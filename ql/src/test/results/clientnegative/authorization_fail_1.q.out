@@ -1,0 +1,17 @@
+PREHOOK: query: create table authorization_fail_1 (key int, value string)
+PREHOOK: type: CREATETABLE
+POSTHOOK: query: create table authorization_fail_1 (key int, value string)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: default@authorization_fail_1
+PREHOOK: query: revoke `ALL` on table authorization_fail_1 from user hive_test_user
+PREHOOK: type: REVOKE_PRIVILEGE
+POSTHOOK: query: revoke `ALL` on table authorization_fail_1 from user hive_test_user
+POSTHOOK: type: REVOKE_PRIVILEGE
+PREHOOK: query: grant `Create` on table authorization_fail_1 to user hive_test_user
+PREHOOK: type: GRANT_PRIVILEGE
+POSTHOOK: query: grant `Create` on table authorization_fail_1 to user hive_test_user
+POSTHOOK: type: GRANT_PRIVILEGE
+PREHOOK: query: grant `Create` on table authorization_fail_1 to user hive_test_user
+PREHOOK: type: GRANT_PRIVILEGE
+Error: java.lang.RuntimeException: InvalidObjectException(message:Create is already granted on table [default,authorization_fail_1] by hive_test_user)
+FAILED: Execution Error, return code 1 from org.apache.hadoop.hive.ql.exec.DDLTask

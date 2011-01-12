@@ -1,0 +1,10 @@
+PREHOOK: query: create table authorization_fail_2 (key int, value string) partitioned by (ds string)
+PREHOOK: type: CREATETABLE
+POSTHOOK: query: create table authorization_fail_2 (key int, value string) partitioned by (ds string)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: default@authorization_fail_2
+PREHOOK: query: revoke `ALL` on table authorization_fail_2 from user hive_test_user
+PREHOOK: type: REVOKE_PRIVILEGE
+POSTHOOK: query: revoke `ALL` on table authorization_fail_2 from user hive_test_user
+POSTHOOK: type: REVOKE_PRIVILEGE
+Authorization failed:No privilege 'Create' found for inputs { database:default, table:authorization_fail_2}. Use show grant to get more details.

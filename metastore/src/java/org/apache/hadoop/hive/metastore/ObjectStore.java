@@ -21,9 +21,11 @@ package org.apache.hadoop.hive.metastore;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.Map.Entry;
 import java.util.Properties;
 import java.util.concurrent.locks.Lock;
@@ -44,15 +46,24 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.conf.Configurable;
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.hive.common.FileUtils;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
+import org.apache.hadoop.hive.metastore.api.HiveObjectPrivilege;
+import org.apache.hadoop.hive.metastore.api.HiveObjectRef;
+import org.apache.hadoop.hive.metastore.api.HiveObjectType;
 import org.apache.hadoop.hive.metastore.api.Index;
 import org.apache.hadoop.hive.metastore.api.InvalidObjectException;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.NoSuchObjectException;
 import org.apache.hadoop.hive.metastore.api.Order;
 import org.apache.hadoop.hive.metastore.api.Partition;
+import org.apache.hadoop.hive.metastore.api.PrincipalPrivilegeSet;
+import org.apache.hadoop.hive.metastore.api.PrincipalType;
+import org.apache.hadoop.hive.metastore.api.PrivilegeBag;
+import org.apache.hadoop.hive.metastore.api.PrivilegeGrantInfo;
+import org.apache.hadoop.hive.metastore.api.Role;
 import org.apache.hadoop.hive.metastore.api.SerDeInfo;
 import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
 import org.apache.hadoop.hive.metastore.api.Table;
@@ -62,13 +73,21 @@ import org.apache.hadoop.hive.metastore.model.MFieldSchema;
 import org.apache.hadoop.hive.metastore.model.MIndex;
 import org.apache.hadoop.hive.metastore.model.MOrder;
 import org.apache.hadoop.hive.metastore.model.MPartition;
+import org.apache.hadoop.hive.metastore.model.MDBPrivilege;
+import org.apache.hadoop.hive.metastore.model.MPartitionColumnPrivilege;
+import org.apache.hadoop.hive.metastore.model.MPartitionPrivilege;
+import org.apache.hadoop.hive.metastore.model.MRole;
+import org.apache.hadoop.hive.metastore.model.MTableColumnPrivilege;
+import org.apache.hadoop.hive.metastore.model.MGlobalPrivilege;
+import org.apache.hadoop.hive.metastore.model.MRoleMap;
 import org.apache.hadoop.hive.metastore.model.MSerDeInfo;
 import org.apache.hadoop.hive.metastore.model.MStorageDescriptor;
 import org.apache.hadoop.hive.metastore.model.MTable;
+import org.apache.hadoop.hive.metastore.model.MTablePrivilege;
 import org.apache.hadoop.hive.metastore.model.MType;
-import org.apache.hadoop.hive.metastore.parser.ExpressionTree.ANTLRNoCaseStringStream;
 import org.apache.hadoop.hive.metastore.parser.FilterLexer;
 import org.apache.hadoop.hive.metastore.parser.FilterParser;
+import org.apache.hadoop.hive.metastore.parser.ExpressionTree.ANTLRNoCaseStringStream;
 import org.apache.hadoop.util.StringUtils;
 
 /**
@@ -361,7 +380,7 @@ public class ObjectStore implements RawStore, Configurable {
     db.setParameters(mdb.getParameters());
     return db;
   }
-
+  
   /**
    * Alter the database object in metastore. Currently only the parameters
    * of the database can be changed.
@@ -556,10 +575,58 @@ public class ObjectStore implements RawStore, Configurable {
       openTransaction();
       MTable mtbl = convertToMTable(tbl);
       pm.makePersistent(mtbl);
+      PrincipalPrivilegeSet principalPrivs = tbl.getPrivileges();
+      List<Object> toPersistPrivObjs = new ArrayList<Object>();
+      if (principalPrivs != null) {
+        int now = (int)(System.currentTimeMillis()/1000);
+
+        Map<String, List<PrivilegeGrantInfo>> userPrivs = principalPrivs.getUserPrivileges();
+        putPersistentPrivObjects(mtbl, toPersistPrivObjs, now, userPrivs, PrincipalType.USER);
+
+        Map<String, List<PrivilegeGrantInfo>> groupPrivs = principalPrivs.getGroupPrivileges();
+        putPersistentPrivObjects(mtbl, toPersistPrivObjs, now, groupPrivs, PrincipalType.GROUP);
+        
+        Map<String, List<PrivilegeGrantInfo>> rolePrivs = principalPrivs.getRolePrivileges();
+        putPersistentPrivObjects(mtbl, toPersistPrivObjs, now, rolePrivs, PrincipalType.ROLE);
+      }
+      pm.makePersistentAll(toPersistPrivObjs);
       commited = commitTransaction();
     } finally {
       if (!commited) {
         rollbackTransaction();
+      }
+    }
+  }
+
+  /**
+   * Convert PrivilegeGrantInfo from privMap to MTablePrivilege, and add all of
+   * them to the toPersistPrivObjs. These privilege objects will be persisted as
+   * part of createTable.
+   * 
+   * @param mtbl
+   * @param toPersistPrivObjs
+   * @param now
+   * @param privMap
+   * @param type
+   */
+  private void putPersistentPrivObjects(MTable mtbl, List<Object> toPersistPrivObjs,
+      int now, Map<String, List<PrivilegeGrantInfo>> privMap, PrincipalType type) {
+    if (privMap != null) {
+      for (Map.Entry<String, List<PrivilegeGrantInfo>> entry : privMap
+          .entrySet()) {
+        String principalName = entry.getKey();
+        List<PrivilegeGrantInfo> privs = entry.getValue();
+        for (int i = 0; i < privs.size(); i++) {
+          PrivilegeGrantInfo priv = privs.get(i);
+          if (priv == null) {
+            continue;
+          }
+          MTablePrivilege mTblSec = new MTablePrivilege(
+              principalName, type.toString(), mtbl, priv.getPrivilege(),
+              now, priv.getGrantor(), priv.getGrantorType().toString(), priv
+                  .isGrantOption());
+          toPersistPrivObjs.add(mTblSec);
+        }
       }
     }
   }
@@ -572,9 +639,29 @@ public class ObjectStore implements RawStore, Configurable {
       pm.retrieve(tbl);
       if (tbl != null) {
         // first remove all the partitions
+        List<MTablePrivilege> tabGrants = listAllTableGrants(dbName, tableName);
+        if (tabGrants != null && tabGrants.size() > 0) {
+          pm.deletePersistentAll(tabGrants);
+        }
+        List<MTableColumnPrivilege> tblColGrants = listTableAllColumnGrants(dbName,
+            tableName);
+        if (tblColGrants != null && tblColGrants.size() > 0) {
+          pm.deletePersistentAll(tblColGrants);
+        }
+
+        List<MPartitionPrivilege> partGrants = this.listTableAllPartitionGrants(dbName, tableName);
+        if (partGrants != null && partGrants.size() > 0) {
+          pm.deletePersistentAll(partGrants);
+        }
+        
+        List<MPartitionColumnPrivilege> partColGrants = listTableAllPartitionColumnGrants(dbName,
+            tableName);
+        if (partColGrants != null && partColGrants.size() > 0) {
+          pm.deletePersistentAll(partColGrants);
+        }
         pm.deletePersistentAll(listMPartitions(dbName, tableName, -1));
         // then remove the table
-        pm.deletePersistent(tbl);
+        pm.deletePersistentAll(tbl);
       }
       success = commitTransaction();
     } finally {
@@ -584,7 +671,7 @@ public class ObjectStore implements RawStore, Configurable {
     }
     return success;
   }
-
+  
   public Table getTable(String dbName, String tableName) throws MetaException {
     boolean commited = false;
     Table tbl = null;
@@ -820,9 +907,45 @@ public class ObjectStore implements RawStore, Configurable {
     boolean success = false;
     boolean commited = false;
     try {
+      MTable table = this.getMTable(part.getDbName(), part.getTableName());
+      List<MTablePrivilege> tabGrants = null;
+      List<MTableColumnPrivilege> tabColumnGrants = null;
+      if ("TRUE".equalsIgnoreCase(table.getParameters().get("PARTITION_LEVEL_PRIVILEGE"))) {
+        tabGrants = this.listAllTableGrants(part
+            .getDbName(), part.getTableName());
+        tabColumnGrants = this.listTableAllColumnGrants(
+            part.getDbName(), part.getTableName());
+      }
       openTransaction();
       MPartition mpart = convertToMPart(part);
       pm.makePersistent(mpart);
+
+      int now = (int)(System.currentTimeMillis()/1000);
+      List<Object> toPersist = new ArrayList<Object>();
+      if (tabGrants != null) {
+        for (MTablePrivilege tab: tabGrants) {
+          MPartitionPrivilege partGrant = new MPartitionPrivilege(tab
+              .getPrincipalName(), tab.getPrincipalType(),
+              mpart, tab.getPrivilege(), now, tab.getGrantor(), tab
+                  .getGrantorType(), tab.getGrantOption());
+          toPersist.add(partGrant);
+        }
+      }
+      
+      if (tabColumnGrants != null) {
+        for (MTableColumnPrivilege col : tabColumnGrants) {
+          MPartitionColumnPrivilege partColumn = new MPartitionColumnPrivilege(col
+              .getPrincipalName(), col.getPrincipalType(), mpart, col
+              .getColumnName(), col.getPrivilege(), now, col.getGrantor(), col
+              .getGrantorType(), col.getGrantOption());
+          toPersist.add(partColumn);
+        }
+        
+        if (toPersist.size() > 0) {
+          pm.makePersistentAll(toPersist);
+        }
+      }
+
       commited = commitTransaction();
       success = true;
     } finally {
@@ -839,11 +962,12 @@ public class ObjectStore implements RawStore, Configurable {
     Partition part = convertToPart(getMPartition(dbName, tableName, part_vals));
     commitTransaction();
     if(part == null) {
-        throw new NoSuchObjectException();
+      throw new NoSuchObjectException("partition values="
+          + part_vals.toString());
     }
     return part;
   }
-
+  
   private MPartition getMPartition(String dbName, String tableName,
       List<String> part_vals) throws MetaException {
     MPartition mpart = null;
@@ -909,6 +1033,26 @@ public class ObjectStore implements RawStore, Configurable {
       openTransaction();
       MPartition part = getMPartition(dbName, tableName, part_vals);
       if (part != null) {
+        List<MFieldSchema> schemas = part.getTable().getPartitionKeys();
+        List<String> colNames = new ArrayList<String>();
+        for (MFieldSchema col: schemas) {
+          colNames.add(col.getName());
+        }
+        String partName = FileUtils.makePartName(colNames, part_vals);
+        
+        List<MPartitionPrivilege> partGrants = listPartitionGrants(
+            dbName, tableName, partName);
+
+        if (partGrants != null && partGrants.size() > 0) {
+          pm.deletePersistentAll(partGrants);
+        }
+
+        List<MPartitionColumnPrivilege> partColumnGrants = listPartitionAllColumnGrants(
+            dbName, tableName, partName);
+        if (partColumnGrants != null && partColumnGrants.size() > 0) {
+          pm.deletePersistentAll(partColumnGrants);
+        }
+
         pm.deletePersistent(part);
       }
       success = commitTransaction();
@@ -928,6 +1072,73 @@ public class ObjectStore implements RawStore, Configurable {
     commitTransaction();
     return parts;
   }
+
+  @Override
+  public List<Partition> getPartitionsWithAuth(String dbName, String tblName,
+      short maxParts, String userName, List<String> groupNames)
+      throws MetaException, NoSuchObjectException, InvalidObjectException {
+    boolean success = false;
+    try {
+      openTransaction();
+      List<MPartition> mparts = listMPartitions(dbName, tblName, maxParts);
+      List<Partition> parts = new ArrayList<Partition>(mparts.size());
+      if (mparts != null && mparts.size()>0) {
+        for (MPartition mpart : mparts) {
+          MTable mtbl = mpart.getTable();
+          Partition part = convertToPart(mpart);
+          parts.add(part);
+
+          if ("TRUE".equalsIgnoreCase(mtbl.getParameters().get("PARTITION_LEVEL_PRIVILEGE"))) {
+            String partName = Warehouse.makePartName(this.convertToFieldSchemas(mtbl
+                .getPartitionKeys()), part.getValues());
+            PrincipalPrivilegeSet partAuth = this.getPartitionPrivilegeSet(dbName,
+                tblName, partName, userName, groupNames);
+            part.setPrivileges(partAuth);
+          }
+        }
+      }
+      success =  commitTransaction();
+      return parts;
+    } finally {
+      if (!success) {
+        rollbackTransaction();
+      }
+    }
+  }
+  
+  @Override
+  public Partition getPartitionWithAuth(String dbName, String tblName,
+      List<String> partVals, String user_name, List<String> group_names)
+      throws NoSuchObjectException, MetaException, InvalidObjectException {
+    boolean success = false;
+    try {
+      openTransaction();
+      MPartition mpart = getMPartition(dbName, tblName, partVals);
+      if (mpart == null) {
+        commitTransaction();
+        throw new NoSuchObjectException("partition values="
+            + partVals.toString());
+      }
+      Partition part = null;
+      MTable mtbl = mpart.getTable();
+      part = convertToPart(mpart);
+      if ("TRUE".equalsIgnoreCase(mtbl.getParameters().get("PARTITION_LEVEL_PRIVILEGE"))) {
+        String partName = Warehouse.makePartName(this.convertToFieldSchemas(mtbl
+            .getPartitionKeys()), partVals);
+        PrincipalPrivilegeSet partAuth = this.getPartitionPrivilegeSet(dbName,
+            tblName, partName, user_name, group_names);
+        part.setPrivileges(partAuth);
+      }
+
+      success = commitTransaction();
+      return part;
+    } finally {
+      if (!success) {
+        rollbackTransaction();
+      }
+    }
+  }
+
 
   private List<Partition> convertToParts(List<MPartition> mparts)
       throws MetaException {
@@ -1418,4 +1629,1539 @@ public class ObjectStore implements RawStore, Configurable {
     }
     return pns;
   }
+
+  @Override
+  public boolean addRole(String roleName, String ownerName)
+      throws InvalidObjectException, MetaException, NoSuchObjectException {
+    boolean success = false;
+    boolean commited = false;
+    try {
+      openTransaction();
+      MRole nameCheck = this.getMRole(roleName);
+      if (nameCheck != null) {
+        throw new InvalidObjectException("Role " + roleName + " already exists.");
+      }
+      int now = (int)(System.currentTimeMillis()/1000);
+      MRole mRole = new MRole(roleName, now,
+          ownerName);
+      pm.makePersistent(mRole);
+      commited = commitTransaction();
+      success = true;
+    } finally {
+      if (!commited) {
+        rollbackTransaction();
+      }
+    }
+    return success;
+  }
+
+  @Override
+  public boolean grantRole(Role role, String userName,
+      PrincipalType principalType, String grantor, PrincipalType grantorType,
+      boolean grantOption) throws MetaException, NoSuchObjectException,InvalidObjectException {
+    boolean success = false;
+    boolean commited = false;
+    try {
+      MRoleMap roleMap = null;
+      try {
+        roleMap = this.getMSecurityUserRoleMap(userName, principalType, role
+            .getRoleName());
+      } catch (Exception e) {
+      }
+      if (roleMap != null) {
+        throw new InvalidObjectException("Principal " + userName
+            + " already has the role " + role.getRoleName());
+      }
+      openTransaction();
+      MRole mRole = getMRole(role.getRoleName());
+      long now = System.currentTimeMillis()/1000;
+      MRoleMap roleMember = new MRoleMap(userName, principalType.toString(),
+          mRole, (int) now, grantor, grantorType.toString(), grantOption);
+      pm.makePersistent(roleMember);
+      commited = commitTransaction();
+      success = true;
+    } finally {
+      if (!commited) {
+        rollbackTransaction();
+      }
+    }
+    return success;
+  }
+
+  @Override
+  public boolean revokeRole(Role role, String userName, PrincipalType principalType) throws MetaException, NoSuchObjectException {
+    boolean success = false;
+    try {
+      openTransaction();
+      MRoleMap roleMember = getMSecurityUserRoleMap(userName, principalType,
+          role.getRoleName());
+      pm.deletePersistent(roleMember);
+      success = commitTransaction();
+    } finally {
+      if (!success) {
+        rollbackTransaction();
+      }
+    }
+    return success;
+  }
+  
+  private MRoleMap getMSecurityUserRoleMap(String userName,
+      PrincipalType principalType, String roleName) {
+    MRoleMap mRoleMember = null;
+    boolean commited = false;
+    try {
+      openTransaction();
+      Query query = pm.newQuery(MRoleMap.class, "principalName == t1 && principalType == t2 && role.roleName == t3");
+      query.declareParameters("java.lang.String t1, java.lang.String t2, java.lang.String t3");
+      query.setUnique(true);
+      mRoleMember = (MRoleMap) query.executeWithArray(userName, principalType.toString(), roleName);
+      pm.retrieve(mRoleMember);
+      commited = commitTransaction();
+    } finally {
+      if (!commited) {
+        rollbackTransaction();
+      }
+    }
+    return mRoleMember;
+  }
+
+  @Override
+  public boolean removeRole(String roleName) throws MetaException,
+      NoSuchObjectException {
+    boolean success = false;
+    try {
+      openTransaction();
+      MRole mRol = getMRole(roleName);
+      pm.retrieve(mRol);
+      if (mRol != null) {
+        // first remove all the membership, the membership that this role has
+        // been granted
+        List<MRoleMap> roleMap = listRoleMembers(mRol);
+        if (roleMap.size() > 0) {
+          pm.deletePersistentAll(roleMap);
+        }
+        List<MRoleMap> roleMember = listMSecurityPrincipalMembershipRole(mRol
+            .getRoleName(), PrincipalType.ROLE);
+        if (roleMember.size() > 0) {
+          pm.deletePersistentAll(roleMember);
+        }
+        // then remove all the grants
+        List<MGlobalPrivilege> userGrants = listPrincipalGlobalGrants(
+            mRol.getRoleName(), PrincipalType.ROLE);
+        if (userGrants.size() > 0) {
+          pm.deletePersistentAll(userGrants);
+        }
+        List<MDBPrivilege> dbGrants = listPrincipalAllDBGrant(mRol
+            .getRoleName(), PrincipalType.ROLE);
+        if (dbGrants.size() > 0) {
+          pm.deletePersistentAll(dbGrants);
+        }
+        List<MTablePrivilege> tabPartGrants = listPrincipalAllTableGrants(
+            mRol.getRoleName(), PrincipalType.ROLE);
+        if (tabPartGrants.size() > 0) {
+          pm.deletePersistentAll(tabPartGrants);
+        }
+        List<MPartitionPrivilege> partGrants = listPrincipalAllPartitionGrants(
+            mRol.getRoleName(), PrincipalType.ROLE);
+        if (partGrants.size() > 0) {
+          pm.deletePersistentAll(partGrants);
+        }
+        List<MTableColumnPrivilege> tblColumnGrants = listPrincipalAllTableColumnGrants(
+            mRol.getRoleName(), PrincipalType.ROLE);
+        if (tblColumnGrants.size() > 0) {
+          pm.deletePersistentAll(tblColumnGrants);
+        }
+        List<MPartitionColumnPrivilege> partColumnGrants = listPrincipalAllPartitionColumnGrants(
+            mRol.getRoleName(), PrincipalType.ROLE);
+        if (tblColumnGrants.size() > 0) {
+          pm.deletePersistentAll(partColumnGrants);
+        }
+        // finally remove the role
+        pm.deletePersistent(mRol);
+      }
+      success = commitTransaction();
+    } finally {
+      if (!success) {
+        rollbackTransaction();
+      }
+    }
+    return success;
+  }
+  
+  private List<MRoleMap> listRoles(String userName,
+      List<String> groupNames) {
+    List<MRoleMap> ret = new ArrayList<MRoleMap>();
+    if(userName != null) {
+      ret.addAll(listRoles(userName, PrincipalType.USER));
+    }
+    if (groupNames != null) {
+      for (String groupName: groupNames) {
+        ret.addAll(listRoles(groupName, PrincipalType.GROUP));
+      }
+    }
+    return ret;
+  }
+  
+  @SuppressWarnings("unchecked")
+  @Override
+  public List<MRoleMap> listRoles(String principalName,
+      PrincipalType principalType) {
+    boolean success = false;
+    List<MRoleMap> mRoleMember = null;
+    try {
+      openTransaction();
+      LOG.debug("Executing listRoles");
+      Query query = pm
+          .newQuery(
+              MRoleMap.class,
+              "principalName == t1 && principalType == t2");
+      query
+          .declareParameters("java.lang.String t1, java.lang.String t2");
+      query.setUnique(false);
+      mRoleMember = (List<MRoleMap>) query.executeWithArray(
+          principalName, principalType.toString());
+      LOG.debug("Done executing query for listMSecurityUserRoleMap");
+      pm.retrieveAll(mRoleMember);
+      success = commitTransaction();
+      LOG.debug("Done retrieving all objects for listMSecurityUserRoleMap");
+    } finally {
+      if (!success) {
+        rollbackTransaction();
+      }
+    }
+    return mRoleMember;
+  }
+
+  
+  @SuppressWarnings("unchecked")
+  private List<MRoleMap> listMSecurityPrincipalMembershipRole(final String roleName,
+      final PrincipalType principalType) {
+    boolean success = false;
+    List<MRoleMap> mRoleMemebership = null;
+    try {
+      openTransaction();
+      LOG.debug("Executing listMSecurityPrincipalMembershipRole");
+      Query query = pm.newQuery(MRoleMap.class,
+          "principalName == t1 && principalType == t2");
+      query
+          .declareParameters("java.lang.String t1, java.lang.String t2");
+      mRoleMemebership = (List<MRoleMap>) query.execute(roleName, principalType.toString());
+      LOG
+          .debug("Done executing query for listMSecurityPrincipalMembershipRole");
+      pm.retrieveAll(mRoleMemebership);
+      success = commitTransaction();
+      LOG
+          .debug("Done retrieving all objects for listMSecurityPrincipalMembershipRole");
+    } finally {
+      if (!success) {
+        rollbackTransaction();
+      }
+    }
+    return mRoleMemebership;
+  }
+
+  public Role getRole(String roleName) throws NoSuchObjectException {
+    MRole mRole = this.getMRole(roleName);
+    if (mRole == null) {
+      throw new NoSuchObjectException(roleName + " role can not be found.");
+    }
+    Role ret = new Role(mRole.getRoleName(), mRole.getCreateTime(), mRole
+        .getOwnerName());
+    return ret;
+  }
+
+  private MRole getMRole(String roleName) {
+    MRole mrole = null;
+    boolean commited = false;
+    try {
+      openTransaction();
+      Query query = pm.newQuery(MRole.class, "roleName == t1");
+      query.declareParameters("java.lang.String t1");
+      query.setUnique(true);
+      mrole = (MRole) query.execute(roleName);
+      pm.retrieve(mrole);
+      commited = commitTransaction();
+    } finally {
+      if (!commited) {
+        rollbackTransaction();
+      }
+    }
+    return mrole;
+  }
+  
+  @Override
+  public PrincipalPrivilegeSet getUserPrivilegeSet(String userName,
+      List<String> groupNames) throws InvalidObjectException, MetaException {
+    boolean commited = false;
+    PrincipalPrivilegeSet ret = new PrincipalPrivilegeSet();
+    try {
+      openTransaction();
+      if (userName != null) {
+        List<MGlobalPrivilege> user = this.listPrincipalGlobalGrants(userName, PrincipalType.USER);
+        if(user.size()>0) {
+          Map<String, List<PrivilegeGrantInfo>> userPriv = new HashMap<String, List<PrivilegeGrantInfo>>();
+          List<PrivilegeGrantInfo> grantInfos = new ArrayList<PrivilegeGrantInfo>(user.size());
+          for (int i = 0; i < user.size(); i++) {
+            MGlobalPrivilege item = user.get(i);
+            grantInfos.add(new PrivilegeGrantInfo(item.getPrivilege(), item
+                .getCreateTime(), item.getGrantor(), getPrincipalTypeFromStr(item
+                .getGrantorType()), item.getGrantOption()));
+          }
+          userPriv.put(userName, grantInfos);
+          ret.setUserPrivileges(userPriv);
+        }
+      }
+      if (groupNames != null && groupNames.size() > 0) {
+        Map<String, List<PrivilegeGrantInfo>> groupPriv = new HashMap<String, List<PrivilegeGrantInfo>>();
+        for(String groupName: groupNames) {
+          List<MGlobalPrivilege> group = this.listPrincipalGlobalGrants(groupName, PrincipalType.GROUP);
+          if(group.size()>0) {
+            List<PrivilegeGrantInfo> grantInfos = new ArrayList<PrivilegeGrantInfo>(group.size());
+            for (int i = 0; i < group.size(); i++) {
+              MGlobalPrivilege item = group.get(i);
+              grantInfos.add(new PrivilegeGrantInfo(item.getPrivilege(), item
+                  .getCreateTime(), item.getGrantor(), getPrincipalTypeFromStr(item
+                  .getGrantorType()), item.getGrantOption()));
+            }
+            groupPriv.put(groupName, grantInfos);
+          }
+        }
+        ret.setGroupPrivileges(groupPriv);
+      }
+      commited = commitTransaction();
+    } finally {
+      if (!commited) {
+        rollbackTransaction();
+      }
+    }
+    return ret;
+  }
+  
+  public List<PrivilegeGrantInfo> getDBPrivilege(String dbName,
+      String principalName, PrincipalType principalType)
+      throws InvalidObjectException, MetaException {
+    dbName = dbName.toLowerCase().trim();
+
+    if (principalName != null) {
+      List<MDBPrivilege> userNameDbPriv = this.listPrincipalDBGrants(
+          principalName, principalType, dbName);
+      if (userNameDbPriv != null && userNameDbPriv.size() > 0) {
+        List<PrivilegeGrantInfo> grantInfos = new ArrayList<PrivilegeGrantInfo>(
+            userNameDbPriv.size());
+        for (int i = 0; i < userNameDbPriv.size(); i++) {
+          MDBPrivilege item = userNameDbPriv.get(i);
+          grantInfos.add(new PrivilegeGrantInfo(item.getPrivilege(), item
+              .getCreateTime(), item.getGrantor(), getPrincipalTypeFromStr(item
+              .getGrantorType()), item.getGrantOption()));
+        }
+        return grantInfos;
+      }
+    }
+    return new ArrayList<PrivilegeGrantInfo>(0);
+  }
+
+  
+  @Override
+  public PrincipalPrivilegeSet getDBPrivilegeSet(String dbName,
+      String userName, List<String> groupNames) throws InvalidObjectException,
+      MetaException {
+    boolean commited = false;
+    dbName = dbName.toLowerCase().trim();
+
+    PrincipalPrivilegeSet ret = new PrincipalPrivilegeSet();
+    try {
+      openTransaction();
+      if (userName != null) {
+        Map<String, List<PrivilegeGrantInfo>> dbUserPriv = new HashMap<String, List<PrivilegeGrantInfo>>();
+        dbUserPriv.put(userName, getDBPrivilege(dbName, userName,
+            PrincipalType.USER));
+        ret.setUserPrivileges(dbUserPriv);
+      }
+      if (groupNames != null && groupNames.size() > 0) {
+        Map<String, List<PrivilegeGrantInfo>> dbGroupPriv = new HashMap<String, List<PrivilegeGrantInfo>>();
+        for (String groupName : groupNames) {
+          dbGroupPriv.put(groupName, getDBPrivilege(dbName, groupName,
+              PrincipalType.GROUP));
+        }
+        ret.setGroupPrivileges(dbGroupPriv);
+      }
+      List<MRoleMap> roles = listRoles(userName, groupNames);
+      if (roles != null && roles.size() > 0) {
+        Map<String, List<PrivilegeGrantInfo>> dbRolePriv = new HashMap<String, List<PrivilegeGrantInfo>>();
+        for (MRoleMap role : roles) {
+          String name = role.getRole().getRoleName();
+          dbRolePriv
+              .put(name, getDBPrivilege(dbName, name, PrincipalType.ROLE));
+        }
+        ret.setRolePrivileges(dbRolePriv);
+      }
+      commited = commitTransaction();
+    } finally {
+      if (!commited) {
+        rollbackTransaction();
+      }
+    }
+    return ret;
+  }
+
+  @Override
+  public PrincipalPrivilegeSet getPartitionPrivilegeSet(String dbName,
+      String tableName, String partition, String userName,
+      List<String> groupNames) throws InvalidObjectException, MetaException {
+    boolean commited = false;
+    PrincipalPrivilegeSet ret = new PrincipalPrivilegeSet();
+    tableName = tableName.toLowerCase().trim();
+    dbName = dbName.toLowerCase().trim();
+
+    try {
+      openTransaction();
+      if (userName != null) {
+        Map<String, List<PrivilegeGrantInfo>> partUserPriv = new HashMap<String, List<PrivilegeGrantInfo>>();
+        partUserPriv.put(userName, getPartitionPrivilege(dbName,
+            tableName, partition, userName, PrincipalType.USER));
+        ret.setUserPrivileges(partUserPriv);
+      }
+      if (groupNames != null && groupNames.size() > 0) {
+        Map<String, List<PrivilegeGrantInfo>> partGroupPriv = new HashMap<String, List<PrivilegeGrantInfo>>();
+        for (String groupName : groupNames) {
+          partGroupPriv.put(groupName, getPartitionPrivilege(dbName, tableName,
+              partition, groupName, PrincipalType.GROUP));
+        }
+        ret.setGroupPrivileges(partGroupPriv);
+      }
+      List<MRoleMap> roles = listRoles(userName, groupNames);
+      if (roles != null && roles.size() > 0) {
+        Map<String, List<PrivilegeGrantInfo>> partRolePriv = new HashMap<String, List<PrivilegeGrantInfo>>();
+        for (MRoleMap role : roles) {
+          String roleName = role.getRole().getRoleName();
+          partRolePriv.put(roleName, getPartitionPrivilege(dbName, tableName,
+              partition, roleName, PrincipalType.ROLE));
+        }
+        ret.setRolePrivileges(partRolePriv);
+      }
+      commited = commitTransaction();
+    } finally {
+      if (!commited) {
+        rollbackTransaction();
+      }
+    }
+    return ret;
+  }
+
+  @Override
+  public PrincipalPrivilegeSet getTablePrivilegeSet(String dbName,
+      String tableName, String userName, List<String> groupNames)
+      throws InvalidObjectException, MetaException {
+    boolean commited = false;
+    PrincipalPrivilegeSet ret = new PrincipalPrivilegeSet();
+    tableName = tableName.toLowerCase().trim();
+    dbName = dbName.toLowerCase().trim();
+
+    try {
+      openTransaction();
+      if (userName != null) {
+        Map<String, List<PrivilegeGrantInfo>> tableUserPriv = new HashMap<String, List<PrivilegeGrantInfo>>();
+        tableUserPriv.put(userName, getTablePrivilege(dbName,
+            tableName, userName, PrincipalType.USER));
+        ret.setUserPrivileges(tableUserPriv);
+      }
+      if (groupNames != null && groupNames.size() > 0) {
+        Map<String, List<PrivilegeGrantInfo>> tableGroupPriv = new HashMap<String, List<PrivilegeGrantInfo>>();
+        for (String groupName : groupNames) {
+          tableGroupPriv.put(groupName, getTablePrivilege(dbName, tableName,
+              groupName, PrincipalType.GROUP));
+        }
+        ret.setGroupPrivileges(tableGroupPriv);
+      }
+      List<MRoleMap> roles = listRoles(userName, groupNames);
+      if (roles != null && roles.size() > 0) {
+        Map<String, List<PrivilegeGrantInfo>> tableRolePriv = new HashMap<String, List<PrivilegeGrantInfo>>();
+        for (MRoleMap role : roles) {
+          String roleName = role.getRole().getRoleName();
+          tableRolePriv.put(roleName, getTablePrivilege(dbName, tableName,
+              roleName, PrincipalType.ROLE));
+        }
+        ret.setRolePrivileges(tableRolePriv);
+      }
+      commited = commitTransaction();
+    } finally {
+      if (!commited) {
+        rollbackTransaction();
+      }
+    }
+    return ret;
+  }
+  
+  @Override
+  public PrincipalPrivilegeSet getColumnPrivilegeSet(String dbName,
+      String tableName, String partitionName, String columnName,
+      String userName, List<String> groupNames) throws InvalidObjectException,
+      MetaException {
+    tableName = tableName.toLowerCase().trim();
+    dbName = dbName.toLowerCase().trim();
+    columnName = columnName.toLowerCase().trim();
+
+    boolean commited = false;
+    PrincipalPrivilegeSet ret = new PrincipalPrivilegeSet();
+    try {
+      openTransaction();
+      if (userName != null) {
+        Map<String, List<PrivilegeGrantInfo>> columnUserPriv = new HashMap<String, List<PrivilegeGrantInfo>>();
+        columnUserPriv.put(userName, getColumnPrivilege(dbName, tableName,
+            columnName, partitionName, userName, PrincipalType.USER));
+        ret.setUserPrivileges(columnUserPriv);
+      }
+      if (groupNames != null && groupNames.size() > 0) {
+        Map<String, List<PrivilegeGrantInfo>> columnGroupPriv = new HashMap<String, List<PrivilegeGrantInfo>>();
+        for (String groupName : groupNames) {
+          columnGroupPriv.put(groupName, getColumnPrivilege(dbName, tableName,
+              columnName, partitionName, groupName, PrincipalType.GROUP));
+        }
+        ret.setGroupPrivileges(columnGroupPriv);
+      }
+      List<MRoleMap> roles = listRoles(userName, groupNames);
+      if (roles != null && roles.size() > 0) {
+        Map<String, List<PrivilegeGrantInfo>> columnRolePriv = new HashMap<String, List<PrivilegeGrantInfo>>();
+        for (MRoleMap role : roles) {
+          String roleName = role.getRole().getRoleName();
+          columnRolePriv.put(roleName, getColumnPrivilege(dbName, tableName,
+              columnName, partitionName, roleName, PrincipalType.ROLE));
+        }
+        ret.setRolePrivileges(columnRolePriv);
+      }
+      commited = commitTransaction();
+    } finally {
+      if (!commited) {
+        rollbackTransaction();
+      }
+    }
+    return ret;
+  }
+  
+  private List<PrivilegeGrantInfo> getPartitionPrivilege(String dbName,
+      String tableName, String partName, String principalName,
+      PrincipalType principalType) {
+
+    tableName = tableName.toLowerCase().trim();
+    dbName = dbName.toLowerCase().trim();
+
+    if (principalName != null) {
+      List<MPartitionPrivilege> userNameTabPartPriv = this
+          .listPrincipalPartitionGrants(principalName, principalType,
+              dbName, tableName, partName);
+      if (userNameTabPartPriv != null && userNameTabPartPriv.size() > 0) {
+        List<PrivilegeGrantInfo> grantInfos = new ArrayList<PrivilegeGrantInfo>(
+            userNameTabPartPriv.size());
+        for (int i = 0; i < userNameTabPartPriv.size(); i++) {
+          MPartitionPrivilege item = userNameTabPartPriv.get(i);
+          grantInfos.add(new PrivilegeGrantInfo(item.getPrivilege(), item
+              .getCreateTime(), item.getGrantor(),
+              getPrincipalTypeFromStr(item.getGrantorType()), item.getGrantOption()));
+
+        }
+        return grantInfos;
+      }
+    }
+    return new ArrayList<PrivilegeGrantInfo>(0);
+  }
+
+  private PrincipalType getPrincipalTypeFromStr(String str) {
+    return str == null ? null : PrincipalType.valueOf(str);
+  }
+  
+  private List<PrivilegeGrantInfo> getTablePrivilege(String dbName,
+      String tableName, String principalName, PrincipalType principalType) {
+    tableName = tableName.toLowerCase().trim();
+    dbName = dbName.toLowerCase().trim();
+
+    if (principalName != null) {
+      List<MTablePrivilege> userNameTabPartPriv = this
+          .listAllTableGrants(principalName, principalType,
+              dbName, tableName);
+      if (userNameTabPartPriv != null && userNameTabPartPriv.size() > 0) {
+        List<PrivilegeGrantInfo> grantInfos = new ArrayList<PrivilegeGrantInfo>(
+            userNameTabPartPriv.size());
+        for (int i = 0; i < userNameTabPartPriv.size(); i++) {
+          MTablePrivilege item = userNameTabPartPriv.get(i);
+          grantInfos.add(new PrivilegeGrantInfo(item.getPrivilege(), item
+              .getCreateTime(), item.getGrantor(), getPrincipalTypeFromStr(item
+              .getGrantorType()), item.getGrantOption()));
+        }
+        return grantInfos;
+      }
+    }
+    return new ArrayList<PrivilegeGrantInfo>(0);
+  }
+  
+  private List<PrivilegeGrantInfo> getColumnPrivilege(String dbName,
+      String tableName, String columnName, String partitionName,
+      String principalName, PrincipalType principalType) {
+    
+    tableName = tableName.toLowerCase().trim();
+    dbName = dbName.toLowerCase().trim();
+    columnName = columnName.toLowerCase().trim();
+
+    if (partitionName == null) {
+      List<MTableColumnPrivilege> userNameColumnPriv = this
+          .listPrincipalTableColumnGrants(principalName, principalType,
+              dbName, tableName, columnName);
+      if (userNameColumnPriv != null && userNameColumnPriv.size() > 0) {
+        List<PrivilegeGrantInfo> grantInfos = new ArrayList<PrivilegeGrantInfo>(
+            userNameColumnPriv.size());
+        for (int i = 0; i < userNameColumnPriv.size(); i++) {
+          MTableColumnPrivilege item = userNameColumnPriv.get(i);
+          grantInfos.add(new PrivilegeGrantInfo(item.getPrivilege(), item
+              .getCreateTime(), item.getGrantor(), getPrincipalTypeFromStr(item
+              .getGrantorType()), item.getGrantOption()));
+        }
+        return grantInfos;
+      }
+    } else {
+      List<MPartitionColumnPrivilege> userNameColumnPriv = this
+          .listPrincipalPartitionColumnGrants(principalName,
+              principalType, dbName, tableName, partitionName, columnName);
+      if (userNameColumnPriv != null && userNameColumnPriv.size() > 0) {
+        List<PrivilegeGrantInfo> grantInfos = new ArrayList<PrivilegeGrantInfo>(
+            userNameColumnPriv.size());
+        for (int i = 0; i < userNameColumnPriv.size(); i++) {
+          MPartitionColumnPrivilege item = userNameColumnPriv.get(i);
+          grantInfos.add(new PrivilegeGrantInfo(item.getPrivilege(), item
+              .getCreateTime(), item.getGrantor(), getPrincipalTypeFromStr(item
+              .getGrantorType()), item.getGrantOption()));
+        }
+        return grantInfos;
+      }
+    }
+    return new ArrayList<PrivilegeGrantInfo>(0);
+  }
+
+  @Override
+  public boolean grantPrivileges(PrivilegeBag privileges) throws InvalidObjectException,
+      MetaException, NoSuchObjectException {
+    boolean committed = false;
+    int now = (int) (System.currentTimeMillis() / 1000);
+    try {
+      openTransaction();
+      List<Object> persistentObjs = new ArrayList<Object>();
+
+      List<HiveObjectPrivilege> privilegeList = privileges.getPrivileges();
+
+      if (privilegeList != null && privilegeList.size() > 0) {
+        Iterator<HiveObjectPrivilege> privIter = privilegeList.iterator();
+        Set<String> privSet = new HashSet<String>();
+        while (privIter.hasNext()) {
+          HiveObjectPrivilege privDef = privIter.next();
+          HiveObjectRef hiveObject = privDef.getHiveObject();
+          String privilegeStr = privDef.getGrantInfo().getPrivilege();
+          String[] privs = privilegeStr.split(",");
+          String userName = privDef.getPrincipalName();
+          PrincipalType principalType = privDef.getPrincipalType();
+          String grantor = privDef.getGrantInfo().getGrantor();
+          String grantorType = privDef.getGrantInfo().getGrantorType().toString();
+          boolean grantOption = privDef.getGrantInfo().isGrantOption();
+          privSet.clear();
+
+          if (hiveObject.getObjectType() == HiveObjectType.GLOBAL) {
+            List<MGlobalPrivilege> globalPrivs = this
+                .listPrincipalGlobalGrants(userName, principalType);
+            if (globalPrivs != null) {
+              for (MGlobalPrivilege priv : globalPrivs) {
+                if (priv.getGrantor().equalsIgnoreCase(grantor)) {
+                  privSet.add(priv.getPrivilege());
+                }
+              }
+            }
+            for (String privilege : privs) {
+              if (privSet.contains(privilege)) {
+                throw new InvalidObjectException(privilege
+                    + " is already granted by " + grantor);
+              }
+              MGlobalPrivilege mGlobalPrivs = new MGlobalPrivilege(userName,
+                  principalType.toString(), privilege, now, grantor, grantorType, grantOption);
+              persistentObjs.add(mGlobalPrivs);
+            }
+          } else if (hiveObject.getObjectType() == HiveObjectType.DATABASE) {
+            MDatabase dbObj = getMDatabase(hiveObject.getDbName());
+            if (dbObj != null) {
+              List<MDBPrivilege> dbPrivs = this.listPrincipalDBGrants(
+                  userName, principalType, hiveObject.getDbName());
+              if (dbPrivs != null) {
+                for (MDBPrivilege priv : dbPrivs) {
+                  if (priv.getGrantor().equalsIgnoreCase(grantor)) {
+                    privSet.add(priv.getPrivilege());
+                  }
+                }
+              }
+              for (String privilege : privs) {
+                if (privSet.contains(privilege)) {
+                  throw new InvalidObjectException(privilege
+                      + " is already granted on database "
+                      + hiveObject.getDbName() + " by " + grantor);
+                }
+                MDBPrivilege mDb = new MDBPrivilege(userName, principalType
+                    .toString(), dbObj, privilege, now, grantor, grantorType, grantOption);
+                persistentObjs.add(mDb);
+              }
+            }
+          } else if (hiveObject.getObjectType() == HiveObjectType.TABLE) {
+            MTable tblObj = getMTable(hiveObject.getDbName(), hiveObject
+                .getObjectName());
+            if (tblObj != null) {
+              List<MTablePrivilege> tablePrivs = this
+                  .listAllTableGrants(userName, principalType,
+                      hiveObject.getDbName(), hiveObject.getObjectName());
+              if (tablePrivs != null) {
+                for (MTablePrivilege priv : tablePrivs) {
+                  if (priv.getGrantor() != null
+                      && priv.getGrantor().equalsIgnoreCase(grantor)) {
+                    privSet.add(priv.getPrivilege());
+                  }
+                }
+              }
+              for (String privilege : privs) {
+                if (privSet.contains(privilege)) {
+                  throw new InvalidObjectException(privilege
+                      + " is already granted on table ["
+                      + hiveObject.getDbName() + ","
+                      + hiveObject.getObjectName() + "] by " + grantor);
+                }
+                MTablePrivilege mTab = new MTablePrivilege(
+                    userName, principalType.toString(), tblObj,
+                    privilege, now, grantor, grantorType, grantOption);
+                persistentObjs.add(mTab);
+              }
+            }
+          } else if (hiveObject.getObjectType() == HiveObjectType.PARTITION) {
+            MPartition partObj = this.getMPartition(hiveObject.getDbName(),
+                hiveObject.getObjectName(), hiveObject.getPartValues());
+            String partName = null;
+            if (partObj != null) {
+              partName = partObj.getPartitionName();
+              List<MPartitionPrivilege> partPrivs = this
+                  .listPrincipalPartitionGrants(userName,
+                      principalType, hiveObject.getDbName(), hiveObject
+                          .getObjectName(), partObj.getPartitionName());
+              if (partPrivs != null) {
+                for (MPartitionPrivilege priv : partPrivs) {
+                  if (priv.getGrantor().equalsIgnoreCase(grantor)) {
+                    privSet.add(priv.getPrivilege());
+                  }
+                }
+              }
+              for (String privilege : privs) {
+                if (privSet.contains(privilege)) {
+                  throw new InvalidObjectException(privilege
+                      + " is already granted on partition ["
+                      + hiveObject.getDbName() + ","
+                      + hiveObject.getObjectName() + ","
+                      + partName + "] by " + grantor);
+                }
+                MPartitionPrivilege mTab = new MPartitionPrivilege(userName,
+                    principalType.toString(), partObj, privilege, now, grantor,
+                    grantorType, grantOption);
+                persistentObjs.add(mTab);
+              }
+            }
+          } else if (hiveObject.getObjectType() == HiveObjectType.COLUMN) {
+            MTable tblObj = getMTable(hiveObject.getDbName(), hiveObject
+                .getObjectName());
+            if (tblObj != null) {
+              if (hiveObject.getPartValues() != null) {
+                MPartition partObj = null;
+                List<MPartitionColumnPrivilege> colPrivs = null;
+                partObj = this.getMPartition(hiveObject.getDbName(), hiveObject
+                    .getObjectName(), hiveObject.getPartValues());
+                if (partObj == null) {
+                  continue;
+                }
+                colPrivs = this.listPrincipalPartitionColumnGrants(
+                    userName, principalType, hiveObject.getDbName(), hiveObject
+                        .getObjectName(), partObj.getPartitionName(),
+                    hiveObject.getColumnName());
+                
+                if (colPrivs != null) {
+                  for (MPartitionColumnPrivilege priv : colPrivs) {
+                    if (priv.getGrantor().equalsIgnoreCase(grantor)) {
+                      privSet.add(priv.getPrivilege());
+                    }
+                  }
+                }
+                for (String privilege : privs) {
+                  if (privSet.contains(privilege)) {
+                    throw new InvalidObjectException(privilege
+                        + " is already granted on column "
+                        + hiveObject.getColumnName() + " ["
+                        + hiveObject.getDbName() + ","
+                        + hiveObject.getObjectName() + ","
+                        + partObj.getPartitionName() + "] by " + grantor);
+                  }
+                  MPartitionColumnPrivilege mCol = new MPartitionColumnPrivilege(userName,
+                      principalType.toString(), partObj, hiveObject
+                          .getColumnName(), privilege, now, grantor, grantorType,
+                      grantOption);
+                  persistentObjs.add(mCol);
+                }
+                
+              } else {
+                List<MTableColumnPrivilege> colPrivs = null;
+                colPrivs = this.listPrincipalTableColumnGrants(
+                    userName, principalType, hiveObject.getDbName(), hiveObject
+                        .getObjectName(), hiveObject.getColumnName());
+                
+                if (colPrivs != null) {
+                  for (MTableColumnPrivilege priv : colPrivs) {
+                    if (priv.getGrantor().equalsIgnoreCase(grantor)) {
+                      privSet.add(priv.getPrivilege());
+                    }
+                  }
+                }
+                for (String privilege : privs) {
+                  if (privSet.contains(privilege)) {
+                    throw new InvalidObjectException(privilege
+                        + " is already granted on column "
+                        + hiveObject.getColumnName() + " ["
+                        + hiveObject.getDbName() + ","
+                        + hiveObject.getObjectName() + "] by " + grantor);
+                  }
+                  MTableColumnPrivilege mCol = new MTableColumnPrivilege(userName,
+                      principalType.toString(), tblObj, hiveObject
+                          .getColumnName(), privilege, now, grantor, grantorType,
+                      grantOption);
+                  persistentObjs.add(mCol);
+                }
+              }
+            }
+          }
+        }
+      }
+      if (persistentObjs.size() > 0) {
+        pm.makePersistentAll(persistentObjs);
+      }
+      committed = commitTransaction();
+    } finally {
+      if (!committed) {
+        rollbackTransaction();
+      }
+    }
+    return committed;
+  }
+  
+  @Override
+  public boolean revokePrivileges(PrivilegeBag privileges)
+      throws InvalidObjectException, MetaException, NoSuchObjectException {
+    boolean committed = false;
+    try {
+      openTransaction();
+      List<Object> persistentObjs = new ArrayList<Object>();
+      
+      List<HiveObjectPrivilege> privilegeList = privileges.getPrivileges();
+
+      
+      if (privilegeList != null && privilegeList.size() > 0) {
+        Iterator<HiveObjectPrivilege> privIter = privilegeList.iterator();
+        
+        while (privIter.hasNext()) {
+          HiveObjectPrivilege privDef = privIter.next();
+          HiveObjectRef hiveObject = privDef.getHiveObject();
+          String privilegeStr = privDef.getGrantInfo().getPrivilege();
+          if (privilegeStr == null || privilegeStr.trim().equals("")) {
+            continue;
+          }
+          String[] privs = privilegeStr.split(",");
+          String userName = privDef.getPrincipalName();
+          PrincipalType principalType = privDef.getPrincipalType();
+
+          if (hiveObject.getObjectType() == HiveObjectType.GLOBAL) {
+            List<MGlobalPrivilege> mSecUser = this.listPrincipalGlobalGrants(
+                userName, principalType);
+            boolean found = false;
+            if (mSecUser != null) {
+              for (String privilege : privs) {
+                for (MGlobalPrivilege userGrant : mSecUser) {
+                  String userGrantPrivs = userGrant.getPrivilege();
+                  if (privilege.equals(userGrantPrivs)) {
+                    found = true;
+                    persistentObjs.add(userGrant);
+                    break;
+                  }
+                }
+                if (!found) {
+                  throw new InvalidObjectException(
+                      "No user grant found for privileges " + privilege);
+                }
+              }
+            }
+          
+          } else if (hiveObject.getObjectType() == HiveObjectType.DATABASE) {
+            MDatabase dbObj = getMDatabase(hiveObject.getDbName());
+            if (dbObj != null) {
+              String db = hiveObject.getDbName();
+              boolean found = false;
+              List<MDBPrivilege> dbGrants = this.listPrincipalDBGrants(
+                  userName, principalType, db);
+              for (String privilege : privs) {
+                for (MDBPrivilege dbGrant : dbGrants) {
+                  String dbGrantPriv = dbGrant.getPrivilege();
+                  if (privilege.equals(dbGrantPriv)) {
+                    found = true;
+                    persistentObjs.add(dbGrant);
+                    break;
+                  }
+                }
+                if (!found) {
+                  throw new InvalidObjectException(
+                      "No database grant found for privileges " + privilege
+                          + " on database " + db);
+                }
+              }
+            }
+          } else if (hiveObject.getObjectType() == HiveObjectType.TABLE) {
+            boolean found = false;
+            List<MTablePrivilege> tableGrants = this
+                .listAllTableGrants(userName, principalType,
+                    hiveObject.getDbName(), hiveObject.getObjectName());
+            for (String privilege : privs) {
+              for (MTablePrivilege tabGrant : tableGrants) {
+                String tableGrantPriv = tabGrant.getPrivilege();
+                if (privilege.equalsIgnoreCase(tableGrantPriv)) {
+                  found = true;
+                  persistentObjs.add(tabGrant);
+                  break;
+                }
+              }
+              if (!found) {
+                throw new InvalidObjectException("No grant (" + privilege
+                    + ") found " + " on table " + hiveObject.getObjectName()
+                    + ", database is " + hiveObject.getDbName());
+              }
+            }
+          } else if (hiveObject.getObjectType() == HiveObjectType.PARTITION) {
+            
+            boolean found = false;
+            Table tabObj = this.getTable(hiveObject.getDbName(), hiveObject.getObjectName());
+            String partName = null;
+            if (hiveObject.getPartValues() != null) {
+              partName = Warehouse.makePartName(tabObj.getPartitionKeys(), hiveObject.getPartValues());
+            }
+            List<MPartitionPrivilege> partitionGrants = this
+                .listPrincipalPartitionGrants(userName, principalType,
+                    hiveObject.getDbName(), hiveObject.getObjectName(), partName);
+            for (String privilege : privs) {
+              for (MPartitionPrivilege partGrant : partitionGrants) {
+                String partPriv = partGrant.getPrivilege();
+                if (partPriv.equalsIgnoreCase(privilege)) {
+                  found = true;
+                  persistentObjs.add(partGrant);
+                  break;
+                }
+              }
+              if (!found) {
+                throw new InvalidObjectException("No grant (" + privilege
+                    + ") found " + " on table " + tabObj.getTableName()
+                    + ", partition is " + partName + ", database is " + tabObj.getDbName());
+              }
+            }
+          } else if (hiveObject.getObjectType() == HiveObjectType.COLUMN) {
+
+            Table tabObj = this.getTable(hiveObject.getDbName(), hiveObject
+                .getObjectName());
+            String partName = null;
+            if (hiveObject.getPartValues() != null) {
+              partName = Warehouse.makePartName(tabObj.getPartitionKeys(),
+                  hiveObject.getPartValues());
+            }
+            
+            if (partName != null) {
+              List<MPartitionColumnPrivilege> mSecCol = listPrincipalPartitionColumnGrants(
+                  userName, principalType, hiveObject.getDbName(), hiveObject
+                      .getObjectName(), partName, hiveObject.getColumnName());
+              boolean found = false;
+              if (mSecCol != null) {
+                for (String privilege : privs) {
+                  for (MPartitionColumnPrivilege col : mSecCol) {
+                    String colPriv = col.getPrivilege();
+                    if (colPriv.equalsIgnoreCase(privilege)) {
+                      found = true;
+                      persistentObjs.add(col);
+                      break;
+                    }
+                  }
+                  if (!found) {
+                    throw new InvalidObjectException("No grant (" + privilege
+                        + ") found " + " on table " + tabObj.getTableName()
+                        + ", partition is " + partName + ", column name = "
+                        + hiveObject.getColumnName() + ", database is "
+                        + tabObj.getDbName());
+                  }
+                }
+              }
+            } else {
+              List<MTableColumnPrivilege> mSecCol = listPrincipalTableColumnGrants(
+                  userName, principalType, hiveObject.getDbName(), hiveObject
+                      .getObjectName(), hiveObject.getColumnName());
+              boolean found = false;
+              if (mSecCol != null) {
+                for (String privilege : privs) {
+                  for (MTableColumnPrivilege col : mSecCol) {
+                    String colPriv = col.getPrivilege();
+                    if (colPriv.equalsIgnoreCase(privilege)) {
+                      found = true;
+                      persistentObjs.add(col);
+                      break;
+                    }
+                  }
+                  if (!found) {
+                    throw new InvalidObjectException("No grant (" + privilege
+                        + ") found " + " on table " + tabObj.getTableName()
+                        + ", column name = "
+                        + hiveObject.getColumnName() + ", database is "
+                        + tabObj.getDbName());
+                  }
+                }
+              }
+            }
+
+          }
+        }
+      }
+      
+      if (persistentObjs.size() > 0) {
+        pm.deletePersistentAll(persistentObjs);
+      }
+      committed = commitTransaction();
+    } finally {
+      if (!committed) {
+        rollbackTransaction();
+      }
+    }
+    return committed;
+  }
+  
+  @SuppressWarnings("unchecked")
+  private List<MRoleMap> listRoleMembers(
+      MRole mRol) {
+    boolean success = false;
+    List<MRoleMap> mRoleMemeberList = null;
+    try {
+      openTransaction();
+      LOG.debug("Executing listMSecurityUserRoleMember");
+      Query query = pm.newQuery(MRoleMap.class,
+          "role.roleName == t1");
+      query.declareParameters("java.lang.String t1");
+      query.setUnique(false);
+      mRoleMemeberList = (List<MRoleMap>) query.execute(
+          mRol.getRoleName());
+      LOG.debug("Done executing query for listMSecurityUserRoleMember");
+      pm.retrieveAll(mRoleMemeberList);
+      success = commitTransaction();
+      LOG.debug("Done retrieving all objects for listMSecurityUserRoleMember");
+    } finally {
+      if (!success) {
+        rollbackTransaction();
+      }
+    }
+    return mRoleMemeberList;
+  }
+  
+  @SuppressWarnings("unchecked")
+  @Override
+  public List<MGlobalPrivilege> listPrincipalGlobalGrants(String principalName, PrincipalType principalType) {
+    boolean commited = false;
+    List<MGlobalPrivilege> userNameDbPriv = null;
+    try {
+      openTransaction();
+      if (principalName != null) {
+        Query query = pm.newQuery(MGlobalPrivilege.class,
+            "principalName == t1 && principalType == t2 ");
+        query.declareParameters(
+            "java.lang.String t1, java.lang.String t2");
+        userNameDbPriv = (List<MGlobalPrivilege>) query
+            .executeWithArray(principalName, principalType.toString());
+        pm.retrieveAll(userNameDbPriv);
+      }
+      commited = commitTransaction();
+    } finally {
+      if (!commited) {
+        rollbackTransaction();
+      }
+    }
+    return userNameDbPriv;
+  }
+
+  @SuppressWarnings("unchecked")
+  @Override
+  public List<MDBPrivilege> listPrincipalDBGrants(String principalName,
+      PrincipalType principalType, String dbName) {
+    boolean success = false;
+    List<MDBPrivilege> mSecurityDBList = null;
+    dbName = dbName.toLowerCase().trim();
+
+    try {
+      openTransaction();
+      LOG.debug("Executing listPrincipalDBGrants");
+      Query query = pm.newQuery(MDBPrivilege.class,
+          "principalName == t1 && principalType == t2 && database.name == t3");
+      query
+          .declareParameters("java.lang.String t1, java.lang.String t2, java.lang.String t3");
+      mSecurityDBList = (List<MDBPrivilege>) query.executeWithArray(principalName, principalType.toString(), dbName);
+      LOG.debug("Done executing query for listPrincipalDBGrants");
+      pm.retrieveAll(mSecurityDBList);
+      success = commitTransaction();
+      LOG.debug("Done retrieving all objects for listPrincipalDBGrants");
+    } finally {
+      if (!success) {
+        rollbackTransaction();
+      }
+    }
+    return mSecurityDBList;
+  }
+  
+  @SuppressWarnings("unchecked")
+  private List<MDBPrivilege> listPrincipalAllDBGrant(
+      String principalName, PrincipalType principalType) {
+    boolean success = false;
+    List<MDBPrivilege> mSecurityDBList = null;
+    try {
+      openTransaction();
+      LOG.debug("Executing listPrincipalAllDBGrant");
+      Query query = pm.newQuery(MDBPrivilege.class,
+          "principalName == t1 && principalType == t2");
+      query
+          .declareParameters("java.lang.String t1, java.lang.String t2");
+      mSecurityDBList = (List<MDBPrivilege>) query.execute(principalName, principalType.toString());
+      LOG.debug("Done executing query for listPrincipalAllDBGrant");
+      pm.retrieveAll(mSecurityDBList);
+      success = commitTransaction();
+      LOG.debug("Done retrieving all objects for listPrincipalAllDBGrant");
+    } finally {
+      if (!success) {
+        rollbackTransaction();
+      }
+    }
+    return mSecurityDBList;
+  }
+
+  @SuppressWarnings("unchecked")
+  public List<MTablePrivilege> listAllTableGrants(String dbName,
+      String tableName) {
+    boolean success = false;
+    tableName = tableName.toLowerCase().trim();
+    dbName = dbName.toLowerCase().trim();
+    List<MTablePrivilege> mSecurityTabList = null;
+    tableName = tableName.toLowerCase().trim();
+    dbName = dbName.toLowerCase().trim();
+    try {
+      openTransaction();
+      LOG.debug("Executing listAllTableGrants");
+      String queryStr = "table.tableName == t1 && table.database.name == t2";
+      Query query = pm.newQuery(
+          MTablePrivilege.class, queryStr);
+      query.declareParameters(
+          "java.lang.String t1, java.lang.String t2");
+      mSecurityTabList = (List<MTablePrivilege>) query
+          .executeWithArray(tableName, dbName);
+      LOG.debug("Done executing query for listAllTableGrants");
+      pm.retrieveAll(mSecurityTabList);
+      success = commitTransaction();
+      LOG
+          .debug("Done retrieving all objects for listAllTableGrants");
+    } finally {
+      if (!success) {
+        rollbackTransaction();
+      }
+    }
+    return mSecurityTabList;
+  }
+  
+  @SuppressWarnings("unchecked")
+  public List<MPartitionPrivilege> listTableAllPartitionGrants(String dbName,
+      String tableName) {
+    tableName = tableName.toLowerCase().trim();
+    dbName = dbName.toLowerCase().trim();
+    boolean success = false;
+    List<MPartitionPrivilege> mSecurityTabPartList = null;
+    try {
+      openTransaction();
+      LOG.debug("Executing listTableAllPartitionGrants");
+      String queryStr = "partition.table.tableName == t1 && partition.table.database.name == t2";
+      Query query = pm.newQuery(
+          MPartitionPrivilege.class, queryStr);
+      query.declareParameters(
+          "java.lang.String t1, java.lang.String t2");
+      mSecurityTabPartList = (List<MPartitionPrivilege>) query
+          .executeWithArray(tableName, dbName);
+      LOG.debug("Done executing query for listTableAllPartitionGrants");
+      pm.retrieveAll(mSecurityTabPartList);
+      success = commitTransaction();
+      LOG
+          .debug("Done retrieving all objects for listTableAllPartitionGrants");
+    } finally {
+      if (!success) {
+        rollbackTransaction();
+      }
+    }
+    return mSecurityTabPartList;
+  }
+  
+  @SuppressWarnings("unchecked")
+  public List<MTableColumnPrivilege> listTableAllColumnGrants(String dbName,
+      String tableName) {
+    boolean success = false;
+    List<MTableColumnPrivilege> mTblColPrivilegeList = null;
+    tableName = tableName.toLowerCase().trim();
+    dbName = dbName.toLowerCase().trim();
+
+    try {
+      openTransaction();
+      LOG.debug("Executing listTableAllColumnGrants");
+      String queryStr = "table.tableName == t1 && table.database.name == t2";
+      Query query = pm.newQuery(MTableColumnPrivilege.class, queryStr);
+      query.declareParameters("java.lang.String t1, java.lang.String t2");
+      mTblColPrivilegeList = (List<MTableColumnPrivilege>) query
+          .executeWithArray(tableName, dbName);
+      LOG.debug("Done executing query for listTableAllColumnGrants");
+      pm.retrieveAll(mTblColPrivilegeList);
+      success = commitTransaction();
+      LOG.debug("Done retrieving all objects for listTableAllColumnGrants");
+    } finally {
+      if (!success) {
+        rollbackTransaction();
+      }
+    }
+    return mTblColPrivilegeList;
+  }
+  
+  @SuppressWarnings("unchecked")
+  public List<MPartitionColumnPrivilege> listTableAllPartitionColumnGrants(String dbName,
+      String tableName) {
+    boolean success = false;
+    tableName = tableName.toLowerCase().trim();
+    dbName = dbName.toLowerCase().trim();
+
+    List<MPartitionColumnPrivilege> mSecurityColList = null;
+    try {
+      openTransaction();
+      LOG.debug("Executing listTableAllPartitionColumnGrants");
+      String queryStr = "partition.table.tableName == t1 && partition.table.database.name == t2";
+      Query query = pm.newQuery(MPartitionColumnPrivilege.class, queryStr);
+      query.declareParameters("java.lang.String t1, java.lang.String t2");
+      mSecurityColList = (List<MPartitionColumnPrivilege>) query
+          .executeWithArray(tableName, dbName);
+      LOG.debug("Done executing query for listTableAllPartitionColumnGrants");
+      pm.retrieveAll(mSecurityColList);
+      success = commitTransaction();
+      LOG.debug("Done retrieving all objects for listTableAllPartitionColumnGrants");
+    } finally {
+      if (!success) {
+        rollbackTransaction();
+      }
+    }
+    return mSecurityColList;
+  }
+  
+  @SuppressWarnings("unchecked")
+  public List<MPartitionColumnPrivilege> listPartitionAllColumnGrants(String dbName,
+      String tableName, String partName) {
+    boolean success = false;
+    tableName = tableName.toLowerCase().trim();
+    dbName = dbName.toLowerCase().trim();
+
+    List<MPartitionColumnPrivilege> mSecurityColList = null;
+    try {
+      openTransaction();
+      LOG.debug("Executing listPartitionAllColumnGrants");
+      String queryStr = "partition.table.tableName == t1 && partition.table.database.name == t2 && partition.partitionName == t3";
+      Query query = pm.newQuery(MPartitionColumnPrivilege.class, queryStr);
+      query.declareParameters(
+          "java.lang.String t1, java.lang.String t2, java.lang.String t3");
+      mSecurityColList = (List<MPartitionColumnPrivilege>) query
+          .executeWithArray(tableName, dbName, partName);
+      LOG.debug("Done executing query for listPartitionAllColumnGrants");
+      pm.retrieveAll(mSecurityColList);
+      success = commitTransaction();
+      LOG.debug("Done retrieving all objects for listPartitionAllColumnGrants");
+    } finally {
+      if (!success) {
+        rollbackTransaction();
+      }
+    }
+    return mSecurityColList;
+  }
+
+  
+  @SuppressWarnings("unchecked")
+  private List<MPartitionPrivilege> listPartitionGrants(String dbName, String tableName,
+      String partName) {
+    tableName = tableName.toLowerCase().trim();
+    dbName = dbName.toLowerCase().trim();
+
+    boolean success = false;
+    List<MPartitionPrivilege> mSecurityTabPartList = null;
+    try {
+      openTransaction();
+      LOG.debug("Executing listPartitionGrants");
+      Query query = pm.newQuery(MPartitionPrivilege.class,
+          "partition.table.tableName == t1 && partition.table.database.name == t2 && partition.partitionName == t3");
+      query.declareParameters(
+          "java.lang.String t1, java.lang.String t2, java.lang.String t3");
+      mSecurityTabPartList = (List<MPartitionPrivilege>) query
+          .executeWithArray(tableName, dbName, partName);
+      LOG.debug("Done executing query for listPartitionGrants");
+      pm.retrieveAll(mSecurityTabPartList);
+      success = commitTransaction();
+      LOG.debug("Done retrieving all objects for listPartitionGrants");
+    } finally {
+      if (!success) {
+        rollbackTransaction();
+      }
+    }
+    return mSecurityTabPartList;
+  }
+  
+  @SuppressWarnings("unchecked")
+  public List<MTablePrivilege> listAllTableGrants(
+      String principalName, PrincipalType principalType, String dbName,
+      String tableName) {
+    tableName = tableName.toLowerCase().trim();
+    dbName = dbName.toLowerCase().trim();
+
+    boolean success = false;
+    List<MTablePrivilege> mSecurityTabPartList = null;
+    try {
+      openTransaction();
+      LOG.debug("Executing listAllTableGrants");
+      Query query = pm.newQuery(
+          MTablePrivilege.class,
+              "principalName == t1 && principalType == t2 && table.tableName == t3 && table.database.name == t4");
+      query.declareParameters(
+          "java.lang.String t1, java.lang.String t2, java.lang.String t3, java.lang.String t4");
+      mSecurityTabPartList = (List<MTablePrivilege>) query
+          .executeWithArray(principalName, principalType.toString(), tableName, dbName);
+      LOG.debug("Done executing query for listAllTableGrants");
+      pm.retrieveAll(mSecurityTabPartList);
+      success = commitTransaction();
+      LOG
+          .debug("Done retrieving all objects for listAllTableGrants");
+    } finally {
+      if (!success) {
+        rollbackTransaction();
+      }
+    }
+    return mSecurityTabPartList;
+  }
+
+  @SuppressWarnings("unchecked")
+  @Override
+  public List<MPartitionPrivilege> listPrincipalPartitionGrants(
+      String principalName, PrincipalType principalType, String dbName,
+      String tableName, String partName) {
+    boolean success = false;
+    tableName = tableName.toLowerCase().trim();
+    dbName = dbName.toLowerCase().trim();
+
+    List<MPartitionPrivilege> mSecurityTabPartList = null;
+    try {
+      openTransaction();
+      LOG.debug("Executing listMSecurityPrincipalPartitionGrant");
+      Query query = pm.newQuery(
+          MPartitionPrivilege.class,
+              "principalName == t1 && principalType == t2 && partition.table.tableName == t3 " +
+              "&& partition.table.database.name == t4 && partition.partitionName == t5");
+      query.declareParameters(
+          "java.lang.String t1, java.lang.String t2, java.lang.String t3, java.lang.String t4, " +
+          "java.lang.String t5");
+      mSecurityTabPartList = (List<MPartitionPrivilege>) query
+          .executeWithArray(principalName, principalType.toString(), tableName, dbName, partName);
+      LOG.debug("Done executing query for listMSecurityPrincipalPartitionGrant");
+      
+      pm.retrieveAll(mSecurityTabPartList);
+      success = commitTransaction();
+      LOG.debug("Done retrieving all objects for listMSecurityPrincipalPartitionGrant");
+    } finally {
+      if (!success) {
+        rollbackTransaction();
+      }
+    }
+    return mSecurityTabPartList;
+  }
+
+  @SuppressWarnings("unchecked")
+  @Override
+  public List<MTableColumnPrivilege> listPrincipalTableColumnGrants(
+      String principalName, PrincipalType principalType, String dbName,
+      String tableName, String columnName) {
+    boolean success = false;
+    tableName = tableName.toLowerCase().trim();
+    dbName = dbName.toLowerCase().trim();
+    columnName = columnName.toLowerCase().trim();
+    List<MTableColumnPrivilege> mSecurityColList = null;
+    try {
+      openTransaction();
+      LOG.debug("Executing listPrincipalTableColumnGrants");
+      String queryStr = "principalName == t1 && principalType == t2 && " +
+      		"table.tableName == t3 && table.database.name == t4 &&  columnName == t5 ";
+      Query query = pm.newQuery(MTableColumnPrivilege.class, queryStr);
+      query
+          .declareParameters("java.lang.String t1, java.lang.String t2, java.lang.String t3, " +
+          		"java.lang.String t4, java.lang.String t5");
+      mSecurityColList = (List<MTableColumnPrivilege>) query.executeWithArray(
+          principalName, principalType.toString(), tableName, dbName, columnName);
+      LOG.debug("Done executing query for listPrincipalTableColumnGrants");
+      pm.retrieveAll(mSecurityColList);
+      success = commitTransaction();
+      LOG
+          .debug("Done retrieving all objects for listPrincipalTableColumnGrants");
+    } finally {
+      if (!success) {
+        rollbackTransaction();
+      }
+    }
+    return mSecurityColList;
+  }
+  
+  @SuppressWarnings("unchecked")
+  public List<MPartitionColumnPrivilege> listPrincipalPartitionColumnGrants(
+      String principalName, PrincipalType principalType, String dbName,
+      String tableName, String partitionName, String columnName) {
+    boolean success = false;
+    tableName = tableName.toLowerCase().trim();
+    dbName = dbName.toLowerCase().trim();
+    columnName = columnName.toLowerCase().trim();
+
+    List<MPartitionColumnPrivilege> mSecurityColList = null;
+    try {
+      openTransaction();
+      LOG.debug("Executing listPrincipalPartitionColumnGrants");
+      Query query = pm
+          .newQuery(
+              MPartitionColumnPrivilege.class,
+              "principalName == t1 && principalType == t2 && partition.table.tableName == t3 " +
+              "&& partition.table.database.name == t4 && partition.partitionName == t5 && columnName == t6");
+      query
+          .declareParameters("java.lang.String t1, java.lang.String t2, java.lang.String t3, " +
+          		"java.lang.String t4, java.lang.String t5, java.lang.String t6");
+
+      mSecurityColList = (List<MPartitionColumnPrivilege>) query
+          .executeWithArray(principalName, principalType.toString(), tableName,
+              dbName, partitionName, columnName);
+      LOG.debug("Done executing query for listPrincipalPartitionColumnGrants");
+      pm.retrieveAll(mSecurityColList);
+
+      success = commitTransaction();
+      LOG
+          .debug("Done retrieving all objects for listPrincipalPartitionColumnGrants");
+    } finally {
+      if (!success) {
+        rollbackTransaction();
+      }
+    }
+    return mSecurityColList;
+  }
+  
+  @SuppressWarnings("unchecked")
+  private List<MTablePrivilege> listPrincipalAllTableGrants(
+      String principalName, PrincipalType principalType) {
+    boolean success = false;
+    List<MTablePrivilege> mSecurityTabPartList = null;
+    try {
+      openTransaction();
+      LOG.debug("Executing listPrincipalAllTableGrants");
+      Query query = pm.newQuery(MTablePrivilege.class,
+          "principalName == t1 && principalType == t2");
+      query.declareParameters("java.lang.String t1, java.lang.String t2");
+      mSecurityTabPartList = (List<MTablePrivilege>) query.execute(
+          principalName, principalType.toString());
+      LOG
+          .debug("Done executing query for listPrincipalAllTableGrants");
+      pm.retrieveAll(mSecurityTabPartList);
+      success = commitTransaction();
+      LOG
+          .debug("Done retrieving all objects for listPrincipalAllTableGrants");
+    } finally {
+      if (!success) {
+        rollbackTransaction();
+      }
+    }
+    return mSecurityTabPartList;
+  }
+
+  @SuppressWarnings("unchecked")
+  private List<MPartitionPrivilege> listPrincipalAllPartitionGrants(
+      String principalName, PrincipalType principalType) {
+    boolean success = false;
+    List<MPartitionPrivilege> mSecurityTabPartList = null;
+    try {
+      openTransaction();
+      LOG.debug("Executing listPrincipalAllPartitionGrants");
+      Query query = pm.newQuery(MPartitionPrivilege.class,
+          "principalName == t1 && principalType == t2");
+      query.declareParameters("java.lang.String t1, java.lang.String t2");
+      mSecurityTabPartList = (List<MPartitionPrivilege>) query.execute(
+          principalName, principalType.toString());
+      LOG
+          .debug("Done executing query for listPrincipalAllPartitionGrants");
+      pm.retrieveAll(mSecurityTabPartList);
+      success = commitTransaction();
+      LOG
+          .debug("Done retrieving all objects for listPrincipalAllPartitionGrants");
+    } finally {
+      if (!success) {
+        rollbackTransaction();
+      }
+    }
+    return mSecurityTabPartList;
+  }
+  
+  @SuppressWarnings("unchecked")
+  private List<MTableColumnPrivilege> listPrincipalAllTableColumnGrants(
+      String principalName, PrincipalType principalType) {
+    boolean success = false;
+    List<MTableColumnPrivilege> mSecurityColumnList = null;
+    try {
+      openTransaction();
+      LOG.debug("Executing listPrincipalAllTableColumnGrants");
+      Query query = pm.newQuery(MTableColumnPrivilege.class,
+          "principalName == t1 && principalType == t2");
+      query
+          .declareParameters("java.lang.String t1, java.lang.String t2");
+      mSecurityColumnList = (List<MTableColumnPrivilege>) query.execute(
+          principalName, principalType.toString());
+      LOG.debug("Done executing query for listPrincipalAllTableColumnGrants");
+      pm.retrieveAll(mSecurityColumnList);
+      success = commitTransaction();
+      LOG.debug("Done retrieving all objects for listPrincipalAllTableColumnGrants");
+    } finally {
+      if (!success) {
+        rollbackTransaction();
+      }
+    }
+    return mSecurityColumnList;
+  }
+  
+  @SuppressWarnings("unchecked")
+  private List<MPartitionColumnPrivilege> listPrincipalAllPartitionColumnGrants(
+      String principalName, PrincipalType principalType) {
+    boolean success = false;
+    List<MPartitionColumnPrivilege> mSecurityColumnList = null;
+    try {
+      openTransaction();
+      LOG.debug("Executing listPrincipalAllTableColumnGrants");
+      Query query = pm.newQuery(MPartitionColumnPrivilege.class,
+          "principalName == t1 && principalType == t2");
+      query
+          .declareParameters("java.lang.String t1, java.lang.String t2");
+      mSecurityColumnList = (List<MPartitionColumnPrivilege>) query.execute(
+          principalName, principalType.toString());
+      LOG.debug("Done executing query for listPrincipalAllTableColumnGrants");
+      pm.retrieveAll(mSecurityColumnList);
+      success = commitTransaction();
+      LOG.debug("Done retrieving all objects for listPrincipalAllTableColumnGrants");
+    } finally {
+      if (!success) {
+        rollbackTransaction();
+      }
+    }
+    return mSecurityColumnList;
+  }
+
 }

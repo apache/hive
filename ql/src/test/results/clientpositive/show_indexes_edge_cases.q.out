@@ -201,6 +201,40 @@ POSTHOOK: Lineage: default__show_idx_full_idx_compound__._bucketname SIMPLE [(sh
 POSTHOOK: Lineage: default__show_idx_full_idx_compound__._offsets EXPRESSION [(show_idx_full)show_idx_full.FieldSchema(name:BLOCK__OFFSET__INSIDE__FILE, type:bigint, comment:), ]
 POSTHOOK: Lineage: default__show_idx_full_idx_compound__.key SIMPLE [(show_idx_full)show_idx_full.FieldSchema(name:key, type:string, comment:null), ]
 POSTHOOK: Lineage: default__show_idx_full_idx_compound__.value1 SIMPLE [(show_idx_full)show_idx_full.FieldSchema(name:value1, type:string, comment:null), ]
+PREHOOK: query: DROP INDEX idx_1 on show_idx_full
+PREHOOK: type: DROPINDEX
+POSTHOOK: query: DROP INDEX idx_1 on show_idx_full
+POSTHOOK: type: DROPINDEX
+POSTHOOK: Lineage: default__show_idx_full_idx_1__._bucketname SIMPLE [(show_idx_full)show_idx_full.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
+POSTHOOK: Lineage: default__show_idx_full_idx_1__._offsets EXPRESSION [(show_idx_full)show_idx_full.FieldSchema(name:BLOCK__OFFSET__INSIDE__FILE, type:bigint, comment:), ]
+POSTHOOK: Lineage: default__show_idx_full_idx_1__.key SIMPLE [(show_idx_full)show_idx_full.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: default__show_idx_full_idx_2__._bucketname SIMPLE [(show_idx_full)show_idx_full.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
+POSTHOOK: Lineage: default__show_idx_full_idx_2__._offsets EXPRESSION [(show_idx_full)show_idx_full.FieldSchema(name:BLOCK__OFFSET__INSIDE__FILE, type:bigint, comment:), ]
+POSTHOOK: Lineage: default__show_idx_full_idx_2__.value1 SIMPLE [(show_idx_full)show_idx_full.FieldSchema(name:value1, type:string, comment:null), ]
+POSTHOOK: Lineage: default__show_idx_full_idx_comment__._bucketname SIMPLE [(show_idx_full)show_idx_full.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
+POSTHOOK: Lineage: default__show_idx_full_idx_comment__._offsets EXPRESSION [(show_idx_full)show_idx_full.FieldSchema(name:BLOCK__OFFSET__INSIDE__FILE, type:bigint, comment:), ]
+POSTHOOK: Lineage: default__show_idx_full_idx_comment__.value2 SIMPLE [(show_idx_full)show_idx_full.FieldSchema(name:value2, type:string, comment:null), ]
+POSTHOOK: Lineage: default__show_idx_full_idx_compound__._bucketname SIMPLE [(show_idx_full)show_idx_full.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
+POSTHOOK: Lineage: default__show_idx_full_idx_compound__._offsets EXPRESSION [(show_idx_full)show_idx_full.FieldSchema(name:BLOCK__OFFSET__INSIDE__FILE, type:bigint, comment:), ]
+POSTHOOK: Lineage: default__show_idx_full_idx_compound__.key SIMPLE [(show_idx_full)show_idx_full.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: default__show_idx_full_idx_compound__.value1 SIMPLE [(show_idx_full)show_idx_full.FieldSchema(name:value1, type:string, comment:null), ]
+PREHOOK: query: DROP INDEX idx_2 on show_idx_full
+PREHOOK: type: DROPINDEX
+POSTHOOK: query: DROP INDEX idx_2 on show_idx_full
+POSTHOOK: type: DROPINDEX
+POSTHOOK: Lineage: default__show_idx_full_idx_1__._bucketname SIMPLE [(show_idx_full)show_idx_full.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
+POSTHOOK: Lineage: default__show_idx_full_idx_1__._offsets EXPRESSION [(show_idx_full)show_idx_full.FieldSchema(name:BLOCK__OFFSET__INSIDE__FILE, type:bigint, comment:), ]
+POSTHOOK: Lineage: default__show_idx_full_idx_1__.key SIMPLE [(show_idx_full)show_idx_full.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: default__show_idx_full_idx_2__._bucketname SIMPLE [(show_idx_full)show_idx_full.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
+POSTHOOK: Lineage: default__show_idx_full_idx_2__._offsets EXPRESSION [(show_idx_full)show_idx_full.FieldSchema(name:BLOCK__OFFSET__INSIDE__FILE, type:bigint, comment:), ]
+POSTHOOK: Lineage: default__show_idx_full_idx_2__.value1 SIMPLE [(show_idx_full)show_idx_full.FieldSchema(name:value1, type:string, comment:null), ]
+POSTHOOK: Lineage: default__show_idx_full_idx_comment__._bucketname SIMPLE [(show_idx_full)show_idx_full.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
+POSTHOOK: Lineage: default__show_idx_full_idx_comment__._offsets EXPRESSION [(show_idx_full)show_idx_full.FieldSchema(name:BLOCK__OFFSET__INSIDE__FILE, type:bigint, comment:), ]
+POSTHOOK: Lineage: default__show_idx_full_idx_comment__.value2 SIMPLE [(show_idx_full)show_idx_full.FieldSchema(name:value2, type:string, comment:null), ]
+POSTHOOK: Lineage: default__show_idx_full_idx_compound__._bucketname SIMPLE [(show_idx_full)show_idx_full.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
+POSTHOOK: Lineage: default__show_idx_full_idx_compound__._offsets EXPRESSION [(show_idx_full)show_idx_full.FieldSchema(name:BLOCK__OFFSET__INSIDE__FILE, type:bigint, comment:), ]
+POSTHOOK: Lineage: default__show_idx_full_idx_compound__.key SIMPLE [(show_idx_full)show_idx_full.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: default__show_idx_full_idx_compound__.value1 SIMPLE [(show_idx_full)show_idx_full.FieldSchema(name:value1, type:string, comment:null), ]
 PREHOOK: query: DROP TABLE show_idx_empty
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@show_idx_empty

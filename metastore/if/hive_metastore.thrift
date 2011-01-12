@@ -29,12 +29,66 @@ struct Type {
   4: optional list<FieldSchema> fields // if the name is one of the user defined types
 }
 
+enum HiveObjectType {
+  GLOBAL = 1,
+  DATABASE = 2,
+  TABLE = 3,
+  PARTITION = 4,
+  COLUMN = 5,
+}
+
+enum PrincipalType {
+  USER = 1,
+  ROLE = 2,
+  GROUP = 3,
+}
+
+struct HiveObjectRef{
+  1: HiveObjectType objectType,
+  2: string dbName,
+  3: string objectName,
+  4: list<string> partValues,
+  5: string columnName,
+}
+
+struct PrivilegeGrantInfo {
+  1: string privilege,
+  2: i32 createTime,
+  3: string grantor,
+  4: PrincipalType grantorType,
+  5: bool grantOption,
+}
+
+struct HiveObjectPrivilege {
+  1: HiveObjectRef  hiveObject,
+  2: string principalName,
+  3: PrincipalType principalType,
+  4: PrivilegeGrantInfo grantInfo,
+}
+
+struct PrivilegeBag {
+  1: list<HiveObjectPrivilege> privileges,
+}
+
+struct PrincipalPrivilegeSet {
+  1: map<string, list<PrivilegeGrantInfo>> userPrivileges, // user name -> privilege grant info
+  2: map<string, list<PrivilegeGrantInfo>> groupPrivileges, // group name -> privilege grant info
+  3: map<string, list<PrivilegeGrantInfo>> rolePrivileges, //role name -> privilege grant info
+}
+
+struct Role {
+  1: string roleName,
+  2: i32 createTime,
+  3: string ownerName,
+}
+
 // namespace for tables
 struct Database {
   1: string name,
   2: string description,
   3: string locationUri,
-  4: map<string, string> parameters // properties associated with the database
+  4: map<string, string> parameters, // properties associated with the database
+  5: optional PrincipalPrivilegeSet privileges
 }
 
 // This object holds the information needed by SerDes
@@ -77,7 +131,8 @@ struct Table {
   9: map<string, string> parameters,   // to store comments or any other user level parameters
   10: string viewOriginalText,         // original view text, null for non-view
   11: string viewExpandedText,         // expanded view text, null for non-view
-  12: string tableType                 // table type enum, e.g. EXTERNAL_TABLE
+  12: string tableType,                 // table type enum, e.g. EXTERNAL_TABLE
+  13: optional PrincipalPrivilegeSet privileges,
 }
 
 struct Partition {
@@ -87,7 +142,8 @@ struct Partition {
   4: i32          createTime,
   5: i32          lastAccessTime,
   6: StorageDescriptor   sd,
-  7: map<string, string> parameters
+  7: map<string, string> parameters,
+  8: optional PrincipalPrivilegeSet privileges
 }
 
 struct Index {
@@ -109,7 +165,6 @@ struct Schema {
  1: list<FieldSchema> fieldSchemas,  // delimiters etc
  2: map<string, string> properties
 }
-
 
 exception MetaException {
   1: string message
@@ -210,6 +265,10 @@ service ThriftHiveMetastore extends fb303.FacebookService
                        throws(1:NoSuchObjectException o1, 2:MetaException o2) 
   Partition get_partition(1:string db_name, 2:string tbl_name, 3:list<string> part_vals)
                        throws(1:MetaException o1, 2:NoSuchObjectException o2)
+
+  Partition get_partition_with_auth(1:string db_name, 2:string tbl_name, 3:list<string> part_vals, 
+      4: string user_name, 5: list<string> group_names) throws(1:MetaException o1, 2:NoSuchObjectException o2)
+
   Partition get_partition_by_name(1:string db_name 2:string tbl_name, 3:string part_name)
                        throws(1:MetaException o1, 2:NoSuchObjectException o2)
 
@@ -217,6 +276,9 @@ service ThriftHiveMetastore extends fb303.FacebookService
   // If max parts is given then it will return only that many.
   list<Partition> get_partitions(1:string db_name, 2:string tbl_name, 3:i16 max_parts=-1)
                        throws(1:NoSuchObjectException o1, 2:MetaException o2)
+  list<Partition> get_partitions_with_auth(1:string db_name, 2:string tbl_name, 3:i16 max_parts=-1, 
+     4: string user_name, 5: list<string> group_names) throws(1:NoSuchObjectException o1, 2:MetaException o2)                       
+
   list<string> get_partition_names(1:string db_name, 2:string tbl_name, 3:i16 max_parts=-1)
                        throws(1:MetaException o2)
                        
@@ -229,6 +291,9 @@ service ThriftHiveMetastore extends fb303.FacebookService
   list<Partition> get_partitions_ps(1:string db_name 2:string tbl_name 
   	3:list<string> part_vals, 4:i16 max_parts=-1)
                        throws(1:MetaException o1)
+  list<Partition> get_partitions_ps_with_auth(1:string db_name, 2:string tbl_name, 3:list<string> part_vals, 4:i16 max_parts=-1, 
+     5: string user_name, 6: list<string> group_names) throws(1:NoSuchObjectException o1, 2:MetaException o2)                       
+  
   list<string> get_partition_names_ps(1:string db_name, 
   	2:string tbl_name, 3:list<string> part_vals, 4:i16 max_parts=-1)
   	                   throws(1:MetaException o1)
@@ -273,6 +338,24 @@ service ThriftHiveMetastore extends fb303.FacebookService
                        throws(1:NoSuchObjectException o1, 2:MetaException o2)
   list<string> get_index_names(1:string db_name, 2:string tbl_name, 3:i16 max_indexes=-1)
                        throws(1:MetaException o2)
+
+  //authorization privileges
+                       
+  bool create_role(1:Role role) throws(1:MetaException o1)
+  bool drop_role(1:string role_name) throws(1:MetaException o1)
+  bool grant_role(1:string role_name, 2:string principal_name, 3:PrincipalType principal_type, 
+    4:string grantor, 5:PrincipalType grantorType, 6:bool grant_option) throws(1:MetaException o1)
+  bool revoke_role(1:string role_name, 2:string principal_name, 3:PrincipalType principal_type) 
+                        throws(1:MetaException o1)
+  list<Role> list_roles(1:string principal_name, 2:PrincipalType principal_type) throws(1:MetaException o1)
+
+  PrincipalPrivilegeSet get_privilege_set(1:HiveObjectRef hiveObject, 2:string user_name, 
+    3: list<string> group_names) throws(1:MetaException o1)
+  list<HiveObjectPrivilege> list_privileges(1:string principal_name, 2:PrincipalType principal_type, 
+    3: HiveObjectRef hiveObject) throws(1:MetaException o1)
+  
+  bool grant_privileges(1:PrivilegeBag privileges) throws(1:MetaException o1)
+  bool revoke_privileges(1:PrivilegeBag privileges) throws(1:MetaException o1)
 }
 
 // * Note about the DDL_TIME: When creating or altering a table or a partition,

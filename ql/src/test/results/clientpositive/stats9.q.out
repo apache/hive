@@ -14,9 +14,9 @@ POSTHOOK: Output: default@analyze_srcbucket
 POSTHOOK: Lineage: analyze_srcbucket.key SIMPLE [(srcbucket)srcbucket.FieldSchema(name:key, type:int, comment:null), ]
 POSTHOOK: Lineage: analyze_srcbucket.value SIMPLE [(srcbucket)srcbucket.FieldSchema(name:value, type:string, comment:null), ]
 PREHOOK: query: explain analyze table analyze_srcbucket compute statistics
-PREHOOK: type: null
+PREHOOK: type: QUERY
 POSTHOOK: query: explain analyze table analyze_srcbucket compute statistics
-POSTHOOK: type: null
+POSTHOOK: type: QUERY
 POSTHOOK: Lineage: analyze_srcbucket.key SIMPLE [(srcbucket)srcbucket.FieldSchema(name:key, type:int, comment:null), ]
 POSTHOOK: Lineage: analyze_srcbucket.value SIMPLE [(srcbucket)srcbucket.FieldSchema(name:value, type:string, comment:null), ]
 ABSTRACT SYNTAX TREE:
@@ -39,11 +39,11 @@ STAGE PLANS:
 
 
 PREHOOK: query: analyze table analyze_srcbucket compute statistics
-PREHOOK: type: null
+PREHOOK: type: QUERY
 PREHOOK: Input: default@analyze_srcbucket
 PREHOOK: Output: default@analyze_srcbucket
 POSTHOOK: query: analyze table analyze_srcbucket compute statistics
-POSTHOOK: type: null
+POSTHOOK: type: QUERY
 POSTHOOK: Input: default@analyze_srcbucket
 POSTHOOK: Output: default@analyze_srcbucket
 POSTHOOK: Lineage: analyze_srcbucket.key SIMPLE [(srcbucket)srcbucket.FieldSchema(name:key, type:int, comment:null), ]
@@ -57,4 +57,4 @@ POSTHOOK: Lineage: analyze_srcbucket.value SIMPLE [(srcbucket)srcbucket.FieldSch
 key	int	
 value	string	
 	 	 
-Detailed Table Information	Table(tableName:analyze_srcbucket, dbName:default, owner:thiruvel, createTime:1286826500, lastAccessTime:0, retention:0, sd:StorageDescriptor(cols:[FieldSchema(name:key, type:int, comment:null), FieldSchema(name:value, type:string, comment:null)], location:pfile:/home/thiruvel/projects/hive/hive.unsecure/build/ql/test/data/warehouse/analyze_srcbucket, inputFormat:org.apache.hadoop.mapred.TextInputFormat, outputFormat:org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat, compressed:false, numBuckets:2, serdeInfo:SerDeInfo(name:null, serializationLib:org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe, parameters:{serialization.format=1}), bucketCols:[key], sortCols:[], parameters:{}), partitionKeys:[], parameters:{numPartitions=0, EXTERNAL=FALSE, numFiles=1, transient_lastDdlTime=1286826508, numRows=1000, totalSize=11603}, viewOriginalText:null, viewExpandedText:null, tableType:MANAGED_TABLE)	
+Detailed Table Information	Table(tableName:analyze_srcbucket, dbName:default, owner:heyongqiang, createTime:1290146857, lastAccessTime:0, retention:0, sd:StorageDescriptor(cols:[FieldSchema(name:key, type:int, comment:null), FieldSchema(name:value, type:string, comment:null)], location:pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/analyze_srcbucket, inputFormat:org.apache.hadoop.mapred.TextInputFormat, outputFormat:org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat, compressed:false, numBuckets:2, serdeInfo:SerDeInfo(name:null, serializationLib:org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe, parameters:{serialization.format=1}), bucketCols:[key], sortCols:[], parameters:{}), partitionKeys:[], parameters:{numPartitions=0, numFiles=1, transient_lastDdlTime=1290146885, numRows=1000, totalSize=11603}, viewOriginalText:null, viewExpandedText:null, tableType:MANAGED_TABLE)	

@@ -2,23 +2,23 @@ PREHOOK: query: create table nzhang_test1 stored as sequencefile as select 'key1
 1
 
 http://asdf' value from src limit 1
-PREHOOK: type: CREATETABLE
+PREHOOK: type: CREATETABLE_AS_SELECT
 PREHOOK: Input: default@src
 POSTHOOK: query: create table nzhang_test1 stored as sequencefile as select 'key1' as key, 'value
 1
 
 http://asdf' value from src limit 1
-POSTHOOK: type: CREATETABLE
+POSTHOOK: type: CREATETABLE_AS_SELECT
 POSTHOOK: Input: default@src
 POSTHOOK: Output: default@nzhang_test1
 PREHOOK: query: select * from nzhang_test1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@nzhang_test1
-PREHOOK: Output: file:/tmp/nzhang/hive_2010-08-30_23-37-49_137_345185714437305649/-mr-10000
+PREHOOK: Output: file:/var/folders/6g/6grtCwPMEf4sqHUPpy6xQG9ByHg/-Tmp-/heyongqiang/hive_2010-11-18_10-59-18_756_4686540378600379768/-mr-10000
 POSTHOOK: query: select * from nzhang_test1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@nzhang_test1
-POSTHOOK: Output: file:/tmp/nzhang/hive_2010-08-30_23-37-49_137_345185714437305649/-mr-10000
+POSTHOOK: Output: file:/var/folders/6g/6grtCwPMEf4sqHUPpy6xQG9ByHg/-Tmp-/heyongqiang/hive_2010-11-18_10-59-18_756_4686540378600379768/-mr-10000
 key1	value
 1
 
@@ -26,11 +26,11 @@ http://asdf
 PREHOOK: query: select count(*) from nzhang_test1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@nzhang_test1
-PREHOOK: Output: file:/tmp/nzhang/hive_2010-08-30_23-37-49_893_2470605464847588988/-mr-10000
+PREHOOK: Output: file:/var/folders/6g/6grtCwPMEf4sqHUPpy6xQG9ByHg/-Tmp-/heyongqiang/hive_2010-11-18_10-59-19_306_9007845540495524130/-mr-10000
 POSTHOOK: query: select count(*) from nzhang_test1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@nzhang_test1
-POSTHOOK: Output: file:/tmp/nzhang/hive_2010-08-30_23-37-49_893_2470605464847588988/-mr-10000
+POSTHOOK: Output: file:/var/folders/6g/6grtCwPMEf4sqHUPpy6xQG9ByHg/-Tmp-/heyongqiang/hive_2010-11-18_10-59-19_306_9007845540495524130/-mr-10000
 1
 PREHOOK: query: explain
 select * from nzhang_test1 where key='key1'
@@ -82,11 +82,11 @@ STAGE PLANS:
 PREHOOK: query: select * from nzhang_test1 where key='key1'
 PREHOOK: type: QUERY
 PREHOOK: Input: default@nzhang_test1
-PREHOOK: Output: file:/tmp/nzhang/hive_2010-08-30_23-37-56_447_1539901914223140072/-mr-10000
+PREHOOK: Output: file:/var/folders/6g/6grtCwPMEf4sqHUPpy6xQG9ByHg/-Tmp-/heyongqiang/hive_2010-11-18_10-59-27_819_8034778775852480180/-mr-10000
 POSTHOOK: query: select * from nzhang_test1 where key='key1'
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@nzhang_test1
-POSTHOOK: Output: file:/tmp/nzhang/hive_2010-08-30_23-37-56_447_1539901914223140072/-mr-10000
+POSTHOOK: Output: file:/var/folders/6g/6grtCwPMEf4sqHUPpy6xQG9ByHg/-Tmp-/heyongqiang/hive_2010-11-18_10-59-27_819_8034778775852480180/-mr-10000
 key1	value
 1	NULL
 	NULL
@@ -94,11 +94,11 @@ http://asdf	NULL
 PREHOOK: query: select * from nzhang_test1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@nzhang_test1
-PREHOOK: Output: file:/tmp/nzhang/hive_2010-08-30_23-38-00_606_2534525216891512327/-mr-10000
+PREHOOK: Output: file:/var/folders/6g/6grtCwPMEf4sqHUPpy6xQG9ByHg/-Tmp-/heyongqiang/hive_2010-11-18_10-59-32_891_5081550764397015247/-mr-10000
 POSTHOOK: query: select * from nzhang_test1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@nzhang_test1
-POSTHOOK: Output: file:/tmp/nzhang/hive_2010-08-30_23-38-00_606_2534525216891512327/-mr-10000
+POSTHOOK: Output: file:/var/folders/6g/6grtCwPMEf4sqHUPpy6xQG9ByHg/-Tmp-/heyongqiang/hive_2010-11-18_10-59-32_891_5081550764397015247/-mr-10000
 key1	value
 1
 
@@ -106,11 +106,11 @@ http://asdf
 PREHOOK: query: select count(*) from nzhang_test1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@nzhang_test1
-PREHOOK: Output: file:/tmp/nzhang/hive_2010-08-30_23-38-02_968_2091791272244763520/-mr-10000
+PREHOOK: Output: file:/var/folders/6g/6grtCwPMEf4sqHUPpy6xQG9ByHg/-Tmp-/heyongqiang/hive_2010-11-18_10-59-33_131_934017148846831316/-mr-10000
 POSTHOOK: query: select count(*) from nzhang_test1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@nzhang_test1
-POSTHOOK: Output: file:/tmp/nzhang/hive_2010-08-30_23-38-02_968_2091791272244763520/-mr-10000
+POSTHOOK: Output: file:/var/folders/6g/6grtCwPMEf4sqHUPpy6xQG9ByHg/-Tmp-/heyongqiang/hive_2010-11-18_10-59-33_131_934017148846831316/-mr-10000
 1
 PREHOOK: query: explain
 select * from nzhang_test1 where key='key1'
@@ -162,11 +162,11 @@ STAGE PLANS:
 PREHOOK: query: select * from nzhang_test1 where key='key1'
 PREHOOK: type: QUERY
 PREHOOK: Input: default@nzhang_test1
-PREHOOK: Output: file:/tmp/nzhang/hive_2010-08-30_23-38-09_247_8932362895617955403/-mr-10000
+PREHOOK: Output: file:/var/folders/6g/6grtCwPMEf4sqHUPpy6xQG9ByHg/-Tmp-/heyongqiang/hive_2010-11-18_10-59-40_273_8393892543433536739/-mr-10000
 POSTHOOK: query: select * from nzhang_test1 where key='key1'
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@nzhang_test1
-POSTHOOK: Output: file:/tmp/nzhang/hive_2010-08-30_23-38-09_247_8932362895617955403/-mr-10000
+POSTHOOK: Output: file:/var/folders/6g/6grtCwPMEf4sqHUPpy6xQG9ByHg/-Tmp-/heyongqiang/hive_2010-11-18_10-59-40_273_8393892543433536739/-mr-10000
 key1	value
 1
 

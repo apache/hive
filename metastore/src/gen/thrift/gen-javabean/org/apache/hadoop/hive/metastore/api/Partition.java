@@ -36,6 +36,7 @@ public class Partition implements TBase<Partition, Partition._Fields>, java.io.S
   private static final TField LAST_ACCESS_TIME_FIELD_DESC = new TField("lastAccessTime", TType.I32, (short)5);
   private static final TField SD_FIELD_DESC = new TField("sd", TType.STRUCT, (short)6);
   private static final TField PARAMETERS_FIELD_DESC = new TField("parameters", TType.MAP, (short)7);
+  private static final TField PRIVILEGES_FIELD_DESC = new TField("privileges", TType.STRUCT, (short)8);
 
   private List<String> values;
   private String dbName;
@@ -44,6 +45,7 @@ public class Partition implements TBase<Partition, Partition._Fields>, java.io.S
   private int lastAccessTime;
   private StorageDescriptor sd;
   private Map<String,String> parameters;
+  private PrincipalPrivilegeSet privileges;
 
   /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
   public enum _Fields implements TFieldIdEnum {
@@ -53,7 +55,8 @@ public class Partition implements TBase<Partition, Partition._Fields>, java.io.S
     CREATE_TIME((short)4, "createTime"),
     LAST_ACCESS_TIME((short)5, "lastAccessTime"),
     SD((short)6, "sd"),
-    PARAMETERS((short)7, "parameters");
+    PARAMETERS((short)7, "parameters"),
+    PRIVILEGES((short)8, "privileges");
 
     private static final Map<String, _Fields> byName = new HashMap<String, _Fields>();
 
@@ -82,6 +85,8 @@ public class Partition implements TBase<Partition, Partition._Fields>, java.io.S
           return SD;
         case 7: // PARAMETERS
           return PARAMETERS;
+        case 8: // PRIVILEGES
+          return PRIVILEGES;
         default:
           return null;
       }
@@ -146,6 +151,8 @@ public class Partition implements TBase<Partition, Partition._Fields>, java.io.S
         new MapMetaData(TType.MAP, 
             new FieldValueMetaData(TType.STRING), 
             new FieldValueMetaData(TType.STRING))));
+    tmpMap.put(_Fields.PRIVILEGES, new FieldMetaData("privileges", TFieldRequirementType.OPTIONAL, 
+        new StructMetaData(TType.STRUCT, PrincipalPrivilegeSet.class)));
     metaDataMap = Collections.unmodifiableMap(tmpMap);
     FieldMetaData.addStructMetaDataMap(Partition.class, metaDataMap);
   }
@@ -213,6 +220,9 @@ public class Partition implements TBase<Partition, Partition._Fields>, java.io.S
       }
       this.parameters = __this__parameters;
     }
+    if (other.isSetPrivileges()) {
+      this.privileges = new PrincipalPrivilegeSet(other.privileges);
+    }
   }
 
   public Partition deepCopy() {
@@ -230,6 +240,7 @@ public class Partition implements TBase<Partition, Partition._Fields>, java.io.S
     this.lastAccessTime = 0;
     this.sd = null;
     this.parameters = null;
+    this.privileges = null;
   }
 
   public int getValuesSize() {
@@ -417,6 +428,29 @@ public class Partition implements TBase<Partition, Partition._Fields>, java.io.S
     }
   }
 
+  public PrincipalPrivilegeSet getPrivileges() {
+    return this.privileges;
+  }
+
+  public void setPrivileges(PrincipalPrivilegeSet privileges) {
+    this.privileges = privileges;
+  }
+
+  public void unsetPrivileges() {
+    this.privileges = null;
+  }
+
+  /** Returns true if field privileges is set (has been asigned a value) and false otherwise */
+  public boolean isSetPrivileges() {
+    return this.privileges != null;
+  }
+
+  public void setPrivilegesIsSet(boolean value) {
+    if (!value) {
+      this.privileges = null;
+    }
+  }
+
   public void setFieldValue(_Fields field, Object value) {
     switch (field) {
     case VALUES:
@@ -475,6 +509,14 @@ public class Partition implements TBase<Partition, Partition._Fields>, java.io.S
       }
       break;
 
+    case PRIVILEGES:
+      if (value == null) {
+        unsetPrivileges();
+      } else {
+        setPrivileges((PrincipalPrivilegeSet)value);
+      }
+      break;
+
     }
   }
 
@@ -501,6 +543,9 @@ public class Partition implements TBase<Partition, Partition._Fields>, java.io.S
     case PARAMETERS:
       return getParameters();
 
+    case PRIVILEGES:
+      return getPrivileges();
+
     }
     throw new IllegalStateException();
   }
@@ -526,6 +571,8 @@ public class Partition implements TBase<Partition, Partition._Fields>, java.io.S
       return isSetSd();
     case PARAMETERS:
       return isSetParameters();
+    case PRIVILEGES:
+      return isSetPrivileges();
     }
     throw new IllegalStateException();
   }
@@ -603,6 +650,15 @@ public class Partition implements TBase<Partition, Partition._Fields>, java.io.S
       if (!(this_present_parameters && that_present_parameters))
         return false;
       if (!this.parameters.equals(that.parameters))
+        return false;
+    }
+
+    boolean this_present_privileges = true && this.isSetPrivileges();
+    boolean that_present_privileges = true && that.isSetPrivileges();
+    if (this_present_privileges || that_present_privileges) {
+      if (!(this_present_privileges && that_present_privileges))
+        return false;
+      if (!this.privileges.equals(that.privileges))
         return false;
     }
 
@@ -692,6 +748,16 @@ public class Partition implements TBase<Partition, Partition._Fields>, java.io.S
         return lastComparison;
       }
     }
+    lastComparison = Boolean.valueOf(isSetPrivileges()).compareTo(typedOther.isSetPrivileges());
+    if (lastComparison != 0) {
+      return lastComparison;
+    }
+    if (isSetPrivileges()) {
+      lastComparison = TBaseHelper.compareTo(this.privileges, typedOther.privileges);
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+    }
     return 0;
   }
 
@@ -712,13 +778,13 @@ public class Partition implements TBase<Partition, Partition._Fields>, java.io.S
         case 1: // VALUES
           if (field.type == TType.LIST) {
             {
-              TList _list40 = iprot.readListBegin();
-              this.values = new ArrayList<String>(_list40.size);
-              for (int _i41 = 0; _i41 < _list40.size; ++_i41)
+              TList _list75 = iprot.readListBegin();
+              this.values = new ArrayList<String>(_list75.size);
+              for (int _i76 = 0; _i76 < _list75.size; ++_i76)
               {
-                String _elem42;
-                _elem42 = iprot.readString();
-                this.values.add(_elem42);
+                String _elem77;
+                _elem77 = iprot.readString();
+                this.values.add(_elem77);
               }
               iprot.readListEnd();
             }
@@ -767,18 +833,26 @@ public class Partition implements TBase<Partition, Partition._Fields>, java.io.S
         case 7: // PARAMETERS
           if (field.type == TType.MAP) {
             {
-              TMap _map43 = iprot.readMapBegin();
-              this.parameters = new HashMap<String,String>(2*_map43.size);
-              for (int _i44 = 0; _i44 < _map43.size; ++_i44)
+              TMap _map78 = iprot.readMapBegin();
+              this.parameters = new HashMap<String,String>(2*_map78.size);
+              for (int _i79 = 0; _i79 < _map78.size; ++_i79)
               {
-                String _key45;
-                String _val46;
-                _key45 = iprot.readString();
-                _val46 = iprot.readString();
-                this.parameters.put(_key45, _val46);
+                String _key80;
+                String _val81;
+                _key80 = iprot.readString();
+                _val81 = iprot.readString();
+                this.parameters.put(_key80, _val81);
               }
               iprot.readMapEnd();
             }
+          } else { 
+            TProtocolUtil.skip(iprot, field.type);
+          }
+          break;
+        case 8: // PRIVILEGES
+          if (field.type == TType.STRUCT) {
+            this.privileges = new PrincipalPrivilegeSet();
+            this.privileges.read(iprot);
           } else { 
             TProtocolUtil.skip(iprot, field.type);
           }
@@ -800,9 +874,9 @@ public class Partition implements TBase<Partition, Partition._Fields>, java.io.S
       oprot.writeFieldBegin(VALUES_FIELD_DESC);
       {
         oprot.writeListBegin(new TList(TType.STRING, this.values.size()));
-        for (String _iter47 : this.values)
+        for (String _iter82 : this.values)
         {
-          oprot.writeString(_iter47);
+          oprot.writeString(_iter82);
         }
         oprot.writeListEnd();
       }
@@ -833,14 +907,21 @@ public class Partition implements TBase<Partition, Partition._Fields>, java.io.S
       oprot.writeFieldBegin(PARAMETERS_FIELD_DESC);
       {
         oprot.writeMapBegin(new TMap(TType.STRING, TType.STRING, this.parameters.size()));
-        for (Map.Entry<String, String> _iter48 : this.parameters.entrySet())
+        for (Map.Entry<String, String> _iter83 : this.parameters.entrySet())
         {
-          oprot.writeString(_iter48.getKey());
-          oprot.writeString(_iter48.getValue());
+          oprot.writeString(_iter83.getKey());
+          oprot.writeString(_iter83.getValue());
         }
         oprot.writeMapEnd();
       }
       oprot.writeFieldEnd();
+    }
+    if (this.privileges != null) {
+      if (isSetPrivileges()) {
+        oprot.writeFieldBegin(PRIVILEGES_FIELD_DESC);
+        this.privileges.write(oprot);
+        oprot.writeFieldEnd();
+      }
     }
     oprot.writeFieldStop();
     oprot.writeStructEnd();
@@ -898,6 +979,16 @@ public class Partition implements TBase<Partition, Partition._Fields>, java.io.S
       sb.append(this.parameters);
     }
     first = false;
+    if (isSetPrivileges()) {
+      if (!first) sb.append(", ");
+      sb.append("privileges:");
+      if (this.privileges == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.privileges);
+      }
+      first = false;
+    }
     sb.append(")");
     return sb.toString();
   }

@@ -263,7 +263,7 @@ public class HiveConf extends Configuration {
     HIVESKEWJOINKEY("hive.skewjoin.key", 1000000),
     HIVESKEWJOINMAPJOINNUMMAPTASK("hive.skewjoin.mapjoin.map.tasks", 10000),
     HIVESKEWJOINMAPJOINMINSPLIT("hive.skewjoin.mapjoin.min.split", 33554432L), //32M
-    MAPREDMINSPLITSIZE("mapred.min.split.size", 1),
+    MAPREDMINSPLITSIZE("mapred.min.split.size", 1L),
     HIVEMERGEMAPONLY("hive.mergejob.maponly", true),
 
     HIVESENDHEARTBEAT("hive.heartbeat.interval", 1000),
@@ -334,6 +334,13 @@ public class HiveConf extends Configuration {
 
     SEMANTIC_ANALYZER_HOOK("hive.semantic.analyzer.hook",null),
 
+    HIVE_AUTHORIZATION_ENABLED("hive.security.authorization.enabled", false),
+    HIVE_AUTHORIZATION_MANAGER("hive.security.authorization.manager", null),
+    HIVE_AUTHENTICATOR_MANAGER("hive.security.authenticator.manager", null),
+
+    HIVE_AUTHORIZATION_TABLE_USER_GRANTS("hive.security.authorization.createtable.user.grants", null),
+    HIVE_AUTHORIZATION_TABLE_GROUP_GRANTS("hive.security.authorization.createtable.group.grants", null),
+    HIVE_AUTHORIZATION_TABLE_ROLE_GRANTS("hive.security.authorization.createtable.role.grants", null),
     // Print column names in output
     HIVE_CLI_PRINT_HEADER("hive.cli.print.header", false),
 

@@ -190,6 +190,23 @@ TOK_LEFTSEMIJOIN;
 TOK_LATERAL_VIEW;
 TOK_TABALIAS;
 TOK_ANALYZE;
+TOK_CREATEROLE;
+TOK_DROPROLE;
+TOK_GRANT;
+TOK_REVOKE;
+TOK_SHOW_GRANT;
+TOK_PRIVILEGE_LIST;
+TOK_PRIVILEGE;
+TOK_PRINCIPAL_NAME;
+TOK_USER;
+TOK_GROUP;
+TOK_ROLE;
+TOK_GRANT_WITH_OPTION;
+TOK_PRIV_OBJECT;
+TOK_PRIV_OBJECT_COL;
+TOK_GRANT_ROLE;
+TOK_REVOKE_ROLE;
+TOK_SHOW_ROLE_GRANT;
 TOK_SHOWINDEXES;
 TOK_INDEXCOMMENT;
 TOK_DESCDATABASE;
@@ -265,6 +282,14 @@ ddlStatement
     | analyzeStatement
     | lockStatement
     | unlockStatement
+    | createRoleStatement
+    | dropRoleStatement
+    | grantPrivileges
+    | revokePrivileges
+    | showGrants
+    | showRoleGrants
+    | grantRole
+    | revokeRole
     ;
 
 ifExists
@@ -738,6 +763,114 @@ unlockStatement
     : KW_UNLOCK KW_TABLE Identifier partitionSpec?  -> ^(TOK_UNLOCKTABLE Identifier partitionSpec?)
     ;
 
+createRoleStatement
+@init { msgs.push("create role"); }
+@after { msgs.pop(); }
+    : KW_CREATE kwRole roleName=Identifier
+    -> ^(TOK_CREATEROLE $roleName)
+    ;
+
+dropRoleStatement
+@init {msgs.push("drop role");}
+@after {msgs.pop();}
+    : KW_DROP kwRole roleName=Identifier
+    -> ^(TOK_DROPROLE $roleName)
+    ;
+
+grantPrivileges
+@init {msgs.push("grant privileges");}
+@after {msgs.pop();}
+    : KW_GRANT privList=privilegeList 
+      privilegeObject?
+      KW_TO principalSpecification
+      (KW_WITH withOption)?
+    -> ^(TOK_GRANT $privList principalSpecification privilegeObject? withOption?)
+    ;
+
+revokePrivileges
+@init {msgs.push("revoke privileges");}
+@afer {msgs.pop();}
+    : KW_REVOKE privilegeList privilegeObject? KW_FROM principalSpecification
+    -> ^(TOK_REVOKE privilegeList principalSpecification privilegeObject?)
+    ;
+
+grantRole
+@init {msgs.push("grant role");}
+@after {msgs.pop();}
+    : KW_GRANT kwRole Identifier (COMMA Identifier)* KW_TO principalSpecification
+    -> ^(TOK_GRANT_ROLE principalSpecification Identifier+)
+    ;
+
+revokeRole
+@init {msgs.push("revoke role");}
+@after {msgs.pop();}
+    : KW_REVOKE kwRole Identifier (COMMA Identifier)* KW_FROM principalSpecification
+    -> ^(TOK_REVOKE_ROLE principalSpecification Identifier+)
+    ;
+
+showRoleGrants
+@init {msgs.push("show role grants");}
+@after {msgs.pop();}
+    : KW_SHOW kwRole KW_GRANT principalName
+    -> ^(TOK_SHOW_ROLE_GRANT principalName)
+    ;
+
+showGrants
+@init {msgs.push("show grants");}
+@after {msgs.pop();}
+    : KW_SHOW KW_GRANT principalName privilegeIncludeColObject?
+    -> ^(TOK_SHOW_GRANT principalName privilegeIncludeColObject?)
+    ;
+
+privilegeIncludeColObject
+@init {msgs.push("privilege object including columns");}
+@after {msgs.pop();}
+    : KW_ON (table=KW_TABLE|KW_DATABASE) Identifier (LPAREN cols=columnNameList RPAREN)? partitionSpec?
+    -> ^(TOK_PRIV_OBJECT_COL Identifier $table? $cols? partitionSpec?)
+    ;
+
+privilegeObject
+@init {msgs.push("privilege subject");}
+@after {msgs.pop();}
+    : KW_ON (table=KW_TABLE|KW_DATABASE) Identifier partitionSpec?
+    -> ^(TOK_PRIV_OBJECT Identifier $table? partitionSpec?)
+    ;
+
+privilegeList
+@init {msgs.push("grant privilege list");}
+@after {msgs.pop();}
+    : privlegeDef (COMMA privlegeDef)* 
+    -> ^(TOK_PRIVILEGE_LIST privlegeDef+)
+    ;
+
+privlegeDef
+@init {msgs.push("grant privilege");}
+@after {msgs.pop();}
+    : Identifier (LPAREN cols=columnNameList RPAREN)?
+    -> ^(TOK_PRIVILEGE Identifier $cols?)
+    ;
+
+principalSpecification
+@init { msgs.push("user/group/role name list"); }
+@after { msgs.pop(); }
+    : principalName (COMMA principalName)* -> ^(TOK_PRINCIPAL_NAME principalName+)
+    ;
+
+principalName
+@init {msgs.push("user|group|role name");}
+@after {msgs.pop();}
+    : kwUser Identifier -> ^(TOK_USER Identifier)
+    | KW_GROUP Identifier -> ^(TOK_GROUP Identifier)
+    | kwRole Identifier -> ^(TOK_ROLE Identifier)
+    ;
+
+withOption
+@init {msgs.push("grant with option");}
+@after {msgs.pop();}
+    : KW_GRANT KW_OPTION
+    -> ^(TOK_GRANT_WITH_OPTION)
+    ;
+
 metastoreCheck
 @init { msgs.push("metastore check statement"); }
 @after { msgs.pop(); }
@@ -784,7 +917,7 @@ dropViewStatement
     ;
 
 showStmtIdentifier
-@init { msgs.push("identifier for show statement"); }
+@init { msgs.push("Identifier for show statement"); }
 @after { msgs.pop(); }
     : Identifier
     | StringLiteral
@@ -1800,6 +1933,15 @@ descFuncNames
     ;
 
 // Keywords
+
+kwUser 
+: 
+{input.LT(1).getText().equalsIgnoreCase("user")}? Identifier;
+
+kwRole 
+: 
+{input.LT(1).getText().equalsIgnoreCase("role")}? Identifier;
+
 KW_TRUE : 'TRUE';
 KW_FALSE : 'FALSE';
 KW_ALL : 'ALL';
@@ -1814,8 +1956,8 @@ KW_EXISTS : 'EXISTS';
 KW_ASC : 'ASC';
 KW_DESC : 'DESC';
 KW_ORDER : 'ORDER';
-KW_BY : 'BY';
 KW_GROUP : 'GROUP';
+KW_BY : 'BY';
 KW_HAVING : 'HAVING';
 KW_WHERE : 'WHERE';
 KW_FROM : 'FROM';
@@ -2000,6 +2142,8 @@ KW_UNARCHIVE: 'UNARCHIVE';
 KW_COMPUTE: 'COMPUTE';
 KW_STATISTICS: 'STATISTICS';
 KW_USE: 'USE';
+KW_OPTION: 'OPTION';
+
 
 // Operators
 // NOTE: if you add a new function/operator, add it to sysFuncNames so that describe function _FUNC_ will work.

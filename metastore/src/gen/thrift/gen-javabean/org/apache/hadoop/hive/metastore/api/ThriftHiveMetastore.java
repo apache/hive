@@ -81,13 +81,19 @@ public class ThriftHiveMetastore {
 
     public Partition get_partition(String db_name, String tbl_name, List<String> part_vals) throws MetaException, NoSuchObjectException, TException;
 
+    public Partition get_partition_with_auth(String db_name, String tbl_name, List<String> part_vals, String user_name, List<String> group_names) throws MetaException, NoSuchObjectException, TException;
+
     public Partition get_partition_by_name(String db_name, String tbl_name, String part_name) throws MetaException, NoSuchObjectException, TException;
 
     public List<Partition> get_partitions(String db_name, String tbl_name, short max_parts) throws NoSuchObjectException, MetaException, TException;
 
+    public List<Partition> get_partitions_with_auth(String db_name, String tbl_name, short max_parts, String user_name, List<String> group_names) throws NoSuchObjectException, MetaException, TException;
+
     public List<String> get_partition_names(String db_name, String tbl_name, short max_parts) throws MetaException, TException;
 
     public List<Partition> get_partitions_ps(String db_name, String tbl_name, List<String> part_vals, short max_parts) throws MetaException, TException;
+
+    public List<Partition> get_partitions_ps_with_auth(String db_name, String tbl_name, List<String> part_vals, short max_parts, String user_name, List<String> group_names) throws NoSuchObjectException, MetaException, TException;
 
     public List<String> get_partition_names_ps(String db_name, String tbl_name, List<String> part_vals, short max_parts) throws MetaException, TException;
 
@@ -112,6 +118,24 @@ public class ThriftHiveMetastore {
     public List<Index> get_indexes(String db_name, String tbl_name, short max_indexes) throws NoSuchObjectException, MetaException, TException;
 
     public List<String> get_index_names(String db_name, String tbl_name, short max_indexes) throws MetaException, TException;
+
+    public boolean create_role(Role role) throws MetaException, TException;
+
+    public boolean drop_role(String role_name) throws MetaException, TException;
+
+    public boolean grant_role(String role_name, String principal_name, PrincipalType principal_type, String grantor, PrincipalType grantorType, boolean grant_option) throws MetaException, TException;
+
+    public boolean revoke_role(String role_name, String principal_name, PrincipalType principal_type) throws MetaException, TException;
+
+    public List<Role> list_roles(String principal_name, PrincipalType principal_type) throws MetaException, TException;
+
+    public PrincipalPrivilegeSet get_privilege_set(HiveObjectRef hiveObject, String user_name, List<String> group_names) throws MetaException, TException;
+
+    public List<HiveObjectPrivilege> list_privileges(String principal_name, PrincipalType principal_type, HiveObjectRef hiveObject) throws MetaException, TException;
+
+    public boolean grant_privileges(PrivilegeBag privileges) throws MetaException, TException;
+
+    public boolean revoke_privileges(PrivilegeBag privileges) throws MetaException, TException;
 
   }
 
@@ -165,13 +189,19 @@ public class ThriftHiveMetastore {
 
     public void get_partition(String db_name, String tbl_name, List<String> part_vals, AsyncMethodCallback<AsyncClient.get_partition_call> resultHandler) throws TException;
 
+    public void get_partition_with_auth(String db_name, String tbl_name, List<String> part_vals, String user_name, List<String> group_names, AsyncMethodCallback<AsyncClient.get_partition_with_auth_call> resultHandler) throws TException;
+
     public void get_partition_by_name(String db_name, String tbl_name, String part_name, AsyncMethodCallback<AsyncClient.get_partition_by_name_call> resultHandler) throws TException;
 
     public void get_partitions(String db_name, String tbl_name, short max_parts, AsyncMethodCallback<AsyncClient.get_partitions_call> resultHandler) throws TException;
 
+    public void get_partitions_with_auth(String db_name, String tbl_name, short max_parts, String user_name, List<String> group_names, AsyncMethodCallback<AsyncClient.get_partitions_with_auth_call> resultHandler) throws TException;
+
     public void get_partition_names(String db_name, String tbl_name, short max_parts, AsyncMethodCallback<AsyncClient.get_partition_names_call> resultHandler) throws TException;
 
     public void get_partitions_ps(String db_name, String tbl_name, List<String> part_vals, short max_parts, AsyncMethodCallback<AsyncClient.get_partitions_ps_call> resultHandler) throws TException;
+
+    public void get_partitions_ps_with_auth(String db_name, String tbl_name, List<String> part_vals, short max_parts, String user_name, List<String> group_names, AsyncMethodCallback<AsyncClient.get_partitions_ps_with_auth_call> resultHandler) throws TException;
 
     public void get_partition_names_ps(String db_name, String tbl_name, List<String> part_vals, short max_parts, AsyncMethodCallback<AsyncClient.get_partition_names_ps_call> resultHandler) throws TException;
 
@@ -196,6 +226,24 @@ public class ThriftHiveMetastore {
     public void get_indexes(String db_name, String tbl_name, short max_indexes, AsyncMethodCallback<AsyncClient.get_indexes_call> resultHandler) throws TException;
 
     public void get_index_names(String db_name, String tbl_name, short max_indexes, AsyncMethodCallback<AsyncClient.get_index_names_call> resultHandler) throws TException;
+
+    public void create_role(Role role, AsyncMethodCallback<AsyncClient.create_role_call> resultHandler) throws TException;
+
+    public void drop_role(String role_name, AsyncMethodCallback<AsyncClient.drop_role_call> resultHandler) throws TException;
+
+    public void grant_role(String role_name, String principal_name, PrincipalType principal_type, String grantor, PrincipalType grantorType, boolean grant_option, AsyncMethodCallback<AsyncClient.grant_role_call> resultHandler) throws TException;
+
+    public void revoke_role(String role_name, String principal_name, PrincipalType principal_type, AsyncMethodCallback<AsyncClient.revoke_role_call> resultHandler) throws TException;
+
+    public void list_roles(String principal_name, PrincipalType principal_type, AsyncMethodCallback<AsyncClient.list_roles_call> resultHandler) throws TException;
+
+    public void get_privilege_set(HiveObjectRef hiveObject, String user_name, List<String> group_names, AsyncMethodCallback<AsyncClient.get_privilege_set_call> resultHandler) throws TException;
+
+    public void list_privileges(String principal_name, PrincipalType principal_type, HiveObjectRef hiveObject, AsyncMethodCallback<AsyncClient.list_privileges_call> resultHandler) throws TException;
+
+    public void grant_privileges(PrivilegeBag privileges, AsyncMethodCallback<AsyncClient.grant_privileges_call> resultHandler) throws TException;
+
+    public void revoke_privileges(PrivilegeBag privileges, AsyncMethodCallback<AsyncClient.revoke_privileges_call> resultHandler) throws TException;
 
   }
 
@@ -1246,6 +1294,52 @@ public class ThriftHiveMetastore {
       throw new TApplicationException(TApplicationException.MISSING_RESULT, "get_partition failed: unknown result");
     }
 
+    public Partition get_partition_with_auth(String db_name, String tbl_name, List<String> part_vals, String user_name, List<String> group_names) throws MetaException, NoSuchObjectException, TException
+    {
+      send_get_partition_with_auth(db_name, tbl_name, part_vals, user_name, group_names);
+      return recv_get_partition_with_auth();
+    }
+
+    public void send_get_partition_with_auth(String db_name, String tbl_name, List<String> part_vals, String user_name, List<String> group_names) throws TException
+    {
+      oprot_.writeMessageBegin(new TMessage("get_partition_with_auth", TMessageType.CALL, ++seqid_));
+      get_partition_with_auth_args args = new get_partition_with_auth_args();
+      args.setDb_name(db_name);
+      args.setTbl_name(tbl_name);
+      args.setPart_vals(part_vals);
+      args.setUser_name(user_name);
+      args.setGroup_names(group_names);
+      args.write(oprot_);
+      oprot_.writeMessageEnd();
+      oprot_.getTransport().flush();
+    }
+
+    public Partition recv_get_partition_with_auth() throws MetaException, NoSuchObjectException, TException
+    {
+      TMessage msg = iprot_.readMessageBegin();
+      if (msg.type == TMessageType.EXCEPTION) {
+        TApplicationException x = TApplicationException.read(iprot_);
+        iprot_.readMessageEnd();
+        throw x;
+      }
+      if (msg.seqid != seqid_) {
+        throw new TApplicationException(TApplicationException.BAD_SEQUENCE_ID, "get_partition_with_auth failed: out of sequence response");
+      }
+      get_partition_with_auth_result result = new get_partition_with_auth_result();
+      result.read(iprot_);
+      iprot_.readMessageEnd();
+      if (result.isSetSuccess()) {
+        return result.success;
+      }
+      if (result.o1 != null) {
+        throw result.o1;
+      }
+      if (result.o2 != null) {
+        throw result.o2;
+      }
+      throw new TApplicationException(TApplicationException.MISSING_RESULT, "get_partition_with_auth failed: unknown result");
+    }
+
     public Partition get_partition_by_name(String db_name, String tbl_name, String part_name) throws MetaException, NoSuchObjectException, TException
     {
       send_get_partition_by_name(db_name, tbl_name, part_name);
@@ -1334,6 +1428,52 @@ public class ThriftHiveMetastore {
       throw new TApplicationException(TApplicationException.MISSING_RESULT, "get_partitions failed: unknown result");
     }
 
+    public List<Partition> get_partitions_with_auth(String db_name, String tbl_name, short max_parts, String user_name, List<String> group_names) throws NoSuchObjectException, MetaException, TException
+    {
+      send_get_partitions_with_auth(db_name, tbl_name, max_parts, user_name, group_names);
+      return recv_get_partitions_with_auth();
+    }
+
+    public void send_get_partitions_with_auth(String db_name, String tbl_name, short max_parts, String user_name, List<String> group_names) throws TException
+    {
+      oprot_.writeMessageBegin(new TMessage("get_partitions_with_auth", TMessageType.CALL, ++seqid_));
+      get_partitions_with_auth_args args = new get_partitions_with_auth_args();
+      args.setDb_name(db_name);
+      args.setTbl_name(tbl_name);
+      args.setMax_parts(max_parts);
+      args.setUser_name(user_name);
+      args.setGroup_names(group_names);
+      args.write(oprot_);
+      oprot_.writeMessageEnd();
+      oprot_.getTransport().flush();
+    }
+
+    public List<Partition> recv_get_partitions_with_auth() throws NoSuchObjectException, MetaException, TException
+    {
+      TMessage msg = iprot_.readMessageBegin();
+      if (msg.type == TMessageType.EXCEPTION) {
+        TApplicationException x = TApplicationException.read(iprot_);
+        iprot_.readMessageEnd();
+        throw x;
+      }
+      if (msg.seqid != seqid_) {
+        throw new TApplicationException(TApplicationException.BAD_SEQUENCE_ID, "get_partitions_with_auth failed: out of sequence response");
+      }
+      get_partitions_with_auth_result result = new get_partitions_with_auth_result();
+      result.read(iprot_);
+      iprot_.readMessageEnd();
+      if (result.isSetSuccess()) {
+        return result.success;
+      }
+      if (result.o1 != null) {
+        throw result.o1;
+      }
+      if (result.o2 != null) {
+        throw result.o2;
+      }
+      throw new TApplicationException(TApplicationException.MISSING_RESULT, "get_partitions_with_auth failed: unknown result");
+    }
+
     public List<String> get_partition_names(String db_name, String tbl_name, short max_parts) throws MetaException, TException
     {
       send_get_partition_names(db_name, tbl_name, max_parts);
@@ -1415,6 +1555,53 @@ public class ThriftHiveMetastore {
         throw result.o1;
       }
       throw new TApplicationException(TApplicationException.MISSING_RESULT, "get_partitions_ps failed: unknown result");
+    }
+
+    public List<Partition> get_partitions_ps_with_auth(String db_name, String tbl_name, List<String> part_vals, short max_parts, String user_name, List<String> group_names) throws NoSuchObjectException, MetaException, TException
+    {
+      send_get_partitions_ps_with_auth(db_name, tbl_name, part_vals, max_parts, user_name, group_names);
+      return recv_get_partitions_ps_with_auth();
+    }
+
+    public void send_get_partitions_ps_with_auth(String db_name, String tbl_name, List<String> part_vals, short max_parts, String user_name, List<String> group_names) throws TException
+    {
+      oprot_.writeMessageBegin(new TMessage("get_partitions_ps_with_auth", TMessageType.CALL, ++seqid_));
+      get_partitions_ps_with_auth_args args = new get_partitions_ps_with_auth_args();
+      args.setDb_name(db_name);
+      args.setTbl_name(tbl_name);
+      args.setPart_vals(part_vals);
+      args.setMax_parts(max_parts);
+      args.setUser_name(user_name);
+      args.setGroup_names(group_names);
+      args.write(oprot_);
+      oprot_.writeMessageEnd();
+      oprot_.getTransport().flush();
+    }
+
+    public List<Partition> recv_get_partitions_ps_with_auth() throws NoSuchObjectException, MetaException, TException
+    {
+      TMessage msg = iprot_.readMessageBegin();
+      if (msg.type == TMessageType.EXCEPTION) {
+        TApplicationException x = TApplicationException.read(iprot_);
+        iprot_.readMessageEnd();
+        throw x;
+      }
+      if (msg.seqid != seqid_) {
+        throw new TApplicationException(TApplicationException.BAD_SEQUENCE_ID, "get_partitions_ps_with_auth failed: out of sequence response");
+      }
+      get_partitions_ps_with_auth_result result = new get_partitions_ps_with_auth_result();
+      result.read(iprot_);
+      iprot_.readMessageEnd();
+      if (result.isSetSuccess()) {
+        return result.success;
+      }
+      if (result.o1 != null) {
+        throw result.o1;
+      }
+      if (result.o2 != null) {
+        throw result.o2;
+      }
+      throw new TApplicationException(TApplicationException.MISSING_RESULT, "get_partitions_ps_with_auth failed: unknown result");
     }
 
     public List<String> get_partition_names_ps(String db_name, String tbl_name, List<String> part_vals, short max_parts) throws MetaException, TException
@@ -1923,6 +2110,369 @@ public class ThriftHiveMetastore {
         throw result.o2;
       }
       throw new TApplicationException(TApplicationException.MISSING_RESULT, "get_index_names failed: unknown result");
+    }
+
+    public boolean create_role(Role role) throws MetaException, TException
+    {
+      send_create_role(role);
+      return recv_create_role();
+    }
+
+    public void send_create_role(Role role) throws TException
+    {
+      oprot_.writeMessageBegin(new TMessage("create_role", TMessageType.CALL, ++seqid_));
+      create_role_args args = new create_role_args();
+      args.setRole(role);
+      args.write(oprot_);
+      oprot_.writeMessageEnd();
+      oprot_.getTransport().flush();
+    }
+
+    public boolean recv_create_role() throws MetaException, TException
+    {
+      TMessage msg = iprot_.readMessageBegin();
+      if (msg.type == TMessageType.EXCEPTION) {
+        TApplicationException x = TApplicationException.read(iprot_);
+        iprot_.readMessageEnd();
+        throw x;
+      }
+      if (msg.seqid != seqid_) {
+        throw new TApplicationException(TApplicationException.BAD_SEQUENCE_ID, "create_role failed: out of sequence response");
+      }
+      create_role_result result = new create_role_result();
+      result.read(iprot_);
+      iprot_.readMessageEnd();
+      if (result.isSetSuccess()) {
+        return result.success;
+      }
+      if (result.o1 != null) {
+        throw result.o1;
+      }
+      throw new TApplicationException(TApplicationException.MISSING_RESULT, "create_role failed: unknown result");
+    }
+
+    public boolean drop_role(String role_name) throws MetaException, TException
+    {
+      send_drop_role(role_name);
+      return recv_drop_role();
+    }
+
+    public void send_drop_role(String role_name) throws TException
+    {
+      oprot_.writeMessageBegin(new TMessage("drop_role", TMessageType.CALL, ++seqid_));
+      drop_role_args args = new drop_role_args();
+      args.setRole_name(role_name);
+      args.write(oprot_);
+      oprot_.writeMessageEnd();
+      oprot_.getTransport().flush();
+    }
+
+    public boolean recv_drop_role() throws MetaException, TException
+    {
+      TMessage msg = iprot_.readMessageBegin();
+      if (msg.type == TMessageType.EXCEPTION) {
+        TApplicationException x = TApplicationException.read(iprot_);
+        iprot_.readMessageEnd();
+        throw x;
+      }
+      if (msg.seqid != seqid_) {
+        throw new TApplicationException(TApplicationException.BAD_SEQUENCE_ID, "drop_role failed: out of sequence response");
+      }
+      drop_role_result result = new drop_role_result();
+      result.read(iprot_);
+      iprot_.readMessageEnd();
+      if (result.isSetSuccess()) {
+        return result.success;
+      }
+      if (result.o1 != null) {
+        throw result.o1;
+      }
+      throw new TApplicationException(TApplicationException.MISSING_RESULT, "drop_role failed: unknown result");
+    }
+
+    public boolean grant_role(String role_name, String principal_name, PrincipalType principal_type, String grantor, PrincipalType grantorType, boolean grant_option) throws MetaException, TException
+    {
+      send_grant_role(role_name, principal_name, principal_type, grantor, grantorType, grant_option);
+      return recv_grant_role();
+    }
+
+    public void send_grant_role(String role_name, String principal_name, PrincipalType principal_type, String grantor, PrincipalType grantorType, boolean grant_option) throws TException
+    {
+      oprot_.writeMessageBegin(new TMessage("grant_role", TMessageType.CALL, ++seqid_));
+      grant_role_args args = new grant_role_args();
+      args.setRole_name(role_name);
+      args.setPrincipal_name(principal_name);
+      args.setPrincipal_type(principal_type);
+      args.setGrantor(grantor);
+      args.setGrantorType(grantorType);
+      args.setGrant_option(grant_option);
+      args.write(oprot_);
+      oprot_.writeMessageEnd();
+      oprot_.getTransport().flush();
+    }
+
+    public boolean recv_grant_role() throws MetaException, TException
+    {
+      TMessage msg = iprot_.readMessageBegin();
+      if (msg.type == TMessageType.EXCEPTION) {
+        TApplicationException x = TApplicationException.read(iprot_);
+        iprot_.readMessageEnd();
+        throw x;
+      }
+      if (msg.seqid != seqid_) {
+        throw new TApplicationException(TApplicationException.BAD_SEQUENCE_ID, "grant_role failed: out of sequence response");
+      }
+      grant_role_result result = new grant_role_result();
+      result.read(iprot_);
+      iprot_.readMessageEnd();
+      if (result.isSetSuccess()) {
+        return result.success;
+      }
+      if (result.o1 != null) {
+        throw result.o1;
+      }
+      throw new TApplicationException(TApplicationException.MISSING_RESULT, "grant_role failed: unknown result");
+    }
+
+    public boolean revoke_role(String role_name, String principal_name, PrincipalType principal_type) throws MetaException, TException
+    {
+      send_revoke_role(role_name, principal_name, principal_type);
+      return recv_revoke_role();
+    }
+
+    public void send_revoke_role(String role_name, String principal_name, PrincipalType principal_type) throws TException
+    {
+      oprot_.writeMessageBegin(new TMessage("revoke_role", TMessageType.CALL, ++seqid_));
+      revoke_role_args args = new revoke_role_args();
+      args.setRole_name(role_name);
+      args.setPrincipal_name(principal_name);
+      args.setPrincipal_type(principal_type);
+      args.write(oprot_);
+      oprot_.writeMessageEnd();
+      oprot_.getTransport().flush();
+    }
+
+    public boolean recv_revoke_role() throws MetaException, TException
+    {
+      TMessage msg = iprot_.readMessageBegin();
+      if (msg.type == TMessageType.EXCEPTION) {
+        TApplicationException x = TApplicationException.read(iprot_);
+        iprot_.readMessageEnd();
+        throw x;
+      }
+      if (msg.seqid != seqid_) {
+        throw new TApplicationException(TApplicationException.BAD_SEQUENCE_ID, "revoke_role failed: out of sequence response");
+      }
+      revoke_role_result result = new revoke_role_result();
+      result.read(iprot_);
+      iprot_.readMessageEnd();
+      if (result.isSetSuccess()) {
+        return result.success;
+      }
+      if (result.o1 != null) {
+        throw result.o1;
+      }
+      throw new TApplicationException(TApplicationException.MISSING_RESULT, "revoke_role failed: unknown result");
+    }
+
+    public List<Role> list_roles(String principal_name, PrincipalType principal_type) throws MetaException, TException
+    {
+      send_list_roles(principal_name, principal_type);
+      return recv_list_roles();
+    }
+
+    public void send_list_roles(String principal_name, PrincipalType principal_type) throws TException
+    {
+      oprot_.writeMessageBegin(new TMessage("list_roles", TMessageType.CALL, ++seqid_));
+      list_roles_args args = new list_roles_args();
+      args.setPrincipal_name(principal_name);
+      args.setPrincipal_type(principal_type);
+      args.write(oprot_);
+      oprot_.writeMessageEnd();
+      oprot_.getTransport().flush();
+    }
+
+    public List<Role> recv_list_roles() throws MetaException, TException
+    {
+      TMessage msg = iprot_.readMessageBegin();
+      if (msg.type == TMessageType.EXCEPTION) {
+        TApplicationException x = TApplicationException.read(iprot_);
+        iprot_.readMessageEnd();
+        throw x;
+      }
+      if (msg.seqid != seqid_) {
+        throw new TApplicationException(TApplicationException.BAD_SEQUENCE_ID, "list_roles failed: out of sequence response");
+      }
+      list_roles_result result = new list_roles_result();
+      result.read(iprot_);
+      iprot_.readMessageEnd();
+      if (result.isSetSuccess()) {
+        return result.success;
+      }
+      if (result.o1 != null) {
+        throw result.o1;
+      }
+      throw new TApplicationException(TApplicationException.MISSING_RESULT, "list_roles failed: unknown result");
+    }
+
+    public PrincipalPrivilegeSet get_privilege_set(HiveObjectRef hiveObject, String user_name, List<String> group_names) throws MetaException, TException
+    {
+      send_get_privilege_set(hiveObject, user_name, group_names);
+      return recv_get_privilege_set();
+    }
+
+    public void send_get_privilege_set(HiveObjectRef hiveObject, String user_name, List<String> group_names) throws TException
+    {
+      oprot_.writeMessageBegin(new TMessage("get_privilege_set", TMessageType.CALL, ++seqid_));
+      get_privilege_set_args args = new get_privilege_set_args();
+      args.setHiveObject(hiveObject);
+      args.setUser_name(user_name);
+      args.setGroup_names(group_names);
+      args.write(oprot_);
+      oprot_.writeMessageEnd();
+      oprot_.getTransport().flush();
+    }
+
+    public PrincipalPrivilegeSet recv_get_privilege_set() throws MetaException, TException
+    {
+      TMessage msg = iprot_.readMessageBegin();
+      if (msg.type == TMessageType.EXCEPTION) {
+        TApplicationException x = TApplicationException.read(iprot_);
+        iprot_.readMessageEnd();
+        throw x;
+      }
+      if (msg.seqid != seqid_) {
+        throw new TApplicationException(TApplicationException.BAD_SEQUENCE_ID, "get_privilege_set failed: out of sequence response");
+      }
+      get_privilege_set_result result = new get_privilege_set_result();
+      result.read(iprot_);
+      iprot_.readMessageEnd();
+      if (result.isSetSuccess()) {
+        return result.success;
+      }
+      if (result.o1 != null) {
+        throw result.o1;
+      }
+      throw new TApplicationException(TApplicationException.MISSING_RESULT, "get_privilege_set failed: unknown result");
+    }
+
+    public List<HiveObjectPrivilege> list_privileges(String principal_name, PrincipalType principal_type, HiveObjectRef hiveObject) throws MetaException, TException
+    {
+      send_list_privileges(principal_name, principal_type, hiveObject);
+      return recv_list_privileges();
+    }
+
+    public void send_list_privileges(String principal_name, PrincipalType principal_type, HiveObjectRef hiveObject) throws TException
+    {
+      oprot_.writeMessageBegin(new TMessage("list_privileges", TMessageType.CALL, ++seqid_));
+      list_privileges_args args = new list_privileges_args();
+      args.setPrincipal_name(principal_name);
+      args.setPrincipal_type(principal_type);
+      args.setHiveObject(hiveObject);
+      args.write(oprot_);
+      oprot_.writeMessageEnd();
+      oprot_.getTransport().flush();
+    }
+
+    public List<HiveObjectPrivilege> recv_list_privileges() throws MetaException, TException
+    {
+      TMessage msg = iprot_.readMessageBegin();
+      if (msg.type == TMessageType.EXCEPTION) {
+        TApplicationException x = TApplicationException.read(iprot_);
+        iprot_.readMessageEnd();
+        throw x;
+      }
+      if (msg.seqid != seqid_) {
+        throw new TApplicationException(TApplicationException.BAD_SEQUENCE_ID, "list_privileges failed: out of sequence response");
+      }
+      list_privileges_result result = new list_privileges_result();
+      result.read(iprot_);
+      iprot_.readMessageEnd();
+      if (result.isSetSuccess()) {
+        return result.success;
+      }
+      if (result.o1 != null) {
+        throw result.o1;
+      }
+      throw new TApplicationException(TApplicationException.MISSING_RESULT, "list_privileges failed: unknown result");
+    }
+
+    public boolean grant_privileges(PrivilegeBag privileges) throws MetaException, TException
+    {
+      send_grant_privileges(privileges);
+      return recv_grant_privileges();
+    }
+
+    public void send_grant_privileges(PrivilegeBag privileges) throws TException
+    {
+      oprot_.writeMessageBegin(new TMessage("grant_privileges", TMessageType.CALL, ++seqid_));
+      grant_privileges_args args = new grant_privileges_args();
+      args.setPrivileges(privileges);
+      args.write(oprot_);
+      oprot_.writeMessageEnd();
+      oprot_.getTransport().flush();
+    }
+
+    public boolean recv_grant_privileges() throws MetaException, TException
+    {
+      TMessage msg = iprot_.readMessageBegin();
+      if (msg.type == TMessageType.EXCEPTION) {
+        TApplicationException x = TApplicationException.read(iprot_);
+        iprot_.readMessageEnd();
+        throw x;
+      }
+      if (msg.seqid != seqid_) {
+        throw new TApplicationException(TApplicationException.BAD_SEQUENCE_ID, "grant_privileges failed: out of sequence response");
+      }
+      grant_privileges_result result = new grant_privileges_result();
+      result.read(iprot_);
+      iprot_.readMessageEnd();
+      if (result.isSetSuccess()) {
+        return result.success;
+      }
+      if (result.o1 != null) {
+        throw result.o1;
+      }
+      throw new TApplicationException(TApplicationException.MISSING_RESULT, "grant_privileges failed: unknown result");
+    }
+
+    public boolean revoke_privileges(PrivilegeBag privileges) throws MetaException, TException
+    {
+      send_revoke_privileges(privileges);
+      return recv_revoke_privileges();
+    }
+
+    public void send_revoke_privileges(PrivilegeBag privileges) throws TException
+    {
+      oprot_.writeMessageBegin(new TMessage("revoke_privileges", TMessageType.CALL, ++seqid_));
+      revoke_privileges_args args = new revoke_privileges_args();
+      args.setPrivileges(privileges);
+      args.write(oprot_);
+      oprot_.writeMessageEnd();
+      oprot_.getTransport().flush();
+    }
+
+    public boolean recv_revoke_privileges() throws MetaException, TException
+    {
+      TMessage msg = iprot_.readMessageBegin();
+      if (msg.type == TMessageType.EXCEPTION) {
+        TApplicationException x = TApplicationException.read(iprot_);
+        iprot_.readMessageEnd();
+        throw x;
+      }
+      if (msg.seqid != seqid_) {
+        throw new TApplicationException(TApplicationException.BAD_SEQUENCE_ID, "revoke_privileges failed: out of sequence response");
+      }
+      revoke_privileges_result result = new revoke_privileges_result();
+      result.read(iprot_);
+      iprot_.readMessageEnd();
+      if (result.isSetSuccess()) {
+        return result.success;
+      }
+      if (result.o1 != null) {
+        throw result.o1;
+      }
+      throw new TApplicationException(TApplicationException.MISSING_RESULT, "revoke_privileges failed: unknown result");
     }
 
   }
@@ -2750,6 +3300,49 @@ public class ThriftHiveMetastore {
       }
     }
 
+    public void get_partition_with_auth(String db_name, String tbl_name, List<String> part_vals, String user_name, List<String> group_names, AsyncMethodCallback<get_partition_with_auth_call> resultHandler) throws TException {
+      checkReady();
+      get_partition_with_auth_call method_call = new get_partition_with_auth_call(db_name, tbl_name, part_vals, user_name, group_names, resultHandler, this, protocolFactory, transport);
+      manager.call(method_call);
+    }
+
+    public static class get_partition_with_auth_call extends TAsyncMethodCall {
+      private String db_name;
+      private String tbl_name;
+      private List<String> part_vals;
+      private String user_name;
+      private List<String> group_names;
+      public get_partition_with_auth_call(String db_name, String tbl_name, List<String> part_vals, String user_name, List<String> group_names, AsyncMethodCallback<get_partition_with_auth_call> resultHandler, TAsyncClient client, TProtocolFactory protocolFactory, TNonblockingTransport transport) throws TException {
+        super(client, protocolFactory, transport, resultHandler, false);
+        this.db_name = db_name;
+        this.tbl_name = tbl_name;
+        this.part_vals = part_vals;
+        this.user_name = user_name;
+        this.group_names = group_names;
+      }
+
+      public void write_args(TProtocol prot) throws TException {
+        prot.writeMessageBegin(new TMessage("get_partition_with_auth", TMessageType.CALL, 0));
+        get_partition_with_auth_args args = new get_partition_with_auth_args();
+        args.setDb_name(db_name);
+        args.setTbl_name(tbl_name);
+        args.setPart_vals(part_vals);
+        args.setUser_name(user_name);
+        args.setGroup_names(group_names);
+        args.write(prot);
+        prot.writeMessageEnd();
+      }
+
+      public Partition getResult() throws MetaException, NoSuchObjectException, TException {
+        if (getState() != State.RESPONSE_READ) {
+          throw new IllegalStateException("Method call not finished!");
+        }
+        TMemoryInputTransport memoryTransport = new TMemoryInputTransport(getFrameBuffer().array());
+        TProtocol prot = client.getProtocolFactory().getProtocol(memoryTransport);
+        return (new Client(prot)).recv_get_partition_with_auth();
+      }
+    }
+
     public void get_partition_by_name(String db_name, String tbl_name, String part_name, AsyncMethodCallback<get_partition_by_name_call> resultHandler) throws TException {
       checkReady();
       get_partition_by_name_call method_call = new get_partition_by_name_call(db_name, tbl_name, part_name, resultHandler, this, protocolFactory, transport);
@@ -2821,6 +3414,49 @@ public class ThriftHiveMetastore {
         TMemoryInputTransport memoryTransport = new TMemoryInputTransport(getFrameBuffer().array());
         TProtocol prot = client.getProtocolFactory().getProtocol(memoryTransport);
         return (new Client(prot)).recv_get_partitions();
+      }
+    }
+
+    public void get_partitions_with_auth(String db_name, String tbl_name, short max_parts, String user_name, List<String> group_names, AsyncMethodCallback<get_partitions_with_auth_call> resultHandler) throws TException {
+      checkReady();
+      get_partitions_with_auth_call method_call = new get_partitions_with_auth_call(db_name, tbl_name, max_parts, user_name, group_names, resultHandler, this, protocolFactory, transport);
+      manager.call(method_call);
+    }
+
+    public static class get_partitions_with_auth_call extends TAsyncMethodCall {
+      private String db_name;
+      private String tbl_name;
+      private short max_parts;
+      private String user_name;
+      private List<String> group_names;
+      public get_partitions_with_auth_call(String db_name, String tbl_name, short max_parts, String user_name, List<String> group_names, AsyncMethodCallback<get_partitions_with_auth_call> resultHandler, TAsyncClient client, TProtocolFactory protocolFactory, TNonblockingTransport transport) throws TException {
+        super(client, protocolFactory, transport, resultHandler, false);
+        this.db_name = db_name;
+        this.tbl_name = tbl_name;
+        this.max_parts = max_parts;
+        this.user_name = user_name;
+        this.group_names = group_names;
+      }
+
+      public void write_args(TProtocol prot) throws TException {
+        prot.writeMessageBegin(new TMessage("get_partitions_with_auth", TMessageType.CALL, 0));
+        get_partitions_with_auth_args args = new get_partitions_with_auth_args();
+        args.setDb_name(db_name);
+        args.setTbl_name(tbl_name);
+        args.setMax_parts(max_parts);
+        args.setUser_name(user_name);
+        args.setGroup_names(group_names);
+        args.write(prot);
+        prot.writeMessageEnd();
+      }
+
+      public List<Partition> getResult() throws NoSuchObjectException, MetaException, TException {
+        if (getState() != State.RESPONSE_READ) {
+          throw new IllegalStateException("Method call not finished!");
+        }
+        TMemoryInputTransport memoryTransport = new TMemoryInputTransport(getFrameBuffer().array());
+        TProtocol prot = client.getProtocolFactory().getProtocol(memoryTransport);
+        return (new Client(prot)).recv_get_partitions_with_auth();
       }
     }
 
@@ -2898,6 +3534,52 @@ public class ThriftHiveMetastore {
         TMemoryInputTransport memoryTransport = new TMemoryInputTransport(getFrameBuffer().array());
         TProtocol prot = client.getProtocolFactory().getProtocol(memoryTransport);
         return (new Client(prot)).recv_get_partitions_ps();
+      }
+    }
+
+    public void get_partitions_ps_with_auth(String db_name, String tbl_name, List<String> part_vals, short max_parts, String user_name, List<String> group_names, AsyncMethodCallback<get_partitions_ps_with_auth_call> resultHandler) throws TException {
+      checkReady();
+      get_partitions_ps_with_auth_call method_call = new get_partitions_ps_with_auth_call(db_name, tbl_name, part_vals, max_parts, user_name, group_names, resultHandler, this, protocolFactory, transport);
+      manager.call(method_call);
+    }
+
+    public static class get_partitions_ps_with_auth_call extends TAsyncMethodCall {
+      private String db_name;
+      private String tbl_name;
+      private List<String> part_vals;
+      private short max_parts;
+      private String user_name;
+      private List<String> group_names;
+      public get_partitions_ps_with_auth_call(String db_name, String tbl_name, List<String> part_vals, short max_parts, String user_name, List<String> group_names, AsyncMethodCallback<get_partitions_ps_with_auth_call> resultHandler, TAsyncClient client, TProtocolFactory protocolFactory, TNonblockingTransport transport) throws TException {
+        super(client, protocolFactory, transport, resultHandler, false);
+        this.db_name = db_name;
+        this.tbl_name = tbl_name;
+        this.part_vals = part_vals;
+        this.max_parts = max_parts;
+        this.user_name = user_name;
+        this.group_names = group_names;
+      }
+
+      public void write_args(TProtocol prot) throws TException {
+        prot.writeMessageBegin(new TMessage("get_partitions_ps_with_auth", TMessageType.CALL, 0));
+        get_partitions_ps_with_auth_args args = new get_partitions_ps_with_auth_args();
+        args.setDb_name(db_name);
+        args.setTbl_name(tbl_name);
+        args.setPart_vals(part_vals);
+        args.setMax_parts(max_parts);
+        args.setUser_name(user_name);
+        args.setGroup_names(group_names);
+        args.write(prot);
+        prot.writeMessageEnd();
+      }
+
+      public List<Partition> getResult() throws NoSuchObjectException, MetaException, TException {
+        if (getState() != State.RESPONSE_READ) {
+          throw new IllegalStateException("Method call not finished!");
+        }
+        TMemoryInputTransport memoryTransport = new TMemoryInputTransport(getFrameBuffer().array());
+        TProtocol prot = client.getProtocolFactory().getProtocol(memoryTransport);
+        return (new Client(prot)).recv_get_partitions_ps_with_auth();
       }
     }
 
@@ -3339,6 +4021,321 @@ public class ThriftHiveMetastore {
       }
     }
 
+    public void create_role(Role role, AsyncMethodCallback<create_role_call> resultHandler) throws TException {
+      checkReady();
+      create_role_call method_call = new create_role_call(role, resultHandler, this, protocolFactory, transport);
+      manager.call(method_call);
+    }
+
+    public static class create_role_call extends TAsyncMethodCall {
+      private Role role;
+      public create_role_call(Role role, AsyncMethodCallback<create_role_call> resultHandler, TAsyncClient client, TProtocolFactory protocolFactory, TNonblockingTransport transport) throws TException {
+        super(client, protocolFactory, transport, resultHandler, false);
+        this.role = role;
+      }
+
+      public void write_args(TProtocol prot) throws TException {
+        prot.writeMessageBegin(new TMessage("create_role", TMessageType.CALL, 0));
+        create_role_args args = new create_role_args();
+        args.setRole(role);
+        args.write(prot);
+        prot.writeMessageEnd();
+      }
+
+      public boolean getResult() throws MetaException, TException {
+        if (getState() != State.RESPONSE_READ) {
+          throw new IllegalStateException("Method call not finished!");
+        }
+        TMemoryInputTransport memoryTransport = new TMemoryInputTransport(getFrameBuffer().array());
+        TProtocol prot = client.getProtocolFactory().getProtocol(memoryTransport);
+        return (new Client(prot)).recv_create_role();
+      }
+    }
+
+    public void drop_role(String role_name, AsyncMethodCallback<drop_role_call> resultHandler) throws TException {
+      checkReady();
+      drop_role_call method_call = new drop_role_call(role_name, resultHandler, this, protocolFactory, transport);
+      manager.call(method_call);
+    }
+
+    public static class drop_role_call extends TAsyncMethodCall {
+      private String role_name;
+      public drop_role_call(String role_name, AsyncMethodCallback<drop_role_call> resultHandler, TAsyncClient client, TProtocolFactory protocolFactory, TNonblockingTransport transport) throws TException {
+        super(client, protocolFactory, transport, resultHandler, false);
+        this.role_name = role_name;
+      }
+
+      public void write_args(TProtocol prot) throws TException {
+        prot.writeMessageBegin(new TMessage("drop_role", TMessageType.CALL, 0));
+        drop_role_args args = new drop_role_args();
+        args.setRole_name(role_name);
+        args.write(prot);
+        prot.writeMessageEnd();
+      }
+
+      public boolean getResult() throws MetaException, TException {
+        if (getState() != State.RESPONSE_READ) {
+          throw new IllegalStateException("Method call not finished!");
+        }
+        TMemoryInputTransport memoryTransport = new TMemoryInputTransport(getFrameBuffer().array());
+        TProtocol prot = client.getProtocolFactory().getProtocol(memoryTransport);
+        return (new Client(prot)).recv_drop_role();
+      }
+    }
+
+    public void grant_role(String role_name, String principal_name, PrincipalType principal_type, String grantor, PrincipalType grantorType, boolean grant_option, AsyncMethodCallback<grant_role_call> resultHandler) throws TException {
+      checkReady();
+      grant_role_call method_call = new grant_role_call(role_name, principal_name, principal_type, grantor, grantorType, grant_option, resultHandler, this, protocolFactory, transport);
+      manager.call(method_call);
+    }
+
+    public static class grant_role_call extends TAsyncMethodCall {
+      private String role_name;
+      private String principal_name;
+      private PrincipalType principal_type;
+      private String grantor;
+      private PrincipalType grantorType;
+      private boolean grant_option;
+      public grant_role_call(String role_name, String principal_name, PrincipalType principal_type, String grantor, PrincipalType grantorType, boolean grant_option, AsyncMethodCallback<grant_role_call> resultHandler, TAsyncClient client, TProtocolFactory protocolFactory, TNonblockingTransport transport) throws TException {
+        super(client, protocolFactory, transport, resultHandler, false);
+        this.role_name = role_name;
+        this.principal_name = principal_name;
+        this.principal_type = principal_type;
+        this.grantor = grantor;
+        this.grantorType = grantorType;
+        this.grant_option = grant_option;
+      }
+
+      public void write_args(TProtocol prot) throws TException {
+        prot.writeMessageBegin(new TMessage("grant_role", TMessageType.CALL, 0));
+        grant_role_args args = new grant_role_args();
+        args.setRole_name(role_name);
+        args.setPrincipal_name(principal_name);
+        args.setPrincipal_type(principal_type);
+        args.setGrantor(grantor);
+        args.setGrantorType(grantorType);
+        args.setGrant_option(grant_option);
+        args.write(prot);
+        prot.writeMessageEnd();
+      }
+
+      public boolean getResult() throws MetaException, TException {
+        if (getState() != State.RESPONSE_READ) {
+          throw new IllegalStateException("Method call not finished!");
+        }
+        TMemoryInputTransport memoryTransport = new TMemoryInputTransport(getFrameBuffer().array());
+        TProtocol prot = client.getProtocolFactory().getProtocol(memoryTransport);
+        return (new Client(prot)).recv_grant_role();
+      }
+    }
+
+    public void revoke_role(String role_name, String principal_name, PrincipalType principal_type, AsyncMethodCallback<revoke_role_call> resultHandler) throws TException {
+      checkReady();
+      revoke_role_call method_call = new revoke_role_call(role_name, principal_name, principal_type, resultHandler, this, protocolFactory, transport);
+      manager.call(method_call);
+    }
+
+    public static class revoke_role_call extends TAsyncMethodCall {
+      private String role_name;
+      private String principal_name;
+      private PrincipalType principal_type;
+      public revoke_role_call(String role_name, String principal_name, PrincipalType principal_type, AsyncMethodCallback<revoke_role_call> resultHandler, TAsyncClient client, TProtocolFactory protocolFactory, TNonblockingTransport transport) throws TException {
+        super(client, protocolFactory, transport, resultHandler, false);
+        this.role_name = role_name;
+        this.principal_name = principal_name;
+        this.principal_type = principal_type;
+      }
+
+      public void write_args(TProtocol prot) throws TException {
+        prot.writeMessageBegin(new TMessage("revoke_role", TMessageType.CALL, 0));
+        revoke_role_args args = new revoke_role_args();
+        args.setRole_name(role_name);
+        args.setPrincipal_name(principal_name);
+        args.setPrincipal_type(principal_type);
+        args.write(prot);
+        prot.writeMessageEnd();
+      }
+
+      public boolean getResult() throws MetaException, TException {
+        if (getState() != State.RESPONSE_READ) {
+          throw new IllegalStateException("Method call not finished!");
+        }
+        TMemoryInputTransport memoryTransport = new TMemoryInputTransport(getFrameBuffer().array());
+        TProtocol prot = client.getProtocolFactory().getProtocol(memoryTransport);
+        return (new Client(prot)).recv_revoke_role();
+      }
+    }
+
+    public void list_roles(String principal_name, PrincipalType principal_type, AsyncMethodCallback<list_roles_call> resultHandler) throws TException {
+      checkReady();
+      list_roles_call method_call = new list_roles_call(principal_name, principal_type, resultHandler, this, protocolFactory, transport);
+      manager.call(method_call);
+    }
+
+    public static class list_roles_call extends TAsyncMethodCall {
+      private String principal_name;
+      private PrincipalType principal_type;
+      public list_roles_call(String principal_name, PrincipalType principal_type, AsyncMethodCallback<list_roles_call> resultHandler, TAsyncClient client, TProtocolFactory protocolFactory, TNonblockingTransport transport) throws TException {
+        super(client, protocolFactory, transport, resultHandler, false);
+        this.principal_name = principal_name;
+        this.principal_type = principal_type;
+      }
+
+      public void write_args(TProtocol prot) throws TException {
+        prot.writeMessageBegin(new TMessage("list_roles", TMessageType.CALL, 0));
+        list_roles_args args = new list_roles_args();
+        args.setPrincipal_name(principal_name);
+        args.setPrincipal_type(principal_type);
+        args.write(prot);
+        prot.writeMessageEnd();
+      }
+
+      public List<Role> getResult() throws MetaException, TException {
+        if (getState() != State.RESPONSE_READ) {
+          throw new IllegalStateException("Method call not finished!");
+        }
+        TMemoryInputTransport memoryTransport = new TMemoryInputTransport(getFrameBuffer().array());
+        TProtocol prot = client.getProtocolFactory().getProtocol(memoryTransport);
+        return (new Client(prot)).recv_list_roles();
+      }
+    }
+
+    public void get_privilege_set(HiveObjectRef hiveObject, String user_name, List<String> group_names, AsyncMethodCallback<get_privilege_set_call> resultHandler) throws TException {
+      checkReady();
+      get_privilege_set_call method_call = new get_privilege_set_call(hiveObject, user_name, group_names, resultHandler, this, protocolFactory, transport);
+      manager.call(method_call);
+    }
+
+    public static class get_privilege_set_call extends TAsyncMethodCall {
+      private HiveObjectRef hiveObject;
+      private String user_name;
+      private List<String> group_names;
+      public get_privilege_set_call(HiveObjectRef hiveObject, String user_name, List<String> group_names, AsyncMethodCallback<get_privilege_set_call> resultHandler, TAsyncClient client, TProtocolFactory protocolFactory, TNonblockingTransport transport) throws TException {
+        super(client, protocolFactory, transport, resultHandler, false);
+        this.hiveObject = hiveObject;
+        this.user_name = user_name;
+        this.group_names = group_names;
+      }
+
+      public void write_args(TProtocol prot) throws TException {
+        prot.writeMessageBegin(new TMessage("get_privilege_set", TMessageType.CALL, 0));
+        get_privilege_set_args args = new get_privilege_set_args();
+        args.setHiveObject(hiveObject);
+        args.setUser_name(user_name);
+        args.setGroup_names(group_names);
+        args.write(prot);
+        prot.writeMessageEnd();
+      }
+
+      public PrincipalPrivilegeSet getResult() throws MetaException, TException {
+        if (getState() != State.RESPONSE_READ) {
+          throw new IllegalStateException("Method call not finished!");
+        }
+        TMemoryInputTransport memoryTransport = new TMemoryInputTransport(getFrameBuffer().array());
+        TProtocol prot = client.getProtocolFactory().getProtocol(memoryTransport);
+        return (new Client(prot)).recv_get_privilege_set();
+      }
+    }
+
+    public void list_privileges(String principal_name, PrincipalType principal_type, HiveObjectRef hiveObject, AsyncMethodCallback<list_privileges_call> resultHandler) throws TException {
+      checkReady();
+      list_privileges_call method_call = new list_privileges_call(principal_name, principal_type, hiveObject, resultHandler, this, protocolFactory, transport);
+      manager.call(method_call);
+    }
+
+    public static class list_privileges_call extends TAsyncMethodCall {
+      private String principal_name;
+      private PrincipalType principal_type;
+      private HiveObjectRef hiveObject;
+      public list_privileges_call(String principal_name, PrincipalType principal_type, HiveObjectRef hiveObject, AsyncMethodCallback<list_privileges_call> resultHandler, TAsyncClient client, TProtocolFactory protocolFactory, TNonblockingTransport transport) throws TException {
+        super(client, protocolFactory, transport, resultHandler, false);
+        this.principal_name = principal_name;
+        this.principal_type = principal_type;
+        this.hiveObject = hiveObject;
+      }
+
+      public void write_args(TProtocol prot) throws TException {
+        prot.writeMessageBegin(new TMessage("list_privileges", TMessageType.CALL, 0));
+        list_privileges_args args = new list_privileges_args();
+        args.setPrincipal_name(principal_name);
+        args.setPrincipal_type(principal_type);
+        args.setHiveObject(hiveObject);
+        args.write(prot);
+        prot.writeMessageEnd();
+      }
+
+      public List<HiveObjectPrivilege> getResult() throws MetaException, TException {
+        if (getState() != State.RESPONSE_READ) {
+          throw new IllegalStateException("Method call not finished!");
+        }
+        TMemoryInputTransport memoryTransport = new TMemoryInputTransport(getFrameBuffer().array());
+        TProtocol prot = client.getProtocolFactory().getProtocol(memoryTransport);
+        return (new Client(prot)).recv_list_privileges();
+      }
+    }
+
+    public void grant_privileges(PrivilegeBag privileges, AsyncMethodCallback<grant_privileges_call> resultHandler) throws TException {
+      checkReady();
+      grant_privileges_call method_call = new grant_privileges_call(privileges, resultHandler, this, protocolFactory, transport);
+      manager.call(method_call);
+    }
+
+    public static class grant_privileges_call extends TAsyncMethodCall {
+      private PrivilegeBag privileges;
+      public grant_privileges_call(PrivilegeBag privileges, AsyncMethodCallback<grant_privileges_call> resultHandler, TAsyncClient client, TProtocolFactory protocolFactory, TNonblockingTransport transport) throws TException {
+        super(client, protocolFactory, transport, resultHandler, false);
+        this.privileges = privileges;
+      }
+
+      public void write_args(TProtocol prot) throws TException {
+        prot.writeMessageBegin(new TMessage("grant_privileges", TMessageType.CALL, 0));
+        grant_privileges_args args = new grant_privileges_args();
+        args.setPrivileges(privileges);
+        args.write(prot);
+        prot.writeMessageEnd();
+      }
+
+      public boolean getResult() throws MetaException, TException {
+        if (getState() != State.RESPONSE_READ) {
+          throw new IllegalStateException("Method call not finished!");
+        }
+        TMemoryInputTransport memoryTransport = new TMemoryInputTransport(getFrameBuffer().array());
+        TProtocol prot = client.getProtocolFactory().getProtocol(memoryTransport);
+        return (new Client(prot)).recv_grant_privileges();
+      }
+    }
+
+    public void revoke_privileges(PrivilegeBag privileges, AsyncMethodCallback<revoke_privileges_call> resultHandler) throws TException {
+      checkReady();
+      revoke_privileges_call method_call = new revoke_privileges_call(privileges, resultHandler, this, protocolFactory, transport);
+      manager.call(method_call);
+    }
+
+    public static class revoke_privileges_call extends TAsyncMethodCall {
+      private PrivilegeBag privileges;
+      public revoke_privileges_call(PrivilegeBag privileges, AsyncMethodCallback<revoke_privileges_call> resultHandler, TAsyncClient client, TProtocolFactory protocolFactory, TNonblockingTransport transport) throws TException {
+        super(client, protocolFactory, transport, resultHandler, false);
+        this.privileges = privileges;
+      }
+
+      public void write_args(TProtocol prot) throws TException {
+        prot.writeMessageBegin(new TMessage("revoke_privileges", TMessageType.CALL, 0));
+        revoke_privileges_args args = new revoke_privileges_args();
+        args.setPrivileges(privileges);
+        args.write(prot);
+        prot.writeMessageEnd();
+      }
+
+      public boolean getResult() throws MetaException, TException {
+        if (getState() != State.RESPONSE_READ) {
+          throw new IllegalStateException("Method call not finished!");
+        }
+        TMemoryInputTransport memoryTransport = new TMemoryInputTransport(getFrameBuffer().array());
+        TProtocol prot = client.getProtocolFactory().getProtocol(memoryTransport);
+        return (new Client(prot)).recv_revoke_privileges();
+      }
+    }
+
   }
 
   public static class Processor extends com.facebook.fb303.FacebookService.Processor implements TProcessor {
@@ -3371,10 +4368,13 @@ public class ThriftHiveMetastore {
       processMap_.put("drop_partition", new drop_partition());
       processMap_.put("drop_partition_by_name", new drop_partition_by_name());
       processMap_.put("get_partition", new get_partition());
+      processMap_.put("get_partition_with_auth", new get_partition_with_auth());
       processMap_.put("get_partition_by_name", new get_partition_by_name());
       processMap_.put("get_partitions", new get_partitions());
+      processMap_.put("get_partitions_with_auth", new get_partitions_with_auth());
       processMap_.put("get_partition_names", new get_partition_names());
       processMap_.put("get_partitions_ps", new get_partitions_ps());
+      processMap_.put("get_partitions_ps_with_auth", new get_partitions_ps_with_auth());
       processMap_.put("get_partition_names_ps", new get_partition_names_ps());
       processMap_.put("get_partitions_by_filter", new get_partitions_by_filter());
       processMap_.put("alter_partition", new alter_partition());
@@ -3387,6 +4387,15 @@ public class ThriftHiveMetastore {
       processMap_.put("get_index_by_name", new get_index_by_name());
       processMap_.put("get_indexes", new get_indexes());
       processMap_.put("get_index_names", new get_index_names());
+      processMap_.put("create_role", new create_role());
+      processMap_.put("drop_role", new drop_role());
+      processMap_.put("grant_role", new grant_role());
+      processMap_.put("revoke_role", new revoke_role());
+      processMap_.put("list_roles", new list_roles());
+      processMap_.put("get_privilege_set", new get_privilege_set());
+      processMap_.put("list_privileges", new list_privileges());
+      processMap_.put("grant_privileges", new grant_privileges());
+      processMap_.put("revoke_privileges", new revoke_privileges());
     }
 
     private Iface iface_;
@@ -4383,6 +5392,46 @@ public class ThriftHiveMetastore {
 
     }
 
+    private class get_partition_with_auth implements ProcessFunction {
+      public void process(int seqid, TProtocol iprot, TProtocol oprot) throws TException
+      {
+        get_partition_with_auth_args args = new get_partition_with_auth_args();
+        try {
+          args.read(iprot);
+        } catch (TProtocolException e) {
+          iprot.readMessageEnd();
+          TApplicationException x = new TApplicationException(TApplicationException.PROTOCOL_ERROR, e.getMessage());
+          oprot.writeMessageBegin(new TMessage("get_partition_with_auth", TMessageType.EXCEPTION, seqid));
+          x.write(oprot);
+          oprot.writeMessageEnd();
+          oprot.getTransport().flush();
+          return;
+        }
+        iprot.readMessageEnd();
+        get_partition_with_auth_result result = new get_partition_with_auth_result();
+        try {
+          result.success = iface_.get_partition_with_auth(args.db_name, args.tbl_name, args.part_vals, args.user_name, args.group_names);
+        } catch (MetaException o1) {
+          result.o1 = o1;
+        } catch (NoSuchObjectException o2) {
+          result.o2 = o2;
+        } catch (Throwable th) {
+          LOGGER.error("Internal error processing get_partition_with_auth", th);
+          TApplicationException x = new TApplicationException(TApplicationException.INTERNAL_ERROR, "Internal error processing get_partition_with_auth");
+          oprot.writeMessageBegin(new TMessage("get_partition_with_auth", TMessageType.EXCEPTION, seqid));
+          x.write(oprot);
+          oprot.writeMessageEnd();
+          oprot.getTransport().flush();
+          return;
+        }
+        oprot.writeMessageBegin(new TMessage("get_partition_with_auth", TMessageType.REPLY, seqid));
+        result.write(oprot);
+        oprot.writeMessageEnd();
+        oprot.getTransport().flush();
+      }
+
+    }
+
     private class get_partition_by_name implements ProcessFunction {
       public void process(int seqid, TProtocol iprot, TProtocol oprot) throws TException
       {
@@ -4463,6 +5512,46 @@ public class ThriftHiveMetastore {
 
     }
 
+    private class get_partitions_with_auth implements ProcessFunction {
+      public void process(int seqid, TProtocol iprot, TProtocol oprot) throws TException
+      {
+        get_partitions_with_auth_args args = new get_partitions_with_auth_args();
+        try {
+          args.read(iprot);
+        } catch (TProtocolException e) {
+          iprot.readMessageEnd();
+          TApplicationException x = new TApplicationException(TApplicationException.PROTOCOL_ERROR, e.getMessage());
+          oprot.writeMessageBegin(new TMessage("get_partitions_with_auth", TMessageType.EXCEPTION, seqid));
+          x.write(oprot);
+          oprot.writeMessageEnd();
+          oprot.getTransport().flush();
+          return;
+        }
+        iprot.readMessageEnd();
+        get_partitions_with_auth_result result = new get_partitions_with_auth_result();
+        try {
+          result.success = iface_.get_partitions_with_auth(args.db_name, args.tbl_name, args.max_parts, args.user_name, args.group_names);
+        } catch (NoSuchObjectException o1) {
+          result.o1 = o1;
+        } catch (MetaException o2) {
+          result.o2 = o2;
+        } catch (Throwable th) {
+          LOGGER.error("Internal error processing get_partitions_with_auth", th);
+          TApplicationException x = new TApplicationException(TApplicationException.INTERNAL_ERROR, "Internal error processing get_partitions_with_auth");
+          oprot.writeMessageBegin(new TMessage("get_partitions_with_auth", TMessageType.EXCEPTION, seqid));
+          x.write(oprot);
+          oprot.writeMessageEnd();
+          oprot.getTransport().flush();
+          return;
+        }
+        oprot.writeMessageBegin(new TMessage("get_partitions_with_auth", TMessageType.REPLY, seqid));
+        result.write(oprot);
+        oprot.writeMessageEnd();
+        oprot.getTransport().flush();
+      }
+
+    }
+
     private class get_partition_names implements ProcessFunction {
       public void process(int seqid, TProtocol iprot, TProtocol oprot) throws TException
       {
@@ -4532,6 +5621,46 @@ public class ThriftHiveMetastore {
           return;
         }
         oprot.writeMessageBegin(new TMessage("get_partitions_ps", TMessageType.REPLY, seqid));
+        result.write(oprot);
+        oprot.writeMessageEnd();
+        oprot.getTransport().flush();
+      }
+
+    }
+
+    private class get_partitions_ps_with_auth implements ProcessFunction {
+      public void process(int seqid, TProtocol iprot, TProtocol oprot) throws TException
+      {
+        get_partitions_ps_with_auth_args args = new get_partitions_ps_with_auth_args();
+        try {
+          args.read(iprot);
+        } catch (TProtocolException e) {
+          iprot.readMessageEnd();
+          TApplicationException x = new TApplicationException(TApplicationException.PROTOCOL_ERROR, e.getMessage());
+          oprot.writeMessageBegin(new TMessage("get_partitions_ps_with_auth", TMessageType.EXCEPTION, seqid));
+          x.write(oprot);
+          oprot.writeMessageEnd();
+          oprot.getTransport().flush();
+          return;
+        }
+        iprot.readMessageEnd();
+        get_partitions_ps_with_auth_result result = new get_partitions_ps_with_auth_result();
+        try {
+          result.success = iface_.get_partitions_ps_with_auth(args.db_name, args.tbl_name, args.part_vals, args.max_parts, args.user_name, args.group_names);
+        } catch (NoSuchObjectException o1) {
+          result.o1 = o1;
+        } catch (MetaException o2) {
+          result.o2 = o2;
+        } catch (Throwable th) {
+          LOGGER.error("Internal error processing get_partitions_ps_with_auth", th);
+          TApplicationException x = new TApplicationException(TApplicationException.INTERNAL_ERROR, "Internal error processing get_partitions_ps_with_auth");
+          oprot.writeMessageBegin(new TMessage("get_partitions_ps_with_auth", TMessageType.EXCEPTION, seqid));
+          x.write(oprot);
+          oprot.writeMessageEnd();
+          oprot.getTransport().flush();
+          return;
+        }
+        oprot.writeMessageBegin(new TMessage("get_partitions_ps_with_auth", TMessageType.REPLY, seqid));
         result.write(oprot);
         oprot.writeMessageEnd();
         oprot.getTransport().flush();
@@ -5005,6 +6134,354 @@ public class ThriftHiveMetastore {
           return;
         }
         oprot.writeMessageBegin(new TMessage("get_index_names", TMessageType.REPLY, seqid));
+        result.write(oprot);
+        oprot.writeMessageEnd();
+        oprot.getTransport().flush();
+      }
+
+    }
+
+    private class create_role implements ProcessFunction {
+      public void process(int seqid, TProtocol iprot, TProtocol oprot) throws TException
+      {
+        create_role_args args = new create_role_args();
+        try {
+          args.read(iprot);
+        } catch (TProtocolException e) {
+          iprot.readMessageEnd();
+          TApplicationException x = new TApplicationException(TApplicationException.PROTOCOL_ERROR, e.getMessage());
+          oprot.writeMessageBegin(new TMessage("create_role", TMessageType.EXCEPTION, seqid));
+          x.write(oprot);
+          oprot.writeMessageEnd();
+          oprot.getTransport().flush();
+          return;
+        }
+        iprot.readMessageEnd();
+        create_role_result result = new create_role_result();
+        try {
+          result.success = iface_.create_role(args.role);
+          result.setSuccessIsSet(true);
+        } catch (MetaException o1) {
+          result.o1 = o1;
+        } catch (Throwable th) {
+          LOGGER.error("Internal error processing create_role", th);
+          TApplicationException x = new TApplicationException(TApplicationException.INTERNAL_ERROR, "Internal error processing create_role");
+          oprot.writeMessageBegin(new TMessage("create_role", TMessageType.EXCEPTION, seqid));
+          x.write(oprot);
+          oprot.writeMessageEnd();
+          oprot.getTransport().flush();
+          return;
+        }
+        oprot.writeMessageBegin(new TMessage("create_role", TMessageType.REPLY, seqid));
+        result.write(oprot);
+        oprot.writeMessageEnd();
+        oprot.getTransport().flush();
+      }
+
+    }
+
+    private class drop_role implements ProcessFunction {
+      public void process(int seqid, TProtocol iprot, TProtocol oprot) throws TException
+      {
+        drop_role_args args = new drop_role_args();
+        try {
+          args.read(iprot);
+        } catch (TProtocolException e) {
+          iprot.readMessageEnd();
+          TApplicationException x = new TApplicationException(TApplicationException.PROTOCOL_ERROR, e.getMessage());
+          oprot.writeMessageBegin(new TMessage("drop_role", TMessageType.EXCEPTION, seqid));
+          x.write(oprot);
+          oprot.writeMessageEnd();
+          oprot.getTransport().flush();
+          return;
+        }
+        iprot.readMessageEnd();
+        drop_role_result result = new drop_role_result();
+        try {
+          result.success = iface_.drop_role(args.role_name);
+          result.setSuccessIsSet(true);
+        } catch (MetaException o1) {
+          result.o1 = o1;
+        } catch (Throwable th) {
+          LOGGER.error("Internal error processing drop_role", th);
+          TApplicationException x = new TApplicationException(TApplicationException.INTERNAL_ERROR, "Internal error processing drop_role");
+          oprot.writeMessageBegin(new TMessage("drop_role", TMessageType.EXCEPTION, seqid));
+          x.write(oprot);
+          oprot.writeMessageEnd();
+          oprot.getTransport().flush();
+          return;
+        }
+        oprot.writeMessageBegin(new TMessage("drop_role", TMessageType.REPLY, seqid));
+        result.write(oprot);
+        oprot.writeMessageEnd();
+        oprot.getTransport().flush();
+      }
+
+    }
+
+    private class grant_role implements ProcessFunction {
+      public void process(int seqid, TProtocol iprot, TProtocol oprot) throws TException
+      {
+        grant_role_args args = new grant_role_args();
+        try {
+          args.read(iprot);
+        } catch (TProtocolException e) {
+          iprot.readMessageEnd();
+          TApplicationException x = new TApplicationException(TApplicationException.PROTOCOL_ERROR, e.getMessage());
+          oprot.writeMessageBegin(new TMessage("grant_role", TMessageType.EXCEPTION, seqid));
+          x.write(oprot);
+          oprot.writeMessageEnd();
+          oprot.getTransport().flush();
+          return;
+        }
+        iprot.readMessageEnd();
+        grant_role_result result = new grant_role_result();
+        try {
+          result.success = iface_.grant_role(args.role_name, args.principal_name, args.principal_type, args.grantor, args.grantorType, args.grant_option);
+          result.setSuccessIsSet(true);
+        } catch (MetaException o1) {
+          result.o1 = o1;
+        } catch (Throwable th) {
+          LOGGER.error("Internal error processing grant_role", th);
+          TApplicationException x = new TApplicationException(TApplicationException.INTERNAL_ERROR, "Internal error processing grant_role");
+          oprot.writeMessageBegin(new TMessage("grant_role", TMessageType.EXCEPTION, seqid));
+          x.write(oprot);
+          oprot.writeMessageEnd();
+          oprot.getTransport().flush();
+          return;
+        }
+        oprot.writeMessageBegin(new TMessage("grant_role", TMessageType.REPLY, seqid));
+        result.write(oprot);
+        oprot.writeMessageEnd();
+        oprot.getTransport().flush();
+      }
+
+    }
+
+    private class revoke_role implements ProcessFunction {
+      public void process(int seqid, TProtocol iprot, TProtocol oprot) throws TException
+      {
+        revoke_role_args args = new revoke_role_args();
+        try {
+          args.read(iprot);
+        } catch (TProtocolException e) {
+          iprot.readMessageEnd();
+          TApplicationException x = new TApplicationException(TApplicationException.PROTOCOL_ERROR, e.getMessage());
+          oprot.writeMessageBegin(new TMessage("revoke_role", TMessageType.EXCEPTION, seqid));
+          x.write(oprot);
+          oprot.writeMessageEnd();
+          oprot.getTransport().flush();
+          return;
+        }
+        iprot.readMessageEnd();
+        revoke_role_result result = new revoke_role_result();
+        try {
+          result.success = iface_.revoke_role(args.role_name, args.principal_name, args.principal_type);
+          result.setSuccessIsSet(true);
+        } catch (MetaException o1) {
+          result.o1 = o1;
+        } catch (Throwable th) {
+          LOGGER.error("Internal error processing revoke_role", th);
+          TApplicationException x = new TApplicationException(TApplicationException.INTERNAL_ERROR, "Internal error processing revoke_role");
+          oprot.writeMessageBegin(new TMessage("revoke_role", TMessageType.EXCEPTION, seqid));
+          x.write(oprot);
+          oprot.writeMessageEnd();
+          oprot.getTransport().flush();
+          return;
+        }
+        oprot.writeMessageBegin(new TMessage("revoke_role", TMessageType.REPLY, seqid));
+        result.write(oprot);
+        oprot.writeMessageEnd();
+        oprot.getTransport().flush();
+      }
+
+    }
+
+    private class list_roles implements ProcessFunction {
+      public void process(int seqid, TProtocol iprot, TProtocol oprot) throws TException
+      {
+        list_roles_args args = new list_roles_args();
+        try {
+          args.read(iprot);
+        } catch (TProtocolException e) {
+          iprot.readMessageEnd();
+          TApplicationException x = new TApplicationException(TApplicationException.PROTOCOL_ERROR, e.getMessage());
+          oprot.writeMessageBegin(new TMessage("list_roles", TMessageType.EXCEPTION, seqid));
+          x.write(oprot);
+          oprot.writeMessageEnd();
+          oprot.getTransport().flush();
+          return;
+        }
+        iprot.readMessageEnd();
+        list_roles_result result = new list_roles_result();
+        try {
+          result.success = iface_.list_roles(args.principal_name, args.principal_type);
+        } catch (MetaException o1) {
+          result.o1 = o1;
+        } catch (Throwable th) {
+          LOGGER.error("Internal error processing list_roles", th);
+          TApplicationException x = new TApplicationException(TApplicationException.INTERNAL_ERROR, "Internal error processing list_roles");
+          oprot.writeMessageBegin(new TMessage("list_roles", TMessageType.EXCEPTION, seqid));
+          x.write(oprot);
+          oprot.writeMessageEnd();
+          oprot.getTransport().flush();
+          return;
+        }
+        oprot.writeMessageBegin(new TMessage("list_roles", TMessageType.REPLY, seqid));
+        result.write(oprot);
+        oprot.writeMessageEnd();
+        oprot.getTransport().flush();
+      }
+
+    }
+
+    private class get_privilege_set implements ProcessFunction {
+      public void process(int seqid, TProtocol iprot, TProtocol oprot) throws TException
+      {
+        get_privilege_set_args args = new get_privilege_set_args();
+        try {
+          args.read(iprot);
+        } catch (TProtocolException e) {
+          iprot.readMessageEnd();
+          TApplicationException x = new TApplicationException(TApplicationException.PROTOCOL_ERROR, e.getMessage());
+          oprot.writeMessageBegin(new TMessage("get_privilege_set", TMessageType.EXCEPTION, seqid));
+          x.write(oprot);
+          oprot.writeMessageEnd();
+          oprot.getTransport().flush();
+          return;
+        }
+        iprot.readMessageEnd();
+        get_privilege_set_result result = new get_privilege_set_result();
+        try {
+          result.success = iface_.get_privilege_set(args.hiveObject, args.user_name, args.group_names);
+        } catch (MetaException o1) {
+          result.o1 = o1;
+        } catch (Throwable th) {
+          LOGGER.error("Internal error processing get_privilege_set", th);
+          TApplicationException x = new TApplicationException(TApplicationException.INTERNAL_ERROR, "Internal error processing get_privilege_set");
+          oprot.writeMessageBegin(new TMessage("get_privilege_set", TMessageType.EXCEPTION, seqid));
+          x.write(oprot);
+          oprot.writeMessageEnd();
+          oprot.getTransport().flush();
+          return;
+        }
+        oprot.writeMessageBegin(new TMessage("get_privilege_set", TMessageType.REPLY, seqid));
+        result.write(oprot);
+        oprot.writeMessageEnd();
+        oprot.getTransport().flush();
+      }
+
+    }
+
+    private class list_privileges implements ProcessFunction {
+      public void process(int seqid, TProtocol iprot, TProtocol oprot) throws TException
+      {
+        list_privileges_args args = new list_privileges_args();
+        try {
+          args.read(iprot);
+        } catch (TProtocolException e) {
+          iprot.readMessageEnd();
+          TApplicationException x = new TApplicationException(TApplicationException.PROTOCOL_ERROR, e.getMessage());
+          oprot.writeMessageBegin(new TMessage("list_privileges", TMessageType.EXCEPTION, seqid));
+          x.write(oprot);
+          oprot.writeMessageEnd();
+          oprot.getTransport().flush();
+          return;
+        }
+        iprot.readMessageEnd();
+        list_privileges_result result = new list_privileges_result();
+        try {
+          result.success = iface_.list_privileges(args.principal_name, args.principal_type, args.hiveObject);
+        } catch (MetaException o1) {
+          result.o1 = o1;
+        } catch (Throwable th) {
+          LOGGER.error("Internal error processing list_privileges", th);
+          TApplicationException x = new TApplicationException(TApplicationException.INTERNAL_ERROR, "Internal error processing list_privileges");
+          oprot.writeMessageBegin(new TMessage("list_privileges", TMessageType.EXCEPTION, seqid));
+          x.write(oprot);
+          oprot.writeMessageEnd();
+          oprot.getTransport().flush();
+          return;
+        }
+        oprot.writeMessageBegin(new TMessage("list_privileges", TMessageType.REPLY, seqid));
+        result.write(oprot);
+        oprot.writeMessageEnd();
+        oprot.getTransport().flush();
+      }
+
+    }
+
+    private class grant_privileges implements ProcessFunction {
+      public void process(int seqid, TProtocol iprot, TProtocol oprot) throws TException
+      {
+        grant_privileges_args args = new grant_privileges_args();
+        try {
+          args.read(iprot);
+        } catch (TProtocolException e) {
+          iprot.readMessageEnd();
+          TApplicationException x = new TApplicationException(TApplicationException.PROTOCOL_ERROR, e.getMessage());
+          oprot.writeMessageBegin(new TMessage("grant_privileges", TMessageType.EXCEPTION, seqid));
+          x.write(oprot);
+          oprot.writeMessageEnd();
+          oprot.getTransport().flush();
+          return;
+        }
+        iprot.readMessageEnd();
+        grant_privileges_result result = new grant_privileges_result();
+        try {
+          result.success = iface_.grant_privileges(args.privileges);
+          result.setSuccessIsSet(true);
+        } catch (MetaException o1) {
+          result.o1 = o1;
+        } catch (Throwable th) {
+          LOGGER.error("Internal error processing grant_privileges", th);
+          TApplicationException x = new TApplicationException(TApplicationException.INTERNAL_ERROR, "Internal error processing grant_privileges");
+          oprot.writeMessageBegin(new TMessage("grant_privileges", TMessageType.EXCEPTION, seqid));
+          x.write(oprot);
+          oprot.writeMessageEnd();
+          oprot.getTransport().flush();
+          return;
+        }
+        oprot.writeMessageBegin(new TMessage("grant_privileges", TMessageType.REPLY, seqid));
+        result.write(oprot);
+        oprot.writeMessageEnd();
+        oprot.getTransport().flush();
+      }
+
+    }
+
+    private class revoke_privileges implements ProcessFunction {
+      public void process(int seqid, TProtocol iprot, TProtocol oprot) throws TException
+      {
+        revoke_privileges_args args = new revoke_privileges_args();
+        try {
+          args.read(iprot);
+        } catch (TProtocolException e) {
+          iprot.readMessageEnd();
+          TApplicationException x = new TApplicationException(TApplicationException.PROTOCOL_ERROR, e.getMessage());
+          oprot.writeMessageBegin(new TMessage("revoke_privileges", TMessageType.EXCEPTION, seqid));
+          x.write(oprot);
+          oprot.writeMessageEnd();
+          oprot.getTransport().flush();
+          return;
+        }
+        iprot.readMessageEnd();
+        revoke_privileges_result result = new revoke_privileges_result();
+        try {
+          result.success = iface_.revoke_privileges(args.privileges);
+          result.setSuccessIsSet(true);
+        } catch (MetaException o1) {
+          result.o1 = o1;
+        } catch (Throwable th) {
+          LOGGER.error("Internal error processing revoke_privileges", th);
+          TApplicationException x = new TApplicationException(TApplicationException.INTERNAL_ERROR, "Internal error processing revoke_privileges");
+          oprot.writeMessageBegin(new TMessage("revoke_privileges", TMessageType.EXCEPTION, seqid));
+          x.write(oprot);
+          oprot.writeMessageEnd();
+          oprot.getTransport().flush();
+          return;
+        }
+        oprot.writeMessageBegin(new TMessage("revoke_privileges", TMessageType.REPLY, seqid));
         result.write(oprot);
         oprot.writeMessageEnd();
         oprot.getTransport().flush();
@@ -7893,13 +9370,13 @@ public class ThriftHiveMetastore {
           case 0: // SUCCESS
             if (field.type == TType.LIST) {
               {
-                TList _list63 = iprot.readListBegin();
-                this.success = new ArrayList<String>(_list63.size);
-                for (int _i64 = 0; _i64 < _list63.size; ++_i64)
+                TList _list98 = iprot.readListBegin();
+                this.success = new ArrayList<String>(_list98.size);
+                for (int _i99 = 0; _i99 < _list98.size; ++_i99)
                 {
-                  String _elem65;
-                  _elem65 = iprot.readString();
-                  this.success.add(_elem65);
+                  String _elem100;
+                  _elem100 = iprot.readString();
+                  this.success.add(_elem100);
                 }
                 iprot.readListEnd();
               }
@@ -7931,9 +9408,9 @@ public class ThriftHiveMetastore {
         oprot.writeFieldBegin(SUCCESS_FIELD_DESC);
         {
           oprot.writeListBegin(new TList(TType.STRING, this.success.size()));
-          for (String _iter66 : this.success)
+          for (String _iter101 : this.success)
           {
-            oprot.writeString(_iter66);
+            oprot.writeString(_iter101);
           }
           oprot.writeListEnd();
         }
@@ -8479,13 +9956,13 @@ public class ThriftHiveMetastore {
           case 0: // SUCCESS
             if (field.type == TType.LIST) {
               {
-                TList _list67 = iprot.readListBegin();
-                this.success = new ArrayList<String>(_list67.size);
-                for (int _i68 = 0; _i68 < _list67.size; ++_i68)
+                TList _list102 = iprot.readListBegin();
+                this.success = new ArrayList<String>(_list102.size);
+                for (int _i103 = 0; _i103 < _list102.size; ++_i103)
                 {
-                  String _elem69;
-                  _elem69 = iprot.readString();
-                  this.success.add(_elem69);
+                  String _elem104;
+                  _elem104 = iprot.readString();
+                  this.success.add(_elem104);
                 }
                 iprot.readListEnd();
               }
@@ -8517,9 +9994,9 @@ public class ThriftHiveMetastore {
         oprot.writeFieldBegin(SUCCESS_FIELD_DESC);
         {
           oprot.writeListBegin(new TList(TType.STRING, this.success.size()));
-          for (String _iter70 : this.success)
+          for (String _iter105 : this.success)
           {
-            oprot.writeString(_iter70);
+            oprot.writeString(_iter105);
           }
           oprot.writeListEnd();
         }
@@ -12180,16 +13657,16 @@ public class ThriftHiveMetastore {
           case 0: // SUCCESS
             if (field.type == TType.MAP) {
               {
-                TMap _map71 = iprot.readMapBegin();
-                this.success = new HashMap<String,Type>(2*_map71.size);
-                for (int _i72 = 0; _i72 < _map71.size; ++_i72)
+                TMap _map106 = iprot.readMapBegin();
+                this.success = new HashMap<String,Type>(2*_map106.size);
+                for (int _i107 = 0; _i107 < _map106.size; ++_i107)
                 {
-                  String _key73;
-                  Type _val74;
-                  _key73 = iprot.readString();
-                  _val74 = new Type();
-                  _val74.read(iprot);
-                  this.success.put(_key73, _val74);
+                  String _key108;
+                  Type _val109;
+                  _key108 = iprot.readString();
+                  _val109 = new Type();
+                  _val109.read(iprot);
+                  this.success.put(_key108, _val109);
                 }
                 iprot.readMapEnd();
               }
@@ -12221,10 +13698,10 @@ public class ThriftHiveMetastore {
         oprot.writeFieldBegin(SUCCESS_FIELD_DESC);
         {
           oprot.writeMapBegin(new TMap(TType.STRING, TType.STRUCT, this.success.size()));
-          for (Map.Entry<String, Type> _iter75 : this.success.entrySet())
+          for (Map.Entry<String, Type> _iter110 : this.success.entrySet())
           {
-            oprot.writeString(_iter75.getKey());
-            _iter75.getValue().write(oprot);
+            oprot.writeString(_iter110.getKey());
+            _iter110.getValue().write(oprot);
           }
           oprot.writeMapEnd();
         }
@@ -13088,14 +14565,14 @@ public class ThriftHiveMetastore {
           case 0: // SUCCESS
             if (field.type == TType.LIST) {
               {
-                TList _list76 = iprot.readListBegin();
-                this.success = new ArrayList<FieldSchema>(_list76.size);
-                for (int _i77 = 0; _i77 < _list76.size; ++_i77)
+                TList _list111 = iprot.readListBegin();
+                this.success = new ArrayList<FieldSchema>(_list111.size);
+                for (int _i112 = 0; _i112 < _list111.size; ++_i112)
                 {
-                  FieldSchema _elem78;
-                  _elem78 = new FieldSchema();
-                  _elem78.read(iprot);
-                  this.success.add(_elem78);
+                  FieldSchema _elem113;
+                  _elem113 = new FieldSchema();
+                  _elem113.read(iprot);
+                  this.success.add(_elem113);
                 }
                 iprot.readListEnd();
               }
@@ -13143,9 +14620,9 @@ public class ThriftHiveMetastore {
         oprot.writeFieldBegin(SUCCESS_FIELD_DESC);
         {
           oprot.writeListBegin(new TList(TType.STRUCT, this.success.size()));
-          for (FieldSchema _iter79 : this.success)
+          for (FieldSchema _iter114 : this.success)
           {
-            _iter79.write(oprot);
+            _iter114.write(oprot);
           }
           oprot.writeListEnd();
         }
@@ -14033,14 +15510,14 @@ public class ThriftHiveMetastore {
           case 0: // SUCCESS
             if (field.type == TType.LIST) {
               {
-                TList _list80 = iprot.readListBegin();
-                this.success = new ArrayList<FieldSchema>(_list80.size);
-                for (int _i81 = 0; _i81 < _list80.size; ++_i81)
+                TList _list115 = iprot.readListBegin();
+                this.success = new ArrayList<FieldSchema>(_list115.size);
+                for (int _i116 = 0; _i116 < _list115.size; ++_i116)
                 {
-                  FieldSchema _elem82;
-                  _elem82 = new FieldSchema();
-                  _elem82.read(iprot);
-                  this.success.add(_elem82);
+                  FieldSchema _elem117;
+                  _elem117 = new FieldSchema();
+                  _elem117.read(iprot);
+                  this.success.add(_elem117);
                 }
                 iprot.readListEnd();
               }
@@ -14088,9 +15565,9 @@ public class ThriftHiveMetastore {
         oprot.writeFieldBegin(SUCCESS_FIELD_DESC);
         {
           oprot.writeListBegin(new TList(TType.STRUCT, this.success.size()));
-          for (FieldSchema _iter83 : this.success)
+          for (FieldSchema _iter118 : this.success)
           {
-            _iter83.write(oprot);
+            _iter118.write(oprot);
           }
           oprot.writeListEnd();
         }
@@ -16481,13 +17958,13 @@ public class ThriftHiveMetastore {
           case 0: // SUCCESS
             if (field.type == TType.LIST) {
               {
-                TList _list84 = iprot.readListBegin();
-                this.success = new ArrayList<String>(_list84.size);
-                for (int _i85 = 0; _i85 < _list84.size; ++_i85)
+                TList _list119 = iprot.readListBegin();
+                this.success = new ArrayList<String>(_list119.size);
+                for (int _i120 = 0; _i120 < _list119.size; ++_i120)
                 {
-                  String _elem86;
-                  _elem86 = iprot.readString();
-                  this.success.add(_elem86);
+                  String _elem121;
+                  _elem121 = iprot.readString();
+                  this.success.add(_elem121);
                 }
                 iprot.readListEnd();
               }
@@ -16519,9 +17996,9 @@ public class ThriftHiveMetastore {
         oprot.writeFieldBegin(SUCCESS_FIELD_DESC);
         {
           oprot.writeListBegin(new TList(TType.STRING, this.success.size()));
-          for (String _iter87 : this.success)
+          for (String _iter122 : this.success)
           {
-            oprot.writeString(_iter87);
+            oprot.writeString(_iter122);
           }
           oprot.writeListEnd();
         }
@@ -17161,13 +18638,13 @@ public class ThriftHiveMetastore {
           case 0: // SUCCESS
             if (field.type == TType.LIST) {
               {
-                TList _list88 = iprot.readListBegin();
-                this.success = new ArrayList<String>(_list88.size);
-                for (int _i89 = 0; _i89 < _list88.size; ++_i89)
+                TList _list123 = iprot.readListBegin();
+                this.success = new ArrayList<String>(_list123.size);
+                for (int _i124 = 0; _i124 < _list123.size; ++_i124)
                 {
-                  String _elem90;
-                  _elem90 = iprot.readString();
-                  this.success.add(_elem90);
+                  String _elem125;
+                  _elem125 = iprot.readString();
+                  this.success.add(_elem125);
                 }
                 iprot.readListEnd();
               }
@@ -17199,9 +18676,9 @@ public class ThriftHiveMetastore {
         oprot.writeFieldBegin(SUCCESS_FIELD_DESC);
         {
           oprot.writeListBegin(new TList(TType.STRING, this.success.size()));
-          for (String _iter91 : this.success)
+          for (String _iter126 : this.success)
           {
-            oprot.writeString(_iter91);
+            oprot.writeString(_iter126);
           }
           oprot.writeListEnd();
         }
@@ -20107,13 +21584,13 @@ public class ThriftHiveMetastore {
           case 3: // PART_VALS
             if (field.type == TType.LIST) {
               {
-                TList _list92 = iprot.readListBegin();
-                this.part_vals = new ArrayList<String>(_list92.size);
-                for (int _i93 = 0; _i93 < _list92.size; ++_i93)
+                TList _list127 = iprot.readListBegin();
+                this.part_vals = new ArrayList<String>(_list127.size);
+                for (int _i128 = 0; _i128 < _list127.size; ++_i128)
                 {
-                  String _elem94;
-                  _elem94 = iprot.readString();
-                  this.part_vals.add(_elem94);
+                  String _elem129;
+                  _elem129 = iprot.readString();
+                  this.part_vals.add(_elem129);
                 }
                 iprot.readListEnd();
               }
@@ -20148,9 +21625,9 @@ public class ThriftHiveMetastore {
         oprot.writeFieldBegin(PART_VALS_FIELD_DESC);
         {
           oprot.writeListBegin(new TList(TType.STRING, this.part_vals.size()));
-          for (String _iter95 : this.part_vals)
+          for (String _iter130 : this.part_vals)
           {
-            oprot.writeString(_iter95);
+            oprot.writeString(_iter130);
           }
           oprot.writeListEnd();
         }
@@ -22207,13 +23684,13 @@ public class ThriftHiveMetastore {
           case 3: // PART_VALS
             if (field.type == TType.LIST) {
               {
-                TList _list96 = iprot.readListBegin();
-                this.part_vals = new ArrayList<String>(_list96.size);
-                for (int _i97 = 0; _i97 < _list96.size; ++_i97)
+                TList _list131 = iprot.readListBegin();
+                this.part_vals = new ArrayList<String>(_list131.size);
+                for (int _i132 = 0; _i132 < _list131.size; ++_i132)
                 {
-                  String _elem98;
-                  _elem98 = iprot.readString();
-                  this.part_vals.add(_elem98);
+                  String _elem133;
+                  _elem133 = iprot.readString();
+                  this.part_vals.add(_elem133);
                 }
                 iprot.readListEnd();
               }
@@ -22256,9 +23733,9 @@ public class ThriftHiveMetastore {
         oprot.writeFieldBegin(PART_VALS_FIELD_DESC);
         {
           oprot.writeListBegin(new TList(TType.STRING, this.part_vals.size()));
-          for (String _iter99 : this.part_vals)
+          for (String _iter134 : this.part_vals)
           {
-            oprot.writeString(_iter99);
+            oprot.writeString(_iter134);
           }
           oprot.writeListEnd();
         }
@@ -24159,13 +25636,13 @@ public class ThriftHiveMetastore {
           case 3: // PART_VALS
             if (field.type == TType.LIST) {
               {
-                TList _list100 = iprot.readListBegin();
-                this.part_vals = new ArrayList<String>(_list100.size);
-                for (int _i101 = 0; _i101 < _list100.size; ++_i101)
+                TList _list135 = iprot.readListBegin();
+                this.part_vals = new ArrayList<String>(_list135.size);
+                for (int _i136 = 0; _i136 < _list135.size; ++_i136)
                 {
-                  String _elem102;
-                  _elem102 = iprot.readString();
-                  this.part_vals.add(_elem102);
+                  String _elem137;
+                  _elem137 = iprot.readString();
+                  this.part_vals.add(_elem137);
                 }
                 iprot.readListEnd();
               }
@@ -24200,9 +25677,9 @@ public class ThriftHiveMetastore {
         oprot.writeFieldBegin(PART_VALS_FIELD_DESC);
         {
           oprot.writeListBegin(new TList(TType.STRING, this.part_vals.size()));
-          for (String _iter103 : this.part_vals)
+          for (String _iter138 : this.part_vals)
           {
-            oprot.writeString(_iter103);
+            oprot.writeString(_iter138);
           }
           oprot.writeListEnd();
         }
@@ -24669,6 +26146,1164 @@ public class ThriftHiveMetastore {
     @Override
     public String toString() {
       StringBuilder sb = new StringBuilder("get_partition_result(");
+      boolean first = true;
+
+      sb.append("success:");
+      if (this.success == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.success);
+      }
+      first = false;
+      if (!first) sb.append(", ");
+      sb.append("o1:");
+      if (this.o1 == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.o1);
+      }
+      first = false;
+      if (!first) sb.append(", ");
+      sb.append("o2:");
+      if (this.o2 == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.o2);
+      }
+      first = false;
+      sb.append(")");
+      return sb.toString();
+    }
+
+    public void validate() throws TException {
+      // check for required fields
+    }
+
+  }
+
+  public static class get_partition_with_auth_args implements TBase<get_partition_with_auth_args, get_partition_with_auth_args._Fields>, java.io.Serializable, Cloneable   {
+    private static final TStruct STRUCT_DESC = new TStruct("get_partition_with_auth_args");
+
+    private static final TField DB_NAME_FIELD_DESC = new TField("db_name", TType.STRING, (short)1);
+    private static final TField TBL_NAME_FIELD_DESC = new TField("tbl_name", TType.STRING, (short)2);
+    private static final TField PART_VALS_FIELD_DESC = new TField("part_vals", TType.LIST, (short)3);
+    private static final TField USER_NAME_FIELD_DESC = new TField("user_name", TType.STRING, (short)4);
+    private static final TField GROUP_NAMES_FIELD_DESC = new TField("group_names", TType.LIST, (short)5);
+
+    private String db_name;
+    private String tbl_name;
+    private List<String> part_vals;
+    private String user_name;
+    private List<String> group_names;
+
+    /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
+    public enum _Fields implements TFieldIdEnum {
+      DB_NAME((short)1, "db_name"),
+      TBL_NAME((short)2, "tbl_name"),
+      PART_VALS((short)3, "part_vals"),
+      USER_NAME((short)4, "user_name"),
+      GROUP_NAMES((short)5, "group_names");
+
+      private static final Map<String, _Fields> byName = new HashMap<String, _Fields>();
+
+      static {
+        for (_Fields field : EnumSet.allOf(_Fields.class)) {
+          byName.put(field.getFieldName(), field);
+        }
+      }
+
+      /**
+       * Find the _Fields constant that matches fieldId, or null if its not found.
+       */
+      public static _Fields findByThriftId(int fieldId) {
+        switch(fieldId) {
+          case 1: // DB_NAME
+            return DB_NAME;
+          case 2: // TBL_NAME
+            return TBL_NAME;
+          case 3: // PART_VALS
+            return PART_VALS;
+          case 4: // USER_NAME
+            return USER_NAME;
+          case 5: // GROUP_NAMES
+            return GROUP_NAMES;
+          default:
+            return null;
+        }
+      }
+
+      /**
+       * Find the _Fields constant that matches fieldId, throwing an exception
+       * if it is not found.
+       */
+      public static _Fields findByThriftIdOrThrow(int fieldId) {
+        _Fields fields = findByThriftId(fieldId);
+        if (fields == null) throw new IllegalArgumentException("Field " + fieldId + " doesn't exist!");
+        return fields;
+      }
+
+      /**
+       * Find the _Fields constant that matches name, or null if its not found.
+       */
+      public static _Fields findByName(String name) {
+        return byName.get(name);
+      }
+
+      private final short _thriftId;
+      private final String _fieldName;
+
+      _Fields(short thriftId, String fieldName) {
+        _thriftId = thriftId;
+        _fieldName = fieldName;
+      }
+
+      public short getThriftFieldId() {
+        return _thriftId;
+      }
+
+      public String getFieldName() {
+        return _fieldName;
+      }
+    }
+
+    // isset id assignments
+
+    public static final Map<_Fields, FieldMetaData> metaDataMap;
+    static {
+      Map<_Fields, FieldMetaData> tmpMap = new EnumMap<_Fields, FieldMetaData>(_Fields.class);
+      tmpMap.put(_Fields.DB_NAME, new FieldMetaData("db_name", TFieldRequirementType.DEFAULT, 
+          new FieldValueMetaData(TType.STRING)));
+      tmpMap.put(_Fields.TBL_NAME, new FieldMetaData("tbl_name", TFieldRequirementType.DEFAULT, 
+          new FieldValueMetaData(TType.STRING)));
+      tmpMap.put(_Fields.PART_VALS, new FieldMetaData("part_vals", TFieldRequirementType.DEFAULT, 
+          new ListMetaData(TType.LIST, 
+              new FieldValueMetaData(TType.STRING))));
+      tmpMap.put(_Fields.USER_NAME, new FieldMetaData("user_name", TFieldRequirementType.DEFAULT, 
+          new FieldValueMetaData(TType.STRING)));
+      tmpMap.put(_Fields.GROUP_NAMES, new FieldMetaData("group_names", TFieldRequirementType.DEFAULT, 
+          new ListMetaData(TType.LIST, 
+              new FieldValueMetaData(TType.STRING))));
+      metaDataMap = Collections.unmodifiableMap(tmpMap);
+      FieldMetaData.addStructMetaDataMap(get_partition_with_auth_args.class, metaDataMap);
+    }
+
+    public get_partition_with_auth_args() {
+    }
+
+    public get_partition_with_auth_args(
+      String db_name,
+      String tbl_name,
+      List<String> part_vals,
+      String user_name,
+      List<String> group_names)
+    {
+      this();
+      this.db_name = db_name;
+      this.tbl_name = tbl_name;
+      this.part_vals = part_vals;
+      this.user_name = user_name;
+      this.group_names = group_names;
+    }
+
+    /**
+     * Performs a deep copy on <i>other</i>.
+     */
+    public get_partition_with_auth_args(get_partition_with_auth_args other) {
+      if (other.isSetDb_name()) {
+        this.db_name = other.db_name;
+      }
+      if (other.isSetTbl_name()) {
+        this.tbl_name = other.tbl_name;
+      }
+      if (other.isSetPart_vals()) {
+        List<String> __this__part_vals = new ArrayList<String>();
+        for (String other_element : other.part_vals) {
+          __this__part_vals.add(other_element);
+        }
+        this.part_vals = __this__part_vals;
+      }
+      if (other.isSetUser_name()) {
+        this.user_name = other.user_name;
+      }
+      if (other.isSetGroup_names()) {
+        List<String> __this__group_names = new ArrayList<String>();
+        for (String other_element : other.group_names) {
+          __this__group_names.add(other_element);
+        }
+        this.group_names = __this__group_names;
+      }
+    }
+
+    public get_partition_with_auth_args deepCopy() {
+      return new get_partition_with_auth_args(this);
+    }
+
+    @Override
+    public void clear() {
+      this.db_name = null;
+      this.tbl_name = null;
+      this.part_vals = null;
+      this.user_name = null;
+      this.group_names = null;
+    }
+
+    public String getDb_name() {
+      return this.db_name;
+    }
+
+    public void setDb_name(String db_name) {
+      this.db_name = db_name;
+    }
+
+    public void unsetDb_name() {
+      this.db_name = null;
+    }
+
+    /** Returns true if field db_name is set (has been asigned a value) and false otherwise */
+    public boolean isSetDb_name() {
+      return this.db_name != null;
+    }
+
+    public void setDb_nameIsSet(boolean value) {
+      if (!value) {
+        this.db_name = null;
+      }
+    }
+
+    public String getTbl_name() {
+      return this.tbl_name;
+    }
+
+    public void setTbl_name(String tbl_name) {
+      this.tbl_name = tbl_name;
+    }
+
+    public void unsetTbl_name() {
+      this.tbl_name = null;
+    }
+
+    /** Returns true if field tbl_name is set (has been asigned a value) and false otherwise */
+    public boolean isSetTbl_name() {
+      return this.tbl_name != null;
+    }
+
+    public void setTbl_nameIsSet(boolean value) {
+      if (!value) {
+        this.tbl_name = null;
+      }
+    }
+
+    public int getPart_valsSize() {
+      return (this.part_vals == null) ? 0 : this.part_vals.size();
+    }
+
+    public java.util.Iterator<String> getPart_valsIterator() {
+      return (this.part_vals == null) ? null : this.part_vals.iterator();
+    }
+
+    public void addToPart_vals(String elem) {
+      if (this.part_vals == null) {
+        this.part_vals = new ArrayList<String>();
+      }
+      this.part_vals.add(elem);
+    }
+
+    public List<String> getPart_vals() {
+      return this.part_vals;
+    }
+
+    public void setPart_vals(List<String> part_vals) {
+      this.part_vals = part_vals;
+    }
+
+    public void unsetPart_vals() {
+      this.part_vals = null;
+    }
+
+    /** Returns true if field part_vals is set (has been asigned a value) and false otherwise */
+    public boolean isSetPart_vals() {
+      return this.part_vals != null;
+    }
+
+    public void setPart_valsIsSet(boolean value) {
+      if (!value) {
+        this.part_vals = null;
+      }
+    }
+
+    public String getUser_name() {
+      return this.user_name;
+    }
+
+    public void setUser_name(String user_name) {
+      this.user_name = user_name;
+    }
+
+    public void unsetUser_name() {
+      this.user_name = null;
+    }
+
+    /** Returns true if field user_name is set (has been asigned a value) and false otherwise */
+    public boolean isSetUser_name() {
+      return this.user_name != null;
+    }
+
+    public void setUser_nameIsSet(boolean value) {
+      if (!value) {
+        this.user_name = null;
+      }
+    }
+
+    public int getGroup_namesSize() {
+      return (this.group_names == null) ? 0 : this.group_names.size();
+    }
+
+    public java.util.Iterator<String> getGroup_namesIterator() {
+      return (this.group_names == null) ? null : this.group_names.iterator();
+    }
+
+    public void addToGroup_names(String elem) {
+      if (this.group_names == null) {
+        this.group_names = new ArrayList<String>();
+      }
+      this.group_names.add(elem);
+    }
+
+    public List<String> getGroup_names() {
+      return this.group_names;
+    }
+
+    public void setGroup_names(List<String> group_names) {
+      this.group_names = group_names;
+    }
+
+    public void unsetGroup_names() {
+      this.group_names = null;
+    }
+
+    /** Returns true if field group_names is set (has been asigned a value) and false otherwise */
+    public boolean isSetGroup_names() {
+      return this.group_names != null;
+    }
+
+    public void setGroup_namesIsSet(boolean value) {
+      if (!value) {
+        this.group_names = null;
+      }
+    }
+
+    public void setFieldValue(_Fields field, Object value) {
+      switch (field) {
+      case DB_NAME:
+        if (value == null) {
+          unsetDb_name();
+        } else {
+          setDb_name((String)value);
+        }
+        break;
+
+      case TBL_NAME:
+        if (value == null) {
+          unsetTbl_name();
+        } else {
+          setTbl_name((String)value);
+        }
+        break;
+
+      case PART_VALS:
+        if (value == null) {
+          unsetPart_vals();
+        } else {
+          setPart_vals((List<String>)value);
+        }
+        break;
+
+      case USER_NAME:
+        if (value == null) {
+          unsetUser_name();
+        } else {
+          setUser_name((String)value);
+        }
+        break;
+
+      case GROUP_NAMES:
+        if (value == null) {
+          unsetGroup_names();
+        } else {
+          setGroup_names((List<String>)value);
+        }
+        break;
+
+      }
+    }
+
+    public Object getFieldValue(_Fields field) {
+      switch (field) {
+      case DB_NAME:
+        return getDb_name();
+
+      case TBL_NAME:
+        return getTbl_name();
+
+      case PART_VALS:
+        return getPart_vals();
+
+      case USER_NAME:
+        return getUser_name();
+
+      case GROUP_NAMES:
+        return getGroup_names();
+
+      }
+      throw new IllegalStateException();
+    }
+
+    /** Returns true if field corresponding to fieldID is set (has been asigned a value) and false otherwise */
+    public boolean isSet(_Fields field) {
+      if (field == null) {
+        throw new IllegalArgumentException();
+      }
+
+      switch (field) {
+      case DB_NAME:
+        return isSetDb_name();
+      case TBL_NAME:
+        return isSetTbl_name();
+      case PART_VALS:
+        return isSetPart_vals();
+      case USER_NAME:
+        return isSetUser_name();
+      case GROUP_NAMES:
+        return isSetGroup_names();
+      }
+      throw new IllegalStateException();
+    }
+
+    @Override
+    public boolean equals(Object that) {
+      if (that == null)
+        return false;
+      if (that instanceof get_partition_with_auth_args)
+        return this.equals((get_partition_with_auth_args)that);
+      return false;
+    }
+
+    public boolean equals(get_partition_with_auth_args that) {
+      if (that == null)
+        return false;
+
+      boolean this_present_db_name = true && this.isSetDb_name();
+      boolean that_present_db_name = true && that.isSetDb_name();
+      if (this_present_db_name || that_present_db_name) {
+        if (!(this_present_db_name && that_present_db_name))
+          return false;
+        if (!this.db_name.equals(that.db_name))
+          return false;
+      }
+
+      boolean this_present_tbl_name = true && this.isSetTbl_name();
+      boolean that_present_tbl_name = true && that.isSetTbl_name();
+      if (this_present_tbl_name || that_present_tbl_name) {
+        if (!(this_present_tbl_name && that_present_tbl_name))
+          return false;
+        if (!this.tbl_name.equals(that.tbl_name))
+          return false;
+      }
+
+      boolean this_present_part_vals = true && this.isSetPart_vals();
+      boolean that_present_part_vals = true && that.isSetPart_vals();
+      if (this_present_part_vals || that_present_part_vals) {
+        if (!(this_present_part_vals && that_present_part_vals))
+          return false;
+        if (!this.part_vals.equals(that.part_vals))
+          return false;
+      }
+
+      boolean this_present_user_name = true && this.isSetUser_name();
+      boolean that_present_user_name = true && that.isSetUser_name();
+      if (this_present_user_name || that_present_user_name) {
+        if (!(this_present_user_name && that_present_user_name))
+          return false;
+        if (!this.user_name.equals(that.user_name))
+          return false;
+      }
+
+      boolean this_present_group_names = true && this.isSetGroup_names();
+      boolean that_present_group_names = true && that.isSetGroup_names();
+      if (this_present_group_names || that_present_group_names) {
+        if (!(this_present_group_names && that_present_group_names))
+          return false;
+        if (!this.group_names.equals(that.group_names))
+          return false;
+      }
+
+      return true;
+    }
+
+    @Override
+    public int hashCode() {
+      return 0;
+    }
+
+    public int compareTo(get_partition_with_auth_args other) {
+      if (!getClass().equals(other.getClass())) {
+        return getClass().getName().compareTo(other.getClass().getName());
+      }
+
+      int lastComparison = 0;
+      get_partition_with_auth_args typedOther = (get_partition_with_auth_args)other;
+
+      lastComparison = Boolean.valueOf(isSetDb_name()).compareTo(typedOther.isSetDb_name());
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+      if (isSetDb_name()) {
+        lastComparison = TBaseHelper.compareTo(this.db_name, typedOther.db_name);
+        if (lastComparison != 0) {
+          return lastComparison;
+        }
+      }
+      lastComparison = Boolean.valueOf(isSetTbl_name()).compareTo(typedOther.isSetTbl_name());
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+      if (isSetTbl_name()) {
+        lastComparison = TBaseHelper.compareTo(this.tbl_name, typedOther.tbl_name);
+        if (lastComparison != 0) {
+          return lastComparison;
+        }
+      }
+      lastComparison = Boolean.valueOf(isSetPart_vals()).compareTo(typedOther.isSetPart_vals());
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+      if (isSetPart_vals()) {
+        lastComparison = TBaseHelper.compareTo(this.part_vals, typedOther.part_vals);
+        if (lastComparison != 0) {
+          return lastComparison;
+        }
+      }
+      lastComparison = Boolean.valueOf(isSetUser_name()).compareTo(typedOther.isSetUser_name());
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+      if (isSetUser_name()) {
+        lastComparison = TBaseHelper.compareTo(this.user_name, typedOther.user_name);
+        if (lastComparison != 0) {
+          return lastComparison;
+        }
+      }
+      lastComparison = Boolean.valueOf(isSetGroup_names()).compareTo(typedOther.isSetGroup_names());
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+      if (isSetGroup_names()) {
+        lastComparison = TBaseHelper.compareTo(this.group_names, typedOther.group_names);
+        if (lastComparison != 0) {
+          return lastComparison;
+        }
+      }
+      return 0;
+    }
+
+    public _Fields fieldForId(int fieldId) {
+      return _Fields.findByThriftId(fieldId);
+    }
+
+    public void read(TProtocol iprot) throws TException {
+      TField field;
+      iprot.readStructBegin();
+      while (true)
+      {
+        field = iprot.readFieldBegin();
+        if (field.type == TType.STOP) { 
+          break;
+        }
+        switch (field.id) {
+          case 1: // DB_NAME
+            if (field.type == TType.STRING) {
+              this.db_name = iprot.readString();
+            } else { 
+              TProtocolUtil.skip(iprot, field.type);
+            }
+            break;
+          case 2: // TBL_NAME
+            if (field.type == TType.STRING) {
+              this.tbl_name = iprot.readString();
+            } else { 
+              TProtocolUtil.skip(iprot, field.type);
+            }
+            break;
+          case 3: // PART_VALS
+            if (field.type == TType.LIST) {
+              {
+                TList _list139 = iprot.readListBegin();
+                this.part_vals = new ArrayList<String>(_list139.size);
+                for (int _i140 = 0; _i140 < _list139.size; ++_i140)
+                {
+                  String _elem141;
+                  _elem141 = iprot.readString();
+                  this.part_vals.add(_elem141);
+                }
+                iprot.readListEnd();
+              }
+            } else { 
+              TProtocolUtil.skip(iprot, field.type);
+            }
+            break;
+          case 4: // USER_NAME
+            if (field.type == TType.STRING) {
+              this.user_name = iprot.readString();
+            } else { 
+              TProtocolUtil.skip(iprot, field.type);
+            }
+            break;
+          case 5: // GROUP_NAMES
+            if (field.type == TType.LIST) {
+              {
+                TList _list142 = iprot.readListBegin();
+                this.group_names = new ArrayList<String>(_list142.size);
+                for (int _i143 = 0; _i143 < _list142.size; ++_i143)
+                {
+                  String _elem144;
+                  _elem144 = iprot.readString();
+                  this.group_names.add(_elem144);
+                }
+                iprot.readListEnd();
+              }
+            } else { 
+              TProtocolUtil.skip(iprot, field.type);
+            }
+            break;
+          default:
+            TProtocolUtil.skip(iprot, field.type);
+        }
+        iprot.readFieldEnd();
+      }
+      iprot.readStructEnd();
+      validate();
+    }
+
+    public void write(TProtocol oprot) throws TException {
+      validate();
+
+      oprot.writeStructBegin(STRUCT_DESC);
+      if (this.db_name != null) {
+        oprot.writeFieldBegin(DB_NAME_FIELD_DESC);
+        oprot.writeString(this.db_name);
+        oprot.writeFieldEnd();
+      }
+      if (this.tbl_name != null) {
+        oprot.writeFieldBegin(TBL_NAME_FIELD_DESC);
+        oprot.writeString(this.tbl_name);
+        oprot.writeFieldEnd();
+      }
+      if (this.part_vals != null) {
+        oprot.writeFieldBegin(PART_VALS_FIELD_DESC);
+        {
+          oprot.writeListBegin(new TList(TType.STRING, this.part_vals.size()));
+          for (String _iter145 : this.part_vals)
+          {
+            oprot.writeString(_iter145);
+          }
+          oprot.writeListEnd();
+        }
+        oprot.writeFieldEnd();
+      }
+      if (this.user_name != null) {
+        oprot.writeFieldBegin(USER_NAME_FIELD_DESC);
+        oprot.writeString(this.user_name);
+        oprot.writeFieldEnd();
+      }
+      if (this.group_names != null) {
+        oprot.writeFieldBegin(GROUP_NAMES_FIELD_DESC);
+        {
+          oprot.writeListBegin(new TList(TType.STRING, this.group_names.size()));
+          for (String _iter146 : this.group_names)
+          {
+            oprot.writeString(_iter146);
+          }
+          oprot.writeListEnd();
+        }
+        oprot.writeFieldEnd();
+      }
+      oprot.writeFieldStop();
+      oprot.writeStructEnd();
+    }
+
+    @Override
+    public String toString() {
+      StringBuilder sb = new StringBuilder("get_partition_with_auth_args(");
+      boolean first = true;
+
+      sb.append("db_name:");
+      if (this.db_name == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.db_name);
+      }
+      first = false;
+      if (!first) sb.append(", ");
+      sb.append("tbl_name:");
+      if (this.tbl_name == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.tbl_name);
+      }
+      first = false;
+      if (!first) sb.append(", ");
+      sb.append("part_vals:");
+      if (this.part_vals == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.part_vals);
+      }
+      first = false;
+      if (!first) sb.append(", ");
+      sb.append("user_name:");
+      if (this.user_name == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.user_name);
+      }
+      first = false;
+      if (!first) sb.append(", ");
+      sb.append("group_names:");
+      if (this.group_names == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.group_names);
+      }
+      first = false;
+      sb.append(")");
+      return sb.toString();
+    }
+
+    public void validate() throws TException {
+      // check for required fields
+    }
+
+  }
+
+  public static class get_partition_with_auth_result implements TBase<get_partition_with_auth_result, get_partition_with_auth_result._Fields>, java.io.Serializable, Cloneable   {
+    private static final TStruct STRUCT_DESC = new TStruct("get_partition_with_auth_result");
+
+    private static final TField SUCCESS_FIELD_DESC = new TField("success", TType.STRUCT, (short)0);
+    private static final TField O1_FIELD_DESC = new TField("o1", TType.STRUCT, (short)1);
+    private static final TField O2_FIELD_DESC = new TField("o2", TType.STRUCT, (short)2);
+
+    private Partition success;
+    private MetaException o1;
+    private NoSuchObjectException o2;
+
+    /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
+    public enum _Fields implements TFieldIdEnum {
+      SUCCESS((short)0, "success"),
+      O1((short)1, "o1"),
+      O2((short)2, "o2");
+
+      private static final Map<String, _Fields> byName = new HashMap<String, _Fields>();
+
+      static {
+        for (_Fields field : EnumSet.allOf(_Fields.class)) {
+          byName.put(field.getFieldName(), field);
+        }
+      }
+
+      /**
+       * Find the _Fields constant that matches fieldId, or null if its not found.
+       */
+      public static _Fields findByThriftId(int fieldId) {
+        switch(fieldId) {
+          case 0: // SUCCESS
+            return SUCCESS;
+          case 1: // O1
+            return O1;
+          case 2: // O2
+            return O2;
+          default:
+            return null;
+        }
+      }
+
+      /**
+       * Find the _Fields constant that matches fieldId, throwing an exception
+       * if it is not found.
+       */
+      public static _Fields findByThriftIdOrThrow(int fieldId) {
+        _Fields fields = findByThriftId(fieldId);
+        if (fields == null) throw new IllegalArgumentException("Field " + fieldId + " doesn't exist!");
+        return fields;
+      }
+
+      /**
+       * Find the _Fields constant that matches name, or null if its not found.
+       */
+      public static _Fields findByName(String name) {
+        return byName.get(name);
+      }
+
+      private final short _thriftId;
+      private final String _fieldName;
+
+      _Fields(short thriftId, String fieldName) {
+        _thriftId = thriftId;
+        _fieldName = fieldName;
+      }
+
+      public short getThriftFieldId() {
+        return _thriftId;
+      }
+
+      public String getFieldName() {
+        return _fieldName;
+      }
+    }
+
+    // isset id assignments
+
+    public static final Map<_Fields, FieldMetaData> metaDataMap;
+    static {
+      Map<_Fields, FieldMetaData> tmpMap = new EnumMap<_Fields, FieldMetaData>(_Fields.class);
+      tmpMap.put(_Fields.SUCCESS, new FieldMetaData("success", TFieldRequirementType.DEFAULT, 
+          new StructMetaData(TType.STRUCT, Partition.class)));
+      tmpMap.put(_Fields.O1, new FieldMetaData("o1", TFieldRequirementType.DEFAULT, 
+          new FieldValueMetaData(TType.STRUCT)));
+      tmpMap.put(_Fields.O2, new FieldMetaData("o2", TFieldRequirementType.DEFAULT, 
+          new FieldValueMetaData(TType.STRUCT)));
+      metaDataMap = Collections.unmodifiableMap(tmpMap);
+      FieldMetaData.addStructMetaDataMap(get_partition_with_auth_result.class, metaDataMap);
+    }
+
+    public get_partition_with_auth_result() {
+    }
+
+    public get_partition_with_auth_result(
+      Partition success,
+      MetaException o1,
+      NoSuchObjectException o2)
+    {
+      this();
+      this.success = success;
+      this.o1 = o1;
+      this.o2 = o2;
+    }
+
+    /**
+     * Performs a deep copy on <i>other</i>.
+     */
+    public get_partition_with_auth_result(get_partition_with_auth_result other) {
+      if (other.isSetSuccess()) {
+        this.success = new Partition(other.success);
+      }
+      if (other.isSetO1()) {
+        this.o1 = new MetaException(other.o1);
+      }
+      if (other.isSetO2()) {
+        this.o2 = new NoSuchObjectException(other.o2);
+      }
+    }
+
+    public get_partition_with_auth_result deepCopy() {
+      return new get_partition_with_auth_result(this);
+    }
+
+    @Override
+    public void clear() {
+      this.success = null;
+      this.o1 = null;
+      this.o2 = null;
+    }
+
+    public Partition getSuccess() {
+      return this.success;
+    }
+
+    public void setSuccess(Partition success) {
+      this.success = success;
+    }
+
+    public void unsetSuccess() {
+      this.success = null;
+    }
+
+    /** Returns true if field success is set (has been asigned a value) and false otherwise */
+    public boolean isSetSuccess() {
+      return this.success != null;
+    }
+
+    public void setSuccessIsSet(boolean value) {
+      if (!value) {
+        this.success = null;
+      }
+    }
+
+    public MetaException getO1() {
+      return this.o1;
+    }
+
+    public void setO1(MetaException o1) {
+      this.o1 = o1;
+    }
+
+    public void unsetO1() {
+      this.o1 = null;
+    }
+
+    /** Returns true if field o1 is set (has been asigned a value) and false otherwise */
+    public boolean isSetO1() {
+      return this.o1 != null;
+    }
+
+    public void setO1IsSet(boolean value) {
+      if (!value) {
+        this.o1 = null;
+      }
+    }
+
+    public NoSuchObjectException getO2() {
+      return this.o2;
+    }
+
+    public void setO2(NoSuchObjectException o2) {
+      this.o2 = o2;
+    }
+
+    public void unsetO2() {
+      this.o2 = null;
+    }
+
+    /** Returns true if field o2 is set (has been asigned a value) and false otherwise */
+    public boolean isSetO2() {
+      return this.o2 != null;
+    }
+
+    public void setO2IsSet(boolean value) {
+      if (!value) {
+        this.o2 = null;
+      }
+    }
+
+    public void setFieldValue(_Fields field, Object value) {
+      switch (field) {
+      case SUCCESS:
+        if (value == null) {
+          unsetSuccess();
+        } else {
+          setSuccess((Partition)value);
+        }
+        break;
+
+      case O1:
+        if (value == null) {
+          unsetO1();
+        } else {
+          setO1((MetaException)value);
+        }
+        break;
+
+      case O2:
+        if (value == null) {
+          unsetO2();
+        } else {
+          setO2((NoSuchObjectException)value);
+        }
+        break;
+
+      }
+    }
+
+    public Object getFieldValue(_Fields field) {
+      switch (field) {
+      case SUCCESS:
+        return getSuccess();
+
+      case O1:
+        return getO1();
+
+      case O2:
+        return getO2();
+
+      }
+      throw new IllegalStateException();
+    }
+
+    /** Returns true if field corresponding to fieldID is set (has been asigned a value) and false otherwise */
+    public boolean isSet(_Fields field) {
+      if (field == null) {
+        throw new IllegalArgumentException();
+      }
+
+      switch (field) {
+      case SUCCESS:
+        return isSetSuccess();
+      case O1:
+        return isSetO1();
+      case O2:
+        return isSetO2();
+      }
+      throw new IllegalStateException();
+    }
+
+    @Override
+    public boolean equals(Object that) {
+      if (that == null)
+        return false;
+      if (that instanceof get_partition_with_auth_result)
+        return this.equals((get_partition_with_auth_result)that);
+      return false;
+    }
+
+    public boolean equals(get_partition_with_auth_result that) {
+      if (that == null)
+        return false;
+
+      boolean this_present_success = true && this.isSetSuccess();
+      boolean that_present_success = true && that.isSetSuccess();
+      if (this_present_success || that_present_success) {
+        if (!(this_present_success && that_present_success))
+          return false;
+        if (!this.success.equals(that.success))
+          return false;
+      }
+
+      boolean this_present_o1 = true && this.isSetO1();
+      boolean that_present_o1 = true && that.isSetO1();
+      if (this_present_o1 || that_present_o1) {
+        if (!(this_present_o1 && that_present_o1))
+          return false;
+        if (!this.o1.equals(that.o1))
+          return false;
+      }
+
+      boolean this_present_o2 = true && this.isSetO2();
+      boolean that_present_o2 = true && that.isSetO2();
+      if (this_present_o2 || that_present_o2) {
+        if (!(this_present_o2 && that_present_o2))
+          return false;
+        if (!this.o2.equals(that.o2))
+          return false;
+      }
+
+      return true;
+    }
+
+    @Override
+    public int hashCode() {
+      return 0;
+    }
+
+    public int compareTo(get_partition_with_auth_result other) {
+      if (!getClass().equals(other.getClass())) {
+        return getClass().getName().compareTo(other.getClass().getName());
+      }
+
+      int lastComparison = 0;
+      get_partition_with_auth_result typedOther = (get_partition_with_auth_result)other;
+
+      lastComparison = Boolean.valueOf(isSetSuccess()).compareTo(typedOther.isSetSuccess());
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+      if (isSetSuccess()) {
+        lastComparison = TBaseHelper.compareTo(this.success, typedOther.success);
+        if (lastComparison != 0) {
+          return lastComparison;
+        }
+      }
+      lastComparison = Boolean.valueOf(isSetO1()).compareTo(typedOther.isSetO1());
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+      if (isSetO1()) {
+        lastComparison = TBaseHelper.compareTo(this.o1, typedOther.o1);
+        if (lastComparison != 0) {
+          return lastComparison;
+        }
+      }
+      lastComparison = Boolean.valueOf(isSetO2()).compareTo(typedOther.isSetO2());
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+      if (isSetO2()) {
+        lastComparison = TBaseHelper.compareTo(this.o2, typedOther.o2);
+        if (lastComparison != 0) {
+          return lastComparison;
+        }
+      }
+      return 0;
+    }
+
+    public _Fields fieldForId(int fieldId) {
+      return _Fields.findByThriftId(fieldId);
+    }
+
+    public void read(TProtocol iprot) throws TException {
+      TField field;
+      iprot.readStructBegin();
+      while (true)
+      {
+        field = iprot.readFieldBegin();
+        if (field.type == TType.STOP) { 
+          break;
+        }
+        switch (field.id) {
+          case 0: // SUCCESS
+            if (field.type == TType.STRUCT) {
+              this.success = new Partition();
+              this.success.read(iprot);
+            } else { 
+              TProtocolUtil.skip(iprot, field.type);
+            }
+            break;
+          case 1: // O1
+            if (field.type == TType.STRUCT) {
+              this.o1 = new MetaException();
+              this.o1.read(iprot);
+            } else { 
+              TProtocolUtil.skip(iprot, field.type);
+            }
+            break;
+          case 2: // O2
+            if (field.type == TType.STRUCT) {
+              this.o2 = new NoSuchObjectException();
+              this.o2.read(iprot);
+            } else { 
+              TProtocolUtil.skip(iprot, field.type);
+            }
+            break;
+          default:
+            TProtocolUtil.skip(iprot, field.type);
+        }
+        iprot.readFieldEnd();
+      }
+      iprot.readStructEnd();
+      validate();
+    }
+
+    public void write(TProtocol oprot) throws TException {
+      oprot.writeStructBegin(STRUCT_DESC);
+
+      if (this.isSetSuccess()) {
+        oprot.writeFieldBegin(SUCCESS_FIELD_DESC);
+        this.success.write(oprot);
+        oprot.writeFieldEnd();
+      } else if (this.isSetO1()) {
+        oprot.writeFieldBegin(O1_FIELD_DESC);
+        this.o1.write(oprot);
+        oprot.writeFieldEnd();
+      } else if (this.isSetO2()) {
+        oprot.writeFieldBegin(O2_FIELD_DESC);
+        this.o2.write(oprot);
+        oprot.writeFieldEnd();
+      }
+      oprot.writeFieldStop();
+      oprot.writeStructEnd();
+    }
+
+    @Override
+    public String toString() {
+      StringBuilder sb = new StringBuilder("get_partition_with_auth_result(");
       boolean first = true;
 
       sb.append("success:");
@@ -26452,14 +29087,14 @@ public class ThriftHiveMetastore {
           case 0: // SUCCESS
             if (field.type == TType.LIST) {
               {
-                TList _list104 = iprot.readListBegin();
-                this.success = new ArrayList<Partition>(_list104.size);
-                for (int _i105 = 0; _i105 < _list104.size; ++_i105)
+                TList _list147 = iprot.readListBegin();
+                this.success = new ArrayList<Partition>(_list147.size);
+                for (int _i148 = 0; _i148 < _list147.size; ++_i148)
                 {
-                  Partition _elem106;
-                  _elem106 = new Partition();
-                  _elem106.read(iprot);
-                  this.success.add(_elem106);
+                  Partition _elem149;
+                  _elem149 = new Partition();
+                  _elem149.read(iprot);
+                  this.success.add(_elem149);
                 }
                 iprot.readListEnd();
               }
@@ -26499,9 +29134,9 @@ public class ThriftHiveMetastore {
         oprot.writeFieldBegin(SUCCESS_FIELD_DESC);
         {
           oprot.writeListBegin(new TList(TType.STRUCT, this.success.size()));
-          for (Partition _iter107 : this.success)
+          for (Partition _iter150 : this.success)
           {
-            _iter107.write(oprot);
+            _iter150.write(oprot);
           }
           oprot.writeListEnd();
         }
@@ -26522,6 +29157,1164 @@ public class ThriftHiveMetastore {
     @Override
     public String toString() {
       StringBuilder sb = new StringBuilder("get_partitions_result(");
+      boolean first = true;
+
+      sb.append("success:");
+      if (this.success == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.success);
+      }
+      first = false;
+      if (!first) sb.append(", ");
+      sb.append("o1:");
+      if (this.o1 == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.o1);
+      }
+      first = false;
+      if (!first) sb.append(", ");
+      sb.append("o2:");
+      if (this.o2 == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.o2);
+      }
+      first = false;
+      sb.append(")");
+      return sb.toString();
+    }
+
+    public void validate() throws TException {
+      // check for required fields
+    }
+
+  }
+
+  public static class get_partitions_with_auth_args implements TBase<get_partitions_with_auth_args, get_partitions_with_auth_args._Fields>, java.io.Serializable, Cloneable   {
+    private static final TStruct STRUCT_DESC = new TStruct("get_partitions_with_auth_args");
+
+    private static final TField DB_NAME_FIELD_DESC = new TField("db_name", TType.STRING, (short)1);
+    private static final TField TBL_NAME_FIELD_DESC = new TField("tbl_name", TType.STRING, (short)2);
+    private static final TField MAX_PARTS_FIELD_DESC = new TField("max_parts", TType.I16, (short)3);
+    private static final TField USER_NAME_FIELD_DESC = new TField("user_name", TType.STRING, (short)4);
+    private static final TField GROUP_NAMES_FIELD_DESC = new TField("group_names", TType.LIST, (short)5);
+
+    private String db_name;
+    private String tbl_name;
+    private short max_parts;
+    private String user_name;
+    private List<String> group_names;
+
+    /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
+    public enum _Fields implements TFieldIdEnum {
+      DB_NAME((short)1, "db_name"),
+      TBL_NAME((short)2, "tbl_name"),
+      MAX_PARTS((short)3, "max_parts"),
+      USER_NAME((short)4, "user_name"),
+      GROUP_NAMES((short)5, "group_names");
+
+      private static final Map<String, _Fields> byName = new HashMap<String, _Fields>();
+
+      static {
+        for (_Fields field : EnumSet.allOf(_Fields.class)) {
+          byName.put(field.getFieldName(), field);
+        }
+      }
+
+      /**
+       * Find the _Fields constant that matches fieldId, or null if its not found.
+       */
+      public static _Fields findByThriftId(int fieldId) {
+        switch(fieldId) {
+          case 1: // DB_NAME
+            return DB_NAME;
+          case 2: // TBL_NAME
+            return TBL_NAME;
+          case 3: // MAX_PARTS
+            return MAX_PARTS;
+          case 4: // USER_NAME
+            return USER_NAME;
+          case 5: // GROUP_NAMES
+            return GROUP_NAMES;
+          default:
+            return null;
+        }
+      }
+
+      /**
+       * Find the _Fields constant that matches fieldId, throwing an exception
+       * if it is not found.
+       */
+      public static _Fields findByThriftIdOrThrow(int fieldId) {
+        _Fields fields = findByThriftId(fieldId);
+        if (fields == null) throw new IllegalArgumentException("Field " + fieldId + " doesn't exist!");
+        return fields;
+      }
+
+      /**
+       * Find the _Fields constant that matches name, or null if its not found.
+       */
+      public static _Fields findByName(String name) {
+        return byName.get(name);
+      }
+
+      private final short _thriftId;
+      private final String _fieldName;
+
+      _Fields(short thriftId, String fieldName) {
+        _thriftId = thriftId;
+        _fieldName = fieldName;
+      }
+
+      public short getThriftFieldId() {
+        return _thriftId;
+      }
+
+      public String getFieldName() {
+        return _fieldName;
+      }
+    }
+
+    // isset id assignments
+    private static final int __MAX_PARTS_ISSET_ID = 0;
+    private BitSet __isset_bit_vector = new BitSet(1);
+
+    public static final Map<_Fields, FieldMetaData> metaDataMap;
+    static {
+      Map<_Fields, FieldMetaData> tmpMap = new EnumMap<_Fields, FieldMetaData>(_Fields.class);
+      tmpMap.put(_Fields.DB_NAME, new FieldMetaData("db_name", TFieldRequirementType.DEFAULT, 
+          new FieldValueMetaData(TType.STRING)));
+      tmpMap.put(_Fields.TBL_NAME, new FieldMetaData("tbl_name", TFieldRequirementType.DEFAULT, 
+          new FieldValueMetaData(TType.STRING)));
+      tmpMap.put(_Fields.MAX_PARTS, new FieldMetaData("max_parts", TFieldRequirementType.DEFAULT, 
+          new FieldValueMetaData(TType.I16)));
+      tmpMap.put(_Fields.USER_NAME, new FieldMetaData("user_name", TFieldRequirementType.DEFAULT, 
+          new FieldValueMetaData(TType.STRING)));
+      tmpMap.put(_Fields.GROUP_NAMES, new FieldMetaData("group_names", TFieldRequirementType.DEFAULT, 
+          new ListMetaData(TType.LIST, 
+              new FieldValueMetaData(TType.STRING))));
+      metaDataMap = Collections.unmodifiableMap(tmpMap);
+      FieldMetaData.addStructMetaDataMap(get_partitions_with_auth_args.class, metaDataMap);
+    }
+
+    public get_partitions_with_auth_args() {
+      this.max_parts = (short)-1;
+
+    }
+
+    public get_partitions_with_auth_args(
+      String db_name,
+      String tbl_name,
+      short max_parts,
+      String user_name,
+      List<String> group_names)
+    {
+      this();
+      this.db_name = db_name;
+      this.tbl_name = tbl_name;
+      this.max_parts = max_parts;
+      setMax_partsIsSet(true);
+      this.user_name = user_name;
+      this.group_names = group_names;
+    }
+
+    /**
+     * Performs a deep copy on <i>other</i>.
+     */
+    public get_partitions_with_auth_args(get_partitions_with_auth_args other) {
+      __isset_bit_vector.clear();
+      __isset_bit_vector.or(other.__isset_bit_vector);
+      if (other.isSetDb_name()) {
+        this.db_name = other.db_name;
+      }
+      if (other.isSetTbl_name()) {
+        this.tbl_name = other.tbl_name;
+      }
+      this.max_parts = other.max_parts;
+      if (other.isSetUser_name()) {
+        this.user_name = other.user_name;
+      }
+      if (other.isSetGroup_names()) {
+        List<String> __this__group_names = new ArrayList<String>();
+        for (String other_element : other.group_names) {
+          __this__group_names.add(other_element);
+        }
+        this.group_names = __this__group_names;
+      }
+    }
+
+    public get_partitions_with_auth_args deepCopy() {
+      return new get_partitions_with_auth_args(this);
+    }
+
+    @Override
+    public void clear() {
+      this.db_name = null;
+      this.tbl_name = null;
+      this.max_parts = (short)-1;
+
+      this.user_name = null;
+      this.group_names = null;
+    }
+
+    public String getDb_name() {
+      return this.db_name;
+    }
+
+    public void setDb_name(String db_name) {
+      this.db_name = db_name;
+    }
+
+    public void unsetDb_name() {
+      this.db_name = null;
+    }
+
+    /** Returns true if field db_name is set (has been asigned a value) and false otherwise */
+    public boolean isSetDb_name() {
+      return this.db_name != null;
+    }
+
+    public void setDb_nameIsSet(boolean value) {
+      if (!value) {
+        this.db_name = null;
+      }
+    }
+
+    public String getTbl_name() {
+      return this.tbl_name;
+    }
+
+    public void setTbl_name(String tbl_name) {
+      this.tbl_name = tbl_name;
+    }
+
+    public void unsetTbl_name() {
+      this.tbl_name = null;
+    }
+
+    /** Returns true if field tbl_name is set (has been asigned a value) and false otherwise */
+    public boolean isSetTbl_name() {
+      return this.tbl_name != null;
+    }
+
+    public void setTbl_nameIsSet(boolean value) {
+      if (!value) {
+        this.tbl_name = null;
+      }
+    }
+
+    public short getMax_parts() {
+      return this.max_parts;
+    }
+
+    public void setMax_parts(short max_parts) {
+      this.max_parts = max_parts;
+      setMax_partsIsSet(true);
+    }
+
+    public void unsetMax_parts() {
+      __isset_bit_vector.clear(__MAX_PARTS_ISSET_ID);
+    }
+
+    /** Returns true if field max_parts is set (has been asigned a value) and false otherwise */
+    public boolean isSetMax_parts() {
+      return __isset_bit_vector.get(__MAX_PARTS_ISSET_ID);
+    }
+
+    public void setMax_partsIsSet(boolean value) {
+      __isset_bit_vector.set(__MAX_PARTS_ISSET_ID, value);
+    }
+
+    public String getUser_name() {
+      return this.user_name;
+    }
+
+    public void setUser_name(String user_name) {
+      this.user_name = user_name;
+    }
+
+    public void unsetUser_name() {
+      this.user_name = null;
+    }
+
+    /** Returns true if field user_name is set (has been asigned a value) and false otherwise */
+    public boolean isSetUser_name() {
+      return this.user_name != null;
+    }
+
+    public void setUser_nameIsSet(boolean value) {
+      if (!value) {
+        this.user_name = null;
+      }
+    }
+
+    public int getGroup_namesSize() {
+      return (this.group_names == null) ? 0 : this.group_names.size();
+    }
+
+    public java.util.Iterator<String> getGroup_namesIterator() {
+      return (this.group_names == null) ? null : this.group_names.iterator();
+    }
+
+    public void addToGroup_names(String elem) {
+      if (this.group_names == null) {
+        this.group_names = new ArrayList<String>();
+      }
+      this.group_names.add(elem);
+    }
+
+    public List<String> getGroup_names() {
+      return this.group_names;
+    }
+
+    public void setGroup_names(List<String> group_names) {
+      this.group_names = group_names;
+    }
+
+    public void unsetGroup_names() {
+      this.group_names = null;
+    }
+
+    /** Returns true if field group_names is set (has been asigned a value) and false otherwise */
+    public boolean isSetGroup_names() {
+      return this.group_names != null;
+    }
+
+    public void setGroup_namesIsSet(boolean value) {
+      if (!value) {
+        this.group_names = null;
+      }
+    }
+
+    public void setFieldValue(_Fields field, Object value) {
+      switch (field) {
+      case DB_NAME:
+        if (value == null) {
+          unsetDb_name();
+        } else {
+          setDb_name((String)value);
+        }
+        break;
+
+      case TBL_NAME:
+        if (value == null) {
+          unsetTbl_name();
+        } else {
+          setTbl_name((String)value);
+        }
+        break;
+
+      case MAX_PARTS:
+        if (value == null) {
+          unsetMax_parts();
+        } else {
+          setMax_parts((Short)value);
+        }
+        break;
+
+      case USER_NAME:
+        if (value == null) {
+          unsetUser_name();
+        } else {
+          setUser_name((String)value);
+        }
+        break;
+
+      case GROUP_NAMES:
+        if (value == null) {
+          unsetGroup_names();
+        } else {
+          setGroup_names((List<String>)value);
+        }
+        break;
+
+      }
+    }
+
+    public Object getFieldValue(_Fields field) {
+      switch (field) {
+      case DB_NAME:
+        return getDb_name();
+
+      case TBL_NAME:
+        return getTbl_name();
+
+      case MAX_PARTS:
+        return new Short(getMax_parts());
+
+      case USER_NAME:
+        return getUser_name();
+
+      case GROUP_NAMES:
+        return getGroup_names();
+
+      }
+      throw new IllegalStateException();
+    }
+
+    /** Returns true if field corresponding to fieldID is set (has been asigned a value) and false otherwise */
+    public boolean isSet(_Fields field) {
+      if (field == null) {
+        throw new IllegalArgumentException();
+      }
+
+      switch (field) {
+      case DB_NAME:
+        return isSetDb_name();
+      case TBL_NAME:
+        return isSetTbl_name();
+      case MAX_PARTS:
+        return isSetMax_parts();
+      case USER_NAME:
+        return isSetUser_name();
+      case GROUP_NAMES:
+        return isSetGroup_names();
+      }
+      throw new IllegalStateException();
+    }
+
+    @Override
+    public boolean equals(Object that) {
+      if (that == null)
+        return false;
+      if (that instanceof get_partitions_with_auth_args)
+        return this.equals((get_partitions_with_auth_args)that);
+      return false;
+    }
+
+    public boolean equals(get_partitions_with_auth_args that) {
+      if (that == null)
+        return false;
+
+      boolean this_present_db_name = true && this.isSetDb_name();
+      boolean that_present_db_name = true && that.isSetDb_name();
+      if (this_present_db_name || that_present_db_name) {
+        if (!(this_present_db_name && that_present_db_name))
+          return false;
+        if (!this.db_name.equals(that.db_name))
+          return false;
+      }
+
+      boolean this_present_tbl_name = true && this.isSetTbl_name();
+      boolean that_present_tbl_name = true && that.isSetTbl_name();
+      if (this_present_tbl_name || that_present_tbl_name) {
+        if (!(this_present_tbl_name && that_present_tbl_name))
+          return false;
+        if (!this.tbl_name.equals(that.tbl_name))
+          return false;
+      }
+
+      boolean this_present_max_parts = true;
+      boolean that_present_max_parts = true;
+      if (this_present_max_parts || that_present_max_parts) {
+        if (!(this_present_max_parts && that_present_max_parts))
+          return false;
+        if (this.max_parts != that.max_parts)
+          return false;
+      }
+
+      boolean this_present_user_name = true && this.isSetUser_name();
+      boolean that_present_user_name = true && that.isSetUser_name();
+      if (this_present_user_name || that_present_user_name) {
+        if (!(this_present_user_name && that_present_user_name))
+          return false;
+        if (!this.user_name.equals(that.user_name))
+          return false;
+      }
+
+      boolean this_present_group_names = true && this.isSetGroup_names();
+      boolean that_present_group_names = true && that.isSetGroup_names();
+      if (this_present_group_names || that_present_group_names) {
+        if (!(this_present_group_names && that_present_group_names))
+          return false;
+        if (!this.group_names.equals(that.group_names))
+          return false;
+      }
+
+      return true;
+    }
+
+    @Override
+    public int hashCode() {
+      return 0;
+    }
+
+    public int compareTo(get_partitions_with_auth_args other) {
+      if (!getClass().equals(other.getClass())) {
+        return getClass().getName().compareTo(other.getClass().getName());
+      }
+
+      int lastComparison = 0;
+      get_partitions_with_auth_args typedOther = (get_partitions_with_auth_args)other;
+
+      lastComparison = Boolean.valueOf(isSetDb_name()).compareTo(typedOther.isSetDb_name());
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+      if (isSetDb_name()) {
+        lastComparison = TBaseHelper.compareTo(this.db_name, typedOther.db_name);
+        if (lastComparison != 0) {
+          return lastComparison;
+        }
+      }
+      lastComparison = Boolean.valueOf(isSetTbl_name()).compareTo(typedOther.isSetTbl_name());
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+      if (isSetTbl_name()) {
+        lastComparison = TBaseHelper.compareTo(this.tbl_name, typedOther.tbl_name);
+        if (lastComparison != 0) {
+          return lastComparison;
+        }
+      }
+      lastComparison = Boolean.valueOf(isSetMax_parts()).compareTo(typedOther.isSetMax_parts());
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+      if (isSetMax_parts()) {
+        lastComparison = TBaseHelper.compareTo(this.max_parts, typedOther.max_parts);
+        if (lastComparison != 0) {
+          return lastComparison;
+        }
+      }
+      lastComparison = Boolean.valueOf(isSetUser_name()).compareTo(typedOther.isSetUser_name());
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+      if (isSetUser_name()) {
+        lastComparison = TBaseHelper.compareTo(this.user_name, typedOther.user_name);
+        if (lastComparison != 0) {
+          return lastComparison;
+        }
+      }
+      lastComparison = Boolean.valueOf(isSetGroup_names()).compareTo(typedOther.isSetGroup_names());
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+      if (isSetGroup_names()) {
+        lastComparison = TBaseHelper.compareTo(this.group_names, typedOther.group_names);
+        if (lastComparison != 0) {
+          return lastComparison;
+        }
+      }
+      return 0;
+    }
+
+    public _Fields fieldForId(int fieldId) {
+      return _Fields.findByThriftId(fieldId);
+    }
+
+    public void read(TProtocol iprot) throws TException {
+      TField field;
+      iprot.readStructBegin();
+      while (true)
+      {
+        field = iprot.readFieldBegin();
+        if (field.type == TType.STOP) { 
+          break;
+        }
+        switch (field.id) {
+          case 1: // DB_NAME
+            if (field.type == TType.STRING) {
+              this.db_name = iprot.readString();
+            } else { 
+              TProtocolUtil.skip(iprot, field.type);
+            }
+            break;
+          case 2: // TBL_NAME
+            if (field.type == TType.STRING) {
+              this.tbl_name = iprot.readString();
+            } else { 
+              TProtocolUtil.skip(iprot, field.type);
+            }
+            break;
+          case 3: // MAX_PARTS
+            if (field.type == TType.I16) {
+              this.max_parts = iprot.readI16();
+              setMax_partsIsSet(true);
+            } else { 
+              TProtocolUtil.skip(iprot, field.type);
+            }
+            break;
+          case 4: // USER_NAME
+            if (field.type == TType.STRING) {
+              this.user_name = iprot.readString();
+            } else { 
+              TProtocolUtil.skip(iprot, field.type);
+            }
+            break;
+          case 5: // GROUP_NAMES
+            if (field.type == TType.LIST) {
+              {
+                TList _list151 = iprot.readListBegin();
+                this.group_names = new ArrayList<String>(_list151.size);
+                for (int _i152 = 0; _i152 < _list151.size; ++_i152)
+                {
+                  String _elem153;
+                  _elem153 = iprot.readString();
+                  this.group_names.add(_elem153);
+                }
+                iprot.readListEnd();
+              }
+            } else { 
+              TProtocolUtil.skip(iprot, field.type);
+            }
+            break;
+          default:
+            TProtocolUtil.skip(iprot, field.type);
+        }
+        iprot.readFieldEnd();
+      }
+      iprot.readStructEnd();
+      validate();
+    }
+
+    public void write(TProtocol oprot) throws TException {
+      validate();
+
+      oprot.writeStructBegin(STRUCT_DESC);
+      if (this.db_name != null) {
+        oprot.writeFieldBegin(DB_NAME_FIELD_DESC);
+        oprot.writeString(this.db_name);
+        oprot.writeFieldEnd();
+      }
+      if (this.tbl_name != null) {
+        oprot.writeFieldBegin(TBL_NAME_FIELD_DESC);
+        oprot.writeString(this.tbl_name);
+        oprot.writeFieldEnd();
+      }
+      oprot.writeFieldBegin(MAX_PARTS_FIELD_DESC);
+      oprot.writeI16(this.max_parts);
+      oprot.writeFieldEnd();
+      if (this.user_name != null) {
+        oprot.writeFieldBegin(USER_NAME_FIELD_DESC);
+        oprot.writeString(this.user_name);
+        oprot.writeFieldEnd();
+      }
+      if (this.group_names != null) {
+        oprot.writeFieldBegin(GROUP_NAMES_FIELD_DESC);
+        {
+          oprot.writeListBegin(new TList(TType.STRING, this.group_names.size()));
+          for (String _iter154 : this.group_names)
+          {
+            oprot.writeString(_iter154);
+          }
+          oprot.writeListEnd();
+        }
+        oprot.writeFieldEnd();
+      }
+      oprot.writeFieldStop();
+      oprot.writeStructEnd();
+    }
+
+    @Override
+    public String toString() {
+      StringBuilder sb = new StringBuilder("get_partitions_with_auth_args(");
+      boolean first = true;
+
+      sb.append("db_name:");
+      if (this.db_name == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.db_name);
+      }
+      first = false;
+      if (!first) sb.append(", ");
+      sb.append("tbl_name:");
+      if (this.tbl_name == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.tbl_name);
+      }
+      first = false;
+      if (!first) sb.append(", ");
+      sb.append("max_parts:");
+      sb.append(this.max_parts);
+      first = false;
+      if (!first) sb.append(", ");
+      sb.append("user_name:");
+      if (this.user_name == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.user_name);
+      }
+      first = false;
+      if (!first) sb.append(", ");
+      sb.append("group_names:");
+      if (this.group_names == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.group_names);
+      }
+      first = false;
+      sb.append(")");
+      return sb.toString();
+    }
+
+    public void validate() throws TException {
+      // check for required fields
+    }
+
+  }
+
+  public static class get_partitions_with_auth_result implements TBase<get_partitions_with_auth_result, get_partitions_with_auth_result._Fields>, java.io.Serializable, Cloneable   {
+    private static final TStruct STRUCT_DESC = new TStruct("get_partitions_with_auth_result");
+
+    private static final TField SUCCESS_FIELD_DESC = new TField("success", TType.LIST, (short)0);
+    private static final TField O1_FIELD_DESC = new TField("o1", TType.STRUCT, (short)1);
+    private static final TField O2_FIELD_DESC = new TField("o2", TType.STRUCT, (short)2);
+
+    private List<Partition> success;
+    private NoSuchObjectException o1;
+    private MetaException o2;
+
+    /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
+    public enum _Fields implements TFieldIdEnum {
+      SUCCESS((short)0, "success"),
+      O1((short)1, "o1"),
+      O2((short)2, "o2");
+
+      private static final Map<String, _Fields> byName = new HashMap<String, _Fields>();
+
+      static {
+        for (_Fields field : EnumSet.allOf(_Fields.class)) {
+          byName.put(field.getFieldName(), field);
+        }
+      }
+
+      /**
+       * Find the _Fields constant that matches fieldId, or null if its not found.
+       */
+      public static _Fields findByThriftId(int fieldId) {
+        switch(fieldId) {
+          case 0: // SUCCESS
+            return SUCCESS;
+          case 1: // O1
+            return O1;
+          case 2: // O2
+            return O2;
+          default:
+            return null;
+        }
+      }
+
+      /**
+       * Find the _Fields constant that matches fieldId, throwing an exception
+       * if it is not found.
+       */
+      public static _Fields findByThriftIdOrThrow(int fieldId) {
+        _Fields fields = findByThriftId(fieldId);
+        if (fields == null) throw new IllegalArgumentException("Field " + fieldId + " doesn't exist!");
+        return fields;
+      }
+
+      /**
+       * Find the _Fields constant that matches name, or null if its not found.
+       */
+      public static _Fields findByName(String name) {
+        return byName.get(name);
+      }
+
+      private final short _thriftId;
+      private final String _fieldName;
+
+      _Fields(short thriftId, String fieldName) {
+        _thriftId = thriftId;
+        _fieldName = fieldName;
+      }
+
+      public short getThriftFieldId() {
+        return _thriftId;
+      }
+
+      public String getFieldName() {
+        return _fieldName;
+      }
+    }
+
+    // isset id assignments
+
+    public static final Map<_Fields, FieldMetaData> metaDataMap;
+    static {
+      Map<_Fields, FieldMetaData> tmpMap = new EnumMap<_Fields, FieldMetaData>(_Fields.class);
+      tmpMap.put(_Fields.SUCCESS, new FieldMetaData("success", TFieldRequirementType.DEFAULT, 
+          new ListMetaData(TType.LIST, 
+              new StructMetaData(TType.STRUCT, Partition.class))));
+      tmpMap.put(_Fields.O1, new FieldMetaData("o1", TFieldRequirementType.DEFAULT, 
+          new FieldValueMetaData(TType.STRUCT)));
+      tmpMap.put(_Fields.O2, new FieldMetaData("o2", TFieldRequirementType.DEFAULT, 
+          new FieldValueMetaData(TType.STRUCT)));
+      metaDataMap = Collections.unmodifiableMap(tmpMap);
+      FieldMetaData.addStructMetaDataMap(get_partitions_with_auth_result.class, metaDataMap);
+    }
+
+    public get_partitions_with_auth_result() {
+    }
+
+    public get_partitions_with_auth_result(
+      List<Partition> success,
+      NoSuchObjectException o1,
+      MetaException o2)
+    {
+      this();
+      this.success = success;
+      this.o1 = o1;
+      this.o2 = o2;
+    }
+
+    /**
+     * Performs a deep copy on <i>other</i>.
+     */
+    public get_partitions_with_auth_result(get_partitions_with_auth_result other) {
+      if (other.isSetSuccess()) {
+        List<Partition> __this__success = new ArrayList<Partition>();
+        for (Partition other_element : other.success) {
+          __this__success.add(new Partition(other_element));
+        }
+        this.success = __this__success;
+      }
+      if (other.isSetO1()) {
+        this.o1 = new NoSuchObjectException(other.o1);
+      }
+      if (other.isSetO2()) {
+        this.o2 = new MetaException(other.o2);
+      }
+    }
+
+    public get_partitions_with_auth_result deepCopy() {
+      return new get_partitions_with_auth_result(this);
+    }
+
+    @Override
+    public void clear() {
+      this.success = null;
+      this.o1 = null;
+      this.o2 = null;
+    }
+
+    public int getSuccessSize() {
+      return (this.success == null) ? 0 : this.success.size();
+    }
+
+    public java.util.Iterator<Partition> getSuccessIterator() {
+      return (this.success == null) ? null : this.success.iterator();
+    }
+
+    public void addToSuccess(Partition elem) {
+      if (this.success == null) {
+        this.success = new ArrayList<Partition>();
+      }
+      this.success.add(elem);
+    }
+
+    public List<Partition> getSuccess() {
+      return this.success;
+    }
+
+    public void setSuccess(List<Partition> success) {
+      this.success = success;
+    }
+
+    public void unsetSuccess() {
+      this.success = null;
+    }
+
+    /** Returns true if field success is set (has been asigned a value) and false otherwise */
+    public boolean isSetSuccess() {
+      return this.success != null;
+    }
+
+    public void setSuccessIsSet(boolean value) {
+      if (!value) {
+        this.success = null;
+      }
+    }
+
+    public NoSuchObjectException getO1() {
+      return this.o1;
+    }
+
+    public void setO1(NoSuchObjectException o1) {
+      this.o1 = o1;
+    }
+
+    public void unsetO1() {
+      this.o1 = null;
+    }
+
+    /** Returns true if field o1 is set (has been asigned a value) and false otherwise */
+    public boolean isSetO1() {
+      return this.o1 != null;
+    }
+
+    public void setO1IsSet(boolean value) {
+      if (!value) {
+        this.o1 = null;
+      }
+    }
+
+    public MetaException getO2() {
+      return this.o2;
+    }
+
+    public void setO2(MetaException o2) {
+      this.o2 = o2;
+    }
+
+    public void unsetO2() {
+      this.o2 = null;
+    }
+
+    /** Returns true if field o2 is set (has been asigned a value) and false otherwise */
+    public boolean isSetO2() {
+      return this.o2 != null;
+    }
+
+    public void setO2IsSet(boolean value) {
+      if (!value) {
+        this.o2 = null;
+      }
+    }
+
+    public void setFieldValue(_Fields field, Object value) {
+      switch (field) {
+      case SUCCESS:
+        if (value == null) {
+          unsetSuccess();
+        } else {
+          setSuccess((List<Partition>)value);
+        }
+        break;
+
+      case O1:
+        if (value == null) {
+          unsetO1();
+        } else {
+          setO1((NoSuchObjectException)value);
+        }
+        break;
+
+      case O2:
+        if (value == null) {
+          unsetO2();
+        } else {
+          setO2((MetaException)value);
+        }
+        break;
+
+      }
+    }
+
+    public Object getFieldValue(_Fields field) {
+      switch (field) {
+      case SUCCESS:
+        return getSuccess();
+
+      case O1:
+        return getO1();
+
+      case O2:
+        return getO2();
+
+      }
+      throw new IllegalStateException();
+    }
+
+    /** Returns true if field corresponding to fieldID is set (has been asigned a value) and false otherwise */
+    public boolean isSet(_Fields field) {
+      if (field == null) {
+        throw new IllegalArgumentException();
+      }
+
+      switch (field) {
+      case SUCCESS:
+        return isSetSuccess();
+      case O1:
+        return isSetO1();
+      case O2:
+        return isSetO2();
+      }
+      throw new IllegalStateException();
+    }
+
+    @Override
+    public boolean equals(Object that) {
+      if (that == null)
+        return false;
+      if (that instanceof get_partitions_with_auth_result)
+        return this.equals((get_partitions_with_auth_result)that);
+      return false;
+    }
+
+    public boolean equals(get_partitions_with_auth_result that) {
+      if (that == null)
+        return false;
+
+      boolean this_present_success = true && this.isSetSuccess();
+      boolean that_present_success = true && that.isSetSuccess();
+      if (this_present_success || that_present_success) {
+        if (!(this_present_success && that_present_success))
+          return false;
+        if (!this.success.equals(that.success))
+          return false;
+      }
+
+      boolean this_present_o1 = true && this.isSetO1();
+      boolean that_present_o1 = true && that.isSetO1();
+      if (this_present_o1 || that_present_o1) {
+        if (!(this_present_o1 && that_present_o1))
+          return false;
+        if (!this.o1.equals(that.o1))
+          return false;
+      }
+
+      boolean this_present_o2 = true && this.isSetO2();
+      boolean that_present_o2 = true && that.isSetO2();
+      if (this_present_o2 || that_present_o2) {
+        if (!(this_present_o2 && that_present_o2))
+          return false;
+        if (!this.o2.equals(that.o2))
+          return false;
+      }
+
+      return true;
+    }
+
+    @Override
+    public int hashCode() {
+      return 0;
+    }
+
+    public int compareTo(get_partitions_with_auth_result other) {
+      if (!getClass().equals(other.getClass())) {
+        return getClass().getName().compareTo(other.getClass().getName());
+      }
+
+      int lastComparison = 0;
+      get_partitions_with_auth_result typedOther = (get_partitions_with_auth_result)other;
+
+      lastComparison = Boolean.valueOf(isSetSuccess()).compareTo(typedOther.isSetSuccess());
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+      if (isSetSuccess()) {
+        lastComparison = TBaseHelper.compareTo(this.success, typedOther.success);
+        if (lastComparison != 0) {
+          return lastComparison;
+        }
+      }
+      lastComparison = Boolean.valueOf(isSetO1()).compareTo(typedOther.isSetO1());
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+      if (isSetO1()) {
+        lastComparison = TBaseHelper.compareTo(this.o1, typedOther.o1);
+        if (lastComparison != 0) {
+          return lastComparison;
+        }
+      }
+      lastComparison = Boolean.valueOf(isSetO2()).compareTo(typedOther.isSetO2());
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+      if (isSetO2()) {
+        lastComparison = TBaseHelper.compareTo(this.o2, typedOther.o2);
+        if (lastComparison != 0) {
+          return lastComparison;
+        }
+      }
+      return 0;
+    }
+
+    public _Fields fieldForId(int fieldId) {
+      return _Fields.findByThriftId(fieldId);
+    }
+
+    public void read(TProtocol iprot) throws TException {
+      TField field;
+      iprot.readStructBegin();
+      while (true)
+      {
+        field = iprot.readFieldBegin();
+        if (field.type == TType.STOP) { 
+          break;
+        }
+        switch (field.id) {
+          case 0: // SUCCESS
+            if (field.type == TType.LIST) {
+              {
+                TList _list155 = iprot.readListBegin();
+                this.success = new ArrayList<Partition>(_list155.size);
+                for (int _i156 = 0; _i156 < _list155.size; ++_i156)
+                {
+                  Partition _elem157;
+                  _elem157 = new Partition();
+                  _elem157.read(iprot);
+                  this.success.add(_elem157);
+                }
+                iprot.readListEnd();
+              }
+            } else { 
+              TProtocolUtil.skip(iprot, field.type);
+            }
+            break;
+          case 1: // O1
+            if (field.type == TType.STRUCT) {
+              this.o1 = new NoSuchObjectException();
+              this.o1.read(iprot);
+            } else { 
+              TProtocolUtil.skip(iprot, field.type);
+            }
+            break;
+          case 2: // O2
+            if (field.type == TType.STRUCT) {
+              this.o2 = new MetaException();
+              this.o2.read(iprot);
+            } else { 
+              TProtocolUtil.skip(iprot, field.type);
+            }
+            break;
+          default:
+            TProtocolUtil.skip(iprot, field.type);
+        }
+        iprot.readFieldEnd();
+      }
+      iprot.readStructEnd();
+      validate();
+    }
+
+    public void write(TProtocol oprot) throws TException {
+      oprot.writeStructBegin(STRUCT_DESC);
+
+      if (this.isSetSuccess()) {
+        oprot.writeFieldBegin(SUCCESS_FIELD_DESC);
+        {
+          oprot.writeListBegin(new TList(TType.STRUCT, this.success.size()));
+          for (Partition _iter158 : this.success)
+          {
+            _iter158.write(oprot);
+          }
+          oprot.writeListEnd();
+        }
+        oprot.writeFieldEnd();
+      } else if (this.isSetO1()) {
+        oprot.writeFieldBegin(O1_FIELD_DESC);
+        this.o1.write(oprot);
+        oprot.writeFieldEnd();
+      } else if (this.isSetO2()) {
+        oprot.writeFieldBegin(O2_FIELD_DESC);
+        this.o2.write(oprot);
+        oprot.writeFieldEnd();
+      }
+      oprot.writeFieldStop();
+      oprot.writeStructEnd();
+    }
+
+    @Override
+    public String toString() {
+      StringBuilder sb = new StringBuilder("get_partitions_with_auth_result(");
       boolean first = true;
 
       sb.append("success:");
@@ -27329,13 +31122,13 @@ public class ThriftHiveMetastore {
           case 0: // SUCCESS
             if (field.type == TType.LIST) {
               {
-                TList _list108 = iprot.readListBegin();
-                this.success = new ArrayList<String>(_list108.size);
-                for (int _i109 = 0; _i109 < _list108.size; ++_i109)
+                TList _list159 = iprot.readListBegin();
+                this.success = new ArrayList<String>(_list159.size);
+                for (int _i160 = 0; _i160 < _list159.size; ++_i160)
                 {
-                  String _elem110;
-                  _elem110 = iprot.readString();
-                  this.success.add(_elem110);
+                  String _elem161;
+                  _elem161 = iprot.readString();
+                  this.success.add(_elem161);
                 }
                 iprot.readListEnd();
               }
@@ -27367,9 +31160,9 @@ public class ThriftHiveMetastore {
         oprot.writeFieldBegin(SUCCESS_FIELD_DESC);
         {
           oprot.writeListBegin(new TList(TType.STRING, this.success.size()));
-          for (String _iter111 : this.success)
+          for (String _iter162 : this.success)
           {
-            oprot.writeString(_iter111);
+            oprot.writeString(_iter162);
           }
           oprot.writeListEnd();
         }
@@ -27886,13 +31679,13 @@ public class ThriftHiveMetastore {
           case 3: // PART_VALS
             if (field.type == TType.LIST) {
               {
-                TList _list112 = iprot.readListBegin();
-                this.part_vals = new ArrayList<String>(_list112.size);
-                for (int _i113 = 0; _i113 < _list112.size; ++_i113)
+                TList _list163 = iprot.readListBegin();
+                this.part_vals = new ArrayList<String>(_list163.size);
+                for (int _i164 = 0; _i164 < _list163.size; ++_i164)
                 {
-                  String _elem114;
-                  _elem114 = iprot.readString();
-                  this.part_vals.add(_elem114);
+                  String _elem165;
+                  _elem165 = iprot.readString();
+                  this.part_vals.add(_elem165);
                 }
                 iprot.readListEnd();
               }
@@ -27935,9 +31728,9 @@ public class ThriftHiveMetastore {
         oprot.writeFieldBegin(PART_VALS_FIELD_DESC);
         {
           oprot.writeListBegin(new TList(TType.STRING, this.part_vals.size()));
-          for (String _iter115 : this.part_vals)
+          for (String _iter166 : this.part_vals)
           {
-            oprot.writeString(_iter115);
+            oprot.writeString(_iter166);
           }
           oprot.writeListEnd();
         }
@@ -28310,14 +32103,14 @@ public class ThriftHiveMetastore {
           case 0: // SUCCESS
             if (field.type == TType.LIST) {
               {
-                TList _list116 = iprot.readListBegin();
-                this.success = new ArrayList<Partition>(_list116.size);
-                for (int _i117 = 0; _i117 < _list116.size; ++_i117)
+                TList _list167 = iprot.readListBegin();
+                this.success = new ArrayList<Partition>(_list167.size);
+                for (int _i168 = 0; _i168 < _list167.size; ++_i168)
                 {
-                  Partition _elem118;
-                  _elem118 = new Partition();
-                  _elem118.read(iprot);
-                  this.success.add(_elem118);
+                  Partition _elem169;
+                  _elem169 = new Partition();
+                  _elem169.read(iprot);
+                  this.success.add(_elem169);
                 }
                 iprot.readListEnd();
               }
@@ -28349,9 +32142,9 @@ public class ThriftHiveMetastore {
         oprot.writeFieldBegin(SUCCESS_FIELD_DESC);
         {
           oprot.writeListBegin(new TList(TType.STRUCT, this.success.size()));
-          for (Partition _iter119 : this.success)
+          for (Partition _iter170 : this.success)
           {
-            _iter119.write(oprot);
+            _iter170.write(oprot);
           }
           oprot.writeListEnd();
         }
@@ -28383,6 +32176,1289 @@ public class ThriftHiveMetastore {
         sb.append("null");
       } else {
         sb.append(this.o1);
+      }
+      first = false;
+      sb.append(")");
+      return sb.toString();
+    }
+
+    public void validate() throws TException {
+      // check for required fields
+    }
+
+  }
+
+  public static class get_partitions_ps_with_auth_args implements TBase<get_partitions_ps_with_auth_args, get_partitions_ps_with_auth_args._Fields>, java.io.Serializable, Cloneable   {
+    private static final TStruct STRUCT_DESC = new TStruct("get_partitions_ps_with_auth_args");
+
+    private static final TField DB_NAME_FIELD_DESC = new TField("db_name", TType.STRING, (short)1);
+    private static final TField TBL_NAME_FIELD_DESC = new TField("tbl_name", TType.STRING, (short)2);
+    private static final TField PART_VALS_FIELD_DESC = new TField("part_vals", TType.LIST, (short)3);
+    private static final TField MAX_PARTS_FIELD_DESC = new TField("max_parts", TType.I16, (short)4);
+    private static final TField USER_NAME_FIELD_DESC = new TField("user_name", TType.STRING, (short)5);
+    private static final TField GROUP_NAMES_FIELD_DESC = new TField("group_names", TType.LIST, (short)6);
+
+    private String db_name;
+    private String tbl_name;
+    private List<String> part_vals;
+    private short max_parts;
+    private String user_name;
+    private List<String> group_names;
+
+    /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
+    public enum _Fields implements TFieldIdEnum {
+      DB_NAME((short)1, "db_name"),
+      TBL_NAME((short)2, "tbl_name"),
+      PART_VALS((short)3, "part_vals"),
+      MAX_PARTS((short)4, "max_parts"),
+      USER_NAME((short)5, "user_name"),
+      GROUP_NAMES((short)6, "group_names");
+
+      private static final Map<String, _Fields> byName = new HashMap<String, _Fields>();
+
+      static {
+        for (_Fields field : EnumSet.allOf(_Fields.class)) {
+          byName.put(field.getFieldName(), field);
+        }
+      }
+
+      /**
+       * Find the _Fields constant that matches fieldId, or null if its not found.
+       */
+      public static _Fields findByThriftId(int fieldId) {
+        switch(fieldId) {
+          case 1: // DB_NAME
+            return DB_NAME;
+          case 2: // TBL_NAME
+            return TBL_NAME;
+          case 3: // PART_VALS
+            return PART_VALS;
+          case 4: // MAX_PARTS
+            return MAX_PARTS;
+          case 5: // USER_NAME
+            return USER_NAME;
+          case 6: // GROUP_NAMES
+            return GROUP_NAMES;
+          default:
+            return null;
+        }
+      }
+
+      /**
+       * Find the _Fields constant that matches fieldId, throwing an exception
+       * if it is not found.
+       */
+      public static _Fields findByThriftIdOrThrow(int fieldId) {
+        _Fields fields = findByThriftId(fieldId);
+        if (fields == null) throw new IllegalArgumentException("Field " + fieldId + " doesn't exist!");
+        return fields;
+      }
+
+      /**
+       * Find the _Fields constant that matches name, or null if its not found.
+       */
+      public static _Fields findByName(String name) {
+        return byName.get(name);
+      }
+
+      private final short _thriftId;
+      private final String _fieldName;
+
+      _Fields(short thriftId, String fieldName) {
+        _thriftId = thriftId;
+        _fieldName = fieldName;
+      }
+
+      public short getThriftFieldId() {
+        return _thriftId;
+      }
+
+      public String getFieldName() {
+        return _fieldName;
+      }
+    }
+
+    // isset id assignments
+    private static final int __MAX_PARTS_ISSET_ID = 0;
+    private BitSet __isset_bit_vector = new BitSet(1);
+
+    public static final Map<_Fields, FieldMetaData> metaDataMap;
+    static {
+      Map<_Fields, FieldMetaData> tmpMap = new EnumMap<_Fields, FieldMetaData>(_Fields.class);
+      tmpMap.put(_Fields.DB_NAME, new FieldMetaData("db_name", TFieldRequirementType.DEFAULT, 
+          new FieldValueMetaData(TType.STRING)));
+      tmpMap.put(_Fields.TBL_NAME, new FieldMetaData("tbl_name", TFieldRequirementType.DEFAULT, 
+          new FieldValueMetaData(TType.STRING)));
+      tmpMap.put(_Fields.PART_VALS, new FieldMetaData("part_vals", TFieldRequirementType.DEFAULT, 
+          new ListMetaData(TType.LIST, 
+              new FieldValueMetaData(TType.STRING))));
+      tmpMap.put(_Fields.MAX_PARTS, new FieldMetaData("max_parts", TFieldRequirementType.DEFAULT, 
+          new FieldValueMetaData(TType.I16)));
+      tmpMap.put(_Fields.USER_NAME, new FieldMetaData("user_name", TFieldRequirementType.DEFAULT, 
+          new FieldValueMetaData(TType.STRING)));
+      tmpMap.put(_Fields.GROUP_NAMES, new FieldMetaData("group_names", TFieldRequirementType.DEFAULT, 
+          new ListMetaData(TType.LIST, 
+              new FieldValueMetaData(TType.STRING))));
+      metaDataMap = Collections.unmodifiableMap(tmpMap);
+      FieldMetaData.addStructMetaDataMap(get_partitions_ps_with_auth_args.class, metaDataMap);
+    }
+
+    public get_partitions_ps_with_auth_args() {
+      this.max_parts = (short)-1;
+
+    }
+
+    public get_partitions_ps_with_auth_args(
+      String db_name,
+      String tbl_name,
+      List<String> part_vals,
+      short max_parts,
+      String user_name,
+      List<String> group_names)
+    {
+      this();
+      this.db_name = db_name;
+      this.tbl_name = tbl_name;
+      this.part_vals = part_vals;
+      this.max_parts = max_parts;
+      setMax_partsIsSet(true);
+      this.user_name = user_name;
+      this.group_names = group_names;
+    }
+
+    /**
+     * Performs a deep copy on <i>other</i>.
+     */
+    public get_partitions_ps_with_auth_args(get_partitions_ps_with_auth_args other) {
+      __isset_bit_vector.clear();
+      __isset_bit_vector.or(other.__isset_bit_vector);
+      if (other.isSetDb_name()) {
+        this.db_name = other.db_name;
+      }
+      if (other.isSetTbl_name()) {
+        this.tbl_name = other.tbl_name;
+      }
+      if (other.isSetPart_vals()) {
+        List<String> __this__part_vals = new ArrayList<String>();
+        for (String other_element : other.part_vals) {
+          __this__part_vals.add(other_element);
+        }
+        this.part_vals = __this__part_vals;
+      }
+      this.max_parts = other.max_parts;
+      if (other.isSetUser_name()) {
+        this.user_name = other.user_name;
+      }
+      if (other.isSetGroup_names()) {
+        List<String> __this__group_names = new ArrayList<String>();
+        for (String other_element : other.group_names) {
+          __this__group_names.add(other_element);
+        }
+        this.group_names = __this__group_names;
+      }
+    }
+
+    public get_partitions_ps_with_auth_args deepCopy() {
+      return new get_partitions_ps_with_auth_args(this);
+    }
+
+    @Override
+    public void clear() {
+      this.db_name = null;
+      this.tbl_name = null;
+      this.part_vals = null;
+      this.max_parts = (short)-1;
+
+      this.user_name = null;
+      this.group_names = null;
+    }
+
+    public String getDb_name() {
+      return this.db_name;
+    }
+
+    public void setDb_name(String db_name) {
+      this.db_name = db_name;
+    }
+
+    public void unsetDb_name() {
+      this.db_name = null;
+    }
+
+    /** Returns true if field db_name is set (has been asigned a value) and false otherwise */
+    public boolean isSetDb_name() {
+      return this.db_name != null;
+    }
+
+    public void setDb_nameIsSet(boolean value) {
+      if (!value) {
+        this.db_name = null;
+      }
+    }
+
+    public String getTbl_name() {
+      return this.tbl_name;
+    }
+
+    public void setTbl_name(String tbl_name) {
+      this.tbl_name = tbl_name;
+    }
+
+    public void unsetTbl_name() {
+      this.tbl_name = null;
+    }
+
+    /** Returns true if field tbl_name is set (has been asigned a value) and false otherwise */
+    public boolean isSetTbl_name() {
+      return this.tbl_name != null;
+    }
+
+    public void setTbl_nameIsSet(boolean value) {
+      if (!value) {
+        this.tbl_name = null;
+      }
+    }
+
+    public int getPart_valsSize() {
+      return (this.part_vals == null) ? 0 : this.part_vals.size();
+    }
+
+    public java.util.Iterator<String> getPart_valsIterator() {
+      return (this.part_vals == null) ? null : this.part_vals.iterator();
+    }
+
+    public void addToPart_vals(String elem) {
+      if (this.part_vals == null) {
+        this.part_vals = new ArrayList<String>();
+      }
+      this.part_vals.add(elem);
+    }
+
+    public List<String> getPart_vals() {
+      return this.part_vals;
+    }
+
+    public void setPart_vals(List<String> part_vals) {
+      this.part_vals = part_vals;
+    }
+
+    public void unsetPart_vals() {
+      this.part_vals = null;
+    }
+
+    /** Returns true if field part_vals is set (has been asigned a value) and false otherwise */
+    public boolean isSetPart_vals() {
+      return this.part_vals != null;
+    }
+
+    public void setPart_valsIsSet(boolean value) {
+      if (!value) {
+        this.part_vals = null;
+      }
+    }
+
+    public short getMax_parts() {
+      return this.max_parts;
+    }
+
+    public void setMax_parts(short max_parts) {
+      this.max_parts = max_parts;
+      setMax_partsIsSet(true);
+    }
+
+    public void unsetMax_parts() {
+      __isset_bit_vector.clear(__MAX_PARTS_ISSET_ID);
+    }
+
+    /** Returns true if field max_parts is set (has been asigned a value) and false otherwise */
+    public boolean isSetMax_parts() {
+      return __isset_bit_vector.get(__MAX_PARTS_ISSET_ID);
+    }
+
+    public void setMax_partsIsSet(boolean value) {
+      __isset_bit_vector.set(__MAX_PARTS_ISSET_ID, value);
+    }
+
+    public String getUser_name() {
+      return this.user_name;
+    }
+
+    public void setUser_name(String user_name) {
+      this.user_name = user_name;
+    }
+
+    public void unsetUser_name() {
+      this.user_name = null;
+    }
+
+    /** Returns true if field user_name is set (has been asigned a value) and false otherwise */
+    public boolean isSetUser_name() {
+      return this.user_name != null;
+    }
+
+    public void setUser_nameIsSet(boolean value) {
+      if (!value) {
+        this.user_name = null;
+      }
+    }
+
+    public int getGroup_namesSize() {
+      return (this.group_names == null) ? 0 : this.group_names.size();
+    }
+
+    public java.util.Iterator<String> getGroup_namesIterator() {
+      return (this.group_names == null) ? null : this.group_names.iterator();
+    }
+
+    public void addToGroup_names(String elem) {
+      if (this.group_names == null) {
+        this.group_names = new ArrayList<String>();
+      }
+      this.group_names.add(elem);
+    }
+
+    public List<String> getGroup_names() {
+      return this.group_names;
+    }
+
+    public void setGroup_names(List<String> group_names) {
+      this.group_names = group_names;
+    }
+
+    public void unsetGroup_names() {
+      this.group_names = null;
+    }
+
+    /** Returns true if field group_names is set (has been asigned a value) and false otherwise */
+    public boolean isSetGroup_names() {
+      return this.group_names != null;
+    }
+
+    public void setGroup_namesIsSet(boolean value) {
+      if (!value) {
+        this.group_names = null;
+      }
+    }
+
+    public void setFieldValue(_Fields field, Object value) {
+      switch (field) {
+      case DB_NAME:
+        if (value == null) {
+          unsetDb_name();
+        } else {
+          setDb_name((String)value);
+        }
+        break;
+
+      case TBL_NAME:
+        if (value == null) {
+          unsetTbl_name();
+        } else {
+          setTbl_name((String)value);
+        }
+        break;
+
+      case PART_VALS:
+        if (value == null) {
+          unsetPart_vals();
+        } else {
+          setPart_vals((List<String>)value);
+        }
+        break;
+
+      case MAX_PARTS:
+        if (value == null) {
+          unsetMax_parts();
+        } else {
+          setMax_parts((Short)value);
+        }
+        break;
+
+      case USER_NAME:
+        if (value == null) {
+          unsetUser_name();
+        } else {
+          setUser_name((String)value);
+        }
+        break;
+
+      case GROUP_NAMES:
+        if (value == null) {
+          unsetGroup_names();
+        } else {
+          setGroup_names((List<String>)value);
+        }
+        break;
+
+      }
+    }
+
+    public Object getFieldValue(_Fields field) {
+      switch (field) {
+      case DB_NAME:
+        return getDb_name();
+
+      case TBL_NAME:
+        return getTbl_name();
+
+      case PART_VALS:
+        return getPart_vals();
+
+      case MAX_PARTS:
+        return new Short(getMax_parts());
+
+      case USER_NAME:
+        return getUser_name();
+
+      case GROUP_NAMES:
+        return getGroup_names();
+
+      }
+      throw new IllegalStateException();
+    }
+
+    /** Returns true if field corresponding to fieldID is set (has been asigned a value) and false otherwise */
+    public boolean isSet(_Fields field) {
+      if (field == null) {
+        throw new IllegalArgumentException();
+      }
+
+      switch (field) {
+      case DB_NAME:
+        return isSetDb_name();
+      case TBL_NAME:
+        return isSetTbl_name();
+      case PART_VALS:
+        return isSetPart_vals();
+      case MAX_PARTS:
+        return isSetMax_parts();
+      case USER_NAME:
+        return isSetUser_name();
+      case GROUP_NAMES:
+        return isSetGroup_names();
+      }
+      throw new IllegalStateException();
+    }
+
+    @Override
+    public boolean equals(Object that) {
+      if (that == null)
+        return false;
+      if (that instanceof get_partitions_ps_with_auth_args)
+        return this.equals((get_partitions_ps_with_auth_args)that);
+      return false;
+    }
+
+    public boolean equals(get_partitions_ps_with_auth_args that) {
+      if (that == null)
+        return false;
+
+      boolean this_present_db_name = true && this.isSetDb_name();
+      boolean that_present_db_name = true && that.isSetDb_name();
+      if (this_present_db_name || that_present_db_name) {
+        if (!(this_present_db_name && that_present_db_name))
+          return false;
+        if (!this.db_name.equals(that.db_name))
+          return false;
+      }
+
+      boolean this_present_tbl_name = true && this.isSetTbl_name();
+      boolean that_present_tbl_name = true && that.isSetTbl_name();
+      if (this_present_tbl_name || that_present_tbl_name) {
+        if (!(this_present_tbl_name && that_present_tbl_name))
+          return false;
+        if (!this.tbl_name.equals(that.tbl_name))
+          return false;
+      }
+
+      boolean this_present_part_vals = true && this.isSetPart_vals();
+      boolean that_present_part_vals = true && that.isSetPart_vals();
+      if (this_present_part_vals || that_present_part_vals) {
+        if (!(this_present_part_vals && that_present_part_vals))
+          return false;
+        if (!this.part_vals.equals(that.part_vals))
+          return false;
+      }
+
+      boolean this_present_max_parts = true;
+      boolean that_present_max_parts = true;
+      if (this_present_max_parts || that_present_max_parts) {
+        if (!(this_present_max_parts && that_present_max_parts))
+          return false;
+        if (this.max_parts != that.max_parts)
+          return false;
+      }
+
+      boolean this_present_user_name = true && this.isSetUser_name();
+      boolean that_present_user_name = true && that.isSetUser_name();
+      if (this_present_user_name || that_present_user_name) {
+        if (!(this_present_user_name && that_present_user_name))
+          return false;
+        if (!this.user_name.equals(that.user_name))
+          return false;
+      }
+
+      boolean this_present_group_names = true && this.isSetGroup_names();
+      boolean that_present_group_names = true && that.isSetGroup_names();
+      if (this_present_group_names || that_present_group_names) {
+        if (!(this_present_group_names && that_present_group_names))
+          return false;
+        if (!this.group_names.equals(that.group_names))
+          return false;
+      }
+
+      return true;
+    }
+
+    @Override
+    public int hashCode() {
+      return 0;
+    }
+
+    public int compareTo(get_partitions_ps_with_auth_args other) {
+      if (!getClass().equals(other.getClass())) {
+        return getClass().getName().compareTo(other.getClass().getName());
+      }
+
+      int lastComparison = 0;
+      get_partitions_ps_with_auth_args typedOther = (get_partitions_ps_with_auth_args)other;
+
+      lastComparison = Boolean.valueOf(isSetDb_name()).compareTo(typedOther.isSetDb_name());
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+      if (isSetDb_name()) {
+        lastComparison = TBaseHelper.compareTo(this.db_name, typedOther.db_name);
+        if (lastComparison != 0) {
+          return lastComparison;
+        }
+      }
+      lastComparison = Boolean.valueOf(isSetTbl_name()).compareTo(typedOther.isSetTbl_name());
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+      if (isSetTbl_name()) {
+        lastComparison = TBaseHelper.compareTo(this.tbl_name, typedOther.tbl_name);
+        if (lastComparison != 0) {
+          return lastComparison;
+        }
+      }
+      lastComparison = Boolean.valueOf(isSetPart_vals()).compareTo(typedOther.isSetPart_vals());
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+      if (isSetPart_vals()) {
+        lastComparison = TBaseHelper.compareTo(this.part_vals, typedOther.part_vals);
+        if (lastComparison != 0) {
+          return lastComparison;
+        }
+      }
+      lastComparison = Boolean.valueOf(isSetMax_parts()).compareTo(typedOther.isSetMax_parts());
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+      if (isSetMax_parts()) {
+        lastComparison = TBaseHelper.compareTo(this.max_parts, typedOther.max_parts);
+        if (lastComparison != 0) {
+          return lastComparison;
+        }
+      }
+      lastComparison = Boolean.valueOf(isSetUser_name()).compareTo(typedOther.isSetUser_name());
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+      if (isSetUser_name()) {
+        lastComparison = TBaseHelper.compareTo(this.user_name, typedOther.user_name);
+        if (lastComparison != 0) {
+          return lastComparison;
+        }
+      }
+      lastComparison = Boolean.valueOf(isSetGroup_names()).compareTo(typedOther.isSetGroup_names());
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+      if (isSetGroup_names()) {
+        lastComparison = TBaseHelper.compareTo(this.group_names, typedOther.group_names);
+        if (lastComparison != 0) {
+          return lastComparison;
+        }
+      }
+      return 0;
+    }
+
+    public _Fields fieldForId(int fieldId) {
+      return _Fields.findByThriftId(fieldId);
+    }
+
+    public void read(TProtocol iprot) throws TException {
+      TField field;
+      iprot.readStructBegin();
+      while (true)
+      {
+        field = iprot.readFieldBegin();
+        if (field.type == TType.STOP) { 
+          break;
+        }
+        switch (field.id) {
+          case 1: // DB_NAME
+            if (field.type == TType.STRING) {
+              this.db_name = iprot.readString();
+            } else { 
+              TProtocolUtil.skip(iprot, field.type);
+            }
+            break;
+          case 2: // TBL_NAME
+            if (field.type == TType.STRING) {
+              this.tbl_name = iprot.readString();
+            } else { 
+              TProtocolUtil.skip(iprot, field.type);
+            }
+            break;
+          case 3: // PART_VALS
+            if (field.type == TType.LIST) {
+              {
+                TList _list171 = iprot.readListBegin();
+                this.part_vals = new ArrayList<String>(_list171.size);
+                for (int _i172 = 0; _i172 < _list171.size; ++_i172)
+                {
+                  String _elem173;
+                  _elem173 = iprot.readString();
+                  this.part_vals.add(_elem173);
+                }
+                iprot.readListEnd();
+              }
+            } else { 
+              TProtocolUtil.skip(iprot, field.type);
+            }
+            break;
+          case 4: // MAX_PARTS
+            if (field.type == TType.I16) {
+              this.max_parts = iprot.readI16();
+              setMax_partsIsSet(true);
+            } else { 
+              TProtocolUtil.skip(iprot, field.type);
+            }
+            break;
+          case 5: // USER_NAME
+            if (field.type == TType.STRING) {
+              this.user_name = iprot.readString();
+            } else { 
+              TProtocolUtil.skip(iprot, field.type);
+            }
+            break;
+          case 6: // GROUP_NAMES
+            if (field.type == TType.LIST) {
+              {
+                TList _list174 = iprot.readListBegin();
+                this.group_names = new ArrayList<String>(_list174.size);
+                for (int _i175 = 0; _i175 < _list174.size; ++_i175)
+                {
+                  String _elem176;
+                  _elem176 = iprot.readString();
+                  this.group_names.add(_elem176);
+                }
+                iprot.readListEnd();
+              }
+            } else { 
+              TProtocolUtil.skip(iprot, field.type);
+            }
+            break;
+          default:
+            TProtocolUtil.skip(iprot, field.type);
+        }
+        iprot.readFieldEnd();
+      }
+      iprot.readStructEnd();
+      validate();
+    }
+
+    public void write(TProtocol oprot) throws TException {
+      validate();
+
+      oprot.writeStructBegin(STRUCT_DESC);
+      if (this.db_name != null) {
+        oprot.writeFieldBegin(DB_NAME_FIELD_DESC);
+        oprot.writeString(this.db_name);
+        oprot.writeFieldEnd();
+      }
+      if (this.tbl_name != null) {
+        oprot.writeFieldBegin(TBL_NAME_FIELD_DESC);
+        oprot.writeString(this.tbl_name);
+        oprot.writeFieldEnd();
+      }
+      if (this.part_vals != null) {
+        oprot.writeFieldBegin(PART_VALS_FIELD_DESC);
+        {
+          oprot.writeListBegin(new TList(TType.STRING, this.part_vals.size()));
+          for (String _iter177 : this.part_vals)
+          {
+            oprot.writeString(_iter177);
+          }
+          oprot.writeListEnd();
+        }
+        oprot.writeFieldEnd();
+      }
+      oprot.writeFieldBegin(MAX_PARTS_FIELD_DESC);
+      oprot.writeI16(this.max_parts);
+      oprot.writeFieldEnd();
+      if (this.user_name != null) {
+        oprot.writeFieldBegin(USER_NAME_FIELD_DESC);
+        oprot.writeString(this.user_name);
+        oprot.writeFieldEnd();
+      }
+      if (this.group_names != null) {
+        oprot.writeFieldBegin(GROUP_NAMES_FIELD_DESC);
+        {
+          oprot.writeListBegin(new TList(TType.STRING, this.group_names.size()));
+          for (String _iter178 : this.group_names)
+          {
+            oprot.writeString(_iter178);
+          }
+          oprot.writeListEnd();
+        }
+        oprot.writeFieldEnd();
+      }
+      oprot.writeFieldStop();
+      oprot.writeStructEnd();
+    }
+
+    @Override
+    public String toString() {
+      StringBuilder sb = new StringBuilder("get_partitions_ps_with_auth_args(");
+      boolean first = true;
+
+      sb.append("db_name:");
+      if (this.db_name == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.db_name);
+      }
+      first = false;
+      if (!first) sb.append(", ");
+      sb.append("tbl_name:");
+      if (this.tbl_name == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.tbl_name);
+      }
+      first = false;
+      if (!first) sb.append(", ");
+      sb.append("part_vals:");
+      if (this.part_vals == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.part_vals);
+      }
+      first = false;
+      if (!first) sb.append(", ");
+      sb.append("max_parts:");
+      sb.append(this.max_parts);
+      first = false;
+      if (!first) sb.append(", ");
+      sb.append("user_name:");
+      if (this.user_name == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.user_name);
+      }
+      first = false;
+      if (!first) sb.append(", ");
+      sb.append("group_names:");
+      if (this.group_names == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.group_names);
+      }
+      first = false;
+      sb.append(")");
+      return sb.toString();
+    }
+
+    public void validate() throws TException {
+      // check for required fields
+    }
+
+  }
+
+  public static class get_partitions_ps_with_auth_result implements TBase<get_partitions_ps_with_auth_result, get_partitions_ps_with_auth_result._Fields>, java.io.Serializable, Cloneable   {
+    private static final TStruct STRUCT_DESC = new TStruct("get_partitions_ps_with_auth_result");
+
+    private static final TField SUCCESS_FIELD_DESC = new TField("success", TType.LIST, (short)0);
+    private static final TField O1_FIELD_DESC = new TField("o1", TType.STRUCT, (short)1);
+    private static final TField O2_FIELD_DESC = new TField("o2", TType.STRUCT, (short)2);
+
+    private List<Partition> success;
+    private NoSuchObjectException o1;
+    private MetaException o2;
+
+    /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
+    public enum _Fields implements TFieldIdEnum {
+      SUCCESS((short)0, "success"),
+      O1((short)1, "o1"),
+      O2((short)2, "o2");
+
+      private static final Map<String, _Fields> byName = new HashMap<String, _Fields>();
+
+      static {
+        for (_Fields field : EnumSet.allOf(_Fields.class)) {
+          byName.put(field.getFieldName(), field);
+        }
+      }
+
+      /**
+       * Find the _Fields constant that matches fieldId, or null if its not found.
+       */
+      public static _Fields findByThriftId(int fieldId) {
+        switch(fieldId) {
+          case 0: // SUCCESS
+            return SUCCESS;
+          case 1: // O1
+            return O1;
+          case 2: // O2
+            return O2;
+          default:
+            return null;
+        }
+      }
+
+      /**
+       * Find the _Fields constant that matches fieldId, throwing an exception
+       * if it is not found.
+       */
+      public static _Fields findByThriftIdOrThrow(int fieldId) {
+        _Fields fields = findByThriftId(fieldId);
+        if (fields == null) throw new IllegalArgumentException("Field " + fieldId + " doesn't exist!");
+        return fields;
+      }
+
+      /**
+       * Find the _Fields constant that matches name, or null if its not found.
+       */
+      public static _Fields findByName(String name) {
+        return byName.get(name);
+      }
+
+      private final short _thriftId;
+      private final String _fieldName;
+
+      _Fields(short thriftId, String fieldName) {
+        _thriftId = thriftId;
+        _fieldName = fieldName;
+      }
+
+      public short getThriftFieldId() {
+        return _thriftId;
+      }
+
+      public String getFieldName() {
+        return _fieldName;
+      }
+    }
+
+    // isset id assignments
+
+    public static final Map<_Fields, FieldMetaData> metaDataMap;
+    static {
+      Map<_Fields, FieldMetaData> tmpMap = new EnumMap<_Fields, FieldMetaData>(_Fields.class);
+      tmpMap.put(_Fields.SUCCESS, new FieldMetaData("success", TFieldRequirementType.DEFAULT, 
+          new ListMetaData(TType.LIST, 
+              new StructMetaData(TType.STRUCT, Partition.class))));
+      tmpMap.put(_Fields.O1, new FieldMetaData("o1", TFieldRequirementType.DEFAULT, 
+          new FieldValueMetaData(TType.STRUCT)));
+      tmpMap.put(_Fields.O2, new FieldMetaData("o2", TFieldRequirementType.DEFAULT, 
+          new FieldValueMetaData(TType.STRUCT)));
+      metaDataMap = Collections.unmodifiableMap(tmpMap);
+      FieldMetaData.addStructMetaDataMap(get_partitions_ps_with_auth_result.class, metaDataMap);
+    }
+
+    public get_partitions_ps_with_auth_result() {
+    }
+
+    public get_partitions_ps_with_auth_result(
+      List<Partition> success,
+      NoSuchObjectException o1,
+      MetaException o2)
+    {
+      this();
+      this.success = success;
+      this.o1 = o1;
+      this.o2 = o2;
+    }
+
+    /**
+     * Performs a deep copy on <i>other</i>.
+     */
+    public get_partitions_ps_with_auth_result(get_partitions_ps_with_auth_result other) {
+      if (other.isSetSuccess()) {
+        List<Partition> __this__success = new ArrayList<Partition>();
+        for (Partition other_element : other.success) {
+          __this__success.add(new Partition(other_element));
+        }
+        this.success = __this__success;
+      }
+      if (other.isSetO1()) {
+        this.o1 = new NoSuchObjectException(other.o1);
+      }
+      if (other.isSetO2()) {
+        this.o2 = new MetaException(other.o2);
+      }
+    }
+
+    public get_partitions_ps_with_auth_result deepCopy() {
+      return new get_partitions_ps_with_auth_result(this);
+    }
+
+    @Override
+    public void clear() {
+      this.success = null;
+      this.o1 = null;
+      this.o2 = null;
+    }
+
+    public int getSuccessSize() {
+      return (this.success == null) ? 0 : this.success.size();
+    }
+
+    public java.util.Iterator<Partition> getSuccessIterator() {
+      return (this.success == null) ? null : this.success.iterator();
+    }
+
+    public void addToSuccess(Partition elem) {
+      if (this.success == null) {
+        this.success = new ArrayList<Partition>();
+      }
+      this.success.add(elem);
+    }
+
+    public List<Partition> getSuccess() {
+      return this.success;
+    }
+
+    public void setSuccess(List<Partition> success) {
+      this.success = success;
+    }
+
+    public void unsetSuccess() {
+      this.success = null;
+    }
+
+    /** Returns true if field success is set (has been asigned a value) and false otherwise */
+    public boolean isSetSuccess() {
+      return this.success != null;
+    }
+
+    public void setSuccessIsSet(boolean value) {
+      if (!value) {
+        this.success = null;
+      }
+    }
+
+    public NoSuchObjectException getO1() {
+      return this.o1;
+    }
+
+    public void setO1(NoSuchObjectException o1) {
+      this.o1 = o1;
+    }
+
+    public void unsetO1() {
+      this.o1 = null;
+    }
+
+    /** Returns true if field o1 is set (has been asigned a value) and false otherwise */
+    public boolean isSetO1() {
+      return this.o1 != null;
+    }
+
+    public void setO1IsSet(boolean value) {
+      if (!value) {
+        this.o1 = null;
+      }
+    }
+
+    public MetaException getO2() {
+      return this.o2;
+    }
+
+    public void setO2(MetaException o2) {
+      this.o2 = o2;
+    }
+
+    public void unsetO2() {
+      this.o2 = null;
+    }
+
+    /** Returns true if field o2 is set (has been asigned a value) and false otherwise */
+    public boolean isSetO2() {
+      return this.o2 != null;
+    }
+
+    public void setO2IsSet(boolean value) {
+      if (!value) {
+        this.o2 = null;
+      }
+    }
+
+    public void setFieldValue(_Fields field, Object value) {
+      switch (field) {
+      case SUCCESS:
+        if (value == null) {
+          unsetSuccess();
+        } else {
+          setSuccess((List<Partition>)value);
+        }
+        break;
+
+      case O1:
+        if (value == null) {
+          unsetO1();
+        } else {
+          setO1((NoSuchObjectException)value);
+        }
+        break;
+
+      case O2:
+        if (value == null) {
+          unsetO2();
+        } else {
+          setO2((MetaException)value);
+        }
+        break;
+
+      }
+    }
+
+    public Object getFieldValue(_Fields field) {
+      switch (field) {
+      case SUCCESS:
+        return getSuccess();
+
+      case O1:
+        return getO1();
+
+      case O2:
+        return getO2();
+
+      }
+      throw new IllegalStateException();
+    }
+
+    /** Returns true if field corresponding to fieldID is set (has been asigned a value) and false otherwise */
+    public boolean isSet(_Fields field) {
+      if (field == null) {
+        throw new IllegalArgumentException();
+      }
+
+      switch (field) {
+      case SUCCESS:
+        return isSetSuccess();
+      case O1:
+        return isSetO1();
+      case O2:
+        return isSetO2();
+      }
+      throw new IllegalStateException();
+    }
+
+    @Override
+    public boolean equals(Object that) {
+      if (that == null)
+        return false;
+      if (that instanceof get_partitions_ps_with_auth_result)
+        return this.equals((get_partitions_ps_with_auth_result)that);
+      return false;
+    }
+
+    public boolean equals(get_partitions_ps_with_auth_result that) {
+      if (that == null)
+        return false;
+
+      boolean this_present_success = true && this.isSetSuccess();
+      boolean that_present_success = true && that.isSetSuccess();
+      if (this_present_success || that_present_success) {
+        if (!(this_present_success && that_present_success))
+          return false;
+        if (!this.success.equals(that.success))
+          return false;
+      }
+
+      boolean this_present_o1 = true && this.isSetO1();
+      boolean that_present_o1 = true && that.isSetO1();
+      if (this_present_o1 || that_present_o1) {
+        if (!(this_present_o1 && that_present_o1))
+          return false;
+        if (!this.o1.equals(that.o1))
+          return false;
+      }
+
+      boolean this_present_o2 = true && this.isSetO2();
+      boolean that_present_o2 = true && that.isSetO2();
+      if (this_present_o2 || that_present_o2) {
+        if (!(this_present_o2 && that_present_o2))
+          return false;
+        if (!this.o2.equals(that.o2))
+          return false;
+      }
+
+      return true;
+    }
+
+    @Override
+    public int hashCode() {
+      return 0;
+    }
+
+    public int compareTo(get_partitions_ps_with_auth_result other) {
+      if (!getClass().equals(other.getClass())) {
+        return getClass().getName().compareTo(other.getClass().getName());
+      }
+
+      int lastComparison = 0;
+      get_partitions_ps_with_auth_result typedOther = (get_partitions_ps_with_auth_result)other;
+
+      lastComparison = Boolean.valueOf(isSetSuccess()).compareTo(typedOther.isSetSuccess());
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+      if (isSetSuccess()) {
+        lastComparison = TBaseHelper.compareTo(this.success, typedOther.success);
+        if (lastComparison != 0) {
+          return lastComparison;
+        }
+      }
+      lastComparison = Boolean.valueOf(isSetO1()).compareTo(typedOther.isSetO1());
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+      if (isSetO1()) {
+        lastComparison = TBaseHelper.compareTo(this.o1, typedOther.o1);
+        if (lastComparison != 0) {
+          return lastComparison;
+        }
+      }
+      lastComparison = Boolean.valueOf(isSetO2()).compareTo(typedOther.isSetO2());
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+      if (isSetO2()) {
+        lastComparison = TBaseHelper.compareTo(this.o2, typedOther.o2);
+        if (lastComparison != 0) {
+          return lastComparison;
+        }
+      }
+      return 0;
+    }
+
+    public _Fields fieldForId(int fieldId) {
+      return _Fields.findByThriftId(fieldId);
+    }
+
+    public void read(TProtocol iprot) throws TException {
+      TField field;
+      iprot.readStructBegin();
+      while (true)
+      {
+        field = iprot.readFieldBegin();
+        if (field.type == TType.STOP) { 
+          break;
+        }
+        switch (field.id) {
+          case 0: // SUCCESS
+            if (field.type == TType.LIST) {
+              {
+                TList _list179 = iprot.readListBegin();
+                this.success = new ArrayList<Partition>(_list179.size);
+                for (int _i180 = 0; _i180 < _list179.size; ++_i180)
+                {
+                  Partition _elem181;
+                  _elem181 = new Partition();
+                  _elem181.read(iprot);
+                  this.success.add(_elem181);
+                }
+                iprot.readListEnd();
+              }
+            } else { 
+              TProtocolUtil.skip(iprot, field.type);
+            }
+            break;
+          case 1: // O1
+            if (field.type == TType.STRUCT) {
+              this.o1 = new NoSuchObjectException();
+              this.o1.read(iprot);
+            } else { 
+              TProtocolUtil.skip(iprot, field.type);
+            }
+            break;
+          case 2: // O2
+            if (field.type == TType.STRUCT) {
+              this.o2 = new MetaException();
+              this.o2.read(iprot);
+            } else { 
+              TProtocolUtil.skip(iprot, field.type);
+            }
+            break;
+          default:
+            TProtocolUtil.skip(iprot, field.type);
+        }
+        iprot.readFieldEnd();
+      }
+      iprot.readStructEnd();
+      validate();
+    }
+
+    public void write(TProtocol oprot) throws TException {
+      oprot.writeStructBegin(STRUCT_DESC);
+
+      if (this.isSetSuccess()) {
+        oprot.writeFieldBegin(SUCCESS_FIELD_DESC);
+        {
+          oprot.writeListBegin(new TList(TType.STRUCT, this.success.size()));
+          for (Partition _iter182 : this.success)
+          {
+            _iter182.write(oprot);
+          }
+          oprot.writeListEnd();
+        }
+        oprot.writeFieldEnd();
+      } else if (this.isSetO1()) {
+        oprot.writeFieldBegin(O1_FIELD_DESC);
+        this.o1.write(oprot);
+        oprot.writeFieldEnd();
+      } else if (this.isSetO2()) {
+        oprot.writeFieldBegin(O2_FIELD_DESC);
+        this.o2.write(oprot);
+        oprot.writeFieldEnd();
+      }
+      oprot.writeFieldStop();
+      oprot.writeStructEnd();
+    }
+
+    @Override
+    public String toString() {
+      StringBuilder sb = new StringBuilder("get_partitions_ps_with_auth_result(");
+      boolean first = true;
+
+      sb.append("success:");
+      if (this.success == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.success);
+      }
+      first = false;
+      if (!first) sb.append(", ");
+      sb.append("o1:");
+      if (this.o1 == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.o1);
+      }
+      first = false;
+      if (!first) sb.append(", ");
+      sb.append("o2:");
+      if (this.o2 == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.o2);
       }
       first = false;
       sb.append(")");
@@ -28868,13 +33944,13 @@ public class ThriftHiveMetastore {
           case 3: // PART_VALS
             if (field.type == TType.LIST) {
               {
-                TList _list120 = iprot.readListBegin();
-                this.part_vals = new ArrayList<String>(_list120.size);
-                for (int _i121 = 0; _i121 < _list120.size; ++_i121)
+                TList _list183 = iprot.readListBegin();
+                this.part_vals = new ArrayList<String>(_list183.size);
+                for (int _i184 = 0; _i184 < _list183.size; ++_i184)
                 {
-                  String _elem122;
-                  _elem122 = iprot.readString();
-                  this.part_vals.add(_elem122);
+                  String _elem185;
+                  _elem185 = iprot.readString();
+                  this.part_vals.add(_elem185);
                 }
                 iprot.readListEnd();
               }
@@ -28917,9 +33993,9 @@ public class ThriftHiveMetastore {
         oprot.writeFieldBegin(PART_VALS_FIELD_DESC);
         {
           oprot.writeListBegin(new TList(TType.STRING, this.part_vals.size()));
-          for (String _iter123 : this.part_vals)
+          for (String _iter186 : this.part_vals)
           {
-            oprot.writeString(_iter123);
+            oprot.writeString(_iter186);
           }
           oprot.writeListEnd();
         }
@@ -29292,13 +34368,13 @@ public class ThriftHiveMetastore {
           case 0: // SUCCESS
             if (field.type == TType.LIST) {
               {
-                TList _list124 = iprot.readListBegin();
-                this.success = new ArrayList<String>(_list124.size);
-                for (int _i125 = 0; _i125 < _list124.size; ++_i125)
+                TList _list187 = iprot.readListBegin();
+                this.success = new ArrayList<String>(_list187.size);
+                for (int _i188 = 0; _i188 < _list187.size; ++_i188)
                 {
-                  String _elem126;
-                  _elem126 = iprot.readString();
-                  this.success.add(_elem126);
+                  String _elem189;
+                  _elem189 = iprot.readString();
+                  this.success.add(_elem189);
                 }
                 iprot.readListEnd();
               }
@@ -29330,9 +34406,9 @@ public class ThriftHiveMetastore {
         oprot.writeFieldBegin(SUCCESS_FIELD_DESC);
         {
           oprot.writeListBegin(new TList(TType.STRING, this.success.size()));
-          for (String _iter127 : this.success)
+          for (String _iter190 : this.success)
           {
-            oprot.writeString(_iter127);
+            oprot.writeString(_iter190);
           }
           oprot.writeListEnd();
         }
@@ -30304,14 +35380,14 @@ public class ThriftHiveMetastore {
           case 0: // SUCCESS
             if (field.type == TType.LIST) {
               {
-                TList _list128 = iprot.readListBegin();
-                this.success = new ArrayList<Partition>(_list128.size);
-                for (int _i129 = 0; _i129 < _list128.size; ++_i129)
+                TList _list191 = iprot.readListBegin();
+                this.success = new ArrayList<Partition>(_list191.size);
+                for (int _i192 = 0; _i192 < _list191.size; ++_i192)
                 {
-                  Partition _elem130;
-                  _elem130 = new Partition();
-                  _elem130.read(iprot);
-                  this.success.add(_elem130);
+                  Partition _elem193;
+                  _elem193 = new Partition();
+                  _elem193.read(iprot);
+                  this.success.add(_elem193);
                 }
                 iprot.readListEnd();
               }
@@ -30351,9 +35427,9 @@ public class ThriftHiveMetastore {
         oprot.writeFieldBegin(SUCCESS_FIELD_DESC);
         {
           oprot.writeListBegin(new TList(TType.STRUCT, this.success.size()));
-          for (Partition _iter131 : this.success)
+          for (Partition _iter194 : this.success)
           {
-            _iter131.write(oprot);
+            _iter194.write(oprot);
           }
           oprot.writeListEnd();
         }
@@ -32557,13 +37633,13 @@ public class ThriftHiveMetastore {
           case 0: // SUCCESS
             if (field.type == TType.LIST) {
               {
-                TList _list132 = iprot.readListBegin();
-                this.success = new ArrayList<String>(_list132.size);
-                for (int _i133 = 0; _i133 < _list132.size; ++_i133)
+                TList _list195 = iprot.readListBegin();
+                this.success = new ArrayList<String>(_list195.size);
+                for (int _i196 = 0; _i196 < _list195.size; ++_i196)
                 {
-                  String _elem134;
-                  _elem134 = iprot.readString();
-                  this.success.add(_elem134);
+                  String _elem197;
+                  _elem197 = iprot.readString();
+                  this.success.add(_elem197);
                 }
                 iprot.readListEnd();
               }
@@ -32595,9 +37671,9 @@ public class ThriftHiveMetastore {
         oprot.writeFieldBegin(SUCCESS_FIELD_DESC);
         {
           oprot.writeListBegin(new TList(TType.STRING, this.success.size()));
-          for (String _iter135 : this.success)
+          for (String _iter198 : this.success)
           {
-            oprot.writeString(_iter135);
+            oprot.writeString(_iter198);
           }
           oprot.writeListEnd();
         }
@@ -33242,15 +38318,15 @@ public class ThriftHiveMetastore {
           case 0: // SUCCESS
             if (field.type == TType.MAP) {
               {
-                TMap _map136 = iprot.readMapBegin();
-                this.success = new HashMap<String,String>(2*_map136.size);
-                for (int _i137 = 0; _i137 < _map136.size; ++_i137)
+                TMap _map199 = iprot.readMapBegin();
+                this.success = new HashMap<String,String>(2*_map199.size);
+                for (int _i200 = 0; _i200 < _map199.size; ++_i200)
                 {
-                  String _key138;
-                  String _val139;
-                  _key138 = iprot.readString();
-                  _val139 = iprot.readString();
-                  this.success.put(_key138, _val139);
+                  String _key201;
+                  String _val202;
+                  _key201 = iprot.readString();
+                  _val202 = iprot.readString();
+                  this.success.put(_key201, _val202);
                 }
                 iprot.readMapEnd();
               }
@@ -33282,10 +38358,10 @@ public class ThriftHiveMetastore {
         oprot.writeFieldBegin(SUCCESS_FIELD_DESC);
         {
           oprot.writeMapBegin(new TMap(TType.STRING, TType.STRING, this.success.size()));
-          for (Map.Entry<String, String> _iter140 : this.success.entrySet())
+          for (Map.Entry<String, String> _iter203 : this.success.entrySet())
           {
-            oprot.writeString(_iter140.getKey());
-            oprot.writeString(_iter140.getValue());
+            oprot.writeString(_iter203.getKey());
+            oprot.writeString(_iter203.getValue());
           }
           oprot.writeMapEnd();
         }
@@ -37889,14 +42965,14 @@ public class ThriftHiveMetastore {
           case 0: // SUCCESS
             if (field.type == TType.LIST) {
               {
-                TList _list141 = iprot.readListBegin();
-                this.success = new ArrayList<Index>(_list141.size);
-                for (int _i142 = 0; _i142 < _list141.size; ++_i142)
+                TList _list204 = iprot.readListBegin();
+                this.success = new ArrayList<Index>(_list204.size);
+                for (int _i205 = 0; _i205 < _list204.size; ++_i205)
                 {
-                  Index _elem143;
-                  _elem143 = new Index();
-                  _elem143.read(iprot);
-                  this.success.add(_elem143);
+                  Index _elem206;
+                  _elem206 = new Index();
+                  _elem206.read(iprot);
+                  this.success.add(_elem206);
                 }
                 iprot.readListEnd();
               }
@@ -37936,9 +43012,9 @@ public class ThriftHiveMetastore {
         oprot.writeFieldBegin(SUCCESS_FIELD_DESC);
         {
           oprot.writeListBegin(new TList(TType.STRUCT, this.success.size()));
-          for (Index _iter144 : this.success)
+          for (Index _iter207 : this.success)
           {
-            _iter144.write(oprot);
+            _iter207.write(oprot);
           }
           oprot.writeListEnd();
         }
@@ -38766,13 +43842,13 @@ public class ThriftHiveMetastore {
           case 0: // SUCCESS
             if (field.type == TType.LIST) {
               {
-                TList _list145 = iprot.readListBegin();
-                this.success = new ArrayList<String>(_list145.size);
-                for (int _i146 = 0; _i146 < _list145.size; ++_i146)
+                TList _list208 = iprot.readListBegin();
+                this.success = new ArrayList<String>(_list208.size);
+                for (int _i209 = 0; _i209 < _list208.size; ++_i209)
                 {
-                  String _elem147;
-                  _elem147 = iprot.readString();
-                  this.success.add(_elem147);
+                  String _elem210;
+                  _elem210 = iprot.readString();
+                  this.success.add(_elem210);
                 }
                 iprot.readListEnd();
               }
@@ -38804,9 +43880,9 @@ public class ThriftHiveMetastore {
         oprot.writeFieldBegin(SUCCESS_FIELD_DESC);
         {
           oprot.writeListBegin(new TList(TType.STRING, this.success.size()));
-          for (String _iter148 : this.success)
+          for (String _iter211 : this.success)
           {
-            oprot.writeString(_iter148);
+            oprot.writeString(_iter211);
           }
           oprot.writeListEnd();
         }
@@ -38838,6 +43914,7026 @@ public class ThriftHiveMetastore {
         sb.append("null");
       } else {
         sb.append(this.o2);
+      }
+      first = false;
+      sb.append(")");
+      return sb.toString();
+    }
+
+    public void validate() throws TException {
+      // check for required fields
+    }
+
+  }
+
+  public static class create_role_args implements TBase<create_role_args, create_role_args._Fields>, java.io.Serializable, Cloneable   {
+    private static final TStruct STRUCT_DESC = new TStruct("create_role_args");
+
+    private static final TField ROLE_FIELD_DESC = new TField("role", TType.STRUCT, (short)1);
+
+    private Role role;
+
+    /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
+    public enum _Fields implements TFieldIdEnum {
+      ROLE((short)1, "role");
+
+      private static final Map<String, _Fields> byName = new HashMap<String, _Fields>();
+
+      static {
+        for (_Fields field : EnumSet.allOf(_Fields.class)) {
+          byName.put(field.getFieldName(), field);
+        }
+      }
+
+      /**
+       * Find the _Fields constant that matches fieldId, or null if its not found.
+       */
+      public static _Fields findByThriftId(int fieldId) {
+        switch(fieldId) {
+          case 1: // ROLE
+            return ROLE;
+          default:
+            return null;
+        }
+      }
+
+      /**
+       * Find the _Fields constant that matches fieldId, throwing an exception
+       * if it is not found.
+       */
+      public static _Fields findByThriftIdOrThrow(int fieldId) {
+        _Fields fields = findByThriftId(fieldId);
+        if (fields == null) throw new IllegalArgumentException("Field " + fieldId + " doesn't exist!");
+        return fields;
+      }
+
+      /**
+       * Find the _Fields constant that matches name, or null if its not found.
+       */
+      public static _Fields findByName(String name) {
+        return byName.get(name);
+      }
+
+      private final short _thriftId;
+      private final String _fieldName;
+
+      _Fields(short thriftId, String fieldName) {
+        _thriftId = thriftId;
+        _fieldName = fieldName;
+      }
+
+      public short getThriftFieldId() {
+        return _thriftId;
+      }
+
+      public String getFieldName() {
+        return _fieldName;
+      }
+    }
+
+    // isset id assignments
+
+    public static final Map<_Fields, FieldMetaData> metaDataMap;
+    static {
+      Map<_Fields, FieldMetaData> tmpMap = new EnumMap<_Fields, FieldMetaData>(_Fields.class);
+      tmpMap.put(_Fields.ROLE, new FieldMetaData("role", TFieldRequirementType.DEFAULT, 
+          new StructMetaData(TType.STRUCT, Role.class)));
+      metaDataMap = Collections.unmodifiableMap(tmpMap);
+      FieldMetaData.addStructMetaDataMap(create_role_args.class, metaDataMap);
+    }
+
+    public create_role_args() {
+    }
+
+    public create_role_args(
+      Role role)
+    {
+      this();
+      this.role = role;
+    }
+
+    /**
+     * Performs a deep copy on <i>other</i>.
+     */
+    public create_role_args(create_role_args other) {
+      if (other.isSetRole()) {
+        this.role = new Role(other.role);
+      }
+    }
+
+    public create_role_args deepCopy() {
+      return new create_role_args(this);
+    }
+
+    @Override
+    public void clear() {
+      this.role = null;
+    }
+
+    public Role getRole() {
+      return this.role;
+    }
+
+    public void setRole(Role role) {
+      this.role = role;
+    }
+
+    public void unsetRole() {
+      this.role = null;
+    }
+
+    /** Returns true if field role is set (has been asigned a value) and false otherwise */
+    public boolean isSetRole() {
+      return this.role != null;
+    }
+
+    public void setRoleIsSet(boolean value) {
+      if (!value) {
+        this.role = null;
+      }
+    }
+
+    public void setFieldValue(_Fields field, Object value) {
+      switch (field) {
+      case ROLE:
+        if (value == null) {
+          unsetRole();
+        } else {
+          setRole((Role)value);
+        }
+        break;
+
+      }
+    }
+
+    public Object getFieldValue(_Fields field) {
+      switch (field) {
+      case ROLE:
+        return getRole();
+
+      }
+      throw new IllegalStateException();
+    }
+
+    /** Returns true if field corresponding to fieldID is set (has been asigned a value) and false otherwise */
+    public boolean isSet(_Fields field) {
+      if (field == null) {
+        throw new IllegalArgumentException();
+      }
+
+      switch (field) {
+      case ROLE:
+        return isSetRole();
+      }
+      throw new IllegalStateException();
+    }
+
+    @Override
+    public boolean equals(Object that) {
+      if (that == null)
+        return false;
+      if (that instanceof create_role_args)
+        return this.equals((create_role_args)that);
+      return false;
+    }
+
+    public boolean equals(create_role_args that) {
+      if (that == null)
+        return false;
+
+      boolean this_present_role = true && this.isSetRole();
+      boolean that_present_role = true && that.isSetRole();
+      if (this_present_role || that_present_role) {
+        if (!(this_present_role && that_present_role))
+          return false;
+        if (!this.role.equals(that.role))
+          return false;
+      }
+
+      return true;
+    }
+
+    @Override
+    public int hashCode() {
+      return 0;
+    }
+
+    public int compareTo(create_role_args other) {
+      if (!getClass().equals(other.getClass())) {
+        return getClass().getName().compareTo(other.getClass().getName());
+      }
+
+      int lastComparison = 0;
+      create_role_args typedOther = (create_role_args)other;
+
+      lastComparison = Boolean.valueOf(isSetRole()).compareTo(typedOther.isSetRole());
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+      if (isSetRole()) {
+        lastComparison = TBaseHelper.compareTo(this.role, typedOther.role);
+        if (lastComparison != 0) {
+          return lastComparison;
+        }
+      }
+      return 0;
+    }
+
+    public _Fields fieldForId(int fieldId) {
+      return _Fields.findByThriftId(fieldId);
+    }
+
+    public void read(TProtocol iprot) throws TException {
+      TField field;
+      iprot.readStructBegin();
+      while (true)
+      {
+        field = iprot.readFieldBegin();
+        if (field.type == TType.STOP) { 
+          break;
+        }
+        switch (field.id) {
+          case 1: // ROLE
+            if (field.type == TType.STRUCT) {
+              this.role = new Role();
+              this.role.read(iprot);
+            } else { 
+              TProtocolUtil.skip(iprot, field.type);
+            }
+            break;
+          default:
+            TProtocolUtil.skip(iprot, field.type);
+        }
+        iprot.readFieldEnd();
+      }
+      iprot.readStructEnd();
+      validate();
+    }
+
+    public void write(TProtocol oprot) throws TException {
+      validate();
+
+      oprot.writeStructBegin(STRUCT_DESC);
+      if (this.role != null) {
+        oprot.writeFieldBegin(ROLE_FIELD_DESC);
+        this.role.write(oprot);
+        oprot.writeFieldEnd();
+      }
+      oprot.writeFieldStop();
+      oprot.writeStructEnd();
+    }
+
+    @Override
+    public String toString() {
+      StringBuilder sb = new StringBuilder("create_role_args(");
+      boolean first = true;
+
+      sb.append("role:");
+      if (this.role == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.role);
+      }
+      first = false;
+      sb.append(")");
+      return sb.toString();
+    }
+
+    public void validate() throws TException {
+      // check for required fields
+    }
+
+  }
+
+  public static class create_role_result implements TBase<create_role_result, create_role_result._Fields>, java.io.Serializable, Cloneable   {
+    private static final TStruct STRUCT_DESC = new TStruct("create_role_result");
+
+    private static final TField SUCCESS_FIELD_DESC = new TField("success", TType.BOOL, (short)0);
+    private static final TField O1_FIELD_DESC = new TField("o1", TType.STRUCT, (short)1);
+
+    private boolean success;
+    private MetaException o1;
+
+    /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
+    public enum _Fields implements TFieldIdEnum {
+      SUCCESS((short)0, "success"),
+      O1((short)1, "o1");
+
+      private static final Map<String, _Fields> byName = new HashMap<String, _Fields>();
+
+      static {
+        for (_Fields field : EnumSet.allOf(_Fields.class)) {
+          byName.put(field.getFieldName(), field);
+        }
+      }
+
+      /**
+       * Find the _Fields constant that matches fieldId, or null if its not found.
+       */
+      public static _Fields findByThriftId(int fieldId) {
+        switch(fieldId) {
+          case 0: // SUCCESS
+            return SUCCESS;
+          case 1: // O1
+            return O1;
+          default:
+            return null;
+        }
+      }
+
+      /**
+       * Find the _Fields constant that matches fieldId, throwing an exception
+       * if it is not found.
+       */
+      public static _Fields findByThriftIdOrThrow(int fieldId) {
+        _Fields fields = findByThriftId(fieldId);
+        if (fields == null) throw new IllegalArgumentException("Field " + fieldId + " doesn't exist!");
+        return fields;
+      }
+
+      /**
+       * Find the _Fields constant that matches name, or null if its not found.
+       */
+      public static _Fields findByName(String name) {
+        return byName.get(name);
+      }
+
+      private final short _thriftId;
+      private final String _fieldName;
+
+      _Fields(short thriftId, String fieldName) {
+        _thriftId = thriftId;
+        _fieldName = fieldName;
+      }
+
+      public short getThriftFieldId() {
+        return _thriftId;
+      }
+
+      public String getFieldName() {
+        return _fieldName;
+      }
+    }
+
+    // isset id assignments
+    private static final int __SUCCESS_ISSET_ID = 0;
+    private BitSet __isset_bit_vector = new BitSet(1);
+
+    public static final Map<_Fields, FieldMetaData> metaDataMap;
+    static {
+      Map<_Fields, FieldMetaData> tmpMap = new EnumMap<_Fields, FieldMetaData>(_Fields.class);
+      tmpMap.put(_Fields.SUCCESS, new FieldMetaData("success", TFieldRequirementType.DEFAULT, 
+          new FieldValueMetaData(TType.BOOL)));
+      tmpMap.put(_Fields.O1, new FieldMetaData("o1", TFieldRequirementType.DEFAULT, 
+          new FieldValueMetaData(TType.STRUCT)));
+      metaDataMap = Collections.unmodifiableMap(tmpMap);
+      FieldMetaData.addStructMetaDataMap(create_role_result.class, metaDataMap);
+    }
+
+    public create_role_result() {
+    }
+
+    public create_role_result(
+      boolean success,
+      MetaException o1)
+    {
+      this();
+      this.success = success;
+      setSuccessIsSet(true);
+      this.o1 = o1;
+    }
+
+    /**
+     * Performs a deep copy on <i>other</i>.
+     */
+    public create_role_result(create_role_result other) {
+      __isset_bit_vector.clear();
+      __isset_bit_vector.or(other.__isset_bit_vector);
+      this.success = other.success;
+      if (other.isSetO1()) {
+        this.o1 = new MetaException(other.o1);
+      }
+    }
+
+    public create_role_result deepCopy() {
+      return new create_role_result(this);
+    }
+
+    @Override
+    public void clear() {
+      setSuccessIsSet(false);
+      this.success = false;
+      this.o1 = null;
+    }
+
+    public boolean isSuccess() {
+      return this.success;
+    }
+
+    public void setSuccess(boolean success) {
+      this.success = success;
+      setSuccessIsSet(true);
+    }
+
+    public void unsetSuccess() {
+      __isset_bit_vector.clear(__SUCCESS_ISSET_ID);
+    }
+
+    /** Returns true if field success is set (has been asigned a value) and false otherwise */
+    public boolean isSetSuccess() {
+      return __isset_bit_vector.get(__SUCCESS_ISSET_ID);
+    }
+
+    public void setSuccessIsSet(boolean value) {
+      __isset_bit_vector.set(__SUCCESS_ISSET_ID, value);
+    }
+
+    public MetaException getO1() {
+      return this.o1;
+    }
+
+    public void setO1(MetaException o1) {
+      this.o1 = o1;
+    }
+
+    public void unsetO1() {
+      this.o1 = null;
+    }
+
+    /** Returns true if field o1 is set (has been asigned a value) and false otherwise */
+    public boolean isSetO1() {
+      return this.o1 != null;
+    }
+
+    public void setO1IsSet(boolean value) {
+      if (!value) {
+        this.o1 = null;
+      }
+    }
+
+    public void setFieldValue(_Fields field, Object value) {
+      switch (field) {
+      case SUCCESS:
+        if (value == null) {
+          unsetSuccess();
+        } else {
+          setSuccess((Boolean)value);
+        }
+        break;
+
+      case O1:
+        if (value == null) {
+          unsetO1();
+        } else {
+          setO1((MetaException)value);
+        }
+        break;
+
+      }
+    }
+
+    public Object getFieldValue(_Fields field) {
+      switch (field) {
+      case SUCCESS:
+        return new Boolean(isSuccess());
+
+      case O1:
+        return getO1();
+
+      }
+      throw new IllegalStateException();
+    }
+
+    /** Returns true if field corresponding to fieldID is set (has been asigned a value) and false otherwise */
+    public boolean isSet(_Fields field) {
+      if (field == null) {
+        throw new IllegalArgumentException();
+      }
+
+      switch (field) {
+      case SUCCESS:
+        return isSetSuccess();
+      case O1:
+        return isSetO1();
+      }
+      throw new IllegalStateException();
+    }
+
+    @Override
+    public boolean equals(Object that) {
+      if (that == null)
+        return false;
+      if (that instanceof create_role_result)
+        return this.equals((create_role_result)that);
+      return false;
+    }
+
+    public boolean equals(create_role_result that) {
+      if (that == null)
+        return false;
+
+      boolean this_present_success = true;
+      boolean that_present_success = true;
+      if (this_present_success || that_present_success) {
+        if (!(this_present_success && that_present_success))
+          return false;
+        if (this.success != that.success)
+          return false;
+      }
+
+      boolean this_present_o1 = true && this.isSetO1();
+      boolean that_present_o1 = true && that.isSetO1();
+      if (this_present_o1 || that_present_o1) {
+        if (!(this_present_o1 && that_present_o1))
+          return false;
+        if (!this.o1.equals(that.o1))
+          return false;
+      }
+
+      return true;
+    }
+
+    @Override
+    public int hashCode() {
+      return 0;
+    }
+
+    public int compareTo(create_role_result other) {
+      if (!getClass().equals(other.getClass())) {
+        return getClass().getName().compareTo(other.getClass().getName());
+      }
+
+      int lastComparison = 0;
+      create_role_result typedOther = (create_role_result)other;
+
+      lastComparison = Boolean.valueOf(isSetSuccess()).compareTo(typedOther.isSetSuccess());
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+      if (isSetSuccess()) {
+        lastComparison = TBaseHelper.compareTo(this.success, typedOther.success);
+        if (lastComparison != 0) {
+          return lastComparison;
+        }
+      }
+      lastComparison = Boolean.valueOf(isSetO1()).compareTo(typedOther.isSetO1());
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+      if (isSetO1()) {
+        lastComparison = TBaseHelper.compareTo(this.o1, typedOther.o1);
+        if (lastComparison != 0) {
+          return lastComparison;
+        }
+      }
+      return 0;
+    }
+
+    public _Fields fieldForId(int fieldId) {
+      return _Fields.findByThriftId(fieldId);
+    }
+
+    public void read(TProtocol iprot) throws TException {
+      TField field;
+      iprot.readStructBegin();
+      while (true)
+      {
+        field = iprot.readFieldBegin();
+        if (field.type == TType.STOP) { 
+          break;
+        }
+        switch (field.id) {
+          case 0: // SUCCESS
+            if (field.type == TType.BOOL) {
+              this.success = iprot.readBool();
+              setSuccessIsSet(true);
+            } else { 
+              TProtocolUtil.skip(iprot, field.type);
+            }
+            break;
+          case 1: // O1
+            if (field.type == TType.STRUCT) {
+              this.o1 = new MetaException();
+              this.o1.read(iprot);
+            } else { 
+              TProtocolUtil.skip(iprot, field.type);
+            }
+            break;
+          default:
+            TProtocolUtil.skip(iprot, field.type);
+        }
+        iprot.readFieldEnd();
+      }
+      iprot.readStructEnd();
+      validate();
+    }
+
+    public void write(TProtocol oprot) throws TException {
+      oprot.writeStructBegin(STRUCT_DESC);
+
+      if (this.isSetSuccess()) {
+        oprot.writeFieldBegin(SUCCESS_FIELD_DESC);
+        oprot.writeBool(this.success);
+        oprot.writeFieldEnd();
+      } else if (this.isSetO1()) {
+        oprot.writeFieldBegin(O1_FIELD_DESC);
+        this.o1.write(oprot);
+        oprot.writeFieldEnd();
+      }
+      oprot.writeFieldStop();
+      oprot.writeStructEnd();
+    }
+
+    @Override
+    public String toString() {
+      StringBuilder sb = new StringBuilder("create_role_result(");
+      boolean first = true;
+
+      sb.append("success:");
+      sb.append(this.success);
+      first = false;
+      if (!first) sb.append(", ");
+      sb.append("o1:");
+      if (this.o1 == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.o1);
+      }
+      first = false;
+      sb.append(")");
+      return sb.toString();
+    }
+
+    public void validate() throws TException {
+      // check for required fields
+    }
+
+  }
+
+  public static class drop_role_args implements TBase<drop_role_args, drop_role_args._Fields>, java.io.Serializable, Cloneable   {
+    private static final TStruct STRUCT_DESC = new TStruct("drop_role_args");
+
+    private static final TField ROLE_NAME_FIELD_DESC = new TField("role_name", TType.STRING, (short)1);
+
+    private String role_name;
+
+    /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
+    public enum _Fields implements TFieldIdEnum {
+      ROLE_NAME((short)1, "role_name");
+
+      private static final Map<String, _Fields> byName = new HashMap<String, _Fields>();
+
+      static {
+        for (_Fields field : EnumSet.allOf(_Fields.class)) {
+          byName.put(field.getFieldName(), field);
+        }
+      }
+
+      /**
+       * Find the _Fields constant that matches fieldId, or null if its not found.
+       */
+      public static _Fields findByThriftId(int fieldId) {
+        switch(fieldId) {
+          case 1: // ROLE_NAME
+            return ROLE_NAME;
+          default:
+            return null;
+        }
+      }
+
+      /**
+       * Find the _Fields constant that matches fieldId, throwing an exception
+       * if it is not found.
+       */
+      public static _Fields findByThriftIdOrThrow(int fieldId) {
+        _Fields fields = findByThriftId(fieldId);
+        if (fields == null) throw new IllegalArgumentException("Field " + fieldId + " doesn't exist!");
+        return fields;
+      }
+
+      /**
+       * Find the _Fields constant that matches name, or null if its not found.
+       */
+      public static _Fields findByName(String name) {
+        return byName.get(name);
+      }
+
+      private final short _thriftId;
+      private final String _fieldName;
+
+      _Fields(short thriftId, String fieldName) {
+        _thriftId = thriftId;
+        _fieldName = fieldName;
+      }
+
+      public short getThriftFieldId() {
+        return _thriftId;
+      }
+
+      public String getFieldName() {
+        return _fieldName;
+      }
+    }
+
+    // isset id assignments
+
+    public static final Map<_Fields, FieldMetaData> metaDataMap;
+    static {
+      Map<_Fields, FieldMetaData> tmpMap = new EnumMap<_Fields, FieldMetaData>(_Fields.class);
+      tmpMap.put(_Fields.ROLE_NAME, new FieldMetaData("role_name", TFieldRequirementType.DEFAULT, 
+          new FieldValueMetaData(TType.STRING)));
+      metaDataMap = Collections.unmodifiableMap(tmpMap);
+      FieldMetaData.addStructMetaDataMap(drop_role_args.class, metaDataMap);
+    }
+
+    public drop_role_args() {
+    }
+
+    public drop_role_args(
+      String role_name)
+    {
+      this();
+      this.role_name = role_name;
+    }
+
+    /**
+     * Performs a deep copy on <i>other</i>.
+     */
+    public drop_role_args(drop_role_args other) {
+      if (other.isSetRole_name()) {
+        this.role_name = other.role_name;
+      }
+    }
+
+    public drop_role_args deepCopy() {
+      return new drop_role_args(this);
+    }
+
+    @Override
+    public void clear() {
+      this.role_name = null;
+    }
+
+    public String getRole_name() {
+      return this.role_name;
+    }
+
+    public void setRole_name(String role_name) {
+      this.role_name = role_name;
+    }
+
+    public void unsetRole_name() {
+      this.role_name = null;
+    }
+
+    /** Returns true if field role_name is set (has been asigned a value) and false otherwise */
+    public boolean isSetRole_name() {
+      return this.role_name != null;
+    }
+
+    public void setRole_nameIsSet(boolean value) {
+      if (!value) {
+        this.role_name = null;
+      }
+    }
+
+    public void setFieldValue(_Fields field, Object value) {
+      switch (field) {
+      case ROLE_NAME:
+        if (value == null) {
+          unsetRole_name();
+        } else {
+          setRole_name((String)value);
+        }
+        break;
+
+      }
+    }
+
+    public Object getFieldValue(_Fields field) {
+      switch (field) {
+      case ROLE_NAME:
+        return getRole_name();
+
+      }
+      throw new IllegalStateException();
+    }
+
+    /** Returns true if field corresponding to fieldID is set (has been asigned a value) and false otherwise */
+    public boolean isSet(_Fields field) {
+      if (field == null) {
+        throw new IllegalArgumentException();
+      }
+
+      switch (field) {
+      case ROLE_NAME:
+        return isSetRole_name();
+      }
+      throw new IllegalStateException();
+    }
+
+    @Override
+    public boolean equals(Object that) {
+      if (that == null)
+        return false;
+      if (that instanceof drop_role_args)
+        return this.equals((drop_role_args)that);
+      return false;
+    }
+
+    public boolean equals(drop_role_args that) {
+      if (that == null)
+        return false;
+
+      boolean this_present_role_name = true && this.isSetRole_name();
+      boolean that_present_role_name = true && that.isSetRole_name();
+      if (this_present_role_name || that_present_role_name) {
+        if (!(this_present_role_name && that_present_role_name))
+          return false;
+        if (!this.role_name.equals(that.role_name))
+          return false;
+      }
+
+      return true;
+    }
+
+    @Override
+    public int hashCode() {
+      return 0;
+    }
+
+    public int compareTo(drop_role_args other) {
+      if (!getClass().equals(other.getClass())) {
+        return getClass().getName().compareTo(other.getClass().getName());
+      }
+
+      int lastComparison = 0;
+      drop_role_args typedOther = (drop_role_args)other;
+
+      lastComparison = Boolean.valueOf(isSetRole_name()).compareTo(typedOther.isSetRole_name());
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+      if (isSetRole_name()) {
+        lastComparison = TBaseHelper.compareTo(this.role_name, typedOther.role_name);
+        if (lastComparison != 0) {
+          return lastComparison;
+        }
+      }
+      return 0;
+    }
+
+    public _Fields fieldForId(int fieldId) {
+      return _Fields.findByThriftId(fieldId);
+    }
+
+    public void read(TProtocol iprot) throws TException {
+      TField field;
+      iprot.readStructBegin();
+      while (true)
+      {
+        field = iprot.readFieldBegin();
+        if (field.type == TType.STOP) { 
+          break;
+        }
+        switch (field.id) {
+          case 1: // ROLE_NAME
+            if (field.type == TType.STRING) {
+              this.role_name = iprot.readString();
+            } else { 
+              TProtocolUtil.skip(iprot, field.type);
+            }
+            break;
+          default:
+            TProtocolUtil.skip(iprot, field.type);
+        }
+        iprot.readFieldEnd();
+      }
+      iprot.readStructEnd();
+      validate();
+    }
+
+    public void write(TProtocol oprot) throws TException {
+      validate();
+
+      oprot.writeStructBegin(STRUCT_DESC);
+      if (this.role_name != null) {
+        oprot.writeFieldBegin(ROLE_NAME_FIELD_DESC);
+        oprot.writeString(this.role_name);
+        oprot.writeFieldEnd();
+      }
+      oprot.writeFieldStop();
+      oprot.writeStructEnd();
+    }
+
+    @Override
+    public String toString() {
+      StringBuilder sb = new StringBuilder("drop_role_args(");
+      boolean first = true;
+
+      sb.append("role_name:");
+      if (this.role_name == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.role_name);
+      }
+      first = false;
+      sb.append(")");
+      return sb.toString();
+    }
+
+    public void validate() throws TException {
+      // check for required fields
+    }
+
+  }
+
+  public static class drop_role_result implements TBase<drop_role_result, drop_role_result._Fields>, java.io.Serializable, Cloneable   {
+    private static final TStruct STRUCT_DESC = new TStruct("drop_role_result");
+
+    private static final TField SUCCESS_FIELD_DESC = new TField("success", TType.BOOL, (short)0);
+    private static final TField O1_FIELD_DESC = new TField("o1", TType.STRUCT, (short)1);
+
+    private boolean success;
+    private MetaException o1;
+
+    /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
+    public enum _Fields implements TFieldIdEnum {
+      SUCCESS((short)0, "success"),
+      O1((short)1, "o1");
+
+      private static final Map<String, _Fields> byName = new HashMap<String, _Fields>();
+
+      static {
+        for (_Fields field : EnumSet.allOf(_Fields.class)) {
+          byName.put(field.getFieldName(), field);
+        }
+      }
+
+      /**
+       * Find the _Fields constant that matches fieldId, or null if its not found.
+       */
+      public static _Fields findByThriftId(int fieldId) {
+        switch(fieldId) {
+          case 0: // SUCCESS
+            return SUCCESS;
+          case 1: // O1
+            return O1;
+          default:
+            return null;
+        }
+      }
+
+      /**
+       * Find the _Fields constant that matches fieldId, throwing an exception
+       * if it is not found.
+       */
+      public static _Fields findByThriftIdOrThrow(int fieldId) {
+        _Fields fields = findByThriftId(fieldId);
+        if (fields == null) throw new IllegalArgumentException("Field " + fieldId + " doesn't exist!");
+        return fields;
+      }
+
+      /**
+       * Find the _Fields constant that matches name, or null if its not found.
+       */
+      public static _Fields findByName(String name) {
+        return byName.get(name);
+      }
+
+      private final short _thriftId;
+      private final String _fieldName;
+
+      _Fields(short thriftId, String fieldName) {
+        _thriftId = thriftId;
+        _fieldName = fieldName;
+      }
+
+      public short getThriftFieldId() {
+        return _thriftId;
+      }
+
+      public String getFieldName() {
+        return _fieldName;
+      }
+    }
+
+    // isset id assignments
+    private static final int __SUCCESS_ISSET_ID = 0;
+    private BitSet __isset_bit_vector = new BitSet(1);
+
+    public static final Map<_Fields, FieldMetaData> metaDataMap;
+    static {
+      Map<_Fields, FieldMetaData> tmpMap = new EnumMap<_Fields, FieldMetaData>(_Fields.class);
+      tmpMap.put(_Fields.SUCCESS, new FieldMetaData("success", TFieldRequirementType.DEFAULT, 
+          new FieldValueMetaData(TType.BOOL)));
+      tmpMap.put(_Fields.O1, new FieldMetaData("o1", TFieldRequirementType.DEFAULT, 
+          new FieldValueMetaData(TType.STRUCT)));
+      metaDataMap = Collections.unmodifiableMap(tmpMap);
+      FieldMetaData.addStructMetaDataMap(drop_role_result.class, metaDataMap);
+    }
+
+    public drop_role_result() {
+    }
+
+    public drop_role_result(
+      boolean success,
+      MetaException o1)
+    {
+      this();
+      this.success = success;
+      setSuccessIsSet(true);
+      this.o1 = o1;
+    }
+
+    /**
+     * Performs a deep copy on <i>other</i>.
+     */
+    public drop_role_result(drop_role_result other) {
+      __isset_bit_vector.clear();
+      __isset_bit_vector.or(other.__isset_bit_vector);
+      this.success = other.success;
+      if (other.isSetO1()) {
+        this.o1 = new MetaException(other.o1);
+      }
+    }
+
+    public drop_role_result deepCopy() {
+      return new drop_role_result(this);
+    }
+
+    @Override
+    public void clear() {
+      setSuccessIsSet(false);
+      this.success = false;
+      this.o1 = null;
+    }
+
+    public boolean isSuccess() {
+      return this.success;
+    }
+
+    public void setSuccess(boolean success) {
+      this.success = success;
+      setSuccessIsSet(true);
+    }
+
+    public void unsetSuccess() {
+      __isset_bit_vector.clear(__SUCCESS_ISSET_ID);
+    }
+
+    /** Returns true if field success is set (has been asigned a value) and false otherwise */
+    public boolean isSetSuccess() {
+      return __isset_bit_vector.get(__SUCCESS_ISSET_ID);
+    }
+
+    public void setSuccessIsSet(boolean value) {
+      __isset_bit_vector.set(__SUCCESS_ISSET_ID, value);
+    }
+
+    public MetaException getO1() {
+      return this.o1;
+    }
+
+    public void setO1(MetaException o1) {
+      this.o1 = o1;
+    }
+
+    public void unsetO1() {
+      this.o1 = null;
+    }
+
+    /** Returns true if field o1 is set (has been asigned a value) and false otherwise */
+    public boolean isSetO1() {
+      return this.o1 != null;
+    }
+
+    public void setO1IsSet(boolean value) {
+      if (!value) {
+        this.o1 = null;
+      }
+    }
+
+    public void setFieldValue(_Fields field, Object value) {
+      switch (field) {
+      case SUCCESS:
+        if (value == null) {
+          unsetSuccess();
+        } else {
+          setSuccess((Boolean)value);
+        }
+        break;
+
+      case O1:
+        if (value == null) {
+          unsetO1();
+        } else {
+          setO1((MetaException)value);
+        }
+        break;
+
+      }
+    }
+
+    public Object getFieldValue(_Fields field) {
+      switch (field) {
+      case SUCCESS:
+        return new Boolean(isSuccess());
+
+      case O1:
+        return getO1();
+
+      }
+      throw new IllegalStateException();
+    }
+
+    /** Returns true if field corresponding to fieldID is set (has been asigned a value) and false otherwise */
+    public boolean isSet(_Fields field) {
+      if (field == null) {
+        throw new IllegalArgumentException();
+      }
+
+      switch (field) {
+      case SUCCESS:
+        return isSetSuccess();
+      case O1:
+        return isSetO1();
+      }
+      throw new IllegalStateException();
+    }
+
+    @Override
+    public boolean equals(Object that) {
+      if (that == null)
+        return false;
+      if (that instanceof drop_role_result)
+        return this.equals((drop_role_result)that);
+      return false;
+    }
+
+    public boolean equals(drop_role_result that) {
+      if (that == null)
+        return false;
+
+      boolean this_present_success = true;
+      boolean that_present_success = true;
+      if (this_present_success || that_present_success) {
+        if (!(this_present_success && that_present_success))
+          return false;
+        if (this.success != that.success)
+          return false;
+      }
+
+      boolean this_present_o1 = true && this.isSetO1();
+      boolean that_present_o1 = true && that.isSetO1();
+      if (this_present_o1 || that_present_o1) {
+        if (!(this_present_o1 && that_present_o1))
+          return false;
+        if (!this.o1.equals(that.o1))
+          return false;
+      }
+
+      return true;
+    }
+
+    @Override
+    public int hashCode() {
+      return 0;
+    }
+
+    public int compareTo(drop_role_result other) {
+      if (!getClass().equals(other.getClass())) {
+        return getClass().getName().compareTo(other.getClass().getName());
+      }
+
+      int lastComparison = 0;
+      drop_role_result typedOther = (drop_role_result)other;
+
+      lastComparison = Boolean.valueOf(isSetSuccess()).compareTo(typedOther.isSetSuccess());
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+      if (isSetSuccess()) {
+        lastComparison = TBaseHelper.compareTo(this.success, typedOther.success);
+        if (lastComparison != 0) {
+          return lastComparison;
+        }
+      }
+      lastComparison = Boolean.valueOf(isSetO1()).compareTo(typedOther.isSetO1());
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+      if (isSetO1()) {
+        lastComparison = TBaseHelper.compareTo(this.o1, typedOther.o1);
+        if (lastComparison != 0) {
+          return lastComparison;
+        }
+      }
+      return 0;
+    }
+
+    public _Fields fieldForId(int fieldId) {
+      return _Fields.findByThriftId(fieldId);
+    }
+
+    public void read(TProtocol iprot) throws TException {
+      TField field;
+      iprot.readStructBegin();
+      while (true)
+      {
+        field = iprot.readFieldBegin();
+        if (field.type == TType.STOP) { 
+          break;
+        }
+        switch (field.id) {
+          case 0: // SUCCESS
+            if (field.type == TType.BOOL) {
+              this.success = iprot.readBool();
+              setSuccessIsSet(true);
+            } else { 
+              TProtocolUtil.skip(iprot, field.type);
+            }
+            break;
+          case 1: // O1
+            if (field.type == TType.STRUCT) {
+              this.o1 = new MetaException();
+              this.o1.read(iprot);
+            } else { 
+              TProtocolUtil.skip(iprot, field.type);
+            }
+            break;
+          default:
+            TProtocolUtil.skip(iprot, field.type);
+        }
+        iprot.readFieldEnd();
+      }
+      iprot.readStructEnd();
+      validate();
+    }
+
+    public void write(TProtocol oprot) throws TException {
+      oprot.writeStructBegin(STRUCT_DESC);
+
+      if (this.isSetSuccess()) {
+        oprot.writeFieldBegin(SUCCESS_FIELD_DESC);
+        oprot.writeBool(this.success);
+        oprot.writeFieldEnd();
+      } else if (this.isSetO1()) {
+        oprot.writeFieldBegin(O1_FIELD_DESC);
+        this.o1.write(oprot);
+        oprot.writeFieldEnd();
+      }
+      oprot.writeFieldStop();
+      oprot.writeStructEnd();
+    }
+
+    @Override
+    public String toString() {
+      StringBuilder sb = new StringBuilder("drop_role_result(");
+      boolean first = true;
+
+      sb.append("success:");
+      sb.append(this.success);
+      first = false;
+      if (!first) sb.append(", ");
+      sb.append("o1:");
+      if (this.o1 == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.o1);
+      }
+      first = false;
+      sb.append(")");
+      return sb.toString();
+    }
+
+    public void validate() throws TException {
+      // check for required fields
+    }
+
+  }
+
+  public static class grant_role_args implements TBase<grant_role_args, grant_role_args._Fields>, java.io.Serializable, Cloneable   {
+    private static final TStruct STRUCT_DESC = new TStruct("grant_role_args");
+
+    private static final TField ROLE_NAME_FIELD_DESC = new TField("role_name", TType.STRING, (short)1);
+    private static final TField PRINCIPAL_NAME_FIELD_DESC = new TField("principal_name", TType.STRING, (short)2);
+    private static final TField PRINCIPAL_TYPE_FIELD_DESC = new TField("principal_type", TType.I32, (short)3);
+    private static final TField GRANTOR_FIELD_DESC = new TField("grantor", TType.STRING, (short)4);
+    private static final TField GRANTOR_TYPE_FIELD_DESC = new TField("grantorType", TType.I32, (short)5);
+    private static final TField GRANT_OPTION_FIELD_DESC = new TField("grant_option", TType.BOOL, (short)6);
+
+    private String role_name;
+    private String principal_name;
+    private PrincipalType principal_type;
+    private String grantor;
+    private PrincipalType grantorType;
+    private boolean grant_option;
+
+    /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
+    public enum _Fields implements TFieldIdEnum {
+      ROLE_NAME((short)1, "role_name"),
+      PRINCIPAL_NAME((short)2, "principal_name"),
+      /**
+       * 
+       * @see PrincipalType
+       */
+      PRINCIPAL_TYPE((short)3, "principal_type"),
+      GRANTOR((short)4, "grantor"),
+      /**
+       * 
+       * @see PrincipalType
+       */
+      GRANTOR_TYPE((short)5, "grantorType"),
+      GRANT_OPTION((short)6, "grant_option");
+
+      private static final Map<String, _Fields> byName = new HashMap<String, _Fields>();
+
+      static {
+        for (_Fields field : EnumSet.allOf(_Fields.class)) {
+          byName.put(field.getFieldName(), field);
+        }
+      }
+
+      /**
+       * Find the _Fields constant that matches fieldId, or null if its not found.
+       */
+      public static _Fields findByThriftId(int fieldId) {
+        switch(fieldId) {
+          case 1: // ROLE_NAME
+            return ROLE_NAME;
+          case 2: // PRINCIPAL_NAME
+            return PRINCIPAL_NAME;
+          case 3: // PRINCIPAL_TYPE
+            return PRINCIPAL_TYPE;
+          case 4: // GRANTOR
+            return GRANTOR;
+          case 5: // GRANTOR_TYPE
+            return GRANTOR_TYPE;
+          case 6: // GRANT_OPTION
+            return GRANT_OPTION;
+          default:
+            return null;
+        }
+      }
+
+      /**
+       * Find the _Fields constant that matches fieldId, throwing an exception
+       * if it is not found.
+       */
+      public static _Fields findByThriftIdOrThrow(int fieldId) {
+        _Fields fields = findByThriftId(fieldId);
+        if (fields == null) throw new IllegalArgumentException("Field " + fieldId + " doesn't exist!");
+        return fields;
+      }
+
+      /**
+       * Find the _Fields constant that matches name, or null if its not found.
+       */
+      public static _Fields findByName(String name) {
+        return byName.get(name);
+      }
+
+      private final short _thriftId;
+      private final String _fieldName;
+
+      _Fields(short thriftId, String fieldName) {
+        _thriftId = thriftId;
+        _fieldName = fieldName;
+      }
+
+      public short getThriftFieldId() {
+        return _thriftId;
+      }
+
+      public String getFieldName() {
+        return _fieldName;
+      }
+    }
+
+    // isset id assignments
+    private static final int __GRANT_OPTION_ISSET_ID = 0;
+    private BitSet __isset_bit_vector = new BitSet(1);
+
+    public static final Map<_Fields, FieldMetaData> metaDataMap;
+    static {
+      Map<_Fields, FieldMetaData> tmpMap = new EnumMap<_Fields, FieldMetaData>(_Fields.class);
+      tmpMap.put(_Fields.ROLE_NAME, new FieldMetaData("role_name", TFieldRequirementType.DEFAULT, 
+          new FieldValueMetaData(TType.STRING)));
+      tmpMap.put(_Fields.PRINCIPAL_NAME, new FieldMetaData("principal_name", TFieldRequirementType.DEFAULT, 
+          new FieldValueMetaData(TType.STRING)));
+      tmpMap.put(_Fields.PRINCIPAL_TYPE, new FieldMetaData("principal_type", TFieldRequirementType.DEFAULT, 
+          new EnumMetaData(TType.ENUM, PrincipalType.class)));
+      tmpMap.put(_Fields.GRANTOR, new FieldMetaData("grantor", TFieldRequirementType.DEFAULT, 
+          new FieldValueMetaData(TType.STRING)));
+      tmpMap.put(_Fields.GRANTOR_TYPE, new FieldMetaData("grantorType", TFieldRequirementType.DEFAULT, 
+          new EnumMetaData(TType.ENUM, PrincipalType.class)));
+      tmpMap.put(_Fields.GRANT_OPTION, new FieldMetaData("grant_option", TFieldRequirementType.DEFAULT, 
+          new FieldValueMetaData(TType.BOOL)));
+      metaDataMap = Collections.unmodifiableMap(tmpMap);
+      FieldMetaData.addStructMetaDataMap(grant_role_args.class, metaDataMap);
+    }
+
+    public grant_role_args() {
+    }
+
+    public grant_role_args(
+      String role_name,
+      String principal_name,
+      PrincipalType principal_type,
+      String grantor,
+      PrincipalType grantorType,
+      boolean grant_option)
+    {
+      this();
+      this.role_name = role_name;
+      this.principal_name = principal_name;
+      this.principal_type = principal_type;
+      this.grantor = grantor;
+      this.grantorType = grantorType;
+      this.grant_option = grant_option;
+      setGrant_optionIsSet(true);
+    }
+
+    /**
+     * Performs a deep copy on <i>other</i>.
+     */
+    public grant_role_args(grant_role_args other) {
+      __isset_bit_vector.clear();
+      __isset_bit_vector.or(other.__isset_bit_vector);
+      if (other.isSetRole_name()) {
+        this.role_name = other.role_name;
+      }
+      if (other.isSetPrincipal_name()) {
+        this.principal_name = other.principal_name;
+      }
+      if (other.isSetPrincipal_type()) {
+        this.principal_type = other.principal_type;
+      }
+      if (other.isSetGrantor()) {
+        this.grantor = other.grantor;
+      }
+      if (other.isSetGrantorType()) {
+        this.grantorType = other.grantorType;
+      }
+      this.grant_option = other.grant_option;
+    }
+
+    public grant_role_args deepCopy() {
+      return new grant_role_args(this);
+    }
+
+    @Override
+    public void clear() {
+      this.role_name = null;
+      this.principal_name = null;
+      this.principal_type = null;
+      this.grantor = null;
+      this.grantorType = null;
+      setGrant_optionIsSet(false);
+      this.grant_option = false;
+    }
+
+    public String getRole_name() {
+      return this.role_name;
+    }
+
+    public void setRole_name(String role_name) {
+      this.role_name = role_name;
+    }
+
+    public void unsetRole_name() {
+      this.role_name = null;
+    }
+
+    /** Returns true if field role_name is set (has been asigned a value) and false otherwise */
+    public boolean isSetRole_name() {
+      return this.role_name != null;
+    }
+
+    public void setRole_nameIsSet(boolean value) {
+      if (!value) {
+        this.role_name = null;
+      }
+    }
+
+    public String getPrincipal_name() {
+      return this.principal_name;
+    }
+
+    public void setPrincipal_name(String principal_name) {
+      this.principal_name = principal_name;
+    }
+
+    public void unsetPrincipal_name() {
+      this.principal_name = null;
+    }
+
+    /** Returns true if field principal_name is set (has been asigned a value) and false otherwise */
+    public boolean isSetPrincipal_name() {
+      return this.principal_name != null;
+    }
+
+    public void setPrincipal_nameIsSet(boolean value) {
+      if (!value) {
+        this.principal_name = null;
+      }
+    }
+
+    /**
+     * 
+     * @see PrincipalType
+     */
+    public PrincipalType getPrincipal_type() {
+      return this.principal_type;
+    }
+
+    /**
+     * 
+     * @see PrincipalType
+     */
+    public void setPrincipal_type(PrincipalType principal_type) {
+      this.principal_type = principal_type;
+    }
+
+    public void unsetPrincipal_type() {
+      this.principal_type = null;
+    }
+
+    /** Returns true if field principal_type is set (has been asigned a value) and false otherwise */
+    public boolean isSetPrincipal_type() {
+      return this.principal_type != null;
+    }
+
+    public void setPrincipal_typeIsSet(boolean value) {
+      if (!value) {
+        this.principal_type = null;
+      }
+    }
+
+    public String getGrantor() {
+      return this.grantor;
+    }
+
+    public void setGrantor(String grantor) {
+      this.grantor = grantor;
+    }
+
+    public void unsetGrantor() {
+      this.grantor = null;
+    }
+
+    /** Returns true if field grantor is set (has been asigned a value) and false otherwise */
+    public boolean isSetGrantor() {
+      return this.grantor != null;
+    }
+
+    public void setGrantorIsSet(boolean value) {
+      if (!value) {
+        this.grantor = null;
+      }
+    }
+
+    /**
+     * 
+     * @see PrincipalType
+     */
+    public PrincipalType getGrantorType() {
+      return this.grantorType;
+    }
+
+    /**
+     * 
+     * @see PrincipalType
+     */
+    public void setGrantorType(PrincipalType grantorType) {
+      this.grantorType = grantorType;
+    }
+
+    public void unsetGrantorType() {
+      this.grantorType = null;
+    }
+
+    /** Returns true if field grantorType is set (has been asigned a value) and false otherwise */
+    public boolean isSetGrantorType() {
+      return this.grantorType != null;
+    }
+
+    public void setGrantorTypeIsSet(boolean value) {
+      if (!value) {
+        this.grantorType = null;
+      }
+    }
+
+    public boolean isGrant_option() {
+      return this.grant_option;
+    }
+
+    public void setGrant_option(boolean grant_option) {
+      this.grant_option = grant_option;
+      setGrant_optionIsSet(true);
+    }
+
+    public void unsetGrant_option() {
+      __isset_bit_vector.clear(__GRANT_OPTION_ISSET_ID);
+    }
+
+    /** Returns true if field grant_option is set (has been asigned a value) and false otherwise */
+    public boolean isSetGrant_option() {
+      return __isset_bit_vector.get(__GRANT_OPTION_ISSET_ID);
+    }
+
+    public void setGrant_optionIsSet(boolean value) {
+      __isset_bit_vector.set(__GRANT_OPTION_ISSET_ID, value);
+    }
+
+    public void setFieldValue(_Fields field, Object value) {
+      switch (field) {
+      case ROLE_NAME:
+        if (value == null) {
+          unsetRole_name();
+        } else {
+          setRole_name((String)value);
+        }
+        break;
+
+      case PRINCIPAL_NAME:
+        if (value == null) {
+          unsetPrincipal_name();
+        } else {
+          setPrincipal_name((String)value);
+        }
+        break;
+
+      case PRINCIPAL_TYPE:
+        if (value == null) {
+          unsetPrincipal_type();
+        } else {
+          setPrincipal_type((PrincipalType)value);
+        }
+        break;
+
+      case GRANTOR:
+        if (value == null) {
+          unsetGrantor();
+        } else {
+          setGrantor((String)value);
+        }
+        break;
+
+      case GRANTOR_TYPE:
+        if (value == null) {
+          unsetGrantorType();
+        } else {
+          setGrantorType((PrincipalType)value);
+        }
+        break;
+
+      case GRANT_OPTION:
+        if (value == null) {
+          unsetGrant_option();
+        } else {
+          setGrant_option((Boolean)value);
+        }
+        break;
+
+      }
+    }
+
+    public Object getFieldValue(_Fields field) {
+      switch (field) {
+      case ROLE_NAME:
+        return getRole_name();
+
+      case PRINCIPAL_NAME:
+        return getPrincipal_name();
+
+      case PRINCIPAL_TYPE:
+        return getPrincipal_type();
+
+      case GRANTOR:
+        return getGrantor();
+
+      case GRANTOR_TYPE:
+        return getGrantorType();
+
+      case GRANT_OPTION:
+        return new Boolean(isGrant_option());
+
+      }
+      throw new IllegalStateException();
+    }
+
+    /** Returns true if field corresponding to fieldID is set (has been asigned a value) and false otherwise */
+    public boolean isSet(_Fields field) {
+      if (field == null) {
+        throw new IllegalArgumentException();
+      }
+
+      switch (field) {
+      case ROLE_NAME:
+        return isSetRole_name();
+      case PRINCIPAL_NAME:
+        return isSetPrincipal_name();
+      case PRINCIPAL_TYPE:
+        return isSetPrincipal_type();
+      case GRANTOR:
+        return isSetGrantor();
+      case GRANTOR_TYPE:
+        return isSetGrantorType();
+      case GRANT_OPTION:
+        return isSetGrant_option();
+      }
+      throw new IllegalStateException();
+    }
+
+    @Override
+    public boolean equals(Object that) {
+      if (that == null)
+        return false;
+      if (that instanceof grant_role_args)
+        return this.equals((grant_role_args)that);
+      return false;
+    }
+
+    public boolean equals(grant_role_args that) {
+      if (that == null)
+        return false;
+
+      boolean this_present_role_name = true && this.isSetRole_name();
+      boolean that_present_role_name = true && that.isSetRole_name();
+      if (this_present_role_name || that_present_role_name) {
+        if (!(this_present_role_name && that_present_role_name))
+          return false;
+        if (!this.role_name.equals(that.role_name))
+          return false;
+      }
+
+      boolean this_present_principal_name = true && this.isSetPrincipal_name();
+      boolean that_present_principal_name = true && that.isSetPrincipal_name();
+      if (this_present_principal_name || that_present_principal_name) {
+        if (!(this_present_principal_name && that_present_principal_name))
+          return false;
+        if (!this.principal_name.equals(that.principal_name))
+          return false;
+      }
+
+      boolean this_present_principal_type = true && this.isSetPrincipal_type();
+      boolean that_present_principal_type = true && that.isSetPrincipal_type();
+      if (this_present_principal_type || that_present_principal_type) {
+        if (!(this_present_principal_type && that_present_principal_type))
+          return false;
+        if (!this.principal_type.equals(that.principal_type))
+          return false;
+      }
+
+      boolean this_present_grantor = true && this.isSetGrantor();
+      boolean that_present_grantor = true && that.isSetGrantor();
+      if (this_present_grantor || that_present_grantor) {
+        if (!(this_present_grantor && that_present_grantor))
+          return false;
+        if (!this.grantor.equals(that.grantor))
+          return false;
+      }
+
+      boolean this_present_grantorType = true && this.isSetGrantorType();
+      boolean that_present_grantorType = true && that.isSetGrantorType();
+      if (this_present_grantorType || that_present_grantorType) {
+        if (!(this_present_grantorType && that_present_grantorType))
+          return false;
+        if (!this.grantorType.equals(that.grantorType))
+          return false;
+      }
+
+      boolean this_present_grant_option = true;
+      boolean that_present_grant_option = true;
+      if (this_present_grant_option || that_present_grant_option) {
+        if (!(this_present_grant_option && that_present_grant_option))
+          return false;
+        if (this.grant_option != that.grant_option)
+          return false;
+      }
+
+      return true;
+    }
+
+    @Override
+    public int hashCode() {
+      return 0;
+    }
+
+    public int compareTo(grant_role_args other) {
+      if (!getClass().equals(other.getClass())) {
+        return getClass().getName().compareTo(other.getClass().getName());
+      }
+
+      int lastComparison = 0;
+      grant_role_args typedOther = (grant_role_args)other;
+
+      lastComparison = Boolean.valueOf(isSetRole_name()).compareTo(typedOther.isSetRole_name());
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+      if (isSetRole_name()) {
+        lastComparison = TBaseHelper.compareTo(this.role_name, typedOther.role_name);
+        if (lastComparison != 0) {
+          return lastComparison;
+        }
+      }
+      lastComparison = Boolean.valueOf(isSetPrincipal_name()).compareTo(typedOther.isSetPrincipal_name());
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+      if (isSetPrincipal_name()) {
+        lastComparison = TBaseHelper.compareTo(this.principal_name, typedOther.principal_name);
+        if (lastComparison != 0) {
+          return lastComparison;
+        }
+      }
+      lastComparison = Boolean.valueOf(isSetPrincipal_type()).compareTo(typedOther.isSetPrincipal_type());
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+      if (isSetPrincipal_type()) {
+        lastComparison = TBaseHelper.compareTo(this.principal_type, typedOther.principal_type);
+        if (lastComparison != 0) {
+          return lastComparison;
+        }
+      }
+      lastComparison = Boolean.valueOf(isSetGrantor()).compareTo(typedOther.isSetGrantor());
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+      if (isSetGrantor()) {
+        lastComparison = TBaseHelper.compareTo(this.grantor, typedOther.grantor);
+        if (lastComparison != 0) {
+          return lastComparison;
+        }
+      }
+      lastComparison = Boolean.valueOf(isSetGrantorType()).compareTo(typedOther.isSetGrantorType());
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+      if (isSetGrantorType()) {
+        lastComparison = TBaseHelper.compareTo(this.grantorType, typedOther.grantorType);
+        if (lastComparison != 0) {
+          return lastComparison;
+        }
+      }
+      lastComparison = Boolean.valueOf(isSetGrant_option()).compareTo(typedOther.isSetGrant_option());
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+      if (isSetGrant_option()) {
+        lastComparison = TBaseHelper.compareTo(this.grant_option, typedOther.grant_option);
+        if (lastComparison != 0) {
+          return lastComparison;
+        }
+      }
+      return 0;
+    }
+
+    public _Fields fieldForId(int fieldId) {
+      return _Fields.findByThriftId(fieldId);
+    }
+
+    public void read(TProtocol iprot) throws TException {
+      TField field;
+      iprot.readStructBegin();
+      while (true)
+      {
+        field = iprot.readFieldBegin();
+        if (field.type == TType.STOP) { 
+          break;
+        }
+        switch (field.id) {
+          case 1: // ROLE_NAME
+            if (field.type == TType.STRING) {
+              this.role_name = iprot.readString();
+            } else { 
+              TProtocolUtil.skip(iprot, field.type);
+            }
+            break;
+          case 2: // PRINCIPAL_NAME
+            if (field.type == TType.STRING) {
+              this.principal_name = iprot.readString();
+            } else { 
+              TProtocolUtil.skip(iprot, field.type);
+            }
+            break;
+          case 3: // PRINCIPAL_TYPE
+            if (field.type == TType.I32) {
+              this.principal_type = PrincipalType.findByValue(iprot.readI32());
+            } else { 
+              TProtocolUtil.skip(iprot, field.type);
+            }
+            break;
+          case 4: // GRANTOR
+            if (field.type == TType.STRING) {
+              this.grantor = iprot.readString();
+            } else { 
+              TProtocolUtil.skip(iprot, field.type);
+            }
+            break;
+          case 5: // GRANTOR_TYPE
+            if (field.type == TType.I32) {
+              this.grantorType = PrincipalType.findByValue(iprot.readI32());
+            } else { 
+              TProtocolUtil.skip(iprot, field.type);
+            }
+            break;
+          case 6: // GRANT_OPTION
+            if (field.type == TType.BOOL) {
+              this.grant_option = iprot.readBool();
+              setGrant_optionIsSet(true);
+            } else { 
+              TProtocolUtil.skip(iprot, field.type);
+            }
+            break;
+          default:
+            TProtocolUtil.skip(iprot, field.type);
+        }
+        iprot.readFieldEnd();
+      }
+      iprot.readStructEnd();
+      validate();
+    }
+
+    public void write(TProtocol oprot) throws TException {
+      validate();
+
+      oprot.writeStructBegin(STRUCT_DESC);
+      if (this.role_name != null) {
+        oprot.writeFieldBegin(ROLE_NAME_FIELD_DESC);
+        oprot.writeString(this.role_name);
+        oprot.writeFieldEnd();
+      }
+      if (this.principal_name != null) {
+        oprot.writeFieldBegin(PRINCIPAL_NAME_FIELD_DESC);
+        oprot.writeString(this.principal_name);
+        oprot.writeFieldEnd();
+      }
+      if (this.principal_type != null) {
+        oprot.writeFieldBegin(PRINCIPAL_TYPE_FIELD_DESC);
+        oprot.writeI32(this.principal_type.getValue());
+        oprot.writeFieldEnd();
+      }
+      if (this.grantor != null) {
+        oprot.writeFieldBegin(GRANTOR_FIELD_DESC);
+        oprot.writeString(this.grantor);
+        oprot.writeFieldEnd();
+      }
+      if (this.grantorType != null) {
+        oprot.writeFieldBegin(GRANTOR_TYPE_FIELD_DESC);
+        oprot.writeI32(this.grantorType.getValue());
+        oprot.writeFieldEnd();
+      }
+      oprot.writeFieldBegin(GRANT_OPTION_FIELD_DESC);
+      oprot.writeBool(this.grant_option);
+      oprot.writeFieldEnd();
+      oprot.writeFieldStop();
+      oprot.writeStructEnd();
+    }
+
+    @Override
+    public String toString() {
+      StringBuilder sb = new StringBuilder("grant_role_args(");
+      boolean first = true;
+
+      sb.append("role_name:");
+      if (this.role_name == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.role_name);
+      }
+      first = false;
+      if (!first) sb.append(", ");
+      sb.append("principal_name:");
+      if (this.principal_name == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.principal_name);
+      }
+      first = false;
+      if (!first) sb.append(", ");
+      sb.append("principal_type:");
+      if (this.principal_type == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.principal_type);
+      }
+      first = false;
+      if (!first) sb.append(", ");
+      sb.append("grantor:");
+      if (this.grantor == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.grantor);
+      }
+      first = false;
+      if (!first) sb.append(", ");
+      sb.append("grantorType:");
+      if (this.grantorType == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.grantorType);
+      }
+      first = false;
+      if (!first) sb.append(", ");
+      sb.append("grant_option:");
+      sb.append(this.grant_option);
+      first = false;
+      sb.append(")");
+      return sb.toString();
+    }
+
+    public void validate() throws TException {
+      // check for required fields
+    }
+
+  }
+
+  public static class grant_role_result implements TBase<grant_role_result, grant_role_result._Fields>, java.io.Serializable, Cloneable   {
+    private static final TStruct STRUCT_DESC = new TStruct("grant_role_result");
+
+    private static final TField SUCCESS_FIELD_DESC = new TField("success", TType.BOOL, (short)0);
+    private static final TField O1_FIELD_DESC = new TField("o1", TType.STRUCT, (short)1);
+
+    private boolean success;
+    private MetaException o1;
+
+    /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
+    public enum _Fields implements TFieldIdEnum {
+      SUCCESS((short)0, "success"),
+      O1((short)1, "o1");
+
+      private static final Map<String, _Fields> byName = new HashMap<String, _Fields>();
+
+      static {
+        for (_Fields field : EnumSet.allOf(_Fields.class)) {
+          byName.put(field.getFieldName(), field);
+        }
+      }
+
+      /**
+       * Find the _Fields constant that matches fieldId, or null if its not found.
+       */
+      public static _Fields findByThriftId(int fieldId) {
+        switch(fieldId) {
+          case 0: // SUCCESS
+            return SUCCESS;
+          case 1: // O1
+            return O1;
+          default:
+            return null;
+        }
+      }
+
+      /**
+       * Find the _Fields constant that matches fieldId, throwing an exception
+       * if it is not found.
+       */
+      public static _Fields findByThriftIdOrThrow(int fieldId) {
+        _Fields fields = findByThriftId(fieldId);
+        if (fields == null) throw new IllegalArgumentException("Field " + fieldId + " doesn't exist!");
+        return fields;
+      }
+
+      /**
+       * Find the _Fields constant that matches name, or null if its not found.
+       */
+      public static _Fields findByName(String name) {
+        return byName.get(name);
+      }
+
+      private final short _thriftId;
+      private final String _fieldName;
+
+      _Fields(short thriftId, String fieldName) {
+        _thriftId = thriftId;
+        _fieldName = fieldName;
+      }
+
+      public short getThriftFieldId() {
+        return _thriftId;
+      }
+
+      public String getFieldName() {
+        return _fieldName;
+      }
+    }
+
+    // isset id assignments
+    private static final int __SUCCESS_ISSET_ID = 0;
+    private BitSet __isset_bit_vector = new BitSet(1);
+
+    public static final Map<_Fields, FieldMetaData> metaDataMap;
+    static {
+      Map<_Fields, FieldMetaData> tmpMap = new EnumMap<_Fields, FieldMetaData>(_Fields.class);
+      tmpMap.put(_Fields.SUCCESS, new FieldMetaData("success", TFieldRequirementType.DEFAULT, 
+          new FieldValueMetaData(TType.BOOL)));
+      tmpMap.put(_Fields.O1, new FieldMetaData("o1", TFieldRequirementType.DEFAULT, 
+          new FieldValueMetaData(TType.STRUCT)));
+      metaDataMap = Collections.unmodifiableMap(tmpMap);
+      FieldMetaData.addStructMetaDataMap(grant_role_result.class, metaDataMap);
+    }
+
+    public grant_role_result() {
+    }
+
+    public grant_role_result(
+      boolean success,
+      MetaException o1)
+    {
+      this();
+      this.success = success;
+      setSuccessIsSet(true);
+      this.o1 = o1;
+    }
+
+    /**
+     * Performs a deep copy on <i>other</i>.
+     */
+    public grant_role_result(grant_role_result other) {
+      __isset_bit_vector.clear();
+      __isset_bit_vector.or(other.__isset_bit_vector);
+      this.success = other.success;
+      if (other.isSetO1()) {
+        this.o1 = new MetaException(other.o1);
+      }
+    }
+
+    public grant_role_result deepCopy() {
+      return new grant_role_result(this);
+    }
+
+    @Override
+    public void clear() {
+      setSuccessIsSet(false);
+      this.success = false;
+      this.o1 = null;
+    }
+
+    public boolean isSuccess() {
+      return this.success;
+    }
+
+    public void setSuccess(boolean success) {
+      this.success = success;
+      setSuccessIsSet(true);
+    }
+
+    public void unsetSuccess() {
+      __isset_bit_vector.clear(__SUCCESS_ISSET_ID);
+    }
+
+    /** Returns true if field success is set (has been asigned a value) and false otherwise */
+    public boolean isSetSuccess() {
+      return __isset_bit_vector.get(__SUCCESS_ISSET_ID);
+    }
+
+    public void setSuccessIsSet(boolean value) {
+      __isset_bit_vector.set(__SUCCESS_ISSET_ID, value);
+    }
+
+    public MetaException getO1() {
+      return this.o1;
+    }
+
+    public void setO1(MetaException o1) {
+      this.o1 = o1;
+    }
+
+    public void unsetO1() {
+      this.o1 = null;
+    }
+
+    /** Returns true if field o1 is set (has been asigned a value) and false otherwise */
+    public boolean isSetO1() {
+      return this.o1 != null;
+    }
+
+    public void setO1IsSet(boolean value) {
+      if (!value) {
+        this.o1 = null;
+      }
+    }
+
+    public void setFieldValue(_Fields field, Object value) {
+      switch (field) {
+      case SUCCESS:
+        if (value == null) {
+          unsetSuccess();
+        } else {
+          setSuccess((Boolean)value);
+        }
+        break;
+
+      case O1:
+        if (value == null) {
+          unsetO1();
+        } else {
+          setO1((MetaException)value);
+        }
+        break;
+
+      }
+    }
+
+    public Object getFieldValue(_Fields field) {
+      switch (field) {
+      case SUCCESS:
+        return new Boolean(isSuccess());
+
+      case O1:
+        return getO1();
+
+      }
+      throw new IllegalStateException();
+    }
+
+    /** Returns true if field corresponding to fieldID is set (has been asigned a value) and false otherwise */
+    public boolean isSet(_Fields field) {
+      if (field == null) {
+        throw new IllegalArgumentException();
+      }
+
+      switch (field) {
+      case SUCCESS:
+        return isSetSuccess();
+      case O1:
+        return isSetO1();
+      }
+      throw new IllegalStateException();
+    }
+
+    @Override
+    public boolean equals(Object that) {
+      if (that == null)
+        return false;
+      if (that instanceof grant_role_result)
+        return this.equals((grant_role_result)that);
+      return false;
+    }
+
+    public boolean equals(grant_role_result that) {
+      if (that == null)
+        return false;
+
+      boolean this_present_success = true;
+      boolean that_present_success = true;
+      if (this_present_success || that_present_success) {
+        if (!(this_present_success && that_present_success))
+          return false;
+        if (this.success != that.success)
+          return false;
+      }
+
+      boolean this_present_o1 = true && this.isSetO1();
+      boolean that_present_o1 = true && that.isSetO1();
+      if (this_present_o1 || that_present_o1) {
+        if (!(this_present_o1 && that_present_o1))
+          return false;
+        if (!this.o1.equals(that.o1))
+          return false;
+      }
+
+      return true;
+    }
+
+    @Override
+    public int hashCode() {
+      return 0;
+    }
+
+    public int compareTo(grant_role_result other) {
+      if (!getClass().equals(other.getClass())) {
+        return getClass().getName().compareTo(other.getClass().getName());
+      }
+
+      int lastComparison = 0;
+      grant_role_result typedOther = (grant_role_result)other;
+
+      lastComparison = Boolean.valueOf(isSetSuccess()).compareTo(typedOther.isSetSuccess());
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+      if (isSetSuccess()) {
+        lastComparison = TBaseHelper.compareTo(this.success, typedOther.success);
+        if (lastComparison != 0) {
+          return lastComparison;
+        }
+      }
+      lastComparison = Boolean.valueOf(isSetO1()).compareTo(typedOther.isSetO1());
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+      if (isSetO1()) {
+        lastComparison = TBaseHelper.compareTo(this.o1, typedOther.o1);
+        if (lastComparison != 0) {
+          return lastComparison;
+        }
+      }
+      return 0;
+    }
+
+    public _Fields fieldForId(int fieldId) {
+      return _Fields.findByThriftId(fieldId);
+    }
+
+    public void read(TProtocol iprot) throws TException {
+      TField field;
+      iprot.readStructBegin();
+      while (true)
+      {
+        field = iprot.readFieldBegin();
+        if (field.type == TType.STOP) { 
+          break;
+        }
+        switch (field.id) {
+          case 0: // SUCCESS
+            if (field.type == TType.BOOL) {
+              this.success = iprot.readBool();
+              setSuccessIsSet(true);
+            } else { 
+              TProtocolUtil.skip(iprot, field.type);
+            }
+            break;
+          case 1: // O1
+            if (field.type == TType.STRUCT) {
+              this.o1 = new MetaException();
+              this.o1.read(iprot);
+            } else { 
+              TProtocolUtil.skip(iprot, field.type);
+            }
+            break;
+          default:
+            TProtocolUtil.skip(iprot, field.type);
+        }
+        iprot.readFieldEnd();
+      }
+      iprot.readStructEnd();
+      validate();
+    }
+
+    public void write(TProtocol oprot) throws TException {
+      oprot.writeStructBegin(STRUCT_DESC);
+
+      if (this.isSetSuccess()) {
+        oprot.writeFieldBegin(SUCCESS_FIELD_DESC);
+        oprot.writeBool(this.success);
+        oprot.writeFieldEnd();
+      } else if (this.isSetO1()) {
+        oprot.writeFieldBegin(O1_FIELD_DESC);
+        this.o1.write(oprot);
+        oprot.writeFieldEnd();
+      }
+      oprot.writeFieldStop();
+      oprot.writeStructEnd();
+    }
+
+    @Override
+    public String toString() {
+      StringBuilder sb = new StringBuilder("grant_role_result(");
+      boolean first = true;
+
+      sb.append("success:");
+      sb.append(this.success);
+      first = false;
+      if (!first) sb.append(", ");
+      sb.append("o1:");
+      if (this.o1 == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.o1);
+      }
+      first = false;
+      sb.append(")");
+      return sb.toString();
+    }
+
+    public void validate() throws TException {
+      // check for required fields
+    }
+
+  }
+
+  public static class revoke_role_args implements TBase<revoke_role_args, revoke_role_args._Fields>, java.io.Serializable, Cloneable   {
+    private static final TStruct STRUCT_DESC = new TStruct("revoke_role_args");
+
+    private static final TField ROLE_NAME_FIELD_DESC = new TField("role_name", TType.STRING, (short)1);
+    private static final TField PRINCIPAL_NAME_FIELD_DESC = new TField("principal_name", TType.STRING, (short)2);
+    private static final TField PRINCIPAL_TYPE_FIELD_DESC = new TField("principal_type", TType.I32, (short)3);
+
+    private String role_name;
+    private String principal_name;
+    private PrincipalType principal_type;
+
+    /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
+    public enum _Fields implements TFieldIdEnum {
+      ROLE_NAME((short)1, "role_name"),
+      PRINCIPAL_NAME((short)2, "principal_name"),
+      /**
+       * 
+       * @see PrincipalType
+       */
+      PRINCIPAL_TYPE((short)3, "principal_type");
+
+      private static final Map<String, _Fields> byName = new HashMap<String, _Fields>();
+
+      static {
+        for (_Fields field : EnumSet.allOf(_Fields.class)) {
+          byName.put(field.getFieldName(), field);
+        }
+      }
+
+      /**
+       * Find the _Fields constant that matches fieldId, or null if its not found.
+       */
+      public static _Fields findByThriftId(int fieldId) {
+        switch(fieldId) {
+          case 1: // ROLE_NAME
+            return ROLE_NAME;
+          case 2: // PRINCIPAL_NAME
+            return PRINCIPAL_NAME;
+          case 3: // PRINCIPAL_TYPE
+            return PRINCIPAL_TYPE;
+          default:
+            return null;
+        }
+      }
+
+      /**
+       * Find the _Fields constant that matches fieldId, throwing an exception
+       * if it is not found.
+       */
+      public static _Fields findByThriftIdOrThrow(int fieldId) {
+        _Fields fields = findByThriftId(fieldId);
+        if (fields == null) throw new IllegalArgumentException("Field " + fieldId + " doesn't exist!");
+        return fields;
+      }
+
+      /**
+       * Find the _Fields constant that matches name, or null if its not found.
+       */
+      public static _Fields findByName(String name) {
+        return byName.get(name);
+      }
+
+      private final short _thriftId;
+      private final String _fieldName;
+
+      _Fields(short thriftId, String fieldName) {
+        _thriftId = thriftId;
+        _fieldName = fieldName;
+      }
+
+      public short getThriftFieldId() {
+        return _thriftId;
+      }
+
+      public String getFieldName() {
+        return _fieldName;
+      }
+    }
+
+    // isset id assignments
+
+    public static final Map<_Fields, FieldMetaData> metaDataMap;
+    static {
+      Map<_Fields, FieldMetaData> tmpMap = new EnumMap<_Fields, FieldMetaData>(_Fields.class);
+      tmpMap.put(_Fields.ROLE_NAME, new FieldMetaData("role_name", TFieldRequirementType.DEFAULT, 
+          new FieldValueMetaData(TType.STRING)));
+      tmpMap.put(_Fields.PRINCIPAL_NAME, new FieldMetaData("principal_name", TFieldRequirementType.DEFAULT, 
+          new FieldValueMetaData(TType.STRING)));
+      tmpMap.put(_Fields.PRINCIPAL_TYPE, new FieldMetaData("principal_type", TFieldRequirementType.DEFAULT, 
+          new EnumMetaData(TType.ENUM, PrincipalType.class)));
+      metaDataMap = Collections.unmodifiableMap(tmpMap);
+      FieldMetaData.addStructMetaDataMap(revoke_role_args.class, metaDataMap);
+    }
+
+    public revoke_role_args() {
+    }
+
+    public revoke_role_args(
+      String role_name,
+      String principal_name,
+      PrincipalType principal_type)
+    {
+      this();
+      this.role_name = role_name;
+      this.principal_name = principal_name;
+      this.principal_type = principal_type;
+    }
+
+    /**
+     * Performs a deep copy on <i>other</i>.
+     */
+    public revoke_role_args(revoke_role_args other) {
+      if (other.isSetRole_name()) {
+        this.role_name = other.role_name;
+      }
+      if (other.isSetPrincipal_name()) {
+        this.principal_name = other.principal_name;
+      }
+      if (other.isSetPrincipal_type()) {
+        this.principal_type = other.principal_type;
+      }
+    }
+
+    public revoke_role_args deepCopy() {
+      return new revoke_role_args(this);
+    }
+
+    @Override
+    public void clear() {
+      this.role_name = null;
+      this.principal_name = null;
+      this.principal_type = null;
+    }
+
+    public String getRole_name() {
+      return this.role_name;
+    }
+
+    public void setRole_name(String role_name) {
+      this.role_name = role_name;
+    }
+
+    public void unsetRole_name() {
+      this.role_name = null;
+    }
+
+    /** Returns true if field role_name is set (has been asigned a value) and false otherwise */
+    public boolean isSetRole_name() {
+      return this.role_name != null;
+    }
+
+    public void setRole_nameIsSet(boolean value) {
+      if (!value) {
+        this.role_name = null;
+      }
+    }
+
+    public String getPrincipal_name() {
+      return this.principal_name;
+    }
+
+    public void setPrincipal_name(String principal_name) {
+      this.principal_name = principal_name;
+    }
+
+    public void unsetPrincipal_name() {
+      this.principal_name = null;
+    }
+
+    /** Returns true if field principal_name is set (has been asigned a value) and false otherwise */
+    public boolean isSetPrincipal_name() {
+      return this.principal_name != null;
+    }
+
+    public void setPrincipal_nameIsSet(boolean value) {
+      if (!value) {
+        this.principal_name = null;
+      }
+    }
+
+    /**
+     * 
+     * @see PrincipalType
+     */
+    public PrincipalType getPrincipal_type() {
+      return this.principal_type;
+    }
+
+    /**
+     * 
+     * @see PrincipalType
+     */
+    public void setPrincipal_type(PrincipalType principal_type) {
+      this.principal_type = principal_type;
+    }
+
+    public void unsetPrincipal_type() {
+      this.principal_type = null;
+    }
+
+    /** Returns true if field principal_type is set (has been asigned a value) and false otherwise */
+    public boolean isSetPrincipal_type() {
+      return this.principal_type != null;
+    }
+
+    public void setPrincipal_typeIsSet(boolean value) {
+      if (!value) {
+        this.principal_type = null;
+      }
+    }
+
+    public void setFieldValue(_Fields field, Object value) {
+      switch (field) {
+      case ROLE_NAME:
+        if (value == null) {
+          unsetRole_name();
+        } else {
+          setRole_name((String)value);
+        }
+        break;
+
+      case PRINCIPAL_NAME:
+        if (value == null) {
+          unsetPrincipal_name();
+        } else {
+          setPrincipal_name((String)value);
+        }
+        break;
+
+      case PRINCIPAL_TYPE:
+        if (value == null) {
+          unsetPrincipal_type();
+        } else {
+          setPrincipal_type((PrincipalType)value);
+        }
+        break;
+
+      }
+    }
+
+    public Object getFieldValue(_Fields field) {
+      switch (field) {
+      case ROLE_NAME:
+        return getRole_name();
+
+      case PRINCIPAL_NAME:
+        return getPrincipal_name();
+
+      case PRINCIPAL_TYPE:
+        return getPrincipal_type();
+
+      }
+      throw new IllegalStateException();
+    }
+
+    /** Returns true if field corresponding to fieldID is set (has been asigned a value) and false otherwise */
+    public boolean isSet(_Fields field) {
+      if (field == null) {
+        throw new IllegalArgumentException();
+      }
+
+      switch (field) {
+      case ROLE_NAME:
+        return isSetRole_name();
+      case PRINCIPAL_NAME:
+        return isSetPrincipal_name();
+      case PRINCIPAL_TYPE:
+        return isSetPrincipal_type();
+      }
+      throw new IllegalStateException();
+    }
+
+    @Override
+    public boolean equals(Object that) {
+      if (that == null)
+        return false;
+      if (that instanceof revoke_role_args)
+        return this.equals((revoke_role_args)that);
+      return false;
+    }
+
+    public boolean equals(revoke_role_args that) {
+      if (that == null)
+        return false;
+
+      boolean this_present_role_name = true && this.isSetRole_name();
+      boolean that_present_role_name = true && that.isSetRole_name();
+      if (this_present_role_name || that_present_role_name) {
+        if (!(this_present_role_name && that_present_role_name))
+          return false;
+        if (!this.role_name.equals(that.role_name))
+          return false;
+      }
+
+      boolean this_present_principal_name = true && this.isSetPrincipal_name();
+      boolean that_present_principal_name = true && that.isSetPrincipal_name();
+      if (this_present_principal_name || that_present_principal_name) {
+        if (!(this_present_principal_name && that_present_principal_name))
+          return false;
+        if (!this.principal_name.equals(that.principal_name))
+          return false;
+      }
+
+      boolean this_present_principal_type = true && this.isSetPrincipal_type();
+      boolean that_present_principal_type = true && that.isSetPrincipal_type();
+      if (this_present_principal_type || that_present_principal_type) {
+        if (!(this_present_principal_type && that_present_principal_type))
+          return false;
+        if (!this.principal_type.equals(that.principal_type))
+          return false;
+      }
+
+      return true;
+    }
+
+    @Override
+    public int hashCode() {
+      return 0;
+    }
+
+    public int compareTo(revoke_role_args other) {
+      if (!getClass().equals(other.getClass())) {
+        return getClass().getName().compareTo(other.getClass().getName());
+      }
+
+      int lastComparison = 0;
+      revoke_role_args typedOther = (revoke_role_args)other;
+
+      lastComparison = Boolean.valueOf(isSetRole_name()).compareTo(typedOther.isSetRole_name());
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+      if (isSetRole_name()) {
+        lastComparison = TBaseHelper.compareTo(this.role_name, typedOther.role_name);
+        if (lastComparison != 0) {
+          return lastComparison;
+        }
+      }
+      lastComparison = Boolean.valueOf(isSetPrincipal_name()).compareTo(typedOther.isSetPrincipal_name());
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+      if (isSetPrincipal_name()) {
+        lastComparison = TBaseHelper.compareTo(this.principal_name, typedOther.principal_name);
+        if (lastComparison != 0) {
+          return lastComparison;
+        }
+      }
+      lastComparison = Boolean.valueOf(isSetPrincipal_type()).compareTo(typedOther.isSetPrincipal_type());
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+      if (isSetPrincipal_type()) {
+        lastComparison = TBaseHelper.compareTo(this.principal_type, typedOther.principal_type);
+        if (lastComparison != 0) {
+          return lastComparison;
+        }
+      }
+      return 0;
+    }
+
+    public _Fields fieldForId(int fieldId) {
+      return _Fields.findByThriftId(fieldId);
+    }
+
+    public void read(TProtocol iprot) throws TException {
+      TField field;
+      iprot.readStructBegin();
+      while (true)
+      {
+        field = iprot.readFieldBegin();
+        if (field.type == TType.STOP) { 
+          break;
+        }
+        switch (field.id) {
+          case 1: // ROLE_NAME
+            if (field.type == TType.STRING) {
+              this.role_name = iprot.readString();
+            } else { 
+              TProtocolUtil.skip(iprot, field.type);
+            }
+            break;
+          case 2: // PRINCIPAL_NAME
+            if (field.type == TType.STRING) {
+              this.principal_name = iprot.readString();
+            } else { 
+              TProtocolUtil.skip(iprot, field.type);
+            }
+            break;
+          case 3: // PRINCIPAL_TYPE
+            if (field.type == TType.I32) {
+              this.principal_type = PrincipalType.findByValue(iprot.readI32());
+            } else { 
+              TProtocolUtil.skip(iprot, field.type);
+            }
+            break;
+          default:
+            TProtocolUtil.skip(iprot, field.type);
+        }
+        iprot.readFieldEnd();
+      }
+      iprot.readStructEnd();
+      validate();
+    }
+
+    public void write(TProtocol oprot) throws TException {
+      validate();
+
+      oprot.writeStructBegin(STRUCT_DESC);
+      if (this.role_name != null) {
+        oprot.writeFieldBegin(ROLE_NAME_FIELD_DESC);
+        oprot.writeString(this.role_name);
+        oprot.writeFieldEnd();
+      }
+      if (this.principal_name != null) {
+        oprot.writeFieldBegin(PRINCIPAL_NAME_FIELD_DESC);
+        oprot.writeString(this.principal_name);
+        oprot.writeFieldEnd();
+      }
+      if (this.principal_type != null) {
+        oprot.writeFieldBegin(PRINCIPAL_TYPE_FIELD_DESC);
+        oprot.writeI32(this.principal_type.getValue());
+        oprot.writeFieldEnd();
+      }
+      oprot.writeFieldStop();
+      oprot.writeStructEnd();
+    }
+
+    @Override
+    public String toString() {
+      StringBuilder sb = new StringBuilder("revoke_role_args(");
+      boolean first = true;
+
+      sb.append("role_name:");
+      if (this.role_name == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.role_name);
+      }
+      first = false;
+      if (!first) sb.append(", ");
+      sb.append("principal_name:");
+      if (this.principal_name == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.principal_name);
+      }
+      first = false;
+      if (!first) sb.append(", ");
+      sb.append("principal_type:");
+      if (this.principal_type == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.principal_type);
+      }
+      first = false;
+      sb.append(")");
+      return sb.toString();
+    }
+
+    public void validate() throws TException {
+      // check for required fields
+    }
+
+  }
+
+  public static class revoke_role_result implements TBase<revoke_role_result, revoke_role_result._Fields>, java.io.Serializable, Cloneable   {
+    private static final TStruct STRUCT_DESC = new TStruct("revoke_role_result");
+
+    private static final TField SUCCESS_FIELD_DESC = new TField("success", TType.BOOL, (short)0);
+    private static final TField O1_FIELD_DESC = new TField("o1", TType.STRUCT, (short)1);
+
+    private boolean success;
+    private MetaException o1;
+
+    /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
+    public enum _Fields implements TFieldIdEnum {
+      SUCCESS((short)0, "success"),
+      O1((short)1, "o1");
+
+      private static final Map<String, _Fields> byName = new HashMap<String, _Fields>();
+
+      static {
+        for (_Fields field : EnumSet.allOf(_Fields.class)) {
+          byName.put(field.getFieldName(), field);
+        }
+      }
+
+      /**
+       * Find the _Fields constant that matches fieldId, or null if its not found.
+       */
+      public static _Fields findByThriftId(int fieldId) {
+        switch(fieldId) {
+          case 0: // SUCCESS
+            return SUCCESS;
+          case 1: // O1
+            return O1;
+          default:
+            return null;
+        }
+      }
+
+      /**
+       * Find the _Fields constant that matches fieldId, throwing an exception
+       * if it is not found.
+       */
+      public static _Fields findByThriftIdOrThrow(int fieldId) {
+        _Fields fields = findByThriftId(fieldId);
+        if (fields == null) throw new IllegalArgumentException("Field " + fieldId + " doesn't exist!");
+        return fields;
+      }
+
+      /**
+       * Find the _Fields constant that matches name, or null if its not found.
+       */
+      public static _Fields findByName(String name) {
+        return byName.get(name);
+      }
+
+      private final short _thriftId;
+      private final String _fieldName;
+
+      _Fields(short thriftId, String fieldName) {
+        _thriftId = thriftId;
+        _fieldName = fieldName;
+      }
+
+      public short getThriftFieldId() {
+        return _thriftId;
+      }
+
+      public String getFieldName() {
+        return _fieldName;
+      }
+    }
+
+    // isset id assignments
+    private static final int __SUCCESS_ISSET_ID = 0;
+    private BitSet __isset_bit_vector = new BitSet(1);
+
+    public static final Map<_Fields, FieldMetaData> metaDataMap;
+    static {
+      Map<_Fields, FieldMetaData> tmpMap = new EnumMap<_Fields, FieldMetaData>(_Fields.class);
+      tmpMap.put(_Fields.SUCCESS, new FieldMetaData("success", TFieldRequirementType.DEFAULT, 
+          new FieldValueMetaData(TType.BOOL)));
+      tmpMap.put(_Fields.O1, new FieldMetaData("o1", TFieldRequirementType.DEFAULT, 
+          new FieldValueMetaData(TType.STRUCT)));
+      metaDataMap = Collections.unmodifiableMap(tmpMap);
+      FieldMetaData.addStructMetaDataMap(revoke_role_result.class, metaDataMap);
+    }
+
+    public revoke_role_result() {
+    }
+
+    public revoke_role_result(
+      boolean success,
+      MetaException o1)
+    {
+      this();
+      this.success = success;
+      setSuccessIsSet(true);
+      this.o1 = o1;
+    }
+
+    /**
+     * Performs a deep copy on <i>other</i>.
+     */
+    public revoke_role_result(revoke_role_result other) {
+      __isset_bit_vector.clear();
+      __isset_bit_vector.or(other.__isset_bit_vector);
+      this.success = other.success;
+      if (other.isSetO1()) {
+        this.o1 = new MetaException(other.o1);
+      }
+    }
+
+    public revoke_role_result deepCopy() {
+      return new revoke_role_result(this);
+    }
+
+    @Override
+    public void clear() {
+      setSuccessIsSet(false);
+      this.success = false;
+      this.o1 = null;
+    }
+
+    public boolean isSuccess() {
+      return this.success;
+    }
+
+    public void setSuccess(boolean success) {
+      this.success = success;
+      setSuccessIsSet(true);
+    }
+
+    public void unsetSuccess() {
+      __isset_bit_vector.clear(__SUCCESS_ISSET_ID);
+    }
+
+    /** Returns true if field success is set (has been asigned a value) and false otherwise */
+    public boolean isSetSuccess() {
+      return __isset_bit_vector.get(__SUCCESS_ISSET_ID);
+    }
+
+    public void setSuccessIsSet(boolean value) {
+      __isset_bit_vector.set(__SUCCESS_ISSET_ID, value);
+    }
+
+    public MetaException getO1() {
+      return this.o1;
+    }
+
+    public void setO1(MetaException o1) {
+      this.o1 = o1;
+    }
+
+    public void unsetO1() {
+      this.o1 = null;
+    }
+
+    /** Returns true if field o1 is set (has been asigned a value) and false otherwise */
+    public boolean isSetO1() {
+      return this.o1 != null;
+    }
+
+    public void setO1IsSet(boolean value) {
+      if (!value) {
+        this.o1 = null;
+      }
+    }
+
+    public void setFieldValue(_Fields field, Object value) {
+      switch (field) {
+      case SUCCESS:
+        if (value == null) {
+          unsetSuccess();
+        } else {
+          setSuccess((Boolean)value);
+        }
+        break;
+
+      case O1:
+        if (value == null) {
+          unsetO1();
+        } else {
+          setO1((MetaException)value);
+        }
+        break;
+
+      }
+    }
+
+    public Object getFieldValue(_Fields field) {
+      switch (field) {
+      case SUCCESS:
+        return new Boolean(isSuccess());
+
+      case O1:
+        return getO1();
+
+      }
+      throw new IllegalStateException();
+    }
+
+    /** Returns true if field corresponding to fieldID is set (has been asigned a value) and false otherwise */
+    public boolean isSet(_Fields field) {
+      if (field == null) {
+        throw new IllegalArgumentException();
+      }
+
+      switch (field) {
+      case SUCCESS:
+        return isSetSuccess();
+      case O1:
+        return isSetO1();
+      }
+      throw new IllegalStateException();
+    }
+
+    @Override
+    public boolean equals(Object that) {
+      if (that == null)
+        return false;
+      if (that instanceof revoke_role_result)
+        return this.equals((revoke_role_result)that);
+      return false;
+    }
+
+    public boolean equals(revoke_role_result that) {
+      if (that == null)
+        return false;
+
+      boolean this_present_success = true;
+      boolean that_present_success = true;
+      if (this_present_success || that_present_success) {
+        if (!(this_present_success && that_present_success))
+          return false;
+        if (this.success != that.success)
+          return false;
+      }
+
+      boolean this_present_o1 = true && this.isSetO1();
+      boolean that_present_o1 = true && that.isSetO1();
+      if (this_present_o1 || that_present_o1) {
+        if (!(this_present_o1 && that_present_o1))
+          return false;
+        if (!this.o1.equals(that.o1))
+          return false;
+      }
+
+      return true;
+    }
+
+    @Override
+    public int hashCode() {
+      return 0;
+    }
+
+    public int compareTo(revoke_role_result other) {
+      if (!getClass().equals(other.getClass())) {
+        return getClass().getName().compareTo(other.getClass().getName());
+      }
+
+      int lastComparison = 0;
+      revoke_role_result typedOther = (revoke_role_result)other;
+
+      lastComparison = Boolean.valueOf(isSetSuccess()).compareTo(typedOther.isSetSuccess());
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+      if (isSetSuccess()) {
+        lastComparison = TBaseHelper.compareTo(this.success, typedOther.success);
+        if (lastComparison != 0) {
+          return lastComparison;
+        }
+      }
+      lastComparison = Boolean.valueOf(isSetO1()).compareTo(typedOther.isSetO1());
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+      if (isSetO1()) {
+        lastComparison = TBaseHelper.compareTo(this.o1, typedOther.o1);
+        if (lastComparison != 0) {
+          return lastComparison;
+        }
+      }
+      return 0;
+    }
+
+    public _Fields fieldForId(int fieldId) {
+      return _Fields.findByThriftId(fieldId);
+    }
+
+    public void read(TProtocol iprot) throws TException {
+      TField field;
+      iprot.readStructBegin();
+      while (true)
+      {
+        field = iprot.readFieldBegin();
+        if (field.type == TType.STOP) { 
+          break;
+        }
+        switch (field.id) {
+          case 0: // SUCCESS
+            if (field.type == TType.BOOL) {
+              this.success = iprot.readBool();
+              setSuccessIsSet(true);
+            } else { 
+              TProtocolUtil.skip(iprot, field.type);
+            }
+            break;
+          case 1: // O1
+            if (field.type == TType.STRUCT) {
+              this.o1 = new MetaException();
+              this.o1.read(iprot);
+            } else { 
+              TProtocolUtil.skip(iprot, field.type);
+            }
+            break;
+          default:
+            TProtocolUtil.skip(iprot, field.type);
+        }
+        iprot.readFieldEnd();
+      }
+      iprot.readStructEnd();
+      validate();
+    }
+
+    public void write(TProtocol oprot) throws TException {
+      oprot.writeStructBegin(STRUCT_DESC);
+
+      if (this.isSetSuccess()) {
+        oprot.writeFieldBegin(SUCCESS_FIELD_DESC);
+        oprot.writeBool(this.success);
+        oprot.writeFieldEnd();
+      } else if (this.isSetO1()) {
+        oprot.writeFieldBegin(O1_FIELD_DESC);
+        this.o1.write(oprot);
+        oprot.writeFieldEnd();
+      }
+      oprot.writeFieldStop();
+      oprot.writeStructEnd();
+    }
+
+    @Override
+    public String toString() {
+      StringBuilder sb = new StringBuilder("revoke_role_result(");
+      boolean first = true;
+
+      sb.append("success:");
+      sb.append(this.success);
+      first = false;
+      if (!first) sb.append(", ");
+      sb.append("o1:");
+      if (this.o1 == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.o1);
+      }
+      first = false;
+      sb.append(")");
+      return sb.toString();
+    }
+
+    public void validate() throws TException {
+      // check for required fields
+    }
+
+  }
+
+  public static class list_roles_args implements TBase<list_roles_args, list_roles_args._Fields>, java.io.Serializable, Cloneable   {
+    private static final TStruct STRUCT_DESC = new TStruct("list_roles_args");
+
+    private static final TField PRINCIPAL_NAME_FIELD_DESC = new TField("principal_name", TType.STRING, (short)1);
+    private static final TField PRINCIPAL_TYPE_FIELD_DESC = new TField("principal_type", TType.I32, (short)2);
+
+    private String principal_name;
+    private PrincipalType principal_type;
+
+    /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
+    public enum _Fields implements TFieldIdEnum {
+      PRINCIPAL_NAME((short)1, "principal_name"),
+      /**
+       * 
+       * @see PrincipalType
+       */
+      PRINCIPAL_TYPE((short)2, "principal_type");
+
+      private static final Map<String, _Fields> byName = new HashMap<String, _Fields>();
+
+      static {
+        for (_Fields field : EnumSet.allOf(_Fields.class)) {
+          byName.put(field.getFieldName(), field);
+        }
+      }
+
+      /**
+       * Find the _Fields constant that matches fieldId, or null if its not found.
+       */
+      public static _Fields findByThriftId(int fieldId) {
+        switch(fieldId) {
+          case 1: // PRINCIPAL_NAME
+            return PRINCIPAL_NAME;
+          case 2: // PRINCIPAL_TYPE
+            return PRINCIPAL_TYPE;
+          default:
+            return null;
+        }
+      }
+
+      /**
+       * Find the _Fields constant that matches fieldId, throwing an exception
+       * if it is not found.
+       */
+      public static _Fields findByThriftIdOrThrow(int fieldId) {
+        _Fields fields = findByThriftId(fieldId);
+        if (fields == null) throw new IllegalArgumentException("Field " + fieldId + " doesn't exist!");
+        return fields;
+      }
+
+      /**
+       * Find the _Fields constant that matches name, or null if its not found.
+       */
+      public static _Fields findByName(String name) {
+        return byName.get(name);
+      }
+
+      private final short _thriftId;
+      private final String _fieldName;
+
+      _Fields(short thriftId, String fieldName) {
+        _thriftId = thriftId;
+        _fieldName = fieldName;
+      }
+
+      public short getThriftFieldId() {
+        return _thriftId;
+      }
+
+      public String getFieldName() {
+        return _fieldName;
+      }
+    }
+
+    // isset id assignments
+
+    public static final Map<_Fields, FieldMetaData> metaDataMap;
+    static {
+      Map<_Fields, FieldMetaData> tmpMap = new EnumMap<_Fields, FieldMetaData>(_Fields.class);
+      tmpMap.put(_Fields.PRINCIPAL_NAME, new FieldMetaData("principal_name", TFieldRequirementType.DEFAULT, 
+          new FieldValueMetaData(TType.STRING)));
+      tmpMap.put(_Fields.PRINCIPAL_TYPE, new FieldMetaData("principal_type", TFieldRequirementType.DEFAULT, 
+          new EnumMetaData(TType.ENUM, PrincipalType.class)));
+      metaDataMap = Collections.unmodifiableMap(tmpMap);
+      FieldMetaData.addStructMetaDataMap(list_roles_args.class, metaDataMap);
+    }
+
+    public list_roles_args() {
+    }
+
+    public list_roles_args(
+      String principal_name,
+      PrincipalType principal_type)
+    {
+      this();
+      this.principal_name = principal_name;
+      this.principal_type = principal_type;
+    }
+
+    /**
+     * Performs a deep copy on <i>other</i>.
+     */
+    public list_roles_args(list_roles_args other) {
+      if (other.isSetPrincipal_name()) {
+        this.principal_name = other.principal_name;
+      }
+      if (other.isSetPrincipal_type()) {
+        this.principal_type = other.principal_type;
+      }
+    }
+
+    public list_roles_args deepCopy() {
+      return new list_roles_args(this);
+    }
+
+    @Override
+    public void clear() {
+      this.principal_name = null;
+      this.principal_type = null;
+    }
+
+    public String getPrincipal_name() {
+      return this.principal_name;
+    }
+
+    public void setPrincipal_name(String principal_name) {
+      this.principal_name = principal_name;
+    }
+
+    public void unsetPrincipal_name() {
+      this.principal_name = null;
+    }
+
+    /** Returns true if field principal_name is set (has been asigned a value) and false otherwise */
+    public boolean isSetPrincipal_name() {
+      return this.principal_name != null;
+    }
+
+    public void setPrincipal_nameIsSet(boolean value) {
+      if (!value) {
+        this.principal_name = null;
+      }
+    }
+
+    /**
+     * 
+     * @see PrincipalType
+     */
+    public PrincipalType getPrincipal_type() {
+      return this.principal_type;
+    }
+
+    /**
+     * 
+     * @see PrincipalType
+     */
+    public void setPrincipal_type(PrincipalType principal_type) {
+      this.principal_type = principal_type;
+    }
+
+    public void unsetPrincipal_type() {
+      this.principal_type = null;
+    }
+
+    /** Returns true if field principal_type is set (has been asigned a value) and false otherwise */
+    public boolean isSetPrincipal_type() {
+      return this.principal_type != null;
+    }
+
+    public void setPrincipal_typeIsSet(boolean value) {
+      if (!value) {
+        this.principal_type = null;
+      }
+    }
+
+    public void setFieldValue(_Fields field, Object value) {
+      switch (field) {
+      case PRINCIPAL_NAME:
+        if (value == null) {
+          unsetPrincipal_name();
+        } else {
+          setPrincipal_name((String)value);
+        }
+        break;
+
+      case PRINCIPAL_TYPE:
+        if (value == null) {
+          unsetPrincipal_type();
+        } else {
+          setPrincipal_type((PrincipalType)value);
+        }
+        break;
+
+      }
+    }
+
+    public Object getFieldValue(_Fields field) {
+      switch (field) {
+      case PRINCIPAL_NAME:
+        return getPrincipal_name();
+
+      case PRINCIPAL_TYPE:
+        return getPrincipal_type();
+
+      }
+      throw new IllegalStateException();
+    }
+
+    /** Returns true if field corresponding to fieldID is set (has been asigned a value) and false otherwise */
+    public boolean isSet(_Fields field) {
+      if (field == null) {
+        throw new IllegalArgumentException();
+      }
+
+      switch (field) {
+      case PRINCIPAL_NAME:
+        return isSetPrincipal_name();
+      case PRINCIPAL_TYPE:
+        return isSetPrincipal_type();
+      }
+      throw new IllegalStateException();
+    }
+
+    @Override
+    public boolean equals(Object that) {
+      if (that == null)
+        return false;
+      if (that instanceof list_roles_args)
+        return this.equals((list_roles_args)that);
+      return false;
+    }
+
+    public boolean equals(list_roles_args that) {
+      if (that == null)
+        return false;
+
+      boolean this_present_principal_name = true && this.isSetPrincipal_name();
+      boolean that_present_principal_name = true && that.isSetPrincipal_name();
+      if (this_present_principal_name || that_present_principal_name) {
+        if (!(this_present_principal_name && that_present_principal_name))
+          return false;
+        if (!this.principal_name.equals(that.principal_name))
+          return false;
+      }
+
+      boolean this_present_principal_type = true && this.isSetPrincipal_type();
+      boolean that_present_principal_type = true && that.isSetPrincipal_type();
+      if (this_present_principal_type || that_present_principal_type) {
+        if (!(this_present_principal_type && that_present_principal_type))
+          return false;
+        if (!this.principal_type.equals(that.principal_type))
+          return false;
+      }
+
+      return true;
+    }
+
+    @Override
+    public int hashCode() {
+      return 0;
+    }
+
+    public int compareTo(list_roles_args other) {
+      if (!getClass().equals(other.getClass())) {
+        return getClass().getName().compareTo(other.getClass().getName());
+      }
+
+      int lastComparison = 0;
+      list_roles_args typedOther = (list_roles_args)other;
+
+      lastComparison = Boolean.valueOf(isSetPrincipal_name()).compareTo(typedOther.isSetPrincipal_name());
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+      if (isSetPrincipal_name()) {
+        lastComparison = TBaseHelper.compareTo(this.principal_name, typedOther.principal_name);
+        if (lastComparison != 0) {
+          return lastComparison;
+        }
+      }
+      lastComparison = Boolean.valueOf(isSetPrincipal_type()).compareTo(typedOther.isSetPrincipal_type());
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+      if (isSetPrincipal_type()) {
+        lastComparison = TBaseHelper.compareTo(this.principal_type, typedOther.principal_type);
+        if (lastComparison != 0) {
+          return lastComparison;
+        }
+      }
+      return 0;
+    }
+
+    public _Fields fieldForId(int fieldId) {
+      return _Fields.findByThriftId(fieldId);
+    }
+
+    public void read(TProtocol iprot) throws TException {
+      TField field;
+      iprot.readStructBegin();
+      while (true)
+      {
+        field = iprot.readFieldBegin();
+        if (field.type == TType.STOP) { 
+          break;
+        }
+        switch (field.id) {
+          case 1: // PRINCIPAL_NAME
+            if (field.type == TType.STRING) {
+              this.principal_name = iprot.readString();
+            } else { 
+              TProtocolUtil.skip(iprot, field.type);
+            }
+            break;
+          case 2: // PRINCIPAL_TYPE
+            if (field.type == TType.I32) {
+              this.principal_type = PrincipalType.findByValue(iprot.readI32());
+            } else { 
+              TProtocolUtil.skip(iprot, field.type);
+            }
+            break;
+          default:
+            TProtocolUtil.skip(iprot, field.type);
+        }
+        iprot.readFieldEnd();
+      }
+      iprot.readStructEnd();
+      validate();
+    }
+
+    public void write(TProtocol oprot) throws TException {
+      validate();
+
+      oprot.writeStructBegin(STRUCT_DESC);
+      if (this.principal_name != null) {
+        oprot.writeFieldBegin(PRINCIPAL_NAME_FIELD_DESC);
+        oprot.writeString(this.principal_name);
+        oprot.writeFieldEnd();
+      }
+      if (this.principal_type != null) {
+        oprot.writeFieldBegin(PRINCIPAL_TYPE_FIELD_DESC);
+        oprot.writeI32(this.principal_type.getValue());
+        oprot.writeFieldEnd();
+      }
+      oprot.writeFieldStop();
+      oprot.writeStructEnd();
+    }
+
+    @Override
+    public String toString() {
+      StringBuilder sb = new StringBuilder("list_roles_args(");
+      boolean first = true;
+
+      sb.append("principal_name:");
+      if (this.principal_name == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.principal_name);
+      }
+      first = false;
+      if (!first) sb.append(", ");
+      sb.append("principal_type:");
+      if (this.principal_type == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.principal_type);
+      }
+      first = false;
+      sb.append(")");
+      return sb.toString();
+    }
+
+    public void validate() throws TException {
+      // check for required fields
+    }
+
+  }
+
+  public static class list_roles_result implements TBase<list_roles_result, list_roles_result._Fields>, java.io.Serializable, Cloneable   {
+    private static final TStruct STRUCT_DESC = new TStruct("list_roles_result");
+
+    private static final TField SUCCESS_FIELD_DESC = new TField("success", TType.LIST, (short)0);
+    private static final TField O1_FIELD_DESC = new TField("o1", TType.STRUCT, (short)1);
+
+    private List<Role> success;
+    private MetaException o1;
+
+    /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
+    public enum _Fields implements TFieldIdEnum {
+      SUCCESS((short)0, "success"),
+      O1((short)1, "o1");
+
+      private static final Map<String, _Fields> byName = new HashMap<String, _Fields>();
+
+      static {
+        for (_Fields field : EnumSet.allOf(_Fields.class)) {
+          byName.put(field.getFieldName(), field);
+        }
+      }
+
+      /**
+       * Find the _Fields constant that matches fieldId, or null if its not found.
+       */
+      public static _Fields findByThriftId(int fieldId) {
+        switch(fieldId) {
+          case 0: // SUCCESS
+            return SUCCESS;
+          case 1: // O1
+            return O1;
+          default:
+            return null;
+        }
+      }
+
+      /**
+       * Find the _Fields constant that matches fieldId, throwing an exception
+       * if it is not found.
+       */
+      public static _Fields findByThriftIdOrThrow(int fieldId) {
+        _Fields fields = findByThriftId(fieldId);
+        if (fields == null) throw new IllegalArgumentException("Field " + fieldId + " doesn't exist!");
+        return fields;
+      }
+
+      /**
+       * Find the _Fields constant that matches name, or null if its not found.
+       */
+      public static _Fields findByName(String name) {
+        return byName.get(name);
+      }
+
+      private final short _thriftId;
+      private final String _fieldName;
+
+      _Fields(short thriftId, String fieldName) {
+        _thriftId = thriftId;
+        _fieldName = fieldName;
+      }
+
+      public short getThriftFieldId() {
+        return _thriftId;
+      }
+
+      public String getFieldName() {
+        return _fieldName;
+      }
+    }
+
+    // isset id assignments
+
+    public static final Map<_Fields, FieldMetaData> metaDataMap;
+    static {
+      Map<_Fields, FieldMetaData> tmpMap = new EnumMap<_Fields, FieldMetaData>(_Fields.class);
+      tmpMap.put(_Fields.SUCCESS, new FieldMetaData("success", TFieldRequirementType.DEFAULT, 
+          new ListMetaData(TType.LIST, 
+              new StructMetaData(TType.STRUCT, Role.class))));
+      tmpMap.put(_Fields.O1, new FieldMetaData("o1", TFieldRequirementType.DEFAULT, 
+          new FieldValueMetaData(TType.STRUCT)));
+      metaDataMap = Collections.unmodifiableMap(tmpMap);
+      FieldMetaData.addStructMetaDataMap(list_roles_result.class, metaDataMap);
+    }
+
+    public list_roles_result() {
+    }
+
+    public list_roles_result(
+      List<Role> success,
+      MetaException o1)
+    {
+      this();
+      this.success = success;
+      this.o1 = o1;
+    }
+
+    /**
+     * Performs a deep copy on <i>other</i>.
+     */
+    public list_roles_result(list_roles_result other) {
+      if (other.isSetSuccess()) {
+        List<Role> __this__success = new ArrayList<Role>();
+        for (Role other_element : other.success) {
+          __this__success.add(new Role(other_element));
+        }
+        this.success = __this__success;
+      }
+      if (other.isSetO1()) {
+        this.o1 = new MetaException(other.o1);
+      }
+    }
+
+    public list_roles_result deepCopy() {
+      return new list_roles_result(this);
+    }
+
+    @Override
+    public void clear() {
+      this.success = null;
+      this.o1 = null;
+    }
+
+    public int getSuccessSize() {
+      return (this.success == null) ? 0 : this.success.size();
+    }
+
+    public java.util.Iterator<Role> getSuccessIterator() {
+      return (this.success == null) ? null : this.success.iterator();
+    }
+
+    public void addToSuccess(Role elem) {
+      if (this.success == null) {
+        this.success = new ArrayList<Role>();
+      }
+      this.success.add(elem);
+    }
+
+    public List<Role> getSuccess() {
+      return this.success;
+    }
+
+    public void setSuccess(List<Role> success) {
+      this.success = success;
+    }
+
+    public void unsetSuccess() {
+      this.success = null;
+    }
+
+    /** Returns true if field success is set (has been asigned a value) and false otherwise */
+    public boolean isSetSuccess() {
+      return this.success != null;
+    }
+
+    public void setSuccessIsSet(boolean value) {
+      if (!value) {
+        this.success = null;
+      }
+    }
+
+    public MetaException getO1() {
+      return this.o1;
+    }
+
+    public void setO1(MetaException o1) {
+      this.o1 = o1;
+    }
+
+    public void unsetO1() {
+      this.o1 = null;
+    }
+
+    /** Returns true if field o1 is set (has been asigned a value) and false otherwise */
+    public boolean isSetO1() {
+      return this.o1 != null;
+    }
+
+    public void setO1IsSet(boolean value) {
+      if (!value) {
+        this.o1 = null;
+      }
+    }
+
+    public void setFieldValue(_Fields field, Object value) {
+      switch (field) {
+      case SUCCESS:
+        if (value == null) {
+          unsetSuccess();
+        } else {
+          setSuccess((List<Role>)value);
+        }
+        break;
+
+      case O1:
+        if (value == null) {
+          unsetO1();
+        } else {
+          setO1((MetaException)value);
+        }
+        break;
+
+      }
+    }
+
+    public Object getFieldValue(_Fields field) {
+      switch (field) {
+      case SUCCESS:
+        return getSuccess();
+
+      case O1:
+        return getO1();
+
+      }
+      throw new IllegalStateException();
+    }
+
+    /** Returns true if field corresponding to fieldID is set (has been asigned a value) and false otherwise */
+    public boolean isSet(_Fields field) {
+      if (field == null) {
+        throw new IllegalArgumentException();
+      }
+
+      switch (field) {
+      case SUCCESS:
+        return isSetSuccess();
+      case O1:
+        return isSetO1();
+      }
+      throw new IllegalStateException();
+    }
+
+    @Override
+    public boolean equals(Object that) {
+      if (that == null)
+        return false;
+      if (that instanceof list_roles_result)
+        return this.equals((list_roles_result)that);
+      return false;
+    }
+
+    public boolean equals(list_roles_result that) {
+      if (that == null)
+        return false;
+
+      boolean this_present_success = true && this.isSetSuccess();
+      boolean that_present_success = true && that.isSetSuccess();
+      if (this_present_success || that_present_success) {
+        if (!(this_present_success && that_present_success))
+          return false;
+        if (!this.success.equals(that.success))
+          return false;
+      }
+
+      boolean this_present_o1 = true && this.isSetO1();
+      boolean that_present_o1 = true && that.isSetO1();
+      if (this_present_o1 || that_present_o1) {
+        if (!(this_present_o1 && that_present_o1))
+          return false;
+        if (!this.o1.equals(that.o1))
+          return false;
+      }
+
+      return true;
+    }
+
+    @Override
+    public int hashCode() {
+      return 0;
+    }
+
+    public int compareTo(list_roles_result other) {
+      if (!getClass().equals(other.getClass())) {
+        return getClass().getName().compareTo(other.getClass().getName());
+      }
+
+      int lastComparison = 0;
+      list_roles_result typedOther = (list_roles_result)other;
+
+      lastComparison = Boolean.valueOf(isSetSuccess()).compareTo(typedOther.isSetSuccess());
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+      if (isSetSuccess()) {
+        lastComparison = TBaseHelper.compareTo(this.success, typedOther.success);
+        if (lastComparison != 0) {
+          return lastComparison;
+        }
+      }
+      lastComparison = Boolean.valueOf(isSetO1()).compareTo(typedOther.isSetO1());
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+      if (isSetO1()) {
+        lastComparison = TBaseHelper.compareTo(this.o1, typedOther.o1);
+        if (lastComparison != 0) {
+          return lastComparison;
+        }
+      }
+      return 0;
+    }
+
+    public _Fields fieldForId(int fieldId) {
+      return _Fields.findByThriftId(fieldId);
+    }
+
+    public void read(TProtocol iprot) throws TException {
+      TField field;
+      iprot.readStructBegin();
+      while (true)
+      {
+        field = iprot.readFieldBegin();
+        if (field.type == TType.STOP) { 
+          break;
+        }
+        switch (field.id) {
+          case 0: // SUCCESS
+            if (field.type == TType.LIST) {
+              {
+                TList _list212 = iprot.readListBegin();
+                this.success = new ArrayList<Role>(_list212.size);
+                for (int _i213 = 0; _i213 < _list212.size; ++_i213)
+                {
+                  Role _elem214;
+                  _elem214 = new Role();
+                  _elem214.read(iprot);
+                  this.success.add(_elem214);
+                }
+                iprot.readListEnd();
+              }
+            } else { 
+              TProtocolUtil.skip(iprot, field.type);
+            }
+            break;
+          case 1: // O1
+            if (field.type == TType.STRUCT) {
+              this.o1 = new MetaException();
+              this.o1.read(iprot);
+            } else { 
+              TProtocolUtil.skip(iprot, field.type);
+            }
+            break;
+          default:
+            TProtocolUtil.skip(iprot, field.type);
+        }
+        iprot.readFieldEnd();
+      }
+      iprot.readStructEnd();
+      validate();
+    }
+
+    public void write(TProtocol oprot) throws TException {
+      oprot.writeStructBegin(STRUCT_DESC);
+
+      if (this.isSetSuccess()) {
+        oprot.writeFieldBegin(SUCCESS_FIELD_DESC);
+        {
+          oprot.writeListBegin(new TList(TType.STRUCT, this.success.size()));
+          for (Role _iter215 : this.success)
+          {
+            _iter215.write(oprot);
+          }
+          oprot.writeListEnd();
+        }
+        oprot.writeFieldEnd();
+      } else if (this.isSetO1()) {
+        oprot.writeFieldBegin(O1_FIELD_DESC);
+        this.o1.write(oprot);
+        oprot.writeFieldEnd();
+      }
+      oprot.writeFieldStop();
+      oprot.writeStructEnd();
+    }
+
+    @Override
+    public String toString() {
+      StringBuilder sb = new StringBuilder("list_roles_result(");
+      boolean first = true;
+
+      sb.append("success:");
+      if (this.success == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.success);
+      }
+      first = false;
+      if (!first) sb.append(", ");
+      sb.append("o1:");
+      if (this.o1 == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.o1);
+      }
+      first = false;
+      sb.append(")");
+      return sb.toString();
+    }
+
+    public void validate() throws TException {
+      // check for required fields
+    }
+
+  }
+
+  public static class get_privilege_set_args implements TBase<get_privilege_set_args, get_privilege_set_args._Fields>, java.io.Serializable, Cloneable   {
+    private static final TStruct STRUCT_DESC = new TStruct("get_privilege_set_args");
+
+    private static final TField HIVE_OBJECT_FIELD_DESC = new TField("hiveObject", TType.STRUCT, (short)1);
+    private static final TField USER_NAME_FIELD_DESC = new TField("user_name", TType.STRING, (short)2);
+    private static final TField GROUP_NAMES_FIELD_DESC = new TField("group_names", TType.LIST, (short)3);
+
+    private HiveObjectRef hiveObject;
+    private String user_name;
+    private List<String> group_names;
+
+    /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
+    public enum _Fields implements TFieldIdEnum {
+      HIVE_OBJECT((short)1, "hiveObject"),
+      USER_NAME((short)2, "user_name"),
+      GROUP_NAMES((short)3, "group_names");
+
+      private static final Map<String, _Fields> byName = new HashMap<String, _Fields>();
+
+      static {
+        for (_Fields field : EnumSet.allOf(_Fields.class)) {
+          byName.put(field.getFieldName(), field);
+        }
+      }
+
+      /**
+       * Find the _Fields constant that matches fieldId, or null if its not found.
+       */
+      public static _Fields findByThriftId(int fieldId) {
+        switch(fieldId) {
+          case 1: // HIVE_OBJECT
+            return HIVE_OBJECT;
+          case 2: // USER_NAME
+            return USER_NAME;
+          case 3: // GROUP_NAMES
+            return GROUP_NAMES;
+          default:
+            return null;
+        }
+      }
+
+      /**
+       * Find the _Fields constant that matches fieldId, throwing an exception
+       * if it is not found.
+       */
+      public static _Fields findByThriftIdOrThrow(int fieldId) {
+        _Fields fields = findByThriftId(fieldId);
+        if (fields == null) throw new IllegalArgumentException("Field " + fieldId + " doesn't exist!");
+        return fields;
+      }
+
+      /**
+       * Find the _Fields constant that matches name, or null if its not found.
+       */
+      public static _Fields findByName(String name) {
+        return byName.get(name);
+      }
+
+      private final short _thriftId;
+      private final String _fieldName;
+
+      _Fields(short thriftId, String fieldName) {
+        _thriftId = thriftId;
+        _fieldName = fieldName;
+      }
+
+      public short getThriftFieldId() {
+        return _thriftId;
+      }
+
+      public String getFieldName() {
+        return _fieldName;
+      }
+    }
+
+    // isset id assignments
+
+    public static final Map<_Fields, FieldMetaData> metaDataMap;
+    static {
+      Map<_Fields, FieldMetaData> tmpMap = new EnumMap<_Fields, FieldMetaData>(_Fields.class);
+      tmpMap.put(_Fields.HIVE_OBJECT, new FieldMetaData("hiveObject", TFieldRequirementType.DEFAULT, 
+          new StructMetaData(TType.STRUCT, HiveObjectRef.class)));
+      tmpMap.put(_Fields.USER_NAME, new FieldMetaData("user_name", TFieldRequirementType.DEFAULT, 
+          new FieldValueMetaData(TType.STRING)));
+      tmpMap.put(_Fields.GROUP_NAMES, new FieldMetaData("group_names", TFieldRequirementType.DEFAULT, 
+          new ListMetaData(TType.LIST, 
+              new FieldValueMetaData(TType.STRING))));
+      metaDataMap = Collections.unmodifiableMap(tmpMap);
+      FieldMetaData.addStructMetaDataMap(get_privilege_set_args.class, metaDataMap);
+    }
+
+    public get_privilege_set_args() {
+    }
+
+    public get_privilege_set_args(
+      HiveObjectRef hiveObject,
+      String user_name,
+      List<String> group_names)
+    {
+      this();
+      this.hiveObject = hiveObject;
+      this.user_name = user_name;
+      this.group_names = group_names;
+    }
+
+    /**
+     * Performs a deep copy on <i>other</i>.
+     */
+    public get_privilege_set_args(get_privilege_set_args other) {
+      if (other.isSetHiveObject()) {
+        this.hiveObject = new HiveObjectRef(other.hiveObject);
+      }
+      if (other.isSetUser_name()) {
+        this.user_name = other.user_name;
+      }
+      if (other.isSetGroup_names()) {
+        List<String> __this__group_names = new ArrayList<String>();
+        for (String other_element : other.group_names) {
+          __this__group_names.add(other_element);
+        }
+        this.group_names = __this__group_names;
+      }
+    }
+
+    public get_privilege_set_args deepCopy() {
+      return new get_privilege_set_args(this);
+    }
+
+    @Override
+    public void clear() {
+      this.hiveObject = null;
+      this.user_name = null;
+      this.group_names = null;
+    }
+
+    public HiveObjectRef getHiveObject() {
+      return this.hiveObject;
+    }
+
+    public void setHiveObject(HiveObjectRef hiveObject) {
+      this.hiveObject = hiveObject;
+    }
+
+    public void unsetHiveObject() {
+      this.hiveObject = null;
+    }
+
+    /** Returns true if field hiveObject is set (has been asigned a value) and false otherwise */
+    public boolean isSetHiveObject() {
+      return this.hiveObject != null;
+    }
+
+    public void setHiveObjectIsSet(boolean value) {
+      if (!value) {
+        this.hiveObject = null;
+      }
+    }
+
+    public String getUser_name() {
+      return this.user_name;
+    }
+
+    public void setUser_name(String user_name) {
+      this.user_name = user_name;
+    }
+
+    public void unsetUser_name() {
+      this.user_name = null;
+    }
+
+    /** Returns true if field user_name is set (has been asigned a value) and false otherwise */
+    public boolean isSetUser_name() {
+      return this.user_name != null;
+    }
+
+    public void setUser_nameIsSet(boolean value) {
+      if (!value) {
+        this.user_name = null;
+      }
+    }
+
+    public int getGroup_namesSize() {
+      return (this.group_names == null) ? 0 : this.group_names.size();
+    }
+
+    public java.util.Iterator<String> getGroup_namesIterator() {
+      return (this.group_names == null) ? null : this.group_names.iterator();
+    }
+
+    public void addToGroup_names(String elem) {
+      if (this.group_names == null) {
+        this.group_names = new ArrayList<String>();
+      }
+      this.group_names.add(elem);
+    }
+
+    public List<String> getGroup_names() {
+      return this.group_names;
+    }
+
+    public void setGroup_names(List<String> group_names) {
+      this.group_names = group_names;
+    }
+
+    public void unsetGroup_names() {
+      this.group_names = null;
+    }
+
+    /** Returns true if field group_names is set (has been asigned a value) and false otherwise */
+    public boolean isSetGroup_names() {
+      return this.group_names != null;
+    }
+
+    public void setGroup_namesIsSet(boolean value) {
+      if (!value) {
+        this.group_names = null;
+      }
+    }
+
+    public void setFieldValue(_Fields field, Object value) {
+      switch (field) {
+      case HIVE_OBJECT:
+        if (value == null) {
+          unsetHiveObject();
+        } else {
+          setHiveObject((HiveObjectRef)value);
+        }
+        break;
+
+      case USER_NAME:
+        if (value == null) {
+          unsetUser_name();
+        } else {
+          setUser_name((String)value);
+        }
+        break;
+
+      case GROUP_NAMES:
+        if (value == null) {
+          unsetGroup_names();
+        } else {
+          setGroup_names((List<String>)value);
+        }
+        break;
+
+      }
+    }
+
+    public Object getFieldValue(_Fields field) {
+      switch (field) {
+      case HIVE_OBJECT:
+        return getHiveObject();
+
+      case USER_NAME:
+        return getUser_name();
+
+      case GROUP_NAMES:
+        return getGroup_names();
+
+      }
+      throw new IllegalStateException();
+    }
+
+    /** Returns true if field corresponding to fieldID is set (has been asigned a value) and false otherwise */
+    public boolean isSet(_Fields field) {
+      if (field == null) {
+        throw new IllegalArgumentException();
+      }
+
+      switch (field) {
+      case HIVE_OBJECT:
+        return isSetHiveObject();
+      case USER_NAME:
+        return isSetUser_name();
+      case GROUP_NAMES:
+        return isSetGroup_names();
+      }
+      throw new IllegalStateException();
+    }
+
+    @Override
+    public boolean equals(Object that) {
+      if (that == null)
+        return false;
+      if (that instanceof get_privilege_set_args)
+        return this.equals((get_privilege_set_args)that);
+      return false;
+    }
+
+    public boolean equals(get_privilege_set_args that) {
+      if (that == null)
+        return false;
+
+      boolean this_present_hiveObject = true && this.isSetHiveObject();
+      boolean that_present_hiveObject = true && that.isSetHiveObject();
+      if (this_present_hiveObject || that_present_hiveObject) {
+        if (!(this_present_hiveObject && that_present_hiveObject))
+          return false;
+        if (!this.hiveObject.equals(that.hiveObject))
+          return false;
+      }
+
+      boolean this_present_user_name = true && this.isSetUser_name();
+      boolean that_present_user_name = true && that.isSetUser_name();
+      if (this_present_user_name || that_present_user_name) {
+        if (!(this_present_user_name && that_present_user_name))
+          return false;
+        if (!this.user_name.equals(that.user_name))
+          return false;
+      }
+
+      boolean this_present_group_names = true && this.isSetGroup_names();
+      boolean that_present_group_names = true && that.isSetGroup_names();
+      if (this_present_group_names || that_present_group_names) {
+        if (!(this_present_group_names && that_present_group_names))
+          return false;
+        if (!this.group_names.equals(that.group_names))
+          return false;
+      }
+
+      return true;
+    }
+
+    @Override
+    public int hashCode() {
+      return 0;
+    }
+
+    public int compareTo(get_privilege_set_args other) {
+      if (!getClass().equals(other.getClass())) {
+        return getClass().getName().compareTo(other.getClass().getName());
+      }
+
+      int lastComparison = 0;
+      get_privilege_set_args typedOther = (get_privilege_set_args)other;
+
+      lastComparison = Boolean.valueOf(isSetHiveObject()).compareTo(typedOther.isSetHiveObject());
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+      if (isSetHiveObject()) {
+        lastComparison = TBaseHelper.compareTo(this.hiveObject, typedOther.hiveObject);
+        if (lastComparison != 0) {
+          return lastComparison;
+        }
+      }
+      lastComparison = Boolean.valueOf(isSetUser_name()).compareTo(typedOther.isSetUser_name());
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+      if (isSetUser_name()) {
+        lastComparison = TBaseHelper.compareTo(this.user_name, typedOther.user_name);
+        if (lastComparison != 0) {
+          return lastComparison;
+        }
+      }
+      lastComparison = Boolean.valueOf(isSetGroup_names()).compareTo(typedOther.isSetGroup_names());
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+      if (isSetGroup_names()) {
+        lastComparison = TBaseHelper.compareTo(this.group_names, typedOther.group_names);
+        if (lastComparison != 0) {
+          return lastComparison;
+        }
+      }
+      return 0;
+    }
+
+    public _Fields fieldForId(int fieldId) {
+      return _Fields.findByThriftId(fieldId);
+    }
+
+    public void read(TProtocol iprot) throws TException {
+      TField field;
+      iprot.readStructBegin();
+      while (true)
+      {
+        field = iprot.readFieldBegin();
+        if (field.type == TType.STOP) { 
+          break;
+        }
+        switch (field.id) {
+          case 1: // HIVE_OBJECT
+            if (field.type == TType.STRUCT) {
+              this.hiveObject = new HiveObjectRef();
+              this.hiveObject.read(iprot);
+            } else { 
+              TProtocolUtil.skip(iprot, field.type);
+            }
+            break;
+          case 2: // USER_NAME
+            if (field.type == TType.STRING) {
+              this.user_name = iprot.readString();
+            } else { 
+              TProtocolUtil.skip(iprot, field.type);
+            }
+            break;
+          case 3: // GROUP_NAMES
+            if (field.type == TType.LIST) {
+              {
+                TList _list216 = iprot.readListBegin();
+                this.group_names = new ArrayList<String>(_list216.size);
+                for (int _i217 = 0; _i217 < _list216.size; ++_i217)
+                {
+                  String _elem218;
+                  _elem218 = iprot.readString();
+                  this.group_names.add(_elem218);
+                }
+                iprot.readListEnd();
+              }
+            } else { 
+              TProtocolUtil.skip(iprot, field.type);
+            }
+            break;
+          default:
+            TProtocolUtil.skip(iprot, field.type);
+        }
+        iprot.readFieldEnd();
+      }
+      iprot.readStructEnd();
+      validate();
+    }
+
+    public void write(TProtocol oprot) throws TException {
+      validate();
+
+      oprot.writeStructBegin(STRUCT_DESC);
+      if (this.hiveObject != null) {
+        oprot.writeFieldBegin(HIVE_OBJECT_FIELD_DESC);
+        this.hiveObject.write(oprot);
+        oprot.writeFieldEnd();
+      }
+      if (this.user_name != null) {
+        oprot.writeFieldBegin(USER_NAME_FIELD_DESC);
+        oprot.writeString(this.user_name);
+        oprot.writeFieldEnd();
+      }
+      if (this.group_names != null) {
+        oprot.writeFieldBegin(GROUP_NAMES_FIELD_DESC);
+        {
+          oprot.writeListBegin(new TList(TType.STRING, this.group_names.size()));
+          for (String _iter219 : this.group_names)
+          {
+            oprot.writeString(_iter219);
+          }
+          oprot.writeListEnd();
+        }
+        oprot.writeFieldEnd();
+      }
+      oprot.writeFieldStop();
+      oprot.writeStructEnd();
+    }
+
+    @Override
+    public String toString() {
+      StringBuilder sb = new StringBuilder("get_privilege_set_args(");
+      boolean first = true;
+
+      sb.append("hiveObject:");
+      if (this.hiveObject == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.hiveObject);
+      }
+      first = false;
+      if (!first) sb.append(", ");
+      sb.append("user_name:");
+      if (this.user_name == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.user_name);
+      }
+      first = false;
+      if (!first) sb.append(", ");
+      sb.append("group_names:");
+      if (this.group_names == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.group_names);
+      }
+      first = false;
+      sb.append(")");
+      return sb.toString();
+    }
+
+    public void validate() throws TException {
+      // check for required fields
+    }
+
+  }
+
+  public static class get_privilege_set_result implements TBase<get_privilege_set_result, get_privilege_set_result._Fields>, java.io.Serializable, Cloneable   {
+    private static final TStruct STRUCT_DESC = new TStruct("get_privilege_set_result");
+
+    private static final TField SUCCESS_FIELD_DESC = new TField("success", TType.STRUCT, (short)0);
+    private static final TField O1_FIELD_DESC = new TField("o1", TType.STRUCT, (short)1);
+
+    private PrincipalPrivilegeSet success;
+    private MetaException o1;
+
+    /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
+    public enum _Fields implements TFieldIdEnum {
+      SUCCESS((short)0, "success"),
+      O1((short)1, "o1");
+
+      private static final Map<String, _Fields> byName = new HashMap<String, _Fields>();
+
+      static {
+        for (_Fields field : EnumSet.allOf(_Fields.class)) {
+          byName.put(field.getFieldName(), field);
+        }
+      }
+
+      /**
+       * Find the _Fields constant that matches fieldId, or null if its not found.
+       */
+      public static _Fields findByThriftId(int fieldId) {
+        switch(fieldId) {
+          case 0: // SUCCESS
+            return SUCCESS;
+          case 1: // O1
+            return O1;
+          default:
+            return null;
+        }
+      }
+
+      /**
+       * Find the _Fields constant that matches fieldId, throwing an exception
+       * if it is not found.
+       */
+      public static _Fields findByThriftIdOrThrow(int fieldId) {
+        _Fields fields = findByThriftId(fieldId);
+        if (fields == null) throw new IllegalArgumentException("Field " + fieldId + " doesn't exist!");
+        return fields;
+      }
+
+      /**
+       * Find the _Fields constant that matches name, or null if its not found.
+       */
+      public static _Fields findByName(String name) {
+        return byName.get(name);
+      }
+
+      private final short _thriftId;
+      private final String _fieldName;
+
+      _Fields(short thriftId, String fieldName) {
+        _thriftId = thriftId;
+        _fieldName = fieldName;
+      }
+
+      public short getThriftFieldId() {
+        return _thriftId;
+      }
+
+      public String getFieldName() {
+        return _fieldName;
+      }
+    }
+
+    // isset id assignments
+
+    public static final Map<_Fields, FieldMetaData> metaDataMap;
+    static {
+      Map<_Fields, FieldMetaData> tmpMap = new EnumMap<_Fields, FieldMetaData>(_Fields.class);
+      tmpMap.put(_Fields.SUCCESS, new FieldMetaData("success", TFieldRequirementType.DEFAULT, 
+          new StructMetaData(TType.STRUCT, PrincipalPrivilegeSet.class)));
+      tmpMap.put(_Fields.O1, new FieldMetaData("o1", TFieldRequirementType.DEFAULT, 
+          new FieldValueMetaData(TType.STRUCT)));
+      metaDataMap = Collections.unmodifiableMap(tmpMap);
+      FieldMetaData.addStructMetaDataMap(get_privilege_set_result.class, metaDataMap);
+    }
+
+    public get_privilege_set_result() {
+    }
+
+    public get_privilege_set_result(
+      PrincipalPrivilegeSet success,
+      MetaException o1)
+    {
+      this();
+      this.success = success;
+      this.o1 = o1;
+    }
+
+    /**
+     * Performs a deep copy on <i>other</i>.
+     */
+    public get_privilege_set_result(get_privilege_set_result other) {
+      if (other.isSetSuccess()) {
+        this.success = new PrincipalPrivilegeSet(other.success);
+      }
+      if (other.isSetO1()) {
+        this.o1 = new MetaException(other.o1);
+      }
+    }
+
+    public get_privilege_set_result deepCopy() {
+      return new get_privilege_set_result(this);
+    }
+
+    @Override
+    public void clear() {
+      this.success = null;
+      this.o1 = null;
+    }
+
+    public PrincipalPrivilegeSet getSuccess() {
+      return this.success;
+    }
+
+    public void setSuccess(PrincipalPrivilegeSet success) {
+      this.success = success;
+    }
+
+    public void unsetSuccess() {
+      this.success = null;
+    }
+
+    /** Returns true if field success is set (has been asigned a value) and false otherwise */
+    public boolean isSetSuccess() {
+      return this.success != null;
+    }
+
+    public void setSuccessIsSet(boolean value) {
+      if (!value) {
+        this.success = null;
+      }
+    }
+
+    public MetaException getO1() {
+      return this.o1;
+    }
+
+    public void setO1(MetaException o1) {
+      this.o1 = o1;
+    }
+
+    public void unsetO1() {
+      this.o1 = null;
+    }
+
+    /** Returns true if field o1 is set (has been asigned a value) and false otherwise */
+    public boolean isSetO1() {
+      return this.o1 != null;
+    }
+
+    public void setO1IsSet(boolean value) {
+      if (!value) {
+        this.o1 = null;
+      }
+    }
+
+    public void setFieldValue(_Fields field, Object value) {
+      switch (field) {
+      case SUCCESS:
+        if (value == null) {
+          unsetSuccess();
+        } else {
+          setSuccess((PrincipalPrivilegeSet)value);
+        }
+        break;
+
+      case O1:
+        if (value == null) {
+          unsetO1();
+        } else {
+          setO1((MetaException)value);
+        }
+        break;
+
+      }
+    }
+
+    public Object getFieldValue(_Fields field) {
+      switch (field) {
+      case SUCCESS:
+        return getSuccess();
+
+      case O1:
+        return getO1();
+
+      }
+      throw new IllegalStateException();
+    }
+
+    /** Returns true if field corresponding to fieldID is set (has been asigned a value) and false otherwise */
+    public boolean isSet(_Fields field) {
+      if (field == null) {
+        throw new IllegalArgumentException();
+      }
+
+      switch (field) {
+      case SUCCESS:
+        return isSetSuccess();
+      case O1:
+        return isSetO1();
+      }
+      throw new IllegalStateException();
+    }
+
+    @Override
+    public boolean equals(Object that) {
+      if (that == null)
+        return false;
+      if (that instanceof get_privilege_set_result)
+        return this.equals((get_privilege_set_result)that);
+      return false;
+    }
+
+    public boolean equals(get_privilege_set_result that) {
+      if (that == null)
+        return false;
+
+      boolean this_present_success = true && this.isSetSuccess();
+      boolean that_present_success = true && that.isSetSuccess();
+      if (this_present_success || that_present_success) {
+        if (!(this_present_success && that_present_success))
+          return false;
+        if (!this.success.equals(that.success))
+          return false;
+      }
+
+      boolean this_present_o1 = true && this.isSetO1();
+      boolean that_present_o1 = true && that.isSetO1();
+      if (this_present_o1 || that_present_o1) {
+        if (!(this_present_o1 && that_present_o1))
+          return false;
+        if (!this.o1.equals(that.o1))
+          return false;
+      }
+
+      return true;
+    }
+
+    @Override
+    public int hashCode() {
+      return 0;
+    }
+
+    public int compareTo(get_privilege_set_result other) {
+      if (!getClass().equals(other.getClass())) {
+        return getClass().getName().compareTo(other.getClass().getName());
+      }
+
+      int lastComparison = 0;
+      get_privilege_set_result typedOther = (get_privilege_set_result)other;
+
+      lastComparison = Boolean.valueOf(isSetSuccess()).compareTo(typedOther.isSetSuccess());
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+      if (isSetSuccess()) {
+        lastComparison = TBaseHelper.compareTo(this.success, typedOther.success);
+        if (lastComparison != 0) {
+          return lastComparison;
+        }
+      }
+      lastComparison = Boolean.valueOf(isSetO1()).compareTo(typedOther.isSetO1());
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+      if (isSetO1()) {
+        lastComparison = TBaseHelper.compareTo(this.o1, typedOther.o1);
+        if (lastComparison != 0) {
+          return lastComparison;
+        }
+      }
+      return 0;
+    }
+
+    public _Fields fieldForId(int fieldId) {
+      return _Fields.findByThriftId(fieldId);
+    }
+
+    public void read(TProtocol iprot) throws TException {
+      TField field;
+      iprot.readStructBegin();
+      while (true)
+      {
+        field = iprot.readFieldBegin();
+        if (field.type == TType.STOP) { 
+          break;
+        }
+        switch (field.id) {
+          case 0: // SUCCESS
+            if (field.type == TType.STRUCT) {
+              this.success = new PrincipalPrivilegeSet();
+              this.success.read(iprot);
+            } else { 
+              TProtocolUtil.skip(iprot, field.type);
+            }
+            break;
+          case 1: // O1
+            if (field.type == TType.STRUCT) {
+              this.o1 = new MetaException();
+              this.o1.read(iprot);
+            } else { 
+              TProtocolUtil.skip(iprot, field.type);
+            }
+            break;
+          default:
+            TProtocolUtil.skip(iprot, field.type);
+        }
+        iprot.readFieldEnd();
+      }
+      iprot.readStructEnd();
+      validate();
+    }
+
+    public void write(TProtocol oprot) throws TException {
+      oprot.writeStructBegin(STRUCT_DESC);
+
+      if (this.isSetSuccess()) {
+        oprot.writeFieldBegin(SUCCESS_FIELD_DESC);
+        this.success.write(oprot);
+        oprot.writeFieldEnd();
+      } else if (this.isSetO1()) {
+        oprot.writeFieldBegin(O1_FIELD_DESC);
+        this.o1.write(oprot);
+        oprot.writeFieldEnd();
+      }
+      oprot.writeFieldStop();
+      oprot.writeStructEnd();
+    }
+
+    @Override
+    public String toString() {
+      StringBuilder sb = new StringBuilder("get_privilege_set_result(");
+      boolean first = true;
+
+      sb.append("success:");
+      if (this.success == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.success);
+      }
+      first = false;
+      if (!first) sb.append(", ");
+      sb.append("o1:");
+      if (this.o1 == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.o1);
+      }
+      first = false;
+      sb.append(")");
+      return sb.toString();
+    }
+
+    public void validate() throws TException {
+      // check for required fields
+    }
+
+  }
+
+  public static class list_privileges_args implements TBase<list_privileges_args, list_privileges_args._Fields>, java.io.Serializable, Cloneable   {
+    private static final TStruct STRUCT_DESC = new TStruct("list_privileges_args");
+
+    private static final TField PRINCIPAL_NAME_FIELD_DESC = new TField("principal_name", TType.STRING, (short)1);
+    private static final TField PRINCIPAL_TYPE_FIELD_DESC = new TField("principal_type", TType.I32, (short)2);
+    private static final TField HIVE_OBJECT_FIELD_DESC = new TField("hiveObject", TType.STRUCT, (short)3);
+
+    private String principal_name;
+    private PrincipalType principal_type;
+    private HiveObjectRef hiveObject;
+
+    /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
+    public enum _Fields implements TFieldIdEnum {
+      PRINCIPAL_NAME((short)1, "principal_name"),
+      /**
+       * 
+       * @see PrincipalType
+       */
+      PRINCIPAL_TYPE((short)2, "principal_type"),
+      HIVE_OBJECT((short)3, "hiveObject");
+
+      private static final Map<String, _Fields> byName = new HashMap<String, _Fields>();
+
+      static {
+        for (_Fields field : EnumSet.allOf(_Fields.class)) {
+          byName.put(field.getFieldName(), field);
+        }
+      }
+
+      /**
+       * Find the _Fields constant that matches fieldId, or null if its not found.
+       */
+      public static _Fields findByThriftId(int fieldId) {
+        switch(fieldId) {
+          case 1: // PRINCIPAL_NAME
+            return PRINCIPAL_NAME;
+          case 2: // PRINCIPAL_TYPE
+            return PRINCIPAL_TYPE;
+          case 3: // HIVE_OBJECT
+            return HIVE_OBJECT;
+          default:
+            return null;
+        }
+      }
+
+      /**
+       * Find the _Fields constant that matches fieldId, throwing an exception
+       * if it is not found.
+       */
+      public static _Fields findByThriftIdOrThrow(int fieldId) {
+        _Fields fields = findByThriftId(fieldId);
+        if (fields == null) throw new IllegalArgumentException("Field " + fieldId + " doesn't exist!");
+        return fields;
+      }
+
+      /**
+       * Find the _Fields constant that matches name, or null if its not found.
+       */
+      public static _Fields findByName(String name) {
+        return byName.get(name);
+      }
+
+      private final short _thriftId;
+      private final String _fieldName;
+
+      _Fields(short thriftId, String fieldName) {
+        _thriftId = thriftId;
+        _fieldName = fieldName;
+      }
+
+      public short getThriftFieldId() {
+        return _thriftId;
+      }
+
+      public String getFieldName() {
+        return _fieldName;
+      }
+    }
+
+    // isset id assignments
+
+    public static final Map<_Fields, FieldMetaData> metaDataMap;
+    static {
+      Map<_Fields, FieldMetaData> tmpMap = new EnumMap<_Fields, FieldMetaData>(_Fields.class);
+      tmpMap.put(_Fields.PRINCIPAL_NAME, new FieldMetaData("principal_name", TFieldRequirementType.DEFAULT, 
+          new FieldValueMetaData(TType.STRING)));
+      tmpMap.put(_Fields.PRINCIPAL_TYPE, new FieldMetaData("principal_type", TFieldRequirementType.DEFAULT, 
+          new EnumMetaData(TType.ENUM, PrincipalType.class)));
+      tmpMap.put(_Fields.HIVE_OBJECT, new FieldMetaData("hiveObject", TFieldRequirementType.DEFAULT, 
+          new StructMetaData(TType.STRUCT, HiveObjectRef.class)));
+      metaDataMap = Collections.unmodifiableMap(tmpMap);
+      FieldMetaData.addStructMetaDataMap(list_privileges_args.class, metaDataMap);
+    }
+
+    public list_privileges_args() {
+    }
+
+    public list_privileges_args(
+      String principal_name,
+      PrincipalType principal_type,
+      HiveObjectRef hiveObject)
+    {
+      this();
+      this.principal_name = principal_name;
+      this.principal_type = principal_type;
+      this.hiveObject = hiveObject;
+    }
+
+    /**
+     * Performs a deep copy on <i>other</i>.
+     */
+    public list_privileges_args(list_privileges_args other) {
+      if (other.isSetPrincipal_name()) {
+        this.principal_name = other.principal_name;
+      }
+      if (other.isSetPrincipal_type()) {
+        this.principal_type = other.principal_type;
+      }
+      if (other.isSetHiveObject()) {
+        this.hiveObject = new HiveObjectRef(other.hiveObject);
+      }
+    }
+
+    public list_privileges_args deepCopy() {
+      return new list_privileges_args(this);
+    }
+
+    @Override
+    public void clear() {
+      this.principal_name = null;
+      this.principal_type = null;
+      this.hiveObject = null;
+    }
+
+    public String getPrincipal_name() {
+      return this.principal_name;
+    }
+
+    public void setPrincipal_name(String principal_name) {
+      this.principal_name = principal_name;
+    }
+
+    public void unsetPrincipal_name() {
+      this.principal_name = null;
+    }
+
+    /** Returns true if field principal_name is set (has been asigned a value) and false otherwise */
+    public boolean isSetPrincipal_name() {
+      return this.principal_name != null;
+    }
+
+    public void setPrincipal_nameIsSet(boolean value) {
+      if (!value) {
+        this.principal_name = null;
+      }
+    }
+
+    /**
+     * 
+     * @see PrincipalType
+     */
+    public PrincipalType getPrincipal_type() {
+      return this.principal_type;
+    }
+
+    /**
+     * 
+     * @see PrincipalType
+     */
+    public void setPrincipal_type(PrincipalType principal_type) {
+      this.principal_type = principal_type;
+    }
+
+    public void unsetPrincipal_type() {
+      this.principal_type = null;
+    }
+
+    /** Returns true if field principal_type is set (has been asigned a value) and false otherwise */
+    public boolean isSetPrincipal_type() {
+      return this.principal_type != null;
+    }
+
+    public void setPrincipal_typeIsSet(boolean value) {
+      if (!value) {
+        this.principal_type = null;
+      }
+    }
+
+    public HiveObjectRef getHiveObject() {
+      return this.hiveObject;
+    }
+
+    public void setHiveObject(HiveObjectRef hiveObject) {
+      this.hiveObject = hiveObject;
+    }
+
+    public void unsetHiveObject() {
+      this.hiveObject = null;
+    }
+
+    /** Returns true if field hiveObject is set (has been asigned a value) and false otherwise */
+    public boolean isSetHiveObject() {
+      return this.hiveObject != null;
+    }
+
+    public void setHiveObjectIsSet(boolean value) {
+      if (!value) {
+        this.hiveObject = null;
+      }
+    }
+
+    public void setFieldValue(_Fields field, Object value) {
+      switch (field) {
+      case PRINCIPAL_NAME:
+        if (value == null) {
+          unsetPrincipal_name();
+        } else {
+          setPrincipal_name((String)value);
+        }
+        break;
+
+      case PRINCIPAL_TYPE:
+        if (value == null) {
+          unsetPrincipal_type();
+        } else {
+          setPrincipal_type((PrincipalType)value);
+        }
+        break;
+
+      case HIVE_OBJECT:
+        if (value == null) {
+          unsetHiveObject();
+        } else {
+          setHiveObject((HiveObjectRef)value);
+        }
+        break;
+
+      }
+    }
+
+    public Object getFieldValue(_Fields field) {
+      switch (field) {
+      case PRINCIPAL_NAME:
+        return getPrincipal_name();
+
+      case PRINCIPAL_TYPE:
+        return getPrincipal_type();
+
+      case HIVE_OBJECT:
+        return getHiveObject();
+
+      }
+      throw new IllegalStateException();
+    }
+
+    /** Returns true if field corresponding to fieldID is set (has been asigned a value) and false otherwise */
+    public boolean isSet(_Fields field) {
+      if (field == null) {
+        throw new IllegalArgumentException();
+      }
+
+      switch (field) {
+      case PRINCIPAL_NAME:
+        return isSetPrincipal_name();
+      case PRINCIPAL_TYPE:
+        return isSetPrincipal_type();
+      case HIVE_OBJECT:
+        return isSetHiveObject();
+      }
+      throw new IllegalStateException();
+    }
+
+    @Override
+    public boolean equals(Object that) {
+      if (that == null)
+        return false;
+      if (that instanceof list_privileges_args)
+        return this.equals((list_privileges_args)that);
+      return false;
+    }
+
+    public boolean equals(list_privileges_args that) {
+      if (that == null)
+        return false;
+
+      boolean this_present_principal_name = true && this.isSetPrincipal_name();
+      boolean that_present_principal_name = true && that.isSetPrincipal_name();
+      if (this_present_principal_name || that_present_principal_name) {
+        if (!(this_present_principal_name && that_present_principal_name))
+          return false;
+        if (!this.principal_name.equals(that.principal_name))
+          return false;
+      }
+
+      boolean this_present_principal_type = true && this.isSetPrincipal_type();
+      boolean that_present_principal_type = true && that.isSetPrincipal_type();
+      if (this_present_principal_type || that_present_principal_type) {
+        if (!(this_present_principal_type && that_present_principal_type))
+          return false;
+        if (!this.principal_type.equals(that.principal_type))
+          return false;
+      }
+
+      boolean this_present_hiveObject = true && this.isSetHiveObject();
+      boolean that_present_hiveObject = true && that.isSetHiveObject();
+      if (this_present_hiveObject || that_present_hiveObject) {
+        if (!(this_present_hiveObject && that_present_hiveObject))
+          return false;
+        if (!this.hiveObject.equals(that.hiveObject))
+          return false;
+      }
+
+      return true;
+    }
+
+    @Override
+    public int hashCode() {
+      return 0;
+    }
+
+    public int compareTo(list_privileges_args other) {
+      if (!getClass().equals(other.getClass())) {
+        return getClass().getName().compareTo(other.getClass().getName());
+      }
+
+      int lastComparison = 0;
+      list_privileges_args typedOther = (list_privileges_args)other;
+
+      lastComparison = Boolean.valueOf(isSetPrincipal_name()).compareTo(typedOther.isSetPrincipal_name());
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+      if (isSetPrincipal_name()) {
+        lastComparison = TBaseHelper.compareTo(this.principal_name, typedOther.principal_name);
+        if (lastComparison != 0) {
+          return lastComparison;
+        }
+      }
+      lastComparison = Boolean.valueOf(isSetPrincipal_type()).compareTo(typedOther.isSetPrincipal_type());
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+      if (isSetPrincipal_type()) {
+        lastComparison = TBaseHelper.compareTo(this.principal_type, typedOther.principal_type);
+        if (lastComparison != 0) {
+          return lastComparison;
+        }
+      }
+      lastComparison = Boolean.valueOf(isSetHiveObject()).compareTo(typedOther.isSetHiveObject());
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+      if (isSetHiveObject()) {
+        lastComparison = TBaseHelper.compareTo(this.hiveObject, typedOther.hiveObject);
+        if (lastComparison != 0) {
+          return lastComparison;
+        }
+      }
+      return 0;
+    }
+
+    public _Fields fieldForId(int fieldId) {
+      return _Fields.findByThriftId(fieldId);
+    }
+
+    public void read(TProtocol iprot) throws TException {
+      TField field;
+      iprot.readStructBegin();
+      while (true)
+      {
+        field = iprot.readFieldBegin();
+        if (field.type == TType.STOP) { 
+          break;
+        }
+        switch (field.id) {
+          case 1: // PRINCIPAL_NAME
+            if (field.type == TType.STRING) {
+              this.principal_name = iprot.readString();
+            } else { 
+              TProtocolUtil.skip(iprot, field.type);
+            }
+            break;
+          case 2: // PRINCIPAL_TYPE
+            if (field.type == TType.I32) {
+              this.principal_type = PrincipalType.findByValue(iprot.readI32());
+            } else { 
+              TProtocolUtil.skip(iprot, field.type);
+            }
+            break;
+          case 3: // HIVE_OBJECT
+            if (field.type == TType.STRUCT) {
+              this.hiveObject = new HiveObjectRef();
+              this.hiveObject.read(iprot);
+            } else { 
+              TProtocolUtil.skip(iprot, field.type);
+            }
+            break;
+          default:
+            TProtocolUtil.skip(iprot, field.type);
+        }
+        iprot.readFieldEnd();
+      }
+      iprot.readStructEnd();
+      validate();
+    }
+
+    public void write(TProtocol oprot) throws TException {
+      validate();
+
+      oprot.writeStructBegin(STRUCT_DESC);
+      if (this.principal_name != null) {
+        oprot.writeFieldBegin(PRINCIPAL_NAME_FIELD_DESC);
+        oprot.writeString(this.principal_name);
+        oprot.writeFieldEnd();
+      }
+      if (this.principal_type != null) {
+        oprot.writeFieldBegin(PRINCIPAL_TYPE_FIELD_DESC);
+        oprot.writeI32(this.principal_type.getValue());
+        oprot.writeFieldEnd();
+      }
+      if (this.hiveObject != null) {
+        oprot.writeFieldBegin(HIVE_OBJECT_FIELD_DESC);
+        this.hiveObject.write(oprot);
+        oprot.writeFieldEnd();
+      }
+      oprot.writeFieldStop();
+      oprot.writeStructEnd();
+    }
+
+    @Override
+    public String toString() {
+      StringBuilder sb = new StringBuilder("list_privileges_args(");
+      boolean first = true;
+
+      sb.append("principal_name:");
+      if (this.principal_name == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.principal_name);
+      }
+      first = false;
+      if (!first) sb.append(", ");
+      sb.append("principal_type:");
+      if (this.principal_type == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.principal_type);
+      }
+      first = false;
+      if (!first) sb.append(", ");
+      sb.append("hiveObject:");
+      if (this.hiveObject == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.hiveObject);
+      }
+      first = false;
+      sb.append(")");
+      return sb.toString();
+    }
+
+    public void validate() throws TException {
+      // check for required fields
+    }
+
+  }
+
+  public static class list_privileges_result implements TBase<list_privileges_result, list_privileges_result._Fields>, java.io.Serializable, Cloneable   {
+    private static final TStruct STRUCT_DESC = new TStruct("list_privileges_result");
+
+    private static final TField SUCCESS_FIELD_DESC = new TField("success", TType.LIST, (short)0);
+    private static final TField O1_FIELD_DESC = new TField("o1", TType.STRUCT, (short)1);
+
+    private List<HiveObjectPrivilege> success;
+    private MetaException o1;
+
+    /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
+    public enum _Fields implements TFieldIdEnum {
+      SUCCESS((short)0, "success"),
+      O1((short)1, "o1");
+
+      private static final Map<String, _Fields> byName = new HashMap<String, _Fields>();
+
+      static {
+        for (_Fields field : EnumSet.allOf(_Fields.class)) {
+          byName.put(field.getFieldName(), field);
+        }
+      }
+
+      /**
+       * Find the _Fields constant that matches fieldId, or null if its not found.
+       */
+      public static _Fields findByThriftId(int fieldId) {
+        switch(fieldId) {
+          case 0: // SUCCESS
+            return SUCCESS;
+          case 1: // O1
+            return O1;
+          default:
+            return null;
+        }
+      }
+
+      /**
+       * Find the _Fields constant that matches fieldId, throwing an exception
+       * if it is not found.
+       */
+      public static _Fields findByThriftIdOrThrow(int fieldId) {
+        _Fields fields = findByThriftId(fieldId);
+        if (fields == null) throw new IllegalArgumentException("Field " + fieldId + " doesn't exist!");
+        return fields;
+      }
+
+      /**
+       * Find the _Fields constant that matches name, or null if its not found.
+       */
+      public static _Fields findByName(String name) {
+        return byName.get(name);
+      }
+
+      private final short _thriftId;
+      private final String _fieldName;
+
+      _Fields(short thriftId, String fieldName) {
+        _thriftId = thriftId;
+        _fieldName = fieldName;
+      }
+
+      public short getThriftFieldId() {
+        return _thriftId;
+      }
+
+      public String getFieldName() {
+        return _fieldName;
+      }
+    }
+
+    // isset id assignments
+
+    public static final Map<_Fields, FieldMetaData> metaDataMap;
+    static {
+      Map<_Fields, FieldMetaData> tmpMap = new EnumMap<_Fields, FieldMetaData>(_Fields.class);
+      tmpMap.put(_Fields.SUCCESS, new FieldMetaData("success", TFieldRequirementType.DEFAULT, 
+          new ListMetaData(TType.LIST, 
+              new StructMetaData(TType.STRUCT, HiveObjectPrivilege.class))));
+      tmpMap.put(_Fields.O1, new FieldMetaData("o1", TFieldRequirementType.DEFAULT, 
+          new FieldValueMetaData(TType.STRUCT)));
+      metaDataMap = Collections.unmodifiableMap(tmpMap);
+      FieldMetaData.addStructMetaDataMap(list_privileges_result.class, metaDataMap);
+    }
+
+    public list_privileges_result() {
+    }
+
+    public list_privileges_result(
+      List<HiveObjectPrivilege> success,
+      MetaException o1)
+    {
+      this();
+      this.success = success;
+      this.o1 = o1;
+    }
+
+    /**
+     * Performs a deep copy on <i>other</i>.
+     */
+    public list_privileges_result(list_privileges_result other) {
+      if (other.isSetSuccess()) {
+        List<HiveObjectPrivilege> __this__success = new ArrayList<HiveObjectPrivilege>();
+        for (HiveObjectPrivilege other_element : other.success) {
+          __this__success.add(new HiveObjectPrivilege(other_element));
+        }
+        this.success = __this__success;
+      }
+      if (other.isSetO1()) {
+        this.o1 = new MetaException(other.o1);
+      }
+    }
+
+    public list_privileges_result deepCopy() {
+      return new list_privileges_result(this);
+    }
+
+    @Override
+    public void clear() {
+      this.success = null;
+      this.o1 = null;
+    }
+
+    public int getSuccessSize() {
+      return (this.success == null) ? 0 : this.success.size();
+    }
+
+    public java.util.Iterator<HiveObjectPrivilege> getSuccessIterator() {
+      return (this.success == null) ? null : this.success.iterator();
+    }
+
+    public void addToSuccess(HiveObjectPrivilege elem) {
+      if (this.success == null) {
+        this.success = new ArrayList<HiveObjectPrivilege>();
+      }
+      this.success.add(elem);
+    }
+
+    public List<HiveObjectPrivilege> getSuccess() {
+      return this.success;
+    }
+
+    public void setSuccess(List<HiveObjectPrivilege> success) {
+      this.success = success;
+    }
+
+    public void unsetSuccess() {
+      this.success = null;
+    }
+
+    /** Returns true if field success is set (has been asigned a value) and false otherwise */
+    public boolean isSetSuccess() {
+      return this.success != null;
+    }
+
+    public void setSuccessIsSet(boolean value) {
+      if (!value) {
+        this.success = null;
+      }
+    }
+
+    public MetaException getO1() {
+      return this.o1;
+    }
+
+    public void setO1(MetaException o1) {
+      this.o1 = o1;
+    }
+
+    public void unsetO1() {
+      this.o1 = null;
+    }
+
+    /** Returns true if field o1 is set (has been asigned a value) and false otherwise */
+    public boolean isSetO1() {
+      return this.o1 != null;
+    }
+
+    public void setO1IsSet(boolean value) {
+      if (!value) {
+        this.o1 = null;
+      }
+    }
+
+    public void setFieldValue(_Fields field, Object value) {
+      switch (field) {
+      case SUCCESS:
+        if (value == null) {
+          unsetSuccess();
+        } else {
+          setSuccess((List<HiveObjectPrivilege>)value);
+        }
+        break;
+
+      case O1:
+        if (value == null) {
+          unsetO1();
+        } else {
+          setO1((MetaException)value);
+        }
+        break;
+
+      }
+    }
+
+    public Object getFieldValue(_Fields field) {
+      switch (field) {
+      case SUCCESS:
+        return getSuccess();
+
+      case O1:
+        return getO1();
+
+      }
+      throw new IllegalStateException();
+    }
+
+    /** Returns true if field corresponding to fieldID is set (has been asigned a value) and false otherwise */
+    public boolean isSet(_Fields field) {
+      if (field == null) {
+        throw new IllegalArgumentException();
+      }
+
+      switch (field) {
+      case SUCCESS:
+        return isSetSuccess();
+      case O1:
+        return isSetO1();
+      }
+      throw new IllegalStateException();
+    }
+
+    @Override
+    public boolean equals(Object that) {
+      if (that == null)
+        return false;
+      if (that instanceof list_privileges_result)
+        return this.equals((list_privileges_result)that);
+      return false;
+    }
+
+    public boolean equals(list_privileges_result that) {
+      if (that == null)
+        return false;
+
+      boolean this_present_success = true && this.isSetSuccess();
+      boolean that_present_success = true && that.isSetSuccess();
+      if (this_present_success || that_present_success) {
+        if (!(this_present_success && that_present_success))
+          return false;
+        if (!this.success.equals(that.success))
+          return false;
+      }
+
+      boolean this_present_o1 = true && this.isSetO1();
+      boolean that_present_o1 = true && that.isSetO1();
+      if (this_present_o1 || that_present_o1) {
+        if (!(this_present_o1 && that_present_o1))
+          return false;
+        if (!this.o1.equals(that.o1))
+          return false;
+      }
+
+      return true;
+    }
+
+    @Override
+    public int hashCode() {
+      return 0;
+    }
+
+    public int compareTo(list_privileges_result other) {
+      if (!getClass().equals(other.getClass())) {
+        return getClass().getName().compareTo(other.getClass().getName());
+      }
+
+      int lastComparison = 0;
+      list_privileges_result typedOther = (list_privileges_result)other;
+
+      lastComparison = Boolean.valueOf(isSetSuccess()).compareTo(typedOther.isSetSuccess());
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+      if (isSetSuccess()) {
+        lastComparison = TBaseHelper.compareTo(this.success, typedOther.success);
+        if (lastComparison != 0) {
+          return lastComparison;
+        }
+      }
+      lastComparison = Boolean.valueOf(isSetO1()).compareTo(typedOther.isSetO1());
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+      if (isSetO1()) {
+        lastComparison = TBaseHelper.compareTo(this.o1, typedOther.o1);
+        if (lastComparison != 0) {
+          return lastComparison;
+        }
+      }
+      return 0;
+    }
+
+    public _Fields fieldForId(int fieldId) {
+      return _Fields.findByThriftId(fieldId);
+    }
+
+    public void read(TProtocol iprot) throws TException {
+      TField field;
+      iprot.readStructBegin();
+      while (true)
+      {
+        field = iprot.readFieldBegin();
+        if (field.type == TType.STOP) { 
+          break;
+        }
+        switch (field.id) {
+          case 0: // SUCCESS
+            if (field.type == TType.LIST) {
+              {
+                TList _list220 = iprot.readListBegin();
+                this.success = new ArrayList<HiveObjectPrivilege>(_list220.size);
+                for (int _i221 = 0; _i221 < _list220.size; ++_i221)
+                {
+                  HiveObjectPrivilege _elem222;
+                  _elem222 = new HiveObjectPrivilege();
+                  _elem222.read(iprot);
+                  this.success.add(_elem222);
+                }
+                iprot.readListEnd();
+              }
+            } else { 
+              TProtocolUtil.skip(iprot, field.type);
+            }
+            break;
+          case 1: // O1
+            if (field.type == TType.STRUCT) {
+              this.o1 = new MetaException();
+              this.o1.read(iprot);
+            } else { 
+              TProtocolUtil.skip(iprot, field.type);
+            }
+            break;
+          default:
+            TProtocolUtil.skip(iprot, field.type);
+        }
+        iprot.readFieldEnd();
+      }
+      iprot.readStructEnd();
+      validate();
+    }
+
+    public void write(TProtocol oprot) throws TException {
+      oprot.writeStructBegin(STRUCT_DESC);
+
+      if (this.isSetSuccess()) {
+        oprot.writeFieldBegin(SUCCESS_FIELD_DESC);
+        {
+          oprot.writeListBegin(new TList(TType.STRUCT, this.success.size()));
+          for (HiveObjectPrivilege _iter223 : this.success)
+          {
+            _iter223.write(oprot);
+          }
+          oprot.writeListEnd();
+        }
+        oprot.writeFieldEnd();
+      } else if (this.isSetO1()) {
+        oprot.writeFieldBegin(O1_FIELD_DESC);
+        this.o1.write(oprot);
+        oprot.writeFieldEnd();
+      }
+      oprot.writeFieldStop();
+      oprot.writeStructEnd();
+    }
+
+    @Override
+    public String toString() {
+      StringBuilder sb = new StringBuilder("list_privileges_result(");
+      boolean first = true;
+
+      sb.append("success:");
+      if (this.success == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.success);
+      }
+      first = false;
+      if (!first) sb.append(", ");
+      sb.append("o1:");
+      if (this.o1 == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.o1);
+      }
+      first = false;
+      sb.append(")");
+      return sb.toString();
+    }
+
+    public void validate() throws TException {
+      // check for required fields
+    }
+
+  }
+
+  public static class grant_privileges_args implements TBase<grant_privileges_args, grant_privileges_args._Fields>, java.io.Serializable, Cloneable   {
+    private static final TStruct STRUCT_DESC = new TStruct("grant_privileges_args");
+
+    private static final TField PRIVILEGES_FIELD_DESC = new TField("privileges", TType.STRUCT, (short)1);
+
+    private PrivilegeBag privileges;
+
+    /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
+    public enum _Fields implements TFieldIdEnum {
+      PRIVILEGES((short)1, "privileges");
+
+      private static final Map<String, _Fields> byName = new HashMap<String, _Fields>();
+
+      static {
+        for (_Fields field : EnumSet.allOf(_Fields.class)) {
+          byName.put(field.getFieldName(), field);
+        }
+      }
+
+      /**
+       * Find the _Fields constant that matches fieldId, or null if its not found.
+       */
+      public static _Fields findByThriftId(int fieldId) {
+        switch(fieldId) {
+          case 1: // PRIVILEGES
+            return PRIVILEGES;
+          default:
+            return null;
+        }
+      }
+
+      /**
+       * Find the _Fields constant that matches fieldId, throwing an exception
+       * if it is not found.
+       */
+      public static _Fields findByThriftIdOrThrow(int fieldId) {
+        _Fields fields = findByThriftId(fieldId);
+        if (fields == null) throw new IllegalArgumentException("Field " + fieldId + " doesn't exist!");
+        return fields;
+      }
+
+      /**
+       * Find the _Fields constant that matches name, or null if its not found.
+       */
+      public static _Fields findByName(String name) {
+        return byName.get(name);
+      }
+
+      private final short _thriftId;
+      private final String _fieldName;
+
+      _Fields(short thriftId, String fieldName) {
+        _thriftId = thriftId;
+        _fieldName = fieldName;
+      }
+
+      public short getThriftFieldId() {
+        return _thriftId;
+      }
+
+      public String getFieldName() {
+        return _fieldName;
+      }
+    }
+
+    // isset id assignments
+
+    public static final Map<_Fields, FieldMetaData> metaDataMap;
+    static {
+      Map<_Fields, FieldMetaData> tmpMap = new EnumMap<_Fields, FieldMetaData>(_Fields.class);
+      tmpMap.put(_Fields.PRIVILEGES, new FieldMetaData("privileges", TFieldRequirementType.DEFAULT, 
+          new StructMetaData(TType.STRUCT, PrivilegeBag.class)));
+      metaDataMap = Collections.unmodifiableMap(tmpMap);
+      FieldMetaData.addStructMetaDataMap(grant_privileges_args.class, metaDataMap);
+    }
+
+    public grant_privileges_args() {
+    }
+
+    public grant_privileges_args(
+      PrivilegeBag privileges)
+    {
+      this();
+      this.privileges = privileges;
+    }
+
+    /**
+     * Performs a deep copy on <i>other</i>.
+     */
+    public grant_privileges_args(grant_privileges_args other) {
+      if (other.isSetPrivileges()) {
+        this.privileges = new PrivilegeBag(other.privileges);
+      }
+    }
+
+    public grant_privileges_args deepCopy() {
+      return new grant_privileges_args(this);
+    }
+
+    @Override
+    public void clear() {
+      this.privileges = null;
+    }
+
+    public PrivilegeBag getPrivileges() {
+      return this.privileges;
+    }
+
+    public void setPrivileges(PrivilegeBag privileges) {
+      this.privileges = privileges;
+    }
+
+    public void unsetPrivileges() {
+      this.privileges = null;
+    }
+
+    /** Returns true if field privileges is set (has been asigned a value) and false otherwise */
+    public boolean isSetPrivileges() {
+      return this.privileges != null;
+    }
+
+    public void setPrivilegesIsSet(boolean value) {
+      if (!value) {
+        this.privileges = null;
+      }
+    }
+
+    public void setFieldValue(_Fields field, Object value) {
+      switch (field) {
+      case PRIVILEGES:
+        if (value == null) {
+          unsetPrivileges();
+        } else {
+          setPrivileges((PrivilegeBag)value);
+        }
+        break;
+
+      }
+    }
+
+    public Object getFieldValue(_Fields field) {
+      switch (field) {
+      case PRIVILEGES:
+        return getPrivileges();
+
+      }
+      throw new IllegalStateException();
+    }
+
+    /** Returns true if field corresponding to fieldID is set (has been asigned a value) and false otherwise */
+    public boolean isSet(_Fields field) {
+      if (field == null) {
+        throw new IllegalArgumentException();
+      }
+
+      switch (field) {
+      case PRIVILEGES:
+        return isSetPrivileges();
+      }
+      throw new IllegalStateException();
+    }
+
+    @Override
+    public boolean equals(Object that) {
+      if (that == null)
+        return false;
+      if (that instanceof grant_privileges_args)
+        return this.equals((grant_privileges_args)that);
+      return false;
+    }
+
+    public boolean equals(grant_privileges_args that) {
+      if (that == null)
+        return false;
+
+      boolean this_present_privileges = true && this.isSetPrivileges();
+      boolean that_present_privileges = true && that.isSetPrivileges();
+      if (this_present_privileges || that_present_privileges) {
+        if (!(this_present_privileges && that_present_privileges))
+          return false;
+        if (!this.privileges.equals(that.privileges))
+          return false;
+      }
+
+      return true;
+    }
+
+    @Override
+    public int hashCode() {
+      return 0;
+    }
+
+    public int compareTo(grant_privileges_args other) {
+      if (!getClass().equals(other.getClass())) {
+        return getClass().getName().compareTo(other.getClass().getName());
+      }
+
+      int lastComparison = 0;
+      grant_privileges_args typedOther = (grant_privileges_args)other;
+
+      lastComparison = Boolean.valueOf(isSetPrivileges()).compareTo(typedOther.isSetPrivileges());
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+      if (isSetPrivileges()) {
+        lastComparison = TBaseHelper.compareTo(this.privileges, typedOther.privileges);
+        if (lastComparison != 0) {
+          return lastComparison;
+        }
+      }
+      return 0;
+    }
+
+    public _Fields fieldForId(int fieldId) {
+      return _Fields.findByThriftId(fieldId);
+    }
+
+    public void read(TProtocol iprot) throws TException {
+      TField field;
+      iprot.readStructBegin();
+      while (true)
+      {
+        field = iprot.readFieldBegin();
+        if (field.type == TType.STOP) { 
+          break;
+        }
+        switch (field.id) {
+          case 1: // PRIVILEGES
+            if (field.type == TType.STRUCT) {
+              this.privileges = new PrivilegeBag();
+              this.privileges.read(iprot);
+            } else { 
+              TProtocolUtil.skip(iprot, field.type);
+            }
+            break;
+          default:
+            TProtocolUtil.skip(iprot, field.type);
+        }
+        iprot.readFieldEnd();
+      }
+      iprot.readStructEnd();
+      validate();
+    }
+
+    public void write(TProtocol oprot) throws TException {
+      validate();
+
+      oprot.writeStructBegin(STRUCT_DESC);
+      if (this.privileges != null) {
+        oprot.writeFieldBegin(PRIVILEGES_FIELD_DESC);
+        this.privileges.write(oprot);
+        oprot.writeFieldEnd();
+      }
+      oprot.writeFieldStop();
+      oprot.writeStructEnd();
+    }
+
+    @Override
+    public String toString() {
+      StringBuilder sb = new StringBuilder("grant_privileges_args(");
+      boolean first = true;
+
+      sb.append("privileges:");
+      if (this.privileges == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.privileges);
+      }
+      first = false;
+      sb.append(")");
+      return sb.toString();
+    }
+
+    public void validate() throws TException {
+      // check for required fields
+    }
+
+  }
+
+  public static class grant_privileges_result implements TBase<grant_privileges_result, grant_privileges_result._Fields>, java.io.Serializable, Cloneable   {
+    private static final TStruct STRUCT_DESC = new TStruct("grant_privileges_result");
+
+    private static final TField SUCCESS_FIELD_DESC = new TField("success", TType.BOOL, (short)0);
+    private static final TField O1_FIELD_DESC = new TField("o1", TType.STRUCT, (short)1);
+
+    private boolean success;
+    private MetaException o1;
+
+    /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
+    public enum _Fields implements TFieldIdEnum {
+      SUCCESS((short)0, "success"),
+      O1((short)1, "o1");
+
+      private static final Map<String, _Fields> byName = new HashMap<String, _Fields>();
+
+      static {
+        for (_Fields field : EnumSet.allOf(_Fields.class)) {
+          byName.put(field.getFieldName(), field);
+        }
+      }
+
+      /**
+       * Find the _Fields constant that matches fieldId, or null if its not found.
+       */
+      public static _Fields findByThriftId(int fieldId) {
+        switch(fieldId) {
+          case 0: // SUCCESS
+            return SUCCESS;
+          case 1: // O1
+            return O1;
+          default:
+            return null;
+        }
+      }
+
+      /**
+       * Find the _Fields constant that matches fieldId, throwing an exception
+       * if it is not found.
+       */
+      public static _Fields findByThriftIdOrThrow(int fieldId) {
+        _Fields fields = findByThriftId(fieldId);
+        if (fields == null) throw new IllegalArgumentException("Field " + fieldId + " doesn't exist!");
+        return fields;
+      }
+
+      /**
+       * Find the _Fields constant that matches name, or null if its not found.
+       */
+      public static _Fields findByName(String name) {
+        return byName.get(name);
+      }
+
+      private final short _thriftId;
+      private final String _fieldName;
+
+      _Fields(short thriftId, String fieldName) {
+        _thriftId = thriftId;
+        _fieldName = fieldName;
+      }
+
+      public short getThriftFieldId() {
+        return _thriftId;
+      }
+
+      public String getFieldName() {
+        return _fieldName;
+      }
+    }
+
+    // isset id assignments
+    private static final int __SUCCESS_ISSET_ID = 0;
+    private BitSet __isset_bit_vector = new BitSet(1);
+
+    public static final Map<_Fields, FieldMetaData> metaDataMap;
+    static {
+      Map<_Fields, FieldMetaData> tmpMap = new EnumMap<_Fields, FieldMetaData>(_Fields.class);
+      tmpMap.put(_Fields.SUCCESS, new FieldMetaData("success", TFieldRequirementType.DEFAULT, 
+          new FieldValueMetaData(TType.BOOL)));
+      tmpMap.put(_Fields.O1, new FieldMetaData("o1", TFieldRequirementType.DEFAULT, 
+          new FieldValueMetaData(TType.STRUCT)));
+      metaDataMap = Collections.unmodifiableMap(tmpMap);
+      FieldMetaData.addStructMetaDataMap(grant_privileges_result.class, metaDataMap);
+    }
+
+    public grant_privileges_result() {
+    }
+
+    public grant_privileges_result(
+      boolean success,
+      MetaException o1)
+    {
+      this();
+      this.success = success;
+      setSuccessIsSet(true);
+      this.o1 = o1;
+    }
+
+    /**
+     * Performs a deep copy on <i>other</i>.
+     */
+    public grant_privileges_result(grant_privileges_result other) {
+      __isset_bit_vector.clear();
+      __isset_bit_vector.or(other.__isset_bit_vector);
+      this.success = other.success;
+      if (other.isSetO1()) {
+        this.o1 = new MetaException(other.o1);
+      }
+    }
+
+    public grant_privileges_result deepCopy() {
+      return new grant_privileges_result(this);
+    }
+
+    @Override
+    public void clear() {
+      setSuccessIsSet(false);
+      this.success = false;
+      this.o1 = null;
+    }
+
+    public boolean isSuccess() {
+      return this.success;
+    }
+
+    public void setSuccess(boolean success) {
+      this.success = success;
+      setSuccessIsSet(true);
+    }
+
+    public void unsetSuccess() {
+      __isset_bit_vector.clear(__SUCCESS_ISSET_ID);
+    }
+
+    /** Returns true if field success is set (has been asigned a value) and false otherwise */
+    public boolean isSetSuccess() {
+      return __isset_bit_vector.get(__SUCCESS_ISSET_ID);
+    }
+
+    public void setSuccessIsSet(boolean value) {
+      __isset_bit_vector.set(__SUCCESS_ISSET_ID, value);
+    }
+
+    public MetaException getO1() {
+      return this.o1;
+    }
+
+    public void setO1(MetaException o1) {
+      this.o1 = o1;
+    }
+
+    public void unsetO1() {
+      this.o1 = null;
+    }
+
+    /** Returns true if field o1 is set (has been asigned a value) and false otherwise */
+    public boolean isSetO1() {
+      return this.o1 != null;
+    }
+
+    public void setO1IsSet(boolean value) {
+      if (!value) {
+        this.o1 = null;
+      }
+    }
+
+    public void setFieldValue(_Fields field, Object value) {
+      switch (field) {
+      case SUCCESS:
+        if (value == null) {
+          unsetSuccess();
+        } else {
+          setSuccess((Boolean)value);
+        }
+        break;
+
+      case O1:
+        if (value == null) {
+          unsetO1();
+        } else {
+          setO1((MetaException)value);
+        }
+        break;
+
+      }
+    }
+
+    public Object getFieldValue(_Fields field) {
+      switch (field) {
+      case SUCCESS:
+        return new Boolean(isSuccess());
+
+      case O1:
+        return getO1();
+
+      }
+      throw new IllegalStateException();
+    }
+
+    /** Returns true if field corresponding to fieldID is set (has been asigned a value) and false otherwise */
+    public boolean isSet(_Fields field) {
+      if (field == null) {
+        throw new IllegalArgumentException();
+      }
+
+      switch (field) {
+      case SUCCESS:
+        return isSetSuccess();
+      case O1:
+        return isSetO1();
+      }
+      throw new IllegalStateException();
+    }
+
+    @Override
+    public boolean equals(Object that) {
+      if (that == null)
+        return false;
+      if (that instanceof grant_privileges_result)
+        return this.equals((grant_privileges_result)that);
+      return false;
+    }
+
+    public boolean equals(grant_privileges_result that) {
+      if (that == null)
+        return false;
+
+      boolean this_present_success = true;
+      boolean that_present_success = true;
+      if (this_present_success || that_present_success) {
+        if (!(this_present_success && that_present_success))
+          return false;
+        if (this.success != that.success)
+          return false;
+      }
+
+      boolean this_present_o1 = true && this.isSetO1();
+      boolean that_present_o1 = true && that.isSetO1();
+      if (this_present_o1 || that_present_o1) {
+        if (!(this_present_o1 && that_present_o1))
+          return false;
+        if (!this.o1.equals(that.o1))
+          return false;
+      }
+
+      return true;
+    }
+
+    @Override
+    public int hashCode() {
+      return 0;
+    }
+
+    public int compareTo(grant_privileges_result other) {
+      if (!getClass().equals(other.getClass())) {
+        return getClass().getName().compareTo(other.getClass().getName());
+      }
+
+      int lastComparison = 0;
+      grant_privileges_result typedOther = (grant_privileges_result)other;
+
+      lastComparison = Boolean.valueOf(isSetSuccess()).compareTo(typedOther.isSetSuccess());
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+      if (isSetSuccess()) {
+        lastComparison = TBaseHelper.compareTo(this.success, typedOther.success);
+        if (lastComparison != 0) {
+          return lastComparison;
+        }
+      }
+      lastComparison = Boolean.valueOf(isSetO1()).compareTo(typedOther.isSetO1());
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+      if (isSetO1()) {
+        lastComparison = TBaseHelper.compareTo(this.o1, typedOther.o1);
+        if (lastComparison != 0) {
+          return lastComparison;
+        }
+      }
+      return 0;
+    }
+
+    public _Fields fieldForId(int fieldId) {
+      return _Fields.findByThriftId(fieldId);
+    }
+
+    public void read(TProtocol iprot) throws TException {
+      TField field;
+      iprot.readStructBegin();
+      while (true)
+      {
+        field = iprot.readFieldBegin();
+        if (field.type == TType.STOP) { 
+          break;
+        }
+        switch (field.id) {
+          case 0: // SUCCESS
+            if (field.type == TType.BOOL) {
+              this.success = iprot.readBool();
+              setSuccessIsSet(true);
+            } else { 
+              TProtocolUtil.skip(iprot, field.type);
+            }
+            break;
+          case 1: // O1
+            if (field.type == TType.STRUCT) {
+              this.o1 = new MetaException();
+              this.o1.read(iprot);
+            } else { 
+              TProtocolUtil.skip(iprot, field.type);
+            }
+            break;
+          default:
+            TProtocolUtil.skip(iprot, field.type);
+        }
+        iprot.readFieldEnd();
+      }
+      iprot.readStructEnd();
+      validate();
+    }
+
+    public void write(TProtocol oprot) throws TException {
+      oprot.writeStructBegin(STRUCT_DESC);
+
+      if (this.isSetSuccess()) {
+        oprot.writeFieldBegin(SUCCESS_FIELD_DESC);
+        oprot.writeBool(this.success);
+        oprot.writeFieldEnd();
+      } else if (this.isSetO1()) {
+        oprot.writeFieldBegin(O1_FIELD_DESC);
+        this.o1.write(oprot);
+        oprot.writeFieldEnd();
+      }
+      oprot.writeFieldStop();
+      oprot.writeStructEnd();
+    }
+
+    @Override
+    public String toString() {
+      StringBuilder sb = new StringBuilder("grant_privileges_result(");
+      boolean first = true;
+
+      sb.append("success:");
+      sb.append(this.success);
+      first = false;
+      if (!first) sb.append(", ");
+      sb.append("o1:");
+      if (this.o1 == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.o1);
+      }
+      first = false;
+      sb.append(")");
+      return sb.toString();
+    }
+
+    public void validate() throws TException {
+      // check for required fields
+    }
+
+  }
+
+  public static class revoke_privileges_args implements TBase<revoke_privileges_args, revoke_privileges_args._Fields>, java.io.Serializable, Cloneable   {
+    private static final TStruct STRUCT_DESC = new TStruct("revoke_privileges_args");
+
+    private static final TField PRIVILEGES_FIELD_DESC = new TField("privileges", TType.STRUCT, (short)1);
+
+    private PrivilegeBag privileges;
+
+    /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
+    public enum _Fields implements TFieldIdEnum {
+      PRIVILEGES((short)1, "privileges");
+
+      private static final Map<String, _Fields> byName = new HashMap<String, _Fields>();
+
+      static {
+        for (_Fields field : EnumSet.allOf(_Fields.class)) {
+          byName.put(field.getFieldName(), field);
+        }
+      }
+
+      /**
+       * Find the _Fields constant that matches fieldId, or null if its not found.
+       */
+      public static _Fields findByThriftId(int fieldId) {
+        switch(fieldId) {
+          case 1: // PRIVILEGES
+            return PRIVILEGES;
+          default:
+            return null;
+        }
+      }
+
+      /**
+       * Find the _Fields constant that matches fieldId, throwing an exception
+       * if it is not found.
+       */
+      public static _Fields findByThriftIdOrThrow(int fieldId) {
+        _Fields fields = findByThriftId(fieldId);
+        if (fields == null) throw new IllegalArgumentException("Field " + fieldId + " doesn't exist!");
+        return fields;
+      }
+
+      /**
+       * Find the _Fields constant that matches name, or null if its not found.
+       */
+      public static _Fields findByName(String name) {
+        return byName.get(name);
+      }
+
+      private final short _thriftId;
+      private final String _fieldName;
+
+      _Fields(short thriftId, String fieldName) {
+        _thriftId = thriftId;
+        _fieldName = fieldName;
+      }
+
+      public short getThriftFieldId() {
+        return _thriftId;
+      }
+
+      public String getFieldName() {
+        return _fieldName;
+      }
+    }
+
+    // isset id assignments
+
+    public static final Map<_Fields, FieldMetaData> metaDataMap;
+    static {
+      Map<_Fields, FieldMetaData> tmpMap = new EnumMap<_Fields, FieldMetaData>(_Fields.class);
+      tmpMap.put(_Fields.PRIVILEGES, new FieldMetaData("privileges", TFieldRequirementType.DEFAULT, 
+          new StructMetaData(TType.STRUCT, PrivilegeBag.class)));
+      metaDataMap = Collections.unmodifiableMap(tmpMap);
+      FieldMetaData.addStructMetaDataMap(revoke_privileges_args.class, metaDataMap);
+    }
+
+    public revoke_privileges_args() {
+    }
+
+    public revoke_privileges_args(
+      PrivilegeBag privileges)
+    {
+      this();
+      this.privileges = privileges;
+    }
+
+    /**
+     * Performs a deep copy on <i>other</i>.
+     */
+    public revoke_privileges_args(revoke_privileges_args other) {
+      if (other.isSetPrivileges()) {
+        this.privileges = new PrivilegeBag(other.privileges);
+      }
+    }
+
+    public revoke_privileges_args deepCopy() {
+      return new revoke_privileges_args(this);
+    }
+
+    @Override
+    public void clear() {
+      this.privileges = null;
+    }
+
+    public PrivilegeBag getPrivileges() {
+      return this.privileges;
+    }
+
+    public void setPrivileges(PrivilegeBag privileges) {
+      this.privileges = privileges;
+    }
+
+    public void unsetPrivileges() {
+      this.privileges = null;
+    }
+
+    /** Returns true if field privileges is set (has been asigned a value) and false otherwise */
+    public boolean isSetPrivileges() {
+      return this.privileges != null;
+    }
+
+    public void setPrivilegesIsSet(boolean value) {
+      if (!value) {
+        this.privileges = null;
+      }
+    }
+
+    public void setFieldValue(_Fields field, Object value) {
+      switch (field) {
+      case PRIVILEGES:
+        if (value == null) {
+          unsetPrivileges();
+        } else {
+          setPrivileges((PrivilegeBag)value);
+        }
+        break;
+
+      }
+    }
+
+    public Object getFieldValue(_Fields field) {
+      switch (field) {
+      case PRIVILEGES:
+        return getPrivileges();
+
+      }
+      throw new IllegalStateException();
+    }
+
+    /** Returns true if field corresponding to fieldID is set (has been asigned a value) and false otherwise */
+    public boolean isSet(_Fields field) {
+      if (field == null) {
+        throw new IllegalArgumentException();
+      }
+
+      switch (field) {
+      case PRIVILEGES:
+        return isSetPrivileges();
+      }
+      throw new IllegalStateException();
+    }
+
+    @Override
+    public boolean equals(Object that) {
+      if (that == null)
+        return false;
+      if (that instanceof revoke_privileges_args)
+        return this.equals((revoke_privileges_args)that);
+      return false;
+    }
+
+    public boolean equals(revoke_privileges_args that) {
+      if (that == null)
+        return false;
+
+      boolean this_present_privileges = true && this.isSetPrivileges();
+      boolean that_present_privileges = true && that.isSetPrivileges();
+      if (this_present_privileges || that_present_privileges) {
+        if (!(this_present_privileges && that_present_privileges))
+          return false;
+        if (!this.privileges.equals(that.privileges))
+          return false;
+      }
+
+      return true;
+    }
+
+    @Override
+    public int hashCode() {
+      return 0;
+    }
+
+    public int compareTo(revoke_privileges_args other) {
+      if (!getClass().equals(other.getClass())) {
+        return getClass().getName().compareTo(other.getClass().getName());
+      }
+
+      int lastComparison = 0;
+      revoke_privileges_args typedOther = (revoke_privileges_args)other;
+
+      lastComparison = Boolean.valueOf(isSetPrivileges()).compareTo(typedOther.isSetPrivileges());
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+      if (isSetPrivileges()) {
+        lastComparison = TBaseHelper.compareTo(this.privileges, typedOther.privileges);
+        if (lastComparison != 0) {
+          return lastComparison;
+        }
+      }
+      return 0;
+    }
+
+    public _Fields fieldForId(int fieldId) {
+      return _Fields.findByThriftId(fieldId);
+    }
+
+    public void read(TProtocol iprot) throws TException {
+      TField field;
+      iprot.readStructBegin();
+      while (true)
+      {
+        field = iprot.readFieldBegin();
+        if (field.type == TType.STOP) { 
+          break;
+        }
+        switch (field.id) {
+          case 1: // PRIVILEGES
+            if (field.type == TType.STRUCT) {
+              this.privileges = new PrivilegeBag();
+              this.privileges.read(iprot);
+            } else { 
+              TProtocolUtil.skip(iprot, field.type);
+            }
+            break;
+          default:
+            TProtocolUtil.skip(iprot, field.type);
+        }
+        iprot.readFieldEnd();
+      }
+      iprot.readStructEnd();
+      validate();
+    }
+
+    public void write(TProtocol oprot) throws TException {
+      validate();
+
+      oprot.writeStructBegin(STRUCT_DESC);
+      if (this.privileges != null) {
+        oprot.writeFieldBegin(PRIVILEGES_FIELD_DESC);
+        this.privileges.write(oprot);
+        oprot.writeFieldEnd();
+      }
+      oprot.writeFieldStop();
+      oprot.writeStructEnd();
+    }
+
+    @Override
+    public String toString() {
+      StringBuilder sb = new StringBuilder("revoke_privileges_args(");
+      boolean first = true;
+
+      sb.append("privileges:");
+      if (this.privileges == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.privileges);
+      }
+      first = false;
+      sb.append(")");
+      return sb.toString();
+    }
+
+    public void validate() throws TException {
+      // check for required fields
+    }
+
+  }
+
+  public static class revoke_privileges_result implements TBase<revoke_privileges_result, revoke_privileges_result._Fields>, java.io.Serializable, Cloneable   {
+    private static final TStruct STRUCT_DESC = new TStruct("revoke_privileges_result");
+
+    private static final TField SUCCESS_FIELD_DESC = new TField("success", TType.BOOL, (short)0);
+    private static final TField O1_FIELD_DESC = new TField("o1", TType.STRUCT, (short)1);
+
+    private boolean success;
+    private MetaException o1;
+
+    /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
+    public enum _Fields implements TFieldIdEnum {
+      SUCCESS((short)0, "success"),
+      O1((short)1, "o1");
+
+      private static final Map<String, _Fields> byName = new HashMap<String, _Fields>();
+
+      static {
+        for (_Fields field : EnumSet.allOf(_Fields.class)) {
+          byName.put(field.getFieldName(), field);
+        }
+      }
+
+      /**
+       * Find the _Fields constant that matches fieldId, or null if its not found.
+       */
+      public static _Fields findByThriftId(int fieldId) {
+        switch(fieldId) {
+          case 0: // SUCCESS
+            return SUCCESS;
+          case 1: // O1
+            return O1;
+          default:
+            return null;
+        }
+      }
+
+      /**
+       * Find the _Fields constant that matches fieldId, throwing an exception
+       * if it is not found.
+       */
+      public static _Fields findByThriftIdOrThrow(int fieldId) {
+        _Fields fields = findByThriftId(fieldId);
+        if (fields == null) throw new IllegalArgumentException("Field " + fieldId + " doesn't exist!");
+        return fields;
+      }
+
+      /**
+       * Find the _Fields constant that matches name, or null if its not found.
+       */
+      public static _Fields findByName(String name) {
+        return byName.get(name);
+      }
+
+      private final short _thriftId;
+      private final String _fieldName;
+
+      _Fields(short thriftId, String fieldName) {
+        _thriftId = thriftId;
+        _fieldName = fieldName;
+      }
+
+      public short getThriftFieldId() {
+        return _thriftId;
+      }
+
+      public String getFieldName() {
+        return _fieldName;
+      }
+    }
+
+    // isset id assignments
+    private static final int __SUCCESS_ISSET_ID = 0;
+    private BitSet __isset_bit_vector = new BitSet(1);
+
+    public static final Map<_Fields, FieldMetaData> metaDataMap;
+    static {
+      Map<_Fields, FieldMetaData> tmpMap = new EnumMap<_Fields, FieldMetaData>(_Fields.class);
+      tmpMap.put(_Fields.SUCCESS, new FieldMetaData("success", TFieldRequirementType.DEFAULT, 
+          new FieldValueMetaData(TType.BOOL)));
+      tmpMap.put(_Fields.O1, new FieldMetaData("o1", TFieldRequirementType.DEFAULT, 
+          new FieldValueMetaData(TType.STRUCT)));
+      metaDataMap = Collections.unmodifiableMap(tmpMap);
+      FieldMetaData.addStructMetaDataMap(revoke_privileges_result.class, metaDataMap);
+    }
+
+    public revoke_privileges_result() {
+    }
+
+    public revoke_privileges_result(
+      boolean success,
+      MetaException o1)
+    {
+      this();
+      this.success = success;
+      setSuccessIsSet(true);
+      this.o1 = o1;
+    }
+
+    /**
+     * Performs a deep copy on <i>other</i>.
+     */
+    public revoke_privileges_result(revoke_privileges_result other) {
+      __isset_bit_vector.clear();
+      __isset_bit_vector.or(other.__isset_bit_vector);
+      this.success = other.success;
+      if (other.isSetO1()) {
+        this.o1 = new MetaException(other.o1);
+      }
+    }
+
+    public revoke_privileges_result deepCopy() {
+      return new revoke_privileges_result(this);
+    }
+
+    @Override
+    public void clear() {
+      setSuccessIsSet(false);
+      this.success = false;
+      this.o1 = null;
+    }
+
+    public boolean isSuccess() {
+      return this.success;
+    }
+
+    public void setSuccess(boolean success) {
+      this.success = success;
+      setSuccessIsSet(true);
+    }
+
+    public void unsetSuccess() {
+      __isset_bit_vector.clear(__SUCCESS_ISSET_ID);
+    }
+
+    /** Returns true if field success is set (has been asigned a value) and false otherwise */
+    public boolean isSetSuccess() {
+      return __isset_bit_vector.get(__SUCCESS_ISSET_ID);
+    }
+
+    public void setSuccessIsSet(boolean value) {
+      __isset_bit_vector.set(__SUCCESS_ISSET_ID, value);
+    }
+
+    public MetaException getO1() {
+      return this.o1;
+    }
+
+    public void setO1(MetaException o1) {
+      this.o1 = o1;
+    }
+
+    public void unsetO1() {
+      this.o1 = null;
+    }
+
+    /** Returns true if field o1 is set (has been asigned a value) and false otherwise */
+    public boolean isSetO1() {
+      return this.o1 != null;
+    }
+
+    public void setO1IsSet(boolean value) {
+      if (!value) {
+        this.o1 = null;
+      }
+    }
+
+    public void setFieldValue(_Fields field, Object value) {
+      switch (field) {
+      case SUCCESS:
+        if (value == null) {
+          unsetSuccess();
+        } else {
+          setSuccess((Boolean)value);
+        }
+        break;
+
+      case O1:
+        if (value == null) {
+          unsetO1();
+        } else {
+          setO1((MetaException)value);
+        }
+        break;
+
+      }
+    }
+
+    public Object getFieldValue(_Fields field) {
+      switch (field) {
+      case SUCCESS:
+        return new Boolean(isSuccess());
+
+      case O1:
+        return getO1();
+
+      }
+      throw new IllegalStateException();
+    }
+
+    /** Returns true if field corresponding to fieldID is set (has been asigned a value) and false otherwise */
+    public boolean isSet(_Fields field) {
+      if (field == null) {
+        throw new IllegalArgumentException();
+      }
+
+      switch (field) {
+      case SUCCESS:
+        return isSetSuccess();
+      case O1:
+        return isSetO1();
+      }
+      throw new IllegalStateException();
+    }
+
+    @Override
+    public boolean equals(Object that) {
+      if (that == null)
+        return false;
+      if (that instanceof revoke_privileges_result)
+        return this.equals((revoke_privileges_result)that);
+      return false;
+    }
+
+    public boolean equals(revoke_privileges_result that) {
+      if (that == null)
+        return false;
+
+      boolean this_present_success = true;
+      boolean that_present_success = true;
+      if (this_present_success || that_present_success) {
+        if (!(this_present_success && that_present_success))
+          return false;
+        if (this.success != that.success)
+          return false;
+      }
+
+      boolean this_present_o1 = true && this.isSetO1();
+      boolean that_present_o1 = true && that.isSetO1();
+      if (this_present_o1 || that_present_o1) {
+        if (!(this_present_o1 && that_present_o1))
+          return false;
+        if (!this.o1.equals(that.o1))
+          return false;
+      }
+
+      return true;
+    }
+
+    @Override
+    public int hashCode() {
+      return 0;
+    }
+
+    public int compareTo(revoke_privileges_result other) {
+      if (!getClass().equals(other.getClass())) {
+        return getClass().getName().compareTo(other.getClass().getName());
+      }
+
+      int lastComparison = 0;
+      revoke_privileges_result typedOther = (revoke_privileges_result)other;
+
+      lastComparison = Boolean.valueOf(isSetSuccess()).compareTo(typedOther.isSetSuccess());
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+      if (isSetSuccess()) {
+        lastComparison = TBaseHelper.compareTo(this.success, typedOther.success);
+        if (lastComparison != 0) {
+          return lastComparison;
+        }
+      }
+      lastComparison = Boolean.valueOf(isSetO1()).compareTo(typedOther.isSetO1());
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+      if (isSetO1()) {
+        lastComparison = TBaseHelper.compareTo(this.o1, typedOther.o1);
+        if (lastComparison != 0) {
+          return lastComparison;
+        }
+      }
+      return 0;
+    }
+
+    public _Fields fieldForId(int fieldId) {
+      return _Fields.findByThriftId(fieldId);
+    }
+
+    public void read(TProtocol iprot) throws TException {
+      TField field;
+      iprot.readStructBegin();
+      while (true)
+      {
+        field = iprot.readFieldBegin();
+        if (field.type == TType.STOP) { 
+          break;
+        }
+        switch (field.id) {
+          case 0: // SUCCESS
+            if (field.type == TType.BOOL) {
+              this.success = iprot.readBool();
+              setSuccessIsSet(true);
+            } else { 
+              TProtocolUtil.skip(iprot, field.type);
+            }
+            break;
+          case 1: // O1
+            if (field.type == TType.STRUCT) {
+              this.o1 = new MetaException();
+              this.o1.read(iprot);
+            } else { 
+              TProtocolUtil.skip(iprot, field.type);
+            }
+            break;
+          default:
+            TProtocolUtil.skip(iprot, field.type);
+        }
+        iprot.readFieldEnd();
+      }
+      iprot.readStructEnd();
+      validate();
+    }
+
+    public void write(TProtocol oprot) throws TException {
+      oprot.writeStructBegin(STRUCT_DESC);
+
+      if (this.isSetSuccess()) {
+        oprot.writeFieldBegin(SUCCESS_FIELD_DESC);
+        oprot.writeBool(this.success);
+        oprot.writeFieldEnd();
+      } else if (this.isSetO1()) {
+        oprot.writeFieldBegin(O1_FIELD_DESC);
+        this.o1.write(oprot);
+        oprot.writeFieldEnd();
+      }
+      oprot.writeFieldStop();
+      oprot.writeStructEnd();
+    }
+
+    @Override
+    public String toString() {
+      StringBuilder sb = new StringBuilder("revoke_privileges_result(");
+      boolean first = true;
+
+      sb.append("success:");
+      sb.append(this.success);
+      first = false;
+      if (!first) sb.append(", ");
+      sb.append("o1:");
+      if (this.o1 == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.o1);
       }
       first = false;
       sb.append(")");

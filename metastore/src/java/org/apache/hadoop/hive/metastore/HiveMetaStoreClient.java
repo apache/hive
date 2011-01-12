@@ -40,12 +40,19 @@ import org.apache.hadoop.hive.metastore.api.AlreadyExistsException;
 import org.apache.hadoop.hive.metastore.api.ConfigValSecurityException;
 import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
+import org.apache.hadoop.hive.metastore.api.HiveObjectPrivilege;
+import org.apache.hadoop.hive.metastore.api.HiveObjectRef;
 import org.apache.hadoop.hive.metastore.api.Index;
 import org.apache.hadoop.hive.metastore.api.InvalidObjectException;
 import org.apache.hadoop.hive.metastore.api.InvalidOperationException;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.NoSuchObjectException;
 import org.apache.hadoop.hive.metastore.api.Partition;
+import org.apache.hadoop.hive.metastore.api.PrincipalPrivilegeSet;
+import org.apache.hadoop.hive.metastore.api.PrincipalType;
+import org.apache.hadoop.hive.metastore.api.PrivilegeBag;
+import org.apache.hadoop.hive.metastore.api.PrivilegeGrantInfo;
+import org.apache.hadoop.hive.metastore.api.Role;
 import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.metastore.api.ThriftHiveMetastore;
 import org.apache.hadoop.hive.metastore.api.Type;
@@ -552,6 +559,23 @@ public class HiveMetaStoreClient implements IMetaStoreClient {
     return deepCopyPartitions(
         client.get_partitions_ps(db_name, tbl_name, part_vals, max_parts));
   }
+  
+  @Override
+  public List<Partition> listPartitionsWithAuthInfo(String db_name,
+      String tbl_name, short max_parts, String user_name, List<String> group_names)
+       throws NoSuchObjectException, MetaException, TException {
+    return deepCopyPartitions(
+        client.get_partitions_with_auth(db_name, tbl_name, max_parts, user_name, group_names));
+  }
+
+  @Override
+  public List<Partition> listPartitionsWithAuthInfo(String db_name,
+      String tbl_name, List<String> part_vals, short max_parts,
+      String user_name, List<String> group_names) throws NoSuchObjectException,
+      MetaException, TException {
+    return deepCopyPartitions(client.get_partitions_ps_with_auth(db_name,
+        tbl_name, part_vals, max_parts, user_name, group_names));
+  }
 
   /**
    * Get list of partitions matching specified filter
@@ -600,6 +624,14 @@ public class HiveMetaStoreClient implements IMetaStoreClient {
   public Partition getPartition(String db_name, String tbl_name,
       List<String> part_vals) throws NoSuchObjectException, MetaException, TException {
     return deepCopy(client.get_partition(db_name, tbl_name, part_vals));
+  }
+  
+  @Override
+  public Partition getPartitionWithAuthInfo(String db_name, String tbl_name,
+      List<String> part_vals, String user_name, List<String> group_names)
+      throws MetaException, UnknownTableException, NoSuchObjectException,
+      TException {
+    return deepCopy(client.get_partition_with_auth(db_name, tbl_name, part_vals, user_name, group_names));
   }
 
   /**
@@ -930,6 +962,63 @@ public class HiveMetaStoreClient implements IMetaStoreClient {
       boolean deleteData) throws NoSuchObjectException, MetaException,
       TException {
     return client.drop_index_by_name(dbName, tblName, name, deleteData);
+  }
+
+  @Override
+  public boolean grant_role(String roleName, String userName,
+      PrincipalType principalType, String grantor, PrincipalType grantorType,
+      boolean grantOption) throws MetaException, TException {
+    return client.grant_role(roleName, userName, principalType, grantor,
+        grantorType, grantOption);
+  }
+
+  @Override
+  public boolean create_role(Role role)
+      throws MetaException, TException {
+    return client.create_role(role);
+  }
+
+  @Override
+  public boolean drop_role(String roleName) throws MetaException, TException {
+    return client.drop_role(roleName);
+  }
+  
+  @Override
+  public List<Role> list_roles(String principalName,
+      PrincipalType principalType) throws MetaException, TException {
+    return client.list_roles(principalName, principalType);
+  }
+
+  @Override
+  public boolean grant_privileges(PrivilegeBag privileges)
+      throws MetaException, TException {
+    return client.grant_privileges(privileges);
+  }
+
+  @Override
+  public boolean revoke_role(String roleName, String userName,
+      PrincipalType principalType) throws MetaException, TException {
+    return client.revoke_role(roleName, userName, principalType);
+  }
+
+  @Override
+  public boolean revoke_privileges(PrivilegeBag privileges) throws MetaException,
+      TException {
+    return client.revoke_privileges(privileges);
+  }
+
+  @Override
+  public PrincipalPrivilegeSet get_privilege_set(HiveObjectRef hiveObject,
+      String userName, List<String> groupNames) throws MetaException,
+      TException {
+    return client.get_privilege_set(hiveObject, userName, groupNames);
+  }
+
+  @Override
+  public List<HiveObjectPrivilege> list_privileges(String principalName,
+      PrincipalType principalType, HiveObjectRef hiveObject)
+      throws MetaException, TException {
+    return client.list_privileges(principalName, principalType, hiveObject);
   }
 
   /**

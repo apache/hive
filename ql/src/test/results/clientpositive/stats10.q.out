@@ -123,11 +123,11 @@ POSTHOOK: Lineage: bucket3_1 PARTITION(ds=2).value SIMPLE [(src)src.FieldSchema(
 PREHOOK: query: select * from bucket3_1 tablesample (bucket 1 out of 2) s where ds = '1' order by key
 PREHOOK: type: QUERY
 PREHOOK: Input: default@bucket3_1@ds=1
-PREHOOK: Output: file:/tmp/thiruvel/hive_2010-10-11_12-41-36_921_3883563776062594481/-mr-10000
+PREHOOK: Output: file:/var/folders/6g/6grtCwPMEf4sqHUPpy6xQG9ByHg/-Tmp-/heyongqiang/hive_2010-11-18_21-59-35_194_6516705847755484921/-mr-10000
 POSTHOOK: query: select * from bucket3_1 tablesample (bucket 1 out of 2) s where ds = '1' order by key
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@bucket3_1@ds=1
-POSTHOOK: Output: file:/tmp/thiruvel/hive_2010-10-11_12-41-36_921_3883563776062594481/-mr-10000
+POSTHOOK: Output: file:/var/folders/6g/6grtCwPMEf4sqHUPpy6xQG9ByHg/-Tmp-/heyongqiang/hive_2010-11-18_21-59-35_194_6516705847755484921/-mr-10000
 POSTHOOK: Lineage: bucket3_1 PARTITION(ds=1).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: bucket3_1 PARTITION(ds=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: bucket3_1 PARTITION(ds=1).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
@@ -382,9 +382,9 @@ POSTHOOK: Lineage: bucket3_1 PARTITION(ds=2).value SIMPLE [(src)src.FieldSchema(
 498	val_498	1
 498	val_498	1
 PREHOOK: query: explain analyze table bucket3_1 partition (ds) compute statistics
-PREHOOK: type: null
+PREHOOK: type: QUERY
 POSTHOOK: query: explain analyze table bucket3_1 partition (ds) compute statistics
-POSTHOOK: type: null
+POSTHOOK: type: QUERY
 POSTHOOK: Lineage: bucket3_1 PARTITION(ds=1).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: bucket3_1 PARTITION(ds=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: bucket3_1 PARTITION(ds=1).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
@@ -411,14 +411,14 @@ STAGE PLANS:
 
 
 PREHOOK: query: analyze table bucket3_1 partition (ds) compute statistics
-PREHOOK: type: null
+PREHOOK: type: QUERY
 PREHOOK: Input: default@bucket3_1@ds=1
 PREHOOK: Input: default@bucket3_1@ds=2
 PREHOOK: Output: default@bucket3_1
 PREHOOK: Output: default@bucket3_1@ds=1
 PREHOOK: Output: default@bucket3_1@ds=2
 POSTHOOK: query: analyze table bucket3_1 partition (ds) compute statistics
-POSTHOOK: type: null
+POSTHOOK: type: QUERY
 POSTHOOK: Input: default@bucket3_1@ds=1
 POSTHOOK: Input: default@bucket3_1@ds=2
 POSTHOOK: Output: default@bucket3_1
@@ -444,7 +444,7 @@ key	int
 value	string	
 ds	string	
 	 	 
-Detailed Partition Information	Partition(values:[1], dbName:default, tableName:bucket3_1, createTime:1286826089, lastAccessTime:0, sd:StorageDescriptor(cols:[FieldSchema(name:key, type:int, comment:null), FieldSchema(name:value, type:string, comment:null)], location:pfile:/home/thiruvel/projects/hive/hive.unsecure/build/ql/test/data/warehouse/bucket3_1/ds=1, inputFormat:org.apache.hadoop.mapred.TextInputFormat, outputFormat:org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat, compressed:false, numBuckets:2, serdeInfo:SerDeInfo(name:null, serializationLib:org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe, parameters:{serialization.format=1}), bucketCols:[key], sortCols:[], parameters:{}), parameters:{numFiles=2, transient_lastDdlTime=1286826103, numRows=500, totalSize=5812})	
+Detailed Partition Information	Partition(values:[1], dbName:default, tableName:bucket3_1, createTime:1290146355, lastAccessTime:0, sd:StorageDescriptor(cols:[FieldSchema(name:key, type:int, comment:null), FieldSchema(name:value, type:string, comment:null)], location:pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/bucket3_1/ds=1, inputFormat:org.apache.hadoop.mapred.TextInputFormat, outputFormat:org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat, compressed:false, numBuckets:2, serdeInfo:SerDeInfo(name:null, serializationLib:org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe, parameters:{serialization.format=1}), bucketCols:[key], sortCols:[], parameters:{}), parameters:{numFiles=2, transient_lastDdlTime=1290146388, numRows=500, totalSize=5812})	
 PREHOOK: query: describe extended bucket3_1 partition (ds='2')
 PREHOOK: type: DESCTABLE
 POSTHOOK: query: describe extended bucket3_1 partition (ds='2')
@@ -459,7 +459,7 @@ key	int
 value	string	
 ds	string	
 	 	 
-Detailed Partition Information	Partition(values:[2], dbName:default, tableName:bucket3_1, createTime:1286826096, lastAccessTime:0, sd:StorageDescriptor(cols:[FieldSchema(name:key, type:int, comment:null), FieldSchema(name:value, type:string, comment:null)], location:pfile:/home/thiruvel/projects/hive/hive.unsecure/build/ql/test/data/warehouse/bucket3_1/ds=2, inputFormat:org.apache.hadoop.mapred.TextInputFormat, outputFormat:org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat, compressed:false, numBuckets:2, serdeInfo:SerDeInfo(name:null, serializationLib:org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe, parameters:{serialization.format=1}), bucketCols:[key], sortCols:[], parameters:{}), parameters:{numFiles=2, transient_lastDdlTime=1286826103, numRows=500, totalSize=5812})	
+Detailed Partition Information	Partition(values:[2], dbName:default, tableName:bucket3_1, createTime:1290146374, lastAccessTime:0, sd:StorageDescriptor(cols:[FieldSchema(name:key, type:int, comment:null), FieldSchema(name:value, type:string, comment:null)], location:pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/bucket3_1/ds=2, inputFormat:org.apache.hadoop.mapred.TextInputFormat, outputFormat:org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat, compressed:false, numBuckets:2, serdeInfo:SerDeInfo(name:null, serializationLib:org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe, parameters:{serialization.format=1}), bucketCols:[key], sortCols:[], parameters:{}), parameters:{numFiles=2, transient_lastDdlTime=1290146388, numRows=500, totalSize=5812})	
 PREHOOK: query: describe extended bucket3_1
 PREHOOK: type: DESCTABLE
 POSTHOOK: query: describe extended bucket3_1
@@ -474,4 +474,4 @@ key	int
 value	string	
 ds	string	
 	 	 
-Detailed Table Information	Table(tableName:bucket3_1, dbName:default, owner:thiruvel, createTime:1286826085, lastAccessTime:0, retention:0, sd:StorageDescriptor(cols:[FieldSchema(name:key, type:int, comment:null), FieldSchema(name:value, type:string, comment:null), FieldSchema(name:ds, type:string, comment:null)], location:pfile:/home/thiruvel/projects/hive/hive.unsecure/build/ql/test/data/warehouse/bucket3_1, inputFormat:org.apache.hadoop.mapred.TextInputFormat, outputFormat:org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat, compressed:false, numBuckets:2, serdeInfo:SerDeInfo(name:null, serializationLib:org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe, parameters:{serialization.format=1}), bucketCols:[key], sortCols:[], parameters:{}), partitionKeys:[FieldSchema(name:ds, type:string, comment:null)], parameters:{numPartitions=2, numFiles=4, transient_lastDdlTime=1286826103, numRows=1000, totalSize=11624}, viewOriginalText:null, viewExpandedText:null, tableType:MANAGED_TABLE)	
+Detailed Table Information	Table(tableName:bucket3_1, dbName:default, owner:heyongqiang, createTime:1290146344, lastAccessTime:0, retention:0, sd:StorageDescriptor(cols:[FieldSchema(name:key, type:int, comment:null), FieldSchema(name:value, type:string, comment:null), FieldSchema(name:ds, type:string, comment:null)], location:pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/bucket3_1, inputFormat:org.apache.hadoop.mapred.TextInputFormat, outputFormat:org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat, compressed:false, numBuckets:2, serdeInfo:SerDeInfo(name:null, serializationLib:org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe, parameters:{serialization.format=1}), bucketCols:[key], sortCols:[], parameters:{}), partitionKeys:[FieldSchema(name:ds, type:string, comment:null)], parameters:{numPartitions=2, numFiles=4, transient_lastDdlTime=1290146388, numRows=1000, totalSize=11624}, viewOriginalText:null, viewExpandedText:null, tableType:MANAGED_TABLE)	

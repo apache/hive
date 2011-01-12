@@ -18,8 +18,6 @@
 
 package org.apache.hadoop.hive.ql.parse;
 
-import static org.apache.hadoop.util.StringUtils.stringifyException;
-
 import java.io.IOException;
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -125,6 +123,7 @@ import org.apache.hadoop.hive.ql.plan.FileSinkDesc;
 import org.apache.hadoop.hive.ql.plan.FilterDesc;
 import org.apache.hadoop.hive.ql.plan.ForwardDesc;
 import org.apache.hadoop.hive.ql.plan.GroupByDesc;
+import org.apache.hadoop.hive.ql.plan.HiveOperation;
 import org.apache.hadoop.hive.ql.plan.JoinCondDesc;
 import org.apache.hadoop.hive.ql.plan.JoinDesc;
 import org.apache.hadoop.hive.ql.plan.LateralViewForwardDesc;
@@ -906,7 +905,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     } catch (HiveException e) {
       // Has to use full name to make sure it does not conflict with
       // org.apache.commons.lang.StringUtils
-      LOG.error(stringifyException(e));
+      LOG.error(org.apache.hadoop.util.StringUtils.stringifyException(e));
       throw new SemanticException(e.getMessage(), e);
     }
   }
@@ -942,7 +941,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       // an old SQL construct which has been eliminated in a later Hive
       // version, so we need to provide full debugging info to help
       // with fixing the view definition.
-      LOG.error(stringifyException(e));
+      LOG.error(org.apache.hadoop.util.StringUtils.stringifyException(e));
       StringBuilder sb = new StringBuilder();
       sb.append(e.getMessage());
       ErrorMsg.renderOrigin(sb, viewOrigin);
@@ -5926,7 +5925,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     	tsDesc.setStatsAggPrefix(k);
 
     	// set up WritenEntity for replication
-    	outputs.add(new WriteEntity(tab));
+    	outputs.add(new WriteEntity(tab, true));
 
     	// add WriteEntity for each matching partition
     	if (tab.isPartitioned()) {
@@ -5937,7 +5936,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     	  if (partitions != null) {
     	    for (Partition partn : partitions) {
     	      // inputs.add(new ReadEntity(partn)); // is this needed at all?
-    	      outputs.add(new WriteEntity(partn));
+    	      outputs.add(new WriteEntity(partn, true));
           }
         }
     	}
@@ -6194,7 +6193,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
             } catch (HiveException e) {
               // Has to use full name to make sure it does not conflict with
               // org.apache.commons.lang.StringUtils
-              LOG.error(stringifyException(e));
+              LOG.error(org.apache.hadoop.util.StringUtils.stringifyException(e));
               throw new SemanticException(e.getMessage(), e);
             }
 
@@ -6550,24 +6549,27 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     ASTNode child = ast;
 
     LOG.info("Starting Semantic Analysis");
-
+    
     // analyze create table command
     if (ast.getToken().getType() == HiveParser.TOK_CREATETABLE) {
       // if it is not CTAS, we don't need to go further and just return
       if ((child = analyzeCreateTable(ast, qb)) == null) {
         return;
       }
+    } else {
+      SessionState.get().setCommandType(HiveOperation.QUERY);
     }
 
     // analyze create view command
     if (ast.getToken().getType() == HiveParser.TOK_CREATEVIEW) {
       child = analyzeCreateView(ast, qb);
+      SessionState.get().setCommandType(HiveOperation.CREATEVIEW);
       if (child == null) {
         return;
       }
       viewSelect = child;
     }
-
+    
     // continue analyzing from the child ASTNode.
     doPhase1(child, qb, initPhase1Ctx());
     LOG.info("Completed phase 1 of Semantic Analysis");
@@ -7110,6 +7112,9 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
           storageFormat.storageHandler, shared.serdeProps, tblProps, ifNotExists);
 
       validateCreateTable(crtTblDesc);
+      // outputs is empty, which means this create table happens in the current
+      // database.
+      SessionState.get().setCommandType(HiveOperation.CREATETABLE);
       rootTasks.add(TaskFactory.get(new DDLWork(getInputs(), getOutputs(),
           crtTblDesc), conf));
       break;
@@ -7117,6 +7122,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     case CTLT: // create table like <tbl_name>
       CreateTableLikeDesc crtTblLikeDesc = new CreateTableLikeDesc(tableName,
           isExt, location, ifNotExists, likeTableName);
+      SessionState.get().setCommandType(HiveOperation.CREATETABLE);
       rootTasks.add(TaskFactory.get(new DDLWork(getInputs(), getOutputs(),
           crtTblLikeDesc), conf));
       break;
@@ -7140,6 +7146,8 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
           storageFormat.outputFormat, location, shared.serde, storageFormat.storageHandler, shared.serdeProps,
           tblProps, ifNotExists);
       qb.setTableDesc(crtTblDesc);
+
+      SessionState.get().setCommandType(HiveOperation.CREATETABLE_AS_SELECT);
 
       return selectStmt;
     default:

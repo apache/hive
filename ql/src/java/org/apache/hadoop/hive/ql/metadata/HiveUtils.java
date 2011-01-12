@@ -25,6 +25,10 @@ import org.apache.hadoop.hive.common.JavaUtils;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.index.HiveIndexHandler;
 import org.apache.hadoop.hive.ql.parse.AbstractSemanticAnalyzerHook;
+import org.apache.hadoop.hive.ql.security.HadoopDefaultAuthenticator;
+import org.apache.hadoop.hive.ql.security.HiveAuthenticationProvider;
+import org.apache.hadoop.hive.ql.security.authorization.DefaultHiveAuthorizationProvider;
+import org.apache.hadoop.hive.ql.security.authorization.HiveAuthorizationProvider;
 import org.apache.hadoop.util.ReflectionUtils;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 
@@ -170,6 +174,57 @@ public final class HiveUtils {
       throw new HiveException("Error in loading index handler."
           + e.getMessage(), e);
     }
+  }
+  
+  @SuppressWarnings("unchecked")
+  public static HiveAuthorizationProvider getAuthorizeProviderManager(
+      Configuration conf, HiveAuthenticationProvider authenticator) throws HiveException {
+
+    String clsStr = HiveConf.getVar(conf,
+        HiveConf.ConfVars.HIVE_AUTHORIZATION_MANAGER);
+
+    HiveAuthorizationProvider ret = null;
+    try {
+      Class<? extends HiveAuthorizationProvider> cls = null;
+      if (clsStr == null || clsStr.trim().equals("")) {
+        cls = DefaultHiveAuthorizationProvider.class;
+      } else {
+        cls = (Class<? extends HiveAuthorizationProvider>) Class.forName(
+            clsStr, true, JavaUtils.getClassLoader());
+      }
+      if (cls != null) {
+        ret = ReflectionUtils.newInstance(cls, conf);
+      }
+    } catch (Exception e) {
+      throw new HiveException(e);
+    }
+    ret.setAuthenticator(authenticator);
+    return ret;
+  }
+
+  @SuppressWarnings("unchecked")
+  public static HiveAuthenticationProvider getAuthenticator(Configuration conf)
+      throws HiveException {
+
+    String clsStr = HiveConf.getVar(conf,
+        HiveConf.ConfVars.HIVE_AUTHENTICATOR_MANAGER);
+
+    HiveAuthenticationProvider ret = null;
+    try {
+      Class<? extends HiveAuthenticationProvider> cls = null;
+      if (clsStr == null || clsStr.trim().equals("")) {
+        cls = HadoopDefaultAuthenticator.class;
+      } else {
+        cls = (Class<? extends HiveAuthenticationProvider>) Class.forName(
+            clsStr, true, JavaUtils.getClassLoader());
+      }
+      if (cls != null) {
+        ret = ReflectionUtils.newInstance(cls, conf);
+      }
+    } catch (Exception e) {
+      throw new HiveException(e);
+    }
+    return ret;
   }
 
   public static AbstractSemanticAnalyzerHook getSemanticAnalyzerHook(

@@ -45,10 +45,13 @@ if len(sys.argv) <= 1 or sys.argv[1] == '--help':
   print '  bool drop_partition(string db_name, string tbl_name,  part_vals, bool deleteData)'
   print '  bool drop_partition_by_name(string db_name, string tbl_name, string part_name, bool deleteData)'
   print '  Partition get_partition(string db_name, string tbl_name,  part_vals)'
+  print '  Partition get_partition_with_auth(string db_name, string tbl_name,  part_vals, string user_name,  group_names)'
   print '  Partition get_partition_by_name(string db_name, string tbl_name, string part_name)'
   print '   get_partitions(string db_name, string tbl_name, i16 max_parts)'
+  print '   get_partitions_with_auth(string db_name, string tbl_name, i16 max_parts, string user_name,  group_names)'
   print '   get_partition_names(string db_name, string tbl_name, i16 max_parts)'
   print '   get_partitions_ps(string db_name, string tbl_name,  part_vals, i16 max_parts)'
+  print '   get_partitions_ps_with_auth(string db_name, string tbl_name,  part_vals, i16 max_parts, string user_name,  group_names)'
   print '   get_partition_names_ps(string db_name, string tbl_name,  part_vals, i16 max_parts)'
   print '   get_partitions_by_filter(string db_name, string tbl_name, string filter, i16 max_parts)'
   print '  void alter_partition(string db_name, string tbl_name, Partition new_part)'
@@ -61,6 +64,15 @@ if len(sys.argv) <= 1 or sys.argv[1] == '--help':
   print '  Index get_index_by_name(string db_name, string tbl_name, string index_name)'
   print '   get_indexes(string db_name, string tbl_name, i16 max_indexes)'
   print '   get_index_names(string db_name, string tbl_name, i16 max_indexes)'
+  print '  bool create_role(Role role)'
+  print '  bool drop_role(string role_name)'
+  print '  bool grant_role(string role_name, string principal_name, PrincipalType principal_type, string grantor, PrincipalType grantorType, bool grant_option)'
+  print '  bool revoke_role(string role_name, string principal_name, PrincipalType principal_type)'
+  print '   list_roles(string principal_name, PrincipalType principal_type)'
+  print '  PrincipalPrivilegeSet get_privilege_set(HiveObjectRef hiveObject, string user_name,  group_names)'
+  print '   list_privileges(string principal_name, PrincipalType principal_type, HiveObjectRef hiveObject)'
+  print '  bool grant_privileges(PrivilegeBag privileges)'
+  print '  bool revoke_privileges(PrivilegeBag privileges)'
   print ''
   sys.exit(0)
 
@@ -255,6 +267,12 @@ elif cmd == 'get_partition':
     sys.exit(1)
   pp.pprint(client.get_partition(args[0],args[1],eval(args[2]),))
 
+elif cmd == 'get_partition_with_auth':
+  if len(args) != 5:
+    print 'get_partition_with_auth requires 5 args'
+    sys.exit(1)
+  pp.pprint(client.get_partition_with_auth(args[0],args[1],eval(args[2]),args[3],eval(args[4]),))
+
 elif cmd == 'get_partition_by_name':
   if len(args) != 3:
     print 'get_partition_by_name requires 3 args'
@@ -267,6 +285,12 @@ elif cmd == 'get_partitions':
     sys.exit(1)
   pp.pprint(client.get_partitions(args[0],args[1],eval(args[2]),))
 
+elif cmd == 'get_partitions_with_auth':
+  if len(args) != 5:
+    print 'get_partitions_with_auth requires 5 args'
+    sys.exit(1)
+  pp.pprint(client.get_partitions_with_auth(args[0],args[1],eval(args[2]),args[3],eval(args[4]),))
+
 elif cmd == 'get_partition_names':
   if len(args) != 3:
     print 'get_partition_names requires 3 args'
@@ -278,6 +302,12 @@ elif cmd == 'get_partitions_ps':
     print 'get_partitions_ps requires 4 args'
     sys.exit(1)
   pp.pprint(client.get_partitions_ps(args[0],args[1],eval(args[2]),eval(args[3]),))
+
+elif cmd == 'get_partitions_ps_with_auth':
+  if len(args) != 6:
+    print 'get_partitions_ps_with_auth requires 6 args'
+    sys.exit(1)
+  pp.pprint(client.get_partitions_ps_with_auth(args[0],args[1],eval(args[2]),eval(args[3]),args[4],eval(args[5]),))
 
 elif cmd == 'get_partition_names_ps':
   if len(args) != 4:
@@ -350,6 +380,60 @@ elif cmd == 'get_index_names':
     print 'get_index_names requires 3 args'
     sys.exit(1)
   pp.pprint(client.get_index_names(args[0],args[1],eval(args[2]),))
+
+elif cmd == 'create_role':
+  if len(args) != 1:
+    print 'create_role requires 1 args'
+    sys.exit(1)
+  pp.pprint(client.create_role(eval(args[0]),))
+
+elif cmd == 'drop_role':
+  if len(args) != 1:
+    print 'drop_role requires 1 args'
+    sys.exit(1)
+  pp.pprint(client.drop_role(args[0],))
+
+elif cmd == 'grant_role':
+  if len(args) != 6:
+    print 'grant_role requires 6 args'
+    sys.exit(1)
+  pp.pprint(client.grant_role(args[0],args[1],eval(args[2]),args[3],eval(args[4]),eval(args[5]),))
+
+elif cmd == 'revoke_role':
+  if len(args) != 3:
+    print 'revoke_role requires 3 args'
+    sys.exit(1)
+  pp.pprint(client.revoke_role(args[0],args[1],eval(args[2]),))
+
+elif cmd == 'list_roles':
+  if len(args) != 2:
+    print 'list_roles requires 2 args'
+    sys.exit(1)
+  pp.pprint(client.list_roles(args[0],eval(args[1]),))
+
+elif cmd == 'get_privilege_set':
+  if len(args) != 3:
+    print 'get_privilege_set requires 3 args'
+    sys.exit(1)
+  pp.pprint(client.get_privilege_set(eval(args[0]),args[1],eval(args[2]),))
+
+elif cmd == 'list_privileges':
+  if len(args) != 3:
+    print 'list_privileges requires 3 args'
+    sys.exit(1)
+  pp.pprint(client.list_privileges(args[0],eval(args[1]),eval(args[2]),))
+
+elif cmd == 'grant_privileges':
+  if len(args) != 1:
+    print 'grant_privileges requires 1 args'
+    sys.exit(1)
+  pp.pprint(client.grant_privileges(eval(args[0]),))
+
+elif cmd == 'revoke_privileges':
+  if len(args) != 1:
+    print 'revoke_privileges requires 1 args'
+    sys.exit(1)
+  pp.pprint(client.revoke_privileges(eval(args[0]),))
 
 else:
   print 'Unrecognized method %s' % cmd

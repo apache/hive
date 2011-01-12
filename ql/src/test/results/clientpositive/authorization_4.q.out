@@ -1,0 +1,55 @@
+PREHOOK: query: create table src_autho_test as select * from src
+PREHOOK: type: CREATETABLE_AS_SELECT
+PREHOOK: Input: default@src
+POSTHOOK: query: create table src_autho_test as select * from src
+POSTHOOK: type: CREATETABLE_AS_SELECT
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@src_autho_test
+PREHOOK: query: show grant user hive_test_user on table src_autho_test
+PREHOOK: type: SHOW_GRANT
+POSTHOOK: query: show grant user hive_test_user on table src_autho_test
+POSTHOOK: type: SHOW_GRANT
+
+database	default	
+table	src_autho_test	
+principalName	hive_test_user	
+principalType	USER	
+privilege	All	
+grantTime	1292567601	
+grantor	hive_test_user	
+PREHOOK: query: select key from src_autho_test order by key limit 20
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src_autho_test
+PREHOOK: Output: file:/var/folders/6g/6grtCwPMEf4sqHUPpy6xQG9ByHg/-Tmp-/heyongqiang/hive_2010-12-16_22-33-22_016_7487510540844272228/-mr-10000
+POSTHOOK: query: select key from src_autho_test order by key limit 20
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src_autho_test
+POSTHOOK: Output: file:/var/folders/6g/6grtCwPMEf4sqHUPpy6xQG9ByHg/-Tmp-/heyongqiang/hive_2010-12-16_22-33-22_016_7487510540844272228/-mr-10000
+0
+0
+0
+10
+100
+100
+103
+103
+104
+104
+105
+11
+111
+113
+113
+114
+116
+118
+118
+119
+PREHOOK: query: drop table src_autho_test
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@src_autho_test
+PREHOOK: Output: default@src_autho_test
+POSTHOOK: query: drop table src_autho_test
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@src_autho_test
+POSTHOOK: Output: default@src_autho_test

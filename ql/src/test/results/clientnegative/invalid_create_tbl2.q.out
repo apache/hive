@@ -1,2 +1,2 @@
-FAILED: Parse Error: line 1:0 cannot recognize input 'create' in ddl statement
+FAILED: Parse Error: line 1:7 rule kwRole failed predicate: {input.LT(1).getText().equalsIgnoreCase("role")}? in create role
 

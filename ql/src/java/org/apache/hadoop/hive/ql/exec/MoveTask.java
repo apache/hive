@@ -197,7 +197,7 @@ public class MoveTask extends Task<MoveWork> implements Serializable {
           db.loadTable(new Path(tbd.getSourceDir()), tbd.getTable()
               .getTableName(), tbd.getReplace(), tbd.getHoldDDLTime());
           if (work.getOutputs() != null) {
-            work.getOutputs().add(new WriteEntity(table));
+            work.getOutputs().add(new WriteEntity(table, true));
           }
         } else {
           LOG.info("Partition is: " + tbd.getPartitionSpec().toString());
@@ -238,7 +238,7 @@ public class MoveTask extends Task<MoveWork> implements Serializable {
             for (LinkedHashMap<String, String> partSpec: dp) {
               Partition partn = db.getPartition(table, partSpec, false);
 
-              WriteEntity enty = new WriteEntity(partn);
+              WriteEntity enty = new WriteEntity(partn, true);
               if (work.getOutputs() != null) {
                 work.getOutputs().add(enty);
               }
@@ -270,7 +270,7 @@ public class MoveTask extends Task<MoveWork> implements Serializable {
           	dc = new DataContainer(table.getTTable(), partn.getTPartition());
           	// add this partition to post-execution hook
           	if (work.getOutputs() != null) {
-          	  work.getOutputs().add(new WriteEntity(partn));
+          	  work.getOutputs().add(new WriteEntity(partn, true));
           	}
          }
         }

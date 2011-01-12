@@ -357,5 +357,313 @@
         </value>
       </field>
     </class>
+
+    <class name="MRole" table="ROLES" identity-type="datastore" detachable="true">
+
+      <index name="RoleEntityINDEX" unique="true">
+        <column name="ROLE_NAME"/>
+      </index>
+
+      <datastore-identity>
+        <column name="ROLE_ID"/>
+      </datastore-identity>
+
+      <field name="roleName">
+        <column name="ROLE_NAME" length="128" jdbc-type="VARCHAR"/>
+      </field>
+      <field name="createTime">
+        <column name="CREATE_TIME" jdbc-type="integer"/>
+      </field>
+      <field name="ownerName">
+        <column name="OWNER_NAME" length="128" jdbc-type="VARCHAR"/>
+      </field>
+      
+    </class>
+
+    <class name="MRoleMap" table="ROLE_MAP" identity-type="datastore" detachable="true">
+      <index name="UserRoleMapINDEX" unique="true">
+        <column name="PRINCIPAL_NAME"/>
+        <column name="ROLE_ID"/>
+        <column name="GRANTOR"/>
+        <column name="GRANTOR_TYPE"/>
+      </index>
+
+      <datastore-identity>
+        <column name="ROLE_GRANT_ID"/>
+      </datastore-identity>
+
+      <field name="role">
+        <column name="ROLE_ID" />
+      </field>
+      <field name="principalName">
+        <column name="PRINCIPAL_NAME" length="128" jdbc-type="VARCHAR"/>
+      </field>
+      <field name="principalType">
+        <column name="PRINCIPAL_TYPE" length="128" jdbc-type="VARCHAR"/>
+      </field>
+      <field name="addTime">
+        <column name="ADD_TIME" jdbc-type="integer"/>
+      </field>
+      <field name="grantor">
+        <column name="GRANTOR" length="128" jdbc-type="VARCHAR"/>
+      </field>
+      <field name="grantorType">
+        <column name="GRANTOR_TYPE" length="128" jdbc-type="VARCHAR"/>
+      </field>
+      <field name="grantOption">
+        <column name="GRANT_OPTION" jdbc-type="SMALLINT"/>
+      </field>
+    </class>
+
+    <class name="MGlobalPrivilege" table="GLOBAL_PRIVS" identity-type="datastore" detachable="true">
+      
+      <index name="GlobalPrivilegeIndex" unique="true">
+        <column name="PRINCIPAL_NAME"/>
+        <column name="PRINCIPAL_TYPE"/>
+        <column name="USER_PRIV"/>
+        <column name="GRANTOR"/>
+        <column name="GRANTOR_TYPE"/>
+      </index>
+    
+      <datastore-identity>
+        <column name="USER_GRANT_ID"/>
+      </datastore-identity>
+
+      <field name="principalName">
+        <column name="PRINCIPAL_NAME" length="128" jdbc-type="VARCHAR"/>
+      </field>
+      <field name="principalType">
+        <column name="PRINCIPAL_TYPE" length="128" jdbc-type="VARCHAR"/>
+      </field>
+      <field name="privilege">
+        <column name="USER_PRIV" length="128" jdbc-type="VARCHAR"/>
+      </field>
+      <field name="createTime">
+        <column name="CREATE_TIME" jdbc-type="integer"/>
+      </field>
+      <field name="grantor">
+        <column name="GRANTOR" length="128" jdbc-type="VARCHAR"/>
+      </field>
+      <field name="grantorType">
+        <column name="GRANTOR_TYPE" length="128" jdbc-type="VARCHAR"/>
+      </field>
+      <field name="grantOption">
+        <column name="GRANT_OPTION" jdbc-type="SMALLINT"/>
+      </field>
+    </class>
+
+    <class name="MDBPrivilege" table="DB_PRIVS" identity-type="datastore" detachable="true">
+      
+      <index name="DBPrivilegeIndex" unique="true">
+        <column name="DB_ID"/>
+        <column name="PRINCIPAL_NAME"/>
+        <column name="PRINCIPAL_TYPE"/>
+        <column name="DB_PRIV"/>
+        <column name="GRANTOR"/>
+        <column name="GRANTOR_TYPE"/>
+      </index>
+
+      <datastore-identity>
+        <column name="DB_GRANT_ID"/>
+      </datastore-identity>
+
+      <field name="principalName">
+        <column name="PRINCIPAL_NAME" length="128" jdbc-type="VARCHAR"/>
+      </field>
+      <field name="principalType">
+        <column name="PRINCIPAL_TYPE" length="128" jdbc-type="VARCHAR"/>
+      </field>
+      <field name="database">
+        <column name="DB_ID" />
+      </field>
+      <field name="privilege">
+        <column name="DB_PRIV" length="128" jdbc-type="VARCHAR"/>
+      </field>
+      <field name="createTime">
+        <column name="CREATE_TIME" jdbc-type="integer"/>
+      </field>
+      <field name="grantor">
+        <column name="GRANTOR" length="128" jdbc-type="VARCHAR"/>
+      </field>
+      <field name="grantorType">
+        <column name="GRANTOR_TYPE" length="128" jdbc-type="VARCHAR"/>
+      </field>
+      <field name="grantOption">
+        <column name="GRANT_OPTION" jdbc-type="SMALLINT"/>
+      </field>
+    </class>
+
+    <class name="MTablePrivilege" table="TBL_PRIVS" identity-type="datastore" detachable="true">
+    
+      <index name="TablePrivilegeIndex" unique="false">
+        <column name="TBL_ID"/>
+        <column name="PRINCIPAL_NAME"/>
+        <column name="PRINCIPAL_TYPE"/>
+        <column name="TBL_PRIV"/>
+        <column name="GRANTOR"/>
+        <column name="GRANTOR_TYPE"/>
+      </index>
+
+      <datastore-identity>
+        <column name="TBL_GRANT_ID"/>
+      </datastore-identity>
+
+      <field name="principalName">
+        <column name="PRINCIPAL_NAME" length="128" jdbc-type="VARCHAR"/>
+      </field>
+      <field name="principalType">
+        <column name="PRINCIPAL_TYPE" length="128" jdbc-type="VARCHAR"/>
+      </field>
+      <field name="table">
+        <column name="TBL_ID"/>
+      </field>
+      <field name="privilege">
+        <column name="TBL_PRIV" length="128" jdbc-type="VARCHAR"/>
+      </field>
+      <field name="createTime">
+        <column name="CREATE_TIME" jdbc-type="integer"/>
+      </field>
+      <field name="grantor">
+        <column name="GRANTOR" length="128" jdbc-type="VARCHAR"/>
+      </field>
+      <field name="grantorType">
+        <column name="GRANTOR_TYPE" length="128" jdbc-type="VARCHAR"/>
+      </field>
+      <field name="grantOption">
+        <column name="GRANT_OPTION" jdbc-type="SMALLINT"/>
+      </field>
+    </class>
+
+    <class name="MPartitionPrivilege" table="PART_PRIVS" identity-type="datastore" detachable="true">
+    
+      <index name="PartPrivilegeIndex" unique="false">
+        <column name="PART_ID"/>
+        <column name="PRINCIPAL_NAME"/>
+        <column name="PRINCIPAL_TYPE"/>
+        <column name="PART_PRIV"/>
+        <column name="GRANTOR"/>
+        <column name="GRANTOR_TYPE"/>
+      </index>
+
+      <datastore-identity>
+        <column name="PART_GRANT_ID"/>
+      </datastore-identity>
+
+      <field name="principalName">
+        <column name="PRINCIPAL_NAME" length="128" jdbc-type="VARCHAR"/>
+      </field>
+      <field name="principalType">
+        <column name="PRINCIPAL_TYPE" length="128" jdbc-type="VARCHAR"/>
+      </field>
+      <field name="partition">
+        <column name="PART_ID" />
+      </field>
+      <field name="privilege">
+        <column name="PART_PRIV" length="128" jdbc-type="VARCHAR"/>
+      </field>
+      <field name="createTime">
+        <column name="CREATE_TIME" jdbc-type="integer"/>
+      </field>
+      <field name="grantor">
+        <column name="GRANTOR" length="128" jdbc-type="VARCHAR"/>
+      </field>
+      <field name="grantorType">
+        <column name="GRANTOR_TYPE" length="128" jdbc-type="VARCHAR"/>
+      </field>
+      <field name="grantOption">
+        <column name="GRANT_OPTION" jdbc-type="SMALLINT"/>
+      </field>
+    </class>
+
+    <class name="MTableColumnPrivilege" table="TBL_COL_PRIVS" identity-type="datastore" detachable="true">
+    
+     <index name="TableColumnPrivilegeIndex" unique="false">
+        <column name="TBL_ID"/>
+        <column name="COLUMN_NAME"/>
+        <column name="PRINCIPAL_NAME"/>
+        <column name="PRINCIPAL_TYPE"/>
+        <column name="TBL_COL_PRIV"/>
+        <column name="GRANTOR"/>
+        <column name="GRANTOR_TYPE"/>
+      </index>
+
+      <datastore-identity>
+        <column name="TBL_COLUMN_GRANT_ID"/>
+      </datastore-identity>
+
+      <field name="principalName">
+        <column name="PRINCIPAL_NAME" length="128" jdbc-type="VARCHAR"/>
+      </field>
+      <field name="principalType">
+        <column name="PRINCIPAL_TYPE" length="128" jdbc-type="VARCHAR"/>
+      </field>
+      <field name="table">
+        <column name="TBL_ID" />
+      </field>
+      <field name="columnName">
+        <column name="COLUMN_NAME" length="128" jdbc-type="VARCHAR"/>
+      </field>
+      <field name="privilege">
+        <column name="TBL_COL_PRIV" length="128" jdbc-type="VARCHAR"/>
+      </field>
+      <field name="createTime">
+        <column name="CREATE_TIME" jdbc-type="integer"/>
+      </field>
+      <field name="grantor">
+        <column name="GRANTOR" length="128" jdbc-type="VARCHAR"/>
+      </field>
+      <field name="grantorType">
+        <column name="GRANTOR_TYPE" length="128" jdbc-type="VARCHAR"/>
+      </field>
+      <field name="grantOption">
+        <column name="GRANT_OPTION" jdbc-type="SMALLINT"/>
+      </field>
+    </class>
+
+    <class name="MPartitionColumnPrivilege" table="PART_COL_PRIVS" identity-type="datastore" detachable="true">
+    
+     <index name="PartitionColumnPrivilegeIndex" unique="false">
+        <column name="PART_ID"/>
+        <column name="COLUMN_NAME"/>
+        <column name="PRINCIPAL_NAME"/>
+        <column name="PRINCIPAL_TYPE"/>
+        <column name="PART_COL_PRIV"/>
+        <column name="GRANTOR"/>
+        <column name="GRANTOR_TYPE"/>
+      </index>
+
+      <datastore-identity>
+        <column name="PART_COLUMN_GRANT_ID"/>
+      </datastore-identity>
+
+      <field name="principalName">
+        <column name="PRINCIPAL_NAME" length="128" jdbc-type="VARCHAR"/>
+      </field>
+      <field name="principalType">
+        <column name="PRINCIPAL_TYPE" length="128" jdbc-type="VARCHAR"/>
+      </field>
+      <field name="partition">
+        <column name="PART_ID" />
+      </field>
+      <field name="columnName">
+        <column name="COLUMN_NAME" length="128" jdbc-type="VARCHAR"/>
+      </field>
+      <field name="privilege">
+        <column name="PART_COL_PRIV" length="128" jdbc-type="VARCHAR"/>
+      </field>
+      <field name="createTime">
+        <column name="CREATE_TIME" jdbc-type="integer"/>
+      </field>
+      <field name="grantor">
+        <column name="GRANTOR" length="128" jdbc-type="VARCHAR"/>
+      </field>
+      <field name="grantorType">
+        <column name="GRANTOR_TYPE" length="128" jdbc-type="VARCHAR"/>
+      </field>
+      <field name="grantOption">
+        <column name="GRANT_OPTION" jdbc-type="SMALLINT"/>
+      </field>
+    </class>
+
   </package>
 </jdo>

@@ -369,14 +369,14 @@ public class Schema implements TBase<Schema, Schema._Fields>, java.io.Serializab
         case 1: // FIELD_SCHEMAS
           if (field.type == TType.LIST) {
             {
-              TList _list54 = iprot.readListBegin();
-              this.fieldSchemas = new ArrayList<FieldSchema>(_list54.size);
-              for (int _i55 = 0; _i55 < _list54.size; ++_i55)
+              TList _list89 = iprot.readListBegin();
+              this.fieldSchemas = new ArrayList<FieldSchema>(_list89.size);
+              for (int _i90 = 0; _i90 < _list89.size; ++_i90)
               {
-                FieldSchema _elem56;
-                _elem56 = new FieldSchema();
-                _elem56.read(iprot);
-                this.fieldSchemas.add(_elem56);
+                FieldSchema _elem91;
+                _elem91 = new FieldSchema();
+                _elem91.read(iprot);
+                this.fieldSchemas.add(_elem91);
               }
               iprot.readListEnd();
             }
@@ -387,15 +387,15 @@ public class Schema implements TBase<Schema, Schema._Fields>, java.io.Serializab
         case 2: // PROPERTIES
           if (field.type == TType.MAP) {
             {
-              TMap _map57 = iprot.readMapBegin();
-              this.properties = new HashMap<String,String>(2*_map57.size);
-              for (int _i58 = 0; _i58 < _map57.size; ++_i58)
+              TMap _map92 = iprot.readMapBegin();
+              this.properties = new HashMap<String,String>(2*_map92.size);
+              for (int _i93 = 0; _i93 < _map92.size; ++_i93)
               {
-                String _key59;
-                String _val60;
-                _key59 = iprot.readString();
-                _val60 = iprot.readString();
-                this.properties.put(_key59, _val60);
+                String _key94;
+                String _val95;
+                _key94 = iprot.readString();
+                _val95 = iprot.readString();
+                this.properties.put(_key94, _val95);
               }
               iprot.readMapEnd();
             }
@@ -420,9 +420,9 @@ public class Schema implements TBase<Schema, Schema._Fields>, java.io.Serializab
       oprot.writeFieldBegin(FIELD_SCHEMAS_FIELD_DESC);
       {
         oprot.writeListBegin(new TList(TType.STRUCT, this.fieldSchemas.size()));
-        for (FieldSchema _iter61 : this.fieldSchemas)
+        for (FieldSchema _iter96 : this.fieldSchemas)
         {
-          _iter61.write(oprot);
+          _iter96.write(oprot);
         }
         oprot.writeListEnd();
       }
@@ -432,10 +432,10 @@ public class Schema implements TBase<Schema, Schema._Fields>, java.io.Serializab
       oprot.writeFieldBegin(PROPERTIES_FIELD_DESC);
       {
         oprot.writeMapBegin(new TMap(TType.STRING, TType.STRING, this.properties.size()));
-        for (Map.Entry<String, String> _iter62 : this.properties.entrySet())
+        for (Map.Entry<String, String> _iter97 : this.properties.entrySet())
         {
-          oprot.writeString(_iter62.getKey());
-          oprot.writeString(_iter62.getValue());
+          oprot.writeString(_iter97.getKey());
+          oprot.writeString(_iter97.getValue());
         }
         oprot.writeMapEnd();
       }

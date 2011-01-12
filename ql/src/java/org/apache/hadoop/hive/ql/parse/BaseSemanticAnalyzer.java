@@ -71,7 +71,7 @@ public abstract class BaseSemanticAnalyzer {
 
   protected Context ctx;
   protected HashMap<String, String> idToTableNameMap;
-
+  
   public static int HIVE_COLUMN_ORDER_ASC = 1;
   public static int HIVE_COLUMN_ORDER_DESC = 0;
 
@@ -718,5 +718,9 @@ public abstract class BaseSemanticAnalyzer {
       partSpec.put(partspec_val.getChild(0).getText().toLowerCase(), val);
     }
     return partSpec;
+  }
+  
+  public Hive getDb() {
+    return db;
   }
 }

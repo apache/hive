@@ -142,6 +142,11 @@ class ThriftHiveMetastoreHandler : virtual public ThriftHiveMetastoreIf {
     printf("get_partition\n");
   }
 
+  void get_partition_with_auth(Partition& _return, const std::string& db_name, const std::string& tbl_name, const std::vector<std::string> & part_vals, const std::string& user_name, const std::vector<std::string> & group_names) {
+    // Your implementation goes here
+    printf("get_partition_with_auth\n");
+  }
+
   void get_partition_by_name(Partition& _return, const std::string& db_name, const std::string& tbl_name, const std::string& part_name) {
     // Your implementation goes here
     printf("get_partition_by_name\n");
@@ -152,6 +157,11 @@ class ThriftHiveMetastoreHandler : virtual public ThriftHiveMetastoreIf {
     printf("get_partitions\n");
   }
 
+  void get_partitions_with_auth(std::vector<Partition> & _return, const std::string& db_name, const std::string& tbl_name, const int16_t max_parts, const std::string& user_name, const std::vector<std::string> & group_names) {
+    // Your implementation goes here
+    printf("get_partitions_with_auth\n");
+  }
+
   void get_partition_names(std::vector<std::string> & _return, const std::string& db_name, const std::string& tbl_name, const int16_t max_parts) {
     // Your implementation goes here
     printf("get_partition_names\n");
@@ -160,6 +170,11 @@ class ThriftHiveMetastoreHandler : virtual public ThriftHiveMetastoreIf {
   void get_partitions_ps(std::vector<Partition> & _return, const std::string& db_name, const std::string& tbl_name, const std::vector<std::string> & part_vals, const int16_t max_parts) {
     // Your implementation goes here
     printf("get_partitions_ps\n");
+  }
+
+  void get_partitions_ps_with_auth(std::vector<Partition> & _return, const std::string& db_name, const std::string& tbl_name, const std::vector<std::string> & part_vals, const int16_t max_parts, const std::string& user_name, const std::vector<std::string> & group_names) {
+    // Your implementation goes here
+    printf("get_partitions_ps_with_auth\n");
   }
 
   void get_partition_names_ps(std::vector<std::string> & _return, const std::string& db_name, const std::string& tbl_name, const std::vector<std::string> & part_vals, const int16_t max_parts) {
@@ -220,6 +235,51 @@ class ThriftHiveMetastoreHandler : virtual public ThriftHiveMetastoreIf {
   void get_index_names(std::vector<std::string> & _return, const std::string& db_name, const std::string& tbl_name, const int16_t max_indexes) {
     // Your implementation goes here
     printf("get_index_names\n");
+  }
+
+  bool create_role(const Role& role) {
+    // Your implementation goes here
+    printf("create_role\n");
+  }
+
+  bool drop_role(const std::string& role_name) {
+    // Your implementation goes here
+    printf("drop_role\n");
+  }
+
+  bool grant_role(const std::string& role_name, const std::string& principal_name, const PrincipalType::type principal_type, const std::string& grantor, const PrincipalType::type grantorType, const bool grant_option) {
+    // Your implementation goes here
+    printf("grant_role\n");
+  }
+
+  bool revoke_role(const std::string& role_name, const std::string& principal_name, const PrincipalType::type principal_type) {
+    // Your implementation goes here
+    printf("revoke_role\n");
+  }
+
+  void list_roles(std::vector<Role> & _return, const std::string& principal_name, const PrincipalType::type principal_type) {
+    // Your implementation goes here
+    printf("list_roles\n");
+  }
+
+  void get_privilege_set(PrincipalPrivilegeSet& _return, const HiveObjectRef& hiveObject, const std::string& user_name, const std::vector<std::string> & group_names) {
+    // Your implementation goes here
+    printf("get_privilege_set\n");
+  }
+
+  void list_privileges(std::vector<HiveObjectPrivilege> & _return, const std::string& principal_name, const PrincipalType::type principal_type, const HiveObjectRef& hiveObject) {
+    // Your implementation goes here
+    printf("list_privileges\n");
+  }
+
+  bool grant_privileges(const PrivilegeBag& privileges) {
+    // Your implementation goes here
+    printf("grant_privileges\n");
+  }
+
+  bool revoke_privileges(const PrivilegeBag& privileges) {
+    // Your implementation goes here
+    printf("revoke_privileges\n");
   }
 
 };

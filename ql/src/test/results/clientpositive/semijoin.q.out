@@ -1,18 +1,18 @@
 PREHOOK: query: create table t1 as select cast(key as int) key, value from src where key <= 10
-PREHOOK: type: CREATETABLE
+PREHOOK: type: CREATETABLE_AS_SELECT
 PREHOOK: Input: default@src
 POSTHOOK: query: create table t1 as select cast(key as int) key, value from src where key <= 10
-POSTHOOK: type: CREATETABLE
+POSTHOOK: type: CREATETABLE_AS_SELECT
 POSTHOOK: Input: default@src
 POSTHOOK: Output: default@t1
 PREHOOK: query: select * from t1 sort by key
 PREHOOK: type: QUERY
 PREHOOK: Input: default@t1
-PREHOOK: Output: file:/tmp/liyintang/hive_2010-11-04_13-17-35_964_8659428901868696782/-mr-10000
+PREHOOK: Output: file:/var/folders/6g/6grtCwPMEf4sqHUPpy6xQG9ByHg/-Tmp-/heyongqiang/hive_2010-11-18_11-00-19_046_3895376692139653549/-mr-10000
 POSTHOOK: query: select * from t1 sort by key
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@t1
-POSTHOOK: Output: file:/tmp/liyintang/hive_2010-11-04_13-17-35_964_8659428901868696782/-mr-10000
+POSTHOOK: Output: file:/var/folders/6g/6grtCwPMEf4sqHUPpy6xQG9ByHg/-Tmp-/heyongqiang/hive_2010-11-18_11-00-19_046_3895376692139653549/-mr-10000
 0	val_0
 0	val_0
 0	val_0
@@ -25,20 +25,20 @@ POSTHOOK: Output: file:/tmp/liyintang/hive_2010-11-04_13-17-35_964_8659428901868
 9	val_9
 10	val_10
 PREHOOK: query: create table t2 as select cast(2*key as int) key, value from t1
-PREHOOK: type: CREATETABLE
+PREHOOK: type: CREATETABLE_AS_SELECT
 PREHOOK: Input: default@t1
 POSTHOOK: query: create table t2 as select cast(2*key as int) key, value from t1
-POSTHOOK: type: CREATETABLE
+POSTHOOK: type: CREATETABLE_AS_SELECT
 POSTHOOK: Input: default@t1
 POSTHOOK: Output: default@t2
 PREHOOK: query: select * from t2 sort by key
 PREHOOK: type: QUERY
 PREHOOK: Input: default@t2
-PREHOOK: Output: file:/tmp/liyintang/hive_2010-11-04_13-17-44_033_1385561037107185571/-mr-10000
+PREHOOK: Output: file:/var/folders/6g/6grtCwPMEf4sqHUPpy6xQG9ByHg/-Tmp-/heyongqiang/hive_2010-11-18_11-00-35_454_4705187275126291053/-mr-10000
 POSTHOOK: query: select * from t2 sort by key
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@t2
-POSTHOOK: Output: file:/tmp/liyintang/hive_2010-11-04_13-17-44_033_1385561037107185571/-mr-10000
+POSTHOOK: Output: file:/var/folders/6g/6grtCwPMEf4sqHUPpy6xQG9ByHg/-Tmp-/heyongqiang/hive_2010-11-18_11-00-35_454_4705187275126291053/-mr-10000
 0	val_0
 0	val_0
 0	val_0
@@ -51,22 +51,22 @@ POSTHOOK: Output: file:/tmp/liyintang/hive_2010-11-04_13-17-44_033_1385561037107
 18	val_9
 20	val_10
 PREHOOK: query: create table t3 as select * from (select * from t1 union all select * from t2) b
-PREHOOK: type: CREATETABLE
+PREHOOK: type: CREATETABLE_AS_SELECT
 PREHOOK: Input: default@t1
 PREHOOK: Input: default@t2
 POSTHOOK: query: create table t3 as select * from (select * from t1 union all select * from t2) b
-POSTHOOK: type: CREATETABLE
+POSTHOOK: type: CREATETABLE_AS_SELECT
 POSTHOOK: Input: default@t1
 POSTHOOK: Input: default@t2
 POSTHOOK: Output: default@t3
 PREHOOK: query: select * from t3 sort by key, value
 PREHOOK: type: QUERY
 PREHOOK: Input: default@t3
-PREHOOK: Output: file:/tmp/liyintang/hive_2010-11-04_13-17-56_368_4643337669577300642/-mr-10000
+PREHOOK: Output: file:/var/folders/6g/6grtCwPMEf4sqHUPpy6xQG9ByHg/-Tmp-/heyongqiang/hive_2010-11-18_11-00-56_521_5858394420847642107/-mr-10000
 POSTHOOK: query: select * from t3 sort by key, value
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@t3
-POSTHOOK: Output: file:/tmp/liyintang/hive_2010-11-04_13-17-56_368_4643337669577300642/-mr-10000
+POSTHOOK: Output: file:/var/folders/6g/6grtCwPMEf4sqHUPpy6xQG9ByHg/-Tmp-/heyongqiang/hive_2010-11-18_11-00-56_521_5858394420847642107/-mr-10000
 0	val_0
 0	val_0
 0	val_0
@@ -97,11 +97,11 @@ POSTHOOK: Output: default@t4
 PREHOOK: query: select * from t4
 PREHOOK: type: QUERY
 PREHOOK: Input: default@t4
-PREHOOK: Output: file:/tmp/liyintang/hive_2010-11-04_13-18-00_347_4261760726152540894/-mr-10000
+PREHOOK: Output: file:/var/folders/6g/6grtCwPMEf4sqHUPpy6xQG9ByHg/-Tmp-/heyongqiang/hive_2010-11-18_11-01-05_957_5547541419038535698/-mr-10000
 POSTHOOK: query: select * from t4
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@t4
-POSTHOOK: Output: file:/tmp/liyintang/hive_2010-11-04_13-18-00_347_4261760726152540894/-mr-10000
+POSTHOOK: Output: file:/var/folders/6g/6grtCwPMEf4sqHUPpy6xQG9ByHg/-Tmp-/heyongqiang/hive_2010-11-18_11-01-05_957_5547541419038535698/-mr-10000
 PREHOOK: query: explain select * from t1 a left semi join t2 b on a.key=b.key sort by a.key, a.value
 PREHOOK: type: QUERY
 POSTHOOK: query: explain select * from t1 a left semi join t2 b on a.key=b.key sort by a.key, a.value
@@ -185,7 +185,7 @@ STAGE PLANS:
   Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/tmp/liyintang/hive_2010-11-04_13-18-00_543_3830170995670719849/-mr-10002 
+        file:/var/folders/6g/6grtCwPMEf4sqHUPpy6xQG9ByHg/-Tmp-/heyongqiang/hive_2010-11-18_11-01-06_152_355729472898392348/-mr-10002 
             Reduce Output Operator
               key expressions:
                     expr: _col0
@@ -217,12 +217,12 @@ PREHOOK: query: select * from t1 a left semi join t2 b on a.key=b.key sort by a.
 PREHOOK: type: QUERY
 PREHOOK: Input: default@t1
 PREHOOK: Input: default@t2
-PREHOOK: Output: file:/tmp/liyintang/hive_2010-11-04_13-18-00_658_5539359917304769093/-mr-10000
+PREHOOK: Output: file:/var/folders/6g/6grtCwPMEf4sqHUPpy6xQG9ByHg/-Tmp-/heyongqiang/hive_2010-11-18_11-01-06_413_6128740965053236566/-mr-10000
 POSTHOOK: query: select * from t1 a left semi join t2 b on a.key=b.key sort by a.key, a.value
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@t1
 POSTHOOK: Input: default@t2
-POSTHOOK: Output: file:/tmp/liyintang/hive_2010-11-04_13-18-00_658_5539359917304769093/-mr-10000
+POSTHOOK: Output: file:/var/folders/6g/6grtCwPMEf4sqHUPpy6xQG9ByHg/-Tmp-/heyongqiang/hive_2010-11-18_11-01-06_413_6128740965053236566/-mr-10000
 0	val_0
 0	val_0
 0	val_0
@@ -312,7 +312,7 @@ STAGE PLANS:
   Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/tmp/liyintang/hive_2010-11-04_13-18-08_284_4216408335407237139/-mr-10002 
+        file:/var/folders/6g/6grtCwPMEf4sqHUPpy6xQG9ByHg/-Tmp-/heyongqiang/hive_2010-11-18_11-01-24_265_4466548024067433690/-mr-10002 
             Reduce Output Operator
               key expressions:
                     expr: _col0
@@ -344,12 +344,12 @@ PREHOOK: query: select * from t2 a left semi join t1 b on b.key=a.key sort by a.
 PREHOOK: type: QUERY
 PREHOOK: Input: default@t1
 PREHOOK: Input: default@t2
-PREHOOK: Output: file:/tmp/liyintang/hive_2010-11-04_13-18-08_398_3149624530689509743/-mr-10000
+PREHOOK: Output: file:/var/folders/6g/6grtCwPMEf4sqHUPpy6xQG9ByHg/-Tmp-/heyongqiang/hive_2010-11-18_11-01-24_509_4270214608701232060/-mr-10000
 POSTHOOK: query: select * from t2 a left semi join t1 b on b.key=a.key sort by a.key, a.value
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@t1
 POSTHOOK: Input: default@t2
-POSTHOOK: Output: file:/tmp/liyintang/hive_2010-11-04_13-18-08_398_3149624530689509743/-mr-10000
+POSTHOOK: Output: file:/var/folders/6g/6grtCwPMEf4sqHUPpy6xQG9ByHg/-Tmp-/heyongqiang/hive_2010-11-18_11-01-24_509_4270214608701232060/-mr-10000
 0	val_0
 0	val_0
 0	val_0
@@ -441,7 +441,7 @@ STAGE PLANS:
   Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/tmp/liyintang/hive_2010-11-04_13-18-16_135_6319067187632899075/-mr-10002 
+        file:/var/folders/6g/6grtCwPMEf4sqHUPpy6xQG9ByHg/-Tmp-/heyongqiang/hive_2010-11-18_11-01-40_609_1842300352332686282/-mr-10002 
             Reduce Output Operator
               key expressions:
                     expr: _col0
@@ -473,12 +473,12 @@ PREHOOK: query: select * from t1 a left semi join t4 b on b.key=a.key sort by a.
 PREHOOK: type: QUERY
 PREHOOK: Input: default@t1
 PREHOOK: Input: default@t4
-PREHOOK: Output: file:/tmp/liyintang/hive_2010-11-04_13-18-16_255_6778253691436748699/-mr-10000
+PREHOOK: Output: file:/var/folders/6g/6grtCwPMEf4sqHUPpy6xQG9ByHg/-Tmp-/heyongqiang/hive_2010-11-18_11-01-40_927_8797191922320768648/-mr-10000
 POSTHOOK: query: select * from t1 a left semi join t4 b on b.key=a.key sort by a.key, a.value
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@t1
 POSTHOOK: Input: default@t4
-POSTHOOK: Output: file:/tmp/liyintang/hive_2010-11-04_13-18-16_255_6778253691436748699/-mr-10000
+POSTHOOK: Output: file:/var/folders/6g/6grtCwPMEf4sqHUPpy6xQG9ByHg/-Tmp-/heyongqiang/hive_2010-11-18_11-01-40_927_8797191922320768648/-mr-10000
 PREHOOK: query: explain select a.value from t1 a left semi join t3 b on (b.key = a.key and b.key < '15') sort by a.value
 PREHOOK: type: QUERY
 POSTHOOK: query: explain select a.value from t1 a left semi join t3 b on (b.key = a.key and b.key < '15') sort by a.value
@@ -568,7 +568,7 @@ STAGE PLANS:
   Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/tmp/liyintang/hive_2010-11-04_13-18-24_857_4689023765690259253/-mr-10002 
+        file:/var/folders/6g/6grtCwPMEf4sqHUPpy6xQG9ByHg/-Tmp-/heyongqiang/hive_2010-11-18_11-01-57_384_3089194844599355448/-mr-10002 
             Reduce Output Operator
               key expressions:
                     expr: _col0
@@ -596,12 +596,12 @@ PREHOOK: query: select a.value from t1 a left semi join t3 b on (b.key = a.key a
 PREHOOK: type: QUERY
 PREHOOK: Input: default@t1
 PREHOOK: Input: default@t3
-PREHOOK: Output: file:/tmp/liyintang/hive_2010-11-04_13-18-24_973_3041071756227440132/-mr-10000
+PREHOOK: Output: file:/var/folders/6g/6grtCwPMEf4sqHUPpy6xQG9ByHg/-Tmp-/heyongqiang/hive_2010-11-18_11-01-57_517_5261225666744367069/-mr-10000
 POSTHOOK: query: select a.value from t1 a left semi join t3 b on (b.key = a.key and b.key < '15') sort by a.value
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@t1
 POSTHOOK: Input: default@t3
-POSTHOOK: Output: file:/tmp/liyintang/hive_2010-11-04_13-18-24_973_3041071756227440132/-mr-10000
+POSTHOOK: Output: file:/var/folders/6g/6grtCwPMEf4sqHUPpy6xQG9ByHg/-Tmp-/heyongqiang/hive_2010-11-18_11-01-57_517_5261225666744367069/-mr-10000
 val_0
 val_0
 val_0
@@ -708,7 +708,7 @@ STAGE PLANS:
   Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/tmp/liyintang/hive_2010-11-04_13-18-34_061_8275163351633601557/-mr-10002 
+        file:/var/folders/6g/6grtCwPMEf4sqHUPpy6xQG9ByHg/-Tmp-/heyongqiang/hive_2010-11-18_11-02-15_938_7137978578832330282/-mr-10002 
             Reduce Output Operator
               key expressions:
                     expr: _col0
@@ -740,12 +740,12 @@ PREHOOK: query: select * from t1 a left semi join t2 b on a.key = b.key and b.va
 PREHOOK: type: QUERY
 PREHOOK: Input: default@t1
 PREHOOK: Input: default@t2
-PREHOOK: Output: file:/tmp/liyintang/hive_2010-11-04_13-18-34_179_4205035139034381615/-mr-10000
+PREHOOK: Output: file:/var/folders/6g/6grtCwPMEf4sqHUPpy6xQG9ByHg/-Tmp-/heyongqiang/hive_2010-11-18_11-02-16_057_519725218464853726/-mr-10000
 POSTHOOK: query: select * from t1 a left semi join t2 b on a.key = b.key and b.value < "val_10" sort by a.key, a.value
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@t1
 POSTHOOK: Input: default@t2
-POSTHOOK: Output: file:/tmp/liyintang/hive_2010-11-04_13-18-34_179_4205035139034381615/-mr-10000
+POSTHOOK: Output: file:/var/folders/6g/6grtCwPMEf4sqHUPpy6xQG9ByHg/-Tmp-/heyongqiang/hive_2010-11-18_11-02-16_057_519725218464853726/-mr-10000
 0	val_0
 0	val_0
 0	val_0
@@ -841,7 +841,7 @@ STAGE PLANS:
   Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/tmp/liyintang/hive_2010-11-04_13-18-43_183_3107199938637789566/-mr-10002 
+        file:/var/folders/6g/6grtCwPMEf4sqHUPpy6xQG9ByHg/-Tmp-/heyongqiang/hive_2010-11-18_11-02-32_044_1882268558166284283/-mr-10002 
             Reduce Output Operator
               key expressions:
                     expr: _col0
@@ -869,12 +869,12 @@ PREHOOK: query: select a.value from t1 a left semi join (select key from t3 wher
 PREHOOK: type: QUERY
 PREHOOK: Input: default@t1
 PREHOOK: Input: default@t3
-PREHOOK: Output: file:/tmp/liyintang/hive_2010-11-04_13-18-43_306_2053779749324913446/-mr-10000
+PREHOOK: Output: file:/var/folders/6g/6grtCwPMEf4sqHUPpy6xQG9ByHg/-Tmp-/heyongqiang/hive_2010-11-18_11-02-32_201_5180642771512887111/-mr-10000
 POSTHOOK: query: select a.value from t1 a left semi join (select key from t3 where key > 5) b on a.key = b.key sort by a.value
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@t1
 POSTHOOK: Input: default@t3
-POSTHOOK: Output: file:/tmp/liyintang/hive_2010-11-04_13-18-43_306_2053779749324913446/-mr-10000
+POSTHOOK: Output: file:/var/folders/6g/6grtCwPMEf4sqHUPpy6xQG9ByHg/-Tmp-/heyongqiang/hive_2010-11-18_11-02-32_201_5180642771512887111/-mr-10000
 val_10
 val_8
 val_9
@@ -980,7 +980,7 @@ STAGE PLANS:
   Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/tmp/liyintang/hive_2010-11-04_13-18-52_335_849441347171062507/-mr-10002 
+        file:/var/folders/6g/6grtCwPMEf4sqHUPpy6xQG9ByHg/-Tmp-/heyongqiang/hive_2010-11-18_11-02-47_618_6081419597528468690/-mr-10002 
             Reduce Output Operator
               key expressions:
                     expr: _col0
@@ -1008,12 +1008,12 @@ PREHOOK: query: select a.value from t1 a left semi join (select key , value from
 PREHOOK: type: QUERY
 PREHOOK: Input: default@t1
 PREHOOK: Input: default@t2
-PREHOOK: Output: file:/tmp/liyintang/hive_2010-11-04_13-18-52_463_737069354382102340/-mr-10000
+PREHOOK: Output: file:/var/folders/6g/6grtCwPMEf4sqHUPpy6xQG9ByHg/-Tmp-/heyongqiang/hive_2010-11-18_11-02-48_046_789670215385615891/-mr-10000
 POSTHOOK: query: select a.value from t1 a left semi join (select key , value from t2 where key > 5) b on a.key = b.key and b.value <= 'val_20' sort by a.value
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@t1
 POSTHOOK: Input: default@t2
-POSTHOOK: Output: file:/tmp/liyintang/hive_2010-11-04_13-18-52_463_737069354382102340/-mr-10000
+POSTHOOK: Output: file:/var/folders/6g/6grtCwPMEf4sqHUPpy6xQG9ByHg/-Tmp-/heyongqiang/hive_2010-11-18_11-02-48_046_789670215385615891/-mr-10000
 PREHOOK: query: explain select * from t2 a left semi join (select key , value from t1 where key > 2) b on a.key = b.key sort by a.key, a.value
 PREHOOK: type: QUERY
 POSTHOOK: query: explain select * from t2 a left semi join (select key , value from t1 where key > 2) b on a.key = b.key sort by a.key, a.value
@@ -1110,7 +1110,7 @@ STAGE PLANS:
   Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/tmp/liyintang/hive_2010-11-04_13-19-00_301_5958832649298868830/-mr-10002 
+        file:/var/folders/6g/6grtCwPMEf4sqHUPpy6xQG9ByHg/-Tmp-/heyongqiang/hive_2010-11-18_11-03-05_112_1019830060466266544/-mr-10002 
             Reduce Output Operator
               key expressions:
                     expr: _col0
@@ -1142,12 +1142,12 @@ PREHOOK: query: select * from t2 a left semi join (select key , value from t1 wh
 PREHOOK: type: QUERY
 PREHOOK: Input: default@t1
 PREHOOK: Input: default@t2
-PREHOOK: Output: file:/tmp/liyintang/hive_2010-11-04_13-19-00_424_4463918460829143379/-mr-10000
+PREHOOK: Output: file:/var/folders/6g/6grtCwPMEf4sqHUPpy6xQG9ByHg/-Tmp-/heyongqiang/hive_2010-11-18_11-03-05_322_221151979084285496/-mr-10000
 POSTHOOK: query: select * from t2 a left semi join (select key , value from t1 where key > 2) b on a.key = b.key sort by a.key, a.value
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@t1
 POSTHOOK: Input: default@t2
-POSTHOOK: Output: file:/tmp/liyintang/hive_2010-11-04_13-19-00_424_4463918460829143379/-mr-10000
+POSTHOOK: Output: file:/var/folders/6g/6grtCwPMEf4sqHUPpy6xQG9ByHg/-Tmp-/heyongqiang/hive_2010-11-18_11-03-05_322_221151979084285496/-mr-10000
 4	val_2
 8	val_4
 10	val_5
@@ -1229,7 +1229,7 @@ STAGE PLANS:
   Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/tmp/liyintang/hive_2010-11-04_13-19-09_365_1316122738460523098/-mr-10002 
+        file:/var/folders/6g/6grtCwPMEf4sqHUPpy6xQG9ByHg/-Tmp-/heyongqiang/hive_2010-11-18_11-03-20_944_438303615610048165/-mr-10002 
           Select Operator
             expressions:
                   expr: _col0
@@ -1267,12 +1267,12 @@ PREHOOK: query: select /*+ mapjoin(b) */ a.key from t3 a left semi join t1 b on 
 PREHOOK: type: QUERY
 PREHOOK: Input: default@t1
 PREHOOK: Input: default@t3
-PREHOOK: Output: file:/tmp/liyintang/hive_2010-11-04_13-19-09_480_7870074811327558689/-mr-10000
+PREHOOK: Output: file:/var/folders/6g/6grtCwPMEf4sqHUPpy6xQG9ByHg/-Tmp-/heyongqiang/hive_2010-11-18_11-03-21_127_8134172271972764419/-mr-10000
 POSTHOOK: query: select /*+ mapjoin(b) */ a.key from t3 a left semi join t1 b on a.key = b.key sort by a.key
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@t1
 POSTHOOK: Input: default@t3
-POSTHOOK: Output: file:/tmp/liyintang/hive_2010-11-04_13-19-09_480_7870074811327558689/-mr-10000
+POSTHOOK: Output: file:/var/folders/6g/6grtCwPMEf4sqHUPpy6xQG9ByHg/-Tmp-/heyongqiang/hive_2010-11-18_11-03-21_127_8134172271972764419/-mr-10000
 0
 0
 0
@@ -1375,7 +1375,7 @@ STAGE PLANS:
   Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/tmp/liyintang/hive_2010-11-04_13-19-19_175_5090290266309302820/-mr-10002 
+        file:/var/folders/6g/6grtCwPMEf4sqHUPpy6xQG9ByHg/-Tmp-/heyongqiang/hive_2010-11-18_11-03-43_629_5752544729482637710/-mr-10002 
             Reduce Output Operator
               key expressions:
                     expr: _col0
@@ -1407,12 +1407,12 @@ PREHOOK: query: select * from t1 a left semi join t2 b on a.key = 2*b.key sort b
 PREHOOK: type: QUERY
 PREHOOK: Input: default@t1
 PREHOOK: Input: default@t2
-PREHOOK: Output: file:/tmp/liyintang/hive_2010-11-04_13-19-19_289_7283573667957611898/-mr-10000
+PREHOOK: Output: file:/var/folders/6g/6grtCwPMEf4sqHUPpy6xQG9ByHg/-Tmp-/heyongqiang/hive_2010-11-18_11-03-43_779_3560439419287948511/-mr-10000
 POSTHOOK: query: select * from t1 a left semi join t2 b on a.key = 2*b.key sort by a.key, a.value
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@t1
 POSTHOOK: Input: default@t2
-POSTHOOK: Output: file:/tmp/liyintang/hive_2010-11-04_13-19-19_289_7283573667957611898/-mr-10000
+POSTHOOK: Output: file:/var/folders/6g/6grtCwPMEf4sqHUPpy6xQG9ByHg/-Tmp-/heyongqiang/hive_2010-11-18_11-03-43_779_3560439419287948511/-mr-10000
 0	val_0
 0	val_0
 0	val_0
@@ -1523,7 +1523,7 @@ STAGE PLANS:
   Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/tmp/liyintang/hive_2010-11-04_13-19-28_320_7044231815158137622/-mr-10002 
+        file:/var/folders/6g/6grtCwPMEf4sqHUPpy6xQG9ByHg/-Tmp-/heyongqiang/hive_2010-11-18_11-04-00_648_373535142060359448/-mr-10002 
             Reduce Output Operator
               key expressions:
                     expr: _col0
@@ -1560,13 +1560,13 @@ PREHOOK: type: QUERY
 PREHOOK: Input: default@t1
 PREHOOK: Input: default@t2
 PREHOOK: Input: default@t3
-PREHOOK: Output: file:/tmp/liyintang/hive_2010-11-04_13-19-28_450_6078674943204864805/-mr-10000
+PREHOOK: Output: file:/var/folders/6g/6grtCwPMEf4sqHUPpy6xQG9ByHg/-Tmp-/heyongqiang/hive_2010-11-18_11-04-00_983_7977499042899650897/-mr-10000
 POSTHOOK: query: select * from t1 a join t2 b on a.key = b.key left semi join t3 c on b.key = c.key sort by a.key, a.value
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@t1
 POSTHOOK: Input: default@t2
 POSTHOOK: Input: default@t3
-POSTHOOK: Output: file:/tmp/liyintang/hive_2010-11-04_13-19-28_450_6078674943204864805/-mr-10000
+POSTHOOK: Output: file:/var/folders/6g/6grtCwPMEf4sqHUPpy6xQG9ByHg/-Tmp-/heyongqiang/hive_2010-11-18_11-04-00_983_7977499042899650897/-mr-10000
 0	val_0	0	val_0
 0	val_0	0	val_0
 0	val_0	0	val_0
@@ -1676,7 +1676,7 @@ STAGE PLANS:
   Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/tmp/liyintang/hive_2010-11-04_13-19-38_052_8721634945636524946/-mr-10002 
+        file:/var/folders/6g/6grtCwPMEf4sqHUPpy6xQG9ByHg/-Tmp-/heyongqiang/hive_2010-11-18_11-04-17_051_7474953441543543987/-mr-10002 
             Reduce Output Operator
               key expressions:
                     expr: _col0
@@ -1708,12 +1708,12 @@ PREHOOK: query: select * from t3 a left semi join t1 b on a.key = b.key and a.va
 PREHOOK: type: QUERY
 PREHOOK: Input: default@t1
 PREHOOK: Input: default@t3
-PREHOOK: Output: file:/tmp/liyintang/hive_2010-11-04_13-19-38_174_5762672611483777652/-mr-10000
+PREHOOK: Output: file:/var/folders/6g/6grtCwPMEf4sqHUPpy6xQG9ByHg/-Tmp-/heyongqiang/hive_2010-11-18_11-04-17_231_2179425812915281444/-mr-10000
 POSTHOOK: query: select * from t3 a left semi join t1 b on a.key = b.key and a.value=b.value sort by a.key, a.value
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@t1
 POSTHOOK: Input: default@t3
-POSTHOOK: Output: file:/tmp/liyintang/hive_2010-11-04_13-19-38_174_5762672611483777652/-mr-10000
+POSTHOOK: Output: file:/var/folders/6g/6grtCwPMEf4sqHUPpy6xQG9ByHg/-Tmp-/heyongqiang/hive_2010-11-18_11-04-17_231_2179425812915281444/-mr-10000
 0	val_0
 0	val_0
 0	val_0
@@ -1838,7 +1838,7 @@ STAGE PLANS:
   Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/tmp/liyintang/hive_2010-11-04_13-19-49_190_4624457787442565360/-mr-10002 
+        file:/var/folders/6g/6grtCwPMEf4sqHUPpy6xQG9ByHg/-Tmp-/heyongqiang/hive_2010-11-18_11-04-33_573_6260564714806927759/-mr-10002 
           Select Operator
             expressions:
                   expr: _col0
@@ -1877,13 +1877,13 @@ PREHOOK: type: QUERY
 PREHOOK: Input: default@t1
 PREHOOK: Input: default@t2
 PREHOOK: Input: default@t3
-PREHOOK: Output: file:/tmp/liyintang/hive_2010-11-04_13-19-49_324_9174162734156458916/-mr-10000
+PREHOOK: Output: file:/var/folders/6g/6grtCwPMEf4sqHUPpy6xQG9ByHg/-Tmp-/heyongqiang/hive_2010-11-18_11-04-33_826_3229491168132326963/-mr-10000
 POSTHOOK: query: select /*+ mapjoin(b, c) */ a.key from t3 a left semi join t1 b on a.key = b.key left semi join t2 c on a.key = c.key sort by a.key
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@t1
 POSTHOOK: Input: default@t2
 POSTHOOK: Input: default@t3
-POSTHOOK: Output: file:/tmp/liyintang/hive_2010-11-04_13-19-49_324_9174162734156458916/-mr-10000
+POSTHOOK: Output: file:/var/folders/6g/6grtCwPMEf4sqHUPpy6xQG9ByHg/-Tmp-/heyongqiang/hive_2010-11-18_11-04-33_826_3229491168132326963/-mr-10000
 0
 0
 0
@@ -1991,7 +1991,7 @@ STAGE PLANS:
   Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/tmp/liyintang/hive_2010-11-04_13-19-59_535_8715349469270136515/-mr-10002 
+        file:/var/folders/6g/6grtCwPMEf4sqHUPpy6xQG9ByHg/-Tmp-/heyongqiang/hive_2010-11-18_11-04-55_240_4472382832724150377/-mr-10002 
             Reduce Output Operator
               key expressions:
                     expr: _col0
@@ -2020,13 +2020,13 @@ PREHOOK: type: QUERY
 PREHOOK: Input: default@t1
 PREHOOK: Input: default@t2
 PREHOOK: Input: default@t3
-PREHOOK: Output: file:/tmp/liyintang/hive_2010-11-04_13-19-59_667_8557238197192129755/-mr-10000
+PREHOOK: Output: file:/var/folders/6g/6grtCwPMEf4sqHUPpy6xQG9ByHg/-Tmp-/heyongqiang/hive_2010-11-18_11-04-55_429_8454721176911576485/-mr-10000
 POSTHOOK: query: select a.key from t3 a left outer join t1 b on a.key = b.key left semi join t2 c on b.key = c.key sort by a.key
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@t1
 POSTHOOK: Input: default@t2
 POSTHOOK: Input: default@t3
-POSTHOOK: Output: file:/tmp/liyintang/hive_2010-11-04_13-19-59_667_8557238197192129755/-mr-10000
+POSTHOOK: Output: file:/var/folders/6g/6grtCwPMEf4sqHUPpy6xQG9ByHg/-Tmp-/heyongqiang/hive_2010-11-18_11-04-55_429_8454721176911576485/-mr-10000
 0
 0
 0
@@ -2146,7 +2146,7 @@ STAGE PLANS:
   Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/tmp/liyintang/hive_2010-11-04_13-20-09_255_2715293241143785335/-mr-10002 
+        file:/var/folders/6g/6grtCwPMEf4sqHUPpy6xQG9ByHg/-Tmp-/heyongqiang/hive_2010-11-18_11-05-12_866_4359353511062609004/-mr-10002 
             Reduce Output Operator
               key expressions:
                     expr: _col0
@@ -2175,13 +2175,13 @@ PREHOOK: type: QUERY
 PREHOOK: Input: default@t1
 PREHOOK: Input: default@t2
 PREHOOK: Input: default@t3
-PREHOOK: Output: file:/tmp/liyintang/hive_2010-11-04_13-20-09_383_4275977555046345305/-mr-10000
+PREHOOK: Output: file:/var/folders/6g/6grtCwPMEf4sqHUPpy6xQG9ByHg/-Tmp-/heyongqiang/hive_2010-11-18_11-05-13_034_2999962254990000638/-mr-10000
 POSTHOOK: query: select a.key from t1 a right outer join t3 b on a.key = b.key left semi join t2 c on b.key = c.key sort by a.key
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@t1
 POSTHOOK: Input: default@t2
 POSTHOOK: Input: default@t3
-POSTHOOK: Output: file:/tmp/liyintang/hive_2010-11-04_13-20-09_383_4275977555046345305/-mr-10000
+POSTHOOK: Output: file:/var/folders/6g/6grtCwPMEf4sqHUPpy6xQG9ByHg/-Tmp-/heyongqiang/hive_2010-11-18_11-05-13_034_2999962254990000638/-mr-10000
 NULL
 NULL
 NULL
@@ -2304,7 +2304,7 @@ STAGE PLANS:
   Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/tmp/liyintang/hive_2010-11-04_13-20-19_268_5618148586891473846/-mr-10002 
+        file:/var/folders/6g/6grtCwPMEf4sqHUPpy6xQG9ByHg/-Tmp-/heyongqiang/hive_2010-11-18_11-05-27_311_4743482924605624788/-mr-10002 
             Reduce Output Operator
               key expressions:
                     expr: _col0
@@ -2333,13 +2333,13 @@ PREHOOK: type: QUERY
 PREHOOK: Input: default@t1
 PREHOOK: Input: default@t2
 PREHOOK: Input: default@t3
-PREHOOK: Output: file:/tmp/liyintang/hive_2010-11-04_13-20-19_400_3587882397101268241/-mr-10000
+PREHOOK: Output: file:/var/folders/6g/6grtCwPMEf4sqHUPpy6xQG9ByHg/-Tmp-/heyongqiang/hive_2010-11-18_11-05-27_421_7482213301780796952/-mr-10000
 POSTHOOK: query: select a.key from t1 a full outer join t3 b on a.key = b.key left semi join t2 c on b.key = c.key sort by a.key
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@t1
 POSTHOOK: Input: default@t2
 POSTHOOK: Input: default@t3
-POSTHOOK: Output: file:/tmp/liyintang/hive_2010-11-04_13-20-19_400_3587882397101268241/-mr-10000
+POSTHOOK: Output: file:/var/folders/6g/6grtCwPMEf4sqHUPpy6xQG9ByHg/-Tmp-/heyongqiang/hive_2010-11-18_11-05-27_421_7482213301780796952/-mr-10000
 NULL
 NULL
 NULL
@@ -2462,7 +2462,7 @@ STAGE PLANS:
   Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/tmp/liyintang/hive_2010-11-04_13-20-28_728_1492881717279570087/-mr-10002 
+        file:/var/folders/6g/6grtCwPMEf4sqHUPpy6xQG9ByHg/-Tmp-/heyongqiang/hive_2010-11-18_11-05-43_118_4112077673076844815/-mr-10002 
             Reduce Output Operator
               key expressions:
                     expr: _col0
@@ -2491,13 +2491,13 @@ PREHOOK: type: QUERY
 PREHOOK: Input: default@t1
 PREHOOK: Input: default@t2
 PREHOOK: Input: default@t3
-PREHOOK: Output: file:/tmp/liyintang/hive_2010-11-04_13-20-28_856_8757358207361872372/-mr-10000
+PREHOOK: Output: file:/var/folders/6g/6grtCwPMEf4sqHUPpy6xQG9ByHg/-Tmp-/heyongqiang/hive_2010-11-18_11-05-43_554_6913778118057933477/-mr-10000
 POSTHOOK: query: select a.key from t3 a left semi join t2 b on a.key = b.key left outer join t1 c on a.key = c.key sort by a.key
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@t1
 POSTHOOK: Input: default@t2
 POSTHOOK: Input: default@t3
-POSTHOOK: Output: file:/tmp/liyintang/hive_2010-11-04_13-20-28_856_8757358207361872372/-mr-10000
+POSTHOOK: Output: file:/var/folders/6g/6grtCwPMEf4sqHUPpy6xQG9ByHg/-Tmp-/heyongqiang/hive_2010-11-18_11-05-43_554_6913778118057933477/-mr-10000
 0
 0
 0
@@ -2620,7 +2620,7 @@ STAGE PLANS:
   Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/tmp/liyintang/hive_2010-11-04_13-20-38_076_4685193258029073996/-mr-10002 
+        file:/var/folders/6g/6grtCwPMEf4sqHUPpy6xQG9ByHg/-Tmp-/heyongqiang/hive_2010-11-18_11-05-59_032_4567135017384415264/-mr-10002 
             Reduce Output Operator
               key expressions:
                     expr: _col0
@@ -2649,13 +2649,13 @@ PREHOOK: type: QUERY
 PREHOOK: Input: default@t1
 PREHOOK: Input: default@t2
 PREHOOK: Input: default@t3
-PREHOOK: Output: file:/tmp/liyintang/hive_2010-11-04_13-20-38_205_3988929412565665845/-mr-10000
+PREHOOK: Output: file:/var/folders/6g/6grtCwPMEf4sqHUPpy6xQG9ByHg/-Tmp-/heyongqiang/hive_2010-11-18_11-05-59_146_932092442279199935/-mr-10000
 POSTHOOK: query: select a.key from t3 a left semi join t2 b on a.key = b.key right outer join t1 c on a.key = c.key sort by a.key
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@t1
 POSTHOOK: Input: default@t2
 POSTHOOK: Input: default@t3
-POSTHOOK: Output: file:/tmp/liyintang/hive_2010-11-04_13-20-38_205_3988929412565665845/-mr-10000
+POSTHOOK: Output: file:/var/folders/6g/6grtCwPMEf4sqHUPpy6xQG9ByHg/-Tmp-/heyongqiang/hive_2010-11-18_11-05-59_146_932092442279199935/-mr-10000
 NULL
 NULL
 NULL
@@ -2780,7 +2780,7 @@ STAGE PLANS:
   Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/tmp/liyintang/hive_2010-11-04_13-20-47_590_2999113315834306029/-mr-10002 
+        file:/var/folders/6g/6grtCwPMEf4sqHUPpy6xQG9ByHg/-Tmp-/heyongqiang/hive_2010-11-18_11-06-15_877_648799003197473512/-mr-10002 
             Reduce Output Operator
               key expressions:
                     expr: _col0
@@ -2809,13 +2809,13 @@ PREHOOK: type: QUERY
 PREHOOK: Input: default@t1
 PREHOOK: Input: default@t2
 PREHOOK: Input: default@t3
-PREHOOK: Output: file:/tmp/liyintang/hive_2010-11-04_13-20-47_722_4677693091558572786/-mr-10000
+PREHOOK: Output: file:/var/folders/6g/6grtCwPMEf4sqHUPpy6xQG9ByHg/-Tmp-/heyongqiang/hive_2010-11-18_11-06-15_976_6198373402363644273/-mr-10000
 POSTHOOK: query: select a.key from t3 a left semi join t1 b on a.key = b.key full outer join t2 c on a.key = c.key sort by a.key
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@t1
 POSTHOOK: Input: default@t2
 POSTHOOK: Input: default@t3
-POSTHOOK: Output: file:/tmp/liyintang/hive_2010-11-04_13-20-47_722_4677693091558572786/-mr-10000
+POSTHOOK: Output: file:/var/folders/6g/6grtCwPMEf4sqHUPpy6xQG9ByHg/-Tmp-/heyongqiang/hive_2010-11-18_11-06-15_976_6198373402363644273/-mr-10000
 NULL
 NULL
 NULL
@@ -2984,7 +2984,7 @@ STAGE PLANS:
   Stage: Stage-3
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/tmp/liyintang/hive_2010-11-04_13-20-57_841_8595738346509621581/-mr-10003 
+        file:/var/folders/6g/6grtCwPMEf4sqHUPpy6xQG9ByHg/-Tmp-/heyongqiang/hive_2010-11-18_11-06-33_848_5227894741694043284/-mr-10003 
             Reduce Output Operator
               key expressions:
                     expr: _col0
@@ -3013,13 +3013,13 @@ PREHOOK: type: QUERY
 PREHOOK: Input: default@t1
 PREHOOK: Input: default@t2
 PREHOOK: Input: default@t3
-PREHOOK: Output: file:/tmp/liyintang/hive_2010-11-04_13-20-57_976_1019112090965524872/-mr-10000
+PREHOOK: Output: file:/var/folders/6g/6grtCwPMEf4sqHUPpy6xQG9ByHg/-Tmp-/heyongqiang/hive_2010-11-18_11-06-34_080_237734989555410900/-mr-10000
 POSTHOOK: query: select a.key from t3 a left semi join t2 b on a.key = b.key left outer join t1 c on a.value = c.value sort by a.key
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@t1
 POSTHOOK: Input: default@t2
 POSTHOOK: Input: default@t3
-POSTHOOK: Output: file:/tmp/liyintang/hive_2010-11-04_13-20-57_976_1019112090965524872/-mr-10000
+POSTHOOK: Output: file:/var/folders/6g/6grtCwPMEf4sqHUPpy6xQG9ByHg/-Tmp-/heyongqiang/hive_2010-11-18_11-06-34_080_237734989555410900/-mr-10000
 0
 0
 0

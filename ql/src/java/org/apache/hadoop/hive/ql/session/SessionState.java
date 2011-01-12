@@ -40,6 +40,11 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.history.HiveHistory;
+import org.apache.hadoop.hive.ql.metadata.HiveException;
+import org.apache.hadoop.hive.ql.metadata.HiveUtils;
+import org.apache.hadoop.hive.ql.plan.HiveOperation;
+import org.apache.hadoop.hive.ql.security.HiveAuthenticationProvider;
+import org.apache.hadoop.hive.ql.security.authorization.HiveAuthorizationProvider;
 import org.apache.hadoop.hive.ql.util.DosToUnix;
 import org.apache.log4j.LogManager;
 import org.apache.log4j.PropertyConfigurator;
@@ -77,8 +82,14 @@ public class SessionState {
   /**
    * type of the command.
    */
-  private String commandType;
-
+  private HiveOperation commandType;
+  
+  private HiveAuthorizationProvider authorizer;
+  
+  private HiveAuthenticationProvider authenticator;
+  
+  private CreateTableAutomaticGrant createTableGrants;
+  
   /**
    * Lineage state.
    */
@@ -150,11 +161,16 @@ public class SessionState {
 
   /**
    * start a new session and set it to current session.
+   * @throws HiveException 
    */
-  public static SessionState start(HiveConf conf) {
+  public static SessionState start(HiveConf conf) throws HiveException {
     SessionState ss = new SessionState(conf);
     ss.getConf().setVar(HiveConf.ConfVars.HIVESESSIONID, makeSessionId());
     ss.hiveHist = new HiveHistory(ss);
+    ss.authenticator = HiveUtils.getAuthenticator(conf);
+    ss.authorizer = HiveUtils.getAuthorizeProviderManager(
+        conf, ss.authenticator);
+    ss.createTableGrants = CreateTableAutomaticGrant.create(conf);
     tss.set(ss);
     return (ss);
   }
@@ -163,6 +179,7 @@ public class SessionState {
    * set current session to existing session object if a thread is running
    * multiple sessions - it must call this method with the new session object
    * when switching from one session to another.
+   * @throws HiveException 
    */
   public static SessionState start(SessionState startSs) {
 
@@ -176,6 +193,18 @@ public class SessionState {
     if (startSs.hiveHist == null) {
       startSs.hiveHist = new HiveHistory(startSs);
     }
+    
+    try {
+      startSs.authenticator = HiveUtils.getAuthenticator(startSs
+          .getConf());
+      startSs.authorizer = HiveUtils.getAuthorizeProviderManager(startSs
+          .getConf(), startSs.authenticator);
+      startSs.createTableGrants = CreateTableAutomaticGrant.create(startSs
+          .getConf());
+    } catch (HiveException e) {
+      throw new RuntimeException(e);
+    }
+    
     return startSs;
   }
 
@@ -539,10 +568,41 @@ public class SessionState {
   }
 
   public String getCommandType() {
+    if (commandType == null) {
+      return null;
+    }
+    return commandType.getOperationName();
+  }
+  
+  public HiveOperation getHiveOperation() {
     return commandType;
   }
 
-  public void setCommandType(String commandType) {
+  public void setCommandType(HiveOperation commandType) {
     this.commandType = commandType;
+  }
+  
+  public HiveAuthorizationProvider getAuthorizer() {
+    return authorizer;
+  }
+
+  public void setAuthorizer(HiveAuthorizationProvider authorizer) {
+    this.authorizer = authorizer;
+  }
+
+  public HiveAuthenticationProvider getAuthenticator() {
+    return authenticator;
+  }
+
+  public void setAuthenticator(HiveAuthenticationProvider authenticator) {
+    this.authenticator = authenticator;
+  }
+  
+  public CreateTableAutomaticGrant getCreateTableGrants() {
+    return createTableGrants;
+  }
+
+  public void setCreateTableGrants(CreateTableAutomaticGrant createTableGrants) {
+    this.createTableGrants = createTableGrants;
   }
 }

@@ -1,6 +1,6 @@
-PREHOOK: query: create table apachelog(ipaddress STRING,identd STRING,user STRING,finishtime STRING,requestline string,returncode INT,size INT) ROW FORMAT SERDE 'org.apache.hadoop.hive.serde2.dynamic_type.DynamicSerDe' WITH SERDEPROPERTIES (  'serialization.format'= 'org.apache.hadoop.hive.serde2.thrift.TCTLSeparatedProtocol',  'quote.delim'= '("|\\[|\\])',  'field.delim'=' ',  'serialization.null.format'='-'  ) STORED AS TEXTFILE
+PREHOOK: query: create table apachelog(ipaddress STRING,identd STRING,user_name STRING,finishtime STRING,requestline string,returncode INT,size INT) ROW FORMAT SERDE 'org.apache.hadoop.hive.serde2.dynamic_type.DynamicSerDe' WITH SERDEPROPERTIES (  'serialization.format'= 'org.apache.hadoop.hive.serde2.thrift.TCTLSeparatedProtocol',  'quote.delim'= '("|\\[|\\])',  'field.delim'=' ',  'serialization.null.format'='-'  ) STORED AS TEXTFILE
 PREHOOK: type: CREATETABLE
-POSTHOOK: query: create table apachelog(ipaddress STRING,identd STRING,user STRING,finishtime STRING,requestline string,returncode INT,size INT) ROW FORMAT SERDE 'org.apache.hadoop.hive.serde2.dynamic_type.DynamicSerDe' WITH SERDEPROPERTIES (  'serialization.format'= 'org.apache.hadoop.hive.serde2.thrift.TCTLSeparatedProtocol',  'quote.delim'= '("|\\[|\\])',  'field.delim'=' ',  'serialization.null.format'='-'  ) STORED AS TEXTFILE
+POSTHOOK: query: create table apachelog(ipaddress STRING,identd STRING,user_name STRING,finishtime STRING,requestline string,returncode INT,size INT) ROW FORMAT SERDE 'org.apache.hadoop.hive.serde2.dynamic_type.DynamicSerDe' WITH SERDEPROPERTIES (  'serialization.format'= 'org.apache.hadoop.hive.serde2.thrift.TCTLSeparatedProtocol',  'quote.delim'= '("|\\[|\\])',  'field.delim'=' ',  'serialization.null.format'='-'  ) STORED AS TEXTFILE
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: default@apachelog
 PREHOOK: query: LOAD DATA LOCAL INPATH '../data/files/apache.access.log' INTO TABLE apachelog
@@ -11,9 +11,9 @@ POSTHOOK: Output: default@apachelog
 PREHOOK: query: SELECT a.* FROM apachelog a
 PREHOOK: type: QUERY
 PREHOOK: Input: default@apachelog
-PREHOOK: Output: file:/tmp/jssarma/hive_2010-07-21_11-26-57_493_8424717254986801325/10000
+PREHOOK: Output: file:/var/folders/6g/6grtCwPMEf4sqHUPpy6xQG9ByHg/-Tmp-/heyongqiang/hive_2010-11-18_13-03-09_967_1761875918055572728/-mr-10000
 POSTHOOK: query: SELECT a.* FROM apachelog a
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@apachelog
-POSTHOOK: Output: file:/tmp/jssarma/hive_2010-07-21_11-26-57_493_8424717254986801325/10000
+POSTHOOK: Output: file:/var/folders/6g/6grtCwPMEf4sqHUPpy6xQG9ByHg/-Tmp-/heyongqiang/hive_2010-11-18_13-03-09_967_1761875918055572728/-mr-10000
 127.0.0.1	NULL	frank	10/Oct/2000:13:55:36 -0700	GET /apache_pb.gif HTTP/1.0	200	2326

@@ -7,6 +7,24 @@
 require 'fb303_types'
 
 
+module HiveObjectType
+  GLOBAL = 1
+  DATABASE = 2
+  TABLE = 3
+  PARTITION = 4
+  COLUMN = 5
+  VALUE_MAP = {1 => "GLOBAL", 2 => "DATABASE", 3 => "TABLE", 4 => "PARTITION", 5 => "COLUMN"}
+  VALID_VALUES = Set.new([GLOBAL, DATABASE, TABLE, PARTITION, COLUMN]).freeze
+end
+
+module PrincipalType
+  USER = 1
+  ROLE = 2
+  GROUP = 3
+  VALUE_MAP = {1 => "USER", 2 => "ROLE", 3 => "GROUP"}
+  VALID_VALUES = Set.new([USER, ROLE, GROUP]).freeze
+end
+
 class Version
   include ::Thrift::Struct, ::Thrift::Struct_Union
   VERSION = 1
@@ -67,18 +85,155 @@ class Type
   ::Thrift::Struct.generate_accessors self
 end
 
+class HiveObjectRef
+  include ::Thrift::Struct, ::Thrift::Struct_Union
+  OBJECTTYPE = 1
+  DBNAME = 2
+  OBJECTNAME = 3
+  PARTVALUES = 4
+  COLUMNNAME = 5
+
+  FIELDS = {
+    OBJECTTYPE => {:type => ::Thrift::Types::I32, :name => 'objectType', :enum_class => HiveObjectType},
+    DBNAME => {:type => ::Thrift::Types::STRING, :name => 'dbName'},
+    OBJECTNAME => {:type => ::Thrift::Types::STRING, :name => 'objectName'},
+    PARTVALUES => {:type => ::Thrift::Types::LIST, :name => 'partValues', :element => {:type => ::Thrift::Types::STRING}},
+    COLUMNNAME => {:type => ::Thrift::Types::STRING, :name => 'columnName'}
+  }
+
+  def struct_fields; FIELDS; end
+
+  def validate
+    unless @objectType.nil? || HiveObjectType::VALID_VALUES.include?(@objectType)
+      raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Invalid value of field objectType!')
+    end
+  end
+
+  ::Thrift::Struct.generate_accessors self
+end
+
+class PrivilegeGrantInfo
+  include ::Thrift::Struct, ::Thrift::Struct_Union
+  PRIVILEGE = 1
+  CREATETIME = 2
+  GRANTOR = 3
+  GRANTORTYPE = 4
+  GRANTOPTION = 5
+
+  FIELDS = {
+    PRIVILEGE => {:type => ::Thrift::Types::STRING, :name => 'privilege'},
+    CREATETIME => {:type => ::Thrift::Types::I32, :name => 'createTime'},
+    GRANTOR => {:type => ::Thrift::Types::STRING, :name => 'grantor'},
+    GRANTORTYPE => {:type => ::Thrift::Types::I32, :name => 'grantorType', :enum_class => PrincipalType},
+    GRANTOPTION => {:type => ::Thrift::Types::BOOL, :name => 'grantOption'}
+  }
+
+  def struct_fields; FIELDS; end
+
+  def validate
+    unless @grantorType.nil? || PrincipalType::VALID_VALUES.include?(@grantorType)
+      raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Invalid value of field grantorType!')
+    end
+  end
+
+  ::Thrift::Struct.generate_accessors self
+end
+
+class HiveObjectPrivilege
+  include ::Thrift::Struct, ::Thrift::Struct_Union
+  HIVEOBJECT = 1
+  PRINCIPALNAME = 2
+  PRINCIPALTYPE = 3
+  GRANTINFO = 4
+
+  FIELDS = {
+    HIVEOBJECT => {:type => ::Thrift::Types::STRUCT, :name => 'hiveObject', :class => HiveObjectRef},
+    PRINCIPALNAME => {:type => ::Thrift::Types::STRING, :name => 'principalName'},
+    PRINCIPALTYPE => {:type => ::Thrift::Types::I32, :name => 'principalType', :enum_class => PrincipalType},
+    GRANTINFO => {:type => ::Thrift::Types::STRUCT, :name => 'grantInfo', :class => PrivilegeGrantInfo}
+  }
+
+  def struct_fields; FIELDS; end
+
+  def validate
+    unless @principalType.nil? || PrincipalType::VALID_VALUES.include?(@principalType)
+      raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Invalid value of field principalType!')
+    end
+  end
+
+  ::Thrift::Struct.generate_accessors self
+end
+
+class PrivilegeBag
+  include ::Thrift::Struct, ::Thrift::Struct_Union
+  PRIVILEGES = 1
+
+  FIELDS = {
+    PRIVILEGES => {:type => ::Thrift::Types::LIST, :name => 'privileges', :element => {:type => ::Thrift::Types::STRUCT, :class => HiveObjectPrivilege}}
+  }
+
+  def struct_fields; FIELDS; end
+
+  def validate
+  end
+
+  ::Thrift::Struct.generate_accessors self
+end
+
+class PrincipalPrivilegeSet
+  include ::Thrift::Struct, ::Thrift::Struct_Union
+  USERPRIVILEGES = 1
+  GROUPPRIVILEGES = 2
+  ROLEPRIVILEGES = 3
+
+  FIELDS = {
+    USERPRIVILEGES => {:type => ::Thrift::Types::MAP, :name => 'userPrivileges', :key => {:type => ::Thrift::Types::STRING}, :value => {:type => ::Thrift::Types::LIST, :element => {:type => ::Thrift::Types::STRUCT, :class => PrivilegeGrantInfo}}},
+    GROUPPRIVILEGES => {:type => ::Thrift::Types::MAP, :name => 'groupPrivileges', :key => {:type => ::Thrift::Types::STRING}, :value => {:type => ::Thrift::Types::LIST, :element => {:type => ::Thrift::Types::STRUCT, :class => PrivilegeGrantInfo}}},
+    ROLEPRIVILEGES => {:type => ::Thrift::Types::MAP, :name => 'rolePrivileges', :key => {:type => ::Thrift::Types::STRING}, :value => {:type => ::Thrift::Types::LIST, :element => {:type => ::Thrift::Types::STRUCT, :class => PrivilegeGrantInfo}}}
+  }
+
+  def struct_fields; FIELDS; end
+
+  def validate
+  end
+
+  ::Thrift::Struct.generate_accessors self
+end
+
+class Role
+  include ::Thrift::Struct, ::Thrift::Struct_Union
+  ROLENAME = 1
+  CREATETIME = 2
+  OWNERNAME = 3
+
+  FIELDS = {
+    ROLENAME => {:type => ::Thrift::Types::STRING, :name => 'roleName'},
+    CREATETIME => {:type => ::Thrift::Types::I32, :name => 'createTime'},
+    OWNERNAME => {:type => ::Thrift::Types::STRING, :name => 'ownerName'}
+  }
+
+  def struct_fields; FIELDS; end
+
+  def validate
+  end
+
+  ::Thrift::Struct.generate_accessors self
+end
+
 class Database
   include ::Thrift::Struct, ::Thrift::Struct_Union
   NAME = 1
   DESCRIPTION = 2
   LOCATIONURI = 3
   PARAMETERS = 4
+  PRIVILEGES = 5
 
   FIELDS = {
     NAME => {:type => ::Thrift::Types::STRING, :name => 'name'},
     DESCRIPTION => {:type => ::Thrift::Types::STRING, :name => 'description'},
     LOCATIONURI => {:type => ::Thrift::Types::STRING, :name => 'locationUri'},
-    PARAMETERS => {:type => ::Thrift::Types::MAP, :name => 'parameters', :key => {:type => ::Thrift::Types::STRING}, :value => {:type => ::Thrift::Types::STRING}}
+    PARAMETERS => {:type => ::Thrift::Types::MAP, :name => 'parameters', :key => {:type => ::Thrift::Types::STRING}, :value => {:type => ::Thrift::Types::STRING}},
+    PRIVILEGES => {:type => ::Thrift::Types::STRUCT, :name => 'privileges', :class => PrincipalPrivilegeSet, :optional => true}
   }
 
   def struct_fields; FIELDS; end
@@ -175,6 +330,7 @@ class Table
   VIEWORIGINALTEXT = 10
   VIEWEXPANDEDTEXT = 11
   TABLETYPE = 12
+  PRIVILEGES = 13
 
   FIELDS = {
     TABLENAME => {:type => ::Thrift::Types::STRING, :name => 'tableName'},
@@ -188,7 +344,8 @@ class Table
     PARAMETERS => {:type => ::Thrift::Types::MAP, :name => 'parameters', :key => {:type => ::Thrift::Types::STRING}, :value => {:type => ::Thrift::Types::STRING}},
     VIEWORIGINALTEXT => {:type => ::Thrift::Types::STRING, :name => 'viewOriginalText'},
     VIEWEXPANDEDTEXT => {:type => ::Thrift::Types::STRING, :name => 'viewExpandedText'},
-    TABLETYPE => {:type => ::Thrift::Types::STRING, :name => 'tableType'}
+    TABLETYPE => {:type => ::Thrift::Types::STRING, :name => 'tableType'},
+    PRIVILEGES => {:type => ::Thrift::Types::STRUCT, :name => 'privileges', :class => PrincipalPrivilegeSet, :optional => true}
   }
 
   def struct_fields; FIELDS; end
@@ -208,6 +365,7 @@ class Partition
   LASTACCESSTIME = 5
   SD = 6
   PARAMETERS = 7
+  PRIVILEGES = 8
 
   FIELDS = {
     VALUES => {:type => ::Thrift::Types::LIST, :name => 'values', :element => {:type => ::Thrift::Types::STRING}},
@@ -216,7 +374,8 @@ class Partition
     CREATETIME => {:type => ::Thrift::Types::I32, :name => 'createTime'},
     LASTACCESSTIME => {:type => ::Thrift::Types::I32, :name => 'lastAccessTime'},
     SD => {:type => ::Thrift::Types::STRUCT, :name => 'sd', :class => StorageDescriptor},
-    PARAMETERS => {:type => ::Thrift::Types::MAP, :name => 'parameters', :key => {:type => ::Thrift::Types::STRING}, :value => {:type => ::Thrift::Types::STRING}}
+    PARAMETERS => {:type => ::Thrift::Types::MAP, :name => 'parameters', :key => {:type => ::Thrift::Types::STRING}, :value => {:type => ::Thrift::Types::STRING}},
+    PRIVILEGES => {:type => ::Thrift::Types::STRUCT, :name => 'privileges', :class => PrincipalPrivilegeSet, :optional => true}
   }
 
   def struct_fields; FIELDS; end

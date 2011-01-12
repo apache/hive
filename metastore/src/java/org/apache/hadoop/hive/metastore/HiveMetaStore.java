@@ -41,6 +41,9 @@ import org.apache.hadoop.hive.metastore.api.ConfigValSecurityException;
 import org.apache.hadoop.hive.metastore.api.Constants;
 import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
+import org.apache.hadoop.hive.metastore.api.HiveObjectPrivilege;
+import org.apache.hadoop.hive.metastore.api.HiveObjectRef;
+import org.apache.hadoop.hive.metastore.api.HiveObjectType;
 import org.apache.hadoop.hive.metastore.api.Index;
 import org.apache.hadoop.hive.metastore.api.IndexAlreadyExistsException;
 import org.apache.hadoop.hive.metastore.api.InvalidObjectException;
@@ -48,12 +51,25 @@ import org.apache.hadoop.hive.metastore.api.InvalidOperationException;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.NoSuchObjectException;
 import org.apache.hadoop.hive.metastore.api.Partition;
+import org.apache.hadoop.hive.metastore.api.PrincipalPrivilegeSet;
+import org.apache.hadoop.hive.metastore.api.PrincipalType;
+import org.apache.hadoop.hive.metastore.api.PrivilegeBag;
+import org.apache.hadoop.hive.metastore.api.PrivilegeGrantInfo;
+import org.apache.hadoop.hive.metastore.api.Role;
 import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.metastore.api.ThriftHiveMetastore;
 import org.apache.hadoop.hive.metastore.api.Type;
 import org.apache.hadoop.hive.metastore.api.UnknownDBException;
 import org.apache.hadoop.hive.metastore.api.UnknownTableException;
 import org.apache.hadoop.hive.metastore.hooks.JDOConnectionURLHook;
+import org.apache.hadoop.hive.metastore.model.MDBPrivilege;
+import org.apache.hadoop.hive.metastore.model.MPartitionColumnPrivilege;
+import org.apache.hadoop.hive.metastore.model.MPartitionPrivilege;
+import org.apache.hadoop.hive.metastore.model.MRole;
+import org.apache.hadoop.hive.metastore.model.MGlobalPrivilege;
+import org.apache.hadoop.hive.metastore.model.MRoleMap;
+import org.apache.hadoop.hive.metastore.model.MTableColumnPrivilege;
+import org.apache.hadoop.hive.metastore.model.MTablePrivilege;
 import org.apache.hadoop.hive.serde2.Deserializer;
 import org.apache.hadoop.hive.serde2.SerDeException;
 import org.apache.hadoop.hive.serde2.SerDeUtils;
@@ -1338,6 +1354,35 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       }
       return ret;
     }
+    
+    @Override
+    public Partition get_partition_with_auth(final String db_name,
+        final String tbl_name, final List<String> part_vals,
+        final String user_name, final List<String> group_names)
+        throws MetaException, NoSuchObjectException, TException {
+      incrementCounter("get_partition_with_auth");
+      logStartPartitionFunction("get_partition_with_auth", db_name, tbl_name,
+          part_vals);
+
+      Partition ret = null;
+      try {
+        ret = executeWithRetry(new Command<Partition>() {
+          @Override
+          Partition run(RawStore ms) throws Exception {
+            return ms.getPartitionWithAuth(db_name, tbl_name, part_vals,
+                user_name, group_names);
+          }
+        });
+      } catch (MetaException e) {
+        throw e;
+      } catch (NoSuchObjectException e) {
+        throw e;
+      } catch (Exception e) {
+        assert (e instanceof RuntimeException);
+        throw (RuntimeException) e;
+      }
+      return ret;
+    }
 
     public List<Partition> get_partitions(final String db_name, final String tbl_name,
         final short max_parts) throws NoSuchObjectException, MetaException {
@@ -1359,6 +1404,35 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       } catch (Exception e) {
         assert(e instanceof RuntimeException);
         throw (RuntimeException)e;
+      }
+      return ret;
+
+    }
+    
+    @Override
+    public List<Partition> get_partitions_with_auth(final String dbName,
+        final String tblName, final short maxParts, final String userName,
+        final List<String> groupNames) throws NoSuchObjectException,
+        MetaException, TException {
+      incrementCounter("get_partitions_with_auth");
+      logStartTableFunction("get_partitions_with_auth", dbName, tblName);
+
+      List<Partition> ret = null;
+      try {
+        ret = executeWithRetry(new Command<List<Partition>>() {
+          @Override
+          List<Partition> run(RawStore ms) throws Exception {
+            return ms.getPartitionsWithAuth(dbName, tblName, maxParts,
+                userName, groupNames);
+          }
+        });
+      } catch (MetaException e) {
+        throw e;
+      } catch (NoSuchObjectException e) {
+        throw e;
+      } catch (Exception e) {
+        assert (e instanceof RuntimeException);
+        throw (RuntimeException) e;
       }
       return ret;
 
@@ -1800,10 +1874,24 @@ public class HiveMetaStore extends ThriftHiveMetastore {
 
     @Override
     public List<Partition> get_partitions_ps(final String db_name,
-        final String tbl_name, final List<String> part_vals, final short max_parts)
-        throws MetaException, TException {
+        final String tbl_name, final List<String> part_vals,
+        final short max_parts) throws MetaException, TException {
       incrementCounter("get_partitions_ps");
-      logStartPartitionFunction("get_partitions_ps", db_name, tbl_name, part_vals);
+      logStartPartitionFunction("get_partitions_ps", db_name, tbl_name,
+          part_vals);
+
+      return this.get_partitions_ps_with_auth(db_name, tbl_name, part_vals,
+          max_parts, null, null);
+    }
+    
+    @Override
+    public List<Partition> get_partitions_ps_with_auth(final String db_name,
+        final String tbl_name, final List<String> part_vals,
+        final short max_parts, final String userName,
+        final List<String> groupNames) throws MetaException, TException {
+      incrementCounter("get_partitions_ps");
+      logStartPartitionFunction("get_partitions_ps", db_name, tbl_name,
+          part_vals);
       List<Partition> parts = null;
       List<Partition> matchingParts = new ArrayList<Partition>();
 
@@ -2157,8 +2245,575 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       return ret;
     }
 
-  }
+    @Override
+    public PrincipalPrivilegeSet get_privilege_set(HiveObjectRef hiveObject,
+        String userName, List<String> groupNames) throws MetaException,
+        TException {
+      if (hiveObject.getObjectType() == HiveObjectType.COLUMN) {
+        String partName = getPartName(hiveObject);
+        return this.get_column_privilege_set(hiveObject.getDbName(), hiveObject
+            .getObjectName(), partName, hiveObject.getColumnName(), userName,
+            groupNames);
+      } else if (hiveObject.getObjectType() == HiveObjectType.PARTITION) {
+        String partName = getPartName(hiveObject);
+        return this.get_partition_privilege_set(hiveObject.getDbName(),
+            hiveObject.getObjectName(), partName, userName, groupNames);
+      } else if (hiveObject.getObjectType() == HiveObjectType.DATABASE) {
+        return this.get_db_privilege_set(hiveObject.getDbName(), userName,
+            groupNames);
+      } else if (hiveObject.getObjectType() == HiveObjectType.TABLE) {
+        return this.get_table_privilege_set(hiveObject.getDbName(), hiveObject
+            .getObjectName(), userName, groupNames);
+      }
+      return null;
+    }
 
+    private String getPartName(HiveObjectRef hiveObject) throws MetaException {
+      String partName = null;
+      List<String> partValue = hiveObject.getPartValues();
+      if (partValue != null && partValue.size() > 0) {
+        try {
+          Table table = get_table(hiveObject.getDbName(), hiveObject
+              .getObjectName());
+          partName = Warehouse
+              .makePartName(table.getPartitionKeys(), partValue);
+        } catch (NoSuchObjectException e) {
+          throw new MetaException(e.getMessage());
+        }
+      }
+      return partName;
+    }
+    
+    public PrincipalPrivilegeSet get_column_privilege_set(final String dbName,
+        final String tableName, final String partName, final String columnName,
+        final String userName, final List<String> groupNames) throws MetaException,
+        TException {
+      incrementCounter("get_column_privilege_set");
+
+      PrincipalPrivilegeSet ret = null;
+      try {
+        ret = executeWithRetry(new Command<PrincipalPrivilegeSet>() {
+          @Override
+          PrincipalPrivilegeSet run(RawStore ms) throws Exception {
+            return ms.getColumnPrivilegeSet(dbName, tableName, partName, columnName, userName, groupNames);
+          }
+        });
+      } catch (MetaException e) {
+        throw e;
+      } catch (Exception e) {
+        throw new RuntimeException(e);
+      }
+      return ret;
+    }
+
+    public PrincipalPrivilegeSet get_db_privilege_set(final String dbName,
+        final String userName, final List<String> groupNames) throws MetaException,
+        TException {
+      incrementCounter("get_db_privilege_set");
+
+      PrincipalPrivilegeSet ret = null;
+      try {
+        ret = executeWithRetry(new Command<PrincipalPrivilegeSet>() {
+          @Override
+          PrincipalPrivilegeSet run(RawStore ms) throws Exception {
+            return ms.getDBPrivilegeSet(dbName, userName, groupNames);
+          }
+        });
+      } catch (MetaException e) {
+        throw e;
+      } catch (Exception e) {
+        throw new RuntimeException(e);
+      }
+      return ret;
+    }
+
+    public PrincipalPrivilegeSet get_partition_privilege_set(
+        final String dbName, final String tableName, final String partName,
+        final String userName, final List<String> groupNames)
+        throws MetaException, TException {
+      incrementCounter("get_partition_privilege_set");
+
+      PrincipalPrivilegeSet ret = null;
+      try {
+        ret = executeWithRetry(new Command<PrincipalPrivilegeSet>() {
+          @Override
+          PrincipalPrivilegeSet run(RawStore ms) throws Exception {
+            return ms.getPartitionPrivilegeSet(dbName, tableName, partName,
+                userName, groupNames);
+          }
+        });
+      } catch (MetaException e) {
+        throw e;
+      } catch (Exception e) {
+        throw new RuntimeException(e);
+      }
+      return ret;
+    }
+
+    public PrincipalPrivilegeSet get_table_privilege_set(final String dbName,
+        final String tableName, final String userName,
+        final List<String> groupNames) throws MetaException, TException {
+      incrementCounter("get_table_privilege_set");
+
+      PrincipalPrivilegeSet ret = null;
+      try {
+        ret = executeWithRetry(new Command<PrincipalPrivilegeSet>() {
+          @Override
+          PrincipalPrivilegeSet run(RawStore ms) throws Exception {
+            return ms.getTablePrivilegeSet(dbName, tableName, userName,
+                groupNames);
+          }
+        });
+      } catch (MetaException e) {
+        throw e;
+      } catch (Exception e) {
+        throw new RuntimeException(e);
+      }
+      return ret;
+    }
+
+    @Override
+    public boolean grant_role(final String roleName,
+        final String userName, final PrincipalType principalType,
+        final String grantor, final PrincipalType grantorType, final boolean grantOption)
+        throws MetaException, TException {
+      incrementCounter("add_role_member");
+
+      Boolean ret = null;
+      try {
+        ret = executeWithRetry(new Command<Boolean>() {
+          @Override
+          Boolean run(RawStore ms) throws Exception {
+            Role role = ms.getRole(roleName);
+            return ms.grantRole(role, userName, principalType, grantor, grantorType, grantOption);
+          }
+        });
+      } catch (MetaException e) {
+        throw e;
+      } catch (Exception e) {
+        throw new RuntimeException(e);
+      }
+      return ret;
+    }
+    
+    public List<Role> list_roles(final String principalName,
+        final PrincipalType principalType) throws MetaException, TException {
+      incrementCounter("list_roles");
+
+      List<Role> ret = null;
+      try {
+        ret = executeWithRetry(new Command<List<Role>>() {
+          @Override
+          List<Role> run(RawStore ms) throws Exception {
+            List<Role> result = new ArrayList<Role>();
+            List<MRoleMap> roleMap = ms.listRoles(principalName,principalType);
+            if (roleMap!=null) {
+              for (MRoleMap role : roleMap) {
+                MRole r = role.getRole();
+                result.add(new Role(r.getRoleName(), r
+                    .getCreateTime(), r.getOwnerName()));
+              }
+            }
+            return result;
+          }
+        });
+      } catch (MetaException e) {
+        throw e;
+      } catch (Exception e) {
+        throw new RuntimeException(e);
+      }
+      return ret;
+    }
+
+    @Override
+    public boolean create_role(final Role role)
+        throws MetaException, TException {
+      incrementCounter("create_role");
+
+      Boolean ret = null;
+      try {
+        
+        ret = executeWithRetry(new Command<Boolean>() {
+          @Override
+          Boolean run(RawStore ms) throws Exception {
+            return ms.addRole(role.getRoleName(), role.getOwnerName());
+          }
+        });
+      } catch (MetaException e) {
+        throw e;
+      } catch (Exception e) {
+        throw new RuntimeException(e);
+      }
+      return ret;
+    }
+
+    @Override
+    public boolean drop_role(final String roleName)
+        throws MetaException, TException {
+      incrementCounter("drop_role");
+
+      Boolean ret = null;
+      try {
+        ret = executeWithRetry(new Command<Boolean>() {
+          @Override
+          Boolean run(RawStore ms) throws Exception {
+            return ms.removeRole(roleName);
+          }
+        });
+      } catch (MetaException e) {
+        throw e;
+      } catch (Exception e) {
+        throw new RuntimeException(e);
+      }
+      return ret;
+    }
+
+    @Override
+    public boolean grant_privileges(final PrivilegeBag privileges) throws MetaException,
+        TException {
+      incrementCounter("grant_privileges");
+
+      Boolean ret = null;
+      try {
+        ret = executeWithRetry(new Command<Boolean>() {
+          @Override
+          Boolean run(RawStore ms) throws Exception {
+            return ms.grantPrivileges(privileges);
+          }
+        });
+      } catch (MetaException e) {
+        e.printStackTrace();
+        throw e;
+      } catch (Exception e) {
+        throw new RuntimeException(e);
+      }
+      return ret;
+    }
+
+    @Override
+    public boolean revoke_role(final String roleName, final String userName,
+        final PrincipalType principalType) throws MetaException, TException {
+      incrementCounter("remove_role_member");
+
+      Boolean ret = null;
+      try {
+        ret = executeWithRetry(new Command<Boolean>() {
+          @Override
+          Boolean run(RawStore ms) throws Exception {
+            Role mRole = ms.getRole(roleName);
+            return ms.revokeRole(mRole, userName, principalType);
+          }
+        });
+      } catch (MetaException e) {
+        throw e;
+      } catch (Exception e) {
+        throw new RuntimeException(e);
+      }
+      return ret;
+    }
+
+    @Override
+    public boolean revoke_privileges(final PrivilegeBag privileges)
+        throws MetaException, TException {
+      incrementCounter("revoke_privileges");
+
+      Boolean ret = null;
+      try {
+        ret = executeWithRetry(new Command<Boolean>() {
+          @Override
+          Boolean run(RawStore ms) throws Exception {
+            return ms.revokePrivileges(privileges);
+          }
+        });
+      } catch (MetaException e) {
+        throw e;
+      } catch (Exception e) {
+        throw new RuntimeException(e);
+      }
+      return ret;
+    }
+
+    public PrincipalPrivilegeSet get_user_privilege_set(final String userName,
+        final List<String> groupNames) throws MetaException, TException {
+      incrementCounter("get_user_privilege_set");
+
+      PrincipalPrivilegeSet ret = null;
+      try {
+        ret = executeWithRetry(new Command<PrincipalPrivilegeSet>() {
+          @Override
+          PrincipalPrivilegeSet run(RawStore ms) throws Exception {
+            return ms.getUserPrivilegeSet(userName, groupNames);
+          }
+        });
+      } catch (MetaException e) {
+        throw e;
+      } catch (Exception e) {
+        throw new RuntimeException(e);
+      }
+      return ret;
+    }
+    
+    public PrincipalType getPrincipalType (String principalType) {
+      return PrincipalType.valueOf(principalType);
+    }
+    
+    @Override
+    public List<HiveObjectPrivilege> list_privileges(String principalName,
+        PrincipalType principalType, HiveObjectRef hiveObject)
+        throws MetaException, TException {
+      if (hiveObject.getObjectType() == HiveObjectType.GLOBAL) {
+        return this.list_global_privileges(principalName, principalType);
+      } else if (hiveObject.getObjectType() == HiveObjectType.DATABASE) {
+        return this.list_db_privileges(principalName, principalType, hiveObject
+            .getDbName());
+      } else if (hiveObject.getObjectType() == HiveObjectType.TABLE) {
+        return this.list_table_privileges(principalName, principalType,
+            hiveObject.getDbName(), hiveObject.getObjectName());
+      } else if (hiveObject.getObjectType() == HiveObjectType.PARTITION) {
+        return this.list_partition_privileges(principalName, principalType,
+            hiveObject.getDbName(), hiveObject.getObjectName(), hiveObject
+                .getPartValues());
+      } else if (hiveObject.getObjectType() == HiveObjectType.COLUMN) {
+        return this.list_column_privileges(principalName, principalType,
+            hiveObject.getDbName(), hiveObject.getObjectName(), hiveObject
+                .getPartValues(), hiveObject.getColumnName());
+      }
+      return null;
+    }
+
+    public List<HiveObjectPrivilege> list_column_privileges(
+        final String principalName, final PrincipalType principalType,
+        final String dbName, final String tableName, final List<String> partValues,
+        final String columnName) throws MetaException, TException {
+      incrementCounter("list_security_column_grant");
+
+      List<HiveObjectPrivilege> ret = null;
+      try {
+        ret = executeWithRetry(new Command<List<HiveObjectPrivilege>>() {
+          @Override
+          List<HiveObjectPrivilege> run(RawStore ms) throws Exception {
+            String partName = null;
+            if (partValues != null && partValues.size()>0) {
+              Table tbl = get_table(dbName, tableName);
+              partName = Warehouse.makePartName(tbl.getPartitionKeys(), partValues);
+            }
+            
+            List<HiveObjectPrivilege> result = null;
+            
+            if (partName != null) {
+              Partition part = null;
+              part = get_partition_by_name(dbName, tableName, partName);
+              List<MPartitionColumnPrivilege> mPartitionCols = ms.listPrincipalPartitionColumnGrants(principalName,
+                  principalType, dbName, tableName, partName, columnName);
+              if (mPartitionCols.size() > 0) {
+                result = new ArrayList<HiveObjectPrivilege>();
+                for (int i = 0; i < mPartitionCols.size(); i++) {
+                  MPartitionColumnPrivilege sCol = mPartitionCols.get(i);
+                  HiveObjectRef objectRef = new HiveObjectRef(
+                      HiveObjectType.COLUMN, dbName, tableName,
+                      part == null ? null : part.getValues(), sCol
+                          .getColumnName());
+                  HiveObjectPrivilege secObj = new HiveObjectPrivilege(objectRef,
+                      sCol.getPrincipalName(), principalType,
+                      new PrivilegeGrantInfo(sCol.getPrivilege(), sCol
+                          .getCreateTime(), sCol.getGrantor(), PrincipalType
+                          .valueOf(sCol.getGrantorType()), sCol.getGrantOption()));
+                  result.add(secObj);
+                }
+              }
+            } else {
+              List<MTableColumnPrivilege> mTableCols = ms
+                  .listPrincipalTableColumnGrants(principalName, principalType,
+                      dbName, tableName, columnName);
+              if (mTableCols.size() > 0) {
+                result = new ArrayList<HiveObjectPrivilege>();
+                for (int i = 0; i < mTableCols.size(); i++) {
+                  MTableColumnPrivilege sCol = mTableCols.get(i);
+                  HiveObjectRef objectRef = new HiveObjectRef(
+                      HiveObjectType.COLUMN, dbName, tableName, null, sCol
+                          .getColumnName());
+                  HiveObjectPrivilege secObj = new HiveObjectPrivilege(
+                      objectRef, sCol.getPrincipalName(), principalType,
+                      new PrivilegeGrantInfo(sCol.getPrivilege(), sCol
+                          .getCreateTime(), sCol.getGrantor(), PrincipalType
+                          .valueOf(sCol.getGrantorType()), sCol
+                          .getGrantOption()));
+                  result.add(secObj);
+                }
+              }
+            }
+             
+            return result;
+          }
+        });
+      } catch (MetaException e) {
+        throw e;
+      } catch (Exception e) {
+        throw new RuntimeException(e);
+      }
+      return ret;
+    }
+
+    public List<HiveObjectPrivilege> list_db_privileges(final String principalName,
+        final PrincipalType principalType, final String dbName)
+        throws MetaException, TException {
+      incrementCounter("list_security_db_grant");
+
+      List<HiveObjectPrivilege> ret = null;
+      try {
+        ret = executeWithRetry(new Command<List<HiveObjectPrivilege>>() {
+          @Override
+          List<HiveObjectPrivilege> run(RawStore ms) throws Exception {
+            List<MDBPrivilege> mDbs = ms.listPrincipalDBGrants(
+                principalName, principalType, dbName);
+            if (mDbs.size() > 0) {
+              List<HiveObjectPrivilege> result = new ArrayList<HiveObjectPrivilege>();
+              for (int i = 0; i < mDbs.size(); i++) {
+                MDBPrivilege sDB = mDbs.get(i);
+                HiveObjectRef objectRef = new HiveObjectRef(
+                    HiveObjectType.DATABASE, dbName, null, null, null);
+                HiveObjectPrivilege secObj = new HiveObjectPrivilege(objectRef,
+                    sDB.getPrincipalName(), principalType,
+                    new PrivilegeGrantInfo(sDB.getPrivilege(), sDB
+                        .getCreateTime(), sDB.getGrantor(), PrincipalType
+                        .valueOf(sDB.getGrantorType()), sDB.getGrantOption()));
+                result.add(secObj);
+              }
+              return result;
+            }
+            return null;
+          }
+        });
+      } catch (MetaException e) {
+        throw e;
+      } catch (Exception e) {
+        throw new RuntimeException(e);
+      }
+      return ret;
+    }
+
+    public List<HiveObjectPrivilege> list_partition_privileges(
+        final String principalName, final PrincipalType principalType,
+        final String dbName, final String tableName, final List<String> partValues)
+        throws MetaException, TException {
+      incrementCounter("list_security_partition_grant");
+
+      List<HiveObjectPrivilege> ret = null;
+      try {
+        ret = executeWithRetry(new Command<List<HiveObjectPrivilege>>() {
+          @Override
+          List<HiveObjectPrivilege> run(RawStore ms) throws Exception {
+            Table tbl = get_table(dbName, tableName);
+            String partName = Warehouse.makePartName(tbl.getPartitionKeys(), partValues);
+            List<MPartitionPrivilege> mParts = ms
+                .listPrincipalPartitionGrants(principalName, principalType, dbName, tableName, partName);
+            if (mParts.size() > 0) {
+              List<HiveObjectPrivilege> result = new ArrayList<HiveObjectPrivilege>();
+              for (int i = 0; i < mParts.size(); i++) {
+                MPartitionPrivilege sPart = mParts.get(i);
+                HiveObjectRef objectRef = new HiveObjectRef(
+                    HiveObjectType.PARTITION, dbName, tableName, partValues,
+                    null);
+                HiveObjectPrivilege secObj = new HiveObjectPrivilege(objectRef,
+                    sPart.getPrincipalName(), principalType,
+                    new PrivilegeGrantInfo(sPart.getPrivilege(), sPart
+                        .getCreateTime(), sPart.getGrantor(), PrincipalType
+                        .valueOf(sPart.getGrantorType()), sPart
+                        .getGrantOption()));
+
+                result.add(secObj);
+              }
+              return result;
+            }
+            return null;
+          }
+        });
+      } catch (MetaException e) {
+        throw e;
+      } catch (Exception e) {
+        throw new RuntimeException(e);
+      }
+      return ret;
+    }
+
+    public List<HiveObjectPrivilege> list_table_privileges(
+        final String principalName, final PrincipalType principalType,
+        final String dbName, final String tableName) throws MetaException,
+        TException {
+      incrementCounter("list_security_table_grant");
+
+      List<HiveObjectPrivilege> ret = null;
+      try {
+        ret = executeWithRetry(new Command<List<HiveObjectPrivilege>>() {
+          @Override
+          List<HiveObjectPrivilege> run(RawStore ms) throws Exception {
+            List<MTablePrivilege> mTbls = ms
+                .listAllTableGrants(principalName, principalType, dbName, tableName);
+            if (mTbls.size() > 0) {
+              List<HiveObjectPrivilege> result = new ArrayList<HiveObjectPrivilege>();
+              for (int i = 0; i < mTbls.size(); i++) {
+                MTablePrivilege sTbl = mTbls.get(i);
+                HiveObjectRef objectRef = new HiveObjectRef(
+                    HiveObjectType.TABLE, dbName, tableName, null,null);
+                HiveObjectPrivilege secObj = new HiveObjectPrivilege(objectRef,
+                    sTbl.getPrincipalName(), principalType,
+                    new PrivilegeGrantInfo(sTbl.getPrivilege(), sTbl.getCreateTime(), sTbl
+                        .getGrantor(), PrincipalType.valueOf(sTbl
+                        .getGrantorType()), sTbl.getGrantOption()));
+                result.add(secObj);
+              }
+              return result;
+            }
+            return null;
+          }
+        });
+      } catch (MetaException e) {
+        throw e;
+      } catch (Exception e) {
+        throw new RuntimeException(e);
+      }
+      return ret;
+    }
+
+    public List<HiveObjectPrivilege> list_global_privileges(
+        final String principalName, final PrincipalType principalType)
+        throws MetaException, TException {
+      incrementCounter("list_security_user_grant");
+
+      List<HiveObjectPrivilege> ret = null;
+      try {
+        ret = executeWithRetry(new Command<List<HiveObjectPrivilege>>() {
+          @Override
+          List<HiveObjectPrivilege> run(RawStore ms) throws Exception {
+            List<MGlobalPrivilege> mUsers = ms.listPrincipalGlobalGrants(
+                principalName, principalType);
+            if (mUsers.size() > 0) {
+              List<HiveObjectPrivilege> result = new ArrayList<HiveObjectPrivilege>();
+              for (int i = 0; i < mUsers.size(); i++) {
+                MGlobalPrivilege sUsr = mUsers.get(i);
+                HiveObjectRef objectRef = new HiveObjectRef(
+                    HiveObjectType.GLOBAL, null, null, null, null);
+                HiveObjectPrivilege secUser = new HiveObjectPrivilege(
+                    objectRef, sUsr.getPrincipalName(), principalType,
+                    new PrivilegeGrantInfo(sUsr.getPrivilege(), sUsr
+                        .getCreateTime(), sUsr.getGrantor(), PrincipalType
+                        .valueOf(sUsr.getGrantorType()), sUsr.getGrantOption()));
+                result.add(secUser);
+              }
+              return result;
+            }
+            return null;
+          }
+        });
+      } catch (MetaException e) {
+        throw e;
+      } catch (Exception e) {
+        throw new RuntimeException(e);
+      }
+      return ret;
+    }
+  }
+  
   /**
    * @param args
    */

@@ -853,6 +853,52 @@
   <description>This enables substitution using syntax like ${var} ${system:var} and ${env:var}.</description>
 </property>
 
+
+<property>
+  <name>hive.security.authorization.enabled</name>
+  <value>false</value>
+  <description>enable or disable the hive client authorization</description>
+</property>
+
+<property>
+  <name>hive.security.authorization.manager</name>
+  <value>org.apache.hadoop.hive.ql.security.authorization.DefaultHiveAuthorizationProvider</value>
+  <description>the hive client authorization manager class name.
+  The user defined authorization class should implement interface org.apache.hadoop.hive.ql.security.authorization.HiveAuthorizationProvider. 
+  </description>
+</property>
+
+<property>
+  <name>hive.security.authenticator.manager</name>
+  <value>org.apache.hadoop.hive.ql.security.HadoopDefaultAuthenticator</value>
+  <description>hive client authenticator manager class name. 
+  The user defined authenticator should implement interface org.apache.hadoop.hive.ql.security.HiveAuthenticationProvider.</description>
+</property>
+
+<property>
+  <name>hive.security.authorization.createtable.user.grants</name>
+  <value></value>
+  <description>the privileges automatically granted to some users whenever a table gets created. 
+   An example like "userX,userY:select;userZ:create" will grant select privilege to userX and userY, 
+   and grant create privilege to userZ whenever a new table created.</description>
+</property>
+
+<property>
+  <name>hive.security.authorization.createtable.group.grants</name>
+  <value></value>
+  <description>the privileges automatically granted to some groups whenever a table gets created. 
+   An example like "groupX,groupY:select;groupZ:create" will grant select privilege to groupX and groupY, 
+   and grant create privilege to groupZ whenever a new table created.</description>
+</property>
+
+<property>
+  <name>hive.security.authorization.createtable.role.grants</name>
+  <value></value>
+  <description>the privileges automatically granted to some roles whenever a table gets created. 
+   An example like "roleX,roleY:select;roleZ:create" will grant select privilege to roleX and roleY, 
+   and grant create privilege to roleZ whenever a new table created.</description>
+</property>
+
 <property>
   <name>hive.error.on.empty.partition</name>
   <value>false</value>

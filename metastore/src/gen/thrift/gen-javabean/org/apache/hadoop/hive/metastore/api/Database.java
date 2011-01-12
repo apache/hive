@@ -33,18 +33,21 @@ public class Database implements TBase<Database, Database._Fields>, java.io.Seri
   private static final TField DESCRIPTION_FIELD_DESC = new TField("description", TType.STRING, (short)2);
   private static final TField LOCATION_URI_FIELD_DESC = new TField("locationUri", TType.STRING, (short)3);
   private static final TField PARAMETERS_FIELD_DESC = new TField("parameters", TType.MAP, (short)4);
+  private static final TField PRIVILEGES_FIELD_DESC = new TField("privileges", TType.STRUCT, (short)5);
 
   private String name;
   private String description;
   private String locationUri;
   private Map<String,String> parameters;
+  private PrincipalPrivilegeSet privileges;
 
   /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
   public enum _Fields implements TFieldIdEnum {
     NAME((short)1, "name"),
     DESCRIPTION((short)2, "description"),
     LOCATION_URI((short)3, "locationUri"),
-    PARAMETERS((short)4, "parameters");
+    PARAMETERS((short)4, "parameters"),
+    PRIVILEGES((short)5, "privileges");
 
     private static final Map<String, _Fields> byName = new HashMap<String, _Fields>();
 
@@ -67,6 +70,8 @@ public class Database implements TBase<Database, Database._Fields>, java.io.Seri
           return LOCATION_URI;
         case 4: // PARAMETERS
           return PARAMETERS;
+        case 5: // PRIVILEGES
+          return PRIVILEGES;
         default:
           return null;
       }
@@ -121,6 +126,8 @@ public class Database implements TBase<Database, Database._Fields>, java.io.Seri
         new MapMetaData(TType.MAP, 
             new FieldValueMetaData(TType.STRING), 
             new FieldValueMetaData(TType.STRING))));
+    tmpMap.put(_Fields.PRIVILEGES, new FieldMetaData("privileges", TFieldRequirementType.OPTIONAL, 
+        new StructMetaData(TType.STRUCT, PrincipalPrivilegeSet.class)));
     metaDataMap = Collections.unmodifiableMap(tmpMap);
     FieldMetaData.addStructMetaDataMap(Database.class, metaDataMap);
   }
@@ -169,6 +176,9 @@ public class Database implements TBase<Database, Database._Fields>, java.io.Seri
       }
       this.parameters = __this__parameters;
     }
+    if (other.isSetPrivileges()) {
+      this.privileges = new PrincipalPrivilegeSet(other.privileges);
+    }
   }
 
   public Database deepCopy() {
@@ -181,6 +191,7 @@ public class Database implements TBase<Database, Database._Fields>, java.io.Seri
     this.description = null;
     this.locationUri = null;
     this.parameters = null;
+    this.privileges = null;
   }
 
   public String getName() {
@@ -286,6 +297,29 @@ public class Database implements TBase<Database, Database._Fields>, java.io.Seri
     }
   }
 
+  public PrincipalPrivilegeSet getPrivileges() {
+    return this.privileges;
+  }
+
+  public void setPrivileges(PrincipalPrivilegeSet privileges) {
+    this.privileges = privileges;
+  }
+
+  public void unsetPrivileges() {
+    this.privileges = null;
+  }
+
+  /** Returns true if field privileges is set (has been asigned a value) and false otherwise */
+  public boolean isSetPrivileges() {
+    return this.privileges != null;
+  }
+
+  public void setPrivilegesIsSet(boolean value) {
+    if (!value) {
+      this.privileges = null;
+    }
+  }
+
   public void setFieldValue(_Fields field, Object value) {
     switch (field) {
     case NAME:
@@ -320,6 +354,14 @@ public class Database implements TBase<Database, Database._Fields>, java.io.Seri
       }
       break;
 
+    case PRIVILEGES:
+      if (value == null) {
+        unsetPrivileges();
+      } else {
+        setPrivileges((PrincipalPrivilegeSet)value);
+      }
+      break;
+
     }
   }
 
@@ -336,6 +378,9 @@ public class Database implements TBase<Database, Database._Fields>, java.io.Seri
 
     case PARAMETERS:
       return getParameters();
+
+    case PRIVILEGES:
+      return getPrivileges();
 
     }
     throw new IllegalStateException();
@@ -356,6 +401,8 @@ public class Database implements TBase<Database, Database._Fields>, java.io.Seri
       return isSetLocationUri();
     case PARAMETERS:
       return isSetParameters();
+    case PRIVILEGES:
+      return isSetPrivileges();
     }
     throw new IllegalStateException();
   }
@@ -406,6 +453,15 @@ public class Database implements TBase<Database, Database._Fields>, java.io.Seri
       if (!(this_present_parameters && that_present_parameters))
         return false;
       if (!this.parameters.equals(that.parameters))
+        return false;
+    }
+
+    boolean this_present_privileges = true && this.isSetPrivileges();
+    boolean that_present_privileges = true && that.isSetPrivileges();
+    if (this_present_privileges || that_present_privileges) {
+      if (!(this_present_privileges && that_present_privileges))
+        return false;
+      if (!this.privileges.equals(that.privileges))
         return false;
     }
 
@@ -465,6 +521,16 @@ public class Database implements TBase<Database, Database._Fields>, java.io.Seri
         return lastComparison;
       }
     }
+    lastComparison = Boolean.valueOf(isSetPrivileges()).compareTo(typedOther.isSetPrivileges());
+    if (lastComparison != 0) {
+      return lastComparison;
+    }
+    if (isSetPrivileges()) {
+      lastComparison = TBaseHelper.compareTo(this.privileges, typedOther.privileges);
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+    }
     return 0;
   }
 
@@ -506,18 +572,26 @@ public class Database implements TBase<Database, Database._Fields>, java.io.Seri
         case 4: // PARAMETERS
           if (field.type == TType.MAP) {
             {
-              TMap _map4 = iprot.readMapBegin();
-              this.parameters = new HashMap<String,String>(2*_map4.size);
-              for (int _i5 = 0; _i5 < _map4.size; ++_i5)
+              TMap _map39 = iprot.readMapBegin();
+              this.parameters = new HashMap<String,String>(2*_map39.size);
+              for (int _i40 = 0; _i40 < _map39.size; ++_i40)
               {
-                String _key6;
-                String _val7;
-                _key6 = iprot.readString();
-                _val7 = iprot.readString();
-                this.parameters.put(_key6, _val7);
+                String _key41;
+                String _val42;
+                _key41 = iprot.readString();
+                _val42 = iprot.readString();
+                this.parameters.put(_key41, _val42);
               }
               iprot.readMapEnd();
             }
+          } else { 
+            TProtocolUtil.skip(iprot, field.type);
+          }
+          break;
+        case 5: // PRIVILEGES
+          if (field.type == TType.STRUCT) {
+            this.privileges = new PrincipalPrivilegeSet();
+            this.privileges.read(iprot);
           } else { 
             TProtocolUtil.skip(iprot, field.type);
           }
@@ -554,14 +628,21 @@ public class Database implements TBase<Database, Database._Fields>, java.io.Seri
       oprot.writeFieldBegin(PARAMETERS_FIELD_DESC);
       {
         oprot.writeMapBegin(new TMap(TType.STRING, TType.STRING, this.parameters.size()));
-        for (Map.Entry<String, String> _iter8 : this.parameters.entrySet())
+        for (Map.Entry<String, String> _iter43 : this.parameters.entrySet())
         {
-          oprot.writeString(_iter8.getKey());
-          oprot.writeString(_iter8.getValue());
+          oprot.writeString(_iter43.getKey());
+          oprot.writeString(_iter43.getValue());
         }
         oprot.writeMapEnd();
       }
       oprot.writeFieldEnd();
+    }
+    if (this.privileges != null) {
+      if (isSetPrivileges()) {
+        oprot.writeFieldBegin(PRIVILEGES_FIELD_DESC);
+        this.privileges.write(oprot);
+        oprot.writeFieldEnd();
+      }
     }
     oprot.writeFieldStop();
     oprot.writeStructEnd();
@@ -603,6 +684,16 @@ public class Database implements TBase<Database, Database._Fields>, java.io.Seri
       sb.append(this.parameters);
     }
     first = false;
+    if (isSetPrivileges()) {
+      if (!first) sb.append(", ");
+      sb.append("privileges:");
+      if (this.privileges == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.privileges);
+      }
+      first = false;
+    }
     sb.append(")");
     return sb.toString();
   }

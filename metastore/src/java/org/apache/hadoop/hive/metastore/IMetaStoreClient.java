@@ -25,12 +25,18 @@ import org.apache.hadoop.hive.metastore.api.AlreadyExistsException;
 import org.apache.hadoop.hive.metastore.api.ConfigValSecurityException;
 import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
+import org.apache.hadoop.hive.metastore.api.HiveObjectPrivilege;
+import org.apache.hadoop.hive.metastore.api.HiveObjectRef;
 import org.apache.hadoop.hive.metastore.api.Index;
 import org.apache.hadoop.hive.metastore.api.InvalidObjectException;
 import org.apache.hadoop.hive.metastore.api.InvalidOperationException;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.NoSuchObjectException;
 import org.apache.hadoop.hive.metastore.api.Partition;
+import org.apache.hadoop.hive.metastore.api.PrincipalPrivilegeSet;
+import org.apache.hadoop.hive.metastore.api.PrincipalType;
+import org.apache.hadoop.hive.metastore.api.PrivilegeBag;
+import org.apache.hadoop.hive.metastore.api.Role;
 import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.metastore.api.UnknownDBException;
 import org.apache.hadoop.hive.metastore.api.UnknownTableException;
@@ -263,6 +269,23 @@ public interface IMetaStoreClient {
   public Partition getPartition(String dbName, String tblName,
       String name) throws MetaException, UnknownTableException, NoSuchObjectException, TException;
 
+  
+  /**
+   * @param dbName
+   * @param tableName
+   * @param pvals
+   * @param userName
+   * @param groupNames
+   * @return
+   * @throws MetaException
+   * @throws UnknownTableException
+   * @throws NoSuchObjectException
+   * @throws TException
+   */
+  public Partition getPartitionWithAuthInfo(String dbName, String tableName,
+      List<String> pvals, String userName, List<String> groupNames)
+      throws MetaException, UnknownTableException, NoSuchObjectException, TException;
+  
   /**
    * @param tbl_name
    * @param db_name
@@ -283,6 +306,33 @@ public interface IMetaStoreClient {
 
   public List<String> listPartitionNames(String db_name, String tbl_name,
       List<String> part_vals, short max_parts) throws MetaException, TException;
+
+  /**
+   * @param dbName
+   * @param tableName
+   * @param s
+   * @param userName
+   * @param groupNames
+   * @return
+   * @throws NoSuchObjectException 
+   */
+  public List<Partition> listPartitionsWithAuthInfo(String dbName,
+      String tableName, short s, String userName, List<String> groupNames)
+      throws MetaException, TException, NoSuchObjectException;
+
+  /**
+   * @param dbName
+   * @param tableName
+   * @param partialPvals
+   * @param s
+   * @param userName
+   * @param groupNames
+   * @return
+   * @throws NoSuchObjectException 
+   */
+  public List<Partition> listPartitionsWithAuthInfo(String dbName,
+      String tableName, List<String> partialPvals, short s, String userName,
+      List<String> groupNames) throws MetaException, TException, NoSuchObjectException;
 
   /**
    * @param tbl
@@ -481,4 +531,110 @@ public interface IMetaStoreClient {
   public boolean dropIndex(String db_name, String tbl_name,
       String name, boolean deleteData) throws NoSuchObjectException,
       MetaException, TException;
+  
+  /**
+   * @param Role
+   *          role object
+   * @return
+   * @throws MetaException
+   * @throws TException
+   */
+  public boolean create_role(Role role)
+      throws MetaException, TException;
+
+  /**
+   * @param role_name
+   *          role name
+   * @param db_name 
+   * 
+   * @return
+   * @throws MetaException
+   * @throws TException
+   */
+  public boolean drop_role(String role_name) throws MetaException, TException;
+
+  /**
+   * 
+   * @param role_name
+   * @param user_name
+   * @param principalType
+   * @param grantor
+   * @param grantorType
+   * @param grantOption
+   * @return
+   * @throws MetaException
+   * @throws TException
+   */
+  public boolean grant_role(String role_name, String user_name,
+      PrincipalType principalType, String grantor, PrincipalType grantorType,
+      boolean grantOption) throws MetaException, TException;
+
+  /**
+   * @param role_name
+   *          role name
+   * @param user_name
+   *          user name
+   * @param principalType
+   * @param db_name
+   * 
+   * @return
+   * @throws MetaException
+   * @throws TException
+   */
+  public boolean revoke_role(String role_name, String user_name,
+      PrincipalType principalType) throws MetaException, TException;
+
+  /**
+   * 
+   * @param principalName
+   * @param principalType
+   * @return
+   * @throws MetaException
+   * @throws TException
+   */
+  public List<Role> list_roles(String principalName, PrincipalType principalType)
+      throws MetaException, TException;
+
+  /**
+   * @param hiveObject
+   * @param user_name
+   * @param group_names
+   * @return
+   * @throws MetaException
+   * @throws TException
+   */
+  public PrincipalPrivilegeSet get_privilege_set(HiveObjectRef hiveObject,
+      String user_name, List<String> group_names) throws MetaException,
+      TException;
+  
+  /**
+   * @param principal_name
+   * @param principal_type
+   * @param hiveObject
+   * @return
+   * @throws MetaException
+   * @throws TException
+   */
+  public List<HiveObjectPrivilege> list_privileges(String principal_name,
+      PrincipalType principal_type, HiveObjectRef hiveObject)
+      throws MetaException, TException;
+
+  /**
+   * @param privileges
+   * @return
+   * @throws MetaException
+   * @throws TException
+   */
+  public boolean grant_privileges(PrivilegeBag privileges)
+      throws MetaException, TException;
+
+  /**
+   * @param privileges
+   * @return
+   * @throws MetaException
+   * @throws TException
+   */
+  public boolean revoke_privileges(PrivilegeBag privileges)
+      throws MetaException, TException;
+
 }

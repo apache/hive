@@ -956,14 +956,14 @@ public class StorageDescriptor implements TBase<StorageDescriptor, StorageDescri
         case 1: // COLS
           if (field.type == TType.LIST) {
             {
-              TList _list14 = iprot.readListBegin();
-              this.cols = new ArrayList<FieldSchema>(_list14.size);
-              for (int _i15 = 0; _i15 < _list14.size; ++_i15)
+              TList _list49 = iprot.readListBegin();
+              this.cols = new ArrayList<FieldSchema>(_list49.size);
+              for (int _i50 = 0; _i50 < _list49.size; ++_i50)
               {
-                FieldSchema _elem16;
-                _elem16 = new FieldSchema();
-                _elem16.read(iprot);
-                this.cols.add(_elem16);
+                FieldSchema _elem51;
+                _elem51 = new FieldSchema();
+                _elem51.read(iprot);
+                this.cols.add(_elem51);
               }
               iprot.readListEnd();
             }
@@ -1019,13 +1019,13 @@ public class StorageDescriptor implements TBase<StorageDescriptor, StorageDescri
         case 8: // BUCKET_COLS
           if (field.type == TType.LIST) {
             {
-              TList _list17 = iprot.readListBegin();
-              this.bucketCols = new ArrayList<String>(_list17.size);
-              for (int _i18 = 0; _i18 < _list17.size; ++_i18)
+              TList _list52 = iprot.readListBegin();
+              this.bucketCols = new ArrayList<String>(_list52.size);
+              for (int _i53 = 0; _i53 < _list52.size; ++_i53)
               {
-                String _elem19;
-                _elem19 = iprot.readString();
-                this.bucketCols.add(_elem19);
+                String _elem54;
+                _elem54 = iprot.readString();
+                this.bucketCols.add(_elem54);
               }
               iprot.readListEnd();
             }
@@ -1036,14 +1036,14 @@ public class StorageDescriptor implements TBase<StorageDescriptor, StorageDescri
         case 9: // SORT_COLS
           if (field.type == TType.LIST) {
             {
-              TList _list20 = iprot.readListBegin();
-              this.sortCols = new ArrayList<Order>(_list20.size);
-              for (int _i21 = 0; _i21 < _list20.size; ++_i21)
+              TList _list55 = iprot.readListBegin();
+              this.sortCols = new ArrayList<Order>(_list55.size);
+              for (int _i56 = 0; _i56 < _list55.size; ++_i56)
               {
-                Order _elem22;
-                _elem22 = new Order();
-                _elem22.read(iprot);
-                this.sortCols.add(_elem22);
+                Order _elem57;
+                _elem57 = new Order();
+                _elem57.read(iprot);
+                this.sortCols.add(_elem57);
               }
               iprot.readListEnd();
             }
@@ -1054,15 +1054,15 @@ public class StorageDescriptor implements TBase<StorageDescriptor, StorageDescri
         case 10: // PARAMETERS
           if (field.type == TType.MAP) {
             {
-              TMap _map23 = iprot.readMapBegin();
-              this.parameters = new HashMap<String,String>(2*_map23.size);
-              for (int _i24 = 0; _i24 < _map23.size; ++_i24)
+              TMap _map58 = iprot.readMapBegin();
+              this.parameters = new HashMap<String,String>(2*_map58.size);
+              for (int _i59 = 0; _i59 < _map58.size; ++_i59)
               {
-                String _key25;
-                String _val26;
-                _key25 = iprot.readString();
-                _val26 = iprot.readString();
-                this.parameters.put(_key25, _val26);
+                String _key60;
+                String _val61;
+                _key60 = iprot.readString();
+                _val61 = iprot.readString();
+                this.parameters.put(_key60, _val61);
               }
               iprot.readMapEnd();
             }
@@ -1087,9 +1087,9 @@ public class StorageDescriptor implements TBase<StorageDescriptor, StorageDescri
       oprot.writeFieldBegin(COLS_FIELD_DESC);
       {
         oprot.writeListBegin(new TList(TType.STRUCT, this.cols.size()));
-        for (FieldSchema _iter27 : this.cols)
+        for (FieldSchema _iter62 : this.cols)
         {
-          _iter27.write(oprot);
+          _iter62.write(oprot);
         }
         oprot.writeListEnd();
       }
@@ -1125,9 +1125,9 @@ public class StorageDescriptor implements TBase<StorageDescriptor, StorageDescri
       oprot.writeFieldBegin(BUCKET_COLS_FIELD_DESC);
       {
         oprot.writeListBegin(new TList(TType.STRING, this.bucketCols.size()));
-        for (String _iter28 : this.bucketCols)
+        for (String _iter63 : this.bucketCols)
         {
-          oprot.writeString(_iter28);
+          oprot.writeString(_iter63);
         }
         oprot.writeListEnd();
       }
@@ -1137,9 +1137,9 @@ public class StorageDescriptor implements TBase<StorageDescriptor, StorageDescri
       oprot.writeFieldBegin(SORT_COLS_FIELD_DESC);
       {
         oprot.writeListBegin(new TList(TType.STRUCT, this.sortCols.size()));
-        for (Order _iter29 : this.sortCols)
+        for (Order _iter64 : this.sortCols)
         {
-          _iter29.write(oprot);
+          _iter64.write(oprot);
         }
         oprot.writeListEnd();
       }
@@ -1149,10 +1149,10 @@ public class StorageDescriptor implements TBase<StorageDescriptor, StorageDescri
       oprot.writeFieldBegin(PARAMETERS_FIELD_DESC);
       {
         oprot.writeMapBegin(new TMap(TType.STRING, TType.STRING, this.parameters.size()));
-        for (Map.Entry<String, String> _iter30 : this.parameters.entrySet())
+        for (Map.Entry<String, String> _iter65 : this.parameters.entrySet())
         {
-          oprot.writeString(_iter30.getKey());
-          oprot.writeString(_iter30.getValue());
+          oprot.writeString(_iter65.getKey());
+          oprot.writeString(_iter65.getValue());
         }
         oprot.writeMapEnd();
       }

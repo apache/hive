@@ -49,6 +49,7 @@ import org.apache.hadoop.hive.ql.exec.ConditionalTask;
 import org.apache.hadoop.hive.ql.exec.ExecDriver;
 import org.apache.hadoop.hive.ql.exec.FetchTask;
 import org.apache.hadoop.hive.ql.exec.Operator;
+import org.apache.hadoop.hive.ql.exec.TableScanOperator;
 import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.exec.TaskFactory;
 import org.apache.hadoop.hive.ql.exec.TaskResult;
@@ -69,22 +70,29 @@ import org.apache.hadoop.hive.ql.lockmgr.HiveLockMode;
 import org.apache.hadoop.hive.ql.lockmgr.HiveLockObject;
 import org.apache.hadoop.hive.ql.lockmgr.HiveLockObject.HiveLockObjectData;
 import org.apache.hadoop.hive.ql.lockmgr.LockException;
+import org.apache.hadoop.hive.ql.metadata.AuthorizationException;
 import org.apache.hadoop.hive.ql.metadata.DummyPartition;
+import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.HiveUtils;
 import org.apache.hadoop.hive.ql.metadata.Partition;
 import org.apache.hadoop.hive.ql.metadata.Table;
+import org.apache.hadoop.hive.ql.optimizer.ppr.PartitionPruner;
 import org.apache.hadoop.hive.ql.parse.ASTNode;
 import org.apache.hadoop.hive.ql.parse.AbstractSemanticAnalyzerHook;
 import org.apache.hadoop.hive.ql.parse.BaseSemanticAnalyzer;
 import org.apache.hadoop.hive.ql.parse.ErrorMsg;
 import org.apache.hadoop.hive.ql.parse.HiveSemanticAnalyzerHookContext;
 import org.apache.hadoop.hive.ql.parse.HiveSemanticAnalyzerHookContextImpl;
+import org.apache.hadoop.hive.ql.parse.ParseContext;
 import org.apache.hadoop.hive.ql.parse.ParseDriver;
 import org.apache.hadoop.hive.ql.parse.ParseException;
 import org.apache.hadoop.hive.ql.parse.ParseUtils;
+import org.apache.hadoop.hive.ql.parse.PrunedPartitionList;
+import org.apache.hadoop.hive.ql.parse.SemanticAnalyzer;
 import org.apache.hadoop.hive.ql.parse.SemanticAnalyzerFactory;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
+import org.apache.hadoop.hive.ql.plan.HiveOperation;
 import org.apache.hadoop.hive.ql.parse.VariableSubstitution;
 import org.apache.hadoop.hive.ql.plan.TableDesc;
 import org.apache.hadoop.hive.ql.processors.CommandProcessor;
@@ -375,8 +383,20 @@ public class Driver implements CommandProcessor {
       if (plan.getFetchTask() != null) {
         plan.getFetchTask().initialize(conf, plan, null);
       }
+      
+      //do the authorization check
+      if (HiveConf.getBoolVar(conf,
+          HiveConf.ConfVars.HIVE_AUTHORIZATION_ENABLED)) {
+        try {
+          doAuthorization(sem);
+        } catch (AuthorizationException authExp) {
+          console.printError("Authorization failed:" + authExp.getMessage()
+              + ". Use show grant to get more details.");
+          return 403;
+        }
+      }
 
-      return (0);
+      return 0;
     } catch (SemanticException e) {
       errorMessage = "FAILED: Error in semantic analysis: " + e.getMessage();
       SQLState = ErrorMsg.findSQLState(e.getMessage());
@@ -395,6 +415,126 @@ public class Driver implements CommandProcessor {
       console.printError(errorMessage + "\n"
           + org.apache.hadoop.util.StringUtils.stringifyException(e));
       return (12);
+    }
+  }
+
+  private void doAuthorization(BaseSemanticAnalyzer sem)
+      throws HiveException, AuthorizationException {
+    HashSet<ReadEntity> inputs = sem.getInputs();
+    HashSet<WriteEntity> outputs = sem.getOutputs();
+    SessionState ss = SessionState.get();
+    HiveOperation op = ss.getHiveOperation();
+    Hive db = sem.getDb();
+    if (op != null) {
+      if (op.equals(HiveOperation.CREATETABLE_AS_SELECT)
+          || op.equals(HiveOperation.CREATETABLE)) {
+        ss.getAuthorizer().authorize(
+            db.getDatabase(db.getCurrentDatabase()), null,
+            HiveOperation.CREATETABLE_AS_SELECT.getOutputRequiredPrivileges());
+      }
+      if (outputs != null && outputs.size() > 0) {
+        for (WriteEntity write : outputs) {
+
+          if (write.getType() == WriteEntity.Type.PARTITION) {
+            Partition part = db.getPartition(write.getTable(), write
+                .getPartition().getSpec(), false);
+            if (part != null) {
+              ss.getAuthorizer().authorize(write.getPartition(), null,
+                      op.getOutputRequiredPrivileges());
+              continue;
+            }
+          }
+
+          if (write.getTable() != null) {
+            ss.getAuthorizer().authorize(write.getTable(), null,
+                    op.getOutputRequiredPrivileges());
+          }
+        }
+
+      }
+    }
+
+    if (inputs != null && inputs.size() > 0) {
+
+      Map<Table, List<String>> tab2Cols = new HashMap<Table, List<String>>();
+      Map<Partition, List<String>> part2Cols = new HashMap<Partition, List<String>>();
+
+      for (ReadEntity read : inputs) {
+        boolean part = read.getPartition() != null;
+        if (part) {
+          part2Cols.put(read.getPartition(), new ArrayList<String>());
+        } else {
+          tab2Cols.put(read.getTable(), new ArrayList<String>());
+        }
+      }
+
+      if (op.equals(HiveOperation.CREATETABLE_AS_SELECT)
+          || op.equals(HiveOperation.QUERY)) {
+        SemanticAnalyzer querySem = (SemanticAnalyzer) sem;
+        ParseContext parseCtx = querySem.getParseContext();
+        Map<TableScanOperator, Table> tsoTopMap = parseCtx.getTopToTable();
+
+        for (Map.Entry<String, Operator<? extends Serializable>> topOpMap : querySem
+            .getParseContext().getTopOps().entrySet()) {
+          Operator<? extends Serializable> topOp = topOpMap.getValue();
+          if (topOp instanceof TableScanOperator
+              && tsoTopMap.containsKey(topOp)) {
+            TableScanOperator tableScanOp = (TableScanOperator) topOp;
+            Table tbl = tsoTopMap.get(tableScanOp);
+            List<Integer> neededColumnIds = tableScanOp.getNeededColumnIDs();
+            List<FieldSchema> columns = tbl.getCols();
+            List<String> cols = new ArrayList<String>();
+            if (neededColumnIds != null && neededColumnIds.size() > 0) {
+              for (int i = 0; i < neededColumnIds.size(); i++) {
+                cols.add(columns.get(neededColumnIds.get(i)).getName());
+              }
+            } else {
+              for (int i = 0; i < columns.size(); i++) {
+                cols.add(columns.get(i).getName());
+              }
+            }
+            if (tbl.isPartitioned()) {
+              String alias_id = topOpMap.getKey();
+              PrunedPartitionList partsList = PartitionPruner.prune(parseCtx
+                  .getTopToTable().get(topOp), parseCtx.getOpToPartPruner()
+                  .get(topOp), parseCtx.getConf(), alias_id, parseCtx
+                  .getPrunedPartitions());
+              Set<Partition> parts = new HashSet<Partition>();
+              parts.addAll(partsList.getConfirmedPartns());
+              parts.addAll(partsList.getUnknownPartns());
+              for (Partition part : parts) {
+                part2Cols.put(part, cols);
+              }
+            } else {
+              tab2Cols.put(tbl, cols);
+            }
+          }
+        }
+      }
+
+      for (ReadEntity read : inputs) {
+        if (read.getPartition() != null) {
+          List<String> cols = part2Cols.get(read.getPartition());
+          if (cols != null && cols.size() > 0) {
+            ss.getAuthorizer().authorize(read.getPartition().getTable(),
+                    read.getPartition(), cols, op.getInputRequiredPrivileges(),
+                    null);
+          } else {
+            ss.getAuthorizer().authorize(read.getPartition(),
+                    op.getInputRequiredPrivileges(), null);
+          }
+        } else if (read.getTable() != null) {
+          List<String> cols = tab2Cols.get(read.getTable());
+          if (cols != null && cols.size() > 0) {
+            ss.getAuthorizer().authorize(read.getTable(), null, cols,
+                    op.getInputRequiredPrivileges(), null);
+          } else {
+            ss.getAuthorizer().authorize(read.getTable(),
+                    op.getInputRequiredPrivileges(), null);
+          }
+        }
+      }
+
     }
   }
 
@@ -754,8 +894,6 @@ public class Driver implements CommandProcessor {
   public int execute() {
     boolean noName = StringUtils.isEmpty(conf.getVar(HiveConf.ConfVars.HADOOPJOBNAME));
     int maxlen = conf.getIntVar(HiveConf.ConfVars.HIVEJOBNAMELENGTH);
-
-    int curJobNo = 0;
 
     String queryId = plan.getQueryId();
     String queryStr = plan.getQueryStr();

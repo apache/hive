@@ -16,6 +16,24 @@
 
 namespace Apache { namespace Hadoop { namespace Hive {
 
+struct HiveObjectType {
+  enum type {
+    GLOBAL = 1,
+    DATABASE = 2,
+    TABLE = 3,
+    PARTITION = 4,
+    COLUMN = 5
+  };
+};
+
+struct PrincipalType {
+  enum type {
+    USER = 1,
+    ROLE = 2,
+    GROUP = 3
+  };
+};
+
 typedef struct _Version__isset {
   _Version__isset() : version(false), comments(false) {}
   bool version;
@@ -157,19 +175,302 @@ class Type {
 
 };
 
+typedef struct _HiveObjectRef__isset {
+  _HiveObjectRef__isset() : objectType(false), dbName(false), objectName(false), partValues(false), columnName(false) {}
+  bool objectType;
+  bool dbName;
+  bool objectName;
+  bool partValues;
+  bool columnName;
+} _HiveObjectRef__isset;
+
+class HiveObjectRef {
+ public:
+
+  static const char* ascii_fingerprint; // = "205CD8311CF3AA9EC161BAEF8D7C933C";
+  static const uint8_t binary_fingerprint[16]; // = {0x20,0x5C,0xD8,0x31,0x1C,0xF3,0xAA,0x9E,0xC1,0x61,0xBA,0xEF,0x8D,0x7C,0x93,0x3C};
+
+  HiveObjectRef() : dbName(""), objectName(""), columnName("") {
+  }
+
+  virtual ~HiveObjectRef() throw() {}
+
+  HiveObjectType::type objectType;
+  std::string dbName;
+  std::string objectName;
+  std::vector<std::string>  partValues;
+  std::string columnName;
+
+  _HiveObjectRef__isset __isset;
+
+  bool operator == (const HiveObjectRef & rhs) const
+  {
+    if (!(objectType == rhs.objectType))
+      return false;
+    if (!(dbName == rhs.dbName))
+      return false;
+    if (!(objectName == rhs.objectName))
+      return false;
+    if (!(partValues == rhs.partValues))
+      return false;
+    if (!(columnName == rhs.columnName))
+      return false;
+    return true;
+  }
+  bool operator != (const HiveObjectRef &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const HiveObjectRef & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+typedef struct _PrivilegeGrantInfo__isset {
+  _PrivilegeGrantInfo__isset() : privilege(false), createTime(false), grantor(false), grantorType(false), grantOption(false) {}
+  bool privilege;
+  bool createTime;
+  bool grantor;
+  bool grantorType;
+  bool grantOption;
+} _PrivilegeGrantInfo__isset;
+
+class PrivilegeGrantInfo {
+ public:
+
+  static const char* ascii_fingerprint; // = "A58923AF7294BE492D6F90E07E8CEE1F";
+  static const uint8_t binary_fingerprint[16]; // = {0xA5,0x89,0x23,0xAF,0x72,0x94,0xBE,0x49,0x2D,0x6F,0x90,0xE0,0x7E,0x8C,0xEE,0x1F};
+
+  PrivilegeGrantInfo() : privilege(""), createTime(0), grantor(""), grantOption(0) {
+  }
+
+  virtual ~PrivilegeGrantInfo() throw() {}
+
+  std::string privilege;
+  int32_t createTime;
+  std::string grantor;
+  PrincipalType::type grantorType;
+  bool grantOption;
+
+  _PrivilegeGrantInfo__isset __isset;
+
+  bool operator == (const PrivilegeGrantInfo & rhs) const
+  {
+    if (!(privilege == rhs.privilege))
+      return false;
+    if (!(createTime == rhs.createTime))
+      return false;
+    if (!(grantor == rhs.grantor))
+      return false;
+    if (!(grantorType == rhs.grantorType))
+      return false;
+    if (!(grantOption == rhs.grantOption))
+      return false;
+    return true;
+  }
+  bool operator != (const PrivilegeGrantInfo &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const PrivilegeGrantInfo & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+typedef struct _HiveObjectPrivilege__isset {
+  _HiveObjectPrivilege__isset() : hiveObject(false), principalName(false), principalType(false), grantInfo(false) {}
+  bool hiveObject;
+  bool principalName;
+  bool principalType;
+  bool grantInfo;
+} _HiveObjectPrivilege__isset;
+
+class HiveObjectPrivilege {
+ public:
+
+  static const char* ascii_fingerprint; // = "83D71969B23BD853E29DBA9D43B29AF8";
+  static const uint8_t binary_fingerprint[16]; // = {0x83,0xD7,0x19,0x69,0xB2,0x3B,0xD8,0x53,0xE2,0x9D,0xBA,0x9D,0x43,0xB2,0x9A,0xF8};
+
+  HiveObjectPrivilege() : principalName("") {
+  }
+
+  virtual ~HiveObjectPrivilege() throw() {}
+
+  HiveObjectRef hiveObject;
+  std::string principalName;
+  PrincipalType::type principalType;
+  PrivilegeGrantInfo grantInfo;
+
+  _HiveObjectPrivilege__isset __isset;
+
+  bool operator == (const HiveObjectPrivilege & rhs) const
+  {
+    if (!(hiveObject == rhs.hiveObject))
+      return false;
+    if (!(principalName == rhs.principalName))
+      return false;
+    if (!(principalType == rhs.principalType))
+      return false;
+    if (!(grantInfo == rhs.grantInfo))
+      return false;
+    return true;
+  }
+  bool operator != (const HiveObjectPrivilege &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const HiveObjectPrivilege & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+typedef struct _PrivilegeBag__isset {
+  _PrivilegeBag__isset() : privileges(false) {}
+  bool privileges;
+} _PrivilegeBag__isset;
+
+class PrivilegeBag {
+ public:
+
+  static const char* ascii_fingerprint; // = "BB89E4701B7B709B046A74C90B1147F2";
+  static const uint8_t binary_fingerprint[16]; // = {0xBB,0x89,0xE4,0x70,0x1B,0x7B,0x70,0x9B,0x04,0x6A,0x74,0xC9,0x0B,0x11,0x47,0xF2};
+
+  PrivilegeBag() {
+  }
+
+  virtual ~PrivilegeBag() throw() {}
+
+  std::vector<HiveObjectPrivilege>  privileges;
+
+  _PrivilegeBag__isset __isset;
+
+  bool operator == (const PrivilegeBag & rhs) const
+  {
+    if (!(privileges == rhs.privileges))
+      return false;
+    return true;
+  }
+  bool operator != (const PrivilegeBag &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const PrivilegeBag & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+typedef struct _PrincipalPrivilegeSet__isset {
+  _PrincipalPrivilegeSet__isset() : userPrivileges(false), groupPrivileges(false), rolePrivileges(false) {}
+  bool userPrivileges;
+  bool groupPrivileges;
+  bool rolePrivileges;
+} _PrincipalPrivilegeSet__isset;
+
+class PrincipalPrivilegeSet {
+ public:
+
+  static const char* ascii_fingerprint; // = "08F75D2533906EA87BE34EA640856683";
+  static const uint8_t binary_fingerprint[16]; // = {0x08,0xF7,0x5D,0x25,0x33,0x90,0x6E,0xA8,0x7B,0xE3,0x4E,0xA6,0x40,0x85,0x66,0x83};
+
+  PrincipalPrivilegeSet() {
+  }
+
+  virtual ~PrincipalPrivilegeSet() throw() {}
+
+  std::map<std::string, std::vector<PrivilegeGrantInfo> >  userPrivileges;
+  std::map<std::string, std::vector<PrivilegeGrantInfo> >  groupPrivileges;
+  std::map<std::string, std::vector<PrivilegeGrantInfo> >  rolePrivileges;
+
+  _PrincipalPrivilegeSet__isset __isset;
+
+  bool operator == (const PrincipalPrivilegeSet & rhs) const
+  {
+    if (!(userPrivileges == rhs.userPrivileges))
+      return false;
+    if (!(groupPrivileges == rhs.groupPrivileges))
+      return false;
+    if (!(rolePrivileges == rhs.rolePrivileges))
+      return false;
+    return true;
+  }
+  bool operator != (const PrincipalPrivilegeSet &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const PrincipalPrivilegeSet & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+typedef struct _Role__isset {
+  _Role__isset() : roleName(false), createTime(false), ownerName(false) {}
+  bool roleName;
+  bool createTime;
+  bool ownerName;
+} _Role__isset;
+
+class Role {
+ public:
+
+  static const char* ascii_fingerprint; // = "70563A0628F75DF9555F4D24690B1E26";
+  static const uint8_t binary_fingerprint[16]; // = {0x70,0x56,0x3A,0x06,0x28,0xF7,0x5D,0xF9,0x55,0x5F,0x4D,0x24,0x69,0x0B,0x1E,0x26};
+
+  Role() : roleName(""), createTime(0), ownerName("") {
+  }
+
+  virtual ~Role() throw() {}
+
+  std::string roleName;
+  int32_t createTime;
+  std::string ownerName;
+
+  _Role__isset __isset;
+
+  bool operator == (const Role & rhs) const
+  {
+    if (!(roleName == rhs.roleName))
+      return false;
+    if (!(createTime == rhs.createTime))
+      return false;
+    if (!(ownerName == rhs.ownerName))
+      return false;
+    return true;
+  }
+  bool operator != (const Role &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const Role & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
 typedef struct _Database__isset {
-  _Database__isset() : name(false), description(false), locationUri(false), parameters(false) {}
+  _Database__isset() : name(false), description(false), locationUri(false), parameters(false), privileges(false) {}
   bool name;
   bool description;
   bool locationUri;
   bool parameters;
+  bool privileges;
 } _Database__isset;
 
 class Database {
  public:
 
-  static const char* ascii_fingerprint; // = "DD4B1A6F6F2E9C90B0A41B314EF1753F";
-  static const uint8_t binary_fingerprint[16]; // = {0xDD,0x4B,0x1A,0x6F,0x6F,0x2E,0x9C,0x90,0xB0,0xA4,0x1B,0x31,0x4E,0xF1,0x75,0x3F};
+  static const char* ascii_fingerprint; // = "213967572143E49C9F1A23F7A866E2F5";
+  static const uint8_t binary_fingerprint[16]; // = {0x21,0x39,0x67,0x57,0x21,0x43,0xE4,0x9C,0x9F,0x1A,0x23,0xF7,0xA8,0x66,0xE2,0xF5};
 
   Database() : name(""), description(""), locationUri("") {
   }
@@ -180,6 +481,7 @@ class Database {
   std::string description;
   std::string locationUri;
   std::map<std::string, std::string>  parameters;
+  PrincipalPrivilegeSet privileges;
 
   _Database__isset __isset;
 
@@ -192,6 +494,10 @@ class Database {
     if (!(locationUri == rhs.locationUri))
       return false;
     if (!(parameters == rhs.parameters))
+      return false;
+    if (__isset.privileges != rhs.__isset.privileges)
+      return false;
+    else if (__isset.privileges && !(privileges == rhs.privileges))
       return false;
     return true;
   }
@@ -366,7 +672,7 @@ class StorageDescriptor {
 };
 
 typedef struct _Table__isset {
-  _Table__isset() : tableName(false), dbName(false), owner(false), createTime(false), lastAccessTime(false), retention(false), sd(false), partitionKeys(false), parameters(false), viewOriginalText(false), viewExpandedText(false), tableType(false) {}
+  _Table__isset() : tableName(false), dbName(false), owner(false), createTime(false), lastAccessTime(false), retention(false), sd(false), partitionKeys(false), parameters(false), viewOriginalText(false), viewExpandedText(false), tableType(false), privileges(false) {}
   bool tableName;
   bool dbName;
   bool owner;
@@ -379,13 +685,14 @@ typedef struct _Table__isset {
   bool viewOriginalText;
   bool viewExpandedText;
   bool tableType;
+  bool privileges;
 } _Table__isset;
 
 class Table {
  public:
 
-  static const char* ascii_fingerprint; // = "F709D087CEEE7C49380296E3B423FF76";
-  static const uint8_t binary_fingerprint[16]; // = {0xF7,0x09,0xD0,0x87,0xCE,0xEE,0x7C,0x49,0x38,0x02,0x96,0xE3,0xB4,0x23,0xFF,0x76};
+  static const char* ascii_fingerprint; // = "26BE788C09746068A2616712C9262900";
+  static const uint8_t binary_fingerprint[16]; // = {0x26,0xBE,0x78,0x8C,0x09,0x74,0x60,0x68,0xA2,0x61,0x67,0x12,0xC9,0x26,0x29,0x00};
 
   Table() : tableName(""), dbName(""), owner(""), createTime(0), lastAccessTime(0), retention(0), viewOriginalText(""), viewExpandedText(""), tableType("") {
   }
@@ -404,6 +711,7 @@ class Table {
   std::string viewOriginalText;
   std::string viewExpandedText;
   std::string tableType;
+  PrincipalPrivilegeSet privileges;
 
   _Table__isset __isset;
 
@@ -433,6 +741,10 @@ class Table {
       return false;
     if (!(tableType == rhs.tableType))
       return false;
+    if (__isset.privileges != rhs.__isset.privileges)
+      return false;
+    else if (__isset.privileges && !(privileges == rhs.privileges))
+      return false;
     return true;
   }
   bool operator != (const Table &rhs) const {
@@ -447,7 +759,7 @@ class Table {
 };
 
 typedef struct _Partition__isset {
-  _Partition__isset() : values(false), dbName(false), tableName(false), createTime(false), lastAccessTime(false), sd(false), parameters(false) {}
+  _Partition__isset() : values(false), dbName(false), tableName(false), createTime(false), lastAccessTime(false), sd(false), parameters(false), privileges(false) {}
   bool values;
   bool dbName;
   bool tableName;
@@ -455,13 +767,14 @@ typedef struct _Partition__isset {
   bool lastAccessTime;
   bool sd;
   bool parameters;
+  bool privileges;
 } _Partition__isset;
 
 class Partition {
  public:
 
-  static const char* ascii_fingerprint; // = "E5EDC507CBBC5F6F81AAC4845B38F51B";
-  static const uint8_t binary_fingerprint[16]; // = {0xE5,0xED,0xC5,0x07,0xCB,0xBC,0x5F,0x6F,0x81,0xAA,0xC4,0x84,0x5B,0x38,0xF5,0x1B};
+  static const char* ascii_fingerprint; // = "F480E1D1B8AEBDDB37F8E180C0F07395";
+  static const uint8_t binary_fingerprint[16]; // = {0xF4,0x80,0xE1,0xD1,0xB8,0xAE,0xBD,0xDB,0x37,0xF8,0xE1,0x80,0xC0,0xF0,0x73,0x95};
 
   Partition() : dbName(""), tableName(""), createTime(0), lastAccessTime(0) {
   }
@@ -475,6 +788,7 @@ class Partition {
   int32_t lastAccessTime;
   StorageDescriptor sd;
   std::map<std::string, std::string>  parameters;
+  PrincipalPrivilegeSet privileges;
 
   _Partition__isset __isset;
 
@@ -493,6 +807,10 @@ class Partition {
     if (!(sd == rhs.sd))
       return false;
     if (!(parameters == rhs.parameters))
+      return false;
+    if (__isset.privileges != rhs.__isset.privileges)
+      return false;
+    else if (__isset.privileges && !(privileges == rhs.privileges))
       return false;
     return true;
   }

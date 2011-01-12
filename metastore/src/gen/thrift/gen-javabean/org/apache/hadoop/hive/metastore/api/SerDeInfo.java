@@ -431,15 +431,15 @@ public class SerDeInfo implements TBase<SerDeInfo, SerDeInfo._Fields>, java.io.S
         case 3: // PARAMETERS
           if (field.type == TType.MAP) {
             {
-              TMap _map9 = iprot.readMapBegin();
-              this.parameters = new HashMap<String,String>(2*_map9.size);
-              for (int _i10 = 0; _i10 < _map9.size; ++_i10)
+              TMap _map44 = iprot.readMapBegin();
+              this.parameters = new HashMap<String,String>(2*_map44.size);
+              for (int _i45 = 0; _i45 < _map44.size; ++_i45)
               {
-                String _key11;
-                String _val12;
-                _key11 = iprot.readString();
-                _val12 = iprot.readString();
-                this.parameters.put(_key11, _val12);
+                String _key46;
+                String _val47;
+                _key46 = iprot.readString();
+                _val47 = iprot.readString();
+                this.parameters.put(_key46, _val47);
               }
               iprot.readMapEnd();
             }
@@ -474,10 +474,10 @@ public class SerDeInfo implements TBase<SerDeInfo, SerDeInfo._Fields>, java.io.S
       oprot.writeFieldBegin(PARAMETERS_FIELD_DESC);
       {
         oprot.writeMapBegin(new TMap(TType.STRING, TType.STRING, this.parameters.size()));
-        for (Map.Entry<String, String> _iter13 : this.parameters.entrySet())
+        for (Map.Entry<String, String> _iter48 : this.parameters.entrySet())
         {
-          oprot.writeString(_iter13.getKey());
-          oprot.writeString(_iter13.getValue());
+          oprot.writeString(_iter48.getKey());
+          oprot.writeString(_iter48.getValue());
         }
         oprot.writeMapEnd();
       }

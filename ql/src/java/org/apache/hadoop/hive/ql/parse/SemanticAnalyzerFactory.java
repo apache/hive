@@ -21,6 +21,7 @@ package org.apache.hadoop.hive.ql.parse;
 import java.util.HashMap;
 
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.ql.plan.HiveOperation;
 import org.apache.hadoop.hive.ql.session.SessionState;
 
 /**
@@ -29,64 +30,76 @@ import org.apache.hadoop.hive.ql.session.SessionState;
  */
 public final class SemanticAnalyzerFactory {
 
-  static HashMap<Integer, String> commandType = new HashMap<Integer, String>();
-  static HashMap<Integer, String[]> tablePartitionCommandType = new HashMap<Integer, String[]>();
+  static HashMap<Integer, HiveOperation> commandType = new HashMap<Integer, HiveOperation>();
+  static HashMap<Integer, HiveOperation[]> tablePartitionCommandType = new HashMap<Integer, HiveOperation[]>(); 
 
   static {
-    commandType.put(HiveParser.TOK_EXPLAIN, "EXPLAIN");
-    commandType.put(HiveParser.TOK_LOAD, "LOAD");
-    commandType.put(HiveParser.TOK_CREATEDATABASE, "CREATEDATABASE");
-    commandType.put(HiveParser.TOK_DROPDATABASE, "DROPDATABASE");
-    commandType.put(HiveParser.TOK_SWITCHDATABASE, "SWITCHDATABASE");
-    commandType.put(HiveParser.TOK_ALTERDATABASE_PROPERTIES, "ALTERDATABASE");
-    commandType.put(HiveParser.TOK_CREATETABLE, "CREATETABLE");
-    commandType.put(HiveParser.TOK_DROPTABLE, "DROPTABLE");
-    commandType.put(HiveParser.TOK_DESCTABLE, "DESCTABLE");
-    commandType.put(HiveParser.TOK_DESCFUNCTION, "DESCFUNCTION");
-    commandType.put(HiveParser.TOK_DESCDATABASE, "DESCDATABASE");
-    commandType.put(HiveParser.TOK_MSCK, "MSCK");
-    commandType.put(HiveParser.TOK_ALTERTABLE_ADDCOLS, "ALTERTABLE_ADDCOLS");
-    commandType.put(HiveParser.TOK_ALTERTABLE_REPLACECOLS, "ALTERTABLE_REPLACECOLS");
-    commandType.put(HiveParser.TOK_ALTERTABLE_RENAMECOL, "ALTERTABLE_RENAMECOL");
-    commandType.put(HiveParser.TOK_ALTERTABLE_RENAME, "ALTERTABLE_RENAME");
-    commandType.put(HiveParser.TOK_ALTERTABLE_DROPPARTS, "ALTERTABLE_DROPPARTS");
-    commandType.put(HiveParser.TOK_ALTERTABLE_ADDPARTS, "ALTERTABLE_ADDPARTS");
-    commandType.put(HiveParser.TOK_ALTERTABLE_TOUCH, "ALTERTABLE_TOUCH");
-    commandType.put(HiveParser.TOK_ALTERTABLE_ARCHIVE, "ALTERTABLE_ARCHIVE");
-    commandType.put(HiveParser.TOK_ALTERTABLE_UNARCHIVE, "ALTERTABLE_UNARCHIVE");
-    commandType.put(HiveParser.TOK_ALTERTABLE_PROPERTIES, "ALTERTABLE_PROPERTIES");
-    commandType.put(HiveParser.TOK_ALTERTABLE_SERIALIZER, "ALTERTABLE_SERIALIZER");
-    commandType.put(HiveParser.TOK_ALTERTABLE_SERDEPROPERTIES, "ALTERTABLE_SERDEPROPERTIES");
-    commandType.put(HiveParser.TOK_ALTERINDEX_REBUILD, "ALTERINDEX_REBUILD");
-    commandType.put(HiveParser.TOK_ALTERINDEX_PROPERTIES, "ALTERINDEX_PROPS");
-    commandType.put(HiveParser.TOK_SHOWDATABASES, "SHOWDATABASES");
-    commandType.put(HiveParser.TOK_SHOWTABLES, "SHOWTABLES");
-    commandType.put(HiveParser.TOK_SHOW_TABLESTATUS, "SHOW_TABLESTATUS");
-    commandType.put(HiveParser.TOK_SHOWFUNCTIONS, "SHOWFUNCTIONS");
-    commandType.put(HiveParser.TOK_SHOWPARTITIONS, "SHOWPARTITIONS");
-    commandType.put(HiveParser.TOK_SHOWINDEXES, "SHOWINDEXES");
-    commandType.put(HiveParser.TOK_SHOWLOCKS, "SHOWLOCKS");
-    commandType.put(HiveParser.TOK_CREATEFUNCTION, "CREATEFUNCTION");
-    commandType.put(HiveParser.TOK_DROPFUNCTION, "DROPFUNCTION");
-    commandType.put(HiveParser.TOK_CREATEVIEW, "CREATEVIEW");
-    commandType.put(HiveParser.TOK_DROPVIEW, "DROPVIEW");
-    commandType.put(HiveParser.TOK_CREATEINDEX, "CREATEINDEX");
-    commandType.put(HiveParser.TOK_DROPINDEX, "DROPINDEX");
-    commandType.put(HiveParser.TOK_ALTERVIEW_PROPERTIES, "ALTERVIEW_PROPERTIES");
-    commandType.put(HiveParser.TOK_QUERY, "QUERY");
-    commandType.put(HiveParser.TOK_LOCKTABLE, "LOCKTABLE");
-    commandType.put(HiveParser.TOK_UNLOCKTABLE, "UNLOCKTABLE");
+    commandType.put(HiveParser.TOK_EXPLAIN, HiveOperation.EXPLAIN);
+    commandType.put(HiveParser.TOK_LOAD, HiveOperation.LOAD);
+    commandType.put(HiveParser.TOK_CREATEDATABASE, HiveOperation.CREATEDATABASE);
+    commandType.put(HiveParser.TOK_DROPDATABASE, HiveOperation.DROPDATABASE);
+    commandType.put(HiveParser.TOK_SWITCHDATABASE, HiveOperation.SWITCHDATABASE);
+    commandType.put(HiveParser.TOK_CREATETABLE, HiveOperation.CREATETABLE);
+    commandType.put(HiveParser.TOK_DROPTABLE, HiveOperation.DROPTABLE);
+    commandType.put(HiveParser.TOK_DESCTABLE, HiveOperation.DESCTABLE);
+    commandType.put(HiveParser.TOK_DESCFUNCTION, HiveOperation.DESCFUNCTION);
+    commandType.put(HiveParser.TOK_MSCK, HiveOperation.MSCK);
+    commandType.put(HiveParser.TOK_ALTERTABLE_ADDCOLS, HiveOperation.ALTERTABLE_ADDCOLS);
+    commandType.put(HiveParser.TOK_ALTERTABLE_REPLACECOLS, HiveOperation.ALTERTABLE_REPLACECOLS);
+    commandType.put(HiveParser.TOK_ALTERTABLE_RENAMECOL, HiveOperation.ALTERTABLE_RENAMECOL);
+    commandType.put(HiveParser.TOK_ALTERTABLE_RENAME, HiveOperation.ALTERTABLE_RENAME);
+    commandType.put(HiveParser.TOK_ALTERTABLE_DROPPARTS, HiveOperation.ALTERTABLE_DROPPARTS);
+    commandType.put(HiveParser.TOK_ALTERTABLE_ADDPARTS, HiveOperation.ALTERTABLE_ADDPARTS);
+    commandType.put(HiveParser.TOK_ALTERTABLE_TOUCH, HiveOperation.ALTERTABLE_TOUCH);
+    commandType.put(HiveParser.TOK_ALTERTABLE_ARCHIVE, HiveOperation.ALTERTABLE_ARCHIVE);
+    commandType.put(HiveParser.TOK_ALTERTABLE_UNARCHIVE, HiveOperation.ALTERTABLE_UNARCHIVE);
+    commandType.put(HiveParser.TOK_ALTERTABLE_PROPERTIES, HiveOperation.ALTERTABLE_PROPERTIES);
+    commandType.put(HiveParser.TOK_ALTERTABLE_SERIALIZER, HiveOperation.ALTERTABLE_SERIALIZER);
+    commandType.put(HiveParser.TOK_ALTERTABLE_SERDEPROPERTIES, HiveOperation.ALTERTABLE_SERDEPROPERTIES);
+    commandType.put(HiveParser.TOK_ALTERTABLE_CLUSTER_SORT, HiveOperation.ALTERTABLE_CLUSTER_SORT);
+    commandType.put(HiveParser.TOK_SHOWDATABASES, HiveOperation.SHOWDATABASES);
+    commandType.put(HiveParser.TOK_SHOWTABLES, HiveOperation.SHOWTABLES);
+    commandType.put(HiveParser.TOK_SHOW_TABLESTATUS, HiveOperation.SHOW_TABLESTATUS);
+    commandType.put(HiveParser.TOK_SHOWFUNCTIONS, HiveOperation.SHOWFUNCTIONS);
+    commandType.put(HiveParser.TOK_SHOWINDEXES, HiveOperation.SHOWINDEXES);
+    commandType.put(HiveParser.TOK_SHOWPARTITIONS, HiveOperation.SHOWPARTITIONS);
+    commandType.put(HiveParser.TOK_SHOWLOCKS, HiveOperation.SHOWLOCKS);
+    commandType.put(HiveParser.TOK_CREATEFUNCTION, HiveOperation.CREATEFUNCTION);
+    commandType.put(HiveParser.TOK_DROPFUNCTION, HiveOperation.DROPFUNCTION);
+    commandType.put(HiveParser.TOK_CREATEVIEW, HiveOperation.CREATEVIEW);
+    commandType.put(HiveParser.TOK_DROPVIEW, HiveOperation.DROPVIEW);
+    commandType.put(HiveParser.TOK_CREATEINDEX, HiveOperation.CREATEINDEX);
+    commandType.put(HiveParser.TOK_DROPINDEX, HiveOperation.DROPINDEX);
+    commandType.put(HiveParser.TOK_ALTERINDEX_REBUILD, HiveOperation.ALTERINDEX_REBUILD);
+    commandType.put(HiveParser.TOK_ALTERINDEX_PROPERTIES, HiveOperation.ALTERINDEX_PROPS);
+    commandType.put(HiveParser.TOK_ALTERVIEW_PROPERTIES, HiveOperation.ALTERVIEW_PROPERTIES);
+    commandType.put(HiveParser.TOK_QUERY, HiveOperation.QUERY);
+    commandType.put(HiveParser.TOK_LOCKTABLE, HiveOperation.LOCKTABLE);
+    commandType.put(HiveParser.TOK_UNLOCKTABLE, HiveOperation.UNLOCKTABLE);
+    commandType.put(HiveParser.TOK_CREATEROLE, HiveOperation.CREATEROLE);
+    commandType.put(HiveParser.TOK_DROPROLE, HiveOperation.DROPROLE);
+    commandType.put(HiveParser.TOK_GRANT, HiveOperation.GRANT_PRIVILEGE);
+    commandType.put(HiveParser.TOK_REVOKE, HiveOperation.REVOKE_PRIVILEGE);
+    commandType.put(HiveParser.TOK_SHOW_GRANT, HiveOperation.SHOW_GRANT);
+    commandType.put(HiveParser.TOK_GRANT_ROLE, HiveOperation.GRANT_ROLE);
+    commandType.put(HiveParser.TOK_REVOKE_ROLE, HiveOperation.REVOKE_ROLE);
+    commandType.put(HiveParser.TOK_SHOW_ROLE_GRANT, HiveOperation.SHOW_ROLE_GRANT);
+    commandType.put(HiveParser.TOK_ALTERDATABASE_PROPERTIES, HiveOperation.ALTERDATABASE);
+    commandType.put(HiveParser.TOK_DESCDATABASE, HiveOperation.DESCDATABASE);
   }
 
   static {
-    tablePartitionCommandType.put(HiveParser.TOK_ALTERTABLE_ALTERPARTS_PROTECTMODE,
-        new String[] { "ALTERTABLE_PROTECTMODE", "ALTERPARTITION_PROTECTMODE" });
+    tablePartitionCommandType.put(
+        HiveParser.TOK_ALTERTABLE_ALTERPARTS_PROTECTMODE,
+        new HiveOperation[] { HiveOperation.ALTERTABLE_PROTECTMODE,
+            HiveOperation.ALTERPARTITION_PROTECTMODE });
     tablePartitionCommandType.put(HiveParser.TOK_ALTERTABLE_FILEFORMAT,
-        new String[] { "ALTERTABLE_FILEFORMAT", "ALTERPARTITION_FILEFORMAT" });
+        new HiveOperation[] { HiveOperation.ALTERTABLE_FILEFORMAT,
+            HiveOperation.ALTERPARTITION_FILEFORMAT });
     tablePartitionCommandType.put(HiveParser.TOK_ALTERTABLE_LOCATION,
-        new String[] { "ALTERTABLE_LOCATION", "ALTERPARTITION_LOCATION" });
+        new HiveOperation[] { HiveOperation.ALTERTABLE_LOCATION,
+            HiveOperation.ALTERPARTITION_LOCATION });
   }
-
 
   public static BaseSemanticAnalyzer get(HiveConf conf, ASTNode tree)
       throws SemanticException {
@@ -136,10 +149,18 @@ public final class SemanticAnalyzerFactory {
       case HiveParser.TOK_ALTERTABLE_UNARCHIVE:
       case HiveParser.TOK_LOCKTABLE:
       case HiveParser.TOK_UNLOCKTABLE:
+      case HiveParser.TOK_CREATEROLE:
+      case HiveParser.TOK_DROPROLE:
+      case HiveParser.TOK_GRANT:
+      case HiveParser.TOK_REVOKE:
+      case HiveParser.TOK_SHOW_GRANT:
+      case HiveParser.TOK_GRANT_ROLE:
+      case HiveParser.TOK_REVOKE_ROLE:
+      case HiveParser.TOK_SHOW_ROLE_GRANT:
       case HiveParser.TOK_ALTERDATABASE_PROPERTIES:
         return new DDLSemanticAnalyzer(conf);
       case HiveParser.TOK_ALTERTABLE_PARTITION:
-        String commandType = null;
+        HiveOperation commandType = null;
         Integer type = ((ASTNode) tree.getChild(1)).getToken().getType();
         if (tree.getChild(0).getChildCount() > 1) {
           commandType = tablePartitionCommandType.get(type)[1];
@@ -157,7 +178,7 @@ public final class SemanticAnalyzerFactory {
     }
   }
 
-  private static void setSessionCommandType(String commandType) {
+  private static void setSessionCommandType(HiveOperation commandType) {
     if (SessionState.get() != null) {
       SessionState.get().setCommandType(commandType);
     }

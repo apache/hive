@@ -1,0 +1,412 @@
+PREHOOK: query: create table src_autho_test as select * from src
+PREHOOK: type: CREATETABLE_AS_SELECT
+PREHOOK: Input: default@src
+POSTHOOK: query: create table src_autho_test as select * from src
+POSTHOOK: type: CREATETABLE_AS_SELECT
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@src_autho_test
+PREHOOK: query: revoke `ALL` on table src_autho_test from user hive_test_user
+PREHOOK: type: REVOKE_PRIVILEGE
+POSTHOOK: query: revoke `ALL` on table src_autho_test from user hive_test_user
+POSTHOOK: type: REVOKE_PRIVILEGE
+PREHOOK: query: --table grant to user
+
+grant `select` on table src_autho_test to user hive_test_user
+PREHOOK: type: GRANT_PRIVILEGE
+POSTHOOK: query: --table grant to user
+
+grant `select` on table src_autho_test to user hive_test_user
+POSTHOOK: type: GRANT_PRIVILEGE
+PREHOOK: query: show grant user hive_test_user on table src_autho_test
+PREHOOK: type: SHOW_GRANT
+POSTHOOK: query: show grant user hive_test_user on table src_autho_test
+POSTHOOK: type: SHOW_GRANT
+
+database	default	
+table	src_autho_test	
+principalName	hive_test_user	
+principalType	USER	
+privilege	Select	
+grantTime	1292567447	
+grantor	hive_test_user	
+PREHOOK: query: show grant user hive_test_user on table src_autho_test(key)
+PREHOOK: type: SHOW_GRANT
+POSTHOOK: query: show grant user hive_test_user on table src_autho_test(key)
+POSTHOOK: type: SHOW_GRANT
+PREHOOK: query: select key from src_autho_test order by key limit 20
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src_autho_test
+PREHOOK: Output: file:/var/folders/6g/6grtCwPMEf4sqHUPpy6xQG9ByHg/-Tmp-/heyongqiang/hive_2010-12-16_22-30-47_550_1512695429257033493/-mr-10000
+POSTHOOK: query: select key from src_autho_test order by key limit 20
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src_autho_test
+POSTHOOK: Output: file:/var/folders/6g/6grtCwPMEf4sqHUPpy6xQG9ByHg/-Tmp-/heyongqiang/hive_2010-12-16_22-30-47_550_1512695429257033493/-mr-10000
+0
+0
+0
+10
+100
+100
+103
+103
+104
+104
+105
+11
+111
+113
+113
+114
+116
+118
+118
+119
+PREHOOK: query: revoke `select` on table src_autho_test from user hive_test_user
+PREHOOK: type: REVOKE_PRIVILEGE
+POSTHOOK: query: revoke `select` on table src_autho_test from user hive_test_user
+POSTHOOK: type: REVOKE_PRIVILEGE
+PREHOOK: query: show grant user hive_test_user on table src_autho_test
+PREHOOK: type: SHOW_GRANT
+POSTHOOK: query: show grant user hive_test_user on table src_autho_test
+POSTHOOK: type: SHOW_GRANT
+PREHOOK: query: show grant user hive_test_user on table src_autho_test(key)
+PREHOOK: type: SHOW_GRANT
+POSTHOOK: query: show grant user hive_test_user on table src_autho_test(key)
+POSTHOOK: type: SHOW_GRANT
+PREHOOK: query: --column grant to user
+
+grant `select`(key) on table src_autho_test to user hive_test_user
+PREHOOK: type: GRANT_PRIVILEGE
+POSTHOOK: query: --column grant to user
+
+grant `select`(key) on table src_autho_test to user hive_test_user
+POSTHOOK: type: GRANT_PRIVILEGE
+PREHOOK: query: show grant user hive_test_user on table src_autho_test
+PREHOOK: type: SHOW_GRANT
+POSTHOOK: query: show grant user hive_test_user on table src_autho_test
+POSTHOOK: type: SHOW_GRANT
+PREHOOK: query: show grant user hive_test_user on table src_autho_test(key)
+PREHOOK: type: SHOW_GRANT
+POSTHOOK: query: show grant user hive_test_user on table src_autho_test(key)
+POSTHOOK: type: SHOW_GRANT
+
+database	default	
+table	src_autho_test	
+columnName	key	
+principalName	hive_test_user	
+principalType	USER	
+privilege	Select	
+grantTime	1292567455	
+grantor	hive_test_user	
+PREHOOK: query: select key from src_autho_test order by key limit 20
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src_autho_test
+PREHOOK: Output: file:/var/folders/6g/6grtCwPMEf4sqHUPpy6xQG9ByHg/-Tmp-/heyongqiang/hive_2010-12-16_22-30-55_772_6274083496243050072/-mr-10000
+POSTHOOK: query: select key from src_autho_test order by key limit 20
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src_autho_test
+POSTHOOK: Output: file:/var/folders/6g/6grtCwPMEf4sqHUPpy6xQG9ByHg/-Tmp-/heyongqiang/hive_2010-12-16_22-30-55_772_6274083496243050072/-mr-10000
+0
+0
+0
+10
+100
+100
+103
+103
+104
+104
+105
+11
+111
+113
+113
+114
+116
+118
+118
+119
+PREHOOK: query: revoke `select`(key) on table src_autho_test from user hive_test_user
+PREHOOK: type: REVOKE_PRIVILEGE
+POSTHOOK: query: revoke `select`(key) on table src_autho_test from user hive_test_user
+POSTHOOK: type: REVOKE_PRIVILEGE
+PREHOOK: query: show grant user hive_test_user on table src_autho_test
+PREHOOK: type: SHOW_GRANT
+POSTHOOK: query: show grant user hive_test_user on table src_autho_test
+POSTHOOK: type: SHOW_GRANT
+PREHOOK: query: show grant user hive_test_user on table src_autho_test(key)
+PREHOOK: type: SHOW_GRANT
+POSTHOOK: query: show grant user hive_test_user on table src_autho_test(key)
+POSTHOOK: type: SHOW_GRANT
+PREHOOK: query: --table grant to group
+
+grant `select` on table src_autho_test to group hive_test_group1
+PREHOOK: type: GRANT_PRIVILEGE
+POSTHOOK: query: --table grant to group
+
+grant `select` on table src_autho_test to group hive_test_group1
+POSTHOOK: type: GRANT_PRIVILEGE
+PREHOOK: query: show grant group hive_test_group1 on table src_autho_test
+PREHOOK: type: SHOW_GRANT
+POSTHOOK: query: show grant group hive_test_group1 on table src_autho_test
+POSTHOOK: type: SHOW_GRANT
+
+database	default	
+table	src_autho_test	
+principalName	hive_test_group1	
+principalType	GROUP	
+privilege	Select	
+grantTime	1292567463	
+grantor	hive_test_user	
+PREHOOK: query: show grant group hive_test_group1 on table src_autho_test(key)
+PREHOOK: type: SHOW_GRANT
+POSTHOOK: query: show grant group hive_test_group1 on table src_autho_test(key)
+POSTHOOK: type: SHOW_GRANT
+PREHOOK: query: select key from src_autho_test order by key limit 20
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src_autho_test
+PREHOOK: Output: file:/var/folders/6g/6grtCwPMEf4sqHUPpy6xQG9ByHg/-Tmp-/heyongqiang/hive_2010-12-16_22-31-03_700_7275195249200178582/-mr-10000
+POSTHOOK: query: select key from src_autho_test order by key limit 20
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src_autho_test
+POSTHOOK: Output: file:/var/folders/6g/6grtCwPMEf4sqHUPpy6xQG9ByHg/-Tmp-/heyongqiang/hive_2010-12-16_22-31-03_700_7275195249200178582/-mr-10000
+0
+0
+0
+10
+100
+100
+103
+103
+104
+104
+105
+11
+111
+113
+113
+114
+116
+118
+118
+119
+PREHOOK: query: revoke `select` on table src_autho_test from group hive_test_group1
+PREHOOK: type: REVOKE_PRIVILEGE
+POSTHOOK: query: revoke `select` on table src_autho_test from group hive_test_group1
+POSTHOOK: type: REVOKE_PRIVILEGE
+PREHOOK: query: show grant group hive_test_group1 on table src_autho_test
+PREHOOK: type: SHOW_GRANT
+POSTHOOK: query: show grant group hive_test_group1 on table src_autho_test
+POSTHOOK: type: SHOW_GRANT
+PREHOOK: query: show grant group hive_test_group1 on table src_autho_test(key)
+PREHOOK: type: SHOW_GRANT
+POSTHOOK: query: show grant group hive_test_group1 on table src_autho_test(key)
+POSTHOOK: type: SHOW_GRANT
+PREHOOK: query: --column grant to group
+
+grant `select`(key) on table src_autho_test to group hive_test_group1
+PREHOOK: type: GRANT_PRIVILEGE
+POSTHOOK: query: --column grant to group
+
+grant `select`(key) on table src_autho_test to group hive_test_group1
+POSTHOOK: type: GRANT_PRIVILEGE
+PREHOOK: query: show grant group hive_test_group1 on table src_autho_test
+PREHOOK: type: SHOW_GRANT
+POSTHOOK: query: show grant group hive_test_group1 on table src_autho_test
+POSTHOOK: type: SHOW_GRANT
+PREHOOK: query: show grant group hive_test_group1 on table src_autho_test(key)
+PREHOOK: type: SHOW_GRANT
+POSTHOOK: query: show grant group hive_test_group1 on table src_autho_test(key)
+POSTHOOK: type: SHOW_GRANT
+
+database	default	
+table	src_autho_test	
+columnName	key	
+principalName	hive_test_group1	
+principalType	GROUP	
+privilege	Select	
+grantTime	1292567471	
+grantor	hive_test_user	
+PREHOOK: query: select key from src_autho_test order by key limit 20
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src_autho_test
+PREHOOK: Output: file:/var/folders/6g/6grtCwPMEf4sqHUPpy6xQG9ByHg/-Tmp-/heyongqiang/hive_2010-12-16_22-31-11_544_6787651330159557242/-mr-10000
+POSTHOOK: query: select key from src_autho_test order by key limit 20
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src_autho_test
+POSTHOOK: Output: file:/var/folders/6g/6grtCwPMEf4sqHUPpy6xQG9ByHg/-Tmp-/heyongqiang/hive_2010-12-16_22-31-11_544_6787651330159557242/-mr-10000
+0
+0
+0
+10
+100
+100
+103
+103
+104
+104
+105
+11
+111
+113
+113
+114
+116
+118
+118
+119
+PREHOOK: query: revoke `select`(key) on table src_autho_test from group hive_test_group1
+PREHOOK: type: REVOKE_PRIVILEGE
+POSTHOOK: query: revoke `select`(key) on table src_autho_test from group hive_test_group1
+POSTHOOK: type: REVOKE_PRIVILEGE
+PREHOOK: query: show grant group hive_test_group1 on table src_autho_test
+PREHOOK: type: SHOW_GRANT
+POSTHOOK: query: show grant group hive_test_group1 on table src_autho_test
+POSTHOOK: type: SHOW_GRANT
+PREHOOK: query: show grant group hive_test_group1 on table src_autho_test(key)
+PREHOOK: type: SHOW_GRANT
+POSTHOOK: query: show grant group hive_test_group1 on table src_autho_test(key)
+POSTHOOK: type: SHOW_GRANT
+PREHOOK: query: --role
+create role src_role
+PREHOOK: type: CREATEROLE
+POSTHOOK: query: --role
+create role src_role
+POSTHOOK: type: CREATEROLE
+PREHOOK: query: grant role src_role to user hive_test_user
+PREHOOK: type: GRANT_ROLE
+POSTHOOK: query: grant role src_role to user hive_test_user
+POSTHOOK: type: GRANT_ROLE
+PREHOOK: query: show role grant user hive_test_user
+PREHOOK: type: SHOW_ROLE_GRANT
+POSTHOOK: query: show role grant user hive_test_user
+POSTHOOK: type: SHOW_ROLE_GRANT
+role name:src_role
+role name:src_role
+PREHOOK: query: --column grant to role
+
+grant `select`(key) on table src_autho_test to role src_role
+PREHOOK: type: GRANT_PRIVILEGE
+POSTHOOK: query: --column grant to role
+
+grant `select`(key) on table src_autho_test to role src_role
+POSTHOOK: type: GRANT_PRIVILEGE
+PREHOOK: query: show grant role src_role on table src_autho_test
+PREHOOK: type: SHOW_GRANT
+POSTHOOK: query: show grant role src_role on table src_autho_test
+POSTHOOK: type: SHOW_GRANT
+PREHOOK: query: show grant role src_role on table src_autho_test(key)
+PREHOOK: type: SHOW_GRANT
+POSTHOOK: query: show grant role src_role on table src_autho_test(key)
+POSTHOOK: type: SHOW_GRANT
+
+database	default	
+table	src_autho_test	
+columnName	key	
+principalName	src_role	
+principalType	ROLE	
+privilege	Select	
+grantTime	1292567480	
+grantor	hive_test_user	
+PREHOOK: query: select key from src_autho_test order by key limit 20
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src_autho_test
+PREHOOK: Output: file:/var/folders/6g/6grtCwPMEf4sqHUPpy6xQG9ByHg/-Tmp-/heyongqiang/hive_2010-12-16_22-31-20_263_1898304116616741455/-mr-10000
+POSTHOOK: query: select key from src_autho_test order by key limit 20
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src_autho_test
+POSTHOOK: Output: file:/var/folders/6g/6grtCwPMEf4sqHUPpy6xQG9ByHg/-Tmp-/heyongqiang/hive_2010-12-16_22-31-20_263_1898304116616741455/-mr-10000
+0
+0
+0
+10
+100
+100
+103
+103
+104
+104
+105
+11
+111
+113
+113
+114
+116
+118
+118
+119
+PREHOOK: query: revoke `select`(key) on table src_autho_test from role src_role
+PREHOOK: type: REVOKE_PRIVILEGE
+POSTHOOK: query: revoke `select`(key) on table src_autho_test from role src_role
+POSTHOOK: type: REVOKE_PRIVILEGE
+PREHOOK: query: --table grant to role
+
+grant `select` on table src_autho_test to role src_role
+PREHOOK: type: GRANT_PRIVILEGE
+POSTHOOK: query: --table grant to role
+
+grant `select` on table src_autho_test to role src_role
+POSTHOOK: type: GRANT_PRIVILEGE
+PREHOOK: query: select key from src_autho_test order by key limit 20
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src_autho_test
+PREHOOK: Output: file:/var/folders/6g/6grtCwPMEf4sqHUPpy6xQG9ByHg/-Tmp-/heyongqiang/hive_2010-12-16_22-31-26_813_7645696827575089587/-mr-10000
+POSTHOOK: query: select key from src_autho_test order by key limit 20
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src_autho_test
+POSTHOOK: Output: file:/var/folders/6g/6grtCwPMEf4sqHUPpy6xQG9ByHg/-Tmp-/heyongqiang/hive_2010-12-16_22-31-26_813_7645696827575089587/-mr-10000
+0
+0
+0
+10
+100
+100
+103
+103
+104
+104
+105
+11
+111
+113
+113
+114
+116
+118
+118
+119
+PREHOOK: query: show grant role src_role on table src_autho_test
+PREHOOK: type: SHOW_GRANT
+POSTHOOK: query: show grant role src_role on table src_autho_test
+POSTHOOK: type: SHOW_GRANT
+
+database	default	
+table	src_autho_test	
+principalName	src_role	
+principalType	ROLE	
+privilege	Select	
+grantTime	1292567486	
+grantor	hive_test_user	
+PREHOOK: query: show grant role src_role on table src_autho_test(key)
+PREHOOK: type: SHOW_GRANT
+POSTHOOK: query: show grant role src_role on table src_autho_test(key)
+POSTHOOK: type: SHOW_GRANT
+PREHOOK: query: revoke `select` on table src_autho_test from role src_role
+PREHOOK: type: REVOKE_PRIVILEGE
+POSTHOOK: query: revoke `select` on table src_autho_test from role src_role
+POSTHOOK: type: REVOKE_PRIVILEGE
+PREHOOK: query: -- drop role
+drop role src_role
+PREHOOK: type: DROPROLE
+POSTHOOK: query: -- drop role
+drop role src_role
+POSTHOOK: type: DROPROLE
+PREHOOK: query: drop table src_autho_test
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@src_autho_test
+PREHOOK: Output: default@src_autho_test
+POSTHOOK: query: drop table src_autho_test
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@src_autho_test
+POSTHOOK: Output: default@src_autho_test

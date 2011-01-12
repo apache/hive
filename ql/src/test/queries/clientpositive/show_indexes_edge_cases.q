@@ -21,5 +21,7 @@ SHOW INDEXES ON show_idx_full;
 EXPLAIN SHOW INDEXES ON show_idx_empty;
 SHOW INDEXES ON show_idx_empty;
 
+DROP INDEX idx_1 on show_idx_full;
+DROP INDEX idx_2 on show_idx_full;
 DROP TABLE show_idx_empty;
 DROP TABLE show_idx_full;

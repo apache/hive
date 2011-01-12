@@ -140,6 +140,9 @@ Trunk -  Unreleased
     HIVE-1858 Implement DROP {PARTITION, INDEX, TEMPORARY FUNCTION} IF EXISTS
     (Marcel Kornacker via jvs)
 
+    HIVE-78 Authorization model for Hive
+    (Yongqiang He via namit)
+
   IMPROVEMENTS
 
     HIVE-1692. FetchOperator.getInputFormatFromCache hides causal exception (Philip Zeyliger via cws)

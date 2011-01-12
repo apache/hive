@@ -59,6 +59,12 @@ public class DDLWork implements Serializable {
   private DescDatabaseDesc descDbDesc;
   private AlterDatabaseDesc alterDbDesc;
 
+  private RoleDDLDesc roleDDLDesc;
+  private GrantDesc grantDesc;
+  private ShowGrantDesc showGrantDesc;
+  private RevokeDesc revokeDesc;
+  private GrantRevokeRoleDDL grantRevokeRoleDDL;
+
   /**
    * ReadEntitites that are passed to the hooks.
    */
@@ -332,6 +338,36 @@ public class DDLWork implements Serializable {
       DropIndexDesc dropIndexDesc) {
     this(inputs, outputs);
     this.dropIdxDesc = dropIndexDesc;
+  }
+
+  public DDLWork(HashSet<ReadEntity> inputs, HashSet<WriteEntity> outputs,
+      RoleDDLDesc roleDDLDesc) {
+    this(inputs, outputs);
+    this.roleDDLDesc = roleDDLDesc;
+  }
+
+  public DDLWork(HashSet<ReadEntity> inputs, HashSet<WriteEntity> outputs,
+      GrantDesc grantDesc) {
+    this(inputs, outputs);
+    this.grantDesc = grantDesc;
+  }
+
+  public DDLWork(HashSet<ReadEntity> inputs, HashSet<WriteEntity> outputs,
+      ShowGrantDesc showGrant) {
+    this(inputs, outputs);
+    this.showGrantDesc = showGrant;
+  }
+
+  public DDLWork(HashSet<ReadEntity> inputs, HashSet<WriteEntity> outputs,
+      RevokeDesc revokeDesc) {
+    this(inputs, outputs);
+    this.revokeDesc = revokeDesc;
+  }
+
+  public DDLWork(HashSet<ReadEntity> inputs, HashSet<WriteEntity> outputs,
+      GrantRevokeRoleDDL grantRevokeRoleDDL) {
+    this(inputs, outputs);
+    this.grantRevokeRoleDDL = grantRevokeRoleDDL;
   }
 
   public DDLWork(HashSet<ReadEntity> inputs, HashSet<WriteEntity> outputs,
@@ -747,6 +783,70 @@ public class DDLWork implements Serializable {
     this.dropIdxDesc = dropIdxDesc;
   }
 
+  /**
+   * @return role ddl desc
+   */
+  public RoleDDLDesc getRoleDDLDesc() {
+    return roleDDLDesc;
+  }
+
+  /**
+   * @param roleDDLDesc role ddl desc
+   */
+  public void setRoleDDLDesc(RoleDDLDesc roleDDLDesc) {
+    this.roleDDLDesc = roleDDLDesc;
+  }
+  
+  /**
+   * @return grant desc
+   */
+  public GrantDesc getGrantDesc() {
+    return grantDesc;
+  }
+
+  /**
+   * @param grantDesc grant desc
+   */
+  public void setGrantDesc(GrantDesc grantDesc) {
+    this.grantDesc = grantDesc;
+  }
+  
+  /**
+   * @return show grant desc
+   */
+  public ShowGrantDesc getShowGrantDesc() {
+    return showGrantDesc;
+  }
+
+  /**
+   * @param showGrantDesc
+   */
+  public void setShowGrantDesc(ShowGrantDesc showGrantDesc) {
+    this.showGrantDesc = showGrantDesc;
+  }
+
+  public RevokeDesc getRevokeDesc() {
+    return revokeDesc;
+  }
+
+  public void setRevokeDesc(RevokeDesc revokeDesc) {
+    this.revokeDesc = revokeDesc;
+  }
+  
+  /**
+   * @return
+   */
+  public GrantRevokeRoleDDL getGrantRevokeRoleDDL() {
+    return grantRevokeRoleDDL;
+  }
+
+  /**
+   * @param grantRevokeRoleDDL
+   */
+  public void setGrantRevokeRoleDDL(GrantRevokeRoleDDL grantRevokeRoleDDL) {
+    this.grantRevokeRoleDDL = grantRevokeRoleDDL;
+  }
+  
   public void setAlterDatabaseDesc(AlterDatabaseDesc alterDbDesc) {
     this.alterDbDesc = alterDbDesc;
   }

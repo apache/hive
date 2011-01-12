@@ -48,11 +48,11 @@ STAGE PLANS:
 PREHOOK: query: select str_to_map('a=1,b=2,c=3',',','=')['a'] from src limit 3
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/tmp/sdong/hive_2010-11-12_00-48-48_939_5414753236298860779/-mr-10000
+PREHOOK: Output: file:/var/folders/6g/6grtCwPMEf4sqHUPpy6xQG9ByHg/-Tmp-/heyongqiang/hive_2010-11-18_16-11-47_081_185807984859506518/-mr-10000
 POSTHOOK: query: select str_to_map('a=1,b=2,c=3',',','=')['a'] from src limit 3
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: file:/tmp/sdong/hive_2010-11-12_00-48-48_939_5414753236298860779/-mr-10000
+POSTHOOK: Output: file:/var/folders/6g/6grtCwPMEf4sqHUPpy6xQG9ByHg/-Tmp-/heyongqiang/hive_2010-11-18_16-11-47_081_185807984859506518/-mr-10000
 1
 1
 1
@@ -95,11 +95,11 @@ STAGE PLANS:
 PREHOOK: query: select str_to_map('a:1,b:2,c:3') from src limit 3
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/tmp/sdong/hive_2010-11-12_00-48-51_828_6905327639418151142/-mr-10000
+PREHOOK: Output: file:/var/folders/6g/6grtCwPMEf4sqHUPpy6xQG9ByHg/-Tmp-/heyongqiang/hive_2010-11-18_16-11-53_276_628458177270710173/-mr-10000
 POSTHOOK: query: select str_to_map('a:1,b:2,c:3') from src limit 3
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: file:/tmp/sdong/hive_2010-11-12_00-48-51_828_6905327639418151142/-mr-10000
+POSTHOOK: Output: file:/var/folders/6g/6grtCwPMEf4sqHUPpy6xQG9ByHg/-Tmp-/heyongqiang/hive_2010-11-18_16-11-53_276_628458177270710173/-mr-10000
 {"b":"2","c":"3","a":"1"}
 {"b":"2","c":"3","a":"1"}
 {"b":"2","c":"3","a":"1"}
@@ -142,11 +142,11 @@ STAGE PLANS:
 PREHOOK: query: select str_to_map('a:1,b:2,c:3',',',':') from src limit 3
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/tmp/sdong/hive_2010-11-12_00-48-54_404_1637219732245487353/-mr-10000
+PREHOOK: Output: file:/var/folders/6g/6grtCwPMEf4sqHUPpy6xQG9ByHg/-Tmp-/heyongqiang/hive_2010-11-18_16-12-00_242_6299210516765000168/-mr-10000
 POSTHOOK: query: select str_to_map('a:1,b:2,c:3',',',':') from src limit 3
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: file:/tmp/sdong/hive_2010-11-12_00-48-54_404_1637219732245487353/-mr-10000
+POSTHOOK: Output: file:/var/folders/6g/6grtCwPMEf4sqHUPpy6xQG9ByHg/-Tmp-/heyongqiang/hive_2010-11-18_16-12-00_242_6299210516765000168/-mr-10000
 {"b":"2","c":"3","a":"1"}
 {"b":"2","c":"3","a":"1"}
 {"b":"2","c":"3","a":"1"}
@@ -205,13 +205,13 @@ from (select transform('a:1,b:2,c:3') using 'cat' as (ss) from src) t
 limit 3
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/tmp/sdong/hive_2010-11-12_00-48-56_995_8619552318902310354/-mr-10000
+PREHOOK: Output: file:/var/folders/6g/6grtCwPMEf4sqHUPpy6xQG9ByHg/-Tmp-/heyongqiang/hive_2010-11-18_16-12-08_090_5560348263638743320/-mr-10000
 POSTHOOK: query: select str_to_map(t.ss,',',':')['a']
 from (select transform('a:1,b:2,c:3') using 'cat' as (ss) from src) t
 limit 3
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: file:/tmp/sdong/hive_2010-11-12_00-48-56_995_8619552318902310354/-mr-10000
+POSTHOOK: Output: file:/var/folders/6g/6grtCwPMEf4sqHUPpy6xQG9ByHg/-Tmp-/heyongqiang/hive_2010-11-18_16-12-08_090_5560348263638743320/-mr-10000
 1
 1
 1
@@ -220,20 +220,20 @@ PREHOOK: type: DROPTABLE
 POSTHOOK: query: drop table tbl_s2m
 POSTHOOK: type: DROPTABLE
 PREHOOK: query: create table tbl_s2m as select 'ABC=CC_333=444' as t from src limit 3
-PREHOOK: type: CREATETABLE
+PREHOOK: type: CREATETABLE_AS_SELECT
 PREHOOK: Input: default@src
 POSTHOOK: query: create table tbl_s2m as select 'ABC=CC_333=444' as t from src limit 3
-POSTHOOK: type: CREATETABLE
+POSTHOOK: type: CREATETABLE_AS_SELECT
 POSTHOOK: Input: default@src
 POSTHOOK: Output: default@tbl_s2m
 PREHOOK: query: select str_to_map(t,'_','=')['333'] from tbl_s2m
 PREHOOK: type: QUERY
 PREHOOK: Input: default@tbl_s2m
-PREHOOK: Output: file:/tmp/sdong/hive_2010-11-12_00-49-02_576_7096389194927995175/-mr-10000
+PREHOOK: Output: file:/var/folders/6g/6grtCwPMEf4sqHUPpy6xQG9ByHg/-Tmp-/heyongqiang/hive_2010-11-18_16-12-26_274_4931967655402208603/-mr-10000
 POSTHOOK: query: select str_to_map(t,'_','=')['333'] from tbl_s2m
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@tbl_s2m
-POSTHOOK: Output: file:/tmp/sdong/hive_2010-11-12_00-49-02_576_7096389194927995175/-mr-10000
+POSTHOOK: Output: file:/var/folders/6g/6grtCwPMEf4sqHUPpy6xQG9ByHg/-Tmp-/heyongqiang/hive_2010-11-18_16-12-26_274_4931967655402208603/-mr-10000
 444
 444
 444

@@ -41,6 +41,7 @@ public class Table implements TBase<Table, Table._Fields>, java.io.Serializable,
   private static final TField VIEW_ORIGINAL_TEXT_FIELD_DESC = new TField("viewOriginalText", TType.STRING, (short)10);
   private static final TField VIEW_EXPANDED_TEXT_FIELD_DESC = new TField("viewExpandedText", TType.STRING, (short)11);
   private static final TField TABLE_TYPE_FIELD_DESC = new TField("tableType", TType.STRING, (short)12);
+  private static final TField PRIVILEGES_FIELD_DESC = new TField("privileges", TType.STRUCT, (short)13);
 
   private String tableName;
   private String dbName;
@@ -54,6 +55,7 @@ public class Table implements TBase<Table, Table._Fields>, java.io.Serializable,
   private String viewOriginalText;
   private String viewExpandedText;
   private String tableType;
+  private PrincipalPrivilegeSet privileges;
 
   /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
   public enum _Fields implements TFieldIdEnum {
@@ -68,7 +70,8 @@ public class Table implements TBase<Table, Table._Fields>, java.io.Serializable,
     PARAMETERS((short)9, "parameters"),
     VIEW_ORIGINAL_TEXT((short)10, "viewOriginalText"),
     VIEW_EXPANDED_TEXT((short)11, "viewExpandedText"),
-    TABLE_TYPE((short)12, "tableType");
+    TABLE_TYPE((short)12, "tableType"),
+    PRIVILEGES((short)13, "privileges");
 
     private static final Map<String, _Fields> byName = new HashMap<String, _Fields>();
 
@@ -107,6 +110,8 @@ public class Table implements TBase<Table, Table._Fields>, java.io.Serializable,
           return VIEW_EXPANDED_TEXT;
         case 12: // TABLE_TYPE
           return TABLE_TYPE;
+        case 13: // PRIVILEGES
+          return PRIVILEGES;
         default:
           return null;
       }
@@ -182,6 +187,8 @@ public class Table implements TBase<Table, Table._Fields>, java.io.Serializable,
         new FieldValueMetaData(TType.STRING)));
     tmpMap.put(_Fields.TABLE_TYPE, new FieldMetaData("tableType", TFieldRequirementType.DEFAULT, 
         new FieldValueMetaData(TType.STRING)));
+    tmpMap.put(_Fields.PRIVILEGES, new FieldMetaData("privileges", TFieldRequirementType.OPTIONAL, 
+        new StructMetaData(TType.STRUCT, PrincipalPrivilegeSet.class)));
     metaDataMap = Collections.unmodifiableMap(tmpMap);
     FieldMetaData.addStructMetaDataMap(Table.class, metaDataMap);
   }
@@ -273,6 +280,9 @@ public class Table implements TBase<Table, Table._Fields>, java.io.Serializable,
     if (other.isSetTableType()) {
       this.tableType = other.tableType;
     }
+    if (other.isSetPrivileges()) {
+      this.privileges = new PrincipalPrivilegeSet(other.privileges);
+    }
   }
 
   public Table deepCopy() {
@@ -296,6 +306,7 @@ public class Table implements TBase<Table, Table._Fields>, java.io.Serializable,
     this.viewOriginalText = null;
     this.viewExpandedText = null;
     this.tableType = null;
+    this.privileges = null;
   }
 
   public String getTableName() {
@@ -597,6 +608,29 @@ public class Table implements TBase<Table, Table._Fields>, java.io.Serializable,
     }
   }
 
+  public PrincipalPrivilegeSet getPrivileges() {
+    return this.privileges;
+  }
+
+  public void setPrivileges(PrincipalPrivilegeSet privileges) {
+    this.privileges = privileges;
+  }
+
+  public void unsetPrivileges() {
+    this.privileges = null;
+  }
+
+  /** Returns true if field privileges is set (has been asigned a value) and false otherwise */
+  public boolean isSetPrivileges() {
+    return this.privileges != null;
+  }
+
+  public void setPrivilegesIsSet(boolean value) {
+    if (!value) {
+      this.privileges = null;
+    }
+  }
+
   public void setFieldValue(_Fields field, Object value) {
     switch (field) {
     case TABLE_NAME:
@@ -695,6 +729,14 @@ public class Table implements TBase<Table, Table._Fields>, java.io.Serializable,
       }
       break;
 
+    case PRIVILEGES:
+      if (value == null) {
+        unsetPrivileges();
+      } else {
+        setPrivileges((PrincipalPrivilegeSet)value);
+      }
+      break;
+
     }
   }
 
@@ -736,6 +778,9 @@ public class Table implements TBase<Table, Table._Fields>, java.io.Serializable,
     case TABLE_TYPE:
       return getTableType();
 
+    case PRIVILEGES:
+      return getPrivileges();
+
     }
     throw new IllegalStateException();
   }
@@ -771,6 +816,8 @@ public class Table implements TBase<Table, Table._Fields>, java.io.Serializable,
       return isSetViewExpandedText();
     case TABLE_TYPE:
       return isSetTableType();
+    case PRIVILEGES:
+      return isSetPrivileges();
     }
     throw new IllegalStateException();
   }
@@ -893,6 +940,15 @@ public class Table implements TBase<Table, Table._Fields>, java.io.Serializable,
       if (!(this_present_tableType && that_present_tableType))
         return false;
       if (!this.tableType.equals(that.tableType))
+        return false;
+    }
+
+    boolean this_present_privileges = true && this.isSetPrivileges();
+    boolean that_present_privileges = true && that.isSetPrivileges();
+    if (this_present_privileges || that_present_privileges) {
+      if (!(this_present_privileges && that_present_privileges))
+        return false;
+      if (!this.privileges.equals(that.privileges))
         return false;
     }
 
@@ -1032,6 +1088,16 @@ public class Table implements TBase<Table, Table._Fields>, java.io.Serializable,
         return lastComparison;
       }
     }
+    lastComparison = Boolean.valueOf(isSetPrivileges()).compareTo(typedOther.isSetPrivileges());
+    if (lastComparison != 0) {
+      return lastComparison;
+    }
+    if (isSetPrivileges()) {
+      lastComparison = TBaseHelper.compareTo(this.privileges, typedOther.privileges);
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+    }
     return 0;
   }
 
@@ -1105,14 +1171,14 @@ public class Table implements TBase<Table, Table._Fields>, java.io.Serializable,
         case 8: // PARTITION_KEYS
           if (field.type == TType.LIST) {
             {
-              TList _list31 = iprot.readListBegin();
-              this.partitionKeys = new ArrayList<FieldSchema>(_list31.size);
-              for (int _i32 = 0; _i32 < _list31.size; ++_i32)
+              TList _list66 = iprot.readListBegin();
+              this.partitionKeys = new ArrayList<FieldSchema>(_list66.size);
+              for (int _i67 = 0; _i67 < _list66.size; ++_i67)
               {
-                FieldSchema _elem33;
-                _elem33 = new FieldSchema();
-                _elem33.read(iprot);
-                this.partitionKeys.add(_elem33);
+                FieldSchema _elem68;
+                _elem68 = new FieldSchema();
+                _elem68.read(iprot);
+                this.partitionKeys.add(_elem68);
               }
               iprot.readListEnd();
             }
@@ -1123,15 +1189,15 @@ public class Table implements TBase<Table, Table._Fields>, java.io.Serializable,
         case 9: // PARAMETERS
           if (field.type == TType.MAP) {
             {
-              TMap _map34 = iprot.readMapBegin();
-              this.parameters = new HashMap<String,String>(2*_map34.size);
-              for (int _i35 = 0; _i35 < _map34.size; ++_i35)
+              TMap _map69 = iprot.readMapBegin();
+              this.parameters = new HashMap<String,String>(2*_map69.size);
+              for (int _i70 = 0; _i70 < _map69.size; ++_i70)
               {
-                String _key36;
-                String _val37;
-                _key36 = iprot.readString();
-                _val37 = iprot.readString();
-                this.parameters.put(_key36, _val37);
+                String _key71;
+                String _val72;
+                _key71 = iprot.readString();
+                _val72 = iprot.readString();
+                this.parameters.put(_key71, _val72);
               }
               iprot.readMapEnd();
             }
@@ -1156,6 +1222,14 @@ public class Table implements TBase<Table, Table._Fields>, java.io.Serializable,
         case 12: // TABLE_TYPE
           if (field.type == TType.STRING) {
             this.tableType = iprot.readString();
+          } else { 
+            TProtocolUtil.skip(iprot, field.type);
+          }
+          break;
+        case 13: // PRIVILEGES
+          if (field.type == TType.STRUCT) {
+            this.privileges = new PrincipalPrivilegeSet();
+            this.privileges.read(iprot);
           } else { 
             TProtocolUtil.skip(iprot, field.type);
           }
@@ -1206,9 +1280,9 @@ public class Table implements TBase<Table, Table._Fields>, java.io.Serializable,
       oprot.writeFieldBegin(PARTITION_KEYS_FIELD_DESC);
       {
         oprot.writeListBegin(new TList(TType.STRUCT, this.partitionKeys.size()));
-        for (FieldSchema _iter38 : this.partitionKeys)
+        for (FieldSchema _iter73 : this.partitionKeys)
         {
-          _iter38.write(oprot);
+          _iter73.write(oprot);
         }
         oprot.writeListEnd();
       }
@@ -1218,10 +1292,10 @@ public class Table implements TBase<Table, Table._Fields>, java.io.Serializable,
       oprot.writeFieldBegin(PARAMETERS_FIELD_DESC);
       {
         oprot.writeMapBegin(new TMap(TType.STRING, TType.STRING, this.parameters.size()));
-        for (Map.Entry<String, String> _iter39 : this.parameters.entrySet())
+        for (Map.Entry<String, String> _iter74 : this.parameters.entrySet())
         {
-          oprot.writeString(_iter39.getKey());
-          oprot.writeString(_iter39.getValue());
+          oprot.writeString(_iter74.getKey());
+          oprot.writeString(_iter74.getValue());
         }
         oprot.writeMapEnd();
       }
@@ -1241,6 +1315,13 @@ public class Table implements TBase<Table, Table._Fields>, java.io.Serializable,
       oprot.writeFieldBegin(TABLE_TYPE_FIELD_DESC);
       oprot.writeString(this.tableType);
       oprot.writeFieldEnd();
+    }
+    if (this.privileges != null) {
+      if (isSetPrivileges()) {
+        oprot.writeFieldBegin(PRIVILEGES_FIELD_DESC);
+        this.privileges.write(oprot);
+        oprot.writeFieldEnd();
+      }
     }
     oprot.writeFieldStop();
     oprot.writeStructEnd();
@@ -1334,6 +1415,16 @@ public class Table implements TBase<Table, Table._Fields>, java.io.Serializable,
       sb.append(this.tableType);
     }
     first = false;
+    if (isSetPrivileges()) {
+      if (!first) sb.append(", ");
+      sb.append("privileges:");
+      if (this.privileges == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.privileges);
+      }
+      first = false;
+    }
     sb.append(")");
     return sb.toString();
   }
