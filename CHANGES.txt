@@ -335,6 +335,9 @@ Trunk -  Unreleased
     confusing it with a release
     (Carl Steinbach via jvs)
 
+    HIVE-1907 Store jobid in ExecDriver
+    (namit via He Yongqiang)
+
   OPTIMIZATIONS
 
   BUG FIXES
