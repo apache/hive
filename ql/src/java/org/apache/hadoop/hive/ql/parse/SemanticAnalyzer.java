@@ -3574,9 +3574,9 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
           try {
             String ppath = dpCtx.getSPPath();
             ppath = ppath.substring(0, ppath.length()-1);
-            DummyPartition p = new DummyPartition(dest_tab,
-                                                  dest_tab.getDbName() + "@" + dest_tab.getTableName() + "@" + ppath);
-
+            DummyPartition p =
+              new DummyPartition(dest_tab,
+                                 dest_tab.getDbName() + "@" + dest_tab.getTableName() + "@" + ppath);
             outputs.add(new WriteEntity(p, false));
           } catch (HiveException e) {
             throw new SemanticException(e.getMessage());

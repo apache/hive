@@ -19,6 +19,7 @@
 package org.apache.hadoop.hive.ql.lockmgr;
 
 import org.apache.hadoop.hive.ql.metadata.Partition;
+import org.apache.hadoop.hive.ql.metadata.DummyPartition;
 import org.apache.hadoop.hive.ql.metadata.Table;
 
 public class HiveLockObject {
@@ -75,6 +76,12 @@ public class HiveLockObject {
     this.data = null;
   }
 
+  public HiveLockObject(String path, HiveLockObjectData lockData) {
+    this.pathNames = new String[1];
+    this.pathNames[0] = path;
+    this.data = lockData;
+  }
+
   public HiveLockObject(String[] paths, HiveLockObjectData lockData) {
     this.pathNames = paths;
     this.data = lockData;
@@ -89,6 +96,10 @@ public class HiveLockObject {
         par.getTable().getTableName(), par.getName() }, lockData);
   }
 
+  public HiveLockObject(DummyPartition par, HiveLockObjectData lockData) {
+    this(new String[] { par.getName() }, lockData);
+  }
+
   public String getName() {
     if (this.pathNames == null) {
       return null;
@@ -97,7 +108,31 @@ public class HiveLockObject {
     boolean first = true;
     for (int i = 0; i < pathNames.length; i++) {
       if (!first) {
-        ret = ret + "@";
+        ret = ret + "/";
+      } else {
+        first = false;
+      }
+      ret = ret + pathNames[i];
+    }
+    return ret;
+  }
+
+  public String getDisplayName() {
+    if (this.pathNames == null) {
+      return null;
+    }
+    if (pathNames.length == 1) {
+      return pathNames[0];
+    }
+    else if (pathNames.length == 2) {
+      return pathNames[0] + "@" + pathNames[1];
+    }
+
+    String ret = pathNames[0] + "@" + pathNames[1] + "@";
+    boolean first = true;
+    for (int i = 2; i < pathNames.length; i++) {
+      if (!first) {
+        ret = ret + "/";
       } else {
         first = false;
       }

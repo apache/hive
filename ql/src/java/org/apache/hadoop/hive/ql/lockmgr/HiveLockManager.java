@@ -33,7 +33,10 @@ public interface HiveLockManager {
    */
   public HiveLock lock(HiveLockObject key, HiveLockMode mode,
       boolean keepAlive, int numRetries, int sleepTime) throws LockException;
+  public List<HiveLock> lock(List<HiveLockObj> objs,
+      boolean keepAlive, int numRetries, int sleepTime) throws LockException;
   public void unlock(HiveLock hiveLock) throws LockException;
+  public void releaseLocks(List<HiveLock> hiveLocks);
 
   public List<HiveLock> getLocks(boolean verifyTablePartitions, boolean fetchData) throws LockException;
   public List<HiveLock> getLocks(HiveLockObject key, boolean verifyTablePartitions, boolean fetchData) throws LockException;

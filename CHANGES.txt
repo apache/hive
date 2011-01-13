@@ -338,6 +338,9 @@ Trunk -  Unreleased
     HIVE-1907 Store jobid in ExecDriver
     (namit via He Yongqiang)
 
+    HIVE-1865 redo zookeeper hive lock manager
+    (namit via He Yongqiang)
+
   OPTIMIZATIONS
 
   BUG FIXES

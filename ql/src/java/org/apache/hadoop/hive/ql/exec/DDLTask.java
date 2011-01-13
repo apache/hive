@@ -1825,7 +1825,7 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
 
       while (locksIter.hasNext()) {
         HiveLock lock = locksIter.next();
-        outStream.writeBytes(lock.getHiveLockObject().getName());
+        outStream.writeBytes(lock.getHiveLockObject().getDisplayName());
         outStream.write(separator);
         outStream.writeBytes(lock.getHiveLockMode().toString());
         if (isExt) {

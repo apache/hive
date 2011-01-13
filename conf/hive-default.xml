@@ -776,6 +776,12 @@
 </property>
 
 <property>
+  <name>hive.zookeeper.clean.extra.nodes</name>
+  <value>false</value>
+  <description>Clean extra nodes at the end of the session.</description>
+</property>
+
+<property>
   <name>fs.har.impl</name>
   <value>org.apache.hadoop.hive.shims.HiveHarFileSystem</value>
   <description>The implementation for accessing Hadoop Archives. Note that this won't be applicable to Hadoop vers less than 0.20</description>
@@ -827,8 +833,8 @@
 <property>
   <name>hive.auto.progress.timeout</name>
   <value>0</value>
-  <description> 
-    How long to run autoprogressor for the script/UDTF operators (in seconds). 
+  <description>
+    How long to run autoprogressor for the script/UDTF operators (in seconds).
     Set to 0 for forever.
   </description>
 </property>
