@@ -194,7 +194,7 @@ public class HiveInputFormat<K extends WritableComparable, V extends Writable>
         inputFormats.put(inputFormatClass, newInstance);
       } catch (Exception e) {
         throw new IOException("Cannot create an instance of InputFormat class "
-            + inputFormatClass.getName() + " as specified in mapredWork!");
+            + inputFormatClass.getName() + " as specified in mapredWork!", e);
       }
     }
     return inputFormats.get(inputFormatClass);

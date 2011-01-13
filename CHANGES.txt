@@ -345,6 +345,9 @@ Trunk -  Unreleased
 
   BUG FIXES
 
+    HIVE-1203. HiveInputFormat.getInputFormatFromCache "swallows" cause exception when trowing IOExcpetion
+    (Vladimir Klimontovich via cws)
+
     HIVE-1524. Parallel Execution fails if mapred.job.name is set
     (Ning Zhang via jssarma)
 
