@@ -698,6 +698,9 @@ Trunk -  Unreleased
     HIVE-1912 Double escaping special chars when removing old partitions
     in rmr (Ning Zhang via namit)
 
+    HIVE-1913 use partition level serde properties
+    (Yongiang He via namit)
+
   TESTS
 
     HIVE-1464. improve  test query performance

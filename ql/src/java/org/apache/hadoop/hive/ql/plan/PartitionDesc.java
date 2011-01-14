@@ -160,7 +160,7 @@ public class PartitionDesc implements Serializable, Cloneable {
 
   @Explain(displayName = "properties", normalExplain = false)
   public java.util.Properties getProperties() {
-    if (tableDesc != null) {
+    if (properties == null && tableDesc != null) {
       return tableDesc.getProperties();
     }
     return properties;
