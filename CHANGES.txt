@@ -695,6 +695,9 @@ Trunk -  Unreleased
     HIVE-1903 Can't join HBase tables if one's name is the beginning of
     the other (John Sichi via namit)
 
+    HIVE-1912 Double escaping special chars when removing old partitions
+    in rmr (Ning Zhang via namit)
+
   TESTS
 
     HIVE-1464. improve  test query performance

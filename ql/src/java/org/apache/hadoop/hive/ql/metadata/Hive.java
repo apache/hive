@@ -95,7 +95,7 @@ public class Hive {
   private HiveConf conf = null;
   private IMetaStoreClient metaStoreClient;
   private String currentDatabase;
-  
+
   private static ThreadLocal<Hive> hiveDB = new ThreadLocal() {
     @Override
     protected synchronized Object initialValue() {
@@ -965,7 +965,7 @@ public class Hive {
       throw new HiveException(e);
     }
   }
-  
+
   /**
    * Query metadata to see if a database with the given name already exists.
    *
@@ -1134,7 +1134,7 @@ public class Hive {
   public void loadTable(Path loadPath, String tableName, boolean replace,
       boolean holdDDLTime) throws HiveException {
     Table tbl = getTable(tableName);
-    
+
     if (replace) {
       tbl.replaceFiles(loadPath);
     } else {
@@ -1459,7 +1459,7 @@ public class Hive {
   public void setCurrentDatabase(String currentDatabase) {
     this.currentDatabase = currentDatabase;
   }
-  
+
   public void createRole(String roleName, String ownerName)
       throws HiveException {
     try {
@@ -1476,7 +1476,7 @@ public class Hive {
       throw new HiveException(e);
     }
   }
-  
+
   public List<Role> showRoleGrant(String principalName, PrincipalType principalType) throws HiveException {
     try {
       return getMSC().list_roles(principalName, principalType);
@@ -1484,7 +1484,7 @@ public class Hive {
       throw new HiveException(e);
     }
   }
-  
+
   public boolean grantRole(String roleName, String userName,
       PrincipalType principalType, String grantor, PrincipalType grantorType,
       boolean grantOption) throws HiveException {
@@ -1504,7 +1504,7 @@ public class Hive {
       throw new HiveException(e);
     }
   }
-  
+
   public List<Role> listRoles(String userName,  PrincipalType principalType)
       throws HiveException {
     try {
@@ -1513,7 +1513,7 @@ public class Hive {
       throw new HiveException(e);
     }
   }
-  
+
   /**
    * @param objectType
    *          hive object type
@@ -1717,7 +1717,7 @@ public class Hive {
             // use FsShell to move data to .Trash first rather than delete permanently
             FsShell fshell = new FsShell();
             fshell.setConf(conf);
-            fshell.run(new String[]{"-rmr", oldPath.toUri().toString()});
+            fshell.run(new String[]{"-rmr", oldPath.toString()});
           }
         } catch (Exception e) {
           //swallow the exception
@@ -1734,7 +1734,7 @@ public class Hive {
       	if (fs.exists(destf)) {
       	  fs.delete(destf, true);
       	}
-      	
+
       	boolean b = fs.rename(srcs[0].getPath(), destf);
       	if (!b) {
       	  throw new HiveException("Unable to move results from " + srcs[0].getPath()
@@ -1806,7 +1806,7 @@ public class Hive {
     }
     return metaStoreClient;
   }
-  
+
   private String getUserName() {
     SessionState ss = SessionState.get();
     if (ss != null && ss.getAuthenticator() != null) {
@@ -1814,7 +1814,7 @@ public class Hive {
     }
     return null;
   }
-  
+
   private List<String> getGroupNames() {
     SessionState ss = SessionState.get();
     if (ss != null && ss.getAuthenticator() != null) {
