@@ -66,6 +66,7 @@ if len(sys.argv) <= 1 or sys.argv[1] == '--help':
   print '   get_index_names(string db_name, string tbl_name, i16 max_indexes)'
   print '  bool create_role(Role role)'
   print '  bool drop_role(string role_name)'
+  print '   get_role_names()'
   print '  bool grant_role(string role_name, string principal_name, PrincipalType principal_type, string grantor, PrincipalType grantorType, bool grant_option)'
   print '  bool revoke_role(string role_name, string principal_name, PrincipalType principal_type)'
   print '   list_roles(string principal_name, PrincipalType principal_type)'
@@ -396,6 +397,12 @@ elif cmd == 'drop_role':
     print 'drop_role requires 1 args'
     sys.exit(1)
   pp.pprint(client.drop_role(args[0],))
+
+elif cmd == 'get_role_names':
+  if len(args) != 0:
+    print 'get_role_names requires 0 args'
+    sys.exit(1)
+  pp.pprint(client.get_role_names())
 
 elif cmd == 'grant_role':
   if len(args) != 6:

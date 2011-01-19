@@ -1,0 +1,80 @@
+PREHOOK: query: CREATE DATABASE IF NOT EXISTS test_db COMMENT 'Hive test database'
+PREHOOK: type: CREATEDATABASE
+POSTHOOK: query: CREATE DATABASE IF NOT EXISTS test_db COMMENT 'Hive test database'
+POSTHOOK: type: CREATEDATABASE
+PREHOOK: query: SHOW DATABASES
+PREHOOK: type: SHOWDATABASES
+POSTHOOK: query: SHOW DATABASES
+POSTHOOK: type: SHOWDATABASES
+default
+test_db
+PREHOOK: query: GRANT `drop` ON DATABASE test_db TO USER hive_test_user
+PREHOOK: type: GRANT_PRIVILEGE
+POSTHOOK: query: GRANT `drop` ON DATABASE test_db TO USER hive_test_user
+POSTHOOK: type: GRANT_PRIVILEGE
+PREHOOK: query: GRANT `select` ON DATABASE test_db TO USER hive_test_user
+PREHOOK: type: GRANT_PRIVILEGE
+POSTHOOK: query: GRANT `select` ON DATABASE test_db TO USER hive_test_user
+POSTHOOK: type: GRANT_PRIVILEGE
+PREHOOK: query: SHOW GRANT USER hive_test_user ON DATABASE test_db
+PREHOOK: type: SHOW_GRANT
+POSTHOOK: query: SHOW GRANT USER hive_test_user ON DATABASE test_db
+POSTHOOK: type: SHOW_GRANT
+
+database	test_db	
+principalName	hive_test_user	
+principalType	USER	
+privilege	Drop	
+grantTime	1295394398	
+grantor	hive_test_user	
+
+database	test_db	
+principalName	hive_test_user	
+principalType	USER	
+privilege	Select	
+grantTime	1295394398	
+grantor	hive_test_user	
+PREHOOK: query: CREATE ROLE db_test_role
+PREHOOK: type: CREATEROLE
+POSTHOOK: query: CREATE ROLE db_test_role
+POSTHOOK: type: CREATEROLE
+PREHOOK: query: GRANT ROLE db_test_role TO USER hive_test_user
+PREHOOK: type: GRANT_ROLE
+POSTHOOK: query: GRANT ROLE db_test_role TO USER hive_test_user
+POSTHOOK: type: GRANT_ROLE
+PREHOOK: query: SHOW ROLE GRANT USER hive_test_user
+PREHOOK: type: SHOW_ROLE_GRANT
+POSTHOOK: query: SHOW ROLE GRANT USER hive_test_user
+POSTHOOK: type: SHOW_ROLE_GRANT
+role name:db_test_role
+role name:db_test_role
+PREHOOK: query: GRANT `drop` ON DATABASE test_db TO ROLE db_test_role
+PREHOOK: type: GRANT_PRIVILEGE
+POSTHOOK: query: GRANT `drop` ON DATABASE test_db TO ROLE db_test_role
+POSTHOOK: type: GRANT_PRIVILEGE
+PREHOOK: query: GRANT `select` ON DATABASE test_db TO ROLE db_test_role
+PREHOOK: type: GRANT_PRIVILEGE
+POSTHOOK: query: GRANT `select` ON DATABASE test_db TO ROLE db_test_role
+POSTHOOK: type: GRANT_PRIVILEGE
+PREHOOK: query: SHOW GRANT ROLE db_test_role ON DATABASE test_db
+PREHOOK: type: SHOW_GRANT
+POSTHOOK: query: SHOW GRANT ROLE db_test_role ON DATABASE test_db
+POSTHOOK: type: SHOW_GRANT
+
+database	test_db	
+principalName	db_test_role	
+principalType	ROLE	
+privilege	Drop	
+grantTime	1295394399	
+grantor	hive_test_user	
+
+database	test_db	
+principalName	db_test_role	
+principalType	ROLE	
+privilege	Select	
+grantTime	1295394399	
+grantor	hive_test_user	
+PREHOOK: query: DROP DATABASE IF EXISTS test_db
+PREHOOK: type: DROPDATABASE
+POSTHOOK: query: DROP DATABASE IF EXISTS test_db
+POSTHOOK: type: DROPDATABASE

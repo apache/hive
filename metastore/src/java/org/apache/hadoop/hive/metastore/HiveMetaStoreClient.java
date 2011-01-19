@@ -1011,6 +1011,11 @@ public class HiveMetaStoreClient implements IMetaStoreClient {
       PrincipalType principalType) throws MetaException, TException {
     return client.list_roles(principalName, principalType);
   }
+  
+  @Override
+  public List<String> listRoleNames() throws MetaException, TException {
+    return client.get_role_names();
+  }
 
   @Override
   public boolean grant_privileges(PrivilegeBag privileges)

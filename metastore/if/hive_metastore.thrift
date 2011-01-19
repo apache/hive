@@ -343,6 +343,7 @@ service ThriftHiveMetastore extends fb303.FacebookService
                        
   bool create_role(1:Role role) throws(1:MetaException o1)
   bool drop_role(1:string role_name) throws(1:MetaException o1)
+  list<string> get_role_names() throws(1:MetaException o1)
   bool grant_role(1:string role_name, 2:string principal_name, 3:PrincipalType principal_type, 
     4:string grantor, 5:PrincipalType grantorType, 6:bool grant_option) throws(1:MetaException o1)
   bool revoke_role(1:string role_name, 2:string principal_name, 3:PrincipalType principal_type) 

@@ -79,7 +79,7 @@ public class Warehouse {
           handlerClass, conf);
       return handler;
     } catch (ClassNotFoundException e) {
-      throw new MetaException("Error in loading index handler."
+      throw new MetaException("Error in loading MetaStoreFS handler."
           + e.getMessage());
     }
   }

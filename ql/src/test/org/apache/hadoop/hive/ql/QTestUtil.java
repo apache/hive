@@ -338,7 +338,11 @@ public class QTestUtil {
       }
     }
     db.setCurrentDatabase(DEFAULT_DATABASE_NAME);
-
+    
+    List<String> roleNames = db.getAllRoleNames();
+      for (String roleName : roleNames) {
+        db.dropRole(roleName);
+    }
     // allocate and initialize a new conf since a test can
     // modify conf by using 'set' commands
     conf = new HiveConf (Driver.class);

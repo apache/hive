@@ -766,6 +766,22 @@ module ThriftHiveMetastore
       raise ::Thrift::ApplicationException.new(::Thrift::ApplicationException::MISSING_RESULT, 'drop_role failed: unknown result')
     end
 
+    def get_role_names()
+      send_get_role_names()
+      return recv_get_role_names()
+    end
+
+    def send_get_role_names()
+      send_message('get_role_names', Get_role_names_args)
+    end
+
+    def recv_get_role_names()
+      result = receive_message(Get_role_names_result)
+      return result.success unless result.success.nil?
+      raise result.o1 unless result.o1.nil?
+      raise ::Thrift::ApplicationException.new(::Thrift::ApplicationException::MISSING_RESULT, 'get_role_names failed: unknown result')
+    end
+
     def grant_role(role_name, principal_name, principal_type, grantor, grantorType, grant_option)
       send_grant_role(role_name, principal_name, principal_type, grantor, grantorType, grant_option)
       return recv_grant_role()
@@ -1523,6 +1539,17 @@ module ThriftHiveMetastore
         result.o1 = o1
       end
       write_result(result, oprot, 'drop_role', seqid)
+    end
+
+    def process_get_role_names(seqid, iprot, oprot)
+      args = read_args(iprot, Get_role_names_args)
+      result = Get_role_names_result.new()
+      begin
+        result.success = @handler.get_role_names()
+      rescue MetaException => o1
+        result.o1 = o1
+      end
+      write_result(result, oprot, 'get_role_names', seqid)
     end
 
     def process_grant_role(seqid, iprot, oprot)
@@ -3368,6 +3395,39 @@ module ThriftHiveMetastore
 
     FIELDS = {
       SUCCESS => {:type => ::Thrift::Types::BOOL, :name => 'success'},
+      O1 => {:type => ::Thrift::Types::STRUCT, :name => 'o1', :class => MetaException}
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+    end
+
+    ::Thrift::Struct.generate_accessors self
+  end
+
+  class Get_role_names_args
+    include ::Thrift::Struct, ::Thrift::Struct_Union
+
+    FIELDS = {
+
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+    end
+
+    ::Thrift::Struct.generate_accessors self
+  end
+
+  class Get_role_names_result
+    include ::Thrift::Struct, ::Thrift::Struct_Union
+    SUCCESS = 0
+    O1 = 1
+
+    FIELDS = {
+      SUCCESS => {:type => ::Thrift::Types::LIST, :name => 'success', :element => {:type => ::Thrift::Types::STRING}},
       O1 => {:type => ::Thrift::Types::STRUCT, :name => 'o1', :class => MetaException}
     }
 

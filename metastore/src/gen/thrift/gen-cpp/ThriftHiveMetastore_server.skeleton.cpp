@@ -247,6 +247,11 @@ class ThriftHiveMetastoreHandler : virtual public ThriftHiveMetastoreIf {
     printf("drop_role\n");
   }
 
+  void get_role_names(std::vector<std::string> & _return) {
+    // Your implementation goes here
+    printf("get_role_names\n");
+  }
+
   bool grant_role(const std::string& role_name, const std::string& principal_name, const PrincipalType::type principal_type, const std::string& grantor, const PrincipalType::type grantorType, const bool grant_option) {
     // Your implementation goes here
     printf("grant_role\n");

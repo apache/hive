@@ -1476,6 +1476,20 @@ public class Hive {
       throw new HiveException(e);
     }
   }
+  
+  /**
+   * Get all existing role names.
+   *
+   * @return List of role names.
+   * @throws HiveException
+   */
+  public List<String> getAllRoleNames() throws HiveException {
+    try {
+      return getMSC().listRoleNames();
+    } catch (Exception e) {
+      throw new HiveException(e);
+    }
+  }
 
   public List<Role> showRoleGrant(String principalName, PrincipalType principalType) throws HiveException {
     try {

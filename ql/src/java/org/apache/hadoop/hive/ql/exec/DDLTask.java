@@ -616,20 +616,20 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
         }
       } else {
         org.apache.hadoop.hive.metastore.api.Partition partObj = null;
-
-        if ((!tableObj.isPartitioned())
-            && privSubjectDesc.getPartSpec() != null) {
-          throw new HiveException(
-              "Table is not partitioned, but partition name is present: partSpec="
-                  + privSubjectDesc.getPartSpec().toString());
-        }
-
-
         List<String> partValues = null;
-        if (privSubjectDesc.getPartSpec() != null) {
-          partObj = db.getPartition(tableObj, privSubjectDesc.getPartSpec(),
-              false).getTPartition();
-          partValues = partObj.getValues();
+        if (tableObj != null) {
+          if ((!tableObj.isPartitioned())
+              && privSubjectDesc.getPartSpec() != null) {
+            throw new HiveException(
+                "Table is not partitioned, but partition name is present: partSpec="
+                    + privSubjectDesc.getPartSpec().toString());
+          }
+
+          if (privSubjectDesc.getPartSpec() != null) {
+            partObj = db.getPartition(tableObj, privSubjectDesc.getPartSpec(),
+                false).getTPartition();
+            partValues = partObj.getValues();
+          }
         }
 
         for (PrivilegeDesc privDesc : privileges) {

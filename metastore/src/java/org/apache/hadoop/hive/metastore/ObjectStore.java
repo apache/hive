@@ -426,6 +426,10 @@ public class ObjectStore implements RawStore, Configurable {
       MDatabase db = getMDatabase(dbname);
       pm.retrieve(db);
       if (db != null) {
+        List<MDBPrivilege> dbGrants = this.listDatabaseGrants(dbname);
+        if (dbGrants != null && dbGrants.size() > 0) {
+          pm.deletePersistentAll(dbGrants);
+        }
         pm.deletePersistent(db);
       }
       success = commitTransaction();
@@ -1832,7 +1836,6 @@ public class ObjectStore implements RawStore, Configurable {
     return mRoleMember;
   }
 
-  
   @SuppressWarnings("unchecked")
   private List<MRoleMap> listMSecurityPrincipalMembershipRole(final String roleName,
       final PrincipalType principalType) {
@@ -1869,7 +1872,7 @@ public class ObjectStore implements RawStore, Configurable {
         .getOwnerName());
     return ret;
   }
-
+  
   private MRole getMRole(String roleName) {
     MRole mrole = null;
     boolean commited = false;
@@ -1887,6 +1890,27 @@ public class ObjectStore implements RawStore, Configurable {
       }
     }
     return mrole;
+  }
+  
+  public List<String> listRoleNames() {
+    boolean success = false;
+    try {
+      openTransaction();
+      LOG.debug("Executing listAllRoleNames");
+      Query query = pm.newQuery("select roleName from org.apache.hadoop.hive.metastore.model.MRole");
+      query.setResult("roleName");
+      Collection names = (Collection) query.execute();
+      List<String> roleNames  = new ArrayList<String>();
+      for (Iterator i = names.iterator(); i.hasNext();) {
+        roleNames.add((String) i.next());
+      }
+      success = commitTransaction();
+      return roleNames;
+    } finally {
+      if (!success) {
+        rollbackTransaction();
+      }
+    }
   }
   
   @Override
@@ -2888,6 +2912,30 @@ public class ObjectStore implements RawStore, Configurable {
     return mSecurityColList;
   }
 
+  @SuppressWarnings("unchecked")
+  private List<MDBPrivilege> listDatabaseGrants(String dbName) {
+    dbName = dbName.toLowerCase().trim();
+
+    boolean success = false;
+    try {
+      openTransaction();
+      LOG.debug("Executing listDatabaseGrants");
+      Query query = pm.newQuery(MDBPrivilege.class,
+          "database.name == t1");
+      query.declareParameters("java.lang.String t1");
+      List<MDBPrivilege> mSecurityDBList = (List<MDBPrivilege>) query
+          .executeWithArray(dbName);
+      LOG.debug("Done executing query for listDatabaseGrants");
+      pm.retrieveAll(mSecurityDBList);
+      success = commitTransaction();
+      LOG.debug("Done retrieving all objects for listDatabaseGrants");
+      return mSecurityDBList;
+    } finally {
+      if (!success) {
+        rollbackTransaction();
+      }
+    }
+  }
   
   @SuppressWarnings("unchecked")
   private List<MPartitionPrivilege> listPartitionGrants(String dbName, String tableName,
@@ -2917,7 +2965,7 @@ public class ObjectStore implements RawStore, Configurable {
     }
     return mSecurityTabPartList;
   }
-  
+
   @SuppressWarnings("unchecked")
   public List<MTablePrivilege> listAllTableGrants(
       String principalName, PrincipalType principalType, String dbName,

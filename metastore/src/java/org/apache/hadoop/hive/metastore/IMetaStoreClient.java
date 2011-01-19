@@ -554,6 +554,14 @@ public interface IMetaStoreClient {
   public boolean drop_role(String role_name) throws MetaException, TException;
 
   /**
+   * list all role names
+   * @return
+   * @throws TException 
+   * @throws MetaException 
+   */
+  public List<String> listRoleNames() throws MetaException, TException;
+
+  /**
    * 
    * @param role_name
    * @param user_name

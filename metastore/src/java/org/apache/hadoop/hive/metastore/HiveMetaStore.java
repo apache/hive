@@ -2197,7 +2197,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       }
       return ret;
     }
-
+    
     @Override
     public List<Index> get_indexes(final String dbName, final String tblName,
         final short maxIndexes) throws NoSuchObjectException, MetaException,
@@ -2467,6 +2467,27 @@ public class HiveMetaStore extends ThriftHiveMetastore {
         throw e;
       } catch (Exception e) {
         throw new RuntimeException(e);
+      }
+      return ret;
+    }
+    
+    @Override
+    public List<String> get_role_names() throws MetaException, TException {
+      incrementCounter("get_role_names");
+
+      List<String> ret = null;
+      try {
+        ret = executeWithRetry(new Command<List<String>>() {
+          @Override
+          List<String> run(RawStore ms) throws Exception {
+            return ms.listRoleNames();
+          }
+        });
+      } catch (MetaException e) {
+        throw e;
+      } catch (Exception e) {
+        assert(e instanceof RuntimeException);
+        throw (RuntimeException)e;
       }
       return ret;
     }
@@ -2867,6 +2888,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
         throw new MetaException(e.getMessage());
       }
     }
+
   }
 
   /**

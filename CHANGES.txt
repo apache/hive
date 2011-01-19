@@ -348,6 +348,9 @@ Trunk -  Unreleased
 
   BUG FIXES
 
+    HIVE-1915. Authorization on database level is broken.
+    (He Yongqiang via cws)
+
     HIVE-1203. HiveInputFormat.getInputFormatFromCache "swallows" cause exception when trowing IOExcpetion
     (Vladimir Klimontovich via cws)
 
