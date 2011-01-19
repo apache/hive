@@ -453,6 +453,13 @@
     </junit>
     <fail if="tests.failed">Tests failed!</fail>
   </target>
+  <target name="test-shims">
+     <subant target="test">
+       <property name="hadoop.version" value="${hadoop.security.version}"/>
+       <property name="hadoop.security.version" value="${hadoop.security.version}"/>
+       <fileset dir="${hive.root}/shims" includes="build.xml"/>
+     </subant>
+  </target>
 
   <target name="clean-test">
     <delete dir="${test.build.dir}"/>

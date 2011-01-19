@@ -356,6 +356,25 @@ service ThriftHiveMetastore extends fb303.FacebookService
   
   bool grant_privileges(1:PrivilegeBag privileges) throws(1:MetaException o1)
   bool revoke_privileges(1:PrivilegeBag privileges) throws(1:MetaException o1)
+  
+  //Authentication (delegation token) interfaces
+  
+  // get metastore server delegation token for use from the map/reduce tasks to authenticate
+  // to metastore server
+  string get_delegation_token(1:string renewer_kerberos_principal_name) throws (1:MetaException o1)
+
+  // get metastore server delegation token for use from the map/reduce tasks to authenticate
+  // to metastore server - this method takes an extra token signature string which is just
+  // an identifier to associate with the token - this will be used by the token selector code
+  // to pick the right token given the associated identifier.
+  string get_delegation_token_with_signature(1:string renewer_kerberos_principal_name, 
+    2:string token_signature) throws (1:MetaException o1)
+
+  // method to renew delegation token obtained from metastore server
+  i64 renew_delegation_token(1:string token_str_form) throws (1:MetaException o1)
+
+  // method to cancel delegation token obtained from metastore server
+  void cancel_delegation_token(1:string token_str_form) throws (1:MetaException o1)
 }
 
 // * Note about the DDL_TIME: When creating or altering a table or a partition,

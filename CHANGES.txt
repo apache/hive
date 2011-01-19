@@ -143,6 +143,9 @@ Trunk -  Unreleased
     HIVE-78 Authorization model for Hive
     (Yongqiang He via namit)
 
+    HIVE-1696  Add delegation token support to metastore
+    (Devaraj Das via namit)
+
   IMPROVEMENTS
 
     HIVE-1692. FetchOperator.getInputFormatFromCache hides causal exception (Philip Zeyliger via cws)

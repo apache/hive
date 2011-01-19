@@ -282,6 +282,26 @@ class ThriftHiveMetastoreHandler : virtual public ThriftHiveMetastoreIf {
     printf("revoke_privileges\n");
   }
 
+  void get_delegation_token(std::string& _return, const std::string& renewer_kerberos_principal_name) {
+    // Your implementation goes here
+    printf("get_delegation_token\n");
+  }
+
+  void get_delegation_token_with_signature(std::string& _return, const std::string& renewer_kerberos_principal_name, const std::string& token_signature) {
+    // Your implementation goes here
+    printf("get_delegation_token_with_signature\n");
+  }
+
+  int64_t renew_delegation_token(const std::string& token_str_form) {
+    // Your implementation goes here
+    printf("renew_delegation_token\n");
+  }
+
+  void cancel_delegation_token(const std::string& token_str_form) {
+    // Your implementation goes here
+    printf("cancel_delegation_token\n");
+  }
+
 };
 
 int main(int argc, char **argv) {

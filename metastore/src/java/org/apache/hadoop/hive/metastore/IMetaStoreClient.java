@@ -637,4 +637,39 @@ public interface IMetaStoreClient {
   public boolean revoke_privileges(PrivilegeBag privileges)
       throws MetaException, TException;
 
+  /**
+   * @param renewerKerberosPrincipalName
+   * @param tokenSignature
+   * @return
+   * @throws MetaException
+   * @throws TException
+   */
+  public String getDelegationTokenWithSignature(String renewerKerberosPrincipalName, String tokenSignature)
+      throws MetaException, TException;
+
+  /**
+   * @param renewerKerberosPrincipalName
+   * @return
+   * @throws MetaException
+   * @throws TException
+   */
+  public String getDelegationToken(String renewerKerberosPrincipalName)
+      throws MetaException, TException;
+
+  /**
+   * @param tokenStrForm
+   * @return
+   * @throws MetaException
+   * @throws TException
+   */
+  public long renewDelegationToken(String tokenStrForm) throws MetaException, TException;
+
+  /**
+   * @param tokenStrForm
+   * @throws MetaException
+   * @throws TException
+   */
+  public void cancelDelegationToken(String tokenStrForm) throws MetaException, TException;
+
+
 }

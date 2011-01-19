@@ -449,4 +449,9 @@ public class Hadoop20Shims implements HadoopShims {
     }
     return ugi;
   }
+
+  @Override
+  public String getTokenStrForm(String tokenSignature) throws IOException {
+    throw new UnsupportedOperationException("Tokens are not supported in current hadoop version");
+  }
 }

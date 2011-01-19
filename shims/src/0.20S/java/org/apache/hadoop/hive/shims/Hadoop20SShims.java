@@ -23,7 +23,6 @@ import java.io.IOException;
 import java.lang.reflect.Constructor;
 import java.util.ArrayList;
 import java.util.List;
-import javax.security.auth.login.LoginException;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileStatus;
@@ -31,6 +30,7 @@ import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.fs.PathFilter;
 import org.apache.hadoop.hdfs.MiniDFSCluster;
+import org.apache.hadoop.hive.thrift.DelegationTokenSelector;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.io.WritableComparable;
 import org.apache.hadoop.mapred.FileInputFormat;
@@ -50,6 +50,9 @@ import org.apache.hadoop.mapred.lib.CombineFileInputFormat;
 import org.apache.hadoop.mapred.lib.CombineFileSplit;
 import org.apache.hadoop.mapred.lib.NullOutputFormat;
 import org.apache.hadoop.security.UserGroupInformation;
+import org.apache.hadoop.security.token.Token;
+import org.apache.hadoop.security.token.TokenIdentifier;
+import org.apache.hadoop.security.token.TokenSelector;
 import org.apache.hadoop.tools.HadoopArchives;
 import org.apache.hadoop.util.ToolRunner;
 
@@ -442,5 +445,15 @@ public class Hadoop20SShims implements HadoopShims {
   @Override
   public UserGroupInformation getUGIForConf(Configuration conf) throws IOException {
     return UserGroupInformation.getCurrentUser();
+  }
+
+  @Override
+  public String getTokenStrForm(String tokenSignature) throws IOException {
+    UserGroupInformation ugi = UserGroupInformation.getCurrentUser();
+    TokenSelector<? extends TokenIdentifier> tokenSelector = new DelegationTokenSelector();
+
+    Token<? extends TokenIdentifier> token = tokenSelector.selectToken(
+        tokenSignature == null ? new Text() : new Text(tokenSignature), ugi.getTokens());
+    return token != null ? token.encodeToUrlString() : null;
   }
 }

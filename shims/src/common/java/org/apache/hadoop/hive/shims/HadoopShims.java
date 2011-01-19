@@ -21,6 +21,10 @@ import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
 
+import javax.security.auth.login.LoginException;
+
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
@@ -35,10 +39,6 @@ import org.apache.hadoop.mapred.Reporter;
 import org.apache.hadoop.mapred.RunningJob;
 import org.apache.hadoop.mapred.TaskCompletionEvent;
 import org.apache.hadoop.security.UserGroupInformation;
-import javax.security.auth.login.LoginException;
-
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 
 /**
  * In order to be compatible with multiple versions of Hadoop, all parts
@@ -157,6 +157,24 @@ public interface HadoopShims {
    * access control context's user, ignoring the configuration.
    */
   public UserGroupInformation getUGIForConf(Configuration conf) throws LoginException, IOException;
+
+
+  /**
+   * Get the string form of the token given a token signature.
+   * The signature is used as the value of the "service" field in the token for lookup.
+   * Ref: AbstractDelegationTokenSelector in Hadoop. If there exists such a token
+   * in the token cache (credential store) of the job, the lookup returns that.
+   * This is relevant only when running against a "secure" hadoop release
+   * The method gets hold of the tokens if they are set up by hadoop - this should
+   * happen on the map/reduce tasks if the client added the tokens into hadoop's
+   * credential store in the front end during job submission. The method will
+   * select the hive delegation token among the set of tokens and return the string
+   * form of it
+   * @param tokenSignature
+   * @return the string form of the token found
+   * @throws IOException
+   */
+  String getTokenStrForm(String tokenSignature) throws IOException;
 
   /**
    * InputSplitShim.

@@ -78,6 +78,8 @@ public class HiveMetaStoreClient implements IMetaStoreClient {
   private final boolean standAloneClient = false;
   private final HiveMetaHookLoader hookLoader;
   private final HiveConf conf;
+  private String tokenStrForm;
+  private final boolean localMetaStore;
 
   // for thrift connects
   private int retries = 5;
@@ -99,7 +101,7 @@ public class HiveMetaStoreClient implements IMetaStoreClient {
     }
     this.conf = conf;
 
-    boolean localMetaStore = conf.getBoolean("hive.metastore.local", false);
+    localMetaStore = conf.getBoolean("hive.metastore.local", false);
     if (localMetaStore) {
       // instantiate the metastore server handler directly instead of connecting
       // through the network
@@ -205,9 +207,26 @@ public class HiveMetaStoreClient implements IMetaStoreClient {
         try {
           HadoopThriftAuthBridge.Client authBridge =
           ShimLoader.getHadoopThriftAuthBridge().createClient();
-          String principalConfig = conf.getVar(HiveConf.ConfVars.METASTORE_KERBEROS_PRINCIPAL);
-          transport = authBridge.createClientTransport(
-          principalConfig, store.getHost(), "KERBEROS", transport);
+
+          // check if we should use delegation tokens to authenticate
+          // the call below gets hold of the tokens if they are set up by hadoop
+          // this should happen on the map/reduce tasks if the client added the
+          // tokens into hadoop's credential store in the front end during job
+          // submission.
+          String tokenSig = conf.get("hive.metastore.token.signature");
+          // tokenSig could be null
+          tokenStrForm = ShimLoader.getHadoopShims().getTokenStrForm(tokenSig);
+
+          if(tokenStrForm != null) {
+            // authenticate using delegation tokens via the "DIGEST" mechanism
+            transport = authBridge.createClientTransport(null, store.getHost(),
+                "DIGEST", tokenStrForm, transport);
+          } else {
+            String principalConfig = conf.getVar(HiveConf.ConfVars.METASTORE_KERBEROS_PRINCIPAL);
+            transport = authBridge.createClientTransport(
+                principalConfig, store.getHost(), "KERBEROS", null,
+                transport);
+          }
         } catch (IOException ioe) {
           LOG.error("Couldn't create client transport", ioe);
           throw new MetaException(ioe.toString());
@@ -233,6 +252,10 @@ public class HiveMetaStoreClient implements IMetaStoreClient {
       throw new MetaException("Could not connect to the MetaStore server!");
     }
   }
+
+  public String getTokenStrForm() throws IOException {
+    return tokenStrForm;
+   }
 
   public void close() {
     isConnected = false;
@@ -1019,6 +1042,46 @@ public class HiveMetaStoreClient implements IMetaStoreClient {
       PrincipalType principalType, HiveObjectRef hiveObject)
       throws MetaException, TException {
     return client.list_privileges(principalName, principalType, hiveObject);
+  }
+
+  @Override
+  public String getDelegationTokenWithSignature(String renewerKerberosPrincipalName,
+      String tokenSignature) throws
+  MetaException, TException {
+    if(localMetaStore) {
+      throw new UnsupportedOperationException("getDelegationToken() can be " +
+          "called only in thrift (non local) mode");
+    }
+    return client.get_delegation_token_with_signature(renewerKerberosPrincipalName, tokenSignature);
+  }
+
+  @Override
+  public String getDelegationToken(String renewerKerberosPrincipalName) throws
+  MetaException, TException {
+    if(localMetaStore) {
+      throw new UnsupportedOperationException("getDelegationToken() can be " +
+          "called only in thrift (non local) mode");
+    }
+    return client.get_delegation_token(renewerKerberosPrincipalName);
+  }
+
+  @Override
+  public long renewDelegationToken(String tokenStrForm) throws MetaException, TException {
+    if(localMetaStore) {
+      throw new UnsupportedOperationException("renewDelegationToken() can be " +
+          "called only in thrift (non local) mode");
+    }
+    return client.renew_delegation_token(tokenStrForm);
+
+  }
+
+  @Override
+  public void cancelDelegationToken(String tokenStrForm) throws MetaException, TException {
+    if(localMetaStore) {
+      throw new UnsupportedOperationException("renewDelegationToken() can be " +
+          "called only in thrift (non local) mode");
+    }
+    client.cancel_delegation_token(tokenStrForm);
   }
 
   /**

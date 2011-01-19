@@ -23,6 +23,7 @@ import static org.apache.hadoop.hive.metastore.MetaStoreUtils.DEFAULT_DATABASE_C
 import static org.apache.hadoop.hive.metastore.MetaStoreUtils.DEFAULT_DATABASE_NAME;
 import static org.apache.hadoop.hive.metastore.MetaStoreUtils.validateName;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
@@ -63,10 +64,10 @@ import org.apache.hadoop.hive.metastore.api.UnknownDBException;
 import org.apache.hadoop.hive.metastore.api.UnknownTableException;
 import org.apache.hadoop.hive.metastore.hooks.JDOConnectionURLHook;
 import org.apache.hadoop.hive.metastore.model.MDBPrivilege;
+import org.apache.hadoop.hive.metastore.model.MGlobalPrivilege;
 import org.apache.hadoop.hive.metastore.model.MPartitionColumnPrivilege;
 import org.apache.hadoop.hive.metastore.model.MPartitionPrivilege;
 import org.apache.hadoop.hive.metastore.model.MRole;
-import org.apache.hadoop.hive.metastore.model.MGlobalPrivilege;
 import org.apache.hadoop.hive.metastore.model.MRoleMap;
 import org.apache.hadoop.hive.metastore.model.MTableColumnPrivilege;
 import org.apache.hadoop.hive.metastore.model.MTablePrivilege;
@@ -95,6 +96,8 @@ import com.facebook.fb303.fb_status;
 public class HiveMetaStore extends ThriftHiveMetastore {
   public static final Log LOG = LogFactory.getLog(
     HiveMetaStore.class);
+
+  private static HadoopThriftAuthBridge.Server saslServer;
 
   public static class HMSHandler extends FacebookBase implements
       ThriftHiveMetastore.Iface {
@@ -2812,8 +2815,94 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       }
       return ret;
     }
+    @Override
+    public void cancel_delegation_token(String token_str_form)
+    throws MetaException, TException {
+      incrementCounter("cancel_delegation_token");
+      logStartFunction("cancel_delegation_token");
+      try {
+        HiveMetaStore.cancelDelegationToken(token_str_form);
+      } catch(IOException e) {
+        throw new MetaException(e.getMessage());
+      }
+
+    }
+
+    @Override
+    public String get_delegation_token_with_signature(
+        String renewer_kerberos_principal_name,
+        String token_signature) throws MetaException, TException {
+      incrementCounter("get_delegation_token_with_signature");
+      logStartFunction("get_delegation_token_with_signature");
+      try {
+        return
+        HiveMetaStore.getDelegationToken(renewer_kerberos_principal_name,
+            token_signature);
+      } catch(IOException e) {
+        throw new MetaException(e.getMessage());
+      }
+    }
+
+    @Override
+    public long renew_delegation_token(String token_str_form)
+    throws MetaException, TException {
+      incrementCounter("renew_delegation_token");
+      logStartFunction("renew_delegation_token");
+      try {
+        return HiveMetaStore.renewDelegationToken(token_str_form);
+      } catch(IOException e) {
+        throw new MetaException(e.getMessage());
+      }
+    }
+
+    @Override
+    public String get_delegation_token(String renewer_kerberos_principal_name)
+    throws MetaException, TException {
+      incrementCounter("get_delegation_token_with_signature");
+      logStartFunction("get_delegation_token_with_signature");
+      try {
+        return
+        HiveMetaStore.getDelegationToken(renewer_kerberos_principal_name);
+      } catch(IOException e) {
+        throw new MetaException(e.getMessage());
+      }
+    }
   }
-  
+
+  /**
+   * Discard a current delegation token.
+   * @param tokenStrForm the token in string form
+   */
+  public static void cancelDelegationToken(String tokenStrForm
+  ) throws IOException {
+    saslServer.cancelDelegationToken(tokenStrForm);
+  }
+  /**
+   * Get a new delegation token.
+   * @param renewer the designated renewer
+   * @param token_signature an identifier that is set as the service on the generated token
+   */
+  public static String getDelegationToken(String renewer,String token_signature
+  )throws IOException {
+    return saslServer.getDelegationToken(renewer, token_signature);
+  }
+
+  /**
+   * Get a new delegation token.
+   * @param renewer the designated renewer
+   */
+  public static String getDelegationToken(String renewer)throws IOException {
+    return saslServer.getDelegationToken(renewer);
+  }
+  /**
+   * Renew a delegation token to extend its lifetime.
+   * @param tokenStrForm the token in string form
+   */
+  public static long renewDelegationToken(String tokenStrForm
+  ) throws IOException {
+    return saslServer.renewDelegationToken(tokenStrForm);
+  }
+
   /**
    * @param args
    */
@@ -2823,6 +2912,23 @@ public class HiveMetaStore extends ThriftHiveMetastore {
     if (args.length > 0) {
       port = new Integer(args[0]);
     }
+    try {
+      startMetaStore(port, ShimLoader.getHadoopThriftAuthBridge());
+    } catch (Throwable t) {
+      HMSHandler.LOG
+       .error("Metastore Thrift Server threw an exception. Exiting...");
+      System.exit(1);
+    }
+  }
+
+  /**
+   * Start Metastore based on a passed {@link HadoopThriftAuthBridge}
+   * @param port
+   * @param bridge
+   * @throws Throwable
+   */
+  public static void startMetaStore(int port, HadoopThriftAuthBridge bridge)
+  throws Throwable {
     try {
 
       HMSHandler handler = new HMSHandler("new db based metaserver");
@@ -2842,11 +2948,14 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       TProcessor processor = new ThriftHiveMetastore.Processor(handler);
       TTransportFactory transFactory;
       if (useSasl) {
-        HadoopThriftAuthBridge.Server authBridge = ShimLoader.getHadoopThriftAuthBridge().createServer(
+         saslServer = bridge.createServer(
            conf.getVar(HiveConf.ConfVars.METASTORE_KERBEROS_KEYTAB_FILE),
            conf.getVar(HiveConf.ConfVars.METASTORE_KERBEROS_PRINCIPAL));
-        transFactory = authBridge.createTransportFactory();
-        processor = authBridge.wrapProcessor(processor);
+
+        // start delegation token manager
+        saslServer.startDelegationTokenSecretManager(conf);
+        transFactory = saslServer.createTransportFactory();
+        processor = saslServer.wrapProcessor(processor);
       } else {
         transFactory = new TTransportFactory();
       }
@@ -2854,7 +2963,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       TThreadPoolServer.Options options = new TThreadPoolServer.Options();
       options.minWorkerThreads = minWorkerThreads;
       options.maxWorkerThreads = maxWorkerThreads;
-      TServer server = new TThreadPoolServer(processor, serverTransport,
+      TServer tServer = new TThreadPoolServer(processor, serverTransport,
           transFactory, transFactory,
           new TBinaryProtocol.Factory(), new TBinaryProtocol.Factory(), options);
       HMSHandler.LOG.info("Started the new metaserver on port [" + port
@@ -2864,14 +2973,11 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       HMSHandler.LOG.info("Options.maxWorkerThreads = "
           + options.maxWorkerThreads);
       HMSHandler.LOG.info("TCP keepalive = " + tcpKeepAlive);
-
-      server.serve();
+      tServer.serve();
     } catch (Throwable x) {
       x.printStackTrace();
-      HMSHandler.LOG
-          .error("Metastore Thrift Server threw an exception. Exiting...");
       HMSHandler.LOG.error(StringUtils.stringifyException(x));
-      System.exit(1);
+      throw x;
     }
   }
 }

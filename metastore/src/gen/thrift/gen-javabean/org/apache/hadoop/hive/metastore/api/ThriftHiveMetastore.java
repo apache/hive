@@ -137,6 +137,14 @@ public class ThriftHiveMetastore {
 
     public boolean revoke_privileges(PrivilegeBag privileges) throws MetaException, TException;
 
+    public String get_delegation_token(String renewer_kerberos_principal_name) throws MetaException, TException;
+
+    public String get_delegation_token_with_signature(String renewer_kerberos_principal_name, String token_signature) throws MetaException, TException;
+
+    public long renew_delegation_token(String token_str_form) throws MetaException, TException;
+
+    public void cancel_delegation_token(String token_str_form) throws MetaException, TException;
+
   }
 
   public interface AsyncIface extends com.facebook.fb303.FacebookService .AsyncIface {
@@ -244,6 +252,14 @@ public class ThriftHiveMetastore {
     public void grant_privileges(PrivilegeBag privileges, AsyncMethodCallback<AsyncClient.grant_privileges_call> resultHandler) throws TException;
 
     public void revoke_privileges(PrivilegeBag privileges, AsyncMethodCallback<AsyncClient.revoke_privileges_call> resultHandler) throws TException;
+
+    public void get_delegation_token(String renewer_kerberos_principal_name, AsyncMethodCallback<AsyncClient.get_delegation_token_call> resultHandler) throws TException;
+
+    public void get_delegation_token_with_signature(String renewer_kerberos_principal_name, String token_signature, AsyncMethodCallback<AsyncClient.get_delegation_token_with_signature_call> resultHandler) throws TException;
+
+    public void renew_delegation_token(String token_str_form, AsyncMethodCallback<AsyncClient.renew_delegation_token_call> resultHandler) throws TException;
+
+    public void cancel_delegation_token(String token_str_form, AsyncMethodCallback<AsyncClient.cancel_delegation_token_call> resultHandler) throws TException;
 
   }
 
@@ -2475,6 +2491,160 @@ public class ThriftHiveMetastore {
       throw new TApplicationException(TApplicationException.MISSING_RESULT, "revoke_privileges failed: unknown result");
     }
 
+    public String get_delegation_token(String renewer_kerberos_principal_name) throws MetaException, TException
+    {
+      send_get_delegation_token(renewer_kerberos_principal_name);
+      return recv_get_delegation_token();
+    }
+
+    public void send_get_delegation_token(String renewer_kerberos_principal_name) throws TException
+    {
+      oprot_.writeMessageBegin(new TMessage("get_delegation_token", TMessageType.CALL, ++seqid_));
+      get_delegation_token_args args = new get_delegation_token_args();
+      args.setRenewer_kerberos_principal_name(renewer_kerberos_principal_name);
+      args.write(oprot_);
+      oprot_.writeMessageEnd();
+      oprot_.getTransport().flush();
+    }
+
+    public String recv_get_delegation_token() throws MetaException, TException
+    {
+      TMessage msg = iprot_.readMessageBegin();
+      if (msg.type == TMessageType.EXCEPTION) {
+        TApplicationException x = TApplicationException.read(iprot_);
+        iprot_.readMessageEnd();
+        throw x;
+      }
+      if (msg.seqid != seqid_) {
+        throw new TApplicationException(TApplicationException.BAD_SEQUENCE_ID, "get_delegation_token failed: out of sequence response");
+      }
+      get_delegation_token_result result = new get_delegation_token_result();
+      result.read(iprot_);
+      iprot_.readMessageEnd();
+      if (result.isSetSuccess()) {
+        return result.success;
+      }
+      if (result.o1 != null) {
+        throw result.o1;
+      }
+      throw new TApplicationException(TApplicationException.MISSING_RESULT, "get_delegation_token failed: unknown result");
+    }
+
+    public String get_delegation_token_with_signature(String renewer_kerberos_principal_name, String token_signature) throws MetaException, TException
+    {
+      send_get_delegation_token_with_signature(renewer_kerberos_principal_name, token_signature);
+      return recv_get_delegation_token_with_signature();
+    }
+
+    public void send_get_delegation_token_with_signature(String renewer_kerberos_principal_name, String token_signature) throws TException
+    {
+      oprot_.writeMessageBegin(new TMessage("get_delegation_token_with_signature", TMessageType.CALL, ++seqid_));
+      get_delegation_token_with_signature_args args = new get_delegation_token_with_signature_args();
+      args.setRenewer_kerberos_principal_name(renewer_kerberos_principal_name);
+      args.setToken_signature(token_signature);
+      args.write(oprot_);
+      oprot_.writeMessageEnd();
+      oprot_.getTransport().flush();
+    }
+
+    public String recv_get_delegation_token_with_signature() throws MetaException, TException
+    {
+      TMessage msg = iprot_.readMessageBegin();
+      if (msg.type == TMessageType.EXCEPTION) {
+        TApplicationException x = TApplicationException.read(iprot_);
+        iprot_.readMessageEnd();
+        throw x;
+      }
+      if (msg.seqid != seqid_) {
+        throw new TApplicationException(TApplicationException.BAD_SEQUENCE_ID, "get_delegation_token_with_signature failed: out of sequence response");
+      }
+      get_delegation_token_with_signature_result result = new get_delegation_token_with_signature_result();
+      result.read(iprot_);
+      iprot_.readMessageEnd();
+      if (result.isSetSuccess()) {
+        return result.success;
+      }
+      if (result.o1 != null) {
+        throw result.o1;
+      }
+      throw new TApplicationException(TApplicationException.MISSING_RESULT, "get_delegation_token_with_signature failed: unknown result");
+    }
+
+    public long renew_delegation_token(String token_str_form) throws MetaException, TException
+    {
+      send_renew_delegation_token(token_str_form);
+      return recv_renew_delegation_token();
+    }
+
+    public void send_renew_delegation_token(String token_str_form) throws TException
+    {
+      oprot_.writeMessageBegin(new TMessage("renew_delegation_token", TMessageType.CALL, ++seqid_));
+      renew_delegation_token_args args = new renew_delegation_token_args();
+      args.setToken_str_form(token_str_form);
+      args.write(oprot_);
+      oprot_.writeMessageEnd();
+      oprot_.getTransport().flush();
+    }
+
+    public long recv_renew_delegation_token() throws MetaException, TException
+    {
+      TMessage msg = iprot_.readMessageBegin();
+      if (msg.type == TMessageType.EXCEPTION) {
+        TApplicationException x = TApplicationException.read(iprot_);
+        iprot_.readMessageEnd();
+        throw x;
+      }
+      if (msg.seqid != seqid_) {
+        throw new TApplicationException(TApplicationException.BAD_SEQUENCE_ID, "renew_delegation_token failed: out of sequence response");
+      }
+      renew_delegation_token_result result = new renew_delegation_token_result();
+      result.read(iprot_);
+      iprot_.readMessageEnd();
+      if (result.isSetSuccess()) {
+        return result.success;
+      }
+      if (result.o1 != null) {
+        throw result.o1;
+      }
+      throw new TApplicationException(TApplicationException.MISSING_RESULT, "renew_delegation_token failed: unknown result");
+    }
+
+    public void cancel_delegation_token(String token_str_form) throws MetaException, TException
+    {
+      send_cancel_delegation_token(token_str_form);
+      recv_cancel_delegation_token();
+    }
+
+    public void send_cancel_delegation_token(String token_str_form) throws TException
+    {
+      oprot_.writeMessageBegin(new TMessage("cancel_delegation_token", TMessageType.CALL, ++seqid_));
+      cancel_delegation_token_args args = new cancel_delegation_token_args();
+      args.setToken_str_form(token_str_form);
+      args.write(oprot_);
+      oprot_.writeMessageEnd();
+      oprot_.getTransport().flush();
+    }
+
+    public void recv_cancel_delegation_token() throws MetaException, TException
+    {
+      TMessage msg = iprot_.readMessageBegin();
+      if (msg.type == TMessageType.EXCEPTION) {
+        TApplicationException x = TApplicationException.read(iprot_);
+        iprot_.readMessageEnd();
+        throw x;
+      }
+      if (msg.seqid != seqid_) {
+        throw new TApplicationException(TApplicationException.BAD_SEQUENCE_ID, "cancel_delegation_token failed: out of sequence response");
+      }
+      cancel_delegation_token_result result = new cancel_delegation_token_result();
+      result.read(iprot_);
+      iprot_.readMessageEnd();
+      if (result.o1 != null) {
+        throw result.o1;
+      }
+      return;
+    }
+
   }
   public static class AsyncClient extends com.facebook.fb303.FacebookService.AsyncClient implements AsyncIface {
     public static class Factory implements TAsyncClientFactory<AsyncClient> {
@@ -4336,6 +4506,133 @@ public class ThriftHiveMetastore {
       }
     }
 
+    public void get_delegation_token(String renewer_kerberos_principal_name, AsyncMethodCallback<get_delegation_token_call> resultHandler) throws TException {
+      checkReady();
+      get_delegation_token_call method_call = new get_delegation_token_call(renewer_kerberos_principal_name, resultHandler, this, protocolFactory, transport);
+      manager.call(method_call);
+    }
+
+    public static class get_delegation_token_call extends TAsyncMethodCall {
+      private String renewer_kerberos_principal_name;
+      public get_delegation_token_call(String renewer_kerberos_principal_name, AsyncMethodCallback<get_delegation_token_call> resultHandler, TAsyncClient client, TProtocolFactory protocolFactory, TNonblockingTransport transport) throws TException {
+        super(client, protocolFactory, transport, resultHandler, false);
+        this.renewer_kerberos_principal_name = renewer_kerberos_principal_name;
+      }
+
+      public void write_args(TProtocol prot) throws TException {
+        prot.writeMessageBegin(new TMessage("get_delegation_token", TMessageType.CALL, 0));
+        get_delegation_token_args args = new get_delegation_token_args();
+        args.setRenewer_kerberos_principal_name(renewer_kerberos_principal_name);
+        args.write(prot);
+        prot.writeMessageEnd();
+      }
+
+      public String getResult() throws MetaException, TException {
+        if (getState() != State.RESPONSE_READ) {
+          throw new IllegalStateException("Method call not finished!");
+        }
+        TMemoryInputTransport memoryTransport = new TMemoryInputTransport(getFrameBuffer().array());
+        TProtocol prot = client.getProtocolFactory().getProtocol(memoryTransport);
+        return (new Client(prot)).recv_get_delegation_token();
+      }
+    }
+
+    public void get_delegation_token_with_signature(String renewer_kerberos_principal_name, String token_signature, AsyncMethodCallback<get_delegation_token_with_signature_call> resultHandler) throws TException {
+      checkReady();
+      get_delegation_token_with_signature_call method_call = new get_delegation_token_with_signature_call(renewer_kerberos_principal_name, token_signature, resultHandler, this, protocolFactory, transport);
+      manager.call(method_call);
+    }
+
+    public static class get_delegation_token_with_signature_call extends TAsyncMethodCall {
+      private String renewer_kerberos_principal_name;
+      private String token_signature;
+      public get_delegation_token_with_signature_call(String renewer_kerberos_principal_name, String token_signature, AsyncMethodCallback<get_delegation_token_with_signature_call> resultHandler, TAsyncClient client, TProtocolFactory protocolFactory, TNonblockingTransport transport) throws TException {
+        super(client, protocolFactory, transport, resultHandler, false);
+        this.renewer_kerberos_principal_name = renewer_kerberos_principal_name;
+        this.token_signature = token_signature;
+      }
+
+      public void write_args(TProtocol prot) throws TException {
+        prot.writeMessageBegin(new TMessage("get_delegation_token_with_signature", TMessageType.CALL, 0));
+        get_delegation_token_with_signature_args args = new get_delegation_token_with_signature_args();
+        args.setRenewer_kerberos_principal_name(renewer_kerberos_principal_name);
+        args.setToken_signature(token_signature);
+        args.write(prot);
+        prot.writeMessageEnd();
+      }
+
+      public String getResult() throws MetaException, TException {
+        if (getState() != State.RESPONSE_READ) {
+          throw new IllegalStateException("Method call not finished!");
+        }
+        TMemoryInputTransport memoryTransport = new TMemoryInputTransport(getFrameBuffer().array());
+        TProtocol prot = client.getProtocolFactory().getProtocol(memoryTransport);
+        return (new Client(prot)).recv_get_delegation_token_with_signature();
+      }
+    }
+
+    public void renew_delegation_token(String token_str_form, AsyncMethodCallback<renew_delegation_token_call> resultHandler) throws TException {
+      checkReady();
+      renew_delegation_token_call method_call = new renew_delegation_token_call(token_str_form, resultHandler, this, protocolFactory, transport);
+      manager.call(method_call);
+    }
+
+    public static class renew_delegation_token_call extends TAsyncMethodCall {
+      private String token_str_form;
+      public renew_delegation_token_call(String token_str_form, AsyncMethodCallback<renew_delegation_token_call> resultHandler, TAsyncClient client, TProtocolFactory protocolFactory, TNonblockingTransport transport) throws TException {
+        super(client, protocolFactory, transport, resultHandler, false);
+        this.token_str_form = token_str_form;
+      }
+
+      public void write_args(TProtocol prot) throws TException {
+        prot.writeMessageBegin(new TMessage("renew_delegation_token", TMessageType.CALL, 0));
+        renew_delegation_token_args args = new renew_delegation_token_args();
+        args.setToken_str_form(token_str_form);
+        args.write(prot);
+        prot.writeMessageEnd();
+      }
+
+      public long getResult() throws MetaException, TException {
+        if (getState() != State.RESPONSE_READ) {
+          throw new IllegalStateException("Method call not finished!");
+        }
+        TMemoryInputTransport memoryTransport = new TMemoryInputTransport(getFrameBuffer().array());
+        TProtocol prot = client.getProtocolFactory().getProtocol(memoryTransport);
+        return (new Client(prot)).recv_renew_delegation_token();
+      }
+    }
+
+    public void cancel_delegation_token(String token_str_form, AsyncMethodCallback<cancel_delegation_token_call> resultHandler) throws TException {
+      checkReady();
+      cancel_delegation_token_call method_call = new cancel_delegation_token_call(token_str_form, resultHandler, this, protocolFactory, transport);
+      manager.call(method_call);
+    }
+
+    public static class cancel_delegation_token_call extends TAsyncMethodCall {
+      private String token_str_form;
+      public cancel_delegation_token_call(String token_str_form, AsyncMethodCallback<cancel_delegation_token_call> resultHandler, TAsyncClient client, TProtocolFactory protocolFactory, TNonblockingTransport transport) throws TException {
+        super(client, protocolFactory, transport, resultHandler, false);
+        this.token_str_form = token_str_form;
+      }
+
+      public void write_args(TProtocol prot) throws TException {
+        prot.writeMessageBegin(new TMessage("cancel_delegation_token", TMessageType.CALL, 0));
+        cancel_delegation_token_args args = new cancel_delegation_token_args();
+        args.setToken_str_form(token_str_form);
+        args.write(prot);
+        prot.writeMessageEnd();
+      }
+
+      public void getResult() throws MetaException, TException {
+        if (getState() != State.RESPONSE_READ) {
+          throw new IllegalStateException("Method call not finished!");
+        }
+        TMemoryInputTransport memoryTransport = new TMemoryInputTransport(getFrameBuffer().array());
+        TProtocol prot = client.getProtocolFactory().getProtocol(memoryTransport);
+        (new Client(prot)).recv_cancel_delegation_token();
+      }
+    }
+
   }
 
   public static class Processor extends com.facebook.fb303.FacebookService.Processor implements TProcessor {
@@ -4396,6 +4693,10 @@ public class ThriftHiveMetastore {
       processMap_.put("list_privileges", new list_privileges());
       processMap_.put("grant_privileges", new grant_privileges());
       processMap_.put("revoke_privileges", new revoke_privileges());
+      processMap_.put("get_delegation_token", new get_delegation_token());
+      processMap_.put("get_delegation_token_with_signature", new get_delegation_token_with_signature());
+      processMap_.put("renew_delegation_token", new renew_delegation_token());
+      processMap_.put("cancel_delegation_token", new cancel_delegation_token());
     }
 
     private Iface iface_;
@@ -6482,6 +6783,159 @@ public class ThriftHiveMetastore {
           return;
         }
         oprot.writeMessageBegin(new TMessage("revoke_privileges", TMessageType.REPLY, seqid));
+        result.write(oprot);
+        oprot.writeMessageEnd();
+        oprot.getTransport().flush();
+      }
+
+    }
+
+    private class get_delegation_token implements ProcessFunction {
+      public void process(int seqid, TProtocol iprot, TProtocol oprot) throws TException
+      {
+        get_delegation_token_args args = new get_delegation_token_args();
+        try {
+          args.read(iprot);
+        } catch (TProtocolException e) {
+          iprot.readMessageEnd();
+          TApplicationException x = new TApplicationException(TApplicationException.PROTOCOL_ERROR, e.getMessage());
+          oprot.writeMessageBegin(new TMessage("get_delegation_token", TMessageType.EXCEPTION, seqid));
+          x.write(oprot);
+          oprot.writeMessageEnd();
+          oprot.getTransport().flush();
+          return;
+        }
+        iprot.readMessageEnd();
+        get_delegation_token_result result = new get_delegation_token_result();
+        try {
+          result.success = iface_.get_delegation_token(args.renewer_kerberos_principal_name);
+        } catch (MetaException o1) {
+          result.o1 = o1;
+        } catch (Throwable th) {
+          LOGGER.error("Internal error processing get_delegation_token", th);
+          TApplicationException x = new TApplicationException(TApplicationException.INTERNAL_ERROR, "Internal error processing get_delegation_token");
+          oprot.writeMessageBegin(new TMessage("get_delegation_token", TMessageType.EXCEPTION, seqid));
+          x.write(oprot);
+          oprot.writeMessageEnd();
+          oprot.getTransport().flush();
+          return;
+        }
+        oprot.writeMessageBegin(new TMessage("get_delegation_token", TMessageType.REPLY, seqid));
+        result.write(oprot);
+        oprot.writeMessageEnd();
+        oprot.getTransport().flush();
+      }
+
+    }
+
+    private class get_delegation_token_with_signature implements ProcessFunction {
+      public void process(int seqid, TProtocol iprot, TProtocol oprot) throws TException
+      {
+        get_delegation_token_with_signature_args args = new get_delegation_token_with_signature_args();
+        try {
+          args.read(iprot);
+        } catch (TProtocolException e) {
+          iprot.readMessageEnd();
+          TApplicationException x = new TApplicationException(TApplicationException.PROTOCOL_ERROR, e.getMessage());
+          oprot.writeMessageBegin(new TMessage("get_delegation_token_with_signature", TMessageType.EXCEPTION, seqid));
+          x.write(oprot);
+          oprot.writeMessageEnd();
+          oprot.getTransport().flush();
+          return;
+        }
+        iprot.readMessageEnd();
+        get_delegation_token_with_signature_result result = new get_delegation_token_with_signature_result();
+        try {
+          result.success = iface_.get_delegation_token_with_signature(args.renewer_kerberos_principal_name, args.token_signature);
+        } catch (MetaException o1) {
+          result.o1 = o1;
+        } catch (Throwable th) {
+          LOGGER.error("Internal error processing get_delegation_token_with_signature", th);
+          TApplicationException x = new TApplicationException(TApplicationException.INTERNAL_ERROR, "Internal error processing get_delegation_token_with_signature");
+          oprot.writeMessageBegin(new TMessage("get_delegation_token_with_signature", TMessageType.EXCEPTION, seqid));
+          x.write(oprot);
+          oprot.writeMessageEnd();
+          oprot.getTransport().flush();
+          return;
+        }
+        oprot.writeMessageBegin(new TMessage("get_delegation_token_with_signature", TMessageType.REPLY, seqid));
+        result.write(oprot);
+        oprot.writeMessageEnd();
+        oprot.getTransport().flush();
+      }
+
+    }
+
+    private class renew_delegation_token implements ProcessFunction {
+      public void process(int seqid, TProtocol iprot, TProtocol oprot) throws TException
+      {
+        renew_delegation_token_args args = new renew_delegation_token_args();
+        try {
+          args.read(iprot);
+        } catch (TProtocolException e) {
+          iprot.readMessageEnd();
+          TApplicationException x = new TApplicationException(TApplicationException.PROTOCOL_ERROR, e.getMessage());
+          oprot.writeMessageBegin(new TMessage("renew_delegation_token", TMessageType.EXCEPTION, seqid));
+          x.write(oprot);
+          oprot.writeMessageEnd();
+          oprot.getTransport().flush();
+          return;
+        }
+        iprot.readMessageEnd();
+        renew_delegation_token_result result = new renew_delegation_token_result();
+        try {
+          result.success = iface_.renew_delegation_token(args.token_str_form);
+          result.setSuccessIsSet(true);
+        } catch (MetaException o1) {
+          result.o1 = o1;
+        } catch (Throwable th) {
+          LOGGER.error("Internal error processing renew_delegation_token", th);
+          TApplicationException x = new TApplicationException(TApplicationException.INTERNAL_ERROR, "Internal error processing renew_delegation_token");
+          oprot.writeMessageBegin(new TMessage("renew_delegation_token", TMessageType.EXCEPTION, seqid));
+          x.write(oprot);
+          oprot.writeMessageEnd();
+          oprot.getTransport().flush();
+          return;
+        }
+        oprot.writeMessageBegin(new TMessage("renew_delegation_token", TMessageType.REPLY, seqid));
+        result.write(oprot);
+        oprot.writeMessageEnd();
+        oprot.getTransport().flush();
+      }
+
+    }
+
+    private class cancel_delegation_token implements ProcessFunction {
+      public void process(int seqid, TProtocol iprot, TProtocol oprot) throws TException
+      {
+        cancel_delegation_token_args args = new cancel_delegation_token_args();
+        try {
+          args.read(iprot);
+        } catch (TProtocolException e) {
+          iprot.readMessageEnd();
+          TApplicationException x = new TApplicationException(TApplicationException.PROTOCOL_ERROR, e.getMessage());
+          oprot.writeMessageBegin(new TMessage("cancel_delegation_token", TMessageType.EXCEPTION, seqid));
+          x.write(oprot);
+          oprot.writeMessageEnd();
+          oprot.getTransport().flush();
+          return;
+        }
+        iprot.readMessageEnd();
+        cancel_delegation_token_result result = new cancel_delegation_token_result();
+        try {
+          iface_.cancel_delegation_token(args.token_str_form);
+        } catch (MetaException o1) {
+          result.o1 = o1;
+        } catch (Throwable th) {
+          LOGGER.error("Internal error processing cancel_delegation_token", th);
+          TApplicationException x = new TApplicationException(TApplicationException.INTERNAL_ERROR, "Internal error processing cancel_delegation_token");
+          oprot.writeMessageBegin(new TMessage("cancel_delegation_token", TMessageType.EXCEPTION, seqid));
+          x.write(oprot);
+          oprot.writeMessageEnd();
+          oprot.getTransport().flush();
+          return;
+        }
+        oprot.writeMessageBegin(new TMessage("cancel_delegation_token", TMessageType.REPLY, seqid));
         result.write(oprot);
         oprot.writeMessageEnd();
         oprot.getTransport().flush();
@@ -50929,6 +51383,2579 @@ public class ThriftHiveMetastore {
       sb.append(this.success);
       first = false;
       if (!first) sb.append(", ");
+      sb.append("o1:");
+      if (this.o1 == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.o1);
+      }
+      first = false;
+      sb.append(")");
+      return sb.toString();
+    }
+
+    public void validate() throws TException {
+      // check for required fields
+    }
+
+  }
+
+  public static class get_delegation_token_args implements TBase<get_delegation_token_args, get_delegation_token_args._Fields>, java.io.Serializable, Cloneable   {
+    private static final TStruct STRUCT_DESC = new TStruct("get_delegation_token_args");
+
+    private static final TField RENEWER_KERBEROS_PRINCIPAL_NAME_FIELD_DESC = new TField("renewer_kerberos_principal_name", TType.STRING, (short)1);
+
+    private String renewer_kerberos_principal_name;
+
+    /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
+    public enum _Fields implements TFieldIdEnum {
+      RENEWER_KERBEROS_PRINCIPAL_NAME((short)1, "renewer_kerberos_principal_name");
+
+      private static final Map<String, _Fields> byName = new HashMap<String, _Fields>();
+
+      static {
+        for (_Fields field : EnumSet.allOf(_Fields.class)) {
+          byName.put(field.getFieldName(), field);
+        }
+      }
+
+      /**
+       * Find the _Fields constant that matches fieldId, or null if its not found.
+       */
+      public static _Fields findByThriftId(int fieldId) {
+        switch(fieldId) {
+          case 1: // RENEWER_KERBEROS_PRINCIPAL_NAME
+            return RENEWER_KERBEROS_PRINCIPAL_NAME;
+          default:
+            return null;
+        }
+      }
+
+      /**
+       * Find the _Fields constant that matches fieldId, throwing an exception
+       * if it is not found.
+       */
+      public static _Fields findByThriftIdOrThrow(int fieldId) {
+        _Fields fields = findByThriftId(fieldId);
+        if (fields == null) throw new IllegalArgumentException("Field " + fieldId + " doesn't exist!");
+        return fields;
+      }
+
+      /**
+       * Find the _Fields constant that matches name, or null if its not found.
+       */
+      public static _Fields findByName(String name) {
+        return byName.get(name);
+      }
+
+      private final short _thriftId;
+      private final String _fieldName;
+
+      _Fields(short thriftId, String fieldName) {
+        _thriftId = thriftId;
+        _fieldName = fieldName;
+      }
+
+      public short getThriftFieldId() {
+        return _thriftId;
+      }
+
+      public String getFieldName() {
+        return _fieldName;
+      }
+    }
+
+    // isset id assignments
+
+    public static final Map<_Fields, FieldMetaData> metaDataMap;
+    static {
+      Map<_Fields, FieldMetaData> tmpMap = new EnumMap<_Fields, FieldMetaData>(_Fields.class);
+      tmpMap.put(_Fields.RENEWER_KERBEROS_PRINCIPAL_NAME, new FieldMetaData("renewer_kerberos_principal_name", TFieldRequirementType.DEFAULT, 
+          new FieldValueMetaData(TType.STRING)));
+      metaDataMap = Collections.unmodifiableMap(tmpMap);
+      FieldMetaData.addStructMetaDataMap(get_delegation_token_args.class, metaDataMap);
+    }
+
+    public get_delegation_token_args() {
+    }
+
+    public get_delegation_token_args(
+      String renewer_kerberos_principal_name)
+    {
+      this();
+      this.renewer_kerberos_principal_name = renewer_kerberos_principal_name;
+    }
+
+    /**
+     * Performs a deep copy on <i>other</i>.
+     */
+    public get_delegation_token_args(get_delegation_token_args other) {
+      if (other.isSetRenewer_kerberos_principal_name()) {
+        this.renewer_kerberos_principal_name = other.renewer_kerberos_principal_name;
+      }
+    }
+
+    public get_delegation_token_args deepCopy() {
+      return new get_delegation_token_args(this);
+    }
+
+    @Override
+    public void clear() {
+      this.renewer_kerberos_principal_name = null;
+    }
+
+    public String getRenewer_kerberos_principal_name() {
+      return this.renewer_kerberos_principal_name;
+    }
+
+    public void setRenewer_kerberos_principal_name(String renewer_kerberos_principal_name) {
+      this.renewer_kerberos_principal_name = renewer_kerberos_principal_name;
+    }
+
+    public void unsetRenewer_kerberos_principal_name() {
+      this.renewer_kerberos_principal_name = null;
+    }
+
+    /** Returns true if field renewer_kerberos_principal_name is set (has been asigned a value) and false otherwise */
+    public boolean isSetRenewer_kerberos_principal_name() {
+      return this.renewer_kerberos_principal_name != null;
+    }
+
+    public void setRenewer_kerberos_principal_nameIsSet(boolean value) {
+      if (!value) {
+        this.renewer_kerberos_principal_name = null;
+      }
+    }
+
+    public void setFieldValue(_Fields field, Object value) {
+      switch (field) {
+      case RENEWER_KERBEROS_PRINCIPAL_NAME:
+        if (value == null) {
+          unsetRenewer_kerberos_principal_name();
+        } else {
+          setRenewer_kerberos_principal_name((String)value);
+        }
+        break;
+
+      }
+    }
+
+    public Object getFieldValue(_Fields field) {
+      switch (field) {
+      case RENEWER_KERBEROS_PRINCIPAL_NAME:
+        return getRenewer_kerberos_principal_name();
+
+      }
+      throw new IllegalStateException();
+    }
+
+    /** Returns true if field corresponding to fieldID is set (has been asigned a value) and false otherwise */
+    public boolean isSet(_Fields field) {
+      if (field == null) {
+        throw new IllegalArgumentException();
+      }
+
+      switch (field) {
+      case RENEWER_KERBEROS_PRINCIPAL_NAME:
+        return isSetRenewer_kerberos_principal_name();
+      }
+      throw new IllegalStateException();
+    }
+
+    @Override
+    public boolean equals(Object that) {
+      if (that == null)
+        return false;
+      if (that instanceof get_delegation_token_args)
+        return this.equals((get_delegation_token_args)that);
+      return false;
+    }
+
+    public boolean equals(get_delegation_token_args that) {
+      if (that == null)
+        return false;
+
+      boolean this_present_renewer_kerberos_principal_name = true && this.isSetRenewer_kerberos_principal_name();
+      boolean that_present_renewer_kerberos_principal_name = true && that.isSetRenewer_kerberos_principal_name();
+      if (this_present_renewer_kerberos_principal_name || that_present_renewer_kerberos_principal_name) {
+        if (!(this_present_renewer_kerberos_principal_name && that_present_renewer_kerberos_principal_name))
+          return false;
+        if (!this.renewer_kerberos_principal_name.equals(that.renewer_kerberos_principal_name))
+          return false;
+      }
+
+      return true;
+    }
+
+    @Override
+    public int hashCode() {
+      return 0;
+    }
+
+    public int compareTo(get_delegation_token_args other) {
+      if (!getClass().equals(other.getClass())) {
+        return getClass().getName().compareTo(other.getClass().getName());
+      }
+
+      int lastComparison = 0;
+      get_delegation_token_args typedOther = (get_delegation_token_args)other;
+
+      lastComparison = Boolean.valueOf(isSetRenewer_kerberos_principal_name()).compareTo(typedOther.isSetRenewer_kerberos_principal_name());
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+      if (isSetRenewer_kerberos_principal_name()) {
+        lastComparison = TBaseHelper.compareTo(this.renewer_kerberos_principal_name, typedOther.renewer_kerberos_principal_name);
+        if (lastComparison != 0) {
+          return lastComparison;
+        }
+      }
+      return 0;
+    }
+
+    public _Fields fieldForId(int fieldId) {
+      return _Fields.findByThriftId(fieldId);
+    }
+
+    public void read(TProtocol iprot) throws TException {
+      TField field;
+      iprot.readStructBegin();
+      while (true)
+      {
+        field = iprot.readFieldBegin();
+        if (field.type == TType.STOP) { 
+          break;
+        }
+        switch (field.id) {
+          case 1: // RENEWER_KERBEROS_PRINCIPAL_NAME
+            if (field.type == TType.STRING) {
+              this.renewer_kerberos_principal_name = iprot.readString();
+            } else { 
+              TProtocolUtil.skip(iprot, field.type);
+            }
+            break;
+          default:
+            TProtocolUtil.skip(iprot, field.type);
+        }
+        iprot.readFieldEnd();
+      }
+      iprot.readStructEnd();
+      validate();
+    }
+
+    public void write(TProtocol oprot) throws TException {
+      validate();
+
+      oprot.writeStructBegin(STRUCT_DESC);
+      if (this.renewer_kerberos_principal_name != null) {
+        oprot.writeFieldBegin(RENEWER_KERBEROS_PRINCIPAL_NAME_FIELD_DESC);
+        oprot.writeString(this.renewer_kerberos_principal_name);
+        oprot.writeFieldEnd();
+      }
+      oprot.writeFieldStop();
+      oprot.writeStructEnd();
+    }
+
+    @Override
+    public String toString() {
+      StringBuilder sb = new StringBuilder("get_delegation_token_args(");
+      boolean first = true;
+
+      sb.append("renewer_kerberos_principal_name:");
+      if (this.renewer_kerberos_principal_name == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.renewer_kerberos_principal_name);
+      }
+      first = false;
+      sb.append(")");
+      return sb.toString();
+    }
+
+    public void validate() throws TException {
+      // check for required fields
+    }
+
+  }
+
+  public static class get_delegation_token_result implements TBase<get_delegation_token_result, get_delegation_token_result._Fields>, java.io.Serializable, Cloneable   {
+    private static final TStruct STRUCT_DESC = new TStruct("get_delegation_token_result");
+
+    private static final TField SUCCESS_FIELD_DESC = new TField("success", TType.STRING, (short)0);
+    private static final TField O1_FIELD_DESC = new TField("o1", TType.STRUCT, (short)1);
+
+    private String success;
+    private MetaException o1;
+
+    /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
+    public enum _Fields implements TFieldIdEnum {
+      SUCCESS((short)0, "success"),
+      O1((short)1, "o1");
+
+      private static final Map<String, _Fields> byName = new HashMap<String, _Fields>();
+
+      static {
+        for (_Fields field : EnumSet.allOf(_Fields.class)) {
+          byName.put(field.getFieldName(), field);
+        }
+      }
+
+      /**
+       * Find the _Fields constant that matches fieldId, or null if its not found.
+       */
+      public static _Fields findByThriftId(int fieldId) {
+        switch(fieldId) {
+          case 0: // SUCCESS
+            return SUCCESS;
+          case 1: // O1
+            return O1;
+          default:
+            return null;
+        }
+      }
+
+      /**
+       * Find the _Fields constant that matches fieldId, throwing an exception
+       * if it is not found.
+       */
+      public static _Fields findByThriftIdOrThrow(int fieldId) {
+        _Fields fields = findByThriftId(fieldId);
+        if (fields == null) throw new IllegalArgumentException("Field " + fieldId + " doesn't exist!");
+        return fields;
+      }
+
+      /**
+       * Find the _Fields constant that matches name, or null if its not found.
+       */
+      public static _Fields findByName(String name) {
+        return byName.get(name);
+      }
+
+      private final short _thriftId;
+      private final String _fieldName;
+
+      _Fields(short thriftId, String fieldName) {
+        _thriftId = thriftId;
+        _fieldName = fieldName;
+      }
+
+      public short getThriftFieldId() {
+        return _thriftId;
+      }
+
+      public String getFieldName() {
+        return _fieldName;
+      }
+    }
+
+    // isset id assignments
+
+    public static final Map<_Fields, FieldMetaData> metaDataMap;
+    static {
+      Map<_Fields, FieldMetaData> tmpMap = new EnumMap<_Fields, FieldMetaData>(_Fields.class);
+      tmpMap.put(_Fields.SUCCESS, new FieldMetaData("success", TFieldRequirementType.DEFAULT, 
+          new FieldValueMetaData(TType.STRING)));
+      tmpMap.put(_Fields.O1, new FieldMetaData("o1", TFieldRequirementType.DEFAULT, 
+          new FieldValueMetaData(TType.STRUCT)));
+      metaDataMap = Collections.unmodifiableMap(tmpMap);
+      FieldMetaData.addStructMetaDataMap(get_delegation_token_result.class, metaDataMap);
+    }
+
+    public get_delegation_token_result() {
+    }
+
+    public get_delegation_token_result(
+      String success,
+      MetaException o1)
+    {
+      this();
+      this.success = success;
+      this.o1 = o1;
+    }
+
+    /**
+     * Performs a deep copy on <i>other</i>.
+     */
+    public get_delegation_token_result(get_delegation_token_result other) {
+      if (other.isSetSuccess()) {
+        this.success = other.success;
+      }
+      if (other.isSetO1()) {
+        this.o1 = new MetaException(other.o1);
+      }
+    }
+
+    public get_delegation_token_result deepCopy() {
+      return new get_delegation_token_result(this);
+    }
+
+    @Override
+    public void clear() {
+      this.success = null;
+      this.o1 = null;
+    }
+
+    public String getSuccess() {
+      return this.success;
+    }
+
+    public void setSuccess(String success) {
+      this.success = success;
+    }
+
+    public void unsetSuccess() {
+      this.success = null;
+    }
+
+    /** Returns true if field success is set (has been asigned a value) and false otherwise */
+    public boolean isSetSuccess() {
+      return this.success != null;
+    }
+
+    public void setSuccessIsSet(boolean value) {
+      if (!value) {
+        this.success = null;
+      }
+    }
+
+    public MetaException getO1() {
+      return this.o1;
+    }
+
+    public void setO1(MetaException o1) {
+      this.o1 = o1;
+    }
+
+    public void unsetO1() {
+      this.o1 = null;
+    }
+
+    /** Returns true if field o1 is set (has been asigned a value) and false otherwise */
+    public boolean isSetO1() {
+      return this.o1 != null;
+    }
+
+    public void setO1IsSet(boolean value) {
+      if (!value) {
+        this.o1 = null;
+      }
+    }
+
+    public void setFieldValue(_Fields field, Object value) {
+      switch (field) {
+      case SUCCESS:
+        if (value == null) {
+          unsetSuccess();
+        } else {
+          setSuccess((String)value);
+        }
+        break;
+
+      case O1:
+        if (value == null) {
+          unsetO1();
+        } else {
+          setO1((MetaException)value);
+        }
+        break;
+
+      }
+    }
+
+    public Object getFieldValue(_Fields field) {
+      switch (field) {
+      case SUCCESS:
+        return getSuccess();
+
+      case O1:
+        return getO1();
+
+      }
+      throw new IllegalStateException();
+    }
+
+    /** Returns true if field corresponding to fieldID is set (has been asigned a value) and false otherwise */
+    public boolean isSet(_Fields field) {
+      if (field == null) {
+        throw new IllegalArgumentException();
+      }
+
+      switch (field) {
+      case SUCCESS:
+        return isSetSuccess();
+      case O1:
+        return isSetO1();
+      }
+      throw new IllegalStateException();
+    }
+
+    @Override
+    public boolean equals(Object that) {
+      if (that == null)
+        return false;
+      if (that instanceof get_delegation_token_result)
+        return this.equals((get_delegation_token_result)that);
+      return false;
+    }
+
+    public boolean equals(get_delegation_token_result that) {
+      if (that == null)
+        return false;
+
+      boolean this_present_success = true && this.isSetSuccess();
+      boolean that_present_success = true && that.isSetSuccess();
+      if (this_present_success || that_present_success) {
+        if (!(this_present_success && that_present_success))
+          return false;
+        if (!this.success.equals(that.success))
+          return false;
+      }
+
+      boolean this_present_o1 = true && this.isSetO1();
+      boolean that_present_o1 = true && that.isSetO1();
+      if (this_present_o1 || that_present_o1) {
+        if (!(this_present_o1 && that_present_o1))
+          return false;
+        if (!this.o1.equals(that.o1))
+          return false;
+      }
+
+      return true;
+    }
+
+    @Override
+    public int hashCode() {
+      return 0;
+    }
+
+    public int compareTo(get_delegation_token_result other) {
+      if (!getClass().equals(other.getClass())) {
+        return getClass().getName().compareTo(other.getClass().getName());
+      }
+
+      int lastComparison = 0;
+      get_delegation_token_result typedOther = (get_delegation_token_result)other;
+
+      lastComparison = Boolean.valueOf(isSetSuccess()).compareTo(typedOther.isSetSuccess());
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+      if (isSetSuccess()) {
+        lastComparison = TBaseHelper.compareTo(this.success, typedOther.success);
+        if (lastComparison != 0) {
+          return lastComparison;
+        }
+      }
+      lastComparison = Boolean.valueOf(isSetO1()).compareTo(typedOther.isSetO1());
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+      if (isSetO1()) {
+        lastComparison = TBaseHelper.compareTo(this.o1, typedOther.o1);
+        if (lastComparison != 0) {
+          return lastComparison;
+        }
+      }
+      return 0;
+    }
+
+    public _Fields fieldForId(int fieldId) {
+      return _Fields.findByThriftId(fieldId);
+    }
+
+    public void read(TProtocol iprot) throws TException {
+      TField field;
+      iprot.readStructBegin();
+      while (true)
+      {
+        field = iprot.readFieldBegin();
+        if (field.type == TType.STOP) { 
+          break;
+        }
+        switch (field.id) {
+          case 0: // SUCCESS
+            if (field.type == TType.STRING) {
+              this.success = iprot.readString();
+            } else { 
+              TProtocolUtil.skip(iprot, field.type);
+            }
+            break;
+          case 1: // O1
+            if (field.type == TType.STRUCT) {
+              this.o1 = new MetaException();
+              this.o1.read(iprot);
+            } else { 
+              TProtocolUtil.skip(iprot, field.type);
+            }
+            break;
+          default:
+            TProtocolUtil.skip(iprot, field.type);
+        }
+        iprot.readFieldEnd();
+      }
+      iprot.readStructEnd();
+      validate();
+    }
+
+    public void write(TProtocol oprot) throws TException {
+      oprot.writeStructBegin(STRUCT_DESC);
+
+      if (this.isSetSuccess()) {
+        oprot.writeFieldBegin(SUCCESS_FIELD_DESC);
+        oprot.writeString(this.success);
+        oprot.writeFieldEnd();
+      } else if (this.isSetO1()) {
+        oprot.writeFieldBegin(O1_FIELD_DESC);
+        this.o1.write(oprot);
+        oprot.writeFieldEnd();
+      }
+      oprot.writeFieldStop();
+      oprot.writeStructEnd();
+    }
+
+    @Override
+    public String toString() {
+      StringBuilder sb = new StringBuilder("get_delegation_token_result(");
+      boolean first = true;
+
+      sb.append("success:");
+      if (this.success == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.success);
+      }
+      first = false;
+      if (!first) sb.append(", ");
+      sb.append("o1:");
+      if (this.o1 == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.o1);
+      }
+      first = false;
+      sb.append(")");
+      return sb.toString();
+    }
+
+    public void validate() throws TException {
+      // check for required fields
+    }
+
+  }
+
+  public static class get_delegation_token_with_signature_args implements TBase<get_delegation_token_with_signature_args, get_delegation_token_with_signature_args._Fields>, java.io.Serializable, Cloneable   {
+    private static final TStruct STRUCT_DESC = new TStruct("get_delegation_token_with_signature_args");
+
+    private static final TField RENEWER_KERBEROS_PRINCIPAL_NAME_FIELD_DESC = new TField("renewer_kerberos_principal_name", TType.STRING, (short)1);
+    private static final TField TOKEN_SIGNATURE_FIELD_DESC = new TField("token_signature", TType.STRING, (short)2);
+
+    private String renewer_kerberos_principal_name;
+    private String token_signature;
+
+    /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
+    public enum _Fields implements TFieldIdEnum {
+      RENEWER_KERBEROS_PRINCIPAL_NAME((short)1, "renewer_kerberos_principal_name"),
+      TOKEN_SIGNATURE((short)2, "token_signature");
+
+      private static final Map<String, _Fields> byName = new HashMap<String, _Fields>();
+
+      static {
+        for (_Fields field : EnumSet.allOf(_Fields.class)) {
+          byName.put(field.getFieldName(), field);
+        }
+      }
+
+      /**
+       * Find the _Fields constant that matches fieldId, or null if its not found.
+       */
+      public static _Fields findByThriftId(int fieldId) {
+        switch(fieldId) {
+          case 1: // RENEWER_KERBEROS_PRINCIPAL_NAME
+            return RENEWER_KERBEROS_PRINCIPAL_NAME;
+          case 2: // TOKEN_SIGNATURE
+            return TOKEN_SIGNATURE;
+          default:
+            return null;
+        }
+      }
+
+      /**
+       * Find the _Fields constant that matches fieldId, throwing an exception
+       * if it is not found.
+       */
+      public static _Fields findByThriftIdOrThrow(int fieldId) {
+        _Fields fields = findByThriftId(fieldId);
+        if (fields == null) throw new IllegalArgumentException("Field " + fieldId + " doesn't exist!");
+        return fields;
+      }
+
+      /**
+       * Find the _Fields constant that matches name, or null if its not found.
+       */
+      public static _Fields findByName(String name) {
+        return byName.get(name);
+      }
+
+      private final short _thriftId;
+      private final String _fieldName;
+
+      _Fields(short thriftId, String fieldName) {
+        _thriftId = thriftId;
+        _fieldName = fieldName;
+      }
+
+      public short getThriftFieldId() {
+        return _thriftId;
+      }
+
+      public String getFieldName() {
+        return _fieldName;
+      }
+    }
+
+    // isset id assignments
+
+    public static final Map<_Fields, FieldMetaData> metaDataMap;
+    static {
+      Map<_Fields, FieldMetaData> tmpMap = new EnumMap<_Fields, FieldMetaData>(_Fields.class);
+      tmpMap.put(_Fields.RENEWER_KERBEROS_PRINCIPAL_NAME, new FieldMetaData("renewer_kerberos_principal_name", TFieldRequirementType.DEFAULT, 
+          new FieldValueMetaData(TType.STRING)));
+      tmpMap.put(_Fields.TOKEN_SIGNATURE, new FieldMetaData("token_signature", TFieldRequirementType.DEFAULT, 
+          new FieldValueMetaData(TType.STRING)));
+      metaDataMap = Collections.unmodifiableMap(tmpMap);
+      FieldMetaData.addStructMetaDataMap(get_delegation_token_with_signature_args.class, metaDataMap);
+    }
+
+    public get_delegation_token_with_signature_args() {
+    }
+
+    public get_delegation_token_with_signature_args(
+      String renewer_kerberos_principal_name,
+      String token_signature)
+    {
+      this();
+      this.renewer_kerberos_principal_name = renewer_kerberos_principal_name;
+      this.token_signature = token_signature;
+    }
+
+    /**
+     * Performs a deep copy on <i>other</i>.
+     */
+    public get_delegation_token_with_signature_args(get_delegation_token_with_signature_args other) {
+      if (other.isSetRenewer_kerberos_principal_name()) {
+        this.renewer_kerberos_principal_name = other.renewer_kerberos_principal_name;
+      }
+      if (other.isSetToken_signature()) {
+        this.token_signature = other.token_signature;
+      }
+    }
+
+    public get_delegation_token_with_signature_args deepCopy() {
+      return new get_delegation_token_with_signature_args(this);
+    }
+
+    @Override
+    public void clear() {
+      this.renewer_kerberos_principal_name = null;
+      this.token_signature = null;
+    }
+
+    public String getRenewer_kerberos_principal_name() {
+      return this.renewer_kerberos_principal_name;
+    }
+
+    public void setRenewer_kerberos_principal_name(String renewer_kerberos_principal_name) {
+      this.renewer_kerberos_principal_name = renewer_kerberos_principal_name;
+    }
+
+    public void unsetRenewer_kerberos_principal_name() {
+      this.renewer_kerberos_principal_name = null;
+    }
+
+    /** Returns true if field renewer_kerberos_principal_name is set (has been asigned a value) and false otherwise */
+    public boolean isSetRenewer_kerberos_principal_name() {
+      return this.renewer_kerberos_principal_name != null;
+    }
+
+    public void setRenewer_kerberos_principal_nameIsSet(boolean value) {
+      if (!value) {
+        this.renewer_kerberos_principal_name = null;
+      }
+    }
+
+    public String getToken_signature() {
+      return this.token_signature;
+    }
+
+    public void setToken_signature(String token_signature) {
+      this.token_signature = token_signature;
+    }
+
+    public void unsetToken_signature() {
+      this.token_signature = null;
+    }
+
+    /** Returns true if field token_signature is set (has been asigned a value) and false otherwise */
+    public boolean isSetToken_signature() {
+      return this.token_signature != null;
+    }
+
+    public void setToken_signatureIsSet(boolean value) {
+      if (!value) {
+        this.token_signature = null;
+      }
+    }
+
+    public void setFieldValue(_Fields field, Object value) {
+      switch (field) {
+      case RENEWER_KERBEROS_PRINCIPAL_NAME:
+        if (value == null) {
+          unsetRenewer_kerberos_principal_name();
+        } else {
+          setRenewer_kerberos_principal_name((String)value);
+        }
+        break;
+
+      case TOKEN_SIGNATURE:
+        if (value == null) {
+          unsetToken_signature();
+        } else {
+          setToken_signature((String)value);
+        }
+        break;
+
+      }
+    }
+
+    public Object getFieldValue(_Fields field) {
+      switch (field) {
+      case RENEWER_KERBEROS_PRINCIPAL_NAME:
+        return getRenewer_kerberos_principal_name();
+
+      case TOKEN_SIGNATURE:
+        return getToken_signature();
+
+      }
+      throw new IllegalStateException();
+    }
+
+    /** Returns true if field corresponding to fieldID is set (has been asigned a value) and false otherwise */
+    public boolean isSet(_Fields field) {
+      if (field == null) {
+        throw new IllegalArgumentException();
+      }
+
+      switch (field) {
+      case RENEWER_KERBEROS_PRINCIPAL_NAME:
+        return isSetRenewer_kerberos_principal_name();
+      case TOKEN_SIGNATURE:
+        return isSetToken_signature();
+      }
+      throw new IllegalStateException();
+    }
+
+    @Override
+    public boolean equals(Object that) {
+      if (that == null)
+        return false;
+      if (that instanceof get_delegation_token_with_signature_args)
+        return this.equals((get_delegation_token_with_signature_args)that);
+      return false;
+    }
+
+    public boolean equals(get_delegation_token_with_signature_args that) {
+      if (that == null)
+        return false;
+
+      boolean this_present_renewer_kerberos_principal_name = true && this.isSetRenewer_kerberos_principal_name();
+      boolean that_present_renewer_kerberos_principal_name = true && that.isSetRenewer_kerberos_principal_name();
+      if (this_present_renewer_kerberos_principal_name || that_present_renewer_kerberos_principal_name) {
+        if (!(this_present_renewer_kerberos_principal_name && that_present_renewer_kerberos_principal_name))
+          return false;
+        if (!this.renewer_kerberos_principal_name.equals(that.renewer_kerberos_principal_name))
+          return false;
+      }
+
+      boolean this_present_token_signature = true && this.isSetToken_signature();
+      boolean that_present_token_signature = true && that.isSetToken_signature();
+      if (this_present_token_signature || that_present_token_signature) {
+        if (!(this_present_token_signature && that_present_token_signature))
+          return false;
+        if (!this.token_signature.equals(that.token_signature))
+          return false;
+      }
+
+      return true;
+    }
+
+    @Override
+    public int hashCode() {
+      return 0;
+    }
+
+    public int compareTo(get_delegation_token_with_signature_args other) {
+      if (!getClass().equals(other.getClass())) {
+        return getClass().getName().compareTo(other.getClass().getName());
+      }
+
+      int lastComparison = 0;
+      get_delegation_token_with_signature_args typedOther = (get_delegation_token_with_signature_args)other;
+
+      lastComparison = Boolean.valueOf(isSetRenewer_kerberos_principal_name()).compareTo(typedOther.isSetRenewer_kerberos_principal_name());
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+      if (isSetRenewer_kerberos_principal_name()) {
+        lastComparison = TBaseHelper.compareTo(this.renewer_kerberos_principal_name, typedOther.renewer_kerberos_principal_name);
+        if (lastComparison != 0) {
+          return lastComparison;
+        }
+      }
+      lastComparison = Boolean.valueOf(isSetToken_signature()).compareTo(typedOther.isSetToken_signature());
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+      if (isSetToken_signature()) {
+        lastComparison = TBaseHelper.compareTo(this.token_signature, typedOther.token_signature);
+        if (lastComparison != 0) {
+          return lastComparison;
+        }
+      }
+      return 0;
+    }
+
+    public _Fields fieldForId(int fieldId) {
+      return _Fields.findByThriftId(fieldId);
+    }
+
+    public void read(TProtocol iprot) throws TException {
+      TField field;
+      iprot.readStructBegin();
+      while (true)
+      {
+        field = iprot.readFieldBegin();
+        if (field.type == TType.STOP) { 
+          break;
+        }
+        switch (field.id) {
+          case 1: // RENEWER_KERBEROS_PRINCIPAL_NAME
+            if (field.type == TType.STRING) {
+              this.renewer_kerberos_principal_name = iprot.readString();
+            } else { 
+              TProtocolUtil.skip(iprot, field.type);
+            }
+            break;
+          case 2: // TOKEN_SIGNATURE
+            if (field.type == TType.STRING) {
+              this.token_signature = iprot.readString();
+            } else { 
+              TProtocolUtil.skip(iprot, field.type);
+            }
+            break;
+          default:
+            TProtocolUtil.skip(iprot, field.type);
+        }
+        iprot.readFieldEnd();
+      }
+      iprot.readStructEnd();
+      validate();
+    }
+
+    public void write(TProtocol oprot) throws TException {
+      validate();
+
+      oprot.writeStructBegin(STRUCT_DESC);
+      if (this.renewer_kerberos_principal_name != null) {
+        oprot.writeFieldBegin(RENEWER_KERBEROS_PRINCIPAL_NAME_FIELD_DESC);
+        oprot.writeString(this.renewer_kerberos_principal_name);
+        oprot.writeFieldEnd();
+      }
+      if (this.token_signature != null) {
+        oprot.writeFieldBegin(TOKEN_SIGNATURE_FIELD_DESC);
+        oprot.writeString(this.token_signature);
+        oprot.writeFieldEnd();
+      }
+      oprot.writeFieldStop();
+      oprot.writeStructEnd();
+    }
+
+    @Override
+    public String toString() {
+      StringBuilder sb = new StringBuilder("get_delegation_token_with_signature_args(");
+      boolean first = true;
+
+      sb.append("renewer_kerberos_principal_name:");
+      if (this.renewer_kerberos_principal_name == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.renewer_kerberos_principal_name);
+      }
+      first = false;
+      if (!first) sb.append(", ");
+      sb.append("token_signature:");
+      if (this.token_signature == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.token_signature);
+      }
+      first = false;
+      sb.append(")");
+      return sb.toString();
+    }
+
+    public void validate() throws TException {
+      // check for required fields
+    }
+
+  }
+
+  public static class get_delegation_token_with_signature_result implements TBase<get_delegation_token_with_signature_result, get_delegation_token_with_signature_result._Fields>, java.io.Serializable, Cloneable   {
+    private static final TStruct STRUCT_DESC = new TStruct("get_delegation_token_with_signature_result");
+
+    private static final TField SUCCESS_FIELD_DESC = new TField("success", TType.STRING, (short)0);
+    private static final TField O1_FIELD_DESC = new TField("o1", TType.STRUCT, (short)1);
+
+    private String success;
+    private MetaException o1;
+
+    /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
+    public enum _Fields implements TFieldIdEnum {
+      SUCCESS((short)0, "success"),
+      O1((short)1, "o1");
+
+      private static final Map<String, _Fields> byName = new HashMap<String, _Fields>();
+
+      static {
+        for (_Fields field : EnumSet.allOf(_Fields.class)) {
+          byName.put(field.getFieldName(), field);
+        }
+      }
+
+      /**
+       * Find the _Fields constant that matches fieldId, or null if its not found.
+       */
+      public static _Fields findByThriftId(int fieldId) {
+        switch(fieldId) {
+          case 0: // SUCCESS
+            return SUCCESS;
+          case 1: // O1
+            return O1;
+          default:
+            return null;
+        }
+      }
+
+      /**
+       * Find the _Fields constant that matches fieldId, throwing an exception
+       * if it is not found.
+       */
+      public static _Fields findByThriftIdOrThrow(int fieldId) {
+        _Fields fields = findByThriftId(fieldId);
+        if (fields == null) throw new IllegalArgumentException("Field " + fieldId + " doesn't exist!");
+        return fields;
+      }
+
+      /**
+       * Find the _Fields constant that matches name, or null if its not found.
+       */
+      public static _Fields findByName(String name) {
+        return byName.get(name);
+      }
+
+      private final short _thriftId;
+      private final String _fieldName;
+
+      _Fields(short thriftId, String fieldName) {
+        _thriftId = thriftId;
+        _fieldName = fieldName;
+      }
+
+      public short getThriftFieldId() {
+        return _thriftId;
+      }
+
+      public String getFieldName() {
+        return _fieldName;
+      }
+    }
+
+    // isset id assignments
+
+    public static final Map<_Fields, FieldMetaData> metaDataMap;
+    static {
+      Map<_Fields, FieldMetaData> tmpMap = new EnumMap<_Fields, FieldMetaData>(_Fields.class);
+      tmpMap.put(_Fields.SUCCESS, new FieldMetaData("success", TFieldRequirementType.DEFAULT, 
+          new FieldValueMetaData(TType.STRING)));
+      tmpMap.put(_Fields.O1, new FieldMetaData("o1", TFieldRequirementType.DEFAULT, 
+          new FieldValueMetaData(TType.STRUCT)));
+      metaDataMap = Collections.unmodifiableMap(tmpMap);
+      FieldMetaData.addStructMetaDataMap(get_delegation_token_with_signature_result.class, metaDataMap);
+    }
+
+    public get_delegation_token_with_signature_result() {
+    }
+
+    public get_delegation_token_with_signature_result(
+      String success,
+      MetaException o1)
+    {
+      this();
+      this.success = success;
+      this.o1 = o1;
+    }
+
+    /**
+     * Performs a deep copy on <i>other</i>.
+     */
+    public get_delegation_token_with_signature_result(get_delegation_token_with_signature_result other) {
+      if (other.isSetSuccess()) {
+        this.success = other.success;
+      }
+      if (other.isSetO1()) {
+        this.o1 = new MetaException(other.o1);
+      }
+    }
+
+    public get_delegation_token_with_signature_result deepCopy() {
+      return new get_delegation_token_with_signature_result(this);
+    }
+
+    @Override
+    public void clear() {
+      this.success = null;
+      this.o1 = null;
+    }
+
+    public String getSuccess() {
+      return this.success;
+    }
+
+    public void setSuccess(String success) {
+      this.success = success;
+    }
+
+    public void unsetSuccess() {
+      this.success = null;
+    }
+
+    /** Returns true if field success is set (has been asigned a value) and false otherwise */
+    public boolean isSetSuccess() {
+      return this.success != null;
+    }
+
+    public void setSuccessIsSet(boolean value) {
+      if (!value) {
+        this.success = null;
+      }
+    }
+
+    public MetaException getO1() {
+      return this.o1;
+    }
+
+    public void setO1(MetaException o1) {
+      this.o1 = o1;
+    }
+
+    public void unsetO1() {
+      this.o1 = null;
+    }
+
+    /** Returns true if field o1 is set (has been asigned a value) and false otherwise */
+    public boolean isSetO1() {
+      return this.o1 != null;
+    }
+
+    public void setO1IsSet(boolean value) {
+      if (!value) {
+        this.o1 = null;
+      }
+    }
+
+    public void setFieldValue(_Fields field, Object value) {
+      switch (field) {
+      case SUCCESS:
+        if (value == null) {
+          unsetSuccess();
+        } else {
+          setSuccess((String)value);
+        }
+        break;
+
+      case O1:
+        if (value == null) {
+          unsetO1();
+        } else {
+          setO1((MetaException)value);
+        }
+        break;
+
+      }
+    }
+
+    public Object getFieldValue(_Fields field) {
+      switch (field) {
+      case SUCCESS:
+        return getSuccess();
+
+      case O1:
+        return getO1();
+
+      }
+      throw new IllegalStateException();
+    }
+
+    /** Returns true if field corresponding to fieldID is set (has been asigned a value) and false otherwise */
+    public boolean isSet(_Fields field) {
+      if (field == null) {
+        throw new IllegalArgumentException();
+      }
+
+      switch (field) {
+      case SUCCESS:
+        return isSetSuccess();
+      case O1:
+        return isSetO1();
+      }
+      throw new IllegalStateException();
+    }
+
+    @Override
+    public boolean equals(Object that) {
+      if (that == null)
+        return false;
+      if (that instanceof get_delegation_token_with_signature_result)
+        return this.equals((get_delegation_token_with_signature_result)that);
+      return false;
+    }
+
+    public boolean equals(get_delegation_token_with_signature_result that) {
+      if (that == null)
+        return false;
+
+      boolean this_present_success = true && this.isSetSuccess();
+      boolean that_present_success = true && that.isSetSuccess();
+      if (this_present_success || that_present_success) {
+        if (!(this_present_success && that_present_success))
+          return false;
+        if (!this.success.equals(that.success))
+          return false;
+      }
+
+      boolean this_present_o1 = true && this.isSetO1();
+      boolean that_present_o1 = true && that.isSetO1();
+      if (this_present_o1 || that_present_o1) {
+        if (!(this_present_o1 && that_present_o1))
+          return false;
+        if (!this.o1.equals(that.o1))
+          return false;
+      }
+
+      return true;
+    }
+
+    @Override
+    public int hashCode() {
+      return 0;
+    }
+
+    public int compareTo(get_delegation_token_with_signature_result other) {
+      if (!getClass().equals(other.getClass())) {
+        return getClass().getName().compareTo(other.getClass().getName());
+      }
+
+      int lastComparison = 0;
+      get_delegation_token_with_signature_result typedOther = (get_delegation_token_with_signature_result)other;
+
+      lastComparison = Boolean.valueOf(isSetSuccess()).compareTo(typedOther.isSetSuccess());
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+      if (isSetSuccess()) {
+        lastComparison = TBaseHelper.compareTo(this.success, typedOther.success);
+        if (lastComparison != 0) {
+          return lastComparison;
+        }
+      }
+      lastComparison = Boolean.valueOf(isSetO1()).compareTo(typedOther.isSetO1());
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+      if (isSetO1()) {
+        lastComparison = TBaseHelper.compareTo(this.o1, typedOther.o1);
+        if (lastComparison != 0) {
+          return lastComparison;
+        }
+      }
+      return 0;
+    }
+
+    public _Fields fieldForId(int fieldId) {
+      return _Fields.findByThriftId(fieldId);
+    }
+
+    public void read(TProtocol iprot) throws TException {
+      TField field;
+      iprot.readStructBegin();
+      while (true)
+      {
+        field = iprot.readFieldBegin();
+        if (field.type == TType.STOP) { 
+          break;
+        }
+        switch (field.id) {
+          case 0: // SUCCESS
+            if (field.type == TType.STRING) {
+              this.success = iprot.readString();
+            } else { 
+              TProtocolUtil.skip(iprot, field.type);
+            }
+            break;
+          case 1: // O1
+            if (field.type == TType.STRUCT) {
+              this.o1 = new MetaException();
+              this.o1.read(iprot);
+            } else { 
+              TProtocolUtil.skip(iprot, field.type);
+            }
+            break;
+          default:
+            TProtocolUtil.skip(iprot, field.type);
+        }
+        iprot.readFieldEnd();
+      }
+      iprot.readStructEnd();
+      validate();
+    }
+
+    public void write(TProtocol oprot) throws TException {
+      oprot.writeStructBegin(STRUCT_DESC);
+
+      if (this.isSetSuccess()) {
+        oprot.writeFieldBegin(SUCCESS_FIELD_DESC);
+        oprot.writeString(this.success);
+        oprot.writeFieldEnd();
+      } else if (this.isSetO1()) {
+        oprot.writeFieldBegin(O1_FIELD_DESC);
+        this.o1.write(oprot);
+        oprot.writeFieldEnd();
+      }
+      oprot.writeFieldStop();
+      oprot.writeStructEnd();
+    }
+
+    @Override
+    public String toString() {
+      StringBuilder sb = new StringBuilder("get_delegation_token_with_signature_result(");
+      boolean first = true;
+
+      sb.append("success:");
+      if (this.success == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.success);
+      }
+      first = false;
+      if (!first) sb.append(", ");
+      sb.append("o1:");
+      if (this.o1 == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.o1);
+      }
+      first = false;
+      sb.append(")");
+      return sb.toString();
+    }
+
+    public void validate() throws TException {
+      // check for required fields
+    }
+
+  }
+
+  public static class renew_delegation_token_args implements TBase<renew_delegation_token_args, renew_delegation_token_args._Fields>, java.io.Serializable, Cloneable   {
+    private static final TStruct STRUCT_DESC = new TStruct("renew_delegation_token_args");
+
+    private static final TField TOKEN_STR_FORM_FIELD_DESC = new TField("token_str_form", TType.STRING, (short)1);
+
+    private String token_str_form;
+
+    /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
+    public enum _Fields implements TFieldIdEnum {
+      TOKEN_STR_FORM((short)1, "token_str_form");
+
+      private static final Map<String, _Fields> byName = new HashMap<String, _Fields>();
+
+      static {
+        for (_Fields field : EnumSet.allOf(_Fields.class)) {
+          byName.put(field.getFieldName(), field);
+        }
+      }
+
+      /**
+       * Find the _Fields constant that matches fieldId, or null if its not found.
+       */
+      public static _Fields findByThriftId(int fieldId) {
+        switch(fieldId) {
+          case 1: // TOKEN_STR_FORM
+            return TOKEN_STR_FORM;
+          default:
+            return null;
+        }
+      }
+
+      /**
+       * Find the _Fields constant that matches fieldId, throwing an exception
+       * if it is not found.
+       */
+      public static _Fields findByThriftIdOrThrow(int fieldId) {
+        _Fields fields = findByThriftId(fieldId);
+        if (fields == null) throw new IllegalArgumentException("Field " + fieldId + " doesn't exist!");
+        return fields;
+      }
+
+      /**
+       * Find the _Fields constant that matches name, or null if its not found.
+       */
+      public static _Fields findByName(String name) {
+        return byName.get(name);
+      }
+
+      private final short _thriftId;
+      private final String _fieldName;
+
+      _Fields(short thriftId, String fieldName) {
+        _thriftId = thriftId;
+        _fieldName = fieldName;
+      }
+
+      public short getThriftFieldId() {
+        return _thriftId;
+      }
+
+      public String getFieldName() {
+        return _fieldName;
+      }
+    }
+
+    // isset id assignments
+
+    public static final Map<_Fields, FieldMetaData> metaDataMap;
+    static {
+      Map<_Fields, FieldMetaData> tmpMap = new EnumMap<_Fields, FieldMetaData>(_Fields.class);
+      tmpMap.put(_Fields.TOKEN_STR_FORM, new FieldMetaData("token_str_form", TFieldRequirementType.DEFAULT, 
+          new FieldValueMetaData(TType.STRING)));
+      metaDataMap = Collections.unmodifiableMap(tmpMap);
+      FieldMetaData.addStructMetaDataMap(renew_delegation_token_args.class, metaDataMap);
+    }
+
+    public renew_delegation_token_args() {
+    }
+
+    public renew_delegation_token_args(
+      String token_str_form)
+    {
+      this();
+      this.token_str_form = token_str_form;
+    }
+
+    /**
+     * Performs a deep copy on <i>other</i>.
+     */
+    public renew_delegation_token_args(renew_delegation_token_args other) {
+      if (other.isSetToken_str_form()) {
+        this.token_str_form = other.token_str_form;
+      }
+    }
+
+    public renew_delegation_token_args deepCopy() {
+      return new renew_delegation_token_args(this);
+    }
+
+    @Override
+    public void clear() {
+      this.token_str_form = null;
+    }
+
+    public String getToken_str_form() {
+      return this.token_str_form;
+    }
+
+    public void setToken_str_form(String token_str_form) {
+      this.token_str_form = token_str_form;
+    }
+
+    public void unsetToken_str_form() {
+      this.token_str_form = null;
+    }
+
+    /** Returns true if field token_str_form is set (has been asigned a value) and false otherwise */
+    public boolean isSetToken_str_form() {
+      return this.token_str_form != null;
+    }
+
+    public void setToken_str_formIsSet(boolean value) {
+      if (!value) {
+        this.token_str_form = null;
+      }
+    }
+
+    public void setFieldValue(_Fields field, Object value) {
+      switch (field) {
+      case TOKEN_STR_FORM:
+        if (value == null) {
+          unsetToken_str_form();
+        } else {
+          setToken_str_form((String)value);
+        }
+        break;
+
+      }
+    }
+
+    public Object getFieldValue(_Fields field) {
+      switch (field) {
+      case TOKEN_STR_FORM:
+        return getToken_str_form();
+
+      }
+      throw new IllegalStateException();
+    }
+
+    /** Returns true if field corresponding to fieldID is set (has been asigned a value) and false otherwise */
+    public boolean isSet(_Fields field) {
+      if (field == null) {
+        throw new IllegalArgumentException();
+      }
+
+      switch (field) {
+      case TOKEN_STR_FORM:
+        return isSetToken_str_form();
+      }
+      throw new IllegalStateException();
+    }
+
+    @Override
+    public boolean equals(Object that) {
+      if (that == null)
+        return false;
+      if (that instanceof renew_delegation_token_args)
+        return this.equals((renew_delegation_token_args)that);
+      return false;
+    }
+
+    public boolean equals(renew_delegation_token_args that) {
+      if (that == null)
+        return false;
+
+      boolean this_present_token_str_form = true && this.isSetToken_str_form();
+      boolean that_present_token_str_form = true && that.isSetToken_str_form();
+      if (this_present_token_str_form || that_present_token_str_form) {
+        if (!(this_present_token_str_form && that_present_token_str_form))
+          return false;
+        if (!this.token_str_form.equals(that.token_str_form))
+          return false;
+      }
+
+      return true;
+    }
+
+    @Override
+    public int hashCode() {
+      return 0;
+    }
+
+    public int compareTo(renew_delegation_token_args other) {
+      if (!getClass().equals(other.getClass())) {
+        return getClass().getName().compareTo(other.getClass().getName());
+      }
+
+      int lastComparison = 0;
+      renew_delegation_token_args typedOther = (renew_delegation_token_args)other;
+
+      lastComparison = Boolean.valueOf(isSetToken_str_form()).compareTo(typedOther.isSetToken_str_form());
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+      if (isSetToken_str_form()) {
+        lastComparison = TBaseHelper.compareTo(this.token_str_form, typedOther.token_str_form);
+        if (lastComparison != 0) {
+          return lastComparison;
+        }
+      }
+      return 0;
+    }
+
+    public _Fields fieldForId(int fieldId) {
+      return _Fields.findByThriftId(fieldId);
+    }
+
+    public void read(TProtocol iprot) throws TException {
+      TField field;
+      iprot.readStructBegin();
+      while (true)
+      {
+        field = iprot.readFieldBegin();
+        if (field.type == TType.STOP) { 
+          break;
+        }
+        switch (field.id) {
+          case 1: // TOKEN_STR_FORM
+            if (field.type == TType.STRING) {
+              this.token_str_form = iprot.readString();
+            } else { 
+              TProtocolUtil.skip(iprot, field.type);
+            }
+            break;
+          default:
+            TProtocolUtil.skip(iprot, field.type);
+        }
+        iprot.readFieldEnd();
+      }
+      iprot.readStructEnd();
+      validate();
+    }
+
+    public void write(TProtocol oprot) throws TException {
+      validate();
+
+      oprot.writeStructBegin(STRUCT_DESC);
+      if (this.token_str_form != null) {
+        oprot.writeFieldBegin(TOKEN_STR_FORM_FIELD_DESC);
+        oprot.writeString(this.token_str_form);
+        oprot.writeFieldEnd();
+      }
+      oprot.writeFieldStop();
+      oprot.writeStructEnd();
+    }
+
+    @Override
+    public String toString() {
+      StringBuilder sb = new StringBuilder("renew_delegation_token_args(");
+      boolean first = true;
+
+      sb.append("token_str_form:");
+      if (this.token_str_form == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.token_str_form);
+      }
+      first = false;
+      sb.append(")");
+      return sb.toString();
+    }
+
+    public void validate() throws TException {
+      // check for required fields
+    }
+
+  }
+
+  public static class renew_delegation_token_result implements TBase<renew_delegation_token_result, renew_delegation_token_result._Fields>, java.io.Serializable, Cloneable   {
+    private static final TStruct STRUCT_DESC = new TStruct("renew_delegation_token_result");
+
+    private static final TField SUCCESS_FIELD_DESC = new TField("success", TType.I64, (short)0);
+    private static final TField O1_FIELD_DESC = new TField("o1", TType.STRUCT, (short)1);
+
+    private long success;
+    private MetaException o1;
+
+    /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
+    public enum _Fields implements TFieldIdEnum {
+      SUCCESS((short)0, "success"),
+      O1((short)1, "o1");
+
+      private static final Map<String, _Fields> byName = new HashMap<String, _Fields>();
+
+      static {
+        for (_Fields field : EnumSet.allOf(_Fields.class)) {
+          byName.put(field.getFieldName(), field);
+        }
+      }
+
+      /**
+       * Find the _Fields constant that matches fieldId, or null if its not found.
+       */
+      public static _Fields findByThriftId(int fieldId) {
+        switch(fieldId) {
+          case 0: // SUCCESS
+            return SUCCESS;
+          case 1: // O1
+            return O1;
+          default:
+            return null;
+        }
+      }
+
+      /**
+       * Find the _Fields constant that matches fieldId, throwing an exception
+       * if it is not found.
+       */
+      public static _Fields findByThriftIdOrThrow(int fieldId) {
+        _Fields fields = findByThriftId(fieldId);
+        if (fields == null) throw new IllegalArgumentException("Field " + fieldId + " doesn't exist!");
+        return fields;
+      }
+
+      /**
+       * Find the _Fields constant that matches name, or null if its not found.
+       */
+      public static _Fields findByName(String name) {
+        return byName.get(name);
+      }
+
+      private final short _thriftId;
+      private final String _fieldName;
+
+      _Fields(short thriftId, String fieldName) {
+        _thriftId = thriftId;
+        _fieldName = fieldName;
+      }
+
+      public short getThriftFieldId() {
+        return _thriftId;
+      }
+
+      public String getFieldName() {
+        return _fieldName;
+      }
+    }
+
+    // isset id assignments
+    private static final int __SUCCESS_ISSET_ID = 0;
+    private BitSet __isset_bit_vector = new BitSet(1);
+
+    public static final Map<_Fields, FieldMetaData> metaDataMap;
+    static {
+      Map<_Fields, FieldMetaData> tmpMap = new EnumMap<_Fields, FieldMetaData>(_Fields.class);
+      tmpMap.put(_Fields.SUCCESS, new FieldMetaData("success", TFieldRequirementType.DEFAULT, 
+          new FieldValueMetaData(TType.I64)));
+      tmpMap.put(_Fields.O1, new FieldMetaData("o1", TFieldRequirementType.DEFAULT, 
+          new FieldValueMetaData(TType.STRUCT)));
+      metaDataMap = Collections.unmodifiableMap(tmpMap);
+      FieldMetaData.addStructMetaDataMap(renew_delegation_token_result.class, metaDataMap);
+    }
+
+    public renew_delegation_token_result() {
+    }
+
+    public renew_delegation_token_result(
+      long success,
+      MetaException o1)
+    {
+      this();
+      this.success = success;
+      setSuccessIsSet(true);
+      this.o1 = o1;
+    }
+
+    /**
+     * Performs a deep copy on <i>other</i>.
+     */
+    public renew_delegation_token_result(renew_delegation_token_result other) {
+      __isset_bit_vector.clear();
+      __isset_bit_vector.or(other.__isset_bit_vector);
+      this.success = other.success;
+      if (other.isSetO1()) {
+        this.o1 = new MetaException(other.o1);
+      }
+    }
+
+    public renew_delegation_token_result deepCopy() {
+      return new renew_delegation_token_result(this);
+    }
+
+    @Override
+    public void clear() {
+      setSuccessIsSet(false);
+      this.success = 0;
+      this.o1 = null;
+    }
+
+    public long getSuccess() {
+      return this.success;
+    }
+
+    public void setSuccess(long success) {
+      this.success = success;
+      setSuccessIsSet(true);
+    }
+
+    public void unsetSuccess() {
+      __isset_bit_vector.clear(__SUCCESS_ISSET_ID);
+    }
+
+    /** Returns true if field success is set (has been asigned a value) and false otherwise */
+    public boolean isSetSuccess() {
+      return __isset_bit_vector.get(__SUCCESS_ISSET_ID);
+    }
+
+    public void setSuccessIsSet(boolean value) {
+      __isset_bit_vector.set(__SUCCESS_ISSET_ID, value);
+    }
+
+    public MetaException getO1() {
+      return this.o1;
+    }
+
+    public void setO1(MetaException o1) {
+      this.o1 = o1;
+    }
+
+    public void unsetO1() {
+      this.o1 = null;
+    }
+
+    /** Returns true if field o1 is set (has been asigned a value) and false otherwise */
+    public boolean isSetO1() {
+      return this.o1 != null;
+    }
+
+    public void setO1IsSet(boolean value) {
+      if (!value) {
+        this.o1 = null;
+      }
+    }
+
+    public void setFieldValue(_Fields field, Object value) {
+      switch (field) {
+      case SUCCESS:
+        if (value == null) {
+          unsetSuccess();
+        } else {
+          setSuccess((Long)value);
+        }
+        break;
+
+      case O1:
+        if (value == null) {
+          unsetO1();
+        } else {
+          setO1((MetaException)value);
+        }
+        break;
+
+      }
+    }
+
+    public Object getFieldValue(_Fields field) {
+      switch (field) {
+      case SUCCESS:
+        return new Long(getSuccess());
+
+      case O1:
+        return getO1();
+
+      }
+      throw new IllegalStateException();
+    }
+
+    /** Returns true if field corresponding to fieldID is set (has been asigned a value) and false otherwise */
+    public boolean isSet(_Fields field) {
+      if (field == null) {
+        throw new IllegalArgumentException();
+      }
+
+      switch (field) {
+      case SUCCESS:
+        return isSetSuccess();
+      case O1:
+        return isSetO1();
+      }
+      throw new IllegalStateException();
+    }
+
+    @Override
+    public boolean equals(Object that) {
+      if (that == null)
+        return false;
+      if (that instanceof renew_delegation_token_result)
+        return this.equals((renew_delegation_token_result)that);
+      return false;
+    }
+
+    public boolean equals(renew_delegation_token_result that) {
+      if (that == null)
+        return false;
+
+      boolean this_present_success = true;
+      boolean that_present_success = true;
+      if (this_present_success || that_present_success) {
+        if (!(this_present_success && that_present_success))
+          return false;
+        if (this.success != that.success)
+          return false;
+      }
+
+      boolean this_present_o1 = true && this.isSetO1();
+      boolean that_present_o1 = true && that.isSetO1();
+      if (this_present_o1 || that_present_o1) {
+        if (!(this_present_o1 && that_present_o1))
+          return false;
+        if (!this.o1.equals(that.o1))
+          return false;
+      }
+
+      return true;
+    }
+
+    @Override
+    public int hashCode() {
+      return 0;
+    }
+
+    public int compareTo(renew_delegation_token_result other) {
+      if (!getClass().equals(other.getClass())) {
+        return getClass().getName().compareTo(other.getClass().getName());
+      }
+
+      int lastComparison = 0;
+      renew_delegation_token_result typedOther = (renew_delegation_token_result)other;
+
+      lastComparison = Boolean.valueOf(isSetSuccess()).compareTo(typedOther.isSetSuccess());
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+      if (isSetSuccess()) {
+        lastComparison = TBaseHelper.compareTo(this.success, typedOther.success);
+        if (lastComparison != 0) {
+          return lastComparison;
+        }
+      }
+      lastComparison = Boolean.valueOf(isSetO1()).compareTo(typedOther.isSetO1());
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+      if (isSetO1()) {
+        lastComparison = TBaseHelper.compareTo(this.o1, typedOther.o1);
+        if (lastComparison != 0) {
+          return lastComparison;
+        }
+      }
+      return 0;
+    }
+
+    public _Fields fieldForId(int fieldId) {
+      return _Fields.findByThriftId(fieldId);
+    }
+
+    public void read(TProtocol iprot) throws TException {
+      TField field;
+      iprot.readStructBegin();
+      while (true)
+      {
+        field = iprot.readFieldBegin();
+        if (field.type == TType.STOP) { 
+          break;
+        }
+        switch (field.id) {
+          case 0: // SUCCESS
+            if (field.type == TType.I64) {
+              this.success = iprot.readI64();
+              setSuccessIsSet(true);
+            } else { 
+              TProtocolUtil.skip(iprot, field.type);
+            }
+            break;
+          case 1: // O1
+            if (field.type == TType.STRUCT) {
+              this.o1 = new MetaException();
+              this.o1.read(iprot);
+            } else { 
+              TProtocolUtil.skip(iprot, field.type);
+            }
+            break;
+          default:
+            TProtocolUtil.skip(iprot, field.type);
+        }
+        iprot.readFieldEnd();
+      }
+      iprot.readStructEnd();
+      validate();
+    }
+
+    public void write(TProtocol oprot) throws TException {
+      oprot.writeStructBegin(STRUCT_DESC);
+
+      if (this.isSetSuccess()) {
+        oprot.writeFieldBegin(SUCCESS_FIELD_DESC);
+        oprot.writeI64(this.success);
+        oprot.writeFieldEnd();
+      } else if (this.isSetO1()) {
+        oprot.writeFieldBegin(O1_FIELD_DESC);
+        this.o1.write(oprot);
+        oprot.writeFieldEnd();
+      }
+      oprot.writeFieldStop();
+      oprot.writeStructEnd();
+    }
+
+    @Override
+    public String toString() {
+      StringBuilder sb = new StringBuilder("renew_delegation_token_result(");
+      boolean first = true;
+
+      sb.append("success:");
+      sb.append(this.success);
+      first = false;
+      if (!first) sb.append(", ");
+      sb.append("o1:");
+      if (this.o1 == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.o1);
+      }
+      first = false;
+      sb.append(")");
+      return sb.toString();
+    }
+
+    public void validate() throws TException {
+      // check for required fields
+    }
+
+  }
+
+  public static class cancel_delegation_token_args implements TBase<cancel_delegation_token_args, cancel_delegation_token_args._Fields>, java.io.Serializable, Cloneable   {
+    private static final TStruct STRUCT_DESC = new TStruct("cancel_delegation_token_args");
+
+    private static final TField TOKEN_STR_FORM_FIELD_DESC = new TField("token_str_form", TType.STRING, (short)1);
+
+    private String token_str_form;
+
+    /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
+    public enum _Fields implements TFieldIdEnum {
+      TOKEN_STR_FORM((short)1, "token_str_form");
+
+      private static final Map<String, _Fields> byName = new HashMap<String, _Fields>();
+
+      static {
+        for (_Fields field : EnumSet.allOf(_Fields.class)) {
+          byName.put(field.getFieldName(), field);
+        }
+      }
+
+      /**
+       * Find the _Fields constant that matches fieldId, or null if its not found.
+       */
+      public static _Fields findByThriftId(int fieldId) {
+        switch(fieldId) {
+          case 1: // TOKEN_STR_FORM
+            return TOKEN_STR_FORM;
+          default:
+            return null;
+        }
+      }
+
+      /**
+       * Find the _Fields constant that matches fieldId, throwing an exception
+       * if it is not found.
+       */
+      public static _Fields findByThriftIdOrThrow(int fieldId) {
+        _Fields fields = findByThriftId(fieldId);
+        if (fields == null) throw new IllegalArgumentException("Field " + fieldId + " doesn't exist!");
+        return fields;
+      }
+
+      /**
+       * Find the _Fields constant that matches name, or null if its not found.
+       */
+      public static _Fields findByName(String name) {
+        return byName.get(name);
+      }
+
+      private final short _thriftId;
+      private final String _fieldName;
+
+      _Fields(short thriftId, String fieldName) {
+        _thriftId = thriftId;
+        _fieldName = fieldName;
+      }
+
+      public short getThriftFieldId() {
+        return _thriftId;
+      }
+
+      public String getFieldName() {
+        return _fieldName;
+      }
+    }
+
+    // isset id assignments
+
+    public static final Map<_Fields, FieldMetaData> metaDataMap;
+    static {
+      Map<_Fields, FieldMetaData> tmpMap = new EnumMap<_Fields, FieldMetaData>(_Fields.class);
+      tmpMap.put(_Fields.TOKEN_STR_FORM, new FieldMetaData("token_str_form", TFieldRequirementType.DEFAULT, 
+          new FieldValueMetaData(TType.STRING)));
+      metaDataMap = Collections.unmodifiableMap(tmpMap);
+      FieldMetaData.addStructMetaDataMap(cancel_delegation_token_args.class, metaDataMap);
+    }
+
+    public cancel_delegation_token_args() {
+    }
+
+    public cancel_delegation_token_args(
+      String token_str_form)
+    {
+      this();
+      this.token_str_form = token_str_form;
+    }
+
+    /**
+     * Performs a deep copy on <i>other</i>.
+     */
+    public cancel_delegation_token_args(cancel_delegation_token_args other) {
+      if (other.isSetToken_str_form()) {
+        this.token_str_form = other.token_str_form;
+      }
+    }
+
+    public cancel_delegation_token_args deepCopy() {
+      return new cancel_delegation_token_args(this);
+    }
+
+    @Override
+    public void clear() {
+      this.token_str_form = null;
+    }
+
+    public String getToken_str_form() {
+      return this.token_str_form;
+    }
+
+    public void setToken_str_form(String token_str_form) {
+      this.token_str_form = token_str_form;
+    }
+
+    public void unsetToken_str_form() {
+      this.token_str_form = null;
+    }
+
+    /** Returns true if field token_str_form is set (has been asigned a value) and false otherwise */
+    public boolean isSetToken_str_form() {
+      return this.token_str_form != null;
+    }
+
+    public void setToken_str_formIsSet(boolean value) {
+      if (!value) {
+        this.token_str_form = null;
+      }
+    }
+
+    public void setFieldValue(_Fields field, Object value) {
+      switch (field) {
+      case TOKEN_STR_FORM:
+        if (value == null) {
+          unsetToken_str_form();
+        } else {
+          setToken_str_form((String)value);
+        }
+        break;
+
+      }
+    }
+
+    public Object getFieldValue(_Fields field) {
+      switch (field) {
+      case TOKEN_STR_FORM:
+        return getToken_str_form();
+
+      }
+      throw new IllegalStateException();
+    }
+
+    /** Returns true if field corresponding to fieldID is set (has been asigned a value) and false otherwise */
+    public boolean isSet(_Fields field) {
+      if (field == null) {
+        throw new IllegalArgumentException();
+      }
+
+      switch (field) {
+      case TOKEN_STR_FORM:
+        return isSetToken_str_form();
+      }
+      throw new IllegalStateException();
+    }
+
+    @Override
+    public boolean equals(Object that) {
+      if (that == null)
+        return false;
+      if (that instanceof cancel_delegation_token_args)
+        return this.equals((cancel_delegation_token_args)that);
+      return false;
+    }
+
+    public boolean equals(cancel_delegation_token_args that) {
+      if (that == null)
+        return false;
+
+      boolean this_present_token_str_form = true && this.isSetToken_str_form();
+      boolean that_present_token_str_form = true && that.isSetToken_str_form();
+      if (this_present_token_str_form || that_present_token_str_form) {
+        if (!(this_present_token_str_form && that_present_token_str_form))
+          return false;
+        if (!this.token_str_form.equals(that.token_str_form))
+          return false;
+      }
+
+      return true;
+    }
+
+    @Override
+    public int hashCode() {
+      return 0;
+    }
+
+    public int compareTo(cancel_delegation_token_args other) {
+      if (!getClass().equals(other.getClass())) {
+        return getClass().getName().compareTo(other.getClass().getName());
+      }
+
+      int lastComparison = 0;
+      cancel_delegation_token_args typedOther = (cancel_delegation_token_args)other;
+
+      lastComparison = Boolean.valueOf(isSetToken_str_form()).compareTo(typedOther.isSetToken_str_form());
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+      if (isSetToken_str_form()) {
+        lastComparison = TBaseHelper.compareTo(this.token_str_form, typedOther.token_str_form);
+        if (lastComparison != 0) {
+          return lastComparison;
+        }
+      }
+      return 0;
+    }
+
+    public _Fields fieldForId(int fieldId) {
+      return _Fields.findByThriftId(fieldId);
+    }
+
+    public void read(TProtocol iprot) throws TException {
+      TField field;
+      iprot.readStructBegin();
+      while (true)
+      {
+        field = iprot.readFieldBegin();
+        if (field.type == TType.STOP) { 
+          break;
+        }
+        switch (field.id) {
+          case 1: // TOKEN_STR_FORM
+            if (field.type == TType.STRING) {
+              this.token_str_form = iprot.readString();
+            } else { 
+              TProtocolUtil.skip(iprot, field.type);
+            }
+            break;
+          default:
+            TProtocolUtil.skip(iprot, field.type);
+        }
+        iprot.readFieldEnd();
+      }
+      iprot.readStructEnd();
+      validate();
+    }
+
+    public void write(TProtocol oprot) throws TException {
+      validate();
+
+      oprot.writeStructBegin(STRUCT_DESC);
+      if (this.token_str_form != null) {
+        oprot.writeFieldBegin(TOKEN_STR_FORM_FIELD_DESC);
+        oprot.writeString(this.token_str_form);
+        oprot.writeFieldEnd();
+      }
+      oprot.writeFieldStop();
+      oprot.writeStructEnd();
+    }
+
+    @Override
+    public String toString() {
+      StringBuilder sb = new StringBuilder("cancel_delegation_token_args(");
+      boolean first = true;
+
+      sb.append("token_str_form:");
+      if (this.token_str_form == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.token_str_form);
+      }
+      first = false;
+      sb.append(")");
+      return sb.toString();
+    }
+
+    public void validate() throws TException {
+      // check for required fields
+    }
+
+  }
+
+  public static class cancel_delegation_token_result implements TBase<cancel_delegation_token_result, cancel_delegation_token_result._Fields>, java.io.Serializable, Cloneable   {
+    private static final TStruct STRUCT_DESC = new TStruct("cancel_delegation_token_result");
+
+    private static final TField O1_FIELD_DESC = new TField("o1", TType.STRUCT, (short)1);
+
+    private MetaException o1;
+
+    /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
+    public enum _Fields implements TFieldIdEnum {
+      O1((short)1, "o1");
+
+      private static final Map<String, _Fields> byName = new HashMap<String, _Fields>();
+
+      static {
+        for (_Fields field : EnumSet.allOf(_Fields.class)) {
+          byName.put(field.getFieldName(), field);
+        }
+      }
+
+      /**
+       * Find the _Fields constant that matches fieldId, or null if its not found.
+       */
+      public static _Fields findByThriftId(int fieldId) {
+        switch(fieldId) {
+          case 1: // O1
+            return O1;
+          default:
+            return null;
+        }
+      }
+
+      /**
+       * Find the _Fields constant that matches fieldId, throwing an exception
+       * if it is not found.
+       */
+      public static _Fields findByThriftIdOrThrow(int fieldId) {
+        _Fields fields = findByThriftId(fieldId);
+        if (fields == null) throw new IllegalArgumentException("Field " + fieldId + " doesn't exist!");
+        return fields;
+      }
+
+      /**
+       * Find the _Fields constant that matches name, or null if its not found.
+       */
+      public static _Fields findByName(String name) {
+        return byName.get(name);
+      }
+
+      private final short _thriftId;
+      private final String _fieldName;
+
+      _Fields(short thriftId, String fieldName) {
+        _thriftId = thriftId;
+        _fieldName = fieldName;
+      }
+
+      public short getThriftFieldId() {
+        return _thriftId;
+      }
+
+      public String getFieldName() {
+        return _fieldName;
+      }
+    }
+
+    // isset id assignments
+
+    public static final Map<_Fields, FieldMetaData> metaDataMap;
+    static {
+      Map<_Fields, FieldMetaData> tmpMap = new EnumMap<_Fields, FieldMetaData>(_Fields.class);
+      tmpMap.put(_Fields.O1, new FieldMetaData("o1", TFieldRequirementType.DEFAULT, 
+          new FieldValueMetaData(TType.STRUCT)));
+      metaDataMap = Collections.unmodifiableMap(tmpMap);
+      FieldMetaData.addStructMetaDataMap(cancel_delegation_token_result.class, metaDataMap);
+    }
+
+    public cancel_delegation_token_result() {
+    }
+
+    public cancel_delegation_token_result(
+      MetaException o1)
+    {
+      this();
+      this.o1 = o1;
+    }
+
+    /**
+     * Performs a deep copy on <i>other</i>.
+     */
+    public cancel_delegation_token_result(cancel_delegation_token_result other) {
+      if (other.isSetO1()) {
+        this.o1 = new MetaException(other.o1);
+      }
+    }
+
+    public cancel_delegation_token_result deepCopy() {
+      return new cancel_delegation_token_result(this);
+    }
+
+    @Override
+    public void clear() {
+      this.o1 = null;
+    }
+
+    public MetaException getO1() {
+      return this.o1;
+    }
+
+    public void setO1(MetaException o1) {
+      this.o1 = o1;
+    }
+
+    public void unsetO1() {
+      this.o1 = null;
+    }
+
+    /** Returns true if field o1 is set (has been asigned a value) and false otherwise */
+    public boolean isSetO1() {
+      return this.o1 != null;
+    }
+
+    public void setO1IsSet(boolean value) {
+      if (!value) {
+        this.o1 = null;
+      }
+    }
+
+    public void setFieldValue(_Fields field, Object value) {
+      switch (field) {
+      case O1:
+        if (value == null) {
+          unsetO1();
+        } else {
+          setO1((MetaException)value);
+        }
+        break;
+
+      }
+    }
+
+    public Object getFieldValue(_Fields field) {
+      switch (field) {
+      case O1:
+        return getO1();
+
+      }
+      throw new IllegalStateException();
+    }
+
+    /** Returns true if field corresponding to fieldID is set (has been asigned a value) and false otherwise */
+    public boolean isSet(_Fields field) {
+      if (field == null) {
+        throw new IllegalArgumentException();
+      }
+
+      switch (field) {
+      case O1:
+        return isSetO1();
+      }
+      throw new IllegalStateException();
+    }
+
+    @Override
+    public boolean equals(Object that) {
+      if (that == null)
+        return false;
+      if (that instanceof cancel_delegation_token_result)
+        return this.equals((cancel_delegation_token_result)that);
+      return false;
+    }
+
+    public boolean equals(cancel_delegation_token_result that) {
+      if (that == null)
+        return false;
+
+      boolean this_present_o1 = true && this.isSetO1();
+      boolean that_present_o1 = true && that.isSetO1();
+      if (this_present_o1 || that_present_o1) {
+        if (!(this_present_o1 && that_present_o1))
+          return false;
+        if (!this.o1.equals(that.o1))
+          return false;
+      }
+
+      return true;
+    }
+
+    @Override
+    public int hashCode() {
+      return 0;
+    }
+
+    public int compareTo(cancel_delegation_token_result other) {
+      if (!getClass().equals(other.getClass())) {
+        return getClass().getName().compareTo(other.getClass().getName());
+      }
+
+      int lastComparison = 0;
+      cancel_delegation_token_result typedOther = (cancel_delegation_token_result)other;
+
+      lastComparison = Boolean.valueOf(isSetO1()).compareTo(typedOther.isSetO1());
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+      if (isSetO1()) {
+        lastComparison = TBaseHelper.compareTo(this.o1, typedOther.o1);
+        if (lastComparison != 0) {
+          return lastComparison;
+        }
+      }
+      return 0;
+    }
+
+    public _Fields fieldForId(int fieldId) {
+      return _Fields.findByThriftId(fieldId);
+    }
+
+    public void read(TProtocol iprot) throws TException {
+      TField field;
+      iprot.readStructBegin();
+      while (true)
+      {
+        field = iprot.readFieldBegin();
+        if (field.type == TType.STOP) { 
+          break;
+        }
+        switch (field.id) {
+          case 1: // O1
+            if (field.type == TType.STRUCT) {
+              this.o1 = new MetaException();
+              this.o1.read(iprot);
+            } else { 
+              TProtocolUtil.skip(iprot, field.type);
+            }
+            break;
+          default:
+            TProtocolUtil.skip(iprot, field.type);
+        }
+        iprot.readFieldEnd();
+      }
+      iprot.readStructEnd();
+      validate();
+    }
+
+    public void write(TProtocol oprot) throws TException {
+      oprot.writeStructBegin(STRUCT_DESC);
+
+      if (this.isSetO1()) {
+        oprot.writeFieldBegin(O1_FIELD_DESC);
+        this.o1.write(oprot);
+        oprot.writeFieldEnd();
+      }
+      oprot.writeFieldStop();
+      oprot.writeStructEnd();
+    }
+
+    @Override
+    public String toString() {
+      StringBuilder sb = new StringBuilder("cancel_delegation_token_result(");
+      boolean first = true;
+
       sb.append("o1:");
       if (this.o1 == null) {
         sb.append("null");

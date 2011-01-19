@@ -126,6 +126,17 @@
     </sequential>
   </macrodef>
 
+  <macrodef name="iterate-test-dirs">
+    <attribute name="target"/>
+    <sequential>
+      <subant target="@{target}">
+        <property name="build.dir.hive" location="${build.dir.hive}"/>
+        <property name="is-offline" value="${is-offline}"/>
+        <filelist dir="." files="common/build.xml,serde/build.xml,metastore/build.xml,ql/build.xml,cli/build.xml,contrib/build.xml,service/build.xml,jdbc/build.xml,hwi/build.xml${hbase.iterate}"/>
+      </subant>
+    </sequential>
+  </macrodef>
+
   <macrodef name="iterate">
     <attribute name="target"/>
     <sequential>
@@ -206,7 +217,8 @@
   <target name="test"
           depends="clean-test,jar"
           description="Run tests">
-    <iterate target="test"/>
+    <antcall target="test-shims"/>
+    <iterate-test-dirs target="test"/>
   </target>
 
   <!-- create an html report from junit output files -->
