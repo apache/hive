@@ -146,6 +146,9 @@ Trunk -  Unreleased
     HIVE-1696  Add delegation token support to metastore
     (Devaraj Das via namit)
 
+    HIVE-1862 Revive partition filtering in the Hive MetaStore
+    (Mac Yang via pauly)
+
   IMPROVEMENTS
 
     HIVE-1692. FetchOperator.getInputFormatFromCache hides causal exception (Philip Zeyliger via cws)

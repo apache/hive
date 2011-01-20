@@ -27,6 +27,7 @@ import org.apache.hadoop.hive.metastore.Warehouse;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.serde.Constants;
+import org.apache.hadoop.hive.common.FileUtils;
 
 /**
  * The Class representing the filter as a  binary tree. The tree has TreeNode's
@@ -168,6 +169,17 @@ public class ExpressionTree {
       params.put(paramName, value);
       String filter;
 
+      String keyEqual = FileUtils.escapePathName(keyName) + "=";
+      int keyEqualLength = keyEqual.length();
+      String valString;
+      // partitionname ==>  (key=value/)*(key=value)
+      if (partitionColumnIndex == (partitionColumnCount - 1)) {
+        valString = "partitionName.substring(partitionName.indexOf(\"" + keyEqual + "\")+" + keyEqualLength + ")";
+      }
+      else {
+        valString = "partitionName.substring(partitionName.indexOf(\"" + keyEqual + "\")+" + keyEqualLength + ").substring(0, partitionName.substring(partitionName.indexOf(\"" + keyEqual + "\")+" + keyEqualLength + ").indexOf(\"/\"))";
+      }
+
       //Handle "a > 10" and "10 > a" appropriately
       if (isReverseOrder){
         //For LIKE, the value should be on the RHS
@@ -181,19 +193,18 @@ public class ExpressionTree {
               partitionColumnIndex, partitionColumnCount);
         } else {
           filter = paramName +
-          " " + operator.getJdoOp() + " " +
-          " this.values.get(" + partitionColumnIndex + ")";
+          " " + operator.getJdoOp() + " " + valString;
         }
       } else {
         if (operator == Operator.LIKE ) {
           //generate this.values.get(i).matches("abc%")
-          filter = " this.values.get(" + partitionColumnIndex + ")."
+          filter = " " + valString + "."
               + operator.getJdoOp() + "(" + paramName + ") ";
         } else if (operator == Operator.EQUALS) {
           filter = makeFilterForEquals(keyName, value, paramName, params,
               partitionColumnIndex, partitionColumnCount);
         } else {
-          filter = " this.values.get(" + partitionColumnIndex + ") "
+          filter = " " + valString + " "
               + operator.getJdoOp() + " " + paramName;
         }
       }
