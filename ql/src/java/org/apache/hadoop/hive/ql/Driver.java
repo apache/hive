@@ -36,6 +36,7 @@ import java.util.Set;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.apache.hadoop.fs.FSDataInputStream;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.JavaUtils;
 import org.apache.hadoop.hive.conf.HiveConf;
@@ -1130,8 +1131,25 @@ public class Driver implements CommandProcessor {
 
   public int close() {
     try {
+      if (plan != null) {
+        FetchTask fetchTask = plan.getFetchTask();
+        if (null != fetchTask) {
+          try {
+            fetchTask.clearFetch();
+          } catch (Exception e) {
+            LOG.debug(" Exception while clearing the Fetch task ", e);
+          }
+        }
+      }
       if (ctx != null) {
         ctx.clear();
+      }
+      if (null != resStream) {
+        try {
+          ((FSDataInputStream) resStream).close();
+        } catch (Exception e) {
+          LOG.debug(" Exception while closing the resStream ", e);
+        }
       }
     } catch (Exception e) {
       console.printError("FAILED: Hive Internal Error: " + Utilities.getNameMessage(e) + "\n"

@@ -719,6 +719,9 @@ Trunk -  Unreleased
     HIVE-1897 Alter command execution "when HDFS is down" results in holding
     stale data in MetaStore (Chinna Rao Lalam via namit)
 
+    HIVE-1908 FileHandler leak on partial iteration of the resultset
+    (Chinna Rao Lalam via namit)
+
   TESTS
 
     HIVE-1464. improve  test query performance

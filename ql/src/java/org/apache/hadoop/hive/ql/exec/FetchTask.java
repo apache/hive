@@ -28,13 +28,14 @@ import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.Context;
 import org.apache.hadoop.hive.ql.DriverContext;
 import org.apache.hadoop.hive.ql.QueryPlan;
+import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.plan.FetchWork;
 import org.apache.hadoop.hive.ql.plan.TableDesc;
 import org.apache.hadoop.hive.ql.plan.api.StageType;
 import org.apache.hadoop.hive.serde.Constants;
 import org.apache.hadoop.hive.serde2.DelimitedJSONSerDe;
-import org.apache.hadoop.hive.serde2.objectinspector.InspectableObject;
 import org.apache.hadoop.hive.serde2.SerDe;
+import org.apache.hadoop.hive.serde2.objectinspector.InspectableObject;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.util.ReflectionUtils;
@@ -163,11 +164,24 @@ public class FetchTask extends Task<FetchWork> implements Serializable {
   @Override
   protected void localizeMRTmpFilesImpl(Context ctx) {
     String s = work.getTblDir();
-    if ((s != null) && ctx.isMRTmpFileURI(s))
+    if ((s != null) && ctx.isMRTmpFileURI(s)) {
       work.setTblDir(ctx.localizeMRTmpFileURI(s));
+    }
 
     ArrayList<String> ls = work.getPartDir();
-    if (ls != null) 
+    if (ls != null) {
       ctx.localizePaths(ls);
+    }
+  }
+
+  /**
+   * Clear the Fetch Operator.
+   *
+   * @throws HiveException
+   */
+  public void clearFetch() throws HiveException {
+    if (null != ftOp) {
+      ftOp.clearFetchContext();
+    }
   }
 }
