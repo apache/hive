@@ -716,6 +716,9 @@ Trunk -  Unreleased
     HIVE-1917 CTAS (create-table-as-select) throws exception when showing
     results (Ning Zhang via namit)
 
+    HIVE-1897 Alter command execution "when HDFS is down" results in holding
+    stale data in MetaStore (Chinna Rao Lalam via namit)
+
   TESTS
 
     HIVE-1464. improve  test query performance

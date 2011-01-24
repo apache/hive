@@ -74,6 +74,7 @@ public class HiveAlterHandler implements AlterHandler {
     String newTblLoc = null;
     boolean moveData = false;
     boolean rename = false;
+    Table oldt = null;
     try {
       msdb.openTransaction();
       name = name.toLowerCase();
@@ -90,7 +91,7 @@ public class HiveAlterHandler implements AlterHandler {
       }
 
       // get old table
-      Table oldt = msdb.getTable(dbname, name);
+      oldt = msdb.getTable(dbname, name);
       if (oldt == null) {
         throw new InvalidOperationException("table " + newt.getDbName() + "."
             + newt.getTableName() + " doesn't exist");
@@ -194,6 +195,17 @@ public class HiveAlterHandler implements AlterHandler {
             srcFs.rename(srcPath, destPath);
           }
         } catch (IOException e) {
+          boolean revertMetaDataTransaction = false;
+          try {
+            msdb.openTransaction();
+            msdb.alterTable(dbname, newt.getTableName(), oldt);
+            revertMetaDataTransaction = msdb.commitTransaction();
+          } catch (Exception e1) {
+            LOG.error("Reverting metadata opeation failed During HDFS operation failed", e1);
+            if (!revertMetaDataTransaction) {
+              msdb.rollbackTransaction();
+            }
+          }
           throw new InvalidOperationException("Unable to access old location "
               + srcPath + " for table " + dbname + "." + name);
         }
