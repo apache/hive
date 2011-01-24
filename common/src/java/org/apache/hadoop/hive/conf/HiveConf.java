@@ -306,6 +306,11 @@ public class HiveConf extends Configuration {
         "org.apache.derby.jdbc.EmbeddedDriver"), // JDBC driver specific to the dbclass
     HIVESTATSDBCONNECTIONSTRING("hive.stats.dbconnectionstring",
         "jdbc:derby:;databaseName=TempStatsStore;create=true"), // automatically create database
+    HIVE_STATS_DEFAULT_PUBLISHER("hive.stats.default.publisher",
+        ""), // default stats publisher if none of JDBC/HBase is specified
+    HIVE_STATS_DEFAULT_AGGREGATOR("hive.stats.default.aggregator",
+        ""), // default stats aggregator if none of JDBC/HBase is specified
+
 
     // Concurrency
     HIVE_SUPPORT_CONCURRENCY("hive.support.concurrency", false),

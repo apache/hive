@@ -24,6 +24,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.common.JavaUtils;
+import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.util.ReflectionUtils;
 
 /**
@@ -72,8 +73,22 @@ public final class StatsFactory {
         return false;
       }
     } else {
-      // ERROR
-      return false;
+      // try default stats publisher/aggregator
+      String defPublisher = HiveConf.getVar(conf, HiveConf.ConfVars.HIVE_STATS_DEFAULT_PUBLISHER);
+      String defAggregator = HiveConf.getVar(conf,  HiveConf.ConfVars.HIVE_STATS_DEFAULT_AGGREGATOR);
+      // ERROR no default publisher/aggregator is defined
+      if (defPublisher == null || defAggregator == null) {
+        return false;
+      }
+      try{
+        publisherImplementation = (Class<? extends Serializable>)
+          Class.forName(defPublisher, true, classLoader);
+        aggregatorImplementation = (Class<? extends Serializable>)
+          Class.forName(defAggregator, true, classLoader);
+      } catch (ClassNotFoundException e) {
+        LOG.error("JDBC Publisher/Aggregator classes cannot be loaded.", e);
+        return false;
+      }
     }
 
     jobConf = conf;
