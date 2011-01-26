@@ -60,7 +60,7 @@ public class HiveConf extends Configuration {
       HiveConf.ConfVars.METASTORECONNECTURLKEY,
       HiveConf.ConfVars.METASTOREATTEMPTS,
       HiveConf.ConfVars.METASTOREINTERVAL,
-      HiveConf.ConfVars.METASTOREFORCERELOADCONF,
+      HiveConf.ConfVars.METASTOREFORCERELOADCONF
       };
 
   /**
@@ -161,6 +161,7 @@ public class HiveConf extends Configuration {
     METASTORE_KERBEROS_KEYTAB_FILE("hive.metastore.kerberos.keytab.file", ""),
     METASTORE_KERBEROS_PRINCIPAL("hive.metastore.kerberos.principal", ""),
     METASTORE_USE_THRIFT_SASL("hive.metastore.sasl.enabled", false),
+    METASTORE_CACHE_PINOBJTYPES("hive.metastore.cache.pinobjtypes", "Table,StorageDescriptor,SerDeInfo,Partition,Database,Type,FieldSchema,Order"),
 
     // Default parameters for creating tables
     NEWTABLEDEFAULTPARA("hive.table.parameters.default",""),

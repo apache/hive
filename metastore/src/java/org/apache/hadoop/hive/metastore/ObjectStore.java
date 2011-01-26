@@ -20,6 +20,7 @@ package org.apache.hadoop.hive.metastore;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -106,6 +107,20 @@ public class ObjectStore implements RawStore, Configurable {
 
   private static enum TXN_STATUS {
     NO_STATE, OPEN, COMMITED, ROLLBACK
+  }
+
+  private static final Map<String, Class> PINCLASSMAP;
+  static {
+    Map<String, Class> map = new HashMap();
+    map.put("table", MTable.class);
+    map.put("storagedescriptor", MStorageDescriptor.class);
+    map.put("serdeinfo", MSerDeInfo.class);
+    map.put("partition", MPartition.class);
+    map.put("database", MDatabase.class);
+    map.put("type", MType.class);
+    map.put("fieldschema", MFieldSchema.class);
+    map.put("order", MOrder.class);
+    PINCLASSMAP = Collections.unmodifiableMap(map);
   }
 
   private boolean isInitialized = false;
@@ -219,14 +234,18 @@ public class ObjectStore implements RawStore, Configurable {
       pmf = JDOHelper.getPersistenceManagerFactory(prop);
       DataStoreCache dsc = pmf.getDataStoreCache();
       if (dsc != null) {
-        dsc.pinAll(true, MTable.class);
-        dsc.pinAll(true, MStorageDescriptor.class);
-        dsc.pinAll(true, MSerDeInfo.class);
-        dsc.pinAll(true, MPartition.class);
-        dsc.pinAll(true, MDatabase.class);
-        dsc.pinAll(true, MType.class);
-        dsc.pinAll(true, MFieldSchema.class);
-        dsc.pinAll(true, MOrder.class);
+        HiveConf conf = new HiveConf(ObjectStore.class);
+        String objTypes = HiveConf.getVar(conf, HiveConf.ConfVars.METASTORE_CACHE_PINOBJTYPES);
+        if (objTypes != null && objTypes.length() > 0) {
+          objTypes = objTypes.toLowerCase();
+          String[] typeTokens = objTypes.split(",");
+          for (String type : typeTokens) {
+            type = type.trim();
+            if (PINCLASSMAP.containsKey(type)) {
+              dsc.pinAll(true, PINCLASSMAP.get(type));
+            }
+          }
+        }
       }
     }
     return pmf;

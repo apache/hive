@@ -154,6 +154,9 @@ Trunk -  Unreleased
     HIVE-1923 Allow any type of stats publisher and aggregator in addition to
     HBase and JDBC (Ning Zhang via namit)
 
+    HIVE-1910 Provide config parameters to control cache object pinning
+    (Mac Yang via namit)
+
   IMPROVEMENTS
 
     HIVE-1692. FetchOperator.getInputFormatFromCache hides causal exception (Philip Zeyliger via cws)
