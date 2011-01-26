@@ -87,6 +87,7 @@ STAGE PLANS:
   Stage: Stage-0
       Show Table Operator:
         Show Tables
+          database name: default
 
   Stage: Stage-1
     Fetch Operator

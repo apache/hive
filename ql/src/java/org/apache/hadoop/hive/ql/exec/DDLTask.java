@@ -1688,12 +1688,18 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
   private int showTables(Hive db, ShowTablesDesc showTbls) throws HiveException {
     // get the tables for the desired pattenn - populate the output stream
     List<String> tbls = null;
+    String dbName = showTbls.getDbName();
+
+    if (!db.databaseExists(dbName)) {
+      throw new HiveException("ERROR: The database " + dbName + " does not exist.");
+
+    }
     if (showTbls.getPattern() != null) {
       LOG.info("pattern: " + showTbls.getPattern());
-      tbls = db.getTablesByPattern(showTbls.getPattern());
+      tbls = db.getTablesByPattern(dbName, showTbls.getPattern());
       LOG.info("results : " + tbls.size());
     } else {
-      tbls = db.getAllTables();
+      tbls = db.getAllTables(dbName);
     }
 
     // write the results in the file

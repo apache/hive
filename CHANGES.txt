@@ -6,6 +6,8 @@ Trunk -  Unreleased
 
   NEW FEATURES
 
+    HIVE-1636. Implement 'SHOW TABLES {FROM | IN} db_name' (Jonathan Natkins via cws)
+
     HIVE-1790. Support HAVING clause in Hive (Vaibhav Aggarwal via cws)
 
     HIVE-1304. Add function row_sequence in contrib (John Sichi via namit)

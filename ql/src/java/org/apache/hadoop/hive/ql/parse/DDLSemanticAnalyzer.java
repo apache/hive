@@ -384,10 +384,10 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
             ASTNode grandChild = (ASTNode) child.getChild(i);
             if (grandChild.getToken().getType() == HiveParser.TOK_PARTSPEC) {
               privHiveObj.setPartSpec(DDLSemanticAnalyzer.getPartSpec(grandChild));
-            } else if (grandChild.getToken().getType() == HiveParser.TOK_TABCOLNAME) { 
+            } else if (grandChild.getToken().getType() == HiveParser.TOK_TABCOLNAME) {
               cols = getColumnNames((ASTNode) grandChild);
             } else {
-              privHiveObj.setTable(child.getChild(i) != null);              
+              privHiveObj.setTable(child.getChild(i) != null);
             }
           }
         }
@@ -1248,12 +1248,34 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
 
   private void analyzeShowTables(ASTNode ast) throws SemanticException {
     ShowTablesDesc showTblsDesc;
-    if (ast.getChildCount() == 1) {
-      String tableNames = unescapeSQLString(ast.getChild(0).getText());
-      showTblsDesc = new ShowTablesDesc(ctx.getResFile(), tableNames);
-    } else {
-      showTblsDesc = new ShowTablesDesc(ctx.getResFile());
+    String dbName = db.getCurrentDatabase();
+    String tableNames = null;
+
+    if (ast.getChildCount() > 3) {
+      throw new SemanticException(ErrorMsg.GENERIC_ERROR.getMsg());
     }
+
+    switch (ast.getChildCount()) {
+    case 1: // Uses a pattern
+      tableNames = unescapeSQLString(ast.getChild(0).getText());
+      showTblsDesc = new ShowTablesDesc(ctx.getResFile(), dbName, tableNames);
+      break;
+    case 2: // Specifies a DB
+      assert(ast.getChild(0).getType() == HiveParser.TOK_FROM);
+      dbName = unescapeIdentifier(ast.getChild(1).getText());
+      showTblsDesc = new ShowTablesDesc(ctx.getResFile(), dbName);
+      break;
+    case 3: // Uses a pattern and specifies a DB
+      assert(ast.getChild(0).getType() == HiveParser.TOK_FROM);
+      dbName = unescapeIdentifier(ast.getChild(1).getText());
+      tableNames = unescapeSQLString(ast.getChild(2).getText());
+      showTblsDesc = new ShowTablesDesc(ctx.getResFile(), dbName, tableNames);
+      break;
+    default: // No pattern or DB
+      showTblsDesc = new ShowTablesDesc(ctx.getResFile(), dbName);
+      break;
+    }
+
     rootTasks.add(TaskFactory.get(new DDLWork(getInputs(), getOutputs(),
         showTblsDesc), conf));
     setFetchTask(createFetchTask(showTblsDesc.getSchema()));

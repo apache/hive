@@ -43,6 +43,7 @@ SHOW DATABASES;
 -- CREATE table in non-default DB
 CREATE TABLE test_table (col1 STRING) STORED AS TEXTFILE;
 SHOW TABLES;
+SHOW TABLES FROM default;
 
 -- DESCRIBE table in non-default DB
 DESCRIBE test_table;
@@ -72,6 +73,7 @@ SELECT * FROM test_table;
 USE test_db;
 CREATE TABLE src (col1 STRING) STORED AS TEXTFILE;
 SHOW TABLES;
+SHOW TABLES FROM test_db;
 
 SELECT * FROM src LIMIT 10;
 

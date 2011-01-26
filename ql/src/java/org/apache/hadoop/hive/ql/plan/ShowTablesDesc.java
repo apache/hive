@@ -30,6 +30,7 @@ import org.apache.hadoop.fs.Path;
 public class ShowTablesDesc extends DDLDesc implements Serializable {
   private static final long serialVersionUID = 1L;
   String pattern;
+  String dbName;
   String resFile;
   /**
    * table name for the result of show tables.
@@ -60,11 +61,21 @@ public class ShowTablesDesc extends DDLDesc implements Serializable {
   }
 
   /**
+   * @param dbName
+   *          name of database to show tables of
+   */
+  public ShowTablesDesc(Path resFile, String dbName) {
+    this.resFile = resFile.toString();
+    this.dbName = dbName;
+  }
+
+  /**
    * @param pattern
    *          names of tables to show
    */
-  public ShowTablesDesc(Path resFile, String pattern) {
+  public ShowTablesDesc(Path resFile, String dbName, String pattern) {
     this.resFile = resFile.toString();
+    this.dbName = dbName;
     this.pattern = pattern;
   }
 
@@ -98,5 +109,21 @@ public class ShowTablesDesc extends DDLDesc implements Serializable {
    */
   public void setResFile(String resFile) {
     this.resFile = resFile;
+  }
+
+  /**
+   * @return the dbName
+   */
+  @Explain(displayName = "database name")
+  public String getDbName() {
+    return dbName;
+  }
+
+  /**
+   * @param dbName
+   *          the dbName to set
+   */
+  public void setDbName(String dbName) {
+    this.dbName = dbName;
   }
 }

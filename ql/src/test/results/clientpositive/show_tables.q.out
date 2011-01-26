@@ -25,6 +25,7 @@ STAGE PLANS:
   Stage: Stage-0
       Show Table Operator:
         Show Tables
+          database name: default
           pattern: shtb_*
 
   Stage: Stage-1
@@ -39,10 +40,10 @@ POSTHOOK: type: SHOWTABLES
 shtb_test1
 shtb_test2
 PREHOOK: query: EXPLAIN
-SHOW TABLES 'shtb_test1|shtb_test2'
+SHOW TABLES LIKE 'shtb_test1|shtb_test2'
 PREHOOK: type: SHOWTABLES
 POSTHOOK: query: EXPLAIN
-SHOW TABLES 'shtb_test1|shtb_test2'
+SHOW TABLES LIKE 'shtb_test1|shtb_test2'
 POSTHOOK: type: SHOWTABLES
 ABSTRACT SYNTAX TREE:
   (TOK_SHOWTABLES 'shtb_test1|shtb_test2')
@@ -55,6 +56,7 @@ STAGE PLANS:
   Stage: Stage-0
       Show Table Operator:
         Show Tables
+          database name: default
           pattern: shtb_test1|shtb_test2
 
   Stage: Stage-1
@@ -62,9 +64,114 @@ STAGE PLANS:
       limit: -1
 
 
-PREHOOK: query: SHOW TABLES 'shtb_test1|shtb_test2'
+PREHOOK: query: SHOW TABLES LIKE 'shtb_test1|shtb_test2'
 PREHOOK: type: SHOWTABLES
-POSTHOOK: query: SHOW TABLES 'shtb_test1|shtb_test2'
+POSTHOOK: query: SHOW TABLES LIKE 'shtb_test1|shtb_test2'
 POSTHOOK: type: SHOWTABLES
 shtb_test1
 shtb_test2
+PREHOOK: query: -- SHOW TABLES FROM/IN database
+CREATE DATABASE test_db
+PREHOOK: type: CREATEDATABASE
+POSTHOOK: query: -- SHOW TABLES FROM/IN database
+CREATE DATABASE test_db
+POSTHOOK: type: CREATEDATABASE
+PREHOOK: query: USE test_db
+PREHOOK: type: SWITCHDATABASE
+POSTHOOK: query: USE test_db
+POSTHOOK: type: SWITCHDATABASE
+PREHOOK: query: CREATE TABLE foo(a INT)
+PREHOOK: type: CREATETABLE
+POSTHOOK: query: CREATE TABLE foo(a INT)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: test_db@foo
+PREHOOK: query: CREATE TABLE bar(a INT)
+PREHOOK: type: CREATETABLE
+POSTHOOK: query: CREATE TABLE bar(a INT)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: test_db@bar
+PREHOOK: query: CREATE TABLE baz(a INT)
+PREHOOK: type: CREATETABLE
+POSTHOOK: query: CREATE TABLE baz(a INT)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: test_db@baz
+PREHOOK: query: -- SHOW TABLES basic syntax tests
+USE default
+PREHOOK: type: SWITCHDATABASE
+POSTHOOK: query: -- SHOW TABLES basic syntax tests
+USE default
+POSTHOOK: type: SWITCHDATABASE
+PREHOOK: query: SHOW TABLES FROM test_db
+PREHOOK: type: SHOWTABLES
+POSTHOOK: query: SHOW TABLES FROM test_db
+POSTHOOK: type: SHOWTABLES
+bar
+baz
+foo
+PREHOOK: query: SHOW TABLES FROM default
+PREHOOK: type: SHOWTABLES
+POSTHOOK: query: SHOW TABLES FROM default
+POSTHOOK: type: SHOWTABLES
+shtb_test1
+shtb_test2
+src
+src1
+src_json
+src_sequencefile
+src_thrift
+srcbucket
+srcbucket2
+srcpart
+PREHOOK: query: SHOW TABLES IN test_db
+PREHOOK: type: SHOWTABLES
+POSTHOOK: query: SHOW TABLES IN test_db
+POSTHOOK: type: SHOWTABLES
+bar
+baz
+foo
+PREHOOK: query: SHOW TABLES IN default
+PREHOOK: type: SHOWTABLES
+POSTHOOK: query: SHOW TABLES IN default
+POSTHOOK: type: SHOWTABLES
+shtb_test1
+shtb_test2
+src
+src1
+src_json
+src_sequencefile
+src_thrift
+srcbucket
+srcbucket2
+srcpart
+PREHOOK: query: SHOW TABLES IN test_db "test*"
+PREHOOK: type: SHOWTABLES
+POSTHOOK: query: SHOW TABLES IN test_db "test*"
+POSTHOOK: type: SHOWTABLES
+PREHOOK: query: SHOW TABLES IN test_db LIKE "nomatch"
+PREHOOK: type: SHOWTABLES
+POSTHOOK: query: SHOW TABLES IN test_db LIKE "nomatch"
+POSTHOOK: type: SHOWTABLES
+PREHOOK: query: -- SHOW TABLES from a database with a name that requires escaping
+CREATE DATABASE `database`
+PREHOOK: type: CREATEDATABASE
+POSTHOOK: query: -- SHOW TABLES from a database with a name that requires escaping
+CREATE DATABASE `database`
+POSTHOOK: type: CREATEDATABASE
+PREHOOK: query: USE `database`
+PREHOOK: type: SWITCHDATABASE
+POSTHOOK: query: USE `database`
+POSTHOOK: type: SWITCHDATABASE
+PREHOOK: query: CREATE TABLE foo(a INT)
+PREHOOK: type: CREATETABLE
+POSTHOOK: query: CREATE TABLE foo(a INT)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database@foo
+PREHOOK: query: USE default
+PREHOOK: type: SWITCHDATABASE
+POSTHOOK: query: USE default
+POSTHOOK: type: SWITCHDATABASE
+PREHOOK: query: SHOW TABLES FROM `database` LIKE "foo"
+PREHOOK: type: SHOWTABLES
+POSTHOOK: query: SHOW TABLES FROM `database` LIKE "foo"
+POSTHOOK: type: SHOWTABLES
+foo
