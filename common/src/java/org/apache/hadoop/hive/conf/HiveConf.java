@@ -64,6 +64,20 @@ public class HiveConf extends Configuration {
       };
 
   /**
+   * dbVars are the parameters can be set per database. If these
+   * parameters are set as a database property, when switching to that
+   * database, the HiveConf variable will be changed. The change of these
+   * parameters will effectively change the DFS and MapReduce clusters
+   * for different databases.
+   */
+  public static final HiveConf.ConfVars[] dbVars = {
+    HiveConf.ConfVars.HADOOPBIN,
+    HiveConf.ConfVars.HADOOPJT,
+    HiveConf.ConfVars.METASTOREWAREHOUSE,
+    HiveConf.ConfVars.SCRATCHDIR
+  };
+
+  /**
    * ConfVars.
    *
    */

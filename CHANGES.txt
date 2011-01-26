@@ -157,6 +157,9 @@ Trunk -  Unreleased
     HIVE-1910 Provide config parameters to control cache object pinning
     (Mac Yang via namit)
 
+    HIVE-1820 Make Hive database data center aware
+    (Ning Zhang via namit)
+
   IMPROVEMENTS
 
     HIVE-1692. FetchOperator.getInputFormatFromCache hides causal exception (Philip Zeyliger via cws)

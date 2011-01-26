@@ -2978,6 +2978,22 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
       throw new HiveException("ERROR: The database " + dbName + " does not exist.");
     }
     db.setCurrentDatabase(dbName);
+
+    // set database specific parameters
+    Database database = db.getDatabase(dbName);
+    assert(database != null);
+    Map<String, String> dbParams = database.getParameters();
+    if (dbParams != null) {
+      for (HiveConf.ConfVars var: HiveConf.dbVars) {
+        String newValue = dbParams.get(var.varname);
+        if (newValue != null) {
+         	LOG.info("Changing " + var.varname +
+         	    " from " + conf.getVar(var) + " to " + newValue);
+         	conf.setVar(var, newValue);
+        }
+      }
+    }
+
     return 0;
   }
 
