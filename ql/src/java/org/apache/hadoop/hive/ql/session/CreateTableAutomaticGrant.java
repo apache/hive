@@ -45,17 +45,18 @@ public class CreateTableAutomaticGrant {
     grants.roleGrants = getGrantMap(HiveConf.getVar(conf,
         HiveConf.ConfVars.HIVE_AUTHORIZATION_TABLE_ROLE_GRANTS));
     
-    List<PrivilegeGrantInfo> ownerGrantInfoList = new ArrayList<PrivilegeGrantInfo>();
     String grantor = null;
     if (SessionState.get() != null
         && SessionState.get().getAuthenticator() != null) {
       grantor = SessionState.get().getAuthenticator().getUserName();
-      ownerGrantInfoList.add(new PrivilegeGrantInfo(Privilege.ALL.getPriv(), -1, grantor,
-          PrincipalType.USER, true));
-      if (grants.userGrants == null) {
-        grants.userGrants = new HashMap<String, List<PrivilegeGrantInfo>>();
+      List<PrivilegeGrantInfo> ownerGrant = getGrantorInfoList(HiveConf.getVar(conf,
+          HiveConf.ConfVars.HIVE_AUTHORIZATION_TABLE_OWNER_GRANTS));
+      if(ownerGrant != null) {
+        if (grants.userGrants == null) {
+          grants.userGrants = new HashMap<String, List<PrivilegeGrantInfo>>();
+        }
+        grants.userGrants.put(grantor, ownerGrant);
       }
-      grants.userGrants.put(grantor, ownerGrantInfoList);
     }
     return grants;
   }
@@ -75,27 +76,36 @@ public class CreateTableAutomaticGrant {
         }
         String userList = principalListAndPrivList[0];
         String privList = principalListAndPrivList[1];
-        checkPrivilege(privList);
-        
-        String[] grantArray = privList.split(",");
-        List<PrivilegeGrantInfo> grantInfoList = new ArrayList<PrivilegeGrantInfo>();
-        String grantor = null;
-        if (SessionState.get().getAuthenticator() != null) {
-          grantor = SessionState.get().getAuthenticator().getUserName();  
-        }
-        for (String grant : grantArray) {
-          grantInfoList.add(new PrivilegeGrantInfo(grant, -1, grantor,
-              PrincipalType.USER, true));
-        }
-        
-        String[] users = userList.split(",");
-        for (String user : users) {
-          grantsMap.put(user, grantInfoList);
+        List<PrivilegeGrantInfo> grantInfoList = getGrantorInfoList(privList);
+        if(grantInfoList != null) {
+          String[] users = userList.split(",");
+          for (String user : users) {
+            grantsMap.put(user, grantInfoList);
+          }
         }
       }
       return grantsMap;
     }
     return null;
+  }
+
+  private static List<PrivilegeGrantInfo> getGrantorInfoList(String privList)
+      throws HiveException {
+    if (privList == null || privList.trim().equals("")) {
+      return null;
+    }
+    checkPrivilege(privList);
+    String[] grantArray = privList.split(",");
+    List<PrivilegeGrantInfo> grantInfoList = new ArrayList<PrivilegeGrantInfo>();
+    String grantor = null;
+    if (SessionState.get().getAuthenticator() != null) {
+      grantor = SessionState.get().getAuthenticator().getUserName();  
+    }
+    for (String grant : grantArray) {
+      grantInfoList.add(new PrivilegeGrantInfo(grant, -1, grantor,
+          PrincipalType.USER, true));
+    }
+    return grantInfoList;
   }
 
   private static void checkPrivilege(String ownerGrantsInConfig)

@@ -160,6 +160,9 @@ Trunk -  Unreleased
     HIVE-1820 Make Hive database data center aware
     (Ning Zhang via namit)
 
+    HIVE-1929 A way to disable owner grants
+    (He Yongqiang via namit)
+
   IMPROVEMENTS
 
     HIVE-1692. FetchOperator.getInputFormatFromCache hides causal exception (Philip Zeyliger via cws)
