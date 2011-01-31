@@ -236,6 +236,7 @@ public class ObjectStore implements RawStore, Configurable {
       if (dsc != null) {
         HiveConf conf = new HiveConf(ObjectStore.class);
         String objTypes = HiveConf.getVar(conf, HiveConf.ConfVars.METASTORE_CACHE_PINOBJTYPES);
+        LOG.info("Setting MetaStore object pin classes with hive.metastore.cache.pinobjtypes=\"" + objTypes + "\"");
         if (objTypes != null && objTypes.length() > 0) {
           objTypes = objTypes.toLowerCase();
           String[] typeTokens = objTypes.split(",");
@@ -244,8 +245,13 @@ public class ObjectStore implements RawStore, Configurable {
             if (PINCLASSMAP.containsKey(type)) {
               dsc.pinAll(true, PINCLASSMAP.get(type));
             }
+            else {
+              LOG.warn(type + " is not one of the pinnable object types: " + org.apache.commons.lang.StringUtils.join(PINCLASSMAP.keySet(), " "));
+            }
           }
         }
+      } else {
+        LOG.warn("PersistenceManagerFactory returned null DataStoreCache object. Unable to initialize object pin types defined by hive.metastore.cache.pinobjtypes");
       }
     }
     return pmf;
