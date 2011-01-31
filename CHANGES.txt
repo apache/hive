@@ -758,6 +758,9 @@ Trunk -  Unreleased
     HIVE-1829. Fix intermittent failures in TestRemoteMetaStore
     (Carl Steinbach via jvs)
 
+    HIVE-1927. Fix TestHadoop20SAuthBridge failure on Hudson
+    (Devaraj Das via jvs)
+
   TASKS
 
     HIVE-1526. Hive should depend on a release version of Thrift

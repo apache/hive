@@ -217,7 +217,9 @@
   <target name="test"
           depends="clean-test,jar"
           description="Run tests">
-    <antcall target="test-shims"/>
+    <antcall target="test-shims">
+      <param name="hadoop.version.ant-internal" value="${hadoop.security.version}" />
+    </antcall>
     <iterate-test-dirs target="test"/>
   </target>
 
