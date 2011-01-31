@@ -5,10 +5,6 @@ POSTHOOK: query: create table src_autho_test as select * from src
 POSTHOOK: type: CREATETABLE_AS_SELECT
 POSTHOOK: Input: default@src
 POSTHOOK: Output: default@src_autho_test
-PREHOOK: query: revoke `ALL` on table src_autho_test from user hive_test_user
-PREHOOK: type: REVOKE_PRIVILEGE
-POSTHOOK: query: revoke `ALL` on table src_autho_test from user hive_test_user
-POSTHOOK: type: REVOKE_PRIVILEGE
 PREHOOK: query: grant `drop` on table src_autho_test to user hive_test_user
 PREHOOK: type: GRANT_PRIVILEGE
 POSTHOOK: query: grant `drop` on table src_autho_test to user hive_test_user
@@ -27,7 +23,7 @@ table	src_autho_test
 principalName	hive_test_user	
 principalType	USER	
 privilege	Drop	
-grantTime	1292567595	
+grantTime	1296259321	
 grantor	hive_test_user	
 
 database	default	
@@ -35,7 +31,7 @@ table	src_autho_test
 principalName	hive_test_user	
 principalType	USER	
 privilege	Select	
-grantTime	1292567595	
+grantTime	1296259321	
 grantor	hive_test_user	
 PREHOOK: query: revoke `select` on table src_autho_test from user hive_test_user
 PREHOOK: type: REVOKE_PRIVILEGE
@@ -59,7 +55,7 @@ table	src_autho_test
 principalName	hive_test_user	
 principalType	USER	
 privilege	Drop	
-grantTime	1292567595	
+grantTime	1296259321	
 grantor	hive_test_user	
 
 database	default	
@@ -67,7 +63,7 @@ table	src_autho_test
 principalName	hive_test_user	
 principalType	USER	
 privilege	Select	
-grantTime	1292567595	
+grantTime	1296259321	
 grantor	hive_test_user	
 PREHOOK: query: revoke `drop`,`select` on table src_autho_test from user hive_test_user
 PREHOOK: type: REVOKE_PRIVILEGE

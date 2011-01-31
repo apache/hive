@@ -3,10 +3,6 @@ PREHOOK: type: CREATETABLE
 POSTHOOK: query: create table authorization_fail (key int, value string)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: default@authorization_fail
-PREHOOK: query: revoke `ALL` on table authorization_fail from user hive_test_user
-PREHOOK: type: REVOKE_PRIVILEGE
-POSTHOOK: query: revoke `ALL` on table authorization_fail from user hive_test_user
-POSTHOOK: type: REVOKE_PRIVILEGE
 PREHOOK: query: create role hive_test_role_fail
 PREHOOK: type: CREATEROLE
 POSTHOOK: query: create role hive_test_role_fail
@@ -35,7 +31,7 @@ table	authorization_fail
 principalName	hive_test_role_fail	
 principalType	ROLE	
 privilege	Select	
-grantTime	1292570201	
+grantTime	1296259812	
 grantor	hive_test_user	
 PREHOOK: query: drop role hive_test_role_fail
 PREHOOK: type: DROPROLE

@@ -3,10 +3,6 @@ PREHOOK: type: CREATETABLE
 POSTHOOK: query: create table authorization_part (key int, value string) partitioned by (ds string)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: default@authorization_part
-PREHOOK: query: revoke `ALL` on table authorization_part from user hive_test_user
-PREHOOK: type: REVOKE_PRIVILEGE
-POSTHOOK: query: revoke `ALL` on table authorization_part from user hive_test_user
-POSTHOOK: type: REVOKE_PRIVILEGE
 PREHOOK: query: ALTER TABLE authorization_part SET TBLPROPERTIES ("PARTITION_LEVEL_PRIVILEGE"="TRUE")
 PREHOOK: type: ALTERTABLE_PROPERTIES
 PREHOOK: Input: default@authorization_part
@@ -43,7 +39,7 @@ table	authorization_part
 principalName	hive_test_user	
 principalType	USER	
 privilege	Create	
-grantTime	1292567495	
+grantTime	1296259216	
 grantor	hive_test_user	
 
 database	default	
@@ -51,7 +47,7 @@ table	authorization_part
 principalName	hive_test_user	
 principalType	USER	
 privilege	Update	
-grantTime	1292567495	
+grantTime	1296259216	
 grantor	hive_test_user	
 
 database	default	
@@ -59,7 +55,7 @@ table	authorization_part
 principalName	hive_test_user	
 principalType	USER	
 privilege	Drop	
-grantTime	1292567495	
+grantTime	1296259216	
 grantor	hive_test_user	
 PREHOOK: query: alter table authorization_part add partition (ds='2010')
 PREHOOK: type: ALTERTABLE_ADDPARTS
@@ -79,7 +75,7 @@ partition	ds=2010
 principalName	hive_test_user	
 principalType	USER	
 privilege	Create	
-grantTime	1292567495	
+grantTime	1296259217	
 grantor	hive_test_user	
 
 database	default	
@@ -88,7 +84,7 @@ partition	ds=2010
 principalName	hive_test_user	
 principalType	USER	
 privilege	Update	
-grantTime	1292567495	
+grantTime	1296259217	
 grantor	hive_test_user	
 
 database	default	
@@ -97,7 +93,7 @@ partition	ds=2010
 principalName	hive_test_user	
 principalType	USER	
 privilege	Drop	
-grantTime	1292567495	
+grantTime	1296259217	
 grantor	hive_test_user	
 PREHOOK: query: grant `select`(key) on table authorization_part to user hive_test_user
 PREHOOK: type: GRANT_PRIVILEGE
@@ -135,7 +131,7 @@ columnName	key
 principalName	hive_test_user	
 principalType	USER	
 privilege	Select	
-grantTime	1292567504	
+grantTime	1296259226	
 grantor	hive_test_user	
 PREHOOK: query: show grant user hive_test_user on table authorization_part(key)
 PREHOOK: type: SHOW_GRANT
@@ -150,16 +146,16 @@ columnName	key
 principalName	hive_test_user	
 principalType	USER	
 privilege	Select	
-grantTime	1292567495	
+grantTime	1296259217	
 grantor	hive_test_user	
 PREHOOK: query: select key from authorization_part where ds='2010' order by key limit 20
 PREHOOK: type: QUERY
 PREHOOK: Input: default@authorization_part@ds=2010
-PREHOOK: Output: file:/var/folders/6g/6grtCwPMEf4sqHUPpy6xQG9ByHg/-Tmp-/heyongqiang/hive_2010-12-16_22-31-44_729_6159445007917571115/-mr-10000
+PREHOOK: Output: file:/var/folders/6g/6grtCwPMEf4sqHUPpy6xQG9ByHg/-Tmp-/heyongqiang/hive_2011-01-28_16-00-26_658_4619960421451115327/-mr-10000
 POSTHOOK: query: select key from authorization_part where ds='2010' order by key limit 20
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@authorization_part@ds=2010
-POSTHOOK: Output: file:/var/folders/6g/6grtCwPMEf4sqHUPpy6xQG9ByHg/-Tmp-/heyongqiang/hive_2010-12-16_22-31-44_729_6159445007917571115/-mr-10000
+POSTHOOK: Output: file:/var/folders/6g/6grtCwPMEf4sqHUPpy6xQG9ByHg/-Tmp-/heyongqiang/hive_2011-01-28_16-00-26_658_4619960421451115327/-mr-10000
 POSTHOOK: Lineage: authorization_part PARTITION(ds=2010).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: authorization_part PARTITION(ds=2010).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 0
@@ -208,16 +204,16 @@ columnName	key
 principalName	hive_test_user	
 principalType	USER	
 privilege	Select	
-grantTime	1292567504	
+grantTime	1296259226	
 grantor	hive_test_user	
 PREHOOK: query: select key from authorization_part where ds='2010' order by key limit 20
 PREHOOK: type: QUERY
 PREHOOK: Input: default@authorization_part@ds=2010
-PREHOOK: Output: file:/var/folders/6g/6grtCwPMEf4sqHUPpy6xQG9ByHg/-Tmp-/heyongqiang/hive_2010-12-16_22-31-51_427_8272622381150203232/-mr-10000
+PREHOOK: Output: file:/var/folders/6g/6grtCwPMEf4sqHUPpy6xQG9ByHg/-Tmp-/heyongqiang/hive_2011-01-28_16-00-33_447_7575761638678787958/-mr-10000
 POSTHOOK: query: select key from authorization_part where ds='2010' order by key limit 20
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@authorization_part@ds=2010
-POSTHOOK: Output: file:/var/folders/6g/6grtCwPMEf4sqHUPpy6xQG9ByHg/-Tmp-/heyongqiang/hive_2010-12-16_22-31-51_427_8272622381150203232/-mr-10000
+POSTHOOK: Output: file:/var/folders/6g/6grtCwPMEf4sqHUPpy6xQG9ByHg/-Tmp-/heyongqiang/hive_2011-01-28_16-00-33_447_7575761638678787958/-mr-10000
 POSTHOOK: Lineage: authorization_part PARTITION(ds=2010).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: authorization_part PARTITION(ds=2010).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 0
@@ -276,7 +272,7 @@ table	authorization_part
 principalName	hive_test_user	
 principalType	USER	
 privilege	Create	
-grantTime	1292567495	
+grantTime	1296259216	
 grantor	hive_test_user	
 
 database	default	
@@ -284,7 +280,7 @@ table	authorization_part
 principalName	hive_test_user	
 principalType	USER	
 privilege	Update	
-grantTime	1292567495	
+grantTime	1296259216	
 grantor	hive_test_user	
 
 database	default	
@@ -292,7 +288,7 @@ table	authorization_part
 principalName	hive_test_user	
 principalType	USER	
 privilege	Drop	
-grantTime	1292567495	
+grantTime	1296259216	
 grantor	hive_test_user	
 PREHOOK: query: alter table authorization_part add partition (ds='2010')
 PREHOOK: type: ALTERTABLE_ADDPARTS
@@ -316,7 +312,7 @@ partition	ds=2010
 principalName	hive_test_user	
 principalType	USER	
 privilege	Create	
-grantTime	1292567519	
+grantTime	1296259240	
 grantor	hive_test_user	
 
 database	default	
@@ -325,7 +321,7 @@ partition	ds=2010
 principalName	hive_test_user	
 principalType	USER	
 privilege	Update	
-grantTime	1292567519	
+grantTime	1296259240	
 grantor	hive_test_user	
 
 database	default	
@@ -334,7 +330,7 @@ partition	ds=2010
 principalName	hive_test_user	
 principalType	USER	
 privilege	Drop	
-grantTime	1292567519	
+grantTime	1296259240	
 grantor	hive_test_user	
 PREHOOK: query: grant `select` on table authorization_part to user hive_test_user
 PREHOOK: type: GRANT_PRIVILEGE
@@ -379,7 +375,7 @@ partition	ds=2010
 principalName	hive_test_user	
 principalType	USER	
 privilege	Create	
-grantTime	1292567529	
+grantTime	1296259249	
 grantor	hive_test_user	
 
 database	default	
@@ -388,7 +384,7 @@ partition	ds=2010
 principalName	hive_test_user	
 principalType	USER	
 privilege	Update	
-grantTime	1292567529	
+grantTime	1296259249	
 grantor	hive_test_user	
 
 database	default	
@@ -397,7 +393,7 @@ partition	ds=2010
 principalName	hive_test_user	
 principalType	USER	
 privilege	Drop	
-grantTime	1292567529	
+grantTime	1296259249	
 grantor	hive_test_user	
 
 database	default	
@@ -406,7 +402,7 @@ partition	ds=2010
 principalName	hive_test_user	
 principalType	USER	
 privilege	Select	
-grantTime	1292567529	
+grantTime	1296259249	
 grantor	hive_test_user	
 PREHOOK: query: show grant user hive_test_user on table authorization_part
 PREHOOK: type: SHOW_GRANT
@@ -422,7 +418,7 @@ table	authorization_part
 principalName	hive_test_user	
 principalType	USER	
 privilege	Create	
-grantTime	1292567495	
+grantTime	1296259216	
 grantor	hive_test_user	
 
 database	default	
@@ -430,7 +426,7 @@ table	authorization_part
 principalName	hive_test_user	
 principalType	USER	
 privilege	Update	
-grantTime	1292567495	
+grantTime	1296259216	
 grantor	hive_test_user	
 
 database	default	
@@ -438,7 +434,7 @@ table	authorization_part
 principalName	hive_test_user	
 principalType	USER	
 privilege	Drop	
-grantTime	1292567495	
+grantTime	1296259216	
 grantor	hive_test_user	
 
 database	default	
@@ -446,16 +442,16 @@ table	authorization_part
 principalName	hive_test_user	
 principalType	USER	
 privilege	Select	
-grantTime	1292567519	
+grantTime	1296259241	
 grantor	hive_test_user	
 PREHOOK: query: select key from authorization_part where ds='2010' order by key limit 20
 PREHOOK: type: QUERY
 PREHOOK: Input: default@authorization_part@ds=2010
-PREHOOK: Output: file:/var/folders/6g/6grtCwPMEf4sqHUPpy6xQG9ByHg/-Tmp-/heyongqiang/hive_2010-12-16_22-32-09_525_5244658946776244269/-mr-10000
+PREHOOK: Output: file:/var/folders/6g/6grtCwPMEf4sqHUPpy6xQG9ByHg/-Tmp-/heyongqiang/hive_2011-01-28_16-00-49_729_230128608320793542/-mr-10000
 POSTHOOK: query: select key from authorization_part where ds='2010' order by key limit 20
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@authorization_part@ds=2010
-POSTHOOK: Output: file:/var/folders/6g/6grtCwPMEf4sqHUPpy6xQG9ByHg/-Tmp-/heyongqiang/hive_2010-12-16_22-32-09_525_5244658946776244269/-mr-10000
+POSTHOOK: Output: file:/var/folders/6g/6grtCwPMEf4sqHUPpy6xQG9ByHg/-Tmp-/heyongqiang/hive_2011-01-28_16-00-49_729_230128608320793542/-mr-10000
 POSTHOOK: Lineage: authorization_part PARTITION(ds=2010).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: authorization_part PARTITION(ds=2010).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: authorization_part PARTITION(ds=2010).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
@@ -502,7 +498,7 @@ table	authorization_part
 principalName	hive_test_user	
 principalType	USER	
 privilege	Create	
-grantTime	1292567495	
+grantTime	1296259216	
 grantor	hive_test_user	
 
 database	default	
@@ -510,7 +506,7 @@ table	authorization_part
 principalName	hive_test_user	
 principalType	USER	
 privilege	Update	
-grantTime	1292567495	
+grantTime	1296259216	
 grantor	hive_test_user	
 
 database	default	
@@ -518,7 +514,7 @@ table	authorization_part
 principalName	hive_test_user	
 principalType	USER	
 privilege	Drop	
-grantTime	1292567495	
+grantTime	1296259216	
 grantor	hive_test_user	
 PREHOOK: query: show grant user hive_test_user on table authorization_part partition (ds='2010')
 PREHOOK: type: SHOW_GRANT
@@ -535,7 +531,7 @@ partition	ds=2010
 principalName	hive_test_user	
 principalType	USER	
 privilege	Create	
-grantTime	1292567529	
+grantTime	1296259249	
 grantor	hive_test_user	
 
 database	default	
@@ -544,7 +540,7 @@ partition	ds=2010
 principalName	hive_test_user	
 principalType	USER	
 privilege	Update	
-grantTime	1292567529	
+grantTime	1296259249	
 grantor	hive_test_user	
 
 database	default	
@@ -553,7 +549,7 @@ partition	ds=2010
 principalName	hive_test_user	
 principalType	USER	
 privilege	Drop	
-grantTime	1292567529	
+grantTime	1296259249	
 grantor	hive_test_user	
 
 database	default	
@@ -562,16 +558,16 @@ partition	ds=2010
 principalName	hive_test_user	
 principalType	USER	
 privilege	Select	
-grantTime	1292567529	
+grantTime	1296259249	
 grantor	hive_test_user	
 PREHOOK: query: select key from authorization_part where ds='2010' order by key limit 20
 PREHOOK: type: QUERY
 PREHOOK: Input: default@authorization_part@ds=2010
-PREHOOK: Output: file:/var/folders/6g/6grtCwPMEf4sqHUPpy6xQG9ByHg/-Tmp-/heyongqiang/hive_2010-12-16_22-32-15_947_8100424728454115880/-mr-10000
+PREHOOK: Output: file:/var/folders/6g/6grtCwPMEf4sqHUPpy6xQG9ByHg/-Tmp-/heyongqiang/hive_2011-01-28_16-00-56_474_1991163519827081229/-mr-10000
 POSTHOOK: query: select key from authorization_part where ds='2010' order by key limit 20
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@authorization_part@ds=2010
-POSTHOOK: Output: file:/var/folders/6g/6grtCwPMEf4sqHUPpy6xQG9ByHg/-Tmp-/heyongqiang/hive_2010-12-16_22-32-15_947_8100424728454115880/-mr-10000
+POSTHOOK: Output: file:/var/folders/6g/6grtCwPMEf4sqHUPpy6xQG9ByHg/-Tmp-/heyongqiang/hive_2011-01-28_16-00-56_474_1991163519827081229/-mr-10000
 POSTHOOK: Lineage: authorization_part PARTITION(ds=2010).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: authorization_part PARTITION(ds=2010).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: authorization_part PARTITION(ds=2010).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
@@ -619,7 +615,7 @@ partition	ds=2010
 principalName	hive_test_user	
 principalType	USER	
 privilege	Create	
-grantTime	1292567529	
+grantTime	1296259249	
 grantor	hive_test_user	
 
 database	default	
@@ -628,7 +624,7 @@ partition	ds=2010
 principalName	hive_test_user	
 principalType	USER	
 privilege	Update	
-grantTime	1292567529	
+grantTime	1296259249	
 grantor	hive_test_user	
 
 database	default	
@@ -637,7 +633,7 @@ partition	ds=2010
 principalName	hive_test_user	
 principalType	USER	
 privilege	Drop	
-grantTime	1292567529	
+grantTime	1296259249	
 grantor	hive_test_user	
 PREHOOK: query: alter table authorization_part drop partition (ds='2010')
 PREHOOK: type: ALTERTABLE_DROPPARTS
@@ -734,7 +730,7 @@ columnName	key
 principalName	hive_test_group1	
 principalType	GROUP	
 privilege	Select	
-grantTime	1292567551	
+grantTime	1296259276	
 grantor	hive_test_user	
 PREHOOK: query: show grant group hive_test_group1 on table authorization_part(key)
 PREHOOK: type: SHOW_GRANT
@@ -753,16 +749,16 @@ columnName	key
 principalName	hive_test_group1	
 principalType	GROUP	
 privilege	Select	
-grantTime	1292567543	
+grantTime	1296259265	
 grantor	hive_test_user	
 PREHOOK: query: select key from authorization_part where ds='2010' order by key limit 20
 PREHOOK: type: QUERY
 PREHOOK: Input: default@authorization_part@ds=2010
-PREHOOK: Output: file:/var/folders/6g/6grtCwPMEf4sqHUPpy6xQG9ByHg/-Tmp-/heyongqiang/hive_2010-12-16_22-32-32_179_1859237138227238635/-mr-10000
+PREHOOK: Output: file:/var/folders/6g/6grtCwPMEf4sqHUPpy6xQG9ByHg/-Tmp-/heyongqiang/hive_2011-01-28_16-01-16_979_1522547827203100347/-mr-10000
 POSTHOOK: query: select key from authorization_part where ds='2010' order by key limit 20
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@authorization_part@ds=2010
-POSTHOOK: Output: file:/var/folders/6g/6grtCwPMEf4sqHUPpy6xQG9ByHg/-Tmp-/heyongqiang/hive_2010-12-16_22-32-32_179_1859237138227238635/-mr-10000
+POSTHOOK: Output: file:/var/folders/6g/6grtCwPMEf4sqHUPpy6xQG9ByHg/-Tmp-/heyongqiang/hive_2011-01-28_16-01-16_979_1522547827203100347/-mr-10000
 POSTHOOK: Lineage: authorization_part PARTITION(ds=2010).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: authorization_part PARTITION(ds=2010).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: authorization_part PARTITION(ds=2010).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
@@ -827,16 +823,16 @@ columnName	key
 principalName	hive_test_group1	
 principalType	GROUP	
 privilege	Select	
-grantTime	1292567551	
+grantTime	1296259276	
 grantor	hive_test_user	
 PREHOOK: query: select key from authorization_part where ds='2010' order by key limit 20
 PREHOOK: type: QUERY
 PREHOOK: Input: default@authorization_part@ds=2010
-PREHOOK: Output: file:/var/folders/6g/6grtCwPMEf4sqHUPpy6xQG9ByHg/-Tmp-/heyongqiang/hive_2010-12-16_22-32-38_657_7188861192410002773/-mr-10000
+PREHOOK: Output: file:/var/folders/6g/6grtCwPMEf4sqHUPpy6xQG9ByHg/-Tmp-/heyongqiang/hive_2011-01-28_16-01-24_136_2793119370338384319/-mr-10000
 POSTHOOK: query: select key from authorization_part where ds='2010' order by key limit 20
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@authorization_part@ds=2010
-POSTHOOK: Output: file:/var/folders/6g/6grtCwPMEf4sqHUPpy6xQG9ByHg/-Tmp-/heyongqiang/hive_2010-12-16_22-32-38_657_7188861192410002773/-mr-10000
+POSTHOOK: Output: file:/var/folders/6g/6grtCwPMEf4sqHUPpy6xQG9ByHg/-Tmp-/heyongqiang/hive_2011-01-28_16-01-24_136_2793119370338384319/-mr-10000
 POSTHOOK: Lineage: authorization_part PARTITION(ds=2010).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: authorization_part PARTITION(ds=2010).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: authorization_part PARTITION(ds=2010).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
@@ -991,7 +987,7 @@ partition	ds=2010
 principalName	hive_test_group1	
 principalType	GROUP	
 privilege	Select	
-grantTime	1292567574	
+grantTime	1296259300	
 grantor	hive_test_user	
 PREHOOK: query: show grant group hive_test_group1 on table authorization_part
 PREHOOK: type: SHOW_GRANT
@@ -1011,16 +1007,16 @@ table	authorization_part
 principalName	hive_test_group1	
 principalType	GROUP	
 privilege	Select	
-grantTime	1292567566	
+grantTime	1296259292	
 grantor	hive_test_user	
 PREHOOK: query: select key from authorization_part where ds='2010' order by key limit 20
 PREHOOK: type: QUERY
 PREHOOK: Input: default@authorization_part@ds=2010
-PREHOOK: Output: file:/var/folders/6g/6grtCwPMEf4sqHUPpy6xQG9ByHg/-Tmp-/heyongqiang/hive_2010-12-16_22-32-55_104_6462994010195124243/-mr-10000
+PREHOOK: Output: file:/var/folders/6g/6grtCwPMEf4sqHUPpy6xQG9ByHg/-Tmp-/heyongqiang/hive_2011-01-28_16-01-41_012_4602555776513968992/-mr-10000
 POSTHOOK: query: select key from authorization_part where ds='2010' order by key limit 20
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@authorization_part@ds=2010
-POSTHOOK: Output: file:/var/folders/6g/6grtCwPMEf4sqHUPpy6xQG9ByHg/-Tmp-/heyongqiang/hive_2010-12-16_22-32-55_104_6462994010195124243/-mr-10000
+POSTHOOK: Output: file:/var/folders/6g/6grtCwPMEf4sqHUPpy6xQG9ByHg/-Tmp-/heyongqiang/hive_2011-01-28_16-01-41_012_4602555776513968992/-mr-10000
 POSTHOOK: Lineage: authorization_part PARTITION(ds=2010).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: authorization_part PARTITION(ds=2010).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: authorization_part PARTITION(ds=2010).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
@@ -1092,16 +1088,16 @@ partition	ds=2010
 principalName	hive_test_group1	
 principalType	GROUP	
 privilege	Select	
-grantTime	1292567574	
+grantTime	1296259300	
 grantor	hive_test_user	
 PREHOOK: query: select key from authorization_part where ds='2010' order by key limit 20
 PREHOOK: type: QUERY
 PREHOOK: Input: default@authorization_part@ds=2010
-PREHOOK: Output: file:/var/folders/6g/6grtCwPMEf4sqHUPpy6xQG9ByHg/-Tmp-/heyongqiang/hive_2010-12-16_22-33-01_749_5408406852569793238/-mr-10000
+PREHOOK: Output: file:/var/folders/6g/6grtCwPMEf4sqHUPpy6xQG9ByHg/-Tmp-/heyongqiang/hive_2011-01-28_16-01-48_388_3846951968845754989/-mr-10000
 POSTHOOK: query: select key from authorization_part where ds='2010' order by key limit 20
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@authorization_part@ds=2010
-POSTHOOK: Output: file:/var/folders/6g/6grtCwPMEf4sqHUPpy6xQG9ByHg/-Tmp-/heyongqiang/hive_2010-12-16_22-33-01_749_5408406852569793238/-mr-10000
+POSTHOOK: Output: file:/var/folders/6g/6grtCwPMEf4sqHUPpy6xQG9ByHg/-Tmp-/heyongqiang/hive_2011-01-28_16-01-48_388_3846951968845754989/-mr-10000
 POSTHOOK: Lineage: authorization_part PARTITION(ds=2010).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: authorization_part PARTITION(ds=2010).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: authorization_part PARTITION(ds=2010).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]

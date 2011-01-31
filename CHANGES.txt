@@ -163,6 +163,9 @@ Trunk -  Unreleased
     HIVE-1929 A way to disable owner grants
     (He Yongqiang via namit)
 
+    HIVE-1935 set hive.security.authorization.createtable.owner.grants to null
+    by default (He Yongqiang via namit)
+
   IMPROVEMENTS
 
     HIVE-1692. FetchOperator.getInputFormatFromCache hides causal exception (Philip Zeyliger via cws)

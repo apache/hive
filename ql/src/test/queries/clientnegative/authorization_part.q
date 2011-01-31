@@ -2,8 +2,6 @@ create table authorization_part_fail (key int, value string) partitioned by (ds 
 ALTER TABLE authorization_part_fail SET TBLPROPERTIES ("PARTITION_LEVEL_PRIVILEGE"="TRUE");
 set hive.security.authorization.enabled=true;
 
-revoke `ALL` on table authorization_part_fail from user hive_test_user;
-
 grant `Create` on table authorization_part_fail to user hive_test_user;
 grant `Update` on table authorization_part_fail to user hive_test_user;
 grant `Drop` on table authorization_part_fail to user hive_test_user;

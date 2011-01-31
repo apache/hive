@@ -913,7 +913,7 @@
 
 <property>
   <name>hive.security.authorization.createtable.owner.grants</name>
-  <value>All</value>
+  <value></value>
   <description>the privileges automatically granted to the owner whenever a table gets created. 
    An example like "select,drop" will grant select and drop privilege to the owner of the table</description>
 </property>

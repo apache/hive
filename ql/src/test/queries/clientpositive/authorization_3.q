@@ -1,7 +1,5 @@
 create table src_autho_test as select * from src;
 
-revoke `ALL` on table src_autho_test from user hive_test_user;
-
 grant `drop` on table src_autho_test to user hive_test_user;
 grant `select` on table src_autho_test to user hive_test_user;
 

@@ -1,5 +1,4 @@
 create table authorization_fail (key int, value string);
-revoke `ALL` on table authorization_fail from user hive_test_user;
 
 set hive.security.authorization.enabled=true;
 

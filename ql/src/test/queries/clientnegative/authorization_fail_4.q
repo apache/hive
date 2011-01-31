@@ -1,7 +1,5 @@
 create table authorization_fail_4 (key int, value string) partitioned by (ds string);
 
-revoke `ALL` on table authorization_fail_4 from user hive_test_user;
-
 set hive.security.authorization.enabled=true;
 grant `Alter` on table authorization_fail_4 to user hive_test_user;
 ALTER TABLE authorization_fail_4 SET TBLPROPERTIES ("PARTITION_LEVEL_PRIVILEGE"="TRUE");
