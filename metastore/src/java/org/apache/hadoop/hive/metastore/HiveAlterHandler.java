@@ -19,7 +19,6 @@ package org.apache.hadoop.hive.metastore;
 
 import java.io.IOException;
 import java.net.URI;
-import java.net.URISyntaxException;
 import java.util.List;
 
 import org.apache.commons.lang.StringUtils;
@@ -150,25 +149,19 @@ public class HiveAlterHandler implements AlterHandler {
         List<Partition> parts = msdb.getPartitions(dbname, name, 0);
         for (Partition part : parts) {
           String oldPartLoc = part.getSd().getLocation();
+          Path oldPartLocPath = new Path(oldPartLoc);
           String oldTblLocPath = new Path(oldTblLoc).toUri().getPath();
           String newTblLocPath = new Path(newTblLoc).toUri().getPath();
           if (oldPartLoc.contains(oldTblLocPath)) {
-            URI newPartLocUri = null;
-            try {
-              URI oldPartLocUri = new URI(oldPartLoc);
-              newPartLocUri = new URI(
-                  oldPartLocUri.getScheme(),
-                  oldPartLocUri.getUserInfo(),
-                  oldPartLocUri.getHost(),
-                  oldPartLocUri.getPort(),
-                  oldPartLocUri.getPath().replace(oldTblLocPath, newTblLocPath),
-                  oldPartLocUri.getQuery(),
-                  oldPartLocUri.getFragment());
-            } catch (URISyntaxException e) {
-              throw new InvalidOperationException("Old partition location " +
-              		" is invalid. (" + oldPartLoc + ")");
-            }
-            part.getSd().setLocation(newPartLocUri.toString());
+            Path newPartLocPath = null;
+            URI oldUri = oldPartLocPath.toUri();
+            String newPath = oldUri.getPath().replace(oldTblLocPath,
+                                                      newTblLocPath);
+
+            newPartLocPath = new Path(oldUri.getScheme(),
+                                      oldUri.getAuthority(),
+                                      newPath);
+            part.getSd().setLocation(newPartLocPath.toString());
             msdb.alterPartition(dbname, name, part);
           }
         }

@@ -743,6 +743,8 @@ Trunk -  Unreleased
     HIVE-1908 FileHandler leak on partial iteration of the resultset
     (Chinna Rao Lalam via namit)
 
+    HIVE-1934 Alter table rename messes the location
+    (Paul Yang via namit)
   TESTS
 
     HIVE-1464. improve  test query performance
