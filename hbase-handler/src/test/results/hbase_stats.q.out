@@ -14,11 +14,11 @@ POSTHOOK: Output: default@stats_src
 POSTHOOK: Lineage: stats_src.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: stats_src.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 PREHOOK: query: analyze table stats_src compute statistics
-PREHOOK: type: null
+PREHOOK: type: QUERY
 PREHOOK: Input: default@stats_src
 PREHOOK: Output: default@stats_src
 POSTHOOK: query: analyze table stats_src compute statistics
-POSTHOOK: type: null
+POSTHOOK: type: QUERY
 POSTHOOK: Input: default@stats_src
 POSTHOOK: Output: default@stats_src
 POSTHOOK: Lineage: stats_src.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
@@ -37,18 +37,14 @@ value               	string              	default
 # Detailed Table Information	 	 
 Database:           	default             	 
 Owner:              	null                	 
-CreateTime:         	Sun Oct 17 21:42:31 PDT 2010	 
+CreateTime:         	Tue Jan 25 14:48:20 PST 2011	 
 LastAccessTime:     	UNKNOWN             	 
 Protect Mode:       	None                	 
 Retention:          	0                   	 
-Location:           	pfile:/data/users/njain/hive_commit1/hive_commit1/build/hbase-handler/test/data/warehouse/stats_src	 
+Location:           	pfile:/data/users/jsichi/open/hive-trunk/build/hbase-handler/test/data/warehouse/stats_src	 
 Table Type:         	MANAGED_TABLE       	 
 Table Parameters:	 	 
-	numFiles            	1                   
-	numPartitions       	0                   
-	numRows             	500                 
-	totalSize           	5812                
-	transient_lastDdlTime	1287376963          
+	transient_lastDdlTime	1295995714          
 	 	 
 # Storage Information	 	 
 SerDe Library:      	org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe	 
@@ -94,11 +90,11 @@ POSTHOOK: Lineage: hbase_part PARTITION(ds=2010-04-08,hr=12).value SIMPLE [(src)
 POSTHOOK: Lineage: stats_src.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: stats_src.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 PREHOOK: query: analyze table hbase_part partition(ds='2008-04-08', hr=11) compute statistics
-PREHOOK: type: null
+PREHOOK: type: QUERY
 PREHOOK: Input: default@hbase_part@ds=2008-04-08/hr=11
 PREHOOK: Output: default@hbase_part
 POSTHOOK: query: analyze table hbase_part partition(ds='2008-04-08', hr=11) compute statistics
-POSTHOOK: type: null
+POSTHOOK: type: QUERY
 POSTHOOK: Input: default@hbase_part@ds=2008-04-08/hr=11
 POSTHOOK: Output: default@hbase_part
 POSTHOOK: Lineage: hbase_part PARTITION(ds=2010-04-08,hr=11).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
@@ -108,11 +104,11 @@ POSTHOOK: Lineage: hbase_part PARTITION(ds=2010-04-08,hr=12).value SIMPLE [(src)
 POSTHOOK: Lineage: stats_src.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: stats_src.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 PREHOOK: query: analyze table hbase_part partition(ds='2008-04-08', hr=12) compute statistics
-PREHOOK: type: null
+PREHOOK: type: QUERY
 PREHOOK: Input: default@hbase_part@ds=2008-04-08/hr=12
 PREHOOK: Output: default@hbase_part
 POSTHOOK: query: analyze table hbase_part partition(ds='2008-04-08', hr=12) compute statistics
-POSTHOOK: type: null
+POSTHOOK: type: QUERY
 POSTHOOK: Input: default@hbase_part@ds=2008-04-08/hr=12
 POSTHOOK: Output: default@hbase_part
 POSTHOOK: Lineage: hbase_part PARTITION(ds=2010-04-08,hr=11).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
@@ -145,18 +141,14 @@ hr                  	string              	None
 # Detailed Table Information	 	 
 Database:           	default             	 
 Owner:              	null                	 
-CreateTime:         	Sun Oct 17 21:42:44 PDT 2010	 
+CreateTime:         	Tue Jan 25 14:49:11 PST 2011	 
 LastAccessTime:     	UNKNOWN             	 
 Protect Mode:       	None                	 
 Retention:          	0                   	 
-Location:           	pfile:/data/users/njain/hive_commit1/hive_commit1/build/hbase-handler/test/data/warehouse/hbase_part	 
+Location:           	pfile:/data/users/jsichi/open/hive-trunk/build/hbase-handler/test/data/warehouse/hbase_part	 
 Table Type:         	MANAGED_TABLE       	 
 Table Parameters:	 	 
-	numFiles            	2                   
-	numPartitions       	2                   
-	numRows             	1000                
-	totalSize           	11624               
-	transient_lastDdlTime	1287376983          
+	transient_lastDdlTime	1295995751          
 	 	 
 # Storage Information	 	 
 SerDe Library:      	org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe	 
@@ -193,15 +185,12 @@ hr                  	string              	None
 Partition Value:    	[2010-04-08, 11]    	 
 Database:           	default             	 
 Table:              	hbase_part          	 
-CreateTime:         	Sun Oct 17 21:42:49 PDT 2010	 
+CreateTime:         	Tue Jan 25 14:49:26 PST 2011	 
 LastAccessTime:     	UNKNOWN             	 
 Protect Mode:       	None                	 
-Location:           	pfile:/data/users/njain/hive_commit1/hive_commit1/build/hbase-handler/test/data/warehouse/hbase_part/ds=2010-04-08/hr=11	 
+Location:           	pfile:/data/users/jsichi/open/hive-trunk/build/hbase-handler/test/data/warehouse/hbase_part/ds=2010-04-08/hr=11	 
 Partition Parameters:	 	 
-	numFiles            	1                   
-	numRows             	500                 
-	totalSize           	5812                
-	transient_lastDdlTime	1287376969          
+	transient_lastDdlTime	1295995766          
 	 	 
 # Storage Information	 	 
 SerDe Library:      	org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe	 
@@ -238,15 +227,12 @@ hr                  	string              	None
 Partition Value:    	[2010-04-08, 12]    	 
 Database:           	default             	 
 Table:              	hbase_part          	 
-CreateTime:         	Sun Oct 17 21:42:54 PDT 2010	 
+CreateTime:         	Tue Jan 25 14:49:52 PST 2011	 
 LastAccessTime:     	UNKNOWN             	 
 Protect Mode:       	None                	 
-Location:           	pfile:/data/users/njain/hive_commit1/hive_commit1/build/hbase-handler/test/data/warehouse/hbase_part/ds=2010-04-08/hr=12	 
+Location:           	pfile:/data/users/jsichi/open/hive-trunk/build/hbase-handler/test/data/warehouse/hbase_part/ds=2010-04-08/hr=12	 
 Partition Parameters:	 	 
-	numFiles            	1                   
-	numRows             	500                 
-	totalSize           	5812                
-	transient_lastDdlTime	1287376974          
+	transient_lastDdlTime	1295995792          
 	 	 
 # Storage Information	 	 
 SerDe Library:      	org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe	 

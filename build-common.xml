@@ -105,7 +105,7 @@
   </condition>
 
   <!--this is the naming policy for artifacts we want pulled down-->
-  <property name="ivy.artifact.retrieve.pattern" value="[conf]/[artifact]-[revision].[ext]"/>
+  <property name="ivy.artifact.retrieve.pattern" value="[conf]/[artifact]-[revision](-[classifier]).[ext]"/>
 
   <target name="ivy-init-dirs">
     <mkdir dir="${build.ivy.dir}" />
@@ -272,7 +272,7 @@
 
   <target name="setup"/>
 
-  <target name="compile" depends="init, install-hadoopcore, setup">
+  <target name="compile" depends="init, setup">
     <echo message="Compiling: ${ant.project.name}"/>
     <javac
      encoding="${build.encoding}"

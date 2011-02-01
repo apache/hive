@@ -1,4 +1,4 @@
-<ivy-module version="2.0">
+<ivy-module version="2.0" xmlns:m="http://ant.apache.org/ivy/maven">
     <info organisation="org.apache.hadoop.hive" module="ql"/>
     <dependencies>
         <dependency org="hadoop" name="core" rev="${hadoop.version.ant-internal}">
@@ -6,5 +6,17 @@
         </dependency>
         <dependency org="org.slf4j" name="slf4j-api" rev="${slf4j-api.version}"/>
         <dependency org="org.slf4j" name="slf4j-log4j12" rev="${slf4j-log4j12.version}"/>
+        <dependency org="org.apache.hbase" name="hbase" rev="${hbase.version}"
+                    transitive="false">
+          <artifact name="hbase" type="jar"/>
+          <artifact name="hbase" type="test-jar" ext="jar"
+                    m:classifier="tests"/>
+        </dependency>
+        <dependency org="org.apache.zookeeper" name="zookeeper"
+                    rev="${zookeeper.version}" transitive="false">
+          <include type="jar"/>
+        </dependency>
+        <dependency org="com.google.guava" name="guava" rev="${guava.version}"
+                    transitive="false"/>
     </dependencies>
 </ivy-module>

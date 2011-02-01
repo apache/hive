@@ -11,17 +11,16 @@ TBLPROPERTIES ('hfile.family.path' = '/tmp/hbsort/cf');
 
 -- this is a dummy table used for controlling how the input file
 -- for TotalOrderPartitioner is created
-create external table hbpartition(part_break string)
-row format serde 
+create table hbpartition(part_break string)
+row format serde
 'org.apache.hadoop.hive.serde2.binarysortable.BinarySortableSerDe'
-stored as 
-inputformat 
+stored as
+inputformat
 'org.apache.hadoop.mapred.TextInputFormat'
-outputformat 
-'org.apache.hadoop.hive.ql.io.HiveNullValueSequenceFileOutputFormat'
-location '/tmp/hbpartitions';
+outputformat
+'org.apache.hadoop.hive.ql.io.HiveNullValueSequenceFileOutputFormat';
 
--- this should produce one file in /tmp/hbpartitions, but we do not
+-- this should produce one file, but we do not
 -- know what it will be called, so we will copy it to a well known
 -- filename /tmp/hbpartition.lst
 insert overwrite table hbpartition
@@ -29,8 +28,8 @@ select distinct value
 from src
 where value='val_100' or value='val_200';
 
-dfs -count /tmp/hbpartitions;
-dfs -cp /tmp/hbpartitions/* /tmp/hbpartition.lst;
+dfs -count /build/ql/test/data/warehouse/hbpartition;
+dfs -cp /build/ql/test/data/warehouse/hbpartition/* /tmp/hbpartition.lst;
 
 set mapred.reduce.tasks=3;
 set hive.mapred.partitioner=org.apache.hadoop.mapred.lib.TotalOrderPartitioner;

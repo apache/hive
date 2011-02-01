@@ -19,6 +19,7 @@
 package org.apache.hadoop.hive.hbase;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Properties;
 
@@ -84,6 +85,7 @@ public class TestHBaseSerDe extends TestCase {
     kvs.add(new KeyValue(rowKey, cfc, qualDouble, Bytes.toBytes("5.3")));
     kvs.add(new KeyValue(rowKey, cfa, qualString, Bytes.toBytes("Hadoop, HBase, and Hive")));
     kvs.add(new KeyValue(rowKey, cfb, qualBool, Bytes.toBytes("true")));
+    Collections.sort(kvs, KeyValue.COMPARATOR);
 
     Result r = new Result(kvs);
 

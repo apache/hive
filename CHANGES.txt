@@ -171,6 +171,8 @@ Trunk -  Unreleased
 
   IMPROVEMENTS
 
+    HIVE-1235 use Ivy for fetching HBase dependencies (John Sichi via cws)
+
     HIVE-1931 Improve the implementation of the METASTORE_CACHE_PINOBJTYPES config (Mac Yang via cws)"
 
     HIVE-1692. FetchOperator.getInputFormatFromCache hides causal exception (Philip Zeyliger via cws)

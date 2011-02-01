@@ -55,17 +55,17 @@
        <artifact pattern="${repo.dir}/org/apache/hadoop/[module]/[revision]/[module]-[revision].[ext]"/>
        <ivy pattern="${repo.dir}/org/apache/hadoop/[module]/[revision]/[module]-[revision].pom"/>
     </filesystem>
-    
+
     <chain name="default" dual="true" checkmodified="true" changingPattern=".*SNAPSHOT">
       <resolver ref="hadoop-source"/>
-      <resolver ref="apache-snapshot"/> 
+      <resolver ref="apache-snapshot"/>
       <resolver ref="maven2"/>
       <resolver ref="datanucleus-repo"/>
     </chain>
 
     <chain name="internal" dual="true">
       <resolver ref="fs"/>
-      <resolver ref="apache-snapshot"/> 
+      <resolver ref="apache-snapshot"/>
       <resolver ref="maven2"/>
       <resolver ref="datanucleus-repo"/>
     </chain>
@@ -74,9 +74,9 @@
       <resolver ref="maven2"/>
       <resolver ref="datanucleus-repo"/>
     </chain>
-    
+
   </resolvers>
-  
+
   <modules>
      <module organisation="org.apache.hadoop" name="hadoop-*" resolver="${resolvers}"/>
   </modules>
