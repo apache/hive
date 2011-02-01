@@ -166,6 +166,9 @@ Trunk -  Unreleased
     HIVE-1935 set hive.security.authorization.createtable.owner.grants to null
     by default (He Yongqiang via namit)
 
+   HIVE-1936 hive.semantic.analyzer.hook cannot have multiple values
+   (Siying Dong via namit)
+
   IMPROVEMENTS
 
     HIVE-1931 Improve the implementation of the METASTORE_CACHE_PINOBJTYPES config (Mac Yang via cws)"

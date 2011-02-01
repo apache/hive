@@ -40,7 +40,6 @@ import org.apache.hadoop.fs.FSDataInputStream;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.JavaUtils;
 import org.apache.hadoop.hive.conf.HiveConf;
-import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.metastore.MetaStoreUtils;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.Schema;
@@ -68,8 +67,8 @@ import org.apache.hadoop.hive.ql.lockmgr.HiveLockManagerCtx;
 import org.apache.hadoop.hive.ql.lockmgr.HiveLockMode;
 import org.apache.hadoop.hive.ql.lockmgr.HiveLockObj;
 import org.apache.hadoop.hive.ql.lockmgr.HiveLockObject;
-import org.apache.hadoop.hive.ql.lockmgr.HiveLockObject.HiveLockObjectData;
 import org.apache.hadoop.hive.ql.lockmgr.LockException;
+import org.apache.hadoop.hive.ql.lockmgr.HiveLockObject.HiveLockObjectData;
 import org.apache.hadoop.hive.ql.metadata.AuthorizationException;
 import org.apache.hadoop.hive.ql.metadata.DummyPartition;
 import org.apache.hadoop.hive.ql.metadata.Hive;
@@ -92,8 +91,8 @@ import org.apache.hadoop.hive.ql.parse.PrunedPartitionList;
 import org.apache.hadoop.hive.ql.parse.SemanticAnalyzer;
 import org.apache.hadoop.hive.ql.parse.SemanticAnalyzerFactory;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
-import org.apache.hadoop.hive.ql.plan.HiveOperation;
 import org.apache.hadoop.hive.ql.parse.VariableSubstitution;
+import org.apache.hadoop.hive.ql.plan.HiveOperation;
 import org.apache.hadoop.hive.ql.plan.TableDesc;
 import org.apache.hadoop.hive.ql.processors.CommandProcessor;
 import org.apache.hadoop.hive.ql.processors.CommandProcessorResponse;
@@ -105,7 +104,6 @@ import org.apache.hadoop.mapred.ClusterStatus;
 import org.apache.hadoop.mapred.JobClient;
 import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.util.ReflectionUtils;
-import org.apache.hadoop.hive.ql.metadata.Hive;
 
 public class Driver implements CommandProcessor {
 
@@ -330,16 +328,19 @@ public class Driver implements CommandProcessor {
       tree = ParseUtils.findRootNonNullToken(tree);
 
       BaseSemanticAnalyzer sem = SemanticAnalyzerFactory.get(conf, tree);
-      String hookName = HiveConf.getVar(conf, ConfVars.SEMANTIC_ANALYZER_HOOK);
+      List<AbstractSemanticAnalyzerHook> saHooks = getSemanticAnalyzerHooks();
 
       // Do semantic analysis and plan generation
-      if (hookName != null) {
-        AbstractSemanticAnalyzerHook hook = HiveUtils.getSemanticAnalyzerHook(conf, hookName);
+      if (saHooks != null) {
         HiveSemanticAnalyzerHookContext hookCtx = new HiveSemanticAnalyzerHookContextImpl();
         hookCtx.setConf(conf);
-        hook.preAnalyze(hookCtx, tree);
+        for (AbstractSemanticAnalyzerHook hook : saHooks) {
+          tree = hook.preAnalyze(hookCtx, tree);
+        }
         sem.analyze(tree, ctx);
-        hook.postAnalyze(hookCtx, sem.getRootTasks());
+        for (AbstractSemanticAnalyzerHook hook : saHooks) {
+          hook.postAnalyze(hookCtx, sem.getRootTasks());
+        }
       } else {
         sem.analyze(tree, ctx);
       }
@@ -384,7 +385,7 @@ public class Driver implements CommandProcessor {
       if (plan.getFetchTask() != null) {
         plan.getFetchTask().initialize(conf, plan, null);
       }
-      
+
       //do the authorization check
       if (HiveConf.getBoolVar(conf,
           HiveConf.ConfVars.HIVE_AUTHORIZATION_ENABLED)) {
@@ -750,6 +751,33 @@ public class Driver implements CommandProcessor {
     releaseLocks(ctx.getHiveLocks());
     return new CommandProcessorResponse(ret);
   }
+
+  private List<AbstractSemanticAnalyzerHook> getSemanticAnalyzerHooks() throws Exception {
+    ArrayList<AbstractSemanticAnalyzerHook> saHooks = new ArrayList<AbstractSemanticAnalyzerHook>();
+    String pestr = conf.getVar(HiveConf.ConfVars.SEMANTIC_ANALYZER_HOOK);
+    if(pestr == null) {
+      return saHooks;
+    }
+    pestr = pestr.trim();
+    if (pestr.equals("")) {
+      return saHooks;
+    }
+
+    String[] peClasses = pestr.split(",");
+
+    for (String peClass : peClasses) {
+      try {
+        AbstractSemanticAnalyzerHook hook = HiveUtils.getSemanticAnalyzerHook(conf, peClass);
+        saHooks.add(hook);
+      } catch (HiveException e) {
+        console.printError("Pre Exec Hook Class not found:" + e.getMessage());
+        throw e;
+      }
+    }
+
+    return saHooks;
+  }
+
 
   private List<Hook> getPreExecHooks() throws Exception {
     ArrayList<Hook> pehooks = new ArrayList<Hook>();
