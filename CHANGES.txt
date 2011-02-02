@@ -745,6 +745,10 @@ Trunk -  Unreleased
 
     HIVE-1934 Alter table rename messes the location
     (Paul Yang via namit)
+
+    HIVE-1944 Dynamic partition insert creating different directories for the
+    same partition during merge (Ning Zhang via namit)
+
   TESTS
 
     HIVE-1464. improve  test query performance

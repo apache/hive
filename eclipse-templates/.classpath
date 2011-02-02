@@ -16,11 +16,11 @@
   <classpathentry exported="true" kind="lib" path="lib/commons-logging-@commons-logging.version@.jar"/>
   <classpathentry exported="true" kind="lib" path="lib/commons-logging-api-@commons-logging-api.version@.jar"/>
   <classpathentry exported="true" kind="lib" path="lib/derby.jar"/>
-  <classpathentry exported="true" kind="lib" path="lib/hbase-@hbase.version@.jar"/>
-  <classpathentry exported="true" kind="lib" path="lib/hbase-@hbase-test.version@-test.jar"/>
+  <classpathentry exported="true" kind="lib" path="build/dist/lib/hbase-@hbase.version@.jar"/>
+  <classpathentry exported="true" kind="lib" path="build/dist/lib/hbase-@hbase-test.version@-tests.jar"/>
   <classpathentry exported="true" kind="lib" path="lib/thrift-fb303-@thrift-fb303.version@.jar"/>
   <classpathentry exported="true" kind="lib" path="lib/thrift-@thrift.version@.jar"/>
-  <classpathentry exported="true" kind="lib" path="lib/zookeeper-@zookeeper.version@.jar"/>
+  <classpathentry exported="true" kind="lib" path="build/dist/lib/zookeeper-@zookeeper.version@.jar"/>
   <classpathentry exported="true" kind="lib" path="lib/log4j-@log4j.version@.jar"/>
   <classpathentry exported="true" kind="lib" path="ql/lib/antlr-@antlr.version@.jar"/>
   <classpathentry exported="true" kind="lib" path="ql/lib/antlr-runtime-@antlr-runtime.version@.jar"/>
