@@ -752,6 +752,9 @@ Trunk -  Unreleased
     HIVE-1716 Make TestHBaseCliDriver use dynamic ports to avoid conflicts with
     already-running services (John Sichi via namit)
 
+    HIVE-1951 input16_cc.q is failing in testminimrclidriver
+    (He Yongqiang via namit)
+
   TESTS
 
     HIVE-1464. improve  test query performance
