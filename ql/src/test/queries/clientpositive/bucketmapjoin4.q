@@ -1,3 +1,4 @@
+set hive.input.format=org.apache.hadoop.hive.ql.io.HiveInputFormat;
 CREATE TABLE srcbucket_mapjoin(key int, value string) CLUSTERED BY (key) INTO 2 BUCKETS STORED AS TEXTFILE;
 load data local inpath '../data/files/srcbucket20.txt' INTO TABLE srcbucket_mapjoin;
 load data local inpath '../data/files/srcbucket21.txt' INTO TABLE srcbucket_mapjoin;
@@ -18,15 +19,15 @@ create table bucketmapjoin_hash_result_2 (key bigint , value1 bigint, value2 big
 set hive.optimize.bucketmapjoin = true;
 create table bucketmapjoin_tmp_result (key string , value1 string, value2 string);
 
-explain extended 
-insert overwrite table bucketmapjoin_tmp_result 
-select /*+mapjoin(b)*/ a.key, a.value, b.value 
-from srcbucket_mapjoin a join srcbucket_mapjoin b 
+explain extended
+insert overwrite table bucketmapjoin_tmp_result
+select /*+mapjoin(b)*/ a.key, a.value, b.value
+from srcbucket_mapjoin a join srcbucket_mapjoin b
 on a.key=b.key;
 
 insert overwrite table bucketmapjoin_tmp_result
-select /*+mapjoin(b)*/ a.key, a.value, b.value 
-from srcbucket_mapjoin a join srcbucket_mapjoin b 
+select /*+mapjoin(b)*/ a.key, a.value, b.value
+from srcbucket_mapjoin a join srcbucket_mapjoin b
 on a.key=b.key;
 
 select count(1) from bucketmapjoin_tmp_result;
@@ -34,9 +35,9 @@ insert overwrite table bucketmapjoin_hash_result_1
 select sum(hash(key)), sum(hash(value1)), sum(hash(value2)) from bucketmapjoin_tmp_result;
 
 set hive.optimize.bucketmapjoin = false;
-insert overwrite table bucketmapjoin_tmp_result 
-select /*+mapjoin(b)*/ a.key, a.value, b.value 
-from srcbucket_mapjoin a join srcbucket_mapjoin b 
+insert overwrite table bucketmapjoin_tmp_result
+select /*+mapjoin(b)*/ a.key, a.value, b.value
+from srcbucket_mapjoin a join srcbucket_mapjoin b
 on a.key=b.key;
 
 select count(1) from bucketmapjoin_tmp_result;
@@ -50,14 +51,14 @@ on a.key = b.key;
 
 set hive.optimize.bucketmapjoin = true;
 explain extended
-insert overwrite table bucketmapjoin_tmp_result 
-select /*+mapjoin(a)*/ a.key, a.value, b.value 
-from srcbucket_mapjoin a join srcbucket_mapjoin b 
+insert overwrite table bucketmapjoin_tmp_result
+select /*+mapjoin(a)*/ a.key, a.value, b.value
+from srcbucket_mapjoin a join srcbucket_mapjoin b
 on a.key=b.key;
 
-insert overwrite table bucketmapjoin_tmp_result 
-select /*+mapjoin(a)*/ a.key, a.value, b.value 
-from srcbucket_mapjoin a join srcbucket_mapjoin b 
+insert overwrite table bucketmapjoin_tmp_result
+select /*+mapjoin(a)*/ a.key, a.value, b.value
+from srcbucket_mapjoin a join srcbucket_mapjoin b
 on a.key=b.key;
 
 select count(1) from bucketmapjoin_tmp_result;
@@ -65,9 +66,9 @@ insert overwrite table bucketmapjoin_hash_result_1
 select sum(hash(key)), sum(hash(value1)), sum(hash(value2)) from bucketmapjoin_tmp_result;
 
 set hive.optimize.bucketmapjoin = false;
-insert overwrite table bucketmapjoin_tmp_result 
-select /*+mapjoin(a)*/ a.key, a.value, b.value 
-from srcbucket_mapjoin a join srcbucket_mapjoin b 
+insert overwrite table bucketmapjoin_tmp_result
+select /*+mapjoin(a)*/ a.key, a.value, b.value
+from srcbucket_mapjoin a join srcbucket_mapjoin b
 on a.key=b.key;
 
 select count(1) from bucketmapjoin_tmp_result;

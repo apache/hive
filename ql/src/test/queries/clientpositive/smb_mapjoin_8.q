@@ -1,3 +1,4 @@
+set hive.input.format=org.apache.hadoop.hive.ql.io.HiveInputFormat;
 set hive.enforce.bucketing = true;
 set hive.enforce.sorting = true;
 set hive.exec.reducers.max = 1;
