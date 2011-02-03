@@ -749,6 +749,9 @@ Trunk -  Unreleased
     HIVE-1944 Dynamic partition insert creating different directories for the
     same partition during merge (Ning Zhang via namit)
 
+    HIVE-1716 Make TestHBaseCliDriver use dynamic ports to avoid conflicts with
+    already-running services (John Sichi via namit)
+
   TESTS
 
     HIVE-1464. improve  test query performance

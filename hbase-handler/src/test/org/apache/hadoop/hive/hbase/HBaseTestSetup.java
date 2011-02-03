@@ -19,6 +19,8 @@
 package org.apache.hadoop.hive.hbase;
 
 import java.io.File;
+import java.io.IOException;
+import java.net.ServerSocket;
 
 import junit.extensions.TestSetup;
 import junit.framework.Test;
@@ -81,10 +83,21 @@ public class HBaseTestSetup extends TestSetup {
     conf.set("hbase.zookeeper.property.clientPort",
       Integer.toString(zooKeeperPort));
     HBaseConfiguration hbaseConf = new HBaseConfiguration(conf);
+    hbaseConf.setInt("hbase.master.port", findFreePort());
+    hbaseConf.setInt("hbase.master.info.port", -1);
+    hbaseConf.setInt("hbase.regionserver.port", findFreePort());
+    hbaseConf.setInt("hbase.regionserver.info.port", -1);
     hbaseCluster = new MiniHBaseCluster(hbaseConf, NUM_REGIONSERVERS);
     conf.set("hbase.master", hbaseCluster.getHMasterAddress().toString());
     // opening the META table ensures that cluster is running
     new HTable(new HBaseConfiguration(conf), HConstants.META_TABLE_NAME);
+  }
+
+  private static int findFreePort() throws IOException {
+    ServerSocket server = new ServerSocket(0);
+    int port = server.getLocalPort();
+    server.close();
+    return port;
   }
 
   @Override
