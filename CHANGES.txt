@@ -783,6 +783,9 @@ Trunk -  Unreleased
     HIVE-1942. change the value of hive.input.format to CombineHiveInputFormat for tests
     (namit via He Yongqiang)
 
+    HIVE-1952. fix some outputs and make some tests deterministic
+    (namit via He Yongqiang)
+
   TASKS
 
     HIVE-1526. Hive should depend on a release version of Thrift
