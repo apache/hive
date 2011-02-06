@@ -773,7 +773,12 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
     // Initializing a stats publisher
     StatsPublisher statsPublisher = Utilities.getStatsPublisher(jc);
 
-    if (statsPublisher == null || !statsPublisher.connect(hconf)) {
+    if (statsPublisher == null) {
+      // just return, stats gathering should not block the main query
+      LOG.error("StatsPublishing error: StatsPublisher is not initialized.");
+      return;
+    }
+    if (!statsPublisher.connect(hconf)) {
       // just return, stats gathering should not block the main query
       LOG.error("StatsPublishing error: cannot connect to database");
       return;

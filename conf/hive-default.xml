@@ -734,6 +734,30 @@
 </property>
 
 <property>
+  <name>hive.stats.default.publisher</name>
+  <value></value>
+  <description>The Java class (implementing the StatsPublisher interface) that is used by default if hive.stats.dbclass is not JDBC or HBase.</description>
+</property>
+
+<property>
+  <name>hive.stats.default.aggregator</name>
+  <value></value>
+  <description>The Java class (implementing the StatsAggregator interface) that is used by default if hive.stats.dbclass is not JDBC or HBase.</description>
+</property>
+
+<property>
+  <name>hive.stats.jdbc.timeout</name>
+  <value>30</value>
+  <description>Timeout value (number of seconds) used by JDBC connection and statements.</description>
+</property>
+
+<property>
+  <name>hive.stats.jdbc.atomic</name>
+  <value>false</value>
+  <description>If this is set to true then the metastore stats will be updated only if all types of stats (# of rows, # of files, # of bytes etc.) are available. Otherwise metastore stats are updated in a best effort fashion with whatever are available.</description>
+</property>
+
+<property>
   <name>hive.support.concurrency</name>
   <value>false</value>
   <description>Whether hive supports concurrency or not. A zookeeper instance must be up and running for the default hive lock manager to support read-write locks.</description>

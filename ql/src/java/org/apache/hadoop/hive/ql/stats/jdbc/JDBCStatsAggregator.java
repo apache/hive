@@ -37,14 +37,17 @@ public class JDBCStatsAggregator implements StatsAggregator {
   private String connectionString;
   private Configuration hiveconf;
   private final Log LOG = LogFactory.getLog(this.getClass().getName());
+  private int timeout = 30;
 
   public boolean connect(Configuration hiveconf) {
     try {
       this.hiveconf = hiveconf;
+      timeout = HiveConf.getIntVar(hiveconf, HiveConf.ConfVars.HIVE_STATS_JDBC_TIMEOUT);
       connectionString = HiveConf.getVar(hiveconf, HiveConf.ConfVars.HIVESTATSDBCONNECTIONSTRING);
       String driver = HiveConf.getVar(hiveconf, HiveConf.ConfVars.HIVESTATSJDBCDRIVER);
       Class.forName(driver).newInstance();
-      DriverManager.setLoginTimeout(3); // stats should not block
+      // stats is non-blocking -- throw an exception when timeout
+      DriverManager.setLoginTimeout(timeout);
       conn = DriverManager.getConnection(connectionString);
       return true;
     } catch (Exception e) {
@@ -67,6 +70,7 @@ public class JDBCStatsAggregator implements StatsAggregator {
     try {
       long retval = 0;
       Statement stmt = conn.createStatement();
+      stmt.setQueryTimeout(timeout);
       String select =
         "SELECT SUM" + "(" + JDBCStatsSetupConstants.PART_STAT_ROW_COUNT_COLUMN_NAME + ")" +
         " FROM " + JDBCStatsSetupConstants.PART_STAT_TABLE_NAME +

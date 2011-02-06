@@ -172,6 +172,9 @@ Trunk -  Unreleased
     HIVE-1956 Provide DFS initialization script for Hive
     (Bruno Mahe via namit)
 
+    HIVE-1961 Make Stats gathering more flexible with timeout and atomicity
+    (Ning Zhang via namit)
+
   IMPROVEMENTS
 
     HIVE-1235 use Ivy for fetching HBase dependencies (John Sichi via cws)

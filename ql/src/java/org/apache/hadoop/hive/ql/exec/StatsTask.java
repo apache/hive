@@ -226,6 +226,11 @@ public class StatsTask extends Task<StatsWork> implements Serializable {
   }
 
   private int aggregateStats() {
+
+    String statsImplementationClass = HiveConf.getVar(conf, HiveConf.ConfVars.HIVESTATSDBCLASS);
+    StatsFactory.setImplementation(statsImplementationClass, conf);
+    StatsAggregator statsAggregator = StatsFactory.getStatsAggregator();
+
     try {
       // Stats setup:
       Warehouse wh = new Warehouse(conf);
@@ -233,18 +238,9 @@ public class StatsTask extends Task<StatsWork> implements Serializable {
       FileStatus[] fileStatus;
 
       // manufacture a StatsAggregator
-      StatsAggregator statsAggregator;
-      String statsImplementationClass = HiveConf.getVar(conf, HiveConf.ConfVars.HIVESTATSDBCLASS);
-      StatsFactory.setImplementation(statsImplementationClass, conf);
-      statsAggregator = StatsFactory.getStatsAggregator();
       if (!statsAggregator.connect(conf)) {
-        // this should not fail the whole job, return 0 so that the job won't fail.
-        console.printInfo("[WARNING] Could not update table/partition level stats.",
-            "StatsAggregator.connect() failed: stats class = " +
-            statsImplementationClass);
-        return 0;
+        throw new HiveException("StatsAggregator connect failed " + statsImplementationClass);
       }
-
 
       TableStatistics tblStats = new TableStatistics();
 
@@ -287,6 +283,10 @@ public class StatsTask extends Task<StatsWork> implements Serializable {
         String rows = statsAggregator.aggregateStats(work.getAggKey(), StatsSetupConst.ROW_COUNT);
         if (rows != null) {
           tblStats.setNumRows(Long.parseLong(rows));
+        } else {
+          if (HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVE_STATS_ATOMIC)) {
+            throw new HiveException("StatsAggregator failed to get numRows.");
+          }
         }
       } else {
         // Partitioned table:
@@ -304,6 +304,10 @@ public class StatsTask extends Task<StatsWork> implements Serializable {
           String rows = statsAggregator.aggregateStats(partitionID, StatsSetupConst.ROW_COUNT);
           if (rows != null) {
             newPartStats.setNumRows(Long.parseLong(rows));
+          } else {
+            if (HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVE_STATS_ATOMIC)) {
+              throw new HiveException("StatsAggregator failed to get numRows.");
+            }
           }
 
           fileSys = partn.getPartitionPath().getFileSystem(conf);
@@ -358,7 +362,6 @@ public class StatsTask extends Task<StatsWork> implements Serializable {
         }
       }
 
-      statsAggregator.closeConnection();
 
       //
       // write table stats to metastore
@@ -375,15 +378,16 @@ public class StatsTask extends Task<StatsWork> implements Serializable {
 
       console.printInfo("Table " + table.getTableName() + " stats: [" + tblStats.toString() + ']');
 
-      return 0;
-    }
-    catch (Exception e) {
+    } catch (Exception e) {
       // return 0 since StatsTask should not fail the whole job
       console.printInfo("[Warning] could not update stats.",
           "Failed with exception " + e.getMessage() + "\n"
           + StringUtils.stringifyException(e));
-      return 0;
+    } finally {
+      statsAggregator.closeConnection();
     }
+    // StatsTask always return 0 so that the whole job won't fail
+    return 0;
   }
 
   /**
