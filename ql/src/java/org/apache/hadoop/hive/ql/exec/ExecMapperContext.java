@@ -107,6 +107,7 @@ public class ExecMapperContext {
   }
 
   public String getCurrentInputFile() {
+    currentInputFile = this.ioCxt.getInputFile();
     return currentInputFile;
   }
 

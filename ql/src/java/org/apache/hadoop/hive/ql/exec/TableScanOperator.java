@@ -51,6 +51,7 @@ public class TableScanOperator extends Operator<TableScanDesc> implements
   private transient Configuration hconf;
   private transient Stat stat;
   private transient String partitionSpecs;
+  private transient boolean inputFileChanged = false;
   private TableDesc tableDesc;
 
 
@@ -77,8 +78,16 @@ public class TableScanOperator extends Operator<TableScanDesc> implements
     forward(row, inputObjInspectors[tag]);
   }
 
+  // Change the table partition for collecting stats
+  @Override
+  public void cleanUpInputFileChangedOp() throws HiveException {
+    inputFileChanged = true;
+  }
+
   private void gatherStats(Object row) {
-    if (stat == null) { // first row/call
+    // first row/call or a new partition
+    if ((stat == null) || inputFileChanged) {
+      inputFileChanged = false;
       stat = new Stat();
       if (conf.getPartColumns() == null || conf.getPartColumns().size() == 0) {
         partitionSpecs = "";
@@ -122,6 +131,8 @@ public class TableScanOperator extends Operator<TableScanDesc> implements
   @Override
   protected void initializeOp(Configuration hconf) throws HiveException {
     initializeChildren(hconf);
+    inputFileChanged = false;
+
     if (conf == null) {
       return;
     }

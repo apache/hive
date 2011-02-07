@@ -373,6 +373,11 @@ public class HiveConf extends Configuration {
     HIVE_ERROR_ON_EMPTY_PARTITION("hive.error.on.empty.partition", false),
 
     HIVE_INDEX_IGNORE_HDFS_LOC("hive.index.compact.file.ignore.hdfs", false),
+
+    // temporary variable for testing. This is added just to turn off this feature in case of a bug in
+    // deployment. It has not been documented in hive-default.xml intentionally, this should be removed
+    // once the feature is stable
+    HIVE_MAPPER_CANNOT_SPAN_MULTIPLE_PARTITIONS("hive.mapper.cannot.span.multiple.partitions", false),
     ;
 
 

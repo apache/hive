@@ -20,7 +20,9 @@ package org.apache.hadoop.hive.ql.io;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
@@ -31,6 +33,7 @@ import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.exec.FileSinkOperator.RecordWriter;
+import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.plan.FileSinkDesc;
@@ -244,7 +247,7 @@ public final class HiveFileFormatUtils {
     }
     return null;
   }
-  
+
   public static PartitionDesc getPartitionDescFromPathRecursively(
       Map<String, PartitionDesc> pathToPartitionInfo, Path dir,
       Map<Map<String, PartitionDesc>, Map<String, PartitionDesc>> cacheMap)
@@ -252,7 +255,7 @@ public final class HiveFileFormatUtils {
     return getPartitionDescFromPathRecursively(pathToPartitionInfo, dir,
         cacheMap, false);
   }
-  
+
   public static PartitionDesc getPartitionDescFromPathRecursively(
       Map<String, PartitionDesc> pathToPartitionInfo, Path dir,
       Map<Map<String, PartitionDesc>, Map<String, PartitionDesc>> cacheMap,
@@ -267,11 +270,11 @@ public final class HiveFileFormatUtils {
       if (cacheMap != null) {
         newPathToPartitionInfo = cacheMap.get(pathToPartitionInfo);
       }
-      
+
       if (newPathToPartitionInfo == null) { // still null
         newPathToPartitionInfo = new HashMap<String, PartitionDesc>();
         populateNewPartitionDesc(pathToPartitionInfo, newPathToPartitionInfo);
-        
+
         if (cacheMap != null) {
           cacheMap.put(pathToPartitionInfo, newPathToPartitionInfo);
         }
@@ -309,7 +312,7 @@ public final class HiveFileFormatUtils {
       //      LOG.warn("exact match not found, try ripping input path's theme and authority");
       part = pathToPartitionInfo.get(dirPath);
     }
-    
+
     if (part == null) {
       String dirStr = dir.toString();
       int dirPathIndex = dirPath.lastIndexOf(File.separator);
@@ -331,6 +334,68 @@ public final class HiveFileFormatUtils {
       }
     }
     return part;
+  }
+
+  private static boolean foundAlias(Map<String, ArrayList<String>> pathToAliases,
+                                    String path) {
+    List<String> aliases = pathToAliases.get(path);
+    if ((aliases == null) || (aliases.isEmpty())) {
+      return false;
+    }
+    return true;
+  }
+
+  private static String getMatchingPath(Map<String, ArrayList<String>> pathToAliases,
+                                        Path dir) {
+    // First find the path to be searched
+    String path = dir.toString();
+    if (foundAlias(pathToAliases, path)) {
+      return path;
+    }
+
+    String dirPath = dir.toUri().getPath();
+    if (foundAlias(pathToAliases, dirPath)) {
+      return dirPath;
+    }
+    path = dirPath;
+
+    String dirStr = dir.toString();
+    int dirPathIndex = dirPath.lastIndexOf(File.separator);
+    int dirStrIndex = dirStr.lastIndexOf(File.separator);
+    while (dirPathIndex >= 0 && dirStrIndex >= 0) {
+      dirStr = dirStr.substring(0, dirStrIndex);
+      dirPath = dirPath.substring(0, dirPathIndex);
+      //first try full match
+      if (foundAlias(pathToAliases, dirStr)) {
+        return dirStr;
+      }
+      if (foundAlias(pathToAliases, dirPath)) {
+        return dirPath;
+      }
+      dirPathIndex = dirPath.lastIndexOf(File.separator);
+      dirStrIndex = dirStr.lastIndexOf(File.separator);
+    }
+    return null;
+  }
+
+  /**
+   * Get the list of operatators from the opeerator tree that are needed for the path
+   * @param pathToAliases  mapping from path to aliases
+   * @param aliasToWork    The operator tree to be invoked for a given alias
+   * @param dir            The path to look for
+   **/
+  public static List<Operator<? extends Serializable>> doGetAliasesFromPath(
+    Map<String, ArrayList<String>> pathToAliases,
+    Map<String, Operator<? extends Serializable>> aliasToWork, Path dir) {
+
+    String path = getMatchingPath(pathToAliases, dir);
+    List<Operator<? extends Serializable>> opList =
+      new ArrayList<Operator<? extends Serializable>>();
+    List<String> aliases = pathToAliases.get(path);
+    for (String alias : aliases) {
+      opList.add(aliasToWork.get(alias));
+    }
+    return opList;
   }
 
   private HiveFileFormatUtils() {

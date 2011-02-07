@@ -194,6 +194,23 @@ public class MapJoinOperator extends AbstractMapJoinOperator<MapJoinDesc> implem
     }
   }
 
+  // Load the hash table
+  @Override
+  public void cleanUpInputFileChangedOp() throws HiveException {
+    try {
+      if (firstRow) {
+        // generate the map metadata
+        generateMapMetaData();
+        firstRow = false;
+      }
+
+      loadHashTable();
+    } catch (SerDeException e) {
+      e.printStackTrace();
+      throw new HiveException(e);
+    }
+  }
+
   @Override
   public void processOp(Object row, int tag) throws HiveException {
 
@@ -202,9 +219,6 @@ public class MapJoinOperator extends AbstractMapJoinOperator<MapJoinDesc> implem
         // generate the map metadata
         generateMapMetaData();
         firstRow = false;
-      }
-      if (this.getExecContext().inputFileChanged()) {
-        loadHashTable();
       }
 
       // get alias

@@ -58,6 +58,7 @@ import org.apache.hadoop.hive.ql.plan.TableDesc;
 import org.apache.hadoop.hive.ql.plan.TableScanDesc;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
+import org.apache.hadoop.hive.ql.metadata.HiveException;
 
 /**
  * GenMRSkewJoinProcessor.
@@ -232,6 +233,13 @@ public final class GenMRSkewJoinProcessor {
     for (int i = 0; i < numAliases - 1; i++) {
       Byte src = tags[i];
       MapredWork newPlan = PlanUtils.getMapRedWork();
+
+      // This code has been only added for testing
+      boolean mapperCannotSpanPartns =
+        parseCtx.getConf().getBoolVar(
+          HiveConf.ConfVars.HIVE_MAPPER_CANNOT_SPAN_MULTIPLE_PARTITIONS);
+      newPlan.setMapperCannotSpanPartns(mapperCannotSpanPartns);
+
       MapredWork clonePlan = null;
       try {
         String xmlPlan = currPlan.toXML();

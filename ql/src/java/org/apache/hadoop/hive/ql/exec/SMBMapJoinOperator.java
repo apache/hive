@@ -67,6 +67,7 @@ public class SMBMapJoinOperator extends AbstractMapJoinOperator<SMBJoinDesc> imp
   private transient boolean[] fetchOpDone;
   private transient boolean[] foundNextKeyGroup;
   transient boolean firstFetchHappened = false;
+  private transient boolean inputFileChanged = false;
   transient boolean localWorkInited = false;
 
   public SMBMapJoinOperator() {
@@ -85,6 +86,7 @@ public class SMBMapJoinOperator extends AbstractMapJoinOperator<SMBJoinDesc> imp
     closeCalled = false;
 
     this.firstFetchHappened = false;
+    this.inputFileChanged = false;
 
     // get the largest table alias from order
     int maxAlias = 0;
@@ -177,11 +179,17 @@ public class SMBMapJoinOperator extends AbstractMapJoinOperator<SMBJoinDesc> imp
     }
   }
 
+  // The input file has changed - load the correct hash bucket
+  @Override
+  public void cleanUpInputFileChangedOp() throws HiveException {
+    inputFileChanged = true;
+  }
+
   @Override
   public void processOp(Object row, int tag) throws HiveException {
 
     if (tag == posBigTable) {
-      if (this.getExecContext().inputFileChanged()) {
+      if (inputFileChanged) {
         if (firstFetchHappened) {
           // we need to first join and flush out data left by the previous file.
           joinFinalLeftData();
@@ -194,6 +202,7 @@ public class SMBMapJoinOperator extends AbstractMapJoinOperator<SMBJoinDesc> imp
           setUpFetchOpContext(fetchOp, alias);
         }
         firstFetchHappened = false;
+        inputFileChanged = false;
       }
     }
 
@@ -531,8 +540,7 @@ public class SMBMapJoinOperator extends AbstractMapJoinOperator<SMBJoinDesc> imp
     }
     closeCalled = true;
 
-    if ((this.getExecContext() != null && this.getExecContext().inputFileChanged())
-        || !firstFetchHappened) {
+    if (inputFileChanged || !firstFetchHappened) {
       //set up the fetch operator for the new input file.
       for (Map.Entry<String, FetchOperator> entry : fetchOperators.entrySet()) {
         String alias = entry.getKey();
@@ -546,6 +554,7 @@ public class SMBMapJoinOperator extends AbstractMapJoinOperator<SMBJoinDesc> imp
           fetchNextGroup(t);
         }
       }
+      inputFileChanged = false;
     }
 
     joinFinalLeftData();

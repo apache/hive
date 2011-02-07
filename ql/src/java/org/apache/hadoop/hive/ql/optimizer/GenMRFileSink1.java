@@ -426,6 +426,7 @@ public class GenMRFileSink1 implements NodeProcessor {
     cplan.getPathToPartitionInfo().put(inputDir, new PartitionDesc(tblDesc, null));
     cplan.setNumReduceTasks(0);
     cplan.getAliasToWork().put(inputDir, topOp);
+    cplan.setMapperCannotSpanPartns(true);
 
     return cplan;
   }

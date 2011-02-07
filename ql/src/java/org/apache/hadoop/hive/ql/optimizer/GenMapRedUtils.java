@@ -765,6 +765,11 @@ public final class GenMapRedUtils {
    */
   public static MapredWork getMapRedWork(HiveConf conf) {
     MapredWork work = new MapredWork();
+    // This code has been only added for testing
+    boolean mapperCannotSpanPartns =
+      conf.getBoolVar(
+        HiveConf.ConfVars.HIVE_MAPPER_CANNOT_SPAN_MULTIPLE_PARTITIONS);
+    work.setMapperCannotSpanPartns(mapperCannotSpanPartns);
     work.setPathToAliases(new LinkedHashMap<String, ArrayList<String>>());
     work.setPathToPartitionInfo(new LinkedHashMap<String, PartitionDesc>());
     work.setAliasToWork(new LinkedHashMap<String, Operator<? extends Serializable>>());

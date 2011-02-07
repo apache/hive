@@ -29,6 +29,9 @@ import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.parse.OpParseContext;
 import org.apache.hadoop.hive.ql.parse.QBJoinTree;
+import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.ql.metadata.Hive;
+import org.apache.hadoop.hive.ql.metadata.HiveException;
 
 /**
  * MapredWork.
@@ -74,6 +77,8 @@ public class MapredWork implements Serializable {
   private LinkedHashMap<Operator<? extends Serializable>, OpParseContext> opParseCtxMap;
 
   private QBJoinTree joinTree;
+
+  private boolean mapperCannotSpanPartns;
 
   public MapredWork() {
     aliasToPartnInfo = new LinkedHashMap<String, PartitionDesc>();
@@ -337,6 +342,14 @@ public class MapredWork implements Serializable {
 
   public boolean isGatheringStats() {
     return this.gatheringStats;
+  }
+
+  public void setMapperCannotSpanPartns(boolean mapperCannotSpanPartns) {
+    this.mapperCannotSpanPartns = mapperCannotSpanPartns;
+  }
+
+  public boolean isMapperCannotSpanPartns() {
+    return this.mapperCannotSpanPartns;
   }
 
   public String getTmpHDFSFileURI() {

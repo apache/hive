@@ -1236,4 +1236,22 @@ public abstract class Operator<T extends Serializable> implements Serializable,
       }
     }
   }
+
+  // The input file has changed - every operator can invoke specific action
+  // for each input file
+  public void cleanUpInputFileChanged() throws HiveException {
+    this.cleanUpInputFileChangedOp();
+    if(this.childOperators != null) {
+      for (int i = 0; i<this.childOperators.size();i++) {
+        Operator<? extends Serializable> op = this.childOperators.get(i);
+        op.cleanUpInputFileChanged();
+      }
+    }
+  }
+
+  // If a operator needs to invoke specific cleanup, that operator can override
+  // this method
+  public void cleanUpInputFileChangedOp() throws HiveException {
+  }
+
 }

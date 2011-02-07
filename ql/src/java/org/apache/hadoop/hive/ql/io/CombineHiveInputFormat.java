@@ -22,9 +22,12 @@ import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.File;
 import java.io.IOException;
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.LinkedList;
+import java.util.List;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Queue;
 import java.util.Set;
@@ -50,9 +53,7 @@ import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.mapred.RecordReader;
 import org.apache.hadoop.mapred.Reporter;
 import org.apache.hadoop.mapred.TextInputFormat;
-
-
-
+import org.apache.hadoop.hive.ql.exec.Operator;
 
 /**
  * CombineHiveInputFormat is a parameterized InputFormat which looks at the path
@@ -211,7 +212,37 @@ public class CombineHiveInputFormat<K extends WritableComparable, V extends Writ
       out.writeUTF(inputFormatClassName);
     }
   }
-  
+
+  // Splits are not shared across different partitions with different input formats.
+  // For example, 2 partitions (1 sequencefile and 1 rcfile) will have 2 different splits
+  private static class CombinePathInputFormat {
+    private List<Operator<? extends Serializable>> opList;
+    private String inputFormatClassName;
+
+    public CombinePathInputFormat(List<Operator<? extends Serializable>> opList,
+                                  String inputFormatClassName) {
+      this.opList = opList;
+      this.inputFormatClassName = inputFormatClassName;
+    }
+
+    public boolean equals(Object o) {
+      if (o instanceof CombinePathInputFormat) {
+        CombinePathInputFormat mObj = (CombinePathInputFormat)o;
+        if (mObj == null) {
+          return false;
+        }
+        return opList.equals(mObj.opList) &&
+          inputFormatClassName.equals(mObj.inputFormatClassName);
+      }
+      return false;
+    }
+
+    @Override
+    public int hashCode() {
+      return (opList == null) ? 0 : opList.hashCode();
+    }
+  }
+
   /**
    * Create Hive splits based on CombineFileSplit.
    */
@@ -219,6 +250,9 @@ public class CombineHiveInputFormat<K extends WritableComparable, V extends Writ
   public InputSplit[] getSplits(JobConf job, int numSplits) throws IOException {
 
     init(job);
+    Map<String, ArrayList<String>> pathToAliases = mrwork.getPathToAliases();
+    Map<String, Operator<? extends Serializable>> aliasToWork =
+      mrwork.getAliasToWork();
     CombineFileInputFormatShim combine = ShimLoader.getHadoopShims()
         .getCombineFileInputFormat();
 
@@ -234,7 +268,10 @@ public class CombineHiveInputFormat<K extends WritableComparable, V extends Writ
     // combine splits only from same tables and same partitions. Do not combine splits from multiple
     // tables or multiple partitions.
     Path[] paths = combine.getInputPathsShim(job);
+    Map<CombinePathInputFormat, CombineFilter> poolMap =
+      new HashMap<CombinePathInputFormat, CombineFilter>();
     Set<Path> poolSet = new HashSet<Path>();
+
     for (Path path : paths) {
 
       PartitionDesc part = HiveFileFormatUtils.getPartitionDescFromPathRecursively(
@@ -246,6 +283,7 @@ public class CombineHiveInputFormat<K extends WritableComparable, V extends Writ
 
       // Use HiveInputFormat if any of the paths is not splittable
       Class inputFormatClass = part.getInputFileFormatClass();
+      String inputFormatClassName = inputFormatClass.getName();
       InputFormat inputFormat = getInputFormatFromCache(inputFormatClass, job);
 
       // Since there is no easy way of knowing whether MAPREDUCE-1597 is present in the tree or not,
@@ -288,25 +326,54 @@ public class CombineHiveInputFormat<K extends WritableComparable, V extends Writ
         return super.getSplits(job, numSplits);
       }
 
+      Path filterPath = path;
+
       // In the case of tablesample, the input paths are pointing to files rather than directories.
       // We need to get the parent directory as the filtering path so that all files in the same
       // parent directory will be grouped into one pool but not files from different parent
       // directories. This guarantees that a split will combine all files in the same partition
-      // but won't cross multiple partitions.
-      Path filterPath = path;
-      if (!path.getFileSystem(job).getFileStatus(path).isDir()) { // path is not directory
+      // but won't cross multiple partitions if the user has asked so.
+      if (mrwork.isMapperCannotSpanPartns() &&
+          !path.getFileSystem(job).getFileStatus(path).isDir()) { // path is not directory
         filterPath = path.getParent();
       }
-      if (!poolSet.contains(filterPath)) {
-        LOG.info("CombineHiveInputSplit creating pool for " + path +
-            "; using filter path " + filterPath);
-        combine.createPool(job, new CombineFilter(filterPath));
+
+      // Does a pool exist for this path already
+      CombineFilter f = null;
+      List<Operator<? extends Serializable>> opList = null;
+      boolean done = false;
+
+      if (!mrwork.isMapperCannotSpanPartns()) {
+        opList = HiveFileFormatUtils.doGetAliasesFromPath(
+                   pathToAliases, aliasToWork, filterPath);
+        f = poolMap.get(new CombinePathInputFormat(opList, inputFormatClassName));
+      }
+      else {
+        if (poolSet.contains(filterPath)) {
+          LOG.info("CombineHiveInputSplit: pool is already created for " + path +
+                   "; using filter path " + filterPath);
+          done = true;
+        }
         poolSet.add(filterPath);
-      } else {
-        LOG.info("CombineHiveInputSplit: pool is already created for " + path +
-            "; using filter path " + filterPath);
+      }
+
+      if (!done) {
+        if (f == null) {
+          f = new CombineFilter(filterPath);
+          LOG.info("CombineHiveInputSplit creating pool for " + path +
+                   "; using filter path " + filterPath);
+          combine.createPool(job, f);
+          if (!mrwork.isMapperCannotSpanPartns()) {
+            poolMap.put(new CombinePathInputFormat(opList, inputFormatClassName), f);
+          }
+        } else {
+          LOG.info("CombineHiveInputSplit: pool is already created for " + path +
+                   "; using filter path " + filterPath);
+          f.addPath(filterPath);
+        }
       }
     }
+
     InputSplitShim[] iss = combine.getSplits(job, 1);
     for (InputSplitShim is : iss) {
       CombineHiveInputSplit csplit = new CombineHiveInputSplit(job, is);
@@ -314,7 +381,6 @@ public class CombineHiveInputFormat<K extends WritableComparable, V extends Writ
     }
 
     LOG.info("number of splits " + result.size());
-
     return result.toArray(new CombineHiveInputSplit[result.size()]);
   }
 
@@ -351,7 +417,7 @@ public class CombineHiveInputFormat<K extends WritableComparable, V extends Writ
   }
 
   static class CombineFilter implements PathFilter {
-    private final String pString;
+    private List<String> pStrings = new ArrayList<String>();
 
     // store a path prefix in this TestFilter
     // PRECONDITION: p should always be a directory
@@ -359,21 +425,33 @@ public class CombineHiveInputFormat<K extends WritableComparable, V extends Writ
       // we need to keep the path part only because the Hadoop CombineFileInputFormat will
       // pass the path part only to accept().
       // Trailing the path with a separator to prevent partial matching.
-      pString = p.toUri().getPath().toString() + File.separator;;
+      addPath(p);
+    }
+
+    public void addPath(Path p) {
+      String pString = p.toUri().getPath().toString() + File.separator;;
+      pStrings.add(pString);
     }
 
     // returns true if the specified path matches the prefix stored
     // in this TestFilter.
     public boolean accept(Path path) {
-      if (path.toString().indexOf(pString) == 0) {
-        return true;
+      for (String pString : pStrings) {
+        if (path.toString().indexOf(pString) == 0) {
+          return true;
+        }
       }
       return false;
     }
 
     @Override
     public String toString() {
-      return "PathFilter:" + pString;
+      StringBuilder s = new StringBuilder();
+      s.append("PathFilter: ");
+      for (String pString : pStrings) {
+        s.append(pString + " ");
+      }
+      return s.toString();
     }
   }
 }
