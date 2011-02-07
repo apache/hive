@@ -38,7 +38,4 @@ where a.k1 > 20
 subq;
 
 
-select * from dst_union22 where ds = '2' order by k1;
-
-
-
+select * from dst_union22 where ds = '2' order by k1, k2, k3, k4;

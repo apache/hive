@@ -761,6 +761,9 @@ Trunk -  Unreleased
     HIVE-1951 input16_cc.q is failing in testminimrclidriver
     (He Yongqiang via namit)
 
+    HIVE-1964 Add fully deterministic ORDER BY in test union22.q and input40.q
+    (John Sichi via namit)
+
   TESTS
 
     HIVE-1464. improve  test query performance
