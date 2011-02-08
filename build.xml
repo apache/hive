@@ -36,6 +36,7 @@
   <property name="ql.test.query.dir" location="${basedir}/ql/src/test/queries"/>
   <property name="test.data.dir" location="${basedir}/data"/>
   <property name="test.build.dir" value="${build.dir.hive}/test"/>
+  <property name="test.continue.on.failure" value="true"/>
   <property name="build.docs" value="${target.dir}/docs"/>
   <property name="build.javadoc" value="${build.docs}/api"/>
   <property name="docs.src" value="${hive.root}/docs"/>
@@ -57,6 +58,13 @@
     <isset property="offline"/>
   </condition>
 
+  <!-- ForTask is not defined in net/sf/antcontrib/antcontrib.properties! -->
+  <taskdef name="for" classname="net.sf.antcontrib.logic.ForTask">
+    <classpath>
+      <pathelement location="${hive.root}/testlibs/ant-contrib-1.0b3.jar"/>
+    </classpath>
+  </taskdef>
+  
   <!-- ====================================================== -->
   <!-- Macro definitions                                      -->
   <!-- ====================================================== -->
@@ -112,17 +120,6 @@
         <property name="build.dir.hive" location="${build.dir.hive}"/>
         <property name="is-offline" value="${is-offline}"/>
         <filelist dir="." files="ant/build.xml,shims/build.xml,common/build.xml,serde/build.xml,metastore/build.xml,ql/build.xml,cli/build.xml,contrib/build.xml,service/build.xml,jdbc/build.xml,hwi/build.xml,hbase-handler/build.xml,ant/build.xml"/>
-      </subant>
-    </sequential>
-  </macrodef>
-
-  <macrodef name="iterate-test-dirs">
-    <attribute name="target"/>
-    <sequential>
-      <subant target="@{target}">
-        <property name="build.dir.hive" location="${build.dir.hive}"/>
-        <property name="is-offline" value="${is-offline}"/>
-        <filelist dir="." files="common/build.xml,serde/build.xml,metastore/build.xml,ql/build.xml,cli/build.xml,contrib/build.xml,service/build.xml,jdbc/build.xml,hwi/build.xml,hbase-handler/build.xml"/>
       </subant>
     </sequential>
   </macrodef>
@@ -204,13 +201,21 @@
     <iterate-test target="compile-test"/>
   </target>
 
-  <target name="test"
-          depends="clean-test,jar"
-          description="Run tests">
+  <target name="test" depends="clean-test,jar-test" description="Run tests">
     <antcall target="test-shims">
       <param name="hadoop.version.ant-internal" value="${hadoop.security.version}" />
     </antcall>
-    <iterate-test-dirs target="test"/>
+    <for keepgoing="${test.continue.on.failure}" param="file">
+      <path>
+        <fileset dir="." includes="*/build.xml" excludes="ant/*,odbc/*"/>
+      </path>
+      <sequential>
+        <ant antfile="@{file}" target="test" inheritAll="false" inheritRefs="true">
+          <property name="build.dir.hive" location="${build.dir.hive}"/>
+          <property name="is-offline" value="${is-offline}"/>
+        </ant>
+      </sequential>
+    </for>
   </target>
 
   <!-- create an html report from junit output files -->
