@@ -178,6 +178,9 @@ Trunk -  Unreleased
     HIVE-1900 a mapper should be able to span multiple partitions
     (namit via He Yongqiang)
 
+    HIVE-1818 Call frequency and duration metrics for HiveMetaStore via jmx
+    (Sushanth Sowmyan via pauly)
+
   IMPROVEMENTS
 
     HIVE-1235 use Ivy for fetching HBase dependencies (John Sichi via cws)

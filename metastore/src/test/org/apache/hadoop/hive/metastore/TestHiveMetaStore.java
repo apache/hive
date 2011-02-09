@@ -64,6 +64,7 @@ public abstract class TestHiveMetaStore extends TestCase {
     warehouse = new Warehouse(hiveConf);
 
     // set some values to use for getting conf. vars
+    hiveConf.set("hive.metastore.metrics.enabled","true");
     hiveConf.set("hive.key1", "value1");
     hiveConf.set("hive.key2", "http://www.example.com");
     hiveConf.set("hive.key3", "");
