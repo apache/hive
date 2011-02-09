@@ -181,6 +181,10 @@ Trunk -  Unreleased
     HIVE-1818 Call frequency and duration metrics for HiveMetaStore via jmx
     (Sushanth Sowmyan via pauly)
 
+    HIVE-1971 Verbose/echo mode for the Hive CLI
+    (Jonathan Natkins via Ning Zhang)
+    
+
   IMPROVEMENTS
 
     HIVE-1235 use Ivy for fetching HBase dependencies (John Sichi via cws)

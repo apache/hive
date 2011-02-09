@@ -47,7 +47,7 @@ public class OptionsProcessor {
 
   private final Parser parser = new Parser();
   private final Option confOptions, initFilesOption, isSilentOption,
-    execOption, fileOption, isHelpOption;
+    execOption, fileOption, isHelpOption, isVerboseOption;
 
   /**
    * Shamelessly cloned from Hadoop streaming take in multiple -hiveconf x=y parameters.
@@ -150,6 +150,9 @@ public class OptionsProcessor {
     // -S
     isSilentOption = createBoolOption(builder, "silent", "S", "silent mode");
 
+    // -v
+    isVerboseOption = createBoolOption(builder, "verbose", "v", "verbose mode");
+
     // -help
     isHelpOption = createBoolOption(builder, "help", "h", "help");
 
@@ -164,7 +167,8 @@ public class OptionsProcessor {
     Group allOptions =
       new GroupBuilder().withOption(confOptions).withOption(initFilesOption)
       .withOption(isSilentOption).withOption(isHelpOption)
-      .withOption(execOption).withOption(fileOption).create();
+      .withOption(execOption).withOption(fileOption)
+      .withOption(isVerboseOption).create();
     parser.setGroup(allOptions);
   }
 
@@ -196,6 +200,8 @@ public class OptionsProcessor {
     ss.execString = (String) cmdLine.getValue(execOption);
     // -f
     ss.fileName = (String) cmdLine.getValue(fileOption);
+    // -v
+    ss.setIsVerbose(cmdLine.hasOption(isVerboseOption));
     // -i
     List<String> initFiles = (List<String>) cmdLine.getValue(initFilesOption);
     if (null != initFiles) {
@@ -229,12 +235,13 @@ public class OptionsProcessor {
     System.err.println("");
     System.err.println(
       "Usage: hive [--config confdir] [-hiveconf x=y]* [-i <init-filename>]*"
-      + " [-f <filename>|-e <query-string>] [-S]");
+      + " [-f <filename>|-e <query-string>] [-S] [-v]");
     System.err.println("");
     System.err.println("  -i <filename>             init Sql file");
     System.err.println("  -e 'quoted query string'  Sql from command line");
     System.err.println("  -f <filename>             Sql from files");
     System.err.println("  -S                        Silent mode in interactive shell");
+    System.err.println("  -v                        Verbose mode (echo executed Sql to the console)");
     System.err.println("");
     System.err.println("-e and -f cannot be specified together. In the absence of these");
     System.err.println(" options, interactive shell is started.");

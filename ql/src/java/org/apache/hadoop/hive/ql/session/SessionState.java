@@ -68,6 +68,11 @@ public class SessionState {
    */
   protected boolean isSilent;
 
+  /**
+   * verbose mode
+   */
+  protected boolean isVerbose;
+
   /*
    * HiveHistory Object
    */
@@ -125,6 +130,14 @@ public class SessionState {
       conf.setBoolVar(HiveConf.ConfVars.HIVESESSIONSILENT, isSilent);
     }
     this.isSilent = isSilent;
+  }
+
+  public boolean getIsVerbose() {
+    return isVerbose;
+  }
+
+  public void setIsVerbose(boolean isVerbose) {
+    this.isVerbose = isVerbose;
   }
 
   public SessionState() {

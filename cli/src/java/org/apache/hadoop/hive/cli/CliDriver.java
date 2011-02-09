@@ -157,6 +157,9 @@ public class CliDriver {
           Driver qp = (Driver) proc;
           PrintStream out = ss.out;
           long start = System.currentTimeMillis();
+          if (ss.getIsVerbose()) {
+            out.println(cmd);
+          }
 
           ret = qp.run(cmd).getResponseCode();
           if (ret != 0) {
@@ -208,6 +211,9 @@ public class CliDriver {
           }
 
         } else {
+          if (ss.getIsVerbose()) {
+            ss.out.println(tokens[0] + " " + cmd_1);
+          }
           ret = proc.run(cmd_1).getResponseCode();
         }
       }
