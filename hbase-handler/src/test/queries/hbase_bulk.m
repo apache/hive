@@ -1,6 +1,8 @@
 drop table hbsort;
 drop table hbpartition;
 
+set hive.input.format=org.apache.hadoop.hive.ql.io.HiveInputFormat;
+
 -- this is a dummy table used for controlling how the HFiles are
 -- created
 create table hbsort(key string, val string, val2 string)

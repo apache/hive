@@ -770,6 +770,9 @@ Trunk -  Unreleased
     HIVE-1964 Add fully deterministic ORDER BY in test union22.q and input40.q
     (John Sichi via namit)
 
+    HIVE-1979 set hive.input.format in hbase_bulk.m
+    (John Sichi via namit)
+
   TESTS
 
     HIVE-1464. improve  test query performance
