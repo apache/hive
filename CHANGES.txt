@@ -184,6 +184,8 @@ Trunk -  Unreleased
     HIVE-1971 Verbose/echo mode for the Hive CLI
     (Jonathan Natkins via Ning Zhang)
 
+    HIVE-1948 Add audit logging in the metastore
+    (Devaraj Das via namit)
 
   IMPROVEMENTS
 

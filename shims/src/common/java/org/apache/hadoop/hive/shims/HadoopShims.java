@@ -158,6 +158,10 @@ public interface HadoopShims {
    */
   public UserGroupInformation getUGIForConf(Configuration conf) throws LoginException, IOException;
 
+  /**
+   * Return true if the Shim is based on Hadoop Security APIs.
+   */
+  public boolean isSecureShimImpl();
 
   /**
    * Get the string form of the token given a token signature.

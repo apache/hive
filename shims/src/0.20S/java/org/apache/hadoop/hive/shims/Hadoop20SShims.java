@@ -446,6 +446,11 @@ public class Hadoop20SShims implements HadoopShims {
   public UserGroupInformation getUGIForConf(Configuration conf) throws IOException {
     return UserGroupInformation.getCurrentUser();
   }
+  
+  @Override
+  public boolean isSecureShimImpl() {
+    return true;
+  }
 
   @Override
   public String getTokenStrForm(String tokenSignature) throws IOException {

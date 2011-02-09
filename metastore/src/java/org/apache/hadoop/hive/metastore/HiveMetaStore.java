@@ -24,7 +24,10 @@ import static org.apache.hadoop.hive.metastore.MetaStoreUtils.DEFAULT_DATABASE_N
 import static org.apache.hadoop.hive.metastore.MetaStoreUtils.validateName;
 
 import java.io.IOException;
+import java.net.InetAddress;
+import java.net.Socket;
 import java.util.ArrayList;
+import java.util.Formatter;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -77,15 +80,18 @@ import org.apache.hadoop.hive.serde2.SerDeException;
 import org.apache.hadoop.hive.serde2.SerDeUtils;
 import org.apache.hadoop.hive.shims.ShimLoader;
 import org.apache.hadoop.hive.thrift.HadoopThriftAuthBridge;
+import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.hadoop.util.ReflectionUtils;
 import org.apache.hadoop.util.StringUtils;
 import org.apache.thrift.TException;
 import org.apache.thrift.TProcessor;
 import org.apache.thrift.protocol.TBinaryProtocol;
+import org.apache.thrift.protocol.TProtocol;
 import org.apache.thrift.server.TServer;
 import org.apache.thrift.server.TThreadPoolServer;
 import org.apache.thrift.transport.TServerSocket;
 import org.apache.thrift.transport.TServerTransport;
+import org.apache.thrift.transport.TSocket;
 import org.apache.thrift.transport.TTransportFactory;
 
 import com.facebook.fb303.FacebookBase;
@@ -126,6 +132,38 @@ public class HiveMetaStore extends ThriftHiveMetastore {
         return null;
       }
     };
+
+    public static final String AUDIT_FORMAT =
+      "ugi=%s\t" +  // ugi
+      "ip=%s\t" +   // remote IP
+      "cmd=%s\t";   // command
+    public static final Log auditLog = LogFactory.getLog(
+        HiveMetaStore.class.getName() + ".audit");
+    private static final ThreadLocal<Formatter> auditFormatter =
+      new ThreadLocal<Formatter>() {
+      @Override
+      protected Formatter initialValue() {
+        return new Formatter(new StringBuilder(AUDIT_FORMAT.length() * 4));
+      }
+    };
+
+    private final void logAuditEvent(String cmd) {
+      if (!ShimLoader.getHadoopShims().isSecureShimImpl() || cmd == null) {
+        return;
+      }
+      
+      UserGroupInformation ugi;
+      try {
+        ugi = ShimLoader.getHadoopShims().getUGIForConf(getConf());
+      } catch (Exception ex) {
+        throw new RuntimeException(ex);
+      }
+      InetAddress addr = TLoggingProcessor.getRemoteAddress();
+      final Formatter fmt = auditFormatter.get();
+      ((StringBuilder)fmt.out()).setLength(0);
+      auditLog.info(fmt.format(AUDIT_FORMAT, ugi.getUserName(), 
+          addr == null ? "unknown-ip-addr" : addr.toString(), cmd).toString());
+    }
 
     // The next serial number to be assigned
     private boolean checkForDefaultDb;
@@ -439,6 +477,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
 
     private void logInfo(String m) {
       LOG.info(threadLocalId.get().toString() + ": " + m);
+      logAuditEvent(m);
     }
 
     public String startFunction(String function, String extraLogInfo) {
@@ -3067,7 +3106,8 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       TServerTransport serverTransport = tcpKeepAlive ?
           new TServerSocketKeepAlive(port) : new TServerSocket(port);
 
-      TProcessor processor = new ThriftHiveMetastore.Processor(handler);
+      TProcessor processor = 
+        new TLoggingProcessor(new ThriftHiveMetastore.Processor(handler));
       TTransportFactory transFactory;
       if (useSasl) {
          saslServer = bridge.createServer(
@@ -3100,6 +3140,31 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       x.printStackTrace();
       HMSHandler.LOG.error(StringUtils.stringifyException(x));
       throw x;
+    }
+  }
+  //Assists audit logger - gets the remote client's IP address. 
+  private static class TLoggingProcessor implements TProcessor {
+    private final static ThreadLocal<InetAddress> remoteAddress =
+      new ThreadLocal<InetAddress>() {
+      @Override
+      protected synchronized InetAddress initialValue() {
+        return null;
+      }
+    };
+    TProcessor wrapped;
+    TLoggingProcessor(TProcessor wrapped) {
+      this.wrapped = wrapped;
+    }
+    static InetAddress getRemoteAddress() {
+      return remoteAddress.get();
+    }
+    public boolean process(final TProtocol inProt, final TProtocol outProt) 
+    throws TException {
+      if (TSocket.class.isAssignableFrom(inProt.getTransport().getClass())) {
+        Socket socket = ((TSocket)inProt.getTransport()).getSocket();
+        remoteAddress.set(socket.getInetAddress());
+      }
+      return wrapped.process(inProt, outProt);
     }
   }
 }
