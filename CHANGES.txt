@@ -183,7 +183,7 @@ Trunk -  Unreleased
 
     HIVE-1971 Verbose/echo mode for the Hive CLI
     (Jonathan Natkins via Ning Zhang)
-    
+
 
   IMPROVEMENTS
 
@@ -810,6 +810,10 @@ Trunk -  Unreleased
 
     HIVE-1970. Modify build to run all tests regardless of subproject failures.
     (Carl Steinbach via jvs)
+
+    HIVE-1969. TestMinimrCliDriver merge_dynamic_partition2 and 3 are failing
+    on trunk
+    (Ning Zhang via jvs)
 
   TASKS
 
