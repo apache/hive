@@ -80,6 +80,8 @@ import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.Order;
 import org.apache.hadoop.hive.ql.Context;
 import org.apache.hadoop.hive.ql.QueryPlan;
+import org.apache.hadoop.hive.ql.io.ContentSummaryInputFormat;
+import org.apache.hadoop.hive.ql.io.HiveInputFormat;
 import org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat;
 import org.apache.hadoop.hive.ql.io.RCFile;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
@@ -106,6 +108,7 @@ import org.apache.hadoop.io.SequenceFile.CompressionType;
 import org.apache.hadoop.io.compress.CompressionCodec;
 import org.apache.hadoop.io.compress.DefaultCodec;
 import org.apache.hadoop.mapred.FileOutputFormat;
+import org.apache.hadoop.mapred.InputFormat;
 import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.mapred.SequenceFileInputFormat;
 import org.apache.hadoop.mapred.SequenceFileOutputFormat;
@@ -1438,8 +1441,19 @@ public final class Utilities {
 
         ContentSummary cs = ctx.getCS(path);
         if (cs == null) {
-          FileSystem fs = p.getFileSystem(ctx.getConf());
-          cs = fs.getContentSummary(p);
+          JobConf jobConf = new JobConf(ctx.getConf());
+          PartitionDesc partDesc = work.getPathToPartitionInfo().get(
+              p.toString());
+          Class<? extends InputFormat> inputFormatCls = partDesc
+              .getInputFileFormatClass();
+          InputFormat inputFormatObj = HiveInputFormat.getInputFormatFromCache(
+              inputFormatCls, jobConf);
+          if(inputFormatObj instanceof ContentSummaryInputFormat) {
+            cs = ((ContentSummaryInputFormat) inputFormatObj).getContentSummary(p, jobConf);
+          } else {
+            FileSystem fs = p.getFileSystem(ctx.getConf());
+            cs = fs.getContentSummary(p);
+          }
           ctx.addCS(path, cs);
         }
 

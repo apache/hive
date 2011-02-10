@@ -391,6 +391,9 @@ Trunk -  Unreleased
     HIVE-1865 redo zookeeper hive lock manager
     (namit via He Yongqiang)
 
+    HIVE-1978 Hive SymlinkTextInputFormat does not estimate input size correctly
+    (He Yongqiang via Ning Zhang)
+
   OPTIMIZATIONS
 
   BUG FIXES

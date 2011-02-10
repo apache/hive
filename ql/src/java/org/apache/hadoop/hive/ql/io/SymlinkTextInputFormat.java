@@ -9,6 +9,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.fs.ContentSummary;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
@@ -32,7 +33,7 @@ import org.apache.hadoop.mapred.TextInputFormat;
  */
 @SuppressWarnings("deprecation")
 public class SymlinkTextInputFormat
-    implements InputFormat<LongWritable, Text>, JobConfigurable {
+    implements InputFormat<LongWritable, Text>, JobConfigurable, ContentSummaryInputFormat {
   /**
    * This input split wraps the FileSplit generated from
    * TextInputFormat.getSplits(), while setting the original link file path
@@ -180,5 +181,32 @@ public class SymlinkTextInputFormat
    */
   public void validateInput(JobConf job) throws IOException {
     // do nothing
+  }
+
+  @Override
+  public ContentSummary getContentSummary(Path p, JobConf job)
+      throws IOException {
+    //length, file count, directory count
+    long[] summary = {0, 0, 0};
+    List<Path> targetPaths = new ArrayList<Path>();
+    List<Path> symlinkPaths = new ArrayList<Path>();
+    try {
+      getTargetPathsFromSymlinksDirs(
+          job,
+          new Path[]{p},
+          targetPaths,
+          symlinkPaths);
+    } catch (Exception e) {
+      throw new IOException(
+          "Error parsing symlinks from specified job input path.", e);
+    }
+    for(Path path : targetPaths) {
+      FileSystem fs = path.getFileSystem(job);
+      ContentSummary cs = fs.getContentSummary(path);
+      summary[0] += cs.getLength();
+      summary[1] += cs.getFileCount();
+      summary[2] += cs.getDirectoryCount();
+    }
+    return new ContentSummary(summary[0], summary[1], summary[2]);
   }
 }
