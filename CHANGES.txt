@@ -189,6 +189,8 @@ Trunk -  Unreleased
 
   IMPROVEMENTS
 
+    HIVE-1962 Make a libthrift.jar and libfb303.jar in dist package for backward compatibility (Ning Zhang via cws)
+
     HIVE-1235 use Ivy for fetching HBase dependencies (John Sichi via cws)
 
     HIVE-1931 Improve the implementation of the METASTORE_CACHE_PINOBJTYPES config (Mac Yang via cws)"
