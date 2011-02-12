@@ -210,7 +210,7 @@ public class ObjectStore implements RawStore, Configurable {
     while (iter.hasNext()) {
       Map.Entry<String, String> e = iter.next();
       if (e.getKey().contains("datanucleus") || e.getKey().contains("jdo")) {
-        Object prevVal = prop.setProperty(e.getKey(), e.getValue());
+        Object prevVal = prop.setProperty(e.getKey(), conf.get(e.getKey()));
         if (LOG.isDebugEnabled()
             && !e.getKey().equals(HiveConf.ConfVars.METASTOREPWD.varname)) {
           LOG.debug("Overriding " + e.getKey() + " value " + prevVal

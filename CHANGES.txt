@@ -822,6 +822,10 @@ Trunk -  Unreleased
     on trunk
     (Ning Zhang via jvs)
 
+    HIVE-1465. hive-site.xml ${user.name} not replaced for local-file derby
+    metastore connection URL
+    (Carl Steinbach via jvs)
+
   TASKS
 
     HIVE-1526. Hive should depend on a release version of Thrift
