@@ -394,6 +394,9 @@ Trunk -  Unreleased
     HIVE-1978 Hive SymlinkTextInputFormat does not estimate input size correctly
     (He Yongqiang via Ning Zhang)
 
+    HIVE-1896 HBase and Contrib JAR names are missing version numbers
+    (Carl Steinbach via jvs)
+
   OPTIMIZATIONS
 
   BUG FIXES

@@ -107,23 +107,4 @@
 
   </target>
 
-  <!-- override target jar because contrib tests need to add contrib jars,
-       which needs to be a constant without the version number -->
-  <target name="jar" depends="compile">
-    <echo message="Jar: ${ant.project.name}"/>
-    <jar
-      jarfile="${build.dir}/hive_${ant.project.name}.jar"
-      basedir="${build.classes}">
-      <manifest>
-        <!-- Not putting these in their own manifest section, since that inserts
-        a new-line, which breaks the reading of the attributes. -->
-        <attribute name="Implementation-Title" value="Hive"/>
-        <attribute name="Implementation-Version" value="${version}"/>
-        <attribute name="Implementation-Vendor" value="Apache"/>
-      </manifest>
-      <metainf dir="${hive.root}" includes="LICENSE,NOTICE"/>
-    </jar>
-  </target>
-
-
 </project>

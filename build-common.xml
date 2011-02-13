@@ -436,6 +436,7 @@
       <sysproperty key="fs.default.name" value="${fs.default.name}"/>
       <sysproperty key="build.dir" value="${build.dir}"/>
       <sysproperty key="build.dir.hive" value="${build.dir.hive}"/>
+      <sysproperty key="hive.version" value="${version}"/>
 
       <classpath refid="${test.classpath.id}"/>
       <formatter type="${test.junit.output.format}" usefile="${test.junit.output.usefile}" />

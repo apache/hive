@@ -1,4 +1,4 @@
-add jar ../build/contrib/hive_contrib.jar;
+add jar ${system:build.dir}/hive-contrib-${system:hive.version}.jar;
 
 drop table dest1;
 CREATE TABLE dest1(key STRING, value STRING) STORED AS TEXTFILE;
