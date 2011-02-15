@@ -86,6 +86,7 @@ import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.mapred.Partitioner;
 import org.apache.hadoop.mapred.RunningJob;
 import org.apache.hadoop.mapred.TaskCompletionEvent;
+import org.apache.hadoop.mapred.TaskReport;
 import org.apache.log4j.Appender;
 import org.apache.log4j.BasicConfigurator;
 import org.apache.log4j.FileAppender;
@@ -333,6 +334,7 @@ public class ExecDriver extends Task<MapredWork> implements Serializable {
     StringBuilder errMsg = new StringBuilder();
     long pullInterval = HiveConf.getLongVar(job, HiveConf.ConfVars.HIVECOUNTERSPULLINTERVAL);
     boolean initializing = true;
+    boolean initOutputPrinted = false;
     while (!rj.isComplete()) {
       try {
         Thread.sleep(pullInterval);
@@ -346,6 +348,41 @@ public class ExecDriver extends Task<MapredWork> implements Serializable {
         // By now the job is initialized so no reason to do
         // rj.getJobState() again and we do not want to do an extra RPC call
         initializing = false;
+      }
+
+      if (!initOutputPrinted) {
+        SessionState ss = SessionState.get();
+
+        String logMapper;
+        String logReducer;
+
+        TaskReport[] mappers = jc.getMapTaskReports(rj.getJobID());
+        if (mappers == null) {
+          logMapper = "no information for number of mappers; ";
+        } else {
+          int numMap = mappers.length;
+          if (ss != null) {
+            ss.getHiveHistory().setTaskProperty(SessionState.get().getQueryId(), getId(),
+                Keys.TASK_NUM_MAPPERS, Integer.toString(numMap));
+          }
+          logMapper = "number of mappers: " + numMap + "; ";
+        }
+
+        TaskReport[] reducers = jc.getReduceTaskReports(rj.getJobID());
+        if (reducers == null) {
+          logReducer = "no information for number of reducers. ";
+        } else {
+          int numReduce = reducers.length;
+          if (ss != null) {
+            ss.getHiveHistory().setTaskProperty(SessionState.get().getQueryId(), getId(),
+                Keys.TASK_NUM_REDUCERS, Integer.toString(numReduce));
+          }
+          logReducer = "number of reducers: " + numReduce;
+        }
+
+        console
+            .printInfo("Hadoop job information for " + getId() + ": " + logMapper + logReducer);
+        initOutputPrinted = true;
       }
 
       RunningJob newRj = jc.getJob(rj.getJobID());

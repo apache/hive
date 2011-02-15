@@ -99,6 +99,7 @@ public class HiveHistory {
     TASK_HADOOP_ID,
     TASK_HADOOP_PROGRESS,
     TASK_COUNTERS,
+    TASK_NUM_MAPPERS,
     TASK_NUM_REDUCERS,
     ROWS_INSERTED
   };
