@@ -60,7 +60,7 @@ to call at top-level: ant deploy-contrib compile-core-test
 
   <target name="compile" depends="init">
     <antcall target="build_shims" inheritRefs="false" inheritAll="false">
-      <param name="hadoop.version.ant-internal" value="0.20.0" />
+      <param name="hadoop.version.ant-internal" value="${hadoop.version}" />
     </antcall>
     <antcall target="build_shims" inheritRefs="false" inheritAll="false">
       <param name="hadoop.version.ant-internal" value="${hadoop.security.version}" />

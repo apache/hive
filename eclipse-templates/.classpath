@@ -10,7 +10,6 @@
   <classpathentry exported="true" kind="lib" path="cli/lib/jline-@jline.version@.jar"/>
   <classpathentry exported="true" kind="lib" path="lib/json.jar"/>
   <classpathentry exported="true" kind="lib" path="lib/asm-@asm.version@.jar"/>
-  <classpathentry exported="true" kind="lib" path="lib/commons-cli-@commons-cli.version@.jar"/>
   <classpathentry exported="true" kind="lib" path="lib/commons-codec-@commons-codec.version@.jar"/>
   <classpathentry exported="true" kind="lib" path="lib/commons-lang-@commons-lang.version@.jar"/>
   <classpathentry exported="true" kind="lib" path="lib/commons-logging-@commons-logging.version@.jar"/>
@@ -29,6 +28,7 @@
   <classpathentry kind="lib" path="build/dist/lib/datanucleus-core-@datanucleus-core.version@.jar"/>
   <classpathentry kind="lib" path="build/dist/lib/datanucleus-enhancer-@datanucleus-enhancer.version@.jar"/>
   <classpathentry kind="lib" path="build/dist/lib/datanucleus-rdbms-@datanucleus-rdbms.version@.jar"/>
+  <classpathentry kind="lib" path="build/dist/lib/commons-cli-@commons-cli.version@.jar"/>
   <classpathentry kind="lib" path="build/dist/lib/commons-collections-@commons-collections.version@.jar"/>
   <classpathentry kind="lib" path="build/dist/lib/commons-dbcp-@commons-dbcp.version@.jar"/>
   <classpathentry kind="lib" path="build/dist/lib/datanucleus-connectionpool-@datanucleus-connectionpool.version@.jar"/>

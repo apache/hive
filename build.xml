@@ -206,7 +206,7 @@
     </antcall>
     <for keepgoing="${test.continue.on.failure}" param="file">
       <path>
-        <fileset dir="." includes="*/build.xml" excludes="ant/*,odbc/*"/>
+        <fileset dir="." includes="*/build.xml" excludes="ant/*,odbc/*,shims/*"/>
       </path>
       <sequential>
         <ant antfile="@{file}" target="test" inheritAll="false" inheritRefs="true">
