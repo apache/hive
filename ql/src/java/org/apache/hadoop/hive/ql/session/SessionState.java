@@ -80,9 +80,17 @@ public class SessionState {
   /**
    * Streams to read/write from.
    */
-  public PrintStream out;
   public InputStream in;
+  public PrintStream out;
   public PrintStream err;
+  /**
+   * Standard output from any child process(es).
+   */
+  public PrintStream childOut;
+  /**
+   * Error output from any child process(es).
+   */
+  public PrintStream childErr;
 
   /**
    * type of the command.
@@ -297,6 +305,16 @@ public class SessionState {
     public PrintStream getErrStream() {
       SessionState ss = SessionState.get();
       return ((ss != null) && (ss.err != null)) ? ss.err : System.err;
+    }
+
+    public PrintStream getChildOutStream() {
+      SessionState ss = SessionState.get();
+      return ((ss != null) && (ss.childOut != null)) ? ss.childOut : System.out;
+    }
+
+    public PrintStream getChildErrStream() {
+      SessionState ss = SessionState.get();
+      return ((ss != null) && (ss.childErr != null)) ? ss.childErr : System.err;
     }
 
     public boolean getIsSilent() {

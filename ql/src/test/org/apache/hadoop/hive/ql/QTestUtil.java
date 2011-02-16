@@ -662,10 +662,10 @@ public class QTestUtil {
 
     Process executor = Runtime.getRuntime().exec(cmdLine);
 
-    StreamPrinter outPrinter = new StreamPrinter(executor.getInputStream(),
-        null, System.out);
-    StreamPrinter errPrinter = new StreamPrinter(executor.getErrorStream(),
-        null, System.err);
+    StreamPrinter outPrinter = new StreamPrinter(
+        executor.getInputStream(), null, SessionState.getConsole().getChildOutStream());
+    StreamPrinter errPrinter = new StreamPrinter(
+        executor.getErrorStream(), null, SessionState.getConsole().getChildErrStream());
 
     outPrinter.start();
     errPrinter.start();
@@ -701,10 +701,10 @@ public class QTestUtil {
 
       Process executor = Runtime.getRuntime().exec(cmdLine);
 
-      StreamPrinter outPrinter = new StreamPrinter(executor.getInputStream(),
-          null, System.out);
-      StreamPrinter errPrinter = new StreamPrinter(executor.getErrorStream(),
-          null, System.err);
+      StreamPrinter outPrinter = new StreamPrinter(
+          executor.getInputStream(), null, SessionState.getConsole().getChildOutStream());
+      StreamPrinter errPrinter = new StreamPrinter(
+          executor.getErrorStream(), null, SessionState.getConsole().getChildErrStream());
 
       outPrinter.start();
       errPrinter.start();
@@ -756,10 +756,10 @@ public class QTestUtil {
 
       Process executor = Runtime.getRuntime().exec(cmdArray);
 
-      StreamPrinter outPrinter = new StreamPrinter(executor.getInputStream(),
-          null, System.out);
-      StreamPrinter errPrinter = new StreamPrinter(executor.getErrorStream(),
-          null, System.err);
+      StreamPrinter outPrinter = new StreamPrinter(
+          executor.getInputStream(), null, SessionState.getConsole().getChildOutStream());
+      StreamPrinter errPrinter = new StreamPrinter(
+          executor.getErrorStream(), null, SessionState.getConsole().getChildErrStream());
 
       outPrinter.start();
       errPrinter.start();
@@ -822,10 +822,10 @@ public class QTestUtil {
 
       Process executor = Runtime.getRuntime().exec(cmdArray1);
 
-      StreamPrinter outPrinter = new StreamPrinter(executor.getInputStream(),
-          null, System.out);
-      StreamPrinter errPrinter = new StreamPrinter(executor.getErrorStream(),
-          null, System.err);
+      StreamPrinter outPrinter = new StreamPrinter(
+          executor.getInputStream(), null, SessionState.getConsole().getChildOutStream());
+      StreamPrinter errPrinter = new StreamPrinter(
+          executor.getErrorStream(), null, SessionState.getConsole().getChildErrStream());
 
       outPrinter.start();
       errPrinter.start();
@@ -846,10 +846,10 @@ public class QTestUtil {
 
     Process executor = Runtime.getRuntime().exec(cmdArray);
 
-    StreamPrinter outPrinter = new StreamPrinter(executor.getInputStream(),
-        null, System.out);
-    StreamPrinter errPrinter = new StreamPrinter(executor.getErrorStream(),
-        null, System.err);
+    StreamPrinter outPrinter = new StreamPrinter(
+        executor.getInputStream(), null, SessionState.getConsole().getChildOutStream());
+    StreamPrinter errPrinter = new StreamPrinter(
+        executor.getErrorStream(), null, SessionState.getConsole().getChildErrStream());
 
     outPrinter.start();
     errPrinter.start();
@@ -933,10 +933,10 @@ public class QTestUtil {
 
     Process executor = Runtime.getRuntime().exec(cmdArray);
 
-    StreamPrinter outPrinter = new StreamPrinter(executor.getInputStream(),
-        null, System.out);
-    StreamPrinter errPrinter = new StreamPrinter(executor.getErrorStream(),
-        null, System.err);
+    StreamPrinter outPrinter = new StreamPrinter(
+        executor.getInputStream(), null, SessionState.getConsole().getChildOutStream());
+    StreamPrinter errPrinter = new StreamPrinter(
+        executor.getErrorStream(), null, SessionState.getConsole().getChildErrStream());
 
     outPrinter.start();
     errPrinter.start();
