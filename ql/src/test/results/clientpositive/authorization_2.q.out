@@ -12,22 +12,22 @@ POSTHOOK: type: ALTERTABLE_PROPERTIES
 POSTHOOK: Input: default@authorization_part
 POSTHOOK: Output: default@authorization_part
 PREHOOK: query: -- column grant to user
-grant `Create` on table authorization_part to user hive_test_user
+grant Create on table authorization_part to user hive_test_user
 PREHOOK: type: GRANT_PRIVILEGE
 POSTHOOK: query: -- column grant to user
-grant `Create` on table authorization_part to user hive_test_user
+grant Create on table authorization_part to user hive_test_user
 POSTHOOK: type: GRANT_PRIVILEGE
-PREHOOK: query: grant `Update` on table authorization_part to user hive_test_user
+PREHOOK: query: grant Update on table authorization_part to user hive_test_user
 PREHOOK: type: GRANT_PRIVILEGE
-POSTHOOK: query: grant `Update` on table authorization_part to user hive_test_user
+POSTHOOK: query: grant Update on table authorization_part to user hive_test_user
 POSTHOOK: type: GRANT_PRIVILEGE
-PREHOOK: query: grant `Drop` on table authorization_part to user hive_test_user
+PREHOOK: query: grant Drop on table authorization_part to user hive_test_user
 PREHOOK: type: GRANT_PRIVILEGE
-POSTHOOK: query: grant `Drop` on table authorization_part to user hive_test_user
+POSTHOOK: query: grant Drop on table authorization_part to user hive_test_user
 POSTHOOK: type: GRANT_PRIVILEGE
-PREHOOK: query: grant `select` on table src to user hive_test_user
+PREHOOK: query: grant select on table src to user hive_test_user
 PREHOOK: type: GRANT_PRIVILEGE
-POSTHOOK: query: grant `select` on table src to user hive_test_user
+POSTHOOK: query: grant select on table src to user hive_test_user
 POSTHOOK: type: GRANT_PRIVILEGE
 PREHOOK: query: show grant user hive_test_user on table authorization_part
 PREHOOK: type: SHOW_GRANT
@@ -95,9 +95,9 @@ principalType	USER
 privilege	Drop	
 grantTime	1296259217	
 grantor	hive_test_user	
-PREHOOK: query: grant `select`(key) on table authorization_part to user hive_test_user
+PREHOOK: query: grant select(key) on table authorization_part to user hive_test_user
 PREHOOK: type: GRANT_PRIVILEGE
-POSTHOOK: query: grant `select`(key) on table authorization_part to user hive_test_user
+POSTHOOK: query: grant select(key) on table authorization_part to user hive_test_user
 POSTHOOK: type: GRANT_PRIVILEGE
 PREHOOK: query: alter table authorization_part drop partition (ds='2010')
 PREHOOK: type: ALTERTABLE_DROPPARTS
@@ -178,9 +178,9 @@ POSTHOOK: Lineage: authorization_part PARTITION(ds=2010).value SIMPLE [(src)src.
 18
 18
 19
-PREHOOK: query: revoke `select`(key) on table authorization_part from user hive_test_user
+PREHOOK: query: revoke select(key) on table authorization_part from user hive_test_user
 PREHOOK: type: REVOKE_PRIVILEGE
-POSTHOOK: query: revoke `select`(key) on table authorization_part from user hive_test_user
+POSTHOOK: query: revoke select(key) on table authorization_part from user hive_test_user
 POSTHOOK: type: REVOKE_PRIVILEGE
 POSTHOOK: Lineage: authorization_part PARTITION(ds=2010).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: authorization_part PARTITION(ds=2010).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
@@ -236,9 +236,9 @@ POSTHOOK: Lineage: authorization_part PARTITION(ds=2010).value SIMPLE [(src)src.
 18
 18
 19
-PREHOOK: query: revoke `select`(key) on table authorization_part partition (ds='2010') from user hive_test_user
+PREHOOK: query: revoke select(key) on table authorization_part partition (ds='2010') from user hive_test_user
 PREHOOK: type: REVOKE_PRIVILEGE
-POSTHOOK: query: revoke `select`(key) on table authorization_part partition (ds='2010') from user hive_test_user
+POSTHOOK: query: revoke select(key) on table authorization_part partition (ds='2010') from user hive_test_user
 POSTHOOK: type: REVOKE_PRIVILEGE
 POSTHOOK: Lineage: authorization_part PARTITION(ds=2010).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: authorization_part PARTITION(ds=2010).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
@@ -332,9 +332,9 @@ principalType	USER
 privilege	Drop	
 grantTime	1296259240	
 grantor	hive_test_user	
-PREHOOK: query: grant `select` on table authorization_part to user hive_test_user
+PREHOOK: query: grant select on table authorization_part to user hive_test_user
 PREHOOK: type: GRANT_PRIVILEGE
-POSTHOOK: query: grant `select` on table authorization_part to user hive_test_user
+POSTHOOK: query: grant select on table authorization_part to user hive_test_user
 POSTHOOK: type: GRANT_PRIVILEGE
 POSTHOOK: Lineage: authorization_part PARTITION(ds=2010).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: authorization_part PARTITION(ds=2010).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
@@ -476,9 +476,9 @@ POSTHOOK: Lineage: authorization_part PARTITION(ds=2010).value SIMPLE [(src)src.
 18
 18
 19
-PREHOOK: query: revoke `select` on table authorization_part from user hive_test_user
+PREHOOK: query: revoke select on table authorization_part from user hive_test_user
 PREHOOK: type: REVOKE_PRIVILEGE
-POSTHOOK: query: revoke `select` on table authorization_part from user hive_test_user
+POSTHOOK: query: revoke select on table authorization_part from user hive_test_user
 POSTHOOK: type: REVOKE_PRIVILEGE
 POSTHOOK: Lineage: authorization_part PARTITION(ds=2010).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: authorization_part PARTITION(ds=2010).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
@@ -592,9 +592,9 @@ POSTHOOK: Lineage: authorization_part PARTITION(ds=2010).value SIMPLE [(src)src.
 18
 18
 19
-PREHOOK: query: revoke `select` on table authorization_part partition (ds='2010') from user hive_test_user
+PREHOOK: query: revoke select on table authorization_part partition (ds='2010') from user hive_test_user
 PREHOOK: type: REVOKE_PRIVILEGE
-POSTHOOK: query: revoke `select` on table authorization_part partition (ds='2010') from user hive_test_user
+POSTHOOK: query: revoke select on table authorization_part partition (ds='2010') from user hive_test_user
 POSTHOOK: type: REVOKE_PRIVILEGE
 POSTHOOK: Lineage: authorization_part PARTITION(ds=2010).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: authorization_part PARTITION(ds=2010).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
@@ -678,9 +678,9 @@ POSTHOOK: Lineage: authorization_part PARTITION(ds=2010).key EXPRESSION [(src)sr
 POSTHOOK: Lineage: authorization_part PARTITION(ds=2010).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: authorization_part PARTITION(ds=2010).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: authorization_part PARTITION(ds=2010).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-PREHOOK: query: grant `select`(key) on table authorization_part to group hive_test_group1
+PREHOOK: query: grant select(key) on table authorization_part to group hive_test_group1
 PREHOOK: type: GRANT_PRIVILEGE
-POSTHOOK: query: grant `select`(key) on table authorization_part to group hive_test_group1
+POSTHOOK: query: grant select(key) on table authorization_part to group hive_test_group1
 POSTHOOK: type: GRANT_PRIVILEGE
 POSTHOOK: Lineage: authorization_part PARTITION(ds=2010).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: authorization_part PARTITION(ds=2010).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
@@ -785,9 +785,9 @@ POSTHOOK: Lineage: authorization_part PARTITION(ds=2010).value SIMPLE [(src)src.
 18
 18
 19
-PREHOOK: query: revoke `select`(key) on table authorization_part from group hive_test_group1
+PREHOOK: query: revoke select(key) on table authorization_part from group hive_test_group1
 PREHOOK: type: REVOKE_PRIVILEGE
-POSTHOOK: query: revoke `select`(key) on table authorization_part from group hive_test_group1
+POSTHOOK: query: revoke select(key) on table authorization_part from group hive_test_group1
 POSTHOOK: type: REVOKE_PRIVILEGE
 POSTHOOK: Lineage: authorization_part PARTITION(ds=2010).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: authorization_part PARTITION(ds=2010).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
@@ -859,9 +859,9 @@ POSTHOOK: Lineage: authorization_part PARTITION(ds=2010).value SIMPLE [(src)src.
 18
 18
 19
-PREHOOK: query: revoke `select`(key) on table authorization_part partition (ds='2010') from group hive_test_group1
+PREHOOK: query: revoke select(key) on table authorization_part partition (ds='2010') from group hive_test_group1
 PREHOOK: type: REVOKE_PRIVILEGE
-POSTHOOK: query: revoke `select`(key) on table authorization_part partition (ds='2010') from group hive_test_group1
+POSTHOOK: query: revoke select(key) on table authorization_part partition (ds='2010') from group hive_test_group1
 POSTHOOK: type: REVOKE_PRIVILEGE
 POSTHOOK: Lineage: authorization_part PARTITION(ds=2010).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: authorization_part PARTITION(ds=2010).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
@@ -928,9 +928,9 @@ POSTHOOK: Lineage: authorization_part PARTITION(ds=2010).key EXPRESSION [(src)sr
 POSTHOOK: Lineage: authorization_part PARTITION(ds=2010).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: authorization_part PARTITION(ds=2010).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: authorization_part PARTITION(ds=2010).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-PREHOOK: query: grant `select` on table authorization_part to group hive_test_group1
+PREHOOK: query: grant select on table authorization_part to group hive_test_group1
 PREHOOK: type: GRANT_PRIVILEGE
-POSTHOOK: query: grant `select` on table authorization_part to group hive_test_group1
+POSTHOOK: query: grant select on table authorization_part to group hive_test_group1
 POSTHOOK: type: GRANT_PRIVILEGE
 POSTHOOK: Lineage: authorization_part PARTITION(ds=2010).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: authorization_part PARTITION(ds=2010).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
@@ -1045,9 +1045,9 @@ POSTHOOK: Lineage: authorization_part PARTITION(ds=2010).value SIMPLE [(src)src.
 18
 18
 19
-PREHOOK: query: revoke `select` on table authorization_part from group hive_test_group1
+PREHOOK: query: revoke select on table authorization_part from group hive_test_group1
 PREHOOK: type: REVOKE_PRIVILEGE
-POSTHOOK: query: revoke `select` on table authorization_part from group hive_test_group1
+POSTHOOK: query: revoke select on table authorization_part from group hive_test_group1
 POSTHOOK: type: REVOKE_PRIVILEGE
 POSTHOOK: Lineage: authorization_part PARTITION(ds=2010).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: authorization_part PARTITION(ds=2010).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
@@ -1126,9 +1126,9 @@ POSTHOOK: Lineage: authorization_part PARTITION(ds=2010).value SIMPLE [(src)src.
 18
 18
 19
-PREHOOK: query: revoke `select` on table authorization_part partition (ds='2010') from group hive_test_group1
+PREHOOK: query: revoke select on table authorization_part partition (ds='2010') from group hive_test_group1
 PREHOOK: type: REVOKE_PRIVILEGE
-POSTHOOK: query: revoke `select` on table authorization_part partition (ds='2010') from group hive_test_group1
+POSTHOOK: query: revoke select on table authorization_part partition (ds='2010') from group hive_test_group1
 POSTHOOK: type: REVOKE_PRIVILEGE
 POSTHOOK: Lineage: authorization_part PARTITION(ds=2010).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: authorization_part PARTITION(ds=2010).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
@@ -1150,9 +1150,9 @@ POSTHOOK: Lineage: authorization_part PARTITION(ds=2010).key EXPRESSION [(src)sr
 POSTHOOK: Lineage: authorization_part PARTITION(ds=2010).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: authorization_part PARTITION(ds=2010).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: authorization_part PARTITION(ds=2010).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-PREHOOK: query: revoke `select` on table src from user hive_test_user
+PREHOOK: query: revoke select on table src from user hive_test_user
 PREHOOK: type: REVOKE_PRIVILEGE
-POSTHOOK: query: revoke `select` on table src from user hive_test_user
+POSTHOOK: query: revoke select on table src from user hive_test_user
 POSTHOOK: type: REVOKE_PRIVILEGE
 POSTHOOK: Lineage: authorization_part PARTITION(ds=2010).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: authorization_part PARTITION(ds=2010).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]

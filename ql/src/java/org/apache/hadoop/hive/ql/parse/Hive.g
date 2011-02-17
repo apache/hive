@@ -202,6 +202,15 @@ TOK_USER;
 TOK_GROUP;
 TOK_ROLE;
 TOK_GRANT_WITH_OPTION;
+TOK_PRIV_ALL;
+TOK_PRIV_ALTER_METADATA;
+TOK_PRIV_ALTER_DATA;
+TOK_PRIV_DROP;
+TOK_PRIV_INDEX;
+TOK_PRIV_LOCK;
+TOK_PRIV_SELECT;
+TOK_PRIV_SHOW_DATABASE;
+TOK_PRIV_CREATE;
 TOK_PRIV_OBJECT;
 TOK_PRIV_OBJECT_COL;
 TOK_GRANT_ROLE;
@@ -846,8 +855,22 @@ privilegeList
 privlegeDef
 @init {msgs.push("grant privilege");}
 @after {msgs.pop();}
-    : Identifier (LPAREN cols=columnNameList RPAREN)?
-    -> ^(TOK_PRIVILEGE Identifier $cols?)
+    : privilegeType (LPAREN cols=columnNameList RPAREN)?
+    -> ^(TOK_PRIVILEGE privilegeType $cols?)
+    ;
+    
+privilegeType
+@init {msgs.push("privilege type");}
+@after {msgs.pop();}
+    : KW_ALL -> ^(TOK_PRIV_ALL)
+    | KW_ALTER -> ^(TOK_PRIV_ALTER_METADATA)
+    | KW_UPDATE -> ^(TOK_PRIV_ALTER_DATA)
+    | KW_CREATE -> ^(TOK_PRIV_CREATE)
+    | KW_DROP -> ^(TOK_PRIV_DROP)
+    | KW_INDEX -> ^(TOK_PRIV_INDEX)
+    | KW_LOCK -> ^(TOK_PRIV_LOCK)
+    | KW_SELECT -> ^(TOK_PRIV_SELECT)
+    | KW_SHOW_DATABASE -> ^(TOK_PRIV_SHOW_DATABASE)
     ;
 
 principalSpecification
@@ -2143,6 +2166,8 @@ KW_COMPUTE: 'COMPUTE';
 KW_STATISTICS: 'STATISTICS';
 KW_USE: 'USE';
 KW_OPTION: 'OPTION';
+KW_SHOW_DATABASE: 'SHOW_DATABASE';
+KW_UPDATE: 'UPDATE';
 
 
 // Operators
