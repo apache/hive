@@ -405,7 +405,7 @@ public class DefaultHiveAuthorizationProvider extends
     }
 
     for (int i = 0; i < inputPriv.length; i++) {
-      String toMatch = inputPriv[i].getPriv();
+      String toMatch = inputPriv[i].toString();
       if (!check[i]) {
         check[i] = privSet.contains(toMatch.toLowerCase());
       }
@@ -467,7 +467,7 @@ public class DefaultHiveAuthorizationProvider extends
       int input = this.firstFalseIndex(inputCheck);
       if (input >= 0) {
         throw new AuthorizationException("No privilege '"
-            + inputRequiredPriv[input].getPriv() + "' found for inputs "
+            + inputRequiredPriv[input].toString() + "' found for inputs "
             + hiveObject);
       }
     }
@@ -476,7 +476,7 @@ public class DefaultHiveAuthorizationProvider extends
       int output = this.firstFalseIndex(outputCheck);
       if (output >= 0) {
         throw new AuthorizationException("No privilege '"
-            + outputRequiredPriv[output].getPriv() + "' found for outputs "
+            + outputRequiredPriv[output].toString() + "' found for outputs "
             + hiveObject);
       }
     }

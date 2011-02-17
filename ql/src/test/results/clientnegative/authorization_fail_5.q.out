@@ -3,9 +3,9 @@ PREHOOK: type: CREATETABLE
 POSTHOOK: query: create table authorization_fail (key int, value string) partitioned by (ds string)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: default@authorization_fail
-PREHOOK: query: grant `Alter` on table authorization_fail to user hive_test_user
+PREHOOK: query: grant Alter on table authorization_fail to user hive_test_user
 PREHOOK: type: GRANT_PRIVILEGE
-POSTHOOK: query: grant `Alter` on table authorization_fail to user hive_test_user
+POSTHOOK: query: grant Alter on table authorization_fail to user hive_test_user
 POSTHOOK: type: GRANT_PRIVILEGE
 PREHOOK: query: ALTER TABLE authorization_fail SET TBLPROPERTIES ("PARTITION_LEVEL_PRIVILEGE"="TRUE")
 PREHOOK: type: ALTERTABLE_PROPERTIES
@@ -15,13 +15,13 @@ POSTHOOK: query: ALTER TABLE authorization_fail SET TBLPROPERTIES ("PARTITION_LE
 POSTHOOK: type: ALTERTABLE_PROPERTIES
 POSTHOOK: Input: default@authorization_fail
 POSTHOOK: Output: default@authorization_fail
-PREHOOK: query: grant `Create` on table authorization_fail to user hive_test_user
+PREHOOK: query: grant Create on table authorization_fail to user hive_test_user
 PREHOOK: type: GRANT_PRIVILEGE
-POSTHOOK: query: grant `Create` on table authorization_fail to user hive_test_user
+POSTHOOK: query: grant Create on table authorization_fail to user hive_test_user
 POSTHOOK: type: GRANT_PRIVILEGE
-PREHOOK: query: grant `Select` on table authorization_fail to user hive_test_user
+PREHOOK: query: grant Select on table authorization_fail to user hive_test_user
 PREHOOK: type: GRANT_PRIVILEGE
-POSTHOOK: query: grant `Select` on table authorization_fail to user hive_test_user
+POSTHOOK: query: grant Select on table authorization_fail to user hive_test_user
 POSTHOOK: type: GRANT_PRIVILEGE
 PREHOOK: query: alter table authorization_fail add partition (ds='2010')
 PREHOOK: type: ALTERTABLE_ADDPARTS
@@ -89,9 +89,9 @@ principalType	USER
 privilege	Select	
 grantTime	1296259811	
 grantor	hive_test_user	
-PREHOOK: query: revoke `Select` on table authorization_fail partition (ds='2010') from user hive_test_user
+PREHOOK: query: revoke Select on table authorization_fail partition (ds='2010') from user hive_test_user
 PREHOOK: type: REVOKE_PRIVILEGE
-POSTHOOK: query: revoke `Select` on table authorization_fail partition (ds='2010') from user hive_test_user
+POSTHOOK: query: revoke Select on table authorization_fail partition (ds='2010') from user hive_test_user
 POSTHOOK: type: REVOKE_PRIVILEGE
 PREHOOK: query: show grant user hive_test_user on table authorization_fail partition (ds='2010')
 PREHOOK: type: SHOW_GRANT

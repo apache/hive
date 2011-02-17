@@ -11,33 +11,33 @@ POSTHOOK: query: ALTER TABLE authorization_part_fail SET TBLPROPERTIES ("PARTITI
 POSTHOOK: type: ALTERTABLE_PROPERTIES
 POSTHOOK: Input: default@authorization_part_fail
 POSTHOOK: Output: default@authorization_part_fail
-PREHOOK: query: grant `Create` on table authorization_part_fail to user hive_test_user
+PREHOOK: query: grant Create on table authorization_part_fail to user hive_test_user
 PREHOOK: type: GRANT_PRIVILEGE
-POSTHOOK: query: grant `Create` on table authorization_part_fail to user hive_test_user
+POSTHOOK: query: grant Create on table authorization_part_fail to user hive_test_user
 POSTHOOK: type: GRANT_PRIVILEGE
-PREHOOK: query: grant `Update` on table authorization_part_fail to user hive_test_user
+PREHOOK: query: grant Update on table authorization_part_fail to user hive_test_user
 PREHOOK: type: GRANT_PRIVILEGE
-POSTHOOK: query: grant `Update` on table authorization_part_fail to user hive_test_user
+POSTHOOK: query: grant Update on table authorization_part_fail to user hive_test_user
 POSTHOOK: type: GRANT_PRIVILEGE
-PREHOOK: query: grant `Drop` on table authorization_part_fail to user hive_test_user
+PREHOOK: query: grant Drop on table authorization_part_fail to user hive_test_user
 PREHOOK: type: GRANT_PRIVILEGE
-POSTHOOK: query: grant `Drop` on table authorization_part_fail to user hive_test_user
+POSTHOOK: query: grant Drop on table authorization_part_fail to user hive_test_user
 POSTHOOK: type: GRANT_PRIVILEGE
-PREHOOK: query: grant `select` on table src to user hive_test_user
+PREHOOK: query: grant select on table src to user hive_test_user
 PREHOOK: type: GRANT_PRIVILEGE
-POSTHOOK: query: grant `select` on table src to user hive_test_user
+POSTHOOK: query: grant select on table src to user hive_test_user
 POSTHOOK: type: GRANT_PRIVILEGE
 PREHOOK: query: -- column grant to group
 
-grant `select`(key) on table authorization_part_fail to group hive_test_group1
+grant select(key) on table authorization_part_fail to group hive_test_group1
 PREHOOK: type: GRANT_PRIVILEGE
 POSTHOOK: query: -- column grant to group
 
-grant `select`(key) on table authorization_part_fail to group hive_test_group1
+grant select(key) on table authorization_part_fail to group hive_test_group1
 POSTHOOK: type: GRANT_PRIVILEGE
-PREHOOK: query: grant `select` on table authorization_part_fail to group hive_test_group1
+PREHOOK: query: grant select on table authorization_part_fail to group hive_test_group1
 PREHOOK: type: GRANT_PRIVILEGE
-POSTHOOK: query: grant `select` on table authorization_part_fail to group hive_test_group1
+POSTHOOK: query: grant select on table authorization_part_fail to group hive_test_group1
 POSTHOOK: type: GRANT_PRIVILEGE
 PREHOOK: query: show grant group hive_test_group1 on table authorization_part_fail
 PREHOOK: type: SHOW_GRANT
@@ -235,9 +235,9 @@ POSTHOOK: Lineage: authorization_part_fail PARTITION(ds=2011).value SIMPLE [(src
 8	val_8	2011
 9	val_9	2010
 9	val_9	2011
-PREHOOK: query: revoke `select` on table authorization_part_fail partition (ds='2010') from group hive_test_group1
+PREHOOK: query: revoke select on table authorization_part_fail partition (ds='2010') from group hive_test_group1
 PREHOOK: type: REVOKE_PRIVILEGE
-POSTHOOK: query: revoke `select` on table authorization_part_fail partition (ds='2010') from group hive_test_group1
+POSTHOOK: query: revoke select on table authorization_part_fail partition (ds='2010') from group hive_test_group1
 POSTHOOK: type: REVOKE_PRIVILEGE
 POSTHOOK: Lineage: authorization_part_fail PARTITION(ds=2010).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: authorization_part_fail PARTITION(ds=2010).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]

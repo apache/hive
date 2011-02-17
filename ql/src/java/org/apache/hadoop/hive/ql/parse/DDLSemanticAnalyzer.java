@@ -501,12 +501,10 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
     List<PrivilegeDesc> ret = new ArrayList<PrivilegeDesc>();
     for (int i = 0; i < node.getChildCount(); i++) {
       ASTNode privilegeDef = (ASTNode) node.getChild(i);
-      
-      String privilegeStr = unescapeIdentifier(privilegeDef.getChild(0)
-          .getText());
-      Privilege privObj = PrivilegeRegistry.getPrivilege(privilegeStr);
+      ASTNode privilegeType = (ASTNode) privilegeDef.getChild(0);
+      Privilege privObj = PrivilegeRegistry.getPrivilege(privilegeType.getType());
       if (privObj == null) {
-        throw new SemanticException("undefined privilege " + privilegeStr);
+        throw new SemanticException("undefined privilege " + privObj.toString());
       }
       List<String> cols = null;
       if (privilegeDef.getChildCount() > 1) {

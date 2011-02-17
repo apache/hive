@@ -611,7 +611,7 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
 
           privBag.addToPrivileges(new HiveObjectPrivilege(new HiveObjectRef(
               HiveObjectType.GLOBAL, null, null, null, null), null, null,
-              new PrivilegeGrantInfo(priv.getPriv(), 0, grantor, grantorType,
+              new PrivilegeGrantInfo(priv.toString(), 0, grantor, grantorType,
                   grantOption)));
         }
       } else {
@@ -637,7 +637,7 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
           Privilege priv = privDesc.getPrivilege();
           if (columns != null && columns.size() > 0) {
             if (!priv.supportColumnLevel()) {
-              throw new HiveException(priv.getPriv()
+              throw new HiveException(priv.toString()
                   + " does not support column level.");
             }
             if (privSubjectDesc == null || tableName == null) {
@@ -648,24 +648,24 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
             for (int i = 0; i < columns.size(); i++) {
               privBag.addToPrivileges(new HiveObjectPrivilege(
                   new HiveObjectRef(HiveObjectType.COLUMN, dbName, tableName,
-                      partValues, columns.get(i)), null, null,  new PrivilegeGrantInfo(priv.getPriv(), 0, grantor, grantorType, grantOption)));
+                      partValues, columns.get(i)), null, null,  new PrivilegeGrantInfo(priv.toString(), 0, grantor, grantorType, grantOption)));
             }
           } else {
             if (privSubjectDesc.getTable()) {
               if (privSubjectDesc.getPartSpec() != null) {
                 privBag.addToPrivileges(new HiveObjectPrivilege(
                     new HiveObjectRef(HiveObjectType.PARTITION, dbName,
-                        tableName, partValues, null), null, null,  new PrivilegeGrantInfo(priv.getPriv(), 0, grantor, grantorType, grantOption)));
+                        tableName, partValues, null), null, null,  new PrivilegeGrantInfo(priv.toString(), 0, grantor, grantorType, grantOption)));
               } else {
                 privBag
                     .addToPrivileges(new HiveObjectPrivilege(
                         new HiveObjectRef(HiveObjectType.TABLE, dbName,
-                            tableName, null, null), null, null, new PrivilegeGrantInfo(priv.getPriv(), 0, grantor, grantorType, grantOption)));
+                            tableName, null, null), null, null, new PrivilegeGrantInfo(priv.toString(), 0, grantor, grantorType, grantOption)));
               }
             } else {
               privBag.addToPrivileges(new HiveObjectPrivilege(
                   new HiveObjectRef(HiveObjectType.DATABASE, dbName, null,
-                      null, null), null, null, new PrivilegeGrantInfo(priv.getPriv(), 0, grantor, grantorType, grantOption)));
+                      null, null), null, null, new PrivilegeGrantInfo(priv.toString(), 0, grantor, grantorType, grantOption)));
             }
           }
         }

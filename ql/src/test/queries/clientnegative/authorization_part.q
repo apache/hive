@@ -2,15 +2,15 @@ create table authorization_part_fail (key int, value string) partitioned by (ds 
 ALTER TABLE authorization_part_fail SET TBLPROPERTIES ("PARTITION_LEVEL_PRIVILEGE"="TRUE");
 set hive.security.authorization.enabled=true;
 
-grant `Create` on table authorization_part_fail to user hive_test_user;
-grant `Update` on table authorization_part_fail to user hive_test_user;
-grant `Drop` on table authorization_part_fail to user hive_test_user;
-grant `select` on table src to user hive_test_user;
+grant Create on table authorization_part_fail to user hive_test_user;
+grant Update on table authorization_part_fail to user hive_test_user;
+grant Drop on table authorization_part_fail to user hive_test_user;
+grant select on table src to user hive_test_user;
 
 -- column grant to group
 
-grant `select`(key) on table authorization_part_fail to group hive_test_group1;
-grant `select` on table authorization_part_fail to group hive_test_group1;
+grant select(key) on table authorization_part_fail to group hive_test_group1;
+grant select on table authorization_part_fail to group hive_test_group1;
 
 show grant group hive_test_group1 on table authorization_part_fail;
 
@@ -26,7 +26,7 @@ select key, value from authorization_part_fail where ds='2011' order by key limi
 
 select key,value, ds from authorization_part_fail where ds>='2010' order by key, ds limit 20;
 
-revoke `select` on table authorization_part_fail partition (ds='2010') from group hive_test_group1;
+revoke select on table authorization_part_fail partition (ds='2010') from group hive_test_group1;
 
 select key,value, ds from authorization_part_fail where ds>='2010' order by key, ds limit 20;
 

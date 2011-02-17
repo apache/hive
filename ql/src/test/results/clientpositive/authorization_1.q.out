@@ -7,11 +7,11 @@ POSTHOOK: Input: default@src
 POSTHOOK: Output: default@src_autho_test
 PREHOOK: query: --table grant to user
 
-grant `select` on table src_autho_test to user hive_test_user
+grant select on table src_autho_test to user hive_test_user
 PREHOOK: type: GRANT_PRIVILEGE
 POSTHOOK: query: --table grant to user
 
-grant `select` on table src_autho_test to user hive_test_user
+grant select on table src_autho_test to user hive_test_user
 POSTHOOK: type: GRANT_PRIVILEGE
 PREHOOK: query: show grant user hive_test_user on table src_autho_test
 PREHOOK: type: SHOW_GRANT
@@ -57,9 +57,9 @@ POSTHOOK: Output: file:/var/folders/6g/6grtCwPMEf4sqHUPpy6xQG9ByHg/-Tmp-/heyongq
 118
 118
 119
-PREHOOK: query: revoke `select` on table src_autho_test from user hive_test_user
+PREHOOK: query: revoke select on table src_autho_test from user hive_test_user
 PREHOOK: type: REVOKE_PRIVILEGE
-POSTHOOK: query: revoke `select` on table src_autho_test from user hive_test_user
+POSTHOOK: query: revoke select on table src_autho_test from user hive_test_user
 POSTHOOK: type: REVOKE_PRIVILEGE
 PREHOOK: query: show grant user hive_test_user on table src_autho_test
 PREHOOK: type: SHOW_GRANT
@@ -71,11 +71,11 @@ POSTHOOK: query: show grant user hive_test_user on table src_autho_test(key)
 POSTHOOK: type: SHOW_GRANT
 PREHOOK: query: --column grant to user
 
-grant `select`(key) on table src_autho_test to user hive_test_user
+grant select(key) on table src_autho_test to user hive_test_user
 PREHOOK: type: GRANT_PRIVILEGE
 POSTHOOK: query: --column grant to user
 
-grant `select`(key) on table src_autho_test to user hive_test_user
+grant select(key) on table src_autho_test to user hive_test_user
 POSTHOOK: type: GRANT_PRIVILEGE
 PREHOOK: query: show grant user hive_test_user on table src_autho_test
 PREHOOK: type: SHOW_GRANT
@@ -122,9 +122,9 @@ POSTHOOK: Output: file:/var/folders/6g/6grtCwPMEf4sqHUPpy6xQG9ByHg/-Tmp-/heyongq
 118
 118
 119
-PREHOOK: query: revoke `select`(key) on table src_autho_test from user hive_test_user
+PREHOOK: query: revoke select(key) on table src_autho_test from user hive_test_user
 PREHOOK: type: REVOKE_PRIVILEGE
-POSTHOOK: query: revoke `select`(key) on table src_autho_test from user hive_test_user
+POSTHOOK: query: revoke select(key) on table src_autho_test from user hive_test_user
 POSTHOOK: type: REVOKE_PRIVILEGE
 PREHOOK: query: show grant user hive_test_user on table src_autho_test
 PREHOOK: type: SHOW_GRANT
@@ -136,11 +136,11 @@ POSTHOOK: query: show grant user hive_test_user on table src_autho_test(key)
 POSTHOOK: type: SHOW_GRANT
 PREHOOK: query: --table grant to group
 
-grant `select` on table src_autho_test to group hive_test_group1
+grant select on table src_autho_test to group hive_test_group1
 PREHOOK: type: GRANT_PRIVILEGE
 POSTHOOK: query: --table grant to group
 
-grant `select` on table src_autho_test to group hive_test_group1
+grant select on table src_autho_test to group hive_test_group1
 POSTHOOK: type: GRANT_PRIVILEGE
 PREHOOK: query: show grant group hive_test_group1 on table src_autho_test
 PREHOOK: type: SHOW_GRANT
@@ -186,9 +186,9 @@ POSTHOOK: Output: file:/var/folders/6g/6grtCwPMEf4sqHUPpy6xQG9ByHg/-Tmp-/heyongq
 118
 118
 119
-PREHOOK: query: revoke `select` on table src_autho_test from group hive_test_group1
+PREHOOK: query: revoke select on table src_autho_test from group hive_test_group1
 PREHOOK: type: REVOKE_PRIVILEGE
-POSTHOOK: query: revoke `select` on table src_autho_test from group hive_test_group1
+POSTHOOK: query: revoke select on table src_autho_test from group hive_test_group1
 POSTHOOK: type: REVOKE_PRIVILEGE
 PREHOOK: query: show grant group hive_test_group1 on table src_autho_test
 PREHOOK: type: SHOW_GRANT
@@ -200,11 +200,11 @@ POSTHOOK: query: show grant group hive_test_group1 on table src_autho_test(key)
 POSTHOOK: type: SHOW_GRANT
 PREHOOK: query: --column grant to group
 
-grant `select`(key) on table src_autho_test to group hive_test_group1
+grant select(key) on table src_autho_test to group hive_test_group1
 PREHOOK: type: GRANT_PRIVILEGE
 POSTHOOK: query: --column grant to group
 
-grant `select`(key) on table src_autho_test to group hive_test_group1
+grant select(key) on table src_autho_test to group hive_test_group1
 POSTHOOK: type: GRANT_PRIVILEGE
 PREHOOK: query: show grant group hive_test_group1 on table src_autho_test
 PREHOOK: type: SHOW_GRANT
@@ -251,9 +251,9 @@ POSTHOOK: Output: file:/var/folders/6g/6grtCwPMEf4sqHUPpy6xQG9ByHg/-Tmp-/heyongq
 118
 118
 119
-PREHOOK: query: revoke `select`(key) on table src_autho_test from group hive_test_group1
+PREHOOK: query: revoke select(key) on table src_autho_test from group hive_test_group1
 PREHOOK: type: REVOKE_PRIVILEGE
-POSTHOOK: query: revoke `select`(key) on table src_autho_test from group hive_test_group1
+POSTHOOK: query: revoke select(key) on table src_autho_test from group hive_test_group1
 POSTHOOK: type: REVOKE_PRIVILEGE
 PREHOOK: query: show grant group hive_test_group1 on table src_autho_test
 PREHOOK: type: SHOW_GRANT
@@ -281,11 +281,11 @@ role name:src_role
 role name:src_role
 PREHOOK: query: --column grant to role
 
-grant `select`(key) on table src_autho_test to role src_role
+grant select(key) on table src_autho_test to role src_role
 PREHOOK: type: GRANT_PRIVILEGE
 POSTHOOK: query: --column grant to role
 
-grant `select`(key) on table src_autho_test to role src_role
+grant select(key) on table src_autho_test to role src_role
 POSTHOOK: type: GRANT_PRIVILEGE
 PREHOOK: query: show grant role src_role on table src_autho_test
 PREHOOK: type: SHOW_GRANT
@@ -332,17 +332,17 @@ POSTHOOK: Output: file:/var/folders/6g/6grtCwPMEf4sqHUPpy6xQG9ByHg/-Tmp-/heyongq
 118
 118
 119
-PREHOOK: query: revoke `select`(key) on table src_autho_test from role src_role
+PREHOOK: query: revoke select(key) on table src_autho_test from role src_role
 PREHOOK: type: REVOKE_PRIVILEGE
-POSTHOOK: query: revoke `select`(key) on table src_autho_test from role src_role
+POSTHOOK: query: revoke select(key) on table src_autho_test from role src_role
 POSTHOOK: type: REVOKE_PRIVILEGE
 PREHOOK: query: --table grant to role
 
-grant `select` on table src_autho_test to role src_role
+grant select on table src_autho_test to role src_role
 PREHOOK: type: GRANT_PRIVILEGE
 POSTHOOK: query: --table grant to role
 
-grant `select` on table src_autho_test to role src_role
+grant select on table src_autho_test to role src_role
 POSTHOOK: type: GRANT_PRIVILEGE
 PREHOOK: query: select key from src_autho_test order by key limit 20
 PREHOOK: type: QUERY
@@ -388,9 +388,9 @@ PREHOOK: query: show grant role src_role on table src_autho_test(key)
 PREHOOK: type: SHOW_GRANT
 POSTHOOK: query: show grant role src_role on table src_autho_test(key)
 POSTHOOK: type: SHOW_GRANT
-PREHOOK: query: revoke `select` on table src_autho_test from role src_role
+PREHOOK: query: revoke select on table src_autho_test from role src_role
 PREHOOK: type: REVOKE_PRIVILEGE
-POSTHOOK: query: revoke `select` on table src_autho_test from role src_role
+POSTHOOK: query: revoke select on table src_autho_test from role src_role
 POSTHOOK: type: REVOKE_PRIVILEGE
 PREHOOK: query: -- drop role
 drop role src_role
