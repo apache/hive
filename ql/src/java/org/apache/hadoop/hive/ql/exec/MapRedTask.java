@@ -245,10 +245,12 @@ public class MapRedTask extends ExecDriver implements Serializable {
       // Run ExecDriver in another JVM
       executor = Runtime.getRuntime().exec(cmdLine, env, new File(workDir));
 
-      StreamPrinter outPrinter = new StreamPrinter(executor.getInputStream(),
-          null, System.out);
-      StreamPrinter errPrinter = new StreamPrinter(executor.getErrorStream(),
-          null, System.err);
+      StreamPrinter outPrinter = new StreamPrinter(
+          executor.getInputStream(), null,
+          SessionState.getConsole().getChildOutStream());
+      StreamPrinter errPrinter = new StreamPrinter(
+          executor.getErrorStream(), null,
+          SessionState.getConsole().getChildErrStream());
 
       outPrinter.start();
       errPrinter.start();
