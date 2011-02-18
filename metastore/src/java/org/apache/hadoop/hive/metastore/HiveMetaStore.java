@@ -151,7 +151,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       if (!ShimLoader.getHadoopShims().isSecureShimImpl() || cmd == null) {
         return;
       }
-      
+
       UserGroupInformation ugi;
       try {
         ugi = ShimLoader.getHadoopShims().getUGIForConf(getConf());
@@ -161,7 +161,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       InetAddress addr = TLoggingProcessor.getRemoteAddress();
       final Formatter fmt = auditFormatter.get();
       ((StringBuilder)fmt.out()).setLength(0);
-      auditLog.info(fmt.format(AUDIT_FORMAT, ugi.getUserName(), 
+      auditLog.info(fmt.format(AUDIT_FORMAT, ugi.getUserName(),
           addr == null ? "unknown-ip-addr" : addr.toString(), cmd).toString());
     }
 
@@ -486,7 +486,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       try {
         Metrics.startScope(function);
       } catch (IOException e) {
-        LOG.debug("Exception when starting metrics scope" 
+        LOG.debug("Exception when starting metrics scope"
                     + e.getClass().getName() + " " + e.getMessage());
         MetaStoreUtils.printStackTrace(e);
       }
@@ -1128,7 +1128,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
 
         Partition old_part = null;
         try {
-          old_part = get_partition(part.getDbName(), part
+          old_part = ms.getPartition(part.getDbName(), part
             .getTableName(), part.getValues());
         } catch (NoSuchObjectException e) {
           // this means there is no existing partition
@@ -1260,7 +1260,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
         ms.openTransaction();
         Partition old_part = null;
         try {
-          old_part = get_partition(part.getDbName(), part
+          old_part = ms.getPartition(part.getDbName(), part
             .getTableName(), part.getValues());
         } catch(NoSuchObjectException e) {
           // this means there is no existing partition
@@ -1359,7 +1359,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
 
       try {
         ms.openTransaction();
-        part = get_partition(db_name, tbl_name, part_vals);
+        part = ms.getPartition(db_name, tbl_name, part_vals);
 
         if (part == null) {
           throw new NoSuchObjectException("Partition doesn't exist. "
@@ -2762,7 +2762,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
             if (partName != null) {
               Partition part = null;
               part = get_partition_by_name(dbName, tableName, partName);
-              List<MPartitionColumnPrivilege> mPartitionCols 
+              List<MPartitionColumnPrivilege> mPartitionCols
                   = ms.listPrincipalPartitionColumnGrants(principalName,
                   principalType, dbName, tableName, partName, columnName);
               if (mPartitionCols.size() > 0) {
@@ -3106,7 +3106,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       TServerTransport serverTransport = tcpKeepAlive ?
           new TServerSocketKeepAlive(port) : new TServerSocket(port);
 
-      TProcessor processor = 
+      TProcessor processor =
         new TLoggingProcessor(new ThriftHiveMetastore.Processor(handler));
       TTransportFactory transFactory;
       if (useSasl) {
@@ -3142,7 +3142,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       throw x;
     }
   }
-  //Assists audit logger - gets the remote client's IP address. 
+  //Assists audit logger - gets the remote client's IP address.
   private static class TLoggingProcessor implements TProcessor {
     private final static ThreadLocal<InetAddress> remoteAddress =
       new ThreadLocal<InetAddress>() {
@@ -3158,7 +3158,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
     static InetAddress getRemoteAddress() {
       return remoteAddress.get();
     }
-    public boolean process(final TProtocol inProt, final TProtocol outProt) 
+    public boolean process(final TProtocol inProt, final TProtocol outProt)
     throws TException {
       if (TSocket.class.isAssignableFrom(inProt.getTransport().getClass())) {
         Socket socket = ((TSocket)inProt.getTransport()).getSocket();
