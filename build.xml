@@ -368,7 +368,11 @@
     <copy todir="${target.example.dir}/files" preservelastmodified="true" flatten="true">
       <fileset dir="${test.data.dir}/files" includes="*.*" excludes="${vcs.excludes}"/>
     </copy>
-    <copy file="${basedir}/README.txt" todir="${target.dir}"/>
+    <copy file="${basedir}/README.txt" todir="${target.dir}">
+      <filterset>
+        <filter token="VERSION" value="${version}"/>
+      </filterset>
+    </copy>
     <copy file="${basedir}/NOTICE" todir="${target.dir}"/>
     <copy file="${basedir}/LICENSE" todir="${target.dir}"/>
     <copy file="${basedir}/RELEASE_NOTES.txt" todir="${target.dir}"/>

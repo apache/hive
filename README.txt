@@ -1,4 +1,4 @@
-Apache Hive 0.6.0
+Apache Hive @VERSION@
 =================
 
 Hive is a data warehouse system for Hadoop that facilitates
@@ -38,10 +38,6 @@ For the latest information about Hive, please visit out website at:
 
   http://hive.apache.org/
 
-and our wiki at:
-
-  http://wiki.apache.org/hadoop/Hive/
-
 
 Getting Started
 ===============
@@ -61,28 +57,23 @@ Requirements
 
 - Java 1.6
 
-- Hadoop 0.17, 0.18, 0.19, or 0.20.
-
-  *NOTE*: We strongly recommend that you use Hadoop 0.20
-  since the majority of our testing is done against this
-  version and because support for pre-0.20 versions of
-  Hadoop will be dropped in Hive 0.7.
+- Hadoop 0.20.x (x >= 1)
 
 
 Upgrading from older versions of Hive
 =====================================
 
-- Hive 0.6.0 includes changes to the MetaStore schema. If
+- Hive @VERSION@ includes changes to the MetaStore schema. If
   you are upgrading from an earlier version of Hive it is
   imperative that you upgrade the MetaStore schema by
-  running the appropriate schema upgrade script located in
+  running the appropriate schema upgrade scripts located in
   the scripts/metastore/upgrade directory.
 
-  We have provided upgrade scripts for Derby, MySQL, and PostgreSQL
-  databases. If you are using a different database for your MetaStore
-  you will need to provide your own upgrade script.
+  We have provided upgrade scripts for Derby and MySQL databases. If
+  you are using a different database for your MetaStore you will need
+  to provide your own upgrade script.
 
-- Hive 0.6.0 includes new configuration properties. If you
+- Hive @VERSION@ includes new configuration properties. If you
   are upgrading from an earlier version of Hive it is imperative
   that you replace all of the old copies of the hive-default.xml
   configuration file with the new version located in the conf/
