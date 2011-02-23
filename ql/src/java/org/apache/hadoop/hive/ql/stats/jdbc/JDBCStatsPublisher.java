@@ -41,6 +41,9 @@ public class JDBCStatsPublisher implements StatsPublisher {
   private final Log LOG = LogFactory.getLog(this.getClass().getName());
   private PreparedStatement selStmt, updStmt, insStmt;
   private int timeout = 30; // default timeout in sec. for JDBC connection and statements
+  // SQL comment that identifies where the SQL statement comes from
+  private final String comment = "Hive stats publishing: " + this.getClass().getName();
+
 
   public JDBCStatsPublisher() {
     selStmt = updStmt = insStmt = null;
@@ -58,17 +61,17 @@ public class JDBCStatsPublisher implements StatsPublisher {
 
       // prepare the SELECT/UPDATE/INSERT statements
       String select =
-        "SELECT " + JDBCStatsSetupConstants.PART_STAT_ROW_COUNT_COLUMN_NAME +
+        "SELECT /* " + comment + " */ " + JDBCStatsSetupConstants.PART_STAT_ROW_COUNT_COLUMN_NAME +
         " FROM " + JDBCStatsSetupConstants.PART_STAT_TABLE_NAME +
         " WHERE " + JDBCStatsSetupConstants.PART_STAT_ID_COLUMN_NAME + " = ?";
 
       String update =
-        "UPDATE " + JDBCStatsSetupConstants.PART_STAT_TABLE_NAME +
+        "UPDATE /* " + comment + " */ "+ JDBCStatsSetupConstants.PART_STAT_TABLE_NAME +
         " SET " +  JDBCStatsSetupConstants.PART_STAT_ROW_COUNT_COLUMN_NAME + "= ? " +
         " WHERE " + JDBCStatsSetupConstants.PART_STAT_ID_COLUMN_NAME + " = ?";
 
       String insert =
-        "INSERT INTO " + JDBCStatsSetupConstants.PART_STAT_TABLE_NAME +
+        "INSERT INTO /* " + comment + " */ " + JDBCStatsSetupConstants.PART_STAT_TABLE_NAME +
         " VALUES (?, ?)";
 
       selStmt = conn.prepareStatement(select);

@@ -38,6 +38,7 @@ public class JDBCStatsAggregator implements StatsAggregator {
   private Configuration hiveconf;
   private final Log LOG = LogFactory.getLog(this.getClass().getName());
   private int timeout = 30;
+  private final String comment = "Hive stats aggregation: " + this.getClass().getName();
 
   public boolean connect(Configuration hiveconf) {
     try {
@@ -72,7 +73,8 @@ public class JDBCStatsAggregator implements StatsAggregator {
       Statement stmt = conn.createStatement();
       stmt.setQueryTimeout(timeout);
       String select =
-        "SELECT SUM" + "(" + JDBCStatsSetupConstants.PART_STAT_ROW_COUNT_COLUMN_NAME + ")" +
+        "SELECT /* " + comment + " */ " +
+        " SUM(" + JDBCStatsSetupConstants.PART_STAT_ROW_COUNT_COLUMN_NAME + ")" +
         " FROM " + JDBCStatsSetupConstants.PART_STAT_TABLE_NAME +
         " WHERE " + JDBCStatsSetupConstants.PART_STAT_ID_COLUMN_NAME + " LIKE '" + fileID + "%'";
 
@@ -94,7 +96,8 @@ public class JDBCStatsAggregator implements StatsAggregator {
           through a separate method which the developer has to call it manually in the code.
        */
       String delete =
-        "DELETE FROM " + JDBCStatsSetupConstants.PART_STAT_TABLE_NAME +
+        "DELETE /* " + comment + " */ " +
+        " FROM " + JDBCStatsSetupConstants.PART_STAT_TABLE_NAME +
         " WHERE " + JDBCStatsSetupConstants.PART_STAT_ID_COLUMN_NAME + " LIKE '" + fileID + "%'";
       stmt.executeUpdate(delete);
       stmt.close();
@@ -138,7 +141,8 @@ public class JDBCStatsAggregator implements StatsAggregator {
       Statement stmt = conn.createStatement();
 
       String delete =
-        "DELETE FROM " + JDBCStatsSetupConstants.PART_STAT_TABLE_NAME +
+        "DELETE /* " + comment + " */ " +
+        " FROM " + JDBCStatsSetupConstants.PART_STAT_TABLE_NAME +
         " WHERE " + JDBCStatsSetupConstants.PART_STAT_ID_COLUMN_NAME + " LIKE '" + rowID + "%'";
       stmt.executeUpdate(delete);
       stmt.close();
