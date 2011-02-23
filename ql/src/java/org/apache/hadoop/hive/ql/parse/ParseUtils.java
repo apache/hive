@@ -18,15 +18,16 @@
 
 package org.apache.hadoop.hive.ql.parse;
 
+
 /**
  * Library of utility functions used in the parse code.
- * 
+ *
  */
 public final class ParseUtils {
 
   /**
    * Tests whether the parse tree node is a join token.
-   * 
+   *
    * @param node
    *          The parse tree node
    * @return boolean
@@ -46,10 +47,10 @@ public final class ParseUtils {
   /**
    * Performs a descent of the leftmost branch of a tree, stopping when either a
    * node with a non-null token is found or the leaf level is encountered.
-   * 
+   *
    * @param tree
    *          candidate node from which to start searching
-   * 
+   *
    * @return node at which descent stopped
    */
   public static ASTNode findRootNonNullToken(ASTNode tree) {

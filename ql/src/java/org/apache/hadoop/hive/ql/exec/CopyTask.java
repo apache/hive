@@ -25,11 +25,11 @@ import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.FileUtil;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.ql.Context;
+import org.apache.hadoop.hive.ql.DriverContext;
 import org.apache.hadoop.hive.ql.parse.LoadSemanticAnalyzer;
 import org.apache.hadoop.hive.ql.plan.CopyWork;
 import org.apache.hadoop.hive.ql.plan.api.StageType;
 import org.apache.hadoop.util.StringUtils;
-import org.apache.hadoop.hive.ql.DriverContext;
 
 /**
  * CopyTask implementation.
@@ -70,6 +70,7 @@ public class CopyTask extends Task<CopyWork> implements Serializable {
       }
 
       for (FileStatus oneSrc : srcs) {
+        System.out.println("Copying file: " + oneSrc.getPath().toString());
         LOG.debug("Copying file: " + oneSrc.getPath().toString());
         if (!FileUtil.copy(srcFs, oneSrc.getPath(), dstFs, toPath, false, // delete
             // source
@@ -101,7 +102,7 @@ public class CopyTask extends Task<CopyWork> implements Serializable {
 
   @Override
   protected void localizeMRTmpFilesImpl(Context ctx) {
-    // copy task is only used by the load command and 
+    // copy task is only used by the load command and
     // does not use any map-reduce tmp files
     // we don't expect to enter this code path at all
     throw new RuntimeException ("Unexpected call");

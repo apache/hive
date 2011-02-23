@@ -568,6 +568,8 @@ public class Driver implements CommandProcessor {
 
     if (t != null) {
       locks.add(new HiveLockObj(new HiveLockObject(t, lockData), mode));
+      mode = HiveLockMode.SHARED;
+      locks.add(new HiveLockObj(new HiveLockObject(t.getDbName(), lockData), mode));
       return locks;
     }
 
@@ -605,6 +607,7 @@ public class Driver implements CommandProcessor {
       }
 
       locks.add(new HiveLockObj(new HiveLockObject(p.getTable(), lockData), mode));
+      locks.add(new HiveLockObj(new HiveLockObject(p.getTable().getDbName(), lockData), mode));
     }
     return locks;
   }

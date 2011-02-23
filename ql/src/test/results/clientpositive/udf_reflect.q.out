@@ -31,7 +31,7 @@ SELECT reflect("java.lang.String", "valueOf", 1),
 FROM src LIMIT 1
 POSTHOOK: type: QUERY
 ABSTRACT SYNTAX TREE:
-  (TOK_QUERY (TOK_FROM (TOK_TABREF src)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_FUNCTION reflect "java.lang.String" "valueOf" 1)) (TOK_SELEXPR (TOK_FUNCTION reflect "java.lang.String" "isEmpty")) (TOK_SELEXPR (TOK_FUNCTION reflect "java.lang.Math" "max" 2 3)) (TOK_SELEXPR (TOK_FUNCTION reflect "java.lang.Math" "min" 2 3)) (TOK_SELEXPR (TOK_FUNCTION reflect "java.lang.Math" "round" 2.5)) (TOK_SELEXPR (TOK_FUNCTION reflect "java.lang.Math" "exp" 1.0)) (TOK_SELEXPR (TOK_FUNCTION reflect "java.lang.Math" "floor" 1.9))) (TOK_LIMIT 1)))
+  (TOK_QUERY (TOK_FROM (TOK_TABREF (TOK_TABNAME src))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_FUNCTION reflect "java.lang.String" "valueOf" 1)) (TOK_SELEXPR (TOK_FUNCTION reflect "java.lang.String" "isEmpty")) (TOK_SELEXPR (TOK_FUNCTION reflect "java.lang.Math" "max" 2 3)) (TOK_SELEXPR (TOK_FUNCTION reflect "java.lang.Math" "min" 2 3)) (TOK_SELEXPR (TOK_FUNCTION reflect "java.lang.Math" "round" 2.5)) (TOK_SELEXPR (TOK_FUNCTION reflect "java.lang.Math" "exp" 1.0)) (TOK_SELEXPR (TOK_FUNCTION reflect "java.lang.Math" "floor" 1.9))) (TOK_LIMIT 1)))
 
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -66,9 +66,9 @@ STAGE PLANS:
                 File Output Operator
                   compressed: false
                   GlobalTableId: 0
-                  directory: file:/tmp/nzhang/hive_2010-09-15_17-26-36_357_6265400288274412023/-ext-10001
+                  directory: file:/tmp/sdong/hive_2011-02-10_17-39-58_293_2781390290372198499/-ext-10001
                   NumFilesPerFileSink: 1
-                  Stats Publishing Key Prefix: file:/tmp/nzhang/hive_2010-09-15_17-26-36_357_6265400288274412023/-ext-10001/
+                  Stats Publishing Key Prefix: file:/tmp/sdong/hive_2011-02-10_17-39-58_293_2781390290372198499/-ext-10001/
                   table:
                       input format: org.apache.hadoop.mapred.TextInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
@@ -81,9 +81,9 @@ STAGE PLANS:
                   MultiFileSpray: false
       Needs Tagging: false
       Path -> Alias:
-        pfile:/data/users/nzhang/work/784/apache-hive/build/ql/test/data/warehouse/src [src]
+        pfile:/data/users/sdong/www/open-source-hive1/build/ql/test/data/warehouse/src [src]
       Path -> Partition:
-        pfile:/data/users/nzhang/work/784/apache-hive/build/ql/test/data/warehouse/src 
+        pfile:/data/users/sdong/www/open-source-hive1/build/ql/test/data/warehouse/src 
           Partition
             base file name: src
             input format: org.apache.hadoop.mapred.TextInputFormat
@@ -94,12 +94,12 @@ STAGE PLANS:
               columns.types string:string
               file.inputformat org.apache.hadoop.mapred.TextInputFormat
               file.outputformat org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-              location pfile:/data/users/nzhang/work/784/apache-hive/build/ql/test/data/warehouse/src
-              name src
+              location pfile:/data/users/sdong/www/open-source-hive1/build/ql/test/data/warehouse/src
+              name default.src
               serialization.ddl struct src { string key, string value}
               serialization.format 1
               serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              transient_lastDdlTime 1284588338
+              transient_lastDdlTime 1297378968
             serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
           
               input format: org.apache.hadoop.mapred.TextInputFormat
@@ -110,15 +110,15 @@ STAGE PLANS:
                 columns.types string:string
                 file.inputformat org.apache.hadoop.mapred.TextInputFormat
                 file.outputformat org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                location pfile:/data/users/nzhang/work/784/apache-hive/build/ql/test/data/warehouse/src
-                name src
+                location pfile:/data/users/sdong/www/open-source-hive1/build/ql/test/data/warehouse/src
+                name default.src
                 serialization.ddl struct src { string key, string value}
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                transient_lastDdlTime 1284588338
+                transient_lastDdlTime 1297378968
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              name: src
-            name: src
+              name: default.src
+            name: default.src
 
   Stage: Stage-0
     Fetch Operator
@@ -135,7 +135,7 @@ PREHOOK: query: SELECT reflect("java.lang.String", "valueOf", 1),
 FROM src LIMIT 1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/tmp/nzhang/hive_2010-09-15_17-26-36_401_5084178290925314023/-mr-10000
+PREHOOK: Output: file:/tmp/sdong/hive_2011-02-10_17-39-58_382_6716753430415370105/-mr-10000
 POSTHOOK: query: SELECT reflect("java.lang.String", "valueOf", 1),
        reflect("java.lang.String", "isEmpty"),
        reflect("java.lang.Math", "max", 2, 3),
@@ -146,5 +146,5 @@ POSTHOOK: query: SELECT reflect("java.lang.String", "valueOf", 1),
 FROM src LIMIT 1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: file:/tmp/nzhang/hive_2010-09-15_17-26-36_401_5084178290925314023/-mr-10000
+POSTHOOK: Output: file:/tmp/sdong/hive_2011-02-10_17-39-58_382_6716753430415370105/-mr-10000
 1	true	3	2	3	2.7182818284590455	1.0

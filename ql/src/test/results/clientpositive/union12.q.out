@@ -24,7 +24,7 @@ insert overwrite table tmptable
                                             select 'tst3' as key, count(1) as value from srcbucket s3) unionsrc
 POSTHOOK: type: QUERY
 ABSTRACT SYNTAX TREE:
-  (TOK_QUERY (TOK_FROM (TOK_SUBQUERY (TOK_UNION (TOK_UNION (TOK_QUERY (TOK_FROM (TOK_TABREF src s1)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR 'tst1' key) (TOK_SELEXPR (TOK_FUNCTION count 1) value)))) (TOK_QUERY (TOK_FROM (TOK_TABREF src1 s2)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR 'tst2' key) (TOK_SELEXPR (TOK_FUNCTION count 1) value))))) (TOK_QUERY (TOK_FROM (TOK_TABREF srcbucket s3)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR 'tst3' key) (TOK_SELEXPR (TOK_FUNCTION count 1) value))))) unionsrc)) (TOK_INSERT (TOK_DESTINATION (TOK_TAB tmptable)) (TOK_SELECT (TOK_SELEXPR (. (TOK_TABLE_OR_COL unionsrc) key)) (TOK_SELEXPR (. (TOK_TABLE_OR_COL unionsrc) value)))))
+  (TOK_QUERY (TOK_FROM (TOK_SUBQUERY (TOK_UNION (TOK_UNION (TOK_QUERY (TOK_FROM (TOK_TABREF (TOK_TABNAME src) s1)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR 'tst1' key) (TOK_SELEXPR (TOK_FUNCTION count 1) value)))) (TOK_QUERY (TOK_FROM (TOK_TABREF (TOK_TABNAME src1) s2)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR 'tst2' key) (TOK_SELEXPR (TOK_FUNCTION count 1) value))))) (TOK_QUERY (TOK_FROM (TOK_TABREF (TOK_TABNAME srcbucket) s3)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR 'tst3' key) (TOK_SELEXPR (TOK_FUNCTION count 1) value))))) unionsrc)) (TOK_INSERT (TOK_DESTINATION (TOK_TAB (TOK_TABNAME tmptable))) (TOK_SELECT (TOK_SELEXPR (. (TOK_TABLE_OR_COL unionsrc) key)) (TOK_SELEXPR (. (TOK_TABLE_OR_COL unionsrc) value)))))
 
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -81,7 +81,7 @@ STAGE PLANS:
   Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/tmp/nzhang/hive_2010-09-14_18-17-08_605_1439847119800045323/-mr-10002 
+        file:/tmp/sdong/hive_2011-02-10_17-49-01_067_6496196090074691511/-mr-10002 
           Union
             Select Operator
               expressions:
@@ -104,8 +104,8 @@ STAGE PLANS:
                       input format: org.apache.hadoop.mapred.TextInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                       serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                      name: tmptable
-        file:/tmp/nzhang/hive_2010-09-14_18-17-08_605_1439847119800045323/-mr-10004 
+                      name: default.tmptable
+        file:/tmp/sdong/hive_2011-02-10_17-49-01_067_6496196090074691511/-mr-10004 
           Union
             Select Operator
               expressions:
@@ -128,8 +128,8 @@ STAGE PLANS:
                       input format: org.apache.hadoop.mapred.TextInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                       serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                      name: tmptable
-        file:/tmp/nzhang/hive_2010-09-14_18-17-08_605_1439847119800045323/-mr-10005 
+                      name: default.tmptable
+        file:/tmp/sdong/hive_2011-02-10_17-49-01_067_6496196090074691511/-mr-10005 
           Union
             Select Operator
               expressions:
@@ -152,7 +152,7 @@ STAGE PLANS:
                       input format: org.apache.hadoop.mapred.TextInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                       serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                      name: tmptable
+                      name: default.tmptable
 
   Stage: Stage-6
     Conditional Operator
@@ -161,7 +161,7 @@ STAGE PLANS:
     Move Operator
       files:
           hdfs directory: true
-          destination: pfile:/data/users/nzhang/work/784/apache-hive/build/ql/scratchdir/hive_2010-09-14_18-17-08_605_1439847119800045323/-ext-10000
+          destination: pfile:/data/users/sdong/www/open-source-hive1/build/ql/scratchdir/hive_2011-02-10_17-49-01_067_6496196090074691511/-ext-10000
 
   Stage: Stage-0
     Move Operator
@@ -171,7 +171,7 @@ STAGE PLANS:
               input format: org.apache.hadoop.mapred.TextInputFormat
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              name: tmptable
+              name: default.tmptable
 
   Stage: Stage-3
     Stats-Aggr Operator
@@ -179,7 +179,7 @@ STAGE PLANS:
   Stage: Stage-4
     Map Reduce
       Alias -> Map Operator Tree:
-        pfile:/data/users/nzhang/work/784/apache-hive/build/ql/scratchdir/hive_2010-09-14_18-17-08_605_1439847119800045323/-ext-10003 
+        pfile:/data/users/sdong/www/open-source-hive1/build/ql/scratchdir/hive_2011-02-10_17-49-01_067_6496196090074691511/-ext-10003 
             File Output Operator
               compressed: false
               GlobalTableId: 0
@@ -187,7 +187,7 @@ STAGE PLANS:
                   input format: org.apache.hadoop.mapred.TextInputFormat
                   output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                   serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                  name: tmptable
+                  name: default.tmptable
 
   Stage: Stage-7
     Map Reduce
@@ -297,11 +297,11 @@ POSTHOOK: Lineage: tmptable.value EXPRESSION [(src)s1.null, (src1)s2.null, (srcb
 PREHOOK: query: select * from tmptable x sort by x.key
 PREHOOK: type: QUERY
 PREHOOK: Input: default@tmptable
-PREHOOK: Output: file:/tmp/nzhang/hive_2010-09-14_18-17-28_935_6340798078420535385/-mr-10000
+PREHOOK: Output: file:/tmp/sdong/hive_2011-02-10_17-49-16_037_8936104568515340621/-mr-10000
 POSTHOOK: query: select * from tmptable x sort by x.key
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@tmptable
-POSTHOOK: Output: file:/tmp/nzhang/hive_2010-09-14_18-17-28_935_6340798078420535385/-mr-10000
+POSTHOOK: Output: file:/tmp/sdong/hive_2011-02-10_17-49-16_037_8936104568515340621/-mr-10000
 POSTHOOK: Lineage: tmptable.key EXPRESSION []
 POSTHOOK: Lineage: tmptable.value EXPRESSION [(src)s1.null, (src1)s2.null, (srcbucket)s3.null, ]
 tst1	500

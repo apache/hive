@@ -10,7 +10,7 @@ POSTHOOK: query: EXPLAIN
 LOAD DATA LOCAL INPATH '../data/files/kv1.txt' INTO TABLE INPUT4
 POSTHOOK: type: LOAD
 ABSTRACT SYNTAX TREE:
-  (TOK_LOAD '../data/files/kv1.txt' (TOK_TAB INPUT4) LOCAL)
+  (TOK_LOAD '../data/files/kv1.txt' (TOK_TAB (TOK_TABNAME INPUT4)) LOCAL)
 
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
@@ -19,8 +19,8 @@ STAGE DEPENDENCIES:
 STAGE PLANS:
   Stage: Stage-0
     Copy
-      source: file:/mnt/vol/devrs004.snc1/jssarma/projects/hive_trunk/data/files/kv1.txt
-      destination: file:/mnt/vol/devrs004.snc1/jssarma/projects/hive_trunk/build/ql/scratchdir/hive_2010-07-21_11-28-36_668_8539148391422299238/10000
+      source: file:/data/users/sdong/www/open-source-hive1/data/files/kv1.txt
+      destination: pfile:/data/users/sdong/www/open-source-hive1/build/ql/scratchdir/hive_2011-02-10_15-56-38_706_4510952181406829379/-ext-10000
 
   Stage: Stage-1
     Move Operator
@@ -30,7 +30,7 @@ STAGE PLANS:
               input format: org.apache.hadoop.mapred.TextInputFormat
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              name: input4
+              name: default.input4
 
 
 PREHOOK: query: LOAD DATA LOCAL INPATH '../data/files/kv1.txt' INTO TABLE INPUT4
@@ -41,11 +41,11 @@ POSTHOOK: Output: default@input4
 PREHOOK: query: SELECT INPUT4.VALUE, INPUT4.KEY FROM INPUT4
 PREHOOK: type: QUERY
 PREHOOK: Input: default@input4
-PREHOOK: Output: file:/tmp/jssarma/hive_2010-07-21_11-28-36_825_182661124432042155/10000
+PREHOOK: Output: file:/tmp/sdong/hive_2011-02-10_15-56-39_396_4819837394975176065/-mr-10000
 POSTHOOK: query: SELECT INPUT4.VALUE, INPUT4.KEY FROM INPUT4
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@input4
-POSTHOOK: Output: file:/tmp/jssarma/hive_2010-07-21_11-28-36_825_182661124432042155/10000
+POSTHOOK: Output: file:/tmp/sdong/hive_2011-02-10_15-56-39_396_4819837394975176065/-mr-10000
 val_238	238
 val_86	86
 val_311	311

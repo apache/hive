@@ -14,7 +14,7 @@ SELECT /*+ MAPJOIN(x) */ x.key, x.value, y.value
 FROM src1 x JOIN src y ON (x.value = y.value)
 POSTHOOK: type: QUERY
 ABSTRACT SYNTAX TREE:
-  (TOK_QUERY (TOK_FROM (TOK_JOIN (TOK_TABREF src1 x) (TOK_TABREF src y) (= (. (TOK_TABLE_OR_COL x) value) (. (TOK_TABLE_OR_COL y) value)))) (TOK_INSERT (TOK_DESTINATION (TOK_TAB dest_j1)) (TOK_SELECT (TOK_HINTLIST (TOK_HINT TOK_MAPJOIN (TOK_HINTARGLIST x))) (TOK_SELEXPR (. (TOK_TABLE_OR_COL x) key)) (TOK_SELEXPR (. (TOK_TABLE_OR_COL x) value)) (TOK_SELEXPR (. (TOK_TABLE_OR_COL y) value)))))
+  (TOK_QUERY (TOK_FROM (TOK_JOIN (TOK_TABREF (TOK_TABNAME src1) x) (TOK_TABREF (TOK_TABNAME src) y) (= (. (TOK_TABLE_OR_COL x) value) (. (TOK_TABLE_OR_COL y) value)))) (TOK_INSERT (TOK_DESTINATION (TOK_TAB (TOK_TABNAME dest_j1))) (TOK_SELECT (TOK_HINTLIST (TOK_HINT TOK_MAPJOIN (TOK_HINTARGLIST x))) (TOK_SELEXPR (. (TOK_TABLE_OR_COL x) key)) (TOK_SELEXPR (. (TOK_TABLE_OR_COL x) value)) (TOK_SELEXPR (. (TOK_TABLE_OR_COL y) value)))))
 
 STAGE DEPENDENCIES:
   Stage-7 is a root stage
@@ -98,7 +98,7 @@ STAGE PLANS:
                           input format: org.apache.hadoop.mapred.TextInputFormat
                           output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                           serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                          name: dest_j1
+                          name: default.dest_j1
       Local Work:
         Map Reduce Local Work
 
@@ -109,7 +109,7 @@ STAGE PLANS:
     Move Operator
       files:
           hdfs directory: true
-          destination: pfile:/data/users/liyintang/hive-1754/build/ql/scratchdir/hive_2010-11-04_12-09-55_355_6415074899212151208/-ext-10000
+          destination: pfile:/data/users/sdong/www/open-source-hive1/build/ql/scratchdir/hive_2011-02-10_16-04-08_290_5231941166795202890/-ext-10000
 
   Stage: Stage-0
     Move Operator
@@ -119,7 +119,7 @@ STAGE PLANS:
               input format: org.apache.hadoop.mapred.TextInputFormat
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              name: dest_j1
+              name: default.dest_j1
 
   Stage: Stage-2
     Stats-Aggr Operator
@@ -127,7 +127,7 @@ STAGE PLANS:
   Stage: Stage-3
     Map Reduce
       Alias -> Map Operator Tree:
-        pfile:/data/users/liyintang/hive-1754/build/ql/scratchdir/hive_2010-11-04_12-09-55_355_6415074899212151208/-ext-10002 
+        pfile:/data/users/sdong/www/open-source-hive1/build/ql/scratchdir/hive_2011-02-10_16-04-08_290_5231941166795202890/-ext-10002 
             File Output Operator
               compressed: false
               GlobalTableId: 0
@@ -135,7 +135,7 @@ STAGE PLANS:
                   input format: org.apache.hadoop.mapred.TextInputFormat
                   output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                   serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                  name: dest_j1
+                  name: default.dest_j1
 
 
 PREHOOK: query: INSERT OVERWRITE TABLE dest_j1 
@@ -158,11 +158,11 @@ POSTHOOK: Lineage: dest_j1.value SIMPLE [(src1)x.FieldSchema(name:value, type:st
 PREHOOK: query: select * from dest_j1 x order by x.key, x.value
 PREHOOK: type: QUERY
 PREHOOK: Input: default@dest_j1
-PREHOOK: Output: file:/tmp/liyintang/hive_2010-11-04_12-10-05_344_6343916336537575010/-mr-10000
+PREHOOK: Output: file:/tmp/sdong/hive_2011-02-10_16-04-15_076_7667701666661422377/-mr-10000
 POSTHOOK: query: select * from dest_j1 x order by x.key, x.value
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@dest_j1
-POSTHOOK: Output: file:/tmp/liyintang/hive_2010-11-04_12-10-05_344_6343916336537575010/-mr-10000
+POSTHOOK: Output: file:/tmp/sdong/hive_2011-02-10_16-04-15_076_7667701666661422377/-mr-10000
 POSTHOOK: Lineage: dest_j1.key EXPRESSION [(src1)x.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: dest_j1.val2 SIMPLE [(src)y.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: dest_j1.value SIMPLE [(src1)x.FieldSchema(name:value, type:string, comment:default), ]

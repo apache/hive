@@ -49,7 +49,7 @@ POSTHOOK: Lineage: hive_test_smb_bucket1 PARTITION(ds=2010-10-15).value SIMPLE [
 POSTHOOK: Lineage: hive_test_smb_bucket2 PARTITION(ds=2010-10-15).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: hive_test_smb_bucket2 PARTITION(ds=2010-10-15).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 ABSTRACT SYNTAX TREE:
-  (TOK_CREATETABLE smb_mapjoin9_results TOK_LIKETABLE (TOK_QUERY (TOK_FROM (TOK_JOIN (TOK_TABREF hive_test_smb_bucket1 a) (TOK_TABREF hive_test_smb_bucket2 b) (= (. (TOK_TABLE_OR_COL a) key) (. (TOK_TABLE_OR_COL b) key)))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_HINTLIST (TOK_HINT TOK_MAPJOIN (TOK_HINTARGLIST b))) (TOK_SELEXPR (. (TOK_TABLE_OR_COL b) key) k1) (TOK_SELEXPR (. (TOK_TABLE_OR_COL b) value)) (TOK_SELEXPR (. (TOK_TABLE_OR_COL b) ds)) (TOK_SELEXPR (. (TOK_TABLE_OR_COL a) key) k2)) (TOK_WHERE (and (and (= (. (TOK_TABLE_OR_COL a) ds) '2010-10-15') (= (. (TOK_TABLE_OR_COL b) ds) '2010-10-15')) (TOK_FUNCTION TOK_ISNOTNULL (. (TOK_TABLE_OR_COL b) key)))))))
+  (TOK_CREATETABLE (TOK_TABNAME smb_mapjoin9_results) TOK_LIKETABLE (TOK_QUERY (TOK_FROM (TOK_JOIN (TOK_TABREF (TOK_TABNAME hive_test_smb_bucket1) a) (TOK_TABREF (TOK_TABNAME hive_test_smb_bucket2) b) (= (. (TOK_TABLE_OR_COL a) key) (. (TOK_TABLE_OR_COL b) key)))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_HINTLIST (TOK_HINT TOK_MAPJOIN (TOK_HINTARGLIST b))) (TOK_SELEXPR (. (TOK_TABLE_OR_COL b) key) k1) (TOK_SELEXPR (. (TOK_TABLE_OR_COL b) value)) (TOK_SELEXPR (. (TOK_TABLE_OR_COL b) ds)) (TOK_SELEXPR (. (TOK_TABLE_OR_COL a) key) k2)) (TOK_WHERE (and (and (= (. (TOK_TABLE_OR_COL a) ds) '2010-10-15') (= (. (TOK_TABLE_OR_COL b) ds) '2010-10-15')) (TOK_FUNCTION TOK_ISNOTNULL (. (TOK_TABLE_OR_COL b) key)))))))
 
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -114,7 +114,7 @@ STAGE PLANS:
     Move Operator
       files:
           hdfs directory: true
-          destination: pfile:///Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/smb_mapjoin9_results
+          destination: pfile:/data/users/sdong/www/open-source-hive1/build/ql/test/data/warehouse/smb_mapjoin9_results
 
   Stage: Stage-3
       Create Table Operator:

@@ -37,10 +37,10 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
+import java.util.Map.Entry;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -93,7 +93,6 @@ import org.apache.hadoop.hive.ql.plan.AddPartitionDesc;
 import org.apache.hadoop.hive.ql.plan.AlterDatabaseDesc;
 import org.apache.hadoop.hive.ql.plan.AlterIndexDesc;
 import org.apache.hadoop.hive.ql.plan.AlterTableDesc;
-import org.apache.hadoop.hive.ql.plan.AlterTableDesc.AlterTableTypes;
 import org.apache.hadoop.hive.ql.plan.AlterTableSimpleDesc;
 import org.apache.hadoop.hive.ql.plan.CreateDatabaseDesc;
 import org.apache.hadoop.hive.ql.plan.CreateIndexDesc;
@@ -126,9 +125,9 @@ import org.apache.hadoop.hive.ql.plan.ShowTableStatusDesc;
 import org.apache.hadoop.hive.ql.plan.ShowTablesDesc;
 import org.apache.hadoop.hive.ql.plan.SwitchDatabaseDesc;
 import org.apache.hadoop.hive.ql.plan.UnlockTableDesc;
+import org.apache.hadoop.hive.ql.plan.AlterTableDesc.AlterTableTypes;
 import org.apache.hadoop.hive.ql.plan.api.StageType;
 import org.apache.hadoop.hive.ql.security.authorization.Privilege;
-import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.serde.Constants;
 import org.apache.hadoop.hive.serde2.Deserializer;
 import org.apache.hadoop.hive.serde2.MetadataTypedColumnsetSerDe;
@@ -139,12 +138,11 @@ import org.apache.hadoop.hive.serde2.dynamic_type.DynamicSerDe;
 import org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe;
 import org.apache.hadoop.hive.shims.HadoopShims;
 import org.apache.hadoop.hive.shims.ShimLoader;
-import org.apache.hadoop.util.StringUtils;
 import org.apache.hadoop.util.ToolRunner;
 
 /**
  * DDLTask implementation.
- * 
+ *
  **/
 public class DDLTask extends Task<DDLWork> implements Serializable {
   private static final long serialVersionUID = 1L;
@@ -567,7 +565,7 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
     String tableName = null;
     Table tableObj = null;
     Database dbObj = null;
-    
+
     try {
 
       if (privSubjectDesc != null) {
@@ -670,7 +668,7 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
           }
         }
       }
-      
+
       for (PrincipalDesc principal : principals) {
         for (int i = 0; i < privBag.getPrivileges().size(); i++) {
           HiveObjectPrivilege objPrivs = privBag.getPrivileges().get(i);
@@ -807,7 +805,7 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
 
   /**
    * Add a partition to a table.
-   * 
+   *
    * @param db
    *          Database to add the partition to.
    * @param addPartitionDesc
@@ -1422,8 +1420,8 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
     List<String> repairOutput = new ArrayList<String>();
     try {
       HiveMetaStoreChecker checker = new HiveMetaStoreChecker(db);
-      checker.checkMetastore(db.getCurrentDatabase(), msckDesc
-          .getTableName(), msckDesc.getPartSpecs(), result);
+      Table t = db.newTable(msckDesc.getTableName());
+      checker.checkMetastore(t.getDbName(), t.getTableName(), msckDesc.getPartSpecs(), result);
       if (msckDesc.isRepairPartitions()) {
         Table table = db.getTable(msckDesc.getTableName());
         for (CheckResult.PartitionResult part : result.getPartitionsNotInMs()) {
@@ -1544,10 +1542,10 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
       return 1;
     }
     if (showParts.getPartSpec() != null) {
-      parts = db.getPartitionNames(db.getCurrentDatabase(),
+      parts = db.getPartitionNames(tbl.getDbName(),
           tbl.getTableName(), showParts.getPartSpec(), (short) -1);
     } else {
-      parts = db.getPartitionNames(db.getCurrentDatabase(), tbl.getTableName(), (short) -1);
+      parts = db.getPartitionNames(tbl.getDbName(), tbl.getTableName(), (short) -1);
     }
 
     // write the results in the file
@@ -1595,7 +1593,7 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
 
     tbl = db.getTable(tableName);
 
-    indexes = db.getIndexes(db.getCurrentDatabase(), tbl.getTableName(), (short) -1);
+    indexes = db.getIndexes(tbl.getDbName(), tbl.getTableName(), (short) -1);
 
     // write the results in the file
     try {
@@ -1908,7 +1906,7 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
 
   private HiveLockObject getHiveObject(String tabName,
                                        Map<String, String> partSpec) throws HiveException {
-    Table  tbl = db.getTable(MetaStoreUtils.DEFAULT_DATABASE_NAME, tabName);
+    Table  tbl = db.getTable(tabName);
     if (tbl == null) {
       throw new HiveException("Table " + tabName + " does not exist ");
     }
@@ -2205,7 +2203,7 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
         colPath.indexOf('.') == -1 ? colPath.length() : colPath.indexOf('.'));
 
     // describe the table - populate the output stream
-    Table tbl = db.getTable(db.getCurrentDatabase(), tableName, false);
+    Table tbl = db.getTable(tableName, false);
     Partition part = null;
     try {
       Path resFile = new Path(descTbl.getResFile());
@@ -2320,9 +2318,9 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
       PrivilegeGrantInfo grantInfo) throws IOException {
 
     String privilege = grantInfo.getPrivilege();
-    int createTime = grantInfo.getCreateTime(); 
+    int createTime = grantInfo.getCreateTime();
     String grantor = grantInfo.getGrantor();
-    
+
     if (dbName != null) {
       writeKeyValuePair(outStream, "database", dbName);
     }
@@ -2836,14 +2834,14 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
       }
 
       // drop the table
-      db.dropTable(db.getCurrentDatabase(), dropTbl.getTableName());
+      db.dropTable(dropTbl.getTableName());
       if (tbl != null) {
         work.getOutputs().add(new WriteEntity(tbl));
       }
     } else {
       // get all partitions of the table
       List<String> partitionNames =
-        db.getPartitionNames(db.getCurrentDatabase(), dropTbl.getTableName(), (short) -1);
+        db.getPartitionNames(dropTbl.getTableName(), (short) -1);
       Set<Map<String, String>> partitions = new HashSet<Map<String, String>>();
       for (String partitionName : partitionNames) {
         try {
@@ -2883,9 +2881,7 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
       // drop all existing partitions from the list
       for (Partition partition : partsToDelete) {
         console.printInfo("Dropping the partition " + partition.getName());
-        db.dropPartition(db.getCurrentDatabase(), dropTbl.getTableName(),
-            partition.getValues(), true); // drop data for the
-        // partition
+        db.dropPartition(dropTbl.getTableName(), partition.getValues(), true);
         work.getOutputs().add(new WriteEntity(partition));
       }
     }
@@ -3010,7 +3006,7 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
    */
   private int createTable(Hive db, CreateTableDesc crtTbl) throws HiveException {
     // create the table
-    Table tbl = new Table(db.getCurrentDatabase(), crtTbl.getTableName());
+    Table tbl = db.newTable(crtTbl.getTableName());
 
     if (crtTbl.getTblProps() != null) {
       tbl.getTTable().getParameters().putAll(crtTbl.getTblProps());
@@ -3167,7 +3163,12 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
     // Get the existing table
     Table tbl = db.getTable(crtTbl.getLikeTableName());
 
-    tbl.setTableName(crtTbl.getTableName());
+    // find out database name and table name of target table
+    String targetTableName = crtTbl.getTableName();
+    Table newTable = db.newTable(targetTableName);
+
+    tbl.setDbName(newTable.getDbName());
+    tbl.setTableName(newTable.getTableName());
 
     if (crtTbl.isExternal()) {
       tbl.setProperty("EXTERNAL", "TRUE");
@@ -3203,7 +3204,7 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
    *           Throws this exception if an unexpected error occurs.
    */
   private int createView(Hive db, CreateViewDesc crtView) throws HiveException {
-    Table tbl = new Table(db.getCurrentDatabase(), crtView.getViewName());
+    Table tbl = db.newTable(crtView.getViewName());
     tbl.setTableType(TableType.VIRTUAL_VIEW);
     tbl.setSerializationLib(null);
     tbl.clearSerDeInfo();

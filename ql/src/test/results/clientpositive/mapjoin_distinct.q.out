@@ -11,7 +11,7 @@ ON ( c.key=d.key AND c.ds='2008-04-08' AND d.ds='2008-04-08')
 SELECT /*+ MAPJOIN(d) */ DISTINCT c.value
 POSTHOOK: type: QUERY
 ABSTRACT SYNTAX TREE:
-  (TOK_QUERY (TOK_FROM (TOK_JOIN (TOK_TABREF srcpart c) (TOK_TABREF srcpart d) (AND (AND (= (. (TOK_TABLE_OR_COL c) key) (. (TOK_TABLE_OR_COL d) key)) (= (. (TOK_TABLE_OR_COL c) ds) '2008-04-08')) (= (. (TOK_TABLE_OR_COL d) ds) '2008-04-08')))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECTDI (TOK_HINTLIST (TOK_HINT TOK_MAPJOIN (TOK_HINTARGLIST d))) (TOK_SELEXPR (. (TOK_TABLE_OR_COL c) value)))))
+  (TOK_QUERY (TOK_FROM (TOK_JOIN (TOK_TABREF (TOK_TABNAME srcpart) c) (TOK_TABREF (TOK_TABNAME srcpart) d) (AND (AND (= (. (TOK_TABLE_OR_COL c) key) (. (TOK_TABLE_OR_COL d) key)) (= (. (TOK_TABLE_OR_COL c) ds) '2008-04-08')) (= (. (TOK_TABLE_OR_COL d) ds) '2008-04-08')))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECTDI (TOK_HINTLIST (TOK_HINT TOK_MAPJOIN (TOK_HINTARGLIST d))) (TOK_SELEXPR (. (TOK_TABLE_OR_COL c) value)))))
 
 STAGE DEPENDENCIES:
   Stage-5 is a root stage
@@ -79,7 +79,7 @@ STAGE PLANS:
   Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/var/folders/6g/6grtCwPMEf4sqHUPpy6xQG9ByHg/-Tmp-/heyongqiang/hive_2010-12-13_16-38-19_312_7667409333001408369/-mr-10002 
+        file:/tmp/sdong/hive_2011-02-10_16-37-40_563_433585388404283026/-mr-10002 
           Select Operator
             expressions:
                   expr: _col1
@@ -124,7 +124,7 @@ STAGE PLANS:
   Stage: Stage-3
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/var/folders/6g/6grtCwPMEf4sqHUPpy6xQG9ByHg/-Tmp-/heyongqiang/hive_2010-12-13_16-38-19_312_7667409333001408369/-mr-10003 
+        file:/tmp/sdong/hive_2011-02-10_16-37-40_563_433585388404283026/-mr-10003 
             Reduce Output Operator
               key expressions:
                     expr: _col0
@@ -166,7 +166,7 @@ SELECT /*+ MAPJOIN(d) */ DISTINCT c.value as value order by value limit 10
 PREHOOK: type: QUERY
 PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
 PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
-PREHOOK: Output: file:/var/folders/6g/6grtCwPMEf4sqHUPpy6xQG9ByHg/-Tmp-/heyongqiang/hive_2010-12-13_16-38-19_737_2016332093340702361/-mr-10000
+PREHOOK: Output: file:/tmp/sdong/hive_2011-02-10_16-37-40_729_3324964356271994807/-mr-10000
 POSTHOOK: query: FROM srcpart c
 JOIN srcpart d
 ON ( c.key=d.key AND c.ds='2008-04-08' AND d.ds='2008-04-08')
@@ -174,7 +174,7 @@ SELECT /*+ MAPJOIN(d) */ DISTINCT c.value as value order by value limit 10
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
 POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
-POSTHOOK: Output: file:/var/folders/6g/6grtCwPMEf4sqHUPpy6xQG9ByHg/-Tmp-/heyongqiang/hive_2010-12-13_16-38-19_737_2016332093340702361/-mr-10000
+POSTHOOK: Output: file:/tmp/sdong/hive_2011-02-10_16-37-40_729_3324964356271994807/-mr-10000
 val_0
 val_10
 val_100
@@ -198,7 +198,7 @@ ON ( c.key=d.key AND c.ds='2008-04-08' AND d.ds='2008-04-08')
 SELECT /*+ MAPJOIN(d) */ DISTINCT c.value
 POSTHOOK: type: QUERY
 ABSTRACT SYNTAX TREE:
-  (TOK_QUERY (TOK_FROM (TOK_JOIN (TOK_TABREF srcpart c) (TOK_TABREF srcpart d) (AND (AND (= (. (TOK_TABLE_OR_COL c) key) (. (TOK_TABLE_OR_COL d) key)) (= (. (TOK_TABLE_OR_COL c) ds) '2008-04-08')) (= (. (TOK_TABLE_OR_COL d) ds) '2008-04-08')))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECTDI (TOK_HINTLIST (TOK_HINT TOK_MAPJOIN (TOK_HINTARGLIST d))) (TOK_SELEXPR (. (TOK_TABLE_OR_COL c) value)))))
+  (TOK_QUERY (TOK_FROM (TOK_JOIN (TOK_TABREF (TOK_TABNAME srcpart) c) (TOK_TABREF (TOK_TABNAME srcpart) d) (AND (AND (= (. (TOK_TABLE_OR_COL c) key) (. (TOK_TABLE_OR_COL d) key)) (= (. (TOK_TABLE_OR_COL c) ds) '2008-04-08')) (= (. (TOK_TABLE_OR_COL d) ds) '2008-04-08')))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECTDI (TOK_HINTLIST (TOK_HINT TOK_MAPJOIN (TOK_HINTARGLIST d))) (TOK_SELEXPR (. (TOK_TABLE_OR_COL c) value)))))
 
 STAGE DEPENDENCIES:
   Stage-4 is a root stage
@@ -265,7 +265,7 @@ STAGE PLANS:
   Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/var/folders/6g/6grtCwPMEf4sqHUPpy6xQG9ByHg/-Tmp-/heyongqiang/hive_2010-12-13_16-38-46_551_1306221886921486866/-mr-10002 
+        file:/tmp/sdong/hive_2011-02-10_16-37-55_645_7459162605410841209/-mr-10002 
           Select Operator
             expressions:
                   expr: _col1
@@ -324,7 +324,7 @@ SELECT /*+ MAPJOIN(d) */ DISTINCT c.value as value order by value limit 10
 PREHOOK: type: QUERY
 PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
 PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
-PREHOOK: Output: file:/var/folders/6g/6grtCwPMEf4sqHUPpy6xQG9ByHg/-Tmp-/heyongqiang/hive_2010-12-13_16-38-46_744_1664486730611024221/-mr-10000
+PREHOOK: Output: file:/tmp/sdong/hive_2011-02-10_16-37-55_791_16936825172294012/-mr-10000
 POSTHOOK: query: FROM srcpart c
 JOIN srcpart d
 ON ( c.key=d.key AND c.ds='2008-04-08' AND d.ds='2008-04-08')
@@ -332,7 +332,7 @@ SELECT /*+ MAPJOIN(d) */ DISTINCT c.value as value order by value limit 10
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
 POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
-POSTHOOK: Output: file:/var/folders/6g/6grtCwPMEf4sqHUPpy6xQG9ByHg/-Tmp-/heyongqiang/hive_2010-12-13_16-38-46_744_1664486730611024221/-mr-10000
+POSTHOOK: Output: file:/tmp/sdong/hive_2011-02-10_16-37-55_791_16936825172294012/-mr-10000
 val_0
 val_10
 val_100
@@ -356,7 +356,7 @@ ON ( c.key=d.key AND c.ds='2008-04-08' AND d.ds='2008-04-08')
 SELECT /*+ MAPJOIN(d) */ DISTINCT c.value
 POSTHOOK: type: QUERY
 ABSTRACT SYNTAX TREE:
-  (TOK_QUERY (TOK_FROM (TOK_JOIN (TOK_TABREF srcpart c) (TOK_TABREF srcpart d) (AND (AND (= (. (TOK_TABLE_OR_COL c) key) (. (TOK_TABLE_OR_COL d) key)) (= (. (TOK_TABLE_OR_COL c) ds) '2008-04-08')) (= (. (TOK_TABLE_OR_COL d) ds) '2008-04-08')))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECTDI (TOK_HINTLIST (TOK_HINT TOK_MAPJOIN (TOK_HINTARGLIST d))) (TOK_SELEXPR (. (TOK_TABLE_OR_COL c) value)))))
+  (TOK_QUERY (TOK_FROM (TOK_JOIN (TOK_TABREF (TOK_TABNAME srcpart) c) (TOK_TABREF (TOK_TABNAME srcpart) d) (AND (AND (= (. (TOK_TABLE_OR_COL c) key) (. (TOK_TABLE_OR_COL d) key)) (= (. (TOK_TABLE_OR_COL c) ds) '2008-04-08')) (= (. (TOK_TABLE_OR_COL d) ds) '2008-04-08')))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECTDI (TOK_HINTLIST (TOK_HINT TOK_MAPJOIN (TOK_HINTARGLIST d))) (TOK_SELEXPR (. (TOK_TABLE_OR_COL c) value)))))
 
 STAGE DEPENDENCIES:
   Stage-5 is a root stage
@@ -424,7 +424,7 @@ STAGE PLANS:
   Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/var/folders/6g/6grtCwPMEf4sqHUPpy6xQG9ByHg/-Tmp-/heyongqiang/hive_2010-12-13_16-39-08_383_3773075123707020792/-mr-10002 
+        file:/tmp/sdong/hive_2011-02-10_16-38-07_800_18311093333129052/-mr-10002 
           Select Operator
             expressions:
                   expr: _col1
@@ -462,7 +462,7 @@ STAGE PLANS:
   Stage: Stage-3
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/var/folders/6g/6grtCwPMEf4sqHUPpy6xQG9ByHg/-Tmp-/heyongqiang/hive_2010-12-13_16-39-08_383_3773075123707020792/-mr-10003 
+        file:/tmp/sdong/hive_2011-02-10_16-38-07_800_18311093333129052/-mr-10003 
             Reduce Output Operator
               key expressions:
                     expr: _col0
@@ -504,7 +504,7 @@ SELECT /*+ MAPJOIN(d) */ DISTINCT c.value as value order by value limit 10
 PREHOOK: type: QUERY
 PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
 PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
-PREHOOK: Output: file:/var/folders/6g/6grtCwPMEf4sqHUPpy6xQG9ByHg/-Tmp-/heyongqiang/hive_2010-12-13_16-39-08_657_8389727596818288164/-mr-10000
+PREHOOK: Output: file:/tmp/sdong/hive_2011-02-10_16-38-07_946_5835525932602393343/-mr-10000
 POSTHOOK: query: FROM srcpart c
 JOIN srcpart d
 ON ( c.key=d.key AND c.ds='2008-04-08' AND d.ds='2008-04-08')
@@ -512,7 +512,7 @@ SELECT /*+ MAPJOIN(d) */ DISTINCT c.value as value order by value limit 10
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
 POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
-POSTHOOK: Output: file:/var/folders/6g/6grtCwPMEf4sqHUPpy6xQG9ByHg/-Tmp-/heyongqiang/hive_2010-12-13_16-39-08_657_8389727596818288164/-mr-10000
+POSTHOOK: Output: file:/tmp/sdong/hive_2011-02-10_16-38-07_946_5835525932602393343/-mr-10000
 val_0
 val_10
 val_100
@@ -536,7 +536,7 @@ ON ( c.key=d.key AND c.ds='2008-04-08' AND d.ds='2008-04-08')
 SELECT /*+ MAPJOIN(d) */ DISTINCT c.value
 POSTHOOK: type: QUERY
 ABSTRACT SYNTAX TREE:
-  (TOK_QUERY (TOK_FROM (TOK_JOIN (TOK_TABREF srcpart c) (TOK_TABREF srcpart d) (AND (AND (= (. (TOK_TABLE_OR_COL c) key) (. (TOK_TABLE_OR_COL d) key)) (= (. (TOK_TABLE_OR_COL c) ds) '2008-04-08')) (= (. (TOK_TABLE_OR_COL d) ds) '2008-04-08')))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECTDI (TOK_HINTLIST (TOK_HINT TOK_MAPJOIN (TOK_HINTARGLIST d))) (TOK_SELEXPR (. (TOK_TABLE_OR_COL c) value)))))
+  (TOK_QUERY (TOK_FROM (TOK_JOIN (TOK_TABREF (TOK_TABNAME srcpart) c) (TOK_TABREF (TOK_TABNAME srcpart) d) (AND (AND (= (. (TOK_TABLE_OR_COL c) key) (. (TOK_TABLE_OR_COL d) key)) (= (. (TOK_TABLE_OR_COL c) ds) '2008-04-08')) (= (. (TOK_TABLE_OR_COL d) ds) '2008-04-08')))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECTDI (TOK_HINTLIST (TOK_HINT TOK_MAPJOIN (TOK_HINTARGLIST d))) (TOK_SELEXPR (. (TOK_TABLE_OR_COL c) value)))))
 
 STAGE DEPENDENCIES:
   Stage-4 is a root stage
@@ -603,7 +603,7 @@ STAGE PLANS:
   Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/var/folders/6g/6grtCwPMEf4sqHUPpy6xQG9ByHg/-Tmp-/heyongqiang/hive_2010-12-13_16-39-34_660_2006394188111369086/-mr-10002 
+        file:/tmp/sdong/hive_2011-02-10_16-38-22_735_288363957530184508/-mr-10002 
           Select Operator
             expressions:
                   expr: _col1
@@ -655,7 +655,7 @@ SELECT /*+ MAPJOIN(d) */ DISTINCT c.value as value order by value limit 10
 PREHOOK: type: QUERY
 PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
 PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
-PREHOOK: Output: file:/var/folders/6g/6grtCwPMEf4sqHUPpy6xQG9ByHg/-Tmp-/heyongqiang/hive_2010-12-13_16-39-35_226_6828976715085994135/-mr-10000
+PREHOOK: Output: file:/tmp/sdong/hive_2011-02-10_16-38-22_877_4204906363684367032/-mr-10000
 POSTHOOK: query: FROM srcpart c
 JOIN srcpart d
 ON ( c.key=d.key AND c.ds='2008-04-08' AND d.ds='2008-04-08')
@@ -663,7 +663,7 @@ SELECT /*+ MAPJOIN(d) */ DISTINCT c.value as value order by value limit 10
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
 POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
-POSTHOOK: Output: file:/var/folders/6g/6grtCwPMEf4sqHUPpy6xQG9ByHg/-Tmp-/heyongqiang/hive_2010-12-13_16-39-35_226_6828976715085994135/-mr-10000
+POSTHOOK: Output: file:/tmp/sdong/hive_2011-02-10_16-38-22_877_4204906363684367032/-mr-10000
 val_0
 val_10
 val_100

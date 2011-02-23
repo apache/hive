@@ -6,17 +6,17 @@ POSTHOOK: Output: default@nzhang_Tmp
 PREHOOK: query: select * from nzhang_Tmp
 PREHOOK: type: QUERY
 PREHOOK: Input: default@nzhang_tmp
-PREHOOK: Output: file:/var/folders/6g/6grtCwPMEf4sqHUPpy6xQG9ByHg/-Tmp-/heyongqiang/hive_2010-11-18_12-21-38_152_6607893365576187007/-mr-10000
+PREHOOK: Output: file:/tmp/sdong/hive_2011-02-10_01-44-51_322_2848708186205887611/-mr-10000
 POSTHOOK: query: select * from nzhang_Tmp
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@nzhang_tmp
-POSTHOOK: Output: file:/var/folders/6g/6grtCwPMEf4sqHUPpy6xQG9ByHg/-Tmp-/heyongqiang/hive_2010-11-18_12-21-38_152_6607893365576187007/-mr-10000
+POSTHOOK: Output: file:/tmp/sdong/hive_2011-02-10_01-44-51_322_2848708186205887611/-mr-10000
 PREHOOK: query: explain create table nzhang_CTAS1 as select key k, value from src sort by k, value limit 10
 PREHOOK: type: CREATETABLE_AS_SELECT
 POSTHOOK: query: explain create table nzhang_CTAS1 as select key k, value from src sort by k, value limit 10
 POSTHOOK: type: CREATETABLE_AS_SELECT
 ABSTRACT SYNTAX TREE:
-  (TOK_CREATETABLE nzhang_CTAS1 TOK_LIKETABLE (TOK_QUERY (TOK_FROM (TOK_TABREF src)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_TABLE_OR_COL key) k) (TOK_SELEXPR (TOK_TABLE_OR_COL value))) (TOK_SORTBY (TOK_TABSORTCOLNAMEASC (TOK_TABLE_OR_COL k)) (TOK_TABSORTCOLNAMEASC (TOK_TABLE_OR_COL value))) (TOK_LIMIT 10))))
+  (TOK_CREATETABLE (TOK_TABNAME nzhang_CTAS1) TOK_LIKETABLE (TOK_QUERY (TOK_FROM (TOK_TABREF (TOK_TABNAME src))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_TABLE_OR_COL key) k) (TOK_SELEXPR (TOK_TABLE_OR_COL value))) (TOK_SORTBY (TOK_TABSORTCOLNAMEASC (TOK_TABLE_OR_COL k)) (TOK_TABSORTCOLNAMEASC (TOK_TABLE_OR_COL value))) (TOK_LIMIT 10))))
 
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -64,7 +64,7 @@ STAGE PLANS:
   Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/var/folders/6g/6grtCwPMEf4sqHUPpy6xQG9ByHg/-Tmp-/heyongqiang/hive_2010-11-18_12-21-38_294_2534653608830924093/-mr-10002 
+        file:/tmp/sdong/hive_2011-02-10_01-44-51_470_2994705028366987051/-mr-10002 
             Reduce Output Operator
               key expressions:
                     expr: _col0
@@ -92,7 +92,7 @@ STAGE PLANS:
     Move Operator
       files:
           hdfs directory: true
-          destination: pfile:///Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/nzhang_ctas1
+          destination: pfile:/data/users/sdong/www/open-source-hive1/build/ql/test/data/warehouse/nzhang_ctas1
 
   Stage: Stage-3
       Create Table Operator:
@@ -116,11 +116,11 @@ POSTHOOK: Output: default@nzhang_CTAS1
 PREHOOK: query: select * from nzhang_CTAS1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@nzhang_ctas1
-PREHOOK: Output: file:/var/folders/6g/6grtCwPMEf4sqHUPpy6xQG9ByHg/-Tmp-/heyongqiang/hive_2010-11-18_12-21-54_890_340708639379092873/-mr-10000
+PREHOOK: Output: file:/tmp/sdong/hive_2011-02-10_01-44-58_596_3850188449580676786/-mr-10000
 POSTHOOK: query: select * from nzhang_CTAS1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@nzhang_ctas1
-POSTHOOK: Output: file:/var/folders/6g/6grtCwPMEf4sqHUPpy6xQG9ByHg/-Tmp-/heyongqiang/hive_2010-11-18_12-21-54_890_340708639379092873/-mr-10000
+POSTHOOK: Output: file:/tmp/sdong/hive_2011-02-10_01-44-58_596_3850188449580676786/-mr-10000
 0	val_0
 0	val_0
 0	val_0
@@ -136,7 +136,7 @@ PREHOOK: type: CREATETABLE_AS_SELECT
 POSTHOOK: query: explain create table nzhang_ctas2 as select * from src sort by key, value limit 10
 POSTHOOK: type: CREATETABLE_AS_SELECT
 ABSTRACT SYNTAX TREE:
-  (TOK_CREATETABLE nzhang_ctas2 TOK_LIKETABLE (TOK_QUERY (TOK_FROM (TOK_TABREF src)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR TOK_ALLCOLREF)) (TOK_SORTBY (TOK_TABSORTCOLNAMEASC (TOK_TABLE_OR_COL key)) (TOK_TABSORTCOLNAMEASC (TOK_TABLE_OR_COL value))) (TOK_LIMIT 10))))
+  (TOK_CREATETABLE (TOK_TABNAME nzhang_ctas2) TOK_LIKETABLE (TOK_QUERY (TOK_FROM (TOK_TABREF (TOK_TABNAME src))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR TOK_ALLCOLREF)) (TOK_SORTBY (TOK_TABSORTCOLNAMEASC (TOK_TABLE_OR_COL key)) (TOK_TABSORTCOLNAMEASC (TOK_TABLE_OR_COL value))) (TOK_LIMIT 10))))
 
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -184,7 +184,7 @@ STAGE PLANS:
   Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/var/folders/6g/6grtCwPMEf4sqHUPpy6xQG9ByHg/-Tmp-/heyongqiang/hive_2010-11-18_12-21-55_113_2975775360233211417/-mr-10002 
+        file:/tmp/sdong/hive_2011-02-10_01-44-58_860_3982645483317411637/-mr-10002 
             Reduce Output Operator
               key expressions:
                     expr: _col0
@@ -212,7 +212,7 @@ STAGE PLANS:
     Move Operator
       files:
           hdfs directory: true
-          destination: pfile:///Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/nzhang_ctas2
+          destination: pfile:/data/users/sdong/www/open-source-hive1/build/ql/test/data/warehouse/nzhang_ctas2
 
   Stage: Stage-3
       Create Table Operator:
@@ -236,11 +236,11 @@ POSTHOOK: Output: default@nzhang_ctas2
 PREHOOK: query: select * from nzhang_ctas2
 PREHOOK: type: QUERY
 PREHOOK: Input: default@nzhang_ctas2
-PREHOOK: Output: file:/var/folders/6g/6grtCwPMEf4sqHUPpy6xQG9ByHg/-Tmp-/heyongqiang/hive_2010-11-18_12-22-10_092_5599426394139957980/-mr-10000
+PREHOOK: Output: file:/tmp/sdong/hive_2011-02-10_01-45-05_578_7349012551226510377/-mr-10000
 POSTHOOK: query: select * from nzhang_ctas2
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@nzhang_ctas2
-POSTHOOK: Output: file:/var/folders/6g/6grtCwPMEf4sqHUPpy6xQG9ByHg/-Tmp-/heyongqiang/hive_2010-11-18_12-22-10_092_5599426394139957980/-mr-10000
+POSTHOOK: Output: file:/tmp/sdong/hive_2011-02-10_01-45-05_578_7349012551226510377/-mr-10000
 0	val_0
 0	val_0
 0	val_0
@@ -256,7 +256,7 @@ PREHOOK: type: CREATETABLE_AS_SELECT
 POSTHOOK: query: explain create table nzhang_ctas3 row format serde "org.apache.hadoop.hive.serde2.columnar.ColumnarSerDe" stored as RCFile as select key/2 half_key, concat(value, "_con") conb  from src sort by half_key, conb limit 10
 POSTHOOK: type: CREATETABLE_AS_SELECT
 ABSTRACT SYNTAX TREE:
-  (TOK_CREATETABLE nzhang_ctas3 TOK_LIKETABLE (TOK_TABLESERIALIZER (TOK_SERDENAME "org.apache.hadoop.hive.serde2.columnar.ColumnarSerDe")) TOK_TBLRCFILE (TOK_QUERY (TOK_FROM (TOK_TABREF src)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (/ (TOK_TABLE_OR_COL key) 2) half_key) (TOK_SELEXPR (TOK_FUNCTION concat (TOK_TABLE_OR_COL value) "_con") conb)) (TOK_SORTBY (TOK_TABSORTCOLNAMEASC (TOK_TABLE_OR_COL half_key)) (TOK_TABSORTCOLNAMEASC (TOK_TABLE_OR_COL conb))) (TOK_LIMIT 10))))
+  (TOK_CREATETABLE (TOK_TABNAME nzhang_ctas3) TOK_LIKETABLE (TOK_TABLESERIALIZER (TOK_SERDENAME "org.apache.hadoop.hive.serde2.columnar.ColumnarSerDe")) TOK_TBLRCFILE (TOK_QUERY (TOK_FROM (TOK_TABREF (TOK_TABNAME src))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (/ (TOK_TABLE_OR_COL key) 2) half_key) (TOK_SELEXPR (TOK_FUNCTION concat (TOK_TABLE_OR_COL value) "_con") conb)) (TOK_SORTBY (TOK_TABSORTCOLNAMEASC (TOK_TABLE_OR_COL half_key)) (TOK_TABSORTCOLNAMEASC (TOK_TABLE_OR_COL conb))) (TOK_LIMIT 10))))
 
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -304,7 +304,7 @@ STAGE PLANS:
   Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/var/folders/6g/6grtCwPMEf4sqHUPpy6xQG9ByHg/-Tmp-/heyongqiang/hive_2010-11-18_12-22-10_269_5024522055775704015/-mr-10002 
+        file:/tmp/sdong/hive_2011-02-10_01-45-05_893_3271637980302783261/-mr-10002 
             Reduce Output Operator
               key expressions:
                     expr: _col0
@@ -332,7 +332,7 @@ STAGE PLANS:
     Move Operator
       files:
           hdfs directory: true
-          destination: pfile:///Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/nzhang_ctas3
+          destination: pfile:/data/users/sdong/www/open-source-hive1/build/ql/test/data/warehouse/nzhang_ctas3
 
   Stage: Stage-3
       Create Table Operator:
@@ -357,11 +357,11 @@ POSTHOOK: Output: default@nzhang_ctas3
 PREHOOK: query: select * from nzhang_ctas3
 PREHOOK: type: QUERY
 PREHOOK: Input: default@nzhang_ctas3
-PREHOOK: Output: file:/var/folders/6g/6grtCwPMEf4sqHUPpy6xQG9ByHg/-Tmp-/heyongqiang/hive_2010-11-18_12-22-26_253_5950487784027845463/-mr-10000
+PREHOOK: Output: file:/tmp/sdong/hive_2011-02-10_01-45-12_580_9113217289697940221/-mr-10000
 POSTHOOK: query: select * from nzhang_ctas3
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@nzhang_ctas3
-POSTHOOK: Output: file:/var/folders/6g/6grtCwPMEf4sqHUPpy6xQG9ByHg/-Tmp-/heyongqiang/hive_2010-11-18_12-22-26_253_5950487784027845463/-mr-10000
+POSTHOOK: Output: file:/tmp/sdong/hive_2011-02-10_01-45-12_580_9113217289697940221/-mr-10000
 0.0	val_0_con
 0.0	val_0_con
 0.0	val_0_con
@@ -377,7 +377,7 @@ PREHOOK: type: CREATETABLE
 POSTHOOK: query: explain create table if not exists nzhang_ctas3 as select key, value from src sort by key, value limit 2
 POSTHOOK: type: CREATETABLE
 ABSTRACT SYNTAX TREE:
-  (TOK_CREATETABLE nzhang_ctas3 TOK_IFNOTEXISTS TOK_LIKETABLE (TOK_QUERY (TOK_FROM (TOK_TABREF src)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_TABLE_OR_COL key)) (TOK_SELEXPR (TOK_TABLE_OR_COL value))) (TOK_SORTBY (TOK_TABSORTCOLNAMEASC (TOK_TABLE_OR_COL key)) (TOK_TABSORTCOLNAMEASC (TOK_TABLE_OR_COL value))) (TOK_LIMIT 2))))
+  (TOK_CREATETABLE (TOK_TABNAME nzhang_ctas3) TOK_IFNOTEXISTS TOK_LIKETABLE (TOK_QUERY (TOK_FROM (TOK_TABREF (TOK_TABNAME src))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_TABLE_OR_COL key)) (TOK_SELEXPR (TOK_TABLE_OR_COL value))) (TOK_SORTBY (TOK_TABSORTCOLNAMEASC (TOK_TABLE_OR_COL key)) (TOK_TABSORTCOLNAMEASC (TOK_TABLE_OR_COL value))) (TOK_LIMIT 2))))
 
 STAGE DEPENDENCIES:
 
@@ -390,11 +390,11 @@ POSTHOOK: type: CREATETABLE
 PREHOOK: query: select * from nzhang_ctas3
 PREHOOK: type: QUERY
 PREHOOK: Input: default@nzhang_ctas3
-PREHOOK: Output: file:/var/folders/6g/6grtCwPMEf4sqHUPpy6xQG9ByHg/-Tmp-/heyongqiang/hive_2010-11-18_12-22-26_587_8435204750824479169/-mr-10000
+PREHOOK: Output: file:/tmp/sdong/hive_2011-02-10_01-45-12_947_7015621330413441447/-mr-10000
 POSTHOOK: query: select * from nzhang_ctas3
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@nzhang_ctas3
-POSTHOOK: Output: file:/var/folders/6g/6grtCwPMEf4sqHUPpy6xQG9ByHg/-Tmp-/heyongqiang/hive_2010-11-18_12-22-26_587_8435204750824479169/-mr-10000
+POSTHOOK: Output: file:/tmp/sdong/hive_2011-02-10_01-45-12_947_7015621330413441447/-mr-10000
 0.0	val_0_con
 0.0	val_0_con
 0.0	val_0_con
@@ -410,7 +410,7 @@ PREHOOK: type: CREATETABLE_AS_SELECT
 POSTHOOK: query: explain create table nzhang_ctas4 row format delimited fields terminated by ',' stored as textfile as select key, value from src sort by key, value limit 10
 POSTHOOK: type: CREATETABLE_AS_SELECT
 ABSTRACT SYNTAX TREE:
-  (TOK_CREATETABLE nzhang_ctas4 TOK_LIKETABLE (TOK_TABLEROWFORMAT (TOK_SERDEPROPS (TOK_TABLEROWFORMATFIELD ','))) TOK_TBLTEXTFILE (TOK_QUERY (TOK_FROM (TOK_TABREF src)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_TABLE_OR_COL key)) (TOK_SELEXPR (TOK_TABLE_OR_COL value))) (TOK_SORTBY (TOK_TABSORTCOLNAMEASC (TOK_TABLE_OR_COL key)) (TOK_TABSORTCOLNAMEASC (TOK_TABLE_OR_COL value))) (TOK_LIMIT 10))))
+  (TOK_CREATETABLE (TOK_TABNAME nzhang_ctas4) TOK_LIKETABLE (TOK_TABLEROWFORMAT (TOK_SERDEPROPS (TOK_TABLEROWFORMATFIELD ','))) TOK_TBLTEXTFILE (TOK_QUERY (TOK_FROM (TOK_TABREF (TOK_TABNAME src))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_TABLE_OR_COL key)) (TOK_SELEXPR (TOK_TABLE_OR_COL value))) (TOK_SORTBY (TOK_TABSORTCOLNAMEASC (TOK_TABLE_OR_COL key)) (TOK_TABSORTCOLNAMEASC (TOK_TABLE_OR_COL value))) (TOK_LIMIT 10))))
 
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -458,7 +458,7 @@ STAGE PLANS:
   Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/var/folders/6g/6grtCwPMEf4sqHUPpy6xQG9ByHg/-Tmp-/heyongqiang/hive_2010-11-18_12-22-26_831_6665219081002226800/-mr-10002 
+        file:/tmp/sdong/hive_2011-02-10_01-45-13_334_919564477125108638/-mr-10002 
             Reduce Output Operator
               key expressions:
                     expr: _col0
@@ -486,7 +486,7 @@ STAGE PLANS:
     Move Operator
       files:
           hdfs directory: true
-          destination: pfile:///Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/nzhang_ctas4
+          destination: pfile:/data/users/sdong/www/open-source-hive1/build/ql/test/data/warehouse/nzhang_ctas4
 
   Stage: Stage-3
       Create Table Operator:
@@ -511,11 +511,11 @@ POSTHOOK: Output: default@nzhang_ctas4
 PREHOOK: query: select * from nzhang_ctas4
 PREHOOK: type: QUERY
 PREHOOK: Input: default@nzhang_ctas4
-PREHOOK: Output: file:/var/folders/6g/6grtCwPMEf4sqHUPpy6xQG9ByHg/-Tmp-/heyongqiang/hive_2010-11-18_12-22-42_599_6843607487274708798/-mr-10000
+PREHOOK: Output: file:/tmp/sdong/hive_2011-02-10_01-45-20_050_1736075504443010216/-mr-10000
 POSTHOOK: query: select * from nzhang_ctas4
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@nzhang_ctas4
-POSTHOOK: Output: file:/var/folders/6g/6grtCwPMEf4sqHUPpy6xQG9ByHg/-Tmp-/heyongqiang/hive_2010-11-18_12-22-42_599_6843607487274708798/-mr-10000
+POSTHOOK: Output: file:/tmp/sdong/hive_2011-02-10_01-45-20_050_1736075504443010216/-mr-10000
 0	val_0
 0	val_0
 0	val_0
@@ -531,7 +531,7 @@ PREHOOK: type: CREATETABLE_AS_SELECT
 POSTHOOK: query: explain extended create table nzhang_ctas5 row format delimited fields terminated by ',' lines terminated by '\012' stored as textfile as select key, value from src sort by key, value limit 10
 POSTHOOK: type: CREATETABLE_AS_SELECT
 ABSTRACT SYNTAX TREE:
-  (TOK_CREATETABLE nzhang_ctas5 TOK_LIKETABLE (TOK_TABLEROWFORMAT (TOK_SERDEPROPS (TOK_TABLEROWFORMATFIELD ',') (TOK_TABLEROWFORMATLINES '\012'))) TOK_TBLTEXTFILE (TOK_QUERY (TOK_FROM (TOK_TABREF src)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_TABLE_OR_COL key)) (TOK_SELEXPR (TOK_TABLE_OR_COL value))) (TOK_SORTBY (TOK_TABSORTCOLNAMEASC (TOK_TABLE_OR_COL key)) (TOK_TABSORTCOLNAMEASC (TOK_TABLE_OR_COL value))) (TOK_LIMIT 10))))
+  (TOK_CREATETABLE (TOK_TABNAME nzhang_ctas5) TOK_LIKETABLE (TOK_TABLEROWFORMAT (TOK_SERDEPROPS (TOK_TABLEROWFORMATFIELD ',') (TOK_TABLEROWFORMATLINES '\012'))) TOK_TBLTEXTFILE (TOK_QUERY (TOK_FROM (TOK_TABREF (TOK_TABNAME src))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_TABLE_OR_COL key)) (TOK_SELEXPR (TOK_TABLE_OR_COL value))) (TOK_SORTBY (TOK_TABSORTCOLNAMEASC (TOK_TABLE_OR_COL key)) (TOK_TABSORTCOLNAMEASC (TOK_TABLE_OR_COL value))) (TOK_LIMIT 10))))
 
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -569,9 +569,9 @@ STAGE PLANS:
                       type: string
       Needs Tagging: false
       Path -> Alias:
-        pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src [src]
+        pfile:/data/users/sdong/www/open-source-hive1/build/ql/test/data/warehouse/src [src]
       Path -> Partition:
-        pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src 
+        pfile:/data/users/sdong/www/open-source-hive1/build/ql/test/data/warehouse/src 
           Partition
             base file name: src
             input format: org.apache.hadoop.mapred.TextInputFormat
@@ -582,12 +582,12 @@ STAGE PLANS:
               columns.types string:string
               file.inputformat org.apache.hadoop.mapred.TextInputFormat
               file.outputformat org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-              location pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src
-              name src
+              location pfile:/data/users/sdong/www/open-source-hive1/build/ql/test/data/warehouse/src
+              name default.src
               serialization.ddl struct src { string key, string value}
               serialization.format 1
               serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              transient_lastDdlTime 1290111684
+              transient_lastDdlTime 1297328964
             serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
           
               input format: org.apache.hadoop.mapred.TextInputFormat
@@ -598,22 +598,22 @@ STAGE PLANS:
                 columns.types string:string
                 file.inputformat org.apache.hadoop.mapred.TextInputFormat
                 file.outputformat org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                location pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/src
-                name src
+                location pfile:/data/users/sdong/www/open-source-hive1/build/ql/test/data/warehouse/src
+                name default.src
                 serialization.ddl struct src { string key, string value}
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                transient_lastDdlTime 1290111684
+                transient_lastDdlTime 1297328964
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              name: src
-            name: src
+              name: default.src
+            name: default.src
       Reduce Operator Tree:
         Extract
           Limit
             File Output Operator
               compressed: false
               GlobalTableId: 0
-              directory: file:/var/folders/6g/6grtCwPMEf4sqHUPpy6xQG9ByHg/-Tmp-/heyongqiang/hive_2010-11-18_12-22-42_827_2917364249718384116/-mr-10002
+              directory: file:/tmp/sdong/hive_2011-02-10_01-45-20_305_5281789596105491506/-mr-10002
               NumFilesPerFileSink: 1
               table:
                   input format: org.apache.hadoop.mapred.SequenceFileInputFormat
@@ -629,7 +629,7 @@ STAGE PLANS:
   Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/var/folders/6g/6grtCwPMEf4sqHUPpy6xQG9ByHg/-Tmp-/heyongqiang/hive_2010-11-18_12-22-42_827_2917364249718384116/-mr-10002 
+        file:/tmp/sdong/hive_2011-02-10_01-45-20_305_5281789596105491506/-mr-10002 
             Reduce Output Operator
               key expressions:
                     expr: _col0
@@ -645,9 +645,9 @@ STAGE PLANS:
                     type: string
       Needs Tagging: false
       Path -> Alias:
-        file:/var/folders/6g/6grtCwPMEf4sqHUPpy6xQG9ByHg/-Tmp-/heyongqiang/hive_2010-11-18_12-22-42_827_2917364249718384116/-mr-10002 [file:/var/folders/6g/6grtCwPMEf4sqHUPpy6xQG9ByHg/-Tmp-/heyongqiang/hive_2010-11-18_12-22-42_827_2917364249718384116/-mr-10002]
+        file:/tmp/sdong/hive_2011-02-10_01-45-20_305_5281789596105491506/-mr-10002 [file:/tmp/sdong/hive_2011-02-10_01-45-20_305_5281789596105491506/-mr-10002]
       Path -> Partition:
-        file:/var/folders/6g/6grtCwPMEf4sqHUPpy6xQG9ByHg/-Tmp-/heyongqiang/hive_2010-11-18_12-22-42_827_2917364249718384116/-mr-10002 
+        file:/tmp/sdong/hive_2011-02-10_01-45-20_305_5281789596105491506/-mr-10002 
           Partition
             base file name: -mr-10002
             input format: org.apache.hadoop.mapred.SequenceFileInputFormat
@@ -669,9 +669,9 @@ STAGE PLANS:
             File Output Operator
               compressed: false
               GlobalTableId: 1
-              directory: pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/scratchdir/hive_2010-11-18_12-22-42_827_2917364249718384116/-ext-10001
+              directory: pfile:/data/users/sdong/www/open-source-hive1/build/ql/scratchdir/hive_2011-02-10_01-45-20_305_5281789596105491506/-ext-10001
               NumFilesPerFileSink: 1
-              Stats Publishing Key Prefix: pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/scratchdir/hive_2010-11-18_12-22-42_827_2917364249718384116/-ext-10001/
+              Stats Publishing Key Prefix: pfile:/data/users/sdong/www/open-source-hive1/build/ql/scratchdir/hive_2011-02-10_01-45-20_305_5281789596105491506/-ext-10001/
               table:
                   input format: org.apache.hadoop.mapred.TextInputFormat
                   output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
@@ -690,8 +690,8 @@ STAGE PLANS:
     Move Operator
       files:
           hdfs directory: true
-          source: pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/scratchdir/hive_2010-11-18_12-22-42_827_2917364249718384116/-ext-10001
-          destination: pfile:///Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/nzhang_ctas5
+          source: pfile:/data/users/sdong/www/open-source-hive1/build/ql/scratchdir/hive_2011-02-10_01-45-20_305_5281789596105491506/-ext-10001
+          destination: pfile:/data/users/sdong/www/open-source-hive1/build/ql/test/data/warehouse/nzhang_ctas5
 
   Stage: Stage-3
       Create Table Operator:

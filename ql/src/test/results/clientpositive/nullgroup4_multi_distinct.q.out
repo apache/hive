@@ -5,7 +5,7 @@ POSTHOOK: query: explain
 select count(1), count(distinct x.value), count(distinct substr(x.value, 5)) from src x where x.key = 9999
 POSTHOOK: type: QUERY
 ABSTRACT SYNTAX TREE:
-  (TOK_QUERY (TOK_FROM (TOK_TABREF src x)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_FUNCTION count 1)) (TOK_SELEXPR (TOK_FUNCTIONDI count (. (TOK_TABLE_OR_COL x) value))) (TOK_SELEXPR (TOK_FUNCTIONDI count (TOK_FUNCTION substr (. (TOK_TABLE_OR_COL x) value) 5)))) (TOK_WHERE (= (. (TOK_TABLE_OR_COL x) key) 9999))))
+  (TOK_QUERY (TOK_FROM (TOK_TABREF (TOK_TABNAME src) x)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_FUNCTION count 1)) (TOK_SELEXPR (TOK_FUNCTIONDI count (. (TOK_TABLE_OR_COL x) value))) (TOK_SELEXPR (TOK_FUNCTIONDI count (TOK_FUNCTION substr (. (TOK_TABLE_OR_COL x) value) 5)))) (TOK_WHERE (= (. (TOK_TABLE_OR_COL x) key) 9999))))
 
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -92,11 +92,11 @@ STAGE PLANS:
 PREHOOK: query: select count(1), count(distinct x.value), count(distinct substr(x.value, 5)) from src x where x.key = 9999
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/tmp/amarsri/hive_2010-10-26_00-39-13_413_5076187437569125571/-mr-10000
+PREHOOK: Output: file:/tmp/sdong/hive_2011-02-10_16-48-27_281_6261349366093864618/-mr-10000
 POSTHOOK: query: select count(1), count(distinct x.value), count(distinct substr(x.value, 5)) from src x where x.key = 9999
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: file:/tmp/amarsri/hive_2010-10-26_00-39-13_413_5076187437569125571/-mr-10000
+POSTHOOK: Output: file:/tmp/sdong/hive_2011-02-10_16-48-27_281_6261349366093864618/-mr-10000
 0	0	0
 PREHOOK: query: explain
 select count(1), count(distinct x.value), count(distinct substr(x.value, 5)) from src x where x.key = 9999
@@ -105,7 +105,7 @@ POSTHOOK: query: explain
 select count(1), count(distinct x.value), count(distinct substr(x.value, 5)) from src x where x.key = 9999
 POSTHOOK: type: QUERY
 ABSTRACT SYNTAX TREE:
-  (TOK_QUERY (TOK_FROM (TOK_TABREF src x)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_FUNCTION count 1)) (TOK_SELEXPR (TOK_FUNCTIONDI count (. (TOK_TABLE_OR_COL x) value))) (TOK_SELEXPR (TOK_FUNCTIONDI count (TOK_FUNCTION substr (. (TOK_TABLE_OR_COL x) value) 5)))) (TOK_WHERE (= (. (TOK_TABLE_OR_COL x) key) 9999))))
+  (TOK_QUERY (TOK_FROM (TOK_TABREF (TOK_TABNAME src) x)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_FUNCTION count 1)) (TOK_SELEXPR (TOK_FUNCTIONDI count (. (TOK_TABLE_OR_COL x) value))) (TOK_SELEXPR (TOK_FUNCTIONDI count (TOK_FUNCTION substr (. (TOK_TABLE_OR_COL x) value) 5)))) (TOK_WHERE (= (. (TOK_TABLE_OR_COL x) key) 9999))))
 
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -175,9 +175,9 @@ STAGE PLANS:
 PREHOOK: query: select count(1), count(distinct x.value), count(distinct substr(x.value, 5)) from src x where x.key = 9999
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/tmp/amarsri/hive_2010-10-26_00-39-16_129_3006310959633214362/-mr-10000
+PREHOOK: Output: file:/tmp/sdong/hive_2011-02-10_16-48-30_870_1082986772406527025/-mr-10000
 POSTHOOK: query: select count(1), count(distinct x.value), count(distinct substr(x.value, 5)) from src x where x.key = 9999
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: file:/tmp/amarsri/hive_2010-10-26_00-39-16_129_3006310959633214362/-mr-10000
+POSTHOOK: Output: file:/tmp/sdong/hive_2011-02-10_16-48-30_870_1082986772406527025/-mr-10000
 0	0	0

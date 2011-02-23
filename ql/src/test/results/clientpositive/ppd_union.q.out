@@ -17,7 +17,7 @@ SELECT unioned_query.*
   WHERE key > '4' and value > 'val_4'
 POSTHOOK: type: QUERY
 ABSTRACT SYNTAX TREE:
-  (TOK_QUERY (TOK_FROM (TOK_SUBQUERY (TOK_UNION (TOK_QUERY (TOK_FROM (TOK_TABREF src)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (. (TOK_TABLE_OR_COL src) key)) (TOK_SELEXPR (. (TOK_TABLE_OR_COL src) value))) (TOK_WHERE (< (. (TOK_TABLE_OR_COL src) key) '100')))) (TOK_QUERY (TOK_FROM (TOK_TABREF src)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_ALLCOLREF src))) (TOK_WHERE (> (. (TOK_TABLE_OR_COL src) key) '150'))))) unioned_query)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_ALLCOLREF unioned_query))) (TOK_WHERE (and (> (TOK_TABLE_OR_COL key) '4') (> (TOK_TABLE_OR_COL value) 'val_4')))))
+  (TOK_QUERY (TOK_FROM (TOK_SUBQUERY (TOK_UNION (TOK_QUERY (TOK_FROM (TOK_TABREF (TOK_TABNAME src))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (. (TOK_TABLE_OR_COL src) key)) (TOK_SELEXPR (. (TOK_TABLE_OR_COL src) value))) (TOK_WHERE (< (. (TOK_TABLE_OR_COL src) key) '100')))) (TOK_QUERY (TOK_FROM (TOK_TABREF (TOK_TABNAME src))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_ALLCOLREF (TOK_TABNAME src)))) (TOK_WHERE (> (. (TOK_TABLE_OR_COL src) key) '150'))))) unioned_query)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_ALLCOLREF (TOK_TABNAME unioned_query)))) (TOK_WHERE (and (> (TOK_TABLE_OR_COL key) '4') (> (TOK_TABLE_OR_COL value) 'val_4')))))
 
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -114,7 +114,7 @@ SELECT unioned_query.*
   WHERE key > '4' and value > 'val_4'
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/1938021944/10000
+PREHOOK: Output: file:/tmp/sdong/hive_2011-02-10_16-57-42_422_7786150548202984482/-mr-10000
 POSTHOOK: query: FROM (
   FROM src select src.key, src.value WHERE src.key < '100'
     UNION ALL
@@ -124,7 +124,7 @@ SELECT unioned_query.*
   WHERE key > '4' and value > 'val_4'
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/1938021944/10000
+POSTHOOK: Output: file:/tmp/sdong/hive_2011-02-10_16-57-42_422_7786150548202984482/-mr-10000
 86	val_86
 409	val_409
 98	val_98

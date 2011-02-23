@@ -5,7 +5,7 @@ POSTHOOK: query: explain
 select degrees(PI()) FROM src LIMIT 1
 POSTHOOK: type: QUERY
 ABSTRACT SYNTAX TREE:
-  (TOK_QUERY (TOK_FROM (TOK_TABREF src)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_FUNCTION degrees (TOK_FUNCTION PI)))) (TOK_LIMIT 1)))
+  (TOK_QUERY (TOK_FROM (TOK_TABREF (TOK_TABNAME src))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_FUNCTION degrees (TOK_FUNCTION PI)))) (TOK_LIMIT 1)))
 
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -39,11 +39,11 @@ STAGE PLANS:
 PREHOOK: query: select degrees(PI()) FROM src LIMIT 1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/home/ecapriolo/downloads/hive/build/ql/tmp/864830697/10000
+PREHOOK: Output: file:/tmp/sdong/hive_2011-02-10_17-32-59_458_5156366208109692774/-mr-10000
 POSTHOOK: query: select degrees(PI()) FROM src LIMIT 1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: file:/home/ecapriolo/downloads/hive/build/ql/tmp/864830697/10000
+POSTHOOK: Output: file:/tmp/sdong/hive_2011-02-10_17-32-59_458_5156366208109692774/-mr-10000
 180.0
 PREHOOK: query: DESCRIBE FUNCTION degrees
 PREHOOK: type: DESCFUNCTION
@@ -66,7 +66,7 @@ POSTHOOK: query: explain
 select degrees(PI()) FROM src LIMIT 1
 POSTHOOK: type: QUERY
 ABSTRACT SYNTAX TREE:
-  (TOK_QUERY (TOK_FROM (TOK_TABREF src)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_FUNCTION degrees (TOK_FUNCTION PI)))) (TOK_LIMIT 1)))
+  (TOK_QUERY (TOK_FROM (TOK_TABREF (TOK_TABNAME src))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_FUNCTION degrees (TOK_FUNCTION PI)))) (TOK_LIMIT 1)))
 
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -100,11 +100,11 @@ STAGE PLANS:
 PREHOOK: query: select degrees(PI()) FROM src LIMIT 1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/home/ecapriolo/downloads/hive/build/ql/tmp/864830697/10000
+PREHOOK: Output: file:/tmp/sdong/hive_2011-02-10_17-33-03_005_5440568287824883570/-mr-10000
 POSTHOOK: query: select degrees(PI()) FROM src LIMIT 1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: file:/home/ecapriolo/downloads/hive/build/ql/tmp/864830697/10000
+POSTHOOK: Output: file:/tmp/sdong/hive_2011-02-10_17-33-03_005_5440568287824883570/-mr-10000
 180.0
 PREHOOK: query: DESCRIBE FUNCTION degrees
 PREHOOK: type: DESCFUNCTION

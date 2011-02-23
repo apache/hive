@@ -33,7 +33,7 @@ FROM src
 WHERE true IS NOT NULL LIMIT 1
 POSTHOOK: type: QUERY
 ABSTRACT SYNTAX TREE:
-  (TOK_QUERY (TOK_FROM (TOK_TABREF src)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_FUNCTION TOK_ISNULL TOK_NULL)) (TOK_SELEXPR (TOK_FUNCTION TOK_ISNOTNULL 1)) (TOK_SELEXPR (TOK_FUNCTION TOK_ISNOTNULL 'my string'))) (TOK_WHERE (TOK_FUNCTION TOK_ISNOTNULL true)) (TOK_LIMIT 1)))
+  (TOK_QUERY (TOK_FROM (TOK_TABREF (TOK_TABNAME src))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_FUNCTION TOK_ISNULL TOK_NULL)) (TOK_SELEXPR (TOK_FUNCTION TOK_ISNOTNULL 1)) (TOK_SELEXPR (TOK_FUNCTION TOK_ISNOTNULL 'my string'))) (TOK_WHERE (TOK_FUNCTION TOK_ISNOTNULL true)) (TOK_LIMIT 1)))
 
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -83,7 +83,7 @@ FROM src
 WHERE true IS NOT NULL LIMIT 1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/Users/carl/Projects/hd9/hive-trunk/build/ql/tmp/1963364824/10000
+PREHOOK: Output: file:/tmp/sdong/hive_2011-02-10_17-36-03_354_6313112205133317265/-mr-10000
 POSTHOOK: query: SELECT NULL IS NULL,
        1 IS NOT NULL, 
        'my string' IS NOT NULL
@@ -91,7 +91,7 @@ FROM src
 WHERE true IS NOT NULL LIMIT 1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: file:/Users/carl/Projects/hd9/hive-trunk/build/ql/tmp/1963364824/10000
+POSTHOOK: Output: file:/tmp/sdong/hive_2011-02-10_17-36-03_354_6313112205133317265/-mr-10000
 true	true	true
 PREHOOK: query: EXPLAIN
 FROM src_thrift
@@ -110,7 +110,7 @@ WHERE  src_thrift.lint IS NOT NULL
        AND NOT (src_thrift.mstringstring IS NULL) LIMIT 1
 POSTHOOK: type: QUERY
 ABSTRACT SYNTAX TREE:
-  (TOK_QUERY (TOK_FROM (TOK_TABREF src_thrift)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_FUNCTION TOK_ISNOTNULL (. (TOK_TABLE_OR_COL src_thrift) lint))) (TOK_SELEXPR (TOK_FUNCTION TOK_ISNOTNULL (. (TOK_TABLE_OR_COL src_thrift) lintstring))) (TOK_SELEXPR (TOK_FUNCTION TOK_ISNOTNULL (. (TOK_TABLE_OR_COL src_thrift) mstringstring)))) (TOK_WHERE (AND (TOK_FUNCTION TOK_ISNOTNULL (. (TOK_TABLE_OR_COL src_thrift) lint)) (NOT (TOK_FUNCTION TOK_ISNULL (. (TOK_TABLE_OR_COL src_thrift) mstringstring))))) (TOK_LIMIT 1)))
+  (TOK_QUERY (TOK_FROM (TOK_TABREF (TOK_TABNAME src_thrift))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_FUNCTION TOK_ISNOTNULL (. (TOK_TABLE_OR_COL src_thrift) lint))) (TOK_SELEXPR (TOK_FUNCTION TOK_ISNOTNULL (. (TOK_TABLE_OR_COL src_thrift) lintstring))) (TOK_SELEXPR (TOK_FUNCTION TOK_ISNOTNULL (. (TOK_TABLE_OR_COL src_thrift) mstringstring)))) (TOK_WHERE (AND (TOK_FUNCTION TOK_ISNOTNULL (. (TOK_TABLE_OR_COL src_thrift) lint)) (NOT (TOK_FUNCTION TOK_ISNULL (. (TOK_TABLE_OR_COL src_thrift) mstringstring))))) (TOK_LIMIT 1)))
 
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -161,7 +161,7 @@ WHERE  src_thrift.lint IS NOT NULL
        AND NOT (src_thrift.mstringstring IS NULL) LIMIT 1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src_thrift
-PREHOOK: Output: file:/Users/carl/Projects/hd9/hive-trunk/build/ql/tmp/609638755/10000
+PREHOOK: Output: file:/tmp/sdong/hive_2011-02-10_17-36-06_768_249335154055687547/-mr-10000
 POSTHOOK: query: FROM src_thrift
 SELECT src_thrift.lint IS NOT NULL, 
        src_thrift.lintstring IS NOT NULL, 
@@ -170,5 +170,5 @@ WHERE  src_thrift.lint IS NOT NULL
        AND NOT (src_thrift.mstringstring IS NULL) LIMIT 1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src_thrift
-POSTHOOK: Output: file:/Users/carl/Projects/hd9/hive-trunk/build/ql/tmp/609638755/10000
+POSTHOOK: Output: file:/tmp/sdong/hive_2011-02-10_17-36-06_768_249335154055687547/-mr-10000
 true	true	true

@@ -12,7 +12,7 @@ FROM src src1 JOIN src src2 ON (src1.key = src2.key) JOIN src src3 ON (src1.key 
 INSERT OVERWRITE TABLE dest_j2 SELECT src1.key, src3.value
 POSTHOOK: type: QUERY
 ABSTRACT SYNTAX TREE:
-  (TOK_QUERY (TOK_FROM (TOK_JOIN (TOK_JOIN (TOK_TABREF src src1) (TOK_TABREF src src2) (= (. (TOK_TABLE_OR_COL src1) key) (. (TOK_TABLE_OR_COL src2) key))) (TOK_TABREF src src3) (= (+ (. (TOK_TABLE_OR_COL src1) key) (. (TOK_TABLE_OR_COL src2) key)) (. (TOK_TABLE_OR_COL src3) key)))) (TOK_INSERT (TOK_DESTINATION (TOK_TAB dest_j2)) (TOK_SELECT (TOK_SELEXPR (. (TOK_TABLE_OR_COL src1) key)) (TOK_SELEXPR (. (TOK_TABLE_OR_COL src3) value)))))
+  (TOK_QUERY (TOK_FROM (TOK_JOIN (TOK_JOIN (TOK_TABREF (TOK_TABNAME src) src1) (TOK_TABREF (TOK_TABNAME src) src2) (= (. (TOK_TABLE_OR_COL src1) key) (. (TOK_TABLE_OR_COL src2) key))) (TOK_TABREF (TOK_TABNAME src) src3) (= (+ (. (TOK_TABLE_OR_COL src1) key) (. (TOK_TABLE_OR_COL src2) key)) (. (TOK_TABLE_OR_COL src3) key)))) (TOK_INSERT (TOK_DESTINATION (TOK_TAB (TOK_TABNAME dest_j2))) (TOK_SELECT (TOK_SELEXPR (. (TOK_TABLE_OR_COL src1) key)) (TOK_SELEXPR (. (TOK_TABLE_OR_COL src3) value)))))
 
 STAGE DEPENDENCIES:
   Stage-11 is a root stage , consists of Stage-14, Stage-15, Stage-1
@@ -141,7 +141,7 @@ STAGE PLANS:
                         input format: org.apache.hadoop.mapred.TextInputFormat
                         output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                         serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                        name: dest_j2
+                        name: default.dest_j2
       Local Work:
         Map Reduce Local Work
 
@@ -153,7 +153,7 @@ STAGE PLANS:
               input format: org.apache.hadoop.mapred.TextInputFormat
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              name: dest_j2
+              name: default.dest_j2
 
   Stage: Stage-3
     Stats-Aggr Operator
@@ -215,7 +215,7 @@ STAGE PLANS:
                         input format: org.apache.hadoop.mapred.TextInputFormat
                         output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                         serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                        name: dest_j2
+                        name: default.dest_j2
       Local Work:
         Map Reduce Local Work
 
@@ -280,7 +280,7 @@ STAGE PLANS:
                     input format: org.apache.hadoop.mapred.TextInputFormat
                     output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                     serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                    name: dest_j2
+                    name: default.dest_j2
 
   Stage: Stage-15
     Map Reduce Local Work
@@ -394,11 +394,11 @@ POSTHOOK: Lineage: dest_j2.value SIMPLE [(src)src3.FieldSchema(name:value, type:
 PREHOOK: query: SELECT sum(hash(dest_j2.key,dest_j2.value)) FROM dest_j2
 PREHOOK: type: QUERY
 PREHOOK: Input: default@dest_j2
-PREHOOK: Output: file:/tmp/liyintang/hive_2010-11-15_16-47-22_907_3066399957536170228/-mr-10000
+PREHOOK: Output: file:/tmp/sdong/hive_2011-02-10_01-15-45_319_4401285660039001258/-mr-10000
 POSTHOOK: query: SELECT sum(hash(dest_j2.key,dest_j2.value)) FROM dest_j2
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@dest_j2
-POSTHOOK: Output: file:/tmp/liyintang/hive_2010-11-15_16-47-22_907_3066399957536170228/-mr-10000
+POSTHOOK: Output: file:/tmp/sdong/hive_2011-02-10_01-15-45_319_4401285660039001258/-mr-10000
 POSTHOOK: Lineage: dest_j2.key EXPRESSION [(src)src1.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: dest_j2.value SIMPLE [(src)src3.FieldSchema(name:value, type:string, comment:default), ]
 33815990627

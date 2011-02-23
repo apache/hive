@@ -45,7 +45,7 @@ POSTHOOK: query: explain
 insert overwrite table merge_dynamic_part partition (ds='2008-04-08', hr) select key, value, hr from srcpart_merge_dp where ds='2008-04-08'
 POSTHOOK: type: QUERY
 ABSTRACT SYNTAX TREE:
-  (TOK_QUERY (TOK_FROM (TOK_TABREF srcpart_merge_dp)) (TOK_INSERT (TOK_DESTINATION (TOK_TAB merge_dynamic_part (TOK_PARTSPEC (TOK_PARTVAL ds '2008-04-08') (TOK_PARTVAL hr)))) (TOK_SELECT (TOK_SELEXPR (TOK_TABLE_OR_COL key)) (TOK_SELEXPR (TOK_TABLE_OR_COL value)) (TOK_SELEXPR (TOK_TABLE_OR_COL hr))) (TOK_WHERE (= (TOK_TABLE_OR_COL ds) '2008-04-08'))))
+  (TOK_QUERY (TOK_FROM (TOK_TABREF (TOK_TABNAME srcpart_merge_dp))) (TOK_INSERT (TOK_DESTINATION (TOK_TAB (TOK_TABNAME merge_dynamic_part) (TOK_PARTSPEC (TOK_PARTVAL ds '2008-04-08') (TOK_PARTVAL hr)))) (TOK_SELECT (TOK_SELEXPR (TOK_TABLE_OR_COL key)) (TOK_SELEXPR (TOK_TABLE_OR_COL value)) (TOK_SELEXPR (TOK_TABLE_OR_COL hr))) (TOK_WHERE (= (TOK_TABLE_OR_COL ds) '2008-04-08'))))
 
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -82,7 +82,7 @@ STAGE PLANS:
                       input format: org.apache.hadoop.mapred.TextInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                       serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                      name: merge_dynamic_part
+                      name: default.merge_dynamic_part
 
   Stage: Stage-5
     Conditional Operator
@@ -91,7 +91,7 @@ STAGE PLANS:
     Move Operator
       files:
           hdfs directory: true
-          destination: pfile:/data/users/nzhang/work/2/apache-hive/build/ql/scratchdir/hive_2010-12-15_11-09-33_994_7142549978626881266/-ext-10000
+          destination: pfile:/data/users/sdong/www/open-source-hive3/build/ql/scratchdir/hive_2011-02-16_21-56-20_411_1361898506367871678/-ext-10000
 
   Stage: Stage-0
     Move Operator
@@ -104,7 +104,7 @@ STAGE PLANS:
               input format: org.apache.hadoop.mapred.TextInputFormat
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              name: merge_dynamic_part
+              name: default.merge_dynamic_part
 
   Stage: Stage-2
     Stats-Aggr Operator
@@ -112,7 +112,7 @@ STAGE PLANS:
   Stage: Stage-3
     Map Reduce
       Alias -> Map Operator Tree:
-        pfile:/data/users/nzhang/work/2/apache-hive/build/ql/scratchdir/hive_2010-12-15_11-09-33_994_7142549978626881266/-ext-10002 
+        pfile:/data/users/sdong/www/open-source-hive3/build/ql/scratchdir/hive_2011-02-16_21-56-20_411_1361898506367871678/-ext-10002 
             File Output Operator
               compressed: false
               GlobalTableId: 0
@@ -120,7 +120,7 @@ STAGE PLANS:
                   input format: org.apache.hadoop.mapred.TextInputFormat
                   output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                   serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                  name: merge_dynamic_part
+                  name: default.merge_dynamic_part
 
 
 PREHOOK: query: insert overwrite table merge_dynamic_part partition (ds='2008-04-08', hr) select key, value, hr from srcpart_merge_dp where ds='2008-04-08'
@@ -148,7 +148,7 @@ POSTHOOK: Lineage: merge_dynamic_part PARTITION(ds=2008-04-08,hr=12).key SIMPLE 
 POSTHOOK: Lineage: merge_dynamic_part PARTITION(ds=2008-04-08,hr=12).value SIMPLE [(srcpart_merge_dp)srcpart_merge_dp.FieldSchema(name:value, type:string, comment:default), ]
 tableName:merge_dynamic_part
 owner:null
-location:pfile:/data/users/nzhang/work/2/apache-hive/build/ql/test/data/warehouse/merge_dynamic_part
+location:pfile:/data/users/sdong/www/open-source-hive3/build/ql/test/data/warehouse/merge_dynamic_part
 inputformat:org.apache.hadoop.mapred.TextInputFormat
 outputformat:org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
 columns:struct columns { string key, string value}
@@ -159,5 +159,5 @@ totalFileSize:17415
 maxFileSize:5901
 minFileSize:5702
 lastAccessTime:0
-lastUpdateTime:1292440184000
+lastUpdateTime:1297922190000
 

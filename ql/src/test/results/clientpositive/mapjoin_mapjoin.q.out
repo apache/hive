@@ -3,7 +3,7 @@ PREHOOK: type: QUERY
 POSTHOOK: query: explain select /*+MAPJOIN(src, src1) */ srcpart.key from srcpart join src on (srcpart.value=src.value) join src1 on (srcpart.key=src1.key)
 POSTHOOK: type: QUERY
 ABSTRACT SYNTAX TREE:
-  (TOK_QUERY (TOK_FROM (TOK_JOIN (TOK_JOIN (TOK_TABREF srcpart) (TOK_TABREF src) (= (. (TOK_TABLE_OR_COL srcpart) value) (. (TOK_TABLE_OR_COL src) value))) (TOK_TABREF src1) (= (. (TOK_TABLE_OR_COL srcpart) key) (. (TOK_TABLE_OR_COL src1) key)))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_HINTLIST (TOK_HINT TOK_MAPJOIN (TOK_HINTARGLIST src src1))) (TOK_SELEXPR (. (TOK_TABLE_OR_COL srcpart) key)))))
+  (TOK_QUERY (TOK_FROM (TOK_JOIN (TOK_JOIN (TOK_TABREF (TOK_TABNAME srcpart)) (TOK_TABREF (TOK_TABNAME src)) (= (. (TOK_TABLE_OR_COL srcpart) value) (. (TOK_TABLE_OR_COL src) value))) (TOK_TABREF (TOK_TABNAME src1)) (= (. (TOK_TABLE_OR_COL srcpart) key) (. (TOK_TABLE_OR_COL src1) key)))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_HINTLIST (TOK_HINT TOK_MAPJOIN (TOK_HINTARGLIST src src1))) (TOK_SELEXPR (. (TOK_TABLE_OR_COL srcpart) key)))))
 
 STAGE DEPENDENCIES:
   Stage-6 is a root stage
@@ -83,7 +83,7 @@ STAGE PLANS:
   Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/tmp/liyintang/hive_2010-11-04_12-50-21_401_1192194208773335423/-mr-10002 
+        file:/tmp/sdong/hive_2011-02-10_16-39-15_246_6812245566327256930/-mr-10002 
           Select Operator
             expressions:
                   expr: _col0
@@ -130,7 +130,7 @@ PREHOOK: type: QUERY
 POSTHOOK: query: explain select /*+MAPJOIN(src, src1) */ count(*) from srcpart join src on (srcpart.value=src.value) join src1 on (srcpart.key=src1.key) group by ds
 POSTHOOK: type: QUERY
 ABSTRACT SYNTAX TREE:
-  (TOK_QUERY (TOK_FROM (TOK_JOIN (TOK_JOIN (TOK_TABREF srcpart) (TOK_TABREF src) (= (. (TOK_TABLE_OR_COL srcpart) value) (. (TOK_TABLE_OR_COL src) value))) (TOK_TABREF src1) (= (. (TOK_TABLE_OR_COL srcpart) key) (. (TOK_TABLE_OR_COL src1) key)))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_HINTLIST (TOK_HINT TOK_MAPJOIN (TOK_HINTARGLIST src src1))) (TOK_SELEXPR (TOK_FUNCTIONSTAR count))) (TOK_GROUPBY (TOK_TABLE_OR_COL ds))))
+  (TOK_QUERY (TOK_FROM (TOK_JOIN (TOK_JOIN (TOK_TABREF (TOK_TABNAME srcpart)) (TOK_TABREF (TOK_TABNAME src)) (= (. (TOK_TABLE_OR_COL srcpart) value) (. (TOK_TABLE_OR_COL src) value))) (TOK_TABREF (TOK_TABNAME src1)) (= (. (TOK_TABLE_OR_COL srcpart) key) (. (TOK_TABLE_OR_COL src1) key)))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_HINTLIST (TOK_HINT TOK_MAPJOIN (TOK_HINTARGLIST src src1))) (TOK_SELEXPR (TOK_FUNCTIONSTAR count))) (TOK_GROUPBY (TOK_TABLE_OR_COL ds))))
 
 STAGE DEPENDENCIES:
   Stage-7 is a root stage
@@ -211,7 +211,7 @@ STAGE PLANS:
   Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/tmp/liyintang/hive_2010-11-04_12-50-21_619_1359331938520049914/-mr-10002 
+        file:/tmp/sdong/hive_2011-02-10_16-39-15_407_4173154005362822854/-mr-10002 
           Select Operator
             expressions:
                   expr: _col0
@@ -243,7 +243,7 @@ STAGE PLANS:
   Stage: Stage-3
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/tmp/liyintang/hive_2010-11-04_12-50-21_619_1359331938520049914/-mr-10003 
+        file:/tmp/sdong/hive_2011-02-10_16-39-15_407_4173154005362822854/-mr-10003 
           Select Operator
             expressions:
                   expr: _col2
@@ -309,7 +309,7 @@ PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
 PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
 PREHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
 PREHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
-PREHOOK: Output: file:/tmp/liyintang/hive_2010-11-04_12-50-21_821_3740258359127333333/-mr-10000
+PREHOOK: Output: file:/tmp/sdong/hive_2011-02-10_16-39-15_579_6486376364563566190/-mr-10000
 POSTHOOK: query: select /*+MAPJOIN(src, src1) */ count(*) from srcpart join src src on (srcpart.value=src.value) join src src1 on (srcpart.key=src1.key) group by ds
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
@@ -317,6 +317,6 @@ POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
 POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
 POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
 POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
-POSTHOOK: Output: file:/tmp/liyintang/hive_2010-11-04_12-50-21_821_3740258359127333333/-mr-10000
+POSTHOOK: Output: file:/tmp/sdong/hive_2011-02-10_16-39-15_579_6486376364563566190/-mr-10000
 5308
 5308

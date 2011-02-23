@@ -12,7 +12,7 @@ insert overwrite table stats_non_partitioned
 select * from src
 POSTHOOK: type: QUERY
 ABSTRACT SYNTAX TREE:
-  (TOK_QUERY (TOK_FROM (TOK_TABREF src)) (TOK_INSERT (TOK_DESTINATION (TOK_TAB stats_non_partitioned)) (TOK_SELECT (TOK_SELEXPR TOK_ALLCOLREF))))
+  (TOK_QUERY (TOK_FROM (TOK_TABREF (TOK_TABNAME src))) (TOK_INSERT (TOK_DESTINATION (TOK_TAB (TOK_TABNAME stats_non_partitioned))) (TOK_SELECT (TOK_SELEXPR TOK_ALLCOLREF))))
 
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -37,9 +37,9 @@ STAGE PLANS:
               File Output Operator
                 compressed: false
                 GlobalTableId: 1
-                directory: pfile:/home/thiruvel/projects/hive/hive.unsecure/build/ql/scratchdir/hive_2010-10-11_12-39-56_888_8633906021259923490/-ext-10000
+                directory: pfile:/data/users/sdong/www/open-source-hive1/build/ql/scratchdir/hive_2011-02-10_17-18-58_598_1661934788546513953/-ext-10000
                 NumFilesPerFileSink: 1
-                Stats Publishing Key Prefix: pfile:/home/thiruvel/projects/hive/hive.unsecure/build/ql/scratchdir/hive_2010-10-11_12-39-56_888_8633906021259923490/-ext-10000/
+                Stats Publishing Key Prefix: pfile:/data/users/sdong/www/open-source-hive1/build/ql/scratchdir/hive_2011-02-10_17-18-58_598_1661934788546513953/-ext-10000/
                 table:
                     input format: org.apache.hadoop.mapred.TextInputFormat
                     output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
@@ -49,22 +49,22 @@ STAGE PLANS:
                       columns.types string:string
                       file.inputformat org.apache.hadoop.mapred.TextInputFormat
                       file.outputformat org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                      location pfile:/home/thiruvel/projects/hive/hive.unsecure/build/ql/test/data/warehouse/stats_non_partitioned
-                      name stats_non_partitioned
+                      location pfile:/data/users/sdong/www/open-source-hive1/build/ql/test/data/warehouse/stats_non_partitioned
+                      name default.stats_non_partitioned
                       serialization.ddl struct stats_non_partitioned { string key, string value}
                       serialization.format 1
                       serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                      transient_lastDdlTime 1286825996
+                      transient_lastDdlTime 1297387138
                     serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                    name: stats_non_partitioned
+                    name: default.stats_non_partitioned
                 TotalFiles: 1
                 GatherStats: true
                 MultiFileSpray: false
       Needs Tagging: false
       Path -> Alias:
-        pfile:/home/thiruvel/projects/hive/hive.unsecure/build/ql/test/data/warehouse/src [src]
+        pfile:/data/users/sdong/www/open-source-hive1/build/ql/test/data/warehouse/src [src]
       Path -> Partition:
-        pfile:/home/thiruvel/projects/hive/hive.unsecure/build/ql/test/data/warehouse/src 
+        pfile:/data/users/sdong/www/open-source-hive1/build/ql/test/data/warehouse/src 
           Partition
             base file name: src
             input format: org.apache.hadoop.mapred.TextInputFormat
@@ -75,12 +75,12 @@ STAGE PLANS:
               columns.types string:string
               file.inputformat org.apache.hadoop.mapred.TextInputFormat
               file.outputformat org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-              location pfile:/home/thiruvel/projects/hive/hive.unsecure/build/ql/test/data/warehouse/src
-              name src
+              location pfile:/data/users/sdong/www/open-source-hive1/build/ql/test/data/warehouse/src
+              name default.src
               serialization.ddl struct src { string key, string value}
               serialization.format 1
               serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              transient_lastDdlTime 1286825995
+              transient_lastDdlTime 1297378968
             serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
           
               input format: org.apache.hadoop.mapred.TextInputFormat
@@ -91,21 +91,21 @@ STAGE PLANS:
                 columns.types string:string
                 file.inputformat org.apache.hadoop.mapred.TextInputFormat
                 file.outputformat org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                location pfile:/home/thiruvel/projects/hive/hive.unsecure/build/ql/test/data/warehouse/src
-                name src
+                location pfile:/data/users/sdong/www/open-source-hive1/build/ql/test/data/warehouse/src
+                name default.src
                 serialization.ddl struct src { string key, string value}
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                transient_lastDdlTime 1286825995
+                transient_lastDdlTime 1297378968
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              name: src
-            name: src
+              name: default.src
+            name: default.src
 
   Stage: Stage-0
     Move Operator
       tables:
           replace: true
-          source: pfile:/home/thiruvel/projects/hive/hive.unsecure/build/ql/scratchdir/hive_2010-10-11_12-39-56_888_8633906021259923490/-ext-10000
+          source: pfile:/data/users/sdong/www/open-source-hive1/build/ql/scratchdir/hive_2011-02-10_17-18-58_598_1661934788546513953/-ext-10000
           table:
               input format: org.apache.hadoop.mapred.TextInputFormat
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
@@ -115,19 +115,19 @@ STAGE PLANS:
                 columns.types string:string
                 file.inputformat org.apache.hadoop.mapred.TextInputFormat
                 file.outputformat org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                location pfile:/home/thiruvel/projects/hive/hive.unsecure/build/ql/test/data/warehouse/stats_non_partitioned
-                name stats_non_partitioned
+                location pfile:/data/users/sdong/www/open-source-hive1/build/ql/test/data/warehouse/stats_non_partitioned
+                name default.stats_non_partitioned
                 serialization.ddl struct stats_non_partitioned { string key, string value}
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                transient_lastDdlTime 1286825996
+                transient_lastDdlTime 1297387138
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              name: stats_non_partitioned
-          tmp directory: pfile:/home/thiruvel/projects/hive/hive.unsecure/build/ql/scratchdir/hive_2010-10-11_12-39-56_888_8633906021259923490/-ext-10001
+              name: default.stats_non_partitioned
+          tmp directory: pfile:/data/users/sdong/www/open-source-hive1/build/ql/scratchdir/hive_2011-02-10_17-18-58_598_1661934788546513953/-ext-10001
 
   Stage: Stage-2
     Stats-Aggr Operator
-      Stats Aggregation Key Prefix: pfile:/home/thiruvel/projects/hive/hive.unsecure/build/ql/scratchdir/hive_2010-10-11_12-39-56_888_8633906021259923490/-ext-10000/
+      Stats Aggregation Key Prefix: pfile:/data/users/sdong/www/open-source-hive1/build/ql/scratchdir/hive_2011-02-10_17-18-58_598_1661934788546513953/-ext-10000/
 
 
 PREHOOK: query: insert overwrite table stats_non_partitioned
@@ -151,15 +151,15 @@ POSTHOOK: Lineage: stats_non_partitioned.value SIMPLE [(src)src.FieldSchema(name
 key	string	
 value	string	
 	 	 
-Detailed Table Information	Table(tableName:stats_non_partitioned, dbName:default, owner:thiruvel, createTime:1286825996, lastAccessTime:0, retention:0, sd:StorageDescriptor(cols:[FieldSchema(name:key, type:string, comment:null), FieldSchema(name:value, type:string, comment:null)], location:pfile:/home/thiruvel/projects/hive/hive.unsecure/build/ql/test/data/warehouse/stats_non_partitioned, inputFormat:org.apache.hadoop.mapred.TextInputFormat, outputFormat:org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat, compressed:false, numBuckets:-1, serdeInfo:SerDeInfo(name:null, serializationLib:org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe, parameters:{serialization.format=1}), bucketCols:[], sortCols:[], parameters:{}), partitionKeys:[], parameters:{numPartitions=0, numFiles=1, transient_lastDdlTime=1286826001, numRows=500, totalSize=5812}, viewOriginalText:null, viewExpandedText:null, tableType:MANAGED_TABLE)	
+Detailed Table Information	Table(tableName:stats_non_partitioned, dbName:default, owner:sdong, createTime:1297387138, lastAccessTime:0, retention:0, sd:StorageDescriptor(cols:[FieldSchema(name:key, type:string, comment:null), FieldSchema(name:value, type:string, comment:null)], location:pfile:/data/users/sdong/www/open-source-hive1/build/ql/test/data/warehouse/stats_non_partitioned, inputFormat:org.apache.hadoop.mapred.TextInputFormat, outputFormat:org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat, compressed:false, numBuckets:-1, serdeInfo:SerDeInfo(name:null, serializationLib:org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe, parameters:{serialization.format=1}), bucketCols:[], sortCols:[], parameters:{}), partitionKeys:[], parameters:{numPartitions=0, numFiles=1, transient_lastDdlTime=1297387144, numRows=500, totalSize=5812}, viewOriginalText:null, viewExpandedText:null, tableType:MANAGED_TABLE)	
 PREHOOK: query: select * from stats_non_partitioned
 PREHOOK: type: QUERY
 PREHOOK: Input: default@stats_non_partitioned
-PREHOOK: Output: file:/tmp/thiruvel/hive_2010-10-11_12-40-01_425_1999440609925877473/-mr-10000
+PREHOOK: Output: file:/tmp/sdong/hive_2011-02-10_17-19-04_622_8552827783926126583/-mr-10000
 POSTHOOK: query: select * from stats_non_partitioned
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@stats_non_partitioned
-POSTHOOK: Output: file:/tmp/thiruvel/hive_2010-10-11_12-40-01_425_1999440609925877473/-mr-10000
+POSTHOOK: Output: file:/tmp/sdong/hive_2011-02-10_17-19-04_622_8552827783926126583/-mr-10000
 POSTHOOK: Lineage: stats_non_partitioned.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: stats_non_partitioned.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 238	val_238
@@ -680,7 +680,7 @@ POSTHOOK: type: QUERY
 POSTHOOK: Lineage: stats_non_partitioned.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: stats_non_partitioned.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 ABSTRACT SYNTAX TREE:
-  (TOK_QUERY (TOK_FROM (TOK_TABREF src)) (TOK_INSERT (TOK_DESTINATION (TOK_TAB stats_partitioned (TOK_PARTSPEC (TOK_PARTVAL ds '1')))) (TOK_SELECT (TOK_SELEXPR TOK_ALLCOLREF))))
+  (TOK_QUERY (TOK_FROM (TOK_TABREF (TOK_TABNAME src))) (TOK_INSERT (TOK_DESTINATION (TOK_TAB (TOK_TABNAME stats_partitioned) (TOK_PARTSPEC (TOK_PARTVAL ds '1')))) (TOK_SELECT (TOK_SELEXPR TOK_ALLCOLREF))))
 
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -708,7 +708,7 @@ STAGE PLANS:
                     input format: org.apache.hadoop.mapred.TextInputFormat
                     output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                     serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                    name: stats_partitioned
+                    name: default.stats_partitioned
 
   Stage: Stage-0
     Move Operator
@@ -720,7 +720,7 @@ STAGE PLANS:
               input format: org.apache.hadoop.mapred.TextInputFormat
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              name: stats_partitioned
+              name: default.stats_partitioned
 
   Stage: Stage-2
     Stats-Aggr Operator
@@ -752,11 +752,11 @@ ds=1
 PREHOOK: query: select * from stats_partitioned where ds is not null
 PREHOOK: type: QUERY
 PREHOOK: Input: default@stats_partitioned@ds=1
-PREHOOK: Output: file:/tmp/thiruvel/hive_2010-10-11_12-40-05_452_8160090432534415125/-mr-10000
+PREHOOK: Output: file:/tmp/sdong/hive_2011-02-10_17-19-09_723_4960596007616418516/-mr-10000
 POSTHOOK: query: select * from stats_partitioned where ds is not null
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@stats_partitioned@ds=1
-POSTHOOK: Output: file:/tmp/thiruvel/hive_2010-10-11_12-40-05_452_8160090432534415125/-mr-10000
+POSTHOOK: Output: file:/tmp/sdong/hive_2011-02-10_17-19-09_723_4960596007616418516/-mr-10000
 POSTHOOK: Lineage: stats_non_partitioned.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: stats_non_partitioned.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: stats_partitioned PARTITION(ds=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
@@ -1273,7 +1273,7 @@ key	string
 value	string	
 ds	string	
 	 	 
-Detailed Partition Information	Partition(values:[1], dbName:default, tableName:stats_partitioned, createTime:1286826005, lastAccessTime:0, sd:StorageDescriptor(cols:[FieldSchema(name:key, type:string, comment:null), FieldSchema(name:value, type:string, comment:null)], location:pfile:/home/thiruvel/projects/hive/hive.unsecure/build/ql/test/data/warehouse/stats_partitioned/ds=1, inputFormat:org.apache.hadoop.mapred.TextInputFormat, outputFormat:org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat, compressed:false, numBuckets:-1, serdeInfo:SerDeInfo(name:null, serializationLib:org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe, parameters:{serialization.format=1}), bucketCols:[], sortCols:[], parameters:{}), parameters:{numFiles=1, transient_lastDdlTime=1286826005, numRows=500, totalSize=5812})	
+Detailed Partition Information	Partition(values:[1], dbName:default, tableName:stats_partitioned, createTime:1297387149, lastAccessTime:0, sd:StorageDescriptor(cols:[FieldSchema(name:key, type:string, comment:null), FieldSchema(name:value, type:string, comment:null)], location:pfile:/data/users/sdong/www/open-source-hive1/build/ql/test/data/warehouse/stats_partitioned/ds=1, inputFormat:org.apache.hadoop.mapred.TextInputFormat, outputFormat:org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat, compressed:false, numBuckets:-1, serdeInfo:SerDeInfo(name:null, serializationLib:org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe, parameters:{serialization.format=1}), bucketCols:[], sortCols:[], parameters:{}), parameters:{numFiles=1, transient_lastDdlTime=1297387149, numRows=500, totalSize=5812})	
 PREHOOK: query: describe extended stats_partitioned
 PREHOOK: type: DESCTABLE
 POSTHOOK: query: describe extended stats_partitioned
@@ -1286,7 +1286,7 @@ key	string
 value	string	
 ds	string	
 	 	 
-Detailed Table Information	Table(tableName:stats_partitioned, dbName:default, owner:thiruvel, createTime:1286826001, lastAccessTime:0, retention:0, sd:StorageDescriptor(cols:[FieldSchema(name:key, type:string, comment:null), FieldSchema(name:value, type:string, comment:null), FieldSchema(name:ds, type:string, comment:null)], location:pfile:/home/thiruvel/projects/hive/hive.unsecure/build/ql/test/data/warehouse/stats_partitioned, inputFormat:org.apache.hadoop.mapred.TextInputFormat, outputFormat:org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat, compressed:false, numBuckets:-1, serdeInfo:SerDeInfo(name:null, serializationLib:org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe, parameters:{serialization.format=1}), bucketCols:[], sortCols:[], parameters:{}), partitionKeys:[FieldSchema(name:ds, type:string, comment:null)], parameters:{numPartitions=1, numFiles=1, transient_lastDdlTime=1286826005, numRows=500, totalSize=5812}, viewOriginalText:null, viewExpandedText:null, tableType:MANAGED_TABLE)	
+Detailed Table Information	Table(tableName:stats_partitioned, dbName:default, owner:sdong, createTime:1297387144, lastAccessTime:0, retention:0, sd:StorageDescriptor(cols:[FieldSchema(name:key, type:string, comment:null), FieldSchema(name:value, type:string, comment:null), FieldSchema(name:ds, type:string, comment:null)], location:pfile:/data/users/sdong/www/open-source-hive1/build/ql/test/data/warehouse/stats_partitioned, inputFormat:org.apache.hadoop.mapred.TextInputFormat, outputFormat:org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat, compressed:false, numBuckets:-1, serdeInfo:SerDeInfo(name:null, serializationLib:org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe, parameters:{serialization.format=1}), bucketCols:[], sortCols:[], parameters:{}), partitionKeys:[FieldSchema(name:ds, type:string, comment:null)], parameters:{numPartitions=1, numFiles=1, transient_lastDdlTime=1297387149, numRows=500, totalSize=5812}, viewOriginalText:null, viewExpandedText:null, tableType:MANAGED_TABLE)	
 PREHOOK: query: drop table stats_non_partitioned
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@stats_non_partitioned
@@ -1333,7 +1333,7 @@ POSTHOOK: Lineage: stats_non_partitioned.value SIMPLE [(src)src.FieldSchema(name
 POSTHOOK: Lineage: stats_partitioned PARTITION(ds=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: stats_partitioned PARTITION(ds=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 ABSTRACT SYNTAX TREE:
-  (TOK_QUERY (TOK_FROM (TOK_TABREF src)) (TOK_INSERT (TOK_DESTINATION (TOK_TAB stats_non_partitioned)) (TOK_SELECT (TOK_SELEXPR TOK_ALLCOLREF))))
+  (TOK_QUERY (TOK_FROM (TOK_TABREF (TOK_TABNAME src))) (TOK_INSERT (TOK_DESTINATION (TOK_TAB (TOK_TABNAME stats_non_partitioned))) (TOK_SELECT (TOK_SELEXPR TOK_ALLCOLREF))))
 
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -1361,9 +1361,9 @@ STAGE PLANS:
               File Output Operator
                 compressed: false
                 GlobalTableId: 1
-                directory: pfile:/home/thiruvel/projects/hive/hive.unsecure/build/ql/scratchdir/hive_2010-10-11_12-40-06_453_7501705445146051221/-ext-10002
+                directory: pfile:/data/users/sdong/www/open-source-hive1/build/ql/scratchdir/hive_2011-02-10_17-19-10_494_135071668206887577/-ext-10002
                 NumFilesPerFileSink: 1
-                Stats Publishing Key Prefix: pfile:/home/thiruvel/projects/hive/hive.unsecure/build/ql/scratchdir/hive_2010-10-11_12-40-06_453_7501705445146051221/-ext-10000/
+                Stats Publishing Key Prefix: pfile:/data/users/sdong/www/open-source-hive1/build/ql/scratchdir/hive_2011-02-10_17-19-10_494_135071668206887577/-ext-10000/
                 table:
                     input format: org.apache.hadoop.mapred.TextInputFormat
                     output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
@@ -1373,22 +1373,22 @@ STAGE PLANS:
                       columns.types string:string
                       file.inputformat org.apache.hadoop.mapred.TextInputFormat
                       file.outputformat org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                      location pfile:/home/thiruvel/projects/hive/hive.unsecure/build/ql/test/data/warehouse/stats_non_partitioned
-                      name stats_non_partitioned
+                      location pfile:/data/users/sdong/www/open-source-hive1/build/ql/test/data/warehouse/stats_non_partitioned
+                      name default.stats_non_partitioned
                       serialization.ddl struct stats_non_partitioned { string key, string value}
                       serialization.format 1
                       serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                      transient_lastDdlTime 1286826006
+                      transient_lastDdlTime 1297387150
                     serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                    name: stats_non_partitioned
+                    name: default.stats_non_partitioned
                 TotalFiles: 1
                 GatherStats: true
                 MultiFileSpray: false
       Needs Tagging: false
       Path -> Alias:
-        pfile:/home/thiruvel/projects/hive/hive.unsecure/build/ql/test/data/warehouse/src [src]
+        pfile:/data/users/sdong/www/open-source-hive1/build/ql/test/data/warehouse/src [src]
       Path -> Partition:
-        pfile:/home/thiruvel/projects/hive/hive.unsecure/build/ql/test/data/warehouse/src 
+        pfile:/data/users/sdong/www/open-source-hive1/build/ql/test/data/warehouse/src 
           Partition
             base file name: src
             input format: org.apache.hadoop.mapred.TextInputFormat
@@ -1399,12 +1399,12 @@ STAGE PLANS:
               columns.types string:string
               file.inputformat org.apache.hadoop.mapred.TextInputFormat
               file.outputformat org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-              location pfile:/home/thiruvel/projects/hive/hive.unsecure/build/ql/test/data/warehouse/src
-              name src
+              location pfile:/data/users/sdong/www/open-source-hive1/build/ql/test/data/warehouse/src
+              name default.src
               serialization.ddl struct src { string key, string value}
               serialization.format 1
               serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              transient_lastDdlTime 1286825995
+              transient_lastDdlTime 1297378968
             serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
           
               input format: org.apache.hadoop.mapred.TextInputFormat
@@ -1415,15 +1415,15 @@ STAGE PLANS:
                 columns.types string:string
                 file.inputformat org.apache.hadoop.mapred.TextInputFormat
                 file.outputformat org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                location pfile:/home/thiruvel/projects/hive/hive.unsecure/build/ql/test/data/warehouse/src
-                name src
+                location pfile:/data/users/sdong/www/open-source-hive1/build/ql/test/data/warehouse/src
+                name default.src
                 serialization.ddl struct src { string key, string value}
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                transient_lastDdlTime 1286825995
+                transient_lastDdlTime 1297378968
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              name: src
-            name: src
+              name: default.src
+            name: default.src
 
   Stage: Stage-5
     Conditional Operator
@@ -1432,14 +1432,14 @@ STAGE PLANS:
     Move Operator
       files:
           hdfs directory: true
-          source: pfile:/home/thiruvel/projects/hive/hive.unsecure/build/ql/scratchdir/hive_2010-10-11_12-40-06_453_7501705445146051221/-ext-10002
-          destination: pfile:/home/thiruvel/projects/hive/hive.unsecure/build/ql/scratchdir/hive_2010-10-11_12-40-06_453_7501705445146051221/-ext-10000
+          source: pfile:/data/users/sdong/www/open-source-hive1/build/ql/scratchdir/hive_2011-02-10_17-19-10_494_135071668206887577/-ext-10002
+          destination: pfile:/data/users/sdong/www/open-source-hive1/build/ql/scratchdir/hive_2011-02-10_17-19-10_494_135071668206887577/-ext-10000
 
   Stage: Stage-0
     Move Operator
       tables:
           replace: true
-          source: pfile:/home/thiruvel/projects/hive/hive.unsecure/build/ql/scratchdir/hive_2010-10-11_12-40-06_453_7501705445146051221/-ext-10000
+          source: pfile:/data/users/sdong/www/open-source-hive1/build/ql/scratchdir/hive_2011-02-10_17-19-10_494_135071668206887577/-ext-10000
           table:
               input format: org.apache.hadoop.mapred.TextInputFormat
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
@@ -1449,28 +1449,28 @@ STAGE PLANS:
                 columns.types string:string
                 file.inputformat org.apache.hadoop.mapred.TextInputFormat
                 file.outputformat org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                location pfile:/home/thiruvel/projects/hive/hive.unsecure/build/ql/test/data/warehouse/stats_non_partitioned
-                name stats_non_partitioned
+                location pfile:/data/users/sdong/www/open-source-hive1/build/ql/test/data/warehouse/stats_non_partitioned
+                name default.stats_non_partitioned
                 serialization.ddl struct stats_non_partitioned { string key, string value}
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                transient_lastDdlTime 1286826006
+                transient_lastDdlTime 1297387150
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              name: stats_non_partitioned
-          tmp directory: pfile:/home/thiruvel/projects/hive/hive.unsecure/build/ql/scratchdir/hive_2010-10-11_12-40-06_453_7501705445146051221/-ext-10001
+              name: default.stats_non_partitioned
+          tmp directory: pfile:/data/users/sdong/www/open-source-hive1/build/ql/scratchdir/hive_2011-02-10_17-19-10_494_135071668206887577/-ext-10001
 
   Stage: Stage-2
     Stats-Aggr Operator
-      Stats Aggregation Key Prefix: pfile:/home/thiruvel/projects/hive/hive.unsecure/build/ql/scratchdir/hive_2010-10-11_12-40-06_453_7501705445146051221/-ext-10000/
+      Stats Aggregation Key Prefix: pfile:/data/users/sdong/www/open-source-hive1/build/ql/scratchdir/hive_2011-02-10_17-19-10_494_135071668206887577/-ext-10000/
 
   Stage: Stage-3
     Map Reduce
       Alias -> Map Operator Tree:
-        pfile:/home/thiruvel/projects/hive/hive.unsecure/build/ql/scratchdir/hive_2010-10-11_12-40-06_453_7501705445146051221/-ext-10002 
+        pfile:/data/users/sdong/www/open-source-hive1/build/ql/scratchdir/hive_2011-02-10_17-19-10_494_135071668206887577/-ext-10002 
             File Output Operator
               compressed: false
               GlobalTableId: 0
-              directory: pfile:/home/thiruvel/projects/hive/hive.unsecure/build/ql/scratchdir/hive_2010-10-11_12-40-06_453_7501705445146051221/-ext-10000
+              directory: pfile:/data/users/sdong/www/open-source-hive1/build/ql/scratchdir/hive_2011-02-10_17-19-10_494_135071668206887577/-ext-10000
               NumFilesPerFileSink: 1
               table:
                   input format: org.apache.hadoop.mapred.TextInputFormat
@@ -1481,22 +1481,22 @@ STAGE PLANS:
                     columns.types string:string
                     file.inputformat org.apache.hadoop.mapred.TextInputFormat
                     file.outputformat org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                    location pfile:/home/thiruvel/projects/hive/hive.unsecure/build/ql/test/data/warehouse/stats_non_partitioned
-                    name stats_non_partitioned
+                    location pfile:/data/users/sdong/www/open-source-hive1/build/ql/test/data/warehouse/stats_non_partitioned
+                    name default.stats_non_partitioned
                     serialization.ddl struct stats_non_partitioned { string key, string value}
                     serialization.format 1
                     serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                    transient_lastDdlTime 1286826006
+                    transient_lastDdlTime 1297387150
                   serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                  name: stats_non_partitioned
+                  name: default.stats_non_partitioned
               TotalFiles: 1
               GatherStats: false
               MultiFileSpray: false
       Needs Tagging: false
       Path -> Alias:
-        pfile:/home/thiruvel/projects/hive/hive.unsecure/build/ql/scratchdir/hive_2010-10-11_12-40-06_453_7501705445146051221/-ext-10002 [pfile:/home/thiruvel/projects/hive/hive.unsecure/build/ql/scratchdir/hive_2010-10-11_12-40-06_453_7501705445146051221/-ext-10002]
+        pfile:/data/users/sdong/www/open-source-hive1/build/ql/scratchdir/hive_2011-02-10_17-19-10_494_135071668206887577/-ext-10002 [pfile:/data/users/sdong/www/open-source-hive1/build/ql/scratchdir/hive_2011-02-10_17-19-10_494_135071668206887577/-ext-10002]
       Path -> Partition:
-        pfile:/home/thiruvel/projects/hive/hive.unsecure/build/ql/scratchdir/hive_2010-10-11_12-40-06_453_7501705445146051221/-ext-10002 
+        pfile:/data/users/sdong/www/open-source-hive1/build/ql/scratchdir/hive_2011-02-10_17-19-10_494_135071668206887577/-ext-10002 
           Partition
             base file name: -ext-10002
             input format: org.apache.hadoop.mapred.TextInputFormat
@@ -1507,12 +1507,12 @@ STAGE PLANS:
               columns.types string:string
               file.inputformat org.apache.hadoop.mapred.TextInputFormat
               file.outputformat org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-              location pfile:/home/thiruvel/projects/hive/hive.unsecure/build/ql/test/data/warehouse/stats_non_partitioned
-              name stats_non_partitioned
+              location pfile:/data/users/sdong/www/open-source-hive1/build/ql/test/data/warehouse/stats_non_partitioned
+              name default.stats_non_partitioned
               serialization.ddl struct stats_non_partitioned { string key, string value}
               serialization.format 1
               serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              transient_lastDdlTime 1286826006
+              transient_lastDdlTime 1297387150
             serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
           
               input format: org.apache.hadoop.mapred.TextInputFormat
@@ -1523,15 +1523,15 @@ STAGE PLANS:
                 columns.types string:string
                 file.inputformat org.apache.hadoop.mapred.TextInputFormat
                 file.outputformat org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                location pfile:/home/thiruvel/projects/hive/hive.unsecure/build/ql/test/data/warehouse/stats_non_partitioned
-                name stats_non_partitioned
+                location pfile:/data/users/sdong/www/open-source-hive1/build/ql/test/data/warehouse/stats_non_partitioned
+                name default.stats_non_partitioned
                 serialization.ddl struct stats_non_partitioned { string key, string value}
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                transient_lastDdlTime 1286826006
+                transient_lastDdlTime 1297387150
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              name: stats_non_partitioned
-            name: stats_non_partitioned
+              name: default.stats_non_partitioned
+            name: default.stats_non_partitioned
 
 
 PREHOOK: query: insert overwrite table stats_non_partitioned
@@ -1563,15 +1563,15 @@ POSTHOOK: Lineage: stats_partitioned PARTITION(ds=1).value SIMPLE [(src)src.Fiel
 key	string	
 value	string	
 	 	 
-Detailed Table Information	Table(tableName:stats_non_partitioned, dbName:default, owner:thiruvel, createTime:1286826006, lastAccessTime:0, retention:0, sd:StorageDescriptor(cols:[FieldSchema(name:key, type:string, comment:null), FieldSchema(name:value, type:string, comment:null)], location:pfile:/home/thiruvel/projects/hive/hive.unsecure/build/ql/test/data/warehouse/stats_non_partitioned, inputFormat:org.apache.hadoop.mapred.TextInputFormat, outputFormat:org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat, compressed:false, numBuckets:-1, serdeInfo:SerDeInfo(name:null, serializationLib:org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe, parameters:{serialization.format=1}), bucketCols:[], sortCols:[], parameters:{}), partitionKeys:[], parameters:{numPartitions=0, numFiles=1, transient_lastDdlTime=1286826009, numRows=500, totalSize=5812}, viewOriginalText:null, viewExpandedText:null, tableType:MANAGED_TABLE)	
+Detailed Table Information	Table(tableName:stats_non_partitioned, dbName:default, owner:sdong, createTime:1297387150, lastAccessTime:0, retention:0, sd:StorageDescriptor(cols:[FieldSchema(name:key, type:string, comment:null), FieldSchema(name:value, type:string, comment:null)], location:pfile:/data/users/sdong/www/open-source-hive1/build/ql/test/data/warehouse/stats_non_partitioned, inputFormat:org.apache.hadoop.mapred.TextInputFormat, outputFormat:org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat, compressed:false, numBuckets:-1, serdeInfo:SerDeInfo(name:null, serializationLib:org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe, parameters:{serialization.format=1}), bucketCols:[], sortCols:[], parameters:{}), partitionKeys:[], parameters:{numPartitions=0, numFiles=1, transient_lastDdlTime=1297387155, numRows=500, totalSize=5812}, viewOriginalText:null, viewExpandedText:null, tableType:MANAGED_TABLE)	
 PREHOOK: query: select * from stats_non_partitioned
 PREHOOK: type: QUERY
 PREHOOK: Input: default@stats_non_partitioned
-PREHOOK: Output: file:/tmp/thiruvel/hive_2010-10-11_12-40-09_882_2561691140403474623/-mr-10000
+PREHOOK: Output: file:/tmp/sdong/hive_2011-02-10_17-19-15_256_6646105206776245651/-mr-10000
 POSTHOOK: query: select * from stats_non_partitioned
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@stats_non_partitioned
-POSTHOOK: Output: file:/tmp/thiruvel/hive_2010-10-11_12-40-09_882_2561691140403474623/-mr-10000
+POSTHOOK: Output: file:/tmp/sdong/hive_2011-02-10_17-19-15_256_6646105206776245651/-mr-10000
 POSTHOOK: Lineage: stats_non_partitioned.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: stats_non_partitioned.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: stats_non_partitioned.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
@@ -2104,7 +2104,7 @@ POSTHOOK: Lineage: stats_non_partitioned.value SIMPLE [(src)src.FieldSchema(name
 POSTHOOK: Lineage: stats_partitioned PARTITION(ds=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: stats_partitioned PARTITION(ds=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 ABSTRACT SYNTAX TREE:
-  (TOK_QUERY (TOK_FROM (TOK_TABREF src)) (TOK_INSERT (TOK_DESTINATION (TOK_TAB stats_partitioned (TOK_PARTSPEC (TOK_PARTVAL ds '1')))) (TOK_SELECT (TOK_SELEXPR TOK_ALLCOLREF))))
+  (TOK_QUERY (TOK_FROM (TOK_TABREF (TOK_TABNAME src))) (TOK_INSERT (TOK_DESTINATION (TOK_TAB (TOK_TABNAME stats_partitioned) (TOK_PARTSPEC (TOK_PARTVAL ds '1')))) (TOK_SELECT (TOK_SELEXPR TOK_ALLCOLREF))))
 
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -2135,7 +2135,7 @@ STAGE PLANS:
                     input format: org.apache.hadoop.mapred.TextInputFormat
                     output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                     serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                    name: stats_partitioned
+                    name: default.stats_partitioned
 
   Stage: Stage-5
     Conditional Operator
@@ -2144,7 +2144,7 @@ STAGE PLANS:
     Move Operator
       files:
           hdfs directory: true
-          destination: pfile:/home/thiruvel/projects/hive/hive.unsecure/build/ql/scratchdir/hive_2010-10-11_12-40-10_020_2736829673279856717/-ext-10000
+          destination: pfile:/data/users/sdong/www/open-source-hive1/build/ql/scratchdir/hive_2011-02-10_17-19-15_601_8048186397758247601/-ext-10000
 
   Stage: Stage-0
     Move Operator
@@ -2156,7 +2156,7 @@ STAGE PLANS:
               input format: org.apache.hadoop.mapred.TextInputFormat
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              name: stats_partitioned
+              name: default.stats_partitioned
 
   Stage: Stage-2
     Stats-Aggr Operator
@@ -2164,7 +2164,7 @@ STAGE PLANS:
   Stage: Stage-3
     Map Reduce
       Alias -> Map Operator Tree:
-        pfile:/home/thiruvel/projects/hive/hive.unsecure/build/ql/scratchdir/hive_2010-10-11_12-40-10_020_2736829673279856717/-ext-10002 
+        pfile:/data/users/sdong/www/open-source-hive1/build/ql/scratchdir/hive_2011-02-10_17-19-15_601_8048186397758247601/-ext-10002 
             File Output Operator
               compressed: false
               GlobalTableId: 0
@@ -2172,7 +2172,7 @@ STAGE PLANS:
                   input format: org.apache.hadoop.mapred.TextInputFormat
                   output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                   serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                  name: stats_partitioned
+                  name: default.stats_partitioned
 
 
 PREHOOK: query: insert overwrite table stats_partitioned partition (ds='1')
@@ -2209,11 +2209,11 @@ ds=1
 PREHOOK: query: select * from stats_partitioned where ds is not null
 PREHOOK: type: QUERY
 PREHOOK: Input: default@stats_partitioned@ds=1
-PREHOOK: Output: file:/tmp/thiruvel/hive_2010-10-11_12-40-13_807_595319153848714979/-mr-10000
+PREHOOK: Output: file:/tmp/sdong/hive_2011-02-10_17-19-20_498_5090761327460515398/-mr-10000
 POSTHOOK: query: select * from stats_partitioned where ds is not null
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@stats_partitioned@ds=1
-POSTHOOK: Output: file:/tmp/thiruvel/hive_2010-10-11_12-40-13_807_595319153848714979/-mr-10000
+POSTHOOK: Output: file:/tmp/sdong/hive_2011-02-10_17-19-20_498_5090761327460515398/-mr-10000
 POSTHOOK: Lineage: stats_non_partitioned.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: stats_non_partitioned.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: stats_non_partitioned.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
@@ -2738,7 +2738,7 @@ key	string
 value	string	
 ds	string	
 	 	 
-Detailed Partition Information	Partition(values:[1], dbName:default, tableName:stats_partitioned, createTime:1286826013, lastAccessTime:0, sd:StorageDescriptor(cols:[FieldSchema(name:key, type:string, comment:null), FieldSchema(name:value, type:string, comment:null)], location:pfile:/home/thiruvel/projects/hive/hive.unsecure/build/ql/test/data/warehouse/stats_partitioned/ds=1, inputFormat:org.apache.hadoop.mapred.TextInputFormat, outputFormat:org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat, compressed:false, numBuckets:-1, serdeInfo:SerDeInfo(name:null, serializationLib:org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe, parameters:{serialization.format=1}), bucketCols:[], sortCols:[], parameters:{}), parameters:{numFiles=1, transient_lastDdlTime=1286826013, numRows=500, totalSize=5812})	
+Detailed Partition Information	Partition(values:[1], dbName:default, tableName:stats_partitioned, createTime:1297387160, lastAccessTime:0, sd:StorageDescriptor(cols:[FieldSchema(name:key, type:string, comment:null), FieldSchema(name:value, type:string, comment:null)], location:pfile:/data/users/sdong/www/open-source-hive1/build/ql/test/data/warehouse/stats_partitioned/ds=1, inputFormat:org.apache.hadoop.mapred.TextInputFormat, outputFormat:org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat, compressed:false, numBuckets:-1, serdeInfo:SerDeInfo(name:null, serializationLib:org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe, parameters:{serialization.format=1}), bucketCols:[], sortCols:[], parameters:{}), parameters:{numFiles=1, transient_lastDdlTime=1297387160, numRows=500, totalSize=5812})	
 PREHOOK: query: describe extended stats_partitioned
 PREHOOK: type: DESCTABLE
 POSTHOOK: query: describe extended stats_partitioned
@@ -2755,4 +2755,4 @@ key	string
 value	string	
 ds	string	
 	 	 
-Detailed Table Information	Table(tableName:stats_partitioned, dbName:default, owner:thiruvel, createTime:1286826010, lastAccessTime:0, retention:0, sd:StorageDescriptor(cols:[FieldSchema(name:key, type:string, comment:null), FieldSchema(name:value, type:string, comment:null), FieldSchema(name:ds, type:string, comment:null)], location:pfile:/home/thiruvel/projects/hive/hive.unsecure/build/ql/test/data/warehouse/stats_partitioned, inputFormat:org.apache.hadoop.mapred.TextInputFormat, outputFormat:org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat, compressed:false, numBuckets:-1, serdeInfo:SerDeInfo(name:null, serializationLib:org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe, parameters:{serialization.format=1}), bucketCols:[], sortCols:[], parameters:{}), partitionKeys:[FieldSchema(name:ds, type:string, comment:null)], parameters:{numPartitions=1, numFiles=1, transient_lastDdlTime=1286826013, numRows=500, totalSize=5812}, viewOriginalText:null, viewExpandedText:null, tableType:MANAGED_TABLE)	
+Detailed Table Information	Table(tableName:stats_partitioned, dbName:default, owner:sdong, createTime:1297387155, lastAccessTime:0, retention:0, sd:StorageDescriptor(cols:[FieldSchema(name:key, type:string, comment:null), FieldSchema(name:value, type:string, comment:null), FieldSchema(name:ds, type:string, comment:null)], location:pfile:/data/users/sdong/www/open-source-hive1/build/ql/test/data/warehouse/stats_partitioned, inputFormat:org.apache.hadoop.mapred.TextInputFormat, outputFormat:org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat, compressed:false, numBuckets:-1, serdeInfo:SerDeInfo(name:null, serializationLib:org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe, parameters:{serialization.format=1}), bucketCols:[], sortCols:[], parameters:{}), partitionKeys:[FieldSchema(name:ds, type:string, comment:null)], parameters:{numPartitions=1, numFiles=1, transient_lastDdlTime=1297387160, numRows=500, totalSize=5812}, viewOriginalText:null, viewExpandedText:null, tableType:MANAGED_TABLE)	

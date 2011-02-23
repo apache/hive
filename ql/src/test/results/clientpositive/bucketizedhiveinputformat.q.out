@@ -28,7 +28,7 @@ SELECT tmp1.name as name FROM (
   ON tmp1.n = tmp2.n AND tmp1.n = tmp3.n) ttt LIMIT 5000000
 POSTHOOK: type: QUERY
 ABSTRACT SYNTAX TREE:
-  (TOK_QUERY (TOK_FROM (TOK_SUBQUERY (TOK_QUERY (TOK_FROM (TOK_JOIN (TOK_JOIN (TOK_SUBQUERY (TOK_QUERY (TOK_FROM (TOK_TABREF T1)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_TABLE_OR_COL name)) (TOK_SELEXPR 'MMM' n)))) tmp1) (TOK_SUBQUERY (TOK_QUERY (TOK_FROM (TOK_TABREF T1)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR 'MMM' n)))) tmp2)) (TOK_SUBQUERY (TOK_QUERY (TOK_FROM (TOK_TABREF T1)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR 'MMM' n)))) tmp3) (AND (= (. (TOK_TABLE_OR_COL tmp1) n) (. (TOK_TABLE_OR_COL tmp2) n)) (= (. (TOK_TABLE_OR_COL tmp1) n) (. (TOK_TABLE_OR_COL tmp3) n))))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (. (TOK_TABLE_OR_COL tmp1) name) name)))) ttt)) (TOK_INSERT (TOK_DESTINATION (TOK_TAB T2)) (TOK_SELECT (TOK_SELEXPR TOK_ALLCOLREF)) (TOK_LIMIT 5000000)))
+  (TOK_QUERY (TOK_FROM (TOK_SUBQUERY (TOK_QUERY (TOK_FROM (TOK_JOIN (TOK_JOIN (TOK_SUBQUERY (TOK_QUERY (TOK_FROM (TOK_TABREF (TOK_TABNAME T1))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_TABLE_OR_COL name)) (TOK_SELEXPR 'MMM' n)))) tmp1) (TOK_SUBQUERY (TOK_QUERY (TOK_FROM (TOK_TABREF (TOK_TABNAME T1))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR 'MMM' n)))) tmp2)) (TOK_SUBQUERY (TOK_QUERY (TOK_FROM (TOK_TABREF (TOK_TABNAME T1))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR 'MMM' n)))) tmp3) (AND (= (. (TOK_TABLE_OR_COL tmp1) n) (. (TOK_TABLE_OR_COL tmp2) n)) (= (. (TOK_TABLE_OR_COL tmp1) n) (. (TOK_TABLE_OR_COL tmp3) n))))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (. (TOK_TABLE_OR_COL tmp1) name) name)))) ttt)) (TOK_INSERT (TOK_DESTINATION (TOK_TAB (TOK_TABNAME T2))) (TOK_SELECT (TOK_SELEXPR TOK_ALLCOLREF)) (TOK_LIMIT 5000000)))
 
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -156,7 +156,7 @@ STAGE PLANS:
   Stage: Stage-3
     Map Reduce
       Alias -> Map Operator Tree:
-        hdfs://localhost.localdomain:62850/data/users/nzhang/work/784/apache-hive/build/ql/scratchdir/hive_2010-09-14_18-24-39_720_7348805745281253844/-mr-10003 
+        hdfs://localhost.localdomain:38821/data/users/sdong/www/open-source-hive3/build/ql/scratchdir/hive_2011-02-16_23-11-25_094_4321921681840377407/-mr-10003 
             Reduce Output Operator
               sort order: 
               tag: -1
@@ -173,7 +173,7 @@ STAGE PLANS:
                   input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                   output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                   serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                  name: t2
+                  name: default.t2
 
   Stage: Stage-0
     Move Operator
@@ -183,7 +183,7 @@ STAGE PLANS:
               input format: org.apache.hadoop.mapred.SequenceFileInputFormat
               output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              name: t2
+              name: default.t2
 
   Stage: Stage-4
     Stats-Aggr Operator
@@ -214,7 +214,7 @@ POSTHOOK: query: EXPLAIN SELECT COUNT(1) FROM T2
 POSTHOOK: type: QUERY
 POSTHOOK: Lineage: t2.name SIMPLE [(t1)t1.FieldSchema(name:name, type:string, comment:null), ]
 ABSTRACT SYNTAX TREE:
-  (TOK_QUERY (TOK_FROM (TOK_TABREF T2)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_FUNCTION COUNT 1)))))
+  (TOK_QUERY (TOK_FROM (TOK_TABREF (TOK_TABNAME T2))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_FUNCTION COUNT 1)))))
 
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -267,11 +267,11 @@ STAGE PLANS:
 PREHOOK: query: SELECT COUNT(1) FROM T2
 PREHOOK: type: QUERY
 PREHOOK: Input: default@t2
-PREHOOK: Output: hdfs://localhost.localdomain:62850/data/users/nzhang/work/784/apache-hive/build/ql/scratchdir/hive_2010-09-14_18-27-09_461_719019531461293886/-mr-10000
+PREHOOK: Output: hdfs://localhost.localdomain:38821/data/users/sdong/www/open-source-hive3/build/ql/scratchdir/hive_2011-02-16_23-13-39_139_7485731441142242061/-mr-10000
 POSTHOOK: query: SELECT COUNT(1) FROM T2
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@t2
-POSTHOOK: Output: hdfs://localhost.localdomain:62850/data/users/nzhang/work/784/apache-hive/build/ql/scratchdir/hive_2010-09-14_18-27-09_461_719019531461293886/-mr-10000
+POSTHOOK: Output: hdfs://localhost.localdomain:38821/data/users/sdong/www/open-source-hive3/build/ql/scratchdir/hive_2011-02-16_23-13-39_139_7485731441142242061/-mr-10000
 POSTHOOK: Lineage: t2.name SIMPLE [(t1)t1.FieldSchema(name:name, type:string, comment:null), ]
 5000000
 PREHOOK: query: CREATE TABLE T3(name STRING) STORED AS TEXTFILE
@@ -298,7 +298,7 @@ POSTHOOK: query: EXPLAIN SELECT COUNT(1) FROM T3
 POSTHOOK: type: QUERY
 POSTHOOK: Lineage: t2.name SIMPLE [(t1)t1.FieldSchema(name:name, type:string, comment:null), ]
 ABSTRACT SYNTAX TREE:
-  (TOK_QUERY (TOK_FROM (TOK_TABREF T3)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_FUNCTION COUNT 1)))))
+  (TOK_QUERY (TOK_FROM (TOK_TABREF (TOK_TABNAME T3))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_FUNCTION COUNT 1)))))
 
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -351,10 +351,10 @@ STAGE PLANS:
 PREHOOK: query: SELECT COUNT(1) FROM T3
 PREHOOK: type: QUERY
 PREHOOK: Input: default@t3
-PREHOOK: Output: hdfs://localhost.localdomain:62850/data/users/nzhang/work/784/apache-hive/build/ql/scratchdir/hive_2010-09-14_18-27-33_849_2287170328982872863/-mr-10000
+PREHOOK: Output: hdfs://localhost.localdomain:38821/data/users/sdong/www/open-source-hive3/build/ql/scratchdir/hive_2011-02-16_23-14-20_069_6368911954239576439/-mr-10000
 POSTHOOK: query: SELECT COUNT(1) FROM T3
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@t3
-POSTHOOK: Output: hdfs://localhost.localdomain:62850/data/users/nzhang/work/784/apache-hive/build/ql/scratchdir/hive_2010-09-14_18-27-33_849_2287170328982872863/-mr-10000
+POSTHOOK: Output: hdfs://localhost.localdomain:38821/data/users/sdong/www/open-source-hive3/build/ql/scratchdir/hive_2011-02-16_23-14-20_069_6368911954239576439/-mr-10000
 POSTHOOK: Lineage: t2.name SIMPLE [(t1)t1.FieldSchema(name:name, type:string, comment:null), ]
 1000

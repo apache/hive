@@ -25,7 +25,7 @@ POSTHOOK: query: EXPLAIN
 INSERT OVERWRITE TABLE T2 SELECT * FROM (SELECT * FROM T1 DISTRIBUTE BY key SORT BY key, value) T LIMIT 20
 POSTHOOK: type: QUERY
 ABSTRACT SYNTAX TREE:
-  (TOK_QUERY (TOK_FROM (TOK_SUBQUERY (TOK_QUERY (TOK_FROM (TOK_TABREF T1)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR TOK_ALLCOLREF)) (TOK_DISTRIBUTEBY (TOK_TABLE_OR_COL key)) (TOK_SORTBY (TOK_TABSORTCOLNAMEASC (TOK_TABLE_OR_COL key)) (TOK_TABSORTCOLNAMEASC (TOK_TABLE_OR_COL value))))) T)) (TOK_INSERT (TOK_DESTINATION (TOK_TAB T2)) (TOK_SELECT (TOK_SELEXPR TOK_ALLCOLREF)) (TOK_LIMIT 20)))
+  (TOK_QUERY (TOK_FROM (TOK_SUBQUERY (TOK_QUERY (TOK_FROM (TOK_TABREF (TOK_TABNAME T1))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR TOK_ALLCOLREF)) (TOK_DISTRIBUTEBY (TOK_TABLE_OR_COL key)) (TOK_SORTBY (TOK_TABSORTCOLNAMEASC (TOK_TABLE_OR_COL key)) (TOK_TABSORTCOLNAMEASC (TOK_TABLE_OR_COL value))))) T)) (TOK_INSERT (TOK_DESTINATION (TOK_TAB (TOK_TABNAME T2))) (TOK_SELECT (TOK_SELEXPR TOK_ALLCOLREF)) (TOK_LIMIT 20)))
 
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -83,7 +83,7 @@ STAGE PLANS:
   Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/tmp/nzhang/hive_2010-09-14_16-30-52_861_1975779672781338215/-mr-10002 
+        file:/tmp/sdong/hive_2011-02-10_15-56-27_142_6762491279894953495/-mr-10002 
             Reduce Output Operator
               sort order: 
               tag: -1
@@ -102,7 +102,7 @@ STAGE PLANS:
                   input format: org.apache.hadoop.mapred.TextInputFormat
                   output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                   serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                  name: t2
+                  name: default.t2
 
   Stage: Stage-0
     Move Operator
@@ -112,7 +112,7 @@ STAGE PLANS:
               input format: org.apache.hadoop.mapred.TextInputFormat
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              name: t2
+              name: default.t2
 
   Stage: Stage-3
     Stats-Aggr Operator
@@ -131,11 +131,11 @@ POSTHOOK: Lineage: t2.value SIMPLE [(t1)t1.FieldSchema(name:value, type:string, 
 PREHOOK: query: SELECT * FROM T2 SORT BY key, value
 PREHOOK: type: QUERY
 PREHOOK: Input: default@t2
-PREHOOK: Output: file:/tmp/nzhang/hive_2010-09-14_16-31-03_039_904488643585504415/-mr-10000
+PREHOOK: Output: file:/tmp/sdong/hive_2011-02-10_15-56-34_984_5041167310430297291/-mr-10000
 POSTHOOK: query: SELECT * FROM T2 SORT BY key, value
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@t2
-POSTHOOK: Output: file:/tmp/nzhang/hive_2010-09-14_16-31-03_039_904488643585504415/-mr-10000
+POSTHOOK: Output: file:/tmp/sdong/hive_2011-02-10_15-56-34_984_5041167310430297291/-mr-10000
 POSTHOOK: Lineage: t2.key SIMPLE [(t1)t1.FieldSchema(name:key, type:string, comment:null), ]
 POSTHOOK: Lineage: t2.value SIMPLE [(t1)t1.FieldSchema(name:value, type:string, comment:null), ]
 0	val_0

@@ -12,7 +12,7 @@ PREHOOK: type: QUERY
 POSTHOOK: query: explain select user from test_user
 POSTHOOK: type: QUERY
 ABSTRACT SYNTAX TREE:
-  (TOK_QUERY (TOK_FROM (TOK_TABREF test_user)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_TABLE_OR_COL user)))))
+  (TOK_QUERY (TOK_FROM (TOK_TABREF (TOK_TABNAME test_user))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_TABLE_OR_COL user)))))
 
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -52,7 +52,7 @@ table	test_user
 principalName	hive_test	
 principalType	USER	
 privilege	Select	
-grantTime	1294716172	
+grantTime	1297384137	
 grantor	hive_test_user	
 PREHOOK: query: drop table test_user
 PREHOOK: type: DROPTABLE
@@ -76,7 +76,7 @@ PREHOOK: type: QUERY
 POSTHOOK: query: explain select role from test_user
 POSTHOOK: type: QUERY
 ABSTRACT SYNTAX TREE:
-  (TOK_QUERY (TOK_FROM (TOK_TABREF test_user)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_TABLE_OR_COL role)))))
+  (TOK_QUERY (TOK_FROM (TOK_TABREF (TOK_TABNAME test_user))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_TABLE_OR_COL role)))))
 
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -116,7 +116,7 @@ table	test_user
 principalName	hive_test	
 principalType	USER	
 privilege	Select	
-grantTime	1294716174	
+grantTime	1297384137	
 grantor	hive_test_user	
 PREHOOK: query: drop table test_user
 PREHOOK: type: DROPTABLE

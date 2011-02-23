@@ -17,7 +17,7 @@ POSTHOOK: query: explain
 select count(1) from tst x where x.d='2009-01-01'
 POSTHOOK: type: QUERY
 ABSTRACT SYNTAX TREE:
-  (TOK_QUERY (TOK_FROM (TOK_TABREF tst x)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_FUNCTION count 1))) (TOK_WHERE (= (. (TOK_TABLE_OR_COL x) d) '2009-01-01'))))
+  (TOK_QUERY (TOK_FROM (TOK_TABREF (TOK_TABNAME tst) x)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_FUNCTION count 1))) (TOK_WHERE (= (. (TOK_TABLE_OR_COL x) d) '2009-01-01'))))
 
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -74,9 +74,9 @@ STAGE PLANS:
 PREHOOK: query: select count(1) from tst x where x.d='2009-01-01'
 PREHOOK: type: QUERY
 PREHOOK: Input: default@tst@d=2009-01-01
-PREHOOK: Output: file:/tmp/sdong/hive_2010-10-29_15-29-10_436_169903004206051830/-mr-10000
+PREHOOK: Output: file:/tmp/sdong/hive_2011-02-10_15-54-32_641_2755242249562407402/-mr-10000
 POSTHOOK: query: select count(1) from tst x where x.d='2009-01-01'
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@tst@d=2009-01-01
-POSTHOOK: Output: file:/tmp/sdong/hive_2010-10-29_15-29-10_436_169903004206051830/-mr-10000
+POSTHOOK: Output: file:/tmp/sdong/hive_2011-02-10_15-54-32_641_2755242249562407402/-mr-10000
 0

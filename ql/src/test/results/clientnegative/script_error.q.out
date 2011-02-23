@@ -7,7 +7,7 @@ SELECT TRANSFORM(src.key, src.value) USING '../data/scripts/error_script' AS (tk
 FROM src
 POSTHOOK: type: QUERY
 ABSTRACT SYNTAX TREE:
-  (TOK_QUERY (TOK_FROM (TOK_TABREF src)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_TRANSFORM (TOK_EXPLIST (. (TOK_TABLE_OR_COL src) key) (. (TOK_TABLE_OR_COL src) value)) TOK_SERDE TOK_RECORDWRITER '../data/scripts/error_script' TOK_SERDE TOK_RECORDREADER (TOK_ALIASLIST tkey tvalue))))))
+  (TOK_QUERY (TOK_FROM (TOK_TABREF (TOK_TABNAME src))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_TRANSFORM (TOK_EXPLIST (. (TOK_TABLE_OR_COL src) key) (. (TOK_TABLE_OR_COL src) value)) TOK_SERDE TOK_RECORDWRITER '../data/scripts/error_script' TOK_SERDE TOK_RECORDREADER (TOK_ALIASLIST tkey tvalue))))))
 
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -48,5 +48,5 @@ PREHOOK: query: SELECT TRANSFORM(src.key, src.value) USING '../data/scripts/erro
 FROM src
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/data/users/njain/hive5/hive5/.ptest_3/build/ql/tmp/1662782185/10000
+PREHOOK: Output: file:/tmp/sdong/hive_2011-02-10_21-03-24_190_21878950587359648/-mr-10000
 FAILED: Execution Error, return code 2 from org.apache.hadoop.hive.ql.exec.MapRedTask

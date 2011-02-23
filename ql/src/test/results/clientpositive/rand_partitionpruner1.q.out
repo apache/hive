@@ -5,7 +5,7 @@ POSTHOOK: query: -- scanning un-partitioned data
 explain extended select * from src where rand(1) < 0.1
 POSTHOOK: type: QUERY
 ABSTRACT SYNTAX TREE:
-  (TOK_QUERY (TOK_FROM (TOK_TABREF src)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR TOK_ALLCOLREF)) (TOK_WHERE (< (TOK_FUNCTION rand 1) 0.1))))
+  (TOK_QUERY (TOK_FROM (TOK_TABREF (TOK_TABNAME src))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR TOK_ALLCOLREF)) (TOK_WHERE (< (TOK_FUNCTION rand 1) 0.1))))
 
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -34,9 +34,9 @@ STAGE PLANS:
                 File Output Operator
                   compressed: false
                   GlobalTableId: 0
-                  directory: file:/tmp/nzhang/hive_2010-09-14_17-19-52_616_4921474467166008696/-ext-10001
+                  directory: file:/tmp/sdong/hive_2011-02-10_16-59-15_337_3392401522353054315/-ext-10001
                   NumFilesPerFileSink: 1
-                  Stats Publishing Key Prefix: file:/tmp/nzhang/hive_2010-09-14_17-19-52_616_4921474467166008696/-ext-10001/
+                  Stats Publishing Key Prefix: file:/tmp/sdong/hive_2011-02-10_16-59-15_337_3392401522353054315/-ext-10001/
                   table:
                       input format: org.apache.hadoop.mapred.TextInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
@@ -49,9 +49,9 @@ STAGE PLANS:
                   MultiFileSpray: false
       Needs Tagging: false
       Path -> Alias:
-        pfile:/data/users/nzhang/work/784/apache-hive/build/ql/test/data/warehouse/src [src]
+        pfile:/data/users/sdong/www/open-source-hive1/build/ql/test/data/warehouse/src [src]
       Path -> Partition:
-        pfile:/data/users/nzhang/work/784/apache-hive/build/ql/test/data/warehouse/src 
+        pfile:/data/users/sdong/www/open-source-hive1/build/ql/test/data/warehouse/src 
           Partition
             base file name: src
             input format: org.apache.hadoop.mapred.TextInputFormat
@@ -62,12 +62,12 @@ STAGE PLANS:
               columns.types string:string
               file.inputformat org.apache.hadoop.mapred.TextInputFormat
               file.outputformat org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-              location pfile:/data/users/nzhang/work/784/apache-hive/build/ql/test/data/warehouse/src
-              name src
+              location pfile:/data/users/sdong/www/open-source-hive1/build/ql/test/data/warehouse/src
+              name default.src
               serialization.ddl struct src { string key, string value}
               serialization.format 1
               serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              transient_lastDdlTime 1284504429
+              transient_lastDdlTime 1297378968
             serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
           
               input format: org.apache.hadoop.mapred.TextInputFormat
@@ -78,15 +78,15 @@ STAGE PLANS:
                 columns.types string:string
                 file.inputformat org.apache.hadoop.mapred.TextInputFormat
                 file.outputformat org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                location pfile:/data/users/nzhang/work/784/apache-hive/build/ql/test/data/warehouse/src
-                name src
+                location pfile:/data/users/sdong/www/open-source-hive1/build/ql/test/data/warehouse/src
+                name default.src
                 serialization.ddl struct src { string key, string value}
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                transient_lastDdlTime 1284504429
+                transient_lastDdlTime 1297378968
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              name: src
-            name: src
+              name: default.src
+            name: default.src
 
   Stage: Stage-0
     Fetch Operator
@@ -96,11 +96,11 @@ STAGE PLANS:
 PREHOOK: query: select * from src where rand(1) < 0.1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/tmp/nzhang/hive_2010-09-14_17-19-52_716_1485476896153547687/-mr-10000
+PREHOOK: Output: file:/tmp/sdong/hive_2011-02-10_16-59-15_417_3701035171047203208/-mr-10000
 POSTHOOK: query: select * from src where rand(1) < 0.1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: file:/tmp/nzhang/hive_2010-09-14_17-19-52_716_1485476896153547687/-mr-10000
+POSTHOOK: Output: file:/tmp/sdong/hive_2011-02-10_16-59-15_417_3701035171047203208/-mr-10000
 409	val_409
 429	val_429
 209	val_209

@@ -14,11 +14,11 @@ POSTHOOK: Output: default@nzhang_test1
 PREHOOK: query: select * from nzhang_test1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@nzhang_test1
-PREHOOK: Output: file:/var/folders/6g/6grtCwPMEf4sqHUPpy6xQG9ByHg/-Tmp-/heyongqiang/hive_2010-11-18_10-59-18_756_4686540378600379768/-mr-10000
+PREHOOK: Output: file:/tmp/sdong/hive_2011-02-10_16-58-38_165_4398929323400556725/-mr-10000
 POSTHOOK: query: select * from nzhang_test1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@nzhang_test1
-POSTHOOK: Output: file:/var/folders/6g/6grtCwPMEf4sqHUPpy6xQG9ByHg/-Tmp-/heyongqiang/hive_2010-11-18_10-59-18_756_4686540378600379768/-mr-10000
+POSTHOOK: Output: file:/tmp/sdong/hive_2011-02-10_16-58-38_165_4398929323400556725/-mr-10000
 key1	value
 1
 
@@ -26,11 +26,11 @@ http://asdf
 PREHOOK: query: select count(*) from nzhang_test1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@nzhang_test1
-PREHOOK: Output: file:/var/folders/6g/6grtCwPMEf4sqHUPpy6xQG9ByHg/-Tmp-/heyongqiang/hive_2010-11-18_10-59-19_306_9007845540495524130/-mr-10000
+PREHOOK: Output: file:/tmp/sdong/hive_2011-02-10_16-58-38_483_2004173313003151664/-mr-10000
 POSTHOOK: query: select count(*) from nzhang_test1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@nzhang_test1
-POSTHOOK: Output: file:/var/folders/6g/6grtCwPMEf4sqHUPpy6xQG9ByHg/-Tmp-/heyongqiang/hive_2010-11-18_10-59-19_306_9007845540495524130/-mr-10000
+POSTHOOK: Output: file:/tmp/sdong/hive_2011-02-10_16-58-38_483_2004173313003151664/-mr-10000
 1
 PREHOOK: query: explain
 select * from nzhang_test1 where key='key1'
@@ -39,7 +39,7 @@ POSTHOOK: query: explain
 select * from nzhang_test1 where key='key1'
 POSTHOOK: type: QUERY
 ABSTRACT SYNTAX TREE:
-  (TOK_QUERY (TOK_FROM (TOK_TABREF nzhang_test1)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR TOK_ALLCOLREF)) (TOK_WHERE (= (TOK_TABLE_OR_COL key) 'key1'))))
+  (TOK_QUERY (TOK_FROM (TOK_TABREF (TOK_TABNAME nzhang_test1))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR TOK_ALLCOLREF)) (TOK_WHERE (= (TOK_TABLE_OR_COL key) 'key1'))))
 
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -82,11 +82,11 @@ STAGE PLANS:
 PREHOOK: query: select * from nzhang_test1 where key='key1'
 PREHOOK: type: QUERY
 PREHOOK: Input: default@nzhang_test1
-PREHOOK: Output: file:/var/folders/6g/6grtCwPMEf4sqHUPpy6xQG9ByHg/-Tmp-/heyongqiang/hive_2010-11-18_10-59-27_819_8034778775852480180/-mr-10000
+PREHOOK: Output: file:/tmp/sdong/hive_2011-02-10_16-58-41_833_3189826843679768337/-mr-10000
 POSTHOOK: query: select * from nzhang_test1 where key='key1'
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@nzhang_test1
-POSTHOOK: Output: file:/var/folders/6g/6grtCwPMEf4sqHUPpy6xQG9ByHg/-Tmp-/heyongqiang/hive_2010-11-18_10-59-27_819_8034778775852480180/-mr-10000
+POSTHOOK: Output: file:/tmp/sdong/hive_2011-02-10_16-58-41_833_3189826843679768337/-mr-10000
 key1	value
 1	NULL
 	NULL
@@ -94,11 +94,11 @@ http://asdf	NULL
 PREHOOK: query: select * from nzhang_test1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@nzhang_test1
-PREHOOK: Output: file:/var/folders/6g/6grtCwPMEf4sqHUPpy6xQG9ByHg/-Tmp-/heyongqiang/hive_2010-11-18_10-59-32_891_5081550764397015247/-mr-10000
+PREHOOK: Output: file:/tmp/sdong/hive_2011-02-10_16-58-45_103_1272902040402843427/-mr-10000
 POSTHOOK: query: select * from nzhang_test1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@nzhang_test1
-POSTHOOK: Output: file:/var/folders/6g/6grtCwPMEf4sqHUPpy6xQG9ByHg/-Tmp-/heyongqiang/hive_2010-11-18_10-59-32_891_5081550764397015247/-mr-10000
+POSTHOOK: Output: file:/tmp/sdong/hive_2011-02-10_16-58-45_103_1272902040402843427/-mr-10000
 key1	value
 1
 
@@ -106,11 +106,11 @@ http://asdf
 PREHOOK: query: select count(*) from nzhang_test1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@nzhang_test1
-PREHOOK: Output: file:/var/folders/6g/6grtCwPMEf4sqHUPpy6xQG9ByHg/-Tmp-/heyongqiang/hive_2010-11-18_10-59-33_131_934017148846831316/-mr-10000
+PREHOOK: Output: file:/tmp/sdong/hive_2011-02-10_16-58-45_450_6448276977789466042/-mr-10000
 POSTHOOK: query: select count(*) from nzhang_test1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@nzhang_test1
-POSTHOOK: Output: file:/var/folders/6g/6grtCwPMEf4sqHUPpy6xQG9ByHg/-Tmp-/heyongqiang/hive_2010-11-18_10-59-33_131_934017148846831316/-mr-10000
+POSTHOOK: Output: file:/tmp/sdong/hive_2011-02-10_16-58-45_450_6448276977789466042/-mr-10000
 1
 PREHOOK: query: explain
 select * from nzhang_test1 where key='key1'
@@ -119,7 +119,7 @@ POSTHOOK: query: explain
 select * from nzhang_test1 where key='key1'
 POSTHOOK: type: QUERY
 ABSTRACT SYNTAX TREE:
-  (TOK_QUERY (TOK_FROM (TOK_TABREF nzhang_test1)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR TOK_ALLCOLREF)) (TOK_WHERE (= (TOK_TABLE_OR_COL key) 'key1'))))
+  (TOK_QUERY (TOK_FROM (TOK_TABREF (TOK_TABNAME nzhang_test1))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR TOK_ALLCOLREF)) (TOK_WHERE (= (TOK_TABLE_OR_COL key) 'key1'))))
 
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -162,11 +162,11 @@ STAGE PLANS:
 PREHOOK: query: select * from nzhang_test1 where key='key1'
 PREHOOK: type: QUERY
 PREHOOK: Input: default@nzhang_test1
-PREHOOK: Output: file:/var/folders/6g/6grtCwPMEf4sqHUPpy6xQG9ByHg/-Tmp-/heyongqiang/hive_2010-11-18_10-59-40_273_8393892543433536739/-mr-10000
+PREHOOK: Output: file:/tmp/sdong/hive_2011-02-10_16-58-48_816_283858652484794783/-mr-10000
 POSTHOOK: query: select * from nzhang_test1 where key='key1'
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@nzhang_test1
-POSTHOOK: Output: file:/var/folders/6g/6grtCwPMEf4sqHUPpy6xQG9ByHg/-Tmp-/heyongqiang/hive_2010-11-18_10-59-40_273_8393892543433536739/-mr-10000
+POSTHOOK: Output: file:/tmp/sdong/hive_2011-02-10_16-58-48_816_283858652484794783/-mr-10000
 key1	value
 1
 

@@ -12,7 +12,7 @@ insert overwrite table bucket1_1
 select * from src
 POSTHOOK: type: QUERY
 ABSTRACT SYNTAX TREE:
-  (TOK_QUERY (TOK_FROM (TOK_TABREF src)) (TOK_INSERT (TOK_DESTINATION (TOK_TAB bucket1_1)) (TOK_SELECT (TOK_SELEXPR TOK_ALLCOLREF))))
+  (TOK_QUERY (TOK_FROM (TOK_TABREF (TOK_TABNAME src))) (TOK_INSERT (TOK_DESTINATION (TOK_TAB (TOK_TABNAME bucket1_1))) (TOK_SELECT (TOK_SELEXPR TOK_ALLCOLREF))))
 
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -47,9 +47,9 @@ STAGE PLANS:
                       type: string
       Needs Tagging: false
       Path -> Alias:
-        pfile:/data/users/nzhang/work/784/apache-hive/build/ql/test/data/warehouse/src [src]
+        pfile:/data/users/sdong/www/open-source-hive1/build/ql/test/data/warehouse/src [src]
       Path -> Partition:
-        pfile:/data/users/nzhang/work/784/apache-hive/build/ql/test/data/warehouse/src 
+        pfile:/data/users/sdong/www/open-source-hive1/build/ql/test/data/warehouse/src 
           Partition
             base file name: src
             input format: org.apache.hadoop.mapred.TextInputFormat
@@ -60,12 +60,12 @@ STAGE PLANS:
               columns.types string:string
               file.inputformat org.apache.hadoop.mapred.TextInputFormat
               file.outputformat org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-              location pfile:/data/users/nzhang/work/784/apache-hive/build/ql/test/data/warehouse/src
-              name src
+              location pfile:/data/users/sdong/www/open-source-hive1/build/ql/test/data/warehouse/src
+              name default.src
               serialization.ddl struct src { string key, string value}
               serialization.format 1
               serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              transient_lastDdlTime 1284504429
+              transient_lastDdlTime 1297328964
             serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
           
               input format: org.apache.hadoop.mapred.TextInputFormat
@@ -76,15 +76,15 @@ STAGE PLANS:
                 columns.types string:string
                 file.inputformat org.apache.hadoop.mapred.TextInputFormat
                 file.outputformat org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                location pfile:/data/users/nzhang/work/784/apache-hive/build/ql/test/data/warehouse/src
-                name src
+                location pfile:/data/users/sdong/www/open-source-hive1/build/ql/test/data/warehouse/src
+                name default.src
                 serialization.ddl struct src { string key, string value}
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                transient_lastDdlTime 1284504429
+                transient_lastDdlTime 1297328964
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              name: src
-            name: src
+              name: default.src
+            name: default.src
       Reduce Operator Tree:
         Extract
           Select Operator
@@ -97,9 +97,9 @@ STAGE PLANS:
             File Output Operator
               compressed: false
               GlobalTableId: 1
-              directory: pfile:/data/users/nzhang/work/784/apache-hive/build/ql/scratchdir/hive_2010-09-14_15-50-02_223_4269812662234645087/-ext-10000
+              directory: pfile:/data/users/sdong/www/open-source-hive1/build/ql/scratchdir/hive_2011-02-10_01-30-32_715_8063819901877770761/-ext-10000
               NumFilesPerFileSink: 1
-              Stats Publishing Key Prefix: pfile:/data/users/nzhang/work/784/apache-hive/build/ql/scratchdir/hive_2010-09-14_15-50-02_223_4269812662234645087/-ext-10000/
+              Stats Publishing Key Prefix: pfile:/data/users/sdong/www/open-source-hive1/build/ql/scratchdir/hive_2011-02-10_01-30-32_715_8063819901877770761/-ext-10000/
               table:
                   input format: org.apache.hadoop.mapred.TextInputFormat
                   output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
@@ -110,14 +110,14 @@ STAGE PLANS:
                     columns.types int:string
                     file.inputformat org.apache.hadoop.mapred.TextInputFormat
                     file.outputformat org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                    location pfile:/data/users/nzhang/work/784/apache-hive/build/ql/test/data/warehouse/bucket1_1
-                    name bucket1_1
+                    location pfile:/data/users/sdong/www/open-source-hive1/build/ql/test/data/warehouse/bucket1_1
+                    name default.bucket1_1
                     serialization.ddl struct bucket1_1 { i32 key, string value}
                     serialization.format 1
                     serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                    transient_lastDdlTime 1284504602
+                    transient_lastDdlTime 1297330232
                   serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                  name: bucket1_1
+                  name: default.bucket1_1
               TotalFiles: 1
               GatherStats: true
               MultiFileSpray: false
@@ -126,7 +126,7 @@ STAGE PLANS:
     Move Operator
       tables:
           replace: true
-          source: pfile:/data/users/nzhang/work/784/apache-hive/build/ql/scratchdir/hive_2010-09-14_15-50-02_223_4269812662234645087/-ext-10000
+          source: pfile:/data/users/sdong/www/open-source-hive1/build/ql/scratchdir/hive_2011-02-10_01-30-32_715_8063819901877770761/-ext-10000
           table:
               input format: org.apache.hadoop.mapred.TextInputFormat
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
@@ -137,19 +137,19 @@ STAGE PLANS:
                 columns.types int:string
                 file.inputformat org.apache.hadoop.mapred.TextInputFormat
                 file.outputformat org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                location pfile:/data/users/nzhang/work/784/apache-hive/build/ql/test/data/warehouse/bucket1_1
-                name bucket1_1
+                location pfile:/data/users/sdong/www/open-source-hive1/build/ql/test/data/warehouse/bucket1_1
+                name default.bucket1_1
                 serialization.ddl struct bucket1_1 { i32 key, string value}
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                transient_lastDdlTime 1284504602
+                transient_lastDdlTime 1297330232
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              name: bucket1_1
-          tmp directory: pfile:/data/users/nzhang/work/784/apache-hive/build/ql/scratchdir/hive_2010-09-14_15-50-02_223_4269812662234645087/-ext-10001
+              name: default.bucket1_1
+          tmp directory: pfile:/data/users/sdong/www/open-source-hive1/build/ql/scratchdir/hive_2011-02-10_01-30-32_715_8063819901877770761/-ext-10001
 
   Stage: Stage-2
     Stats-Aggr Operator
-      Stats Aggregation Key Prefix: pfile:/data/users/nzhang/work/784/apache-hive/build/ql/scratchdir/hive_2010-09-14_15-50-02_223_4269812662234645087/-ext-10000/
+      Stats Aggregation Key Prefix: pfile:/data/users/sdong/www/open-source-hive1/build/ql/scratchdir/hive_2011-02-10_01-30-32_715_8063819901877770761/-ext-10000/
 
 
 PREHOOK: query: insert overwrite table bucket1_1
@@ -167,11 +167,11 @@ POSTHOOK: Lineage: bucket1_1.value SIMPLE [(src)src.FieldSchema(name:value, type
 PREHOOK: query: select * from bucket1_1 order by key
 PREHOOK: type: QUERY
 PREHOOK: Input: default@bucket1_1
-PREHOOK: Output: file:/tmp/nzhang/hive_2010-09-14_15-50-08_787_7479988112336189751/-mr-10000
+PREHOOK: Output: file:/tmp/sdong/hive_2011-02-10_01-30-37_416_6808991169590499902/-mr-10000
 POSTHOOK: query: select * from bucket1_1 order by key
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@bucket1_1
-POSTHOOK: Output: file:/tmp/nzhang/hive_2010-09-14_15-50-08_787_7479988112336189751/-mr-10000
+POSTHOOK: Output: file:/tmp/sdong/hive_2011-02-10_01-30-37_416_6808991169590499902/-mr-10000
 POSTHOOK: Lineage: bucket1_1.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: bucket1_1.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 0	val_0

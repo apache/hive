@@ -28,7 +28,7 @@ INSERT OVERWRITE TABLE mi3 PARTITION(ds='2008-04-08', hr='12') SELECT a.key WHER
 INSERT OVERWRITE DIRECTORY '../build/ql/test/data/warehouse/mi4.out' SELECT a.value WHERE a.key >= 300
 POSTHOOK: type: QUERY
 ABSTRACT SYNTAX TREE:
-  (TOK_QUERY (TOK_FROM (TOK_JOIN (TOK_TABREF src a) (TOK_TABREF src b) (= (. (TOK_TABLE_OR_COL a) key) (. (TOK_TABLE_OR_COL b) key)))) (TOK_INSERT (TOK_DESTINATION (TOK_TAB mi1)) (TOK_SELECT (TOK_SELEXPR (TOK_ALLCOLREF a))) (TOK_WHERE (< (. (TOK_TABLE_OR_COL a) key) 100))) (TOK_INSERT (TOK_DESTINATION (TOK_TAB mi2)) (TOK_SELECT (TOK_SELEXPR (. (TOK_TABLE_OR_COL a) key)) (TOK_SELEXPR (. (TOK_TABLE_OR_COL a) value))) (TOK_WHERE (and (>= (. (TOK_TABLE_OR_COL a) key) 100) (< (. (TOK_TABLE_OR_COL a) key) 200)))) (TOK_INSERT (TOK_DESTINATION (TOK_TAB mi3 (TOK_PARTSPEC (TOK_PARTVAL ds '2008-04-08') (TOK_PARTVAL hr '12')))) (TOK_SELECT (TOK_SELEXPR (. (TOK_TABLE_OR_COL a) key))) (TOK_WHERE (and (>= (. (TOK_TABLE_OR_COL a) key) 200) (< (. (TOK_TABLE_OR_COL a) key) 300)))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR '../build/ql/test/data/warehouse/mi4.out')) (TOK_SELECT (TOK_SELEXPR (. (TOK_TABLE_OR_COL a) value))) (TOK_WHERE (>= (. (TOK_TABLE_OR_COL a) key) 300))))
+  (TOK_QUERY (TOK_FROM (TOK_JOIN (TOK_TABREF (TOK_TABNAME src) a) (TOK_TABREF (TOK_TABNAME src) b) (= (. (TOK_TABLE_OR_COL a) key) (. (TOK_TABLE_OR_COL b) key)))) (TOK_INSERT (TOK_DESTINATION (TOK_TAB (TOK_TABNAME mi1))) (TOK_SELECT (TOK_SELEXPR (TOK_ALLCOLREF (TOK_TABNAME a)))) (TOK_WHERE (< (. (TOK_TABLE_OR_COL a) key) 100))) (TOK_INSERT (TOK_DESTINATION (TOK_TAB (TOK_TABNAME mi2))) (TOK_SELECT (TOK_SELEXPR (. (TOK_TABLE_OR_COL a) key)) (TOK_SELEXPR (. (TOK_TABLE_OR_COL a) value))) (TOK_WHERE (and (>= (. (TOK_TABLE_OR_COL a) key) 100) (< (. (TOK_TABLE_OR_COL a) key) 200)))) (TOK_INSERT (TOK_DESTINATION (TOK_TAB (TOK_TABNAME mi3) (TOK_PARTSPEC (TOK_PARTVAL ds '2008-04-08') (TOK_PARTVAL hr '12')))) (TOK_SELECT (TOK_SELEXPR (. (TOK_TABLE_OR_COL a) key))) (TOK_WHERE (and (>= (. (TOK_TABLE_OR_COL a) key) 200) (< (. (TOK_TABLE_OR_COL a) key) 300)))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR '../build/ql/test/data/warehouse/mi4.out')) (TOK_SELECT (TOK_SELEXPR (. (TOK_TABLE_OR_COL a) value))) (TOK_WHERE (>= (. (TOK_TABLE_OR_COL a) key) 300))))
 
 STAGE DEPENDENCIES:
   Stage-4 is a root stage
@@ -107,7 +107,7 @@ STAGE PLANS:
                       input format: org.apache.hadoop.mapred.TextInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                       serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                      name: mi1
+                      name: default.mi1
           Filter Operator
             predicate:
                 expr: ((_col0 >= 100) and (_col0 < 200))
@@ -133,7 +133,7 @@ STAGE PLANS:
                       input format: org.apache.hadoop.mapred.TextInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                       serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                      name: mi2
+                      name: default.mi2
           Filter Operator
             predicate:
                 expr: ((_col0 >= 200) and (_col0 < 300))
@@ -155,7 +155,7 @@ STAGE PLANS:
                       input format: org.apache.hadoop.mapred.TextInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                       serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                      name: mi3
+                      name: default.mi3
           Filter Operator
             predicate:
                 expr: (_col0 >= 300)
@@ -180,7 +180,7 @@ STAGE PLANS:
               input format: org.apache.hadoop.mapred.TextInputFormat
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              name: mi1
+              name: default.mi1
 
   Stage: Stage-5
     Stats-Aggr Operator
@@ -193,7 +193,7 @@ STAGE PLANS:
               input format: org.apache.hadoop.mapred.TextInputFormat
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              name: mi2
+              name: default.mi2
 
   Stage: Stage-6
     Stats-Aggr Operator
@@ -209,7 +209,7 @@ STAGE PLANS:
               input format: org.apache.hadoop.mapred.TextInputFormat
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              name: mi3
+              name: default.mi3
 
   Stage: Stage-7
     Stats-Aggr Operator
@@ -251,11 +251,11 @@ POSTHOOK: Lineage: mi3 PARTITION(ds=2008-04-08,hr=12).key EXPRESSION [(src)a.Fie
 PREHOOK: query: SELECT mi1.* FROM mi1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@mi1
-PREHOOK: Output: file:/tmp/njain/hive_2010-11-11_09-15-27_727_3572542851489673202/-mr-10000
+PREHOOK: Output: file:/tmp/sdong/hive_2011-02-10_16-57-13_377_6694062256944958178/-mr-10000
 POSTHOOK: query: SELECT mi1.* FROM mi1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@mi1
-POSTHOOK: Output: file:/tmp/njain/hive_2010-11-11_09-15-27_727_3572542851489673202/-mr-10000
+POSTHOOK: Output: file:/tmp/sdong/hive_2011-02-10_16-57-13_377_6694062256944958178/-mr-10000
 POSTHOOK: Lineage: mi1.key EXPRESSION [(src)a.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: mi1.value SIMPLE [(src)a.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: mi2.key EXPRESSION [(src)a.FieldSchema(name:key, type:string, comment:default), ]
@@ -412,11 +412,11 @@ POSTHOOK: Lineage: mi3 PARTITION(ds=2008-04-08,hr=12).key EXPRESSION [(src)a.Fie
 PREHOOK: query: SELECT mi2.* FROM mi2
 PREHOOK: type: QUERY
 PREHOOK: Input: default@mi2
-PREHOOK: Output: file:/tmp/njain/hive_2010-11-11_09-15-28_023_307854968020208171/-mr-10000
+PREHOOK: Output: file:/tmp/sdong/hive_2011-02-10_16-57-13_655_8369587899383200383/-mr-10000
 POSTHOOK: query: SELECT mi2.* FROM mi2
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@mi2
-POSTHOOK: Output: file:/tmp/njain/hive_2010-11-11_09-15-28_023_307854968020208171/-mr-10000
+POSTHOOK: Output: file:/tmp/sdong/hive_2011-02-10_16-57-13_655_8369587899383200383/-mr-10000
 POSTHOOK: Lineage: mi1.key EXPRESSION [(src)a.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: mi1.value SIMPLE [(src)a.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: mi2.key EXPRESSION [(src)a.FieldSchema(name:key, type:string, comment:default), ]
@@ -636,11 +636,11 @@ POSTHOOK: Lineage: mi3 PARTITION(ds=2008-04-08,hr=12).key EXPRESSION [(src)a.Fie
 PREHOOK: query: SELECT mi3.* FROM mi3
 PREHOOK: type: QUERY
 PREHOOK: Input: default@mi3@ds=2008-04-08/hr=12
-PREHOOK: Output: file:/tmp/njain/hive_2010-11-11_09-15-28_324_6189844014644056674/-mr-10000
+PREHOOK: Output: file:/tmp/sdong/hive_2011-02-10_16-57-13_918_2681356088476144937/-mr-10000
 POSTHOOK: query: SELECT mi3.* FROM mi3
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@mi3@ds=2008-04-08/hr=12
-POSTHOOK: Output: file:/tmp/njain/hive_2010-11-11_09-15-28_324_6189844014644056674/-mr-10000
+POSTHOOK: Output: file:/tmp/sdong/hive_2011-02-10_16-57-13_918_2681356088476144937/-mr-10000
 POSTHOOK: Lineage: mi1.key EXPRESSION [(src)a.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: mi1.value SIMPLE [(src)a.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: mi2.key EXPRESSION [(src)a.FieldSchema(name:key, type:string, comment:default), ]

@@ -12,7 +12,7 @@ INSERT OVERWRITE TABLE dest_j1
 SELECT x.key, count(1) FROM src1 x JOIN src y ON (x.key = y.key) group by x.key
 POSTHOOK: type: QUERY
 ABSTRACT SYNTAX TREE:
-  (TOK_QUERY (TOK_FROM (TOK_JOIN (TOK_TABREF src1 x) (TOK_TABREF src y) (= (. (TOK_TABLE_OR_COL x) key) (. (TOK_TABLE_OR_COL y) key)))) (TOK_INSERT (TOK_DESTINATION (TOK_TAB dest_j1)) (TOK_SELECT (TOK_SELEXPR (. (TOK_TABLE_OR_COL x) key)) (TOK_SELEXPR (TOK_FUNCTION count 1))) (TOK_GROUPBY (. (TOK_TABLE_OR_COL x) key))))
+  (TOK_QUERY (TOK_FROM (TOK_JOIN (TOK_TABREF (TOK_TABNAME src1) x) (TOK_TABREF (TOK_TABNAME src) y) (= (. (TOK_TABLE_OR_COL x) key) (. (TOK_TABLE_OR_COL y) key)))) (TOK_INSERT (TOK_DESTINATION (TOK_TAB (TOK_TABNAME dest_j1))) (TOK_SELECT (TOK_SELEXPR (. (TOK_TABLE_OR_COL x) key)) (TOK_SELEXPR (TOK_FUNCTION count 1))) (TOK_GROUPBY (. (TOK_TABLE_OR_COL x) key))))
 
 STAGE DEPENDENCIES:
   Stage-7 is a root stage , consists of Stage-8, Stage-9, Stage-1
@@ -93,7 +93,7 @@ STAGE PLANS:
   Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/tmp/liyintang/hive_2010-12-06_15-13-36_873_2449071063337197304/-mr-10002 
+        file:/tmp/sdong/hive_2011-02-10_01-17-40_833_4814441987512493547/-mr-10002 
             Reduce Output Operator
               key expressions:
                     expr: _col0
@@ -137,7 +137,7 @@ STAGE PLANS:
                     input format: org.apache.hadoop.mapred.TextInputFormat
                     output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                     serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                    name: dest_j1
+                    name: default.dest_j1
 
   Stage: Stage-0
     Move Operator
@@ -147,7 +147,7 @@ STAGE PLANS:
               input format: org.apache.hadoop.mapred.TextInputFormat
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              name: dest_j1
+              name: default.dest_j1
 
   Stage: Stage-3
     Stats-Aggr Operator
@@ -291,11 +291,11 @@ POSTHOOK: Lineage: dest_j1.key EXPRESSION [(src1)x.FieldSchema(name:key, type:st
 PREHOOK: query: select * from dest_j1 x order by x.key
 PREHOOK: type: QUERY
 PREHOOK: Input: default@dest_j1
-PREHOOK: Output: file:/tmp/liyintang/hive_2010-12-06_15-13-51_429_1293784409064103219/-mr-10000
+PREHOOK: Output: file:/tmp/sdong/hive_2011-02-10_01-17-50_937_8187868486627717858/-mr-10000
 POSTHOOK: query: select * from dest_j1 x order by x.key
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@dest_j1
-POSTHOOK: Output: file:/tmp/liyintang/hive_2010-12-06_15-13-51_429_1293784409064103219/-mr-10000
+POSTHOOK: Output: file:/tmp/sdong/hive_2011-02-10_01-17-50_937_8187868486627717858/-mr-10000
 POSTHOOK: Lineage: dest_j1.cnt EXPRESSION [(src1)x.null, (src)y.null, ]
 POSTHOOK: Lineage: dest_j1.key EXPRESSION [(src1)x.FieldSchema(name:key, type:string, comment:default), ]
 66	1

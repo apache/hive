@@ -19,8 +19,8 @@
 package org.apache.hadoop.hive.ql.parse;
 
 import java.util.ArrayList;
-import java.util.Map;
 import java.util.List;
+import java.util.Map;
 import java.util.NavigableMap;
 import java.util.TreeMap;
 
@@ -61,10 +61,10 @@ class UnparseTranslator {
    * The translation must not overlap with any previously
    * registered translations (unless it is identical to an
    * existing translation, in which case it is ignored).
-   * 
+   *
    * @param node
    *          target node whose subtree is to be replaced
-   * 
+   *
    * @param replacementText
    *          text to use as replacement
    */
@@ -113,8 +113,30 @@ class UnparseTranslator {
   }
 
   /**
+   * Register a translation for an tabName.
+   *
+   * @param node
+   *          source node (which must be an tabName) to be replaced
+   */
+  void addTableNameTranslation(ASTNode tableName) {
+    if (!enabled) {
+      return;
+    }
+    if (tableName.getToken().getType() == HiveParser.Identifier) {
+      addIdentifierTranslation(tableName);
+      return;
+    }
+    assert (tableName.getToken().getType() == HiveParser.TOK_TABNAME);
+    assert (tableName.getChildCount() <= 2);
+    addIdentifierTranslation((ASTNode)tableName.getChild(0));
+    if (tableName.getChildCount() == 2) {
+      addIdentifierTranslation((ASTNode)tableName.getChild(1));
+    }
+  }
+
+  /**
    * Register a translation for an identifier.
-   * 
+   *
    * @param node
    *          source node (which must be an identifier) to be replaced
    */
@@ -158,7 +180,7 @@ class UnparseTranslator {
 
   /**
    * Apply all translations on the given token stream.
-   * 
+   *
    * @param tokenRewriteStream
    *          rewrite-capable stream
    */

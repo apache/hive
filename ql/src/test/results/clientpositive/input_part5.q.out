@@ -12,7 +12,7 @@ insert overwrite table tmptable
 SELECT x.* FROM SRCPART x WHERE x.ds = '2008-04-08' and x.key < 100
 POSTHOOK: type: QUERY
 ABSTRACT SYNTAX TREE:
-  (TOK_QUERY (TOK_FROM (TOK_TABREF SRCPART x)) (TOK_INSERT (TOK_DESTINATION (TOK_TAB tmptable)) (TOK_SELECT (TOK_SELEXPR (TOK_ALLCOLREF x))) (TOK_WHERE (and (= (. (TOK_TABLE_OR_COL x) ds) '2008-04-08') (< (. (TOK_TABLE_OR_COL x) key) 100)))))
+  (TOK_QUERY (TOK_FROM (TOK_TABREF (TOK_TABNAME SRCPART) x)) (TOK_INSERT (TOK_DESTINATION (TOK_TAB (TOK_TABNAME tmptable))) (TOK_SELECT (TOK_SELEXPR (TOK_ALLCOLREF (TOK_TABNAME x)))) (TOK_WHERE (and (= (. (TOK_TABLE_OR_COL x) ds) '2008-04-08') (< (. (TOK_TABLE_OR_COL x) key) 100)))))
 
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -55,7 +55,7 @@ STAGE PLANS:
                         input format: org.apache.hadoop.mapred.TextInputFormat
                         output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                         serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                        name: tmptable
+                        name: default.tmptable
 
   Stage: Stage-5
     Conditional Operator
@@ -64,7 +64,7 @@ STAGE PLANS:
     Move Operator
       files:
           hdfs directory: true
-          destination: pfile:/data/users/sdong/www/hive-trunk/build/ql/scratchdir/hive_2010-10-29_15-33-52_690_4501272582403071835/-ext-10000
+          destination: pfile:/data/users/sdong/www/open-source-hive1/build/ql/scratchdir/hive_2011-02-10_16-00-19_192_1244051253440138528/-ext-10000
 
   Stage: Stage-0
     Move Operator
@@ -74,7 +74,7 @@ STAGE PLANS:
               input format: org.apache.hadoop.mapred.TextInputFormat
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              name: tmptable
+              name: default.tmptable
 
   Stage: Stage-2
     Stats-Aggr Operator
@@ -82,7 +82,7 @@ STAGE PLANS:
   Stage: Stage-3
     Map Reduce
       Alias -> Map Operator Tree:
-        pfile:/data/users/sdong/www/hive-trunk/build/ql/scratchdir/hive_2010-10-29_15-33-52_690_4501272582403071835/-ext-10002 
+        pfile:/data/users/sdong/www/open-source-hive1/build/ql/scratchdir/hive_2011-02-10_16-00-19_192_1244051253440138528/-ext-10002 
             File Output Operator
               compressed: false
               GlobalTableId: 0
@@ -90,7 +90,7 @@ STAGE PLANS:
                   input format: org.apache.hadoop.mapred.TextInputFormat
                   output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                   serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                  name: tmptable
+                  name: default.tmptable
 
 
 PREHOOK: query: insert overwrite table tmptable
@@ -112,11 +112,11 @@ POSTHOOK: Lineage: tmptable.value SIMPLE [(srcpart)x.FieldSchema(name:value, typ
 PREHOOK: query: select * from tmptable x sort by x.key,x.value,x.ds,x.hr
 PREHOOK: type: QUERY
 PREHOOK: Input: default@tmptable
-PREHOOK: Output: file:/tmp/sdong/hive_2010-10-29_15-34-01_055_4260628118574102608/-mr-10000
+PREHOOK: Output: file:/tmp/sdong/hive_2011-02-10_16-00-24_146_7801314068481792786/-mr-10000
 POSTHOOK: query: select * from tmptable x sort by x.key,x.value,x.ds,x.hr
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@tmptable
-POSTHOOK: Output: file:/tmp/sdong/hive_2010-10-29_15-34-01_055_4260628118574102608/-mr-10000
+POSTHOOK: Output: file:/tmp/sdong/hive_2011-02-10_16-00-24_146_7801314068481792786/-mr-10000
 POSTHOOK: Lineage: tmptable.ds SIMPLE [(srcpart)x.FieldSchema(name:hr, type:string, comment:null), ]
 POSTHOOK: Lineage: tmptable.hr SIMPLE [(srcpart)x.FieldSchema(name:ds, type:string, comment:null), ]
 POSTHOOK: Lineage: tmptable.key SIMPLE [(srcpart)x.FieldSchema(name:key, type:string, comment:default), ]

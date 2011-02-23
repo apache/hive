@@ -5,7 +5,7 @@ POSTHOOK: query: EXPLAIN
 SELECT src.key, sum(substr(src.value,5)) FROM src GROUP BY src.key LIMIT 5
 POSTHOOK: type: QUERY
 ABSTRACT SYNTAX TREE:
-  (TOK_QUERY (TOK_FROM (TOK_TABREF src)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (. (TOK_TABLE_OR_COL src) key)) (TOK_SELEXPR (TOK_FUNCTION sum (TOK_FUNCTION substr (. (TOK_TABLE_OR_COL src) value) 5)))) (TOK_GROUPBY (. (TOK_TABLE_OR_COL src) key)) (TOK_LIMIT 5)))
+  (TOK_QUERY (TOK_FROM (TOK_TABREF (TOK_TABNAME src))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (. (TOK_TABLE_OR_COL src) key)) (TOK_SELEXPR (TOK_FUNCTION sum (TOK_FUNCTION substr (. (TOK_TABLE_OR_COL src) value) 5)))) (TOK_GROUPBY (. (TOK_TABLE_OR_COL src) key)) (TOK_LIMIT 5)))
 
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -79,11 +79,11 @@ STAGE PLANS:
 PREHOOK: query: SELECT src.key, sum(substr(src.value,5)) FROM src GROUP BY src.key LIMIT 5
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/data/users/heyongqiang/hive-trunk-commit/build/ql/tmp/184969854/10000
+PREHOOK: Output: file:/tmp/sdong/hive_2011-02-10_01-49-38_421_1730686589318105080/-mr-10000
 POSTHOOK: query: SELECT src.key, sum(substr(src.value,5)) FROM src GROUP BY src.key LIMIT 5
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: file:/data/users/heyongqiang/hive-trunk-commit/build/ql/tmp/184969854/10000
+POSTHOOK: Output: file:/tmp/sdong/hive_2011-02-10_01-49-38_421_1730686589318105080/-mr-10000
 0	0.0
 10	10.0
 100	200.0

@@ -9,7 +9,7 @@ FROM (SELECT b.key as k, count(1) as c FROM src b GROUP BY b.key) a
 WHERE a.k >= 90
 POSTHOOK: type: QUERY
 ABSTRACT SYNTAX TREE:
-  (TOK_QUERY (TOK_FROM (TOK_SUBQUERY (TOK_QUERY (TOK_FROM (TOK_TABREF src b)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (. (TOK_TABLE_OR_COL b) key) k) (TOK_SELEXPR (TOK_FUNCTION count 1) c)) (TOK_GROUPBY (. (TOK_TABLE_OR_COL b) key)))) a)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (. (TOK_TABLE_OR_COL a) k)) (TOK_SELEXPR (. (TOK_TABLE_OR_COL a) c))) (TOK_WHERE (>= (. (TOK_TABLE_OR_COL a) k) 90))))
+  (TOK_QUERY (TOK_FROM (TOK_SUBQUERY (TOK_QUERY (TOK_FROM (TOK_TABREF (TOK_TABNAME src) b)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (. (TOK_TABLE_OR_COL b) key) k) (TOK_SELEXPR (TOK_FUNCTION count 1) c)) (TOK_GROUPBY (. (TOK_TABLE_OR_COL b) key)))) a)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (. (TOK_TABLE_OR_COL a) k)) (TOK_SELEXPR (. (TOK_TABLE_OR_COL a) c))) (TOK_WHERE (>= (. (TOK_TABLE_OR_COL a) k) 90))))
 
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -97,13 +97,13 @@ FROM (SELECT b.key as k, count(1) as c FROM src b GROUP BY b.key) a
 WHERE a.k >= 90
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/data/users/heyongqiang/hive-trunk-commit/build/ql/tmp/944603484/10000
+PREHOOK: Output: file:/tmp/sdong/hive_2011-02-10_17-24-06_203_2627613690822348533/-mr-10000
 POSTHOOK: query: SELECT a.k, a.c
 FROM (SELECT b.key as k, count(1) as c FROM src b GROUP BY b.key) a
 WHERE a.k >= 90
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: file:/data/users/heyongqiang/hive-trunk-commit/build/ql/tmp/944603484/10000
+POSTHOOK: Output: file:/tmp/sdong/hive_2011-02-10_17-24-06_203_2627613690822348533/-mr-10000
 100	2
 103	2
 104	2

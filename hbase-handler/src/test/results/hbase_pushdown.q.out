@@ -26,7 +26,7 @@ POSTHOOK: query: -- with full pushdown
 explain select * from hbase_pushdown where key=90
 POSTHOOK: type: QUERY
 ABSTRACT SYNTAX TREE:
-  (TOK_QUERY (TOK_FROM (TOK_TABREF hbase_pushdown)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR TOK_ALLCOLREF)) (TOK_WHERE (= (TOK_TABLE_OR_COL key) 90))))
+  (TOK_QUERY (TOK_FROM (TOK_TABREF (TOK_TABNAME hbase_pushdown))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR TOK_ALLCOLREF)) (TOK_WHERE (= (TOK_TABLE_OR_COL key) 90))))
 
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -68,11 +68,11 @@ STAGE PLANS:
 PREHOOK: query: select * from hbase_pushdown where key=90
 PREHOOK: type: QUERY
 PREHOOK: Input: default@hbase_pushdown
-PREHOOK: Output: file:/var/folders/7P/7PeC14kXFIWq0PIYyexGbmKuXUk/-Tmp-/jsichi/hive_2011-01-02_20-26-17_206_4185141159586177240/-mr-10000
+PREHOOK: Output: file:/tmp/sdong/hive_2011-02-18_19-02-03_372_1639723360194917209/-mr-10000
 POSTHOOK: query: select * from hbase_pushdown where key=90
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@hbase_pushdown
-POSTHOOK: Output: file:/var/folders/7P/7PeC14kXFIWq0PIYyexGbmKuXUk/-Tmp-/jsichi/hive_2011-01-02_20-26-17_206_4185141159586177240/-mr-10000
+POSTHOOK: Output: file:/tmp/sdong/hive_2011-02-18_19-02-03_372_1639723360194917209/-mr-10000
 90	val_90
 PREHOOK: query: -- with partial pushdown
 
@@ -83,7 +83,7 @@ POSTHOOK: query: -- with partial pushdown
 explain select * from hbase_pushdown where key=90 and value like '%90%'
 POSTHOOK: type: QUERY
 ABSTRACT SYNTAX TREE:
-  (TOK_QUERY (TOK_FROM (TOK_TABREF hbase_pushdown)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR TOK_ALLCOLREF)) (TOK_WHERE (and (= (TOK_TABLE_OR_COL key) 90) (like (TOK_TABLE_OR_COL value) '%90%')))))
+  (TOK_QUERY (TOK_FROM (TOK_TABREF (TOK_TABNAME hbase_pushdown))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR TOK_ALLCOLREF)) (TOK_WHERE (and (= (TOK_TABLE_OR_COL key) 90) (like (TOK_TABLE_OR_COL value) '%90%')))))
 
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -129,11 +129,11 @@ STAGE PLANS:
 PREHOOK: query: select * from hbase_pushdown where key=90 and value like '%90%'
 PREHOOK: type: QUERY
 PREHOOK: Input: default@hbase_pushdown
-PREHOOK: Output: file:/var/folders/7P/7PeC14kXFIWq0PIYyexGbmKuXUk/-Tmp-/jsichi/hive_2011-01-02_20-26-23_971_8228733230872798781/-mr-10000
+PREHOOK: Output: file:/tmp/sdong/hive_2011-02-18_19-02-06_922_7094561571442494676/-mr-10000
 POSTHOOK: query: select * from hbase_pushdown where key=90 and value like '%90%'
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@hbase_pushdown
-POSTHOOK: Output: file:/var/folders/7P/7PeC14kXFIWq0PIYyexGbmKuXUk/-Tmp-/jsichi/hive_2011-01-02_20-26-23_971_8228733230872798781/-mr-10000
+POSTHOOK: Output: file:/tmp/sdong/hive_2011-02-18_19-02-06_922_7094561571442494676/-mr-10000
 90	val_90
 PREHOOK: query: -- with two residuals
 
@@ -146,7 +146,7 @@ explain select * from hbase_pushdown
 where key=90 and value like '%90%' and key=cast(value as int)
 POSTHOOK: type: QUERY
 ABSTRACT SYNTAX TREE:
-  (TOK_QUERY (TOK_FROM (TOK_TABREF hbase_pushdown)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR TOK_ALLCOLREF)) (TOK_WHERE (and (and (= (TOK_TABLE_OR_COL key) 90) (like (TOK_TABLE_OR_COL value) '%90%')) (= (TOK_TABLE_OR_COL key) (TOK_FUNCTION TOK_INT (TOK_TABLE_OR_COL value)))))))
+  (TOK_QUERY (TOK_FROM (TOK_TABREF (TOK_TABNAME hbase_pushdown))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR TOK_ALLCOLREF)) (TOK_WHERE (and (and (= (TOK_TABLE_OR_COL key) 90) (like (TOK_TABLE_OR_COL value) '%90%')) (= (TOK_TABLE_OR_COL key) (TOK_FUNCTION TOK_INT (TOK_TABLE_OR_COL value)))))))
 
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -200,7 +200,7 @@ explain select * from hbase_pushdown
 where key=80 and key=90 and value like '%90%'
 POSTHOOK: type: QUERY
 ABSTRACT SYNTAX TREE:
-  (TOK_QUERY (TOK_FROM (TOK_TABREF hbase_pushdown)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR TOK_ALLCOLREF)) (TOK_WHERE (and (and (= (TOK_TABLE_OR_COL key) 80) (= (TOK_TABLE_OR_COL key) 90)) (like (TOK_TABLE_OR_COL value) '%90%')))))
+  (TOK_QUERY (TOK_FROM (TOK_TABREF (TOK_TABNAME hbase_pushdown))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR TOK_ALLCOLREF)) (TOK_WHERE (and (and (= (TOK_TABLE_OR_COL key) 80) (= (TOK_TABLE_OR_COL key) 90)) (like (TOK_TABLE_OR_COL value) '%90%')))))
 
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -244,12 +244,12 @@ PREHOOK: query: select * from hbase_pushdown
 where key=80 and key=90 and value like '%90%'
 PREHOOK: type: QUERY
 PREHOOK: Input: default@hbase_pushdown
-PREHOOK: Output: file:/var/folders/7P/7PeC14kXFIWq0PIYyexGbmKuXUk/-Tmp-/jsichi/hive_2011-01-02_20-26-30_678_8030079731107253758/-mr-10000
+PREHOOK: Output: file:/tmp/sdong/hive_2011-02-18_19-02-10_558_7297784935989395706/-mr-10000
 POSTHOOK: query: select * from hbase_pushdown
 where key=80 and key=90 and value like '%90%'
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@hbase_pushdown
-POSTHOOK: Output: file:/var/folders/7P/7PeC14kXFIWq0PIYyexGbmKuXUk/-Tmp-/jsichi/hive_2011-01-02_20-26-30_678_8030079731107253758/-mr-10000
+POSTHOOK: Output: file:/tmp/sdong/hive_2011-02-18_19-02-10_558_7297784935989395706/-mr-10000
 PREHOOK: query: -- with nothing to push down
 
 explain select * from hbase_pushdown
@@ -259,7 +259,7 @@ POSTHOOK: query: -- with nothing to push down
 explain select * from hbase_pushdown
 POSTHOOK: type: QUERY
 ABSTRACT SYNTAX TREE:
-  (TOK_QUERY (TOK_FROM (TOK_TABREF hbase_pushdown)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR TOK_ALLCOLREF))))
+  (TOK_QUERY (TOK_FROM (TOK_TABREF (TOK_TABNAME hbase_pushdown))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR TOK_ALLCOLREF))))
 
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
@@ -283,7 +283,7 @@ explain select * from hbase_pushdown
 where (case when key=90 then 2 else 4 end) > 3
 POSTHOOK: type: QUERY
 ABSTRACT SYNTAX TREE:
-  (TOK_QUERY (TOK_FROM (TOK_TABREF hbase_pushdown)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR TOK_ALLCOLREF)) (TOK_WHERE (> (TOK_FUNCTION when (= (TOK_TABLE_OR_COL key) 90) 2 4) 3))))
+  (TOK_QUERY (TOK_FROM (TOK_TABREF (TOK_TABNAME hbase_pushdown))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR TOK_ALLCOLREF)) (TOK_WHERE (> (TOK_FUNCTION when (= (TOK_TABLE_OR_COL key) 90) 2 4) 3))))
 
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -336,7 +336,7 @@ explain select * from hbase_pushdown
 where key=80 or value like '%90%'
 POSTHOOK: type: QUERY
 ABSTRACT SYNTAX TREE:
-  (TOK_QUERY (TOK_FROM (TOK_TABREF hbase_pushdown)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR TOK_ALLCOLREF)) (TOK_WHERE (or (= (TOK_TABLE_OR_COL key) 80) (like (TOK_TABLE_OR_COL value) '%90%')))))
+  (TOK_QUERY (TOK_FROM (TOK_TABREF (TOK_TABNAME hbase_pushdown))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR TOK_ALLCOLREF)) (TOK_WHERE (or (= (TOK_TABLE_OR_COL key) 80) (like (TOK_TABLE_OR_COL value) '%90%')))))
 
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -385,7 +385,7 @@ POSTHOOK: query: -- with pushdown disabled
 explain select * from hbase_pushdown where key=90
 POSTHOOK: type: QUERY
 ABSTRACT SYNTAX TREE:
-  (TOK_QUERY (TOK_FROM (TOK_TABREF hbase_pushdown)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR TOK_ALLCOLREF)) (TOK_WHERE (= (TOK_TABLE_OR_COL key) 90))))
+  (TOK_QUERY (TOK_FROM (TOK_TABREF (TOK_TABNAME hbase_pushdown))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR TOK_ALLCOLREF)) (TOK_WHERE (= (TOK_TABLE_OR_COL key) 90))))
 
 STAGE DEPENDENCIES:
   Stage-1 is a root stage

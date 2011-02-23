@@ -12,7 +12,7 @@ FROM src
 INSERT OVERWRITE TABLE dest1 SELECT substr(src.key,1,1) GROUP BY substr(src.key,1,1)
 POSTHOOK: type: QUERY
 ABSTRACT SYNTAX TREE:
-  (TOK_QUERY (TOK_FROM (TOK_TABREF src)) (TOK_INSERT (TOK_DESTINATION (TOK_TAB dest1)) (TOK_SELECT (TOK_SELEXPR (TOK_FUNCTION substr (. (TOK_TABLE_OR_COL src) key) 1 1))) (TOK_GROUPBY (TOK_FUNCTION substr (. (TOK_TABLE_OR_COL src) key) 1 1))))
+  (TOK_QUERY (TOK_FROM (TOK_TABREF (TOK_TABNAME src))) (TOK_INSERT (TOK_DESTINATION (TOK_TAB (TOK_TABNAME dest1))) (TOK_SELECT (TOK_SELEXPR (TOK_FUNCTION substr (. (TOK_TABLE_OR_COL src) key) 1 1))) (TOK_GROUPBY (TOK_FUNCTION substr (. (TOK_TABLE_OR_COL src) key) 1 1))))
 
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -60,7 +60,7 @@ STAGE PLANS:
                   input format: org.apache.hadoop.mapred.TextInputFormat
                   output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                   serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                  name: dest1
+                  name: default.dest1
 
   Stage: Stage-0
     Move Operator
@@ -70,7 +70,7 @@ STAGE PLANS:
               input format: org.apache.hadoop.mapred.TextInputFormat
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              name: dest1
+              name: default.dest1
 
   Stage: Stage-2
     Stats-Aggr Operator
@@ -90,11 +90,11 @@ POSTHOOK: Lineage: dest1.c1 EXPRESSION [(src)src.FieldSchema(name:key, type:stri
 PREHOOK: query: SELECT dest1.* FROM dest1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@dest1
-PREHOOK: Output: file:/tmp/nzhang/hive_2010-09-14_16-16-04_350_4543908149102458043/-mr-10000
+PREHOOK: Output: file:/tmp/sdong/hive_2011-02-10_01-51-23_092_8392864965420069358/-mr-10000
 POSTHOOK: query: SELECT dest1.* FROM dest1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@dest1
-POSTHOOK: Output: file:/tmp/nzhang/hive_2010-09-14_16-16-04_350_4543908149102458043/-mr-10000
+POSTHOOK: Output: file:/tmp/sdong/hive_2011-02-10_01-51-23_092_8392864965420069358/-mr-10000
 POSTHOOK: Lineage: dest1.c1 EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 0
 1

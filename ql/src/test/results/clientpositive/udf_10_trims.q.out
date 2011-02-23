@@ -16,7 +16,7 @@ FROM src
 WHERE src.key = 86
 POSTHOOK: type: QUERY
 ABSTRACT SYNTAX TREE:
-  (TOK_QUERY (TOK_FROM (TOK_TABREF src)) (TOK_INSERT (TOK_DESTINATION (TOK_TAB dest1)) (TOK_SELECT (TOK_SELEXPR (TOK_FUNCTION trim (TOK_FUNCTION trim (TOK_FUNCTION trim (TOK_FUNCTION trim (TOK_FUNCTION trim (TOK_FUNCTION trim (TOK_FUNCTION trim (TOK_FUNCTION trim (TOK_FUNCTION trim (TOK_FUNCTION trim '  abc  ')))))))))))) (TOK_WHERE (= (. (TOK_TABLE_OR_COL src) key) 86))))
+  (TOK_QUERY (TOK_FROM (TOK_TABREF (TOK_TABNAME src))) (TOK_INSERT (TOK_DESTINATION (TOK_TAB (TOK_TABNAME dest1))) (TOK_SELECT (TOK_SELEXPR (TOK_FUNCTION trim (TOK_FUNCTION trim (TOK_FUNCTION trim (TOK_FUNCTION trim (TOK_FUNCTION trim (TOK_FUNCTION trim (TOK_FUNCTION trim (TOK_FUNCTION trim (TOK_FUNCTION trim (TOK_FUNCTION trim '  abc  ')))))))))))) (TOK_WHERE (= (. (TOK_TABLE_OR_COL src) key) 86))))
 
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -53,7 +53,7 @@ STAGE PLANS:
                         input format: org.apache.hadoop.mapred.TextInputFormat
                         output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                         serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                        name: dest1
+                        name: default.dest1
 
   Stage: Stage-5
     Conditional Operator
@@ -62,7 +62,7 @@ STAGE PLANS:
     Move Operator
       files:
           hdfs directory: true
-          destination: pfile:/data/users/nzhang/work/784/apache-hive/build/ql/scratchdir/hive_2010-09-14_17-57-19_255_7754784838144044480/-ext-10000
+          destination: pfile:/data/users/sdong/www/open-source-hive1/build/ql/scratchdir/hive_2011-02-10_17-29-31_766_2361786374011727834/-ext-10000
 
   Stage: Stage-0
     Move Operator
@@ -72,7 +72,7 @@ STAGE PLANS:
               input format: org.apache.hadoop.mapred.TextInputFormat
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              name: dest1
+              name: default.dest1
 
   Stage: Stage-2
     Stats-Aggr Operator
@@ -80,7 +80,7 @@ STAGE PLANS:
   Stage: Stage-3
     Map Reduce
       Alias -> Map Operator Tree:
-        pfile:/data/users/nzhang/work/784/apache-hive/build/ql/scratchdir/hive_2010-09-14_17-57-19_255_7754784838144044480/-ext-10002 
+        pfile:/data/users/sdong/www/open-source-hive1/build/ql/scratchdir/hive_2011-02-10_17-29-31_766_2361786374011727834/-ext-10002 
             File Output Operator
               compressed: false
               GlobalTableId: 0
@@ -88,7 +88,7 @@ STAGE PLANS:
                   input format: org.apache.hadoop.mapred.TextInputFormat
                   output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                   serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                  name: dest1
+                  name: default.dest1
 
 
 PREHOOK: query: INSERT OVERWRITE TABLE dest1

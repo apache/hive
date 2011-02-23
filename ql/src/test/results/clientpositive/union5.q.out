@@ -13,7 +13,7 @@ explain
                                       select 'tst2' as key, count(1) as value from src s2) unionsrc group by unionsrc.key
 POSTHOOK: type: QUERY
 ABSTRACT SYNTAX TREE:
-  (TOK_QUERY (TOK_FROM (TOK_SUBQUERY (TOK_UNION (TOK_QUERY (TOK_FROM (TOK_TABREF src s1)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR 'tst1' key) (TOK_SELEXPR (TOK_FUNCTION count 1) value)))) (TOK_QUERY (TOK_FROM (TOK_TABREF src s2)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR 'tst2' key) (TOK_SELEXPR (TOK_FUNCTION count 1) value))))) unionsrc)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (. (TOK_TABLE_OR_COL unionsrc) key)) (TOK_SELEXPR (TOK_FUNCTION count 1))) (TOK_GROUPBY (. (TOK_TABLE_OR_COL unionsrc) key))))
+  (TOK_QUERY (TOK_FROM (TOK_SUBQUERY (TOK_UNION (TOK_QUERY (TOK_FROM (TOK_TABREF (TOK_TABNAME src) s1)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR 'tst1' key) (TOK_SELEXPR (TOK_FUNCTION count 1) value)))) (TOK_QUERY (TOK_FROM (TOK_TABREF (TOK_TABNAME src) s2)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR 'tst2' key) (TOK_SELEXPR (TOK_FUNCTION count 1) value))))) unionsrc)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (. (TOK_TABLE_OR_COL unionsrc) key)) (TOK_SELEXPR (TOK_FUNCTION count 1))) (TOK_GROUPBY (. (TOK_TABLE_OR_COL unionsrc) key))))
 
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -65,7 +65,7 @@ STAGE PLANS:
   Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/data/users/heyongqiang/hive-trunk/.ptest_0/build/ql/tmp/2029325579/10002 
+        file:/tmp/sdong/hive_2011-02-10_17-52-35_634_8721217390847331165/-mr-10002 
           Union
             Select Operator
               expressions:
@@ -93,7 +93,7 @@ STAGE PLANS:
                   value expressions:
                         expr: _col1
                         type: bigint
-        file:/data/users/heyongqiang/hive-trunk/.ptest_0/build/ql/tmp/2029325579/10003 
+        file:/tmp/sdong/hive_2011-02-10_17-52-35_634_8721217390847331165/-mr-10003 
           Union
             Select Operator
               expressions:
@@ -195,12 +195,12 @@ PREHOOK: query: select unionsrc.key, count(1) FROM (select 'tst1' as key, count(
                                     select 'tst2' as key, count(1) as value from src s2) unionsrc group by unionsrc.key
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/data/users/heyongqiang/hive-trunk/.ptest_0/build/ql/tmp/757963901/10000
+PREHOOK: Output: file:/tmp/sdong/hive_2011-02-10_17-52-35_751_1142412284544355296/-mr-10000
 POSTHOOK: query: select unionsrc.key, count(1) FROM (select 'tst1' as key, count(1) as value from src s1
                                   UNION  ALL  
                                     select 'tst2' as key, count(1) as value from src s2) unionsrc group by unionsrc.key
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: file:/data/users/heyongqiang/hive-trunk/.ptest_0/build/ql/tmp/757963901/10000
+POSTHOOK: Output: file:/tmp/sdong/hive_2011-02-10_17-52-35_751_1142412284544355296/-mr-10000
 tst1	1
 tst2	1

@@ -5,7 +5,7 @@ POSTHOOK: query: EXPLAIN SELECT x.key, x.value, y.key, y.value
 FROM src x left outer JOIN (select * from src where key <= 100) y ON (x.key = y.key)
 POSTHOOK: type: QUERY
 ABSTRACT SYNTAX TREE:
-  (TOK_QUERY (TOK_FROM (TOK_LEFTOUTERJOIN (TOK_TABREF src x) (TOK_SUBQUERY (TOK_QUERY (TOK_FROM (TOK_TABREF src)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR TOK_ALLCOLREF)) (TOK_WHERE (<= (TOK_TABLE_OR_COL key) 100)))) y) (= (. (TOK_TABLE_OR_COL x) key) (. (TOK_TABLE_OR_COL y) key)))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (. (TOK_TABLE_OR_COL x) key)) (TOK_SELEXPR (. (TOK_TABLE_OR_COL x) value)) (TOK_SELEXPR (. (TOK_TABLE_OR_COL y) key)) (TOK_SELEXPR (. (TOK_TABLE_OR_COL y) value)))))
+  (TOK_QUERY (TOK_FROM (TOK_LEFTOUTERJOIN (TOK_TABREF (TOK_TABNAME src) x) (TOK_SUBQUERY (TOK_QUERY (TOK_FROM (TOK_TABREF (TOK_TABNAME src))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR TOK_ALLCOLREF)) (TOK_WHERE (<= (TOK_TABLE_OR_COL key) 100)))) y) (= (. (TOK_TABLE_OR_COL x) key) (. (TOK_TABLE_OR_COL y) key)))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (. (TOK_TABLE_OR_COL x) key)) (TOK_SELEXPR (. (TOK_TABLE_OR_COL x) value)) (TOK_SELEXPR (. (TOK_TABLE_OR_COL y) key)) (TOK_SELEXPR (. (TOK_TABLE_OR_COL y) value)))))
 
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -100,12 +100,12 @@ PREHOOK: query: SELECT x.key, x.value, y.key, y.value
 FROM src x left outer JOIN (select * from src where key <= 100) y ON (x.key = y.key)
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/tmp/liyintang/hive_2010-11-04_12-14-28_326_3972885048921144262/-mr-10000
+PREHOOK: Output: file:/tmp/sdong/hive_2011-02-10_16-07-26_728_575634996407286755/-mr-10000
 POSTHOOK: query: SELECT x.key, x.value, y.key, y.value
 FROM src x left outer JOIN (select * from src where key <= 100) y ON (x.key = y.key)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: file:/tmp/liyintang/hive_2010-11-04_12-14-28_326_3972885048921144262/-mr-10000
+POSTHOOK: Output: file:/tmp/sdong/hive_2011-02-10_16-07-26_728_575634996407286755/-mr-10000
 0	val_0	0	val_0
 0	val_0	0	val_0
 0	val_0	0	val_0
@@ -679,7 +679,7 @@ POSTHOOK: query: EXPLAIN select src1.key, src2.value
 FROM src src1 JOIN src src2 ON (src1.key = src2.key)
 POSTHOOK: type: QUERY
 ABSTRACT SYNTAX TREE:
-  (TOK_QUERY (TOK_FROM (TOK_JOIN (TOK_TABREF src src1) (TOK_TABREF src src2) (= (. (TOK_TABLE_OR_COL src1) key) (. (TOK_TABLE_OR_COL src2) key)))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (. (TOK_TABLE_OR_COL src1) key)) (TOK_SELEXPR (. (TOK_TABLE_OR_COL src2) value)))))
+  (TOK_QUERY (TOK_FROM (TOK_JOIN (TOK_TABREF (TOK_TABNAME src) src1) (TOK_TABREF (TOK_TABNAME src) src2) (= (. (TOK_TABLE_OR_COL src1) key) (. (TOK_TABLE_OR_COL src2) key)))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (. (TOK_TABLE_OR_COL src1) key)) (TOK_SELEXPR (. (TOK_TABLE_OR_COL src2) value)))))
 
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -751,12 +751,12 @@ PREHOOK: query: select src1.key, src2.value
 FROM src src1 JOIN src src2 ON (src1.key = src2.key)
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/tmp/liyintang/hive_2010-11-04_12-14-36_619_6415824732118440282/-mr-10000
+PREHOOK: Output: file:/tmp/sdong/hive_2011-02-10_16-07-34_633_2787732427056663675/-mr-10000
 POSTHOOK: query: select src1.key, src2.value 
 FROM src src1 JOIN src src2 ON (src1.key = src2.key)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: file:/tmp/liyintang/hive_2010-11-04_12-14-36_619_6415824732118440282/-mr-10000
+POSTHOOK: Output: file:/tmp/sdong/hive_2011-02-10_16-07-34_633_2787732427056663675/-mr-10000
 0	val_0
 0	val_0
 0	val_0
@@ -1794,7 +1794,7 @@ SELECT * FROM src src1 JOIN src src2 ON (src1.key = src2.key AND src1.key < 10) 
 SORT BY src1.key, src1.value, src2.key, src2.value, src3.key, src3.value
 POSTHOOK: type: QUERY
 ABSTRACT SYNTAX TREE:
-  (TOK_QUERY (TOK_FROM (TOK_RIGHTOUTERJOIN (TOK_JOIN (TOK_TABREF src src1) (TOK_TABREF src src2) (AND (= (. (TOK_TABLE_OR_COL src1) key) (. (TOK_TABLE_OR_COL src2) key)) (< (. (TOK_TABLE_OR_COL src1) key) 10))) (TOK_TABREF src src3) (AND (= (. (TOK_TABLE_OR_COL src1) key) (. (TOK_TABLE_OR_COL src3) key)) (< (. (TOK_TABLE_OR_COL src3) key) 20)))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR TOK_ALLCOLREF)) (TOK_SORTBY (TOK_TABSORTCOLNAMEASC (. (TOK_TABLE_OR_COL src1) key)) (TOK_TABSORTCOLNAMEASC (. (TOK_TABLE_OR_COL src1) value)) (TOK_TABSORTCOLNAMEASC (. (TOK_TABLE_OR_COL src2) key)) (TOK_TABSORTCOLNAMEASC (. (TOK_TABLE_OR_COL src2) value)) (TOK_TABSORTCOLNAMEASC (. (TOK_TABLE_OR_COL src3) key)) (TOK_TABSORTCOLNAMEASC (. (TOK_TABLE_OR_COL src3) value)))))
+  (TOK_QUERY (TOK_FROM (TOK_RIGHTOUTERJOIN (TOK_JOIN (TOK_TABREF (TOK_TABNAME src) src1) (TOK_TABREF (TOK_TABNAME src) src2) (AND (= (. (TOK_TABLE_OR_COL src1) key) (. (TOK_TABLE_OR_COL src2) key)) (< (. (TOK_TABLE_OR_COL src1) key) 10))) (TOK_TABREF (TOK_TABNAME src) src3) (AND (= (. (TOK_TABLE_OR_COL src1) key) (. (TOK_TABLE_OR_COL src3) key)) (< (. (TOK_TABLE_OR_COL src3) key) 20)))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR TOK_ALLCOLREF)) (TOK_SORTBY (TOK_TABSORTCOLNAMEASC (. (TOK_TABLE_OR_COL src1) key)) (TOK_TABSORTCOLNAMEASC (. (TOK_TABLE_OR_COL src1) value)) (TOK_TABSORTCOLNAMEASC (. (TOK_TABLE_OR_COL src2) key)) (TOK_TABSORTCOLNAMEASC (. (TOK_TABLE_OR_COL src2) value)) (TOK_TABSORTCOLNAMEASC (. (TOK_TABLE_OR_COL src3) key)) (TOK_TABSORTCOLNAMEASC (. (TOK_TABLE_OR_COL src3) value)))))
 
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -1904,7 +1904,7 @@ STAGE PLANS:
   Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/tmp/liyintang/hive_2010-11-04_12-14-46_832_624292527665996520/-mr-10002 
+        file:/tmp/sdong/hive_2011-02-10_16-07-44_112_2093169853711368630/-mr-10002 
             Reduce Output Operator
               key expressions:
                     expr: _col0
@@ -1952,12 +1952,12 @@ PREHOOK: query: SELECT * FROM src src1 JOIN src src2 ON (src1.key = src2.key AND
 SORT BY src1.key, src1.value, src2.key, src2.value, src3.key, src3.value
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/tmp/liyintang/hive_2010-11-04_12-14-46_969_1334858435022180797/-mr-10000
+PREHOOK: Output: file:/tmp/sdong/hive_2011-02-10_16-07-44_222_3133440987037406315/-mr-10000
 POSTHOOK: query: SELECT * FROM src src1 JOIN src src2 ON (src1.key = src2.key AND src1.key < 10) RIGHT OUTER JOIN src src3 ON (src1.key = src3.key AND src3.key < 20)
 SORT BY src1.key, src1.value, src2.key, src2.value, src3.key, src3.value
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: file:/tmp/liyintang/hive_2010-11-04_12-14-46_969_1334858435022180797/-mr-10000
+POSTHOOK: Output: file:/tmp/sdong/hive_2011-02-10_16-07-44_222_3133440987037406315/-mr-10000
 NULL	NULL	NULL	NULL	10	val_10
 NULL	NULL	NULL	NULL	100	val_100
 NULL	NULL	NULL	NULL	100	val_100
@@ -2515,7 +2515,7 @@ SELECT * FROM src src1 JOIN src src2 ON (src1.key = src2.key AND src1.key < 10 A
 SORT BY src1.key, src1.value, src2.key, src2.value, src3.key, src3.value
 POSTHOOK: type: QUERY
 ABSTRACT SYNTAX TREE:
-  (TOK_QUERY (TOK_FROM (TOK_RIGHTOUTERJOIN (TOK_JOIN (TOK_TABREF src src1) (TOK_TABREF src src2) (AND (AND (= (. (TOK_TABLE_OR_COL src1) key) (. (TOK_TABLE_OR_COL src2) key)) (< (. (TOK_TABLE_OR_COL src1) key) 10)) (< (. (TOK_TABLE_OR_COL src2) key) 15))) (TOK_TABREF src src3) (AND (= (. (TOK_TABLE_OR_COL src1) key) (. (TOK_TABLE_OR_COL src3) key)) (< (. (TOK_TABLE_OR_COL src3) key) 20)))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR TOK_ALLCOLREF)) (TOK_SORTBY (TOK_TABSORTCOLNAMEASC (. (TOK_TABLE_OR_COL src1) key)) (TOK_TABSORTCOLNAMEASC (. (TOK_TABLE_OR_COL src1) value)) (TOK_TABSORTCOLNAMEASC (. (TOK_TABLE_OR_COL src2) key)) (TOK_TABSORTCOLNAMEASC (. (TOK_TABLE_OR_COL src2) value)) (TOK_TABSORTCOLNAMEASC (. (TOK_TABLE_OR_COL src3) key)) (TOK_TABSORTCOLNAMEASC (. (TOK_TABLE_OR_COL src3) value)))))
+  (TOK_QUERY (TOK_FROM (TOK_RIGHTOUTERJOIN (TOK_JOIN (TOK_TABREF (TOK_TABNAME src) src1) (TOK_TABREF (TOK_TABNAME src) src2) (AND (AND (= (. (TOK_TABLE_OR_COL src1) key) (. (TOK_TABLE_OR_COL src2) key)) (< (. (TOK_TABLE_OR_COL src1) key) 10)) (< (. (TOK_TABLE_OR_COL src2) key) 15))) (TOK_TABREF (TOK_TABNAME src) src3) (AND (= (. (TOK_TABLE_OR_COL src1) key) (. (TOK_TABLE_OR_COL src3) key)) (< (. (TOK_TABLE_OR_COL src3) key) 20)))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR TOK_ALLCOLREF)) (TOK_SORTBY (TOK_TABSORTCOLNAMEASC (. (TOK_TABLE_OR_COL src1) key)) (TOK_TABSORTCOLNAMEASC (. (TOK_TABLE_OR_COL src1) value)) (TOK_TABSORTCOLNAMEASC (. (TOK_TABLE_OR_COL src2) key)) (TOK_TABSORTCOLNAMEASC (. (TOK_TABLE_OR_COL src2) value)) (TOK_TABSORTCOLNAMEASC (. (TOK_TABLE_OR_COL src3) key)) (TOK_TABSORTCOLNAMEASC (. (TOK_TABLE_OR_COL src3) value)))))
 
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -2633,7 +2633,7 @@ STAGE PLANS:
   Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/tmp/liyintang/hive_2010-11-04_12-15-01_848_4481484445896033624/-mr-10002 
+        file:/tmp/sdong/hive_2011-02-10_16-07-57_010_3886291302348783990/-mr-10002 
             Reduce Output Operator
               key expressions:
                     expr: _col0
@@ -2681,12 +2681,12 @@ PREHOOK: query: SELECT * FROM src src1 JOIN src src2 ON (src1.key = src2.key AND
 SORT BY src1.key, src1.value, src2.key, src2.value, src3.key, src3.value
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/tmp/liyintang/hive_2010-11-04_12-15-02_041_1716373562559394449/-mr-10000
+PREHOOK: Output: file:/tmp/sdong/hive_2011-02-10_16-07-57_122_4715415954395441060/-mr-10000
 POSTHOOK: query: SELECT * FROM src src1 JOIN src src2 ON (src1.key = src2.key AND src1.key < 10 AND src2.key < 15) RIGHT OUTER JOIN src src3 ON (src1.key = src3.key AND src3.key < 20)
 SORT BY src1.key, src1.value, src2.key, src2.value, src3.key, src3.value
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: file:/tmp/liyintang/hive_2010-11-04_12-15-02_041_1716373562559394449/-mr-10000
+POSTHOOK: Output: file:/tmp/sdong/hive_2011-02-10_16-07-57_122_4715415954395441060/-mr-10000
 NULL	NULL	NULL	NULL	10	val_10
 NULL	NULL	NULL	NULL	100	val_100
 NULL	NULL	NULL	NULL	100	val_100
@@ -3244,7 +3244,7 @@ SELECT /*+ MAPJOIN(y) */ x.key, x.value, y.key, y.value
 FROM src x left outer JOIN (select * from src where key <= 100) y ON (x.key = y.key)
 POSTHOOK: type: QUERY
 ABSTRACT SYNTAX TREE:
-  (TOK_QUERY (TOK_FROM (TOK_LEFTOUTERJOIN (TOK_TABREF src x) (TOK_SUBQUERY (TOK_QUERY (TOK_FROM (TOK_TABREF src)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR TOK_ALLCOLREF)) (TOK_WHERE (<= (TOK_TABLE_OR_COL key) 100)))) y) (= (. (TOK_TABLE_OR_COL x) key) (. (TOK_TABLE_OR_COL y) key)))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_HINTLIST (TOK_HINT TOK_MAPJOIN (TOK_HINTARGLIST y))) (TOK_SELEXPR (. (TOK_TABLE_OR_COL x) key)) (TOK_SELEXPR (. (TOK_TABLE_OR_COL x) value)) (TOK_SELEXPR (. (TOK_TABLE_OR_COL y) key)) (TOK_SELEXPR (. (TOK_TABLE_OR_COL y) value)))))
+  (TOK_QUERY (TOK_FROM (TOK_LEFTOUTERJOIN (TOK_TABREF (TOK_TABNAME src) x) (TOK_SUBQUERY (TOK_QUERY (TOK_FROM (TOK_TABREF (TOK_TABNAME src))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR TOK_ALLCOLREF)) (TOK_WHERE (<= (TOK_TABLE_OR_COL key) 100)))) y) (= (. (TOK_TABLE_OR_COL x) key) (. (TOK_TABLE_OR_COL y) key)))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_HINTLIST (TOK_HINT TOK_MAPJOIN (TOK_HINTARGLIST y))) (TOK_SELEXPR (. (TOK_TABLE_OR_COL x) key)) (TOK_SELEXPR (. (TOK_TABLE_OR_COL x) value)) (TOK_SELEXPR (. (TOK_TABLE_OR_COL y) key)) (TOK_SELEXPR (. (TOK_TABLE_OR_COL y) value)))))
 
 STAGE DEPENDENCIES:
   Stage-3 is a root stage
@@ -3345,12 +3345,12 @@ PREHOOK: query: SELECT /*+ MAPJOIN(y) */ x.key, x.value, y.key, y.value
 FROM src x left outer JOIN (select * from src where key <= 100) y ON (x.key = y.key)
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/tmp/liyintang/hive_2010-11-04_12-15-12_928_5277225703166373723/-mr-10000
+PREHOOK: Output: file:/tmp/sdong/hive_2011-02-10_16-08-07_427_2952592821866056396/-mr-10000
 POSTHOOK: query: SELECT /*+ MAPJOIN(y) */ x.key, x.value, y.key, y.value
 FROM src x left outer JOIN (select * from src where key <= 100) y ON (x.key = y.key)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: file:/tmp/liyintang/hive_2010-11-04_12-15-12_928_5277225703166373723/-mr-10000
+POSTHOOK: Output: file:/tmp/sdong/hive_2011-02-10_16-08-07_427_2952592821866056396/-mr-10000
 238	val_238	NULL	NULL
 86	val_86	86	val_86
 311	val_311	NULL	NULL
@@ -3924,7 +3924,7 @@ POSTHOOK: query: EXPLAIN
 SELECT COUNT(1) FROM SRC A JOIN SRC B ON (A.KEY=B.KEY)
 POSTHOOK: type: QUERY
 ABSTRACT SYNTAX TREE:
-  (TOK_QUERY (TOK_FROM (TOK_JOIN (TOK_TABREF SRC A) (TOK_TABREF SRC B) (= (. (TOK_TABLE_OR_COL A) KEY) (. (TOK_TABLE_OR_COL B) KEY)))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_FUNCTION COUNT 1)))))
+  (TOK_QUERY (TOK_FROM (TOK_JOIN (TOK_TABREF (TOK_TABNAME SRC) A) (TOK_TABREF (TOK_TABNAME SRC) B) (= (. (TOK_TABLE_OR_COL A) KEY) (. (TOK_TABLE_OR_COL B) KEY)))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_FUNCTION COUNT 1)))))
 
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -3984,7 +3984,7 @@ STAGE PLANS:
   Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/tmp/liyintang/hive_2010-11-04_12-15-20_303_498904788302590605/-mr-10002 
+        file:/tmp/sdong/hive_2011-02-10_16-08-12_669_6044200484375125842/-mr-10002 
             Reduce Output Operator
               sort order: 
               tag: -1
@@ -4018,9 +4018,9 @@ STAGE PLANS:
 PREHOOK: query: SELECT COUNT(1) FROM SRC A JOIN SRC B ON (A.KEY=B.KEY)
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/tmp/liyintang/hive_2010-11-04_12-15-20_419_6110829774550991242/-mr-10000
+PREHOOK: Output: file:/tmp/sdong/hive_2011-02-10_16-08-12_772_2673146484429886185/-mr-10000
 POSTHOOK: query: SELECT COUNT(1) FROM SRC A JOIN SRC B ON (A.KEY=B.KEY)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: file:/tmp/liyintang/hive_2010-11-04_12-15-20_419_6110829774550991242/-mr-10000
+POSTHOOK: Output: file:/tmp/sdong/hive_2011-02-10_16-08-12_772_2673146484429886185/-mr-10000
 1028

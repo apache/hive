@@ -10,7 +10,7 @@ POSTHOOK: query: explain
 insert overwrite table analyze_t1 partition (ds, hr) select * from srcpart where ds is not null
 POSTHOOK: type: QUERY
 ABSTRACT SYNTAX TREE:
-  (TOK_QUERY (TOK_FROM (TOK_TABREF srcpart)) (TOK_INSERT (TOK_DESTINATION (TOK_TAB analyze_t1 (TOK_PARTSPEC (TOK_PARTVAL ds) (TOK_PARTVAL hr)))) (TOK_SELECT (TOK_SELEXPR TOK_ALLCOLREF)) (TOK_WHERE (TOK_FUNCTION TOK_ISNOTNULL (TOK_TABLE_OR_COL ds)))))
+  (TOK_QUERY (TOK_FROM (TOK_TABREF (TOK_TABNAME srcpart))) (TOK_INSERT (TOK_DESTINATION (TOK_TAB (TOK_TABNAME analyze_t1) (TOK_PARTSPEC (TOK_PARTVAL ds) (TOK_PARTVAL hr)))) (TOK_SELECT (TOK_SELEXPR TOK_ALLCOLREF)) (TOK_WHERE (TOK_FUNCTION TOK_ISNOTNULL (TOK_TABLE_OR_COL ds)))))
 
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -45,7 +45,7 @@ STAGE PLANS:
                       input format: org.apache.hadoop.mapred.TextInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                       serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                      name: analyze_t1
+                      name: default.analyze_t1
 
   Stage: Stage-0
     Move Operator
@@ -58,7 +58,7 @@ STAGE PLANS:
               input format: org.apache.hadoop.mapred.TextInputFormat
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              name: analyze_t1
+              name: default.analyze_t1
 
 
 PREHOOK: query: insert overwrite table analyze_t1 partition (ds, hr) select * from srcpart where ds is not null
@@ -103,7 +103,7 @@ value	string	default
 ds	string	
 hr	string	
 	 	 
-Detailed Table Information	Table(tableName:analyze_t1, dbName:default, owner:null, createTime:1290126752, lastAccessTime:0, retention:0, sd:StorageDescriptor(cols:[FieldSchema(name:key, type:string, comment:default), FieldSchema(name:value, type:string, comment:default), FieldSchema(name:ds, type:string, comment:null), FieldSchema(name:hr, type:string, comment:null)], location:pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/analyze_t1, inputFormat:org.apache.hadoop.mapred.TextInputFormat, outputFormat:org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat, compressed:false, numBuckets:-1, serdeInfo:SerDeInfo(name:null, serializationLib:org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe, parameters:{serialization.format=1}), bucketCols:[], sortCols:[], parameters:{}), partitionKeys:[FieldSchema(name:ds, type:string, comment:null), FieldSchema(name:hr, type:string, comment:null)], parameters:{transient_lastDdlTime=1290126752}, viewOriginalText:null, viewExpandedText:null, tableType:MANAGED_TABLE)	
+Detailed Table Information	Table(tableName:analyze_t1, dbName:default, owner:null, createTime:1297387302, lastAccessTime:1297386140, retention:0, sd:StorageDescriptor(cols:[FieldSchema(name:key, type:string, comment:default), FieldSchema(name:value, type:string, comment:default), FieldSchema(name:ds, type:string, comment:null), FieldSchema(name:hr, type:string, comment:null)], location:pfile:/data/users/sdong/www/open-source-hive1/build/ql/test/data/warehouse/analyze_t1, inputFormat:org.apache.hadoop.mapred.TextInputFormat, outputFormat:org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat, compressed:false, numBuckets:-1, serdeInfo:SerDeInfo(name:null, serializationLib:org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe, parameters:{serialization.format=1}), bucketCols:[], sortCols:[], parameters:{}), partitionKeys:[FieldSchema(name:ds, type:string, comment:null), FieldSchema(name:hr, type:string, comment:null)], parameters:{transient_lastDdlTime=1297387302}, viewOriginalText:null, viewExpandedText:null, tableType:MANAGED_TABLE)	
 PREHOOK: query: explain analyze table analyze_t1 partition (ds, hr) compute statistics
 PREHOOK: type: QUERY
 POSTHOOK: query: explain analyze table analyze_t1 partition (ds, hr) compute statistics
@@ -117,7 +117,7 @@ POSTHOOK: Lineage: analyze_t1 PARTITION(ds=2008-04-09,hr=11).value SIMPLE [(srcp
 POSTHOOK: Lineage: analyze_t1 PARTITION(ds=2008-04-09,hr=12).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: analyze_t1 PARTITION(ds=2008-04-09,hr=12).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
 ABSTRACT SYNTAX TREE:
-  (TOK_ANALYZE (TOK_TABTYPE analyze_t1 (TOK_PARTSPEC (TOK_PARTVAL ds) (TOK_PARTVAL hr))))
+  (TOK_ANALYZE (TOK_TAB (TOK_TABNAME analyze_t1) (TOK_PARTSPEC (TOK_PARTVAL ds) (TOK_PARTVAL hr))))
 
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
@@ -182,4 +182,4 @@ value	string	default
 ds	string	
 hr	string	
 	 	 
-Detailed Table Information	Table(tableName:analyze_t1, dbName:default, owner:null, createTime:1290126752, lastAccessTime:0, retention:0, sd:StorageDescriptor(cols:[FieldSchema(name:key, type:string, comment:default), FieldSchema(name:value, type:string, comment:default), FieldSchema(name:ds, type:string, comment:null), FieldSchema(name:hr, type:string, comment:null)], location:pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/analyze_t1, inputFormat:org.apache.hadoop.mapred.TextInputFormat, outputFormat:org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat, compressed:false, numBuckets:-1, serdeInfo:SerDeInfo(name:null, serializationLib:org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe, parameters:{serialization.format=1}), bucketCols:[], sortCols:[], parameters:{}), partitionKeys:[FieldSchema(name:ds, type:string, comment:null), FieldSchema(name:hr, type:string, comment:null)], parameters:{numPartitions=4, numFiles=4, transient_lastDdlTime=1290126769, numRows=2000, totalSize=23248}, viewOriginalText:null, viewExpandedText:null, tableType:MANAGED_TABLE)	
+Detailed Table Information	Table(tableName:analyze_t1, dbName:default, owner:null, createTime:1297387302, lastAccessTime:1297386140, retention:0, sd:StorageDescriptor(cols:[FieldSchema(name:key, type:string, comment:default), FieldSchema(name:value, type:string, comment:default), FieldSchema(name:ds, type:string, comment:null), FieldSchema(name:hr, type:string, comment:null)], location:pfile:/data/users/sdong/www/open-source-hive1/build/ql/test/data/warehouse/analyze_t1, inputFormat:org.apache.hadoop.mapred.TextInputFormat, outputFormat:org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat, compressed:false, numBuckets:-1, serdeInfo:SerDeInfo(name:null, serializationLib:org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe, parameters:{serialization.format=1}), bucketCols:[], sortCols:[], parameters:{}), partitionKeys:[FieldSchema(name:ds, type:string, comment:null), FieldSchema(name:hr, type:string, comment:null)], parameters:{numPartitions=4, numFiles=4, transient_lastDdlTime=1297387313, numRows=500, totalSize=23248}, viewOriginalText:null, viewExpandedText:null, tableType:MANAGED_TABLE)	

@@ -20,7 +20,7 @@ POSTHOOK: query: explain
 select count(1) from tstparttbl
 POSTHOOK: type: QUERY
 ABSTRACT SYNTAX TREE:
-  (TOK_QUERY (TOK_FROM (TOK_TABREF tstparttbl)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_FUNCTION count 1)))))
+  (TOK_QUERY (TOK_FROM (TOK_TABREF (TOK_TABNAME tstparttbl))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_FUNCTION count 1)))))
 
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -74,12 +74,12 @@ PREHOOK: query: select count(1) from tstparttbl
 PREHOOK: type: QUERY
 PREHOOK: Input: default@tstparttbl@ds=2008-04-08
 PREHOOK: Input: default@tstparttbl@ds=2008-04-09
-PREHOOK: Output: file:/tmp/njain/hive_2010-08-17_00-26-16_782_400043420949497617/-mr-10000
+PREHOOK: Output: file:/tmp/sdong/hive_2011-02-10_16-47-45_924_6449903161675123446/-mr-10000
 POSTHOOK: query: select count(1) from tstparttbl
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@tstparttbl@ds=2008-04-08
 POSTHOOK: Input: default@tstparttbl@ds=2008-04-09
-POSTHOOK: Output: file:/tmp/njain/hive_2010-08-17_00-26-16_782_400043420949497617/-mr-10000
+POSTHOOK: Output: file:/tmp/sdong/hive_2011-02-10_16-47-45_924_6449903161675123446/-mr-10000
 500
 PREHOOK: query: CREATE TABLE tstparttbl2(KEY STRING, VALUE STRING) PARTITIONED BY(ds string) STORED AS TEXTFILE
 PREHOOK: type: CREATETABLE
@@ -103,7 +103,7 @@ POSTHOOK: query: explain
 select count(1) from tstparttbl2
 POSTHOOK: type: QUERY
 ABSTRACT SYNTAX TREE:
-  (TOK_QUERY (TOK_FROM (TOK_TABREF tstparttbl2)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_FUNCTION count 1)))))
+  (TOK_QUERY (TOK_FROM (TOK_TABREF (TOK_TABNAME tstparttbl2))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_FUNCTION count 1)))))
 
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -157,12 +157,12 @@ PREHOOK: query: select count(1) from tstparttbl2
 PREHOOK: type: QUERY
 PREHOOK: Input: default@tstparttbl2@ds=2008-04-08
 PREHOOK: Input: default@tstparttbl2@ds=2008-04-09
-PREHOOK: Output: file:/tmp/njain/hive_2010-08-17_00-26-22_475_3755322603416219894/-mr-10000
+PREHOOK: Output: file:/tmp/sdong/hive_2011-02-10_16-47-51_083_196164182966080792/-mr-10000
 POSTHOOK: query: select count(1) from tstparttbl2
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@tstparttbl2@ds=2008-04-08
 POSTHOOK: Input: default@tstparttbl2@ds=2008-04-09
-POSTHOOK: Output: file:/tmp/njain/hive_2010-08-17_00-26-22_475_3755322603416219894/-mr-10000
+POSTHOOK: Output: file:/tmp/sdong/hive_2011-02-10_16-47-51_083_196164182966080792/-mr-10000
 0
 PREHOOK: query: DROP TABLE tstparttbl
 PREHOOK: type: DROPTABLE
@@ -194,7 +194,7 @@ POSTHOOK: query: explain
 select count(1) from tstparttbl
 POSTHOOK: type: QUERY
 ABSTRACT SYNTAX TREE:
-  (TOK_QUERY (TOK_FROM (TOK_TABREF tstparttbl)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_FUNCTION count 1)))))
+  (TOK_QUERY (TOK_FROM (TOK_TABREF (TOK_TABNAME tstparttbl))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_FUNCTION count 1)))))
 
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -248,12 +248,12 @@ PREHOOK: query: select count(1) from tstparttbl
 PREHOOK: type: QUERY
 PREHOOK: Input: default@tstparttbl@ds=2008-04-08
 PREHOOK: Input: default@tstparttbl@ds=2008-04-09
-PREHOOK: Output: file:/tmp/njain/hive_2010-08-17_00-26-28_557_293556059240399525/-mr-10000
+PREHOOK: Output: file:/tmp/sdong/hive_2011-02-10_16-47-56_385_6129278432749802559/-mr-10000
 POSTHOOK: query: select count(1) from tstparttbl
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@tstparttbl@ds=2008-04-08
 POSTHOOK: Input: default@tstparttbl@ds=2008-04-09
-POSTHOOK: Output: file:/tmp/njain/hive_2010-08-17_00-26-28_557_293556059240399525/-mr-10000
+POSTHOOK: Output: file:/tmp/sdong/hive_2011-02-10_16-47-56_385_6129278432749802559/-mr-10000
 500
 PREHOOK: query: DROP TABLE tstparttbl2
 PREHOOK: type: DROPTABLE
@@ -285,7 +285,7 @@ POSTHOOK: query: explain
 select count(1) from tstparttbl2
 POSTHOOK: type: QUERY
 ABSTRACT SYNTAX TREE:
-  (TOK_QUERY (TOK_FROM (TOK_TABREF tstparttbl2)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_FUNCTION count 1)))))
+  (TOK_QUERY (TOK_FROM (TOK_TABREF (TOK_TABNAME tstparttbl2))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_FUNCTION count 1)))))
 
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -339,10 +339,10 @@ PREHOOK: query: select count(1) from tstparttbl2
 PREHOOK: type: QUERY
 PREHOOK: Input: default@tstparttbl2@ds=2008-04-08
 PREHOOK: Input: default@tstparttbl2@ds=2008-04-09
-PREHOOK: Output: file:/tmp/njain/hive_2010-08-17_00-26-35_611_7617453415628310797/-mr-10000
+PREHOOK: Output: file:/tmp/sdong/hive_2011-02-10_16-48-02_718_2429296519427564988/-mr-10000
 POSTHOOK: query: select count(1) from tstparttbl2
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@tstparttbl2@ds=2008-04-08
 POSTHOOK: Input: default@tstparttbl2@ds=2008-04-09
-POSTHOOK: Output: file:/tmp/njain/hive_2010-08-17_00-26-35_611_7617453415628310797/-mr-10000
+POSTHOOK: Output: file:/tmp/sdong/hive_2011-02-10_16-48-02_718_2429296519427564988/-mr-10000
 0

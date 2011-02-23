@@ -24,7 +24,7 @@ SELECT '_%_' LIKE '%\_\%\_%', '__' LIKE '%\_\%\_%', '%%_%_' LIKE '%\_\%\_%', '%_
 FROM src WHERE src.key = 86
 POSTHOOK: type: QUERY
 ABSTRACT SYNTAX TREE:
-  (TOK_QUERY (TOK_FROM (TOK_TABREF src)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (LIKE '_%_' '%\_\%\_%')) (TOK_SELEXPR (LIKE '__' '%\_\%\_%')) (TOK_SELEXPR (LIKE '%%_%_' '%\_\%\_%')) (TOK_SELEXPR (LIKE '%_%_%' '%\%\_\%')) (TOK_SELEXPR (LIKE '_%_' '\%\_%')) (TOK_SELEXPR (LIKE '%__' '__\%%')) (TOK_SELEXPR (LIKE '_%' '\_\%\_\%%')) (TOK_SELEXPR (LIKE '_%' '\_\%_%')) (TOK_SELEXPR (LIKE '%_' '\%\_')) (TOK_SELEXPR (LIKE 'ab' '\%\_')) (TOK_SELEXPR (LIKE 'ab' '_a%')) (TOK_SELEXPR (LIKE 'ab' 'a'))) (TOK_WHERE (= (. (TOK_TABLE_OR_COL src) key) 86))))
+  (TOK_QUERY (TOK_FROM (TOK_TABREF (TOK_TABNAME src))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (LIKE '_%_' '%\_\%\_%')) (TOK_SELEXPR (LIKE '__' '%\_\%\_%')) (TOK_SELEXPR (LIKE '%%_%_' '%\_\%\_%')) (TOK_SELEXPR (LIKE '%_%_%' '%\%\_\%')) (TOK_SELEXPR (LIKE '_%_' '\%\_%')) (TOK_SELEXPR (LIKE '%__' '__\%%')) (TOK_SELEXPR (LIKE '_%' '\_\%\_\%%')) (TOK_SELEXPR (LIKE '_%' '\_\%_%')) (TOK_SELEXPR (LIKE '%_' '\%\_')) (TOK_SELEXPR (LIKE 'ab' '\%\_')) (TOK_SELEXPR (LIKE 'ab' '_a%')) (TOK_SELEXPR (LIKE 'ab' 'a'))) (TOK_WHERE (= (. (TOK_TABLE_OR_COL src) key) 86))))
 
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -90,12 +90,12 @@ PREHOOK: query: SELECT '_%_' LIKE '%\_\%\_%', '__' LIKE '%\_\%\_%', '%%_%_' LIKE
 FROM src WHERE src.key = 86
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/Users/carl/Projects/hd9/hive-trunk/build/ql/tmp/1557896001/10000
+PREHOOK: Output: file:/tmp/sdong/hive_2011-02-10_17-36-27_972_7663123608612028482/-mr-10000
 POSTHOOK: query: SELECT '_%_' LIKE '%\_\%\_%', '__' LIKE '%\_\%\_%', '%%_%_' LIKE '%\_\%\_%', '%_%_%' LIKE '%\%\_\%',
   '_%_' LIKE '\%\_%', '%__' LIKE '__\%%', '_%' LIKE '\_\%\_\%%', '_%' LIKE '\_\%_%',
   '%_' LIKE '\%\_', 'ab' LIKE '\%\_', 'ab' LIKE '_a%', 'ab' LIKE 'a'
 FROM src WHERE src.key = 86
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: file:/Users/carl/Projects/hd9/hive-trunk/build/ql/tmp/1557896001/10000
+POSTHOOK: Output: file:/tmp/sdong/hive_2011-02-10_17-36-27_972_7663123608612028482/-mr-10000
 true	false	true	true	false	false	false	false	true	false	false	false

@@ -12,7 +12,7 @@ FROM src
 INSERT OVERWRITE TABLE dest_g2 SELECT substr(src.key,1,1), count(DISTINCT substr(src.value,5)), concat(substr(src.key,1,1),sum(substr(src.value,5))) GROUP BY substr(src.key,1,1)
 POSTHOOK: type: QUERY
 ABSTRACT SYNTAX TREE:
-  (TOK_QUERY (TOK_FROM (TOK_TABREF src)) (TOK_INSERT (TOK_DESTINATION (TOK_TAB dest_g2)) (TOK_SELECT (TOK_SELEXPR (TOK_FUNCTION substr (. (TOK_TABLE_OR_COL src) key) 1 1)) (TOK_SELEXPR (TOK_FUNCTIONDI count (TOK_FUNCTION substr (. (TOK_TABLE_OR_COL src) value) 5))) (TOK_SELEXPR (TOK_FUNCTION concat (TOK_FUNCTION substr (. (TOK_TABLE_OR_COL src) key) 1 1) (TOK_FUNCTION sum (TOK_FUNCTION substr (. (TOK_TABLE_OR_COL src) value) 5))))) (TOK_GROUPBY (TOK_FUNCTION substr (. (TOK_TABLE_OR_COL src) key) 1 1))))
+  (TOK_QUERY (TOK_FROM (TOK_TABREF (TOK_TABNAME src))) (TOK_INSERT (TOK_DESTINATION (TOK_TAB (TOK_TABNAME dest_g2))) (TOK_SELECT (TOK_SELEXPR (TOK_FUNCTION substr (. (TOK_TABLE_OR_COL src) key) 1 1)) (TOK_SELEXPR (TOK_FUNCTIONDI count (TOK_FUNCTION substr (. (TOK_TABLE_OR_COL src) value) 5))) (TOK_SELEXPR (TOK_FUNCTION concat (TOK_FUNCTION substr (. (TOK_TABLE_OR_COL src) key) 1 1) (TOK_FUNCTION sum (TOK_FUNCTION substr (. (TOK_TABLE_OR_COL src) value) 5))))) (TOK_GROUPBY (TOK_FUNCTION substr (. (TOK_TABLE_OR_COL src) key) 1 1))))
 
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -68,7 +68,7 @@ STAGE PLANS:
   Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
-        hdfs://localhost.localdomain:61365/data/users/nzhang/work/784/apache-hive/build/ql/scratchdir/hive_2010-09-15_02-39-32_192_1798856922728294607/-mr-10002 
+        hdfs://localhost.localdomain:38821/data/users/sdong/www/open-source-hive3/build/ql/scratchdir/hive_2011-02-16_23-17-19_978_68252757964749625/-mr-10002 
             Reduce Output Operator
               key expressions:
                     expr: _col0
@@ -119,7 +119,7 @@ STAGE PLANS:
                     input format: org.apache.hadoop.mapred.TextInputFormat
                     output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                     serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                    name: dest_g2
+                    name: default.dest_g2
 
   Stage: Stage-0
     Move Operator
@@ -129,7 +129,7 @@ STAGE PLANS:
               input format: org.apache.hadoop.mapred.TextInputFormat
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              name: dest_g2
+              name: default.dest_g2
 
   Stage: Stage-3
     Stats-Aggr Operator
@@ -151,11 +151,11 @@ POSTHOOK: Lineage: dest_g2.key EXPRESSION [(src)src.FieldSchema(name:key, type:s
 PREHOOK: query: SELECT dest_g2.* FROM dest_g2
 PREHOOK: type: QUERY
 PREHOOK: Input: default@dest_g2
-PREHOOK: Output: hdfs://localhost.localdomain:61365/data/users/nzhang/work/784/apache-hive/build/ql/scratchdir/hive_2010-09-15_02-39-44_735_8511890502067156540/-mr-10000
+PREHOOK: Output: hdfs://localhost.localdomain:38821/data/users/sdong/www/open-source-hive3/build/ql/scratchdir/hive_2011-02-16_23-18-03_755_1947298915463685990/-mr-10000
 POSTHOOK: query: SELECT dest_g2.* FROM dest_g2
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@dest_g2
-POSTHOOK: Output: hdfs://localhost.localdomain:61365/data/users/nzhang/work/784/apache-hive/build/ql/scratchdir/hive_2010-09-15_02-39-44_735_8511890502067156540/-mr-10000
+POSTHOOK: Output: hdfs://localhost.localdomain:38821/data/users/sdong/www/open-source-hive3/build/ql/scratchdir/hive_2011-02-16_23-18-03_755_1947298915463685990/-mr-10000
 POSTHOOK: Lineage: dest_g2.c1 EXPRESSION [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: dest_g2.c2 EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: dest_g2.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]

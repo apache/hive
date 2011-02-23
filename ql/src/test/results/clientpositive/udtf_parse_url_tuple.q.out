@@ -69,7 +69,7 @@ POSTHOOK: type: QUERY
 POSTHOOK: Lineage: url_t.fullurl EXPRESSION []
 POSTHOOK: Lineage: url_t.key EXPRESSION []
 ABSTRACT SYNTAX TREE:
-  (TOK_QUERY (TOK_FROM (TOK_LATERAL_VIEW (TOK_SELECT (TOK_SELEXPR (TOK_FUNCTION parse_url_tuple (. (TOK_TABLE_OR_COL a) fullurl) 'HOST' 'PATH' 'QUERY' 'REF' 'PROTOCOL' 'FILE' 'AUTHORITY' 'USERINFO' 'QUERY:k1') ho pa qu re pr fi au us qk1 (TOK_TABALIAS b))) (TOK_TABREF url_t a))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (. (TOK_TABLE_OR_COL a) key)) (TOK_SELEXPR (TOK_ALLCOLREF b))) (TOK_ORDERBY (TOK_TABSORTCOLNAMEASC (. (TOK_TABLE_OR_COL a) key)))))
+  (TOK_QUERY (TOK_FROM (TOK_LATERAL_VIEW (TOK_SELECT (TOK_SELEXPR (TOK_FUNCTION parse_url_tuple (. (TOK_TABLE_OR_COL a) fullurl) 'HOST' 'PATH' 'QUERY' 'REF' 'PROTOCOL' 'FILE' 'AUTHORITY' 'USERINFO' 'QUERY:k1') ho pa qu re pr fi au us qk1 (TOK_TABALIAS b))) (TOK_TABREF (TOK_TABNAME url_t) a))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (. (TOK_TABLE_OR_COL a) key)) (TOK_SELEXPR (TOK_ALLCOLREF (TOK_TABNAME b)))) (TOK_ORDERBY (TOK_TABSORTCOLNAMEASC (. (TOK_TABLE_OR_COL a) key)))))
 
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -231,11 +231,11 @@ STAGE PLANS:
 PREHOOK: query: select a.key, b.* from url_t a lateral view parse_url_tuple(a.fullurl, 'HOST', 'PATH', 'QUERY', 'REF', 'PROTOCOL', 'FILE', 'AUTHORITY', 'USERINFO', 'QUERY:k1') b as ho, pa, qu, re, pr, fi, au, us, qk1 order by a.key
 PREHOOK: type: QUERY
 PREHOOK: Input: default@url_t
-PREHOOK: Output: file:/tmp/xjin/hive_2010-09-23_14-33-06_345_6003355090197452651/-mr-10000
+PREHOOK: Output: file:/tmp/sdong/hive_2011-02-10_17-48-08_686_2438339126682195604/-mr-10000
 POSTHOOK: query: select a.key, b.* from url_t a lateral view parse_url_tuple(a.fullurl, 'HOST', 'PATH', 'QUERY', 'REF', 'PROTOCOL', 'FILE', 'AUTHORITY', 'USERINFO', 'QUERY:k1') b as ho, pa, qu, re, pr, fi, au, us, qk1 order by a.key
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@url_t
-POSTHOOK: Output: file:/tmp/xjin/hive_2010-09-23_14-33-06_345_6003355090197452651/-mr-10000
+POSTHOOK: Output: file:/tmp/sdong/hive_2011-02-10_17-48-08_686_2438339126682195604/-mr-10000
 POSTHOOK: Lineage: url_t.fullurl EXPRESSION []
 POSTHOOK: Lineage: url_t.key EXPRESSION []
 1	facebook.com	/path1/p.php	k1=v1&k2=v2	Ref1	http	/path1/p.php?k1=v1&k2=v2	facebook.com	NULL	v1
@@ -253,7 +253,7 @@ POSTHOOK: type: QUERY
 POSTHOOK: Lineage: url_t.fullurl EXPRESSION []
 POSTHOOK: Lineage: url_t.key EXPRESSION []
 ABSTRACT SYNTAX TREE:
-  (TOK_QUERY (TOK_FROM (TOK_TABREF url_t a)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_FUNCTION parse_url_tuple (. (TOK_TABLE_OR_COL a) fullurl) 'HOST' 'PATH' 'QUERY' 'REF' 'PROTOCOL' 'FILE' 'AUTHORITY' 'USERINFO' 'QUERY:k1') ho pa qu re pr fi au us qk1)) (TOK_ORDERBY (TOK_TABSORTCOLNAMEASC (TOK_TABLE_OR_COL ho)) (TOK_TABSORTCOLNAMEASC (TOK_TABLE_OR_COL pa)) (TOK_TABSORTCOLNAMEASC (TOK_TABLE_OR_COL qu)))))
+  (TOK_QUERY (TOK_FROM (TOK_TABREF (TOK_TABNAME url_t) a)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_FUNCTION parse_url_tuple (. (TOK_TABLE_OR_COL a) fullurl) 'HOST' 'PATH' 'QUERY' 'REF' 'PROTOCOL' 'FILE' 'AUTHORITY' 'USERINFO' 'QUERY:k1') ho pa qu re pr fi au us qk1)) (TOK_ORDERBY (TOK_TABSORTCOLNAMEASC (TOK_TABLE_OR_COL ho)) (TOK_TABSORTCOLNAMEASC (TOK_TABLE_OR_COL pa)) (TOK_TABSORTCOLNAMEASC (TOK_TABLE_OR_COL qu)))))
 
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -337,11 +337,11 @@ STAGE PLANS:
 PREHOOK: query: select parse_url_tuple(a.fullurl, 'HOST', 'PATH', 'QUERY', 'REF', 'PROTOCOL', 'FILE', 'AUTHORITY', 'USERINFO', 'QUERY:k1') as (ho, pa, qu, re, pr, fi, au, us, qk1) from url_t a order by ho, pa, qu
 PREHOOK: type: QUERY
 PREHOOK: Input: default@url_t
-PREHOOK: Output: file:/tmp/xjin/hive_2010-09-23_14-33-09_351_1128977597067341681/-mr-10000
+PREHOOK: Output: file:/tmp/sdong/hive_2011-02-10_17-48-12_281_5919341324759760546/-mr-10000
 POSTHOOK: query: select parse_url_tuple(a.fullurl, 'HOST', 'PATH', 'QUERY', 'REF', 'PROTOCOL', 'FILE', 'AUTHORITY', 'USERINFO', 'QUERY:k1') as (ho, pa, qu, re, pr, fi, au, us, qk1) from url_t a order by ho, pa, qu
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@url_t
-POSTHOOK: Output: file:/tmp/xjin/hive_2010-09-23_14-33-09_351_1128977597067341681/-mr-10000
+POSTHOOK: Output: file:/tmp/sdong/hive_2011-02-10_17-48-12_281_5919341324759760546/-mr-10000
 POSTHOOK: Lineage: url_t.fullurl EXPRESSION []
 POSTHOOK: Lineage: url_t.key EXPRESSION []
 NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL
@@ -361,7 +361,7 @@ POSTHOOK: type: QUERY
 POSTHOOK: Lineage: url_t.fullurl EXPRESSION []
 POSTHOOK: Lineage: url_t.key EXPRESSION []
 ABSTRACT SYNTAX TREE:
-  (TOK_QUERY (TOK_FROM (TOK_LATERAL_VIEW (TOK_SELECT (TOK_SELEXPR (TOK_FUNCTION parse_url_tuple (. (TOK_TABLE_OR_COL a) fullurl) 'HOST' 'PATH' 'QUERY' 'REF' 'PROTOCOL' 'FILE' 'AUTHORITY' 'USERINFO' 'QUERY:k1' 'host' 'query' 'QUERY:nonExistCol') ho pa qu re pr fi au us qk1 err1 err2 err3 (TOK_TABALIAS b))) (TOK_TABREF url_t a))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (. (TOK_TABLE_OR_COL a) key)) (TOK_SELEXPR (. (TOK_TABLE_OR_COL b) ho)) (TOK_SELEXPR (. (TOK_TABLE_OR_COL b) qu)) (TOK_SELEXPR (. (TOK_TABLE_OR_COL b) qk1)) (TOK_SELEXPR (. (TOK_TABLE_OR_COL b) err1)) (TOK_SELEXPR (. (TOK_TABLE_OR_COL b) err2)) (TOK_SELEXPR (. (TOK_TABLE_OR_COL b) err3))) (TOK_ORDERBY (TOK_TABSORTCOLNAMEASC (. (TOK_TABLE_OR_COL a) key)))))
+  (TOK_QUERY (TOK_FROM (TOK_LATERAL_VIEW (TOK_SELECT (TOK_SELEXPR (TOK_FUNCTION parse_url_tuple (. (TOK_TABLE_OR_COL a) fullurl) 'HOST' 'PATH' 'QUERY' 'REF' 'PROTOCOL' 'FILE' 'AUTHORITY' 'USERINFO' 'QUERY:k1' 'host' 'query' 'QUERY:nonExistCol') ho pa qu re pr fi au us qk1 err1 err2 err3 (TOK_TABALIAS b))) (TOK_TABREF (TOK_TABNAME url_t) a))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (. (TOK_TABLE_OR_COL a) key)) (TOK_SELEXPR (. (TOK_TABLE_OR_COL b) ho)) (TOK_SELEXPR (. (TOK_TABLE_OR_COL b) qu)) (TOK_SELEXPR (. (TOK_TABLE_OR_COL b) qk1)) (TOK_SELEXPR (. (TOK_TABLE_OR_COL b) err1)) (TOK_SELEXPR (. (TOK_TABLE_OR_COL b) err2)) (TOK_SELEXPR (. (TOK_TABLE_OR_COL b) err3))) (TOK_ORDERBY (TOK_TABSORTCOLNAMEASC (. (TOK_TABLE_OR_COL a) key)))))
 
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -505,11 +505,11 @@ STAGE PLANS:
 PREHOOK: query: select a.key, b.ho, b.qu, b.qk1, b.err1, b.err2, b.err3 from url_t a lateral view parse_url_tuple(a.fullurl, 'HOST', 'PATH', 'QUERY', 'REF', 'PROTOCOL', 'FILE', 'AUTHORITY', 'USERINFO', 'QUERY:k1', 'host', 'query', 'QUERY:nonExistCol') b as ho, pa, qu, re, pr, fi, au, us, qk1, err1, err2, err3 order by a.key
 PREHOOK: type: QUERY
 PREHOOK: Input: default@url_t
-PREHOOK: Output: file:/tmp/xjin/hive_2010-09-23_14-33-12_205_3636054115754495430/-mr-10000
+PREHOOK: Output: file:/tmp/sdong/hive_2011-02-10_17-48-16_477_4910097906781584970/-mr-10000
 POSTHOOK: query: select a.key, b.ho, b.qu, b.qk1, b.err1, b.err2, b.err3 from url_t a lateral view parse_url_tuple(a.fullurl, 'HOST', 'PATH', 'QUERY', 'REF', 'PROTOCOL', 'FILE', 'AUTHORITY', 'USERINFO', 'QUERY:k1', 'host', 'query', 'QUERY:nonExistCol') b as ho, pa, qu, re, pr, fi, au, us, qk1, err1, err2, err3 order by a.key
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@url_t
-POSTHOOK: Output: file:/tmp/xjin/hive_2010-09-23_14-33-12_205_3636054115754495430/-mr-10000
+POSTHOOK: Output: file:/tmp/sdong/hive_2011-02-10_17-48-16_477_4910097906781584970/-mr-10000
 POSTHOOK: Lineage: url_t.fullurl EXPRESSION []
 POSTHOOK: Lineage: url_t.key EXPRESSION []
 1	facebook.com	k1=v1&k2=v2	v1	NULL	NULL	NULL
@@ -527,7 +527,7 @@ POSTHOOK: type: QUERY
 POSTHOOK: Lineage: url_t.fullurl EXPRESSION []
 POSTHOOK: Lineage: url_t.key EXPRESSION []
 ABSTRACT SYNTAX TREE:
-  (TOK_QUERY (TOK_FROM (TOK_LATERAL_VIEW (TOK_SELECT (TOK_SELEXPR (TOK_FUNCTION parse_url_tuple (. (TOK_TABLE_OR_COL a) fullurl) 'HOST' 'PATH' 'QUERY' 'REF' 'PROTOCOL' 'FILE' 'AUTHORITY' 'USERINFO' 'QUERY:k1') ho pa qu re pr fi au us qk1 (TOK_TABALIAS b))) (TOK_TABREF url_t a))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_TABLE_OR_COL ho)) (TOK_SELEXPR (TOK_FUNCTIONSTAR count))) (TOK_WHERE (TOK_FUNCTION TOK_ISNOTNULL (TOK_TABLE_OR_COL qk1))) (TOK_GROUPBY (TOK_TABLE_OR_COL ho))))
+  (TOK_QUERY (TOK_FROM (TOK_LATERAL_VIEW (TOK_SELECT (TOK_SELEXPR (TOK_FUNCTION parse_url_tuple (. (TOK_TABLE_OR_COL a) fullurl) 'HOST' 'PATH' 'QUERY' 'REF' 'PROTOCOL' 'FILE' 'AUTHORITY' 'USERINFO' 'QUERY:k1') ho pa qu re pr fi au us qk1 (TOK_TABALIAS b))) (TOK_TABREF (TOK_TABNAME url_t) a))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_TABLE_OR_COL ho)) (TOK_SELEXPR (TOK_FUNCTIONSTAR count))) (TOK_WHERE (TOK_FUNCTION TOK_ISNOTNULL (TOK_TABLE_OR_COL qk1))) (TOK_GROUPBY (TOK_TABLE_OR_COL ho))))
 
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -664,11 +664,11 @@ STAGE PLANS:
 PREHOOK: query: select ho, count(*) from url_t a lateral view parse_url_tuple(a.fullurl, 'HOST', 'PATH', 'QUERY', 'REF', 'PROTOCOL', 'FILE', 'AUTHORITY', 'USERINFO', 'QUERY:k1') b as ho, pa, qu, re, pr, fi, au, us, qk1 where qk1 is not null group by ho
 PREHOOK: type: QUERY
 PREHOOK: Input: default@url_t
-PREHOOK: Output: file:/tmp/xjin/hive_2010-09-23_14-33-15_195_8128654165273206766/-mr-10000
+PREHOOK: Output: file:/tmp/sdong/hive_2011-02-10_17-48-20_142_8723043944221910244/-mr-10000
 POSTHOOK: query: select ho, count(*) from url_t a lateral view parse_url_tuple(a.fullurl, 'HOST', 'PATH', 'QUERY', 'REF', 'PROTOCOL', 'FILE', 'AUTHORITY', 'USERINFO', 'QUERY:k1') b as ho, pa, qu, re, pr, fi, au, us, qk1 where qk1 is not null group by ho
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@url_t
-POSTHOOK: Output: file:/tmp/xjin/hive_2010-09-23_14-33-15_195_8128654165273206766/-mr-10000
+POSTHOOK: Output: file:/tmp/sdong/hive_2011-02-10_17-48-20_142_8723043944221910244/-mr-10000
 POSTHOOK: Lineage: url_t.fullurl EXPRESSION []
 POSTHOOK: Lineage: url_t.key EXPRESSION []
 facebook.com	1

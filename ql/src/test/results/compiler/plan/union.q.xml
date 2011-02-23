@@ -41,7 +41,7 @@
                     <void property="aliasToWork"> 
                      <object class="java.util.LinkedHashMap"> 
                       <void method="put"> 
-                       <string>file:/data/users/njain/hive3/build/ql/scratchdir/hive_2011-02-02_21-41-47_409_7384638659374812967/-ext-10001</string> 
+                       <string>file:/data/users/sdong/www/open-source-hive3/build/ql/scratchdir/hive_2011-02-16_23-44-36_753_3307275503036394113/-ext-10001</string> 
                        <object id="TableScanOperator0" class="org.apache.hadoop.hive.ql.exec.TableScanOperator"> 
                         <void property="childOperators"> 
                          <object class="java.util.ArrayList"> 
@@ -50,7 +50,7 @@
                             <void property="conf"> 
                              <object class="org.apache.hadoop.hive.ql.plan.FileSinkDesc"> 
                               <void property="dirName"> 
-                               <string>file:/data/users/njain/hive3/build/ql/scratchdir/hive_2011-02-02_21-41-47_409_7384638659374812967/-ext-10000</string> 
+                               <string>file:/data/users/sdong/www/open-source-hive3/build/ql/scratchdir/hive_2011-02-16_23-44-36_753_3307275503036394113/-ext-10000</string> 
                               </void> 
                               <void property="numFiles"> 
                                <int>1</int> 
@@ -195,10 +195,10 @@
                     <void property="pathToAliases"> 
                      <object class="java.util.LinkedHashMap"> 
                       <void method="put"> 
-                       <string>file:/data/users/njain/hive3/build/ql/scratchdir/hive_2011-02-02_21-41-47_409_7384638659374812967/-ext-10001</string> 
+                       <string>file:/data/users/sdong/www/open-source-hive3/build/ql/scratchdir/hive_2011-02-16_23-44-36_753_3307275503036394113/-ext-10001</string> 
                        <object class="java.util.ArrayList"> 
                         <void method="add"> 
-                         <string>file:/data/users/njain/hive3/build/ql/scratchdir/hive_2011-02-02_21-41-47_409_7384638659374812967/-ext-10001</string> 
+                         <string>file:/data/users/sdong/www/open-source-hive3/build/ql/scratchdir/hive_2011-02-16_23-44-36_753_3307275503036394113/-ext-10001</string> 
                         </void> 
                        </object> 
                       </void> 
@@ -207,7 +207,7 @@
                     <void property="pathToPartitionInfo"> 
                      <object class="java.util.LinkedHashMap"> 
                       <void method="put"> 
-                       <string>file:/data/users/njain/hive3/build/ql/scratchdir/hive_2011-02-02_21-41-47_409_7384638659374812967/-ext-10001</string> 
+                       <string>file:/data/users/sdong/www/open-source-hive3/build/ql/scratchdir/hive_2011-02-16_23-44-36_753_3307275503036394113/-ext-10001</string> 
                        <object class="org.apache.hadoop.hive.ql.plan.PartitionDesc"> 
                         <void property="baseFileName"> 
                          <string>-ext-10001</string> 
@@ -280,7 +280,7 @@
                    <boolean>true</boolean> 
                   </void> 
                   <void property="sourceDir"> 
-                   <string>file:/data/users/njain/hive3/build/ql/scratchdir/hive_2011-02-02_21-41-47_409_7384638659374812967/-ext-10000</string> 
+                   <string>file:/data/users/sdong/www/open-source-hive3/build/ql/scratchdir/hive_2011-02-16_23-44-36_753_3307275503036394113/-ext-10000</string> 
                   </void> 
                   <void property="targetDir"> 
                    <string>../build/ql/test/data/warehouse/union.out</string> 
@@ -304,10 +304,10 @@
                <boolean>true</boolean> 
               </void> 
               <void property="sourceDir"> 
-               <string>file:/data/users/njain/hive3/build/ql/scratchdir/hive_2011-02-02_21-41-47_409_7384638659374812967/-ext-10001</string> 
+               <string>file:/data/users/sdong/www/open-source-hive3/build/ql/scratchdir/hive_2011-02-16_23-44-36_753_3307275503036394113/-ext-10001</string> 
               </void> 
               <void property="targetDir"> 
-               <string>file:/data/users/njain/hive3/build/ql/scratchdir/hive_2011-02-02_21-41-47_409_7384638659374812967/-ext-10000</string> 
+               <string>file:/data/users/sdong/www/open-source-hive3/build/ql/scratchdir/hive_2011-02-16_23-44-36_753_3307275503036394113/-ext-10000</string> 
               </void> 
              </object> 
             </void> 
@@ -333,7 +333,7 @@
       <void property="resolverCtx"> 
        <object class="org.apache.hadoop.hive.ql.plan.ConditionalResolverMergeFiles$ConditionalResolverMergeFilesCtx"> 
         <void property="dir"> 
-         <string>file:/data/users/njain/hive3/build/ql/scratchdir/hive_2011-02-02_21-41-47_409_7384638659374812967/-ext-10001</string> 
+         <string>file:/data/users/sdong/www/open-source-hive3/build/ql/scratchdir/hive_2011-02-16_23-44-36_753_3307275503036394113/-ext-10001</string> 
         </void> 
         <void property="listTasks"> 
          <object idref="ArrayList0"/> 
@@ -383,7 +383,7 @@
         <object class="java.util.Properties"> 
          <void method="put"> 
           <string>name</string> 
-          <string>src</string> 
+          <string>default.src</string> 
          </void> 
          <void method="put"> 
           <string>columns.types</string> 
@@ -419,11 +419,11 @@
          </void> 
          <void method="put"> 
           <string>location</string> 
-          <string>pfile:/data/users/njain/hive3/build/ql/test/data/warehouse/src</string> 
+          <string>pfile:/data/users/sdong/www/open-source-hive3/build/ql/test/data/warehouse/src</string> 
          </void> 
          <void method="put"> 
           <string>transient_lastDdlTime</string> 
-          <string>1296711704</string> 
+          <string>1297928673</string> 
          </void> 
         </object> 
        </void> 
@@ -445,7 +445,7 @@
           <object class="java.util.Properties"> 
            <void method="put"> 
             <string>name</string> 
-            <string>src</string> 
+            <string>default.src</string> 
            </void> 
            <void method="put"> 
             <string>columns.types</string> 
@@ -481,11 +481,11 @@
            </void> 
            <void method="put"> 
             <string>location</string> 
-            <string>pfile:/data/users/njain/hive3/build/ql/test/data/warehouse/src</string> 
+            <string>pfile:/data/users/sdong/www/open-source-hive3/build/ql/test/data/warehouse/src</string> 
            </void> 
            <void method="put"> 
             <string>transient_lastDdlTime</string> 
-            <string>1296711704</string> 
+            <string>1297928673</string> 
            </void> 
           </object> 
          </void> 
@@ -515,7 +515,7 @@
         <object class="java.util.Properties"> 
          <void method="put"> 
           <string>name</string> 
-          <string>src</string> 
+          <string>default.src</string> 
          </void> 
          <void method="put"> 
           <string>columns.types</string> 
@@ -551,11 +551,11 @@
          </void> 
          <void method="put"> 
           <string>location</string> 
-          <string>pfile:/data/users/njain/hive3/build/ql/test/data/warehouse/src</string> 
+          <string>pfile:/data/users/sdong/www/open-source-hive3/build/ql/test/data/warehouse/src</string> 
          </void> 
          <void method="put"> 
           <string>transient_lastDdlTime</string> 
-          <string>1296711704</string> 
+          <string>1297928673</string> 
          </void> 
         </object> 
        </void> 
@@ -577,7 +577,7 @@
           <object class="java.util.Properties"> 
            <void method="put"> 
             <string>name</string> 
-            <string>src</string> 
+            <string>default.src</string> 
            </void> 
            <void method="put"> 
             <string>columns.types</string> 
@@ -613,11 +613,11 @@
            </void> 
            <void method="put"> 
             <string>location</string> 
-            <string>pfile:/data/users/njain/hive3/build/ql/test/data/warehouse/src</string> 
+            <string>pfile:/data/users/sdong/www/open-source-hive3/build/ql/test/data/warehouse/src</string> 
            </void> 
            <void method="put"> 
             <string>transient_lastDdlTime</string> 
-            <string>1296711704</string> 
+            <string>1297928673</string> 
            </void> 
           </object> 
          </void> 
@@ -664,13 +664,13 @@
                                    <int>1</int> 
                                   </void> 
                                   <void property="dirName"> 
-                                   <string>file:/data/users/njain/hive3/build/ql/scratchdir/hive_2011-02-02_21-41-47_409_7384638659374812967/-ext-10001</string> 
+                                   <string>file:/data/users/sdong/www/open-source-hive3/build/ql/scratchdir/hive_2011-02-16_23-44-36_753_3307275503036394113/-ext-10001</string> 
                                   </void> 
                                   <void property="numFiles"> 
                                    <int>1</int> 
                                   </void> 
                                   <void property="statsAggPrefix"> 
-                                   <string>file:/data/users/njain/hive3/build/ql/scratchdir/hive_2011-02-02_21-41-47_409_7384638659374812967/-ext-10000/</string> 
+                                   <string>file:/data/users/sdong/www/open-source-hive3/build/ql/scratchdir/hive_2011-02-16_23-44-36_753_3307275503036394113/-ext-10000/</string> 
                                   </void> 
                                   <void property="tableInfo"> 
                                    <object idref="TableDesc0"/> 
@@ -1714,7 +1714,7 @@
     <void property="pathToAliases"> 
      <object class="java.util.LinkedHashMap"> 
       <void method="put"> 
-       <string>pfile:/data/users/njain/hive3/build/ql/test/data/warehouse/src</string> 
+       <string>pfile:/data/users/sdong/www/open-source-hive3/build/ql/test/data/warehouse/src</string> 
        <object class="java.util.ArrayList"> 
         <void method="add"> 
          <string>null-subquery1:unioninput-subquery1:src</string> 
@@ -1729,7 +1729,7 @@
     <void property="pathToPartitionInfo"> 
      <object class="java.util.LinkedHashMap"> 
       <void method="put"> 
-       <string>pfile:/data/users/njain/hive3/build/ql/test/data/warehouse/src</string> 
+       <string>pfile:/data/users/sdong/www/open-source-hive3/build/ql/test/data/warehouse/src</string> 
        <object class="org.apache.hadoop.hive.ql.plan.PartitionDesc"> 
         <void property="baseFileName"> 
          <string>src</string> 
@@ -1750,7 +1750,7 @@
          <object class="java.util.Properties"> 
           <void method="put"> 
            <string>name</string> 
-           <string>src</string> 
+           <string>default.src</string> 
           </void> 
           <void method="put"> 
            <string>columns.types</string> 
@@ -1786,11 +1786,11 @@
           </void> 
           <void method="put"> 
            <string>location</string> 
-           <string>pfile:/data/users/njain/hive3/build/ql/test/data/warehouse/src</string> 
+           <string>pfile:/data/users/sdong/www/open-source-hive3/build/ql/test/data/warehouse/src</string> 
           </void> 
           <void method="put"> 
            <string>transient_lastDdlTime</string> 
-           <string>1296711704</string> 
+           <string>1297928673</string> 
           </void> 
          </object> 
         </void> 
@@ -1812,7 +1812,7 @@
            <object class="java.util.Properties"> 
             <void method="put"> 
              <string>name</string> 
-             <string>src</string> 
+             <string>default.src</string> 
             </void> 
             <void method="put"> 
              <string>columns.types</string> 
@@ -1848,11 +1848,11 @@
             </void> 
             <void method="put"> 
              <string>location</string> 
-             <string>pfile:/data/users/njain/hive3/build/ql/test/data/warehouse/src</string> 
+             <string>pfile:/data/users/sdong/www/open-source-hive3/build/ql/test/data/warehouse/src</string> 
             </void> 
             <void method="put"> 
              <string>transient_lastDdlTime</string> 
-             <string>1296711704</string> 
+             <string>1297928673</string> 
             </void> 
            </object> 
           </void> 

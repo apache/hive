@@ -8,11 +8,11 @@ POSTHOOK: Output: default@t1
 PREHOOK: query: select * from t1 sort by key
 PREHOOK: type: QUERY
 PREHOOK: Input: default@t1
-PREHOOK: Output: file:/var/folders/6g/6grtCwPMEf4sqHUPpy6xQG9ByHg/-Tmp-/heyongqiang/hive_2010-11-18_11-00-19_046_3895376692139653549/-mr-10000
+PREHOOK: Output: file:/tmp/sdong/hive_2011-02-10_17-04-47_886_705452503633658789/-mr-10000
 POSTHOOK: query: select * from t1 sort by key
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@t1
-POSTHOOK: Output: file:/var/folders/6g/6grtCwPMEf4sqHUPpy6xQG9ByHg/-Tmp-/heyongqiang/hive_2010-11-18_11-00-19_046_3895376692139653549/-mr-10000
+POSTHOOK: Output: file:/tmp/sdong/hive_2011-02-10_17-04-47_886_705452503633658789/-mr-10000
 0	val_0
 0	val_0
 0	val_0
@@ -34,11 +34,11 @@ POSTHOOK: Output: default@t2
 PREHOOK: query: select * from t2 sort by key
 PREHOOK: type: QUERY
 PREHOOK: Input: default@t2
-PREHOOK: Output: file:/var/folders/6g/6grtCwPMEf4sqHUPpy6xQG9ByHg/-Tmp-/heyongqiang/hive_2010-11-18_11-00-35_454_4705187275126291053/-mr-10000
+PREHOOK: Output: file:/tmp/sdong/hive_2011-02-10_17-04-54_794_6115178750654470118/-mr-10000
 POSTHOOK: query: select * from t2 sort by key
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@t2
-POSTHOOK: Output: file:/var/folders/6g/6grtCwPMEf4sqHUPpy6xQG9ByHg/-Tmp-/heyongqiang/hive_2010-11-18_11-00-35_454_4705187275126291053/-mr-10000
+POSTHOOK: Output: file:/tmp/sdong/hive_2011-02-10_17-04-54_794_6115178750654470118/-mr-10000
 0	val_0
 0	val_0
 0	val_0
@@ -62,11 +62,11 @@ POSTHOOK: Output: default@t3
 PREHOOK: query: select * from t3 sort by key, value
 PREHOOK: type: QUERY
 PREHOOK: Input: default@t3
-PREHOOK: Output: file:/var/folders/6g/6grtCwPMEf4sqHUPpy6xQG9ByHg/-Tmp-/heyongqiang/hive_2010-11-18_11-00-56_521_5858394420847642107/-mr-10000
+PREHOOK: Output: file:/tmp/sdong/hive_2011-02-10_17-05-05_418_8784955403393483239/-mr-10000
 POSTHOOK: query: select * from t3 sort by key, value
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@t3
-POSTHOOK: Output: file:/var/folders/6g/6grtCwPMEf4sqHUPpy6xQG9ByHg/-Tmp-/heyongqiang/hive_2010-11-18_11-00-56_521_5858394420847642107/-mr-10000
+POSTHOOK: Output: file:/tmp/sdong/hive_2011-02-10_17-05-05_418_8784955403393483239/-mr-10000
 0	val_0
 0	val_0
 0	val_0
@@ -97,17 +97,17 @@ POSTHOOK: Output: default@t4
 PREHOOK: query: select * from t4
 PREHOOK: type: QUERY
 PREHOOK: Input: default@t4
-PREHOOK: Output: file:/var/folders/6g/6grtCwPMEf4sqHUPpy6xQG9ByHg/-Tmp-/heyongqiang/hive_2010-11-18_11-01-05_957_5547541419038535698/-mr-10000
+PREHOOK: Output: file:/tmp/sdong/hive_2011-02-10_17-05-08_875_8263284626120887909/-mr-10000
 POSTHOOK: query: select * from t4
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@t4
-POSTHOOK: Output: file:/var/folders/6g/6grtCwPMEf4sqHUPpy6xQG9ByHg/-Tmp-/heyongqiang/hive_2010-11-18_11-01-05_957_5547541419038535698/-mr-10000
+POSTHOOK: Output: file:/tmp/sdong/hive_2011-02-10_17-05-08_875_8263284626120887909/-mr-10000
 PREHOOK: query: explain select * from t1 a left semi join t2 b on a.key=b.key sort by a.key, a.value
 PREHOOK: type: QUERY
 POSTHOOK: query: explain select * from t1 a left semi join t2 b on a.key=b.key sort by a.key, a.value
 POSTHOOK: type: QUERY
 ABSTRACT SYNTAX TREE:
-  (TOK_QUERY (TOK_FROM (TOK_LEFTSEMIJOIN (TOK_TABREF t1 a) (TOK_TABREF t2 b) (= (. (TOK_TABLE_OR_COL a) key) (. (TOK_TABLE_OR_COL b) key)))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR TOK_ALLCOLREF)) (TOK_SORTBY (TOK_TABSORTCOLNAMEASC (. (TOK_TABLE_OR_COL a) key)) (TOK_TABSORTCOLNAMEASC (. (TOK_TABLE_OR_COL a) value)))))
+  (TOK_QUERY (TOK_FROM (TOK_LEFTSEMIJOIN (TOK_TABREF (TOK_TABNAME t1) a) (TOK_TABREF (TOK_TABNAME t2) b) (= (. (TOK_TABLE_OR_COL a) key) (. (TOK_TABLE_OR_COL b) key)))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR TOK_ALLCOLREF)) (TOK_SORTBY (TOK_TABSORTCOLNAMEASC (. (TOK_TABLE_OR_COL a) key)) (TOK_TABSORTCOLNAMEASC (. (TOK_TABLE_OR_COL a) value)))))
 
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -185,7 +185,7 @@ STAGE PLANS:
   Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/var/folders/6g/6grtCwPMEf4sqHUPpy6xQG9ByHg/-Tmp-/heyongqiang/hive_2010-11-18_11-01-06_152_355729472898392348/-mr-10002 
+        file:/tmp/sdong/hive_2011-02-10_17-05-09_005_502081017578523829/-mr-10002 
             Reduce Output Operator
               key expressions:
                     expr: _col0
@@ -217,12 +217,12 @@ PREHOOK: query: select * from t1 a left semi join t2 b on a.key=b.key sort by a.
 PREHOOK: type: QUERY
 PREHOOK: Input: default@t1
 PREHOOK: Input: default@t2
-PREHOOK: Output: file:/var/folders/6g/6grtCwPMEf4sqHUPpy6xQG9ByHg/-Tmp-/heyongqiang/hive_2010-11-18_11-01-06_413_6128740965053236566/-mr-10000
+PREHOOK: Output: file:/tmp/sdong/hive_2011-02-10_17-05-09_098_1588087013512926695/-mr-10000
 POSTHOOK: query: select * from t1 a left semi join t2 b on a.key=b.key sort by a.key, a.value
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@t1
 POSTHOOK: Input: default@t2
-POSTHOOK: Output: file:/var/folders/6g/6grtCwPMEf4sqHUPpy6xQG9ByHg/-Tmp-/heyongqiang/hive_2010-11-18_11-01-06_413_6128740965053236566/-mr-10000
+POSTHOOK: Output: file:/tmp/sdong/hive_2011-02-10_17-05-09_098_1588087013512926695/-mr-10000
 0	val_0
 0	val_0
 0	val_0
@@ -234,7 +234,7 @@ PREHOOK: type: QUERY
 POSTHOOK: query: explain select * from t2 a left semi join t1 b on b.key=a.key sort by a.key, a.value
 POSTHOOK: type: QUERY
 ABSTRACT SYNTAX TREE:
-  (TOK_QUERY (TOK_FROM (TOK_LEFTSEMIJOIN (TOK_TABREF t2 a) (TOK_TABREF t1 b) (= (. (TOK_TABLE_OR_COL b) key) (. (TOK_TABLE_OR_COL a) key)))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR TOK_ALLCOLREF)) (TOK_SORTBY (TOK_TABSORTCOLNAMEASC (. (TOK_TABLE_OR_COL a) key)) (TOK_TABSORTCOLNAMEASC (. (TOK_TABLE_OR_COL a) value)))))
+  (TOK_QUERY (TOK_FROM (TOK_LEFTSEMIJOIN (TOK_TABREF (TOK_TABNAME t2) a) (TOK_TABREF (TOK_TABNAME t1) b) (= (. (TOK_TABLE_OR_COL b) key) (. (TOK_TABLE_OR_COL a) key)))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR TOK_ALLCOLREF)) (TOK_SORTBY (TOK_TABSORTCOLNAMEASC (. (TOK_TABLE_OR_COL a) key)) (TOK_TABSORTCOLNAMEASC (. (TOK_TABLE_OR_COL a) value)))))
 
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -312,7 +312,7 @@ STAGE PLANS:
   Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/var/folders/6g/6grtCwPMEf4sqHUPpy6xQG9ByHg/-Tmp-/heyongqiang/hive_2010-11-18_11-01-24_265_4466548024067433690/-mr-10002 
+        file:/tmp/sdong/hive_2011-02-10_17-05-15_949_4211046763459932826/-mr-10002 
             Reduce Output Operator
               key expressions:
                     expr: _col0
@@ -344,12 +344,12 @@ PREHOOK: query: select * from t2 a left semi join t1 b on b.key=a.key sort by a.
 PREHOOK: type: QUERY
 PREHOOK: Input: default@t1
 PREHOOK: Input: default@t2
-PREHOOK: Output: file:/var/folders/6g/6grtCwPMEf4sqHUPpy6xQG9ByHg/-Tmp-/heyongqiang/hive_2010-11-18_11-01-24_509_4270214608701232060/-mr-10000
+PREHOOK: Output: file:/tmp/sdong/hive_2011-02-10_17-05-16_042_8329878039830895731/-mr-10000
 POSTHOOK: query: select * from t2 a left semi join t1 b on b.key=a.key sort by a.key, a.value
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@t1
 POSTHOOK: Input: default@t2
-POSTHOOK: Output: file:/var/folders/6g/6grtCwPMEf4sqHUPpy6xQG9ByHg/-Tmp-/heyongqiang/hive_2010-11-18_11-01-24_509_4270214608701232060/-mr-10000
+POSTHOOK: Output: file:/tmp/sdong/hive_2011-02-10_17-05-16_042_8329878039830895731/-mr-10000
 0	val_0
 0	val_0
 0	val_0
@@ -363,7 +363,7 @@ PREHOOK: type: QUERY
 POSTHOOK: query: explain select * from t1 a left semi join t4 b on b.key=a.key sort by a.key, a.value
 POSTHOOK: type: QUERY
 ABSTRACT SYNTAX TREE:
-  (TOK_QUERY (TOK_FROM (TOK_LEFTSEMIJOIN (TOK_TABREF t1 a) (TOK_TABREF t4 b) (= (. (TOK_TABLE_OR_COL b) key) (. (TOK_TABLE_OR_COL a) key)))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR TOK_ALLCOLREF)) (TOK_SORTBY (TOK_TABSORTCOLNAMEASC (. (TOK_TABLE_OR_COL a) key)) (TOK_TABSORTCOLNAMEASC (. (TOK_TABLE_OR_COL a) value)))))
+  (TOK_QUERY (TOK_FROM (TOK_LEFTSEMIJOIN (TOK_TABREF (TOK_TABNAME t1) a) (TOK_TABREF (TOK_TABNAME t4) b) (= (. (TOK_TABLE_OR_COL b) key) (. (TOK_TABLE_OR_COL a) key)))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR TOK_ALLCOLREF)) (TOK_SORTBY (TOK_TABSORTCOLNAMEASC (. (TOK_TABLE_OR_COL a) key)) (TOK_TABSORTCOLNAMEASC (. (TOK_TABLE_OR_COL a) value)))))
 
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -441,7 +441,7 @@ STAGE PLANS:
   Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/var/folders/6g/6grtCwPMEf4sqHUPpy6xQG9ByHg/-Tmp-/heyongqiang/hive_2010-11-18_11-01-40_609_1842300352332686282/-mr-10002 
+        file:/tmp/sdong/hive_2011-02-10_17-05-22_786_6856730491579709518/-mr-10002 
             Reduce Output Operator
               key expressions:
                     expr: _col0
@@ -473,18 +473,18 @@ PREHOOK: query: select * from t1 a left semi join t4 b on b.key=a.key sort by a.
 PREHOOK: type: QUERY
 PREHOOK: Input: default@t1
 PREHOOK: Input: default@t4
-PREHOOK: Output: file:/var/folders/6g/6grtCwPMEf4sqHUPpy6xQG9ByHg/-Tmp-/heyongqiang/hive_2010-11-18_11-01-40_927_8797191922320768648/-mr-10000
+PREHOOK: Output: file:/tmp/sdong/hive_2011-02-10_17-05-22_880_1665353720432910838/-mr-10000
 POSTHOOK: query: select * from t1 a left semi join t4 b on b.key=a.key sort by a.key, a.value
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@t1
 POSTHOOK: Input: default@t4
-POSTHOOK: Output: file:/var/folders/6g/6grtCwPMEf4sqHUPpy6xQG9ByHg/-Tmp-/heyongqiang/hive_2010-11-18_11-01-40_927_8797191922320768648/-mr-10000
+POSTHOOK: Output: file:/tmp/sdong/hive_2011-02-10_17-05-22_880_1665353720432910838/-mr-10000
 PREHOOK: query: explain select a.value from t1 a left semi join t3 b on (b.key = a.key and b.key < '15') sort by a.value
 PREHOOK: type: QUERY
 POSTHOOK: query: explain select a.value from t1 a left semi join t3 b on (b.key = a.key and b.key < '15') sort by a.value
 POSTHOOK: type: QUERY
 ABSTRACT SYNTAX TREE:
-  (TOK_QUERY (TOK_FROM (TOK_LEFTSEMIJOIN (TOK_TABREF t1 a) (TOK_TABREF t3 b) (and (= (. (TOK_TABLE_OR_COL b) key) (. (TOK_TABLE_OR_COL a) key)) (< (. (TOK_TABLE_OR_COL b) key) '15')))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (. (TOK_TABLE_OR_COL a) value))) (TOK_SORTBY (TOK_TABSORTCOLNAMEASC (. (TOK_TABLE_OR_COL a) value)))))
+  (TOK_QUERY (TOK_FROM (TOK_LEFTSEMIJOIN (TOK_TABREF (TOK_TABNAME t1) a) (TOK_TABREF (TOK_TABNAME t3) b) (and (= (. (TOK_TABLE_OR_COL b) key) (. (TOK_TABLE_OR_COL a) key)) (< (. (TOK_TABLE_OR_COL b) key) '15')))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (. (TOK_TABLE_OR_COL a) value))) (TOK_SORTBY (TOK_TABSORTCOLNAMEASC (. (TOK_TABLE_OR_COL a) value)))))
 
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -568,7 +568,7 @@ STAGE PLANS:
   Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/var/folders/6g/6grtCwPMEf4sqHUPpy6xQG9ByHg/-Tmp-/heyongqiang/hive_2010-11-18_11-01-57_384_3089194844599355448/-mr-10002 
+        file:/tmp/sdong/hive_2011-02-10_17-05-29_616_1235177871277954972/-mr-10002 
             Reduce Output Operator
               key expressions:
                     expr: _col0
@@ -596,12 +596,12 @@ PREHOOK: query: select a.value from t1 a left semi join t3 b on (b.key = a.key a
 PREHOOK: type: QUERY
 PREHOOK: Input: default@t1
 PREHOOK: Input: default@t3
-PREHOOK: Output: file:/var/folders/6g/6grtCwPMEf4sqHUPpy6xQG9ByHg/-Tmp-/heyongqiang/hive_2010-11-18_11-01-57_517_5261225666744367069/-mr-10000
+PREHOOK: Output: file:/tmp/sdong/hive_2011-02-10_17-05-29_715_4357564705901360206/-mr-10000
 POSTHOOK: query: select a.value from t1 a left semi join t3 b on (b.key = a.key and b.key < '15') sort by a.value
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@t1
 POSTHOOK: Input: default@t3
-POSTHOOK: Output: file:/var/folders/6g/6grtCwPMEf4sqHUPpy6xQG9ByHg/-Tmp-/heyongqiang/hive_2010-11-18_11-01-57_517_5261225666744367069/-mr-10000
+POSTHOOK: Output: file:/tmp/sdong/hive_2011-02-10_17-05-29_715_4357564705901360206/-mr-10000
 val_0
 val_0
 val_0
@@ -618,7 +618,7 @@ PREHOOK: type: QUERY
 POSTHOOK: query: explain select * from t1 a left semi join t2 b on a.key = b.key and b.value < "val_10" sort by a.key, a.value
 POSTHOOK: type: QUERY
 ABSTRACT SYNTAX TREE:
-  (TOK_QUERY (TOK_FROM (TOK_LEFTSEMIJOIN (TOK_TABREF t1 a) (TOK_TABREF t2 b) (and (= (. (TOK_TABLE_OR_COL a) key) (. (TOK_TABLE_OR_COL b) key)) (< (. (TOK_TABLE_OR_COL b) value) "val_10")))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR TOK_ALLCOLREF)) (TOK_SORTBY (TOK_TABSORTCOLNAMEASC (. (TOK_TABLE_OR_COL a) key)) (TOK_TABSORTCOLNAMEASC (. (TOK_TABLE_OR_COL a) value)))))
+  (TOK_QUERY (TOK_FROM (TOK_LEFTSEMIJOIN (TOK_TABREF (TOK_TABNAME t1) a) (TOK_TABREF (TOK_TABNAME t2) b) (and (= (. (TOK_TABLE_OR_COL a) key) (. (TOK_TABLE_OR_COL b) key)) (< (. (TOK_TABLE_OR_COL b) value) "val_10")))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR TOK_ALLCOLREF)) (TOK_SORTBY (TOK_TABSORTCOLNAMEASC (. (TOK_TABLE_OR_COL a) key)) (TOK_TABSORTCOLNAMEASC (. (TOK_TABLE_OR_COL a) value)))))
 
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -708,7 +708,7 @@ STAGE PLANS:
   Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/var/folders/6g/6grtCwPMEf4sqHUPpy6xQG9ByHg/-Tmp-/heyongqiang/hive_2010-11-18_11-02-15_938_7137978578832330282/-mr-10002 
+        file:/tmp/sdong/hive_2011-02-10_17-05-36_675_4481351875930852775/-mr-10002 
             Reduce Output Operator
               key expressions:
                     expr: _col0
@@ -740,12 +740,12 @@ PREHOOK: query: select * from t1 a left semi join t2 b on a.key = b.key and b.va
 PREHOOK: type: QUERY
 PREHOOK: Input: default@t1
 PREHOOK: Input: default@t2
-PREHOOK: Output: file:/var/folders/6g/6grtCwPMEf4sqHUPpy6xQG9ByHg/-Tmp-/heyongqiang/hive_2010-11-18_11-02-16_057_519725218464853726/-mr-10000
+PREHOOK: Output: file:/tmp/sdong/hive_2011-02-10_17-05-36_773_1099957685086464486/-mr-10000
 POSTHOOK: query: select * from t1 a left semi join t2 b on a.key = b.key and b.value < "val_10" sort by a.key, a.value
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@t1
 POSTHOOK: Input: default@t2
-POSTHOOK: Output: file:/var/folders/6g/6grtCwPMEf4sqHUPpy6xQG9ByHg/-Tmp-/heyongqiang/hive_2010-11-18_11-02-16_057_519725218464853726/-mr-10000
+POSTHOOK: Output: file:/tmp/sdong/hive_2011-02-10_17-05-36_773_1099957685086464486/-mr-10000
 0	val_0
 0	val_0
 0	val_0
@@ -754,7 +754,7 @@ PREHOOK: type: QUERY
 POSTHOOK: query: explain select a.value from t1 a left semi join (select key from t3 where key > 5) b on a.key = b.key sort by a.value
 POSTHOOK: type: QUERY
 ABSTRACT SYNTAX TREE:
-  (TOK_QUERY (TOK_FROM (TOK_LEFTSEMIJOIN (TOK_TABREF t1 a) (TOK_SUBQUERY (TOK_QUERY (TOK_FROM (TOK_TABREF t3)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_TABLE_OR_COL key))) (TOK_WHERE (> (TOK_TABLE_OR_COL key) 5)))) b) (= (. (TOK_TABLE_OR_COL a) key) (. (TOK_TABLE_OR_COL b) key)))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (. (TOK_TABLE_OR_COL a) value))) (TOK_SORTBY (TOK_TABSORTCOLNAMEASC (. (TOK_TABLE_OR_COL a) value)))))
+  (TOK_QUERY (TOK_FROM (TOK_LEFTSEMIJOIN (TOK_TABREF (TOK_TABNAME t1) a) (TOK_SUBQUERY (TOK_QUERY (TOK_FROM (TOK_TABREF (TOK_TABNAME t3))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_TABLE_OR_COL key))) (TOK_WHERE (> (TOK_TABLE_OR_COL key) 5)))) b) (= (. (TOK_TABLE_OR_COL a) key) (. (TOK_TABLE_OR_COL b) key)))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (. (TOK_TABLE_OR_COL a) value))) (TOK_SORTBY (TOK_TABSORTCOLNAMEASC (. (TOK_TABLE_OR_COL a) value)))))
 
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -841,7 +841,7 @@ STAGE PLANS:
   Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/var/folders/6g/6grtCwPMEf4sqHUPpy6xQG9ByHg/-Tmp-/heyongqiang/hive_2010-11-18_11-02-32_044_1882268558166284283/-mr-10002 
+        file:/tmp/sdong/hive_2011-02-10_17-05-43_606_4268995089293633608/-mr-10002 
             Reduce Output Operator
               key expressions:
                     expr: _col0
@@ -869,12 +869,12 @@ PREHOOK: query: select a.value from t1 a left semi join (select key from t3 wher
 PREHOOK: type: QUERY
 PREHOOK: Input: default@t1
 PREHOOK: Input: default@t3
-PREHOOK: Output: file:/var/folders/6g/6grtCwPMEf4sqHUPpy6xQG9ByHg/-Tmp-/heyongqiang/hive_2010-11-18_11-02-32_201_5180642771512887111/-mr-10000
+PREHOOK: Output: file:/tmp/sdong/hive_2011-02-10_17-05-43_705_5212605861362357897/-mr-10000
 POSTHOOK: query: select a.value from t1 a left semi join (select key from t3 where key > 5) b on a.key = b.key sort by a.value
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@t1
 POSTHOOK: Input: default@t3
-POSTHOOK: Output: file:/var/folders/6g/6grtCwPMEf4sqHUPpy6xQG9ByHg/-Tmp-/heyongqiang/hive_2010-11-18_11-02-32_201_5180642771512887111/-mr-10000
+POSTHOOK: Output: file:/tmp/sdong/hive_2011-02-10_17-05-43_705_5212605861362357897/-mr-10000
 val_10
 val_8
 val_9
@@ -883,7 +883,7 @@ PREHOOK: type: QUERY
 POSTHOOK: query: explain select a.value from t1 a left semi join (select key , value from t2 where key > 5) b on a.key = b.key and b.value <= 'val_20' sort by a.value
 POSTHOOK: type: QUERY
 ABSTRACT SYNTAX TREE:
-  (TOK_QUERY (TOK_FROM (TOK_LEFTSEMIJOIN (TOK_TABREF t1 a) (TOK_SUBQUERY (TOK_QUERY (TOK_FROM (TOK_TABREF t2)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_TABLE_OR_COL key)) (TOK_SELEXPR (TOK_TABLE_OR_COL value))) (TOK_WHERE (> (TOK_TABLE_OR_COL key) 5)))) b) (and (= (. (TOK_TABLE_OR_COL a) key) (. (TOK_TABLE_OR_COL b) key)) (<= (. (TOK_TABLE_OR_COL b) value) 'val_20')))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (. (TOK_TABLE_OR_COL a) value))) (TOK_SORTBY (TOK_TABSORTCOLNAMEASC (. (TOK_TABLE_OR_COL a) value)))))
+  (TOK_QUERY (TOK_FROM (TOK_LEFTSEMIJOIN (TOK_TABREF (TOK_TABNAME t1) a) (TOK_SUBQUERY (TOK_QUERY (TOK_FROM (TOK_TABREF (TOK_TABNAME t2))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_TABLE_OR_COL key)) (TOK_SELEXPR (TOK_TABLE_OR_COL value))) (TOK_WHERE (> (TOK_TABLE_OR_COL key) 5)))) b) (and (= (. (TOK_TABLE_OR_COL a) key) (. (TOK_TABLE_OR_COL b) key)) (<= (. (TOK_TABLE_OR_COL b) value) 'val_20')))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (. (TOK_TABLE_OR_COL a) value))) (TOK_SORTBY (TOK_TABSORTCOLNAMEASC (. (TOK_TABLE_OR_COL a) value)))))
 
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -980,7 +980,7 @@ STAGE PLANS:
   Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/var/folders/6g/6grtCwPMEf4sqHUPpy6xQG9ByHg/-Tmp-/heyongqiang/hive_2010-11-18_11-02-47_618_6081419597528468690/-mr-10002 
+        file:/tmp/sdong/hive_2011-02-10_17-05-50_572_4351935636267130614/-mr-10002 
             Reduce Output Operator
               key expressions:
                     expr: _col0
@@ -1008,18 +1008,18 @@ PREHOOK: query: select a.value from t1 a left semi join (select key , value from
 PREHOOK: type: QUERY
 PREHOOK: Input: default@t1
 PREHOOK: Input: default@t2
-PREHOOK: Output: file:/var/folders/6g/6grtCwPMEf4sqHUPpy6xQG9ByHg/-Tmp-/heyongqiang/hive_2010-11-18_11-02-48_046_789670215385615891/-mr-10000
+PREHOOK: Output: file:/tmp/sdong/hive_2011-02-10_17-05-50_690_824047413986414031/-mr-10000
 POSTHOOK: query: select a.value from t1 a left semi join (select key , value from t2 where key > 5) b on a.key = b.key and b.value <= 'val_20' sort by a.value
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@t1
 POSTHOOK: Input: default@t2
-POSTHOOK: Output: file:/var/folders/6g/6grtCwPMEf4sqHUPpy6xQG9ByHg/-Tmp-/heyongqiang/hive_2010-11-18_11-02-48_046_789670215385615891/-mr-10000
+POSTHOOK: Output: file:/tmp/sdong/hive_2011-02-10_17-05-50_690_824047413986414031/-mr-10000
 PREHOOK: query: explain select * from t2 a left semi join (select key , value from t1 where key > 2) b on a.key = b.key sort by a.key, a.value
 PREHOOK: type: QUERY
 POSTHOOK: query: explain select * from t2 a left semi join (select key , value from t1 where key > 2) b on a.key = b.key sort by a.key, a.value
 POSTHOOK: type: QUERY
 ABSTRACT SYNTAX TREE:
-  (TOK_QUERY (TOK_FROM (TOK_LEFTSEMIJOIN (TOK_TABREF t2 a) (TOK_SUBQUERY (TOK_QUERY (TOK_FROM (TOK_TABREF t1)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_TABLE_OR_COL key)) (TOK_SELEXPR (TOK_TABLE_OR_COL value))) (TOK_WHERE (> (TOK_TABLE_OR_COL key) 2)))) b) (= (. (TOK_TABLE_OR_COL a) key) (. (TOK_TABLE_OR_COL b) key)))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR TOK_ALLCOLREF)) (TOK_SORTBY (TOK_TABSORTCOLNAMEASC (. (TOK_TABLE_OR_COL a) key)) (TOK_TABSORTCOLNAMEASC (. (TOK_TABLE_OR_COL a) value)))))
+  (TOK_QUERY (TOK_FROM (TOK_LEFTSEMIJOIN (TOK_TABREF (TOK_TABNAME t2) a) (TOK_SUBQUERY (TOK_QUERY (TOK_FROM (TOK_TABREF (TOK_TABNAME t1))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_TABLE_OR_COL key)) (TOK_SELEXPR (TOK_TABLE_OR_COL value))) (TOK_WHERE (> (TOK_TABLE_OR_COL key) 2)))) b) (= (. (TOK_TABLE_OR_COL a) key) (. (TOK_TABLE_OR_COL b) key)))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR TOK_ALLCOLREF)) (TOK_SORTBY (TOK_TABSORTCOLNAMEASC (. (TOK_TABLE_OR_COL a) key)) (TOK_TABSORTCOLNAMEASC (. (TOK_TABLE_OR_COL a) value)))))
 
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -1110,7 +1110,7 @@ STAGE PLANS:
   Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/var/folders/6g/6grtCwPMEf4sqHUPpy6xQG9ByHg/-Tmp-/heyongqiang/hive_2010-11-18_11-03-05_112_1019830060466266544/-mr-10002 
+        file:/tmp/sdong/hive_2011-02-10_17-05-57_516_1309591908900729926/-mr-10002 
             Reduce Output Operator
               key expressions:
                     expr: _col0
@@ -1142,12 +1142,12 @@ PREHOOK: query: select * from t2 a left semi join (select key , value from t1 wh
 PREHOOK: type: QUERY
 PREHOOK: Input: default@t1
 PREHOOK: Input: default@t2
-PREHOOK: Output: file:/var/folders/6g/6grtCwPMEf4sqHUPpy6xQG9ByHg/-Tmp-/heyongqiang/hive_2010-11-18_11-03-05_322_221151979084285496/-mr-10000
+PREHOOK: Output: file:/tmp/sdong/hive_2011-02-10_17-05-57_625_9169051107141388478/-mr-10000
 POSTHOOK: query: select * from t2 a left semi join (select key , value from t1 where key > 2) b on a.key = b.key sort by a.key, a.value
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@t1
 POSTHOOK: Input: default@t2
-POSTHOOK: Output: file:/var/folders/6g/6grtCwPMEf4sqHUPpy6xQG9ByHg/-Tmp-/heyongqiang/hive_2010-11-18_11-03-05_322_221151979084285496/-mr-10000
+POSTHOOK: Output: file:/tmp/sdong/hive_2011-02-10_17-05-57_625_9169051107141388478/-mr-10000
 4	val_2
 8	val_4
 10	val_5
@@ -1158,7 +1158,7 @@ PREHOOK: type: QUERY
 POSTHOOK: query: explain select /*+ mapjoin(b) */ a.key from t3 a left semi join t1 b on a.key = b.key sort by a.key
 POSTHOOK: type: QUERY
 ABSTRACT SYNTAX TREE:
-  (TOK_QUERY (TOK_FROM (TOK_LEFTSEMIJOIN (TOK_TABREF t3 a) (TOK_TABREF t1 b) (= (. (TOK_TABLE_OR_COL a) key) (. (TOK_TABLE_OR_COL b) key)))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_HINTLIST (TOK_HINT TOK_MAPJOIN (TOK_HINTARGLIST b))) (TOK_SELEXPR (. (TOK_TABLE_OR_COL a) key))) (TOK_SORTBY (TOK_TABSORTCOLNAMEASC (. (TOK_TABLE_OR_COL a) key)))))
+  (TOK_QUERY (TOK_FROM (TOK_LEFTSEMIJOIN (TOK_TABREF (TOK_TABNAME t3) a) (TOK_TABREF (TOK_TABNAME t1) b) (= (. (TOK_TABLE_OR_COL a) key) (. (TOK_TABLE_OR_COL b) key)))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_HINTLIST (TOK_HINT TOK_MAPJOIN (TOK_HINTARGLIST b))) (TOK_SELEXPR (. (TOK_TABLE_OR_COL a) key))) (TOK_SORTBY (TOK_TABSORTCOLNAMEASC (. (TOK_TABLE_OR_COL a) key)))))
 
 STAGE DEPENDENCIES:
   Stage-4 is a root stage
@@ -1229,7 +1229,7 @@ STAGE PLANS:
   Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/var/folders/6g/6grtCwPMEf4sqHUPpy6xQG9ByHg/-Tmp-/heyongqiang/hive_2010-11-18_11-03-20_944_438303615610048165/-mr-10002 
+        file:/tmp/sdong/hive_2011-02-10_17-06-04_576_6173849197621673319/-mr-10002 
           Select Operator
             expressions:
                   expr: _col0
@@ -1267,12 +1267,12 @@ PREHOOK: query: select /*+ mapjoin(b) */ a.key from t3 a left semi join t1 b on 
 PREHOOK: type: QUERY
 PREHOOK: Input: default@t1
 PREHOOK: Input: default@t3
-PREHOOK: Output: file:/var/folders/6g/6grtCwPMEf4sqHUPpy6xQG9ByHg/-Tmp-/heyongqiang/hive_2010-11-18_11-03-21_127_8134172271972764419/-mr-10000
+PREHOOK: Output: file:/tmp/sdong/hive_2011-02-10_17-06-04_672_5227381156024671685/-mr-10000
 POSTHOOK: query: select /*+ mapjoin(b) */ a.key from t3 a left semi join t1 b on a.key = b.key sort by a.key
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@t1
 POSTHOOK: Input: default@t3
-POSTHOOK: Output: file:/var/folders/6g/6grtCwPMEf4sqHUPpy6xQG9ByHg/-Tmp-/heyongqiang/hive_2010-11-18_11-03-21_127_8134172271972764419/-mr-10000
+POSTHOOK: Output: file:/tmp/sdong/hive_2011-02-10_17-06-04_672_5227381156024671685/-mr-10000
 0
 0
 0
@@ -1297,7 +1297,7 @@ PREHOOK: type: QUERY
 POSTHOOK: query: explain select * from t1 a left semi join t2 b on a.key = 2*b.key sort by a.key, a.value
 POSTHOOK: type: QUERY
 ABSTRACT SYNTAX TREE:
-  (TOK_QUERY (TOK_FROM (TOK_LEFTSEMIJOIN (TOK_TABREF t1 a) (TOK_TABREF t2 b) (= (. (TOK_TABLE_OR_COL a) key) (* 2 (. (TOK_TABLE_OR_COL b) key))))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR TOK_ALLCOLREF)) (TOK_SORTBY (TOK_TABSORTCOLNAMEASC (. (TOK_TABLE_OR_COL a) key)) (TOK_TABSORTCOLNAMEASC (. (TOK_TABLE_OR_COL a) value)))))
+  (TOK_QUERY (TOK_FROM (TOK_LEFTSEMIJOIN (TOK_TABREF (TOK_TABNAME t1) a) (TOK_TABREF (TOK_TABNAME t2) b) (= (. (TOK_TABLE_OR_COL a) key) (* 2 (. (TOK_TABLE_OR_COL b) key))))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR TOK_ALLCOLREF)) (TOK_SORTBY (TOK_TABSORTCOLNAMEASC (. (TOK_TABLE_OR_COL a) key)) (TOK_TABSORTCOLNAMEASC (. (TOK_TABLE_OR_COL a) value)))))
 
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -1375,7 +1375,7 @@ STAGE PLANS:
   Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/var/folders/6g/6grtCwPMEf4sqHUPpy6xQG9ByHg/-Tmp-/heyongqiang/hive_2010-11-18_11-03-43_629_5752544729482637710/-mr-10002 
+        file:/tmp/sdong/hive_2011-02-10_17-06-12_910_1677370657145984011/-mr-10002 
             Reduce Output Operator
               key expressions:
                     expr: _col0
@@ -1407,12 +1407,12 @@ PREHOOK: query: select * from t1 a left semi join t2 b on a.key = 2*b.key sort b
 PREHOOK: type: QUERY
 PREHOOK: Input: default@t1
 PREHOOK: Input: default@t2
-PREHOOK: Output: file:/var/folders/6g/6grtCwPMEf4sqHUPpy6xQG9ByHg/-Tmp-/heyongqiang/hive_2010-11-18_11-03-43_779_3560439419287948511/-mr-10000
+PREHOOK: Output: file:/tmp/sdong/hive_2011-02-10_17-06-13_004_9070842837652856960/-mr-10000
 POSTHOOK: query: select * from t1 a left semi join t2 b on a.key = 2*b.key sort by a.key, a.value
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@t1
 POSTHOOK: Input: default@t2
-POSTHOOK: Output: file:/var/folders/6g/6grtCwPMEf4sqHUPpy6xQG9ByHg/-Tmp-/heyongqiang/hive_2010-11-18_11-03-43_779_3560439419287948511/-mr-10000
+POSTHOOK: Output: file:/tmp/sdong/hive_2011-02-10_17-06-13_004_9070842837652856960/-mr-10000
 0	val_0
 0	val_0
 0	val_0
@@ -1422,7 +1422,7 @@ PREHOOK: type: QUERY
 POSTHOOK: query: explain select * from t1 a join t2 b on a.key = b.key left semi join t3 c on b.key = c.key sort by a.key, a.value
 POSTHOOK: type: QUERY
 ABSTRACT SYNTAX TREE:
-  (TOK_QUERY (TOK_FROM (TOK_LEFTSEMIJOIN (TOK_JOIN (TOK_TABREF t1 a) (TOK_TABREF t2 b) (= (. (TOK_TABLE_OR_COL a) key) (. (TOK_TABLE_OR_COL b) key))) (TOK_TABREF t3 c) (= (. (TOK_TABLE_OR_COL b) key) (. (TOK_TABLE_OR_COL c) key)))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR TOK_ALLCOLREF)) (TOK_SORTBY (TOK_TABSORTCOLNAMEASC (. (TOK_TABLE_OR_COL a) key)) (TOK_TABSORTCOLNAMEASC (. (TOK_TABLE_OR_COL a) value)))))
+  (TOK_QUERY (TOK_FROM (TOK_LEFTSEMIJOIN (TOK_JOIN (TOK_TABREF (TOK_TABNAME t1) a) (TOK_TABREF (TOK_TABNAME t2) b) (= (. (TOK_TABLE_OR_COL a) key) (. (TOK_TABLE_OR_COL b) key))) (TOK_TABREF (TOK_TABNAME t3) c) (= (. (TOK_TABLE_OR_COL b) key) (. (TOK_TABLE_OR_COL c) key)))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR TOK_ALLCOLREF)) (TOK_SORTBY (TOK_TABSORTCOLNAMEASC (. (TOK_TABLE_OR_COL a) key)) (TOK_TABSORTCOLNAMEASC (. (TOK_TABLE_OR_COL a) value)))))
 
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -1523,7 +1523,7 @@ STAGE PLANS:
   Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/var/folders/6g/6grtCwPMEf4sqHUPpy6xQG9ByHg/-Tmp-/heyongqiang/hive_2010-11-18_11-04-00_648_373535142060359448/-mr-10002 
+        file:/tmp/sdong/hive_2011-02-10_17-06-19_852_1718406537733894766/-mr-10002 
             Reduce Output Operator
               key expressions:
                     expr: _col0
@@ -1560,13 +1560,13 @@ PREHOOK: type: QUERY
 PREHOOK: Input: default@t1
 PREHOOK: Input: default@t2
 PREHOOK: Input: default@t3
-PREHOOK: Output: file:/var/folders/6g/6grtCwPMEf4sqHUPpy6xQG9ByHg/-Tmp-/heyongqiang/hive_2010-11-18_11-04-00_983_7977499042899650897/-mr-10000
+PREHOOK: Output: file:/tmp/sdong/hive_2011-02-10_17-06-19_961_7528472610501686423/-mr-10000
 POSTHOOK: query: select * from t1 a join t2 b on a.key = b.key left semi join t3 c on b.key = c.key sort by a.key, a.value
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@t1
 POSTHOOK: Input: default@t2
 POSTHOOK: Input: default@t3
-POSTHOOK: Output: file:/var/folders/6g/6grtCwPMEf4sqHUPpy6xQG9ByHg/-Tmp-/heyongqiang/hive_2010-11-18_11-04-00_983_7977499042899650897/-mr-10000
+POSTHOOK: Output: file:/tmp/sdong/hive_2011-02-10_17-06-19_961_7528472610501686423/-mr-10000
 0	val_0	0	val_0
 0	val_0	0	val_0
 0	val_0	0	val_0
@@ -1586,7 +1586,7 @@ PREHOOK: type: QUERY
 POSTHOOK: query: explain select * from t3 a left semi join t1 b on a.key = b.key and a.value=b.value sort by a.key, a.value
 POSTHOOK: type: QUERY
 ABSTRACT SYNTAX TREE:
-  (TOK_QUERY (TOK_FROM (TOK_LEFTSEMIJOIN (TOK_TABREF t3 a) (TOK_TABREF t1 b) (and (= (. (TOK_TABLE_OR_COL a) key) (. (TOK_TABLE_OR_COL b) key)) (= (. (TOK_TABLE_OR_COL a) value) (. (TOK_TABLE_OR_COL b) value))))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR TOK_ALLCOLREF)) (TOK_SORTBY (TOK_TABSORTCOLNAMEASC (. (TOK_TABLE_OR_COL a) key)) (TOK_TABSORTCOLNAMEASC (. (TOK_TABLE_OR_COL a) value)))))
+  (TOK_QUERY (TOK_FROM (TOK_LEFTSEMIJOIN (TOK_TABREF (TOK_TABNAME t3) a) (TOK_TABREF (TOK_TABNAME t1) b) (and (= (. (TOK_TABLE_OR_COL a) key) (. (TOK_TABLE_OR_COL b) key)) (= (. (TOK_TABLE_OR_COL a) value) (. (TOK_TABLE_OR_COL b) value))))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR TOK_ALLCOLREF)) (TOK_SORTBY (TOK_TABSORTCOLNAMEASC (. (TOK_TABLE_OR_COL a) key)) (TOK_TABSORTCOLNAMEASC (. (TOK_TABLE_OR_COL a) value)))))
 
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -1676,7 +1676,7 @@ STAGE PLANS:
   Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/var/folders/6g/6grtCwPMEf4sqHUPpy6xQG9ByHg/-Tmp-/heyongqiang/hive_2010-11-18_11-04-17_051_7474953441543543987/-mr-10002 
+        file:/tmp/sdong/hive_2011-02-10_17-06-27_084_2843906965158857658/-mr-10002 
             Reduce Output Operator
               key expressions:
                     expr: _col0
@@ -1708,12 +1708,12 @@ PREHOOK: query: select * from t3 a left semi join t1 b on a.key = b.key and a.va
 PREHOOK: type: QUERY
 PREHOOK: Input: default@t1
 PREHOOK: Input: default@t3
-PREHOOK: Output: file:/var/folders/6g/6grtCwPMEf4sqHUPpy6xQG9ByHg/-Tmp-/heyongqiang/hive_2010-11-18_11-04-17_231_2179425812915281444/-mr-10000
+PREHOOK: Output: file:/tmp/sdong/hive_2011-02-10_17-06-27_179_3678360233120119417/-mr-10000
 POSTHOOK: query: select * from t3 a left semi join t1 b on a.key = b.key and a.value=b.value sort by a.key, a.value
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@t1
 POSTHOOK: Input: default@t3
-POSTHOOK: Output: file:/var/folders/6g/6grtCwPMEf4sqHUPpy6xQG9ByHg/-Tmp-/heyongqiang/hive_2010-11-18_11-04-17_231_2179425812915281444/-mr-10000
+POSTHOOK: Output: file:/tmp/sdong/hive_2011-02-10_17-06-27_179_3678360233120119417/-mr-10000
 0	val_0
 0	val_0
 0	val_0
@@ -1733,7 +1733,7 @@ PREHOOK: type: QUERY
 POSTHOOK: query: explain select /*+ mapjoin(b, c) */ a.key from t3 a left semi join t1 b on a.key = b.key left semi join t2 c on a.key = c.key sort by a.key
 POSTHOOK: type: QUERY
 ABSTRACT SYNTAX TREE:
-  (TOK_QUERY (TOK_FROM (TOK_LEFTSEMIJOIN (TOK_LEFTSEMIJOIN (TOK_TABREF t3 a) (TOK_TABREF t1 b) (= (. (TOK_TABLE_OR_COL a) key) (. (TOK_TABLE_OR_COL b) key))) (TOK_TABREF t2 c) (= (. (TOK_TABLE_OR_COL a) key) (. (TOK_TABLE_OR_COL c) key)))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_HINTLIST (TOK_HINT TOK_MAPJOIN (TOK_HINTARGLIST b c))) (TOK_SELEXPR (. (TOK_TABLE_OR_COL a) key))) (TOK_SORTBY (TOK_TABSORTCOLNAMEASC (. (TOK_TABLE_OR_COL a) key)))))
+  (TOK_QUERY (TOK_FROM (TOK_LEFTSEMIJOIN (TOK_LEFTSEMIJOIN (TOK_TABREF (TOK_TABNAME t3) a) (TOK_TABREF (TOK_TABNAME t1) b) (= (. (TOK_TABLE_OR_COL a) key) (. (TOK_TABLE_OR_COL b) key))) (TOK_TABREF (TOK_TABNAME t2) c) (= (. (TOK_TABLE_OR_COL a) key) (. (TOK_TABLE_OR_COL c) key)))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_HINTLIST (TOK_HINT TOK_MAPJOIN (TOK_HINTARGLIST b c))) (TOK_SELEXPR (. (TOK_TABLE_OR_COL a) key))) (TOK_SORTBY (TOK_TABSORTCOLNAMEASC (. (TOK_TABLE_OR_COL a) key)))))
 
 STAGE DEPENDENCIES:
   Stage-5 is a root stage
@@ -1838,7 +1838,7 @@ STAGE PLANS:
   Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/var/folders/6g/6grtCwPMEf4sqHUPpy6xQG9ByHg/-Tmp-/heyongqiang/hive_2010-11-18_11-04-33_573_6260564714806927759/-mr-10002 
+        file:/tmp/sdong/hive_2011-02-10_17-06-33_926_1715380380256238596/-mr-10002 
           Select Operator
             expressions:
                   expr: _col0
@@ -1877,13 +1877,13 @@ PREHOOK: type: QUERY
 PREHOOK: Input: default@t1
 PREHOOK: Input: default@t2
 PREHOOK: Input: default@t3
-PREHOOK: Output: file:/var/folders/6g/6grtCwPMEf4sqHUPpy6xQG9ByHg/-Tmp-/heyongqiang/hive_2010-11-18_11-04-33_826_3229491168132326963/-mr-10000
+PREHOOK: Output: file:/tmp/sdong/hive_2011-02-10_17-06-34_032_9074388788335932765/-mr-10000
 POSTHOOK: query: select /*+ mapjoin(b, c) */ a.key from t3 a left semi join t1 b on a.key = b.key left semi join t2 c on a.key = c.key sort by a.key
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@t1
 POSTHOOK: Input: default@t2
 POSTHOOK: Input: default@t3
-POSTHOOK: Output: file:/var/folders/6g/6grtCwPMEf4sqHUPpy6xQG9ByHg/-Tmp-/heyongqiang/hive_2010-11-18_11-04-33_826_3229491168132326963/-mr-10000
+POSTHOOK: Output: file:/tmp/sdong/hive_2011-02-10_17-06-34_032_9074388788335932765/-mr-10000
 0
 0
 0
@@ -1903,7 +1903,7 @@ PREHOOK: type: QUERY
 POSTHOOK: query: explain select a.key from t3 a left outer join t1 b on a.key = b.key left semi join t2 c on b.key = c.key sort by a.key
 POSTHOOK: type: QUERY
 ABSTRACT SYNTAX TREE:
-  (TOK_QUERY (TOK_FROM (TOK_LEFTSEMIJOIN (TOK_LEFTOUTERJOIN (TOK_TABREF t3 a) (TOK_TABREF t1 b) (= (. (TOK_TABLE_OR_COL a) key) (. (TOK_TABLE_OR_COL b) key))) (TOK_TABREF t2 c) (= (. (TOK_TABLE_OR_COL b) key) (. (TOK_TABLE_OR_COL c) key)))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (. (TOK_TABLE_OR_COL a) key))) (TOK_SORTBY (TOK_TABSORTCOLNAMEASC (. (TOK_TABLE_OR_COL a) key)))))
+  (TOK_QUERY (TOK_FROM (TOK_LEFTSEMIJOIN (TOK_LEFTOUTERJOIN (TOK_TABREF (TOK_TABNAME t3) a) (TOK_TABREF (TOK_TABNAME t1) b) (= (. (TOK_TABLE_OR_COL a) key) (. (TOK_TABLE_OR_COL b) key))) (TOK_TABREF (TOK_TABNAME t2) c) (= (. (TOK_TABLE_OR_COL b) key) (. (TOK_TABLE_OR_COL c) key)))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (. (TOK_TABLE_OR_COL a) key))) (TOK_SORTBY (TOK_TABSORTCOLNAMEASC (. (TOK_TABLE_OR_COL a) key)))))
 
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -1991,7 +1991,7 @@ STAGE PLANS:
   Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/var/folders/6g/6grtCwPMEf4sqHUPpy6xQG9ByHg/-Tmp-/heyongqiang/hive_2010-11-18_11-04-55_240_4472382832724150377/-mr-10002 
+        file:/tmp/sdong/hive_2011-02-10_17-06-42_647_6930739806966536340/-mr-10002 
             Reduce Output Operator
               key expressions:
                     expr: _col0
@@ -2020,13 +2020,13 @@ PREHOOK: type: QUERY
 PREHOOK: Input: default@t1
 PREHOOK: Input: default@t2
 PREHOOK: Input: default@t3
-PREHOOK: Output: file:/var/folders/6g/6grtCwPMEf4sqHUPpy6xQG9ByHg/-Tmp-/heyongqiang/hive_2010-11-18_11-04-55_429_8454721176911576485/-mr-10000
+PREHOOK: Output: file:/tmp/sdong/hive_2011-02-10_17-06-42_752_7032165149735678247/-mr-10000
 POSTHOOK: query: select a.key from t3 a left outer join t1 b on a.key = b.key left semi join t2 c on b.key = c.key sort by a.key
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@t1
 POSTHOOK: Input: default@t2
 POSTHOOK: Input: default@t3
-POSTHOOK: Output: file:/var/folders/6g/6grtCwPMEf4sqHUPpy6xQG9ByHg/-Tmp-/heyongqiang/hive_2010-11-18_11-04-55_429_8454721176911576485/-mr-10000
+POSTHOOK: Output: file:/tmp/sdong/hive_2011-02-10_17-06-42_752_7032165149735678247/-mr-10000
 0
 0
 0
@@ -2058,7 +2058,7 @@ PREHOOK: type: QUERY
 POSTHOOK: query: explain select a.key from t1 a right outer join t3 b on a.key = b.key left semi join t2 c on b.key = c.key sort by a.key
 POSTHOOK: type: QUERY
 ABSTRACT SYNTAX TREE:
-  (TOK_QUERY (TOK_FROM (TOK_LEFTSEMIJOIN (TOK_RIGHTOUTERJOIN (TOK_TABREF t1 a) (TOK_TABREF t3 b) (= (. (TOK_TABLE_OR_COL a) key) (. (TOK_TABLE_OR_COL b) key))) (TOK_TABREF t2 c) (= (. (TOK_TABLE_OR_COL b) key) (. (TOK_TABLE_OR_COL c) key)))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (. (TOK_TABLE_OR_COL a) key))) (TOK_SORTBY (TOK_TABSORTCOLNAMEASC (. (TOK_TABLE_OR_COL a) key)))))
+  (TOK_QUERY (TOK_FROM (TOK_LEFTSEMIJOIN (TOK_RIGHTOUTERJOIN (TOK_TABREF (TOK_TABNAME t1) a) (TOK_TABREF (TOK_TABNAME t3) b) (= (. (TOK_TABLE_OR_COL a) key) (. (TOK_TABLE_OR_COL b) key))) (TOK_TABREF (TOK_TABNAME t2) c) (= (. (TOK_TABLE_OR_COL b) key) (. (TOK_TABLE_OR_COL c) key)))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (. (TOK_TABLE_OR_COL a) key))) (TOK_SORTBY (TOK_TABSORTCOLNAMEASC (. (TOK_TABLE_OR_COL a) key)))))
 
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -2146,7 +2146,7 @@ STAGE PLANS:
   Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/var/folders/6g/6grtCwPMEf4sqHUPpy6xQG9ByHg/-Tmp-/heyongqiang/hive_2010-11-18_11-05-12_866_4359353511062609004/-mr-10002 
+        file:/tmp/sdong/hive_2011-02-10_17-06-49_770_643136424396000126/-mr-10002 
             Reduce Output Operator
               key expressions:
                     expr: _col0
@@ -2175,13 +2175,13 @@ PREHOOK: type: QUERY
 PREHOOK: Input: default@t1
 PREHOOK: Input: default@t2
 PREHOOK: Input: default@t3
-PREHOOK: Output: file:/var/folders/6g/6grtCwPMEf4sqHUPpy6xQG9ByHg/-Tmp-/heyongqiang/hive_2010-11-18_11-05-13_034_2999962254990000638/-mr-10000
+PREHOOK: Output: file:/tmp/sdong/hive_2011-02-10_17-06-49_878_1832122776231127136/-mr-10000
 POSTHOOK: query: select a.key from t1 a right outer join t3 b on a.key = b.key left semi join t2 c on b.key = c.key sort by a.key
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@t1
 POSTHOOK: Input: default@t2
 POSTHOOK: Input: default@t3
-POSTHOOK: Output: file:/var/folders/6g/6grtCwPMEf4sqHUPpy6xQG9ByHg/-Tmp-/heyongqiang/hive_2010-11-18_11-05-13_034_2999962254990000638/-mr-10000
+POSTHOOK: Output: file:/tmp/sdong/hive_2011-02-10_17-06-49_878_1832122776231127136/-mr-10000
 NULL
 NULL
 NULL
@@ -2216,7 +2216,7 @@ PREHOOK: type: QUERY
 POSTHOOK: query: explain select a.key from t1 a full outer join t3 b on a.key = b.key left semi join t2 c on b.key = c.key sort by a.key
 POSTHOOK: type: QUERY
 ABSTRACT SYNTAX TREE:
-  (TOK_QUERY (TOK_FROM (TOK_LEFTSEMIJOIN (TOK_FULLOUTERJOIN (TOK_TABREF t1 a) (TOK_TABREF t3 b) (= (. (TOK_TABLE_OR_COL a) key) (. (TOK_TABLE_OR_COL b) key))) (TOK_TABREF t2 c) (= (. (TOK_TABLE_OR_COL b) key) (. (TOK_TABLE_OR_COL c) key)))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (. (TOK_TABLE_OR_COL a) key))) (TOK_SORTBY (TOK_TABSORTCOLNAMEASC (. (TOK_TABLE_OR_COL a) key)))))
+  (TOK_QUERY (TOK_FROM (TOK_LEFTSEMIJOIN (TOK_FULLOUTERJOIN (TOK_TABREF (TOK_TABNAME t1) a) (TOK_TABREF (TOK_TABNAME t3) b) (= (. (TOK_TABLE_OR_COL a) key) (. (TOK_TABLE_OR_COL b) key))) (TOK_TABREF (TOK_TABNAME t2) c) (= (. (TOK_TABLE_OR_COL b) key) (. (TOK_TABLE_OR_COL c) key)))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (. (TOK_TABLE_OR_COL a) key))) (TOK_SORTBY (TOK_TABSORTCOLNAMEASC (. (TOK_TABLE_OR_COL a) key)))))
 
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -2304,7 +2304,7 @@ STAGE PLANS:
   Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/var/folders/6g/6grtCwPMEf4sqHUPpy6xQG9ByHg/-Tmp-/heyongqiang/hive_2010-11-18_11-05-27_311_4743482924605624788/-mr-10002 
+        file:/tmp/sdong/hive_2011-02-10_17-06-56_968_7643972596631988821/-mr-10002 
             Reduce Output Operator
               key expressions:
                     expr: _col0
@@ -2333,13 +2333,13 @@ PREHOOK: type: QUERY
 PREHOOK: Input: default@t1
 PREHOOK: Input: default@t2
 PREHOOK: Input: default@t3
-PREHOOK: Output: file:/var/folders/6g/6grtCwPMEf4sqHUPpy6xQG9ByHg/-Tmp-/heyongqiang/hive_2010-11-18_11-05-27_421_7482213301780796952/-mr-10000
+PREHOOK: Output: file:/tmp/sdong/hive_2011-02-10_17-06-57_080_8193264678320216901/-mr-10000
 POSTHOOK: query: select a.key from t1 a full outer join t3 b on a.key = b.key left semi join t2 c on b.key = c.key sort by a.key
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@t1
 POSTHOOK: Input: default@t2
 POSTHOOK: Input: default@t3
-POSTHOOK: Output: file:/var/folders/6g/6grtCwPMEf4sqHUPpy6xQG9ByHg/-Tmp-/heyongqiang/hive_2010-11-18_11-05-27_421_7482213301780796952/-mr-10000
+POSTHOOK: Output: file:/tmp/sdong/hive_2011-02-10_17-06-57_080_8193264678320216901/-mr-10000
 NULL
 NULL
 NULL
@@ -2374,7 +2374,7 @@ PREHOOK: type: QUERY
 POSTHOOK: query: explain select a.key from t3 a left semi join t2 b on a.key = b.key left outer join t1 c on a.key = c.key sort by a.key
 POSTHOOK: type: QUERY
 ABSTRACT SYNTAX TREE:
-  (TOK_QUERY (TOK_FROM (TOK_LEFTOUTERJOIN (TOK_LEFTSEMIJOIN (TOK_TABREF t3 a) (TOK_TABREF t2 b) (= (. (TOK_TABLE_OR_COL a) key) (. (TOK_TABLE_OR_COL b) key))) (TOK_TABREF t1 c) (= (. (TOK_TABLE_OR_COL a) key) (. (TOK_TABLE_OR_COL c) key)))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (. (TOK_TABLE_OR_COL a) key))) (TOK_SORTBY (TOK_TABSORTCOLNAMEASC (. (TOK_TABLE_OR_COL a) key)))))
+  (TOK_QUERY (TOK_FROM (TOK_LEFTOUTERJOIN (TOK_LEFTSEMIJOIN (TOK_TABREF (TOK_TABNAME t3) a) (TOK_TABREF (TOK_TABNAME t2) b) (= (. (TOK_TABLE_OR_COL a) key) (. (TOK_TABLE_OR_COL b) key))) (TOK_TABREF (TOK_TABNAME t1) c) (= (. (TOK_TABLE_OR_COL a) key) (. (TOK_TABLE_OR_COL c) key)))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (. (TOK_TABLE_OR_COL a) key))) (TOK_SORTBY (TOK_TABSORTCOLNAMEASC (. (TOK_TABLE_OR_COL a) key)))))
 
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -2462,7 +2462,7 @@ STAGE PLANS:
   Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/var/folders/6g/6grtCwPMEf4sqHUPpy6xQG9ByHg/-Tmp-/heyongqiang/hive_2010-11-18_11-05-43_118_4112077673076844815/-mr-10002 
+        file:/tmp/sdong/hive_2011-02-10_17-07-04_107_6251353695567907652/-mr-10002 
             Reduce Output Operator
               key expressions:
                     expr: _col0
@@ -2491,13 +2491,13 @@ PREHOOK: type: QUERY
 PREHOOK: Input: default@t1
 PREHOOK: Input: default@t2
 PREHOOK: Input: default@t3
-PREHOOK: Output: file:/var/folders/6g/6grtCwPMEf4sqHUPpy6xQG9ByHg/-Tmp-/heyongqiang/hive_2010-11-18_11-05-43_554_6913778118057933477/-mr-10000
+PREHOOK: Output: file:/tmp/sdong/hive_2011-02-10_17-07-04_211_3457575679962196635/-mr-10000
 POSTHOOK: query: select a.key from t3 a left semi join t2 b on a.key = b.key left outer join t1 c on a.key = c.key sort by a.key
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@t1
 POSTHOOK: Input: default@t2
 POSTHOOK: Input: default@t3
-POSTHOOK: Output: file:/var/folders/6g/6grtCwPMEf4sqHUPpy6xQG9ByHg/-Tmp-/heyongqiang/hive_2010-11-18_11-05-43_554_6913778118057933477/-mr-10000
+POSTHOOK: Output: file:/tmp/sdong/hive_2011-02-10_17-07-04_211_3457575679962196635/-mr-10000
 0
 0
 0
@@ -2532,7 +2532,7 @@ PREHOOK: type: QUERY
 POSTHOOK: query: explain select a.key from t3 a left semi join t2 b on a.key = b.key right outer join t1 c on a.key = c.key sort by a.key
 POSTHOOK: type: QUERY
 ABSTRACT SYNTAX TREE:
-  (TOK_QUERY (TOK_FROM (TOK_RIGHTOUTERJOIN (TOK_LEFTSEMIJOIN (TOK_TABREF t3 a) (TOK_TABREF t2 b) (= (. (TOK_TABLE_OR_COL a) key) (. (TOK_TABLE_OR_COL b) key))) (TOK_TABREF t1 c) (= (. (TOK_TABLE_OR_COL a) key) (. (TOK_TABLE_OR_COL c) key)))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (. (TOK_TABLE_OR_COL a) key))) (TOK_SORTBY (TOK_TABSORTCOLNAMEASC (. (TOK_TABLE_OR_COL a) key)))))
+  (TOK_QUERY (TOK_FROM (TOK_RIGHTOUTERJOIN (TOK_LEFTSEMIJOIN (TOK_TABREF (TOK_TABNAME t3) a) (TOK_TABREF (TOK_TABNAME t2) b) (= (. (TOK_TABLE_OR_COL a) key) (. (TOK_TABLE_OR_COL b) key))) (TOK_TABREF (TOK_TABNAME t1) c) (= (. (TOK_TABLE_OR_COL a) key) (. (TOK_TABLE_OR_COL c) key)))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (. (TOK_TABLE_OR_COL a) key))) (TOK_SORTBY (TOK_TABSORTCOLNAMEASC (. (TOK_TABLE_OR_COL a) key)))))
 
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -2620,7 +2620,7 @@ STAGE PLANS:
   Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/var/folders/6g/6grtCwPMEf4sqHUPpy6xQG9ByHg/-Tmp-/heyongqiang/hive_2010-11-18_11-05-59_032_4567135017384415264/-mr-10002 
+        file:/tmp/sdong/hive_2011-02-10_17-07-11_322_7072549615087920137/-mr-10002 
             Reduce Output Operator
               key expressions:
                     expr: _col0
@@ -2649,13 +2649,13 @@ PREHOOK: type: QUERY
 PREHOOK: Input: default@t1
 PREHOOK: Input: default@t2
 PREHOOK: Input: default@t3
-PREHOOK: Output: file:/var/folders/6g/6grtCwPMEf4sqHUPpy6xQG9ByHg/-Tmp-/heyongqiang/hive_2010-11-18_11-05-59_146_932092442279199935/-mr-10000
+PREHOOK: Output: file:/tmp/sdong/hive_2011-02-10_17-07-11_426_2212605511914985664/-mr-10000
 POSTHOOK: query: select a.key from t3 a left semi join t2 b on a.key = b.key right outer join t1 c on a.key = c.key sort by a.key
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@t1
 POSTHOOK: Input: default@t2
 POSTHOOK: Input: default@t3
-POSTHOOK: Output: file:/var/folders/6g/6grtCwPMEf4sqHUPpy6xQG9ByHg/-Tmp-/heyongqiang/hive_2010-11-18_11-05-59_146_932092442279199935/-mr-10000
+POSTHOOK: Output: file:/tmp/sdong/hive_2011-02-10_17-07-11_426_2212605511914985664/-mr-10000
 NULL
 NULL
 NULL
@@ -2692,7 +2692,7 @@ PREHOOK: type: QUERY
 POSTHOOK: query: explain select a.key from t3 a left semi join t1 b on a.key = b.key full outer join t2 c on a.key = c.key sort by a.key
 POSTHOOK: type: QUERY
 ABSTRACT SYNTAX TREE:
-  (TOK_QUERY (TOK_FROM (TOK_FULLOUTERJOIN (TOK_LEFTSEMIJOIN (TOK_TABREF t3 a) (TOK_TABREF t1 b) (= (. (TOK_TABLE_OR_COL a) key) (. (TOK_TABLE_OR_COL b) key))) (TOK_TABREF t2 c) (= (. (TOK_TABLE_OR_COL a) key) (. (TOK_TABLE_OR_COL c) key)))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (. (TOK_TABLE_OR_COL a) key))) (TOK_SORTBY (TOK_TABSORTCOLNAMEASC (. (TOK_TABLE_OR_COL a) key)))))
+  (TOK_QUERY (TOK_FROM (TOK_FULLOUTERJOIN (TOK_LEFTSEMIJOIN (TOK_TABREF (TOK_TABNAME t3) a) (TOK_TABREF (TOK_TABNAME t1) b) (= (. (TOK_TABLE_OR_COL a) key) (. (TOK_TABLE_OR_COL b) key))) (TOK_TABREF (TOK_TABNAME t2) c) (= (. (TOK_TABLE_OR_COL a) key) (. (TOK_TABLE_OR_COL c) key)))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (. (TOK_TABLE_OR_COL a) key))) (TOK_SORTBY (TOK_TABSORTCOLNAMEASC (. (TOK_TABLE_OR_COL a) key)))))
 
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -2780,7 +2780,7 @@ STAGE PLANS:
   Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/var/folders/6g/6grtCwPMEf4sqHUPpy6xQG9ByHg/-Tmp-/heyongqiang/hive_2010-11-18_11-06-15_877_648799003197473512/-mr-10002 
+        file:/tmp/sdong/hive_2011-02-10_17-07-18_609_2326696937241485221/-mr-10002 
             Reduce Output Operator
               key expressions:
                     expr: _col0
@@ -2809,13 +2809,13 @@ PREHOOK: type: QUERY
 PREHOOK: Input: default@t1
 PREHOOK: Input: default@t2
 PREHOOK: Input: default@t3
-PREHOOK: Output: file:/var/folders/6g/6grtCwPMEf4sqHUPpy6xQG9ByHg/-Tmp-/heyongqiang/hive_2010-11-18_11-06-15_976_6198373402363644273/-mr-10000
+PREHOOK: Output: file:/tmp/sdong/hive_2011-02-10_17-07-18_713_5822041319246326513/-mr-10000
 POSTHOOK: query: select a.key from t3 a left semi join t1 b on a.key = b.key full outer join t2 c on a.key = c.key sort by a.key
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@t1
 POSTHOOK: Input: default@t2
 POSTHOOK: Input: default@t3
-POSTHOOK: Output: file:/var/folders/6g/6grtCwPMEf4sqHUPpy6xQG9ByHg/-Tmp-/heyongqiang/hive_2010-11-18_11-06-15_976_6198373402363644273/-mr-10000
+POSTHOOK: Output: file:/tmp/sdong/hive_2011-02-10_17-07-18_713_5822041319246326513/-mr-10000
 NULL
 NULL
 NULL
@@ -2863,7 +2863,7 @@ PREHOOK: type: QUERY
 POSTHOOK: query: explain select a.key from t3 a left semi join t2 b on a.key = b.key left outer join t1 c on a.value = c.value sort by a.key
 POSTHOOK: type: QUERY
 ABSTRACT SYNTAX TREE:
-  (TOK_QUERY (TOK_FROM (TOK_LEFTOUTERJOIN (TOK_LEFTSEMIJOIN (TOK_TABREF t3 a) (TOK_TABREF t2 b) (= (. (TOK_TABLE_OR_COL a) key) (. (TOK_TABLE_OR_COL b) key))) (TOK_TABREF t1 c) (= (. (TOK_TABLE_OR_COL a) value) (. (TOK_TABLE_OR_COL c) value)))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (. (TOK_TABLE_OR_COL a) key))) (TOK_SORTBY (TOK_TABSORTCOLNAMEASC (. (TOK_TABLE_OR_COL a) key)))))
+  (TOK_QUERY (TOK_FROM (TOK_LEFTOUTERJOIN (TOK_LEFTSEMIJOIN (TOK_TABREF (TOK_TABNAME t3) a) (TOK_TABREF (TOK_TABNAME t2) b) (= (. (TOK_TABLE_OR_COL a) key) (. (TOK_TABLE_OR_COL b) key))) (TOK_TABREF (TOK_TABNAME t1) c) (= (. (TOK_TABLE_OR_COL a) value) (. (TOK_TABLE_OR_COL c) value)))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (. (TOK_TABLE_OR_COL a) key))) (TOK_SORTBY (TOK_TABSORTCOLNAMEASC (. (TOK_TABLE_OR_COL a) key)))))
 
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -2984,7 +2984,7 @@ STAGE PLANS:
   Stage: Stage-3
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/var/folders/6g/6grtCwPMEf4sqHUPpy6xQG9ByHg/-Tmp-/heyongqiang/hive_2010-11-18_11-06-33_848_5227894741694043284/-mr-10003 
+        file:/tmp/sdong/hive_2011-02-10_17-07-25_999_7077184010366818399/-mr-10003 
             Reduce Output Operator
               key expressions:
                     expr: _col0
@@ -3013,13 +3013,13 @@ PREHOOK: type: QUERY
 PREHOOK: Input: default@t1
 PREHOOK: Input: default@t2
 PREHOOK: Input: default@t3
-PREHOOK: Output: file:/var/folders/6g/6grtCwPMEf4sqHUPpy6xQG9ByHg/-Tmp-/heyongqiang/hive_2010-11-18_11-06-34_080_237734989555410900/-mr-10000
+PREHOOK: Output: file:/tmp/sdong/hive_2011-02-10_17-07-26_116_7797736579721782344/-mr-10000
 POSTHOOK: query: select a.key from t3 a left semi join t2 b on a.key = b.key left outer join t1 c on a.value = c.value sort by a.key
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@t1
 POSTHOOK: Input: default@t2
 POSTHOOK: Input: default@t3
-POSTHOOK: Output: file:/var/folders/6g/6grtCwPMEf4sqHUPpy6xQG9ByHg/-Tmp-/heyongqiang/hive_2010-11-18_11-06-34_080_237734989555410900/-mr-10000
+POSTHOOK: Output: file:/tmp/sdong/hive_2011-02-10_17-07-26_116_7797736579721782344/-mr-10000
 0
 0
 0

@@ -1,3 +1,19 @@
+/**
+   Licensed to the Apache Software Foundation (ASF) under one or more
+   contributor license agreements.  See the NOTICE file distributed with
+   this work for additional information regarding copyright ownership.
+   The ASF licenses this file to You under the Apache License, Version 2.0
+   (the "License"); you may not use this file except in compliance with
+   the License.  You may obtain a copy of the License at
+
+       http://www.apache.org/licenses/LICENSE-2.0
+
+   Unless required by applicable law or agreed to in writing, software
+   distributed under the License is distributed on an "AS IS" BASIS,
+   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+   See the License for the specific language governing permissions and
+   limitations under the License.
+*/
 grammar Hive;
 
 options
@@ -222,6 +238,8 @@ TOK_DESCDATABASE;
 TOK_DATABASEPROPERTIES;
 TOK_DBPROPLIST;
 TOK_ALTERDATABASE_PROPERTIES;
+TOK_TABNAME;
+TOK_TABSRC;
 }
 
 
@@ -266,7 +284,7 @@ execStatement
 loadStatement
 @init { msgs.push("load statement"); }
 @after { msgs.pop(); }
-    : KW_LOAD KW_DATA (islocal=KW_LOCAL)? KW_INPATH (path=StringLiteral) (isoverwrite=KW_OVERWRITE)? KW_INTO KW_TABLE (tab=tabName)
+    : KW_LOAD KW_DATA (islocal=KW_LOCAL)? KW_INPATH (path=StringLiteral) (isoverwrite=KW_OVERWRITE)? KW_INTO KW_TABLE (tab=tableOrPartition)
     -> ^(TOK_LOAD $path $tab $islocal? $isoverwrite?)
     ;
 
@@ -366,8 +384,8 @@ databaseComment
 createTableStatement
 @init { msgs.push("create table statement"); }
 @after { msgs.pop(); }
-    : KW_CREATE (ext=KW_EXTERNAL)? KW_TABLE ifNotExists? name=Identifier
-      (  like=KW_LIKE likeName=Identifier
+    : KW_CREATE (ext=KW_EXTERNAL)? KW_TABLE ifNotExists? name=tableName
+      (  like=KW_LIKE likeName=tableName
          tableLocation?
        | (LPAREN columnNameTypeList RPAREN)?
          tableComment?
@@ -397,7 +415,7 @@ createIndexStatement
 @init { msgs.push("create index statement");}
 @after {msgs.pop();}
     : KW_CREATE KW_INDEX indexName=Identifier
-      KW_ON KW_TABLE tab=Identifier LPAREN indexedCols=columnNameList RPAREN
+      KW_ON KW_TABLE tab=tableName LPAREN indexedCols=columnNameList RPAREN
       KW_AS typeName=StringLiteral
       autoRebuild?
       indexPropertiesPrefixed?
@@ -435,7 +453,7 @@ autoRebuild
 indexTblName
 @init { msgs.push("index table name");}
 @after {msgs.pop();}
-    : KW_IN KW_TABLE indexTbl=Identifier
+    : KW_IN KW_TABLE indexTbl=tableName
     ->^(TOK_CREATEINDEX_INDEXTBLNAME $indexTbl)
     ;
 
@@ -463,14 +481,14 @@ indexPropertiesList
 dropIndexStatement
 @init { msgs.push("drop index statement");}
 @after {msgs.pop();}
-    : KW_DROP KW_INDEX ifExists? indexName=Identifier KW_ON tab=Identifier
+    : KW_DROP KW_INDEX ifExists? indexName=Identifier KW_ON tab=tableName
     ->^(TOK_DROPINDEX $indexName $tab ifExists?)
     ;
 
 dropTableStatement
 @init { msgs.push("drop statement"); }
 @after { msgs.pop(); }
-    : KW_DROP KW_TABLE ifExists? Identifier -> ^(TOK_DROPTABLE Identifier ifExists?)
+    : KW_DROP KW_TABLE ifExists? tableName -> ^(TOK_DROPTABLE tableName ifExists?)
     ;
 
 alterStatement
@@ -515,15 +533,15 @@ alterIndexStatementSuffix
 @init { msgs.push("alter index statement"); }
 @after { msgs.pop(); }
     : indexName=Identifier
-      (KW_ON tableName=Identifier)
+      (KW_ON tableNameId=Identifier)
       partitionSpec?
     (
       KW_REBUILD
-      ->^(TOK_ALTERINDEX_REBUILD $tableName $indexName partitionSpec?)
+      ->^(TOK_ALTERINDEX_REBUILD $tableNameId $indexName partitionSpec?)
     |
       KW_SET KW_IDXPROPERTIES
       indexProperties
-      ->^(TOK_ALTERINDEX_PROPERTIES $tableName $indexName indexProperties)
+      ->^(TOK_ALTERINDEX_PROPERTIES $tableNameId $indexName indexProperties)
     )
     ;
 
@@ -737,7 +755,7 @@ descStatement
 analyzeStatement
 @init { msgs.push("analyze statement"); }
 @after { msgs.pop(); }
-    : KW_ANALYZE KW_TABLE (parttype=partTypeExpr) KW_COMPUTE KW_STATISTICS -> ^(TOK_ANALYZE $parttype)
+    : KW_ANALYZE KW_TABLE (parttype=tableOrPartition) KW_COMPUTE KW_STATISTICS -> ^(TOK_ANALYZE $parttype)
     ;
 
 showStatement
@@ -757,7 +775,7 @@ showStatement
 lockStatement
 @init { msgs.push("lock statement"); }
 @after { msgs.pop(); }
-    : KW_LOCK KW_TABLE Identifier partitionSpec? lockMode -> ^(TOK_LOCKTABLE Identifier lockMode partitionSpec?)
+    : KW_LOCK KW_TABLE tableName partitionSpec? lockMode -> ^(TOK_LOCKTABLE tableName lockMode partitionSpec?)
     ;
 
 lockMode
@@ -769,7 +787,7 @@ lockMode
 unlockStatement
 @init { msgs.push("unlock statement"); }
 @after { msgs.pop(); }
-    : KW_UNLOCK KW_TABLE Identifier partitionSpec?  -> ^(TOK_UNLOCKTABLE Identifier partitionSpec?)
+    : KW_UNLOCK KW_TABLE tableName partitionSpec?  -> ^(TOK_UNLOCKTABLE tableName partitionSpec?)
     ;
 
 createRoleStatement
@@ -920,7 +938,7 @@ createViewStatement
     msgs.push("create view statement");
 }
 @after { msgs.pop(); }
-    : KW_CREATE KW_VIEW ifNotExists? name=Identifier
+    : KW_CREATE KW_VIEW ifNotExists? name=tableName
         (LPAREN columnNameCommentList RPAREN)? tableComment?
         tablePropertiesPrefixed?
         KW_AS
@@ -936,7 +954,7 @@ createViewStatement
 dropViewStatement
 @init { msgs.push("drop view statement"); }
 @after { msgs.pop(); }
-    : KW_DROP KW_VIEW ifExists? Identifier -> ^(TOK_DROPVIEW Identifier ifExists?)
+    : KW_DROP KW_VIEW ifExists? viewName -> ^(TOK_DROPVIEW viewName ifExists?)
     ;
 
 showStmtIdentifier
@@ -1329,7 +1347,7 @@ destination
    :
      KW_LOCAL KW_DIRECTORY StringLiteral -> ^(TOK_LOCAL_DIR StringLiteral)
    | KW_DIRECTORY StringLiteral -> ^(TOK_DIR StringLiteral)
-   | KW_TABLE tabName -> ^(tabName)
+   | KW_TABLE tableOrPartition -> ^(tableOrPartition)
    ;
 
 limitClause
@@ -1455,9 +1473,10 @@ selectExpressionList
 //-----------------------------------------------------------------------------------
 
 tableAllColumns
-    :
-    STAR -> ^(TOK_ALLCOLREF)
-    | Identifier DOT STAR -> ^(TOK_ALLCOLREF Identifier)
+    : STAR
+        -> ^(TOK_ALLCOLREF)
+    | tableName DOT STAR
+        -> ^(TOK_ALLCOLREF tableName)
     ;
 
 // (table|column)
@@ -1558,9 +1577,23 @@ tableSample
 tableSource
 @init { msgs.push("table source"); }
 @after { msgs.pop(); }
-    :
-    tabname=Identifier (ts=tableSample)? (alias=Identifier)? -> ^(TOK_TABREF $tabname $ts? $alias?)
+    : tabname=tableName (ts=tableSample)? (alias=Identifier)?
+    -> ^(TOK_TABREF $tabname $ts? $alias?)
+    ;
 
+tableName
+@init { msgs.push("table name"); }
+@after { msgs.pop(); }
+    : (db=Identifier DOT)? tab=Identifier
+    -> ^(TOK_TABNAME $db? $tab)
+    ;
+
+viewName
+@init { msgs.push("view name"); }
+@after { msgs.pop(); }
+    :
+    (db=Identifier DOT)? view=Identifier
+    -> ^(TOK_TABNAME $db? $view)
     ;
 
 subQuerySource
@@ -1890,9 +1923,9 @@ booleanValue
     KW_TRUE^ | KW_FALSE^
     ;
 
-tabName
+tableOrPartition
    :
-   Identifier partitionSpec? -> ^(TOK_TAB Identifier partitionSpec?)
+   tableName partitionSpec? -> ^(TOK_TAB tableName partitionSpec?)
    ;
 
 partitionSpec

@@ -19,7 +19,7 @@ ON a.key = b.key
 ORDER BY key LIMIT 10
 POSTHOOK: type: QUERY
 ABSTRACT SYNTAX TREE:
-  (TOK_QUERY (TOK_FROM (TOK_JOIN (TOK_TABREF src a) (TOK_TABREF src b) (= (. (TOK_TABLE_OR_COL a) key) (. (TOK_TABLE_OR_COL b) key)))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_FUNCTION CASE (. (TOK_TABLE_OR_COL a) key) '1' 2 '3' 4 5) key)) (TOK_ORDERBY (TOK_TABSORTCOLNAMEASC (TOK_TABLE_OR_COL key))) (TOK_LIMIT 10)))
+  (TOK_QUERY (TOK_FROM (TOK_JOIN (TOK_TABREF (TOK_TABNAME src) a) (TOK_TABREF (TOK_TABNAME src) b) (= (. (TOK_TABLE_OR_COL a) key) (. (TOK_TABLE_OR_COL b) key)))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_FUNCTION CASE (. (TOK_TABLE_OR_COL a) key) '1' 2 '3' 4 5) key)) (TOK_ORDERBY (TOK_TABSORTCOLNAMEASC (TOK_TABLE_OR_COL key))) (TOK_LIMIT 10)))
 
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -81,7 +81,7 @@ STAGE PLANS:
   Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/data/users/zshao/hadoop_hive_trunk2/.ptest_0/build/ql/scratchdir/hive_2010-02-12_22-40-56_328_3918398179294085207/10002 
+        file:/tmp/sdong/hive_2011-02-10_17-31-08_047_5397855627467107431/-mr-10002 
             Reduce Output Operator
               key expressions:
                     expr: _col0
@@ -116,7 +116,7 @@ ON a.key = b.key
 ORDER BY key LIMIT 10
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/data/users/zshao/hadoop_hive_trunk2/.ptest_0/build/ql/scratchdir/hive_2010-02-12_22-40-56_386_3460624776357253178/10000
+PREHOOK: Output: file:/tmp/sdong/hive_2011-02-10_17-31-08_144_3622242941929236732/-mr-10000
 POSTHOOK: query: SELECT CASE a.key
         WHEN '1' THEN 2
         WHEN '3' THEN 4
@@ -127,7 +127,7 @@ ON a.key = b.key
 ORDER BY key LIMIT 10
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: file:/data/users/zshao/hadoop_hive_trunk2/.ptest_0/build/ql/scratchdir/hive_2010-02-12_22-40-56_386_3460624776357253178/10000
+POSTHOOK: Output: file:/tmp/sdong/hive_2011-02-10_17-31-08_144_3622242941929236732/-mr-10000
 5
 5
 5

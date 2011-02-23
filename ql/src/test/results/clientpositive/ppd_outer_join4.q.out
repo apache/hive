@@ -23,7 +23,7 @@ POSTHOOK: query: EXPLAIN
  WHERE a.key > '10' AND a.key < '20' AND b.key > '15' AND b.key < '25' AND sqrt(c.key) <> 13
 POSTHOOK: type: QUERY
 ABSTRACT SYNTAX TREE:
-  (TOK_QUERY (TOK_FROM (TOK_RIGHTOUTERJOIN (TOK_LEFTOUTERJOIN (TOK_TABREF src a) (TOK_TABREF src b) (= (. (TOK_TABLE_OR_COL a) key) (. (TOK_TABLE_OR_COL b) key))) (TOK_TABREF src c) (= (. (TOK_TABLE_OR_COL a) key) (. (TOK_TABLE_OR_COL c) key)))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (. (TOK_TABLE_OR_COL a) key)) (TOK_SELEXPR (. (TOK_TABLE_OR_COL a) value)) (TOK_SELEXPR (. (TOK_TABLE_OR_COL b) key)) (TOK_SELEXPR (. (TOK_TABLE_OR_COL b) value)) (TOK_SELEXPR (. (TOK_TABLE_OR_COL c) key))) (TOK_WHERE (AND (AND (AND (AND (> (. (TOK_TABLE_OR_COL a) key) '10') (< (. (TOK_TABLE_OR_COL a) key) '20')) (> (. (TOK_TABLE_OR_COL b) key) '15')) (< (. (TOK_TABLE_OR_COL b) key) '25')) (<> (TOK_FUNCTION sqrt (. (TOK_TABLE_OR_COL c) key)) 13)))))
+  (TOK_QUERY (TOK_FROM (TOK_RIGHTOUTERJOIN (TOK_LEFTOUTERJOIN (TOK_TABREF (TOK_TABNAME src) a) (TOK_TABREF (TOK_TABNAME src) b) (= (. (TOK_TABLE_OR_COL a) key) (. (TOK_TABLE_OR_COL b) key))) (TOK_TABREF (TOK_TABNAME src) c) (= (. (TOK_TABLE_OR_COL a) key) (. (TOK_TABLE_OR_COL c) key)))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (. (TOK_TABLE_OR_COL a) key)) (TOK_SELEXPR (. (TOK_TABLE_OR_COL a) value)) (TOK_SELEXPR (. (TOK_TABLE_OR_COL b) key)) (TOK_SELEXPR (. (TOK_TABLE_OR_COL b) value)) (TOK_SELEXPR (. (TOK_TABLE_OR_COL c) key))) (TOK_WHERE (AND (AND (AND (AND (> (. (TOK_TABLE_OR_COL a) key) '10') (< (. (TOK_TABLE_OR_COL a) key) '20')) (> (. (TOK_TABLE_OR_COL b) key) '15')) (< (. (TOK_TABLE_OR_COL b) key) '25')) (<> (TOK_FUNCTION sqrt (. (TOK_TABLE_OR_COL c) key)) 13)))))
 
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -134,7 +134,7 @@ PREHOOK: query: FROM
  WHERE a.key > '10' AND a.key < '20' AND b.key > '15' AND b.key < '25' AND sqrt(c.key) <> 13
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/var/folders/6g/6grtCwPMEf4sqHUPpy6xQG9ByHg/-Tmp-/heyongqiang/hive_2010-07-29_13-24-23_156_7722827221052399095/-mr-10000
+PREHOOK: Output: file:/tmp/sdong/hive_2011-02-10_16-57-26_835_1439714224998684331/-mr-10000
 POSTHOOK: query: FROM 
   src a
  LEFT OUTER JOIN
@@ -147,7 +147,7 @@ POSTHOOK: query: FROM
  WHERE a.key > '10' AND a.key < '20' AND b.key > '15' AND b.key < '25' AND sqrt(c.key) <> 13
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: file:/var/folders/6g/6grtCwPMEf4sqHUPpy6xQG9ByHg/-Tmp-/heyongqiang/hive_2010-07-29_13-24-23_156_7722827221052399095/-mr-10000
+POSTHOOK: Output: file:/tmp/sdong/hive_2011-02-10_16-57-26_835_1439714224998684331/-mr-10000
 150	val_150	150	val_150	150
 152	val_152	152	val_152	152
 152	val_152	152	val_152	152

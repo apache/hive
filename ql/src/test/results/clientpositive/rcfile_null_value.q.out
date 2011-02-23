@@ -16,11 +16,11 @@ POSTHOOK: Lineage: src1_rc.value SIMPLE [(src1)src1.FieldSchema(name:value, type
 PREHOOK: query: SELECT * FROM src1_rc
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src1_rc
-PREHOOK: Output: file:/tmp/nzhang/hive_2010-09-14_17-21-57_139_2164061306153672083/-mr-10000
+PREHOOK: Output: file:/tmp/sdong/hive_2011-02-10_17-01-12_273_475781980443789988/-mr-10000
 POSTHOOK: query: SELECT * FROM src1_rc
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src1_rc
-POSTHOOK: Output: file:/tmp/nzhang/hive_2010-09-14_17-21-57_139_2164061306153672083/-mr-10000
+POSTHOOK: Output: file:/tmp/sdong/hive_2011-02-10_17-01-12_273_475781980443789988/-mr-10000
 POSTHOOK: Lineage: src1_rc.key SIMPLE [(src1)src1.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: src1_rc.value SIMPLE [(src1)src1.FieldSchema(name:value, type:string, comment:default), ]
 238	val_238
@@ -88,7 +88,7 @@ POSTHOOK: type: QUERY
 POSTHOOK: Lineage: src1_rc.key SIMPLE [(src1)src1.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: src1_rc.value SIMPLE [(src1)src1.FieldSchema(name:value, type:string, comment:default), ]
 ABSTRACT SYNTAX TREE:
-  (TOK_QUERY (TOK_FROM (TOK_SUBQUERY (TOK_QUERY (TOK_FROM (TOK_RIGHTOUTERJOIN (TOK_SUBQUERY (TOK_QUERY (TOK_FROM (TOK_TABREF src src1)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (. (TOK_TABLE_OR_COL src1) key) c1) (TOK_SELEXPR (. (TOK_TABLE_OR_COL src1) value) c2)) (TOK_WHERE (and (> (. (TOK_TABLE_OR_COL src1) key) 10) (< (. (TOK_TABLE_OR_COL src1) key) 20))))) a) (TOK_SUBQUERY (TOK_QUERY (TOK_FROM (TOK_TABREF src src2)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (. (TOK_TABLE_OR_COL src2) key) c3) (TOK_SELEXPR (. (TOK_TABLE_OR_COL src2) value) c4)) (TOK_WHERE (and (> (. (TOK_TABLE_OR_COL src2) key) 15) (< (. (TOK_TABLE_OR_COL src2) key) 25))))) b) (= (. (TOK_TABLE_OR_COL a) c1) (. (TOK_TABLE_OR_COL b) c3)))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (. (TOK_TABLE_OR_COL a) c1) c1) (TOK_SELEXPR (. (TOK_TABLE_OR_COL a) c2) c2) (TOK_SELEXPR (. (TOK_TABLE_OR_COL b) c3) c3) (TOK_SELEXPR (. (TOK_TABLE_OR_COL b) c4) c4)))) c)) (TOK_INSERT (TOK_DESTINATION (TOK_TAB dest1_rc)) (TOK_SELECT (TOK_SELEXPR (. (TOK_TABLE_OR_COL c) c1)) (TOK_SELEXPR (. (TOK_TABLE_OR_COL c) c2)) (TOK_SELEXPR (. (TOK_TABLE_OR_COL c) c3)) (TOK_SELEXPR (. (TOK_TABLE_OR_COL c) c4)))))
+  (TOK_QUERY (TOK_FROM (TOK_SUBQUERY (TOK_QUERY (TOK_FROM (TOK_RIGHTOUTERJOIN (TOK_SUBQUERY (TOK_QUERY (TOK_FROM (TOK_TABREF (TOK_TABNAME src) src1)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (. (TOK_TABLE_OR_COL src1) key) c1) (TOK_SELEXPR (. (TOK_TABLE_OR_COL src1) value) c2)) (TOK_WHERE (and (> (. (TOK_TABLE_OR_COL src1) key) 10) (< (. (TOK_TABLE_OR_COL src1) key) 20))))) a) (TOK_SUBQUERY (TOK_QUERY (TOK_FROM (TOK_TABREF (TOK_TABNAME src) src2)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (. (TOK_TABLE_OR_COL src2) key) c3) (TOK_SELEXPR (. (TOK_TABLE_OR_COL src2) value) c4)) (TOK_WHERE (and (> (. (TOK_TABLE_OR_COL src2) key) 15) (< (. (TOK_TABLE_OR_COL src2) key) 25))))) b) (= (. (TOK_TABLE_OR_COL a) c1) (. (TOK_TABLE_OR_COL b) c3)))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (. (TOK_TABLE_OR_COL a) c1) c1) (TOK_SELEXPR (. (TOK_TABLE_OR_COL a) c2) c2) (TOK_SELEXPR (. (TOK_TABLE_OR_COL b) c3) c3) (TOK_SELEXPR (. (TOK_TABLE_OR_COL b) c4) c4)))) c)) (TOK_INSERT (TOK_DESTINATION (TOK_TAB (TOK_TABNAME dest1_rc))) (TOK_SELECT (TOK_SELEXPR (. (TOK_TABLE_OR_COL c) c1)) (TOK_SELEXPR (. (TOK_TABLE_OR_COL c) c2)) (TOK_SELEXPR (. (TOK_TABLE_OR_COL c) c3)) (TOK_SELEXPR (. (TOK_TABLE_OR_COL c) c4)))))
 
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -212,7 +212,7 @@ STAGE PLANS:
                       input format: org.apache.hadoop.hive.ql.io.RCFileInputFormat
                       output format: org.apache.hadoop.hive.ql.io.RCFileOutputFormat
                       serde: org.apache.hadoop.hive.serde2.columnar.ColumnarSerDe
-                      name: dest1_rc
+                      name: default.dest1_rc
 
   Stage: Stage-0
     Move Operator
@@ -222,7 +222,7 @@ STAGE PLANS:
               input format: org.apache.hadoop.hive.ql.io.RCFileInputFormat
               output format: org.apache.hadoop.hive.ql.io.RCFileOutputFormat
               serde: org.apache.hadoop.hive.serde2.columnar.ColumnarSerDe
-              name: dest1_rc
+              name: default.dest1_rc
 
   Stage: Stage-2
     Stats-Aggr Operator
@@ -269,11 +269,11 @@ POSTHOOK: Lineage: src1_rc.value SIMPLE [(src1)src1.FieldSchema(name:value, type
 PREHOOK: query: SELECT dest1_rc.* FROM dest1_rc
 PREHOOK: type: QUERY
 PREHOOK: Input: default@dest1_rc
-PREHOOK: Output: file:/tmp/nzhang/hive_2010-09-14_17-22-05_391_6302655231306765287/-mr-10000
+PREHOOK: Output: file:/tmp/sdong/hive_2011-02-10_17-01-17_670_7681446333893033573/-mr-10000
 POSTHOOK: query: SELECT dest1_rc.* FROM dest1_rc
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@dest1_rc
-POSTHOOK: Output: file:/tmp/nzhang/hive_2010-09-14_17-22-05_391_6302655231306765287/-mr-10000
+POSTHOOK: Output: file:/tmp/sdong/hive_2011-02-10_17-01-17_670_7681446333893033573/-mr-10000
 POSTHOOK: Lineage: dest1_rc.c1 EXPRESSION [(src)src1.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: dest1_rc.c2 SIMPLE [(src)src1.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: dest1_rc.c3 EXPRESSION [(src)src2.FieldSchema(name:key, type:string, comment:default), ]

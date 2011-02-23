@@ -52,7 +52,7 @@ FROM src src1 JOIN src src2 ON (src1.key = src2.key)
 INSERT OVERWRITE TABLE dest_j1 SELECT src1.key, src2.value
 POSTHOOK: type: QUERY
 ABSTRACT SYNTAX TREE:
-  (TOK_QUERY (TOK_FROM (TOK_JOIN (TOK_TABREF src src1) (TOK_TABREF src src2) (= (. (TOK_TABLE_OR_COL src1) key) (. (TOK_TABLE_OR_COL src2) key)))) (TOK_INSERT (TOK_DESTINATION (TOK_TAB dest_j1)) (TOK_SELECT (TOK_SELEXPR (. (TOK_TABLE_OR_COL src1) key)) (TOK_SELEXPR (. (TOK_TABLE_OR_COL src2) value)))))
+  (TOK_QUERY (TOK_FROM (TOK_JOIN (TOK_TABREF (TOK_TABNAME src) src1) (TOK_TABREF (TOK_TABNAME src) src2) (= (. (TOK_TABLE_OR_COL src1) key) (. (TOK_TABLE_OR_COL src2) key)))) (TOK_INSERT (TOK_DESTINATION (TOK_TAB (TOK_TABNAME dest_j1))) (TOK_SELECT (TOK_SELEXPR (. (TOK_TABLE_OR_COL src1) key)) (TOK_SELEXPR (. (TOK_TABLE_OR_COL src2) value)))))
 
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -126,7 +126,7 @@ STAGE PLANS:
                     input format: org.apache.hadoop.mapred.TextInputFormat
                     output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                     serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                    name: dest_j1
+                    name: default.dest_j1
 
   Stage: Stage-5
     Conditional Operator
@@ -186,7 +186,7 @@ STAGE PLANS:
                         input format: org.apache.hadoop.mapred.TextInputFormat
                         output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                         serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                        name: dest_j1
+                        name: default.dest_j1
       Local Work:
         Map Reduce Local Work
 
@@ -198,7 +198,7 @@ STAGE PLANS:
               input format: org.apache.hadoop.mapred.TextInputFormat
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              name: dest_j1
+              name: default.dest_j1
 
   Stage: Stage-2
     Stats-Aggr Operator
@@ -219,11 +219,11 @@ POSTHOOK: Lineage: dest_j1.value SIMPLE [(src)src2.FieldSchema(name:value, type:
 PREHOOK: query: SELECT sum(hash(key)), sum(hash(value)) FROM dest_j1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@dest_j1
-PREHOOK: Output: file:/tmp/liyintang/hive_2010-11-04_13-24-02_177_6322462823933452249/-mr-10000
+PREHOOK: Output: file:/tmp/sdong/hive_2011-02-10_17-09-24_642_2468932754198583760/-mr-10000
 POSTHOOK: query: SELECT sum(hash(key)), sum(hash(value)) FROM dest_j1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@dest_j1
-POSTHOOK: Output: file:/tmp/liyintang/hive_2010-11-04_13-24-02_177_6322462823933452249/-mr-10000
+POSTHOOK: Output: file:/tmp/sdong/hive_2011-02-10_17-09-24_642_2468932754198583760/-mr-10000
 POSTHOOK: Lineage: dest_j1.key EXPRESSION [(src)src1.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: dest_j1.value SIMPLE [(src)src2.FieldSchema(name:value, type:string, comment:default), ]
 278697	101852390308
@@ -242,7 +242,7 @@ POSTHOOK: type: QUERY
 POSTHOOK: Lineage: dest_j1.key EXPRESSION [(src)src1.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: dest_j1.value SIMPLE [(src)src2.FieldSchema(name:value, type:string, comment:default), ]
 ABSTRACT SYNTAX TREE:
-  (TOK_QUERY (TOK_FROM (TOK_JOIN (TOK_JOIN (TOK_JOIN (TOK_TABREF T1 a) (TOK_TABREF T2 b) (= (. (TOK_TABLE_OR_COL a) key) (. (TOK_TABLE_OR_COL b) key))) (TOK_TABREF T3 c) (= (. (TOK_TABLE_OR_COL b) key) (. (TOK_TABLE_OR_COL c) key))) (TOK_TABREF T4 d) (= (. (TOK_TABLE_OR_COL c) key) (. (TOK_TABLE_OR_COL d) key)))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_HINTLIST (TOK_HINT TOK_STREAMTABLE (TOK_HINTARGLIST a))) (TOK_SELEXPR TOK_ALLCOLREF))))
+  (TOK_QUERY (TOK_FROM (TOK_JOIN (TOK_JOIN (TOK_JOIN (TOK_TABREF (TOK_TABNAME T1) a) (TOK_TABREF (TOK_TABNAME T2) b) (= (. (TOK_TABLE_OR_COL a) key) (. (TOK_TABLE_OR_COL b) key))) (TOK_TABREF (TOK_TABNAME T3) c) (= (. (TOK_TABLE_OR_COL b) key) (. (TOK_TABLE_OR_COL c) key))) (TOK_TABREF (TOK_TABNAME T4) d) (= (. (TOK_TABLE_OR_COL c) key) (. (TOK_TABLE_OR_COL d) key)))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_HINTLIST (TOK_HINT TOK_STREAMTABLE (TOK_HINTARGLIST a))) (TOK_SELEXPR TOK_ALLCOLREF))))
 
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -373,7 +373,7 @@ PREHOOK: Input: default@t1
 PREHOOK: Input: default@t2
 PREHOOK: Input: default@t3
 PREHOOK: Input: default@t4
-PREHOOK: Output: file:/tmp/liyintang/hive_2010-11-04_13-24-48_767_6312998778554021237/-mr-10000
+PREHOOK: Output: file:/tmp/sdong/hive_2011-02-10_17-09-38_293_3748436233439546/-mr-10000
 POSTHOOK: query: SELECT /*+ STREAMTABLE(a) */ *
 FROM T1 a JOIN T2 b ON a.key = b.key
           JOIN T3 c ON b.key = c.key
@@ -383,7 +383,7 @@ POSTHOOK: Input: default@t1
 POSTHOOK: Input: default@t2
 POSTHOOK: Input: default@t3
 POSTHOOK: Input: default@t4
-POSTHOOK: Output: file:/tmp/liyintang/hive_2010-11-04_13-24-48_767_6312998778554021237/-mr-10000
+POSTHOOK: Output: file:/tmp/sdong/hive_2011-02-10_17-09-38_293_3748436233439546/-mr-10000
 POSTHOOK: Lineage: dest_j1.key EXPRESSION [(src)src1.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: dest_j1.value SIMPLE [(src)src2.FieldSchema(name:value, type:string, comment:default), ]
 2	12	2	22	2	12	2	12
@@ -402,7 +402,7 @@ POSTHOOK: type: QUERY
 POSTHOOK: Lineage: dest_j1.key EXPRESSION [(src)src1.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: dest_j1.value SIMPLE [(src)src2.FieldSchema(name:value, type:string, comment:default), ]
 ABSTRACT SYNTAX TREE:
-  (TOK_QUERY (TOK_FROM (TOK_JOIN (TOK_JOIN (TOK_JOIN (TOK_TABREF T1 a) (TOK_TABREF T2 b) (= (. (TOK_TABLE_OR_COL a) key) (. (TOK_TABLE_OR_COL b) key))) (TOK_TABREF T3 c) (= (. (TOK_TABLE_OR_COL b) key) (. (TOK_TABLE_OR_COL c) key))) (TOK_TABREF T4 d) (= (. (TOK_TABLE_OR_COL c) key) (. (TOK_TABLE_OR_COL d) key)))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_HINTLIST (TOK_HINT TOK_STREAMTABLE (TOK_HINTARGLIST a c))) (TOK_SELEXPR TOK_ALLCOLREF))))
+  (TOK_QUERY (TOK_FROM (TOK_JOIN (TOK_JOIN (TOK_JOIN (TOK_TABREF (TOK_TABNAME T1) a) (TOK_TABREF (TOK_TABNAME T2) b) (= (. (TOK_TABLE_OR_COL a) key) (. (TOK_TABLE_OR_COL b) key))) (TOK_TABREF (TOK_TABNAME T3) c) (= (. (TOK_TABLE_OR_COL b) key) (. (TOK_TABLE_OR_COL c) key))) (TOK_TABREF (TOK_TABNAME T4) d) (= (. (TOK_TABLE_OR_COL c) key) (. (TOK_TABLE_OR_COL d) key)))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_HINTLIST (TOK_HINT TOK_STREAMTABLE (TOK_HINTARGLIST a c))) (TOK_SELEXPR TOK_ALLCOLREF))))
 
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -533,7 +533,7 @@ PREHOOK: Input: default@t1
 PREHOOK: Input: default@t2
 PREHOOK: Input: default@t3
 PREHOOK: Input: default@t4
-PREHOOK: Output: file:/tmp/liyintang/hive_2010-11-04_13-24-55_262_4307015827448578323/-mr-10000
+PREHOOK: Output: file:/tmp/sdong/hive_2011-02-10_17-09-42_943_1971937621048870984/-mr-10000
 POSTHOOK: query: SELECT /*+ STREAMTABLE(a,c) */ *
 FROM T1 a JOIN T2 b ON a.key = b.key
           JOIN T3 c ON b.key = c.key
@@ -543,7 +543,7 @@ POSTHOOK: Input: default@t1
 POSTHOOK: Input: default@t2
 POSTHOOK: Input: default@t3
 POSTHOOK: Input: default@t4
-POSTHOOK: Output: file:/tmp/liyintang/hive_2010-11-04_13-24-55_262_4307015827448578323/-mr-10000
+POSTHOOK: Output: file:/tmp/sdong/hive_2011-02-10_17-09-42_943_1971937621048870984/-mr-10000
 POSTHOOK: Lineage: dest_j1.key EXPRESSION [(src)src1.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: dest_j1.value SIMPLE [(src)src2.FieldSchema(name:value, type:string, comment:default), ]
 2	12	2	22	2	12	2	12
@@ -554,7 +554,7 @@ POSTHOOK: type: QUERY
 POSTHOOK: Lineage: dest_j1.key EXPRESSION [(src)src1.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: dest_j1.value SIMPLE [(src)src2.FieldSchema(name:value, type:string, comment:default), ]
 ABSTRACT SYNTAX TREE:
-  (TOK_QUERY (TOK_FROM (TOK_JOIN (TOK_TABREF T1 a) (TOK_TABREF src c) (= (+ (. (TOK_TABLE_OR_COL c) key) 1) (. (TOK_TABLE_OR_COL a) key)))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_HINTLIST (TOK_HINT TOK_STREAMTABLE (TOK_HINTARGLIST a))) (TOK_SELEXPR (TOK_FUNCTION sum (TOK_FUNCTION hash (. (TOK_TABLE_OR_COL a) key)))) (TOK_SELEXPR (TOK_FUNCTION sum (TOK_FUNCTION hash (. (TOK_TABLE_OR_COL a) val)))) (TOK_SELEXPR (TOK_FUNCTION sum (TOK_FUNCTION hash (. (TOK_TABLE_OR_COL c) key)))))))
+  (TOK_QUERY (TOK_FROM (TOK_JOIN (TOK_TABREF (TOK_TABNAME T1) a) (TOK_TABREF (TOK_TABNAME src) c) (= (+ (. (TOK_TABLE_OR_COL c) key) 1) (. (TOK_TABLE_OR_COL a) key)))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_HINTLIST (TOK_HINT TOK_STREAMTABLE (TOK_HINTARGLIST a))) (TOK_SELEXPR (TOK_FUNCTION sum (TOK_FUNCTION hash (. (TOK_TABLE_OR_COL a) key)))) (TOK_SELEXPR (TOK_FUNCTION sum (TOK_FUNCTION hash (. (TOK_TABLE_OR_COL a) val)))) (TOK_SELEXPR (TOK_FUNCTION sum (TOK_FUNCTION hash (. (TOK_TABLE_OR_COL c) key)))))))
 
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -633,7 +633,7 @@ STAGE PLANS:
   Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/tmp/liyintang/hive_2010-11-04_13-25-01_489_621733224236629264/-mr-10002 
+        file:/tmp/sdong/hive_2011-02-10_17-09-47_420_5981143518066828337/-mr-10002 
             Reduce Output Operator
               sort order: 
               tag: -1
@@ -678,12 +678,12 @@ PREHOOK: query: FROM T1 a JOIN src c ON c.key+1=a.key SELECT /*+ STREAMTABLE(a) 
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
 PREHOOK: Input: default@t1
-PREHOOK: Output: file:/tmp/liyintang/hive_2010-11-04_13-25-01_614_8452579245689090471/-mr-10000
+PREHOOK: Output: file:/tmp/sdong/hive_2011-02-10_17-09-47_566_240192624436212534/-mr-10000
 POSTHOOK: query: FROM T1 a JOIN src c ON c.key+1=a.key SELECT /*+ STREAMTABLE(a) */ sum(hash(a.key)), sum(hash(a.val)), sum(hash(c.key))
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 POSTHOOK: Input: default@t1
-POSTHOOK: Output: file:/tmp/liyintang/hive_2010-11-04_13-25-01_614_8452579245689090471/-mr-10000
+POSTHOOK: Output: file:/tmp/sdong/hive_2011-02-10_17-09-47_566_240192624436212534/-mr-10000
 POSTHOOK: Lineage: dest_j1.key EXPRESSION [(src)src1.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: dest_j1.value SIMPLE [(src)src2.FieldSchema(name:value, type:string, comment:default), ]
 198	6274	194
@@ -704,7 +704,7 @@ POSTHOOK: type: QUERY
 POSTHOOK: Lineage: dest_j1.key EXPRESSION [(src)src1.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: dest_j1.value SIMPLE [(src)src2.FieldSchema(name:value, type:string, comment:default), ]
 ABSTRACT SYNTAX TREE:
-  (TOK_QUERY (TOK_FROM (TOK_JOIN (TOK_SUBQUERY (TOK_QUERY (TOK_FROM (TOK_TABREF src)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_ALLCOLREF src))))) x) (TOK_SUBQUERY (TOK_QUERY (TOK_FROM (TOK_TABREF src)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_ALLCOLREF src))))) Y) (= (. (TOK_TABLE_OR_COL x) key) (. (TOK_TABLE_OR_COL Y) key)))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_FUNCTION sum (TOK_FUNCTION hash (. (TOK_TABLE_OR_COL Y) key)))) (TOK_SELEXPR (TOK_FUNCTION sum (TOK_FUNCTION hash (. (TOK_TABLE_OR_COL Y) value)))))))
+  (TOK_QUERY (TOK_FROM (TOK_JOIN (TOK_SUBQUERY (TOK_QUERY (TOK_FROM (TOK_TABREF (TOK_TABNAME src))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_ALLCOLREF (TOK_TABNAME src)))))) x) (TOK_SUBQUERY (TOK_QUERY (TOK_FROM (TOK_TABREF (TOK_TABNAME src))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_ALLCOLREF (TOK_TABNAME src)))))) Y) (= (. (TOK_TABLE_OR_COL x) key) (. (TOK_TABLE_OR_COL Y) key)))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_FUNCTION sum (TOK_FUNCTION hash (. (TOK_TABLE_OR_COL Y) key)))) (TOK_SELEXPR (TOK_FUNCTION sum (TOK_FUNCTION hash (. (TOK_TABLE_OR_COL Y) value)))))))
 
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -852,7 +852,7 @@ STAGE PLANS:
   Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/tmp/liyintang/hive_2010-11-04_13-25-11_476_8171195744821612387/-mr-10002 
+        file:/tmp/sdong/hive_2011-02-10_17-09-54_587_1570310782941051679/-mr-10002 
             Reduce Output Operator
               sort order: 
               tag: -1
@@ -896,7 +896,7 @@ ON (x.key = Y.key)
 SELECT sum(hash(Y.key)), sum(hash(Y.value))
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/tmp/liyintang/hive_2010-11-04_13-25-11_753_1076291109958736199/-mr-10000
+PREHOOK: Output: file:/tmp/sdong/hive_2011-02-10_17-09-54_779_5556867573127106668/-mr-10000
 POSTHOOK: query: FROM 
 (SELECT src.* FROM src) x
 JOIN 
@@ -905,7 +905,7 @@ ON (x.key = Y.key)
 SELECT sum(hash(Y.key)), sum(hash(Y.value))
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: file:/tmp/liyintang/hive_2010-11-04_13-25-11_753_1076291109958736199/-mr-10000
+POSTHOOK: Output: file:/tmp/sdong/hive_2011-02-10_17-09-54_779_5556867573127106668/-mr-10000
 POSTHOOK: Lineage: dest_j1.key EXPRESSION [(src)src1.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: dest_j1.value SIMPLE [(src)src2.FieldSchema(name:value, type:string, comment:default), ]
 44481300	101852390308
@@ -926,7 +926,7 @@ POSTHOOK: type: QUERY
 POSTHOOK: Lineage: dest_j1.key EXPRESSION [(src)src1.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: dest_j1.value SIMPLE [(src)src2.FieldSchema(name:value, type:string, comment:default), ]
 ABSTRACT SYNTAX TREE:
-  (TOK_QUERY (TOK_FROM (TOK_JOIN (TOK_SUBQUERY (TOK_QUERY (TOK_FROM (TOK_TABREF src)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_ALLCOLREF src))))) x) (TOK_SUBQUERY (TOK_QUERY (TOK_FROM (TOK_TABREF src)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_ALLCOLREF src))))) Y) (and (= (. (TOK_TABLE_OR_COL x) key) (. (TOK_TABLE_OR_COL Y) key)) (= (TOK_FUNCTION substring (. (TOK_TABLE_OR_COL x) value) 5) (+ (TOK_FUNCTION substring (. (TOK_TABLE_OR_COL y) value) 5) 1))))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_FUNCTION sum (TOK_FUNCTION hash (. (TOK_TABLE_OR_COL Y) key)))) (TOK_SELEXPR (TOK_FUNCTION sum (TOK_FUNCTION hash (. (TOK_TABLE_OR_COL Y) value)))))))
+  (TOK_QUERY (TOK_FROM (TOK_JOIN (TOK_SUBQUERY (TOK_QUERY (TOK_FROM (TOK_TABREF (TOK_TABNAME src))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_ALLCOLREF (TOK_TABNAME src)))))) x) (TOK_SUBQUERY (TOK_QUERY (TOK_FROM (TOK_TABREF (TOK_TABNAME src))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_ALLCOLREF (TOK_TABNAME src)))))) Y) (and (= (. (TOK_TABLE_OR_COL x) key) (. (TOK_TABLE_OR_COL Y) key)) (= (TOK_FUNCTION substring (. (TOK_TABLE_OR_COL x) value) 5) (+ (TOK_FUNCTION substring (. (TOK_TABLE_OR_COL y) value) 5) 1))))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_FUNCTION sum (TOK_FUNCTION hash (. (TOK_TABLE_OR_COL Y) key)))) (TOK_SELEXPR (TOK_FUNCTION sum (TOK_FUNCTION hash (. (TOK_TABLE_OR_COL Y) value)))))))
 
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -1084,7 +1084,7 @@ STAGE PLANS:
   Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/tmp/liyintang/hive_2010-11-04_13-26-43_698_1130450755234603131/-mr-10002 
+        file:/tmp/sdong/hive_2011-02-10_17-10-26_747_2453193727648511264/-mr-10002 
             Reduce Output Operator
               sort order: 
               tag: -1
@@ -1128,7 +1128,7 @@ ON (x.key = Y.key and substring(x.value, 5)=substring(y.value, 5)+1)
 SELECT sum(hash(Y.key)), sum(hash(Y.value))
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/tmp/liyintang/hive_2010-11-04_13-26-43_990_6372868616213782508/-mr-10000
+PREHOOK: Output: file:/tmp/sdong/hive_2011-02-10_17-10-26_950_857999915064847230/-mr-10000
 POSTHOOK: query: FROM 
 (SELECT src.* FROM src) x
 JOIN 
@@ -1137,7 +1137,7 @@ ON (x.key = Y.key and substring(x.value, 5)=substring(y.value, 5)+1)
 SELECT sum(hash(Y.key)), sum(hash(Y.value))
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: file:/tmp/liyintang/hive_2010-11-04_13-26-43_990_6372868616213782508/-mr-10000
+POSTHOOK: Output: file:/tmp/sdong/hive_2011-02-10_17-10-26_950_857999915064847230/-mr-10000
 POSTHOOK: Lineage: dest_j1.key EXPRESSION [(src)src1.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: dest_j1.value SIMPLE [(src)src2.FieldSchema(name:value, type:string, comment:default), ]
 NULL	NULL
@@ -1166,7 +1166,7 @@ POSTHOOK: type: QUERY
 POSTHOOK: Lineage: dest_j1.key EXPRESSION [(src)src1.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: dest_j1.value SIMPLE [(src)src2.FieldSchema(name:value, type:string, comment:default), ]
 ABSTRACT SYNTAX TREE:
-  (TOK_QUERY (TOK_FROM (TOK_JOIN (TOK_JOIN (TOK_SUBQUERY (TOK_QUERY (TOK_FROM (TOK_TABREF src)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (. (TOK_TABLE_OR_COL src) key) c1) (TOK_SELEXPR (. (TOK_TABLE_OR_COL src) value) c2)))) src1) (TOK_SUBQUERY (TOK_QUERY (TOK_FROM (TOK_TABREF src)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (. (TOK_TABLE_OR_COL src) key) c3) (TOK_SELEXPR (. (TOK_TABLE_OR_COL src) value) c4)))) src2) (AND (= (. (TOK_TABLE_OR_COL src1) c1) (. (TOK_TABLE_OR_COL src2) c3)) (< (. (TOK_TABLE_OR_COL src1) c1) 100))) (TOK_SUBQUERY (TOK_QUERY (TOK_FROM (TOK_TABREF src)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (. (TOK_TABLE_OR_COL src) key) c5) (TOK_SELEXPR (. (TOK_TABLE_OR_COL src) value) c6)))) src3) (AND (= (. (TOK_TABLE_OR_COL src1) c1) (. (TOK_TABLE_OR_COL src3) c5)) (< (. (TOK_TABLE_OR_COL src3) c5) 80)))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_FUNCTION sum (TOK_FUNCTION hash (. (TOK_TABLE_OR_COL src1) c1)))) (TOK_SELEXPR (TOK_FUNCTION sum (TOK_FUNCTION hash (. (TOK_TABLE_OR_COL src2) c4)))))))
+  (TOK_QUERY (TOK_FROM (TOK_JOIN (TOK_JOIN (TOK_SUBQUERY (TOK_QUERY (TOK_FROM (TOK_TABREF (TOK_TABNAME src))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (. (TOK_TABLE_OR_COL src) key) c1) (TOK_SELEXPR (. (TOK_TABLE_OR_COL src) value) c2)))) src1) (TOK_SUBQUERY (TOK_QUERY (TOK_FROM (TOK_TABREF (TOK_TABNAME src))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (. (TOK_TABLE_OR_COL src) key) c3) (TOK_SELEXPR (. (TOK_TABLE_OR_COL src) value) c4)))) src2) (AND (= (. (TOK_TABLE_OR_COL src1) c1) (. (TOK_TABLE_OR_COL src2) c3)) (< (. (TOK_TABLE_OR_COL src1) c1) 100))) (TOK_SUBQUERY (TOK_QUERY (TOK_FROM (TOK_TABREF (TOK_TABNAME src))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (. (TOK_TABLE_OR_COL src) key) c5) (TOK_SELEXPR (. (TOK_TABLE_OR_COL src) value) c6)))) src3) (AND (= (. (TOK_TABLE_OR_COL src1) c1) (. (TOK_TABLE_OR_COL src3) c5)) (< (. (TOK_TABLE_OR_COL src3) c5) 80)))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_FUNCTION sum (TOK_FUNCTION hash (. (TOK_TABLE_OR_COL src1) c1)))) (TOK_SELEXPR (TOK_FUNCTION sum (TOK_FUNCTION hash (. (TOK_TABLE_OR_COL src2) c4)))))))
 
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -1372,7 +1372,7 @@ STAGE PLANS:
   Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/tmp/liyintang/hive_2010-11-04_13-28-07_199_3806389747749479816/-mr-10002 
+        file:/tmp/sdong/hive_2011-02-10_17-10-51_510_1238149963939295340/-mr-10002 
             Reduce Output Operator
               sort order: 
               tag: -1
@@ -1496,7 +1496,7 @@ JOIN
 ON src1.c1 = src3.c5 AND src3.c5 < 80
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/tmp/liyintang/hive_2010-11-04_13-28-07_762_745139769279053433/-mr-10000
+PREHOOK: Output: file:/tmp/sdong/hive_2011-02-10_17-10-51_909_3962121749311775638/-mr-10000
 POSTHOOK: query: SELECT sum(hash(src1.c1)), sum(hash(src2.c4))
 FROM
 (SELECT src.key as c1, src.value as c2 from src) src1
@@ -1508,7 +1508,7 @@ JOIN
 ON src1.c1 = src3.c5 AND src3.c5 < 80
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: file:/tmp/liyintang/hive_2010-11-04_13-28-07_762_745139769279053433/-mr-10000
+POSTHOOK: Output: file:/tmp/sdong/hive_2011-02-10_17-10-51_909_3962121749311775638/-mr-10000
 POSTHOOK: Lineage: dest_j1.key EXPRESSION [(src)src1.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: dest_j1.value SIMPLE [(src)src2.FieldSchema(name:value, type:string, comment:default), ]
 293143	-136853010385
@@ -1521,7 +1521,7 @@ POSTHOOK: type: QUERY
 POSTHOOK: Lineage: dest_j1.key EXPRESSION [(src)src1.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: dest_j1.value SIMPLE [(src)src2.FieldSchema(name:value, type:string, comment:default), ]
 ABSTRACT SYNTAX TREE:
-  (TOK_QUERY (TOK_FROM (TOK_LEFTOUTERJOIN (TOK_TABREF T1 k) (TOK_TABREF T1 v) (= (+ (. (TOK_TABLE_OR_COL k) key) 1) (. (TOK_TABLE_OR_COL v) key)))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_HINTLIST (TOK_HINT TOK_MAPJOIN (TOK_HINTARGLIST v))) (TOK_SELEXPR (TOK_FUNCTION sum (TOK_FUNCTION hash (. (TOK_TABLE_OR_COL k) key)))) (TOK_SELEXPR (TOK_FUNCTION sum (TOK_FUNCTION hash (. (TOK_TABLE_OR_COL v) val)))))))
+  (TOK_QUERY (TOK_FROM (TOK_LEFTOUTERJOIN (TOK_TABREF (TOK_TABNAME T1) k) (TOK_TABREF (TOK_TABNAME T1) v) (= (+ (. (TOK_TABLE_OR_COL k) key) 1) (. (TOK_TABLE_OR_COL v) key)))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_HINTLIST (TOK_HINT TOK_MAPJOIN (TOK_HINTARGLIST v))) (TOK_SELEXPR (TOK_FUNCTION sum (TOK_FUNCTION hash (. (TOK_TABLE_OR_COL k) key)))) (TOK_SELEXPR (TOK_FUNCTION sum (TOK_FUNCTION hash (. (TOK_TABLE_OR_COL v) val)))))))
 
 STAGE DEPENDENCIES:
   Stage-4 is a root stage
@@ -1580,7 +1580,7 @@ STAGE PLANS:
   Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/tmp/liyintang/hive_2010-11-04_13-30-14_923_356309771096230331/-mr-10002 
+        file:/tmp/sdong/hive_2011-02-10_17-11-28_095_555531482500036088/-mr-10002 
           Select Operator
             expressions:
                   expr: _col0
@@ -1640,55 +1640,55 @@ STAGE PLANS:
 PREHOOK: query: SELECT /*+ mapjoin(v)*/ sum(hash(k.key)), sum(hash(v.val)) FROM T1 k LEFT OUTER JOIN T1 v ON k.key+1=v.key
 PREHOOK: type: QUERY
 PREHOOK: Input: default@t1
-PREHOOK: Output: file:/tmp/liyintang/hive_2010-11-04_13-30-15_048_6024162501211427411/-mr-10000
+PREHOOK: Output: file:/tmp/sdong/hive_2011-02-10_17-11-28_198_2952980494677491358/-mr-10000
 POSTHOOK: query: SELECT /*+ mapjoin(v)*/ sum(hash(k.key)), sum(hash(v.val)) FROM T1 k LEFT OUTER JOIN T1 v ON k.key+1=v.key
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@t1
-POSTHOOK: Output: file:/tmp/liyintang/hive_2010-11-04_13-30-15_048_6024162501211427411/-mr-10000
+POSTHOOK: Output: file:/tmp/sdong/hive_2011-02-10_17-11-28_198_2952980494677491358/-mr-10000
 POSTHOOK: Lineage: dest_j1.key EXPRESSION [(src)src1.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: dest_j1.value SIMPLE [(src)src2.FieldSchema(name:value, type:string, comment:default), ]
 372	6320
 PREHOOK: query: select /*+ mapjoin(k)*/ sum(hash(k.key)), sum(hash(v.val)) from T1 k join T1 v on k.key=v.val
 PREHOOK: type: QUERY
 PREHOOK: Input: default@t1
-PREHOOK: Output: file:/tmp/liyintang/hive_2010-11-04_13-30-26_961_8307603098035847510/-mr-10000
+PREHOOK: Output: file:/tmp/sdong/hive_2011-02-10_17-11-36_666_1287812065315868972/-mr-10000
 POSTHOOK: query: select /*+ mapjoin(k)*/ sum(hash(k.key)), sum(hash(v.val)) from T1 k join T1 v on k.key=v.val
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@t1
-POSTHOOK: Output: file:/tmp/liyintang/hive_2010-11-04_13-30-26_961_8307603098035847510/-mr-10000
+POSTHOOK: Output: file:/tmp/sdong/hive_2011-02-10_17-11-36_666_1287812065315868972/-mr-10000
 POSTHOOK: Lineage: dest_j1.key EXPRESSION [(src)src1.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: dest_j1.value SIMPLE [(src)src2.FieldSchema(name:value, type:string, comment:default), ]
 NULL	NULL
 PREHOOK: query: select /*+ mapjoin(k)*/ sum(hash(k.key)), sum(hash(v.val)) from T1 k join T1 v on k.key=v.key
 PREHOOK: type: QUERY
 PREHOOK: Input: default@t1
-PREHOOK: Output: file:/tmp/liyintang/hive_2010-11-04_13-30-36_802_3005209775052152224/-mr-10000
+PREHOOK: Output: file:/tmp/sdong/hive_2011-02-10_17-11-45_008_1927295372390395125/-mr-10000
 POSTHOOK: query: select /*+ mapjoin(k)*/ sum(hash(k.key)), sum(hash(v.val)) from T1 k join T1 v on k.key=v.key
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@t1
-POSTHOOK: Output: file:/tmp/liyintang/hive_2010-11-04_13-30-36_802_3005209775052152224/-mr-10000
+POSTHOOK: Output: file:/tmp/sdong/hive_2011-02-10_17-11-45_008_1927295372390395125/-mr-10000
 POSTHOOK: Lineage: dest_j1.key EXPRESSION [(src)src1.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: dest_j1.value SIMPLE [(src)src2.FieldSchema(name:value, type:string, comment:default), ]
 429	12643
 PREHOOK: query: select sum(hash(k.key)), sum(hash(v.val)) from T1 k join T1 v on k.key=v.key
 PREHOOK: type: QUERY
 PREHOOK: Input: default@t1
-PREHOOK: Output: file:/tmp/liyintang/hive_2010-11-04_13-30-48_466_8583634665917897680/-mr-10000
+PREHOOK: Output: file:/tmp/sdong/hive_2011-02-10_17-11-53_509_7232113740080349559/-mr-10000
 POSTHOOK: query: select sum(hash(k.key)), sum(hash(v.val)) from T1 k join T1 v on k.key=v.key
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@t1
-POSTHOOK: Output: file:/tmp/liyintang/hive_2010-11-04_13-30-48_466_8583634665917897680/-mr-10000
+POSTHOOK: Output: file:/tmp/sdong/hive_2011-02-10_17-11-53_509_7232113740080349559/-mr-10000
 POSTHOOK: Lineage: dest_j1.key EXPRESSION [(src)src1.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: dest_j1.value SIMPLE [(src)src2.FieldSchema(name:value, type:string, comment:default), ]
 429	12643
 PREHOOK: query: select count(1) from  T1 a join T1 b on a.key = b.key
 PREHOOK: type: QUERY
 PREHOOK: Input: default@t1
-PREHOOK: Output: file:/tmp/liyintang/hive_2010-11-04_13-31-03_237_192983720880547949/-mr-10000
+PREHOOK: Output: file:/tmp/sdong/hive_2011-02-10_17-12-05_407_7413224696471929917/-mr-10000
 POSTHOOK: query: select count(1) from  T1 a join T1 b on a.key = b.key
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@t1
-POSTHOOK: Output: file:/tmp/liyintang/hive_2010-11-04_13-31-03_237_192983720880547949/-mr-10000
+POSTHOOK: Output: file:/tmp/sdong/hive_2011-02-10_17-12-05_407_7413224696471929917/-mr-10000
 POSTHOOK: Lineage: dest_j1.key EXPRESSION [(src)src1.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: dest_j1.value SIMPLE [(src)src2.FieldSchema(name:value, type:string, comment:default), ]
 8
@@ -1696,12 +1696,12 @@ PREHOOK: query: FROM T1 a LEFT OUTER JOIN T2 c ON c.key+1=a.key SELECT sum(hash(
 PREHOOK: type: QUERY
 PREHOOK: Input: default@t1
 PREHOOK: Input: default@t2
-PREHOOK: Output: file:/tmp/liyintang/hive_2010-11-04_13-31-16_676_2618061858875139981/-mr-10000
+PREHOOK: Output: file:/tmp/sdong/hive_2011-02-10_17-12-17_144_7091436886229369702/-mr-10000
 POSTHOOK: query: FROM T1 a LEFT OUTER JOIN T2 c ON c.key+1=a.key SELECT sum(hash(a.key)), sum(hash(a.val)), sum(hash(c.key))
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@t1
 POSTHOOK: Input: default@t2
-POSTHOOK: Output: file:/tmp/liyintang/hive_2010-11-04_13-31-16_676_2618061858875139981/-mr-10000
+POSTHOOK: Output: file:/tmp/sdong/hive_2011-02-10_17-12-17_144_7091436886229369702/-mr-10000
 POSTHOOK: Lineage: dest_j1.key EXPRESSION [(src)src1.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: dest_j1.value SIMPLE [(src)src2.FieldSchema(name:value, type:string, comment:default), ]
 317	9462	50
@@ -1709,12 +1709,12 @@ PREHOOK: query: FROM T1 a RIGHT OUTER JOIN T2 c ON c.key+1=a.key SELECT /*+ STRE
 PREHOOK: type: QUERY
 PREHOOK: Input: default@t1
 PREHOOK: Input: default@t2
-PREHOOK: Output: file:/tmp/liyintang/hive_2010-11-04_13-31-25_804_1434715960848718635/-mr-10000
+PREHOOK: Output: file:/tmp/sdong/hive_2011-02-10_17-12-24_069_7354507146456277214/-mr-10000
 POSTHOOK: query: FROM T1 a RIGHT OUTER JOIN T2 c ON c.key+1=a.key SELECT /*+ STREAMTABLE(a) */ sum(hash(a.key)), sum(hash(a.val)), sum(hash(c.key))
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@t1
 POSTHOOK: Input: default@t2
-POSTHOOK: Output: file:/tmp/liyintang/hive_2010-11-04_13-31-25_804_1434715960848718635/-mr-10000
+POSTHOOK: Output: file:/tmp/sdong/hive_2011-02-10_17-12-24_069_7354507146456277214/-mr-10000
 POSTHOOK: Lineage: dest_j1.key EXPRESSION [(src)src1.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: dest_j1.value SIMPLE [(src)src2.FieldSchema(name:value, type:string, comment:default), ]
 51	1570	318
@@ -1722,12 +1722,12 @@ PREHOOK: query: FROM T1 a FULL OUTER JOIN T2 c ON c.key+1=a.key SELECT /*+ STREA
 PREHOOK: type: QUERY
 PREHOOK: Input: default@t1
 PREHOOK: Input: default@t2
-PREHOOK: Output: file:/tmp/liyintang/hive_2010-11-04_13-31-35_151_4513393491876936064/-mr-10000
+PREHOOK: Output: file:/tmp/sdong/hive_2011-02-10_17-12-30_962_8559481647604200175/-mr-10000
 POSTHOOK: query: FROM T1 a FULL OUTER JOIN T2 c ON c.key+1=a.key SELECT /*+ STREAMTABLE(a) */ sum(hash(a.key)), sum(hash(a.val)), sum(hash(c.key))
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@t1
 POSTHOOK: Input: default@t2
-POSTHOOK: Output: file:/tmp/liyintang/hive_2010-11-04_13-31-35_151_4513393491876936064/-mr-10000
+POSTHOOK: Output: file:/tmp/sdong/hive_2011-02-10_17-12-30_962_8559481647604200175/-mr-10000
 POSTHOOK: Lineage: dest_j1.key EXPRESSION [(src)src1.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: dest_j1.value SIMPLE [(src)src2.FieldSchema(name:value, type:string, comment:default), ]
 317	9462	318
@@ -1735,12 +1735,12 @@ PREHOOK: query: SELECT sum(hash(src1.key)), sum(hash(src1.val)), sum(hash(src2.k
 PREHOOK: type: QUERY
 PREHOOK: Input: default@t1
 PREHOOK: Input: default@t2
-PREHOOK: Output: file:/tmp/liyintang/hive_2010-11-04_13-31-44_380_3162963056826185972/-mr-10000
+PREHOOK: Output: file:/tmp/sdong/hive_2011-02-10_17-12-37_957_5747584432334234958/-mr-10000
 POSTHOOK: query: SELECT sum(hash(src1.key)), sum(hash(src1.val)), sum(hash(src2.key)) FROM T1 src1 LEFT OUTER JOIN T2 src2 ON src1.key+1 = src2.key RIGHT OUTER JOIN T2 src3 ON src2.key = src3.key
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@t1
 POSTHOOK: Input: default@t2
-POSTHOOK: Output: file:/tmp/liyintang/hive_2010-11-04_13-31-44_380_3162963056826185972/-mr-10000
+POSTHOOK: Output: file:/tmp/sdong/hive_2011-02-10_17-12-37_957_5747584432334234958/-mr-10000
 POSTHOOK: Lineage: dest_j1.key EXPRESSION [(src)src1.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: dest_j1.value SIMPLE [(src)src2.FieldSchema(name:value, type:string, comment:default), ]
 370	11003	377
@@ -1748,23 +1748,23 @@ PREHOOK: query: SELECT sum(hash(src1.key)), sum(hash(src1.val)), sum(hash(src2.k
 PREHOOK: type: QUERY
 PREHOOK: Input: default@t1
 PREHOOK: Input: default@t2
-PREHOOK: Output: file:/tmp/liyintang/hive_2010-11-04_13-31-53_546_8829290719525806208/-mr-10000
+PREHOOK: Output: file:/tmp/sdong/hive_2011-02-10_17-12-44_922_3451280888339520464/-mr-10000
 POSTHOOK: query: SELECT sum(hash(src1.key)), sum(hash(src1.val)), sum(hash(src2.key)) FROM T1 src1 JOIN T2 src2 ON src1.key+1 = src2.key JOIN T2 src3 ON src2.key = src3.key
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@t1
 POSTHOOK: Input: default@t2
-POSTHOOK: Output: file:/tmp/liyintang/hive_2010-11-04_13-31-53_546_8829290719525806208/-mr-10000
+POSTHOOK: Output: file:/tmp/sdong/hive_2011-02-10_17-12-44_922_3451280888339520464/-mr-10000
 POSTHOOK: Lineage: dest_j1.key EXPRESSION [(src)src1.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: dest_j1.value SIMPLE [(src)src2.FieldSchema(name:value, type:string, comment:default), ]
 370	11003	377
 PREHOOK: query: select /*+ mapjoin(v)*/ sum(hash(k.key)), sum(hash(v.val)) from T1 k left outer join T1 v on k.key+1=v.key
 PREHOOK: type: QUERY
 PREHOOK: Input: default@t1
-PREHOOK: Output: file:/tmp/liyintang/hive_2010-11-04_13-32-19_241_1942705791648142414/-mr-10000
+PREHOOK: Output: file:/tmp/sdong/hive_2011-02-10_17-13-03_264_3996881668428926895/-mr-10000
 POSTHOOK: query: select /*+ mapjoin(v)*/ sum(hash(k.key)), sum(hash(v.val)) from T1 k left outer join T1 v on k.key+1=v.key
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@t1
-POSTHOOK: Output: file:/tmp/liyintang/hive_2010-11-04_13-32-19_241_1942705791648142414/-mr-10000
+POSTHOOK: Output: file:/tmp/sdong/hive_2011-02-10_17-13-03_264_3996881668428926895/-mr-10000
 POSTHOOK: Lineage: dest_j1.key EXPRESSION [(src)src1.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: dest_j1.value SIMPLE [(src)src2.FieldSchema(name:value, type:string, comment:default), ]
 372	6320

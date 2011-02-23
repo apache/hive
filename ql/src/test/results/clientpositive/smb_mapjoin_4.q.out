@@ -35,7 +35,7 @@ POSTHOOK: query: explain
 select /*+mapjoin(a,b)*/ * from smb_bucket_1 a join smb_bucket_2 b on a.key = b.key join smb_bucket_3 c on b.key=c.key
 POSTHOOK: type: QUERY
 ABSTRACT SYNTAX TREE:
-  (TOK_QUERY (TOK_FROM (TOK_JOIN (TOK_JOIN (TOK_TABREF smb_bucket_1 a) (TOK_TABREF smb_bucket_2 b) (= (. (TOK_TABLE_OR_COL a) key) (. (TOK_TABLE_OR_COL b) key))) (TOK_TABREF smb_bucket_3 c) (= (. (TOK_TABLE_OR_COL b) key) (. (TOK_TABLE_OR_COL c) key)))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_HINTLIST (TOK_HINT TOK_MAPJOIN (TOK_HINTARGLIST a b))) (TOK_SELEXPR TOK_ALLCOLREF))))
+  (TOK_QUERY (TOK_FROM (TOK_JOIN (TOK_JOIN (TOK_TABREF (TOK_TABNAME smb_bucket_1) a) (TOK_TABREF (TOK_TABNAME smb_bucket_2) b) (= (. (TOK_TABLE_OR_COL a) key) (. (TOK_TABLE_OR_COL b) key))) (TOK_TABREF (TOK_TABNAME smb_bucket_3) c) (= (. (TOK_TABLE_OR_COL b) key) (. (TOK_TABLE_OR_COL c) key)))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_HINTLIST (TOK_HINT TOK_MAPJOIN (TOK_HINTARGLIST a b))) (TOK_SELEXPR TOK_ALLCOLREF))))
 
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -110,13 +110,13 @@ PREHOOK: type: QUERY
 PREHOOK: Input: default@smb_bucket_1
 PREHOOK: Input: default@smb_bucket_2
 PREHOOK: Input: default@smb_bucket_3
-PREHOOK: Output: file:/tmp/jsichi/hive_2010-08-26_16-42-09_324_5003697422621652815/-mr-10000
+PREHOOK: Output: file:/tmp/sdong/hive_2011-02-10_17-15-06_331_5205477657301314989/-mr-10000
 POSTHOOK: query: select /*+mapjoin(a,b)*/ * from smb_bucket_1 a join smb_bucket_2 b on a.key = b.key join smb_bucket_3 c on b.key=c.key
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@smb_bucket_1
 POSTHOOK: Input: default@smb_bucket_2
 POSTHOOK: Input: default@smb_bucket_3
-POSTHOOK: Output: file:/tmp/jsichi/hive_2010-08-26_16-42-09_324_5003697422621652815/-mr-10000
+POSTHOOK: Output: file:/tmp/sdong/hive_2011-02-10_17-15-06_331_5205477657301314989/-mr-10000
 PREHOOK: query: explain
 select /*+mapjoin(a,b)*/ * from smb_bucket_1 a left outer join smb_bucket_2 b on a.key = b.key join smb_bucket_3 c on b.key=c.key
 PREHOOK: type: QUERY
@@ -124,7 +124,7 @@ POSTHOOK: query: explain
 select /*+mapjoin(a,b)*/ * from smb_bucket_1 a left outer join smb_bucket_2 b on a.key = b.key join smb_bucket_3 c on b.key=c.key
 POSTHOOK: type: QUERY
 ABSTRACT SYNTAX TREE:
-  (TOK_QUERY (TOK_FROM (TOK_JOIN (TOK_LEFTOUTERJOIN (TOK_TABREF smb_bucket_1 a) (TOK_TABREF smb_bucket_2 b) (= (. (TOK_TABLE_OR_COL a) key) (. (TOK_TABLE_OR_COL b) key))) (TOK_TABREF smb_bucket_3 c) (= (. (TOK_TABLE_OR_COL b) key) (. (TOK_TABLE_OR_COL c) key)))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_HINTLIST (TOK_HINT TOK_MAPJOIN (TOK_HINTARGLIST a b))) (TOK_SELEXPR TOK_ALLCOLREF))))
+  (TOK_QUERY (TOK_FROM (TOK_JOIN (TOK_LEFTOUTERJOIN (TOK_TABREF (TOK_TABNAME smb_bucket_1) a) (TOK_TABREF (TOK_TABNAME smb_bucket_2) b) (= (. (TOK_TABLE_OR_COL a) key) (. (TOK_TABLE_OR_COL b) key))) (TOK_TABREF (TOK_TABNAME smb_bucket_3) c) (= (. (TOK_TABLE_OR_COL b) key) (. (TOK_TABLE_OR_COL c) key)))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_HINTLIST (TOK_HINT TOK_MAPJOIN (TOK_HINTARGLIST a b))) (TOK_SELEXPR TOK_ALLCOLREF))))
 
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -199,13 +199,13 @@ PREHOOK: type: QUERY
 PREHOOK: Input: default@smb_bucket_1
 PREHOOK: Input: default@smb_bucket_2
 PREHOOK: Input: default@smb_bucket_3
-PREHOOK: Output: file:/tmp/jsichi/hive_2010-08-26_16-42-12_911_4454279447652036446/-mr-10000
+PREHOOK: Output: file:/tmp/sdong/hive_2011-02-10_17-15-10_281_6615460759540095247/-mr-10000
 POSTHOOK: query: select /*+mapjoin(a,b)*/ * from smb_bucket_1 a left outer join smb_bucket_2 b on a.key = b.key join smb_bucket_3 c on b.key=c.key
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@smb_bucket_1
 POSTHOOK: Input: default@smb_bucket_2
 POSTHOOK: Input: default@smb_bucket_3
-POSTHOOK: Output: file:/tmp/jsichi/hive_2010-08-26_16-42-12_911_4454279447652036446/-mr-10000
+POSTHOOK: Output: file:/tmp/sdong/hive_2011-02-10_17-15-10_281_6615460759540095247/-mr-10000
 PREHOOK: query: explain
 select /*+mapjoin(a,b)*/ * from smb_bucket_1 a left outer join smb_bucket_2 b on a.key = b.key left outer join smb_bucket_3 c on b.key=c.key
 PREHOOK: type: QUERY
@@ -213,7 +213,7 @@ POSTHOOK: query: explain
 select /*+mapjoin(a,b)*/ * from smb_bucket_1 a left outer join smb_bucket_2 b on a.key = b.key left outer join smb_bucket_3 c on b.key=c.key
 POSTHOOK: type: QUERY
 ABSTRACT SYNTAX TREE:
-  (TOK_QUERY (TOK_FROM (TOK_LEFTOUTERJOIN (TOK_LEFTOUTERJOIN (TOK_TABREF smb_bucket_1 a) (TOK_TABREF smb_bucket_2 b) (= (. (TOK_TABLE_OR_COL a) key) (. (TOK_TABLE_OR_COL b) key))) (TOK_TABREF smb_bucket_3 c) (= (. (TOK_TABLE_OR_COL b) key) (. (TOK_TABLE_OR_COL c) key)))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_HINTLIST (TOK_HINT TOK_MAPJOIN (TOK_HINTARGLIST a b))) (TOK_SELEXPR TOK_ALLCOLREF))))
+  (TOK_QUERY (TOK_FROM (TOK_LEFTOUTERJOIN (TOK_LEFTOUTERJOIN (TOK_TABREF (TOK_TABNAME smb_bucket_1) a) (TOK_TABREF (TOK_TABNAME smb_bucket_2) b) (= (. (TOK_TABLE_OR_COL a) key) (. (TOK_TABLE_OR_COL b) key))) (TOK_TABREF (TOK_TABNAME smb_bucket_3) c) (= (. (TOK_TABLE_OR_COL b) key) (. (TOK_TABLE_OR_COL c) key)))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_HINTLIST (TOK_HINT TOK_MAPJOIN (TOK_HINTARGLIST a b))) (TOK_SELEXPR TOK_ALLCOLREF))))
 
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -288,13 +288,13 @@ PREHOOK: type: QUERY
 PREHOOK: Input: default@smb_bucket_1
 PREHOOK: Input: default@smb_bucket_2
 PREHOOK: Input: default@smb_bucket_3
-PREHOOK: Output: file:/tmp/jsichi/hive_2010-08-26_16-42-16_467_5197011805004822874/-mr-10000
+PREHOOK: Output: file:/tmp/sdong/hive_2011-02-10_17-15-14_304_8478838610363198182/-mr-10000
 POSTHOOK: query: select /*+mapjoin(a,b)*/ * from smb_bucket_1 a left outer join smb_bucket_2 b on a.key = b.key left outer join smb_bucket_3 c on b.key=c.key
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@smb_bucket_1
 POSTHOOK: Input: default@smb_bucket_2
 POSTHOOK: Input: default@smb_bucket_3
-POSTHOOK: Output: file:/tmp/jsichi/hive_2010-08-26_16-42-16_467_5197011805004822874/-mr-10000
+POSTHOOK: Output: file:/tmp/sdong/hive_2011-02-10_17-15-14_304_8478838610363198182/-mr-10000
 1	val_1	NULL	NULL	NULL	NULL
 3	val_3	NULL	NULL	NULL	NULL
 4	val_4	NULL	NULL	NULL	NULL
@@ -307,7 +307,7 @@ POSTHOOK: query: explain
 select /*+mapjoin(a,b)*/ * from smb_bucket_1 a left outer join smb_bucket_2 b on a.key = b.key right outer join smb_bucket_3 c on b.key=c.key
 POSTHOOK: type: QUERY
 ABSTRACT SYNTAX TREE:
-  (TOK_QUERY (TOK_FROM (TOK_RIGHTOUTERJOIN (TOK_LEFTOUTERJOIN (TOK_TABREF smb_bucket_1 a) (TOK_TABREF smb_bucket_2 b) (= (. (TOK_TABLE_OR_COL a) key) (. (TOK_TABLE_OR_COL b) key))) (TOK_TABREF smb_bucket_3 c) (= (. (TOK_TABLE_OR_COL b) key) (. (TOK_TABLE_OR_COL c) key)))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_HINTLIST (TOK_HINT TOK_MAPJOIN (TOK_HINTARGLIST a b))) (TOK_SELEXPR TOK_ALLCOLREF))))
+  (TOK_QUERY (TOK_FROM (TOK_RIGHTOUTERJOIN (TOK_LEFTOUTERJOIN (TOK_TABREF (TOK_TABNAME smb_bucket_1) a) (TOK_TABREF (TOK_TABNAME smb_bucket_2) b) (= (. (TOK_TABLE_OR_COL a) key) (. (TOK_TABLE_OR_COL b) key))) (TOK_TABREF (TOK_TABNAME smb_bucket_3) c) (= (. (TOK_TABLE_OR_COL b) key) (. (TOK_TABLE_OR_COL c) key)))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_HINTLIST (TOK_HINT TOK_MAPJOIN (TOK_HINTARGLIST a b))) (TOK_SELEXPR TOK_ALLCOLREF))))
 
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -382,13 +382,13 @@ PREHOOK: type: QUERY
 PREHOOK: Input: default@smb_bucket_1
 PREHOOK: Input: default@smb_bucket_2
 PREHOOK: Input: default@smb_bucket_3
-PREHOOK: Output: file:/tmp/jsichi/hive_2010-08-26_16-42-20_045_1628227846316651581/-mr-10000
+PREHOOK: Output: file:/tmp/sdong/hive_2011-02-10_17-15-18_204_9146610776187740795/-mr-10000
 POSTHOOK: query: select /*+mapjoin(a,b)*/ * from smb_bucket_1 a left outer join smb_bucket_2 b on a.key = b.key right outer join smb_bucket_3 c on b.key=c.key
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@smb_bucket_1
 POSTHOOK: Input: default@smb_bucket_2
 POSTHOOK: Input: default@smb_bucket_3
-POSTHOOK: Output: file:/tmp/jsichi/hive_2010-08-26_16-42-20_045_1628227846316651581/-mr-10000
+POSTHOOK: Output: file:/tmp/sdong/hive_2011-02-10_17-15-18_204_9146610776187740795/-mr-10000
 NULL	NULL	NULL	NULL	4	val_4
 NULL	NULL	NULL	NULL	10	val_10
 NULL	NULL	NULL	NULL	17	val_17
@@ -402,7 +402,7 @@ POSTHOOK: query: explain
 select /*+mapjoin(a,b)*/ * from smb_bucket_1 a left outer join smb_bucket_2 b on a.key = b.key full outer join smb_bucket_3 c on b.key=c.key
 POSTHOOK: type: QUERY
 ABSTRACT SYNTAX TREE:
-  (TOK_QUERY (TOK_FROM (TOK_FULLOUTERJOIN (TOK_LEFTOUTERJOIN (TOK_TABREF smb_bucket_1 a) (TOK_TABREF smb_bucket_2 b) (= (. (TOK_TABLE_OR_COL a) key) (. (TOK_TABLE_OR_COL b) key))) (TOK_TABREF smb_bucket_3 c) (= (. (TOK_TABLE_OR_COL b) key) (. (TOK_TABLE_OR_COL c) key)))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_HINTLIST (TOK_HINT TOK_MAPJOIN (TOK_HINTARGLIST a b))) (TOK_SELEXPR TOK_ALLCOLREF))))
+  (TOK_QUERY (TOK_FROM (TOK_FULLOUTERJOIN (TOK_LEFTOUTERJOIN (TOK_TABREF (TOK_TABNAME smb_bucket_1) a) (TOK_TABREF (TOK_TABNAME smb_bucket_2) b) (= (. (TOK_TABLE_OR_COL a) key) (. (TOK_TABLE_OR_COL b) key))) (TOK_TABREF (TOK_TABNAME smb_bucket_3) c) (= (. (TOK_TABLE_OR_COL b) key) (. (TOK_TABLE_OR_COL c) key)))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_HINTLIST (TOK_HINT TOK_MAPJOIN (TOK_HINTARGLIST a b))) (TOK_SELEXPR TOK_ALLCOLREF))))
 
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -477,13 +477,13 @@ PREHOOK: type: QUERY
 PREHOOK: Input: default@smb_bucket_1
 PREHOOK: Input: default@smb_bucket_2
 PREHOOK: Input: default@smb_bucket_3
-PREHOOK: Output: file:/tmp/jsichi/hive_2010-08-26_16-42-23_706_8199432227541064820/-mr-10000
+PREHOOK: Output: file:/tmp/sdong/hive_2011-02-10_17-15-22_205_8471330192044419205/-mr-10000
 POSTHOOK: query: select /*+mapjoin(a,b)*/ * from smb_bucket_1 a left outer join smb_bucket_2 b on a.key = b.key full outer join smb_bucket_3 c on b.key=c.key
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@smb_bucket_1
 POSTHOOK: Input: default@smb_bucket_2
 POSTHOOK: Input: default@smb_bucket_3
-POSTHOOK: Output: file:/tmp/jsichi/hive_2010-08-26_16-42-23_706_8199432227541064820/-mr-10000
+POSTHOOK: Output: file:/tmp/sdong/hive_2011-02-10_17-15-22_205_8471330192044419205/-mr-10000
 1	val_1	NULL	NULL	NULL	NULL
 3	val_3	NULL	NULL	NULL	NULL
 4	val_4	NULL	NULL	NULL	NULL
@@ -502,7 +502,7 @@ POSTHOOK: query: explain
 select /*+mapjoin(a,b)*/ * from smb_bucket_1 a right outer join smb_bucket_2 b on a.key = b.key join smb_bucket_3 c on b.key=c.key
 POSTHOOK: type: QUERY
 ABSTRACT SYNTAX TREE:
-  (TOK_QUERY (TOK_FROM (TOK_JOIN (TOK_RIGHTOUTERJOIN (TOK_TABREF smb_bucket_1 a) (TOK_TABREF smb_bucket_2 b) (= (. (TOK_TABLE_OR_COL a) key) (. (TOK_TABLE_OR_COL b) key))) (TOK_TABREF smb_bucket_3 c) (= (. (TOK_TABLE_OR_COL b) key) (. (TOK_TABLE_OR_COL c) key)))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_HINTLIST (TOK_HINT TOK_MAPJOIN (TOK_HINTARGLIST a b))) (TOK_SELEXPR TOK_ALLCOLREF))))
+  (TOK_QUERY (TOK_FROM (TOK_JOIN (TOK_RIGHTOUTERJOIN (TOK_TABREF (TOK_TABNAME smb_bucket_1) a) (TOK_TABREF (TOK_TABNAME smb_bucket_2) b) (= (. (TOK_TABLE_OR_COL a) key) (. (TOK_TABLE_OR_COL b) key))) (TOK_TABREF (TOK_TABNAME smb_bucket_3) c) (= (. (TOK_TABLE_OR_COL b) key) (. (TOK_TABLE_OR_COL c) key)))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_HINTLIST (TOK_HINT TOK_MAPJOIN (TOK_HINTARGLIST a b))) (TOK_SELEXPR TOK_ALLCOLREF))))
 
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -577,13 +577,13 @@ PREHOOK: type: QUERY
 PREHOOK: Input: default@smb_bucket_1
 PREHOOK: Input: default@smb_bucket_2
 PREHOOK: Input: default@smb_bucket_3
-PREHOOK: Output: file:/tmp/jsichi/hive_2010-08-26_16-42-27_290_3824008948964071639/-mr-10000
+PREHOOK: Output: file:/tmp/sdong/hive_2011-02-10_17-15-26_150_9205082013397728802/-mr-10000
 POSTHOOK: query: select /*+mapjoin(a,b)*/ * from smb_bucket_1 a right outer join smb_bucket_2 b on a.key = b.key join smb_bucket_3 c on b.key=c.key
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@smb_bucket_1
 POSTHOOK: Input: default@smb_bucket_2
 POSTHOOK: Input: default@smb_bucket_3
-POSTHOOK: Output: file:/tmp/jsichi/hive_2010-08-26_16-42-27_290_3824008948964071639/-mr-10000
+POSTHOOK: Output: file:/tmp/sdong/hive_2011-02-10_17-15-26_150_9205082013397728802/-mr-10000
 NULL	NULL	20	val_20	20	val_20
 NULL	NULL	23	val_23	23	val_23
 PREHOOK: query: explain
@@ -593,7 +593,7 @@ POSTHOOK: query: explain
 select /*+mapjoin(a,b)*/ * from smb_bucket_1 a right outer join smb_bucket_2 b on a.key = b.key left outer join smb_bucket_3 c on b.key=c.key
 POSTHOOK: type: QUERY
 ABSTRACT SYNTAX TREE:
-  (TOK_QUERY (TOK_FROM (TOK_LEFTOUTERJOIN (TOK_RIGHTOUTERJOIN (TOK_TABREF smb_bucket_1 a) (TOK_TABREF smb_bucket_2 b) (= (. (TOK_TABLE_OR_COL a) key) (. (TOK_TABLE_OR_COL b) key))) (TOK_TABREF smb_bucket_3 c) (= (. (TOK_TABLE_OR_COL b) key) (. (TOK_TABLE_OR_COL c) key)))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_HINTLIST (TOK_HINT TOK_MAPJOIN (TOK_HINTARGLIST a b))) (TOK_SELEXPR TOK_ALLCOLREF))))
+  (TOK_QUERY (TOK_FROM (TOK_LEFTOUTERJOIN (TOK_RIGHTOUTERJOIN (TOK_TABREF (TOK_TABNAME smb_bucket_1) a) (TOK_TABREF (TOK_TABNAME smb_bucket_2) b) (= (. (TOK_TABLE_OR_COL a) key) (. (TOK_TABLE_OR_COL b) key))) (TOK_TABREF (TOK_TABNAME smb_bucket_3) c) (= (. (TOK_TABLE_OR_COL b) key) (. (TOK_TABLE_OR_COL c) key)))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_HINTLIST (TOK_HINT TOK_MAPJOIN (TOK_HINTARGLIST a b))) (TOK_SELEXPR TOK_ALLCOLREF))))
 
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -668,13 +668,13 @@ PREHOOK: type: QUERY
 PREHOOK: Input: default@smb_bucket_1
 PREHOOK: Input: default@smb_bucket_2
 PREHOOK: Input: default@smb_bucket_3
-PREHOOK: Output: file:/tmp/jsichi/hive_2010-08-26_16-42-30_936_5263381546938369405/-mr-10000
+PREHOOK: Output: file:/tmp/sdong/hive_2011-02-10_17-15-30_251_6611842775186153900/-mr-10000
 POSTHOOK: query: select /*+mapjoin(a,b)*/ * from smb_bucket_1 a right outer join smb_bucket_2 b on a.key = b.key left outer join smb_bucket_3 c on b.key=c.key
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@smb_bucket_1
 POSTHOOK: Input: default@smb_bucket_2
 POSTHOOK: Input: default@smb_bucket_3
-POSTHOOK: Output: file:/tmp/jsichi/hive_2010-08-26_16-42-30_936_5263381546938369405/-mr-10000
+POSTHOOK: Output: file:/tmp/sdong/hive_2011-02-10_17-15-30_251_6611842775186153900/-mr-10000
 NULL	NULL	20	val_20	20	val_20
 NULL	NULL	23	val_23	23	val_23
 NULL	NULL	25	val_25	NULL	NULL
@@ -686,7 +686,7 @@ POSTHOOK: query: explain
 select /*+mapjoin(a,b)*/ * from smb_bucket_1 a right outer join smb_bucket_2 b on a.key = b.key right outer join smb_bucket_3 c on b.key=c.key
 POSTHOOK: type: QUERY
 ABSTRACT SYNTAX TREE:
-  (TOK_QUERY (TOK_FROM (TOK_RIGHTOUTERJOIN (TOK_RIGHTOUTERJOIN (TOK_TABREF smb_bucket_1 a) (TOK_TABREF smb_bucket_2 b) (= (. (TOK_TABLE_OR_COL a) key) (. (TOK_TABLE_OR_COL b) key))) (TOK_TABREF smb_bucket_3 c) (= (. (TOK_TABLE_OR_COL b) key) (. (TOK_TABLE_OR_COL c) key)))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_HINTLIST (TOK_HINT TOK_MAPJOIN (TOK_HINTARGLIST a b))) (TOK_SELEXPR TOK_ALLCOLREF))))
+  (TOK_QUERY (TOK_FROM (TOK_RIGHTOUTERJOIN (TOK_RIGHTOUTERJOIN (TOK_TABREF (TOK_TABNAME smb_bucket_1) a) (TOK_TABREF (TOK_TABNAME smb_bucket_2) b) (= (. (TOK_TABLE_OR_COL a) key) (. (TOK_TABLE_OR_COL b) key))) (TOK_TABREF (TOK_TABNAME smb_bucket_3) c) (= (. (TOK_TABLE_OR_COL b) key) (. (TOK_TABLE_OR_COL c) key)))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_HINTLIST (TOK_HINT TOK_MAPJOIN (TOK_HINTARGLIST a b))) (TOK_SELEXPR TOK_ALLCOLREF))))
 
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -761,13 +761,13 @@ PREHOOK: type: QUERY
 PREHOOK: Input: default@smb_bucket_1
 PREHOOK: Input: default@smb_bucket_2
 PREHOOK: Input: default@smb_bucket_3
-PREHOOK: Output: file:/tmp/jsichi/hive_2010-08-26_16-42-34_501_9167438490893243306/-mr-10000
+PREHOOK: Output: file:/tmp/sdong/hive_2011-02-10_17-15-34_204_4900976025324371341/-mr-10000
 POSTHOOK: query: select /*+mapjoin(a,b)*/ * from smb_bucket_1 a right outer join smb_bucket_2 b on a.key = b.key right outer join smb_bucket_3 c on b.key=c.key
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@smb_bucket_1
 POSTHOOK: Input: default@smb_bucket_2
 POSTHOOK: Input: default@smb_bucket_3
-POSTHOOK: Output: file:/tmp/jsichi/hive_2010-08-26_16-42-34_501_9167438490893243306/-mr-10000
+POSTHOOK: Output: file:/tmp/sdong/hive_2011-02-10_17-15-34_204_4900976025324371341/-mr-10000
 NULL	NULL	NULL	NULL	4	val_4
 NULL	NULL	NULL	NULL	10	val_10
 NULL	NULL	NULL	NULL	17	val_17
@@ -781,7 +781,7 @@ POSTHOOK: query: explain
 select /*+mapjoin(a,b)*/ * from smb_bucket_1 a right outer join smb_bucket_2 b on a.key = b.key full outer join smb_bucket_3 c on b.key=c.key
 POSTHOOK: type: QUERY
 ABSTRACT SYNTAX TREE:
-  (TOK_QUERY (TOK_FROM (TOK_FULLOUTERJOIN (TOK_RIGHTOUTERJOIN (TOK_TABREF smb_bucket_1 a) (TOK_TABREF smb_bucket_2 b) (= (. (TOK_TABLE_OR_COL a) key) (. (TOK_TABLE_OR_COL b) key))) (TOK_TABREF smb_bucket_3 c) (= (. (TOK_TABLE_OR_COL b) key) (. (TOK_TABLE_OR_COL c) key)))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_HINTLIST (TOK_HINT TOK_MAPJOIN (TOK_HINTARGLIST a b))) (TOK_SELEXPR TOK_ALLCOLREF))))
+  (TOK_QUERY (TOK_FROM (TOK_FULLOUTERJOIN (TOK_RIGHTOUTERJOIN (TOK_TABREF (TOK_TABNAME smb_bucket_1) a) (TOK_TABREF (TOK_TABNAME smb_bucket_2) b) (= (. (TOK_TABLE_OR_COL a) key) (. (TOK_TABLE_OR_COL b) key))) (TOK_TABREF (TOK_TABNAME smb_bucket_3) c) (= (. (TOK_TABLE_OR_COL b) key) (. (TOK_TABLE_OR_COL c) key)))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_HINTLIST (TOK_HINT TOK_MAPJOIN (TOK_HINTARGLIST a b))) (TOK_SELEXPR TOK_ALLCOLREF))))
 
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -856,13 +856,13 @@ PREHOOK: type: QUERY
 PREHOOK: Input: default@smb_bucket_1
 PREHOOK: Input: default@smb_bucket_2
 PREHOOK: Input: default@smb_bucket_3
-PREHOOK: Output: file:/tmp/jsichi/hive_2010-08-26_16-42-38_051_4511190830431439223/-mr-10000
+PREHOOK: Output: file:/tmp/sdong/hive_2011-02-10_17-15-38_206_6717147668347906240/-mr-10000
 POSTHOOK: query: select /*+mapjoin(a,b)*/ * from smb_bucket_1 a right outer join smb_bucket_2 b on a.key = b.key full outer join smb_bucket_3 c on b.key=c.key
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@smb_bucket_1
 POSTHOOK: Input: default@smb_bucket_2
 POSTHOOK: Input: default@smb_bucket_3
-POSTHOOK: Output: file:/tmp/jsichi/hive_2010-08-26_16-42-38_051_4511190830431439223/-mr-10000
+POSTHOOK: Output: file:/tmp/sdong/hive_2011-02-10_17-15-38_206_6717147668347906240/-mr-10000
 NULL	NULL	NULL	NULL	4	val_4
 NULL	NULL	NULL	NULL	10	val_10
 NULL	NULL	NULL	NULL	17	val_17
@@ -878,7 +878,7 @@ POSTHOOK: query: explain
 select /*+mapjoin(a,b)*/ * from smb_bucket_1 a full outer join smb_bucket_2 b on a.key = b.key join smb_bucket_3 c on b.key=c.key
 POSTHOOK: type: QUERY
 ABSTRACT SYNTAX TREE:
-  (TOK_QUERY (TOK_FROM (TOK_JOIN (TOK_FULLOUTERJOIN (TOK_TABREF smb_bucket_1 a) (TOK_TABREF smb_bucket_2 b) (= (. (TOK_TABLE_OR_COL a) key) (. (TOK_TABLE_OR_COL b) key))) (TOK_TABREF smb_bucket_3 c) (= (. (TOK_TABLE_OR_COL b) key) (. (TOK_TABLE_OR_COL c) key)))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_HINTLIST (TOK_HINT TOK_MAPJOIN (TOK_HINTARGLIST a b))) (TOK_SELEXPR TOK_ALLCOLREF))))
+  (TOK_QUERY (TOK_FROM (TOK_JOIN (TOK_FULLOUTERJOIN (TOK_TABREF (TOK_TABNAME smb_bucket_1) a) (TOK_TABREF (TOK_TABNAME smb_bucket_2) b) (= (. (TOK_TABLE_OR_COL a) key) (. (TOK_TABLE_OR_COL b) key))) (TOK_TABREF (TOK_TABNAME smb_bucket_3) c) (= (. (TOK_TABLE_OR_COL b) key) (. (TOK_TABLE_OR_COL c) key)))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_HINTLIST (TOK_HINT TOK_MAPJOIN (TOK_HINTARGLIST a b))) (TOK_SELEXPR TOK_ALLCOLREF))))
 
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -953,13 +953,13 @@ PREHOOK: type: QUERY
 PREHOOK: Input: default@smb_bucket_1
 PREHOOK: Input: default@smb_bucket_2
 PREHOOK: Input: default@smb_bucket_3
-PREHOOK: Output: file:/tmp/jsichi/hive_2010-08-26_16-42-41_627_6765762965982547245/-mr-10000
+PREHOOK: Output: file:/tmp/sdong/hive_2011-02-10_17-15-42_164_1429157770616375927/-mr-10000
 POSTHOOK: query: select /*+mapjoin(a,b)*/ * from smb_bucket_1 a full outer join smb_bucket_2 b on a.key = b.key join smb_bucket_3 c on b.key=c.key
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@smb_bucket_1
 POSTHOOK: Input: default@smb_bucket_2
 POSTHOOK: Input: default@smb_bucket_3
-POSTHOOK: Output: file:/tmp/jsichi/hive_2010-08-26_16-42-41_627_6765762965982547245/-mr-10000
+POSTHOOK: Output: file:/tmp/sdong/hive_2011-02-10_17-15-42_164_1429157770616375927/-mr-10000
 NULL	NULL	20	val_20	20	val_20
 NULL	NULL	23	val_23	23	val_23
 PREHOOK: query: explain
@@ -969,7 +969,7 @@ POSTHOOK: query: explain
 select /*+mapjoin(a,b)*/ * from smb_bucket_1 a full outer join smb_bucket_2 b on a.key = b.key left outer join smb_bucket_3 c on b.key=c.key
 POSTHOOK: type: QUERY
 ABSTRACT SYNTAX TREE:
-  (TOK_QUERY (TOK_FROM (TOK_LEFTOUTERJOIN (TOK_FULLOUTERJOIN (TOK_TABREF smb_bucket_1 a) (TOK_TABREF smb_bucket_2 b) (= (. (TOK_TABLE_OR_COL a) key) (. (TOK_TABLE_OR_COL b) key))) (TOK_TABREF smb_bucket_3 c) (= (. (TOK_TABLE_OR_COL b) key) (. (TOK_TABLE_OR_COL c) key)))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_HINTLIST (TOK_HINT TOK_MAPJOIN (TOK_HINTARGLIST a b))) (TOK_SELEXPR TOK_ALLCOLREF))))
+  (TOK_QUERY (TOK_FROM (TOK_LEFTOUTERJOIN (TOK_FULLOUTERJOIN (TOK_TABREF (TOK_TABNAME smb_bucket_1) a) (TOK_TABREF (TOK_TABNAME smb_bucket_2) b) (= (. (TOK_TABLE_OR_COL a) key) (. (TOK_TABLE_OR_COL b) key))) (TOK_TABREF (TOK_TABNAME smb_bucket_3) c) (= (. (TOK_TABLE_OR_COL b) key) (. (TOK_TABLE_OR_COL c) key)))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_HINTLIST (TOK_HINT TOK_MAPJOIN (TOK_HINTARGLIST a b))) (TOK_SELEXPR TOK_ALLCOLREF))))
 
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -1044,13 +1044,13 @@ PREHOOK: type: QUERY
 PREHOOK: Input: default@smb_bucket_1
 PREHOOK: Input: default@smb_bucket_2
 PREHOOK: Input: default@smb_bucket_3
-PREHOOK: Output: file:/tmp/jsichi/hive_2010-08-26_16-42-45_184_5223207976717364002/-mr-10000
+PREHOOK: Output: file:/tmp/sdong/hive_2011-02-10_17-15-46_112_8801523623809894607/-mr-10000
 POSTHOOK: query: select /*+mapjoin(a,b)*/ * from smb_bucket_1 a full outer join smb_bucket_2 b on a.key = b.key left outer join smb_bucket_3 c on b.key=c.key
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@smb_bucket_1
 POSTHOOK: Input: default@smb_bucket_2
 POSTHOOK: Input: default@smb_bucket_3
-POSTHOOK: Output: file:/tmp/jsichi/hive_2010-08-26_16-42-45_184_5223207976717364002/-mr-10000
+POSTHOOK: Output: file:/tmp/sdong/hive_2011-02-10_17-15-46_112_8801523623809894607/-mr-10000
 1	val_1	NULL	NULL	NULL	NULL
 3	val_3	NULL	NULL	NULL	NULL
 4	val_4	NULL	NULL	NULL	NULL
@@ -1067,7 +1067,7 @@ POSTHOOK: query: explain
 select /*+mapjoin(a,b)*/ * from smb_bucket_1 a full outer join smb_bucket_2 b on a.key = b.key right outer join smb_bucket_3 c on b.key=c.key
 POSTHOOK: type: QUERY
 ABSTRACT SYNTAX TREE:
-  (TOK_QUERY (TOK_FROM (TOK_RIGHTOUTERJOIN (TOK_FULLOUTERJOIN (TOK_TABREF smb_bucket_1 a) (TOK_TABREF smb_bucket_2 b) (= (. (TOK_TABLE_OR_COL a) key) (. (TOK_TABLE_OR_COL b) key))) (TOK_TABREF smb_bucket_3 c) (= (. (TOK_TABLE_OR_COL b) key) (. (TOK_TABLE_OR_COL c) key)))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_HINTLIST (TOK_HINT TOK_MAPJOIN (TOK_HINTARGLIST a b))) (TOK_SELEXPR TOK_ALLCOLREF))))
+  (TOK_QUERY (TOK_FROM (TOK_RIGHTOUTERJOIN (TOK_FULLOUTERJOIN (TOK_TABREF (TOK_TABNAME smb_bucket_1) a) (TOK_TABREF (TOK_TABNAME smb_bucket_2) b) (= (. (TOK_TABLE_OR_COL a) key) (. (TOK_TABLE_OR_COL b) key))) (TOK_TABREF (TOK_TABNAME smb_bucket_3) c) (= (. (TOK_TABLE_OR_COL b) key) (. (TOK_TABLE_OR_COL c) key)))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_HINTLIST (TOK_HINT TOK_MAPJOIN (TOK_HINTARGLIST a b))) (TOK_SELEXPR TOK_ALLCOLREF))))
 
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -1142,13 +1142,13 @@ PREHOOK: type: QUERY
 PREHOOK: Input: default@smb_bucket_1
 PREHOOK: Input: default@smb_bucket_2
 PREHOOK: Input: default@smb_bucket_3
-PREHOOK: Output: file:/tmp/jsichi/hive_2010-08-26_16-42-48_743_7572889603110654998/-mr-10000
+PREHOOK: Output: file:/tmp/sdong/hive_2011-02-10_17-15-50_387_7308558012963216174/-mr-10000
 POSTHOOK: query: select /*+mapjoin(a,b)*/ * from smb_bucket_1 a full outer join smb_bucket_2 b on a.key = b.key right outer join smb_bucket_3 c on b.key=c.key
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@smb_bucket_1
 POSTHOOK: Input: default@smb_bucket_2
 POSTHOOK: Input: default@smb_bucket_3
-POSTHOOK: Output: file:/tmp/jsichi/hive_2010-08-26_16-42-48_743_7572889603110654998/-mr-10000
+POSTHOOK: Output: file:/tmp/sdong/hive_2011-02-10_17-15-50_387_7308558012963216174/-mr-10000
 NULL	NULL	NULL	NULL	4	val_4
 NULL	NULL	NULL	NULL	10	val_10
 NULL	NULL	NULL	NULL	17	val_17
@@ -1162,7 +1162,7 @@ POSTHOOK: query: explain
 select /*+mapjoin(a,b)*/ * from smb_bucket_1 a full outer join smb_bucket_2 b on a.key = b.key full outer join smb_bucket_3 c on b.key=c.key
 POSTHOOK: type: QUERY
 ABSTRACT SYNTAX TREE:
-  (TOK_QUERY (TOK_FROM (TOK_FULLOUTERJOIN (TOK_FULLOUTERJOIN (TOK_TABREF smb_bucket_1 a) (TOK_TABREF smb_bucket_2 b) (= (. (TOK_TABLE_OR_COL a) key) (. (TOK_TABLE_OR_COL b) key))) (TOK_TABREF smb_bucket_3 c) (= (. (TOK_TABLE_OR_COL b) key) (. (TOK_TABLE_OR_COL c) key)))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_HINTLIST (TOK_HINT TOK_MAPJOIN (TOK_HINTARGLIST a b))) (TOK_SELEXPR TOK_ALLCOLREF))))
+  (TOK_QUERY (TOK_FROM (TOK_FULLOUTERJOIN (TOK_FULLOUTERJOIN (TOK_TABREF (TOK_TABNAME smb_bucket_1) a) (TOK_TABREF (TOK_TABNAME smb_bucket_2) b) (= (. (TOK_TABLE_OR_COL a) key) (. (TOK_TABLE_OR_COL b) key))) (TOK_TABREF (TOK_TABNAME smb_bucket_3) c) (= (. (TOK_TABLE_OR_COL b) key) (. (TOK_TABLE_OR_COL c) key)))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_HINTLIST (TOK_HINT TOK_MAPJOIN (TOK_HINTARGLIST a b))) (TOK_SELEXPR TOK_ALLCOLREF))))
 
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -1237,13 +1237,13 @@ PREHOOK: type: QUERY
 PREHOOK: Input: default@smb_bucket_1
 PREHOOK: Input: default@smb_bucket_2
 PREHOOK: Input: default@smb_bucket_3
-PREHOOK: Output: file:/tmp/jsichi/hive_2010-08-26_16-42-52_303_1702164061537345426/-mr-10000
+PREHOOK: Output: file:/tmp/sdong/hive_2011-02-10_17-15-54_370_1397524931449303875/-mr-10000
 POSTHOOK: query: select /*+mapjoin(a,b)*/ * from smb_bucket_1 a full outer join smb_bucket_2 b on a.key = b.key full outer join smb_bucket_3 c on b.key=c.key
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@smb_bucket_1
 POSTHOOK: Input: default@smb_bucket_2
 POSTHOOK: Input: default@smb_bucket_3
-POSTHOOK: Output: file:/tmp/jsichi/hive_2010-08-26_16-42-52_303_1702164061537345426/-mr-10000
+POSTHOOK: Output: file:/tmp/sdong/hive_2011-02-10_17-15-54_370_1397524931449303875/-mr-10000
 1	val_1	NULL	NULL	NULL	NULL
 3	val_3	NULL	NULL	NULL	NULL
 4	val_4	NULL	NULL	NULL	NULL

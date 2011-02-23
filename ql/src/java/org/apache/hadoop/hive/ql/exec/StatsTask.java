@@ -355,9 +355,10 @@ public class StatsTask extends Task<StatsWork> implements Serializable {
           parameters.put(StatsSetupConst.TOTAL_SIZE, Long.toString(newPartStats.getSize()));
 
           tPart.setParameters(parameters);
-          db.alterPartition(table.getTableName(), new Partition(table, tPart));
+          String tableFullName = table.getDbName() + "." + table.getTableName();
+          db.alterPartition(tableFullName, new Partition(table, tPart));
 
-          console.printInfo("Partition " + table.getTableName() + partn.getSpec() +
+          console.printInfo("Partition " + tableFullName + partn.getSpec() +
               " stats: [" + newPartStats.toString() + ']');
         }
       }
@@ -374,9 +375,11 @@ public class StatsTask extends Task<StatsWork> implements Serializable {
       parameters.put(StatsSetupConst.TOTAL_SIZE, Long.toString(tblStats.getSize()));
       tTable.setParameters(parameters);
 
-      db.alterTable(table.getTableName(), new Table(tTable));
+      String tableFullName = table.getDbName() + "." + table.getTableName();
 
-      console.printInfo("Table " + table.getTableName() + " stats: [" + tblStats.toString() + ']');
+      db.alterTable(tableFullName, new Table(tTable));
+
+      console.printInfo("Table " + tableFullName + " stats: [" + tblStats.toString() + ']');
 
     } catch (Exception e) {
       // return 0 since StatsTask should not fail the whole job
