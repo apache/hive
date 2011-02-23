@@ -99,6 +99,9 @@ public final class SemanticAnalyzerFactory {
     tablePartitionCommandType.put(HiveParser.TOK_ALTERTABLE_LOCATION,
         new HiveOperation[] { HiveOperation.ALTERTABLE_LOCATION,
             HiveOperation.ALTERPARTITION_LOCATION });
+    tablePartitionCommandType.put(HiveParser.TOK_ALTERTABLE_ALTERPARTS_MERGEFILES,
+            new HiveOperation[] {HiveOperation.ALTERTABLE_MERGEFILES,
+            HiveOperation.ALTERPARTITION_MERGEFILES });
   }
 
   public static BaseSemanticAnalyzer get(HiveConf conf, ASTNode tree)

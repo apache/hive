@@ -80,6 +80,9 @@ import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.Order;
 import org.apache.hadoop.hive.ql.Context;
 import org.apache.hadoop.hive.ql.QueryPlan;
+import org.apache.hadoop.hive.ql.exec.FileSinkOperator.RecordWriter;
+import org.apache.hadoop.hive.ql.io.HiveFileFormatUtils;
+import org.apache.hadoop.hive.ql.io.HiveOutputFormat;
 import org.apache.hadoop.hive.ql.io.ContentSummaryInputFormat;
 import org.apache.hadoop.hive.ql.io.HiveInputFormat;
 import org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat;
@@ -91,6 +94,7 @@ import org.apache.hadoop.hive.ql.parse.ErrorMsg;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.plan.DynamicPartitionCtx;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
+import org.apache.hadoop.hive.ql.plan.FileSinkDesc;
 import org.apache.hadoop.hive.ql.plan.GroupByDesc;
 import org.apache.hadoop.hive.ql.plan.MapredLocalWork;
 import org.apache.hadoop.hive.ql.plan.MapredWork;
@@ -101,9 +105,12 @@ import org.apache.hadoop.hive.ql.plan.PlanUtils.ExpressionTypes;
 import org.apache.hadoop.hive.ql.stats.StatsFactory;
 import org.apache.hadoop.hive.ql.stats.StatsPublisher;
 import org.apache.hadoop.hive.serde.Constants;
+import org.apache.hadoop.hive.serde2.SerDeException;
+import org.apache.hadoop.hive.serde2.Serializer;
 import org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe;
 import org.apache.hadoop.hive.shims.ShimLoader;
 import org.apache.hadoop.io.SequenceFile;
+import org.apache.hadoop.io.Writable;
 import org.apache.hadoop.io.SequenceFile.CompressionType;
 import org.apache.hadoop.io.compress.CompressionCodec;
 import org.apache.hadoop.io.compress.DefaultCodec;
@@ -1133,6 +1140,83 @@ public final class Utilities {
     Path pathPattern = new Path(path, sb.toString());
     return fs.globStatus(pathPattern);
   }
+  
+  public static void mvFileToFinalPath(String specPath, Configuration hconf,
+      boolean success, Log log, DynamicPartitionCtx dpCtx, FileSinkDesc conf) throws IOException, HiveException {
+
+    FileSystem fs = (new Path(specPath)).getFileSystem(hconf);
+    Path tmpPath = Utilities.toTempPath(specPath);
+    Path intermediatePath = new Path(tmpPath.getParent(), tmpPath.getName()
+        + ".intermediate");
+    Path finalPath = new Path(specPath);
+    if (success) {
+      if (fs.exists(tmpPath)) {
+        // Step1: rename tmp output folder to intermediate path. After this
+        // point, updates from speculative tasks still writing to tmpPath
+        // will not appear in finalPath.
+        log.info("Moving tmp dir: " + tmpPath + " to: " + intermediatePath);
+        Utilities.rename(fs, tmpPath, intermediatePath);
+        // Step2: remove any tmp file or double-committed output files
+        ArrayList<String> emptyBuckets =
+          Utilities.removeTempOrDuplicateFiles(fs, intermediatePath, dpCtx);
+        // create empty buckets if necessary
+        if (emptyBuckets.size() > 0) {
+          createEmptyBuckets(hconf, emptyBuckets, conf);
+        }
+
+        // Step3: move to the file destination
+        log.info("Moving tmp dir: " + intermediatePath + " to: " + finalPath);
+        Utilities.renameOrMoveFiles(fs, intermediatePath, finalPath);
+      }
+    } else {
+      fs.delete(tmpPath, true);
+    }
+  }
+  
+  /**
+   * Check the existence of buckets according to bucket specification. Create empty buckets if
+   * needed.
+   * @param specPath The final path where the dynamic partitions should be in.
+   * @param conf FileSinkDesc.
+   * @param dpCtx dynamic partition context.
+   * @throws HiveException
+   * @throws IOException
+   */
+  private static void createEmptyBuckets(Configuration hconf, ArrayList<String> paths, FileSinkDesc conf)
+      throws HiveException, IOException {
+
+    JobConf jc;
+    if (hconf instanceof JobConf) {
+      jc = new JobConf(hconf);
+    } else {
+      // test code path
+      jc = new JobConf(hconf, ExecDriver.class);
+    }
+    HiveOutputFormat<?, ?> hiveOutputFormat = null;
+    Class<? extends Writable> outputClass = null;
+    boolean isCompressed = conf.getCompressed();
+    TableDesc tableInfo = conf.getTableInfo();
+    try {
+      Serializer serializer = (Serializer) tableInfo.getDeserializerClass().newInstance();
+      serializer.initialize(null, tableInfo.getProperties());
+      outputClass = serializer.getSerializedClass();
+      hiveOutputFormat = conf.getTableInfo().getOutputFileFormatClass().newInstance();
+    } catch (SerDeException e) {
+      throw new HiveException(e);
+    } catch (InstantiationException e) {
+      throw new HiveException(e);
+    } catch (IllegalAccessException e) {
+      throw new HiveException(e);
+    }
+
+    for (String p: paths) {
+      Path path = new Path(p);
+      RecordWriter writer = HiveFileFormatUtils.getRecordWriter(
+          jc, hiveOutputFormat, outputClass, isCompressed, tableInfo.getProperties(), path);
+      writer.close(false);
+      LOG.info("created empty bucket for enforcing bucketing at " + path);
+    }
+  }
 
   /**
    * Remove all temporary files and duplicate (double-committed) files from a given directory.
@@ -1643,5 +1727,21 @@ public final class Utilities {
   public static double showTime(long time) {
     double result = (double) time / (double)1000;
     return result;
+  }
+
+  /**
+   * Determines whether a partition has been archived
+   *
+   * @param p
+   * @return
+   */
+  public static boolean isArchived(Partition p) {
+    Map<String, String> params = p.getParameters();
+    if ("true".equalsIgnoreCase(params.get(
+        org.apache.hadoop.hive.metastore.api.Constants.IS_ARCHIVED))) {
+      return true;
+    } else {
+      return false;
+    }
   }
 }

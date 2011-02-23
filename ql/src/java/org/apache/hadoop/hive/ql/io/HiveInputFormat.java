@@ -374,7 +374,11 @@ public class HiveInputFormat<K extends WritableComparable, V extends Writable>
     if (this.mrwork == null) {
       init(job);
     }
-
+    
+    if(this.mrwork.getPathToAliases() == null) {
+      return;
+    }
+    
     ArrayList<String> aliases = new ArrayList<String>();
     Iterator<Entry<String, ArrayList<String>>> iterator = this.mrwork
         .getPathToAliases().entrySet().iterator();

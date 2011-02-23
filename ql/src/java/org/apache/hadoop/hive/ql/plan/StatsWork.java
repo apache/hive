@@ -33,6 +33,8 @@ public class StatsWork implements Serializable {
   private tableSpec tableSpecs;        // source table spec -- for TableScanOperator
   private LoadTableDesc loadTableDesc; // same as MoveWork.loadTableDesc -- for FileSinkOperator
   private String aggKey;               // aggregation key prefix
+  
+  private boolean noStatsAggregator = false;
 
   public StatsWork() {
   }
@@ -60,6 +62,14 @@ public class StatsWork implements Serializable {
   @Explain(displayName = "Stats Aggregation Key Prefix", normalExplain = false)
   public String getAggKey() {
     return aggKey;
+  }
+
+  public boolean getNoStatsAggregator() {
+    return noStatsAggregator;
+  }
+
+  public void setNoStatsAggregator(boolean noStatsAggregator) {
+    this.noStatsAggregator = noStatsAggregator;
   }
 
 }

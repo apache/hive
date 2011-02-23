@@ -80,7 +80,9 @@ public enum HiveOperation {
   QUERY("QUERY", new Privilege[]{Privilege.SELECT}, new Privilege[]{Privilege.ALTER_DATA, Privilege.CREATE}), 
   ALTERINDEX_PROPS("ALTERINDEX_PROPS",null, null), 
   ALTERDATABASE("ALTERDATABASE", null, null), 
-  DESCDATABASE("DESCDATABASE", null, null),
+  DESCDATABASE("DESCDATABASE", null, null), 
+  ALTERTABLE_MERGEFILES("ALTER_TABLE_MERGE", new Privilege[] { Privilege.SELECT }, new Privilege[] { Privilege.ALTER_DATA }),
+  ALTERPARTITION_MERGEFILES("ALTER_PARTITION_MERGE", new Privilege[] { Privilege.SELECT }, new Privilege[] { Privilege.ALTER_DATA }),
   ;
 
   private String operationName;

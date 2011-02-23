@@ -23,6 +23,7 @@ import java.util.HashSet;
 
 import org.apache.hadoop.hive.ql.hooks.ReadEntity;
 import org.apache.hadoop.hive.ql.hooks.WriteEntity;
+import org.apache.hadoop.hive.ql.parse.AlterTablePartMergeFilesDesc;
 
 /**
  * DDLWork.
@@ -73,6 +74,7 @@ public class DDLWork implements Serializable {
    * List of WriteEntities that are passed to the hooks.
    */
   protected HashSet<WriteEntity> outputs;
+  private AlterTablePartMergeFilesDesc mergeFilesDesc;
 
   public DDLWork() {
   }
@@ -374,6 +376,12 @@ public class DDLWork implements Serializable {
       ShowIndexesDesc showIndexesDesc) {
     this(inputs, outputs);
     this.showIndexesDesc = showIndexesDesc;
+  }
+
+  public DDLWork(HashSet<ReadEntity> inputs, HashSet<WriteEntity> outputs,
+      AlterTablePartMergeFilesDesc mergeDesc) {
+    this(inputs, outputs);
+    this.mergeFilesDesc = mergeDesc;
   }
 
   /**
@@ -854,4 +862,19 @@ public class DDLWork implements Serializable {
   public AlterDatabaseDesc getAlterDatabaseDesc() {
     return this.alterDbDesc;
   }
+  
+  /**
+   * @return descriptor for merging files
+   */
+  public AlterTablePartMergeFilesDesc getMergeFilesDesc() {
+    return mergeFilesDesc;
+  }
+
+  /**
+   * @param mergeDesc descriptor of merging files
+   */
+  public void setMergeFilesDesc(AlterTablePartMergeFilesDesc mergeDesc) {
+    this.mergeFilesDesc = mergeDesc;
+  }
+
 }

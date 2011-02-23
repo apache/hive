@@ -46,6 +46,7 @@ import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.io.VersionMismatchException;
 import org.apache.hadoop.io.Writable;
+import org.apache.hadoop.io.WritableComparable;
 import org.apache.hadoop.io.WritableUtils;
 import org.apache.hadoop.io.SequenceFile.Metadata;
 import org.apache.hadoop.io.compress.CompressionCodec;
@@ -190,7 +191,7 @@ public class RCFile {
    * <li>{the end of the key part}</li>
    * </ul>
    */
-  static class KeyBuffer implements Writable {
+  public static class KeyBuffer implements WritableComparable {
     // each column's value length in a split
     private int[] eachColumnValueLen = null;
     private int[] eachColumnUncompressedValueLen = null;
@@ -200,6 +201,14 @@ public class RCFile {
     private int numberRows = 0;
     // how many columns
     private int columnNumber = 0;
+    
+    // return the number of columns recorded in this file's header
+    public int getColumnNumber() {
+      return columnNumber;
+    }
+
+    public KeyBuffer(){
+    }
 
     KeyBuffer(int columnNumber) {
       this(0, columnNumber);
@@ -281,6 +290,12 @@ public class RCFile {
 
       return ret;
     }
+
+    @Override
+    public int compareTo(Object arg0) {
+      throw new RuntimeException("compareTo not supported in class "
+          + this.getClass().getName());
+    }
   }
 
   /**
@@ -293,7 +308,7 @@ public class RCFile {
    * column_2_row_2_value,....]</li>
    * </ul>
    */
-  static class ValueBuffer implements Writable {
+  public static class ValueBuffer implements WritableComparable {
 
     class LazyDecompressionCallbackImpl implements LazyDecompressionCallback {
 
@@ -347,6 +362,9 @@ public class RCFile {
     Decompressor valDecompressor = null;
     NonSyncDataInputBuffer decompressBuffer = new NonSyncDataInputBuffer();
     CompressionInputStream deflatFilter = null;
+    
+    public ValueBuffer() throws IOException {
+    }
 
     public ValueBuffer(KeyBuffer keyBuffer) throws IOException {
       this(keyBuffer, null);
@@ -463,6 +481,12 @@ public class RCFile {
         IOUtils.closeStream(decompressBuffer);
         CodecPool.returnDecompressor(valDecompressor);
       }
+    }
+    
+    @Override
+    public int compareTo(Object arg0) {
+      throw new RuntimeException("compareTo not supported in class "
+          + this.getClass().getName());
     }
   }
 
@@ -871,6 +895,33 @@ public class RCFile {
 
       bufferedRecords = 0;
       columnBufferSize = 0;
+    }
+    
+    /**
+     * flush a block out without doing anything except compressing the key part.
+     */
+    public void flushBlock(KeyBuffer keyBuffer, ValueBuffer valueBuffer,
+        int recordLen, int keyLength, int compressedKeyLen) throws IOException {
+      checkAndWriteSync(); // sync
+      out.writeInt(recordLen); // total record length
+      out.writeInt(keyLength); // key portion length
+      
+      if(this.isCompressed()) {
+        //compress key and write key out
+        keyCompressionBuffer.reset();
+        keyDeflateFilter.resetState();
+        keyBuffer.write(keyDeflateOut);
+        keyDeflateOut.flush();
+        keyDeflateFilter.finish();
+        compressedKeyLen = keyCompressionBuffer.getLength();
+        out.writeInt(compressedKeyLen);
+        out.write(keyCompressionBuffer.getData(), 0, compressedKeyLen);
+      } else {
+        out.writeInt(compressedKeyLen);
+        keyBuffer.write(out);
+      }
+
+      valueBuffer.write(out); // value
     }
 
     private void clearColumnBuffers() throws IOException {
@@ -1304,6 +1355,15 @@ public class RCFile {
       currentValue.readFields(in);
       currentValue.inited = true;
     }
+    
+    public boolean nextBlock() throws IOException {
+      int keyLength = nextKeyBuffer();
+      if(keyLength > 0) {
+        currentValueBuffer();
+        return true;
+      }
+      return false;
+    }
 
     private boolean rowFetched = false;
 
@@ -1500,5 +1560,44 @@ public class RCFile {
         CodecPool.returnDecompressor(keyDecompressor);
       }
     }
+
+    /**
+     * return the KeyBuffer object used in the reader. Internally in each
+     * reader, there is only one KeyBuffer object, which gets reused for every
+     * block.
+     */
+    public KeyBuffer getCurrentKeyBufferObj() {
+      return this.currentKey;
+    }
+    
+    /**
+     * return the ValueBuffer object used in the reader. Internally in each
+     * reader, there is only one ValueBuffer object, which gets reused for every
+     * block.
+     */
+    public ValueBuffer getCurrentValueBufferObj() {
+      return this.currentValue;
+    }
+    
+    //return the current block's length
+    public int getCurrentBlockLength() {
+      return this.currentRecordLength;
+    }
+
+    //return the current block's key length
+    public int getCurrentKeyLength() {
+      return this.currentKeyLength;
+    }
+
+    //return the current block's compressed key length
+    public int getCurrentCompressedKeyLen() {
+      return this.compressedKeyLen;
+    }
+    
+    //return the CompressionCodec used for this file
+    public CompressionCodec getCompressionCodec() {
+      return this.codec;
+    }
+    
   }
 }

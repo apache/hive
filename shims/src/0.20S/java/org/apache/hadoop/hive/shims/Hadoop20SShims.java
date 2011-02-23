@@ -150,35 +150,6 @@ public class Hadoop20SShims implements HadoopShims {
     }
   }
 
-  public static class CombineHiveKey implements WritableComparable {
-    Object key;
-
-    public CombineHiveKey(Object key) {
-      this.key = key;
-    }
-
-    public Object getKey() {
-      return key;
-    }
-
-    public void setKey(Object key) {
-      this.key = key;
-    }
-
-    public void write(DataOutput out) throws IOException {
-      throw new IOException("Method not supported");
-    }
-
-    public void readFields(DataInput in) throws IOException {
-      throw new IOException("Method not supported");
-    }
-
-    public int compareTo(Object w) {
-      assert false;
-      return 0;
-    }
-  }
-
   /* This class should be replaced with org.apache.hadoop.mapred.lib.CombineFileRecordReader class, once
    * https://issues.apache.org/jira/browse/MAPREDUCE-955 is fixed. This code should be removed - it is a copy
    * of org.apache.hadoop.mapred.lib.CombineFileRecordReader

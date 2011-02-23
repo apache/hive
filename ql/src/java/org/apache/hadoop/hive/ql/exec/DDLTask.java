@@ -75,6 +75,9 @@ import org.apache.hadoop.hive.ql.DriverContext;
 import org.apache.hadoop.hive.ql.QueryPlan;
 import org.apache.hadoop.hive.ql.hooks.ReadEntity;
 import org.apache.hadoop.hive.ql.hooks.WriteEntity;
+import org.apache.hadoop.hive.ql.io.RCFileInputFormat;
+import org.apache.hadoop.hive.ql.io.rcfile.merge.BlockMergeTask;
+import org.apache.hadoop.hive.ql.io.rcfile.merge.MergeWork;
 import org.apache.hadoop.hive.ql.lockmgr.HiveLock;
 import org.apache.hadoop.hive.ql.lockmgr.HiveLockManager;
 import org.apache.hadoop.hive.ql.lockmgr.HiveLockMode;
@@ -89,6 +92,7 @@ import org.apache.hadoop.hive.ql.metadata.InvalidTableException;
 import org.apache.hadoop.hive.ql.metadata.MetaDataFormatUtils;
 import org.apache.hadoop.hive.ql.metadata.Partition;
 import org.apache.hadoop.hive.ql.metadata.Table;
+import org.apache.hadoop.hive.ql.parse.AlterTablePartMergeFilesDesc;
 import org.apache.hadoop.hive.ql.plan.AddPartitionDesc;
 import org.apache.hadoop.hive.ql.plan.AlterDatabaseDesc;
 import org.apache.hadoop.hive.ql.plan.AlterIndexDesc;
@@ -138,6 +142,7 @@ import org.apache.hadoop.hive.serde2.dynamic_type.DynamicSerDe;
 import org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe;
 import org.apache.hadoop.hive.shims.HadoopShims;
 import org.apache.hadoop.hive.shims.ShimLoader;
+import org.apache.hadoop.mapred.InputFormat;
 import org.apache.hadoop.util.ToolRunner;
 
 /**
@@ -350,6 +355,11 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
       if (showIndexes != null) {
         return showIndexes(db, showIndexes);
       }
+      
+      AlterTablePartMergeFilesDesc mergeFilesDesc = work.getMergeFilesDesc();
+      if(mergeFilesDesc != null) {
+        return mergeFiles(db, mergeFilesDesc);
+      }
 
     } catch (InvalidTableException e) {
       console.printError("Table " + e.getTableName() + " does not exist");
@@ -367,6 +377,33 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
     }
     assert false;
     return 0;
+  }
+
+  /**
+   * First, make sure the source table/partition is not
+   * archived/indexes/non-rcfile. If either of these is true, throw an
+   * exception.
+   * 
+   * The way how it does the merge is to create a BlockMergeTask from the
+   * mergeFilesDesc.
+   * 
+   * @param db
+   * @param mergeFilesDesc
+   * @return
+   * @throws HiveException
+   */
+  private int mergeFiles(Hive db, AlterTablePartMergeFilesDesc mergeFilesDesc)
+      throws HiveException {
+    // merge work only needs input and output.
+    MergeWork mergeWork = new MergeWork(mergeFilesDesc.getInputDir(),
+        mergeFilesDesc.getOutputDir());
+    DriverContext driverCxt = new DriverContext();
+    BlockMergeTask taskExec = new BlockMergeTask();
+    taskExec.initialize(db.getConf(), null, driverCxt);
+    taskExec.setWork(mergeWork);
+    int ret = taskExec.execute(driverCxt);
+
+    return ret;
   }
 
   private int grantOrRevokeRole(GrantRevokeRoleDDL grantOrRevokeRoleDDL)
@@ -894,23 +931,6 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
     return 0;
   }
 
-  /**
-   * Determines whether a partition has been archived
-   *
-   * @param p
-   * @return
-   */
-
-  private boolean isArchived(Partition p) {
-    Map<String, String> params = p.getParameters();
-    if ("true".equalsIgnoreCase(params.get(
-        org.apache.hadoop.hive.metastore.api.Constants.IS_ARCHIVED))) {
-      return true;
-    } else {
-      return false;
-    }
-  }
-
   private void setIsArchived(Partition p, boolean state) {
     Map<String, String> params = p.getParameters();
     if (state) {
@@ -958,7 +978,7 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
    */
   private void setArchived(Partition p, Path parentDir, String dirInArchive, String archiveName)
       throws URISyntaxException {
-    assert(isArchived(p) == false);
+    assert(Utilities.isArchived(p) == false);
     Map<String, String> params = p.getParameters();
 
     URI parentUri = parentDir.toUri();
@@ -996,7 +1016,7 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
    * @param p - the partition to modify
    */
   private void setUnArchived(Partition p) {
-    assert(isArchived(p) == true);
+    assert(Utilities.isArchived(p) == true);
     String parentDir = getOriginalLocation(p);
     setIsArchived(p, false);
     setOriginalLocation(p, null);
@@ -1051,7 +1071,7 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
       throw new HiveException("Specified partition does not exist");
     }
 
-    if (isArchived(p)) {
+    if (Utilities.isArchived(p)) {
       // If there were a failure right after the metadata was updated in an
       // archiving operation, it's possible that the original, unarchived files
       // weren't deleted.
@@ -1236,7 +1256,7 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
       throw new HiveException("Specified partition does not exist");
     }
 
-    if (!isArchived(p)) {
+    if (!Utilities.isArchived(p)) {
       Path location = new Path(p.getLocation());
       Path leftOverArchiveDir = new Path(location.getParent(),
           location.getName() + INTERMEDIATE_ARCHIVED_DIR_SUFFIX);

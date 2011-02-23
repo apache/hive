@@ -707,6 +707,13 @@ public class Table implements Serializable {
   public boolean isView() {
     return TableType.VIRTUAL_VIEW.equals(getTableType());
   }
+  
+  /**
+   * @return whether this table is actually an index table
+   */
+  public boolean isIndexTable() {
+    return TableType.INDEX_TABLE.equals(getTableType());
+  }
 
   /**
    * Creates a partition name -> value spec map object

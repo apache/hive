@@ -238,6 +238,7 @@ TOK_DESCDATABASE;
 TOK_DATABASEPROPERTIES;
 TOK_DBPROPLIST;
 TOK_ALTERDATABASE_PROPERTIES;
+TOK_ALTERTABLE_ALTERPARTS_MERGEFILES;
 TOK_TABNAME;
 TOK_TABSRC;
 }
@@ -671,6 +672,7 @@ alterTblPartitionStatementSuffix
   : alterStatementSuffixFileFormat
   | alterStatementSuffixLocation
   | alterStatementSuffixProtectMode
+  | alterStatementSuffixMergeFiles
   ;
 
 alterStatementSuffixFileFormat
@@ -692,6 +694,13 @@ alterStatementSuffixProtectMode
 @after { msgs.pop(); }
     : alterProtectMode
     -> ^(TOK_ALTERTABLE_ALTERPARTS_PROTECTMODE alterProtectMode)
+    ;
+
+alterStatementSuffixMergeFiles
+@init { msgs.push(""); }
+@after { msgs.pop(); }
+    : KW_CONCATENATE
+    -> ^(TOK_ALTERTABLE_ALTERPARTS_MERGEFILES)
     ;
 
 alterProtectMode
@@ -2199,6 +2208,7 @@ KW_COMPUTE: 'COMPUTE';
 KW_STATISTICS: 'STATISTICS';
 KW_USE: 'USE';
 KW_OPTION: 'OPTION';
+KW_CONCATENATE: 'CONCATENATE';
 KW_SHOW_DATABASE: 'SHOW_DATABASE';
 KW_UPDATE: 'UPDATE';
 

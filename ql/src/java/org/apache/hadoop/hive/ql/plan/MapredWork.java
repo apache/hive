@@ -279,6 +279,9 @@ public class MapredWork implements Serializable {
    * operator - but could be useful for debugging as well.
    */
   private void setAliases() {
+    if(aliasToWork == null) {
+      return;
+    }
     for (String oneAlias : aliasToWork.keySet()) {
       aliasToWork.get(oneAlias).setAlias(oneAlias);
     }

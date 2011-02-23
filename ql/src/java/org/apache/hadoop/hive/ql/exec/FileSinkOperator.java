@@ -673,89 +673,12 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
       if ((conf != null) && isNativeTable) {
         String specPath = conf.getDirName();
         DynamicPartitionCtx dpCtx = conf.getDynPartCtx();
-        mvFileToFinalPath(specPath, hconf, success, LOG, dpCtx);
+        Utilities.mvFileToFinalPath(specPath, hconf, success, LOG, dpCtx, conf);
       }
     } catch (IOException e) {
       throw new HiveException(e);
     }
     super.jobClose(hconf, success, feedBack);
-  }
-
-  public void mvFileToFinalPath(String specPath, Configuration hconf,
-      boolean success, Log log, DynamicPartitionCtx dpCtx) throws IOException, HiveException {
-
-    FileSystem fs = (new Path(specPath)).getFileSystem(hconf);
-    Path tmpPath = Utilities.toTempPath(specPath);
-    Path intermediatePath = new Path(tmpPath.getParent(), tmpPath.getName()
-        + ".intermediate");
-    Path finalPath = new Path(specPath);
-    if (success) {
-      if (fs.exists(tmpPath)) {
-        // Step1: rename tmp output folder to intermediate path. After this
-        // point, updates from speculative tasks still writing to tmpPath
-        // will not appear in finalPath.
-        log.info("Moving tmp dir: " + tmpPath + " to: " + intermediatePath);
-        Utilities.rename(fs, tmpPath, intermediatePath);
-        // Step2: remove any tmp file or double-committed output files
-        ArrayList<String> emptyBuckets =
-          Utilities.removeTempOrDuplicateFiles(fs, intermediatePath, dpCtx);
-        // create empty buckets if necessary
-        if (emptyBuckets.size() > 0) {
-          createEmptyBuckets(hconf, emptyBuckets);
-        }
-
-        // Step3: move to the file destination
-        log.info("Moving tmp dir: " + intermediatePath + " to: " + finalPath);
-        Utilities.renameOrMoveFiles(fs, intermediatePath, finalPath);
-      }
-    } else {
-      fs.delete(tmpPath, true);
-    }
-  }
-
-  /**
-   * Check the existence of buckets according to bucket specification. Create empty buckets if
-   * needed.
-   * @param specPath The final path where the dynamic partitions should be in.
-   * @param conf FileSinkDesc.
-   * @param dpCtx dynamic partition context.
-   * @throws HiveException
-   * @throws IOException
-   */
-  private void createEmptyBuckets(Configuration hconf, ArrayList<String> paths)
-      throws HiveException, IOException {
-
-    JobConf jc;
-    if (hconf instanceof JobConf) {
-      jc = new JobConf(hconf);
-    } else {
-      // test code path
-      jc = new JobConf(hconf, ExecDriver.class);
-    }
-    HiveOutputFormat<?, ?> hiveOutputFormat = null;
-    Class<? extends Writable> outputClass = null;
-    boolean isCompressed = conf.getCompressed();
-    TableDesc tableInfo = conf.getTableInfo();
-    try {
-      Serializer serializer = (Serializer) tableInfo.getDeserializerClass().newInstance();
-      serializer.initialize(null, tableInfo.getProperties());
-      outputClass = serializer.getSerializedClass();
-      hiveOutputFormat = conf.getTableInfo().getOutputFileFormatClass().newInstance();
-    } catch (SerDeException e) {
-      throw new HiveException(e);
-    } catch (InstantiationException e) {
-      throw new HiveException(e);
-    } catch (IllegalAccessException e) {
-      throw new HiveException(e);
-    }
-
-    for (String p: paths) {
-      Path path = new Path(p);
-      RecordWriter writer = HiveFileFormatUtils.getRecordWriter(
-          jc, hiveOutputFormat, outputClass, isCompressed, tableInfo.getProperties(), path);
-      writer.close(false);
-      LOG.info("created empty bucket for enforcing bucketing at " + path);
-    }
   }
 
   @Override

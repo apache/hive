@@ -603,7 +603,9 @@ public abstract class BaseSemanticAnalyzer {
     public tableSpec(Hive db, HiveConf conf, ASTNode ast)
         throws SemanticException {
 
-      assert (ast.getToken().getType() == HiveParser.TOK_TAB || ast.getToken().getType() == HiveParser.TOK_TABTYPE);
+      assert (ast.getToken().getType() == HiveParser.TOK_TAB
+          || ast.getToken().getType() == HiveParser.TOK_TABLE_PARTITION 
+          || ast.getToken().getType() == HiveParser.TOK_TABTYPE);
       int childIndex = 0;
       numDynParts = 0;
 

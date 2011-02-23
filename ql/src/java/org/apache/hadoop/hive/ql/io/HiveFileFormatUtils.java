@@ -387,10 +387,12 @@ public final class HiveFileFormatUtils {
   public static List<Operator<? extends Serializable>> doGetAliasesFromPath(
     Map<String, ArrayList<String>> pathToAliases,
     Map<String, Operator<? extends Serializable>> aliasToWork, Path dir) {
-
-    String path = getMatchingPath(pathToAliases, dir);
     List<Operator<? extends Serializable>> opList =
       new ArrayList<Operator<? extends Serializable>>();
+    if (pathToAliases == null) {
+      return opList;
+    }
+    String path = getMatchingPath(pathToAliases, dir);
     List<String> aliases = pathToAliases.get(path);
     for (String alias : aliases) {
       opList.add(aliasToWork.get(alias));

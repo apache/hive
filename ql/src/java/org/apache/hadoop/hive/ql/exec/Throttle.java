@@ -43,7 +43,7 @@ public final class Throttle {
   /**
    * Fetch http://tracker.om:/gc.jsp?threshold=period.
    */
-  static void checkJobTracker(JobConf conf, Log LOG) {
+  public static void checkJobTracker(JobConf conf, Log LOG) {
 
     try {
       byte[] buffer = new byte[1024];
