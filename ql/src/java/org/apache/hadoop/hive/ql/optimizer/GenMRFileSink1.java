@@ -48,6 +48,7 @@ import org.apache.hadoop.hive.ql.lib.Node;
 import org.apache.hadoop.hive.ql.lib.NodeProcessor;
 import org.apache.hadoop.hive.ql.lib.NodeProcessorCtx;
 import org.apache.hadoop.hive.ql.optimizer.GenMRProcContext.GenMRMapJoinCtx;
+import org.apache.hadoop.hive.ql.parse.ErrorMsg;
 import org.apache.hadoop.hive.ql.parse.ParseContext;
 import org.apache.hadoop.hive.ql.parse.RowResolver;
 import org.apache.hadoop.hive.ql.parse.SemanticAnalyzer;
@@ -277,6 +278,9 @@ public class GenMRFileSink1 implements NodeProcessor {
       createMap4Merge(fsOp, ctx, finalName);
       LOG.info("use CombineHiveInputformat for the merge job");
     } else {
+      if (fsOp.getConf().getDynPartCtx() != null) {
+        throw new SemanticException(ErrorMsg.DYNAMIC_PARTITION_MERGE.getMsg());
+      }
       createMapReduce4Merge(fsOp, ctx, finalName);
       LOG.info("use HiveInputFormat for the merge job");
     }
