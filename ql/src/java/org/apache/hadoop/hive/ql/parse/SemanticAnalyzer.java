@@ -962,7 +962,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
 
   private boolean isPresent(String[] list, String elem) {
     for (String s : list) {
-      if (s.equals(elem)) {
+      if (s.toLowerCase().equals(elem)) {
         return true;
       }
     }
@@ -4518,7 +4518,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     int pos = 0;
     for (String src : joinTree.getBaseSrc()) {
       if (src != null) {
-        Operator srcOp = map.get(src);
+        Operator srcOp = map.get(src.toLowerCase());
 
         // for left-semi join, generate an additional selection & group-by
         // operator before ReduceSink
