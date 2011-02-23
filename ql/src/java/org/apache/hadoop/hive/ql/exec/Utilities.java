@@ -386,14 +386,20 @@ public final class Utilities {
    * Serialize a single Task.
    */
   public static void serializeTasks(Task<? extends Serializable> t, OutputStream out) {
-    XMLEncoder e = new XMLEncoder(out);
-    // workaround for java 1.5
-    e.setPersistenceDelegate(ExpressionTypes.class, new EnumDelegate());
-    e.setPersistenceDelegate(GroupByDesc.Mode.class, new EnumDelegate());
-    e.setPersistenceDelegate(Operator.ProgressCounter.class, new EnumDelegate());
+    XMLEncoder e = null;
+    try {
+      e = new XMLEncoder(out);
+      // workaround for java 1.5
+      e.setPersistenceDelegate(ExpressionTypes.class, new EnumDelegate());
+      e.setPersistenceDelegate(GroupByDesc.Mode.class, new EnumDelegate());
+      e.setPersistenceDelegate(Operator.ProgressCounter.class, new EnumDelegate());
 
-    e.writeObject(t);
-    e.close();
+      e.writeObject(t);
+    }finally {
+      if(null != e){
+        e.close();
+      }
+    }
   }
 
   public static class CollectionPersistenceDelegate extends DefaultPersistenceDelegate {
