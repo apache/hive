@@ -62,6 +62,11 @@ class ThriftHiveHandler : virtual public ThriftHiveIf {
     printf("getQueryPlan\n");
   }
 
+  void clean() {
+    // Your implementation goes here
+    printf("clean\n");
+  }
+
 };
 
 int main(int argc, char **argv) {

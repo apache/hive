@@ -24,10 +24,17 @@ import java.util.Properties;
 
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.session.SessionState;
+import org.apache.hadoop.hive.service.HiveClient;
+import org.apache.thrift.TException;
+import org.apache.thrift.protocol.TBinaryProtocol;
+import org.apache.thrift.protocol.TProtocol;
+import org.apache.thrift.transport.TSocket;
+import org.apache.thrift.transport.TTransport;
+import org.apache.thrift.transport.TTransportException;
 
 /**
  * CliSessionState.
- * 
+ *
  */
 public class CliSessionState extends SessionState {
   /**
@@ -50,12 +57,65 @@ public class CliSessionState extends SessionState {
    */
   public List<String> initFiles = new ArrayList<String>();
 
+  /**
+   * host name and port number of remote Hive server
+   */
+  protected String host;
+  protected int port;
+
+  private boolean remoteMode;
+
+  private TTransport transport;
+  private HiveClient client;
+
   public CliSessionState() {
     super();
+    remoteMode = false;
   }
 
   public CliSessionState(HiveConf conf) {
     super(conf);
+    remoteMode = false;
   }
 
+  /**
+   * Connect to Hive Server
+   */
+  public void connect() throws TTransportException {
+    transport = new TSocket(host, port);
+    TProtocol protocol = new TBinaryProtocol(transport);
+    client = new HiveClient(protocol);
+    transport.open();
+    remoteMode = true;
+  }
+
+  public void setHost(String host) {
+    this.host = host;
+  }
+
+  public String getHost() {
+    return host;
+  }
+
+  public int getPort() {
+    return port;
+  }
+
+  public void close() {
+    try {
+      client.clean();
+      client.shutdown();
+      transport.close();
+    } catch (TException e) {
+      e.printStackTrace();
+    }
+  }
+
+  public boolean isRemoteMode() {
+    return remoteMode;
+  }
+
+  public HiveClient getClient() {
+    return client;
+  }
 }

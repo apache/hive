@@ -73,14 +73,29 @@ public class OptionsProcessor {
         .withDescription("Use value for given property")
         .create());
 
+    // -h hostname/ippaddress
+    options.addOption(OptionBuilder
+        .hasArg()
+        .withArgName("hostname")
+        .withDescription("connecting to Hive Server on remote host")
+        .create('h'));
+
+    // -p port
+    options.addOption(OptionBuilder
+        .hasArg()
+        .withArgName("port")
+        .withDescription("connecting to Hive Server on port number")
+        .create('p'));
+
     // [-S|--silent]
     options.addOption(new Option("S", "silent", false, "Silent mode in interactive shell"));
 
     // [-v|--verbose]
     options.addOption(new Option("v", "verbose", false, "Verbose mode (echo executed SQL to the console)"));
 
-    // [-h|--help]
-    options.addOption(new Option("h", "help", false, "Print help information"));
+    // [-H|--help]
+    options.addOption(new Option("H", "help", false, "Print help information"));
+
   }
 
   public boolean process_stage1(String[] argv) {
@@ -101,7 +116,7 @@ public class OptionsProcessor {
   public boolean process_stage2(CliSessionState ss) {
     ss.getConf();
 
-    if (commandLine.hasOption('h')) {
+    if (commandLine.hasOption('H')) {
       printUsage();
       return false;
     }
@@ -113,6 +128,10 @@ public class OptionsProcessor {
     ss.fileName = commandLine.getOptionValue('f');
 
     ss.setIsVerbose(commandLine.hasOption('v'));
+
+    ss.host = (String) commandLine.getOptionValue('h');
+
+    ss.port = Integer.parseInt((String) commandLine.getOptionValue('p', "10000"));
 
     String[] initFiles = commandLine.getOptionValues('i');
     if (null != initFiles) {

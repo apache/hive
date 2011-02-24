@@ -18,11 +18,17 @@
 
 package org.apache.hadoop.hive.service;
 
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.FileReader;
 import java.io.IOException;
+import java.io.PrintStream;
+import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.facebook.fb303.fb_status;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.hive.conf.HiveConf;
@@ -48,11 +54,13 @@ import org.apache.thrift.transport.TServerTransport;
 import org.apache.thrift.transport.TTransport;
 import org.apache.thrift.transport.TTransportFactory;
 
+import com.facebook.fb303.fb_status;
+
 /**
  * Thrift Hive Server Implementation.
  */
 public class HiveServer extends ThriftHive {
-  private static final String VERSION = "0";
+  private static final String VERSION = "1";
 
   /**
    * Handler which implements the Hive Interface This class can be used in lieu
@@ -63,8 +71,14 @@ public class HiveServer extends ThriftHive {
     /**
      * Hive server uses org.apache.hadoop.hive.ql.Driver for run() and
      * getResults() methods.
+     * It is the instance of the last Hive query.
      */
-    private final Driver driver;
+    private Driver driver;
+    /**
+     * For processors other than Hive queries (Driver), they output to session.out (a temp file)
+     * first and the fetchOne/fetchN/fetchAll functions get the output from pipeIn.
+     */
+    private BufferedReader pipeIn;
 
     /**
      * Flag that indicates whether the last executed command was a Hive query.
@@ -80,12 +94,33 @@ public class HiveServer extends ThriftHive {
       super(HiveServer.class.getName());
 
       isHiveQuery = false;
+      driver = null;
       SessionState session = new SessionState(new HiveConf(SessionState.class));
       SessionState.start(session);
-      session.in = null;
-      session.out = null;
-      session.err = null;
-      driver = new Driver();
+      setupSessionIO(session);
+    }
+
+    private void setupSessionIO(SessionState session) {
+      try {
+        LOG.info("Putting temp output to file " + session.getTmpOutputFile().toString());
+        session.in = null; // hive server's session input stream is not used
+        // open a per-session file in auto-flush mode for writing temp results
+        session.out = new PrintStream(new FileOutputStream(session.getTmpOutputFile()), true, "UTF-8");
+        // TODO: for hadoop jobs, progress is printed out to session.err,
+        // we should find a way to feed back job progress to client
+        session.err = new PrintStream(System.err, true, "UTF-8");
+      } catch (IOException e) {
+        LOG.error("Error in creating temp output file ", e);
+        try {
+          session.in = null;
+          session.out = new PrintStream(System.out, true, "UTF-8");
+          session.err = new PrintStream(System.err, true, "UTF-8");
+      	  } catch (UnsupportedEncodingException ee) {
+      	    ee.printStackTrace();
+      	    session.out = null;
+      	    session.err = null;
+      	  }
+      }
     }
 
     /**
@@ -96,7 +131,7 @@ public class HiveServer extends ThriftHive {
      */
     public void execute(String cmd) throws HiveServerException, TException {
       HiveServerHandler.LOG.info("Running the query: " + cmd);
-      SessionState.get();
+      SessionState session = SessionState.get();
 
       String cmd_trimmed = cmd.trim();
       String[] tokens = cmd_trimmed.split("\\s");
@@ -111,11 +146,14 @@ public class HiveServer extends ThriftHive {
         CommandProcessorResponse response = null;
         if (proc != null) {
           if (proc instanceof Driver) {
-            ((Driver)proc).destroy();
             isHiveQuery = true;
+            driver = (Driver) proc;
             response = driver.run(cmd);
           } else {
             isHiveQuery = false;
+            driver = null;
+            // need to reset output for each non-Hive query
+            setupSessionIO(session);
             response = proc.run(cmd_1);
           }
 
@@ -126,6 +164,7 @@ public class HiveServer extends ThriftHive {
       } catch (Exception e) {
         HiveServerException ex = new HiveServerException();
         ex.setMessage("Error running query: " + e.toString());
+        ex.setErrorCode(ret == 0? -10000: ret);
         throw ex;
       }
 
@@ -136,13 +175,32 @@ public class HiveServer extends ThriftHive {
     }
 
     /**
+     * Should be called by the client at the end of a session.
+     */
+    public void clean() {
+      if (driver != null) {
+        driver.close();
+        driver.destroy();
+      }
+
+      SessionState session = SessionState.get();
+      if (session.getTmpOutputFile() != null) {
+        session.getTmpOutputFile().delete();
+      }
+      pipeIn = null;
+    }
+
+    /**
      * Return the status information about the Map-Reduce cluster.
      */
     public HiveClusterStatus getClusterStatus() throws HiveServerException,
         TException {
       HiveClusterStatus hcs;
       try {
-        ClusterStatus cs = driver.getClusterStatus();
+        Driver drv = new Driver();
+        drv.init();
+
+        ClusterStatus cs = drv.getClusterStatus();
         JobTracker.State jbs = cs.getJobTrackerState();
 
         // Convert the ClusterStatus to its Thrift equivalent: HiveClusterStatus
@@ -181,6 +239,8 @@ public class HiveServer extends ThriftHive {
         return new Schema();
       }
 
+      assert driver != null: "getSchema() is called on a Hive query and driver is NULL.";
+
       try {
         Schema schema = driver.getSchema();
         if (schema == null) {
@@ -206,6 +266,8 @@ public class HiveServer extends ThriftHive {
         return new Schema();
       }
 
+      assert driver != null: "getThriftSchema() is called on a Hive query and driver is NULL.";
+
       try {
         Schema schema = driver.getThriftSchema();
         if (schema == null) {
@@ -222,6 +284,7 @@ public class HiveServer extends ThriftHive {
       }
     }
 
+
     /**
      * Fetches the next row in a query result set.
      *
@@ -231,8 +294,16 @@ public class HiveServer extends ThriftHive {
     public String fetchOne() throws HiveServerException, TException {
       if (!isHiveQuery) {
         // Return no results if the last command was not a Hive query
-        return "";
+        List<String> results = new ArrayList<String>(1);
+        readResults(results, 1);
+        if (results.size() > 0) {
+          return results.get(0);
+        } else { //  throw an EOF exception
+          throw new HiveServerException("OK", 0, "");
+        }
       }
+
+      assert driver != null: "fetchOne() is called on a Hive query and driver is NULL.";
 
       ArrayList<String> result = new ArrayList<String>();
       driver.setMaxRows(1);
@@ -243,11 +314,62 @@ public class HiveServer extends ThriftHive {
         // TODO: Cannot return null here because thrift cannot handle nulls
         // TODO: Returning empty string for now. Need to figure out how to
         // TODO: return null in some other way
-        return "";
+        throw new HiveServerException("OK", 0, "");
+       // return "";
       } catch (IOException e) {
         HiveServerException ex = new HiveServerException();
         ex.setMessage(e.getMessage());
         throw ex;
+      }
+    }
+
+    private void cleanTmpFile() {
+      if (pipeIn != null) {
+        SessionState session = SessionState.get();
+        File tmp = session.getTmpOutputFile();
+        tmp.delete();
+        pipeIn = null;
+      }
+    }
+
+    /**
+     * Reads the temporary results for non-Hive (non-Driver) commands to the
+     * resulting List of strings.
+     * @param results list of strings containing the results
+     * @param nLines number of lines read at once. If it is <= 0, then read all lines.
+     */
+    private void readResults(List<String> results, int nLines) {
+
+      if (pipeIn == null) {
+        SessionState session = SessionState.get();
+        File tmp = session.getTmpOutputFile();
+        try {
+          pipeIn = new BufferedReader(new FileReader(tmp));
+        } catch (FileNotFoundException e) {
+          LOG.error("File " + tmp + " not found. ", e);
+          return;
+        }
+      }
+
+      boolean readAll = false;
+
+      for (int i = 0; i < nLines || nLines <= 0; ++i) {
+        try {
+          String line = pipeIn.readLine();
+          if (line == null) {
+            // reached the end of the result file
+            readAll = true;
+            break;
+          } else {
+            results.add(line);
+          }
+        } catch (IOException e) {
+          LOG.error("Reading temp results encountered an exception: ", e);
+          readAll = true;
+        }
+      }
+      if (readAll) {
+        cleanTmpFile();
       }
     }
 
@@ -270,12 +392,16 @@ public class HiveServer extends ThriftHive {
         ex.setMessage("Invalid argument for number of rows: " + numRows);
         throw ex;
       }
-      if (!isHiveQuery) {
-        // Return no results if the last command was not a Hive query
-        return new ArrayList<String>();
-      }
 
       ArrayList<String> result = new ArrayList<String>();
+
+      if (!isHiveQuery) {
+        readResults(result, numRows);
+        return result;
+      }
+
+      assert driver != null: "fetchN() is called on a Hive query and driver is NULL.";
+
       driver.setMaxRows(numRows);
       try {
         driver.getResults(result);
@@ -298,13 +424,16 @@ public class HiveServer extends ThriftHive {
      *         in the client.
      */
     public List<String> fetchAll() throws HiveServerException, TException {
-      if (!isHiveQuery) {
-        // Return no results if the last command was not a Hive query
-        return new ArrayList<String>();
-      }
 
       ArrayList<String> rows = new ArrayList<String>();
       ArrayList<String> result = new ArrayList<String>();
+
+      if (!isHiveQuery) {
+        // Return all results if numRows <= 0
+        readResults(result, 0);
+        return result;
+      }
+
       try {
         while (driver.getResults(result)) {
           rows.addAll(result);
@@ -337,6 +466,13 @@ public class HiveServer extends ThriftHive {
     @Override
     public QueryPlan getQueryPlan() throws HiveServerException, TException {
       QueryPlan qp = new QueryPlan();
+
+      if (!isHiveQuery) {
+        return qp;
+      }
+
+      assert driver != null: "getQueryPlan() is called on a Hive query and driver is NULL.";
+
       // TODO for now only return one query at a time
       // going forward, all queries associated with a single statement
       // will be returned in a single QueryPlan
@@ -375,12 +511,17 @@ public class HiveServer extends ThriftHive {
   public static void main(String[] args) {
     try {
       int port = 10000;
+      int minWorkerThreads = 100; // default number of threads serving the Hive server
       if (args.length >= 1) {
         port = Integer.parseInt(args[0]);
+      }
+      if (args.length >= 2) {
+        minWorkerThreads = Integer.parseInt(args[1]);
       }
       TServerTransport serverTransport = new TServerSocket(port);
       ThriftHiveProcessorFactory hfactory = new ThriftHiveProcessorFactory(null);
       TThreadPoolServer.Options options = new TThreadPoolServer.Options();
+      options.minWorkerThreads = minWorkerThreads;
       TServer server = new TThreadPoolServer(hfactory, serverTransport,
           new TTransportFactory(), new TTransportFactory(),
           new TBinaryProtocol.Factory(), new TBinaryProtocol.Factory(), options);

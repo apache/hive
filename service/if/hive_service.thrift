@@ -81,4 +81,6 @@ service ThriftHive extends hive_metastore.ThriftHiveMetastore {
   # Get the queryplan annotated with counter information
   queryplan.QueryPlan getQueryPlan() throws(1:HiveServerException ex)
 
+  # clean up last Hive query (releasing locks etc.)
+  void clean()
 }

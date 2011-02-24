@@ -18,10 +18,6 @@
 
 package org.apache.hadoop.hive.jdbc;
 
-import junit.framework.TestCase;
-import org.apache.hadoop.fs.Path;
-import org.apache.hadoop.hive.conf.HiveConf;
-
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
 import java.sql.DriverManager;
@@ -36,6 +32,11 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+
+import junit.framework.TestCase;
+
+import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.hive.conf.HiveConf;
 
 /**
  * TestJdbcDriver.
@@ -68,6 +69,7 @@ public class TestJdbcDriver extends TestCase {
         .getProperty("test.service.standalone.server"));
   }
 
+  @Override
   protected void setUp() throws Exception {
     super.setUp();
     Class.forName(driverName);
@@ -160,6 +162,7 @@ public class TestJdbcDriver extends TestCase {
     assertFalse(res.next());
   }
 
+  @Override
   protected void tearDown() throws Exception {
     super.tearDown();
 
@@ -584,7 +587,7 @@ public class TestJdbcDriver extends TestCase {
     DatabaseMetaData meta = con.getMetaData();
 
     assertEquals("Hive", meta.getDatabaseProductName());
-    assertEquals("0", meta.getDatabaseProductVersion());
+    assertEquals("1", meta.getDatabaseProductVersion());
     assertEquals(DatabaseMetaData.sqlStateSQL99, meta.getSQLStateType());
     assertNull(meta.getProcedures(null, null, null));
     assertFalse(meta.supportsCatalogsInTableDefinitions());

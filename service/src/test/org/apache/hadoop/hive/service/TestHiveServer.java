@@ -162,7 +162,12 @@ public class TestHiveServer extends TestCase {
     assertEquals(thriftschema.getFieldSchemasSize(), 0);
     assertEquals(thriftschema.getPropertiesSize(), 0);
 
-    assertEquals(client.fetchOne(), "");
+    try {
+      String ret = client.fetchOne();
+      assertTrue(false);
+    } catch (HiveServerException e) {
+      assertEquals(e.getErrorCode(), 0);
+    }
     assertEquals(client.fetchN(10).size(), 0);
     assertEquals(client.fetchAll().size(), 0);
 
@@ -181,7 +186,12 @@ public class TestHiveServer extends TestCase {
     assertEquals(thriftschema.getFieldSchemasSize(), 0);
     assertEquals(thriftschema.getPropertiesSize(), 0);
 
-    assertEquals(client.fetchOne(), "");
+    try {
+      String ret = client.fetchOne();
+      assertTrue(false);
+    } catch (HiveServerException e) {
+      assertEquals(e.getErrorCode(), 0);
+    }
     assertEquals(client.fetchN(10).size(), 0);
     assertEquals(client.fetchAll().size(), 0);
 
@@ -243,12 +253,17 @@ public class TestHiveServer extends TestCase {
       // fetchOne test
       client.execute("select key, value from " + tableName);
       for (int i = 0; i < 500; i++) {
-        String str = client.fetchOne();
-        if (str.equals("")) {
+        try {
+          String str = client.fetchOne();
+        } catch (HiveServerException e) {
           assertTrue(false);
         }
       }
-      assertEquals(client.fetchOne(), "");
+      try {
+        client.fetchOne();
+      } catch (HiveServerException e) {
+        assertEquals(e.getErrorCode(), 0);
+      }
 
       // fetchN test
       client.execute("select key, value from " + tableName);

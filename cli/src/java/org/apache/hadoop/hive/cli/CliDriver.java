@@ -27,15 +27,14 @@ import java.io.PrintStream;
 import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import jline.Completor;
 import jline.ArgumentCompletor;
-import jline.ArgumentCompletor.ArgumentDelimiter;
 import jline.ArgumentCompletor.AbstractArgumentDelimiter;
+import jline.ArgumentCompletor.ArgumentDelimiter;
+import jline.Completor;
 import jline.ConsoleReader;
 import jline.History;
 import jline.SimpleCompletor;
@@ -45,18 +44,21 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.metastore.api.FieldSchema;
+import org.apache.hadoop.hive.metastore.api.Schema;
 import org.apache.hadoop.hive.ql.Driver;
-import org.apache.hadoop.hive.ql.parse.ParseDriver;
 import org.apache.hadoop.hive.ql.exec.FunctionRegistry;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.exec.Utilities.StreamPrinter;
+import org.apache.hadoop.hive.ql.parse.ParseDriver;
 import org.apache.hadoop.hive.ql.processors.CommandProcessor;
 import org.apache.hadoop.hive.ql.processors.CommandProcessorFactory;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.ql.session.SessionState.LogHelper;
+import org.apache.hadoop.hive.service.HiveClient;
+import org.apache.hadoop.hive.service.HiveServerException;
 import org.apache.hadoop.hive.shims.ShimLoader;
-import org.apache.hadoop.hive.metastore.api.FieldSchema;
-import org.apache.hadoop.hive.metastore.api.Schema;
+import org.apache.thrift.TException;
 
 /**
  * CliDriver.
@@ -64,8 +66,9 @@ import org.apache.hadoop.hive.metastore.api.Schema;
  */
 public class CliDriver {
 
-  public static final String prompt = "hive";
-  public static final String prompt2 = "    "; // when ';' is not yet seen
+  public static String prompt = "hive";
+  public static String prompt2 = "    "; // when ';' is not yet seen
+  public static final int LINES_TO_FETCH = 40; // number of lines to fetch in batch from remote hive server
 
   public static final String HIVERCFILE = ".hiverc";
 
@@ -80,7 +83,7 @@ public class CliDriver {
   }
 
   public int processCmd(String cmd) {
-    SessionState ss = SessionState.get();
+    CliSessionState ss = (CliSessionState) SessionState.get();
 
     String cmd_trimmed = cmd.trim();
     String[] tokens = cmd_trimmed.split("\\s+");
@@ -149,8 +152,50 @@ public class CliDriver {
           ss.out.println(StringUtils.join(s, "\n"));
         }
       }
+    } else if (ss.isRemoteMode()) { // remote mode -- connecting to remote hive server
+        HiveClient client = ss.getClient();
+        PrintStream out = ss.out;
+        PrintStream err = ss.err;
 
-    } else {
+        try {
+          client.execute(cmd_trimmed);
+          List<String> results;
+          do {
+            results = client.fetchN(LINES_TO_FETCH);
+            for (String line: results) {
+              out.println(line);
+            }
+          } while (results.size() == LINES_TO_FETCH);
+        } catch (HiveServerException e) {
+          ret = e.getErrorCode();
+          if (ret != 0) { // OK if ret == 0 -- reached the EOF
+            String errMsg = e.getMessage();
+            if (errMsg == null) {
+              errMsg = e.toString();
+            }
+            ret = e.getErrorCode();
+            err.println("[Hive Error]: " + errMsg);
+          }
+        } catch (TException e) {
+          String errMsg = e.getMessage();
+          if (errMsg == null) {
+            errMsg = e.toString();
+          }
+          ret = -10002;
+          err.println("[Thrift Error]: " + errMsg);
+        } finally {
+          try {
+            client.clean();
+          } catch (TException e) {
+            String errMsg = e.getMessage();
+            if (errMsg == null) {
+              errMsg = e.toString();
+            }
+            err.println("[Thrift Error]: Hive server is not cleaned due to thrift exception: "
+                + errMsg);
+          }
+        }
+    } else { // local mode
       CommandProcessor proc = CommandProcessorFactory.get(tokens[0], (HiveConf)conf);
       if (proc != null) {
         if (proc instanceof Driver) {
@@ -168,7 +213,7 @@ public class CliDriver {
           }
 
           ArrayList<String> res = new ArrayList<String>();
-          
+
           if (HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVE_CLI_PRINT_HEADER)) {
             // Print the column names
             boolean first_col = true;
@@ -332,6 +377,7 @@ public class CliDriver {
     // as a keyword delimiter, we need to define a new ArgumentDelimiter
     // that recognizes parenthesis as a delimiter.
     ArgumentDelimiter delim = new AbstractArgumentDelimiter () {
+      @Override
       public boolean isDelimiterChar (String buffer, int pos) {
         char c = buffer.charAt(pos);
         return (Character.isWhitespace(c) || c == '(' || c == ')' ||
@@ -367,7 +413,7 @@ public class CliDriver {
         return ret;
       }
     };
-    
+
     return completor;
   }
 
@@ -416,6 +462,17 @@ public class CliDriver {
 
     SessionState.start(ss);
 
+    // connect to Hive Server
+    if (ss.getHost() != null) {
+      ss.connect();
+      if (ss.isRemoteMode()) {
+        prompt = "[" + ss.host + ':' + ss.port + "] " + prompt;
+        char[] spaces = new char[prompt.length()];
+        Arrays.fill(spaces, ' ');
+        prompt2 = new String(spaces);
+      }
+    }
+
     CliDriver cli = new CliDriver();
 
     // Execute -i init files (always in silent mode)
@@ -462,6 +519,8 @@ public class CliDriver {
         continue;
       }
     }
+
+    ss.close();
 
     System.exit(ret);
   }

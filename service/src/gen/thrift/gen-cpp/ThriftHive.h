@@ -23,6 +23,7 @@ class ThriftHiveIf : virtual public Apache::Hadoop::Hive::ThriftHiveMetastoreIf 
   virtual void getThriftSchema(Apache::Hadoop::Hive::Schema& _return) = 0;
   virtual void getClusterStatus(HiveClusterStatus& _return) = 0;
   virtual void getQueryPlan(Apache::Hadoop::Hive::QueryPlan& _return) = 0;
+  virtual void clean() = 0;
 };
 
 class ThriftHiveNull : virtual public ThriftHiveIf , virtual public Apache::Hadoop::Hive::ThriftHiveMetastoreNull {
@@ -50,6 +51,9 @@ class ThriftHiveNull : virtual public ThriftHiveIf , virtual public Apache::Hado
     return;
   }
   void getQueryPlan(Apache::Hadoop::Hive::QueryPlan& /* _return */) {
+    return;
+  }
+  void clean() {
     return;
   }
 };
@@ -836,6 +840,80 @@ class ThriftHive_getQueryPlan_presult {
 
 };
 
+
+class ThriftHive_clean_args {
+ public:
+
+  ThriftHive_clean_args() {
+  }
+
+  virtual ~ThriftHive_clean_args() throw() {}
+
+
+  bool operator == (const ThriftHive_clean_args & /* rhs */) const
+  {
+    return true;
+  }
+  bool operator != (const ThriftHive_clean_args &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const ThriftHive_clean_args & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+
+class ThriftHive_clean_pargs {
+ public:
+
+
+  virtual ~ThriftHive_clean_pargs() throw() {}
+
+
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+
+class ThriftHive_clean_result {
+ public:
+
+  ThriftHive_clean_result() {
+  }
+
+  virtual ~ThriftHive_clean_result() throw() {}
+
+
+  bool operator == (const ThriftHive_clean_result & /* rhs */) const
+  {
+    return true;
+  }
+  bool operator != (const ThriftHive_clean_result &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const ThriftHive_clean_result & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+
+class ThriftHive_clean_presult {
+ public:
+
+
+  virtual ~ThriftHive_clean_presult() throw() {}
+
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+
+};
+
 class ThriftHiveClient : virtual public ThriftHiveIf, public Apache::Hadoop::Hive::ThriftHiveMetastoreClient {
  public:
   ThriftHiveClient(boost::shared_ptr< ::apache::thrift::protocol::TProtocol> prot) :
@@ -872,6 +950,9 @@ class ThriftHiveClient : virtual public ThriftHiveIf, public Apache::Hadoop::Hiv
   void getQueryPlan(Apache::Hadoop::Hive::QueryPlan& _return);
   void send_getQueryPlan();
   void recv_getQueryPlan(Apache::Hadoop::Hive::QueryPlan& _return);
+  void clean();
+  void send_clean();
+  void recv_clean();
 };
 
 class ThriftHiveProcessor : virtual public ::apache::thrift::TProcessor, public Apache::Hadoop::Hive::ThriftHiveMetastoreProcessor {
@@ -888,6 +969,7 @@ class ThriftHiveProcessor : virtual public ::apache::thrift::TProcessor, public 
   void process_getThriftSchema(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot);
   void process_getClusterStatus(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot);
   void process_getQueryPlan(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot);
+  void process_clean(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot);
  public:
   ThriftHiveProcessor(boost::shared_ptr<ThriftHiveIf> iface) :
     Apache::Hadoop::Hive::ThriftHiveMetastoreProcessor(iface),
@@ -900,6 +982,7 @@ class ThriftHiveProcessor : virtual public ::apache::thrift::TProcessor, public 
     processMap_["getThriftSchema"] = &ThriftHiveProcessor::process_getThriftSchema;
     processMap_["getClusterStatus"] = &ThriftHiveProcessor::process_getClusterStatus;
     processMap_["getQueryPlan"] = &ThriftHiveProcessor::process_getQueryPlan;
+    processMap_["clean"] = &ThriftHiveProcessor::process_clean;
   }
 
   virtual bool process(boost::shared_ptr< ::apache::thrift::protocol::TProtocol> piprot, boost::shared_ptr< ::apache::thrift::protocol::TProtocol> poprot);
@@ -1011,6 +1094,13 @@ class ThriftHiveMultiface : virtual public ThriftHiveIf, public Apache::Hadoop::
       } else {
         ifaces_[i]->getQueryPlan(_return);
       }
+    }
+  }
+
+  void clean() {
+    uint32_t sz = ifaces_.size();
+    for (uint32_t i = 0; i < sz; ++i) {
+      ifaces_[i]->clean();
     }
   }
 

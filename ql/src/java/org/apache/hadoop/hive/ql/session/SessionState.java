@@ -77,6 +77,7 @@ public class SessionState {
    * HiveHistory Object
    */
   protected HiveHistory hiveHist;
+
   /**
    * Streams to read/write from.
    */
@@ -93,16 +94,22 @@ public class SessionState {
   public PrintStream childErr;
 
   /**
+   * Temporary file name used to store results of non-Hive commands (e.g., set, dfs)
+   * and HiveServer.fetch*() function will read results from this file
+   */
+  protected File tmpOutputFile;
+
+  /**
    * type of the command.
    */
   private HiveOperation commandType;
-  
+
   private HiveAuthorizationProvider authorizer;
-  
+
   private HiveAuthenticationProvider authenticator;
-  
+
   private CreateTableAutomaticGrant createTableGrants;
-  
+
   /**
    * Lineage state.
    */
@@ -123,6 +130,14 @@ public class SessionState {
 
   public void setConf(HiveConf conf) {
     this.conf = conf;
+  }
+
+  public File getTmpOutputFile() {
+    return tmpOutputFile;
+  }
+
+  public void setTmpOutputFile(File f) {
+    tmpOutputFile = f;
   }
 
   public boolean getIsSilent() {
@@ -182,29 +197,22 @@ public class SessionState {
 
   /**
    * start a new session and set it to current session.
-   * @throws HiveException 
    */
-  public static SessionState start(HiveConf conf) throws HiveException {
+  public static SessionState start(HiveConf conf) {
     SessionState ss = new SessionState(conf);
-    ss.getConf().setVar(HiveConf.ConfVars.HIVESESSIONID, makeSessionId());
-    ss.hiveHist = new HiveHistory(ss);
-    ss.authenticator = HiveUtils.getAuthenticator(conf);
-    ss.authorizer = HiveUtils.getAuthorizeProviderManager(
-        conf, ss.authenticator);
-    ss.createTableGrants = CreateTableAutomaticGrant.create(conf);
-    tss.set(ss);
-    return (ss);
+    return start(ss);
   }
 
   /**
    * set current session to existing session object if a thread is running
    * multiple sessions - it must call this method with the new session object
    * when switching from one session to another.
-   * @throws HiveException 
+   * @throws HiveException
    */
   public static SessionState start(SessionState startSs) {
 
     tss.set(startSs);
+
     if (StringUtils.isEmpty(startSs.getConf().getVar(
         HiveConf.ConfVars.HIVESESSIONID))) {
       startSs.getConf()
@@ -214,7 +222,21 @@ public class SessionState {
     if (startSs.hiveHist == null) {
       startSs.hiveHist = new HiveHistory(startSs);
     }
-    
+
+    if (startSs.getTmpOutputFile() == null) {
+      // per-session temp file containing results to be sent from HiveServer to HiveClient
+      File tmpDir = new File(
+          HiveConf.getVar(startSs.getConf(), HiveConf.ConfVars.HIVEHISTORYFILELOC));
+      String sessionID = startSs.getConf().getVar(HiveConf.ConfVars.HIVESESSIONID);
+      try {
+        File tmpFile = File.createTempFile(sessionID, ".pipeout", tmpDir);
+        tmpFile.deleteOnExit();
+        startSs.setTmpOutputFile(tmpFile);
+      } catch (IOException e) {
+        throw new RuntimeException(e);
+      }
+    }
+
     try {
       startSs.authenticator = HiveUtils.getAuthenticator(startSs
           .getConf());
@@ -225,7 +247,7 @@ public class SessionState {
     } catch (HiveException e) {
       throw new RuntimeException(e);
     }
-    
+
     return startSs;
   }
 
@@ -604,7 +626,7 @@ public class SessionState {
     }
     return commandType.getOperationName();
   }
-  
+
   public HiveOperation getHiveOperation() {
     return commandType;
   }
@@ -612,7 +634,7 @@ public class SessionState {
   public void setCommandType(HiveOperation commandType) {
     this.commandType = commandType;
   }
-  
+
   public HiveAuthorizationProvider getAuthorizer() {
     return authorizer;
   }
@@ -628,7 +650,7 @@ public class SessionState {
   public void setAuthenticator(HiveAuthenticationProvider authenticator) {
     this.authenticator = authenticator;
   }
-  
+
   public CreateTableAutomaticGrant getCreateTableGrants() {
     return createTableGrants;
   }
