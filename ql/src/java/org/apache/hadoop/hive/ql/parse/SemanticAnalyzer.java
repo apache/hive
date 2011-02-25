@@ -2050,7 +2050,10 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
             qb.getAliases());
       } else {
         // Case when this is an expression
-        ExprNodeDesc exp = genExprNodeDesc(expr, inputRR);
+        TypeCheckCtx tcCtx = new TypeCheckCtx(inputRR);
+        // We allow stateful functions in the SELECT list (but nowhere else)
+        tcCtx.setAllowStatefulFunctions(true);
+        ExprNodeDesc exp = genExprNodeDesc(expr, inputRR, tcCtx);
         col_list.add(exp);
         if (!StringUtils.isEmpty(alias)
             && (out_rwsch.get(null, colAlias) != null)) {
@@ -6728,9 +6731,31 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
    * @return exprNodeDesc
    * @throws SemanticException
    */
-  @SuppressWarnings("nls")
   public ExprNodeDesc genExprNodeDesc(ASTNode expr, RowResolver input)
       throws SemanticException {
+    // Since the user didn't supply a customized type-checking context,
+    // use default settings.
+    TypeCheckCtx tcCtx = new TypeCheckCtx(input);
+    return genExprNodeDesc(expr, input, tcCtx);
+  }
+  
+  /**
+   * Generates an expression node descriptor for the expression passed in the
+   * arguments. This function uses the row resolver and the metadata information
+   * that are passed as arguments to resolve the column names to internal names.
+   *
+   * @param expr
+   *          The expression
+   * @param input
+   *          The row resolver
+   * @param tcCtx
+   *          Customized type-checking context
+   * @return exprNodeDesc
+   * @throws SemanticException
+   */
+  @SuppressWarnings("nls")
+  public ExprNodeDesc genExprNodeDesc(ASTNode expr, RowResolver input,
+    TypeCheckCtx tcCtx) throws SemanticException {
     // We recursively create the exprNodeDesc. Base cases: when we encounter
     // a column ref, we convert that into an exprNodeColumnDesc; when we
     // encounter
@@ -6750,8 +6775,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
           .getIsVirtualCol());
     }
 
-    // Create the walker, the rules dispatcher and the context.
-    TypeCheckCtx tcCtx = new TypeCheckCtx(input);
+    // Create the walker and  the rules dispatcher.
     tcCtx.setUnparseTranslator(unparseTranslator);
 
     HashMap<Node, Object> nodeOutputs =

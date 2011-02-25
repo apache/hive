@@ -55,3 +55,9 @@ SELECT CASE 1
         WHEN 21 THEN 24
        END
 FROM src LIMIT 1;
+
+-- verify that short-circuiting is working correctly for CASE
+-- we should never get to the ELSE branch, which would raise an exception
+SELECT CASE 1 WHEN 1 THEN 'yo'
+ELSE reflect('java.lang.String', 'bogus', 1) END
+FROM src LIMIT 1;

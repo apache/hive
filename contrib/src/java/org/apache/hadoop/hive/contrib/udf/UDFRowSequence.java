@@ -28,7 +28,7 @@ import org.apache.hadoop.io.LongWritable;
  */
 @Description(name = "row_sequence",
     value = "_FUNC_() - Returns a generated row sequence number starting from 1")
-@UDFType(deterministic = false)
+@UDFType(deterministic = false, stateful = true)
 public class UDFRowSequence extends UDF
 {
   private LongWritable result = new LongWritable();

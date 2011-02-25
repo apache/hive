@@ -630,6 +630,12 @@ public final class TypeCheckProcFactory {
         if (fi.getGenericUDTF() != null) {
           throw new SemanticException(ErrorMsg.UDTF_INVALID_LOCATION.getMsg());
         }
+        if (!ctx.getAllowStatefulFunctions() && (fi.getGenericUDF() != null)) {
+          if (FunctionRegistry.isStateful(fi.getGenericUDF())) {
+            throw new SemanticException(
+              ErrorMsg.UDF_STATEFUL_INVALID_LOCATION.getMsg());
+          }
+        }
 
         desc = ExprNodeGenericFuncDesc.newInstance(fi.getGenericUDF(), children);
       }

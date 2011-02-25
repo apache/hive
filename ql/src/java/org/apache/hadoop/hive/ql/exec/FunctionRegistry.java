@@ -1005,6 +1005,11 @@ public final class FunctionRegistry {
    * Returns whether a GenericUDF is deterministic or not.
    */
   public static boolean isDeterministic(GenericUDF genericUDF) {
+    if (isStateful(genericUDF)) {
+      // stateful implies non-deterministic, regardless of whatever
+      // the deterministic annotation declares
+      return false;
+    }
     UDFType genericUDFType = genericUDF.getClass().getAnnotation(UDFType.class);
     if (genericUDFType != null && genericUDFType.deterministic() == false) {
       return false;
@@ -1019,6 +1024,26 @@ public final class FunctionRegistry {
     }
 
     return true;
+  }
+
+  /**
+   * Returns whether a GenericUDF is stateful or not.
+   */
+  public static boolean isStateful(GenericUDF genericUDF) {
+    UDFType genericUDFType = genericUDF.getClass().getAnnotation(UDFType.class);
+    if (genericUDFType != null && genericUDFType.stateful()) {
+      return true;
+    }
+
+    if (genericUDF instanceof GenericUDFBridge) {
+      GenericUDFBridge bridge = (GenericUDFBridge) genericUDF;
+      UDFType bridgeUDFType = bridge.getUdfClass().getAnnotation(UDFType.class);
+      if (bridgeUDFType != null && bridgeUDFType.stateful()) {
+        return true;
+      }
+    }
+
+    return false;
   }
 
   /**

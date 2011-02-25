@@ -131,6 +131,7 @@ public enum ErrorMsg {
   UDTF_LATERAL_VIEW("UDTF's cannot be in a select expression when there is a lateral view"),
   UDTF_ALIAS_MISMATCH("The number of aliases supplied in the AS clause does not match the "
       + "number of columns output by the UDTF"),
+  UDF_STATEFUL_INVALID_LOCATION("Stateful UDF's can only be invoked in the SELECT list"),
   LATERAL_VIEW_WITH_JOIN("Join with a lateral view is not supported"),
   LATERAL_VIEW_INVALID_CHILD("Lateral view AST with invalid child"),
   OUTPUT_SPECIFIED_MULTIPLE_TIMES("The same output cannot be present multiple times: "),
