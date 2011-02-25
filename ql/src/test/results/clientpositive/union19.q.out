@@ -27,7 +27,7 @@ INSERT OVERWRITE TABLE DEST1 SELECT unionsrc.key, count(unionsrc.value) group by
 INSERT OVERWRITE TABLE DEST2 SELECT unionsrc.key, unionsrc.value, unionsrc.value
 POSTHOOK: type: QUERY
 ABSTRACT SYNTAX TREE:
-  (TOK_QUERY (TOK_FROM (TOK_SUBQUERY (TOK_UNION (TOK_QUERY (TOK_FROM (TOK_TABREF src s1)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR 'tst1' key) (TOK_SELEXPR (TOK_FUNCTION TOK_STRING (TOK_FUNCTION count 1)) value)))) (TOK_QUERY (TOK_FROM (TOK_TABREF src s2)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (. (TOK_TABLE_OR_COL s2) key) key) (TOK_SELEXPR (. (TOK_TABLE_OR_COL s2) value) value))))) unionsrc)) (TOK_INSERT (TOK_DESTINATION (TOK_TAB DEST1)) (TOK_SELECT (TOK_SELEXPR (. (TOK_TABLE_OR_COL unionsrc) key)) (TOK_SELEXPR (TOK_FUNCTION count (. (TOK_TABLE_OR_COL unionsrc) value)))) (TOK_GROUPBY (. (TOK_TABLE_OR_COL unionsrc) key))) (TOK_INSERT (TOK_DESTINATION (TOK_TAB DEST2)) (TOK_SELECT (TOK_SELEXPR (. (TOK_TABLE_OR_COL unionsrc) key)) (TOK_SELEXPR (. (TOK_TABLE_OR_COL unionsrc) value)) (TOK_SELEXPR (. (TOK_TABLE_OR_COL unionsrc) value)))))
+  (TOK_QUERY (TOK_FROM (TOK_SUBQUERY (TOK_UNION (TOK_QUERY (TOK_FROM (TOK_TABREF (TOK_TABNAME src) s1)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR 'tst1' key) (TOK_SELEXPR (TOK_FUNCTION TOK_STRING (TOK_FUNCTION count 1)) value)))) (TOK_QUERY (TOK_FROM (TOK_TABREF (TOK_TABNAME src) s2)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (. (TOK_TABLE_OR_COL s2) key) key) (TOK_SELEXPR (. (TOK_TABLE_OR_COL s2) value) value))))) unionsrc)) (TOK_INSERT (TOK_DESTINATION (TOK_TAB (TOK_TABNAME DEST1))) (TOK_SELECT (TOK_SELEXPR (. (TOK_TABLE_OR_COL unionsrc) key)) (TOK_SELEXPR (TOK_FUNCTION count (. (TOK_TABLE_OR_COL unionsrc) value)))) (TOK_GROUPBY (. (TOK_TABLE_OR_COL unionsrc) key))) (TOK_INSERT (TOK_DESTINATION (TOK_TAB (TOK_TABNAME DEST2))) (TOK_SELECT (TOK_SELEXPR (. (TOK_TABLE_OR_COL unionsrc) key)) (TOK_SELEXPR (. (TOK_TABLE_OR_COL unionsrc) value)) (TOK_SELEXPR (. (TOK_TABLE_OR_COL unionsrc) value)))))
 
 STAGE DEPENDENCIES:
   Stage-2 is a root stage
@@ -82,7 +82,7 @@ STAGE PLANS:
   Stage: Stage-3
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/tmp/nzhang/hive_2010-09-14_18-19-07_762_5076204664112453958/-mr-10004 
+        file:/tmp/sdong/hive_2011-02-10_17-50-35_633_5501263837548824327/-mr-10004 
           Union
             Select Operator
               expressions:
@@ -128,8 +128,8 @@ STAGE PLANS:
                     input format: org.apache.hadoop.mapred.TextInputFormat
                     output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                     serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                    name: dest2
-        file:/tmp/nzhang/hive_2010-09-14_18-19-07_762_5076204664112453958/-mr-10005 
+                    name: default.dest2
+        file:/tmp/sdong/hive_2011-02-10_17-50-35_633_5501263837548824327/-mr-10005 
           Union
             Select Operator
               expressions:
@@ -175,7 +175,7 @@ STAGE PLANS:
                     input format: org.apache.hadoop.mapred.TextInputFormat
                     output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                     serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                    name: dest2
+                    name: default.dest2
       Reduce Operator Tree:
         Group By Operator
           aggregations:
@@ -200,7 +200,7 @@ STAGE PLANS:
                   input format: org.apache.hadoop.mapred.TextInputFormat
                   output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                   serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                  name: dest1
+                  name: default.dest1
 
   Stage: Stage-0
     Move Operator
@@ -210,7 +210,7 @@ STAGE PLANS:
               input format: org.apache.hadoop.mapred.TextInputFormat
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              name: dest1
+              name: default.dest1
 
   Stage: Stage-4
     Stats-Aggr Operator
@@ -223,7 +223,7 @@ STAGE PLANS:
               input format: org.apache.hadoop.mapred.TextInputFormat
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              name: dest2
+              name: default.dest2
 
   Stage: Stage-5
     Stats-Aggr Operator
@@ -275,11 +275,11 @@ POSTHOOK: Lineage: dest2.val2 EXPRESSION [(src)s1.null, (src)s2.FieldSchema(name
 PREHOOK: query: SELECT DEST1.* FROM DEST1 SORT BY DEST1.key, DEST1.value
 PREHOOK: type: QUERY
 PREHOOK: Input: default@dest1
-PREHOOK: Output: file:/tmp/nzhang/hive_2010-09-14_18-19-23_211_5795126073345644412/-mr-10000
+PREHOOK: Output: file:/tmp/sdong/hive_2011-02-10_17-50-47_346_4576578696322369282/-mr-10000
 POSTHOOK: query: SELECT DEST1.* FROM DEST1 SORT BY DEST1.key, DEST1.value
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@dest1
-POSTHOOK: Output: file:/tmp/nzhang/hive_2010-09-14_18-19-23_211_5795126073345644412/-mr-10000
+POSTHOOK: Output: file:/tmp/sdong/hive_2011-02-10_17-50-47_346_4576578696322369282/-mr-10000
 POSTHOOK: Lineage: dest1.key EXPRESSION [(src)s2.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: dest1.value EXPRESSION [(src)s1.null, (src)s2.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: dest2.key EXPRESSION [(src)s2.FieldSchema(name:key, type:string, comment:default), ]
@@ -598,11 +598,11 @@ tst1	1
 PREHOOK: query: SELECT DEST2.* FROM DEST2 SORT BY DEST2.key, DEST2.val1, DEST2.val2
 PREHOOK: type: QUERY
 PREHOOK: Input: default@dest2
-PREHOOK: Output: file:/tmp/nzhang/hive_2010-09-14_18-19-26_789_6983596924823083129/-mr-10000
+PREHOOK: Output: file:/tmp/sdong/hive_2011-02-10_17-50-50_762_8525696098189627148/-mr-10000
 POSTHOOK: query: SELECT DEST2.* FROM DEST2 SORT BY DEST2.key, DEST2.val1, DEST2.val2
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@dest2
-POSTHOOK: Output: file:/tmp/nzhang/hive_2010-09-14_18-19-26_789_6983596924823083129/-mr-10000
+POSTHOOK: Output: file:/tmp/sdong/hive_2011-02-10_17-50-50_762_8525696098189627148/-mr-10000
 POSTHOOK: Lineage: dest1.key EXPRESSION [(src)s2.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: dest1.value EXPRESSION [(src)s1.null, (src)s2.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: dest2.key EXPRESSION [(src)s2.FieldSchema(name:key, type:string, comment:default), ]

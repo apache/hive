@@ -46,7 +46,7 @@ parse_url('http://facebook.com/path1/p.php?k1=v1&k2=v2#Ref1', 'AUTHORITY')
   FROM src WHERE key = 86
 POSTHOOK: type: QUERY
 ABSTRACT SYNTAX TREE:
-  (TOK_QUERY (TOK_FROM (TOK_TABREF src)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_FUNCTION parse_url 'http://facebook.com/path1/p.php?k1=v1&k2=v2#Ref1' 'HOST')) (TOK_SELEXPR (TOK_FUNCTION parse_url 'http://facebook.com/path1/p.php?k1=v1&k2=v2#Ref1' 'PATH')) (TOK_SELEXPR (TOK_FUNCTION parse_url 'http://facebook.com/path1/p.php?k1=v1&k2=v2#Ref1' 'QUERY')) (TOK_SELEXPR (TOK_FUNCTION parse_url 'http://facebook.com/path1/p.php?k1=v1&k2=v2#Ref1' 'REF')) (TOK_SELEXPR (TOK_FUNCTION parse_url 'http://facebook.com/path1/p.php?k1=v1&k2=v2#Ref1' 'QUERY' 'k2')) (TOK_SELEXPR (TOK_FUNCTION parse_url 'http://facebook.com/path1/p.php?k1=v1&k2=v2#Ref1' 'QUERY' 'k1')) (TOK_SELEXPR (TOK_FUNCTION parse_url 'http://facebook.com/path1/p.php?k1=v1&k2=v2#Ref1' 'QUERY' 'k3')) (TOK_SELEXPR (TOK_FUNCTION parse_url 'http://facebook.com/path1/p.php?k1=v1&k2=v2#Ref1' 'FILE')) (TOK_SELEXPR (TOK_FUNCTION parse_url 'http://facebook.com/path1/p.php?k1=v1&k2=v2#Ref1' 'PROTOCOL')) (TOK_SELEXPR (TOK_FUNCTION parse_url 'http://facebook.com/path1/p.php?k1=v1&k2=v2#Ref1' 'USERINFO')) (TOK_SELEXPR (TOK_FUNCTION parse_url 'http://facebook.com/path1/p.php?k1=v1&k2=v2#Ref1' 'AUTHORITY'))) (TOK_WHERE (= (TOK_TABLE_OR_COL key) 86))))
+  (TOK_QUERY (TOK_FROM (TOK_TABREF (TOK_TABNAME src))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_FUNCTION parse_url 'http://facebook.com/path1/p.php?k1=v1&k2=v2#Ref1' 'HOST')) (TOK_SELEXPR (TOK_FUNCTION parse_url 'http://facebook.com/path1/p.php?k1=v1&k2=v2#Ref1' 'PATH')) (TOK_SELEXPR (TOK_FUNCTION parse_url 'http://facebook.com/path1/p.php?k1=v1&k2=v2#Ref1' 'QUERY')) (TOK_SELEXPR (TOK_FUNCTION parse_url 'http://facebook.com/path1/p.php?k1=v1&k2=v2#Ref1' 'REF')) (TOK_SELEXPR (TOK_FUNCTION parse_url 'http://facebook.com/path1/p.php?k1=v1&k2=v2#Ref1' 'QUERY' 'k2')) (TOK_SELEXPR (TOK_FUNCTION parse_url 'http://facebook.com/path1/p.php?k1=v1&k2=v2#Ref1' 'QUERY' 'k1')) (TOK_SELEXPR (TOK_FUNCTION parse_url 'http://facebook.com/path1/p.php?k1=v1&k2=v2#Ref1' 'QUERY' 'k3')) (TOK_SELEXPR (TOK_FUNCTION parse_url 'http://facebook.com/path1/p.php?k1=v1&k2=v2#Ref1' 'FILE')) (TOK_SELEXPR (TOK_FUNCTION parse_url 'http://facebook.com/path1/p.php?k1=v1&k2=v2#Ref1' 'PROTOCOL')) (TOK_SELEXPR (TOK_FUNCTION parse_url 'http://facebook.com/path1/p.php?k1=v1&k2=v2#Ref1' 'USERINFO')) (TOK_SELEXPR (TOK_FUNCTION parse_url 'http://facebook.com/path1/p.php?k1=v1&k2=v2#Ref1' 'AUTHORITY'))) (TOK_WHERE (= (TOK_TABLE_OR_COL key) 86))))
 
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -118,7 +118,7 @@ parse_url('http://facebook.com/path1/p.php?k1=v1&k2=v2#Ref1', 'AUTHORITY')
   FROM src WHERE key = 86
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/Users/carl/Projects/hd9/hive-trunk/build/ql/tmp/482859701/10000
+PREHOOK: Output: file:/tmp/sdong/hive_2011-02-10_17-38-56_591_3335436134061688371/-mr-10000
 POSTHOOK: query: SELECT parse_url('http://facebook.com/path1/p.php?k1=v1&k2=v2#Ref1', 'HOST'), 
 parse_url('http://facebook.com/path1/p.php?k1=v1&k2=v2#Ref1', 'PATH'), 
 parse_url('http://facebook.com/path1/p.php?k1=v1&k2=v2#Ref1', 'QUERY') ,
@@ -133,5 +133,5 @@ parse_url('http://facebook.com/path1/p.php?k1=v1&k2=v2#Ref1', 'AUTHORITY')
   FROM src WHERE key = 86
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: file:/Users/carl/Projects/hd9/hive-trunk/build/ql/tmp/482859701/10000
+POSTHOOK: Output: file:/tmp/sdong/hive_2011-02-10_17-38-56_591_3335436134061688371/-mr-10000
 facebook.com	/path1/p.php	k1=v1&k2=v2	Ref1	v2	v1	NULL	/path1/p.php?k1=v1&k2=v2	http	NULL	facebook.com

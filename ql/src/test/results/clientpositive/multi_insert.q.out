@@ -19,7 +19,7 @@ insert overwrite table src_multi1 select * where key < 10
 insert overwrite table src_multi2 select * where key > 10 and key < 20
 POSTHOOK: type: QUERY
 ABSTRACT SYNTAX TREE:
-  (TOK_QUERY (TOK_FROM (TOK_TABREF src)) (TOK_INSERT (TOK_DESTINATION (TOK_TAB src_multi1)) (TOK_SELECT (TOK_SELEXPR TOK_ALLCOLREF)) (TOK_WHERE (< (TOK_TABLE_OR_COL key) 10))) (TOK_INSERT (TOK_DESTINATION (TOK_TAB src_multi2)) (TOK_SELECT (TOK_SELEXPR TOK_ALLCOLREF)) (TOK_WHERE (and (> (TOK_TABLE_OR_COL key) 10) (< (TOK_TABLE_OR_COL key) 20)))))
+  (TOK_QUERY (TOK_FROM (TOK_TABREF (TOK_TABNAME src))) (TOK_INSERT (TOK_DESTINATION (TOK_TAB (TOK_TABNAME src_multi1))) (TOK_SELECT (TOK_SELEXPR TOK_ALLCOLREF)) (TOK_WHERE (< (TOK_TABLE_OR_COL key) 10))) (TOK_INSERT (TOK_DESTINATION (TOK_TAB (TOK_TABNAME src_multi2))) (TOK_SELECT (TOK_SELEXPR TOK_ALLCOLREF)) (TOK_WHERE (and (> (TOK_TABLE_OR_COL key) 10) (< (TOK_TABLE_OR_COL key) 20)))))
 
 STAGE DEPENDENCIES:
   Stage-2 is a root stage
@@ -53,7 +53,7 @@ STAGE PLANS:
                       input format: org.apache.hadoop.mapred.TextInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                       serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                      name: src_multi1
+                      name: default.src_multi1
             Filter Operator
               predicate:
                   expr: ((key > 10) and (key < 20))
@@ -72,7 +72,7 @@ STAGE PLANS:
                       input format: org.apache.hadoop.mapred.TextInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                       serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                      name: src_multi2
+                      name: default.src_multi2
 
   Stage: Stage-0
     Move Operator
@@ -82,7 +82,7 @@ STAGE PLANS:
               input format: org.apache.hadoop.mapred.TextInputFormat
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              name: src_multi1
+              name: default.src_multi1
 
   Stage: Stage-3
     Stats-Aggr Operator
@@ -95,7 +95,7 @@ STAGE PLANS:
               input format: org.apache.hadoop.mapred.TextInputFormat
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              name: src_multi2
+              name: default.src_multi2
 
   Stage: Stage-4
     Stats-Aggr Operator
@@ -122,11 +122,11 @@ POSTHOOK: Lineage: src_multi2.value SIMPLE [(src)src.FieldSchema(name:value, typ
 PREHOOK: query: select * from src_multi1 order by key, value
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src_multi1
-PREHOOK: Output: file:/tmp/nzhang/hive_2010-09-14_17-06-48_360_7953762035746547555/-mr-10000
+PREHOOK: Output: file:/tmp/sdong/hive_2011-02-10_16-43-28_145_3241710195767422128/-mr-10000
 POSTHOOK: query: select * from src_multi1 order by key, value
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src_multi1
-POSTHOOK: Output: file:/tmp/nzhang/hive_2010-09-14_17-06-48_360_7953762035746547555/-mr-10000
+POSTHOOK: Output: file:/tmp/sdong/hive_2011-02-10_16-43-28_145_3241710195767422128/-mr-10000
 POSTHOOK: Lineage: src_multi1.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: src_multi1.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: src_multi2.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
@@ -144,11 +144,11 @@ POSTHOOK: Lineage: src_multi2.value SIMPLE [(src)src.FieldSchema(name:value, typ
 PREHOOK: query: select * from src_multi2 order by key, value
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src_multi2
-PREHOOK: Output: file:/tmp/nzhang/hive_2010-09-14_17-06-51_771_8783183293277206129/-mr-10000
+PREHOOK: Output: file:/tmp/sdong/hive_2011-02-10_16-43-31_438_9069228920663463258/-mr-10000
 POSTHOOK: query: select * from src_multi2 order by key, value
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src_multi2
-POSTHOOK: Output: file:/tmp/nzhang/hive_2010-09-14_17-06-51_771_8783183293277206129/-mr-10000
+POSTHOOK: Output: file:/tmp/sdong/hive_2011-02-10_16-43-31_438_9069228920663463258/-mr-10000
 POSTHOOK: Lineage: src_multi1.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: src_multi1.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: src_multi2.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
@@ -177,7 +177,7 @@ POSTHOOK: Lineage: src_multi1.value SIMPLE [(src)src.FieldSchema(name:value, typ
 POSTHOOK: Lineage: src_multi2.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: src_multi2.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 ABSTRACT SYNTAX TREE:
-  (TOK_QUERY (TOK_FROM (TOK_TABREF src)) (TOK_INSERT (TOK_DESTINATION (TOK_TAB src_multi1)) (TOK_SELECT (TOK_SELEXPR TOK_ALLCOLREF)) (TOK_WHERE (< (TOK_TABLE_OR_COL key) 10))) (TOK_INSERT (TOK_DESTINATION (TOK_TAB src_multi2)) (TOK_SELECT (TOK_SELEXPR TOK_ALLCOLREF)) (TOK_WHERE (and (> (TOK_TABLE_OR_COL key) 10) (< (TOK_TABLE_OR_COL key) 20)))))
+  (TOK_QUERY (TOK_FROM (TOK_TABREF (TOK_TABNAME src))) (TOK_INSERT (TOK_DESTINATION (TOK_TAB (TOK_TABNAME src_multi1))) (TOK_SELECT (TOK_SELEXPR TOK_ALLCOLREF)) (TOK_WHERE (< (TOK_TABLE_OR_COL key) 10))) (TOK_INSERT (TOK_DESTINATION (TOK_TAB (TOK_TABNAME src_multi2))) (TOK_SELECT (TOK_SELEXPR TOK_ALLCOLREF)) (TOK_WHERE (and (> (TOK_TABLE_OR_COL key) 10) (< (TOK_TABLE_OR_COL key) 20)))))
 
 STAGE DEPENDENCIES:
   Stage-2 is a root stage
@@ -217,7 +217,7 @@ STAGE PLANS:
                       input format: org.apache.hadoop.mapred.TextInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                       serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                      name: src_multi1
+                      name: default.src_multi1
             Filter Operator
               predicate:
                   expr: ((key > 10) and (key < 20))
@@ -236,7 +236,7 @@ STAGE PLANS:
                       input format: org.apache.hadoop.mapred.TextInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                       serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                      name: src_multi2
+                      name: default.src_multi2
 
   Stage: Stage-6
     Conditional Operator
@@ -245,7 +245,7 @@ STAGE PLANS:
     Move Operator
       files:
           hdfs directory: true
-          destination: pfile:/data/users/nzhang/work/784/apache-hive/build/ql/scratchdir/hive_2010-09-14_17-06-55_632_2674460654496933955/-ext-10000
+          destination: pfile:/data/users/sdong/www/open-source-hive1/build/ql/scratchdir/hive_2011-02-10_16-43-34_769_237323934229498156/-ext-10000
 
   Stage: Stage-0
     Move Operator
@@ -255,7 +255,7 @@ STAGE PLANS:
               input format: org.apache.hadoop.mapred.TextInputFormat
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              name: src_multi1
+              name: default.src_multi1
 
   Stage: Stage-3
     Stats-Aggr Operator
@@ -263,7 +263,7 @@ STAGE PLANS:
   Stage: Stage-4
     Map Reduce
       Alias -> Map Operator Tree:
-        pfile:/data/users/nzhang/work/784/apache-hive/build/ql/scratchdir/hive_2010-09-14_17-06-55_632_2674460654496933955/-ext-10004 
+        pfile:/data/users/sdong/www/open-source-hive1/build/ql/scratchdir/hive_2011-02-10_16-43-34_769_237323934229498156/-ext-10004 
             File Output Operator
               compressed: false
               GlobalTableId: 0
@@ -271,7 +271,7 @@ STAGE PLANS:
                   input format: org.apache.hadoop.mapred.TextInputFormat
                   output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                   serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                  name: src_multi1
+                  name: default.src_multi1
 
   Stage: Stage-10
     Conditional Operator
@@ -280,7 +280,7 @@ STAGE PLANS:
     Move Operator
       files:
           hdfs directory: true
-          destination: pfile:/data/users/nzhang/work/784/apache-hive/build/ql/scratchdir/hive_2010-09-14_17-06-55_632_2674460654496933955/-ext-10002
+          destination: pfile:/data/users/sdong/www/open-source-hive1/build/ql/scratchdir/hive_2011-02-10_16-43-34_769_237323934229498156/-ext-10002
 
   Stage: Stage-1
     Move Operator
@@ -290,7 +290,7 @@ STAGE PLANS:
               input format: org.apache.hadoop.mapred.TextInputFormat
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              name: src_multi2
+              name: default.src_multi2
 
   Stage: Stage-7
     Stats-Aggr Operator
@@ -298,7 +298,7 @@ STAGE PLANS:
   Stage: Stage-8
     Map Reduce
       Alias -> Map Operator Tree:
-        pfile:/data/users/nzhang/work/784/apache-hive/build/ql/scratchdir/hive_2010-09-14_17-06-55_632_2674460654496933955/-ext-10005 
+        pfile:/data/users/sdong/www/open-source-hive1/build/ql/scratchdir/hive_2011-02-10_16-43-34_769_237323934229498156/-ext-10005 
             File Output Operator
               compressed: false
               GlobalTableId: 0
@@ -306,7 +306,7 @@ STAGE PLANS:
                   input format: org.apache.hadoop.mapred.TextInputFormat
                   output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                   serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                  name: src_multi2
+                  name: default.src_multi2
 
 
 PREHOOK: query: from src
@@ -334,11 +334,11 @@ POSTHOOK: Lineage: src_multi2.value SIMPLE [(src)src.FieldSchema(name:value, typ
 PREHOOK: query: select * from src_multi1 order by key, value
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src_multi1
-PREHOOK: Output: file:/tmp/nzhang/hive_2010-09-14_17-07-03_879_3895728757416914263/-mr-10000
+PREHOOK: Output: file:/tmp/sdong/hive_2011-02-10_16-43-40_108_540422556150441780/-mr-10000
 POSTHOOK: query: select * from src_multi1 order by key, value
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src_multi1
-POSTHOOK: Output: file:/tmp/nzhang/hive_2010-09-14_17-07-03_879_3895728757416914263/-mr-10000
+POSTHOOK: Output: file:/tmp/sdong/hive_2011-02-10_16-43-40_108_540422556150441780/-mr-10000
 POSTHOOK: Lineage: src_multi1.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: src_multi1.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: src_multi1.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
@@ -360,11 +360,11 @@ POSTHOOK: Lineage: src_multi2.value SIMPLE [(src)src.FieldSchema(name:value, typ
 PREHOOK: query: select * from src_multi2 order by key, value
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src_multi2
-PREHOOK: Output: file:/tmp/nzhang/hive_2010-09-14_17-07-07_346_6746106485662953432/-mr-10000
+PREHOOK: Output: file:/tmp/sdong/hive_2011-02-10_16-43-43_386_4508980303632676768/-mr-10000
 POSTHOOK: query: select * from src_multi2 order by key, value
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src_multi2
-POSTHOOK: Output: file:/tmp/nzhang/hive_2010-09-14_17-07-07_346_6746106485662953432/-mr-10000
+POSTHOOK: Output: file:/tmp/sdong/hive_2011-02-10_16-43-43_386_4508980303632676768/-mr-10000
 POSTHOOK: Lineage: src_multi1.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: src_multi1.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: src_multi1.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
@@ -401,7 +401,7 @@ POSTHOOK: Lineage: src_multi2.key SIMPLE [(src)src.FieldSchema(name:key, type:st
 POSTHOOK: Lineage: src_multi2.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: src_multi2.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 ABSTRACT SYNTAX TREE:
-  (TOK_QUERY (TOK_FROM (TOK_TABREF src)) (TOK_INSERT (TOK_DESTINATION (TOK_TAB src_multi1)) (TOK_SELECT (TOK_SELEXPR TOK_ALLCOLREF)) (TOK_WHERE (< (TOK_TABLE_OR_COL key) 10))) (TOK_INSERT (TOK_DESTINATION (TOK_TAB src_multi2)) (TOK_SELECT (TOK_SELEXPR TOK_ALLCOLREF)) (TOK_WHERE (and (> (TOK_TABLE_OR_COL key) 10) (< (TOK_TABLE_OR_COL key) 20)))))
+  (TOK_QUERY (TOK_FROM (TOK_TABREF (TOK_TABNAME src))) (TOK_INSERT (TOK_DESTINATION (TOK_TAB (TOK_TABNAME src_multi1))) (TOK_SELECT (TOK_SELEXPR TOK_ALLCOLREF)) (TOK_WHERE (< (TOK_TABLE_OR_COL key) 10))) (TOK_INSERT (TOK_DESTINATION (TOK_TAB (TOK_TABNAME src_multi2))) (TOK_SELECT (TOK_SELEXPR TOK_ALLCOLREF)) (TOK_WHERE (and (> (TOK_TABLE_OR_COL key) 10) (< (TOK_TABLE_OR_COL key) 20)))))
 
 STAGE DEPENDENCIES:
   Stage-2 is a root stage
@@ -435,7 +435,7 @@ STAGE PLANS:
                       input format: org.apache.hadoop.mapred.TextInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                       serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                      name: src_multi1
+                      name: default.src_multi1
             Filter Operator
               predicate:
                   expr: ((key > 10) and (key < 20))
@@ -454,7 +454,7 @@ STAGE PLANS:
                       input format: org.apache.hadoop.mapred.TextInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                       serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                      name: src_multi2
+                      name: default.src_multi2
 
   Stage: Stage-0
     Move Operator
@@ -464,7 +464,7 @@ STAGE PLANS:
               input format: org.apache.hadoop.mapred.TextInputFormat
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              name: src_multi1
+              name: default.src_multi1
 
   Stage: Stage-3
     Stats-Aggr Operator
@@ -477,7 +477,7 @@ STAGE PLANS:
               input format: org.apache.hadoop.mapred.TextInputFormat
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              name: src_multi2
+              name: default.src_multi2
 
   Stage: Stage-4
     Stats-Aggr Operator
@@ -512,11 +512,11 @@ POSTHOOK: Lineage: src_multi2.value SIMPLE [(src)src.FieldSchema(name:value, typ
 PREHOOK: query: select * from src_multi1 order by key, value
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src_multi1
-PREHOOK: Output: file:/tmp/nzhang/hive_2010-09-14_17-07-18_515_3457355393974663217/-mr-10000
+PREHOOK: Output: file:/tmp/sdong/hive_2011-02-10_16-43-52_773_729013797916091277/-mr-10000
 POSTHOOK: query: select * from src_multi1 order by key, value
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src_multi1
-POSTHOOK: Output: file:/tmp/nzhang/hive_2010-09-14_17-07-18_515_3457355393974663217/-mr-10000
+POSTHOOK: Output: file:/tmp/sdong/hive_2011-02-10_16-43-52_773_729013797916091277/-mr-10000
 POSTHOOK: Lineage: src_multi1.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: src_multi1.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: src_multi1.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
@@ -542,11 +542,11 @@ POSTHOOK: Lineage: src_multi2.value SIMPLE [(src)src.FieldSchema(name:value, typ
 PREHOOK: query: select * from src_multi2 order by key, value
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src_multi2
-PREHOOK: Output: file:/tmp/nzhang/hive_2010-09-14_17-07-21_917_512990937016178322/-mr-10000
+PREHOOK: Output: file:/tmp/sdong/hive_2011-02-10_16-43-56_122_5865497182262054478/-mr-10000
 POSTHOOK: query: select * from src_multi2 order by key, value
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src_multi2
-POSTHOOK: Output: file:/tmp/nzhang/hive_2010-09-14_17-07-21_917_512990937016178322/-mr-10000
+POSTHOOK: Output: file:/tmp/sdong/hive_2011-02-10_16-43-56_122_5865497182262054478/-mr-10000
 POSTHOOK: Lineage: src_multi1.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: src_multi1.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: src_multi1.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
@@ -591,7 +591,7 @@ POSTHOOK: Lineage: src_multi2.value SIMPLE [(src)src.FieldSchema(name:value, typ
 POSTHOOK: Lineage: src_multi2.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: src_multi2.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 ABSTRACT SYNTAX TREE:
-  (TOK_QUERY (TOK_FROM (TOK_TABREF src)) (TOK_INSERT (TOK_DESTINATION (TOK_TAB src_multi1)) (TOK_SELECT (TOK_SELEXPR TOK_ALLCOLREF)) (TOK_WHERE (< (TOK_TABLE_OR_COL key) 10))) (TOK_INSERT (TOK_DESTINATION (TOK_TAB src_multi2)) (TOK_SELECT (TOK_SELEXPR TOK_ALLCOLREF)) (TOK_WHERE (and (> (TOK_TABLE_OR_COL key) 10) (< (TOK_TABLE_OR_COL key) 20)))))
+  (TOK_QUERY (TOK_FROM (TOK_TABREF (TOK_TABNAME src))) (TOK_INSERT (TOK_DESTINATION (TOK_TAB (TOK_TABNAME src_multi1))) (TOK_SELECT (TOK_SELEXPR TOK_ALLCOLREF)) (TOK_WHERE (< (TOK_TABLE_OR_COL key) 10))) (TOK_INSERT (TOK_DESTINATION (TOK_TAB (TOK_TABNAME src_multi2))) (TOK_SELECT (TOK_SELEXPR TOK_ALLCOLREF)) (TOK_WHERE (and (> (TOK_TABLE_OR_COL key) 10) (< (TOK_TABLE_OR_COL key) 20)))))
 
 STAGE DEPENDENCIES:
   Stage-2 is a root stage
@@ -631,7 +631,7 @@ STAGE PLANS:
                       input format: org.apache.hadoop.mapred.TextInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                       serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                      name: src_multi1
+                      name: default.src_multi1
             Filter Operator
               predicate:
                   expr: ((key > 10) and (key < 20))
@@ -650,7 +650,7 @@ STAGE PLANS:
                       input format: org.apache.hadoop.mapred.TextInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                       serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                      name: src_multi2
+                      name: default.src_multi2
 
   Stage: Stage-6
     Conditional Operator
@@ -659,7 +659,7 @@ STAGE PLANS:
     Move Operator
       files:
           hdfs directory: true
-          destination: pfile:/data/users/nzhang/work/784/apache-hive/build/ql/scratchdir/hive_2010-09-14_17-07-25_343_7959271322926254276/-ext-10000
+          destination: pfile:/data/users/sdong/www/open-source-hive1/build/ql/scratchdir/hive_2011-02-10_16-43-59_397_2100362781804635792/-ext-10000
 
   Stage: Stage-0
     Move Operator
@@ -669,7 +669,7 @@ STAGE PLANS:
               input format: org.apache.hadoop.mapred.TextInputFormat
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              name: src_multi1
+              name: default.src_multi1
 
   Stage: Stage-3
     Stats-Aggr Operator
@@ -677,7 +677,7 @@ STAGE PLANS:
   Stage: Stage-4
     Map Reduce
       Alias -> Map Operator Tree:
-        pfile:/data/users/nzhang/work/784/apache-hive/build/ql/scratchdir/hive_2010-09-14_17-07-25_343_7959271322926254276/-ext-10004 
+        pfile:/data/users/sdong/www/open-source-hive1/build/ql/scratchdir/hive_2011-02-10_16-43-59_397_2100362781804635792/-ext-10004 
             File Output Operator
               compressed: false
               GlobalTableId: 0
@@ -685,7 +685,7 @@ STAGE PLANS:
                   input format: org.apache.hadoop.mapred.TextInputFormat
                   output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                   serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                  name: src_multi1
+                  name: default.src_multi1
 
   Stage: Stage-10
     Conditional Operator
@@ -694,7 +694,7 @@ STAGE PLANS:
     Move Operator
       files:
           hdfs directory: true
-          destination: pfile:/data/users/nzhang/work/784/apache-hive/build/ql/scratchdir/hive_2010-09-14_17-07-25_343_7959271322926254276/-ext-10002
+          destination: pfile:/data/users/sdong/www/open-source-hive1/build/ql/scratchdir/hive_2011-02-10_16-43-59_397_2100362781804635792/-ext-10002
 
   Stage: Stage-1
     Move Operator
@@ -704,7 +704,7 @@ STAGE PLANS:
               input format: org.apache.hadoop.mapred.TextInputFormat
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              name: src_multi2
+              name: default.src_multi2
 
   Stage: Stage-7
     Stats-Aggr Operator
@@ -712,7 +712,7 @@ STAGE PLANS:
   Stage: Stage-8
     Map Reduce
       Alias -> Map Operator Tree:
-        pfile:/data/users/nzhang/work/784/apache-hive/build/ql/scratchdir/hive_2010-09-14_17-07-25_343_7959271322926254276/-ext-10005 
+        pfile:/data/users/sdong/www/open-source-hive1/build/ql/scratchdir/hive_2011-02-10_16-43-59_397_2100362781804635792/-ext-10005 
             File Output Operator
               compressed: false
               GlobalTableId: 0
@@ -720,7 +720,7 @@ STAGE PLANS:
                   input format: org.apache.hadoop.mapred.TextInputFormat
                   output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                   serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                  name: src_multi2
+                  name: default.src_multi2
 
 
 PREHOOK: query: from src
@@ -756,11 +756,11 @@ POSTHOOK: Lineage: src_multi2.value SIMPLE [(src)src.FieldSchema(name:value, typ
 PREHOOK: query: select * from src_multi1 order by key, value
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src_multi1
-PREHOOK: Output: file:/tmp/nzhang/hive_2010-09-14_17-07-33_918_4809641701424690942/-mr-10000
+PREHOOK: Output: file:/tmp/sdong/hive_2011-02-10_16-44-04_792_6847429891760050580/-mr-10000
 POSTHOOK: query: select * from src_multi1 order by key, value
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src_multi1
-POSTHOOK: Output: file:/tmp/nzhang/hive_2010-09-14_17-07-33_918_4809641701424690942/-mr-10000
+POSTHOOK: Output: file:/tmp/sdong/hive_2011-02-10_16-44-04_792_6847429891760050580/-mr-10000
 POSTHOOK: Lineage: src_multi1.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: src_multi1.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: src_multi1.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
@@ -790,11 +790,11 @@ POSTHOOK: Lineage: src_multi2.value SIMPLE [(src)src.FieldSchema(name:value, typ
 PREHOOK: query: select * from src_multi2 order by key, value
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src_multi2
-PREHOOK: Output: file:/tmp/nzhang/hive_2010-09-14_17-07-37_380_7772013364074968547/-mr-10000
+PREHOOK: Output: file:/tmp/sdong/hive_2011-02-10_16-44-08_124_6485128554403267461/-mr-10000
 POSTHOOK: query: select * from src_multi2 order by key, value
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src_multi2
-POSTHOOK: Output: file:/tmp/nzhang/hive_2010-09-14_17-07-37_380_7772013364074968547/-mr-10000
+POSTHOOK: Output: file:/tmp/sdong/hive_2011-02-10_16-44-08_124_6485128554403267461/-mr-10000
 POSTHOOK: Lineage: src_multi1.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: src_multi1.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: src_multi1.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
@@ -847,7 +847,7 @@ POSTHOOK: Lineage: src_multi2.value SIMPLE [(src)src.FieldSchema(name:value, typ
 POSTHOOK: Lineage: src_multi2.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: src_multi2.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 ABSTRACT SYNTAX TREE:
-  (TOK_QUERY (TOK_FROM (TOK_TABREF src)) (TOK_INSERT (TOK_DESTINATION (TOK_TAB src_multi1)) (TOK_SELECT (TOK_SELEXPR TOK_ALLCOLREF)) (TOK_WHERE (< (TOK_TABLE_OR_COL key) 10)) (TOK_GROUPBY (TOK_TABLE_OR_COL key) (TOK_TABLE_OR_COL value))) (TOK_INSERT (TOK_DESTINATION (TOK_TAB src_multi2)) (TOK_SELECT (TOK_SELEXPR TOK_ALLCOLREF)) (TOK_WHERE (and (> (TOK_TABLE_OR_COL key) 10) (< (TOK_TABLE_OR_COL key) 20))) (TOK_GROUPBY (TOK_TABLE_OR_COL key) (TOK_TABLE_OR_COL value))))
+  (TOK_QUERY (TOK_FROM (TOK_TABREF (TOK_TABNAME src))) (TOK_INSERT (TOK_DESTINATION (TOK_TAB (TOK_TABNAME src_multi1))) (TOK_SELECT (TOK_SELEXPR TOK_ALLCOLREF)) (TOK_WHERE (< (TOK_TABLE_OR_COL key) 10)) (TOK_GROUPBY (TOK_TABLE_OR_COL key) (TOK_TABLE_OR_COL value))) (TOK_INSERT (TOK_DESTINATION (TOK_TAB (TOK_TABNAME src_multi2))) (TOK_SELECT (TOK_SELEXPR TOK_ALLCOLREF)) (TOK_WHERE (and (> (TOK_TABLE_OR_COL key) 10) (< (TOK_TABLE_OR_COL key) 20))) (TOK_GROUPBY (TOK_TABLE_OR_COL key) (TOK_TABLE_OR_COL value))))
 
 STAGE DEPENDENCIES:
   Stage-2 is a root stage
@@ -947,7 +947,7 @@ STAGE PLANS:
                   input format: org.apache.hadoop.mapred.TextInputFormat
                   output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                   serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                  name: src_multi1
+                  name: default.src_multi1
 
   Stage: Stage-0
     Move Operator
@@ -957,7 +957,7 @@ STAGE PLANS:
               input format: org.apache.hadoop.mapred.TextInputFormat
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              name: src_multi1
+              name: default.src_multi1
 
   Stage: Stage-3
     Stats-Aggr Operator
@@ -965,7 +965,7 @@ STAGE PLANS:
   Stage: Stage-4
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/tmp/nzhang/hive_2010-09-14_17-07-40_802_8868350862677882659/-mr-10004 
+        file:/tmp/sdong/hive_2011-02-10_16-44-11_407_9168756298659685920/-mr-10004 
             Reduce Output Operator
               key expressions:
                     expr: _col0
@@ -1003,7 +1003,7 @@ STAGE PLANS:
                   input format: org.apache.hadoop.mapred.TextInputFormat
                   output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                   serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                  name: src_multi2
+                  name: default.src_multi2
 
   Stage: Stage-1
     Move Operator
@@ -1013,7 +1013,7 @@ STAGE PLANS:
               input format: org.apache.hadoop.mapred.TextInputFormat
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              name: src_multi2
+              name: default.src_multi2
 
   Stage: Stage-5
     Stats-Aggr Operator
@@ -1056,11 +1056,11 @@ POSTHOOK: Lineage: src_multi2.value SIMPLE [(src)src.FieldSchema(name:value, typ
 PREHOOK: query: select * from src_multi1 order by key, value
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src_multi1
-PREHOOK: Output: file:/tmp/nzhang/hive_2010-09-14_17-07-53_919_7663690847493758997/-mr-10000
+PREHOOK: Output: file:/tmp/sdong/hive_2011-02-10_16-44-20_601_2082131829649381741/-mr-10000
 POSTHOOK: query: select * from src_multi1 order by key, value
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src_multi1
-POSTHOOK: Output: file:/tmp/nzhang/hive_2010-09-14_17-07-53_919_7663690847493758997/-mr-10000
+POSTHOOK: Output: file:/tmp/sdong/hive_2011-02-10_16-44-20_601_2082131829649381741/-mr-10000
 POSTHOOK: Lineage: src_multi1.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: src_multi1.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: src_multi1.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
@@ -1090,11 +1090,11 @@ POSTHOOK: Lineage: src_multi2.value SIMPLE [(src)src.FieldSchema(name:value, typ
 PREHOOK: query: select * from src_multi2 order by key, value
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src_multi2
-PREHOOK: Output: file:/tmp/nzhang/hive_2010-09-14_17-07-57_490_6080507292036060377/-mr-10000
+PREHOOK: Output: file:/tmp/sdong/hive_2011-02-10_16-44-23_902_3199219428684690703/-mr-10000
 POSTHOOK: query: select * from src_multi2 order by key, value
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src_multi2
-POSTHOOK: Output: file:/tmp/nzhang/hive_2010-09-14_17-07-57_490_6080507292036060377/-mr-10000
+POSTHOOK: Output: file:/tmp/sdong/hive_2011-02-10_16-44-23_902_3199219428684690703/-mr-10000
 POSTHOOK: Lineage: src_multi1.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: src_multi1.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: src_multi1.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
@@ -1152,7 +1152,7 @@ POSTHOOK: Lineage: src_multi2.value SIMPLE [(src)src.FieldSchema(name:value, typ
 POSTHOOK: Lineage: src_multi2.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: src_multi2.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 ABSTRACT SYNTAX TREE:
-  (TOK_QUERY (TOK_FROM (TOK_TABREF src)) (TOK_INSERT (TOK_DESTINATION (TOK_TAB src_multi1)) (TOK_SELECT (TOK_SELEXPR TOK_ALLCOLREF)) (TOK_WHERE (< (TOK_TABLE_OR_COL key) 10)) (TOK_GROUPBY (TOK_TABLE_OR_COL key) (TOK_TABLE_OR_COL value))) (TOK_INSERT (TOK_DESTINATION (TOK_TAB src_multi2)) (TOK_SELECT (TOK_SELEXPR TOK_ALLCOLREF)) (TOK_WHERE (and (> (TOK_TABLE_OR_COL key) 10) (< (TOK_TABLE_OR_COL key) 20))) (TOK_GROUPBY (TOK_TABLE_OR_COL key) (TOK_TABLE_OR_COL value))))
+  (TOK_QUERY (TOK_FROM (TOK_TABREF (TOK_TABNAME src))) (TOK_INSERT (TOK_DESTINATION (TOK_TAB (TOK_TABNAME src_multi1))) (TOK_SELECT (TOK_SELEXPR TOK_ALLCOLREF)) (TOK_WHERE (< (TOK_TABLE_OR_COL key) 10)) (TOK_GROUPBY (TOK_TABLE_OR_COL key) (TOK_TABLE_OR_COL value))) (TOK_INSERT (TOK_DESTINATION (TOK_TAB (TOK_TABNAME src_multi2))) (TOK_SELECT (TOK_SELEXPR TOK_ALLCOLREF)) (TOK_WHERE (and (> (TOK_TABLE_OR_COL key) 10) (< (TOK_TABLE_OR_COL key) 20))) (TOK_GROUPBY (TOK_TABLE_OR_COL key) (TOK_TABLE_OR_COL value))))
 
 STAGE DEPENDENCIES:
   Stage-2 is a root stage
@@ -1258,7 +1258,7 @@ STAGE PLANS:
                   input format: org.apache.hadoop.mapred.TextInputFormat
                   output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                   serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                  name: src_multi1
+                  name: default.src_multi1
 
   Stage: Stage-6
     Conditional Operator
@@ -1267,7 +1267,7 @@ STAGE PLANS:
     Move Operator
       files:
           hdfs directory: true
-          destination: pfile:/data/users/nzhang/work/784/apache-hive/build/ql/scratchdir/hive_2010-09-14_17-08-01_023_3963425209968278997/-ext-10000
+          destination: pfile:/data/users/sdong/www/open-source-hive1/build/ql/scratchdir/hive_2011-02-10_16-44-27_249_7623279141540150203/-ext-10000
 
   Stage: Stage-0
     Move Operator
@@ -1277,7 +1277,7 @@ STAGE PLANS:
               input format: org.apache.hadoop.mapred.TextInputFormat
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              name: src_multi1
+              name: default.src_multi1
 
   Stage: Stage-3
     Stats-Aggr Operator
@@ -1285,7 +1285,7 @@ STAGE PLANS:
   Stage: Stage-4
     Map Reduce
       Alias -> Map Operator Tree:
-        pfile:/data/users/nzhang/work/784/apache-hive/build/ql/scratchdir/hive_2010-09-14_17-08-01_023_3963425209968278997/-ext-10004 
+        pfile:/data/users/sdong/www/open-source-hive1/build/ql/scratchdir/hive_2011-02-10_16-44-27_249_7623279141540150203/-ext-10004 
             File Output Operator
               compressed: false
               GlobalTableId: 0
@@ -1293,12 +1293,12 @@ STAGE PLANS:
                   input format: org.apache.hadoop.mapred.TextInputFormat
                   output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                   serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                  name: src_multi1
+                  name: default.src_multi1
 
   Stage: Stage-7
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/tmp/nzhang/hive_2010-09-14_17-08-01_023_3963425209968278997/-mr-10005 
+        file:/tmp/sdong/hive_2011-02-10_16-44-27_249_7623279141540150203/-mr-10005 
             Reduce Output Operator
               key expressions:
                     expr: _col0
@@ -1336,7 +1336,7 @@ STAGE PLANS:
                   input format: org.apache.hadoop.mapred.TextInputFormat
                   output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                   serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                  name: src_multi2
+                  name: default.src_multi2
 
   Stage: Stage-11
     Conditional Operator
@@ -1345,7 +1345,7 @@ STAGE PLANS:
     Move Operator
       files:
           hdfs directory: true
-          destination: pfile:/data/users/nzhang/work/784/apache-hive/build/ql/scratchdir/hive_2010-09-14_17-08-01_023_3963425209968278997/-ext-10002
+          destination: pfile:/data/users/sdong/www/open-source-hive1/build/ql/scratchdir/hive_2011-02-10_16-44-27_249_7623279141540150203/-ext-10002
 
   Stage: Stage-1
     Move Operator
@@ -1355,7 +1355,7 @@ STAGE PLANS:
               input format: org.apache.hadoop.mapred.TextInputFormat
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              name: src_multi2
+              name: default.src_multi2
 
   Stage: Stage-8
     Stats-Aggr Operator
@@ -1363,7 +1363,7 @@ STAGE PLANS:
   Stage: Stage-9
     Map Reduce
       Alias -> Map Operator Tree:
-        pfile:/data/users/nzhang/work/784/apache-hive/build/ql/scratchdir/hive_2010-09-14_17-08-01_023_3963425209968278997/-ext-10006 
+        pfile:/data/users/sdong/www/open-source-hive1/build/ql/scratchdir/hive_2011-02-10_16-44-27_249_7623279141540150203/-ext-10006 
             File Output Operator
               compressed: false
               GlobalTableId: 0
@@ -1371,7 +1371,7 @@ STAGE PLANS:
                   input format: org.apache.hadoop.mapred.TextInputFormat
                   output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                   serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                  name: src_multi2
+                  name: default.src_multi2
 
 
 PREHOOK: query: from src
@@ -1415,11 +1415,11 @@ POSTHOOK: Lineage: src_multi2.value SIMPLE [(src)src.FieldSchema(name:value, typ
 PREHOOK: query: select * from src_multi1 order by key, value
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src_multi1
-PREHOOK: Output: file:/tmp/nzhang/hive_2010-09-14_17-08-14_413_7522438004697427536/-mr-10000
+PREHOOK: Output: file:/tmp/sdong/hive_2011-02-10_16-44-36_779_3999780121139346937/-mr-10000
 POSTHOOK: query: select * from src_multi1 order by key, value
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src_multi1
-POSTHOOK: Output: file:/tmp/nzhang/hive_2010-09-14_17-08-14_413_7522438004697427536/-mr-10000
+POSTHOOK: Output: file:/tmp/sdong/hive_2011-02-10_16-44-36_779_3999780121139346937/-mr-10000
 POSTHOOK: Lineage: src_multi1.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: src_multi1.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: src_multi1.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
@@ -1453,11 +1453,11 @@ POSTHOOK: Lineage: src_multi2.value SIMPLE [(src)src.FieldSchema(name:value, typ
 PREHOOK: query: select * from src_multi2 order by key, value
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src_multi2
-PREHOOK: Output: file:/tmp/nzhang/hive_2010-09-14_17-08-17_953_5778321600107239234/-mr-10000
+PREHOOK: Output: file:/tmp/sdong/hive_2011-02-10_16-44-40_077_8576725772660015791/-mr-10000
 POSTHOOK: query: select * from src_multi2 order by key, value
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src_multi2
-POSTHOOK: Output: file:/tmp/nzhang/hive_2010-09-14_17-08-17_953_5778321600107239234/-mr-10000
+POSTHOOK: Output: file:/tmp/sdong/hive_2011-02-10_16-44-40_077_8576725772660015791/-mr-10000
 POSTHOOK: Lineage: src_multi1.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: src_multi1.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: src_multi1.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
@@ -1523,7 +1523,7 @@ POSTHOOK: Lineage: src_multi2.value SIMPLE [(src)src.FieldSchema(name:value, typ
 POSTHOOK: Lineage: src_multi2.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: src_multi2.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 ABSTRACT SYNTAX TREE:
-  (TOK_QUERY (TOK_FROM (TOK_TABREF src)) (TOK_INSERT (TOK_DESTINATION (TOK_TAB src_multi1)) (TOK_SELECT (TOK_SELEXPR TOK_ALLCOLREF)) (TOK_WHERE (< (TOK_TABLE_OR_COL key) 10)) (TOK_GROUPBY (TOK_TABLE_OR_COL key) (TOK_TABLE_OR_COL value))) (TOK_INSERT (TOK_DESTINATION (TOK_TAB src_multi2)) (TOK_SELECT (TOK_SELEXPR TOK_ALLCOLREF)) (TOK_WHERE (and (> (TOK_TABLE_OR_COL key) 10) (< (TOK_TABLE_OR_COL key) 20))) (TOK_GROUPBY (TOK_TABLE_OR_COL key) (TOK_TABLE_OR_COL value))))
+  (TOK_QUERY (TOK_FROM (TOK_TABREF (TOK_TABNAME src))) (TOK_INSERT (TOK_DESTINATION (TOK_TAB (TOK_TABNAME src_multi1))) (TOK_SELECT (TOK_SELEXPR TOK_ALLCOLREF)) (TOK_WHERE (< (TOK_TABLE_OR_COL key) 10)) (TOK_GROUPBY (TOK_TABLE_OR_COL key) (TOK_TABLE_OR_COL value))) (TOK_INSERT (TOK_DESTINATION (TOK_TAB (TOK_TABNAME src_multi2))) (TOK_SELECT (TOK_SELEXPR TOK_ALLCOLREF)) (TOK_WHERE (and (> (TOK_TABLE_OR_COL key) 10) (< (TOK_TABLE_OR_COL key) 20))) (TOK_GROUPBY (TOK_TABLE_OR_COL key) (TOK_TABLE_OR_COL value))))
 
 STAGE DEPENDENCIES:
   Stage-2 is a root stage
@@ -1623,7 +1623,7 @@ STAGE PLANS:
                   input format: org.apache.hadoop.mapred.TextInputFormat
                   output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                   serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                  name: src_multi1
+                  name: default.src_multi1
 
   Stage: Stage-0
     Move Operator
@@ -1633,7 +1633,7 @@ STAGE PLANS:
               input format: org.apache.hadoop.mapred.TextInputFormat
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              name: src_multi1
+              name: default.src_multi1
 
   Stage: Stage-3
     Stats-Aggr Operator
@@ -1641,7 +1641,7 @@ STAGE PLANS:
   Stage: Stage-4
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/tmp/nzhang/hive_2010-09-14_17-08-21_377_1827405192033515593/-mr-10004 
+        file:/tmp/sdong/hive_2011-02-10_16-44-43_411_3281118470745972569/-mr-10004 
             Reduce Output Operator
               key expressions:
                     expr: _col0
@@ -1679,7 +1679,7 @@ STAGE PLANS:
                   input format: org.apache.hadoop.mapred.TextInputFormat
                   output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                   serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                  name: src_multi2
+                  name: default.src_multi2
 
   Stage: Stage-1
     Move Operator
@@ -1689,7 +1689,7 @@ STAGE PLANS:
               input format: org.apache.hadoop.mapred.TextInputFormat
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              name: src_multi2
+              name: default.src_multi2
 
   Stage: Stage-5
     Stats-Aggr Operator
@@ -1740,11 +1740,11 @@ POSTHOOK: Lineage: src_multi2.value SIMPLE [(src)src.FieldSchema(name:value, typ
 PREHOOK: query: select * from src_multi1 order by key, value
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src_multi1
-PREHOOK: Output: file:/tmp/nzhang/hive_2010-09-14_17-08-34_489_4945629790959108979/-mr-10000
+PREHOOK: Output: file:/tmp/sdong/hive_2011-02-10_16-44-52_616_346709338376813267/-mr-10000
 POSTHOOK: query: select * from src_multi1 order by key, value
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src_multi1
-POSTHOOK: Output: file:/tmp/nzhang/hive_2010-09-14_17-08-34_489_4945629790959108979/-mr-10000
+POSTHOOK: Output: file:/tmp/sdong/hive_2011-02-10_16-44-52_616_346709338376813267/-mr-10000
 POSTHOOK: Lineage: src_multi1.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: src_multi1.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: src_multi1.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
@@ -1782,11 +1782,11 @@ POSTHOOK: Lineage: src_multi2.value SIMPLE [(src)src.FieldSchema(name:value, typ
 PREHOOK: query: select * from src_multi2 order by key, value
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src_multi2
-PREHOOK: Output: file:/tmp/nzhang/hive_2010-09-14_17-08-37_914_4018953913282915169/-mr-10000
+PREHOOK: Output: file:/tmp/sdong/hive_2011-02-10_16-44-55_913_8458628626122262799/-mr-10000
 POSTHOOK: query: select * from src_multi2 order by key, value
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src_multi2
-POSTHOOK: Output: file:/tmp/nzhang/hive_2010-09-14_17-08-37_914_4018953913282915169/-mr-10000
+POSTHOOK: Output: file:/tmp/sdong/hive_2011-02-10_16-44-55_913_8458628626122262799/-mr-10000
 POSTHOOK: Lineage: src_multi1.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: src_multi1.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: src_multi1.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
@@ -1860,7 +1860,7 @@ POSTHOOK: Lineage: src_multi2.value SIMPLE [(src)src.FieldSchema(name:value, typ
 POSTHOOK: Lineage: src_multi2.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: src_multi2.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 ABSTRACT SYNTAX TREE:
-  (TOK_QUERY (TOK_FROM (TOK_TABREF src)) (TOK_INSERT (TOK_DESTINATION (TOK_TAB src_multi1)) (TOK_SELECT (TOK_SELEXPR TOK_ALLCOLREF)) (TOK_WHERE (< (TOK_TABLE_OR_COL key) 10)) (TOK_GROUPBY (TOK_TABLE_OR_COL key) (TOK_TABLE_OR_COL value))) (TOK_INSERT (TOK_DESTINATION (TOK_TAB src_multi2)) (TOK_SELECT (TOK_SELEXPR TOK_ALLCOLREF)) (TOK_WHERE (and (> (TOK_TABLE_OR_COL key) 10) (< (TOK_TABLE_OR_COL key) 20))) (TOK_GROUPBY (TOK_TABLE_OR_COL key) (TOK_TABLE_OR_COL value))))
+  (TOK_QUERY (TOK_FROM (TOK_TABREF (TOK_TABNAME src))) (TOK_INSERT (TOK_DESTINATION (TOK_TAB (TOK_TABNAME src_multi1))) (TOK_SELECT (TOK_SELEXPR TOK_ALLCOLREF)) (TOK_WHERE (< (TOK_TABLE_OR_COL key) 10)) (TOK_GROUPBY (TOK_TABLE_OR_COL key) (TOK_TABLE_OR_COL value))) (TOK_INSERT (TOK_DESTINATION (TOK_TAB (TOK_TABNAME src_multi2))) (TOK_SELECT (TOK_SELEXPR TOK_ALLCOLREF)) (TOK_WHERE (and (> (TOK_TABLE_OR_COL key) 10) (< (TOK_TABLE_OR_COL key) 20))) (TOK_GROUPBY (TOK_TABLE_OR_COL key) (TOK_TABLE_OR_COL value))))
 
 STAGE DEPENDENCIES:
   Stage-2 is a root stage
@@ -1966,7 +1966,7 @@ STAGE PLANS:
                   input format: org.apache.hadoop.mapred.TextInputFormat
                   output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                   serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                  name: src_multi1
+                  name: default.src_multi1
 
   Stage: Stage-6
     Conditional Operator
@@ -1975,7 +1975,7 @@ STAGE PLANS:
     Move Operator
       files:
           hdfs directory: true
-          destination: pfile:/data/users/nzhang/work/784/apache-hive/build/ql/scratchdir/hive_2010-09-14_17-08-41_433_7001879836883681733/-ext-10000
+          destination: pfile:/data/users/sdong/www/open-source-hive1/build/ql/scratchdir/hive_2011-02-10_16-44-59_247_2084251084570958888/-ext-10000
 
   Stage: Stage-0
     Move Operator
@@ -1985,7 +1985,7 @@ STAGE PLANS:
               input format: org.apache.hadoop.mapred.TextInputFormat
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              name: src_multi1
+              name: default.src_multi1
 
   Stage: Stage-3
     Stats-Aggr Operator
@@ -1993,7 +1993,7 @@ STAGE PLANS:
   Stage: Stage-4
     Map Reduce
       Alias -> Map Operator Tree:
-        pfile:/data/users/nzhang/work/784/apache-hive/build/ql/scratchdir/hive_2010-09-14_17-08-41_433_7001879836883681733/-ext-10004 
+        pfile:/data/users/sdong/www/open-source-hive1/build/ql/scratchdir/hive_2011-02-10_16-44-59_247_2084251084570958888/-ext-10004 
             File Output Operator
               compressed: false
               GlobalTableId: 0
@@ -2001,12 +2001,12 @@ STAGE PLANS:
                   input format: org.apache.hadoop.mapred.TextInputFormat
                   output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                   serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                  name: src_multi1
+                  name: default.src_multi1
 
   Stage: Stage-7
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/tmp/nzhang/hive_2010-09-14_17-08-41_433_7001879836883681733/-mr-10005 
+        file:/tmp/sdong/hive_2011-02-10_16-44-59_247_2084251084570958888/-mr-10005 
             Reduce Output Operator
               key expressions:
                     expr: _col0
@@ -2044,7 +2044,7 @@ STAGE PLANS:
                   input format: org.apache.hadoop.mapred.TextInputFormat
                   output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                   serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                  name: src_multi2
+                  name: default.src_multi2
 
   Stage: Stage-11
     Conditional Operator
@@ -2053,7 +2053,7 @@ STAGE PLANS:
     Move Operator
       files:
           hdfs directory: true
-          destination: pfile:/data/users/nzhang/work/784/apache-hive/build/ql/scratchdir/hive_2010-09-14_17-08-41_433_7001879836883681733/-ext-10002
+          destination: pfile:/data/users/sdong/www/open-source-hive1/build/ql/scratchdir/hive_2011-02-10_16-44-59_247_2084251084570958888/-ext-10002
 
   Stage: Stage-1
     Move Operator
@@ -2063,7 +2063,7 @@ STAGE PLANS:
               input format: org.apache.hadoop.mapred.TextInputFormat
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              name: src_multi2
+              name: default.src_multi2
 
   Stage: Stage-8
     Stats-Aggr Operator
@@ -2071,7 +2071,7 @@ STAGE PLANS:
   Stage: Stage-9
     Map Reduce
       Alias -> Map Operator Tree:
-        pfile:/data/users/nzhang/work/784/apache-hive/build/ql/scratchdir/hive_2010-09-14_17-08-41_433_7001879836883681733/-ext-10006 
+        pfile:/data/users/sdong/www/open-source-hive1/build/ql/scratchdir/hive_2011-02-10_16-44-59_247_2084251084570958888/-ext-10006 
             File Output Operator
               compressed: false
               GlobalTableId: 0
@@ -2079,7 +2079,7 @@ STAGE PLANS:
                   input format: org.apache.hadoop.mapred.TextInputFormat
                   output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                   serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                  name: src_multi2
+                  name: default.src_multi2
 
 
 PREHOOK: query: from src
@@ -2131,11 +2131,11 @@ POSTHOOK: Lineage: src_multi2.value SIMPLE [(src)src.FieldSchema(name:value, typ
 PREHOOK: query: select * from src_multi1 order by key, value
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src_multi1
-PREHOOK: Output: file:/tmp/nzhang/hive_2010-09-14_17-08-55_889_658737220991587687/-mr-10000
+PREHOOK: Output: file:/tmp/sdong/hive_2011-02-10_16-45-08_936_3832443917120699457/-mr-10000
 POSTHOOK: query: select * from src_multi1 order by key, value
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src_multi1
-POSTHOOK: Output: file:/tmp/nzhang/hive_2010-09-14_17-08-55_889_658737220991587687/-mr-10000
+POSTHOOK: Output: file:/tmp/sdong/hive_2011-02-10_16-45-08_936_3832443917120699457/-mr-10000
 POSTHOOK: Lineage: src_multi1.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: src_multi1.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: src_multi1.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
@@ -2177,11 +2177,11 @@ POSTHOOK: Lineage: src_multi2.value SIMPLE [(src)src.FieldSchema(name:value, typ
 PREHOOK: query: select * from src_multi2 order by key, value
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src_multi2
-PREHOOK: Output: file:/tmp/nzhang/hive_2010-09-14_17-08-59_415_7402581530462627245/-mr-10000
+PREHOOK: Output: file:/tmp/sdong/hive_2011-02-10_16-45-12_235_8496683191765892867/-mr-10000
 POSTHOOK: query: select * from src_multi2 order by key, value
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src_multi2
-POSTHOOK: Output: file:/tmp/nzhang/hive_2010-09-14_17-08-59_415_7402581530462627245/-mr-10000
+POSTHOOK: Output: file:/tmp/sdong/hive_2011-02-10_16-45-12_235_8496683191765892867/-mr-10000
 POSTHOOK: Lineage: src_multi1.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: src_multi1.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: src_multi1.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
@@ -2263,7 +2263,7 @@ POSTHOOK: Lineage: src_multi2.value SIMPLE [(src)src.FieldSchema(name:value, typ
 POSTHOOK: Lineage: src_multi2.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: src_multi2.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 ABSTRACT SYNTAX TREE:
-  (TOK_QUERY (TOK_FROM (TOK_SUBQUERY (TOK_UNION (TOK_QUERY (TOK_FROM (TOK_TABREF src)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR TOK_ALLCOLREF)))) (TOK_QUERY (TOK_FROM (TOK_TABREF src)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR TOK_ALLCOLREF))))) s)) (TOK_INSERT (TOK_DESTINATION (TOK_TAB src_multi1)) (TOK_SELECT (TOK_SELEXPR TOK_ALLCOLREF)) (TOK_WHERE (< (TOK_TABLE_OR_COL key) 10))) (TOK_INSERT (TOK_DESTINATION (TOK_TAB src_multi2)) (TOK_SELECT (TOK_SELEXPR TOK_ALLCOLREF)) (TOK_WHERE (and (> (TOK_TABLE_OR_COL key) 10) (< (TOK_TABLE_OR_COL key) 20)))))
+  (TOK_QUERY (TOK_FROM (TOK_SUBQUERY (TOK_UNION (TOK_QUERY (TOK_FROM (TOK_TABREF (TOK_TABNAME src))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR TOK_ALLCOLREF)))) (TOK_QUERY (TOK_FROM (TOK_TABREF (TOK_TABNAME src))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR TOK_ALLCOLREF))))) s)) (TOK_INSERT (TOK_DESTINATION (TOK_TAB (TOK_TABNAME src_multi1))) (TOK_SELECT (TOK_SELEXPR TOK_ALLCOLREF)) (TOK_WHERE (< (TOK_TABLE_OR_COL key) 10))) (TOK_INSERT (TOK_DESTINATION (TOK_TAB (TOK_TABNAME src_multi2))) (TOK_SELECT (TOK_SELEXPR TOK_ALLCOLREF)) (TOK_WHERE (and (> (TOK_TABLE_OR_COL key) 10) (< (TOK_TABLE_OR_COL key) 20)))))
 
 STAGE DEPENDENCIES:
   Stage-2 is a root stage
@@ -2305,7 +2305,7 @@ STAGE PLANS:
                           input format: org.apache.hadoop.mapred.TextInputFormat
                           output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                           serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                          name: src_multi1
+                          name: default.src_multi1
                 Filter Operator
                   predicate:
                       expr: ((_col0 > 10) and (_col0 < 20))
@@ -2324,7 +2324,7 @@ STAGE PLANS:
                           input format: org.apache.hadoop.mapred.TextInputFormat
                           output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                           serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                          name: src_multi2
+                          name: default.src_multi2
         null-subquery2:s-subquery2:src 
           TableScan
             alias: src
@@ -2354,7 +2354,7 @@ STAGE PLANS:
                           input format: org.apache.hadoop.mapred.TextInputFormat
                           output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                           serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                          name: src_multi1
+                          name: default.src_multi1
                 Filter Operator
                   predicate:
                       expr: ((_col0 > 10) and (_col0 < 20))
@@ -2373,7 +2373,7 @@ STAGE PLANS:
                           input format: org.apache.hadoop.mapred.TextInputFormat
                           output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                           serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                          name: src_multi2
+                          name: default.src_multi2
 
   Stage: Stage-0
     Move Operator
@@ -2383,7 +2383,7 @@ STAGE PLANS:
               input format: org.apache.hadoop.mapred.TextInputFormat
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              name: src_multi1
+              name: default.src_multi1
 
   Stage: Stage-3
     Stats-Aggr Operator
@@ -2396,7 +2396,7 @@ STAGE PLANS:
               input format: org.apache.hadoop.mapred.TextInputFormat
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              name: src_multi2
+              name: default.src_multi2
 
   Stage: Stage-4
     Stats-Aggr Operator
@@ -2455,11 +2455,11 @@ POSTHOOK: Lineage: src_multi2.value EXPRESSION [(src)src.FieldSchema(name:value,
 PREHOOK: query: select * from src_multi1 order by key, value
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src_multi1
-PREHOOK: Output: file:/tmp/nzhang/hive_2010-09-14_17-09-10_720_6010441005119219252/-mr-10000
+PREHOOK: Output: file:/tmp/sdong/hive_2011-02-10_16-45-20_844_3953463844343651944/-mr-10000
 POSTHOOK: query: select * from src_multi1 order by key, value
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src_multi1
-POSTHOOK: Output: file:/tmp/nzhang/hive_2010-09-14_17-09-10_720_6010441005119219252/-mr-10000
+POSTHOOK: Output: file:/tmp/sdong/hive_2011-02-10_16-45-20_844_3953463844343651944/-mr-10000
 POSTHOOK: Lineage: src_multi1.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: src_multi1.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: src_multi1.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
@@ -2519,11 +2519,11 @@ POSTHOOK: Lineage: src_multi2.value EXPRESSION [(src)src.FieldSchema(name:value,
 PREHOOK: query: select * from src_multi2 order by key, value
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src_multi2
-PREHOOK: Output: file:/tmp/nzhang/hive_2010-09-14_17-09-14_168_2552421292011602066/-mr-10000
+PREHOOK: Output: file:/tmp/sdong/hive_2011-02-10_16-45-24_204_8850515575535942770/-mr-10000
 POSTHOOK: query: select * from src_multi2 order by key, value
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src_multi2
-POSTHOOK: Output: file:/tmp/nzhang/hive_2010-09-14_17-09-14_168_2552421292011602066/-mr-10000
+POSTHOOK: Output: file:/tmp/sdong/hive_2011-02-10_16-45-24_204_8850515575535942770/-mr-10000
 POSTHOOK: Lineage: src_multi1.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: src_multi1.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: src_multi1.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
@@ -2625,7 +2625,7 @@ POSTHOOK: Lineage: src_multi2.value SIMPLE [(src)src.FieldSchema(name:value, typ
 POSTHOOK: Lineage: src_multi2.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: src_multi2.value EXPRESSION [(src)src.FieldSchema(name:value, type:string, comment:default), (src)src.FieldSchema(name:value, type:string, comment:default), ]
 ABSTRACT SYNTAX TREE:
-  (TOK_QUERY (TOK_FROM (TOK_SUBQUERY (TOK_UNION (TOK_QUERY (TOK_FROM (TOK_TABREF src)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR TOK_ALLCOLREF)))) (TOK_QUERY (TOK_FROM (TOK_TABREF src)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR TOK_ALLCOLREF))))) s)) (TOK_INSERT (TOK_DESTINATION (TOK_TAB src_multi1)) (TOK_SELECT (TOK_SELEXPR TOK_ALLCOLREF)) (TOK_WHERE (< (TOK_TABLE_OR_COL key) 10))) (TOK_INSERT (TOK_DESTINATION (TOK_TAB src_multi2)) (TOK_SELECT (TOK_SELEXPR TOK_ALLCOLREF)) (TOK_WHERE (and (> (TOK_TABLE_OR_COL key) 10) (< (TOK_TABLE_OR_COL key) 20)))))
+  (TOK_QUERY (TOK_FROM (TOK_SUBQUERY (TOK_UNION (TOK_QUERY (TOK_FROM (TOK_TABREF (TOK_TABNAME src))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR TOK_ALLCOLREF)))) (TOK_QUERY (TOK_FROM (TOK_TABREF (TOK_TABNAME src))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR TOK_ALLCOLREF))))) s)) (TOK_INSERT (TOK_DESTINATION (TOK_TAB (TOK_TABNAME src_multi1))) (TOK_SELECT (TOK_SELEXPR TOK_ALLCOLREF)) (TOK_WHERE (< (TOK_TABLE_OR_COL key) 10))) (TOK_INSERT (TOK_DESTINATION (TOK_TAB (TOK_TABNAME src_multi2))) (TOK_SELECT (TOK_SELEXPR TOK_ALLCOLREF)) (TOK_WHERE (and (> (TOK_TABLE_OR_COL key) 10) (< (TOK_TABLE_OR_COL key) 20)))))
 
 STAGE DEPENDENCIES:
   Stage-2 is a root stage
@@ -2673,7 +2673,7 @@ STAGE PLANS:
                           input format: org.apache.hadoop.mapred.TextInputFormat
                           output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                           serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                          name: src_multi1
+                          name: default.src_multi1
                 Filter Operator
                   predicate:
                       expr: ((_col0 > 10) and (_col0 < 20))
@@ -2692,7 +2692,7 @@ STAGE PLANS:
                           input format: org.apache.hadoop.mapred.TextInputFormat
                           output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                           serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                          name: src_multi2
+                          name: default.src_multi2
         null-subquery2:s-subquery2:src 
           TableScan
             alias: src
@@ -2722,7 +2722,7 @@ STAGE PLANS:
                           input format: org.apache.hadoop.mapred.TextInputFormat
                           output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                           serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                          name: src_multi1
+                          name: default.src_multi1
                 Filter Operator
                   predicate:
                       expr: ((_col0 > 10) and (_col0 < 20))
@@ -2741,7 +2741,7 @@ STAGE PLANS:
                           input format: org.apache.hadoop.mapred.TextInputFormat
                           output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                           serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                          name: src_multi2
+                          name: default.src_multi2
 
   Stage: Stage-6
     Conditional Operator
@@ -2750,7 +2750,7 @@ STAGE PLANS:
     Move Operator
       files:
           hdfs directory: true
-          destination: pfile:/data/users/nzhang/work/784/apache-hive/build/ql/scratchdir/hive_2010-09-14_17-09-17_639_542994900721500417/-ext-10000
+          destination: pfile:/data/users/sdong/www/open-source-hive1/build/ql/scratchdir/hive_2011-02-10_16-45-27_536_7429276394415406616/-ext-10000
 
   Stage: Stage-0
     Move Operator
@@ -2760,7 +2760,7 @@ STAGE PLANS:
               input format: org.apache.hadoop.mapred.TextInputFormat
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              name: src_multi1
+              name: default.src_multi1
 
   Stage: Stage-3
     Stats-Aggr Operator
@@ -2768,7 +2768,7 @@ STAGE PLANS:
   Stage: Stage-4
     Map Reduce
       Alias -> Map Operator Tree:
-        pfile:/data/users/nzhang/work/784/apache-hive/build/ql/scratchdir/hive_2010-09-14_17-09-17_639_542994900721500417/-ext-10004 
+        pfile:/data/users/sdong/www/open-source-hive1/build/ql/scratchdir/hive_2011-02-10_16-45-27_536_7429276394415406616/-ext-10004 
             File Output Operator
               compressed: false
               GlobalTableId: 0
@@ -2776,7 +2776,7 @@ STAGE PLANS:
                   input format: org.apache.hadoop.mapred.TextInputFormat
                   output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                   serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                  name: src_multi1
+                  name: default.src_multi1
 
   Stage: Stage-10
     Conditional Operator
@@ -2785,7 +2785,7 @@ STAGE PLANS:
     Move Operator
       files:
           hdfs directory: true
-          destination: pfile:/data/users/nzhang/work/784/apache-hive/build/ql/scratchdir/hive_2010-09-14_17-09-17_639_542994900721500417/-ext-10002
+          destination: pfile:/data/users/sdong/www/open-source-hive1/build/ql/scratchdir/hive_2011-02-10_16-45-27_536_7429276394415406616/-ext-10002
 
   Stage: Stage-1
     Move Operator
@@ -2795,7 +2795,7 @@ STAGE PLANS:
               input format: org.apache.hadoop.mapred.TextInputFormat
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              name: src_multi2
+              name: default.src_multi2
 
   Stage: Stage-7
     Stats-Aggr Operator
@@ -2803,7 +2803,7 @@ STAGE PLANS:
   Stage: Stage-8
     Map Reduce
       Alias -> Map Operator Tree:
-        pfile:/data/users/nzhang/work/784/apache-hive/build/ql/scratchdir/hive_2010-09-14_17-09-17_639_542994900721500417/-ext-10005 
+        pfile:/data/users/sdong/www/open-source-hive1/build/ql/scratchdir/hive_2011-02-10_16-45-27_536_7429276394415406616/-ext-10005 
             File Output Operator
               compressed: false
               GlobalTableId: 0
@@ -2811,7 +2811,7 @@ STAGE PLANS:
                   input format: org.apache.hadoop.mapred.TextInputFormat
                   output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                   serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                  name: src_multi2
+                  name: default.src_multi2
 
 
 PREHOOK: query: from (select * from src  union all select * from src) s
@@ -2871,11 +2871,11 @@ POSTHOOK: Lineage: src_multi2.value EXPRESSION [(src)src.FieldSchema(name:value,
 PREHOOK: query: select * from src_multi1 order by key, value
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src_multi1
-PREHOOK: Output: file:/tmp/nzhang/hive_2010-09-14_17-09-25_884_6431166930291232652/-mr-10000
+PREHOOK: Output: file:/tmp/sdong/hive_2011-02-10_16-45-33_056_5316411913010951123/-mr-10000
 POSTHOOK: query: select * from src_multi1 order by key, value
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src_multi1
-POSTHOOK: Output: file:/tmp/nzhang/hive_2010-09-14_17-09-25_884_6431166930291232652/-mr-10000
+POSTHOOK: Output: file:/tmp/sdong/hive_2011-02-10_16-45-33_056_5316411913010951123/-mr-10000
 POSTHOOK: Lineage: src_multi1.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: src_multi1.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: src_multi1.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
@@ -2939,11 +2939,11 @@ POSTHOOK: Lineage: src_multi2.value EXPRESSION [(src)src.FieldSchema(name:value,
 PREHOOK: query: select * from src_multi2 order by key, value
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src_multi2
-PREHOOK: Output: file:/tmp/nzhang/hive_2010-09-14_17-09-29_897_6290521718057232673/-mr-10000
+PREHOOK: Output: file:/tmp/sdong/hive_2011-02-10_16-45-36_350_5514837416722271487/-mr-10000
 POSTHOOK: query: select * from src_multi2 order by key, value
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src_multi2
-POSTHOOK: Output: file:/tmp/nzhang/hive_2010-09-14_17-09-29_897_6290521718057232673/-mr-10000
+POSTHOOK: Output: file:/tmp/sdong/hive_2011-02-10_16-45-36_350_5514837416722271487/-mr-10000
 POSTHOOK: Lineage: src_multi1.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: src_multi1.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: src_multi1.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
@@ -3053,7 +3053,7 @@ POSTHOOK: Lineage: src_multi2.value SIMPLE [(src)src.FieldSchema(name:value, typ
 POSTHOOK: Lineage: src_multi2.value EXPRESSION [(src)src.FieldSchema(name:value, type:string, comment:default), (src)src.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: src_multi2.value EXPRESSION [(src)src.FieldSchema(name:value, type:string, comment:default), (src)src.FieldSchema(name:value, type:string, comment:default), ]
 ABSTRACT SYNTAX TREE:
-  (TOK_QUERY (TOK_FROM (TOK_SUBQUERY (TOK_UNION (TOK_QUERY (TOK_FROM (TOK_TABREF src)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR TOK_ALLCOLREF)))) (TOK_QUERY (TOK_FROM (TOK_TABREF src)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR TOK_ALLCOLREF))))) s)) (TOK_INSERT (TOK_DESTINATION (TOK_TAB src_multi1)) (TOK_SELECT (TOK_SELEXPR TOK_ALLCOLREF)) (TOK_WHERE (< (TOK_TABLE_OR_COL key) 10))) (TOK_INSERT (TOK_DESTINATION (TOK_TAB src_multi2)) (TOK_SELECT (TOK_SELEXPR TOK_ALLCOLREF)) (TOK_WHERE (and (> (TOK_TABLE_OR_COL key) 10) (< (TOK_TABLE_OR_COL key) 20)))))
+  (TOK_QUERY (TOK_FROM (TOK_SUBQUERY (TOK_UNION (TOK_QUERY (TOK_FROM (TOK_TABREF (TOK_TABNAME src))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR TOK_ALLCOLREF)))) (TOK_QUERY (TOK_FROM (TOK_TABREF (TOK_TABNAME src))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR TOK_ALLCOLREF))))) s)) (TOK_INSERT (TOK_DESTINATION (TOK_TAB (TOK_TABNAME src_multi1))) (TOK_SELECT (TOK_SELEXPR TOK_ALLCOLREF)) (TOK_WHERE (< (TOK_TABLE_OR_COL key) 10))) (TOK_INSERT (TOK_DESTINATION (TOK_TAB (TOK_TABNAME src_multi2))) (TOK_SELECT (TOK_SELEXPR TOK_ALLCOLREF)) (TOK_WHERE (and (> (TOK_TABLE_OR_COL key) 10) (< (TOK_TABLE_OR_COL key) 20)))))
 
 STAGE DEPENDENCIES:
   Stage-2 is a root stage
@@ -3095,7 +3095,7 @@ STAGE PLANS:
                           input format: org.apache.hadoop.mapred.TextInputFormat
                           output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                           serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                          name: src_multi1
+                          name: default.src_multi1
                 Filter Operator
                   predicate:
                       expr: ((_col0 > 10) and (_col0 < 20))
@@ -3114,7 +3114,7 @@ STAGE PLANS:
                           input format: org.apache.hadoop.mapred.TextInputFormat
                           output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                           serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                          name: src_multi2
+                          name: default.src_multi2
         null-subquery2:s-subquery2:src 
           TableScan
             alias: src
@@ -3144,7 +3144,7 @@ STAGE PLANS:
                           input format: org.apache.hadoop.mapred.TextInputFormat
                           output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                           serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                          name: src_multi1
+                          name: default.src_multi1
                 Filter Operator
                   predicate:
                       expr: ((_col0 > 10) and (_col0 < 20))
@@ -3163,7 +3163,7 @@ STAGE PLANS:
                           input format: org.apache.hadoop.mapred.TextInputFormat
                           output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                           serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                          name: src_multi2
+                          name: default.src_multi2
 
   Stage: Stage-0
     Move Operator
@@ -3173,7 +3173,7 @@ STAGE PLANS:
               input format: org.apache.hadoop.mapred.TextInputFormat
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              name: src_multi1
+              name: default.src_multi1
 
   Stage: Stage-3
     Stats-Aggr Operator
@@ -3186,7 +3186,7 @@ STAGE PLANS:
               input format: org.apache.hadoop.mapred.TextInputFormat
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              name: src_multi2
+              name: default.src_multi2
 
   Stage: Stage-4
     Stats-Aggr Operator
@@ -3253,11 +3253,11 @@ POSTHOOK: Lineage: src_multi2.value EXPRESSION [(src)src.FieldSchema(name:value,
 PREHOOK: query: select * from src_multi1 order by key, value
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src_multi1
-PREHOOK: Output: file:/tmp/nzhang/hive_2010-09-14_17-09-41_225_2946007877854426595/-mr-10000
+PREHOOK: Output: file:/tmp/sdong/hive_2011-02-10_16-45-44_972_7203180363224865270/-mr-10000
 POSTHOOK: query: select * from src_multi1 order by key, value
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src_multi1
-POSTHOOK: Output: file:/tmp/nzhang/hive_2010-09-14_17-09-41_225_2946007877854426595/-mr-10000
+POSTHOOK: Output: file:/tmp/sdong/hive_2011-02-10_16-45-44_972_7203180363224865270/-mr-10000
 POSTHOOK: Lineage: src_multi1.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: src_multi1.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: src_multi1.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
@@ -3325,11 +3325,11 @@ POSTHOOK: Lineage: src_multi2.value EXPRESSION [(src)src.FieldSchema(name:value,
 PREHOOK: query: select * from src_multi2 order by key, value
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src_multi2
-PREHOOK: Output: file:/tmp/nzhang/hive_2010-09-14_17-09-44_726_6586471843451209756/-mr-10000
+PREHOOK: Output: file:/tmp/sdong/hive_2011-02-10_16-45-48_259_494334402336133464/-mr-10000
 POSTHOOK: query: select * from src_multi2 order by key, value
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src_multi2
-POSTHOOK: Output: file:/tmp/nzhang/hive_2010-09-14_17-09-44_726_6586471843451209756/-mr-10000
+POSTHOOK: Output: file:/tmp/sdong/hive_2011-02-10_16-45-48_259_494334402336133464/-mr-10000
 POSTHOOK: Lineage: src_multi1.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: src_multi1.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: src_multi1.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
@@ -3447,7 +3447,7 @@ POSTHOOK: Lineage: src_multi2.value EXPRESSION [(src)src.FieldSchema(name:value,
 POSTHOOK: Lineage: src_multi2.value EXPRESSION [(src)src.FieldSchema(name:value, type:string, comment:default), (src)src.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: src_multi2.value EXPRESSION [(src)src.FieldSchema(name:value, type:string, comment:default), (src)src.FieldSchema(name:value, type:string, comment:default), ]
 ABSTRACT SYNTAX TREE:
-  (TOK_QUERY (TOK_FROM (TOK_SUBQUERY (TOK_UNION (TOK_QUERY (TOK_FROM (TOK_TABREF src)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR TOK_ALLCOLREF)))) (TOK_QUERY (TOK_FROM (TOK_TABREF src)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR TOK_ALLCOLREF))))) s)) (TOK_INSERT (TOK_DESTINATION (TOK_TAB src_multi1)) (TOK_SELECT (TOK_SELEXPR TOK_ALLCOLREF)) (TOK_WHERE (< (TOK_TABLE_OR_COL key) 10))) (TOK_INSERT (TOK_DESTINATION (TOK_TAB src_multi2)) (TOK_SELECT (TOK_SELEXPR TOK_ALLCOLREF)) (TOK_WHERE (and (> (TOK_TABLE_OR_COL key) 10) (< (TOK_TABLE_OR_COL key) 20)))))
+  (TOK_QUERY (TOK_FROM (TOK_SUBQUERY (TOK_UNION (TOK_QUERY (TOK_FROM (TOK_TABREF (TOK_TABNAME src))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR TOK_ALLCOLREF)))) (TOK_QUERY (TOK_FROM (TOK_TABREF (TOK_TABNAME src))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR TOK_ALLCOLREF))))) s)) (TOK_INSERT (TOK_DESTINATION (TOK_TAB (TOK_TABNAME src_multi1))) (TOK_SELECT (TOK_SELEXPR TOK_ALLCOLREF)) (TOK_WHERE (< (TOK_TABLE_OR_COL key) 10))) (TOK_INSERT (TOK_DESTINATION (TOK_TAB (TOK_TABNAME src_multi2))) (TOK_SELECT (TOK_SELEXPR TOK_ALLCOLREF)) (TOK_WHERE (and (> (TOK_TABLE_OR_COL key) 10) (< (TOK_TABLE_OR_COL key) 20)))))
 
 STAGE DEPENDENCIES:
   Stage-2 is a root stage
@@ -3495,7 +3495,7 @@ STAGE PLANS:
                           input format: org.apache.hadoop.mapred.TextInputFormat
                           output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                           serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                          name: src_multi1
+                          name: default.src_multi1
                 Filter Operator
                   predicate:
                       expr: ((_col0 > 10) and (_col0 < 20))
@@ -3514,7 +3514,7 @@ STAGE PLANS:
                           input format: org.apache.hadoop.mapred.TextInputFormat
                           output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                           serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                          name: src_multi2
+                          name: default.src_multi2
         null-subquery2:s-subquery2:src 
           TableScan
             alias: src
@@ -3544,7 +3544,7 @@ STAGE PLANS:
                           input format: org.apache.hadoop.mapred.TextInputFormat
                           output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                           serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                          name: src_multi1
+                          name: default.src_multi1
                 Filter Operator
                   predicate:
                       expr: ((_col0 > 10) and (_col0 < 20))
@@ -3563,7 +3563,7 @@ STAGE PLANS:
                           input format: org.apache.hadoop.mapred.TextInputFormat
                           output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                           serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                          name: src_multi2
+                          name: default.src_multi2
 
   Stage: Stage-6
     Conditional Operator
@@ -3572,7 +3572,7 @@ STAGE PLANS:
     Move Operator
       files:
           hdfs directory: true
-          destination: pfile:/data/users/nzhang/work/784/apache-hive/build/ql/scratchdir/hive_2010-09-14_17-09-48_169_7249129799893741096/-ext-10000
+          destination: pfile:/data/users/sdong/www/open-source-hive1/build/ql/scratchdir/hive_2011-02-10_16-45-51_569_2379485967482742559/-ext-10000
 
   Stage: Stage-0
     Move Operator
@@ -3582,7 +3582,7 @@ STAGE PLANS:
               input format: org.apache.hadoop.mapred.TextInputFormat
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              name: src_multi1
+              name: default.src_multi1
 
   Stage: Stage-3
     Stats-Aggr Operator
@@ -3590,7 +3590,7 @@ STAGE PLANS:
   Stage: Stage-4
     Map Reduce
       Alias -> Map Operator Tree:
-        pfile:/data/users/nzhang/work/784/apache-hive/build/ql/scratchdir/hive_2010-09-14_17-09-48_169_7249129799893741096/-ext-10004 
+        pfile:/data/users/sdong/www/open-source-hive1/build/ql/scratchdir/hive_2011-02-10_16-45-51_569_2379485967482742559/-ext-10004 
             File Output Operator
               compressed: false
               GlobalTableId: 0
@@ -3598,7 +3598,7 @@ STAGE PLANS:
                   input format: org.apache.hadoop.mapred.TextInputFormat
                   output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                   serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                  name: src_multi1
+                  name: default.src_multi1
 
   Stage: Stage-10
     Conditional Operator
@@ -3607,7 +3607,7 @@ STAGE PLANS:
     Move Operator
       files:
           hdfs directory: true
-          destination: pfile:/data/users/nzhang/work/784/apache-hive/build/ql/scratchdir/hive_2010-09-14_17-09-48_169_7249129799893741096/-ext-10002
+          destination: pfile:/data/users/sdong/www/open-source-hive1/build/ql/scratchdir/hive_2011-02-10_16-45-51_569_2379485967482742559/-ext-10002
 
   Stage: Stage-1
     Move Operator
@@ -3617,7 +3617,7 @@ STAGE PLANS:
               input format: org.apache.hadoop.mapred.TextInputFormat
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              name: src_multi2
+              name: default.src_multi2
 
   Stage: Stage-7
     Stats-Aggr Operator
@@ -3625,7 +3625,7 @@ STAGE PLANS:
   Stage: Stage-8
     Map Reduce
       Alias -> Map Operator Tree:
-        pfile:/data/users/nzhang/work/784/apache-hive/build/ql/scratchdir/hive_2010-09-14_17-09-48_169_7249129799893741096/-ext-10005 
+        pfile:/data/users/sdong/www/open-source-hive1/build/ql/scratchdir/hive_2011-02-10_16-45-51_569_2379485967482742559/-ext-10005 
             File Output Operator
               compressed: false
               GlobalTableId: 0
@@ -3633,7 +3633,7 @@ STAGE PLANS:
                   input format: org.apache.hadoop.mapred.TextInputFormat
                   output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                   serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                  name: src_multi2
+                  name: default.src_multi2
 
 
 PREHOOK: query: from (select * from src  union all select * from src) s
@@ -3701,11 +3701,11 @@ POSTHOOK: Lineage: src_multi2.value EXPRESSION [(src)src.FieldSchema(name:value,
 PREHOOK: query: select * from src_multi1 order by key, value
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src_multi1
-PREHOOK: Output: file:/tmp/nzhang/hive_2010-09-14_17-09-56_473_8688197416844196261/-mr-10000
+PREHOOK: Output: file:/tmp/sdong/hive_2011-02-10_16-45-57_111_2267878231944588124/-mr-10000
 POSTHOOK: query: select * from src_multi1 order by key, value
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src_multi1
-POSTHOOK: Output: file:/tmp/nzhang/hive_2010-09-14_17-09-56_473_8688197416844196261/-mr-10000
+POSTHOOK: Output: file:/tmp/sdong/hive_2011-02-10_16-45-57_111_2267878231944588124/-mr-10000
 POSTHOOK: Lineage: src_multi1.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: src_multi1.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: src_multi1.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
@@ -3777,11 +3777,11 @@ POSTHOOK: Lineage: src_multi2.value EXPRESSION [(src)src.FieldSchema(name:value,
 PREHOOK: query: select * from src_multi2 order by key, value
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src_multi2
-PREHOOK: Output: file:/tmp/nzhang/hive_2010-09-14_17-10-00_115_2198989029090707740/-mr-10000
+PREHOOK: Output: file:/tmp/sdong/hive_2011-02-10_16-46-00_422_7771858013824678476/-mr-10000
 POSTHOOK: query: select * from src_multi2 order by key, value
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src_multi2
-POSTHOOK: Output: file:/tmp/nzhang/hive_2010-09-14_17-10-00_115_2198989029090707740/-mr-10000
+POSTHOOK: Output: file:/tmp/sdong/hive_2011-02-10_16-46-00_422_7771858013824678476/-mr-10000
 POSTHOOK: Lineage: src_multi1.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: src_multi1.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: src_multi1.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
@@ -3909,7 +3909,7 @@ POSTHOOK: Lineage: src_multi2.value EXPRESSION [(src)src.FieldSchema(name:value,
 POSTHOOK: Lineage: src_multi2.value EXPRESSION [(src)src.FieldSchema(name:value, type:string, comment:default), (src)src.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: src_multi2.value EXPRESSION [(src)src.FieldSchema(name:value, type:string, comment:default), (src)src.FieldSchema(name:value, type:string, comment:default), ]
 ABSTRACT SYNTAX TREE:
-  (TOK_QUERY (TOK_FROM (TOK_TABREF src)) (TOK_INSERT (TOK_DESTINATION (TOK_LOCAL_DIR '/tmp/hive_test/multiins_local/0')) (TOK_SELECT (TOK_SELEXPR TOK_ALLCOLREF)) (TOK_WHERE (= (TOK_TABLE_OR_COL key) 0))) (TOK_INSERT (TOK_DESTINATION (TOK_LOCAL_DIR '/tmp/hive_test/multiins_local/2')) (TOK_SELECT (TOK_SELEXPR TOK_ALLCOLREF)) (TOK_WHERE (= (TOK_TABLE_OR_COL key) 2))) (TOK_INSERT (TOK_DESTINATION (TOK_LOCAL_DIR '/tmp/hive_test/multiins_local/4')) (TOK_SELECT (TOK_SELEXPR TOK_ALLCOLREF)) (TOK_WHERE (= (TOK_TABLE_OR_COL key) 4))))
+  (TOK_QUERY (TOK_FROM (TOK_TABREF (TOK_TABNAME src))) (TOK_INSERT (TOK_DESTINATION (TOK_LOCAL_DIR '/tmp/hive_test/multiins_local/0')) (TOK_SELECT (TOK_SELEXPR TOK_ALLCOLREF)) (TOK_WHERE (= (TOK_TABLE_OR_COL key) 0))) (TOK_INSERT (TOK_DESTINATION (TOK_LOCAL_DIR '/tmp/hive_test/multiins_local/2')) (TOK_SELECT (TOK_SELEXPR TOK_ALLCOLREF)) (TOK_WHERE (= (TOK_TABLE_OR_COL key) 2))) (TOK_INSERT (TOK_DESTINATION (TOK_LOCAL_DIR '/tmp/hive_test/multiins_local/4')) (TOK_SELECT (TOK_SELEXPR TOK_ALLCOLREF)) (TOK_WHERE (= (TOK_TABLE_OR_COL key) 4))))
 
 STAGE DEPENDENCIES:
   Stage-3 is a root stage
@@ -4125,7 +4125,7 @@ POSTHOOK: Lineage: src_multi2.value EXPRESSION [(src)src.FieldSchema(name:value,
 POSTHOOK: Lineage: src_multi2.value EXPRESSION [(src)src.FieldSchema(name:value, type:string, comment:default), (src)src.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: src_multi2.value EXPRESSION [(src)src.FieldSchema(name:value, type:string, comment:default), (src)src.FieldSchema(name:value, type:string, comment:default), ]
 ABSTRACT SYNTAX TREE:
-  (TOK_QUERY (TOK_FROM (TOK_TABREF src)) (TOK_INSERT (TOK_DESTINATION (TOK_LOCAL_DIR '/tmp/hive_test/multiins_local/0')) (TOK_SELECT (TOK_SELEXPR TOK_ALLCOLREF)) (TOK_WHERE (= (TOK_TABLE_OR_COL key) 0))) (TOK_INSERT (TOK_DESTINATION (TOK_LOCAL_DIR '/tmp/hive_test/multiins_local/2')) (TOK_SELECT (TOK_SELEXPR TOK_ALLCOLREF)) (TOK_WHERE (= (TOK_TABLE_OR_COL key) 2))) (TOK_INSERT (TOK_DESTINATION (TOK_LOCAL_DIR '/tmp/hive_test/multiins_local/4')) (TOK_SELECT (TOK_SELEXPR TOK_ALLCOLREF)) (TOK_WHERE (= (TOK_TABLE_OR_COL key) 4))))
+  (TOK_QUERY (TOK_FROM (TOK_TABREF (TOK_TABNAME src))) (TOK_INSERT (TOK_DESTINATION (TOK_LOCAL_DIR '/tmp/hive_test/multiins_local/0')) (TOK_SELECT (TOK_SELEXPR TOK_ALLCOLREF)) (TOK_WHERE (= (TOK_TABLE_OR_COL key) 0))) (TOK_INSERT (TOK_DESTINATION (TOK_LOCAL_DIR '/tmp/hive_test/multiins_local/2')) (TOK_SELECT (TOK_SELEXPR TOK_ALLCOLREF)) (TOK_WHERE (= (TOK_TABLE_OR_COL key) 2))) (TOK_INSERT (TOK_DESTINATION (TOK_LOCAL_DIR '/tmp/hive_test/multiins_local/4')) (TOK_SELECT (TOK_SELEXPR TOK_ALLCOLREF)) (TOK_WHERE (= (TOK_TABLE_OR_COL key) 4))))
 
 STAGE DEPENDENCIES:
   Stage-3 is a root stage
@@ -4341,7 +4341,7 @@ POSTHOOK: Lineage: src_multi2.value EXPRESSION [(src)src.FieldSchema(name:value,
 POSTHOOK: Lineage: src_multi2.value EXPRESSION [(src)src.FieldSchema(name:value, type:string, comment:default), (src)src.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: src_multi2.value EXPRESSION [(src)src.FieldSchema(name:value, type:string, comment:default), (src)src.FieldSchema(name:value, type:string, comment:default), ]
 ABSTRACT SYNTAX TREE:
-  (TOK_QUERY (TOK_FROM (TOK_TABREF src)) (TOK_INSERT (TOK_DESTINATION (TOK_LOCAL_DIR '/tmp/hive_test/multiins_local/0')) (TOK_SELECT (TOK_SELEXPR TOK_ALLCOLREF)) (TOK_WHERE (= (TOK_TABLE_OR_COL key) 0))) (TOK_INSERT (TOK_DESTINATION (TOK_LOCAL_DIR '/tmp/hive_test/multiins_local/2')) (TOK_SELECT (TOK_SELEXPR TOK_ALLCOLREF)) (TOK_WHERE (= (TOK_TABLE_OR_COL key) 2))) (TOK_INSERT (TOK_DESTINATION (TOK_LOCAL_DIR '/tmp/hive_test/multiins_local/4')) (TOK_SELECT (TOK_SELEXPR TOK_ALLCOLREF)) (TOK_WHERE (= (TOK_TABLE_OR_COL key) 4))))
+  (TOK_QUERY (TOK_FROM (TOK_TABREF (TOK_TABNAME src))) (TOK_INSERT (TOK_DESTINATION (TOK_LOCAL_DIR '/tmp/hive_test/multiins_local/0')) (TOK_SELECT (TOK_SELEXPR TOK_ALLCOLREF)) (TOK_WHERE (= (TOK_TABLE_OR_COL key) 0))) (TOK_INSERT (TOK_DESTINATION (TOK_LOCAL_DIR '/tmp/hive_test/multiins_local/2')) (TOK_SELECT (TOK_SELEXPR TOK_ALLCOLREF)) (TOK_WHERE (= (TOK_TABLE_OR_COL key) 2))) (TOK_INSERT (TOK_DESTINATION (TOK_LOCAL_DIR '/tmp/hive_test/multiins_local/4')) (TOK_SELECT (TOK_SELEXPR TOK_ALLCOLREF)) (TOK_WHERE (= (TOK_TABLE_OR_COL key) 4))))
 
 STAGE DEPENDENCIES:
   Stage-3 is a root stage
@@ -4557,7 +4557,7 @@ POSTHOOK: Lineage: src_multi2.value EXPRESSION [(src)src.FieldSchema(name:value,
 POSTHOOK: Lineage: src_multi2.value EXPRESSION [(src)src.FieldSchema(name:value, type:string, comment:default), (src)src.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: src_multi2.value EXPRESSION [(src)src.FieldSchema(name:value, type:string, comment:default), (src)src.FieldSchema(name:value, type:string, comment:default), ]
 ABSTRACT SYNTAX TREE:
-  (TOK_QUERY (TOK_FROM (TOK_TABREF src)) (TOK_INSERT (TOK_DESTINATION (TOK_LOCAL_DIR '/tmp/hive_test/multiins_local/0')) (TOK_SELECT (TOK_SELEXPR TOK_ALLCOLREF)) (TOK_WHERE (= (TOK_TABLE_OR_COL key) 0))) (TOK_INSERT (TOK_DESTINATION (TOK_LOCAL_DIR '/tmp/hive_test/multiins_local/2')) (TOK_SELECT (TOK_SELEXPR TOK_ALLCOLREF)) (TOK_WHERE (= (TOK_TABLE_OR_COL key) 2))) (TOK_INSERT (TOK_DESTINATION (TOK_LOCAL_DIR '/tmp/hive_test/multiins_local/4')) (TOK_SELECT (TOK_SELEXPR TOK_ALLCOLREF)) (TOK_WHERE (= (TOK_TABLE_OR_COL key) 4))))
+  (TOK_QUERY (TOK_FROM (TOK_TABREF (TOK_TABNAME src))) (TOK_INSERT (TOK_DESTINATION (TOK_LOCAL_DIR '/tmp/hive_test/multiins_local/0')) (TOK_SELECT (TOK_SELEXPR TOK_ALLCOLREF)) (TOK_WHERE (= (TOK_TABLE_OR_COL key) 0))) (TOK_INSERT (TOK_DESTINATION (TOK_LOCAL_DIR '/tmp/hive_test/multiins_local/2')) (TOK_SELECT (TOK_SELEXPR TOK_ALLCOLREF)) (TOK_WHERE (= (TOK_TABLE_OR_COL key) 2))) (TOK_INSERT (TOK_DESTINATION (TOK_LOCAL_DIR '/tmp/hive_test/multiins_local/4')) (TOK_SELECT (TOK_SELEXPR TOK_ALLCOLREF)) (TOK_WHERE (= (TOK_TABLE_OR_COL key) 4))))
 
 STAGE DEPENDENCIES:
   Stage-3 is a root stage

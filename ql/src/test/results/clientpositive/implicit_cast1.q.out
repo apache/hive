@@ -14,7 +14,7 @@ FROM implicit_test1
 WHERE implicit_test1.a <> 0
 POSTHOOK: type: QUERY
 ABSTRACT SYNTAX TREE:
-  (TOK_QUERY (TOK_FROM (TOK_TABREF implicit_test1)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_ALLCOLREF implicit_test1))) (TOK_WHERE (<> (. (TOK_TABLE_OR_COL implicit_test1) a) 0))))
+  (TOK_QUERY (TOK_FROM (TOK_TABREF (TOK_TABNAME implicit_test1))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_ALLCOLREF (TOK_TABNAME implicit_test1)))) (TOK_WHERE (<> (. (TOK_TABLE_OR_COL implicit_test1) a) 0))))
 
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -59,10 +59,10 @@ FROM implicit_test1
 WHERE implicit_test1.a <> 0
 PREHOOK: type: QUERY
 PREHOOK: Input: default@implicit_test1
-PREHOOK: Output: file:/tmp/jssarma/hive_2010-07-21_11-26-24_976_2073073634228618169/10000
+PREHOOK: Output: file:/tmp/sdong/hive_2011-02-10_01-55-43_628_3651404316559049098/-mr-10000
 POSTHOOK: query: SELECT implicit_test1.*
 FROM implicit_test1
 WHERE implicit_test1.a <> 0
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@implicit_test1
-POSTHOOK: Output: file:/tmp/jssarma/hive_2010-07-21_11-26-24_976_2073073634228618169/10000
+POSTHOOK: Output: file:/tmp/sdong/hive_2011-02-10_01-55-43_628_3651404316559049098/-mr-10000

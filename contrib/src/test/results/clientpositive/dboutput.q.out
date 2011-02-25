@@ -45,7 +45,7 @@ dboutput('jdbc:derby:../build/test_dboutput_db','','',
 limit 1
 POSTHOOK: type: QUERY
 ABSTRACT SYNTAX TREE:
-  (TOK_QUERY (TOK_FROM (TOK_TABREF src)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_FUNCTION dboutput 'jdbc:derby:../build/test_dboutput_db;create=true' '' '' 'CREATE TABLE app_info ( kkey VARCHAR(255) NOT NULL, vvalue VARCHAR(255) NOT NULL, UNIQUE(kkey))')) (TOK_SELEXPR (TOK_FUNCTION dboutput 'jdbc:derby:../build/test_dboutput_db' '' '' 'INSERT INTO app_info (kkey,vvalue) VALUES (?,?)' '20' 'a')) (TOK_SELEXPR (TOK_FUNCTION dboutput 'jdbc:derby:../build/test_dboutput_db' '' '' 'INSERT INTO app_info (kkey,vvalue) VALUES (?,?)' '20' 'b'))) (TOK_LIMIT 1)))
+  (TOK_QUERY (TOK_FROM (TOK_TABREF (TOK_TABNAME src))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_FUNCTION dboutput 'jdbc:derby:../build/test_dboutput_db;create=true' '' '' 'CREATE TABLE app_info ( kkey VARCHAR(255) NOT NULL, vvalue VARCHAR(255) NOT NULL, UNIQUE(kkey))')) (TOK_SELEXPR (TOK_FUNCTION dboutput 'jdbc:derby:../build/test_dboutput_db' '' '' 'INSERT INTO app_info (kkey,vvalue) VALUES (?,?)' '20' 'a')) (TOK_SELEXPR (TOK_FUNCTION dboutput 'jdbc:derby:../build/test_dboutput_db' '' '' 'INSERT INTO app_info (kkey,vvalue) VALUES (?,?)' '20' 'b'))) (TOK_LIMIT 1)))
 
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -94,7 +94,7 @@ dboutput('jdbc:derby:../build/test_dboutput_db','','',
 limit 1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/109195708/10000
+PREHOOK: Output: file:/tmp/sdong/hive_2011-02-16_20-09-23_328_8680925253427995225/-mr-10000
 POSTHOOK: query: FROM src 
 
 SELECT dboutput ( 'jdbc:derby:../build/test_dboutput_db;create=true','','',
@@ -109,7 +109,7 @@ dboutput('jdbc:derby:../build/test_dboutput_db','','',
 limit 1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/109195708/10000
+POSTHOOK: Output: file:/tmp/sdong/hive_2011-02-16_20-09-23_328_8680925253427995225/-mr-10000
 0	0	1
 PREHOOK: query: EXPLAIN SELECT
 
@@ -126,7 +126,7 @@ dboutput('jdbc:derby:../build/test_dboutput_db','','',
 FROM src WHERE key < 10
 POSTHOOK: type: QUERY
 ABSTRACT SYNTAX TREE:
-  (TOK_QUERY (TOK_FROM (TOK_TABREF src)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_FUNCTION dboutput 'jdbc:derby:../build/test_dboutput_db' '' '' 'INSERT INTO app_info (kkey,vvalue) VALUES (?,?)' (TOK_TABLE_OR_COL key) (TOK_TABLE_OR_COL value)))) (TOK_WHERE (< (TOK_TABLE_OR_COL key) 10))))
+  (TOK_QUERY (TOK_FROM (TOK_TABREF (TOK_TABNAME src))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_FUNCTION dboutput 'jdbc:derby:../build/test_dboutput_db' '' '' 'INSERT INTO app_info (kkey,vvalue) VALUES (?,?)' (TOK_TABLE_OR_COL key) (TOK_TABLE_OR_COL value)))) (TOK_WHERE (< (TOK_TABLE_OR_COL key) 10))))
 
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -172,7 +172,7 @@ dboutput('jdbc:derby:../build/test_dboutput_db','','',
 FROM src WHERE key < 10
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/667407949/10000
+PREHOOK: Output: file:/tmp/sdong/hive_2011-02-16_20-09-28_953_3029021215935953778/-mr-10000
 POSTHOOK: query: SELECT
 
 dboutput('jdbc:derby:../build/test_dboutput_db','','',
@@ -181,7 +181,7 @@ dboutput('jdbc:derby:../build/test_dboutput_db','','',
 FROM src WHERE key < 10
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/667407949/10000
+POSTHOOK: Output: file:/tmp/sdong/hive_2011-02-16_20-09-28_953_3029021215935953778/-mr-10000
 0
 0
 0
@@ -192,8 +192,8 @@ POSTHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/667407949/1000
 0
 1
 0
-Deleted file:/data/users/njain/hive5/hive5/build/test_dboutput_db
-Deleted file:/data/users/njain/hive5/hive5/contrib/derby.log
+Deleted file:/data/users/sdong/www/open-source-hive3/build/test_dboutput_db
+Deleted file:/data/users/sdong/www/open-source-hive3/contrib/derby.log
 PREHOOK: query: DROP TEMPORARY FUNCTION dboutput
 PREHOOK: type: DROPFUNCTION
 POSTHOOK: query: DROP TEMPORARY FUNCTION dboutput

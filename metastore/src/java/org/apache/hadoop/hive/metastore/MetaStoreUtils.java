@@ -455,20 +455,20 @@ public class MetaStoreUtils {
   public static Properties getSchema(
       org.apache.hadoop.hive.metastore.api.Table table) {
     return MetaStoreUtils.getSchema(table.getSd(), table.getSd(), table
-        .getParameters(), table.getTableName(), table.getPartitionKeys());
+        .getParameters(), table.getDbName(), table.getTableName(), table.getPartitionKeys());
   }
 
   public static Properties getSchema(
       org.apache.hadoop.hive.metastore.api.Partition part,
       org.apache.hadoop.hive.metastore.api.Table table) {
     return MetaStoreUtils.getSchema(part.getSd(), table.getSd(), table
-        .getParameters(), table.getTableName(), table.getPartitionKeys());
+        .getParameters(), table.getDbName(), table.getTableName(), table.getPartitionKeys());
   }
 
   public static Properties getSchema(
       org.apache.hadoop.hive.metastore.api.StorageDescriptor sd,
       org.apache.hadoop.hive.metastore.api.StorageDescriptor tblsd,
-      Map<String, String> parameters, String tableName,
+      Map<String, String> parameters, String databaseName, String tableName,
       List<FieldSchema> partitionKeys) {
     Properties schema = new Properties();
     String inputFormat = sd.getInputFormat();
@@ -487,9 +487,11 @@ public class MetaStoreUtils {
     schema.setProperty(
       org.apache.hadoop.hive.metastore.api.Constants.FILE_OUTPUT_FORMAT,
       outputFormat);
+
     schema.setProperty(
         org.apache.hadoop.hive.metastore.api.Constants.META_TABLE_NAME,
-        tableName);
+        databaseName + "." + tableName);
+
     if (sd.getLocation() != null) {
       schema.setProperty(
           org.apache.hadoop.hive.metastore.api.Constants.META_TABLE_LOCATION,

@@ -17,7 +17,7 @@ insert overwrite table dest32
 select count(1) from srcbucket
 POSTHOOK: type: QUERY
 ABSTRACT SYNTAX TREE:
-  (TOK_QUERY (TOK_FROM (TOK_TABREF srcbucket)) (TOK_INSERT (TOK_DESTINATION (TOK_TAB dest32)) (TOK_SELECT (TOK_SELEXPR (TOK_FUNCTION count 1)))))
+  (TOK_QUERY (TOK_FROM (TOK_TABREF (TOK_TABNAME srcbucket))) (TOK_INSERT (TOK_DESTINATION (TOK_TAB (TOK_TABNAME dest32))) (TOK_SELECT (TOK_SELEXPR (TOK_FUNCTION count 1)))))
 
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -68,7 +68,7 @@ STAGE PLANS:
                     input format: org.apache.hadoop.mapred.TextInputFormat
                     output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                     serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                    name: tst_dest32
+                    name: default.tst_dest32
 
   Stage: Stage-0
     Move Operator
@@ -78,7 +78,7 @@ STAGE PLANS:
               input format: org.apache.hadoop.mapred.TextInputFormat
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              name: tst_dest32
+              name: default.tst_dest32
 
   Stage: Stage-2
     Stats-Aggr Operator
@@ -98,10 +98,10 @@ POSTHOOK: Lineage: tst_dest32.a EXPRESSION [(srcbucket)srcbucket.null, ]
 PREHOOK: query: select * from tst_dest32
 PREHOOK: type: QUERY
 PREHOOK: Input: default@tst_dest32
-PREHOOK: Output: file:/tmp/nzhang/hive_2010-09-14_16-29-34_990_3499360845984372062/-mr-10000
+PREHOOK: Output: file:/tmp/sdong/hive_2011-02-10_15-55-25_816_8083027825061354059/-mr-10000
 POSTHOOK: query: select * from tst_dest32
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@tst_dest32
-POSTHOOK: Output: file:/tmp/nzhang/hive_2010-09-14_16-29-34_990_3499360845984372062/-mr-10000
+POSTHOOK: Output: file:/tmp/sdong/hive_2011-02-10_15-55-25_816_8083027825061354059/-mr-10000
 POSTHOOK: Lineage: tst_dest32.a EXPRESSION [(srcbucket)srcbucket.null, ]
 1000

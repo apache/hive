@@ -17,7 +17,7 @@ FROM (
 SELECT tmap.key, regexp_extract(tmap.value, 'val_(\\d+\\t\\d+)',1) WHERE tmap.key < 100
 POSTHOOK: type: QUERY
 ABSTRACT SYNTAX TREE:
-  (TOK_QUERY (TOK_FROM (TOK_SUBQUERY (TOK_QUERY (TOK_FROM (TOK_TABREF src)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_TRANSFORM (TOK_EXPLIST (. (TOK_TABLE_OR_COL src) key) (. (TOK_TABLE_OR_COL src) value) (+ 1 2) (+ 3 4)) TOK_SERDE TOK_RECORDWRITER '/bin/cat' TOK_SERDE TOK_RECORDREADER))) (TOK_CLUSTERBY (TOK_TABLE_OR_COL key)))) tmap)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (. (TOK_TABLE_OR_COL tmap) key)) (TOK_SELEXPR (TOK_FUNCTION regexp_extract (. (TOK_TABLE_OR_COL tmap) value) 'val_(\\d+\\t\\d+)' 1))) (TOK_WHERE (< (. (TOK_TABLE_OR_COL tmap) key) 100))))
+  (TOK_QUERY (TOK_FROM (TOK_SUBQUERY (TOK_QUERY (TOK_FROM (TOK_TABREF (TOK_TABNAME src))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_TRANSFORM (TOK_EXPLIST (. (TOK_TABLE_OR_COL src) key) (. (TOK_TABLE_OR_COL src) value) (+ 1 2) (+ 3 4)) TOK_SERDE TOK_RECORDWRITER '/bin/cat' TOK_SERDE TOK_RECORDREADER))) (TOK_CLUSTERBY (TOK_TABLE_OR_COL key)))) tmap)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (. (TOK_TABLE_OR_COL tmap) key)) (TOK_SELEXPR (TOK_FUNCTION regexp_extract (. (TOK_TABLE_OR_COL tmap) value) 'val_(\\d+\\t\\d+)' 1))) (TOK_WHERE (< (. (TOK_TABLE_OR_COL tmap) key) 100))))
 
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -69,9 +69,9 @@ STAGE PLANS:
                         type: string
       Needs Tagging: false
       Path -> Alias:
-        pfile:/data/users/nzhang/work/784/apache-hive/build/ql/test/data/warehouse/src [tmap:src]
+        pfile:/data/users/sdong/www/open-source-hive1/build/ql/test/data/warehouse/src [tmap:src]
       Path -> Partition:
-        pfile:/data/users/nzhang/work/784/apache-hive/build/ql/test/data/warehouse/src 
+        pfile:/data/users/sdong/www/open-source-hive1/build/ql/test/data/warehouse/src 
           Partition
             base file name: src
             input format: org.apache.hadoop.mapred.TextInputFormat
@@ -82,12 +82,12 @@ STAGE PLANS:
               columns.types string:string
               file.inputformat org.apache.hadoop.mapred.TextInputFormat
               file.outputformat org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-              location pfile:/data/users/nzhang/work/784/apache-hive/build/ql/test/data/warehouse/src
-              name src
+              location pfile:/data/users/sdong/www/open-source-hive1/build/ql/test/data/warehouse/src
+              name default.src
               serialization.ddl struct src { string key, string value}
               serialization.format 1
               serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              transient_lastDdlTime 1284504429
+              transient_lastDdlTime 1297378968
             serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
           
               input format: org.apache.hadoop.mapred.TextInputFormat
@@ -98,15 +98,15 @@ STAGE PLANS:
                 columns.types string:string
                 file.inputformat org.apache.hadoop.mapred.TextInputFormat
                 file.outputformat org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                location pfile:/data/users/nzhang/work/784/apache-hive/build/ql/test/data/warehouse/src
-                name src
+                location pfile:/data/users/sdong/www/open-source-hive1/build/ql/test/data/warehouse/src
+                name default.src
                 serialization.ddl struct src { string key, string value}
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                transient_lastDdlTime 1284504429
+                transient_lastDdlTime 1297378968
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              name: src
-            name: src
+              name: default.src
+            name: default.src
       Reduce Operator Tree:
         Extract
           Filter Operator
@@ -124,9 +124,9 @@ STAGE PLANS:
               File Output Operator
                 compressed: false
                 GlobalTableId: 0
-                directory: file:/tmp/nzhang/hive_2010-09-14_17-22-34_668_2056813096308329710/-ext-10001
+                directory: file:/tmp/sdong/hive_2011-02-10_17-01-39_424_6724088978945525837/-ext-10001
                 NumFilesPerFileSink: 1
-                Stats Publishing Key Prefix: file:/tmp/nzhang/hive_2010-09-14_17-22-34_668_2056813096308329710/-ext-10001/
+                Stats Publishing Key Prefix: file:/tmp/sdong/hive_2011-02-10_17-01-39_424_6724088978945525837/-ext-10001/
                 table:
                     input format: org.apache.hadoop.mapred.TextInputFormat
                     output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
@@ -152,7 +152,7 @@ PREHOOK: query: FROM (
 SELECT tmap.key, regexp_extract(tmap.value, 'val_(\\d+\\t\\d+)',1) WHERE tmap.key < 100
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/tmp/nzhang/hive_2010-09-14_17-22-34_791_2473896929847962683/-mr-10000
+PREHOOK: Output: file:/tmp/sdong/hive_2011-02-10_17-01-39_518_2112543687006032682/-mr-10000
 POSTHOOK: query: FROM (
   FROM src
   SELECT TRANSFORM(src.key, src.value, 1+2, 3+4)
@@ -162,7 +162,7 @@ POSTHOOK: query: FROM (
 SELECT tmap.key, regexp_extract(tmap.value, 'val_(\\d+\\t\\d+)',1) WHERE tmap.key < 100
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: file:/tmp/nzhang/hive_2010-09-14_17-22-34_791_2473896929847962683/-mr-10000
+POSTHOOK: Output: file:/tmp/sdong/hive_2011-02-10_17-01-39_518_2112543687006032682/-mr-10000
 0	0	3
 0	0	3
 0	0	3
@@ -266,7 +266,7 @@ FROM (
 SELECT tmap.key, regexp_extract(tmap.value, 'val_(\\d+\\t\\d+)') WHERE tmap.key < 100
 POSTHOOK: type: QUERY
 ABSTRACT SYNTAX TREE:
-  (TOK_QUERY (TOK_FROM (TOK_SUBQUERY (TOK_QUERY (TOK_FROM (TOK_TABREF src)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_TRANSFORM (TOK_EXPLIST (. (TOK_TABLE_OR_COL src) key) (. (TOK_TABLE_OR_COL src) value) (+ 1 2) (+ 3 4)) TOK_SERDE TOK_RECORDWRITER '/bin/cat' TOK_SERDE TOK_RECORDREADER))) (TOK_CLUSTERBY (TOK_TABLE_OR_COL key)))) tmap)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (. (TOK_TABLE_OR_COL tmap) key)) (TOK_SELEXPR (TOK_FUNCTION regexp_extract (. (TOK_TABLE_OR_COL tmap) value) 'val_(\\d+\\t\\d+)'))) (TOK_WHERE (< (. (TOK_TABLE_OR_COL tmap) key) 100))))
+  (TOK_QUERY (TOK_FROM (TOK_SUBQUERY (TOK_QUERY (TOK_FROM (TOK_TABREF (TOK_TABNAME src))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_TRANSFORM (TOK_EXPLIST (. (TOK_TABLE_OR_COL src) key) (. (TOK_TABLE_OR_COL src) value) (+ 1 2) (+ 3 4)) TOK_SERDE TOK_RECORDWRITER '/bin/cat' TOK_SERDE TOK_RECORDREADER))) (TOK_CLUSTERBY (TOK_TABLE_OR_COL key)))) tmap)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (. (TOK_TABLE_OR_COL tmap) key)) (TOK_SELEXPR (TOK_FUNCTION regexp_extract (. (TOK_TABLE_OR_COL tmap) value) 'val_(\\d+\\t\\d+)'))) (TOK_WHERE (< (. (TOK_TABLE_OR_COL tmap) key) 100))))
 
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -318,9 +318,9 @@ STAGE PLANS:
                         type: string
       Needs Tagging: false
       Path -> Alias:
-        pfile:/data/users/nzhang/work/784/apache-hive/build/ql/test/data/warehouse/src [tmap:src]
+        pfile:/data/users/sdong/www/open-source-hive1/build/ql/test/data/warehouse/src [tmap:src]
       Path -> Partition:
-        pfile:/data/users/nzhang/work/784/apache-hive/build/ql/test/data/warehouse/src 
+        pfile:/data/users/sdong/www/open-source-hive1/build/ql/test/data/warehouse/src 
           Partition
             base file name: src
             input format: org.apache.hadoop.mapred.TextInputFormat
@@ -331,12 +331,12 @@ STAGE PLANS:
               columns.types string:string
               file.inputformat org.apache.hadoop.mapred.TextInputFormat
               file.outputformat org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-              location pfile:/data/users/nzhang/work/784/apache-hive/build/ql/test/data/warehouse/src
-              name src
+              location pfile:/data/users/sdong/www/open-source-hive1/build/ql/test/data/warehouse/src
+              name default.src
               serialization.ddl struct src { string key, string value}
               serialization.format 1
               serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              transient_lastDdlTime 1284504429
+              transient_lastDdlTime 1297378968
             serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
           
               input format: org.apache.hadoop.mapred.TextInputFormat
@@ -347,15 +347,15 @@ STAGE PLANS:
                 columns.types string:string
                 file.inputformat org.apache.hadoop.mapred.TextInputFormat
                 file.outputformat org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                location pfile:/data/users/nzhang/work/784/apache-hive/build/ql/test/data/warehouse/src
-                name src
+                location pfile:/data/users/sdong/www/open-source-hive1/build/ql/test/data/warehouse/src
+                name default.src
                 serialization.ddl struct src { string key, string value}
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                transient_lastDdlTime 1284504429
+                transient_lastDdlTime 1297378968
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              name: src
-            name: src
+              name: default.src
+            name: default.src
       Reduce Operator Tree:
         Extract
           Filter Operator
@@ -373,9 +373,9 @@ STAGE PLANS:
               File Output Operator
                 compressed: false
                 GlobalTableId: 0
-                directory: file:/tmp/nzhang/hive_2010-09-14_17-22-38_507_8896713942915944466/-ext-10001
+                directory: file:/tmp/sdong/hive_2011-02-10_17-01-43_012_4690012969555367930/-ext-10001
                 NumFilesPerFileSink: 1
-                Stats Publishing Key Prefix: file:/tmp/nzhang/hive_2010-09-14_17-22-38_507_8896713942915944466/-ext-10001/
+                Stats Publishing Key Prefix: file:/tmp/sdong/hive_2011-02-10_17-01-43_012_4690012969555367930/-ext-10001/
                 table:
                     input format: org.apache.hadoop.mapred.TextInputFormat
                     output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
@@ -401,7 +401,7 @@ PREHOOK: query: FROM (
 SELECT tmap.key, regexp_extract(tmap.value, 'val_(\\d+\\t\\d+)') WHERE tmap.key < 100
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/tmp/nzhang/hive_2010-09-14_17-22-38_622_4580748835136954647/-mr-10000
+PREHOOK: Output: file:/tmp/sdong/hive_2011-02-10_17-01-43_099_3379262351848426372/-mr-10000
 POSTHOOK: query: FROM (
   FROM src
   SELECT TRANSFORM(src.key, src.value, 1+2, 3+4)
@@ -411,7 +411,7 @@ POSTHOOK: query: FROM (
 SELECT tmap.key, regexp_extract(tmap.value, 'val_(\\d+\\t\\d+)') WHERE tmap.key < 100
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: file:/tmp/nzhang/hive_2010-09-14_17-22-38_622_4580748835136954647/-mr-10000
+POSTHOOK: Output: file:/tmp/sdong/hive_2011-02-10_17-01-43_099_3379262351848426372/-mr-10000
 0	0	3
 0	0	3
 0	0	3

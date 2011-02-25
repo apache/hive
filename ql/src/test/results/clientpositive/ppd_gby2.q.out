@@ -13,7 +13,7 @@ WHERE src1.c1 > 'val_200' AND (src1.c2 > 30 OR src1.c1 < 'val_400')
 GROUP BY src1.c2
 POSTHOOK: type: QUERY
 ABSTRACT SYNTAX TREE:
-  (TOK_QUERY (TOK_FROM (TOK_SUBQUERY (TOK_QUERY (TOK_FROM (TOK_TABREF src)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (. (TOK_TABLE_OR_COL src) value) c1) (TOK_SELEXPR (TOK_FUNCTION count (. (TOK_TABLE_OR_COL src) key)) c2)) (TOK_WHERE (> (. (TOK_TABLE_OR_COL src) value) 'val_10')) (TOK_GROUPBY (. (TOK_TABLE_OR_COL src) value)))) src1)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_FUNCTION max (. (TOK_TABLE_OR_COL src1) c1))) (TOK_SELEXPR (. (TOK_TABLE_OR_COL src1) c2))) (TOK_WHERE (AND (> (. (TOK_TABLE_OR_COL src1) c1) 'val_200') (OR (> (. (TOK_TABLE_OR_COL src1) c2) 30) (< (. (TOK_TABLE_OR_COL src1) c1) 'val_400')))) (TOK_GROUPBY (. (TOK_TABLE_OR_COL src1) c2))))
+  (TOK_QUERY (TOK_FROM (TOK_SUBQUERY (TOK_QUERY (TOK_FROM (TOK_TABREF (TOK_TABNAME src))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (. (TOK_TABLE_OR_COL src) value) c1) (TOK_SELEXPR (TOK_FUNCTION count (. (TOK_TABLE_OR_COL src) key)) c2)) (TOK_WHERE (> (. (TOK_TABLE_OR_COL src) value) 'val_10')) (TOK_GROUPBY (. (TOK_TABLE_OR_COL src) value)))) src1)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_FUNCTION max (. (TOK_TABLE_OR_COL src1) c1))) (TOK_SELEXPR (. (TOK_TABLE_OR_COL src1) c2))) (TOK_WHERE (AND (> (. (TOK_TABLE_OR_COL src1) c1) 'val_200') (OR (> (. (TOK_TABLE_OR_COL src1) c2) 30) (< (. (TOK_TABLE_OR_COL src1) c1) 'val_400')))) (TOK_GROUPBY (. (TOK_TABLE_OR_COL src1) c2))))
 
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -110,7 +110,7 @@ STAGE PLANS:
   Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/var/folders/6g/6grtCwPMEf4sqHUPpy6xQG9ByHg/-Tmp-/heyongqiang/hive_2010-07-29_13-23-26_197_7689399677363243197/-mr-10002 
+        file:/tmp/sdong/hive_2011-02-10_16-56-41_891_721328983378577073/-mr-10002 
             Reduce Output Operator
               key expressions:
                     expr: _col0
@@ -159,7 +159,7 @@ WHERE src1.c1 > 'val_200' AND (src1.c2 > 30 OR src1.c1 < 'val_400')
 GROUP BY src1.c2
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/var/folders/6g/6grtCwPMEf4sqHUPpy6xQG9ByHg/-Tmp-/heyongqiang/hive_2010-07-29_13-23-26_312_2994304887857298954/-mr-10000
+PREHOOK: Output: file:/tmp/sdong/hive_2011-02-10_16-56-41_988_2096999785618851738/-mr-10000
 POSTHOOK: query: SELECT max(src1.c1), src1.c2 
 FROM
 (SELECT src.value AS c1, count(src.key) AS c2 FROM src WHERE src.value > 'val_10' GROUP BY src.value) src1
@@ -167,7 +167,7 @@ WHERE src1.c1 > 'val_200' AND (src1.c2 > 30 OR src1.c1 < 'val_400')
 GROUP BY src1.c2
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: file:/var/folders/6g/6grtCwPMEf4sqHUPpy6xQG9ByHg/-Tmp-/heyongqiang/hive_2010-07-29_13-23-26_312_2994304887857298954/-mr-10000
+POSTHOOK: Output: file:/tmp/sdong/hive_2011-02-10_16-56-41_988_2096999785618851738/-mr-10000
 val_4	1
 val_399	2
 val_396	3

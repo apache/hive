@@ -25,7 +25,7 @@ WHERE a.ds = '2008-04-08' AND
 ORDER BY a.key, a.value, a.ds, a.hr, b.key, b.value, b.ds, b.hr
 POSTHOOK: type: QUERY
 ABSTRACT SYNTAX TREE:
-  (TOK_QUERY (TOK_FROM (TOK_JOIN (TOK_TABREF srcpart a) (TOK_TABREF srcpart b) (= (. (TOK_TABLE_OR_COL a) key) (. (TOK_TABLE_OR_COL b) key)))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR TOK_ALLCOLREF)) (TOK_WHERE (AND (AND (= (. (TOK_TABLE_OR_COL a) ds) '2008-04-08') (= (. (TOK_TABLE_OR_COL b) ds) '2008-04-08')) (TOK_FUNCTION CASE (. (TOK_TABLE_OR_COL a) key) '27' TRUE '38' FALSE TOK_NULL))) (TOK_ORDERBY (TOK_TABSORTCOLNAMEASC (. (TOK_TABLE_OR_COL a) key)) (TOK_TABSORTCOLNAMEASC (. (TOK_TABLE_OR_COL a) value)) (TOK_TABSORTCOLNAMEASC (. (TOK_TABLE_OR_COL a) ds)) (TOK_TABSORTCOLNAMEASC (. (TOK_TABLE_OR_COL a) hr)) (TOK_TABSORTCOLNAMEASC (. (TOK_TABLE_OR_COL b) key)) (TOK_TABSORTCOLNAMEASC (. (TOK_TABLE_OR_COL b) value)) (TOK_TABSORTCOLNAMEASC (. (TOK_TABLE_OR_COL b) ds)) (TOK_TABSORTCOLNAMEASC (. (TOK_TABLE_OR_COL b) hr)))))
+  (TOK_QUERY (TOK_FROM (TOK_JOIN (TOK_TABREF (TOK_TABNAME srcpart) a) (TOK_TABREF (TOK_TABNAME srcpart) b) (= (. (TOK_TABLE_OR_COL a) key) (. (TOK_TABLE_OR_COL b) key)))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR TOK_ALLCOLREF)) (TOK_WHERE (AND (AND (= (. (TOK_TABLE_OR_COL a) ds) '2008-04-08') (= (. (TOK_TABLE_OR_COL b) ds) '2008-04-08')) (TOK_FUNCTION CASE (. (TOK_TABLE_OR_COL a) key) '27' TRUE '38' FALSE TOK_NULL))) (TOK_ORDERBY (TOK_TABSORTCOLNAMEASC (. (TOK_TABLE_OR_COL a) key)) (TOK_TABSORTCOLNAMEASC (. (TOK_TABLE_OR_COL a) value)) (TOK_TABSORTCOLNAMEASC (. (TOK_TABLE_OR_COL a) ds)) (TOK_TABSORTCOLNAMEASC (. (TOK_TABLE_OR_COL a) hr)) (TOK_TABSORTCOLNAMEASC (. (TOK_TABLE_OR_COL b) key)) (TOK_TABSORTCOLNAMEASC (. (TOK_TABLE_OR_COL b) value)) (TOK_TABSORTCOLNAMEASC (. (TOK_TABLE_OR_COL b) ds)) (TOK_TABSORTCOLNAMEASC (. (TOK_TABLE_OR_COL b) hr)))))
 
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -124,7 +124,7 @@ STAGE PLANS:
   Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/tmp/sdong/hive_2010-10-29_16-20-39_092_8167372794768737936/-mr-10002 
+        file:/tmp/sdong/hive_2011-02-10_16-57-34_795_6886645259044041600/-mr-10002 
             Reduce Output Operator
               key expressions:
                     expr: _col0
@@ -190,7 +190,7 @@ ORDER BY a.key, a.value, a.ds, a.hr, b.key, b.value, b.ds, b.hr
 PREHOOK: type: QUERY
 PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
 PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
-PREHOOK: Output: file:/tmp/sdong/hive_2010-10-29_16-20-39_271_3826610394362572122/-mr-10000
+PREHOOK: Output: file:/tmp/sdong/hive_2011-02-10_16-57-34_974_8461060314707067318/-mr-10000
 POSTHOOK: query: SELECT *
 FROM srcpart a JOIN srcpart b
 ON a.key = b.key
@@ -205,7 +205,7 @@ ORDER BY a.key, a.value, a.ds, a.hr, b.key, b.value, b.ds, b.hr
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
 POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
-POSTHOOK: Output: file:/tmp/sdong/hive_2010-10-29_16-20-39_271_3826610394362572122/-mr-10000
+POSTHOOK: Output: file:/tmp/sdong/hive_2011-02-10_16-57-34_974_8461060314707067318/-mr-10000
 27	val_27	2008-04-08	11	27	val_27	2008-04-08	11
 27	val_27	2008-04-08	11	27	val_27	2008-04-08	12
 27	val_27	2008-04-08	12	27	val_27	2008-04-08	11

@@ -30,7 +30,7 @@ FROM (SELECT t1.key, p1.value
       ON (t2.key = p2.key)) j
 POSTHOOK: type: QUERY
 ABSTRACT SYNTAX TREE:
-  (TOK_QUERY (TOK_FROM (TOK_SUBQUERY (TOK_UNION (TOK_QUERY (TOK_FROM (TOK_LEFTOUTERJOIN (TOK_TABREF src1 t1) (TOK_TABREF src p1) (= (. (TOK_TABLE_OR_COL t1) key) (. (TOK_TABLE_OR_COL p1) key)))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (. (TOK_TABLE_OR_COL t1) key)) (TOK_SELEXPR (. (TOK_TABLE_OR_COL p1) value))))) (TOK_QUERY (TOK_FROM (TOK_LEFTOUTERJOIN (TOK_TABREF src1 t2) (TOK_TABREF src p2) (= (. (TOK_TABLE_OR_COL t2) key) (. (TOK_TABLE_OR_COL p2) key)))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (. (TOK_TABLE_OR_COL t2) key)) (TOK_SELEXPR (. (TOK_TABLE_OR_COL p2) value)))))) j)) (TOK_INSERT (TOK_DESTINATION (TOK_TAB dest_l1)) (TOK_SELECT (TOK_SELEXPR (TOK_ALLCOLREF j)))))
+  (TOK_QUERY (TOK_FROM (TOK_SUBQUERY (TOK_UNION (TOK_QUERY (TOK_FROM (TOK_LEFTOUTERJOIN (TOK_TABREF (TOK_TABNAME src1) t1) (TOK_TABREF (TOK_TABNAME src) p1) (= (. (TOK_TABLE_OR_COL t1) key) (. (TOK_TABLE_OR_COL p1) key)))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (. (TOK_TABLE_OR_COL t1) key)) (TOK_SELEXPR (. (TOK_TABLE_OR_COL p1) value))))) (TOK_QUERY (TOK_FROM (TOK_LEFTOUTERJOIN (TOK_TABREF (TOK_TABNAME src1) t2) (TOK_TABREF (TOK_TABNAME src) p2) (= (. (TOK_TABLE_OR_COL t2) key) (. (TOK_TABLE_OR_COL p2) key)))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (. (TOK_TABLE_OR_COL t2) key)) (TOK_SELEXPR (. (TOK_TABLE_OR_COL p2) value)))))) j)) (TOK_INSERT (TOK_DESTINATION (TOK_TAB (TOK_TABNAME dest_l1))) (TOK_SELECT (TOK_SELEXPR (TOK_ALLCOLREF (TOK_TABNAME j))))))
 
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -102,7 +102,7 @@ STAGE PLANS:
   Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/tmp/nzhang/hive_2010-09-14_16-52-08_102_663019916071850448/-mr-10002 
+        file:/tmp/sdong/hive_2011-02-10_16-30-08_914_3722712791189344403/-mr-10002 
           Union
             Select Operator
               expressions:
@@ -125,8 +125,8 @@ STAGE PLANS:
                       input format: org.apache.hadoop.mapred.TextInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                       serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                      name: dest_l1
-        file:/tmp/nzhang/hive_2010-09-14_16-52-08_102_663019916071850448/-mr-10004 
+                      name: default.dest_l1
+        file:/tmp/sdong/hive_2011-02-10_16-30-08_914_3722712791189344403/-mr-10004 
           Union
             Select Operator
               expressions:
@@ -149,7 +149,7 @@ STAGE PLANS:
                       input format: org.apache.hadoop.mapred.TextInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                       serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                      name: dest_l1
+                      name: default.dest_l1
 
   Stage: Stage-6
     Conditional Operator
@@ -158,7 +158,7 @@ STAGE PLANS:
     Move Operator
       files:
           hdfs directory: true
-          destination: pfile:/data/users/nzhang/work/784/apache-hive/build/ql/scratchdir/hive_2010-09-14_16-52-08_102_663019916071850448/-ext-10000
+          destination: pfile:/data/users/sdong/www/open-source-hive1/build/ql/scratchdir/hive_2011-02-10_16-30-08_914_3722712791189344403/-ext-10000
 
   Stage: Stage-0
     Move Operator
@@ -168,7 +168,7 @@ STAGE PLANS:
               input format: org.apache.hadoop.mapred.TextInputFormat
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              name: dest_l1
+              name: default.dest_l1
 
   Stage: Stage-3
     Stats-Aggr Operator
@@ -176,7 +176,7 @@ STAGE PLANS:
   Stage: Stage-4
     Map Reduce
       Alias -> Map Operator Tree:
-        pfile:/data/users/nzhang/work/784/apache-hive/build/ql/scratchdir/hive_2010-09-14_16-52-08_102_663019916071850448/-ext-10003 
+        pfile:/data/users/sdong/www/open-source-hive1/build/ql/scratchdir/hive_2011-02-10_16-30-08_914_3722712791189344403/-ext-10003 
             File Output Operator
               compressed: false
               GlobalTableId: 0
@@ -184,7 +184,7 @@ STAGE PLANS:
                   input format: org.apache.hadoop.mapred.TextInputFormat
                   output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                   serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                  name: dest_l1
+                  name: default.dest_l1
 
   Stage: Stage-7
     Map Reduce

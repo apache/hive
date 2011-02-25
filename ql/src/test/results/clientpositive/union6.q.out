@@ -22,7 +22,7 @@ insert overwrite table tmptable
                                             select s2.key as key, s2.value as value from src1 s2) unionsrc
 POSTHOOK: type: QUERY
 ABSTRACT SYNTAX TREE:
-  (TOK_QUERY (TOK_FROM (TOK_SUBQUERY (TOK_UNION (TOK_QUERY (TOK_FROM (TOK_TABREF src s1)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR 'tst1' key) (TOK_SELEXPR (TOK_FUNCTION TOK_STRING (TOK_FUNCTION count 1)) value)))) (TOK_QUERY (TOK_FROM (TOK_TABREF src1 s2)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (. (TOK_TABLE_OR_COL s2) key) key) (TOK_SELEXPR (. (TOK_TABLE_OR_COL s2) value) value))))) unionsrc)) (TOK_INSERT (TOK_DESTINATION (TOK_TAB tmptable)) (TOK_SELECT (TOK_SELEXPR (. (TOK_TABLE_OR_COL unionsrc) key)) (TOK_SELEXPR (. (TOK_TABLE_OR_COL unionsrc) value)))))
+  (TOK_QUERY (TOK_FROM (TOK_SUBQUERY (TOK_UNION (TOK_QUERY (TOK_FROM (TOK_TABREF (TOK_TABNAME src) s1)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR 'tst1' key) (TOK_SELEXPR (TOK_FUNCTION TOK_STRING (TOK_FUNCTION count 1)) value)))) (TOK_QUERY (TOK_FROM (TOK_TABREF (TOK_TABNAME src1) s2)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (. (TOK_TABLE_OR_COL s2) key) key) (TOK_SELEXPR (. (TOK_TABLE_OR_COL s2) value) value))))) unionsrc)) (TOK_INSERT (TOK_DESTINATION (TOK_TAB (TOK_TABNAME tmptable))) (TOK_SELECT (TOK_SELEXPR (. (TOK_TABLE_OR_COL unionsrc) key)) (TOK_SELEXPR (. (TOK_TABLE_OR_COL unionsrc) value)))))
 
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -78,7 +78,7 @@ STAGE PLANS:
   Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/tmp/nzhang/hive_2010-09-14_18-21-50_637_3032457585026659835/-mr-10002 
+        file:/tmp/sdong/hive_2011-02-10_17-52-46_559_910674796929230613/-mr-10002 
           Union
             Select Operator
               expressions:
@@ -94,8 +94,8 @@ STAGE PLANS:
                     input format: org.apache.hadoop.mapred.TextInputFormat
                     output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                     serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                    name: tmptable
-        file:/tmp/nzhang/hive_2010-09-14_18-21-50_637_3032457585026659835/-mr-10004 
+                    name: default.tmptable
+        file:/tmp/sdong/hive_2011-02-10_17-52-46_559_910674796929230613/-mr-10004 
           Union
             Select Operator
               expressions:
@@ -111,7 +111,7 @@ STAGE PLANS:
                     input format: org.apache.hadoop.mapred.TextInputFormat
                     output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                     serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                    name: tmptable
+                    name: default.tmptable
 
   Stage: Stage-6
     Conditional Operator
@@ -120,7 +120,7 @@ STAGE PLANS:
     Move Operator
       files:
           hdfs directory: true
-          destination: pfile:/data/users/nzhang/work/784/apache-hive/build/ql/scratchdir/hive_2010-09-14_18-21-50_637_3032457585026659835/-ext-10000
+          destination: pfile:/data/users/sdong/www/open-source-hive1/build/ql/scratchdir/hive_2011-02-10_17-52-46_559_910674796929230613/-ext-10000
 
   Stage: Stage-0
     Move Operator
@@ -130,7 +130,7 @@ STAGE PLANS:
               input format: org.apache.hadoop.mapred.TextInputFormat
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              name: tmptable
+              name: default.tmptable
 
   Stage: Stage-3
     Stats-Aggr Operator
@@ -138,7 +138,7 @@ STAGE PLANS:
   Stage: Stage-4
     Map Reduce
       Alias -> Map Operator Tree:
-        pfile:/data/users/nzhang/work/784/apache-hive/build/ql/scratchdir/hive_2010-09-14_18-21-50_637_3032457585026659835/-ext-10003 
+        pfile:/data/users/sdong/www/open-source-hive1/build/ql/scratchdir/hive_2011-02-10_17-52-46_559_910674796929230613/-ext-10003 
             File Output Operator
               compressed: false
               GlobalTableId: 0
@@ -146,7 +146,7 @@ STAGE PLANS:
                   input format: org.apache.hadoop.mapred.TextInputFormat
                   output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                   serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                  name: tmptable
+                  name: default.tmptable
 
   Stage: Stage-7
     Map Reduce
@@ -190,11 +190,11 @@ POSTHOOK: Lineage: tmptable.value EXPRESSION [(src)s1.null, (src1)s2.FieldSchema
 PREHOOK: query: select * from tmptable x sort by x.key, x.value
 PREHOOK: type: QUERY
 PREHOOK: Input: default@tmptable
-PREHOOK: Output: file:/tmp/nzhang/hive_2010-09-14_18-22-07_181_1811819841284617502/-mr-10000
+PREHOOK: Output: file:/tmp/sdong/hive_2011-02-10_17-52-58_699_4520080058177751609/-mr-10000
 POSTHOOK: query: select * from tmptable x sort by x.key, x.value
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@tmptable
-POSTHOOK: Output: file:/tmp/nzhang/hive_2010-09-14_18-22-07_181_1811819841284617502/-mr-10000
+POSTHOOK: Output: file:/tmp/sdong/hive_2011-02-10_17-52-58_699_4520080058177751609/-mr-10000
 POSTHOOK: Lineage: tmptable.key EXPRESSION [(src1)s2.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: tmptable.value EXPRESSION [(src)s1.null, (src1)s2.FieldSchema(name:value, type:string, comment:default), ]
 	

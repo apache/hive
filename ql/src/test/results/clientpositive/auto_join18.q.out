@@ -25,7 +25,7 @@ POSTHOOK: query: explain
  ON (a.key = b.key)
 POSTHOOK: type: QUERY
 ABSTRACT SYNTAX TREE:
-  (TOK_QUERY (TOK_FROM (TOK_FULLOUTERJOIN (TOK_SUBQUERY (TOK_QUERY (TOK_FROM (TOK_TABREF src src1)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (. (TOK_TABLE_OR_COL src1) key) key) (TOK_SELEXPR (TOK_FUNCTION count (. (TOK_TABLE_OR_COL src1) value)) value)) (TOK_GROUPBY (. (TOK_TABLE_OR_COL src1) key)))) a) (TOK_SUBQUERY (TOK_QUERY (TOK_FROM (TOK_TABREF src1 src2)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (. (TOK_TABLE_OR_COL src2) key) key) (TOK_SELEXPR (TOK_FUNCTIONDI count (. (TOK_TABLE_OR_COL src2) value)) value)) (TOK_GROUPBY (. (TOK_TABLE_OR_COL src2) key)))) b) (= (. (TOK_TABLE_OR_COL a) key) (. (TOK_TABLE_OR_COL b) key)))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_FUNCTION sum (TOK_FUNCTION hash (. (TOK_TABLE_OR_COL a) key) (. (TOK_TABLE_OR_COL a) value) (. (TOK_TABLE_OR_COL b) key) (. (TOK_TABLE_OR_COL b) value)))))))
+  (TOK_QUERY (TOK_FROM (TOK_FULLOUTERJOIN (TOK_SUBQUERY (TOK_QUERY (TOK_FROM (TOK_TABREF (TOK_TABNAME src) src1)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (. (TOK_TABLE_OR_COL src1) key) key) (TOK_SELEXPR (TOK_FUNCTION count (. (TOK_TABLE_OR_COL src1) value)) value)) (TOK_GROUPBY (. (TOK_TABLE_OR_COL src1) key)))) a) (TOK_SUBQUERY (TOK_QUERY (TOK_FROM (TOK_TABREF (TOK_TABNAME src1) src2)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (. (TOK_TABLE_OR_COL src2) key) key) (TOK_SELEXPR (TOK_FUNCTIONDI count (. (TOK_TABLE_OR_COL src2) value)) value)) (TOK_GROUPBY (. (TOK_TABLE_OR_COL src2) key)))) b) (= (. (TOK_TABLE_OR_COL a) key) (. (TOK_TABLE_OR_COL b) key)))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_FUNCTION sum (TOK_FUNCTION hash (. (TOK_TABLE_OR_COL a) key) (. (TOK_TABLE_OR_COL a) value) (. (TOK_TABLE_OR_COL b) key) (. (TOK_TABLE_OR_COL b) value)))))))
 
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -166,7 +166,7 @@ STAGE PLANS:
   Stage: Stage-3
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/tmp/liyintang/hive_2010-11-15_16-46-23_684_8729096496625979401/-mr-10003 
+        file:/tmp/sdong/hive_2011-02-10_01-14-54_534_398623067782139813/-mr-10003 
             Reduce Output Operator
               sort order: 
               tag: -1
@@ -269,7 +269,7 @@ PREHOOK: query: SELECT sum(hash(a.key, a.value, b.key, b.value))
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
 PREHOOK: Input: default@src1
-PREHOOK: Output: file:/tmp/liyintang/hive_2010-11-15_16-46-23_849_2497457649667386022/-mr-10000
+PREHOOK: Output: file:/tmp/sdong/hive_2011-02-10_01-14-54_655_7217977487914196830/-mr-10000
 POSTHOOK: query: SELECT sum(hash(a.key, a.value, b.key, b.value))
  FROM 
   (
@@ -284,5 +284,5 @@ POSTHOOK: query: SELECT sum(hash(a.key, a.value, b.key, b.value))
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 POSTHOOK: Input: default@src1
-POSTHOOK: Output: file:/tmp/liyintang/hive_2010-11-15_16-46-23_849_2497457649667386022/-mr-10000
+POSTHOOK: Output: file:/tmp/sdong/hive_2011-02-10_01-14-54_655_7217977487914196830/-mr-10000
 379685492277

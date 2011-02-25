@@ -153,10 +153,12 @@ public class PartitionPruner implements Transform {
       HiveConf conf, String alias,
       Map<String, PrunedPartitionList> prunedPartitionsMap) throws HiveException {
     LOG.trace("Started pruning partiton");
+    LOG.trace("dbname = " + tab.getDbName());
     LOG.trace("tabname = " + tab.getTableName());
     LOG.trace("prune Expression = " + prunerExpr);
 
-    String key = tab.getTableName() + ";";
+    String key = tab.getDbName() + "." + tab.getTableName() + ";";
+
     if (prunerExpr != null) {
       key = key + prunerExpr.getExprString();
     }

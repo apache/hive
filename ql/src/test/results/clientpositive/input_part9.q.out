@@ -5,7 +5,7 @@ POSTHOOK: query: EXPLAIN EXTENDED
 SELECT x.* FROM SRCPART x WHERE key IS NOT NULL AND ds = '2008-04-08' order by x.key, x.hr
 POSTHOOK: type: QUERY
 ABSTRACT SYNTAX TREE:
-  (TOK_QUERY (TOK_FROM (TOK_TABREF SRCPART x)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_ALLCOLREF x))) (TOK_WHERE (AND (TOK_FUNCTION TOK_ISNOTNULL (TOK_TABLE_OR_COL key)) (= (TOK_TABLE_OR_COL ds) '2008-04-08'))) (TOK_ORDERBY (TOK_TABSORTCOLNAMEASC (. (TOK_TABLE_OR_COL x) key)) (TOK_TABSORTCOLNAMEASC (. (TOK_TABLE_OR_COL x) hr)))))
+  (TOK_QUERY (TOK_FROM (TOK_TABREF (TOK_TABNAME SRCPART) x)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_ALLCOLREF (TOK_TABNAME x)))) (TOK_WHERE (AND (TOK_FUNCTION TOK_ISNOTNULL (TOK_TABLE_OR_COL key)) (= (TOK_TABLE_OR_COL ds) '2008-04-08'))) (TOK_ORDERBY (TOK_TABSORTCOLNAMEASC (. (TOK_TABLE_OR_COL x) key)) (TOK_TABSORTCOLNAMEASC (. (TOK_TABLE_OR_COL x) hr)))))
 
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -59,10 +59,10 @@ STAGE PLANS:
                           type: string
       Needs Tagging: false
       Path -> Alias:
-        pfile:/data/users/sdong/www/hive-trunk/build/ql/test/data/warehouse/srcpart/ds=2008-04-08/hr=11 [x]
-        pfile:/data/users/sdong/www/hive-trunk/build/ql/test/data/warehouse/srcpart/ds=2008-04-08/hr=12 [x]
+        pfile:/data/users/sdong/www/open-source-hive1/build/ql/test/data/warehouse/srcpart/ds=2008-04-08/hr=11 [x]
+        pfile:/data/users/sdong/www/open-source-hive1/build/ql/test/data/warehouse/srcpart/ds=2008-04-08/hr=12 [x]
       Path -> Partition:
-        pfile:/data/users/sdong/www/hive-trunk/build/ql/test/data/warehouse/srcpart/ds=2008-04-08/hr=11 
+        pfile:/data/users/sdong/www/open-source-hive1/build/ql/test/data/warehouse/srcpart/ds=2008-04-08/hr=11 
           Partition
             base file name: hr=11
             input format: org.apache.hadoop.mapred.TextInputFormat
@@ -76,13 +76,13 @@ STAGE PLANS:
               columns.types string:string
               file.inputformat org.apache.hadoop.mapred.TextInputFormat
               file.outputformat org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-              location pfile:/data/users/sdong/www/hive-trunk/build/ql/test/data/warehouse/srcpart
-              name srcpart
+              location pfile:/data/users/sdong/www/open-source-hive1/build/ql/test/data/warehouse/srcpart/ds=2008-04-08/hr=11
+              name default.srcpart
               partition_columns ds/hr
               serialization.ddl struct srcpart { string key, string value}
               serialization.format 1
               serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              transient_lastDdlTime 1288389287
+              transient_lastDdlTime 1297378962
             serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
           
               input format: org.apache.hadoop.mapred.TextInputFormat
@@ -93,17 +93,17 @@ STAGE PLANS:
                 columns.types string:string
                 file.inputformat org.apache.hadoop.mapred.TextInputFormat
                 file.outputformat org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                location pfile:/data/users/sdong/www/hive-trunk/build/ql/test/data/warehouse/srcpart
-                name srcpart
+                location pfile:/data/users/sdong/www/open-source-hive1/build/ql/test/data/warehouse/srcpart
+                name default.srcpart
                 partition_columns ds/hr
                 serialization.ddl struct srcpart { string key, string value}
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                transient_lastDdlTime 1288389287
+                transient_lastDdlTime 1297378962
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              name: srcpart
-            name: srcpart
-        pfile:/data/users/sdong/www/hive-trunk/build/ql/test/data/warehouse/srcpart/ds=2008-04-08/hr=12 
+              name: default.srcpart
+            name: default.srcpart
+        pfile:/data/users/sdong/www/open-source-hive1/build/ql/test/data/warehouse/srcpart/ds=2008-04-08/hr=12 
           Partition
             base file name: hr=12
             input format: org.apache.hadoop.mapred.TextInputFormat
@@ -117,13 +117,13 @@ STAGE PLANS:
               columns.types string:string
               file.inputformat org.apache.hadoop.mapred.TextInputFormat
               file.outputformat org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-              location pfile:/data/users/sdong/www/hive-trunk/build/ql/test/data/warehouse/srcpart
-              name srcpart
+              location pfile:/data/users/sdong/www/open-source-hive1/build/ql/test/data/warehouse/srcpart/ds=2008-04-08/hr=12
+              name default.srcpart
               partition_columns ds/hr
               serialization.ddl struct srcpart { string key, string value}
               serialization.format 1
               serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              transient_lastDdlTime 1288389287
+              transient_lastDdlTime 1297378962
             serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
           
               input format: org.apache.hadoop.mapred.TextInputFormat
@@ -134,24 +134,24 @@ STAGE PLANS:
                 columns.types string:string
                 file.inputformat org.apache.hadoop.mapred.TextInputFormat
                 file.outputformat org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                location pfile:/data/users/sdong/www/hive-trunk/build/ql/test/data/warehouse/srcpart
-                name srcpart
+                location pfile:/data/users/sdong/www/open-source-hive1/build/ql/test/data/warehouse/srcpart
+                name default.srcpart
                 partition_columns ds/hr
                 serialization.ddl struct srcpart { string key, string value}
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                transient_lastDdlTime 1288389287
+                transient_lastDdlTime 1297378962
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              name: srcpart
-            name: srcpart
+              name: default.srcpart
+            name: default.srcpart
       Reduce Operator Tree:
         Extract
           File Output Operator
             compressed: false
             GlobalTableId: 0
-            directory: file:/tmp/sdong/hive_2010-10-29_15-34-14_582_756431055398829157/-ext-10001
+            directory: file:/tmp/sdong/hive_2011-02-10_16-00-37_414_3110997122037603470/-ext-10001
             NumFilesPerFileSink: 1
-            Stats Publishing Key Prefix: file:/tmp/sdong/hive_2010-10-29_15-34-14_582_756431055398829157/-ext-10001/
+            Stats Publishing Key Prefix: file:/tmp/sdong/hive_2011-02-10_16-00-37_414_3110997122037603470/-ext-10001/
             table:
                 input format: org.apache.hadoop.mapred.TextInputFormat
                 output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
@@ -172,12 +172,12 @@ PREHOOK: query: SELECT x.* FROM SRCPART x WHERE key IS NOT NULL AND ds = '2008-0
 PREHOOK: type: QUERY
 PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
 PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
-PREHOOK: Output: file:/tmp/sdong/hive_2010-10-29_15-34-14_736_4847116234573522157/-mr-10000
+PREHOOK: Output: file:/tmp/sdong/hive_2011-02-10_16-00-37_541_281073495943344664/-mr-10000
 POSTHOOK: query: SELECT x.* FROM SRCPART x WHERE key IS NOT NULL AND ds = '2008-04-08' order by x.key, x.hr
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
 POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
-POSTHOOK: Output: file:/tmp/sdong/hive_2010-10-29_15-34-14_736_4847116234573522157/-mr-10000
+POSTHOOK: Output: file:/tmp/sdong/hive_2011-02-10_16-00-37_541_281073495943344664/-mr-10000
 0	val_0	2008-04-08	11
 0	val_0	2008-04-08	11
 0	val_0	2008-04-08	11

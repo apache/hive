@@ -12,7 +12,7 @@ POSTHOOK: type: DESCTABLE
 key	string	
 value	string	
 	 	 
-Detailed Table Information	Table(tableName:nzhang_part14, dbName:default, owner:njain, createTime:1289453285, lastAccessTime:0, retention:0, sd:StorageDescriptor(cols:[FieldSchema(name:key, type:string, comment:null), FieldSchema(name:value, type:string, comment:null)], location:pfile:/data/users/njain/hive1/hive1/build/ql/test/data/warehouse/nzhang_part14, inputFormat:org.apache.hadoop.mapred.TextInputFormat, outputFormat:org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat, compressed:false, numBuckets:-1, serdeInfo:SerDeInfo(name:null, serializationLib:org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe, parameters:{serialization.format=1}), bucketCols:[], sortCols:[], parameters:{}), partitionKeys:[FieldSchema(name:value, type:string, comment:null)], parameters:{transient_lastDdlTime=1289453285}, viewOriginalText:null, viewExpandedText:null, tableType:MANAGED_TABLE)	
+Detailed Table Information	Table(tableName:nzhang_part14, dbName:default, owner:sdong, createTime:1297384261, lastAccessTime:0, retention:0, sd:StorageDescriptor(cols:[FieldSchema(name:key, type:string, comment:null), FieldSchema(name:value, type:string, comment:null)], location:pfile:/data/users/sdong/www/open-source-hive1/build/ql/test/data/warehouse/nzhang_part14, inputFormat:org.apache.hadoop.mapred.TextInputFormat, outputFormat:org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat, compressed:false, numBuckets:-1, serdeInfo:SerDeInfo(name:null, serializationLib:org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe, parameters:{serialization.format=1}), bucketCols:[], sortCols:[], parameters:{}), partitionKeys:[FieldSchema(name:value, type:string, comment:null)], parameters:{transient_lastDdlTime=1297384261}, viewOriginalText:null, viewExpandedText:null, tableType:MANAGED_TABLE)	
 PREHOOK: query: explain
 insert overwrite table nzhang_part14 partition(value) 
 select key, value from (
@@ -34,7 +34,7 @@ select key, value from (
 ) T
 POSTHOOK: type: QUERY
 ABSTRACT SYNTAX TREE:
-  (TOK_QUERY (TOK_FROM (TOK_SUBQUERY (TOK_UNION (TOK_UNION (TOK_QUERY (TOK_FROM (TOK_TABREF src)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR 'k1' key) (TOK_SELEXPR (TOK_FUNCTION TOK_STRING TOK_NULL) value)) (TOK_LIMIT 2))) (TOK_QUERY (TOK_FROM (TOK_TABREF src)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR 'k2' key) (TOK_SELEXPR '' value)) (TOK_LIMIT 2)))) (TOK_QUERY (TOK_FROM (TOK_TABREF src)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR 'k3' key) (TOK_SELEXPR ' ' value)) (TOK_LIMIT 2)))) T)) (TOK_INSERT (TOK_DESTINATION (TOK_TAB nzhang_part14 (TOK_PARTSPEC (TOK_PARTVAL value)))) (TOK_SELECT (TOK_SELEXPR (TOK_TABLE_OR_COL key)) (TOK_SELEXPR (TOK_TABLE_OR_COL value)))))
+  (TOK_QUERY (TOK_FROM (TOK_SUBQUERY (TOK_UNION (TOK_UNION (TOK_QUERY (TOK_FROM (TOK_TABREF (TOK_TABNAME src))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR 'k1' key) (TOK_SELEXPR (TOK_FUNCTION TOK_STRING TOK_NULL) value)) (TOK_LIMIT 2))) (TOK_QUERY (TOK_FROM (TOK_TABREF (TOK_TABNAME src))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR 'k2' key) (TOK_SELEXPR '' value)) (TOK_LIMIT 2)))) (TOK_QUERY (TOK_FROM (TOK_TABREF (TOK_TABNAME src))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR 'k3' key) (TOK_SELEXPR ' ' value)) (TOK_LIMIT 2)))) T)) (TOK_INSERT (TOK_DESTINATION (TOK_TAB (TOK_TABNAME nzhang_part14) (TOK_PARTSPEC (TOK_PARTVAL value)))) (TOK_SELECT (TOK_SELEXPR (TOK_TABLE_OR_COL key)) (TOK_SELEXPR (TOK_TABLE_OR_COL value)))))
 
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -83,7 +83,7 @@ STAGE PLANS:
   Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/tmp/njain/hive_2010-11-10_21-28-06_008_7897968784053489362/-mr-10002 
+        file:/tmp/sdong/hive_2011-02-10_16-31-01_687_6566069687609794153/-mr-10002 
           Union
             Select Operator
               expressions:
@@ -99,8 +99,8 @@ STAGE PLANS:
                     input format: org.apache.hadoop.mapred.TextInputFormat
                     output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                     serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                    name: nzhang_part14
-        file:/tmp/njain/hive_2010-11-10_21-28-06_008_7897968784053489362/-mr-10004 
+                    name: default.nzhang_part14
+        file:/tmp/sdong/hive_2011-02-10_16-31-01_687_6566069687609794153/-mr-10004 
           Union
             Select Operator
               expressions:
@@ -116,8 +116,8 @@ STAGE PLANS:
                     input format: org.apache.hadoop.mapred.TextInputFormat
                     output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                     serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                    name: nzhang_part14
-        file:/tmp/njain/hive_2010-11-10_21-28-06_008_7897968784053489362/-mr-10005 
+                    name: default.nzhang_part14
+        file:/tmp/sdong/hive_2011-02-10_16-31-01_687_6566069687609794153/-mr-10005 
           Union
             Select Operator
               expressions:
@@ -133,7 +133,7 @@ STAGE PLANS:
                     input format: org.apache.hadoop.mapred.TextInputFormat
                     output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                     serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                    name: nzhang_part14
+                    name: default.nzhang_part14
 
   Stage: Stage-6
     Conditional Operator
@@ -142,7 +142,7 @@ STAGE PLANS:
     Move Operator
       files:
           hdfs directory: true
-          destination: pfile:/data/users/njain/hive1/hive1/build/ql/scratchdir/hive_2010-11-10_21-28-06_008_7897968784053489362/-ext-10000
+          destination: pfile:/data/users/sdong/www/open-source-hive1/build/ql/scratchdir/hive_2011-02-10_16-31-01_687_6566069687609794153/-ext-10000
 
   Stage: Stage-0
     Move Operator
@@ -154,7 +154,7 @@ STAGE PLANS:
               input format: org.apache.hadoop.mapred.TextInputFormat
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              name: nzhang_part14
+              name: default.nzhang_part14
 
   Stage: Stage-3
     Stats-Aggr Operator
@@ -162,7 +162,7 @@ STAGE PLANS:
   Stage: Stage-4
     Map Reduce
       Alias -> Map Operator Tree:
-        pfile:/data/users/njain/hive1/hive1/build/ql/scratchdir/hive_2010-11-10_21-28-06_008_7897968784053489362/-ext-10003 
+        pfile:/data/users/sdong/www/open-source-hive1/build/ql/scratchdir/hive_2011-02-10_16-31-01_687_6566069687609794153/-ext-10003 
             File Output Operator
               compressed: false
               GlobalTableId: 0
@@ -170,7 +170,7 @@ STAGE PLANS:
                   input format: org.apache.hadoop.mapred.TextInputFormat
                   output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                   serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                  name: nzhang_part14
+                  name: default.nzhang_part14
 
   Stage: Stage-7
     Map Reduce
@@ -275,12 +275,13 @@ order by key, value
 PREHOOK: type: QUERY
 PREHOOK: Input: default@nzhang_part14@value= 
 PREHOOK: Input: default@nzhang_part14@value=__HIVE_DEFAULT_PARTITION__
-PREHOOK: Output: file:/tmp/njain/hive_2010-11-10_21-28-37_957_3443086512551503511/-mr-10000
+PREHOOK: Output: file:/tmp/sdong/hive_2011-02-10_16-31-17_561_1922360594179733073/-mr-10000
 POSTHOOK: query: select * from nzhang_part14 where value <> 'a'
 order by key, value
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@nzhang_part14@value= 
 POSTHOOK: Input: default@nzhang_part14@value=__HIVE_DEFAULT_PARTITION__
+POSTHOOK: Output: file:/tmp/sdong/hive_2011-02-10_16-31-17_561_1922360594179733073/-mr-10000
 POSTHOOK: Lineage: nzhang_part14 PARTITION(value= ).key EXPRESSION []
 POSTHOOK: Lineage: nzhang_part14 PARTITION(value=__HIVE_DEFAULT_PARTITION__).key EXPRESSION []
 k1	__HIVE_DEFAULT_PARTITION__

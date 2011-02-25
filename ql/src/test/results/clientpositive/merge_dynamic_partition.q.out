@@ -35,7 +35,7 @@ POSTHOOK: query: explain
 insert overwrite table merge_dynamic_part partition (ds='2008-04-08', hr) select key, value, hr from srcpart_merge_dp where ds='2008-04-08'
 POSTHOOK: type: QUERY
 ABSTRACT SYNTAX TREE:
-  (TOK_QUERY (TOK_FROM (TOK_TABREF srcpart_merge_dp)) (TOK_INSERT (TOK_DESTINATION (TOK_TAB merge_dynamic_part (TOK_PARTSPEC (TOK_PARTVAL ds '2008-04-08') (TOK_PARTVAL hr)))) (TOK_SELECT (TOK_SELEXPR (TOK_TABLE_OR_COL key)) (TOK_SELEXPR (TOK_TABLE_OR_COL value)) (TOK_SELEXPR (TOK_TABLE_OR_COL hr))) (TOK_WHERE (= (TOK_TABLE_OR_COL ds) '2008-04-08'))))
+  (TOK_QUERY (TOK_FROM (TOK_TABREF (TOK_TABNAME srcpart_merge_dp))) (TOK_INSERT (TOK_DESTINATION (TOK_TAB (TOK_TABNAME merge_dynamic_part) (TOK_PARTSPEC (TOK_PARTVAL ds '2008-04-08') (TOK_PARTVAL hr)))) (TOK_SELECT (TOK_SELEXPR (TOK_TABLE_OR_COL key)) (TOK_SELEXPR (TOK_TABLE_OR_COL value)) (TOK_SELEXPR (TOK_TABLE_OR_COL hr))) (TOK_WHERE (= (TOK_TABLE_OR_COL ds) '2008-04-08'))))
 
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -69,7 +69,7 @@ STAGE PLANS:
                       input format: org.apache.hadoop.mapred.TextInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                       serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                      name: merge_dynamic_part
+                      name: default.merge_dynamic_part
 
   Stage: Stage-0
     Move Operator
@@ -82,7 +82,7 @@ STAGE PLANS:
               input format: org.apache.hadoop.mapred.TextInputFormat
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              name: merge_dynamic_part
+              name: default.merge_dynamic_part
 
   Stage: Stage-2
     Stats-Aggr Operator
@@ -101,10 +101,11 @@ POSTHOOK: Lineage: merge_dynamic_part PARTITION(ds=2008-04-08,hr=11).value SIMPL
 PREHOOK: query: select * from merge_dynamic_part order by key, value
 PREHOOK: type: QUERY
 PREHOOK: Input: default@merge_dynamic_part@ds=2008-04-08/hr=11
-PREHOOK: Output: file:/tmp/njain/hive_2010-11-10_21-43-53_940_2634395367591841528/-mr-10000
+PREHOOK: Output: file:/tmp/sdong/hive_2011-02-10_16-42-51_097_3481859672276894033/-mr-10000
 POSTHOOK: query: select * from merge_dynamic_part order by key, value
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@merge_dynamic_part@ds=2008-04-08/hr=11
+POSTHOOK: Output: file:/tmp/sdong/hive_2011-02-10_16-42-51_097_3481859672276894033/-mr-10000
 POSTHOOK: Lineage: merge_dynamic_part PARTITION(ds=2008-04-08,hr=11).key SIMPLE [(srcpart_merge_dp)srcpart_merge_dp.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: merge_dynamic_part PARTITION(ds=2008-04-08,hr=11).value SIMPLE [(srcpart_merge_dp)srcpart_merge_dp.FieldSchema(name:value, type:string, comment:default), ]
 0	val_0	2008-04-08	11
@@ -615,7 +616,7 @@ POSTHOOK: Lineage: merge_dynamic_part PARTITION(ds=2008-04-08,hr=11).key SIMPLE 
 POSTHOOK: Lineage: merge_dynamic_part PARTITION(ds=2008-04-08,hr=11).value SIMPLE [(srcpart_merge_dp)srcpart_merge_dp.FieldSchema(name:value, type:string, comment:default), ]
 tableName:merge_dynamic_part
 owner:null
-location:pfile:/data/users/njain/hive1/hive1/build/ql/test/data/warehouse/merge_dynamic_part
+location:pfile:/data/users/sdong/www/open-source-hive1/build/ql/test/data/warehouse/merge_dynamic_part
 inputformat:org.apache.hadoop.mapred.TextInputFormat
 outputformat:org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
 columns:struct columns { string key, string value}
@@ -626,7 +627,7 @@ totalFileSize:5812
 maxFileSize:1612
 minFileSize:1358
 lastAccessTime:0
-lastUpdateTime:1289454233000
+lastUpdateTime:1297384970000
 
 PREHOOK: query: explain
 insert overwrite table merge_dynamic_part partition (ds='2008-04-08', hr=11) select key, value from srcpart_merge_dp where ds='2008-04-08'
@@ -637,7 +638,7 @@ POSTHOOK: type: QUERY
 POSTHOOK: Lineage: merge_dynamic_part PARTITION(ds=2008-04-08,hr=11).key SIMPLE [(srcpart_merge_dp)srcpart_merge_dp.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: merge_dynamic_part PARTITION(ds=2008-04-08,hr=11).value SIMPLE [(srcpart_merge_dp)srcpart_merge_dp.FieldSchema(name:value, type:string, comment:default), ]
 ABSTRACT SYNTAX TREE:
-  (TOK_QUERY (TOK_FROM (TOK_TABREF srcpart_merge_dp)) (TOK_INSERT (TOK_DESTINATION (TOK_TAB merge_dynamic_part (TOK_PARTSPEC (TOK_PARTVAL ds '2008-04-08') (TOK_PARTVAL hr 11)))) (TOK_SELECT (TOK_SELEXPR (TOK_TABLE_OR_COL key)) (TOK_SELEXPR (TOK_TABLE_OR_COL value))) (TOK_WHERE (= (TOK_TABLE_OR_COL ds) '2008-04-08'))))
+  (TOK_QUERY (TOK_FROM (TOK_TABREF (TOK_TABNAME srcpart_merge_dp))) (TOK_INSERT (TOK_DESTINATION (TOK_TAB (TOK_TABNAME merge_dynamic_part) (TOK_PARTSPEC (TOK_PARTVAL ds '2008-04-08') (TOK_PARTVAL hr 11)))) (TOK_SELECT (TOK_SELEXPR (TOK_TABLE_OR_COL key)) (TOK_SELEXPR (TOK_TABLE_OR_COL value))) (TOK_WHERE (= (TOK_TABLE_OR_COL ds) '2008-04-08'))))
 
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -672,7 +673,7 @@ STAGE PLANS:
                       input format: org.apache.hadoop.mapred.TextInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                       serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                      name: merge_dynamic_part
+                      name: default.merge_dynamic_part
 
   Stage: Stage-5
     Conditional Operator
@@ -681,7 +682,7 @@ STAGE PLANS:
     Move Operator
       files:
           hdfs directory: true
-          destination: pfile:/data/users/njain/hive1/hive1/build/ql/scratchdir/hive_2010-11-10_21-43-59_740_209003009979096611/-ext-10000
+          destination: pfile:/data/users/sdong/www/open-source-hive1/build/ql/scratchdir/hive_2011-02-10_16-42-54_962_3779931759264102612/-ext-10000
 
   Stage: Stage-0
     Move Operator
@@ -694,7 +695,7 @@ STAGE PLANS:
               input format: org.apache.hadoop.mapred.TextInputFormat
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              name: merge_dynamic_part
+              name: default.merge_dynamic_part
 
   Stage: Stage-2
     Stats-Aggr Operator
@@ -702,7 +703,7 @@ STAGE PLANS:
   Stage: Stage-3
     Map Reduce
       Alias -> Map Operator Tree:
-        pfile:/data/users/njain/hive1/hive1/build/ql/scratchdir/hive_2010-11-10_21-43-59_740_209003009979096611/-ext-10002 
+        pfile:/data/users/sdong/www/open-source-hive1/build/ql/scratchdir/hive_2011-02-10_16-42-54_962_3779931759264102612/-ext-10002 
             File Output Operator
               compressed: false
               GlobalTableId: 0
@@ -710,7 +711,7 @@ STAGE PLANS:
                   input format: org.apache.hadoop.mapred.TextInputFormat
                   output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                   serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                  name: merge_dynamic_part
+                  name: default.merge_dynamic_part
 
 
 PREHOOK: query: insert overwrite table merge_dynamic_part partition (ds='2008-04-08', hr=11) select key, value from srcpart_merge_dp where ds='2008-04-08'
@@ -728,10 +729,11 @@ POSTHOOK: Lineage: merge_dynamic_part PARTITION(ds=2008-04-08,hr=11).value SIMPL
 PREHOOK: query: select * from merge_dynamic_part order by key, value
 PREHOOK: type: QUERY
 PREHOOK: Input: default@merge_dynamic_part@ds=2008-04-08/hr=11
-PREHOOK: Output: file:/tmp/njain/hive_2010-11-10_21-44-07_937_1316260934052203711/-mr-10000
+PREHOOK: Output: file:/tmp/sdong/hive_2011-02-10_16-43-00_180_8752940958373182523/-mr-10000
 POSTHOOK: query: select * from merge_dynamic_part order by key, value
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@merge_dynamic_part@ds=2008-04-08/hr=11
+POSTHOOK: Output: file:/tmp/sdong/hive_2011-02-10_16-43-00_180_8752940958373182523/-mr-10000
 POSTHOOK: Lineage: merge_dynamic_part PARTITION(ds=2008-04-08,hr=11).key SIMPLE [(srcpart_merge_dp)srcpart_merge_dp.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: merge_dynamic_part PARTITION(ds=2008-04-08,hr=11).value SIMPLE [(srcpart_merge_dp)srcpart_merge_dp.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: merge_dynamic_part PARTITION(ds=2008-04-08,hr=11).key SIMPLE [(srcpart_merge_dp)srcpart_merge_dp.FieldSchema(name:key, type:string, comment:default), ]
@@ -1246,7 +1248,7 @@ POSTHOOK: Lineage: merge_dynamic_part PARTITION(ds=2008-04-08,hr=11).key SIMPLE 
 POSTHOOK: Lineage: merge_dynamic_part PARTITION(ds=2008-04-08,hr=11).value SIMPLE [(srcpart_merge_dp)srcpart_merge_dp.FieldSchema(name:value, type:string, comment:default), ]
 tableName:merge_dynamic_part
 owner:null
-location:pfile:/data/users/njain/hive1/hive1/build/ql/test/data/warehouse/merge_dynamic_part
+location:pfile:/data/users/sdong/www/open-source-hive1/build/ql/test/data/warehouse/merge_dynamic_part
 inputformat:org.apache.hadoop.mapred.TextInputFormat
 outputformat:org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
 columns:struct columns { string key, string value}
@@ -1257,7 +1259,7 @@ totalFileSize:5812
 maxFileSize:5812
 minFileSize:5812
 lastAccessTime:0
-lastUpdateTime:1289454245000
+lastUpdateTime:1297384978000
 
 PREHOOK: query: explain
 insert overwrite table merge_dynamic_part partition (ds, hr) select key, value, ds, hr from srcpart_merge_dp where ds='2008-04-08' and hr=11
@@ -1270,7 +1272,7 @@ POSTHOOK: Lineage: merge_dynamic_part PARTITION(ds=2008-04-08,hr=11).value SIMPL
 POSTHOOK: Lineage: merge_dynamic_part PARTITION(ds=2008-04-08,hr=11).key SIMPLE [(srcpart_merge_dp)srcpart_merge_dp.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: merge_dynamic_part PARTITION(ds=2008-04-08,hr=11).value SIMPLE [(srcpart_merge_dp)srcpart_merge_dp.FieldSchema(name:value, type:string, comment:default), ]
 ABSTRACT SYNTAX TREE:
-  (TOK_QUERY (TOK_FROM (TOK_TABREF srcpart_merge_dp)) (TOK_INSERT (TOK_DESTINATION (TOK_TAB merge_dynamic_part (TOK_PARTSPEC (TOK_PARTVAL ds) (TOK_PARTVAL hr)))) (TOK_SELECT (TOK_SELEXPR (TOK_TABLE_OR_COL key)) (TOK_SELEXPR (TOK_TABLE_OR_COL value)) (TOK_SELEXPR (TOK_TABLE_OR_COL ds)) (TOK_SELEXPR (TOK_TABLE_OR_COL hr))) (TOK_WHERE (and (= (TOK_TABLE_OR_COL ds) '2008-04-08') (= (TOK_TABLE_OR_COL hr) 11)))))
+  (TOK_QUERY (TOK_FROM (TOK_TABREF (TOK_TABNAME srcpart_merge_dp))) (TOK_INSERT (TOK_DESTINATION (TOK_TAB (TOK_TABNAME merge_dynamic_part) (TOK_PARTSPEC (TOK_PARTVAL ds) (TOK_PARTVAL hr)))) (TOK_SELECT (TOK_SELEXPR (TOK_TABLE_OR_COL key)) (TOK_SELEXPR (TOK_TABLE_OR_COL value)) (TOK_SELEXPR (TOK_TABLE_OR_COL ds)) (TOK_SELEXPR (TOK_TABLE_OR_COL hr))) (TOK_WHERE (and (= (TOK_TABLE_OR_COL ds) '2008-04-08') (= (TOK_TABLE_OR_COL hr) 11)))))
 
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -1309,7 +1311,7 @@ STAGE PLANS:
                       input format: org.apache.hadoop.mapred.TextInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                       serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                      name: merge_dynamic_part
+                      name: default.merge_dynamic_part
 
   Stage: Stage-5
     Conditional Operator
@@ -1318,7 +1320,7 @@ STAGE PLANS:
     Move Operator
       files:
           hdfs directory: true
-          destination: pfile:/data/users/njain/hive1/hive1/build/ql/scratchdir/hive_2010-11-10_21-44-12_145_2577288331870219341/-ext-10000
+          destination: pfile:/data/users/sdong/www/open-source-hive1/build/ql/scratchdir/hive_2011-02-10_16-43-03_902_5071022234307010687/-ext-10000
 
   Stage: Stage-0
     Move Operator
@@ -1331,7 +1333,7 @@ STAGE PLANS:
               input format: org.apache.hadoop.mapred.TextInputFormat
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              name: merge_dynamic_part
+              name: default.merge_dynamic_part
 
   Stage: Stage-2
     Stats-Aggr Operator
@@ -1339,7 +1341,7 @@ STAGE PLANS:
   Stage: Stage-3
     Map Reduce
       Alias -> Map Operator Tree:
-        pfile:/data/users/njain/hive1/hive1/build/ql/scratchdir/hive_2010-11-10_21-44-12_145_2577288331870219341/-ext-10002 
+        pfile:/data/users/sdong/www/open-source-hive1/build/ql/scratchdir/hive_2011-02-10_16-43-03_902_5071022234307010687/-ext-10002 
             File Output Operator
               compressed: false
               GlobalTableId: 0
@@ -1347,7 +1349,7 @@ STAGE PLANS:
                   input format: org.apache.hadoop.mapred.TextInputFormat
                   output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                   serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                  name: merge_dynamic_part
+                  name: default.merge_dynamic_part
 
 
 PREHOOK: query: insert overwrite table merge_dynamic_part partition (ds, hr) select key, value, ds, hr from srcpart_merge_dp where ds='2008-04-08' and hr=11
@@ -1367,10 +1369,11 @@ POSTHOOK: Lineage: merge_dynamic_part PARTITION(ds=2008-04-08,hr=11).value SIMPL
 PREHOOK: query: select * from merge_dynamic_part order by key, value
 PREHOOK: type: QUERY
 PREHOOK: Input: default@merge_dynamic_part@ds=2008-04-08/hr=11
-PREHOOK: Output: file:/tmp/njain/hive_2010-11-10_21-44-21_897_7437398250505351661/-mr-10000
+PREHOOK: Output: file:/tmp/sdong/hive_2011-02-10_16-43-09_432_791379534466661926/-mr-10000
 POSTHOOK: query: select * from merge_dynamic_part order by key, value
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@merge_dynamic_part@ds=2008-04-08/hr=11
+POSTHOOK: Output: file:/tmp/sdong/hive_2011-02-10_16-43-09_432_791379534466661926/-mr-10000
 POSTHOOK: Lineage: merge_dynamic_part PARTITION(ds=2008-04-08,hr=11).key SIMPLE [(srcpart_merge_dp)srcpart_merge_dp.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: merge_dynamic_part PARTITION(ds=2008-04-08,hr=11).value SIMPLE [(srcpart_merge_dp)srcpart_merge_dp.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: merge_dynamic_part PARTITION(ds=2008-04-08,hr=11).key SIMPLE [(srcpart_merge_dp)srcpart_merge_dp.FieldSchema(name:key, type:string, comment:default), ]
@@ -1889,7 +1892,7 @@ POSTHOOK: Lineage: merge_dynamic_part PARTITION(ds=2008-04-08,hr=11).key SIMPLE 
 POSTHOOK: Lineage: merge_dynamic_part PARTITION(ds=2008-04-08,hr=11).value SIMPLE [(srcpart_merge_dp)srcpart_merge_dp.FieldSchema(name:value, type:string, comment:default), ]
 tableName:merge_dynamic_part
 owner:null
-location:pfile:/data/users/njain/hive1/hive1/build/ql/test/data/warehouse/merge_dynamic_part
+location:pfile:/data/users/sdong/www/open-source-hive1/build/ql/test/data/warehouse/merge_dynamic_part
 inputformat:org.apache.hadoop.mapred.TextInputFormat
 outputformat:org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
 columns:struct columns { string key, string value}
@@ -1900,5 +1903,5 @@ totalFileSize:5812
 maxFileSize:5812
 minFileSize:5812
 lastAccessTime:0
-lastUpdateTime:1289454258000
+lastUpdateTime:1297384987000
 

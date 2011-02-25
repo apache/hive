@@ -14,7 +14,7 @@ PREHOOK: type: QUERY
 POSTHOOK: query: explain select str_to_map('a=1,b=2,c=3',',','=')['a'] from src limit 3
 POSTHOOK: type: QUERY
 ABSTRACT SYNTAX TREE:
-  (TOK_QUERY (TOK_FROM (TOK_TABREF src)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR ([ (TOK_FUNCTION str_to_map 'a=1,b=2,c=3' ',' '=') 'a'))) (TOK_LIMIT 3)))
+  (TOK_QUERY (TOK_FROM (TOK_TABREF (TOK_TABNAME src))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR ([ (TOK_FUNCTION str_to_map 'a=1,b=2,c=3' ',' '=') 'a'))) (TOK_LIMIT 3)))
 
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -48,11 +48,11 @@ STAGE PLANS:
 PREHOOK: query: select str_to_map('a=1,b=2,c=3',',','=')['a'] from src limit 3
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/var/folders/6g/6grtCwPMEf4sqHUPpy6xQG9ByHg/-Tmp-/heyongqiang/hive_2010-11-18_16-11-47_081_185807984859506518/-mr-10000
+PREHOOK: Output: file:/tmp/sdong/hive_2011-02-10_17-23-41_630_3186988539263498425/-mr-10000
 POSTHOOK: query: select str_to_map('a=1,b=2,c=3',',','=')['a'] from src limit 3
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: file:/var/folders/6g/6grtCwPMEf4sqHUPpy6xQG9ByHg/-Tmp-/heyongqiang/hive_2010-11-18_16-11-47_081_185807984859506518/-mr-10000
+POSTHOOK: Output: file:/tmp/sdong/hive_2011-02-10_17-23-41_630_3186988539263498425/-mr-10000
 1
 1
 1
@@ -61,7 +61,7 @@ PREHOOK: type: QUERY
 POSTHOOK: query: explain select str_to_map('a:1,b:2,c:3') from src limit 3
 POSTHOOK: type: QUERY
 ABSTRACT SYNTAX TREE:
-  (TOK_QUERY (TOK_FROM (TOK_TABREF src)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_FUNCTION str_to_map 'a:1,b:2,c:3'))) (TOK_LIMIT 3)))
+  (TOK_QUERY (TOK_FROM (TOK_TABREF (TOK_TABNAME src))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_FUNCTION str_to_map 'a:1,b:2,c:3'))) (TOK_LIMIT 3)))
 
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -95,11 +95,11 @@ STAGE PLANS:
 PREHOOK: query: select str_to_map('a:1,b:2,c:3') from src limit 3
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/var/folders/6g/6grtCwPMEf4sqHUPpy6xQG9ByHg/-Tmp-/heyongqiang/hive_2010-11-18_16-11-53_276_628458177270710173/-mr-10000
+PREHOOK: Output: file:/tmp/sdong/hive_2011-02-10_17-23-45_084_2380690793062196557/-mr-10000
 POSTHOOK: query: select str_to_map('a:1,b:2,c:3') from src limit 3
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: file:/var/folders/6g/6grtCwPMEf4sqHUPpy6xQG9ByHg/-Tmp-/heyongqiang/hive_2010-11-18_16-11-53_276_628458177270710173/-mr-10000
+POSTHOOK: Output: file:/tmp/sdong/hive_2011-02-10_17-23-45_084_2380690793062196557/-mr-10000
 {"b":"2","c":"3","a":"1"}
 {"b":"2","c":"3","a":"1"}
 {"b":"2","c":"3","a":"1"}
@@ -108,7 +108,7 @@ PREHOOK: type: QUERY
 POSTHOOK: query: explain select str_to_map('a:1,b:2,c:3',',',':') from src limit 3
 POSTHOOK: type: QUERY
 ABSTRACT SYNTAX TREE:
-  (TOK_QUERY (TOK_FROM (TOK_TABREF src)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_FUNCTION str_to_map 'a:1,b:2,c:3' ',' ':'))) (TOK_LIMIT 3)))
+  (TOK_QUERY (TOK_FROM (TOK_TABREF (TOK_TABNAME src))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_FUNCTION str_to_map 'a:1,b:2,c:3' ',' ':'))) (TOK_LIMIT 3)))
 
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -142,11 +142,11 @@ STAGE PLANS:
 PREHOOK: query: select str_to_map('a:1,b:2,c:3',',',':') from src limit 3
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/var/folders/6g/6grtCwPMEf4sqHUPpy6xQG9ByHg/-Tmp-/heyongqiang/hive_2010-11-18_16-12-00_242_6299210516765000168/-mr-10000
+PREHOOK: Output: file:/tmp/sdong/hive_2011-02-10_17-23-48_380_2768579016303223096/-mr-10000
 POSTHOOK: query: select str_to_map('a:1,b:2,c:3',',',':') from src limit 3
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: file:/var/folders/6g/6grtCwPMEf4sqHUPpy6xQG9ByHg/-Tmp-/heyongqiang/hive_2010-11-18_16-12-00_242_6299210516765000168/-mr-10000
+POSTHOOK: Output: file:/tmp/sdong/hive_2011-02-10_17-23-48_380_2768579016303223096/-mr-10000
 {"b":"2","c":"3","a":"1"}
 {"b":"2","c":"3","a":"1"}
 {"b":"2","c":"3","a":"1"}
@@ -159,7 +159,7 @@ from (select transform('a:1,b:2,c:3') using 'cat' as (ss) from src) t
 limit 3
 POSTHOOK: type: QUERY
 ABSTRACT SYNTAX TREE:
-  (TOK_QUERY (TOK_FROM (TOK_SUBQUERY (TOK_QUERY (TOK_FROM (TOK_TABREF src)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_TRANSFORM (TOK_EXPLIST 'a:1,b:2,c:3') TOK_SERDE TOK_RECORDWRITER 'cat' TOK_SERDE TOK_RECORDREADER (TOK_ALIASLIST ss)))))) t)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR ([ (TOK_FUNCTION str_to_map (. (TOK_TABLE_OR_COL t) ss) ',' ':') 'a'))) (TOK_LIMIT 3)))
+  (TOK_QUERY (TOK_FROM (TOK_SUBQUERY (TOK_QUERY (TOK_FROM (TOK_TABREF (TOK_TABNAME src))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_TRANSFORM (TOK_EXPLIST 'a:1,b:2,c:3') TOK_SERDE TOK_RECORDWRITER 'cat' TOK_SERDE TOK_RECORDREADER (TOK_ALIASLIST ss)))))) t)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR ([ (TOK_FUNCTION str_to_map (. (TOK_TABLE_OR_COL t) ss) ',' ':') 'a'))) (TOK_LIMIT 3)))
 
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -205,13 +205,13 @@ from (select transform('a:1,b:2,c:3') using 'cat' as (ss) from src) t
 limit 3
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/var/folders/6g/6grtCwPMEf4sqHUPpy6xQG9ByHg/-Tmp-/heyongqiang/hive_2010-11-18_16-12-08_090_5560348263638743320/-mr-10000
+PREHOOK: Output: file:/tmp/sdong/hive_2011-02-10_17-23-51_684_230364883876108478/-mr-10000
 POSTHOOK: query: select str_to_map(t.ss,',',':')['a']
 from (select transform('a:1,b:2,c:3') using 'cat' as (ss) from src) t
 limit 3
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: file:/var/folders/6g/6grtCwPMEf4sqHUPpy6xQG9ByHg/-Tmp-/heyongqiang/hive_2010-11-18_16-12-08_090_5560348263638743320/-mr-10000
+POSTHOOK: Output: file:/tmp/sdong/hive_2011-02-10_17-23-51_684_230364883876108478/-mr-10000
 1
 1
 1
@@ -229,11 +229,11 @@ POSTHOOK: Output: default@tbl_s2m
 PREHOOK: query: select str_to_map(t,'_','=')['333'] from tbl_s2m
 PREHOOK: type: QUERY
 PREHOOK: Input: default@tbl_s2m
-PREHOOK: Output: file:/var/folders/6g/6grtCwPMEf4sqHUPpy6xQG9ByHg/-Tmp-/heyongqiang/hive_2010-11-18_16-12-26_274_4931967655402208603/-mr-10000
+PREHOOK: Output: file:/tmp/sdong/hive_2011-02-10_17-23-58_864_5131196835428716204/-mr-10000
 POSTHOOK: query: select str_to_map(t,'_','=')['333'] from tbl_s2m
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@tbl_s2m
-POSTHOOK: Output: file:/var/folders/6g/6grtCwPMEf4sqHUPpy6xQG9ByHg/-Tmp-/heyongqiang/hive_2010-11-18_16-12-26_274_4931967655402208603/-mr-10000
+POSTHOOK: Output: file:/tmp/sdong/hive_2011-02-10_17-23-58_864_5131196835428716204/-mr-10000
 444
 444
 444

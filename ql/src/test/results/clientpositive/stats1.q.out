@@ -18,7 +18,7 @@ FROM (SELECT 'tst1' AS key, cast(count(1) AS string) AS value FROM src s1
       SELECT s2.key AS key, s2.value AS value FROM src1 s2) unionsrc
 POSTHOOK: type: QUERY
 ABSTRACT SYNTAX TREE:
-  (TOK_QUERY (TOK_FROM (TOK_SUBQUERY (TOK_UNION (TOK_QUERY (TOK_FROM (TOK_TABREF src s1)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR 'tst1' key) (TOK_SELEXPR (TOK_FUNCTION TOK_STRING (TOK_FUNCTION count 1)) value)))) (TOK_QUERY (TOK_FROM (TOK_TABREF src1 s2)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (. (TOK_TABLE_OR_COL s2) key) key) (TOK_SELEXPR (. (TOK_TABLE_OR_COL s2) value) value))))) unionsrc)) (TOK_INSERT (TOK_DESTINATION (TOK_TAB tmptable)) (TOK_SELECT (TOK_SELEXPR (. (TOK_TABLE_OR_COL unionsrc) key)) (TOK_SELEXPR (. (TOK_TABLE_OR_COL unionsrc) value)))))
+  (TOK_QUERY (TOK_FROM (TOK_SUBQUERY (TOK_UNION (TOK_QUERY (TOK_FROM (TOK_TABREF (TOK_TABNAME src) s1)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR 'tst1' key) (TOK_SELEXPR (TOK_FUNCTION TOK_STRING (TOK_FUNCTION count 1)) value)))) (TOK_QUERY (TOK_FROM (TOK_TABREF (TOK_TABNAME src1) s2)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (. (TOK_TABLE_OR_COL s2) key) key) (TOK_SELEXPR (. (TOK_TABLE_OR_COL s2) value) value))))) unionsrc)) (TOK_INSERT (TOK_DESTINATION (TOK_TAB (TOK_TABNAME tmptable))) (TOK_SELECT (TOK_SELEXPR (. (TOK_TABLE_OR_COL unionsrc) key)) (TOK_SELEXPR (. (TOK_TABLE_OR_COL unionsrc) value)))))
 
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -71,7 +71,7 @@ STAGE PLANS:
   Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/tmp/thiruvel/hive_2010-10-11_12-40-43_920_7464404777180584999/-mr-10002 
+        file:/tmp/sdong/hive_2011-02-10_17-19-21_435_1722472580398861832/-mr-10002 
           Union
             Select Operator
               expressions:
@@ -87,8 +87,8 @@ STAGE PLANS:
                     input format: org.apache.hadoop.mapred.TextInputFormat
                     output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                     serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                    name: tmptable
-        file:/tmp/thiruvel/hive_2010-10-11_12-40-43_920_7464404777180584999/-mr-10003 
+                    name: default.tmptable
+        file:/tmp/sdong/hive_2011-02-10_17-19-21_435_1722472580398861832/-mr-10003 
           Union
             Select Operator
               expressions:
@@ -104,7 +104,7 @@ STAGE PLANS:
                     input format: org.apache.hadoop.mapred.TextInputFormat
                     output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                     serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                    name: tmptable
+                    name: default.tmptable
 
   Stage: Stage-0
     Move Operator
@@ -114,7 +114,7 @@ STAGE PLANS:
               input format: org.apache.hadoop.mapred.TextInputFormat
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              name: tmptable
+              name: default.tmptable
 
   Stage: Stage-3
     Stats-Aggr Operator
@@ -163,11 +163,11 @@ POSTHOOK: Lineage: tmptable.value EXPRESSION [(src)s1.null, (src1)s2.FieldSchema
 PREHOOK: query: SELECT * FROM tmptable x SORT BY x.key, x.value
 PREHOOK: type: QUERY
 PREHOOK: Input: default@tmptable
-PREHOOK: Output: file:/tmp/thiruvel/hive_2010-10-11_12-40-52_217_4617099280093332761/-mr-10000
+PREHOOK: Output: file:/tmp/sdong/hive_2011-02-10_17-19-34_061_491212136979249700/-mr-10000
 POSTHOOK: query: SELECT * FROM tmptable x SORT BY x.key, x.value
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@tmptable
-POSTHOOK: Output: file:/tmp/thiruvel/hive_2010-10-11_12-40-52_217_4617099280093332761/-mr-10000
+POSTHOOK: Output: file:/tmp/sdong/hive_2011-02-10_17-19-34_061_491212136979249700/-mr-10000
 POSTHOOK: Lineage: tmptable.key EXPRESSION [(src1)s2.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: tmptable.value EXPRESSION [(src)s1.null, (src1)s2.FieldSchema(name:value, type:string, comment:default), ]
 	
@@ -205,4 +205,4 @@ POSTHOOK: Lineage: tmptable.value EXPRESSION [(src)s1.null, (src1)s2.FieldSchema
 key	string	
 value	string	
 	 	 
-Detailed Table Information	Table(tableName:tmptable, dbName:default, owner:thiruvel, createTime:1286826043, lastAccessTime:0, retention:0, sd:StorageDescriptor(cols:[FieldSchema(name:key, type:string, comment:null), FieldSchema(name:value, type:string, comment:null)], location:pfile:/home/thiruvel/projects/hive/hive.unsecure/build/ql/test/data/warehouse/tmptable, inputFormat:org.apache.hadoop.mapred.TextInputFormat, outputFormat:org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat, compressed:false, numBuckets:-1, serdeInfo:SerDeInfo(name:null, serializationLib:org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe, parameters:{serialization.format=1}), bucketCols:[], sortCols:[], parameters:{}), partitionKeys:[], parameters:{numPartitions=0, numFiles=2, transient_lastDdlTime=1286826052, numRows=26, totalSize=225}, viewOriginalText:null, viewExpandedText:null, tableType:MANAGED_TABLE)	
+Detailed Table Information	Table(tableName:tmptable, dbName:default, owner:sdong, createTime:1297387161, lastAccessTime:0, retention:0, sd:StorageDescriptor(cols:[FieldSchema(name:key, type:string, comment:null), FieldSchema(name:value, type:string, comment:null)], location:pfile:/data/users/sdong/www/open-source-hive1/build/ql/test/data/warehouse/tmptable, inputFormat:org.apache.hadoop.mapred.TextInputFormat, outputFormat:org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat, compressed:false, numBuckets:-1, serdeInfo:SerDeInfo(name:null, serializationLib:org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe, parameters:{serialization.format=1}), bucketCols:[], sortCols:[], parameters:{}), partitionKeys:[], parameters:{numPartitions=0, numFiles=1, transient_lastDdlTime=1297387173, numRows=26, totalSize=225}, viewOriginalText:null, viewExpandedText:null, tableType:MANAGED_TABLE)	

@@ -20,7 +20,7 @@ POSTHOOK: query: explain
 select transform(key) using '/bin/cat' as key1 from nullscript
 POSTHOOK: type: QUERY
 ABSTRACT SYNTAX TREE:
-  (TOK_QUERY (TOK_FROM (TOK_TABREF nullscript)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_TRANSFORM (TOK_EXPLIST (TOK_TABLE_OR_COL key)) TOK_SERDE TOK_RECORDWRITER '/bin/cat' TOK_SERDE TOK_RECORDREADER (TOK_ALIASLIST key1))))))
+  (TOK_QUERY (TOK_FROM (TOK_TABREF (TOK_TABNAME nullscript))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_TRANSFORM (TOK_EXPLIST (TOK_TABLE_OR_COL key)) TOK_SERDE TOK_RECORDWRITER '/bin/cat' TOK_SERDE TOK_RECORDREADER (TOK_ALIASLIST key1))))))
 
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -58,11 +58,11 @@ STAGE PLANS:
 PREHOOK: query: select transform(key) using '/bin/cat' as key1 from nullscript
 PREHOOK: type: QUERY
 PREHOOK: Input: default@nullscript
-PREHOOK: Output: file:/tmp/jssarma/hive_2010-07-21_11-44-51_131_1687271560149359862/10000
+PREHOOK: Output: file:/tmp/sdong/hive_2011-02-10_16-48-52_197_7623127141434168915/-mr-10000
 POSTHOOK: query: select transform(key) using '/bin/cat' as key1 from nullscript
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@nullscript
-POSTHOOK: Output: file:/tmp/jssarma/hive_2010-07-21_11-44-51_131_1687271560149359862/10000
+POSTHOOK: Output: file:/tmp/sdong/hive_2011-02-10_16-48-52_197_7623127141434168915/-mr-10000
 238
 86
 311

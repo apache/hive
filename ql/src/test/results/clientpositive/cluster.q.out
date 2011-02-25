@@ -5,7 +5,7 @@ POSTHOOK: query: EXPLAIN
 SELECT * FROM SRC x where x.key = 10 CLUSTER BY x.key
 POSTHOOK: type: QUERY
 ABSTRACT SYNTAX TREE:
-  (TOK_QUERY (TOK_FROM (TOK_TABREF SRC x)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR TOK_ALLCOLREF)) (TOK_WHERE (= (. (TOK_TABLE_OR_COL x) key) 10)) (TOK_CLUSTERBY (. (TOK_TABLE_OR_COL x) key))))
+  (TOK_QUERY (TOK_FROM (TOK_TABREF (TOK_TABNAME SRC) x)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR TOK_ALLCOLREF)) (TOK_WHERE (= (. (TOK_TABLE_OR_COL x) key) 10)) (TOK_CLUSTERBY (. (TOK_TABLE_OR_COL x) key))))
 
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -64,11 +64,11 @@ STAGE PLANS:
 PREHOOK: query: SELECT * FROM SRC x where x.key = 10 CLUSTER BY x.key
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/var/folders/6g/6grtCwPMEf4sqHUPpy6xQG9ByHg/-Tmp-/heyongqiang/hive_2010-07-29_11-02-24_261_6437725192448955894/-mr-10000
+PREHOOK: Output: file:/tmp/sdong/hive_2011-02-10_01-39-00_308_3996892596871050805/-mr-10000
 POSTHOOK: query: SELECT * FROM SRC x where x.key = 10 CLUSTER BY x.key
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: file:/var/folders/6g/6grtCwPMEf4sqHUPpy6xQG9ByHg/-Tmp-/heyongqiang/hive_2010-07-29_11-02-24_261_6437725192448955894/-mr-10000
+POSTHOOK: Output: file:/tmp/sdong/hive_2011-02-10_01-39-00_308_3996892596871050805/-mr-10000
 10	val_10
 PREHOOK: query: EXPLAIN
 SELECT * FROM SRC x  where x.key = 20 CLUSTER BY key
@@ -77,7 +77,7 @@ POSTHOOK: query: EXPLAIN
 SELECT * FROM SRC x  where x.key = 20 CLUSTER BY key
 POSTHOOK: type: QUERY
 ABSTRACT SYNTAX TREE:
-  (TOK_QUERY (TOK_FROM (TOK_TABREF SRC x)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR TOK_ALLCOLREF)) (TOK_WHERE (= (. (TOK_TABLE_OR_COL x) key) 20)) (TOK_CLUSTERBY (TOK_TABLE_OR_COL key))))
+  (TOK_QUERY (TOK_FROM (TOK_TABREF (TOK_TABNAME SRC) x)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR TOK_ALLCOLREF)) (TOK_WHERE (= (. (TOK_TABLE_OR_COL x) key) 20)) (TOK_CLUSTERBY (TOK_TABLE_OR_COL key))))
 
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -136,11 +136,11 @@ STAGE PLANS:
 PREHOOK: query: SELECT * FROM SRC x where x.key = 20 CLUSTER BY key
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/var/folders/6g/6grtCwPMEf4sqHUPpy6xQG9ByHg/-Tmp-/heyongqiang/hive_2010-07-29_11-02-29_842_578607839779563869/-mr-10000
+PREHOOK: Output: file:/tmp/sdong/hive_2011-02-10_01-39-05_095_3989764442537175585/-mr-10000
 POSTHOOK: query: SELECT * FROM SRC x where x.key = 20 CLUSTER BY key
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: file:/var/folders/6g/6grtCwPMEf4sqHUPpy6xQG9ByHg/-Tmp-/heyongqiang/hive_2010-07-29_11-02-29_842_578607839779563869/-mr-10000
+POSTHOOK: Output: file:/tmp/sdong/hive_2011-02-10_01-39-05_095_3989764442537175585/-mr-10000
 20	val_20
 PREHOOK: query: EXPLAIN
 SELECT x.* FROM SRC x where x.key = 20 CLUSTER BY key
@@ -149,7 +149,7 @@ POSTHOOK: query: EXPLAIN
 SELECT x.* FROM SRC x where x.key = 20 CLUSTER BY key
 POSTHOOK: type: QUERY
 ABSTRACT SYNTAX TREE:
-  (TOK_QUERY (TOK_FROM (TOK_TABREF SRC x)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_ALLCOLREF x))) (TOK_WHERE (= (. (TOK_TABLE_OR_COL x) key) 20)) (TOK_CLUSTERBY (TOK_TABLE_OR_COL key))))
+  (TOK_QUERY (TOK_FROM (TOK_TABREF (TOK_TABNAME SRC) x)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_ALLCOLREF (TOK_TABNAME x)))) (TOK_WHERE (= (. (TOK_TABLE_OR_COL x) key) 20)) (TOK_CLUSTERBY (TOK_TABLE_OR_COL key))))
 
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -208,11 +208,11 @@ STAGE PLANS:
 PREHOOK: query: SELECT x.* FROM SRC x where x.key = 20 CLUSTER BY key
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/var/folders/6g/6grtCwPMEf4sqHUPpy6xQG9ByHg/-Tmp-/heyongqiang/hive_2010-07-29_11-02-34_215_6197686627919208530/-mr-10000
+PREHOOK: Output: file:/tmp/sdong/hive_2011-02-10_01-39-08_623_1909163536697384354/-mr-10000
 POSTHOOK: query: SELECT x.* FROM SRC x where x.key = 20 CLUSTER BY key
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: file:/var/folders/6g/6grtCwPMEf4sqHUPpy6xQG9ByHg/-Tmp-/heyongqiang/hive_2010-07-29_11-02-34_215_6197686627919208530/-mr-10000
+POSTHOOK: Output: file:/tmp/sdong/hive_2011-02-10_01-39-08_623_1909163536697384354/-mr-10000
 20	val_20
 PREHOOK: query: EXPLAIN
 SELECT x.*  FROM SRC x where x.key = 20 CLUSTER BY x.key
@@ -221,7 +221,7 @@ POSTHOOK: query: EXPLAIN
 SELECT x.*  FROM SRC x where x.key = 20 CLUSTER BY x.key
 POSTHOOK: type: QUERY
 ABSTRACT SYNTAX TREE:
-  (TOK_QUERY (TOK_FROM (TOK_TABREF SRC x)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_ALLCOLREF x))) (TOK_WHERE (= (. (TOK_TABLE_OR_COL x) key) 20)) (TOK_CLUSTERBY (. (TOK_TABLE_OR_COL x) key))))
+  (TOK_QUERY (TOK_FROM (TOK_TABREF (TOK_TABNAME SRC) x)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_ALLCOLREF (TOK_TABNAME x)))) (TOK_WHERE (= (. (TOK_TABLE_OR_COL x) key) 20)) (TOK_CLUSTERBY (. (TOK_TABLE_OR_COL x) key))))
 
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -280,11 +280,11 @@ STAGE PLANS:
 PREHOOK: query: SELECT x.*  FROM SRC x where x.key = 20 CLUSTER BY x.key
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/var/folders/6g/6grtCwPMEf4sqHUPpy6xQG9ByHg/-Tmp-/heyongqiang/hive_2010-07-29_11-02-38_139_3316356060320173122/-mr-10000
+PREHOOK: Output: file:/tmp/sdong/hive_2011-02-10_01-39-12_155_5678606790020408085/-mr-10000
 POSTHOOK: query: SELECT x.*  FROM SRC x where x.key = 20 CLUSTER BY x.key
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: file:/var/folders/6g/6grtCwPMEf4sqHUPpy6xQG9ByHg/-Tmp-/heyongqiang/hive_2010-07-29_11-02-38_139_3316356060320173122/-mr-10000
+POSTHOOK: Output: file:/tmp/sdong/hive_2011-02-10_01-39-12_155_5678606790020408085/-mr-10000
 20	val_20
 PREHOOK: query: EXPLAIN
 SELECT x.key, x.value as v1 FROM SRC x where x.key = 20 CLUSTER BY key
@@ -293,7 +293,7 @@ POSTHOOK: query: EXPLAIN
 SELECT x.key, x.value as v1 FROM SRC x where x.key = 20 CLUSTER BY key
 POSTHOOK: type: QUERY
 ABSTRACT SYNTAX TREE:
-  (TOK_QUERY (TOK_FROM (TOK_TABREF SRC x)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (. (TOK_TABLE_OR_COL x) key)) (TOK_SELEXPR (. (TOK_TABLE_OR_COL x) value) v1)) (TOK_WHERE (= (. (TOK_TABLE_OR_COL x) key) 20)) (TOK_CLUSTERBY (TOK_TABLE_OR_COL key))))
+  (TOK_QUERY (TOK_FROM (TOK_TABREF (TOK_TABNAME SRC) x)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (. (TOK_TABLE_OR_COL x) key)) (TOK_SELEXPR (. (TOK_TABLE_OR_COL x) value) v1)) (TOK_WHERE (= (. (TOK_TABLE_OR_COL x) key) 20)) (TOK_CLUSTERBY (TOK_TABLE_OR_COL key))))
 
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -352,11 +352,11 @@ STAGE PLANS:
 PREHOOK: query: SELECT x.key, x.value as v1 FROM SRC x where x.key = 20 CLUSTER BY key
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/var/folders/6g/6grtCwPMEf4sqHUPpy6xQG9ByHg/-Tmp-/heyongqiang/hive_2010-07-29_11-02-44_253_1539937897915785116/-mr-10000
+PREHOOK: Output: file:/tmp/sdong/hive_2011-02-10_01-39-15_632_3313925045921329153/-mr-10000
 POSTHOOK: query: SELECT x.key, x.value as v1 FROM SRC x where x.key = 20 CLUSTER BY key
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: file:/var/folders/6g/6grtCwPMEf4sqHUPpy6xQG9ByHg/-Tmp-/heyongqiang/hive_2010-07-29_11-02-44_253_1539937897915785116/-mr-10000
+POSTHOOK: Output: file:/tmp/sdong/hive_2011-02-10_01-39-15_632_3313925045921329153/-mr-10000
 20	val_20
 PREHOOK: query: EXPLAIN
 SELECT x.key, x.value as v1 FROM SRC x where x.key = 20 CLUSTER BY x.key
@@ -365,7 +365,7 @@ POSTHOOK: query: EXPLAIN
 SELECT x.key, x.value as v1 FROM SRC x where x.key = 20 CLUSTER BY x.key
 POSTHOOK: type: QUERY
 ABSTRACT SYNTAX TREE:
-  (TOK_QUERY (TOK_FROM (TOK_TABREF SRC x)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (. (TOK_TABLE_OR_COL x) key)) (TOK_SELEXPR (. (TOK_TABLE_OR_COL x) value) v1)) (TOK_WHERE (= (. (TOK_TABLE_OR_COL x) key) 20)) (TOK_CLUSTERBY (. (TOK_TABLE_OR_COL x) key))))
+  (TOK_QUERY (TOK_FROM (TOK_TABREF (TOK_TABNAME SRC) x)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (. (TOK_TABLE_OR_COL x) key)) (TOK_SELEXPR (. (TOK_TABLE_OR_COL x) value) v1)) (TOK_WHERE (= (. (TOK_TABLE_OR_COL x) key) 20)) (TOK_CLUSTERBY (. (TOK_TABLE_OR_COL x) key))))
 
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -424,11 +424,11 @@ STAGE PLANS:
 PREHOOK: query: SELECT x.key, x.value as v1 FROM SRC x where x.key = 20 CLUSTER BY x.key
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/var/folders/6g/6grtCwPMEf4sqHUPpy6xQG9ByHg/-Tmp-/heyongqiang/hive_2010-07-29_11-02-49_068_5172852982314475051/-mr-10000
+PREHOOK: Output: file:/tmp/sdong/hive_2011-02-10_01-39-19_114_1622685930107208593/-mr-10000
 POSTHOOK: query: SELECT x.key, x.value as v1 FROM SRC x where x.key = 20 CLUSTER BY x.key
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: file:/var/folders/6g/6grtCwPMEf4sqHUPpy6xQG9ByHg/-Tmp-/heyongqiang/hive_2010-07-29_11-02-49_068_5172852982314475051/-mr-10000
+POSTHOOK: Output: file:/tmp/sdong/hive_2011-02-10_01-39-19_114_1622685930107208593/-mr-10000
 20	val_20
 PREHOOK: query: EXPLAIN
 SELECT x.key, x.value as v1  FROM SRC x where x.key = 20 CLUSTER BY v1
@@ -437,7 +437,7 @@ POSTHOOK: query: EXPLAIN
 SELECT x.key, x.value as v1  FROM SRC x where x.key = 20 CLUSTER BY v1
 POSTHOOK: type: QUERY
 ABSTRACT SYNTAX TREE:
-  (TOK_QUERY (TOK_FROM (TOK_TABREF SRC x)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (. (TOK_TABLE_OR_COL x) key)) (TOK_SELEXPR (. (TOK_TABLE_OR_COL x) value) v1)) (TOK_WHERE (= (. (TOK_TABLE_OR_COL x) key) 20)) (TOK_CLUSTERBY (TOK_TABLE_OR_COL v1))))
+  (TOK_QUERY (TOK_FROM (TOK_TABREF (TOK_TABNAME SRC) x)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (. (TOK_TABLE_OR_COL x) key)) (TOK_SELEXPR (. (TOK_TABLE_OR_COL x) value) v1)) (TOK_WHERE (= (. (TOK_TABLE_OR_COL x) key) 20)) (TOK_CLUSTERBY (TOK_TABLE_OR_COL v1))))
 
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -496,11 +496,11 @@ STAGE PLANS:
 PREHOOK: query: SELECT x.key, x.value as v1  FROM SRC x where x.key = 20 CLUSTER BY v1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/var/folders/6g/6grtCwPMEf4sqHUPpy6xQG9ByHg/-Tmp-/heyongqiang/hive_2010-07-29_11-02-55_898_460454971604760187/-mr-10000
+PREHOOK: Output: file:/tmp/sdong/hive_2011-02-10_01-39-22_595_5329567143269229226/-mr-10000
 POSTHOOK: query: SELECT x.key, x.value as v1  FROM SRC x where x.key = 20 CLUSTER BY v1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: file:/var/folders/6g/6grtCwPMEf4sqHUPpy6xQG9ByHg/-Tmp-/heyongqiang/hive_2010-07-29_11-02-55_898_460454971604760187/-mr-10000
+POSTHOOK: Output: file:/tmp/sdong/hive_2011-02-10_01-39-22_595_5329567143269229226/-mr-10000
 20	val_20
 PREHOOK: query: EXPLAIN
 SELECT y.* from (SELECT x.* FROM SRC x CLUSTER BY x.key) y where y.key = 20
@@ -509,7 +509,7 @@ POSTHOOK: query: EXPLAIN
 SELECT y.* from (SELECT x.* FROM SRC x CLUSTER BY x.key) y where y.key = 20
 POSTHOOK: type: QUERY
 ABSTRACT SYNTAX TREE:
-  (TOK_QUERY (TOK_FROM (TOK_SUBQUERY (TOK_QUERY (TOK_FROM (TOK_TABREF SRC x)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_ALLCOLREF x))) (TOK_CLUSTERBY (. (TOK_TABLE_OR_COL x) key)))) y)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_ALLCOLREF y))) (TOK_WHERE (= (. (TOK_TABLE_OR_COL y) key) 20))))
+  (TOK_QUERY (TOK_FROM (TOK_SUBQUERY (TOK_QUERY (TOK_FROM (TOK_TABREF (TOK_TABNAME SRC) x)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_ALLCOLREF (TOK_TABNAME x)))) (TOK_CLUSTERBY (. (TOK_TABLE_OR_COL x) key)))) y)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_ALLCOLREF (TOK_TABNAME y)))) (TOK_WHERE (= (. (TOK_TABLE_OR_COL y) key) 20))))
 
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -571,11 +571,11 @@ STAGE PLANS:
 PREHOOK: query: SELECT y.* from (SELECT x.* FROM SRC x CLUSTER BY x.key) y where y.key = 20
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/var/folders/6g/6grtCwPMEf4sqHUPpy6xQG9ByHg/-Tmp-/heyongqiang/hive_2010-07-29_11-03-01_741_1830256943791082152/-mr-10000
+PREHOOK: Output: file:/tmp/sdong/hive_2011-02-10_01-39-26_137_8371385798213040613/-mr-10000
 POSTHOOK: query: SELECT y.* from (SELECT x.* FROM SRC x CLUSTER BY x.key) y where y.key = 20
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: file:/var/folders/6g/6grtCwPMEf4sqHUPpy6xQG9ByHg/-Tmp-/heyongqiang/hive_2010-07-29_11-03-01_741_1830256943791082152/-mr-10000
+POSTHOOK: Output: file:/tmp/sdong/hive_2011-02-10_01-39-26_137_8371385798213040613/-mr-10000
 20	val_20
 PREHOOK: query: EXPLAIN 
 SELECT x.key, x.value as v1, y.key  FROM SRC x JOIN SRC y ON (x.key = y.key)  where x.key = 20 CLUSTER BY v1
@@ -584,7 +584,7 @@ POSTHOOK: query: EXPLAIN
 SELECT x.key, x.value as v1, y.key  FROM SRC x JOIN SRC y ON (x.key = y.key)  where x.key = 20 CLUSTER BY v1
 POSTHOOK: type: QUERY
 ABSTRACT SYNTAX TREE:
-  (TOK_QUERY (TOK_FROM (TOK_JOIN (TOK_TABREF SRC x) (TOK_TABREF SRC y) (= (. (TOK_TABLE_OR_COL x) key) (. (TOK_TABLE_OR_COL y) key)))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (. (TOK_TABLE_OR_COL x) key)) (TOK_SELEXPR (. (TOK_TABLE_OR_COL x) value) v1) (TOK_SELEXPR (. (TOK_TABLE_OR_COL y) key))) (TOK_WHERE (= (. (TOK_TABLE_OR_COL x) key) 20)) (TOK_CLUSTERBY (TOK_TABLE_OR_COL v1))))
+  (TOK_QUERY (TOK_FROM (TOK_JOIN (TOK_TABREF (TOK_TABNAME SRC) x) (TOK_TABREF (TOK_TABNAME SRC) y) (= (. (TOK_TABLE_OR_COL x) key) (. (TOK_TABLE_OR_COL y) key)))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (. (TOK_TABLE_OR_COL x) key)) (TOK_SELEXPR (. (TOK_TABLE_OR_COL x) value) v1) (TOK_SELEXPR (. (TOK_TABLE_OR_COL y) key))) (TOK_WHERE (= (. (TOK_TABLE_OR_COL x) key) 20)) (TOK_CLUSTERBY (TOK_TABLE_OR_COL v1))))
 
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -663,7 +663,7 @@ STAGE PLANS:
   Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/var/folders/6g/6grtCwPMEf4sqHUPpy6xQG9ByHg/-Tmp-/heyongqiang/hive_2010-07-29_11-03-10_135_8465951951718830602/-mr-10002 
+        file:/tmp/sdong/hive_2011-02-10_01-39-29_546_9044307911488476013/-mr-10002 
             Reduce Output Operator
               key expressions:
                     expr: _col1
@@ -697,11 +697,11 @@ STAGE PLANS:
 PREHOOK: query: SELECT x.key, x.value as v1, y.key  FROM SRC x JOIN SRC y ON (x.key = y.key) where x.key = 20 CLUSTER BY v1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/var/folders/6g/6grtCwPMEf4sqHUPpy6xQG9ByHg/-Tmp-/heyongqiang/hive_2010-07-29_11-03-10_286_7953538941949300288/-mr-10000
+PREHOOK: Output: file:/tmp/sdong/hive_2011-02-10_01-39-29_640_7990093747029711700/-mr-10000
 POSTHOOK: query: SELECT x.key, x.value as v1, y.key  FROM SRC x JOIN SRC y ON (x.key = y.key) where x.key = 20 CLUSTER BY v1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: file:/var/folders/6g/6grtCwPMEf4sqHUPpy6xQG9ByHg/-Tmp-/heyongqiang/hive_2010-07-29_11-03-10_286_7953538941949300288/-mr-10000
+POSTHOOK: Output: file:/tmp/sdong/hive_2011-02-10_01-39-29_640_7990093747029711700/-mr-10000
 20	val_20	20
 PREHOOK: query: EXPLAIN 
 SELECT x.key, x.value as v1, y.*  FROM SRC x JOIN SRC y ON (x.key = y.key) where x.key = 20 CLUSTER BY v1
@@ -710,7 +710,7 @@ POSTHOOK: query: EXPLAIN
 SELECT x.key, x.value as v1, y.*  FROM SRC x JOIN SRC y ON (x.key = y.key) where x.key = 20 CLUSTER BY v1
 POSTHOOK: type: QUERY
 ABSTRACT SYNTAX TREE:
-  (TOK_QUERY (TOK_FROM (TOK_JOIN (TOK_TABREF SRC x) (TOK_TABREF SRC y) (= (. (TOK_TABLE_OR_COL x) key) (. (TOK_TABLE_OR_COL y) key)))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (. (TOK_TABLE_OR_COL x) key)) (TOK_SELEXPR (. (TOK_TABLE_OR_COL x) value) v1) (TOK_SELEXPR (TOK_ALLCOLREF y))) (TOK_WHERE (= (. (TOK_TABLE_OR_COL x) key) 20)) (TOK_CLUSTERBY (TOK_TABLE_OR_COL v1))))
+  (TOK_QUERY (TOK_FROM (TOK_JOIN (TOK_TABREF (TOK_TABNAME SRC) x) (TOK_TABREF (TOK_TABNAME SRC) y) (= (. (TOK_TABLE_OR_COL x) key) (. (TOK_TABLE_OR_COL y) key)))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (. (TOK_TABLE_OR_COL x) key)) (TOK_SELEXPR (. (TOK_TABLE_OR_COL x) value) v1) (TOK_SELEXPR (TOK_ALLCOLREF (TOK_TABNAME y)))) (TOK_WHERE (= (. (TOK_TABLE_OR_COL x) key) 20)) (TOK_CLUSTERBY (TOK_TABLE_OR_COL v1))))
 
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -793,7 +793,7 @@ STAGE PLANS:
   Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/var/folders/6g/6grtCwPMEf4sqHUPpy6xQG9ByHg/-Tmp-/heyongqiang/hive_2010-07-29_11-03-20_550_4090222363071736776/-mr-10002 
+        file:/tmp/sdong/hive_2011-02-10_01-39-36_146_7523047334744872007/-mr-10002 
             Reduce Output Operator
               key expressions:
                     expr: _col1
@@ -829,11 +829,11 @@ STAGE PLANS:
 PREHOOK: query: SELECT x.key, x.value as v1, y.*  FROM SRC x JOIN SRC y ON (x.key = y.key) where x.key = 20 CLUSTER BY v1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/var/folders/6g/6grtCwPMEf4sqHUPpy6xQG9ByHg/-Tmp-/heyongqiang/hive_2010-07-29_11-03-20_636_1232432883221421266/-mr-10000
+PREHOOK: Output: file:/tmp/sdong/hive_2011-02-10_01-39-36_271_8501113562060498197/-mr-10000
 POSTHOOK: query: SELECT x.key, x.value as v1, y.*  FROM SRC x JOIN SRC y ON (x.key = y.key) where x.key = 20 CLUSTER BY v1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: file:/var/folders/6g/6grtCwPMEf4sqHUPpy6xQG9ByHg/-Tmp-/heyongqiang/hive_2010-07-29_11-03-20_636_1232432883221421266/-mr-10000
+POSTHOOK: Output: file:/tmp/sdong/hive_2011-02-10_01-39-36_271_8501113562060498197/-mr-10000
 20	val_20	20	val_20
 PREHOOK: query: EXPLAIN
 SELECT x.key, x.value as v1, y.*  FROM SRC x JOIN SRC y ON (x.key = y.key) where x.key = 20 CLUSTER BY x.key
@@ -842,7 +842,7 @@ POSTHOOK: query: EXPLAIN
 SELECT x.key, x.value as v1, y.*  FROM SRC x JOIN SRC y ON (x.key = y.key) where x.key = 20 CLUSTER BY x.key
 POSTHOOK: type: QUERY
 ABSTRACT SYNTAX TREE:
-  (TOK_QUERY (TOK_FROM (TOK_JOIN (TOK_TABREF SRC x) (TOK_TABREF SRC y) (= (. (TOK_TABLE_OR_COL x) key) (. (TOK_TABLE_OR_COL y) key)))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (. (TOK_TABLE_OR_COL x) key)) (TOK_SELEXPR (. (TOK_TABLE_OR_COL x) value) v1) (TOK_SELEXPR (TOK_ALLCOLREF y))) (TOK_WHERE (= (. (TOK_TABLE_OR_COL x) key) 20)) (TOK_CLUSTERBY (. (TOK_TABLE_OR_COL x) key))))
+  (TOK_QUERY (TOK_FROM (TOK_JOIN (TOK_TABREF (TOK_TABNAME SRC) x) (TOK_TABREF (TOK_TABNAME SRC) y) (= (. (TOK_TABLE_OR_COL x) key) (. (TOK_TABLE_OR_COL y) key)))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (. (TOK_TABLE_OR_COL x) key)) (TOK_SELEXPR (. (TOK_TABLE_OR_COL x) value) v1) (TOK_SELEXPR (TOK_ALLCOLREF (TOK_TABNAME y)))) (TOK_WHERE (= (. (TOK_TABLE_OR_COL x) key) 20)) (TOK_CLUSTERBY (. (TOK_TABLE_OR_COL x) key))))
 
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -925,7 +925,7 @@ STAGE PLANS:
   Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/var/folders/6g/6grtCwPMEf4sqHUPpy6xQG9ByHg/-Tmp-/heyongqiang/hive_2010-07-29_11-03-29_670_6551249949062057949/-mr-10002 
+        file:/tmp/sdong/hive_2011-02-10_01-39-42_907_3531906775052670778/-mr-10002 
             Reduce Output Operator
               key expressions:
                     expr: _col0
@@ -961,11 +961,11 @@ STAGE PLANS:
 PREHOOK: query: SELECT x.key, x.value as v1, y.*  FROM SRC x JOIN SRC y ON (x.key = y.key) where x.key = 20 CLUSTER BY x.key
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/var/folders/6g/6grtCwPMEf4sqHUPpy6xQG9ByHg/-Tmp-/heyongqiang/hive_2010-07-29_11-03-29_792_7964360624661468857/-mr-10000
+PREHOOK: Output: file:/tmp/sdong/hive_2011-02-10_01-39-43_027_3013451718430380875/-mr-10000
 POSTHOOK: query: SELECT x.key, x.value as v1, y.*  FROM SRC x JOIN SRC y ON (x.key = y.key) where x.key = 20 CLUSTER BY x.key
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: file:/var/folders/6g/6grtCwPMEf4sqHUPpy6xQG9ByHg/-Tmp-/heyongqiang/hive_2010-07-29_11-03-29_792_7964360624661468857/-mr-10000
+POSTHOOK: Output: file:/tmp/sdong/hive_2011-02-10_01-39-43_027_3013451718430380875/-mr-10000
 20	val_20	20	val_20
 PREHOOK: query: EXPLAIN
 SELECT x.key, x.value as v1, y.key as yk  FROM SRC x JOIN SRC y ON (x.key = y.key) where x.key = 20 CLUSTER BY key
@@ -974,7 +974,7 @@ POSTHOOK: query: EXPLAIN
 SELECT x.key, x.value as v1, y.key as yk  FROM SRC x JOIN SRC y ON (x.key = y.key) where x.key = 20 CLUSTER BY key
 POSTHOOK: type: QUERY
 ABSTRACT SYNTAX TREE:
-  (TOK_QUERY (TOK_FROM (TOK_JOIN (TOK_TABREF SRC x) (TOK_TABREF SRC y) (= (. (TOK_TABLE_OR_COL x) key) (. (TOK_TABLE_OR_COL y) key)))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (. (TOK_TABLE_OR_COL x) key)) (TOK_SELEXPR (. (TOK_TABLE_OR_COL x) value) v1) (TOK_SELEXPR (. (TOK_TABLE_OR_COL y) key) yk)) (TOK_WHERE (= (. (TOK_TABLE_OR_COL x) key) 20)) (TOK_CLUSTERBY (TOK_TABLE_OR_COL key))))
+  (TOK_QUERY (TOK_FROM (TOK_JOIN (TOK_TABREF (TOK_TABNAME SRC) x) (TOK_TABREF (TOK_TABNAME SRC) y) (= (. (TOK_TABLE_OR_COL x) key) (. (TOK_TABLE_OR_COL y) key)))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (. (TOK_TABLE_OR_COL x) key)) (TOK_SELEXPR (. (TOK_TABLE_OR_COL x) value) v1) (TOK_SELEXPR (. (TOK_TABLE_OR_COL y) key) yk)) (TOK_WHERE (= (. (TOK_TABLE_OR_COL x) key) 20)) (TOK_CLUSTERBY (TOK_TABLE_OR_COL key))))
 
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -1053,7 +1053,7 @@ STAGE PLANS:
   Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/var/folders/6g/6grtCwPMEf4sqHUPpy6xQG9ByHg/-Tmp-/heyongqiang/hive_2010-07-29_11-03-40_175_7869691048043021342/-mr-10002 
+        file:/tmp/sdong/hive_2011-02-10_01-39-49_649_313028914611607523/-mr-10002 
             Reduce Output Operator
               key expressions:
                     expr: _col0
@@ -1087,11 +1087,11 @@ STAGE PLANS:
 PREHOOK: query: SELECT x.key, x.value as v1, y.key as yk  FROM SRC x JOIN SRC y ON (x.key = y.key) where x.key = 20 CLUSTER BY key
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/var/folders/6g/6grtCwPMEf4sqHUPpy6xQG9ByHg/-Tmp-/heyongqiang/hive_2010-07-29_11-03-40_269_8619996170626222765/-mr-10000
+PREHOOK: Output: file:/tmp/sdong/hive_2011-02-10_01-39-49_743_5449040629326573495/-mr-10000
 POSTHOOK: query: SELECT x.key, x.value as v1, y.key as yk  FROM SRC x JOIN SRC y ON (x.key = y.key) where x.key = 20 CLUSTER BY key
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: file:/var/folders/6g/6grtCwPMEf4sqHUPpy6xQG9ByHg/-Tmp-/heyongqiang/hive_2010-07-29_11-03-40_269_8619996170626222765/-mr-10000
+POSTHOOK: Output: file:/tmp/sdong/hive_2011-02-10_01-39-49_743_5449040629326573495/-mr-10000
 20	val_20	20
 PREHOOK: query: EXPLAIN
 SELECT unioninput.*
@@ -1112,7 +1112,7 @@ FROM (
 CLUSTER BY unioninput.key
 POSTHOOK: type: QUERY
 ABSTRACT SYNTAX TREE:
-  (TOK_QUERY (TOK_FROM (TOK_SUBQUERY (TOK_UNION (TOK_QUERY (TOK_FROM (TOK_TABREF src)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (. (TOK_TABLE_OR_COL src) key)) (TOK_SELEXPR (. (TOK_TABLE_OR_COL src) value))) (TOK_WHERE (< (. (TOK_TABLE_OR_COL src) key) 100)))) (TOK_QUERY (TOK_FROM (TOK_TABREF src)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_ALLCOLREF src))) (TOK_WHERE (> (. (TOK_TABLE_OR_COL src) key) 100))))) unioninput)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_ALLCOLREF unioninput))) (TOK_CLUSTERBY (. (TOK_TABLE_OR_COL unioninput) key))))
+  (TOK_QUERY (TOK_FROM (TOK_SUBQUERY (TOK_UNION (TOK_QUERY (TOK_FROM (TOK_TABREF (TOK_TABNAME src))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (. (TOK_TABLE_OR_COL src) key)) (TOK_SELEXPR (. (TOK_TABLE_OR_COL src) value))) (TOK_WHERE (< (. (TOK_TABLE_OR_COL src) key) 100)))) (TOK_QUERY (TOK_FROM (TOK_TABREF (TOK_TABNAME src))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_ALLCOLREF (TOK_TABNAME src)))) (TOK_WHERE (> (. (TOK_TABLE_OR_COL src) key) 100))))) unioninput)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_ALLCOLREF (TOK_TABNAME unioninput)))) (TOK_CLUSTERBY (. (TOK_TABLE_OR_COL unioninput) key))))
 
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -1225,7 +1225,7 @@ FROM (
 CLUSTER BY unioninput.key
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/var/folders/6g/6grtCwPMEf4sqHUPpy6xQG9ByHg/-Tmp-/heyongqiang/hive_2010-07-29_11-03-50_185_4510032647777990341/-mr-10000
+PREHOOK: Output: file:/tmp/sdong/hive_2011-02-10_01-39-56_398_2632059281772742928/-mr-10000
 POSTHOOK: query: SELECT unioninput.*
 FROM (
   FROM src select src.key, src.value WHERE src.key < 100
@@ -1235,7 +1235,7 @@ FROM (
 CLUSTER BY unioninput.key
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: file:/var/folders/6g/6grtCwPMEf4sqHUPpy6xQG9ByHg/-Tmp-/heyongqiang/hive_2010-07-29_11-03-50_185_4510032647777990341/-mr-10000
+POSTHOOK: Output: file:/tmp/sdong/hive_2011-02-10_01-39-56_398_2632059281772742928/-mr-10000
 0	val_0
 0	val_0
 0	val_0

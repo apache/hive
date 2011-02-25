@@ -20,7 +20,7 @@ FROM
  JOIN srcpart z ON (subq.key1 = z.key and z.ds='2008-04-08' and z.hr=11)
 POSTHOOK: type: QUERY
 ABSTRACT SYNTAX TREE:
-  (TOK_QUERY (TOK_FROM (TOK_JOIN (TOK_SUBQUERY (TOK_QUERY (TOK_FROM (TOK_JOIN (TOK_TABREF src1 x) (TOK_TABREF src y) (= (. (TOK_TABLE_OR_COL x) key) (. (TOK_TABLE_OR_COL y) key)))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_HINTLIST (TOK_HINT TOK_MAPJOIN (TOK_HINTARGLIST x))) (TOK_SELEXPR (. (TOK_TABLE_OR_COL x) key) key1) (TOK_SELEXPR (. (TOK_TABLE_OR_COL x) value) value1) (TOK_SELEXPR (. (TOK_TABLE_OR_COL y) key) key2) (TOK_SELEXPR (. (TOK_TABLE_OR_COL y) value) value2)))) subq) (TOK_TABREF srcpart z) (and (and (= (. (TOK_TABLE_OR_COL subq) key1) (. (TOK_TABLE_OR_COL z) key)) (= (. (TOK_TABLE_OR_COL z) ds) '2008-04-08')) (= (. (TOK_TABLE_OR_COL z) hr) 11)))) (TOK_INSERT (TOK_DESTINATION (TOK_TAB dest_j1)) (TOK_SELECT (TOK_HINTLIST (TOK_HINT TOK_MAPJOIN (TOK_HINTARGLIST z))) (TOK_SELEXPR (. (TOK_TABLE_OR_COL subq) key1)) (TOK_SELEXPR (. (TOK_TABLE_OR_COL z) value)))))
+  (TOK_QUERY (TOK_FROM (TOK_JOIN (TOK_SUBQUERY (TOK_QUERY (TOK_FROM (TOK_JOIN (TOK_TABREF (TOK_TABNAME src1) x) (TOK_TABREF (TOK_TABNAME src) y) (= (. (TOK_TABLE_OR_COL x) key) (. (TOK_TABLE_OR_COL y) key)))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_HINTLIST (TOK_HINT TOK_MAPJOIN (TOK_HINTARGLIST x))) (TOK_SELEXPR (. (TOK_TABLE_OR_COL x) key) key1) (TOK_SELEXPR (. (TOK_TABLE_OR_COL x) value) value1) (TOK_SELEXPR (. (TOK_TABLE_OR_COL y) key) key2) (TOK_SELEXPR (. (TOK_TABLE_OR_COL y) value) value2)))) subq) (TOK_TABREF (TOK_TABNAME srcpart) z) (and (and (= (. (TOK_TABLE_OR_COL subq) key1) (. (TOK_TABLE_OR_COL z) key)) (= (. (TOK_TABLE_OR_COL z) ds) '2008-04-08')) (= (. (TOK_TABLE_OR_COL z) hr) 11)))) (TOK_INSERT (TOK_DESTINATION (TOK_TAB (TOK_TABNAME dest_j1))) (TOK_SELECT (TOK_HINTLIST (TOK_HINT TOK_MAPJOIN (TOK_HINTARGLIST z))) (TOK_SELEXPR (. (TOK_TABLE_OR_COL subq) key1)) (TOK_SELEXPR (. (TOK_TABLE_OR_COL z) value)))))
 
 STAGE DEPENDENCIES:
   Stage-8 is a root stage
@@ -136,7 +136,7 @@ STAGE PLANS:
                               input format: org.apache.hadoop.mapred.TextInputFormat
                               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                              name: dest_j1
+                              name: default.dest_j1
       Local Work:
         Map Reduce Local Work
 
@@ -147,7 +147,7 @@ STAGE PLANS:
     Move Operator
       files:
           hdfs directory: true
-          destination: pfile:/data/users/liyintang/hive-1754/build/ql/scratchdir/hive_2010-11-08_18-59-55_834_2268567445499795563/-ext-10000
+          destination: pfile:/data/users/sdong/www/open-source-hive1/build/ql/scratchdir/hive_2011-02-10_16-04-18_666_8729563590191203713/-ext-10000
 
   Stage: Stage-0
     Move Operator
@@ -157,7 +157,7 @@ STAGE PLANS:
               input format: org.apache.hadoop.mapred.TextInputFormat
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              name: dest_j1
+              name: default.dest_j1
 
   Stage: Stage-2
     Stats-Aggr Operator
@@ -165,7 +165,7 @@ STAGE PLANS:
   Stage: Stage-3
     Map Reduce
       Alias -> Map Operator Tree:
-        pfile:/data/users/liyintang/hive-1754/build/ql/scratchdir/hive_2010-11-08_18-59-55_834_2268567445499795563/-ext-10002 
+        pfile:/data/users/sdong/www/open-source-hive1/build/ql/scratchdir/hive_2011-02-10_16-04-18_666_8729563590191203713/-ext-10002 
             File Output Operator
               compressed: false
               GlobalTableId: 0
@@ -173,7 +173,7 @@ STAGE PLANS:
                   input format: org.apache.hadoop.mapred.TextInputFormat
                   output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                   serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                  name: dest_j1
+                  name: default.dest_j1
 
 
 PREHOOK: query: INSERT OVERWRITE TABLE dest_j1 
@@ -203,11 +203,11 @@ POSTHOOK: Lineage: dest_j1.value SIMPLE [(srcpart)z.FieldSchema(name:value, type
 PREHOOK: query: select * from dest_j1 x order by x.key
 PREHOOK: type: QUERY
 PREHOOK: Input: default@dest_j1
-PREHOOK: Output: file:/tmp/liyintang/hive_2010-11-08_19-00-06_183_3300125804401305378/-mr-10000
+PREHOOK: Output: file:/tmp/sdong/hive_2011-02-10_16-04-25_901_2052252208804412968/-mr-10000
 POSTHOOK: query: select * from dest_j1 x order by x.key
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@dest_j1
-POSTHOOK: Output: file:/tmp/liyintang/hive_2010-11-08_19-00-06_183_3300125804401305378/-mr-10000
+POSTHOOK: Output: file:/tmp/sdong/hive_2011-02-10_16-04-25_901_2052252208804412968/-mr-10000
 POSTHOOK: Lineage: dest_j1.key EXPRESSION [(src1)x.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: dest_j1.value SIMPLE [(srcpart)z.FieldSchema(name:value, type:string, comment:default), ]
 128	val_128

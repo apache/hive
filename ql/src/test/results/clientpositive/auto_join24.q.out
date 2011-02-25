@@ -24,7 +24,7 @@ POSTHOOK: type: QUERY
 POSTHOOK: Lineage: tst1.cnt EXPRESSION [(src)a.null, ]
 POSTHOOK: Lineage: tst1.key SIMPLE [(src)a.FieldSchema(name:key, type:string, comment:default), ]
 ABSTRACT SYNTAX TREE:
-  (TOK_QUERY (TOK_FROM (TOK_JOIN (TOK_TABREF tst1 a) (TOK_TABREF tst1 b) (= (. (TOK_TABLE_OR_COL a) key) (. (TOK_TABLE_OR_COL b) key)))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_FUNCTION sum (. (TOK_TABLE_OR_COL a) cnt))))))
+  (TOK_QUERY (TOK_FROM (TOK_JOIN (TOK_TABREF (TOK_TABNAME tst1) a) (TOK_TABREF (TOK_TABNAME tst1) b) (= (. (TOK_TABLE_OR_COL a) key) (. (TOK_TABLE_OR_COL b) key)))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_FUNCTION sum (. (TOK_TABLE_OR_COL a) cnt))))))
 
 STAGE DEPENDENCIES:
   Stage-6 is a root stage , consists of Stage-7, Stage-8, Stage-1
@@ -101,7 +101,7 @@ STAGE PLANS:
   Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/tmp/liyintang/hive_2010-11-15_16-48-39_265_1289386780470095965/-mr-10002 
+        file:/tmp/sdong/hive_2011-02-10_01-16-51_787_1548590887218755701/-mr-10002 
             Reduce Output Operator
               sort order: 
               tag: -1
@@ -250,11 +250,11 @@ STAGE PLANS:
 PREHOOK: query: SELECT sum(a.cnt)  FROM tst1 a JOIN tst1 b ON a.key = b.key
 PREHOOK: type: QUERY
 PREHOOK: Input: default@tst1
-PREHOOK: Output: file:/tmp/liyintang/hive_2010-11-15_16-48-39_524_8876213971940214888/-mr-10000
+PREHOOK: Output: file:/tmp/sdong/hive_2011-02-10_01-16-51_997_3779127301007370770/-mr-10000
 POSTHOOK: query: SELECT sum(a.cnt)  FROM tst1 a JOIN tst1 b ON a.key = b.key
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@tst1
-POSTHOOK: Output: file:/tmp/liyintang/hive_2010-11-15_16-48-39_524_8876213971940214888/-mr-10000
+POSTHOOK: Output: file:/tmp/sdong/hive_2011-02-10_01-16-51_997_3779127301007370770/-mr-10000
 POSTHOOK: Lineage: tst1.cnt EXPRESSION [(src)a.null, ]
 POSTHOOK: Lineage: tst1.key SIMPLE [(src)a.FieldSchema(name:key, type:string, comment:default), ]
 500

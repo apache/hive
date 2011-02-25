@@ -44,6 +44,7 @@ import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.ql.index.IndexPredicateAnalyzer;
 import org.apache.hadoop.hive.ql.index.IndexSearchCondition;
 import org.apache.hadoop.hive.ql.metadata.DefaultStorageHandler;
+import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.metadata.HiveStoragePredicateHandler;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
 import org.apache.hadoop.hive.ql.plan.TableDesc;
@@ -62,6 +63,8 @@ import org.apache.hadoop.util.StringUtils;
 public class HBaseStorageHandler extends DefaultStorageHandler
   implements HiveMetaHook, HiveStoragePredicateHandler {
 
+  final static public String DEFAULT_PREFIX = "default.";
+  
   private HBaseConfiguration hbaseConf;
   private HBaseAdmin admin;
 
@@ -88,7 +91,10 @@ public class HBaseStorageHandler extends DefaultStorageHandler
         HBaseSerDe.HBASE_TABLE_NAME);
     }
     if (tableName == null) {
-      tableName = tbl.getTableName();
+      tableName = tbl.getDbName() + "." + tbl.getTableName();
+      if (tableName.startsWith(DEFAULT_PREFIX)) {
+        tableName = tableName.substring(DEFAULT_PREFIX.length());
+      }
     }
     return tableName;
   }
@@ -268,6 +274,9 @@ public class HBaseStorageHandler extends DefaultStorageHandler
     if (tableName == null) {
       tableName =
         tableProperties.getProperty(Constants.META_TABLE_NAME);
+      if (tableName.startsWith(DEFAULT_PREFIX)) {
+        tableName = tableName.substring(DEFAULT_PREFIX.length());
+      }
     }
     jobProperties.put(HBaseSerDe.HBASE_TABLE_NAME, tableName);
   }

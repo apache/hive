@@ -13,7 +13,7 @@ PREHOOK: type: QUERY
 POSTHOOK: query: EXPLAIN EXTENDED SELECT explode(array(1,2,3)) AS myCol FROM src LIMIT 3
 POSTHOOK: type: QUERY
 ABSTRACT SYNTAX TREE:
-  (TOK_QUERY (TOK_FROM (TOK_TABREF src)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_FUNCTION explode (TOK_FUNCTION array 1 2 3)) myCol)) (TOK_LIMIT 3)))
+  (TOK_QUERY (TOK_FROM (TOK_TABREF (TOK_TABNAME src))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_FUNCTION explode (TOK_FUNCTION array 1 2 3)) myCol)) (TOK_LIMIT 3)))
 
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -38,9 +38,9 @@ STAGE PLANS:
                   File Output Operator
                     compressed: false
                     GlobalTableId: 0
-                    directory: file:/tmp/nzhang/hive_2010-09-15_17-34-12_472_461078458690479492/-ext-10001
+                    directory: file:/tmp/sdong/hive_2011-02-10_17-46-44_813_2933283385410388072/-ext-10001
                     NumFilesPerFileSink: 1
-                    Stats Publishing Key Prefix: file:/tmp/nzhang/hive_2010-09-15_17-34-12_472_461078458690479492/-ext-10001/
+                    Stats Publishing Key Prefix: file:/tmp/sdong/hive_2011-02-10_17-46-44_813_2933283385410388072/-ext-10001/
                     table:
                         input format: org.apache.hadoop.mapred.TextInputFormat
                         output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
@@ -53,9 +53,9 @@ STAGE PLANS:
                     MultiFileSpray: false
       Needs Tagging: false
       Path -> Alias:
-        pfile:/data/users/nzhang/work/784/apache-hive/build/ql/test/data/warehouse/src [src]
+        pfile:/data/users/sdong/www/open-source-hive1/build/ql/test/data/warehouse/src [src]
       Path -> Partition:
-        pfile:/data/users/nzhang/work/784/apache-hive/build/ql/test/data/warehouse/src 
+        pfile:/data/users/sdong/www/open-source-hive1/build/ql/test/data/warehouse/src 
           Partition
             base file name: src
             input format: org.apache.hadoop.mapred.TextInputFormat
@@ -66,12 +66,12 @@ STAGE PLANS:
               columns.types string:string
               file.inputformat org.apache.hadoop.mapred.TextInputFormat
               file.outputformat org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-              location pfile:/data/users/nzhang/work/784/apache-hive/build/ql/test/data/warehouse/src
-              name src
+              location pfile:/data/users/sdong/www/open-source-hive1/build/ql/test/data/warehouse/src
+              name default.src
               serialization.ddl struct src { string key, string value}
               serialization.format 1
               serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              transient_lastDdlTime 1284588338
+              transient_lastDdlTime 1297378968
             serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
           
               input format: org.apache.hadoop.mapred.TextInputFormat
@@ -82,15 +82,15 @@ STAGE PLANS:
                 columns.types string:string
                 file.inputformat org.apache.hadoop.mapred.TextInputFormat
                 file.outputformat org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                location pfile:/data/users/nzhang/work/784/apache-hive/build/ql/test/data/warehouse/src
-                name src
+                location pfile:/data/users/sdong/www/open-source-hive1/build/ql/test/data/warehouse/src
+                name default.src
                 serialization.ddl struct src { string key, string value}
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                transient_lastDdlTime 1284588338
+                transient_lastDdlTime 1297378968
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              name: src
-            name: src
+              name: default.src
+            name: default.src
 
   Stage: Stage-0
     Fetch Operator
@@ -102,7 +102,7 @@ PREHOOK: type: QUERY
 POSTHOOK: query: EXPLAIN EXTENDED SELECT a.myCol, count(1) FROM (SELECT explode(array(1,2,3)) AS myCol FROM src LIMIT 3) a GROUP BY a.myCol
 POSTHOOK: type: QUERY
 ABSTRACT SYNTAX TREE:
-  (TOK_QUERY (TOK_FROM (TOK_SUBQUERY (TOK_QUERY (TOK_FROM (TOK_TABREF src)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_FUNCTION explode (TOK_FUNCTION array 1 2 3)) myCol)) (TOK_LIMIT 3))) a)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (. (TOK_TABLE_OR_COL a) myCol)) (TOK_SELEXPR (TOK_FUNCTION count 1))) (TOK_GROUPBY (. (TOK_TABLE_OR_COL a) myCol))))
+  (TOK_QUERY (TOK_FROM (TOK_SUBQUERY (TOK_QUERY (TOK_FROM (TOK_TABREF (TOK_TABNAME src))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_FUNCTION explode (TOK_FUNCTION array 1 2 3)) myCol)) (TOK_LIMIT 3))) a)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (. (TOK_TABLE_OR_COL a) myCol)) (TOK_SELEXPR (TOK_FUNCTION count 1))) (TOK_GROUPBY (. (TOK_TABLE_OR_COL a) myCol))))
 
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -133,9 +133,9 @@ STAGE PLANS:
                           type: int
       Needs Tagging: false
       Path -> Alias:
-        pfile:/data/users/nzhang/work/784/apache-hive/build/ql/test/data/warehouse/src [a:src]
+        pfile:/data/users/sdong/www/open-source-hive1/build/ql/test/data/warehouse/src [a:src]
       Path -> Partition:
-        pfile:/data/users/nzhang/work/784/apache-hive/build/ql/test/data/warehouse/src 
+        pfile:/data/users/sdong/www/open-source-hive1/build/ql/test/data/warehouse/src 
           Partition
             base file name: src
             input format: org.apache.hadoop.mapred.TextInputFormat
@@ -146,12 +146,12 @@ STAGE PLANS:
               columns.types string:string
               file.inputformat org.apache.hadoop.mapred.TextInputFormat
               file.outputformat org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-              location pfile:/data/users/nzhang/work/784/apache-hive/build/ql/test/data/warehouse/src
-              name src
+              location pfile:/data/users/sdong/www/open-source-hive1/build/ql/test/data/warehouse/src
+              name default.src
               serialization.ddl struct src { string key, string value}
               serialization.format 1
               serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              transient_lastDdlTime 1284588338
+              transient_lastDdlTime 1297378968
             serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
           
               input format: org.apache.hadoop.mapred.TextInputFormat
@@ -162,15 +162,15 @@ STAGE PLANS:
                 columns.types string:string
                 file.inputformat org.apache.hadoop.mapred.TextInputFormat
                 file.outputformat org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                location pfile:/data/users/nzhang/work/784/apache-hive/build/ql/test/data/warehouse/src
-                name src
+                location pfile:/data/users/sdong/www/open-source-hive1/build/ql/test/data/warehouse/src
+                name default.src
                 serialization.ddl struct src { string key, string value}
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                transient_lastDdlTime 1284588338
+                transient_lastDdlTime 1297378968
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              name: src
-            name: src
+              name: default.src
+            name: default.src
       Reduce Operator Tree:
         Extract
           Limit
@@ -191,7 +191,7 @@ STAGE PLANS:
                 File Output Operator
                   compressed: false
                   GlobalTableId: 0
-                  directory: file:/tmp/nzhang/hive_2010-09-15_17-34-12_511_3699113220853694956/-mr-10002
+                  directory: file:/tmp/sdong/hive_2011-02-10_17-46-44_900_3479860791903660768/-mr-10002
                   NumFilesPerFileSink: 1
                   table:
                       input format: org.apache.hadoop.mapred.SequenceFileInputFormat
@@ -207,7 +207,7 @@ STAGE PLANS:
   Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/tmp/nzhang/hive_2010-09-15_17-34-12_511_3699113220853694956/-mr-10002 
+        file:/tmp/sdong/hive_2011-02-10_17-46-44_900_3479860791903660768/-mr-10002 
             Reduce Output Operator
               key expressions:
                     expr: _col0
@@ -222,9 +222,9 @@ STAGE PLANS:
                     type: bigint
       Needs Tagging: false
       Path -> Alias:
-        file:/tmp/nzhang/hive_2010-09-15_17-34-12_511_3699113220853694956/-mr-10002 [file:/tmp/nzhang/hive_2010-09-15_17-34-12_511_3699113220853694956/-mr-10002]
+        file:/tmp/sdong/hive_2011-02-10_17-46-44_900_3479860791903660768/-mr-10002 [file:/tmp/sdong/hive_2011-02-10_17-46-44_900_3479860791903660768/-mr-10002]
       Path -> Partition:
-        file:/tmp/nzhang/hive_2010-09-15_17-34-12_511_3699113220853694956/-mr-10002 
+        file:/tmp/sdong/hive_2011-02-10_17-46-44_900_3479860791903660768/-mr-10002 
           Partition
             base file name: -mr-10002
             input format: org.apache.hadoop.mapred.SequenceFileInputFormat
@@ -260,9 +260,9 @@ STAGE PLANS:
             File Output Operator
               compressed: false
               GlobalTableId: 0
-              directory: file:/tmp/nzhang/hive_2010-09-15_17-34-12_511_3699113220853694956/-ext-10001
+              directory: file:/tmp/sdong/hive_2011-02-10_17-46-44_900_3479860791903660768/-ext-10001
               NumFilesPerFileSink: 1
-              Stats Publishing Key Prefix: file:/tmp/nzhang/hive_2010-09-15_17-34-12_511_3699113220853694956/-ext-10001/
+              Stats Publishing Key Prefix: file:/tmp/sdong/hive_2011-02-10_17-46-44_900_3479860791903660768/-ext-10001/
               table:
                   input format: org.apache.hadoop.mapred.TextInputFormat
                   output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
@@ -282,33 +282,33 @@ STAGE PLANS:
 PREHOOK: query: SELECT explode(array(1,2,3)) AS myCol FROM src LIMIT 3
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/tmp/nzhang/hive_2010-09-15_17-34-12_563_1523905309826369917/-mr-10000
+PREHOOK: Output: file:/tmp/sdong/hive_2011-02-10_17-46-44_991_4845617813725464653/-mr-10000
 POSTHOOK: query: SELECT explode(array(1,2,3)) AS myCol FROM src LIMIT 3
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: file:/tmp/nzhang/hive_2010-09-15_17-34-12_563_1523905309826369917/-mr-10000
+POSTHOOK: Output: file:/tmp/sdong/hive_2011-02-10_17-46-44_991_4845617813725464653/-mr-10000
 1
 2
 3
 PREHOOK: query: SELECT explode(array(1,2,3)) AS (myCol) FROM src LIMIT 3
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/tmp/nzhang/hive_2010-09-15_17-34-16_104_3527117414764259158/-mr-10000
+PREHOOK: Output: file:/tmp/sdong/hive_2011-02-10_17-46-48_334_8378511418411346233/-mr-10000
 POSTHOOK: query: SELECT explode(array(1,2,3)) AS (myCol) FROM src LIMIT 3
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: file:/tmp/nzhang/hive_2010-09-15_17-34-16_104_3527117414764259158/-mr-10000
+POSTHOOK: Output: file:/tmp/sdong/hive_2011-02-10_17-46-48_334_8378511418411346233/-mr-10000
 1
 2
 3
 PREHOOK: query: SELECT a.myCol, count(1) FROM (SELECT explode(array(1,2,3)) AS myCol FROM src LIMIT 3) a GROUP BY a.myCol
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/tmp/nzhang/hive_2010-09-15_17-34-19_634_506308003652349415/-mr-10000
+PREHOOK: Output: file:/tmp/sdong/hive_2011-02-10_17-46-51_612_7416766295859987410/-mr-10000
 POSTHOOK: query: SELECT a.myCol, count(1) FROM (SELECT explode(array(1,2,3)) AS myCol FROM src LIMIT 3) a GROUP BY a.myCol
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: file:/tmp/nzhang/hive_2010-09-15_17-34-19_634_506308003652349415/-mr-10000
+POSTHOOK: Output: file:/tmp/sdong/hive_2011-02-10_17-46-51_612_7416766295859987410/-mr-10000
 1	1
 2	1
 3	1

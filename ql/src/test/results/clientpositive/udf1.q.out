@@ -30,7 +30,7 @@ FROM src INSERT OVERWRITE TABLE dest1 SELECT 'a' LIKE '%a%', 'b' LIKE '%a%', 'ab
   WHERE src.key = 86
 POSTHOOK: type: QUERY
 ABSTRACT SYNTAX TREE:
-  (TOK_QUERY (TOK_FROM (TOK_TABREF src)) (TOK_INSERT (TOK_DESTINATION (TOK_TAB dest1)) (TOK_SELECT (TOK_SELEXPR (LIKE 'a' '%a%')) (TOK_SELEXPR (LIKE 'b' '%a%')) (TOK_SELEXPR (LIKE 'ab' '%a%')) (TOK_SELEXPR (LIKE 'ab' '%a_')) (TOK_SELEXPR (LIKE '%_' '\%\_')) (TOK_SELEXPR (LIKE 'ab' '\%\_')) (TOK_SELEXPR (LIKE 'ab' '_a%')) (TOK_SELEXPR (LIKE 'ab' 'a')) (TOK_SELEXPR (RLIKE '' '.*')) (TOK_SELEXPR (RLIKE 'a' '[ab]')) (TOK_SELEXPR (RLIKE '' '[ab]')) (TOK_SELEXPR (RLIKE 'hadoop' '[a-z]*')) (TOK_SELEXPR (RLIKE 'hadoop' 'o*')) (TOK_SELEXPR (TOK_FUNCTION REGEXP_REPLACE 'abc' 'b' 'c')) (TOK_SELEXPR (TOK_FUNCTION REGEXP_REPLACE 'abc' 'z' 'a')) (TOK_SELEXPR (TOK_FUNCTION REGEXP_REPLACE 'abbbb' 'bb' 'b')) (TOK_SELEXPR (TOK_FUNCTION REGEXP_REPLACE 'hadoop' '(.)[a-z]*' '$1ive')) (TOK_SELEXPR (TOK_FUNCTION REGEXP_REPLACE 'hadoopAAA' 'A.*' '')) (TOK_SELEXPR (TOK_FUNCTION REGEXP_REPLACE 'abc' '' 'A')) (TOK_SELEXPR (RLIKE 'abc' ''))) (TOK_WHERE (= (. (TOK_TABLE_OR_COL src) key) 86))))
+  (TOK_QUERY (TOK_FROM (TOK_TABREF (TOK_TABNAME src))) (TOK_INSERT (TOK_DESTINATION (TOK_TAB (TOK_TABNAME dest1))) (TOK_SELECT (TOK_SELEXPR (LIKE 'a' '%a%')) (TOK_SELEXPR (LIKE 'b' '%a%')) (TOK_SELEXPR (LIKE 'ab' '%a%')) (TOK_SELEXPR (LIKE 'ab' '%a_')) (TOK_SELEXPR (LIKE '%_' '\%\_')) (TOK_SELEXPR (LIKE 'ab' '\%\_')) (TOK_SELEXPR (LIKE 'ab' '_a%')) (TOK_SELEXPR (LIKE 'ab' 'a')) (TOK_SELEXPR (RLIKE '' '.*')) (TOK_SELEXPR (RLIKE 'a' '[ab]')) (TOK_SELEXPR (RLIKE '' '[ab]')) (TOK_SELEXPR (RLIKE 'hadoop' '[a-z]*')) (TOK_SELEXPR (RLIKE 'hadoop' 'o*')) (TOK_SELEXPR (TOK_FUNCTION REGEXP_REPLACE 'abc' 'b' 'c')) (TOK_SELEXPR (TOK_FUNCTION REGEXP_REPLACE 'abc' 'z' 'a')) (TOK_SELEXPR (TOK_FUNCTION REGEXP_REPLACE 'abbbb' 'bb' 'b')) (TOK_SELEXPR (TOK_FUNCTION REGEXP_REPLACE 'hadoop' '(.)[a-z]*' '$1ive')) (TOK_SELEXPR (TOK_FUNCTION REGEXP_REPLACE 'hadoopAAA' 'A.*' '')) (TOK_SELEXPR (TOK_FUNCTION REGEXP_REPLACE 'abc' '' 'A')) (TOK_SELEXPR (RLIKE 'abc' ''))) (TOK_WHERE (= (. (TOK_TABLE_OR_COL src) key) 86))))
 
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -105,7 +105,7 @@ STAGE PLANS:
                         input format: org.apache.hadoop.mapred.TextInputFormat
                         output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                         serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                        name: dest1
+                        name: default.dest1
 
   Stage: Stage-5
     Conditional Operator
@@ -114,7 +114,7 @@ STAGE PLANS:
     Move Operator
       files:
           hdfs directory: true
-          destination: pfile:/data/users/nzhang/work/784/apache-hive/build/ql/scratchdir/hive_2010-09-14_17-55-39_714_1712462366624932992/-ext-10000
+          destination: pfile:/data/users/sdong/www/open-source-hive1/build/ql/scratchdir/hive_2011-02-10_17-28-12_526_1155642978613928841/-ext-10000
 
   Stage: Stage-0
     Move Operator
@@ -124,7 +124,7 @@ STAGE PLANS:
               input format: org.apache.hadoop.mapred.TextInputFormat
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              name: dest1
+              name: default.dest1
 
   Stage: Stage-2
     Stats-Aggr Operator
@@ -132,7 +132,7 @@ STAGE PLANS:
   Stage: Stage-3
     Map Reduce
       Alias -> Map Operator Tree:
-        pfile:/data/users/nzhang/work/784/apache-hive/build/ql/scratchdir/hive_2010-09-14_17-55-39_714_1712462366624932992/-ext-10002 
+        pfile:/data/users/sdong/www/open-source-hive1/build/ql/scratchdir/hive_2011-02-10_17-28-12_526_1155642978613928841/-ext-10002 
             File Output Operator
               compressed: false
               GlobalTableId: 0
@@ -140,7 +140,7 @@ STAGE PLANS:
                   input format: org.apache.hadoop.mapred.TextInputFormat
                   output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                   serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                  name: dest1
+                  name: default.dest1
 
 
 PREHOOK: query: FROM src INSERT OVERWRITE TABLE dest1 SELECT 'a' LIKE '%a%', 'b' LIKE '%a%', 'ab' LIKE '%a%', 'ab' LIKE '%a_',
@@ -186,11 +186,11 @@ POSTHOOK: Lineage: dest1.c9 EXPRESSION []
 PREHOOK: query: SELECT dest1.* FROM dest1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@dest1
-PREHOOK: Output: file:/tmp/nzhang/hive_2010-09-14_17-55-46_255_8352436092286552251/-mr-10000
+PREHOOK: Output: file:/tmp/sdong/hive_2011-02-10_17-28-17_519_2541432450369524888/-mr-10000
 POSTHOOK: query: SELECT dest1.* FROM dest1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@dest1
-POSTHOOK: Output: file:/tmp/nzhang/hive_2010-09-14_17-55-46_255_8352436092286552251/-mr-10000
+POSTHOOK: Output: file:/tmp/sdong/hive_2011-02-10_17-28-17_519_2541432450369524888/-mr-10000
 POSTHOOK: Lineage: dest1.c1 EXPRESSION []
 POSTHOOK: Lineage: dest1.c10 EXPRESSION []
 POSTHOOK: Lineage: dest1.c11 EXPRESSION []

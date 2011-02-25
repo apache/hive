@@ -31,7 +31,7 @@ FROM src
 WHERE key <> '302'
 POSTHOOK: type: QUERY
 ABSTRACT SYNTAX TREE:
-  (TOK_QUERY (TOK_FROM (TOK_TABREF src)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_TABLE_OR_COL key)) (TOK_SELEXPR (TOK_TABLE_OR_COL value))) (TOK_WHERE (<> (TOK_TABLE_OR_COL key) '302'))))
+  (TOK_QUERY (TOK_FROM (TOK_TABREF (TOK_TABNAME src))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_TABLE_OR_COL key)) (TOK_SELEXPR (TOK_TABLE_OR_COL value))) (TOK_WHERE (<> (TOK_TABLE_OR_COL key) '302'))))
 
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -76,13 +76,13 @@ FROM src
 WHERE key <> '302'
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/Users/carl/Projects/hd8/hive-trunk/build/ql/tmp/250131163/10000
+PREHOOK: Output: file:/tmp/sdong/hive_2011-02-10_17-38-49_076_8731314818424049528/-mr-10000
 POSTHOOK: query: SELECT key, value
 FROM src
 WHERE key <> '302'
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: file:/Users/carl/Projects/hd8/hive-trunk/build/ql/tmp/250131163/10000
+POSTHOOK: Output: file:/tmp/sdong/hive_2011-02-10_17-38-49_076_8731314818424049528/-mr-10000
 238	val_238
 86	val_86
 311	val_311
@@ -593,7 +593,7 @@ FROM src
 WHERE key != '302'
 POSTHOOK: type: QUERY
 ABSTRACT SYNTAX TREE:
-  (TOK_QUERY (TOK_FROM (TOK_TABREF src)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_TABLE_OR_COL key)) (TOK_SELEXPR (TOK_TABLE_OR_COL value))) (TOK_WHERE (!= (TOK_TABLE_OR_COL key) '302'))))
+  (TOK_QUERY (TOK_FROM (TOK_TABREF (TOK_TABNAME src))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_TABLE_OR_COL key)) (TOK_SELEXPR (TOK_TABLE_OR_COL value))) (TOK_WHERE (!= (TOK_TABLE_OR_COL key) '302'))))
 
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -638,13 +638,13 @@ FROM src
 WHERE key != '302'
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/Users/carl/Projects/hd8/hive-trunk/build/ql/tmp/414907244/10000
+PREHOOK: Output: file:/tmp/sdong/hive_2011-02-10_17-38-52_445_8025674449421147677/-mr-10000
 POSTHOOK: query: SELECT key, value
 FROM src
 WHERE key != '302'
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: file:/Users/carl/Projects/hd8/hive-trunk/build/ql/tmp/414907244/10000
+POSTHOOK: Output: file:/tmp/sdong/hive_2011-02-10_17-38-52_445_8025674449421147677/-mr-10000
 238	val_238
 86	val_86
 311	val_311

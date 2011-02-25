@@ -76,7 +76,17 @@ public class DynamicSerDe implements SerDe, Serializable {
     try {
 
       String ddl = tbl.getProperty(Constants.SERIALIZATION_DDL);
-      type_name = tbl.getProperty(META_TABLE_NAME);
+      // type_name used to be tbl.getProperty(META_TABLE_NAME).
+      // However, now the value is DBName.TableName. To make it backward compatible,
+      // we take the TableName part as type_name.
+      //
+      String tableName = tbl.getProperty(META_TABLE_NAME);
+      int index = tableName.indexOf('.');
+      if (index != -1) {
+        type_name = tableName.substring(index + 1, tableName.length());
+      } else {
+        type_name = tableName;
+      }
       String protoName = tbl.getProperty(Constants.SERIALIZATION_FORMAT);
 
       if (protoName == null) {

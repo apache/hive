@@ -25,7 +25,7 @@ JOIN
 ON (unionsrc1.key = unionsrc2.key)
 POSTHOOK: type: QUERY
 ABSTRACT SYNTAX TREE:
-  (TOK_QUERY (TOK_FROM (TOK_JOIN (TOK_SUBQUERY (TOK_UNION (TOK_QUERY (TOK_FROM (TOK_TABREF src s1)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR 'tst1' key) (TOK_SELEXPR (TOK_FUNCTION TOK_STRING (TOK_FUNCTION count 1)) value)))) (TOK_QUERY (TOK_FROM (TOK_TABREF src s2)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (. (TOK_TABLE_OR_COL s2) key) key) (TOK_SELEXPR (. (TOK_TABLE_OR_COL s2) value) value)) (TOK_WHERE (< (. (TOK_TABLE_OR_COL s2) key) 10))))) unionsrc1) (TOK_SUBQUERY (TOK_UNION (TOK_QUERY (TOK_FROM (TOK_TABREF src s3)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR 'tst1' key) (TOK_SELEXPR (TOK_FUNCTION TOK_STRING (TOK_FUNCTION count 1)) value)))) (TOK_QUERY (TOK_FROM (TOK_TABREF src s4)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (. (TOK_TABLE_OR_COL s4) key) key) (TOK_SELEXPR (. (TOK_TABLE_OR_COL s4) value) value)) (TOK_WHERE (< (. (TOK_TABLE_OR_COL s4) key) 10))))) unionsrc2) (= (. (TOK_TABLE_OR_COL unionsrc1) key) (. (TOK_TABLE_OR_COL unionsrc2) key)))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (. (TOK_TABLE_OR_COL unionsrc1) key)) (TOK_SELEXPR (. (TOK_TABLE_OR_COL unionsrc1) value)) (TOK_SELEXPR (. (TOK_TABLE_OR_COL unionsrc2) key)) (TOK_SELEXPR (. (TOK_TABLE_OR_COL unionsrc2) value)))))
+  (TOK_QUERY (TOK_FROM (TOK_JOIN (TOK_SUBQUERY (TOK_UNION (TOK_QUERY (TOK_FROM (TOK_TABREF (TOK_TABNAME src) s1)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR 'tst1' key) (TOK_SELEXPR (TOK_FUNCTION TOK_STRING (TOK_FUNCTION count 1)) value)))) (TOK_QUERY (TOK_FROM (TOK_TABREF (TOK_TABNAME src) s2)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (. (TOK_TABLE_OR_COL s2) key) key) (TOK_SELEXPR (. (TOK_TABLE_OR_COL s2) value) value)) (TOK_WHERE (< (. (TOK_TABLE_OR_COL s2) key) 10))))) unionsrc1) (TOK_SUBQUERY (TOK_UNION (TOK_QUERY (TOK_FROM (TOK_TABREF (TOK_TABNAME src) s3)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR 'tst1' key) (TOK_SELEXPR (TOK_FUNCTION TOK_STRING (TOK_FUNCTION count 1)) value)))) (TOK_QUERY (TOK_FROM (TOK_TABREF (TOK_TABNAME src) s4)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (. (TOK_TABLE_OR_COL s4) key) key) (TOK_SELEXPR (. (TOK_TABLE_OR_COL s4) value) value)) (TOK_WHERE (< (. (TOK_TABLE_OR_COL s4) key) 10))))) unionsrc2) (= (. (TOK_TABLE_OR_COL unionsrc1) key) (. (TOK_TABLE_OR_COL unionsrc2) key)))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (. (TOK_TABLE_OR_COL unionsrc1) key)) (TOK_SELEXPR (. (TOK_TABLE_OR_COL unionsrc1) value)) (TOK_SELEXPR (. (TOK_TABLE_OR_COL unionsrc2) key)) (TOK_SELEXPR (. (TOK_TABLE_OR_COL unionsrc2) value)))))
 
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -95,7 +95,7 @@ STAGE PLANS:
                     type: string
                     expr: _col1
                     type: string
-        file:/data/users/zshao/hadoop_hive_trunk2/.ptest_1/build/ql/scratchdir/hive_2010-02-12_22-44-12_799_6947862339516446099/10002 
+        file:/tmp/sdong/hive_2011-02-10_17-50-58_273_8747453587292923422/-mr-10002 
           Union
             Reduce Output Operator
               key expressions:
@@ -111,7 +111,7 @@ STAGE PLANS:
                     type: string
                     expr: _col1
                     type: string
-        file:/data/users/zshao/hadoop_hive_trunk2/.ptest_1/build/ql/scratchdir/hive_2010-02-12_22-44-12_799_6947862339516446099/10003 
+        file:/tmp/sdong/hive_2011-02-10_17-50-58_273_8747453587292923422/-mr-10003 
           Union
             Reduce Output Operator
               key expressions:
@@ -213,7 +213,7 @@ STAGE PLANS:
   Stage: Stage-5
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/data/users/zshao/hadoop_hive_trunk2/.ptest_1/build/ql/scratchdir/hive_2010-02-12_22-44-12_799_6947862339516446099/10004 
+        file:/tmp/sdong/hive_2011-02-10_17-50-58_273_8747453587292923422/-mr-10004 
           Union
             File Output Operator
               compressed: false
@@ -221,7 +221,7 @@ STAGE PLANS:
               table:
                   input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                   output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
-        file:/data/users/zshao/hadoop_hive_trunk2/.ptest_1/build/ql/scratchdir/hive_2010-02-12_22-44-12_799_6947862339516446099/10006 
+        file:/tmp/sdong/hive_2011-02-10_17-50-58_273_8747453587292923422/-mr-10006 
           Union
             File Output Operator
               compressed: false
@@ -286,7 +286,7 @@ JOIN
 ON (unionsrc1.key = unionsrc2.key)
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/data/users/zshao/hadoop_hive_trunk2/.ptest_1/build/ql/scratchdir/hive_2010-02-12_22-44-12_925_5957838146435122575/10000
+PREHOOK: Output: file:/tmp/sdong/hive_2011-02-10_17-50-58_427_7809802233568190458/-mr-10000
 POSTHOOK: query: SELECT unionsrc1.key, unionsrc1.value, unionsrc2.key, unionsrc2.value
 FROM (select 'tst1' as key, cast(count(1) as string) as value from src s1
                          UNION  ALL  
@@ -298,7 +298,7 @@ JOIN
 ON (unionsrc1.key = unionsrc2.key)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: file:/data/users/zshao/hadoop_hive_trunk2/.ptest_1/build/ql/scratchdir/hive_2010-02-12_22-44-12_925_5957838146435122575/10000
+POSTHOOK: Output: file:/tmp/sdong/hive_2011-02-10_17-50-58_427_7809802233568190458/-mr-10000
 0	val_0	0	val_0
 0	val_0	0	val_0
 0	val_0	0	val_0

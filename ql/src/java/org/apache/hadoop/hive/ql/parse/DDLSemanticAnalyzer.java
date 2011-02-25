@@ -30,9 +30,9 @@ import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Properties;
 import java.util.Set;
+import java.util.Map.Entry;
 
 import org.antlr.runtime.tree.CommonTree;
 import org.antlr.runtime.tree.Tree;
@@ -53,8 +53,8 @@ import org.apache.hadoop.hive.ql.exec.TaskFactory;
 import org.apache.hadoop.hive.ql.hooks.ReadEntity;
 import org.apache.hadoop.hive.ql.hooks.WriteEntity;
 import org.apache.hadoop.hive.ql.index.HiveIndex;
-import org.apache.hadoop.hive.ql.index.HiveIndex.IndexType;
 import org.apache.hadoop.hive.ql.index.HiveIndexHandler;
+import org.apache.hadoop.hive.ql.index.HiveIndex.IndexType;
 import org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat;
 import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
@@ -64,19 +64,10 @@ import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.plan.AddPartitionDesc;
 import org.apache.hadoop.hive.ql.plan.AlterDatabaseDesc;
 import org.apache.hadoop.hive.ql.plan.AlterIndexDesc;
-import org.apache.hadoop.hive.ql.plan.AlterIndexDesc.AlterIndexTypes;
 import org.apache.hadoop.hive.ql.plan.AlterTableDesc;
-import org.apache.hadoop.hive.ql.plan.AlterTableDesc.AlterTableTypes;
 import org.apache.hadoop.hive.ql.plan.AlterTableSimpleDesc;
 import org.apache.hadoop.hive.ql.plan.CreateDatabaseDesc;
 import org.apache.hadoop.hive.ql.plan.CreateIndexDesc;
-import org.apache.hadoop.hive.ql.plan.GrantDesc;
-import org.apache.hadoop.hive.ql.plan.GrantRevokeRoleDDL;
-import org.apache.hadoop.hive.ql.plan.PrincipalDesc;
-import org.apache.hadoop.hive.ql.plan.PrivilegeDesc;
-import org.apache.hadoop.hive.ql.plan.PrivilegeObjectDesc;
-import org.apache.hadoop.hive.ql.plan.RevokeDesc;
-import org.apache.hadoop.hive.ql.plan.RoleDDLDesc;
 import org.apache.hadoop.hive.ql.plan.DDLWork;
 import org.apache.hadoop.hive.ql.plan.DescDatabaseDesc;
 import org.apache.hadoop.hive.ql.plan.DescFunctionDesc;
@@ -85,8 +76,15 @@ import org.apache.hadoop.hive.ql.plan.DropDatabaseDesc;
 import org.apache.hadoop.hive.ql.plan.DropIndexDesc;
 import org.apache.hadoop.hive.ql.plan.DropTableDesc;
 import org.apache.hadoop.hive.ql.plan.FetchWork;
+import org.apache.hadoop.hive.ql.plan.GrantDesc;
+import org.apache.hadoop.hive.ql.plan.GrantRevokeRoleDDL;
 import org.apache.hadoop.hive.ql.plan.LockTableDesc;
 import org.apache.hadoop.hive.ql.plan.MsckDesc;
+import org.apache.hadoop.hive.ql.plan.PrincipalDesc;
+import org.apache.hadoop.hive.ql.plan.PrivilegeDesc;
+import org.apache.hadoop.hive.ql.plan.PrivilegeObjectDesc;
+import org.apache.hadoop.hive.ql.plan.RevokeDesc;
+import org.apache.hadoop.hive.ql.plan.RoleDDLDesc;
 import org.apache.hadoop.hive.ql.plan.ShowDatabasesDesc;
 import org.apache.hadoop.hive.ql.plan.ShowFunctionsDesc;
 import org.apache.hadoop.hive.ql.plan.ShowGrantDesc;
@@ -98,6 +96,8 @@ import org.apache.hadoop.hive.ql.plan.ShowTablesDesc;
 import org.apache.hadoop.hive.ql.plan.SwitchDatabaseDesc;
 import org.apache.hadoop.hive.ql.plan.TableDesc;
 import org.apache.hadoop.hive.ql.plan.UnlockTableDesc;
+import org.apache.hadoop.hive.ql.plan.AlterIndexDesc.AlterIndexTypes;
+import org.apache.hadoop.hive.ql.plan.AlterTableDesc.AlterTableTypes;
 import org.apache.hadoop.hive.ql.security.authorization.Privilege;
 import org.apache.hadoop.hive.ql.security.authorization.PrivilegeRegistry;
 import org.apache.hadoop.hive.ql.session.SessionState;
@@ -357,7 +357,7 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
 
   private void analyzeShowGrant(ASTNode ast) throws SemanticException {
     PrivilegeObjectDesc privHiveObj = null;
-    
+
     ASTNode principal = (ASTNode) ast.getChild(0);
     PrincipalType type = PrincipalType.USER;
     switch (principal.getType()) {
@@ -393,13 +393,13 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
         }
       }
     }
-    
+
     if (privHiveObj == null && cols != null) {
       throw new SemanticException(
           "For user-level privileges, column sets should be null. columns="
               + cols.toString());
     }
-    
+
     ShowGrantDesc showGrant = new ShowGrantDesc(ctx.getResFile().toString(),
         principalDesc, privHiveObj, cols);
     rootTasks.add(TaskFactory.get(new DDLWork(getInputs(), getOutputs(),
@@ -421,10 +421,10 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
           grantOption = true;
         } else if (astChild.getType() == HiveParser.TOK_PRIV_OBJECT) {
           privilegeObj = analyzePrivilegeObject(astChild);
-        } 
+        }
       }
     }
-    
+
     String userName = null;
     if (SessionState.get() != null
         && SessionState.get().getAuthenticator() != null) {
@@ -436,7 +436,7 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
     rootTasks.add(TaskFactory.get(new DDLWork(getInputs(), getOutputs(),
         grantDesc), conf));
   }
-  
+
   private void analyzeRevoke(ASTNode ast) throws SemanticException {
     List<PrivilegeDesc> privilegeDesc = analyzePrivilegeListDef(
         (ASTNode) ast.getChild(0));
@@ -447,13 +447,13 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
       ASTNode astChild = (ASTNode) ast.getChild(2);
       hiveObj = analyzePrivilegeObject(astChild);
     }
-    
+
     RevokeDesc revokeDesc = new RevokeDesc(privilegeDesc, principalDesc, hiveObj);
     rootTasks.add(TaskFactory.get(new DDLWork(getInputs(), getOutputs(),
         revokeDesc), conf));
   }
 
-  
+
   private PrivilegeObjectDesc analyzePrivilegeObject(ASTNode ast)
       throws SemanticException {
     PrivilegeObjectDesc subject = new PrivilegeObjectDesc();
@@ -470,10 +470,10 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
     }
     return subject;
   }
-  
+
   private List<PrincipalDesc> analyzePrincipalListDef(ASTNode node) {
     List<PrincipalDesc> principalList = new ArrayList<PrincipalDesc>();
-    
+
     for (int i = 0; i < node.getChildCount(); i++) {
       ASTNode child = (ASTNode) node.getChild(i);
       PrincipalType type = null;
@@ -492,7 +492,7 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
       PrincipalDesc principalDesc = new PrincipalDesc(principalName, type);
       principalList.add(principalDesc);
     }
-    
+
     return principalList;
   }
 
@@ -503,6 +503,7 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
       ASTNode privilegeDef = (ASTNode) node.getChild(i);
       ASTNode privilegeType = (ASTNode) privilegeDef.getChild(0);
       Privilege privObj = PrivilegeRegistry.getPrivilege(privilegeType.getType());
+
       if (privObj == null) {
         throw new SemanticException("undefined privilege " + privObj.toString());
       }
@@ -637,7 +638,7 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
 
   private void analyzeDropTable(ASTNode ast, boolean expectView)
       throws SemanticException {
-    String tableName = unescapeIdentifier(ast.getChild(0).getText());
+    String tableName = getUnescapedName((ASTNode)ast.getChild(0));
     boolean ifExists = (ast.getFirstChildWithType(TOK_IFEXISTS) != null);
     // we want to signal an error if the table/view doesn't exist and we're
     // configured not to fail silently
@@ -661,7 +662,7 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
   private void analyzeCreateIndex(ASTNode ast) throws SemanticException {
     String indexName = unescapeIdentifier(ast.getChild(0).getText());
     String typeName = unescapeSQLString(ast.getChild(1).getText());
-    String tableName = unescapeIdentifier(ast.getChild(2).getText());
+    String tableName = getUnescapedName((ASTNode)ast.getChild(2));
     List<String> indexedCols = getColumnNames((ASTNode) ast.getChild(3));
 
     IndexType indexType = HiveIndex.getIndexType(typeName);
@@ -697,7 +698,7 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
         break;
       case HiveParser.TOK_CREATEINDEX_INDEXTBLNAME:
         ASTNode ch = (ASTNode) child.getChild(0);
-        indexTableName = unescapeIdentifier(ch.getText());
+        indexTableName = getUnescapedName((ASTNode)ch);
         break;
       case HiveParser.TOK_DEFERRED_REBUILDINDEX:
         deferredRebuild = true;
@@ -739,7 +740,7 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
 
   private void analyzeDropIndex(ASTNode ast) throws SemanticException {
     String indexName = unescapeIdentifier(ast.getChild(0).getText());
-    String tableName = unescapeIdentifier(ast.getChild(1).getText());
+    String tableName = getUnescapedName((ASTNode)ast.getChild(1));
     boolean ifExists = (ast.getFirstChildWithType(TOK_IFEXISTS) != null);
     // we want to signal an error if the index doesn't exist and we're
     // configured not to ignore this
@@ -773,7 +774,7 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
   private void analyzeAlterIndexProps(ASTNode ast)
     throws SemanticException {
 
-    String baseTableName = unescapeIdentifier(ast.getChild(0).getText());
+    String baseTableName = getUnescapedName((ASTNode)ast.getChild(0));
     String indexName = unescapeIdentifier(ast.getChild(1).getText());
     HashMap<String, String> mapProp = getProps((ASTNode) (ast.getChild(2))
         .getChild(0));
@@ -858,7 +859,7 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
   private void analyzeAlterTableProps(ASTNode ast, boolean expectView)
     throws SemanticException {
 
-    String tableName = unescapeIdentifier(ast.getChild(0).getText());
+    String tableName = getUnescapedName((ASTNode)ast.getChild(0));
     HashMap<String, String> mapProp = getProps((ASTNode) (ast.getChild(1))
         .getChild(0));
     AlterTableDesc alterTblDesc =
@@ -882,7 +883,7 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
 
   private void analyzeAlterTableSerdeProps(ASTNode ast)
       throws SemanticException {
-    String tableName = unescapeIdentifier(ast.getChild(0).getText());
+    String tableName = getUnescapedName((ASTNode)ast.getChild(0));
     HashMap<String, String> mapProp = getProps((ASTNode) (ast.getChild(1))
         .getChild(0));
     AlterTableDesc alterTblDesc = new AlterTableDesc(
@@ -905,7 +906,7 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
   }
 
   private void analyzeAlterTableSerde(ASTNode ast) throws SemanticException {
-    String tableName = unescapeIdentifier(ast.getChild(0).getText());
+    String tableName = getUnescapedName((ASTNode)ast.getChild(0));
     String serdeName = unescapeSQLString(ast.getChild(1).getText());
     AlterTableDesc alterTblDesc = new AlterTableDesc(AlterTableTypes.ADDSERDE);
     if (ast.getChildCount() > 2) {
@@ -1069,7 +1070,7 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
 
   private void analyzeAlterTableClusterSort(ASTNode ast)
       throws SemanticException {
-    String tableName = unescapeIdentifier(ast.getChild(0).getText());
+    String tableName = getUnescapedName((ASTNode)ast.getChild(0));
 
     try {
       Table tab = db.getTable(db.getCurrentDatabase(), tableName, false);
@@ -1218,7 +1219,7 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
 
   private void analyzeShowPartitions(ASTNode ast) throws SemanticException {
     ShowPartitionsDesc showPartsDesc;
-    String tableName = unescapeIdentifier(ast.getChild(0).getText());
+    String tableName = getUnescapedName((ASTNode)ast.getChild(0));
     List<Map<String, String>> partSpecs = getPartitionSpecs(ast);
     // We only can have a single partition spec
     assert(partSpecs.size() <= 1);
@@ -1281,7 +1282,7 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
 
   private void analyzeShowTableStatus(ASTNode ast) throws SemanticException {
     ShowTableStatusDesc showTblStatusDesc;
-    String tableNames = unescapeIdentifier(ast.getChild(0).getText());
+    String tableNames = getUnescapedName((ASTNode)ast.getChild(0));
     String dbName = db.getCurrentDatabase();
     int children = ast.getChildCount();
     HashMap<String, String> partSpec = null;
@@ -1309,7 +1310,7 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
 
   private void analyzeShowIndexes(ASTNode ast) throws SemanticException {
     ShowIndexesDesc showIndexesDesc;
-    String tableName = unescapeIdentifier(ast.getChild(0).getText());
+    String tableName = getUnescapedName((ASTNode)ast.getChild(0));
     showIndexesDesc = new ShowIndexesDesc(tableName, ctx.getResFile());
 
     if (ast.getChildCount() == 2) {
@@ -1397,7 +1398,7 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
    */
   private void analyzeLockTable(ASTNode ast)
       throws SemanticException {
-    String tableName = unescapeIdentifier(ast.getChild(0).getText().toLowerCase());
+    String tableName = getUnescapedName((ASTNode)ast.getChild(0)).toLowerCase();
     String mode      = unescapeIdentifier(ast.getChild(1).getText().toUpperCase());
     List<Map<String, String>> partSpecs = getPartitionSpecs(ast);
 
@@ -1428,7 +1429,7 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
    */
   private void analyzeUnlockTable(ASTNode ast)
       throws SemanticException {
-    String tableName = unescapeIdentifier(ast.getChild(0).getText().toLowerCase());
+    String tableName = getUnescapedName((ASTNode)ast.getChild(0));
     List<Map<String, String>> partSpecs = getPartitionSpecs(ast);
 
     // We only can have a single partition spec
@@ -1478,9 +1479,9 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
 
 
   private void analyzeAlterTableRename(ASTNode ast) throws SemanticException {
-    String tblName = unescapeIdentifier(ast.getChild(0).getText());
+    String tblName = getUnescapedName((ASTNode)ast.getChild(0));
     AlterTableDesc alterTblDesc = new AlterTableDesc(tblName,
-      unescapeIdentifier(ast.getChild(1).getText()));
+        getUnescapedName((ASTNode)ast.getChild(1)));
     try {
       Table tab = db.getTable(db.getCurrentDatabase(), tblName, false);
       if (tab != null) {
@@ -1496,7 +1497,7 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
   }
 
   private void analyzeAlterTableRenameCol(ASTNode ast) throws SemanticException {
-    String tblName = unescapeIdentifier(ast.getChild(0).getText());
+    String tblName = getUnescapedName((ASTNode)ast.getChild(0));
     String newComment = null;
     String newType = null;
     newType = getTypeStringFromAST((ASTNode) ast.getChild(3));
@@ -1542,7 +1543,7 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
 
   private void analyzeAlterTableModifyCols(ASTNode ast,
       AlterTableTypes alterType) throws SemanticException {
-    String tblName = unescapeIdentifier(ast.getChild(0).getText());
+    String tblName = getUnescapedName((ASTNode)ast.getChild(0));
     List<FieldSchema> newCols = getColumns((ASTNode) ast.getChild(1));
     AlterTableDesc alterTblDesc = new AlterTableDesc(tblName, newCols,
         alterType);
@@ -1562,7 +1563,7 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
   }
 
   private void analyzeAlterTableDropParts(ASTNode ast) throws SemanticException {
-    String tblName = unescapeIdentifier(ast.getChild(0).getText());
+    String tblName = getUnescapedName((ASTNode)ast.getChild(0));
     // get table metadata
     List<Map<String, String>> partSpecs = getPartitionSpecs(ast);
     DropTableDesc dropTblDesc = new DropTableDesc(tblName, partSpecs);
@@ -1601,7 +1602,7 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
   private void analyzeAlterTableAddParts(CommonTree ast)
       throws SemanticException {
 
-    String tblName = unescapeIdentifier(ast.getChild(0).getText());
+    String tblName = getUnescapedName((ASTNode)ast.getChild(0));
     try {
       Table tab = db.getTable(db.getCurrentDatabase(), tblName, false);
       if (tab != null) {
@@ -1674,7 +1675,7 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
   private void analyzeAlterTableTouch(CommonTree ast)
       throws SemanticException {
 
-    String tblName = unescapeIdentifier(ast.getChild(0).getText());
+    String tblName = getUnescapedName((ASTNode)ast.getChild(0));
     Table tab;
 
     try {
@@ -1715,7 +1716,7 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
       throw new SemanticException(ErrorMsg.ARCHIVE_METHODS_DISABLED.getMsg());
 
     }
-    String tblName = unescapeIdentifier(ast.getChild(0).getText());
+    String tblName = getUnescapedName((ASTNode)ast.getChild(0));
     // partition name to value
     List<Map<String, String>> partSpecs = getPartitionSpecs(ast);
 
@@ -1761,9 +1762,9 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
     if (ast.getChildCount() > 0) {
       repair = ast.getChild(0).getType() == HiveParser.KW_REPAIR;
       if (!repair) {
-        tableName = unescapeIdentifier(ast.getChild(0).getText());
+        tableName = getUnescapedName((ASTNode)ast.getChild(0));
       } else if (ast.getChildCount() > 1) {
-        tableName = unescapeIdentifier(ast.getChild(1).getText());
+        tableName = getUnescapedName((ASTNode)ast.getChild(1));
       }
     }
     List<Map<String, String>> specs = getPartitionSpecs(ast);

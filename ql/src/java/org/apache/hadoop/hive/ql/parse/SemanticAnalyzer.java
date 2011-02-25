@@ -27,9 +27,9 @@ import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Set;
 import java.util.TreeSet;
+import java.util.Map.Entry;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 
@@ -91,7 +91,6 @@ import org.apache.hadoop.hive.ql.metadata.VirtualColumn;
 import org.apache.hadoop.hive.ql.optimizer.GenMRFileSink1;
 import org.apache.hadoop.hive.ql.optimizer.GenMROperator;
 import org.apache.hadoop.hive.ql.optimizer.GenMRProcContext;
-import org.apache.hadoop.hive.ql.optimizer.GenMRProcContext.GenMapRedCtx;
 import org.apache.hadoop.hive.ql.optimizer.GenMRRedSink1;
 import org.apache.hadoop.hive.ql.optimizer.GenMRRedSink2;
 import org.apache.hadoop.hive.ql.optimizer.GenMRRedSink3;
@@ -101,6 +100,7 @@ import org.apache.hadoop.hive.ql.optimizer.GenMRUnion1;
 import org.apache.hadoop.hive.ql.optimizer.GenMapRedUtils;
 import org.apache.hadoop.hive.ql.optimizer.MapJoinFactory;
 import org.apache.hadoop.hive.ql.optimizer.Optimizer;
+import org.apache.hadoop.hive.ql.optimizer.GenMRProcContext.GenMapRedCtx;
 import org.apache.hadoop.hive.ql.optimizer.physical.PhysicalContext;
 import org.apache.hadoop.hive.ql.optimizer.physical.PhysicalOptimizer;
 import org.apache.hadoop.hive.ql.optimizer.ppr.PartitionPruner;
@@ -121,7 +121,6 @@ import org.apache.hadoop.hive.ql.plan.ExtractDesc;
 import org.apache.hadoop.hive.ql.plan.FetchWork;
 import org.apache.hadoop.hive.ql.plan.FileSinkDesc;
 import org.apache.hadoop.hive.ql.plan.FilterDesc;
-import org.apache.hadoop.hive.ql.plan.FilterDesc.sampleDesc;
 import org.apache.hadoop.hive.ql.plan.ForwardDesc;
 import org.apache.hadoop.hive.ql.plan.GroupByDesc;
 import org.apache.hadoop.hive.ql.plan.HiveOperation;
@@ -144,12 +143,13 @@ import org.apache.hadoop.hive.ql.plan.TableDesc;
 import org.apache.hadoop.hive.ql.plan.TableScanDesc;
 import org.apache.hadoop.hive.ql.plan.UDTFDesc;
 import org.apache.hadoop.hive.ql.plan.UnionDesc;
+import org.apache.hadoop.hive.ql.plan.FilterDesc.sampleDesc;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.ql.session.SessionState.ResourceType;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDAFEvaluator;
-import org.apache.hadoop.hive.ql.udf.generic.GenericUDAFEvaluator.Mode;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFHash;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDTF;
+import org.apache.hadoop.hive.ql.udf.generic.GenericUDAFEvaluator.Mode;
 import org.apache.hadoop.hive.serde.Constants;
 import org.apache.hadoop.hive.serde2.Deserializer;
 import org.apache.hadoop.hive.serde2.MetadataTypedColumnsetSerDe;
@@ -157,9 +157,9 @@ import org.apache.hadoop.hive.serde2.SerDeException;
 import org.apache.hadoop.hive.serde2.SerDeUtils;
 import org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
-import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector.Category;
 import org.apache.hadoop.hive.serde2.objectinspector.StructField;
 import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
+import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector.Category;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
@@ -399,7 +399,12 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       tableSamplePresent = true;
     }
     ASTNode tableTree = (ASTNode) (tabref.getChild(0));
-    String alias = unescapeIdentifier(tabref.getChild(aliasIndex).getText());
+
+    String tabIdName = getUnescapedName(tableTree);
+
+    String alias = (aliasIndex != 0) ?
+        unescapeIdentifier(tabref.getChild(aliasIndex).getText()) : tabIdName;
+
     // If the alias is already there then we have a conflict
     if (qb.exists(alias)) {
       throw new SemanticException(ErrorMsg.AMBIGUOUS_TABLE_ALIAS.getMsg(tabref
@@ -433,13 +438,12 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       }
     }
     // Insert this map into the stats
-    String table_name = unescapeIdentifier(tabref.getChild(0).getText());
-    qb.setTabAlias(alias, table_name);
+    qb.setTabAlias(alias, tabIdName);
     qb.addAlias(alias);
 
     qb.getParseInfo().setSrcForAlias(alias, tableTree);
 
-    unparseTranslator.addIdentifierTranslation(tableTree);
+    unparseTranslator.addTableNameTranslation(tableTree);
     if (aliasIndex != 0) {
       unparseTranslator.addIdentifierTranslation((ASTNode) tabref
           .getChild(aliasIndex));
@@ -715,7 +719,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
 
       case HiveParser.TOK_ANALYZE:
         // Case of analyze command
-        String table_name = unescapeIdentifier(ast.getChild(0).getChild(0).getText());
+        String table_name = getUnescapedName((ASTNode)ast.getChild(0).getChild(0));
         qb.setTabAlias(table_name, table_name);
         qb.addAlias(table_name);
         qb.getParseInfo().setIsAnalyzeCommand(true);
@@ -788,10 +792,15 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         //
         if (tab.isOffline()) {
           throw new SemanticException(ErrorMsg.OFFLINE_TABLE_OR_PARTITION.
-              getMsg("Table " + qb.getParseInfo().getSrcForAlias(alias)));
+              getMsg("Table " + getUnescapedName(qb.getParseInfo().getSrcForAlias(alias))));
         }
 
         if (tab.isView()) {
+          // TODO: add support to referencing views in foreign databases.
+          if (!tab.getDbName().equals(db.getCurrentDatabase())) {
+            throw new SemanticException(ErrorMsg.INVALID_TABLE_ALIAS.
+                getMsg("Referencing view from foreign databases is not supported."));
+          }
           replaceViewReferenceWithDefinition(qb, tab, tab_name, alias);
           continue;
         }
@@ -2015,7 +2024,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
 
       if (expr.getType() == HiveParser.TOK_ALLCOLREF) {
         pos = genColListRegex(".*", expr.getChildCount() == 0 ? null
-            : unescapeIdentifier(expr.getChild(0).getText().toLowerCase()),
+            : getUnescapedName((ASTNode)expr.getChild(0)).toLowerCase(),
             expr, col_list, inputRR, pos, out_rwsch, qb.getAliases());
         selectStar = true;
       } else if (expr.getType() == HiveParser.TOK_TABLE_OR_COL && !hasAsClause
@@ -4766,7 +4775,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         // leftAliases should contain the first table, rightAliases should
         // contain all other tables and baseSrc should contain all tables
 
-        String tableName = unescapeIdentifier(child.getChild(0).getText());
+        String tableName = getUnescapedName((ASTNode)child.getChild(0));
         String alias = child.getChildCount() == 1 ? tableName
             : unescapeIdentifier(child.getChild(child.getChildCount() - 1)
             .getText().toLowerCase());
@@ -4869,7 +4878,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
 
     if ((left.getToken().getType() == HiveParser.TOK_TABREF)
         || (left.getToken().getType() == HiveParser.TOK_SUBQUERY)) {
-      String table_name = unescapeIdentifier(left.getChild(0).getText());
+      String table_name = getUnescapedName((ASTNode)left.getChild(0));
       String alias = left.getChildCount() == 1 ? table_name
           : unescapeIdentifier(left.getChild(left.getChildCount() - 1)
           .getText().toLowerCase());
@@ -4896,7 +4905,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
 
     if ((right.getToken().getType() == HiveParser.TOK_TABREF)
         || (right.getToken().getType() == HiveParser.TOK_SUBQUERY)) {
-      String tableName = unescapeIdentifier(right.getChild(0).getText());
+      String tableName = getUnescapedName((ASTNode)right.getChild(0));
       String alias = right.getChildCount() == 1 ? tableName
           : unescapeIdentifier(right.getChild(right.getChildCount() - 1)
           .getText().toLowerCase());
@@ -6270,14 +6279,23 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
           String location = qb.getTableDesc().getLocation();
           if (location == null) {
             // get the table's default location
-            location = conf.getVar(HiveConf.ConfVars.METASTOREWAREHOUSE);
-            assert (location.length() > 0);
-            if (location.charAt(location.length() - 1) != '/') {
-              location += '/';
+            Table dumpTable;
+            Path targetPath;
+            try {
+              dumpTable = db.newTable(qb.getTableDesc().getTableName());
+              Warehouse wh = new Warehouse(conf);
+              targetPath = wh.getDefaultTablePath(dumpTable.getDbName(), dumpTable
+                  .getTableName());
+            } catch (HiveException e) {
+              throw new SemanticException(e);
+            } catch (MetaException e) {
+              throw new SemanticException(e);
             }
-            location += qb.getTableDesc().getTableName().toLowerCase();
+
+            location = targetPath.toString();
           }
           lfd.setTargetDir(location);
+
           oneLoadFile = false;
         }
         mvTask.add(TaskFactory.get(new MoveWork(null, null, null, lfd, false),
@@ -6774,42 +6792,6 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     return desc;
   }
 
-  /**
-   * Gets the table Alias for the column from the column name. This function
-   * throws and exception in case the same column name is present in multiple
-   * table. The exception message indicates that the ambiguity could not be
-   * resolved.
-   *
-   * @param qbm
-   *          The metadata where the function looks for the table alias
-   * @param colName
-   *          The name of the non aliased column
-   * @param pt
-   *          The parse tree corresponding to the column(this is used for error
-   *          reporting)
-   * @return String
-   * @throws SemanticException
-   */
-  static String getTabAliasForCol(QBMetaData qbm, String colName, ASTNode pt)
-      throws SemanticException {
-    String tabAlias = null;
-    boolean found = false;
-
-    for (Map.Entry<String, Table> ent : qbm.getAliasToTable().entrySet()) {
-      for (FieldSchema field : ent.getValue().getAllCols()) {
-        if (colName.equalsIgnoreCase(field.getName())) {
-          if (found) {
-            throw new SemanticException(ErrorMsg.AMBIGUOUS_COLUMN.getMsg(pt));
-          }
-
-          found = true;
-          tabAlias = ent.getKey();
-        }
-      }
-    }
-    return tabAlias;
-  }
-
   @Override
   public void validate() throws SemanticException {
     // Validate inputs and outputs have right protectmode to execute the query
@@ -6874,7 +6856,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         if (type == WriteEntity.Type.PARTITION && p!=null && p.isOffline()) {
           throw new SemanticException(
               ErrorMsg.OFFLINE_TABLE_OR_PARTITION.getMsg(
-              "Table " + tbl.getTableName() +
+              " Table " + tbl.getTableName() +
               " Partition " + p.getName()));
         }
       }
@@ -6951,7 +6933,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
    */
   private ASTNode analyzeCreateTable(ASTNode ast, QB qb)
       throws SemanticException {
-    String tableName = unescapeIdentifier(ast.getChild(0).getText());
+    String tableName = getUnescapedName((ASTNode)ast.getChild(0));
     String likeTableName = null;
     List<FieldSchema> cols = new ArrayList<FieldSchema>();
     List<FieldSchema> partCols = new ArrayList<FieldSchema>();
@@ -6997,7 +6979,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         break;
       case HiveParser.TOK_LIKETABLE:
         if (child.getChildCount() > 0) {
-          likeTableName = unescapeIdentifier(child.getChild(0).getText());
+          likeTableName = getUnescapedName((ASTNode)child.getChild(0));
           if (likeTableName != null) {
             if (command_type == CTAS) {
               throw new SemanticException(ErrorMsg.CTAS_CTLT_COEXISTENCE
@@ -7104,6 +7086,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
 
     case CREATE_TABLE: // REGULAR CREATE TABLE DDL
       tblProps = addDefaultProperties(tblProps);
+
       crtTblDesc = new CreateTableDesc(tableName, isExt, cols, partCols,
           bucketCols, sortCols, numBuckets, rowFormatParams.fieldDelim, rowFormatParams.fieldEscape,
           rowFormatParams.collItemDelim, rowFormatParams.mapKeyDelim, rowFormatParams.lineDelim, comment,
@@ -7130,7 +7113,8 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
 
       // Verify that the table does not already exist
       try {
-        if (null != db.getTable(db.getCurrentDatabase(), tableName, false)) {
+        Table dumpTable = db.newTable(tableName);
+        if (null != db.getTable(dumpTable.getDbName(), dumpTable.getTableName(), false)) {
           throw new SemanticException(ErrorMsg.TABLE_ALREADY_EXISTS.getMsg(tableName));
         }
       } catch (HiveException e) {
@@ -7157,7 +7141,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
 
   private ASTNode analyzeCreateView(ASTNode ast, QB qb)
       throws SemanticException {
-    String tableName = unescapeIdentifier(ast.getChild(0).getText());
+    String tableName = getUnescapedName((ASTNode)ast.getChild(0));
     List<FieldSchema> cols = null;
     boolean ifNotExists = false;
     String comment = null;
@@ -7195,6 +7179,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     unparseTranslator.enable();
     rootTasks.add(TaskFactory.get(new DDLWork(getInputs(), getOutputs(),
         createVwDesc), conf));
+
     return selectStmt;
   }
 
@@ -7390,5 +7375,4 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
 
     return conf.getIntVar(HiveConf.ConfVars.HADOOPNUMREDUCERS);
   }
-
 }

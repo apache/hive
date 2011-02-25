@@ -5,7 +5,7 @@ POSTHOOK: query: explain
 select * from src sort by key limit 10
 POSTHOOK: type: QUERY
 ABSTRACT SYNTAX TREE:
-  (TOK_QUERY (TOK_FROM (TOK_TABREF src)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR TOK_ALLCOLREF)) (TOK_SORTBY (TOK_TABSORTCOLNAMEASC (TOK_TABLE_OR_COL key))) (TOK_LIMIT 10)))
+  (TOK_QUERY (TOK_FROM (TOK_TABREF (TOK_TABNAME src))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR TOK_ALLCOLREF)) (TOK_SORTBY (TOK_TABSORTCOLNAMEASC (TOK_TABLE_OR_COL key))) (TOK_LIMIT 10)))
 
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -50,7 +50,7 @@ STAGE PLANS:
   Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/data/users/njain/hive5/hive5/build/ql/tmp/1763489725/10002 
+        file:/tmp/sdong/hive_2011-02-10_15-57-49_662_8624774470586471481/-mr-10002 
             Reduce Output Operator
               key expressions:
                     expr: _col0
@@ -80,11 +80,11 @@ STAGE PLANS:
 PREHOOK: query: select * from src sort by key limit 10
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/1576676537/10000
+PREHOOK: Output: file:/tmp/sdong/hive_2011-02-10_15-57-49_754_6913553304641154292/-mr-10000
 POSTHOOK: query: select * from src sort by key limit 10
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/1576676537/10000
+POSTHOOK: Output: file:/tmp/sdong/hive_2011-02-10_15-57-49_754_6913553304641154292/-mr-10000
 0	val_0
 0	val_0
 0	val_0

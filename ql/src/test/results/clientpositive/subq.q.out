@@ -11,7 +11,7 @@ FROM (
 INSERT OVERWRITE DIRECTORY '../build/ql/test/data/warehouse/union.out' SELECT unioninput.*
 POSTHOOK: type: QUERY
 ABSTRACT SYNTAX TREE:
-  (TOK_QUERY (TOK_FROM (TOK_SUBQUERY (TOK_QUERY (TOK_FROM (TOK_TABREF src)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_ALLCOLREF src))) (TOK_WHERE (< (. (TOK_TABLE_OR_COL src) key) 100)))) unioninput)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR '../build/ql/test/data/warehouse/union.out')) (TOK_SELECT (TOK_SELEXPR (TOK_ALLCOLREF unioninput)))))
+  (TOK_QUERY (TOK_FROM (TOK_SUBQUERY (TOK_QUERY (TOK_FROM (TOK_TABREF (TOK_TABNAME src))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_ALLCOLREF (TOK_TABNAME src)))) (TOK_WHERE (< (. (TOK_TABLE_OR_COL src) key) 100)))) unioninput)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR '../build/ql/test/data/warehouse/union.out')) (TOK_SELECT (TOK_SELEXPR (TOK_ALLCOLREF (TOK_TABNAME unioninput))))))
 
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -63,7 +63,7 @@ STAGE PLANS:
     Move Operator
       files:
           hdfs directory: true
-          destination: file:/data/users/nzhang/work/870/apache-hive/build/ql/scratchdir/hive_2010-08-17_22-59-55_872_4777473968057853028/-ext-10000
+          destination: file:/data/users/sdong/www/open-source-hive1/build/ql/scratchdir/hive_2011-02-10_17-24-02_450_5117807678141759845/-ext-10000
 
   Stage: Stage-0
     Move Operator
@@ -74,7 +74,7 @@ STAGE PLANS:
   Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/data/users/nzhang/work/870/apache-hive/build/ql/scratchdir/hive_2010-08-17_22-59-55_872_4777473968057853028/-ext-10001 
+        file:/data/users/sdong/www/open-source-hive1/build/ql/scratchdir/hive_2011-02-10_17-24-02_450_5117807678141759845/-ext-10001 
             File Output Operator
               compressed: false
               GlobalTableId: 0

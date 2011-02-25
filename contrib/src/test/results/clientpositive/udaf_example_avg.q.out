@@ -13,7 +13,7 @@ SELECT example_avg(substr(value,5)),
 FROM src
 POSTHOOK: type: QUERY
 ABSTRACT SYNTAX TREE:
-  (TOK_QUERY (TOK_FROM (TOK_TABREF src)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_FUNCTION example_avg (TOK_FUNCTION substr (TOK_TABLE_OR_COL value) 5))) (TOK_SELEXPR (TOK_FUNCTION example_avg (TOK_FUNCTION IF (> (TOK_FUNCTION substr (TOK_TABLE_OR_COL value) 5) 250) TOK_NULL (TOK_FUNCTION substr (TOK_TABLE_OR_COL value) 5)))))))
+  (TOK_QUERY (TOK_FROM (TOK_TABREF (TOK_TABNAME src))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_FUNCTION example_avg (TOK_FUNCTION substr (TOK_TABLE_OR_COL value) 5))) (TOK_SELEXPR (TOK_FUNCTION example_avg (TOK_FUNCTION IF (> (TOK_FUNCTION substr (TOK_TABLE_OR_COL value) 5) 250) TOK_NULL (TOK_FUNCTION substr (TOK_TABLE_OR_COL value) 5)))))))
 
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -78,13 +78,13 @@ PREHOOK: query: SELECT example_avg(substr(value,5)),
 FROM src
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/data/users/heyongqiang/hive-trunk-commit/build/ql/tmp/611794302/10000
+PREHOOK: Output: file:/tmp/sdong/hive_2011-02-16_20-10-40_935_934094548612608112/-mr-10000
 POSTHOOK: query: SELECT example_avg(substr(value,5)),
        example_avg(IF(substr(value,5) > 250, NULL, substr(value,5)))
 FROM src
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: file:/data/users/heyongqiang/hive-trunk-commit/build/ql/tmp/611794302/10000
+POSTHOOK: Output: file:/tmp/sdong/hive_2011-02-16_20-10-40_935_934094548612608112/-mr-10000
 260.182	134.82926829268294
 PREHOOK: query: DROP TEMPORARY FUNCTION example_avg
 PREHOOK: type: DROPFUNCTION

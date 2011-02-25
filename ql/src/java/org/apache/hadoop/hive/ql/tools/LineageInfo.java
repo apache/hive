@@ -34,17 +34,18 @@ import org.apache.hadoop.hive.ql.lib.NodeProcessor;
 import org.apache.hadoop.hive.ql.lib.NodeProcessorCtx;
 import org.apache.hadoop.hive.ql.lib.Rule;
 import org.apache.hadoop.hive.ql.parse.ASTNode;
+import org.apache.hadoop.hive.ql.parse.BaseSemanticAnalyzer;
 import org.apache.hadoop.hive.ql.parse.HiveParser;
 import org.apache.hadoop.hive.ql.parse.ParseDriver;
 import org.apache.hadoop.hive.ql.parse.ParseException;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 
 /**
- * 
+ *
  * This class prints out the lineage info. It takes sql as input and prints
  * lineage info. Currently this prints only input and output tables for a given
  * sql. Later we can expand to add join tables etc.
- * 
+ *
  */
 public class LineageInfo implements NodeProcessor {
 
@@ -58,7 +59,7 @@ public class LineageInfo implements NodeProcessor {
   TreeSet<String> OutputTableList = new TreeSet<String>();
 
   /**
-   * 
+   *
    * @return java.util.TreeSet
    */
   public TreeSet<String> getInputTableList() {
@@ -82,11 +83,14 @@ public class LineageInfo implements NodeProcessor {
     switch (pt.getToken().getType()) {
 
     case HiveParser.TOK_TAB:
-      OutputTableList.add(pt.getChild(0).getText());
+      OutputTableList.add(BaseSemanticAnalyzer.getUnescapedName((ASTNode)pt.getChild(0)));
       break;
 
     case HiveParser.TOK_TABREF:
-      String table_name = ((ASTNode) pt.getChild(0)).getText();
+      ASTNode tabTree = (ASTNode) pt.getChild(0);
+      String table_name = (tabTree.getChildCount() == 1) ?
+          BaseSemanticAnalyzer.getUnescapedName((ASTNode)tabTree.getChild(0)) :
+            BaseSemanticAnalyzer.getUnescapedName((ASTNode)tabTree.getChild(0)) + "." + tabTree.getChild(1);
       inputTableList.add(table_name);
       break;
     }
@@ -95,7 +99,7 @@ public class LineageInfo implements NodeProcessor {
 
   /**
    * parses given query and gets the lineage info.
-   * 
+   *
    * @param query
    * @throws ParseException
    */

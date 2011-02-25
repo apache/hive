@@ -13,7 +13,7 @@ select * from (
 )subq
 POSTHOOK: type: QUERY
 ABSTRACT SYNTAX TREE:
-  (TOK_QUERY (TOK_FROM (TOK_SUBQUERY (TOK_UNION (TOK_QUERY (TOK_FROM (TOK_TABREF srcpart a)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR TOK_ALLCOLREF)) (TOK_WHERE (and (= (. (TOK_TABLE_OR_COL a) ds) '2008-04-08') (= (. (TOK_TABLE_OR_COL a) hr) '11'))) (TOK_ORDERBY (TOK_TABSORTCOLNAMEASC (. (TOK_TABLE_OR_COL a) key))) (TOK_LIMIT 5))) (TOK_QUERY (TOK_FROM (TOK_TABREF srcpart b)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR TOK_ALLCOLREF)) (TOK_WHERE (and (= (. (TOK_TABLE_OR_COL b) ds) '2008-04-08') (= (. (TOK_TABLE_OR_COL b) hr) '14'))) (TOK_LIMIT 5)))) subq)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR TOK_ALLCOLREF))))
+  (TOK_QUERY (TOK_FROM (TOK_SUBQUERY (TOK_UNION (TOK_QUERY (TOK_FROM (TOK_TABREF (TOK_TABNAME srcpart) a)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR TOK_ALLCOLREF)) (TOK_WHERE (and (= (. (TOK_TABLE_OR_COL a) ds) '2008-04-08') (= (. (TOK_TABLE_OR_COL a) hr) '11'))) (TOK_ORDERBY (TOK_TABSORTCOLNAMEASC (. (TOK_TABLE_OR_COL a) key))) (TOK_LIMIT 5))) (TOK_QUERY (TOK_FROM (TOK_TABREF (TOK_TABNAME srcpart) b)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR TOK_ALLCOLREF)) (TOK_WHERE (and (= (. (TOK_TABLE_OR_COL b) ds) '2008-04-08') (= (. (TOK_TABLE_OR_COL b) hr) '14'))) (TOK_LIMIT 5)))) subq)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR TOK_ALLCOLREF))))
 
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -71,7 +71,7 @@ STAGE PLANS:
   Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/tmp/sdong/hive_2010-10-29_15-29-23_938_7355422580795044573/-mr-10002 
+        file:/tmp/sdong/hive_2011-02-10_15-54-47_775_6322428928723831214/-mr-10002 
           Union
             Select Operator
               expressions:
@@ -90,7 +90,7 @@ STAGE PLANS:
                 table:
                     input format: org.apache.hadoop.mapred.TextInputFormat
                     output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-        file:/tmp/sdong/hive_2010-10-29_15-29-23_938_7355422580795044573/-mr-10003 
+        file:/tmp/sdong/hive_2011-02-10_15-54-47_775_6322428928723831214/-mr-10003 
           Union
             Select Operator
               expressions:
@@ -170,7 +170,7 @@ PREHOOK: query: select * from (
 )subq
 PREHOOK: type: QUERY
 PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
-PREHOOK: Output: file:/tmp/sdong/hive_2010-10-29_15-29-24_093_3328149771220915909/-mr-10000
+PREHOOK: Output: file:/tmp/sdong/hive_2011-02-10_15-54-47_937_1412967694655761034/-mr-10000
 POSTHOOK: query: select * from (
   select * from srcpart a where a.ds = '2008-04-08' and a.hr = '11' order by a.key limit 5
     union all
@@ -178,7 +178,7 @@ POSTHOOK: query: select * from (
 )subq
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
-POSTHOOK: Output: file:/tmp/sdong/hive_2010-10-29_15-29-24_093_3328149771220915909/-mr-10000
+POSTHOOK: Output: file:/tmp/sdong/hive_2011-02-10_15-54-47_937_1412967694655761034/-mr-10000
 0	val_0	2008-04-08	11
 0	val_0	2008-04-08	11
 0	val_0	2008-04-08	11

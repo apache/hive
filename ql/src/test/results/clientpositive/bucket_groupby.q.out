@@ -11,7 +11,7 @@ key	string
 value	string	
 ds	string	
 	 	 
-Detailed Table Information	Table(tableName:clustergroupby, dbName:default, owner:heyongqiang, createTime:1290108934, lastAccessTime:0, retention:0, sd:StorageDescriptor(cols:[FieldSchema(name:key, type:string, comment:null), FieldSchema(name:value, type:string, comment:null), FieldSchema(name:ds, type:string, comment:null)], location:pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/clustergroupby, inputFormat:org.apache.hadoop.mapred.TextInputFormat, outputFormat:org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat, compressed:false, numBuckets:-1, serdeInfo:SerDeInfo(name:null, serializationLib:org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe, parameters:{serialization.format=1}), bucketCols:[], sortCols:[], parameters:{}), partitionKeys:[FieldSchema(name:ds, type:string, comment:null)], parameters:{transient_lastDdlTime=1290108934}, viewOriginalText:null, viewExpandedText:null, tableType:MANAGED_TABLE)	
+Detailed Table Information	Table(tableName:clustergroupby, dbName:default, owner:sdong, createTime:1297330264, lastAccessTime:0, retention:0, sd:StorageDescriptor(cols:[FieldSchema(name:key, type:string, comment:null), FieldSchema(name:value, type:string, comment:null), FieldSchema(name:ds, type:string, comment:null)], location:pfile:/data/users/sdong/www/open-source-hive1/build/ql/test/data/warehouse/clustergroupby, inputFormat:org.apache.hadoop.mapred.TextInputFormat, outputFormat:org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat, compressed:false, numBuckets:-1, serdeInfo:SerDeInfo(name:null, serializationLib:org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe, parameters:{serialization.format=1}), bucketCols:[], sortCols:[], parameters:{}), partitionKeys:[FieldSchema(name:ds, type:string, comment:null)], parameters:{transient_lastDdlTime=1297330264}, viewOriginalText:null, viewExpandedText:null, tableType:MANAGED_TABLE)	
 PREHOOK: query: insert overwrite table clustergroupby partition (ds='100') select key, value from src sort by key
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
@@ -31,7 +31,7 @@ POSTHOOK: type: QUERY
 POSTHOOK: Lineage: clustergroupby PARTITION(ds=100).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: clustergroupby PARTITION(ds=100).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 ABSTRACT SYNTAX TREE:
-  (TOK_QUERY (TOK_FROM (TOK_TABREF clustergroupby)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_TABLE_OR_COL key)) (TOK_SELEXPR (TOK_FUNCTION count 1))) (TOK_WHERE (= (TOK_TABLE_OR_COL ds) '100')) (TOK_GROUPBY (TOK_TABLE_OR_COL key)) (TOK_LIMIT 10)))
+  (TOK_QUERY (TOK_FROM (TOK_TABREF (TOK_TABNAME clustergroupby))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_TABLE_OR_COL key)) (TOK_SELEXPR (TOK_FUNCTION count 1))) (TOK_WHERE (= (TOK_TABLE_OR_COL ds) '100')) (TOK_GROUPBY (TOK_TABLE_OR_COL key)) (TOK_LIMIT 10)))
 
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -107,11 +107,11 @@ STAGE PLANS:
 PREHOOK: query: select key, count(1) from clustergroupby where ds='100' group by key limit 10
 PREHOOK: type: QUERY
 PREHOOK: Input: default@clustergroupby@ds=100
-PREHOOK: Output: file:/var/folders/6g/6grtCwPMEf4sqHUPpy6xQG9ByHg/-Tmp-/heyongqiang/hive_2010-11-18_11-35-47_282_4113045751057786056/-mr-10000
+PREHOOK: Output: file:/tmp/sdong/hive_2011-02-10_01-31-09_571_4785800205176349032/-mr-10000
 POSTHOOK: query: select key, count(1) from clustergroupby where ds='100' group by key limit 10
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@clustergroupby@ds=100
-POSTHOOK: Output: file:/var/folders/6g/6grtCwPMEf4sqHUPpy6xQG9ByHg/-Tmp-/heyongqiang/hive_2010-11-18_11-35-47_282_4113045751057786056/-mr-10000
+POSTHOOK: Output: file:/tmp/sdong/hive_2011-02-10_01-31-09_571_4785800205176349032/-mr-10000
 POSTHOOK: Lineage: clustergroupby PARTITION(ds=100).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: clustergroupby PARTITION(ds=100).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 0	3
@@ -144,7 +144,7 @@ key	string
 value	string	
 ds	string	
 	 	 
-Detailed Table Information	Table(tableName:clustergroupby, dbName:default, owner:heyongqiang, createTime:1290108934, lastAccessTime:0, retention:0, sd:StorageDescriptor(cols:[FieldSchema(name:key, type:string, comment:null), FieldSchema(name:value, type:string, comment:null), FieldSchema(name:ds, type:string, comment:null)], location:pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/clustergroupby, inputFormat:org.apache.hadoop.mapred.TextInputFormat, outputFormat:org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat, compressed:false, numBuckets:1, serdeInfo:SerDeInfo(name:null, serializationLib:org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe, parameters:{serialization.format=1}), bucketCols:[key], sortCols:[], parameters:{}), partitionKeys:[FieldSchema(name:ds, type:string, comment:null)], parameters:{numPartitions=1, numFiles=1, last_modified_by=heyongqiang, last_modified_time=1290108955, transient_lastDdlTime=1290108955, numRows=500, totalSize=5812}, viewOriginalText:null, viewExpandedText:null, tableType:MANAGED_TABLE)	
+Detailed Table Information	Table(tableName:clustergroupby, dbName:default, owner:sdong, createTime:1297330264, lastAccessTime:0, retention:0, sd:StorageDescriptor(cols:[FieldSchema(name:key, type:string, comment:null), FieldSchema(name:value, type:string, comment:null), FieldSchema(name:ds, type:string, comment:null)], location:pfile:/data/users/sdong/www/open-source-hive1/build/ql/test/data/warehouse/clustergroupby, inputFormat:org.apache.hadoop.mapred.TextInputFormat, outputFormat:org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat, compressed:false, numBuckets:1, serdeInfo:SerDeInfo(name:null, serializationLib:org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe, parameters:{serialization.format=1}), bucketCols:[key], sortCols:[], parameters:{}), partitionKeys:[FieldSchema(name:ds, type:string, comment:null)], parameters:{numPartitions=1, numFiles=1, last_modified_by=sdong, last_modified_time=1297330273, transient_lastDdlTime=1297330273, numRows=500, totalSize=5812}, viewOriginalText:null, viewExpandedText:null, tableType:MANAGED_TABLE)	
 PREHOOK: query: insert overwrite table clustergroupby partition (ds='101') select key, value from src distribute by key
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
@@ -170,7 +170,7 @@ POSTHOOK: Lineage: clustergroupby PARTITION(ds=100).value SIMPLE [(src)src.Field
 POSTHOOK: Lineage: clustergroupby PARTITION(ds=101).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: clustergroupby PARTITION(ds=101).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 ABSTRACT SYNTAX TREE:
-  (TOK_QUERY (TOK_FROM (TOK_TABREF clustergroupby)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_TABLE_OR_COL key)) (TOK_SELEXPR (TOK_FUNCTION count 1))) (TOK_WHERE (= (TOK_TABLE_OR_COL ds) '101')) (TOK_GROUPBY (TOK_TABLE_OR_COL key)) (TOK_LIMIT 10)))
+  (TOK_QUERY (TOK_FROM (TOK_TABREF (TOK_TABNAME clustergroupby))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_TABLE_OR_COL key)) (TOK_SELEXPR (TOK_FUNCTION count 1))) (TOK_WHERE (= (TOK_TABLE_OR_COL ds) '101')) (TOK_GROUPBY (TOK_TABLE_OR_COL key)) (TOK_LIMIT 10)))
 
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -246,11 +246,11 @@ STAGE PLANS:
 PREHOOK: query: select key, count(1) from clustergroupby  where ds='101' group by key limit 10
 PREHOOK: type: QUERY
 PREHOOK: Input: default@clustergroupby@ds=101
-PREHOOK: Output: file:/var/folders/6g/6grtCwPMEf4sqHUPpy6xQG9ByHg/-Tmp-/heyongqiang/hive_2010-11-18_11-36-06_455_5652519335128156482/-mr-10000
+PREHOOK: Output: file:/tmp/sdong/hive_2011-02-10_01-31-18_109_2103582873568530260/-mr-10000
 POSTHOOK: query: select key, count(1) from clustergroupby  where ds='101' group by key limit 10
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@clustergroupby@ds=101
-POSTHOOK: Output: file:/var/folders/6g/6grtCwPMEf4sqHUPpy6xQG9ByHg/-Tmp-/heyongqiang/hive_2010-11-18_11-36-06_455_5652519335128156482/-mr-10000
+POSTHOOK: Output: file:/tmp/sdong/hive_2011-02-10_01-31-18_109_2103582873568530260/-mr-10000
 POSTHOOK: Lineage: clustergroupby PARTITION(ds=100).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: clustergroupby PARTITION(ds=100).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: clustergroupby PARTITION(ds=101).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
@@ -278,7 +278,7 @@ POSTHOOK: Lineage: clustergroupby PARTITION(ds=100).value SIMPLE [(src)src.Field
 POSTHOOK: Lineage: clustergroupby PARTITION(ds=101).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: clustergroupby PARTITION(ds=101).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 ABSTRACT SYNTAX TREE:
-  (TOK_QUERY (TOK_FROM (TOK_TABREF clustergroupby)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_FUNCTION length (TOK_TABLE_OR_COL key))) (TOK_SELEXPR (TOK_FUNCTION count 1))) (TOK_WHERE (= (TOK_TABLE_OR_COL ds) '101')) (TOK_GROUPBY (TOK_FUNCTION length (TOK_TABLE_OR_COL key))) (TOK_LIMIT 10)))
+  (TOK_QUERY (TOK_FROM (TOK_TABREF (TOK_TABNAME clustergroupby))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_FUNCTION length (TOK_TABLE_OR_COL key))) (TOK_SELEXPR (TOK_FUNCTION count 1))) (TOK_WHERE (= (TOK_TABLE_OR_COL ds) '101')) (TOK_GROUPBY (TOK_FUNCTION length (TOK_TABLE_OR_COL key))) (TOK_LIMIT 10)))
 
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -354,11 +354,11 @@ STAGE PLANS:
 PREHOOK: query: select length(key), count(1) from clustergroupby  where ds='101' group by length(key) limit 10
 PREHOOK: type: QUERY
 PREHOOK: Input: default@clustergroupby@ds=101
-PREHOOK: Output: file:/var/folders/6g/6grtCwPMEf4sqHUPpy6xQG9ByHg/-Tmp-/heyongqiang/hive_2010-11-18_11-36-13_777_4853958758753332533/-mr-10000
+PREHOOK: Output: file:/tmp/sdong/hive_2011-02-10_01-31-21_764_2109263664206229253/-mr-10000
 POSTHOOK: query: select length(key), count(1) from clustergroupby  where ds='101' group by length(key) limit 10
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@clustergroupby@ds=101
-POSTHOOK: Output: file:/var/folders/6g/6grtCwPMEf4sqHUPpy6xQG9ByHg/-Tmp-/heyongqiang/hive_2010-11-18_11-36-13_777_4853958758753332533/-mr-10000
+POSTHOOK: Output: file:/tmp/sdong/hive_2011-02-10_01-31-21_764_2109263664206229253/-mr-10000
 POSTHOOK: Lineage: clustergroupby PARTITION(ds=100).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: clustergroupby PARTITION(ds=100).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: clustergroupby PARTITION(ds=101).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
@@ -377,7 +377,7 @@ POSTHOOK: Lineage: clustergroupby PARTITION(ds=100).value SIMPLE [(src)src.Field
 POSTHOOK: Lineage: clustergroupby PARTITION(ds=101).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: clustergroupby PARTITION(ds=101).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 ABSTRACT SYNTAX TREE:
-  (TOK_QUERY (TOK_FROM (TOK_TABREF clustergroupby)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_FUNCTION abs (TOK_FUNCTION length (TOK_TABLE_OR_COL key)))) (TOK_SELEXPR (TOK_FUNCTION count 1))) (TOK_WHERE (= (TOK_TABLE_OR_COL ds) '101')) (TOK_GROUPBY (TOK_FUNCTION abs (TOK_FUNCTION length (TOK_TABLE_OR_COL key)))) (TOK_LIMIT 10)))
+  (TOK_QUERY (TOK_FROM (TOK_TABREF (TOK_TABNAME clustergroupby))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_FUNCTION abs (TOK_FUNCTION length (TOK_TABLE_OR_COL key)))) (TOK_SELEXPR (TOK_FUNCTION count 1))) (TOK_WHERE (= (TOK_TABLE_OR_COL ds) '101')) (TOK_GROUPBY (TOK_FUNCTION abs (TOK_FUNCTION length (TOK_TABLE_OR_COL key)))) (TOK_LIMIT 10)))
 
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -453,11 +453,11 @@ STAGE PLANS:
 PREHOOK: query: select abs(length(key)), count(1) from clustergroupby  where ds='101' group by abs(length(key)) limit 10
 PREHOOK: type: QUERY
 PREHOOK: Input: default@clustergroupby@ds=101
-PREHOOK: Output: file:/var/folders/6g/6grtCwPMEf4sqHUPpy6xQG9ByHg/-Tmp-/heyongqiang/hive_2010-11-18_11-36-22_353_1148410217887255773/-mr-10000
+PREHOOK: Output: file:/tmp/sdong/hive_2011-02-10_01-31-26_110_671172006622360339/-mr-10000
 POSTHOOK: query: select abs(length(key)), count(1) from clustergroupby  where ds='101' group by abs(length(key)) limit 10
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@clustergroupby@ds=101
-POSTHOOK: Output: file:/var/folders/6g/6grtCwPMEf4sqHUPpy6xQG9ByHg/-Tmp-/heyongqiang/hive_2010-11-18_11-36-22_353_1148410217887255773/-mr-10000
+POSTHOOK: Output: file:/tmp/sdong/hive_2011-02-10_01-31-26_110_671172006622360339/-mr-10000
 POSTHOOK: Lineage: clustergroupby PARTITION(ds=100).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: clustergroupby PARTITION(ds=100).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: clustergroupby PARTITION(ds=101).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
@@ -478,7 +478,7 @@ POSTHOOK: Lineage: clustergroupby PARTITION(ds=100).value SIMPLE [(src)src.Field
 POSTHOOK: Lineage: clustergroupby PARTITION(ds=101).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: clustergroupby PARTITION(ds=101).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 ABSTRACT SYNTAX TREE:
-  (TOK_QUERY (TOK_FROM (TOK_TABREF clustergroupby)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_TABLE_OR_COL key)) (TOK_SELEXPR (TOK_FUNCTION count 1))) (TOK_WHERE (= (TOK_TABLE_OR_COL ds) '101')) (TOK_GROUPBY (TOK_TABLE_OR_COL key) 3) (TOK_LIMIT 10)))
+  (TOK_QUERY (TOK_FROM (TOK_TABREF (TOK_TABNAME clustergroupby))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_TABLE_OR_COL key)) (TOK_SELEXPR (TOK_FUNCTION count 1))) (TOK_WHERE (= (TOK_TABLE_OR_COL ds) '101')) (TOK_GROUPBY (TOK_TABLE_OR_COL key) 3) (TOK_LIMIT 10)))
 
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -562,11 +562,11 @@ STAGE PLANS:
 PREHOOK: query: select key, count(1) from clustergroupby  where ds='101' group by key,3 limit 10
 PREHOOK: type: QUERY
 PREHOOK: Input: default@clustergroupby@ds=101
-PREHOOK: Output: file:/var/folders/6g/6grtCwPMEf4sqHUPpy6xQG9ByHg/-Tmp-/heyongqiang/hive_2010-11-18_11-36-29_836_2726844280049537094/-mr-10000
+PREHOOK: Output: file:/tmp/sdong/hive_2011-02-10_01-31-29_764_2397216315877695624/-mr-10000
 POSTHOOK: query: select key, count(1) from clustergroupby  where ds='101' group by key,3 limit 10
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@clustergroupby@ds=101
-POSTHOOK: Output: file:/var/folders/6g/6grtCwPMEf4sqHUPpy6xQG9ByHg/-Tmp-/heyongqiang/hive_2010-11-18_11-36-29_836_2726844280049537094/-mr-10000
+POSTHOOK: Output: file:/tmp/sdong/hive_2011-02-10_01-31-29_764_2397216315877695624/-mr-10000
 POSTHOOK: Lineage: clustergroupby PARTITION(ds=100).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: clustergroupby PARTITION(ds=100).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: clustergroupby PARTITION(ds=101).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
@@ -594,7 +594,7 @@ POSTHOOK: Lineage: clustergroupby PARTITION(ds=100).value SIMPLE [(src)src.Field
 POSTHOOK: Lineage: clustergroupby PARTITION(ds=101).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: clustergroupby PARTITION(ds=101).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 ABSTRACT SYNTAX TREE:
-  (TOK_QUERY (TOK_FROM (TOK_SUBQUERY (TOK_QUERY (TOK_FROM (TOK_TABREF clustergroupby)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_TABLE_OR_COL value) key) (TOK_SELEXPR (TOK_TABLE_OR_COL key) value)) (TOK_WHERE (= (TOK_TABLE_OR_COL ds) '101')))) subq)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_TABLE_OR_COL key)) (TOK_SELEXPR (TOK_FUNCTION count 1))) (TOK_GROUPBY (TOK_TABLE_OR_COL key)) (TOK_LIMIT 10)))
+  (TOK_QUERY (TOK_FROM (TOK_SUBQUERY (TOK_QUERY (TOK_FROM (TOK_TABREF (TOK_TABNAME clustergroupby))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_TABLE_OR_COL value) key) (TOK_SELEXPR (TOK_TABLE_OR_COL key) value)) (TOK_WHERE (= (TOK_TABLE_OR_COL ds) '101')))) subq)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_TABLE_OR_COL key)) (TOK_SELEXPR (TOK_FUNCTION count 1))) (TOK_GROUPBY (TOK_TABLE_OR_COL key)) (TOK_LIMIT 10)))
 
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -675,11 +675,11 @@ STAGE PLANS:
 PREHOOK: query: select key, count(1) from (select value as key, key as value from clustergroupby where ds='101')subq group by key limit 10
 PREHOOK: type: QUERY
 PREHOOK: Input: default@clustergroupby@ds=101
-PREHOOK: Output: file:/var/folders/6g/6grtCwPMEf4sqHUPpy6xQG9ByHg/-Tmp-/heyongqiang/hive_2010-11-18_11-36-36_869_6506961229190926826/-mr-10000
+PREHOOK: Output: file:/tmp/sdong/hive_2011-02-10_01-31-33_487_1431386357774433664/-mr-10000
 POSTHOOK: query: select key, count(1) from (select value as key, key as value from clustergroupby where ds='101')subq group by key limit 10
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@clustergroupby@ds=101
-POSTHOOK: Output: file:/var/folders/6g/6grtCwPMEf4sqHUPpy6xQG9ByHg/-Tmp-/heyongqiang/hive_2010-11-18_11-36-36_869_6506961229190926826/-mr-10000
+POSTHOOK: Output: file:/tmp/sdong/hive_2011-02-10_01-31-33_487_1431386357774433664/-mr-10000
 POSTHOOK: Lineage: clustergroupby PARTITION(ds=100).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: clustergroupby PARTITION(ds=100).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: clustergroupby PARTITION(ds=101).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
@@ -705,7 +705,7 @@ POSTHOOK: Lineage: clustergroupby PARTITION(ds=100).value SIMPLE [(src)src.Field
 POSTHOOK: Lineage: clustergroupby PARTITION(ds=101).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: clustergroupby PARTITION(ds=101).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 ABSTRACT SYNTAX TREE:
-  (TOK_QUERY (TOK_FROM (TOK_TABREF clustergroupby)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_TABLE_OR_COL key)) (TOK_SELEXPR (TOK_FUNCTION count 1))) (TOK_GROUPBY (TOK_TABLE_OR_COL key))))
+  (TOK_QUERY (TOK_FROM (TOK_TABREF (TOK_TABNAME clustergroupby))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_TABLE_OR_COL key)) (TOK_SELEXPR (TOK_FUNCTION count 1))) (TOK_GROUPBY (TOK_TABLE_OR_COL key))))
 
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -777,12 +777,12 @@ PREHOOK: query: select key, count(1) from clustergroupby  group by key
 PREHOOK: type: QUERY
 PREHOOK: Input: default@clustergroupby@ds=100
 PREHOOK: Input: default@clustergroupby@ds=101
-PREHOOK: Output: file:/var/folders/6g/6grtCwPMEf4sqHUPpy6xQG9ByHg/-Tmp-/heyongqiang/hive_2010-11-18_11-36-45_158_7554312247658259364/-mr-10000
+PREHOOK: Output: file:/tmp/sdong/hive_2011-02-10_01-31-37_126_6695656183965608913/-mr-10000
 POSTHOOK: query: select key, count(1) from clustergroupby  group by key
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@clustergroupby@ds=100
 POSTHOOK: Input: default@clustergroupby@ds=101
-POSTHOOK: Output: file:/var/folders/6g/6grtCwPMEf4sqHUPpy6xQG9ByHg/-Tmp-/heyongqiang/hive_2010-11-18_11-36-45_158_7554312247658259364/-mr-10000
+POSTHOOK: Output: file:/tmp/sdong/hive_2011-02-10_01-31-37_126_6695656183965608913/-mr-10000
 POSTHOOK: Lineage: clustergroupby PARTITION(ds=100).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: clustergroupby PARTITION(ds=100).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: clustergroupby PARTITION(ds=101).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
@@ -1107,7 +1107,7 @@ POSTHOOK: Lineage: clustergroupby PARTITION(ds=100).value SIMPLE [(src)src.Field
 POSTHOOK: Lineage: clustergroupby PARTITION(ds=101).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: clustergroupby PARTITION(ds=101).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 ABSTRACT SYNTAX TREE:
-  (TOK_QUERY (TOK_FROM (TOK_TABREF clustergroupby)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_TABLE_OR_COL key)) (TOK_SELEXPR (TOK_FUNCTION count 1))) (TOK_GROUPBY (TOK_TABLE_OR_COL key) 3)))
+  (TOK_QUERY (TOK_FROM (TOK_TABREF (TOK_TABNAME clustergroupby))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_TABLE_OR_COL key)) (TOK_SELEXPR (TOK_FUNCTION count 1))) (TOK_GROUPBY (TOK_TABLE_OR_COL key) 3)))
 
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -1209,7 +1209,7 @@ key	string
 value	string	
 ds	string	
 	 	 
-Detailed Table Information	Table(tableName:clustergroupby, dbName:default, owner:heyongqiang, createTime:1290108934, lastAccessTime:0, retention:0, sd:StorageDescriptor(cols:[FieldSchema(name:key, type:string, comment:null), FieldSchema(name:value, type:string, comment:null), FieldSchema(name:ds, type:string, comment:null)], location:pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/clustergroupby, inputFormat:org.apache.hadoop.mapred.TextInputFormat, outputFormat:org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat, compressed:false, numBuckets:1, serdeInfo:SerDeInfo(name:null, serializationLib:org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe, parameters:{serialization.format=1}), bucketCols:[value], sortCols:[Order(col:key, order:1), Order(col:value, order:1)], parameters:{}), partitionKeys:[FieldSchema(name:ds, type:string, comment:null)], parameters:{numPartitions=2, numFiles=2, last_modified_by=heyongqiang, last_modified_time=1290109014, transient_lastDdlTime=1290109014, numRows=1000, totalSize=11624}, viewOriginalText:null, viewExpandedText:null, tableType:MANAGED_TABLE)	
+Detailed Table Information	Table(tableName:clustergroupby, dbName:default, owner:sdong, createTime:1297330264, lastAccessTime:0, retention:0, sd:StorageDescriptor(cols:[FieldSchema(name:key, type:string, comment:null), FieldSchema(name:value, type:string, comment:null), FieldSchema(name:ds, type:string, comment:null)], location:pfile:/data/users/sdong/www/open-source-hive1/build/ql/test/data/warehouse/clustergroupby, inputFormat:org.apache.hadoop.mapred.TextInputFormat, outputFormat:org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat, compressed:false, numBuckets:1, serdeInfo:SerDeInfo(name:null, serializationLib:org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe, parameters:{serialization.format=1}), bucketCols:[value], sortCols:[Order(col:key, order:1), Order(col:value, order:1)], parameters:{}), partitionKeys:[FieldSchema(name:ds, type:string, comment:null)], parameters:{numPartitions=2, numFiles=2, last_modified_by=sdong, last_modified_time=1297330300, transient_lastDdlTime=1297330300, numRows=1000, totalSize=11624}, viewOriginalText:null, viewExpandedText:null, tableType:MANAGED_TABLE)	
 PREHOOK: query: insert overwrite table clustergroupby partition (ds='102') select key, value from src distribute by value sort by key, value
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
@@ -1237,7 +1237,7 @@ POSTHOOK: Lineage: clustergroupby PARTITION(ds=101).value SIMPLE [(src)src.Field
 POSTHOOK: Lineage: clustergroupby PARTITION(ds=102).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: clustergroupby PARTITION(ds=102).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 ABSTRACT SYNTAX TREE:
-  (TOK_QUERY (TOK_FROM (TOK_TABREF clustergroupby)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_TABLE_OR_COL key)) (TOK_SELEXPR (TOK_FUNCTION count 1))) (TOK_WHERE (= (TOK_TABLE_OR_COL ds) '102')) (TOK_GROUPBY (TOK_TABLE_OR_COL key)) (TOK_LIMIT 10)))
+  (TOK_QUERY (TOK_FROM (TOK_TABREF (TOK_TABNAME clustergroupby))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_TABLE_OR_COL key)) (TOK_SELEXPR (TOK_FUNCTION count 1))) (TOK_WHERE (= (TOK_TABLE_OR_COL ds) '102')) (TOK_GROUPBY (TOK_TABLE_OR_COL key)) (TOK_LIMIT 10)))
 
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -1313,11 +1313,11 @@ STAGE PLANS:
 PREHOOK: query: select key, count(1) from clustergroupby  where ds='102' group by key limit 10
 PREHOOK: type: QUERY
 PREHOOK: Input: default@clustergroupby@ds=102
-PREHOOK: Output: file:/var/folders/6g/6grtCwPMEf4sqHUPpy6xQG9ByHg/-Tmp-/heyongqiang/hive_2010-11-18_11-37-04_173_5662986070533466247/-mr-10000
+PREHOOK: Output: file:/tmp/sdong/hive_2011-02-10_01-31-45_956_2691533777800757183/-mr-10000
 POSTHOOK: query: select key, count(1) from clustergroupby  where ds='102' group by key limit 10
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@clustergroupby@ds=102
-POSTHOOK: Output: file:/var/folders/6g/6grtCwPMEf4sqHUPpy6xQG9ByHg/-Tmp-/heyongqiang/hive_2010-11-18_11-37-04_173_5662986070533466247/-mr-10000
+POSTHOOK: Output: file:/tmp/sdong/hive_2011-02-10_01-31-45_956_2691533777800757183/-mr-10000
 POSTHOOK: Lineage: clustergroupby PARTITION(ds=100).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: clustergroupby PARTITION(ds=100).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: clustergroupby PARTITION(ds=101).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
@@ -1347,7 +1347,7 @@ POSTHOOK: Lineage: clustergroupby PARTITION(ds=101).value SIMPLE [(src)src.Field
 POSTHOOK: Lineage: clustergroupby PARTITION(ds=102).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: clustergroupby PARTITION(ds=102).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 ABSTRACT SYNTAX TREE:
-  (TOK_QUERY (TOK_FROM (TOK_TABREF clustergroupby)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_TABLE_OR_COL value)) (TOK_SELEXPR (TOK_FUNCTION count 1))) (TOK_WHERE (= (TOK_TABLE_OR_COL ds) '102')) (TOK_GROUPBY (TOK_TABLE_OR_COL value)) (TOK_LIMIT 10)))
+  (TOK_QUERY (TOK_FROM (TOK_TABREF (TOK_TABNAME clustergroupby))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_TABLE_OR_COL value)) (TOK_SELEXPR (TOK_FUNCTION count 1))) (TOK_WHERE (= (TOK_TABLE_OR_COL ds) '102')) (TOK_GROUPBY (TOK_TABLE_OR_COL value)) (TOK_LIMIT 10)))
 
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -1423,11 +1423,11 @@ STAGE PLANS:
 PREHOOK: query: select value, count(1) from clustergroupby  where ds='102'  group by value limit 10
 PREHOOK: type: QUERY
 PREHOOK: Input: default@clustergroupby@ds=102
-PREHOOK: Output: file:/var/folders/6g/6grtCwPMEf4sqHUPpy6xQG9ByHg/-Tmp-/heyongqiang/hive_2010-11-18_11-37-11_984_9094618456601035974/-mr-10000
+PREHOOK: Output: file:/tmp/sdong/hive_2011-02-10_01-31-49_553_601799080303065238/-mr-10000
 POSTHOOK: query: select value, count(1) from clustergroupby  where ds='102'  group by value limit 10
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@clustergroupby@ds=102
-POSTHOOK: Output: file:/var/folders/6g/6grtCwPMEf4sqHUPpy6xQG9ByHg/-Tmp-/heyongqiang/hive_2010-11-18_11-37-11_984_9094618456601035974/-mr-10000
+POSTHOOK: Output: file:/tmp/sdong/hive_2011-02-10_01-31-49_553_601799080303065238/-mr-10000
 POSTHOOK: Lineage: clustergroupby PARTITION(ds=100).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: clustergroupby PARTITION(ds=100).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: clustergroupby PARTITION(ds=101).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
@@ -1457,7 +1457,7 @@ POSTHOOK: Lineage: clustergroupby PARTITION(ds=101).value SIMPLE [(src)src.Field
 POSTHOOK: Lineage: clustergroupby PARTITION(ds=102).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: clustergroupby PARTITION(ds=102).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 ABSTRACT SYNTAX TREE:
-  (TOK_QUERY (TOK_FROM (TOK_TABREF clustergroupby)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_TABLE_OR_COL key)) (TOK_SELEXPR (TOK_FUNCTION count 1))) (TOK_WHERE (= (TOK_TABLE_OR_COL ds) '102')) (TOK_GROUPBY (TOK_TABLE_OR_COL key) (TOK_TABLE_OR_COL value)) (TOK_LIMIT 10)))
+  (TOK_QUERY (TOK_FROM (TOK_TABREF (TOK_TABNAME clustergroupby))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_TABLE_OR_COL key)) (TOK_SELEXPR (TOK_FUNCTION count 1))) (TOK_WHERE (= (TOK_TABLE_OR_COL ds) '102')) (TOK_GROUPBY (TOK_TABLE_OR_COL key) (TOK_TABLE_OR_COL value)) (TOK_LIMIT 10)))
 
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -1543,11 +1543,11 @@ STAGE PLANS:
 PREHOOK: query: select key, count(1) from clustergroupby  where ds='102'  group by key, value limit 10
 PREHOOK: type: QUERY
 PREHOOK: Input: default@clustergroupby@ds=102
-PREHOOK: Output: file:/var/folders/6g/6grtCwPMEf4sqHUPpy6xQG9ByHg/-Tmp-/heyongqiang/hive_2010-11-18_11-37-18_617_5093814006573436611/-mr-10000
+PREHOOK: Output: file:/tmp/sdong/hive_2011-02-10_01-31-53_197_8563057494828766352/-mr-10000
 POSTHOOK: query: select key, count(1) from clustergroupby  where ds='102'  group by key, value limit 10
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@clustergroupby@ds=102
-POSTHOOK: Output: file:/var/folders/6g/6grtCwPMEf4sqHUPpy6xQG9ByHg/-Tmp-/heyongqiang/hive_2010-11-18_11-37-18_617_5093814006573436611/-mr-10000
+POSTHOOK: Output: file:/tmp/sdong/hive_2011-02-10_01-31-53_197_8563057494828766352/-mr-10000
 POSTHOOK: Lineage: clustergroupby PARTITION(ds=100).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: clustergroupby PARTITION(ds=100).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: clustergroupby PARTITION(ds=101).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
@@ -1592,7 +1592,7 @@ key	string
 value	string	
 ds	string	
 	 	 
-Detailed Table Information	Table(tableName:clustergroupby, dbName:default, owner:heyongqiang, createTime:1290108934, lastAccessTime:0, retention:0, sd:StorageDescriptor(cols:[FieldSchema(name:key, type:string, comment:null), FieldSchema(name:value, type:string, comment:null), FieldSchema(name:ds, type:string, comment:null)], location:pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/clustergroupby, inputFormat:org.apache.hadoop.mapred.TextInputFormat, outputFormat:org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat, compressed:false, numBuckets:1, serdeInfo:SerDeInfo(name:null, serializationLib:org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe, parameters:{serialization.format=1}), bucketCols:[value, key], sortCols:[Order(col:key, order:1)], parameters:{}), partitionKeys:[FieldSchema(name:ds, type:string, comment:null)], parameters:{numPartitions=3, numFiles=3, last_modified_by=heyongqiang, last_modified_time=1290109047, transient_lastDdlTime=1290109047, numRows=1500, totalSize=17436}, viewOriginalText:null, viewExpandedText:null, tableType:MANAGED_TABLE)	
+Detailed Table Information	Table(tableName:clustergroupby, dbName:default, owner:sdong, createTime:1297330264, lastAccessTime:0, retention:0, sd:StorageDescriptor(cols:[FieldSchema(name:key, type:string, comment:null), FieldSchema(name:value, type:string, comment:null), FieldSchema(name:ds, type:string, comment:null)], location:pfile:/data/users/sdong/www/open-source-hive1/build/ql/test/data/warehouse/clustergroupby, inputFormat:org.apache.hadoop.mapred.TextInputFormat, outputFormat:org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat, compressed:false, numBuckets:1, serdeInfo:SerDeInfo(name:null, serializationLib:org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe, parameters:{serialization.format=1}), bucketCols:[value, key], sortCols:[Order(col:key, order:1)], parameters:{}), partitionKeys:[FieldSchema(name:ds, type:string, comment:null)], parameters:{numPartitions=3, numFiles=3, last_modified_by=sdong, last_modified_time=1297330316, transient_lastDdlTime=1297330316, numRows=1500, totalSize=17436}, viewOriginalText:null, viewExpandedText:null, tableType:MANAGED_TABLE)	
 PREHOOK: query: insert overwrite table clustergroupby partition (ds='103') select key, value from src distribute by value, key sort by key
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
@@ -1624,7 +1624,7 @@ POSTHOOK: Lineage: clustergroupby PARTITION(ds=102).value SIMPLE [(src)src.Field
 POSTHOOK: Lineage: clustergroupby PARTITION(ds=103).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: clustergroupby PARTITION(ds=103).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 ABSTRACT SYNTAX TREE:
-  (TOK_QUERY (TOK_FROM (TOK_TABREF clustergroupby)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_TABLE_OR_COL key)) (TOK_SELEXPR (TOK_FUNCTION count 1))) (TOK_WHERE (= (TOK_TABLE_OR_COL ds) '103')) (TOK_GROUPBY (TOK_TABLE_OR_COL key)) (TOK_LIMIT 10)))
+  (TOK_QUERY (TOK_FROM (TOK_TABREF (TOK_TABNAME clustergroupby))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_TABLE_OR_COL key)) (TOK_SELEXPR (TOK_FUNCTION count 1))) (TOK_WHERE (= (TOK_TABLE_OR_COL ds) '103')) (TOK_GROUPBY (TOK_TABLE_OR_COL key)) (TOK_LIMIT 10)))
 
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -1700,11 +1700,11 @@ STAGE PLANS:
 PREHOOK: query: select key, count(1) from clustergroupby  where ds='103' group by key limit 10
 PREHOOK: type: QUERY
 PREHOOK: Input: default@clustergroupby@ds=103
-PREHOOK: Output: file:/var/folders/6g/6grtCwPMEf4sqHUPpy6xQG9ByHg/-Tmp-/heyongqiang/hive_2010-11-18_11-37-38_066_2359801468488363119/-mr-10000
+PREHOOK: Output: file:/tmp/sdong/hive_2011-02-10_01-32-01_981_7801389614651227175/-mr-10000
 POSTHOOK: query: select key, count(1) from clustergroupby  where ds='103' group by key limit 10
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@clustergroupby@ds=103
-POSTHOOK: Output: file:/var/folders/6g/6grtCwPMEf4sqHUPpy6xQG9ByHg/-Tmp-/heyongqiang/hive_2010-11-18_11-37-38_066_2359801468488363119/-mr-10000
+POSTHOOK: Output: file:/tmp/sdong/hive_2011-02-10_01-32-01_981_7801389614651227175/-mr-10000
 POSTHOOK: Lineage: clustergroupby PARTITION(ds=100).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: clustergroupby PARTITION(ds=100).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: clustergroupby PARTITION(ds=101).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
@@ -1738,7 +1738,7 @@ POSTHOOK: Lineage: clustergroupby PARTITION(ds=102).value SIMPLE [(src)src.Field
 POSTHOOK: Lineage: clustergroupby PARTITION(ds=103).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: clustergroupby PARTITION(ds=103).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 ABSTRACT SYNTAX TREE:
-  (TOK_QUERY (TOK_FROM (TOK_TABREF clustergroupby)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_TABLE_OR_COL key)) (TOK_SELEXPR (TOK_FUNCTION count 1))) (TOK_WHERE (= (TOK_TABLE_OR_COL ds) '103')) (TOK_GROUPBY (TOK_TABLE_OR_COL value) (TOK_TABLE_OR_COL key)) (TOK_LIMIT 10)))
+  (TOK_QUERY (TOK_FROM (TOK_TABREF (TOK_TABNAME clustergroupby))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_TABLE_OR_COL key)) (TOK_SELEXPR (TOK_FUNCTION count 1))) (TOK_WHERE (= (TOK_TABLE_OR_COL ds) '103')) (TOK_GROUPBY (TOK_TABLE_OR_COL value) (TOK_TABLE_OR_COL key)) (TOK_LIMIT 10)))
 
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -1824,11 +1824,11 @@ STAGE PLANS:
 PREHOOK: query: select key, count(1) from clustergroupby  where ds='103' group by  value, key limit 10
 PREHOOK: type: QUERY
 PREHOOK: Input: default@clustergroupby@ds=103
-PREHOOK: Output: file:/var/folders/6g/6grtCwPMEf4sqHUPpy6xQG9ByHg/-Tmp-/heyongqiang/hive_2010-11-18_11-37-45_975_5803139738369049064/-mr-10000
+PREHOOK: Output: file:/tmp/sdong/hive_2011-02-10_01-32-05_628_4341301404865471977/-mr-10000
 POSTHOOK: query: select key, count(1) from clustergroupby  where ds='103' group by  value, key limit 10
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@clustergroupby@ds=103
-POSTHOOK: Output: file:/var/folders/6g/6grtCwPMEf4sqHUPpy6xQG9ByHg/-Tmp-/heyongqiang/hive_2010-11-18_11-37-45_975_5803139738369049064/-mr-10000
+POSTHOOK: Output: file:/tmp/sdong/hive_2011-02-10_01-32-05_628_4341301404865471977/-mr-10000
 POSTHOOK: Lineage: clustergroupby PARTITION(ds=100).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: clustergroupby PARTITION(ds=100).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: clustergroupby PARTITION(ds=101).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]

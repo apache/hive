@@ -71,7 +71,7 @@ public abstract class BaseSemanticAnalyzer {
 
   protected Context ctx;
   protected HashMap<String, String> idToTableNameMap;
-  
+
   public static int HIVE_COLUMN_ORDER_ASC = 1;
   public static int HIVE_COLUMN_ORDER_DESC = 0;
 
@@ -304,6 +304,23 @@ public abstract class BaseSemanticAnalyzer {
     } catch (UnsupportedEncodingException e) {
       throw new SemanticException(e);
     }
+  }
+
+  /**
+   * @param Get the name from a table node
+   * @return if DB name is give, db.tab is returned. Otherwise, tab.
+   */
+  public static String getUnescapedName(ASTNode tableNameNode) {
+    if (tableNameNode.getToken().getType() == HiveParser.TOK_TABNAME) {
+      if (tableNameNode.getChildCount() == 2) {
+        String dbName = unescapeIdentifier(tableNameNode.getChild(0).getText());
+        String tableName = unescapeIdentifier(tableNameNode.getChild(1).getText());
+        return dbName + "." + tableName;
+      } else {
+        return unescapeIdentifier(tableNameNode.getChild(0).getText());
+      }
+    }
+    return unescapeIdentifier(tableNameNode.getText());
   }
 
   /**
@@ -592,7 +609,7 @@ public abstract class BaseSemanticAnalyzer {
 
       try {
         // get table metadata
-        tableName = unescapeIdentifier(ast.getChild(0).getText());
+        tableName = getUnescapedName((ASTNode)ast.getChild(0));
         boolean testMode = conf.getBoolVar(HiveConf.ConfVars.HIVETESTMODE);
         if (testMode) {
           tableName = conf.getVar(HiveConf.ConfVars.HIVETESTMODEPREFIX)
@@ -719,7 +736,7 @@ public abstract class BaseSemanticAnalyzer {
     }
     return partSpec;
   }
-  
+
   public Hive getDb() {
     return db;
   }

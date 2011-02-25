@@ -15,7 +15,7 @@ ON (subq.key = tab.key and subq.key > 20 and subq.value = tab.value)
 where tab.value < 200
 POSTHOOK: type: QUERY
 ABSTRACT SYNTAX TREE:
-  (TOK_QUERY (TOK_FROM (TOK_JOIN (TOK_SUBQUERY (TOK_QUERY (TOK_FROM (TOK_TABREF src a)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (. (TOK_TABLE_OR_COL a) key)) (TOK_SELEXPR (. (TOK_TABLE_OR_COL a) value))) (TOK_WHERE (> (. (TOK_TABLE_OR_COL a) key) 10)))) subq) (TOK_TABREF src tab) (and (and (= (. (TOK_TABLE_OR_COL subq) key) (. (TOK_TABLE_OR_COL tab) key)) (> (. (TOK_TABLE_OR_COL subq) key) 20)) (= (. (TOK_TABLE_OR_COL subq) value) (. (TOK_TABLE_OR_COL tab) value))))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_FUNCTION sum (TOK_FUNCTION hash (. (TOK_TABLE_OR_COL subq) key) (. (TOK_TABLE_OR_COL tab) value))))) (TOK_WHERE (< (. (TOK_TABLE_OR_COL tab) value) 200))))
+  (TOK_QUERY (TOK_FROM (TOK_JOIN (TOK_SUBQUERY (TOK_QUERY (TOK_FROM (TOK_TABREF (TOK_TABNAME src) a)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (. (TOK_TABLE_OR_COL a) key)) (TOK_SELEXPR (. (TOK_TABLE_OR_COL a) value))) (TOK_WHERE (> (. (TOK_TABLE_OR_COL a) key) 10)))) subq) (TOK_TABREF (TOK_TABNAME src) tab) (and (and (= (. (TOK_TABLE_OR_COL subq) key) (. (TOK_TABLE_OR_COL tab) key)) (> (. (TOK_TABLE_OR_COL subq) key) 20)) (= (. (TOK_TABLE_OR_COL subq) value) (. (TOK_TABLE_OR_COL tab) value))))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_FUNCTION sum (TOK_FUNCTION hash (. (TOK_TABLE_OR_COL subq) key) (. (TOK_TABLE_OR_COL tab) value))))) (TOK_WHERE (< (. (TOK_TABLE_OR_COL tab) value) 200))))
 
 STAGE DEPENDENCIES:
   Stage-6 is a root stage , consists of Stage-7, Stage-8, Stage-1
@@ -121,7 +121,7 @@ STAGE PLANS:
   Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/tmp/liyintang/hive_2010-11-15_16-45-59_829_630621006367329763/-mr-10002 
+        file:/tmp/sdong/hive_2011-02-10_01-14-34_877_5596761155901891451/-mr-10002 
             Reduce Output Operator
               sort order: 
               tag: -1
@@ -344,7 +344,7 @@ ON (subq.key = tab.key and subq.key > 20 and subq.value = tab.value)
 where tab.value < 200
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/tmp/liyintang/hive_2010-11-15_16-46-00_194_7551947713427199304/-mr-10000
+PREHOOK: Output: file:/tmp/sdong/hive_2011-02-10_01-14-35_133_7289459318323276940/-mr-10000
 POSTHOOK: query: SELECT sum(hash(subq.key, tab.value)) 
 FROM 
 (select a.key, a.value from src a where a.key > 10 ) subq 
@@ -353,5 +353,5 @@ ON (subq.key = tab.key and subq.key > 20 and subq.value = tab.value)
 where tab.value < 200
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: file:/tmp/liyintang/hive_2010-11-15_16-46-00_194_7551947713427199304/-mr-10000
+POSTHOOK: Output: file:/tmp/sdong/hive_2011-02-10_01-14-35_133_7289459318323276940/-mr-10000
 NULL

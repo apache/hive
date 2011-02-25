@@ -40,7 +40,7 @@ SELECT elt(2, 'abc', 'defg'),
 FROM src LIMIT 1
 POSTHOOK: type: QUERY
 ABSTRACT SYNTAX TREE:
-  (TOK_QUERY (TOK_FROM (TOK_TABREF src)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_FUNCTION elt 2 'abc' 'defg')) (TOK_SELEXPR (TOK_FUNCTION elt 3 'aa' 'bb' 'cc' 'dd' 'ee' 'ff' 'gg')) (TOK_SELEXPR (TOK_FUNCTION elt '1' 'abc' 'defg')) (TOK_SELEXPR (TOK_FUNCTION elt 2 'aa' (TOK_FUNCTION TOK_TINYINT '2'))) (TOK_SELEXPR (TOK_FUNCTION elt 2 'aa' (TOK_FUNCTION TOK_SMALLINT '12345'))) (TOK_SELEXPR (TOK_FUNCTION elt 2 'aa' (TOK_FUNCTION TOK_BIGINT '123456789012'))) (TOK_SELEXPR (TOK_FUNCTION elt 2 'aa' (TOK_FUNCTION TOK_FLOAT 1.25))) (TOK_SELEXPR (TOK_FUNCTION elt 2 'aa' (TOK_FUNCTION TOK_DOUBLE 16.0))) (TOK_SELEXPR (TOK_FUNCTION elt TOK_NULL 'abc' 'defg')) (TOK_SELEXPR (TOK_FUNCTION elt 0 'abc' 'defg')) (TOK_SELEXPR (TOK_FUNCTION elt 3 'abc' 'defg'))) (TOK_LIMIT 1)))
+  (TOK_QUERY (TOK_FROM (TOK_TABREF (TOK_TABNAME src))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_FUNCTION elt 2 'abc' 'defg')) (TOK_SELEXPR (TOK_FUNCTION elt 3 'aa' 'bb' 'cc' 'dd' 'ee' 'ff' 'gg')) (TOK_SELEXPR (TOK_FUNCTION elt '1' 'abc' 'defg')) (TOK_SELEXPR (TOK_FUNCTION elt 2 'aa' (TOK_FUNCTION TOK_TINYINT '2'))) (TOK_SELEXPR (TOK_FUNCTION elt 2 'aa' (TOK_FUNCTION TOK_SMALLINT '12345'))) (TOK_SELEXPR (TOK_FUNCTION elt 2 'aa' (TOK_FUNCTION TOK_BIGINT '123456789012'))) (TOK_SELEXPR (TOK_FUNCTION elt 2 'aa' (TOK_FUNCTION TOK_FLOAT 1.25))) (TOK_SELEXPR (TOK_FUNCTION elt 2 'aa' (TOK_FUNCTION TOK_DOUBLE 16.0))) (TOK_SELEXPR (TOK_FUNCTION elt TOK_NULL 'abc' 'defg')) (TOK_SELEXPR (TOK_FUNCTION elt 0 'abc' 'defg')) (TOK_SELEXPR (TOK_FUNCTION elt 3 'abc' 'defg'))) (TOK_LIMIT 1)))
 
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -105,7 +105,7 @@ PREHOOK: query: SELECT elt(2, 'abc', 'defg'),
 FROM src LIMIT 1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/Users/carl/Projects/hd9/hive-trunk/build/ql/tmp/1020024876/10000
+PREHOOK: Output: file:/tmp/sdong/hive_2011-02-10_17-33-14_630_8074107803106807260/-mr-10000
 POSTHOOK: query: SELECT elt(2, 'abc', 'defg'),
        elt(3, 'aa', 'bb', 'cc', 'dd', 'ee', 'ff', 'gg'),
        elt('1', 'abc', 'defg'),
@@ -120,5 +120,5 @@ POSTHOOK: query: SELECT elt(2, 'abc', 'defg'),
 FROM src LIMIT 1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: file:/Users/carl/Projects/hd9/hive-trunk/build/ql/tmp/1020024876/10000
+POSTHOOK: Output: file:/tmp/sdong/hive_2011-02-10_17-33-14_630_8074107803106807260/-mr-10000
 defg	cc	abc	2	12345	123456789012	1.25	16.0	NULL	NULL	NULL

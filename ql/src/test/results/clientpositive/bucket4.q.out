@@ -12,7 +12,7 @@ insert overwrite table bucket4_1
 select * from src
 POSTHOOK: type: QUERY
 ABSTRACT SYNTAX TREE:
-  (TOK_QUERY (TOK_FROM (TOK_TABREF src)) (TOK_INSERT (TOK_DESTINATION (TOK_TAB bucket4_1)) (TOK_SELECT (TOK_SELEXPR TOK_ALLCOLREF))))
+  (TOK_QUERY (TOK_FROM (TOK_TABREF (TOK_TABNAME src))) (TOK_INSERT (TOK_DESTINATION (TOK_TAB (TOK_TABNAME bucket4_1))) (TOK_SELECT (TOK_SELEXPR TOK_ALLCOLREF))))
 
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -50,9 +50,9 @@ STAGE PLANS:
                       type: string
       Needs Tagging: false
       Path -> Alias:
-        hdfs://localhost.localdomain:62850/build/ql/test/data/warehouse/src [src]
+        hdfs://localhost.localdomain:38821/build/ql/test/data/warehouse/src [src]
       Path -> Partition:
-        hdfs://localhost.localdomain:62850/build/ql/test/data/warehouse/src 
+        hdfs://localhost.localdomain:38821/build/ql/test/data/warehouse/src 
           Partition
             base file name: src
             input format: org.apache.hadoop.mapred.TextInputFormat
@@ -63,12 +63,12 @@ STAGE PLANS:
               columns.types string:string
               file.inputformat org.apache.hadoop.mapred.TextInputFormat
               file.outputformat org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-              location hdfs://localhost.localdomain:62850/build/ql/test/data/warehouse/src
-              name src
+              location hdfs://localhost.localdomain:38821/build/ql/test/data/warehouse/src
+              name default.src
               serialization.ddl struct src { string key, string value}
               serialization.format 1
               serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              transient_lastDdlTime 1284513860
+              transient_lastDdlTime 1297926642
             serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
           
               input format: org.apache.hadoop.mapred.TextInputFormat
@@ -79,15 +79,15 @@ STAGE PLANS:
                 columns.types string:string
                 file.inputformat org.apache.hadoop.mapred.TextInputFormat
                 file.outputformat org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                location hdfs://localhost.localdomain:62850/build/ql/test/data/warehouse/src
-                name src
+                location hdfs://localhost.localdomain:38821/build/ql/test/data/warehouse/src
+                name default.src
                 serialization.ddl struct src { string key, string value}
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                transient_lastDdlTime 1284513860
+                transient_lastDdlTime 1297926642
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              name: src
-            name: src
+              name: default.src
+            name: default.src
       Reduce Operator Tree:
         Extract
           Select Operator
@@ -100,9 +100,9 @@ STAGE PLANS:
             File Output Operator
               compressed: false
               GlobalTableId: 1
-              directory: hdfs://localhost.localdomain:62850/data/users/nzhang/work/784/apache-hive/build/ql/scratchdir/hive_2010-09-14_18-24-23_792_6277370088719829339/-ext-10000
+              directory: hdfs://localhost.localdomain:38821/data/users/sdong/www/open-source-hive3/build/ql/scratchdir/hive_2011-02-16_23-10-44_106_4588433479891768182/-ext-10000
               NumFilesPerFileSink: 2
-              Stats Publishing Key Prefix: hdfs://localhost.localdomain:62850/data/users/nzhang/work/784/apache-hive/build/ql/scratchdir/hive_2010-09-14_18-24-23_792_6277370088719829339/-ext-10000/
+              Stats Publishing Key Prefix: hdfs://localhost.localdomain:38821/data/users/sdong/www/open-source-hive3/build/ql/scratchdir/hive_2011-02-16_23-10-44_106_4588433479891768182/-ext-10000/
               table:
                   input format: org.apache.hadoop.mapred.TextInputFormat
                   output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
@@ -114,14 +114,14 @@ STAGE PLANS:
                     columns.types int:string
                     file.inputformat org.apache.hadoop.mapred.TextInputFormat
                     file.outputformat org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                    location hdfs://localhost.localdomain:62850/build/ql/test/data/warehouse/bucket4_1
-                    name bucket4_1
+                    location hdfs://localhost.localdomain:38821/build/ql/test/data/warehouse/bucket4_1
+                    name default.bucket4_1
                     serialization.ddl struct bucket4_1 { i32 key, string value}
                     serialization.format 1
                     serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                    transient_lastDdlTime 1284513863
+                    transient_lastDdlTime 1297926644
                   serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                  name: bucket4_1
+                  name: default.bucket4_1
               TotalFiles: 2
               GatherStats: true
               MultiFileSpray: true
@@ -130,7 +130,7 @@ STAGE PLANS:
     Move Operator
       tables:
           replace: true
-          source: hdfs://localhost.localdomain:62850/data/users/nzhang/work/784/apache-hive/build/ql/scratchdir/hive_2010-09-14_18-24-23_792_6277370088719829339/-ext-10000
+          source: hdfs://localhost.localdomain:38821/data/users/sdong/www/open-source-hive3/build/ql/scratchdir/hive_2011-02-16_23-10-44_106_4588433479891768182/-ext-10000
           table:
               input format: org.apache.hadoop.mapred.TextInputFormat
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
@@ -142,19 +142,19 @@ STAGE PLANS:
                 columns.types int:string
                 file.inputformat org.apache.hadoop.mapred.TextInputFormat
                 file.outputformat org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                location hdfs://localhost.localdomain:62850/build/ql/test/data/warehouse/bucket4_1
-                name bucket4_1
+                location hdfs://localhost.localdomain:38821/build/ql/test/data/warehouse/bucket4_1
+                name default.bucket4_1
                 serialization.ddl struct bucket4_1 { i32 key, string value}
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                transient_lastDdlTime 1284513863
+                transient_lastDdlTime 1297926644
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              name: bucket4_1
-          tmp directory: hdfs://localhost.localdomain:62850/data/users/nzhang/work/784/apache-hive/build/ql/scratchdir/hive_2010-09-14_18-24-23_792_6277370088719829339/-ext-10001
+              name: default.bucket4_1
+          tmp directory: hdfs://localhost.localdomain:38821/data/users/sdong/www/open-source-hive3/build/ql/scratchdir/hive_2011-02-16_23-10-44_106_4588433479891768182/-ext-10001
 
   Stage: Stage-2
     Stats-Aggr Operator
-      Stats Aggregation Key Prefix: hdfs://localhost.localdomain:62850/data/users/nzhang/work/784/apache-hive/build/ql/scratchdir/hive_2010-09-14_18-24-23_792_6277370088719829339/-ext-10000/
+      Stats Aggregation Key Prefix: hdfs://localhost.localdomain:38821/data/users/sdong/www/open-source-hive3/build/ql/scratchdir/hive_2011-02-16_23-10-44_106_4588433479891768182/-ext-10000/
 
 
 PREHOOK: query: insert overwrite table bucket4_1
@@ -178,7 +178,7 @@ POSTHOOK: type: QUERY
 POSTHOOK: Lineage: bucket4_1.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: bucket4_1.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 ABSTRACT SYNTAX TREE:
-  (TOK_QUERY (TOK_FROM (TOK_TABREF bucket4_1 (TOK_TABLESAMPLE 1 2) s)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR TOK_ALLCOLREF))))
+  (TOK_QUERY (TOK_FROM (TOK_TABREF (TOK_TABNAME bucket4_1) (TOK_TABLESAMPLE 1 2) s)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR TOK_ALLCOLREF))))
 
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -221,11 +221,11 @@ STAGE PLANS:
 PREHOOK: query: select * from bucket4_1 tablesample (bucket 1 out of 2) s
 PREHOOK: type: QUERY
 PREHOOK: Input: default@bucket4_1
-PREHOOK: Output: hdfs://localhost.localdomain:62850/data/users/nzhang/work/784/apache-hive/build/ql/scratchdir/hive_2010-09-14_18-24-32_425_2483781603651828525/-mr-10000
+PREHOOK: Output: hdfs://localhost.localdomain:38821/data/users/sdong/www/open-source-hive3/build/ql/scratchdir/hive_2011-02-16_23-11-09_440_4231562110595025861/-mr-10000
 POSTHOOK: query: select * from bucket4_1 tablesample (bucket 1 out of 2) s
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@bucket4_1
-POSTHOOK: Output: hdfs://localhost.localdomain:62850/data/users/nzhang/work/784/apache-hive/build/ql/scratchdir/hive_2010-09-14_18-24-32_425_2483781603651828525/-mr-10000
+POSTHOOK: Output: hdfs://localhost.localdomain:38821/data/users/sdong/www/open-source-hive3/build/ql/scratchdir/hive_2011-02-16_23-11-09_440_4231562110595025861/-mr-10000
 POSTHOOK: Lineage: bucket4_1.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: bucket4_1.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 0	val_0

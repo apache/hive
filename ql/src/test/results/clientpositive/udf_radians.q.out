@@ -5,7 +5,7 @@ POSTHOOK: query: explain
 select radians(57.2958) FROM src LIMIT 1
 POSTHOOK: type: QUERY
 ABSTRACT SYNTAX TREE:
-  (TOK_QUERY (TOK_FROM (TOK_TABREF src)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_FUNCTION radians 57.2958))) (TOK_LIMIT 1)))
+  (TOK_QUERY (TOK_FROM (TOK_TABREF (TOK_TABNAME src))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_FUNCTION radians 57.2958))) (TOK_LIMIT 1)))
 
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -39,20 +39,20 @@ STAGE PLANS:
 PREHOOK: query: select radians(57.2958) FROM src LIMIT 1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/home/edward/hive/hive/build/ql/scratchdir/hive_2010-03-25_07-41-40_585_4074288577412212093/10000
+PREHOOK: Output: file:/tmp/sdong/hive_2011-02-10_17-39-44_078_9109783333773553444/-mr-10000
 POSTHOOK: query: select radians(57.2958) FROM src LIMIT 1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: file:/home/edward/hive/hive/build/ql/scratchdir/hive_2010-03-25_07-41-40_585_4074288577412212093/10000
+POSTHOOK: Output: file:/tmp/sdong/hive_2011-02-10_17-39-44_078_9109783333773553444/-mr-10000
 1.000000357564167
 PREHOOK: query: select radians(143.2394) FROM src LIMIT 1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/home/edward/hive/hive/build/ql/scratchdir/hive_2010-03-25_07-41-49_329_7599870839384039656/10000
+PREHOOK: Output: file:/tmp/sdong/hive_2011-02-10_17-39-47_306_1941990909459019781/-mr-10000
 POSTHOOK: query: select radians(143.2394) FROM src LIMIT 1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: file:/home/edward/hive/hive/build/ql/scratchdir/hive_2010-03-25_07-41-49_329_7599870839384039656/10000
+POSTHOOK: Output: file:/tmp/sdong/hive_2011-02-10_17-39-47_306_1941990909459019781/-mr-10000
 2.4999991485811655
 PREHOOK: query: DESCRIBE FUNCTION radians
 PREHOOK: type: DESCFUNCTION
@@ -75,7 +75,7 @@ POSTHOOK: query: explain
 select radians(57.2958) FROM src LIMIT 1
 POSTHOOK: type: QUERY
 ABSTRACT SYNTAX TREE:
-  (TOK_QUERY (TOK_FROM (TOK_TABREF src)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_FUNCTION radians 57.2958))) (TOK_LIMIT 1)))
+  (TOK_QUERY (TOK_FROM (TOK_TABREF (TOK_TABNAME src))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_FUNCTION radians 57.2958))) (TOK_LIMIT 1)))
 
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -109,20 +109,20 @@ STAGE PLANS:
 PREHOOK: query: select radians(57.2958) FROM src LIMIT 1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/home/edward/hive/hive/build/ql/scratchdir/hive_2010-03-25_07-41-57_755_2267469268422543769/10000
+PREHOOK: Output: file:/tmp/sdong/hive_2011-02-10_17-39-50_816_7653095422070360785/-mr-10000
 POSTHOOK: query: select radians(57.2958) FROM src LIMIT 1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: file:/home/edward/hive/hive/build/ql/scratchdir/hive_2010-03-25_07-41-57_755_2267469268422543769/10000
+POSTHOOK: Output: file:/tmp/sdong/hive_2011-02-10_17-39-50_816_7653095422070360785/-mr-10000
 1.000000357564167
 PREHOOK: query: select radians(143.2394) FROM src LIMIT 1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/home/edward/hive/hive/build/ql/scratchdir/hive_2010-03-25_07-42-05_384_6924630684028722794/10000
+PREHOOK: Output: file:/tmp/sdong/hive_2011-02-10_17-39-54_090_7082105358146623132/-mr-10000
 POSTHOOK: query: select radians(143.2394) FROM src LIMIT 1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: file:/home/edward/hive/hive/build/ql/scratchdir/hive_2010-03-25_07-42-05_384_6924630684028722794/10000
+POSTHOOK: Output: file:/tmp/sdong/hive_2011-02-10_17-39-54_090_7082105358146623132/-mr-10000
 2.4999991485811655
 PREHOOK: query: DESCRIBE FUNCTION radians
 PREHOOK: type: DESCFUNCTION

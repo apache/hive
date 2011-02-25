@@ -11,11 +11,11 @@ POSTHOOK: Output: default@abcd
 PREHOOK: query: select * from abcd
 PREHOOK: type: QUERY
 PREHOOK: Input: default@abcd
-PREHOOK: Output: file:/tmp/amarsri/hive_2010-10-19_03-08-12_523_248548306762990690/-mr-10000
+PREHOOK: Output: file:/tmp/sdong/hive_2011-02-10_01-41-20_584_382646781576129063/-mr-10000
 POSTHOOK: query: select * from abcd
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@abcd
-POSTHOOK: Output: file:/tmp/amarsri/hive_2010-10-19_03-08-12_523_248548306762990690/-mr-10000
+POSTHOOK: Output: file:/tmp/sdong/hive_2011-02-10_01-41-20_584_382646781576129063/-mr-10000
 NULL	35	23	6
 10	1000	50	1
 100	100	10	3
@@ -28,7 +28,7 @@ PREHOOK: type: QUERY
 POSTHOOK: query: explain select a, count(distinct b), count(distinct c), sum(d) from abcd group by a
 POSTHOOK: type: QUERY
 ABSTRACT SYNTAX TREE:
-  (TOK_QUERY (TOK_FROM (TOK_TABREF abcd)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_TABLE_OR_COL a)) (TOK_SELEXPR (TOK_FUNCTIONDI count (TOK_TABLE_OR_COL b))) (TOK_SELEXPR (TOK_FUNCTIONDI count (TOK_TABLE_OR_COL c))) (TOK_SELEXPR (TOK_FUNCTION sum (TOK_TABLE_OR_COL d)))) (TOK_GROUPBY (TOK_TABLE_OR_COL a))))
+  (TOK_QUERY (TOK_FROM (TOK_TABREF (TOK_TABNAME abcd))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_TABLE_OR_COL a)) (TOK_SELEXPR (TOK_FUNCTIONDI count (TOK_TABLE_OR_COL b))) (TOK_SELEXPR (TOK_FUNCTIONDI count (TOK_TABLE_OR_COL c))) (TOK_SELEXPR (TOK_FUNCTION sum (TOK_TABLE_OR_COL d)))) (TOK_GROUPBY (TOK_TABLE_OR_COL a))))
 
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -125,11 +125,11 @@ STAGE PLANS:
 PREHOOK: query: select a, count(distinct b), count(distinct c), sum(d) from abcd group by a
 PREHOOK: type: QUERY
 PREHOOK: Input: default@abcd
-PREHOOK: Output: file:/tmp/amarsri/hive_2010-10-19_03-08-12_925_5142539455043997266/-mr-10000
+PREHOOK: Output: file:/tmp/sdong/hive_2011-02-10_01-41-20_919_8656944021001458401/-mr-10000
 POSTHOOK: query: select a, count(distinct b), count(distinct c), sum(d) from abcd group by a
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@abcd
-POSTHOOK: Output: file:/tmp/amarsri/hive_2010-10-19_03-08-12_925_5142539455043997266/-mr-10000
+POSTHOOK: Output: file:/tmp/sdong/hive_2011-02-10_01-41-20_919_8656944021001458401/-mr-10000
 NULL	1	1	6
 10	2	2	10
 12	1	2	9
@@ -139,7 +139,7 @@ PREHOOK: type: QUERY
 POSTHOOK: query: explain select count(1), count(*), count(a), count(b), count(c), count(d), count(distinct a), count(distinct b), count(distinct c), count(distinct d), count(distinct a,b), count(distinct b,c), count(distinct c,d), count(distinct a,d), count(distinct a,c), count(distinct b,d), count(distinct a,b,c), count(distinct b,c,d), count(distinct a,c,d), count(distinct a,b,d), count(distinct a,b,c,d) from abcd
 POSTHOOK: type: QUERY
 ABSTRACT SYNTAX TREE:
-  (TOK_QUERY (TOK_FROM (TOK_TABREF abcd)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_FUNCTION count 1)) (TOK_SELEXPR (TOK_FUNCTIONSTAR count)) (TOK_SELEXPR (TOK_FUNCTION count (TOK_TABLE_OR_COL a))) (TOK_SELEXPR (TOK_FUNCTION count (TOK_TABLE_OR_COL b))) (TOK_SELEXPR (TOK_FUNCTION count (TOK_TABLE_OR_COL c))) (TOK_SELEXPR (TOK_FUNCTION count (TOK_TABLE_OR_COL d))) (TOK_SELEXPR (TOK_FUNCTIONDI count (TOK_TABLE_OR_COL a))) (TOK_SELEXPR (TOK_FUNCTIONDI count (TOK_TABLE_OR_COL b))) (TOK_SELEXPR (TOK_FUNCTIONDI count (TOK_TABLE_OR_COL c))) (TOK_SELEXPR (TOK_FUNCTIONDI count (TOK_TABLE_OR_COL d))) (TOK_SELEXPR (TOK_FUNCTIONDI count (TOK_TABLE_OR_COL a) (TOK_TABLE_OR_COL b))) (TOK_SELEXPR (TOK_FUNCTIONDI count (TOK_TABLE_OR_COL b) (TOK_TABLE_OR_COL c))) (TOK_SELEXPR (TOK_FUNCTIONDI count (TOK_TABLE_OR_COL c) (TOK_TABLE_OR_COL d))) (TOK_SELEXPR (TOK_FUNCTIONDI count (TOK_TABLE_OR_COL a) (TOK_TABLE_OR_COL d))) (TOK_SELEXPR (TOK_FUNCTIONDI count (TOK_TABLE_OR_COL a) (TOK_TABLE_OR_COL c))) (TOK_SELEXPR (TOK_FUNCTIONDI count (TOK_TABLE_OR_COL b) (TOK_TABLE_OR_COL d))) (TOK_SELEXPR (TOK_FUNCTIONDI count (TOK_TABLE_OR_COL a) (TOK_TABLE_OR_COL b) (TOK_TABLE_OR_COL c))) (TOK_SELEXPR (TOK_FUNCTIONDI count (TOK_TABLE_OR_COL b) (TOK_TABLE_OR_COL c) (TOK_TABLE_OR_COL d))) (TOK_SELEXPR (TOK_FUNCTIONDI count (TOK_TABLE_OR_COL a) (TOK_TABLE_OR_COL c) (TOK_TABLE_OR_COL d))) (TOK_SELEXPR (TOK_FUNCTIONDI count (TOK_TABLE_OR_COL a) (TOK_TABLE_OR_COL b) (TOK_TABLE_OR_COL d))) (TOK_SELEXPR (TOK_FUNCTIONDI count (TOK_TABLE_OR_COL a) (TOK_TABLE_OR_COL b) (TOK_TABLE_OR_COL c) (TOK_TABLE_OR_COL d))))))
+  (TOK_QUERY (TOK_FROM (TOK_TABREF (TOK_TABNAME abcd))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_FUNCTION count 1)) (TOK_SELEXPR (TOK_FUNCTIONSTAR count)) (TOK_SELEXPR (TOK_FUNCTION count (TOK_TABLE_OR_COL a))) (TOK_SELEXPR (TOK_FUNCTION count (TOK_TABLE_OR_COL b))) (TOK_SELEXPR (TOK_FUNCTION count (TOK_TABLE_OR_COL c))) (TOK_SELEXPR (TOK_FUNCTION count (TOK_TABLE_OR_COL d))) (TOK_SELEXPR (TOK_FUNCTIONDI count (TOK_TABLE_OR_COL a))) (TOK_SELEXPR (TOK_FUNCTIONDI count (TOK_TABLE_OR_COL b))) (TOK_SELEXPR (TOK_FUNCTIONDI count (TOK_TABLE_OR_COL c))) (TOK_SELEXPR (TOK_FUNCTIONDI count (TOK_TABLE_OR_COL d))) (TOK_SELEXPR (TOK_FUNCTIONDI count (TOK_TABLE_OR_COL a) (TOK_TABLE_OR_COL b))) (TOK_SELEXPR (TOK_FUNCTIONDI count (TOK_TABLE_OR_COL b) (TOK_TABLE_OR_COL c))) (TOK_SELEXPR (TOK_FUNCTIONDI count (TOK_TABLE_OR_COL c) (TOK_TABLE_OR_COL d))) (TOK_SELEXPR (TOK_FUNCTIONDI count (TOK_TABLE_OR_COL a) (TOK_TABLE_OR_COL d))) (TOK_SELEXPR (TOK_FUNCTIONDI count (TOK_TABLE_OR_COL a) (TOK_TABLE_OR_COL c))) (TOK_SELEXPR (TOK_FUNCTIONDI count (TOK_TABLE_OR_COL b) (TOK_TABLE_OR_COL d))) (TOK_SELEXPR (TOK_FUNCTIONDI count (TOK_TABLE_OR_COL a) (TOK_TABLE_OR_COL b) (TOK_TABLE_OR_COL c))) (TOK_SELEXPR (TOK_FUNCTIONDI count (TOK_TABLE_OR_COL b) (TOK_TABLE_OR_COL c) (TOK_TABLE_OR_COL d))) (TOK_SELEXPR (TOK_FUNCTIONDI count (TOK_TABLE_OR_COL a) (TOK_TABLE_OR_COL c) (TOK_TABLE_OR_COL d))) (TOK_SELEXPR (TOK_FUNCTIONDI count (TOK_TABLE_OR_COL a) (TOK_TABLE_OR_COL b) (TOK_TABLE_OR_COL d))) (TOK_SELEXPR (TOK_FUNCTIONDI count (TOK_TABLE_OR_COL a) (TOK_TABLE_OR_COL b) (TOK_TABLE_OR_COL c) (TOK_TABLE_OR_COL d))))))
 
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -340,18 +340,18 @@ STAGE PLANS:
 PREHOOK: query: select count(1), count(*), count(a), count(b), count(c), count(d), count(distinct a), count(distinct b), count(distinct c), count(distinct d), count(distinct a,b), count(distinct b,c), count(distinct c,d), count(distinct a,d), count(distinct a,c), count(distinct b,d), count(distinct a,b,c), count(distinct b,c,d), count(distinct a,c,d), count(distinct a,b,d), count(distinct a,b,c,d) from abcd
 PREHOOK: type: QUERY
 PREHOOK: Input: default@abcd
-PREHOOK: Output: file:/tmp/amarsri/hive_2010-10-19_03-08-15_550_8269692453214848200/-mr-10000
+PREHOOK: Output: file:/tmp/sdong/hive_2011-02-10_01-41-24_687_8476753299417599809/-mr-10000
 POSTHOOK: query: select count(1), count(*), count(a), count(b), count(c), count(d), count(distinct a), count(distinct b), count(distinct c), count(distinct d), count(distinct a,b), count(distinct b,c), count(distinct c,d), count(distinct a,d), count(distinct a,c), count(distinct b,d), count(distinct a,b,c), count(distinct b,c,d), count(distinct a,c,d), count(distinct a,b,d), count(distinct a,b,c,d) from abcd
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@abcd
-POSTHOOK: Output: file:/tmp/amarsri/hive_2010-10-19_03-08-15_550_8269692453214848200/-mr-10000
+POSTHOOK: Output: file:/tmp/sdong/hive_2011-02-10_01-41-24_687_8476753299417599809/-mr-10000
 7	7	6	6	6	7	3	3	6	7	4	5	6	6	5	6	4	5	5	5	4
 PREHOOK: query: explain select a, count(distinct b), count(distinct c), sum(d) from abcd group by a
 PREHOOK: type: QUERY
 POSTHOOK: query: explain select a, count(distinct b), count(distinct c), sum(d) from abcd group by a
 POSTHOOK: type: QUERY
 ABSTRACT SYNTAX TREE:
-  (TOK_QUERY (TOK_FROM (TOK_TABREF abcd)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_TABLE_OR_COL a)) (TOK_SELEXPR (TOK_FUNCTIONDI count (TOK_TABLE_OR_COL b))) (TOK_SELEXPR (TOK_FUNCTIONDI count (TOK_TABLE_OR_COL c))) (TOK_SELEXPR (TOK_FUNCTION sum (TOK_TABLE_OR_COL d)))) (TOK_GROUPBY (TOK_TABLE_OR_COL a))))
+  (TOK_QUERY (TOK_FROM (TOK_TABREF (TOK_TABNAME abcd))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_TABLE_OR_COL a)) (TOK_SELEXPR (TOK_FUNCTIONDI count (TOK_TABLE_OR_COL b))) (TOK_SELEXPR (TOK_FUNCTIONDI count (TOK_TABLE_OR_COL c))) (TOK_SELEXPR (TOK_FUNCTION sum (TOK_TABLE_OR_COL d)))) (TOK_GROUPBY (TOK_TABLE_OR_COL a))))
 
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -429,11 +429,11 @@ STAGE PLANS:
 PREHOOK: query: select a, count(distinct b), count(distinct c), sum(d) from abcd group by a
 PREHOOK: type: QUERY
 PREHOOK: Input: default@abcd
-PREHOOK: Output: file:/tmp/amarsri/hive_2010-10-19_03-08-18_476_7776659377634244729/-mr-10000
+PREHOOK: Output: file:/tmp/sdong/hive_2011-02-10_01-41-28_616_5425018604681703308/-mr-10000
 POSTHOOK: query: select a, count(distinct b), count(distinct c), sum(d) from abcd group by a
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@abcd
-POSTHOOK: Output: file:/tmp/amarsri/hive_2010-10-19_03-08-18_476_7776659377634244729/-mr-10000
+POSTHOOK: Output: file:/tmp/sdong/hive_2011-02-10_01-41-28_616_5425018604681703308/-mr-10000
 NULL	1	1	6
 10	2	2	10
 12	1	2	9
@@ -443,7 +443,7 @@ PREHOOK: type: QUERY
 POSTHOOK: query: explain select count(1), count(*), count(a), count(b), count(c), count(d), count(distinct a), count(distinct b), count(distinct c), count(distinct d), count(distinct a,b), count(distinct b,c), count(distinct c,d), count(distinct a,d), count(distinct a,c), count(distinct b,d), count(distinct a,b,c), count(distinct b,c,d), count(distinct a,c,d), count(distinct a,b,d), count(distinct a,b,c,d) from abcd
 POSTHOOK: type: QUERY
 ABSTRACT SYNTAX TREE:
-  (TOK_QUERY (TOK_FROM (TOK_TABREF abcd)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_FUNCTION count 1)) (TOK_SELEXPR (TOK_FUNCTIONSTAR count)) (TOK_SELEXPR (TOK_FUNCTION count (TOK_TABLE_OR_COL a))) (TOK_SELEXPR (TOK_FUNCTION count (TOK_TABLE_OR_COL b))) (TOK_SELEXPR (TOK_FUNCTION count (TOK_TABLE_OR_COL c))) (TOK_SELEXPR (TOK_FUNCTION count (TOK_TABLE_OR_COL d))) (TOK_SELEXPR (TOK_FUNCTIONDI count (TOK_TABLE_OR_COL a))) (TOK_SELEXPR (TOK_FUNCTIONDI count (TOK_TABLE_OR_COL b))) (TOK_SELEXPR (TOK_FUNCTIONDI count (TOK_TABLE_OR_COL c))) (TOK_SELEXPR (TOK_FUNCTIONDI count (TOK_TABLE_OR_COL d))) (TOK_SELEXPR (TOK_FUNCTIONDI count (TOK_TABLE_OR_COL a) (TOK_TABLE_OR_COL b))) (TOK_SELEXPR (TOK_FUNCTIONDI count (TOK_TABLE_OR_COL b) (TOK_TABLE_OR_COL c))) (TOK_SELEXPR (TOK_FUNCTIONDI count (TOK_TABLE_OR_COL c) (TOK_TABLE_OR_COL d))) (TOK_SELEXPR (TOK_FUNCTIONDI count (TOK_TABLE_OR_COL a) (TOK_TABLE_OR_COL d))) (TOK_SELEXPR (TOK_FUNCTIONDI count (TOK_TABLE_OR_COL a) (TOK_TABLE_OR_COL c))) (TOK_SELEXPR (TOK_FUNCTIONDI count (TOK_TABLE_OR_COL b) (TOK_TABLE_OR_COL d))) (TOK_SELEXPR (TOK_FUNCTIONDI count (TOK_TABLE_OR_COL a) (TOK_TABLE_OR_COL b) (TOK_TABLE_OR_COL c))) (TOK_SELEXPR (TOK_FUNCTIONDI count (TOK_TABLE_OR_COL b) (TOK_TABLE_OR_COL c) (TOK_TABLE_OR_COL d))) (TOK_SELEXPR (TOK_FUNCTIONDI count (TOK_TABLE_OR_COL a) (TOK_TABLE_OR_COL c) (TOK_TABLE_OR_COL d))) (TOK_SELEXPR (TOK_FUNCTIONDI count (TOK_TABLE_OR_COL a) (TOK_TABLE_OR_COL b) (TOK_TABLE_OR_COL d))) (TOK_SELEXPR (TOK_FUNCTIONDI count (TOK_TABLE_OR_COL a) (TOK_TABLE_OR_COL b) (TOK_TABLE_OR_COL c) (TOK_TABLE_OR_COL d))))))
+  (TOK_QUERY (TOK_FROM (TOK_TABREF (TOK_TABNAME abcd))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_FUNCTION count 1)) (TOK_SELEXPR (TOK_FUNCTIONSTAR count)) (TOK_SELEXPR (TOK_FUNCTION count (TOK_TABLE_OR_COL a))) (TOK_SELEXPR (TOK_FUNCTION count (TOK_TABLE_OR_COL b))) (TOK_SELEXPR (TOK_FUNCTION count (TOK_TABLE_OR_COL c))) (TOK_SELEXPR (TOK_FUNCTION count (TOK_TABLE_OR_COL d))) (TOK_SELEXPR (TOK_FUNCTIONDI count (TOK_TABLE_OR_COL a))) (TOK_SELEXPR (TOK_FUNCTIONDI count (TOK_TABLE_OR_COL b))) (TOK_SELEXPR (TOK_FUNCTIONDI count (TOK_TABLE_OR_COL c))) (TOK_SELEXPR (TOK_FUNCTIONDI count (TOK_TABLE_OR_COL d))) (TOK_SELEXPR (TOK_FUNCTIONDI count (TOK_TABLE_OR_COL a) (TOK_TABLE_OR_COL b))) (TOK_SELEXPR (TOK_FUNCTIONDI count (TOK_TABLE_OR_COL b) (TOK_TABLE_OR_COL c))) (TOK_SELEXPR (TOK_FUNCTIONDI count (TOK_TABLE_OR_COL c) (TOK_TABLE_OR_COL d))) (TOK_SELEXPR (TOK_FUNCTIONDI count (TOK_TABLE_OR_COL a) (TOK_TABLE_OR_COL d))) (TOK_SELEXPR (TOK_FUNCTIONDI count (TOK_TABLE_OR_COL a) (TOK_TABLE_OR_COL c))) (TOK_SELEXPR (TOK_FUNCTIONDI count (TOK_TABLE_OR_COL b) (TOK_TABLE_OR_COL d))) (TOK_SELEXPR (TOK_FUNCTIONDI count (TOK_TABLE_OR_COL a) (TOK_TABLE_OR_COL b) (TOK_TABLE_OR_COL c))) (TOK_SELEXPR (TOK_FUNCTIONDI count (TOK_TABLE_OR_COL b) (TOK_TABLE_OR_COL c) (TOK_TABLE_OR_COL d))) (TOK_SELEXPR (TOK_FUNCTIONDI count (TOK_TABLE_OR_COL a) (TOK_TABLE_OR_COL c) (TOK_TABLE_OR_COL d))) (TOK_SELEXPR (TOK_FUNCTIONDI count (TOK_TABLE_OR_COL a) (TOK_TABLE_OR_COL b) (TOK_TABLE_OR_COL d))) (TOK_SELEXPR (TOK_FUNCTIONDI count (TOK_TABLE_OR_COL a) (TOK_TABLE_OR_COL b) (TOK_TABLE_OR_COL c) (TOK_TABLE_OR_COL d))))))
 
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -569,9 +569,9 @@ STAGE PLANS:
 PREHOOK: query: select count(1), count(*), count(a), count(b), count(c), count(d), count(distinct a), count(distinct b), count(distinct c), count(distinct d), count(distinct a,b), count(distinct b,c), count(distinct c,d), count(distinct a,d), count(distinct a,c), count(distinct b,d), count(distinct a,b,c), count(distinct b,c,d), count(distinct a,c,d), count(distinct a,b,d), count(distinct a,b,c,d) from abcd
 PREHOOK: type: QUERY
 PREHOOK: Input: default@abcd
-PREHOOK: Output: file:/tmp/amarsri/hive_2010-10-19_03-08-20_818_3596074897102517680/-mr-10000
+PREHOOK: Output: file:/tmp/sdong/hive_2011-02-10_01-41-32_180_5459367864239202252/-mr-10000
 POSTHOOK: query: select count(1), count(*), count(a), count(b), count(c), count(d), count(distinct a), count(distinct b), count(distinct c), count(distinct d), count(distinct a,b), count(distinct b,c), count(distinct c,d), count(distinct a,d), count(distinct a,c), count(distinct b,d), count(distinct a,b,c), count(distinct b,c,d), count(distinct a,c,d), count(distinct a,b,d), count(distinct a,b,c,d) from abcd
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@abcd
-POSTHOOK: Output: file:/tmp/amarsri/hive_2010-10-19_03-08-20_818_3596074897102517680/-mr-10000
+POSTHOOK: Output: file:/tmp/sdong/hive_2011-02-10_01-41-32_180_5459367864239202252/-mr-10000
 7	7	6	6	6	7	3	3	6	7	4	5	6	6	5	6	4	5	5	5	4

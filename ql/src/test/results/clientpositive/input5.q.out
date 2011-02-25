@@ -22,7 +22,7 @@ FROM (
 INSERT OVERWRITE TABLE dest1 SELECT tmap.tkey, tmap.tvalue
 POSTHOOK: type: QUERY
 ABSTRACT SYNTAX TREE:
-  (TOK_QUERY (TOK_FROM (TOK_SUBQUERY (TOK_QUERY (TOK_FROM (TOK_TABREF src_thrift)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_TRANSFORM (TOK_EXPLIST (. (TOK_TABLE_OR_COL src_thrift) lint) (. (TOK_TABLE_OR_COL src_thrift) lintstring)) TOK_SERDE TOK_RECORDWRITER '/bin/cat' TOK_SERDE TOK_RECORDREADER (TOK_ALIASLIST tkey tvalue)))) (TOK_CLUSTERBY (TOK_TABLE_OR_COL tkey)))) tmap)) (TOK_INSERT (TOK_DESTINATION (TOK_TAB dest1)) (TOK_SELECT (TOK_SELEXPR (. (TOK_TABLE_OR_COL tmap) tkey)) (TOK_SELEXPR (. (TOK_TABLE_OR_COL tmap) tvalue)))))
+  (TOK_QUERY (TOK_FROM (TOK_SUBQUERY (TOK_QUERY (TOK_FROM (TOK_TABREF (TOK_TABNAME src_thrift))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_TRANSFORM (TOK_EXPLIST (. (TOK_TABLE_OR_COL src_thrift) lint) (. (TOK_TABLE_OR_COL src_thrift) lintstring)) TOK_SERDE TOK_RECORDWRITER '/bin/cat' TOK_SERDE TOK_RECORDREADER (TOK_ALIASLIST tkey tvalue)))) (TOK_CLUSTERBY (TOK_TABLE_OR_COL tkey)))) tmap)) (TOK_INSERT (TOK_DESTINATION (TOK_TAB (TOK_TABNAME dest1))) (TOK_SELECT (TOK_SELEXPR (. (TOK_TABLE_OR_COL tmap) tkey)) (TOK_SELEXPR (. (TOK_TABLE_OR_COL tmap) tvalue)))))
 
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -78,7 +78,7 @@ STAGE PLANS:
                   input format: org.apache.hadoop.mapred.TextInputFormat
                   output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                   serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                  name: dest1
+                  name: default.dest1
 
   Stage: Stage-0
     Move Operator
@@ -88,7 +88,7 @@ STAGE PLANS:
               input format: org.apache.hadoop.mapred.TextInputFormat
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              name: dest1
+              name: default.dest1
 
   Stage: Stage-2
     Stats-Aggr Operator
@@ -119,11 +119,11 @@ POSTHOOK: Lineage: dest1.value SCRIPT [(src_thrift)src_thrift.FieldSchema(name:l
 PREHOOK: query: SELECT dest1.* FROM dest1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@dest1
-PREHOOK: Output: file:/tmp/nzhang/hive_2010-09-14_16-32-21_789_4017947778315716401/-mr-10000
+PREHOOK: Output: file:/tmp/sdong/hive_2011-02-10_15-58-11_675_5799458023080781546/-mr-10000
 POSTHOOK: query: SELECT dest1.* FROM dest1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@dest1
-POSTHOOK: Output: file:/tmp/nzhang/hive_2010-09-14_16-32-21_789_4017947778315716401/-mr-10000
+POSTHOOK: Output: file:/tmp/sdong/hive_2011-02-10_15-58-11_675_5799458023080781546/-mr-10000
 POSTHOOK: Lineage: dest1.key SCRIPT [(src_thrift)src_thrift.FieldSchema(name:lint, type:array<int>, comment:from deserializer), (src_thrift)src_thrift.FieldSchema(name:lintstring, type:array<org.apache.hadoop.hive.serde2.thrift.test.IntString>, comment:from deserializer), ]
 POSTHOOK: Lineage: dest1.value SCRIPT [(src_thrift)src_thrift.FieldSchema(name:lint, type:array<int>, comment:from deserializer), (src_thrift)src_thrift.FieldSchema(name:lintstring, type:array<org.apache.hadoop.hive.serde2.thrift.test.IntString>, comment:from deserializer), ]
 [0,0,0]	[{"myint":0,"mystring":"0","underscore_int":0}]

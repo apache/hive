@@ -309,7 +309,7 @@ public class Hive {
       throw new HiveException("columns not specified for table " + tableName);
     }
 
-    Table tbl = new Table(getCurrentDatabase(), tableName);
+    Table tbl = newTable(tableName);
     tbl.setInputFormatClass(fileInputFormat.getName());
     tbl.setOutputFormatClass(fileOutputFormat.getName());
 
@@ -345,12 +345,13 @@ public class Hive {
    */
   public void alterTable(String tblName, Table newTbl)
       throws InvalidOperationException, HiveException {
+    Table t = newTable(tblName);
     try {
       // Remove the DDL_TIME so it gets refreshed
       if (newTbl.getParameters() != null) {
         newTbl.getParameters().remove(Constants.DDL_TIME);
       }
-      getMSC().alter_table(getCurrentDatabase(), tblName, newTbl.getTTable());
+      getMSC().alter_table(t.getDbName(), t.getTableName(), newTbl.getTTable());
     } catch (MetaException e) {
       throw new HiveException("Unable to alter table.", e);
     } catch (TException e) {
@@ -393,12 +394,13 @@ public class Hive {
    */
   public void alterPartition(String tblName, Partition newPart)
       throws InvalidOperationException, HiveException {
+    Table t = newTable(tblName);
     try {
       // Remove the DDL time so that it gets refreshed
       if (newPart.getParameters() != null) {
         newPart.getParameters().remove(Constants.DDL_TIME);
       }
-      getMSC().alter_partition(getCurrentDatabase(), tblName,
+      getMSC().alter_partition(t.getDbName(), t.getTableName(),
           newPart.getTPartition());
 
     } catch (MetaException e) {
@@ -653,8 +655,21 @@ public class Hive {
     }
   }
 
+  public Index getIndex(String qualifiedIndexName) throws HiveException {
+    String[] names = getQualifiedNames(qualifiedIndexName);
+    switch (names.length) {
+    case 3:
+      return getIndex(names[0], names[1], names[2]);
+    case 2:
+      return getIndex(getCurrentDatabase(), names[0], names[1]);
+    default:
+      throw new HiveException("Invalid index name:" + qualifiedIndexName);
+    }
+  }
+
   public Index getIndex(String baseTableName, String indexName) throws HiveException {
-    return this.getIndex(getCurrentDatabase(), baseTableName, indexName);
+    Table t = newTable(baseTableName);
+    return this.getIndex(t.getDbName(), t.getTableName(), indexName);
   }
 
   public Index getIndex(String dbName, String baseTableName,
@@ -693,7 +708,8 @@ public class Hive {
    *           thrown if the drop fails
    */
   public void dropTable(String tableName) throws HiveException {
-    dropTable(getCurrentDatabase(), tableName, true, true);
+    Table t = newTable(tableName);
+    dropTable(t.getDbName(), t.getTableName(), true, true);
   }
 
   /**
@@ -745,14 +761,28 @@ public class Hive {
   }
 
   /**
-   * Returns metadata for the table named tableName in the current database.
+   * Returns metadata for the table named tableName
    * @param tableName the name of the table
    * @return
    * @throws HiveException if there's an internal error or if the
    * table doesn't exist
    */
   public Table getTable(final String tableName) throws HiveException {
-    return this.getTable(getCurrentDatabase(), tableName, true);
+    Table t = newTable(tableName);
+    return this.getTable(t.getDbName(), t.getTableName(), true);
+  }
+
+  /**
+   * Returns metadata for the table named tableName
+   * @param tableName the name of the table
+   * @param throwException controls whether an exception is thrown or a returns a null
+   * @return
+   * @throws HiveException if there's an internal error or if the
+   * table doesn't exist
+   */
+  public Table getTable(final String tableName, boolean throwException) throws HiveException {
+    Table t = newTable(tableName);
+    return this.getTable(t.getDbName(), t.getTableName(), throwException);
   }
 
   /**
@@ -767,7 +797,12 @@ public class Hive {
    *              if there's an internal error or if the table doesn't exist
    */
   public Table getTable(final String dbName, final String tableName) throws HiveException {
-    return this.getTable(dbName, tableName, true);
+    if (tableName.contains(".")) {
+      Table t = newTable(tableName);
+      return this.getTable(t.getDbName(), t.getTableName(), true);
+    } else {
+      return this.getTable(dbName, tableName, true);
+    }
   }
 
   /**
@@ -1284,6 +1319,12 @@ public class Hive {
     return new Partition(tbl, tpart);
   }
 
+  public boolean dropPartition(String tblName, List<String> part_vals, boolean deleteData)
+  throws HiveException {
+    Table t = newTable(tblName);
+    return dropPartition(t.getDbName(), t.getTableName(), part_vals, deleteData);
+  }
+
   public boolean dropPartition(String db_name, String tbl_name,
       List<String> part_vals, boolean deleteData) throws HiveException {
     try {
@@ -1293,6 +1334,11 @@ public class Hive {
     } catch (Exception e) {
       throw new HiveException("Unknow error. Please check logs.", e);
     }
+  }
+
+  public List<String> getPartitionNames(String tblName, short max) throws HiveException {
+    Table t = newTable(tblName);
+    return getPartitionNames(t.getDbName(), t.getTableName(), max);
   }
 
   public List<String> getPartitionNames(String dbName, String tblName, short max)
@@ -1476,7 +1522,7 @@ public class Hive {
       throw new HiveException(e);
     }
   }
-  
+
   /**
    * Get all existing role names.
    *
@@ -1860,4 +1906,27 @@ public class Hive {
     }
     return indexes;
   }
+
+  public Table newTable(String tableName) throws HiveException {
+    String[] names = getQualifiedNames(tableName);
+    switch (names.length) {
+    case 2:
+      return new Table(names[0], names[1]);
+    case 1:
+      return new Table(getCurrentDatabase(), names[0]);
+    default:
+      try{
+        throw new HiveException("Invalid table name: " + tableName);
+      }catch(Exception e) {
+        e.printStackTrace();
+      }
+      throw new HiveException("Invalid table name: " + tableName);
+    }
+  }
+
+  private static String[] getQualifiedNames(String qualifiedName) {
+    return qualifiedName.split("\\.");
+  }
+
+
 };
