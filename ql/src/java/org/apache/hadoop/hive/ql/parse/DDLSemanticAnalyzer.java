@@ -428,7 +428,7 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
         if (astChild.getType() == HiveParser.TOK_GRANT_WITH_OPTION) {
           grantOption = true;
         } else if (astChild.getType() == HiveParser.TOK_PRIV_OBJECT) {
-          privilegeObj = analyzePrivilegeObject(astChild);
+          privilegeObj = analyzePrivilegeObject(astChild, getOutputs());
         }
       }
     }
@@ -453,7 +453,7 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
     PrivilegeObjectDesc hiveObj = null;
     if (ast.getChildCount() > 2) {
       ASTNode astChild = (ASTNode) ast.getChild(2);
-      hiveObj = analyzePrivilegeObject(astChild);
+      hiveObj = analyzePrivilegeObject(astChild, getOutputs());
     }
 
     RevokeDesc revokeDesc = new RevokeDesc(privilegeDesc, principalDesc, hiveObj);
@@ -462,7 +462,8 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
   }
 
 
-  private PrivilegeObjectDesc analyzePrivilegeObject(ASTNode ast)
+  private PrivilegeObjectDesc analyzePrivilegeObject(ASTNode ast,
+      HashSet<WriteEntity> outputs)
       throws SemanticException {
     PrivilegeObjectDesc subject = new PrivilegeObjectDesc();
     subject.setObject(unescapeIdentifier(ast.getChild(0).getText()));
@@ -476,6 +477,21 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
         }
       }
     }
+
+    try {
+      if (subject.getTable()) {
+        Table tbl = db.getTable(subject.getObject());
+        if (subject.getPartSpec() != null) {
+          Partition part = db.getPartition(tbl, subject.getPartSpec(), false);
+          outputs.add(new WriteEntity(part));
+        } else {
+          outputs.add(new WriteEntity(tbl));
+        }
+      }
+    } catch (HiveException e) {
+      throw new SemanticException(e);
+    }
+
     return subject;
   }
 
@@ -513,7 +529,7 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
       Privilege privObj = PrivilegeRegistry.getPrivilege(privilegeType.getType());
 
       if (privObj == null) {
-        throw new SemanticException("undefined privilege " + privObj.toString());
+        throw new SemanticException("undefined privilege " + privilegeType.getType());
       }
       List<String> cols = null;
       if (privilegeDef.getChildCount() > 1) {
