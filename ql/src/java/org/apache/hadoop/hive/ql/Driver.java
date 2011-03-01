@@ -460,13 +460,23 @@ public class Driver implements CommandProcessor {
 
       Map<Table, List<String>> tab2Cols = new HashMap<Table, List<String>>();
       Map<Partition, List<String>> part2Cols = new HashMap<Partition, List<String>>();
-
+      
+      Map<String, Boolean> tableUsePartLevelAuth = new HashMap<String, Boolean>();
       for (ReadEntity read : inputs) {
-        boolean part = read.getPartition() != null;
-        if (part) {
-          part2Cols.put(read.getPartition(), new ArrayList<String>());
-        } else {
-          tab2Cols.put(read.getTable(), new ArrayList<String>());
+        if (read.getPartition() != null) {
+          Table tbl = read.getTable();
+          String tblName = tbl.getTableName();
+          if (tableUsePartLevelAuth.get(tblName) == null) {
+            boolean usePartLevelPriv = (tbl.getParameters().get(
+                "PARTITION_LEVEL_PRIVILEGE") != null && ("TRUE"
+                .equalsIgnoreCase(tbl.getParameters().get(
+                    "PARTITION_LEVEL_PRIVILEGE"))));
+            if (usePartLevelPriv) {
+              tableUsePartLevelAuth.put(tblName, Boolean.TRUE);
+            } else {
+              tableUsePartLevelAuth.put(tblName, Boolean.FALSE);
+            }
+          }
         }
       }
 
@@ -495,7 +505,7 @@ public class Driver implements CommandProcessor {
                 cols.add(columns.get(i).getName());
               }
             }
-            if (tbl.isPartitioned()) {
+            if (tbl.isPartitioned() && tableUsePartLevelAuth.get(tbl.getTableName())) {
               String alias_id = topOpMap.getKey();
               PrunedPartitionList partsList = PartitionPruner.prune(parseCtx
                   .getTopToTable().get(topOp), parseCtx.getOpToPartPruner()
@@ -505,38 +515,65 @@ public class Driver implements CommandProcessor {
               parts.addAll(partsList.getConfirmedPartns());
               parts.addAll(partsList.getUnknownPartns());
               for (Partition part : parts) {
-                part2Cols.put(part, cols);
+                List<String> existingCols = part2Cols.get(part);
+                if (existingCols == null) {
+                  existingCols = new ArrayList<String>();
+                }
+                existingCols.addAll(cols);
+                part2Cols.put(part, existingCols);
               }
             } else {
-              tab2Cols.put(tbl, cols);
+              List<String> existingCols = tab2Cols.get(tbl);
+              if (existingCols == null) {
+                existingCols = new ArrayList<String>();
+              }
+              existingCols.addAll(cols);
+              tab2Cols.put(tbl, existingCols);
             }
           }
         }
       }
-
+      
+      
+      //cache the results for table authorization
+      Set<String> tableAuthChecked = new HashSet<String>();
       for (ReadEntity read : inputs) {
+        Table tbl = null;
         if (read.getPartition() != null) {
-          List<String> cols = part2Cols.get(read.getPartition());
-          if (cols != null && cols.size() > 0) {
-            ss.getAuthorizer().authorize(read.getPartition().getTable(),
-                    read.getPartition(), cols, op.getInputRequiredPrivileges(),
-                    null);
-          } else {
-            ss.getAuthorizer().authorize(read.getPartition(),
-                    op.getInputRequiredPrivileges(), null);
+          tbl = read.getPartition().getTable();
+          // use partition level authorization
+          if (tableUsePartLevelAuth.get(tbl.getTableName())) {
+            List<String> cols = part2Cols.get(read.getPartition());
+            if (cols != null && cols.size() > 0) {
+              ss.getAuthorizer().authorize(read.getPartition().getTable(),
+                  read.getPartition(), cols, op.getInputRequiredPrivileges(),
+                  null);
+            } else {
+              ss.getAuthorizer().authorize(read.getPartition(),
+                  op.getInputRequiredPrivileges(), null);
+            }
+            continue;
           }
         } else if (read.getTable() != null) {
-          List<String> cols = tab2Cols.get(read.getTable());
+          tbl = read.getTable();
+        }
+        
+        // if we reach here, it means it needs to do a table authorization
+        // check, and the table authorization may already happened because of other
+        // partitions
+        if (tbl != null && !tableAuthChecked.contains(tbl.getTableName())) {
+          List<String> cols = tab2Cols.get(tbl);
           if (cols != null && cols.size() > 0) {
-            ss.getAuthorizer().authorize(read.getTable(), null, cols,
-                    op.getInputRequiredPrivileges(), null);
+            ss.getAuthorizer().authorize(tbl, null, cols,
+                op.getInputRequiredPrivileges(), null);
           } else {
-            ss.getAuthorizer().authorize(read.getTable(),
-                    op.getInputRequiredPrivileges(), null);
+            ss.getAuthorizer().authorize(tbl, op.getInputRequiredPrivileges(),
+                null);
           }
+          tableAuthChecked.add(tbl.getTableName());
         }
       }
-
+      
     }
   }
 
