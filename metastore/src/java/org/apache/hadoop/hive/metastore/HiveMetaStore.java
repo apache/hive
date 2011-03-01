@@ -306,9 +306,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
           RawStore ms = getMS(reloadConf || gotNewConnectUrl);
           ret = cmd.run(ms);
           break;
-        } catch (javax.jdo.JDOFatalDataStoreException e) {
-          caughtException = e;
-        } catch (javax.jdo.JDODataStoreException e) {
+        } catch (javax.jdo.JDOException e) {
           caughtException = e;
         }
 
