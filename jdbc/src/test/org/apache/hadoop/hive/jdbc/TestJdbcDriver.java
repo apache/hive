@@ -216,7 +216,8 @@ public class TestJdbcDriver extends TestCase {
 
     // row 1
     assertTrue(res.next());
-    for (int i = 1; i <= meta.getColumnCount(); i++) {
+    // skip the last (partitioning) column since it is always non-null
+    for (int i = 1; i < meta.getColumnCount(); i++) {
       assertNull(res.getObject(i));
     }
 
@@ -291,7 +292,12 @@ public class TestJdbcDriver extends TestCase {
     int i = 0;
 
     ResultSetMetaData meta = res.getMetaData();
-    assertEquals("Unexpected column count", 2, meta.getColumnCount());
+    int expectedColCount = 2;
+    if (tableName.equals(partitionedTableName)) {
+      ++expectedColCount;
+    }
+    assertEquals(
+      "Unexpected column count", expectedColCount, meta.getColumnCount());
 
     boolean moreRow = res.next();
     while (moreRow) {

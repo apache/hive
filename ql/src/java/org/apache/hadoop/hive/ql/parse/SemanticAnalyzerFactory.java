@@ -73,6 +73,8 @@ public final class SemanticAnalyzerFactory {
     commandType.put(HiveParser.TOK_ALTERINDEX_REBUILD, HiveOperation.ALTERINDEX_REBUILD);
     commandType.put(HiveParser.TOK_ALTERINDEX_PROPERTIES, HiveOperation.ALTERINDEX_PROPS);
     commandType.put(HiveParser.TOK_ALTERVIEW_PROPERTIES, HiveOperation.ALTERVIEW_PROPERTIES);
+    commandType.put(HiveParser.TOK_ALTERVIEW_ADDPARTS, HiveOperation.ALTERTABLE_ADDPARTS);
+    commandType.put(HiveParser.TOK_ALTERVIEW_DROPPARTS, HiveOperation.ALTERTABLE_DROPPARTS);
     commandType.put(HiveParser.TOK_QUERY, HiveOperation.QUERY);
     commandType.put(HiveParser.TOK_LOCKTABLE, HiveOperation.LOCKTABLE);
     commandType.put(HiveParser.TOK_UNLOCKTABLE, HiveOperation.UNLOCKTABLE);
@@ -137,6 +139,8 @@ public final class SemanticAnalyzerFactory {
       case HiveParser.TOK_ALTERINDEX_REBUILD:
       case HiveParser.TOK_ALTERINDEX_PROPERTIES:
       case HiveParser.TOK_ALTERVIEW_PROPERTIES:
+      case HiveParser.TOK_ALTERVIEW_ADDPARTS:
+      case HiveParser.TOK_ALTERVIEW_DROPPARTS:
       case HiveParser.TOK_SHOWDATABASES:
       case HiveParser.TOK_SHOWTABLES:
       case HiveParser.TOK_SHOW_TABLESTATUS:

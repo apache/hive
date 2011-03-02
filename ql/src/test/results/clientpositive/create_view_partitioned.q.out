@@ -1,0 +1,412 @@
+PREHOOK: query: DROP VIEW vp1
+PREHOOK: type: DROPVIEW
+POSTHOOK: query: DROP VIEW vp1
+POSTHOOK: type: DROPVIEW
+PREHOOK: query: DROP VIEW vp2
+PREHOOK: type: DROPVIEW
+POSTHOOK: query: DROP VIEW vp2
+POSTHOOK: type: DROPVIEW
+PREHOOK: query: DROP VIEW vp3
+PREHOOK: type: DROPVIEW
+POSTHOOK: query: DROP VIEW vp3
+POSTHOOK: type: DROPVIEW
+PREHOOK: query: -- test partitioned view definition
+-- (underlying table is not actually partitioned)
+CREATE VIEW vp1
+PARTITIONED ON (value)
+AS
+SELECT key, value
+FROM src
+WHERE key=86
+PREHOOK: type: CREATEVIEW
+PREHOOK: Output: file:/var/folders/7P/7PeC14kXFIWq0PIYyexGbmKuXUk/-Tmp-/jsichi/hive_2011-02-09_12-39-20_202_459725770522554343/-mr-10000
+POSTHOOK: query: -- test partitioned view definition
+-- (underlying table is not actually partitioned)
+CREATE VIEW vp1
+PARTITIONED ON (value)
+AS
+SELECT key, value
+FROM src
+WHERE key=86
+POSTHOOK: type: CREATEVIEW
+POSTHOOK: Output: default@vp1
+POSTHOOK: Output: file:/var/folders/7P/7PeC14kXFIWq0PIYyexGbmKuXUk/-Tmp-/jsichi/hive_2011-02-09_12-39-20_202_459725770522554343/-mr-10000
+PREHOOK: query: DESCRIBE EXTENDED vp1
+PREHOOK: type: DESCTABLE
+POSTHOOK: query: DESCRIBE EXTENDED vp1
+POSTHOOK: type: DESCTABLE
+key	string	
+value	string	
+	 	 
+Detailed Table Information	Table(tableName:vp1, dbName:default, owner:jsichi, createTime:1297283960, lastAccessTime:0, retention:0, sd:StorageDescriptor(cols:[FieldSchema(name:key, type:string, comment:null), FieldSchema(name:value, type:string, comment:null)], location:null, inputFormat:org.apache.hadoop.mapred.SequenceFileInputFormat, outputFormat:org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat, compressed:false, numBuckets:-1, serdeInfo:SerDeInfo(name:null, serializationLib:null, parameters:{}), bucketCols:[], sortCols:[], parameters:{}), partitionKeys:[FieldSchema(name:value, type:string, comment:null)], parameters:{transient_lastDdlTime=1297283960}, viewOriginalText:SELECT key, value	 
+FROM src	 	 
+WHERE key=86, viewExpandedText:SELECT `src`.`key`, `src`.`value`	 	 
+FROM `src`	 	 
+WHERE `src`.`key`=86, tableType:VIRTUAL_VIEW)		 
+PREHOOK: query: DESCRIBE FORMATTED vp1
+PREHOOK: type: DESCTABLE
+POSTHOOK: query: DESCRIBE FORMATTED vp1
+POSTHOOK: type: DESCTABLE
+# col_name            	data_type           	comment             
+	 	 
+key                 	string              	None                
+	 	 
+# Partition Information	 	 
+# col_name            	data_type           	comment             
+	 	 
+value               	string              	None                
+	 	 
+# Detailed Table Information	 	 
+Database:           	default             	 
+Owner:              	jsichi              	 
+CreateTime:         	Wed Feb 09 12:39:20 PST 2011	 
+LastAccessTime:     	UNKNOWN             	 
+Protect Mode:       	None                	 
+Retention:          	0                   	 
+Table Type:         	VIRTUAL_VIEW        	 
+Table Parameters:	 	 
+	transient_lastDdlTime	1297283960          
+	 	 
+# Storage Information	 	 
+SerDe Library:      	null                	 
+InputFormat:        	org.apache.hadoop.mapred.SequenceFileInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	-1                  	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
+	 	 
+# View Information	 	 
+View Original Text: 	SELECT key, value	 
+FROM src	 	 
+WHERE key=86	 	 
+View Expanded Text: 	SELECT `src`.`key`, `src`.`value`	 
+FROM `src`	 	 
+WHERE `src`.`key`=86	 	 
+PREHOOK: query: SELECT * FROM vp1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: file:/var/folders/7P/7PeC14kXFIWq0PIYyexGbmKuXUk/-Tmp-/jsichi/hive_2011-02-09_12-39-20_956_4791033359314261882/-mr-10000
+POSTHOOK: query: SELECT * FROM vp1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: file:/var/folders/7P/7PeC14kXFIWq0PIYyexGbmKuXUk/-Tmp-/jsichi/hive_2011-02-09_12-39-20_956_4791033359314261882/-mr-10000
+86	val_86
+PREHOOK: query: SELECT key FROM vp1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: file:/var/folders/7P/7PeC14kXFIWq0PIYyexGbmKuXUk/-Tmp-/jsichi/hive_2011-02-09_12-39-28_000_2791859544795907188/-mr-10000
+POSTHOOK: query: SELECT key FROM vp1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: file:/var/folders/7P/7PeC14kXFIWq0PIYyexGbmKuXUk/-Tmp-/jsichi/hive_2011-02-09_12-39-28_000_2791859544795907188/-mr-10000
+86
+PREHOOK: query: SELECT value FROM vp1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: file:/var/folders/7P/7PeC14kXFIWq0PIYyexGbmKuXUk/-Tmp-/jsichi/hive_2011-02-09_12-39-34_032_4697733201868315411/-mr-10000
+POSTHOOK: query: SELECT value FROM vp1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: file:/var/folders/7P/7PeC14kXFIWq0PIYyexGbmKuXUk/-Tmp-/jsichi/hive_2011-02-09_12-39-34_032_4697733201868315411/-mr-10000
+val_86
+PREHOOK: query: ALTER VIEW vp1
+ADD PARTITION (value='val_86') PARTITION (value='val_xyz')
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Input: default@vp1
+POSTHOOK: query: ALTER VIEW vp1
+ADD PARTITION (value='val_86') PARTITION (value='val_xyz')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Input: default@vp1
+POSTHOOK: Output: default@vp1@value=val_86
+POSTHOOK: Output: default@vp1@value=val_xyz
+PREHOOK: query: -- should work since we use IF NOT EXISTS
+ALTER VIEW vp1
+ADD IF NOT EXISTS PARTITION (value='val_xyz')
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Input: default@vp1
+PREHOOK: Output: default@vp1@value=val_xyz
+POSTHOOK: query: -- should work since we use IF NOT EXISTS
+ALTER VIEW vp1
+ADD IF NOT EXISTS PARTITION (value='val_xyz')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Input: default@vp1
+POSTHOOK: Output: default@vp1@value=val_xyz
+PREHOOK: query: SHOW PARTITIONS vp1
+PREHOOK: type: SHOWPARTITIONS
+POSTHOOK: query: SHOW PARTITIONS vp1
+POSTHOOK: type: SHOWPARTITIONS
+value=val_86
+value=val_xyz
+PREHOOK: query: SHOW PARTITIONS vp1 PARTITION(value='val_86')
+PREHOOK: type: SHOWPARTITIONS
+POSTHOOK: query: SHOW PARTITIONS vp1 PARTITION(value='val_86')
+POSTHOOK: type: SHOWPARTITIONS
+value=val_86
+PREHOOK: query: SHOW TABLE EXTENDED LIKE vp1
+PREHOOK: type: SHOW_TABLESTATUS
+POSTHOOK: query: SHOW TABLE EXTENDED LIKE vp1
+POSTHOOK: type: SHOW_TABLESTATUS
+tableName:vp1
+owner:jsichi
+location:null
+inputformat:org.apache.hadoop.mapred.SequenceFileInputFormat
+outputformat:org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+columns:struct columns { string key}
+partitioned:true
+partitionColumns:struct partition_columns { string value}
+
+PREHOOK: query: SHOW TABLE EXTENDED LIKE vp1 PARTITION(value='val_86')
+PREHOOK: type: SHOW_TABLESTATUS
+POSTHOOK: query: SHOW TABLE EXTENDED LIKE vp1 PARTITION(value='val_86')
+POSTHOOK: type: SHOW_TABLESTATUS
+tableName:vp1
+owner:jsichi
+location:null
+inputformat:org.apache.hadoop.mapred.SequenceFileInputFormat
+outputformat:org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+columns:struct columns { string key}
+partitioned:true
+partitionColumns:struct partition_columns { string value}
+
+PREHOOK: query: ALTER VIEW vp1
+DROP PARTITION (value='val_xyz')
+PREHOOK: type: ALTERTABLE_DROPPARTS
+PREHOOK: Input: default@vp1
+PREHOOK: Output: default@vp1@value=val_xyz
+POSTHOOK: query: ALTER VIEW vp1
+DROP PARTITION (value='val_xyz')
+POSTHOOK: type: ALTERTABLE_DROPPARTS
+POSTHOOK: Input: default@vp1
+POSTHOOK: Output: default@vp1@value=val_xyz
+PREHOOK: query: -- should work since we use IF EXISTS
+ALTER VIEW vp1
+DROP IF EXISTS PARTITION (value='val_xyz')
+PREHOOK: type: ALTERTABLE_DROPPARTS
+PREHOOK: Input: default@vp1
+POSTHOOK: query: -- should work since we use IF EXISTS
+ALTER VIEW vp1
+DROP IF EXISTS PARTITION (value='val_xyz')
+POSTHOOK: type: ALTERTABLE_DROPPARTS
+POSTHOOK: Input: default@vp1
+PREHOOK: query: SHOW PARTITIONS vp1
+PREHOOK: type: SHOWPARTITIONS
+POSTHOOK: query: SHOW PARTITIONS vp1
+POSTHOOK: type: SHOWPARTITIONS
+value=val_86
+PREHOOK: query: -- Even though no partition predicate is specified in the next query,
+-- the WHERE clause inside of the view should satisfy strict mode.
+-- In other words, strict only applies to underlying tables
+-- (regardless of whether or not the view is partitioned).
+SELECT * FROM vp1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: file:/var/folders/7P/7PeC14kXFIWq0PIYyexGbmKuXUk/-Tmp-/jsichi/hive_2011-02-09_12-39-41_066_3753395059950041338/-mr-10000
+POSTHOOK: query: -- Even though no partition predicate is specified in the next query,
+-- the WHERE clause inside of the view should satisfy strict mode.
+-- In other words, strict only applies to underlying tables
+-- (regardless of whether or not the view is partitioned).
+SELECT * FROM vp1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: file:/var/folders/7P/7PeC14kXFIWq0PIYyexGbmKuXUk/-Tmp-/jsichi/hive_2011-02-09_12-39-41_066_3753395059950041338/-mr-10000
+86	val_86
+PREHOOK: query: -- test a partitioned view on top of an underlying partitioned table,
+-- but with only a suffix of the partitioning columns
+CREATE VIEW vp2
+PARTITIONED ON (hr)
+AS SELECT * FROM srcpart WHERE key < 10
+PREHOOK: type: CREATEVIEW
+PREHOOK: Output: file:/var/folders/7P/7PeC14kXFIWq0PIYyexGbmKuXUk/-Tmp-/jsichi/hive_2011-02-09_12-39-46_912_6988747758977470257/-mr-10000
+POSTHOOK: query: -- test a partitioned view on top of an underlying partitioned table,
+-- but with only a suffix of the partitioning columns
+CREATE VIEW vp2
+PARTITIONED ON (hr)
+AS SELECT * FROM srcpart WHERE key < 10
+POSTHOOK: type: CREATEVIEW
+POSTHOOK: Output: default@vp2
+POSTHOOK: Output: file:/var/folders/7P/7PeC14kXFIWq0PIYyexGbmKuXUk/-Tmp-/jsichi/hive_2011-02-09_12-39-46_912_6988747758977470257/-mr-10000
+PREHOOK: query: DESCRIBE FORMATTED vp2
+PREHOOK: type: DESCTABLE
+POSTHOOK: query: DESCRIBE FORMATTED vp2
+POSTHOOK: type: DESCTABLE
+# col_name            	data_type           	comment             
+	 	 
+key                 	string              	None                
+value               	string              	None                
+ds                  	string              	None                
+	 	 
+# Partition Information	 	 
+# col_name            	data_type           	comment             
+	 	 
+hr                  	string              	None                
+	 	 
+# Detailed Table Information	 	 
+Database:           	default             	 
+Owner:              	jsichi              	 
+CreateTime:         	Wed Feb 09 12:39:46 PST 2011	 
+LastAccessTime:     	UNKNOWN             	 
+Protect Mode:       	None                	 
+Retention:          	0                   	 
+Table Type:         	VIRTUAL_VIEW        	 
+Table Parameters:	 	 
+	transient_lastDdlTime	1297283986          
+	 	 
+# Storage Information	 	 
+SerDe Library:      	null                	 
+InputFormat:        	org.apache.hadoop.mapred.SequenceFileInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	-1                  	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
+	 	 
+# View Information	 	 
+View Original Text: 	SELECT * FROM srcpart WHERE key < 10	 
+View Expanded Text: 	SELECT `srcpart`.`key`, `srcpart`.`value`, `srcpart`.`ds`, `srcpart`.`hr` FROM `srcpart` WHERE `srcpart`.`key` < 10	 
+PREHOOK: query: ALTER VIEW vp2 ADD PARTITION (hr='11') PARTITION (hr='12')
+PREHOOK: type: QUERY
+PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
+PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
+PREHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
+PREHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
+PREHOOK: Input: default@vp2
+POSTHOOK: query: ALTER VIEW vp2 ADD PARTITION (hr='11') PARTITION (hr='12')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
+POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
+POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
+POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
+POSTHOOK: Input: default@vp2
+POSTHOOK: Output: default@vp2@hr=11
+POSTHOOK: Output: default@vp2@hr=12
+PREHOOK: query: SELECT key FROM vp2 WHERE hr='12' ORDER BY key
+PREHOOK: type: QUERY
+PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
+PREHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
+PREHOOK: Output: file:/var/folders/7P/7PeC14kXFIWq0PIYyexGbmKuXUk/-Tmp-/jsichi/hive_2011-02-09_12-39-47_562_328778258675461955/-mr-10000
+POSTHOOK: query: SELECT key FROM vp2 WHERE hr='12' ORDER BY key
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
+POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
+POSTHOOK: Output: file:/var/folders/7P/7PeC14kXFIWq0PIYyexGbmKuXUk/-Tmp-/jsichi/hive_2011-02-09_12-39-47_562_328778258675461955/-mr-10000
+0
+0
+0
+0
+0
+0
+2
+2
+4
+4
+5
+5
+5
+5
+5
+5
+8
+8
+9
+9
+PREHOOK: query: -- test a partitioned view where the PARTITIONED ON clause references
+-- an imposed column name
+CREATE VIEW vp3(k,v)
+PARTITIONED ON (v)
+AS
+SELECT key, value
+FROM src
+WHERE key=86
+PREHOOK: type: CREATEVIEW
+PREHOOK: Output: file:/var/folders/7P/7PeC14kXFIWq0PIYyexGbmKuXUk/-Tmp-/jsichi/hive_2011-02-09_12-39-55_502_5144513026720493384/-mr-10000
+POSTHOOK: query: -- test a partitioned view where the PARTITIONED ON clause references
+-- an imposed column name
+CREATE VIEW vp3(k,v)
+PARTITIONED ON (v)
+AS
+SELECT key, value
+FROM src
+WHERE key=86
+POSTHOOK: type: CREATEVIEW
+POSTHOOK: Output: default@vp3
+POSTHOOK: Output: file:/var/folders/7P/7PeC14kXFIWq0PIYyexGbmKuXUk/-Tmp-/jsichi/hive_2011-02-09_12-39-55_502_5144513026720493384/-mr-10000
+PREHOOK: query: DESCRIBE FORMATTED vp3
+PREHOOK: type: DESCTABLE
+POSTHOOK: query: DESCRIBE FORMATTED vp3
+POSTHOOK: type: DESCTABLE
+# col_name            	data_type           	comment             
+	 	 
+k                   	string              	None                
+	 	 
+# Partition Information	 	 
+# col_name            	data_type           	comment             
+	 	 
+v                   	string              	None                
+	 	 
+# Detailed Table Information	 	 
+Database:           	default             	 
+Owner:              	jsichi              	 
+CreateTime:         	Wed Feb 09 12:39:55 PST 2011	 
+LastAccessTime:     	UNKNOWN             	 
+Protect Mode:       	None                	 
+Retention:          	0                   	 
+Table Type:         	VIRTUAL_VIEW        	 
+Table Parameters:	 	 
+	transient_lastDdlTime	1297283995          
+	 	 
+# Storage Information	 	 
+SerDe Library:      	null                	 
+InputFormat:        	org.apache.hadoop.mapred.SequenceFileInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	-1                  	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
+	 	 
+# View Information	 	 
+View Original Text: 	SELECT key, value	 
+FROM src	 	 
+WHERE key=86	 	 
+View Expanded Text: 	SELECT `key` AS `k`, `value` AS `v` FROM (SELECT `src`.`key`, `src`.`value`	 
+FROM `src`	 	 
+WHERE `src`.`key`=86) `vp3`	 	 
+PREHOOK: query: ALTER VIEW vp3
+ADD PARTITION (v='val_86')
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Input: default@vp3
+POSTHOOK: query: ALTER VIEW vp3
+ADD PARTITION (v='val_86')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Input: default@vp3
+POSTHOOK: Output: default@vp3@v=val_86
+PREHOOK: query: DROP VIEW vp1
+PREHOOK: type: DROPVIEW
+PREHOOK: Input: default@vp1
+PREHOOK: Output: default@vp1
+POSTHOOK: query: DROP VIEW vp1
+POSTHOOK: type: DROPVIEW
+POSTHOOK: Input: default@vp1
+POSTHOOK: Output: default@vp1
+PREHOOK: query: DROP VIEW vp2
+PREHOOK: type: DROPVIEW
+PREHOOK: Input: default@vp2
+PREHOOK: Output: default@vp2
+POSTHOOK: query: DROP VIEW vp2
+POSTHOOK: type: DROPVIEW
+POSTHOOK: Input: default@vp2
+POSTHOOK: Output: default@vp2
+PREHOOK: query: DROP VIEW vp3
+PREHOOK: type: DROPVIEW
+PREHOOK: Input: default@vp3
+PREHOOK: Output: default@vp3
+POSTHOOK: query: DROP VIEW vp3
+POSTHOOK: type: DROPVIEW
+POSTHOOK: Input: default@vp3
+POSTHOOK: Output: default@vp3

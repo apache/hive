@@ -801,6 +801,9 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
             throw new SemanticException(ErrorMsg.INVALID_TABLE_ALIAS.
                 getMsg("Referencing view from foreign databases is not supported."));
           }
+          if (qb.getParseInfo().isAnalyzeCommand()) {
+            throw new SemanticException(ErrorMsg.ANALYZE_VIEW.getMsg());
+          }
           replaceViewReferenceWithDefinition(qb, tab, tab_name, alias);
           continue;
         }
@@ -6702,6 +6705,52 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       expandedText = sb.toString();
     }
 
+    if (createVwDesc.getPartColNames() != null) {
+      // Make sure all partitioning columns referenced actually
+      // exist and are in the correct order at the end
+      // of the list of columns produced by the view.  Also move the field
+      // schema descriptors from derivedSchema to the partitioning key
+      // descriptor.
+      List<String> partColNames = createVwDesc.getPartColNames();
+      if (partColNames.size() > derivedSchema.size()) {
+          throw new SemanticException(
+            ErrorMsg.VIEW_PARTITION_MISMATCH.getMsg());
+      }
+      
+      // Get the partition columns from the end of derivedSchema.
+      List<FieldSchema> partitionColumns = derivedSchema.subList(
+        derivedSchema.size() - partColNames.size(),
+        derivedSchema.size());
+
+      // Verify that the names match the PARTITIONED ON clause.
+      Iterator<String> colNameIter = partColNames.iterator();
+      Iterator<FieldSchema> schemaIter = partitionColumns.iterator();
+      while (colNameIter.hasNext()) {
+        String colName = colNameIter.next();
+        FieldSchema fieldSchema = schemaIter.next();
+        if (!fieldSchema.getName().equals(colName)) {
+          throw new SemanticException(
+            ErrorMsg.VIEW_PARTITION_MISMATCH.getMsg());
+        }
+      }
+
+      // Boundary case:  require at least one non-partitioned column
+      // for consistency with tables.
+      if (partColNames.size() == derivedSchema.size()) {
+          throw new SemanticException(
+            ErrorMsg.VIEW_PARTITION_TOTAL.getMsg());
+      }
+
+      // Now make a copy.
+      createVwDesc.setPartCols(
+        new ArrayList<FieldSchema>(partitionColumns));
+
+      // Finally, remove the partition columns from the end of derivedSchema.
+      // (Clearing the subList writes through to the underlying
+      // derivedSchema ArrayList.)
+      partitionColumns.clear();
+    }
+
     createVwDesc.setSchema(derivedSchema);
     createVwDesc.setViewExpandedText(expandedText);
   }
@@ -6709,7 +6758,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
   private List<FieldSchema> convertRowSchemaToViewSchema(RowResolver rr) {
     List<FieldSchema> fieldSchemas = new ArrayList<FieldSchema>();
     for (ColumnInfo colInfo : rr.getColumnInfos()) {
-      if (colInfo.getIsVirtualCol()) {
+      if (colInfo.isHiddenVirtualCol()) {
         continue;
       }
       String colName = rr.reverseLookup(colInfo.getInternalName())[1];
@@ -7171,6 +7220,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     String comment = null;
     ASTNode selectStmt = null;
     Map<String, String> tblProps = null;
+    List<String> partColNames = null;
 
     LOG.info("Creating view " + tableName + " position="
         + ast.getCharPositionInLine());
@@ -7193,13 +7243,16 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       case HiveParser.TOK_TABLEPROPERTIES:
         tblProps = DDLSemanticAnalyzer.getProps((ASTNode) child.getChild(0));
         break;
+      case HiveParser.TOK_VIEWPARTCOLS:
+        partColNames = getColumnNames((ASTNode) child.getChild(0));
+        break;
       default:
         assert false;
       }
     }
 
     createVwDesc = new CreateViewDesc(
-      tableName, cols, comment, tblProps, ifNotExists);
+      tableName, cols, comment, tblProps, partColNames, ifNotExists);
     unparseTranslator.enable();
     rootTasks.add(TaskFactory.get(new DDLWork(getInputs(), getOutputs(),
         createVwDesc), conf));

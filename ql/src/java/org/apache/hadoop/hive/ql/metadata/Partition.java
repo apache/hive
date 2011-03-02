@@ -95,7 +95,9 @@ public class Partition implements Serializable {
   public Partition(Table tbl) throws HiveException {
     org.apache.hadoop.hive.metastore.api.Partition tPart =
         new org.apache.hadoop.hive.metastore.api.Partition();
-    tPart.setSd(tbl.getTTable().getSd()); // TODO: get a copy
+    if (!tbl.isView()) {
+      tPart.setSd(tbl.getTTable().getSd()); // TODO: get a copy
+    }
     initialize(tbl, tPart);
   }
 
@@ -133,6 +135,11 @@ public class Partition implements Serializable {
     tpart.setDbName(tbl.getDbName());
     tpart.setTableName(tbl.getTableName());
     tpart.setValues(pvals);
+
+    if (tbl.isView()) {
+      initialize(tbl, tpart);
+      return;
+    }
 
     StorageDescriptor sd = new StorageDescriptor();
     try {
@@ -172,15 +179,23 @@ public class Partition implements Serializable {
 
     this.table = table;
     this.tPartition = tPartition;
-    String partName = "";
 
+    if (table.isView()) {
+      return;
+    }
+    
+    String partName = "";
     if (table.isPartitioned()) {
       try {
         partName = Warehouse.makePartName(table.getPartCols(), tPartition.getValues());
         if (tPartition.getSd().getLocation() == null) {
-          // set default if location is not set
-          Path partPath = new Path(table.getDataLocation().toString(), partName);
-          tPartition.getSd().setLocation(partPath.toString());
+          // set default if location is not set and this is a physical
+          // table partition (not a view partition)
+          if (table.getDataLocation() != null) {
+            Path partPath = new Path(
+              table.getDataLocation().toString(), partName);
+            tPartition.getSd().setLocation(partPath.toString());
+          }
         }
       } catch (MetaException e) {
         throw new HiveException("Invalid partition for table " + table.getTableName(),
@@ -466,7 +481,11 @@ public class Partition implements Serializable {
   }
 
   public String getLocation() {
-    return tPartition.getSd().getLocation();
+    if (tPartition.getSd() == null) {
+      return null;
+    } else {
+      return tPartition.getSd().getLocation();
+    }
   }
 
   public void setLocation(String location) {

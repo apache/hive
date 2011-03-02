@@ -38,6 +38,8 @@ public class CreateViewDesc extends DDLDesc implements Serializable {
   private String expandedText;
   private List<FieldSchema> schema;
   private Map<String, String> tblProps;
+  private List<String> partColNames;
+  private List<FieldSchema> partCols;
   private String comment;
   private boolean ifNotExists;
 
@@ -48,11 +50,13 @@ public class CreateViewDesc extends DDLDesc implements Serializable {
   }
   
   public CreateViewDesc(String viewName, List<FieldSchema> schema,
-      String comment, Map<String, String> tblProps, boolean ifNotExists) {
+      String comment, Map<String, String> tblProps,
+      List<String> partColNames, boolean ifNotExists) {
     this.viewName = viewName;
     this.schema = schema;
     this.comment = comment;
     this.tblProps = tblProps;
+    this.partColNames = partColNames;
     this.ifNotExists = ifNotExists;
   }
 
@@ -94,6 +98,27 @@ public class CreateViewDesc extends DDLDesc implements Serializable {
 
   public void setSchema(List<FieldSchema> schema) {
     this.schema = schema;
+  }
+
+  @Explain(displayName = "partition columns")
+  public List<String> getPartColsString() {
+    return Utilities.getFieldSchemaString(partCols);
+  }
+
+  public List<FieldSchema> getPartCols() {
+    return partCols;
+  }
+
+  public void setPartCols(List<FieldSchema> partCols) {
+    this.partCols = partCols;
+  }
+
+  public List<String> getPartColNames() {
+    return partColNames;
+  }
+
+  public void setPartColNames(List<String> partColNames) {
+    this.partColNames = partColNames;
   }
 
   @Explain(displayName = "comment")

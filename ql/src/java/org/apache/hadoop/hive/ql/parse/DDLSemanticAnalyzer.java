@@ -34,6 +34,7 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 import java.util.Map.Entry;
+import java.util.regex.Pattern;
 
 import org.antlr.runtime.tree.CommonTree;
 import org.antlr.runtime.tree.Tree;
@@ -48,6 +49,7 @@ import org.apache.hadoop.hive.metastore.api.Index;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.Order;
 import org.apache.hadoop.hive.metastore.api.PrincipalType;
+import org.apache.hadoop.hive.ql.Driver;
 import org.apache.hadoop.hive.ql.exec.FetchTask;
 import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.exec.TaskFactory;
@@ -243,6 +245,16 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
     case HiveParser.TOK_ALTERVIEW_PROPERTIES:
       analyzeAlterTableProps(ast, true);
       break;
+    case HiveParser.TOK_ALTERVIEW_ADDPARTS:
+      // for ALTER VIEW ADD PARTITION, we wrapped the ADD to discriminate
+      // view from table; unwrap it now
+      analyzeAlterTableAddParts((ASTNode) ast.getChild(0), true);
+      break;
+    case HiveParser.TOK_ALTERVIEW_DROPPARTS:
+      // for ALTER VIEW DROP PARTITION, we wrapped the DROP to discriminate
+      // view from table; unwrap it now
+      analyzeAlterTableDropParts((ASTNode) ast.getChild(0), true);
+      break;
     case HiveParser.TOK_ALTERTABLE_RENAME:
       analyzeAlterTableRename(ast);
       break;
@@ -265,10 +277,10 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
       analyzeAlterTableRenameCol(ast);
       break;
     case HiveParser.TOK_ALTERTABLE_ADDPARTS:
-      analyzeAlterTableAddParts(ast);
+      analyzeAlterTableAddParts(ast, false);
       break;
     case HiveParser.TOK_ALTERTABLE_DROPPARTS:
-      analyzeAlterTableDropParts(ast);
+      analyzeAlterTableDropParts(ast, false);
       break;
     case HiveParser.TOK_ALTERTABLE_PROPERTIES:
       analyzeAlterTableProps(ast, false);
@@ -1669,11 +1681,14 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
         alterTblDesc), conf));
   }
 
-  private void analyzeAlterTableDropParts(ASTNode ast) throws SemanticException {
+  private void analyzeAlterTableDropParts(ASTNode ast, boolean expectView)
+    throws SemanticException {
+
     String tblName = getUnescapedName((ASTNode)ast.getChild(0));
     // get table metadata
     List<Map<String, String>> partSpecs = getPartitionSpecs(ast);
-    DropTableDesc dropTblDesc = new DropTableDesc(tblName, partSpecs);
+    DropTableDesc dropTblDesc =
+      new DropTableDesc(tblName, partSpecs, expectView);
 
     try {
       Table tab = db.getTable(db.getCurrentDatabase(), tblName, false);
@@ -1703,17 +1718,24 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
    *
    * @param ast
    *          The parsed command tree.
+   *
+   * @param expectView
+   *          True for ALTER VIEW, false for ALTER TABLE.
+   *
    * @throws SemanticException
-   *           Parsin failed
+   *           Parsing failed
    */
-  private void analyzeAlterTableAddParts(CommonTree ast)
+  private void analyzeAlterTableAddParts(CommonTree ast, boolean expectView)
       throws SemanticException {
 
     String tblName = getUnescapedName((ASTNode)ast.getChild(0));
+    boolean isView = false;
+    Table tab;
     try {
-      Table tab = db.getTable(db.getCurrentDatabase(), tblName, false);
+      tab = db.getTable(db.getCurrentDatabase(), tblName, false);
       if (tab != null) {
         inputs.add(new ReadEntity(tab));
+        isView = tab.isView();
       }
     } catch (HiveException e) {
       throw new SemanticException(ErrorMsg.INVALID_TABLE.getMsg(tblName));
@@ -1728,6 +1750,7 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
     String currentLocation = null;
     Map<String, String> currentPart = null;
     boolean ifNotExists = false;
+    List<AddPartitionDesc> partitionDescs = new ArrayList<AddPartitionDesc>();
 
     int numCh = ast.getChildCount();
     for (int num = 1; num < numCh; num++) {
@@ -1741,9 +1764,8 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
           validatePartitionValues(currentPart);
           AddPartitionDesc addPartitionDesc = new AddPartitionDesc(
               db.getCurrentDatabase(), tblName, currentPart,
-              currentLocation, ifNotExists);
-          rootTasks.add(TaskFactory.get(new DDLWork(getInputs(), getOutputs(),
-              addPartitionDesc), conf));
+              currentLocation, ifNotExists, expectView);
+          partitionDescs.add(addPartitionDesc);
         }
         // create new partition, set values
         currentLocation = null;
@@ -1763,9 +1785,60 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
       validatePartitionValues(currentPart);
       AddPartitionDesc addPartitionDesc = new AddPartitionDesc(
           db.getCurrentDatabase(), tblName, currentPart,
-          currentLocation, ifNotExists);
+          currentLocation, ifNotExists, expectView);
+      partitionDescs.add(addPartitionDesc);
+    }
+
+    for (AddPartitionDesc addPartitionDesc : partitionDescs) {
       rootTasks.add(TaskFactory.get(new DDLWork(getInputs(), getOutputs(),
-          addPartitionDesc), conf));
+            addPartitionDesc), conf));
+    }
+    
+    if (isView) {
+      // Compile internal query to capture underlying table partition
+      // dependencies
+      StringBuilder cmd = new StringBuilder();
+      cmd.append("SELECT * FROM ");
+      cmd.append(HiveUtils.unparseIdentifier(tblName));
+      cmd.append(" WHERE ");
+      boolean firstOr = true;
+      for (AddPartitionDesc partitionDesc : partitionDescs) {
+        // Perform this check early so that we get a better error message.
+        try {
+          // Note that isValidSpec throws an exception (it never
+          // actually returns false).
+          tab.isValidSpec(partitionDesc.getPartSpec());
+        } catch (HiveException ex) {
+          throw new SemanticException(ex.getMessage(), ex);
+        }
+        if (firstOr) {
+          firstOr = false;
+        } else {
+          cmd.append(" OR ");
+        }
+        boolean firstAnd = true;
+        cmd.append("(");
+        for (Map.Entry<String, String> entry
+               : partitionDesc.getPartSpec().entrySet())
+        {
+          if (firstAnd) {
+            firstAnd = false;
+          } else {
+            cmd.append(" AND ");
+          }
+          cmd.append(HiveUtils.unparseIdentifier(entry.getKey()));
+          cmd.append(" = '");
+          cmd.append(HiveUtils.escapeString(entry.getValue()));
+          cmd.append("'");
+        }
+        cmd.append(")");
+      }
+      Driver driver = new Driver(conf);
+      int rc = driver.compile(cmd.toString());
+      if (rc != 0) {
+        throw new SemanticException(ErrorMsg.NO_VALID_PARTN.getMsg());
+      }
+      inputs.addAll(driver.getPlan().getInputs());
     }
   }
 

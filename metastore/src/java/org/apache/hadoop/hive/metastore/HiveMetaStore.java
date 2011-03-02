@@ -1118,6 +1118,10 @@ public class HiveMetaStore extends ThriftHiveMetastore {
           throw new InvalidObjectException(
               "Unable to add partition because table or database do not exist");
         }
+        if (tbl.getSd().getLocation() == null) {
+            throw new MetaException(
+              "Cannot append a partition to a view");
+        }
 
         part.setSd(tbl.getSd());
         partLocation = new Path(tbl.getSd().getLocation(), Warehouse
@@ -1273,27 +1277,40 @@ public class HiveMetaStore extends ThriftHiveMetastore {
               "Unable to add partition because table or database do not exist");
         }
 
-        String partLocationStr = part.getSd().getLocation();
+        String partLocationStr = null;
+        if (part.getSd() != null) {
+          partLocationStr = part.getSd().getLocation();
+        }
         if (partLocationStr == null || partLocationStr.isEmpty()) {
-          // set default location if not specified
-          partLocation = new Path(tbl.getSd().getLocation(), Warehouse
+          // set default location if not specified and this is
+          // a physical table partition (not a view)
+          if (tbl.getSd().getLocation() != null) {
+            partLocation = new Path(tbl.getSd().getLocation(), Warehouse
               .makePartName(tbl.getPartitionKeys(), part.getValues()));
+          }
 
         } else {
+          if (tbl.getSd().getLocation() == null) {
+            throw new MetaException(
+              "Cannot specify location for a view partition");
+          }
           partLocation = wh.getDnsPath(new Path(partLocationStr));
         }
 
-        part.getSd().setLocation(partLocation.toString());
+        if (partLocation != null) {
+          part.getSd().setLocation(partLocation.toString());
 
-        // Check to see if the directory already exists before calling mkdirs()
-        // because if the file system is read-only, mkdirs will throw an
-        // exception even if the directory already exists.
-        if (!wh.isDir(partLocation)) {
-          if (!wh.mkdirs(partLocation)) {
-            throw new MetaException(partLocation
+
+          // Check to see if the directory already exists before calling
+          // mkdirs() because if the file system is read-only, mkdirs will
+          // throw an exception even if the directory already exists.
+          if (!wh.isDir(partLocation)) {
+            if (!wh.mkdirs(partLocation)) {
+              throw new MetaException(partLocation
                 + " is not a directory or unable to create one");
+            }
+            madeDir = true;
           }
-          madeDir = true;
         }
 
         // set create time
@@ -1368,14 +1385,13 @@ public class HiveMetaStore extends ThriftHiveMetastore {
         if (isArchived) {
           archiveParentDir = MetaStoreUtils.getOriginalLocation(part);
         }
-        if (part.getSd() == null || part.getSd().getLocation() == null) {
-          throw new MetaException("Partition metadata is corrupted");
-        }
         if (!ms.dropPartition(db_name, tbl_name, part_vals)) {
           throw new MetaException("Unable to drop partition");
         }
         success = ms.commitTransaction();
-        partPath = new Path(part.getSd().getLocation());
+        if ((part.getSd() != null) && (part.getSd().getLocation() != null)) {
+          partPath = new Path(part.getSd().getLocation());
+        }
         tbl = get_table(db_name, tbl_name);
       } finally {
         if (!success) {

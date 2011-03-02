@@ -48,13 +48,13 @@ public class DropTableDesc extends DDLDesc implements Serializable {
     this.expectView = expectView;
   }
 
-  public DropTableDesc(String tableName, List<? extends Map<String, String>> partSpecs) {
+  public DropTableDesc(String tableName, List<? extends Map<String, String>> partSpecs, boolean expectView) {
     this.tableName = tableName;
     this.partSpecs = new ArrayList<LinkedHashMap<String, String>>(partSpecs.size());
     for (int i = 0; i < partSpecs.size(); i++) {
       this.partSpecs.add(new LinkedHashMap<String, String>(partSpecs.get(i)));
     }
-    expectView = false;
+    this.expectView = expectView;
   }
 
   /**

@@ -864,7 +864,9 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
 
     Table tbl = db.getTable(addPartitionDesc.getDbName(), addPartitionDesc.getTableName());
 
-    validateAlterTableType(tbl, AlterTableDesc.AlterTableTypes.ADDPARTITION);
+    validateAlterTableType(
+      tbl, AlterTableDesc.AlterTableTypes.ADDPARTITION,
+      addPartitionDesc.getExpectView());
 
     // If the add partition was created with IF NOT EXISTS, then we should
     // not throw an error if the specified part does exist.
@@ -876,6 +878,9 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
     if (addPartitionDesc.getLocation() == null) {
       db.createPartition(tbl, addPartitionDesc.getPartSpec());
     } else {
+      if (tbl.isView()) {
+        throw new HiveException("LOCATION clause illegal for view partition");
+      }
       // set partition path relative to table
       db.createPartition(tbl, addPartitionDesc.getPartSpec(), new Path(tbl
           .getPath(), addPartitionDesc.getLocation()));
@@ -1406,16 +1411,32 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
   }
 
   private void validateAlterTableType(
-    Table tbl, AlterTableDesc.AlterTableTypes alterType)  throws HiveException {
+    Table tbl, AlterTableDesc.AlterTableTypes alterType) throws HiveException {
+
+    validateAlterTableType(tbl, alterType, false);
+  }
+  
+  private void validateAlterTableType(
+    Table tbl, AlterTableDesc.AlterTableTypes alterType,
+    boolean expectView) throws HiveException {
 
     if (tbl.isView()) {
+      if (!expectView) {
+        throw new HiveException("Cannot alter a view with ALTER TABLE");
+      }
       switch (alterType) {
+      case ADDPARTITION:
+      case DROPPARTITION:
       case ADDPROPS:
         // allow this form
         break;
       default:
         throw new HiveException(
-          "Cannot use this form of ALTER TABLE on a view");
+          "Cannot use this form of ALTER on a view");
+      }
+    } else {
+      if (expectView) {
+        throw new HiveException("Cannot alter a base table with ALTER VIEW");
       }
     }
 
@@ -2138,12 +2159,16 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
         String outputFormattCls = null;
         if (part != null) {
           if (par != null) {
-            tblLoc = par.getDataLocation().toString();
+            if (par.getLocation() != null) {
+              tblLoc = par.getDataLocation().toString();
+            }
             inputFormattCls = par.getInputFormatClass().getName();
             outputFormattCls = par.getOutputFormatClass().getName();
           }
         } else {
-          tblLoc = tbl.getDataLocation().toString();
+          if (tbl.getPath() != null) {
+            tblLoc = tbl.getDataLocation().toString();
+          }
           inputFormattCls = tbl.getInputFormatClass().getName();
           outputFormattCls = tbl.getOutputFormatClass().getName();
         }
@@ -2180,16 +2205,23 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
         if (isPartitioned) {
           if (par == null) {
             for (Partition curPart : db.getPartitions(tbl)) {
-              locations.add(new Path(curPart.getTPartition().getSd()
-                  .getLocation()));
+              if (curPart.getLocation() != null) {
+                locations.add(new Path(curPart.getLocation()));
+              }
             }
           } else {
-            locations.add(new Path(par.getTPartition().getSd().getLocation()));
+            if (par.getLocation() != null) {
+              locations.add(new Path(par.getLocation()));
+            }
           }
         } else {
-          locations.add(tablLoc);
+          if (tablLoc != null) {
+            locations.add(tablLoc);
+          }
         }
-        writeFileSystemStats(outStream, locations, tablLoc, false, 0);
+        if (!locations.isEmpty()) {
+          writeFileSystemStats(outStream, locations, tablLoc, false, 0);
+        }
 
         outStream.write(terminator);
       }
@@ -2519,17 +2551,7 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
       }
     }
 
-    validateAlterTableType(tbl, alterTbl.getOp());
-
-    if (tbl.isView()) {
-      if (!alterTbl.getExpectView()) {
-        throw new HiveException("Cannot alter a view with ALTER TABLE");
-      }
-    } else {
-      if (alterTbl.getExpectView()) {
-        throw new HiveException("Cannot alter a base table with ALTER VIEW");
-      }
-    }
+    validateAlterTableType(tbl, alterTbl.getOp(), alterTbl.getExpectView());
 
     Table oldTbl = tbl.copy();
 
@@ -2823,19 +2845,20 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
       // drop table is idempotent
     }
 
-    if (tbl != null) {
-      if (tbl.isView()) {
-        if (!dropTbl.getExpectView()) {
-          throw new HiveException("Cannot drop a view with DROP TABLE");
-        }
-      } else {
-        if (dropTbl.getExpectView()) {
-          throw new HiveException("Cannot drop a base table with DROP VIEW");
+    if (dropTbl.getPartSpecs() == null) {
+      // This is a true DROP TABLE
+      if (tbl != null) {
+        if (tbl.isView()) {
+          if (!dropTbl.getExpectView()) {
+            throw new HiveException("Cannot drop a view with DROP TABLE");
+          }
+        } else {
+          if (dropTbl.getExpectView()) {
+            throw new HiveException("Cannot drop a base table with DROP VIEW");
+          }
         }
       }
-    }
 
-    if (dropTbl.getPartSpecs() == null) {
       if (tbl != null && !tbl.canDrop()) {
         throw new HiveException("Table " + tbl.getTableName() +
             " is protected from being dropped");
@@ -2859,6 +2882,13 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
         work.getOutputs().add(new WriteEntity(tbl));
       }
     } else {
+      // This is actually an ALTER TABLE DROP PARTITION
+      if (tbl != null) {
+        validateAlterTableType(
+          tbl, AlterTableDesc.AlterTableTypes.DROPPARTITION,
+          dropTbl.getExpectView());
+      }
+      
       // get all partitions of the table
       List<String> partitionNames =
         db.getPartitionNames(dropTbl.getTableName(), (short) -1);
@@ -3236,6 +3266,10 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
     }
     if (crtView.getTblProps() != null) {
       tbl.getTTable().getParameters().putAll(crtView.getTblProps());
+    }
+
+    if (crtView.getPartCols() != null) {
+      tbl.setPartCols(crtView.getPartCols());
     }
 
     int rc = setGenericTableAttributes(tbl);

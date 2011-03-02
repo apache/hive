@@ -1,0 +1,24 @@
+PREHOOK: query: DROP VIEW xxx5
+PREHOOK: type: DROPVIEW
+POSTHOOK: query: DROP VIEW xxx5
+POSTHOOK: type: DROPVIEW
+PREHOOK: query: CREATE VIEW xxx5
+PARTITIONED ON (value)
+AS 
+SELECT * FROM src
+PREHOOK: type: CREATEVIEW
+PREHOOK: Output: file:/var/folders/7P/7PeC14kXFIWq0PIYyexGbmKuXUk/-Tmp-/jsichi/hive_2011-02-10_12-59-39_789_5581361064099423922/-mr-10000
+POSTHOOK: query: CREATE VIEW xxx5
+PARTITIONED ON (value)
+AS 
+SELECT * FROM src
+POSTHOOK: type: CREATEVIEW
+POSTHOOK: Output: default@xxx5
+POSTHOOK: Output: file:/var/folders/7P/7PeC14kXFIWq0PIYyexGbmKuXUk/-Tmp-/jsichi/hive_2011-02-10_12-59-39_789_5581361064099423922/-mr-10000
+PREHOOK: query: -- should fail:  LOCATION clause is illegal
+ALTER VIEW xxx5 ADD PARTITION (value='val_86') LOCATION '/foo/bar/baz'
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Input: default@xxx5
+FAILED: Error in metadata: LOCATION clause illegal for view partition
+FAILED: Execution Error, return code 1 from org.apache.hadoop.hive.ql.exec.DDLTask

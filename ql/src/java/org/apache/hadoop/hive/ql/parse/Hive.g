@@ -181,6 +181,9 @@ TOK_DROPFUNCTION;
 TOK_CREATEVIEW;
 TOK_DROPVIEW;
 TOK_ALTERVIEW_PROPERTIES;
+TOK_ALTERVIEW_ADDPARTS;
+TOK_ALTERVIEW_DROPPARTS;
+TOK_VIEWPARTCOLS;
 TOK_EXPLAIN;
 TOK_TABLESERIALIZER;
 TOK_TABLEPROPERTIES;
@@ -528,6 +531,10 @@ alterViewStatementSuffix
 @init { msgs.push("alter view statement"); }
 @after { msgs.pop(); }
     : alterViewSuffixProperties
+    | alterStatementSuffixAddPartitions
+        -> ^(TOK_ALTERVIEW_ADDPARTS alterStatementSuffixAddPartitions)
+    | alterStatementSuffixDropPartitions
+        -> ^(TOK_ALTERVIEW_DROPPARTS alterStatementSuffixDropPartitions)
     ;
 
 alterIndexStatementSuffix
@@ -948,16 +955,24 @@ createViewStatement
 }
 @after { msgs.pop(); }
     : KW_CREATE KW_VIEW ifNotExists? name=tableName
-        (LPAREN columnNameCommentList RPAREN)? tableComment?
+        (LPAREN columnNameCommentList RPAREN)? tableComment? viewPartition?
         tablePropertiesPrefixed?
         KW_AS
         selectStatement
     -> ^(TOK_CREATEVIEW $name ifNotExists?
          columnNameCommentList?
          tableComment?
+         viewPartition?
          tablePropertiesPrefixed?
          selectStatement
         )
+    ;
+
+viewPartition
+@init { msgs.push("view partition specification"); }
+@after { msgs.pop(); }
+    : KW_PARTITIONED KW_ON LPAREN columnNameList RPAREN
+    -> ^(TOK_VIEWPARTCOLS columnNameList)
     ;
 
 dropViewStatement

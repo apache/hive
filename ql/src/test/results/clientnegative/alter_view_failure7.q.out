@@ -1,0 +1,18 @@
+PREHOOK: query: DROP VIEW xxx8
+PREHOOK: type: DROPVIEW
+POSTHOOK: query: DROP VIEW xxx8
+POSTHOOK: type: DROPVIEW
+PREHOOK: query: CREATE VIEW xxx8
+PARTITIONED ON (ds,hr)
+AS 
+SELECT key,ds,hr FROM srcpart
+PREHOOK: type: CREATEVIEW
+PREHOOK: Output: file:/var/folders/7P/7PeC14kXFIWq0PIYyexGbmKuXUk/-Tmp-/jsichi/hive_2011-02-10_17-23-35_264_1200860254018763/-mr-10000
+POSTHOOK: query: CREATE VIEW xxx8
+PARTITIONED ON (ds,hr)
+AS 
+SELECT key,ds,hr FROM srcpart
+POSTHOOK: type: CREATEVIEW
+POSTHOOK: Output: default@xxx8
+POSTHOOK: Output: file:/var/folders/7P/7PeC14kXFIWq0PIYyexGbmKuXUk/-Tmp-/jsichi/hive_2011-02-10_17-23-35_264_1200860254018763/-mr-10000
+FAILED: Error in semantic analysis: table is partitioned but partition spec is not specified or does not fully match table partitioning: {ds=2011-01-01}

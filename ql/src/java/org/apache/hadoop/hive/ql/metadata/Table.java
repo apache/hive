@@ -339,8 +339,9 @@ public class Table implements Serializable {
 
     if ((spec == null) || (spec.size() != partCols.size())) {
       throw new HiveException(
-          "table is partitioned but partition spec is not specified or tab: "
-              + spec);
+          "table is partitioned but partition spec is not specified or"
+          + " does not fully match table partitioning: "
+          + spec);
     }
 
     for (FieldSchema field : partCols) {
