@@ -409,6 +409,10 @@ public class Hadoop20Shims implements HadoopShims {
     // option to bypass job setup and cleanup was introduced in hadoop-21 (MAPREDUCE-463)
     // but can be backported. So we disable setup/cleanup in all versions >= 0.19
     conf.setBoolean("mapred.committer.job.setup.cleanup.needed", false);
+
+    // option to bypass task cleanup task was introduced in hadoop-23 (MAPREDUCE-2206)
+    // but can be backported. So we disable setup/cleanup in all versions >= 0.19
+    conf.setBoolean("mapreduce.job.committer.task.cleanup.needed", false);
   }
 
   @Override
