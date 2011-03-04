@@ -26,9 +26,9 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.Map.Entry;
 import java.util.Properties;
+import java.util.Set;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
@@ -69,26 +69,26 @@ import org.apache.hadoop.hive.metastore.api.SerDeInfo;
 import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
 import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.metastore.api.Type;
+import org.apache.hadoop.hive.metastore.model.MDBPrivilege;
 import org.apache.hadoop.hive.metastore.model.MDatabase;
 import org.apache.hadoop.hive.metastore.model.MFieldSchema;
+import org.apache.hadoop.hive.metastore.model.MGlobalPrivilege;
 import org.apache.hadoop.hive.metastore.model.MIndex;
 import org.apache.hadoop.hive.metastore.model.MOrder;
 import org.apache.hadoop.hive.metastore.model.MPartition;
-import org.apache.hadoop.hive.metastore.model.MDBPrivilege;
 import org.apache.hadoop.hive.metastore.model.MPartitionColumnPrivilege;
 import org.apache.hadoop.hive.metastore.model.MPartitionPrivilege;
 import org.apache.hadoop.hive.metastore.model.MRole;
-import org.apache.hadoop.hive.metastore.model.MTableColumnPrivilege;
-import org.apache.hadoop.hive.metastore.model.MGlobalPrivilege;
 import org.apache.hadoop.hive.metastore.model.MRoleMap;
 import org.apache.hadoop.hive.metastore.model.MSerDeInfo;
 import org.apache.hadoop.hive.metastore.model.MStorageDescriptor;
 import org.apache.hadoop.hive.metastore.model.MTable;
+import org.apache.hadoop.hive.metastore.model.MTableColumnPrivilege;
 import org.apache.hadoop.hive.metastore.model.MTablePrivilege;
 import org.apache.hadoop.hive.metastore.model.MType;
+import org.apache.hadoop.hive.metastore.parser.ExpressionTree.ANTLRNoCaseStringStream;
 import org.apache.hadoop.hive.metastore.parser.FilterLexer;
 import org.apache.hadoop.hive.metastore.parser.FilterParser;
-import org.apache.hadoop.hive.metastore.parser.ExpressionTree.ANTLRNoCaseStringStream;
 import org.apache.hadoop.util.StringUtils;
 
 /**
@@ -405,7 +405,7 @@ public class ObjectStore implements RawStore, Configurable {
     db.setParameters(mdb.getParameters());
     return db;
   }
-  
+
   /**
    * Alter the database object in metastore. Currently only the parameters
    * of the database can be changed.
@@ -576,7 +576,6 @@ public class ObjectStore implements RawStore, Configurable {
 
   public boolean dropType(String typeName) {
     boolean success = false;
-    boolean commited = false;
     try {
       openTransaction();
       Query query = pm.newQuery(MType.class, "name == typeName");
@@ -584,14 +583,15 @@ public class ObjectStore implements RawStore, Configurable {
       query.setUnique(true);
       MType type = (MType) query.execute(typeName.trim());
       pm.retrieve(type);
-      pm.deletePersistent(type);
-      commited = commitTransaction();
-      success = true;
+      if (type != null) {
+        pm.deletePersistent(type);
+      }
+      success = commitTransaction();
     } catch (JDOObjectNotFoundException e) {
-      commited = commitTransaction();
+      success = commitTransaction();
       LOG.debug("type not found " + typeName, e);
     } finally {
-      if (!commited) {
+      if (!success) {
         rollbackTransaction();
       }
     }
@@ -614,7 +614,7 @@ public class ObjectStore implements RawStore, Configurable {
 
         Map<String, List<PrivilegeGrantInfo>> groupPrivs = principalPrivs.getGroupPrivileges();
         putPersistentPrivObjects(mtbl, toPersistPrivObjs, now, groupPrivs, PrincipalType.GROUP);
-        
+
         Map<String, List<PrivilegeGrantInfo>> rolePrivs = principalPrivs.getRolePrivileges();
         putPersistentPrivObjects(mtbl, toPersistPrivObjs, now, rolePrivs, PrincipalType.ROLE);
       }
@@ -631,7 +631,7 @@ public class ObjectStore implements RawStore, Configurable {
    * Convert PrivilegeGrantInfo from privMap to MTablePrivilege, and add all of
    * them to the toPersistPrivObjs. These privilege objects will be persisted as
    * part of createTable.
-   * 
+   *
    * @param mtbl
    * @param toPersistPrivObjs
    * @param now
@@ -682,7 +682,7 @@ public class ObjectStore implements RawStore, Configurable {
         if (partGrants != null && partGrants.size() > 0) {
           pm.deletePersistentAll(partGrants);
         }
-        
+
         List<MPartitionColumnPrivilege> partColGrants = listTableAllPartitionColumnGrants(dbName,
             tableName);
         if (partColGrants != null && partColGrants.size() > 0) {
@@ -700,7 +700,7 @@ public class ObjectStore implements RawStore, Configurable {
     }
     return success;
   }
-  
+
   public Table getTable(String dbName, String tableName) throws MetaException {
     boolean commited = false;
     Table tbl = null;
@@ -960,7 +960,7 @@ public class ObjectStore implements RawStore, Configurable {
           toPersist.add(partGrant);
         }
       }
-      
+
       if (tabColumnGrants != null) {
         for (MTableColumnPrivilege col : tabColumnGrants) {
           MPartitionColumnPrivilege partColumn = new MPartitionColumnPrivilege(col
@@ -969,7 +969,7 @@ public class ObjectStore implements RawStore, Configurable {
               .getGrantorType(), col.getGrantOption());
           toPersist.add(partColumn);
         }
-        
+
         if (toPersist.size() > 0) {
           pm.makePersistentAll(toPersist);
         }
@@ -996,7 +996,7 @@ public class ObjectStore implements RawStore, Configurable {
     }
     return part;
   }
-  
+
   private MPartition getMPartition(String dbName, String tableName,
       List<String> part_vals) throws MetaException {
     MPartition mpart = null;
@@ -1068,7 +1068,7 @@ public class ObjectStore implements RawStore, Configurable {
           colNames.add(col.getName());
         }
         String partName = FileUtils.makePartName(colNames, part_vals);
-        
+
         List<MPartitionPrivilege> partGrants = listPartitionGrants(
             dbName, tableName, partName);
 
@@ -1134,7 +1134,7 @@ public class ObjectStore implements RawStore, Configurable {
       }
     }
   }
-  
+
   @Override
   public Partition getPartitionWithAuth(String dbName, String tblName,
       List<String> partVals, String user_name, List<String> group_names)
@@ -1778,7 +1778,7 @@ public class ObjectStore implements RawStore, Configurable {
     }
     return success;
   }
-  
+
   private MRoleMap getMSecurityUserRoleMap(String userName,
       PrincipalType principalType, String roleName) {
     MRoleMap mRoleMember = null;
@@ -1861,7 +1861,7 @@ public class ObjectStore implements RawStore, Configurable {
     }
     return success;
   }
-  
+
   private List<MRoleMap> listRoles(String userName,
       List<String> groupNames) {
     List<MRoleMap> ret = new ArrayList<MRoleMap>();
@@ -1875,7 +1875,7 @@ public class ObjectStore implements RawStore, Configurable {
     }
     return ret;
   }
-  
+
   @SuppressWarnings("unchecked")
   @Override
   public List<MRoleMap> listRoles(String principalName,
@@ -1942,7 +1942,7 @@ public class ObjectStore implements RawStore, Configurable {
         .getOwnerName());
     return ret;
   }
-  
+
   private MRole getMRole(String roleName) {
     MRole mrole = null;
     boolean commited = false;
@@ -1961,7 +1961,7 @@ public class ObjectStore implements RawStore, Configurable {
     }
     return mrole;
   }
-  
+
   public List<String> listRoleNames() {
     boolean success = false;
     try {
@@ -1982,7 +1982,7 @@ public class ObjectStore implements RawStore, Configurable {
       }
     }
   }
-  
+
   @Override
   public PrincipalPrivilegeSet getUserPrivilegeSet(String userName,
       List<String> groupNames) throws InvalidObjectException, MetaException {
@@ -2030,7 +2030,7 @@ public class ObjectStore implements RawStore, Configurable {
     }
     return ret;
   }
-  
+
   public List<PrivilegeGrantInfo> getDBPrivilege(String dbName,
       String principalName, PrincipalType principalType)
       throws InvalidObjectException, MetaException {
@@ -2054,7 +2054,7 @@ public class ObjectStore implements RawStore, Configurable {
     return new ArrayList<PrivilegeGrantInfo>(0);
   }
 
-  
+
   @Override
   public PrincipalPrivilegeSet getDBPrivilegeSet(String dbName,
       String userName, List<String> groupNames) throws InvalidObjectException,
@@ -2185,7 +2185,7 @@ public class ObjectStore implements RawStore, Configurable {
     }
     return ret;
   }
-  
+
   @Override
   public PrincipalPrivilegeSet getColumnPrivilegeSet(String dbName,
       String tableName, String partitionName, String columnName,
@@ -2231,7 +2231,7 @@ public class ObjectStore implements RawStore, Configurable {
     }
     return ret;
   }
-  
+
   private List<PrivilegeGrantInfo> getPartitionPrivilege(String dbName,
       String tableName, String partName, String principalName,
       PrincipalType principalType) {
@@ -2262,7 +2262,7 @@ public class ObjectStore implements RawStore, Configurable {
   private PrincipalType getPrincipalTypeFromStr(String str) {
     return str == null ? null : PrincipalType.valueOf(str);
   }
-  
+
   private List<PrivilegeGrantInfo> getTablePrivilege(String dbName,
       String tableName, String principalName, PrincipalType principalType) {
     tableName = tableName.toLowerCase().trim();
@@ -2286,11 +2286,11 @@ public class ObjectStore implements RawStore, Configurable {
     }
     return new ArrayList<PrivilegeGrantInfo>(0);
   }
-  
+
   private List<PrivilegeGrantInfo> getColumnPrivilege(String dbName,
       String tableName, String columnName, String partitionName,
       String principalName, PrincipalType principalType) {
-    
+
     tableName = tableName.toLowerCase().trim();
     dbName = dbName.toLowerCase().trim();
     columnName = columnName.toLowerCase().trim();
@@ -2472,7 +2472,7 @@ public class ObjectStore implements RawStore, Configurable {
                     userName, principalType, hiveObject.getDbName(), hiveObject
                         .getObjectName(), partObj.getPartitionName(),
                     hiveObject.getColumnName());
-                
+
                 if (colPrivs != null) {
                   for (MPartitionColumnPrivilege priv : colPrivs) {
                     if (priv.getGrantor().equalsIgnoreCase(grantor)) {
@@ -2495,13 +2495,13 @@ public class ObjectStore implements RawStore, Configurable {
                       grantOption);
                   persistentObjs.add(mCol);
                 }
-                
+
               } else {
                 List<MTableColumnPrivilege> colPrivs = null;
                 colPrivs = this.listPrincipalTableColumnGrants(
                     userName, principalType, hiveObject.getDbName(), hiveObject
                         .getObjectName(), hiveObject.getColumnName());
-                
+
                 if (colPrivs != null) {
                   for (MTableColumnPrivilege priv : colPrivs) {
                     if (priv.getGrantor().equalsIgnoreCase(grantor)) {
@@ -2539,7 +2539,7 @@ public class ObjectStore implements RawStore, Configurable {
     }
     return committed;
   }
-  
+
   @Override
   public boolean revokePrivileges(PrivilegeBag privileges)
       throws InvalidObjectException, MetaException, NoSuchObjectException {
@@ -2547,13 +2547,13 @@ public class ObjectStore implements RawStore, Configurable {
     try {
       openTransaction();
       List<Object> persistentObjs = new ArrayList<Object>();
-      
+
       List<HiveObjectPrivilege> privilegeList = privileges.getPrivileges();
 
-      
+
       if (privilegeList != null && privilegeList.size() > 0) {
         Iterator<HiveObjectPrivilege> privIter = privilegeList.iterator();
-        
+
         while (privIter.hasNext()) {
           HiveObjectPrivilege privDef = privIter.next();
           HiveObjectRef hiveObject = privDef.getHiveObject();
@@ -2585,7 +2585,7 @@ public class ObjectStore implements RawStore, Configurable {
                 }
               }
             }
-          
+
           } else if (hiveObject.getObjectType() == HiveObjectType.DATABASE) {
             MDatabase dbObj = getMDatabase(hiveObject.getDbName());
             if (dbObj != null) {
@@ -2630,7 +2630,7 @@ public class ObjectStore implements RawStore, Configurable {
               }
             }
           } else if (hiveObject.getObjectType() == HiveObjectType.PARTITION) {
-            
+
             boolean found = false;
             Table tabObj = this.getTable(hiveObject.getDbName(), hiveObject.getObjectName());
             String partName = null;
@@ -2664,7 +2664,7 @@ public class ObjectStore implements RawStore, Configurable {
               partName = Warehouse.makePartName(tabObj.getPartitionKeys(),
                   hiveObject.getPartValues());
             }
-            
+
             if (partName != null) {
               List<MPartitionColumnPrivilege> mSecCol = listPrincipalPartitionColumnGrants(
                   userName, principalType, hiveObject.getDbName(), hiveObject
@@ -2718,7 +2718,7 @@ public class ObjectStore implements RawStore, Configurable {
           }
         }
       }
-      
+
       if (persistentObjs.size() > 0) {
         pm.deletePersistentAll(persistentObjs);
       }
@@ -2730,7 +2730,7 @@ public class ObjectStore implements RawStore, Configurable {
     }
     return committed;
   }
-  
+
   @SuppressWarnings("unchecked")
   private List<MRoleMap> listRoleMembers(
       MRole mRol) {
@@ -2756,7 +2756,7 @@ public class ObjectStore implements RawStore, Configurable {
     }
     return mRoleMemeberList;
   }
-  
+
   @SuppressWarnings("unchecked")
   @Override
   public List<MGlobalPrivilege> listPrincipalGlobalGrants(String principalName, PrincipalType principalType) {
@@ -2809,7 +2809,7 @@ public class ObjectStore implements RawStore, Configurable {
     }
     return mSecurityDBList;
   }
-  
+
   @SuppressWarnings("unchecked")
   private List<MDBPrivilege> listPrincipalAllDBGrant(
       String principalName, PrincipalType principalType) {
@@ -2866,7 +2866,7 @@ public class ObjectStore implements RawStore, Configurable {
     }
     return mSecurityTabList;
   }
-  
+
   @SuppressWarnings("unchecked")
   public List<MPartitionPrivilege> listTableAllPartitionGrants(String dbName,
       String tableName) {
@@ -2896,7 +2896,7 @@ public class ObjectStore implements RawStore, Configurable {
     }
     return mSecurityTabPartList;
   }
-  
+
   @SuppressWarnings("unchecked")
   public List<MTableColumnPrivilege> listTableAllColumnGrants(String dbName,
       String tableName) {
@@ -2924,7 +2924,7 @@ public class ObjectStore implements RawStore, Configurable {
     }
     return mTblColPrivilegeList;
   }
-  
+
   @SuppressWarnings("unchecked")
   public List<MPartitionColumnPrivilege> listTableAllPartitionColumnGrants(String dbName,
       String tableName) {
@@ -2952,7 +2952,7 @@ public class ObjectStore implements RawStore, Configurable {
     }
     return mSecurityColList;
   }
-  
+
   @SuppressWarnings("unchecked")
   public List<MPartitionColumnPrivilege> listPartitionAllColumnGrants(String dbName,
       String tableName, String partName) {
@@ -3006,7 +3006,7 @@ public class ObjectStore implements RawStore, Configurable {
       }
     }
   }
-  
+
   @SuppressWarnings("unchecked")
   private List<MPartitionPrivilege> listPartitionGrants(String dbName, String tableName,
       String partName) {
@@ -3091,7 +3091,7 @@ public class ObjectStore implements RawStore, Configurable {
       mSecurityTabPartList = (List<MPartitionPrivilege>) query
           .executeWithArray(principalName, principalType.toString(), tableName, dbName, partName);
       LOG.debug("Done executing query for listMSecurityPrincipalPartitionGrant");
-      
+
       pm.retrieveAll(mSecurityTabPartList);
       success = commitTransaction();
       LOG.debug("Done retrieving all objects for listMSecurityPrincipalPartitionGrant");
@@ -3136,7 +3136,7 @@ public class ObjectStore implements RawStore, Configurable {
     }
     return mSecurityColList;
   }
-  
+
   @SuppressWarnings("unchecked")
   public List<MPartitionColumnPrivilege> listPrincipalPartitionColumnGrants(
       String principalName, PrincipalType principalType, String dbName,
@@ -3175,7 +3175,7 @@ public class ObjectStore implements RawStore, Configurable {
     }
     return mSecurityColList;
   }
-  
+
   @SuppressWarnings("unchecked")
   private List<MTablePrivilege> listPrincipalAllTableGrants(
       String principalName, PrincipalType principalType) {
@@ -3229,7 +3229,7 @@ public class ObjectStore implements RawStore, Configurable {
     }
     return mSecurityTabPartList;
   }
-  
+
   @SuppressWarnings("unchecked")
   private List<MTableColumnPrivilege> listPrincipalAllTableColumnGrants(
       String principalName, PrincipalType principalType) {
@@ -3255,7 +3255,7 @@ public class ObjectStore implements RawStore, Configurable {
     }
     return mSecurityColumnList;
   }
-  
+
   @SuppressWarnings("unchecked")
   private List<MPartitionColumnPrivilege> listPrincipalAllPartitionColumnGrants(
       String principalName, PrincipalType principalType) {

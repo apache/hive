@@ -150,6 +150,7 @@ public class HiveConf extends Configuration {
     METASTOREPWD("javax.jdo.option.ConnectionPassword", ""),
     // Class name of JDO connection url hook
     METASTORECONNECTURLHOOK("hive.metastore.ds.connection.url.hook", ""),
+    METASTOREMULTITHREADED("javax.jdo.option.Multithreaded", "true"),
     // Name of the connection url in the configuration
     METASTORECONNECTURLKEY("javax.jdo.option.ConnectionURL", ""),
     // Number of attempts to retry connecting after there is a JDO datastore err
