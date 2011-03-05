@@ -447,19 +447,6 @@ public class CliDriver {
       conf.set((String) item.getKey(), (String) item.getValue());
     }
 
-    if (!ShimLoader.getHadoopShims().usesJobShell()) {
-      // hadoop-20 and above - we need to augment classpath using hiveconf
-      // components
-      // see also: code in ExecDriver.java
-      ClassLoader loader = conf.getClassLoader();
-      String auxJars = HiveConf.getVar(conf, HiveConf.ConfVars.HIVEAUXJARS);
-      if (StringUtils.isNotBlank(auxJars)) {
-        loader = Utilities.addToClassPath(loader, StringUtils.split(auxJars, ","));
-      }
-      conf.setClassLoader(loader);
-      Thread.currentThread().setContextClassLoader(loader);
-    }
-
     SessionState.start(ss);
 
     // connect to Hive Server
@@ -471,6 +458,20 @@ public class CliDriver {
         Arrays.fill(spaces, ' ');
         prompt2 = new String(spaces);
       }
+    }
+
+    // CLI remote mode is a thin client: only load auxJars in local mode
+    if (!ss.isRemoteMode() && !ShimLoader.getHadoopShims().usesJobShell()) {
+      // hadoop-20 and above - we need to augment classpath using hiveconf
+      // components
+      // see also: code in ExecDriver.java
+      ClassLoader loader = conf.getClassLoader();
+      String auxJars = HiveConf.getVar(conf, HiveConf.ConfVars.HIVEAUXJARS);
+      if (StringUtils.isNotBlank(auxJars)) {
+        loader = Utilities.addToClassPath(loader, StringUtils.split(auxJars, ","));
+      }
+      conf.setClassLoader(loader);
+      Thread.currentThread().setContextClassLoader(loader);
     }
 
     CliDriver cli = new CliDriver();
