@@ -374,6 +374,9 @@ public class HiveServer extends ThriftHive {
 
   public static void main(String[] args) {
     try {
+      //Initializing log for the HiveServer Mode
+      SessionState.initHiveLog4j();
+
       int port = 10000;
       if (args.length >= 1) {
         port = Integer.parseInt(args[0]);
