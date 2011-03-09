@@ -29,9 +29,6 @@ import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.parse.OpParseContext;
 import org.apache.hadoop.hive.ql.parse.QBJoinTree;
-import org.apache.hadoop.hive.conf.HiveConf;
-import org.apache.hadoop.hive.ql.metadata.Hive;
-import org.apache.hadoop.hive.ql.metadata.HiveException;
 
 /**
  * MapredWork.
@@ -63,7 +60,10 @@ public class MapredWork implements Serializable {
 
   private Integer numReduceTasks;
   private Integer numMapTasks;
+  private Long maxSplitSize;
   private Long minSplitSize;
+  private Long minSplitSizePerNode;
+  private Long minSplitSizePerRack;
 
   private boolean needsTagging;
   private boolean hadoopSupportsSplittable;
@@ -104,6 +104,10 @@ public class MapredWork implements Serializable {
     this.mapLocalWork = mapLocalWork;
     aliasToPartnInfo = new LinkedHashMap<String, PartitionDesc>();
     this.hadoopSupportsSplittable = hadoopSupportsSplittable;
+    maxSplitSize = null;
+    minSplitSize = null;
+    minSplitSizePerNode = null;
+    minSplitSizePerRack = null;
   }
 
   public String getCommand() {
@@ -323,12 +327,36 @@ public class MapredWork implements Serializable {
     this.hadoopSupportsSplittable = hadoopSupportsSplittable;
   }
 
+  public Long getMaxSplitSize() {
+    return maxSplitSize;
+  }
+
+  public void setMaxSplitSize(Long maxSplitSize) {
+    this.maxSplitSize = maxSplitSize;
+  }
+
   public Long getMinSplitSize() {
     return minSplitSize;
   }
 
   public void setMinSplitSize(Long minSplitSize) {
     this.minSplitSize = minSplitSize;
+  }
+
+  public Long getMinSplitSizePerNode() {
+    return minSplitSizePerNode;
+  }
+
+  public void setMinSplitSizePerNode(Long minSplitSizePerNode) {
+    this.minSplitSizePerNode = minSplitSizePerNode;
+  }
+
+  public Long getMinSplitSizePerRack() {
+    return minSplitSizePerRack;
+  }
+
+  public void setMinSplitSizePerRack(Long minSplitSizePerRack) {
+    this.minSplitSizePerRack = minSplitSizePerRack;
   }
 
   public String getInputformat() {

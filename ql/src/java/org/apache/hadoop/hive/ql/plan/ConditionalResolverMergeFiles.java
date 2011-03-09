@@ -117,7 +117,7 @@ public class ConditionalResolverMergeFiles implements ConditionalResolver,
     long trgtSize = conf.getLongVar(HiveConf.ConfVars.HIVEMERGEMAPFILESSIZE);
     long avgConditionSize = conf
         .getLongVar(HiveConf.ConfVars.HIVEMERGEMAPFILESAVGSIZE);
-    trgtSize = trgtSize > avgConditionSize ? trgtSize : avgConditionSize;
+    trgtSize = Math.max(trgtSize, avgConditionSize);
 
     Task<? extends Serializable> mvTask = ctx.getListTasks().get(0);
     Task<? extends Serializable> mrTask = ctx.getListTasks().get(1);
@@ -255,8 +255,12 @@ public class ConditionalResolverMergeFiles implements ConditionalResolver,
       reducers = Math.min(maxReducers, reducers);
       work.setNumReduceTasks(reducers);
     }
+    work.setMaxSplitSize(targetSize);
     work.setMinSplitSize(targetSize);
+    work.setMinSplitSizePerNode(targetSize);
+    work.setMinSplitSizePerRack(targetSize);
   }
+
   /**
    * Whether to merge files inside directory given the threshold of the average file size.
    *
