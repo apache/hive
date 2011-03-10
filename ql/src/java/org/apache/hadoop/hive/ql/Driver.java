@@ -969,6 +969,9 @@ public class Driver implements CommandProcessor {
             if (running.size() != 0) {
               taskCleanup();
             }
+            // in case we decided to run everything in local mode, restore the
+            // the jobtracker setting to its initial value
+            ctx.restoreOriginalTracker();
             return 9;
           }
         }
