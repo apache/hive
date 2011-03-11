@@ -156,13 +156,15 @@ if [ ! -f ${HADOOP} ]; then
 fi
 
 # Make sure we're using a compatible version of Hadoop
-hadoop_version=$($HADOOP version | awk '{if (NR == 1) {print $2;}}');
+if [ "x$HADOOP_VERSION" == "x" ]; then
+    HADOOP_VERSION=$($HADOOP version | awk '{if (NR == 1) {print $2;}}');
+fi
 
 # Save the regex to a var to workaround quoting incompatabilities
 # between Bash 3.1 and 3.2
 hadoop_version_re="^([[:digit:]]+)\.([[:digit:]]+)(\.([[:digit:]]+))?.*$"
 
-if [[ "$hadoop_version" =~ $hadoop_version_re ]]; then
+if [[ "$HADOOP_VERSION" =~ $hadoop_version_re ]]; then
     hadoop_major_ver=${BASH_REMATCH[1]}
     hadoop_minor_ver=${BASH_REMATCH[2]}
     hadoop_patch_ver=${BASH_REMATCH[4]}
