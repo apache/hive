@@ -18,9 +18,6 @@
 
 package org.apache.hadoop.hive.ql.lockmgr;
 
-import org.apache.hadoop.hive.ql.metadata.Partition;
-import org.apache.hadoop.hive.ql.metadata.Table;
-
 public class HiveLockObj {
   HiveLockObject obj;
   HiveLockMode   mode;

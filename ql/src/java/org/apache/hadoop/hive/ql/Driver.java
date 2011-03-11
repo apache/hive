@@ -657,7 +657,6 @@ public class Driver implements CommandProcessor {
    **/
   public int acquireReadWriteLocks() {
     try {
-      int tryNum = 1;
       int sleepTime = conf.getIntVar(HiveConf.ConfVars.HIVE_LOCK_SLEEP_BETWEEN_RETRIES) * 1000;
       int numRetries = conf.getIntVar(HiveConf.ConfVars.HIVE_LOCK_NUMRETRIES);
 
@@ -717,13 +716,31 @@ public class Driver implements CommandProcessor {
       }
 
       ctx.setHiveLockMgr(hiveLockMgr);
-      List<HiveLock> hiveLocks = ctx.getHiveLockMgr().lock(lockObjects, false, numRetries, sleepTime);
+      List<HiveLock> hiveLocks = null;
+      
+      int tryNum = 1;
+      do {
 
+        ctx.getHiveLockMgr().prepareRetry();
+        hiveLocks = ctx.getHiveLockMgr().lock(lockObjects, false);
+
+        if (hiveLocks != null) {
+          break;
+        }
+
+        tryNum++;
+        try {
+          Thread.sleep(sleepTime);
+        } catch (InterruptedException e) {
+        }
+      } while (tryNum < numRetries);
+      
       if (hiveLocks == null) {
         throw new SemanticException(ErrorMsg.LOCK_CANNOT_BE_ACQUIRED.getMsg());
       } else {
         ctx.setHiveLocks(hiveLocks);
       }
+
       return (0);
     } catch (SemanticException e) {
       errorMessage = "FAILED: Error in acquiring locks: " + e.getMessage();

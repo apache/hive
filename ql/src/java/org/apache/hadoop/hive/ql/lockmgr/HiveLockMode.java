@@ -18,8 +18,6 @@
 
 package org.apache.hadoop.hive.ql.lockmgr;
 
-import org.apache.hadoop.hive.conf.HiveConf;
-
 public enum HiveLockMode {
   SHARED, EXCLUSIVE;
 }

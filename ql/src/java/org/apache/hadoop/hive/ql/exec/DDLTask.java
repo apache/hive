@@ -1927,7 +1927,7 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
                              "EXPLICIT");
 
     if (partSpec == null) {
-      HiveLock lck = lockMgr.lock(new HiveLockObject(tbl, lockData), mode, true, 0, 0);
+      HiveLock lck = lockMgr.lock(new HiveLockObject(tbl, lockData), mode, true);
       if (lck == null) {
         return 1;
       }
@@ -1938,7 +1938,7 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
     if (par == null) {
       throw new HiveException("Partition " + partSpec + " for table " + tabName + " does not exist");
     }
-    HiveLock lck = lockMgr.lock(new HiveLockObject(par, lockData), mode, true, 0, 0);
+    HiveLock lck = lockMgr.lock(new HiveLockObject(par, lockData), mode, true);
     if (lck == null) {
       return 1;
     }
