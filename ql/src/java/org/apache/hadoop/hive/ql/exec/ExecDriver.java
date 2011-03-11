@@ -377,7 +377,7 @@ public class ExecDriver extends Task<MapredWork> implements Serializable, Hadoop
         }
       }
 
-      addInputPaths(job, work, emptyScratchDirStr);
+      addInputPaths(job, work, emptyScratchDirStr, ctx);
 
       Utilities.setMapRedWork(job, work, ctx.getMRTmpFileURI());
       // remove the pwd from conf file so that job tracker doesn't show this
@@ -790,7 +790,8 @@ public class ExecDriver extends Task<MapredWork> implements Serializable, Hadoop
     return numEmptyPaths;
   }
 
-  private void addInputPaths(JobConf job, MapredWork work, String hiveScratchDir) throws Exception {
+  private void addInputPaths(JobConf job, MapredWork work, String hiveScratchDir, Context ctx)
+      throws Exception {
     int numEmptyPaths = 0;
 
     List<String> pathsProcessed = new ArrayList<String>();
@@ -817,7 +818,7 @@ public class ExecDriver extends Task<MapredWork> implements Serializable, Hadoop
           LOG.info("Adding input file " + path);
 
           Path dirPath = new Path(path);
-          if (!Utilities.isEmptyPath(job, dirPath)) {
+          if (!Utilities.isEmptyPath(job, path, ctx)) {
             FileInputFormat.addInputPath(job, dirPath);
           } else {
             emptyPaths.add(path);

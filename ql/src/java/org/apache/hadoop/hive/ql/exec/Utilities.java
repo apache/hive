@@ -81,10 +81,10 @@ import org.apache.hadoop.hive.metastore.api.Order;
 import org.apache.hadoop.hive.ql.Context;
 import org.apache.hadoop.hive.ql.QueryPlan;
 import org.apache.hadoop.hive.ql.exec.FileSinkOperator.RecordWriter;
-import org.apache.hadoop.hive.ql.io.HiveFileFormatUtils;
-import org.apache.hadoop.hive.ql.io.HiveOutputFormat;
 import org.apache.hadoop.hive.ql.io.ContentSummaryInputFormat;
+import org.apache.hadoop.hive.ql.io.HiveFileFormatUtils;
 import org.apache.hadoop.hive.ql.io.HiveInputFormat;
+import org.apache.hadoop.hive.ql.io.HiveOutputFormat;
 import org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat;
 import org.apache.hadoop.hive.ql.io.RCFile;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
@@ -1140,7 +1140,7 @@ public final class Utilities {
     Path pathPattern = new Path(path, sb.toString());
     return fs.globStatus(pathPattern);
   }
-  
+
   public static void mvFileToFinalPath(String specPath, Configuration hconf,
       boolean success, Log log, DynamicPartitionCtx dpCtx, FileSinkDesc conf) throws IOException, HiveException {
 
@@ -1172,7 +1172,7 @@ public final class Utilities {
       fs.delete(tmpPath, true);
     }
   }
-  
+
   /**
    * Check the existence of buckets according to bucket specification. Create empty buckets if
    * needed.
@@ -1545,6 +1545,8 @@ public final class Utilities {
             cs = fs.getContentSummary(p);
           }
           ctx.addCS(path, cs);
+          LOG.info("Cache Content Summary for " + path + " length: " + cs.getLength() + " file count: "
+              + cs.getFileCount() + " directory count: " + cs.getDirectoryCount());
         }
 
         summary[0] += cs.getLength();
@@ -1553,12 +1555,23 @@ public final class Utilities {
 
       } catch (IOException e) {
         LOG.info("Cannot get size of " + path + ". Safely ignored.");
-        if (path != null) {
-          ctx.addCS(path, new ContentSummary(0, 0, 0));
-        }
       }
     }
     return new ContentSummary(summary[0], summary[1], summary[2]);
+  }
+
+  public static boolean isEmptyPath(JobConf job, String dirPath, Context ctx)
+    throws Exception {
+    ContentSummary cs = ctx.getCS(dirPath);
+    if (cs != null) {
+      LOG.info("Content Summary " + dirPath + "length: " + cs.getLength() + " num files: "
+          + cs.getFileCount() + " num directories: " + cs.getDirectoryCount());
+      return (cs.getLength() == 0 && cs.getFileCount() == 0 && cs.getDirectoryCount() <= 1);
+    } else {
+      LOG.info("Content Summary not cached for " + dirPath);
+    }
+    Path p = new Path(dirPath);
+    return isEmptyPath(job, p);
   }
 
   public static boolean isEmptyPath(JobConf job, Path dirPath) throws Exception {
