@@ -73,7 +73,7 @@ public class $className extends TestCase {
     HBaseTestSetup setup = new HBaseTestSetup(suite);
 #foreach ($qf in $qfiles)
   #set ($fname = $qf.getName())
-  #set ($eidx = $fname.length() - 2)
+  #set ($eidx = $fname.indexOf('.'))
   #set ($tname = $fname.substring(0, $eidx))
     suite.addTest(new $className("testCliDriver_$tname", setup));
 #end
@@ -82,7 +82,7 @@ public class $className extends TestCase {
 
 #foreach ($qf in $qfiles)
   #set ($fname = $qf.getName())
-  #set ($eidx = $fname.length() - 2)
+  #set ($eidx = $fname.indexOf('.'))
   #set ($tname = $fname.substring(0, $eidx))
   public void testCliDriver_$tname() throws Exception {
     try {

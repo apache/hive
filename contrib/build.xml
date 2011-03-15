@@ -71,6 +71,7 @@
               queryDirectory="${contrib.test.query.dir}/positive"
               queryFile="${qfile}"
               queryFileRegex="${qfile_regex}"
+              runDisabled="${run_disabled}"
               resultsDirectory="${contrib.test.results.dir}/compiler" className="TestContribParse"
               logFile="${test.log.dir}/testcontribparsegen.log"
               logDirectory="${test.log.dir}/contribpositive"/>
@@ -80,6 +81,7 @@
               queryDirectory="${contrib.test.query.dir}/negative" 
               queryFile="${qfile}"
               queryFileRegex="${qfile_regex}"
+              runDisabled="${run_disabled}"
               resultsDirectory="${contrib.test.results.dir}/compiler/errors" className="TestContribParseNegative"
               logFile="${test.log.dir}/testcontribparseneggen.log"
               logDirectory="${test.log.dir}/contribnegative"/>
@@ -89,6 +91,7 @@
               queryDirectory="${contrib.test.query.dir}/clientpositive" 
               queryFile="${qfile}"
               queryFileRegex="${qfile_regex}"
+              runDisabled="${run_disabled}"
               clusterMode="${clustermode}"
               resultsDirectory="${contrib.test.results.dir}/clientpositive" className="TestContribCliDriver"
               logFile="${test.log.dir}/testcontribclidrivergen.log"
@@ -101,6 +104,7 @@
               queryDirectory="${contrib.test.query.dir}/clientnegative" 
               queryFile="${qfile}"
               queryFileRegex="${qfile_regex}"
+              runDisabled="${run_disabled}"
               resultsDirectory="${contrib.test.results.dir}/clientnegative" className="TestContribNegativeCliDriver"
               logFile="${test.log.dir}/testcontribnegclidrivergen.log"
               logDirectory="${test.log.dir}/contribclientnegative"/>
