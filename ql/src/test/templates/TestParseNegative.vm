@@ -77,7 +77,7 @@ public class $className extends TestCase {
 
 #foreach ($qf in $qfiles)
   #set ($fname = $qf.getName())
-  #set ($eidx = $fname.length() - 2)
+  #set ($eidx = $fname.indexOf('.'))
   #set ($tname = $fname.substring(0, $eidx))
     suite.addTest(new $className("testParseNegative_$tname"));
 #end
@@ -90,7 +90,7 @@ public class $className extends TestCase {
 
 #foreach ($qf in $qfiles)
   #set ($fname = $qf.getName())
-  #set ($eidx = $fname.length() - 2)
+  #set ($eidx = $fname.indexOf('.'))
   #set ($tname = $fname.substring(0, $eidx))
   public void testParseNegative_$tname() throws Exception {
     try {

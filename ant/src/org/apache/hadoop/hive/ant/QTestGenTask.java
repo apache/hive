@@ -58,6 +58,12 @@ public class QTestGenTask extends Task {
     
   }
   
+  public class DisabledQFileFilter implements FileFilter { 
+    public boolean accept(File fpath) {
+      return !fpath.isDirectory() && fpath.getName().endsWith(".q.disabled");
+    }  
+  }
+  
   public class QFileRegexFilter extends QFileFilter {
     Pattern filterPattern;
     
@@ -97,6 +103,8 @@ public class QTestGenTask extends Task {
   private String logFile;
 
   private String clusterMode;
+
+  private String runDisabled;
   
   private String hadoopVersion;
 
@@ -114,6 +122,14 @@ public class QTestGenTask extends Task {
 
   public String getClusterMode() {
     return clusterMode;
+  }
+
+  public void setRunDisabled(String runDisabled) {
+    this.runDisabled = runDisabled;
+  }
+
+  public String getRunDisabled() {
+    return runDisabled;
   }
 
   public void setLogFile(String logFile) {
@@ -264,6 +280,8 @@ public class QTestGenTask extends Task {
         }
       } else if (queryFileRegex != null && !queryFileRegex.equals("")) {
         qFiles.addAll(Arrays.asList(inpDir.listFiles(new QFileRegexFilter(queryFileRegex))));
+      } else if (runDisabled != null && runDisabled.equals("true")) {
+        qFiles.addAll(Arrays.asList(inpDir.listFiles(new DisabledQFileFilter())));        
       } else {
         qFiles.addAll(Arrays.asList(inpDir.listFiles(new QFileFilter())));
       }
