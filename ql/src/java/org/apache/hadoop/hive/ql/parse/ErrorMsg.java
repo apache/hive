@@ -173,6 +173,12 @@ public enum ErrorMsg {
   OUTERJOIN_USES_FILTERS("The query results could be wrong. " +
   		"Turn on hive.outerjoin.supports.filters"),
   NEED_PARTITION_SPECIFICATION("Table is partitioned and partition specification is needed"),
+  INVALID_METADATA("The metadata file could not be parsed "),
+  NEED_TABLE_SPECIFICATION("Table name could be determined; It should be specified "),
+  PARTITION_EXISTS("Partition already exists"),
+  TABLE_DATA_EXISTS("Table exists and contains data files"),
+  INCOMPATIBLE_SCHEMA("The existing table is not compatible with the import spec. "),
+  EXIM_FOR_NON_NATIVE("Export/Import cannot be done for a non-native table. "),
       ;
 
   private String mesg;

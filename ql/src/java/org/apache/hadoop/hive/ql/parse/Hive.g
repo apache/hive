@@ -85,6 +85,8 @@ TOK_RIGHTOUTERJOIN;
 TOK_FULLOUTERJOIN;
 TOK_UNIQUEJOIN;
 TOK_LOAD;
+TOK_EXPORT;
+TOK_IMPORT;
 TOK_NULL;
 TOK_ISNULL;
 TOK_ISNOTNULL;
@@ -282,6 +284,8 @@ execStatement
 @after { msgs.pop(); }
     : queryStatementExpression
     | loadStatement
+    | exportStatement
+    | importStatement
     | ddlStatement
     ;
 
@@ -290,6 +294,20 @@ loadStatement
 @after { msgs.pop(); }
     : KW_LOAD KW_DATA (islocal=KW_LOCAL)? KW_INPATH (path=StringLiteral) (isoverwrite=KW_OVERWRITE)? KW_INTO KW_TABLE (tab=tableOrPartition)
     -> ^(TOK_LOAD $path $tab $islocal? $isoverwrite?)
+    ;
+
+exportStatement
+@init { msgs.push("export statement"); }
+@after { msgs.pop(); }
+    : KW_EXPORT KW_TABLE (tab=tableOrPartition) KW_TO (path=StringLiteral)
+    -> ^(TOK_EXPORT $tab $path)
+    ;
+
+importStatement
+@init { msgs.push("import statement"); }
+@after { msgs.pop(); }
+	: KW_IMPORT ((ext=KW_EXTERNAL)? KW_TABLE (tab=tableOrPartition))? KW_FROM (path=StringLiteral) tableLocation?
+    -> ^(TOK_IMPORT $path $tab? $ext? tableLocation?)
     ;
 
 ddlStatement
@@ -2074,6 +2092,8 @@ KW_DISTRIBUTE: 'DISTRIBUTE';
 KW_SORT: 'SORT';
 KW_UNION: 'UNION';
 KW_LOAD: 'LOAD';
+KW_EXPORT: 'EXPORT';
+KW_IMPORT: 'IMPORT';
 KW_DATA: 'DATA';
 KW_INPATH: 'INPATH';
 KW_IS: 'IS';

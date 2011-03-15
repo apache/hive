@@ -36,6 +36,8 @@ public final class SemanticAnalyzerFactory {
   static {
     commandType.put(HiveParser.TOK_EXPLAIN, HiveOperation.EXPLAIN);
     commandType.put(HiveParser.TOK_LOAD, HiveOperation.LOAD);
+    commandType.put(HiveParser.TOK_EXPORT, HiveOperation.EXPORT);
+    commandType.put(HiveParser.TOK_IMPORT, HiveOperation.IMPORT);
     commandType.put(HiveParser.TOK_CREATEDATABASE, HiveOperation.CREATEDATABASE);
     commandType.put(HiveParser.TOK_DROPDATABASE, HiveOperation.DROPDATABASE);
     commandType.put(HiveParser.TOK_SWITCHDATABASE, HiveOperation.SWITCHDATABASE);
@@ -118,6 +120,10 @@ public final class SemanticAnalyzerFactory {
         return new ExplainSemanticAnalyzer(conf);
       case HiveParser.TOK_LOAD:
         return new LoadSemanticAnalyzer(conf);
+      case HiveParser.TOK_EXPORT:
+        return new ExportSemanticAnalyzer(conf);
+      case HiveParser.TOK_IMPORT:
+        return new ImportSemanticAnalyzer(conf);
       case HiveParser.TOK_CREATEDATABASE:
       case HiveParser.TOK_DROPDATABASE:
       case HiveParser.TOK_SWITCHDATABASE:

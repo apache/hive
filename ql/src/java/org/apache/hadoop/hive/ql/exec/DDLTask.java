@@ -875,15 +875,35 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
       return 0;
     }
 
+    
+    
     if (addPartitionDesc.getLocation() == null) {
-      db.createPartition(tbl, addPartitionDesc.getPartSpec());
+      db.createPartition(tbl, addPartitionDesc.getPartSpec(), null,
+          addPartitionDesc.getPartParams(),
+                    addPartitionDesc.getInputFormat(),
+                    addPartitionDesc.getOutputFormat(),
+                    addPartitionDesc.getNumBuckets(),
+                    addPartitionDesc.getCols(),
+                    addPartitionDesc.getSerializationLib(),
+                    addPartitionDesc.getSerdeParams(),
+                    addPartitionDesc.getBucketCols(),
+                    addPartitionDesc.getSortCols());
+
     } else {
       if (tbl.isView()) {
         throw new HiveException("LOCATION clause illegal for view partition");
       }
       // set partition path relative to table
       db.createPartition(tbl, addPartitionDesc.getPartSpec(), new Path(tbl
-          .getPath(), addPartitionDesc.getLocation()));
+                    .getPath(), addPartitionDesc.getLocation()), addPartitionDesc.getPartParams(),
+                    addPartitionDesc.getInputFormat(),
+                    addPartitionDesc.getOutputFormat(),
+                    addPartitionDesc.getNumBuckets(),
+                    addPartitionDesc.getCols(),
+                    addPartitionDesc.getSerializationLib(),
+                    addPartitionDesc.getSerdeParams(),
+                    addPartitionDesc.getBucketCols(),
+                    addPartitionDesc.getSortCols());
     }
 
     Partition part = db

@@ -59,8 +59,12 @@ public class CopyTask extends Task<CopyWork> implements Serializable {
       FileStatus[] srcs = LoadSemanticAnalyzer.matchFilesOrDir(srcFs, fromPath);
 
       if (srcs == null || srcs.length == 0) {
-        console.printError("No files matching path: " + fromPath.toString());
-        return 3;
+        if (work.isErrorOnSrcEmpty()) {
+          console.printError("No files matching path: " + fromPath.toString());
+          return 3;
+        } else {
+          return 0;
+        }
       }
 
       if (!dstFs.mkdirs(toPath)) {

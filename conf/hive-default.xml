@@ -977,4 +977,11 @@
   If the data got moved or the name of the cluster got changed, the index data should still be usable.</description>
 </property>
 
+<property>
+  <name>hive.exim.uri.scheme.whitelist</name>
+  <value>hdfs,pfile</value>
+  <description>A comma separated list of acceptable URI schemes for import and export.</description>
+</property>
+
+
 </configuration>

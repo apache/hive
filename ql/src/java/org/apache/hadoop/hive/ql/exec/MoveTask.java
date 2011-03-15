@@ -265,7 +265,7 @@ public class MoveTask extends Task<MoveWork> implements Serializable {
             dc = null; // reset data container to prevent it being added again.
           } else { // static partitions
             db.loadPartition(new Path(tbd.getSourceDir()), tbd.getTable().getTableName(),
-                tbd.getPartitionSpec(), tbd.getReplace(), tbd.getHoldDDLTime());
+                tbd.getPartitionSpec(), tbd.getReplace(), tbd.getHoldDDLTime(), tbd.getInheritTableSpecs());
           	Partition partn = db.getPartition(table, tbd.getPartitionSpec(), false);
           	dc = new DataContainer(table.getTTable(), partn.getTPartition());
           	// add this partition to post-execution hook

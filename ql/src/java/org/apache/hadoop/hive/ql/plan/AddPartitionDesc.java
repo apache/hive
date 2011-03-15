@@ -18,9 +18,12 @@
 package org.apache.hadoop.hive.ql.plan;
 
 import java.io.Serializable;
-import java.util.HashMap;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
+
+import org.apache.hadoop.hive.metastore.api.FieldSchema;
+import org.apache.hadoop.hive.metastore.api.Order;
 
 /**
  * Contains the information needed to add a partition.
@@ -28,13 +31,22 @@ import java.util.Map;
 public class AddPartitionDesc extends DDLDesc implements Serializable {
 
   private static final long serialVersionUID = 1L;
-  
+
   String tableName;
   String dbName;
   String location;
   boolean ifNotExists;
   boolean expectView;
   LinkedHashMap<String, String> partSpec;
+  Map<String, String> partParams;
+  String inputFormat = null;
+  String outputFormat = null;
+  int numBuckets = -1;
+  List<FieldSchema> cols = null;
+  String serializationLib = null;
+  Map<String, String> serdeParams = null;
+  List<String> bucketCols = null;
+  List<Order> sortCols = null;
 
   /**
    * For serialization only.
@@ -51,7 +63,25 @@ public class AddPartitionDesc extends DDLDesc implements Serializable {
    *          partition specification.
    * @param location
    *          partition location, relative to table location.
-   * @param ifNotExists 
+   * @param params
+   *          partition parameters.
+   */
+  public AddPartitionDesc(String dbName, String tableName,
+      Map<String, String> partSpec, String location, Map<String, String> params) {
+    this(dbName, tableName, partSpec, location, true, false);
+    this.partParams = params;
+  }
+
+  /**
+   * @param dbName
+   *          database to add to.
+   * @param tableName
+   *          table to add to.
+   * @param partSpec
+   *          partition specification.
+   * @param location
+   *          partition location, relative to table location.
+   * @param ifNotExists
    *          if true, the partition is only added if it doesn't exist
    * @param expectView
    *          true for ALTER VIEW, false for ALTER TABLE
@@ -136,7 +166,7 @@ public class AddPartitionDesc extends DDLDesc implements Serializable {
   }
 
   /**
-   * @param ifNotExists 
+   * @param ifNotExists
    *          if the part should be added only if it doesn't exist
    */
   public void setIfNotExists(boolean ifNotExists) {
@@ -144,6 +174,86 @@ public class AddPartitionDesc extends DDLDesc implements Serializable {
   }
 
   /**
+   * @return partition parameters.
+   */
+  public Map<String, String> getPartParams() {
+    return partParams;
+  }
+
+  /**
+   * @param partParams
+   *          partition parameters
+   */
+
+  public void setPartParams(Map<String, String> partParams) {
+    this.partParams = partParams;
+  }
+
+  public int getNumBuckets() {
+    return numBuckets;
+  }
+
+  public void setNumBuckets(int numBuckets) {
+    this.numBuckets = numBuckets;
+  }
+
+  public List<FieldSchema> getCols() {
+    return cols;
+  }
+
+  public void setCols(List<FieldSchema> cols) {
+    this.cols = cols;
+  }
+
+  public String getSerializationLib() {
+    return serializationLib;
+  }
+
+  public void setSerializationLib(String serializationLib) {
+    this.serializationLib = serializationLib;
+  }
+
+  public Map<String, String> getSerdeParams() {
+    return serdeParams;
+  }
+
+  public void setSerdeParams(Map<String, String> serdeParams) {
+    this.serdeParams = serdeParams;
+  }
+
+  public List<String> getBucketCols() {
+    return bucketCols;
+  }
+
+  public void setBucketCols(List<String> bucketCols) {
+    this.bucketCols = bucketCols;
+  }
+
+  public List<Order> getSortCols() {
+    return sortCols;
+  }
+
+  public void setSortCols(List<Order> sortCols) {
+    this.sortCols = sortCols;
+  }
+
+  public String getInputFormat() {
+    return inputFormat;
+  }
+
+  public void setInputFormat(String inputFormat) {
+    this.inputFormat = inputFormat;
+  }
+
+  public String getOutputFormat() {
+    return outputFormat;
+  }
+
+  public void setOutputFormat(String outputFormat) {
+    this.outputFormat = outputFormat;
+  }
+
+  /*
    * @return whether to expect a view being altered
    */
   public boolean getExpectView() {

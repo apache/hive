@@ -67,8 +67,8 @@ import org.apache.hadoop.hive.ql.lockmgr.HiveLockManagerCtx;
 import org.apache.hadoop.hive.ql.lockmgr.HiveLockMode;
 import org.apache.hadoop.hive.ql.lockmgr.HiveLockObj;
 import org.apache.hadoop.hive.ql.lockmgr.HiveLockObject;
-import org.apache.hadoop.hive.ql.lockmgr.LockException;
 import org.apache.hadoop.hive.ql.lockmgr.HiveLockObject.HiveLockObjectData;
+import org.apache.hadoop.hive.ql.lockmgr.LockException;
 import org.apache.hadoop.hive.ql.metadata.AuthorizationException;
 import org.apache.hadoop.hive.ql.metadata.DummyPartition;
 import org.apache.hadoop.hive.ql.metadata.Hive;
@@ -83,6 +83,7 @@ import org.apache.hadoop.hive.ql.parse.BaseSemanticAnalyzer;
 import org.apache.hadoop.hive.ql.parse.ErrorMsg;
 import org.apache.hadoop.hive.ql.parse.HiveSemanticAnalyzerHookContext;
 import org.apache.hadoop.hive.ql.parse.HiveSemanticAnalyzerHookContextImpl;
+import org.apache.hadoop.hive.ql.parse.ImportSemanticAnalyzer;
 import org.apache.hadoop.hive.ql.parse.ParseContext;
 import org.apache.hadoop.hive.ql.parse.ParseDriver;
 import org.apache.hadoop.hive.ql.parse.ParseException;
@@ -433,6 +434,15 @@ public class Driver implements CommandProcessor {
         ss.getAuthorizer().authorize(
             db.getDatabase(db.getCurrentDatabase()), null,
             HiveOperation.CREATETABLE_AS_SELECT.getOutputRequiredPrivileges());
+      } else {
+        if (op.equals(HiveOperation.IMPORT)) {
+          ImportSemanticAnalyzer isa = (ImportSemanticAnalyzer) sem;
+          if (!isa.existsTable()) {
+            ss.getAuthorizer().authorize(
+                db.getDatabase(db.getCurrentDatabase()), null,
+                HiveOperation.CREATETABLE_AS_SELECT.getOutputRequiredPrivileges());
+          }
+        }
       }
       if (outputs != null && outputs.size() > 0) {
         for (WriteEntity write : outputs) {

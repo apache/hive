@@ -1044,11 +1044,15 @@ public class Hive {
    * @param replace
    *          if true - replace files in the partition, otherwise add files to
    *          the partition
+   * @param holdDDLTime if true, force [re]create the partition
+   * @param inheritTableSpecs if true, on [re]creating the partition, take the 
+   *          location/inputformat/outputformat/serde details from table spec
    * @param tmpDirPath
    *          The temporary directory.
    */
   public void loadPartition(Path loadPath, String tableName,
-      Map<String, String> partSpec, boolean replace, boolean holdDDLTime)
+      Map<String, String> partSpec, boolean replace, boolean holdDDLTime,
+      boolean inheritTableSpecs)
       throws HiveException {
     Table tbl = getTable(tableName);
     try {
@@ -1059,18 +1063,24 @@ public class Hive {
        * processes might move forward with partial data
        */
 
-      Partition oldPart = getPartition(tbl, partSpec, false, null);
+      Partition oldPart = getPartition(tbl, partSpec, false);
       Path oldPartPath = null;
       if(oldPart != null) {
         oldPartPath = oldPart.getPartitionPath();
       }
 
-      Path partPath = new Path(tbl.getDataLocation().getPath(),
-          Warehouse.makePartPath(partSpec));
 
-      Path newPartPath = new Path(loadPath.toUri().getScheme(), loadPath
-          .toUri().getAuthority(), partPath.toUri().getPath());
-
+      Path newPartPath = null;
+      
+      if (inheritTableSpecs) {
+        Path partPath = new Path(tbl.getDataLocation().getPath(),
+            Warehouse.makePartPath(partSpec));
+        newPartPath = new Path(loadPath.toUri().getScheme(), loadPath.toUri().getAuthority(),
+            partPath.toUri().getPath());
+      } else {
+        newPartPath = oldPartPath;
+      }
+      
       if (replace) {
         Hive.replaceFiles(loadPath, newPartPath, oldPartPath, getConf());
       } else {
@@ -1080,7 +1090,7 @@ public class Hive {
 
       // recreate the partition if it existed before
       if (!holdDDLTime) {
-        getPartition(tbl, partSpec, true, newPartPath.toString());
+        getPartition(tbl, partSpec, true, newPartPath.toString(), inheritTableSpecs);
       }
     } catch (IOException e) {
       LOG.error(StringUtils.stringifyException(e));
@@ -1142,7 +1152,7 @@ public class Hive {
       	fullPartSpecs.add(fullPartSpec);
 
         // finally load the partition -- move the file to the final table address
-      	loadPartition(partPath, tableName, fullPartSpec, replace, holdDDLTime);
+      	loadPartition(partPath, tableName, fullPartSpec, replace, holdDDLTime, true);
       	LOG.info("New loading path = " + partPath + " with partSpec " + fullPartSpec);
     	}
       return fullPartSpecs;
@@ -1198,7 +1208,8 @@ public class Hive {
    */
   public Partition createPartition(Table tbl, Map<String, String> partSpec)
       throws HiveException {
-    return createPartition(tbl, partSpec, null);
+    return createPartition(tbl, partSpec, null, null, null, null, -1, 
+        null, null, null, null, null);
   }
 
   /**
@@ -1210,12 +1221,26 @@ public class Hive {
    *          partition keys and their values
    * @param location
    *          location of this partition
+   * @param partParams
+   *          partition parameters
+   * @param inputFormat the inputformat class
+   * @param outputformat the outputformat class
+   * @param numBuckets the number of buckets
+   * @param cols the column schema
+   * @param serializationLib the serde class
+   * @param serdeParams the serde parameters
+   * @param bucketCols the bucketing columns
+   * @param sortCols sort columns and order
+   *             
    * @return created partition object
    * @throws HiveException
    *           if table doesn't exist or partition already exists
    */
   public Partition createPartition(Table tbl, Map<String, String> partSpec,
-      Path location) throws HiveException {
+      Path location, Map<String, String> partParams, String inputFormat, String outputFormat,
+      int numBuckets, List<FieldSchema> cols,
+      String serializationLib, Map<String, String> serdeParams,
+      List<String> bucketCols, List<Order> sortCols) throws HiveException {
 
     org.apache.hadoop.hive.metastore.api.Partition partition = null;
 
@@ -1231,7 +1256,36 @@ public class Hive {
       Partition tmpPart = new Partition(tbl, partSpec, location);
       // No need to clear DDL_TIME in parameters since we know it's
       // not populated on construction.
-      partition = getMSC().add_partition(tmpPart.getTPartition());
+      org.apache.hadoop.hive.metastore.api.Partition inPart
+        = tmpPart.getTPartition();
+      if (partParams != null) {
+        inPart.setParameters(partParams);
+      }
+      if (inputFormat != null) {
+        inPart.getSd().setInputFormat(inputFormat);
+      }
+      if (outputFormat != null) {
+        inPart.getSd().setOutputFormat(outputFormat);
+      }
+      if (numBuckets != -1) {
+        inPart.getSd().setNumBuckets(numBuckets);
+      }
+      if (cols != null) {
+        inPart.getSd().setCols(cols);
+      }
+      if (serializationLib != null) {
+          inPart.getSd().getSerdeInfo().setSerializationLib(serializationLib);
+      }
+      if (serdeParams != null) {
+        inPart.getSd().getSerdeInfo().setParameters(serdeParams);
+      }
+      if (bucketCols != null) {
+        inPart.getSd().setBucketCols(bucketCols);
+      }
+      if (sortCols != null) {
+        inPart.getSd().setSortCols(sortCols);
+      }
+      partition = getMSC().add_partition(inPart);
     } catch (Exception e) {
       LOG.error(StringUtils.stringifyException(e));
       throw new HiveException(e);
@@ -1242,7 +1296,7 @@ public class Hive {
 
   public Partition getPartition(Table tbl, Map<String, String> partSpec,
       boolean forceCreate) throws HiveException {
-    return getPartition(tbl, partSpec, forceCreate, null);
+    return getPartition(tbl, partSpec, forceCreate, null, true);
   }
 
   /**
@@ -1255,11 +1309,13 @@ public class Hive {
    * @param forceCreate
    *          if this is true and partition doesn't exist then a partition is
    *          created
+   * @param partPath the path where the partition data is located
+   * @param inheritTableSpecs whether to copy over the table specs for if/of/serde 
    * @return result partition object or null if there is no partition
    * @throws HiveException
    */
   public Partition getPartition(Table tbl, Map<String, String> partSpec,
-      boolean forceCreate, String partPath) throws HiveException {
+      boolean forceCreate, String partPath, boolean inheritTableSpecs) throws HiveException {
     if (!tbl.isValidSpec(partSpec)) {
       throw new HiveException("Invalid partition: " + partSpec);
     }
@@ -1298,10 +1354,11 @@ public class Hive {
         else {
           LOG.debug("altering partition for table " + tbl.getTableName()
                     + " with partition spec : " + partSpec);
-
-          tpart.getSd().setOutputFormat(tbl.getTTable().getSd().getOutputFormat());
-          tpart.getSd().setInputFormat(tbl.getTTable().getSd().getInputFormat());
-          tpart.getSd().getSerdeInfo().setSerializationLib(tbl.getSerializationLib());
+          if (inheritTableSpecs) {
+            tpart.getSd().setOutputFormat(tbl.getTTable().getSd().getOutputFormat());
+            tpart.getSd().setInputFormat(tbl.getTTable().getSd().getInputFormat());
+            tpart.getSd().getSerdeInfo().setSerializationLib(tbl.getSerializationLib());
+          }
           if (partPath == null || partPath.trim().equals("")) {
             throw new HiveException("new partition path should not be null or empty.");
           }
@@ -1800,7 +1857,7 @@ public class Hive {
       	  throw new HiveException("Unable to move results from " + srcs[0].getPath()
       	      + " to destination directory: " + destf);
       	}
-      	LOG.debug("Renaming:" + srcf.toString() + ",Status:" + b);
+      	LOG.debug("Renaming:" + srcf.toString() + " to " + destf.toString()  + ",Status:" + b);
       } else { // srcf is a file or pattern containing wildcards
         if (!fs.exists(destf)) {
           fs.mkdirs(destf);

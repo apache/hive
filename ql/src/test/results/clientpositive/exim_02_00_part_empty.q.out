@@ -1,0 +1,80 @@
+PREHOOK: query: create table exim_employee ( emp_id int comment "employee id") 	
+	comment "employee table"
+	partitioned by (emp_country string comment "two char iso code", emp_state string comment "free text")
+	stored as textfile	
+	tblproperties("creator"="krishna")
+PREHOOK: type: CREATETABLE
+POSTHOOK: query: create table exim_employee ( emp_id int comment "employee id") 	
+	comment "employee table"
+	partitioned by (emp_country string comment "two char iso code", emp_state string comment "free text")
+	stored as textfile	
+	tblproperties("creator"="krishna")
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: default@exim_employee
+PREHOOK: query: export table exim_employee to 'ql/test/data/exports/exim_employee'
+PREHOOK: type: EXPORT
+PREHOOK: Output: pfile:/Users/krishnak/Projects/hdp/sources/hive-git-apache/build/ql/test/data/exports/exim_employee
+POSTHOOK: query: export table exim_employee to 'ql/test/data/exports/exim_employee'
+POSTHOOK: type: EXPORT
+POSTHOOK: Output: pfile:/Users/krishnak/Projects/hdp/sources/hive-git-apache/build/ql/test/data/exports/exim_employee
+PREHOOK: query: drop table exim_employee
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@exim_employee
+PREHOOK: Output: default@exim_employee
+POSTHOOK: query: drop table exim_employee
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@exim_employee
+POSTHOOK: Output: default@exim_employee
+PREHOOK: query: create database importer
+PREHOOK: type: CREATEDATABASE
+POSTHOOK: query: create database importer
+POSTHOOK: type: CREATEDATABASE
+PREHOOK: query: use importer
+PREHOOK: type: SWITCHDATABASE
+POSTHOOK: query: use importer
+POSTHOOK: type: SWITCHDATABASE
+PREHOOK: query: import from 'ql/test/data/exports/exim_employee'
+PREHOOK: type: IMPORT
+POSTHOOK: query: import from 'ql/test/data/exports/exim_employee'
+POSTHOOK: type: IMPORT
+POSTHOOK: Output: importer@exim_employee
+PREHOOK: query: describe extended exim_employee
+PREHOOK: type: DESCTABLE
+POSTHOOK: query: describe extended exim_employee
+POSTHOOK: type: DESCTABLE
+emp_id	int	employee id
+emp_country	string	two char iso code
+emp_state	string	free text
+	 	 
+Detailed Table Information	Table(tableName:exim_employee, dbName:importer, owner:krishnak, createTime:1300085749, lastAccessTime:0, retention:0, sd:StorageDescriptor(cols:[FieldSchema(name:emp_id, type:int, comment:employee id), FieldSchema(name:emp_country, type:string, comment:two char iso code), FieldSchema(name:emp_state, type:string, comment:free text)], location:pfile:/Users/krishnak/Projects/hdp/sources/hive-git-apache/build/ql/test/data/warehouse/importer.db/exim_employee, inputFormat:org.apache.hadoop.mapred.TextInputFormat, outputFormat:org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat, compressed:false, numBuckets:-1, serdeInfo:SerDeInfo(name:null, serializationLib:org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe, parameters:{serialization.format=1}), bucketCols:[], sortCols:[], parameters:{}), partitionKeys:[FieldSchema(name:emp_country, type:string, comment:two char iso code), FieldSchema(name:emp_state, type:string, comment:free text)], parameters:{transient_lastDdlTime=1300085749, comment=employee table, creator=krishna}, viewOriginalText:null, viewExpandedText:null, tableType:MANAGED_TABLE)	
+PREHOOK: query: show table extended like exim_employee
+PREHOOK: type: SHOW_TABLESTATUS
+POSTHOOK: query: show table extended like exim_employee
+POSTHOOK: type: SHOW_TABLESTATUS
+tableName:exim_employee
+owner:krishnak
+location:pfile:/Users/krishnak/Projects/hdp/sources/hive-git-apache/build/ql/test/data/warehouse/importer.db/exim_employee
+inputformat:org.apache.hadoop.mapred.TextInputFormat
+outputformat:org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+columns:struct columns { i32 emp_id}
+partitioned:true
+partitionColumns:struct partition_columns { string emp_country, string emp_state}
+
+PREHOOK: query: select * from exim_employee
+PREHOOK: type: QUERY
+PREHOOK: Output: file:/var/folders/67/67R3POPtF90VG63KSmCbcU++F0U/-Tmp-/krishnak/hive_2011-03-13_23-55-50_434_5419900420959928846/-mr-10000
+POSTHOOK: query: select * from exim_employee
+POSTHOOK: type: QUERY
+POSTHOOK: Output: file:/var/folders/67/67R3POPtF90VG63KSmCbcU++F0U/-Tmp-/krishnak/hive_2011-03-13_23-55-50_434_5419900420959928846/-mr-10000
+PREHOOK: query: drop table exim_employee
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: importer@exim_employee
+PREHOOK: Output: importer@exim_employee
+POSTHOOK: query: drop table exim_employee
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: importer@exim_employee
+POSTHOOK: Output: importer@exim_employee
+PREHOOK: query: drop database importer
+PREHOOK: type: DROPDATABASE
+POSTHOOK: query: drop database importer
+POSTHOOK: type: DROPDATABASE

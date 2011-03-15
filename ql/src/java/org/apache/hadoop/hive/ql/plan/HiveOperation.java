@@ -24,6 +24,8 @@ public enum HiveOperation {
   
   EXPLAIN("EXPLAIN", null, null),
   LOAD("LOAD", null, new Privilege[]{Privilege.ALTER_DATA}),
+  EXPORT("EXPORT", new Privilege[]{Privilege.SELECT}, null),
+  IMPORT("IMPORT", null, new Privilege[]{Privilege.ALTER_METADATA, Privilege.ALTER_DATA}),
   CREATEDATABASE("CREATEDATABASE", null, null),
   DROPDATABASE("DROPDATABASE", null, null),
   SWITCHDATABASE("SWITCHDATABASE", null, null),

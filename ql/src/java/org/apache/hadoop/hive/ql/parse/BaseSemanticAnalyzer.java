@@ -602,6 +602,12 @@ public abstract class BaseSemanticAnalyzer {
 
     public tableSpec(Hive db, HiveConf conf, ASTNode ast)
         throws SemanticException {
+      this(db, conf, ast, true, false);
+    }
+
+    public tableSpec(Hive db, HiveConf conf, ASTNode ast,
+        boolean allowDynamicPartitionsSpec, boolean allowPartialPartitionsSpec)
+        throws SemanticException {
 
       assert (ast.getToken().getType() == HiveParser.TOK_TAB
           || ast.getToken().getType() == HiveParser.TOK_TABLE_PARTITION 
@@ -639,7 +645,12 @@ public abstract class BaseSemanticAnalyzer {
           String val = null;
           String colName = unescapeIdentifier(partspec_val.getChild(0).getText().toLowerCase());
           if (partspec_val.getChildCount() < 2) { // DP in the form of T partition (ds, hr)
-            ++numDynParts;
+            if (allowDynamicPartitionsSpec) {
+              ++numDynParts;
+            } else {
+              throw new SemanticException(ErrorMsg.INVALID_PARTITION
+                                                       .getMsg(" - Dynamic partitions not allowed"));
+            }
           } else { // in the form of T partition (ds="2010-03-03")
             val = stripQuotes(partspec_val.getChild(1).getText());
           }
@@ -672,14 +683,18 @@ public abstract class BaseSemanticAnalyzer {
           specType = SpecType.DYNAMIC_PARTITION;
         } else {
           try {
-            // this doesn't create partition.
-            partHandle = db.getPartition(tableHandle, partSpec, false);
-            if (partHandle == null) {
-              // if partSpec doesn't exists in DB, return a delegate one
-              // and the actual partition is created in MoveTask
-              partHandle = new Partition(tableHandle, partSpec, null);
+            if (allowPartialPartitionsSpec) {
+              partitions = db.getPartitions(tableHandle, partSpec);
             } else {
-              partitions.add(partHandle);
+              // this doesn't create partition.
+              partHandle = db.getPartition(tableHandle, partSpec, false);
+              if (partHandle == null) {
+                // if partSpec doesn't exists in DB, return a delegate one
+                // and the actual partition is created in MoveTask
+                partHandle = new Partition(tableHandle, partSpec, null);
+              } else {
+                partitions.add(partHandle);
+              }
             }
           } catch (HiveException e) {
             throw new SemanticException(
