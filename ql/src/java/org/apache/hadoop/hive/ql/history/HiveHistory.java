@@ -425,6 +425,7 @@ public class HiveHistory {
       return;
     }
     log(RecordTypes.QueryEnd, ji.hm);
+    queryInfoMap.remove(queryId);
   }
 
   /**
@@ -465,6 +466,7 @@ public class HiveHistory {
       return;
     }
     log(RecordTypes.TaskEnd, ti.hm);
+    taskInfoMap.remove(id);
   }
 
   /**
