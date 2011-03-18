@@ -100,8 +100,8 @@ import org.apache.hadoop.hive.ql.plan.MapredLocalWork;
 import org.apache.hadoop.hive.ql.plan.MapredWork;
 import org.apache.hadoop.hive.ql.plan.PartitionDesc;
 import org.apache.hadoop.hive.ql.plan.PlanUtils;
-import org.apache.hadoop.hive.ql.plan.TableDesc;
 import org.apache.hadoop.hive.ql.plan.PlanUtils.ExpressionTypes;
+import org.apache.hadoop.hive.ql.plan.TableDesc;
 import org.apache.hadoop.hive.ql.stats.StatsFactory;
 import org.apache.hadoop.hive.ql.stats.StatsPublisher;
 import org.apache.hadoop.hive.serde.Constants;
@@ -110,8 +110,8 @@ import org.apache.hadoop.hive.serde2.Serializer;
 import org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe;
 import org.apache.hadoop.hive.shims.ShimLoader;
 import org.apache.hadoop.io.SequenceFile;
-import org.apache.hadoop.io.Writable;
 import org.apache.hadoop.io.SequenceFile.CompressionType;
+import org.apache.hadoop.io.Writable;
 import org.apache.hadoop.io.compress.CompressionCodec;
 import org.apache.hadoop.io.compress.DefaultCodec;
 import org.apache.hadoop.mapred.FileOutputFormat;
@@ -1756,5 +1756,41 @@ public final class Utilities {
     } else {
       return false;
     }
+  }
+
+  private static ThreadLocal<Map<String, Long>> perfKeyMaps = new ThreadLocal<Map<String, Long>>();
+
+  /**
+   * Call this function when you start to measure time spent by a piece of code.
+   * @param _log the logging object to be used.
+   * @param method method or ID that identifies this perf log element.
+   */
+  public static void PerfLogBegin(Log _log, String method) {
+    long startTime = System.currentTimeMillis();
+    _log.info("<PERFLOG method=" + method + ">");
+    if (perfKeyMaps.get() == null) {
+      perfKeyMaps.set(new HashMap<String, Long>());
+    }
+    perfKeyMaps.get().put(method, new Long(startTime));
+  }
+
+  /**
+   * Call this function in correspondence of PerfLogBegin to mark the end of the measurement.
+   * @param _log
+   * @param method
+   */
+  public static void PerfLogEnd(Log _log, String method) {
+    Long startTime = perfKeyMaps.get().get(method);
+    long endTime = System.currentTimeMillis();
+    StringBuilder sb = new StringBuilder("</PERFLOG method=").append(method);
+    if (startTime != null) {
+      sb.append(" start=").append(startTime);
+    }
+    sb.append(" end=").append(endTime);
+    if (startTime != null) {
+      sb.append(" duration=").append(endTime - startTime.longValue());
+    }
+    sb.append(">");
+    _log.info(sb);
   }
 }

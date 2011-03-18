@@ -313,6 +313,9 @@ public class Driver implements CommandProcessor {
    *          The SQL query to compile.
    */
   public int compile(String command) {
+
+    Utilities.PerfLogBegin(LOG, "compile");
+
     if (plan != null) {
       close();
       plan = null;
@@ -391,11 +394,14 @@ public class Driver implements CommandProcessor {
       if (HiveConf.getBoolVar(conf,
           HiveConf.ConfVars.HIVE_AUTHORIZATION_ENABLED)) {
         try {
+          Utilities.PerfLogBegin(LOG, "doAuthorization");
           doAuthorization(sem);
         } catch (AuthorizationException authExp) {
           console.printError("Authorization failed:" + authExp.getMessage()
               + ". Use show grant to get more details.");
           return 403;
+        } finally {
+          Utilities.PerfLogEnd(LOG, "doAuthorization");
         }
       }
 
@@ -418,6 +424,8 @@ public class Driver implements CommandProcessor {
       console.printError(errorMessage + "\n"
           + org.apache.hadoop.util.StringUtils.stringifyException(e));
       return (12);
+    } finally {
+      Utilities.PerfLogEnd(LOG, "compile");
     }
   }
 
@@ -666,6 +674,9 @@ public class Driver implements CommandProcessor {
    * sure that the locks are lexicographically sorted.
    **/
   public int acquireReadWriteLocks() {
+
+    Utilities.PerfLogBegin(LOG, "acquireReadWriteLocks");
+
     try {
       int sleepTime = conf.getIntVar(HiveConf.ConfVars.HIVE_LOCK_SLEEP_BETWEEN_RETRIES) * 1000;
       int numRetries = conf.getIntVar(HiveConf.ConfVars.HIVE_LOCK_NUMRETRIES);
@@ -764,6 +775,8 @@ public class Driver implements CommandProcessor {
       console.printError(errorMessage, "\n"
           + org.apache.hadoop.util.StringUtils.stringifyException(e));
       return (10);
+    } finally {
+      Utilities.PerfLogEnd(LOG, "acquireReadWriteLocks");
     }
   }
 
@@ -787,10 +800,14 @@ public class Driver implements CommandProcessor {
    *          locks have already been released, ignore them
    **/
   private void releaseLocks(List<HiveLock> hiveLocks) {
+    Utilities.PerfLogBegin(LOG, "releaseLocks");
+
     if (hiveLocks != null) {
       ctx.getHiveLockMgr().releaseLocks(hiveLocks);
     }
     ctx.setHiveLocks(null);
+
+    Utilities.PerfLogEnd(LOG, "releaseLocks");
   }
 
   public CommandProcessorResponse run(String command) {
@@ -798,6 +815,7 @@ public class Driver implements CommandProcessor {
     SQLState = null;
 
     int ret = compile(command);
+
     if (ret != 0) {
       releaseLocks(ctx.getHiveLocks());
       return new CommandProcessorResponse(ret, errorMessage, SQLState);
@@ -893,6 +911,8 @@ public class Driver implements CommandProcessor {
   }
 
   public int execute() {
+    Utilities.PerfLogBegin(LOG, "Driver.execute");
+
     boolean noName = StringUtils.isEmpty(conf.getVar(HiveConf.ConfVars.HADOOPJOBNAME));
     int maxlen = conf.getIntVar(HiveConf.ConfVars.HIVEJOBNAMELENGTH);
 
@@ -919,10 +939,18 @@ public class Driver implements CommandProcessor {
 
       for (Hook peh : getPreExecHooks()) {
         if (peh instanceof ExecuteWithHookContext) {
+          Utilities.PerfLogBegin(LOG, "PreHook." + peh.getClass().getSimpleName());
+
           ((ExecuteWithHookContext) peh).run(hookContext);
+
+          Utilities.PerfLogEnd(LOG, "PreHook." + peh.getClass().getSimpleName());
         } else if (peh instanceof PreExecute) {
+          Utilities.PerfLogBegin(LOG, "PreHook." + peh.getClass().getSimpleName());
+
           ((PreExecute) peh).run(SessionState.get(), plan.getInputs(), plan.getOutputs(),
               ShimLoader.getHadoopShims().getUGIForConf(conf));
+
+          Utilities.PerfLogEnd(LOG, "PreHook." + peh.getClass().getSimpleName());
         }
       }
 
@@ -1039,11 +1067,19 @@ public class Driver implements CommandProcessor {
       // Get all the post execution hooks and execute them.
       for (Hook peh : getPostExecHooks()) {
         if (peh instanceof ExecuteWithHookContext) {
+          Utilities.PerfLogBegin(LOG, "PostHook." + peh.getClass().getSimpleName());
+
           ((ExecuteWithHookContext) peh).run(hookContext);
+
+          Utilities.PerfLogEnd(LOG, "PostHook." + peh.getClass().getSimpleName());
         } else if (peh instanceof PostExecute) {
+          Utilities.PerfLogBegin(LOG, "PostHook." + peh.getClass().getSimpleName());
+
           ((PostExecute) peh).run(SessionState.get(), plan.getInputs(), plan.getOutputs(),
               (SessionState.get() != null ? SessionState.get().getLineageState().getLineageInfo()
                   : null), ShimLoader.getHadoopShims().getUGIForConf(conf));
+
+          Utilities.PerfLogEnd(LOG, "PostHook." + peh.getClass().getSimpleName());
         }
       }
 
@@ -1071,6 +1107,7 @@ public class Driver implements CommandProcessor {
       if (noName) {
         conf.setVar(HiveConf.ConfVars.HADOOPJOBNAME, "");
       }
+      Utilities.PerfLogEnd(LOG, "Driver.execute");
     }
     plan.setDone();
 
