@@ -50,12 +50,14 @@ public class TestHiveServer extends TestCase {
   private final HiveConf conf;
   private boolean standAloneServer = false;
   private TTransport transport;
+  private final String invalidPath;
 
   public TestHiveServer(String name) {
     super(name);
     conf = new HiveConf(TestHiveServer.class);
     String dataFileDir = conf.get("test.data.files").replace('\\', '/')
         .replace("c:", "");
+    invalidPath = dataFileDir+"/invalidpath/";
     dataFilePath = new Path(dataFileDir, "kv1.txt");
     // See data/conf/hive-site.xml
     String paramStr = System.getProperty("test.service.standalone.server");
@@ -345,6 +347,42 @@ public class TestHiveServer extends TestCase {
     ds = new DynamicSerDe();
     ds.initialize(new Configuration(), dsp);
     o = ds.deserialize(new BytesWritable(row.getBytes()));
+  }
+
+  public void testAddJarShouldFailIfJarNotExist() throws Exception {
+    boolean queryExecutionFailed = false;
+    try {
+      client.execute("add jar " + invalidPath + "sample.jar");
+    } catch (Exception e) {
+      queryExecutionFailed = true;
+    }
+    if (!queryExecutionFailed) {
+      fail("It should throw exception since jar does not exist");
+    }
+  }
+
+  public void testAddFileShouldFailIfFileNotExist() throws Exception {
+    boolean queryExecutionFailed = false;
+    try {
+      client.execute("add file " + invalidPath + "sample.txt");
+    } catch (Exception e) {
+      queryExecutionFailed = true;
+    }
+    if (!queryExecutionFailed) {
+      fail("It should throw exception since file does not exist");
+    }
+  }
+
+  public void testAddArchiveShouldFailIfFileNotExist() throws Exception {
+    boolean queryExecutionFailed = false;
+    try {
+      client.execute("add archive " + invalidPath + "sample.zip");
+    } catch (Exception e) {
+      queryExecutionFailed = true;
+    }
+    if (!queryExecutionFailed) {
+      fail("It should trow exception since archive does not exist");
+    }
   }
 
 }

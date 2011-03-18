@@ -512,9 +512,9 @@ public class SessionState {
   private final HashMap<ResourceType, HashSet<String>> resource_map =
     new HashMap<ResourceType, HashSet<String>>();
 
-  public void add_resource(ResourceType t, String value) {
+  public String add_resource(ResourceType t, String value) {
     // By default don't convert to unix
-    add_resource(t, value, false);
+    return add_resource(t, value, false);
   }
 
   public String add_resource(ResourceType t, String value, boolean convertToUnix) {
