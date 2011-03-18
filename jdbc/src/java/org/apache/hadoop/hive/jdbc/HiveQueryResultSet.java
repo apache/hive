@@ -21,6 +21,7 @@ package org.apache.hadoop.hive.jdbc;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Properties;
 
@@ -54,6 +55,10 @@ public class HiveQueryResultSet extends HiveBaseResultSet {
 
   private int maxRows = 0;
   private int rowsFetched = 0;
+  private int fetchSize = 50;
+
+  private List<String> fetchedRows;
+  private Iterator<String> fetchedRowsItr;
 
   public HiveQueryResultSet(HiveInterface client, int maxRows) throws SQLException {
     this.client = client;
@@ -96,18 +101,18 @@ public class HiveQueryResultSet extends HiveBaseResultSet {
       serde = new LazySimpleSerDe();
       Properties props = new Properties();
       if (names.length() > 0) {
-        LOG.info("Column names: " + names);
+        LOG.debug("Column names: " + names);
         props.setProperty(Constants.LIST_COLUMNS, names);
       }
       if (types.length() > 0) {
-        LOG.info("Column types: " + types);
+        LOG.debug("Column types: " + types);
         props.setProperty(Constants.LIST_COLUMN_TYPES, types);
       }
       serde.initialize(new Configuration(), props);
 
     } catch (Exception ex) {
       ex.printStackTrace();
-      throw new SQLException("Could not create ResultSet: " + ex.getMessage());
+      throw new SQLException("Could not create ResultSet: " + ex.getMessage(), ex);
     }
   }
 
@@ -128,9 +133,19 @@ public class HiveQueryResultSet extends HiveBaseResultSet {
       return false;
     }
 
-    String rowStr = "";
     try {
-      rowStr = (String) client.fetchOne();
+      if (fetchedRows == null || !fetchedRowsItr.hasNext()) {
+        fetchedRows = client.fetchN(fetchSize);
+        fetchedRowsItr = fetchedRows.iterator();
+      }
+
+      String rowStr = "";
+      if (fetchedRowsItr.hasNext()) {
+        rowStr = fetchedRowsItr.next();
+      } else {
+        return false;
+      }
+
       rowsFetched++;
       if (LOG.isDebugEnabled()) {
         LOG.debug("Fetched row string: " + rowStr);
@@ -163,6 +178,16 @@ public class HiveQueryResultSet extends HiveBaseResultSet {
     }
     // NOTE: fetchOne dosn't throw new SQLException("Method not supported").
     return true;
+  }
+
+  @Override
+  public void setFetchSize(int rows) throws SQLException {
+    fetchSize = rows;
+  }
+
+  @Override
+  public int getFetchSize() throws SQLException {
+    return fetchSize;
   }
 
   /**

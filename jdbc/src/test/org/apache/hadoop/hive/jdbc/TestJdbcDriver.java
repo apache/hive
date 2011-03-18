@@ -192,19 +192,23 @@ public class TestJdbcDriver extends TestCase {
   }
 
   public final void testSelectAll() throws Exception {
-    doTestSelectAll(tableName, -1); // tests not setting maxRows (return all)
-    doTestSelectAll(tableName, 0); // tests setting maxRows to 0 (return all)
+    doTestSelectAll(tableName, -1, -1); // tests not setting maxRows (return all)
+    doTestSelectAll(tableName, 0, -1); // tests setting maxRows to 0 (return all)
   }
 
   public final void testSelectAllPartioned() throws Exception {
-    doTestSelectAll(partitionedTableName, -1); // tests not setting maxRows
+    doTestSelectAll(partitionedTableName, -1, -1); // tests not setting maxRows
     // (return all)
-    doTestSelectAll(partitionedTableName, 0); // tests setting maxRows to 0
+    doTestSelectAll(partitionedTableName, 0, -1); // tests setting maxRows to 0
     // (return all)
   }
 
   public final void testSelectAllMaxRows() throws Exception {
-    doTestSelectAll(tableName, 100);
+    doTestSelectAll(tableName, 100, -1);
+  }
+
+  public final void testSelectAllFetchSize() throws Exception {
+    doTestSelectAll(tableName, 100, 20);
   }
 
   public void testDataTypes() throws Exception {
@@ -267,10 +271,14 @@ public class TestJdbcDriver extends TestCase {
     assertFalse(res.next());
   }
 
-  private void doTestSelectAll(String tableName, int maxRows) throws Exception {
+  private void doTestSelectAll(String tableName, int maxRows, int fetchSize) throws Exception {
     Statement stmt = con.createStatement();
     if (maxRows >= 0) {
       stmt.setMaxRows(maxRows);
+    }
+    if (fetchSize > 0) {
+      stmt.setFetchSize(fetchSize);
+      assertEquals(fetchSize, stmt.getFetchSize());
     }
 
     // JDBC says that 0 means return all, which is the default
