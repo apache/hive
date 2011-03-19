@@ -347,8 +347,8 @@ import org.apache.thrift.transport.TTransportFactory;
        // Login from the keytab
        String kerberosName;
        try {
-         kerberosName = SecurityUtil.getServerPrincipal(
-           principalConf, null);
+         kerberosName =
+           SecurityUtil.getServerPrincipal(principalConf, "0.0.0.0");
          UserGroupInformation.loginUserFromKeytab(
              kerberosName, keytabFile);
          realUgi = UserGroupInformation.getLoginUser();
