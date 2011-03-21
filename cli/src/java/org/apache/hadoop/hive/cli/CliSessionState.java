@@ -103,9 +103,10 @@ public class CliSessionState extends SessionState {
 
   public void close() {
     try {
-      client.clean();
-      client.shutdown();
-      transport.close();
+      if (remoteMode) {
+        client.clean();
+        transport.close();
+      }
     } catch (TException e) {
       e.printStackTrace();
     }

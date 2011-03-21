@@ -95,6 +95,7 @@ public class CliDriver {
       // if we have come this far - either the previous commands
       // are all successful or this is command line. in either case
       // this counts as a successful run
+      ss.close();
       System.exit(0);
 
     } else if (tokens[0].equalsIgnoreCase("source")) {
