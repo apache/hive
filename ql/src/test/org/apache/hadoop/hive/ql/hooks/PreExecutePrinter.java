@@ -23,6 +23,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 
+import org.apache.hadoop.hive.ql.hooks.HookContext.HookType;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.ql.session.SessionState.LogHelper;
 import org.apache.hadoop.security.UserGroupInformation;
@@ -35,6 +36,7 @@ public class PreExecutePrinter implements ExecuteWithHookContext {
 
   @Override
   public void run(HookContext hookContext) throws Exception {
+    assert(hookContext.getHookType() == HookType.PRE_EXEC_HOOK);
     SessionState ss = SessionState.get();
     Set<ReadEntity> inputs = hookContext.getInputs();
     Set<WriteEntity> outputs = hookContext.getOutputs();

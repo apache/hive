@@ -67,8 +67,8 @@ import org.apache.hadoop.hive.ql.lockmgr.HiveLockManagerCtx;
 import org.apache.hadoop.hive.ql.lockmgr.HiveLockMode;
 import org.apache.hadoop.hive.ql.lockmgr.HiveLockObj;
 import org.apache.hadoop.hive.ql.lockmgr.HiveLockObject;
-import org.apache.hadoop.hive.ql.lockmgr.HiveLockObject.HiveLockObjectData;
 import org.apache.hadoop.hive.ql.lockmgr.LockException;
+import org.apache.hadoop.hive.ql.lockmgr.HiveLockObject.HiveLockObjectData;
 import org.apache.hadoop.hive.ql.metadata.AuthorizationException;
 import org.apache.hadoop.hive.ql.metadata.DummyPartition;
 import org.apache.hadoop.hive.ql.metadata.Hive;
@@ -478,7 +478,7 @@ public class Driver implements CommandProcessor {
 
       Map<Table, List<String>> tab2Cols = new HashMap<Table, List<String>>();
       Map<Partition, List<String>> part2Cols = new HashMap<Partition, List<String>>();
-      
+
       Map<String, Boolean> tableUsePartLevelAuth = new HashMap<String, Boolean>();
       for (ReadEntity read : inputs) {
         if (read.getPartition() != null) {
@@ -551,8 +551,8 @@ public class Driver implements CommandProcessor {
           }
         }
       }
-      
-      
+
+
       //cache the results for table authorization
       Set<String> tableAuthChecked = new HashSet<String>();
       for (ReadEntity read : inputs) {
@@ -575,7 +575,7 @@ public class Driver implements CommandProcessor {
         } else if (read.getTable() != null) {
           tbl = read.getTable();
         }
-        
+
         // if we reach here, it means it needs to do a table authorization
         // check, and the table authorization may already happened because of other
         // partitions
@@ -591,7 +591,7 @@ public class Driver implements CommandProcessor {
           tableAuthChecked.add(tbl.getTableName());
         }
       }
-      
+
     }
   }
 
@@ -738,7 +738,7 @@ public class Driver implements CommandProcessor {
 
       ctx.setHiveLockMgr(hiveLockMgr);
       List<HiveLock> hiveLocks = null;
-      
+
       int tryNum = 1;
       do {
 
@@ -755,7 +755,7 @@ public class Driver implements CommandProcessor {
         } catch (InterruptedException e) {
         }
       } while (tryNum < numRetries);
-      
+
       if (hiveLocks == null) {
         throw new SemanticException(ErrorMsg.LOCK_CANNOT_BE_ACQUIRED.getMsg());
       } else {
@@ -935,7 +935,8 @@ public class Driver implements CommandProcessor {
       }
       resStream = null;
 
-      HookContext hookContext = new HookContext(plan, conf);
+      HookContext hookContext = new HookContext(plan, conf, ctx.getPathToCS());
+      hookContext.setHookType(HookContext.HookType.PRE_EXEC_HOOK);
 
       for (Hook peh : getPreExecHooks()) {
         if (peh instanceof ExecuteWithHookContext) {
@@ -1064,6 +1065,7 @@ public class Driver implements CommandProcessor {
         plan.getOutputs().remove(output);
       }
 
+      hookContext.setHookType(HookContext.HookType.POST_EXEC_HOOK);
       // Get all the post execution hooks and execute them.
       for (Hook peh : getPostExecHooks()) {
         if (peh instanceof ExecuteWithHookContext) {

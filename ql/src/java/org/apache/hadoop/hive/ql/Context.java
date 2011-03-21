@@ -35,16 +35,16 @@ import java.util.concurrent.ConcurrentHashMap;
 import org.antlr.runtime.TokenRewriteStream;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.fs.ContentSummary;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
-import org.apache.hadoop.fs.ContentSummary;
 import org.apache.hadoop.hive.common.FileUtils;
 import org.apache.hadoop.hive.conf.HiveConf;
-import org.apache.hadoop.util.StringUtils;
 import org.apache.hadoop.hive.ql.lockmgr.HiveLock;
 import org.apache.hadoop.hive.ql.lockmgr.HiveLockManager;
-import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.util.StringUtils;
 
 /**
  * Context for Semantic Analyzers. Usage: not reusable - construct a new one for
@@ -59,7 +59,7 @@ public class Context {
   private int resDirFilesNum;
   boolean initialized;
   String originalTracker = null;
-  private Map<String, ContentSummary> pathToCS = new ConcurrentHashMap<String, ContentSummary>();
+  private final Map<String, ContentSummary> pathToCS = new ConcurrentHashMap<String, ContentSummary>();
 
   // scratch path to use for all non-local (ie. hdfs) file system tmp folders
   private final Path nonLocalScratchPath;
@@ -70,7 +70,7 @@ public class Context {
   // Keeps track of scratch directories created for different scheme/authority
   private final Map<String, String> fsScratchDirs = new HashMap<String, String>();
 
-  private Configuration conf;
+  private final Configuration conf;
   protected int pathid = 10000;
   protected boolean explain = false;
   private TokenRewriteStream tokenRewriteStream;
@@ -144,9 +144,10 @@ public class Context {
         try {
           FileSystem fs = dirPath.getFileSystem(conf);
           dirPath = new Path(fs.makeQualified(dirPath).toString());
-          if (!fs.mkdirs(dirPath))
+          if (!fs.mkdirs(dirPath)) {
             throw new RuntimeException("Cannot make directory: "
                                        + dirPath.toString());
+          }
         } catch (IOException e) {
           throw new RuntimeException (e);
         }
@@ -181,8 +182,9 @@ public class Context {
 
     // if we are executing entirely on the client side - then
     // just (re)use the local scratch directory
-    if(isLocalOnlyExecutionMode())
+    if(isLocalOnlyExecutionMode()) {
       return getLocalScratchDir(!explain);
+    }
 
     try {
       Path dir = FileUtils.makeQualified(nonLocalScratchPath, conf);
@@ -263,10 +265,11 @@ public class Context {
     Path mrbase = new Path(getMRScratchDir());
 
     URI relURI = mrbase.toUri().relativize(o.toUri());
-    if (relURI.equals(o.toUri()))
+    if (relURI.equals(o.toUri())) {
       throw new RuntimeException
         ("Invalid URI: " + originalURI + ", cannot relativize against" +
          mrbase.toString());
+    }
 
     return getLocalScratchDir(!explain) + Path.SEPARATOR +
       relURI.getPath();
@@ -501,6 +504,10 @@ public class Context {
 
   public ContentSummary getCS(String path) {
     return pathToCS.get(path);
+  }
+
+  public Map<String, ContentSummary> getPathToCS() {
+    return pathToCS;
   }
 
   public Configuration getConf() {

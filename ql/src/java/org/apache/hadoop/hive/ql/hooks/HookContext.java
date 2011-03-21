@@ -21,8 +21,11 @@ package org.apache.hadoop.hive.ql.hooks;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 
+import org.apache.hadoop.fs.ContentSummary;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.QueryPlan;
 import org.apache.hadoop.hive.ql.exec.TaskRunner;
@@ -34,6 +37,11 @@ import org.apache.hadoop.security.UserGroupInformation;
  * New implemented hook can get the query plan, job conf and the list of all completed tasks from this hook context
  */
 public class HookContext {
+
+  static public enum HookType {
+    PRE_EXEC_HOOK, POST_EXEC_HOOK
+  }
+
   private QueryPlan queryPlan;
   private HiveConf conf;
   private List<TaskRunner> completeTaskList;
@@ -41,11 +49,18 @@ public class HookContext {
   private Set<WriteEntity> outputs;
   private LineageInfo linfo;
   private UserGroupInformation ugi;
-
+  private HookType hookType;
+  final private Map<String, ContentSummary> inputPathToContentSummary;
 
   public HookContext(QueryPlan queryPlan, HiveConf conf) throws Exception{
+    this(queryPlan, conf, new ConcurrentHashMap<String, ContentSummary>());
+  }
+
+  public HookContext(QueryPlan queryPlan, HiveConf conf,
+      Map<String, ContentSummary> inputPathToContentSummary) throws Exception {
     this.queryPlan = queryPlan;
     this.conf = conf;
+    this.inputPathToContentSummary = inputPathToContentSummary;
     completeTaskList = new ArrayList<TaskRunner>();
     inputs = queryPlan.getInputs();
     outputs = queryPlan.getOutputs();
@@ -116,5 +131,16 @@ public class HookContext {
     this.ugi = ugi;
   }
 
+  public Map<String, ContentSummary> getInputPathToContentSummary() {
+    return inputPathToContentSummary;
+  }
+
+  public HookType getHookType() {
+    return hookType;
+  }
+
+  public void setHookType(HookType hookType) {
+    this.hookType = hookType;
+  }
 
 }
