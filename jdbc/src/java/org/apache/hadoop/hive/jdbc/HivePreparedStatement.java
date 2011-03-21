@@ -159,7 +159,6 @@ public class HivePreparedStatement implements PreparedStatement {
     }
 
     try {
-      clearWarnings();
       resultSet = null;
       client.execute(sql);
     } catch (HiveServerException e) {
