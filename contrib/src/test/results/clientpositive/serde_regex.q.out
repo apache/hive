@@ -98,22 +98,24 @@ POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: default@serde_regex
 PREHOOK: query: LOAD DATA LOCAL INPATH "../data/files/apache.access.log" INTO TABLE serde_regex
 PREHOOK: type: LOAD
+PREHOOK: Output: default@serde_regex
 POSTHOOK: query: LOAD DATA LOCAL INPATH "../data/files/apache.access.log" INTO TABLE serde_regex
 POSTHOOK: type: LOAD
 POSTHOOK: Output: default@serde_regex
 PREHOOK: query: LOAD DATA LOCAL INPATH "../data/files/apache.access.2.log" INTO TABLE serde_regex
 PREHOOK: type: LOAD
+PREHOOK: Output: default@serde_regex
 POSTHOOK: query: LOAD DATA LOCAL INPATH "../data/files/apache.access.2.log" INTO TABLE serde_regex
 POSTHOOK: type: LOAD
 POSTHOOK: Output: default@serde_regex
 PREHOOK: query: SELECT * FROM serde_regex ORDER BY time
 PREHOOK: type: QUERY
 PREHOOK: Input: default@serde_regex
-PREHOOK: Output: file:/tmp/sdong/hive_2011-02-16_20-09-53_522_5630388816344060781/-mr-10000
+PREHOOK: Output: file:/var/folders/67/67R3POPtF90VG63KSmCbcU++F0U/-Tmp-/krishnak/hive_2011-03-20_20-47-18_233_4390647269234114824/-mr-10000
 POSTHOOK: query: SELECT * FROM serde_regex ORDER BY time
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@serde_regex
-POSTHOOK: Output: file:/tmp/sdong/hive_2011-02-16_20-09-53_522_5630388816344060781/-mr-10000
+POSTHOOK: Output: file:/var/folders/67/67R3POPtF90VG63KSmCbcU++F0U/-Tmp-/krishnak/hive_2011-03-20_20-47-18_233_4390647269234114824/-mr-10000
 127.0.0.1	-	frank	[10/Oct/2000:13:55:36 -0700]	"GET /apache_pb.gif HTTP/1.0"	200	2326	NULL	NULL
 127.0.0.1	-	-	[26/May/2009:00:00:00 +0000]	"GET /someurl/?track=Blabla(Main) HTTP/1.1"	200	5864	-	"Mozilla/5.0 (Windows; U; Windows NT 6.0; en-US) AppleWebKit/525.19 (KHTML, like Gecko) Chrome/1.0.154.65 Safari/525.19"
 PREHOOK: query: DROP TABLE serde_regex

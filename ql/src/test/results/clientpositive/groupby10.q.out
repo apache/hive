@@ -15,6 +15,7 @@ POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: default@INPUT
 PREHOOK: query: LOAD DATA LOCAL INPATH '../data/files/kv5.txt' INTO TABLE INPUT
 PREHOOK: type: LOAD
+PREHOOK: Output: default@input
 POSTHOOK: query: LOAD DATA LOCAL INPATH '../data/files/kv5.txt' INTO TABLE INPUT
 POSTHOOK: type: LOAD
 POSTHOOK: Output: default@input
@@ -97,7 +98,7 @@ STAGE PLANS:
   Stage: Stage-3
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/tmp/sdong/hive_2011-02-10_01-48-37_938_8059876075925675779/-mr-10004 
+        file:/var/folders/67/67R3POPtF90VG63KSmCbcU++F0U/-Tmp-/krishnak/hive_2011-03-20_23-10-37_844_2784636939771236613/-mr-10004 
             Reduce Output Operator
               key expressions:
                     expr: _col0
@@ -166,7 +167,7 @@ STAGE PLANS:
   Stage: Stage-5
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/tmp/sdong/hive_2011-02-10_01-48-37_938_8059876075925675779/-mr-10005 
+        file:/var/folders/67/67R3POPtF90VG63KSmCbcU++F0U/-Tmp-/krishnak/hive_2011-03-20_23-10-37_844_2784636939771236613/-mr-10005 
             Reduce Output Operator
               key expressions:
                     expr: _col0
@@ -256,11 +257,11 @@ POSTHOOK: Lineage: dest2.val2 EXPRESSION [(input)input.FieldSchema(name:value, t
 PREHOOK: query: SELECT * from dest1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@dest1
-PREHOOK: Output: file:/tmp/sdong/hive_2011-02-10_01-48-50_240_8214998084538575911/-mr-10000
+PREHOOK: Output: file:/var/folders/67/67R3POPtF90VG63KSmCbcU++F0U/-Tmp-/krishnak/hive_2011-03-20_23-11-13_750_3405393267317215329/-mr-10000
 POSTHOOK: query: SELECT * from dest1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@dest1
-POSTHOOK: Output: file:/tmp/sdong/hive_2011-02-10_01-48-50_240_8214998084538575911/-mr-10000
+POSTHOOK: Output: file:/var/folders/67/67R3POPtF90VG63KSmCbcU++F0U/-Tmp-/krishnak/hive_2011-03-20_23-11-13_750_3405393267317215329/-mr-10000
 POSTHOOK: Lineage: dest1.key SIMPLE [(input)input.FieldSchema(name:key, type:int, comment:null), ]
 POSTHOOK: Lineage: dest1.val1 EXPRESSION [(input)input.FieldSchema(name:value, type:string, comment:null), ]
 POSTHOOK: Lineage: dest1.val2 EXPRESSION [(input)input.FieldSchema(name:value, type:string, comment:null), ]
@@ -290,11 +291,11 @@ POSTHOOK: Lineage: dest2.val2 EXPRESSION [(input)input.FieldSchema(name:value, t
 PREHOOK: query: SELECT * from dest2
 PREHOOK: type: QUERY
 PREHOOK: Input: default@dest2
-PREHOOK: Output: file:/tmp/sdong/hive_2011-02-10_01-48-50_510_3820874581577425988/-mr-10000
+PREHOOK: Output: file:/var/folders/67/67R3POPtF90VG63KSmCbcU++F0U/-Tmp-/krishnak/hive_2011-03-20_23-11-14_211_4036618129486956421/-mr-10000
 POSTHOOK: query: SELECT * from dest2
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@dest2
-POSTHOOK: Output: file:/tmp/sdong/hive_2011-02-10_01-48-50_510_3820874581577425988/-mr-10000
+POSTHOOK: Output: file:/var/folders/67/67R3POPtF90VG63KSmCbcU++F0U/-Tmp-/krishnak/hive_2011-03-20_23-11-14_211_4036618129486956421/-mr-10000
 POSTHOOK: Lineage: dest1.key SIMPLE [(input)input.FieldSchema(name:key, type:int, comment:null), ]
 POSTHOOK: Lineage: dest1.val1 EXPRESSION [(input)input.FieldSchema(name:value, type:string, comment:null), ]
 POSTHOOK: Lineage: dest1.val2 EXPRESSION [(input)input.FieldSchema(name:value, type:string, comment:null), ]

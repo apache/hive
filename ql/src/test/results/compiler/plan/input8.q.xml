@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?> 
-<java version="1.6.0_07" class="java.beans.XMLDecoder"> 
+<java version="1.6.0_23" class="java.beans.XMLDecoder"> 
  <object class="org.apache.hadoop.hive.ql.exec.MapRedTask"> 
   <void property="id"> 
    <string>Stage-3</string> 
@@ -62,11 +62,11 @@
          </void> 
          <void method="put"> 
           <string>location</string> 
-          <string>pfile:/data/users/sdong/www/open-source-hive3/build/ql/test/data/warehouse/src1</string> 
+          <string>pfile:/home/krishnak/hive-howl/hive-git-apache/build/ql/test/data/warehouse/src1</string> 
          </void> 
          <void method="put"> 
           <string>transient_lastDdlTime</string> 
-          <string>1297928380</string> 
+          <string>1300721837</string> 
          </void> 
         </object> 
        </void> 
@@ -124,11 +124,11 @@
            </void> 
            <void method="put"> 
             <string>location</string> 
-            <string>pfile:/data/users/sdong/www/open-source-hive3/build/ql/test/data/warehouse/src1</string> 
+            <string>pfile:/home/krishnak/hive-howl/hive-git-apache/build/ql/test/data/warehouse/src1</string> 
            </void> 
            <void method="put"> 
             <string>transient_lastDdlTime</string> 
-            <string>1297928380</string> 
+            <string>1300721837</string> 
            </void> 
           </object> 
          </void> 
@@ -156,13 +156,13 @@
                 <void property="conf"> 
                  <object class="org.apache.hadoop.hive.ql.plan.FileSinkDesc"> 
                   <void property="dirName"> 
-                   <string>file:/tmp/sdong/hive_2011-02-16_23-39-42_801_4226585292135876536/-ext-10001</string> 
+                   <string>file:/tmp/krishnak/hive_2011-03-21_08-37-18_078_5798819181320710589/-ext-10001</string> 
                   </void> 
                   <void property="numFiles"> 
                    <int>1</int> 
                   </void> 
                   <void property="statsAggPrefix"> 
-                   <string>file:/tmp/sdong/hive_2011-02-16_23-39-42_801_4226585292135876536/-ext-10001/</string> 
+                   <string>file:/tmp/krishnak/hive_2011-03-21_08-37-18_078_5798819181320710589/-ext-10001/</string> 
                   </void> 
                   <void property="tableInfo"> 
                    <object class="org.apache.hadoop.hive.ql.plan.TableDesc"> 
@@ -201,21 +201,21 @@
                 <void property="counterNames"> 
                  <object class="java.util.ArrayList"> 
                   <void method="add"> 
-                   <string>CNTR_NAME_FS_2_NUM_INPUT_ROWS</string> 
+                   <string>CNTR_NAME_FS_268_NUM_INPUT_ROWS</string> 
                   </void> 
                   <void method="add"> 
-                   <string>CNTR_NAME_FS_2_NUM_OUTPUT_ROWS</string> 
+                   <string>CNTR_NAME_FS_268_NUM_OUTPUT_ROWS</string> 
                   </void> 
                   <void method="add"> 
-                   <string>CNTR_NAME_FS_2_TIME_TAKEN</string> 
+                   <string>CNTR_NAME_FS_268_TIME_TAKEN</string> 
                   </void> 
                   <void method="add"> 
-                   <string>CNTR_NAME_FS_2_FATAL_ERROR</string> 
+                   <string>CNTR_NAME_FS_268_FATAL_ERROR</string> 
                   </void> 
                  </object> 
                 </void> 
                 <void property="operatorId"> 
-                 <string>FS_2</string> 
+                 <string>FS_268</string> 
                 </void> 
                 <void property="parentOperators"> 
                  <object class="java.util.ArrayList"> 
@@ -438,21 +438,21 @@
             <void property="counterNames"> 
              <object class="java.util.ArrayList"> 
               <void method="add"> 
-               <string>CNTR_NAME_SEL_1_NUM_INPUT_ROWS</string> 
+               <string>CNTR_NAME_SEL_267_NUM_INPUT_ROWS</string> 
               </void> 
               <void method="add"> 
-               <string>CNTR_NAME_SEL_1_NUM_OUTPUT_ROWS</string> 
+               <string>CNTR_NAME_SEL_267_NUM_OUTPUT_ROWS</string> 
               </void> 
               <void method="add"> 
-               <string>CNTR_NAME_SEL_1_TIME_TAKEN</string> 
+               <string>CNTR_NAME_SEL_267_TIME_TAKEN</string> 
               </void> 
               <void method="add"> 
-               <string>CNTR_NAME_SEL_1_FATAL_ERROR</string> 
+               <string>CNTR_NAME_SEL_267_FATAL_ERROR</string> 
               </void> 
              </object> 
             </void> 
             <void property="operatorId"> 
-             <string>SEL_1</string> 
+             <string>SEL_267</string> 
             </void> 
             <void property="parentOperators"> 
              <object class="java.util.ArrayList"> 
@@ -525,16 +525,16 @@
         <void property="counterNames"> 
          <object class="java.util.ArrayList"> 
           <void method="add"> 
-           <string>CNTR_NAME_TS_0_NUM_INPUT_ROWS</string> 
+           <string>CNTR_NAME_TS_266_NUM_INPUT_ROWS</string> 
           </void> 
           <void method="add"> 
-           <string>CNTR_NAME_TS_0_NUM_OUTPUT_ROWS</string> 
+           <string>CNTR_NAME_TS_266_NUM_OUTPUT_ROWS</string> 
           </void> 
           <void method="add"> 
-           <string>CNTR_NAME_TS_0_TIME_TAKEN</string> 
+           <string>CNTR_NAME_TS_266_TIME_TAKEN</string> 
           </void> 
           <void method="add"> 
-           <string>CNTR_NAME_TS_0_FATAL_ERROR</string> 
+           <string>CNTR_NAME_TS_266_FATAL_ERROR</string> 
           </void> 
          </object> 
         </void> 
@@ -546,7 +546,7 @@
          </object> 
         </void> 
         <void property="operatorId"> 
-         <string>TS_0</string> 
+         <string>TS_266</string> 
         </void> 
         <void property="schema"> 
          <object class="org.apache.hadoop.hive.ql.exec.RowSchema"> 
@@ -625,7 +625,7 @@
     <void property="pathToAliases"> 
      <object class="java.util.LinkedHashMap"> 
       <void method="put"> 
-       <string>pfile:/data/users/sdong/www/open-source-hive3/build/ql/test/data/warehouse/src1</string> 
+       <string>pfile:/home/krishnak/hive-howl/hive-git-apache/build/ql/test/data/warehouse/src1</string> 
        <object class="java.util.ArrayList"> 
         <void method="add"> 
          <string>src1</string> 
@@ -637,7 +637,7 @@
     <void property="pathToPartitionInfo"> 
      <object class="java.util.LinkedHashMap"> 
       <void method="put"> 
-       <string>pfile:/data/users/sdong/www/open-source-hive3/build/ql/test/data/warehouse/src1</string> 
+       <string>pfile:/home/krishnak/hive-howl/hive-git-apache/build/ql/test/data/warehouse/src1</string> 
        <object class="org.apache.hadoop.hive.ql.plan.PartitionDesc"> 
         <void property="baseFileName"> 
          <string>src1</string> 
@@ -694,11 +694,11 @@
           </void> 
           <void method="put"> 
            <string>location</string> 
-           <string>pfile:/data/users/sdong/www/open-source-hive3/build/ql/test/data/warehouse/src1</string> 
+           <string>pfile:/home/krishnak/hive-howl/hive-git-apache/build/ql/test/data/warehouse/src1</string> 
           </void> 
           <void method="put"> 
            <string>transient_lastDdlTime</string> 
-           <string>1297928380</string> 
+           <string>1300721837</string> 
           </void> 
          </object> 
         </void> 
@@ -756,11 +756,11 @@
             </void> 
             <void method="put"> 
              <string>location</string> 
-             <string>pfile:/data/users/sdong/www/open-source-hive3/build/ql/test/data/warehouse/src1</string> 
+             <string>pfile:/home/krishnak/hive-howl/hive-git-apache/build/ql/test/data/warehouse/src1</string> 
             </void> 
             <void method="put"> 
              <string>transient_lastDdlTime</string> 
-             <string>1297928380</string> 
+             <string>1300721837</string> 
             </void> 
            </object> 
           </void> 

@@ -1,0 +1,6 @@
+PREHOOK: query: create table hive_test_src ( col1 string ) stored as textfile
+PREHOOK: type: CREATETABLE
+POSTHOOK: query: create table hive_test_src ( col1 string ) stored as textfile
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: default@hive_test_src
+Authorization failed:No privilege 'Update' found for outputs { database:default, table:hive_test_src}. Use show grant to get more details.

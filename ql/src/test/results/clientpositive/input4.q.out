@@ -19,8 +19,8 @@ STAGE DEPENDENCIES:
 STAGE PLANS:
   Stage: Stage-0
     Copy
-      source: file:/data/users/sdong/www/open-source-hive1/data/files/kv1.txt
-      destination: pfile:/data/users/sdong/www/open-source-hive1/build/ql/scratchdir/hive_2011-02-10_15-56-38_706_4510952181406829379/-ext-10000
+      source: file:/Users/krishnak/Projects/hdp/sources/hive-git-apache/data/files/kv1.txt
+      destination: pfile:/Users/krishnak/Projects/hdp/sources/hive-git-apache/build/ql/scratchdir/hive_2011-03-20_23-49-16_008_2588436210508896099/-ext-10000
 
   Stage: Stage-1
     Move Operator
@@ -35,17 +35,18 @@ STAGE PLANS:
 
 PREHOOK: query: LOAD DATA LOCAL INPATH '../data/files/kv1.txt' INTO TABLE INPUT4
 PREHOOK: type: LOAD
+PREHOOK: Output: default@input4
 POSTHOOK: query: LOAD DATA LOCAL INPATH '../data/files/kv1.txt' INTO TABLE INPUT4
 POSTHOOK: type: LOAD
 POSTHOOK: Output: default@input4
 PREHOOK: query: SELECT INPUT4.VALUE, INPUT4.KEY FROM INPUT4
 PREHOOK: type: QUERY
 PREHOOK: Input: default@input4
-PREHOOK: Output: file:/tmp/sdong/hive_2011-02-10_15-56-39_396_4819837394975176065/-mr-10000
+PREHOOK: Output: file:/var/folders/67/67R3POPtF90VG63KSmCbcU++F0U/-Tmp-/krishnak/hive_2011-03-20_23-49-17_477_5960644229997823855/-mr-10000
 POSTHOOK: query: SELECT INPUT4.VALUE, INPUT4.KEY FROM INPUT4
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@input4
-POSTHOOK: Output: file:/tmp/sdong/hive_2011-02-10_15-56-39_396_4819837394975176065/-mr-10000
+POSTHOOK: Output: file:/var/folders/67/67R3POPtF90VG63KSmCbcU++F0U/-Tmp-/krishnak/hive_2011-03-20_23-49-17_477_5960644229997823855/-mr-10000
 val_238	238
 val_86	86
 val_311	311

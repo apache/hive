@@ -5,6 +5,7 @@ POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: default@T1
 PREHOOK: query: LOAD DATA LOCAL INPATH '../data/files/kv1.txt' INTO TABLE T1
 PREHOOK: type: LOAD
+PREHOOK: Output: default@t1
 POSTHOOK: query: LOAD DATA LOCAL INPATH '../data/files/kv1.txt' INTO TABLE T1
 POSTHOOK: type: LOAD
 POSTHOOK: Output: default@t1
@@ -156,7 +157,7 @@ STAGE PLANS:
   Stage: Stage-3
     Map Reduce
       Alias -> Map Operator Tree:
-        hdfs://localhost.localdomain:38821/data/users/sdong/www/open-source-hive3/build/ql/scratchdir/hive_2011-02-16_23-11-25_094_4321921681840377407/-mr-10003 
+        hdfs://localhost.localdomain:48956/home/krishnak/hive-howl/hive-git-apache/build/ql/scratchdir/hive_2011-03-21_05-51-27_066_7206620542416882466/-mr-10003 
             Reduce Output Operator
               sort order: 
               tag: -1
@@ -267,11 +268,11 @@ STAGE PLANS:
 PREHOOK: query: SELECT COUNT(1) FROM T2
 PREHOOK: type: QUERY
 PREHOOK: Input: default@t2
-PREHOOK: Output: hdfs://localhost.localdomain:38821/data/users/sdong/www/open-source-hive3/build/ql/scratchdir/hive_2011-02-16_23-13-39_139_7485731441142242061/-mr-10000
+PREHOOK: Output: hdfs://localhost.localdomain:48956/home/krishnak/hive-howl/hive-git-apache/build/ql/scratchdir/hive_2011-03-21_05-53-59_669_30214837486178245/-mr-10000
 POSTHOOK: query: SELECT COUNT(1) FROM T2
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@t2
-POSTHOOK: Output: hdfs://localhost.localdomain:38821/data/users/sdong/www/open-source-hive3/build/ql/scratchdir/hive_2011-02-16_23-13-39_139_7485731441142242061/-mr-10000
+POSTHOOK: Output: hdfs://localhost.localdomain:48956/home/krishnak/hive-howl/hive-git-apache/build/ql/scratchdir/hive_2011-03-21_05-53-59_669_30214837486178245/-mr-10000
 POSTHOOK: Lineage: t2.name SIMPLE [(t1)t1.FieldSchema(name:name, type:string, comment:null), ]
 5000000
 PREHOOK: query: CREATE TABLE T3(name STRING) STORED AS TEXTFILE
@@ -282,12 +283,14 @@ POSTHOOK: Output: default@T3
 POSTHOOK: Lineage: t2.name SIMPLE [(t1)t1.FieldSchema(name:name, type:string, comment:null), ]
 PREHOOK: query: LOAD DATA LOCAL INPATH '../data/files/kv1.txt' INTO TABLE T3
 PREHOOK: type: LOAD
+PREHOOK: Output: default@t3
 POSTHOOK: query: LOAD DATA LOCAL INPATH '../data/files/kv1.txt' INTO TABLE T3
 POSTHOOK: type: LOAD
 POSTHOOK: Output: default@t3
 POSTHOOK: Lineage: t2.name SIMPLE [(t1)t1.FieldSchema(name:name, type:string, comment:null), ]
 PREHOOK: query: LOAD DATA LOCAL INPATH '../data/files/kv2.txt' INTO TABLE T3
 PREHOOK: type: LOAD
+PREHOOK: Output: default@t3
 POSTHOOK: query: LOAD DATA LOCAL INPATH '../data/files/kv2.txt' INTO TABLE T3
 POSTHOOK: type: LOAD
 POSTHOOK: Output: default@t3
@@ -351,10 +354,10 @@ STAGE PLANS:
 PREHOOK: query: SELECT COUNT(1) FROM T3
 PREHOOK: type: QUERY
 PREHOOK: Input: default@t3
-PREHOOK: Output: hdfs://localhost.localdomain:38821/data/users/sdong/www/open-source-hive3/build/ql/scratchdir/hive_2011-02-16_23-14-20_069_6368911954239576439/-mr-10000
+PREHOOK: Output: hdfs://localhost.localdomain:48956/home/krishnak/hive-howl/hive-git-apache/build/ql/scratchdir/hive_2011-03-21_05-54-45_062_3900492877877354624/-mr-10000
 POSTHOOK: query: SELECT COUNT(1) FROM T3
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@t3
-POSTHOOK: Output: hdfs://localhost.localdomain:38821/data/users/sdong/www/open-source-hive3/build/ql/scratchdir/hive_2011-02-16_23-14-20_069_6368911954239576439/-mr-10000
+POSTHOOK: Output: hdfs://localhost.localdomain:48956/home/krishnak/hive-howl/hive-git-apache/build/ql/scratchdir/hive_2011-03-21_05-54-45_062_3900492877877354624/-mr-10000
 POSTHOOK: Lineage: t2.name SIMPLE [(t1)t1.FieldSchema(name:name, type:string, comment:null), ]
 1000

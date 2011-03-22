@@ -20,21 +20,25 @@ POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: default@T4
 PREHOOK: query: LOAD DATA LOCAL INPATH '../data/files/T1.txt' INTO TABLE T1
 PREHOOK: type: LOAD
+PREHOOK: Output: default@t1
 POSTHOOK: query: LOAD DATA LOCAL INPATH '../data/files/T1.txt' INTO TABLE T1
 POSTHOOK: type: LOAD
 POSTHOOK: Output: default@t1
 PREHOOK: query: LOAD DATA LOCAL INPATH '../data/files/T2.txt' INTO TABLE T2
 PREHOOK: type: LOAD
+PREHOOK: Output: default@t2
 POSTHOOK: query: LOAD DATA LOCAL INPATH '../data/files/T2.txt' INTO TABLE T2
 POSTHOOK: type: LOAD
 POSTHOOK: Output: default@t2
 PREHOOK: query: LOAD DATA LOCAL INPATH '../data/files/T3.txt' INTO TABLE T3
 PREHOOK: type: LOAD
+PREHOOK: Output: default@t3
 POSTHOOK: query: LOAD DATA LOCAL INPATH '../data/files/T3.txt' INTO TABLE T3
 POSTHOOK: type: LOAD
 POSTHOOK: Output: default@t3
 PREHOOK: query: LOAD DATA LOCAL INPATH '../data/files/T1.txt' INTO TABLE T4
 PREHOOK: type: LOAD
+PREHOOK: Output: default@t4
 POSTHOOK: query: LOAD DATA LOCAL INPATH '../data/files/T1.txt' INTO TABLE T4
 POSTHOOK: type: LOAD
 POSTHOOK: Output: default@t4
@@ -182,7 +186,7 @@ PREHOOK: Input: default@t1
 PREHOOK: Input: default@t2
 PREHOOK: Input: default@t3
 PREHOOK: Input: default@t4
-PREHOOK: Output: file:/tmp/sdong/hive_2011-02-10_16-28-36_769_7718434008849418627/-mr-10000
+PREHOOK: Output: file:/tmp/krishnak/hive_2011-03-21_03-58-11_159_4555059335132203811/-mr-10000
 POSTHOOK: query: SELECT /*+ STREAMTABLE(a,c) */ *
 FROM T1 a JOIN T2 b ON a.key = b.key
           JOIN T3 c ON b.key = c.key
@@ -192,7 +196,7 @@ POSTHOOK: Input: default@t1
 POSTHOOK: Input: default@t2
 POSTHOOK: Input: default@t3
 POSTHOOK: Input: default@t4
-POSTHOOK: Output: file:/tmp/sdong/hive_2011-02-10_16-28-36_769_7718434008849418627/-mr-10000
+POSTHOOK: Output: file:/tmp/krishnak/hive_2011-03-21_03-58-11_159_4555059335132203811/-mr-10000
 2	12	2	22	2	12	2	12
 PREHOOK: query: EXPLAIN
 SELECT /*+ STREAMTABLE(a,c) */ *
@@ -415,7 +419,7 @@ PREHOOK: Input: default@t1
 PREHOOK: Input: default@t2
 PREHOOK: Input: default@t3
 PREHOOK: Input: default@t4
-PREHOOK: Output: file:/tmp/sdong/hive_2011-02-10_16-28-42_245_14070689639460924/-mr-10000
+PREHOOK: Output: file:/tmp/krishnak/hive_2011-03-21_03-58-15_654_5324680612568899112/-mr-10000
 POSTHOOK: query: SELECT /*+ STREAMTABLE(a,c) */ *
 FROM T1 a JOIN T2 b ON a.key = b.key
           JOIN T3 c ON a.val = c.val
@@ -425,5 +429,5 @@ POSTHOOK: Input: default@t1
 POSTHOOK: Input: default@t2
 POSTHOOK: Input: default@t3
 POSTHOOK: Input: default@t4
-POSTHOOK: Output: file:/tmp/sdong/hive_2011-02-10_16-28-42_245_14070689639460924/-mr-10000
+POSTHOOK: Output: file:/tmp/krishnak/hive_2011-03-21_03-58-15_654_5324680612568899112/-mr-10000
 2	12	2	22	2	12	2	12

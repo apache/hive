@@ -5,11 +5,13 @@ POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: default@T1
 PREHOOK: query: LOAD DATA LOCAL INPATH '../data/files/kv1.txt' INTO TABLE T1
 PREHOOK: type: LOAD
+PREHOOK: Output: default@t1
 POSTHOOK: query: LOAD DATA LOCAL INPATH '../data/files/kv1.txt' INTO TABLE T1
 POSTHOOK: type: LOAD
 POSTHOOK: Output: default@t1
 PREHOOK: query: LOAD DATA LOCAL INPATH '../data/files/kv2.txt' INTO TABLE T1
 PREHOOK: type: LOAD
+PREHOOK: Output: default@t1
 POSTHOOK: query: LOAD DATA LOCAL INPATH '../data/files/kv2.txt' INTO TABLE T1
 POSTHOOK: type: LOAD
 POSTHOOK: Output: default@t1
@@ -83,7 +85,7 @@ STAGE PLANS:
   Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/tmp/sdong/hive_2011-02-10_15-56-27_142_6762491279894953495/-mr-10002 
+        file:/var/folders/67/67R3POPtF90VG63KSmCbcU++F0U/-Tmp-/krishnak/hive_2011-03-20_23-48-40_303_1958473630760739622/-mr-10002 
             Reduce Output Operator
               sort order: 
               tag: -1
@@ -131,11 +133,11 @@ POSTHOOK: Lineage: t2.value SIMPLE [(t1)t1.FieldSchema(name:value, type:string, 
 PREHOOK: query: SELECT * FROM T2 SORT BY key, value
 PREHOOK: type: QUERY
 PREHOOK: Input: default@t2
-PREHOOK: Output: file:/tmp/sdong/hive_2011-02-10_15-56-34_984_5041167310430297291/-mr-10000
+PREHOOK: Output: file:/var/folders/67/67R3POPtF90VG63KSmCbcU++F0U/-Tmp-/krishnak/hive_2011-03-20_23-49-03_854_6142415275552021554/-mr-10000
 POSTHOOK: query: SELECT * FROM T2 SORT BY key, value
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@t2
-POSTHOOK: Output: file:/tmp/sdong/hive_2011-02-10_15-56-34_984_5041167310430297291/-mr-10000
+POSTHOOK: Output: file:/var/folders/67/67R3POPtF90VG63KSmCbcU++F0U/-Tmp-/krishnak/hive_2011-03-20_23-49-03_854_6142415275552021554/-mr-10000
 POSTHOOK: Lineage: t2.key SIMPLE [(t1)t1.FieldSchema(name:key, type:string, comment:null), ]
 POSTHOOK: Lineage: t2.value SIMPLE [(t1)t1.FieldSchema(name:value, type:string, comment:null), ]
 0	val_0

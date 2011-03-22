@@ -59,7 +59,7 @@ STAGE PLANS:
     Move Operator
       files:
           hdfs directory: true
-          destination: pfile:/data/users/sdong/www/open-source-hive1/build/ql/scratchdir/hive_2011-02-10_17-36-11_031_6373562727275009655/-ext-10000
+          destination: pfile:/home/krishnak/hive-howl/hive-git-apache/build/ql/scratchdir/hive_2011-03-21_05-34-26_324_5327305333350769794/-ext-10000
 
   Stage: Stage-0
     Move Operator
@@ -77,7 +77,7 @@ STAGE PLANS:
   Stage: Stage-3
     Map Reduce
       Alias -> Map Operator Tree:
-        pfile:/data/users/sdong/www/open-source-hive1/build/ql/scratchdir/hive_2011-02-10_17-36-11_031_6373562727275009655/-ext-10002 
+        pfile:/home/krishnak/hive-howl/hive-git-apache/build/ql/scratchdir/hive_2011-03-21_05-34-26_324_5327305333350769794/-ext-10002 
             File Output Operator
               compressed: false
               GlobalTableId: 0
@@ -100,11 +100,11 @@ POSTHOOK: Lineage: dest1.len EXPRESSION [(src1)src1.FieldSchema(name:value, type
 PREHOOK: query: SELECT dest1.* FROM dest1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@dest1
-PREHOOK: Output: file:/tmp/sdong/hive_2011-02-10_17-36-15_723_4993295365073539383/-mr-10000
+PREHOOK: Output: file:/tmp/krishnak/hive_2011-03-21_05-34-30_517_1435949390197102187/-mr-10000
 POSTHOOK: query: SELECT dest1.* FROM dest1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@dest1
-POSTHOOK: Output: file:/tmp/sdong/hive_2011-02-10_17-36-15_723_4993295365073539383/-mr-10000
+POSTHOOK: Output: file:/tmp/krishnak/hive_2011-03-21_05-34-30_517_1435949390197102187/-mr-10000
 POSTHOOK: Lineage: dest1.len EXPRESSION [(src1)src1.FieldSchema(name:value, type:string, comment:default), ]
 7
 0
@@ -150,6 +150,7 @@ POSTHOOK: Output: default@dest1
 POSTHOOK: Lineage: dest1.len EXPRESSION [(src1)src1.FieldSchema(name:value, type:string, comment:default), ]
 PREHOOK: query: LOAD DATA LOCAL INPATH '../data/files/kv4.txt' INTO TABLE dest1
 PREHOOK: type: LOAD
+PREHOOK: Output: default@dest1
 POSTHOOK: query: LOAD DATA LOCAL INPATH '../data/files/kv4.txt' INTO TABLE dest1
 POSTHOOK: type: LOAD
 POSTHOOK: Output: default@dest1
@@ -193,10 +194,10 @@ STAGE PLANS:
 PREHOOK: query: SELECT length(dest1.name) FROM dest1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@dest1
-PREHOOK: Output: file:/tmp/sdong/hive_2011-02-10_17-36-16_907_1406444163456788090/-mr-10000
+PREHOOK: Output: file:/tmp/krishnak/hive_2011-03-21_05-34-30_836_6536693317435884383/-mr-10000
 POSTHOOK: query: SELECT length(dest1.name) FROM dest1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@dest1
-POSTHOOK: Output: file:/tmp/sdong/hive_2011-02-10_17-36-16_907_1406444163456788090/-mr-10000
+POSTHOOK: Output: file:/tmp/krishnak/hive_2011-03-21_05-34-30_836_6536693317435884383/-mr-10000
 POSTHOOK: Lineage: dest1.len EXPRESSION [(src1)src1.FieldSchema(name:value, type:string, comment:default), ]
 2
