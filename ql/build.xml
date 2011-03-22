@@ -165,6 +165,9 @@
       <compilerarg line="${javac.args} ${javac.args.warnings}" />
       <classpath refid="classpath"/>
     </javac>
+    <copy todir="${build.classes}" failonerror="false">
+      <fileset dir="${src.dir}/conf"/>
+    </copy>
   </target>
 	
   <!-- Override jar target to specify main class and compiler stuff -->
@@ -192,7 +195,7 @@
     <!-- jar jarfile="${build.dir}/hive_${name}.jar" basedir="${build.classes}" / -->
     <jar jarfile="${build.dir}/hive-exec-${version}.jar">
       <fileset dir="${build.dir.hive}/common/classes" includes="**/*.class"/>
-      <fileset dir="${build.dir.hive}/ql/classes" includes="**/*.class"/>
+      <fileset dir="${build.dir.hive}/ql/classes" includes="**/*.class,**/*.properties"/>
       <fileset dir="${build.dir.hive}/serde/classes" includes="**/*.class"/>
       <fileset dir="${build.dir.hive}/thrift/classes" includes="**/*.class"/>
       <fileset dir="${build.dir.hive}/commons-lang/classes" includes="**/StringUtils.class,**/WordUtils.class"/>

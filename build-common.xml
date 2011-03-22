@@ -284,6 +284,9 @@
       <compilerarg line="${javac.args} ${javac.args.warnings}" />
       <classpath refid="classpath"/>
     </javac>
+    <copy todir="${build.classes}" failonerror="false">
+      <fileset dir="${src.dir}/conf"/>
+    </copy>
   </target>
 
   <target name="jar" depends="compile">

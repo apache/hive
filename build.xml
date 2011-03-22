@@ -313,10 +313,14 @@
     </copy>
     <copy todir="${target.conf.dir}">
      <fileset dir="${basedir}/conf">
-       <include name="*.properties"/>
        <include name="*.template"/>
      </fileset>
     </copy>
+    <copy file="${basedir}/common/src/java/conf/hive-log4j.properties"
+          tofile="${target.conf.dir}/hive-log4j.properties.template"/>
+    <copy file="${basedir}/ql/src/java/conf/hive-exec-log4j.properties"
+          tofile="${target.conf.dir}/hive-exec-log4j.properties.template"/>
+      
     <!-- Create php thrift package -->
     <copy todir="${target.lib.dir}/php">
      <fileset dir="${hive.root}/service/lib/php" excludes="${vcs.excludes}"/>
