@@ -23,11 +23,11 @@ import java.util.Stack;
 
 import org.antlr.runtime.ANTLRStringStream;
 import org.antlr.runtime.CharStream;
+import org.apache.hadoop.hive.common.FileUtils;
 import org.apache.hadoop.hive.metastore.Warehouse;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.serde.Constants;
-import org.apache.hadoop.hive.common.FileUtils;
 
 /**
  * The Class representing the filter as a  binary tree. The tree has TreeNode's
@@ -239,19 +239,30 @@ public class ExpressionTree {
     // makePartName with one key will return a substring of the name made
     // with both all the keys.
     String escapedNameFragment = Warehouse.makePartName(partKeyToVal, false);
-
+    StringBuilder fltr = new StringBuilder();
     if (keyCount == 1) {
       // Case where this is no other partition columns
       params.put(paramName, escapedNameFragment);
+      fltr.append("partitionName == ").append(paramName);
     } else if (keyPos + 1 == keyCount) {
       // Case where the partition column is at the end of the name. There will
       // be a leading '/' but no trailing '/'
-      params.put(paramName, ".*/" + escapedNameFragment);
+      params.put(paramName, "/" + escapedNameFragment);
+      fltr.append("partitionName.endsWith(").append(paramName).append(')');
+    } else if (keyPos == 0) {
+      // Case where the parttion column is at the beginning of the name. There will
+      // be a trailing '/' but no leading '/'
+      params.put(paramName, escapedNameFragment + "/");
+      fltr.append("partitionName.startsWith(").append(paramName).append(')');
     } else {
-      params.put(paramName, ".*" + escapedNameFragment + "/.*");
+      // Case where the partition column is in the middle of the name. There will
+      // be a leading '/' and an trailing '/'
+      params.put(paramName, "/" + escapedNameFragment + "/");
+      fltr.append("partitionName.indexOf(").append(paramName).append(") >= 0");
     }
-    return "partitionName.matches(" + paramName + ")";
+    return fltr.toString();
   }
+
   /**
    * The root node for the tree.
    */

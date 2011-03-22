@@ -1,0 +1,455 @@
+PREHOOK: query: create table ppr_test (key string) partitioned by (ds string)
+PREHOOK: type: CREATETABLE
+POSTHOOK: query: create table ppr_test (key string) partitioned by (ds string)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: default@ppr_test
+PREHOOK: query: alter table ppr_test add partition (ds = '1234')
+PREHOOK: type: ALTERTABLE_ADDPARTS
+PREHOOK: Input: default@ppr_test
+POSTHOOK: query: alter table ppr_test add partition (ds = '1234')
+POSTHOOK: type: ALTERTABLE_ADDPARTS
+POSTHOOK: Input: default@ppr_test
+POSTHOOK: Output: default@ppr_test@ds=1234
+PREHOOK: query: alter table ppr_test add partition (ds = '1224')
+PREHOOK: type: ALTERTABLE_ADDPARTS
+PREHOOK: Input: default@ppr_test
+POSTHOOK: query: alter table ppr_test add partition (ds = '1224')
+POSTHOOK: type: ALTERTABLE_ADDPARTS
+POSTHOOK: Input: default@ppr_test
+POSTHOOK: Output: default@ppr_test@ds=1224
+PREHOOK: query: alter table ppr_test add partition (ds = '1214')
+PREHOOK: type: ALTERTABLE_ADDPARTS
+PREHOOK: Input: default@ppr_test
+POSTHOOK: query: alter table ppr_test add partition (ds = '1214')
+POSTHOOK: type: ALTERTABLE_ADDPARTS
+POSTHOOK: Input: default@ppr_test
+POSTHOOK: Output: default@ppr_test@ds=1214
+PREHOOK: query: alter table ppr_test add partition (ds = '12+4')
+PREHOOK: type: ALTERTABLE_ADDPARTS
+PREHOOK: Input: default@ppr_test
+POSTHOOK: query: alter table ppr_test add partition (ds = '12+4')
+POSTHOOK: type: ALTERTABLE_ADDPARTS
+POSTHOOK: Input: default@ppr_test
+POSTHOOK: Output: default@ppr_test@ds=12+4
+PREHOOK: query: alter table ppr_test add partition (ds = '12.4')
+PREHOOK: type: ALTERTABLE_ADDPARTS
+PREHOOK: Input: default@ppr_test
+POSTHOOK: query: alter table ppr_test add partition (ds = '12.4')
+POSTHOOK: type: ALTERTABLE_ADDPARTS
+POSTHOOK: Input: default@ppr_test
+POSTHOOK: Output: default@ppr_test@ds=12.4
+PREHOOK: query: alter table ppr_test add partition (ds = '12:4')
+PREHOOK: type: ALTERTABLE_ADDPARTS
+PREHOOK: Input: default@ppr_test
+POSTHOOK: query: alter table ppr_test add partition (ds = '12:4')
+POSTHOOK: type: ALTERTABLE_ADDPARTS
+POSTHOOK: Input: default@ppr_test
+POSTHOOK: Output: default@ppr_test@ds=12%3A4
+PREHOOK: query: alter table ppr_test add partition (ds = '12%4')
+PREHOOK: type: ALTERTABLE_ADDPARTS
+PREHOOK: Input: default@ppr_test
+POSTHOOK: query: alter table ppr_test add partition (ds = '12%4')
+POSTHOOK: type: ALTERTABLE_ADDPARTS
+POSTHOOK: Input: default@ppr_test
+POSTHOOK: Output: default@ppr_test@ds=12%254
+PREHOOK: query: alter table ppr_test add partition (ds = '12*4')
+PREHOOK: type: ALTERTABLE_ADDPARTS
+PREHOOK: Input: default@ppr_test
+POSTHOOK: query: alter table ppr_test add partition (ds = '12*4')
+POSTHOOK: type: ALTERTABLE_ADDPARTS
+POSTHOOK: Input: default@ppr_test
+POSTHOOK: Output: default@ppr_test@ds=12%2A4
+PREHOOK: query: insert overwrite table ppr_test partition(ds = '1234') select * from (select '1234' from src limit 1 union all select 'abcd' from src limit 1) s
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@ppr_test@ds=1234
+POSTHOOK: query: insert overwrite table ppr_test partition(ds = '1234') select * from (select '1234' from src limit 1 union all select 'abcd' from src limit 1) s
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@ppr_test@ds=1234
+POSTHOOK: Lineage: ppr_test PARTITION(ds=1234).key EXPRESSION []
+PREHOOK: query: insert overwrite table ppr_test partition(ds = '1224') select * from (select '1224' from src limit 1 union all select 'abcd' from src limit 1) s
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@ppr_test@ds=1224
+POSTHOOK: query: insert overwrite table ppr_test partition(ds = '1224') select * from (select '1224' from src limit 1 union all select 'abcd' from src limit 1) s
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@ppr_test@ds=1224
+POSTHOOK: Lineage: ppr_test PARTITION(ds=1224).key EXPRESSION []
+POSTHOOK: Lineage: ppr_test PARTITION(ds=1234).key EXPRESSION []
+PREHOOK: query: insert overwrite table ppr_test partition(ds = '1214') select * from (select '1214' from src limit 1 union all select 'abcd' from src limit 1) s
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@ppr_test@ds=1214
+POSTHOOK: query: insert overwrite table ppr_test partition(ds = '1214') select * from (select '1214' from src limit 1 union all select 'abcd' from src limit 1) s
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@ppr_test@ds=1214
+POSTHOOK: Lineage: ppr_test PARTITION(ds=1214).key EXPRESSION []
+POSTHOOK: Lineage: ppr_test PARTITION(ds=1224).key EXPRESSION []
+POSTHOOK: Lineage: ppr_test PARTITION(ds=1234).key EXPRESSION []
+PREHOOK: query: insert overwrite table ppr_test partition(ds = '12+4') select * from (select '12+4' from src limit 1 union all select 'abcd' from src limit 1) s
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@ppr_test@ds=12+4
+POSTHOOK: query: insert overwrite table ppr_test partition(ds = '12+4') select * from (select '12+4' from src limit 1 union all select 'abcd' from src limit 1) s
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@ppr_test@ds=12+4
+POSTHOOK: Lineage: ppr_test PARTITION(ds=12+4).key EXPRESSION []
+POSTHOOK: Lineage: ppr_test PARTITION(ds=1214).key EXPRESSION []
+POSTHOOK: Lineage: ppr_test PARTITION(ds=1224).key EXPRESSION []
+POSTHOOK: Lineage: ppr_test PARTITION(ds=1234).key EXPRESSION []
+PREHOOK: query: insert overwrite table ppr_test partition(ds = '12.4') select * from (select '12.4' from src limit 1 union all select 'abcd' from src limit 1) s
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@ppr_test@ds=12.4
+POSTHOOK: query: insert overwrite table ppr_test partition(ds = '12.4') select * from (select '12.4' from src limit 1 union all select 'abcd' from src limit 1) s
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@ppr_test@ds=12.4
+POSTHOOK: Lineage: ppr_test PARTITION(ds=12+4).key EXPRESSION []
+POSTHOOK: Lineage: ppr_test PARTITION(ds=12.4).key EXPRESSION []
+POSTHOOK: Lineage: ppr_test PARTITION(ds=1214).key EXPRESSION []
+POSTHOOK: Lineage: ppr_test PARTITION(ds=1224).key EXPRESSION []
+POSTHOOK: Lineage: ppr_test PARTITION(ds=1234).key EXPRESSION []
+PREHOOK: query: insert overwrite table ppr_test partition(ds = '12:4') select * from (select '12:4' from src limit 1 union all select 'abcd' from src limit 1) s
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@ppr_test@ds=12%3A4
+POSTHOOK: query: insert overwrite table ppr_test partition(ds = '12:4') select * from (select '12:4' from src limit 1 union all select 'abcd' from src limit 1) s
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@ppr_test@ds=12%3A4
+POSTHOOK: Lineage: ppr_test PARTITION(ds=12+4).key EXPRESSION []
+POSTHOOK: Lineage: ppr_test PARTITION(ds=12.4).key EXPRESSION []
+POSTHOOK: Lineage: ppr_test PARTITION(ds=1214).key EXPRESSION []
+POSTHOOK: Lineage: ppr_test PARTITION(ds=1224).key EXPRESSION []
+POSTHOOK: Lineage: ppr_test PARTITION(ds=1234).key EXPRESSION []
+POSTHOOK: Lineage: ppr_test PARTITION(ds=12:4).key EXPRESSION []
+PREHOOK: query: insert overwrite table ppr_test partition(ds = '12%4') select * from (select '12%4' from src limit 1 union all select 'abcd' from src limit 1) s
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@ppr_test@ds=12%254
+POSTHOOK: query: insert overwrite table ppr_test partition(ds = '12%4') select * from (select '12%4' from src limit 1 union all select 'abcd' from src limit 1) s
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@ppr_test@ds=12%254
+POSTHOOK: Lineage: ppr_test PARTITION(ds=12%4).key EXPRESSION []
+POSTHOOK: Lineage: ppr_test PARTITION(ds=12+4).key EXPRESSION []
+POSTHOOK: Lineage: ppr_test PARTITION(ds=12.4).key EXPRESSION []
+POSTHOOK: Lineage: ppr_test PARTITION(ds=1214).key EXPRESSION []
+POSTHOOK: Lineage: ppr_test PARTITION(ds=1224).key EXPRESSION []
+POSTHOOK: Lineage: ppr_test PARTITION(ds=1234).key EXPRESSION []
+POSTHOOK: Lineage: ppr_test PARTITION(ds=12:4).key EXPRESSION []
+PREHOOK: query: insert overwrite table ppr_test partition(ds = '12*4') select * from (select '12*4' from src limit 1 union all select 'abcd' from src limit 1) s
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@ppr_test@ds=12%2A4
+POSTHOOK: query: insert overwrite table ppr_test partition(ds = '12*4') select * from (select '12*4' from src limit 1 union all select 'abcd' from src limit 1) s
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@ppr_test@ds=12%2A4
+POSTHOOK: Lineage: ppr_test PARTITION(ds=12%4).key EXPRESSION []
+POSTHOOK: Lineage: ppr_test PARTITION(ds=12*4).key EXPRESSION []
+POSTHOOK: Lineage: ppr_test PARTITION(ds=12+4).key EXPRESSION []
+POSTHOOK: Lineage: ppr_test PARTITION(ds=12.4).key EXPRESSION []
+POSTHOOK: Lineage: ppr_test PARTITION(ds=1214).key EXPRESSION []
+POSTHOOK: Lineage: ppr_test PARTITION(ds=1224).key EXPRESSION []
+POSTHOOK: Lineage: ppr_test PARTITION(ds=1234).key EXPRESSION []
+POSTHOOK: Lineage: ppr_test PARTITION(ds=12:4).key EXPRESSION []
+PREHOOK: query: select * from ppr_test where ds = '1234'
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ppr_test@ds=1234
+PREHOOK: Output: file:/tmp/nzhang/hive_2011-03-15_17-42-53_994_7562932232779987377/-mr-10000
+POSTHOOK: query: select * from ppr_test where ds = '1234'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ppr_test@ds=1234
+POSTHOOK: Output: file:/tmp/nzhang/hive_2011-03-15_17-42-53_994_7562932232779987377/-mr-10000
+POSTHOOK: Lineage: ppr_test PARTITION(ds=12%4).key EXPRESSION []
+POSTHOOK: Lineage: ppr_test PARTITION(ds=12*4).key EXPRESSION []
+POSTHOOK: Lineage: ppr_test PARTITION(ds=12+4).key EXPRESSION []
+POSTHOOK: Lineage: ppr_test PARTITION(ds=12.4).key EXPRESSION []
+POSTHOOK: Lineage: ppr_test PARTITION(ds=1214).key EXPRESSION []
+POSTHOOK: Lineage: ppr_test PARTITION(ds=1224).key EXPRESSION []
+POSTHOOK: Lineage: ppr_test PARTITION(ds=1234).key EXPRESSION []
+POSTHOOK: Lineage: ppr_test PARTITION(ds=12:4).key EXPRESSION []
+abcd	1234
+1234	1234
+PREHOOK: query: select * from ppr_test where ds = '1224'
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ppr_test@ds=1224
+PREHOOK: Output: file:/tmp/nzhang/hive_2011-03-15_17-42-54_581_2505144516732828104/-mr-10000
+POSTHOOK: query: select * from ppr_test where ds = '1224'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ppr_test@ds=1224
+POSTHOOK: Output: file:/tmp/nzhang/hive_2011-03-15_17-42-54_581_2505144516732828104/-mr-10000
+POSTHOOK: Lineage: ppr_test PARTITION(ds=12%4).key EXPRESSION []
+POSTHOOK: Lineage: ppr_test PARTITION(ds=12*4).key EXPRESSION []
+POSTHOOK: Lineage: ppr_test PARTITION(ds=12+4).key EXPRESSION []
+POSTHOOK: Lineage: ppr_test PARTITION(ds=12.4).key EXPRESSION []
+POSTHOOK: Lineage: ppr_test PARTITION(ds=1214).key EXPRESSION []
+POSTHOOK: Lineage: ppr_test PARTITION(ds=1224).key EXPRESSION []
+POSTHOOK: Lineage: ppr_test PARTITION(ds=1234).key EXPRESSION []
+POSTHOOK: Lineage: ppr_test PARTITION(ds=12:4).key EXPRESSION []
+abcd	1224
+1224	1224
+PREHOOK: query: select * from ppr_test where ds = '1214'
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ppr_test@ds=1214
+PREHOOK: Output: file:/tmp/nzhang/hive_2011-03-15_17-42-54_853_7951716559154890872/-mr-10000
+POSTHOOK: query: select * from ppr_test where ds = '1214'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ppr_test@ds=1214
+POSTHOOK: Output: file:/tmp/nzhang/hive_2011-03-15_17-42-54_853_7951716559154890872/-mr-10000
+POSTHOOK: Lineage: ppr_test PARTITION(ds=12%4).key EXPRESSION []
+POSTHOOK: Lineage: ppr_test PARTITION(ds=12*4).key EXPRESSION []
+POSTHOOK: Lineage: ppr_test PARTITION(ds=12+4).key EXPRESSION []
+POSTHOOK: Lineage: ppr_test PARTITION(ds=12.4).key EXPRESSION []
+POSTHOOK: Lineage: ppr_test PARTITION(ds=1214).key EXPRESSION []
+POSTHOOK: Lineage: ppr_test PARTITION(ds=1224).key EXPRESSION []
+POSTHOOK: Lineage: ppr_test PARTITION(ds=1234).key EXPRESSION []
+POSTHOOK: Lineage: ppr_test PARTITION(ds=12:4).key EXPRESSION []
+abcd	1214
+1214	1214
+PREHOOK: query: select * from ppr_test where ds = '12.4'
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ppr_test@ds=12.4
+PREHOOK: Output: file:/tmp/nzhang/hive_2011-03-15_17-42-55_133_1358900232060245493/-mr-10000
+POSTHOOK: query: select * from ppr_test where ds = '12.4'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ppr_test@ds=12.4
+POSTHOOK: Output: file:/tmp/nzhang/hive_2011-03-15_17-42-55_133_1358900232060245493/-mr-10000
+POSTHOOK: Lineage: ppr_test PARTITION(ds=12%4).key EXPRESSION []
+POSTHOOK: Lineage: ppr_test PARTITION(ds=12*4).key EXPRESSION []
+POSTHOOK: Lineage: ppr_test PARTITION(ds=12+4).key EXPRESSION []
+POSTHOOK: Lineage: ppr_test PARTITION(ds=12.4).key EXPRESSION []
+POSTHOOK: Lineage: ppr_test PARTITION(ds=1214).key EXPRESSION []
+POSTHOOK: Lineage: ppr_test PARTITION(ds=1224).key EXPRESSION []
+POSTHOOK: Lineage: ppr_test PARTITION(ds=1234).key EXPRESSION []
+POSTHOOK: Lineage: ppr_test PARTITION(ds=12:4).key EXPRESSION []
+abcd	12.4
+12.4	12.4
+PREHOOK: query: select * from ppr_test where ds = '12+4'
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ppr_test@ds=12+4
+PREHOOK: Output: file:/tmp/nzhang/hive_2011-03-15_17-42-55_396_1886989364983202450/-mr-10000
+POSTHOOK: query: select * from ppr_test where ds = '12+4'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ppr_test@ds=12+4
+POSTHOOK: Output: file:/tmp/nzhang/hive_2011-03-15_17-42-55_396_1886989364983202450/-mr-10000
+POSTHOOK: Lineage: ppr_test PARTITION(ds=12%4).key EXPRESSION []
+POSTHOOK: Lineage: ppr_test PARTITION(ds=12*4).key EXPRESSION []
+POSTHOOK: Lineage: ppr_test PARTITION(ds=12+4).key EXPRESSION []
+POSTHOOK: Lineage: ppr_test PARTITION(ds=12.4).key EXPRESSION []
+POSTHOOK: Lineage: ppr_test PARTITION(ds=1214).key EXPRESSION []
+POSTHOOK: Lineage: ppr_test PARTITION(ds=1224).key EXPRESSION []
+POSTHOOK: Lineage: ppr_test PARTITION(ds=1234).key EXPRESSION []
+POSTHOOK: Lineage: ppr_test PARTITION(ds=12:4).key EXPRESSION []
+abcd	12+4
+12+4	12+4
+PREHOOK: query: select * from ppr_test where ds = '12:4'
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ppr_test@ds=12%3A4
+PREHOOK: Output: file:/tmp/nzhang/hive_2011-03-15_17-42-55_675_1879183848037008858/-mr-10000
+POSTHOOK: query: select * from ppr_test where ds = '12:4'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ppr_test@ds=12%3A4
+POSTHOOK: Output: file:/tmp/nzhang/hive_2011-03-15_17-42-55_675_1879183848037008858/-mr-10000
+POSTHOOK: Lineage: ppr_test PARTITION(ds=12%4).key EXPRESSION []
+POSTHOOK: Lineage: ppr_test PARTITION(ds=12*4).key EXPRESSION []
+POSTHOOK: Lineage: ppr_test PARTITION(ds=12+4).key EXPRESSION []
+POSTHOOK: Lineage: ppr_test PARTITION(ds=12.4).key EXPRESSION []
+POSTHOOK: Lineage: ppr_test PARTITION(ds=1214).key EXPRESSION []
+POSTHOOK: Lineage: ppr_test PARTITION(ds=1224).key EXPRESSION []
+POSTHOOK: Lineage: ppr_test PARTITION(ds=1234).key EXPRESSION []
+POSTHOOK: Lineage: ppr_test PARTITION(ds=12:4).key EXPRESSION []
+abcd	12:4
+12:4	12:4
+PREHOOK: query: select * from ppr_test where ds = '12%4'
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ppr_test@ds=12%254
+PREHOOK: Output: file:/tmp/nzhang/hive_2011-03-15_17-42-55_947_7257143082337477962/-mr-10000
+POSTHOOK: query: select * from ppr_test where ds = '12%4'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ppr_test@ds=12%254
+POSTHOOK: Output: file:/tmp/nzhang/hive_2011-03-15_17-42-55_947_7257143082337477962/-mr-10000
+POSTHOOK: Lineage: ppr_test PARTITION(ds=12%4).key EXPRESSION []
+POSTHOOK: Lineage: ppr_test PARTITION(ds=12*4).key EXPRESSION []
+POSTHOOK: Lineage: ppr_test PARTITION(ds=12+4).key EXPRESSION []
+POSTHOOK: Lineage: ppr_test PARTITION(ds=12.4).key EXPRESSION []
+POSTHOOK: Lineage: ppr_test PARTITION(ds=1214).key EXPRESSION []
+POSTHOOK: Lineage: ppr_test PARTITION(ds=1224).key EXPRESSION []
+POSTHOOK: Lineage: ppr_test PARTITION(ds=1234).key EXPRESSION []
+POSTHOOK: Lineage: ppr_test PARTITION(ds=12:4).key EXPRESSION []
+abcd	12%4
+12%4	12%4
+PREHOOK: query: select * from ppr_test where ds = '12*4'
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ppr_test@ds=12%2A4
+PREHOOK: Output: file:/tmp/nzhang/hive_2011-03-15_17-42-56_206_658052552869274889/-mr-10000
+POSTHOOK: query: select * from ppr_test where ds = '12*4'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ppr_test@ds=12%2A4
+POSTHOOK: Output: file:/tmp/nzhang/hive_2011-03-15_17-42-56_206_658052552869274889/-mr-10000
+POSTHOOK: Lineage: ppr_test PARTITION(ds=12%4).key EXPRESSION []
+POSTHOOK: Lineage: ppr_test PARTITION(ds=12*4).key EXPRESSION []
+POSTHOOK: Lineage: ppr_test PARTITION(ds=12+4).key EXPRESSION []
+POSTHOOK: Lineage: ppr_test PARTITION(ds=12.4).key EXPRESSION []
+POSTHOOK: Lineage: ppr_test PARTITION(ds=1214).key EXPRESSION []
+POSTHOOK: Lineage: ppr_test PARTITION(ds=1224).key EXPRESSION []
+POSTHOOK: Lineage: ppr_test PARTITION(ds=1234).key EXPRESSION []
+POSTHOOK: Lineage: ppr_test PARTITION(ds=12:4).key EXPRESSION []
+abcd	12*4
+12*4	12*4
+PREHOOK: query: select * from ppr_test where ds = '12.*4'
+PREHOOK: type: QUERY
+PREHOOK: Output: file:/tmp/nzhang/hive_2011-03-15_17-42-56_473_2360145199088935052/-mr-10000
+POSTHOOK: query: select * from ppr_test where ds = '12.*4'
+POSTHOOK: type: QUERY
+POSTHOOK: Output: file:/tmp/nzhang/hive_2011-03-15_17-42-56_473_2360145199088935052/-mr-10000
+POSTHOOK: Lineage: ppr_test PARTITION(ds=12%4).key EXPRESSION []
+POSTHOOK: Lineage: ppr_test PARTITION(ds=12*4).key EXPRESSION []
+POSTHOOK: Lineage: ppr_test PARTITION(ds=12+4).key EXPRESSION []
+POSTHOOK: Lineage: ppr_test PARTITION(ds=12.4).key EXPRESSION []
+POSTHOOK: Lineage: ppr_test PARTITION(ds=1214).key EXPRESSION []
+POSTHOOK: Lineage: ppr_test PARTITION(ds=1224).key EXPRESSION []
+POSTHOOK: Lineage: ppr_test PARTITION(ds=1234).key EXPRESSION []
+POSTHOOK: Lineage: ppr_test PARTITION(ds=12:4).key EXPRESSION []
+PREHOOK: query: select * from ppr_test where ds = '1234' and key = '1234'
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ppr_test@ds=1234
+PREHOOK: Output: file:/tmp/nzhang/hive_2011-03-15_17-42-56_533_2669295483949497025/-mr-10000
+POSTHOOK: query: select * from ppr_test where ds = '1234' and key = '1234'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ppr_test@ds=1234
+POSTHOOK: Output: file:/tmp/nzhang/hive_2011-03-15_17-42-56_533_2669295483949497025/-mr-10000
+POSTHOOK: Lineage: ppr_test PARTITION(ds=12%4).key EXPRESSION []
+POSTHOOK: Lineage: ppr_test PARTITION(ds=12*4).key EXPRESSION []
+POSTHOOK: Lineage: ppr_test PARTITION(ds=12+4).key EXPRESSION []
+POSTHOOK: Lineage: ppr_test PARTITION(ds=12.4).key EXPRESSION []
+POSTHOOK: Lineage: ppr_test PARTITION(ds=1214).key EXPRESSION []
+POSTHOOK: Lineage: ppr_test PARTITION(ds=1224).key EXPRESSION []
+POSTHOOK: Lineage: ppr_test PARTITION(ds=1234).key EXPRESSION []
+POSTHOOK: Lineage: ppr_test PARTITION(ds=12:4).key EXPRESSION []
+1234	1234
+PREHOOK: query: select * from ppr_test where ds = '1224' and key = '1224'
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ppr_test@ds=1224
+PREHOOK: Output: file:/tmp/nzhang/hive_2011-03-15_17-42-59_506_7569310480938065041/-mr-10000
+POSTHOOK: query: select * from ppr_test where ds = '1224' and key = '1224'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ppr_test@ds=1224
+POSTHOOK: Output: file:/tmp/nzhang/hive_2011-03-15_17-42-59_506_7569310480938065041/-mr-10000
+POSTHOOK: Lineage: ppr_test PARTITION(ds=12%4).key EXPRESSION []
+POSTHOOK: Lineage: ppr_test PARTITION(ds=12*4).key EXPRESSION []
+POSTHOOK: Lineage: ppr_test PARTITION(ds=12+4).key EXPRESSION []
+POSTHOOK: Lineage: ppr_test PARTITION(ds=12.4).key EXPRESSION []
+POSTHOOK: Lineage: ppr_test PARTITION(ds=1214).key EXPRESSION []
+POSTHOOK: Lineage: ppr_test PARTITION(ds=1224).key EXPRESSION []
+POSTHOOK: Lineage: ppr_test PARTITION(ds=1234).key EXPRESSION []
+POSTHOOK: Lineage: ppr_test PARTITION(ds=12:4).key EXPRESSION []
+1224	1224
+PREHOOK: query: select * from ppr_test where ds = '1214' and key = '1214'
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ppr_test@ds=1214
+PREHOOK: Output: file:/tmp/nzhang/hive_2011-03-15_17-43-02_471_7943670690328696677/-mr-10000
+POSTHOOK: query: select * from ppr_test where ds = '1214' and key = '1214'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ppr_test@ds=1214
+POSTHOOK: Output: file:/tmp/nzhang/hive_2011-03-15_17-43-02_471_7943670690328696677/-mr-10000
+POSTHOOK: Lineage: ppr_test PARTITION(ds=12%4).key EXPRESSION []
+POSTHOOK: Lineage: ppr_test PARTITION(ds=12*4).key EXPRESSION []
+POSTHOOK: Lineage: ppr_test PARTITION(ds=12+4).key EXPRESSION []
+POSTHOOK: Lineage: ppr_test PARTITION(ds=12.4).key EXPRESSION []
+POSTHOOK: Lineage: ppr_test PARTITION(ds=1214).key EXPRESSION []
+POSTHOOK: Lineage: ppr_test PARTITION(ds=1224).key EXPRESSION []
+POSTHOOK: Lineage: ppr_test PARTITION(ds=1234).key EXPRESSION []
+POSTHOOK: Lineage: ppr_test PARTITION(ds=12:4).key EXPRESSION []
+1214	1214
+PREHOOK: query: select * from ppr_test where ds = '12.4' and key = '12.4'
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ppr_test@ds=12.4
+PREHOOK: Output: file:/tmp/nzhang/hive_2011-03-15_17-43-05_426_6599608597912720244/-mr-10000
+POSTHOOK: query: select * from ppr_test where ds = '12.4' and key = '12.4'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ppr_test@ds=12.4
+POSTHOOK: Output: file:/tmp/nzhang/hive_2011-03-15_17-43-05_426_6599608597912720244/-mr-10000
+POSTHOOK: Lineage: ppr_test PARTITION(ds=12%4).key EXPRESSION []
+POSTHOOK: Lineage: ppr_test PARTITION(ds=12*4).key EXPRESSION []
+POSTHOOK: Lineage: ppr_test PARTITION(ds=12+4).key EXPRESSION []
+POSTHOOK: Lineage: ppr_test PARTITION(ds=12.4).key EXPRESSION []
+POSTHOOK: Lineage: ppr_test PARTITION(ds=1214).key EXPRESSION []
+POSTHOOK: Lineage: ppr_test PARTITION(ds=1224).key EXPRESSION []
+POSTHOOK: Lineage: ppr_test PARTITION(ds=1234).key EXPRESSION []
+POSTHOOK: Lineage: ppr_test PARTITION(ds=12:4).key EXPRESSION []
+12.4	12.4
+PREHOOK: query: select * from ppr_test where ds = '12+4' and key = '12+4'
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ppr_test@ds=12+4
+PREHOOK: Output: file:/tmp/nzhang/hive_2011-03-15_17-43-08_327_2168484222242026552/-mr-10000
+POSTHOOK: query: select * from ppr_test where ds = '12+4' and key = '12+4'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ppr_test@ds=12+4
+POSTHOOK: Output: file:/tmp/nzhang/hive_2011-03-15_17-43-08_327_2168484222242026552/-mr-10000
+POSTHOOK: Lineage: ppr_test PARTITION(ds=12%4).key EXPRESSION []
+POSTHOOK: Lineage: ppr_test PARTITION(ds=12*4).key EXPRESSION []
+POSTHOOK: Lineage: ppr_test PARTITION(ds=12+4).key EXPRESSION []
+POSTHOOK: Lineage: ppr_test PARTITION(ds=12.4).key EXPRESSION []
+POSTHOOK: Lineage: ppr_test PARTITION(ds=1214).key EXPRESSION []
+POSTHOOK: Lineage: ppr_test PARTITION(ds=1224).key EXPRESSION []
+POSTHOOK: Lineage: ppr_test PARTITION(ds=1234).key EXPRESSION []
+POSTHOOK: Lineage: ppr_test PARTITION(ds=12:4).key EXPRESSION []
+12+4	12+4
+PREHOOK: query: select * from ppr_test where ds = '12:4' and key = '12:4'
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ppr_test@ds=12%3A4
+PREHOOK: Output: file:/tmp/nzhang/hive_2011-03-15_17-43-11_361_8648952567109428131/-mr-10000
+POSTHOOK: query: select * from ppr_test where ds = '12:4' and key = '12:4'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ppr_test@ds=12%3A4
+POSTHOOK: Output: file:/tmp/nzhang/hive_2011-03-15_17-43-11_361_8648952567109428131/-mr-10000
+POSTHOOK: Lineage: ppr_test PARTITION(ds=12%4).key EXPRESSION []
+POSTHOOK: Lineage: ppr_test PARTITION(ds=12*4).key EXPRESSION []
+POSTHOOK: Lineage: ppr_test PARTITION(ds=12+4).key EXPRESSION []
+POSTHOOK: Lineage: ppr_test PARTITION(ds=12.4).key EXPRESSION []
+POSTHOOK: Lineage: ppr_test PARTITION(ds=1214).key EXPRESSION []
+POSTHOOK: Lineage: ppr_test PARTITION(ds=1224).key EXPRESSION []
+POSTHOOK: Lineage: ppr_test PARTITION(ds=1234).key EXPRESSION []
+POSTHOOK: Lineage: ppr_test PARTITION(ds=12:4).key EXPRESSION []
+12:4	12:4
+PREHOOK: query: select * from ppr_test where ds = '12%4' and key = '12%4'
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ppr_test@ds=12%254
+PREHOOK: Output: file:/tmp/nzhang/hive_2011-03-15_17-43-14_254_1733336023126589571/-mr-10000
+POSTHOOK: query: select * from ppr_test where ds = '12%4' and key = '12%4'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ppr_test@ds=12%254
+POSTHOOK: Output: file:/tmp/nzhang/hive_2011-03-15_17-43-14_254_1733336023126589571/-mr-10000
+POSTHOOK: Lineage: ppr_test PARTITION(ds=12%4).key EXPRESSION []
+POSTHOOK: Lineage: ppr_test PARTITION(ds=12*4).key EXPRESSION []
+POSTHOOK: Lineage: ppr_test PARTITION(ds=12+4).key EXPRESSION []
+POSTHOOK: Lineage: ppr_test PARTITION(ds=12.4).key EXPRESSION []
+POSTHOOK: Lineage: ppr_test PARTITION(ds=1214).key EXPRESSION []
+POSTHOOK: Lineage: ppr_test PARTITION(ds=1224).key EXPRESSION []
+POSTHOOK: Lineage: ppr_test PARTITION(ds=1234).key EXPRESSION []
+POSTHOOK: Lineage: ppr_test PARTITION(ds=12:4).key EXPRESSION []
+12%4	12%4
+PREHOOK: query: select * from ppr_test where ds = '12*4' and key = '12*4'
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ppr_test@ds=12%2A4
+PREHOOK: Output: file:/tmp/nzhang/hive_2011-03-15_17-43-17_286_8476862252367771252/-mr-10000
+POSTHOOK: query: select * from ppr_test where ds = '12*4' and key = '12*4'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ppr_test@ds=12%2A4
+POSTHOOK: Output: file:/tmp/nzhang/hive_2011-03-15_17-43-17_286_8476862252367771252/-mr-10000
+POSTHOOK: Lineage: ppr_test PARTITION(ds=12%4).key EXPRESSION []
+POSTHOOK: Lineage: ppr_test PARTITION(ds=12*4).key EXPRESSION []
+POSTHOOK: Lineage: ppr_test PARTITION(ds=12+4).key EXPRESSION []
+POSTHOOK: Lineage: ppr_test PARTITION(ds=12.4).key EXPRESSION []
+POSTHOOK: Lineage: ppr_test PARTITION(ds=1214).key EXPRESSION []
+POSTHOOK: Lineage: ppr_test PARTITION(ds=1224).key EXPRESSION []
+POSTHOOK: Lineage: ppr_test PARTITION(ds=1234).key EXPRESSION []
+POSTHOOK: Lineage: ppr_test PARTITION(ds=12:4).key EXPRESSION []
+12*4	12*4
