@@ -5,11 +5,13 @@ POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: default@nullscript
 PREHOOK: query: LOAD DATA LOCAL INPATH '../data/files/kv1.txt' INTO TABLE nullscript
 PREHOOK: type: LOAD
+PREHOOK: Output: default@nullscript
 POSTHOOK: query: LOAD DATA LOCAL INPATH '../data/files/kv1.txt' INTO TABLE nullscript
 POSTHOOK: type: LOAD
 POSTHOOK: Output: default@nullscript
 PREHOOK: query: LOAD DATA LOCAL INPATH '../data/files/nullfile.txt' INTO TABLE nullscript
 PREHOOK: type: LOAD
+PREHOOK: Output: default@nullscript
 POSTHOOK: query: LOAD DATA LOCAL INPATH '../data/files/nullfile.txt' INTO TABLE nullscript
 POSTHOOK: type: LOAD
 POSTHOOK: Output: default@nullscript
@@ -58,11 +60,11 @@ STAGE PLANS:
 PREHOOK: query: select transform(key) using '/bin/cat' as key1 from nullscript
 PREHOOK: type: QUERY
 PREHOOK: Input: default@nullscript
-PREHOOK: Output: file:/tmp/sdong/hive_2011-02-10_16-48-52_197_7623127141434168915/-mr-10000
+PREHOOK: Output: file:/tmp/krishnak/hive_2011-03-21_04-13-58_476_8682161178533749649/-mr-10000
 POSTHOOK: query: select transform(key) using '/bin/cat' as key1 from nullscript
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@nullscript
-POSTHOOK: Output: file:/tmp/sdong/hive_2011-02-10_16-48-52_197_7623127141434168915/-mr-10000
+POSTHOOK: Output: file:/tmp/krishnak/hive_2011-03-21_04-13-58_476_8682161178533749649/-mr-10000
 238
 86
 311

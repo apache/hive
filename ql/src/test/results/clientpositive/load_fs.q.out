@@ -10,16 +10,19 @@ POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: default@load_overwrite2
 PREHOOK: query: load data local inpath '../data/files/kv1.txt' into table load_overwrite
 PREHOOK: type: LOAD
+PREHOOK: Output: default@load_overwrite
 POSTHOOK: query: load data local inpath '../data/files/kv1.txt' into table load_overwrite
 POSTHOOK: type: LOAD
 POSTHOOK: Output: default@load_overwrite
 PREHOOK: query: load data local inpath '../data/files/kv2.txt' into table load_overwrite
 PREHOOK: type: LOAD
+PREHOOK: Output: default@load_overwrite
 POSTHOOK: query: load data local inpath '../data/files/kv2.txt' into table load_overwrite
 POSTHOOK: type: LOAD
 POSTHOOK: Output: default@load_overwrite
 PREHOOK: query: load data local inpath '../data/files/kv3.txt' into table load_overwrite
 PREHOOK: type: LOAD
+PREHOOK: Output: default@load_overwrite
 POSTHOOK: query: load data local inpath '../data/files/kv3.txt' into table load_overwrite
 POSTHOOK: type: LOAD
 POSTHOOK: Output: default@load_overwrite
@@ -28,7 +31,7 @@ PREHOOK: type: SHOW_TABLESTATUS
 POSTHOOK: query: show table extended like load_overwrite
 POSTHOOK: type: SHOW_TABLESTATUS
 tableName:load_overwrite
-owner:nzhang
+owner:krishnak
 location:file:/tmp/load_overwrite
 inputformat:org.apache.hadoop.mapred.TextInputFormat
 outputformat:org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
@@ -40,7 +43,7 @@ totalFileSize:11819
 maxFileSize:5812
 minFileSize:216
 lastAccessTime:0
-lastUpdateTime:1292974447000
+lastUpdateTime:1300705348000
 
 PREHOOK: query: desc extended load_overwrite
 PREHOOK: type: DESCTABLE
@@ -49,18 +52,19 @@ POSTHOOK: type: DESCTABLE
 key	string	
 value	string	
 	 	 
-Detailed Table Information	Table(tableName:load_overwrite, dbName:default, owner:nzhang, createTime:1292974446, lastAccessTime:0, retention:0, sd:StorageDescriptor(cols:[FieldSchema(name:key, type:string, comment:null), FieldSchema(name:value, type:string, comment:null)], location:file:/tmp/load_overwrite, inputFormat:org.apache.hadoop.mapred.TextInputFormat, outputFormat:org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat, compressed:false, numBuckets:-1, serdeInfo:SerDeInfo(name:null, serializationLib:org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe, parameters:{serialization.format=1}), bucketCols:[], sortCols:[], parameters:{}), partitionKeys:[], parameters:{transient_lastDdlTime=1292974447}, viewOriginalText:null, viewExpandedText:null, tableType:MANAGED_TABLE)	
+Detailed Table Information	Table(tableName:load_overwrite, dbName:default, owner:krishnak, createTime:1300705345, lastAccessTime:0, retention:0, sd:StorageDescriptor(cols:[FieldSchema(name:key, type:string, comment:null), FieldSchema(name:value, type:string, comment:null)], location:file:/tmp/load_overwrite, inputFormat:org.apache.hadoop.mapred.TextInputFormat, outputFormat:org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat, compressed:false, numBuckets:-1, serdeInfo:SerDeInfo(name:null, serializationLib:org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe, parameters:{serialization.format=1}), bucketCols:[], sortCols:[], parameters:{}), partitionKeys:[], parameters:{transient_lastDdlTime=1300705348}, viewOriginalText:null, viewExpandedText:null, tableType:MANAGED_TABLE)	
 PREHOOK: query: select count(*) from load_overwrite
 PREHOOK: type: QUERY
 PREHOOK: Input: default@load_overwrite
-PREHOOK: Output: file:/tmp/nzhang/hive_2010-12-21_15-34-07_300_6614219932872851525/-mr-10000
+PREHOOK: Output: file:/tmp/krishnak/hive_2011-03-21_04-02-29_491_3367221189564886205/-mr-10000
 POSTHOOK: query: select count(*) from load_overwrite
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@load_overwrite
-POSTHOOK: Output: file:/tmp/nzhang/hive_2010-12-21_15-34-07_300_6614219932872851525/-mr-10000
+POSTHOOK: Output: file:/tmp/krishnak/hive_2011-03-21_04-02-29_491_3367221189564886205/-mr-10000
 1025
 PREHOOK: query: load data inpath '/tmp/load_overwrite/kv*.txt' overwrite into table load_overwrite2
 PREHOOK: type: LOAD
+PREHOOK: Output: default@load_overwrite2
 POSTHOOK: query: load data inpath '/tmp/load_overwrite/kv*.txt' overwrite into table load_overwrite2
 POSTHOOK: type: LOAD
 POSTHOOK: Output: default@load_overwrite2
@@ -69,7 +73,7 @@ PREHOOK: type: SHOW_TABLESTATUS
 POSTHOOK: query: show table extended like load_overwrite2
 POSTHOOK: type: SHOW_TABLESTATUS
 tableName:load_overwrite2
-owner:nzhang
+owner:krishnak
 location:file:/tmp/load2_overwrite2
 inputformat:org.apache.hadoop.mapred.TextInputFormat
 outputformat:org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
@@ -81,7 +85,7 @@ totalFileSize:11819
 maxFileSize:5812
 minFileSize:216
 lastAccessTime:0
-lastUpdateTime:1292974450000
+lastUpdateTime:1300705354000
 
 PREHOOK: query: desc extended load_overwrite2
 PREHOOK: type: DESCTABLE
@@ -90,18 +94,19 @@ POSTHOOK: type: DESCTABLE
 key	string	
 value	string	
 	 	 
-Detailed Table Information	Table(tableName:load_overwrite2, dbName:default, owner:nzhang, createTime:1292974446, lastAccessTime:0, retention:0, sd:StorageDescriptor(cols:[FieldSchema(name:key, type:string, comment:null), FieldSchema(name:value, type:string, comment:null)], location:file:/tmp/load2_overwrite2, inputFormat:org.apache.hadoop.mapred.TextInputFormat, outputFormat:org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat, compressed:false, numBuckets:-1, serdeInfo:SerDeInfo(name:null, serializationLib:org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe, parameters:{serialization.format=1}), bucketCols:[], sortCols:[], parameters:{}), partitionKeys:[], parameters:{transient_lastDdlTime=1292974450}, viewOriginalText:null, viewExpandedText:null, tableType:MANAGED_TABLE)	
+Detailed Table Information	Table(tableName:load_overwrite2, dbName:default, owner:krishnak, createTime:1300705345, lastAccessTime:0, retention:0, sd:StorageDescriptor(cols:[FieldSchema(name:key, type:string, comment:null), FieldSchema(name:value, type:string, comment:null)], location:file:/tmp/load2_overwrite2, inputFormat:org.apache.hadoop.mapred.TextInputFormat, outputFormat:org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat, compressed:false, numBuckets:-1, serdeInfo:SerDeInfo(name:null, serializationLib:org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe, parameters:{serialization.format=1}), bucketCols:[], sortCols:[], parameters:{}), partitionKeys:[], parameters:{transient_lastDdlTime=1300705354}, viewOriginalText:null, viewExpandedText:null, tableType:MANAGED_TABLE)	
 PREHOOK: query: select count(*) from load_overwrite2
 PREHOOK: type: QUERY
 PREHOOK: Input: default@load_overwrite2
-PREHOOK: Output: file:/tmp/nzhang/hive_2010-12-21_15-34-10_663_8151245977694219009/-mr-10000
+PREHOOK: Output: file:/tmp/krishnak/hive_2011-03-21_04-02-34_934_7051947202127416140/-mr-10000
 POSTHOOK: query: select count(*) from load_overwrite2
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@load_overwrite2
-POSTHOOK: Output: file:/tmp/nzhang/hive_2010-12-21_15-34-10_663_8151245977694219009/-mr-10000
+POSTHOOK: Output: file:/tmp/krishnak/hive_2011-03-21_04-02-34_934_7051947202127416140/-mr-10000
 1025
 PREHOOK: query: load data inpath '/tmp/load2_*' overwrite into table load_overwrite
 PREHOOK: type: LOAD
+PREHOOK: Output: default@load_overwrite
 POSTHOOK: query: load data inpath '/tmp/load2_*' overwrite into table load_overwrite
 POSTHOOK: type: LOAD
 POSTHOOK: Output: default@load_overwrite
@@ -110,7 +115,7 @@ PREHOOK: type: SHOW_TABLESTATUS
 POSTHOOK: query: show table extended like load_overwrite
 POSTHOOK: type: SHOW_TABLESTATUS
 tableName:load_overwrite
-owner:nzhang
+owner:krishnak
 location:file:/tmp/load_overwrite
 inputformat:org.apache.hadoop.mapred.TextInputFormat
 outputformat:org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
@@ -122,14 +127,14 @@ totalFileSize:11819
 maxFileSize:5812
 minFileSize:216
 lastAccessTime:0
-lastUpdateTime:1292974450000
+lastUpdateTime:1300705354000
 
 PREHOOK: query: select count(*) from load_overwrite
 PREHOOK: type: QUERY
 PREHOOK: Input: default@load_overwrite
-PREHOOK: Output: file:/tmp/nzhang/hive_2010-12-21_15-34-13_655_3156172885780176831/-mr-10000
+PREHOOK: Output: file:/tmp/krishnak/hive_2011-03-21_04-02-40_269_315571418896887051/-mr-10000
 POSTHOOK: query: select count(*) from load_overwrite
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@load_overwrite
-POSTHOOK: Output: file:/tmp/nzhang/hive_2010-12-21_15-34-13_655_3156172885780176831/-mr-10000
+POSTHOOK: Output: file:/tmp/krishnak/hive_2011-03-21_04-02-40_269_315571418896887051/-mr-10000
 1025

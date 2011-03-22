@@ -44,6 +44,8 @@ import java.util.regex.Pattern;
 
 import junit.framework.Test;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
@@ -84,6 +86,8 @@ import org.apache.zookeeper.ZooKeeper;
  *
  */
 public class QTestUtil {
+
+  private static final Log LOG = LogFactory.getLog("QTestUtil");
 
   private String testWarehouse;
   private final String tmpdir= System.getProperty("test.tmp.dir") ;
@@ -248,7 +252,7 @@ public class QTestUtil {
 
   public void shutdown() throws Exception {
     cleanUp();
-
+    setup.tearDown();
     if (dfs != null) {
       dfs.shutdown();
       dfs = null;
@@ -333,7 +337,7 @@ public class QTestUtil {
         if (!DEFAULT_DATABASE_NAME.equals(dbName) || !srcTables.contains(tblName)) {
           Table tblObj = db.getTable(tblName);
           // dropping index table can not be dropped directly. Dropping the base
-          // table will automatically drop all its index table  
+          // table will automatically drop all its index table
           if(tblObj.isIndexTable()) {
             continue;
           }
@@ -343,7 +347,7 @@ public class QTestUtil {
          List<Index> indexes = db.getIndexes(dbName, tblName, (short)-1);
           if (indexes != null && indexes.size() > 0) {
             for (Index index : indexes) {
-              db.dropIndex(dbName, tblName, index.getIndexName(), true);              
+              db.dropIndex(dbName, tblName, index.getIndexName(), true);
             }
           }
         }
@@ -384,7 +388,6 @@ public class QTestUtil {
 
     FunctionRegistry.unregisterTemporaryUDF("test_udaf");
     FunctionRegistry.unregisterTemporaryUDF("test_error");
-    setup.tearDown();
   }
 
   private void runLoadCmd(String loadCmd) throws Exception {
@@ -412,6 +415,7 @@ public class QTestUtil {
   public void createSources() throws Exception {
 
     startSessionState();
+    conf.setBoolean("hive.test.init.phase", true);
 
     // Create a bunch of tables with columns key and value
     LinkedList<String> cols = new LinkedList<String>();
@@ -506,7 +510,7 @@ public class QTestUtil {
     fpath = new Path(testFiles, "json.txt");
     runLoadCmd("LOAD DATA LOCAL INPATH '" + fpath.toString()
         + "' INTO TABLE src_json");
-
+    conf.setBoolean("hive.test.init.phase", false);
   }
 
   public void init() throws Exception {
@@ -989,7 +993,8 @@ public class QTestUtil {
     while ((ast.getToken() == null) && (ast.getChildCount() > 0)) {
       ast = (ASTNode) ast.getChild(0);
     }
-
+    sem.getOutputs().clear();
+    sem.getInputs().clear();
     sem.analyze(ast, ctx);
     ctx.clear();
     return sem.getRootTasks();

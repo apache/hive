@@ -36,6 +36,7 @@ import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.exec.TaskFactory;
 import org.apache.hadoop.hive.ql.exec.Utilities;
+import org.apache.hadoop.hive.ql.hooks.WriteEntity;
 import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.Partition;
@@ -210,7 +211,7 @@ public class LoadSemanticAnalyzer extends BaseSemanticAnalyzer {
         : ts.tableHandle.getDataLocation();
 
     List<FieldSchema> parts = ts.tableHandle.getPartitionKeys();
-    if (isOverWrite && (parts != null && parts.size() > 0)
+    if ((parts != null && parts.size() > 0)
         && (ts.partSpec == null || ts.partSpec.size() == 0)) {
       throw new SemanticException(ErrorMsg.NEED_PARTITION_ERROR.getMsg());
     }
@@ -234,11 +235,12 @@ public class LoadSemanticAnalyzer extends BaseSemanticAnalyzer {
     }
 
     // create final load/move work
-
+    
     String loadTmpPath = ctx.getExternalTmpFileURI(toURI);
     Map<String, String> partSpec = ts.getPartSpec();
     if (partSpec == null) {
       partSpec = new LinkedHashMap<String, String>();
+      outputs.add(new WriteEntity(ts.tableHandle));
     } else {
       try{
         Partition part = Hive.get().getPartition(ts.tableHandle, partSpec, false);
@@ -247,6 +249,9 @@ public class LoadSemanticAnalyzer extends BaseSemanticAnalyzer {
             throw new SemanticException(ErrorMsg.OFFLINE_TABLE_OR_PARTITION.
                 getMsg(ts.tableName + ":" + part.getName()));
           }
+          outputs.add(new WriteEntity(part));
+        } else {
+          outputs.add(new WriteEntity(ts.tableHandle));
         }
       } catch(HiveException e) {
         throw new SemanticException(e);

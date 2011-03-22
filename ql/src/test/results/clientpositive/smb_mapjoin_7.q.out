@@ -25,11 +25,13 @@ POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: default@normal_join_results
 PREHOOK: query: load data local inpath '../data/files/empty1.txt' into table smb_bucket4_1
 PREHOOK: type: LOAD
+PREHOOK: Output: default@smb_bucket4_1
 POSTHOOK: query: load data local inpath '../data/files/empty1.txt' into table smb_bucket4_1
 POSTHOOK: type: LOAD
 POSTHOOK: Output: default@smb_bucket4_1
 PREHOOK: query: load data local inpath '../data/files/empty2.txt' into table smb_bucket4_1
 PREHOOK: type: LOAD
+PREHOOK: Output: default@smb_bucket4_1
 POSTHOOK: query: load data local inpath '../data/files/empty2.txt' into table smb_bucket4_1
 POSTHOOK: type: LOAD
 POSTHOOK: Output: default@smb_bucket4_1
@@ -88,11 +90,11 @@ POSTHOOK: Lineage: smb_join_results_empty_bigtable.v2 SIMPLE [(smb_bucket4_2)b.F
 PREHOOK: query: select * from smb_join_results_empty_bigtable order by k1, v1, k2, v2
 PREHOOK: type: QUERY
 PREHOOK: Input: default@smb_join_results_empty_bigtable
-PREHOOK: Output: file:/tmp/sdong/hive_2011-02-10_17-18-24_616_678604458259947919/-mr-10000
+PREHOOK: Output: file:/tmp/krishnak/hive_2011-03-21_05-19-34_663_1979970426982146402/-mr-10000
 POSTHOOK: query: select * from smb_join_results_empty_bigtable order by k1, v1, k2, v2
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@smb_join_results_empty_bigtable
-POSTHOOK: Output: file:/tmp/sdong/hive_2011-02-10_17-18-24_616_678604458259947919/-mr-10000
+POSTHOOK: Output: file:/tmp/krishnak/hive_2011-03-21_05-19-34_663_1979970426982146402/-mr-10000
 POSTHOOK: Lineage: smb_bucket4_2.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: smb_bucket4_2.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: smb_join_results_empty_bigtable.k1 SIMPLE [(smb_bucket4_1)a.FieldSchema(name:key, type:int, comment:null), ]
@@ -722,11 +724,11 @@ POSTHOOK: Lineage: smb_join_results_empty_bigtable.v2 SIMPLE [(smb_bucket4_2)b.F
 PREHOOK: query: select * from smb_join_results order by k1, v1, k2, v2
 PREHOOK: type: QUERY
 PREHOOK: Input: default@smb_join_results
-PREHOOK: Output: file:/tmp/sdong/hive_2011-02-10_17-18-34_102_3460544953226063048/-mr-10000
+PREHOOK: Output: file:/tmp/krishnak/hive_2011-03-21_05-19-42_038_9114789644039619741/-mr-10000
 POSTHOOK: query: select * from smb_join_results order by k1, v1, k2, v2
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@smb_join_results
-POSTHOOK: Output: file:/tmp/sdong/hive_2011-02-10_17-18-34_102_3460544953226063048/-mr-10000
+POSTHOOK: Output: file:/tmp/krishnak/hive_2011-03-21_05-19-42_038_9114789644039619741/-mr-10000
 POSTHOOK: Lineage: smb_bucket4_2.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: smb_bucket4_2.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: smb_join_results.k1 SIMPLE [(smb_bucket4_1)a.FieldSchema(name:key, type:int, comment:null), ]
@@ -1272,11 +1274,11 @@ POSTHOOK: Lineage: smb_join_results_empty_bigtable.v2 SIMPLE [(smb_bucket4_2)b.F
 PREHOOK: query: select sum(hash(k1)) as k1, sum(hash(k2)) as k2, sum(hash(v1)) as v1, sum(hash(v2)) as v2 from normal_join_results
 PREHOOK: type: QUERY
 PREHOOK: Input: default@normal_join_results
-PREHOOK: Output: file:/tmp/sdong/hive_2011-02-10_17-18-43_599_4385355081108514064/-mr-10000
+PREHOOK: Output: file:/tmp/krishnak/hive_2011-03-21_05-19-49_670_8267030672146730864/-mr-10000
 POSTHOOK: query: select sum(hash(k1)) as k1, sum(hash(k2)) as k2, sum(hash(v1)) as v1, sum(hash(v2)) as v2 from normal_join_results
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@normal_join_results
-POSTHOOK: Output: file:/tmp/sdong/hive_2011-02-10_17-18-43_599_4385355081108514064/-mr-10000
+POSTHOOK: Output: file:/tmp/krishnak/hive_2011-03-21_05-19-49_670_8267030672146730864/-mr-10000
 POSTHOOK: Lineage: normal_join_results.k1 SIMPLE [(smb_bucket4_1)a.FieldSchema(name:key, type:int, comment:null), ]
 POSTHOOK: Lineage: normal_join_results.k2 SIMPLE [(smb_bucket4_2)b.FieldSchema(name:key, type:int, comment:null), ]
 POSTHOOK: Lineage: normal_join_results.v1 SIMPLE [(smb_bucket4_1)a.FieldSchema(name:value, type:string, comment:null), ]
@@ -1299,11 +1301,11 @@ POSTHOOK: Lineage: smb_join_results_empty_bigtable.v2 SIMPLE [(smb_bucket4_2)b.F
 PREHOOK: query: select sum(hash(k1)) as k1, sum(hash(k2)) as k2, sum(hash(v1)) as v1, sum(hash(v2)) as v2 from smb_join_results
 PREHOOK: type: QUERY
 PREHOOK: Input: default@smb_join_results
-PREHOOK: Output: file:/tmp/sdong/hive_2011-02-10_17-18-46_996_4839622908465641442/-mr-10000
+PREHOOK: Output: file:/tmp/krishnak/hive_2011-03-21_05-19-52_827_7894481902386044692/-mr-10000
 POSTHOOK: query: select sum(hash(k1)) as k1, sum(hash(k2)) as k2, sum(hash(v1)) as v1, sum(hash(v2)) as v2 from smb_join_results
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@smb_join_results
-POSTHOOK: Output: file:/tmp/sdong/hive_2011-02-10_17-18-46_996_4839622908465641442/-mr-10000
+POSTHOOK: Output: file:/tmp/krishnak/hive_2011-03-21_05-19-52_827_7894481902386044692/-mr-10000
 POSTHOOK: Lineage: normal_join_results.k1 SIMPLE [(smb_bucket4_1)a.FieldSchema(name:key, type:int, comment:null), ]
 POSTHOOK: Lineage: normal_join_results.k2 SIMPLE [(smb_bucket4_2)b.FieldSchema(name:key, type:int, comment:null), ]
 POSTHOOK: Lineage: normal_join_results.v1 SIMPLE [(smb_bucket4_1)a.FieldSchema(name:value, type:string, comment:null), ]
@@ -1326,11 +1328,11 @@ POSTHOOK: Lineage: smb_join_results_empty_bigtable.v2 SIMPLE [(smb_bucket4_2)b.F
 PREHOOK: query: select sum(hash(k1)) as k1, sum(hash(k2)) as k2, sum(hash(v1)) as v1, sum(hash(v2)) as v2 from smb_join_results_empty_bigtable
 PREHOOK: type: QUERY
 PREHOOK: Input: default@smb_join_results_empty_bigtable
-PREHOOK: Output: file:/tmp/sdong/hive_2011-02-10_17-18-50_464_1730177966441244662/-mr-10000
+PREHOOK: Output: file:/tmp/krishnak/hive_2011-03-21_05-19-55_904_8901128032908040682/-mr-10000
 POSTHOOK: query: select sum(hash(k1)) as k1, sum(hash(k2)) as k2, sum(hash(v1)) as v1, sum(hash(v2)) as v2 from smb_join_results_empty_bigtable
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@smb_join_results_empty_bigtable
-POSTHOOK: Output: file:/tmp/sdong/hive_2011-02-10_17-18-50_464_1730177966441244662/-mr-10000
+POSTHOOK: Output: file:/tmp/krishnak/hive_2011-03-21_05-19-55_904_8901128032908040682/-mr-10000
 POSTHOOK: Lineage: normal_join_results.k1 SIMPLE [(smb_bucket4_1)a.FieldSchema(name:key, type:int, comment:null), ]
 POSTHOOK: Lineage: normal_join_results.k2 SIMPLE [(smb_bucket4_2)b.FieldSchema(name:key, type:int, comment:null), ]
 POSTHOOK: Lineage: normal_join_results.v1 SIMPLE [(smb_bucket4_1)a.FieldSchema(name:value, type:string, comment:null), ]

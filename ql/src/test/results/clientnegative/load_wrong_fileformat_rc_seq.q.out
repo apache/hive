@@ -13,5 +13,6 @@ POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: default@T1
 PREHOOK: query: LOAD DATA LOCAL INPATH '../data/files/kv1.seq' INTO TABLE T1
 PREHOOK: type: LOAD
+PREHOOK: Output: default@t1
 Failed with exception Wrong file format. Please check the file's format.
 FAILED: Execution Error, return code 1 from org.apache.hadoop.hive.ql.exec.MoveTask

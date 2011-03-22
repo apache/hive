@@ -5,6 +5,7 @@ POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: default@src_null
 PREHOOK: query: LOAD DATA LOCAL INPATH '../data/files/null.txt' INTO TABLE src_null
 PREHOOK: type: LOAD
+PREHOOK: Output: default@src_null
 POSTHOOK: query: LOAD DATA LOCAL INPATH '../data/files/null.txt' INTO TABLE src_null
 POSTHOOK: type: LOAD
 POSTHOOK: Output: default@src_null
@@ -72,11 +73,11 @@ STAGE PLANS:
 PREHOOK: query: SELECT * FROM src_null DISTRIBUTE BY c SORT BY d
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src_null
-PREHOOK: Output: file:/tmp/sdong/hive_2011-02-10_15-54-20_174_3461711807925991675/-mr-10000
+PREHOOK: Output: file:/var/folders/67/67R3POPtF90VG63KSmCbcU++F0U/-Tmp-/krishnak/hive_2011-03-20_23-43-04_093_3744625047385355137/-mr-10000
 POSTHOOK: query: SELECT * FROM src_null DISTRIBUTE BY c SORT BY d
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src_null
-POSTHOOK: Output: file:/tmp/sdong/hive_2011-02-10_15-54-20_174_3461711807925991675/-mr-10000
+POSTHOOK: Output: file:/var/folders/67/67R3POPtF90VG63KSmCbcU++F0U/-Tmp-/krishnak/hive_2011-03-20_23-43-04_093_3744625047385355137/-mr-10000
 1.0	1	same	0
 1.0	1	same	1
 1.0	1	same	2

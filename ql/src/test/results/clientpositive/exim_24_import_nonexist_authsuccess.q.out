@@ -5,6 +5,7 @@ POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: default@exim_department
 PREHOOK: query: load data local inpath "../data/files/test.dat" into table exim_department
 PREHOOK: type: LOAD
+PREHOOK: Output: default@exim_department
 POSTHOOK: query: load data local inpath "../data/files/test.dat" into table exim_department
 POSTHOOK: type: LOAD
 POSTHOOK: Output: default@exim_department
@@ -44,11 +45,11 @@ POSTHOOK: Output: importer@exim_department
 PREHOOK: query: select * from exim_department
 PREHOOK: type: QUERY
 PREHOOK: Input: importer@exim_department
-PREHOOK: Output: file:/var/folders/67/67R3POPtF90VG63KSmCbcU++F0U/-Tmp-/krishnak/hive_2011-02-28_03-23-10_804_4500507731598816674/-mr-10000
+PREHOOK: Output: file:/var/folders/67/67R3POPtF90VG63KSmCbcU++F0U/-Tmp-/krishnak/hive_2011-03-20_23-06-33_608_3825518513638087885/-mr-10000
 POSTHOOK: query: select * from exim_department
 POSTHOOK: type: QUERY
 POSTHOOK: Input: importer@exim_department
-POSTHOOK: Output: file:/var/folders/67/67R3POPtF90VG63KSmCbcU++F0U/-Tmp-/krishnak/hive_2011-02-28_03-23-10_804_4500507731598816674/-mr-10000
+POSTHOOK: Output: file:/var/folders/67/67R3POPtF90VG63KSmCbcU++F0U/-Tmp-/krishnak/hive_2011-03-20_23-06-33_608_3825518513638087885/-mr-10000
 1
 2
 3

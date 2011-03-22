@@ -5,13 +5,17 @@ POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: default@tstparttbl
 PREHOOK: query: LOAD DATA LOCAL INPATH '../data/files/kv1.txt' INTO TABLE tstparttbl PARTITION (ds='2008-04-09')
 PREHOOK: type: LOAD
+PREHOOK: Output: default@tstparttbl
 POSTHOOK: query: LOAD DATA LOCAL INPATH '../data/files/kv1.txt' INTO TABLE tstparttbl PARTITION (ds='2008-04-09')
 POSTHOOK: type: LOAD
+POSTHOOK: Output: default@tstparttbl
 POSTHOOK: Output: default@tstparttbl@ds=2008-04-09
 PREHOOK: query: LOAD DATA LOCAL INPATH '../data/files/nullfile.txt' INTO TABLE tstparttbl PARTITION (ds='2008-04-08')
 PREHOOK: type: LOAD
+PREHOOK: Output: default@tstparttbl
 POSTHOOK: query: LOAD DATA LOCAL INPATH '../data/files/nullfile.txt' INTO TABLE tstparttbl PARTITION (ds='2008-04-08')
 POSTHOOK: type: LOAD
+POSTHOOK: Output: default@tstparttbl
 POSTHOOK: Output: default@tstparttbl@ds=2008-04-08
 PREHOOK: query: explain
 select count(1) from tstparttbl
@@ -74,12 +78,12 @@ PREHOOK: query: select count(1) from tstparttbl
 PREHOOK: type: QUERY
 PREHOOK: Input: default@tstparttbl@ds=2008-04-08
 PREHOOK: Input: default@tstparttbl@ds=2008-04-09
-PREHOOK: Output: file:/tmp/sdong/hive_2011-02-10_16-47-45_924_6449903161675123446/-mr-10000
+PREHOOK: Output: file:/tmp/krishnak/hive_2011-03-21_04-13-07_266_530503210743564414/-mr-10000
 POSTHOOK: query: select count(1) from tstparttbl
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@tstparttbl@ds=2008-04-08
 POSTHOOK: Input: default@tstparttbl@ds=2008-04-09
-POSTHOOK: Output: file:/tmp/sdong/hive_2011-02-10_16-47-45_924_6449903161675123446/-mr-10000
+POSTHOOK: Output: file:/tmp/krishnak/hive_2011-03-21_04-13-07_266_530503210743564414/-mr-10000
 500
 PREHOOK: query: CREATE TABLE tstparttbl2(KEY STRING, VALUE STRING) PARTITIONED BY(ds string) STORED AS TEXTFILE
 PREHOOK: type: CREATETABLE
@@ -88,13 +92,17 @@ POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: default@tstparttbl2
 PREHOOK: query: LOAD DATA LOCAL INPATH '../data/files/nullfile.txt' INTO TABLE tstparttbl2 PARTITION (ds='2008-04-09')
 PREHOOK: type: LOAD
+PREHOOK: Output: default@tstparttbl2
 POSTHOOK: query: LOAD DATA LOCAL INPATH '../data/files/nullfile.txt' INTO TABLE tstparttbl2 PARTITION (ds='2008-04-09')
 POSTHOOK: type: LOAD
+POSTHOOK: Output: default@tstparttbl2
 POSTHOOK: Output: default@tstparttbl2@ds=2008-04-09
 PREHOOK: query: LOAD DATA LOCAL INPATH '../data/files/nullfile.txt' INTO TABLE tstparttbl2 PARTITION (ds='2008-04-08')
 PREHOOK: type: LOAD
+PREHOOK: Output: default@tstparttbl2
 POSTHOOK: query: LOAD DATA LOCAL INPATH '../data/files/nullfile.txt' INTO TABLE tstparttbl2 PARTITION (ds='2008-04-08')
 POSTHOOK: type: LOAD
+POSTHOOK: Output: default@tstparttbl2
 POSTHOOK: Output: default@tstparttbl2@ds=2008-04-08
 PREHOOK: query: explain
 select count(1) from tstparttbl2
@@ -157,12 +165,12 @@ PREHOOK: query: select count(1) from tstparttbl2
 PREHOOK: type: QUERY
 PREHOOK: Input: default@tstparttbl2@ds=2008-04-08
 PREHOOK: Input: default@tstparttbl2@ds=2008-04-09
-PREHOOK: Output: file:/tmp/sdong/hive_2011-02-10_16-47-51_083_196164182966080792/-mr-10000
+PREHOOK: Output: file:/tmp/krishnak/hive_2011-03-21_04-13-10_685_2521681953062502433/-mr-10000
 POSTHOOK: query: select count(1) from tstparttbl2
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@tstparttbl2@ds=2008-04-08
 POSTHOOK: Input: default@tstparttbl2@ds=2008-04-09
-POSTHOOK: Output: file:/tmp/sdong/hive_2011-02-10_16-47-51_083_196164182966080792/-mr-10000
+POSTHOOK: Output: file:/tmp/krishnak/hive_2011-03-21_04-13-10_685_2521681953062502433/-mr-10000
 0
 PREHOOK: query: DROP TABLE tstparttbl
 PREHOOK: type: DROPTABLE
@@ -179,13 +187,17 @@ POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: default@tstparttbl
 PREHOOK: query: LOAD DATA LOCAL INPATH '../data/files/kv1.txt' INTO TABLE tstparttbl PARTITION (ds='2008-04-09')
 PREHOOK: type: LOAD
+PREHOOK: Output: default@tstparttbl
 POSTHOOK: query: LOAD DATA LOCAL INPATH '../data/files/kv1.txt' INTO TABLE tstparttbl PARTITION (ds='2008-04-09')
 POSTHOOK: type: LOAD
+POSTHOOK: Output: default@tstparttbl
 POSTHOOK: Output: default@tstparttbl@ds=2008-04-09
 PREHOOK: query: LOAD DATA LOCAL INPATH '../data/files/nullfile.txt' INTO TABLE tstparttbl PARTITION (ds='2008-04-08')
 PREHOOK: type: LOAD
+PREHOOK: Output: default@tstparttbl
 POSTHOOK: query: LOAD DATA LOCAL INPATH '../data/files/nullfile.txt' INTO TABLE tstparttbl PARTITION (ds='2008-04-08')
 POSTHOOK: type: LOAD
+POSTHOOK: Output: default@tstparttbl
 POSTHOOK: Output: default@tstparttbl@ds=2008-04-08
 PREHOOK: query: explain
 select count(1) from tstparttbl
@@ -248,12 +260,12 @@ PREHOOK: query: select count(1) from tstparttbl
 PREHOOK: type: QUERY
 PREHOOK: Input: default@tstparttbl@ds=2008-04-08
 PREHOOK: Input: default@tstparttbl@ds=2008-04-09
-PREHOOK: Output: file:/tmp/sdong/hive_2011-02-10_16-47-56_385_6129278432749802559/-mr-10000
+PREHOOK: Output: file:/tmp/krishnak/hive_2011-03-21_04-13-14_214_6605372656284457620/-mr-10000
 POSTHOOK: query: select count(1) from tstparttbl
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@tstparttbl@ds=2008-04-08
 POSTHOOK: Input: default@tstparttbl@ds=2008-04-09
-POSTHOOK: Output: file:/tmp/sdong/hive_2011-02-10_16-47-56_385_6129278432749802559/-mr-10000
+POSTHOOK: Output: file:/tmp/krishnak/hive_2011-03-21_04-13-14_214_6605372656284457620/-mr-10000
 500
 PREHOOK: query: DROP TABLE tstparttbl2
 PREHOOK: type: DROPTABLE
@@ -270,13 +282,17 @@ POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: default@tstparttbl2
 PREHOOK: query: LOAD DATA LOCAL INPATH '../data/files/nullfile.txt' INTO TABLE tstparttbl2 PARTITION (ds='2008-04-09')
 PREHOOK: type: LOAD
+PREHOOK: Output: default@tstparttbl2
 POSTHOOK: query: LOAD DATA LOCAL INPATH '../data/files/nullfile.txt' INTO TABLE tstparttbl2 PARTITION (ds='2008-04-09')
 POSTHOOK: type: LOAD
+POSTHOOK: Output: default@tstparttbl2
 POSTHOOK: Output: default@tstparttbl2@ds=2008-04-09
 PREHOOK: query: LOAD DATA LOCAL INPATH '../data/files/nullfile.txt' INTO TABLE tstparttbl2 PARTITION (ds='2008-04-08')
 PREHOOK: type: LOAD
+PREHOOK: Output: default@tstparttbl2
 POSTHOOK: query: LOAD DATA LOCAL INPATH '../data/files/nullfile.txt' INTO TABLE tstparttbl2 PARTITION (ds='2008-04-08')
 POSTHOOK: type: LOAD
+POSTHOOK: Output: default@tstparttbl2
 POSTHOOK: Output: default@tstparttbl2@ds=2008-04-08
 PREHOOK: query: explain
 select count(1) from tstparttbl2
@@ -339,10 +355,10 @@ PREHOOK: query: select count(1) from tstparttbl2
 PREHOOK: type: QUERY
 PREHOOK: Input: default@tstparttbl2@ds=2008-04-08
 PREHOOK: Input: default@tstparttbl2@ds=2008-04-09
-PREHOOK: Output: file:/tmp/sdong/hive_2011-02-10_16-48-02_718_2429296519427564988/-mr-10000
+PREHOOK: Output: file:/tmp/krishnak/hive_2011-03-21_04-13-17_713_2865331384408810906/-mr-10000
 POSTHOOK: query: select count(1) from tstparttbl2
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@tstparttbl2@ds=2008-04-08
 POSTHOOK: Input: default@tstparttbl2@ds=2008-04-09
-POSTHOOK: Output: file:/tmp/sdong/hive_2011-02-10_16-48-02_718_2429296519427564988/-mr-10000
+POSTHOOK: Output: file:/tmp/krishnak/hive_2011-03-21_04-13-17_713_2865331384408810906/-mr-10000
 0

@@ -10,61 +10,77 @@ POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: default@merge_dynamic_part
 PREHOOK: query: load data local inpath '../data/files/srcbucket20.txt' INTO TABLE srcpart_merge_dp partition(ds='2008-04-08', hr=11)
 PREHOOK: type: LOAD
+PREHOOK: Output: default@srcpart_merge_dp
 POSTHOOK: query: load data local inpath '../data/files/srcbucket20.txt' INTO TABLE srcpart_merge_dp partition(ds='2008-04-08', hr=11)
 POSTHOOK: type: LOAD
+POSTHOOK: Output: default@srcpart_merge_dp
 POSTHOOK: Output: default@srcpart_merge_dp@ds=2008-04-08/hr=11
 PREHOOK: query: load data local inpath '../data/files/srcbucket21.txt' INTO TABLE srcpart_merge_dp partition(ds='2008-04-08', hr=11)
 PREHOOK: type: LOAD
+PREHOOK: Output: default@srcpart_merge_dp@ds=2008-04-08/hr=11
 POSTHOOK: query: load data local inpath '../data/files/srcbucket21.txt' INTO TABLE srcpart_merge_dp partition(ds='2008-04-08', hr=11)
 POSTHOOK: type: LOAD
 POSTHOOK: Output: default@srcpart_merge_dp@ds=2008-04-08/hr=11
 PREHOOK: query: load data local inpath '../data/files/srcbucket22.txt' INTO TABLE srcpart_merge_dp partition(ds='2008-04-08', hr=11)
 PREHOOK: type: LOAD
+PREHOOK: Output: default@srcpart_merge_dp@ds=2008-04-08/hr=11
 POSTHOOK: query: load data local inpath '../data/files/srcbucket22.txt' INTO TABLE srcpart_merge_dp partition(ds='2008-04-08', hr=11)
 POSTHOOK: type: LOAD
 POSTHOOK: Output: default@srcpart_merge_dp@ds=2008-04-08/hr=11
 PREHOOK: query: load data local inpath '../data/files/srcbucket23.txt' INTO TABLE srcpart_merge_dp partition(ds='2008-04-08', hr=11)
 PREHOOK: type: LOAD
+PREHOOK: Output: default@srcpart_merge_dp@ds=2008-04-08/hr=11
 POSTHOOK: query: load data local inpath '../data/files/srcbucket23.txt' INTO TABLE srcpart_merge_dp partition(ds='2008-04-08', hr=11)
 POSTHOOK: type: LOAD
 POSTHOOK: Output: default@srcpart_merge_dp@ds=2008-04-08/hr=11
 PREHOOK: query: load data local inpath '../data/files/srcbucket20.txt' INTO TABLE srcpart_merge_dp partition(ds='2008-04-08', hr=12)
 PREHOOK: type: LOAD
+PREHOOK: Output: default@srcpart_merge_dp
 POSTHOOK: query: load data local inpath '../data/files/srcbucket20.txt' INTO TABLE srcpart_merge_dp partition(ds='2008-04-08', hr=12)
 POSTHOOK: type: LOAD
+POSTHOOK: Output: default@srcpart_merge_dp
 POSTHOOK: Output: default@srcpart_merge_dp@ds=2008-04-08/hr=12
 PREHOOK: query: load data local inpath '../data/files/srcbucket21.txt' INTO TABLE srcpart_merge_dp partition(ds='2008-04-08', hr=12)
 PREHOOK: type: LOAD
+PREHOOK: Output: default@srcpart_merge_dp@ds=2008-04-08/hr=12
 POSTHOOK: query: load data local inpath '../data/files/srcbucket21.txt' INTO TABLE srcpart_merge_dp partition(ds='2008-04-08', hr=12)
 POSTHOOK: type: LOAD
 POSTHOOK: Output: default@srcpart_merge_dp@ds=2008-04-08/hr=12
 PREHOOK: query: load data local inpath '../data/files/srcbucket22.txt' INTO TABLE srcpart_merge_dp partition(ds='2008-04-08', hr=12)
 PREHOOK: type: LOAD
+PREHOOK: Output: default@srcpart_merge_dp@ds=2008-04-08/hr=12
 POSTHOOK: query: load data local inpath '../data/files/srcbucket22.txt' INTO TABLE srcpart_merge_dp partition(ds='2008-04-08', hr=12)
 POSTHOOK: type: LOAD
 POSTHOOK: Output: default@srcpart_merge_dp@ds=2008-04-08/hr=12
 PREHOOK: query: load data local inpath '../data/files/srcbucket23.txt' INTO TABLE srcpart_merge_dp partition(ds='2008-04-08', hr=12)
 PREHOOK: type: LOAD
+PREHOOK: Output: default@srcpart_merge_dp@ds=2008-04-08/hr=12
 POSTHOOK: query: load data local inpath '../data/files/srcbucket23.txt' INTO TABLE srcpart_merge_dp partition(ds='2008-04-08', hr=12)
 POSTHOOK: type: LOAD
 POSTHOOK: Output: default@srcpart_merge_dp@ds=2008-04-08/hr=12
 PREHOOK: query: load data local inpath '../data/files/kv1.txt' INTO TABLE srcpart_merge_dp partition(ds='2008-04-09', hr=11)
 PREHOOK: type: LOAD
+PREHOOK: Output: default@srcpart_merge_dp
 POSTHOOK: query: load data local inpath '../data/files/kv1.txt' INTO TABLE srcpart_merge_dp partition(ds='2008-04-09', hr=11)
 POSTHOOK: type: LOAD
+POSTHOOK: Output: default@srcpart_merge_dp
 POSTHOOK: Output: default@srcpart_merge_dp@ds=2008-04-09/hr=11
 PREHOOK: query: load data local inpath '../data/files/kv2.txt' INTO TABLE srcpart_merge_dp partition(ds='2008-04-09', hr=11)
 PREHOOK: type: LOAD
+PREHOOK: Output: default@srcpart_merge_dp@ds=2008-04-09/hr=11
 POSTHOOK: query: load data local inpath '../data/files/kv2.txt' INTO TABLE srcpart_merge_dp partition(ds='2008-04-09', hr=11)
 POSTHOOK: type: LOAD
 POSTHOOK: Output: default@srcpart_merge_dp@ds=2008-04-09/hr=11
 PREHOOK: query: load data local inpath '../data/files/kv1.txt' INTO TABLE srcpart_merge_dp partition(ds='2008-04-09', hr=12)
 PREHOOK: type: LOAD
+PREHOOK: Output: default@srcpart_merge_dp
 POSTHOOK: query: load data local inpath '../data/files/kv1.txt' INTO TABLE srcpart_merge_dp partition(ds='2008-04-09', hr=12)
 POSTHOOK: type: LOAD
+POSTHOOK: Output: default@srcpart_merge_dp
 POSTHOOK: Output: default@srcpart_merge_dp@ds=2008-04-09/hr=12
 PREHOOK: query: load data local inpath '../data/files/kv2.txt' INTO TABLE srcpart_merge_dp partition(ds='2008-04-09', hr=12)
 PREHOOK: type: LOAD
+PREHOOK: Output: default@srcpart_merge_dp@ds=2008-04-09/hr=12
 POSTHOOK: query: load data local inpath '../data/files/kv2.txt' INTO TABLE srcpart_merge_dp partition(ds='2008-04-09', hr=12)
 POSTHOOK: type: LOAD
 POSTHOOK: Output: default@srcpart_merge_dp@ds=2008-04-09/hr=12
@@ -131,7 +147,7 @@ STAGE PLANS:
     Move Operator
       files:
           hdfs directory: true
-          destination: pfile:/data/users/sdong/www/open-source-hive2/.ptest_0/build/ql/scratchdir/hive_2011-02-16_17-06-54_385_3145107815584383204/-ext-10000
+          destination: pfile:/home/krishnak/hive-howl/hive-git-apache/build/ql/scratchdir/hive_2011-03-21_04-08-57_744_5652858185751684707/-ext-10000
 
   Stage: Stage-0
     Move Operator
@@ -152,7 +168,7 @@ STAGE PLANS:
   Stage: Stage-3
     Map Reduce
       Alias -> Map Operator Tree:
-        pfile:/data/users/sdong/www/open-source-hive2/.ptest_0/build/ql/scratchdir/hive_2011-02-16_17-06-54_385_3145107815584383204/-ext-10002 
+        pfile:/home/krishnak/hive-howl/hive-git-apache/build/ql/scratchdir/hive_2011-03-21_04-08-57_744_5652858185751684707/-ext-10002 
             File Output Operator
               compressed: false
               GlobalTableId: 0
@@ -194,14 +210,14 @@ PREHOOK: Input: default@merge_dynamic_part@ds=2008-04-08/hr=11
 PREHOOK: Input: default@merge_dynamic_part@ds=2008-04-08/hr=12
 PREHOOK: Input: default@merge_dynamic_part@ds=2008-04-09/hr=11
 PREHOOK: Input: default@merge_dynamic_part@ds=2008-04-09/hr=12
-PREHOOK: Output: file:/tmp/sdong/hive_2011-02-16_17-07-08_924_3777174972695387743/-mr-10000
+PREHOOK: Output: file:/tmp/krishnak/hive_2011-03-21_04-09-06_498_2526338891417606549/-mr-10000
 POSTHOOK: query: select ds, hr, count(1) from merge_dynamic_part where ds>='2008-04-08' group by ds, hr order by ds, hr
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@merge_dynamic_part@ds=2008-04-08/hr=11
 POSTHOOK: Input: default@merge_dynamic_part@ds=2008-04-08/hr=12
 POSTHOOK: Input: default@merge_dynamic_part@ds=2008-04-09/hr=11
 POSTHOOK: Input: default@merge_dynamic_part@ds=2008-04-09/hr=12
-POSTHOOK: Output: file:/tmp/sdong/hive_2011-02-16_17-07-08_924_3777174972695387743/-mr-10000
+POSTHOOK: Output: file:/tmp/krishnak/hive_2011-03-21_04-09-06_498_2526338891417606549/-mr-10000
 POSTHOOK: Lineage: merge_dynamic_part PARTITION(ds=2008-04-08,hr=11).key SIMPLE [(srcpart_merge_dp)srcpart_merge_dp.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: merge_dynamic_part PARTITION(ds=2008-04-08,hr=11).value SIMPLE [(srcpart_merge_dp)srcpart_merge_dp.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: merge_dynamic_part PARTITION(ds=2008-04-08,hr=12).key SIMPLE [(srcpart_merge_dp)srcpart_merge_dp.FieldSchema(name:key, type:string, comment:default), ]
@@ -228,7 +244,7 @@ POSTHOOK: Lineage: merge_dynamic_part PARTITION(ds=2008-04-09,hr=12).key SIMPLE 
 POSTHOOK: Lineage: merge_dynamic_part PARTITION(ds=2008-04-09,hr=12).value SIMPLE [(srcpart_merge_dp)srcpart_merge_dp.FieldSchema(name:value, type:string, comment:default), ]
 tableName:merge_dynamic_part
 owner:null
-location:pfile:/data/users/sdong/www/open-source-hive2/.ptest_0/build/ql/test/data/warehouse/merge_dynamic_part
+location:pfile:/home/krishnak/hive-howl/hive-git-apache/build/ql/test/data/warehouse/merge_dynamic_part
 inputformat:org.apache.hadoop.mapred.TextInputFormat
 outputformat:org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
 columns:struct columns { string key, string value}
@@ -239,5 +255,5 @@ totalFileSize:34830
 maxFileSize:5812
 minFileSize:5791
 lastAccessTime:0
-lastUpdateTime:1297904827000
+lastUpdateTime:1300705746000
 
