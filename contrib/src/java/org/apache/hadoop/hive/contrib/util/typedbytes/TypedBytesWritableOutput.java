@@ -32,6 +32,7 @@ import org.apache.hadoop.io.ArrayWritable;
 import org.apache.hadoop.io.BooleanWritable;
 import org.apache.hadoop.io.BytesWritable;
 import org.apache.hadoop.io.FloatWritable;
+import org.apache.hadoop.io.IOUtils;
 import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.MapWritable;
@@ -229,12 +230,18 @@ public class TypedBytesWritableOutput {
   }
 
   public void writeWritable(Writable w) throws IOException {
-    ByteArrayOutputStream baos = new ByteArrayOutputStream();
-    DataOutputStream dos = new DataOutputStream(baos);
-    WritableUtils.writeString(dos, w.getClass().getName());
-    w.write(dos);
-    dos.close();
-    out.writeBytes(baos.toByteArray(), Type.WRITABLE.code);
+    DataOutputStream dos = null;
+    try {
+      ByteArrayOutputStream baos = new ByteArrayOutputStream();
+      dos = new DataOutputStream(baos);
+      WritableUtils.writeString(dos, w.getClass().getName());
+      w.write(dos);
+      out.writeBytes(baos.toByteArray(), Type.WRITABLE.code);
+      dos.close();
+      dos = null;
+    } finally {
+      IOUtils.closeStream(dos);
+    }
   }
 
   public void writeEndOfRecord() throws IOException {

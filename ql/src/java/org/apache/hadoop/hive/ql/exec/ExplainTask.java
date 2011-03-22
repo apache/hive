@@ -38,6 +38,7 @@ import org.apache.hadoop.hive.ql.DriverContext;
 import org.apache.hadoop.hive.ql.plan.Explain;
 import org.apache.hadoop.hive.ql.plan.ExplainWork;
 import org.apache.hadoop.hive.ql.plan.api.StageType;
+import org.apache.hadoop.io.IOUtils;
 import org.apache.hadoop.util.StringUtils;
 
 
@@ -55,10 +56,11 @@ public class ExplainTask extends Task<ExplainWork> implements Serializable {
   @Override
   public int execute(DriverContext driverContext) {
 
+    PrintStream out = null;
     try {
       Path resFile = new Path(work.getResFile());
       OutputStream outS = resFile.getFileSystem(conf).create(resFile);
-      PrintStream out = new PrintStream(outS);
+      out = new PrintStream(outS);
 
       // Print out the parse AST
       outputAST(work.getAstStringTree(), out, 0);
@@ -70,12 +72,15 @@ public class ExplainTask extends Task<ExplainWork> implements Serializable {
       // Go over all the tasks and dump out the plans
       outputStagePlans(out, work.getRootTasks(), 0);
       out.close();
+      out = null;
 
       return (0);
     } catch (Exception e) {
       console.printError("Failed with exception " + e.getMessage(), "\n"
           + StringUtils.stringifyException(e));
       return (1);
+    } finally {
+      IOUtils.closeStream(out);
     }
   }
 
