@@ -24,6 +24,7 @@ import java.util.ArrayList;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.io.IOUtils;
 import org.apache.hadoop.io.SequenceFile;
 
 /**
@@ -39,12 +40,16 @@ public class SequenceFileInputFormatChecker implements InputFormatChecker {
       return false;
     }
     for (int fileId = 0; fileId < files.size(); fileId++) {
+      SequenceFile.Reader reader = null;
       try {
-        SequenceFile.Reader reader = new SequenceFile.Reader(fs, files.get(
+        reader = new SequenceFile.Reader(fs, files.get(
             fileId).getPath(), conf);
         reader.close();
+        reader = null;
       } catch (IOException e) {
         return false;
+      }finally{
+        IOUtils.closeStream(reader);
       }
     }
     return true;

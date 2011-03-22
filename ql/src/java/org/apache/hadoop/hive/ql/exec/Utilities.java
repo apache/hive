@@ -115,6 +115,7 @@ import org.apache.hadoop.hive.serde2.SerDeException;
 import org.apache.hadoop.hive.serde2.Serializer;
 import org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe;
 import org.apache.hadoop.hive.shims.ShimLoader;
+import org.apache.hadoop.io.IOUtils;
 import org.apache.hadoop.io.SequenceFile;
 import org.apache.hadoop.io.Writable;
 import org.apache.hadoop.io.SequenceFile.CompressionType;
@@ -457,10 +458,16 @@ public final class Utilities {
    * Deserialize the whole query plan.
    */
   public static QueryPlan deserializeQueryPlan(InputStream in, Configuration conf) {
-    XMLDecoder d = new XMLDecoder(in, null, null, conf.getClassLoader());
-    QueryPlan ret = (QueryPlan) d.readObject();
-    d.close();
-    return (ret);
+    XMLDecoder d = null;
+    try {
+      d = new XMLDecoder(in, null, null, conf.getClassLoader());
+      QueryPlan ret = (QueryPlan) d.readObject();
+      return (ret);
+    } finally {
+      if (null != d) {
+        d.close();
+      }
+    }
   }
 
   /**
@@ -468,19 +475,32 @@ public final class Utilities {
    * output since it closes the output stream. DO USE mapredWork.toXML() instead.
    */
   public static void serializeMapRedWork(MapredWork w, OutputStream out) {
-    XMLEncoder e = new XMLEncoder(out);
-    // workaround for java 1.5
-    e.setPersistenceDelegate(ExpressionTypes.class, new EnumDelegate());
-    e.setPersistenceDelegate(GroupByDesc.Mode.class, new EnumDelegate());
-    e.writeObject(w);
-    e.close();
+    XMLEncoder e = null;
+    try {
+      e = new XMLEncoder(out);
+      // workaround for java 1.5
+      e.setPersistenceDelegate(ExpressionTypes.class, new EnumDelegate());
+      e.setPersistenceDelegate(GroupByDesc.Mode.class, new EnumDelegate());
+      e.writeObject(w);
+    } finally {
+      if (null != e) {
+        e.close();
+      }
+    }
+
   }
 
   public static MapredWork deserializeMapRedWork(InputStream in, Configuration conf) {
-    XMLDecoder d = new XMLDecoder(in, null, null, conf.getClassLoader());
-    MapredWork ret = (MapredWork) d.readObject();
-    d.close();
-    return (ret);
+    XMLDecoder d = null;
+    try {
+      d = new XMLDecoder(in, null, null, conf.getClassLoader());
+      MapredWork ret = (MapredWork) d.readObject();
+      return (ret);
+    } finally {
+      if (null != d) {
+        d.close();
+      }
+    }
   }
 
   /**
@@ -488,19 +508,31 @@ public final class Utilities {
    * output since it closes the output stream. DO USE mapredWork.toXML() instead.
    */
   public static void serializeMapRedLocalWork(MapredLocalWork w, OutputStream out) {
-    XMLEncoder e = new XMLEncoder(out);
-    // workaround for java 1.5
-    e.setPersistenceDelegate(ExpressionTypes.class, new EnumDelegate());
-    e.setPersistenceDelegate(GroupByDesc.Mode.class, new EnumDelegate());
-    e.writeObject(w);
-    e.close();
+    XMLEncoder e = null;
+    try {
+      e = new XMLEncoder(out);
+      // workaround for java 1.5
+      e.setPersistenceDelegate(ExpressionTypes.class, new EnumDelegate());
+      e.setPersistenceDelegate(GroupByDesc.Mode.class, new EnumDelegate());
+      e.writeObject(w);
+    } finally {
+      if (null != e) {
+        e.close();
+      }
+    }
   }
 
   public static MapredLocalWork deserializeMapRedLocalWork(InputStream in, Configuration conf) {
-    XMLDecoder d = new XMLDecoder(in, null, null, conf.getClassLoader());
-    MapredLocalWork ret = (MapredLocalWork) d.readObject();
-    d.close();
-    return (ret);
+    XMLDecoder d = null;
+    try {
+      d = new XMLDecoder(in, null, null, conf.getClassLoader());
+      MapredLocalWork ret = (MapredLocalWork) d.readObject();
+      return (ret);
+    } finally {
+      if (null != d) {
+        d.close();
+      }
+    }
   }
 
   /**
@@ -610,9 +642,10 @@ public final class Utilities {
 
     @Override
     public void run() {
+      BufferedReader br = null;
       try {
         InputStreamReader isr = new InputStreamReader(is);
-        BufferedReader br = new BufferedReader(isr);
+        br = new BufferedReader(isr);
         String line = null;
         if (type != null) {
           while ((line = br.readLine()) != null) {
@@ -623,8 +656,12 @@ public final class Utilities {
             os.println(line);
           }
         }
+        br.close();
+        br=null;
       } catch (IOException ioe) {
         ioe.printStackTrace();
+      }finally{
+        IOUtils.closeStream(br);
       }
     }
   }
