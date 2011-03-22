@@ -1221,6 +1221,7 @@ public class ObjectStore implements RawStore, Configurable {
       Query query = pm.newQuery(MPartition.class,
           "table.tableName == t1 && table.database.name == t2");
       query.declareParameters("java.lang.String t1, java.lang.String t2");
+      query.setOrdering("partitionName ascending");
       mparts = (List<MPartition>) query.execute(tableName, dbName);
       LOG.debug("Done executing query for listMPartitions");
       pm.retrieveAll(mparts);
@@ -1240,6 +1241,7 @@ public class ObjectStore implements RawStore, Configurable {
     openTransaction();
     List<Partition> parts = convertToParts(listMPartitionsByFilter(dbName,
         tblName, filter, maxParts));
+    LOG.info("# parts after pruning = " + parts.size());
     commitTransaction();
     return parts;
   }
@@ -1269,6 +1271,7 @@ public class ObjectStore implements RawStore, Configurable {
       }
 
       String jdoFilter = parser.tree.generateJDOFilter(table, params);
+      LOG.debug("jdoFilter = " + jdoFilter);
 
       if( jdoFilter.trim().length() > 0 ) {
         queryBuilder.append(" && ( ");
@@ -1276,7 +1279,6 @@ public class ObjectStore implements RawStore, Configurable {
         queryBuilder.append(" )");
       }
     }
-
     return queryBuilder.toString();
   }
 
@@ -1347,7 +1349,7 @@ public class ObjectStore implements RawStore, Configurable {
     List<String> partNames = new ArrayList<String>();
     try {
       openTransaction();
-      LOG.debug("Executing listMPartitionsByFilter");
+      LOG.debug("Executing listMPartitionNamesByFilter");
       dbName = dbName.toLowerCase();
       tableName = tableName.toLowerCase();
 

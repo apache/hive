@@ -1045,7 +1045,7 @@ public class Hive {
    *          if true - replace files in the partition, otherwise add files to
    *          the partition
    * @param holdDDLTime if true, force [re]create the partition
-   * @param inheritTableSpecs if true, on [re]creating the partition, take the 
+   * @param inheritTableSpecs if true, on [re]creating the partition, take the
    *          location/inputformat/outputformat/serde details from table spec
    * @param tmpDirPath
    *          The temporary directory.
@@ -1071,7 +1071,7 @@ public class Hive {
 
 
       Path newPartPath = null;
-      
+
       if (inheritTableSpecs) {
         Path partPath = new Path(tbl.getDataLocation().getPath(),
             Warehouse.makePartPath(partSpec));
@@ -1080,7 +1080,7 @@ public class Hive {
       } else {
         newPartPath = oldPartPath;
       }
-      
+
       if (replace) {
         Hive.replaceFiles(loadPath, newPartPath, oldPartPath, getConf());
       } else {
@@ -1208,7 +1208,7 @@ public class Hive {
    */
   public Partition createPartition(Table tbl, Map<String, String> partSpec)
       throws HiveException {
-    return createPartition(tbl, partSpec, null, null, null, null, -1, 
+    return createPartition(tbl, partSpec, null, null, null, null, -1,
         null, null, null, null, null);
   }
 
@@ -1231,7 +1231,7 @@ public class Hive {
    * @param serdeParams the serde parameters
    * @param bucketCols the bucketing columns
    * @param sortCols sort columns and order
-   *             
+   *
    * @return created partition object
    * @throws HiveException
    *           if table doesn't exist or partition already exists
@@ -1310,7 +1310,7 @@ public class Hive {
    *          if this is true and partition doesn't exist then a partition is
    *          created
    * @param partPath the path where the partition data is located
-   * @param inheritTableSpecs whether to copy over the table specs for if/of/serde 
+   * @param inheritTableSpecs whether to copy over the table specs for if/of/serde
    * @return result partition object or null if there is no partition
    * @throws HiveException
    */
@@ -1544,6 +1544,36 @@ public class Hive {
 
     return partitions;
   }
+
+  /**
+   * Get a list of Partitions by filter.
+   * @param tbl The table containing the partitions.
+   * @param filter A string represent partition predicates.
+   * @return a list of partitions satisfying the partition predicates.
+   * @throws HiveException
+   * @throws MetaException
+   * @throws NoSuchObjectException
+   * @throws TException
+   */
+  public List<Partition> getPartitionsByFilter(Table tbl, String filter)
+      throws HiveException, MetaException, NoSuchObjectException, TException {
+
+    if (!tbl.isPartitioned()) {
+      throw new HiveException("Partition spec should only be supplied for a " +
+          "partitioned table");
+    }
+
+    List<org.apache.hadoop.hive.metastore.api.Partition> tParts = getMSC().listPartitionsByFilter(
+        tbl.getDbName(), tbl.getTableName(), filter, (short)-1);
+    List<Partition> results = new ArrayList<Partition>(tParts.size());
+
+    for (org.apache.hadoop.hive.metastore.api.Partition tPart: tParts) {
+      Partition part = new Partition(tbl, tPart);
+      results.add(part);
+    }
+    return results;
+  }
+
   /**
    * Get the name of the current database
    * @return

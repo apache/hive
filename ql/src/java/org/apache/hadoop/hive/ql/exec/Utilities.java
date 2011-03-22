@@ -99,7 +99,10 @@ import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.parse.ErrorMsg;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.plan.DynamicPartitionCtx;
+import org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc;
+import org.apache.hadoop.hive.ql.plan.ExprNodeConstantDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
+import org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc;
 import org.apache.hadoop.hive.ql.plan.FileSinkDesc;
 import org.apache.hadoop.hive.ql.plan.GroupByDesc;
 import org.apache.hadoop.hive.ql.plan.MapredLocalWork;
@@ -110,10 +113,15 @@ import org.apache.hadoop.hive.ql.plan.TableDesc;
 import org.apache.hadoop.hive.ql.plan.PlanUtils.ExpressionTypes;
 import org.apache.hadoop.hive.ql.stats.StatsFactory;
 import org.apache.hadoop.hive.ql.stats.StatsPublisher;
+import org.apache.hadoop.hive.ql.udf.generic.GenericUDF;
+import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPAnd;
+import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPEqual;
+import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPOr;
 import org.apache.hadoop.hive.serde.Constants;
 import org.apache.hadoop.hive.serde2.SerDeException;
 import org.apache.hadoop.hive.serde2.Serializer;
 import org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe;
+import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.hadoop.hive.shims.ShimLoader;
 import org.apache.hadoop.io.IOUtils;
 import org.apache.hadoop.io.SequenceFile;
@@ -1892,6 +1900,66 @@ public final class Utilities {
     } else {
       return false;
     }
+  }
+
+  /**
+   * Check if a function can be pushed down to JDO.
+   * Now only {=, AND, OR} are supported.
+   * @param func a generic function.
+   * @return true if this function can be pushed down to JDO filter.
+   */
+  private static boolean supportedJDOFuncs(GenericUDF func) {
+    return func instanceof GenericUDFOPEqual ||
+           func instanceof GenericUDFOPAnd ||
+           func instanceof GenericUDFOPOr;
+  }
+
+  /**
+   * Check if the partition pruning expression can be pushed down to JDO filtering.
+   * The partition expression contains only partition columns.
+   * The criteria that an expression can be pushed down are that:
+   *  1) the expression only contains function specified in supportedJDOFuncs().
+   *     Now only {=, AND, OR} can be pushed down.
+   *  2) the partition column type and the constant type have to be String. This is
+   *     restriction by the current JDO filtering implementation.
+   * @param tab The table that contains the partition columns.
+   * @param expr the partition pruning expression
+   * @return true if the partition pruning expression can be pushed down to JDO filtering.
+   */
+  public static boolean checkJDOPushDown(Table tab, ExprNodeDesc expr) {
+    if (expr instanceof ExprNodeConstantDesc) {
+      // JDO filter now only support String typed literal -- see Filter.g and ExpressionTree.java
+      Object value = ((ExprNodeConstantDesc)expr).getValue();
+      return (value instanceof String);
+    } else if (expr instanceof ExprNodeColumnDesc) {
+      // JDO filter now only support String typed literal -- see Filter.g and ExpressionTree.java
+      TypeInfo type = expr.getTypeInfo();
+      if (type.getTypeName().equals(Constants.STRING_TYPE_NAME)) {
+        String colName = ((ExprNodeColumnDesc)expr).getColumn();
+        for (FieldSchema fs: tab.getPartCols()) {
+          if (fs.getName().equals(colName)) {
+            return fs.getType().equals(Constants.STRING_TYPE_NAME);
+          }
+        }
+        assert(false); // cannot find the partition column!
+     } else {
+       return false;
+     }
+    } else if (expr instanceof ExprNodeGenericFuncDesc) {
+      ExprNodeGenericFuncDesc funcDesc = (ExprNodeGenericFuncDesc) expr;
+      GenericUDF func = funcDesc.getGenericUDF();
+      if (!supportedJDOFuncs(func)) {
+        return false;
+      }
+      List<ExprNodeDesc> children = funcDesc.getChildExprs();
+      for (ExprNodeDesc child: children) {
+        if (!checkJDOPushDown(tab, child)) {
+          return false;
+        }
+      }
+      return true;
+    }
+    return false;
   }
 
   private static ThreadLocal<Map<String, Long>> perfKeyMaps = new ThreadLocal<Map<String, Long>>();

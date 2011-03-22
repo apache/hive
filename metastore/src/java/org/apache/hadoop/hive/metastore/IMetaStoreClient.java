@@ -269,7 +269,7 @@ public interface IMetaStoreClient {
   public Partition getPartition(String dbName, String tblName,
       String name) throws MetaException, UnknownTableException, NoSuchObjectException, TException;
 
-  
+
   /**
    * @param dbName
    * @param tableName
@@ -285,7 +285,7 @@ public interface IMetaStoreClient {
   public Partition getPartitionWithAuthInfo(String dbName, String tableName,
       List<String> pvals, String userName, List<String> groupNames)
       throws MetaException, UnknownTableException, NoSuchObjectException, TException;
-  
+
   /**
    * @param tbl_name
    * @param db_name
@@ -308,13 +308,31 @@ public interface IMetaStoreClient {
       List<String> part_vals, short max_parts) throws MetaException, TException;
 
   /**
+   * Get list of partitions matching specified filter
+   * @param db_name the database name
+   * @param tbl_name the table name
+   * @param filter the filter string,
+   *    for example "part1 = \"p1_abc\" and part2 <= "\p2_test\"". Filtering can
+   *    be done only on string partition keys.
+   * @param max_parts the maximum number of partitions to return,
+   *    all partitions are returned if -1 is passed
+   * @return list of partitions
+   * @throws MetaException
+   * @throws NoSuchObjectException
+   * @throws TException
+   */
+  public List<Partition> listPartitionsByFilter(String db_name, String tbl_name,
+      String filter, short max_parts) throws MetaException,
+         NoSuchObjectException, TException;
+
+  /**
    * @param dbName
    * @param tableName
    * @param s
    * @param userName
    * @param groupNames
    * @return
-   * @throws NoSuchObjectException 
+   * @throws NoSuchObjectException
    */
   public List<Partition> listPartitionsWithAuthInfo(String dbName,
       String tableName, short s, String userName, List<String> groupNames)
@@ -328,7 +346,7 @@ public interface IMetaStoreClient {
    * @param userName
    * @param groupNames
    * @return
-   * @throws NoSuchObjectException 
+   * @throws NoSuchObjectException
    */
   public List<Partition> listPartitionsWithAuthInfo(String dbName,
       String tableName, List<String> partialPvals, short s, String userName,
@@ -531,7 +549,7 @@ public interface IMetaStoreClient {
   public boolean dropIndex(String db_name, String tbl_name,
       String name, boolean deleteData) throws NoSuchObjectException,
       MetaException, TException;
-  
+
   /**
    * @param Role
    *          role object
@@ -545,8 +563,8 @@ public interface IMetaStoreClient {
   /**
    * @param role_name
    *          role name
-   * @param db_name 
-   * 
+   * @param db_name
+   *
    * @return
    * @throws MetaException
    * @throws TException
@@ -556,13 +574,13 @@ public interface IMetaStoreClient {
   /**
    * list all role names
    * @return
-   * @throws TException 
-   * @throws MetaException 
+   * @throws TException
+   * @throws MetaException
    */
   public List<String> listRoleNames() throws MetaException, TException;
 
   /**
-   * 
+   *
    * @param role_name
    * @param user_name
    * @param principalType
@@ -584,7 +602,7 @@ public interface IMetaStoreClient {
    *          user name
    * @param principalType
    * @param db_name
-   * 
+   *
    * @return
    * @throws MetaException
    * @throws TException
@@ -593,7 +611,7 @@ public interface IMetaStoreClient {
       PrincipalType principalType) throws MetaException, TException;
 
   /**
-   * 
+   *
    * @param principalName
    * @param principalType
    * @return
@@ -614,7 +632,7 @@ public interface IMetaStoreClient {
   public PrincipalPrivilegeSet get_privilege_set(HiveObjectRef hiveObject,
       String user_name, List<String> group_names) throws MetaException,
       TException;
-  
+
   /**
    * @param principal_name
    * @param principal_type
