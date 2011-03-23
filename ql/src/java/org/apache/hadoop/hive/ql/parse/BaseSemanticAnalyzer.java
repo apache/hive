@@ -610,7 +610,7 @@ public abstract class BaseSemanticAnalyzer {
         throws SemanticException {
 
       assert (ast.getToken().getType() == HiveParser.TOK_TAB
-          || ast.getToken().getType() == HiveParser.TOK_TABLE_PARTITION 
+          || ast.getToken().getType() == HiveParser.TOK_TABLE_PARTITION
           || ast.getToken().getType() == HiveParser.TOK_TABTYPE);
       int childIndex = 0;
       numDynParts = 0;
@@ -698,7 +698,7 @@ public abstract class BaseSemanticAnalyzer {
             }
           } catch (HiveException e) {
             throw new SemanticException(
-                ErrorMsg.INVALID_PARTITION.getMsg(ast.getChild(childIndex)));
+                ErrorMsg.INVALID_PARTITION.getMsg(ast.getChild(childIndex)), e);
           }
           specType = SpecType.STATIC_PARTITION;
         }
