@@ -481,7 +481,17 @@ public class TestJdbcDriver extends TestCase {
       cnt++;
     }
     rs.close();
-    assertEquals("Incorrect schema count", 1, cnt);
+    assertEquals("Incorrect catalog count", 1, cnt);
+  }
+
+  public void testMetaDataGetSchemas() throws SQLException {
+    ResultSet rs = (ResultSet)con.getMetaData().getSchemas();
+    int cnt = 0;
+    while (rs.next()) {
+      cnt++;
+    }
+    rs.close();
+    assertEquals("Incorrect schema count", 0, cnt);
   }
 
   public void testMetaDataGetTableTypes() throws SQLException {
