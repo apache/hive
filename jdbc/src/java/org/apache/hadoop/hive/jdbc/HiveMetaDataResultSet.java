@@ -29,9 +29,21 @@ public abstract class HiveMetaDataResultSet<M> extends HiveBaseResultSet {
   public HiveMetaDataResultSet(final List<String> columnNames
           , final List<String> columnTypes
           , final List<M> data) throws SQLException {
-    this.data = new ArrayList<M>(data);
-    this.columnNames = new ArrayList<String>(columnNames);
-    this.columnTypes = new ArrayList<String>(columnTypes);
+    if (data!=null) {
+      this.data = new ArrayList<M>(data);
+    } else {
+      this.data =  new ArrayList<M>();
+    }
+    if (columnNames!=null) {
+      this.columnNames = new ArrayList<String>(columnNames);
+    } else {
+      this.columnNames =  new ArrayList<String>();
+    }
+    if (columnTypes!=null) {
+      this.columnTypes = new ArrayList<String>(columnTypes);
+    } else {
+      this.columnTypes =  new ArrayList<String>();
+    }
   }
 
   @Override
