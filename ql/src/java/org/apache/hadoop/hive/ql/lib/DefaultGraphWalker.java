@@ -121,11 +121,9 @@ public class DefaultGraphWalker implements GraphWalker {
     if ((nd.getChildren() == null)
         || getDispatchedList().containsAll(nd.getChildren())) {
       // all children are done or no need to walk the children
-      if (getDispatchedList().contains(nd)) {
-        // sanity check
-        assert false;
+      if (!getDispatchedList().contains(nd)) {
+        dispatch(nd, opStack);        
       }
-      dispatch(nd, opStack);
       opStack.pop();
       return;
     }
