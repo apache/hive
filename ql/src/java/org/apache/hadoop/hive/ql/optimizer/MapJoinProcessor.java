@@ -129,16 +129,11 @@ public class MapJoinProcessor implements Transform {
         .entrySet()) {
       String alias = entry.getKey();
       Operator<? extends Serializable> op = entry.getValue();
-      // get table scan op
-      if (!(op instanceof TableScanOperator)) {
-        throw new SemanticException("top op is not table scan");
-      }
-      TableScanOperator tableScanOp = (TableScanOperator) op;
 
       // if the table scan is for big table; then skip it
       // tracing down the operator tree from the table scan operator
-      Operator<? extends Serializable> parentOp = tableScanOp;
-      Operator<? extends Serializable> childOp = tableScanOp.getChildOperators().get(0);
+      Operator<? extends Serializable> parentOp = op;
+      Operator<? extends Serializable> childOp = op.getChildOperators().get(0);
       while ((childOp != null) && (!childOp.equals(mapJoinOp))) {
         parentOp = childOp;
         assert parentOp.getChildOperators().size() == 1;
@@ -155,7 +150,7 @@ public class MapJoinProcessor implements Transform {
         continue;
       }
       // set alias to work and put into smallTableAliasList
-      newLocalWork.getAliasToWork().put(alias, tableScanOp);
+      newLocalWork.getAliasToWork().put(alias, op);
       smallTableAliasList.add(alias);
       // get input path and remove this alias from pathToAlias
       // because this file will be fetched by fetch operator
