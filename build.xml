@@ -309,6 +309,7 @@
         <filter token="VERSION" value="${version}"/>
       </filterset>
     </copy>
+    <copy file="${basedir}/conf/hive-site.xml" todir="${target.conf.dir}"/>
     <copy todir="${target.conf.dir}">
      <fileset dir="${basedir}/conf">
        <include name="*.properties"/>
