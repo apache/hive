@@ -61,6 +61,7 @@
       <resolver ref="apache-snapshot"/>
       <resolver ref="maven2"/>
       <resolver ref="datanucleus-repo"/>
+      <ibiblio name="ibiblio" m2compatible="true" />
     </chain>
 
     <chain name="internal" dual="true">

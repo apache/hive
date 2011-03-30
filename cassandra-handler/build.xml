@@ -1,0 +1,95 @@
+<?xml version="1.0"?>
+<!--
+   Licensed to the Apache Software Foundation (ASF) under one or more
+   contributor license agreements.  See the NOTICE file distributed with
+   this work for additional information regarding copyright ownership.
+   The ASF licenses this file to You under the Apache License, Version 2.0
+   (the "License"); you may not use this file except in compliance with
+   the License.  You may obtain a copy of the License at
+
+       http://www.apache.org/licenses/LICENSE-2.0
+
+   Unless required by applicable law or agreed to in writing, software
+   distributed under the License is distributed on an "AS IS" BASIS,
+   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+   See the License for the specific language governing permissions and
+   limitations under the License.
+-->
+<project name="cassandra-handler" default="jar">
+  <property name="cassandra-handler.lib.dir" value="${basedir}/lib"/>
+  <property name="src.dir"  location="${basedir}/src/java"/>
+  <property name="cassandra-handler.test.query.dir" location="${basedir}/src/test/queries"/>
+  <property name="ql.test.template.dir" location="${basedir}/../ql/src/test/templates"/>
+  <property name="ql.cassandra.test.template.dir" location="${basedir}/src/test/templates"/>
+  <property name="cassandra-handler.test.results.dir" location="${basedir}/src/test/results"/>
+  <property name="cassandra.resource.dir" location="conf" />
+  <import file="../build-common.xml"/>
+
+  <path id="test.classpath">
+
+    <fileset dir="${hive.root}" includes="testlibs/*.jar"/>
+
+    <pathelement location="${build.dir.hive}/ql/test/classes" />
+    <pathelement location="${test.build.classes}" />
+    <pathelement location="" />
+    <pathelement location="${hadoop.conf.dir}"/>
+    <pathelement location="${test.src.data.dir}/conf"/>
+    <pathelement location="${hive.conf.dir}"/>
+    <pathelement location="${hive.root}/cli/lib/jline-0.9.94.jar"/>
+    <pathelement location="${hadoop.oldstyle-name.test.jar}"/>
+    <pathelement location="${hadoop.newstyle-name.test.jar}"/>
+    
+    <!--<pathelement location="../build/ivy/lib/default/*.jar"/>-->
+    <fileset dir="../build/ivy/lib/default/" includes="*.jar"/>
+
+    <pathelement location="${jetty.test.jar}"/>
+    <pathelement location="${servlet.test.jar}"/>
+    <pathelement location="${jasper.test.jar}"/>
+    <pathelement location="${jasperc.test.jar}"/>
+    <pathelement location="${jsp.test.jar}"/>
+    <pathelement location="${common.jar}"/>
+    <pathelement location="${basedir}/conf"/><!--put yaml on cp -->
+    <fileset dir="${hive.root}" includes="testlibs/*.jar"/>
+    <fileset dir="${hadoop.root}/lib" includes="*.jar"/>
+    <fileset dir="${hadoop.root}/lib/jsp-2.1" includes="*.jar"/>
+    <fileset dir="${cassandra-handler.lib.dir}" includes="*.jar" excludes="antlr*.jar" />
+    <path refid="classpath"/>
+  </path>
+
+  <target name="test-jar" depends="compile-test, jar">
+    <delete file="${test.build.dir}/test-udfs.jar"/>
+    <jar jarfile="${test.build.dir}/test-udfs.jar">
+       <fileset dir="${test.build.classes}" includes="**/udf/*.class"/>
+       <fileset dir="${test.build.classes}" includes="**/udf/generic/*.class"/>
+    </jar>
+  </target>
+
+  <target name="gen-test" depends="deploy-ant-tasks, test-conditions, test-init" >
+    <taskdef name="qtestgen" classname="org.apache.hadoop.hive.ant.QTestGenTask"
+             classpath="${build.dir.hive}/anttasks/hive-anttasks-${version}.jar:${hive.root}/lib/velocity-1.5.jar:${hive.root}/lib/commons-collections-3.2.1.jar:${hive.root}/lib/commons-lang-2.4.jar"/>
+    
+    <mkdir dir="${test.build.src}/org/apache/hadoop/hive/cli"/>
+    <mkdir dir="${test.log.dir}/cassandra-handler"/>
+    <mkdir dir="${cassandra-handler.test.results.dir}"/>
+
+    <qtestgen outputDirectory="${test.build.src}/org/apache/hadoop/hive/cli" 
+              templatePath="${ql.cassandra.test.template.dir}" template="TestCassandraCliDriver.vm" 
+              queryDirectory="${cassandra-handler.test.query.dir}" 
+              queryFile="${qfile}"
+	      clusterMode="${clustermode}"              
+              resultsDirectory="${cassandra-handler.test.results.dir}" className="TestCassandraCliDriver"
+              logFile="${test.log.dir}/testcassandraclidrivergen.log"
+              logDirectory="${test.log.dir}/cassandra-handler"/> 
+  <!--
+    <qtestgen outputDirectory="${test.build.src}/org/apache/hadoop/hive/cli" 
+              templatePath="${ql.cassandra.test.template.dir}" template="TestCassandraCliDriver.vm" 
+              queryDirectory="${cassandra-handler.test.query.dir}" 
+              queryFile="cassandra_bulk.m"
+              
+              resultsDirectory="${cassandra-handler.test.results.dir}" className="TestCassandraMinimrCliDriver"
+              logFile="${test.log.dir}/testcassandraminimrclidrivergen.log"
+              logDirectory="${test.log.dir}/cassandra-handler"/>
+    -->
+  </target>
+
+</project>
