@@ -213,7 +213,8 @@ public class HiveConf extends Configuration {
     METASTORE_CACHE_LEVEL2_TYPE("datanucleus.cache.level2.type", "SOFT"),
     METASTORE_IDENTIFIER_FACTORY("datanucleus.identifierFactory", "datanucleus"),
     METASTORE_PLUGIN_REGISTRY_BUNDLE_CHECK("datanucleus.plugin.pluginRegistryBundleCheck", "LOG"),
-      
+    METASTORE_BATCH_RETRIEVE_MAX("hive.metastore.batch.retrieve.max", 300),
+
 
     // Default parameters for creating tables
     NEWTABLEDEFAULTPARA("hive.table.parameters.default",""),

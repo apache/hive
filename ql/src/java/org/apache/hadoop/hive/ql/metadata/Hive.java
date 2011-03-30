@@ -1512,6 +1512,8 @@ public class Hive {
    *
    * @param tbl
    *          object for which partition is needed. Must be partitioned.
+   * @param partialPartSpec
+   *          partial partition specification (some subpartitions can be empty).
    * @return list of partition objects
    * @throws HiveException
    */
@@ -1527,21 +1529,58 @@ public class Hive {
     List<String> names = getPartitionNames(tbl.getDbName(), tbl.getTableName(),
         partialPartSpec, (short)-1);
 
-    List<Partition> partitions = new ArrayList<Partition>();
+    List<Partition> partitions = getPartitionsByNames(tbl, names);
+    return partitions;
+  }
 
-    for (String pval: names) {
-      try {
-        org.apache.hadoop.hive.metastore.api.Partition tpart =
-          getMSC().getPartition(tbl.getDbName(), tbl.getTableName(), pval);
-        if (tpart != null) {
-          Partition p = new Partition(tbl, tpart);
-          partitions.add(p);
-        }
-      } catch (Exception e) {
-        throw new HiveException(e);
-      }
+  /**
+   * Get all partitions of the table that matches the list of given partition names.
+   *
+   * @param tbl
+   *          object for which partition is needed. Must be partitioned.
+   * @param partNames
+   *          list of partition names
+   * @return list of partition objects
+   * @throws HiveException
+   */
+  public List<Partition> getPartitionsByNames(Table tbl, List<String> partNames)
+      throws HiveException {
+
+    if (!tbl.isPartitioned()) {
+      throw new HiveException("Partition spec should only be supplied for a " +
+          "partitioned table");
     }
+    List<Partition> partitions = new ArrayList<Partition>(partNames.size());
 
+    int batchSize = HiveConf.getIntVar(conf, HiveConf.ConfVars.METASTORE_BATCH_RETRIEVE_MAX);
+    int nParts = partNames.size();
+    int nBatches = nParts / batchSize;
+
+    try {
+      for (int i = 0; i < nBatches; ++i) {
+        List<org.apache.hadoop.hive.metastore.api.Partition> tParts =
+          getMSC().getPartitionsByNames(tbl.getDbName(), tbl.getTableName(),
+          partNames.subList(i*batchSize, (i+1)*batchSize));
+        if (tParts != null) {
+          for (org.apache.hadoop.hive.metastore.api.Partition tpart: tParts) {
+            partitions.add(new Partition(tbl, tpart));
+          }
+        }
+      }
+
+      if (nParts > nBatches * batchSize) {
+        List<org.apache.hadoop.hive.metastore.api.Partition> tParts =
+          getMSC().getPartitionsByNames(tbl.getDbName(), tbl.getTableName(),
+          partNames.subList(nBatches*batchSize, nParts));
+        if (tParts != null) {
+          for (org.apache.hadoop.hive.metastore.api.Partition tpart: tParts) {
+            partitions.add(new Partition(tbl, tpart));
+          }
+        }
+      }
+    } catch (Exception e) {
+      throw new HiveException(e);
+    }
     return partitions;
   }
 

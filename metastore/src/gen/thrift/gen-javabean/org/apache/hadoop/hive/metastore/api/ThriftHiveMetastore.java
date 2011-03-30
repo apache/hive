@@ -99,6 +99,8 @@ public class ThriftHiveMetastore {
 
     public List<Partition> get_partitions_by_filter(String db_name, String tbl_name, String filter, short max_parts) throws MetaException, NoSuchObjectException, TException;
 
+    public List<Partition> get_partitions_by_names(String db_name, String tbl_name, List<String> names) throws MetaException, NoSuchObjectException, TException;
+
     public void alter_partition(String db_name, String tbl_name, Partition new_part) throws InvalidOperationException, MetaException, TException;
 
     public String get_config_value(String name, String defaultValue) throws ConfigValSecurityException, TException;
@@ -216,6 +218,8 @@ public class ThriftHiveMetastore {
     public void get_partition_names_ps(String db_name, String tbl_name, List<String> part_vals, short max_parts, AsyncMethodCallback<AsyncClient.get_partition_names_ps_call> resultHandler) throws TException;
 
     public void get_partitions_by_filter(String db_name, String tbl_name, String filter, short max_parts, AsyncMethodCallback<AsyncClient.get_partitions_by_filter_call> resultHandler) throws TException;
+
+    public void get_partitions_by_names(String db_name, String tbl_name, List<String> names, AsyncMethodCallback<AsyncClient.get_partitions_by_names_call> resultHandler) throws TException;
 
     public void alter_partition(String db_name, String tbl_name, Partition new_part, AsyncMethodCallback<AsyncClient.alter_partition_call> resultHandler) throws TException;
 
@@ -1709,6 +1713,50 @@ public class ThriftHiveMetastore {
         throw result.o2;
       }
       throw new TApplicationException(TApplicationException.MISSING_RESULT, "get_partitions_by_filter failed: unknown result");
+    }
+
+    public List<Partition> get_partitions_by_names(String db_name, String tbl_name, List<String> names) throws MetaException, NoSuchObjectException, TException
+    {
+      send_get_partitions_by_names(db_name, tbl_name, names);
+      return recv_get_partitions_by_names();
+    }
+
+    public void send_get_partitions_by_names(String db_name, String tbl_name, List<String> names) throws TException
+    {
+      oprot_.writeMessageBegin(new TMessage("get_partitions_by_names", TMessageType.CALL, ++seqid_));
+      get_partitions_by_names_args args = new get_partitions_by_names_args();
+      args.setDb_name(db_name);
+      args.setTbl_name(tbl_name);
+      args.setNames(names);
+      args.write(oprot_);
+      oprot_.writeMessageEnd();
+      oprot_.getTransport().flush();
+    }
+
+    public List<Partition> recv_get_partitions_by_names() throws MetaException, NoSuchObjectException, TException
+    {
+      TMessage msg = iprot_.readMessageBegin();
+      if (msg.type == TMessageType.EXCEPTION) {
+        TApplicationException x = TApplicationException.read(iprot_);
+        iprot_.readMessageEnd();
+        throw x;
+      }
+      if (msg.seqid != seqid_) {
+        throw new TApplicationException(TApplicationException.BAD_SEQUENCE_ID, "get_partitions_by_names failed: out of sequence response");
+      }
+      get_partitions_by_names_result result = new get_partitions_by_names_result();
+      result.read(iprot_);
+      iprot_.readMessageEnd();
+      if (result.isSetSuccess()) {
+        return result.success;
+      }
+      if (result.o1 != null) {
+        throw result.o1;
+      }
+      if (result.o2 != null) {
+        throw result.o2;
+      }
+      throw new TApplicationException(TApplicationException.MISSING_RESULT, "get_partitions_by_names failed: unknown result");
     }
 
     public void alter_partition(String db_name, String tbl_name, Partition new_part) throws InvalidOperationException, MetaException, TException
@@ -3875,6 +3923,43 @@ public class ThriftHiveMetastore {
       }
     }
 
+    public void get_partitions_by_names(String db_name, String tbl_name, List<String> names, AsyncMethodCallback<get_partitions_by_names_call> resultHandler) throws TException {
+      checkReady();
+      get_partitions_by_names_call method_call = new get_partitions_by_names_call(db_name, tbl_name, names, resultHandler, this, protocolFactory, transport);
+      manager.call(method_call);
+    }
+
+    public static class get_partitions_by_names_call extends TAsyncMethodCall {
+      private String db_name;
+      private String tbl_name;
+      private List<String> names;
+      public get_partitions_by_names_call(String db_name, String tbl_name, List<String> names, AsyncMethodCallback<get_partitions_by_names_call> resultHandler, TAsyncClient client, TProtocolFactory protocolFactory, TNonblockingTransport transport) throws TException {
+        super(client, protocolFactory, transport, resultHandler, false);
+        this.db_name = db_name;
+        this.tbl_name = tbl_name;
+        this.names = names;
+      }
+
+      public void write_args(TProtocol prot) throws TException {
+        prot.writeMessageBegin(new TMessage("get_partitions_by_names", TMessageType.CALL, 0));
+        get_partitions_by_names_args args = new get_partitions_by_names_args();
+        args.setDb_name(db_name);
+        args.setTbl_name(tbl_name);
+        args.setNames(names);
+        args.write(prot);
+        prot.writeMessageEnd();
+      }
+
+      public List<Partition> getResult() throws MetaException, NoSuchObjectException, TException {
+        if (getState() != State.RESPONSE_READ) {
+          throw new IllegalStateException("Method call not finished!");
+        }
+        TMemoryInputTransport memoryTransport = new TMemoryInputTransport(getFrameBuffer().array());
+        TProtocol prot = client.getProtocolFactory().getProtocol(memoryTransport);
+        return (new Client(prot)).recv_get_partitions_by_names();
+      }
+    }
+
     public void alter_partition(String db_name, String tbl_name, Partition new_part, AsyncMethodCallback<alter_partition_call> resultHandler) throws TException {
       checkReady();
       alter_partition_call method_call = new alter_partition_call(db_name, tbl_name, new_part, resultHandler, this, protocolFactory, transport);
@@ -4744,6 +4829,7 @@ public class ThriftHiveMetastore {
       processMap_.put("get_partitions_ps_with_auth", new get_partitions_ps_with_auth());
       processMap_.put("get_partition_names_ps", new get_partition_names_ps());
       processMap_.put("get_partitions_by_filter", new get_partitions_by_filter());
+      processMap_.put("get_partitions_by_names", new get_partitions_by_names());
       processMap_.put("alter_partition", new alter_partition());
       processMap_.put("get_config_value", new get_config_value());
       processMap_.put("partition_name_to_vals", new partition_name_to_vals());
@@ -6111,6 +6197,46 @@ public class ThriftHiveMetastore {
           return;
         }
         oprot.writeMessageBegin(new TMessage("get_partitions_by_filter", TMessageType.REPLY, seqid));
+        result.write(oprot);
+        oprot.writeMessageEnd();
+        oprot.getTransport().flush();
+      }
+
+    }
+
+    private class get_partitions_by_names implements ProcessFunction {
+      public void process(int seqid, TProtocol iprot, TProtocol oprot) throws TException
+      {
+        get_partitions_by_names_args args = new get_partitions_by_names_args();
+        try {
+          args.read(iprot);
+        } catch (TProtocolException e) {
+          iprot.readMessageEnd();
+          TApplicationException x = new TApplicationException(TApplicationException.PROTOCOL_ERROR, e.getMessage());
+          oprot.writeMessageBegin(new TMessage("get_partitions_by_names", TMessageType.EXCEPTION, seqid));
+          x.write(oprot);
+          oprot.writeMessageEnd();
+          oprot.getTransport().flush();
+          return;
+        }
+        iprot.readMessageEnd();
+        get_partitions_by_names_result result = new get_partitions_by_names_result();
+        try {
+          result.success = iface_.get_partitions_by_names(args.db_name, args.tbl_name, args.names);
+        } catch (MetaException o1) {
+          result.o1 = o1;
+        } catch (NoSuchObjectException o2) {
+          result.o2 = o2;
+        } catch (Throwable th) {
+          LOGGER.error("Internal error processing get_partitions_by_names", th);
+          TApplicationException x = new TApplicationException(TApplicationException.INTERNAL_ERROR, "Internal error processing get_partitions_by_names");
+          oprot.writeMessageBegin(new TMessage("get_partitions_by_names", TMessageType.EXCEPTION, seqid));
+          x.write(oprot);
+          oprot.writeMessageEnd();
+          oprot.getTransport().flush();
+          return;
+        }
+        oprot.writeMessageBegin(new TMessage("get_partitions_by_names", TMessageType.REPLY, seqid));
         result.write(oprot);
         oprot.writeMessageEnd();
         oprot.getTransport().flush();
@@ -36048,6 +36174,988 @@ public class ThriftHiveMetastore {
 
   }
 
+  public static class get_partitions_by_names_args implements TBase<get_partitions_by_names_args, get_partitions_by_names_args._Fields>, java.io.Serializable, Cloneable   {
+    private static final TStruct STRUCT_DESC = new TStruct("get_partitions_by_names_args");
+
+    private static final TField DB_NAME_FIELD_DESC = new TField("db_name", TType.STRING, (short)1);
+    private static final TField TBL_NAME_FIELD_DESC = new TField("tbl_name", TType.STRING, (short)2);
+    private static final TField NAMES_FIELD_DESC = new TField("names", TType.LIST, (short)3);
+
+    private String db_name;
+    private String tbl_name;
+    private List<String> names;
+
+    /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
+    public enum _Fields implements TFieldIdEnum {
+      DB_NAME((short)1, "db_name"),
+      TBL_NAME((short)2, "tbl_name"),
+      NAMES((short)3, "names");
+
+      private static final Map<String, _Fields> byName = new HashMap<String, _Fields>();
+
+      static {
+        for (_Fields field : EnumSet.allOf(_Fields.class)) {
+          byName.put(field.getFieldName(), field);
+        }
+      }
+
+      /**
+       * Find the _Fields constant that matches fieldId, or null if its not found.
+       */
+      public static _Fields findByThriftId(int fieldId) {
+        switch(fieldId) {
+          case 1: // DB_NAME
+            return DB_NAME;
+          case 2: // TBL_NAME
+            return TBL_NAME;
+          case 3: // NAMES
+            return NAMES;
+          default:
+            return null;
+        }
+      }
+
+      /**
+       * Find the _Fields constant that matches fieldId, throwing an exception
+       * if it is not found.
+       */
+      public static _Fields findByThriftIdOrThrow(int fieldId) {
+        _Fields fields = findByThriftId(fieldId);
+        if (fields == null) throw new IllegalArgumentException("Field " + fieldId + " doesn't exist!");
+        return fields;
+      }
+
+      /**
+       * Find the _Fields constant that matches name, or null if its not found.
+       */
+      public static _Fields findByName(String name) {
+        return byName.get(name);
+      }
+
+      private final short _thriftId;
+      private final String _fieldName;
+
+      _Fields(short thriftId, String fieldName) {
+        _thriftId = thriftId;
+        _fieldName = fieldName;
+      }
+
+      public short getThriftFieldId() {
+        return _thriftId;
+      }
+
+      public String getFieldName() {
+        return _fieldName;
+      }
+    }
+
+    // isset id assignments
+
+    public static final Map<_Fields, FieldMetaData> metaDataMap;
+    static {
+      Map<_Fields, FieldMetaData> tmpMap = new EnumMap<_Fields, FieldMetaData>(_Fields.class);
+      tmpMap.put(_Fields.DB_NAME, new FieldMetaData("db_name", TFieldRequirementType.DEFAULT, 
+          new FieldValueMetaData(TType.STRING)));
+      tmpMap.put(_Fields.TBL_NAME, new FieldMetaData("tbl_name", TFieldRequirementType.DEFAULT, 
+          new FieldValueMetaData(TType.STRING)));
+      tmpMap.put(_Fields.NAMES, new FieldMetaData("names", TFieldRequirementType.DEFAULT, 
+          new ListMetaData(TType.LIST, 
+              new FieldValueMetaData(TType.STRING))));
+      metaDataMap = Collections.unmodifiableMap(tmpMap);
+      FieldMetaData.addStructMetaDataMap(get_partitions_by_names_args.class, metaDataMap);
+    }
+
+    public get_partitions_by_names_args() {
+    }
+
+    public get_partitions_by_names_args(
+      String db_name,
+      String tbl_name,
+      List<String> names)
+    {
+      this();
+      this.db_name = db_name;
+      this.tbl_name = tbl_name;
+      this.names = names;
+    }
+
+    /**
+     * Performs a deep copy on <i>other</i>.
+     */
+    public get_partitions_by_names_args(get_partitions_by_names_args other) {
+      if (other.isSetDb_name()) {
+        this.db_name = other.db_name;
+      }
+      if (other.isSetTbl_name()) {
+        this.tbl_name = other.tbl_name;
+      }
+      if (other.isSetNames()) {
+        List<String> __this__names = new ArrayList<String>();
+        for (String other_element : other.names) {
+          __this__names.add(other_element);
+        }
+        this.names = __this__names;
+      }
+    }
+
+    public get_partitions_by_names_args deepCopy() {
+      return new get_partitions_by_names_args(this);
+    }
+
+    @Override
+    public void clear() {
+      this.db_name = null;
+      this.tbl_name = null;
+      this.names = null;
+    }
+
+    public String getDb_name() {
+      return this.db_name;
+    }
+
+    public void setDb_name(String db_name) {
+      this.db_name = db_name;
+    }
+
+    public void unsetDb_name() {
+      this.db_name = null;
+    }
+
+    /** Returns true if field db_name is set (has been asigned a value) and false otherwise */
+    public boolean isSetDb_name() {
+      return this.db_name != null;
+    }
+
+    public void setDb_nameIsSet(boolean value) {
+      if (!value) {
+        this.db_name = null;
+      }
+    }
+
+    public String getTbl_name() {
+      return this.tbl_name;
+    }
+
+    public void setTbl_name(String tbl_name) {
+      this.tbl_name = tbl_name;
+    }
+
+    public void unsetTbl_name() {
+      this.tbl_name = null;
+    }
+
+    /** Returns true if field tbl_name is set (has been asigned a value) and false otherwise */
+    public boolean isSetTbl_name() {
+      return this.tbl_name != null;
+    }
+
+    public void setTbl_nameIsSet(boolean value) {
+      if (!value) {
+        this.tbl_name = null;
+      }
+    }
+
+    public int getNamesSize() {
+      return (this.names == null) ? 0 : this.names.size();
+    }
+
+    public java.util.Iterator<String> getNamesIterator() {
+      return (this.names == null) ? null : this.names.iterator();
+    }
+
+    public void addToNames(String elem) {
+      if (this.names == null) {
+        this.names = new ArrayList<String>();
+      }
+      this.names.add(elem);
+    }
+
+    public List<String> getNames() {
+      return this.names;
+    }
+
+    public void setNames(List<String> names) {
+      this.names = names;
+    }
+
+    public void unsetNames() {
+      this.names = null;
+    }
+
+    /** Returns true if field names is set (has been asigned a value) and false otherwise */
+    public boolean isSetNames() {
+      return this.names != null;
+    }
+
+    public void setNamesIsSet(boolean value) {
+      if (!value) {
+        this.names = null;
+      }
+    }
+
+    public void setFieldValue(_Fields field, Object value) {
+      switch (field) {
+      case DB_NAME:
+        if (value == null) {
+          unsetDb_name();
+        } else {
+          setDb_name((String)value);
+        }
+        break;
+
+      case TBL_NAME:
+        if (value == null) {
+          unsetTbl_name();
+        } else {
+          setTbl_name((String)value);
+        }
+        break;
+
+      case NAMES:
+        if (value == null) {
+          unsetNames();
+        } else {
+          setNames((List<String>)value);
+        }
+        break;
+
+      }
+    }
+
+    public Object getFieldValue(_Fields field) {
+      switch (field) {
+      case DB_NAME:
+        return getDb_name();
+
+      case TBL_NAME:
+        return getTbl_name();
+
+      case NAMES:
+        return getNames();
+
+      }
+      throw new IllegalStateException();
+    }
+
+    /** Returns true if field corresponding to fieldID is set (has been asigned a value) and false otherwise */
+    public boolean isSet(_Fields field) {
+      if (field == null) {
+        throw new IllegalArgumentException();
+      }
+
+      switch (field) {
+      case DB_NAME:
+        return isSetDb_name();
+      case TBL_NAME:
+        return isSetTbl_name();
+      case NAMES:
+        return isSetNames();
+      }
+      throw new IllegalStateException();
+    }
+
+    @Override
+    public boolean equals(Object that) {
+      if (that == null)
+        return false;
+      if (that instanceof get_partitions_by_names_args)
+        return this.equals((get_partitions_by_names_args)that);
+      return false;
+    }
+
+    public boolean equals(get_partitions_by_names_args that) {
+      if (that == null)
+        return false;
+
+      boolean this_present_db_name = true && this.isSetDb_name();
+      boolean that_present_db_name = true && that.isSetDb_name();
+      if (this_present_db_name || that_present_db_name) {
+        if (!(this_present_db_name && that_present_db_name))
+          return false;
+        if (!this.db_name.equals(that.db_name))
+          return false;
+      }
+
+      boolean this_present_tbl_name = true && this.isSetTbl_name();
+      boolean that_present_tbl_name = true && that.isSetTbl_name();
+      if (this_present_tbl_name || that_present_tbl_name) {
+        if (!(this_present_tbl_name && that_present_tbl_name))
+          return false;
+        if (!this.tbl_name.equals(that.tbl_name))
+          return false;
+      }
+
+      boolean this_present_names = true && this.isSetNames();
+      boolean that_present_names = true && that.isSetNames();
+      if (this_present_names || that_present_names) {
+        if (!(this_present_names && that_present_names))
+          return false;
+        if (!this.names.equals(that.names))
+          return false;
+      }
+
+      return true;
+    }
+
+    @Override
+    public int hashCode() {
+      return 0;
+    }
+
+    public int compareTo(get_partitions_by_names_args other) {
+      if (!getClass().equals(other.getClass())) {
+        return getClass().getName().compareTo(other.getClass().getName());
+      }
+
+      int lastComparison = 0;
+      get_partitions_by_names_args typedOther = (get_partitions_by_names_args)other;
+
+      lastComparison = Boolean.valueOf(isSetDb_name()).compareTo(typedOther.isSetDb_name());
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+      if (isSetDb_name()) {
+        lastComparison = TBaseHelper.compareTo(this.db_name, typedOther.db_name);
+        if (lastComparison != 0) {
+          return lastComparison;
+        }
+      }
+      lastComparison = Boolean.valueOf(isSetTbl_name()).compareTo(typedOther.isSetTbl_name());
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+      if (isSetTbl_name()) {
+        lastComparison = TBaseHelper.compareTo(this.tbl_name, typedOther.tbl_name);
+        if (lastComparison != 0) {
+          return lastComparison;
+        }
+      }
+      lastComparison = Boolean.valueOf(isSetNames()).compareTo(typedOther.isSetNames());
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+      if (isSetNames()) {
+        lastComparison = TBaseHelper.compareTo(this.names, typedOther.names);
+        if (lastComparison != 0) {
+          return lastComparison;
+        }
+      }
+      return 0;
+    }
+
+    public _Fields fieldForId(int fieldId) {
+      return _Fields.findByThriftId(fieldId);
+    }
+
+    public void read(TProtocol iprot) throws TException {
+      TField field;
+      iprot.readStructBegin();
+      while (true)
+      {
+        field = iprot.readFieldBegin();
+        if (field.type == TType.STOP) { 
+          break;
+        }
+        switch (field.id) {
+          case 1: // DB_NAME
+            if (field.type == TType.STRING) {
+              this.db_name = iprot.readString();
+            } else { 
+              TProtocolUtil.skip(iprot, field.type);
+            }
+            break;
+          case 2: // TBL_NAME
+            if (field.type == TType.STRING) {
+              this.tbl_name = iprot.readString();
+            } else { 
+              TProtocolUtil.skip(iprot, field.type);
+            }
+            break;
+          case 3: // NAMES
+            if (field.type == TType.LIST) {
+              {
+                TList _list195 = iprot.readListBegin();
+                this.names = new ArrayList<String>(_list195.size);
+                for (int _i196 = 0; _i196 < _list195.size; ++_i196)
+                {
+                  String _elem197;
+                  _elem197 = iprot.readString();
+                  this.names.add(_elem197);
+                }
+                iprot.readListEnd();
+              }
+            } else { 
+              TProtocolUtil.skip(iprot, field.type);
+            }
+            break;
+          default:
+            TProtocolUtil.skip(iprot, field.type);
+        }
+        iprot.readFieldEnd();
+      }
+      iprot.readStructEnd();
+      validate();
+    }
+
+    public void write(TProtocol oprot) throws TException {
+      validate();
+
+      oprot.writeStructBegin(STRUCT_DESC);
+      if (this.db_name != null) {
+        oprot.writeFieldBegin(DB_NAME_FIELD_DESC);
+        oprot.writeString(this.db_name);
+        oprot.writeFieldEnd();
+      }
+      if (this.tbl_name != null) {
+        oprot.writeFieldBegin(TBL_NAME_FIELD_DESC);
+        oprot.writeString(this.tbl_name);
+        oprot.writeFieldEnd();
+      }
+      if (this.names != null) {
+        oprot.writeFieldBegin(NAMES_FIELD_DESC);
+        {
+          oprot.writeListBegin(new TList(TType.STRING, this.names.size()));
+          for (String _iter198 : this.names)
+          {
+            oprot.writeString(_iter198);
+          }
+          oprot.writeListEnd();
+        }
+        oprot.writeFieldEnd();
+      }
+      oprot.writeFieldStop();
+      oprot.writeStructEnd();
+    }
+
+    @Override
+    public String toString() {
+      StringBuilder sb = new StringBuilder("get_partitions_by_names_args(");
+      boolean first = true;
+
+      sb.append("db_name:");
+      if (this.db_name == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.db_name);
+      }
+      first = false;
+      if (!first) sb.append(", ");
+      sb.append("tbl_name:");
+      if (this.tbl_name == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.tbl_name);
+      }
+      first = false;
+      if (!first) sb.append(", ");
+      sb.append("names:");
+      if (this.names == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.names);
+      }
+      first = false;
+      sb.append(")");
+      return sb.toString();
+    }
+
+    public void validate() throws TException {
+      // check for required fields
+    }
+
+  }
+
+  public static class get_partitions_by_names_result implements TBase<get_partitions_by_names_result, get_partitions_by_names_result._Fields>, java.io.Serializable, Cloneable   {
+    private static final TStruct STRUCT_DESC = new TStruct("get_partitions_by_names_result");
+
+    private static final TField SUCCESS_FIELD_DESC = new TField("success", TType.LIST, (short)0);
+    private static final TField O1_FIELD_DESC = new TField("o1", TType.STRUCT, (short)1);
+    private static final TField O2_FIELD_DESC = new TField("o2", TType.STRUCT, (short)2);
+
+    private List<Partition> success;
+    private MetaException o1;
+    private NoSuchObjectException o2;
+
+    /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
+    public enum _Fields implements TFieldIdEnum {
+      SUCCESS((short)0, "success"),
+      O1((short)1, "o1"),
+      O2((short)2, "o2");
+
+      private static final Map<String, _Fields> byName = new HashMap<String, _Fields>();
+
+      static {
+        for (_Fields field : EnumSet.allOf(_Fields.class)) {
+          byName.put(field.getFieldName(), field);
+        }
+      }
+
+      /**
+       * Find the _Fields constant that matches fieldId, or null if its not found.
+       */
+      public static _Fields findByThriftId(int fieldId) {
+        switch(fieldId) {
+          case 0: // SUCCESS
+            return SUCCESS;
+          case 1: // O1
+            return O1;
+          case 2: // O2
+            return O2;
+          default:
+            return null;
+        }
+      }
+
+      /**
+       * Find the _Fields constant that matches fieldId, throwing an exception
+       * if it is not found.
+       */
+      public static _Fields findByThriftIdOrThrow(int fieldId) {
+        _Fields fields = findByThriftId(fieldId);
+        if (fields == null) throw new IllegalArgumentException("Field " + fieldId + " doesn't exist!");
+        return fields;
+      }
+
+      /**
+       * Find the _Fields constant that matches name, or null if its not found.
+       */
+      public static _Fields findByName(String name) {
+        return byName.get(name);
+      }
+
+      private final short _thriftId;
+      private final String _fieldName;
+
+      _Fields(short thriftId, String fieldName) {
+        _thriftId = thriftId;
+        _fieldName = fieldName;
+      }
+
+      public short getThriftFieldId() {
+        return _thriftId;
+      }
+
+      public String getFieldName() {
+        return _fieldName;
+      }
+    }
+
+    // isset id assignments
+
+    public static final Map<_Fields, FieldMetaData> metaDataMap;
+    static {
+      Map<_Fields, FieldMetaData> tmpMap = new EnumMap<_Fields, FieldMetaData>(_Fields.class);
+      tmpMap.put(_Fields.SUCCESS, new FieldMetaData("success", TFieldRequirementType.DEFAULT, 
+          new ListMetaData(TType.LIST, 
+              new StructMetaData(TType.STRUCT, Partition.class))));
+      tmpMap.put(_Fields.O1, new FieldMetaData("o1", TFieldRequirementType.DEFAULT, 
+          new FieldValueMetaData(TType.STRUCT)));
+      tmpMap.put(_Fields.O2, new FieldMetaData("o2", TFieldRequirementType.DEFAULT, 
+          new FieldValueMetaData(TType.STRUCT)));
+      metaDataMap = Collections.unmodifiableMap(tmpMap);
+      FieldMetaData.addStructMetaDataMap(get_partitions_by_names_result.class, metaDataMap);
+    }
+
+    public get_partitions_by_names_result() {
+    }
+
+    public get_partitions_by_names_result(
+      List<Partition> success,
+      MetaException o1,
+      NoSuchObjectException o2)
+    {
+      this();
+      this.success = success;
+      this.o1 = o1;
+      this.o2 = o2;
+    }
+
+    /**
+     * Performs a deep copy on <i>other</i>.
+     */
+    public get_partitions_by_names_result(get_partitions_by_names_result other) {
+      if (other.isSetSuccess()) {
+        List<Partition> __this__success = new ArrayList<Partition>();
+        for (Partition other_element : other.success) {
+          __this__success.add(new Partition(other_element));
+        }
+        this.success = __this__success;
+      }
+      if (other.isSetO1()) {
+        this.o1 = new MetaException(other.o1);
+      }
+      if (other.isSetO2()) {
+        this.o2 = new NoSuchObjectException(other.o2);
+      }
+    }
+
+    public get_partitions_by_names_result deepCopy() {
+      return new get_partitions_by_names_result(this);
+    }
+
+    @Override
+    public void clear() {
+      this.success = null;
+      this.o1 = null;
+      this.o2 = null;
+    }
+
+    public int getSuccessSize() {
+      return (this.success == null) ? 0 : this.success.size();
+    }
+
+    public java.util.Iterator<Partition> getSuccessIterator() {
+      return (this.success == null) ? null : this.success.iterator();
+    }
+
+    public void addToSuccess(Partition elem) {
+      if (this.success == null) {
+        this.success = new ArrayList<Partition>();
+      }
+      this.success.add(elem);
+    }
+
+    public List<Partition> getSuccess() {
+      return this.success;
+    }
+
+    public void setSuccess(List<Partition> success) {
+      this.success = success;
+    }
+
+    public void unsetSuccess() {
+      this.success = null;
+    }
+
+    /** Returns true if field success is set (has been asigned a value) and false otherwise */
+    public boolean isSetSuccess() {
+      return this.success != null;
+    }
+
+    public void setSuccessIsSet(boolean value) {
+      if (!value) {
+        this.success = null;
+      }
+    }
+
+    public MetaException getO1() {
+      return this.o1;
+    }
+
+    public void setO1(MetaException o1) {
+      this.o1 = o1;
+    }
+
+    public void unsetO1() {
+      this.o1 = null;
+    }
+
+    /** Returns true if field o1 is set (has been asigned a value) and false otherwise */
+    public boolean isSetO1() {
+      return this.o1 != null;
+    }
+
+    public void setO1IsSet(boolean value) {
+      if (!value) {
+        this.o1 = null;
+      }
+    }
+
+    public NoSuchObjectException getO2() {
+      return this.o2;
+    }
+
+    public void setO2(NoSuchObjectException o2) {
+      this.o2 = o2;
+    }
+
+    public void unsetO2() {
+      this.o2 = null;
+    }
+
+    /** Returns true if field o2 is set (has been asigned a value) and false otherwise */
+    public boolean isSetO2() {
+      return this.o2 != null;
+    }
+
+    public void setO2IsSet(boolean value) {
+      if (!value) {
+        this.o2 = null;
+      }
+    }
+
+    public void setFieldValue(_Fields field, Object value) {
+      switch (field) {
+      case SUCCESS:
+        if (value == null) {
+          unsetSuccess();
+        } else {
+          setSuccess((List<Partition>)value);
+        }
+        break;
+
+      case O1:
+        if (value == null) {
+          unsetO1();
+        } else {
+          setO1((MetaException)value);
+        }
+        break;
+
+      case O2:
+        if (value == null) {
+          unsetO2();
+        } else {
+          setO2((NoSuchObjectException)value);
+        }
+        break;
+
+      }
+    }
+
+    public Object getFieldValue(_Fields field) {
+      switch (field) {
+      case SUCCESS:
+        return getSuccess();
+
+      case O1:
+        return getO1();
+
+      case O2:
+        return getO2();
+
+      }
+      throw new IllegalStateException();
+    }
+
+    /** Returns true if field corresponding to fieldID is set (has been asigned a value) and false otherwise */
+    public boolean isSet(_Fields field) {
+      if (field == null) {
+        throw new IllegalArgumentException();
+      }
+
+      switch (field) {
+      case SUCCESS:
+        return isSetSuccess();
+      case O1:
+        return isSetO1();
+      case O2:
+        return isSetO2();
+      }
+      throw new IllegalStateException();
+    }
+
+    @Override
+    public boolean equals(Object that) {
+      if (that == null)
+        return false;
+      if (that instanceof get_partitions_by_names_result)
+        return this.equals((get_partitions_by_names_result)that);
+      return false;
+    }
+
+    public boolean equals(get_partitions_by_names_result that) {
+      if (that == null)
+        return false;
+
+      boolean this_present_success = true && this.isSetSuccess();
+      boolean that_present_success = true && that.isSetSuccess();
+      if (this_present_success || that_present_success) {
+        if (!(this_present_success && that_present_success))
+          return false;
+        if (!this.success.equals(that.success))
+          return false;
+      }
+
+      boolean this_present_o1 = true && this.isSetO1();
+      boolean that_present_o1 = true && that.isSetO1();
+      if (this_present_o1 || that_present_o1) {
+        if (!(this_present_o1 && that_present_o1))
+          return false;
+        if (!this.o1.equals(that.o1))
+          return false;
+      }
+
+      boolean this_present_o2 = true && this.isSetO2();
+      boolean that_present_o2 = true && that.isSetO2();
+      if (this_present_o2 || that_present_o2) {
+        if (!(this_present_o2 && that_present_o2))
+          return false;
+        if (!this.o2.equals(that.o2))
+          return false;
+      }
+
+      return true;
+    }
+
+    @Override
+    public int hashCode() {
+      return 0;
+    }
+
+    public int compareTo(get_partitions_by_names_result other) {
+      if (!getClass().equals(other.getClass())) {
+        return getClass().getName().compareTo(other.getClass().getName());
+      }
+
+      int lastComparison = 0;
+      get_partitions_by_names_result typedOther = (get_partitions_by_names_result)other;
+
+      lastComparison = Boolean.valueOf(isSetSuccess()).compareTo(typedOther.isSetSuccess());
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+      if (isSetSuccess()) {
+        lastComparison = TBaseHelper.compareTo(this.success, typedOther.success);
+        if (lastComparison != 0) {
+          return lastComparison;
+        }
+      }
+      lastComparison = Boolean.valueOf(isSetO1()).compareTo(typedOther.isSetO1());
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+      if (isSetO1()) {
+        lastComparison = TBaseHelper.compareTo(this.o1, typedOther.o1);
+        if (lastComparison != 0) {
+          return lastComparison;
+        }
+      }
+      lastComparison = Boolean.valueOf(isSetO2()).compareTo(typedOther.isSetO2());
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+      if (isSetO2()) {
+        lastComparison = TBaseHelper.compareTo(this.o2, typedOther.o2);
+        if (lastComparison != 0) {
+          return lastComparison;
+        }
+      }
+      return 0;
+    }
+
+    public _Fields fieldForId(int fieldId) {
+      return _Fields.findByThriftId(fieldId);
+    }
+
+    public void read(TProtocol iprot) throws TException {
+      TField field;
+      iprot.readStructBegin();
+      while (true)
+      {
+        field = iprot.readFieldBegin();
+        if (field.type == TType.STOP) { 
+          break;
+        }
+        switch (field.id) {
+          case 0: // SUCCESS
+            if (field.type == TType.LIST) {
+              {
+                TList _list199 = iprot.readListBegin();
+                this.success = new ArrayList<Partition>(_list199.size);
+                for (int _i200 = 0; _i200 < _list199.size; ++_i200)
+                {
+                  Partition _elem201;
+                  _elem201 = new Partition();
+                  _elem201.read(iprot);
+                  this.success.add(_elem201);
+                }
+                iprot.readListEnd();
+              }
+            } else { 
+              TProtocolUtil.skip(iprot, field.type);
+            }
+            break;
+          case 1: // O1
+            if (field.type == TType.STRUCT) {
+              this.o1 = new MetaException();
+              this.o1.read(iprot);
+            } else { 
+              TProtocolUtil.skip(iprot, field.type);
+            }
+            break;
+          case 2: // O2
+            if (field.type == TType.STRUCT) {
+              this.o2 = new NoSuchObjectException();
+              this.o2.read(iprot);
+            } else { 
+              TProtocolUtil.skip(iprot, field.type);
+            }
+            break;
+          default:
+            TProtocolUtil.skip(iprot, field.type);
+        }
+        iprot.readFieldEnd();
+      }
+      iprot.readStructEnd();
+      validate();
+    }
+
+    public void write(TProtocol oprot) throws TException {
+      oprot.writeStructBegin(STRUCT_DESC);
+
+      if (this.isSetSuccess()) {
+        oprot.writeFieldBegin(SUCCESS_FIELD_DESC);
+        {
+          oprot.writeListBegin(new TList(TType.STRUCT, this.success.size()));
+          for (Partition _iter202 : this.success)
+          {
+            _iter202.write(oprot);
+          }
+          oprot.writeListEnd();
+        }
+        oprot.writeFieldEnd();
+      } else if (this.isSetO1()) {
+        oprot.writeFieldBegin(O1_FIELD_DESC);
+        this.o1.write(oprot);
+        oprot.writeFieldEnd();
+      } else if (this.isSetO2()) {
+        oprot.writeFieldBegin(O2_FIELD_DESC);
+        this.o2.write(oprot);
+        oprot.writeFieldEnd();
+      }
+      oprot.writeFieldStop();
+      oprot.writeStructEnd();
+    }
+
+    @Override
+    public String toString() {
+      StringBuilder sb = new StringBuilder("get_partitions_by_names_result(");
+      boolean first = true;
+
+      sb.append("success:");
+      if (this.success == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.success);
+      }
+      first = false;
+      if (!first) sb.append(", ");
+      sb.append("o1:");
+      if (this.o1 == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.o1);
+      }
+      first = false;
+      if (!first) sb.append(", ");
+      sb.append("o2:");
+      if (this.o2 == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.o2);
+      }
+      first = false;
+      sb.append(")");
+      return sb.toString();
+    }
+
+    public void validate() throws TException {
+      // check for required fields
+    }
+
+  }
+
   public static class alter_partition_args implements TBase<alter_partition_args, alter_partition_args._Fields>, java.io.Serializable, Cloneable   {
     private static final TStruct STRUCT_DESC = new TStruct("alter_partition_args");
 
@@ -38196,13 +39304,13 @@ public class ThriftHiveMetastore {
           case 0: // SUCCESS
             if (field.type == TType.LIST) {
               {
-                TList _list195 = iprot.readListBegin();
-                this.success = new ArrayList<String>(_list195.size);
-                for (int _i196 = 0; _i196 < _list195.size; ++_i196)
+                TList _list203 = iprot.readListBegin();
+                this.success = new ArrayList<String>(_list203.size);
+                for (int _i204 = 0; _i204 < _list203.size; ++_i204)
                 {
-                  String _elem197;
-                  _elem197 = iprot.readString();
-                  this.success.add(_elem197);
+                  String _elem205;
+                  _elem205 = iprot.readString();
+                  this.success.add(_elem205);
                 }
                 iprot.readListEnd();
               }
@@ -38234,9 +39342,9 @@ public class ThriftHiveMetastore {
         oprot.writeFieldBegin(SUCCESS_FIELD_DESC);
         {
           oprot.writeListBegin(new TList(TType.STRING, this.success.size()));
-          for (String _iter198 : this.success)
+          for (String _iter206 : this.success)
           {
-            oprot.writeString(_iter198);
+            oprot.writeString(_iter206);
           }
           oprot.writeListEnd();
         }
@@ -38881,15 +39989,15 @@ public class ThriftHiveMetastore {
           case 0: // SUCCESS
             if (field.type == TType.MAP) {
               {
-                TMap _map199 = iprot.readMapBegin();
-                this.success = new HashMap<String,String>(2*_map199.size);
-                for (int _i200 = 0; _i200 < _map199.size; ++_i200)
+                TMap _map207 = iprot.readMapBegin();
+                this.success = new HashMap<String,String>(2*_map207.size);
+                for (int _i208 = 0; _i208 < _map207.size; ++_i208)
                 {
-                  String _key201;
-                  String _val202;
-                  _key201 = iprot.readString();
-                  _val202 = iprot.readString();
-                  this.success.put(_key201, _val202);
+                  String _key209;
+                  String _val210;
+                  _key209 = iprot.readString();
+                  _val210 = iprot.readString();
+                  this.success.put(_key209, _val210);
                 }
                 iprot.readMapEnd();
               }
@@ -38921,10 +40029,10 @@ public class ThriftHiveMetastore {
         oprot.writeFieldBegin(SUCCESS_FIELD_DESC);
         {
           oprot.writeMapBegin(new TMap(TType.STRING, TType.STRING, this.success.size()));
-          for (Map.Entry<String, String> _iter203 : this.success.entrySet())
+          for (Map.Entry<String, String> _iter211 : this.success.entrySet())
           {
-            oprot.writeString(_iter203.getKey());
-            oprot.writeString(_iter203.getValue());
+            oprot.writeString(_iter211.getKey());
+            oprot.writeString(_iter211.getValue());
           }
           oprot.writeMapEnd();
         }
@@ -43528,14 +44636,14 @@ public class ThriftHiveMetastore {
           case 0: // SUCCESS
             if (field.type == TType.LIST) {
               {
-                TList _list204 = iprot.readListBegin();
-                this.success = new ArrayList<Index>(_list204.size);
-                for (int _i205 = 0; _i205 < _list204.size; ++_i205)
+                TList _list212 = iprot.readListBegin();
+                this.success = new ArrayList<Index>(_list212.size);
+                for (int _i213 = 0; _i213 < _list212.size; ++_i213)
                 {
-                  Index _elem206;
-                  _elem206 = new Index();
-                  _elem206.read(iprot);
-                  this.success.add(_elem206);
+                  Index _elem214;
+                  _elem214 = new Index();
+                  _elem214.read(iprot);
+                  this.success.add(_elem214);
                 }
                 iprot.readListEnd();
               }
@@ -43575,9 +44683,9 @@ public class ThriftHiveMetastore {
         oprot.writeFieldBegin(SUCCESS_FIELD_DESC);
         {
           oprot.writeListBegin(new TList(TType.STRUCT, this.success.size()));
-          for (Index _iter207 : this.success)
+          for (Index _iter215 : this.success)
           {
-            _iter207.write(oprot);
+            _iter215.write(oprot);
           }
           oprot.writeListEnd();
         }
@@ -44405,13 +45513,13 @@ public class ThriftHiveMetastore {
           case 0: // SUCCESS
             if (field.type == TType.LIST) {
               {
-                TList _list208 = iprot.readListBegin();
-                this.success = new ArrayList<String>(_list208.size);
-                for (int _i209 = 0; _i209 < _list208.size; ++_i209)
+                TList _list216 = iprot.readListBegin();
+                this.success = new ArrayList<String>(_list216.size);
+                for (int _i217 = 0; _i217 < _list216.size; ++_i217)
                 {
-                  String _elem210;
-                  _elem210 = iprot.readString();
-                  this.success.add(_elem210);
+                  String _elem218;
+                  _elem218 = iprot.readString();
+                  this.success.add(_elem218);
                 }
                 iprot.readListEnd();
               }
@@ -44443,9 +45551,9 @@ public class ThriftHiveMetastore {
         oprot.writeFieldBegin(SUCCESS_FIELD_DESC);
         {
           oprot.writeListBegin(new TList(TType.STRING, this.success.size()));
-          for (String _iter211 : this.success)
+          for (String _iter219 : this.success)
           {
-            oprot.writeString(_iter211);
+            oprot.writeString(_iter219);
           }
           oprot.writeListEnd();
         }
@@ -46278,13 +47386,13 @@ public class ThriftHiveMetastore {
           case 0: // SUCCESS
             if (field.type == TType.LIST) {
               {
-                TList _list212 = iprot.readListBegin();
-                this.success = new ArrayList<String>(_list212.size);
-                for (int _i213 = 0; _i213 < _list212.size; ++_i213)
+                TList _list220 = iprot.readListBegin();
+                this.success = new ArrayList<String>(_list220.size);
+                for (int _i221 = 0; _i221 < _list220.size; ++_i221)
                 {
-                  String _elem214;
-                  _elem214 = iprot.readString();
-                  this.success.add(_elem214);
+                  String _elem222;
+                  _elem222 = iprot.readString();
+                  this.success.add(_elem222);
                 }
                 iprot.readListEnd();
               }
@@ -46316,9 +47424,9 @@ public class ThriftHiveMetastore {
         oprot.writeFieldBegin(SUCCESS_FIELD_DESC);
         {
           oprot.writeListBegin(new TList(TType.STRING, this.success.size()));
-          for (String _iter215 : this.success)
+          for (String _iter223 : this.success)
           {
-            oprot.writeString(_iter215);
+            oprot.writeString(_iter223);
           }
           oprot.writeListEnd();
         }
@@ -48994,14 +50102,14 @@ public class ThriftHiveMetastore {
           case 0: // SUCCESS
             if (field.type == TType.LIST) {
               {
-                TList _list216 = iprot.readListBegin();
-                this.success = new ArrayList<Role>(_list216.size);
-                for (int _i217 = 0; _i217 < _list216.size; ++_i217)
+                TList _list224 = iprot.readListBegin();
+                this.success = new ArrayList<Role>(_list224.size);
+                for (int _i225 = 0; _i225 < _list224.size; ++_i225)
                 {
-                  Role _elem218;
-                  _elem218 = new Role();
-                  _elem218.read(iprot);
-                  this.success.add(_elem218);
+                  Role _elem226;
+                  _elem226 = new Role();
+                  _elem226.read(iprot);
+                  this.success.add(_elem226);
                 }
                 iprot.readListEnd();
               }
@@ -49033,9 +50141,9 @@ public class ThriftHiveMetastore {
         oprot.writeFieldBegin(SUCCESS_FIELD_DESC);
         {
           oprot.writeListBegin(new TList(TType.STRUCT, this.success.size()));
-          for (Role _iter219 : this.success)
+          for (Role _iter227 : this.success)
           {
-            _iter219.write(oprot);
+            _iter227.write(oprot);
           }
           oprot.writeListEnd();
         }
@@ -49480,13 +50588,13 @@ public class ThriftHiveMetastore {
           case 3: // GROUP_NAMES
             if (field.type == TType.LIST) {
               {
-                TList _list220 = iprot.readListBegin();
-                this.group_names = new ArrayList<String>(_list220.size);
-                for (int _i221 = 0; _i221 < _list220.size; ++_i221)
+                TList _list228 = iprot.readListBegin();
+                this.group_names = new ArrayList<String>(_list228.size);
+                for (int _i229 = 0; _i229 < _list228.size; ++_i229)
                 {
-                  String _elem222;
-                  _elem222 = iprot.readString();
-                  this.group_names.add(_elem222);
+                  String _elem230;
+                  _elem230 = iprot.readString();
+                  this.group_names.add(_elem230);
                 }
                 iprot.readListEnd();
               }
@@ -49521,9 +50629,9 @@ public class ThriftHiveMetastore {
         oprot.writeFieldBegin(GROUP_NAMES_FIELD_DESC);
         {
           oprot.writeListBegin(new TList(TType.STRING, this.group_names.size()));
-          for (String _iter223 : this.group_names)
+          for (String _iter231 : this.group_names)
           {
-            oprot.writeString(_iter223);
+            oprot.writeString(_iter231);
           }
           oprot.writeListEnd();
         }
@@ -50722,14 +51830,14 @@ public class ThriftHiveMetastore {
           case 0: // SUCCESS
             if (field.type == TType.LIST) {
               {
-                TList _list224 = iprot.readListBegin();
-                this.success = new ArrayList<HiveObjectPrivilege>(_list224.size);
-                for (int _i225 = 0; _i225 < _list224.size; ++_i225)
+                TList _list232 = iprot.readListBegin();
+                this.success = new ArrayList<HiveObjectPrivilege>(_list232.size);
+                for (int _i233 = 0; _i233 < _list232.size; ++_i233)
                 {
-                  HiveObjectPrivilege _elem226;
-                  _elem226 = new HiveObjectPrivilege();
-                  _elem226.read(iprot);
-                  this.success.add(_elem226);
+                  HiveObjectPrivilege _elem234;
+                  _elem234 = new HiveObjectPrivilege();
+                  _elem234.read(iprot);
+                  this.success.add(_elem234);
                 }
                 iprot.readListEnd();
               }
@@ -50761,9 +51869,9 @@ public class ThriftHiveMetastore {
         oprot.writeFieldBegin(SUCCESS_FIELD_DESC);
         {
           oprot.writeListBegin(new TList(TType.STRUCT, this.success.size()));
-          for (HiveObjectPrivilege _iter227 : this.success)
+          for (HiveObjectPrivilege _iter235 : this.success)
           {
-            _iter227.write(oprot);
+            _iter235.write(oprot);
           }
           oprot.writeListEnd();
         }

@@ -251,6 +251,12 @@
 </property>
 
 <property>
+  <name>hive.metastore.batch.retrieve.max</name>
+  <value>300</value>
+  <description>Maximum number of objects (tables/partitions) can be retrieved from metastore in one batch. The higher the number, the less the number of round trips is needed to the Hive metastore server, but it may also cause higher memory requirement at the client side.</description>
+</property>
+
+<property>
   <name>hive.default.fileformat</name>
   <value>TextFile</value>
   <description>Default file format for CREATE TABLE statement. Options are TextFile and SequenceFile. Users can explicitly say CREATE TABLE ... STORED AS &lt;TEXTFILE|SEQUENCEFILE&gt; to override</description>

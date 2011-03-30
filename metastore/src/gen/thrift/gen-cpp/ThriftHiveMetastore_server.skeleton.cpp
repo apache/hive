@@ -187,6 +187,11 @@ class ThriftHiveMetastoreHandler : virtual public ThriftHiveMetastoreIf {
     printf("get_partitions_by_filter\n");
   }
 
+  void get_partitions_by_names(std::vector<Partition> & _return, const std::string& db_name, const std::string& tbl_name, const std::vector<std::string> & names) {
+    // Your implementation goes here
+    printf("get_partitions_by_names\n");
+  }
+
   void alter_partition(const std::string& db_name, const std::string& tbl_name, const Partition& new_part) {
     // Your implementation goes here
     printf("alter_partition\n");

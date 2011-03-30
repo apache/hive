@@ -2397,6 +2397,34 @@ public class HiveMetaStore extends ThriftHiveMetastore {
     }
 
     @Override
+    public List<Partition> get_partitions_by_names(final String dbName,
+        final String tblName, final List<String> partNames)
+        throws MetaException, NoSuchObjectException, TException {
+
+      startTableFunction("get_partitions_by_names", dbName, tblName);
+
+      List<Partition> ret = null;
+      try {
+        ret = executeWithRetry(new Command<List<Partition>>() {
+          @Override
+          List<Partition> run(RawStore ms) throws Exception {
+            return ms.getPartitionsByNames(dbName, tblName, partNames);
+          }
+        });
+      } catch (MetaException e) {
+        throw e;
+      } catch (NoSuchObjectException e) {
+        throw e;
+      } catch (Exception e) {
+        assert(e instanceof RuntimeException);
+        throw (RuntimeException)e;
+      } finally {
+        endFunction("get_partitions_by_names");
+      }
+      return ret;
+    }
+
+    @Override
     public PrincipalPrivilegeSet get_privilege_set(HiveObjectRef hiveObject,
         String userName, List<String> groupNames) throws MetaException,
         TException {
