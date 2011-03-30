@@ -21,6 +21,7 @@ package org.apache.hadoop.hive.ql.optimizer.ppr;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -29,8 +30,10 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.Warehouse;
+import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.NoSuchObjectException;
+import org.apache.hadoop.hive.ql.exec.ExprNodeEvaluator;
 import org.apache.hadoop.hive.ql.exec.FunctionRegistry;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.lib.DefaultGraphWalker;
@@ -57,6 +60,7 @@ import org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDF;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPAnd;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPOr;
+import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
 import org.apache.thrift.TException;
 
@@ -310,51 +314,69 @@ public class PartitionPruner implements Transform {
       Set<Partition> denied_parts, ExprNodeDesc prunerExpr, StructObjectInspector rowObjectInspector)
       throws Exception {
 
-    for (String partName : Hive.get().getPartitionNames(tab.getDbName(),
-        tab.getTableName(), (short) -1)) {
+    List<String> trueNames = null;
+    List<String> unknNames = null;
+
+    Utilities.PerfLogBegin(LOG, "prune-listing");
+
+    List<String> partNames = Hive.get().getPartitionNames(tab.getDbName(),
+        tab.getTableName(), (short) -1);
+
+    List<FieldSchema> pCols = tab.getPartCols();
+    List<String> partCols = new ArrayList<String>(pCols.size());
+    List<String> values = new ArrayList<String>(pCols.size());
+    Object[] objectWithPart = new Object[2];
+
+    for (FieldSchema pCol : pCols) {
+      partCols.add(pCol.getName());
+    }
+
+    Map<PrimitiveObjectInspector, ExprNodeEvaluator> handle = PartExprEvalUtils.prepareExpr(
+        prunerExpr, partCols, rowObjectInspector);
+
+    for (String partName : partNames) {
 
       // Set all the variables here
       LinkedHashMap<String, String> partSpec = Warehouse
           .makeSpecFromName(partName);
 
-      LOG.trace("about to process partition " + partSpec + " for pruning ");
+      values.clear();
+      for (Map.Entry<String, String> kv: partSpec.entrySet()) {
+        values.add(kv.getValue());
+      }
+      objectWithPart[1] = values;
+
       // evaluate the expression tree
-      if (prunerExpr != null) {
+      Boolean r = (Boolean) PartExprEvalUtils.evaluateExprOnPart(handle, objectWithPart);
 
-        Boolean r = (Boolean) PartExprEvalUtils.evalExprWithPart(prunerExpr, partSpec,
-            rowObjectInspector);
-
-        if (Boolean.FALSE.equals(r)) {
-          if (denied_parts.isEmpty()) {
-            Partition part = Hive.get().getPartition(tab, partSpec,
-                Boolean.FALSE);
-            denied_parts.add(part);
-          }
-          LOG.trace("pruned partition: " + partSpec);
-        } else {
-          Partition part = Hive.get().getPartition(tab, partSpec,
-              Boolean.FALSE);
-          String state = "retained";
-          if (Boolean.TRUE.equals(r)) {
-            true_parts.add(part);
-          } else {
-            // r == null means prunerExpr contains null subexpression,
-            // which was converted from non-partition columns
-            assert (r == null);
-            unkn_parts.add(part);
-            state = "unknown";
-          }
-          if (LOG.isDebugEnabled()) {
-            LOG.debug(state + " partition: " + partSpec);
-          }
+      if (r == null) {
+        if (unknNames == null) {
+          unknNames = new LinkedList<String>();
         }
-      } else {
-        // is there is no parition pruning, all of them are needed
-        true_parts.add(Hive.get()
-            .getPartition(tab, partSpec, Boolean.FALSE));
+        unknNames.add(partName);
+        LOG.debug("retained unknown partition: " + partName);
+      } else if (Boolean.TRUE.equals(r)) {
+        if (trueNames == null) {
+          trueNames = new LinkedList<String>();
+        }
+        trueNames.add(partName);
+        LOG.debug("retained partition: " + partName);
       }
     }
+    Utilities.PerfLogEnd(LOG, "prune-listing");
+
+    Utilities.PerfLogBegin(LOG, "partition-retrieving");
+    if (trueNames != null) {
+      List<Partition> parts = Hive.get().getPartitionsByNames(tab, trueNames);
+      true_parts.addAll(parts);
+    }
+    if (unknNames != null) {
+      List<Partition> parts = Hive.get().getPartitionsByNames(tab, unknNames);
+      unkn_parts.addAll(parts);
+    }
+    Utilities.PerfLogEnd(LOG, "partition-retrieving");
   }
+
   /**
    * Whether the expression contains a column node or not.
    */

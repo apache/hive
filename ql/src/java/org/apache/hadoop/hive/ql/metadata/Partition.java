@@ -183,7 +183,7 @@ public class Partition implements Serializable {
     if (table.isView()) {
       return;
     }
-    
+
     String partName = "";
     if (table.isPartitioned()) {
       try {
@@ -195,6 +195,12 @@ public class Partition implements Serializable {
             Path partPath = new Path(
               table.getDataLocation().toString(), partName);
             tPartition.getSd().setLocation(partPath.toString());
+          }
+        }
+        // set default if columns are not set
+        if (tPartition.getSd().getCols() == null) {
+          if (table.getCols() != null) {
+            tPartition.getSd().setCols(table.getCols());
           }
         }
       } catch (MetaException e) {

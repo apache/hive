@@ -881,7 +881,7 @@ public class ObjectStore implements RawStore, Configurable {
   private List<Order> convertToOrders(List<MOrder> mkeys) {
     List<Order> keys = null;
     if (mkeys != null) {
-      keys = new ArrayList<Order>();
+      keys = new ArrayList<Order>(mkeys.size());
       for (MOrder part : mkeys) {
         keys.add(new Order(part.getCol(), part.getOrder()));
       }
@@ -907,16 +907,22 @@ public class ObjectStore implements RawStore, Configurable {
 
   // MSD and SD should be same objects. Not sure how to make then same right now
   // MSerdeInfo *& SerdeInfo should be same as well
-  private StorageDescriptor convertToStorageDescriptor(MStorageDescriptor msd)
+  private StorageDescriptor convertToStorageDescriptor(MStorageDescriptor msd,
+      boolean noFS)
       throws MetaException {
     if (msd == null) {
       return null;
     }
-    return new StorageDescriptor(convertToFieldSchemas(msd.getCols()), msd
-        .getLocation(), msd.getInputFormat(), msd.getOutputFormat(), msd
+    return new StorageDescriptor(noFS ? null: convertToFieldSchemas(msd.getCols()),
+        msd.getLocation(), msd.getInputFormat(), msd.getOutputFormat(), msd
         .isCompressed(), msd.getNumBuckets(), converToSerDeInfo(msd
         .getSerDeInfo()), msd.getBucketCols(), convertToOrders(msd
         .getSortCols()), msd.getParameters());
+  }
+
+  private StorageDescriptor convertToStorageDescriptor(MStorageDescriptor msd)
+      throws MetaException {
+    return convertToStorageDescriptor(msd, false);
   }
 
   private MStorageDescriptor convertToMStorageDescriptor(StorageDescriptor sd)
@@ -1055,6 +1061,16 @@ public class ObjectStore implements RawStore, Configurable {
         mpart.getParameters());
   }
 
+  private Partition convertToPart(String dbName, String tblName, MPartition mpart)
+      throws MetaException {
+    if (mpart == null) {
+      return null;
+    }
+    return new Partition(mpart.getValues(), dbName, tblName, mpart.getCreateTime(),
+        mpart.getLastAccessTime(), convertToStorageDescriptor(mpart.getSd(), true),
+        mpart.getParameters());
+  }
+
   public boolean dropPartition(String dbName, String tableName,
       List<String> part_vals) throws MetaException {
     boolean success = false;
@@ -1178,6 +1194,15 @@ public class ObjectStore implements RawStore, Configurable {
     return parts;
   }
 
+  private List<Partition> convertToParts(String dbName, String tblName, List<MPartition> mparts)
+      throws MetaException {
+    List<Partition> parts = new ArrayList<Partition>(mparts.size());
+    for (MPartition mp : mparts) {
+      parts.add(convertToPart(dbName, tblName, mp));
+    }
+    return parts;
+  }
+
   // TODO:pc implement max
   public List<String> listPartitionNames(String dbName, String tableName,
       short max) throws MetaException {
@@ -1233,6 +1258,54 @@ public class ObjectStore implements RawStore, Configurable {
       }
     }
     return mparts;
+  }
+
+  @Override
+  public List<Partition> getPartitionsByNames(String dbName, String tblName,
+      List<String> partNames) throws MetaException, NoSuchObjectException {
+
+    boolean success = false;
+    try {
+      openTransaction();
+
+      StringBuilder sb = new StringBuilder(
+          "table.tableName == t1 && table.database.name == t2 && (");
+      int n = 0;
+      Map<String, String> params = new HashMap<String, String>();
+      for (Iterator<String> itr = partNames.iterator(); itr.hasNext();) {
+        String pn = "p" + n;
+        n++;
+        String part = itr.next();
+        params.put(pn, part);
+        sb.append("partitionName == ").append(pn);
+        sb.append(" || ");
+      }
+      sb.setLength(sb.length() - 4); // remove the last " || "
+      sb.append(')');
+
+      Query query = pm.newQuery(MPartition.class, sb.toString());
+
+      LOG.debug(" JDOQL filter is " + sb.toString());
+
+      params.put("t1", tblName.trim());
+      params.put("t2", dbName.trim());
+
+      String parameterDeclaration = makeParameterDeclarationString(params);
+      query.declareParameters(parameterDeclaration);
+      query.setOrdering("partitionName ascending");
+
+      List<MPartition> mparts = (List<MPartition>) query.executeWithMap(params);
+      // pm.retrieveAll(mparts); // retrieveAll is pessimistic. some fields may not be needed
+      List<Partition> results = convertToParts(dbName, tblName, mparts);
+      // pm.makeTransientAll(mparts); // makeTransient will prohibit future access of unfetched fields
+      query.closeAll();
+      success = commitTransaction();
+      return results;
+    } finally {
+      if (!success) {
+        rollbackTransaction();
+      }
+    }
   }
 
   @Override

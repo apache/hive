@@ -19,7 +19,9 @@
 package org.apache.hadoop.hive.ql.optimizer.ppr;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 
 import org.apache.hadoop.hive.ql.exec.ExprNodeEvaluator;
@@ -42,7 +44,7 @@ public class PartExprEvalUtils {
    * @return value returned by the expression
    * @throws HiveException
    */
-  static public Object evalExprWithPart(ExprNodeDesc expr, LinkedHashMap<String, String> partSpec,
+  static synchronized public Object evalExprWithPart(ExprNodeDesc expr, LinkedHashMap<String, String> partSpec,
       StructObjectInspector rowObjectInspector) throws HiveException {
     Object[] rowWithPart = new Object[2];
     // Create the row object
@@ -74,5 +76,46 @@ public class PartExprEvalUtils {
 
     return ((PrimitiveObjectInspector) evaluateResultOI)
         .getPrimitiveJavaObject(evaluateResultO);
+  }
+
+  static synchronized public Map<PrimitiveObjectInspector, ExprNodeEvaluator> prepareExpr(
+      ExprNodeDesc expr, List<String> partNames,
+      StructObjectInspector rowObjectInspector) throws HiveException {
+
+    // Create the row object
+    List<ObjectInspector> partObjectInspectors = new ArrayList<ObjectInspector>();
+    for (int i = 0; i < partNames.size(); i++) {
+      partObjectInspectors.add(PrimitiveObjectInspectorFactory.javaStringObjectInspector);
+    }
+    StructObjectInspector partObjectInspector = ObjectInspectorFactory
+        .getStandardStructObjectInspector(partNames, partObjectInspectors);
+
+    List<StructObjectInspector> ois = new ArrayList<StructObjectInspector>(2);
+    ois.add(rowObjectInspector);
+    ois.add(partObjectInspector);
+    StructObjectInspector rowWithPartObjectInspector =
+      ObjectInspectorFactory.getUnionStructObjectInspector(ois);
+
+    ExprNodeEvaluator evaluator = ExprNodeEvaluatorFactory.get(expr);
+    ObjectInspector evaluateResultOI = evaluator.initialize(rowWithPartObjectInspector);
+
+    Map<PrimitiveObjectInspector, ExprNodeEvaluator> result =
+      new HashMap<PrimitiveObjectInspector, ExprNodeEvaluator>();
+    result.put((PrimitiveObjectInspector)evaluateResultOI,  evaluator);
+    return result;
+  }
+
+  static synchronized public Object evaluateExprOnPart(
+      Map<PrimitiveObjectInspector, ExprNodeEvaluator> pair, Object[] rowWithPart)
+      throws HiveException {
+    assert(pair.size() > 0);
+    // only get the 1st entry from the map
+    Map.Entry<PrimitiveObjectInspector, ExprNodeEvaluator> entry = pair.entrySet().iterator().next();
+    PrimitiveObjectInspector evaluateResultOI = entry.getKey();
+    ExprNodeEvaluator evaluator = entry.getValue();
+
+    Object evaluateResultO = evaluator.evaluate(rowWithPart);
+
+    return evaluateResultOI.getPrimitiveJavaObject(evaluateResultO);
   }
 }

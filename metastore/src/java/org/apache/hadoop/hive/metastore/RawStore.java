@@ -144,48 +144,52 @@ public interface RawStore extends Configurable {
   public abstract List<Partition> getPartitionsByFilter(
       String dbName, String tblName, String filter, short maxParts)
       throws MetaException, NoSuchObjectException;
-  
+
+  public abstract List<Partition> getPartitionsByNames(
+      String dbName, String tblName, List<String> partNames)
+      throws MetaException, NoSuchObjectException;
+
   public abstract boolean addRole(String rowName, String ownerName)
       throws InvalidObjectException, MetaException, NoSuchObjectException;
-  
+
   public abstract boolean removeRole(String roleName) throws MetaException, NoSuchObjectException;
-  
+
   public abstract boolean grantRole(Role role, String userName, PrincipalType principalType,
-      String grantor, PrincipalType grantorType, boolean grantOption) 
+      String grantor, PrincipalType grantorType, boolean grantOption)
       throws MetaException, NoSuchObjectException, InvalidObjectException;
-  
-  public abstract boolean revokeRole(Role role, String userName, PrincipalType principalType) 
+
+  public abstract boolean revokeRole(Role role, String userName, PrincipalType principalType)
       throws MetaException, NoSuchObjectException;
 
   public abstract PrincipalPrivilegeSet getUserPrivilegeSet(String userName,
       List<String> groupNames) throws InvalidObjectException, MetaException;
-  
-  public abstract PrincipalPrivilegeSet getDBPrivilegeSet (String dbName, String userName, 
+
+  public abstract PrincipalPrivilegeSet getDBPrivilegeSet (String dbName, String userName,
       List<String> groupNames)  throws InvalidObjectException, MetaException;
-  
-  public abstract PrincipalPrivilegeSet getTablePrivilegeSet (String dbName, String tableName, 
+
+  public abstract PrincipalPrivilegeSet getTablePrivilegeSet (String dbName, String tableName,
       String userName, List<String> groupNames) throws InvalidObjectException, MetaException;
-  
-  public abstract PrincipalPrivilegeSet getPartitionPrivilegeSet (String dbName, String tableName, 
+
+  public abstract PrincipalPrivilegeSet getPartitionPrivilegeSet (String dbName, String tableName,
       String partition, String userName, List<String> groupNames) throws InvalidObjectException, MetaException;
-  
-  public abstract PrincipalPrivilegeSet getColumnPrivilegeSet (String dbName, String tableName, String partitionName, 
+
+  public abstract PrincipalPrivilegeSet getColumnPrivilegeSet (String dbName, String tableName, String partitionName,
       String columnName, String userName, List<String> groupNames) throws InvalidObjectException, MetaException;
-  
+
   public abstract List<MGlobalPrivilege> listPrincipalGlobalGrants(String principalName,
       PrincipalType principalType);
-  
+
   public abstract List<MDBPrivilege> listPrincipalDBGrants(String principalName,
       PrincipalType principalType, String dbName);
 
   public abstract List<MTablePrivilege> listAllTableGrants(
       String principalName, PrincipalType principalType, String dbName,
       String tableName);
-  
+
   public abstract List<MPartitionPrivilege> listPrincipalPartitionGrants(
       String principalName, PrincipalType principalType, String dbName,
       String tableName, String partName);
-  
+
   public abstract List<MTableColumnPrivilege> listPrincipalTableColumnGrants(
       String principalName, PrincipalType principalType, String dbName,
       String tableName, String columnName);
@@ -193,21 +197,21 @@ public interface RawStore extends Configurable {
   public abstract List<MPartitionColumnPrivilege> listPrincipalPartitionColumnGrants(
       String principalName, PrincipalType principalType, String dbName,
       String tableName, String partName, String columnName);
-  
-  public abstract boolean grantPrivileges (PrivilegeBag privileges) 
+
+  public abstract boolean grantPrivileges (PrivilegeBag privileges)
       throws InvalidObjectException, MetaException, NoSuchObjectException;
-  
-  public abstract boolean revokePrivileges  (PrivilegeBag privileges) 
+
+  public abstract boolean revokePrivileges  (PrivilegeBag privileges)
   throws InvalidObjectException, MetaException, NoSuchObjectException;
 
   public abstract org.apache.hadoop.hive.metastore.api.Role getRole(
       String roleName) throws NoSuchObjectException;
 
   public List<String> listRoleNames();
-  
+
   public List<MRoleMap> listRoles(String principalName,
       PrincipalType principalType);
-  
+
   public abstract Partition getPartitionWithAuth(String dbName, String tblName,
       List<String> partVals, String user_name, List<String> group_names)
       throws MetaException, NoSuchObjectException, InvalidObjectException;

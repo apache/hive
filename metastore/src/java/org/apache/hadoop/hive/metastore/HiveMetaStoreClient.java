@@ -51,7 +51,6 @@ import org.apache.hadoop.hive.metastore.api.Partition;
 import org.apache.hadoop.hive.metastore.api.PrincipalPrivilegeSet;
 import org.apache.hadoop.hive.metastore.api.PrincipalType;
 import org.apache.hadoop.hive.metastore.api.PrivilegeBag;
-import org.apache.hadoop.hive.metastore.api.PrivilegeGrantInfo;
 import org.apache.hadoop.hive.metastore.api.Role;
 import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.metastore.api.ThriftHiveMetastore;
@@ -582,7 +581,7 @@ public class HiveMetaStoreClient implements IMetaStoreClient {
     return deepCopyPartitions(
         client.get_partitions_ps(db_name, tbl_name, part_vals, max_parts));
   }
-  
+
   @Override
   public List<Partition> listPartitionsWithAuthInfo(String db_name,
       String tbl_name, short max_parts, String user_name, List<String> group_names)
@@ -648,7 +647,12 @@ public class HiveMetaStoreClient implements IMetaStoreClient {
       List<String> part_vals) throws NoSuchObjectException, MetaException, TException {
     return deepCopy(client.get_partition(db_name, tbl_name, part_vals));
   }
-  
+
+  public List<Partition> getPartitionsByNames(String db_name, String tbl_name,
+      List<String> part_names) throws NoSuchObjectException, MetaException, TException {
+    return deepCopyPartitions(client.get_partitions_by_names(db_name, tbl_name, part_names));
+  }
+
   @Override
   public Partition getPartitionWithAuthInfo(String db_name, String tbl_name,
       List<String> part_vals, String user_name, List<String> group_names)
@@ -1005,13 +1009,13 @@ public class HiveMetaStoreClient implements IMetaStoreClient {
   public boolean drop_role(String roleName) throws MetaException, TException {
     return client.drop_role(roleName);
   }
-  
+
   @Override
   public List<Role> list_roles(String principalName,
       PrincipalType principalType) throws MetaException, TException {
     return client.list_roles(principalName, principalType);
   }
-  
+
   @Override
   public List<String> listRoleNames() throws MetaException, TException {
     return client.get_role_names();
