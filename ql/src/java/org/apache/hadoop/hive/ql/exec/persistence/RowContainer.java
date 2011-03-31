@@ -116,17 +116,13 @@ public class RowContainer<Row extends List<Object>> extends AbstractRowContainer
   JobConf jobCloneUsingLocalFs = null;
   private LocalFileSystem localFs;
 
-  public RowContainer() {
-
-  }
-
   public RowContainer(Configuration jc) throws HiveException {
     this(BLOCKSIZE, jc);
   }
 
-  public RowContainer(int blockSize, Configuration jc) throws HiveException {
+  public RowContainer(int bs, Configuration jc) throws HiveException {
     // no 0-sized block
-    this.blockSize = blockSize == 0 ? BLOCKSIZE : blockSize;
+    this.blockSize = bs <= 0 ? BLOCKSIZE : bs;
     this.size = 0;
     this.itrCursor = 0;
     this.addCursor = 0;
@@ -139,7 +135,7 @@ public class RowContainer<Row extends List<Object>> extends AbstractRowContainer
     this.standardOI = null;
     this.jc = jc;
   }
-
+  
   private JobConf getLocalFSJobConfClone(Configuration jc) {
     if (this.jobCloneUsingLocalFs == null) {
       this.jobCloneUsingLocalFs = new JobConf(jc);
@@ -148,12 +144,6 @@ public class RowContainer<Row extends List<Object>> extends AbstractRowContainer
     return this.jobCloneUsingLocalFs;
   }
 
-
-  public RowContainer(int blockSize, SerDe sd, ObjectInspector oi, Configuration jc)
-      throws HiveException {
-    this(blockSize, jc);
-    setSerDe(sd, oi);
-  }
 
   public void setSerDe(SerDe sd, ObjectInspector oi) {
     this.serde = sd;
