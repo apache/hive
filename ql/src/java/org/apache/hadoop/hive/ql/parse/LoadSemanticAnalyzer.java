@@ -26,8 +26,9 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.antlr.runtime.tree.Tree;
 import org.apache.commons.lang.StringUtils;
+
+import org.antlr.runtime.tree.Tree;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
@@ -100,7 +101,7 @@ public class LoadSemanticAnalyzer extends BaseSemanticAnalyzer {
     }
 
     // if scheme is specified but not authority then use the default authority
-    if (fromScheme.equals("hdfs") && StringUtils.isEmpty(fromAuthority)) {
+    if (StringUtils.isEmpty(fromAuthority)) {
       URI defaultURI = FileSystem.get(conf).getUri();
       fromAuthority = defaultURI.getAuthority();
     }
@@ -111,11 +112,6 @@ public class LoadSemanticAnalyzer extends BaseSemanticAnalyzer {
 
   private void applyConstraints(URI fromURI, URI toURI, Tree ast,
       boolean isLocal) throws SemanticException {
-    if (!fromURI.getScheme().equals("file")
-        && !fromURI.getScheme().equals("hdfs")) {
-      throw new SemanticException(ErrorMsg.INVALID_PATH.getMsg(ast,
-          "only \"file\" or \"hdfs\" file systems accepted"));
-    }
 
     // local mode implies that scheme should be "file"
     // we can change this going forward
@@ -148,7 +144,7 @@ public class LoadSemanticAnalyzer extends BaseSemanticAnalyzer {
 
     // only in 'local' mode do we copy stuff from one place to another.
     // reject different scheme/authority in other cases.
-    if (!isLocal
+    /*if (!isLocal
         && (!StringUtils.equals(fromURI.getScheme(), toURI.getScheme()) || !StringUtils
         .equals(fromURI.getAuthority(), toURI.getAuthority()))) {
       String reason = "Move from: " + fromURI.toString() + " to: "
@@ -156,7 +152,7 @@ public class LoadSemanticAnalyzer extends BaseSemanticAnalyzer {
           + "Please check that values for params \"default.fs.name\" and "
           + "\"hive.metastore.warehouse.dir\" do not conflict.";
       throw new SemanticException(ErrorMsg.ILLEGAL_PATH.getMsg(ast, reason));
-    }
+    }*/
   }
 
   @Override
