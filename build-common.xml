@@ -86,8 +86,8 @@
   <property name="ivysettings.xml" location="${ivy.conf.dir}/ivysettings.xml" />
   <property name="ivy.org" value="org.apache.hadoop"/>
   <property name="mvn.repo" value="http://repo2.maven.org/maven2"/>
-  <property name="repo" value="snapshots"/>
-  <property name="asfrepo" value="https://repository.apache.org/content/repositories/${repo}"/>
+  <property name="repo" value="datastax-snapshot"/>
+  <property name="asfrepo" value="http://mvn.riptano.com/content/repositories/${repo}"/>
   <property name="ant_task_repo_url" value="${mvn.repo}/org/apache/maven/maven-ant-tasks/${ant-task.version}/maven-ant-tasks-${ant-task.version}.jar"/>
   <property name="ivy_repo_url" value="${mvn.repo}/org/apache/ivy/ivy/${ivy.version}/ivy-${ivy.version}.jar"/>
 
