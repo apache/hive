@@ -490,4 +490,33 @@
     </condition>
   </target>
 
+  <target name="check-ivy" depends="ivy-init">
+   <available file="${basedir}/ivy.xml" property="ivy.present"/>
+  </target>
+
+  <target name="make-pom" if="ivy.present" depends="check-ivy, jar">
+               <echo> Writing POM to ${build.dir}/pom.xml</echo>
+
+               <ivy:makepom ivyfile="${basedir}/ivy.xml" pomfile="${build.dir}/pom.xml">
+                       <mapping conf="default" scope="compile" />
+                       <mapping conf="runtime" scope="runtime" />
+               </ivy:makepom>
+               <replace file="${build.dir}/pom.xml">
+                       <replacetoken>&lt;dependencies&gt;</replacetoken>
+                       <replacevalue>
+                               &lt;description&gt;Hive is a data warehouse infrastructure built on top of Hadoop see
+                               http://wiki.apache.org/hadoop/Hive &lt;/description&gt;
+                               &lt;licenses&gt;
+                               &lt;license&gt;
+                               &lt;name&gt;The Apache Software License, Version 2.0&lt;/name&gt;
+                               &lt;url&gt;http://www.apache.org/licenses/LICENSE-2.0.txt&lt;/url&gt;
+                               &lt;distribution&gt;repo&lt;/distribution&gt;
+                               &lt;/license&gt;
+                               &lt;/licenses&gt;
+                               &lt;scm&gt;
+                               &lt;url&gt;http://svn.apache.org/repos/asf/hadoop/hive/&lt;/url&gt;
+                               &lt;/scm&gt;
+                               &lt;dependencies&gt; </replacevalue>
+               </replace>
+  </target>
 </project>

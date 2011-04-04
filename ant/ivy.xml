@@ -15,5 +15,5 @@
    limitations under the License.
 -->
 <ivy-module version="2.0">
-    <info organisation="org.apache.hadoop.hive" module="ant"/>
+    <info organisation="org.apache.hive" module="ant"/>
 </ivy-module>
