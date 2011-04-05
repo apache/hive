@@ -50,7 +50,6 @@ import org.apache.hadoop.hive.service.HiveServerException;
  */
 public class HivePreparedStatement implements PreparedStatement {
   private String sql;
-  private JdbcSessionState session;
   private HiveInterface client;
   /**
    * We need to keep a reference to the result set to support the following:
@@ -78,9 +77,8 @@ public class HivePreparedStatement implements PreparedStatement {
   /**
    *
    */
-  public HivePreparedStatement(JdbcSessionState session, HiveInterface client,
+  public HivePreparedStatement(HiveInterface client,
       String sql) {
-    this.session = session;
     this.client = client;
     this.sql = sql;
   }

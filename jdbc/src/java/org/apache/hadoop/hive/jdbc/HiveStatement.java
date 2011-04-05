@@ -31,7 +31,6 @@ import org.apache.hadoop.hive.service.HiveServerException;
  *
  */
 public class HiveStatement implements java.sql.Statement {
-  private JdbcSessionState session;
   private HiveInterface client;
   /**
    * We need to keep a reference to the result set to support the following:
@@ -60,8 +59,7 @@ public class HiveStatement implements java.sql.Statement {
   /**
    *
    */
-  public HiveStatement(JdbcSessionState session, HiveInterface client) {
-    this.session = session;
+  public HiveStatement(HiveInterface client) {
     this.client = client;
   }
 
