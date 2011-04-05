@@ -15,7 +15,7 @@
    limitations under the License.
 -->
 <ivy-module version="2.0">
-    <info organisation="org.apache.hive" module="hive-hwi" revision="${version}"/>
+    <info organisation="org.apache.hive" module="hive-jdbc" revision="${version}"/>
     <dependencies>
         <dependency org="hadoop" name="core" rev="${hadoop.version.ant-internal}">
           <artifact name="hadoop" type="source" ext="tar.gz"/>

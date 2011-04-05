@@ -684,6 +684,9 @@
 		<!-- call make pom on all projects that have ivy.xml -->
 		<iterate-all target="make-pom" />
 
+		<subant antfile="lib/build.xml" buildpath="." target="make-pom"/>
+		
+
 		<!-- create jars, poms licences directory -->
 		<mkdir dir="${build.dir.hive}/maven/jars" />
 		<mkdir dir="${build.dir.hive}/maven/poms" />
@@ -692,6 +695,9 @@
 		<!-- copy the jars and rename to maven convention -->
 		<copy file="${build.dir.hive}/ql/hive-exec-${version}.jar" todir="${build.dir.hive}/maven/jars/" />
 		<copy file="${build.dir.hive}/cli/hive-cli-${version}.jar" todir="${build.dir.hive}/maven/jars/" />
+		<copy file="${build.dir.hive}/hwi/hive-hwi-${version}.jar" todir="${build.dir.hive}/maven/jars/" />
+		<copy file="${build.dir.hive}/jdbc/hive-jdbc-${version}.jar" todir="${build.dir.hive}/maven/jars/" />
+		
 		<copy file="${build.dir.hive}/common/hive-common-${version}.jar"
 			todir="${build.dir.hive}/maven/jars/" />
 		<copy file="${build.dir.hive}/metastore/hive-metastore-${version}.jar"
@@ -705,9 +711,11 @@
 			todir="${build.dir.hive}/maven/jars/" />
 
 		<!-- copy over maven pom files created using the make-pom target -->
-		<copy file="${build.dir.hive}/ql/pom.xml"
-			tofile="${build.dir.hive}/maven/poms/hive-exec-${version}.pom" />
+		<copy file="${build.dir.hive}/ql/pom.xml" tofile="${build.dir.hive}/maven/poms/hive-exec-${version}.pom" />
+		<copy file="${build.dir.hive}/hwi/pom.xml" tofile="${build.dir.hive}/maven/poms/hive-hwi-${version}.pom" />
 		<copy file="${build.dir.hive}/cli/pom.xml" tofile="${build.dir.hive}/maven/poms/hive-cli-${version}.pom" />
+		<copy file="${build.dir.hive}/jdbc/pom.xml" tofile="${build.dir.hive}/maven/poms/hive-jdbc-${version}.pom" />
+		
 		<copy file="${build.dir.hive}/common/pom.xml"
 			tofile="${build.dir.hive}/maven/poms/hive-common-${version}.pom" />
 		<copy file="${build.dir.hive}/metastore/pom.xml"
@@ -718,6 +726,7 @@
 			tofile="${build.dir.hive}/maven/poms/hive-shims-${version}.pom" />
 		<copy file="${build.dir.hive}/cassandra-handler/pom.xml"
 			tofile="${build.dir.hive}/maven/poms/hive-cassandra-handler-${version}.pom" />
+		<copy file="${build.dir.hive}/hive-deps/pom.xml" tofile="${build.dir.hive}/maven/poms/hive-deps-${version}.pom" />
 
 		<!-- copy over licence -->
 		<copy file="${hive.root}/LICENSE-2.0.txt" todir="${build.dir.hive}/maven/licences/" />
@@ -778,21 +787,63 @@
 		<antcall target="maven-publish-artifact">
 			<param name="hive.project" value="cassandra-handler" />
 		</antcall>
+		<antcall target="maven-publish-artifact">
+			<param name="hive.project" value="jdbc" />
+		</antcall>
+
+		<antcall target="maven-publish-deps"/>
+		<antcall target="maven-publish-hwi"/>
+
+  </target>
+
+  <target name="maven-publish-deps" depends="mvn-taskdef">
+    <!-- add all dependencies -->
+    <artifact:pom
+	file="${build.dir.hive}/maven/poms/hive-deps-${version}.pom"
+	id="hive.project.pom" />
+    
+    <artifact:install-provider artifactId="wagon-http"
+			       version="1.0-beta-2" />
+    
+    <artifact:deploy>
+      <remoteRepository id="datastax-snapshot" url="${asfrepo}"/>
+      <pom refid="hive.project.pom"/>
+      <attach file="${basedir}/lib/derby.jar" type="jar" classifier="derby"/> 
+      <attach file="${basedir}/lib/thrift-0.5.0.jar" type="jar" classifier="thrift"/>
+      <attach file="${basedir}/lib/thrift-fb303-0.5.0.jar" type="jar" classifier="thrift-fb303"/>
+      <attach file="${basedir}/lib/json.jar" type="jar" classifier="json"/>
+    </artifact:deploy>
+  </target>
+
+  <target name="maven-publish-hwi" depends="mvn-taskdef">
+    <!-- add all dependencies -->
+    <artifact:pom
+	file="${build.dir.hive}/maven/poms/hive-hwi-${version}.pom"
+	id="hive.project.pom" />
+    
+    <artifact:install-provider artifactId="wagon-http" version="1.0-beta-2" />
+    
+    <artifact:deploy>
+      <remoteRepository id="datastax-snapshot" url="${asfrepo}"/>
+      <pom refid="hive.project.pom"/>
+      <attach file="${build.dir.hive}/hwi/hive-hwi-${version}.jar" type="jar" classifier="compile"/> 
+      <attach file="${build.dir.hive}/hwi/hive-hwi-${version}.war" type="war" classifier="compile"/> 
+    </artifact:deploy>
   </target>
 
   <!-- Deploy a single artifact to the maven repository -->
   <target name="maven-publish-artifact" depends="mvn-taskdef">
-		<artifact:pom
-			file="${build.dir.hive}/maven/poms/hive-${hive.project}-${version}.pom"
-			id="hive.project.pom" />
-
-		<artifact:install-provider artifactId="wagon-http"
-			version="1.0-beta-2" />
-		<artifact:deploy
-			file="${build.dir.hive}/maven/jars/hive-${hive.project}-${version}.jar">
-			<remoteRepository id="datastax-snapshot" url="${asfrepo}" />
-			<pom refid="hive.project.pom" />
-		</artifact:deploy>
+    <artifact:pom
+	file="${build.dir.hive}/maven/poms/hive-${hive.project}-${version}.pom"
+	id="hive.project.pom" />
+    
+    <artifact:install-provider artifactId="wagon-http"
+			       version="1.0-beta-2" />
+    <artifact:deploy
+	file="${build.dir.hive}/maven/jars/hive-${hive.project}-${version}.jar">
+      <remoteRepository id="datastax-snapshot" url="${asfrepo}" />
+      <pom refid="hive.project.pom" />
+    </artifact:deploy>
   </target>
 
 
