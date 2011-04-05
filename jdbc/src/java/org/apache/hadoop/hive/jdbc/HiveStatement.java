@@ -31,7 +31,6 @@ import org.apache.hadoop.hive.service.HiveServerException;
  *
  */
 public class HiveStatement implements java.sql.Statement {
-  private JdbcSessionState session;
   private HiveInterface client;
   private int fetchSize = 50;
 
@@ -62,8 +61,7 @@ public class HiveStatement implements java.sql.Statement {
   /**
    *
    */
-  public HiveStatement(JdbcSessionState session, HiveInterface client) {
-    this.session = session;
+  public HiveStatement(HiveInterface client) {
     this.client = client;
   }
 
