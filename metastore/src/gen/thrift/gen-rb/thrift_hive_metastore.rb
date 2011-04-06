@@ -911,13 +911,13 @@ module ThriftHiveMetastore
       raise ::Thrift::ApplicationException.new(::Thrift::ApplicationException::MISSING_RESULT, 'revoke_privileges failed: unknown result')
     end
 
-    def get_delegation_token(renewer_kerberos_principal_name)
-      send_get_delegation_token(renewer_kerberos_principal_name)
+    def get_delegation_token(token_owner, renewer_kerberos_principal_name)
+      send_get_delegation_token(token_owner, renewer_kerberos_principal_name)
       return recv_get_delegation_token()
     end
 
-    def send_get_delegation_token(renewer_kerberos_principal_name)
-      send_message('get_delegation_token', Get_delegation_token_args, :renewer_kerberos_principal_name => renewer_kerberos_principal_name)
+    def send_get_delegation_token(token_owner, renewer_kerberos_principal_name)
+      send_message('get_delegation_token', Get_delegation_token_args, :token_owner => token_owner, :renewer_kerberos_principal_name => renewer_kerberos_principal_name)
     end
 
     def recv_get_delegation_token()
@@ -925,22 +925,6 @@ module ThriftHiveMetastore
       return result.success unless result.success.nil?
       raise result.o1 unless result.o1.nil?
       raise ::Thrift::ApplicationException.new(::Thrift::ApplicationException::MISSING_RESULT, 'get_delegation_token failed: unknown result')
-    end
-
-    def get_delegation_token_with_signature(renewer_kerberos_principal_name, token_signature)
-      send_get_delegation_token_with_signature(renewer_kerberos_principal_name, token_signature)
-      return recv_get_delegation_token_with_signature()
-    end
-
-    def send_get_delegation_token_with_signature(renewer_kerberos_principal_name, token_signature)
-      send_message('get_delegation_token_with_signature', Get_delegation_token_with_signature_args, :renewer_kerberos_principal_name => renewer_kerberos_principal_name, :token_signature => token_signature)
-    end
-
-    def recv_get_delegation_token_with_signature()
-      result = receive_message(Get_delegation_token_with_signature_result)
-      return result.success unless result.success.nil?
-      raise result.o1 unless result.o1.nil?
-      raise ::Thrift::ApplicationException.new(::Thrift::ApplicationException::MISSING_RESULT, 'get_delegation_token_with_signature failed: unknown result')
     end
 
     def renew_delegation_token(token_str_form)
@@ -1663,22 +1647,11 @@ module ThriftHiveMetastore
       args = read_args(iprot, Get_delegation_token_args)
       result = Get_delegation_token_result.new()
       begin
-        result.success = @handler.get_delegation_token(args.renewer_kerberos_principal_name)
+        result.success = @handler.get_delegation_token(args.token_owner, args.renewer_kerberos_principal_name)
       rescue MetaException => o1
         result.o1 = o1
       end
       write_result(result, oprot, 'get_delegation_token', seqid)
-    end
-
-    def process_get_delegation_token_with_signature(seqid, iprot, oprot)
-      args = read_args(iprot, Get_delegation_token_with_signature_args)
-      result = Get_delegation_token_with_signature_result.new()
-      begin
-        result.success = @handler.get_delegation_token_with_signature(args.renewer_kerberos_principal_name, args.token_signature)
-      rescue MetaException => o1
-        result.o1 = o1
-      end
-      write_result(result, oprot, 'get_delegation_token_with_signature', seqid)
     end
 
     def process_renew_delegation_token(seqid, iprot, oprot)
@@ -3788,9 +3761,11 @@ module ThriftHiveMetastore
 
   class Get_delegation_token_args
     include ::Thrift::Struct, ::Thrift::Struct_Union
-    RENEWER_KERBEROS_PRINCIPAL_NAME = 1
+    TOKEN_OWNER = 1
+    RENEWER_KERBEROS_PRINCIPAL_NAME = 2
 
     FIELDS = {
+      TOKEN_OWNER => {:type => ::Thrift::Types::STRING, :name => 'token_owner'},
       RENEWER_KERBEROS_PRINCIPAL_NAME => {:type => ::Thrift::Types::STRING, :name => 'renewer_kerberos_principal_name'}
     }
 
@@ -3803,42 +3778,6 @@ module ThriftHiveMetastore
   end
 
   class Get_delegation_token_result
-    include ::Thrift::Struct, ::Thrift::Struct_Union
-    SUCCESS = 0
-    O1 = 1
-
-    FIELDS = {
-      SUCCESS => {:type => ::Thrift::Types::STRING, :name => 'success'},
-      O1 => {:type => ::Thrift::Types::STRUCT, :name => 'o1', :class => MetaException}
-    }
-
-    def struct_fields; FIELDS; end
-
-    def validate
-    end
-
-    ::Thrift::Struct.generate_accessors self
-  end
-
-  class Get_delegation_token_with_signature_args
-    include ::Thrift::Struct, ::Thrift::Struct_Union
-    RENEWER_KERBEROS_PRINCIPAL_NAME = 1
-    TOKEN_SIGNATURE = 2
-
-    FIELDS = {
-      RENEWER_KERBEROS_PRINCIPAL_NAME => {:type => ::Thrift::Types::STRING, :name => 'renewer_kerberos_principal_name'},
-      TOKEN_SIGNATURE => {:type => ::Thrift::Types::STRING, :name => 'token_signature'}
-    }
-
-    def struct_fields; FIELDS; end
-
-    def validate
-    end
-
-    ::Thrift::Struct.generate_accessors self
-  end
-
-  class Get_delegation_token_with_signature_result
     include ::Thrift::Struct, ::Thrift::Struct_Union
     SUCCESS = 0
     O1 = 1

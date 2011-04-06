@@ -470,18 +470,11 @@ class Iface(fb303.FacebookService.Iface):
     """
     pass
 
-  def get_delegation_token(self, renewer_kerberos_principal_name):
+  def get_delegation_token(self, token_owner, renewer_kerberos_principal_name):
     """
     Parameters:
+     - token_owner
      - renewer_kerberos_principal_name
-    """
-    pass
-
-  def get_delegation_token_with_signature(self, renewer_kerberos_principal_name, token_signature):
-    """
-    Parameters:
-     - renewer_kerberos_principal_name
-     - token_signature
     """
     pass
 
@@ -2455,17 +2448,19 @@ class Client(fb303.FacebookService.Client, Iface):
       raise result.o1
     raise TApplicationException(TApplicationException.MISSING_RESULT, "revoke_privileges failed: unknown result");
 
-  def get_delegation_token(self, renewer_kerberos_principal_name):
+  def get_delegation_token(self, token_owner, renewer_kerberos_principal_name):
     """
     Parameters:
+     - token_owner
      - renewer_kerberos_principal_name
     """
-    self.send_get_delegation_token(renewer_kerberos_principal_name)
+    self.send_get_delegation_token(token_owner, renewer_kerberos_principal_name)
     return self.recv_get_delegation_token()
 
-  def send_get_delegation_token(self, renewer_kerberos_principal_name):
+  def send_get_delegation_token(self, token_owner, renewer_kerberos_principal_name):
     self._oprot.writeMessageBegin('get_delegation_token', TMessageType.CALL, self._seqid)
     args = get_delegation_token_args()
+    args.token_owner = token_owner
     args.renewer_kerberos_principal_name = renewer_kerberos_principal_name
     args.write(self._oprot)
     self._oprot.writeMessageEnd()
@@ -2486,40 +2481,6 @@ class Client(fb303.FacebookService.Client, Iface):
     if result.o1 != None:
       raise result.o1
     raise TApplicationException(TApplicationException.MISSING_RESULT, "get_delegation_token failed: unknown result");
-
-  def get_delegation_token_with_signature(self, renewer_kerberos_principal_name, token_signature):
-    """
-    Parameters:
-     - renewer_kerberos_principal_name
-     - token_signature
-    """
-    self.send_get_delegation_token_with_signature(renewer_kerberos_principal_name, token_signature)
-    return self.recv_get_delegation_token_with_signature()
-
-  def send_get_delegation_token_with_signature(self, renewer_kerberos_principal_name, token_signature):
-    self._oprot.writeMessageBegin('get_delegation_token_with_signature', TMessageType.CALL, self._seqid)
-    args = get_delegation_token_with_signature_args()
-    args.renewer_kerberos_principal_name = renewer_kerberos_principal_name
-    args.token_signature = token_signature
-    args.write(self._oprot)
-    self._oprot.writeMessageEnd()
-    self._oprot.trans.flush()
-
-  def recv_get_delegation_token_with_signature(self, ):
-    (fname, mtype, rseqid) = self._iprot.readMessageBegin()
-    if mtype == TMessageType.EXCEPTION:
-      x = TApplicationException()
-      x.read(self._iprot)
-      self._iprot.readMessageEnd()
-      raise x
-    result = get_delegation_token_with_signature_result()
-    result.read(self._iprot)
-    self._iprot.readMessageEnd()
-    if result.success != None:
-      return result.success
-    if result.o1 != None:
-      raise result.o1
-    raise TApplicationException(TApplicationException.MISSING_RESULT, "get_delegation_token_with_signature failed: unknown result");
 
   def renew_delegation_token(self, token_str_form):
     """
@@ -2642,7 +2603,6 @@ class Processor(fb303.FacebookService.Processor, Iface, TProcessor):
     self._processMap["grant_privileges"] = Processor.process_grant_privileges
     self._processMap["revoke_privileges"] = Processor.process_revoke_privileges
     self._processMap["get_delegation_token"] = Processor.process_get_delegation_token
-    self._processMap["get_delegation_token_with_signature"] = Processor.process_get_delegation_token_with_signature
     self._processMap["renew_delegation_token"] = Processor.process_renew_delegation_token
     self._processMap["cancel_delegation_token"] = Processor.process_cancel_delegation_token
 
@@ -3509,24 +3469,10 @@ class Processor(fb303.FacebookService.Processor, Iface, TProcessor):
     iprot.readMessageEnd()
     result = get_delegation_token_result()
     try:
-      result.success = self._handler.get_delegation_token(args.renewer_kerberos_principal_name)
+      result.success = self._handler.get_delegation_token(args.token_owner, args.renewer_kerberos_principal_name)
     except MetaException, o1:
       result.o1 = o1
     oprot.writeMessageBegin("get_delegation_token", TMessageType.REPLY, seqid)
-    result.write(oprot)
-    oprot.writeMessageEnd()
-    oprot.trans.flush()
-
-  def process_get_delegation_token_with_signature(self, seqid, iprot, oprot):
-    args = get_delegation_token_with_signature_args()
-    args.read(iprot)
-    iprot.readMessageEnd()
-    result = get_delegation_token_with_signature_result()
-    try:
-      result.success = self._handler.get_delegation_token_with_signature(args.renewer_kerberos_principal_name, args.token_signature)
-    except MetaException, o1:
-      result.o1 = o1
-    oprot.writeMessageBegin("get_delegation_token_with_signature", TMessageType.REPLY, seqid)
     result.write(oprot)
     oprot.writeMessageEnd()
     oprot.trans.flush()
@@ -12295,15 +12241,18 @@ class revoke_privileges_result:
 class get_delegation_token_args:
   """
   Attributes:
+   - token_owner
    - renewer_kerberos_principal_name
   """
 
   thrift_spec = (
     None, # 0
-    (1, TType.STRING, 'renewer_kerberos_principal_name', None, None, ), # 1
+    (1, TType.STRING, 'token_owner', None, None, ), # 1
+    (2, TType.STRING, 'renewer_kerberos_principal_name', None, None, ), # 2
   )
 
-  def __init__(self, renewer_kerberos_principal_name=None,):
+  def __init__(self, token_owner=None, renewer_kerberos_principal_name=None,):
+    self.token_owner = token_owner
     self.renewer_kerberos_principal_name = renewer_kerberos_principal_name
 
   def read(self, iprot):
@@ -12316,6 +12265,11 @@ class get_delegation_token_args:
       if ftype == TType.STOP:
         break
       if fid == 1:
+        if ftype == TType.STRING:
+          self.token_owner = iprot.readString();
+        else:
+          iprot.skip(ftype)
+      elif fid == 2:
         if ftype == TType.STRING:
           self.renewer_kerberos_principal_name = iprot.readString();
         else:
@@ -12330,8 +12284,12 @@ class get_delegation_token_args:
       oprot.trans.write(fastbinary.encode_binary(self, (self.__class__, self.thrift_spec)))
       return
     oprot.writeStructBegin('get_delegation_token_args')
+    if self.token_owner != None:
+      oprot.writeFieldBegin('token_owner', TType.STRING, 1)
+      oprot.writeString(self.token_owner)
+      oprot.writeFieldEnd()
     if self.renewer_kerberos_principal_name != None:
-      oprot.writeFieldBegin('renewer_kerberos_principal_name', TType.STRING, 1)
+      oprot.writeFieldBegin('renewer_kerberos_principal_name', TType.STRING, 2)
       oprot.writeString(self.renewer_kerberos_principal_name)
       oprot.writeFieldEnd()
     oprot.writeFieldStop()
@@ -12397,148 +12355,6 @@ class get_delegation_token_result:
       oprot.trans.write(fastbinary.encode_binary(self, (self.__class__, self.thrift_spec)))
       return
     oprot.writeStructBegin('get_delegation_token_result')
-    if self.success != None:
-      oprot.writeFieldBegin('success', TType.STRING, 0)
-      oprot.writeString(self.success)
-      oprot.writeFieldEnd()
-    if self.o1 != None:
-      oprot.writeFieldBegin('o1', TType.STRUCT, 1)
-      self.o1.write(oprot)
-      oprot.writeFieldEnd()
-    oprot.writeFieldStop()
-    oprot.writeStructEnd()
-    def validate(self):
-      return
-
-
-  def __repr__(self):
-    L = ['%s=%r' % (key, value)
-      for key, value in self.__dict__.iteritems()]
-    return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
-
-  def __eq__(self, other):
-    return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
-
-  def __ne__(self, other):
-    return not (self == other)
-
-class get_delegation_token_with_signature_args:
-  """
-  Attributes:
-   - renewer_kerberos_principal_name
-   - token_signature
-  """
-
-  thrift_spec = (
-    None, # 0
-    (1, TType.STRING, 'renewer_kerberos_principal_name', None, None, ), # 1
-    (2, TType.STRING, 'token_signature', None, None, ), # 2
-  )
-
-  def __init__(self, renewer_kerberos_principal_name=None, token_signature=None,):
-    self.renewer_kerberos_principal_name = renewer_kerberos_principal_name
-    self.token_signature = token_signature
-
-  def read(self, iprot):
-    if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
-      fastbinary.decode_binary(self, iprot.trans, (self.__class__, self.thrift_spec))
-      return
-    iprot.readStructBegin()
-    while True:
-      (fname, ftype, fid) = iprot.readFieldBegin()
-      if ftype == TType.STOP:
-        break
-      if fid == 1:
-        if ftype == TType.STRING:
-          self.renewer_kerberos_principal_name = iprot.readString();
-        else:
-          iprot.skip(ftype)
-      elif fid == 2:
-        if ftype == TType.STRING:
-          self.token_signature = iprot.readString();
-        else:
-          iprot.skip(ftype)
-      else:
-        iprot.skip(ftype)
-      iprot.readFieldEnd()
-    iprot.readStructEnd()
-
-  def write(self, oprot):
-    if oprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and self.thrift_spec is not None and fastbinary is not None:
-      oprot.trans.write(fastbinary.encode_binary(self, (self.__class__, self.thrift_spec)))
-      return
-    oprot.writeStructBegin('get_delegation_token_with_signature_args')
-    if self.renewer_kerberos_principal_name != None:
-      oprot.writeFieldBegin('renewer_kerberos_principal_name', TType.STRING, 1)
-      oprot.writeString(self.renewer_kerberos_principal_name)
-      oprot.writeFieldEnd()
-    if self.token_signature != None:
-      oprot.writeFieldBegin('token_signature', TType.STRING, 2)
-      oprot.writeString(self.token_signature)
-      oprot.writeFieldEnd()
-    oprot.writeFieldStop()
-    oprot.writeStructEnd()
-    def validate(self):
-      return
-
-
-  def __repr__(self):
-    L = ['%s=%r' % (key, value)
-      for key, value in self.__dict__.iteritems()]
-    return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
-
-  def __eq__(self, other):
-    return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
-
-  def __ne__(self, other):
-    return not (self == other)
-
-class get_delegation_token_with_signature_result:
-  """
-  Attributes:
-   - success
-   - o1
-  """
-
-  thrift_spec = (
-    (0, TType.STRING, 'success', None, None, ), # 0
-    (1, TType.STRUCT, 'o1', (MetaException, MetaException.thrift_spec), None, ), # 1
-  )
-
-  def __init__(self, success=None, o1=None,):
-    self.success = success
-    self.o1 = o1
-
-  def read(self, iprot):
-    if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
-      fastbinary.decode_binary(self, iprot.trans, (self.__class__, self.thrift_spec))
-      return
-    iprot.readStructBegin()
-    while True:
-      (fname, ftype, fid) = iprot.readFieldBegin()
-      if ftype == TType.STOP:
-        break
-      if fid == 0:
-        if ftype == TType.STRING:
-          self.success = iprot.readString();
-        else:
-          iprot.skip(ftype)
-      elif fid == 1:
-        if ftype == TType.STRUCT:
-          self.o1 = MetaException()
-          self.o1.read(iprot)
-        else:
-          iprot.skip(ftype)
-      else:
-        iprot.skip(ftype)
-      iprot.readFieldEnd()
-    iprot.readStructEnd()
-
-  def write(self, oprot):
-    if oprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and self.thrift_spec is not None and fastbinary is not None:
-      oprot.trans.write(fastbinary.encode_binary(self, (self.__class__, self.thrift_spec)))
-      return
-    oprot.writeStructBegin('get_delegation_token_with_signature_result')
     if self.success != None:
       oprot.writeFieldBegin('success', TType.STRING, 0)
       oprot.writeString(self.success)

@@ -12497,6 +12497,14 @@ uint32_t ThriftHiveMetastore_get_delegation_token_args::read(::apache::thrift::p
     {
       case 1:
         if (ftype == ::apache::thrift::protocol::T_STRING) {
+          xfer += iprot->readString(this->token_owner);
+          this->__isset.token_owner = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      case 2:
+        if (ftype == ::apache::thrift::protocol::T_STRING) {
           xfer += iprot->readString(this->renewer_kerberos_principal_name);
           this->__isset.renewer_kerberos_principal_name = true;
         } else {
@@ -12518,7 +12526,10 @@ uint32_t ThriftHiveMetastore_get_delegation_token_args::read(::apache::thrift::p
 uint32_t ThriftHiveMetastore_get_delegation_token_args::write(::apache::thrift::protocol::TProtocol* oprot) const {
   uint32_t xfer = 0;
   xfer += oprot->writeStructBegin("ThriftHiveMetastore_get_delegation_token_args");
-  xfer += oprot->writeFieldBegin("renewer_kerberos_principal_name", ::apache::thrift::protocol::T_STRING, 1);
+  xfer += oprot->writeFieldBegin("token_owner", ::apache::thrift::protocol::T_STRING, 1);
+  xfer += oprot->writeString(this->token_owner);
+  xfer += oprot->writeFieldEnd();
+  xfer += oprot->writeFieldBegin("renewer_kerberos_principal_name", ::apache::thrift::protocol::T_STRING, 2);
   xfer += oprot->writeString(this->renewer_kerberos_principal_name);
   xfer += oprot->writeFieldEnd();
   xfer += oprot->writeFieldStop();
@@ -12529,7 +12540,10 @@ uint32_t ThriftHiveMetastore_get_delegation_token_args::write(::apache::thrift::
 uint32_t ThriftHiveMetastore_get_delegation_token_pargs::write(::apache::thrift::protocol::TProtocol* oprot) const {
   uint32_t xfer = 0;
   xfer += oprot->writeStructBegin("ThriftHiveMetastore_get_delegation_token_pargs");
-  xfer += oprot->writeFieldBegin("renewer_kerberos_principal_name", ::apache::thrift::protocol::T_STRING, 1);
+  xfer += oprot->writeFieldBegin("token_owner", ::apache::thrift::protocol::T_STRING, 1);
+  xfer += oprot->writeString((*(this->token_owner)));
+  xfer += oprot->writeFieldEnd();
+  xfer += oprot->writeFieldBegin("renewer_kerberos_principal_name", ::apache::thrift::protocol::T_STRING, 2);
   xfer += oprot->writeString((*(this->renewer_kerberos_principal_name)));
   xfer += oprot->writeFieldEnd();
   xfer += oprot->writeFieldStop();
@@ -12606,198 +12620,6 @@ uint32_t ThriftHiveMetastore_get_delegation_token_result::write(::apache::thrift
 }
 
 uint32_t ThriftHiveMetastore_get_delegation_token_presult::read(::apache::thrift::protocol::TProtocol* iprot) {
-
-  uint32_t xfer = 0;
-  std::string fname;
-  ::apache::thrift::protocol::TType ftype;
-  int16_t fid;
-
-  xfer += iprot->readStructBegin(fname);
-
-  using ::apache::thrift::protocol::TProtocolException;
-
-
-  while (true)
-  {
-    xfer += iprot->readFieldBegin(fname, ftype, fid);
-    if (ftype == ::apache::thrift::protocol::T_STOP) {
-      break;
-    }
-    switch (fid)
-    {
-      case 0:
-        if (ftype == ::apache::thrift::protocol::T_STRING) {
-          xfer += iprot->readString((*(this->success)));
-          this->__isset.success = true;
-        } else {
-          xfer += iprot->skip(ftype);
-        }
-        break;
-      case 1:
-        if (ftype == ::apache::thrift::protocol::T_STRUCT) {
-          xfer += this->o1.read(iprot);
-          this->__isset.o1 = true;
-        } else {
-          xfer += iprot->skip(ftype);
-        }
-        break;
-      default:
-        xfer += iprot->skip(ftype);
-        break;
-    }
-    xfer += iprot->readFieldEnd();
-  }
-
-  xfer += iprot->readStructEnd();
-
-  return xfer;
-}
-
-uint32_t ThriftHiveMetastore_get_delegation_token_with_signature_args::read(::apache::thrift::protocol::TProtocol* iprot) {
-
-  uint32_t xfer = 0;
-  std::string fname;
-  ::apache::thrift::protocol::TType ftype;
-  int16_t fid;
-
-  xfer += iprot->readStructBegin(fname);
-
-  using ::apache::thrift::protocol::TProtocolException;
-
-
-  while (true)
-  {
-    xfer += iprot->readFieldBegin(fname, ftype, fid);
-    if (ftype == ::apache::thrift::protocol::T_STOP) {
-      break;
-    }
-    switch (fid)
-    {
-      case 1:
-        if (ftype == ::apache::thrift::protocol::T_STRING) {
-          xfer += iprot->readString(this->renewer_kerberos_principal_name);
-          this->__isset.renewer_kerberos_principal_name = true;
-        } else {
-          xfer += iprot->skip(ftype);
-        }
-        break;
-      case 2:
-        if (ftype == ::apache::thrift::protocol::T_STRING) {
-          xfer += iprot->readString(this->token_signature);
-          this->__isset.token_signature = true;
-        } else {
-          xfer += iprot->skip(ftype);
-        }
-        break;
-      default:
-        xfer += iprot->skip(ftype);
-        break;
-    }
-    xfer += iprot->readFieldEnd();
-  }
-
-  xfer += iprot->readStructEnd();
-
-  return xfer;
-}
-
-uint32_t ThriftHiveMetastore_get_delegation_token_with_signature_args::write(::apache::thrift::protocol::TProtocol* oprot) const {
-  uint32_t xfer = 0;
-  xfer += oprot->writeStructBegin("ThriftHiveMetastore_get_delegation_token_with_signature_args");
-  xfer += oprot->writeFieldBegin("renewer_kerberos_principal_name", ::apache::thrift::protocol::T_STRING, 1);
-  xfer += oprot->writeString(this->renewer_kerberos_principal_name);
-  xfer += oprot->writeFieldEnd();
-  xfer += oprot->writeFieldBegin("token_signature", ::apache::thrift::protocol::T_STRING, 2);
-  xfer += oprot->writeString(this->token_signature);
-  xfer += oprot->writeFieldEnd();
-  xfer += oprot->writeFieldStop();
-  xfer += oprot->writeStructEnd();
-  return xfer;
-}
-
-uint32_t ThriftHiveMetastore_get_delegation_token_with_signature_pargs::write(::apache::thrift::protocol::TProtocol* oprot) const {
-  uint32_t xfer = 0;
-  xfer += oprot->writeStructBegin("ThriftHiveMetastore_get_delegation_token_with_signature_pargs");
-  xfer += oprot->writeFieldBegin("renewer_kerberos_principal_name", ::apache::thrift::protocol::T_STRING, 1);
-  xfer += oprot->writeString((*(this->renewer_kerberos_principal_name)));
-  xfer += oprot->writeFieldEnd();
-  xfer += oprot->writeFieldBegin("token_signature", ::apache::thrift::protocol::T_STRING, 2);
-  xfer += oprot->writeString((*(this->token_signature)));
-  xfer += oprot->writeFieldEnd();
-  xfer += oprot->writeFieldStop();
-  xfer += oprot->writeStructEnd();
-  return xfer;
-}
-
-uint32_t ThriftHiveMetastore_get_delegation_token_with_signature_result::read(::apache::thrift::protocol::TProtocol* iprot) {
-
-  uint32_t xfer = 0;
-  std::string fname;
-  ::apache::thrift::protocol::TType ftype;
-  int16_t fid;
-
-  xfer += iprot->readStructBegin(fname);
-
-  using ::apache::thrift::protocol::TProtocolException;
-
-
-  while (true)
-  {
-    xfer += iprot->readFieldBegin(fname, ftype, fid);
-    if (ftype == ::apache::thrift::protocol::T_STOP) {
-      break;
-    }
-    switch (fid)
-    {
-      case 0:
-        if (ftype == ::apache::thrift::protocol::T_STRING) {
-          xfer += iprot->readString(this->success);
-          this->__isset.success = true;
-        } else {
-          xfer += iprot->skip(ftype);
-        }
-        break;
-      case 1:
-        if (ftype == ::apache::thrift::protocol::T_STRUCT) {
-          xfer += this->o1.read(iprot);
-          this->__isset.o1 = true;
-        } else {
-          xfer += iprot->skip(ftype);
-        }
-        break;
-      default:
-        xfer += iprot->skip(ftype);
-        break;
-    }
-    xfer += iprot->readFieldEnd();
-  }
-
-  xfer += iprot->readStructEnd();
-
-  return xfer;
-}
-
-uint32_t ThriftHiveMetastore_get_delegation_token_with_signature_result::write(::apache::thrift::protocol::TProtocol* oprot) const {
-
-  uint32_t xfer = 0;
-
-  xfer += oprot->writeStructBegin("ThriftHiveMetastore_get_delegation_token_with_signature_result");
-
-  if (this->__isset.success) {
-    xfer += oprot->writeFieldBegin("success", ::apache::thrift::protocol::T_STRING, 0);
-    xfer += oprot->writeString(this->success);
-    xfer += oprot->writeFieldEnd();
-  } else if (this->__isset.o1) {
-    xfer += oprot->writeFieldBegin("o1", ::apache::thrift::protocol::T_STRUCT, 1);
-    xfer += this->o1.write(oprot);
-    xfer += oprot->writeFieldEnd();
-  }
-  xfer += oprot->writeFieldStop();
-  xfer += oprot->writeStructEnd();
-  return xfer;
-}
-
-uint32_t ThriftHiveMetastore_get_delegation_token_with_signature_presult::read(::apache::thrift::protocol::TProtocol* iprot) {
 
   uint32_t xfer = 0;
   std::string fname;
@@ -16750,18 +16572,19 @@ bool ThriftHiveMetastoreClient::recv_revoke_privileges()
   throw ::apache::thrift::TApplicationException(::apache::thrift::TApplicationException::MISSING_RESULT, "revoke_privileges failed: unknown result");
 }
 
-void ThriftHiveMetastoreClient::get_delegation_token(std::string& _return, const std::string& renewer_kerberos_principal_name)
+void ThriftHiveMetastoreClient::get_delegation_token(std::string& _return, const std::string& token_owner, const std::string& renewer_kerberos_principal_name)
 {
-  send_get_delegation_token(renewer_kerberos_principal_name);
+  send_get_delegation_token(token_owner, renewer_kerberos_principal_name);
   recv_get_delegation_token(_return);
 }
 
-void ThriftHiveMetastoreClient::send_get_delegation_token(const std::string& renewer_kerberos_principal_name)
+void ThriftHiveMetastoreClient::send_get_delegation_token(const std::string& token_owner, const std::string& renewer_kerberos_principal_name)
 {
   int32_t cseqid = 0;
   oprot_->writeMessageBegin("get_delegation_token", ::apache::thrift::protocol::T_CALL, cseqid);
 
   ThriftHiveMetastore_get_delegation_token_pargs args;
+  args.token_owner = &token_owner;
   args.renewer_kerberos_principal_name = &renewer_kerberos_principal_name;
   args.write(oprot_);
 
@@ -16811,70 +16634,6 @@ void ThriftHiveMetastoreClient::recv_get_delegation_token(std::string& _return)
     throw result.o1;
   }
   throw ::apache::thrift::TApplicationException(::apache::thrift::TApplicationException::MISSING_RESULT, "get_delegation_token failed: unknown result");
-}
-
-void ThriftHiveMetastoreClient::get_delegation_token_with_signature(std::string& _return, const std::string& renewer_kerberos_principal_name, const std::string& token_signature)
-{
-  send_get_delegation_token_with_signature(renewer_kerberos_principal_name, token_signature);
-  recv_get_delegation_token_with_signature(_return);
-}
-
-void ThriftHiveMetastoreClient::send_get_delegation_token_with_signature(const std::string& renewer_kerberos_principal_name, const std::string& token_signature)
-{
-  int32_t cseqid = 0;
-  oprot_->writeMessageBegin("get_delegation_token_with_signature", ::apache::thrift::protocol::T_CALL, cseqid);
-
-  ThriftHiveMetastore_get_delegation_token_with_signature_pargs args;
-  args.renewer_kerberos_principal_name = &renewer_kerberos_principal_name;
-  args.token_signature = &token_signature;
-  args.write(oprot_);
-
-  oprot_->writeMessageEnd();
-  oprot_->getTransport()->flush();
-  oprot_->getTransport()->writeEnd();
-}
-
-void ThriftHiveMetastoreClient::recv_get_delegation_token_with_signature(std::string& _return)
-{
-
-  int32_t rseqid = 0;
-  std::string fname;
-  ::apache::thrift::protocol::TMessageType mtype;
-
-  iprot_->readMessageBegin(fname, mtype, rseqid);
-  if (mtype == ::apache::thrift::protocol::T_EXCEPTION) {
-    ::apache::thrift::TApplicationException x;
-    x.read(iprot_);
-    iprot_->readMessageEnd();
-    iprot_->getTransport()->readEnd();
-    throw x;
-  }
-  if (mtype != ::apache::thrift::protocol::T_REPLY) {
-    iprot_->skip(::apache::thrift::protocol::T_STRUCT);
-    iprot_->readMessageEnd();
-    iprot_->getTransport()->readEnd();
-    throw ::apache::thrift::TApplicationException(::apache::thrift::TApplicationException::INVALID_MESSAGE_TYPE);
-  }
-  if (fname.compare("get_delegation_token_with_signature") != 0) {
-    iprot_->skip(::apache::thrift::protocol::T_STRUCT);
-    iprot_->readMessageEnd();
-    iprot_->getTransport()->readEnd();
-    throw ::apache::thrift::TApplicationException(::apache::thrift::TApplicationException::WRONG_METHOD_NAME);
-  }
-  ThriftHiveMetastore_get_delegation_token_with_signature_presult result;
-  result.success = &_return;
-  result.read(iprot_);
-  iprot_->readMessageEnd();
-  iprot_->getTransport()->readEnd();
-
-  if (result.__isset.success) {
-    // _return pointer has now been filled
-    return;
-  }
-  if (result.__isset.o1) {
-    throw result.o1;
-  }
-  throw ::apache::thrift::TApplicationException(::apache::thrift::TApplicationException::MISSING_RESULT, "get_delegation_token_with_signature failed: unknown result");
 }
 
 int64_t ThriftHiveMetastoreClient::renew_delegation_token(const std::string& token_str_form)
@@ -18838,7 +18597,7 @@ void ThriftHiveMetastoreProcessor::process_get_delegation_token(int32_t seqid, :
 
   ThriftHiveMetastore_get_delegation_token_result result;
   try {
-    iface_->get_delegation_token(result.success, args.renewer_kerberos_principal_name);
+    iface_->get_delegation_token(result.success, args.token_owner, args.renewer_kerberos_principal_name);
     result.__isset.success = true;
   } catch (MetaException &o1) {
     result.o1 = o1;
@@ -18854,37 +18613,6 @@ void ThriftHiveMetastoreProcessor::process_get_delegation_token(int32_t seqid, :
   }
 
   oprot->writeMessageBegin("get_delegation_token", ::apache::thrift::protocol::T_REPLY, seqid);
-  result.write(oprot);
-  oprot->writeMessageEnd();
-  oprot->getTransport()->flush();
-  oprot->getTransport()->writeEnd();
-}
-
-void ThriftHiveMetastoreProcessor::process_get_delegation_token_with_signature(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot)
-{
-  ThriftHiveMetastore_get_delegation_token_with_signature_args args;
-  args.read(iprot);
-  iprot->readMessageEnd();
-  iprot->getTransport()->readEnd();
-
-  ThriftHiveMetastore_get_delegation_token_with_signature_result result;
-  try {
-    iface_->get_delegation_token_with_signature(result.success, args.renewer_kerberos_principal_name, args.token_signature);
-    result.__isset.success = true;
-  } catch (MetaException &o1) {
-    result.o1 = o1;
-    result.__isset.o1 = true;
-  } catch (const std::exception& e) {
-    ::apache::thrift::TApplicationException x(e.what());
-    oprot->writeMessageBegin("get_delegation_token_with_signature", ::apache::thrift::protocol::T_EXCEPTION, seqid);
-    x.write(oprot);
-    oprot->writeMessageEnd();
-    oprot->getTransport()->flush();
-    oprot->getTransport()->writeEnd();
-    return;
-  }
-
-  oprot->writeMessageBegin("get_delegation_token_with_signature", ::apache::thrift::protocol::T_REPLY, seqid);
   result.write(oprot);
   oprot->writeMessageEnd();
   oprot->getTransport()->flush();

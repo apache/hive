@@ -25,7 +25,6 @@ import static org.apache.hadoop.hive.metastore.MetaStoreUtils.validateName;
 
 import java.io.IOException;
 import java.net.InetAddress;
-import java.net.Socket;
 import java.util.ArrayList;
 import java.util.Formatter;
 import java.util.HashMap;
@@ -86,12 +85,10 @@ import org.apache.hadoop.util.StringUtils;
 import org.apache.thrift.TException;
 import org.apache.thrift.TProcessor;
 import org.apache.thrift.protocol.TBinaryProtocol;
-import org.apache.thrift.protocol.TProtocol;
 import org.apache.thrift.server.TServer;
 import org.apache.thrift.server.TThreadPoolServer;
 import org.apache.thrift.transport.TServerSocket;
 import org.apache.thrift.transport.TServerTransport;
-import org.apache.thrift.transport.TSocket;
 import org.apache.thrift.transport.TTransportFactory;
 
 import com.facebook.fb303.FacebookBase;
@@ -105,6 +102,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
     HiveMetaStore.class);
 
   private static HadoopThriftAuthBridge.Server saslServer;
+  private static boolean useSasl;
 
   public static class HMSHandler extends FacebookBase implements
       ThriftHiveMetastore.Iface {
@@ -148,7 +146,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
     };
 
     private final void logAuditEvent(String cmd) {
-      if (!ShimLoader.getHadoopShims().isSecureShimImpl() || cmd == null) {
+      if (!useSasl || cmd == null) {
         return;
       }
 
@@ -158,7 +156,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       } catch (Exception ex) {
         throw new RuntimeException(ex);
       }
-      InetAddress addr = TLoggingProcessor.getRemoteAddress();
+      InetAddress addr = saslServer.getRemoteAddress();
       final Formatter fmt = auditFormatter.get();
       ((StringBuilder)fmt.out()).setLength(0);
       auditLog.info(fmt.format(AUDIT_FORMAT, ugi.getUserName(),
@@ -3028,22 +3026,6 @@ public class HiveMetaStore extends ThriftHiveMetastore {
     }
 
     @Override
-    public String get_delegation_token_with_signature(
-        String renewer_kerberos_principal_name,
-        String token_signature) throws MetaException, TException {
-      startFunction("get_delegation_token_with_signature");
-      try {
-        return
-        HiveMetaStore.getDelegationToken(renewer_kerberos_principal_name,
-            token_signature);
-      } catch(IOException e) {
-        throw new MetaException(e.getMessage());
-      } finally {
-        endFunction("get_delegation_token_with_signature");
-      }
-    }
-
-    @Override
     public long renew_delegation_token(String token_str_form)
     throws MetaException, TException {
       startFunction("renew_delegation_token");
@@ -3057,16 +3039,20 @@ public class HiveMetaStore extends ThriftHiveMetastore {
     }
 
     @Override
-    public String get_delegation_token(String renewer_kerberos_principal_name)
+    public String get_delegation_token(String token_owner,
+        String renewer_kerberos_principal_name)
     throws MetaException, TException {
-      startFunction("get_delegation_token_with_signature");
+      startFunction("get_delegation_token");
       try {
         return
-        HiveMetaStore.getDelegationToken(renewer_kerberos_principal_name);
+        HiveMetaStore.getDelegationToken(token_owner,
+            renewer_kerberos_principal_name);
       } catch(IOException e) {
         throw new MetaException(e.getMessage());
+      } catch (InterruptedException e) {
+        throw new MetaException(e.getMessage());
       } finally {
-        endFunction("get_delegation_token_with_signature");
+        endFunction("get_delegation_token");
       }
     }
 
@@ -3080,22 +3066,14 @@ public class HiveMetaStore extends ThriftHiveMetastore {
   ) throws IOException {
     saslServer.cancelDelegationToken(tokenStrForm);
   }
-  /**
-   * Get a new delegation token.
-   * @param renewer the designated renewer
-   * @param token_signature an identifier that is set as the service on the generated token
-   */
-  public static String getDelegationToken(String renewer, String token_signature
-  )throws IOException {
-    return saslServer.getDelegationToken(renewer, token_signature);
-  }
 
   /**
    * Get a new delegation token.
    * @param renewer the designated renewer
    */
-  public static String getDelegationToken(String renewer)throws IOException {
-    return saslServer.getDelegationToken(renewer);
+  public static String getDelegationToken(String owner, String renewer)
+  throws IOException, InterruptedException {
+    return saslServer.getDelegationToken(owner, renewer);
   }
   /**
    * Renew a delegation token to extend its lifetime.
@@ -3143,13 +3121,12 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       int minWorkerThreads = conf.getIntVar(HiveConf.ConfVars.METASTORESERVERMINTHREADS);
       int maxWorkerThreads = conf.getIntVar(HiveConf.ConfVars.METASTORESERVERMAXTHREADS);
       boolean tcpKeepAlive = conf.getBoolVar(HiveConf.ConfVars.METASTORE_TCP_KEEP_ALIVE);
-      boolean useSasl = conf.getBoolVar(HiveConf.ConfVars.METASTORE_USE_THRIFT_SASL);
+      useSasl = conf.getBoolVar(HiveConf.ConfVars.METASTORE_USE_THRIFT_SASL);
 
       TServerTransport serverTransport = tcpKeepAlive ?
           new TServerSocketKeepAlive(port) : new TServerSocket(port);
 
-      TProcessor processor =
-        new TLoggingProcessor(new ThriftHiveMetastore.Processor(handler));
+      TProcessor processor = new ThriftHiveMetastore.Processor(handler);
       TTransportFactory transFactory;
       if (useSasl) {
          saslServer = bridge.createServer(
@@ -3182,31 +3159,6 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       x.printStackTrace();
       HMSHandler.LOG.error(StringUtils.stringifyException(x));
       throw x;
-    }
-  }
-  //Assists audit logger - gets the remote client's IP address.
-  private static class TLoggingProcessor implements TProcessor {
-    private final static ThreadLocal<InetAddress> remoteAddress =
-      new ThreadLocal<InetAddress>() {
-      @Override
-      protected synchronized InetAddress initialValue() {
-        return null;
-      }
-    };
-    TProcessor wrapped;
-    TLoggingProcessor(TProcessor wrapped) {
-      this.wrapped = wrapped;
-    }
-    static InetAddress getRemoteAddress() {
-      return remoteAddress.get();
-    }
-    public boolean process(final TProtocol inProt, final TProtocol outProt)
-    throws TException {
-      if (TSocket.class.isAssignableFrom(inProt.getTransport().getClass())) {
-        Socket socket = ((TSocket)inProt.getTransport()).getSocket();
-        remoteAddress.set(socket.getInetAddress());
-      }
-      return wrapped.process(inProt, outProt);
     }
   }
 }
