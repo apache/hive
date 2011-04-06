@@ -1,0 +1,9 @@
+<settings>
+<servers>
+  <server>
+    <id>datastax-snapshot</id>
+    <username>tjake</username>
+    <password>brisk</password>
+  </server>
+</servers>
+</settings>

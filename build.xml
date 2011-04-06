@@ -805,7 +805,7 @@
     <artifact:install-provider artifactId="wagon-http"
 			       version="1.0-beta-2" />
     
-    <artifact:deploy>
+    <artifact:deploy settingsFile="${basedir}/settings.xml">
       <remoteRepository id="datastax-snapshot" url="${asfrepo}"/>
       <pom refid="hive.project.pom"/>
       <attach file="${basedir}/lib/derby.jar" type="jar" classifier="derby"/> 
@@ -823,7 +823,7 @@
     
     <artifact:install-provider artifactId="wagon-http" version="1.0-beta-2" />
     
-    <artifact:deploy>
+    <artifact:deploy settingsFile="${basedir}/settings.xml">
       <remoteRepository id="datastax-snapshot" url="${asfrepo}"/>
       <pom refid="hive.project.pom"/>
       <attach file="${build.dir.hive}/hwi/hive-hwi-${version}.jar" type="jar" classifier="compile"/> 
@@ -839,7 +839,7 @@
     
     <artifact:install-provider artifactId="wagon-http"
 			       version="1.0-beta-2" />
-    <artifact:deploy
+    <artifact:deploy settingsFile="${basedir}/settings.xml"
 	file="${build.dir.hive}/maven/jars/hive-${hive.project}-${version}.jar">
       <remoteRepository id="datastax-snapshot" url="${asfrepo}" />
       <pom refid="hive.project.pom" />
