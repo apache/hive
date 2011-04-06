@@ -70,7 +70,7 @@ public class DelegationTokenSecretManager
     return renewToken(t, user);
   }
 
-  public synchronized String getDelegationToken(String renewer, String tokenSignature) throws IOException {
+  public synchronized String getDelegationToken(String renewer) throws IOException {
     UserGroupInformation ugi = UserGroupInformation.getCurrentUser();
     Text owner = new Text(ugi.getUserName());
     Text realUser = null;
@@ -81,14 +81,7 @@ public class DelegationTokenSecretManager
       new DelegationTokenIdentifier(owner, new Text(renewer), realUser);
     Token<DelegationTokenIdentifier> t = new Token<DelegationTokenIdentifier>(
         ident, this);
-    if(tokenSignature != null) {
-      t.setService(new Text(tokenSignature));
-    }
     return t.encodeToUrlString();
-  }
-
-  public synchronized String getDelegationToken(String renewer) throws IOException {
-    return getDelegationToken(renewer, null);
   }
 }
 

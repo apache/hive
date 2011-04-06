@@ -69,8 +69,7 @@ class ThriftHiveMetastoreIf : virtual public facebook::fb303::FacebookServiceIf 
   virtual void list_privileges(std::vector<HiveObjectPrivilege> & _return, const std::string& principal_name, const PrincipalType::type principal_type, const HiveObjectRef& hiveObject) = 0;
   virtual bool grant_privileges(const PrivilegeBag& privileges) = 0;
   virtual bool revoke_privileges(const PrivilegeBag& privileges) = 0;
-  virtual void get_delegation_token(std::string& _return, const std::string& renewer_kerberos_principal_name) = 0;
-  virtual void get_delegation_token_with_signature(std::string& _return, const std::string& renewer_kerberos_principal_name, const std::string& token_signature) = 0;
+  virtual void get_delegation_token(std::string& _return, const std::string& token_owner, const std::string& renewer_kerberos_principal_name) = 0;
   virtual int64_t renew_delegation_token(const std::string& token_str_form) = 0;
   virtual void cancel_delegation_token(const std::string& token_str_form) = 0;
 };
@@ -251,10 +250,7 @@ class ThriftHiveMetastoreNull : virtual public ThriftHiveMetastoreIf , virtual p
     bool _return = false;
     return _return;
   }
-  void get_delegation_token(std::string& /* _return */, const std::string& /* renewer_kerberos_principal_name */) {
-    return;
-  }
-  void get_delegation_token_with_signature(std::string& /* _return */, const std::string& /* renewer_kerberos_principal_name */, const std::string& /* token_signature */) {
+  void get_delegation_token(std::string& /* _return */, const std::string& /* token_owner */, const std::string& /* renewer_kerberos_principal_name */) {
     return;
   }
   int64_t renew_delegation_token(const std::string& /* token_str_form */) {
@@ -6581,24 +6577,28 @@ class ThriftHiveMetastore_revoke_privileges_presult {
 };
 
 typedef struct _ThriftHiveMetastore_get_delegation_token_args__isset {
-  _ThriftHiveMetastore_get_delegation_token_args__isset() : renewer_kerberos_principal_name(false) {}
+  _ThriftHiveMetastore_get_delegation_token_args__isset() : token_owner(false), renewer_kerberos_principal_name(false) {}
+  bool token_owner;
   bool renewer_kerberos_principal_name;
 } _ThriftHiveMetastore_get_delegation_token_args__isset;
 
 class ThriftHiveMetastore_get_delegation_token_args {
  public:
 
-  ThriftHiveMetastore_get_delegation_token_args() : renewer_kerberos_principal_name("") {
+  ThriftHiveMetastore_get_delegation_token_args() : token_owner(""), renewer_kerberos_principal_name("") {
   }
 
   virtual ~ThriftHiveMetastore_get_delegation_token_args() throw() {}
 
+  std::string token_owner;
   std::string renewer_kerberos_principal_name;
 
   _ThriftHiveMetastore_get_delegation_token_args__isset __isset;
 
   bool operator == (const ThriftHiveMetastore_get_delegation_token_args & rhs) const
   {
+    if (!(token_owner == rhs.token_owner))
+      return false;
     if (!(renewer_kerberos_principal_name == rhs.renewer_kerberos_principal_name))
       return false;
     return true;
@@ -6621,6 +6621,7 @@ class ThriftHiveMetastore_get_delegation_token_pargs {
 
   virtual ~ThriftHiveMetastore_get_delegation_token_pargs() throw() {}
 
+  const std::string* token_owner;
   const std::string* renewer_kerberos_principal_name;
 
   uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
@@ -6681,117 +6682,6 @@ class ThriftHiveMetastore_get_delegation_token_presult {
   MetaException o1;
 
   _ThriftHiveMetastore_get_delegation_token_presult__isset __isset;
-
-  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
-
-};
-
-typedef struct _ThriftHiveMetastore_get_delegation_token_with_signature_args__isset {
-  _ThriftHiveMetastore_get_delegation_token_with_signature_args__isset() : renewer_kerberos_principal_name(false), token_signature(false) {}
-  bool renewer_kerberos_principal_name;
-  bool token_signature;
-} _ThriftHiveMetastore_get_delegation_token_with_signature_args__isset;
-
-class ThriftHiveMetastore_get_delegation_token_with_signature_args {
- public:
-
-  ThriftHiveMetastore_get_delegation_token_with_signature_args() : renewer_kerberos_principal_name(""), token_signature("") {
-  }
-
-  virtual ~ThriftHiveMetastore_get_delegation_token_with_signature_args() throw() {}
-
-  std::string renewer_kerberos_principal_name;
-  std::string token_signature;
-
-  _ThriftHiveMetastore_get_delegation_token_with_signature_args__isset __isset;
-
-  bool operator == (const ThriftHiveMetastore_get_delegation_token_with_signature_args & rhs) const
-  {
-    if (!(renewer_kerberos_principal_name == rhs.renewer_kerberos_principal_name))
-      return false;
-    if (!(token_signature == rhs.token_signature))
-      return false;
-    return true;
-  }
-  bool operator != (const ThriftHiveMetastore_get_delegation_token_with_signature_args &rhs) const {
-    return !(*this == rhs);
-  }
-
-  bool operator < (const ThriftHiveMetastore_get_delegation_token_with_signature_args & ) const;
-
-  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
-  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
-
-};
-
-
-class ThriftHiveMetastore_get_delegation_token_with_signature_pargs {
- public:
-
-
-  virtual ~ThriftHiveMetastore_get_delegation_token_with_signature_pargs() throw() {}
-
-  const std::string* renewer_kerberos_principal_name;
-  const std::string* token_signature;
-
-  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
-
-};
-
-typedef struct _ThriftHiveMetastore_get_delegation_token_with_signature_result__isset {
-  _ThriftHiveMetastore_get_delegation_token_with_signature_result__isset() : success(false), o1(false) {}
-  bool success;
-  bool o1;
-} _ThriftHiveMetastore_get_delegation_token_with_signature_result__isset;
-
-class ThriftHiveMetastore_get_delegation_token_with_signature_result {
- public:
-
-  ThriftHiveMetastore_get_delegation_token_with_signature_result() : success("") {
-  }
-
-  virtual ~ThriftHiveMetastore_get_delegation_token_with_signature_result() throw() {}
-
-  std::string success;
-  MetaException o1;
-
-  _ThriftHiveMetastore_get_delegation_token_with_signature_result__isset __isset;
-
-  bool operator == (const ThriftHiveMetastore_get_delegation_token_with_signature_result & rhs) const
-  {
-    if (!(success == rhs.success))
-      return false;
-    if (!(o1 == rhs.o1))
-      return false;
-    return true;
-  }
-  bool operator != (const ThriftHiveMetastore_get_delegation_token_with_signature_result &rhs) const {
-    return !(*this == rhs);
-  }
-
-  bool operator < (const ThriftHiveMetastore_get_delegation_token_with_signature_result & ) const;
-
-  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
-  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
-
-};
-
-typedef struct _ThriftHiveMetastore_get_delegation_token_with_signature_presult__isset {
-  _ThriftHiveMetastore_get_delegation_token_with_signature_presult__isset() : success(false), o1(false) {}
-  bool success;
-  bool o1;
-} _ThriftHiveMetastore_get_delegation_token_with_signature_presult__isset;
-
-class ThriftHiveMetastore_get_delegation_token_with_signature_presult {
- public:
-
-
-  virtual ~ThriftHiveMetastore_get_delegation_token_with_signature_presult() throw() {}
-
-  std::string* success;
-  MetaException o1;
-
-  _ThriftHiveMetastore_get_delegation_token_with_signature_presult__isset __isset;
 
   uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
 
@@ -7177,12 +7067,9 @@ class ThriftHiveMetastoreClient : virtual public ThriftHiveMetastoreIf, public f
   bool revoke_privileges(const PrivilegeBag& privileges);
   void send_revoke_privileges(const PrivilegeBag& privileges);
   bool recv_revoke_privileges();
-  void get_delegation_token(std::string& _return, const std::string& renewer_kerberos_principal_name);
-  void send_get_delegation_token(const std::string& renewer_kerberos_principal_name);
+  void get_delegation_token(std::string& _return, const std::string& token_owner, const std::string& renewer_kerberos_principal_name);
+  void send_get_delegation_token(const std::string& token_owner, const std::string& renewer_kerberos_principal_name);
   void recv_get_delegation_token(std::string& _return);
-  void get_delegation_token_with_signature(std::string& _return, const std::string& renewer_kerberos_principal_name, const std::string& token_signature);
-  void send_get_delegation_token_with_signature(const std::string& renewer_kerberos_principal_name, const std::string& token_signature);
-  void recv_get_delegation_token_with_signature(std::string& _return);
   int64_t renew_delegation_token(const std::string& token_str_form);
   void send_renew_delegation_token(const std::string& token_str_form);
   int64_t recv_renew_delegation_token();
@@ -7252,7 +7139,6 @@ class ThriftHiveMetastoreProcessor : virtual public ::apache::thrift::TProcessor
   void process_grant_privileges(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot);
   void process_revoke_privileges(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot);
   void process_get_delegation_token(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot);
-  void process_get_delegation_token_with_signature(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot);
   void process_renew_delegation_token(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot);
   void process_cancel_delegation_token(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot);
  public:
@@ -7314,7 +7200,6 @@ class ThriftHiveMetastoreProcessor : virtual public ::apache::thrift::TProcessor
     processMap_["grant_privileges"] = &ThriftHiveMetastoreProcessor::process_grant_privileges;
     processMap_["revoke_privileges"] = &ThriftHiveMetastoreProcessor::process_revoke_privileges;
     processMap_["get_delegation_token"] = &ThriftHiveMetastoreProcessor::process_get_delegation_token;
-    processMap_["get_delegation_token_with_signature"] = &ThriftHiveMetastoreProcessor::process_get_delegation_token_with_signature;
     processMap_["renew_delegation_token"] = &ThriftHiveMetastoreProcessor::process_renew_delegation_token;
     processMap_["cancel_delegation_token"] = &ThriftHiveMetastoreProcessor::process_cancel_delegation_token;
   }
@@ -7937,26 +7822,14 @@ class ThriftHiveMetastoreMultiface : virtual public ThriftHiveMetastoreIf, publi
     }
   }
 
-  void get_delegation_token(std::string& _return, const std::string& renewer_kerberos_principal_name) {
+  void get_delegation_token(std::string& _return, const std::string& token_owner, const std::string& renewer_kerberos_principal_name) {
     uint32_t sz = ifaces_.size();
     for (uint32_t i = 0; i < sz; ++i) {
       if (i == sz - 1) {
-        ifaces_[i]->get_delegation_token(_return, renewer_kerberos_principal_name);
+        ifaces_[i]->get_delegation_token(_return, token_owner, renewer_kerberos_principal_name);
         return;
       } else {
-        ifaces_[i]->get_delegation_token(_return, renewer_kerberos_principal_name);
-      }
-    }
-  }
-
-  void get_delegation_token_with_signature(std::string& _return, const std::string& renewer_kerberos_principal_name, const std::string& token_signature) {
-    uint32_t sz = ifaces_.size();
-    for (uint32_t i = 0; i < sz; ++i) {
-      if (i == sz - 1) {
-        ifaces_[i]->get_delegation_token_with_signature(_return, renewer_kerberos_principal_name, token_signature);
-        return;
-      } else {
-        ifaces_[i]->get_delegation_token_with_signature(_return, renewer_kerberos_principal_name, token_signature);
+        ifaces_[i]->get_delegation_token(_return, token_owner, renewer_kerberos_principal_name);
       }
     }
   }

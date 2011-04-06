@@ -677,22 +677,13 @@ public interface IMetaStoreClient {
       throws MetaException, TException;
 
   /**
-   * @param renewerKerberosPrincipalName
-   * @param tokenSignature
-   * @return
-   * @throws MetaException
-   * @throws TException
-   */
-  public String getDelegationTokenWithSignature(String renewerKerberosPrincipalName, String tokenSignature)
-      throws MetaException, TException;
-
-  /**
+   * @param owner the intended owner for the token
    * @param renewerKerberosPrincipalName
    * @return
    * @throws MetaException
    * @throws TException
    */
-  public String getDelegationToken(String renewerKerberosPrincipalName)
+  public String getDelegationToken(String owner, String renewerKerberosPrincipalName)
       throws MetaException, TException;
 
   /**

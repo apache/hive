@@ -64,8 +64,7 @@ interface ThriftHiveMetastoreIf extends FacebookServiceIf {
   public function list_privileges($principal_name, $principal_type, $hiveObject);
   public function grant_privileges($privileges);
   public function revoke_privileges($privileges);
-  public function get_delegation_token($renewer_kerberos_principal_name);
-  public function get_delegation_token_with_signature($renewer_kerberos_principal_name, $token_signature);
+  public function get_delegation_token($token_owner, $renewer_kerberos_principal_name);
   public function renew_delegation_token($token_str_form);
   public function cancel_delegation_token($token_str_form);
 }
@@ -3174,15 +3173,16 @@ class ThriftHiveMetastoreClient extends FacebookServiceClient implements ThriftH
     throw new Exception("revoke_privileges failed: unknown result");
   }
 
-  public function get_delegation_token($renewer_kerberos_principal_name)
+  public function get_delegation_token($token_owner, $renewer_kerberos_principal_name)
   {
-    $this->send_get_delegation_token($renewer_kerberos_principal_name);
+    $this->send_get_delegation_token($token_owner, $renewer_kerberos_principal_name);
     return $this->recv_get_delegation_token();
   }
 
-  public function send_get_delegation_token($renewer_kerberos_principal_name)
+  public function send_get_delegation_token($token_owner, $renewer_kerberos_principal_name)
   {
     $args = new metastore_ThriftHiveMetastore_get_delegation_token_args();
+    $args->token_owner = $token_owner;
     $args->renewer_kerberos_principal_name = $renewer_kerberos_principal_name;
     $bin_accel = ($this->output_ instanceof TProtocol::$TBINARYPROTOCOLACCELERATED) && function_exists('thrift_protocol_write_binary');
     if ($bin_accel)
@@ -3226,61 +3226,6 @@ class ThriftHiveMetastoreClient extends FacebookServiceClient implements ThriftH
       throw $result->o1;
     }
     throw new Exception("get_delegation_token failed: unknown result");
-  }
-
-  public function get_delegation_token_with_signature($renewer_kerberos_principal_name, $token_signature)
-  {
-    $this->send_get_delegation_token_with_signature($renewer_kerberos_principal_name, $token_signature);
-    return $this->recv_get_delegation_token_with_signature();
-  }
-
-  public function send_get_delegation_token_with_signature($renewer_kerberos_principal_name, $token_signature)
-  {
-    $args = new metastore_ThriftHiveMetastore_get_delegation_token_with_signature_args();
-    $args->renewer_kerberos_principal_name = $renewer_kerberos_principal_name;
-    $args->token_signature = $token_signature;
-    $bin_accel = ($this->output_ instanceof TProtocol::$TBINARYPROTOCOLACCELERATED) && function_exists('thrift_protocol_write_binary');
-    if ($bin_accel)
-    {
-      thrift_protocol_write_binary($this->output_, 'get_delegation_token_with_signature', TMessageType::CALL, $args, $this->seqid_, $this->output_->isStrictWrite());
-    }
-    else
-    {
-      $this->output_->writeMessageBegin('get_delegation_token_with_signature', TMessageType::CALL, $this->seqid_);
-      $args->write($this->output_);
-      $this->output_->writeMessageEnd();
-      $this->output_->getTransport()->flush();
-    }
-  }
-
-  public function recv_get_delegation_token_with_signature()
-  {
-    $bin_accel = ($this->input_ instanceof TProtocol::$TBINARYPROTOCOLACCELERATED) && function_exists('thrift_protocol_read_binary');
-    if ($bin_accel) $result = thrift_protocol_read_binary($this->input_, 'metastore_ThriftHiveMetastore_get_delegation_token_with_signature_result', $this->input_->isStrictRead());
-    else
-    {
-      $rseqid = 0;
-      $fname = null;
-      $mtype = 0;
-
-      $this->input_->readMessageBegin($fname, $mtype, $rseqid);
-      if ($mtype == TMessageType::EXCEPTION) {
-        $x = new TApplicationException();
-        $x->read($this->input_);
-        $this->input_->readMessageEnd();
-        throw $x;
-      }
-      $result = new metastore_ThriftHiveMetastore_get_delegation_token_with_signature_result();
-      $result->read($this->input_);
-      $this->input_->readMessageEnd();
-    }
-    if ($result->success !== null) {
-      return $result->success;
-    }
-    if ($result->o1 !== null) {
-      throw $result->o1;
-    }
-    throw new Exception("get_delegation_token_with_signature failed: unknown result");
   }
 
   public function renew_delegation_token($token_str_form)
@@ -15760,18 +15705,26 @@ class metastore_ThriftHiveMetastore_revoke_privileges_result {
 class metastore_ThriftHiveMetastore_get_delegation_token_args {
   static $_TSPEC;
 
+  public $token_owner = null;
   public $renewer_kerberos_principal_name = null;
 
   public function __construct($vals=null) {
     if (!isset(self::$_TSPEC)) {
       self::$_TSPEC = array(
         1 => array(
+          'var' => 'token_owner',
+          'type' => TType::STRING,
+          ),
+        2 => array(
           'var' => 'renewer_kerberos_principal_name',
           'type' => TType::STRING,
           ),
         );
     }
     if (is_array($vals)) {
+      if (isset($vals['token_owner'])) {
+        $this->token_owner = $vals['token_owner'];
+      }
       if (isset($vals['renewer_kerberos_principal_name'])) {
         $this->renewer_kerberos_principal_name = $vals['renewer_kerberos_principal_name'];
       }
@@ -15799,6 +15752,13 @@ class metastore_ThriftHiveMetastore_get_delegation_token_args {
       {
         case 1:
           if ($ftype == TType::STRING) {
+            $xfer += $input->readString($this->token_owner);
+          } else {
+            $xfer += $input->skip($ftype);
+          }
+          break;
+        case 2:
+          if ($ftype == TType::STRING) {
             $xfer += $input->readString($this->renewer_kerberos_principal_name);
           } else {
             $xfer += $input->skip($ftype);
@@ -15817,8 +15777,13 @@ class metastore_ThriftHiveMetastore_get_delegation_token_args {
   public function write($output) {
     $xfer = 0;
     $xfer += $output->writeStructBegin('ThriftHiveMetastore_get_delegation_token_args');
+    if ($this->token_owner !== null) {
+      $xfer += $output->writeFieldBegin('token_owner', TType::STRING, 1);
+      $xfer += $output->writeString($this->token_owner);
+      $xfer += $output->writeFieldEnd();
+    }
     if ($this->renewer_kerberos_principal_name !== null) {
-      $xfer += $output->writeFieldBegin('renewer_kerberos_principal_name', TType::STRING, 1);
+      $xfer += $output->writeFieldBegin('renewer_kerberos_principal_name', TType::STRING, 2);
       $xfer += $output->writeString($this->renewer_kerberos_principal_name);
       $xfer += $output->writeFieldEnd();
     }
@@ -15906,192 +15871,6 @@ class metastore_ThriftHiveMetastore_get_delegation_token_result {
   public function write($output) {
     $xfer = 0;
     $xfer += $output->writeStructBegin('ThriftHiveMetastore_get_delegation_token_result');
-    if ($this->success !== null) {
-      $xfer += $output->writeFieldBegin('success', TType::STRING, 0);
-      $xfer += $output->writeString($this->success);
-      $xfer += $output->writeFieldEnd();
-    }
-    if ($this->o1 !== null) {
-      $xfer += $output->writeFieldBegin('o1', TType::STRUCT, 1);
-      $xfer += $this->o1->write($output);
-      $xfer += $output->writeFieldEnd();
-    }
-    $xfer += $output->writeFieldStop();
-    $xfer += $output->writeStructEnd();
-    return $xfer;
-  }
-
-}
-
-class metastore_ThriftHiveMetastore_get_delegation_token_with_signature_args {
-  static $_TSPEC;
-
-  public $renewer_kerberos_principal_name = null;
-  public $token_signature = null;
-
-  public function __construct($vals=null) {
-    if (!isset(self::$_TSPEC)) {
-      self::$_TSPEC = array(
-        1 => array(
-          'var' => 'renewer_kerberos_principal_name',
-          'type' => TType::STRING,
-          ),
-        2 => array(
-          'var' => 'token_signature',
-          'type' => TType::STRING,
-          ),
-        );
-    }
-    if (is_array($vals)) {
-      if (isset($vals['renewer_kerberos_principal_name'])) {
-        $this->renewer_kerberos_principal_name = $vals['renewer_kerberos_principal_name'];
-      }
-      if (isset($vals['token_signature'])) {
-        $this->token_signature = $vals['token_signature'];
-      }
-    }
-  }
-
-  public function getName() {
-    return 'ThriftHiveMetastore_get_delegation_token_with_signature_args';
-  }
-
-  public function read($input)
-  {
-    $xfer = 0;
-    $fname = null;
-    $ftype = 0;
-    $fid = 0;
-    $xfer += $input->readStructBegin($fname);
-    while (true)
-    {
-      $xfer += $input->readFieldBegin($fname, $ftype, $fid);
-      if ($ftype == TType::STOP) {
-        break;
-      }
-      switch ($fid)
-      {
-        case 1:
-          if ($ftype == TType::STRING) {
-            $xfer += $input->readString($this->renewer_kerberos_principal_name);
-          } else {
-            $xfer += $input->skip($ftype);
-          }
-          break;
-        case 2:
-          if ($ftype == TType::STRING) {
-            $xfer += $input->readString($this->token_signature);
-          } else {
-            $xfer += $input->skip($ftype);
-          }
-          break;
-        default:
-          $xfer += $input->skip($ftype);
-          break;
-      }
-      $xfer += $input->readFieldEnd();
-    }
-    $xfer += $input->readStructEnd();
-    return $xfer;
-  }
-
-  public function write($output) {
-    $xfer = 0;
-    $xfer += $output->writeStructBegin('ThriftHiveMetastore_get_delegation_token_with_signature_args');
-    if ($this->renewer_kerberos_principal_name !== null) {
-      $xfer += $output->writeFieldBegin('renewer_kerberos_principal_name', TType::STRING, 1);
-      $xfer += $output->writeString($this->renewer_kerberos_principal_name);
-      $xfer += $output->writeFieldEnd();
-    }
-    if ($this->token_signature !== null) {
-      $xfer += $output->writeFieldBegin('token_signature', TType::STRING, 2);
-      $xfer += $output->writeString($this->token_signature);
-      $xfer += $output->writeFieldEnd();
-    }
-    $xfer += $output->writeFieldStop();
-    $xfer += $output->writeStructEnd();
-    return $xfer;
-  }
-
-}
-
-class metastore_ThriftHiveMetastore_get_delegation_token_with_signature_result {
-  static $_TSPEC;
-
-  public $success = null;
-  public $o1 = null;
-
-  public function __construct($vals=null) {
-    if (!isset(self::$_TSPEC)) {
-      self::$_TSPEC = array(
-        0 => array(
-          'var' => 'success',
-          'type' => TType::STRING,
-          ),
-        1 => array(
-          'var' => 'o1',
-          'type' => TType::STRUCT,
-          'class' => 'metastore_MetaException',
-          ),
-        );
-    }
-    if (is_array($vals)) {
-      if (isset($vals['success'])) {
-        $this->success = $vals['success'];
-      }
-      if (isset($vals['o1'])) {
-        $this->o1 = $vals['o1'];
-      }
-    }
-  }
-
-  public function getName() {
-    return 'ThriftHiveMetastore_get_delegation_token_with_signature_result';
-  }
-
-  public function read($input)
-  {
-    $xfer = 0;
-    $fname = null;
-    $ftype = 0;
-    $fid = 0;
-    $xfer += $input->readStructBegin($fname);
-    while (true)
-    {
-      $xfer += $input->readFieldBegin($fname, $ftype, $fid);
-      if ($ftype == TType::STOP) {
-        break;
-      }
-      switch ($fid)
-      {
-        case 0:
-          if ($ftype == TType::STRING) {
-            $xfer += $input->readString($this->success);
-          } else {
-            $xfer += $input->skip($ftype);
-          }
-          break;
-        case 1:
-          if ($ftype == TType::STRUCT) {
-            $this->o1 = new metastore_MetaException();
-            $xfer += $this->o1->read($input);
-          } else {
-            $xfer += $input->skip($ftype);
-          }
-          break;
-        default:
-          $xfer += $input->skip($ftype);
-          break;
-      }
-      $xfer += $input->readFieldEnd();
-    }
-    $xfer += $input->readStructEnd();
-    return $xfer;
-  }
-
-  public function write($output) {
-    $xfer = 0;
-    $xfer += $output->writeStructBegin('ThriftHiveMetastore_get_delegation_token_with_signature_result');
     if ($this->success !== null) {
       $xfer += $output->writeFieldBegin('success', TType::STRING, 0);
       $xfer += $output->writeString($this->success);

@@ -18,6 +18,8 @@
 package org.apache.hadoop.hive.thrift;
 
 import java.io.IOException;
+import java.net.InetAddress;
+import java.net.Socket;
 import java.security.PrivilegedAction;
 import java.security.PrivilegedExceptionAction;
 
@@ -40,6 +42,9 @@ import org.apache.hadoop.security.SaslRpcServer;
 import org.apache.hadoop.security.SecurityUtil;
 import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.hadoop.security.SaslRpcServer.AuthMethod;
+import org.apache.hadoop.security.UserGroupInformation.AuthenticationMethod;
+import org.apache.hadoop.security.authorize.AuthorizationException;
+import org.apache.hadoop.security.authorize.ProxyUsers;
 import org.apache.hadoop.security.token.Token;
 import org.apache.hadoop.security.token.TokenIdentifier;
 import org.apache.hadoop.security.token.SecretManager.InvalidToken;
@@ -48,6 +53,7 @@ import org.apache.thrift.TProcessor;
 import org.apache.thrift.protocol.TProtocol;
 import org.apache.thrift.transport.TSaslClientTransport;
 import org.apache.thrift.transport.TSaslServerTransport;
+import org.apache.thrift.transport.TSocket;
 import org.apache.thrift.transport.TTransport;
 import org.apache.thrift.transport.TTransportException;
 import org.apache.thrift.transport.TTransportFactory;
@@ -419,19 +425,49 @@ import org.apache.thrift.transport.TTransportFactory;
      }
 
      @Override
-     public String getDelegationToken(String renewer) throws IOException {
-       return secretManager.getDelegationToken(renewer);
+     public String getDelegationToken(final String owner, final String renewer) 
+     throws IOException, InterruptedException {
+       if (!authenticationMethod.get().equals(AuthenticationMethod.KERBEROS)) {
+         throw new AuthorizationException(
+         "Delegation Token can be issued only with kerberos authentication");
+       }
+       //if the user asking the token is same as the 'owner' then don't do
+       //any proxy authorization checks. For cases like oozie, where it gets
+       //a delegation token for another user, we need to make sure oozie is
+       //authorized to get a delegation token.
+       //Do all checks on short names
+       UserGroupInformation currUser = UserGroupInformation.getCurrentUser();
+       UserGroupInformation ownerUgi = UserGroupInformation.createRemoteUser(owner);
+       if (!ownerUgi.getShortUserName().equals(currUser.getShortUserName())) {
+         //in the case of proxy users, the getCurrentUser will return the 
+         //real user (for e.g. oozie) due to the doAs that happened just before the 
+         //server started executing the method getDelegationToken in the MetaStore
+         ownerUgi = UserGroupInformation.createProxyUser(owner,
+           UserGroupInformation.getCurrentUser());
+         InetAddress remoteAddr = getRemoteAddress();
+         //A hack (127.0.1.1 is used as the remote address in case remoteAddr is null)
+         //to make a testcase TestHadoop20SAuthBridge.testMetastoreProxyUser
+         //pass. Once we have updated hive to have a thrift release with
+         //THIFT-1053 in, we can remove the check for remoteAddr being null, and this
+         //hack
+         ProxyUsers.authorize(ownerUgi, 
+              remoteAddr != null ? remoteAddr.getHostAddress() : "127.0.1.1", 
+              null);
+       }
+       return ownerUgi.doAs(new PrivilegedExceptionAction<String>() {
+         public String run() throws IOException {
+           return secretManager.getDelegationToken(renewer);
+         }
+       }); 
      }
 
      @Override
      public long renewDelegationToken(String tokenStrForm) throws IOException {
+       if (!authenticationMethod.get().equals(AuthenticationMethod.KERBEROS)) {
+         throw new AuthorizationException(
+         "Delegation Token can be issued only with kerberos authentication");
+       }
        return secretManager.renewDelegationToken(tokenStrForm);
-     }
-
-     @Override
-     public String getDelegationToken(String renewer, String token_signature)
-     throws IOException {
-       return secretManager.getDelegationToken(renewer, token_signature);
      }
 
      @Override
@@ -439,7 +475,28 @@ import org.apache.thrift.transport.TTransportFactory;
        secretManager.cancelDelegationToken(tokenStrForm);
      }
 
-
+     private final static ThreadLocal<InetAddress> remoteAddress =
+       new ThreadLocal<InetAddress>() {
+       @Override
+       protected synchronized InetAddress initialValue() {
+         return null;
+       }
+     };
+     
+     @Override
+     public InetAddress getRemoteAddress() {
+       return remoteAddress.get();
+     }
+     
+     //declare the field public so that testcases can set it to an explicit value
+     public final static ThreadLocal<AuthenticationMethod> authenticationMethod =
+       new ThreadLocal<AuthenticationMethod>() {
+       @Override
+       protected synchronized AuthenticationMethod initialValue() {
+         return AuthenticationMethod.TOKEN;
+       }
+     };
+     
     /** CallbackHandler for SASL DIGEST-MD5 mechanism */
     // This code is pretty much completely based on Hadoop's
     // SaslRpcServer.SaslDigestCallbackHandler - the only reason we could not
@@ -537,6 +594,7 @@ import org.apache.thrift.transport.TTransportFactory;
          TSaslServerTransport saslTrans = (TSaslServerTransport)trans;
          SaslServer saslServer = saslTrans.getSaslServer();
          String authId = saslServer.getAuthorizationID();
+         authenticationMethod.set(AuthenticationMethod.KERBEROS);
          LOG.debug("AUTH ID ======>" + authId);
          String endUser = authId;
 
@@ -545,9 +603,14 @@ import org.apache.thrift.transport.TTransportFactory;
              TokenIdentifier tokenId = SaslRpcServer.getIdentifier(authId,
                  secretManager);
              endUser = tokenId.getUser().getUserName();
+             authenticationMethod.set(AuthenticationMethod.TOKEN);
            } catch (InvalidToken e) {
              throw new TException(e.getMessage());
            }
+         }
+         if (TSocket.class.isAssignableFrom(inProt.getTransport().getClass())) {
+           Socket socket = ((TSocket)inProt.getTransport()).getSocket();
+           remoteAddress.set(socket.getInetAddress());
          }
          try {
            UserGroupInformation clientUgi = UserGroupInformation.createProxyUser(

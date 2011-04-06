@@ -1053,25 +1053,22 @@ public class HiveMetaStoreClient implements IMetaStoreClient {
     return client.list_privileges(principalName, principalType, hiveObject);
   }
 
-  @Override
-  public String getDelegationTokenWithSignature(String renewerKerberosPrincipalName,
-      String tokenSignature) throws
-  MetaException, TException {
-    if(localMetaStore) {
-      throw new UnsupportedOperationException("getDelegationToken() can be " +
-          "called only in thrift (non local) mode");
-    }
-    return client.get_delegation_token_with_signature(renewerKerberosPrincipalName, tokenSignature);
-  }
-
-  @Override
   public String getDelegationToken(String renewerKerberosPrincipalName) throws
+  MetaException, TException, IOException {
+    //a convenience method that makes the intended owner for the delegation
+    //token request the current user
+    String owner = conf.getUser();
+    return getDelegationToken(owner, renewerKerberosPrincipalName);
+  }
+  
+  @Override
+  public String getDelegationToken(String owner, String renewerKerberosPrincipalName) throws
   MetaException, TException {
     if(localMetaStore) {
       throw new UnsupportedOperationException("getDelegationToken() can be " +
           "called only in thrift (non local) mode");
     }
-    return client.get_delegation_token(renewerKerberosPrincipalName);
+    return client.get_delegation_token(owner, renewerKerberosPrincipalName);
   }
 
   @Override

@@ -18,22 +18,36 @@
 
 package org.apache.hadoop.hive.thrift;
 
+import java.io.ByteArrayInputStream;
+import java.io.DataInputStream;
+import java.io.IOException;
+import java.net.InetAddress;
 import java.net.InetSocketAddress;
+import java.net.NetworkInterface;
 import java.net.Socket;
 import java.security.PrivilegedExceptionAction;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Enumeration;
 
 import junit.framework.TestCase;
 
+import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.HiveMetaStore;
 import org.apache.hadoop.hive.metastore.HiveMetaStoreClient;
 import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.api.MetaException;
+import org.apache.hadoop.io.Text;
 import org.apache.hadoop.security.SaslRpcServer;
 import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.hadoop.security.SaslRpcServer.AuthMethod;
+import org.apache.hadoop.security.UserGroupInformation.AuthenticationMethod;
+import org.apache.hadoop.security.authorize.AuthorizationException;
+import org.apache.hadoop.security.authorize.ProxyUsers;
 import org.apache.hadoop.security.token.Token;
+import org.apache.hadoop.util.StringUtils;
 import org.apache.thrift.transport.TSaslServerTransport;
 import org.apache.thrift.transport.TTransportException;
 import org.apache.thrift.transport.TTransportFactory;
@@ -66,12 +80,35 @@ public class TestHadoop20SAuthBridge extends TestCase {
       }
     }
   }
-  private static final int port = 10000;
+  
 
-  private final HiveConf conf;
-
-  public TestHadoop20SAuthBridge(String name) {
-    super(name);
+  private HiveConf conf;
+  
+  private void configureSuperUserIPAddresses(Configuration conf,
+      String superUserShortName) throws IOException {
+    ArrayList<String> ipList = new ArrayList<String>();
+    Enumeration<NetworkInterface> netInterfaceList = NetworkInterface
+        .getNetworkInterfaces();
+    while (netInterfaceList.hasMoreElements()) {
+      NetworkInterface inf = netInterfaceList.nextElement();
+      Enumeration<InetAddress> addrList = inf.getInetAddresses();
+      while (addrList.hasMoreElements()) {
+        InetAddress addr = addrList.nextElement();
+        ipList.add(addr.getHostAddress());
+      }
+    }
+    StringBuilder builder = new StringBuilder();
+    for (String ip : ipList) {
+      builder.append(ip);
+      builder.append(',');
+    }
+    builder.append("127.0.1.1,");
+    builder.append(InetAddress.getLocalHost().getCanonicalHostName());
+    conf.setStrings(ProxyUsers.getProxySuperuserIpConfKey(superUserShortName),
+        builder.toString());
+  }
+  
+  public void setup(final int port) throws Exception {
     System.setProperty(HiveConf.ConfVars.METASTORE_USE_THRIFT_SASL.varname,
         "true");
     System.setProperty(HiveConf.ConfVars.METASTOREURIS.varname,
@@ -80,10 +117,6 @@ public class TestHadoop20SAuthBridge extends TestCase {
         System.getProperty("test.build.data", "/tmp")).toString());
     conf = new HiveConf(TestHadoop20SAuthBridge.class);
     conf.setBoolean("hive.metastore.local", false);
-  }
-
-  public void testSaslWithHiveMetaStore() throws Exception {
-
     Thread thread = new Thread(new Runnable() {
       public void run() {
         try {
@@ -95,30 +128,117 @@ public class TestHadoop20SAuthBridge extends TestCase {
     });
     thread.setDaemon(true);
     thread.start();
-    loopUntilHMSReady();
+    loopUntilHMSReady(port);
+  }
+
+  public void testSaslWithHiveMetaStore() throws Exception {
+    setup(10000);
     UserGroupInformation clientUgi = UserGroupInformation.getCurrentUser();
     obtainTokenAndAddIntoUGI(clientUgi, null);
     obtainTokenAndAddIntoUGI(clientUgi, "tokenForFooTablePartition");
   }
-
-  private void obtainTokenAndAddIntoUGI(UserGroupInformation clientUgi,
-      String tokenSig) throws Exception {
+  
+  public void testMetastoreProxyUser() throws Exception {
+    setup(10010);
+    
+    final String proxyUserName = "proxyUser";
+    //set the configuration up such that proxyUser can act on 
+    //behalf of all users belonging to the group foo_bar_group (
+    //a dummy group)
+    String[] groupNames =
+      new String[] { "foo_bar_group" };
+    setGroupsInConf(groupNames, proxyUserName);
+    
+    final UserGroupInformation delegationTokenUser = 
+      UserGroupInformation.getCurrentUser();
+        
+    final UserGroupInformation proxyUserUgi = 
+      UserGroupInformation.createRemoteUser(proxyUserName);
+    String tokenStrForm = proxyUserUgi.doAs(new PrivilegedExceptionAction<String>() {
+      public String run() throws Exception {
+        try {
+          //Since the user running the test won't belong to a non-existent group
+          //foo_bar_group, the call to getDelegationTokenStr will fail
+          return getDelegationTokenStr(delegationTokenUser, proxyUserUgi);
+        } catch (AuthorizationException ae) {
+          return null;
+        }
+      }
+    });
+    assertTrue("Expected the getDelegationToken call to fail", 
+        tokenStrForm == null);
+    
+    //set the configuration up such that proxyUser can act on 
+    //behalf of all users belonging to the real group(s) that the 
+    //user running the test belongs to
+    setGroupsInConf(UserGroupInformation.getCurrentUser().getGroupNames(),
+        proxyUserName);
+    tokenStrForm = proxyUserUgi.doAs(new PrivilegedExceptionAction<String>() {
+      public String run() throws Exception {
+        try {
+          //Since the user running the test belongs to the group
+          //obtained above the call to getDelegationTokenStr will succeed
+          return getDelegationTokenStr(delegationTokenUser, proxyUserUgi);
+        } catch (AuthorizationException ae) {
+          return null;
+        }
+      }
+    });
+    assertTrue("Expected the getDelegationToken call to not fail", 
+        tokenStrForm != null);
+    Token<DelegationTokenIdentifier> t= new Token<DelegationTokenIdentifier>();
+    t.decodeFromUrlString(tokenStrForm);
+    //check whether the username in the token is what we expect
+    DelegationTokenIdentifier d = new DelegationTokenIdentifier();
+    d.readFields(new DataInputStream(new ByteArrayInputStream(
+        t.getIdentifier())));
+    assertTrue("Usernames don't match", 
+        delegationTokenUser.getShortUserName().equals(d.getUser().getShortUserName()));
+    
+  }
+  
+  private void setGroupsInConf(String[] groupNames, String proxyUserName) 
+  throws IOException {
+   conf.set(
+      ProxyUsers.getProxySuperuserGroupConfKey(proxyUserName),
+      StringUtils.join(",", Arrays.asList(groupNames)));
+    configureSuperUserIPAddresses(conf, proxyUserName);
+    ProxyUsers.refreshSuperUserGroupsConfiguration(conf);
+  }
+  
+  private String getDelegationTokenStr(UserGroupInformation ownerUgi, 
+      UserGroupInformation realUgi) throws Exception {
     //obtain a token by directly invoking the metastore operation(without going
     //through the thrift interface). Obtaining a token makes the secret manager
     //aware of the user and that it gave the token to the user
-    String tokenStrForm;
-    if (tokenSig == null) {
-      tokenStrForm =
-        HiveMetaStore.getDelegationToken(clientUgi.getShortUserName());
-    } else {
-      tokenStrForm =
-        HiveMetaStore.getDelegationToken(clientUgi.getShortUserName(),
-                                         tokenSig);
-      conf.set("hive.metastore.token.signature", tokenSig);
-    }
+    //also set the authentication method explicitly to KERBEROS. Since the 
+    //metastore checks whether the authentication method is KERBEROS or not
+    //for getDelegationToken, and the testcases don't use 
+    //kerberos, this needs to be done
+    HadoopThriftAuthBridge20S.Server.authenticationMethod
+                             .set(AuthenticationMethod.KERBEROS);
+    return
+        HiveMetaStore.getDelegationToken(ownerUgi.getShortUserName(), 
+            realUgi.getShortUserName());
+  }
 
+  private void obtainTokenAndAddIntoUGI(UserGroupInformation clientUgi,
+      String tokenSig) throws Exception {
+    String tokenStrForm = getDelegationTokenStr(clientUgi, clientUgi);
     Token<DelegationTokenIdentifier> t= new Token<DelegationTokenIdentifier>();
     t.decodeFromUrlString(tokenStrForm);
+    
+    //check whether the username in the token is what we expect
+    DelegationTokenIdentifier d = new DelegationTokenIdentifier();
+    d.readFields(new DataInputStream(new ByteArrayInputStream(
+        t.getIdentifier())));
+    assertTrue("Usernames don't match", 
+        clientUgi.getShortUserName().equals(d.getUser().getShortUserName()));
+    
+    if (tokenSig != null) {
+      conf.set("hive.metastore.token.signature", tokenSig);
+      t.setService(new Text(tokenSig));
+    }
     //add the token to the clientUgi for securely talking to the metastore
     clientUgi.addToken(t);
     //Create the metastore client as the clientUgi. Doing so this
@@ -137,6 +257,16 @@ public class TestHadoop20SAuthBridge extends TestCase {
 
     //try out some metastore operations
     createDBAndVerifyExistence(hiveClient);
+    
+    //check that getDelegationToken fails since we are not authenticating
+    //over kerberos
+    boolean pass = false;
+    try {
+      hiveClient.getDelegationToken(clientUgi.getUserName());
+    } catch (MetaException ex) {
+      pass = true;
+    }
+    assertTrue("Expected the getDelegationToken call to fail", pass == true);
     hiveClient.close();
 
     //Now cancel the delegation token
@@ -162,7 +292,7 @@ public class TestHadoop20SAuthBridge extends TestCase {
    * A simple connect test to make sure that the metastore is up
    * @throws Exception
    */
-  private void loopUntilHMSReady() throws Exception {
+  private void loopUntilHMSReady(int port) throws Exception {
     int retries = 0;
     Exception exc = null;
     while (true) {
