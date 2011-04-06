@@ -728,9 +728,6 @@
 			tofile="${build.dir.hive}/maven/poms/hive-cassandra-handler-${version}.pom" />
 		<copy file="${build.dir.hive}/hive-deps/pom.xml" tofile="${build.dir.hive}/maven/poms/hive-deps-${version}.pom" />
 
-		<!-- copy over licence -->
-		<copy file="${hive.root}/LICENSE-2.0.txt" todir="${build.dir.hive}/maven/licences/" />
-
 		<!-- checksum files -->
 		<checksum forceOverwrite="yes" fileext=".md5">
 			<fileset dir="${build.dir.hive}/maven/jars" excludes="**/*.sha1,**/*.md5" />
