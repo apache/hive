@@ -19,9 +19,9 @@
 package org.apache.hadoop.hive.serde2;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 import org.apache.hadoop.hive.common.JavaUtils;
 import org.apache.hadoop.hive.serde2.objectinspector.ListObjectInspector;
@@ -54,7 +54,8 @@ public final class SerDeUtils {
   public static final String LBRACE = "{";
   public static final String RBRACE = "}";
 
-  private static HashMap<String, Class<?>> serdes = new HashMap<String, Class<?>>();
+  private static ConcurrentHashMap<String, Class<?>> serdes =
+    new ConcurrentHashMap<String, Class<?>>();
 
   public static void registerSerDe(String name, Class<?> serde) {
     if (serdes.containsKey(name)) {

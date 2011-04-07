@@ -60,16 +60,16 @@ import org.apache.hadoop.hive.ql.parse.RowResolver;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.plan.FetchWork;
 import org.apache.hadoop.hive.ql.plan.FileSinkDesc;
+import org.apache.hadoop.hive.ql.plan.FilterDesc.sampleDesc;
 import org.apache.hadoop.hive.ql.plan.MapJoinDesc;
 import org.apache.hadoop.hive.ql.plan.MapredLocalWork;
+import org.apache.hadoop.hive.ql.plan.MapredLocalWork.BucketMapJoinContext;
 import org.apache.hadoop.hive.ql.plan.MapredWork;
 import org.apache.hadoop.hive.ql.plan.PartitionDesc;
 import org.apache.hadoop.hive.ql.plan.PlanUtils;
 import org.apache.hadoop.hive.ql.plan.ReduceSinkDesc;
 import org.apache.hadoop.hive.ql.plan.TableDesc;
 import org.apache.hadoop.hive.ql.plan.TableScanDesc;
-import org.apache.hadoop.hive.ql.plan.FilterDesc.sampleDesc;
-import org.apache.hadoop.hive.ql.plan.MapredLocalWork.BucketMapJoinContext;
 
 /**
  * General utility common functions for the Processor to convert operator into
@@ -611,6 +611,8 @@ public final class GenMapRedUtils {
 
         tblDir = paths[0];
         tblDesc = Utilities.getTableDesc(part.getTable());
+      } else if (tblDesc == null) {
+        tblDesc = Utilities.getTableDesc(part.getTable());
       }
 
       for (Path p : paths) {
@@ -624,7 +626,7 @@ public final class GenMapRedUtils {
 
         partDir.add(p);
         try {
-          partDesc.add(Utilities.getPartitionDesc(part));
+          partDesc.add(Utilities.getPartitionDescFromTableDesc(tblDesc, part));
         } catch (HiveException e) {
           LOG.error(org.apache.hadoop.util.StringUtils.stringifyException(e));
           throw new SemanticException(e.getMessage(), e);
