@@ -25,8 +25,8 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Properties;
 import java.util.Map.Entry;
+import java.util.Properties;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -49,9 +49,9 @@ import org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe;
 import org.apache.hadoop.hive.serde2.objectinspector.ListObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.MapObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
+import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector.Category;
 import org.apache.hadoop.hive.serde2.objectinspector.StructField;
 import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
-import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector.Category;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.hadoop.util.StringUtils;
 
@@ -463,6 +463,93 @@ public class MetaStoreUtils {
       org.apache.hadoop.hive.metastore.api.Table table) {
     return MetaStoreUtils.getSchema(part.getSd(), table.getSd(), table
         .getParameters(), table.getDbName(), table.getTableName(), table.getPartitionKeys());
+  }
+
+  /**
+   * Get partition level schema from table level schema.
+   * @param sd
+   * @param tblsd
+   * @param parameters
+   * @param databaseName
+   * @param tableName
+   * @param partitionKeys
+   * @param tblSchema
+   * @return
+   */
+  public static Properties getPartSchemaFromTableSchema(
+      org.apache.hadoop.hive.metastore.api.StorageDescriptor sd,
+      org.apache.hadoop.hive.metastore.api.StorageDescriptor tblsd,
+      Map<String, String> parameters, String databaseName, String tableName,
+      List<FieldSchema> partitionKeys,
+      Properties tblSchema) {
+
+    // inherent most properties from table level schema
+    Properties schema = (Properties) tblSchema.clone();
+
+    // InputFormat
+    String inputFormat = sd.getInputFormat();
+    if (inputFormat == null || inputFormat.length() == 0) {
+      String tblInput =
+        schema.getProperty(org.apache.hadoop.hive.metastore.api.Constants.FILE_INPUT_FORMAT);
+      if (tblInput == null) {
+        inputFormat = org.apache.hadoop.mapred.SequenceFileInputFormat.class.getName();
+      } else {
+        inputFormat = tblInput;
+      }
+    }
+    schema.setProperty(org.apache.hadoop.hive.metastore.api.Constants.FILE_INPUT_FORMAT,
+        inputFormat);
+
+    // OutputFormat
+    String outputFormat = sd.getOutputFormat();
+    if (outputFormat == null || outputFormat.length() == 0) {
+      String tblOutput =
+        schema.getProperty(org.apache.hadoop.hive.metastore.api.Constants.FILE_OUTPUT_FORMAT);
+      if (tblOutput == null) {
+        outputFormat = org.apache.hadoop.mapred.SequenceFileOutputFormat.class.getName();
+      } else {
+        outputFormat = tblOutput;
+      }
+    }
+    schema.setProperty(org.apache.hadoop.hive.metastore.api.Constants.FILE_OUTPUT_FORMAT,
+        outputFormat);
+
+    // Location
+    if (sd.getLocation() != null) {
+      schema.setProperty(org.apache.hadoop.hive.metastore.api.Constants.META_TABLE_LOCATION,
+          sd.getLocation());
+    }
+
+    // Bucket count
+    schema.setProperty(org.apache.hadoop.hive.metastore.api.Constants.BUCKET_COUNT,
+        Integer.toString(sd.getNumBuckets()));
+
+    if (sd.getBucketCols() != null && sd.getBucketCols().size() > 0) {
+      schema.setProperty(org.apache.hadoop.hive.metastore.api.Constants.BUCKET_FIELD_NAME,
+          sd.getBucketCols().get(0));
+    }
+
+    if (sd.getSerdeInfo() != null) {
+      for (Map.Entry<String,String> param : sd.getSerdeInfo().getParameters().entrySet()) {
+        schema.put(param.getKey(), (param.getValue() != null) ? param.getValue() : "");
+      }
+
+      if (sd.getSerdeInfo().getSerializationLib() != null) {
+        schema.setProperty(org.apache.hadoop.hive.serde.Constants.SERIALIZATION_LIB,
+            sd.getSerdeInfo().getSerializationLib());
+      }
+    }
+
+    // skipping columns since partition level field schemas are the same as table level's
+    // skipping partition keys since it is the same as table level partition keys
+
+    if (parameters != null) {
+      for (Entry<String, String> e : parameters.entrySet()) {
+        schema.setProperty(e.getKey(), e.getValue());
+      }
+    }
+
+    return schema;
   }
 
   public static Properties getSchema(

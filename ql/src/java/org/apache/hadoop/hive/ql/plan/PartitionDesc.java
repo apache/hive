@@ -18,19 +18,19 @@
 
 package org.apache.hadoop.hive.ql.plan;
 
-import java.io.File;
 import java.io.Serializable;
-import java.net.URI;
 import java.util.Enumeration;
 import java.util.Properties;
 
+import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.io.HiveFileFormatUtils;
 import org.apache.hadoop.hive.ql.io.HiveOutputFormat;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.serde2.Deserializer;
+import org.apache.hadoop.hive.serde2.SerDeException;
+import org.apache.hadoop.hive.serde2.SerDeUtils;
 import org.apache.hadoop.mapred.InputFormat;
-import org.apache.hadoop.fs.Path;
 
 /**
  * PartitionDesc.
@@ -46,7 +46,7 @@ public class PartitionDesc implements Serializable, Cloneable {
   private Class<? extends HiveOutputFormat> outputFileFormatClass;
   private java.util.Properties properties;
   private String serdeClassName;
-  
+
   private transient String baseFileName;
 
   public void setBaseFileName(String baseFileName) {
@@ -68,6 +68,7 @@ public class PartitionDesc implements Serializable, Cloneable {
       final Class<?> outputFormat, final java.util.Properties properties,
       final String serdeClassName) {
     this.tableDesc = table;
+    this.properties = properties;
     this.partSpec = partSpec;
     deserializerClass = serdeClass;
     this.inputFileFormatClass = inputFileFormatClass;
@@ -75,8 +76,9 @@ public class PartitionDesc implements Serializable, Cloneable {
       outputFileFormatClass = HiveFileFormatUtils
           .getOutputFormatSubstitute(outputFormat);
     }
-    this.properties = properties;
-    if (properties != null) {
+    if (serdeClassName != null) {
+      this.serdeClassName = serdeClassName;
+    } else if (properties != null) {
       this.serdeClassName = properties
           .getProperty(org.apache.hadoop.hive.serde.Constants.SERIALIZATION_LIB);
     }
@@ -85,14 +87,34 @@ public class PartitionDesc implements Serializable, Cloneable {
   public PartitionDesc(final org.apache.hadoop.hive.ql.metadata.Partition part)
       throws HiveException {
     tableDesc = Utilities.getTableDesc(part.getTable());
+    properties = part.getSchema();
     partSpec = part.getSpec();
-    deserializerClass = part.getDeserializer().getClass();
+    deserializerClass = part.getDeserializer(properties).getClass();
     inputFileFormatClass = part.getInputFormatClass();
     outputFileFormatClass = part.getOutputFormatClass();
-    properties = part.getSchema();
     serdeClassName = properties
         .getProperty(org.apache.hadoop.hive.serde.Constants.SERIALIZATION_LIB);
     ;
+  }
+
+  public PartitionDesc(final org.apache.hadoop.hive.ql.metadata.Partition part,
+      final TableDesc tblDesc) throws HiveException {
+    tableDesc = tblDesc;
+    properties = part.getSchemaFromTableSchema(tblDesc.getProperties()); // each partition maintains a large properties
+    partSpec = part.getSpec();
+    // deserializerClass = part.getDeserializer(properties).getClass();
+    Deserializer deserializer;
+    try {
+      deserializer = SerDeUtils.lookupDeserializer(
+          properties.getProperty(org.apache.hadoop.hive.serde.Constants.SERIALIZATION_LIB));
+    } catch (SerDeException e) {
+      throw new HiveException(e);
+    }
+    deserializerClass = deserializer.getClass();
+    inputFileFormatClass = part.getInputFormatClass();
+    outputFileFormatClass = part.getOutputFormatClass();
+    serdeClassName = properties.getProperty(
+        org.apache.hadoop.hive.serde.Constants.SERIALIZATION_LIB);
   }
 
   @Explain(displayName = "")
@@ -239,13 +261,13 @@ public class PartitionDesc implements Serializable, Cloneable {
   /**
    * Attempt to derive a virtual <code>base file name</code> property from the
    * path. If path format is unrecognized, just use the full path.
-   * 
+   *
    * @param path
    *          URI to the partition file
    */
   void deriveBaseFileName(String path) {
     PlanUtils.configureTableJobPropertiesForStorageHandler(tableDesc);
-    
+
     if (path == null) {
       return;
     }

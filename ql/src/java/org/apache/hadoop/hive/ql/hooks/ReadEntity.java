@@ -32,7 +32,7 @@ import org.apache.hadoop.hive.ql.metadata.Table;
 public class ReadEntity implements Serializable {
 
   private static final long serialVersionUID = 1L;
-  
+
   /**
    * The table.
    */
@@ -45,11 +45,14 @@ public class ReadEntity implements Serializable {
 
   /**
    * This is derived from t and p, but we need to serialize this field to make sure
-   * ReadEntity.hashCode() does not need to recursively read into t and p. 
+   * ReadEntity.hashCode() does not need to recursively read into t and p.
    */
   private String name;
-  
+
   public String getName() {
+    if (name == null) {
+      name = computeName();
+    }
     return name;
   }
 
@@ -78,40 +81,47 @@ public class ReadEntity implements Serializable {
    */
   public ReadEntity() {
   }
-  
+
   /**
    * Constructor.
-   * 
+   *
    * @param t
    *          The Table that the query reads from.
    */
   public ReadEntity(Table t) {
     this.t = t;
     p = null;
-    name = computeName();
+    name = null;
   }
 
   /**
    * Constructor given a partiton.
-   * 
+   *
    * @param p
    *          The partition that the query reads from.
    */
   public ReadEntity(Partition p) {
     t = p.getTable();
     this.p = p;
-    name = computeName();
+    name = null;
   }
 
   private String computeName() {
+    StringBuilder sb = new StringBuilder();
     if (p != null) {
-      return p.getTable().getDbName() + "@" + p.getTable().getTableName() + "@"
-          + p.getName();
+      sb.append(p.getTable().getDbName());
+      sb.append('@');
+      sb.append(p.getTable().getTableName());
+      sb.append('@');
+      sb.append(p.getName());
     } else {
-      return t.getDbName() + "@" + t.getTableName();
+      sb.append(t.getDbName());
+      sb.append('@');
+      sb.append(t.getTableName());
     }
+    return sb.toString();
   }
-  
+
   /**
    * Enum that tells what time of a read entity this is.
    */
@@ -167,6 +177,9 @@ public class ReadEntity implements Serializable {
    */
   @Override
   public String toString() {
+    if (name == null) {
+      name = computeName();
+    }
     return name;
   }
 

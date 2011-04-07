@@ -258,8 +258,27 @@ public class Partition implements Serializable {
     return deserializer;
   }
 
+  final public Deserializer getDeserializer(Properties props) {
+    if (deserializer == null) {
+      try {
+        deserializer = MetaStoreUtils.getDeserializer(Hive.get().getConf(), props);
+      } catch (HiveException e) {
+        throw new RuntimeException(e);
+      } catch (MetaException e) {
+        throw new RuntimeException(e);
+      }
+    }
+    return deserializer;
+  }
+
   public Properties getSchema() {
     return MetaStoreUtils.getSchema(tPartition, table.getTTable());
+  }
+
+  public Properties getSchemaFromTableSchema(Properties tblSchema) {
+    return MetaStoreUtils.getPartSchemaFromTableSchema(tPartition.getSd(), table.getTTable().getSd(),
+        tPartition.getParameters(), table.getDbName(), table.getTableName(), table.getPartitionKeys(),
+        tblSchema);
   }
 
   /**
