@@ -19,8 +19,11 @@ package org.apache.hadoop.hive.ql.plan;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
@@ -45,10 +48,12 @@ public class ConditionalResolverCommonJoin implements ConditionalResolver, Seria
     private static final long serialVersionUID = 1L;
 
     private HashMap<String, Task<? extends Serializable>> aliasToTask;
-    private HashMap<String, String> aliasToPath;
+    HashMap<String, ArrayList<String>> pathToAliases;
+    HashMap<String, Long> aliasToKnownSize;
     private Task<? extends Serializable> commonJoinTask;
-
-
+    
+    private String localTmpDir;
+    private String hdfsTmpDir;
 
     public ConditionalResolverCommonJoinCtx() {
     }
@@ -61,14 +66,6 @@ public class ConditionalResolverCommonJoin implements ConditionalResolver, Seria
       this.aliasToTask = aliasToTask;
     }
 
-    public HashMap<String, String> getAliasToPath() {
-      return aliasToPath;
-    }
-
-    public void setAliasToPath(HashMap<String, String> aliasToPath) {
-      this.aliasToPath = aliasToPath;
-    }
-
     public Task<? extends Serializable> getCommonJoinTask() {
       return commonJoinTask;
     }
@@ -77,6 +74,37 @@ public class ConditionalResolverCommonJoin implements ConditionalResolver, Seria
       this.commonJoinTask = commonJoinTask;
     }
 
+    public HashMap<String, Long> getAliasToKnownSize() {
+      return aliasToKnownSize;
+    }
+
+    public void setAliasToKnownSize(HashMap<String, Long> aliasToKnownSize) {
+      this.aliasToKnownSize = aliasToKnownSize;
+    }
+
+    public HashMap<String, ArrayList<String>> getPathToAliases() {
+      return pathToAliases;
+    }
+
+    public void setPathToAliases(HashMap<String, ArrayList<String>> pathToAliases) {
+      this.pathToAliases = pathToAliases;
+    }
+
+    public String getLocalTmpDir() {
+      return localTmpDir;
+    }
+
+    public void setLocalTmpDir(String localTmpDir) {
+      this.localTmpDir = localTmpDir;
+    }
+
+    public String getHdfsTmpDir() {
+      return hdfsTmpDir;
+    }
+
+    public void setHdfsTmpDir(String hdfsTmpDir) {
+      this.hdfsTmpDir = hdfsTmpDir;
+    }
   }
 
   public ConditionalResolverCommonJoin() {
@@ -88,8 +116,11 @@ public class ConditionalResolverCommonJoin implements ConditionalResolver, Seria
     List<Task<? extends Serializable>> resTsks = new ArrayList<Task<? extends Serializable>>();
 
     // get aliasToPath and pass it to the heuristic
-    HashMap<String, String> aliasToPath = ctx.getAliasToPath();
-    String bigTableAlias = this.resolveMapJoinTask(aliasToPath, conf);
+    HashMap<String, ArrayList<String>> pathToAliases = ctx.getPathToAliases();
+    HashMap<String, Long> aliasToKnownSize = ctx.getAliasToKnownSize();
+    String bigTableAlias = this.resolveMapJoinTask(pathToAliases, ctx
+        .getAliasToTask(), aliasToKnownSize, ctx.getHdfsTmpDir(), ctx
+        .getLocalTmpDir(), conf);
 
     if (bigTableAlias == null) {
       // run common join task
@@ -108,56 +139,87 @@ public class ConditionalResolverCommonJoin implements ConditionalResolver, Seria
     return resTsks;
   }
 
-  private String resolveMapJoinTask(HashMap<String, String> aliasToPath, HiveConf conf) {
-    // for the full out join; return null directly
-    if (aliasToPath.size() == 0) {
-      return null;
+  class AliasFileSizePair implements Comparable<AliasFileSizePair> {
+    String alias;
+    long size;
+    AliasFileSizePair(String alias, long size) {
+      super();
+      this.alias = alias;
+      this.size = size;
     }
-
-    // generate file size to alias mapping; but not set file size as key,
-    // because different file may have the same file size.
-    List<String> aliasList = new ArrayList<String>();
-    List<Long> fileSizeList = new ArrayList<Long>();
-
-    try {
-      for (Map.Entry<String, String> entry : aliasToPath.entrySet()) {
-        String alias = entry.getKey();
-        String pathStr = entry.getValue();
-
-        Path path = new Path(pathStr);
-        FileSystem fs = path.getFileSystem(conf);
-        FileStatus[] fstatus = fs.listStatus(path);
-        long fileSize = 0;
-        for (int i = 0; i < fstatus.length; i++) {
-          fileSize += fstatus[i].getLen();
-        }
-
-        // put into list and sorted set
-        aliasList.add(alias);
-        fileSizeList.add(fileSize);
-
+    @Override
+    public int compareTo(AliasFileSizePair o) {
+      if (o == null) {
+        return 1;
       }
-      // sorted based file size
-      List<Long> sortedList = new ArrayList<Long>(fileSizeList);
-      Collections.sort(sortedList);
+      return (int)(size - o.size);
+    }
+  }
+  
+  private String resolveMapJoinTask(
+      HashMap<String, ArrayList<String>> pathToAliases,
+      HashMap<String, Task<? extends Serializable>> aliasToTask,
+      HashMap<String, Long> aliasToKnownSize, String hdfsTmpDir,
+      String localTmpDir, HiveConf conf) {
 
-      // get big table file size and small table file size summary
-      long bigTableFileSize = 0;
-      long smallTablesFileSizeSum = 0;
-      String bigTableFileAlias = null;
-      int size = sortedList.size();
-      int tmpIndex;
-      // Iterate the sorted_set to get big/small table file size
-      for (int index = 0; index < sortedList.size(); index++) {
-        Long key = sortedList.get(index);
-        if (index != (size - 1)) {
-          smallTablesFileSizeSum += key.longValue();
-        } else {
-          tmpIndex = fileSizeList.indexOf(key);
-          String alias = aliasList.get(tmpIndex);
-          bigTableFileSize += key.longValue();
-          bigTableFileAlias = alias;
+    String bigTableFileAlias = null;
+    long smallTablesFileSizeSum = 0;
+    
+    Map<String, AliasFileSizePair> aliasToFileSizeMap = new HashMap<String, AliasFileSizePair>();
+    for (Map.Entry<String, Long> entry : aliasToKnownSize.entrySet()) {
+      String alias = entry.getKey();
+      AliasFileSizePair pair = new AliasFileSizePair(alias, entry.getValue());
+      aliasToFileSizeMap.put(alias, pair);
+    }
+    
+    try {
+      // need to compute the input size at runtime, and select the biggest as
+      // the big table.
+      for (Map.Entry<String, ArrayList<String>> oneEntry : pathToAliases
+          .entrySet()) {
+        String p = oneEntry.getKey();
+        // this path is intermediate data
+        if (p.startsWith(hdfsTmpDir) || p.startsWith(localTmpDir)) {
+          ArrayList<String> aliasArray = oneEntry.getValue();
+          if (aliasArray.size() <= 0) {
+            continue;
+          }
+          Path path = new Path(p);
+          FileSystem fs = path.getFileSystem(conf);
+          long fileSize = fs.getContentSummary(path).getLength();
+          for (String alias : aliasArray) {
+            AliasFileSizePair pair = aliasToFileSizeMap.get(alias);
+            if (pair == null) {
+              pair = new AliasFileSizePair(alias, 0);
+              aliasToFileSizeMap.put(alias, pair);
+            }
+            pair.size += fileSize;
+          }
         }
+      }
+      // generate file size to alias mapping; but not set file size as key,
+      // because different file may have the same file size.
+      
+      List<AliasFileSizePair> aliasFileSizeList = new ArrayList<AliasFileSizePair>(
+          aliasToFileSizeMap.values());
+
+      Collections.sort(aliasFileSizeList);
+      // iterating through this list from the end to beginning, trying to find
+      // the big table for mapjoin
+      int idx = aliasFileSizeList.size() - 1;
+      boolean bigAliasFound = false;
+      while (idx >= 0) {
+        AliasFileSizePair pair = aliasFileSizeList.get(idx);
+        String alias = pair.alias;
+        long size = pair.size;
+        if (!bigAliasFound && aliasToTask.get(alias) != null) {
+          // got the big table
+          bigAliasFound = true;
+          bigTableFileAlias = alias;
+          continue;
+        }
+        smallTablesFileSizeSum += size;
+        idx--;
       }
 
       // compare with threshold

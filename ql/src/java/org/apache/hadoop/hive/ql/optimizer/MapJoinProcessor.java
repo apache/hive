@@ -480,27 +480,86 @@ public class MapJoinProcessor implements Transform {
     return mapJoinOp;
   }
 
-  public static HashSet<Integer> getSmallTableOnlySet(JoinCondDesc[] condns) {
-    HashSet<Integer> smallTableOnlySet = new HashSet<Integer>();
+  /**
+   * Get a list of big table candidates. Only the tables in the returned set can
+   * be used as big table in the join operation.
+   * 
+   * The logic here is to scan the join condition array from left to right. If
+   * see a inner join, and the bigTableCandidates is empty or the outer join
+   * that we last saw is a right outer join, add both side of this inner join to
+   * big table candidates only if they are not in bad position. If see a left
+   * outer join, set lastSeenRightOuterJoin to false, and the bigTableCandidates
+   * is empty, add the left side to it, and if the bigTableCandidates is not
+   * empty, do nothing (which means the bigTableCandidates is from left side).
+   * If see a right outer join, set lastSeenRightOuterJoin to true, clear the
+   * bigTableCandidates, and add right side to the bigTableCandidates, it means
+   * the right side of a right outer join always win. If see a full outer join,
+   * return null immediately (no one can be the big table, can not do a
+   * mapjoin).
+   * 
+   * 
+   * @param condns
+   * @return
+   */
+  public static HashSet<Integer> getBigTableCandidates(JoinCondDesc[] condns) {
+    HashSet<Integer> bigTableCandidates = new HashSet<Integer>();
 
+    boolean seenOuterJoin = false;
+    Set<Integer> seenPostitions = new HashSet<Integer>();
+    Set<Integer> leftPosListOfLastRightOuterJoin = new HashSet<Integer>();
+    
+    // is the outer join that we saw most recently is a right outer join?
+    boolean lastSeenRightOuterJoin = false;
     for (JoinCondDesc condn : condns) {
       int joinType = condn.getType();
+      seenPostitions.add(condn.getLeft());
+      seenPostitions.add(condn.getRight());
+
       if (joinType == JoinDesc.FULL_OUTER_JOIN) {
+        // setting these 2 parameters here just in case that if the code got
+        // changed in future, these 2 are not missing.
+        seenOuterJoin = true;
+        lastSeenRightOuterJoin = false;
         return null;
-      } else if (joinType == JoinDesc.LEFT_OUTER_JOIN || joinType == JoinDesc.LEFT_SEMI_JOIN) {
-        smallTableOnlySet.add(condn.getRight());
+      } else if (joinType == JoinDesc.LEFT_OUTER_JOIN
+          || joinType == JoinDesc.LEFT_SEMI_JOIN) {
+        seenOuterJoin = true;
+        if(bigTableCandidates.size() == 0) {
+          bigTableCandidates.add(condn.getLeft());
+        }
+        
+        lastSeenRightOuterJoin = false;
       } else if (joinType == JoinDesc.RIGHT_OUTER_JOIN) {
-        smallTableOnlySet.add(condn.getLeft());
+        seenOuterJoin = true;
+        lastSeenRightOuterJoin = true;
+        // add all except the right side to the bad positions
+        leftPosListOfLastRightOuterJoin.clear();
+        leftPosListOfLastRightOuterJoin.addAll(seenPostitions);
+        leftPosListOfLastRightOuterJoin.remove(condn.getRight());
+
+        bigTableCandidates.clear();
+        bigTableCandidates.add(condn.getRight());
+      } else if (joinType == JoinDesc.INNER_JOIN) {        
+        if (!seenOuterJoin || lastSeenRightOuterJoin) {
+          // is the left was at the left side of a right outer join?
+          if (!leftPosListOfLastRightOuterJoin.contains(condn.getLeft())) {
+            bigTableCandidates.add(condn.getLeft());
+          }
+          // is the right was at the left side of a right outer join?
+          if (!leftPosListOfLastRightOuterJoin.contains(condn.getRight())) {
+            bigTableCandidates.add(condn.getRight());
+          }
+        }
       }
     }
 
-    return smallTableOnlySet;
+    return bigTableCandidates;
   }
 
   public static void checkMapJoin(int mapJoinPos, JoinCondDesc[] condns) throws SemanticException {
-    HashSet<Integer> smallTableOnlySet = MapJoinProcessor.getSmallTableOnlySet(condns);
+    HashSet<Integer> bigTableCandidates = MapJoinProcessor.getBigTableCandidates(condns);
 
-    if (smallTableOnlySet == null || smallTableOnlySet.contains(mapJoinPos)) {
+    if (bigTableCandidates == null || !bigTableCandidates.contains(mapJoinPos)) {
       throw new SemanticException(ErrorMsg.NO_OUTER_MAPJOIN.getMsg());
     }
     return;
@@ -769,30 +828,6 @@ public class MapJoinProcessor implements Transform {
     }
 
     ctx.setListRejectedMapJoins(listRejectedMapJoins);
-  }
-
-  private static int findGrandparentBranch(Operator<? extends Serializable> currOp,
-      Operator<? extends Serializable> grandParent) {
-    int pos = -1;
-    for (int i = 0; i < currOp.getParentOperators().size(); i++) {
-      List<Operator<? extends Serializable>> parentOpList = new LinkedList<Operator<? extends Serializable>>();
-      parentOpList.add(currOp.getParentOperators().get(i));
-      boolean found = false;
-      while (!parentOpList.isEmpty()) {
-        Operator<? extends Serializable> p = parentOpList.remove(0);
-        if (p == grandParent) {
-          found = true;
-          break;
-        } else if (p.getParentOperators() != null) {
-          parentOpList.addAll(p.getParentOperators());
-        }
-      }
-      if (found) {
-        pos = i;
-        break;
-      }
-    }
-    return pos;
   }
 
   /**

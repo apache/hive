@@ -51,15 +51,20 @@ import org.apache.hadoop.hive.ql.plan.PlanUtils;
 import org.apache.hadoop.hive.ql.plan.TableDesc;
 
 /**
- * Node processor factory for skew join resolver.
+ * Node processor factory for map join resolver. What it did is to replace the
+ * map-join operator in the local map join task with a hash-table dump operator.
+ * And if the map join is followed by a group by, the hash-table sink
+ * operator/mapjoin operator should be configured to use less memory to avoid
+ * OOM in group by operator.
  */
 public final class LocalMapJoinProcFactory {
+
   public static NodeProcessor getJoinProc() {
     return new LocalMapJoinProcessor();
   }
 
   public static NodeProcessor getGroupByProc() {
-    return new MapJoinFollowByProcessor();
+    return new MapJoinFollowedByGroupByProcessor();
   }
 
   public static NodeProcessor getDefaultProc() {
@@ -76,7 +81,7 @@ public final class LocalMapJoinProcFactory {
    * MapJoinFollowByProcessor.
    *
    */
-  public static class MapJoinFollowByProcessor implements NodeProcessor {
+  public static class MapJoinFollowedByGroupByProcessor implements NodeProcessor {
     public Object process(Node nd, Stack<Node> stack, NodeProcessorCtx ctx, Object... nodeOutputs)
         throws SemanticException {
       LocalMapJoinProcCtx context = (LocalMapJoinProcCtx) ctx;
@@ -129,7 +134,6 @@ public final class LocalMapJoinProcFactory {
       int bigTable = mapJoinOp.getConf().getPosBigTable();
       Byte[] order = mapJoinOp.getConf().getTagOrder();
       int bigTableAlias = (int) order[bigTable];
-      Operator<? extends Serializable> bigOp = mapJoinOp.getParentOperators().get(bigTable);
 
       // the parent ops for hashTableSinkOp
       List<Operator<? extends Serializable>> smallTablesParentOp = new ArrayList<Operator<? extends Serializable>>();
