@@ -18,27 +18,25 @@ ABSTRACT SYNTAX TREE:
   (TOK_QUERY (TOK_FROM (TOK_SUBQUERY (TOK_QUERY (TOK_FROM (TOK_RIGHTOUTERJOIN (TOK_JOIN (TOK_TABREF (TOK_TABNAME src) src1) (TOK_TABREF (TOK_TABNAME src) src2) (AND (= (. (TOK_TABLE_OR_COL src1) key) (. (TOK_TABLE_OR_COL src2) key)) (< (. (TOK_TABLE_OR_COL src1) key) 10))) (TOK_TABREF (TOK_TABNAME src) src3) (AND (= (. (TOK_TABLE_OR_COL src1) key) (. (TOK_TABLE_OR_COL src3) key)) (< (. (TOK_TABLE_OR_COL src3) key) 20)))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (. (TOK_TABLE_OR_COL src1) key) k1) (TOK_SELEXPR (. (TOK_TABLE_OR_COL src1) value) v1) (TOK_SELEXPR (. (TOK_TABLE_OR_COL src2) key) k2) (TOK_SELEXPR (. (TOK_TABLE_OR_COL src2) value) v2) (TOK_SELEXPR (. (TOK_TABLE_OR_COL src3) key) k3) (TOK_SELEXPR (. (TOK_TABLE_OR_COL src3) value) v3)) (TOK_SORTBY (TOK_TABSORTCOLNAMEASC (TOK_TABLE_OR_COL k1)) (TOK_TABSORTCOLNAMEASC (TOK_TABLE_OR_COL v1)) (TOK_TABSORTCOLNAMEASC (TOK_TABLE_OR_COL k2)) (TOK_TABSORTCOLNAMEASC (TOK_TABLE_OR_COL v2)) (TOK_TABSORTCOLNAMEASC (TOK_TABLE_OR_COL k3)) (TOK_TABSORTCOLNAMEASC (TOK_TABLE_OR_COL v3))))) a)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_FUNCTION sum (TOK_FUNCTION hash (. (TOK_TABLE_OR_COL a) k1) (. (TOK_TABLE_OR_COL a) v1) (. (TOK_TABLE_OR_COL a) k2) (. (TOK_TABLE_OR_COL a) v2) (. (TOK_TABLE_OR_COL a) k3) (. (TOK_TABLE_OR_COL a) v3)))))))
 
 STAGE DEPENDENCIES:
-  Stage-8 is a root stage , consists of Stage-9, Stage-10, Stage-1
-  Stage-9 has a backup stage: Stage-1
-  Stage-6 depends on stages: Stage-9
-  Stage-2 depends on stages: Stage-1, Stage-6, Stage-7
+  Stage-7 is a root stage , consists of Stage-8, Stage-1
+  Stage-8 has a backup stage: Stage-1
+  Stage-6 depends on stages: Stage-8
+  Stage-2 depends on stages: Stage-1, Stage-6
   Stage-3 depends on stages: Stage-2
-  Stage-10 has a backup stage: Stage-1
-  Stage-7 depends on stages: Stage-10
   Stage-1
   Stage-0 is a root stage
 
 STAGE PLANS:
-  Stage: Stage-8
+  Stage: Stage-7
     Conditional Operator
 
-  Stage: Stage-9
+  Stage: Stage-8
     Map Reduce Local Work
       Alias -> Map Local Tables:
         a:src1 
           Fetch Operator
             limit: -1
-        a:src3 
+        a:src2 
           Fetch Operator
             limit: -1
       Alias -> Map Local Operator Tree:
@@ -67,10 +65,10 @@ STAGE PLANS:
                     0 [Column[key]]
                     1 [Column[key]]
                     2 [Column[key]]
-                  Position of Big Table: 1
-        a:src3 
+                  Position of Big Table: 2
+        a:src2 
           TableScan
-            alias: src3
+            alias: src2
             HashTable Sink Operator
               condition expressions:
                 0 {key} {value}
@@ -85,14 +83,14 @@ STAGE PLANS:
                 0 [Column[key]]
                 1 [Column[key]]
                 2 [Column[key]]
-              Position of Big Table: 1
+              Position of Big Table: 2
 
   Stage: Stage-6
     Map Reduce
       Alias -> Map Operator Tree:
-        a:src2 
+        a:src3 
           TableScan
-            alias: src2
+            alias: src3
             Map Join Operator
               condition map:
                    Inner Join 0 to 1
@@ -111,7 +109,7 @@ STAGE PLANS:
                 1 [Column[key]]
                 2 [Column[key]]
               outputColumnNames: _col0, _col1, _col4, _col5, _col8, _col9
-              Position of Big Table: 1
+              Position of Big Table: 2
               Select Operator
                 expressions:
                       expr: _col0
@@ -139,7 +137,7 @@ STAGE PLANS:
   Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/tmp/sdong/hive_2011-02-10_01-15-48_993_4508173982029110358/-mr-10002 
+        file:/tmp/heyongqiang/hive_2011-04-06_21-30-16_341_8865053765003839433/-mr-10002 
             Reduce Output Operator
               key expressions:
                     expr: _col0
@@ -202,7 +200,7 @@ STAGE PLANS:
   Stage: Stage-3
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/tmp/sdong/hive_2011-02-10_01-15-48_993_4508173982029110358/-mr-10003 
+        file:/tmp/heyongqiang/hive_2011-04-06_21-30-16_341_8865053765003839433/-mr-10003 
             Reduce Output Operator
               sort order: 
               tag: -1
@@ -227,110 +225,6 @@ STAGE PLANS:
               table:
                   input format: org.apache.hadoop.mapred.TextInputFormat
                   output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-
-  Stage: Stage-10
-    Map Reduce Local Work
-      Alias -> Map Local Tables:
-        a:src1 
-          Fetch Operator
-            limit: -1
-        a:src2 
-          Fetch Operator
-            limit: -1
-      Alias -> Map Local Operator Tree:
-        a:src1 
-          TableScan
-            alias: src1
-            Filter Operator
-              predicate:
-                  expr: (key < 10)
-                  type: boolean
-              Filter Operator
-                predicate:
-                    expr: (key < 10)
-                    type: boolean
-                HashTable Sink Operator
-                  condition expressions:
-                    0 {key} {value}
-                    1 {key} {value}
-                    2 {key} {value}
-                  filter predicates:
-                    0 
-                    1 
-                    2 {(key < 20)}
-                  handleSkewJoin: false
-                  keys:
-                    0 [Column[key]]
-                    1 [Column[key]]
-                    2 [Column[key]]
-                  Position of Big Table: 2
-        a:src2 
-          TableScan
-            alias: src2
-            HashTable Sink Operator
-              condition expressions:
-                0 {key} {value}
-                1 {key} {value}
-                2 {key} {value}
-              filter predicates:
-                0 
-                1 
-                2 {(key < 20)}
-              handleSkewJoin: false
-              keys:
-                0 [Column[key]]
-                1 [Column[key]]
-                2 [Column[key]]
-              Position of Big Table: 2
-
-  Stage: Stage-7
-    Map Reduce
-      Alias -> Map Operator Tree:
-        a:src3 
-          TableScan
-            alias: src3
-            Map Join Operator
-              condition map:
-                   Inner Join 0 to 1
-                   Right Outer Join0 to 2
-              condition expressions:
-                0 {key} {value}
-                1 {key} {value}
-                2 {key} {value}
-              filter predicates:
-                0 
-                1 
-                2 {(key < 20)}
-              handleSkewJoin: false
-              keys:
-                0 [Column[key]]
-                1 [Column[key]]
-                2 [Column[key]]
-              outputColumnNames: _col0, _col1, _col4, _col5, _col8, _col9
-              Position of Big Table: 2
-              Select Operator
-                expressions:
-                      expr: _col0
-                      type: string
-                      expr: _col1
-                      type: string
-                      expr: _col4
-                      type: string
-                      expr: _col5
-                      type: string
-                      expr: _col8
-                      type: string
-                      expr: _col9
-                      type: string
-                outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5
-                File Output Operator
-                  compressed: false
-                  GlobalTableId: 0
-                  table:
-                      input format: org.apache.hadoop.mapred.SequenceFileInputFormat
-                      output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
-      Local Work:
-        Map Reduce Local Work
 
   Stage: Stage-1
     Map Reduce
@@ -444,7 +338,7 @@ SORT BY k1,v1,k2,v2,k3,v3
 )a
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/tmp/sdong/hive_2011-02-10_01-15-49_289_5405049080173448866/-mr-10000
+PREHOOK: Output: file:/tmp/heyongqiang/hive_2011-04-06_21-30-16_684_6297144842875374998/-mr-10000
 POSTHOOK: query: select sum(hash(a.k1,a.v1,a.k2,a.v2,a.k3,a.v3))
 from (
 SELECT src1.key as k1, src1.value as v1, src2.key as k2, src2.value as v2 , src3.key as k3, src3.value as v3 
@@ -453,7 +347,7 @@ SORT BY k1,v1,k2,v2,k3,v3
 )a
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: file:/tmp/sdong/hive_2011-02-10_01-15-49_289_5405049080173448866/-mr-10000
+POSTHOOK: Output: file:/tmp/heyongqiang/hive_2011-04-06_21-30-16_684_6297144842875374998/-mr-10000
 56157587016
 PREHOOK: query: explain
 select sum(hash(a.k1,a.v1,a.k2,a.v2,a.k3,a.v3))
@@ -475,27 +369,25 @@ ABSTRACT SYNTAX TREE:
   (TOK_QUERY (TOK_FROM (TOK_SUBQUERY (TOK_QUERY (TOK_FROM (TOK_RIGHTOUTERJOIN (TOK_JOIN (TOK_TABREF (TOK_TABNAME src) src1) (TOK_TABREF (TOK_TABNAME src) src2) (AND (AND (= (. (TOK_TABLE_OR_COL src1) key) (. (TOK_TABLE_OR_COL src2) key)) (< (. (TOK_TABLE_OR_COL src1) key) 10)) (< (. (TOK_TABLE_OR_COL src2) key) 15))) (TOK_TABREF (TOK_TABNAME src) src3) (AND (= (. (TOK_TABLE_OR_COL src1) key) (. (TOK_TABLE_OR_COL src3) key)) (< (. (TOK_TABLE_OR_COL src3) key) 20)))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (. (TOK_TABLE_OR_COL src1) key) k1) (TOK_SELEXPR (. (TOK_TABLE_OR_COL src1) value) v1) (TOK_SELEXPR (. (TOK_TABLE_OR_COL src2) key) k2) (TOK_SELEXPR (. (TOK_TABLE_OR_COL src2) value) v2) (TOK_SELEXPR (. (TOK_TABLE_OR_COL src3) key) k3) (TOK_SELEXPR (. (TOK_TABLE_OR_COL src3) value) v3)) (TOK_SORTBY (TOK_TABSORTCOLNAMEASC (TOK_TABLE_OR_COL k1)) (TOK_TABSORTCOLNAMEASC (TOK_TABLE_OR_COL v1)) (TOK_TABSORTCOLNAMEASC (TOK_TABLE_OR_COL k2)) (TOK_TABSORTCOLNAMEASC (TOK_TABLE_OR_COL v2)) (TOK_TABSORTCOLNAMEASC (TOK_TABLE_OR_COL k3)) (TOK_TABSORTCOLNAMEASC (TOK_TABLE_OR_COL v3))))) a)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_FUNCTION sum (TOK_FUNCTION hash (. (TOK_TABLE_OR_COL a) k1) (. (TOK_TABLE_OR_COL a) v1) (. (TOK_TABLE_OR_COL a) k2) (. (TOK_TABLE_OR_COL a) v2) (. (TOK_TABLE_OR_COL a) k3) (. (TOK_TABLE_OR_COL a) v3)))))))
 
 STAGE DEPENDENCIES:
-  Stage-8 is a root stage , consists of Stage-9, Stage-10, Stage-1
-  Stage-9 has a backup stage: Stage-1
-  Stage-6 depends on stages: Stage-9
-  Stage-2 depends on stages: Stage-1, Stage-6, Stage-7
+  Stage-7 is a root stage , consists of Stage-8, Stage-1
+  Stage-8 has a backup stage: Stage-1
+  Stage-6 depends on stages: Stage-8
+  Stage-2 depends on stages: Stage-1, Stage-6
   Stage-3 depends on stages: Stage-2
-  Stage-10 has a backup stage: Stage-1
-  Stage-7 depends on stages: Stage-10
   Stage-1
   Stage-0 is a root stage
 
 STAGE PLANS:
-  Stage: Stage-8
+  Stage: Stage-7
     Conditional Operator
 
-  Stage: Stage-9
+  Stage: Stage-8
     Map Reduce Local Work
       Alias -> Map Local Tables:
         a:src1 
           Fetch Operator
             limit: -1
-        a:src3 
+        a:src2 
           Fetch Operator
             limit: -1
       Alias -> Map Local Operator Tree:
@@ -524,29 +416,7 @@ STAGE PLANS:
                     0 [Column[key]]
                     1 [Column[key]]
                     2 [Column[key]]
-                  Position of Big Table: 1
-        a:src3 
-          TableScan
-            alias: src3
-            HashTable Sink Operator
-              condition expressions:
-                0 {key} {value}
-                1 {key} {value}
-                2 {key} {value}
-              filter predicates:
-                0 
-                1 
-                2 {(key < 20)}
-              handleSkewJoin: false
-              keys:
-                0 [Column[key]]
-                1 [Column[key]]
-                2 [Column[key]]
-              Position of Big Table: 1
-
-  Stage: Stage-6
-    Map Reduce
-      Alias -> Map Operator Tree:
+                  Position of Big Table: 2
         a:src2 
           TableScan
             alias: src2
@@ -558,10 +428,7 @@ STAGE PLANS:
                 predicate:
                     expr: (key < 15)
                     type: boolean
-                Map Join Operator
-                  condition map:
-                       Inner Join 0 to 1
-                       Right Outer Join0 to 2
+                HashTable Sink Operator
                   condition expressions:
                     0 {key} {value}
                     1 {key} {value}
@@ -575,36 +442,61 @@ STAGE PLANS:
                     0 [Column[key]]
                     1 [Column[key]]
                     2 [Column[key]]
-                  outputColumnNames: _col0, _col1, _col4, _col5, _col8, _col9
-                  Position of Big Table: 1
-                  Select Operator
-                    expressions:
-                          expr: _col0
-                          type: string
-                          expr: _col1
-                          type: string
-                          expr: _col4
-                          type: string
-                          expr: _col5
-                          type: string
-                          expr: _col8
-                          type: string
-                          expr: _col9
-                          type: string
-                    outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5
-                    File Output Operator
-                      compressed: false
-                      GlobalTableId: 0
-                      table:
-                          input format: org.apache.hadoop.mapred.SequenceFileInputFormat
-                          output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                  Position of Big Table: 2
+
+  Stage: Stage-6
+    Map Reduce
+      Alias -> Map Operator Tree:
+        a:src3 
+          TableScan
+            alias: src3
+            Map Join Operator
+              condition map:
+                   Inner Join 0 to 1
+                   Right Outer Join0 to 2
+              condition expressions:
+                0 {key} {value}
+                1 {key} {value}
+                2 {key} {value}
+              filter predicates:
+                0 
+                1 
+                2 {(key < 20)}
+              handleSkewJoin: false
+              keys:
+                0 [Column[key]]
+                1 [Column[key]]
+                2 [Column[key]]
+              outputColumnNames: _col0, _col1, _col4, _col5, _col8, _col9
+              Position of Big Table: 2
+              Select Operator
+                expressions:
+                      expr: _col0
+                      type: string
+                      expr: _col1
+                      type: string
+                      expr: _col4
+                      type: string
+                      expr: _col5
+                      type: string
+                      expr: _col8
+                      type: string
+                      expr: _col9
+                      type: string
+                outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5
+                File Output Operator
+                  compressed: false
+                  GlobalTableId: 0
+                  table:
+                      input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
       Local Work:
         Map Reduce Local Work
 
   Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/tmp/sdong/hive_2011-02-10_01-16-01_282_8608740974087583316/-mr-10002 
+        file:/tmp/heyongqiang/hive_2011-04-06_21-30-27_004_4367867622488357822/-mr-10002 
             Reduce Output Operator
               key expressions:
                     expr: _col0
@@ -667,7 +559,7 @@ STAGE PLANS:
   Stage: Stage-3
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/tmp/sdong/hive_2011-02-10_01-16-01_282_8608740974087583316/-mr-10003 
+        file:/tmp/heyongqiang/hive_2011-04-06_21-30-27_004_4367867622488357822/-mr-10003 
             Reduce Output Operator
               sort order: 
               tag: -1
@@ -692,118 +584,6 @@ STAGE PLANS:
               table:
                   input format: org.apache.hadoop.mapred.TextInputFormat
                   output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-
-  Stage: Stage-10
-    Map Reduce Local Work
-      Alias -> Map Local Tables:
-        a:src1 
-          Fetch Operator
-            limit: -1
-        a:src2 
-          Fetch Operator
-            limit: -1
-      Alias -> Map Local Operator Tree:
-        a:src1 
-          TableScan
-            alias: src1
-            Filter Operator
-              predicate:
-                  expr: (key < 10)
-                  type: boolean
-              Filter Operator
-                predicate:
-                    expr: (key < 10)
-                    type: boolean
-                HashTable Sink Operator
-                  condition expressions:
-                    0 {key} {value}
-                    1 {key} {value}
-                    2 {key} {value}
-                  filter predicates:
-                    0 
-                    1 
-                    2 {(key < 20)}
-                  handleSkewJoin: false
-                  keys:
-                    0 [Column[key]]
-                    1 [Column[key]]
-                    2 [Column[key]]
-                  Position of Big Table: 2
-        a:src2 
-          TableScan
-            alias: src2
-            Filter Operator
-              predicate:
-                  expr: (key < 15)
-                  type: boolean
-              Filter Operator
-                predicate:
-                    expr: (key < 15)
-                    type: boolean
-                HashTable Sink Operator
-                  condition expressions:
-                    0 {key} {value}
-                    1 {key} {value}
-                    2 {key} {value}
-                  filter predicates:
-                    0 
-                    1 
-                    2 {(key < 20)}
-                  handleSkewJoin: false
-                  keys:
-                    0 [Column[key]]
-                    1 [Column[key]]
-                    2 [Column[key]]
-                  Position of Big Table: 2
-
-  Stage: Stage-7
-    Map Reduce
-      Alias -> Map Operator Tree:
-        a:src3 
-          TableScan
-            alias: src3
-            Map Join Operator
-              condition map:
-                   Inner Join 0 to 1
-                   Right Outer Join0 to 2
-              condition expressions:
-                0 {key} {value}
-                1 {key} {value}
-                2 {key} {value}
-              filter predicates:
-                0 
-                1 
-                2 {(key < 20)}
-              handleSkewJoin: false
-              keys:
-                0 [Column[key]]
-                1 [Column[key]]
-                2 [Column[key]]
-              outputColumnNames: _col0, _col1, _col4, _col5, _col8, _col9
-              Position of Big Table: 2
-              Select Operator
-                expressions:
-                      expr: _col0
-                      type: string
-                      expr: _col1
-                      type: string
-                      expr: _col4
-                      type: string
-                      expr: _col5
-                      type: string
-                      expr: _col8
-                      type: string
-                      expr: _col9
-                      type: string
-                outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5
-                File Output Operator
-                  compressed: false
-                  GlobalTableId: 0
-                  table:
-                      input format: org.apache.hadoop.mapred.SequenceFileInputFormat
-                      output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
-      Local Work:
-        Map Reduce Local Work
 
   Stage: Stage-1
     Map Reduce
@@ -925,7 +705,7 @@ SORT BY k1,v1,k2,v2,k3,v3
 )a
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/tmp/sdong/hive_2011-02-10_01-16-01_646_566260942186680240/-mr-10000
+PREHOOK: Output: file:/tmp/heyongqiang/hive_2011-04-06_21-30-27_352_4005625870377401724/-mr-10000
 POSTHOOK: query: select sum(hash(a.k1,a.v1,a.k2,a.v2,a.k3,a.v3))
 from (
 SELECT src1.key as k1, src1.value as v1, src2.key as k2, src2.value as v2 , src3.key as k3, src3.value as v3  
@@ -934,5 +714,5 @@ SORT BY k1,v1,k2,v2,k3,v3
 )a
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: file:/tmp/sdong/hive_2011-02-10_01-16-01_646_566260942186680240/-mr-10000
+POSTHOOK: Output: file:/tmp/heyongqiang/hive_2011-04-06_21-30-27_352_4005625870377401724/-mr-10000
 56157587016

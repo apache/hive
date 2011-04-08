@@ -191,8 +191,10 @@ public abstract class Task<T extends Serializable> implements Serializable, Node
   public Task<? extends Serializable> getAndInitBackupTask() {
     if (backupTask != null) {
       // first set back the backup task with its children task.
-      for (Task<? extends Serializable> backupChild : backupChildrenTasks) {
-        backupChild.getParentTasks().add(backupTask);
+      if( backupChildrenTasks!= null) {
+        for (Task<? extends Serializable> backupChild : backupChildrenTasks) {
+          backupChild.getParentTasks().add(backupTask);
+        }
       }
 
       // recursively remove task from its children tasks if this task doesn't have any parent task
