@@ -441,6 +441,7 @@ public class CliDriver {
     if (!oproc.process_stage2(ss)) {
       System.exit(2);
     }
+    ss.printInitInfo();
 
     // set all properties specified via command line
     HiveConf conf = ss.getConf();
