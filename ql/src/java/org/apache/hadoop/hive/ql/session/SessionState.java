@@ -284,12 +284,20 @@ public class SessionState {
   public static void initHiveLog4j() {
     // allow hive log4j to override any normal initialized one
     URL hive_l4j = SessionState.class.getClassLoader().getResource(HIVE_L4J);
-    if (hive_l4j == null) {
-      System.out.println("Unable to initialize logging. " + HIVE_L4J + " not found on CLASSPATH!");
-    } else {
+    if (hive_l4j != null) {
       LogManager.resetConfiguration();
       PropertyConfigurator.configure(hive_l4j);
-      SessionState.getConsole().printInfo("Logging initialized using configuration in " + hive_l4j);
+    }
+  }
+
+  public void printInitInfo() {
+    URL hive_l4j = SessionState.class.getClassLoader().getResource(HIVE_L4J);
+    if (!isSilent) {
+      if (hive_l4j == null) {
+        System.err.println("Unable to initialize logging. " + HIVE_L4J + " not found on CLASSPATH!");
+      } else {
+        SessionState.getConsole().printInfo("Logging initialized using configuration in " + hive_l4j);
+      }
     }
   }
 
