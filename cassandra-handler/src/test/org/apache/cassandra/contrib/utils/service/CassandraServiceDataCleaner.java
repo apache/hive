@@ -69,8 +69,6 @@ public class CassandraServiceDataCleaner {
      */
     private void cleanDir(String dir) throws IOException {
         File dirFile = new File(dir);
-        if (dirFile.exists() && dirFile.isDirectory()) {
-            FileUtils.delete(dirFile.listFiles());
-        }
+        FileUtils.deleteRecursive(dirFile);
     }
 }
