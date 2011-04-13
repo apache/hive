@@ -166,7 +166,7 @@ public class EximUtil {
   /* If null, then the major version number should match */
   public static final String METADATA_FORMAT_FORWARD_COMPATIBLE_VERSION = null;
 
-  static void createExportDump(FileSystem fs, Path metadataPath, org.apache.hadoop.hive.ql.metadata.Table tableHandle,
+  public static void createExportDump(FileSystem fs, Path metadataPath, org.apache.hadoop.hive.ql.metadata.Table tableHandle,
       List<org.apache.hadoop.hive.ql.metadata.Partition> partitions) throws SemanticException, IOException {
     try {
       JSONObject jsonContainer = new JSONObject();
@@ -200,7 +200,7 @@ public class EximUtil {
     }
   }
 
-  static Map.Entry<Table, List<Partition>> 
+  public static Map.Entry<Table, List<Partition>> 
       readMetaData(FileSystem fs, Path metadataPath) 
       throws IOException, SemanticException {
     try {
