@@ -426,6 +426,11 @@ public class Hadoop20SShims implements HadoopShims {
   public boolean isSecureShimImpl() {
     return true;
   }
+  
+  @Override
+  public String getShortUserName(UserGroupInformation ugi) {
+    return ugi.getShortUserName();
+  }
 
   @Override
   public String getTokenStrForm(String tokenSignature) throws IOException {

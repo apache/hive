@@ -20,6 +20,8 @@ package org.apache.hadoop.hive.metastore;
 
 import java.io.File;
 import java.io.IOException;
+import java.net.InetSocketAddress;
+import java.net.Socket;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -53,6 +55,8 @@ import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector.Category;
 import org.apache.hadoop.hive.serde2.objectinspector.StructField;
 import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
+import org.apache.hadoop.hive.shims.ShimLoader;
+import org.apache.hadoop.hive.thrift.HadoopThriftAuthBridge;
 import org.apache.hadoop.util.StringUtils;
 
 public class MetaStoreUtils {
@@ -695,6 +699,45 @@ public class MetaStoreUtils {
       throw new MetaException("Unable to : " + path);
     }
 
+  }
+  
+  public static void startMetaStore(final int port, 
+      final HadoopThriftAuthBridge bridge) throws Exception {
+    Thread thread = new Thread(new Runnable() {
+      public void run() {
+        try {
+          HiveMetaStore.startMetaStore(port, bridge);
+        } catch (Throwable e) {
+          System.exit(1);
+        }
+      }
+    });
+    thread.setDaemon(true);
+    thread.start();
+    loopUntilHMSReady(port);
+  }
+  /**
+   * A simple connect test to make sure that the metastore is up
+   * @throws Exception
+   */
+  private static void loopUntilHMSReady(int port) throws Exception {
+    int retries = 0;
+    Exception exc = null;
+    while (true) {
+      try {
+        Socket socket = new Socket();
+        socket.connect(new InetSocketAddress(port), 5000);
+        socket.close();
+        return;
+      } catch (Exception e) {
+        if (retries++ > 6) { //give up
+          exc = e;
+          break;
+        }
+        Thread.sleep(10000);
+      }
+    }
+    throw exc;
   }
 
   /**

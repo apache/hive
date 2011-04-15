@@ -527,7 +527,8 @@ public class HiveMetaStore extends ThriftHiveMetastore {
     }
 
     private void create_database_core(RawStore ms, final Database db)
-        throws AlreadyExistsException, InvalidObjectException, MetaException {
+        throws AlreadyExistsException, InvalidObjectException, MetaException,
+        IOException {
       if (!validateName(db.getName())) {
         throw new InvalidObjectException(db.getName() + " is not a valid database name");
       }
@@ -633,7 +634,8 @@ public class HiveMetaStore extends ThriftHiveMetastore {
 
     private void drop_database_core(RawStore ms,
         final String name, final boolean deleteData)
-        throws NoSuchObjectException, InvalidOperationException, MetaException {
+        throws NoSuchObjectException, InvalidOperationException, MetaException,
+        IOException {
       boolean success = false;
       Database db = null;
       try {
@@ -641,6 +643,12 @@ public class HiveMetaStore extends ThriftHiveMetastore {
         db = ms.getDatabase(name);
         if (!get_all_tables(db.getName()).isEmpty()) {
           throw new InvalidOperationException("Database " + db.getName() + " is not empty");
+        }
+        Path path = new Path(db.getLocationUri()).getParent();
+        if (!wh.isWritable(path)) {
+          throw new MetaException("Database not dropped since " +
+              path + " is not writable by " + 
+              hiveConf.getUser());
         }
         if (ms.dropDatabase(name)) {
           success = ms.commitTransaction();
@@ -963,7 +971,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
 
     private void drop_table_core(final RawStore ms, final String dbname,
         final String name, final boolean deleteData)
-        throws NoSuchObjectException, MetaException {
+        throws NoSuchObjectException, MetaException, IOException {
 
       boolean success = false;
       boolean isExternal = false;
@@ -1004,6 +1012,11 @@ public class HiveMetaStore extends ThriftHiveMetastore {
         isExternal = isExternal(tbl);
         if (tbl.getSd().getLocation() != null) {
           tblPath = new Path(tbl.getSd().getLocation());
+          if (!wh.isWritable(tblPath.getParent())) {
+            throw new MetaException("Table metadata not deleted since " +
+                tblPath.getParent() + " is not writable by " + 
+                hiveConf.getUser());
+          }
         }
 
         if (!ms.dropTable(dbname, name)) {
@@ -1361,7 +1374,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
 
     private boolean drop_partition_common(RawStore ms, String db_name, String tbl_name,
         List<String> part_vals, final boolean deleteData)
-    throws MetaException, NoSuchObjectException {
+    throws MetaException, NoSuchObjectException, IOException {
 
       boolean success = false;
       Path partPath = null;
@@ -1382,6 +1395,11 @@ public class HiveMetaStore extends ThriftHiveMetastore {
         isArchived = MetaStoreUtils.isArchived(part);
         if (isArchived) {
           archiveParentDir = MetaStoreUtils.getOriginalLocation(part);
+          if (!wh.isWritable(archiveParentDir.getParent())) {
+            throw new MetaException("Table partition not deleted since " +
+                archiveParentDir.getParent() + " is not writable by " + 
+                hiveConf.getUser());
+          }
         }
         if (!ms.dropPartition(db_name, tbl_name, part_vals)) {
           throw new MetaException("Unable to drop partition");
@@ -1389,6 +1407,11 @@ public class HiveMetaStore extends ThriftHiveMetastore {
         success = ms.commitTransaction();
         if ((part.getSd() != null) && (part.getSd().getLocation() != null)) {
           partPath = new Path(part.getSd().getLocation());
+          if (!wh.isWritable(partPath.getParent())) {
+            throw new MetaException("Table partition not deleted since " +
+                partPath.getParent() + " is not writable by " + 
+                hiveConf.getUser());
+          }
         }
         tbl = get_table(db_name, tbl_name);
       } finally {
@@ -1962,7 +1985,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
     private boolean drop_partition_by_name_core(final RawStore ms,
         final String db_name, final String tbl_name, final String part_name,
         final boolean deleteData) throws NoSuchObjectException,
-        MetaException, TException {
+        MetaException, TException, IOException {
 
       List<String> partVals = null;
       try {
@@ -2231,7 +2254,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
     private boolean drop_index_by_name_core(final RawStore ms,
         final String dbName, final String tblName,
         final String indexName, final boolean deleteData) throws NoSuchObjectException,
-        MetaException, TException {
+        MetaException, TException, IOException {
 
       boolean success = false;
       Path tblPath = null;
@@ -2255,6 +2278,11 @@ public class HiveMetaStore extends ThriftHiveMetastore {
 
           if (tbl.getSd().getLocation() != null) {
             tblPath = new Path(tbl.getSd().getLocation());
+            if (!wh.isWritable(tblPath.getParent())) {
+              throw new MetaException("Index table metadata not deleted since " +
+                  tblPath.getParent() + " is not writable by " + 
+                  hiveConf.getUser());
+            }
           }
           if (!ms.dropTable(dbName, idxTblName)) {
             throw new MetaException("Unable to drop underlying data table "
