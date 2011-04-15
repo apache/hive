@@ -971,6 +971,15 @@
 </property>
 
 <property>
+  <name>hive.metastore.authorization.storage.checks</name>
+  <value>false</value>
+  <description>Should the metastore do authorization checks against the underlying storage
+  for operations like drop-partition (disallow the drop-partition if the user in 
+  question doesn't have permissions to delete the corresponding directory
+  on the storage).</description>
+</property>
+
+<property>
   <name>hive.error.on.empty.partition</name>
   <value>false</value>
   <description>Whether to throw an excpetion if dynamic partition insert generates empty results.</description>

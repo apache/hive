@@ -37,6 +37,7 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.HiveMetaStore;
 import org.apache.hadoop.hive.metastore.HiveMetaStoreClient;
+import org.apache.hadoop.hive.metastore.MetaStoreUtils;
 import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.io.Text;
@@ -117,18 +118,7 @@ public class TestHadoop20SAuthBridge extends TestCase {
         System.getProperty("test.build.data", "/tmp")).toString());
     conf = new HiveConf(TestHadoop20SAuthBridge.class);
     conf.setBoolean("hive.metastore.local", false);
-    Thread thread = new Thread(new Runnable() {
-      public void run() {
-        try {
-          HiveMetaStore.startMetaStore(port,new MyHadoopThriftAuthBridge20S());
-        } catch (Throwable e) {
-          System.exit(1);
-        }
-      }
-    });
-    thread.setDaemon(true);
-    thread.start();
-    loopUntilHMSReady(port);
+    MetaStoreUtils.startMetaStore(port, new MyHadoopThriftAuthBridge20S());
   }
 
   public void testSaslWithHiveMetaStore() throws Exception {
@@ -286,30 +276,6 @@ public class TestHadoop20SAuthBridge extends TestCase {
         }
       });
     assertTrue("Expected metastore operations to fail", hiveClient == null);
-  }
-
-  /**
-   * A simple connect test to make sure that the metastore is up
-   * @throws Exception
-   */
-  private void loopUntilHMSReady(int port) throws Exception {
-    int retries = 0;
-    Exception exc = null;
-    while (true) {
-      try {
-        Socket socket = new Socket();
-        socket.connect(new InetSocketAddress(port), 5000);
-        socket.close();
-        return;
-      } catch (Exception e) {
-        if (retries++ > 6) { //give up
-          exc = e;
-          break;
-        }
-        Thread.sleep(10000);
-      }
-    }
-    throw exc;
   }
 
   private void createDBAndVerifyExistence(HiveMetaStoreClient client)
