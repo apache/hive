@@ -8,10 +8,6 @@ import junit.framework.Test;
 import org.apache.cassandra.contrib.utils.service.CassandraServiceDataCleaner;
 import org.apache.cassandra.service.EmbeddedCassandraService;
 import org.apache.cassandra.thrift.Cassandra;
-import org.apache.cassandra.thrift.CfDef;
-import org.apache.cassandra.thrift.InvalidRequestException;
-import org.apache.cassandra.thrift.KsDef;
-import org.apache.cassandra.thrift.NotFoundException;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.hive.cassandra.serde.StandardColumnSerDe;
@@ -38,30 +34,9 @@ public class CassandraTestSetup extends TestSetup{
       cassandra.start();
     }
 
+    //Make sure that this server is connectable.
     FramedConnWrapper wrap = new FramedConnWrapper("127.0.0.1",9170,5000);
     wrap.open();
-    KsDef ks = new KsDef();
-    ks.setName("Keyspace1");
-    ks.setReplication_factor(1);
-    ks.setStrategy_class("org.apache.cassandra.locator.SimpleStrategy");
-    CfDef cf = new CfDef();
-    cf.setName("Standard1");
-    cf.setKeyspace("Keyspace1");
-    ks.addToCf_defs(cf);
-    Cassandra.Client client = wrap.getClient();
-    try {
-      try {
-        KsDef exists =  client.describe_keyspace("Keyspace1");
-      } catch (NotFoundException ex){
-        client.system_add_keyspace(ks);
-        System.out.println("ks added");
-        try {
-          Thread.sleep(2000);
-        } catch (Exception ex2){}
-      }
-    } catch (InvalidRequestException e){
-      throw new RuntimeException(e);
-    }
     wrap.close();
 
     String auxJars = conf.getAuxJars();

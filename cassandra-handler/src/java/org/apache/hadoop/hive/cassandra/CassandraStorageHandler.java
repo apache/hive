@@ -3,7 +3,8 @@ package org.apache.hadoop.hive.cassandra;
 import java.util.Map;
 import java.util.Properties;
 
-import org.apache.cassandra.thrift.*;
+import org.apache.cassandra.thrift.KsDef;
+import org.apache.cassandra.thrift.NotFoundException;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.cassandra.input.HiveCassandraStandardColumnInputFormat;
 import org.apache.hadoop.hive.cassandra.output.HiveCassandraOutputFormat;
@@ -18,12 +19,8 @@ import org.apache.hadoop.hive.ql.plan.TableDesc;
 import org.apache.hadoop.hive.serde2.SerDe;
 import org.apache.hadoop.mapred.InputFormat;
 import org.apache.hadoop.mapred.OutputFormat;
-import org.apache.thrift.TException;
-import org.apache.thrift.transport.TTransportException;
 
 public class CassandraStorageHandler implements HiveStorageHandler, HiveMetaHook {
-
-  private FramedConnWrapper wrap;
 
   private Configuration configuration;
 
@@ -114,99 +111,32 @@ public class CassandraStorageHandler implements HiveStorageHandler, HiveMetaHook
   }
 
   @Override
-  public void preCreateTable(Table tbl) throws MetaException {
-    boolean isExternal = MetaStoreUtils.isExternalTable(tbl);
+  public void preCreateTable(Table table) throws MetaException {
+    boolean isExternal = MetaStoreUtils.isExternalTable(table);
 
     if (!isExternal) {
       throw new MetaException("Cassandra tables must be external.");
     }
 
-    if (tbl.getSd().getLocation() != null) {
+    if (table.getSd().getLocation() != null) {
       throw new MetaException("LOCATION may not be specified for Cassandra.");
     }
 
-    Map<String, String> serdeParam = tbl.getSd().getSerdeInfo().getParameters();
-
-    String keyspace     = getCassandraKeyspace(tbl);
-    String columnFamily = getCassandraColumnFamily(tbl);
-
-    String cassandraHost = serdeParam.get(StandardColumnSerDe.CASSANDRA_HOST);
-    if (cassandraHost == null) {
-      cassandraHost = "localhost";
-    }
-
-    String cassandraPortStr = serdeParam.get(StandardColumnSerDe.CASSANDRA_PORT);
-    if (cassandraPortStr == null) {
-      cassandraPortStr = "9160";
-    }
-
-    int cassandraPort;
-    try {
-      cassandraPort = Integer.parseInt(cassandraPortStr);
-    } catch (NumberFormatException e) {
-      throw new MetaException(StandardColumnSerDe.CASSANDRA_PORT + " must be a number");
-    }
-
+    CassandraManager manager = new CassandraManager(table);
 
     try {
-      this.ensureConnection(cassandraHost, cassandraPort);
-      try {
-        KsDef ks = wrap.getClient().describe_keyspace(keyspace);
+      //open connection to cassandra
+      manager.openConnection();
+      KsDef ks = manager.getKeyspaceDesc();
 
-        boolean hasCf = false;
-        for (CfDef cf : ks.getCf_defs()) {
-          if (cf.getName().equalsIgnoreCase(columnFamily)) {
-            hasCf = true;
-          }
-        }
-
-        if (!hasCf) {
-          throw new MetaException("columnFamily " + columnFamily + " does not exist");
-        }
-
-      } catch (NotFoundException ex) {
-        throw new MetaException(keyspace
-            + " not found. The storage handler will not create it. ");
-      }
-    } catch (TException e) {
-      throw new MetaException("An internal exception prevented this action from taking place."
-          + e.getMessage());
-    } catch (InvalidRequestException e) {
-      throw new MetaException("An internal exception prevented this action from taking place."
-          + e.getMessage());
+      //create the column family if it doesn't exist.
+      manager.createCFIfNotFound(ks);
+    } catch(NotFoundException e) {
+      manager.createKeyspaceWithColumns();
     }
-  }
-
-  private String getCassandraKeyspace(Table tbl) {
-    String tableName = tbl.getParameters().get(StandardColumnSerDe.CASSANDRA_KEYSPACE_NAME);
-    if (tableName == null) {
-      tableName = tbl.getSd().getSerdeInfo().getParameters().get(
-          StandardColumnSerDe.CASSANDRA_KEYSPACE_NAME);
+    finally {
+      manager.closeConnection();
     }
-    if (tableName == null) {
-      tableName = tbl.getDbName();
-    }
-
-    tbl.getParameters().put(StandardColumnSerDe.CASSANDRA_KEYSPACE_NAME, tableName);
-
-    return tableName;
-  }
-
-  private String getCassandraColumnFamily(Table tbl) {
-    String tableName = tbl.getParameters().get(StandardColumnSerDe.CASSANDRA_CF_NAME);
-
-    if (tableName == null) {
-      tableName = tbl.getSd().getSerdeInfo().getParameters().get(
-          StandardColumnSerDe.CASSANDRA_CF_NAME);
-    }
-
-    if (tableName == null) {
-      tableName = tbl.getTableName();
-    }
-
-    tbl.getParameters().put(StandardColumnSerDe.CASSANDRA_CF_NAME, tableName);
-
-    return tableName;
   }
 
   @Override
@@ -216,7 +146,20 @@ public class CassandraStorageHandler implements HiveStorageHandler, HiveMetaHook
 
   @Override
   public void commitDropTable(Table table, boolean deleteData) throws MetaException {
-    // No work needed
+    //TODO: Should this be implemented to drop the table and its data from cassandra
+    boolean isExternal = MetaStoreUtils.isExternalTable(table);
+    if (deleteData && !isExternal) {
+      CassandraManager manager = new CassandraManager(table);
+
+      try {
+        //open connection to cassandra
+        manager.openConnection();
+        //drop the table
+        manager.dropTable();
+      } finally {
+        manager.closeConnection();
+      }
+    }
   }
 
   @Override
@@ -226,7 +169,7 @@ public class CassandraStorageHandler implements HiveStorageHandler, HiveMetaHook
 
   @Override
   public void rollbackCreateTable(Table table) throws MetaException {
-    // nothing to do
+    // No work needed
   }
 
   @Override
@@ -234,10 +177,4 @@ public class CassandraStorageHandler implements HiveStorageHandler, HiveMetaHook
     // nothing to do
   }
 
-  public void ensureConnection(String host, int port) throws TTransportException {
-    if (wrap == null) {
-      wrap = new FramedConnWrapper(host, port, 5000);
-      wrap.open();
-    }
-  }
 }

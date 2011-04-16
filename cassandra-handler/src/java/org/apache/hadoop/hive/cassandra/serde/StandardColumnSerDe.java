@@ -1,26 +1,37 @@
 package org.apache.hadoop.hive.cassandra.serde;
 
 import java.io.IOException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Map;
+import java.util.Properties;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.cassandra.input.HiveCassandraStandardRowResult;
 import org.apache.hadoop.hive.cassandra.input.LazyCassandraRow;
 import org.apache.hadoop.hive.cassandra.output.CassandraColumn;
 import org.apache.hadoop.hive.cassandra.output.CassandraPut;
 import org.apache.hadoop.hive.serde.Constants;
-import org.apache.hadoop.hive.serde2.*;
+import org.apache.hadoop.hive.serde2.ByteStream;
+import org.apache.hadoop.hive.serde2.SerDe;
+import org.apache.hadoop.hive.serde2.SerDeException;
+import org.apache.hadoop.hive.serde2.SerDeUtils;
 import org.apache.hadoop.hive.serde2.lazy.LazyFactory;
 import org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe;
-import org.apache.hadoop.hive.serde2.lazy.LazyUtils;
 import org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe.SerDeParameters;
+import org.apache.hadoop.hive.serde2.lazy.LazyUtils;
 import org.apache.hadoop.hive.serde2.lazy.objectinspector.LazySimpleStructObjectInspector;
-import org.apache.hadoop.hive.serde2.objectinspector.*;
+import org.apache.hadoop.hive.serde2.objectinspector.ListObjectInspector;
+import org.apache.hadoop.hive.serde2.objectinspector.MapObjectInspector;
+import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector.Category;
+import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector;
+import org.apache.hadoop.hive.serde2.objectinspector.StructField;
+import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorFactory;
 import org.apache.hadoop.hive.serde2.typeinfo.MapTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.StructTypeInfo;
@@ -31,6 +42,9 @@ public class StandardColumnSerDe implements SerDe {
 
   public static final Log LOG = LogFactory.getLog(StandardColumnSerDe.class.getName());
   public static final String CASSANDRA_KEYSPACE_NAME = "cassandra.ks.name"; // keyspace
+  public static final String CASSANDRA_KEYSPACE_REPFACTOR = "cassandra.ks.repfactor"; //keyspace replication factor
+  public static final String CASSANDRA_KEYSPACE_STRATEGY = "cassandra.ks.strategy"; //keyspace replica placement strategy
+
   public static final String CASSANDRA_CF_NAME = "cassandra.cf.name"; // column family
   public static final String CASSANDRA_RANGE_BATCH_SIZE = "cassandra.range.size";
   public static final String CASSANDRA_SLICE_PREDICATE_SIZE = "cassandra.slice.predicate.size";
@@ -395,18 +409,19 @@ public class StandardColumnSerDe implements SerDe {
 
   public static List<String> parseOrCreateColumnMapping(Properties tbl, String tblColumnStr) throws SerDeException {
 
-    if(tbl.getProperty(CASSANDRA_COL_MAPPING) == null && tblColumnStr == null) {
+    String prop = tbl.getProperty(CASSANDRA_COL_MAPPING);
+
+    if (prop == null && tblColumnStr == null) {
       throw new SerDeException("Can't find table column definitions");
     }
 
-    // Auto-Create?
-    if (tbl.getProperty(CASSANDRA_COL_MAPPING) == null) {
-      String mappingStr = createColumnMappingString(tblColumnStr);
+    if (tblColumnStr != null) {
+        //auto-create
+        String mappingStr = createColumnMappingString(tblColumnStr);
 
-      return Arrays.asList(mappingStr.split(","));
-
+        return Arrays.asList(mappingStr.split(","));
     } else {
-      return parseColumnMapping(tbl.getProperty(CASSANDRA_COL_MAPPING));
+      return parseColumnMapping(prop);
     }
   }
 
@@ -415,7 +430,7 @@ public class StandardColumnSerDe implements SerDe {
    */
   public static String createColumnMappingString(String tblColumnStr)
   {
-    if(tblColumnStr == null || tblColumnStr.isEmpty()) {
+    if(tblColumnStr == null || tblColumnStr.trim().isEmpty()) {
       throw new IllegalArgumentException("table must have columns");
     }
 
@@ -430,16 +445,16 @@ public class StandardColumnSerDe implements SerDe {
     boolean hasSubCol = false;
     String transposedMapping = "";
     for(String column : colNames) {
-      if(column.equalsIgnoreCase(CASSANDRA_SPECIAL_COLUMN_KEY)){
+      if (column.equalsIgnoreCase(CASSANDRA_SPECIAL_COLUMN_KEY)){
         transposedMapping += ","+CASSANDRA_KEY_COLUMN;
         hasKey = true;
-      }else if(column.equalsIgnoreCase(CASSANDRA_SPECIAL_COLUMN_COL)){
+      } else if(column.equalsIgnoreCase(CASSANDRA_SPECIAL_COLUMN_COL)){
         transposedMapping += ","+CASSANDRA_COLUMN_COLUMN;
         hasCol = true;
-      }else if( column.equalsIgnoreCase(CASSANDRA_SPECIAL_COLUMN_SCOL)){
+      } else if(column.equalsIgnoreCase(CASSANDRA_SPECIAL_COLUMN_SCOL)){
         transposedMapping += ","+CASSANDRA_SUBCOLUMN_COLUMN;
         hasSubCol = true;
-      }else if(column.equalsIgnoreCase(CASSANDRA_SPECIAL_COLUMN_VAL)){
+      } else if(column.equalsIgnoreCase(CASSANDRA_SPECIAL_COLUMN_VAL)){
         transposedMapping += ","+CASSANDRA_VALUE_COLUMN;
         hasVal = true;
       } else {
