@@ -55,7 +55,6 @@ import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector.Category;
 import org.apache.hadoop.hive.serde2.objectinspector.StructField;
 import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
-import org.apache.hadoop.hive.shims.ShimLoader;
 import org.apache.hadoop.hive.thrift.HadoopThriftAuthBridge;
 import org.apache.hadoop.util.StringUtils;
 
@@ -471,13 +470,20 @@ public class MetaStoreUtils {
 
   /**
    * Get partition level schema from table level schema.
-   * @param sd
-   * @param tblsd
-   * @param parameters
-   * @param databaseName
-   * @param tableName
-   * @param partitionKeys
-   * @param tblSchema
+   * This function will use the same column names, column types and partition keys for
+   * each partition Properties. Their values are copied from the table Properties. This
+   * is mainly to save CPU and memory. CPU is saved because the first time the
+   * StorageDescriptor column names are accessed, JDO needs to execute a SQL query to
+   * retrieve the data. If we know the data will be the same as the table level schema
+   * and they are immutable, we should just reuse the table level schema objects.
+   *
+   * @param sd The Partition level Storage Descriptor.
+   * @param tblsd The Table level Storage Descriptor.
+   * @param parameters partition level parameters
+   * @param databaseName DB name
+   * @param tableName table name
+   * @param partitionKeys partition columns
+   * @param tblSchema The table level schema from which this partition should be copied.
    * @return
    */
   public static Properties getPartSchemaFromTableSchema(
@@ -487,7 +493,10 @@ public class MetaStoreUtils {
       List<FieldSchema> partitionKeys,
       Properties tblSchema) {
 
-    // inherent most properties from table level schema
+    // Inherent most properties from table level schema and overwrite some properties
+    // in the following code.
+    // This is mainly for saving CPU and memory to reuse the column names, types and
+    // partition columns in the table level schema.
     Properties schema = (Properties) tblSchema.clone();
 
     // InputFormat
@@ -533,9 +542,23 @@ public class MetaStoreUtils {
           sd.getBucketCols().get(0));
     }
 
+    // SerdeInfo
     if (sd.getSerdeInfo() != null) {
+
+      // We should not update the following 3 values if SerDeInfo contains these.
+      // This is to keep backward compatible with getSchema(), where these 3 keys
+      // are updated after SerDeInfo properties got copied.
+      String cols = org.apache.hadoop.hive.metastore.api.Constants.META_TABLE_COLUMNS;
+      String colTypes = org.apache.hadoop.hive.metastore.api.Constants.META_TABLE_COLUMN_TYPES;
+      String parts = org.apache.hadoop.hive.metastore.api.Constants.META_TABLE_PARTITION_COLUMNS;
+
       for (Map.Entry<String,String> param : sd.getSerdeInfo().getParameters().entrySet()) {
-        schema.put(param.getKey(), (param.getValue() != null) ? param.getValue() : "");
+        String key = param.getKey();
+        if (schema.get(key) != null &&
+            (key.equals(cols) || key.equals(colTypes) || key.equals(parts))) {
+          continue;
+        }
+        schema.put(key, (param.getValue() != null) ? param.getValue() : "");
       }
 
       if (sd.getSerdeInfo().getSerializationLib() != null) {
@@ -700,8 +723,8 @@ public class MetaStoreUtils {
     }
 
   }
-  
-  public static void startMetaStore(final int port, 
+
+  public static void startMetaStore(final int port,
       final HadoopThriftAuthBridge bridge) throws Exception {
     Thread thread = new Thread(new Runnable() {
       public void run() {
