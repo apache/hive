@@ -202,7 +202,8 @@ public class PartitionPruner implements Transform {
         }
 
         if (prunerExpr == null) {
-          // add all partitions corresponding to the table
+          // This can happen when hive.mapred.mode=nonstrict and there is no predicates at all
+          // Add all partitions to the unknown_parts so that a MR job is generated.
           true_parts.addAll(Hive.get().getPartitions(tab));
         } else {
           // remove non-partition columns
@@ -213,7 +214,9 @@ public class PartitionPruner implements Transform {
               "; filter w/o compacting: " +
               ((prunerExpr != null) ? prunerExpr.getExprString(): "null"));
           if (compactExpr == null) {
-            true_parts.addAll(Hive.get().getPartitions(tab));
+            // This could happen when hive.mapred.mode=nonstrict and all the predicates
+            // are on non-partition columns.
+            unkn_parts.addAll(Hive.get().getPartitions(tab));
           } else if (Utilities.checkJDOPushDown(tab, compactExpr)) {
             String filter = compactExpr.getExprString();
             String oldFilter = prunerExpr.getExprString();
