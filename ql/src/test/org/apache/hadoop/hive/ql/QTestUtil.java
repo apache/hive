@@ -626,7 +626,13 @@ public class QTestUtil {
   }
 
   public int execute(String tname) {
-    return drv.run(qMap.get(tname)).getResponseCode();
+    try {
+      return drv.run(qMap.get(tname)).getResponseCode();
+    } catch (CommandNeedRetryException e) {
+      // TODO Auto-generated catch block
+      e.printStackTrace();
+      return -1;
+    }
   }
 
   public int executeClient(String tname) {

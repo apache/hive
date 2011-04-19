@@ -39,6 +39,7 @@ public class FetchWork implements Serializable {
   private ArrayList<PartitionDesc> partDesc;
 
   private int limit;
+  private int leastNumRows;
 
   /**
    * Serialization Null Format for the serde used to fetch data.
@@ -187,6 +188,14 @@ public class FetchWork implements Serializable {
    */
   public void setLimit(int limit) {
     this.limit = limit;
+  }
+
+  public int getLeastNumRows() {
+    return leastNumRows;
+  }
+
+  public void setLeastNumRows(int leastNumRows) {
+    this.leastNumRows = leastNumRows;
   }
 
   @Override

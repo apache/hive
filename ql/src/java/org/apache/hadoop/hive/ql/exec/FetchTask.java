@@ -25,6 +25,7 @@ import java.util.Properties;
 
 import org.apache.hadoop.hive.common.JavaUtils;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.ql.CommandNeedRetryException;
 import org.apache.hadoop.hive.ql.Context;
 import org.apache.hadoop.hive.ql.DriverContext;
 import org.apache.hadoop.hive.ql.QueryPlan;
@@ -117,10 +118,27 @@ public class FetchTask extends Task<FetchWork> implements Serializable {
   }
 
   @Override
-  public boolean fetch(ArrayList<String> res) throws IOException {
+  public boolean fetch(ArrayList<String> res) throws IOException, CommandNeedRetryException {
     try {
       int numRows = 0;
       int rowsRet = maxRows;
+
+      if (work.getLeastNumRows() > 0) {
+        if (totalRows == work.getLeastNumRows()) {
+          return false;
+        }
+        for (int i = 0; i < work.getLeastNumRows(); i++) {
+          InspectableObject io = ftOp.getNextRow();
+          if (io == null) {
+            throw new CommandNeedRetryException();
+          }
+          res.add(((Text) mSerde.serialize(io.o, io.oi)).toString());
+          numRows++;
+        }
+        totalRows = work.getLeastNumRows();
+        return true;
+      }
+
       if ((work.getLimit() >= 0) && ((work.getLimit() - totalRows) < rowsRet)) {
         rowsRet = work.getLimit() - totalRows;
       }
@@ -144,6 +162,8 @@ public class FetchTask extends Task<FetchWork> implements Serializable {
       }
       totalRows += numRows;
       return true;
+    } catch (CommandNeedRetryException e) {
+      throw e;
     } catch (IOException e) {
       throw e;
     } catch (Exception e) {

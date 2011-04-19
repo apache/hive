@@ -480,4 +480,20 @@ public class QBParseInfo {
     return tableSpecs.get(tName.next());
   }
 
+  public HashMap<String, Integer> getDestToLimit() {
+    return destToLimit;
+  }
+
+  public LinkedHashMap<String, LinkedHashMap<String, ASTNode>> getDestToAggregationExprs() {
+    return destToAggregationExprs;
+  }
+
+  public HashMap<String, List<ASTNode>> getDestToDistinctFuncExprs() {
+    return destToDistinctFuncExprs;
+  }
+
+  public HashMap<String, TableSample> getNameToSample() {
+    return nameToSample;
+  }
+
 }

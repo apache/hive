@@ -1,0 +1,1648 @@
+PREHOOK: query: drop table gl_tgt
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: drop table gl_tgt
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: drop table gl_src1
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: drop table gl_src1
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: drop table gl_src2
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: drop table gl_src2
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: drop table gl_src_part1
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: drop table gl_src_part1
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: create table gl_src1 (key int, value string) stored as textfile
+PREHOOK: type: CREATETABLE
+POSTHOOK: query: create table gl_src1 (key int, value string) stored as textfile
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: default@gl_src1
+PREHOOK: query: load data local inpath '../data/files/srcbucket20.txt' INTO TABLE gl_src1
+PREHOOK: type: LOAD
+PREHOOK: Output: default@gl_src1
+POSTHOOK: query: load data local inpath '../data/files/srcbucket20.txt' INTO TABLE gl_src1
+POSTHOOK: type: LOAD
+POSTHOOK: Output: default@gl_src1
+PREHOOK: query: load data local inpath '../data/files/srcbucket20.txt' INTO TABLE gl_src1
+PREHOOK: type: LOAD
+PREHOOK: Output: default@gl_src1
+POSTHOOK: query: load data local inpath '../data/files/srcbucket20.txt' INTO TABLE gl_src1
+POSTHOOK: type: LOAD
+POSTHOOK: Output: default@gl_src1
+PREHOOK: query: load data local inpath '../data/files/srcbucket20.txt' INTO TABLE gl_src1
+PREHOOK: type: LOAD
+PREHOOK: Output: default@gl_src1
+POSTHOOK: query: load data local inpath '../data/files/srcbucket20.txt' INTO TABLE gl_src1
+POSTHOOK: type: LOAD
+POSTHOOK: Output: default@gl_src1
+PREHOOK: query: -- need one file
+create table gl_tgt as select key from gl_src1 limit 1
+PREHOOK: type: CREATETABLE_AS_SELECT
+PREHOOK: Input: default@gl_src1
+POSTHOOK: query: -- need one file
+create table gl_tgt as select key from gl_src1 limit 1
+POSTHOOK: type: CREATETABLE_AS_SELECT
+POSTHOOK: Input: default@gl_src1
+POSTHOOK: Output: default@gl_tgt
+PREHOOK: query: select * from gl_tgt
+PREHOOK: type: QUERY
+PREHOOK: Input: default@gl_tgt
+PREHOOK: Output: file:/tmp/sdong/hive_2011-04-18_13-06-14_715_6666058695580705176/-mr-10000
+POSTHOOK: query: select * from gl_tgt
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@gl_tgt
+POSTHOOK: Output: file:/tmp/sdong/hive_2011-04-18_13-06-14_715_6666058695580705176/-mr-10000
+165
+PREHOOK: query: -- need two files
+select 'x', split(value,',') from gl_src1 limit 20
+PREHOOK: type: QUERY
+PREHOOK: Input: default@gl_src1
+PREHOOK: Output: file:/tmp/sdong/hive_2011-04-18_13-06-14_930_3390626062169619061/-mr-10000
+POSTHOOK: query: -- need two files
+select 'x', split(value,',') from gl_src1 limit 20
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@gl_src1
+POSTHOOK: Output: file:/tmp/sdong/hive_2011-04-18_13-06-14_930_3390626062169619061/-mr-10000
+x	["val_165"]
+x	["val_484"]
+x	["val_150"]
+x	["val_224"]
+x	["val_66"]
+x	["val_213"]
+x	["val_374"]
+x	["val_495"]
+x	["val_37"]
+x	["val_327"]
+x	["val_15"]
+x	["val_338"]
+x	["val_459"]
+x	["val_466"]
+x	["val_396"]
+x	["val_309"]
+x	["val_367"]
+x	["val_0"]
+x	["val_455"]
+x	["val_316"]
+PREHOOK: query: -- no sufficient files
+select key, value, split(value,',') from gl_src1 limit 30
+PREHOOK: type: QUERY
+PREHOOK: Input: default@gl_src1
+PREHOOK: Output: file:/tmp/sdong/hive_2011-04-18_13-06-17_975_1520062346401074551/-mr-10000
+POSTHOOK: query: -- no sufficient files
+select key, value, split(value,',') from gl_src1 limit 30
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@gl_src1
+POSTHOOK: Output: file:/tmp/sdong/hive_2011-04-18_13-06-17_975_1520062346401074551/-mr-10000
+165	val_165	["val_165"]
+484	val_484	["val_484"]
+150	val_150	["val_150"]
+224	val_224	["val_224"]
+66	val_66	["val_66"]
+213	val_213	["val_213"]
+374	val_374	["val_374"]
+495	val_495	["val_495"]
+37	val_37	["val_37"]
+327	val_327	["val_327"]
+15	val_15	["val_15"]
+338	val_338	["val_338"]
+459	val_459	["val_459"]
+466	val_466	["val_466"]
+396	val_396	["val_396"]
+309	val_309	["val_309"]
+367	val_367	["val_367"]
+0	val_0	["val_0"]
+455	val_455	["val_455"]
+316	val_316	["val_316"]
+345	val_345	["val_345"]
+129	val_129	["val_129"]
+378	val_378	["val_378"]
+4	val_4	["val_4"]
+356	val_356	["val_356"]
+169	val_169	["val_169"]
+125	val_125	["val_125"]
+437	val_437	["val_437"]
+286	val_286	["val_286"]
+187	val_187	["val_187"]
+PREHOOK: query: -- need all files
+select key from gl_src1 limit 100
+PREHOOK: type: QUERY
+PREHOOK: Input: default@gl_src1
+PREHOOK: Output: file:/tmp/sdong/hive_2011-04-18_13-06-21_006_2990988342025987107/-mr-10000
+POSTHOOK: query: -- need all files
+select key from gl_src1 limit 100
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@gl_src1
+POSTHOOK: Output: file:/tmp/sdong/hive_2011-04-18_13-06-21_006_2990988342025987107/-mr-10000
+165
+484
+150
+224
+66
+213
+374
+495
+37
+327
+15
+338
+459
+466
+396
+309
+367
+0
+455
+316
+345
+129
+378
+4
+356
+169
+125
+437
+286
+187
+176
+459
+51
+103
+239
+213
+176
+275
+260
+404
+217
+84
+466
+8
+411
+172
+129
+158
+0
+26
+165
+327
+51
+404
+95
+282
+187
+316
+169
+77
+0
+118
+282
+419
+15
+118
+19
+224
+309
+389
+327
+242
+392
+242
+396
+95
+11
+143
+228
+33
+103
+367
+239
+480
+202
+316
+235
+80
+44
+466
+257
+190
+114
+396
+217
+125
+187
+480
+491
+305
+PREHOOK: query: select key from gl_src1 limit 30
+PREHOOK: type: QUERY
+PREHOOK: Input: default@gl_src1
+PREHOOK: Output: file:/tmp/sdong/hive_2011-04-18_13-06-24_041_8059705298736859124/-mr-10000
+POSTHOOK: query: select key from gl_src1 limit 30
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@gl_src1
+POSTHOOK: Output: file:/tmp/sdong/hive_2011-04-18_13-06-24_041_8059705298736859124/-mr-10000
+165
+484
+150
+224
+66
+213
+374
+495
+37
+327
+15
+338
+459
+466
+396
+309
+367
+0
+455
+316
+345
+129
+378
+4
+356
+169
+125
+437
+286
+187
+PREHOOK: query: -- not qualified cases
+select key, count(1) from gl_src1 group by key order by key limit 5
+PREHOOK: type: QUERY
+PREHOOK: Input: default@gl_src1
+PREHOOK: Output: file:/tmp/sdong/hive_2011-04-18_13-06-27_042_2819477757997397479/-mr-10000
+POSTHOOK: query: -- not qualified cases
+select key, count(1) from gl_src1 group by key order by key limit 5
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@gl_src1
+POSTHOOK: Output: file:/tmp/sdong/hive_2011-04-18_13-06-27_042_2819477757997397479/-mr-10000
+0	9
+4	3
+8	3
+11	3
+15	6
+PREHOOK: query: select distinct key from gl_src1 limit 10
+PREHOOK: type: QUERY
+PREHOOK: Input: default@gl_src1
+PREHOOK: Output: file:/tmp/sdong/hive_2011-04-18_13-06-32_925_3439775789836285636/-mr-10000
+POSTHOOK: query: select distinct key from gl_src1 limit 10
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@gl_src1
+POSTHOOK: Output: file:/tmp/sdong/hive_2011-04-18_13-06-32_925_3439775789836285636/-mr-10000
+0
+4
+8
+11
+15
+19
+26
+33
+37
+44
+PREHOOK: query: select count(1) from gl_src1 limit 1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@gl_src1
+PREHOOK: Output: file:/tmp/sdong/hive_2011-04-18_13-06-36_043_608144804096350391/-mr-10000
+POSTHOOK: query: select count(1) from gl_src1 limit 1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@gl_src1
+POSTHOOK: Output: file:/tmp/sdong/hive_2011-04-18_13-06-36_043_608144804096350391/-mr-10000
+354
+PREHOOK: query: select transform(*) using "tr _ \n" as t from
+(select "a_a_a_a_a_a_" from gl_src1 limit 100) subq
+PREHOOK: type: QUERY
+PREHOOK: Input: default@gl_src1
+PREHOOK: Output: file:/tmp/sdong/hive_2011-04-18_13-06-39_121_1333918197839932185/-mr-10000
+POSTHOOK: query: select transform(*) using "tr _ \n" as t from
+(select "a_a_a_a_a_a_" from gl_src1 limit 100) subq
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@gl_src1
+POSTHOOK: Output: file:/tmp/sdong/hive_2011-04-18_13-06-39_121_1333918197839932185/-mr-10000
+a
+a
+a
+a
+a
+a
+
+a
+a
+a
+a
+a
+a
+
+a
+a
+a
+a
+a
+a
+
+a
+a
+a
+a
+a
+a
+
+a
+a
+a
+a
+a
+a
+
+a
+a
+a
+a
+a
+a
+
+a
+a
+a
+a
+a
+a
+
+a
+a
+a
+a
+a
+a
+
+a
+a
+a
+a
+a
+a
+
+a
+a
+a
+a
+a
+a
+
+a
+a
+a
+a
+a
+a
+
+a
+a
+a
+a
+a
+a
+
+a
+a
+a
+a
+a
+a
+
+a
+a
+a
+a
+a
+a
+
+a
+a
+a
+a
+a
+a
+
+a
+a
+a
+a
+a
+a
+
+a
+a
+a
+a
+a
+a
+
+a
+a
+a
+a
+a
+a
+
+a
+a
+a
+a
+a
+a
+
+a
+a
+a
+a
+a
+a
+
+a
+a
+a
+a
+a
+a
+
+a
+a
+a
+a
+a
+a
+
+a
+a
+a
+a
+a
+a
+
+a
+a
+a
+a
+a
+a
+
+a
+a
+a
+a
+a
+a
+
+a
+a
+a
+a
+a
+a
+
+a
+a
+a
+a
+a
+a
+
+a
+a
+a
+a
+a
+a
+
+a
+a
+a
+a
+a
+a
+
+a
+a
+a
+a
+a
+a
+
+a
+a
+a
+a
+a
+a
+
+a
+a
+a
+a
+a
+a
+
+a
+a
+a
+a
+a
+a
+
+a
+a
+a
+a
+a
+a
+
+a
+a
+a
+a
+a
+a
+
+a
+a
+a
+a
+a
+a
+
+a
+a
+a
+a
+a
+a
+
+a
+a
+a
+a
+a
+a
+
+a
+a
+a
+a
+a
+a
+
+a
+a
+a
+a
+a
+a
+
+a
+a
+a
+a
+a
+a
+
+a
+a
+a
+a
+a
+a
+
+a
+a
+a
+a
+a
+a
+
+a
+a
+a
+a
+a
+a
+
+a
+a
+a
+a
+a
+a
+
+a
+a
+a
+a
+a
+a
+
+a
+a
+a
+a
+a
+a
+
+a
+a
+a
+a
+a
+a
+
+a
+a
+a
+a
+a
+a
+
+a
+a
+a
+a
+a
+a
+
+a
+a
+a
+a
+a
+a
+
+a
+a
+a
+a
+a
+a
+
+a
+a
+a
+a
+a
+a
+
+a
+a
+a
+a
+a
+a
+
+a
+a
+a
+a
+a
+a
+
+a
+a
+a
+a
+a
+a
+
+a
+a
+a
+a
+a
+a
+
+a
+a
+a
+a
+a
+a
+
+a
+a
+a
+a
+a
+a
+
+a
+a
+a
+a
+a
+a
+
+a
+a
+a
+a
+a
+a
+
+a
+a
+a
+a
+a
+a
+
+a
+a
+a
+a
+a
+a
+
+a
+a
+a
+a
+a
+a
+
+a
+a
+a
+a
+a
+a
+
+a
+a
+a
+a
+a
+a
+
+a
+a
+a
+a
+a
+a
+
+a
+a
+a
+a
+a
+a
+
+a
+a
+a
+a
+a
+a
+
+a
+a
+a
+a
+a
+a
+
+a
+a
+a
+a
+a
+a
+
+a
+a
+a
+a
+a
+a
+
+a
+a
+a
+a
+a
+a
+
+a
+a
+a
+a
+a
+a
+
+a
+a
+a
+a
+a
+a
+
+a
+a
+a
+a
+a
+a
+
+a
+a
+a
+a
+a
+a
+
+a
+a
+a
+a
+a
+a
+
+a
+a
+a
+a
+a
+a
+
+a
+a
+a
+a
+a
+a
+
+a
+a
+a
+a
+a
+a
+
+a
+a
+a
+a
+a
+a
+
+a
+a
+a
+a
+a
+a
+
+a
+a
+a
+a
+a
+a
+
+a
+a
+a
+a
+a
+a
+
+a
+a
+a
+a
+a
+a
+
+a
+a
+a
+a
+a
+a
+
+a
+a
+a
+a
+a
+a
+
+a
+a
+a
+a
+a
+a
+
+a
+a
+a
+a
+a
+a
+
+a
+a
+a
+a
+a
+a
+
+a
+a
+a
+a
+a
+a
+
+a
+a
+a
+a
+a
+a
+
+a
+a
+a
+a
+a
+a
+
+a
+a
+a
+a
+a
+a
+
+a
+a
+a
+a
+a
+a
+
+a
+a
+a
+a
+a
+a
+
+a
+a
+a
+a
+a
+a
+
+a
+a
+a
+a
+a
+a
+
+a
+a
+a
+a
+a
+a
+
+PREHOOK: query: select key from (select * from (select key,value from gl_src1)t1 limit 10)t2 limit 2000
+PREHOOK: type: QUERY
+PREHOOK: Input: default@gl_src1
+PREHOOK: Output: file:/tmp/sdong/hive_2011-04-18_13-06-42_255_4842424370651858121/-mr-10000
+POSTHOOK: query: select key from (select * from (select key,value from gl_src1)t1 limit 10)t2 limit 2000
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@gl_src1
+POSTHOOK: Output: file:/tmp/sdong/hive_2011-04-18_13-06-42_255_4842424370651858121/-mr-10000
+165
+484
+150
+224
+66
+213
+374
+495
+37
+327
+PREHOOK: query: -- complicated queries
+select key from (select * from (select key,value from gl_src1 limit 10)t1 )t2
+PREHOOK: type: QUERY
+PREHOOK: Input: default@gl_src1
+PREHOOK: Output: file:/tmp/sdong/hive_2011-04-18_13-06-45_699_2470030147373346756/-mr-10000
+POSTHOOK: query: -- complicated queries
+select key from (select * from (select key,value from gl_src1 limit 10)t1 )t2
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@gl_src1
+POSTHOOK: Output: file:/tmp/sdong/hive_2011-04-18_13-06-45_699_2470030147373346756/-mr-10000
+165
+484
+150
+224
+66
+213
+374
+495
+37
+327
+PREHOOK: query: select key from (select * from (select key,value from gl_src1)t1 limit 10)t2
+PREHOOK: type: QUERY
+PREHOOK: Input: default@gl_src1
+PREHOOK: Output: file:/tmp/sdong/hive_2011-04-18_13-06-48_750_7605887767273501586/-mr-10000
+POSTHOOK: query: select key from (select * from (select key,value from gl_src1)t1 limit 10)t2
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@gl_src1
+POSTHOOK: Output: file:/tmp/sdong/hive_2011-04-18_13-06-48_750_7605887767273501586/-mr-10000
+165
+484
+150
+224
+66
+213
+374
+495
+37
+327
+PREHOOK: query: insert overwrite table gl_tgt select key+1 from (select * from (select key,value from gl_src1)t1)t2 limit 10
+PREHOOK: type: QUERY
+PREHOOK: Input: default@gl_src1
+PREHOOK: Output: default@gl_tgt
+POSTHOOK: query: insert overwrite table gl_tgt select key+1 from (select * from (select key,value from gl_src1)t1)t2 limit 10
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@gl_src1
+POSTHOOK: Output: default@gl_tgt
+POSTHOOK: Lineage: gl_tgt.key EXPRESSION [(gl_src1)gl_src1.FieldSchema(name:key, type:int, comment:null), ]
+PREHOOK: query: select * from gl_tgt
+PREHOOK: type: QUERY
+PREHOOK: Input: default@gl_tgt
+PREHOOK: Output: file:/tmp/sdong/hive_2011-04-18_13-06-57_593_9175560296084414291/-mr-10000
+POSTHOOK: query: select * from gl_tgt
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@gl_tgt
+POSTHOOK: Output: file:/tmp/sdong/hive_2011-04-18_13-06-57_593_9175560296084414291/-mr-10000
+POSTHOOK: Lineage: gl_tgt.key EXPRESSION [(gl_src1)gl_src1.FieldSchema(name:key, type:int, comment:null), ]
+166
+485
+151
+225
+67
+214
+375
+496
+38
+328
+PREHOOK: query: -- empty table
+create table gl_src2 (key int, value string) stored as textfile
+PREHOOK: type: CREATETABLE
+POSTHOOK: query: -- empty table
+create table gl_src2 (key int, value string) stored as textfile
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: default@gl_src2
+POSTHOOK: Lineage: gl_tgt.key EXPRESSION [(gl_src1)gl_src1.FieldSchema(name:key, type:int, comment:null), ]
+PREHOOK: query: select key from gl_src2 limit 10
+PREHOOK: type: QUERY
+PREHOOK: Input: default@gl_src2
+PREHOOK: Output: file:/tmp/sdong/hive_2011-04-18_13-06-57_846_8904186104857307463/-mr-10000
+POSTHOOK: query: select key from gl_src2 limit 10
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@gl_src2
+POSTHOOK: Output: file:/tmp/sdong/hive_2011-04-18_13-06-57_846_8904186104857307463/-mr-10000
+POSTHOOK: Lineage: gl_tgt.key EXPRESSION [(gl_src1)gl_src1.FieldSchema(name:key, type:int, comment:null), ]
+PREHOOK: query: -- partition
+create table gl_src_part1 (key int, value string) partitioned by (p string) stored as textfile
+PREHOOK: type: CREATETABLE
+POSTHOOK: query: -- partition
+create table gl_src_part1 (key int, value string) partitioned by (p string) stored as textfile
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: default@gl_src_part1
+POSTHOOK: Lineage: gl_tgt.key EXPRESSION [(gl_src1)gl_src1.FieldSchema(name:key, type:int, comment:null), ]
+PREHOOK: query: load data local inpath '../data/files/srcbucket21.txt' INTO TABLE gl_src_part1 partition(p='11')
+PREHOOK: type: LOAD
+PREHOOK: Output: default@gl_src_part1
+POSTHOOK: query: load data local inpath '../data/files/srcbucket21.txt' INTO TABLE gl_src_part1 partition(p='11')
+POSTHOOK: type: LOAD
+POSTHOOK: Output: default@gl_src_part1
+POSTHOOK: Output: default@gl_src_part1@p=11
+POSTHOOK: Lineage: gl_tgt.key EXPRESSION [(gl_src1)gl_src1.FieldSchema(name:key, type:int, comment:null), ]
+PREHOOK: query: load data local inpath '../data/files/srcbucket20.txt' INTO TABLE gl_src_part1 partition(p='12')
+PREHOOK: type: LOAD
+PREHOOK: Output: default@gl_src_part1
+POSTHOOK: query: load data local inpath '../data/files/srcbucket20.txt' INTO TABLE gl_src_part1 partition(p='12')
+POSTHOOK: type: LOAD
+POSTHOOK: Output: default@gl_src_part1
+POSTHOOK: Output: default@gl_src_part1@p=12
+POSTHOOK: Lineage: gl_tgt.key EXPRESSION [(gl_src1)gl_src1.FieldSchema(name:key, type:int, comment:null), ]
+PREHOOK: query: load data local inpath '../data/files/srcbucket20.txt' INTO TABLE gl_src_part1 partition(p='12')
+PREHOOK: type: LOAD
+PREHOOK: Output: default@gl_src_part1@p=12
+POSTHOOK: query: load data local inpath '../data/files/srcbucket20.txt' INTO TABLE gl_src_part1 partition(p='12')
+POSTHOOK: type: LOAD
+POSTHOOK: Output: default@gl_src_part1@p=12
+POSTHOOK: Lineage: gl_tgt.key EXPRESSION [(gl_src1)gl_src1.FieldSchema(name:key, type:int, comment:null), ]
+PREHOOK: query: load data local inpath '../data/files/srcbucket20.txt' INTO TABLE gl_src_part1 partition(p='12')
+PREHOOK: type: LOAD
+PREHOOK: Output: default@gl_src_part1@p=12
+POSTHOOK: query: load data local inpath '../data/files/srcbucket20.txt' INTO TABLE gl_src_part1 partition(p='12')
+POSTHOOK: type: LOAD
+POSTHOOK: Output: default@gl_src_part1@p=12
+POSTHOOK: Lineage: gl_tgt.key EXPRESSION [(gl_src1)gl_src1.FieldSchema(name:key, type:int, comment:null), ]
+PREHOOK: query: select key from gl_src_part1 where p like '1%' limit 10
+PREHOOK: type: QUERY
+PREHOOK: Input: default@gl_src_part1@p=11
+PREHOOK: Input: default@gl_src_part1@p=12
+PREHOOK: Output: file:/tmp/sdong/hive_2011-04-18_13-07-03_055_6761445866727035783/-mr-10000
+POSTHOOK: query: select key from gl_src_part1 where p like '1%' limit 10
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@gl_src_part1@p=11
+POSTHOOK: Input: default@gl_src_part1@p=12
+POSTHOOK: Output: file:/tmp/sdong/hive_2011-04-18_13-07-03_055_6761445866727035783/-mr-10000
+POSTHOOK: Lineage: gl_tgt.key EXPRESSION [(gl_src1)gl_src1.FieldSchema(name:key, type:int, comment:null), ]
+27
+409
+265
+401
+166
+430
+287
+207
+199
+247
+PREHOOK: query: select key from gl_src_part1 where p='11' limit 10
+PREHOOK: type: QUERY
+PREHOOK: Input: default@gl_src_part1@p=11
+PREHOOK: Output: file:/tmp/sdong/hive_2011-04-18_13-07-06_080_7097976505609243557/-mr-10000
+POSTHOOK: query: select key from gl_src_part1 where p='11' limit 10
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@gl_src_part1@p=11
+POSTHOOK: Output: file:/tmp/sdong/hive_2011-04-18_13-07-06_080_7097976505609243557/-mr-10000
+POSTHOOK: Lineage: gl_tgt.key EXPRESSION [(gl_src1)gl_src1.FieldSchema(name:key, type:int, comment:null), ]
+27
+409
+265
+401
+166
+430
+287
+207
+199
+247
+PREHOOK: query: select key from gl_src_part1 where p='12' limit 10
+PREHOOK: type: QUERY
+PREHOOK: Input: default@gl_src_part1@p=12
+PREHOOK: Output: file:/tmp/sdong/hive_2011-04-18_13-07-09_087_9176571562410124649/-mr-10000
+POSTHOOK: query: select key from gl_src_part1 where p='12' limit 10
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@gl_src_part1@p=12
+POSTHOOK: Output: file:/tmp/sdong/hive_2011-04-18_13-07-09_087_9176571562410124649/-mr-10000
+POSTHOOK: Lineage: gl_tgt.key EXPRESSION [(gl_src1)gl_src1.FieldSchema(name:key, type:int, comment:null), ]
+165
+484
+150
+224
+66
+213
+374
+495
+37
+327
+PREHOOK: query: select key from gl_src_part1 where p='13' limit 10
+PREHOOK: type: QUERY
+PREHOOK: Output: file:/tmp/sdong/hive_2011-04-18_13-07-12_038_7099507780438686856/-mr-10000
+POSTHOOK: query: select key from gl_src_part1 where p='13' limit 10
+POSTHOOK: type: QUERY
+POSTHOOK: Output: file:/tmp/sdong/hive_2011-04-18_13-07-12_038_7099507780438686856/-mr-10000
+POSTHOOK: Lineage: gl_tgt.key EXPRESSION [(gl_src1)gl_src1.FieldSchema(name:key, type:int, comment:null), ]
+PREHOOK: query: alter table gl_src_part1 add partition (p='13')
+PREHOOK: type: ALTERTABLE_ADDPARTS
+PREHOOK: Input: default@gl_src_part1
+POSTHOOK: query: alter table gl_src_part1 add partition (p='13')
+POSTHOOK: type: ALTERTABLE_ADDPARTS
+POSTHOOK: Input: default@gl_src_part1
+POSTHOOK: Output: default@gl_src_part1@p=13
+POSTHOOK: Lineage: gl_tgt.key EXPRESSION [(gl_src1)gl_src1.FieldSchema(name:key, type:int, comment:null), ]
+PREHOOK: query: select key from gl_src_part1 where p='13' limit 10
+PREHOOK: type: QUERY
+PREHOOK: Input: default@gl_src_part1@p=13
+PREHOOK: Output: file:/tmp/sdong/hive_2011-04-18_13-07-15_137_3923898954213249104/-mr-10000
+POSTHOOK: query: select key from gl_src_part1 where p='13' limit 10
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@gl_src_part1@p=13
+POSTHOOK: Output: file:/tmp/sdong/hive_2011-04-18_13-07-15_137_3923898954213249104/-mr-10000
+POSTHOOK: Lineage: gl_tgt.key EXPRESSION [(gl_src1)gl_src1.FieldSchema(name:key, type:int, comment:null), ]
+PREHOOK: query: select key from gl_src_part1 where p='12' limit 1000
+PREHOOK: type: QUERY
+PREHOOK: Input: default@gl_src_part1@p=12
+PREHOOK: Output: file:/tmp/sdong/hive_2011-04-18_13-07-18_041_1214817963525981880/-mr-10000
+POSTHOOK: query: select key from gl_src_part1 where p='12' limit 1000
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@gl_src_part1@p=12
+POSTHOOK: Output: file:/tmp/sdong/hive_2011-04-18_13-07-18_041_1214817963525981880/-mr-10000
+POSTHOOK: Lineage: gl_tgt.key EXPRESSION [(gl_src1)gl_src1.FieldSchema(name:key, type:int, comment:null), ]
+165
+484
+150
+224
+66
+213
+374
+495
+37
+327
+15
+338
+459
+466
+396
+309
+367
+0
+455
+316
+345
+129
+378
+4
+356
+169
+125
+437
+286
+187
+176
+459
+51
+103
+239
+213
+176
+275
+260
+404
+217
+84
+466
+8
+411
+172
+129
+158
+0
+26
+165
+327
+51
+404
+95
+282
+187
+316
+169
+77
+0
+118
+282
+419
+15
+118
+19
+224
+309
+389
+327
+242
+392
+242
+396
+95
+11
+143
+228
+33
+103
+367
+239
+480
+202
+316
+235
+80
+44
+466
+257
+190
+114
+396
+217
+125
+187
+480
+491
+305
+444
+169
+323
+480
+136
+172
+462
+26
+462
+341
+183
+84
+37
+448
+194
+477
+169
+400
+165
+484
+150
+224
+66
+213
+374
+495
+37
+327
+15
+338
+459
+466
+396
+309
+367
+0
+455
+316
+345
+129
+378
+4
+356
+169
+125
+437
+286
+187
+176
+459
+51
+103
+239
+213
+176
+275
+260
+404
+217
+84
+466
+8
+411
+172
+129
+158
+0
+26
+165
+327
+51
+404
+95
+282
+187
+316
+169
+77
+0
+118
+282
+419
+15
+118
+19
+224
+309
+389
+327
+242
+392
+242
+396
+95
+11
+143
+228
+33
+103
+367
+239
+480
+202
+316
+235
+80
+44
+466
+257
+190
+114
+396
+217
+125
+187
+480
+491
+305
+444
+169
+323
+480
+136
+172
+462
+26
+462
+341
+183
+84
+37
+448
+194
+477
+169
+400
+165
+484
+150
+224
+66
+213
+374
+495
+37
+327
+15
+338
+459
+466
+396
+309
+367
+0
+455
+316
+345
+129
+378
+4
+356
+169
+125
+437
+286
+187
+176
+459
+51
+103
+239
+213
+176
+275
+260
+404
+217
+84
+466
+8
+411
+172
+129
+158
+0
+26
+165
+327
+51
+404
+95
+282
+187
+316
+169
+77
+0
+118
+282
+419
+15
+118
+19
+224
+309
+389
+327
+242
+392
+242
+396
+95
+11
+143
+228
+33
+103
+367
+239
+480
+202
+316
+235
+80
+44
+466
+257
+190
+114
+396
+217
+125
+187
+480
+491
+305
+444
+169
+323
+480
+136
+172
+462
+26
+462
+341
+183
+84
+37
+448
+194
+477
+169
+400
+PREHOOK: query: drop table gl_src1
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@gl_src1
+PREHOOK: Output: default@gl_src1
+POSTHOOK: query: drop table gl_src1
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@gl_src1
+POSTHOOK: Output: default@gl_src1
+POSTHOOK: Lineage: gl_tgt.key EXPRESSION [(gl_src1)gl_src1.FieldSchema(name:key, type:int, comment:null), ]
+PREHOOK: query: drop table gl_src2
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@gl_src2
+PREHOOK: Output: default@gl_src2
+POSTHOOK: query: drop table gl_src2
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@gl_src2
+POSTHOOK: Output: default@gl_src2
+POSTHOOK: Lineage: gl_tgt.key EXPRESSION [(gl_src1)gl_src1.FieldSchema(name:key, type:int, comment:null), ]
+PREHOOK: query: drop table gl_src_part1
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@gl_src_part1
+PREHOOK: Output: default@gl_src_part1
+POSTHOOK: query: drop table gl_src_part1
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@gl_src_part1
+POSTHOOK: Output: default@gl_src_part1
+POSTHOOK: Lineage: gl_tgt.key EXPRESSION [(gl_src1)gl_src1.FieldSchema(name:key, type:int, comment:null), ]
+PREHOOK: query: drop table gl_tgt
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@gl_tgt
+PREHOOK: Output: default@gl_tgt
+POSTHOOK: query: drop table gl_tgt
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@gl_tgt
+POSTHOOK: Output: default@gl_tgt
+POSTHOOK: Lineage: gl_tgt.key EXPRESSION [(gl_src1)gl_src1.FieldSchema(name:key, type:int, comment:null), ]
