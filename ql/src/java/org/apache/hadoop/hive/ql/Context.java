@@ -73,6 +73,8 @@ public class Context {
   private final Configuration conf;
   protected int pathid = 10000;
   protected boolean explain = false;
+  // number of previous attempts
+  protected int tryCount = 0;
   private TokenRewriteStream tokenRewriteStream;
 
   String executionId;
@@ -553,5 +555,13 @@ public class Context {
 
   public void setNeedLockMgr(boolean needLockMgr) {
     this.needLockMgr = needLockMgr;
+  }
+
+  public int getTryCount() {
+    return tryCount;
+  }
+
+  public void setTryCount(int tryCount) {
+    this.tryCount = tryCount;
   }
 }

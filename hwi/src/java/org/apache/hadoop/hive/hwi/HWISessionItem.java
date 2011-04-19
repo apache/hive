@@ -30,6 +30,7 @@ import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.hive.cli.CliSessionState;
 import org.apache.hadoop.hive.cli.OptionsProcessor;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.ql.CommandNeedRetryException;
 import org.apache.hadoop.hive.ql.Driver;
 import org.apache.hadoop.hive.ql.history.HiveHistoryViewer;
 import org.apache.hadoop.hive.ql.processors.CommandProcessor;
@@ -39,7 +40,7 @@ import org.apache.hadoop.hive.ql.session.SessionState;
 /**
  * HWISessionItem can be viewed as a wrapper for a Hive shell. With it the user
  * has a session on the web server rather then in a console window.
- * 
+ *
  */
 public class HWISessionItem implements Runnable, Comparable<HWISessionItem> {
 
@@ -215,7 +216,7 @@ public class HWISessionItem implements Runnable, Comparable<HWISessionItem> {
 
   /**
    * Helper function to get configuration variables.
-   * 
+   *
    * @param wanted
    *          a ConfVar
    * @return Value of the configuration variable.
@@ -330,7 +331,9 @@ public class HWISessionItem implements Runnable, Comparable<HWISessionItem> {
       if (proc != null) {
         if (proc instanceof Driver) {
           Driver qp = (Driver) proc;
-          queryRet.add(new Integer(qp.run(cmd).getResponseCode()));
+          qp.setTryCount(Integer.MAX_VALUE);
+          try {
+            queryRet.add(new Integer(qp.run(cmd).getResponseCode()));
           ArrayList<String> res = new ArrayList<String>();
           try {
             while (qp.getResults(res)) {
@@ -351,13 +354,24 @@ public class HWISessionItem implements Runnable, Comparable<HWISessionItem> {
               }
               res.clear();
             }
+
           } catch (IOException ex) {
             l4j.error(getSessionName() + " getting results " + getResultFile()
                 + " caused exception.", ex);
           }
-          qp.close();
+          } catch (CommandNeedRetryException e) {
+            // this should never happen since we Driver.setTryCount(Integer.MAX_VALUE)
+            l4j.error(getSessionName() + " Exception when executing", e);
+          } finally {
+            qp.close();
+          }
         } else {
-          queryRet.add(new Integer(proc.run(cmd_1).getResponseCode()));
+          try {
+            queryRet.add(new Integer(proc.run(cmd_1).getResponseCode()));
+          } catch (CommandNeedRetryException e) {
+            // this should never happen if there is no bug
+            l4j.error(getSessionName() + " Exception when executing", e);
+          }
         }
       } else {
         // processor was null
@@ -412,7 +426,7 @@ public class HWISessionItem implements Runnable, Comparable<HWISessionItem> {
   }
 
   /**
-   * 
+   *
    * @return the HiveHistoryViewer for the session
    * @throws HWIException
    */
@@ -430,7 +444,7 @@ public class HWISessionItem implements Runnable, Comparable<HWISessionItem> {
 
   /**
    * Uses the sessionName property to compare to sessions.
-   * 
+   *
    * @return true if sessionNames are equal false otherwise
    */
   @Override
@@ -459,7 +473,7 @@ public class HWISessionItem implements Runnable, Comparable<HWISessionItem> {
 
   /**
    * The session name is an identifier to recognize the session.
-   * 
+   *
    * @return the session's name
    */
   public String getSessionName() {
@@ -470,7 +484,7 @@ public class HWISessionItem implements Runnable, Comparable<HWISessionItem> {
    * Used to represent to the user and other components what state the
    * HWISessionItem is in. Certain commands can only be run when the application
    * is in certain states.
-   * 
+   *
    * @return the current status of the session
    */
   public WebSessionItemStatus getStatus() {
@@ -479,7 +493,7 @@ public class HWISessionItem implements Runnable, Comparable<HWISessionItem> {
 
   /**
    * Currently unused.
-   * 
+   *
    * @return a String with the full path to the error file.
    */
   public String getErrorFile() {
@@ -488,7 +502,7 @@ public class HWISessionItem implements Runnable, Comparable<HWISessionItem> {
 
   /**
    * Currently unused.
-   * 
+   *
    * @param errorFile
    *          the full path to the file for results.
    */
@@ -518,7 +532,7 @@ public class HWISessionItem implements Runnable, Comparable<HWISessionItem> {
 
   /**
    * Adds a new query to the execution list.
-   * 
+   *
    * @param query
    *          query to be added to the list
    */
@@ -529,7 +543,7 @@ public class HWISessionItem implements Runnable, Comparable<HWISessionItem> {
 
   /**
    * Removes a query from the execution list.
-   * 
+   *
    * @param item
    *          the 0 based index of the item to be removed
    */
@@ -550,7 +564,7 @@ public class HWISessionItem implements Runnable, Comparable<HWISessionItem> {
 
   /**
    * sets the value for resultBucketMaxSize.
-   * 
+   *
    * @param size
    *          the new size
    */
@@ -565,7 +579,7 @@ public class HWISessionItem implements Runnable, Comparable<HWISessionItem> {
 
   /**
    * The HWISessionItem stores the result of each query in an array.
-   * 
+   *
    * @return unmodifiable list of return codes
    */
   public List<Integer> getQueryRet() {

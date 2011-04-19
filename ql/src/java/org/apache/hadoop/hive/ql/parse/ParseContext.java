@@ -91,6 +91,8 @@ public class ParseContext {
   // a map-reduce job
   private boolean hasNonPartCols;
 
+  private SemanticAnalyzer.GlobalLimitCtx globalLimitCtx;
+
   public ParseContext() {
   }
 
@@ -143,7 +145,8 @@ public class ParseContext {
       UnionProcContext uCtx, List<AbstractMapJoinOperator<? extends MapJoinDesc>> listMapJoinOpsNoReducer,
       Map<GroupByOperator, Set<String>> groupOpToInputTables,
       Map<String, PrunedPartitionList> prunedPartitions,
-      HashMap<TableScanOperator, sampleDesc> opToSamplePruner) {
+      HashMap<TableScanOperator, sampleDesc> opToSamplePruner,
+      SemanticAnalyzer.GlobalLimitCtx globalLimitCtx) {
     this.conf = conf;
     this.qb = qb;
     this.ast = ast;
@@ -166,6 +169,7 @@ public class ParseContext {
     this.groupOpToInputTables = groupOpToInputTables;
     this.prunedPartitions = prunedPartitions;
     this.opToSamplePruner = opToSamplePruner;
+    this.globalLimitCtx = globalLimitCtx;
   }
 
   /**
@@ -485,5 +489,13 @@ public class ParseContext {
 
   public void setMapJoinContext(Map<MapJoinOperator, QBJoinTree> mapJoinContext) {
     this.mapJoinContext = mapJoinContext;
+  }
+
+  public SemanticAnalyzer.GlobalLimitCtx getGlobalLimitCtx() {
+    return globalLimitCtx;
+  }
+
+  public void setGlobalLimitCtx(SemanticAnalyzer.GlobalLimitCtx globalLimitCtx) {
+    this.globalLimitCtx = globalLimitCtx;
   }
 }

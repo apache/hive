@@ -32,12 +32,12 @@ import java.util.Map;
 import java.util.Set;
 
 import jline.ArgumentCompletor;
-import jline.ArgumentCompletor.AbstractArgumentDelimiter;
-import jline.ArgumentCompletor.ArgumentDelimiter;
 import jline.Completor;
 import jline.ConsoleReader;
 import jline.History;
 import jline.SimpleCompletor;
+import jline.ArgumentCompletor.AbstractArgumentDelimiter;
+import jline.ArgumentCompletor.ArgumentDelimiter;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
@@ -46,6 +46,7 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.Schema;
+import org.apache.hadoop.hive.ql.CommandNeedRetryException;
 import org.apache.hadoop.hive.ql.Driver;
 import org.apache.hadoop.hive.ql.exec.FunctionRegistry;
 import org.apache.hadoop.hive.ql.exec.Utilities;
@@ -198,71 +199,85 @@ public class CliDriver {
         }
     } else { // local mode
       CommandProcessor proc = CommandProcessorFactory.get(tokens[0], (HiveConf)conf);
-      if (proc != null) {
-        if (proc instanceof Driver) {
-          Driver qp = (Driver) proc;
-          PrintStream out = ss.out;
-          long start = System.currentTimeMillis();
-          if (ss.getIsVerbose()) {
-            out.println(cmd);
-          }
+      int tryCount = 0;
+      boolean needRetry;
 
-          ret = qp.run(cmd).getResponseCode();
-          if (ret != 0) {
-            qp.close();
-            return ret;
-          }
-
-          ArrayList<String> res = new ArrayList<String>();
-
-          if (HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVE_CLI_PRINT_HEADER)) {
-            // Print the column names
-            boolean first_col = true;
-            Schema sc = qp.getSchema();
-            for (FieldSchema fs : sc.getFieldSchemas()) {
-              if (!first_col) {
-                out.print('\t');
+      do {
+        try {
+          needRetry = false;
+          if (proc != null) {
+            if (proc instanceof Driver) {
+              Driver qp = (Driver) proc;
+              PrintStream out = ss.out;
+              long start = System.currentTimeMillis();
+              if (ss.getIsVerbose()) {
+                out.println(cmd);
               }
-              out.print(fs.getName());
-              first_col = false;
+
+              qp.setTryCount(tryCount);
+              ret = qp.run(cmd).getResponseCode();
+              if (ret != 0) {
+                qp.close();
+                return ret;
+              }
+
+              ArrayList<String> res = new ArrayList<String>();
+
+              if (HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVE_CLI_PRINT_HEADER)) {
+                // Print the column names
+                boolean first_col = true;
+                Schema sc = qp.getSchema();
+                for (FieldSchema fs : sc.getFieldSchemas()) {
+                  if (!first_col) {
+                    out.print('\t');
+                  }
+                  out.print(fs.getName());
+                  first_col = false;
+                }
+                out.println();
+              }
+
+              try {
+                while (qp.getResults(res)) {
+                  for (String r : res) {
+                    out.println(r);
+                  }
+                  res.clear();
+                  if (out.checkError()) {
+                    break;
+                  }
+                }
+              } catch (IOException e) {
+                console.printError("Failed with exception " + e.getClass().getName() + ":"
+                    + e.getMessage(), "\n"
+                    + org.apache.hadoop.util.StringUtils.stringifyException(e));
+                ret = 1;
+              }
+
+              int cret = qp.close();
+              if (ret == 0) {
+                ret = cret;
+              }
+
+              long end = System.currentTimeMillis();
+              if (end > start) {
+                double timeTaken = (end - start) / 1000.0;
+                console.printInfo("Time taken: " + timeTaken + " seconds", null);
+              }
+
+            } else {
+              if (ss.getIsVerbose()) {
+                ss.out.println(tokens[0] + " " + cmd_1);
+              }
+              ret = proc.run(cmd_1).getResponseCode();
             }
-            out.println();
           }
-
-          try {
-            while (qp.getResults(res)) {
-              for (String r : res) {
-                out.println(r);
-              }
-              res.clear();
-              if (out.checkError()) {
-                break;
-              }
-            }
-          } catch (IOException e) {
-            console.printError("Failed with exception " + e.getClass().getName() + ":"
-                + e.getMessage(), "\n" + org.apache.hadoop.util.StringUtils.stringifyException(e));
-            ret = 1;
-          }
-
-          int cret = qp.close();
-          if (ret == 0) {
-            ret = cret;
-          }
-
-          long end = System.currentTimeMillis();
-          if (end > start) {
-            double timeTaken = (end - start) / 1000.0;
-            console.printInfo("Time taken: " + timeTaken + " seconds", null);
-          }
-
-        } else {
-          if (ss.getIsVerbose()) {
-            ss.out.println(tokens[0] + " " + cmd_1);
-          }
-          ret = proc.run(cmd_1).getResponseCode();
+        } catch (CommandNeedRetryException e) {
+          console.printInfo("Retry query with a different approach...");
+          tryCount++;
+          needRetry = true;
         }
-      }
+      } while (needRetry);
     }
 
     return ret;

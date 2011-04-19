@@ -35,6 +35,7 @@ import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.HiveMetaStore;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.Schema;
+import org.apache.hadoop.hive.ql.CommandNeedRetryException;
 import org.apache.hadoop.hive.ql.Driver;
 import org.apache.hadoop.hive.ql.plan.api.QueryPlan;
 import org.apache.hadoop.hive.ql.processors.CommandProcessor;
@@ -148,6 +149,10 @@ public class HiveServer extends ThriftHive {
           if (proc instanceof Driver) {
             isHiveQuery = true;
             driver = (Driver) proc;
+            // In Hive server mode, we are not able to retry in the FetchTask
+            // case, when calling fetch quueries since execute() has returned.
+            // For now, we disable the test attempts.
+            driver.setTryCount(Integer.MAX_VALUE);
             response = driver.run(cmd);
           } else {
             isHiveQuery = false;
@@ -316,6 +321,10 @@ public class HiveServer extends ThriftHive {
         // TODO: return null in some other way
         throw new HiveServerException("OK", 0, "");
        // return "";
+      } catch (CommandNeedRetryException e) {
+        HiveServerException ex = new HiveServerException();
+        ex.setMessage(e.getMessage());
+        throw ex;
       } catch (IOException e) {
         HiveServerException ex = new HiveServerException();
         ex.setMessage(e.getMessage());
@@ -405,6 +414,10 @@ public class HiveServer extends ThriftHive {
       driver.setMaxRows(numRows);
       try {
         driver.getResults(result);
+      } catch (CommandNeedRetryException e) {
+        HiveServerException ex = new HiveServerException();
+        ex.setMessage(e.getMessage());
+        throw ex;
       } catch (IOException e) {
         HiveServerException ex = new HiveServerException();
         ex.setMessage(e.getMessage());
@@ -439,6 +452,10 @@ public class HiveServer extends ThriftHive {
           rows.addAll(result);
           result.clear();
         }
+      } catch (CommandNeedRetryException e) {
+        HiveServerException ex = new HiveServerException();
+        ex.setMessage(e.getMessage());
+        throw ex;
       } catch (IOException e) {
         HiveServerException ex = new HiveServerException();
         ex.setMessage(e.getMessage());

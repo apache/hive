@@ -127,6 +127,8 @@ public class Driver implements CommandProcessor {
   // A limit on the number of threads that can be launched
   private int maxthreads;
   private final int sleeptime = 2000;
+  protected int tryCount = Integer.MAX_VALUE;
+
 
   private int checkLockManager() {
     boolean supportConcurrency = conf.getBoolVar(HiveConf.ConfVars.HIVE_SUPPORT_CONCURRENCY);
@@ -326,6 +328,7 @@ public class Driver implements CommandProcessor {
     try {
       command = new VariableSubstitution().substitute(conf,command);
       ctx = new Context(conf);
+      ctx.setTryCount(getTryCount());
 
       ParseDriver pd = new ParseDriver();
       ASTNode tree = pd.parse(command, ctx);
@@ -810,7 +813,7 @@ public class Driver implements CommandProcessor {
     Utilities.PerfLogEnd(LOG, "releaseLocks");
   }
 
-  public CommandProcessorResponse run(String command) {
+  public CommandProcessorResponse run(String command) throws CommandNeedRetryException {
     errorMessage = null;
     SQLState = null;
 
@@ -910,7 +913,7 @@ public class Driver implements CommandProcessor {
     return pehooks;
   }
 
-  public int execute() {
+  public int execute() throws CommandNeedRetryException {
     Utilities.PerfLogBegin(LOG, "Driver.execute");
 
     boolean noName = StringUtils.isEmpty(conf.getVar(HiveConf.ConfVars.HADOOPJOBNAME));
@@ -1001,6 +1004,15 @@ public class Driver implements CommandProcessor {
 
         int exitVal = tskRes.getExitVal();
         if (exitVal != 0) {
+          if (tsk.ifRetryCmdWhenFail()) {
+            if (running.size() != 0) {
+              taskCleanup();
+            }
+            // in case we decided to run everything in local mode, restore the
+            // the jobtracker setting to its initial value
+            ctx.restoreOriginalTracker();
+            throw new CommandNeedRetryException();
+          }
           Task<? extends Serializable> backupTask = tsk.getAndInitBackupTask();
           if (backupTask != null) {
             errorMessage = "FAILED: Execution Error, return code " + exitVal + " from "
@@ -1091,6 +1103,8 @@ public class Driver implements CommandProcessor {
             String.valueOf(0));
         SessionState.get().getHiveHistory().printRowCount(queryId);
       }
+    } catch (CommandNeedRetryException e) {
+      throw e;
     } catch (Exception e) {
       ctx.restoreOriginalTracker();
       if (SessionState.get() != null) {
@@ -1214,7 +1228,7 @@ public class Driver implements CommandProcessor {
     }
   }
 
-  public boolean getResults(ArrayList<String> res) throws IOException {
+  public boolean getResults(ArrayList<String> res) throws IOException, CommandNeedRetryException {
     if (plan != null && plan.getFetchTask() != null) {
       FetchTask ft = plan.getFetchTask();
       ft.setMaxRows(maxRows);
@@ -1266,6 +1280,15 @@ public class Driver implements CommandProcessor {
     }
     return true;
   }
+
+  public int getTryCount() {
+    return tryCount;
+  }
+
+  public void setTryCount(int tryCount) {
+    this.tryCount = tryCount;
+  }
+
 
   public int close() {
     try {

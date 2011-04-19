@@ -32,12 +32,14 @@ public class LimitOperator extends Operator<LimitDesc> implements Serializable {
   private static final long serialVersionUID = 1L;
 
   protected transient int limit;
+  protected transient int leastRow;
   protected transient int currCount;
 
   @Override
   protected void initializeOp(Configuration hconf) throws HiveException {
     super.initializeOp(hconf);
     limit = conf.getLimit();
+    leastRow = conf.getLeastRows();
     currCount = 0;
   }
 
@@ -59,6 +61,13 @@ public class LimitOperator extends Operator<LimitDesc> implements Serializable {
   @Override
   public OperatorType getType() {
     return OperatorType.LIMIT;
+  }
+
+  @Override
+  public void closeOp(boolean abort) throws HiveException {
+    if (currCount < leastRow) {
+      throw new HiveException("No sufficient row found");
+    }
   }
 
 }

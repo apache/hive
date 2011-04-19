@@ -28,6 +28,7 @@ import java.util.List;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.ql.CommandNeedRetryException;
 import org.apache.hadoop.hive.ql.Context;
 import org.apache.hadoop.hive.ql.DriverContext;
 import org.apache.hadoop.hive.ql.QueryPlan;
@@ -63,6 +64,7 @@ public abstract class Task<T extends Serializable> implements Serializable, Node
   protected List<Task<? extends Serializable>> backupChildrenTasks = new ArrayList<Task<? extends Serializable>>();
   protected int taskTag;
   private boolean isLocalMode =false;
+  private boolean retryCmdWhenFail = false;
 
   public static final int NO_TAG = 0;
   public static final int COMMON_JOIN = 1;
@@ -146,7 +148,7 @@ public abstract class Task<T extends Serializable> implements Serializable, Node
   protected abstract int execute(DriverContext driverContext);
 
   // dummy method - FetchTask overwrites this
-  public boolean fetch(ArrayList<String> res) throws IOException {
+  public boolean fetch(ArrayList<String> res) throws IOException, CommandNeedRetryException {
     assert false;
     return false;
   }
@@ -471,5 +473,13 @@ public abstract class Task<T extends Serializable> implements Serializable, Node
 
   public void setLocalMode(boolean isLocalMode) {
     this.isLocalMode = isLocalMode;
+  }
+
+  public boolean ifRetryCmdWhenFail() {
+    return retryCmdWhenFail;
+  }
+
+  public void setRetryCmdWhenFail(boolean retryCmdWhenFail) {
+    this.retryCmdWhenFail = retryCmdWhenFail;
   }
 }

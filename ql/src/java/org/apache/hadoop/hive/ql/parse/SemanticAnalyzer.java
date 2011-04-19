@@ -191,6 +191,50 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
   private CreateViewDesc createVwDesc;
   private ASTNode viewSelect;
   private final UnparseTranslator unparseTranslator;
+  private final GlobalLimitCtx globalLimitCtx = new GlobalLimitCtx();
+
+  public static class GlobalLimitCtx {
+    private boolean enable = false;
+    private int globalLimit = -1;
+    private boolean hasTransformOrUDTF = false;
+    private LimitDesc lastReduceLimitDesc = null;
+
+    public int getGlobalLimit() {
+      return globalLimit;
+    }
+
+    public boolean ifHasTransformOrUDTF() {
+      return hasTransformOrUDTF;
+    }
+
+    public void setHasTransformOrUDTF(boolean hasTransformOrUDTF) {
+      this.hasTransformOrUDTF = hasTransformOrUDTF;
+    }
+
+    public LimitDesc getLastReduceLimitDesc() {
+      return lastReduceLimitDesc;
+    }
+
+    public void setLastReduceLimitDesc(LimitDesc lastReduceLimitDesc) {
+      this.lastReduceLimitDesc = lastReduceLimitDesc;
+    }
+
+
+    public boolean isEnable() {
+      return enable;
+    }
+
+    public void enableOpt(int globalLimit) {
+      this.enable = true;
+      this.globalLimit = globalLimit;
+    }
+
+    public void disableOpt() {
+      this.enable = false;
+      this.globalLimit = -1;
+      this.lastReduceLimitDesc = null;
+    }
+  }
 
   private static class Phase1Ctx {
     String dest;
@@ -262,7 +306,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         topSelOps, opParseCtx, joinContext, topToTable, loadTableWork,
         loadFileWork, ctx, idToTableNameMap, destTableId, uCtx,
         listMapJoinOpsNoReducer, groupOpToInputTables, prunedPartitions,
-        opToSamplePruner);
+        opToSamplePruner, globalLimitCtx);
   }
 
   @SuppressWarnings("nls")
@@ -1904,6 +1948,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     boolean isInTransform = (selExprList.getChild(posn).getChild(0).getType() ==
       HiveParser.TOK_TRANSFORM);
     if (isInTransform) {
+      globalLimitCtx.setHasTransformOrUDTF(true);
       trfm = (ASTNode) selExprList.getChild(posn).getChild(0);
     }
 
@@ -1927,6 +1972,9 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         genericUDTF = fi.getGenericUDTF();
       }
       isUDTF = (genericUDTF != null);
+      if (isUDTF) {
+        globalLimitCtx.setHasTransformOrUDTF(true);
+      }
       if (isUDTF && !fi.isNative()) {
         unparseTranslator.addIdentifierTranslation((ASTNode) udtfExpr
             .getChild(0));
@@ -3962,8 +4010,12 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     // Add the limit operator to get the value fields
 
     RowResolver inputRR = opParseCtx.get(input).getRowResolver();
+
+    LimitDesc limitDesc = new LimitDesc(limit);
+    globalLimitCtx.setLastReduceLimitDesc(limitDesc);
+
     Operator limitMap = putOpInsertMap(OperatorFactory.getAndMakeChild(
-        new LimitDesc(limit), new RowSchema(inputRR.getColumnInfos()), input),
+        limitDesc, new RowSchema(inputRR.getColumnInfos()), input),
         inputRR);
 
     if (LOG.isDebugEnabled()) {
@@ -6161,6 +6213,53 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     }
   }
 
+
+  /**
+   * Recursively check the limit number in all sub queries
+   * @param qbParseInfo
+   * @return if there is one and only one limit for all subqueries, return the limit
+   * if there is no limit, return 0
+   * otherwise, return null
+   */
+  private Integer checkQbpForGlobalLimit(QB localQb) {
+    QBParseInfo qbParseInfo = localQb.getParseInfo();
+    if (localQb.getNumSelDi() == 0 && qbParseInfo.getDestToClusterBy().isEmpty()
+        && qbParseInfo.getDestToDistributeBy().isEmpty()
+        && qbParseInfo.getDestToOrderBy().isEmpty()
+        && qbParseInfo.getDestToSortBy().isEmpty()
+        && qbParseInfo.getDestToAggregationExprs().size() <= 1
+        && qbParseInfo.getDestToDistinctFuncExprs().size() <= 1
+        && qbParseInfo.getNameToSample().isEmpty()) {
+      if ((qbParseInfo.getDestToAggregationExprs().size() < 1 ||
+          qbParseInfo.getDestToAggregationExprs().values().iterator().next().isEmpty()) &&
+          (qbParseInfo.getDestToDistinctFuncExprs().size() < 1 ||
+          qbParseInfo.getDestToDistinctFuncExprs().values().iterator().next().isEmpty())
+          && qbParseInfo.getDestToLimit().size() <= 1) {
+        Integer retValue;
+        if (qbParseInfo.getDestToLimit().size() == 0) {
+          retValue = 0;
+        } else {
+          retValue = qbParseInfo.getDestToLimit().values().iterator().next().intValue();
+        }
+
+        for (String alias : localQb.getSubqAliases()) {
+          Integer limit = checkQbpForGlobalLimit(localQb.getSubqForAlias(alias).getQB());
+          if  (limit == null) {
+            return null;
+          } else if (retValue > 0  && limit > 0) {
+            // Any query has more than one LIMITs shown in the query is not
+            // qualified to this optimization
+            return null;
+          } else if (limit > 0) {
+            retValue = limit;
+          }
+        }
+        return retValue;
+      }
+    }
+    return null;
+  }
+
   @SuppressWarnings("nls")
   private void genMapRedTasks(QB qb) throws SemanticException {
     FetchWork fetch = null;
@@ -6253,6 +6352,71 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       }
     }
 
+    // determine the query qualifies reduce input size for LIMIT
+    // The query only qualifies when there are only one top operator
+    // and there is no transformer or UDTF
+    if (HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVELIMITOPTENABLE)
+        && ctx.getTryCount() == 0 && topOps.size() == 1
+        && !globalLimitCtx.ifHasTransformOrUDTF()) {
+
+      // Here we recursively check:
+      // 1. whether there are exact one LIMIT in the query
+      // 2. whether there is no aggregation, group-by, distinct, sort by,
+      //    distributed by, or table sampling in any of the sub-query.
+      // The query only qualifies if both conditions are satisfied.
+      // 
+      // Example qualified queries:
+      //    CREATE TABLE ... AS SELECT col1, col2 FROM tbl LIMIT ..
+      //    INSERT OVERWRITE TABLE ... SELECT col1, hash(col2), split(col1)
+      //                               FROM ... LIMIT...
+      //    SELECT * FROM (SELECT col1 as col2 (SELECT * FROM ...) t1 LIMIT ...) t2);
+      //
+      Integer tempGlobalLimit = checkQbpForGlobalLimit(qb);
+
+      // query qualify for the optimization
+      if (tempGlobalLimit != null && tempGlobalLimit != 0)  {
+        TableScanOperator ts = (TableScanOperator) topOps.values().toArray()[0];
+        Table tab = topToTable.get(ts);
+
+        if (!tab.isPartitioned()) {
+          if (qbParseInfo.getDestToWhereExpr().isEmpty()) {
+            globalLimitCtx.enableOpt(tempGlobalLimit);
+          }
+        } else {
+          // check if the pruner only contains partition columns
+          if (PartitionPruner.onlyContainsPartnCols(tab,
+              opToPartPruner.get(ts))) {
+
+            PrunedPartitionList partsList = null;
+            try {
+              partsList = opToPartList.get(ts);
+              if (partsList == null) {
+                partsList = PartitionPruner.prune(tab,
+                    opToPartPruner.get(ts), conf, (String) topOps.keySet()
+                    .toArray()[0], prunedPartitions);
+                opToPartList.put(ts, partsList);
+              }
+            } catch (HiveException e) {
+              // Has to use full name to make sure it does not conflict with
+              // org.apache.commons.lang.StringUtils
+              LOG.error(org.apache.hadoop.util.StringUtils.stringifyException(e));
+              throw new SemanticException(e.getMessage(), e);
+            }
+
+            // If there is any unknown partition, create a map-reduce job for
+            // the filter to prune correctly
+            if ((partsList.getUnknownPartns().size() == 0)) {
+              globalLimitCtx.enableOpt(tempGlobalLimit);
+            }
+          }
+        }
+        if (globalLimitCtx.isEnable()) {
+          LOG.info("Qualify the optimize that reduces input size for 'limit' for limit "
+              + globalLimitCtx.getGlobalLimit());
+        }
+      }
+    }
+
     // In case of a select, use a fetch task instead of a move task
     if (qb.getIsQuery()) {
       if ((!loadTableWork.isEmpty()) || (loadFileWork.size() != 1)) {
@@ -6269,6 +6433,17 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
 
       fetchTask = (FetchTask) TaskFactory.get(fetch, conf);
       setFetchTask(fetchTask);
+
+      // For the FetchTask, the limit optimiztion requires we fetch all the rows
+      // in memory and count how many rows we get. It's not practical if the
+      // limit factor is too big
+      int fetchLimit = HiveConf.getIntVar(conf, HiveConf.ConfVars.HIVELIMITOPTMAXFETCH);
+      if (globalLimitCtx.isEnable() && globalLimitCtx.getGlobalLimit() > fetchLimit) {
+        LOG.info("For FetchTask, LIMIT " + globalLimitCtx.getGlobalLimit() + " > " + fetchLimit
+            + ". Doesn't qualify limit optimiztion.");
+        globalLimitCtx.disableOpt();
+      }
+
     } else {
       for (LoadTableDesc ltd : loadTableWork) {
         Task<MoveWork> tsk = TaskFactory.get(new MoveWork(null, null, ltd, null, false),
@@ -6310,10 +6485,11 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     }
 
     // generate map reduce plans
+    ParseContext tempParseContext = getParseContext();
     GenMRProcContext procCtx = new GenMRProcContext(
         conf,
         new HashMap<Operator<? extends Serializable>, Task<? extends Serializable>>(),
-        new ArrayList<Operator<? extends Serializable>>(), getParseContext(),
+        new ArrayList<Operator<? extends Serializable>>(), tempParseContext,
         mvTask, rootTasks,
         new LinkedHashMap<Operator<? extends Serializable>, GenMapRedCtx>(),
         inputs, outputs);
@@ -6403,6 +6579,21 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       assert (leaves.size() > 0);
       for (Task<? extends Serializable> task : leaves) {
         task.addDependentTask(crtTblTask);
+      }
+    }
+
+    if (globalLimitCtx.isEnable() && fetchTask != null) {
+      int fetchLimit = HiveConf.getIntVar(conf, HiveConf.ConfVars.HIVELIMITOPTMAXFETCH);
+        LOG.info("set least row check for FetchTask: " + globalLimitCtx.getGlobalLimit());
+        fetchTask.getWork().setLeastNumRows(globalLimitCtx.getGlobalLimit());
+    }
+
+    if (globalLimitCtx.isEnable() && globalLimitCtx.getLastReduceLimitDesc() != null) {
+      LOG.info("set least row check for LimitDesc: " + globalLimitCtx.getGlobalLimit());
+      globalLimitCtx.getLastReduceLimitDesc().setLeastRows(globalLimitCtx.getGlobalLimit());
+      List<ExecDriver> mrTasks = Utilities.getMRTasks(rootTasks);
+      for (ExecDriver tsk : mrTasks) {
+        tsk.setRetryCmdWhenFail(true);
       }
     }
   }
@@ -6595,6 +6786,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
 
     // continue analyzing from the child ASTNode.
     doPhase1(child, qb, initPhase1Ctx());
+
     LOG.info("Completed phase 1 of Semantic Analysis");
 
     getMetaData(qb);
@@ -6623,7 +6815,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         opToPartList, topOps, topSelOps, opParseCtx, joinContext, topToTable,
         loadTableWork, loadFileWork, ctx, idToTableNameMap, destTableId, uCtx,
         listMapJoinOpsNoReducer, groupOpToInputTables, prunedPartitions,
-        opToSamplePruner);
+        opToSamplePruner, globalLimitCtx);
 
     Optimizer optm = new Optimizer();
     optm.setPctx(pCtx);
@@ -6716,7 +6908,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
           throw new SemanticException(
             ErrorMsg.VIEW_PARTITION_MISMATCH.getMsg());
       }
-      
+
       // Get the partition columns from the end of derivedSchema.
       List<FieldSchema> partitionColumns = derivedSchema.subList(
         derivedSchema.size() - partColNames.size(),
@@ -6787,7 +6979,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     TypeCheckCtx tcCtx = new TypeCheckCtx(input);
     return genExprNodeDesc(expr, input, tcCtx);
   }
-  
+
   /**
    * Generates an expression node descriptor for the expression passed in the
    * arguments. This function uses the row resolver and the metadata information

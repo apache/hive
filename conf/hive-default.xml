@@ -998,5 +998,31 @@
   <description>A comma separated list of acceptable URI schemes for import and export.</description>
 </property>
 
+<property>
+  <name>hive.limit.row.max.size</name>
+  <value>100000</value>
+  <description>When trying a smaller subset of data for simple LIMIT, how much size we need to guarantee
+   each row to have at least.</description>
+</property>
+
+<property>
+  <name>hive.limit.optimize.limit.file</name>
+  <value>10</value>
+  <description>When trying a smaller subset of data for simple LIMIT, maximum number of files we can
+   sample.</description>
+</property>
+
+<property>
+  <name>hive.limit.optimize.enable</name>
+  <value>false</value>
+  <description>Whether to enable to optimization to trying a smaller subset of data for simple LIMIT first.</description>
+</property>
+
+<property>
+  <name>hive.limit.optimize.fetch.max</name>
+  <value>50000</value>
+  <description>Maximum number of rows allowed for a smaller subset of data for simple LIMIT, if it is a fetch query.
+   Insert queries are not restricted by this limit.</description>
+</property>
 
 </configuration>

@@ -34,7 +34,6 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 import java.util.Map.Entry;
-import java.util.regex.Pattern;
 
 import org.antlr.runtime.tree.CommonTree;
 import org.antlr.runtime.tree.Tree;
@@ -73,13 +72,6 @@ import org.apache.hadoop.hive.ql.plan.AlterTableDesc;
 import org.apache.hadoop.hive.ql.plan.AlterTableSimpleDesc;
 import org.apache.hadoop.hive.ql.plan.CreateDatabaseDesc;
 import org.apache.hadoop.hive.ql.plan.CreateIndexDesc;
-import org.apache.hadoop.hive.ql.plan.GrantDesc;
-import org.apache.hadoop.hive.ql.plan.GrantRevokeRoleDDL;
-import org.apache.hadoop.hive.ql.plan.PrincipalDesc;
-import org.apache.hadoop.hive.ql.plan.PrivilegeDesc;
-import org.apache.hadoop.hive.ql.plan.PrivilegeObjectDesc;
-import org.apache.hadoop.hive.ql.plan.RevokeDesc;
-import org.apache.hadoop.hive.ql.plan.RoleDDLDesc;
 import org.apache.hadoop.hive.ql.plan.DDLWork;
 import org.apache.hadoop.hive.ql.plan.DescDatabaseDesc;
 import org.apache.hadoop.hive.ql.plan.DescFunctionDesc;
@@ -88,8 +80,15 @@ import org.apache.hadoop.hive.ql.plan.DropDatabaseDesc;
 import org.apache.hadoop.hive.ql.plan.DropIndexDesc;
 import org.apache.hadoop.hive.ql.plan.DropTableDesc;
 import org.apache.hadoop.hive.ql.plan.FetchWork;
+import org.apache.hadoop.hive.ql.plan.GrantDesc;
+import org.apache.hadoop.hive.ql.plan.GrantRevokeRoleDDL;
 import org.apache.hadoop.hive.ql.plan.LockTableDesc;
 import org.apache.hadoop.hive.ql.plan.MsckDesc;
+import org.apache.hadoop.hive.ql.plan.PrincipalDesc;
+import org.apache.hadoop.hive.ql.plan.PrivilegeDesc;
+import org.apache.hadoop.hive.ql.plan.PrivilegeObjectDesc;
+import org.apache.hadoop.hive.ql.plan.RevokeDesc;
+import org.apache.hadoop.hive.ql.plan.RoleDDLDesc;
 import org.apache.hadoop.hive.ql.plan.ShowDatabasesDesc;
 import org.apache.hadoop.hive.ql.plan.ShowFunctionsDesc;
 import org.apache.hadoop.hive.ql.plan.ShowGrantDesc;
@@ -1103,7 +1102,7 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
     rootTasks.add(TaskFactory.get(new DDLWork(getInputs(), getOutputs(),
         alterTblDesc), conf));
   }
-  
+
   private void analyzeAlterTablePartMergeFiles(ASTNode tablePartAST, ASTNode ast,
       String tableName, HashMap<String, String> partSpec)
       throws SemanticException {
@@ -1115,7 +1114,7 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
 
     try {
       Table tblObj = db.getTable(tableName);
-      
+
       List<String> bucketCols = null;
       Class<? extends InputFormat> inputFormatClass = null;
       boolean isArchived = false;
@@ -1167,17 +1166,17 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
     } catch (HiveException e) {
       throw new SemanticException(e);
     }
-    
+
     // input and output are the same
     inputDir.add(outputDir);
-    
+
     mergeDesc.setInputDir(inputDir);
     mergeDesc.setOutputDir(outputDir);
 
     addInputsOutputsAlterTable(tableName, partSpec);
     Task<? extends Serializable> mergeTask = TaskFactory.get(new DDLWork(
         getInputs(), getOutputs(), mergeDesc), conf);
-    
+
     tableSpec tablepart = new tableSpec(this.db, conf, tablePartAST);
     StatsWork statDesc = new StatsWork(tablepart);
     statDesc.setNoStatsAggregator(true);
@@ -1793,7 +1792,7 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
       rootTasks.add(TaskFactory.get(new DDLWork(getInputs(), getOutputs(),
             addPartitionDesc), conf));
     }
-    
+
     if (isView) {
       // Compile internal query to capture underlying table partition
       // dependencies

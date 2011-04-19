@@ -328,6 +328,10 @@ public class HiveConf extends Configuration {
 
     HIVESENDHEARTBEAT("hive.heartbeat.interval", 1000),
     HIVEMAXMAPJOINSIZE("hive.mapjoin.maxsize", 100000),
+    HIVELIMITMAXROWSIZE("hive.limit.row.max.size", 100000L),
+    HIVELIMITOPTLIMITFILE("hive.limit.optimize.limit.file", 10),
+    HIVELIMITOPTENABLE("hive.limit.optimize.enable", false),
+    HIVELIMITOPTMAXFETCH("hive.limit.optimize.fetch.max", 50000),
     HIVEHASHTABLETHRESHOLD("hive.hashtable.initialCapacity", 100000),
     HIVEHASHTABLELOADFACTOR("hive.hashtable.loadfactor", (float) 0.75),
     HIVEHASHTABLEFOLLOWBYGBYMAXMEMORYUSAGE("hive.mapjoin.followby.gby.localtask.max.memory.usage", (float) 0.55),
