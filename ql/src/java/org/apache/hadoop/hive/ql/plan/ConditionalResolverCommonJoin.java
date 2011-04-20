@@ -212,6 +212,7 @@ public class ConditionalResolverCommonJoin implements ConditionalResolver, Seria
         AliasFileSizePair pair = aliasFileSizeList.get(idx);
         String alias = pair.alias;
         long size = pair.size;
+        idx--;
         if (!bigAliasFound && aliasToTask.get(alias) != null) {
           // got the big table
           bigAliasFound = true;
@@ -219,7 +220,6 @@ public class ConditionalResolverCommonJoin implements ConditionalResolver, Seria
           continue;
         }
         smallTablesFileSizeSum += size;
-        idx--;
       }
 
       // compare with threshold
