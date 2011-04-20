@@ -66,6 +66,8 @@ public class DDLWork implements Serializable {
   private RevokeDesc revokeDesc;
   private GrantRevokeRoleDDL grantRevokeRoleDDL;
 
+  boolean needLock = false;
+  
   /**
    * ReadEntitites that are passed to the hooks.
    */
@@ -875,6 +877,14 @@ public class DDLWork implements Serializable {
    */
   public void setMergeFilesDesc(AlterTablePartMergeFilesDesc mergeDesc) {
     this.mergeFilesDesc = mergeDesc;
+  }
+
+  public boolean getNeedLock() {
+    return needLock;
+  }
+
+  public void setNeedLock(boolean needLock) {
+    this.needLock = needLock;
   }
 
 }

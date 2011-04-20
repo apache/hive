@@ -106,6 +106,10 @@ public class ExecDriver extends Task<MapredWork> implements Serializable, Hadoop
     this.jobExecHelper = new HadoopJobExecHelper(job, console, this, this);
   }
 
+  public boolean requireLock() {
+    return true;
+  }
+
   protected static String getResourceFiles(Configuration conf, SessionState.ResourceType t) {
     // fill in local files to be added to the task environment
     SessionState ss = SessionState.get();

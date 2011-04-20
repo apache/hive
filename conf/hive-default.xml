@@ -999,6 +999,13 @@
 </property>
 
 <property>
+  <name>hive.lock.mapred.only.operation</name>
+  <value>false</value>
+  <description>This param is to control whether or not only do lock on queries 
+  that need to execute at least one mapred job.</description>
+</property>
+
+<property>
   <name>hive.limit.row.max.size</name>
   <value>100000</value>
   <description>When trying a smaller subset of data for simple LIMIT, how much size we need to guarantee

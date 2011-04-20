@@ -474,6 +474,10 @@ public abstract class Task<T extends Serializable> implements Serializable, Node
   public void setLocalMode(boolean isLocalMode) {
     this.isLocalMode = isLocalMode;
   }
+  
+  public boolean requireLock() {
+    return false;
+  }
 
   public boolean ifRetryCmdWhenFail() {
     return retryCmdWhenFail;

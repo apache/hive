@@ -163,6 +163,10 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
   private static String INTERMEDIATE_ORIGINAL_DIR_SUFFIX;
   private static String INTERMEDIATE_EXTRACTED_DIR_SUFFIX;
 
+  public boolean requireLock() {
+    return this.work != null && this.work.getNeedLock();
+  }
+
   public DDLTask() {
     super();
   }
