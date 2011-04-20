@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.util.Properties;
 
+import org.apache.cassandra.thrift.Cassandra;
 import org.apache.cassandra.thrift.Column;
 import org.apache.cassandra.thrift.ColumnParent;
 import org.apache.cassandra.thrift.ConsistencyLevel;
@@ -14,7 +15,8 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
-import org.apache.hadoop.hive.cassandra.FramedConnWrapper;
+import org.apache.hadoop.hive.cassandra.CassandraException;
+import org.apache.hadoop.hive.cassandra.CassandraProxyClient;
 import org.apache.hadoop.hive.cassandra.serde.StandardColumnSerDe;
 import org.apache.hadoop.hive.ql.exec.FileSinkOperator.RecordWriter;
 import org.apache.hadoop.hive.ql.io.HiveOutputFormat;
@@ -24,7 +26,6 @@ import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.mapred.OutputFormat;
 import org.apache.hadoop.util.Progressable;
 import org.apache.thrift.TException;
-import org.apache.thrift.transport.TTransportException;
 
 @SuppressWarnings("deprecation")
 public class HiveCassandraOutputFormat implements HiveOutputFormat<Text, CassandraPut>,
@@ -52,12 +53,13 @@ public class HiveCassandraOutputFormat implements HiveOutputFormat<Text, Cassand
     final ConsistencyLevel fLevel = level;
 
     return new RecordWriter() {
-      private FramedConnWrapper wrap;
+      private Cassandra.Iface client;
 
       @Override
       public void close(boolean abort) throws IOException {
-        if (wrap != null) {
-          wrap.close();
+        //TODO: Need to figure out a way to close the connection.
+        if (client != null) {
+          //client.close();
         }
       }
 
@@ -69,13 +71,15 @@ public class HiveCassandraOutputFormat implements HiveOutputFormat<Text, Cassand
           ColumnParent parent = new ColumnParent();
           parent.setColumn_family(c.getColumnFamily());
           try {
-            ensureConnection(cassandraHost, cassandraPort);
-            wrap.getClient().set_keyspace(cassandraKeySpace);
+            //ensureConnection(cassandraHost, cassandraPort);
+            client = (Cassandra.Iface) CassandraProxyClient.newProxyConnection(
+                cassandraHost, cassandraPort, true, true);
+            client.set_keyspace(cassandraKeySpace);
             Column col = new Column();
             col.setValue(c.getValue());
             col.setTimestamp(c.getTimeStamp());
             col.setName(c.getColumn());
-            wrap.getClient().insert(ByteBuffer.wrap(put.getKey().getBytes()), parent, col, fLevel);
+            client.insert(ByteBuffer.wrap(put.getKey().getBytes()), parent, col, fLevel);
           } catch (InvalidRequestException e) {
             throw new IOException(e);
           } catch (UnavailableException e) {
@@ -84,16 +88,11 @@ public class HiveCassandraOutputFormat implements HiveOutputFormat<Text, Cassand
             throw new IOException(e);
           } catch (TException e) {
             throw new IOException(e);
+          } catch (CassandraException e) {
+            throw new IOException(e);
           }
         }
       } // end write
-
-      public void ensureConnection(String host, int port) throws TTransportException {
-        if (wrap == null) {
-          wrap = new FramedConnWrapper(host, port, 5000);
-          wrap.open();
-        }
-      }
 
     };
   }

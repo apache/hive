@@ -26,7 +26,7 @@ public class CassandraTestSetup extends TestSetup{
   }
 
   @SuppressWarnings("deprecation")
-  void preTest(HiveConf conf) throws IOException, TTransportException, TException {
+  void preTest(HiveConf conf) throws IOException, TTransportException, TException, CassandraException {
     if (cassandra==null){
       CassandraServiceDataCleaner cleaner = new CassandraServiceDataCleaner();
       cleaner.prepare();
@@ -35,9 +35,8 @@ public class CassandraTestSetup extends TestSetup{
     }
 
     //Make sure that this server is connectable.
-    FramedConnWrapper wrap = new FramedConnWrapper("127.0.0.1",9170,5000);
-    wrap.open();
-    wrap.close();
+    Cassandra.Iface client = (Cassandra.Iface) CassandraProxyClient.newProxyConnection(
+        "127.0.0.1", 9170, true, true);
 
     String auxJars = conf.getAuxJars();
     auxJars = ((auxJars == null) ? "" : (auxJars + ",")) + "file://"

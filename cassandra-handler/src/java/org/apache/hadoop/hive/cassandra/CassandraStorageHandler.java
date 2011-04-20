@@ -133,8 +133,7 @@ public class CassandraStorageHandler implements HiveStorageHandler, HiveMetaHook
       manager.createCFIfNotFound(ks);
     } catch(NotFoundException e) {
       manager.createKeyspaceWithColumns();
-    }
-    finally {
+    } finally {
       manager.closeConnection();
     }
   }

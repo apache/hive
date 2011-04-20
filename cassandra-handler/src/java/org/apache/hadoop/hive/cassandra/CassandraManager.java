@@ -2,6 +2,7 @@ package org.apache.hadoop.hive.cassandra;
 
 import java.util.Map;
 
+import org.apache.cassandra.thrift.Cassandra;
 import org.apache.cassandra.thrift.CfDef;
 import org.apache.cassandra.thrift.InvalidRequestException;
 import org.apache.cassandra.thrift.KsDef;
@@ -10,7 +11,7 @@ import org.apache.hadoop.hive.cassandra.serde.StandardColumnSerDe;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.thrift.TException;
-import org.apache.thrift.transport.TTransportException;
+import org.apache.thrift.transport.TTransport;
 
 /**
  * A class to handle the transaction to cassandra backend database.
@@ -26,8 +27,17 @@ public class CassandraManager {
   //Cassandra Host Port
   private final int port;
 
-  //TODO: Replace this with CassandraProxyClient.
-  private FramedConnWrapper wrap;
+  //Cassandra proxy client
+  private Cassandra.Iface client;
+
+  //TTransport
+  private TTransport trans;
+
+  //Whether or not use framed connection
+  private boolean framedConnection;
+
+  //Whether or not use randomized method to pick up the next server
+  private boolean randomizedConnection;
 
   //table property
   private final Table tbl;
@@ -69,6 +79,8 @@ public class CassandraManager {
   private void init() {
     this.keyspace = getCassandraKeyspace();
     this.columnName = getCassandraColumnFamily();
+    this.framedConnection = true;
+    this.randomizedConnection = true;
   }
 
   /**
@@ -77,19 +89,20 @@ public class CassandraManager {
    * @throws MetaException
    */
   public void openConnection() throws MetaException {
-    wrap = new FramedConnWrapper(host, port, 5000);
-
     try {
-      wrap.open();
-    } catch (TTransportException e) {
-      throw new MetaException("Unable to create connection to the cassandra server " + host + ":" + port);
+      client = (Cassandra.Iface) CassandraProxyClient.newProxyConnection(
+         host, port, framedConnection, true);
+    } catch (CassandraException e) {
+      throw new MetaException("Unable to connect to the server " + e.getMessage());
     }
   }
 
-  private void ensureConnection() throws MetaException {
-    if (wrap == null) {
-      openConnection();
-    }
+  /**
+   * Close connection to the cassandra server.
+   *
+   */
+  public void closeConnection() {
+
   }
 
   /**
@@ -101,8 +114,7 @@ public class CassandraManager {
   public KsDef getKeyspaceDesc()
     throws NotFoundException, MetaException {
     try {
-      ensureConnection();
-      return wrap.getClient().describe_keyspace(keyspace);
+      return client.describe_keyspace(keyspace);
     } catch (TException e) {
       throw new MetaException("An internal exception prevented this action from taking place."
           + e.getMessage());
@@ -142,8 +154,8 @@ public class CassandraManager {
 
       ks.addToCf_defs(cf);
 
-      ensureConnection();
-      wrap.getClient().system_add_keyspace(ks);
+      client.system_add_keyspace(ks);
+      client.set_keyspace(keyspace);
       return ks;
     } catch (TException e) {
       throw new MetaException("Unable to create key space '" + keyspace + "'. Error:"
@@ -178,8 +190,8 @@ public class CassandraManager {
     cf.setKeyspace(keyspace);
     cf.setName(columnName);
     try {
-      ensureConnection();
-      wrap.getClient().system_add_column_family(cf);
+      client.set_keyspace(keyspace);
+      client.system_add_column_family(cf);
       return cf;
     } catch (TException e) {
       throw new MetaException("Unable to create key space '" + keyspace + "'. Error:"
@@ -263,7 +275,7 @@ public class CassandraManager {
 
   /**
    * Get the value for a given name from the table.
-   * It first check the table property. If it is not there, it will check the serde properties.
+   * It first checks the table property. If it is not there, it checks the serde properties.
    *
    * @param columnName given name
    * @return value
@@ -278,21 +290,11 @@ public class CassandraManager {
   }
 
   /**
-   * Close the connection.
-   */
-  public void closeConnection() {
-    if (wrap != null) {
-      wrap.close();
-    }
-  }
-
-  /**
    * Drop the table defined in the query.
    */
   public void dropTable() throws MetaException {
     try {
-      ensureConnection();
-      wrap.getClient().system_drop_column_family(columnName);
+      client.system_drop_column_family(columnName);
     } catch (TException e) {
       throw new MetaException("Unable to create key space '" + keyspace + "'. Error:"
           + e.getMessage());
