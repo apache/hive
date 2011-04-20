@@ -1174,8 +1174,9 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
     mergeDesc.setOutputDir(outputDir);
 
     addInputsOutputsAlterTable(tableName, partSpec);
-    Task<? extends Serializable> mergeTask = TaskFactory.get(new DDLWork(
-        getInputs(), getOutputs(), mergeDesc), conf);
+    DDLWork ddlWork = new DDLWork(getInputs(), getOutputs(), mergeDesc);
+    ddlWork.setNeedLock(true);
+    Task<? extends Serializable> mergeTask = TaskFactory.get(ddlWork, conf);
 
     tableSpec tablepart = new tableSpec(this.db, conf, tablePartAST);
     StatsWork statDesc = new StatsWork(tablepart);

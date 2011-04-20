@@ -129,10 +129,12 @@ public class Driver implements CommandProcessor {
   private final int sleeptime = 2000;
   protected int tryCount = Integer.MAX_VALUE;
 
-
-  private int checkLockManager() {
+  private boolean checkLockManager() {
     boolean supportConcurrency = conf.getBoolVar(HiveConf.ConfVars.HIVE_SUPPORT_CONCURRENCY);
-    if (supportConcurrency && (hiveLockMgr == null)) {
+    if (!supportConcurrency) {
+      return false;
+    }
+    if ((hiveLockMgr == null)) {
       try {
         setLockManager();
       } catch (SemanticException e) {
@@ -140,10 +142,10 @@ public class Driver implements CommandProcessor {
         SQLState = ErrorMsg.findSQLState(e.getMessage());
         console.printError(errorMessage, "\n"
             + org.apache.hadoop.util.StringUtils.stringifyException(e));
-        return (12);
+        return false;
       }
     }
-    return (0);
+    return true;
   }
 
   private void setLockManager() throws SemanticException {
@@ -719,11 +721,6 @@ public class Driver implements CommandProcessor {
         return 0;
       }
 
-      int ret = checkLockManager();
-      if (ret != 0) {
-        return ret;
-      }
-
       HiveLockObjectData lockData =
         new HiveLockObjectData(plan.getQueryId(),
                                String.valueOf(System.currentTimeMillis()),
@@ -739,7 +736,6 @@ public class Driver implements CommandProcessor {
         throw new SemanticException(e.getMessage());
       }
 
-      ctx.setHiveLockMgr(hiveLockMgr);
       List<HiveLock> hiveLocks = null;
 
       int tryNum = 1;
@@ -819,23 +815,56 @@ public class Driver implements CommandProcessor {
 
     int ret = compile(command);
 
+    boolean requireLock = false;
+    boolean ckLock = checkLockManager();
+
     if (ret != 0) {
       releaseLocks(ctx.getHiveLocks());
       return new CommandProcessorResponse(ret, errorMessage, SQLState);
     }
-
-    ret = acquireReadWriteLocks();
-    if (ret != 0) {
-      releaseLocks(ctx.getHiveLocks());
-      return new CommandProcessorResponse(ret, errorMessage, SQLState);
+    
+    if (ckLock) {
+      ctx.setHiveLockMgr(hiveLockMgr);
+      boolean lockOnlyMapred = HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVE_LOCK_MAPRED_ONLY);
+      if(lockOnlyMapred) {
+        Queue<Task<? extends Serializable>> taskQueue = new LinkedList<Task<? extends Serializable>>();
+        taskQueue.addAll(plan.getRootTasks());
+        while (taskQueue.peek() != null) {
+          Task<? extends Serializable> tsk = taskQueue.remove();
+          requireLock = requireLock || tsk.requireLock();
+          if(requireLock) {
+            break;
+          }
+          if (tsk instanceof ConditionalTask) {
+            taskQueue.addAll(((ConditionalTask)tsk).getListTasks());
+          }
+          if(tsk.getChildTasks()!= null) {
+            taskQueue.addAll(tsk.getChildTasks());        
+          }
+          // does not add back up task here, because back up task should be the same
+          // type of the original task. 
+        }
+      } else {
+        requireLock = true;
+      }
+    }
+    
+    if (requireLock) {
+      ret = acquireReadWriteLocks();
+      if (ret != 0) {
+        releaseLocks(ctx.getHiveLocks());
+        return new CommandProcessorResponse(ret, errorMessage, SQLState);
+      }
     }
 
     ret = execute();
     if (ret != 0) {
+      //if needRequireLock is false, the release here will do nothing because there is no lock
       releaseLocks(ctx.getHiveLocks());
       return new CommandProcessorResponse(ret, errorMessage, SQLState);
     }
 
+    //if needRequireLock is false, the release here will do nothing because there is no lock
     releaseLocks(ctx.getHiveLocks());
     return new CommandProcessorResponse(ret);
   }

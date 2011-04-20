@@ -97,7 +97,9 @@ public class MapredLocalTask extends Task<MapredLocalWork> implements Serializab
     return sdf.format(cal.getTime());
   }
 
-
+  public boolean requireLock() {
+    return true;
+  }
 
   @Override
   public int execute(DriverContext driverContext) {

@@ -385,6 +385,7 @@ public class HiveConf extends Configuration {
     HIVE_LOCK_MANAGER("hive.lock.manager", "org.apache.hadoop.hive.ql.lockmgr.zookeeper.ZooKeeperHiveLockManager"),
     HIVE_LOCK_NUMRETRIES("hive.lock.numretries", 100),
     HIVE_LOCK_SLEEP_BETWEEN_RETRIES("hive.lock.sleep.between.retries", 60),
+    HIVE_LOCK_MAPRED_ONLY("hive.lock.mapred.only.operation", false),
 
     HIVE_ZOOKEEPER_QUORUM("hive.zookeeper.quorum", ""),
     HIVE_ZOOKEEPER_CLIENT_PORT("hive.zookeeper.client.port", ""),
@@ -427,7 +428,7 @@ public class HiveConf extends Configuration {
     // temporary variable for testing. This is added just to turn off this feature in case of a bug in
     // deployment. It has not been documented in hive-default.xml intentionally, this should be removed
     // once the feature is stable
-    HIVE_MAPPER_CANNOT_SPAN_MULTIPLE_PARTITIONS("hive.mapper.cannot.span.multiple.partitions", false),
+    HIVE_MAPPER_CANNOT_SPAN_MULTIPLE_PARTITIONS("hive.mapper.cannot.span.multiple.partitions", false), 
     ;
 
 

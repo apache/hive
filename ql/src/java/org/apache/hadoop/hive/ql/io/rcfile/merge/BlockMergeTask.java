@@ -74,6 +74,10 @@ public class BlockMergeTask extends Task<MergeWork> implements Serializable,
     job = new JobConf(conf, BlockMergeTask.class);
     jobExecHelper = new HadoopJobExecHelper(job, this.console, this, this);
   }
+  
+  public boolean requireLock() {
+    return true;
+  }
 
   boolean success = true;
 
