@@ -79,7 +79,6 @@
   <property name="build.ivy.lib.dir" location="${build.ivy.dir}/lib"/>
   <property name="build.ivy.report.dir" location="${build.ivy.dir}/report"/>
   <property name="build.ivy.maven.dir" location="${build.ivy.dir}/maven"/>
-  <property name="ivy.home" value="${user.home}/.ant" />
   <property name="ivy.conf.dir" location="${hive.root}/ivy"/>
   <loadproperties srcfile="${ivy.conf.dir}/libraries.properties"/>
   <property name="ivy.jar" location="${build.ivy.lib.dir}/ivy-${ivy.version}.jar"/>
