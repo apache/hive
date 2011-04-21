@@ -6,7 +6,7 @@ DROP TABLE cassandra_hive_table;
 CREATE EXTERNAL TABLE
 cassandra_hive_table(key int, value string)
 STORED BY 'org.apache.hadoop.hive.cassandra.CassandraStorageHandler'
-WITH SERDEPROPERTIES ("cassandra.columns.mapping" = ":key,Table:value" , "cassandra.cf.name" = "Table" , "cassandra.host" = "127.0.0.1" , "cassandra.port" = "9170", "cassandra.partitioner" = "org.apache.cassandra.dht.RandomPartitioner" )
+WITH SERDEPROPERTIES ("cassandra.columns.mapping" = ":key,value" , "cassandra.cf.name" = "Table" , "cassandra.host" = "127.0.0.1" , "cassandra.port" = "9170", "cassandra.partitioner" = "org.apache.cassandra.dht.RandomPartitioner" )
 TBLPROPERTIES ("cassandra.ks.name" = "Hive", "cassandra.ks.repfactor" = "1", "cassandra.ks.strategy" = "org.apache.cassandra.locator.SimpleStrategy");
 
 DESCRIBE cassandra_hive_table;
