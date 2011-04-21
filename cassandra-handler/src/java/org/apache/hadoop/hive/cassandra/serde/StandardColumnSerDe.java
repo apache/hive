@@ -1,37 +1,27 @@
 package org.apache.hadoop.hive.cassandra.serde;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
-import java.util.Properties;
+import java.nio.ByteBuffer;
+import java.util.*;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.cassandra.input.HiveCassandraStandardRowResult;
 import org.apache.hadoop.hive.cassandra.input.LazyCassandraRow;
 import org.apache.hadoop.hive.cassandra.output.CassandraColumn;
 import org.apache.hadoop.hive.cassandra.output.CassandraPut;
 import org.apache.hadoop.hive.serde.Constants;
-import org.apache.hadoop.hive.serde2.ByteStream;
-import org.apache.hadoop.hive.serde2.SerDe;
-import org.apache.hadoop.hive.serde2.SerDeException;
-import org.apache.hadoop.hive.serde2.SerDeUtils;
+import org.apache.hadoop.hive.serde2.*;
 import org.apache.hadoop.hive.serde2.lazy.LazyFactory;
 import org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe;
-import org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe.SerDeParameters;
 import org.apache.hadoop.hive.serde2.lazy.LazyUtils;
+import org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe.SerDeParameters;
 import org.apache.hadoop.hive.serde2.lazy.objectinspector.LazySimpleStructObjectInspector;
-import org.apache.hadoop.hive.serde2.objectinspector.ListObjectInspector;
-import org.apache.hadoop.hive.serde2.objectinspector.MapObjectInspector;
-import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
+import org.apache.hadoop.hive.serde2.objectinspector.*;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector.Category;
-import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector;
-import org.apache.hadoop.hive.serde2.objectinspector.StructField;
-import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorFactory;
 import org.apache.hadoop.hive.serde2.typeinfo.MapTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.StructTypeInfo;
@@ -226,7 +216,7 @@ public class StandardColumnSerDe implements SerDe {
                 : null;
     CassandraPut put = null;
     try {
-      String key = serializeField(iKey, null, fields, list, declaredFields);
+      ByteBuffer key = serializeField(iKey, null, fields, list, declaredFields);
       if (key == null) {
         throw new SerDeException("Cassandra row key cannot be NULL");
       }
@@ -243,7 +233,7 @@ public class StandardColumnSerDe implements SerDe {
     return put;
   }
 
-  private String serializeField(int i, CassandraPut put, List<? extends StructField> fields,
+  private ByteBuffer serializeField(int i, CassandraPut put, List<? extends StructField> fields,
             List<Object> list, List<? extends StructField> declaredFields) throws IOException {
 
     // column name
@@ -321,7 +311,7 @@ public class StandardColumnSerDe implements SerDe {
       byte[] key = new byte[serializeStream.getCount()];
       System.arraycopy(serializeStream.getData(), 0, key, 0, serializeStream.getCount());
       if (i == iKey) {
-        return new String(key);
+        return ByteBuffer.wrap(key);
       }
       CassandraColumn cc = new CassandraColumn();
       cc.setTimeStamp(System.currentTimeMillis());

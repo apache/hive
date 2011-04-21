@@ -1,18 +1,12 @@
 package org.apache.hadoop.hive.cassandra.output;
 
 import java.io.IOException;
-import java.nio.ByteBuffer;
 import java.util.Properties;
 
-import org.apache.cassandra.thrift.Cassandra;
-import org.apache.cassandra.thrift.Column;
-import org.apache.cassandra.thrift.ColumnParent;
-import org.apache.cassandra.thrift.ConsistencyLevel;
-import org.apache.cassandra.thrift.InvalidRequestException;
-import org.apache.cassandra.thrift.TimedOutException;
-import org.apache.cassandra.thrift.UnavailableException;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+
+import org.apache.cassandra.thrift.*;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.cassandra.CassandraException;
@@ -79,7 +73,7 @@ public class HiveCassandraOutputFormat implements HiveOutputFormat<Text, Cassand
             col.setValue(c.getValue());
             col.setTimestamp(c.getTimeStamp());
             col.setName(c.getColumn());
-            client.insert(ByteBuffer.wrap(put.getKey().getBytes()), parent, col, fLevel);
+            client.insert(put.getKey(), parent, col, fLevel);
           } catch (InvalidRequestException e) {
             throw new IOException(e);
           } catch (UnavailableException e) {

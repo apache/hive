@@ -1,11 +1,7 @@
 PREHOOK: query: DROP TABLE cassandra_hive_table
 PREHOOK: type: DROPTABLE
-PREHOOK: Input: default@cassandra_hive_table
-PREHOOK: Output: default@cassandra_hive_table
 POSTHOOK: query: DROP TABLE cassandra_hive_table
 POSTHOOK: type: DROPTABLE
-POSTHOOK: Input: default@cassandra_hive_table
-POSTHOOK: Output: default@cassandra_hive_table
 PREHOOK: query: CREATE EXTERNAL TABLE
 cassandra_hive_table(key int, value string)
 STORED BY 'org.apache.hadoop.hive.cassandra.CassandraStorageHandler'
@@ -148,12 +144,14 @@ STAGE PLANS:
 PREHOOK: query: select * from cassandra_hive_table ORDER BY key
 PREHOOK: type: QUERY
 PREHOOK: Input: default@cassandra_hive_table
-PREHOOK: Output: file:/var/folders/b-/b-vBB2wVHpaVQzxVjeViaE+++TI/-Tmp-/yeweizhang/hive_2011-04-15_16-39-43_342_1987393716980641109/-mr-10000
+PREHOOK: Output: file:/var/folders/Lq/LqzwnoRKESSjhT9BX2Wkck+++TI/-Tmp-/jake/hive_2011-04-21_08-00-46_375_8687678530588651825/-mr-10000
 POSTHOOK: query: select * from cassandra_hive_table ORDER BY key
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@cassandra_hive_table
-POSTHOOK: Output: file:/var/folders/b-/b-vBB2wVHpaVQzxVjeViaE+++TI/-Tmp-/yeweizhang/hive_2011-04-15_16-39-43_342_1987393716980641109/-mr-10000
-79	val_0
+POSTHOOK: Output: file:/var/folders/Lq/LqzwnoRKESSjhT9BX2Wkck+++TI/-Tmp-/jake/hive_2011-04-21_08-00-46_375_8687678530588651825/-mr-10000
+7	val_0
+28	val_28
+77	val_77
 105	val_105
 119	val_119
 126	val_126
@@ -171,7 +169,6 @@ POSTHOOK: Output: file:/var/folders/b-/b-vBB2wVHpaVQzxVjeViaE+++TI/-Tmp-/yeweizh
 273	val_273
 280	val_280
 287	val_287
-289	val_28
 308	val_308
 315	val_315
 322	val_322
@@ -193,7 +190,6 @@ POSTHOOK: Output: file:/var/folders/b-/b-vBB2wVHpaVQzxVjeViaE+++TI/-Tmp-/yeweizh
 490	val_490
 497	val_497
 708	val_70
-779	val_77
 846	val_84
 983	val_98
 PREHOOK: query: EXPLAIN select value from cassandra_hive_table ORDER BY VALUE
@@ -245,11 +241,11 @@ STAGE PLANS:
 PREHOOK: query: select value from cassandra_hive_table ORDER BY VALUE
 PREHOOK: type: QUERY
 PREHOOK: Input: default@cassandra_hive_table
-PREHOOK: Output: file:/var/folders/b-/b-vBB2wVHpaVQzxVjeViaE+++TI/-Tmp-/yeweizhang/hive_2011-04-15_16-39-47_154_3637711083809518943/-mr-10000
+PREHOOK: Output: file:/var/folders/Lq/LqzwnoRKESSjhT9BX2Wkck+++TI/-Tmp-/jake/hive_2011-04-21_08-00-52_425_2469929151312490689/-mr-10000
 POSTHOOK: query: select value from cassandra_hive_table ORDER BY VALUE
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@cassandra_hive_table
-POSTHOOK: Output: file:/var/folders/b-/b-vBB2wVHpaVQzxVjeViaE+++TI/-Tmp-/yeweizhang/hive_2011-04-15_16-39-47_154_3637711083809518943/-mr-10000
+POSTHOOK: Output: file:/var/folders/Lq/LqzwnoRKESSjhT9BX2Wkck+++TI/-Tmp-/jake/hive_2011-04-21_08-00-52_425_2469929151312490689/-mr-10000
 val_0
 val_105
 val_119
@@ -369,7 +365,7 @@ STAGE PLANS:
   Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/var/folders/b-/b-vBB2wVHpaVQzxVjeViaE+++TI/-Tmp-/yeweizhang/hive_2011-04-15_16-39-53_012_7484727216939566466/-mr-10002 
+        file:/var/folders/Lq/LqzwnoRKESSjhT9BX2Wkck+++TI/-Tmp-/jake/hive_2011-04-21_08-00-58_348_4069274586203780009/-mr-10002 
             Reduce Output Operator
               key expressions:
                     expr: _col0
@@ -400,12 +396,14 @@ STAGE PLANS:
 PREHOOK: query: select a.key,a.value,b.value from cassandra_hive_table a JOIN cassandra_hive_table b on a.key=b.key ORDER BY a.key
 PREHOOK: type: QUERY
 PREHOOK: Input: default@cassandra_hive_table
-PREHOOK: Output: file:/var/folders/b-/b-vBB2wVHpaVQzxVjeViaE+++TI/-Tmp-/yeweizhang/hive_2011-04-15_16-39-53_231_9179871363921669882/-mr-10000
+PREHOOK: Output: file:/var/folders/Lq/LqzwnoRKESSjhT9BX2Wkck+++TI/-Tmp-/jake/hive_2011-04-21_08-00-58_502_2838290369760796670/-mr-10000
 POSTHOOK: query: select a.key,a.value,b.value from cassandra_hive_table a JOIN cassandra_hive_table b on a.key=b.key ORDER BY a.key
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@cassandra_hive_table
-POSTHOOK: Output: file:/var/folders/b-/b-vBB2wVHpaVQzxVjeViaE+++TI/-Tmp-/yeweizhang/hive_2011-04-15_16-39-53_231_9179871363921669882/-mr-10000
-79	val_0	val_0
+POSTHOOK: Output: file:/var/folders/Lq/LqzwnoRKESSjhT9BX2Wkck+++TI/-Tmp-/jake/hive_2011-04-21_08-00-58_502_2838290369760796670/-mr-10000
+7	val_0	val_0
+28	val_28	val_28
+77	val_77	val_77
 105	val_105	val_105
 119	val_119	val_119
 126	val_126	val_126
@@ -423,7 +421,6 @@ POSTHOOK: Output: file:/var/folders/b-/b-vBB2wVHpaVQzxVjeViaE+++TI/-Tmp-/yeweizh
 273	val_273	val_273
 280	val_280	val_280
 287	val_287	val_287
-289	val_28	val_28
 308	val_308	val_308
 315	val_315	val_315
 322	val_322	val_322
@@ -445,6 +442,5 @@ POSTHOOK: Output: file:/var/folders/b-/b-vBB2wVHpaVQzxVjeViaE+++TI/-Tmp-/yeweizh
 490	val_490	val_490
 497	val_497	val_497
 708	val_70	val_70
-779	val_77	val_77
 846	val_84	val_84
 983	val_98	val_98

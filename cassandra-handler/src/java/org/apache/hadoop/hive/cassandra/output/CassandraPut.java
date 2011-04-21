@@ -3,14 +3,16 @@ package org.apache.hadoop.hive.cassandra.output;
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
+import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.cassandra.utils.ByteBufferUtil;
 import org.apache.hadoop.io.Writable;
 
 public class CassandraPut implements Writable{
 
-  private String key;
+  private ByteBuffer key;
   //private ConsistencyLevel level;
   private List<CassandraColumn> columns;
 
@@ -18,14 +20,17 @@ public class CassandraPut implements Writable{
     columns = new ArrayList<CassandraColumn>();
   }
 
-  public CassandraPut(String key){
+  public CassandraPut(ByteBuffer key){
     this();
-    setKey(key);
+    this.key = key;
   }
 
   @Override
   public void readFields(DataInput in) throws IOException {
-    key = in.readUTF();
+    int keyLen = in.readInt();
+    byte[] keyBytes = new byte[keyLen];
+    in.readFully(keyBytes);
+    key = ByteBuffer.wrap(keyBytes);
     int ilevel = in.readInt();
     int cols = in.readInt();
     for (int i =0;i<cols;i++){
@@ -37,19 +42,20 @@ public class CassandraPut implements Writable{
 
   @Override
   public void write(DataOutput out) throws IOException {
-    out.writeUTF(this.key);
+    out.writeInt(key.remaining());
+    out.write(ByteBufferUtil.getArray(key));
     out.writeInt(1);
-    out.writeInt(this.columns.size());
-    for (CassandraColumn c: this.columns){
+    out.writeInt(columns.size());
+    for (CassandraColumn c: columns){
       c.write(out);
     }
   }
 
-  public String getKey() {
+  public ByteBuffer getKey() {
     return key;
   }
 
-  public void setKey(String key) {
+  public void setKey(ByteBuffer key) {
     this.key = key;
   }
 
