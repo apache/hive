@@ -20,25 +20,19 @@ import java.util.Arrays;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import org.apache.thrift.*;
-import org.apache.thrift.async.*;
-import org.apache.thrift.meta_data.*;
-import org.apache.thrift.transport.*;
-import org.apache.thrift.protocol.*;
+public class Graph implements org.apache.thrift.TBase<Graph, Graph._Fields>, java.io.Serializable, Cloneable {
+  private static final org.apache.thrift.protocol.TStruct STRUCT_DESC = new org.apache.thrift.protocol.TStruct("Graph");
 
-public class Graph implements TBase<Graph, Graph._Fields>, java.io.Serializable, Cloneable {
-  private static final TStruct STRUCT_DESC = new TStruct("Graph");
-
-  private static final TField NODE_TYPE_FIELD_DESC = new TField("nodeType", TType.I32, (short)1);
-  private static final TField ROOTS_FIELD_DESC = new TField("roots", TType.LIST, (short)2);
-  private static final TField ADJACENCY_LIST_FIELD_DESC = new TField("adjacencyList", TType.LIST, (short)3);
+  private static final org.apache.thrift.protocol.TField NODE_TYPE_FIELD_DESC = new org.apache.thrift.protocol.TField("nodeType", org.apache.thrift.protocol.TType.I32, (short)1);
+  private static final org.apache.thrift.protocol.TField ROOTS_FIELD_DESC = new org.apache.thrift.protocol.TField("roots", org.apache.thrift.protocol.TType.LIST, (short)2);
+  private static final org.apache.thrift.protocol.TField ADJACENCY_LIST_FIELD_DESC = new org.apache.thrift.protocol.TField("adjacencyList", org.apache.thrift.protocol.TType.LIST, (short)3);
 
   private NodeType nodeType;
   private List<String> roots;
   private List<Adjacency> adjacencyList;
 
   /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
-  public enum _Fields implements TFieldIdEnum {
+  public enum _Fields implements org.apache.thrift.TFieldIdEnum {
     /**
      * 
      * @see NodeType
@@ -107,19 +101,19 @@ public class Graph implements TBase<Graph, Graph._Fields>, java.io.Serializable,
 
   // isset id assignments
 
-  public static final Map<_Fields, FieldMetaData> metaDataMap;
+  public static final Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
   static {
-    Map<_Fields, FieldMetaData> tmpMap = new EnumMap<_Fields, FieldMetaData>(_Fields.class);
-    tmpMap.put(_Fields.NODE_TYPE, new FieldMetaData("nodeType", TFieldRequirementType.DEFAULT, 
-        new EnumMetaData(TType.ENUM, NodeType.class)));
-    tmpMap.put(_Fields.ROOTS, new FieldMetaData("roots", TFieldRequirementType.DEFAULT, 
-        new ListMetaData(TType.LIST, 
-            new FieldValueMetaData(TType.STRING))));
-    tmpMap.put(_Fields.ADJACENCY_LIST, new FieldMetaData("adjacencyList", TFieldRequirementType.DEFAULT, 
-        new ListMetaData(TType.LIST, 
-            new StructMetaData(TType.STRUCT, Adjacency.class))));
+    Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
+    tmpMap.put(_Fields.NODE_TYPE, new org.apache.thrift.meta_data.FieldMetaData("nodeType", org.apache.thrift.TFieldRequirementType.DEFAULT, 
+        new org.apache.thrift.meta_data.EnumMetaData(org.apache.thrift.protocol.TType.ENUM, NodeType.class)));
+    tmpMap.put(_Fields.ROOTS, new org.apache.thrift.meta_data.FieldMetaData("roots", org.apache.thrift.TFieldRequirementType.DEFAULT, 
+        new org.apache.thrift.meta_data.ListMetaData(org.apache.thrift.protocol.TType.LIST, 
+            new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING))));
+    tmpMap.put(_Fields.ADJACENCY_LIST, new org.apache.thrift.meta_data.FieldMetaData("adjacencyList", org.apache.thrift.TFieldRequirementType.DEFAULT, 
+        new org.apache.thrift.meta_data.ListMetaData(org.apache.thrift.protocol.TType.LIST, 
+            new org.apache.thrift.meta_data.StructMetaData(org.apache.thrift.protocol.TType.STRUCT, Adjacency.class))));
     metaDataMap = Collections.unmodifiableMap(tmpMap);
-    FieldMetaData.addStructMetaDataMap(Graph.class, metaDataMap);
+    org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(Graph.class, metaDataMap);
   }
 
   public Graph() {
@@ -190,7 +184,7 @@ public class Graph implements TBase<Graph, Graph._Fields>, java.io.Serializable,
     this.nodeType = null;
   }
 
-  /** Returns true if field nodeType is set (has been asigned a value) and false otherwise */
+  /** Returns true if field nodeType is set (has been assigned a value) and false otherwise */
   public boolean isSetNodeType() {
     return this.nodeType != null;
   }
@@ -228,7 +222,7 @@ public class Graph implements TBase<Graph, Graph._Fields>, java.io.Serializable,
     this.roots = null;
   }
 
-  /** Returns true if field roots is set (has been asigned a value) and false otherwise */
+  /** Returns true if field roots is set (has been assigned a value) and false otherwise */
   public boolean isSetRoots() {
     return this.roots != null;
   }
@@ -266,7 +260,7 @@ public class Graph implements TBase<Graph, Graph._Fields>, java.io.Serializable,
     this.adjacencyList = null;
   }
 
-  /** Returns true if field adjacencyList is set (has been asigned a value) and false otherwise */
+  /** Returns true if field adjacencyList is set (has been assigned a value) and false otherwise */
   public boolean isSetAdjacencyList() {
     return this.adjacencyList != null;
   }
@@ -321,7 +315,7 @@ public class Graph implements TBase<Graph, Graph._Fields>, java.io.Serializable,
     throw new IllegalStateException();
   }
 
-  /** Returns true if field corresponding to fieldID is set (has been asigned a value) and false otherwise */
+  /** Returns true if field corresponding to fieldID is set (has been assigned a value) and false otherwise */
   public boolean isSet(_Fields field) {
     if (field == null) {
       throw new IllegalArgumentException();
@@ -399,7 +393,7 @@ public class Graph implements TBase<Graph, Graph._Fields>, java.io.Serializable,
       return lastComparison;
     }
     if (isSetNodeType()) {
-      lastComparison = TBaseHelper.compareTo(this.nodeType, typedOther.nodeType);
+      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.nodeType, typedOther.nodeType);
       if (lastComparison != 0) {
         return lastComparison;
       }
@@ -409,7 +403,7 @@ public class Graph implements TBase<Graph, Graph._Fields>, java.io.Serializable,
       return lastComparison;
     }
     if (isSetRoots()) {
-      lastComparison = TBaseHelper.compareTo(this.roots, typedOther.roots);
+      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.roots, typedOther.roots);
       if (lastComparison != 0) {
         return lastComparison;
       }
@@ -419,7 +413,7 @@ public class Graph implements TBase<Graph, Graph._Fields>, java.io.Serializable,
       return lastComparison;
     }
     if (isSetAdjacencyList()) {
-      lastComparison = TBaseHelper.compareTo(this.adjacencyList, typedOther.adjacencyList);
+      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.adjacencyList, typedOther.adjacencyList);
       if (lastComparison != 0) {
         return lastComparison;
       }
@@ -431,27 +425,27 @@ public class Graph implements TBase<Graph, Graph._Fields>, java.io.Serializable,
     return _Fields.findByThriftId(fieldId);
   }
 
-  public void read(TProtocol iprot) throws TException {
-    TField field;
+  public void read(org.apache.thrift.protocol.TProtocol iprot) throws org.apache.thrift.TException {
+    org.apache.thrift.protocol.TField field;
     iprot.readStructBegin();
     while (true)
     {
       field = iprot.readFieldBegin();
-      if (field.type == TType.STOP) { 
+      if (field.type == org.apache.thrift.protocol.TType.STOP) { 
         break;
       }
       switch (field.id) {
         case 1: // NODE_TYPE
-          if (field.type == TType.I32) {
+          if (field.type == org.apache.thrift.protocol.TType.I32) {
             this.nodeType = NodeType.findByValue(iprot.readI32());
           } else { 
-            TProtocolUtil.skip(iprot, field.type);
+            org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
           }
           break;
         case 2: // ROOTS
-          if (field.type == TType.LIST) {
+          if (field.type == org.apache.thrift.protocol.TType.LIST) {
             {
-              TList _list4 = iprot.readListBegin();
+              org.apache.thrift.protocol.TList _list4 = iprot.readListBegin();
               this.roots = new ArrayList<String>(_list4.size);
               for (int _i5 = 0; _i5 < _list4.size; ++_i5)
               {
@@ -462,13 +456,13 @@ public class Graph implements TBase<Graph, Graph._Fields>, java.io.Serializable,
               iprot.readListEnd();
             }
           } else { 
-            TProtocolUtil.skip(iprot, field.type);
+            org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
           }
           break;
         case 3: // ADJACENCY_LIST
-          if (field.type == TType.LIST) {
+          if (field.type == org.apache.thrift.protocol.TType.LIST) {
             {
-              TList _list7 = iprot.readListBegin();
+              org.apache.thrift.protocol.TList _list7 = iprot.readListBegin();
               this.adjacencyList = new ArrayList<Adjacency>(_list7.size);
               for (int _i8 = 0; _i8 < _list7.size; ++_i8)
               {
@@ -480,11 +474,11 @@ public class Graph implements TBase<Graph, Graph._Fields>, java.io.Serializable,
               iprot.readListEnd();
             }
           } else { 
-            TProtocolUtil.skip(iprot, field.type);
+            org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
           }
           break;
         default:
-          TProtocolUtil.skip(iprot, field.type);
+          org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
       }
       iprot.readFieldEnd();
     }
@@ -492,7 +486,7 @@ public class Graph implements TBase<Graph, Graph._Fields>, java.io.Serializable,
     validate();
   }
 
-  public void write(TProtocol oprot) throws TException {
+  public void write(org.apache.thrift.protocol.TProtocol oprot) throws org.apache.thrift.TException {
     validate();
 
     oprot.writeStructBegin(STRUCT_DESC);
@@ -504,7 +498,7 @@ public class Graph implements TBase<Graph, Graph._Fields>, java.io.Serializable,
     if (this.roots != null) {
       oprot.writeFieldBegin(ROOTS_FIELD_DESC);
       {
-        oprot.writeListBegin(new TList(TType.STRING, this.roots.size()));
+        oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRING, this.roots.size()));
         for (String _iter10 : this.roots)
         {
           oprot.writeString(_iter10);
@@ -516,7 +510,7 @@ public class Graph implements TBase<Graph, Graph._Fields>, java.io.Serializable,
     if (this.adjacencyList != null) {
       oprot.writeFieldBegin(ADJACENCY_LIST_FIELD_DESC);
       {
-        oprot.writeListBegin(new TList(TType.STRUCT, this.adjacencyList.size()));
+        oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, this.adjacencyList.size()));
         for (Adjacency _iter11 : this.adjacencyList)
         {
           _iter11.write(oprot);
@@ -561,7 +555,7 @@ public class Graph implements TBase<Graph, Graph._Fields>, java.io.Serializable,
     return sb.toString();
   }
 
-  public void validate() throws TException {
+  public void validate() throws org.apache.thrift.TException {
     // check for required fields
   }
 

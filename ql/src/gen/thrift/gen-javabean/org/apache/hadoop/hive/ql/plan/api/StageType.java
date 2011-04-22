@@ -10,7 +10,7 @@ import java.util.Map;
 import java.util.HashMap;
 import org.apache.thrift.TEnum;
 
-public enum StageType implements TEnum {
+public enum StageType implements org.apache.thrift.TEnum {
   CONDITIONAL(0),
   COPY(1),
   DDL(2),

@@ -34,10 +34,11 @@
           <artifact name="hbase" type="test-jar" ext="jar"
                     m:classifier="tests"/>
         </dependency>
-        <dependency org="org.apache.cassandra" name="cassandra-all" rev="${cassandra.version}" >
+        <dependency org="org.apache.cassandra" name="apache-cassandra" rev="${cassandra.version}" >
 	  <exclude module="commons-cli"/>
           <exclude module="antlr" />
 	</dependency>  
+        <dependency org="org.apache.cassandra" name="apache-cassandra-thrift" rev="${cassandra.version}"/>
         <dependency org="org.apache.zookeeper" name="zookeeper"
                     rev="${zookeeper.version}" transitive="false">
           <include type="jar"/>

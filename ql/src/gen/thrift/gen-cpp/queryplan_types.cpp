@@ -7,6 +7,106 @@
 
 namespace Apache { namespace Hadoop { namespace Hive {
 
+int _kAdjacencyTypeValues[] = {
+  AdjacencyType::CONJUNCTIVE,
+  AdjacencyType::DISJUNCTIVE
+};
+const char* _kAdjacencyTypeNames[] = {
+  "CONJUNCTIVE",
+  "DISJUNCTIVE"
+};
+const std::map<int, const char*> _AdjacencyType_VALUES_TO_NAMES(::apache::thrift::TEnumIterator(2, _kAdjacencyTypeValues, _kAdjacencyTypeNames), ::apache::thrift::TEnumIterator(-1, NULL, NULL));
+
+int _kNodeTypeValues[] = {
+  NodeType::OPERATOR,
+  NodeType::STAGE
+};
+const char* _kNodeTypeNames[] = {
+  "OPERATOR",
+  "STAGE"
+};
+const std::map<int, const char*> _NodeType_VALUES_TO_NAMES(::apache::thrift::TEnumIterator(2, _kNodeTypeValues, _kNodeTypeNames), ::apache::thrift::TEnumIterator(-1, NULL, NULL));
+
+int _kOperatorTypeValues[] = {
+  OperatorType::JOIN,
+  OperatorType::MAPJOIN,
+  OperatorType::EXTRACT,
+  OperatorType::FILTER,
+  OperatorType::FORWARD,
+  OperatorType::GROUPBY,
+  OperatorType::LIMIT,
+  OperatorType::SCRIPT,
+  OperatorType::SELECT,
+  OperatorType::TABLESCAN,
+  OperatorType::FILESINK,
+  OperatorType::REDUCESINK,
+  OperatorType::UNION,
+  OperatorType::UDTF,
+  OperatorType::LATERALVIEWJOIN,
+  OperatorType::LATERALVIEWFORWARD,
+  OperatorType::HASHTABLESINK,
+  OperatorType::HASHTABLEDUMMY
+};
+const char* _kOperatorTypeNames[] = {
+  "JOIN",
+  "MAPJOIN",
+  "EXTRACT",
+  "FILTER",
+  "FORWARD",
+  "GROUPBY",
+  "LIMIT",
+  "SCRIPT",
+  "SELECT",
+  "TABLESCAN",
+  "FILESINK",
+  "REDUCESINK",
+  "UNION",
+  "UDTF",
+  "LATERALVIEWJOIN",
+  "LATERALVIEWFORWARD",
+  "HASHTABLESINK",
+  "HASHTABLEDUMMY"
+};
+const std::map<int, const char*> _OperatorType_VALUES_TO_NAMES(::apache::thrift::TEnumIterator(18, _kOperatorTypeValues, _kOperatorTypeNames), ::apache::thrift::TEnumIterator(-1, NULL, NULL));
+
+int _kTaskTypeValues[] = {
+  TaskType::MAP,
+  TaskType::REDUCE,
+  TaskType::OTHER
+};
+const char* _kTaskTypeNames[] = {
+  "MAP",
+  "REDUCE",
+  "OTHER"
+};
+const std::map<int, const char*> _TaskType_VALUES_TO_NAMES(::apache::thrift::TEnumIterator(3, _kTaskTypeValues, _kTaskTypeNames), ::apache::thrift::TEnumIterator(-1, NULL, NULL));
+
+int _kStageTypeValues[] = {
+  StageType::CONDITIONAL,
+  StageType::COPY,
+  StageType::DDL,
+  StageType::MAPRED,
+  StageType::EXPLAIN,
+  StageType::FETCH,
+  StageType::FUNC,
+  StageType::MAPREDLOCAL,
+  StageType::MOVE,
+  StageType::STATS
+};
+const char* _kStageTypeNames[] = {
+  "CONDITIONAL",
+  "COPY",
+  "DDL",
+  "MAPRED",
+  "EXPLAIN",
+  "FETCH",
+  "FUNC",
+  "MAPREDLOCAL",
+  "MOVE",
+  "STATS"
+};
+const std::map<int, const char*> _StageType_VALUES_TO_NAMES(::apache::thrift::TEnumIterator(10, _kStageTypeValues, _kStageTypeNames), ::apache::thrift::TEnumIterator(-1, NULL, NULL));
+
 const char* Adjacency::ascii_fingerprint = "BC4F8C394677A1003AA9F56ED26D8204";
 const uint8_t Adjacency::binary_fingerprint[16] = {0xBC,0x4F,0x8C,0x39,0x46,0x77,0xA1,0x00,0x3A,0xA9,0xF5,0x6E,0xD2,0x6D,0x82,0x04};
 

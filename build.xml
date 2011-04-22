@@ -806,8 +806,8 @@
       <remoteRepository id="datastax-snapshot" url="${asfrepo}"/>
       <pom refid="hive.project.pom"/>
       <attach file="${basedir}/lib/derby.jar" type="jar" classifier="derby"/> 
-      <attach file="${basedir}/lib/thrift-0.5.0.jar" type="jar" classifier="thrift"/>
-      <attach file="${basedir}/lib/thrift-fb303-0.5.0.jar" type="jar" classifier="thrift-fb303"/>
+      <attach file="${basedir}/lib/thrift-0.6.0.jar" type="jar" classifier="thrift"/>
+      <attach file="${basedir}/lib/thrift-fb303-0.6.0.jar" type="jar" classifier="thrift-fb303"/>
       <attach file="${basedir}/lib/json.jar" type="jar" classifier="json"/>
     </artifact:deploy>
   </target>
