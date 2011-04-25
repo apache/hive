@@ -18,6 +18,7 @@
 
 package org.apache.hadoop.hive.ql.parse;
 
+import static org.apache.hadoop.hive.ql.parse.HiveParser.TOK_CASCADE;
 import static org.apache.hadoop.hive.ql.parse.HiveParser.TOK_DATABASECOMMENT;
 import static org.apache.hadoop.hive.ql.parse.HiveParser.TOK_IFEXISTS;
 import static org.apache.hadoop.hive.ql.parse.HiveParser.TOK_IFNOTEXISTS;
@@ -653,12 +654,17 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
   private void analyzeDropDatabase(ASTNode ast) throws SemanticException {
     String dbName = unescapeIdentifier(ast.getChild(0).getText());
     boolean ifExists = false;
+    boolean ifCascade = false;
 
     if (null != ast.getFirstChildWithType(TOK_IFEXISTS)) {
       ifExists = true;
     }
 
-    DropDatabaseDesc dropDatabaseDesc = new DropDatabaseDesc(dbName, ifExists);
+    if (null != ast.getFirstChildWithType(TOK_CASCADE)) {
+      ifCascade = true;
+    }
+
+    DropDatabaseDesc dropDatabaseDesc = new DropDatabaseDesc(dbName, ifExists, ifCascade);
     rootTasks.add(TaskFactory.get(new DDLWork(getInputs(), getOutputs(), dropDatabaseDesc), conf));
   }
 
@@ -1174,6 +1180,7 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
     mergeDesc.setOutputDir(outputDir);
 
     addInputsOutputsAlterTable(tableName, partSpec);
+
     DDLWork ddlWork = new DDLWork(getInputs(), getOutputs(), mergeDesc);
     ddlWork.setNeedLock(true);
     Task<? extends Serializable> mergeTask = TaskFactory.get(ddlWork, conf);

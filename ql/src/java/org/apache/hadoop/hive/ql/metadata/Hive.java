@@ -232,9 +232,8 @@ public class Hive {
    * @see org.apache.hadoop.hive.metastore.HiveMetaStoreClient#dropDatabase(java.lang.String)
    */
   public void dropDatabase(String name) throws HiveException, NoSuchObjectException {
-    dropDatabase(name, true, false);
+    dropDatabase(name, true, false, false);
   }
-
 
   /**
    * Drop a database
@@ -247,8 +246,24 @@ public class Hive {
    */
   public void dropDatabase(String name, boolean deleteData, boolean ignoreUnknownDb)
       throws HiveException, NoSuchObjectException {
+    dropDatabase(name, deleteData, ignoreUnknownDb, false);
+  }
+
+  /**
+   * Drop a database
+   * @param name
+   * @param deleteData
+   * @param ignoreUnknownDb if true, will ignore NoSuchObjectException
+   * @param cascade           if true, delete all tables on the DB if exists. Othewise, the query
+   *                        will fail if table still exists.
+   * @return
+   * @throws HiveException
+   * @throws NoSuchObjectException
+   */
+  public void dropDatabase(String name, boolean deleteData, boolean ignoreUnknownDb, boolean cascade)
+      throws HiveException, NoSuchObjectException {
     try {
-      getMSC().dropDatabase(name, deleteData, ignoreUnknownDb);
+      getMSC().dropDatabase(name, deleteData, ignoreUnknownDb, cascade);
     } catch (NoSuchObjectException e) {
       throw e;
     } catch (Exception e) {

@@ -23,7 +23,7 @@ if len(sys.argv) <= 1 or sys.argv[1] == '--help':
   print 'Functions:'
   print '  void create_database(Database database)'
   print '  Database get_database(string name)'
-  print '  void drop_database(string name, bool deleteData)'
+  print '  void drop_database(string name, bool deleteData, bool cascade)'
   print '   get_databases(string pattern)'
   print '   get_all_databases()'
   print '  void alter_database(string dbname, Database db)'
@@ -141,10 +141,10 @@ elif cmd == 'get_database':
   pp.pprint(client.get_database(args[0],))
 
 elif cmd == 'drop_database':
-  if len(args) != 2:
-    print 'drop_database requires 2 args'
+  if len(args) != 3:
+    print 'drop_database requires 3 args'
     sys.exit(1)
-  pp.pprint(client.drop_database(args[0],eval(args[1]),))
+  pp.pprint(client.drop_database(args[0],eval(args[1]),eval(args[2]),))
 
 elif cmd == 'get_databases':
   if len(args) != 1:

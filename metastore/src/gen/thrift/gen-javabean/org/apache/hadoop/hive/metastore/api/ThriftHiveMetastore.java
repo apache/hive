@@ -37,7 +37,7 @@ public class ThriftHiveMetastore {
 
     public Database get_database(String name) throws NoSuchObjectException, MetaException, TException;
 
-    public void drop_database(String name, boolean deleteData) throws NoSuchObjectException, InvalidOperationException, MetaException, TException;
+    public void drop_database(String name, boolean deleteData, boolean cascade) throws NoSuchObjectException, InvalidOperationException, MetaException, TException;
 
     public List<String> get_databases(String pattern) throws MetaException, TException;
 
@@ -155,7 +155,7 @@ public class ThriftHiveMetastore {
 
     public void get_database(String name, AsyncMethodCallback<AsyncClient.get_database_call> resultHandler) throws TException;
 
-    public void drop_database(String name, boolean deleteData, AsyncMethodCallback<AsyncClient.drop_database_call> resultHandler) throws TException;
+    public void drop_database(String name, boolean deleteData, boolean cascade, AsyncMethodCallback<AsyncClient.drop_database_call> resultHandler) throws TException;
 
     public void get_databases(String pattern, AsyncMethodCallback<AsyncClient.get_databases_call> resultHandler) throws TException;
 
@@ -372,18 +372,19 @@ public class ThriftHiveMetastore {
       throw new TApplicationException(TApplicationException.MISSING_RESULT, "get_database failed: unknown result");
     }
 
-    public void drop_database(String name, boolean deleteData) throws NoSuchObjectException, InvalidOperationException, MetaException, TException
+    public void drop_database(String name, boolean deleteData, boolean cascade) throws NoSuchObjectException, InvalidOperationException, MetaException, TException
     {
-      send_drop_database(name, deleteData);
+      send_drop_database(name, deleteData, cascade);
       recv_drop_database();
     }
 
-    public void send_drop_database(String name, boolean deleteData) throws TException
+    public void send_drop_database(String name, boolean deleteData, boolean cascade) throws TException
     {
       oprot_.writeMessageBegin(new TMessage("drop_database", TMessageType.CALL, ++seqid_));
       drop_database_args args = new drop_database_args();
       args.setName(name);
       args.setDeleteData(deleteData);
+      args.setCascade(cascade);
       args.write(oprot_);
       oprot_.writeMessageEnd();
       oprot_.getTransport().flush();
@@ -2772,19 +2773,21 @@ public class ThriftHiveMetastore {
       }
     }
 
-    public void drop_database(String name, boolean deleteData, AsyncMethodCallback<drop_database_call> resultHandler) throws TException {
+    public void drop_database(String name, boolean deleteData, boolean cascade, AsyncMethodCallback<drop_database_call> resultHandler) throws TException {
       checkReady();
-      drop_database_call method_call = new drop_database_call(name, deleteData, resultHandler, this, protocolFactory, transport);
+      drop_database_call method_call = new drop_database_call(name, deleteData, cascade, resultHandler, this, protocolFactory, transport);
       manager.call(method_call);
     }
 
     public static class drop_database_call extends TAsyncMethodCall {
       private String name;
       private boolean deleteData;
-      public drop_database_call(String name, boolean deleteData, AsyncMethodCallback<drop_database_call> resultHandler, TAsyncClient client, TProtocolFactory protocolFactory, TNonblockingTransport transport) throws TException {
+      private boolean cascade;
+      public drop_database_call(String name, boolean deleteData, boolean cascade, AsyncMethodCallback<drop_database_call> resultHandler, TAsyncClient client, TProtocolFactory protocolFactory, TNonblockingTransport transport) throws TException {
         super(client, protocolFactory, transport, resultHandler, false);
         this.name = name;
         this.deleteData = deleteData;
+        this.cascade = cascade;
       }
 
       public void write_args(TProtocol prot) throws TException {
@@ -2792,6 +2795,7 @@ public class ThriftHiveMetastore {
         drop_database_args args = new drop_database_args();
         args.setName(name);
         args.setDeleteData(deleteData);
+        args.setCascade(cascade);
         args.write(prot);
         prot.writeMessageEnd();
       }
@@ -4901,7 +4905,7 @@ public class ThriftHiveMetastore {
         iprot.readMessageEnd();
         drop_database_result result = new drop_database_result();
         try {
-          iface_.drop_database(args.name, args.deleteData);
+          iface_.drop_database(args.name, args.deleteData, args.cascade);
         } catch (NoSuchObjectException o1) {
           result.o1 = o1;
         } catch (InvalidOperationException o2) {
@@ -8537,14 +8541,17 @@ public class ThriftHiveMetastore {
 
     private static final TField NAME_FIELD_DESC = new TField("name", TType.STRING, (short)1);
     private static final TField DELETE_DATA_FIELD_DESC = new TField("deleteData", TType.BOOL, (short)2);
+    private static final TField CASCADE_FIELD_DESC = new TField("cascade", TType.BOOL, (short)3);
 
     private String name;
     private boolean deleteData;
+    private boolean cascade;
 
     /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
     public enum _Fields implements TFieldIdEnum {
       NAME((short)1, "name"),
-      DELETE_DATA((short)2, "deleteData");
+      DELETE_DATA((short)2, "deleteData"),
+      CASCADE((short)3, "cascade");
 
       private static final Map<String, _Fields> byName = new HashMap<String, _Fields>();
 
@@ -8563,6 +8570,8 @@ public class ThriftHiveMetastore {
             return NAME;
           case 2: // DELETE_DATA
             return DELETE_DATA;
+          case 3: // CASCADE
+            return CASCADE;
           default:
             return null;
         }
@@ -8604,7 +8613,8 @@ public class ThriftHiveMetastore {
 
     // isset id assignments
     private static final int __DELETEDATA_ISSET_ID = 0;
-    private BitSet __isset_bit_vector = new BitSet(1);
+    private static final int __CASCADE_ISSET_ID = 1;
+    private BitSet __isset_bit_vector = new BitSet(2);
 
     public static final Map<_Fields, FieldMetaData> metaDataMap;
     static {
@@ -8612,6 +8622,8 @@ public class ThriftHiveMetastore {
       tmpMap.put(_Fields.NAME, new FieldMetaData("name", TFieldRequirementType.DEFAULT, 
           new FieldValueMetaData(TType.STRING)));
       tmpMap.put(_Fields.DELETE_DATA, new FieldMetaData("deleteData", TFieldRequirementType.DEFAULT, 
+          new FieldValueMetaData(TType.BOOL)));
+      tmpMap.put(_Fields.CASCADE, new FieldMetaData("cascade", TFieldRequirementType.DEFAULT,
           new FieldValueMetaData(TType.BOOL)));
       metaDataMap = Collections.unmodifiableMap(tmpMap);
       FieldMetaData.addStructMetaDataMap(drop_database_args.class, metaDataMap);
@@ -8622,12 +8634,15 @@ public class ThriftHiveMetastore {
 
     public drop_database_args(
       String name,
-      boolean deleteData)
+      boolean deleteData,
+      boolean cascade)
     {
       this();
       this.name = name;
       this.deleteData = deleteData;
       setDeleteDataIsSet(true);
+      this.cascade = cascade;
+      setCascadeIsSet(true);
     }
 
     /**
@@ -8640,6 +8655,7 @@ public class ThriftHiveMetastore {
         this.name = other.name;
       }
       this.deleteData = other.deleteData;
+      this.cascade = other.cascade;
     }
 
     public drop_database_args deepCopy() {
@@ -8651,6 +8667,8 @@ public class ThriftHiveMetastore {
       this.name = null;
       setDeleteDataIsSet(false);
       this.deleteData = false;
+      setCascadeIsSet(false);
+      this.cascade = false;
     }
 
     public String getName() {
@@ -8698,6 +8716,28 @@ public class ThriftHiveMetastore {
       __isset_bit_vector.set(__DELETEDATA_ISSET_ID, value);
     }
 
+    public boolean isCascade() {
+      return this.cascade;
+    }
+
+    public void setCascade(boolean cascade) {
+      this.cascade = cascade;
+      setCascadeIsSet(true);
+    }
+
+    public void unsetCascade() {
+      __isset_bit_vector.clear(__CASCADE_ISSET_ID);
+    }
+
+    /** Returns true if field cascade is set (has been asigned a value) and false otherwise */
+    public boolean isSetCascade() {
+      return __isset_bit_vector.get(__CASCADE_ISSET_ID);
+    }
+
+    public void setCascadeIsSet(boolean value) {
+      __isset_bit_vector.set(__CASCADE_ISSET_ID, value);
+    }
+
     public void setFieldValue(_Fields field, Object value) {
       switch (field) {
       case NAME:
@@ -8716,6 +8756,14 @@ public class ThriftHiveMetastore {
         }
         break;
 
+      case CASCADE:
+        if (value == null) {
+          unsetCascade();
+        } else {
+          setCascade((Boolean)value);
+        }
+        break;
+
       }
     }
 
@@ -8726,6 +8774,9 @@ public class ThriftHiveMetastore {
 
       case DELETE_DATA:
         return new Boolean(isDeleteData());
+
+      case CASCADE:
+        return new Boolean(isCascade());
 
       }
       throw new IllegalStateException();
@@ -8742,6 +8793,8 @@ public class ThriftHiveMetastore {
         return isSetName();
       case DELETE_DATA:
         return isSetDeleteData();
+      case CASCADE:
+        return isSetCascade();
       }
       throw new IllegalStateException();
     }
@@ -8774,6 +8827,15 @@ public class ThriftHiveMetastore {
         if (!(this_present_deleteData && that_present_deleteData))
           return false;
         if (this.deleteData != that.deleteData)
+          return false;
+      }
+
+      boolean this_present_cascade = true;
+      boolean that_present_cascade = true;
+      if (this_present_cascade || that_present_cascade) {
+        if (!(this_present_cascade && that_present_cascade))
+          return false;
+        if (this.cascade != that.cascade)
           return false;
       }
 
@@ -8813,6 +8875,16 @@ public class ThriftHiveMetastore {
           return lastComparison;
         }
       }
+      lastComparison = Boolean.valueOf(isSetCascade()).compareTo(typedOther.isSetCascade());
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+      if (isSetCascade()) {
+        lastComparison = TBaseHelper.compareTo(this.cascade, typedOther.cascade);
+        if (lastComparison != 0) {
+          return lastComparison;
+        }
+      }
       return 0;
     }
 
@@ -8845,6 +8917,14 @@ public class ThriftHiveMetastore {
               TProtocolUtil.skip(iprot, field.type);
             }
             break;
+          case 3: // CASCADE
+            if (field.type == TType.BOOL) {
+              this.cascade = iprot.readBool();
+              setCascadeIsSet(true);
+            } else {
+              TProtocolUtil.skip(iprot, field.type);
+            }
+            break;
           default:
             TProtocolUtil.skip(iprot, field.type);
         }
@@ -8866,6 +8946,9 @@ public class ThriftHiveMetastore {
       oprot.writeFieldBegin(DELETE_DATA_FIELD_DESC);
       oprot.writeBool(this.deleteData);
       oprot.writeFieldEnd();
+      oprot.writeFieldBegin(CASCADE_FIELD_DESC);
+      oprot.writeBool(this.cascade);
+      oprot.writeFieldEnd();
       oprot.writeFieldStop();
       oprot.writeStructEnd();
     }
@@ -8885,6 +8968,10 @@ public class ThriftHiveMetastore {
       if (!first) sb.append(", ");
       sb.append("deleteData:");
       sb.append(this.deleteData);
+      first = false;
+      if (!first) sb.append(", ");
+      sb.append("cascade:");
+      sb.append(this.cascade);
       first = false;
       sb.append(")");
       return sb.toString();

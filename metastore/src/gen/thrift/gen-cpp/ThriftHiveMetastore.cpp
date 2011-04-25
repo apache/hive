@@ -439,6 +439,14 @@ uint32_t ThriftHiveMetastore_drop_database_args::read(::apache::thrift::protocol
           xfer += iprot->skip(ftype);
         }
         break;
+      case 3:
+        if (ftype == ::apache::thrift::protocol::T_BOOL) {
+          xfer += iprot->readBool(this->cascade);
+          this->__isset.cascade = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
       default:
         xfer += iprot->skip(ftype);
         break;
@@ -460,6 +468,9 @@ uint32_t ThriftHiveMetastore_drop_database_args::write(::apache::thrift::protoco
   xfer += oprot->writeFieldBegin("deleteData", ::apache::thrift::protocol::T_BOOL, 2);
   xfer += oprot->writeBool(this->deleteData);
   xfer += oprot->writeFieldEnd();
+  xfer += oprot->writeFieldBegin("cascade", ::apache::thrift::protocol::T_BOOL, 3);
+  xfer += oprot->writeBool(this->cascade);
+  xfer += oprot->writeFieldEnd();
   xfer += oprot->writeFieldStop();
   xfer += oprot->writeStructEnd();
   return xfer;
@@ -473,6 +484,9 @@ uint32_t ThriftHiveMetastore_drop_database_pargs::write(::apache::thrift::protoc
   xfer += oprot->writeFieldEnd();
   xfer += oprot->writeFieldBegin("deleteData", ::apache::thrift::protocol::T_BOOL, 2);
   xfer += oprot->writeBool((*(this->deleteData)));
+  xfer += oprot->writeFieldEnd();
+  xfer += oprot->writeFieldBegin("cascade", ::apache::thrift::protocol::T_BOOL, 3);
+  xfer += oprot->writeBool((*(this->cascade)));
   xfer += oprot->writeFieldEnd();
   xfer += oprot->writeFieldStop();
   xfer += oprot->writeStructEnd();
@@ -13133,13 +13147,13 @@ void ThriftHiveMetastoreClient::recv_get_database(Database& _return)
   throw ::apache::thrift::TApplicationException(::apache::thrift::TApplicationException::MISSING_RESULT, "get_database failed: unknown result");
 }
 
-void ThriftHiveMetastoreClient::drop_database(const std::string& name, const bool deleteData)
+void ThriftHiveMetastoreClient::drop_database(const std::string& name, const bool deleteData, const bool cascade)
 {
-  send_drop_database(name, deleteData);
+  send_drop_database(name, deleteData, cascade);
   recv_drop_database();
 }
 
-void ThriftHiveMetastoreClient::send_drop_database(const std::string& name, const bool deleteData)
+void ThriftHiveMetastoreClient::send_drop_database(const std::string& name, const bool deleteData, const bool cascade)
 {
   int32_t cseqid = 0;
   oprot_->writeMessageBegin("drop_database", ::apache::thrift::protocol::T_CALL, cseqid);
@@ -13147,6 +13161,7 @@ void ThriftHiveMetastoreClient::send_drop_database(const std::string& name, cons
   ThriftHiveMetastore_drop_database_pargs args;
   args.name = &name;
   args.deleteData = &deleteData;
+  args.cascade = &cascade;
   args.write(oprot_);
 
   oprot_->writeMessageEnd();
@@ -16872,7 +16887,7 @@ void ThriftHiveMetastoreProcessor::process_drop_database(int32_t seqid, ::apache
 
   ThriftHiveMetastore_drop_database_result result;
   try {
-    iface_->drop_database(args.name, args.deleteData);
+    iface_->drop_database(args.name, args.deleteData, args.cascade);
   } catch (NoSuchObjectException &o1) {
     result.o1 = o1;
     result.__isset.o1 = true;

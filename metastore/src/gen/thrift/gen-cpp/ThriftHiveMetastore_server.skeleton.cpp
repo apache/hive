@@ -32,7 +32,7 @@ class ThriftHiveMetastoreHandler : virtual public ThriftHiveMetastoreIf {
     printf("get_database\n");
   }
 
-  void drop_database(const std::string& name, const bool deleteData) {
+  void drop_database(const std::string& name, const bool deleteData, const bool cascade) {
     // Your implementation goes here
     printf("drop_database\n");
   }

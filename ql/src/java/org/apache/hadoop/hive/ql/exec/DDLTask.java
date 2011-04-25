@@ -75,7 +75,6 @@ import org.apache.hadoop.hive.ql.DriverContext;
 import org.apache.hadoop.hive.ql.QueryPlan;
 import org.apache.hadoop.hive.ql.hooks.ReadEntity;
 import org.apache.hadoop.hive.ql.hooks.WriteEntity;
-import org.apache.hadoop.hive.ql.io.RCFileInputFormat;
 import org.apache.hadoop.hive.ql.io.rcfile.merge.BlockMergeTask;
 import org.apache.hadoop.hive.ql.io.rcfile.merge.MergeWork;
 import org.apache.hadoop.hive.ql.lockmgr.HiveLock;
@@ -142,7 +141,6 @@ import org.apache.hadoop.hive.serde2.dynamic_type.DynamicSerDe;
 import org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe;
 import org.apache.hadoop.hive.shims.HadoopShims;
 import org.apache.hadoop.hive.shims.ShimLoader;
-import org.apache.hadoop.mapred.InputFormat;
 import org.apache.hadoop.util.ToolRunner;
 
 /**
@@ -359,7 +357,7 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
       if (showIndexes != null) {
         return showIndexes(db, showIndexes);
       }
-      
+
       AlterTablePartMergeFilesDesc mergeFilesDesc = work.getMergeFilesDesc();
       if(mergeFilesDesc != null) {
         return mergeFiles(db, mergeFilesDesc);
@@ -387,10 +385,10 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
    * First, make sure the source table/partition is not
    * archived/indexes/non-rcfile. If either of these is true, throw an
    * exception.
-   * 
+   *
    * The way how it does the merge is to create a BlockMergeTask from the
    * mergeFilesDesc.
-   * 
+   *
    * @param db
    * @param mergeFilesDesc
    * @return
@@ -879,8 +877,8 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
       return 0;
     }
 
-    
-    
+
+
     if (addPartitionDesc.getLocation() == null) {
       db.createPartition(tbl, addPartitionDesc.getPartSpec(), null,
           addPartitionDesc.getPartParams(),
@@ -1439,7 +1437,7 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
 
     validateAlterTableType(tbl, alterType, false);
   }
-  
+
   private void validateAlterTableType(
     Table tbl, AlterTableDesc.AlterTableTypes alterType,
     boolean expectView) throws HiveException {
@@ -2912,7 +2910,7 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
           tbl, AlterTableDesc.AlterTableTypes.DROPPARTITION,
           dropTbl.getExpectView());
       }
-      
+
       // get all partitions of the table
       List<String> partitionNames =
         db.getPartitionNames(dropTbl.getTableName(), (short) -1);
@@ -3030,7 +3028,7 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
    */
   private int dropDatabase(Hive db, DropDatabaseDesc dropDb)
       throws HiveException, NoSuchObjectException {
-    db.dropDatabase(dropDb.getDatabaseName(), true, dropDb.getIfExists());
+    db.dropDatabase(dropDb.getDatabaseName(), true, dropDb.getIfExists(), dropDb.isCasdade());
     return 0;
   }
 

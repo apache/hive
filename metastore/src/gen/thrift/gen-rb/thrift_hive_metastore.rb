@@ -46,13 +46,13 @@ module ThriftHiveMetastore
       raise ::Thrift::ApplicationException.new(::Thrift::ApplicationException::MISSING_RESULT, 'get_database failed: unknown result')
     end
 
-    def drop_database(name, deleteData)
-      send_drop_database(name, deleteData)
+    def drop_database(name, deleteData, cascade)
+      send_drop_database(name, deleteData, cascade)
       recv_drop_database()
     end
 
-    def send_drop_database(name, deleteData)
-      send_message('drop_database', Drop_database_args, :name => name, :deleteData => deleteData)
+    def send_drop_database(name, deleteData, cascade)
+      send_message('drop_database', Drop_database_args, :name => name, :deleteData => deleteData, :cascade => cascade)
     end
 
     def recv_drop_database()
@@ -995,7 +995,7 @@ module ThriftHiveMetastore
       args = read_args(iprot, Drop_database_args)
       result = Drop_database_result.new()
       begin
-        @handler.drop_database(args.name, args.deleteData)
+        @handler.drop_database(args.name, args.deleteData, args.cascade)
       rescue NoSuchObjectException => o1
         result.o1 = o1
       rescue InvalidOperationException => o2
@@ -1756,10 +1756,12 @@ module ThriftHiveMetastore
     include ::Thrift::Struct, ::Thrift::Struct_Union
     NAME = 1
     DELETEDATA = 2
+    CASCADE = 3
 
     FIELDS = {
       NAME => {:type => ::Thrift::Types::STRING, :name => 'name'},
-      DELETEDATA => {:type => ::Thrift::Types::BOOL, :name => 'deleteData'}
+      DELETEDATA => {:type => ::Thrift::Types::BOOL, :name => 'deleteData'},
+      CASCADE => {:type => ::Thrift::Types::BOOL, :name => 'cascade'}
     }
 
     def struct_fields; FIELDS; end

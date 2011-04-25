@@ -12,7 +12,7 @@ include_once $GLOBALS['THRIFT_ROOT'].'/packages/fb303/FacebookService.php';
 interface ThriftHiveMetastoreIf extends FacebookServiceIf {
   public function create_database($database);
   public function get_database($name);
-  public function drop_database($name, $deleteData);
+  public function drop_database($name, $deleteData, $cascade);
   public function get_databases($pattern);
   public function get_all_databases();
   public function alter_database($dbname, $db);
@@ -188,17 +188,18 @@ class ThriftHiveMetastoreClient extends FacebookServiceClient implements ThriftH
     throw new Exception("get_database failed: unknown result");
   }
 
-  public function drop_database($name, $deleteData)
+  public function drop_database($name, $deleteData, $cascade)
   {
-    $this->send_drop_database($name, $deleteData);
+    $this->send_drop_database($name, $deleteData, $cascade);
     $this->recv_drop_database();
   }
 
-  public function send_drop_database($name, $deleteData)
+  public function send_drop_database($name, $deleteData, $cascade)
   {
     $args = new metastore_ThriftHiveMetastore_drop_database_args();
     $args->name = $name;
     $args->deleteData = $deleteData;
+    $args->cascade = $cascade;
     $bin_accel = ($this->output_ instanceof TProtocol::$TBINARYPROTOCOLACCELERATED) && function_exists('thrift_protocol_write_binary');
     if ($bin_accel)
     {
@@ -3730,6 +3731,7 @@ class metastore_ThriftHiveMetastore_drop_database_args {
 
   public $name = null;
   public $deleteData = null;
+  public $cascade = null;
 
   public function __construct($vals=null) {
     if (!isset(self::$_TSPEC)) {
@@ -3742,6 +3744,10 @@ class metastore_ThriftHiveMetastore_drop_database_args {
           'var' => 'deleteData',
           'type' => TType::BOOL,
           ),
+        3 => array(
+          'var' => 'cascade',
+          'type' => TType::BOOL,
+          ),
         );
     }
     if (is_array($vals)) {
@@ -3750,6 +3756,9 @@ class metastore_ThriftHiveMetastore_drop_database_args {
       }
       if (isset($vals['deleteData'])) {
         $this->deleteData = $vals['deleteData'];
+      }
+      if (isset($vals['cascade'])) {
+        $this->cascade = $vals['cascade'];
       }
     }
   }
@@ -3787,6 +3796,13 @@ class metastore_ThriftHiveMetastore_drop_database_args {
             $xfer += $input->skip($ftype);
           }
           break;
+        case 3:
+          if ($ftype == TType::BOOL) {
+            $xfer += $input->readBool($this->cascade);
+          } else {
+            $xfer += $input->skip($ftype);
+          }
+          break;
         default:
           $xfer += $input->skip($ftype);
           break;
@@ -3808,6 +3824,11 @@ class metastore_ThriftHiveMetastore_drop_database_args {
     if ($this->deleteData !== null) {
       $xfer += $output->writeFieldBegin('deleteData', TType::BOOL, 2);
       $xfer += $output->writeBool($this->deleteData);
+      $xfer += $output->writeFieldEnd();
+    }
+    if ($this->cascade !== null) {
+      $xfer += $output->writeFieldBegin('cascade', TType::BOOL, 3);
+      $xfer += $output->writeBool($this->cascade);
       $xfer += $output->writeFieldEnd();
     }
     $xfer += $output->writeFieldStop();

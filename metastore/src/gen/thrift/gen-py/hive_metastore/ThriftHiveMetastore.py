@@ -34,11 +34,12 @@ class Iface(fb303.FacebookService.Iface):
     """
     pass
 
-  def drop_database(self, name, deleteData):
+  def drop_database(self, name, deleteData, cascade):
     """
     Parameters:
      - name
      - deleteData
+     - cascade
     """
     pass
 
@@ -568,20 +569,22 @@ class Client(fb303.FacebookService.Client, Iface):
       raise result.o2
     raise TApplicationException(TApplicationException.MISSING_RESULT, "get_database failed: unknown result");
 
-  def drop_database(self, name, deleteData):
+  def drop_database(self, name, deleteData, cascade):
     """
     Parameters:
      - name
      - deleteData
+     - cascade
     """
-    self.send_drop_database(name, deleteData)
+    self.send_drop_database(name, deleteData, cascade)
     self.recv_drop_database()
 
-  def send_drop_database(self, name, deleteData):
+  def send_drop_database(self, name, deleteData, cascade):
     self._oprot.writeMessageBegin('drop_database', TMessageType.CALL, self._seqid)
     args = drop_database_args()
     args.name = name
     args.deleteData = deleteData
+    args.cascade = cascade
     args.write(self._oprot)
     self._oprot.writeMessageEnd()
     self._oprot.trans.flush()
@@ -2661,7 +2664,7 @@ class Processor(fb303.FacebookService.Processor, Iface, TProcessor):
     iprot.readMessageEnd()
     result = drop_database_result()
     try:
-      self._handler.drop_database(args.name, args.deleteData)
+      self._handler.drop_database(args.name, args.deleteData, args.cascade)
     except NoSuchObjectException, o1:
       result.o1 = o1
     except InvalidOperationException, o2:
@@ -3803,17 +3806,20 @@ class drop_database_args:
   Attributes:
    - name
    - deleteData
+   - cascade
   """
 
   thrift_spec = (
     None, # 0
     (1, TType.STRING, 'name', None, None, ), # 1
     (2, TType.BOOL, 'deleteData', None, None, ), # 2
+    (3, TType.BOOL, 'cascade', None, None, ), # 3
   )
 
-  def __init__(self, name=None, deleteData=None,):
+  def __init__(self, name=None, deleteData=None, cascade=None,):
     self.name = name
     self.deleteData = deleteData
+    self.cascade = cascade
 
   def read(self, iprot):
     if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
@@ -3834,6 +3840,11 @@ class drop_database_args:
           self.deleteData = iprot.readBool();
         else:
           iprot.skip(ftype)
+      elif fid == 3:
+        if ftype == TType.BOOL:
+          self.cascade = iprot.readBool();
+        else:
+          iprot.skip(ftype)
       else:
         iprot.skip(ftype)
       iprot.readFieldEnd()
@@ -3851,6 +3862,10 @@ class drop_database_args:
     if self.deleteData != None:
       oprot.writeFieldBegin('deleteData', TType.BOOL, 2)
       oprot.writeBool(self.deleteData)
+      oprot.writeFieldEnd()
+    if self.cascade != None:
+      oprot.writeFieldBegin('cascade', TType.BOOL, 3)
+      oprot.writeBool(self.cascade)
       oprot.writeFieldEnd()
     oprot.writeFieldStop()
     oprot.writeStructEnd()
