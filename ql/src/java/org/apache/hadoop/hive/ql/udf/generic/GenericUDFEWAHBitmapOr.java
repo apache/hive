@@ -16,18 +16,27 @@
  * limitations under the License.
  */
 
-package org.apache.hadoop.hive.ql.index.compact;
+package org.apache.hadoop.hive.ql.udf.generic;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-import org.apache.hadoop.hive.ql.index.HiveIndexedInputFormat;
+import javaewah.EWAHCompressedBitmap;
 
-public class HiveCompactIndexInputFormat extends HiveIndexedInputFormat {
+import org.apache.hadoop.hive.ql.exec.Description;
 
-  public static final Log l4j =
-    LogFactory.getLog(HiveCompactIndexInputFormat.class.getSimpleName());
+/**
+ * GenericUDFEWAHBitmapOr.
+ *
+ */
+@Description(name = "ewah_bitmap_or",
+  value = "_FUNC_(b1, b2) - Return an EWAH-compressed bitmap that is the bitwise OR of two bitmaps.")
+public class GenericUDFEWAHBitmapOr extends AbstractGenericUDFEWAHBitmapBop {
 
-  public HiveCompactIndexInputFormat() {
-    super("hive.index.compact.file");
+  public GenericUDFEWAHBitmapOr() {
+    super("EWAH_BITMAP_OR");
+  }
+
+  @Override
+  protected EWAHCompressedBitmap bitmapBop(
+      EWAHCompressedBitmap bitmap1, EWAHCompressedBitmap bitmap2) {
+    return bitmap1.or(bitmap2);
   }
 }

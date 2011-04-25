@@ -349,6 +349,7 @@ public class HiveConf extends Configuration {
     HIVEPARTITIONER("hive.mapred.partitioner", "org.apache.hadoop.hive.ql.io.DefaultHivePartitioner"),
 
     HIVESCRIPTOPERATORTRUST("hive.exec.script.trust", false),
+    HIVEROWOFFSET("hive.exec.rowoffset", false),
 
     HIVE_COMBINE_INPUT_FORMAT_SUPPORTS_SPLITTABLE("hive.hadoop.supports.splittable.combineinputformat", false),
 

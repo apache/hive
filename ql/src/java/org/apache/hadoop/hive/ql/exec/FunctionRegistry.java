@@ -122,6 +122,7 @@ import org.apache.hadoop.hive.ql.udf.UDFUpper;
 import org.apache.hadoop.hive.ql.udf.UDFWeekOfYear;
 import org.apache.hadoop.hive.ql.udf.UDFYear;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDAFAverage;
+import org.apache.hadoop.hive.ql.udf.generic.GenericUDAFEWAHBitmap;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDAFBridge;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDAFCollectSet;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDAFContextNGrams;
@@ -146,6 +147,9 @@ import org.apache.hadoop.hive.ql.udf.generic.GenericUDAFnGrams;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDF;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFArray;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFArrayContains;
+import org.apache.hadoop.hive.ql.udf.generic.GenericUDFEWAHBitmapAnd;
+import org.apache.hadoop.hive.ql.udf.generic.GenericUDFEWAHBitmapOr;
+import org.apache.hadoop.hive.ql.udf.generic.GenericUDFEWAHBitmapEmpty;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFBridge;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFCase;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFCoalesce;
@@ -339,6 +343,10 @@ public final class FunctionRegistry {
     registerGenericUDF("not", GenericUDFOPNot.class);
     registerGenericUDF("!", GenericUDFOPNot.class);
 
+    registerGenericUDF("ewah_bitmap_and", GenericUDFEWAHBitmapAnd.class);
+    registerGenericUDF("ewah_bitmap_or", GenericUDFEWAHBitmapOr.class);
+    registerGenericUDF("ewah_bitmap_empty", GenericUDFEWAHBitmapEmpty.class);
+
 
     // Aliases for Java Class Names
     // These are used in getImplicitConvertUDFMethod
@@ -383,6 +391,8 @@ public final class FunctionRegistry {
 
     registerGenericUDAF("ngrams", new GenericUDAFnGrams());
     registerGenericUDAF("context_ngrams", new GenericUDAFContextNGrams());
+
+    registerGenericUDAF("ewah_bitmap", new GenericUDAFEWAHBitmap());
 
     registerUDAF("percentile", UDAFPercentile.class);
 

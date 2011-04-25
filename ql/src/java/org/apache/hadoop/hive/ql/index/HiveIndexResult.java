@@ -15,7 +15,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.hadoop.hive.ql.index.compact;
+package org.apache.hadoop.hive.ql.index;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -40,9 +40,14 @@ import org.apache.hadoop.mapred.FileSplit;
 import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.mapred.LineRecordReader.LineReader;
 
-public class HiveCompactIndexResult {
+/**
+ * HiveIndexResult parses the input stream from an index query
+ * to generate a list of file splits to query.
+ */
+public class HiveIndexResult {
 
-  public static final Log l4j = LogFactory.getLog("HiveCompactIndexResult");
+  public static final Log l4j =
+    LogFactory.getLog(HiveIndexResult.class.getSimpleName());
 
   // IndexBucket
   static class IBucket {
@@ -77,7 +82,7 @@ public class HiveCompactIndexResult {
   BytesRefWritable[] bytesRef = new BytesRefWritable[2];
   boolean ignoreHdfsLoc = false;
 
-  public HiveCompactIndexResult(String indexFile, JobConf conf) throws IOException,
+  public HiveIndexResult(String indexFile, JobConf conf) throws IOException,
       HiveException {
     job = conf;
 
@@ -102,12 +107,16 @@ public class HiveCompactIndexResult {
       for (Path indexFinalPath : paths) {
         FSDataInputStream ifile = fs.open(indexFinalPath);
         LineReader lr = new LineReader(ifile, conf);
-        Text line = new Text();
-        while (lr.readLine(line) > 0) {
-          add(line);
+        try {
+          Text line = new Text();
+          while (lr.readLine(line) > 0) {
+            add(line);
+          }
         }
-        // this will close the input stream
-        lr.close();
+        finally {
+          // this will close the input stream
+          lr.close();
+        }
       }
     }
   }

@@ -1,0 +1,18 @@
+PREHOOK: query: select ewah_bitmap_and(array(13,2,4,8589934592,4096,0), array(13,2,4,8589934592,4096,0)) from src limit 1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: file:/tmp/mwang/hive_2011-03-31_14-41-33_816_4178335076582662801/-mr-10000
+POSTHOOK: query: select ewah_bitmap_and(array(13,2,4,8589934592,4096,0), array(13,2,4,8589934592,4096,0)) from src limit 1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: file:/tmp/mwang/hive_2011-03-31_14-41-33_816_4178335076582662801/-mr-10000
+[13,2,4,8589934592,4096,0]
+PREHOOK: query: select ewah_bitmap_and(array(13,2,4,8589934592,4096,0), array(8,2,4,8589934592,128,0)) from src limit 1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: file:/tmp/mwang/hive_2011-03-31_14-41-37_642_5072652249123670071/-mr-10000
+POSTHOOK: query: select ewah_bitmap_and(array(13,2,4,8589934592,4096,0), array(8,2,4,8589934592,128,0)) from src limit 1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: file:/tmp/mwang/hive_2011-03-31_14-41-37_642_5072652249123670071/-mr-10000
+[13,1,4,2,0]

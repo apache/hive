@@ -55,6 +55,10 @@ div
 double
 e
 elt
+ewah_bitmap
+ewah_bitmap_and
+ewah_bitmap_empty
+ewah_bitmap_or
 exp
 explode
 field
