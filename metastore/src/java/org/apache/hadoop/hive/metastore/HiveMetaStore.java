@@ -633,7 +633,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
     }
 
     private void drop_database_core(RawStore ms,
-        final String name, final boolean deleteData)
+        final String name, final boolean deleteData, final boolean cascade)
         throws NoSuchObjectException, InvalidOperationException, MetaException,
         IOException {
       boolean success = false;
@@ -641,7 +641,8 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       try {
         ms.openTransaction();
         db = ms.getDatabase(name);
-        if (!get_all_tables(db.getName()).isEmpty()) {
+        List<String> allTables = get_all_tables(db.getName());
+        if (!cascade && !allTables.isEmpty()) {
           throw new InvalidOperationException("Database " + db.getName() + " is not empty");
         }
         Path path = new Path(db.getLocationUri()).getParent();
@@ -663,7 +664,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       }
     }
 
-    public void drop_database(final String dbName, final boolean deleteData)
+    public void drop_database(final String dbName, final boolean deleteData, final boolean cascade)
         throws NoSuchObjectException, InvalidOperationException, MetaException {
 
       startFunction("drop_database", ": " + dbName);
@@ -676,7 +677,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
         executeWithRetry(new Command<Boolean>() {
           @Override
           Boolean run(RawStore ms) throws Exception {
-            drop_database_core(ms, dbName, deleteData);
+            drop_database_core(ms, dbName, deleteData, cascade);
             return Boolean.TRUE;
           }
         });

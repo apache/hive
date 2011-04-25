@@ -381,11 +381,15 @@ public class HiveMetaStoreClient implements IMetaStoreClient {
    */
   public void dropDatabase(String name)
       throws NoSuchObjectException, InvalidOperationException, MetaException, TException {
-    dropDatabase(name, true, false);
+    dropDatabase(name, true, false, false);
   }
 
-
   public void dropDatabase(String name, boolean deleteData, boolean ignoreUnknownDb)
+      throws NoSuchObjectException, InvalidOperationException, MetaException, TException {
+    dropDatabase(name, deleteData, ignoreUnknownDb, false);
+  }
+
+  public void dropDatabase(String name, boolean deleteData, boolean ignoreUnknownDb, boolean cascade)
       throws NoSuchObjectException, InvalidOperationException, MetaException, TException {
     try {
       getDatabase(name);
@@ -395,7 +399,7 @@ public class HiveMetaStoreClient implements IMetaStoreClient {
       }
       return;
     }
-    client.drop_database(name, deleteData);
+    client.drop_database(name, deleteData, cascade);
   }
 
 

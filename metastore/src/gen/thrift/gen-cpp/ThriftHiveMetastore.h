@@ -17,7 +17,7 @@ class ThriftHiveMetastoreIf : virtual public facebook::fb303::FacebookServiceIf 
   virtual ~ThriftHiveMetastoreIf() {}
   virtual void create_database(const Database& database) = 0;
   virtual void get_database(Database& _return, const std::string& name) = 0;
-  virtual void drop_database(const std::string& name, const bool deleteData) = 0;
+  virtual void drop_database(const std::string& name, const bool deleteData, const bool cascade) = 0;
   virtual void get_databases(std::vector<std::string> & _return, const std::string& pattern) = 0;
   virtual void get_all_databases(std::vector<std::string> & _return) = 0;
   virtual void alter_database(const std::string& dbname, const Database& db) = 0;
@@ -83,7 +83,7 @@ class ThriftHiveMetastoreNull : virtual public ThriftHiveMetastoreIf , virtual p
   void get_database(Database& /* _return */, const std::string& /* name */) {
     return;
   }
-  void drop_database(const std::string& /* name */, const bool /* deleteData */) {
+  void drop_database(const std::string& /* name */, const bool /* deleteData */, const bool /* cascade */) {
     return;
   }
   void get_databases(std::vector<std::string> & /* _return */, const std::string& /* pattern */) {
@@ -487,21 +487,23 @@ class ThriftHiveMetastore_get_database_presult {
 };
 
 typedef struct _ThriftHiveMetastore_drop_database_args__isset {
-  _ThriftHiveMetastore_drop_database_args__isset() : name(false), deleteData(false) {}
+  _ThriftHiveMetastore_drop_database_args__isset() : name(false), deleteData(false), cascade(false) {}
   bool name;
   bool deleteData;
+  bool cascade;
 } _ThriftHiveMetastore_drop_database_args__isset;
 
 class ThriftHiveMetastore_drop_database_args {
  public:
 
-  ThriftHiveMetastore_drop_database_args() : name(""), deleteData(0) {
+  ThriftHiveMetastore_drop_database_args() : name(""), deleteData(0), cascade(0) {
   }
 
   virtual ~ThriftHiveMetastore_drop_database_args() throw() {}
 
   std::string name;
   bool deleteData;
+  bool cascade;
 
   _ThriftHiveMetastore_drop_database_args__isset __isset;
 
@@ -510,6 +512,8 @@ class ThriftHiveMetastore_drop_database_args {
     if (!(name == rhs.name))
       return false;
     if (!(deleteData == rhs.deleteData))
+      return false;
+    if (!(cascade == rhs.cascade))
       return false;
     return true;
   }
@@ -533,6 +537,7 @@ class ThriftHiveMetastore_drop_database_pargs {
 
   const std::string* name;
   const bool* deleteData;
+  const bool* cascade;
 
   uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
 
@@ -6911,8 +6916,8 @@ class ThriftHiveMetastoreClient : virtual public ThriftHiveMetastoreIf, public f
   void get_database(Database& _return, const std::string& name);
   void send_get_database(const std::string& name);
   void recv_get_database(Database& _return);
-  void drop_database(const std::string& name, const bool deleteData);
-  void send_drop_database(const std::string& name, const bool deleteData);
+  void drop_database(const std::string& name, const bool deleteData, const bool cascade);
+  void send_drop_database(const std::string& name, const bool deleteData, const bool cascade);
   void recv_drop_database();
   void get_databases(std::vector<std::string> & _return, const std::string& pattern);
   void send_get_databases(const std::string& pattern);
@@ -7244,10 +7249,10 @@ class ThriftHiveMetastoreMultiface : virtual public ThriftHiveMetastoreIf, publi
     }
   }
 
-  void drop_database(const std::string& name, const bool deleteData) {
+  void drop_database(const std::string& name, const bool deleteData, const bool cascade) {
     uint32_t sz = ifaces_.size();
     for (uint32_t i = 0; i < sz; ++i) {
-      ifaces_[i]->drop_database(name, deleteData);
+      ifaces_[i]->drop_database(name, deleteData, cascade);
     }
   }
 

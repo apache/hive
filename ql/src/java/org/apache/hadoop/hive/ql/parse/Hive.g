@@ -246,6 +246,8 @@ TOK_ALTERDATABASE_PROPERTIES;
 TOK_ALTERTABLE_ALTERPARTS_MERGEFILES;
 TOK_TABNAME;
 TOK_TABSRC;
+TOK_RESTRICT;
+TOK_CASCADE;
 }
 
 
@@ -348,6 +350,15 @@ ifExists
     -> ^(TOK_IFEXISTS)
     ;
 
+restrictOrCascade
+@init { msgs.push("restrict or cascade clause"); }
+@after { msgs.pop(); }
+    : KW_RESTRICT
+    -> ^(TOK_RESTRICT)
+    | KW_CASCADE
+    -> ^(TOK_CASCADE)
+    ;
+
 ifNotExists
 @init { msgs.push("if not exists clause"); }
 @after { msgs.pop(); }
@@ -392,8 +403,8 @@ switchDatabaseStatement
 dropDatabaseStatement
 @init { msgs.push("drop database statement"); }
 @after { msgs.pop(); }
-    : KW_DROP (KW_DATABASE|KW_SCHEMA) ifExists? Identifier
-    -> ^(TOK_DROPDATABASE Identifier ifExists?)
+    : KW_DROP (KW_DATABASE|KW_SCHEMA) ifExists? Identifier restrictOrCascade?
+    -> ^(TOK_DROPDATABASE Identifier ifExists? restrictOrCascade?)
     ;
 
 databaseComment
@@ -2246,6 +2257,8 @@ KW_OPTION: 'OPTION';
 KW_CONCATENATE: 'CONCATENATE';
 KW_SHOW_DATABASE: 'SHOW_DATABASE';
 KW_UPDATE: 'UPDATE';
+KW_RESTRICT: 'RESTRICT';
+KW_CASCADE: 'CASCADE';
 
 
 // Operators
