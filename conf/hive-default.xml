@@ -460,6 +460,12 @@
 </property>
 
 <property>
+  <name>hive.exec.rowoffset</name>
+  <value>false</value>
+  <description>Whether to provide the row offset virtual column</description>
+</property>
+
+<property>
   <name>hive.task.progress</name>
   <value>false</value>
   <description>Whether Hive should periodically update task progress counters during execution.  Enabling this allows task progress to be monitored more closely in the job tracker, but may impose a performance penalty.  This flag is automatically set to true for jobs with hive.exec.dynamic.partition set to true.</description>

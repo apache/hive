@@ -41,6 +41,7 @@ public class IOContext {
 
   long currentBlockStart;
   long nextBlockStart;
+  long currentRow;
   boolean isBlockPointer;
   boolean ioExceptions;
 
@@ -49,6 +50,7 @@ public class IOContext {
   public IOContext() {
     this.currentBlockStart = 0;
     this.nextBlockStart = -1;
+    this.currentRow = 0;
     this.isBlockPointer = true;
     this.ioExceptions = false;
   }
@@ -67,6 +69,14 @@ public class IOContext {
 
   public void setNextBlockStart(long nextBlockStart) {
     this.nextBlockStart = nextBlockStart;
+  }
+
+  public long getCurrentRow() {
+    return currentRow;
+  }
+
+  public void setCurrentRow(long currentRow) {
+    this.currentRow = currentRow;
   }
 
   public boolean isBlockPointer() {

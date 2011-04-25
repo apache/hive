@@ -16,7 +16,7 @@
  * limitations under the License.
  */
 
-package org.apache.hadoop.hive.ql.index.compact;
+package org.apache.hadoop.hive.ql.index;
 
 import java.io.Serializable;
 import java.util.HashMap;
@@ -28,10 +28,10 @@ public class IndexMetadataChangeWork implements Serializable {
   private HashMap<String, String> partSpec;
   private String indexTbl;
   private String dbName;
-  
+
   public IndexMetadataChangeWork() {
   }
-  
+
   public IndexMetadataChangeWork(HashMap<String, String> partSpec,
       String indexTbl, String dbName) {
     super();
@@ -55,7 +55,7 @@ public class IndexMetadataChangeWork implements Serializable {
   public void setIndexTbl(String indexTbl) {
     this.indexTbl = indexTbl;
   }
-  
+
   public String getDbName() {
     return dbName;
   }
@@ -63,5 +63,5 @@ public class IndexMetadataChangeWork implements Serializable {
   public void setDbName(String dbName) {
     this.dbName = dbName;
   }
-  
+
 }

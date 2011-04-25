@@ -5798,7 +5798,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       }
 
       //put all virutal columns in RowResolver.
-      Iterator<VirtualColumn> vcs = VirtualColumn.registry.values().iterator();
+      Iterator<VirtualColumn> vcs = VirtualColumn.getRegistry(conf).iterator();
       //use a list for easy cumtomize
       List<VirtualColumn> vcList = new ArrayList<VirtualColumn>();
       while (vcs.hasNext()) {

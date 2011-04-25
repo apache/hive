@@ -19,8 +19,14 @@
 package org.apache.hadoop.hive.ql.metadata;
 
 import java.io.Serializable;
+import java.util.Map;
 import java.util.HashMap;
+import java.util.List;
+import java.util.ArrayList;
 
+import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 
@@ -28,15 +34,10 @@ public class VirtualColumn implements Serializable {
 
   private static final long serialVersionUID = 1L;
 
-  public static HashMap<String, VirtualColumn> registry = new HashMap<String, VirtualColumn>();
-  
   public static VirtualColumn FILENAME = new VirtualColumn("INPUT__FILE__NAME", (PrimitiveTypeInfo)TypeInfoFactory.stringTypeInfo);
   public static VirtualColumn BLOCKOFFSET = new VirtualColumn("BLOCK__OFFSET__INSIDE__FILE", (PrimitiveTypeInfo)TypeInfoFactory.longTypeInfo);
+  public static VirtualColumn ROWOFFSET = new VirtualColumn("ROW__OFFSET__INSIDE__BLOCK", (PrimitiveTypeInfo)TypeInfoFactory.longTypeInfo);
   
-  static {
-    registry.put(FILENAME.name, FILENAME);
-    registry.put(BLOCKOFFSET.name, BLOCKOFFSET);
-  }
   
   private String name;
   private PrimitiveTypeInfo typeInfo;
@@ -44,7 +45,7 @@ public class VirtualColumn implements Serializable {
 
   public VirtualColumn() {
   }
-  
+
   public VirtualColumn(String name, PrimitiveTypeInfo typeInfo) {
     this(name, typeInfo, true);
   }
@@ -53,6 +54,17 @@ public class VirtualColumn implements Serializable {
     this.name = name;
     this.typeInfo = typeInfo;
     this.isHidden = isHidden;
+  }
+
+  public static List<VirtualColumn> getRegistry(Configuration conf) {
+    ArrayList<VirtualColumn> l = new ArrayList<VirtualColumn>();
+    l.add(BLOCKOFFSET);
+    l.add(FILENAME);
+    if (HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVEROWOFFSET)) {
+      l.add(ROWOFFSET);
+    }
+
+    return l;
   }
   
   public PrimitiveTypeInfo getTypeInfo() {

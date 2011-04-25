@@ -16,7 +16,7 @@
  * limitations under the License.
  */
 
-package org.apache.hadoop.hive.ql.index.compact;
+package org.apache.hadoop.hive.ql.index.bitmap;
 
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -37,8 +37,6 @@ import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.hooks.ReadEntity;
 import org.apache.hadoop.hive.ql.hooks.WriteEntity;
 import org.apache.hadoop.hive.ql.index.TableBasedIndexHandler;
-import org.apache.hadoop.hive.ql.index.IndexMetadataChangeTask;
-import org.apache.hadoop.hive.ql.index.IndexMetadataChangeWork;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.HiveUtils;
 import org.apache.hadoop.hive.ql.metadata.Partition;
@@ -46,10 +44,14 @@ import org.apache.hadoop.hive.ql.metadata.VirtualColumn;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.plan.PartitionDesc;
 import org.apache.hadoop.hive.ql.plan.TableDesc;
+import org.apache.hadoop.hive.ql.index.IndexMetadataChangeTask;
+import org.apache.hadoop.hive.ql.index.IndexMetadataChangeWork;
 
-public class CompactIndexHandler extends TableBasedIndexHandler {
-
-  private Configuration configuration;
+/**
+ * Index handler for the bitmap index. Bitmap index uses an EWAH-compressed
+ * bitmap to represent the values in a table.
+ */
+public class BitmapIndexHandler extends TableBasedIndexHandler {
 
   @Override
   public void analyzeIndexDefinition(Table baseTable, Index index,
@@ -60,8 +62,10 @@ public class CompactIndexHandler extends TableBasedIndexHandler {
       List<FieldSchema> indexTblCols = indexTableSd.getCols();
       FieldSchema bucketFileName = new FieldSchema("_bucketname", "string", "");
       indexTblCols.add(bucketFileName);
-      FieldSchema offSets = new FieldSchema("_offsets", "array<bigint>", "");
+      FieldSchema offSets = new FieldSchema("_offset", "bigint", "");
       indexTblCols.add(offSets);
+      FieldSchema bitmaps = new FieldSchema("_bitmaps", "array<bigint>", "");
+      indexTblCols.add(bitmaps);
       indexTable.setSd(indexTableSd);
     }
   }
@@ -71,6 +75,9 @@ public class CompactIndexHandler extends TableBasedIndexHandler {
       List<FieldSchema> indexField, boolean partitioned,
       PartitionDesc indexTblPartDesc, String indexTableName,
       PartitionDesc baseTablePartDesc, String baseTableName, String dbName) {
+
+    HiveConf conf = new HiveConf(getConf(), BitmapIndexHandler.class);
+    HiveConf.setBoolVar(conf, HiveConf.ConfVars.HIVEROWOFFSET, true);
 
     String indexCols = HiveUtils.getUnparsedColumnNamesFromFieldSchema(indexField);
 
@@ -95,12 +102,13 @@ public class CompactIndexHandler extends TableBasedIndexHandler {
     command.append(" SELECT ");
     command.append(indexCols);
     command.append(",");
-
     command.append(VirtualColumn.FILENAME.getName());
     command.append(",");
-    command.append(" collect_set (");
     command.append(VirtualColumn.BLOCKOFFSET.getName());
-    command.append(") ");
+    command.append(",");
+    command.append("EWAH_BITMAP(");
+    command.append(VirtualColumn.ROWOFFSET.getName());
+    command.append(")");
     command.append(" FROM " + HiveUtils.unparseIdentifier(baseTableName) );
     LinkedHashMap<String, String> basePartSpec = baseTablePartDesc.getPartSpec();
     if(basePartSpec != null) {
@@ -115,9 +123,21 @@ public class CompactIndexHandler extends TableBasedIndexHandler {
       }
     }
     command.append(" GROUP BY ");
-    command.append(indexCols + ", " + VirtualColumn.FILENAME.getName());
+    command.append(VirtualColumn.FILENAME.getName());
+    command.append(",");
+    command.append(VirtualColumn.BLOCKOFFSET.getName());
+    for (FieldSchema fieldSchema : indexField) {
+      command.append(",");
+      command.append(HiveUtils.unparseIdentifier(fieldSchema.getName()));
+    }
+    
+    // Require clusterby ROWOFFSET if map-size aggregation is off.
+    if (!configuration.get("hive.map.aggr", null).equals("true")) {
+      command.append(" CLUSTER BY ");
+      command.append(VirtualColumn.ROWOFFSET.getName());
+    }
 
-    Driver driver = new Driver(new HiveConf(getConf(), CompactIndexHandler.class));
+    Driver driver = new Driver(conf);
     driver.compile(command.toString());
 
     Task<?> rootTask = driver.getPlan().getRootTasks().get(0);

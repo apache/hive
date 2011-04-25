@@ -16,7 +16,7 @@
  * limitations under the License.
  */
 
-package org.apache.hadoop.hive.ql.index.compact;
+package org.apache.hadoop.hive.ql.index;
 
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
@@ -26,7 +26,6 @@ import org.apache.hadoop.hive.metastore.Warehouse;
 import org.apache.hadoop.hive.ql.Context;
 import org.apache.hadoop.hive.ql.DriverContext;
 import org.apache.hadoop.hive.ql.exec.Task;
-import org.apache.hadoop.hive.ql.index.HiveIndex;
 import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.metadata.Partition;
 import org.apache.hadoop.hive.ql.metadata.Table;
@@ -92,7 +91,7 @@ public class IndexMetadataChangeTask extends Task<IndexMetadataChangeWork>{
 
   @Override
   public String getName() {
-    return "IndexMetadataChangeTask";
+    return IndexMetadataChangeTask.class.getSimpleName();
   }
 
   @Override

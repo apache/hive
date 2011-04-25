@@ -16,18 +16,27 @@
  * limitations under the License.
  */
 
-package org.apache.hadoop.hive.ql.index.compact;
+package org.apache.hadoop.hive.ql.udf.generic;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-import org.apache.hadoop.hive.ql.index.HiveIndexedInputFormat;
+import javaewah.EWAHCompressedBitmap;
 
-public class HiveCompactIndexInputFormat extends HiveIndexedInputFormat {
+import org.apache.hadoop.hive.ql.exec.Description;
 
-  public static final Log l4j =
-    LogFactory.getLog(HiveCompactIndexInputFormat.class.getSimpleName());
+/**
+ * GenericEWAHUDFBitmapAnd.
+ *
+ */
+@Description(name = "ewah_bitmap_and",
+  value = "_FUNC_(b1, b2) - Return an EWAH-compressed bitmap that is the bitwise AND of two bitmaps.")
+public class GenericUDFEWAHBitmapAnd extends AbstractGenericUDFEWAHBitmapBop {
 
-  public HiveCompactIndexInputFormat() {
-    super("hive.index.compact.file");
+  public GenericUDFEWAHBitmapAnd() {
+    super("EWAH_BITMAP_AND");
+  }
+
+  @Override
+  protected EWAHCompressedBitmap bitmapBop(
+      EWAHCompressedBitmap bitmap1, EWAHCompressedBitmap bitmap2) {
+    return bitmap1.and(bitmap2);
   }
 }

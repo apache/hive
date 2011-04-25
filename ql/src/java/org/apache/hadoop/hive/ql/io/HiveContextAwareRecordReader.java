@@ -76,15 +76,25 @@ public abstract class HiveContextAwareRecordReader<K, V> implements RecordReader
     long pointerPos = this.getPos();
     if (!ioCxtRef.isBlockPointer) {
       ioCxtRef.currentBlockStart = pointerPos;
+      ioCxtRef.currentRow = 0;
       return;
     }
 
+    ioCxtRef.currentRow++;
+
     if (ioCxtRef.nextBlockStart == -1) {
       ioCxtRef.nextBlockStart = pointerPos;
+      ioCxtRef.currentRow = 0;
     }
     if (pointerPos != ioCxtRef.nextBlockStart) {
       // the reader pointer has moved to the end of next block, or the end of
       // current record.
+
+      ioCxtRef.currentRow = 0;
+
+      if (ioCxtRef.currentBlockStart == ioCxtRef.nextBlockStart) {
+        ioCxtRef.currentRow = 1;
+      }
 
       ioCxtRef.currentBlockStart = ioCxtRef.nextBlockStart;
       ioCxtRef.nextBlockStart = pointerPos;

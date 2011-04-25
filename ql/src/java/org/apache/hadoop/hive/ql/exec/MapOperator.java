@@ -566,6 +566,17 @@ public class MapOperator extends Operator<MapredWork> implements Serializable {
           if (current != old.get()) {
             old.set(current);
           }
+        } else if (vc.equals(VirtualColumn.ROWOFFSET)) {
+          long current = ioCxt.getCurrentRow();
+          LongWritable old = (LongWritable) this.vcValues[i];
+          if (old == null) {
+            old = new LongWritable(current);
+            this.vcValues[i] = old;
+            continue;
+          }
+          if (current != old.get()) {
+            old.set(current);
+          }
         }
       }
     }
