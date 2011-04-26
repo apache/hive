@@ -24,7 +24,7 @@ public class HiveCassandraStandardRowResult implements Writable{
 
     @Override
     public void readFields(DataInput in) throws IOException {
-      key =new Text();
+      key = new Text();
       key.readFields(in);
       value = new MapWritable();
       value.readFields(in);
@@ -37,7 +37,15 @@ public class HiveCassandraStandardRowResult implements Writable{
     }
 
     public Text getKey() {
-      return key;
+      //Text might contain more bytes than expected.
+      //construct the key based on the length of the Text.
+      if (key.getBytes().length > key.getLength()) {
+        Text newKey = new Text();
+        newKey.set(key.getBytes(), 0, key.getLength());
+        return newKey;
+      } else {
+        return key;
+      }
     }
 
     public void setKey(Text key) {
