@@ -46,6 +46,7 @@ public class ExplainSemanticAnalyzer extends BaseSemanticAnalyzer {
     BaseSemanticAnalyzer sem = SemanticAnalyzerFactory.get(conf, (ASTNode) ast
         .getChild(0));
     sem.analyze((ASTNode) ast.getChild(0), ctx);
+    sem.validate();
 
     boolean extended = false;
     if (ast.getChildCount() > 1) {

@@ -72,6 +72,7 @@ import org.apache.hadoop.hive.ql.hooks.ReadEntity;
 import org.apache.hadoop.hive.ql.hooks.WriteEntity;
 import org.apache.hadoop.hive.ql.io.HiveFileFormatUtils;
 import org.apache.hadoop.hive.ql.io.HiveOutputFormat;
+import org.apache.hadoop.hive.ql.io.ReworkMapredInputFormat;
 import org.apache.hadoop.hive.ql.lib.DefaultGraphWalker;
 import org.apache.hadoop.hive.ql.lib.DefaultRuleDispatcher;
 import org.apache.hadoop.hive.ql.lib.Dispatcher;
@@ -164,6 +165,7 @@ import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
 import org.apache.hadoop.mapred.InputFormat;
+import org.apache.hadoop.util.ReflectionUtils;
 
 /**
  * Implementation of the semantic analyzer.
@@ -7135,21 +7137,24 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
             "Table " + tbl.getTableName()));
       }
     }
+    
+    boolean reworkMapredWork = HiveConf.getBoolVar(this.conf, HiveConf.ConfVars.HIVE_REWORK_MAPREDWORK);
 
     // validate all tasks
     for (Task<? extends Serializable> rootTask : rootTasks) {
-      validate(rootTask);
+      validate(rootTask, reworkMapredWork);
     }
   }
 
-  private void validate(Task<? extends Serializable> task)
+  private void validate(Task<? extends Serializable> task, boolean reworkMapredWork)
       throws SemanticException {
+    Utilities.reworkMapRedWork(task, reworkMapredWork, conf);
     if (task.getChildTasks() == null) {
       return;
     }
 
     for (Task<? extends Serializable> childTask : task.getChildTasks()) {
-      validate(childTask);
+      validate(childTask, reworkMapredWork);
     }
   }
 

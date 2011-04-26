@@ -1038,4 +1038,11 @@
    Insert queries are not restricted by this limit.</description>
 </property>
 
+<property>
+  <name>hive.rework.mapredwork</name>
+  <value>false</value>
+  <description>should rework the mapred work or not. 
+  This is first introduced by SymlinkTextInputFormat to replace symlink files with real paths at compile time.</description>
+</property>
+
 </configuration>

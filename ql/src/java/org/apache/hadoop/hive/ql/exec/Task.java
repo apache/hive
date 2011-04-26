@@ -53,7 +53,7 @@ public abstract class Task<T extends Serializable> implements Serializable, Node
   protected transient boolean queued;
   protected transient HiveConf conf;
   protected transient Hive db;
-  protected transient Log LOG;
+  protected static transient Log LOG;
   protected transient LogHelper console;
   protected transient QueryPlan queryPlan;
   protected transient TaskHandle taskHandle;
