@@ -50,9 +50,10 @@ public class CassandraStorageHandler implements HiveStorageHandler, HiveMetaHook
 
     jobProperties.put(StandardColumnSerDe.CASSANDRA_CF_NAME, columnFamily);
 
-    //Identify ColumnInfo
+    //If no column mapping has been configured, we should create the default column mapping.
     if(columnInfo == null) {
-      columnInfo = StandardColumnSerDe.createColumnMappingString(tableProperties.getProperty(org.apache.hadoop.hive.serde.Constants.LIST_COLUMNS));
+      columnInfo = StandardColumnSerDe.createColumnMappingString(
+        tableProperties.getProperty(org.apache.hadoop.hive.serde.Constants.LIST_COLUMNS));
     }
 
     jobProperties.put(StandardColumnSerDe.CASSANDRA_COL_MAPPING, columnInfo);

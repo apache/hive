@@ -2,26 +2,37 @@ package org.apache.hadoop.hive.cassandra.serde;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Map;
+import java.util.Properties;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.cassandra.input.HiveCassandraStandardRowResult;
 import org.apache.hadoop.hive.cassandra.input.LazyCassandraRow;
 import org.apache.hadoop.hive.cassandra.output.CassandraColumn;
 import org.apache.hadoop.hive.cassandra.output.CassandraPut;
 import org.apache.hadoop.hive.serde.Constants;
-import org.apache.hadoop.hive.serde2.*;
+import org.apache.hadoop.hive.serde2.ByteStream;
+import org.apache.hadoop.hive.serde2.SerDe;
+import org.apache.hadoop.hive.serde2.SerDeException;
+import org.apache.hadoop.hive.serde2.SerDeUtils;
 import org.apache.hadoop.hive.serde2.lazy.LazyFactory;
 import org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe;
-import org.apache.hadoop.hive.serde2.lazy.LazyUtils;
 import org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe.SerDeParameters;
+import org.apache.hadoop.hive.serde2.lazy.LazyUtils;
 import org.apache.hadoop.hive.serde2.lazy.objectinspector.LazySimpleStructObjectInspector;
-import org.apache.hadoop.hive.serde2.objectinspector.*;
+import org.apache.hadoop.hive.serde2.objectinspector.ListObjectInspector;
+import org.apache.hadoop.hive.serde2.objectinspector.MapObjectInspector;
+import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector.Category;
+import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector;
+import org.apache.hadoop.hive.serde2.objectinspector.StructField;
+import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorFactory;
 import org.apache.hadoop.hive.serde2.typeinfo.MapTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.StructTypeInfo;
@@ -102,9 +113,16 @@ public class StandardColumnSerDe implements SerDe {
     }
   }
 
+  /**
+   * Initialize the cassandra serialization and deserialization parameters from table properties and configuration.
+   *
+   * @param job
+   * @param tbl
+   * @param serdeName
+   * @throws SerDeException
+   */
   private void initCassandraSerDeParameters(Configuration job, Properties tbl, String serdeName)
       throws SerDeException {
-
 
     //Figure out columnFamily
     cassandraColumnFamily = tbl.getProperty(StandardColumnSerDe.CASSANDRA_CF_NAME);
@@ -124,9 +142,7 @@ public class StandardColumnSerDe implements SerDe {
       }
     }
 
-
     cassandraColumnNames = parseOrCreateColumnMapping(tbl, tbl.getProperty(Constants.LIST_COLUMNS));
-
 
     iKey = cassandraColumnNames.indexOf(StandardColumnSerDe.CASSANDRA_KEY_COLUMN);
 
@@ -397,26 +413,36 @@ public class StandardColumnSerDe implements SerDe {
     throw new RuntimeException("Unknown category type: " + objInspector.getCategory());
   }
 
+  /**
+   * Parse the column mappping from table properties and table columns. If cassandra.columns.mapping
+   * is defined in the property, use it to create the mapping. Otherwise, create the mapping from table
+   * columns using the default mapping.
+   *
+   * @param tbl table properties
+   * @param tblColumnStr table column names
+   * @return A list of column names
+   * @throws SerDeException
+   */
   public static List<String> parseOrCreateColumnMapping(Properties tbl, String tblColumnStr) throws SerDeException {
 
     String prop = tbl.getProperty(CASSANDRA_COL_MAPPING);
 
-    if (prop == null && tblColumnStr == null) {
-      throw new SerDeException("Can't find table column definitions");
-    }
-
-    if (tblColumnStr != null) {
-        //auto-create
-        String mappingStr = createColumnMappingString(tblColumnStr);
-
-        return Arrays.asList(mappingStr.split(","));
-    } else {
+    if (prop != null) {
       return parseColumnMapping(prop);
+    } else if (tblColumnStr != null) {
+      //auto-create
+      String mappingStr = createColumnMappingString(tblColumnStr);
+
+      return Arrays.asList(mappingStr.split(","));
+    } else {
+      throw new SerDeException("Can't find table column definitions");
     }
   }
 
   /*
-   * Creates the cassandra column mappings from the hive column names
+   * Creates the cassandra column mappings from the hive column names.
+   * This would be triggered when no cassandra.columns.mapping has been defined
+   * in the user query.
    */
   public static String createColumnMappingString(String tblColumnStr)
   {
@@ -477,6 +503,12 @@ public class StandardColumnSerDe implements SerDe {
     return mappingStr;
   }
 
+  /**
+   * If only request row key, return false;
+   *
+   * @param columnNames
+   * @return
+   */
   public static boolean isTransposed(List<String> columnNames)
   {
     if(columnNames == null || columnNames.size() == 0) {
@@ -520,9 +552,17 @@ public class StandardColumnSerDe implements SerDe {
     return isTransposedTable;
   }
 
-  //Reads
+  /**
+   * Parses the cassandra columns mapping to identify the column name.
+   * One of the Hive table columns maps to the HBase row key, by default the
+   * first column.
+   *
+   * @param columnMapping - the column mapping specification to be parsed
+   * @return a list of cassandra column names
+   */
   public static List<String> parseColumnMapping(String columnMapping)
   {
+    //TODO: columnMappings should never be empty or null. Add column mapping verification.
     String[] columnArray = columnMapping.split(",");
 
     List<String> columnList = Arrays.asList(columnArray);

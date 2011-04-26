@@ -2,10 +2,11 @@ package org.apache.hadoop.hive.cassandra.input;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
-import java.util.*;
-
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.SortedMap;
 
 import org.apache.cassandra.db.IColumn;
 import org.apache.cassandra.db.SuperColumn;
@@ -15,17 +16,20 @@ import org.apache.cassandra.hadoop.ConfigHelper;
 import org.apache.cassandra.thrift.SlicePredicate;
 import org.apache.cassandra.thrift.SliceRange;
 import org.apache.cassandra.utils.ByteBufferUtil;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.cassandra.serde.StandardColumnSerDe;
 import org.apache.hadoop.hive.serde2.ColumnProjectionUtils;
 import org.apache.hadoop.io.BytesWritable;
 import org.apache.hadoop.io.MapWritable;
 import org.apache.hadoop.io.Text;
-import org.apache.hadoop.mapred.*;
 import org.apache.hadoop.mapred.InputFormat;
 import org.apache.hadoop.mapred.InputSplit;
+import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.mapred.RecordReader;
-import org.apache.hadoop.mapreduce.*;
+import org.apache.hadoop.mapred.Reporter;
+import org.apache.hadoop.mapreduce.Job;
 import org.apache.hadoop.mapreduce.JobContext;
 import org.apache.hadoop.mapreduce.TaskAttemptContext;
 import org.apache.hadoop.mapreduce.TaskAttemptID;
@@ -68,12 +72,22 @@ public class HiveCassandraStandardColumnInputFormat extends
     };
 
     SlicePredicate predicate = new SlicePredicate();
-    SliceRange range = new SliceRange();
-    range.setStart(new byte[0]);
-    range.setFinish(new byte[0]);
-    range.setReversed(false);
-    range.setCount(cassandraSplit.getSlicePredicateSize());
-    predicate.setSlice_range(range);
+
+    if (isTransposed || readColIDs.size() == columns.size()) {
+      //We are reading all columns
+      SliceRange range = new SliceRange();
+      range.setStart(new byte[0]);
+      range.setFinish(new byte[0]);
+      range.setReversed(false);
+      range.setCount(cassandraSplit.getSlicePredicateSize());
+      predicate.setSlice_range(range);
+    } else {
+      int iKey = columns.indexOf(StandardColumnSerDe.CASSANDRA_KEY_COLUMN);
+      List<ByteBuffer> colBytes = getColumnNames(iKey, columns, readColIDs);
+      //TODO: Need to support select key from table query. In this case, only key is specified in the query. colBytes in
+      //this case would be an empty list.
+      predicate.setColumn_names(colBytes);
+    }
 
     final org.apache.hadoop.mapreduce.RecordReader<ByteBuffer, SortedMap<ByteBuffer, IColumn>> recordReader = createRecordReader(
         cfSplit, tac);
@@ -308,6 +322,28 @@ public class HiveCassandraStandardColumnInputFormat extends
       csplit.setColumnMapping(cassandraColumnMapping);
       results[i] = csplit;
     }
+    return results;
+  }
+
+  /**
+   * Return a list of columns names to read from cassandra
+   *
+   * @param iKey the index of the key
+   * @param columns column mapping
+   * @param readColIDs column names to read from cassandra
+   */
+  private List<ByteBuffer> getColumnNames(int iKey, List<String> columns, List<Integer> readColIDs) {
+
+    List<ByteBuffer> results = new ArrayList();
+    int maxSize = columns.size();
+
+    for (Integer i : readColIDs) {
+      assert(i < maxSize);
+      if (i != iKey) {
+        results.add(ByteBufferUtil.bytes(columns.get(i.intValue())));
+      }
+    }
+
     return results;
   }
 
