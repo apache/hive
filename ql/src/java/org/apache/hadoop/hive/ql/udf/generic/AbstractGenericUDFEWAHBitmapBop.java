@@ -104,6 +104,7 @@ abstract public class AbstractGenericUDFEWAHBitmapBop extends GenericUDF {
     } catch (IOException e) {
       throw new RuntimeException(e);
     }
+    ret.clear();
     List<LongWritable> retList = bitmapToWordArray(bitmapAnd);
     for (LongWritable l : retList) {
       ret.add(l);
