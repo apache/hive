@@ -17,6 +17,9 @@ FROM src INSERT OVERWRITE TABLE cassandra_hive_table SELECT * WHERE (key%7)=0 OR
 EXPLAIN select * from cassandra_hive_table ORDER BY key;
 select * from cassandra_hive_table ORDER BY key;
 
+EXPLAIN select key from cassandra_hive_table ORDER BY key;
+select key from cassandra_hive_table ORDER BY key;
+
 EXPLAIN select value from cassandra_hive_table ORDER BY VALUE;
 select value from cassandra_hive_table ORDER BY VALUE;
 
