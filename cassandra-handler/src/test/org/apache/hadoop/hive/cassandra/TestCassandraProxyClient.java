@@ -1,22 +1,19 @@
 package org.apache.hadoop.hive.cassandra;
 
-import java.io.IOException;
 import java.util.List;
 
-import junit.framework.TestCase;
-
 import org.apache.cassandra.contrib.utils.service.CassandraServiceDataCleaner;
-import org.apache.cassandra.service.EmbeddedCassandraService;
-import org.apache.cassandra.thrift.*;
+import org.apache.cassandra.thrift.Cassandra;
+import org.apache.cassandra.thrift.CfDef;
+import org.apache.cassandra.thrift.Column;
+import org.apache.cassandra.thrift.ColumnOrSuperColumn;
+import org.apache.cassandra.thrift.ColumnParent;
+import org.apache.cassandra.thrift.ColumnPath;
+import org.apache.cassandra.thrift.ConsistencyLevel;
+import org.apache.cassandra.thrift.KsDef;
 import org.apache.cassandra.utils.ByteBufferUtil;
-import org.apache.thrift.TException;
-import org.apache.thrift.transport.TTransportException;
 
-public class TestCassandraProxyClient extends TestCase {
-  Cassandra.Iface client;
-  private EmbeddedCassandraService cassandra;
-  private String ksName;
-  private String cfName;
+public class TestCassandraProxyClient extends BaseCassandraConnectionTest {
 
   /**
    * Make sure that when the server is down, proxy client will only try a certain amount of times and fails the request.
@@ -36,26 +33,7 @@ public class TestCassandraProxyClient extends TestCase {
     }
   }
 
-  /**
-   * Start the embedded cassandra server if it is not up.
-   *
-   * @throws IOException
-   * @throws TTransportException
-   * @throws TException
-   * @throws CassandraException
-   */
-  protected void startServer() throws IOException, TTransportException, TException, CassandraException {
-    if (cassandra==null){
-      CassandraServiceDataCleaner cleaner = new CassandraServiceDataCleaner();
-      cleaner.prepare();
-      cassandra = new EmbeddedCassandraService();
-      cassandra.start();
-    }
 
-    //Make sure that this server is connectable.
-    client = (Cassandra.Iface) CassandraProxyClient.newProxyConnection(
-        "127.0.0.1", 9170, true, true);
-  }
 
   @Override
   protected void tearDown() throws Exception {
@@ -65,7 +43,7 @@ public class TestCassandraProxyClient extends TestCase {
   }
 
   public void testInsertionQuery() throws Exception {
-    startServer();
+    maybeStartServer();
 
     List<KsDef> keyspaces = client.describe_keyspaces();
     assertTrue(keyspaces.size() > 1);
