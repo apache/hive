@@ -721,7 +721,7 @@ public class ExecDriver extends Task<MapredWork> implements Serializable, Hadoop
   /**
    * Handle a empty/null path for a given alias.
    */
-  private int addInputPath(String path, JobConf job, MapredWork work, String hiveScratchDir,
+  private static int addInputPath(String path, JobConf job, MapredWork work, String hiveScratchDir,
       int numEmptyPaths, boolean isEmptyPath, String alias) throws Exception {
     // either the directory does not exist or it is empty
     assert path == null || isEmptyPath;
@@ -794,7 +794,7 @@ public class ExecDriver extends Task<MapredWork> implements Serializable, Hadoop
     return numEmptyPaths;
   }
 
-  private void addInputPaths(JobConf job, MapredWork work, String hiveScratchDir, Context ctx)
+  public static void addInputPaths(JobConf job, MapredWork work, String hiveScratchDir, Context ctx)
       throws Exception {
     int numEmptyPaths = 0;
 

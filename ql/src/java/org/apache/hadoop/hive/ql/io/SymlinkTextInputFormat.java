@@ -23,13 +23,18 @@ import java.io.DataOutput;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.ContentSummary;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.ql.plan.MapredWork;
+import org.apache.hadoop.hive.ql.plan.PartitionDesc;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapred.FileInputFormat;
@@ -49,8 +54,9 @@ import org.apache.hadoop.mapred.TextInputFormat;
  * actual map-reduce input. The target input data should be in TextInputFormat.
  */
 @SuppressWarnings("deprecation")
-public class SymlinkTextInputFormat
-    implements InputFormat<LongWritable, Text>, JobConfigurable, ContentSummaryInputFormat {
+public class SymlinkTextInputFormat extends SymbolicInputFormat implements
+    InputFormat<LongWritable, Text>, JobConfigurable,
+    ContentSummaryInputFormat, ReworkMapredInputFormat {
   /**
    * This input split wraps the FileSplit generated from
    * TextInputFormat.getSplits(), while setting the original link file path
@@ -226,4 +232,5 @@ public class SymlinkTextInputFormat
     }
     return new ContentSummary(summary[0], summary[1], summary[2]);
   }
+
 }

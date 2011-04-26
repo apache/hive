@@ -218,7 +218,6 @@ public class HiveConf extends Configuration {
     // should we do checks against the storage (usually hdfs) for operations like drop_partition
     METASTORE_AUTHORIZATION_STORAGE_AUTH_CHECKS("hive.metastore.authorization.storage.checks", false),
 
-
     // Default parameters for creating tables
     NEWTABLEDEFAULTPARA("hive.table.parameters.default",""),
 
@@ -430,8 +429,8 @@ public class HiveConf extends Configuration {
     // deployment. It has not been documented in hive-default.xml intentionally, this should be removed
     // once the feature is stable
     HIVE_MAPPER_CANNOT_SPAN_MULTIPLE_PARTITIONS("hive.mapper.cannot.span.multiple.partitions", false), 
+    HIVE_REWORK_MAPREDWORK("hive.rework.mapredwork", false), 
     ;
-
 
     public final String varname;
     public final String defaultVal;

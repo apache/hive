@@ -93,6 +93,7 @@ import org.apache.hadoop.hive.ql.io.HiveInputFormat;
 import org.apache.hadoop.hive.ql.io.HiveOutputFormat;
 import org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat;
 import org.apache.hadoop.hive.ql.io.RCFile;
+import org.apache.hadoop.hive.ql.io.ReworkMapredInputFormat;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.Partition;
 import org.apache.hadoop.hive.ql.metadata.Table;
@@ -2001,5 +2002,48 @@ public final class Utilities {
     }
     sb.append(">");
     _log.info(sb);
+  }
+
+  /**
+   * The check here is kind of not clean. It first use a for loop to go through
+   * all input formats, and choose the ones that extend ReworkMapredInputFormat
+   * to a set. And finally go through the ReworkMapredInputFormat set, and call
+   * rework for each one.
+   * 
+   * Technically all these can be avoided if all Hive's input formats can share
+   * a same interface. As in today's hive and Hadoop, it is not possible because
+   * a lot of Hive's input formats are in Hadoop's code. And most of Hadoop's
+   * input formats just extend InputFormat interface.
+   * 
+   * @param task
+   * @param reworkMapredWork
+   * @param conf
+   * @throws SemanticException
+   */
+  public static void reworkMapRedWork(Task<? extends Serializable> task,
+      boolean reworkMapredWork, HiveConf conf) throws SemanticException {
+    if (reworkMapredWork && (task instanceof MapRedTask)) {
+      try {
+        MapredWork mapredWork = ((MapRedTask) task).getWork();
+        Set<Class<? extends InputFormat>> reworkInputFormats = new HashSet<Class<? extends InputFormat>>();
+        for (PartitionDesc part : mapredWork.getPathToPartitionInfo().values()) {
+          Class<? extends InputFormat> inputFormatCls = part
+              .getInputFileFormatClass();
+          if (ReworkMapredInputFormat.class.isAssignableFrom(inputFormatCls)) {
+            reworkInputFormats.add(inputFormatCls);
+          }
+        }
+
+        if (reworkInputFormats.size() > 0) {
+          for (Class<? extends InputFormat> inputFormatCls : reworkInputFormats) {
+            ReworkMapredInputFormat inst = (ReworkMapredInputFormat) ReflectionUtils
+                .newInstance(inputFormatCls, null);
+            inst.rework(conf, mapredWork);
+          }
+        }
+      } catch (IOException e) {
+        throw new SemanticException(e);
+      }
+    }
   }
 }
