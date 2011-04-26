@@ -10,7 +10,7 @@ import java.util.Map;
 import java.util.HashMap;
 import org.apache.thrift.TEnum;
 
-public enum AdjacencyType implements TEnum {
+public enum AdjacencyType implements org.apache.thrift.TEnum {
   CONJUNCTIVE(0),
   DISJUNCTIVE(1);
 

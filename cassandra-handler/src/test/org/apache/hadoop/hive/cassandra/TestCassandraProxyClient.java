@@ -7,14 +7,7 @@ import junit.framework.TestCase;
 
 import org.apache.cassandra.contrib.utils.service.CassandraServiceDataCleaner;
 import org.apache.cassandra.service.EmbeddedCassandraService;
-import org.apache.cassandra.thrift.Cassandra;
-import org.apache.cassandra.thrift.CfDef;
-import org.apache.cassandra.thrift.Column;
-import org.apache.cassandra.thrift.ColumnOrSuperColumn;
-import org.apache.cassandra.thrift.ColumnParent;
-import org.apache.cassandra.thrift.ColumnPath;
-import org.apache.cassandra.thrift.ConsistencyLevel;
-import org.apache.cassandra.thrift.KsDef;
+import org.apache.cassandra.thrift.*;
 import org.apache.cassandra.utils.ByteBufferUtil;
 import org.apache.thrift.TException;
 import org.apache.thrift.transport.TTransportException;
@@ -92,7 +85,11 @@ public class TestCassandraProxyClient extends TestCase {
     client.system_add_column_family(columnFamily);
 
     //add some data
-    Column column = new Column(ByteBufferUtil.bytes("name"), ByteBufferUtil.bytes("value"), System.currentTimeMillis());
+    Column column = new Column()
+      .setName(ByteBufferUtil.bytes("name"))
+      .setValue(ByteBufferUtil.bytes("value"))
+      .setTimestamp(System.currentTimeMillis());
+
     client.insert(ByteBufferUtil.bytes("key1"), new ColumnParent(cfName), column, ConsistencyLevel.ALL);
 
     //query for the data

@@ -22,9 +22,11 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.facebook.fb303.fb_status;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+
+import com.facebook.fb303.fb_status;
+
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.HiveMetaStore;
 import org.apache.hadoop.hive.metastore.api.MetaException;
@@ -43,10 +45,7 @@ import org.apache.thrift.TProcessorFactory;
 import org.apache.thrift.protocol.TBinaryProtocol;
 import org.apache.thrift.server.TServer;
 import org.apache.thrift.server.TThreadPoolServer;
-import org.apache.thrift.transport.TServerSocket;
-import org.apache.thrift.transport.TServerTransport;
-import org.apache.thrift.transport.TTransport;
-import org.apache.thrift.transport.TTransportFactory;
+import org.apache.thrift.transport.*;
 
 /**
  * Thrift Hive Server Implementation.
@@ -383,10 +382,11 @@ public class HiveServer extends ThriftHive {
       }
       TServerTransport serverTransport = new TServerSocket(port);
       ThriftHiveProcessorFactory hfactory = new ThriftHiveProcessorFactory(null);
-      TThreadPoolServer.Options options = new TThreadPoolServer.Options();
-      TServer server = new TThreadPoolServer(hfactory, serverTransport,
-          new TTransportFactory(), new TTransportFactory(),
-          new TBinaryProtocol.Factory(), new TBinaryProtocol.Factory(), options);
+      TThreadPoolServer.Args options = new TThreadPoolServer.Args(serverTransport);
+      options.protocolFactory(new TBinaryProtocol.Factory());
+      options.transportFactory(new TTransportFactory());
+      options.processorFactory(hfactory);
+      TServer server = new TThreadPoolServer(options);
       HiveServerHandler.LOG.info("Starting hive server on port " + port);
       server.serve();
     } catch (Exception x) {

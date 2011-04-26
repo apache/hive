@@ -20,23 +20,17 @@ import java.util.Arrays;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import org.apache.thrift.*;
-import org.apache.thrift.async.*;
-import org.apache.thrift.meta_data.*;
-import org.apache.thrift.transport.*;
-import org.apache.thrift.protocol.*;
+public class Query implements org.apache.thrift.TBase<Query, Query._Fields>, java.io.Serializable, Cloneable {
+  private static final org.apache.thrift.protocol.TStruct STRUCT_DESC = new org.apache.thrift.protocol.TStruct("Query");
 
-public class Query implements TBase<Query, Query._Fields>, java.io.Serializable, Cloneable {
-  private static final TStruct STRUCT_DESC = new TStruct("Query");
-
-  private static final TField QUERY_ID_FIELD_DESC = new TField("queryId", TType.STRING, (short)1);
-  private static final TField QUERY_TYPE_FIELD_DESC = new TField("queryType", TType.STRING, (short)2);
-  private static final TField QUERY_ATTRIBUTES_FIELD_DESC = new TField("queryAttributes", TType.MAP, (short)3);
-  private static final TField QUERY_COUNTERS_FIELD_DESC = new TField("queryCounters", TType.MAP, (short)4);
-  private static final TField STAGE_GRAPH_FIELD_DESC = new TField("stageGraph", TType.STRUCT, (short)5);
-  private static final TField STAGE_LIST_FIELD_DESC = new TField("stageList", TType.LIST, (short)6);
-  private static final TField DONE_FIELD_DESC = new TField("done", TType.BOOL, (short)7);
-  private static final TField STARTED_FIELD_DESC = new TField("started", TType.BOOL, (short)8);
+  private static final org.apache.thrift.protocol.TField QUERY_ID_FIELD_DESC = new org.apache.thrift.protocol.TField("queryId", org.apache.thrift.protocol.TType.STRING, (short)1);
+  private static final org.apache.thrift.protocol.TField QUERY_TYPE_FIELD_DESC = new org.apache.thrift.protocol.TField("queryType", org.apache.thrift.protocol.TType.STRING, (short)2);
+  private static final org.apache.thrift.protocol.TField QUERY_ATTRIBUTES_FIELD_DESC = new org.apache.thrift.protocol.TField("queryAttributes", org.apache.thrift.protocol.TType.MAP, (short)3);
+  private static final org.apache.thrift.protocol.TField QUERY_COUNTERS_FIELD_DESC = new org.apache.thrift.protocol.TField("queryCounters", org.apache.thrift.protocol.TType.MAP, (short)4);
+  private static final org.apache.thrift.protocol.TField STAGE_GRAPH_FIELD_DESC = new org.apache.thrift.protocol.TField("stageGraph", org.apache.thrift.protocol.TType.STRUCT, (short)5);
+  private static final org.apache.thrift.protocol.TField STAGE_LIST_FIELD_DESC = new org.apache.thrift.protocol.TField("stageList", org.apache.thrift.protocol.TType.LIST, (short)6);
+  private static final org.apache.thrift.protocol.TField DONE_FIELD_DESC = new org.apache.thrift.protocol.TField("done", org.apache.thrift.protocol.TType.BOOL, (short)7);
+  private static final org.apache.thrift.protocol.TField STARTED_FIELD_DESC = new org.apache.thrift.protocol.TField("started", org.apache.thrift.protocol.TType.BOOL, (short)8);
 
   private String queryId;
   private String queryType;
@@ -48,7 +42,7 @@ public class Query implements TBase<Query, Query._Fields>, java.io.Serializable,
   private boolean started;
 
   /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
-  public enum _Fields implements TFieldIdEnum {
+  public enum _Fields implements org.apache.thrift.TFieldIdEnum {
     QUERY_ID((short)1, "queryId"),
     QUERY_TYPE((short)2, "queryType"),
     QUERY_ATTRIBUTES((short)3, "queryAttributes"),
@@ -131,32 +125,32 @@ public class Query implements TBase<Query, Query._Fields>, java.io.Serializable,
   private static final int __STARTED_ISSET_ID = 1;
   private BitSet __isset_bit_vector = new BitSet(2);
 
-  public static final Map<_Fields, FieldMetaData> metaDataMap;
+  public static final Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
   static {
-    Map<_Fields, FieldMetaData> tmpMap = new EnumMap<_Fields, FieldMetaData>(_Fields.class);
-    tmpMap.put(_Fields.QUERY_ID, new FieldMetaData("queryId", TFieldRequirementType.DEFAULT, 
-        new FieldValueMetaData(TType.STRING)));
-    tmpMap.put(_Fields.QUERY_TYPE, new FieldMetaData("queryType", TFieldRequirementType.DEFAULT, 
-        new FieldValueMetaData(TType.STRING)));
-    tmpMap.put(_Fields.QUERY_ATTRIBUTES, new FieldMetaData("queryAttributes", TFieldRequirementType.DEFAULT, 
-        new MapMetaData(TType.MAP, 
-            new FieldValueMetaData(TType.STRING), 
-            new FieldValueMetaData(TType.STRING))));
-    tmpMap.put(_Fields.QUERY_COUNTERS, new FieldMetaData("queryCounters", TFieldRequirementType.DEFAULT, 
-        new MapMetaData(TType.MAP, 
-            new FieldValueMetaData(TType.STRING), 
-            new FieldValueMetaData(TType.I64))));
-    tmpMap.put(_Fields.STAGE_GRAPH, new FieldMetaData("stageGraph", TFieldRequirementType.DEFAULT, 
-        new StructMetaData(TType.STRUCT, Graph.class)));
-    tmpMap.put(_Fields.STAGE_LIST, new FieldMetaData("stageList", TFieldRequirementType.DEFAULT, 
-        new ListMetaData(TType.LIST, 
-            new StructMetaData(TType.STRUCT, Stage.class))));
-    tmpMap.put(_Fields.DONE, new FieldMetaData("done", TFieldRequirementType.DEFAULT, 
-        new FieldValueMetaData(TType.BOOL)));
-    tmpMap.put(_Fields.STARTED, new FieldMetaData("started", TFieldRequirementType.DEFAULT, 
-        new FieldValueMetaData(TType.BOOL)));
+    Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
+    tmpMap.put(_Fields.QUERY_ID, new org.apache.thrift.meta_data.FieldMetaData("queryId", org.apache.thrift.TFieldRequirementType.DEFAULT, 
+        new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
+    tmpMap.put(_Fields.QUERY_TYPE, new org.apache.thrift.meta_data.FieldMetaData("queryType", org.apache.thrift.TFieldRequirementType.DEFAULT, 
+        new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
+    tmpMap.put(_Fields.QUERY_ATTRIBUTES, new org.apache.thrift.meta_data.FieldMetaData("queryAttributes", org.apache.thrift.TFieldRequirementType.DEFAULT, 
+        new org.apache.thrift.meta_data.MapMetaData(org.apache.thrift.protocol.TType.MAP, 
+            new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING), 
+            new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING))));
+    tmpMap.put(_Fields.QUERY_COUNTERS, new org.apache.thrift.meta_data.FieldMetaData("queryCounters", org.apache.thrift.TFieldRequirementType.DEFAULT, 
+        new org.apache.thrift.meta_data.MapMetaData(org.apache.thrift.protocol.TType.MAP, 
+            new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING), 
+            new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.I64))));
+    tmpMap.put(_Fields.STAGE_GRAPH, new org.apache.thrift.meta_data.FieldMetaData("stageGraph", org.apache.thrift.TFieldRequirementType.DEFAULT, 
+        new org.apache.thrift.meta_data.StructMetaData(org.apache.thrift.protocol.TType.STRUCT, Graph.class)));
+    tmpMap.put(_Fields.STAGE_LIST, new org.apache.thrift.meta_data.FieldMetaData("stageList", org.apache.thrift.TFieldRequirementType.DEFAULT, 
+        new org.apache.thrift.meta_data.ListMetaData(org.apache.thrift.protocol.TType.LIST, 
+            new org.apache.thrift.meta_data.StructMetaData(org.apache.thrift.protocol.TType.STRUCT, Stage.class))));
+    tmpMap.put(_Fields.DONE, new org.apache.thrift.meta_data.FieldMetaData("done", org.apache.thrift.TFieldRequirementType.DEFAULT, 
+        new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.BOOL)));
+    tmpMap.put(_Fields.STARTED, new org.apache.thrift.meta_data.FieldMetaData("started", org.apache.thrift.TFieldRequirementType.DEFAULT, 
+        new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.BOOL)));
     metaDataMap = Collections.unmodifiableMap(tmpMap);
-    FieldMetaData.addStructMetaDataMap(Query.class, metaDataMap);
+    org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(Query.class, metaDataMap);
   }
 
   public Query() {
@@ -271,7 +265,7 @@ public class Query implements TBase<Query, Query._Fields>, java.io.Serializable,
     this.queryId = null;
   }
 
-  /** Returns true if field queryId is set (has been asigned a value) and false otherwise */
+  /** Returns true if field queryId is set (has been assigned a value) and false otherwise */
   public boolean isSetQueryId() {
     return this.queryId != null;
   }
@@ -294,7 +288,7 @@ public class Query implements TBase<Query, Query._Fields>, java.io.Serializable,
     this.queryType = null;
   }
 
-  /** Returns true if field queryType is set (has been asigned a value) and false otherwise */
+  /** Returns true if field queryType is set (has been assigned a value) and false otherwise */
   public boolean isSetQueryType() {
     return this.queryType != null;
   }
@@ -328,7 +322,7 @@ public class Query implements TBase<Query, Query._Fields>, java.io.Serializable,
     this.queryAttributes = null;
   }
 
-  /** Returns true if field queryAttributes is set (has been asigned a value) and false otherwise */
+  /** Returns true if field queryAttributes is set (has been assigned a value) and false otherwise */
   public boolean isSetQueryAttributes() {
     return this.queryAttributes != null;
   }
@@ -362,7 +356,7 @@ public class Query implements TBase<Query, Query._Fields>, java.io.Serializable,
     this.queryCounters = null;
   }
 
-  /** Returns true if field queryCounters is set (has been asigned a value) and false otherwise */
+  /** Returns true if field queryCounters is set (has been assigned a value) and false otherwise */
   public boolean isSetQueryCounters() {
     return this.queryCounters != null;
   }
@@ -385,7 +379,7 @@ public class Query implements TBase<Query, Query._Fields>, java.io.Serializable,
     this.stageGraph = null;
   }
 
-  /** Returns true if field stageGraph is set (has been asigned a value) and false otherwise */
+  /** Returns true if field stageGraph is set (has been assigned a value) and false otherwise */
   public boolean isSetStageGraph() {
     return this.stageGraph != null;
   }
@@ -423,7 +417,7 @@ public class Query implements TBase<Query, Query._Fields>, java.io.Serializable,
     this.stageList = null;
   }
 
-  /** Returns true if field stageList is set (has been asigned a value) and false otherwise */
+  /** Returns true if field stageList is set (has been assigned a value) and false otherwise */
   public boolean isSetStageList() {
     return this.stageList != null;
   }
@@ -447,7 +441,7 @@ public class Query implements TBase<Query, Query._Fields>, java.io.Serializable,
     __isset_bit_vector.clear(__DONE_ISSET_ID);
   }
 
-  /** Returns true if field done is set (has been asigned a value) and false otherwise */
+  /** Returns true if field done is set (has been assigned a value) and false otherwise */
   public boolean isSetDone() {
     return __isset_bit_vector.get(__DONE_ISSET_ID);
   }
@@ -469,7 +463,7 @@ public class Query implements TBase<Query, Query._Fields>, java.io.Serializable,
     __isset_bit_vector.clear(__STARTED_ISSET_ID);
   }
 
-  /** Returns true if field started is set (has been asigned a value) and false otherwise */
+  /** Returns true if field started is set (has been assigned a value) and false otherwise */
   public boolean isSetStarted() {
     return __isset_bit_vector.get(__STARTED_ISSET_ID);
   }
@@ -577,7 +571,7 @@ public class Query implements TBase<Query, Query._Fields>, java.io.Serializable,
     throw new IllegalStateException();
   }
 
-  /** Returns true if field corresponding to fieldID is set (has been asigned a value) and false otherwise */
+  /** Returns true if field corresponding to fieldID is set (has been assigned a value) and false otherwise */
   public boolean isSet(_Fields field) {
     if (field == null) {
       throw new IllegalArgumentException();
@@ -710,7 +704,7 @@ public class Query implements TBase<Query, Query._Fields>, java.io.Serializable,
       return lastComparison;
     }
     if (isSetQueryId()) {
-      lastComparison = TBaseHelper.compareTo(this.queryId, typedOther.queryId);
+      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.queryId, typedOther.queryId);
       if (lastComparison != 0) {
         return lastComparison;
       }
@@ -720,7 +714,7 @@ public class Query implements TBase<Query, Query._Fields>, java.io.Serializable,
       return lastComparison;
     }
     if (isSetQueryType()) {
-      lastComparison = TBaseHelper.compareTo(this.queryType, typedOther.queryType);
+      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.queryType, typedOther.queryType);
       if (lastComparison != 0) {
         return lastComparison;
       }
@@ -730,7 +724,7 @@ public class Query implements TBase<Query, Query._Fields>, java.io.Serializable,
       return lastComparison;
     }
     if (isSetQueryAttributes()) {
-      lastComparison = TBaseHelper.compareTo(this.queryAttributes, typedOther.queryAttributes);
+      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.queryAttributes, typedOther.queryAttributes);
       if (lastComparison != 0) {
         return lastComparison;
       }
@@ -740,7 +734,7 @@ public class Query implements TBase<Query, Query._Fields>, java.io.Serializable,
       return lastComparison;
     }
     if (isSetQueryCounters()) {
-      lastComparison = TBaseHelper.compareTo(this.queryCounters, typedOther.queryCounters);
+      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.queryCounters, typedOther.queryCounters);
       if (lastComparison != 0) {
         return lastComparison;
       }
@@ -750,7 +744,7 @@ public class Query implements TBase<Query, Query._Fields>, java.io.Serializable,
       return lastComparison;
     }
     if (isSetStageGraph()) {
-      lastComparison = TBaseHelper.compareTo(this.stageGraph, typedOther.stageGraph);
+      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.stageGraph, typedOther.stageGraph);
       if (lastComparison != 0) {
         return lastComparison;
       }
@@ -760,7 +754,7 @@ public class Query implements TBase<Query, Query._Fields>, java.io.Serializable,
       return lastComparison;
     }
     if (isSetStageList()) {
-      lastComparison = TBaseHelper.compareTo(this.stageList, typedOther.stageList);
+      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.stageList, typedOther.stageList);
       if (lastComparison != 0) {
         return lastComparison;
       }
@@ -770,7 +764,7 @@ public class Query implements TBase<Query, Query._Fields>, java.io.Serializable,
       return lastComparison;
     }
     if (isSetDone()) {
-      lastComparison = TBaseHelper.compareTo(this.done, typedOther.done);
+      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.done, typedOther.done);
       if (lastComparison != 0) {
         return lastComparison;
       }
@@ -780,7 +774,7 @@ public class Query implements TBase<Query, Query._Fields>, java.io.Serializable,
       return lastComparison;
     }
     if (isSetStarted()) {
-      lastComparison = TBaseHelper.compareTo(this.started, typedOther.started);
+      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.started, typedOther.started);
       if (lastComparison != 0) {
         return lastComparison;
       }
@@ -792,34 +786,34 @@ public class Query implements TBase<Query, Query._Fields>, java.io.Serializable,
     return _Fields.findByThriftId(fieldId);
   }
 
-  public void read(TProtocol iprot) throws TException {
-    TField field;
+  public void read(org.apache.thrift.protocol.TProtocol iprot) throws org.apache.thrift.TException {
+    org.apache.thrift.protocol.TField field;
     iprot.readStructBegin();
     while (true)
     {
       field = iprot.readFieldBegin();
-      if (field.type == TType.STOP) { 
+      if (field.type == org.apache.thrift.protocol.TType.STOP) { 
         break;
       }
       switch (field.id) {
         case 1: // QUERY_ID
-          if (field.type == TType.STRING) {
+          if (field.type == org.apache.thrift.protocol.TType.STRING) {
             this.queryId = iprot.readString();
           } else { 
-            TProtocolUtil.skip(iprot, field.type);
+            org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
           }
           break;
         case 2: // QUERY_TYPE
-          if (field.type == TType.STRING) {
+          if (field.type == org.apache.thrift.protocol.TType.STRING) {
             this.queryType = iprot.readString();
           } else { 
-            TProtocolUtil.skip(iprot, field.type);
+            org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
           }
           break;
         case 3: // QUERY_ATTRIBUTES
-          if (field.type == TType.MAP) {
+          if (field.type == org.apache.thrift.protocol.TType.MAP) {
             {
-              TMap _map50 = iprot.readMapBegin();
+              org.apache.thrift.protocol.TMap _map50 = iprot.readMapBegin();
               this.queryAttributes = new HashMap<String,String>(2*_map50.size);
               for (int _i51 = 0; _i51 < _map50.size; ++_i51)
               {
@@ -832,13 +826,13 @@ public class Query implements TBase<Query, Query._Fields>, java.io.Serializable,
               iprot.readMapEnd();
             }
           } else { 
-            TProtocolUtil.skip(iprot, field.type);
+            org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
           }
           break;
         case 4: // QUERY_COUNTERS
-          if (field.type == TType.MAP) {
+          if (field.type == org.apache.thrift.protocol.TType.MAP) {
             {
-              TMap _map54 = iprot.readMapBegin();
+              org.apache.thrift.protocol.TMap _map54 = iprot.readMapBegin();
               this.queryCounters = new HashMap<String,Long>(2*_map54.size);
               for (int _i55 = 0; _i55 < _map54.size; ++_i55)
               {
@@ -851,21 +845,21 @@ public class Query implements TBase<Query, Query._Fields>, java.io.Serializable,
               iprot.readMapEnd();
             }
           } else { 
-            TProtocolUtil.skip(iprot, field.type);
+            org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
           }
           break;
         case 5: // STAGE_GRAPH
-          if (field.type == TType.STRUCT) {
+          if (field.type == org.apache.thrift.protocol.TType.STRUCT) {
             this.stageGraph = new Graph();
             this.stageGraph.read(iprot);
           } else { 
-            TProtocolUtil.skip(iprot, field.type);
+            org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
           }
           break;
         case 6: // STAGE_LIST
-          if (field.type == TType.LIST) {
+          if (field.type == org.apache.thrift.protocol.TType.LIST) {
             {
-              TList _list58 = iprot.readListBegin();
+              org.apache.thrift.protocol.TList _list58 = iprot.readListBegin();
               this.stageList = new ArrayList<Stage>(_list58.size);
               for (int _i59 = 0; _i59 < _list58.size; ++_i59)
               {
@@ -877,27 +871,27 @@ public class Query implements TBase<Query, Query._Fields>, java.io.Serializable,
               iprot.readListEnd();
             }
           } else { 
-            TProtocolUtil.skip(iprot, field.type);
+            org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
           }
           break;
         case 7: // DONE
-          if (field.type == TType.BOOL) {
+          if (field.type == org.apache.thrift.protocol.TType.BOOL) {
             this.done = iprot.readBool();
             setDoneIsSet(true);
           } else { 
-            TProtocolUtil.skip(iprot, field.type);
+            org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
           }
           break;
         case 8: // STARTED
-          if (field.type == TType.BOOL) {
+          if (field.type == org.apache.thrift.protocol.TType.BOOL) {
             this.started = iprot.readBool();
             setStartedIsSet(true);
           } else { 
-            TProtocolUtil.skip(iprot, field.type);
+            org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
           }
           break;
         default:
-          TProtocolUtil.skip(iprot, field.type);
+          org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
       }
       iprot.readFieldEnd();
     }
@@ -905,7 +899,7 @@ public class Query implements TBase<Query, Query._Fields>, java.io.Serializable,
     validate();
   }
 
-  public void write(TProtocol oprot) throws TException {
+  public void write(org.apache.thrift.protocol.TProtocol oprot) throws org.apache.thrift.TException {
     validate();
 
     oprot.writeStructBegin(STRUCT_DESC);
@@ -922,7 +916,7 @@ public class Query implements TBase<Query, Query._Fields>, java.io.Serializable,
     if (this.queryAttributes != null) {
       oprot.writeFieldBegin(QUERY_ATTRIBUTES_FIELD_DESC);
       {
-        oprot.writeMapBegin(new TMap(TType.STRING, TType.STRING, this.queryAttributes.size()));
+        oprot.writeMapBegin(new org.apache.thrift.protocol.TMap(org.apache.thrift.protocol.TType.STRING, org.apache.thrift.protocol.TType.STRING, this.queryAttributes.size()));
         for (Map.Entry<String, String> _iter61 : this.queryAttributes.entrySet())
         {
           oprot.writeString(_iter61.getKey());
@@ -935,7 +929,7 @@ public class Query implements TBase<Query, Query._Fields>, java.io.Serializable,
     if (this.queryCounters != null) {
       oprot.writeFieldBegin(QUERY_COUNTERS_FIELD_DESC);
       {
-        oprot.writeMapBegin(new TMap(TType.STRING, TType.I64, this.queryCounters.size()));
+        oprot.writeMapBegin(new org.apache.thrift.protocol.TMap(org.apache.thrift.protocol.TType.STRING, org.apache.thrift.protocol.TType.I64, this.queryCounters.size()));
         for (Map.Entry<String, Long> _iter62 : this.queryCounters.entrySet())
         {
           oprot.writeString(_iter62.getKey());
@@ -953,7 +947,7 @@ public class Query implements TBase<Query, Query._Fields>, java.io.Serializable,
     if (this.stageList != null) {
       oprot.writeFieldBegin(STAGE_LIST_FIELD_DESC);
       {
-        oprot.writeListBegin(new TList(TType.STRUCT, this.stageList.size()));
+        oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, this.stageList.size()));
         for (Stage _iter63 : this.stageList)
         {
           _iter63.write(oprot);
@@ -1036,7 +1030,7 @@ public class Query implements TBase<Query, Query._Fields>, java.io.Serializable,
     return sb.toString();
   }
 
-  public void validate() throws TException {
+  public void validate() throws org.apache.thrift.TException {
     // check for required fields
   }
 

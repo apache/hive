@@ -2,11 +2,7 @@ package org.apache.hadoop.hive.cassandra;
 
 import java.util.Map;
 
-import org.apache.cassandra.thrift.Cassandra;
-import org.apache.cassandra.thrift.CfDef;
-import org.apache.cassandra.thrift.InvalidRequestException;
-import org.apache.cassandra.thrift.KsDef;
-import org.apache.cassandra.thrift.NotFoundException;
+import org.apache.cassandra.thrift.*;
 import org.apache.hadoop.hive.cassandra.serde.StandardColumnSerDe;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.Table;
@@ -46,7 +42,7 @@ public class CassandraManager {
   private String keyspace;
 
   //column family name
-  private String columnName;
+  private String columnFamilyName;
 
   /**
    * Construct a cassandra manager object from meta table object.
@@ -78,7 +74,7 @@ public class CassandraManager {
 
   private void init() {
     this.keyspace = getCassandraKeyspace();
-    this.columnName = getCassandraColumnFamily();
+    this.columnFamilyName = getCassandraColumnFamily();
     this.framedConnection = true;
     this.randomizedConnection = true;
   }
@@ -129,7 +125,7 @@ public class CassandraManager {
    */
   private CfDef getColumnFamily(KsDef ks) {
     for (CfDef cf : ks.getCf_defs()) {
-      if (cf.getName().equalsIgnoreCase(columnName)) {
+      if (cf.getName().equalsIgnoreCase(columnFamilyName)) {
         return cf;
       }
     }
@@ -150,7 +146,7 @@ public class CassandraManager {
 
       CfDef cf = new CfDef();
       cf.setKeyspace(keyspace);
-      cf.setName(columnName);
+      cf.setName(columnFamilyName);
 
       ks.addToCf_defs(cf);
 
@@ -161,6 +157,9 @@ public class CassandraManager {
       throw new MetaException("Unable to create key space '" + keyspace + "'. Error:"
           + e.getMessage());
     } catch (InvalidRequestException e) {
+      throw new MetaException("Unable to create key space '" + keyspace + "'. Error:"
+          + e.getMessage());
+    } catch (SchemaDisagreementException e) {
       throw new MetaException("Unable to create key space '" + keyspace + "'. Error:"
           + e.getMessage());
     }
@@ -188,16 +187,19 @@ public class CassandraManager {
   public CfDef createColumnFamily() throws MetaException {
     CfDef cf = new CfDef();
     cf.setKeyspace(keyspace);
-    cf.setName(columnName);
+    cf.setName(columnFamilyName);
     try {
       client.set_keyspace(keyspace);
       client.system_add_column_family(cf);
       return cf;
     } catch (TException e) {
-      throw new MetaException("Unable to create key space '" + keyspace + "'. Error:"
+      throw new MetaException("Unable to create column family '" + columnFamilyName + "'. Error:"
           + e.getMessage());
     } catch (InvalidRequestException e) {
-      throw new MetaException("Unable to create key space '" + keyspace + "'. Error:"
+      throw new MetaException("Unable to create column family '" + columnFamilyName + "'. Error:"
+          + e.getMessage());
+    } catch (SchemaDisagreementException e) {
+      throw new MetaException("Unable to create column family '" + columnFamilyName + "'. Error:"
           + e.getMessage());
     }
   }
@@ -294,12 +296,15 @@ public class CassandraManager {
    */
   public void dropTable() throws MetaException {
     try {
-      client.system_drop_column_family(columnName);
+      client.system_drop_column_family(columnFamilyName);
     } catch (TException e) {
-      throw new MetaException("Unable to create key space '" + keyspace + "'. Error:"
+      throw new MetaException("Unable to drop column family '" + columnFamilyName + "'. Error:"
           + e.getMessage());
     } catch (InvalidRequestException e) {
-      throw new MetaException("Unable to create key space '" + keyspace + "'. Error:"
+      throw new MetaException("Unable to drop column family '" + columnFamilyName + "'. Error:"
+          + e.getMessage());
+    } catch (SchemaDisagreementException e) {
+      throw new MetaException("Unable to drop column family '" + columnFamilyName + "'. Error:"
           + e.getMessage());
     }
   }

@@ -10,7 +10,7 @@ import java.util.Map;
 import java.util.HashMap;
 import org.apache.thrift.TEnum;
 
-public enum TaskType implements TEnum {
+public enum TaskType implements org.apache.thrift.TEnum {
   MAP(0),
   REDUCE(1),
   OTHER(2);

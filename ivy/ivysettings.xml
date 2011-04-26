@@ -31,7 +31,9 @@
   -->
 
   <property name="repo.maven.org" value="http://repo1.maven.org/maven2/" override="false"/>
-  <property name="snapshot.apache.org" value="https://repository.apache.org/content/repositories/snapshots/" override="false"/>
+  <property name="datastax.cassandra" value="http://mvn.riptano.com/content/repositories/snapshots"  changingPattern=".*SNAPSHOT"/>
+  <property name="datastax.cassandra.deps" value="http://mvn.riptano.com/content/repositories/public" override="false"/>
+  <property name="snapshot.apache.org" value="https://repository.apache.org/content/repositories/snapshots/" override="false" changingPattern=".*SNAPSHOT"/>
   <property name="maven2.pattern" value="[organisation]/[module]/[revision]/[module]-[revision]"/>
   <property name="repo.dir" value="${user.home}/.m2/repository"/>
   <property name="maven2.pattern.ext"  value="${maven2.pattern}.[ext]"/>
@@ -44,8 +46,9 @@
     </url>
 
     <ibiblio name="maven2" root="${repo.maven.org}" pattern="${maven2.pattern.ext}" m2compatible="true"/>
-    <ibiblio name="apache-snapshot" root="${snapshot.apache.org}" m2compatible="true"
-        checkmodified="true" changingPattern=".*SNAPSHOT"/>
+    <ibiblio name="datastax-cassandra" root="${datastax.cassandra}" m2compatible="true" checkmodified="true"/>
+    <ibiblio name="datastax-cassandra-deps" root="${datastax.cassandra.deps}"  m2compatible="true"/>
+    <ibiblio name="apache-snapshot" root="${snapshot.apache.org}" m2compatible="true" checkmodified="true"/>
 
     <url name="datanucleus-repo" m2compatible="true">
       <artifact pattern="${datanucleus.repo}/[organisation]/[module]/[revision]/[module]-[revision].[ext]"/>
@@ -59,6 +62,8 @@
     <chain name="default" dual="true" checkmodified="true" changingPattern=".*SNAPSHOT">
       <resolver ref="hadoop-source"/>
       <resolver ref="apache-snapshot"/>
+      <resolver ref="datastax-cassandra"/>
+      <resolver ref="datastax-cassandra-deps"/>
       <resolver ref="maven2"/>
       <resolver ref="datanucleus-repo"/>
       <ibiblio name="ibiblio" m2compatible="true" />
@@ -79,7 +84,8 @@
   </resolvers>
 
   <modules>
-     <module organisation="org.apache.hadoop" name="hadoop-*" resolver="${resolvers}"/>
+    <module organisation="org.apache.hadoop" name="hadoop-*" resolver="${resolvers}"/>
+    <module organisation="org.apache.cassandra" name="*" resolveMode="dynamic"/>
   </modules>
 
   <caches default="${ivy.cache.name}">

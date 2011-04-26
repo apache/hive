@@ -20,21 +20,15 @@ import java.util.Arrays;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import org.apache.thrift.*;
-import org.apache.thrift.async.*;
-import org.apache.thrift.meta_data.*;
-import org.apache.thrift.transport.*;
-import org.apache.thrift.protocol.*;
+public class Operator implements org.apache.thrift.TBase<Operator, Operator._Fields>, java.io.Serializable, Cloneable {
+  private static final org.apache.thrift.protocol.TStruct STRUCT_DESC = new org.apache.thrift.protocol.TStruct("Operator");
 
-public class Operator implements TBase<Operator, Operator._Fields>, java.io.Serializable, Cloneable {
-  private static final TStruct STRUCT_DESC = new TStruct("Operator");
-
-  private static final TField OPERATOR_ID_FIELD_DESC = new TField("operatorId", TType.STRING, (short)1);
-  private static final TField OPERATOR_TYPE_FIELD_DESC = new TField("operatorType", TType.I32, (short)2);
-  private static final TField OPERATOR_ATTRIBUTES_FIELD_DESC = new TField("operatorAttributes", TType.MAP, (short)3);
-  private static final TField OPERATOR_COUNTERS_FIELD_DESC = new TField("operatorCounters", TType.MAP, (short)4);
-  private static final TField DONE_FIELD_DESC = new TField("done", TType.BOOL, (short)5);
-  private static final TField STARTED_FIELD_DESC = new TField("started", TType.BOOL, (short)6);
+  private static final org.apache.thrift.protocol.TField OPERATOR_ID_FIELD_DESC = new org.apache.thrift.protocol.TField("operatorId", org.apache.thrift.protocol.TType.STRING, (short)1);
+  private static final org.apache.thrift.protocol.TField OPERATOR_TYPE_FIELD_DESC = new org.apache.thrift.protocol.TField("operatorType", org.apache.thrift.protocol.TType.I32, (short)2);
+  private static final org.apache.thrift.protocol.TField OPERATOR_ATTRIBUTES_FIELD_DESC = new org.apache.thrift.protocol.TField("operatorAttributes", org.apache.thrift.protocol.TType.MAP, (short)3);
+  private static final org.apache.thrift.protocol.TField OPERATOR_COUNTERS_FIELD_DESC = new org.apache.thrift.protocol.TField("operatorCounters", org.apache.thrift.protocol.TType.MAP, (short)4);
+  private static final org.apache.thrift.protocol.TField DONE_FIELD_DESC = new org.apache.thrift.protocol.TField("done", org.apache.thrift.protocol.TType.BOOL, (short)5);
+  private static final org.apache.thrift.protocol.TField STARTED_FIELD_DESC = new org.apache.thrift.protocol.TField("started", org.apache.thrift.protocol.TType.BOOL, (short)6);
 
   private String operatorId;
   private OperatorType operatorType;
@@ -44,7 +38,7 @@ public class Operator implements TBase<Operator, Operator._Fields>, java.io.Seri
   private boolean started;
 
   /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
-  public enum _Fields implements TFieldIdEnum {
+  public enum _Fields implements org.apache.thrift.TFieldIdEnum {
     OPERATOR_ID((short)1, "operatorId"),
     /**
      * 
@@ -125,27 +119,27 @@ public class Operator implements TBase<Operator, Operator._Fields>, java.io.Seri
   private static final int __STARTED_ISSET_ID = 1;
   private BitSet __isset_bit_vector = new BitSet(2);
 
-  public static final Map<_Fields, FieldMetaData> metaDataMap;
+  public static final Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
   static {
-    Map<_Fields, FieldMetaData> tmpMap = new EnumMap<_Fields, FieldMetaData>(_Fields.class);
-    tmpMap.put(_Fields.OPERATOR_ID, new FieldMetaData("operatorId", TFieldRequirementType.DEFAULT, 
-        new FieldValueMetaData(TType.STRING)));
-    tmpMap.put(_Fields.OPERATOR_TYPE, new FieldMetaData("operatorType", TFieldRequirementType.DEFAULT, 
-        new EnumMetaData(TType.ENUM, OperatorType.class)));
-    tmpMap.put(_Fields.OPERATOR_ATTRIBUTES, new FieldMetaData("operatorAttributes", TFieldRequirementType.DEFAULT, 
-        new MapMetaData(TType.MAP, 
-            new FieldValueMetaData(TType.STRING), 
-            new FieldValueMetaData(TType.STRING))));
-    tmpMap.put(_Fields.OPERATOR_COUNTERS, new FieldMetaData("operatorCounters", TFieldRequirementType.DEFAULT, 
-        new MapMetaData(TType.MAP, 
-            new FieldValueMetaData(TType.STRING), 
-            new FieldValueMetaData(TType.I64))));
-    tmpMap.put(_Fields.DONE, new FieldMetaData("done", TFieldRequirementType.DEFAULT, 
-        new FieldValueMetaData(TType.BOOL)));
-    tmpMap.put(_Fields.STARTED, new FieldMetaData("started", TFieldRequirementType.DEFAULT, 
-        new FieldValueMetaData(TType.BOOL)));
+    Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
+    tmpMap.put(_Fields.OPERATOR_ID, new org.apache.thrift.meta_data.FieldMetaData("operatorId", org.apache.thrift.TFieldRequirementType.DEFAULT, 
+        new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
+    tmpMap.put(_Fields.OPERATOR_TYPE, new org.apache.thrift.meta_data.FieldMetaData("operatorType", org.apache.thrift.TFieldRequirementType.DEFAULT, 
+        new org.apache.thrift.meta_data.EnumMetaData(org.apache.thrift.protocol.TType.ENUM, OperatorType.class)));
+    tmpMap.put(_Fields.OPERATOR_ATTRIBUTES, new org.apache.thrift.meta_data.FieldMetaData("operatorAttributes", org.apache.thrift.TFieldRequirementType.DEFAULT, 
+        new org.apache.thrift.meta_data.MapMetaData(org.apache.thrift.protocol.TType.MAP, 
+            new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING), 
+            new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING))));
+    tmpMap.put(_Fields.OPERATOR_COUNTERS, new org.apache.thrift.meta_data.FieldMetaData("operatorCounters", org.apache.thrift.TFieldRequirementType.DEFAULT, 
+        new org.apache.thrift.meta_data.MapMetaData(org.apache.thrift.protocol.TType.MAP, 
+            new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING), 
+            new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.I64))));
+    tmpMap.put(_Fields.DONE, new org.apache.thrift.meta_data.FieldMetaData("done", org.apache.thrift.TFieldRequirementType.DEFAULT, 
+        new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.BOOL)));
+    tmpMap.put(_Fields.STARTED, new org.apache.thrift.meta_data.FieldMetaData("started", org.apache.thrift.TFieldRequirementType.DEFAULT, 
+        new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.BOOL)));
     metaDataMap = Collections.unmodifiableMap(tmpMap);
-    FieldMetaData.addStructMetaDataMap(Operator.class, metaDataMap);
+    org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(Operator.class, metaDataMap);
   }
 
   public Operator() {
@@ -244,7 +238,7 @@ public class Operator implements TBase<Operator, Operator._Fields>, java.io.Seri
     this.operatorId = null;
   }
 
-  /** Returns true if field operatorId is set (has been asigned a value) and false otherwise */
+  /** Returns true if field operatorId is set (has been assigned a value) and false otherwise */
   public boolean isSetOperatorId() {
     return this.operatorId != null;
   }
@@ -275,7 +269,7 @@ public class Operator implements TBase<Operator, Operator._Fields>, java.io.Seri
     this.operatorType = null;
   }
 
-  /** Returns true if field operatorType is set (has been asigned a value) and false otherwise */
+  /** Returns true if field operatorType is set (has been assigned a value) and false otherwise */
   public boolean isSetOperatorType() {
     return this.operatorType != null;
   }
@@ -309,7 +303,7 @@ public class Operator implements TBase<Operator, Operator._Fields>, java.io.Seri
     this.operatorAttributes = null;
   }
 
-  /** Returns true if field operatorAttributes is set (has been asigned a value) and false otherwise */
+  /** Returns true if field operatorAttributes is set (has been assigned a value) and false otherwise */
   public boolean isSetOperatorAttributes() {
     return this.operatorAttributes != null;
   }
@@ -343,7 +337,7 @@ public class Operator implements TBase<Operator, Operator._Fields>, java.io.Seri
     this.operatorCounters = null;
   }
 
-  /** Returns true if field operatorCounters is set (has been asigned a value) and false otherwise */
+  /** Returns true if field operatorCounters is set (has been assigned a value) and false otherwise */
   public boolean isSetOperatorCounters() {
     return this.operatorCounters != null;
   }
@@ -367,7 +361,7 @@ public class Operator implements TBase<Operator, Operator._Fields>, java.io.Seri
     __isset_bit_vector.clear(__DONE_ISSET_ID);
   }
 
-  /** Returns true if field done is set (has been asigned a value) and false otherwise */
+  /** Returns true if field done is set (has been assigned a value) and false otherwise */
   public boolean isSetDone() {
     return __isset_bit_vector.get(__DONE_ISSET_ID);
   }
@@ -389,7 +383,7 @@ public class Operator implements TBase<Operator, Operator._Fields>, java.io.Seri
     __isset_bit_vector.clear(__STARTED_ISSET_ID);
   }
 
-  /** Returns true if field started is set (has been asigned a value) and false otherwise */
+  /** Returns true if field started is set (has been assigned a value) and false otherwise */
   public boolean isSetStarted() {
     return __isset_bit_vector.get(__STARTED_ISSET_ID);
   }
@@ -475,7 +469,7 @@ public class Operator implements TBase<Operator, Operator._Fields>, java.io.Seri
     throw new IllegalStateException();
   }
 
-  /** Returns true if field corresponding to fieldID is set (has been asigned a value) and false otherwise */
+  /** Returns true if field corresponding to fieldID is set (has been assigned a value) and false otherwise */
   public boolean isSet(_Fields field) {
     if (field == null) {
       throw new IllegalArgumentException();
@@ -586,7 +580,7 @@ public class Operator implements TBase<Operator, Operator._Fields>, java.io.Seri
       return lastComparison;
     }
     if (isSetOperatorId()) {
-      lastComparison = TBaseHelper.compareTo(this.operatorId, typedOther.operatorId);
+      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.operatorId, typedOther.operatorId);
       if (lastComparison != 0) {
         return lastComparison;
       }
@@ -596,7 +590,7 @@ public class Operator implements TBase<Operator, Operator._Fields>, java.io.Seri
       return lastComparison;
     }
     if (isSetOperatorType()) {
-      lastComparison = TBaseHelper.compareTo(this.operatorType, typedOther.operatorType);
+      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.operatorType, typedOther.operatorType);
       if (lastComparison != 0) {
         return lastComparison;
       }
@@ -606,7 +600,7 @@ public class Operator implements TBase<Operator, Operator._Fields>, java.io.Seri
       return lastComparison;
     }
     if (isSetOperatorAttributes()) {
-      lastComparison = TBaseHelper.compareTo(this.operatorAttributes, typedOther.operatorAttributes);
+      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.operatorAttributes, typedOther.operatorAttributes);
       if (lastComparison != 0) {
         return lastComparison;
       }
@@ -616,7 +610,7 @@ public class Operator implements TBase<Operator, Operator._Fields>, java.io.Seri
       return lastComparison;
     }
     if (isSetOperatorCounters()) {
-      lastComparison = TBaseHelper.compareTo(this.operatorCounters, typedOther.operatorCounters);
+      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.operatorCounters, typedOther.operatorCounters);
       if (lastComparison != 0) {
         return lastComparison;
       }
@@ -626,7 +620,7 @@ public class Operator implements TBase<Operator, Operator._Fields>, java.io.Seri
       return lastComparison;
     }
     if (isSetDone()) {
-      lastComparison = TBaseHelper.compareTo(this.done, typedOther.done);
+      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.done, typedOther.done);
       if (lastComparison != 0) {
         return lastComparison;
       }
@@ -636,7 +630,7 @@ public class Operator implements TBase<Operator, Operator._Fields>, java.io.Seri
       return lastComparison;
     }
     if (isSetStarted()) {
-      lastComparison = TBaseHelper.compareTo(this.started, typedOther.started);
+      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.started, typedOther.started);
       if (lastComparison != 0) {
         return lastComparison;
       }
@@ -648,34 +642,34 @@ public class Operator implements TBase<Operator, Operator._Fields>, java.io.Seri
     return _Fields.findByThriftId(fieldId);
   }
 
-  public void read(TProtocol iprot) throws TException {
-    TField field;
+  public void read(org.apache.thrift.protocol.TProtocol iprot) throws org.apache.thrift.TException {
+    org.apache.thrift.protocol.TField field;
     iprot.readStructBegin();
     while (true)
     {
       field = iprot.readFieldBegin();
-      if (field.type == TType.STOP) { 
+      if (field.type == org.apache.thrift.protocol.TType.STOP) { 
         break;
       }
       switch (field.id) {
         case 1: // OPERATOR_ID
-          if (field.type == TType.STRING) {
+          if (field.type == org.apache.thrift.protocol.TType.STRING) {
             this.operatorId = iprot.readString();
           } else { 
-            TProtocolUtil.skip(iprot, field.type);
+            org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
           }
           break;
         case 2: // OPERATOR_TYPE
-          if (field.type == TType.I32) {
+          if (field.type == org.apache.thrift.protocol.TType.I32) {
             this.operatorType = OperatorType.findByValue(iprot.readI32());
           } else { 
-            TProtocolUtil.skip(iprot, field.type);
+            org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
           }
           break;
         case 3: // OPERATOR_ATTRIBUTES
-          if (field.type == TType.MAP) {
+          if (field.type == org.apache.thrift.protocol.TType.MAP) {
             {
-              TMap _map12 = iprot.readMapBegin();
+              org.apache.thrift.protocol.TMap _map12 = iprot.readMapBegin();
               this.operatorAttributes = new HashMap<String,String>(2*_map12.size);
               for (int _i13 = 0; _i13 < _map12.size; ++_i13)
               {
@@ -688,13 +682,13 @@ public class Operator implements TBase<Operator, Operator._Fields>, java.io.Seri
               iprot.readMapEnd();
             }
           } else { 
-            TProtocolUtil.skip(iprot, field.type);
+            org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
           }
           break;
         case 4: // OPERATOR_COUNTERS
-          if (field.type == TType.MAP) {
+          if (field.type == org.apache.thrift.protocol.TType.MAP) {
             {
-              TMap _map16 = iprot.readMapBegin();
+              org.apache.thrift.protocol.TMap _map16 = iprot.readMapBegin();
               this.operatorCounters = new HashMap<String,Long>(2*_map16.size);
               for (int _i17 = 0; _i17 < _map16.size; ++_i17)
               {
@@ -707,27 +701,27 @@ public class Operator implements TBase<Operator, Operator._Fields>, java.io.Seri
               iprot.readMapEnd();
             }
           } else { 
-            TProtocolUtil.skip(iprot, field.type);
+            org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
           }
           break;
         case 5: // DONE
-          if (field.type == TType.BOOL) {
+          if (field.type == org.apache.thrift.protocol.TType.BOOL) {
             this.done = iprot.readBool();
             setDoneIsSet(true);
           } else { 
-            TProtocolUtil.skip(iprot, field.type);
+            org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
           }
           break;
         case 6: // STARTED
-          if (field.type == TType.BOOL) {
+          if (field.type == org.apache.thrift.protocol.TType.BOOL) {
             this.started = iprot.readBool();
             setStartedIsSet(true);
           } else { 
-            TProtocolUtil.skip(iprot, field.type);
+            org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
           }
           break;
         default:
-          TProtocolUtil.skip(iprot, field.type);
+          org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
       }
       iprot.readFieldEnd();
     }
@@ -735,7 +729,7 @@ public class Operator implements TBase<Operator, Operator._Fields>, java.io.Seri
     validate();
   }
 
-  public void write(TProtocol oprot) throws TException {
+  public void write(org.apache.thrift.protocol.TProtocol oprot) throws org.apache.thrift.TException {
     validate();
 
     oprot.writeStructBegin(STRUCT_DESC);
@@ -752,7 +746,7 @@ public class Operator implements TBase<Operator, Operator._Fields>, java.io.Seri
     if (this.operatorAttributes != null) {
       oprot.writeFieldBegin(OPERATOR_ATTRIBUTES_FIELD_DESC);
       {
-        oprot.writeMapBegin(new TMap(TType.STRING, TType.STRING, this.operatorAttributes.size()));
+        oprot.writeMapBegin(new org.apache.thrift.protocol.TMap(org.apache.thrift.protocol.TType.STRING, org.apache.thrift.protocol.TType.STRING, this.operatorAttributes.size()));
         for (Map.Entry<String, String> _iter20 : this.operatorAttributes.entrySet())
         {
           oprot.writeString(_iter20.getKey());
@@ -765,7 +759,7 @@ public class Operator implements TBase<Operator, Operator._Fields>, java.io.Seri
     if (this.operatorCounters != null) {
       oprot.writeFieldBegin(OPERATOR_COUNTERS_FIELD_DESC);
       {
-        oprot.writeMapBegin(new TMap(TType.STRING, TType.I64, this.operatorCounters.size()));
+        oprot.writeMapBegin(new org.apache.thrift.protocol.TMap(org.apache.thrift.protocol.TType.STRING, org.apache.thrift.protocol.TType.I64, this.operatorCounters.size()));
         for (Map.Entry<String, Long> _iter21 : this.operatorCounters.entrySet())
         {
           oprot.writeString(_iter21.getKey());
@@ -833,7 +827,7 @@ public class Operator implements TBase<Operator, Operator._Fields>, java.io.Seri
     return sb.toString();
   }
 
-  public void validate() throws TException {
+  public void validate() throws org.apache.thrift.TException {
     // check for required fields
   }
 

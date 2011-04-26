@@ -10,7 +10,7 @@ import java.util.Map;
 import java.util.HashMap;
 import org.apache.thrift.TEnum;
 
-public enum OperatorType implements TEnum {
+public enum OperatorType implements org.apache.thrift.TEnum {
   JOIN(0),
   MAPJOIN(1),
   EXTRACT(2),

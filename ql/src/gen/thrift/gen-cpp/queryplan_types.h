@@ -22,12 +22,16 @@ struct AdjacencyType {
   };
 };
 
+extern const std::map<int, const char*> _AdjacencyType_VALUES_TO_NAMES;
+
 struct NodeType {
   enum type {
     OPERATOR = 0,
     STAGE = 1
   };
 };
+
+extern const std::map<int, const char*> _NodeType_VALUES_TO_NAMES;
 
 struct OperatorType {
   enum type {
@@ -52,6 +56,8 @@ struct OperatorType {
   };
 };
 
+extern const std::map<int, const char*> _OperatorType_VALUES_TO_NAMES;
+
 struct TaskType {
   enum type {
     MAP = 0,
@@ -59,6 +65,8 @@ struct TaskType {
     OTHER = 2
   };
 };
+
+extern const std::map<int, const char*> _TaskType_VALUES_TO_NAMES;
 
 struct StageType {
   enum type {
@@ -74,6 +82,8 @@ struct StageType {
     STATS = 9
   };
 };
+
+extern const std::map<int, const char*> _StageType_VALUES_TO_NAMES;
 
 typedef struct _Adjacency__isset {
   _Adjacency__isset() : node(false), children(false), adjacencyType(false) {}
