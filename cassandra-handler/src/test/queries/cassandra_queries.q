@@ -119,8 +119,20 @@ FROM src WHERE key=98 OR key=100;
 
 SELECT * FROM cassandra_hive_table4 ORDER BY key;
 
+DROP TABLE cassandra_hive_table5;
+CREATE EXTERNAL TABLE cassandra_hive_table5(key int, value map<string,string>) 
+STORED BY 'org.apache.hadoop.hive.cassandra.CassandraStorageHandler'
+WITH SERDEPROPERTIES ("cassandra.cf.name" = "Table5" , "cassandra.host" = "127.0.0.1" , "cassandra.port" = "9170", "cassandra.partitioner" = "org.apache.cassandra.dht.RandomPartitioner" )
+TBLPROPERTIES ("cassandra.ks.name" = "Hive", "cassandra.ks.repfactor" = "1", "cassandra.ks.strategy" = "org.apache.cassandra.locator.SimpleStrategy");
+
+INSERT OVERWRITE TABLE cassandra_hive_table5 SELECT key, map(value, key) FROM src
+WHERE key=98 OR key=100;
+
+SELECT * FROM cassandra_hive_table5 ORDER BY key;
+
 DROP TABLE cassandra_hive_table;
 DROP TABLE cassandra_hive_table2;
 DROP TABLE cassandra_hive_table3;
 DROP TABLE cassandra_hive_table4;
+DROP TABLE cassandra_hive_table5;
 DROP TABLE empty_cassandra_table;

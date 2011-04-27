@@ -1,11 +1,7 @@
 PREHOOK: query: DROP TABLE cassandra_hive_table
 PREHOOK: type: DROPTABLE
-PREHOOK: Input: default@cassandra_hive_table
-PREHOOK: Output: default@cassandra_hive_table
 POSTHOOK: query: DROP TABLE cassandra_hive_table
 POSTHOOK: type: DROPTABLE
-POSTHOOK: Input: default@cassandra_hive_table
-POSTHOOK: Output: default@cassandra_hive_table
 PREHOOK: query: CREATE EXTERNAL TABLE
 cassandra_hive_table(key int, value string)
 STORED BY 'org.apache.hadoop.hive.cassandra.CassandraStorageHandler'
@@ -28,11 +24,11 @@ value	string	from deserializer
 PREHOOK: query: select * from cassandra_hive_table
 PREHOOK: type: QUERY
 PREHOOK: Input: default@cassandra_hive_table
-PREHOOK: Output: file:/var/folders/b-/b-vBB2wVHpaVQzxVjeViaE+++TI/-Tmp-/yeweizhang/hive_2011-04-26_18-12-27_827_1965223676475440843/-mr-10000
+PREHOOK: Output: file:/var/folders/b-/b-vBB2wVHpaVQzxVjeViaE+++TI/-Tmp-/yeweizhang/hive_2011-04-27_12-15-26_415_4723930238947850507/-mr-10000
 POSTHOOK: query: select * from cassandra_hive_table
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@cassandra_hive_table
-POSTHOOK: Output: file:/var/folders/b-/b-vBB2wVHpaVQzxVjeViaE+++TI/-Tmp-/yeweizhang/hive_2011-04-26_18-12-27_827_1965223676475440843/-mr-10000
+POSTHOOK: Output: file:/var/folders/b-/b-vBB2wVHpaVQzxVjeViaE+++TI/-Tmp-/yeweizhang/hive_2011-04-27_12-15-26_415_4723930238947850507/-mr-10000
 PREHOOK: query: EXPLAIN FROM src INSERT OVERWRITE TABLE cassandra_hive_table SELECT * WHERE (key%7)=0 ORDER BY key
 PREHOOK: type: QUERY
 POSTHOOK: query: EXPLAIN FROM src INSERT OVERWRITE TABLE cassandra_hive_table SELECT * WHERE (key%7)=0 ORDER BY key
@@ -156,11 +152,11 @@ STAGE PLANS:
 PREHOOK: query: select * from cassandra_hive_table ORDER BY key
 PREHOOK: type: QUERY
 PREHOOK: Input: default@cassandra_hive_table
-PREHOOK: Output: file:/var/folders/b-/b-vBB2wVHpaVQzxVjeViaE+++TI/-Tmp-/yeweizhang/hive_2011-04-26_18-12-32_529_7357006939686712608/-mr-10000
+PREHOOK: Output: file:/var/folders/b-/b-vBB2wVHpaVQzxVjeViaE+++TI/-Tmp-/yeweizhang/hive_2011-04-27_12-15-44_453_2161917980913023237/-mr-10000
 POSTHOOK: query: select * from cassandra_hive_table ORDER BY key
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@cassandra_hive_table
-POSTHOOK: Output: file:/var/folders/b-/b-vBB2wVHpaVQzxVjeViaE+++TI/-Tmp-/yeweizhang/hive_2011-04-26_18-12-32_529_7357006939686712608/-mr-10000
+POSTHOOK: Output: file:/var/folders/b-/b-vBB2wVHpaVQzxVjeViaE+++TI/-Tmp-/yeweizhang/hive_2011-04-27_12-15-44_453_2161917980913023237/-mr-10000
 0	val_0
 28	val_28
 35	val_35
@@ -253,11 +249,11 @@ STAGE PLANS:
 PREHOOK: query: select key from cassandra_hive_table ORDER BY key
 PREHOOK: type: QUERY
 PREHOOK: Input: default@cassandra_hive_table
-PREHOOK: Output: file:/var/folders/b-/b-vBB2wVHpaVQzxVjeViaE+++TI/-Tmp-/yeweizhang/hive_2011-04-26_18-12-36_471_6890479242851485466/-mr-10000
+PREHOOK: Output: file:/var/folders/b-/b-vBB2wVHpaVQzxVjeViaE+++TI/-Tmp-/yeweizhang/hive_2011-04-27_12-15-51_677_6808850111791254672/-mr-10000
 POSTHOOK: query: select key from cassandra_hive_table ORDER BY key
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@cassandra_hive_table
-POSTHOOK: Output: file:/var/folders/b-/b-vBB2wVHpaVQzxVjeViaE+++TI/-Tmp-/yeweizhang/hive_2011-04-26_18-12-36_471_6890479242851485466/-mr-10000
+POSTHOOK: Output: file:/var/folders/b-/b-vBB2wVHpaVQzxVjeViaE+++TI/-Tmp-/yeweizhang/hive_2011-04-27_12-15-51_677_6808850111791254672/-mr-10000
 0
 28
 35
@@ -350,11 +346,11 @@ STAGE PLANS:
 PREHOOK: query: select value from cassandra_hive_table ORDER BY VALUE
 PREHOOK: type: QUERY
 PREHOOK: Input: default@cassandra_hive_table
-PREHOOK: Output: file:/var/folders/b-/b-vBB2wVHpaVQzxVjeViaE+++TI/-Tmp-/yeweizhang/hive_2011-04-26_18-12-40_166_7329087574633001595/-mr-10000
+PREHOOK: Output: file:/var/folders/b-/b-vBB2wVHpaVQzxVjeViaE+++TI/-Tmp-/yeweizhang/hive_2011-04-27_12-15-56_016_4133837409745016039/-mr-10000
 POSTHOOK: query: select value from cassandra_hive_table ORDER BY VALUE
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@cassandra_hive_table
-POSTHOOK: Output: file:/var/folders/b-/b-vBB2wVHpaVQzxVjeViaE+++TI/-Tmp-/yeweizhang/hive_2011-04-26_18-12-40_166_7329087574633001595/-mr-10000
+POSTHOOK: Output: file:/var/folders/b-/b-vBB2wVHpaVQzxVjeViaE+++TI/-Tmp-/yeweizhang/hive_2011-04-27_12-15-56_016_4133837409745016039/-mr-10000
 val_0
 val_105
 val_119
@@ -474,7 +470,7 @@ STAGE PLANS:
   Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/var/folders/b-/b-vBB2wVHpaVQzxVjeViaE+++TI/-Tmp-/yeweizhang/hive_2011-04-26_18-12-45_152_1547653972637486587/-mr-10002 
+        file:/var/folders/b-/b-vBB2wVHpaVQzxVjeViaE+++TI/-Tmp-/yeweizhang/hive_2011-04-27_12-16-02_153_2752356286736155888/-mr-10002 
             Reduce Output Operator
               key expressions:
                     expr: _col0
@@ -505,11 +501,11 @@ STAGE PLANS:
 PREHOOK: query: select a.key,a.value,b.value from cassandra_hive_table a JOIN cassandra_hive_table b on a.key=b.key ORDER BY a.key
 PREHOOK: type: QUERY
 PREHOOK: Input: default@cassandra_hive_table
-PREHOOK: Output: file:/var/folders/b-/b-vBB2wVHpaVQzxVjeViaE+++TI/-Tmp-/yeweizhang/hive_2011-04-26_18-12-45_894_4510563033675934223/-mr-10000
+PREHOOK: Output: file:/var/folders/b-/b-vBB2wVHpaVQzxVjeViaE+++TI/-Tmp-/yeweizhang/hive_2011-04-27_12-16-02_825_8557878090999083006/-mr-10000
 POSTHOOK: query: select a.key,a.value,b.value from cassandra_hive_table a JOIN cassandra_hive_table b on a.key=b.key ORDER BY a.key
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@cassandra_hive_table
-POSTHOOK: Output: file:/var/folders/b-/b-vBB2wVHpaVQzxVjeViaE+++TI/-Tmp-/yeweizhang/hive_2011-04-26_18-12-45_894_4510563033675934223/-mr-10000
+POSTHOOK: Output: file:/var/folders/b-/b-vBB2wVHpaVQzxVjeViaE+++TI/-Tmp-/yeweizhang/hive_2011-04-27_12-16-02_825_8557878090999083006/-mr-10000
 0	val_0	val_0
 28	val_28	val_28
 35	val_35	val_35
@@ -650,7 +646,7 @@ STAGE PLANS:
   Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/var/folders/b-/b-vBB2wVHpaVQzxVjeViaE+++TI/-Tmp-/yeweizhang/hive_2011-04-26_18-12-58_304_6472477151847241094/-mr-10002 
+        file:/var/folders/b-/b-vBB2wVHpaVQzxVjeViaE+++TI/-Tmp-/yeweizhang/hive_2011-04-27_12-16-14_469_1098855069026559641/-mr-10002 
             Reduce Output Operator
               key expressions:
                     expr: _col0
@@ -689,7 +685,7 @@ ORDER BY key, value LIMIT 20
 PREHOOK: type: QUERY
 PREHOOK: Input: default@cassandra_hive_table
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/var/folders/b-/b-vBB2wVHpaVQzxVjeViaE+++TI/-Tmp-/yeweizhang/hive_2011-04-26_18-12-58_441_1816853976287601227/-mr-10000
+PREHOOK: Output: file:/var/folders/b-/b-vBB2wVHpaVQzxVjeViaE+++TI/-Tmp-/yeweizhang/hive_2011-04-27_12-16-14_774_7696314185664999081/-mr-10000
 POSTHOOK: query: SELECT Y.* 
 FROM 
 (SELECT cassandra_hive_table.* FROM cassandra_hive_table) x
@@ -700,7 +696,7 @@ ORDER BY key, value LIMIT 20
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@cassandra_hive_table
 POSTHOOK: Input: default@src
-POSTHOOK: Output: file:/var/folders/b-/b-vBB2wVHpaVQzxVjeViaE+++TI/-Tmp-/yeweizhang/hive_2011-04-26_18-12-58_441_1816853976287601227/-mr-10000
+POSTHOOK: Output: file:/var/folders/b-/b-vBB2wVHpaVQzxVjeViaE+++TI/-Tmp-/yeweizhang/hive_2011-04-27_12-16-14_774_7696314185664999081/-mr-10000
 0	val_0
 0	val_0
 0	val_0
@@ -723,12 +719,8 @@ POSTHOOK: Output: file:/var/folders/b-/b-vBB2wVHpaVQzxVjeViaE+++TI/-Tmp-/yeweizh
 224	val_224
 PREHOOK: query: DROP TABLE cassandra_hive_table2
 PREHOOK: type: DROPTABLE
-PREHOOK: Input: default@cassandra_hive_table2
-PREHOOK: Output: default@cassandra_hive_table2
 POSTHOOK: query: DROP TABLE cassandra_hive_table2
 POSTHOOK: type: DROPTABLE
-POSTHOOK: Input: default@cassandra_hive_table2
-POSTHOOK: Output: default@cassandra_hive_table2
 PREHOOK: query: CREATE EXTERNAL TABLE cassandra_hive_table2(key int, value string) 
 STORED BY 'org.apache.hadoop.hive.cassandra.CassandraStorageHandler'
 WITH SERDEPROPERTIES ("cassandra.cf.name" = "Table2" , "cassandra.host" = "127.0.0.1" , "cassandra.port" = "9170", "cassandra.partitioner" = "org.apache.cassandra.dht.RandomPartitioner" )
@@ -859,7 +851,7 @@ STAGE PLANS:
   Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/var/folders/b-/b-vBB2wVHpaVQzxVjeViaE+++TI/-Tmp-/yeweizhang/hive_2011-04-26_18-13-09_439_7147983285959425504/-mr-10002 
+        file:/var/folders/b-/b-vBB2wVHpaVQzxVjeViaE+++TI/-Tmp-/yeweizhang/hive_2011-04-27_12-16-30_441_3456509802502637963/-mr-10002 
             Reduce Output Operator
               key expressions:
                     expr: _col0
@@ -897,7 +889,7 @@ ORDER BY key,value
 PREHOOK: type: QUERY
 PREHOOK: Input: default@cassandra_hive_table
 PREHOOK: Input: default@cassandra_hive_table2
-PREHOOK: Output: file:/var/folders/b-/b-vBB2wVHpaVQzxVjeViaE+++TI/-Tmp-/yeweizhang/hive_2011-04-26_18-13-09_555_3315039506463186387/-mr-10000
+PREHOOK: Output: file:/var/folders/b-/b-vBB2wVHpaVQzxVjeViaE+++TI/-Tmp-/yeweizhang/hive_2011-04-27_12-16-30_797_8493200693429277194/-mr-10000
 POSTHOOK: query: SELECT Y.*
 FROM 
 (SELECT cassandra_hive_table.* FROM cassandra_hive_table WHERE cassandra_hive_table.key > 100) x
@@ -908,15 +900,11 @@ ORDER BY key,value
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@cassandra_hive_table
 POSTHOOK: Input: default@cassandra_hive_table2
-POSTHOOK: Output: file:/var/folders/b-/b-vBB2wVHpaVQzxVjeViaE+++TI/-Tmp-/yeweizhang/hive_2011-04-26_18-13-09_555_3315039506463186387/-mr-10000
+POSTHOOK: Output: file:/var/folders/b-/b-vBB2wVHpaVQzxVjeViaE+++TI/-Tmp-/yeweizhang/hive_2011-04-27_12-16-30_797_8493200693429277194/-mr-10000
 PREHOOK: query: DROP TABLE empty_cassandra_table
 PREHOOK: type: DROPTABLE
-PREHOOK: Input: default@empty_cassandra_table
-PREHOOK: Output: default@empty_cassandra_table
 POSTHOOK: query: DROP TABLE empty_cassandra_table
 POSTHOOK: type: DROPTABLE
-POSTHOOK: Input: default@empty_cassandra_table
-POSTHOOK: Output: default@empty_cassandra_table
 PREHOOK: query: CREATE EXTERNAL TABLE empty_cassandra_table(key int, value string) 
 STORED BY 'org.apache.hadoop.hive.cassandra.CassandraStorageHandler'
 WITH SERDEPROPERTIES ("cassandra.cf.name" = "emptyTable" , "cassandra.host" = "127.0.0.1" , "cassandra.port" = "9170", "cassandra.partitioner" = "org.apache.cassandra.dht.RandomPartitioner" )
@@ -945,58 +933,54 @@ PREHOOK: query: select * from (select count(1) as c from empty_normal_table unio
 PREHOOK: type: QUERY
 PREHOOK: Input: default@empty_cassandra_table
 PREHOOK: Input: default@empty_normal_table
-PREHOOK: Output: file:/var/folders/b-/b-vBB2wVHpaVQzxVjeViaE+++TI/-Tmp-/yeweizhang/hive_2011-04-26_18-13-19_255_8720504644848068428/-mr-10000
+PREHOOK: Output: file:/var/folders/b-/b-vBB2wVHpaVQzxVjeViaE+++TI/-Tmp-/yeweizhang/hive_2011-04-27_12-16-44_064_2121331251556915132/-mr-10000
 POSTHOOK: query: select * from (select count(1) as c from empty_normal_table union all select count(1) as c from empty_cassandra_table) x order by c
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@empty_cassandra_table
 POSTHOOK: Input: default@empty_normal_table
-POSTHOOK: Output: file:/var/folders/b-/b-vBB2wVHpaVQzxVjeViaE+++TI/-Tmp-/yeweizhang/hive_2011-04-26_18-13-19_255_8720504644848068428/-mr-10000
+POSTHOOK: Output: file:/var/folders/b-/b-vBB2wVHpaVQzxVjeViaE+++TI/-Tmp-/yeweizhang/hive_2011-04-27_12-16-44_064_2121331251556915132/-mr-10000
 0
 0
 PREHOOK: query: select * from (select count(1) c from empty_normal_table union all select count(1) as c from empty_cassandra_table) x order by c
 PREHOOK: type: QUERY
 PREHOOK: Input: default@empty_cassandra_table
 PREHOOK: Input: default@empty_normal_table
-PREHOOK: Output: file:/var/folders/b-/b-vBB2wVHpaVQzxVjeViaE+++TI/-Tmp-/yeweizhang/hive_2011-04-26_18-13-36_248_4412408085606383299/-mr-10000
+PREHOOK: Output: file:/var/folders/b-/b-vBB2wVHpaVQzxVjeViaE+++TI/-Tmp-/yeweizhang/hive_2011-04-27_12-17-01_033_5502112696539925415/-mr-10000
 POSTHOOK: query: select * from (select count(1) c from empty_normal_table union all select count(1) as c from empty_cassandra_table) x order by c
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@empty_cassandra_table
 POSTHOOK: Input: default@empty_normal_table
-POSTHOOK: Output: file:/var/folders/b-/b-vBB2wVHpaVQzxVjeViaE+++TI/-Tmp-/yeweizhang/hive_2011-04-26_18-13-36_248_4412408085606383299/-mr-10000
+POSTHOOK: Output: file:/var/folders/b-/b-vBB2wVHpaVQzxVjeViaE+++TI/-Tmp-/yeweizhang/hive_2011-04-27_12-17-01_033_5502112696539925415/-mr-10000
 0
 0
 PREHOOK: query: select * from (select count(1) c from src union all select count(1) as c from empty_cassandra_table) x order by c
 PREHOOK: type: QUERY
 PREHOOK: Input: default@empty_cassandra_table
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/var/folders/b-/b-vBB2wVHpaVQzxVjeViaE+++TI/-Tmp-/yeweizhang/hive_2011-04-26_18-13-52_564_4838380186591335883/-mr-10000
+PREHOOK: Output: file:/var/folders/b-/b-vBB2wVHpaVQzxVjeViaE+++TI/-Tmp-/yeweizhang/hive_2011-04-27_12-17-17_574_6904915604657912684/-mr-10000
 POSTHOOK: query: select * from (select count(1) c from src union all select count(1) as c from empty_cassandra_table) x order by c
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@empty_cassandra_table
 POSTHOOK: Input: default@src
-POSTHOOK: Output: file:/var/folders/b-/b-vBB2wVHpaVQzxVjeViaE+++TI/-Tmp-/yeweizhang/hive_2011-04-26_18-13-52_564_4838380186591335883/-mr-10000
+POSTHOOK: Output: file:/var/folders/b-/b-vBB2wVHpaVQzxVjeViaE+++TI/-Tmp-/yeweizhang/hive_2011-04-27_12-17-17_574_6904915604657912684/-mr-10000
 0
 500
 PREHOOK: query: select * from (select count(1) c from src union all select count(1) as c from cassandra_hive_table) x order by c
 PREHOOK: type: QUERY
 PREHOOK: Input: default@cassandra_hive_table
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/var/folders/b-/b-vBB2wVHpaVQzxVjeViaE+++TI/-Tmp-/yeweizhang/hive_2011-04-26_18-14-06_559_8319644348474247143/-mr-10000
+PREHOOK: Output: file:/var/folders/b-/b-vBB2wVHpaVQzxVjeViaE+++TI/-Tmp-/yeweizhang/hive_2011-04-27_12-17-35_840_5117294143480923014/-mr-10000
 POSTHOOK: query: select * from (select count(1) c from src union all select count(1) as c from cassandra_hive_table) x order by c
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@cassandra_hive_table
 POSTHOOK: Input: default@src
-POSTHOOK: Output: file:/var/folders/b-/b-vBB2wVHpaVQzxVjeViaE+++TI/-Tmp-/yeweizhang/hive_2011-04-26_18-14-06_559_8319644348474247143/-mr-10000
+POSTHOOK: Output: file:/var/folders/b-/b-vBB2wVHpaVQzxVjeViaE+++TI/-Tmp-/yeweizhang/hive_2011-04-27_12-17-35_840_5117294143480923014/-mr-10000
 43
 500
 PREHOOK: query: DROP TABLE cassandra_hive_table3
 PREHOOK: type: DROPTABLE
-PREHOOK: Input: default@cassandra_hive_table3
-PREHOOK: Output: default@cassandra_hive_table3
 POSTHOOK: query: DROP TABLE cassandra_hive_table3
 POSTHOOK: type: DROPTABLE
-POSTHOOK: Input: default@cassandra_hive_table3
-POSTHOOK: Output: default@cassandra_hive_table3
 PREHOOK: query: CREATE EXTERNAL TABLE cassandra_hive_table3(key int, value string, count int) 
 STORED BY 'org.apache.hadoop.hive.cassandra.CassandraStorageHandler'
 WITH SERDEPROPERTIES ("cassandra.columns.mapping" = ":key,value,count" , "cassandra.cf.name" = "Table3" , "cassandra.host" = "127.0.0.1" , "cassandra.port" = "9170", "cassandra.partitioner" = "org.apache.cassandra.dht.RandomPartitioner" )
@@ -1192,20 +1176,20 @@ POSTHOOK: Output: default@cassandra_hive_table3
 PREHOOK: query: select count(1) from cassandra_hive_table3
 PREHOOK: type: QUERY
 PREHOOK: Input: default@cassandra_hive_table3
-PREHOOK: Output: file:/var/folders/b-/b-vBB2wVHpaVQzxVjeViaE+++TI/-Tmp-/yeweizhang/hive_2011-04-26_18-14-37_485_6829192607517349631/-mr-10000
+PREHOOK: Output: file:/var/folders/b-/b-vBB2wVHpaVQzxVjeViaE+++TI/-Tmp-/yeweizhang/hive_2011-04-27_12-18-05_954_4185621064606985594/-mr-10000
 POSTHOOK: query: select count(1) from cassandra_hive_table3
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@cassandra_hive_table3
-POSTHOOK: Output: file:/var/folders/b-/b-vBB2wVHpaVQzxVjeViaE+++TI/-Tmp-/yeweizhang/hive_2011-04-26_18-14-37_485_6829192607517349631/-mr-10000
+POSTHOOK: Output: file:/var/folders/b-/b-vBB2wVHpaVQzxVjeViaE+++TI/-Tmp-/yeweizhang/hive_2011-04-27_12-18-05_954_4185621064606985594/-mr-10000
 43
 PREHOOK: query: select * from cassandra_hive_table3 order by key, value limit 5
 PREHOOK: type: QUERY
 PREHOOK: Input: default@cassandra_hive_table3
-PREHOOK: Output: file:/var/folders/b-/b-vBB2wVHpaVQzxVjeViaE+++TI/-Tmp-/yeweizhang/hive_2011-04-26_18-14-41_927_5259517461382947594/-mr-10000
+PREHOOK: Output: file:/var/folders/b-/b-vBB2wVHpaVQzxVjeViaE+++TI/-Tmp-/yeweizhang/hive_2011-04-27_12-18-11_564_1295519320252225805/-mr-10000
 POSTHOOK: query: select * from cassandra_hive_table3 order by key, value limit 5
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@cassandra_hive_table3
-POSTHOOK: Output: file:/var/folders/b-/b-vBB2wVHpaVQzxVjeViaE+++TI/-Tmp-/yeweizhang/hive_2011-04-26_18-14-41_927_5259517461382947594/-mr-10000
+POSTHOOK: Output: file:/var/folders/b-/b-vBB2wVHpaVQzxVjeViaE+++TI/-Tmp-/yeweizhang/hive_2011-04-27_12-18-11_564_1295519320252225805/-mr-10000
 0	val_0	3
 28	val_28	1
 35	val_35	3
@@ -1214,11 +1198,11 @@ POSTHOOK: Output: file:/var/folders/b-/b-vBB2wVHpaVQzxVjeViaE+++TI/-Tmp-/yeweizh
 PREHOOK: query: select key, count from cassandra_hive_table3 order by key, count desc limit 5
 PREHOOK: type: QUERY
 PREHOOK: Input: default@cassandra_hive_table3
-PREHOOK: Output: file:/var/folders/b-/b-vBB2wVHpaVQzxVjeViaE+++TI/-Tmp-/yeweizhang/hive_2011-04-26_18-14-47_992_894715014204978241/-mr-10000
+PREHOOK: Output: file:/var/folders/b-/b-vBB2wVHpaVQzxVjeViaE+++TI/-Tmp-/yeweizhang/hive_2011-04-27_12-18-15_914_5692275503235161384/-mr-10000
 POSTHOOK: query: select key, count from cassandra_hive_table3 order by key, count desc limit 5
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@cassandra_hive_table3
-POSTHOOK: Output: file:/var/folders/b-/b-vBB2wVHpaVQzxVjeViaE+++TI/-Tmp-/yeweizhang/hive_2011-04-26_18-14-47_992_894715014204978241/-mr-10000
+POSTHOOK: Output: file:/var/folders/b-/b-vBB2wVHpaVQzxVjeViaE+++TI/-Tmp-/yeweizhang/hive_2011-04-27_12-18-15_914_5692275503235161384/-mr-10000
 0	3
 28	1
 35	3
@@ -1226,12 +1210,8 @@ POSTHOOK: Output: file:/var/folders/b-/b-vBB2wVHpaVQzxVjeViaE+++TI/-Tmp-/yeweizh
 70	3
 PREHOOK: query: DROP TABLE cassandra_hive_table4
 PREHOOK: type: DROPTABLE
-PREHOOK: Input: default@cassandra_hive_table4
-PREHOOK: Output: default@cassandra_hive_table4
 POSTHOOK: query: DROP TABLE cassandra_hive_table4
 POSTHOOK: type: DROPTABLE
-POSTHOOK: Input: default@cassandra_hive_table4
-POSTHOOK: Output: default@cassandra_hive_table4
 PREHOOK: query: CREATE EXTERNAL TABLE cassandra_hive_table4(key int, value1 string, value2 int, value3 int) 
 STORED BY 'org.apache.hadoop.hive.cassandra.CassandraStorageHandler'
 WITH SERDEPROPERTIES ("cassandra.columns.mapping" = ":key,value1,value2,value3" , "cassandra.cf.name" = "Table4" , "cassandra.host" = "127.0.0.1" , "cassandra.port" = "9170", "cassandra.partitioner" = "org.apache.cassandra.dht.RandomPartitioner" )
@@ -1256,13 +1236,48 @@ POSTHOOK: Output: default@cassandra_hive_table4
 PREHOOK: query: SELECT * FROM cassandra_hive_table4 ORDER BY key
 PREHOOK: type: QUERY
 PREHOOK: Input: default@cassandra_hive_table4
-PREHOOK: Output: file:/var/folders/b-/b-vBB2wVHpaVQzxVjeViaE+++TI/-Tmp-/yeweizhang/hive_2011-04-26_18-14-58_040_5412387952505986343/-mr-10000
+PREHOOK: Output: file:/var/folders/b-/b-vBB2wVHpaVQzxVjeViaE+++TI/-Tmp-/yeweizhang/hive_2011-04-27_12-18-25_661_8553560853518763772/-mr-10000
 POSTHOOK: query: SELECT * FROM cassandra_hive_table4 ORDER BY key
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@cassandra_hive_table4
-POSTHOOK: Output: file:/var/folders/b-/b-vBB2wVHpaVQzxVjeViaE+++TI/-Tmp-/yeweizhang/hive_2011-04-26_18-14-58_040_5412387952505986343/-mr-10000
+POSTHOOK: Output: file:/var/folders/b-/b-vBB2wVHpaVQzxVjeViaE+++TI/-Tmp-/yeweizhang/hive_2011-04-27_12-18-25_661_8553560853518763772/-mr-10000
 98	val_98	99	100
 100	val_100	101	102
+PREHOOK: query: DROP TABLE cassandra_hive_table5
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: DROP TABLE cassandra_hive_table5
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: CREATE EXTERNAL TABLE cassandra_hive_table5(key int, value map<string,string>) 
+STORED BY 'org.apache.hadoop.hive.cassandra.CassandraStorageHandler'
+WITH SERDEPROPERTIES ("cassandra.cf.name" = "Table5" , "cassandra.host" = "127.0.0.1" , "cassandra.port" = "9170", "cassandra.partitioner" = "org.apache.cassandra.dht.RandomPartitioner" )
+TBLPROPERTIES ("cassandra.ks.name" = "Hive", "cassandra.ks.repfactor" = "1", "cassandra.ks.strategy" = "org.apache.cassandra.locator.SimpleStrategy")
+PREHOOK: type: CREATETABLE
+POSTHOOK: query: CREATE EXTERNAL TABLE cassandra_hive_table5(key int, value map<string,string>) 
+STORED BY 'org.apache.hadoop.hive.cassandra.CassandraStorageHandler'
+WITH SERDEPROPERTIES ("cassandra.cf.name" = "Table5" , "cassandra.host" = "127.0.0.1" , "cassandra.port" = "9170", "cassandra.partitioner" = "org.apache.cassandra.dht.RandomPartitioner" )
+TBLPROPERTIES ("cassandra.ks.name" = "Hive", "cassandra.ks.repfactor" = "1", "cassandra.ks.strategy" = "org.apache.cassandra.locator.SimpleStrategy")
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: default@cassandra_hive_table5
+PREHOOK: query: INSERT OVERWRITE TABLE cassandra_hive_table5 SELECT key, map(value, key) FROM src
+WHERE key=98 OR key=100
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@cassandra_hive_table5
+POSTHOOK: query: INSERT OVERWRITE TABLE cassandra_hive_table5 SELECT key, map(value, key) FROM src
+WHERE key=98 OR key=100
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@cassandra_hive_table5
+PREHOOK: query: SELECT * FROM cassandra_hive_table5 ORDER BY key
+PREHOOK: type: QUERY
+PREHOOK: Input: default@cassandra_hive_table5
+PREHOOK: Output: file:/var/folders/b-/b-vBB2wVHpaVQzxVjeViaE+++TI/-Tmp-/yeweizhang/hive_2011-04-27_12-18-37_097_4589167122477210711/-mr-10000
+POSTHOOK: query: SELECT * FROM cassandra_hive_table5 ORDER BY key
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@cassandra_hive_table5
+POSTHOOK: Output: file:/var/folders/b-/b-vBB2wVHpaVQzxVjeViaE+++TI/-Tmp-/yeweizhang/hive_2011-04-27_12-18-37_097_4589167122477210711/-mr-10000
+98	{"val_98":"98"}
+100	{"val_100":"100"}
 PREHOOK: query: DROP TABLE cassandra_hive_table
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@cassandra_hive_table
@@ -1295,6 +1310,14 @@ POSTHOOK: query: DROP TABLE cassandra_hive_table4
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@cassandra_hive_table4
 POSTHOOK: Output: default@cassandra_hive_table4
+PREHOOK: query: DROP TABLE cassandra_hive_table5
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@cassandra_hive_table5
+PREHOOK: Output: default@cassandra_hive_table5
+POSTHOOK: query: DROP TABLE cassandra_hive_table5
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@cassandra_hive_table5
+POSTHOOK: Output: default@cassandra_hive_table5
 PREHOOK: query: DROP TABLE empty_cassandra_table
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@empty_cassandra_table
