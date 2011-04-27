@@ -792,6 +792,18 @@
 </property>
 
 <property>
+  <name>hive.stats.retries.max</name>
+  <value>0</value>
+  <description>Maximum number of retries when stats publisher/aggregator got an exception updating intermediate database. Default is no tries on failures.</description>
+</property>
+
+<property>
+  <name>hive.stats.retries.wait</name>
+  <value>3000</value>
+  <description>The base waiting window (in milliseconds) before the next retry. The actual wait time is calculated by baseWindow * failues + baseWindow * (failure + 1) * (random number between [0.0,1.0]).</description>
+</property>
+
+<property>
   <name>hive.support.concurrency</name>
   <value>false</value>
   <description>Whether hive supports concurrency or not. A zookeeper instance must be up and running for the default hive lock manager to support read-write locks.</description>

@@ -24,12 +24,15 @@ import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.SQLRecoverableException;
 import java.sql.Statement;
+import java.util.Random;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.stats.StatsPublisher;
 import org.apache.hadoop.hive.ql.stats.StatsSetupConst;
 
@@ -40,56 +43,92 @@ public class JDBCStatsPublisher implements StatsPublisher {
   private Configuration hiveconf;
   private final Log LOG = LogFactory.getLog(this.getClass().getName());
   private PreparedStatement selStmt, updStmt, insStmt;
-  private int timeout = 30; // default timeout in sec. for JDBC connection and statements
+  private int timeout; // default timeout in sec. for JDBC connection and statements
   // SQL comment that identifies where the SQL statement comes from
   private final String comment = "Hive stats publishing: " + this.getClass().getName();
-
+  private int maxRetries, waitWindow;
+  private final Random r;
 
   public JDBCStatsPublisher() {
-    selStmt = updStmt = insStmt = null;
+    r = new Random();
   }
 
+  @Override
   public boolean connect(Configuration hiveconf) {
+    this.hiveconf = hiveconf;
+    maxRetries = HiveConf.getIntVar(hiveconf, HiveConf.ConfVars.HIVE_STATS_RETRIES_MAX);
+    waitWindow = HiveConf.getIntVar(hiveconf, HiveConf.ConfVars.HIVE_STATS_RETRIES_WAIT);
+    connectionString = HiveConf.getVar(hiveconf, HiveConf.ConfVars.HIVESTATSDBCONNECTIONSTRING);
+    timeout = HiveConf.getIntVar(hiveconf, HiveConf.ConfVars.HIVE_STATS_JDBC_TIMEOUT);
+    String driver = HiveConf.getVar(hiveconf, HiveConf.ConfVars.HIVESTATSJDBCDRIVER);
+
     try {
-      this.hiveconf = hiveconf;
-      connectionString = HiveConf.getVar(hiveconf, HiveConf.ConfVars.HIVESTATSDBCONNECTIONSTRING);
-      timeout = HiveConf.getIntVar(hiveconf, HiveConf.ConfVars.HIVE_STATS_JDBC_TIMEOUT);
-      String driver = HiveConf.getVar(hiveconf, HiveConf.ConfVars.HIVESTATSJDBCDRIVER);
       Class.forName(driver).newInstance();
-      DriverManager.setLoginTimeout(timeout); // stats is non-blocking
-      conn = DriverManager.getConnection(connectionString);
-
-      // prepare the SELECT/UPDATE/INSERT statements
-      String select =
-        "SELECT /* " + comment + " */ " + JDBCStatsSetupConstants.PART_STAT_ROW_COUNT_COLUMN_NAME +
-        " FROM " + JDBCStatsSetupConstants.PART_STAT_TABLE_NAME +
-        " WHERE " + JDBCStatsSetupConstants.PART_STAT_ID_COLUMN_NAME + " = ?";
-
-      String update =
-        "UPDATE /* " + comment + " */ "+ JDBCStatsSetupConstants.PART_STAT_TABLE_NAME +
-        " SET " +  JDBCStatsSetupConstants.PART_STAT_ROW_COUNT_COLUMN_NAME + "= ? " +
-        " WHERE " + JDBCStatsSetupConstants.PART_STAT_ID_COLUMN_NAME + " = ?";
-
-      String insert =
-        "INSERT INTO /* " + comment + " */ " + JDBCStatsSetupConstants.PART_STAT_TABLE_NAME +
-        " VALUES (?, ?)";
-
-      selStmt = conn.prepareStatement(select);
-      updStmt = conn.prepareStatement(update);
-      insStmt = conn.prepareStatement(insert);
-
-      // make the statements non-blocking
-      selStmt.setQueryTimeout(timeout);
-      updStmt.setQueryTimeout(timeout);
-      insStmt.setQueryTimeout(timeout);
-
-      return true;
     } catch (Exception e) {
-      LOG.error("Error during JDBC connection to " + connectionString + ". ", e);
+      LOG.error("Error during instantiating JDBC driver " + driver + ". ", e);
       return false;
+    }
+
+    // prepare the SELECT/UPDATE/INSERT statements
+    String select =
+      "SELECT /* " + comment + " */ " + JDBCStatsSetupConstants.PART_STAT_ROW_COUNT_COLUMN_NAME +
+      " FROM " + JDBCStatsSetupConstants.PART_STAT_TABLE_NAME +
+      " WHERE " + JDBCStatsSetupConstants.PART_STAT_ID_COLUMN_NAME + " = ?";
+
+    String update =
+      "UPDATE /* " + comment + " */ "+ JDBCStatsSetupConstants.PART_STAT_TABLE_NAME +
+      " SET " +  JDBCStatsSetupConstants.PART_STAT_ROW_COUNT_COLUMN_NAME + "= ? " +
+      " WHERE " + JDBCStatsSetupConstants.PART_STAT_ID_COLUMN_NAME + " = ?";
+
+    String insert =
+      "INSERT INTO /* " + comment + " */ " + JDBCStatsSetupConstants.PART_STAT_TABLE_NAME +
+      " VALUES (?, ?)";
+
+    DriverManager.setLoginTimeout(timeout); // stats is non-blocking
+
+    // function pointer for executeWithRetry to setQueryTimeout
+    Utilities.SQLCommand<Void> setQueryTimeout = new Utilities.SQLCommand<Void>() {
+      @Override
+      public Void run(PreparedStatement stmt) throws SQLException {
+        stmt.setQueryTimeout(timeout);
+        return null;
+      }
+    };
+
+    for (int failures = 0; ; failures++) {
+      try {
+        conn = Utilities.connectWithRetry(connectionString, waitWindow, maxRetries);
+
+        // prepare statements
+        selStmt = Utilities.prepareWithRetry(conn, select, waitWindow, maxRetries);
+        updStmt = Utilities.prepareWithRetry(conn, update, waitWindow, maxRetries);
+        insStmt = Utilities.prepareWithRetry(conn, insert, waitWindow, maxRetries);
+
+        // set query timeout
+        Utilities.executeWithRetry(setQueryTimeout, selStmt, waitWindow, maxRetries);
+        Utilities.executeWithRetry(setQueryTimeout, updStmt, waitWindow, maxRetries);
+        Utilities.executeWithRetry(setQueryTimeout, insStmt, waitWindow, maxRetries);
+
+        return true;
+      } catch (SQLRecoverableException e) {
+        if (failures >= maxRetries) {
+          LOG.error("Error during JDBC connection to " + connectionString + ". ", e);
+          return false;  // just return false without fail the task
+        }
+        long waitTime = Utilities.getRandomWaitTime(waitWindow, failures, r);
+        try {
+          Thread.sleep(waitTime);
+        } catch (InterruptedException e1) {
+        }
+      } catch (SQLException e) {
+        // for SQLTransientException (maxRetries already achieved at Utilities retry functions
+        // or SQLNonTransientException, declare a real failure
+        return false;
+      }
     }
   }
 
+  @Override
   public boolean publishStat(String fileID, String statType, String value) {
 
     if (conn == null) {
@@ -104,34 +143,70 @@ public class JDBCStatsPublisher implements StatsPublisher {
     }
     LOG.info("Stats publishing for key " + fileID + ". Value = " + value);
 
-    try {
-
-      // Check to see if a previous task (mapper attempt) had published a previous stat
-      selStmt.setString(1, fileID);
-      ResultSet result = selStmt.executeQuery();
-
-      if (result.next()) {
-        long currval = result.getLong(1);
-        // Only update if the previous value is smaller (i.e. the previous attempt was a fail and
-        // hopefully this attempt is a success (as it has a greater value).
-        if (currval < Long.parseLong(value)) {
-          updStmt.setString(1, value);
-          updStmt.setString(2, fileID);
-          updStmt.executeUpdate();
-        }
-      } else {
-        // No previous attempts.
-        insStmt.setString(1, fileID);
-        insStmt.setString(2, value);
-        insStmt.executeUpdate();
+    Utilities.SQLCommand<ResultSet> execQuery = new Utilities.SQLCommand<ResultSet>() {
+      @Override
+      public ResultSet run(PreparedStatement stmt) throws SQLException {
+        return stmt.executeQuery();
       }
-      return true;
-    } catch (SQLException e) {
-      LOG.error("Error during publishing statistics. ", e);
-      return false;
+    };
+
+    Utilities.SQLCommand<Void> execUpdate = new Utilities.SQLCommand<Void>() {
+      @Override
+      public Void run(PreparedStatement stmt) throws SQLException {
+        stmt.executeUpdate();
+        return null;
+      }
+    };
+
+    for (int failures = 0; ; failures++) {
+      try {
+
+        // Check to see if a previous task (mapper attempt) had published a previous stat
+        selStmt.setString(1, fileID);
+        ResultSet result = Utilities.executeWithRetry(execQuery, selStmt, waitWindow, maxRetries);
+
+        if (result.next()) {
+          long currval = result.getLong(1);
+          // Only update if the previous value is smaller (i.e. the previous attempt was a fail and
+          // hopefully this attempt is a success (as it has a greater value).
+          if (currval < Long.parseLong(value)) {
+            updStmt.setString(1, value);
+            updStmt.setString(2, fileID);
+            Utilities.executeWithRetry(execUpdate, updStmt, waitWindow, maxRetries);
+          }
+        } else {
+          // No previous attempts.
+          insStmt.setString(1, fileID);
+          insStmt.setString(2, value);
+          Utilities.executeWithRetry(execUpdate, insStmt, waitWindow, maxRetries);
+        }
+        return true;
+      } catch (SQLRecoverableException e) {
+        // need to start from scratch (connection)
+        if (failures >= maxRetries) {
+          return false;
+        }
+        // close the current connection
+        closeConnection();
+        long waitTime = Utilities.getRandomWaitTime(waitWindow, failures, r);
+        try {
+          Thread.sleep(waitTime);
+        } catch (InterruptedException iex) {
+        }
+        // get a new connection
+        if (!connect(hiveconf)) {
+          // if cannot reconnect, just fail because connect() already handles retries.
+          LOG.error("Error during publishing aggregation. " + e);
+          return false;
+        }
+      } catch (SQLException e) {
+        LOG.error("Error during publishing statistics. ", e);
+        return false;
+      }
     }
   }
 
+  @Override
   public boolean closeConnection() {
     if (conn == null) {
       return true;
@@ -167,6 +242,11 @@ public class JDBCStatsPublisher implements StatsPublisher {
     }
   }
 
+  /**
+   * Initialize the intermediate stats DB for the first time it is running (e.g.,
+   * creating tables.).
+   */
+  @Override
   public boolean init(Configuration hconf) {
     try {
       this.hiveconf = hconf;

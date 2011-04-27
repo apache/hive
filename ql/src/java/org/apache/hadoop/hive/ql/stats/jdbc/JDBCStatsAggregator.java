@@ -20,14 +20,18 @@ package org.apache.hadoop.hive.ql.stats.jdbc;
 
 import java.sql.Connection;
 import java.sql.DriverManager;
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.SQLRecoverableException;
 import java.sql.Statement;
+import java.util.Random;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.stats.StatsAggregator;
 import org.apache.hadoop.hive.ql.stats.StatsSetupConst;
 
@@ -36,24 +40,93 @@ public class JDBCStatsAggregator implements StatsAggregator {
   private Connection conn;
   private String connectionString;
   private Configuration hiveconf;
+  private PreparedStatement selStmt, delStmt;
   private final Log LOG = LogFactory.getLog(this.getClass().getName());
   private int timeout = 30;
   private final String comment = "Hive stats aggregation: " + this.getClass().getName();
+  private int maxRetries, waitWindow;
+  private final Random r;
 
+  public JDBCStatsAggregator() {
+    r = new Random();
+  }
+
+  @Override
   public boolean connect(Configuration hiveconf) {
+    this.hiveconf = hiveconf;
+    timeout = HiveConf.getIntVar(hiveconf, HiveConf.ConfVars.HIVE_STATS_JDBC_TIMEOUT);
+    connectionString = HiveConf.getVar(hiveconf, HiveConf.ConfVars.HIVESTATSDBCONNECTIONSTRING);
+    String driver = HiveConf.getVar(hiveconf, HiveConf.ConfVars.HIVESTATSJDBCDRIVER);
+    maxRetries = HiveConf.getIntVar(hiveconf, HiveConf.ConfVars.HIVE_STATS_RETRIES_MAX);
+    waitWindow = HiveConf.getIntVar(hiveconf, HiveConf.ConfVars.HIVE_STATS_RETRIES_WAIT);
+
     try {
-      this.hiveconf = hiveconf;
-      timeout = HiveConf.getIntVar(hiveconf, HiveConf.ConfVars.HIVE_STATS_JDBC_TIMEOUT);
-      connectionString = HiveConf.getVar(hiveconf, HiveConf.ConfVars.HIVESTATSDBCONNECTIONSTRING);
-      String driver = HiveConf.getVar(hiveconf, HiveConf.ConfVars.HIVESTATSJDBCDRIVER);
       Class.forName(driver).newInstance();
-      // stats is non-blocking -- throw an exception when timeout
-      DriverManager.setLoginTimeout(timeout);
-      conn = DriverManager.getConnection(connectionString);
-      return true;
     } catch (Exception e) {
-      LOG.error("Error during JDBC connection. " + e);
+      LOG.error("Error during instantiating JDBC driver " + driver + ". ", e);
       return false;
+    }
+
+    // prepare the SELECT/DELETE statements
+    String select =
+      "SELECT /* " + comment + " */ " +
+      " SUM(" + JDBCStatsSetupConstants.PART_STAT_ROW_COUNT_COLUMN_NAME + ")" +
+      " FROM " + JDBCStatsSetupConstants.PART_STAT_TABLE_NAME +
+      " WHERE " + JDBCStatsSetupConstants.PART_STAT_ID_COLUMN_NAME + " LIKE ?";
+
+    /* Automatic Cleaning:
+    IMPORTANT: Since we publish and aggregate only 1 value (1 column) which is the row count, it
+    is valid to delete the row after aggregation (automatic cleaning) because we know that there is no
+    other values to aggregate.
+    If ;in the future; other values are aggregated and published, then we cannot do cleaning except
+    when we are sure that all values are aggregated, or we can separate the implementation of cleaning
+    through a separate method which the developer has to call it manually in the code.
+    */
+    String delete =
+      "DELETE /* " + comment + " */ " +
+      " FROM " + JDBCStatsSetupConstants.PART_STAT_TABLE_NAME +
+      " WHERE " + JDBCStatsSetupConstants.PART_STAT_ID_COLUMN_NAME + " LIKE ?";
+
+    // stats is non-blocking -- throw an exception when timeout
+    DriverManager.setLoginTimeout(timeout);
+    // function pointer for executeWithRetry to setQueryTimeout
+    Utilities.SQLCommand<Void> setQueryTimeout = new Utilities.SQLCommand<Void>() {
+      @Override
+      public Void run(PreparedStatement stmt) throws SQLException {
+        stmt.setQueryTimeout(timeout);
+        return null;
+      }
+    };
+
+    // retry connection and statement preparations
+    for (int failures = 0; ;failures++) {
+      try {
+        conn = Utilities.connectWithRetry(connectionString, waitWindow, maxRetries);
+
+        // prepare statements
+        selStmt = Utilities.prepareWithRetry(conn, select, waitWindow, maxRetries);
+        delStmt = Utilities.prepareWithRetry(conn, delete, waitWindow, maxRetries);
+
+        // set query timeout
+        Utilities.executeWithRetry(setQueryTimeout, selStmt, waitWindow, failures);
+        Utilities.executeWithRetry(setQueryTimeout, delStmt, waitWindow, failures);
+
+        return true;
+      } catch (SQLRecoverableException e) {
+        if (failures > maxRetries) {
+          LOG.error("Error during JDBC connection and preparing statement: " + e);
+        	return false;
+        }
+        long waitTime = Utilities.getRandomWaitTime(waitWindow, failures, r);
+        try {
+          Thread.sleep(waitTime);
+        } catch (InterruptedException e1) {
+        }
+      } catch (SQLException e) {
+        // for SQLTransientException (maxRetries already achieved at Utilities retry functions
+        // or SQLNonTransientException, declare a real failure
+        return false;
+      }
     }
   }
 
@@ -68,49 +141,77 @@ public class JDBCStatsAggregator implements StatsAggregator {
       return null;
     }
 
-    try {
-      long retval = 0;
-      Statement stmt = conn.createStatement();
-      stmt.setQueryTimeout(timeout);
-      String select =
-        "SELECT /* " + comment + " */ " +
-        " SUM(" + JDBCStatsSetupConstants.PART_STAT_ROW_COUNT_COLUMN_NAME + ")" +
-        " FROM " + JDBCStatsSetupConstants.PART_STAT_TABLE_NAME +
-        " WHERE " + JDBCStatsSetupConstants.PART_STAT_ID_COLUMN_NAME + " LIKE '" + fileID + "%'";
-
-      ResultSet result = stmt.executeQuery(select);
-      if (result.next()) {
-        retval = result.getLong(1);
-      } else {
-        LOG.warn("Warning. Nothing published. Nothing aggregated.");
-        return "";
+    Utilities.SQLCommand<ResultSet> execQuery = new Utilities.SQLCommand<ResultSet>() {
+      @Override
+      public ResultSet run(PreparedStatement stmt) throws SQLException {
+        return stmt.executeQuery();
       }
-      stmt.clearBatch();
+    };
 
-      /* Automatic Cleaning:
-          IMPORTANT: Since we publish and aggregate only 1 value (1 column) which is the row count, it
-          is valid to delete the row after aggregation (automatic cleaning) because we know that there is no
-          other values to aggregate.
-          If ;in the future; other values are aggregated and published, then we cannot do cleaning except
-          when we are sure that all values are aggregated, or we can separate the implementation of cleaning
-          through a separate method which the developer has to call it manually in the code.
-       */
-      String delete =
-        "DELETE /* " + comment + " */ " +
-        " FROM " + JDBCStatsSetupConstants.PART_STAT_TABLE_NAME +
-        " WHERE " + JDBCStatsSetupConstants.PART_STAT_ID_COLUMN_NAME + " LIKE '" + fileID + "%'";
-      stmt.executeUpdate(delete);
-      stmt.close();
+    Utilities.SQLCommand<Void> execUpdate = new Utilities.SQLCommand<Void>() {
+      @Override
+      public Void run(PreparedStatement stmt) throws SQLException {
+        stmt.executeUpdate();
+        return null;
+      }
+    };
 
-      LOG.info("Stats aggregator got " + retval);
+    for (int failures = 0; ; failures++) {
+      try {
+        long retval = 0;
 
-      return Long.toString(retval);
-    } catch (SQLException e) {
-      LOG.error("Error during publishing aggregation. " + e);
-      return null;
+        String keyPrefix = fileID + "%";
+        selStmt.setString(1, keyPrefix);
+        ResultSet result = Utilities.executeWithRetry(execQuery, selStmt, waitWindow, maxRetries);
+        if (result.next()) {
+          retval = result.getLong(1);
+        } else {
+          LOG.warn("Warning. Nothing published. Nothing aggregated.");
+          return "";
+        }
+
+        /* Automatic Cleaning:
+            IMPORTANT: Since we publish and aggregate only 1 value (1 column) which is the row count, it
+            is valid to delete the row after aggregation (automatic cleaning) because we know that there is no
+            other values to aggregate.
+            If in the future; other values are aggregated and published, then we cannot do cleaning except
+            when we are sure that all values are aggregated, or we can separate the implementation of cleaning
+            through a separate method which the developer has to call it manually in the code.
+         */
+        delStmt.setString(1, keyPrefix);
+        Utilities.executeWithRetry(execUpdate, delStmt, waitWindow, maxRetries);
+
+        LOG.info("Stats aggregator got " + retval);
+
+        return Long.toString(retval);
+      } catch (SQLRecoverableException e) {
+        // need to start from scratch (connection)
+        if (failures >= maxRetries) {
+          return null;
+        }
+        // close the current connection
+        closeConnection();
+        long waitTime = Utilities.getRandomWaitTime(waitWindow, failures, r);
+        try {
+          Thread.sleep(waitTime);
+        } catch (InterruptedException iex) {
+        }
+        // getting a new connection
+        if (!connect(hiveconf)) {
+          // if cannot reconnect, just fail because connect() already handles retries.
+          LOG.error("Error during publishing aggregation. " + e);
+          return null;
+        }
+      } catch (SQLException e) {
+        // for SQLTransientException (already handled by Utilities.*WithRetries() functions
+        // and SQLNonTransientException, just declare failure.
+        LOG.error("Error during publishing aggregation. " + e);
+        return null;
+      }
     }
   }
 
+  @Override
   public boolean closeConnection() {
 
     if (conn == null) {
@@ -136,6 +237,7 @@ public class JDBCStatsAggregator implements StatsAggregator {
     }
   }
 
+  @Override
   public boolean cleanUp(String rowID) {
     try {
       Statement stmt = conn.createStatement();

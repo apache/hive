@@ -378,6 +378,10 @@ public class HiveConf extends Configuration {
         30), // default timeout in sec for JDBC connection & SQL statements
     HIVE_STATS_ATOMIC("hive.stats.atomic",
         false), // whether to update metastore stats only if all stats are available
+    HIVE_STATS_RETRIES_MAX("hive.stats.retries.max",
+        0),     // maximum # of retries to insert/select/delete the stats DB
+    HIVE_STATS_RETRIES_WAIT("hive.stats.retries.wait",
+        3000),  // # milliseconds to wait before the next retry
 
 
     // Concurrency
