@@ -83,10 +83,7 @@ public class HiveCassandraStandardColumnInputFormat extends
       predicate.setSlice_range(range);
     } else {
       int iKey = columns.indexOf(StandardColumnSerDe.CASSANDRA_KEY_COLUMN);
-      List<ByteBuffer> colBytes = getColumnNames(iKey, columns, readColIDs);
-      //TODO: Need to support select key from table query. In this case, only key is specified in the query. colBytes in
-      //this case would be an empty list.
-      predicate.setColumn_names(colBytes);
+      predicate.setColumn_names(getColumnNames(iKey, columns, readColIDs));
     }
 
     final org.apache.hadoop.mapreduce.RecordReader<ByteBuffer, SortedMap<ByteBuffer, IColumn>> recordReader = createRecordReader(
@@ -326,9 +323,10 @@ public class HiveCassandraStandardColumnInputFormat extends
   }
 
   /**
-   * Return a list of columns names to read from cassandra
+   * Return a list of columns names to read from cassandra. The column defined as the key in the column mapping
+   * should be skipped.
    *
-   * @param iKey the index of the key
+   * @param iKey the index of the key defined in the column mappping
    * @param columns column mapping
    * @param readColIDs column names to read from cassandra
    */
