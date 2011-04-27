@@ -43,6 +43,11 @@ import java.io.UnsupportedEncodingException;
 import java.net.URI;
 import java.net.URL;
 import java.net.URLClassLoader;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.PreparedStatement;
+import java.sql.SQLException;
+import java.sql.SQLTransientException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -2045,5 +2050,157 @@ public final class Utilities {
         throw new SemanticException(e);
       }
     }
+  }
+
+  public static class SQLCommand<T> {
+    public T run(PreparedStatement stmt) throws SQLException {
+      return null;
+    }
+  }
+
+  /**
+   * Retry SQL execution with random backoff (same as the one implemented in HDFS-767).
+   * This function only retries when the SQL query throws a SQLTransientException (which
+   * might be able to succeed with a simple retry). It doesn't retry when the exception
+   * is a SQLRecoverableException or SQLNonTransientException. For SQLRecoverableException
+   * the caller needs to reconnect to the database and restart the whole transaction.
+   *
+   * @param query the prepared statement of SQL.
+   * @param type either SQLCommandType.QUERY or SQLCommandType.UPDATE
+   * @param baseWindow  The base time window (in milliseconds) before the next retry.
+   * see {@getRandomWaitTime} for details.
+   * @param maxRetries the maximum # of retries when getting a SQLTransientException.
+   * @throws SQLException throws SQLRecoverableException or SQLNonTransientException the
+   * first time it is caught, or SQLTransientException when the maxRetries has reached.
+   */
+  public static <T> T executeWithRetry(SQLCommand<T> cmd, PreparedStatement stmt,
+      int baseWindow, int maxRetries)  throws SQLException {
+
+    Random r = new Random();
+    T result = null;
+
+    // retry with # of maxRetries before throwing exception
+    for (int failures = 0; ; failures++) {
+      try {
+        result = cmd.run(stmt);
+        return result;
+      } catch (SQLTransientException e) {
+      	LOG.warn("Failure and retry #" + failures +  " with exception " + e.getMessage());
+        if (failures >= maxRetries) {
+          throw e;
+        }
+        long waitTime = getRandomWaitTime(baseWindow, failures, r);
+      	try {
+      	  Thread.sleep(waitTime);
+      	} catch (InterruptedException iex) {
+     	  }
+      } catch (SQLException e) {
+        // throw other types of SQLExceptions (SQLNonTransientException / SQLRecoverableException)
+        throw e;
+      }
+    }
+  }
+
+  /**
+   * Retry connecting to a database with random backoff (same as the one implemented in HDFS-767).
+   * This function only retries when the SQL query throws a SQLTransientException (which
+   * might be able to succeed with a simple retry). It doesn't retry when the exception
+   * is a SQLRecoverableException or SQLNonTransientException. For SQLRecoverableException
+   * the caller needs to reconnect to the database and restart the whole transaction.
+   *
+   * @param connectionString the JDBC connection string.
+   * @param baseWindow  The base time window (in milliseconds) before the next retry.
+   * see {@getRandomWaitTime} for details.
+   * @param maxRetries the maximum # of retries when getting a SQLTransientException.
+   * @throws SQLException throws SQLRecoverableException or SQLNonTransientException the
+   * first time it is caught, or SQLTransientException when the maxRetries has reached.
+   */
+  public static Connection connectWithRetry(String connectionString,
+      int waitWindow, int maxRetries) throws SQLException {
+
+    Random r = new Random();
+
+    // retry with # of maxRetries before throwing exception
+    for (int failures = 0; ; failures++) {
+      try {
+        Connection conn = DriverManager.getConnection(connectionString);
+        return conn;
+      } catch (SQLTransientException e) {
+        if (failures >= maxRetries) {
+          LOG.error("Error during JDBC connection. " + e);
+          throw e;
+        }
+        long waitTime = Utilities.getRandomWaitTime(waitWindow, failures, r);
+        try {
+          Thread.sleep(waitTime);
+        } catch (InterruptedException e1) {
+        }
+      } catch (SQLException e) {
+        // just throw other types (SQLNonTransientException / SQLRecoverableException)
+        throw e;
+      }
+    }
+  }
+
+  /**
+   * Retry preparing a SQL statement with random backoff (same as the one implemented in HDFS-767).
+   * This function only retries when the SQL query throws a SQLTransientException (which
+   * might be able to succeed with a simple retry). It doesn't retry when the exception
+   * is a SQLRecoverableException or SQLNonTransientException. For SQLRecoverableException
+   * the caller needs to reconnect to the database and restart the whole transaction.
+   *
+   * @param conn a JDBC connection.
+   * @param stmt the SQL statement to be prepared.
+   * @param baseWindow  The base time window (in milliseconds) before the next retry.
+   * see {@getRandomWaitTime} for details.
+   * @param maxRetries the maximum # of retries when getting a SQLTransientException.
+   * @throws SQLException throws SQLRecoverableException or SQLNonTransientException the
+   * first time it is caught, or SQLTransientException when the maxRetries has reached.
+   */
+  public static PreparedStatement prepareWithRetry(Connection conn, String stmt,
+      int waitWindow, int maxRetries) throws SQLException {
+
+    Random r = new Random();
+
+    // retry with # of maxRetries before throwing exception
+    for (int failures = 0; ; failures++) {
+      try {
+        return conn.prepareStatement(stmt);
+      } catch (SQLTransientException e) {
+        if (failures >= maxRetries) {
+          LOG.error("Error preparing JDBC Statement " + stmt + " :" + e);
+          throw e;
+        }
+        long waitTime = Utilities.getRandomWaitTime(waitWindow, failures, r);
+        try {
+          Thread.sleep(waitTime);
+        } catch (InterruptedException e1) {
+        }
+      } catch (SQLException e) {
+        // just throw other types (SQLNonTransientException / SQLRecoverableException)
+        throw e;
+      }
+    }
+  }
+
+  /**
+   * Introducing a random factor to the wait time before another retry.
+	 * The wait time is dependent on # of failures and a random factor.
+	 * At the first time of getting an exception , the wait time
+	 * is a random number between 0..baseWindow msec. If the first retry
+	 * still fails, we will wait baseWindow msec grace period before the 2nd retry.
+	 * Also at the second retry, the waiting window is expanded to 2*baseWindow msec
+	 * alleviating the request rate from the server. Similarly the 3rd retry
+	 * will wait 2*baseWindow msec. grace period before retry and the waiting window is
+	 * expanded to 3*baseWindow msec and so on.
+   * @param baseWindow the base waiting window.
+   * @param failures number of failures so far.
+   * @param r a random generator.
+   * @return number of milliseconds for the next wait time.
+   */
+  public static long getRandomWaitTime(int baseWindow, int failures, Random r) {
+    return (long) (
+          baseWindow * failures +     // grace period for the last round of attempt
+      	  baseWindow * (failures + 1) * r.nextDouble()); // expanding time window for each failure
   }
 }
