@@ -432,8 +432,9 @@ public class HiveConf extends Configuration {
     // temporary variable for testing. This is added just to turn off this feature in case of a bug in
     // deployment. It has not been documented in hive-default.xml intentionally, this should be removed
     // once the feature is stable
-    HIVE_MAPPER_CANNOT_SPAN_MULTIPLE_PARTITIONS("hive.mapper.cannot.span.multiple.partitions", false), 
-    HIVE_REWORK_MAPREDWORK("hive.rework.mapredwork", false), 
+    HIVE_MAPPER_CANNOT_SPAN_MULTIPLE_PARTITIONS("hive.mapper.cannot.span.multiple.partitions", false),
+    HIVE_REWORK_MAPREDWORK("hive.rework.mapredwork", false),
+    HIVE_CONCATENATE_CHECK_INDEX ("hive.exec.concatenate.check.index", true),
     ;
 
     public final String varname;
