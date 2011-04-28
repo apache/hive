@@ -111,6 +111,9 @@ public class BlockMergeTask extends Task<MergeWork> implements Serializable,
     if(work.getNumMapTasks() != null) {
       job.setNumMapTasks(work.getNumMapTasks());      
     }
+    
+    // zero reducers
+    job.setNumReduceTasks(0);
 
     if (work.getMinSplitSize() != null) {
       HiveConf.setLongVar(job, HiveConf.ConfVars.MAPREDMINSPLITSIZE, work
@@ -146,11 +149,18 @@ public class BlockMergeTask extends Task<MergeWork> implements Serializable,
     RunningJob rj = null;
     boolean noName = StringUtils.isEmpty(HiveConf.getVar(job,
         HiveConf.ConfVars.HADOOPJOBNAME));
-
+    
+    String jobName = null;
+    if (noName && this.getQueryPlan() != null) {
+      int maxlen = conf.getIntVar(HiveConf.ConfVars.HIVEJOBNAMELENGTH);
+      jobName = Utilities.abbreviate(this.getQueryPlan().getQueryStr(),
+          maxlen - 6);
+    }
+    
     if (noName) {
       // This is for a special case to ensure unit tests pass
-      HiveConf.setVar(job, HiveConf.ConfVars.HADOOPJOBNAME, "JOB"
-          + Utilities.randGen.nextInt());
+      HiveConf.setVar(job, HiveConf.ConfVars.HADOOPJOBNAME,
+          jobName != null ? jobName : "JOB" + Utilities.randGen.nextInt());
     }
 
     try {

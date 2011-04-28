@@ -403,6 +403,7 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
     BlockMergeTask taskExec = new BlockMergeTask();
     taskExec.initialize(db.getConf(), null, driverCxt);
     taskExec.setWork(mergeWork);
+    taskExec.setQueryPlan(this.getQueryPlan());
     int ret = taskExec.execute(driverCxt);
 
     return ret;

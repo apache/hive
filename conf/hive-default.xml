@@ -1057,4 +1057,14 @@
   This is first introduced by SymlinkTextInputFormat to replace symlink files with real paths at compile time.</description>
 </property>
 
+<property>
+  <name>hive.exec.concatenate.check.index</name>
+  <value>true</value>
+  <description>If this sets to true, hive will throw error when doing
+   'alter table tbl_name [partSpec] concatenate' on a table/partition 
+    that has indexes on it. The reason the user want to set this to true 
+    is because it can help user to avoid handling all index drop, recreation, 
+    rebuild work. This is very helpful for tables with thousands of partitions.</description>
+</property>
+
 </configuration>

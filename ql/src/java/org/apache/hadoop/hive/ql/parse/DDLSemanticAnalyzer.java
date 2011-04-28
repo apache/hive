@@ -25,6 +25,8 @@ import static org.apache.hadoop.hive.ql.parse.HiveParser.TOK_IFNOTEXISTS;
 import static org.apache.hadoop.hive.ql.parse.HiveParser.TOK_SHOWDATABASES;
 
 import java.io.Serializable;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -83,7 +85,9 @@ import org.apache.hadoop.hive.ql.plan.DropTableDesc;
 import org.apache.hadoop.hive.ql.plan.FetchWork;
 import org.apache.hadoop.hive.ql.plan.GrantDesc;
 import org.apache.hadoop.hive.ql.plan.GrantRevokeRoleDDL;
+import org.apache.hadoop.hive.ql.plan.LoadTableDesc;
 import org.apache.hadoop.hive.ql.plan.LockTableDesc;
+import org.apache.hadoop.hive.ql.plan.MoveWork;
 import org.apache.hadoop.hive.ql.plan.MsckDesc;
 import org.apache.hadoop.hive.ql.plan.PrincipalDesc;
 import org.apache.hadoop.hive.ql.plan.PrivilegeDesc;
@@ -1116,19 +1120,24 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
         tableName, partSpec);
 
     List<String> inputDir = new ArrayList<String>();
-    String outputDir = null;
+    String tblPartLoc = null;
+    Table tblObj = null;
 
     try {
-      Table tblObj = db.getTable(tableName);
+      tblObj = db.getTable(tableName);
 
       List<String> bucketCols = null;
       Class<? extends InputFormat> inputFormatClass = null;
       boolean isArchived = false;
-      List<Index> indexes = db.getIndexes(tblObj.getDbName(), tableName,
-          Short.MAX_VALUE);
-      if (indexes != null && indexes.size() > 0) {
-        throw new SemanticException("can not do merge because source table "
-            + tableName + " is indexed.");
+      boolean checkIndex = HiveConf.getBoolVar(conf,
+          HiveConf.ConfVars.HIVE_CONCATENATE_CHECK_INDEX);
+      if (checkIndex) {
+        List<Index> indexes = db.getIndexes(tblObj.getDbName(), tableName,
+            Short.MAX_VALUE);
+        if (indexes != null && indexes.size() > 0) {
+          throw new SemanticException("can not do merge because source table "
+              + tableName + " is indexed.");
+        }
       }
 
       if (tblObj.isPartitioned()) {
@@ -1144,12 +1153,12 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
           bucketCols = part.getBucketCols();
           inputFormatClass = part.getInputFormatClass();
           isArchived = Utilities.isArchived(part);
-          outputDir = part.getDataLocation().toString();
+          tblPartLoc = part.getDataLocation().toString();
         }
       } else {
         inputFormatClass = tblObj.getInputFormatClass();
         bucketCols = tblObj.getBucketCols();
-        outputDir = tblObj.getDataLocation().toString();
+        tblPartLoc = tblObj.getDataLocation().toString();
       }
 
       // throw a HiveException for non-rcfile.
@@ -1169,29 +1178,34 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
         throw new SemanticException(
             "Merge can not perform on archived partitions.");
       }
-    } catch (HiveException e) {
+
+      // input and output are the same
+      inputDir.add(tblPartLoc);
+
+      mergeDesc.setInputDir(inputDir);
+
+      addInputsOutputsAlterTable(tableName, partSpec);
+      DDLWork ddlWork = new DDLWork(getInputs(), getOutputs(), mergeDesc);
+      ddlWork.setNeedLock(true);
+      Task<? extends Serializable> mergeTask = TaskFactory.get(ddlWork, conf);
+      TableDesc tblDesc = Utilities.getTableDesc(tblObj);
+      String queryTmpdir = ctx.getExternalTmpFileURI(new URI(tblPartLoc));
+      mergeDesc.setOutputDir(queryTmpdir);
+      LoadTableDesc ltd = new LoadTableDesc(queryTmpdir, queryTmpdir, tblDesc,
+          partSpec == null ? new HashMap<String, String>() : partSpec);
+      Task<MoveWork> moveTsk = TaskFactory.get(new MoveWork(null, null, ltd, null, false),
+          conf);
+      mergeTask.addDependentTask(moveTsk);
+      tableSpec tablepart = new tableSpec(this.db, conf, tablePartAST);
+      StatsWork statDesc = new StatsWork(tablepart);
+      statDesc.setNoStatsAggregator(true);
+      Task<? extends Serializable> statTask = TaskFactory.get(statDesc, conf);
+      moveTsk.addDependentTask(statTask);
+
+      rootTasks.add(mergeTask);
+    } catch (Exception e) {
       throw new SemanticException(e);
     }
-
-    // input and output are the same
-    inputDir.add(outputDir);
-
-    mergeDesc.setInputDir(inputDir);
-    mergeDesc.setOutputDir(outputDir);
-
-    addInputsOutputsAlterTable(tableName, partSpec);
-
-    DDLWork ddlWork = new DDLWork(getInputs(), getOutputs(), mergeDesc);
-    ddlWork.setNeedLock(true);
-    Task<? extends Serializable> mergeTask = TaskFactory.get(ddlWork, conf);
-
-    tableSpec tablepart = new tableSpec(this.db, conf, tablePartAST);
-    StatsWork statDesc = new StatsWork(tablepart);
-    statDesc.setNoStatsAggregator(true);
-    Task<? extends Serializable> statTask = TaskFactory.get(statDesc, conf);
-    mergeTask.addDependentTask(statTask);
-
-    rootTasks.add(mergeTask);
   }
 
   private void analyzeAlterTableClusterSort(ASTNode ast)
