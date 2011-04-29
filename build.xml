@@ -61,8 +61,6 @@
   <property name="mvnrepo" value="http://repo2.maven.org/maven2" />
   <property name="ant_task_repo_url"
 		value="${mvnrepo}/org/apache/maven/maven-ant-tasks/${ant-task.version}/maven-ant-tasks-${ant-task.version}.jar" />
-  <property name="asfrepo"
-		value="http://mvn.riptano.com/content/repositories/datastax-snapshot" />
 
   <condition property="is-offline" value="true" else="false">
     <isset property="offline"/>
@@ -793,7 +791,7 @@
 
   </target>
 
-  <target name="maven-publish-deps" depends="mvn-taskdef">
+  <target name="maven-publish-deps" depends="mvn-taskdef,make-maven">
     <!-- add all dependencies -->
     <artifact:pom
 	file="${build.dir.hive}/maven/poms/hive-deps-${version}.pom"
@@ -803,7 +801,7 @@
 			       version="1.0-beta-2" />
     
     <artifact:deploy settingsFile="${basedir}/settings.xml">
-      <remoteRepository id="datastax-snapshot" url="${asfrepo}"/>
+      <remoteRepository id="datastax-snapshot" url="${datastax.snapshot.repo}"/>
       <pom refid="hive.project.pom"/>
       <attach file="${basedir}/lib/derby.jar" type="jar" classifier="derby"/> 
       <attach file="${basedir}/lib/thrift-0.6.0.jar" type="jar" classifier="thrift"/>
@@ -821,7 +819,7 @@
     <artifact:install-provider artifactId="wagon-http" version="1.0-beta-2" />
     
     <artifact:deploy settingsFile="${basedir}/settings.xml">
-      <remoteRepository id="datastax-snapshot" url="${asfrepo}"/>
+      <remoteRepository id="datastax-snapshot" url="${datastax.snapshot.repo}"/>
       <pom refid="hive.project.pom"/>
       <attach file="${build.dir.hive}/hwi/hive-hwi-${version}.jar" type="jar" classifier="compile"/> 
       <attach file="${build.dir.hive}/hwi/hive-hwi-${version}.war" type="war" classifier="compile"/> 
@@ -838,7 +836,7 @@
 			       version="1.0-beta-2" />
     <artifact:deploy settingsFile="${basedir}/settings.xml"
 	file="${build.dir.hive}/maven/jars/hive-${hive.project}-${version}.jar">
-      <remoteRepository id="datastax-snapshot" url="${asfrepo}" />
+      <remoteRepository id="datastax-snapshot" url="${datastax.snapshot.repo}" />
       <pom refid="hive.project.pom" />
     </artifact:deploy>
   </target>
