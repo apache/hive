@@ -23,6 +23,7 @@ import java.io.IOException;
 import java.lang.reflect.Constructor;
 import java.util.ArrayList;
 import java.util.List;
+
 import javax.security.auth.login.LoginException;
 
 import org.apache.hadoop.conf.Configuration;
@@ -32,7 +33,6 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.fs.PathFilter;
 import org.apache.hadoop.hdfs.MiniDFSCluster;
 import org.apache.hadoop.io.Text;
-import org.apache.hadoop.io.WritableComparable;
 import org.apache.hadoop.mapred.FileInputFormat;
 import org.apache.hadoop.mapred.InputFormat;
 import org.apache.hadoop.mapred.InputSplit;
@@ -49,8 +49,8 @@ import org.apache.hadoop.mapred.TaskID;
 import org.apache.hadoop.mapred.lib.CombineFileInputFormat;
 import org.apache.hadoop.mapred.lib.CombineFileSplit;
 import org.apache.hadoop.mapred.lib.NullOutputFormat;
-import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.hadoop.security.UnixUserGroupInformation;
+import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.hadoop.tools.HadoopArchives;
 import org.apache.hadoop.util.ToolRunner;
 
@@ -139,12 +139,48 @@ public class Hadoop20Shims implements HadoopShims {
   }
 
   public static class InputSplitShim extends CombineFileSplit implements HadoopShims.InputSplitShim {
+    long shrinkedLength;
+    boolean _isShrinked;
     public InputSplitShim() {
       super();
+      _isShrinked = false;
     }
 
     public InputSplitShim(CombineFileSplit old) throws IOException {
       super(old);
+      _isShrinked = false;
+    }
+
+    @Override
+    public void shrinkSplit(long length) {
+      _isShrinked = true;
+      shrinkedLength = length;
+    }
+
+    public boolean isShrinked() {
+      return _isShrinked;
+    }
+
+    public long getShrinkedLength() {
+      return shrinkedLength;
+    }
+
+    @Override
+    public void readFields(DataInput in) throws IOException {
+      super.readFields(in);
+      _isShrinked = in.readBoolean();
+      if (_isShrinked) {
+        shrinkedLength = in.readLong();
+      }
+    }
+
+    @Override
+    public void write(DataOutput out) throws IOException {
+      super.write(out);
+      out.writeBoolean(_isShrinked);
+      if (_isShrinked) {
+        out.writeLong(shrinkedLength);
+      }
     }
   }
 
@@ -171,6 +207,8 @@ public class Hadoop20Shims implements HadoopShims {
     protected int idx;
     protected long progress;
     protected RecordReader<K, V> curReader;
+    protected boolean isShrinked;
+    protected long shrinkedLength;
 
     public boolean next(K key, V value) throws IOException {
 
@@ -228,6 +266,14 @@ public class Hadoop20Shims implements HadoopShims {
       this.curReader = null;
       this.progress = 0;
 
+      isShrinked = false;
+
+      assert (split instanceof InputSplitShim);
+      if (((InputSplitShim) split).isShrinked()) {
+        isShrinked = true;
+        shrinkedLength = ((InputSplitShim) split).getShrinkedLength();
+      }
+
       try {
         rrConstructor = rrClass.getDeclaredConstructor(constructorSignature);
         rrConstructor.setAccessible(true);
@@ -251,8 +297,8 @@ public class Hadoop20Shims implements HadoopShims {
         }
       }
 
-      // if all chunks have been processed, nothing more to do.
-      if (idx == split.getNumPaths()) {
+      // if all chunks have been processed or reached the length, nothing more to do.
+      if (idx == split.getNumPaths() || (isShrinked && progress > shrinkedLength)) {
         return false;
       }
 
@@ -424,12 +470,12 @@ public class Hadoop20Shims implements HadoopShims {
     }
     return ugi;
   }
-  
+
   @Override
   public boolean isSecureShimImpl() {
     return false;
   }
-  
+
   @Override
   public String getShortUserName(UserGroupInformation ugi) {
     return ugi.getUserName();

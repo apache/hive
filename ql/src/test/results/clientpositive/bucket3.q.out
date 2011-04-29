@@ -65,7 +65,7 @@ STAGE PLANS:
               serialization.ddl struct src { string key, string value}
               serialization.format 1
               serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              transient_lastDdlTime 1297328964
+              transient_lastDdlTime 1303258260
             serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
           
               input format: org.apache.hadoop.mapred.TextInputFormat
@@ -81,7 +81,7 @@ STAGE PLANS:
                 serialization.ddl struct src { string key, string value}
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                transient_lastDdlTime 1297328964
+                transient_lastDdlTime 1303258260
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: default.src
             name: default.src
@@ -97,10 +97,10 @@ STAGE PLANS:
             File Output Operator
               compressed: false
               GlobalTableId: 1
-              directory: pfile:/data/users/sdong/www/open-source-hive1/build/ql/scratchdir/hive_2011-02-10_01-30-50_887_7521360143673656649/-ext-10000
+              directory: pfile:/data/users/sdong/www/open-source-hive1/build/ql/scratchdir/hive_2011-04-19_17-36-09_607_3764667041010338952/-ext-10000
               NumFilesPerFileSink: 2
               Static Partition Specification: ds=1/
-              Stats Publishing Key Prefix: pfile:/data/users/sdong/www/open-source-hive1/build/ql/scratchdir/hive_2011-02-10_01-30-50_887_7521360143673656649/-ext-10000/
+              Stats Publishing Key Prefix: pfile:/data/users/sdong/www/open-source-hive1/build/ql/scratchdir/hive_2011-04-19_17-36-09_607_3764667041010338952/-ext-10000/
               table:
                   input format: org.apache.hadoop.mapred.TextInputFormat
                   output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
@@ -117,7 +117,7 @@ STAGE PLANS:
                     serialization.ddl struct bucket3_1 { i32 key, string value}
                     serialization.format 1
                     serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                    transient_lastDdlTime 1297330250
+                    transient_lastDdlTime 1303259769
                   serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                   name: default.bucket3_1
               TotalFiles: 2
@@ -130,7 +130,7 @@ STAGE PLANS:
           partition:
             ds 1
           replace: true
-          source: pfile:/data/users/sdong/www/open-source-hive1/build/ql/scratchdir/hive_2011-02-10_01-30-50_887_7521360143673656649/-ext-10000
+          source: pfile:/data/users/sdong/www/open-source-hive1/build/ql/scratchdir/hive_2011-04-19_17-36-09_607_3764667041010338952/-ext-10000
           table:
               input format: org.apache.hadoop.mapred.TextInputFormat
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
@@ -147,14 +147,14 @@ STAGE PLANS:
                 serialization.ddl struct bucket3_1 { i32 key, string value}
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                transient_lastDdlTime 1297330250
+                transient_lastDdlTime 1303259769
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: default.bucket3_1
-          tmp directory: pfile:/data/users/sdong/www/open-source-hive1/build/ql/scratchdir/hive_2011-02-10_01-30-50_887_7521360143673656649/-ext-10001
+          tmp directory: pfile:/data/users/sdong/www/open-source-hive1/build/ql/scratchdir/hive_2011-04-19_17-36-09_607_3764667041010338952/-ext-10001
 
   Stage: Stage-2
     Stats-Aggr Operator
-      Stats Aggregation Key Prefix: pfile:/data/users/sdong/www/open-source-hive1/build/ql/scratchdir/hive_2011-02-10_01-30-50_887_7521360143673656649/-ext-10000/
+      Stats Aggregation Key Prefix: pfile:/data/users/sdong/www/open-source-hive1/build/ql/scratchdir/hive_2011-04-19_17-36-09_607_3764667041010338952/-ext-10000/
 
 
 PREHOOK: query: insert overwrite table bucket3_1 partition (ds='1')
@@ -194,7 +194,7 @@ POSTHOOK: Lineage: bucket3_1 PARTITION(ds=1).value SIMPLE [(src)src.FieldSchema(
 POSTHOOK: Lineage: bucket3_1 PARTITION(ds=2).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: bucket3_1 PARTITION(ds=2).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 ABSTRACT SYNTAX TREE:
-  (TOK_QUERY (TOK_FROM (TOK_TABREF (TOK_TABNAME bucket3_1) (TOK_TABLESAMPLE 1 2) s)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR TOK_ALLCOLREF)) (TOK_WHERE (= (TOK_TABLE_OR_COL ds) '1')) (TOK_ORDERBY (TOK_TABSORTCOLNAMEASC (TOK_TABLE_OR_COL key)))))
+  (TOK_QUERY (TOK_FROM (TOK_TABREF (TOK_TABNAME bucket3_1) (TOK_TABLEBUCKETSAMPLE 1 2) s)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR TOK_ALLCOLREF)) (TOK_WHERE (= (TOK_TABLE_OR_COL ds) '1')) (TOK_ORDERBY (TOK_TABSORTCOLNAMEASC (TOK_TABLE_OR_COL key)))))
 
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -258,11 +258,11 @@ STAGE PLANS:
 PREHOOK: query: select * from bucket3_1 tablesample (bucket 1 out of 2) s where ds = '1' order by key
 PREHOOK: type: QUERY
 PREHOOK: Input: default@bucket3_1@ds=1
-PREHOOK: Output: file:/tmp/sdong/hive_2011-02-10_01-31-00_746_8025378428702145900/-mr-10000
+PREHOOK: Output: file:/tmp/sdong/hive_2011-04-19_17-36-18_942_3752538522863517107/-mr-10000
 POSTHOOK: query: select * from bucket3_1 tablesample (bucket 1 out of 2) s where ds = '1' order by key
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@bucket3_1@ds=1
-POSTHOOK: Output: file:/tmp/sdong/hive_2011-02-10_01-31-00_746_8025378428702145900/-mr-10000
+POSTHOOK: Output: file:/tmp/sdong/hive_2011-04-19_17-36-18_942_3752538522863517107/-mr-10000
 POSTHOOK: Lineage: bucket3_1 PARTITION(ds=1).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: bucket3_1 PARTITION(ds=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: bucket3_1 PARTITION(ds=2).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]

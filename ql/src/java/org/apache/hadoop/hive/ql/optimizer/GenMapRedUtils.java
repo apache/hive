@@ -60,16 +60,16 @@ import org.apache.hadoop.hive.ql.parse.RowResolver;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.plan.FetchWork;
 import org.apache.hadoop.hive.ql.plan.FileSinkDesc;
-import org.apache.hadoop.hive.ql.plan.FilterDesc.sampleDesc;
 import org.apache.hadoop.hive.ql.plan.MapJoinDesc;
 import org.apache.hadoop.hive.ql.plan.MapredLocalWork;
-import org.apache.hadoop.hive.ql.plan.MapredLocalWork.BucketMapJoinContext;
 import org.apache.hadoop.hive.ql.plan.MapredWork;
 import org.apache.hadoop.hive.ql.plan.PartitionDesc;
 import org.apache.hadoop.hive.ql.plan.PlanUtils;
 import org.apache.hadoop.hive.ql.plan.ReduceSinkDesc;
 import org.apache.hadoop.hive.ql.plan.TableDesc;
 import org.apache.hadoop.hive.ql.plan.TableScanDesc;
+import org.apache.hadoop.hive.ql.plan.FilterDesc.sampleDesc;
+import org.apache.hadoop.hive.ql.plan.MapredLocalWork.BucketMapJoinContext;
 
 /**
  * General utility common functions for the Processor to convert operator into
@@ -474,7 +474,7 @@ public final class GenMapRedUtils {
   throws SemanticException {
     // Generate a new task
     ParseContext parseCtx = opProcCtx.getParseCtx();
-    MapredWork cplan = getMapRedWork(parseCtx.getConf());
+    MapredWork cplan = getMapRedWork(parseCtx);
     Task<? extends Serializable> redTask = TaskFactory.get(cplan, parseCtx
         .getConf());
     Operator<? extends Serializable> reducer = op.getChildOperators().get(0);
@@ -543,6 +543,8 @@ public final class GenMapRedUtils {
     TableDesc tblDesc = null;
 
     PrunedPartitionList partsList = pList;
+
+    plan.setNameToSplitSample(parseCtx.getNameToSplitSample());
 
     if (partsList == null) {
       try {
@@ -836,9 +838,21 @@ public final class GenMapRedUtils {
    *
    * @return the new plan
    */
-  public static MapredWork getMapRedWork(HiveConf conf) {
+  public static MapredWork getMapRedWork(ParseContext parseCtx) {
+    MapredWork work = getMapRedWorkFromConf(parseCtx.getConf());
+    work.setNameToSplitSample(parseCtx.getNameToSplitSample());
+    return work;
+  }
+
+  /**
+   * create a new plan and return. The pan won't contain the name to split
+   * sample information in parse context.
+   *
+   * @return the new plan
+   */
+  public static MapredWork getMapRedWorkFromConf(HiveConf conf) {
     MapredWork work = new MapredWork();
-    // This code has been only added for testing
+
     boolean mapperCannotSpanPartns =
       conf.getBoolVar(
         HiveConf.ConfVars.HIVE_MAPPER_CANNOT_SPAN_MULTIPLE_PARTITIONS);
@@ -1020,7 +1034,7 @@ public final class GenMapRedUtils {
     // union is encountered for the first time
     if (uCtxTask == null) {
       uCtxTask = new GenMRUnionCtx();
-      uPlan = GenMapRedUtils.getMapRedWork(parseCtx.getConf());
+      uPlan = GenMapRedUtils.getMapRedWork(parseCtx);
       uTask = TaskFactory.get(uPlan, parseCtx.getConf());
       uCtxTask.setUTask(uTask);
       ctx.setUnionTask(union, uCtxTask);

@@ -33,11 +33,11 @@ import org.apache.hadoop.hive.ql.lib.NodeProcessor;
 import org.apache.hadoop.hive.ql.lib.NodeProcessorCtx;
 import org.apache.hadoop.hive.ql.metadata.Partition;
 import org.apache.hadoop.hive.ql.optimizer.GenMRProcContext.GenMapRedCtx;
-import org.apache.hadoop.hive.ql.parse.BaseSemanticAnalyzer.tableSpec;
 import org.apache.hadoop.hive.ql.parse.ParseContext;
 import org.apache.hadoop.hive.ql.parse.PrunedPartitionList;
 import org.apache.hadoop.hive.ql.parse.QBParseInfo;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
+import org.apache.hadoop.hive.ql.parse.BaseSemanticAnalyzer.tableSpec;
 import org.apache.hadoop.hive.ql.plan.MapredWork;
 import org.apache.hadoop.hive.ql.plan.StatsWork;
 /**
@@ -63,7 +63,7 @@ public class GenMRTableScan1 implements NodeProcessor {
     Map<Operator<? extends Serializable>, GenMapRedCtx> mapCurrCtx = ctx.getMapCurrCtx();
 
     // create a dummy MapReduce task
-    MapredWork currWork = GenMapRedUtils.getMapRedWork(parseCtx.getConf());
+    MapredWork currWork = GenMapRedUtils.getMapRedWork(parseCtx);
     Task<? extends Serializable> currTask = TaskFactory.get(currWork, parseCtx.getConf());
     Operator<? extends Serializable> currTopOp = op;
     ctx.setCurrTask(currTask);

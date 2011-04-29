@@ -64,6 +64,7 @@ public class ParseContext {
   private Map<JoinOperator, QBJoinTree> joinContext;
   private Map<MapJoinOperator, QBJoinTree> mapJoinContext;
   private HashMap<TableScanOperator, Table> topToTable;
+  private HashMap<String, SplitSample> nameToSplitSample;
   private List<LoadTableDesc> loadTableWork;
   private List<LoadFileDesc> loadFileWork;
   private Context ctx;
@@ -146,7 +147,8 @@ public class ParseContext {
       Map<GroupByOperator, Set<String>> groupOpToInputTables,
       Map<String, PrunedPartitionList> prunedPartitions,
       HashMap<TableScanOperator, sampleDesc> opToSamplePruner,
-      SemanticAnalyzer.GlobalLimitCtx globalLimitCtx) {
+      SemanticAnalyzer.GlobalLimitCtx globalLimitCtx,
+      HashMap<String, SplitSample> nameToSplitSample) {
     this.conf = conf;
     this.qb = qb;
     this.ast = ast;
@@ -169,6 +171,7 @@ public class ParseContext {
     this.groupOpToInputTables = groupOpToInputTables;
     this.prunedPartitions = prunedPartitions;
     this.opToSamplePruner = opToSamplePruner;
+    this.nameToSplitSample = nameToSplitSample;
     this.globalLimitCtx = globalLimitCtx;
   }
 
@@ -316,6 +319,14 @@ public class ParseContext {
   public void setOpParseCtx(
       LinkedHashMap<Operator<? extends Serializable>, OpParseContext> opParseCtx) {
     this.opParseCtx = opParseCtx;
+  }
+
+  public HashMap<String, SplitSample> getNameToSplitSample() {
+    return nameToSplitSample;
+  }
+
+  public void setNameToSplitSample(HashMap<String, SplitSample> nameToSplitSample) {
+    this.nameToSplitSample = nameToSplitSample;
   }
 
   /**
