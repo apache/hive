@@ -699,7 +699,8 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
       throw new SemanticException(ErrorMsg.INVALID_TABLE.getMsg(tableName));
     }
 
-    DropTableDesc dropTblDesc = new DropTableDesc(tableName, expectView);
+    DropTableDesc dropTblDesc = new DropTableDesc(
+      tableName, expectView, ifExists);
     rootTasks.add(TaskFactory.get(new DDLWork(getInputs(), getOutputs(),
         dropTblDesc), conf));
   }
