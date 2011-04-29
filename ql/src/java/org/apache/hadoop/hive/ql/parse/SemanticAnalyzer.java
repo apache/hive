@@ -70,6 +70,7 @@ import org.apache.hadoop.hive.ql.exec.UnionOperator;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.hooks.ReadEntity;
 import org.apache.hadoop.hive.ql.hooks.WriteEntity;
+import org.apache.hadoop.hive.ql.io.CombineHiveInputFormat;
 import org.apache.hadoop.hive.ql.io.HiveFileFormatUtils;
 import org.apache.hadoop.hive.ql.io.HiveOutputFormat;
 import org.apache.hadoop.hive.ql.io.ReworkMapredInputFormat;
@@ -187,6 +188,11 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
   private UnionProcContext uCtx;
   List<AbstractMapJoinOperator<? extends MapJoinDesc>> listMapJoinOpsNoReducer;
   private HashMap<TableScanOperator, sampleDesc> opToSamplePruner;
+  /**
+   * a map for the split sampling, from ailias to an instance of SplitSample
+   * that describes percentage and number.
+   */
+  private final HashMap<String, SplitSample> nameToSplitSample;
   Map<GroupByOperator, Set<String>> groupOpToInputTables;
   Map<String, PrunedPartitionList> prunedPartitions;
   private List<FieldSchema> resultSchema;
@@ -249,6 +255,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     opToPartPruner = new HashMap<TableScanOperator, ExprNodeDesc>();
     opToPartList = new HashMap<TableScanOperator, PrunedPartitionList>();
     opToSamplePruner = new HashMap<TableScanOperator, sampleDesc>();
+    nameToSplitSample = new HashMap<String, SplitSample>();
     topOps = new HashMap<String, Operator<? extends Serializable>>();
     topSelOps = new HashMap<String, Operator<? extends Serializable>>();
     loadTableWork = new ArrayList<LoadTableDesc>();
@@ -308,7 +315,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         topSelOps, opParseCtx, joinContext, topToTable, loadTableWork,
         loadFileWork, ctx, idToTableNameMap, destTableId, uCtx,
         listMapJoinOpsNoReducer, groupOpToInputTables, prunedPartitions,
-        opToSamplePruner, globalLimitCtx);
+        opToSamplePruner, globalLimitCtx, nameToSplitSample);
   }
 
   @SuppressWarnings("nls")
@@ -428,21 +435,30 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     // and the alias (if alias is not present, the table name
     // is used as an alias)
     boolean tableSamplePresent = false;
+    boolean splitSamplePresent = false;
+
     int aliasIndex = 0;
     if (tabref.getChildCount() == 2) {
       // tablename tablesample
       // OR
       // tablename alias
       ASTNode ct = (ASTNode) tabref.getChild(1);
-      if (ct.getToken().getType() == HiveParser.TOK_TABLESAMPLE) {
+      if (ct.getToken().getType() == HiveParser.TOK_TABLEBUCKETSAMPLE) {
         tableSamplePresent = true;
+      } else if (ct.getToken().getType() == HiveParser.TOK_TABLESPLITSAMPLE) {
+        splitSamplePresent = true;
       } else {
         aliasIndex = 1;
       }
     } else if (tabref.getChildCount() == 3) {
       // table name table sample alias
       aliasIndex = 2;
-      tableSamplePresent = true;
+      ASTNode ct = (ASTNode) tabref.getChild(1);
+      if (ct.getToken().getType() == HiveParser.TOK_TABLEBUCKETSAMPLE) {
+        tableSamplePresent = true;
+      } else if (ct.getToken().getType() == HiveParser.TOK_TABLESPLITSAMPLE) {
+        splitSamplePresent = true;
+      }
     }
     ASTNode tableTree = (ASTNode) (tabref.getChild(0));
 
@@ -482,6 +498,23 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
               .getChild(0));
         }
       }
+    } else if (splitSamplePresent) {
+      // only CombineHiveInputFormat supports this optimize
+      String inputFormat = HiveConf.getVar(conf, HiveConf.ConfVars.HIVEINPUTFORMAT);
+      if (!inputFormat.equals(
+        CombineHiveInputFormat.class.getName())) {
+        throw new SemanticException(
+            "Percentage sampling is not supported in " + inputFormat);
+      }
+      ASTNode sampleClause = (ASTNode) tabref.getChild(1);
+      String alias_id = getAliasId(alias, qb);
+      String strPercentage = unescapeIdentifier(sampleClause.getChild(0).getText());
+      Double percent = Double.valueOf(strPercentage).doubleValue();
+      if (percent < 0  || percent > 100) {
+        throw new SemanticException("Sampling percentage should be between 0 and 100.");
+      }
+      nameToSplitSample.put(alias_id, new SplitSample(
+          percent, conf.getIntVar(ConfVars.HIVESAMPLERANDOMNUM)));
     }
     // Insert this map into the stats
     qb.setTabAlias(alias, tabIdName);
@@ -5759,10 +5792,14 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     return equalsExpr;
   }
 
+  private String getAliasId(String alias, QB qb) {
+    return (qb.getId() == null ? alias : qb.getId() + ":" + alias);
+  }
+
   @SuppressWarnings("nls")
   private Operator genTablePlan(String alias, QB qb) throws SemanticException {
 
-    String alias_id = (qb.getId() == null ? alias : qb.getId() + ":" + alias);
+    String alias_id = getAliasId(alias, qb);
     Table tab = qb.getMetaData().getSrcForAlias(alias);
     RowResolver rwsch;
 
@@ -6356,17 +6393,19 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
 
     // determine the query qualifies reduce input size for LIMIT
     // The query only qualifies when there are only one top operator
-    // and there is no transformer or UDTF
+    // and there is no transformer or UDTF and no block sampling
+    // is used.
     if (HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVELIMITOPTENABLE)
         && ctx.getTryCount() == 0 && topOps.size() == 1
-        && !globalLimitCtx.ifHasTransformOrUDTF()) {
+        && !globalLimitCtx.ifHasTransformOrUDTF() &&
+        nameToSplitSample.isEmpty()) {
 
       // Here we recursively check:
       // 1. whether there are exact one LIMIT in the query
       // 2. whether there is no aggregation, group-by, distinct, sort by,
       //    distributed by, or table sampling in any of the sub-query.
       // The query only qualifies if both conditions are satisfied.
-      // 
+      //
       // Example qualified queries:
       //    CREATE TABLE ... AS SELECT col1, col2 FROM tbl LIMIT ..
       //    INSERT OVERWRITE TABLE ... SELECT col1, hash(col2), split(col1)
@@ -6817,7 +6856,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         opToPartList, topOps, topSelOps, opParseCtx, joinContext, topToTable,
         loadTableWork, loadFileWork, ctx, idToTableNameMap, destTableId, uCtx,
         listMapJoinOpsNoReducer, groupOpToInputTables, prunedPartitions,
-        opToSamplePruner, globalLimitCtx);
+        opToSamplePruner, globalLimitCtx, nameToSplitSample);
 
     Optimizer optm = new Optimizer();
     optm.setPctx(pCtx);

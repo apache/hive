@@ -21,6 +21,7 @@ package org.apache.hadoop.hive.ql.plan;
 import java.io.ByteArrayOutputStream;
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -29,6 +30,7 @@ import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.parse.OpParseContext;
 import org.apache.hadoop.hive.ql.parse.QBJoinTree;
+import org.apache.hadoop.hive.ql.parse.SplitSample;
 
 /**
  * MapredWork.
@@ -48,6 +50,8 @@ public class MapredWork implements Serializable {
   private LinkedHashMap<String, Operator<? extends Serializable>> aliasToWork;
 
   private LinkedHashMap<String, PartitionDesc> aliasToPartnInfo;
+
+  private HashMap<String, SplitSample> nameToSplitSample;
 
   // map<->reduce interface
   // schema of the map-reduce 'key' object - this is homogeneous
@@ -199,6 +203,15 @@ public class MapredWork implements Serializable {
   @Explain(displayName = "Reduce Operator Tree")
   public Operator<?> getReducer() {
     return reducer;
+  }
+
+  @Explain(displayName = "Percentage Sample")
+  public HashMap<String, SplitSample> getNameToSplitSample() {
+    return nameToSplitSample;
+  }
+
+  public void setNameToSplitSample(HashMap<String, SplitSample> nameToSplitSample) {
+    this.nameToSplitSample = nameToSplitSample;
   }
 
   public void setReducer(final Operator<?> reducer) {

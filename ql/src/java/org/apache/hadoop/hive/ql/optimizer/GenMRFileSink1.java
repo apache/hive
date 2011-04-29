@@ -55,7 +55,6 @@ import org.apache.hadoop.hive.ql.parse.SemanticAnalyzer;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.parse.TypeCheckProcFactory;
 import org.apache.hadoop.hive.ql.plan.ConditionalResolverMergeFiles;
-import org.apache.hadoop.hive.ql.plan.ConditionalResolverMergeFiles.ConditionalResolverMergeFilesCtx;
 import org.apache.hadoop.hive.ql.plan.ConditionalWork;
 import org.apache.hadoop.hive.ql.plan.DynamicPartitionCtx;
 import org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc;
@@ -72,6 +71,7 @@ import org.apache.hadoop.hive.ql.plan.ReduceSinkDesc;
 import org.apache.hadoop.hive.ql.plan.StatsWork;
 import org.apache.hadoop.hive.ql.plan.TableDesc;
 import org.apache.hadoop.hive.ql.plan.TableScanDesc;
+import org.apache.hadoop.hive.ql.plan.ConditionalResolverMergeFiles.ConditionalResolverMergeFilesCtx;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 
 /**
@@ -425,7 +425,7 @@ public class GenMRFileSink1 implements NodeProcessor {
     aliases.add(inputDir); // dummy alias: just use the input path
 
     // constructing the default MapredWork
-    MapredWork cplan = GenMapRedUtils.getMapRedWork(conf);
+    MapredWork cplan = GenMapRedUtils.getMapRedWorkFromConf(conf);
     cplan.getPathToAliases().put(inputDir, aliases);
     cplan.getPathToPartitionInfo().put(inputDir, new PartitionDesc(tblDesc, null));
     cplan.setNumReduceTasks(0);

@@ -157,7 +157,7 @@ public interface HadoopShims {
    * access control context's user, ignoring the configuration.
    */
   public UserGroupInformation getUGIForConf(Configuration conf) throws LoginException, IOException;
-  
+
   /**
    * Get the short name corresponding to the subject in the passed UGI
    *
@@ -221,6 +221,8 @@ public interface HadoopShims {
 
     /** Returns all the Paths where this input-split resides. */
     String[] getLocations() throws IOException;
+
+    void shrinkSplit(long length);
 
     String toString();
 

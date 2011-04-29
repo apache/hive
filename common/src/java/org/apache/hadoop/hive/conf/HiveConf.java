@@ -303,6 +303,10 @@ public class HiveConf extends Configuration {
 
     //small table file size
     HIVESMALLTABLESFILESIZE("hive.smalltable.filesize",25000000L), //25M
+
+    // random number for split sampling
+    HIVESAMPLERANDOMNUM("hive.sample.seednumber", 0),
+
     // test mode in hive mode
     HIVETESTMODE("hive.test.mode", false),
     HIVETESTMODEPREFIX("hive.test.mode.prefix", "test_"),

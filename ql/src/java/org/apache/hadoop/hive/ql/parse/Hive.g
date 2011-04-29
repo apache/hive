@@ -173,7 +173,8 @@ TOK_ALTERTABLE_CLUSTER_SORT;
 TOK_TABCOLNAME;
 TOK_TABLELOCATION;
 TOK_PARTITIONLOCATION;
-TOK_TABLESAMPLE;
+TOK_TABLEBUCKETSAMPLE;
+TOK_TABLESPLITSAMPLE;
 TOK_TMP_FILE;
 TOK_TABSORTCOLNAMEASC;
 TOK_TABSORTCOLNAMEDESC;
@@ -1620,12 +1621,27 @@ fromSource
     (tableSource | subQuerySource) (lateralView^)*
     ;
 
+tableBucketSample
+@init { msgs.push("table bucket sample specification"); }
+@after { msgs.pop(); }
+    :
+    KW_TABLESAMPLE LPAREN KW_BUCKET (numerator=Number) KW_OUT KW_OF (denominator=Number) (KW_ON expr+=expression (COMMA expr+=expression)*)? RPAREN -> ^(TOK_TABLEBUCKETSAMPLE $numerator $denominator $expr*)
+    ;
+
+splitSample
+@init { msgs.push("table split sample specification"); }
+@after { msgs.pop(); }
+    :
+    KW_TABLESAMPLE LPAREN  (numerator=Number) KW_PERCENT RPAREN -> ^(TOK_TABLESPLITSAMPLE $numerator)
+    ;
+    
 tableSample
 @init { msgs.push("table sample specification"); }
 @after { msgs.pop(); }
     :
-    KW_TABLESAMPLE LPAREN KW_BUCKET (numerator=Number) KW_OUT KW_OF (denominator=Number) (KW_ON expr+=expression (COMMA expr+=expression)*)? RPAREN -> ^(TOK_TABLESAMPLE $numerator $denominator $expr*)
-    ;
+    tableBucketSample |
+    splitSample
+    ;    
 
 tableSource
 @init { msgs.push("table source"); }
@@ -2172,6 +2188,7 @@ KW_TABLESAMPLE: 'TABLESAMPLE';
 KW_BUCKET: 'BUCKET';
 KW_OUT: 'OUT';
 KW_OF: 'OF';
+KW_PERCENT: 'PERCENT';
 KW_CAST: 'CAST';
 KW_ADD: 'ADD';
 KW_REPLACE: 'REPLACE';

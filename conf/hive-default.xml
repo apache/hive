@@ -1067,4 +1067,11 @@
     rebuild work. This is very helpful for tables with thousands of partitions.</description>
 </property>
 
+<property>
+  <name>hive.sample.seednumber</name>
+  <value>0</value>
+  <description>A number used to percentage sampling. By changing this number, user will change the subsets
+   of data sampled.</description>
+</property>
+
 </configuration>
