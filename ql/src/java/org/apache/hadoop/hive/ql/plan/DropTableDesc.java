@@ -35,6 +35,7 @@ public class DropTableDesc extends DDLDesc implements Serializable {
   String tableName;
   ArrayList<LinkedHashMap<String, String>> partSpecs;
   boolean expectView;
+  boolean ifExists;
 
   public DropTableDesc() {
   }
@@ -42,13 +43,16 @@ public class DropTableDesc extends DDLDesc implements Serializable {
   /**
    * @param tableName
    */
-  public DropTableDesc(String tableName, boolean expectView) {
+  public DropTableDesc(String tableName, boolean expectView, boolean ifExists) {
     this.tableName = tableName;
     partSpecs = null;
     this.expectView = expectView;
+    this.ifExists = ifExists;
   }
 
-  public DropTableDesc(String tableName, List<? extends Map<String, String>> partSpecs, boolean expectView) {
+  public DropTableDesc(String tableName,
+    List<? extends Map<String, String>> partSpecs, boolean expectView) {
+    
     this.tableName = tableName;
     this.partSpecs = new ArrayList<LinkedHashMap<String, String>>(partSpecs.size());
     for (int i = 0; i < partSpecs.size(); i++) {
@@ -101,5 +105,20 @@ public class DropTableDesc extends DDLDesc implements Serializable {
    */
   public void setExpectView(boolean expectView) {
     this.expectView = expectView;
+  }
+
+  /**
+   * @return whether IF EXISTS was specified
+   */
+  public boolean getIfExists() {
+    return ifExists;
+  }
+
+  /**
+   * @param ifExists
+   *          set whether IF EXISTS was specified
+   */
+  public void setIfExists(boolean ifExists) {
+    this.ifExists = ifExists;
   }
 }

@@ -2873,11 +2873,18 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
       if (tbl != null) {
         if (tbl.isView()) {
           if (!dropTbl.getExpectView()) {
+            if (dropTbl.getIfExists()) {
+              return 0;
+            }
             throw new HiveException("Cannot drop a view with DROP TABLE");
           }
         } else {
           if (dropTbl.getExpectView()) {
-            throw new HiveException("Cannot drop a base table with DROP VIEW");
+            if (dropTbl.getIfExists()) {
+              return 0;
+            }
+            throw new HiveException(
+              "Cannot drop a base table with DROP VIEW");
           }
         }
       }
