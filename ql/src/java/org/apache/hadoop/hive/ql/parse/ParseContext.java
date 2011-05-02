@@ -20,6 +20,7 @@ package org.apache.hadoop.hive.ql.parse;
 
 import java.io.Serializable;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -33,7 +34,9 @@ import org.apache.hadoop.hive.ql.exec.JoinOperator;
 import org.apache.hadoop.hive.ql.exec.MapJoinOperator;
 import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.exec.TableScanOperator;
+import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.hooks.LineageInfo;
+import org.apache.hadoop.hive.ql.hooks.ReadEntity;
 import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.optimizer.unionproc.UnionProcContext;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
@@ -94,6 +97,9 @@ public class ParseContext {
 
   private SemanticAnalyzer.GlobalLimitCtx globalLimitCtx;
 
+  private HashSet<ReadEntity> semanticInputs;
+  private List<Task<? extends Serializable>> rootTasks;
+  
   public ParseContext() {
   }
 
@@ -129,6 +135,8 @@ public class ParseContext {
    *          list of map join operators with no reducer
    * @param opToSamplePruner
    *          operator to sample pruner map
+   * @param semanticInputs
+   * @param rootTasks
    */
   public ParseContext(
       HiveConf conf,
@@ -148,7 +156,8 @@ public class ParseContext {
       Map<String, PrunedPartitionList> prunedPartitions,
       HashMap<TableScanOperator, sampleDesc> opToSamplePruner,
       SemanticAnalyzer.GlobalLimitCtx globalLimitCtx,
-      HashMap<String, SplitSample> nameToSplitSample) {
+      HashMap<String, SplitSample> nameToSplitSample,
+      HashSet<ReadEntity> semanticInputs, List<Task<? extends Serializable>> rootTasks) {
     this.conf = conf;
     this.qb = qb;
     this.ast = ast;
@@ -173,6 +182,8 @@ public class ParseContext {
     this.opToSamplePruner = opToSamplePruner;
     this.nameToSplitSample = nameToSplitSample;
     this.globalLimitCtx = globalLimitCtx;
+    this.semanticInputs = semanticInputs;
+    this.rootTasks = rootTasks;
   }
 
   /**
@@ -508,5 +519,15 @@ public class ParseContext {
 
   public void setGlobalLimitCtx(SemanticAnalyzer.GlobalLimitCtx globalLimitCtx) {
     this.globalLimitCtx = globalLimitCtx;
+  }
+
+  public HashSet<ReadEntity> getSemanticInputs() {
+    return semanticInputs;
+  }
+
+  public void replaceRootTask(Task<? extends Serializable> rootTask,
+                              List<? extends Task<? extends Serializable>> tasks) {
+    this.rootTasks.remove(rootTask);
+    this.rootTasks.addAll(tasks);
   }
 }

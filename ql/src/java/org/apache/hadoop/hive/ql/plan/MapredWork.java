@@ -74,6 +74,7 @@ public class MapredWork implements Serializable {
 
   private MapredLocalWork mapLocalWork;
   private String inputformat;
+  private String indexIntermediateFile;
   private boolean gatheringStats;
 
   private String tmpHDFSFileURI;
@@ -378,6 +379,14 @@ public class MapredWork implements Serializable {
 
   public void setInputformat(String inputformat) {
     this.inputformat = inputformat;
+  }
+
+  public String getIndexIntermediateFile() {
+    return indexIntermediateFile;
+  }
+
+  public void setIndexIntermediateFile(String fileName) {
+    this.indexIntermediateFile = fileName;
   }
 
   public void setGatheringStats(boolean gatherStats) {

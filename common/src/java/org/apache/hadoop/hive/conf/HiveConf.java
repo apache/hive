@@ -358,6 +358,7 @@ public class HiveConf extends Configuration {
 
     // Optimizer
     HIVEOPTCP("hive.optimize.cp", true), // column pruner
+    HIVEOPTINDEXFILTER("hive.optimize.index.filter", false), // automatically use indexes
     HIVEOPTPPD("hive.optimize.ppd", true), // predicate pushdown
     // push predicates down to storage handlers
     HIVEOPTPPD_STORAGE("hive.optimize.ppd.storage", true),
@@ -365,6 +366,10 @@ public class HiveConf extends Configuration {
     HIVEOPTBUCKETMAPJOIN("hive.optimize.bucketmapjoin", false), // optimize bucket map join
     HIVEOPTSORTMERGEBUCKETMAPJOIN("hive.optimize.bucketmapjoin.sortedmerge", false), // try to use sorted merge bucket map join
     HIVEOPTREDUCEDEDUPLICATION("hive.optimize.reducededuplication", true),
+
+    // Indexes
+    HIVEOPTINDEXFILTER_COMPACT_MINSIZE("hive.optimize.index.filter.compact.minsize", (long) 5 * 1024 * 1024 * 1024), // 5G
+    HIVEOPTINDEXFILTER_COMPACT_MAXSIZE("hive.optimize.index.filter.compact.maxsize", (long) -1), // infinity
 
     // Statistics
     HIVESTATSAUTOGATHER("hive.stats.autogather", true),
