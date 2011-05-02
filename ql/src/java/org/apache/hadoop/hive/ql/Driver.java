@@ -317,6 +317,17 @@ public class Driver implements CommandProcessor {
    *          The SQL query to compile.
    */
   public int compile(String command) {
+    return compile(command, true);
+  }
+
+  /**
+   * Compile a new query, but potentially reset taskID counter.  Not resetting task counter
+   * is useful for generating re-entrant QL queries.  
+   * @param command  The HiveQL query to compile
+   * @param resetTaskIds Resets taskID counter if true.  
+   * @return
+   */
+  public int compile(String command, boolean resetTaskIds) {
 
     Utilities.PerfLogBegin(LOG, "compile");
 
@@ -325,7 +336,9 @@ public class Driver implements CommandProcessor {
       plan = null;
     }
 
+    if (resetTaskIds) {
     TaskFactory.resetId();
+    }
 
     try {
       command = new VariableSubstitution().substitute(conf,command);

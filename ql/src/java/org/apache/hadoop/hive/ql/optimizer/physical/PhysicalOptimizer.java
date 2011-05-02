@@ -52,6 +52,9 @@ public class PhysicalOptimizer {
     if (hiveConf.getBoolVar(HiveConf.ConfVars.HIVECONVERTJOIN)) {
       resolvers.add(new CommonJoinResolver());
     }
+    if (hiveConf.getBoolVar(HiveConf.ConfVars.HIVEOPTINDEXFILTER)) {
+      resolvers.add(new IndexWhereResolver());
+    }
     resolvers.add(new MapJoinResolver());
   }
 

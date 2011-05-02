@@ -126,6 +126,9 @@ public class MapRedTask extends ExecDriver implements Serializable {
       // we need to edit the configuration to setup cmdline. clone it first
       cloneConf();
 
+      // propagate input format if necessary
+      super.setInputAttributes(conf);
+
       // enable assertion
       String hadoopExec = conf.getVar(HiveConf.ConfVars.HADOOPBIN);
       String hiveJar = conf.getJar();

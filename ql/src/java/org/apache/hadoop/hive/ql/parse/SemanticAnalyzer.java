@@ -315,7 +315,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         topSelOps, opParseCtx, joinContext, topToTable, loadTableWork,
         loadFileWork, ctx, idToTableNameMap, destTableId, uCtx,
         listMapJoinOpsNoReducer, groupOpToInputTables, prunedPartitions,
-        opToSamplePruner, globalLimitCtx, nameToSplitSample);
+        opToSamplePruner, globalLimitCtx, nameToSplitSample, inputs, rootTasks);
   }
 
   @SuppressWarnings("nls")
@@ -6856,7 +6856,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         opToPartList, topOps, topSelOps, opParseCtx, joinContext, topToTable,
         loadTableWork, loadFileWork, ctx, idToTableNameMap, destTableId, uCtx,
         listMapJoinOpsNoReducer, groupOpToInputTables, prunedPartitions,
-        opToSamplePruner, globalLimitCtx, nameToSplitSample);
+        opToSamplePruner, globalLimitCtx, nameToSplitSample, inputs, rootTasks);
 
     Optimizer optm = new Optimizer();
     optm.setPctx(pCtx);

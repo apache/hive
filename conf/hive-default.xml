@@ -325,6 +325,12 @@
 </property>
 
 <property>
+  <name>hive.optimize.index.filter</name>
+  <value>false</value>
+  <description>Whether to enable automatic use of indexes</description>
+</property>
+
+<property>
   <name>hive.optimize.ppd</name>
   <value>true</value>
   <description>Whether to enable predicate pushdown</description>
@@ -1008,6 +1014,19 @@
   <value>false</value>
   <description>True the hdfs location stored in the index file will be igbored at runtime. 
   If the data got moved or the name of the cluster got changed, the index data should still be usable.</description>
+</property>
+
+<property>
+  <name>hive.optimize.index.filter.compact.minsize</name>
+  <value>5368709120</value>
+  <description>Minimum size (in bytes) of the inputs on which a compact index is automatically used.</description>
+</property>
+
+<property>
+  <name>hive.optimize.index.filter.compact.maxsize</name>
+  <value>-1</value>
+  <description>Maximum size (in bytes) of the inputs on which a compact index is automatically used.
+  A negative number is equivalent to infinity.</description>
 </property>
 
 <property>

@@ -277,9 +277,8 @@ public class ExecDriver extends Task<MapredWork> implements Serializable, Hadoop
     job.setNumReduceTasks(work.getNumReduceTasks().intValue());
     job.setReducerClass(ExecReducer.class);
 
-    if (work.getInputformat() != null) {
-      HiveConf.setVar(job, HiveConf.ConfVars.HIVEINPUTFORMAT, work.getInputformat());
-    }
+    // set input format information if necessary
+    setInputAttributes(job);
 
     // Turn on speculative execution for reducers
     boolean useSpeculativeExecReducers = HiveConf.getBoolVar(job,
@@ -469,6 +468,18 @@ public class ExecDriver extends Task<MapredWork> implements Serializable, Hadoop
     }
 
     return (returnVal);
+  }
+
+  /**
+   * Set hive input format, and input format file if necessary.
+   */
+  protected void setInputAttributes(Configuration conf) {
+    if (work.getInputformat() != null) {
+      HiveConf.setVar(conf, HiveConf.ConfVars.HIVEINPUTFORMAT, work.getInputformat());
+    }
+    if (work.getIndexIntermediateFile() != null) {
+      conf.set("hive.index.compact.file", work.getIndexIntermediateFile());
+    }
   }
 
   public boolean mapStarted() {
