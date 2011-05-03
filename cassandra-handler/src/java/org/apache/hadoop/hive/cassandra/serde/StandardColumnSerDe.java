@@ -49,7 +49,7 @@ public class StandardColumnSerDe implements SerDe {
   public static final String CASSANDRA_CF_NAME = "cassandra.cf.name"; // column family
   public static final String CASSANDRA_RANGE_BATCH_SIZE = "cassandra.range.size";
   public static final String CASSANDRA_SLICE_PREDICATE_SIZE = "cassandra.slice.predicate.size";
-  public static final String CASSANDRA_SPLIT_SIZE = "cassandra.split.size";
+  public static final String CASSANDRA_SPLIT_SIZE = "cassandra.input.split.size";
   public static final String CASSANDRA_HOST = "cassandra.host"; // initialHost
   public static final String CASSANDRA_PORT = "cassandra.port"; // rcpPort
   public static final String CASSANDRA_PARTITIONER = "cassandra.partitioner"; // partitioner
@@ -69,7 +69,11 @@ public class StandardColumnSerDe implements SerDe {
   public static final String CASSANDRA_THRIFT_MODE = "cassandra.thrift.mode";
 
   public static final int DEFAULT_SPLIT_SIZE = 64 * 1024;
-  public static final int DEFAULT_SLICE_RANGE_SIZE = 1000;
+  public static final int DEFAULT_RANGE_BATCH_SIZE = 1000;
+  public static final int DEFAULT_SLICE_PREDICATE_SIZE = 1000;
+  public static final String DEFAULT_CASSANDRA_HOST = "localhost";
+  public static final String DEFAULT_CASSANDRA_PORT = "9160";
+  public static final String DEFAULT_CONSISTENCY_LEVEL = "ONE";
 
   /* names of columns from SerdeParameters */
   private List<String> cassandraColumnNames;

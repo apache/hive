@@ -3,10 +3,15 @@ package org.apache.hadoop.hive.cassandra.output;
 import java.io.IOException;
 import java.util.Properties;
 
+import org.apache.cassandra.thrift.Cassandra;
+import org.apache.cassandra.thrift.Column;
+import org.apache.cassandra.thrift.ColumnParent;
+import org.apache.cassandra.thrift.ConsistencyLevel;
+import org.apache.cassandra.thrift.InvalidRequestException;
+import org.apache.cassandra.thrift.TimedOutException;
+import org.apache.cassandra.thrift.UnavailableException;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-
-import org.apache.cassandra.thrift.*;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.cassandra.CassandraException;
@@ -35,15 +40,16 @@ public class HiveCassandraOutputFormat implements HiveOutputFormat<Text, Cassand
     final String cassandraKeySpace = jc.get(StandardColumnSerDe.CASSANDRA_KEYSPACE_NAME);
     final String cassandraHost = jc.get(StandardColumnSerDe.CASSANDRA_HOST);
     final int cassandraPort = Integer.parseInt(jc.get(StandardColumnSerDe.CASSANDRA_PORT));
-    final String consistencyLevel = jc.get(StandardColumnSerDe.CASSANDRA_CONSISTENCY_LEVEL, "ONE");
+    final String consistencyLevel = jc.get(StandardColumnSerDe.CASSANDRA_CONSISTENCY_LEVEL,
+      StandardColumnSerDe.DEFAULT_CONSISTENCY_LEVEL);
     ConsistencyLevel level = null;
-    if (consistencyLevel.equalsIgnoreCase("QUORUM")) {
-      level = ConsistencyLevel.QUORUM;
-    } else if (consistencyLevel.equalsIgnoreCase("ALL")) {
-      level = ConsistencyLevel.ALL;
-    } else {
+
+    try {
+      level = ConsistencyLevel.valueOf(consistencyLevel);
+    } catch (IllegalArgumentException e) {
       level = ConsistencyLevel.ONE;
     }
+
     final ConsistencyLevel fLevel = level;
 
     return new RecordWriter() {
@@ -65,7 +71,6 @@ public class HiveCassandraOutputFormat implements HiveOutputFormat<Text, Cassand
           ColumnParent parent = new ColumnParent();
           parent.setColumn_family(c.getColumnFamily());
           try {
-            //ensureConnection(cassandraHost, cassandraPort);
             client = (Cassandra.Iface) CassandraProxyClient.newProxyConnection(
                 cassandraHost, cassandraPort, true, true);
             client.set_keyspace(cassandraKeySpace);

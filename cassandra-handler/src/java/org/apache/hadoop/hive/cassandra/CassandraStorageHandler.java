@@ -1,8 +1,5 @@
 package org.apache.hadoop.hive.cassandra;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 
@@ -12,26 +9,19 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.cassandra.input.HiveCassandraStandardColumnInputFormat;
 import org.apache.hadoop.hive.cassandra.output.HiveCassandraOutputFormat;
 import org.apache.hadoop.hive.cassandra.serde.StandardColumnSerDe;
-import org.apache.hadoop.hive.hbase.HiveHBaseTableInputFormat;
 import org.apache.hadoop.hive.metastore.HiveMetaHook;
 import org.apache.hadoop.hive.metastore.MetaStoreUtils;
 import org.apache.hadoop.hive.metastore.api.Constants;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.Table;
-import org.apache.hadoop.hive.ql.index.IndexPredicateAnalyzer;
-import org.apache.hadoop.hive.ql.index.IndexSearchCondition;
 import org.apache.hadoop.hive.ql.metadata.HiveStorageHandler;
-import org.apache.hadoop.hive.ql.metadata.HiveStoragePredicateHandler;
-import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
 import org.apache.hadoop.hive.ql.plan.TableDesc;
-import org.apache.hadoop.hive.serde2.Deserializer;
 import org.apache.hadoop.hive.serde2.SerDe;
 import org.apache.hadoop.mapred.InputFormat;
-import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.mapred.OutputFormat;
 
 public class CassandraStorageHandler
-  implements HiveStorageHandler, HiveMetaHook, HiveStoragePredicateHandler {
+  implements HiveStorageHandler, HiveMetaHook {
 
   private Configuration configuration;
 
@@ -70,26 +60,33 @@ public class CassandraStorageHandler
     jobProperties.put(StandardColumnSerDe.CASSANDRA_COL_MAPPING, columnInfo);
 
     jobProperties.put(StandardColumnSerDe.CASSANDRA_HOST,
-        tableProperties.getProperty(StandardColumnSerDe.CASSANDRA_HOST, "localhost"));
+      tableProperties.getProperty(StandardColumnSerDe.CASSANDRA_HOST, StandardColumnSerDe.DEFAULT_CASSANDRA_HOST));
 
     jobProperties.put(StandardColumnSerDe.CASSANDRA_PORT,
-        tableProperties.getProperty(StandardColumnSerDe.CASSANDRA_PORT, "9160"));
+      tableProperties.getProperty(StandardColumnSerDe.CASSANDRA_PORT, StandardColumnSerDe.DEFAULT_CASSANDRA_PORT));
 
     jobProperties.put(StandardColumnSerDe.CASSANDRA_PARTITIONER,
-        tableProperties.getProperty(StandardColumnSerDe.CASSANDRA_PARTITIONER,
-            "org.apache.cassandra.dht.RandomPartitioner"));
+      tableProperties.getProperty(StandardColumnSerDe.CASSANDRA_PARTITIONER,
+        "org.apache.cassandra.dht.RandomPartitioner"));
 
     jobProperties.put(StandardColumnSerDe.CASSANDRA_THRIFT_MODE,
-        tableProperties.getProperty(StandardColumnSerDe.CASSANDRA_THRIFT_MODE, "framed"));
+      tableProperties.getProperty(StandardColumnSerDe.CASSANDRA_THRIFT_MODE, "framed"));
 
     jobProperties.put(StandardColumnSerDe.CASSANDRA_CONSISTENCY_LEVEL,
-        tableProperties.getProperty(StandardColumnSerDe.CASSANDRA_CONSISTENCY_LEVEL, "ONE"));
+      tableProperties.getProperty(StandardColumnSerDe.CASSANDRA_CONSISTENCY_LEVEL,
+        StandardColumnSerDe.DEFAULT_CONSISTENCY_LEVEL));
 
     jobProperties.put(StandardColumnSerDe.CASSANDRA_RANGE_BATCH_SIZE,
-        tableProperties.getProperty(StandardColumnSerDe.CASSANDRA_RANGE_BATCH_SIZE, "1000"));
+      tableProperties.getProperty(StandardColumnSerDe.CASSANDRA_RANGE_BATCH_SIZE,
+        Integer.toString(StandardColumnSerDe.DEFAULT_RANGE_BATCH_SIZE)));
 
     jobProperties.put(StandardColumnSerDe.CASSANDRA_SLICE_PREDICATE_SIZE,
-        tableProperties.getProperty(StandardColumnSerDe.CASSANDRA_SLICE_PREDICATE_SIZE, "1000"));
+      tableProperties.getProperty(StandardColumnSerDe.CASSANDRA_SLICE_PREDICATE_SIZE,
+        Integer.toString(StandardColumnSerDe.DEFAULT_SLICE_PREDICATE_SIZE)));
+
+    jobProperties.put(StandardColumnSerDe.CASSANDRA_SPLIT_SIZE,
+      tableProperties.getProperty(StandardColumnSerDe.CASSANDRA_SPLIT_SIZE,
+          Integer.toString(StandardColumnSerDe.DEFAULT_SPLIT_SIZE)));
   }
 
   @Override
@@ -187,36 +184,4 @@ public class CassandraStorageHandler
   public void rollbackDropTable(Table table) throws MetaException {
     // nothing to do
   }
-
-  @Override
-  public DecomposedPredicate decomposePredicate(JobConf jobConf, Deserializer deserializer,
-      ExprNodeDesc predicate) {
-    String columnNameProperty = jobConf.get(
-      org.apache.hadoop.hive.serde.Constants.LIST_COLUMNS);
-    List<String> columnNames =
-      Arrays.asList(columnNameProperty.split(","));
-    StandardColumnSerDe cassandraSerde = (StandardColumnSerDe) deserializer;
-    IndexPredicateAnalyzer analyzer =
-      HiveHBaseTableInputFormat.newIndexPredicateAnalyzer(
-        columnNames.get(cassandraSerde.getKeyColumnOffset()));
-    List<IndexSearchCondition> searchConditions =
-      new ArrayList<IndexSearchCondition>();
-    ExprNodeDesc residualPredicate =
-      analyzer.analyzePredicate(predicate, searchConditions);
-    if (searchConditions.size() != 1) {
-      // Either there was nothing which could be pushed down (size = 0),
-      // or more than one predicate (size > 1); in the latter case,
-      // we bail out for now since multiple lookups on the key are
-      // either contradictory or redundant.  We'll need to handle
-      // this better later when we support more interesting predicates.
-      return null;
-    }
-
-    DecomposedPredicate decomposedPredicate = new DecomposedPredicate();
-    decomposedPredicate.pushedPredicate = analyzer.translateSearchConditions(
-      searchConditions);
-    decomposedPredicate.residualPredicate = residualPredicate;
-    return decomposedPredicate;
-  }
-
 }
