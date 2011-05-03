@@ -17,6 +17,7 @@ public class HiveCassandraStandardSplit extends FileSplit implements InputSplit{
   private String columnFamily;
   private int rangeBatchSize;
   private int slicePredicateSize;
+  private int splitSize;
   //added for 7.0
   private String partitioner;
   private int port;
@@ -139,8 +140,17 @@ public class HiveCassandraStandardSplit extends FileSplit implements InputSplit{
   public void setHost(String host){
     this.host = host;
   }
-  
+
+  @Override
   public String toString(){
     return this.host+" "+this.port+" "+this.partitioner;
+  }
+
+  public void setSplitSize(int splitSize) {
+    this.splitSize = splitSize;
+  }
+
+  public int getSplitSize() {
+    return splitSize;
   }
 }

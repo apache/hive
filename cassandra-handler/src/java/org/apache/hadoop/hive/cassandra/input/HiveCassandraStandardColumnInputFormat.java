@@ -20,6 +20,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.cassandra.serde.StandardColumnSerDe;
+import org.apache.hadoop.hive.ql.index.IndexPredicateAnalyzer;
 import org.apache.hadoop.hive.serde2.ColumnProjectionUtils;
 import org.apache.hadoop.io.BytesWritable;
 import org.apache.hadoop.io.MapWritable;
@@ -40,6 +41,7 @@ public class HiveCassandraStandardColumnInputFormat extends
     ColumnFamilyInputFormat implements InputFormat<Text, HiveCassandraStandardRowResult> {
 
   static final Log LOG = LogFactory.getLog(HiveCassandraStandardColumnInputFormat.class);
+
   private boolean isTransposed;
   private Iterator<Map.Entry<ByteBuffer, IColumn>> currentRecordIterator;
   private Map.Entry<ByteBuffer, IColumn> currentEntry;
@@ -98,6 +100,8 @@ public class HiveCassandraStandardColumnInputFormat extends
       ConfigHelper.setRpcPort(tac.getConfiguration(), cassandraSplit.getPort() + "");
       ConfigHelper.setInitialAddress(tac.getConfiguration(), cassandraSplit.getHost());
       ConfigHelper.setPartitioner(tac.getConfiguration(), cassandraSplit.getPartitioner());
+      //Set Split Size
+      ConfigHelper.setInputSplitSize(tac.getConfiguration(), cassandraSplit.getSplitSize());
 
       recordReader.initialize(cfSplit, tac);
     } catch (InterruptedException ie) {
@@ -274,7 +278,12 @@ public class HiveCassandraStandardColumnInputFormat extends
     String cf = jobConf.get(StandardColumnSerDe.CASSANDRA_CF_NAME);
     int slicePredicateSize = jobConf.getInt(StandardColumnSerDe.CASSANDRA_SLICE_PREDICATE_SIZE,
         1000);
-    int sliceRangeSize = jobConf.getInt(StandardColumnSerDe.CASSANDRA_RANGE_BATCH_SIZE, 1000);
+    int sliceRangeSize = jobConf.getInt(
+        StandardColumnSerDe.CASSANDRA_RANGE_BATCH_SIZE,
+        StandardColumnSerDe.DEFAULT_SLICE_RANGE_SIZE);
+    int splitSize = jobConf.getInt(
+        StandardColumnSerDe.CASSANDRA_SPLIT_SIZE,
+        StandardColumnSerDe.DEFAULT_SPLIT_SIZE);
     String cassandraColumnMapping = jobConf.get(StandardColumnSerDe.CASSANDRA_COL_MAPPING);
     int rpcPort = jobConf.getInt(StandardColumnSerDe.CASSANDRA_PORT, 9160);
     String host = jobConf.get(StandardColumnSerDe.CASSANDRA_HOST);
@@ -298,6 +307,7 @@ public class HiveCassandraStandardColumnInputFormat extends
     ConfigHelper.setInputSlicePredicate(jobConf, predicate);
     ConfigHelper.setInputColumnFamily(jobConf, ks, cf);
     ConfigHelper.setRangeBatchSize(jobConf, sliceRangeSize);
+    ConfigHelper.setInputSplitSize(jobConf, splitSize);
 
     Job job = new Job(jobConf);
     JobContext jobContext = new JobContext(job.getConfiguration(), job.getJobID());
@@ -312,6 +322,7 @@ public class HiveCassandraStandardColumnInputFormat extends
       csplit.setKeyspace(ks);
       csplit.setColumnFamily(cf);
       csplit.setRangeBatchSize(sliceRangeSize);
+      csplit.setSplitSize(splitSize);
       csplit.setHost(host);
       csplit.setPort(rpcPort);
       csplit.setSlicePredicateSize(slicePredicateSize);
@@ -345,4 +356,28 @@ public class HiveCassandraStandardColumnInputFormat extends
     return results;
   }
 
+  /**
+   * Instantiates a new predicate analyzer suitable for
+   * determining how to push a filter down into the cassandra scan,
+   * based on the rules for what kinds of pushdown we currently support.
+   *
+   * @param keyColumnName name of the Hive column mapped to the HBase row key
+   *
+   * @return preconfigured predicate analyzer
+   */
+  static IndexPredicateAnalyzer newIndexPredicateAnalyzer(
+    String keyColumnName) {
+
+    IndexPredicateAnalyzer analyzer = new IndexPredicateAnalyzer();
+
+    // for now, we only support equality comparisons
+    analyzer.addComparisonOp(
+      "org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPEqual");
+
+    // and only on the key column
+    analyzer.clearAllowedColumnNames();
+    analyzer.allowColumnName(keyColumnName);
+
+    return analyzer;
+  }
 }

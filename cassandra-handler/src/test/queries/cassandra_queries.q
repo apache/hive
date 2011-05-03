@@ -1,5 +1,4 @@
 SET hive.support.concurrency=false;
-add file conf/cassandra.yaml;
 
 DROP TABLE cassandra_hive_table;
 CREATE EXTERNAL TABLE
