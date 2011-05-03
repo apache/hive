@@ -191,7 +191,7 @@ public class HadoopJobExecHelper {
     long numFiles = ctrs.getCounter(ProgressCounter.CREATED_FILES);
     long upperLimit = HiveConf.getLongVar(job, HiveConf.ConfVars.MAXCREATEDFILES);
     if (numFiles > upperLimit) {
-      errMsg.append("total number of created files exceeds ").append(upperLimit);
+      errMsg.append("total number of created files now is " + numFiles + ", which exceeds ").append(upperLimit);
       return true;
     }
     return this.callBackObj.checkFatalErrors(ctrs, errMsg);
@@ -279,7 +279,7 @@ public class HadoopJobExecHelper {
 
       Counters ctrs = th.getCounters();
 
-      if (fatal = this.callBackObj.checkFatalErrors(ctrs, errMsg)) {
+      if (fatal = checkFatalErrors(ctrs, errMsg)) {
         console.printError("[Fatal Error] " + errMsg.toString() + ". Killing the job.");
         rj.killJob();
         continue;
