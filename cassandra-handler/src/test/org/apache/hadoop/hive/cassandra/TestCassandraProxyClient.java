@@ -2,7 +2,6 @@ package org.apache.hadoop.hive.cassandra;
 
 import java.util.List;
 
-import org.apache.cassandra.contrib.utils.service.CassandraServiceDataCleaner;
 import org.apache.cassandra.thrift.Cassandra;
 import org.apache.cassandra.thrift.CfDef;
 import org.apache.cassandra.thrift.Column;
@@ -34,13 +33,6 @@ public class TestCassandraProxyClient extends BaseCassandraConnectionTest {
   }
 
 
-
-  @Override
-  protected void tearDown() throws Exception {
-    //do we need this?
-    CassandraServiceDataCleaner cleaner = new CassandraServiceDataCleaner();
-    cleaner.prepare();
-  }
 
   public void testInsertionQuery() throws Exception {
     maybeStartServer();

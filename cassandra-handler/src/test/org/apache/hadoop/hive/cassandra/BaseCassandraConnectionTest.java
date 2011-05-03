@@ -24,8 +24,8 @@ import org.apache.thrift.transport.TTransportException;
 
 public abstract class BaseCassandraConnectionTest extends TestCase {
 
-  protected Cassandra.Iface client;
-  private EmbeddedCassandraService cassandra;
+  protected static Cassandra.Iface client;
+  private static EmbeddedCassandraService cassandra;
   protected String ksName = "TestKeyspace";
   protected String cfName = "TestColumnFamily";
 
@@ -53,13 +53,6 @@ public abstract class BaseCassandraConnectionTest extends TestCase {
       client.describe_cluster_name();
   }
 
-
-
-  @Override
-  protected void tearDown() throws Exception
-  {
-      client.truncate(cfName);
-  }
 
 
   private void loadSchema()

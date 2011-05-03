@@ -3,12 +3,27 @@ package org.apache.hadoop.hive.cassandra;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Random;
 
-import org.apache.cassandra.thrift.*;
+import org.apache.cassandra.thrift.Cassandra;
+import org.apache.cassandra.thrift.CfDef;
+import org.apache.cassandra.thrift.InvalidRequestException;
+import org.apache.cassandra.thrift.KsDef;
+import org.apache.cassandra.thrift.SchemaDisagreementException;
+import org.apache.cassandra.thrift.TimedOutException;
+import org.apache.cassandra.thrift.TokenRange;
+import org.apache.cassandra.thrift.UnavailableException;
 import org.apache.log4j.Logger;
 import org.apache.thrift.TException;
-import org.apache.thrift.transport.*;
+import org.apache.thrift.transport.TFramedTransport;
+import org.apache.thrift.transport.TSocket;
+import org.apache.thrift.transport.TTransport;
+import org.apache.thrift.transport.TTransportException;
 
 /**
  * A proxy client connects to cassandra backend server.
@@ -37,7 +52,7 @@ public class CassandraProxyClient implements java.lang.reflect.InvocationHandler
   /**
    * Cassandra thrift client.
    */
-  private Cassandra.Client client;
+  private CassandraClientHolder clientHolder;
 
   /**
    * The key space to get the ring information from.
@@ -88,29 +103,13 @@ public class CassandraProxyClient implements java.lang.reflect.InvocationHandler
    * @throws CassandraException
    *           error
    */
-  private Cassandra.Client createConnection(String host) throws CassandraException {
+  private CassandraClientHolder createConnection(String host) throws CassandraException {
     TSocket socket = new TSocket(host, port);
     TTransport trans = framed ? new TFramedTransport(socket) : socket;
-    try {
-      trans.open();
-    } catch (TTransportException e) {
-      throw new CassandraException("unable to connect to server", e);
-    }
 
-    Cassandra.Client client = new Cassandra.Client(new TBinaryProtocol(trans));
+    CassandraClientHolder ch = new CassandraClientHolder(trans);
 
-    // connect to last known keyspace
-    if (ringKs != null) {
-      try {
-        client.set_keyspace(ringKs);
-      } catch (InvalidRequestException e) {
-        throw new CassandraException(e);
-      } catch (TException e) {
-        throw new CassandraException(e);
-      }
-    }
-
-    return client;
+    return ch;
   }
 
   private CassandraProxyClient(String host, int port, boolean framed, boolean randomizeConnections)
@@ -140,17 +139,17 @@ public class CassandraProxyClient implements java.lang.reflect.InvocationHandler
    * @throws IOException
    */
   private void initializeConnection() throws CassandraException {
-    client = createConnection(host);
+    clientHolder = createConnection(host);
 
     if (logger.isDebugEnabled()) {
       logger.debug("Connected to cassandra at " + host + ":" + port);
     }
 
-    assert client != null;
+    assert clientHolder.isOpen();
 
     // Find the first keyspace that's not system and assign it to the lastly used keyspace.
     try {
-      List<KsDef> allKs = client.describe_keyspaces();
+      List<KsDef> allKs = clientHolder.getClient().describe_keyspaces();
 
       if (allKs.isEmpty() || (allKs.size() == 1 && allKs.get(0).name.equalsIgnoreCase("system"))) {
         allKs.add(createTmpKs());
@@ -165,7 +164,7 @@ public class CassandraProxyClient implements java.lang.reflect.InvocationHandler
 
       // Set the ring keyspace for initialization purpose. This value
       // should be overwritten later by set_keyspace
-      client.set_keyspace(ringKs);
+      clientHolder.getClient(ringKs);
     } catch (InvalidRequestException e) {
       throw new CassandraException(e);
     } catch (TException e) {
@@ -199,7 +198,7 @@ public class CassandraProxyClient implements java.lang.reflect.InvocationHandler
     KsDef tmpKs = new KsDef("proxy_client_ks", "org.apache.cassandra.locator.SimpleStrategy",
         Arrays.asList(new CfDef[] {})).setStrategy_options(stratOpts);
 
-    client.system_add_keyspace(tmpKs);
+    clientHolder.getClient().system_add_keyspace(tmpKs);
 
     return tmpKs;
   }
@@ -213,14 +212,14 @@ public class CassandraProxyClient implements java.lang.reflect.InvocationHandler
    * @throws IOException
    */
   private void checkRing() throws CassandraException {
-    assert client != null;
+    assert clientHolder != null;
 
     long now = System.currentTimeMillis();
 
     if ((now - lastPoolCheck) > 60 * 1000) {
       List<TokenRange> ring;
       try {
-        ring = client.describe_ring(ringKs);
+        ring = clientHolder.getClient().describe_ring(ringKs);
       } catch (InvalidRequestException e) {
         throw new CassandraException(e);
       } catch (TException e) {
@@ -246,12 +245,12 @@ public class CassandraProxyClient implements java.lang.reflect.InvocationHandler
     String endpoint = nextServerGen.getNextServer(lastUsedHost);
 
     if (endpoint != null) {
-      client = createConnection(endpoint);
+      clientHolder = createConnection(endpoint);
       lastUsedHost = endpoint; // Assign the last successfully connected server.
       checkRing(); // Refresh the servers in the ring.
       logger.info("Connected to cassandra at " + endpoint + ":" + port);
     } else {
-      client = createConnection(lastUsedHost);
+      clientHolder = createConnection(lastUsedHost);
     }
   }
 
@@ -262,13 +261,13 @@ public class CassandraProxyClient implements java.lang.reflect.InvocationHandler
 
     while (result == null && tries++ < maxAttempts) {
       try {
-        if (client == null) {
+        if (clientHolder == null) {
           // Let's try to connect to the next server.
           attemptReconnect();
         }
 
-        if (client != null) {
-          result = m.invoke(client, args);
+        if (clientHolder != null && clientHolder.isOpen()) {
+          result = m.invoke(clientHolder.getClient(), args);
 
           if (m.getName().equalsIgnoreCase("set_keyspace") && args.length == 1) {
             // Keep last known keyspace when set_keyspace is successfully invoked.
