@@ -1,5 +1,6 @@
 package org.apache.hadoop.hive.cassandra;
 
+import org.apache.cassandra.thrift.Cassandra;
 import org.apache.thrift.transport.TFramedTransport;
 import org.apache.thrift.transport.TSocket;
 import org.apache.thrift.transport.TTransport;
@@ -38,5 +39,15 @@ public class CassandraClientHolderTest extends BaseCassandraConnectionTest {
         }
     }
 
-
+    public void testSetKeyspace() throws Exception
+    {
+        maybeStartServer();
+        TSocket socket = new TSocket("127.0.0.1", 9170);
+        TTransport trans = new TFramedTransport(socket);
+        CassandraClientHolder clientHolder = new CassandraClientHolder(trans);
+        assertNull(clientHolder.getKeyspace());
+        Cassandra.Client client = clientHolder.getClient(ksName);
+        assertNotNull(client);
+        assertEquals(ksName, clientHolder.getKeyspace());
+    }
 }

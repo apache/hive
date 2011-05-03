@@ -36,6 +36,11 @@ public class CassandraClientHolder
         return client != null && transport != null && transport.isOpen();
     }
 
+    public String getKeyspace()
+    {
+        return keyspace;
+    }
+
     private void initClient() throws CassandraException
     {
         try
