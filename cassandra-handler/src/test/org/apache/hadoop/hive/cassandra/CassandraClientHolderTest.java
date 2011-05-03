@@ -17,7 +17,7 @@ public class CassandraClientHolderTest extends BaseCassandraConnectionTest {
         TSocket socket = new TSocket("127.0.0.1", 9170);
         TTransport trans = new TFramedTransport(socket);
 
-        CassandraClientHolder clientHolder = new CassandraClientHolder(trans, ksName);
+        ClientHolder clientHolder = new CassandraClientHolder(trans, ksName);
 
         assertEquals("Test Cluster",clientHolder.getClient().describe_cluster_name());
 
@@ -29,7 +29,7 @@ public class CassandraClientHolderTest extends BaseCassandraConnectionTest {
             maybeStartServer();
             TSocket socket = new TSocket("127.0.0.1", 9170);
             TTransport trans = new TFramedTransport(socket);
-            CassandraClientHolder clientHolder = new CassandraClientHolder(trans, ksName);
+            ClientHolder clientHolder = new CassandraClientHolder(trans, ksName);
             assertTrue(clientHolder.isOpen());
             clientHolder.close();
             assertFalse(clientHolder.isOpen());
@@ -44,7 +44,7 @@ public class CassandraClientHolderTest extends BaseCassandraConnectionTest {
         maybeStartServer();
         TSocket socket = new TSocket("127.0.0.1", 9170);
         TTransport trans = new TFramedTransport(socket);
-        CassandraClientHolder clientHolder = new CassandraClientHolder(trans);
+        ClientHolder clientHolder = new CassandraClientHolder(trans);
         assertNull(clientHolder.getKeyspace());
         Cassandra.Client client = clientHolder.getClient(ksName);
         assertNotNull(client);

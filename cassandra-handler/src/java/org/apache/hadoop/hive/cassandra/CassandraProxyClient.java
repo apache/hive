@@ -10,7 +10,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Random;
 
-import org.apache.cassandra.thrift.Cassandra;
 import org.apache.cassandra.thrift.CfDef;
 import org.apache.cassandra.thrift.InvalidRequestException;
 import org.apache.cassandra.thrift.KsDef;
@@ -52,7 +51,7 @@ public class CassandraProxyClient implements java.lang.reflect.InvocationHandler
   /**
    * Cassandra thrift client.
    */
-  private CassandraClientHolder clientHolder;
+  private ClientHolder clientHolder;
 
   /**
    * The key space to get the ring information from.
@@ -85,14 +84,15 @@ public class CassandraProxyClient implements java.lang.reflect.InvocationHandler
    * @return a Brisk Client Interface
    * @throws IOException
    */
-  public static Cassandra.Iface newProxyConnection(String host, int port, boolean framed,
+  public static ClientHolder newProxyConnection(String host, int port, boolean framed,
       boolean randomizeConnections)
       throws CassandraException {
-    return (Cassandra.Iface) java.lang.reflect.Proxy.newProxyInstance(Cassandra.Client.class
+    return (ClientHolder) java.lang.reflect.Proxy.newProxyInstance(ClientHolder.class
         .getClassLoader(),
-              Cassandra.Client.class.getInterfaces(), new CassandraProxyClient(host, port, framed,
+              CassandraClientHolder.class.getInterfaces(), new CassandraProxyClient(host, port, framed,
                       randomizeConnections));
   }
+
 
   /**
    * Create connection to a given host.
@@ -267,9 +267,9 @@ public class CassandraProxyClient implements java.lang.reflect.InvocationHandler
         }
 
         if (clientHolder != null && clientHolder.isOpen()) {
-          result = m.invoke(clientHolder.getClient(), args);
+          result = m.invoke(clientHolder, args);
 
-          if (m.getName().equalsIgnoreCase("set_keyspace") && args.length == 1) {
+          if (m.getName().equalsIgnoreCase("getClient") && args != null && args.length == 1) {
             // Keep last known keyspace when set_keyspace is successfully invoked.
             ringKs = (String) args[0];
           }

@@ -2,7 +2,6 @@ package org.apache.hadoop.hive.cassandra;
 
 import java.util.List;
 
-import org.apache.cassandra.thrift.Cassandra;
 import org.apache.cassandra.thrift.CfDef;
 import org.apache.cassandra.thrift.Column;
 import org.apache.cassandra.thrift.ColumnOrSuperColumn;
@@ -23,9 +22,9 @@ public class TestCassandraProxyClient extends BaseCassandraConnectionTest {
   public void testServerDown() throws Exception {
 
     try {
-      Cassandra.Iface client = (Cassandra.Iface) CassandraProxyClient.newProxyConnection(
+      ClientHolder client = CassandraProxyClient.newProxyConnection(
           "127.0.0.1", 9170, true, true);
-      client.describe_keyspaces();
+      client.getClient().describe_keyspaces();
       fail("Fail this test.");
     } catch (CassandraException e) {
       //As expected.
@@ -35,9 +34,9 @@ public class TestCassandraProxyClient extends BaseCassandraConnectionTest {
 
 
   public void testInsertionQuery() throws Exception {
-    maybeStartServer();
 
-    List<KsDef> keyspaces = client.describe_keyspaces();
+    maybeStartServer();
+    List<KsDef> keyspaces = client.getClient().describe_keyspaces();
     assertTrue(keyspaces.size() > 1);
 
 
@@ -52,7 +51,7 @@ public class TestCassandraProxyClient extends BaseCassandraConnectionTest {
     columnFamily.setKeyspace(ksName);
     cfName = "TestCassandra";
     columnFamily.setName(cfName);
-    client.system_add_column_family(columnFamily);
+    client.getClient().system_add_column_family(columnFamily);
 
     //add some data
     Column column = new Column()
@@ -60,16 +59,17 @@ public class TestCassandraProxyClient extends BaseCassandraConnectionTest {
       .setValue(ByteBufferUtil.bytes("value"))
       .setTimestamp(System.currentTimeMillis());
 
-    client.insert(ByteBufferUtil.bytes("key1"), new ColumnParent(cfName), column, ConsistencyLevel.ALL);
+    client.getClient().insert(ByteBufferUtil.bytes("key1"), new ColumnParent(cfName), column, ConsistencyLevel.ALL);
 
     //query for the data
     ColumnPath path = new ColumnPath();
     path.setColumn_family(cfName);
     path.setColumn(ByteBufferUtil.bytes("name"));
-    ColumnOrSuperColumn result = client.get(ByteBufferUtil.bytes("key1"), path, ConsistencyLevel.ALL);
+    ColumnOrSuperColumn result = client.getClient().get(ByteBufferUtil.bytes("key1"), path, ConsistencyLevel.ALL);
     assertNotNull(result);
     assertEquals("name", new String(result.getColumn().getName()));
     assertEquals("value", new String(result.getColumn().getValue()));
+
   }
 
 }

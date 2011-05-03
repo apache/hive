@@ -18,13 +18,12 @@ import org.apache.cassandra.db.marshal.BytesType;
 import org.apache.cassandra.locator.AbstractReplicationStrategy;
 import org.apache.cassandra.locator.SimpleStrategy;
 import org.apache.cassandra.service.EmbeddedCassandraService;
-import org.apache.cassandra.thrift.Cassandra;
 import org.apache.thrift.TException;
 import org.apache.thrift.transport.TTransportException;
 
 public abstract class BaseCassandraConnectionTest extends TestCase {
 
-  protected static Cassandra.Iface client;
+  protected static ClientHolder client;
   private static EmbeddedCassandraService cassandra;
   protected String ksName = "TestKeyspace";
   protected String cfName = "TestColumnFamily";
@@ -45,12 +44,12 @@ public abstract class BaseCassandraConnectionTest extends TestCase {
           cleaner.prepare();
           cassandra = new EmbeddedCassandraService();
           cassandra.start();
-          client = (Cassandra.Iface) CassandraProxyClient.newProxyConnection(
+          client = CassandraProxyClient.newProxyConnection(
                   "127.0.0.1", 9170, true, true);
           loadSchema();
       }
 
-      client.describe_cluster_name();
+      client.getClient().describe_cluster_name();
   }
 
 

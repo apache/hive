@@ -2,7 +2,11 @@ package org.apache.hadoop.hive.cassandra;
 
 import java.util.Map;
 
-import org.apache.cassandra.thrift.*;
+import org.apache.cassandra.thrift.CfDef;
+import org.apache.cassandra.thrift.InvalidRequestException;
+import org.apache.cassandra.thrift.KsDef;
+import org.apache.cassandra.thrift.NotFoundException;
+import org.apache.cassandra.thrift.SchemaDisagreementException;
 import org.apache.hadoop.hive.cassandra.serde.StandardColumnSerDe;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.Table;
@@ -24,7 +28,7 @@ public class CassandraManager {
   private final int port;
 
   //Cassandra proxy client
-  private Cassandra.Iface client;
+  private ClientHolder clientHolder;
 
   //TTransport
   private TTransport trans;
@@ -86,7 +90,7 @@ public class CassandraManager {
    */
   public void openConnection() throws MetaException {
     try {
-      client = (Cassandra.Iface) CassandraProxyClient.newProxyConnection(
+      clientHolder =  CassandraProxyClient.newProxyConnection(
          host, port, framedConnection, true);
     } catch (CassandraException e) {
       throw new MetaException("Unable to connect to the server " + e.getMessage());
@@ -98,7 +102,7 @@ public class CassandraManager {
    *
    */
   public void closeConnection() {
-
+      clientHolder.close();
   }
 
   /**
@@ -110,7 +114,7 @@ public class CassandraManager {
   public KsDef getKeyspaceDesc()
     throws NotFoundException, MetaException {
     try {
-      return client.describe_keyspace(keyspace);
+      return clientHolder.getClient().describe_keyspace(keyspace);
     } catch (TException e) {
       throw new MetaException("An internal exception prevented this action from taking place."
           + e.getMessage());
@@ -150,8 +154,8 @@ public class CassandraManager {
 
       ks.addToCf_defs(cf);
 
-      client.system_add_keyspace(ks);
-      client.set_keyspace(keyspace);
+      clientHolder.getClient().system_add_keyspace(ks);
+      clientHolder.getClient(keyspace);
       return ks;
     } catch (TException e) {
       throw new MetaException("Unable to create key space '" + keyspace + "'. Error:"
@@ -162,6 +166,9 @@ public class CassandraManager {
     } catch (SchemaDisagreementException e) {
       throw new MetaException("Unable to create key space '" + keyspace + "'. Error:"
           + e.getMessage());
+    } catch (CassandraException ce) {
+        throw new MetaException("Unable to create key space '" + keyspace + "'. Error connecting to Cassandra:"
+                + ce.getMessage());
     }
 
   }
@@ -189,8 +196,7 @@ public class CassandraManager {
     cf.setKeyspace(keyspace);
     cf.setName(columnFamilyName);
     try {
-      client.set_keyspace(keyspace);
-      client.system_add_column_family(cf);
+      clientHolder.getClient(keyspace).system_add_column_family(cf);
       return cf;
     } catch (TException e) {
       throw new MetaException("Unable to create column family '" + columnFamilyName + "'. Error:"
@@ -201,7 +207,11 @@ public class CassandraManager {
     } catch (SchemaDisagreementException e) {
       throw new MetaException("Unable to create column family '" + columnFamilyName + "'. Error:"
           + e.getMessage());
+    } catch (CassandraException ce) {
+        throw new MetaException("Unable to create key space '" + keyspace + "'. Error connecting to Cassandra:"
+                + ce.getMessage());
     }
+
   }
 
   /**
@@ -296,7 +306,7 @@ public class CassandraManager {
    */
   public void dropTable() throws MetaException {
     try {
-      client.system_drop_column_family(columnFamilyName);
+      clientHolder.getClient().system_drop_column_family(columnFamilyName);
     } catch (TException e) {
       throw new MetaException("Unable to drop column family '" + columnFamilyName + "'. Error:"
           + e.getMessage());

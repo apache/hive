@@ -3,7 +3,6 @@ package org.apache.hadoop.hive.cassandra.output;
 import java.io.IOException;
 import java.util.Properties;
 
-import org.apache.cassandra.thrift.Cassandra;
 import org.apache.cassandra.thrift.Column;
 import org.apache.cassandra.thrift.ColumnParent;
 import org.apache.cassandra.thrift.ConsistencyLevel;
@@ -16,6 +15,7 @@ import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.cassandra.CassandraException;
 import org.apache.hadoop.hive.cassandra.CassandraProxyClient;
+import org.apache.hadoop.hive.cassandra.ClientHolder;
 import org.apache.hadoop.hive.cassandra.serde.StandardColumnSerDe;
 import org.apache.hadoop.hive.ql.exec.FileSinkOperator.RecordWriter;
 import org.apache.hadoop.hive.ql.io.HiveOutputFormat;
@@ -53,13 +53,13 @@ public class HiveCassandraOutputFormat implements HiveOutputFormat<Text, Cassand
     final ConsistencyLevel fLevel = level;
 
     return new RecordWriter() {
-      private Cassandra.Iface client;
+      private ClientHolder client;
 
       @Override
       public void close(boolean abort) throws IOException {
         //TODO: Need to figure out a way to close the connection.
         if (client != null) {
-          //client.close();
+          client.close();
         }
       }
 
@@ -71,14 +71,14 @@ public class HiveCassandraOutputFormat implements HiveOutputFormat<Text, Cassand
           ColumnParent parent = new ColumnParent();
           parent.setColumn_family(c.getColumnFamily());
           try {
-            client = (Cassandra.Iface) CassandraProxyClient.newProxyConnection(
+            client = CassandraProxyClient.newProxyConnection(
                 cassandraHost, cassandraPort, true, true);
-            client.set_keyspace(cassandraKeySpace);
+            //client.set_keyspace(cassandraKeySpace);
             Column col = new Column();
             col.setValue(c.getValue());
             col.setTimestamp(c.getTimeStamp());
             col.setName(c.getColumn());
-            client.insert(put.getKey(), parent, col, fLevel);
+            client.getClient(cassandraKeySpace).insert(put.getKey(), parent, col, fLevel);
           } catch (InvalidRequestException e) {
             throw new IOException(e);
           } catch (UnavailableException e) {
