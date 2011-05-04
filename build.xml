@@ -695,6 +695,7 @@
 		<copy file="${build.dir.hive}/cli/hive-cli-${version}.jar" todir="${build.dir.hive}/maven/jars/" />
 		<copy file="${build.dir.hive}/hwi/hive-hwi-${version}.jar" todir="${build.dir.hive}/maven/jars/" />
 		<copy file="${build.dir.hive}/jdbc/hive-jdbc-${version}.jar" todir="${build.dir.hive}/maven/jars/" />
+		<copy file="${build.dir.hive}/service/hive-service-${version}.jar" todir="${build.dir.hive}/maven/jars/" />
 		
 		<copy file="${build.dir.hive}/common/hive-common-${version}.jar"
 			todir="${build.dir.hive}/maven/jars/" />
@@ -704,7 +705,7 @@
 			todir="${build.dir.hive}/maven/jars/" />
 		<copy file="${build.dir.hive}/shims/hive-shims-${version}.jar"
 			todir="${build.dir.hive}/maven/jars/" />
-
+		
 		<copy file="${build.dir.hive}/cassandra-handler/hive-cassandra-handler-${version}.jar"
 			todir="${build.dir.hive}/maven/jars/" />
 
@@ -713,6 +714,7 @@
 		<copy file="${build.dir.hive}/hwi/pom.xml" tofile="${build.dir.hive}/maven/poms/hive-hwi-${version}.pom" />
 		<copy file="${build.dir.hive}/cli/pom.xml" tofile="${build.dir.hive}/maven/poms/hive-cli-${version}.pom" />
 		<copy file="${build.dir.hive}/jdbc/pom.xml" tofile="${build.dir.hive}/maven/poms/hive-jdbc-${version}.pom" />
+		<copy file="${build.dir.hive}/service/pom.xml" tofile="${build.dir.hive}/maven/poms/hive-service-${version}.pom" />
 		
 		<copy file="${build.dir.hive}/common/pom.xml"
 			tofile="${build.dir.hive}/maven/poms/hive-common-${version}.pom" />
@@ -784,6 +786,9 @@
 		</antcall>
 		<antcall target="maven-publish-artifact">
 			<param name="hive.project" value="jdbc" />
+		</antcall>
+		<antcall target="maven-publish-artifact">
+			<param name="hive.project" value="service" />
 		</antcall>
 
 		<antcall target="maven-publish-deps"/>
