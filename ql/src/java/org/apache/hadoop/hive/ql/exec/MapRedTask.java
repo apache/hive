@@ -368,8 +368,34 @@ public class MapRedTask extends ExecDriver implements Serializable {
 
     long totalInputFileSize = inputSummary.getLength();
 
-    LOG.info("BytesPerReducer=" + bytesPerReducer + " maxReducers="
+    // if all inputs are sampled, we should shrink the size of reducers accordingly.
+    double highestSamplePercentage = 0;
+    boolean allSample = false;
+    for (String alias : work.getAliasToWork().keySet()) {
+      if (work.getNameToSplitSample().containsKey(alias)) {
+        allSample = true;
+        double rate = work.getNameToSplitSample().get(alias).getPercent();
+        if (rate > highestSamplePercentage) {
+          highestSamplePercentage = rate;
+        }
+      } else {
+        allSample = false;
+        break;
+      }
+    }
+    if (allSample) {
+      // This is a little bit dangerous if inputs turns out not to be able to be sampled.
+      // In that case, we significantly underestimate number of reducers.
+      // It's the same as other cases of estimateNumberOfReducers(). It's just our best
+      // guess and there is no guarantee.
+      totalInputFileSize = Math.min((long) (totalInputFileSize * highestSamplePercentage / 100D)
+          , totalInputFileSize);
+      LOG.info("BytesPerReducer=" + bytesPerReducer + " maxReducers="
+          + maxReducers + " estimated totalInputFileSize=" + totalInputFileSize);
+    } else {
+      LOG.info("BytesPerReducer=" + bytesPerReducer + " maxReducers="
         + maxReducers + " totalInputFileSize=" + totalInputFileSize);
+    }
 
     int reducers = (int) ((totalInputFileSize + bytesPerReducer - 1) / bytesPerReducer);
     reducers = Math.max(1, reducers);
