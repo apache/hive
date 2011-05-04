@@ -43,6 +43,13 @@ public class HiveCassandraOutputFormat implements HiveOutputFormat<Text, Cassand
     final String consistencyLevel = jc.get(StandardColumnSerDe.CASSANDRA_CONSISTENCY_LEVEL,
       StandardColumnSerDe.DEFAULT_CONSISTENCY_LEVEL);
     ConsistencyLevel level = null;
+    final ClientHolder client;
+    try {
+      client = CassandraProxyClient.newProxyConnection(
+        cassandraHost, cassandraPort, true, true);
+    } catch (CassandraException e) {
+      throw new IOException(e);
+    }
 
     try {
       level = ConsistencyLevel.valueOf(consistencyLevel);
@@ -53,11 +60,9 @@ public class HiveCassandraOutputFormat implements HiveOutputFormat<Text, Cassand
     final ConsistencyLevel fLevel = level;
 
     return new RecordWriter() {
-      private ClientHolder client;
 
       @Override
       public void close(boolean abort) throws IOException {
-        //TODO: Need to figure out a way to close the connection.
         if (client != null) {
           client.close();
         }
@@ -71,9 +76,6 @@ public class HiveCassandraOutputFormat implements HiveOutputFormat<Text, Cassand
           ColumnParent parent = new ColumnParent();
           parent.setColumn_family(c.getColumnFamily());
           try {
-            client = CassandraProxyClient.newProxyConnection(
-                cassandraHost, cassandraPort, true, true);
-            //client.set_keyspace(cassandraKeySpace);
             Column col = new Column();
             col.setValue(c.getValue());
             col.setTimestamp(c.getTimeStamp());
@@ -91,7 +93,7 @@ public class HiveCassandraOutputFormat implements HiveOutputFormat<Text, Cassand
             throw new IOException(e);
           }
         }
-      } // end write
+      }
 
     };
   }
