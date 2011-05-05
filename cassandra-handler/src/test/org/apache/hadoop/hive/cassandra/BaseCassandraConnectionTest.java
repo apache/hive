@@ -23,7 +23,7 @@ import org.apache.thrift.transport.TTransportException;
 
 public abstract class BaseCassandraConnectionTest extends TestCase {
 
-  protected static ClientHolder client;
+  protected static CassandraProxyClient client;
   private static EmbeddedCassandraService cassandra;
   protected String ksName = "TestKeyspace";
   protected String cfName = "TestColumnFamily";
@@ -44,12 +44,12 @@ public abstract class BaseCassandraConnectionTest extends TestCase {
           cleaner.prepare();
           cassandra = new EmbeddedCassandraService();
           cassandra.start();
-          client = CassandraProxyClient.newProxyConnection(
+          client = new CassandraProxyClient(
                   "127.0.0.1", 9170, true, true);
           loadSchema();
       }
 
-      client.getClient().describe_cluster_name();
+      client.getProxyConnection().describe_cluster_name();
   }
 
 

@@ -10,7 +10,7 @@ import org.apache.thrift.transport.TTransportException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class CassandraClientHolder implements ClientHolder
+public class CassandraClientHolder
 {
     private static final Logger log = LoggerFactory.getLogger(CassandraClientHolder.class);
 
@@ -54,10 +54,17 @@ public class CassandraClientHolder implements ClientHolder
         client = new Cassandra.Client(new TBinaryProtocol(transport));
 
         // connect to last known keyspace
-        maybeSetKeyspace(keyspace);
+        setKeyspace(keyspace);
     }
 
-    private void maybeSetKeyspace(String ks) throws CassandraException
+    /**
+     * Set the client with the (potentially) new keyspace. Safe to call this
+     * repeatedly with the same keyspace.
+     * @param keyspace
+     * @return
+     * @throws CassandraException
+     */
+    public void setKeyspace(String ks) throws CassandraException
     {
         if ( ks == null )
         {
@@ -82,13 +89,6 @@ public class CassandraClientHolder implements ClientHolder
 
     public Cassandra.Client getClient()
     {
-        return client;
-    }
-
-
-    public Cassandra.Client getClient(String keyspace) throws CassandraException
-    {
-        maybeSetKeyspace(keyspace);
         return client;
     }
 

@@ -10,6 +10,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Random;
 
+import org.apache.cassandra.thrift.Cassandra;
 import org.apache.cassandra.thrift.CfDef;
 import org.apache.cassandra.thrift.InvalidRequestException;
 import org.apache.cassandra.thrift.KsDef;
@@ -51,7 +52,7 @@ public class CassandraProxyClient implements java.lang.reflect.InvocationHandler
   /**
    * Cassandra thrift client.
    */
-  private ClientHolder clientHolder;
+  private CassandraClientHolder clientHolder;
 
   /**
    * The key space to get the ring information from.
@@ -84,15 +85,43 @@ public class CassandraProxyClient implements java.lang.reflect.InvocationHandler
    * @return a Brisk Client Interface
    * @throws IOException
    */
-  public static ClientHolder newProxyConnection(String host, int port, boolean framed,
-      boolean randomizeConnections)
+  public CassandraProxyClient(String host, int port, boolean framed, boolean randomizeConnections)
       throws CassandraException {
-    return (ClientHolder) java.lang.reflect.Proxy.newProxyInstance(ClientHolder.class
-        .getClassLoader(),
-              CassandraClientHolder.class.getInterfaces(), new CassandraProxyClient(host, port, framed,
-                      randomizeConnections));
+    this.host = host;
+    this.port = port;
+    this.framed = framed;
+    this.lastUsedHost = host;
+    this.lastPoolCheck = 0;
+
+    // If randomized to choose a connection, initialize the random generator.
+    if (randomizeConnections) {
+      nextServerGen = new RandomizerOption();
+    } else {
+      nextServerGen = new RoundRobinOption();
+    }
+
+    initializeConnection();
   }
 
+  /**
+   * Return a handle to the proxied connection
+   * @return
+   */
+  public Cassandra.Iface getProxyConnection() {
+      return (Cassandra.Iface) java.lang.reflect.Proxy.newProxyInstance(Cassandra.Client.class
+              .getClassLoader(),
+                    Cassandra.Client.class.getInterfaces(), this);
+  }
+
+  /**
+   * Delegates to close of {@link CassandraClientHolder#close()}
+   */
+  public void close() {
+      if (clientHolder != null)
+      {
+          clientHolder.close();
+      }
+  }
 
   /**
    * Create connection to a given host.
@@ -112,23 +141,7 @@ public class CassandraProxyClient implements java.lang.reflect.InvocationHandler
     return ch;
   }
 
-  private CassandraProxyClient(String host, int port, boolean framed, boolean randomizeConnections)
-      throws CassandraException {
-    this.host = host;
-    this.port = port;
-    this.framed = framed;
-    this.lastUsedHost = host;
-    this.lastPoolCheck = 0;
 
-    // If randomized to choose a connection, initialize the random generator.
-    if (randomizeConnections) {
-      nextServerGen = new RandomizerOption();
-    } else {
-      nextServerGen = new RoundRobinOption();
-    }
-
-    initializeConnection();
-  }
 
   /**
    * Initialize the cassandra connection with the initial given cassandra host.
@@ -164,7 +177,7 @@ public class CassandraProxyClient implements java.lang.reflect.InvocationHandler
 
       // Set the ring keyspace for initialization purpose. This value
       // should be overwritten later by set_keyspace
-      clientHolder.getClient(ringKs);
+      clientHolder.setKeyspace(ringKs);
     } catch (InvalidRequestException e) {
       throw new CassandraException(e);
     } catch (TException e) {
@@ -267,10 +280,11 @@ public class CassandraProxyClient implements java.lang.reflect.InvocationHandler
         }
 
         if (clientHolder != null && clientHolder.isOpen()) {
-          result = m.invoke(clientHolder, args);
+          result = m.invoke(clientHolder.getClient(), args);
 
-          if (m.getName().equalsIgnoreCase("getClient") && args != null && args.length == 1) {
+          if (m.getName().equalsIgnoreCase("set_keyspace") && args != null && args.length == 1) {
             // Keep last known keyspace when set_keyspace is successfully invoked.
+
             ringKs = (String) args[0];
           }
 

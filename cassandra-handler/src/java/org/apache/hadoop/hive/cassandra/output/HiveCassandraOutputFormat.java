@@ -15,7 +15,6 @@ import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.cassandra.CassandraException;
 import org.apache.hadoop.hive.cassandra.CassandraProxyClient;
-import org.apache.hadoop.hive.cassandra.ClientHolder;
 import org.apache.hadoop.hive.cassandra.serde.StandardColumnSerDe;
 import org.apache.hadoop.hive.ql.exec.FileSinkOperator.RecordWriter;
 import org.apache.hadoop.hive.ql.io.HiveOutputFormat;
@@ -43,9 +42,9 @@ public class HiveCassandraOutputFormat implements HiveOutputFormat<Text, Cassand
     final String consistencyLevel = jc.get(StandardColumnSerDe.CASSANDRA_CONSISTENCY_LEVEL,
       StandardColumnSerDe.DEFAULT_CONSISTENCY_LEVEL);
     ConsistencyLevel level = null;
-    final ClientHolder client;
+    final CassandraProxyClient client;
     try {
-      client = CassandraProxyClient.newProxyConnection(
+      client = new CassandraProxyClient(
         cassandraHost, cassandraPort, true, true);
     } catch (CassandraException e) {
       throw new IOException(e);
@@ -80,7 +79,8 @@ public class HiveCassandraOutputFormat implements HiveOutputFormat<Text, Cassand
             col.setValue(c.getValue());
             col.setTimestamp(c.getTimeStamp());
             col.setName(c.getColumn());
-            client.getClient(cassandraKeySpace).insert(put.getKey(), parent, col, fLevel);
+            client.getProxyConnection().set_keyspace(cassandraKeySpace);
+            client.getProxyConnection().insert(put.getKey(), parent, col, fLevel);
           } catch (InvalidRequestException e) {
             throw new IOException(e);
           } catch (UnavailableException e) {
@@ -88,8 +88,6 @@ public class HiveCassandraOutputFormat implements HiveOutputFormat<Text, Cassand
           } catch (TimedOutException e) {
             throw new IOException(e);
           } catch (TException e) {
-            throw new IOException(e);
-          } catch (CassandraException e) {
             throw new IOException(e);
           }
         }

@@ -36,10 +36,10 @@ public class CassandraTestSetup extends TestSetup{
     }
 
     //Make sure that this server is connectable.
-    ClientHolder client = CassandraProxyClient.newProxyConnection(
+    CassandraProxyClient client = new CassandraProxyClient(
         "127.0.0.1", 9170, true, true);
 
-    client.getClient().describe_cluster_name();
+    client.getProxyConnection().describe_cluster_name();
 
     String auxJars = conf.getAuxJars();
     auxJars = ((auxJars == null) ? "" : (auxJars + ",")) + "file://"
