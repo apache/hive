@@ -110,7 +110,7 @@ public class HiveServer extends ThriftHive {
         CommandProcessorResponse response = null;
         if (proc != null) {
           if (proc instanceof Driver) {
-            ((Driver)proc).destroy();
+            ((Driver) proc).destroy();
             isHiveQuery = true;
             response = driver.run(cmd);
           } else {
@@ -373,13 +373,20 @@ public class HiveServer extends ThriftHive {
 
   public static void main(String[] args) {
     try {
-      //Initializing log for the HiveServer Mode
+      // Initializing log for the HiveServer Mode
       SessionState.initHiveLog4j();
 
       int port = 10000;
       if (args.length >= 1) {
-        port = Integer.parseInt(args[0]);
+        try {
+          port = Integer.parseInt(args[0]);
+        } catch (NumberFormatException e) {
+        }
       }
+
+      // Load the other options
+      new HiveConfProcessor().process(args);
+
       TServerTransport serverTransport = new TServerSocket(port);
       ThriftHiveProcessorFactory hfactory = new ThriftHiveProcessorFactory(null);
       TThreadPoolServer.Args options = new TThreadPoolServer.Args(serverTransport);

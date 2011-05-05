@@ -25,7 +25,7 @@ hiveserver() {
   JAR=${HIVE_LIB}/hive-service-*.jar
 
   # hadoop 20 or newer - skip the aux_jars option and hiveconf
-  exec $HADOOP jar $JAR $CLASS $HIVE_PORT "$@"
+  exec $HADOOP jar $JAR $CLASS $HIVE_PORT "$@" $HIVE_OPTS
 }
 
 hiveserver_help() {
