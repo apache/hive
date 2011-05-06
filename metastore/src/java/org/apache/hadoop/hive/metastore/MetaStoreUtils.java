@@ -37,6 +37,7 @@ import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.hive.common.JavaUtils;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.api.Constants;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
@@ -943,5 +944,38 @@ public class MetaStoreUtils {
       }
     }
     return filter.toString();
+  }
+
+  /**
+   * create listener instances as per the configuration.
+   * @param conf
+   * @return
+   * @throws MetaException
+   */
+  static List<MetaStoreEventListener> getMetaStoreListener (HiveConf conf)
+  throws MetaException {
+
+    List<MetaStoreEventListener> listeners = new ArrayList<MetaStoreEventListener>();
+    String listenerImplList = conf.getVar(HiveConf.ConfVars.METASTORE_EVENT_LISTENERS);
+    listenerImplList = listenerImplList.trim();
+    if (listenerImplList.equals("")) {
+      return listeners;
+}
+
+    String[] listenerImpls = listenerImplList.split(",");
+    for (String listenerImpl : listenerImpls) {
+      try {
+        MetaStoreEventListener listener = (MetaStoreEventListener) Class.forName(
+            listenerImpl.trim(), true, JavaUtils.getClassLoader()).getConstructor(
+                Configuration.class).newInstance(conf);
+        listener.setConf(conf);
+        listeners.add(listener);
+      } catch (Exception e) {
+        throw new MetaException("Failed to instantiate listener named: "+
+            listenerImpl + e.toString());
+      }
+    }
+
+    return listeners;
   }
 }

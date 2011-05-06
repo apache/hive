@@ -215,6 +215,7 @@ public class HiveConf extends Configuration {
     METASTORE_IDENTIFIER_FACTORY("datanucleus.identifierFactory", "datanucleus"),
     METASTORE_PLUGIN_REGISTRY_BUNDLE_CHECK("datanucleus.plugin.pluginRegistryBundleCheck", "LOG"),
     METASTORE_BATCH_RETRIEVE_MAX("hive.metastore.batch.retrieve.max", 300),
+    METASTORE_EVENT_LISTENERS("hive.metastore.event.listeners", ""),
     // should we do checks against the storage (usually hdfs) for operations like drop_partition
     METASTORE_AUTHORIZATION_STORAGE_AUTH_CHECKS("hive.metastore.authorization.storage.checks", false),
 
