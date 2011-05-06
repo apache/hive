@@ -65,6 +65,12 @@ import org.apache.hadoop.hive.metastore.api.ThriftHiveMetastore;
 import org.apache.hadoop.hive.metastore.api.Type;
 import org.apache.hadoop.hive.metastore.api.UnknownDBException;
 import org.apache.hadoop.hive.metastore.api.UnknownTableException;
+import org.apache.hadoop.hive.metastore.events.AddPartitionEvent;
+import org.apache.hadoop.hive.metastore.events.CreateDatabaseEvent;
+import org.apache.hadoop.hive.metastore.events.CreateTableEvent;
+import org.apache.hadoop.hive.metastore.events.DropDatabaseEvent;
+import org.apache.hadoop.hive.metastore.events.DropPartitionEvent;
+import org.apache.hadoop.hive.metastore.events.DropTableEvent;
 import org.apache.hadoop.hive.metastore.hooks.JDOConnectionURLHook;
 import org.apache.hadoop.hive.metastore.model.MDBPrivilege;
 import org.apache.hadoop.hive.metastore.model.MGlobalPrivilege;
@@ -201,6 +207,8 @@ public class HiveMetaStore extends ThriftHiveMetastore {
 
     private ClassLoader classLoader;
     private AlterHandler alterHandler;
+    private List<MetaStoreEventListener> listeners;
+
     {
       classLoader = Thread.currentThread().getContextClassLoader();
       if (classLoader == null) {
@@ -240,6 +248,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
 
         }
       }
+      listeners = MetaStoreUtils.getMetaStoreListener(hiveConf);
       return true;
     }
 
@@ -546,7 +555,10 @@ public class HiveMetaStore extends ThriftHiveMetastore {
         } else {
           wh.mkdirs(new Path(db.getLocationUri()));
         }
+        for (MetaStoreEventListener listener : listeners) {
+          listener.onCreateDatabase(new CreateDatabaseEvent(db, success, this));
       }
+    }
     }
 
     public void create_database(final Database db)
@@ -661,7 +673,10 @@ public class HiveMetaStore extends ThriftHiveMetastore {
           wh.deleteDir(new Path(db.getLocationUri()), true);
           // it is not a terrible thing even if the data is not deleted
         }
+        for (MetaStoreEventListener listener : listeners) {
+          listener.onDropDatabase(new DropDatabaseEvent(db, success, this));
       }
+    }
     }
 
     public void drop_database(final String dbName, final boolean deleteData, final boolean cascade)
@@ -936,7 +951,10 @@ public class HiveMetaStore extends ThriftHiveMetastore {
             wh.deleteDir(tblPath, true);
           }
         }
+        for (MetaStoreEventListener listener : listeners) {
+          listener.onCreateTable(new CreateTableEvent(tbl, success, this));
       }
+    }
     }
 
     public void create_table(final Table tbl) throws AlreadyExistsException,
@@ -1023,7 +1041,6 @@ public class HiveMetaStore extends ThriftHiveMetastore {
         if (!ms.dropTable(dbname, name)) {
           throw new MetaException("Unable to drop table");
         }
-        tbl = null; // table collections disappear after dropping
         success = ms.commitTransaction();
       } finally {
         if (!success) {
@@ -1032,7 +1049,10 @@ public class HiveMetaStore extends ThriftHiveMetastore {
           wh.deleteDir(tblPath, true);
           // ok even if the data is not deleted
         }
+        for(MetaStoreEventListener listener : listeners){
+          listener.onDropTable(new DropTableEvent(tbl, success, this));
       }
+    }
     }
 
     public void drop_table(final String dbname, final String name, final boolean deleteData)
@@ -1341,6 +1361,9 @@ public class HiveMetaStore extends ThriftHiveMetastore {
             wh.deleteDir(partLocation, true);
           }
         }
+        for(MetaStoreEventListener listener : listeners){
+          listener.onAddPartition(new AddPartitionEvent(part, success, this));
+      }
       }
       return part;
     }
@@ -1432,6 +1455,9 @@ public class HiveMetaStore extends ThriftHiveMetastore {
             // ok even if the data is not deleted
           }
         }
+        for(MetaStoreEventListener listener : listeners){
+          listener.onDropPartition(new DropPartitionEvent(part, success, this));
+      }
       }
       return true;
     }

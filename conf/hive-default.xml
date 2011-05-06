@@ -227,6 +227,12 @@
 </property>
 
 <property>
+  <name>hive.metastore.event.listeners</name>
+  <value></value>
+  <description>list of comma seperated listeners for metastore events.</description>
+</property>
+
+<property>
   <name>hive.metastore.connect.retries</name>
   <value>5</value>
   <description>Number of retries while opening a connection to metastore</description>
