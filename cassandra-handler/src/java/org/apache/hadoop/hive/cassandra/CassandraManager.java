@@ -57,20 +57,20 @@ public class CassandraManager {
 
     String cassandraHost = serdeParam.get(StandardColumnSerDe.CASSANDRA_HOST);
     if (cassandraHost == null) {
-      cassandraHost = "localhost";
+      cassandraHost = StandardColumnSerDe.DEFAULT_CASSANDRA_HOST;
     }
 
     this.host = cassandraHost;
 
     String cassandraPortStr = serdeParam.get(StandardColumnSerDe.CASSANDRA_PORT);
     if (cassandraPortStr == null) {
-      port = 9160;
-    } else {
-      try {
-        port = Integer.parseInt(cassandraPortStr);
-      } catch (NumberFormatException e) {
-        throw new MetaException(StandardColumnSerDe.CASSANDRA_PORT + " must be a number");
-      }
+      cassandraPortStr = StandardColumnSerDe.DEFAULT_CASSANDRA_PORT;
+    }
+
+    try {
+      port = Integer.parseInt(cassandraPortStr);
+    } catch (NumberFormatException e) {
+      throw new MetaException(StandardColumnSerDe.CASSANDRA_PORT + " must be a number");
     }
 
     this.tbl = tbl;
