@@ -1,1 +1,1 @@
-Parse Error: line 3:6 mismatched input '(' expecting FROM in from clause
+Parse Error: line 3:6 mismatched input '(' expecting FROM near 'trim' in from clause
