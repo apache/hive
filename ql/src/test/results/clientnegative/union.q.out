@@ -1,1 +1,1 @@
-FAILED: Error in semantic analysis: Top level Union is not supported currently; use a subquery for the union
+FAILED: Error in semantic analysis: Top level UNION is not supported currently; use a subquery for the UNION

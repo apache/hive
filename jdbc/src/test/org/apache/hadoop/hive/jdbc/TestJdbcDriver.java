@@ -360,16 +360,16 @@ public class TestJdbcDriver extends TestCase {
     // sure
     // how to get around that.
     doTestErrorCase("SELECTT * FROM " + tableName,
-        "cannot recognize input 'SELECTT'", invalidSyntaxSQLState, 11);
+        "cannot recognize input near 'SELECTT' '*' 'FROM'", invalidSyntaxSQLState, 11);
     doTestErrorCase("SELECT * FROM some_table_that_does_not_exist",
-        "Table not found", "42S02", parseErrorCode);
+        "Table not found", "42000", parseErrorCode);
     doTestErrorCase("drop table some_table_that_does_not_exist",
-        "Table not found", "42S02", parseErrorCode);
+        "Table not found", "42000", parseErrorCode);
     doTestErrorCase("SELECT invalid_column FROM " + tableName,
-        "Invalid Table Alias or Column Reference", invalidSyntaxSQLState,
+        "Invalid table alias or column reference", invalidSyntaxSQLState,
         parseErrorCode);
     doTestErrorCase("SELECT invalid_function(key) FROM " + tableName,
-        "Invalid Function", invalidSyntaxSQLState, parseErrorCode);
+        "Invalid function", invalidSyntaxSQLState, parseErrorCode);
 
     // TODO: execute errors like this currently don't return good messages (i.e.
     // 'Table already exists'). This is because the Driver class calls
