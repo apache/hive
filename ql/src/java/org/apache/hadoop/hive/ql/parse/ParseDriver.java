@@ -25,6 +25,7 @@ import java.util.HashMap;
 import org.antlr.runtime.ANTLRStringStream;
 import org.antlr.runtime.BitSet;
 import org.antlr.runtime.CharStream;
+import org.antlr.runtime.FailedPredicateException;
 import org.antlr.runtime.IntStream;
 import org.antlr.runtime.MismatchedTokenException;
 import org.antlr.runtime.NoViableAltException;
@@ -190,6 +191,7 @@ public class ParseDriver {
     xlateMap.put("TILDE", "~");
     xlateMap.put("BITWISEOR", "|");
     xlateMap.put("BITWISEXOR", "^");
+    xlateMap.put("CharSetLiteral", "\\'");
   }
 
   public static Collection<String> getKeywords() {
@@ -208,7 +210,7 @@ public class ParseDriver {
 
   /**
    * ANTLRNoCaseStringStream.
-   * 
+   *
    */
   //This class provides and implementation for a case insensitive token checker
   //for the lexical analysis part of antlr. By converting the token stream into
@@ -227,6 +229,7 @@ public class ParseDriver {
       super(input);
     }
 
+    @Override
     public int LA(int i) {
 
       int returnChar = super.LA(i);
@@ -258,12 +261,14 @@ public class ParseDriver {
       errors = new ArrayList<ParseError>();
     }
 
+    @Override
     public void displayRecognitionError(String[] tokenNames,
         RecognitionException e) {
 
       errors.add(new ParseError(this, e, tokenNames));
     }
 
+    @Override
     public String getErrorMessage(RecognitionException e, String[] tokenNames) {
       String msg = null;
 
@@ -301,27 +306,45 @@ public class ParseDriver {
       errors = new ArrayList<ParseError>();
     }
 
+    @Override
     protected void mismatch(IntStream input, int ttype, BitSet follow)
         throws RecognitionException {
 
       throw new MismatchedTokenException(ttype, input);
     }
 
+    @Override
     public void recoverFromMismatchedSet(IntStream input,
         RecognitionException re, BitSet follow) throws RecognitionException {
       throw re;
     }
 
+    @Override
     public void displayRecognitionError(String[] tokenNames,
         RecognitionException e) {
 
       errors.add(new ParseError(this, e, tokenNames));
     }
 
+    @Override
+    public String getErrorHeader(RecognitionException e) {
+      String header = null;
+      if (e.charPositionInLine < 0 && input.LT(-1) != null) {
+        Token t = input.LT(-1);
+        header = "line " + t.getLine() + ":" + t.getCharPositionInLine();
+      } else {
+        header = super.getErrorHeader(e);
+      }
+
+      return header;
+    }
+
+
+    @Override
     public String getErrorMessage(RecognitionException e, String[] tokenNames) {
       String msg = null;
 
-      // Transalate the token names to something that the user can understand
+      // Translate the token names to something that the user can understand
       String[] xlateNames = new String[tokenNames.length];
       for (int i = 0; i < tokenNames.length; ++i) {
         xlateNames[i] = ParseDriver.xlate(tokenNames[i]);
@@ -334,7 +357,16 @@ public class ParseDriver {
         // "decision=<<"+nvae.grammarDecisionDescription+">>"
         // and "(decision="+nvae.decisionNumber+") and
         // "state "+nvae.stateNumber
-        msg = "cannot recognize input " + getTokenErrorDisplay(e.token);
+        msg = "cannot recognize input near "
+                + getTokenErrorDisplay(e.token)
+                + (input.LT(2) != null ? " " + getTokenErrorDisplay(input.LT(2)) : "")
+                + (input.LT(3) != null ? " " + getTokenErrorDisplay(input.LT(3)) : "");
+      } else if (e instanceof MismatchedTokenException) {
+        MismatchedTokenException mte = (MismatchedTokenException) e;
+        msg = super.getErrorMessage(e, xlateNames) + (input.LT(-1) == null ? "":" near '" + input.LT(-1).getText()) + "'";
+      } else if (e instanceof FailedPredicateException) {
+        FailedPredicateException fpe = (FailedPredicateException) e;
+        msg = "Failed to recognize predicate '" + fpe.token.getText() + "'. Failed rule: '" + fpe.ruleName + "'";
       } else {
         msg = super.getErrorMessage(e, xlateNames);
       }
@@ -360,7 +392,7 @@ public class ParseDriver {
     /**
      * Creates an ASTNode for the given token. The ASTNode is a wrapper around
      * antlr's CommonTree class that implements the Node interface.
-     * 
+     *
      * @param payload
      *          The token.
      * @return Object (which is actually an ASTNode) for the token.
@@ -378,15 +410,15 @@ public class ParseDriver {
   /**
    * Parses a command, optionally assigning the parser's token stream to the
    * given context.
-   * 
+   *
    * @param command
    *          command to parse
-   * 
+   *
    * @param ctx
    *          context with which to associate this parser's token stream, or
    *          null if either no context is available or the context already has
    *          an existing stream
-   * 
+   *
    * @return parsed AST
    */
   public ASTNode parse(String command, Context ctx) throws ParseException {
