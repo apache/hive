@@ -370,10 +370,11 @@ public class ZooKeeperHiveLockManager implements HiveLockManager {
 
   /* Release all locks - including PERSISTENT locks */
   public static void releaseAllLocks(HiveConf conf) throws Exception {
+    ZooKeeper zkpClient = null;
     try {
       int sessionTimeout = conf.getIntVar(HiveConf.ConfVars.HIVE_ZOOKEEPER_SESSION_TIMEOUT);
       String quorumServers = getQuorumServers(conf);
-      ZooKeeper zkpClient = new ZooKeeper(quorumServers, sessionTimeout, new DummyWatcher());
+      zkpClient = new ZooKeeper(quorumServers, sessionTimeout, new DummyWatcher());
       String parent = conf.getVar(HiveConf.ConfVars.HIVE_ZOOKEEPER_NAMESPACE);
       List<HiveLock> locks = getLocks(conf, zkpClient, null, parent, false, false);
 
@@ -382,12 +383,14 @@ public class ZooKeeperHiveLockManager implements HiveLockManager {
           unlock(conf, zkpClient, lock, parent);
         }
       }
-
-      zkpClient.close();
-      zkpClient = null;
     } catch (Exception e) {
       LOG.error("Failed to release all locks: " + e.getMessage());
       throw new Exception(ErrorMsg.ZOOKEEPER_CLIENT_COULD_NOT_BE_INITIALIZED.getMsg());
+    } finally {
+      if (zkpClient != null) {
+        zkpClient.close();
+        zkpClient = null;
+      }
     }
   }
 
@@ -490,6 +493,10 @@ public class ZooKeeperHiveLockManager implements HiveLockManager {
     try {
       renewZookeeperInstance(sessionTimeout, quorumServers);
       checkRedundantNode("/" + parent);
+      if (zooKeeper != null) {
+        zooKeeper.close();
+        zooKeeper = null;
+      }
     } catch (Exception e) {
       // ignore all errors
     }
@@ -519,14 +526,16 @@ public class ZooKeeperHiveLockManager implements HiveLockManager {
   /* Release all transient locks, by simply closing the client */
   public void close() throws LockException {
     try {
+
       if (zooKeeper != null) {
         zooKeeper.close();
         zooKeeper = null;
       }
-
+      
       if (HiveConf.getBoolVar(ctx.getConf(), HiveConf.ConfVars.HIVE_ZOOKEEPER_CLEAN_EXTRA_NODES)) {
         removeAllRedundantNodes();
       }
+
     } catch (Exception e) {
       LOG.error("Failed to close zooKeeper client: " + e);
       throw new LockException(e);
