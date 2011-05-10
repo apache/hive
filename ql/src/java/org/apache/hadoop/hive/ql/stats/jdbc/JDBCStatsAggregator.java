@@ -72,7 +72,8 @@ public class JDBCStatsAggregator implements StatsAggregator {
       "SELECT /* " + comment + " */ " +
       " SUM(" + JDBCStatsSetupConstants.PART_STAT_ROW_COUNT_COLUMN_NAME + ")" +
       " FROM " + JDBCStatsSetupConstants.PART_STAT_TABLE_NAME +
-      " WHERE " + JDBCStatsSetupConstants.PART_STAT_ID_COLUMN_NAME + " LIKE ?";
+      " WHERE " + JDBCStatsSetupConstants.PART_STAT_ID_COLUMN_NAME +
+      " LIKE ? ESCAPE ?";
 
     /* Automatic Cleaning:
     IMPORTANT: Since we publish and aggregate only 1 value (1 column) which is the row count, it
@@ -85,7 +86,8 @@ public class JDBCStatsAggregator implements StatsAggregator {
     String delete =
       "DELETE /* " + comment + " */ " +
       " FROM " + JDBCStatsSetupConstants.PART_STAT_TABLE_NAME +
-      " WHERE " + JDBCStatsSetupConstants.PART_STAT_ID_COLUMN_NAME + " LIKE ?";
+      " WHERE " + JDBCStatsSetupConstants.PART_STAT_ID_COLUMN_NAME +
+      " LIKE ? ESCAPE ?";
 
     // stats is non-blocking -- throw an exception when timeout
     DriverManager.setLoginTimeout(timeout);
@@ -156,12 +158,13 @@ public class JDBCStatsAggregator implements StatsAggregator {
       }
     };
 
+    String keyPrefix = Utilities.escapeSqlLike(fileID) + "%";
     for (int failures = 0; ; failures++) {
       try {
         long retval = 0;
 
-        String keyPrefix = fileID + "%";
         selStmt.setString(1, keyPrefix);
+        selStmt.setString(2, Character.toString(Utilities.sqlEscapeChar));
         ResultSet result = Utilities.executeWithRetry(execQuery, selStmt, waitWindow, maxRetries);
         if (result.next()) {
           retval = result.getLong(1);
@@ -179,6 +182,7 @@ public class JDBCStatsAggregator implements StatsAggregator {
             through a separate method which the developer has to call it manually in the code.
          */
         delStmt.setString(1, keyPrefix);
+        delStmt.setString(2, Character.toString(Utilities.sqlEscapeChar));
         Utilities.executeWithRetry(execUpdate, delStmt, waitWindow, maxRetries);
 
         LOG.info("Stats aggregator got " + retval);

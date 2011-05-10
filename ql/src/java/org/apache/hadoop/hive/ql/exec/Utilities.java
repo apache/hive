@@ -2014,12 +2014,12 @@ public final class Utilities {
    * all input formats, and choose the ones that extend ReworkMapredInputFormat
    * to a set. And finally go through the ReworkMapredInputFormat set, and call
    * rework for each one.
-   * 
+   *
    * Technically all these can be avoided if all Hive's input formats can share
    * a same interface. As in today's hive and Hadoop, it is not possible because
    * a lot of Hive's input formats are in Hadoop's code. And most of Hadoop's
    * input formats just extend InputFormat interface.
-   * 
+   *
    * @param task
    * @param reworkMapredWork
    * @param conf
@@ -2202,5 +2202,29 @@ public final class Utilities {
     return (long) (
           baseWindow * failures +     // grace period for the last round of attempt
       	  baseWindow * (failures + 1) * r.nextDouble()); // expanding time window for each failure
+  }
+
+  /**
+   * Escape the '_', '%', as well as the escape characters inside the string key.
+   * @param key the string that will be used for the SQL LIKE operator.
+   * @param escape the escape character
+   * @return a string with escaped '_' and '%'.
+   */
+  public static final char sqlEscapeChar = '\\';
+  public static String escapeSqlLike(String key) {
+    StringBuffer sb = new StringBuffer(key.length());
+    for (char c: key.toCharArray()) {
+      switch(c) {
+      case '_':
+      case '%':
+      case sqlEscapeChar:
+        sb.append(sqlEscapeChar);
+        // fall through
+      default:
+        sb.append(c);
+        break;
+      }
+    }
+    return sb.toString();
   }
 }
