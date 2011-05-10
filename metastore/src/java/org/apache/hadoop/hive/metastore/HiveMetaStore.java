@@ -38,6 +38,8 @@ import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.JavaUtils;
+import org.apache.hadoop.hive.common.classification.InterfaceAudience;
+import org.apache.hadoop.hive.common.classification.InterfaceStability;
 import org.apache.hadoop.hive.common.metrics.Metrics;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.api.AlreadyExistsException;
@@ -289,13 +291,16 @@ public class HiveMetaStore extends ThriftHiveMetastore {
      * The catch blocks are used to ensure that the exceptions thrown by the
      * <block of code> follow the function definition.
      */
-    private static class Command<T> {
+    @InterfaceAudience.LimitedPrivate({"HCATALOG"})
+    @InterfaceStability.Evolving
+    public static class Command<T> {
       T run(RawStore ms) throws Exception {
         return null;
       }
     }
-
-    private <T> T executeWithRetry(Command<T> cmd) throws Exception {
+    @InterfaceAudience.LimitedPrivate({"HCATALOG"})
+    @InterfaceStability.Evolving
+    public <T> T executeWithRetry(Command<T> cmd) throws Exception {
       T ret = null;
 
       boolean gotNewConnectUrl = false;
@@ -351,7 +356,9 @@ public class HiveMetaStore extends ThriftHiveMetastore {
      * @return
      * @throws MetaException
      */
-    private RawStore getMS(boolean reloadConf) throws MetaException {
+    @InterfaceAudience.LimitedPrivate({"HCATALOG"})
+    @InterfaceStability.Evolving
+    public RawStore getMS(boolean reloadConf) throws MetaException {
       RawStore ms = threadLocalMS.get();
       if (ms == null) {
         LOG.info(addPrefix("Opening raw store with implemenation class:"
