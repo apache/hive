@@ -145,7 +145,11 @@ public class Driver implements CommandProcessor {
         return false;
       }
     }
-    return true;
+    // the reason that we set the lock manager for the cxt here is because each
+    // query has its own ctx object. The hiveLockMgr is shared accross the
+    // same instance of Driver, which can run multiple queries.
+    ctx.setHiveLockMgr(hiveLockMgr);
+    return hiveLockMgr != null;
   }
 
   private void setLockManager() throws SemanticException {
@@ -161,11 +165,21 @@ public class Driver implements CommandProcessor {
             conf);
         hiveLockMgr.setContext(new HiveLockManagerCtx(conf));
       } catch (Exception e) {
+        // set hiveLockMgr to null just in case this invalid manager got set to
+        // next query's ctx.  
+        if (hiveLockMgr != null) {
+          try {
+            hiveLockMgr.close();
+          } catch (LockException e1) {
+            //nothing can do here
+          }
+          hiveLockMgr = null;          
+        }
         throw new SemanticException(ErrorMsg.LOCKMGR_NOT_INITIALIZED.getMsg() + e.getMessage());
       }
     }
   }
-
+  
   public void init() {
     Operator.resetId();
   }
@@ -827,17 +841,15 @@ public class Driver implements CommandProcessor {
     SQLState = null;
 
     int ret = compile(command);
-
-    boolean requireLock = false;
-    boolean ckLock = checkLockManager();
-
     if (ret != 0) {
       releaseLocks(ctx.getHiveLocks());
       return new CommandProcessorResponse(ret, errorMessage, SQLState);
     }
-    
+
+    boolean requireLock = false;
+    boolean ckLock = checkLockManager();
+
     if (ckLock) {
-      ctx.setHiveLockMgr(hiveLockMgr);
       boolean lockOnlyMapred = HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVE_LOCK_MAPRED_ONLY);
       if(lockOnlyMapred) {
         Queue<Task<? extends Serializable>> taskQueue = new LinkedList<Task<? extends Serializable>>();
