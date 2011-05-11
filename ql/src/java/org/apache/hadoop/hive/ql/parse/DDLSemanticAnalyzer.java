@@ -122,9 +122,9 @@ import org.apache.hadoop.mapred.TextInputFormat;
  */
 public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
   private static final Log LOG = LogFactory.getLog("hive.ql.parse.DDLSemanticAnalyzer");
-  public static final Map<Integer, String> TokenToTypeName = new HashMap<Integer, String>();
+  private static final Map<Integer, String> TokenToTypeName = new HashMap<Integer, String>();
 
-  public static final Set<String> reservedPartitionValues = new HashSet<String>();
+  private final Set<String> reservedPartitionValues;
   static {
     TokenToTypeName.put(HiveParser.TOK_BOOLEAN, Constants.BOOLEAN_TYPE_NAME);
     TokenToTypeName.put(HiveParser.TOK_TINYINT, Constants.TINYINT_TYPE_NAME);
@@ -168,6 +168,7 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
 
   public DDLSemanticAnalyzer(HiveConf conf) throws SemanticException {
     super(conf);
+    reservedPartitionValues = new HashSet<String>();
     // Partition can't have this name
     reservedPartitionValues.add(HiveConf.getVar(conf, ConfVars.DEFAULTPARTITIONNAME));
     reservedPartitionValues.add(HiveConf.getVar(conf, ConfVars.DEFAULT_ZOOKEEPER_PARTITION_NAME));
@@ -476,7 +477,6 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
     rootTasks.add(TaskFactory.get(new DDLWork(getInputs(), getOutputs(),
         revokeDesc), conf));
   }
-
 
   private PrivilegeObjectDesc analyzePrivilegeObject(ASTNode ast,
       HashSet<WriteEntity> outputs)
