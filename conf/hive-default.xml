@@ -362,6 +362,13 @@
 </property>
 
 <property>
+  <name>hive.multigroupby.singlemr</name>
+  <value>false</value>
+  <description>Whether to optimize multi group by query to generate single M/R
+  job plan. If the multi group by query has common group by keys, it will be
+  optimized to generate single M/R job.</description>
+</property>
+<property>
   <name>hive.join.emit.interval</name>
   <value>1000</value>
   <description>How many rows in the right-most join operand Hive should buffer before emitting the join result. </description>
