@@ -73,7 +73,6 @@ import org.apache.hadoop.hive.ql.hooks.WriteEntity;
 import org.apache.hadoop.hive.ql.io.CombineHiveInputFormat;
 import org.apache.hadoop.hive.ql.io.HiveFileFormatUtils;
 import org.apache.hadoop.hive.ql.io.HiveOutputFormat;
-import org.apache.hadoop.hive.ql.io.ReworkMapredInputFormat;
 import org.apache.hadoop.hive.ql.lib.DefaultGraphWalker;
 import org.apache.hadoop.hive.ql.lib.DefaultRuleDispatcher;
 import org.apache.hadoop.hive.ql.lib.Dispatcher;
@@ -166,7 +165,6 @@ import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
 import org.apache.hadoop.mapred.InputFormat;
-import org.apache.hadoop.util.ReflectionUtils;
 
 /**
  * Implementation of the semantic analyzer.
@@ -3116,6 +3114,40 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
   }
 
   /**
+   * Generate a Multi Group-By plan using a single map-reduce job.
+   *
+   * @param dest
+   * @param qb
+   * @param input
+   * @return
+   * @throws SemanticException
+   *
+   *           Generate a Group-By plan using single map-reduce job, if there is
+   *           common group by key. Spray by the
+   *           common group by key set and compute
+   *           aggregates in the reduce. The agggregation evaluation
+   *           functions are as follows:
+   *
+   *           Partitioning Key: common group by key set
+   *
+   *           Sorting Key: group by keys, distinct keys
+   *
+   *           Reducer: iterate/terminate  (mode = COMPLETE)
+   *
+   */
+  private Operator<?> genGroupByPlan1MRMultiGroupBy(String dest, QB qb,
+      Operator<?> input) throws SemanticException {
+
+    QBParseInfo parseInfo = qb.getParseInfo();
+
+    // //////  Generate GroupbyOperator
+    Operator<?> groupByOperatorInfo = genGroupByPlanGroupByOperator(parseInfo,
+        dest, input, GroupByDesc.Mode.COMPLETE, null);
+
+    return groupByOperatorInfo;
+  }
+
+  /**
    * Generate a Group-By plan using a 2 map-reduce jobs (5 operators will be
    * inserted):
    *
@@ -5446,27 +5478,238 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     return rsOp;
   }
 
+  // see if there are any distinct expressions
+  private boolean distinctExprsExists(QB qb) {
+    QBParseInfo qbp = qb.getParseInfo();
+
+    TreeSet<String> ks = new TreeSet<String>();
+    ks.addAll(qbp.getClauseNames());
+
+    for (String dest : ks) {
+      List<ASTNode> list = qbp.getDistinctFuncExprsForClause(dest);
+      if (!list.isEmpty()) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  // return the common group by key set.
+  // Null if there are no common group by keys.
+  private List<ASTNode> getCommonGroupbyKeys(QB qb, Operator input) {
+    RowResolver inputRR = opParseCtx.get(input).getRowResolver();
+    QBParseInfo qbp = qb.getParseInfo();
+
+    Set<String> ks = qbp.getClauseNames();
+    // Go over all the destination tables
+    if (ks.size() <= 1) {
+      return null;
+    }
+
+    List<ASTNode> oldList = null;
+
+    for (String dest : ks) {
+      // If a filter is present, common processing is not possible
+      if (qbp.getWhrForClause(dest) != null) {
+        return null;
+      }
+
+      //  if one of the sub-queries does not involve an aggregation, common
+      // processing is not possible
+      List<ASTNode> list = getGroupByForClause(qbp, dest);
+      if (list.isEmpty()) {
+        return null;
+      }
+      if (oldList == null) {
+        oldList = new ArrayList<ASTNode>();
+        oldList.addAll(list);
+      } else {
+        int pos = 0;
+        for (pos = 0; pos < oldList.size(); pos++) {
+          if (pos < list.size()) {
+            if (!oldList.get(pos).toStringTree().equals(list.get(pos).toStringTree())) {
+              break;
+            }
+          } else {
+            break;
+          }
+        }
+        oldList = oldList.subList(0, pos);
+      }
+      if (oldList.isEmpty()) {
+        return null;
+      }
+    }
+    return oldList;
+  }
+
+  /**
+   * Generates reduce sink for multigroupby query for non null common groupby set
+   *
+   *All groupby keys and distinct exprs are added to reduce keys. And rows are
+   *partitioned on common groupby key set.
+   *
+   * @param qb
+   * @param input
+   * @return
+   * @throws SemanticException
+   */
+  private Operator createCommonReduceSink1(QB qb, Operator input)
+  throws SemanticException {
+    // Go over all the tables and get common groupby key
+    List<ASTNode> cmonGbyExprs = getCommonGroupbyKeys(qb, input);
+
+    QBParseInfo qbp = qb.getParseInfo();
+    TreeSet<String> ks = new TreeSet<String>();
+    ks.addAll(qbp.getClauseNames());
+
+    // Pass the entire row
+    RowResolver inputRR = opParseCtx.get(input).getRowResolver();
+    RowResolver reduceSinkOutputRowResolver = new RowResolver();
+    reduceSinkOutputRowResolver.setIsExprResolver(true);
+    ArrayList<ExprNodeDesc> reduceKeys = new ArrayList<ExprNodeDesc>();
+    ArrayList<ExprNodeDesc> reducePartKeys = new ArrayList<ExprNodeDesc>();
+    ArrayList<ExprNodeDesc> reduceValues = new ArrayList<ExprNodeDesc>();
+    Map<String, ExprNodeDesc> colExprMap = new HashMap<String, ExprNodeDesc>();
+    List<String> outputColumnNames = new ArrayList<String>();
+    for (String dest : ks) {
+      List<ASTNode> grpByExprs = getGroupByForClause(qbp, dest);
+      for (int i = 0; i < grpByExprs.size(); ++i) {
+        ASTNode grpbyExpr = grpByExprs.get(i);
+
+        if (reduceSinkOutputRowResolver.getExpression(grpbyExpr) == null) {
+          ExprNodeDesc grpByExprNode = genExprNodeDesc(grpbyExpr, inputRR);
+          reduceKeys.add(grpByExprNode);
+          String field = Utilities.ReduceField.KEY.toString() + "."
+          + getColumnInternalName(reduceKeys.size() - 1);
+          ColumnInfo colInfo = new ColumnInfo(field, reduceKeys.get(
+              reduceKeys.size() - 1).getTypeInfo(), "", false);
+          reduceSinkOutputRowResolver.putExpression(grpbyExpr, colInfo);
+          outputColumnNames.add(getColumnInternalName(reduceKeys.size() - 1));
+          colExprMap.put(colInfo.getInternalName(), grpByExprNode);
+        }
+      }
+    }
+    // Add distinct group-by exprs to reduceKeys
+    List<ASTNode> distExprs = getCommonDistinctExprs(qb, input);
+    if (distExprs != null) {
+      for (ASTNode distn : distExprs) {
+        if (reduceSinkOutputRowResolver.getExpression(distn) == null) {
+          ExprNodeDesc distExpr = genExprNodeDesc(distn, inputRR);
+          reduceKeys.add(distExpr);
+          String field = Utilities.ReduceField.KEY.toString() + "."
+              + getColumnInternalName(reduceKeys.size() - 1);
+          ColumnInfo colInfo = new ColumnInfo(field, reduceKeys.get(
+              reduceKeys.size() - 1).getTypeInfo(), "", false);
+          reduceSinkOutputRowResolver.putExpression(distn, colInfo);
+          outputColumnNames.add(getColumnInternalName(reduceKeys.size() - 1));
+          colExprMap.put(colInfo.getInternalName(), distExpr);
+        }
+      }
+    }
+    // Add common groupby keys to partition keys
+    for (ASTNode gby : cmonGbyExprs) {
+      ExprNodeDesc distExpr = genExprNodeDesc(gby, inputRR);
+      reducePartKeys.add(distExpr);
+    }
+
+    // Go over all the aggregations
+    for (String dest : ks) {
+
+      // For each aggregation
+      HashMap<String, ASTNode> aggregationTrees = qbp
+      .getAggregationExprsForClause(dest);
+      assert (aggregationTrees != null);
+
+      for (Map.Entry<String, ASTNode> entry : aggregationTrees.entrySet()) {
+        ASTNode value = entry.getValue();
+        value.getChild(0).getText();
+
+        // 0 is the function name
+        for (int i = 1; i < value.getChildCount(); i++) {
+          ASTNode paraExpr = (ASTNode) value.getChild(i);
+
+          if (reduceSinkOutputRowResolver.getExpression(paraExpr) == null) {
+            ExprNodeDesc paraExprNode = genExprNodeDesc(paraExpr, inputRR);
+            reduceValues.add(paraExprNode);
+            String field = Utilities.ReduceField.VALUE.toString() + "."
+                + getColumnInternalName(reduceValues.size() - 1);
+            ColumnInfo colInfo = new ColumnInfo(field, reduceValues.get(
+                reduceValues.size() - 1).getTypeInfo(), "", false);
+            reduceSinkOutputRowResolver.putExpression(paraExpr, colInfo);
+            outputColumnNames
+                .add(getColumnInternalName(reduceValues.size() - 1));
+          }
+        }
+      }
+    }
+    StringBuilder order = new StringBuilder();
+    for (int i = 0; i < reduceKeys.size(); i++) {
+      order.append("+");
+    }
+
+    ReduceSinkOperator rsOp = (ReduceSinkOperator) putOpInsertMap(
+        OperatorFactory.getAndMakeChild(PlanUtils.getReduceSinkDesc(
+            reduceKeys, reduceValues,
+            outputColumnNames, true, -1,
+            reducePartKeys, order.toString(), -1),
+            new RowSchema(reduceSinkOutputRowResolver.getColumnInfos()), input),
+            reduceSinkOutputRowResolver);
+    rsOp.setColumnExprMap(colExprMap);
+    return rsOp;
+  }
+
   @SuppressWarnings("nls")
   private Operator genBodyPlan(QB qb, Operator input) throws SemanticException {
-
     QBParseInfo qbp = qb.getParseInfo();
 
     TreeSet<String> ks = new TreeSet<String>(qbp.getClauseNames());
-
     // For multi-group by with the same distinct, we ignore all user hints
     // currently. It doesnt matter whether he has asked to do
     // map-side aggregation or not. Map side aggregation is turned off
-    boolean optimizeMultiGroupBy = (getCommonDistinctExprs(qb, input) != null);
+    List<ASTNode> commonDistinctExprs = getCommonDistinctExprs(qb, input);
+    List<ASTNode> commonGbyKeys = getCommonGroupbyKeys(qb, input);
+    LOG.warn("Common Gby keys:" + commonGbyKeys);
+    boolean optimizeMultiGroupBy = commonDistinctExprs != null;
+    // Generate single MR job for multigroupby query if query has non-null common
+    // groupby key set and there are zero or one common distinct expression.
+    boolean singlemrMultiGroupBy =
+      conf.getBoolVar(HiveConf.ConfVars.HIVEMULTIGROUPBYSINGLEMR)
+      && commonGbyKeys != null && !commonGbyKeys.isEmpty() &&
+      (!distinctExprsExists(qb) || commonDistinctExprs != null);
+
     Operator curr = input;
 
     // If there are multiple group-bys, map-side aggregation is turned off,
-    // there are no filters
-    // and there is a single distinct, optimize that. Spray initially by the
+    // and there are no filters.
+    // if there is a common groupby key set, spray by the common groupby key set
+    // and generate single mr job
+    if (singlemrMultiGroupBy) {
+      curr = createCommonReduceSink1(qb, input);
+
+      RowResolver currRR = opParseCtx.get(curr).getRowResolver();
+      // create a forward operator
+      input = putOpInsertMap(OperatorFactory.getAndMakeChild(new ForwardDesc(),
+          new RowSchema(currRR.getColumnInfos()), curr), currRR);
+
+      for (String dest : ks) {
+        curr = input;
+        curr = genGroupByPlan1MRMultiGroupBy(dest, qb, curr);
+        curr = genSelectPlan(dest, qb, curr);
+        Integer limit = qbp.getDestLimit(dest);
+        if (limit != null) {
+          curr = genLimitMapRedPlan(dest, qb, curr, limit.intValue(), true);
+          qb.getParseInfo().setOuterQueryLimit(limit.intValue());
+        }
+        curr = genFileSinkPlan(dest, qb, curr);
+      }
+    }
+    // and if there is a single distinct, optimize that. Spray initially by the
     // distinct key,
     // no computation at the mapper. Have multiple group by operators at the
     // reducer - and then
     // proceed
-    if (optimizeMultiGroupBy) {
+    else if (optimizeMultiGroupBy) {
       curr = createCommonReduceSink(qb, input);
 
       RowResolver currRR = opParseCtx.get(curr).getRowResolver();
@@ -7176,7 +7419,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
             "Table " + tbl.getTableName()));
       }
     }
-    
+
     boolean reworkMapredWork = HiveConf.getBoolVar(this.conf, HiveConf.ConfVars.HIVE_REWORK_MAPREDWORK);
 
     // validate all tasks
