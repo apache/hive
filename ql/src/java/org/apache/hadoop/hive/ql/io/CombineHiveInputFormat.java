@@ -456,7 +456,7 @@ public class CombineHiveInputFormat<K extends WritableComparable, V extends Writ
 
       long targetSize = (long) (totalSize * nameToSamples.get(entry.getKey()).getPercent() / 100D);
       int startIndex = nameToSamples.get(entry.getKey()).getSeedNum() % splitList.size();
-      int size = 0;
+      long size = 0;
       for (int i = 0; i < splitList.size(); i++) {
         InputSplitShim split = splitList.get((startIndex + i) % splitList.size());
         retLists.add(split);
