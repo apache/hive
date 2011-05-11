@@ -60,6 +60,9 @@ public class MapJoinObjectKey  extends AbstractMapJoinKey {
       if ((obj != null) && (mObjArray != null)) {
         if (obj.length == mObjArray.length) {
           for (int i = 0; i < obj.length; i++) {
+            if (obj[i] == null) {
+              return mObjArray[i] == null;
+            }
             if (!obj[i].equals(mObjArray[i])) {
               return false;
             }
