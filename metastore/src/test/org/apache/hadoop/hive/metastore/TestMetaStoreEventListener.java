@@ -53,7 +53,12 @@ public class TestMetaStoreEventListener extends TestCase {
 
     @Override
     public void run() {
-      HiveMetaStore.main(new String[]{msPort});
+      try {
+        HiveMetaStore.main(new String[]{msPort});
+      } catch (Throwable e) {
+        e.printStackTrace(System.err);
+        assert false;
+      }
     }
 
   }

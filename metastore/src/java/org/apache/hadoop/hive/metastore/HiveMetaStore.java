@@ -539,7 +539,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       if (ms != null) {
         ms.shutdown();
       }
-      System.exit(0);
+      logInfo("Metastore shutdown complete.");
     }
 
     private void create_database_core(RawStore ms, final Database db)
@@ -3149,7 +3149,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
   /**
    * @param args
    */
-  public static void main(String[] args) {
+  public static void main(String[] args) throws Throwable{
     int port = 9083;
 
     if (args.length > 0) {
@@ -3158,9 +3158,10 @@ public class HiveMetaStore extends ThriftHiveMetastore {
     try {
       startMetaStore(port, ShimLoader.getHadoopThriftAuthBridge());
     } catch (Throwable t) {
+      // Catch the exception, log it and rethrow it.
       HMSHandler.LOG
-       .error("Metastore Thrift Server threw an exception. Exiting...");
-      System.exit(1);
+       .error("Metastore Thrift Server threw an exception...",t);
+      throw t;
     }
   }
 
