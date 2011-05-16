@@ -35,7 +35,12 @@ public class TestRemoteHiveMetaStore extends TestHiveMetaStore {
 
       @Override
       public void run() {
+        try {
         HiveMetaStore.main(new String[] { METASTORE_PORT });
+        } catch (Throwable e) {
+          e.printStackTrace(System.err);
+          assert false;
+        }
       }
 
     }

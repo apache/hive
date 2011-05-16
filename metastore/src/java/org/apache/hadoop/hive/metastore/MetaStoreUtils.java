@@ -728,11 +728,12 @@ public class MetaStoreUtils {
   public static void startMetaStore(final int port,
       final HadoopThriftAuthBridge bridge) throws Exception {
     Thread thread = new Thread(new Runnable() {
+      @Override
       public void run() {
         try {
           HiveMetaStore.startMetaStore(port, bridge);
         } catch (Throwable e) {
-          System.exit(1);
+          LOG.error("Metastore Thrift Server threw an exception...",e);
         }
       }
     });
