@@ -384,7 +384,8 @@ public final class TypeCheckProcFactory {
         if (colInfo == null) {
           // It's not a column or a table alias.
           if (input.getIsExprResolver()) {
-            ctx.setError(ErrorMsg.NON_KEY_EXPR_IN_GROUPBY.getMsg(expr), expr);
+            stack.pop();
+            ctx.setError(ErrorMsg.NON_KEY_EXPR_IN_GROUPBY.getMsg((ASTNode) stack.peek()), expr);
             return null;
           } else {
             ctx.setError(ErrorMsg.INVALID_TABLE_OR_COLUMN.getMsg(expr
@@ -580,8 +581,9 @@ public final class TypeCheckProcFactory {
           if (!(children.get(1) instanceof ExprNodeConstantDesc)
               || !(((ExprNodeConstantDesc) children.get(1)).getTypeInfo()
               .equals(TypeInfoFactory.intTypeInfo))) {
-            throw new SemanticException(ErrorMsg.INVALID_ARRAYINDEX_CONSTANT
-                .getMsg(expr));
+            throw new SemanticException(SemanticAnalyzer.generateErrorMessage(
+                  expr,
+                  ErrorMsg.INVALID_ARRAYINDEX_CONSTANT.getMsg()));
           }
 
           // Calculate TypeInfo
@@ -591,8 +593,9 @@ public final class TypeCheckProcFactory {
         } else if (myt.getCategory() == Category.MAP) {
           // Only allow constant map key for now
           if (!(children.get(1) instanceof ExprNodeConstantDesc)) {
-            throw new SemanticException(ErrorMsg.INVALID_MAPINDEX_CONSTANT
-                .getMsg(expr));
+            throw new SemanticException(SemanticAnalyzer.generateErrorMessage(
+                  expr,
+                  ErrorMsg.INVALID_MAPINDEX_CONSTANT.getMsg()));
           }
           if (!(((ExprNodeConstantDesc) children.get(1)).getTypeInfo()
               .equals(((MapTypeInfo) myt).getMapKeyTypeInfo()))) {

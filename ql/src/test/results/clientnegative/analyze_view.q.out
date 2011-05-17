@@ -4,9 +4,9 @@ POSTHOOK: query: DROP VIEW av
 POSTHOOK: type: DROPVIEW
 PREHOOK: query: CREATE VIEW av AS SELECT * FROM src
 PREHOOK: type: CREATEVIEW
-PREHOOK: Output: file:/var/folders/7P/7PeC14kXFIWq0PIYyexGbmKuXUk/-Tmp-/jsichi/hive_2011-02-01_17-50-22_779_44083551773069928/-mr-10000
+PREHOOK: Output: file:/var/folders/5V/5V4Zq77qGD4aSK9m8V3frVsFdRU/-Tmp-/salbiz/hive_2011-05-10_11-05-15_170_7006434946918241536/-mr-10000
 POSTHOOK: query: CREATE VIEW av AS SELECT * FROM src
 POSTHOOK: type: CREATEVIEW
 POSTHOOK: Output: default@av
-POSTHOOK: Output: file:/var/folders/7P/7PeC14kXFIWq0PIYyexGbmKuXUk/-Tmp-/jsichi/hive_2011-02-01_17-50-22_779_44083551773069928/-mr-10000
+POSTHOOK: Output: file:/var/folders/5V/5V4Zq77qGD4aSK9m8V3frVsFdRU/-Tmp-/salbiz/hive_2011-05-10_11-05-15_170_7006434946918241536/-mr-10000
 FAILED: Error in semantic analysis: ANALYZE is not supported for views

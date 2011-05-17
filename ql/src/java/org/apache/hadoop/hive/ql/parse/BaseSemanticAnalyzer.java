@@ -136,8 +136,8 @@ public abstract class BaseSemanticAnalyzer {
               .getText());
           if (!lineDelim.equals("\n")
               && !lineDelim.equals("10")) {
-            throw new SemanticException(
-                ErrorMsg.LINES_TERMINATED_BY_NON_NEWLINE.getMsg());
+            throw new SemanticException(SemanticAnalyzer.generateErrorMessage(rowChild,
+                ErrorMsg.LINES_TERMINATED_BY_NON_NEWLINE.getMsg()));
           }
           break;
         default:
