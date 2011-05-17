@@ -752,4 +752,13 @@ public class HiveConf extends Configuration {
     return "_col" + pos;
   }
 
+  public static int getPositionFromInternalName(String internalName) {
+    char pos = internalName.charAt(internalName.length()-1);
+    if (Character.isDigit(pos)) {
+      return Character.digit(pos, 10);
+    } else{
+      return -1;
+    }
+  }
+
 }

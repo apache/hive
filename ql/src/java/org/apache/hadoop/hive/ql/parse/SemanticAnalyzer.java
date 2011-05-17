@@ -421,6 +421,19 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     return exprs;
   }
 
+  public static String generateErrorMessage(ASTNode ast, String message) {
+    StringBuilder sb = new StringBuilder();
+    sb.append(ast.getLine());
+    sb.append(":");
+    sb.append(ast.getCharPositionInLine());
+    sb.append(" ");
+    sb.append(message);
+    sb.append(". Error encountered near token '");
+    sb.append(ErrorMsg.getText(ast));
+    sb.append("'");
+    return sb.toString();
+  }
+
   /**
    * Goes though the tabref tree and finds the alias for the table. Once found,
    * it records the table name-> alias association in aliasToTabs. It also makes
@@ -481,8 +494,9 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       // TODO: For now only support sampling on up to two columns
       // Need to change it to list of columns
       if (sampleCols.size() > 2) {
-        throw new SemanticException(ErrorMsg.SAMPLE_RESTRICTION.getMsg(tabref
-            .getChild(0)));
+        throw new SemanticException(generateErrorMessage(
+              (ASTNode) tabref.getChild(0),
+              ErrorMsg.SAMPLE_RESTRICTION.getMsg()));
       }
       qb.getParseInfo().setTabSample(
           alias,
@@ -501,15 +515,16 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       String inputFormat = HiveConf.getVar(conf, HiveConf.ConfVars.HIVEINPUTFORMAT);
       if (!inputFormat.equals(
         CombineHiveInputFormat.class.getName())) {
-        throw new SemanticException(
-            "Percentage sampling is not supported in " + inputFormat);
+        throw new SemanticException(generateErrorMessage((ASTNode) tabref.getChild(1),
+            "Percentage sampling is not supported in " + inputFormat));
       }
       ASTNode sampleClause = (ASTNode) tabref.getChild(1);
       String alias_id = getAliasId(alias, qb);
       String strPercentage = unescapeIdentifier(sampleClause.getChild(0).getText());
       Double percent = Double.valueOf(strPercentage).doubleValue();
       if (percent < 0  || percent > 100) {
-        throw new SemanticException("Sampling percentage should be between 0 and 100.");
+        throw new SemanticException(generateErrorMessage(sampleClause,
+                    "Sampling percentage should be between 0 and 100"));
       }
       nameToSplitSample.put(alias_id, new SplitSample(
           percent, conf.getIntVar(ConfVars.HIVESAMPLERANDOMNUM)));
@@ -583,7 +598,8 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     int numChildren = join.getChildCount();
     if ((numChildren != 2) && (numChildren != 3)
         && join.getToken().getType() != HiveParser.TOK_UNIQUEJOIN) {
-      throw new SemanticException("Join with multiple children");
+      throw new SemanticException(generateErrorMessage(join,
+                  "Join with multiple children"));
     }
 
     for (int num = 0; num < numChildren; num++) {
@@ -713,7 +729,8 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       case HiveParser.TOK_FROM:
         int child_count = ast.getChildCount();
         if (child_count != 1) {
-          throw new SemanticException("Multiple Children " + child_count);
+          throw new SemanticException(generateErrorMessage(ast,
+                      "Multiple Children " + child_count));
         }
 
         // Check if this is a subquery / lateral view
@@ -742,11 +759,11 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         // select list
         qbp.setDistributeByExprForClause(ctx_1.dest, ast);
         if (qbp.getClusterByForClause(ctx_1.dest) != null) {
-          throw new SemanticException(ErrorMsg.CLUSTERBY_DISTRIBUTEBY_CONFLICT
-              .getMsg(ast));
+          throw new SemanticException(generateErrorMessage(ast,
+                ErrorMsg.CLUSTERBY_DISTRIBUTEBY_CONFLICT.getMsg()));
         } else if (qbp.getOrderByForClause(ctx_1.dest) != null) {
-          throw new SemanticException(ErrorMsg.ORDERBY_DISTRIBUTEBY_CONFLICT
-              .getMsg(ast));
+          throw new SemanticException(generateErrorMessage(ast,
+                ErrorMsg.ORDERBY_DISTRIBUTEBY_CONFLICT.getMsg()));
         }
         break;
 
@@ -755,11 +772,11 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         // select list
         qbp.setSortByExprForClause(ctx_1.dest, ast);
         if (qbp.getClusterByForClause(ctx_1.dest) != null) {
-          throw new SemanticException(ErrorMsg.CLUSTERBY_SORTBY_CONFLICT
-              .getMsg(ast));
+          throw new SemanticException(generateErrorMessage(ast,
+                ErrorMsg.CLUSTERBY_SORTBY_CONFLICT.getMsg()));
         } else if (qbp.getOrderByForClause(ctx_1.dest) != null) {
-          throw new SemanticException(ErrorMsg.ORDERBY_SORTBY_CONFLICT
-              .getMsg(ast));
+          throw new SemanticException(generateErrorMessage(ast,
+                ErrorMsg.ORDERBY_SORTBY_CONFLICT.getMsg()));
         }
 
         break;
@@ -769,8 +786,8 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         // select list
         qbp.setOrderByExprForClause(ctx_1.dest, ast);
         if (qbp.getClusterByForClause(ctx_1.dest) != null) {
-          throw new SemanticException(ErrorMsg.CLUSTERBY_ORDERBY_CONFLICT
-              .getMsg(ast));
+          throw new SemanticException(generateErrorMessage(ast,
+                ErrorMsg.CLUSTERBY_ORDERBY_CONFLICT.getMsg()));
         }
         break;
 
@@ -778,8 +795,8 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         // Get the groupby aliases - these are aliased to the entries in the
         // select list
         if (qbp.getSelForClause(ctx_1.dest).getToken().getType() == HiveParser.TOK_SELECTDI) {
-          throw new SemanticException(ErrorMsg.SELECT_DISTINCT_WITH_GROUPBY
-              .getMsg(ast));
+          throw new SemanticException(generateErrorMessage(ast,
+                ErrorMsg.SELECT_DISTINCT_WITH_GROUPBY.getMsg()));
         }
         qbp.setGroupByExprForClause(ctx_1.dest, ast);
         skipRecursion = true;
@@ -811,7 +828,8 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         // explicitly say:
         // select * from (subq1 union subq2) subqalias
         if (!qbp.getIsSubQ()) {
-          throw new SemanticException(ErrorMsg.UNION_NOTIN_SUBQ.getMsg());
+          throw new SemanticException(generateErrorMessage(ast,
+                                        ErrorMsg.UNION_NOTIN_SUBQ.getMsg()));
         }
 
       default:
@@ -886,8 +904,9 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         }
 
         if (!InputFormat.class.isAssignableFrom(tab.getInputFormatClass())) {
-          throw new SemanticException(ErrorMsg.INVALID_INPUT_FORMAT_TYPE
-              .getMsg(qb.getParseInfo().getSrcForAlias(alias)));
+          throw new SemanticException(generateErrorMessage(
+                qb.getParseInfo().getSrcForAlias(alias),
+                ErrorMsg.INVALID_INPUT_FORMAT_TYPE.getMsg()));
         }
 
         qb.getMetaData().setSrcForAlias(alias, tab);
@@ -898,7 +917,8 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
             try {
               ts.partitions = db.getPartitionsByNames(ts.tableHandle, ts.partSpec);
             } catch (HiveException e) {
-              throw new SemanticException("Cannot get partitions for " + ts.partSpec, e);
+              throw new SemanticException(generateErrorMessage(qb.getParseInfo().getSrcForAlias(alias),
+                          "Cannot get partitions for " + ts.partSpec), e);
             }
           }
           qb.getParseInfo().addTableSpec(alias, ts);
@@ -973,7 +993,8 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
                 fname = ctx.getExternalTmpFileURI(
                     FileUtils.makeQualified(new Path(location), conf).toUri());
               } catch (Exception e) {
-                throw new SemanticException("Error creating temporary folder on: " + location, e);
+                throw new SemanticException(generateErrorMessage(ast,
+                      "Error creating temporary folder on: " + location), e);
               }
             } else {
               qb.setIsQuery(true);
@@ -986,8 +1007,8 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
           break;
         }
         default:
-          throw new SemanticException("Unknown Token Type "
-              + ast.getToken().getType());
+          throw new SemanticException(generateErrorMessage(ast,
+                "Unknown Token Type " + ast.getToken().getType()));
         }
       }
     } catch (HiveException e) {
@@ -1536,6 +1557,10 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     return (end == -1) ? "" : cmd.substring(end, cmd.length());
   }
 
+  private static int getPositionFromInternalName(String internalName) {
+    return HiveConf.getPositionFromInternalName(internalName);
+  }
+
   private String fetchFilesNotInLocalFilesystem(String cmd) {
     SessionState ss = SessionState.get();
     String progName = getScriptProgName(cmd);
@@ -1615,8 +1640,8 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
           String lineDelim = unescapeSQLString(rowChild.getChild(0).getText());
           tblDesc.getProperties().setProperty(Constants.LINE_DELIM, lineDelim);
           if (!lineDelim.equals("\n") && !lineDelim.equals("10")) {
-            throw new SemanticException(
-                ErrorMsg.LINES_TERMINATED_BY_NON_NEWLINE.getMsg());
+            throw new SemanticException(generateErrorMessage(rowChild,
+                    ErrorMsg.LINES_TERMINATED_BY_NON_NEWLINE.getMsg()));
           }
           break;
         default:
@@ -2017,12 +2042,15 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     if (isUDTF) {
       // Only support a single expression when it's a UDTF
       if (selExprList.getChildCount() > 1) {
-        throw new SemanticException(ErrorMsg.UDTF_MULTIPLE_EXPR.getMsg());
+        throw new SemanticException(generateErrorMessage(
+                    (ASTNode) selExprList.getChild(1),
+                    ErrorMsg.UDTF_MULTIPLE_EXPR.getMsg()));
       }
       // Require an AS for UDTFs for column aliases
       ASTNode selExpr = (ASTNode) selExprList.getChild(posn);
       if (selExpr.getChildCount() < 2) {
-        throw new SemanticException(ErrorMsg.UDTF_REQUIRE_AS.getMsg());
+        throw new SemanticException(generateErrorMessage(udtfExpr,
+                    ErrorMsg.UDTF_REQUIRE_AS.getMsg()));
       }
       // Get the column / table aliases from the expression. Start from 1 as
       // 0 is the TOK_FUNCTION
@@ -2082,7 +2110,9 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       // This check is not needed and invalid when there is a transform b/c the
       // AST's are slightly different.
       if (!isInTransform && !isUDTF && child.getChildCount() > 2) {
-        throw new SemanticException(ErrorMsg.INVALID_AS.getMsg());
+        throw new SemanticException(generateErrorMessage(
+                    (ASTNode) child.getChild(2),
+                    ErrorMsg.INVALID_AS.getMsg()));
       }
 
       // The real expression
@@ -3610,12 +3640,16 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       List<FieldSchema> parts = dest_tab.getPartitionKeys();
       if (parts != null && parts.size() > 0) { // table is partitioned
         if (partSpec== null || partSpec.size() == 0) { // user did NOT specify partition
-          throw new SemanticException(ErrorMsg.NEED_PARTITION_ERROR.getMsg());
+          throw new SemanticException(generateErrorMessage(
+                qb.getParseInfo().getDestForClause(dest),
+                ErrorMsg.NEED_PARTITION_ERROR.getMsg()));
         }
         // the HOLD_DDLTIIME hint should not be used with dynamic partition since the
         // newly generated partitions should always update their DDLTIME
         if (holdDDLTime) {
-          throw new SemanticException(ErrorMsg.HOLD_DDLTIME_ON_NONEXIST_PARTITIONS.getMsg());
+          throw new SemanticException(generateErrorMessage(
+                qb.getParseInfo().getDestForClause(dest),
+                ErrorMsg.HOLD_DDLTIME_ON_NONEXIST_PARTITIONS.getMsg()));
         }
         dpCtx = qbm.getDPCtx(dest);
         if (dpCtx == null) {
@@ -3640,7 +3674,9 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
           HiveConf.setBoolVar(conf, HiveConf.ConfVars.HIVEJOBPROGRESS, true);
 
         } else { // QBMetaData.DEST_PARTITION capture the all-SP case
-          throw new SemanticException(ErrorMsg.DYNAMIC_PARTITION_DISABLED.getMsg());
+          throw new SemanticException(generateErrorMessage(
+                qb.getParseInfo().getDestForClause(dest),
+                ErrorMsg.DYNAMIC_PARTITION_DISABLED.getMsg()));
         }
         if (dpCtx.getSPPath() != null) {
           dest_path = new Path(dest_tab.getPath(), dpCtx.getSPPath());
@@ -3729,7 +3765,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
 
       if ("har".equalsIgnoreCase(dest_path.toUri().getScheme())) {
         throw new SemanticException(ErrorMsg.OVERWRITE_ARCHIVED_PART
-            .getMsg());
+            .getMsg(qb.getParseInfo().getDestForClause(dest)));
       }
       queryTmpdir = ctx.getExternalTmpFileURI(dest_path.toUri());
       table_desc = Utilities.getTableDesc(dest_tab);
@@ -3747,7 +3783,9 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         try {
           Partition part = db.getPartition(dest_tab, dest_part.getSpec(), false);
           if (part == null) {
-            throw new SemanticException(ErrorMsg.HOLD_DDLTIME_ON_NONEXIST_PARTITIONS.getMsg());
+            throw new SemanticException(generateErrorMessage(
+                  qb.getParseInfo().getDestForClause(dest),
+                  ErrorMsg.HOLD_DDLTIME_ON_NONEXIST_PARTITIONS.getMsg()));
           }
         } catch (HiveException e) {
           throw new SemanticException(e);
@@ -4394,8 +4432,8 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         if (conf.getVar(HiveConf.ConfVars.HIVEMAPREDMODE).equalsIgnoreCase(
             "strict")
             && limit == null) {
-          throw new SemanticException(ErrorMsg.NO_LIMIT_WITH_ORDERBY
-              .getMsg(sortExprs));
+          throw new SemanticException(generateErrorMessage(sortExprs,
+                ErrorMsg.NO_LIMIT_WITH_ORDERBY.getMsg()));
         }
       }
     }
@@ -5852,6 +5890,8 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     HashMap<String, ColumnInfo> leftmap = leftRR.getFieldMap(leftalias);
     HashMap<String, ColumnInfo> rightmap = rightRR.getFieldMap(rightalias);
     // make sure the schemas of both sides are the same
+    ASTNode tabref = qb.getAliases().isEmpty() ? null :
+                       qb.getParseInfo().getSrcForAlias(qb.getAliases().get(0));
     if (leftmap.size() != rightmap.size()) {
       throw new SemanticException("Schema of both sides of union should match.");
     }
@@ -5860,26 +5900,30 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       ColumnInfo lInfo = lEntry.getValue();
       ColumnInfo rInfo = rightmap.get(field);
       if (rInfo == null) {
-        throw new SemanticException(
+        throw new SemanticException(generateErrorMessage(tabref,
             "Schema of both sides of union should match. " + rightalias
-            + " does not have the field " + field);
+            + " does not have the field " + field));
       }
       if (lInfo == null) {
-        throw new SemanticException(
+        throw new SemanticException(generateErrorMessage(tabref,
             "Schema of both sides of union should match. " + leftalias
-            + " does not have the field " + field);
+            + " does not have the field " + field));
       }
       if (!lInfo.getInternalName().equals(rInfo.getInternalName())) {
-        throw new SemanticException(
-            "Schema of both sides of union should match: " + field + ":"
-            + lInfo.getInternalName() + " " + rInfo.getInternalName());
+        throw new SemanticException(generateErrorMessage(tabref,
+            "Schema of both sides of union should match: field " + field + ":"
+            + " appears on the left side of the UNION at column position: " +
+            getPositionFromInternalName(lInfo.getInternalName())
+            + ", and on the right side of the UNION at column position: " +
+            getPositionFromInternalName(rInfo.getInternalName())
+            + ". Column positions should match for a UNION"));
       }
       if (!lInfo.getType().getTypeName().equals(rInfo.getType().getTypeName())) {
-        throw new SemanticException(
+        throw new SemanticException(generateErrorMessage(tabref,
             "Schema of both sides of union should match: Column " + field
             + " is of type " + lInfo.getType().getTypeName()
             + " on first table and type " + rInfo.getType().getTypeName()
-            + " on second table");
+            + " on second table"));
       }
     }
 
@@ -7135,8 +7179,9 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       int explicitColCount = imposedSchema.size();
       int derivedColCount = derivedSchema.size();
       if (explicitColCount != derivedColCount) {
-        throw new SemanticException(ErrorMsg.VIEW_COL_MISMATCH
-            .getMsg(viewSelect));
+        throw new SemanticException(generateErrorMessage(
+                    viewSelect,
+                    ErrorMsg.VIEW_COL_MISMATCH.getMsg()));
       }
     }
 

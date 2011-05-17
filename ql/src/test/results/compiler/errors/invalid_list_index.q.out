@@ -1,2 +1,2 @@
 Semantic Exception: 
-Line 2:56 Non-constant expressions for array indexes not supported 'abc'
+2:74 Non-constant expressions for array indexes not supported. Error encountered near token ''abc''

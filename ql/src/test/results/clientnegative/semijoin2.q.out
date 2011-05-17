@@ -1,1 +1,1 @@
-FAILED: Error in semantic analysis: Line 2:70 Invalid table alias or column reference b
+FAILED: Error in semantic analysis: Line 2:70 Invalid table alias or column reference 'b'
