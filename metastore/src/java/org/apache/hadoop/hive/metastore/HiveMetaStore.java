@@ -667,7 +667,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
         Path path = new Path(db.getLocationUri()).getParent();
         if (!wh.isWritable(path)) {
           throw new MetaException("Database not dropped since " +
-              path + " is not writable by " + 
+              path + " is not writable by " +
               hiveConf.getUser());
         }
         if (ms.dropDatabase(name)) {
@@ -1040,7 +1040,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
           tblPath = new Path(tbl.getSd().getLocation());
           if (!wh.isWritable(tblPath.getParent())) {
             throw new MetaException("Table metadata not deleted since " +
-                tblPath.getParent() + " is not writable by " + 
+                tblPath.getParent() + " is not writable by " +
                 hiveConf.getUser());
           }
         }
@@ -1147,7 +1147,6 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       Path partLocation = null;
       try {
         ms.openTransaction();
-        part = new Partition();
         part.setDbName(dbName);
         part.setTableName(tableName);
         part.setValues(part_vals);
@@ -1428,7 +1427,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
           archiveParentDir = MetaStoreUtils.getOriginalLocation(part);
           if (!wh.isWritable(archiveParentDir.getParent())) {
             throw new MetaException("Table partition not deleted since " +
-                archiveParentDir.getParent() + " is not writable by " + 
+                archiveParentDir.getParent() + " is not writable by " +
                 hiveConf.getUser());
           }
         }
@@ -1440,7 +1439,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
           partPath = new Path(part.getSd().getLocation());
           if (!wh.isWritable(partPath.getParent())) {
             throw new MetaException("Table partition not deleted since " +
-                partPath.getParent() + " is not writable by " + 
+                partPath.getParent() + " is not writable by " +
                 hiveConf.getUser());
           }
         }
@@ -2314,7 +2313,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
             tblPath = new Path(tbl.getSd().getLocation());
             if (!wh.isWritable(tblPath.getParent())) {
               throw new MetaException("Index table metadata not deleted since " +
-                  tblPath.getParent() + " is not writable by " + 
+                  tblPath.getParent() + " is not writable by " +
                   hiveConf.getUser());
             }
           }

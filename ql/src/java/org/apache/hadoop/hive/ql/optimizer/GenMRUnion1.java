@@ -137,7 +137,6 @@ public class GenMRUnion1 implements NodeProcessor {
       ctx.setUnionTask(union, uCtxTask);
     } else {
       uTask = uCtxTask.getUTask();
-      uPlan = (MapredWork) uTask.getWork();
     }
 
     // If there is a mapjoin at position 'pos'

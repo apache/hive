@@ -208,7 +208,7 @@ public class FetchWork implements Serializable {
       return "null fetchwork";
     }
 
-    String ret = new String("partition = ");
+    String ret = "partition = ";
     for (String part : partDir) {
       ret = ret.concat(part);
     }

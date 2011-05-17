@@ -1225,7 +1225,6 @@ public class ObjectStore implements RawStore, Configurable {
       q.declareParameters("java.lang.String t1, java.lang.String t2");
       q.setResult("partitionName");
       Collection names = (Collection) q.execute(dbName, tableName);
-      pns = new ArrayList<String>();
       for (Iterator i = names.iterator(); i.hasNext();) {
         pns.add((String) i.next());
       }
@@ -1771,7 +1770,6 @@ public class ObjectStore implements RawStore, Configurable {
       q.declareParameters("java.lang.String t1, java.lang.String t2");
       q.setResult("indexName");
       Collection names = (Collection) q.execute(dbName, origTableName);
-      pns = new ArrayList<String>();
       for (Iterator i = names.iterator(); i.hasNext();) {
         pns.add((String) i.next());
       }
