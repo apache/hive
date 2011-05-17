@@ -158,29 +158,33 @@ public class HadoopJobExecHelper {
       Runtime.getRuntime().addShutdownHook(new Thread() {
         @Override
         public void run() {
-          synchronized (runningJobKillURIs) {
-            for (String uri : runningJobKillURIs.values()) {
-              try {
-                System.err.println("killing job with: " + uri);
-                java.net.HttpURLConnection conn = (java.net.HttpURLConnection) new java.net.URL(uri)
-                    .openConnection();
-                conn.setRequestMethod("POST");
-                int retCode = conn.getResponseCode();
-                if (retCode != 200) {
-                  System.err.println("Got an error trying to kill job with URI: " + uri + " = "
-                      + retCode);
-                }
-              } catch (Exception e) {
-                System.err.println("trying to kill job, caught: " + e);
-                // do nothing
-              }
-            }
-          }
+          killRunningJobs();
         }
       });
     }
   }
-  
+
+  public static void killRunningJobs() {
+    synchronized (runningJobKillURIs) {
+      for (String uri : runningJobKillURIs.values()) {
+        try {
+          System.err.println("killing job with: " + uri);
+          java.net.HttpURLConnection conn = (java.net.HttpURLConnection) new java.net.URL(uri)
+               .openConnection();
+          conn.setRequestMethod("POST");
+          int retCode = conn.getResponseCode();
+          if (retCode != 200) {
+            System.err.println("Got an error trying to kill job with URI: " + uri + " = "
+                + retCode);
+          }
+        } catch (Exception e) {
+          System.err.println("trying to kill job, caught: " + e);
+          // do nothing
+        }
+      }
+    }
+  }
+
   public boolean checkFatalErrors(Counters ctrs, StringBuilder errMsg) {
     if (ctrs == null) {
       // hadoop might return null if it cannot locate the job.

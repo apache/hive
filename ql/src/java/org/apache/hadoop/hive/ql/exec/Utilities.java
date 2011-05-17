@@ -85,6 +85,8 @@ import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.fs.PathFilter;
+import org.apache.hadoop.hive.common.HiveInterruptCallback;
+import org.apache.hadoop.hive.common.HiveInterruptUtils;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.Warehouse;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
@@ -1619,99 +1621,98 @@ public final class Utilities {
       // Process the case when name node call is needed
       final Map<String, ContentSummary> resultMap = new ConcurrentHashMap<String, ContentSummary>();
       ArrayList<Future<?>> results = new ArrayList<Future<?>>();
-      ThreadPoolExecutor executor = null;
+      final ThreadPoolExecutor executor;
       int maxThreads = ctx.getConf().getInt("mapred.dfsclient.parallelism.max", 0);
       if (pathNeedProcess.size() > 1 && maxThreads > 1) {
         int numExecutors = Math.min(pathNeedProcess.size(), maxThreads);
         LOG.info("Using " + numExecutors + " threads for getContentSummary");
         executor = new ThreadPoolExecutor(numExecutors, numExecutors, 60, TimeUnit.SECONDS,
             new LinkedBlockingQueue<Runnable>());
+      } else {
+        executor = null;
       }
 
-      //
-      Configuration conf = ctx.getConf();
-      JobConf jobConf = new JobConf(conf);
-      for (String path : pathNeedProcess) {
-        final Path p = new Path(path);
-        final String pathStr = path;
-        // All threads share the same Configuration and JobConf based on the
-        // assumption that they are thread safe if only read operations are
-        // executed. It is not stated in Hadoop's javadoc, the sourcce codes
-        // clearly showed that they made efforts for it and we believe it is
-        // thread safe. Will revisit this piece of codes if we find the assumption
-        // is not correct.
-        final Configuration myConf = conf;
-        final JobConf myJobConf = jobConf;
-        final PartitionDesc partDesc = work.getPathToPartitionInfo().get(
-            p.toString());
-        Runnable r = new Runnable() {
-          public void run() {
-            try {
-              ContentSummary resultCs;
-
-              Class<? extends InputFormat> inputFormatCls = partDesc
-                  .getInputFileFormatClass();
-              InputFormat inputFormatObj = HiveInputFormat.getInputFormatFromCache(
-                  inputFormatCls, myJobConf);
-              if (inputFormatObj instanceof ContentSummaryInputFormat) {
-                resultCs = ((ContentSummaryInputFormat) inputFormatObj).getContentSummary(p,
-                    myJobConf);
-              } else {
-                FileSystem fs = p.getFileSystem(myConf);
-                resultCs = fs.getContentSummary(p);
-              }
-              resultMap.put(pathStr, resultCs);
-            } catch (IOException e) {
-              // We safely ignore this exception for summary data.
-              // We don't update the cache to protect it from polluting other
-              // usages. The worst case is that IOException will always be
-              // retried for another getInputSummary(), which is fine as
-              // IOException is not considered as a common case.
-              LOG.info("Cannot get size of " + pathStr + ". Safely ignored.");
-            }
+      HiveInterruptCallback interrup = HiveInterruptUtils.add(new HiveInterruptCallback() {
+        @Override
+        public void interrupt() {
+          if (executor != null) {
+            executor.shutdownNow();
           }
-        };
-
-        if (executor == null) {
-          r.run();
-        } else {
-          Future<?> result = executor.submit(r);
-          results.add(result);
         }
-      }
+      });
+      try {
+        Configuration conf = ctx.getConf();
+        JobConf jobConf = new JobConf(conf);
+        for (String path : pathNeedProcess) {
+          final Path p = new Path(path);
+          final String pathStr = path;
+          // All threads share the same Configuration and JobConf based on the
+          // assumption that they are thread safe if only read operations are
+          // executed. It is not stated in Hadoop's javadoc, the sourcce codes
+          // clearly showed that they made efforts for it and we believe it is
+          // thread safe. Will revisit this piece of codes if we find the assumption
+          // is not correct.
+          final Configuration myConf = conf;
+          final JobConf myJobConf = jobConf;
+          final PartitionDesc partDesc = work.getPathToPartitionInfo().get(
+              p.toString());
+          Runnable r = new Runnable() {
+            public void run() {
+              try {
+                ContentSummary resultCs;
 
-      if (executor != null) {
-        for (Future<?> result : results) {
-          boolean executorDone = false;
-          do {
-            try {
-              result.get();
-              executorDone = true;
-            } catch (InterruptedException e) {
-              LOG.info("Interrupted when waiting threads: ", e);
-              Thread.currentThread().interrupt();
-            } catch (ExecutionException e) {
-              throw new IOException(e);
+                Class<? extends InputFormat> inputFormatCls = partDesc
+                    .getInputFileFormatClass();
+                InputFormat inputFormatObj = HiveInputFormat.getInputFormatFromCache(
+                    inputFormatCls, myJobConf);
+                if (inputFormatObj instanceof ContentSummaryInputFormat) {
+                  resultCs = ((ContentSummaryInputFormat) inputFormatObj).getContentSummary(p,
+                      myJobConf);
+                } else {
+                  FileSystem fs = p.getFileSystem(myConf);
+                  resultCs = fs.getContentSummary(p);
+                }
+                resultMap.put(pathStr, resultCs);
+              } catch (IOException e) {
+                // We safely ignore this exception for summary data.
+                // We don't update the cache to protect it from polluting other
+                // usages. The worst case is that IOException will always be
+                // retried for another getInputSummary(), which is fine as
+                // IOException is not considered as a common case.
+                LOG.info("Cannot get size of " + pathStr + ". Safely ignored.");
+              }
             }
-          } while (!executorDone);
+          };
+
+          if (executor == null) {
+            r.run();
+          } else {
+            Future<?> result = executor.submit(r);
+            results.add(result);
+          }
         }
-        executor.shutdown();
+
+        if (executor != null) {
+          executor.shutdown();
+        }
+        HiveInterruptUtils.checkInterrupted();
+        for (Map.Entry<String, ContentSummary> entry : resultMap.entrySet()) {
+          ContentSummary cs = entry.getValue();
+
+          summary[0] += cs.getLength();
+          summary[1] += cs.getFileCount();
+          summary[2] += cs.getDirectoryCount();
+
+          ctx.addCS(entry.getKey(), cs);
+          LOG.info("Cache Content Summary for " + entry.getKey() + " length: " + cs.getLength()
+              + " file count: "
+              + cs.getFileCount() + " directory count: " + cs.getDirectoryCount());
+        }
+
+        return new ContentSummary(summary[0], summary[1], summary[2]);
+      } finally {
+        HiveInterruptUtils.remove(interrup);
       }
-
-      for (Map.Entry<String, ContentSummary> entry : resultMap.entrySet()) {
-        ContentSummary cs = entry.getValue();
-
-        summary[0] += cs.getLength();
-        summary[1] += cs.getFileCount();
-        summary[2] += cs.getDirectoryCount();
-
-        ctx.addCS(entry.getKey(), cs);
-        LOG.info("Cache Content Summary for " + entry.getKey() + " length: " + cs.getLength()
-            + " file count: "
-            + cs.getFileCount() + " directory count: " + cs.getDirectoryCount());
-      }
-
-      return new ContentSummary(summary[0], summary[1], summary[2]);
     }
   }
 
