@@ -650,7 +650,7 @@ public final class ColumnPrunerProcFactory {
       List<TableDesc> valueTableDescs = new ArrayList<TableDesc>();
       for (int pos = 0; pos < op.getParentOperators().size(); pos++) {
         List<ExprNodeDesc> valueCols = conf.getExprs()
-            .get(new Byte((byte) pos));
+            .get(Byte.valueOf((byte) pos));
         StringBuilder keyOrder = new StringBuilder();
         for (int i = 0; i < valueCols.size(); i++) {
           keyOrder.append("+");

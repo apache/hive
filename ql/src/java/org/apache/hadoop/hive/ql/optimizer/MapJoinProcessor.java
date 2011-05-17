@@ -24,7 +24,6 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -45,7 +44,6 @@ import org.apache.hadoop.hive.ql.exec.ReduceSinkOperator;
 import org.apache.hadoop.hive.ql.exec.RowSchema;
 import org.apache.hadoop.hive.ql.exec.ScriptOperator;
 import org.apache.hadoop.hive.ql.exec.SelectOperator;
-import org.apache.hadoop.hive.ql.exec.TableScanOperator;
 import org.apache.hadoop.hive.ql.exec.UnionOperator;
 import org.apache.hadoop.hive.ql.lib.DefaultRuleDispatcher;
 import org.apache.hadoop.hive.ql.lib.Dispatcher;
@@ -353,7 +351,7 @@ public class MapJoinProcessor implements Transform {
         }
       }
 
-      valueExprMap.put(new Byte((byte) pos), values);
+      valueExprMap.put(Byte.valueOf((byte) pos), values);
     }
 
     Map<Byte, List<ExprNodeDesc>> filterMap = desc.getFilters();
@@ -392,7 +390,7 @@ public class MapJoinProcessor implements Transform {
       newPar[pos++] = o;
     }
 
-    List<ExprNodeDesc> keyCols = keyExprMap.get(new Byte((byte) 0));
+    List<ExprNodeDesc> keyCols = keyExprMap.get(Byte.valueOf((byte) 0));
     StringBuilder keyOrder = new StringBuilder();
     for (int i = 0; i < keyCols.size(); i++) {
       keyOrder.append("+");
@@ -405,14 +403,14 @@ public class MapJoinProcessor implements Transform {
     List<TableDesc> valueFiltedTableDescs = new ArrayList<TableDesc>();
 
     for (pos = 0; pos < newParentOps.size(); pos++) {
-      List<ExprNodeDesc> valueCols = valueExprMap.get(new Byte((byte) pos));
+      List<ExprNodeDesc> valueCols = valueExprMap.get(Byte.valueOf((byte) pos));
       int length = valueCols.size();
       List<ExprNodeDesc> valueFilteredCols = new ArrayList<ExprNodeDesc>(length);
       // deep copy expr node desc
       for (int i = 0; i < length; i++) {
         valueFilteredCols.add(valueCols.get(i).clone());
       }
-      List<ExprNodeDesc> valueFilters = filterMap.get(new Byte((byte) pos));
+      List<ExprNodeDesc> valueFilters = filterMap.get(Byte.valueOf((byte) pos));
 
       if (valueFilters != null && valueFilters.size() != 0 && pos != mapJoinPos) {
         ExprNodeColumnDesc isFilterDesc = new ExprNodeColumnDesc(TypeInfoFactory
@@ -483,7 +481,7 @@ public class MapJoinProcessor implements Transform {
   /**
    * Get a list of big table candidates. Only the tables in the returned set can
    * be used as big table in the join operation.
-   * 
+   *
    * The logic here is to scan the join condition array from left to right. If
    * see a inner join, and the bigTableCandidates is empty or the outer join
    * that we last saw is a right outer join, add both side of this inner join to
@@ -496,8 +494,8 @@ public class MapJoinProcessor implements Transform {
    * the right side of a right outer join always win. If see a full outer join,
    * return null immediately (no one can be the big table, can not do a
    * mapjoin).
-   * 
-   * 
+   *
+   *
    * @param condns
    * @return
    */
@@ -507,7 +505,7 @@ public class MapJoinProcessor implements Transform {
     boolean seenOuterJoin = false;
     Set<Integer> seenPostitions = new HashSet<Integer>();
     Set<Integer> leftPosListOfLastRightOuterJoin = new HashSet<Integer>();
-    
+
     // is the outer join that we saw most recently is a right outer join?
     boolean lastSeenRightOuterJoin = false;
     for (JoinCondDesc condn : condns) {
@@ -527,7 +525,7 @@ public class MapJoinProcessor implements Transform {
         if(bigTableCandidates.size() == 0) {
           bigTableCandidates.add(condn.getLeft());
         }
-        
+
         lastSeenRightOuterJoin = false;
       } else if (joinType == JoinDesc.RIGHT_OUTER_JOIN) {
         seenOuterJoin = true;
@@ -539,7 +537,7 @@ public class MapJoinProcessor implements Transform {
 
         bigTableCandidates.clear();
         bigTableCandidates.add(condn.getRight());
-      } else if (joinType == JoinDesc.INNER_JOIN) {        
+      } else if (joinType == JoinDesc.INNER_JOIN) {
         if (!seenOuterJoin || lastSeenRightOuterJoin) {
           // is the left was at the left side of a right outer join?
           if (!leftPosListOfLastRightOuterJoin.contains(condn.getLeft())) {
@@ -698,10 +696,10 @@ public class MapJoinProcessor implements Transform {
     // the operator stack.
     // The dispatcher generates the plan from the operator tree
     Map<Rule, NodeProcessor> opRules = new LinkedHashMap<Rule, NodeProcessor>();
-    opRules.put(new RuleRegExp(new String("R0"), "MAPJOIN%"), getCurrentMapJoin());
-    opRules.put(new RuleRegExp(new String("R1"), "MAPJOIN%.*FS%"), getMapJoinFS());
-    opRules.put(new RuleRegExp(new String("R2"), "MAPJOIN%.*RS%"), getMapJoinDefault());
-    opRules.put(new RuleRegExp(new String("R4"), "MAPJOIN%.*UNION%"), getMapJoinDefault());
+    opRules.put(new RuleRegExp("R0", "MAPJOIN%"), getCurrentMapJoin());
+    opRules.put(new RuleRegExp("R1", "MAPJOIN%.*FS%"), getMapJoinFS());
+    opRules.put(new RuleRegExp("R2", "MAPJOIN%.*RS%"), getMapJoinDefault());
+    opRules.put(new RuleRegExp("R4", "MAPJOIN%.*UNION%"), getMapJoinDefault());
 
     // The dispatcher fires the processor corresponding to the closest matching
     // rule and passes the context along

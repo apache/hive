@@ -333,7 +333,7 @@ public class HWISessionItem implements Runnable, Comparable<HWISessionItem> {
           Driver qp = (Driver) proc;
           qp.setTryCount(Integer.MAX_VALUE);
           try {
-            queryRet.add(new Integer(qp.run(cmd).getResponseCode()));
+          queryRet.add(Integer.valueOf(qp.run(cmd).getResponseCode()));
           ArrayList<String> res = new ArrayList<String>();
           try {
             while (qp.getResults(res)) {
@@ -367,7 +367,7 @@ public class HWISessionItem implements Runnable, Comparable<HWISessionItem> {
           }
         } else {
           try {
-            queryRet.add(new Integer(proc.run(cmd_1).getResponseCode()));
+            queryRet.add(Integer.valueOf(proc.run(cmd_1).getResponseCode()));
           } catch (CommandNeedRetryException e) {
             // this should never happen if there is no bug
             l4j.error(getSessionName() + " Exception when executing", e);
