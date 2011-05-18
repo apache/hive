@@ -18,7 +18,7 @@
 -->
 
 
-<project name="hive" default="jar" >
+<project name="hive" default="jar" xmlns:artifact="urn:maven-artifact-ant" >
 
   <property name="hive.root" location="${basedir}"/>
   <property file="${hive.root}/build.properties"/>
@@ -52,6 +52,7 @@
   <property name="checkstyle.conf.dir" location="${hive.root}/checkstyle"/>
   <property name="checkstyle.build.dir" location="${build.dir.hive}/checkstyle"/>
   <property name="md5sum.format" value="{0}  {1}"/>
+
 
   <condition property="is-offline" value="true" else="false">
     <isset property="offline"/>
@@ -656,5 +657,142 @@
     <copy file="${docs.src}/site.css" tofile="${anakia.docs.dest}/site.css" />
   </target>
 
+  <!-- Prepare for maven deploy i.e. jars, poms, and licence -->
+
+  <target name="maven-build" depends="jar" description="Build Maven artifacts">
+    <!-- create jars, poms licences directory -->
+    <mkdir dir="${build.dir.hive}/maven/jars" />
+    <mkdir dir="${build.dir.hive}/maven/poms" />
+    <mkdir dir="${build.dir.hive}/maven/licences" />
+
+    <!-- call make pom on all projects that have ivy.xml -->
+    <iterate-all target="make-pom" />
+
+    <!-- copy the jars  -->
+    <copy file="${build.dir.hive}/anttasks/hive-anttasks-${version}.jar"
+          todir="${build.dir.hive}/maven/jars/" />
+    <copy file="${build.dir.hive}/cli/hive-cli-${version}.jar"
+          todir="${build.dir.hive}/maven/jars/" />
+    <copy file="${build.dir.hive}/common/hive-common-${version}.jar"
+          todir="${build.dir.hive}/maven/jars/" />
+    <copy file="${build.dir.hive}/contrib/hive-contrib-${version}.jar"
+          todir="${build.dir.hive}/maven/jars/" />
+    <copy file="${build.dir.hive}/hbase-handler/hive-hbase-handler-${version}.jar"
+          todir="${build.dir.hive}/maven/jars/" />
+    <copy file="${build.dir.hive}/hwi/hive-hwi-${version}.jar"
+          todir="${build.dir.hive}/maven/jars/" />
+    <copy file="${build.dir.hive}/jdbc/hive-jdbc-${version}.jar"
+          todir="${build.dir.hive}/maven/jars/" />
+    <copy file="${build.dir.hive}/metastore/hive-metastore-${version}.jar"
+          todir="${build.dir.hive}/maven/jars/" />
+    <copy file="${build.dir.hive}/ql/hive-exec-${version}.jar"
+          todir="${build.dir.hive}/maven/jars/" />
+    <copy file="${build.dir.hive}/serde/hive-serde-${version}.jar"
+          todir="${build.dir.hive}/maven/jars/" />
+    <copy file="${build.dir.hive}/service/hive-service-${version}.jar"
+          todir="${build.dir.hive}/maven/jars/" />
+    <copy file="${build.dir.hive}/shims/hive-shims-${version}.jar"
+          todir="${build.dir.hive}/maven/jars/" />
+
+    <!-- copy over maven pom files created using the make-pom target and rename to maven convention -->
+    <copy file="${build.dir.hive}/anttasks/pom.xml"
+          tofile="${build.dir.hive}/maven/poms/hive-anttasks-${version}.pom" />
+    <copy file="${build.dir.hive}/cli/pom.xml"
+          tofile="${build.dir.hive}/maven/poms/hive-cli-${version}.pom" />
+    <copy file="${build.dir.hive}/common/pom.xml"
+          tofile="${build.dir.hive}/maven/poms/hive-common-${version}.pom" />
+    <copy file="${build.dir.hive}/contrib/pom.xml"
+          tofile="${build.dir.hive}/maven/poms/hive-contrib-${version}.pom" />
+    <copy file="${build.dir.hive}/hbase-handler/pom.xml"
+          tofile="${build.dir.hive}/maven/poms/hive-hbase-handler-${version}.pom" />
+    <copy file="${build.dir.hive}/hwi/pom.xml"
+          tofile="${build.dir.hive}/maven/poms/hive-hwi-${version}.pom" />
+    <copy file="${build.dir.hive}/jdbc/pom.xml"
+          tofile="${build.dir.hive}/maven/poms/hive-jdbc-${version}.pom" />
+    <copy file="${build.dir.hive}/metastore/pom.xml"
+          tofile="${build.dir.hive}/maven/poms/hive-metastore-${version}.pom" />
+    <copy file="${build.dir.hive}/ql/pom.xml"
+          tofile="${build.dir.hive}/maven/poms/hive-exec-${version}.pom" />
+    <copy file="${build.dir.hive}/serde/pom.xml"
+          tofile="${build.dir.hive}/maven/poms/hive-serde-${version}.pom" />
+    <copy file="${build.dir.hive}/service/pom.xml"
+          tofile="${build.dir.hive}/maven/poms/hive-service-${version}.pom" />
+    <copy file="${build.dir.hive}/shims/pom.xml"
+          tofile="${build.dir.hive}/maven/poms/hive-shims-${version}.pom" />
+
+    <!-- copy over licence -->
+    <copy file="${hive.root}/LICENSE" todir="${build.dir.hive}/maven/licences/" />
+
+    <!-- checksum files -->
+    <checksum forceOverwrite="yes" algorithm="MD5" fileext=".md5">
+      <fileset dir="${build.dir.hive}/maven/jars" excludes="**/*.sha1,**/*.md5" />
+      <fileset dir="${build.dir.hive}/maven/poms" excludes="**/*.sha1,**/*.md5" />
+      <fileset dir="${build.dir.hive}/maven/licences" excludes="**/*.sha1,**/*.md5" />
+    </checksum>
+
+    <checksum forceOverwrite="yes" algorithm="SHA" fileext=".sha1">
+      <fileset dir="${build.dir.hive}/maven/jars" excludes="**/*.sha1,**/*.md5" />
+      <fileset dir="${build.dir.hive}/maven/poms" excludes="**/*.sha1,**/*.md5" />
+      <fileset dir="${build.dir.hive}/maven/licences" excludes="**/*.sha1,**/*.md5" />
+    </checksum>
+
+    <echo>
+      To deploy using maven:
+      1) Copy the following to the ~/.m2/settings.xml file please
+      see:http://maven.apache.org/developers/committer-settings.html
+      &lt;servers&gt;
+      &lt;server&gt;
+      &lt;id&gt;apache.${repo}.https&lt;/id&gt;
+      &lt;username&gt;[username]&lt;/username&gt;
+      &lt;password&gt;[password]&lt;/password&gt;
+      &lt;/server&gt;
+      &lt;/servers&gt;
+     2)Read
+      http://www.apache.org/dev/repository-faq.html
+      http://www.apache.org/dev/publishing-maven-artifacts.html
+     3)Run the maven-publish target to publish
+      the artifact to the ASF Nexus
+      staging process
+    </echo>
+  </target>
+
+  <target name="maven-publish" description="Publish Maven artifacts">
+    <antcall target="maven-publish-artifact">
+      <param name="hive.project" value="anttasks" />
+    </antcall>
+    <antcall target="maven-publish-artifact">
+      <param name="hive.project" value="cli" />
+    </antcall>
+    <antcall target="maven-publish-artifact">
+      <param name="hive.project" value="common" />
+    </antcall>
+    <antcall target="maven-publish-artifact">
+      <param name="hive.project" value="contrib" />
+    </antcall>
+    <antcall target="maven-publish-artifact">
+      <param name="hive.project" value="exec" />
+    </antcall>
+    <antcall target="maven-publish-artifact">
+      <param name="hive.project" value="hbase-handler" />
+    </antcall>
+    <antcall target="maven-publish-artifact">
+      <param name="hive.project" value="hwi" />
+    </antcall>
+    <antcall target="maven-publish-artifact">
+      <param name="hive.project" value="jdbc" />
+    </antcall>
+    <antcall target="maven-publish-artifact">
+      <param name="hive.project" value="metastore" />
+    </antcall>
+    <antcall target="maven-publish-artifact">
+      <param name="hive.project" value="serde" />
+    </antcall>
+    <antcall target="maven-publish-artifact">
+      <param name="hive.project" value="service" />
+    </antcall>
+    <antcall target="maven-publish-artifact">
+      <param name="hive.project" value="shims" />
+    </antcall>
+  </target>
 
 </project>
