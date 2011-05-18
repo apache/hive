@@ -16,9 +16,9 @@
 -->
 
 <ivy-module version="2.0">
-  <info organisation="org.apache.hadoop.hive" module="${ant.project.name}" revision="${version}">
+  <info organisation="org.apache.hive" module="${ant.project.name}" revision="${version}">
     <license name="Apache 2.0"/>
-    <ivyauthor name="Apache Hive Team" url="http://hadoop.apache.org/hive"/>
+    <ivyauthor name="Apache Hive Team" url="http://hive.apache.org"/>
     <description>Apache Hive</description>
   </info>
 
@@ -31,6 +31,7 @@
     <!-- Private configurations -->
     <conf name="docs" visibility="private"/>
     <conf name="checkstyle" visibility="private"/>
+    <conf name="maven" visibility="private"/>
   </configurations>
 
 
@@ -39,6 +40,8 @@
      conf="checkstyle->default"/>
    <dependency org="org.jdom" name="jdom" rev="${jdom.version}"
      conf="docs->default"/>
+   <dependency org="org.apache.maven" name="maven-ant-tasks" rev="${maven-ant-tasks.version}"
+     conf="maven->default"/>
    <conflict manager="all" />
   </dependencies>
   
