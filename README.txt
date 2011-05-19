@@ -64,10 +64,10 @@ Upgrading from older versions of Hive
 =====================================
 
 - Hive @VERSION@ includes changes to the MetaStore schema. If
-  you are upgrading from an earlier version of Hive it is
-  imperative that you upgrade the MetaStore schema by
-  running the appropriate schema upgrade scripts located in
-  the scripts/metastore/upgrade directory.
+  you are upgrading from an earlier version of Hive it is imperative
+  that you upgrade the MetaStore schema by running the appropriate
+  schema upgrade scripts located in the scripts/metastore/upgrade
+  directory.
 
   We have provided upgrade scripts for Derby and MySQL databases. If
   you are using a different database for your MetaStore you will need
@@ -88,8 +88,8 @@ Useful mailing lists
    to this mailing list.
 
 2. dev@hive.apache.org - For discussions about code, design and features.
-   Send an empty email to dev-subscribe@hive.apache.org in order to subscribe
-   to this mailing list.
+   Send an empty email to dev-subscribe@hive.apache.org in order to
+   subscribe to this mailing list.
 
 3. commits@hive.apache.org - In order to monitor commits to the source
    repository. Send an empty email to commits-subscribe@hive.apache.org
