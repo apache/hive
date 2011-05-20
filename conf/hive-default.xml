@@ -1043,6 +1043,18 @@
 </property>
 
 <property>
+  <name>hive.index.compact.query.max.size</name>
+  <value>10737418240</value>
+  <description>The maximum number of bytes that a query using the compact index can read. Negative value is equivalent to infinity.</description>
+</property>
+
+<property>
+  <name>hive.index.compact.query.max.entries</name>
+  <value>10000000</value>
+  <description>The maximum number of index entries to read during a query that uses the compact index. Negative value is equivalent to infinity.</description>
+</property>
+
+<property>
   <name>hive.exim.uri.scheme.whitelist</name>
   <value>hdfs,pfile</value>
   <description>A comma separated list of acceptable URI schemes for import and export.</description>

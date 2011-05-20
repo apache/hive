@@ -88,7 +88,7 @@ public class HiveIndexResult {
 
     bytesRef[0] = new BytesRefWritable();
     bytesRef[1] = new BytesRefWritable();
-    ignoreHdfsLoc = HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVE_INDEX_IGNORE_HDFS_LOC); 
+    ignoreHdfsLoc = HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVE_INDEX_IGNORE_HDFS_LOC);
 
     if (indexFile != null) {
       Path indexFilePath = new Path(indexFile);
@@ -104,12 +104,22 @@ public class HiveIndexResult {
         paths.add(indexFilePath);
       }
 
+      long maxEntriesToLoad = HiveConf.getLongVar(conf, HiveConf.ConfVars.HIVE_INDEX_COMPACT_QUERY_MAX_ENTRIES);
+      if (maxEntriesToLoad < 0) {
+        maxEntriesToLoad=Long.MAX_VALUE;
+      }
+
+      long lineCounter = 0;
       for (Path indexFinalPath : paths) {
         FSDataInputStream ifile = fs.open(indexFinalPath);
         LineReader lr = new LineReader(ifile, conf);
         try {
           Text line = new Text();
           while (lr.readLine(line) > 0) {
+            if (++lineCounter > maxEntriesToLoad) {
+              throw new HiveException("Number of compact index entries loaded during the query exceeded the maximum of " + maxEntriesToLoad
+                  + " set in " + HiveConf.ConfVars.HIVE_INDEX_COMPACT_QUERY_MAX_ENTRIES.varname);
+            }
             add(line);
           }
         }
@@ -140,7 +150,7 @@ public class HiveIndexResult {
               + line.toString());
     }
     String bucketFileName = new String(bytes, 0, firstEnd);
-    
+
     if (ignoreHdfsLoc) {
       Path tmpPath = new Path(bucketFileName);
       bucketFileName = tmpPath.toUri().getPath();
