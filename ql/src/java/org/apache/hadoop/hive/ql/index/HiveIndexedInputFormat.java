@@ -26,6 +26,8 @@ import java.util.Set;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.io.HiveFileFormatUtils;
 import org.apache.hadoop.hive.ql.io.HiveInputFormat;
@@ -129,6 +131,13 @@ public class HiveIndexedInputFormat extends HiveInputFormat {
 
     ArrayList<HiveInputSplit> newSplits = new ArrayList<HiveInputSplit>(
         numSplits);
+
+    long maxInputSize = HiveConf.getLongVar(job, ConfVars.HIVE_INDEX_COMPACT_QUERY_MAX_SIZE);
+    if (maxInputSize < 0) {
+      maxInputSize=Long.MAX_VALUE;
+    }
+
+    long sumSplitLengths = 0;
     for (HiveInputSplit split : splits) {
       l4j.info("split start : " + split.getStart());
       l4j.info("split end : " + (split.getStart() + split.getLength()));
@@ -140,12 +149,18 @@ public class HiveIndexedInputFormat extends HiveInputFormat {
           if (split.inputFormatClassName().contains("RCFile")
               || split.inputFormatClassName().contains("SequenceFile")) {
             if (split.getStart() > SequenceFile.SYNC_INTERVAL) {
-              newSplit = new HiveInputSplit(new FileSplit(split.getPath(), split
-                  .getStart()
-                  - SequenceFile.SYNC_INTERVAL, split.getLength()
-                  + SequenceFile.SYNC_INTERVAL, split.getLocations()), split
-                  .inputFormatClassName());
+              newSplit = new HiveInputSplit(new FileSplit(split.getPath(),
+                  split.getStart() - SequenceFile.SYNC_INTERVAL,
+                  split.getLength() + SequenceFile.SYNC_INTERVAL,
+                  split.getLocations()),
+                  split.inputFormatClassName());
             }
+          }
+          sumSplitLengths += newSplit.getLength();
+          if (sumSplitLengths > maxInputSize) {
+            throw new IOException(
+                "Size of data to read during a compact-index-based query exceeded the maximum of "
+                    + maxInputSize + " set in " + ConfVars.HIVE_INDEX_COMPACT_QUERY_MAX_SIZE.varname);
           }
           newSplits.add(newSplit);
         }
@@ -156,7 +171,7 @@ public class HiveIndexedInputFormat extends HiveInputFormat {
     }
     InputSplit retA[] = newSplits.toArray((new FileSplit[newSplits.size()]));
     l4j.info("Number of input splits: " + splits.length + " new input splits: "
-        + retA.length);
+        + retA.length + ", sum of split lengths: " + sumSplitLengths);
     return retA;
   }
 }
