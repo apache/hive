@@ -1,0 +1,204 @@
+PREHOOK: query: --
+-- Added to validate the fix for HIVE-2117 - explicit partition location
+--
+
+create table alter5_src ( col1 string ) stored as textfile
+PREHOOK: type: CREATETABLE
+POSTHOOK: query: --
+-- Added to validate the fix for HIVE-2117 - explicit partition location
+--
+
+create table alter5_src ( col1 string ) stored as textfile
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: default@alter5_src
+PREHOOK: query: load data local inpath '../data/files/test.dat' overwrite into table alter5_src
+PREHOOK: type: LOAD
+PREHOOK: Output: default@alter5_src
+POSTHOOK: query: load data local inpath '../data/files/test.dat' overwrite into table alter5_src
+POSTHOOK: type: LOAD
+POSTHOOK: Output: default@alter5_src
+PREHOOK: query: create table alter5 ( col1 string ) partitioned by (dt string)
+PREHOOK: type: CREATETABLE
+POSTHOOK: query: create table alter5 ( col1 string ) partitioned by (dt string)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: default@alter5
+PREHOOK: query: --
+-- Here's the interesting bit for HIVE-2117 - partition subdir should be
+-- named "parta".
+--
+alter table alter5 add partition (dt='a') location 'parta'
+PREHOOK: type: ALTERTABLE_ADDPARTS
+PREHOOK: Input: default@alter5
+POSTHOOK: query: --
+-- Here's the interesting bit for HIVE-2117 - partition subdir should be
+-- named "parta".
+--
+alter table alter5 add partition (dt='a') location 'parta'
+POSTHOOK: type: ALTERTABLE_ADDPARTS
+POSTHOOK: Input: default@alter5
+POSTHOOK: Output: default@alter5@dt=a
+PREHOOK: query: describe extended alter5 partition (dt='a')
+PREHOOK: type: DESCTABLE
+POSTHOOK: query: describe extended alter5 partition (dt='a')
+POSTHOOK: type: DESCTABLE
+col1	string	
+dt	string	
+	 	 
+Detailed Partition Information	Partition(values:[a], dbName:default, tableName:alter5, createTime:1304626469, lastAccessTime:0, sd:StorageDescriptor(cols:[FieldSchema(name:col1, type:string, comment:null)], location:pfile:/home/phunt/dev/hive/build/ql/test/data/warehouse/alter5/parta, inputFormat:org.apache.hadoop.mapred.TextInputFormat, outputFormat:org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat, compressed:false, numBuckets:-1, serdeInfo:SerDeInfo(name:null, serializationLib:org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe, parameters:{serialization.format=1}), bucketCols:[], sortCols:[], parameters:{}), parameters:{transient_lastDdlTime=1304626469})	
+PREHOOK: query: insert overwrite table alter5 partition (dt='a') select col1 from alter5_src
+PREHOOK: type: QUERY
+PREHOOK: Input: default@alter5_src
+PREHOOK: Output: default@alter5@dt=a
+POSTHOOK: query: insert overwrite table alter5 partition (dt='a') select col1 from alter5_src
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@alter5_src
+POSTHOOK: Output: default@alter5@dt=a
+POSTHOOK: Lineage: alter5 PARTITION(dt=a).col1 SIMPLE [(alter5_src)alter5_src.FieldSchema(name:col1, type:string, comment:null), ]
+PREHOOK: query: select * from alter5 where dt='a'
+PREHOOK: type: QUERY
+PREHOOK: Input: default@alter5@dt=a
+PREHOOK: Output: file:/tmp/phunt/hive_2011-05-05_13-14-37_578_1796477555405644183/-mr-10000
+POSTHOOK: query: select * from alter5 where dt='a'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@alter5@dt=a
+POSTHOOK: Output: file:/tmp/phunt/hive_2011-05-05_13-14-37_578_1796477555405644183/-mr-10000
+POSTHOOK: Lineage: alter5 PARTITION(dt=a).col1 SIMPLE [(alter5_src)alter5_src.FieldSchema(name:col1, type:string, comment:null), ]
+1	a
+2	a
+3	a
+4	a
+5	a
+6	a
+PREHOOK: query: describe extended alter5 partition (dt='a')
+PREHOOK: type: DESCTABLE
+POSTHOOK: query: describe extended alter5 partition (dt='a')
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Lineage: alter5 PARTITION(dt=a).col1 SIMPLE [(alter5_src)alter5_src.FieldSchema(name:col1, type:string, comment:null), ]
+col1	string	
+dt	string	
+	 	 
+Detailed Partition Information	Partition(values:[a], dbName:default, tableName:alter5, createTime:1304626469, lastAccessTime:0, sd:StorageDescriptor(cols:[FieldSchema(name:col1, type:string, comment:null)], location:pfile:/home/phunt/dev/hive/build/ql/test/data/warehouse/alter5/parta, inputFormat:org.apache.hadoop.mapred.TextInputFormat, outputFormat:org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat, compressed:false, numBuckets:-1, serdeInfo:SerDeInfo(name:null, serializationLib:org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe, parameters:{serialization.format=1}), bucketCols:[], sortCols:[], parameters:{}), parameters:{numFiles=1, transient_lastDdlTime=1304626476, numRows=6, totalSize=12})	
+PREHOOK: query: -- Cleanup
+DROP TABLE alter5_src
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@alter5_src
+PREHOOK: Output: default@alter5_src
+POSTHOOK: query: -- Cleanup
+DROP TABLE alter5_src
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@alter5_src
+POSTHOOK: Output: default@alter5_src
+POSTHOOK: Lineage: alter5 PARTITION(dt=a).col1 SIMPLE [(alter5_src)alter5_src.FieldSchema(name:col1, type:string, comment:null), ]
+PREHOOK: query: DROP TABLE alter5
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@alter5
+PREHOOK: Output: default@alter5
+POSTHOOK: query: DROP TABLE alter5
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@alter5
+POSTHOOK: Output: default@alter5
+POSTHOOK: Lineage: alter5 PARTITION(dt=a).col1 SIMPLE [(alter5_src)alter5_src.FieldSchema(name:col1, type:string, comment:null), ]
+PREHOOK: query: SHOW TABLES
+PREHOOK: type: SHOWTABLES
+POSTHOOK: query: SHOW TABLES
+POSTHOOK: type: SHOWTABLES
+POSTHOOK: Lineage: alter5 PARTITION(dt=a).col1 SIMPLE [(alter5_src)alter5_src.FieldSchema(name:col1, type:string, comment:null), ]
+src
+src1
+src_json
+src_sequencefile
+src_thrift
+srcbucket
+srcbucket2
+srcpart
+PREHOOK: query: -- With non-default Database
+
+CREATE DATABASE alter5_db
+PREHOOK: type: CREATEDATABASE
+POSTHOOK: query: -- With non-default Database
+
+CREATE DATABASE alter5_db
+POSTHOOK: type: CREATEDATABASE
+POSTHOOK: Lineage: alter5 PARTITION(dt=a).col1 SIMPLE [(alter5_src)alter5_src.FieldSchema(name:col1, type:string, comment:null), ]
+PREHOOK: query: USE alter5_db
+PREHOOK: type: SWITCHDATABASE
+POSTHOOK: query: USE alter5_db
+POSTHOOK: type: SWITCHDATABASE
+POSTHOOK: Lineage: alter5 PARTITION(dt=a).col1 SIMPLE [(alter5_src)alter5_src.FieldSchema(name:col1, type:string, comment:null), ]
+PREHOOK: query: SHOW TABLES
+PREHOOK: type: SHOWTABLES
+POSTHOOK: query: SHOW TABLES
+POSTHOOK: type: SHOWTABLES
+POSTHOOK: Lineage: alter5 PARTITION(dt=a).col1 SIMPLE [(alter5_src)alter5_src.FieldSchema(name:col1, type:string, comment:null), ]
+PREHOOK: query: create table alter5_src ( col1 string ) stored as textfile
+PREHOOK: type: CREATETABLE
+POSTHOOK: query: create table alter5_src ( col1 string ) stored as textfile
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: alter5_db@alter5_src
+POSTHOOK: Lineage: alter5 PARTITION(dt=a).col1 SIMPLE [(alter5_src)alter5_src.FieldSchema(name:col1, type:string, comment:null), ]
+PREHOOK: query: load data local inpath '../data/files/test.dat' overwrite into table alter5_src
+PREHOOK: type: LOAD
+PREHOOK: Output: alter5_db@alter5_src
+POSTHOOK: query: load data local inpath '../data/files/test.dat' overwrite into table alter5_src
+POSTHOOK: type: LOAD
+POSTHOOK: Output: alter5_db@alter5_src
+POSTHOOK: Lineage: alter5 PARTITION(dt=a).col1 SIMPLE [(alter5_src)alter5_src.FieldSchema(name:col1, type:string, comment:null), ]
+PREHOOK: query: create table alter5 ( col1 string ) partitioned by (dt string)
+PREHOOK: type: CREATETABLE
+POSTHOOK: query: create table alter5 ( col1 string ) partitioned by (dt string)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: alter5_db@alter5
+POSTHOOK: Lineage: alter5 PARTITION(dt=a).col1 SIMPLE [(alter5_src)alter5_src.FieldSchema(name:col1, type:string, comment:null), ]
+PREHOOK: query: alter table alter5 add partition (dt='a') location 'parta'
+PREHOOK: type: ALTERTABLE_ADDPARTS
+PREHOOK: Input: alter5_db@alter5
+POSTHOOK: query: alter table alter5 add partition (dt='a') location 'parta'
+POSTHOOK: type: ALTERTABLE_ADDPARTS
+POSTHOOK: Input: alter5_db@alter5
+POSTHOOK: Output: alter5_db@alter5@dt=a
+POSTHOOK: Lineage: alter5 PARTITION(dt=a).col1 SIMPLE [(alter5_src)alter5_src.FieldSchema(name:col1, type:string, comment:null), ]
+PREHOOK: query: describe extended alter5 partition (dt='a')
+PREHOOK: type: DESCTABLE
+POSTHOOK: query: describe extended alter5 partition (dt='a')
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Lineage: alter5 PARTITION(dt=a).col1 SIMPLE [(alter5_src)alter5_src.FieldSchema(name:col1, type:string, comment:null), ]
+col1	string	
+dt	string	
+	 	 
+Detailed Partition Information	Partition(values:[a], dbName:alter5_db, tableName:alter5, createTime:1304626483, lastAccessTime:0, sd:StorageDescriptor(cols:[FieldSchema(name:col1, type:string, comment:null)], location:pfile:/home/phunt/dev/hive/build/ql/test/data/warehouse/alter5_db.db/alter5/parta, inputFormat:org.apache.hadoop.mapred.TextInputFormat, outputFormat:org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat, compressed:false, numBuckets:-1, serdeInfo:SerDeInfo(name:null, serializationLib:org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe, parameters:{serialization.format=1}), bucketCols:[], sortCols:[], parameters:{}), parameters:{transient_lastDdlTime=1304626483})	
+PREHOOK: query: insert overwrite table alter5 partition (dt='a') select col1 from alter5_src
+PREHOOK: type: QUERY
+PREHOOK: Input: alter5_db@alter5_src
+PREHOOK: Output: alter5_db@alter5@dt=a
+POSTHOOK: query: insert overwrite table alter5 partition (dt='a') select col1 from alter5_src
+POSTHOOK: type: QUERY
+POSTHOOK: Input: alter5_db@alter5_src
+POSTHOOK: Output: alter5_db@alter5@dt=a
+POSTHOOK: Lineage: alter5 PARTITION(dt=a).col1 SIMPLE [(alter5_src)alter5_src.FieldSchema(name:col1, type:string, comment:null), ]
+POSTHOOK: Lineage: alter5 PARTITION(dt=a).col1 SIMPLE [(alter5_src)alter5_src.FieldSchema(name:col1, type:string, comment:null), ]
+PREHOOK: query: select * from alter5 where dt='a'
+PREHOOK: type: QUERY
+PREHOOK: Input: alter5_db@alter5@dt=a
+PREHOOK: Output: file:/tmp/phunt/hive_2011-05-05_13-14-49_883_4190579771388965111/-mr-10000
+POSTHOOK: query: select * from alter5 where dt='a'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: alter5_db@alter5@dt=a
+POSTHOOK: Output: file:/tmp/phunt/hive_2011-05-05_13-14-49_883_4190579771388965111/-mr-10000
+POSTHOOK: Lineage: alter5 PARTITION(dt=a).col1 SIMPLE [(alter5_src)alter5_src.FieldSchema(name:col1, type:string, comment:null), ]
+POSTHOOK: Lineage: alter5 PARTITION(dt=a).col1 SIMPLE [(alter5_src)alter5_src.FieldSchema(name:col1, type:string, comment:null), ]
+1	a
+2	a
+3	a
+4	a
+5	a
+6	a
+PREHOOK: query: describe extended alter5 partition (dt='a')
+PREHOOK: type: DESCTABLE
+POSTHOOK: query: describe extended alter5 partition (dt='a')
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Lineage: alter5 PARTITION(dt=a).col1 SIMPLE [(alter5_src)alter5_src.FieldSchema(name:col1, type:string, comment:null), ]
+POSTHOOK: Lineage: alter5 PARTITION(dt=a).col1 SIMPLE [(alter5_src)alter5_src.FieldSchema(name:col1, type:string, comment:null), ]
+col1	string	
+dt	string	
+	 	 
+Detailed Partition Information	Partition(values:[a], dbName:alter5_db, tableName:alter5, createTime:1304626483, lastAccessTime:0, sd:StorageDescriptor(cols:[FieldSchema(name:col1, type:string, comment:null)], location:pfile:/home/phunt/dev/hive/build/ql/test/data/warehouse/alter5_db.db/alter5/parta, inputFormat:org.apache.hadoop.mapred.TextInputFormat, outputFormat:org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat, compressed:false, numBuckets:-1, serdeInfo:SerDeInfo(name:null, serializationLib:org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe, parameters:{serialization.format=1}), bucketCols:[], sortCols:[], parameters:{}), parameters:{numFiles=1, transient_lastDdlTime=1304626489, numRows=6, totalSize=12})	

@@ -20,21 +20,30 @@ package org.apache.hadoop.hive.ql;
 
 import java.io.File;
 
+import junit.framework.TestCase;
+
 /**
- * Suite for testing running of queries in multi-threaded mode.
+ * Base class for testing queries.
  */
-public class TestMTQueries extends BaseTestQueries {
+public abstract class BaseTestQueries extends TestCase {
 
-  public void testMTQueries1() throws Exception {
-    String[] testNames = new String[] {"join1.q", "join2.q", "groupby1.q",
-        "groupby2.q", "join3.q", "input1.q", "input19.q"};
+  protected final String inpDir = System
+      .getProperty("ql.test.query.clientpositive.dir");
+  protected final String resDir = System
+      .getProperty("ql.test.results.clientpositive.dir");
+  protected final String logDir = System.getProperty("test.log.dir")
+      + "/clientpositive";
 
-    File[] qfiles = setupQFiles(testNames);
-
-    QTestUtil[] qts = QTestUtil.queryListRunnerSetup(qfiles, resDir, logDir);
-    boolean success = QTestUtil.queryListRunnerMultiThreaded(qfiles, qts);
-    if (!success) {
-      fail("One or more queries failed");
+  /**
+   * Create a file for each test name in the inpDir.
+   * @param testNames
+   * @return files corresponding to each test name
+   */
+  protected File[] setupQFiles(String[] testNames) {
+    File[] qfiles = new File[testNames.length];
+    for (int i = 0; i < testNames.length; i++) {
+      qfiles[i] = new File(inpDir, testNames[i]);
     }
+    return qfiles;
   }
 }
