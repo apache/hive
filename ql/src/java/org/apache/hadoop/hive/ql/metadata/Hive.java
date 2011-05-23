@@ -1084,7 +1084,6 @@ public class Hive {
         oldPartPath = oldPart.getPartitionPath();
       }
 
-
       Path newPartPath = null;
 
       if (inheritTableSpecs) {
@@ -1092,6 +1091,21 @@ public class Hive {
             Warehouse.makePartPath(partSpec));
         newPartPath = new Path(loadPath.toUri().getScheme(), loadPath.toUri().getAuthority(),
             partPath.toUri().getPath());
+
+        if(oldPart != null) {
+          /*
+           * If we are moving the partition across filesystem boundaries
+           * inherit from the table properties. Otherwise (same filesystem) use the
+           * original partition location.
+           *
+           * See: HIVE-1707 and HIVE-2117 for background
+           */
+          FileSystem oldPartPathFS = oldPartPath.getFileSystem(getConf());
+          FileSystem loadPathFS = loadPath.getFileSystem(getConf());
+          if (oldPartPathFS.equals(loadPathFS)) {
+            newPartPath = oldPartPath;
+          }
+        }
       } else {
         newPartPath = oldPartPath;
       }
