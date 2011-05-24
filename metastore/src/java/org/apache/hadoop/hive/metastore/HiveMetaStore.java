@@ -294,7 +294,10 @@ public class HiveMetaStore extends ThriftHiveMetastore {
     @InterfaceAudience.LimitedPrivate({"HCATALOG"})
     @InterfaceStability.Evolving
     public static class Command<T> {
-      T run(RawStore ms) throws Exception {
+
+      @InterfaceAudience.LimitedPrivate({"HCATALOG"})
+      @InterfaceStability.Evolving
+      public T run(RawStore ms) throws Exception {
         return null;
       }
     }
@@ -462,7 +465,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       try {
         executeWithRetry(new Command<Boolean>() {
           @Override
-          Boolean run(RawStore ms) throws Exception {
+          public Boolean run(RawStore ms) throws Exception {
             createDefaultDB_core(ms);
             return Boolean.TRUE;
           }
@@ -584,7 +587,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
         }
         executeWithRetry(new Command<Boolean>() {
           @Override
-          Boolean run(RawStore ms) throws Exception {
+          public Boolean run(RawStore ms) throws Exception {
             create_database_core(ms, db);
             return Boolean.TRUE;
           }
@@ -610,7 +613,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       try {
         db = executeWithRetry(new Command<Database>() {
           @Override
-          Database run(RawStore ms) throws Exception {
+          public Database run(RawStore ms) throws Exception {
             return ms.getDatabase(name);
           }
         });
@@ -633,7 +636,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       try {
         executeWithRetry(new Command<Boolean>() {
           @Override
-          Boolean run(RawStore ms) throws Exception {
+          public Boolean run(RawStore ms) throws Exception {
             return ms.alterDatabase(dbName, db);
           }
         });
@@ -698,7 +701,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       try {
         executeWithRetry(new Command<Boolean>() {
           @Override
-          Boolean run(RawStore ms) throws Exception {
+          public Boolean run(RawStore ms) throws Exception {
             drop_database_core(ms, dbName, deleteData, cascade);
             return Boolean.TRUE;
           }
@@ -724,7 +727,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       try {
         ret = executeWithRetry(new Command<List<String>>() {
           @Override
-          List<String> run(RawStore ms) throws Exception {
+          public List<String> run(RawStore ms) throws Exception {
             return ms.getDatabases(pattern);
           }
         });
@@ -746,7 +749,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       try {
         ret = executeWithRetry(new Command<List<String>>() {
           @Override
-          List<String> run(RawStore ms) throws Exception {
+          public List<String> run(RawStore ms) throws Exception {
             return ms.getAllDatabases();
           }
         });
@@ -789,7 +792,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       try {
         ret = executeWithRetry(new Command<Boolean>() {
           @Override
-          Boolean run(RawStore ms) throws Exception {
+          public Boolean run(RawStore ms) throws Exception {
             create_type_core(ms, type);
             return Boolean.TRUE;
           }
@@ -817,7 +820,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       try {
         ret = executeWithRetry(new Command<Type>() {
           @Override
-          Type run(RawStore ms) throws Exception {
+          public Type run(RawStore ms) throws Exception {
             Type type = ms.getType(name);
             if (null == type) {
               throw new NoSuchObjectException("Type \"" + name + "\" not found.");
@@ -871,7 +874,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       try {
         ret = executeWithRetry(new Command<Boolean>() {
           @Override
-          Boolean run(RawStore ms) throws Exception {
+          public Boolean run(RawStore ms) throws Exception {
             // TODO:pc validate that there are no types that refer to this
             return ms.dropType(name);
           }
@@ -971,7 +974,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       try {
         executeWithRetry(new Command<Boolean>() {
           @Override
-          Boolean run(RawStore ms) throws Exception {
+          public Boolean run(RawStore ms) throws Exception {
             create_table_core(ms, tbl);
             return Boolean.TRUE;
           }
@@ -1069,7 +1072,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       try {
         executeWithRetry(new Command<Boolean>() {
           @Override
-          Boolean run(RawStore ms) throws Exception {
+          public Boolean run(RawStore ms) throws Exception {
             drop_table_core(ms, dbname, name, deleteData);
             return Boolean.TRUE;
           }
@@ -1109,7 +1112,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       try {
         t = executeWithRetry(new Command<Table>() {
           @Override
-          Table run(RawStore ms) throws Exception {
+          public Table run(RawStore ms) throws Exception {
             Table t = ms.getTable(dbname, name);
             if (t == null) {
               throw new NoSuchObjectException(dbname + "." + name
@@ -1220,7 +1223,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       try {
         ret = executeWithRetry(new Command<Partition>() {
           @Override
-          Partition run(RawStore ms) throws Exception {
+          public Partition run(RawStore ms) throws Exception {
             return append_partition_common(ms, dbName, tableName, part_vals);
           }
         });
@@ -1272,7 +1275,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       try {
         ret = executeWithRetry(new Command<Integer>() {
           @Override
-          Integer run(RawStore ms) throws Exception {
+          public Integer run(RawStore ms) throws Exception {
             int ret = add_partitions_core(ms, parts);
             return Integer.valueOf(ret);
           }
@@ -1382,7 +1385,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       try {
         ret = executeWithRetry(new Command<Partition>() {
           @Override
-          Partition run(RawStore ms) throws Exception {
+          public Partition run(RawStore ms) throws Exception {
             return add_partition_core(ms, part);
           }
         });
@@ -1477,7 +1480,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       try {
         ret = executeWithRetry(new Command<Boolean>() {
           @Override
-          Boolean run(RawStore ms) throws Exception {
+          public Boolean run(RawStore ms) throws Exception {
             return Boolean.valueOf(
                 drop_partition_common(ms, db_name, tbl_name, part_vals, deleteData));
           }
@@ -1506,7 +1509,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       try {
         ret = executeWithRetry(new Command<Partition>() {
           @Override
-          Partition run(RawStore ms) throws Exception {
+          public Partition run(RawStore ms) throws Exception {
             return ms.getPartition(db_name, tbl_name, part_vals);
           }
         });
@@ -1535,7 +1538,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       try {
         ret = executeWithRetry(new Command<Partition>() {
           @Override
-          Partition run(RawStore ms) throws Exception {
+          public Partition run(RawStore ms) throws Exception {
             return ms.getPartitionWithAuth(db_name, tbl_name, part_vals,
                 user_name, group_names);
           }
@@ -1561,7 +1564,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       try {
         ret = executeWithRetry(new Command<List<Partition>>() {
           @Override
-          List<Partition> run(RawStore ms) throws Exception {
+          public List<Partition> run(RawStore ms) throws Exception {
             return ms.getPartitions(db_name, tbl_name, max_parts);
           }
         });
@@ -1590,7 +1593,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       try {
         ret = executeWithRetry(new Command<List<Partition>>() {
           @Override
-          List<Partition> run(RawStore ms) throws Exception {
+          public List<Partition> run(RawStore ms) throws Exception {
             return ms.getPartitionsWithAuth(dbName, tblName, maxParts,
                 userName, groupNames);
           }
@@ -1617,7 +1620,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       try {
         ret = executeWithRetry(new Command<List<String>>() {
           @Override
-          List<String> run(RawStore ms) throws Exception {
+          public List<String> run(RawStore ms) throws Exception {
             return ms.listPartitionNames(db_name, tbl_name, max_parts);
           }
         });
@@ -1658,7 +1661,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       try {
         executeWithRetry(new Command<Boolean>() {
           @Override
-          Boolean run(RawStore ms) throws Exception {
+          public Boolean run(RawStore ms) throws Exception {
             alter_partition_core(ms, db_name, tbl_name, new_part);
             return Boolean.TRUE;
           }
@@ -1696,7 +1699,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       try {
         executeWithRetry(new Command<Boolean>() {
           @Override
-          Boolean run(RawStore ms) throws Exception {
+          public Boolean run(RawStore ms) throws Exception {
             ms.alterIndex(dbname, base_table_name, index_name, newIndex);
             return Boolean.TRUE;
           }
@@ -1735,7 +1738,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       try {
         executeWithRetry(new Command<Boolean>() {
           @Override
-          Boolean run(RawStore ms) throws Exception {
+          public Boolean run(RawStore ms) throws Exception {
             alterHandler.alterTable(ms, wh, dbname, name, newTable);
             return Boolean.TRUE;
           }
@@ -1760,7 +1763,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       try {
         ret = executeWithRetry(new Command<List<String>>() {
           @Override
-          List<String> run(RawStore ms) throws Exception {
+          public List<String> run(RawStore ms) throws Exception {
             return ms.getTables(dbname, pattern);
           }
         });
@@ -1782,7 +1785,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       try {
         ret = executeWithRetry(new Command<List<String>>() {
           @Override
-          List<String> run(RawStore ms) throws Exception {
+          public List<String> run(RawStore ms) throws Exception {
             return ms.getAllTables(dbname);
           }
         });
@@ -1964,7 +1967,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       try {
         ret = executeWithRetry(new Command<Partition>() {
           @Override
-          Partition run(RawStore ms) throws Exception {
+          public Partition run(RawStore ms) throws Exception {
             return get_partition_by_name_core(ms, db_name, tbl_name, part_name);
           }
         });
@@ -1993,7 +1996,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       try {
         ret = executeWithRetry(new Command<Partition>() {
           @Override
-          Partition run(RawStore ms) throws Exception {
+          public Partition run(RawStore ms) throws Exception {
             List<String> partVals = getPartValsFromName(ms, db_name, tbl_name, part_name);
             return append_partition_common(ms, db_name, tbl_name, partVals);
           }
@@ -2041,7 +2044,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       try {
         ret = executeWithRetry(new Command<Boolean>() {
           @Override
-          Boolean run(RawStore ms) throws Exception {
+          public Boolean run(RawStore ms) throws Exception {
             return drop_partition_by_name_core(ms, db_name, tbl_name,
                 part_name, deleteData);
           }
@@ -2176,7 +2179,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       try {
         ret = executeWithRetry(new Command<Index>() {
           @Override
-          Index run(RawStore ms) throws Exception {
+          public Index run(RawStore ms) throws Exception {
             return add_index_core(ms, newIndex, indexTable);
           }
         });
@@ -2263,7 +2266,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       try {
         ret = executeWithRetry(new Command<Boolean>() {
           @Override
-          Boolean run(RawStore ms) throws Exception {
+          public Boolean run(RawStore ms) throws Exception {
             return drop_index_by_name_core(ms, dbName, tblName,
                 indexName, deleteData);
           }
@@ -2348,7 +2351,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       try {
         ret = executeWithRetry(new Command<Index>() {
           @Override
-          Index run(RawStore ms) throws Exception {
+          public Index run(RawStore ms) throws Exception {
             return get_index_by_name_core(ms, dbName, tblName, indexName);
           }
         });
@@ -2388,7 +2391,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       try {
         ret = executeWithRetry(new Command<List<String>>() {
           @Override
-          List<String> run(RawStore ms) throws Exception {
+          public List<String> run(RawStore ms) throws Exception {
             return ms.listIndexNames(dbName, tblName, maxIndexes);
           }
         });
@@ -2413,7 +2416,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       try {
         ret = executeWithRetry(new Command<List<Index>>() {
           @Override
-          List<Index> run(RawStore ms) throws Exception {
+          public List<Index> run(RawStore ms) throws Exception {
             return ms.getIndexes(dbName, tblName, maxIndexes);
           }
         });
@@ -2438,7 +2441,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       try {
         ret = executeWithRetry(new Command<List<Partition>>() {
           @Override
-          List<Partition> run(RawStore ms) throws Exception {
+          public List<Partition> run(RawStore ms) throws Exception {
             return ms.getPartitionsByFilter(dbName, tblName, filter, maxParts);
           }
         });
@@ -2466,7 +2469,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       try {
         ret = executeWithRetry(new Command<List<Partition>>() {
           @Override
-          List<Partition> run(RawStore ms) throws Exception {
+          public List<Partition> run(RawStore ms) throws Exception {
             return ms.getPartitionsByNames(dbName, tblName, partNames);
           }
         });
@@ -2532,7 +2535,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       try {
         ret = executeWithRetry(new Command<PrincipalPrivilegeSet>() {
           @Override
-          PrincipalPrivilegeSet run(RawStore ms) throws Exception {
+          public PrincipalPrivilegeSet run(RawStore ms) throws Exception {
             return ms.getColumnPrivilegeSet(
               dbName, tableName, partName, columnName, userName, groupNames);
           }
@@ -2554,7 +2557,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       try {
         ret = executeWithRetry(new Command<PrincipalPrivilegeSet>() {
           @Override
-          PrincipalPrivilegeSet run(RawStore ms) throws Exception {
+          public PrincipalPrivilegeSet run(RawStore ms) throws Exception {
             return ms.getDBPrivilegeSet(dbName, userName, groupNames);
           }
         });
@@ -2576,7 +2579,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       try {
         ret = executeWithRetry(new Command<PrincipalPrivilegeSet>() {
           @Override
-          PrincipalPrivilegeSet run(RawStore ms) throws Exception {
+          public PrincipalPrivilegeSet run(RawStore ms) throws Exception {
             return ms.getPartitionPrivilegeSet(dbName, tableName, partName,
                 userName, groupNames);
           }
@@ -2598,7 +2601,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       try {
         ret = executeWithRetry(new Command<PrincipalPrivilegeSet>() {
           @Override
-          PrincipalPrivilegeSet run(RawStore ms) throws Exception {
+          public PrincipalPrivilegeSet run(RawStore ms) throws Exception {
             return ms.getTablePrivilegeSet(dbName, tableName, userName,
                 groupNames);
           }
@@ -2622,7 +2625,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       try {
         ret = executeWithRetry(new Command<Boolean>() {
           @Override
-          Boolean run(RawStore ms) throws Exception {
+          public Boolean run(RawStore ms) throws Exception {
             Role role = ms.getRole(roleName);
             return ms.grantRole(role, userName, principalType, grantor, grantorType, grantOption);
           }
@@ -2643,7 +2646,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       try {
         ret = executeWithRetry(new Command<List<Role>>() {
           @Override
-          List<Role> run(RawStore ms) throws Exception {
+          public List<Role> run(RawStore ms) throws Exception {
             List<Role> result = new ArrayList<Role>();
             List<MRoleMap> roleMap = ms.listRoles(principalName, principalType);
             if (roleMap!=null) {
@@ -2674,7 +2677,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
 
         ret = executeWithRetry(new Command<Boolean>() {
           @Override
-          Boolean run(RawStore ms) throws Exception {
+          public Boolean run(RawStore ms) throws Exception {
             return ms.addRole(role.getRoleName(), role.getOwnerName());
           }
         });
@@ -2695,7 +2698,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       try {
         ret = executeWithRetry(new Command<Boolean>() {
           @Override
-          Boolean run(RawStore ms) throws Exception {
+          public Boolean run(RawStore ms) throws Exception {
             return ms.removeRole(roleName);
           }
         });
@@ -2715,7 +2718,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       try {
         ret = executeWithRetry(new Command<List<String>>() {
           @Override
-          List<String> run(RawStore ms) throws Exception {
+          public List<String> run(RawStore ms) throws Exception {
             return ms.listRoleNames();
           }
         });
@@ -2737,7 +2740,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       try {
         ret = executeWithRetry(new Command<Boolean>() {
           @Override
-          Boolean run(RawStore ms) throws Exception {
+          public Boolean run(RawStore ms) throws Exception {
             return ms.grantPrivileges(privileges);
           }
         });
@@ -2759,7 +2762,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       try {
         ret = executeWithRetry(new Command<Boolean>() {
           @Override
-          Boolean run(RawStore ms) throws Exception {
+          public Boolean run(RawStore ms) throws Exception {
             Role mRole = ms.getRole(roleName);
             return ms.revokeRole(mRole, userName, principalType);
           }
@@ -2781,7 +2784,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       try {
         ret = executeWithRetry(new Command<Boolean>() {
           @Override
-          Boolean run(RawStore ms) throws Exception {
+          public Boolean run(RawStore ms) throws Exception {
             return ms.revokePrivileges(privileges);
           }
         });
@@ -2801,7 +2804,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       try {
         ret = executeWithRetry(new Command<PrincipalPrivilegeSet>() {
           @Override
-          PrincipalPrivilegeSet run(RawStore ms) throws Exception {
+          public PrincipalPrivilegeSet run(RawStore ms) throws Exception {
             return ms.getUserPrivilegeSet(userName, groupNames);
           }
         });
@@ -2851,7 +2854,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       try {
         ret = executeWithRetry(new Command<List<HiveObjectPrivilege>>() {
           @Override
-          List<HiveObjectPrivilege> run(RawStore ms) throws Exception {
+          public List<HiveObjectPrivilege> run(RawStore ms) throws Exception {
             String partName = null;
             if (partValues != null && partValues.size()>0) {
               Table tbl = get_table(dbName, tableName);
@@ -2924,7 +2927,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       try {
         ret = executeWithRetry(new Command<List<HiveObjectPrivilege>>() {
           @Override
-          List<HiveObjectPrivilege> run(RawStore ms) throws Exception {
+          public List<HiveObjectPrivilege> run(RawStore ms) throws Exception {
             List<MDBPrivilege> mDbs = ms.listPrincipalDBGrants(
                 principalName, principalType, dbName);
             if (mDbs.size() > 0) {
@@ -2963,7 +2966,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       try {
         ret = executeWithRetry(new Command<List<HiveObjectPrivilege>>() {
           @Override
-          List<HiveObjectPrivilege> run(RawStore ms) throws Exception {
+          public List<HiveObjectPrivilege> run(RawStore ms) throws Exception {
             Table tbl = get_table(dbName, tableName);
             String partName = Warehouse.makePartName(tbl.getPartitionKeys(), partValues);
             List<MPartitionPrivilege> mParts = ms.listPrincipalPartitionGrants(
@@ -3007,7 +3010,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       try {
         ret = executeWithRetry(new Command<List<HiveObjectPrivilege>>() {
           @Override
-          List<HiveObjectPrivilege> run(RawStore ms) throws Exception {
+          public List<HiveObjectPrivilege> run(RawStore ms) throws Exception {
             List<MTablePrivilege> mTbls = ms
                 .listAllTableGrants(principalName, principalType, dbName, tableName);
             if (mTbls.size() > 0) {
@@ -3045,7 +3048,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       try {
         ret = executeWithRetry(new Command<List<HiveObjectPrivilege>>() {
           @Override
-          List<HiveObjectPrivilege> run(RawStore ms) throws Exception {
+          public List<HiveObjectPrivilege> run(RawStore ms) throws Exception {
             List<MGlobalPrivilege> mUsers = ms.listPrincipalGlobalGrants(
                 principalName, principalType);
             if (mUsers.size() > 0) {
