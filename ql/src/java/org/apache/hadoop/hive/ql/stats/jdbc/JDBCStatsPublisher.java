@@ -24,6 +24,7 @@ import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.SQLIntegrityConstraintViolationException;
 import java.sql.SQLRecoverableException;
 import java.sql.Statement;
 import java.util.Random;
@@ -42,7 +43,7 @@ public class JDBCStatsPublisher implements StatsPublisher {
   private String connectionString;
   private Configuration hiveconf;
   private final Log LOG = LogFactory.getLog(this.getClass().getName());
-  private PreparedStatement selStmt, updStmt, insStmt;
+  private PreparedStatement updStmt, insStmt;
   private int timeout; // default timeout in sec. for JDBC connection and statements
   // SQL comment that identifies where the SQL statement comes from
   private final String comment = "Hive stats publishing: " + this.getClass().getName();
@@ -70,19 +71,21 @@ public class JDBCStatsPublisher implements StatsPublisher {
     }
 
     // prepare the SELECT/UPDATE/INSERT statements
-    String select =
-      "SELECT /* " + comment + " */ " + JDBCStatsSetupConstants.PART_STAT_ROW_COUNT_COLUMN_NAME +
-      " FROM " + JDBCStatsSetupConstants.PART_STAT_TABLE_NAME +
-      " WHERE " + JDBCStatsSetupConstants.PART_STAT_ID_COLUMN_NAME + " = ?";
 
     String update =
-      "UPDATE /* " + comment + " */ "+ JDBCStatsSetupConstants.PART_STAT_TABLE_NAME +
-      " SET " +  JDBCStatsSetupConstants.PART_STAT_ROW_COUNT_COLUMN_NAME + "= ? " +
-      " WHERE " + JDBCStatsSetupConstants.PART_STAT_ID_COLUMN_NAME + " = ?";
+        "UPDATE /* " + comment + " */ " + JDBCStatsSetupConstants.PART_STAT_TABLE_NAME +
+            " SET " + JDBCStatsSetupConstants.PART_STAT_ROW_COUNT_COLUMN_NAME + "= ? " +
+            " WHERE " + JDBCStatsSetupConstants.PART_STAT_ID_COLUMN_NAME + " = ? " +
+            " AND ? > ( SELECT TEMP." + JDBCStatsSetupConstants.PART_STAT_ROW_COUNT_COLUMN_NAME
+            + " FROM ( " +
+            " SELECT " + JDBCStatsSetupConstants.PART_STAT_ROW_COUNT_COLUMN_NAME + " FROM "
+            + JDBCStatsSetupConstants.PART_STAT_TABLE_NAME +
+            " WHERE " + JDBCStatsSetupConstants.PART_STAT_ID_COLUMN_NAME
+            + " = ?) TEMP )";
 
     String insert =
-      "INSERT INTO /* " + comment + " */ " + JDBCStatsSetupConstants.PART_STAT_TABLE_NAME +
-      " VALUES (?, ?)";
+        "INSERT INTO /* " + comment + " */ " + JDBCStatsSetupConstants.PART_STAT_TABLE_NAME +
+            " VALUES (?, ?)";
 
     DriverManager.setLoginTimeout(timeout); // stats is non-blocking
 
@@ -95,25 +98,24 @@ public class JDBCStatsPublisher implements StatsPublisher {
       }
     };
 
-    for (int failures = 0; ; failures++) {
+    for (int failures = 0;; failures++) {
       try {
         conn = Utilities.connectWithRetry(connectionString, waitWindow, maxRetries);
 
         // prepare statements
-        selStmt = Utilities.prepareWithRetry(conn, select, waitWindow, maxRetries);
         updStmt = Utilities.prepareWithRetry(conn, update, waitWindow, maxRetries);
         insStmt = Utilities.prepareWithRetry(conn, insert, waitWindow, maxRetries);
 
         // set query timeout
-        Utilities.executeWithRetry(setQueryTimeout, selStmt, waitWindow, maxRetries);
         Utilities.executeWithRetry(setQueryTimeout, updStmt, waitWindow, maxRetries);
         Utilities.executeWithRetry(setQueryTimeout, insStmt, waitWindow, maxRetries);
 
         return true;
+
       } catch (SQLRecoverableException e) {
         if (failures >= maxRetries) {
           LOG.error("Error during JDBC connection to " + connectionString + ". ", e);
-          return false;  // just return false without fail the task
+          return false; // just return false without fail the task
         }
         long waitTime = Utilities.getRandomWaitTime(waitWindow, failures, r);
         try {
@@ -143,13 +145,6 @@ public class JDBCStatsPublisher implements StatsPublisher {
     }
     LOG.info("Stats publishing for key " + fileID + ". Value = " + value);
 
-    Utilities.SQLCommand<ResultSet> execQuery = new Utilities.SQLCommand<ResultSet>() {
-      @Override
-      public ResultSet run(PreparedStatement stmt) throws SQLException {
-        return stmt.executeQuery();
-      }
-    };
-
     Utilities.SQLCommand<Void> execUpdate = new Utilities.SQLCommand<Void>() {
       @Override
       public Void run(PreparedStatement stmt) throws SQLException {
@@ -158,45 +153,40 @@ public class JDBCStatsPublisher implements StatsPublisher {
       }
     };
 
-    for (int failures = 0; ; failures++) {
+    for (int failures = 0;; failures++) {
       try {
+        insStmt.setString(1, fileID);
+        insStmt.setString(2, value);
+        Utilities.executeWithRetry(execUpdate, insStmt, waitWindow, maxRetries);
+        return true;
+      } catch (SQLIntegrityConstraintViolationException e) {
 
-        // Check to see if a previous task (mapper attempt) had published a previous stat
-        selStmt.setString(1, fileID);
-        ResultSet result = Utilities.executeWithRetry(execQuery, selStmt, waitWindow, maxRetries);
+        // We assume that the table used for partial statistics has a primary key declared on the
+        // "fileID". The exception will be thrown if two tasks report results for the same fileID.
+        // In such case, we either update the row, or abandon changes depending on which statistic
+        // is newer.
 
-        if (result.next()) {
-          long currval = result.getLong(1);
-          // Only update if the previous value is smaller (i.e. the previous attempt was a fail and
-          // hopefully this attempt is a success (as it has a greater value).
-          if (currval < Long.parseLong(value)) {
+        for (int updateFailures = 0;; updateFailures++) {
+          try {
             updStmt.setString(1, value);
             updStmt.setString(2, fileID);
+            updStmt.setString(3, value);
+            updStmt.setString(4, fileID);
             Utilities.executeWithRetry(execUpdate, updStmt, waitWindow, maxRetries);
+            return true;
+          } catch (SQLRecoverableException ue) {
+            // need to start from scratch (connection)
+            if (!handleSQLRecoverableException(ue, updateFailures)) {
+              return false;
+            }
+          } catch (SQLException ue) {
+            LOG.error("Error during publishing statistics. ", e);
+            return false;
           }
-        } else {
-          // No previous attempts.
-          insStmt.setString(1, fileID);
-          insStmt.setString(2, value);
-          Utilities.executeWithRetry(execUpdate, insStmt, waitWindow, maxRetries);
         }
-        return true;
       } catch (SQLRecoverableException e) {
         // need to start from scratch (connection)
-        if (failures >= maxRetries) {
-          return false;
-        }
-        // close the current connection
-        closeConnection();
-        long waitTime = Utilities.getRandomWaitTime(waitWindow, failures, r);
-        try {
-          Thread.sleep(waitTime);
-        } catch (InterruptedException iex) {
-        }
-        // get a new connection
-        if (!connect(hiveconf)) {
-          // if cannot reconnect, just fail because connect() already handles retries.
-          LOG.error("Error during publishing aggregation. " + e);
+        if (!handleSQLRecoverableException(e, failures)) {
           return false;
         }
       } catch (SQLException e) {
@@ -204,6 +194,26 @@ public class JDBCStatsPublisher implements StatsPublisher {
         return false;
       }
     }
+  }
+
+  private boolean handleSQLRecoverableException(Exception e, int failures) {
+    if (failures >= maxRetries) {
+      return false;
+    }
+    // close the current connection
+    closeConnection();
+    long waitTime = Utilities.getRandomWaitTime(waitWindow, failures, r);
+    try {
+      Thread.sleep(waitTime);
+    } catch (InterruptedException iex) {
+    }
+    // get a new connection
+    if (!connect(hiveconf)) {
+      // if cannot reconnect, just fail because connect() already handles retries.
+      LOG.error("Error during publishing aggregation. " + e);
+      return false;
+    }
+    return true;
   }
 
   @Override
@@ -218,20 +228,18 @@ public class JDBCStatsPublisher implements StatsPublisher {
       if (updStmt != null) {
         updStmt.close();
       }
-      if (selStmt != null) {
-        selStmt.close();
-      }
 
       conn.close();
 
       // In case of derby, explicitly shutdown the database otherwise it reports error when
       // trying to connect to the same JDBC connection string again.
-      if(HiveConf.getVar(hiveconf, HiveConf.ConfVars.HIVESTATSDBCLASS).equalsIgnoreCase("jdbc:derby")) {
+      if (HiveConf.getVar(hiveconf, HiveConf.ConfVars.HIVESTATSDBCLASS).equalsIgnoreCase(
+          "jdbc:derby")) {
         try {
-          // The following closes the derby connection. It throws an exception that has to be caught and ignored.
+          // The following closes the derby connection. It throws an exception that has to be caught
+          // and ignored.
           DriverManager.getConnection(connectionString + ";shutdown=true");
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
           // Do nothing because we know that an exception is thrown anyway.
         }
       }
@@ -265,9 +273,9 @@ public class JDBCStatsPublisher implements StatsPublisher {
       boolean tblExists = rs.next();
       if (!tblExists) { // Table does not exist, create it
         String createTable =
-          "CREATE TABLE " + JDBCStatsSetupConstants.PART_STAT_TABLE_NAME + " (" +
-          JDBCStatsSetupConstants.PART_STAT_ID_COLUMN_NAME + " VARCHAR(255), " +
-          JDBCStatsSetupConstants.PART_STAT_ROW_COUNT_COLUMN_NAME + " BIGINT)";
+            "CREATE TABLE " + JDBCStatsSetupConstants.PART_STAT_TABLE_NAME + " (" +
+                JDBCStatsSetupConstants.PART_STAT_ID_COLUMN_NAME + " VARCHAR(255) PRIMARY KEY, " +
+                JDBCStatsSetupConstants.PART_STAT_ROW_COUNT_COLUMN_NAME + " BIGINT )";
 
         stmt.executeUpdate(createTable);
         stmt.close();
