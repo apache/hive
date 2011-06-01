@@ -74,7 +74,7 @@ public class HiveCassandraStandardColumnInputFormat extends
 
     SlicePredicate predicate = new SlicePredicate();
 
-    if (isTransposed || readColIDs.size() == columns.size()) {
+    if (isTransposed || readColIDs.size() == columns.size() || readColIDs.size() == 0) {
       //We are reading all columns
       SliceRange range = new SliceRange();
       range.setStart(new byte[0]);
