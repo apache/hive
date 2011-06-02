@@ -20,9 +20,11 @@ package org.apache.hadoop.hive.ql.io;
 
 import java.io.IOException;
 
+import org.apache.hadoop.hive.io.HiveIOExceptionHandlerUtil;
 import org.apache.hadoop.hive.ql.exec.ExecMapper;
 import org.apache.hadoop.io.Writable;
 import org.apache.hadoop.io.WritableComparable;
+import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.mapred.RecordReader;
 
 /**
@@ -33,9 +35,18 @@ public class HiveRecordReader<K extends WritableComparable, V extends Writable>
     extends HiveContextAwareRecordReader<K, V> {
 
   private final RecordReader recordReader;
+  
+  private JobConf jobConf;
 
-  public HiveRecordReader(RecordReader recordReader) throws IOException {
+  public HiveRecordReader(RecordReader recordReader)
+      throws IOException {
     this.recordReader = recordReader;
+  }
+  
+  public HiveRecordReader(RecordReader recordReader, JobConf conf)
+      throws IOException {
+    this.recordReader = recordReader;
+    this.jobConf = conf;
   }
 
   public void doClose() throws IOException {
@@ -63,7 +74,11 @@ public class HiveRecordReader<K extends WritableComparable, V extends Writable>
     if (ExecMapper.getDone()) {
       return false;
     }
-    return recordReader.next(key, value);
+    try {
+      return recordReader.next(key, value);
+    } catch (Exception e) {
+      return HiveIOExceptionHandlerUtil.handleRecordReaderNextException(e, jobConf);
+    }
   }
 
 }

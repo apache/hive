@@ -396,9 +396,10 @@ public class BucketMapJoinOptimizer implements Transform {
           }
         } else {
           int jump = smallTblBucketNum / bigTblBucketNum;
+          List<String> bucketNames = aliasToBucketFileNamesMapping.get(alias);
           for (int i = index; i < aliasToBucketFileNamesMapping.get(alias).size(); i = i + jump) {
             if(i <= aliasToBucketFileNamesMapping.get(alias).size()) {
-              resultFileNames.add(aliasToBucketFileNamesMapping.get(alias).get(i));
+              resultFileNames.add(bucketNames.get(i));
             }
           }
         }

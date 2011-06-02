@@ -1118,4 +1118,12 @@
    of data sampled.</description>
 </property>
 
+<property>
+	<name>hive.io.exception.handlers</name>
+	<value></value>
+	<description>A list of io exception handler class names. This is used
+		to construct a list exception handlers to handle exceptions thrown 
+		by record readers</description>
+</property>
+
 </configuration>
