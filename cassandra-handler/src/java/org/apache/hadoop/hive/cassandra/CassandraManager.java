@@ -102,7 +102,9 @@ public class CassandraManager {
    *
    */
   public void closeConnection() {
+    if (clientHolder != null) {
       clientHolder.close();
+    }
   }
 
   /**

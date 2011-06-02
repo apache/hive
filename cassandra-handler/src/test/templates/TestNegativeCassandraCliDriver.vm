@@ -1,0 +1,115 @@
+package org.apache.hadoop.hive.cli;
+
+import junit.framework.Test;
+import junit.framework.TestCase;
+import junit.framework.TestSuite;
+
+import java.io.*;
+import java.util.*;
+
+import org.apache.hadoop.hive.cassandra.CassandraQTestUtil;
+import org.apache.hadoop.hive.cassandra.CassandraTestSetup;
+import org.apache.hadoop.hive.ql.exec.Task;
+import org.apache.hadoop.hive.ql.history.HiveHistoryViewer;
+import org.apache.hadoop.hive.ql.history.HiveHistory.QueryInfo;
+import org.apache.hadoop.hive.ql.history.HiveHistory.Keys;
+import org.apache.hadoop.hive.ql.history.HiveHistory.TaskInfo;
+import org.apache.hadoop.hive.ql.session.SessionState;
+
+import org.antlr.runtime.*;
+import org.antlr.runtime.tree.*;
+
+public class $className extends TestCase {
+
+  private CassandraQTestUtil qt;
+  private CassandraTestSetup setup;
+
+  public $className(String name, CassandraTestSetup setup) {
+    super(name);
+    qt = null;
+    this.setup = setup;
+  }
+
+  @Override
+  protected void setUp() {
+    try {
+      boolean miniMR = false;
+      if ("$clusterMode".equals("miniMR")) {
+        miniMR = true;
+      }
+
+      qt = new CassandraQTestUtil(
+        "$resultsDir.getCanonicalPath()",
+        "$logDir.getCanonicalPath()", miniMR, setup);
+
+#foreach ($qf in $qfiles)
+      qt.addFile("$qf.getCanonicalPath()");
+#end
+    } catch (Exception e) {
+      System.out.println("Exception: " + e.getMessage());
+      e.printStackTrace();
+      System.out.flush();
+      fail("Unexpected exception in setup");
+    }
+  }
+
+  @Override
+  protected void tearDown() {
+    try {
+      qt.shutdown();
+    }
+    catch (Exception e) {
+      System.out.println("Exception: " + e.getMessage());
+      e.printStackTrace();
+      System.out.flush();
+      fail("Unexpected exception in tearDown");
+    }
+  }
+
+  public static Test suite() {
+    TestSuite suite = new TestSuite();
+    CassandraTestSetup setup = new CassandraTestSetup(suite);
+#foreach ($qf in $qfiles)
+  #set ($fname = $qf.getName())
+  #set ($eidx = $fname.length() - 2)
+  #set ($tname = $fname.substring(0, $eidx))
+    suite.addTest(new $className("testNegativeCliDriver_$tname", setup));
+#end
+    return setup;
+  }
+
+  static String debugHint = "\nSee build/ql/tmp/hive.log, "
+     + "or try \"ant test ... -Dtest.silent=false\" to get more logs.";
+
+  #foreach ($qf in $qfiles)
+  #set ($fname = $qf.getName())
+  #set ($eidx = $fname.length() - 2)
+  #set ($tname = $fname.substring(0, $eidx))
+  public void testNegativeCliDriver_$tname() throws Exception {
+    try {
+      System.out.println("Begin query: " + "$fname");
+      qt.cliInit("$fname");
+      int ecode = qt.executeClient("$fname");
+      if (ecode == 0) {
+        fail("Client Execution failed with error code = " + ecode
+            + debugHint);
+      }
+
+      ecode = qt.checkCliDriverResults("$fname");
+      if (ecode != 0) {
+        fail("Client execution results failed with error code = " + ecode);
+      }
+    } catch (Throwable e) {
+      System.out.println("Exception: " + e.getMessage());
+      e.printStackTrace();
+      System.out.flush();
+      fail("Unexpected exception");
+    }
+
+    System.out.println("Done query: " + "$fname");
+    assertTrue("Test passed", true);
+  }
+
+#end
+}
+
