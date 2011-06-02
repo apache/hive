@@ -33,6 +33,7 @@ import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.io.HiveIOExceptionHandlerUtil;
 import org.apache.hadoop.hive.ql.plan.MapredWork;
 import org.apache.hadoop.hive.ql.plan.PartitionDesc;
 import org.apache.hadoop.io.LongWritable;
@@ -105,9 +106,19 @@ public class SymlinkTextInputFormat extends SymbolicInputFormat implements
     // The target data is in TextInputFormat.
     TextInputFormat inputFormat = new TextInputFormat();
     inputFormat.configure(job);
-    return inputFormat.getRecordReader(targetSplit, job, reporter);
+    RecordReader innerReader = null;
+    try {
+      innerReader = inputFormat.getRecordReader(targetSplit, job,
+          reporter);
+    } catch (Exception e) {
+      innerReader = HiveIOExceptionHandlerUtil
+          .handleRecordReaderCreationException(e, job);
+    }
+    HiveRecordReader rr = new HiveRecordReader(innerReader, job);
+    rr.initIOContext((FileSplit)targetSplit, job, TextInputFormat.class, innerReader);
+    return rr;
   }
-
+  
   /**
    * Parses all target paths from job input directory which contains symlink
    * files, and splits the target data using TextInputFormat.

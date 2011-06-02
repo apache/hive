@@ -32,6 +32,8 @@ import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.fs.PathFilter;
 import org.apache.hadoop.hdfs.MiniDFSCluster;
+import org.apache.hadoop.hive.io.HiveIOExceptionHandlerChain;
+import org.apache.hadoop.hive.io.HiveIOExceptionHandlerUtil;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapred.FileInputFormat;
 import org.apache.hadoop.mapred.InputFormat;
@@ -209,10 +211,12 @@ public class Hadoop20Shims implements HadoopShims {
     protected RecordReader<K, V> curReader;
     protected boolean isShrinked;
     protected long shrinkedLength;
-
+    
     public boolean next(K key, V value) throws IOException {
 
-      while ((curReader == null) || !curReader.next((K)((CombineHiveKey)key).getKey(), value)) {
+      while ((curReader == null)
+          || !doNextWithExceptionHandler((K) ((CombineHiveKey) key).getKey(),
+              value)) {
         if (!initNextRecordReader(key)) {
           return false;
         }
@@ -283,6 +287,21 @@ public class Hadoop20Shims implements HadoopShims {
       }
       initNextRecordReader(null);
     }
+    
+    /**
+     * do next and handle exception inside it. 
+     * @param key
+     * @param value
+     * @return
+     * @throws IOException
+     */
+    private boolean doNextWithExceptionHandler(K key, V value) throws IOException {
+      try {
+        return curReader.next(key, value);
+      } catch (Exception e) {
+        return HiveIOExceptionHandlerUtil.handleRecordReaderNextException(e, jc);
+      }
+    }
 
     /**
      * Get the record reader for the next chunk in this CombineFileSplit.
@@ -318,7 +337,7 @@ public class Hadoop20Shims implements HadoopShims {
         jc.setLong("map.input.start", split.getOffset(idx));
         jc.setLong("map.input.length", split.getLength(idx));
       } catch (Exception e) {
-        throw new RuntimeException(e);
+        curReader=HiveIOExceptionHandlerUtil.handleRecordReaderCreationException(e, jc);
       }
       idx++;
       return true;

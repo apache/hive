@@ -20,6 +20,7 @@ package org.apache.hadoop.hive.ql.io;
 
 import java.io.IOException;
 
+import org.apache.hadoop.hive.io.HiveIOExceptionHandlerUtil;
 import org.apache.hadoop.io.Writable;
 import org.apache.hadoop.io.WritableComparable;
 import org.apache.hadoop.mapred.InputFormat;
@@ -40,10 +41,10 @@ public class BucketizedHiveRecordReader<K extends WritableComparable, V extends 
   protected final InputFormat inputFormat;
   protected final JobConf jobConf;
   protected final Reporter reporter;
-  protected RecordReader curReader;
+  protected RecordReader<K,V> curReader;
   protected long progress;
   protected int idx;
-
+  
   public BucketizedHiveRecordReader(InputFormat inputFormat,
       BucketizedHiveInputSplit bucketizedSplit, JobConf jobConf,
       Reporter reporter) throws IOException {
@@ -86,12 +87,20 @@ public class BucketizedHiveRecordReader<K extends WritableComparable, V extends 
   }
 
   public boolean doNext(K key, V value) throws IOException {
-    while ((curReader == null) || !curReader.next(key, value)) {
+    while ((curReader == null) || !doNextWithExceptionHandler(key, value)) {
       if (!initNextRecordReader()) {
         return false;
       }
     }
     return true;
+  }
+  
+  private boolean doNextWithExceptionHandler(K key, V value) throws IOException {
+    try {
+      return curReader.next(key, value);
+    } catch (Exception e) {
+      return HiveIOExceptionHandlerUtil.handleRecordReaderNextException(e, jobConf);
+    }
   }
 
   /**
@@ -117,9 +126,11 @@ public class BucketizedHiveRecordReader<K extends WritableComparable, V extends 
       curReader = inputFormat.getRecordReader(split.getSplit(idx), jobConf,
           reporter);
     } catch (Exception e) {
-      throw new RuntimeException(e);
+      curReader = HiveIOExceptionHandlerUtil.handleRecordReaderCreationException(e, jobConf);
     }
     idx++;
     return true;
   }
+
+
 }

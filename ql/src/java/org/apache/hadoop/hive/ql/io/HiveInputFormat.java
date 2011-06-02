@@ -33,6 +33,9 @@ import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.conf.Configurable;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.hive.io.HiveIOExceptionHandler;
+import org.apache.hadoop.hive.io.HiveIOExceptionHandlerChain;
+import org.apache.hadoop.hive.io.HiveIOExceptionHandlerUtil;
 import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.exec.TableScanOperator;
 import org.apache.hadoop.hive.ql.exec.Utilities;
@@ -171,7 +174,7 @@ public class HiveInputFormat<K extends WritableComparable, V extends Writable>
   }
 
   JobConf job;
-
+  
   public void configure(JobConf job) {
     this.job = job;
   }
@@ -204,7 +207,7 @@ public class HiveInputFormat<K extends WritableComparable, V extends Writable>
       Reporter reporter) throws IOException {
 
     HiveInputSplit hsplit = (HiveInputSplit) split;
-
+    
     InputSplit inputSplit = hsplit.getInputSplit();
     String inputFormatClassName = null;
     Class inputFormatClass = null;
@@ -234,14 +237,19 @@ public class HiveInputFormat<K extends WritableComparable, V extends Writable>
 
     InputFormat inputFormat = getInputFormatFromCache(inputFormatClass,
         cloneJobConf);
-    RecordReader innerReader = inputFormat.getRecordReader(inputSplit,
+    RecordReader innerReader = null;
+    try {
+      innerReader = inputFormat.getRecordReader(inputSplit,
         cloneJobConf, reporter);
-
-    HiveRecordReader<K,V> rr = new HiveRecordReader(innerReader);
+    } catch (Exception e) {
+      innerReader = HiveIOExceptionHandlerUtil
+          .handleRecordReaderCreationException(e, cloneJobConf);
+    }
+    HiveRecordReader<K,V> rr = new HiveRecordReader(innerReader, job);
     rr.initIOContext(hsplit, job, inputFormatClass, innerReader);
     return rr;
   }
-
+  
   protected Map<String, PartitionDesc> pathToPartitionInfo;
   MapredWork mrwork = null;
 
