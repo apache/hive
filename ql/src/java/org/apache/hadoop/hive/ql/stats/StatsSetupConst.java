@@ -34,23 +34,31 @@ public class StatsSetupConst {
   public static final String JDBC_IMPL_CLASS_VAL = "jdbc";
 
   /**
+   * The name of the statistic Num Files to be published or gathered.
+   */
+  public static final String NUM_FILES = "numFiles";
+
+  /**
+   * The name of the statistic Num Partitions to be published or gathered.
+   */
+  public static final String NUM_PARTITIONS = "numPartitions";
+
+  /**
+   * The name of the statistic Total Size to be published or gathered.
+   */
+  public static final String TOTAL_SIZE = "totalSize";
+
+
+  // statistics stored in metastore
+
+  /**
    * The name of the statistic Row Count to be published or gathered.
    */
   public static final String ROW_COUNT = "numRows";
 
   /**
-   * The name of the statistic Row Count to be published or gathered.
+   * The name of the statistic Raw Data Size to be published or gathered.
    */
-  public static final String NUM_FILES = "numFiles";
-
-  /**
-   * The name of the statistic Row Count to be published or gathered.
-   */
-  public static final String NUM_PARTITIONS = "numPartitions";
-
-  /**
-   * The name of the statistic Row Count to be published or gathered.
-   */
-  public static final String TOTAL_SIZE = "totalSize";
+  public static final String RAW_DATA_SIZE = "rawDataSize";
 
 }

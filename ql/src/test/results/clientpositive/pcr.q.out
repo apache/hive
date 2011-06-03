@@ -112,10 +112,10 @@ STAGE PLANS:
                           type: string
       Needs Tagging: false
       Path -> Alias:
-        pfile:/data/users/nzhang/work/3/apache-hive/build/ql/test/data/warehouse/pcr_t1/ds=2000-04-08 [pcr_t1]
-        pfile:/data/users/nzhang/work/3/apache-hive/build/ql/test/data/warehouse/pcr_t1/ds=2000-04-09 [pcr_t1]
+        pfile:/data/users/tomasz/apache-hive/build/ql/test/data/warehouse/pcr_t1/ds=2000-04-08 [pcr_t1]
+        pfile:/data/users/tomasz/apache-hive/build/ql/test/data/warehouse/pcr_t1/ds=2000-04-09 [pcr_t1]
       Path -> Partition:
-        pfile:/data/users/nzhang/work/3/apache-hive/build/ql/test/data/warehouse/pcr_t1/ds=2000-04-08 
+        pfile:/data/users/tomasz/apache-hive/build/ql/test/data/warehouse/pcr_t1/ds=2000-04-08 
           Partition
             base file name: ds=2000-04-08
             input format: org.apache.hadoop.mapred.TextInputFormat
@@ -128,17 +128,18 @@ STAGE PLANS:
               columns.types int:string
               file.inputformat org.apache.hadoop.mapred.TextInputFormat
               file.outputformat org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-              location pfile:/data/users/nzhang/work/3/apache-hive/build/ql/test/data/warehouse/pcr_t1/ds=2000-04-08
+              location pfile:/data/users/tomasz/apache-hive/build/ql/test/data/warehouse/pcr_t1/ds=2000-04-08
               name default.pcr_t1
               numFiles 1
               numPartitions 3
               numRows 20
               partition_columns ds
+              rawDataSize 160
               serialization.ddl struct pcr_t1 { i32 key, string value}
               serialization.format 1
               serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               totalSize 180
-              transient_lastDdlTime 1302062681
+              transient_lastDdlTime 1306984455
             serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
           
               input format: org.apache.hadoop.mapred.TextInputFormat
@@ -149,21 +150,22 @@ STAGE PLANS:
                 columns.types int:string
                 file.inputformat org.apache.hadoop.mapred.TextInputFormat
                 file.outputformat org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                location pfile:/data/users/nzhang/work/3/apache-hive/build/ql/test/data/warehouse/pcr_t1
+                location pfile:/data/users/tomasz/apache-hive/build/ql/test/data/warehouse/pcr_t1
                 name default.pcr_t1
                 numFiles 3
                 numPartitions 3
                 numRows 60
                 partition_columns ds
+                rawDataSize 480
                 serialization.ddl struct pcr_t1 { i32 key, string value}
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                 totalSize 540
-                transient_lastDdlTime 1302062690
+                transient_lastDdlTime 1306984463
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: default.pcr_t1
             name: default.pcr_t1
-        pfile:/data/users/nzhang/work/3/apache-hive/build/ql/test/data/warehouse/pcr_t1/ds=2000-04-09 
+        pfile:/data/users/tomasz/apache-hive/build/ql/test/data/warehouse/pcr_t1/ds=2000-04-09 
           Partition
             base file name: ds=2000-04-09
             input format: org.apache.hadoop.mapred.TextInputFormat
@@ -176,17 +178,18 @@ STAGE PLANS:
               columns.types int:string
               file.inputformat org.apache.hadoop.mapred.TextInputFormat
               file.outputformat org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-              location pfile:/data/users/nzhang/work/3/apache-hive/build/ql/test/data/warehouse/pcr_t1/ds=2000-04-09
+              location pfile:/data/users/tomasz/apache-hive/build/ql/test/data/warehouse/pcr_t1/ds=2000-04-09
               name default.pcr_t1
               numFiles 1
               numPartitions 3
               numRows 20
               partition_columns ds
+              rawDataSize 160
               serialization.ddl struct pcr_t1 { i32 key, string value}
               serialization.format 1
               serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               totalSize 180
-              transient_lastDdlTime 1302062685
+              transient_lastDdlTime 1306984459
             serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
           
               input format: org.apache.hadoop.mapred.TextInputFormat
@@ -197,17 +200,18 @@ STAGE PLANS:
                 columns.types int:string
                 file.inputformat org.apache.hadoop.mapred.TextInputFormat
                 file.outputformat org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                location pfile:/data/users/nzhang/work/3/apache-hive/build/ql/test/data/warehouse/pcr_t1
+                location pfile:/data/users/tomasz/apache-hive/build/ql/test/data/warehouse/pcr_t1
                 name default.pcr_t1
                 numFiles 3
                 numPartitions 3
                 numRows 60
                 partition_columns ds
+                rawDataSize 480
                 serialization.ddl struct pcr_t1 { i32 key, string value}
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                 totalSize 540
-                transient_lastDdlTime 1302062690
+                transient_lastDdlTime 1306984463
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: default.pcr_t1
             name: default.pcr_t1
@@ -216,9 +220,9 @@ STAGE PLANS:
           File Output Operator
             compressed: false
             GlobalTableId: 0
-            directory: file:/tmp/nzhang/hive_2011-04-05_21-04-50_219_2344810470921724019/-ext-10001
+            directory: file:/tmp/tomasz/hive_2011-06-01_20-14-23_794_45487565656477583/-ext-10001
             NumFilesPerFileSink: 1
-            Stats Publishing Key Prefix: file:/tmp/nzhang/hive_2011-04-05_21-04-50_219_2344810470921724019/-ext-10001/
+            Stats Publishing Key Prefix: file:/tmp/tomasz/hive_2011-06-01_20-14-23_794_45487565656477583/-ext-10001/
             table:
                 input format: org.apache.hadoop.mapred.TextInputFormat
                 output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
@@ -239,12 +243,12 @@ PREHOOK: query: select key, value, ds from pcr_t1 where ds<='2000-04-09' and key
 PREHOOK: type: QUERY
 PREHOOK: Input: default@pcr_t1@ds=2000-04-08
 PREHOOK: Input: default@pcr_t1@ds=2000-04-09
-PREHOOK: Output: file:/tmp/nzhang/hive_2011-04-05_21-04-50_338_1591075691969072143/-mr-10000
+PREHOOK: Output: file:/tmp/tomasz/hive_2011-06-01_20-14-23_901_543871112868419867/-mr-10000
 POSTHOOK: query: select key, value, ds from pcr_t1 where ds<='2000-04-09' and key<5 order by key, ds
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@pcr_t1@ds=2000-04-08
 POSTHOOK: Input: default@pcr_t1@ds=2000-04-09
-POSTHOOK: Output: file:/tmp/nzhang/hive_2011-04-05_21-04-50_338_1591075691969072143/-mr-10000
+POSTHOOK: Output: file:/tmp/tomasz/hive_2011-06-01_20-14-23_901_543871112868419867/-mr-10000
 POSTHOOK: Lineage: pcr_t1 PARTITION(ds=2000-04-08).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: pcr_t1 PARTITION(ds=2000-04-08).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: pcr_t1 PARTITION(ds=2000-04-09).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
@@ -316,11 +320,11 @@ STAGE PLANS:
                           type: string
       Needs Tagging: false
       Path -> Alias:
-        pfile:/data/users/nzhang/work/3/apache-hive/build/ql/test/data/warehouse/pcr_t1/ds=2000-04-08 [pcr_t1]
-        pfile:/data/users/nzhang/work/3/apache-hive/build/ql/test/data/warehouse/pcr_t1/ds=2000-04-09 [pcr_t1]
-        pfile:/data/users/nzhang/work/3/apache-hive/build/ql/test/data/warehouse/pcr_t1/ds=2000-04-10 [pcr_t1]
+        pfile:/data/users/tomasz/apache-hive/build/ql/test/data/warehouse/pcr_t1/ds=2000-04-08 [pcr_t1]
+        pfile:/data/users/tomasz/apache-hive/build/ql/test/data/warehouse/pcr_t1/ds=2000-04-09 [pcr_t1]
+        pfile:/data/users/tomasz/apache-hive/build/ql/test/data/warehouse/pcr_t1/ds=2000-04-10 [pcr_t1]
       Path -> Partition:
-        pfile:/data/users/nzhang/work/3/apache-hive/build/ql/test/data/warehouse/pcr_t1/ds=2000-04-08 
+        pfile:/data/users/tomasz/apache-hive/build/ql/test/data/warehouse/pcr_t1/ds=2000-04-08 
           Partition
             base file name: ds=2000-04-08
             input format: org.apache.hadoop.mapred.TextInputFormat
@@ -333,17 +337,18 @@ STAGE PLANS:
               columns.types int:string
               file.inputformat org.apache.hadoop.mapred.TextInputFormat
               file.outputformat org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-              location pfile:/data/users/nzhang/work/3/apache-hive/build/ql/test/data/warehouse/pcr_t1/ds=2000-04-08
+              location pfile:/data/users/tomasz/apache-hive/build/ql/test/data/warehouse/pcr_t1/ds=2000-04-08
               name default.pcr_t1
               numFiles 1
               numPartitions 3
               numRows 20
               partition_columns ds
+              rawDataSize 160
               serialization.ddl struct pcr_t1 { i32 key, string value}
               serialization.format 1
               serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               totalSize 180
-              transient_lastDdlTime 1302062681
+              transient_lastDdlTime 1306984455
             serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
           
               input format: org.apache.hadoop.mapred.TextInputFormat
@@ -354,21 +359,22 @@ STAGE PLANS:
                 columns.types int:string
                 file.inputformat org.apache.hadoop.mapred.TextInputFormat
                 file.outputformat org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                location pfile:/data/users/nzhang/work/3/apache-hive/build/ql/test/data/warehouse/pcr_t1
+                location pfile:/data/users/tomasz/apache-hive/build/ql/test/data/warehouse/pcr_t1
                 name default.pcr_t1
                 numFiles 3
                 numPartitions 3
                 numRows 60
                 partition_columns ds
+                rawDataSize 480
                 serialization.ddl struct pcr_t1 { i32 key, string value}
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                 totalSize 540
-                transient_lastDdlTime 1302062690
+                transient_lastDdlTime 1306984463
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: default.pcr_t1
             name: default.pcr_t1
-        pfile:/data/users/nzhang/work/3/apache-hive/build/ql/test/data/warehouse/pcr_t1/ds=2000-04-09 
+        pfile:/data/users/tomasz/apache-hive/build/ql/test/data/warehouse/pcr_t1/ds=2000-04-09 
           Partition
             base file name: ds=2000-04-09
             input format: org.apache.hadoop.mapred.TextInputFormat
@@ -381,17 +387,18 @@ STAGE PLANS:
               columns.types int:string
               file.inputformat org.apache.hadoop.mapred.TextInputFormat
               file.outputformat org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-              location pfile:/data/users/nzhang/work/3/apache-hive/build/ql/test/data/warehouse/pcr_t1/ds=2000-04-09
+              location pfile:/data/users/tomasz/apache-hive/build/ql/test/data/warehouse/pcr_t1/ds=2000-04-09
               name default.pcr_t1
               numFiles 1
               numPartitions 3
               numRows 20
               partition_columns ds
+              rawDataSize 160
               serialization.ddl struct pcr_t1 { i32 key, string value}
               serialization.format 1
               serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               totalSize 180
-              transient_lastDdlTime 1302062685
+              transient_lastDdlTime 1306984459
             serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
           
               input format: org.apache.hadoop.mapred.TextInputFormat
@@ -402,21 +409,22 @@ STAGE PLANS:
                 columns.types int:string
                 file.inputformat org.apache.hadoop.mapred.TextInputFormat
                 file.outputformat org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                location pfile:/data/users/nzhang/work/3/apache-hive/build/ql/test/data/warehouse/pcr_t1
+                location pfile:/data/users/tomasz/apache-hive/build/ql/test/data/warehouse/pcr_t1
                 name default.pcr_t1
                 numFiles 3
                 numPartitions 3
                 numRows 60
                 partition_columns ds
+                rawDataSize 480
                 serialization.ddl struct pcr_t1 { i32 key, string value}
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                 totalSize 540
-                transient_lastDdlTime 1302062690
+                transient_lastDdlTime 1306984463
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: default.pcr_t1
             name: default.pcr_t1
-        pfile:/data/users/nzhang/work/3/apache-hive/build/ql/test/data/warehouse/pcr_t1/ds=2000-04-10 
+        pfile:/data/users/tomasz/apache-hive/build/ql/test/data/warehouse/pcr_t1/ds=2000-04-10 
           Partition
             base file name: ds=2000-04-10
             input format: org.apache.hadoop.mapred.TextInputFormat
@@ -429,17 +437,18 @@ STAGE PLANS:
               columns.types int:string
               file.inputformat org.apache.hadoop.mapred.TextInputFormat
               file.outputformat org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-              location pfile:/data/users/nzhang/work/3/apache-hive/build/ql/test/data/warehouse/pcr_t1/ds=2000-04-10
+              location pfile:/data/users/tomasz/apache-hive/build/ql/test/data/warehouse/pcr_t1/ds=2000-04-10
               name default.pcr_t1
               numFiles 1
               numPartitions 3
               numRows 20
               partition_columns ds
+              rawDataSize 160
               serialization.ddl struct pcr_t1 { i32 key, string value}
               serialization.format 1
               serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               totalSize 180
-              transient_lastDdlTime 1302062690
+              transient_lastDdlTime 1306984463
             serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
           
               input format: org.apache.hadoop.mapred.TextInputFormat
@@ -450,17 +459,18 @@ STAGE PLANS:
                 columns.types int:string
                 file.inputformat org.apache.hadoop.mapred.TextInputFormat
                 file.outputformat org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                location pfile:/data/users/nzhang/work/3/apache-hive/build/ql/test/data/warehouse/pcr_t1
+                location pfile:/data/users/tomasz/apache-hive/build/ql/test/data/warehouse/pcr_t1
                 name default.pcr_t1
                 numFiles 3
                 numPartitions 3
                 numRows 60
                 partition_columns ds
+                rawDataSize 480
                 serialization.ddl struct pcr_t1 { i32 key, string value}
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                 totalSize 540
-                transient_lastDdlTime 1302062690
+                transient_lastDdlTime 1306984463
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: default.pcr_t1
             name: default.pcr_t1
@@ -469,9 +479,9 @@ STAGE PLANS:
           File Output Operator
             compressed: false
             GlobalTableId: 0
-            directory: file:/tmp/nzhang/hive_2011-04-05_21-04-53_453_8448141753544546219/-ext-10001
+            directory: file:/tmp/tomasz/hive_2011-06-01_20-14-26_949_686771378189251939/-ext-10001
             NumFilesPerFileSink: 1
-            Stats Publishing Key Prefix: file:/tmp/nzhang/hive_2011-04-05_21-04-53_453_8448141753544546219/-ext-10001/
+            Stats Publishing Key Prefix: file:/tmp/tomasz/hive_2011-06-01_20-14-26_949_686771378189251939/-ext-10001/
             table:
                 input format: org.apache.hadoop.mapred.TextInputFormat
                 output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
@@ -493,13 +503,13 @@ PREHOOK: type: QUERY
 PREHOOK: Input: default@pcr_t1@ds=2000-04-08
 PREHOOK: Input: default@pcr_t1@ds=2000-04-09
 PREHOOK: Input: default@pcr_t1@ds=2000-04-10
-PREHOOK: Output: file:/tmp/nzhang/hive_2011-04-05_21-04-53_585_2471663808341442226/-mr-10000
+PREHOOK: Output: file:/tmp/tomasz/hive_2011-06-01_20-14-27_063_5837880324861709071/-mr-10000
 POSTHOOK: query: select key, value from pcr_t1 where ds<='2000-04-09' or key<5 order by key
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@pcr_t1@ds=2000-04-08
 POSTHOOK: Input: default@pcr_t1@ds=2000-04-09
 POSTHOOK: Input: default@pcr_t1@ds=2000-04-10
-POSTHOOK: Output: file:/tmp/nzhang/hive_2011-04-05_21-04-53_585_2471663808341442226/-mr-10000
+POSTHOOK: Output: file:/tmp/tomasz/hive_2011-06-01_20-14-27_063_5837880324861709071/-mr-10000
 POSTHOOK: Lineage: pcr_t1 PARTITION(ds=2000-04-08).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: pcr_t1 PARTITION(ds=2000-04-08).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: pcr_t1 PARTITION(ds=2000-04-09).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
@@ -612,10 +622,10 @@ STAGE PLANS:
                           type: string
       Needs Tagging: false
       Path -> Alias:
-        pfile:/data/users/nzhang/work/3/apache-hive/build/ql/test/data/warehouse/pcr_t1/ds=2000-04-08 [pcr_t1]
-        pfile:/data/users/nzhang/work/3/apache-hive/build/ql/test/data/warehouse/pcr_t1/ds=2000-04-09 [pcr_t1]
+        pfile:/data/users/tomasz/apache-hive/build/ql/test/data/warehouse/pcr_t1/ds=2000-04-08 [pcr_t1]
+        pfile:/data/users/tomasz/apache-hive/build/ql/test/data/warehouse/pcr_t1/ds=2000-04-09 [pcr_t1]
       Path -> Partition:
-        pfile:/data/users/nzhang/work/3/apache-hive/build/ql/test/data/warehouse/pcr_t1/ds=2000-04-08 
+        pfile:/data/users/tomasz/apache-hive/build/ql/test/data/warehouse/pcr_t1/ds=2000-04-08 
           Partition
             base file name: ds=2000-04-08
             input format: org.apache.hadoop.mapred.TextInputFormat
@@ -628,17 +638,18 @@ STAGE PLANS:
               columns.types int:string
               file.inputformat org.apache.hadoop.mapred.TextInputFormat
               file.outputformat org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-              location pfile:/data/users/nzhang/work/3/apache-hive/build/ql/test/data/warehouse/pcr_t1/ds=2000-04-08
+              location pfile:/data/users/tomasz/apache-hive/build/ql/test/data/warehouse/pcr_t1/ds=2000-04-08
               name default.pcr_t1
               numFiles 1
               numPartitions 3
               numRows 20
               partition_columns ds
+              rawDataSize 160
               serialization.ddl struct pcr_t1 { i32 key, string value}
               serialization.format 1
               serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               totalSize 180
-              transient_lastDdlTime 1302062681
+              transient_lastDdlTime 1306984455
             serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
           
               input format: org.apache.hadoop.mapred.TextInputFormat
@@ -649,21 +660,22 @@ STAGE PLANS:
                 columns.types int:string
                 file.inputformat org.apache.hadoop.mapred.TextInputFormat
                 file.outputformat org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                location pfile:/data/users/nzhang/work/3/apache-hive/build/ql/test/data/warehouse/pcr_t1
+                location pfile:/data/users/tomasz/apache-hive/build/ql/test/data/warehouse/pcr_t1
                 name default.pcr_t1
                 numFiles 3
                 numPartitions 3
                 numRows 60
                 partition_columns ds
+                rawDataSize 480
                 serialization.ddl struct pcr_t1 { i32 key, string value}
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                 totalSize 540
-                transient_lastDdlTime 1302062690
+                transient_lastDdlTime 1306984463
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: default.pcr_t1
             name: default.pcr_t1
-        pfile:/data/users/nzhang/work/3/apache-hive/build/ql/test/data/warehouse/pcr_t1/ds=2000-04-09 
+        pfile:/data/users/tomasz/apache-hive/build/ql/test/data/warehouse/pcr_t1/ds=2000-04-09 
           Partition
             base file name: ds=2000-04-09
             input format: org.apache.hadoop.mapred.TextInputFormat
@@ -676,17 +688,18 @@ STAGE PLANS:
               columns.types int:string
               file.inputformat org.apache.hadoop.mapred.TextInputFormat
               file.outputformat org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-              location pfile:/data/users/nzhang/work/3/apache-hive/build/ql/test/data/warehouse/pcr_t1/ds=2000-04-09
+              location pfile:/data/users/tomasz/apache-hive/build/ql/test/data/warehouse/pcr_t1/ds=2000-04-09
               name default.pcr_t1
               numFiles 1
               numPartitions 3
               numRows 20
               partition_columns ds
+              rawDataSize 160
               serialization.ddl struct pcr_t1 { i32 key, string value}
               serialization.format 1
               serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               totalSize 180
-              transient_lastDdlTime 1302062685
+              transient_lastDdlTime 1306984459
             serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
           
               input format: org.apache.hadoop.mapred.TextInputFormat
@@ -697,17 +710,18 @@ STAGE PLANS:
                 columns.types int:string
                 file.inputformat org.apache.hadoop.mapred.TextInputFormat
                 file.outputformat org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                location pfile:/data/users/nzhang/work/3/apache-hive/build/ql/test/data/warehouse/pcr_t1
+                location pfile:/data/users/tomasz/apache-hive/build/ql/test/data/warehouse/pcr_t1
                 name default.pcr_t1
                 numFiles 3
                 numPartitions 3
                 numRows 60
                 partition_columns ds
+                rawDataSize 480
                 serialization.ddl struct pcr_t1 { i32 key, string value}
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                 totalSize 540
-                transient_lastDdlTime 1302062690
+                transient_lastDdlTime 1306984463
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: default.pcr_t1
             name: default.pcr_t1
@@ -716,9 +730,9 @@ STAGE PLANS:
           File Output Operator
             compressed: false
             GlobalTableId: 0
-            directory: file:/tmp/nzhang/hive_2011-04-05_21-04-56_945_7230683149267115968/-ext-10001
+            directory: file:/tmp/tomasz/hive_2011-06-01_20-14-30_270_8932721888182592546/-ext-10001
             NumFilesPerFileSink: 1
-            Stats Publishing Key Prefix: file:/tmp/nzhang/hive_2011-04-05_21-04-56_945_7230683149267115968/-ext-10001/
+            Stats Publishing Key Prefix: file:/tmp/tomasz/hive_2011-06-01_20-14-30_270_8932721888182592546/-ext-10001/
             table:
                 input format: org.apache.hadoop.mapred.TextInputFormat
                 output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
@@ -739,12 +753,12 @@ PREHOOK: query: select key, value, ds from pcr_t1 where ds<='2000-04-09' and key
 PREHOOK: type: QUERY
 PREHOOK: Input: default@pcr_t1@ds=2000-04-08
 PREHOOK: Input: default@pcr_t1@ds=2000-04-09
-PREHOOK: Output: file:/tmp/nzhang/hive_2011-04-05_21-04-57_056_4209791858248998349/-mr-10000
+PREHOOK: Output: file:/tmp/tomasz/hive_2011-06-01_20-14-30_378_3001871383983881471/-mr-10000
 POSTHOOK: query: select key, value, ds from pcr_t1 where ds<='2000-04-09' and key<5 and value != 'val_2' order by key, ds
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@pcr_t1@ds=2000-04-08
 POSTHOOK: Input: default@pcr_t1@ds=2000-04-09
-POSTHOOK: Output: file:/tmp/nzhang/hive_2011-04-05_21-04-57_056_4209791858248998349/-mr-10000
+POSTHOOK: Output: file:/tmp/tomasz/hive_2011-06-01_20-14-30_378_3001871383983881471/-mr-10000
 POSTHOOK: Lineage: pcr_t1 PARTITION(ds=2000-04-08).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: pcr_t1 PARTITION(ds=2000-04-08).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: pcr_t1 PARTITION(ds=2000-04-09).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
@@ -824,10 +838,10 @@ STAGE PLANS:
                           type: string
       Needs Tagging: false
       Path -> Alias:
-        pfile:/data/users/nzhang/work/3/apache-hive/build/ql/test/data/warehouse/pcr_t1/ds=2000-04-08 [pcr_t1]
-        pfile:/data/users/nzhang/work/3/apache-hive/build/ql/test/data/warehouse/pcr_t1/ds=2000-04-10 [pcr_t1]
+        pfile:/data/users/tomasz/apache-hive/build/ql/test/data/warehouse/pcr_t1/ds=2000-04-08 [pcr_t1]
+        pfile:/data/users/tomasz/apache-hive/build/ql/test/data/warehouse/pcr_t1/ds=2000-04-10 [pcr_t1]
       Path -> Partition:
-        pfile:/data/users/nzhang/work/3/apache-hive/build/ql/test/data/warehouse/pcr_t1/ds=2000-04-08 
+        pfile:/data/users/tomasz/apache-hive/build/ql/test/data/warehouse/pcr_t1/ds=2000-04-08 
           Partition
             base file name: ds=2000-04-08
             input format: org.apache.hadoop.mapred.TextInputFormat
@@ -840,17 +854,18 @@ STAGE PLANS:
               columns.types int:string
               file.inputformat org.apache.hadoop.mapred.TextInputFormat
               file.outputformat org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-              location pfile:/data/users/nzhang/work/3/apache-hive/build/ql/test/data/warehouse/pcr_t1/ds=2000-04-08
+              location pfile:/data/users/tomasz/apache-hive/build/ql/test/data/warehouse/pcr_t1/ds=2000-04-08
               name default.pcr_t1
               numFiles 1
               numPartitions 3
               numRows 20
               partition_columns ds
+              rawDataSize 160
               serialization.ddl struct pcr_t1 { i32 key, string value}
               serialization.format 1
               serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               totalSize 180
-              transient_lastDdlTime 1302062681
+              transient_lastDdlTime 1306984455
             serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
           
               input format: org.apache.hadoop.mapred.TextInputFormat
@@ -861,21 +876,22 @@ STAGE PLANS:
                 columns.types int:string
                 file.inputformat org.apache.hadoop.mapred.TextInputFormat
                 file.outputformat org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                location pfile:/data/users/nzhang/work/3/apache-hive/build/ql/test/data/warehouse/pcr_t1
+                location pfile:/data/users/tomasz/apache-hive/build/ql/test/data/warehouse/pcr_t1
                 name default.pcr_t1
                 numFiles 3
                 numPartitions 3
                 numRows 60
                 partition_columns ds
+                rawDataSize 480
                 serialization.ddl struct pcr_t1 { i32 key, string value}
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                 totalSize 540
-                transient_lastDdlTime 1302062690
+                transient_lastDdlTime 1306984463
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: default.pcr_t1
             name: default.pcr_t1
-        pfile:/data/users/nzhang/work/3/apache-hive/build/ql/test/data/warehouse/pcr_t1/ds=2000-04-10 
+        pfile:/data/users/tomasz/apache-hive/build/ql/test/data/warehouse/pcr_t1/ds=2000-04-10 
           Partition
             base file name: ds=2000-04-10
             input format: org.apache.hadoop.mapred.TextInputFormat
@@ -888,17 +904,18 @@ STAGE PLANS:
               columns.types int:string
               file.inputformat org.apache.hadoop.mapred.TextInputFormat
               file.outputformat org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-              location pfile:/data/users/nzhang/work/3/apache-hive/build/ql/test/data/warehouse/pcr_t1/ds=2000-04-10
+              location pfile:/data/users/tomasz/apache-hive/build/ql/test/data/warehouse/pcr_t1/ds=2000-04-10
               name default.pcr_t1
               numFiles 1
               numPartitions 3
               numRows 20
               partition_columns ds
+              rawDataSize 160
               serialization.ddl struct pcr_t1 { i32 key, string value}
               serialization.format 1
               serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               totalSize 180
-              transient_lastDdlTime 1302062690
+              transient_lastDdlTime 1306984463
             serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
           
               input format: org.apache.hadoop.mapred.TextInputFormat
@@ -909,17 +926,18 @@ STAGE PLANS:
                 columns.types int:string
                 file.inputformat org.apache.hadoop.mapred.TextInputFormat
                 file.outputformat org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                location pfile:/data/users/nzhang/work/3/apache-hive/build/ql/test/data/warehouse/pcr_t1
+                location pfile:/data/users/tomasz/apache-hive/build/ql/test/data/warehouse/pcr_t1
                 name default.pcr_t1
                 numFiles 3
                 numPartitions 3
                 numRows 60
                 partition_columns ds
+                rawDataSize 480
                 serialization.ddl struct pcr_t1 { i32 key, string value}
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                 totalSize 540
-                transient_lastDdlTime 1302062690
+                transient_lastDdlTime 1306984463
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: default.pcr_t1
             name: default.pcr_t1
@@ -928,9 +946,9 @@ STAGE PLANS:
           File Output Operator
             compressed: false
             GlobalTableId: 0
-            directory: file:/tmp/nzhang/hive_2011-04-05_21-05-00_228_5831869255225828862/-ext-10001
+            directory: file:/tmp/tomasz/hive_2011-06-01_20-14-33_477_4843342398582016187/-ext-10001
             NumFilesPerFileSink: 1
-            Stats Publishing Key Prefix: file:/tmp/nzhang/hive_2011-04-05_21-05-00_228_5831869255225828862/-ext-10001/
+            Stats Publishing Key Prefix: file:/tmp/tomasz/hive_2011-06-01_20-14-33_477_4843342398582016187/-ext-10001/
             table:
                 input format: org.apache.hadoop.mapred.TextInputFormat
                 output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
@@ -952,13 +970,13 @@ where (ds < '2000-04-09' and key < 5) or (ds > '2000-04-09' and value == 'val_5'
 PREHOOK: type: QUERY
 PREHOOK: Input: default@pcr_t1@ds=2000-04-08
 PREHOOK: Input: default@pcr_t1@ds=2000-04-10
-PREHOOK: Output: file:/tmp/nzhang/hive_2011-04-05_21-05-00_333_4989277825355087551/-mr-10000
+PREHOOK: Output: file:/tmp/tomasz/hive_2011-06-01_20-14-33_595_7059370303120446928/-mr-10000
 POSTHOOK: query: select key, value, ds from pcr_t1
 where (ds < '2000-04-09' and key < 5) or (ds > '2000-04-09' and value == 'val_5') order by key, ds
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@pcr_t1@ds=2000-04-08
 POSTHOOK: Input: default@pcr_t1@ds=2000-04-10
-POSTHOOK: Output: file:/tmp/nzhang/hive_2011-04-05_21-05-00_333_4989277825355087551/-mr-10000
+POSTHOOK: Output: file:/tmp/tomasz/hive_2011-06-01_20-14-33_595_7059370303120446928/-mr-10000
 POSTHOOK: Lineage: pcr_t1 PARTITION(ds=2000-04-08).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: pcr_t1 PARTITION(ds=2000-04-08).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: pcr_t1 PARTITION(ds=2000-04-09).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
@@ -1038,11 +1056,11 @@ STAGE PLANS:
                           type: string
       Needs Tagging: false
       Path -> Alias:
-        pfile:/data/users/nzhang/work/3/apache-hive/build/ql/test/data/warehouse/pcr_t1/ds=2000-04-08 [pcr_t1]
-        pfile:/data/users/nzhang/work/3/apache-hive/build/ql/test/data/warehouse/pcr_t1/ds=2000-04-09 [pcr_t1]
-        pfile:/data/users/nzhang/work/3/apache-hive/build/ql/test/data/warehouse/pcr_t1/ds=2000-04-10 [pcr_t1]
+        pfile:/data/users/tomasz/apache-hive/build/ql/test/data/warehouse/pcr_t1/ds=2000-04-08 [pcr_t1]
+        pfile:/data/users/tomasz/apache-hive/build/ql/test/data/warehouse/pcr_t1/ds=2000-04-09 [pcr_t1]
+        pfile:/data/users/tomasz/apache-hive/build/ql/test/data/warehouse/pcr_t1/ds=2000-04-10 [pcr_t1]
       Path -> Partition:
-        pfile:/data/users/nzhang/work/3/apache-hive/build/ql/test/data/warehouse/pcr_t1/ds=2000-04-08 
+        pfile:/data/users/tomasz/apache-hive/build/ql/test/data/warehouse/pcr_t1/ds=2000-04-08 
           Partition
             base file name: ds=2000-04-08
             input format: org.apache.hadoop.mapred.TextInputFormat
@@ -1055,17 +1073,18 @@ STAGE PLANS:
               columns.types int:string
               file.inputformat org.apache.hadoop.mapred.TextInputFormat
               file.outputformat org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-              location pfile:/data/users/nzhang/work/3/apache-hive/build/ql/test/data/warehouse/pcr_t1/ds=2000-04-08
+              location pfile:/data/users/tomasz/apache-hive/build/ql/test/data/warehouse/pcr_t1/ds=2000-04-08
               name default.pcr_t1
               numFiles 1
               numPartitions 3
               numRows 20
               partition_columns ds
+              rawDataSize 160
               serialization.ddl struct pcr_t1 { i32 key, string value}
               serialization.format 1
               serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               totalSize 180
-              transient_lastDdlTime 1302062681
+              transient_lastDdlTime 1306984455
             serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
           
               input format: org.apache.hadoop.mapred.TextInputFormat
@@ -1076,21 +1095,22 @@ STAGE PLANS:
                 columns.types int:string
                 file.inputformat org.apache.hadoop.mapred.TextInputFormat
                 file.outputformat org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                location pfile:/data/users/nzhang/work/3/apache-hive/build/ql/test/data/warehouse/pcr_t1
+                location pfile:/data/users/tomasz/apache-hive/build/ql/test/data/warehouse/pcr_t1
                 name default.pcr_t1
                 numFiles 3
                 numPartitions 3
                 numRows 60
                 partition_columns ds
+                rawDataSize 480
                 serialization.ddl struct pcr_t1 { i32 key, string value}
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                 totalSize 540
-                transient_lastDdlTime 1302062690
+                transient_lastDdlTime 1306984463
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: default.pcr_t1
             name: default.pcr_t1
-        pfile:/data/users/nzhang/work/3/apache-hive/build/ql/test/data/warehouse/pcr_t1/ds=2000-04-09 
+        pfile:/data/users/tomasz/apache-hive/build/ql/test/data/warehouse/pcr_t1/ds=2000-04-09 
           Partition
             base file name: ds=2000-04-09
             input format: org.apache.hadoop.mapred.TextInputFormat
@@ -1103,17 +1123,18 @@ STAGE PLANS:
               columns.types int:string
               file.inputformat org.apache.hadoop.mapred.TextInputFormat
               file.outputformat org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-              location pfile:/data/users/nzhang/work/3/apache-hive/build/ql/test/data/warehouse/pcr_t1/ds=2000-04-09
+              location pfile:/data/users/tomasz/apache-hive/build/ql/test/data/warehouse/pcr_t1/ds=2000-04-09
               name default.pcr_t1
               numFiles 1
               numPartitions 3
               numRows 20
               partition_columns ds
+              rawDataSize 160
               serialization.ddl struct pcr_t1 { i32 key, string value}
               serialization.format 1
               serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               totalSize 180
-              transient_lastDdlTime 1302062685
+              transient_lastDdlTime 1306984459
             serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
           
               input format: org.apache.hadoop.mapred.TextInputFormat
@@ -1124,21 +1145,22 @@ STAGE PLANS:
                 columns.types int:string
                 file.inputformat org.apache.hadoop.mapred.TextInputFormat
                 file.outputformat org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                location pfile:/data/users/nzhang/work/3/apache-hive/build/ql/test/data/warehouse/pcr_t1
+                location pfile:/data/users/tomasz/apache-hive/build/ql/test/data/warehouse/pcr_t1
                 name default.pcr_t1
                 numFiles 3
                 numPartitions 3
                 numRows 60
                 partition_columns ds
+                rawDataSize 480
                 serialization.ddl struct pcr_t1 { i32 key, string value}
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                 totalSize 540
-                transient_lastDdlTime 1302062690
+                transient_lastDdlTime 1306984463
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: default.pcr_t1
             name: default.pcr_t1
-        pfile:/data/users/nzhang/work/3/apache-hive/build/ql/test/data/warehouse/pcr_t1/ds=2000-04-10 
+        pfile:/data/users/tomasz/apache-hive/build/ql/test/data/warehouse/pcr_t1/ds=2000-04-10 
           Partition
             base file name: ds=2000-04-10
             input format: org.apache.hadoop.mapred.TextInputFormat
@@ -1151,17 +1173,18 @@ STAGE PLANS:
               columns.types int:string
               file.inputformat org.apache.hadoop.mapred.TextInputFormat
               file.outputformat org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-              location pfile:/data/users/nzhang/work/3/apache-hive/build/ql/test/data/warehouse/pcr_t1/ds=2000-04-10
+              location pfile:/data/users/tomasz/apache-hive/build/ql/test/data/warehouse/pcr_t1/ds=2000-04-10
               name default.pcr_t1
               numFiles 1
               numPartitions 3
               numRows 20
               partition_columns ds
+              rawDataSize 160
               serialization.ddl struct pcr_t1 { i32 key, string value}
               serialization.format 1
               serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               totalSize 180
-              transient_lastDdlTime 1302062690
+              transient_lastDdlTime 1306984463
             serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
           
               input format: org.apache.hadoop.mapred.TextInputFormat
@@ -1172,17 +1195,18 @@ STAGE PLANS:
                 columns.types int:string
                 file.inputformat org.apache.hadoop.mapred.TextInputFormat
                 file.outputformat org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                location pfile:/data/users/nzhang/work/3/apache-hive/build/ql/test/data/warehouse/pcr_t1
+                location pfile:/data/users/tomasz/apache-hive/build/ql/test/data/warehouse/pcr_t1
                 name default.pcr_t1
                 numFiles 3
                 numPartitions 3
                 numRows 60
                 partition_columns ds
+                rawDataSize 480
                 serialization.ddl struct pcr_t1 { i32 key, string value}
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                 totalSize 540
-                transient_lastDdlTime 1302062690
+                transient_lastDdlTime 1306984463
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: default.pcr_t1
             name: default.pcr_t1
@@ -1191,9 +1215,9 @@ STAGE PLANS:
           File Output Operator
             compressed: false
             GlobalTableId: 0
-            directory: file:/tmp/nzhang/hive_2011-04-05_21-05-03_835_409179175272920478/-ext-10001
+            directory: file:/tmp/tomasz/hive_2011-06-01_20-14-36_836_3051586657356094147/-ext-10001
             NumFilesPerFileSink: 1
-            Stats Publishing Key Prefix: file:/tmp/nzhang/hive_2011-04-05_21-05-03_835_409179175272920478/-ext-10001/
+            Stats Publishing Key Prefix: file:/tmp/tomasz/hive_2011-06-01_20-14-36_836_3051586657356094147/-ext-10001/
             table:
                 input format: org.apache.hadoop.mapred.TextInputFormat
                 output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
@@ -1216,14 +1240,14 @@ PREHOOK: type: QUERY
 PREHOOK: Input: default@pcr_t1@ds=2000-04-08
 PREHOOK: Input: default@pcr_t1@ds=2000-04-09
 PREHOOK: Input: default@pcr_t1@ds=2000-04-10
-PREHOOK: Output: file:/tmp/nzhang/hive_2011-04-05_21-05-03_964_6808457543204138401/-mr-10000
+PREHOOK: Output: file:/tmp/tomasz/hive_2011-06-01_20-14-37_078_5128271294396999103/-mr-10000
 POSTHOOK: query: select key, value, ds from pcr_t1
 where (ds < '2000-04-10' and key < 5) or (ds > '2000-04-08' and value == 'val_5') order by key, ds
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@pcr_t1@ds=2000-04-08
 POSTHOOK: Input: default@pcr_t1@ds=2000-04-09
 POSTHOOK: Input: default@pcr_t1@ds=2000-04-10
-POSTHOOK: Output: file:/tmp/nzhang/hive_2011-04-05_21-05-03_964_6808457543204138401/-mr-10000
+POSTHOOK: Output: file:/tmp/tomasz/hive_2011-06-01_20-14-37_078_5128271294396999103/-mr-10000
 POSTHOOK: Lineage: pcr_t1 PARTITION(ds=2000-04-08).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: pcr_t1 PARTITION(ds=2000-04-08).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: pcr_t1 PARTITION(ds=2000-04-09).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
@@ -1311,11 +1335,11 @@ STAGE PLANS:
                           type: string
       Needs Tagging: false
       Path -> Alias:
-        pfile:/data/users/nzhang/work/3/apache-hive/build/ql/test/data/warehouse/pcr_t1/ds=2000-04-08 [pcr_t1]
-        pfile:/data/users/nzhang/work/3/apache-hive/build/ql/test/data/warehouse/pcr_t1/ds=2000-04-09 [pcr_t1]
-        pfile:/data/users/nzhang/work/3/apache-hive/build/ql/test/data/warehouse/pcr_t1/ds=2000-04-10 [pcr_t1]
+        pfile:/data/users/tomasz/apache-hive/build/ql/test/data/warehouse/pcr_t1/ds=2000-04-08 [pcr_t1]
+        pfile:/data/users/tomasz/apache-hive/build/ql/test/data/warehouse/pcr_t1/ds=2000-04-09 [pcr_t1]
+        pfile:/data/users/tomasz/apache-hive/build/ql/test/data/warehouse/pcr_t1/ds=2000-04-10 [pcr_t1]
       Path -> Partition:
-        pfile:/data/users/nzhang/work/3/apache-hive/build/ql/test/data/warehouse/pcr_t1/ds=2000-04-08 
+        pfile:/data/users/tomasz/apache-hive/build/ql/test/data/warehouse/pcr_t1/ds=2000-04-08 
           Partition
             base file name: ds=2000-04-08
             input format: org.apache.hadoop.mapred.TextInputFormat
@@ -1328,17 +1352,18 @@ STAGE PLANS:
               columns.types int:string
               file.inputformat org.apache.hadoop.mapred.TextInputFormat
               file.outputformat org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-              location pfile:/data/users/nzhang/work/3/apache-hive/build/ql/test/data/warehouse/pcr_t1/ds=2000-04-08
+              location pfile:/data/users/tomasz/apache-hive/build/ql/test/data/warehouse/pcr_t1/ds=2000-04-08
               name default.pcr_t1
               numFiles 1
               numPartitions 3
               numRows 20
               partition_columns ds
+              rawDataSize 160
               serialization.ddl struct pcr_t1 { i32 key, string value}
               serialization.format 1
               serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               totalSize 180
-              transient_lastDdlTime 1302062681
+              transient_lastDdlTime 1306984455
             serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
           
               input format: org.apache.hadoop.mapred.TextInputFormat
@@ -1349,21 +1374,22 @@ STAGE PLANS:
                 columns.types int:string
                 file.inputformat org.apache.hadoop.mapred.TextInputFormat
                 file.outputformat org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                location pfile:/data/users/nzhang/work/3/apache-hive/build/ql/test/data/warehouse/pcr_t1
+                location pfile:/data/users/tomasz/apache-hive/build/ql/test/data/warehouse/pcr_t1
                 name default.pcr_t1
                 numFiles 3
                 numPartitions 3
                 numRows 60
                 partition_columns ds
+                rawDataSize 480
                 serialization.ddl struct pcr_t1 { i32 key, string value}
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                 totalSize 540
-                transient_lastDdlTime 1302062690
+                transient_lastDdlTime 1306984463
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: default.pcr_t1
             name: default.pcr_t1
-        pfile:/data/users/nzhang/work/3/apache-hive/build/ql/test/data/warehouse/pcr_t1/ds=2000-04-09 
+        pfile:/data/users/tomasz/apache-hive/build/ql/test/data/warehouse/pcr_t1/ds=2000-04-09 
           Partition
             base file name: ds=2000-04-09
             input format: org.apache.hadoop.mapred.TextInputFormat
@@ -1376,17 +1402,18 @@ STAGE PLANS:
               columns.types int:string
               file.inputformat org.apache.hadoop.mapred.TextInputFormat
               file.outputformat org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-              location pfile:/data/users/nzhang/work/3/apache-hive/build/ql/test/data/warehouse/pcr_t1/ds=2000-04-09
+              location pfile:/data/users/tomasz/apache-hive/build/ql/test/data/warehouse/pcr_t1/ds=2000-04-09
               name default.pcr_t1
               numFiles 1
               numPartitions 3
               numRows 20
               partition_columns ds
+              rawDataSize 160
               serialization.ddl struct pcr_t1 { i32 key, string value}
               serialization.format 1
               serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               totalSize 180
-              transient_lastDdlTime 1302062685
+              transient_lastDdlTime 1306984459
             serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
           
               input format: org.apache.hadoop.mapred.TextInputFormat
@@ -1397,21 +1424,22 @@ STAGE PLANS:
                 columns.types int:string
                 file.inputformat org.apache.hadoop.mapred.TextInputFormat
                 file.outputformat org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                location pfile:/data/users/nzhang/work/3/apache-hive/build/ql/test/data/warehouse/pcr_t1
+                location pfile:/data/users/tomasz/apache-hive/build/ql/test/data/warehouse/pcr_t1
                 name default.pcr_t1
                 numFiles 3
                 numPartitions 3
                 numRows 60
                 partition_columns ds
+                rawDataSize 480
                 serialization.ddl struct pcr_t1 { i32 key, string value}
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                 totalSize 540
-                transient_lastDdlTime 1302062690
+                transient_lastDdlTime 1306984463
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: default.pcr_t1
             name: default.pcr_t1
-        pfile:/data/users/nzhang/work/3/apache-hive/build/ql/test/data/warehouse/pcr_t1/ds=2000-04-10 
+        pfile:/data/users/tomasz/apache-hive/build/ql/test/data/warehouse/pcr_t1/ds=2000-04-10 
           Partition
             base file name: ds=2000-04-10
             input format: org.apache.hadoop.mapred.TextInputFormat
@@ -1424,17 +1452,18 @@ STAGE PLANS:
               columns.types int:string
               file.inputformat org.apache.hadoop.mapred.TextInputFormat
               file.outputformat org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-              location pfile:/data/users/nzhang/work/3/apache-hive/build/ql/test/data/warehouse/pcr_t1/ds=2000-04-10
+              location pfile:/data/users/tomasz/apache-hive/build/ql/test/data/warehouse/pcr_t1/ds=2000-04-10
               name default.pcr_t1
               numFiles 1
               numPartitions 3
               numRows 20
               partition_columns ds
+              rawDataSize 160
               serialization.ddl struct pcr_t1 { i32 key, string value}
               serialization.format 1
               serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               totalSize 180
-              transient_lastDdlTime 1302062690
+              transient_lastDdlTime 1306984463
             serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
           
               input format: org.apache.hadoop.mapred.TextInputFormat
@@ -1445,17 +1474,18 @@ STAGE PLANS:
                 columns.types int:string
                 file.inputformat org.apache.hadoop.mapred.TextInputFormat
                 file.outputformat org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                location pfile:/data/users/nzhang/work/3/apache-hive/build/ql/test/data/warehouse/pcr_t1
+                location pfile:/data/users/tomasz/apache-hive/build/ql/test/data/warehouse/pcr_t1
                 name default.pcr_t1
                 numFiles 3
                 numPartitions 3
                 numRows 60
                 partition_columns ds
+                rawDataSize 480
                 serialization.ddl struct pcr_t1 { i32 key, string value}
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                 totalSize 540
-                transient_lastDdlTime 1302062690
+                transient_lastDdlTime 1306984463
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: default.pcr_t1
             name: default.pcr_t1
@@ -1464,9 +1494,9 @@ STAGE PLANS:
           File Output Operator
             compressed: false
             GlobalTableId: 0
-            directory: file:/tmp/nzhang/hive_2011-04-05_21-05-07_318_2291350301336316720/-ext-10001
+            directory: file:/tmp/tomasz/hive_2011-06-01_20-14-40_317_3482597828578299090/-ext-10001
             NumFilesPerFileSink: 1
-            Stats Publishing Key Prefix: file:/tmp/nzhang/hive_2011-04-05_21-05-07_318_2291350301336316720/-ext-10001/
+            Stats Publishing Key Prefix: file:/tmp/tomasz/hive_2011-06-01_20-14-40_317_3482597828578299090/-ext-10001/
             table:
                 input format: org.apache.hadoop.mapred.TextInputFormat
                 output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
@@ -1489,14 +1519,14 @@ PREHOOK: type: QUERY
 PREHOOK: Input: default@pcr_t1@ds=2000-04-08
 PREHOOK: Input: default@pcr_t1@ds=2000-04-09
 PREHOOK: Input: default@pcr_t1@ds=2000-04-10
-PREHOOK: Output: file:/tmp/nzhang/hive_2011-04-05_21-05-07_429_6918784087469321838/-mr-10000
+PREHOOK: Output: file:/tmp/tomasz/hive_2011-06-01_20-14-40_434_156015404539012634/-mr-10000
 POSTHOOK: query: select key, value, ds from pcr_t1
 where (ds < '2000-04-10' or key < 5) and (ds > '2000-04-08' or value == 'val_5') order by key, ds
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@pcr_t1@ds=2000-04-08
 POSTHOOK: Input: default@pcr_t1@ds=2000-04-09
 POSTHOOK: Input: default@pcr_t1@ds=2000-04-10
-POSTHOOK: Output: file:/tmp/nzhang/hive_2011-04-05_21-05-07_429_6918784087469321838/-mr-10000
+POSTHOOK: Output: file:/tmp/tomasz/hive_2011-06-01_20-14-40_434_156015404539012634/-mr-10000
 POSTHOOK: Lineage: pcr_t1 PARTITION(ds=2000-04-08).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: pcr_t1 PARTITION(ds=2000-04-08).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: pcr_t1 PARTITION(ds=2000-04-09).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
@@ -1588,10 +1618,10 @@ STAGE PLANS:
                           type: string
       Needs Tagging: false
       Path -> Alias:
-        pfile:/data/users/nzhang/work/3/apache-hive/build/ql/test/data/warehouse/pcr_t1/ds=2000-04-08 [pcr_t1]
-        pfile:/data/users/nzhang/work/3/apache-hive/build/ql/test/data/warehouse/pcr_t1/ds=2000-04-09 [pcr_t1]
+        pfile:/data/users/tomasz/apache-hive/build/ql/test/data/warehouse/pcr_t1/ds=2000-04-08 [pcr_t1]
+        pfile:/data/users/tomasz/apache-hive/build/ql/test/data/warehouse/pcr_t1/ds=2000-04-09 [pcr_t1]
       Path -> Partition:
-        pfile:/data/users/nzhang/work/3/apache-hive/build/ql/test/data/warehouse/pcr_t1/ds=2000-04-08 
+        pfile:/data/users/tomasz/apache-hive/build/ql/test/data/warehouse/pcr_t1/ds=2000-04-08 
           Partition
             base file name: ds=2000-04-08
             input format: org.apache.hadoop.mapred.TextInputFormat
@@ -1604,17 +1634,18 @@ STAGE PLANS:
               columns.types int:string
               file.inputformat org.apache.hadoop.mapred.TextInputFormat
               file.outputformat org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-              location pfile:/data/users/nzhang/work/3/apache-hive/build/ql/test/data/warehouse/pcr_t1/ds=2000-04-08
+              location pfile:/data/users/tomasz/apache-hive/build/ql/test/data/warehouse/pcr_t1/ds=2000-04-08
               name default.pcr_t1
               numFiles 1
               numPartitions 3
               numRows 20
               partition_columns ds
+              rawDataSize 160
               serialization.ddl struct pcr_t1 { i32 key, string value}
               serialization.format 1
               serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               totalSize 180
-              transient_lastDdlTime 1302062681
+              transient_lastDdlTime 1306984455
             serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
           
               input format: org.apache.hadoop.mapred.TextInputFormat
@@ -1625,21 +1656,22 @@ STAGE PLANS:
                 columns.types int:string
                 file.inputformat org.apache.hadoop.mapred.TextInputFormat
                 file.outputformat org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                location pfile:/data/users/nzhang/work/3/apache-hive/build/ql/test/data/warehouse/pcr_t1
+                location pfile:/data/users/tomasz/apache-hive/build/ql/test/data/warehouse/pcr_t1
                 name default.pcr_t1
                 numFiles 3
                 numPartitions 3
                 numRows 60
                 partition_columns ds
+                rawDataSize 480
                 serialization.ddl struct pcr_t1 { i32 key, string value}
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                 totalSize 540
-                transient_lastDdlTime 1302062690
+                transient_lastDdlTime 1306984463
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: default.pcr_t1
             name: default.pcr_t1
-        pfile:/data/users/nzhang/work/3/apache-hive/build/ql/test/data/warehouse/pcr_t1/ds=2000-04-09 
+        pfile:/data/users/tomasz/apache-hive/build/ql/test/data/warehouse/pcr_t1/ds=2000-04-09 
           Partition
             base file name: ds=2000-04-09
             input format: org.apache.hadoop.mapred.TextInputFormat
@@ -1652,17 +1684,18 @@ STAGE PLANS:
               columns.types int:string
               file.inputformat org.apache.hadoop.mapred.TextInputFormat
               file.outputformat org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-              location pfile:/data/users/nzhang/work/3/apache-hive/build/ql/test/data/warehouse/pcr_t1/ds=2000-04-09
+              location pfile:/data/users/tomasz/apache-hive/build/ql/test/data/warehouse/pcr_t1/ds=2000-04-09
               name default.pcr_t1
               numFiles 1
               numPartitions 3
               numRows 20
               partition_columns ds
+              rawDataSize 160
               serialization.ddl struct pcr_t1 { i32 key, string value}
               serialization.format 1
               serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               totalSize 180
-              transient_lastDdlTime 1302062685
+              transient_lastDdlTime 1306984459
             serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
           
               input format: org.apache.hadoop.mapred.TextInputFormat
@@ -1673,17 +1706,18 @@ STAGE PLANS:
                 columns.types int:string
                 file.inputformat org.apache.hadoop.mapred.TextInputFormat
                 file.outputformat org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                location pfile:/data/users/nzhang/work/3/apache-hive/build/ql/test/data/warehouse/pcr_t1
+                location pfile:/data/users/tomasz/apache-hive/build/ql/test/data/warehouse/pcr_t1
                 name default.pcr_t1
                 numFiles 3
                 numPartitions 3
                 numRows 60
                 partition_columns ds
+                rawDataSize 480
                 serialization.ddl struct pcr_t1 { i32 key, string value}
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                 totalSize 540
-                transient_lastDdlTime 1302062690
+                transient_lastDdlTime 1306984463
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: default.pcr_t1
             name: default.pcr_t1
@@ -1692,9 +1726,9 @@ STAGE PLANS:
           File Output Operator
             compressed: false
             GlobalTableId: 0
-            directory: file:/tmp/nzhang/hive_2011-04-05_21-05-10_812_3644022781819738746/-ext-10001
+            directory: file:/tmp/tomasz/hive_2011-06-01_20-14-43_671_9068406681245435665/-ext-10001
             NumFilesPerFileSink: 1
-            Stats Publishing Key Prefix: file:/tmp/nzhang/hive_2011-04-05_21-05-10_812_3644022781819738746/-ext-10001/
+            Stats Publishing Key Prefix: file:/tmp/tomasz/hive_2011-06-01_20-14-43_671_9068406681245435665/-ext-10001/
             table:
                 input format: org.apache.hadoop.mapred.TextInputFormat
                 output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
@@ -1715,12 +1749,12 @@ PREHOOK: query: select key, value from pcr_t1 where (ds='2000-04-08' or ds='2000
 PREHOOK: type: QUERY
 PREHOOK: Input: default@pcr_t1@ds=2000-04-08
 PREHOOK: Input: default@pcr_t1@ds=2000-04-09
-PREHOOK: Output: file:/tmp/nzhang/hive_2011-04-05_21-05-10_942_5582319643394362276/-mr-10000
+PREHOOK: Output: file:/tmp/tomasz/hive_2011-06-01_20-14-43_787_4480677150525031425/-mr-10000
 POSTHOOK: query: select key, value from pcr_t1 where (ds='2000-04-08' or ds='2000-04-09') and key=14 order by key, value
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@pcr_t1@ds=2000-04-08
 POSTHOOK: Input: default@pcr_t1@ds=2000-04-09
-POSTHOOK: Output: file:/tmp/nzhang/hive_2011-04-05_21-05-10_942_5582319643394362276/-mr-10000
+POSTHOOK: Output: file:/tmp/tomasz/hive_2011-06-01_20-14-43_787_4480677150525031425/-mr-10000
 POSTHOOK: Lineage: pcr_t1 PARTITION(ds=2000-04-08).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: pcr_t1 PARTITION(ds=2000-04-08).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: pcr_t1 PARTITION(ds=2000-04-09).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
@@ -1779,10 +1813,10 @@ STAGE PLANS:
                         type: string
       Needs Tagging: false
       Path -> Alias:
-        pfile:/data/users/nzhang/work/3/apache-hive/build/ql/test/data/warehouse/pcr_t1/ds=2000-04-08 [pcr_t1]
-        pfile:/data/users/nzhang/work/3/apache-hive/build/ql/test/data/warehouse/pcr_t1/ds=2000-04-09 [pcr_t1]
+        pfile:/data/users/tomasz/apache-hive/build/ql/test/data/warehouse/pcr_t1/ds=2000-04-08 [pcr_t1]
+        pfile:/data/users/tomasz/apache-hive/build/ql/test/data/warehouse/pcr_t1/ds=2000-04-09 [pcr_t1]
       Path -> Partition:
-        pfile:/data/users/nzhang/work/3/apache-hive/build/ql/test/data/warehouse/pcr_t1/ds=2000-04-08 
+        pfile:/data/users/tomasz/apache-hive/build/ql/test/data/warehouse/pcr_t1/ds=2000-04-08 
           Partition
             base file name: ds=2000-04-08
             input format: org.apache.hadoop.mapred.TextInputFormat
@@ -1795,17 +1829,18 @@ STAGE PLANS:
               columns.types int:string
               file.inputformat org.apache.hadoop.mapred.TextInputFormat
               file.outputformat org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-              location pfile:/data/users/nzhang/work/3/apache-hive/build/ql/test/data/warehouse/pcr_t1/ds=2000-04-08
+              location pfile:/data/users/tomasz/apache-hive/build/ql/test/data/warehouse/pcr_t1/ds=2000-04-08
               name default.pcr_t1
               numFiles 1
               numPartitions 3
               numRows 20
               partition_columns ds
+              rawDataSize 160
               serialization.ddl struct pcr_t1 { i32 key, string value}
               serialization.format 1
               serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               totalSize 180
-              transient_lastDdlTime 1302062681
+              transient_lastDdlTime 1306984455
             serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
           
               input format: org.apache.hadoop.mapred.TextInputFormat
@@ -1816,21 +1851,22 @@ STAGE PLANS:
                 columns.types int:string
                 file.inputformat org.apache.hadoop.mapred.TextInputFormat
                 file.outputformat org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                location pfile:/data/users/nzhang/work/3/apache-hive/build/ql/test/data/warehouse/pcr_t1
+                location pfile:/data/users/tomasz/apache-hive/build/ql/test/data/warehouse/pcr_t1
                 name default.pcr_t1
                 numFiles 3
                 numPartitions 3
                 numRows 60
                 partition_columns ds
+                rawDataSize 480
                 serialization.ddl struct pcr_t1 { i32 key, string value}
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                 totalSize 540
-                transient_lastDdlTime 1302062690
+                transient_lastDdlTime 1306984463
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: default.pcr_t1
             name: default.pcr_t1
-        pfile:/data/users/nzhang/work/3/apache-hive/build/ql/test/data/warehouse/pcr_t1/ds=2000-04-09 
+        pfile:/data/users/tomasz/apache-hive/build/ql/test/data/warehouse/pcr_t1/ds=2000-04-09 
           Partition
             base file name: ds=2000-04-09
             input format: org.apache.hadoop.mapred.TextInputFormat
@@ -1843,17 +1879,18 @@ STAGE PLANS:
               columns.types int:string
               file.inputformat org.apache.hadoop.mapred.TextInputFormat
               file.outputformat org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-              location pfile:/data/users/nzhang/work/3/apache-hive/build/ql/test/data/warehouse/pcr_t1/ds=2000-04-09
+              location pfile:/data/users/tomasz/apache-hive/build/ql/test/data/warehouse/pcr_t1/ds=2000-04-09
               name default.pcr_t1
               numFiles 1
               numPartitions 3
               numRows 20
               partition_columns ds
+              rawDataSize 160
               serialization.ddl struct pcr_t1 { i32 key, string value}
               serialization.format 1
               serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               totalSize 180
-              transient_lastDdlTime 1302062685
+              transient_lastDdlTime 1306984459
             serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
           
               input format: org.apache.hadoop.mapred.TextInputFormat
@@ -1864,17 +1901,18 @@ STAGE PLANS:
                 columns.types int:string
                 file.inputformat org.apache.hadoop.mapred.TextInputFormat
                 file.outputformat org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                location pfile:/data/users/nzhang/work/3/apache-hive/build/ql/test/data/warehouse/pcr_t1
+                location pfile:/data/users/tomasz/apache-hive/build/ql/test/data/warehouse/pcr_t1
                 name default.pcr_t1
                 numFiles 3
                 numPartitions 3
                 numRows 60
                 partition_columns ds
+                rawDataSize 480
                 serialization.ddl struct pcr_t1 { i32 key, string value}
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                 totalSize 540
-                transient_lastDdlTime 1302062690
+                transient_lastDdlTime 1306984463
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: default.pcr_t1
             name: default.pcr_t1
@@ -1883,9 +1921,9 @@ STAGE PLANS:
           File Output Operator
             compressed: false
             GlobalTableId: 0
-            directory: file:/tmp/nzhang/hive_2011-04-05_21-05-14_152_1811663463960358965/-ext-10001
+            directory: file:/tmp/tomasz/hive_2011-06-01_20-14-46_895_6528226210433167390/-ext-10001
             NumFilesPerFileSink: 1
-            Stats Publishing Key Prefix: file:/tmp/nzhang/hive_2011-04-05_21-05-14_152_1811663463960358965/-ext-10001/
+            Stats Publishing Key Prefix: file:/tmp/tomasz/hive_2011-06-01_20-14-46_895_6528226210433167390/-ext-10001/
             table:
                 input format: org.apache.hadoop.mapred.TextInputFormat
                 output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
@@ -1906,12 +1944,12 @@ PREHOOK: query: select key, value from pcr_t1 where ds='2000-04-08' or ds='2000-
 PREHOOK: type: QUERY
 PREHOOK: Input: default@pcr_t1@ds=2000-04-08
 PREHOOK: Input: default@pcr_t1@ds=2000-04-09
-PREHOOK: Output: file:/tmp/nzhang/hive_2011-04-05_21-05-14_278_8063853710021572577/-mr-10000
+PREHOOK: Output: file:/tmp/tomasz/hive_2011-06-01_20-14-47_011_5025313460613776496/-mr-10000
 POSTHOOK: query: select key, value from pcr_t1 where ds='2000-04-08' or ds='2000-04-09' order by key, value
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@pcr_t1@ds=2000-04-08
 POSTHOOK: Input: default@pcr_t1@ds=2000-04-09
-POSTHOOK: Output: file:/tmp/nzhang/hive_2011-04-05_21-05-14_278_8063853710021572577/-mr-10000
+POSTHOOK: Output: file:/tmp/tomasz/hive_2011-06-01_20-14-47_011_5025313460613776496/-mr-10000
 POSTHOOK: Lineage: pcr_t1 PARTITION(ds=2000-04-08).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: pcr_t1 PARTITION(ds=2000-04-08).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: pcr_t1 PARTITION(ds=2000-04-09).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
@@ -2010,11 +2048,11 @@ STAGE PLANS:
                         type: string
       Needs Tagging: false
       Path -> Alias:
-        pfile:/data/users/nzhang/work/3/apache-hive/build/ql/test/data/warehouse/pcr_t1/ds=2000-04-08 [pcr_t1]
-        pfile:/data/users/nzhang/work/3/apache-hive/build/ql/test/data/warehouse/pcr_t1/ds=2000-04-09 [pcr_t1]
-        pfile:/data/users/nzhang/work/3/apache-hive/build/ql/test/data/warehouse/pcr_t1/ds=2000-04-10 [pcr_t1]
+        pfile:/data/users/tomasz/apache-hive/build/ql/test/data/warehouse/pcr_t1/ds=2000-04-08 [pcr_t1]
+        pfile:/data/users/tomasz/apache-hive/build/ql/test/data/warehouse/pcr_t1/ds=2000-04-09 [pcr_t1]
+        pfile:/data/users/tomasz/apache-hive/build/ql/test/data/warehouse/pcr_t1/ds=2000-04-10 [pcr_t1]
       Path -> Partition:
-        pfile:/data/users/nzhang/work/3/apache-hive/build/ql/test/data/warehouse/pcr_t1/ds=2000-04-08 
+        pfile:/data/users/tomasz/apache-hive/build/ql/test/data/warehouse/pcr_t1/ds=2000-04-08 
           Partition
             base file name: ds=2000-04-08
             input format: org.apache.hadoop.mapred.TextInputFormat
@@ -2027,17 +2065,18 @@ STAGE PLANS:
               columns.types int:string
               file.inputformat org.apache.hadoop.mapred.TextInputFormat
               file.outputformat org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-              location pfile:/data/users/nzhang/work/3/apache-hive/build/ql/test/data/warehouse/pcr_t1/ds=2000-04-08
+              location pfile:/data/users/tomasz/apache-hive/build/ql/test/data/warehouse/pcr_t1/ds=2000-04-08
               name default.pcr_t1
               numFiles 1
               numPartitions 3
               numRows 20
               partition_columns ds
+              rawDataSize 160
               serialization.ddl struct pcr_t1 { i32 key, string value}
               serialization.format 1
               serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               totalSize 180
-              transient_lastDdlTime 1302062681
+              transient_lastDdlTime 1306984455
             serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
           
               input format: org.apache.hadoop.mapred.TextInputFormat
@@ -2048,21 +2087,22 @@ STAGE PLANS:
                 columns.types int:string
                 file.inputformat org.apache.hadoop.mapred.TextInputFormat
                 file.outputformat org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                location pfile:/data/users/nzhang/work/3/apache-hive/build/ql/test/data/warehouse/pcr_t1
+                location pfile:/data/users/tomasz/apache-hive/build/ql/test/data/warehouse/pcr_t1
                 name default.pcr_t1
                 numFiles 3
                 numPartitions 3
                 numRows 60
                 partition_columns ds
+                rawDataSize 480
                 serialization.ddl struct pcr_t1 { i32 key, string value}
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                 totalSize 540
-                transient_lastDdlTime 1302062690
+                transient_lastDdlTime 1306984463
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: default.pcr_t1
             name: default.pcr_t1
-        pfile:/data/users/nzhang/work/3/apache-hive/build/ql/test/data/warehouse/pcr_t1/ds=2000-04-09 
+        pfile:/data/users/tomasz/apache-hive/build/ql/test/data/warehouse/pcr_t1/ds=2000-04-09 
           Partition
             base file name: ds=2000-04-09
             input format: org.apache.hadoop.mapred.TextInputFormat
@@ -2075,17 +2115,18 @@ STAGE PLANS:
               columns.types int:string
               file.inputformat org.apache.hadoop.mapred.TextInputFormat
               file.outputformat org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-              location pfile:/data/users/nzhang/work/3/apache-hive/build/ql/test/data/warehouse/pcr_t1/ds=2000-04-09
+              location pfile:/data/users/tomasz/apache-hive/build/ql/test/data/warehouse/pcr_t1/ds=2000-04-09
               name default.pcr_t1
               numFiles 1
               numPartitions 3
               numRows 20
               partition_columns ds
+              rawDataSize 160
               serialization.ddl struct pcr_t1 { i32 key, string value}
               serialization.format 1
               serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               totalSize 180
-              transient_lastDdlTime 1302062685
+              transient_lastDdlTime 1306984459
             serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
           
               input format: org.apache.hadoop.mapred.TextInputFormat
@@ -2096,21 +2137,22 @@ STAGE PLANS:
                 columns.types int:string
                 file.inputformat org.apache.hadoop.mapred.TextInputFormat
                 file.outputformat org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                location pfile:/data/users/nzhang/work/3/apache-hive/build/ql/test/data/warehouse/pcr_t1
+                location pfile:/data/users/tomasz/apache-hive/build/ql/test/data/warehouse/pcr_t1
                 name default.pcr_t1
                 numFiles 3
                 numPartitions 3
                 numRows 60
                 partition_columns ds
+                rawDataSize 480
                 serialization.ddl struct pcr_t1 { i32 key, string value}
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                 totalSize 540
-                transient_lastDdlTime 1302062690
+                transient_lastDdlTime 1306984463
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: default.pcr_t1
             name: default.pcr_t1
-        pfile:/data/users/nzhang/work/3/apache-hive/build/ql/test/data/warehouse/pcr_t1/ds=2000-04-10 
+        pfile:/data/users/tomasz/apache-hive/build/ql/test/data/warehouse/pcr_t1/ds=2000-04-10 
           Partition
             base file name: ds=2000-04-10
             input format: org.apache.hadoop.mapred.TextInputFormat
@@ -2123,17 +2165,18 @@ STAGE PLANS:
               columns.types int:string
               file.inputformat org.apache.hadoop.mapred.TextInputFormat
               file.outputformat org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-              location pfile:/data/users/nzhang/work/3/apache-hive/build/ql/test/data/warehouse/pcr_t1/ds=2000-04-10
+              location pfile:/data/users/tomasz/apache-hive/build/ql/test/data/warehouse/pcr_t1/ds=2000-04-10
               name default.pcr_t1
               numFiles 1
               numPartitions 3
               numRows 20
               partition_columns ds
+              rawDataSize 160
               serialization.ddl struct pcr_t1 { i32 key, string value}
               serialization.format 1
               serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               totalSize 180
-              transient_lastDdlTime 1302062690
+              transient_lastDdlTime 1306984463
             serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
           
               input format: org.apache.hadoop.mapred.TextInputFormat
@@ -2144,17 +2187,18 @@ STAGE PLANS:
                 columns.types int:string
                 file.inputformat org.apache.hadoop.mapred.TextInputFormat
                 file.outputformat org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                location pfile:/data/users/nzhang/work/3/apache-hive/build/ql/test/data/warehouse/pcr_t1
+                location pfile:/data/users/tomasz/apache-hive/build/ql/test/data/warehouse/pcr_t1
                 name default.pcr_t1
                 numFiles 3
                 numPartitions 3
                 numRows 60
                 partition_columns ds
+                rawDataSize 480
                 serialization.ddl struct pcr_t1 { i32 key, string value}
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                 totalSize 540
-                transient_lastDdlTime 1302062690
+                transient_lastDdlTime 1306984463
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: default.pcr_t1
             name: default.pcr_t1
@@ -2163,9 +2207,9 @@ STAGE PLANS:
           File Output Operator
             compressed: false
             GlobalTableId: 0
-            directory: file:/tmp/nzhang/hive_2011-04-05_21-05-17_390_8218241996261628500/-ext-10001
+            directory: file:/tmp/tomasz/hive_2011-06-01_20-14-50_070_7918278309965809032/-ext-10001
             NumFilesPerFileSink: 1
-            Stats Publishing Key Prefix: file:/tmp/nzhang/hive_2011-04-05_21-05-17_390_8218241996261628500/-ext-10001/
+            Stats Publishing Key Prefix: file:/tmp/tomasz/hive_2011-06-01_20-14-50_070_7918278309965809032/-ext-10001/
             table:
                 input format: org.apache.hadoop.mapred.TextInputFormat
                 output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
@@ -2187,13 +2231,13 @@ PREHOOK: type: QUERY
 PREHOOK: Input: default@pcr_t1@ds=2000-04-08
 PREHOOK: Input: default@pcr_t1@ds=2000-04-09
 PREHOOK: Input: default@pcr_t1@ds=2000-04-10
-PREHOOK: Output: file:/tmp/nzhang/hive_2011-04-05_21-05-17_499_3923962528754522723/-mr-10000
+PREHOOK: Output: file:/tmp/tomasz/hive_2011-06-01_20-14-50_186_7467964439268319364/-mr-10000
 POSTHOOK: query: select key, value from pcr_t1 where ds>='2000-04-08' or ds<'2000-04-10' order by key, value
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@pcr_t1@ds=2000-04-08
 POSTHOOK: Input: default@pcr_t1@ds=2000-04-09
 POSTHOOK: Input: default@pcr_t1@ds=2000-04-10
-POSTHOOK: Output: file:/tmp/nzhang/hive_2011-04-05_21-05-17_499_3923962528754522723/-mr-10000
+POSTHOOK: Output: file:/tmp/tomasz/hive_2011-06-01_20-14-50_186_7467964439268319364/-mr-10000
 POSTHOOK: Lineage: pcr_t1 PARTITION(ds=2000-04-08).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: pcr_t1 PARTITION(ds=2000-04-08).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: pcr_t1 PARTITION(ds=2000-04-09).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
@@ -2323,10 +2367,10 @@ STAGE PLANS:
                           type: string
       Needs Tagging: false
       Path -> Alias:
-        pfile:/data/users/nzhang/work/3/apache-hive/build/ql/test/data/warehouse/pcr_t1/ds=2000-04-08 [pcr_t1]
-        pfile:/data/users/nzhang/work/3/apache-hive/build/ql/test/data/warehouse/pcr_t1/ds=2000-04-09 [pcr_t1]
+        pfile:/data/users/tomasz/apache-hive/build/ql/test/data/warehouse/pcr_t1/ds=2000-04-08 [pcr_t1]
+        pfile:/data/users/tomasz/apache-hive/build/ql/test/data/warehouse/pcr_t1/ds=2000-04-09 [pcr_t1]
       Path -> Partition:
-        pfile:/data/users/nzhang/work/3/apache-hive/build/ql/test/data/warehouse/pcr_t1/ds=2000-04-08 
+        pfile:/data/users/tomasz/apache-hive/build/ql/test/data/warehouse/pcr_t1/ds=2000-04-08 
           Partition
             base file name: ds=2000-04-08
             input format: org.apache.hadoop.mapred.TextInputFormat
@@ -2339,17 +2383,18 @@ STAGE PLANS:
               columns.types int:string
               file.inputformat org.apache.hadoop.mapred.TextInputFormat
               file.outputformat org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-              location pfile:/data/users/nzhang/work/3/apache-hive/build/ql/test/data/warehouse/pcr_t1/ds=2000-04-08
+              location pfile:/data/users/tomasz/apache-hive/build/ql/test/data/warehouse/pcr_t1/ds=2000-04-08
               name default.pcr_t1
               numFiles 1
               numPartitions 3
               numRows 20
               partition_columns ds
+              rawDataSize 160
               serialization.ddl struct pcr_t1 { i32 key, string value}
               serialization.format 1
               serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               totalSize 180
-              transient_lastDdlTime 1302062681
+              transient_lastDdlTime 1306984455
             serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
           
               input format: org.apache.hadoop.mapred.TextInputFormat
@@ -2360,21 +2405,22 @@ STAGE PLANS:
                 columns.types int:string
                 file.inputformat org.apache.hadoop.mapred.TextInputFormat
                 file.outputformat org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                location pfile:/data/users/nzhang/work/3/apache-hive/build/ql/test/data/warehouse/pcr_t1
+                location pfile:/data/users/tomasz/apache-hive/build/ql/test/data/warehouse/pcr_t1
                 name default.pcr_t1
                 numFiles 3
                 numPartitions 3
                 numRows 60
                 partition_columns ds
+                rawDataSize 480
                 serialization.ddl struct pcr_t1 { i32 key, string value}
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                 totalSize 540
-                transient_lastDdlTime 1302062690
+                transient_lastDdlTime 1306984463
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: default.pcr_t1
             name: default.pcr_t1
-        pfile:/data/users/nzhang/work/3/apache-hive/build/ql/test/data/warehouse/pcr_t1/ds=2000-04-09 
+        pfile:/data/users/tomasz/apache-hive/build/ql/test/data/warehouse/pcr_t1/ds=2000-04-09 
           Partition
             base file name: ds=2000-04-09
             input format: org.apache.hadoop.mapred.TextInputFormat
@@ -2387,17 +2433,18 @@ STAGE PLANS:
               columns.types int:string
               file.inputformat org.apache.hadoop.mapred.TextInputFormat
               file.outputformat org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-              location pfile:/data/users/nzhang/work/3/apache-hive/build/ql/test/data/warehouse/pcr_t1/ds=2000-04-09
+              location pfile:/data/users/tomasz/apache-hive/build/ql/test/data/warehouse/pcr_t1/ds=2000-04-09
               name default.pcr_t1
               numFiles 1
               numPartitions 3
               numRows 20
               partition_columns ds
+              rawDataSize 160
               serialization.ddl struct pcr_t1 { i32 key, string value}
               serialization.format 1
               serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               totalSize 180
-              transient_lastDdlTime 1302062685
+              transient_lastDdlTime 1306984459
             serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
           
               input format: org.apache.hadoop.mapred.TextInputFormat
@@ -2408,17 +2455,18 @@ STAGE PLANS:
                 columns.types int:string
                 file.inputformat org.apache.hadoop.mapred.TextInputFormat
                 file.outputformat org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                location pfile:/data/users/nzhang/work/3/apache-hive/build/ql/test/data/warehouse/pcr_t1
+                location pfile:/data/users/tomasz/apache-hive/build/ql/test/data/warehouse/pcr_t1
                 name default.pcr_t1
                 numFiles 3
                 numPartitions 3
                 numRows 60
                 partition_columns ds
+                rawDataSize 480
                 serialization.ddl struct pcr_t1 { i32 key, string value}
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                 totalSize 540
-                transient_lastDdlTime 1302062690
+                transient_lastDdlTime 1306984463
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: default.pcr_t1
             name: default.pcr_t1
@@ -2427,9 +2475,9 @@ STAGE PLANS:
           File Output Operator
             compressed: false
             GlobalTableId: 0
-            directory: file:/tmp/nzhang/hive_2011-04-05_21-05-20_753_4457015784894213273/-ext-10001
+            directory: file:/tmp/tomasz/hive_2011-06-01_20-14-53_371_8781736527660496822/-ext-10001
             NumFilesPerFileSink: 1
-            Stats Publishing Key Prefix: file:/tmp/nzhang/hive_2011-04-05_21-05-20_753_4457015784894213273/-ext-10001/
+            Stats Publishing Key Prefix: file:/tmp/tomasz/hive_2011-06-01_20-14-53_371_8781736527660496822/-ext-10001/
             table:
                 input format: org.apache.hadoop.mapred.TextInputFormat
                 output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
@@ -2450,12 +2498,12 @@ PREHOOK: query: select key, value, ds from pcr_t1 where (ds='2000-04-08' and key
 PREHOOK: type: QUERY
 PREHOOK: Input: default@pcr_t1@ds=2000-04-08
 PREHOOK: Input: default@pcr_t1@ds=2000-04-09
-PREHOOK: Output: file:/tmp/nzhang/hive_2011-04-05_21-05-20_868_2203544985953380948/-mr-10000
+PREHOOK: Output: file:/tmp/tomasz/hive_2011-06-01_20-14-53_489_3007975236537851113/-mr-10000
 POSTHOOK: query: select key, value, ds from pcr_t1 where (ds='2000-04-08' and key=1) or (ds='2000-04-09' and key=2) order by key, value, ds
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@pcr_t1@ds=2000-04-08
 POSTHOOK: Input: default@pcr_t1@ds=2000-04-09
-POSTHOOK: Output: file:/tmp/nzhang/hive_2011-04-05_21-05-20_868_2203544985953380948/-mr-10000
+POSTHOOK: Output: file:/tmp/tomasz/hive_2011-06-01_20-14-53_489_3007975236537851113/-mr-10000
 POSTHOOK: Lineage: pcr_t1 PARTITION(ds=2000-04-08).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: pcr_t1 PARTITION(ds=2000-04-08).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: pcr_t1 PARTITION(ds=2000-04-09).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
@@ -2537,9 +2585,9 @@ STAGE PLANS:
                       type: string
       Needs Tagging: true
       Path -> Alias:
-        pfile:/data/users/nzhang/work/3/apache-hive/build/ql/test/data/warehouse/pcr_t1/ds=2000-04-08 [t2, t1]
+        pfile:/data/users/tomasz/apache-hive/build/ql/test/data/warehouse/pcr_t1/ds=2000-04-08 [t2, t1]
       Path -> Partition:
-        pfile:/data/users/nzhang/work/3/apache-hive/build/ql/test/data/warehouse/pcr_t1/ds=2000-04-08 
+        pfile:/data/users/tomasz/apache-hive/build/ql/test/data/warehouse/pcr_t1/ds=2000-04-08 
           Partition
             base file name: ds=2000-04-08
             input format: org.apache.hadoop.mapred.TextInputFormat
@@ -2552,17 +2600,18 @@ STAGE PLANS:
               columns.types int:string
               file.inputformat org.apache.hadoop.mapred.TextInputFormat
               file.outputformat org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-              location pfile:/data/users/nzhang/work/3/apache-hive/build/ql/test/data/warehouse/pcr_t1/ds=2000-04-08
+              location pfile:/data/users/tomasz/apache-hive/build/ql/test/data/warehouse/pcr_t1/ds=2000-04-08
               name default.pcr_t1
               numFiles 1
               numPartitions 3
               numRows 20
               partition_columns ds
+              rawDataSize 160
               serialization.ddl struct pcr_t1 { i32 key, string value}
               serialization.format 1
               serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               totalSize 180
-              transient_lastDdlTime 1302062681
+              transient_lastDdlTime 1306984455
             serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
           
               input format: org.apache.hadoop.mapred.TextInputFormat
@@ -2573,17 +2622,18 @@ STAGE PLANS:
                 columns.types int:string
                 file.inputformat org.apache.hadoop.mapred.TextInputFormat
                 file.outputformat org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                location pfile:/data/users/nzhang/work/3/apache-hive/build/ql/test/data/warehouse/pcr_t1
+                location pfile:/data/users/tomasz/apache-hive/build/ql/test/data/warehouse/pcr_t1
                 name default.pcr_t1
                 numFiles 3
                 numPartitions 3
                 numRows 60
                 partition_columns ds
+                rawDataSize 480
                 serialization.ddl struct pcr_t1 { i32 key, string value}
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                 totalSize 540
-                transient_lastDdlTime 1302062690
+                transient_lastDdlTime 1306984463
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: default.pcr_t1
             name: default.pcr_t1
@@ -2614,7 +2664,7 @@ STAGE PLANS:
             File Output Operator
               compressed: false
               GlobalTableId: 0
-              directory: file:/tmp/nzhang/hive_2011-04-05_21-05-24_126_1388234539930965658/-mr-10002
+              directory: file:/tmp/tomasz/hive_2011-06-01_20-14-56_612_921414605077106335/-mr-10002
               NumFilesPerFileSink: 1
               table:
                   input format: org.apache.hadoop.mapred.SequenceFileInputFormat
@@ -2630,7 +2680,7 @@ STAGE PLANS:
   Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/tmp/nzhang/hive_2011-04-05_21-05-24_126_1388234539930965658/-mr-10002 
+        file:/tmp/tomasz/hive_2011-06-01_20-14-56_612_921414605077106335/-mr-10002 
             Reduce Output Operator
               key expressions:
                     expr: _col0
@@ -2652,9 +2702,9 @@ STAGE PLANS:
                     type: string
       Needs Tagging: false
       Path -> Alias:
-        file:/tmp/nzhang/hive_2011-04-05_21-05-24_126_1388234539930965658/-mr-10002 [file:/tmp/nzhang/hive_2011-04-05_21-05-24_126_1388234539930965658/-mr-10002]
+        file:/tmp/tomasz/hive_2011-06-01_20-14-56_612_921414605077106335/-mr-10002 [file:/tmp/tomasz/hive_2011-06-01_20-14-56_612_921414605077106335/-mr-10002]
       Path -> Partition:
-        file:/tmp/nzhang/hive_2011-04-05_21-05-24_126_1388234539930965658/-mr-10002 
+        file:/tmp/tomasz/hive_2011-06-01_20-14-56_612_921414605077106335/-mr-10002 
           Partition
             base file name: -mr-10002
             input format: org.apache.hadoop.mapred.SequenceFileInputFormat
@@ -2675,9 +2725,9 @@ STAGE PLANS:
           File Output Operator
             compressed: false
             GlobalTableId: 0
-            directory: file:/tmp/nzhang/hive_2011-04-05_21-05-24_126_1388234539930965658/-ext-10001
+            directory: file:/tmp/tomasz/hive_2011-06-01_20-14-56_612_921414605077106335/-ext-10001
             NumFilesPerFileSink: 1
-            Stats Publishing Key Prefix: file:/tmp/nzhang/hive_2011-04-05_21-05-24_126_1388234539930965658/-ext-10001/
+            Stats Publishing Key Prefix: file:/tmp/tomasz/hive_2011-06-01_20-14-56_612_921414605077106335/-ext-10001/
             table:
                 input format: org.apache.hadoop.mapred.TextInputFormat
                 output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
@@ -2697,11 +2747,11 @@ STAGE PLANS:
 PREHOOK: query: select * from pcr_t1 t1 join pcr_t1 t2 on t1.key=t2.key and t1.ds='2000-04-08' and t2.ds='2000-04-08' order by t1.key
 PREHOOK: type: QUERY
 PREHOOK: Input: default@pcr_t1@ds=2000-04-08
-PREHOOK: Output: file:/tmp/nzhang/hive_2011-04-05_21-05-24_257_7062740816508471165/-mr-10000
+PREHOOK: Output: file:/tmp/tomasz/hive_2011-06-01_20-14-56_741_2295421096099695127/-mr-10000
 POSTHOOK: query: select * from pcr_t1 t1 join pcr_t1 t2 on t1.key=t2.key and t1.ds='2000-04-08' and t2.ds='2000-04-08' order by t1.key
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@pcr_t1@ds=2000-04-08
-POSTHOOK: Output: file:/tmp/nzhang/hive_2011-04-05_21-05-24_257_7062740816508471165/-mr-10000
+POSTHOOK: Output: file:/tmp/tomasz/hive_2011-06-01_20-14-56_741_2295421096099695127/-mr-10000
 POSTHOOK: Lineage: pcr_t1 PARTITION(ds=2000-04-08).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: pcr_t1 PARTITION(ds=2000-04-08).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: pcr_t1 PARTITION(ds=2000-04-09).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
@@ -2820,10 +2870,10 @@ STAGE PLANS:
                       type: string
       Needs Tagging: true
       Path -> Alias:
-        pfile:/data/users/nzhang/work/3/apache-hive/build/ql/test/data/warehouse/pcr_t1/ds=2000-04-08 [t1]
-        pfile:/data/users/nzhang/work/3/apache-hive/build/ql/test/data/warehouse/pcr_t1/ds=2000-04-09 [t2]
+        pfile:/data/users/tomasz/apache-hive/build/ql/test/data/warehouse/pcr_t1/ds=2000-04-08 [t1]
+        pfile:/data/users/tomasz/apache-hive/build/ql/test/data/warehouse/pcr_t1/ds=2000-04-09 [t2]
       Path -> Partition:
-        pfile:/data/users/nzhang/work/3/apache-hive/build/ql/test/data/warehouse/pcr_t1/ds=2000-04-08 
+        pfile:/data/users/tomasz/apache-hive/build/ql/test/data/warehouse/pcr_t1/ds=2000-04-08 
           Partition
             base file name: ds=2000-04-08
             input format: org.apache.hadoop.mapred.TextInputFormat
@@ -2836,17 +2886,18 @@ STAGE PLANS:
               columns.types int:string
               file.inputformat org.apache.hadoop.mapred.TextInputFormat
               file.outputformat org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-              location pfile:/data/users/nzhang/work/3/apache-hive/build/ql/test/data/warehouse/pcr_t1/ds=2000-04-08
+              location pfile:/data/users/tomasz/apache-hive/build/ql/test/data/warehouse/pcr_t1/ds=2000-04-08
               name default.pcr_t1
               numFiles 1
               numPartitions 3
               numRows 20
               partition_columns ds
+              rawDataSize 160
               serialization.ddl struct pcr_t1 { i32 key, string value}
               serialization.format 1
               serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               totalSize 180
-              transient_lastDdlTime 1302062681
+              transient_lastDdlTime 1306984455
             serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
           
               input format: org.apache.hadoop.mapred.TextInputFormat
@@ -2857,21 +2908,22 @@ STAGE PLANS:
                 columns.types int:string
                 file.inputformat org.apache.hadoop.mapred.TextInputFormat
                 file.outputformat org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                location pfile:/data/users/nzhang/work/3/apache-hive/build/ql/test/data/warehouse/pcr_t1
+                location pfile:/data/users/tomasz/apache-hive/build/ql/test/data/warehouse/pcr_t1
                 name default.pcr_t1
                 numFiles 3
                 numPartitions 3
                 numRows 60
                 partition_columns ds
+                rawDataSize 480
                 serialization.ddl struct pcr_t1 { i32 key, string value}
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                 totalSize 540
-                transient_lastDdlTime 1302062690
+                transient_lastDdlTime 1306984463
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: default.pcr_t1
             name: default.pcr_t1
-        pfile:/data/users/nzhang/work/3/apache-hive/build/ql/test/data/warehouse/pcr_t1/ds=2000-04-09 
+        pfile:/data/users/tomasz/apache-hive/build/ql/test/data/warehouse/pcr_t1/ds=2000-04-09 
           Partition
             base file name: ds=2000-04-09
             input format: org.apache.hadoop.mapred.TextInputFormat
@@ -2884,17 +2936,18 @@ STAGE PLANS:
               columns.types int:string
               file.inputformat org.apache.hadoop.mapred.TextInputFormat
               file.outputformat org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-              location pfile:/data/users/nzhang/work/3/apache-hive/build/ql/test/data/warehouse/pcr_t1/ds=2000-04-09
+              location pfile:/data/users/tomasz/apache-hive/build/ql/test/data/warehouse/pcr_t1/ds=2000-04-09
               name default.pcr_t1
               numFiles 1
               numPartitions 3
               numRows 20
               partition_columns ds
+              rawDataSize 160
               serialization.ddl struct pcr_t1 { i32 key, string value}
               serialization.format 1
               serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               totalSize 180
-              transient_lastDdlTime 1302062685
+              transient_lastDdlTime 1306984459
             serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
           
               input format: org.apache.hadoop.mapred.TextInputFormat
@@ -2905,17 +2958,18 @@ STAGE PLANS:
                 columns.types int:string
                 file.inputformat org.apache.hadoop.mapred.TextInputFormat
                 file.outputformat org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                location pfile:/data/users/nzhang/work/3/apache-hive/build/ql/test/data/warehouse/pcr_t1
+                location pfile:/data/users/tomasz/apache-hive/build/ql/test/data/warehouse/pcr_t1
                 name default.pcr_t1
                 numFiles 3
                 numPartitions 3
                 numRows 60
                 partition_columns ds
+                rawDataSize 480
                 serialization.ddl struct pcr_t1 { i32 key, string value}
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                 totalSize 540
-                transient_lastDdlTime 1302062690
+                transient_lastDdlTime 1306984463
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: default.pcr_t1
             name: default.pcr_t1
@@ -2946,7 +3000,7 @@ STAGE PLANS:
             File Output Operator
               compressed: false
               GlobalTableId: 0
-              directory: file:/tmp/nzhang/hive_2011-04-05_21-05-30_205_3045715249376973421/-mr-10002
+              directory: file:/tmp/tomasz/hive_2011-06-01_20-15-02_758_4300074240039386411/-mr-10002
               NumFilesPerFileSink: 1
               table:
                   input format: org.apache.hadoop.mapred.SequenceFileInputFormat
@@ -2962,7 +3016,7 @@ STAGE PLANS:
   Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/tmp/nzhang/hive_2011-04-05_21-05-30_205_3045715249376973421/-mr-10002 
+        file:/tmp/tomasz/hive_2011-06-01_20-15-02_758_4300074240039386411/-mr-10002 
             Reduce Output Operator
               key expressions:
                     expr: _col0
@@ -2984,9 +3038,9 @@ STAGE PLANS:
                     type: string
       Needs Tagging: false
       Path -> Alias:
-        file:/tmp/nzhang/hive_2011-04-05_21-05-30_205_3045715249376973421/-mr-10002 [file:/tmp/nzhang/hive_2011-04-05_21-05-30_205_3045715249376973421/-mr-10002]
+        file:/tmp/tomasz/hive_2011-06-01_20-15-02_758_4300074240039386411/-mr-10002 [file:/tmp/tomasz/hive_2011-06-01_20-15-02_758_4300074240039386411/-mr-10002]
       Path -> Partition:
-        file:/tmp/nzhang/hive_2011-04-05_21-05-30_205_3045715249376973421/-mr-10002 
+        file:/tmp/tomasz/hive_2011-06-01_20-15-02_758_4300074240039386411/-mr-10002 
           Partition
             base file name: -mr-10002
             input format: org.apache.hadoop.mapred.SequenceFileInputFormat
@@ -3007,9 +3061,9 @@ STAGE PLANS:
           File Output Operator
             compressed: false
             GlobalTableId: 0
-            directory: file:/tmp/nzhang/hive_2011-04-05_21-05-30_205_3045715249376973421/-ext-10001
+            directory: file:/tmp/tomasz/hive_2011-06-01_20-15-02_758_4300074240039386411/-ext-10001
             NumFilesPerFileSink: 1
-            Stats Publishing Key Prefix: file:/tmp/nzhang/hive_2011-04-05_21-05-30_205_3045715249376973421/-ext-10001/
+            Stats Publishing Key Prefix: file:/tmp/tomasz/hive_2011-06-01_20-15-02_758_4300074240039386411/-ext-10001/
             table:
                 input format: org.apache.hadoop.mapred.TextInputFormat
                 output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
@@ -3030,12 +3084,12 @@ PREHOOK: query: select * from pcr_t1 t1 join pcr_t1 t2 on t1.key=t2.key and t1.d
 PREHOOK: type: QUERY
 PREHOOK: Input: default@pcr_t1@ds=2000-04-08
 PREHOOK: Input: default@pcr_t1@ds=2000-04-09
-PREHOOK: Output: file:/tmp/nzhang/hive_2011-04-05_21-05-30_363_4785677708319133039/-mr-10000
+PREHOOK: Output: file:/tmp/tomasz/hive_2011-06-01_20-15-02_999_5248416871455577759/-mr-10000
 POSTHOOK: query: select * from pcr_t1 t1 join pcr_t1 t2 on t1.key=t2.key and t1.ds='2000-04-08' and t2.ds='2000-04-09' order by t1.key
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@pcr_t1@ds=2000-04-08
 POSTHOOK: Input: default@pcr_t1@ds=2000-04-09
-POSTHOOK: Output: file:/tmp/nzhang/hive_2011-04-05_21-05-30_363_4785677708319133039/-mr-10000
+POSTHOOK: Output: file:/tmp/tomasz/hive_2011-06-01_20-15-02_999_5248416871455577759/-mr-10000
 POSTHOOK: Lineage: pcr_t1 PARTITION(ds=2000-04-08).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: pcr_t1 PARTITION(ds=2000-04-08).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: pcr_t1 PARTITION(ds=2000-04-09).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
@@ -3161,12 +3215,12 @@ STAGE PLANS:
                           type: string
       Needs Tagging: false
       Path -> Alias:
-        pfile:/data/users/nzhang/work/3/apache-hive/build/ql/test/data/warehouse/pcr_t1/ds=2000-04-08 [pcr_t1]
-        pfile:/data/users/nzhang/work/3/apache-hive/build/ql/test/data/warehouse/pcr_t1/ds=2000-04-09 [pcr_t1]
-        pfile:/data/users/nzhang/work/3/apache-hive/build/ql/test/data/warehouse/pcr_t1/ds=2000-04-10 [pcr_t1]
-        pfile:/data/users/nzhang/work/3/apache-hive/build/ql/test/data/warehouse/pcr_t1/ds=2000-04-11 [pcr_t1]
+        pfile:/data/users/tomasz/apache-hive/build/ql/test/data/warehouse/pcr_t1/ds=2000-04-08 [pcr_t1]
+        pfile:/data/users/tomasz/apache-hive/build/ql/test/data/warehouse/pcr_t1/ds=2000-04-09 [pcr_t1]
+        pfile:/data/users/tomasz/apache-hive/build/ql/test/data/warehouse/pcr_t1/ds=2000-04-10 [pcr_t1]
+        pfile:/data/users/tomasz/apache-hive/build/ql/test/data/warehouse/pcr_t1/ds=2000-04-11 [pcr_t1]
       Path -> Partition:
-        pfile:/data/users/nzhang/work/3/apache-hive/build/ql/test/data/warehouse/pcr_t1/ds=2000-04-08 
+        pfile:/data/users/tomasz/apache-hive/build/ql/test/data/warehouse/pcr_t1/ds=2000-04-08 
           Partition
             base file name: ds=2000-04-08
             input format: org.apache.hadoop.mapred.TextInputFormat
@@ -3179,17 +3233,18 @@ STAGE PLANS:
               columns.types int:string
               file.inputformat org.apache.hadoop.mapred.TextInputFormat
               file.outputformat org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-              location pfile:/data/users/nzhang/work/3/apache-hive/build/ql/test/data/warehouse/pcr_t1/ds=2000-04-08
+              location pfile:/data/users/tomasz/apache-hive/build/ql/test/data/warehouse/pcr_t1/ds=2000-04-08
               name default.pcr_t1
               numFiles 1
               numPartitions 4
               numRows 20
               partition_columns ds
+              rawDataSize 160
               serialization.ddl struct pcr_t1 { i32 key, string value}
               serialization.format 1
               serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               totalSize 180
-              transient_lastDdlTime 1302062681
+              transient_lastDdlTime 1306984455
             serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
           
               input format: org.apache.hadoop.mapred.TextInputFormat
@@ -3200,21 +3255,22 @@ STAGE PLANS:
                 columns.types int:string
                 file.inputformat org.apache.hadoop.mapred.TextInputFormat
                 file.outputformat org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                location pfile:/data/users/nzhang/work/3/apache-hive/build/ql/test/data/warehouse/pcr_t1
+                location pfile:/data/users/tomasz/apache-hive/build/ql/test/data/warehouse/pcr_t1
                 name default.pcr_t1
                 numFiles 4
                 numPartitions 4
                 numRows 80
                 partition_columns ds
+                rawDataSize 640
                 serialization.ddl struct pcr_t1 { i32 key, string value}
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                 totalSize 720
-                transient_lastDdlTime 1302062740
+                transient_lastDdlTime 1306984514
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: default.pcr_t1
             name: default.pcr_t1
-        pfile:/data/users/nzhang/work/3/apache-hive/build/ql/test/data/warehouse/pcr_t1/ds=2000-04-09 
+        pfile:/data/users/tomasz/apache-hive/build/ql/test/data/warehouse/pcr_t1/ds=2000-04-09 
           Partition
             base file name: ds=2000-04-09
             input format: org.apache.hadoop.mapred.TextInputFormat
@@ -3227,17 +3283,18 @@ STAGE PLANS:
               columns.types int:string
               file.inputformat org.apache.hadoop.mapred.TextInputFormat
               file.outputformat org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-              location pfile:/data/users/nzhang/work/3/apache-hive/build/ql/test/data/warehouse/pcr_t1/ds=2000-04-09
+              location pfile:/data/users/tomasz/apache-hive/build/ql/test/data/warehouse/pcr_t1/ds=2000-04-09
               name default.pcr_t1
               numFiles 1
               numPartitions 4
               numRows 20
               partition_columns ds
+              rawDataSize 160
               serialization.ddl struct pcr_t1 { i32 key, string value}
               serialization.format 1
               serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               totalSize 180
-              transient_lastDdlTime 1302062685
+              transient_lastDdlTime 1306984459
             serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
           
               input format: org.apache.hadoop.mapred.TextInputFormat
@@ -3248,21 +3305,22 @@ STAGE PLANS:
                 columns.types int:string
                 file.inputformat org.apache.hadoop.mapred.TextInputFormat
                 file.outputformat org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                location pfile:/data/users/nzhang/work/3/apache-hive/build/ql/test/data/warehouse/pcr_t1
+                location pfile:/data/users/tomasz/apache-hive/build/ql/test/data/warehouse/pcr_t1
                 name default.pcr_t1
                 numFiles 4
                 numPartitions 4
                 numRows 80
                 partition_columns ds
+                rawDataSize 640
                 serialization.ddl struct pcr_t1 { i32 key, string value}
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                 totalSize 720
-                transient_lastDdlTime 1302062740
+                transient_lastDdlTime 1306984514
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: default.pcr_t1
             name: default.pcr_t1
-        pfile:/data/users/nzhang/work/3/apache-hive/build/ql/test/data/warehouse/pcr_t1/ds=2000-04-10 
+        pfile:/data/users/tomasz/apache-hive/build/ql/test/data/warehouse/pcr_t1/ds=2000-04-10 
           Partition
             base file name: ds=2000-04-10
             input format: org.apache.hadoop.mapred.TextInputFormat
@@ -3275,17 +3333,18 @@ STAGE PLANS:
               columns.types int:string
               file.inputformat org.apache.hadoop.mapred.TextInputFormat
               file.outputformat org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-              location pfile:/data/users/nzhang/work/3/apache-hive/build/ql/test/data/warehouse/pcr_t1/ds=2000-04-10
+              location pfile:/data/users/tomasz/apache-hive/build/ql/test/data/warehouse/pcr_t1/ds=2000-04-10
               name default.pcr_t1
               numFiles 1
               numPartitions 4
               numRows 20
               partition_columns ds
+              rawDataSize 160
               serialization.ddl struct pcr_t1 { i32 key, string value}
               serialization.format 1
               serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               totalSize 180
-              transient_lastDdlTime 1302062690
+              transient_lastDdlTime 1306984463
             serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
           
               input format: org.apache.hadoop.mapred.TextInputFormat
@@ -3296,21 +3355,22 @@ STAGE PLANS:
                 columns.types int:string
                 file.inputformat org.apache.hadoop.mapred.TextInputFormat
                 file.outputformat org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                location pfile:/data/users/nzhang/work/3/apache-hive/build/ql/test/data/warehouse/pcr_t1
+                location pfile:/data/users/tomasz/apache-hive/build/ql/test/data/warehouse/pcr_t1
                 name default.pcr_t1
                 numFiles 4
                 numPartitions 4
                 numRows 80
                 partition_columns ds
+                rawDataSize 640
                 serialization.ddl struct pcr_t1 { i32 key, string value}
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                 totalSize 720
-                transient_lastDdlTime 1302062740
+                transient_lastDdlTime 1306984514
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: default.pcr_t1
             name: default.pcr_t1
-        pfile:/data/users/nzhang/work/3/apache-hive/build/ql/test/data/warehouse/pcr_t1/ds=2000-04-11 
+        pfile:/data/users/tomasz/apache-hive/build/ql/test/data/warehouse/pcr_t1/ds=2000-04-11 
           Partition
             base file name: ds=2000-04-11
             input format: org.apache.hadoop.mapred.TextInputFormat
@@ -3323,17 +3383,18 @@ STAGE PLANS:
               columns.types int:string
               file.inputformat org.apache.hadoop.mapred.TextInputFormat
               file.outputformat org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-              location pfile:/data/users/nzhang/work/3/apache-hive/build/ql/test/data/warehouse/pcr_t1/ds=2000-04-11
+              location pfile:/data/users/tomasz/apache-hive/build/ql/test/data/warehouse/pcr_t1/ds=2000-04-11
               name default.pcr_t1
               numFiles 1
               numPartitions 4
               numRows 20
               partition_columns ds
+              rawDataSize 160
               serialization.ddl struct pcr_t1 { i32 key, string value}
               serialization.format 1
               serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               totalSize 180
-              transient_lastDdlTime 1302062740
+              transient_lastDdlTime 1306984514
             serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
           
               input format: org.apache.hadoop.mapred.TextInputFormat
@@ -3344,17 +3405,18 @@ STAGE PLANS:
                 columns.types int:string
                 file.inputformat org.apache.hadoop.mapred.TextInputFormat
                 file.outputformat org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                location pfile:/data/users/nzhang/work/3/apache-hive/build/ql/test/data/warehouse/pcr_t1
+                location pfile:/data/users/tomasz/apache-hive/build/ql/test/data/warehouse/pcr_t1
                 name default.pcr_t1
                 numFiles 4
                 numPartitions 4
                 numRows 80
                 partition_columns ds
+                rawDataSize 640
                 serialization.ddl struct pcr_t1 { i32 key, string value}
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                 totalSize 720
-                transient_lastDdlTime 1302062740
+                transient_lastDdlTime 1306984514
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: default.pcr_t1
             name: default.pcr_t1
@@ -3363,9 +3425,9 @@ STAGE PLANS:
           File Output Operator
             compressed: false
             GlobalTableId: 0
-            directory: file:/tmp/nzhang/hive_2011-04-05_21-05-40_870_6900078419539556469/-ext-10001
+            directory: file:/tmp/tomasz/hive_2011-06-01_20-15-14_411_1089680996735017254/-ext-10001
             NumFilesPerFileSink: 1
-            Stats Publishing Key Prefix: file:/tmp/nzhang/hive_2011-04-05_21-05-40_870_6900078419539556469/-ext-10001/
+            Stats Publishing Key Prefix: file:/tmp/tomasz/hive_2011-06-01_20-15-14_411_1089680996735017254/-ext-10001/
             table:
                 input format: org.apache.hadoop.mapred.TextInputFormat
                 output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
@@ -3388,14 +3450,14 @@ PREHOOK: Input: default@pcr_t1@ds=2000-04-08
 PREHOOK: Input: default@pcr_t1@ds=2000-04-09
 PREHOOK: Input: default@pcr_t1@ds=2000-04-10
 PREHOOK: Input: default@pcr_t1@ds=2000-04-11
-PREHOOK: Output: file:/tmp/nzhang/hive_2011-04-05_21-05-40_991_1538701252426450946/-mr-10000
+PREHOOK: Output: file:/tmp/tomasz/hive_2011-06-01_20-15-14_536_2347363292073699128/-mr-10000
 POSTHOOK: query: select key, value, ds from pcr_t1 where (ds>'2000-04-08' and ds<'2000-04-11') or (ds>='2000-04-08' and ds<='2000-04-11' and key=2) order by key, value, ds
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@pcr_t1@ds=2000-04-08
 POSTHOOK: Input: default@pcr_t1@ds=2000-04-09
 POSTHOOK: Input: default@pcr_t1@ds=2000-04-10
 POSTHOOK: Input: default@pcr_t1@ds=2000-04-11
-POSTHOOK: Output: file:/tmp/nzhang/hive_2011-04-05_21-05-40_991_1538701252426450946/-mr-10000
+POSTHOOK: Output: file:/tmp/tomasz/hive_2011-06-01_20-15-14_536_2347363292073699128/-mr-10000
 POSTHOOK: Lineage: pcr_t1 PARTITION(ds=2000-04-08).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: pcr_t1 PARTITION(ds=2000-04-08).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: pcr_t1 PARTITION(ds=2000-04-09).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
@@ -3511,11 +3573,11 @@ STAGE PLANS:
                           type: string
       Needs Tagging: false
       Path -> Alias:
-        pfile:/data/users/nzhang/work/3/apache-hive/build/ql/test/data/warehouse/pcr_t1/ds=2000-04-08 [pcr_t1]
-        pfile:/data/users/nzhang/work/3/apache-hive/build/ql/test/data/warehouse/pcr_t1/ds=2000-04-09 [pcr_t1]
-        pfile:/data/users/nzhang/work/3/apache-hive/build/ql/test/data/warehouse/pcr_t1/ds=2000-04-10 [pcr_t1]
+        pfile:/data/users/tomasz/apache-hive/build/ql/test/data/warehouse/pcr_t1/ds=2000-04-08 [pcr_t1]
+        pfile:/data/users/tomasz/apache-hive/build/ql/test/data/warehouse/pcr_t1/ds=2000-04-09 [pcr_t1]
+        pfile:/data/users/tomasz/apache-hive/build/ql/test/data/warehouse/pcr_t1/ds=2000-04-10 [pcr_t1]
       Path -> Partition:
-        pfile:/data/users/nzhang/work/3/apache-hive/build/ql/test/data/warehouse/pcr_t1/ds=2000-04-08 
+        pfile:/data/users/tomasz/apache-hive/build/ql/test/data/warehouse/pcr_t1/ds=2000-04-08 
           Partition
             base file name: ds=2000-04-08
             input format: org.apache.hadoop.mapred.TextInputFormat
@@ -3528,17 +3590,18 @@ STAGE PLANS:
               columns.types int:string
               file.inputformat org.apache.hadoop.mapred.TextInputFormat
               file.outputformat org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-              location pfile:/data/users/nzhang/work/3/apache-hive/build/ql/test/data/warehouse/pcr_t1/ds=2000-04-08
+              location pfile:/data/users/tomasz/apache-hive/build/ql/test/data/warehouse/pcr_t1/ds=2000-04-08
               name default.pcr_t1
               numFiles 1
               numPartitions 4
               numRows 20
               partition_columns ds
+              rawDataSize 160
               serialization.ddl struct pcr_t1 { i32 key, string value}
               serialization.format 1
               serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               totalSize 180
-              transient_lastDdlTime 1302062681
+              transient_lastDdlTime 1306984455
             serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
           
               input format: org.apache.hadoop.mapred.TextInputFormat
@@ -3549,21 +3612,22 @@ STAGE PLANS:
                 columns.types int:string
                 file.inputformat org.apache.hadoop.mapred.TextInputFormat
                 file.outputformat org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                location pfile:/data/users/nzhang/work/3/apache-hive/build/ql/test/data/warehouse/pcr_t1
+                location pfile:/data/users/tomasz/apache-hive/build/ql/test/data/warehouse/pcr_t1
                 name default.pcr_t1
                 numFiles 4
                 numPartitions 4
                 numRows 80
                 partition_columns ds
+                rawDataSize 640
                 serialization.ddl struct pcr_t1 { i32 key, string value}
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                 totalSize 720
-                transient_lastDdlTime 1302062740
+                transient_lastDdlTime 1306984514
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: default.pcr_t1
             name: default.pcr_t1
-        pfile:/data/users/nzhang/work/3/apache-hive/build/ql/test/data/warehouse/pcr_t1/ds=2000-04-09 
+        pfile:/data/users/tomasz/apache-hive/build/ql/test/data/warehouse/pcr_t1/ds=2000-04-09 
           Partition
             base file name: ds=2000-04-09
             input format: org.apache.hadoop.mapred.TextInputFormat
@@ -3576,17 +3640,18 @@ STAGE PLANS:
               columns.types int:string
               file.inputformat org.apache.hadoop.mapred.TextInputFormat
               file.outputformat org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-              location pfile:/data/users/nzhang/work/3/apache-hive/build/ql/test/data/warehouse/pcr_t1/ds=2000-04-09
+              location pfile:/data/users/tomasz/apache-hive/build/ql/test/data/warehouse/pcr_t1/ds=2000-04-09
               name default.pcr_t1
               numFiles 1
               numPartitions 4
               numRows 20
               partition_columns ds
+              rawDataSize 160
               serialization.ddl struct pcr_t1 { i32 key, string value}
               serialization.format 1
               serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               totalSize 180
-              transient_lastDdlTime 1302062685
+              transient_lastDdlTime 1306984459
             serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
           
               input format: org.apache.hadoop.mapred.TextInputFormat
@@ -3597,21 +3662,22 @@ STAGE PLANS:
                 columns.types int:string
                 file.inputformat org.apache.hadoop.mapred.TextInputFormat
                 file.outputformat org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                location pfile:/data/users/nzhang/work/3/apache-hive/build/ql/test/data/warehouse/pcr_t1
+                location pfile:/data/users/tomasz/apache-hive/build/ql/test/data/warehouse/pcr_t1
                 name default.pcr_t1
                 numFiles 4
                 numPartitions 4
                 numRows 80
                 partition_columns ds
+                rawDataSize 640
                 serialization.ddl struct pcr_t1 { i32 key, string value}
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                 totalSize 720
-                transient_lastDdlTime 1302062740
+                transient_lastDdlTime 1306984514
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: default.pcr_t1
             name: default.pcr_t1
-        pfile:/data/users/nzhang/work/3/apache-hive/build/ql/test/data/warehouse/pcr_t1/ds=2000-04-10 
+        pfile:/data/users/tomasz/apache-hive/build/ql/test/data/warehouse/pcr_t1/ds=2000-04-10 
           Partition
             base file name: ds=2000-04-10
             input format: org.apache.hadoop.mapred.TextInputFormat
@@ -3624,17 +3690,18 @@ STAGE PLANS:
               columns.types int:string
               file.inputformat org.apache.hadoop.mapred.TextInputFormat
               file.outputformat org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-              location pfile:/data/users/nzhang/work/3/apache-hive/build/ql/test/data/warehouse/pcr_t1/ds=2000-04-10
+              location pfile:/data/users/tomasz/apache-hive/build/ql/test/data/warehouse/pcr_t1/ds=2000-04-10
               name default.pcr_t1
               numFiles 1
               numPartitions 4
               numRows 20
               partition_columns ds
+              rawDataSize 160
               serialization.ddl struct pcr_t1 { i32 key, string value}
               serialization.format 1
               serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               totalSize 180
-              transient_lastDdlTime 1302062690
+              transient_lastDdlTime 1306984463
             serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
           
               input format: org.apache.hadoop.mapred.TextInputFormat
@@ -3645,17 +3712,18 @@ STAGE PLANS:
                 columns.types int:string
                 file.inputformat org.apache.hadoop.mapred.TextInputFormat
                 file.outputformat org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                location pfile:/data/users/nzhang/work/3/apache-hive/build/ql/test/data/warehouse/pcr_t1
+                location pfile:/data/users/tomasz/apache-hive/build/ql/test/data/warehouse/pcr_t1
                 name default.pcr_t1
                 numFiles 4
                 numPartitions 4
                 numRows 80
                 partition_columns ds
+                rawDataSize 640
                 serialization.ddl struct pcr_t1 { i32 key, string value}
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                 totalSize 720
-                transient_lastDdlTime 1302062740
+                transient_lastDdlTime 1306984514
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: default.pcr_t1
             name: default.pcr_t1
@@ -3664,9 +3732,9 @@ STAGE PLANS:
           File Output Operator
             compressed: false
             GlobalTableId: 0
-            directory: file:/tmp/nzhang/hive_2011-04-05_21-05-44_438_7532927123054980520/-ext-10001
+            directory: file:/tmp/tomasz/hive_2011-06-01_20-15-17_863_5288314494548058592/-ext-10001
             NumFilesPerFileSink: 1
-            Stats Publishing Key Prefix: file:/tmp/nzhang/hive_2011-04-05_21-05-44_438_7532927123054980520/-ext-10001/
+            Stats Publishing Key Prefix: file:/tmp/tomasz/hive_2011-06-01_20-15-17_863_5288314494548058592/-ext-10001/
             table:
                 input format: org.apache.hadoop.mapred.TextInputFormat
                 output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
@@ -3688,13 +3756,13 @@ PREHOOK: type: QUERY
 PREHOOK: Input: default@pcr_t1@ds=2000-04-08
 PREHOOK: Input: default@pcr_t1@ds=2000-04-09
 PREHOOK: Input: default@pcr_t1@ds=2000-04-10
-PREHOOK: Output: file:/tmp/nzhang/hive_2011-04-05_21-05-44_546_992982113963688336/-mr-10000
+PREHOOK: Output: file:/tmp/tomasz/hive_2011-06-01_20-15-17_982_2657675519029852039/-mr-10000
 POSTHOOK: query: select key, value, ds from pcr_t1 where (ds>'2000-04-08' and ds<'2000-04-11') or (ds<='2000-04-09' and key=2) order by key, value, ds
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@pcr_t1@ds=2000-04-08
 POSTHOOK: Input: default@pcr_t1@ds=2000-04-09
 POSTHOOK: Input: default@pcr_t1@ds=2000-04-10
-POSTHOOK: Output: file:/tmp/nzhang/hive_2011-04-05_21-05-44_546_992982113963688336/-mr-10000
+POSTHOOK: Output: file:/tmp/tomasz/hive_2011-06-01_20-15-17_982_2657675519029852039/-mr-10000
 POSTHOOK: Lineage: pcr_t1 PARTITION(ds=2000-04-08).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: pcr_t1 PARTITION(ds=2000-04-08).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: pcr_t1 PARTITION(ds=2000-04-09).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
@@ -3822,9 +3890,9 @@ STAGE PLANS:
               File Output Operator
                 compressed: false
                 GlobalTableId: 1
-                directory: pfile:/data/users/nzhang/work/3/apache-hive/build/ql/scratchdir/hive_2011-04-05_21-05-48_011_648182979209676386/-ext-10004
+                directory: pfile:/data/users/tomasz/apache-hive/build/ql/scratchdir/hive_2011-06-01_20-15-21_352_1116017592704734476/-ext-10004
                 NumFilesPerFileSink: 1
-                Stats Publishing Key Prefix: pfile:/data/users/nzhang/work/3/apache-hive/build/ql/scratchdir/hive_2011-04-05_21-05-48_011_648182979209676386/-ext-10000/
+                Stats Publishing Key Prefix: pfile:/data/users/tomasz/apache-hive/build/ql/scratchdir/hive_2011-06-01_20-15-21_352_1116017592704734476/-ext-10000/
                 table:
                     input format: org.apache.hadoop.mapred.TextInputFormat
                     output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
@@ -3834,12 +3902,12 @@ STAGE PLANS:
                       columns.types int:string
                       file.inputformat org.apache.hadoop.mapred.TextInputFormat
                       file.outputformat org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                      location pfile:/data/users/nzhang/work/3/apache-hive/build/ql/test/data/warehouse/pcr_t2
+                      location pfile:/data/users/tomasz/apache-hive/build/ql/test/data/warehouse/pcr_t2
                       name default.pcr_t2
                       serialization.ddl struct pcr_t2 { i32 key, string value}
                       serialization.format 1
                       serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                      transient_lastDdlTime 1302062747
+                      transient_lastDdlTime 1306984521
                     serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                     name: default.pcr_t2
                 TotalFiles: 1
@@ -3855,9 +3923,9 @@ STAGE PLANS:
               File Output Operator
                 compressed: false
                 GlobalTableId: 2
-                directory: pfile:/data/users/nzhang/work/3/apache-hive/build/ql/scratchdir/hive_2011-04-05_21-05-48_011_648182979209676386/-ext-10005
+                directory: pfile:/data/users/tomasz/apache-hive/build/ql/scratchdir/hive_2011-06-01_20-15-21_352_1116017592704734476/-ext-10005
                 NumFilesPerFileSink: 1
-                Stats Publishing Key Prefix: pfile:/data/users/nzhang/work/3/apache-hive/build/ql/scratchdir/hive_2011-04-05_21-05-48_011_648182979209676386/-ext-10002/
+                Stats Publishing Key Prefix: pfile:/data/users/tomasz/apache-hive/build/ql/scratchdir/hive_2011-06-01_20-15-21_352_1116017592704734476/-ext-10002/
                 table:
                     input format: org.apache.hadoop.mapred.TextInputFormat
                     output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
@@ -3867,12 +3935,12 @@ STAGE PLANS:
                       columns.types int:string
                       file.inputformat org.apache.hadoop.mapred.TextInputFormat
                       file.outputformat org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                      location pfile:/data/users/nzhang/work/3/apache-hive/build/ql/test/data/warehouse/pcr_t3
+                      location pfile:/data/users/tomasz/apache-hive/build/ql/test/data/warehouse/pcr_t3
                       name default.pcr_t3
                       serialization.ddl struct pcr_t3 { i32 key, string value}
                       serialization.format 1
                       serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                      transient_lastDdlTime 1302062747
+                      transient_lastDdlTime 1306984521
                     serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                     name: default.pcr_t3
                 TotalFiles: 1
@@ -3880,9 +3948,9 @@ STAGE PLANS:
                 MultiFileSpray: false
       Needs Tagging: false
       Path -> Alias:
-        pfile:/data/users/nzhang/work/3/apache-hive/build/ql/test/data/warehouse/pcr_t1/ds=2000-04-08 [pcr_t1]
+        pfile:/data/users/tomasz/apache-hive/build/ql/test/data/warehouse/pcr_t1/ds=2000-04-08 [pcr_t1]
       Path -> Partition:
-        pfile:/data/users/nzhang/work/3/apache-hive/build/ql/test/data/warehouse/pcr_t1/ds=2000-04-08 
+        pfile:/data/users/tomasz/apache-hive/build/ql/test/data/warehouse/pcr_t1/ds=2000-04-08 
           Partition
             base file name: ds=2000-04-08
             input format: org.apache.hadoop.mapred.TextInputFormat
@@ -3895,17 +3963,18 @@ STAGE PLANS:
               columns.types int:string
               file.inputformat org.apache.hadoop.mapred.TextInputFormat
               file.outputformat org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-              location pfile:/data/users/nzhang/work/3/apache-hive/build/ql/test/data/warehouse/pcr_t1/ds=2000-04-08
+              location pfile:/data/users/tomasz/apache-hive/build/ql/test/data/warehouse/pcr_t1/ds=2000-04-08
               name default.pcr_t1
               numFiles 1
               numPartitions 4
               numRows 20
               partition_columns ds
+              rawDataSize 160
               serialization.ddl struct pcr_t1 { i32 key, string value}
               serialization.format 1
               serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               totalSize 180
-              transient_lastDdlTime 1302062681
+              transient_lastDdlTime 1306984455
             serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
           
               input format: org.apache.hadoop.mapred.TextInputFormat
@@ -3916,17 +3985,18 @@ STAGE PLANS:
                 columns.types int:string
                 file.inputformat org.apache.hadoop.mapred.TextInputFormat
                 file.outputformat org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                location pfile:/data/users/nzhang/work/3/apache-hive/build/ql/test/data/warehouse/pcr_t1
+                location pfile:/data/users/tomasz/apache-hive/build/ql/test/data/warehouse/pcr_t1
                 name default.pcr_t1
                 numFiles 4
                 numPartitions 4
                 numRows 80
                 partition_columns ds
+                rawDataSize 640
                 serialization.ddl struct pcr_t1 { i32 key, string value}
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                 totalSize 720
-                transient_lastDdlTime 1302062740
+                transient_lastDdlTime 1306984514
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: default.pcr_t1
             name: default.pcr_t1
@@ -3938,14 +4008,14 @@ STAGE PLANS:
     Move Operator
       files:
           hdfs directory: true
-          source: pfile:/data/users/nzhang/work/3/apache-hive/build/ql/scratchdir/hive_2011-04-05_21-05-48_011_648182979209676386/-ext-10004
-          destination: pfile:/data/users/nzhang/work/3/apache-hive/build/ql/scratchdir/hive_2011-04-05_21-05-48_011_648182979209676386/-ext-10000
+          source: pfile:/data/users/tomasz/apache-hive/build/ql/scratchdir/hive_2011-06-01_20-15-21_352_1116017592704734476/-ext-10004
+          destination: pfile:/data/users/tomasz/apache-hive/build/ql/scratchdir/hive_2011-06-01_20-15-21_352_1116017592704734476/-ext-10000
 
   Stage: Stage-0
     Move Operator
       tables:
           replace: true
-          source: pfile:/data/users/nzhang/work/3/apache-hive/build/ql/scratchdir/hive_2011-04-05_21-05-48_011_648182979209676386/-ext-10000
+          source: pfile:/data/users/tomasz/apache-hive/build/ql/scratchdir/hive_2011-06-01_20-15-21_352_1116017592704734476/-ext-10000
           table:
               input format: org.apache.hadoop.mapred.TextInputFormat
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
@@ -3955,28 +4025,28 @@ STAGE PLANS:
                 columns.types int:string
                 file.inputformat org.apache.hadoop.mapred.TextInputFormat
                 file.outputformat org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                location pfile:/data/users/nzhang/work/3/apache-hive/build/ql/test/data/warehouse/pcr_t2
+                location pfile:/data/users/tomasz/apache-hive/build/ql/test/data/warehouse/pcr_t2
                 name default.pcr_t2
                 serialization.ddl struct pcr_t2 { i32 key, string value}
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                transient_lastDdlTime 1302062747
+                transient_lastDdlTime 1306984521
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: default.pcr_t2
-          tmp directory: pfile:/data/users/nzhang/work/3/apache-hive/build/ql/scratchdir/hive_2011-04-05_21-05-48_011_648182979209676386/-ext-10001
+          tmp directory: pfile:/data/users/tomasz/apache-hive/build/ql/scratchdir/hive_2011-06-01_20-15-21_352_1116017592704734476/-ext-10001
 
   Stage: Stage-3
     Stats-Aggr Operator
-      Stats Aggregation Key Prefix: pfile:/data/users/nzhang/work/3/apache-hive/build/ql/scratchdir/hive_2011-04-05_21-05-48_011_648182979209676386/-ext-10000/
+      Stats Aggregation Key Prefix: pfile:/data/users/tomasz/apache-hive/build/ql/scratchdir/hive_2011-06-01_20-15-21_352_1116017592704734476/-ext-10000/
 
   Stage: Stage-4
     Map Reduce
       Alias -> Map Operator Tree:
-        pfile:/data/users/nzhang/work/3/apache-hive/build/ql/scratchdir/hive_2011-04-05_21-05-48_011_648182979209676386/-ext-10004 
+        pfile:/data/users/tomasz/apache-hive/build/ql/scratchdir/hive_2011-06-01_20-15-21_352_1116017592704734476/-ext-10004 
             File Output Operator
               compressed: false
               GlobalTableId: 0
-              directory: pfile:/data/users/nzhang/work/3/apache-hive/build/ql/scratchdir/hive_2011-04-05_21-05-48_011_648182979209676386/-ext-10000
+              directory: pfile:/data/users/tomasz/apache-hive/build/ql/scratchdir/hive_2011-06-01_20-15-21_352_1116017592704734476/-ext-10000
               NumFilesPerFileSink: 1
               table:
                   input format: org.apache.hadoop.mapred.TextInputFormat
@@ -3987,12 +4057,12 @@ STAGE PLANS:
                     columns.types int:string
                     file.inputformat org.apache.hadoop.mapred.TextInputFormat
                     file.outputformat org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                    location pfile:/data/users/nzhang/work/3/apache-hive/build/ql/test/data/warehouse/pcr_t2
+                    location pfile:/data/users/tomasz/apache-hive/build/ql/test/data/warehouse/pcr_t2
                     name default.pcr_t2
                     serialization.ddl struct pcr_t2 { i32 key, string value}
                     serialization.format 1
                     serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                    transient_lastDdlTime 1302062747
+                    transient_lastDdlTime 1306984521
                   serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                   name: default.pcr_t2
               TotalFiles: 1
@@ -4000,9 +4070,9 @@ STAGE PLANS:
               MultiFileSpray: false
       Needs Tagging: false
       Path -> Alias:
-        pfile:/data/users/nzhang/work/3/apache-hive/build/ql/scratchdir/hive_2011-04-05_21-05-48_011_648182979209676386/-ext-10004 [pfile:/data/users/nzhang/work/3/apache-hive/build/ql/scratchdir/hive_2011-04-05_21-05-48_011_648182979209676386/-ext-10004]
+        pfile:/data/users/tomasz/apache-hive/build/ql/scratchdir/hive_2011-06-01_20-15-21_352_1116017592704734476/-ext-10004 [pfile:/data/users/tomasz/apache-hive/build/ql/scratchdir/hive_2011-06-01_20-15-21_352_1116017592704734476/-ext-10004]
       Path -> Partition:
-        pfile:/data/users/nzhang/work/3/apache-hive/build/ql/scratchdir/hive_2011-04-05_21-05-48_011_648182979209676386/-ext-10004 
+        pfile:/data/users/tomasz/apache-hive/build/ql/scratchdir/hive_2011-06-01_20-15-21_352_1116017592704734476/-ext-10004 
           Partition
             base file name: -ext-10004
             input format: org.apache.hadoop.mapred.TextInputFormat
@@ -4013,12 +4083,12 @@ STAGE PLANS:
               columns.types int:string
               file.inputformat org.apache.hadoop.mapred.TextInputFormat
               file.outputformat org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-              location pfile:/data/users/nzhang/work/3/apache-hive/build/ql/test/data/warehouse/pcr_t2
+              location pfile:/data/users/tomasz/apache-hive/build/ql/test/data/warehouse/pcr_t2
               name default.pcr_t2
               serialization.ddl struct pcr_t2 { i32 key, string value}
               serialization.format 1
               serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              transient_lastDdlTime 1302062747
+              transient_lastDdlTime 1306984521
             serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
           
               input format: org.apache.hadoop.mapred.TextInputFormat
@@ -4029,12 +4099,12 @@ STAGE PLANS:
                 columns.types int:string
                 file.inputformat org.apache.hadoop.mapred.TextInputFormat
                 file.outputformat org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                location pfile:/data/users/nzhang/work/3/apache-hive/build/ql/test/data/warehouse/pcr_t2
+                location pfile:/data/users/tomasz/apache-hive/build/ql/test/data/warehouse/pcr_t2
                 name default.pcr_t2
                 serialization.ddl struct pcr_t2 { i32 key, string value}
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                transient_lastDdlTime 1302062747
+                transient_lastDdlTime 1306984521
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: default.pcr_t2
             name: default.pcr_t2
@@ -4046,14 +4116,14 @@ STAGE PLANS:
     Move Operator
       files:
           hdfs directory: true
-          source: pfile:/data/users/nzhang/work/3/apache-hive/build/ql/scratchdir/hive_2011-04-05_21-05-48_011_648182979209676386/-ext-10005
-          destination: pfile:/data/users/nzhang/work/3/apache-hive/build/ql/scratchdir/hive_2011-04-05_21-05-48_011_648182979209676386/-ext-10002
+          source: pfile:/data/users/tomasz/apache-hive/build/ql/scratchdir/hive_2011-06-01_20-15-21_352_1116017592704734476/-ext-10005
+          destination: pfile:/data/users/tomasz/apache-hive/build/ql/scratchdir/hive_2011-06-01_20-15-21_352_1116017592704734476/-ext-10002
 
   Stage: Stage-1
     Move Operator
       tables:
           replace: true
-          source: pfile:/data/users/nzhang/work/3/apache-hive/build/ql/scratchdir/hive_2011-04-05_21-05-48_011_648182979209676386/-ext-10002
+          source: pfile:/data/users/tomasz/apache-hive/build/ql/scratchdir/hive_2011-06-01_20-15-21_352_1116017592704734476/-ext-10002
           table:
               input format: org.apache.hadoop.mapred.TextInputFormat
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
@@ -4063,28 +4133,28 @@ STAGE PLANS:
                 columns.types int:string
                 file.inputformat org.apache.hadoop.mapred.TextInputFormat
                 file.outputformat org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                location pfile:/data/users/nzhang/work/3/apache-hive/build/ql/test/data/warehouse/pcr_t3
+                location pfile:/data/users/tomasz/apache-hive/build/ql/test/data/warehouse/pcr_t3
                 name default.pcr_t3
                 serialization.ddl struct pcr_t3 { i32 key, string value}
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                transient_lastDdlTime 1302062747
+                transient_lastDdlTime 1306984521
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: default.pcr_t3
-          tmp directory: pfile:/data/users/nzhang/work/3/apache-hive/build/ql/scratchdir/hive_2011-04-05_21-05-48_011_648182979209676386/-ext-10003
+          tmp directory: pfile:/data/users/tomasz/apache-hive/build/ql/scratchdir/hive_2011-06-01_20-15-21_352_1116017592704734476/-ext-10003
 
   Stage: Stage-7
     Stats-Aggr Operator
-      Stats Aggregation Key Prefix: pfile:/data/users/nzhang/work/3/apache-hive/build/ql/scratchdir/hive_2011-04-05_21-05-48_011_648182979209676386/-ext-10002/
+      Stats Aggregation Key Prefix: pfile:/data/users/tomasz/apache-hive/build/ql/scratchdir/hive_2011-06-01_20-15-21_352_1116017592704734476/-ext-10002/
 
   Stage: Stage-8
     Map Reduce
       Alias -> Map Operator Tree:
-        pfile:/data/users/nzhang/work/3/apache-hive/build/ql/scratchdir/hive_2011-04-05_21-05-48_011_648182979209676386/-ext-10005 
+        pfile:/data/users/tomasz/apache-hive/build/ql/scratchdir/hive_2011-06-01_20-15-21_352_1116017592704734476/-ext-10005 
             File Output Operator
               compressed: false
               GlobalTableId: 0
-              directory: pfile:/data/users/nzhang/work/3/apache-hive/build/ql/scratchdir/hive_2011-04-05_21-05-48_011_648182979209676386/-ext-10002
+              directory: pfile:/data/users/tomasz/apache-hive/build/ql/scratchdir/hive_2011-06-01_20-15-21_352_1116017592704734476/-ext-10002
               NumFilesPerFileSink: 1
               table:
                   input format: org.apache.hadoop.mapred.TextInputFormat
@@ -4095,12 +4165,12 @@ STAGE PLANS:
                     columns.types int:string
                     file.inputformat org.apache.hadoop.mapred.TextInputFormat
                     file.outputformat org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                    location pfile:/data/users/nzhang/work/3/apache-hive/build/ql/test/data/warehouse/pcr_t3
+                    location pfile:/data/users/tomasz/apache-hive/build/ql/test/data/warehouse/pcr_t3
                     name default.pcr_t3
                     serialization.ddl struct pcr_t3 { i32 key, string value}
                     serialization.format 1
                     serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                    transient_lastDdlTime 1302062747
+                    transient_lastDdlTime 1306984521
                   serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                   name: default.pcr_t3
               TotalFiles: 1
@@ -4108,9 +4178,9 @@ STAGE PLANS:
               MultiFileSpray: false
       Needs Tagging: false
       Path -> Alias:
-        pfile:/data/users/nzhang/work/3/apache-hive/build/ql/scratchdir/hive_2011-04-05_21-05-48_011_648182979209676386/-ext-10005 [pfile:/data/users/nzhang/work/3/apache-hive/build/ql/scratchdir/hive_2011-04-05_21-05-48_011_648182979209676386/-ext-10005]
+        pfile:/data/users/tomasz/apache-hive/build/ql/scratchdir/hive_2011-06-01_20-15-21_352_1116017592704734476/-ext-10005 [pfile:/data/users/tomasz/apache-hive/build/ql/scratchdir/hive_2011-06-01_20-15-21_352_1116017592704734476/-ext-10005]
       Path -> Partition:
-        pfile:/data/users/nzhang/work/3/apache-hive/build/ql/scratchdir/hive_2011-04-05_21-05-48_011_648182979209676386/-ext-10005 
+        pfile:/data/users/tomasz/apache-hive/build/ql/scratchdir/hive_2011-06-01_20-15-21_352_1116017592704734476/-ext-10005 
           Partition
             base file name: -ext-10005
             input format: org.apache.hadoop.mapred.TextInputFormat
@@ -4121,12 +4191,12 @@ STAGE PLANS:
               columns.types int:string
               file.inputformat org.apache.hadoop.mapred.TextInputFormat
               file.outputformat org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-              location pfile:/data/users/nzhang/work/3/apache-hive/build/ql/test/data/warehouse/pcr_t3
+              location pfile:/data/users/tomasz/apache-hive/build/ql/test/data/warehouse/pcr_t3
               name default.pcr_t3
               serialization.ddl struct pcr_t3 { i32 key, string value}
               serialization.format 1
               serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              transient_lastDdlTime 1302062747
+              transient_lastDdlTime 1306984521
             serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
           
               input format: org.apache.hadoop.mapred.TextInputFormat
@@ -4137,12 +4207,12 @@ STAGE PLANS:
                 columns.types int:string
                 file.inputformat org.apache.hadoop.mapred.TextInputFormat
                 file.outputformat org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                location pfile:/data/users/nzhang/work/3/apache-hive/build/ql/test/data/warehouse/pcr_t3
+                location pfile:/data/users/tomasz/apache-hive/build/ql/test/data/warehouse/pcr_t3
                 name default.pcr_t3
                 serialization.ddl struct pcr_t3 { i32 key, string value}
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                transient_lastDdlTime 1302062747
+                transient_lastDdlTime 1306984521
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: default.pcr_t3
             name: default.pcr_t3
@@ -4235,9 +4305,9 @@ STAGE PLANS:
                 File Output Operator
                   compressed: false
                   GlobalTableId: 1
-                  directory: pfile:/data/users/nzhang/work/3/apache-hive/build/ql/scratchdir/hive_2011-04-05_21-05-52_788_4578633977654904334/-ext-10004
+                  directory: pfile:/data/users/tomasz/apache-hive/build/ql/scratchdir/hive_2011-06-01_20-15-26_354_1969910550858833560/-ext-10004
                   NumFilesPerFileSink: 1
-                  Stats Publishing Key Prefix: pfile:/data/users/nzhang/work/3/apache-hive/build/ql/scratchdir/hive_2011-04-05_21-05-52_788_4578633977654904334/-ext-10000/
+                  Stats Publishing Key Prefix: pfile:/data/users/tomasz/apache-hive/build/ql/scratchdir/hive_2011-06-01_20-15-26_354_1969910550858833560/-ext-10000/
                   table:
                       input format: org.apache.hadoop.mapred.TextInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
@@ -4247,16 +4317,17 @@ STAGE PLANS:
                         columns.types int:string
                         file.inputformat org.apache.hadoop.mapred.TextInputFormat
                         file.outputformat org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                        location pfile:/data/users/nzhang/work/3/apache-hive/build/ql/test/data/warehouse/pcr_t2
+                        location pfile:/data/users/tomasz/apache-hive/build/ql/test/data/warehouse/pcr_t2
                         name default.pcr_t2
                         numFiles 1
                         numPartitions 0
                         numRows 20
+                        rawDataSize 160
                         serialization.ddl struct pcr_t2 { i32 key, string value}
                         serialization.format 1
                         serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                         totalSize 180
-                        transient_lastDdlTime 1302062752
+                        transient_lastDdlTime 1306984526
                       serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                       name: default.pcr_t2
                   TotalFiles: 1
@@ -4277,9 +4348,9 @@ STAGE PLANS:
                 File Output Operator
                   compressed: false
                   GlobalTableId: 2
-                  directory: pfile:/data/users/nzhang/work/3/apache-hive/build/ql/scratchdir/hive_2011-04-05_21-05-52_788_4578633977654904334/-ext-10005
+                  directory: pfile:/data/users/tomasz/apache-hive/build/ql/scratchdir/hive_2011-06-01_20-15-26_354_1969910550858833560/-ext-10005
                   NumFilesPerFileSink: 1
-                  Stats Publishing Key Prefix: pfile:/data/users/nzhang/work/3/apache-hive/build/ql/scratchdir/hive_2011-04-05_21-05-52_788_4578633977654904334/-ext-10002/
+                  Stats Publishing Key Prefix: pfile:/data/users/tomasz/apache-hive/build/ql/scratchdir/hive_2011-06-01_20-15-26_354_1969910550858833560/-ext-10002/
                   table:
                       input format: org.apache.hadoop.mapred.TextInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
@@ -4289,16 +4360,17 @@ STAGE PLANS:
                         columns.types int:string
                         file.inputformat org.apache.hadoop.mapred.TextInputFormat
                         file.outputformat org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                        location pfile:/data/users/nzhang/work/3/apache-hive/build/ql/test/data/warehouse/pcr_t3
+                        location pfile:/data/users/tomasz/apache-hive/build/ql/test/data/warehouse/pcr_t3
                         name default.pcr_t3
                         numFiles 1
                         numPartitions 0
                         numRows 20
+                        rawDataSize 160
                         serialization.ddl struct pcr_t3 { i32 key, string value}
                         serialization.format 1
                         serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                         totalSize 180
-                        transient_lastDdlTime 1302062752
+                        transient_lastDdlTime 1306984526
                       serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                       name: default.pcr_t3
                   TotalFiles: 1
@@ -4306,9 +4378,9 @@ STAGE PLANS:
                   MultiFileSpray: false
       Needs Tagging: false
       Path -> Alias:
-        pfile:/data/users/nzhang/work/3/apache-hive/build/ql/test/data/warehouse/pcr_t1/ds=2000-04-08 [pcr_t1]
+        pfile:/data/users/tomasz/apache-hive/build/ql/test/data/warehouse/pcr_t1/ds=2000-04-08 [pcr_t1]
       Path -> Partition:
-        pfile:/data/users/nzhang/work/3/apache-hive/build/ql/test/data/warehouse/pcr_t1/ds=2000-04-08 
+        pfile:/data/users/tomasz/apache-hive/build/ql/test/data/warehouse/pcr_t1/ds=2000-04-08 
           Partition
             base file name: ds=2000-04-08
             input format: org.apache.hadoop.mapred.TextInputFormat
@@ -4321,17 +4393,18 @@ STAGE PLANS:
               columns.types int:string
               file.inputformat org.apache.hadoop.mapred.TextInputFormat
               file.outputformat org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-              location pfile:/data/users/nzhang/work/3/apache-hive/build/ql/test/data/warehouse/pcr_t1/ds=2000-04-08
+              location pfile:/data/users/tomasz/apache-hive/build/ql/test/data/warehouse/pcr_t1/ds=2000-04-08
               name default.pcr_t1
               numFiles 1
               numPartitions 4
               numRows 20
               partition_columns ds
+              rawDataSize 160
               serialization.ddl struct pcr_t1 { i32 key, string value}
               serialization.format 1
               serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               totalSize 180
-              transient_lastDdlTime 1302062681
+              transient_lastDdlTime 1306984455
             serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
           
               input format: org.apache.hadoop.mapred.TextInputFormat
@@ -4342,17 +4415,18 @@ STAGE PLANS:
                 columns.types int:string
                 file.inputformat org.apache.hadoop.mapred.TextInputFormat
                 file.outputformat org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                location pfile:/data/users/nzhang/work/3/apache-hive/build/ql/test/data/warehouse/pcr_t1
+                location pfile:/data/users/tomasz/apache-hive/build/ql/test/data/warehouse/pcr_t1
                 name default.pcr_t1
                 numFiles 4
                 numPartitions 4
                 numRows 80
                 partition_columns ds
+                rawDataSize 640
                 serialization.ddl struct pcr_t1 { i32 key, string value}
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                 totalSize 720
-                transient_lastDdlTime 1302062740
+                transient_lastDdlTime 1306984514
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: default.pcr_t1
             name: default.pcr_t1
@@ -4364,14 +4438,14 @@ STAGE PLANS:
     Move Operator
       files:
           hdfs directory: true
-          source: pfile:/data/users/nzhang/work/3/apache-hive/build/ql/scratchdir/hive_2011-04-05_21-05-52_788_4578633977654904334/-ext-10004
-          destination: pfile:/data/users/nzhang/work/3/apache-hive/build/ql/scratchdir/hive_2011-04-05_21-05-52_788_4578633977654904334/-ext-10000
+          source: pfile:/data/users/tomasz/apache-hive/build/ql/scratchdir/hive_2011-06-01_20-15-26_354_1969910550858833560/-ext-10004
+          destination: pfile:/data/users/tomasz/apache-hive/build/ql/scratchdir/hive_2011-06-01_20-15-26_354_1969910550858833560/-ext-10000
 
   Stage: Stage-0
     Move Operator
       tables:
           replace: true
-          source: pfile:/data/users/nzhang/work/3/apache-hive/build/ql/scratchdir/hive_2011-04-05_21-05-52_788_4578633977654904334/-ext-10000
+          source: pfile:/data/users/tomasz/apache-hive/build/ql/scratchdir/hive_2011-06-01_20-15-26_354_1969910550858833560/-ext-10000
           table:
               input format: org.apache.hadoop.mapred.TextInputFormat
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
@@ -4381,32 +4455,33 @@ STAGE PLANS:
                 columns.types int:string
                 file.inputformat org.apache.hadoop.mapred.TextInputFormat
                 file.outputformat org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                location pfile:/data/users/nzhang/work/3/apache-hive/build/ql/test/data/warehouse/pcr_t2
+                location pfile:/data/users/tomasz/apache-hive/build/ql/test/data/warehouse/pcr_t2
                 name default.pcr_t2
                 numFiles 1
                 numPartitions 0
                 numRows 20
+                rawDataSize 160
                 serialization.ddl struct pcr_t2 { i32 key, string value}
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                 totalSize 180
-                transient_lastDdlTime 1302062752
+                transient_lastDdlTime 1306984526
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: default.pcr_t2
-          tmp directory: pfile:/data/users/nzhang/work/3/apache-hive/build/ql/scratchdir/hive_2011-04-05_21-05-52_788_4578633977654904334/-ext-10001
+          tmp directory: pfile:/data/users/tomasz/apache-hive/build/ql/scratchdir/hive_2011-06-01_20-15-26_354_1969910550858833560/-ext-10001
 
   Stage: Stage-3
     Stats-Aggr Operator
-      Stats Aggregation Key Prefix: pfile:/data/users/nzhang/work/3/apache-hive/build/ql/scratchdir/hive_2011-04-05_21-05-52_788_4578633977654904334/-ext-10000/
+      Stats Aggregation Key Prefix: pfile:/data/users/tomasz/apache-hive/build/ql/scratchdir/hive_2011-06-01_20-15-26_354_1969910550858833560/-ext-10000/
 
   Stage: Stage-4
     Map Reduce
       Alias -> Map Operator Tree:
-        pfile:/data/users/nzhang/work/3/apache-hive/build/ql/scratchdir/hive_2011-04-05_21-05-52_788_4578633977654904334/-ext-10004 
+        pfile:/data/users/tomasz/apache-hive/build/ql/scratchdir/hive_2011-06-01_20-15-26_354_1969910550858833560/-ext-10004 
             File Output Operator
               compressed: false
               GlobalTableId: 0
-              directory: pfile:/data/users/nzhang/work/3/apache-hive/build/ql/scratchdir/hive_2011-04-05_21-05-52_788_4578633977654904334/-ext-10000
+              directory: pfile:/data/users/tomasz/apache-hive/build/ql/scratchdir/hive_2011-06-01_20-15-26_354_1969910550858833560/-ext-10000
               NumFilesPerFileSink: 1
               table:
                   input format: org.apache.hadoop.mapred.TextInputFormat
@@ -4417,16 +4492,17 @@ STAGE PLANS:
                     columns.types int:string
                     file.inputformat org.apache.hadoop.mapred.TextInputFormat
                     file.outputformat org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                    location pfile:/data/users/nzhang/work/3/apache-hive/build/ql/test/data/warehouse/pcr_t2
+                    location pfile:/data/users/tomasz/apache-hive/build/ql/test/data/warehouse/pcr_t2
                     name default.pcr_t2
                     numFiles 1
                     numPartitions 0
                     numRows 20
+                    rawDataSize 160
                     serialization.ddl struct pcr_t2 { i32 key, string value}
                     serialization.format 1
                     serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                     totalSize 180
-                    transient_lastDdlTime 1302062752
+                    transient_lastDdlTime 1306984526
                   serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                   name: default.pcr_t2
               TotalFiles: 1
@@ -4434,9 +4510,9 @@ STAGE PLANS:
               MultiFileSpray: false
       Needs Tagging: false
       Path -> Alias:
-        pfile:/data/users/nzhang/work/3/apache-hive/build/ql/scratchdir/hive_2011-04-05_21-05-52_788_4578633977654904334/-ext-10004 [pfile:/data/users/nzhang/work/3/apache-hive/build/ql/scratchdir/hive_2011-04-05_21-05-52_788_4578633977654904334/-ext-10004]
+        pfile:/data/users/tomasz/apache-hive/build/ql/scratchdir/hive_2011-06-01_20-15-26_354_1969910550858833560/-ext-10004 [pfile:/data/users/tomasz/apache-hive/build/ql/scratchdir/hive_2011-06-01_20-15-26_354_1969910550858833560/-ext-10004]
       Path -> Partition:
-        pfile:/data/users/nzhang/work/3/apache-hive/build/ql/scratchdir/hive_2011-04-05_21-05-52_788_4578633977654904334/-ext-10004 
+        pfile:/data/users/tomasz/apache-hive/build/ql/scratchdir/hive_2011-06-01_20-15-26_354_1969910550858833560/-ext-10004 
           Partition
             base file name: -ext-10004
             input format: org.apache.hadoop.mapred.TextInputFormat
@@ -4447,16 +4523,17 @@ STAGE PLANS:
               columns.types int:string
               file.inputformat org.apache.hadoop.mapred.TextInputFormat
               file.outputformat org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-              location pfile:/data/users/nzhang/work/3/apache-hive/build/ql/test/data/warehouse/pcr_t2
+              location pfile:/data/users/tomasz/apache-hive/build/ql/test/data/warehouse/pcr_t2
               name default.pcr_t2
               numFiles 1
               numPartitions 0
               numRows 20
+              rawDataSize 160
               serialization.ddl struct pcr_t2 { i32 key, string value}
               serialization.format 1
               serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               totalSize 180
-              transient_lastDdlTime 1302062752
+              transient_lastDdlTime 1306984526
             serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
           
               input format: org.apache.hadoop.mapred.TextInputFormat
@@ -4467,16 +4544,17 @@ STAGE PLANS:
                 columns.types int:string
                 file.inputformat org.apache.hadoop.mapred.TextInputFormat
                 file.outputformat org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                location pfile:/data/users/nzhang/work/3/apache-hive/build/ql/test/data/warehouse/pcr_t2
+                location pfile:/data/users/tomasz/apache-hive/build/ql/test/data/warehouse/pcr_t2
                 name default.pcr_t2
                 numFiles 1
                 numPartitions 0
                 numRows 20
+                rawDataSize 160
                 serialization.ddl struct pcr_t2 { i32 key, string value}
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                 totalSize 180
-                transient_lastDdlTime 1302062752
+                transient_lastDdlTime 1306984526
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: default.pcr_t2
             name: default.pcr_t2
@@ -4488,14 +4566,14 @@ STAGE PLANS:
     Move Operator
       files:
           hdfs directory: true
-          source: pfile:/data/users/nzhang/work/3/apache-hive/build/ql/scratchdir/hive_2011-04-05_21-05-52_788_4578633977654904334/-ext-10005
-          destination: pfile:/data/users/nzhang/work/3/apache-hive/build/ql/scratchdir/hive_2011-04-05_21-05-52_788_4578633977654904334/-ext-10002
+          source: pfile:/data/users/tomasz/apache-hive/build/ql/scratchdir/hive_2011-06-01_20-15-26_354_1969910550858833560/-ext-10005
+          destination: pfile:/data/users/tomasz/apache-hive/build/ql/scratchdir/hive_2011-06-01_20-15-26_354_1969910550858833560/-ext-10002
 
   Stage: Stage-1
     Move Operator
       tables:
           replace: true
-          source: pfile:/data/users/nzhang/work/3/apache-hive/build/ql/scratchdir/hive_2011-04-05_21-05-52_788_4578633977654904334/-ext-10002
+          source: pfile:/data/users/tomasz/apache-hive/build/ql/scratchdir/hive_2011-06-01_20-15-26_354_1969910550858833560/-ext-10002
           table:
               input format: org.apache.hadoop.mapred.TextInputFormat
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
@@ -4505,32 +4583,33 @@ STAGE PLANS:
                 columns.types int:string
                 file.inputformat org.apache.hadoop.mapred.TextInputFormat
                 file.outputformat org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                location pfile:/data/users/nzhang/work/3/apache-hive/build/ql/test/data/warehouse/pcr_t3
+                location pfile:/data/users/tomasz/apache-hive/build/ql/test/data/warehouse/pcr_t3
                 name default.pcr_t3
                 numFiles 1
                 numPartitions 0
                 numRows 20
+                rawDataSize 160
                 serialization.ddl struct pcr_t3 { i32 key, string value}
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                 totalSize 180
-                transient_lastDdlTime 1302062752
+                transient_lastDdlTime 1306984526
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: default.pcr_t3
-          tmp directory: pfile:/data/users/nzhang/work/3/apache-hive/build/ql/scratchdir/hive_2011-04-05_21-05-52_788_4578633977654904334/-ext-10003
+          tmp directory: pfile:/data/users/tomasz/apache-hive/build/ql/scratchdir/hive_2011-06-01_20-15-26_354_1969910550858833560/-ext-10003
 
   Stage: Stage-7
     Stats-Aggr Operator
-      Stats Aggregation Key Prefix: pfile:/data/users/nzhang/work/3/apache-hive/build/ql/scratchdir/hive_2011-04-05_21-05-52_788_4578633977654904334/-ext-10002/
+      Stats Aggregation Key Prefix: pfile:/data/users/tomasz/apache-hive/build/ql/scratchdir/hive_2011-06-01_20-15-26_354_1969910550858833560/-ext-10002/
 
   Stage: Stage-8
     Map Reduce
       Alias -> Map Operator Tree:
-        pfile:/data/users/nzhang/work/3/apache-hive/build/ql/scratchdir/hive_2011-04-05_21-05-52_788_4578633977654904334/-ext-10005 
+        pfile:/data/users/tomasz/apache-hive/build/ql/scratchdir/hive_2011-06-01_20-15-26_354_1969910550858833560/-ext-10005 
             File Output Operator
               compressed: false
               GlobalTableId: 0
-              directory: pfile:/data/users/nzhang/work/3/apache-hive/build/ql/scratchdir/hive_2011-04-05_21-05-52_788_4578633977654904334/-ext-10002
+              directory: pfile:/data/users/tomasz/apache-hive/build/ql/scratchdir/hive_2011-06-01_20-15-26_354_1969910550858833560/-ext-10002
               NumFilesPerFileSink: 1
               table:
                   input format: org.apache.hadoop.mapred.TextInputFormat
@@ -4541,16 +4620,17 @@ STAGE PLANS:
                     columns.types int:string
                     file.inputformat org.apache.hadoop.mapred.TextInputFormat
                     file.outputformat org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                    location pfile:/data/users/nzhang/work/3/apache-hive/build/ql/test/data/warehouse/pcr_t3
+                    location pfile:/data/users/tomasz/apache-hive/build/ql/test/data/warehouse/pcr_t3
                     name default.pcr_t3
                     numFiles 1
                     numPartitions 0
                     numRows 20
+                    rawDataSize 160
                     serialization.ddl struct pcr_t3 { i32 key, string value}
                     serialization.format 1
                     serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                     totalSize 180
-                    transient_lastDdlTime 1302062752
+                    transient_lastDdlTime 1306984526
                   serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                   name: default.pcr_t3
               TotalFiles: 1
@@ -4558,9 +4638,9 @@ STAGE PLANS:
               MultiFileSpray: false
       Needs Tagging: false
       Path -> Alias:
-        pfile:/data/users/nzhang/work/3/apache-hive/build/ql/scratchdir/hive_2011-04-05_21-05-52_788_4578633977654904334/-ext-10005 [pfile:/data/users/nzhang/work/3/apache-hive/build/ql/scratchdir/hive_2011-04-05_21-05-52_788_4578633977654904334/-ext-10005]
+        pfile:/data/users/tomasz/apache-hive/build/ql/scratchdir/hive_2011-06-01_20-15-26_354_1969910550858833560/-ext-10005 [pfile:/data/users/tomasz/apache-hive/build/ql/scratchdir/hive_2011-06-01_20-15-26_354_1969910550858833560/-ext-10005]
       Path -> Partition:
-        pfile:/data/users/nzhang/work/3/apache-hive/build/ql/scratchdir/hive_2011-04-05_21-05-52_788_4578633977654904334/-ext-10005 
+        pfile:/data/users/tomasz/apache-hive/build/ql/scratchdir/hive_2011-06-01_20-15-26_354_1969910550858833560/-ext-10005 
           Partition
             base file name: -ext-10005
             input format: org.apache.hadoop.mapred.TextInputFormat
@@ -4571,16 +4651,17 @@ STAGE PLANS:
               columns.types int:string
               file.inputformat org.apache.hadoop.mapred.TextInputFormat
               file.outputformat org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-              location pfile:/data/users/nzhang/work/3/apache-hive/build/ql/test/data/warehouse/pcr_t3
+              location pfile:/data/users/tomasz/apache-hive/build/ql/test/data/warehouse/pcr_t3
               name default.pcr_t3
               numFiles 1
               numPartitions 0
               numRows 20
+              rawDataSize 160
               serialization.ddl struct pcr_t3 { i32 key, string value}
               serialization.format 1
               serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               totalSize 180
-              transient_lastDdlTime 1302062752
+              transient_lastDdlTime 1306984526
             serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
           
               input format: org.apache.hadoop.mapred.TextInputFormat
@@ -4591,16 +4672,17 @@ STAGE PLANS:
                 columns.types int:string
                 file.inputformat org.apache.hadoop.mapred.TextInputFormat
                 file.outputformat org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                location pfile:/data/users/nzhang/work/3/apache-hive/build/ql/test/data/warehouse/pcr_t3
+                location pfile:/data/users/tomasz/apache-hive/build/ql/test/data/warehouse/pcr_t3
                 name default.pcr_t3
                 numFiles 1
                 numPartitions 0
                 numRows 20
+                rawDataSize 160
                 serialization.ddl struct pcr_t3 { i32 key, string value}
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                 totalSize 180
-                transient_lastDdlTime 1302062752
+                transient_lastDdlTime 1306984526
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: default.pcr_t3
             name: default.pcr_t3
@@ -4696,9 +4778,9 @@ STAGE PLANS:
                         type: string
       Needs Tagging: false
       Path -> Alias:
-        pfile:/data/users/nzhang/work/3/apache-hive/build/ql/test/data/warehouse/srcpart/ds=2008-04-08/hr=11 [srcpart]
+        pfile:/data/users/tomasz/apache-hive/build/ql/test/data/warehouse/srcpart/ds=2008-04-08/hr=11 [srcpart]
       Path -> Partition:
-        pfile:/data/users/nzhang/work/3/apache-hive/build/ql/test/data/warehouse/srcpart/ds=2008-04-08/hr=11 
+        pfile:/data/users/tomasz/apache-hive/build/ql/test/data/warehouse/srcpart/ds=2008-04-08/hr=11 
           Partition
             base file name: hr=11
             input format: org.apache.hadoop.mapred.TextInputFormat
@@ -4712,13 +4794,13 @@ STAGE PLANS:
               columns.types string:string
               file.inputformat org.apache.hadoop.mapred.TextInputFormat
               file.outputformat org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-              location pfile:/data/users/nzhang/work/3/apache-hive/build/ql/test/data/warehouse/srcpart/ds=2008-04-08/hr=11
+              location pfile:/data/users/tomasz/apache-hive/build/ql/test/data/warehouse/srcpart/ds=2008-04-08/hr=11
               name default.srcpart
               partition_columns ds/hr
               serialization.ddl struct srcpart { string key, string value}
               serialization.format 1
               serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              transient_lastDdlTime 1302062607
+              transient_lastDdlTime 1306977859
             serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
           
               input format: org.apache.hadoop.mapred.TextInputFormat
@@ -4729,13 +4811,13 @@ STAGE PLANS:
                 columns.types string:string
                 file.inputformat org.apache.hadoop.mapred.TextInputFormat
                 file.outputformat org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                location pfile:/data/users/nzhang/work/3/apache-hive/build/ql/test/data/warehouse/srcpart
+                location pfile:/data/users/tomasz/apache-hive/build/ql/test/data/warehouse/srcpart
                 name default.srcpart
                 partition_columns ds/hr
                 serialization.ddl struct srcpart { string key, string value}
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                transient_lastDdlTime 1302062605
+                transient_lastDdlTime 1306977857
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: default.srcpart
             name: default.srcpart
@@ -4745,9 +4827,9 @@ STAGE PLANS:
             File Output Operator
               compressed: false
               GlobalTableId: 0
-              directory: file:/tmp/nzhang/hive_2011-04-05_21-05-57_997_5656709517953228309/-ext-10001
+              directory: file:/tmp/tomasz/hive_2011-06-01_20-15-31_477_1883153026402938049/-ext-10001
               NumFilesPerFileSink: 1
-              Stats Publishing Key Prefix: file:/tmp/nzhang/hive_2011-04-05_21-05-57_997_5656709517953228309/-ext-10001/
+              Stats Publishing Key Prefix: file:/tmp/tomasz/hive_2011-06-01_20-15-31_477_1883153026402938049/-ext-10001/
               table:
                   input format: org.apache.hadoop.mapred.TextInputFormat
                   output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
@@ -4766,10 +4848,10 @@ STAGE PLANS:
 
 PREHOOK: query: select key, value from srcpart where ds='2008-04-04' and hr=11 order by key limit 10
 PREHOOK: type: QUERY
-PREHOOK: Output: file:/tmp/nzhang/hive_2011-04-05_21-05-58_087_4641834053290921540/-mr-10000
+PREHOOK: Output: file:/tmp/tomasz/hive_2011-06-01_20-15-31_581_5431886470453083216/-mr-10000
 POSTHOOK: query: select key, value from srcpart where ds='2008-04-04' and hr=11 order by key limit 10
 POSTHOOK: type: QUERY
-POSTHOOK: Output: file:/tmp/nzhang/hive_2011-04-05_21-05-58_087_4641834053290921540/-mr-10000
+POSTHOOK: Output: file:/tmp/tomasz/hive_2011-06-01_20-15-31_581_5431886470453083216/-mr-10000
 POSTHOOK: Lineage: pcr_t1 PARTITION(ds=2000-04-08).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: pcr_t1 PARTITION(ds=2000-04-08).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: pcr_t1 PARTITION(ds=2000-04-09).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
@@ -4863,10 +4945,10 @@ STAGE PLANS:
                           type: string
       Needs Tagging: false
       Path -> Alias:
-        pfile:/data/users/nzhang/work/3/apache-hive/build/ql/test/data/warehouse/srcpart/ds=2008-04-08/hr=11 [srcpart]
-        pfile:/data/users/nzhang/work/3/apache-hive/build/ql/test/data/warehouse/srcpart/ds=2008-04-08/hr=12 [srcpart]
+        pfile:/data/users/tomasz/apache-hive/build/ql/test/data/warehouse/srcpart/ds=2008-04-08/hr=11 [srcpart]
+        pfile:/data/users/tomasz/apache-hive/build/ql/test/data/warehouse/srcpart/ds=2008-04-08/hr=12 [srcpart]
       Path -> Partition:
-        pfile:/data/users/nzhang/work/3/apache-hive/build/ql/test/data/warehouse/srcpart/ds=2008-04-08/hr=11 
+        pfile:/data/users/tomasz/apache-hive/build/ql/test/data/warehouse/srcpart/ds=2008-04-08/hr=11 
           Partition
             base file name: hr=11
             input format: org.apache.hadoop.mapred.TextInputFormat
@@ -4880,13 +4962,13 @@ STAGE PLANS:
               columns.types string:string
               file.inputformat org.apache.hadoop.mapred.TextInputFormat
               file.outputformat org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-              location pfile:/data/users/nzhang/work/3/apache-hive/build/ql/test/data/warehouse/srcpart/ds=2008-04-08/hr=11
+              location pfile:/data/users/tomasz/apache-hive/build/ql/test/data/warehouse/srcpart/ds=2008-04-08/hr=11
               name default.srcpart
               partition_columns ds/hr
               serialization.ddl struct srcpart { string key, string value}
               serialization.format 1
               serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              transient_lastDdlTime 1302062607
+              transient_lastDdlTime 1306977859
             serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
           
               input format: org.apache.hadoop.mapred.TextInputFormat
@@ -4897,17 +4979,17 @@ STAGE PLANS:
                 columns.types string:string
                 file.inputformat org.apache.hadoop.mapred.TextInputFormat
                 file.outputformat org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                location pfile:/data/users/nzhang/work/3/apache-hive/build/ql/test/data/warehouse/srcpart
+                location pfile:/data/users/tomasz/apache-hive/build/ql/test/data/warehouse/srcpart
                 name default.srcpart
                 partition_columns ds/hr
                 serialization.ddl struct srcpart { string key, string value}
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                transient_lastDdlTime 1302062605
+                transient_lastDdlTime 1306977857
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: default.srcpart
             name: default.srcpart
-        pfile:/data/users/nzhang/work/3/apache-hive/build/ql/test/data/warehouse/srcpart/ds=2008-04-08/hr=12 
+        pfile:/data/users/tomasz/apache-hive/build/ql/test/data/warehouse/srcpart/ds=2008-04-08/hr=12 
           Partition
             base file name: hr=12
             input format: org.apache.hadoop.mapred.TextInputFormat
@@ -4921,13 +5003,13 @@ STAGE PLANS:
               columns.types string:string
               file.inputformat org.apache.hadoop.mapred.TextInputFormat
               file.outputformat org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-              location pfile:/data/users/nzhang/work/3/apache-hive/build/ql/test/data/warehouse/srcpart/ds=2008-04-08/hr=12
+              location pfile:/data/users/tomasz/apache-hive/build/ql/test/data/warehouse/srcpart/ds=2008-04-08/hr=12
               name default.srcpart
               partition_columns ds/hr
               serialization.ddl struct srcpart { string key, string value}
               serialization.format 1
               serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              transient_lastDdlTime 1302062608
+              transient_lastDdlTime 1306977859
             serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
           
               input format: org.apache.hadoop.mapred.TextInputFormat
@@ -4938,13 +5020,13 @@ STAGE PLANS:
                 columns.types string:string
                 file.inputformat org.apache.hadoop.mapred.TextInputFormat
                 file.outputformat org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                location pfile:/data/users/nzhang/work/3/apache-hive/build/ql/test/data/warehouse/srcpart
+                location pfile:/data/users/tomasz/apache-hive/build/ql/test/data/warehouse/srcpart
                 name default.srcpart
                 partition_columns ds/hr
                 serialization.ddl struct srcpart { string key, string value}
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                transient_lastDdlTime 1302062605
+                transient_lastDdlTime 1306977857
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: default.srcpart
             name: default.srcpart
@@ -4953,9 +5035,9 @@ STAGE PLANS:
           File Output Operator
             compressed: false
             GlobalTableId: 0
-            directory: file:/tmp/nzhang/hive_2011-04-05_21-06-00_998_6835543581888511083/-ext-10001
+            directory: file:/tmp/tomasz/hive_2011-06-01_20-15-34_433_3351089244397296225/-ext-10001
             NumFilesPerFileSink: 1
-            Stats Publishing Key Prefix: file:/tmp/nzhang/hive_2011-04-05_21-06-00_998_6835543581888511083/-ext-10001/
+            Stats Publishing Key Prefix: file:/tmp/tomasz/hive_2011-06-01_20-15-34_433_3351089244397296225/-ext-10001/
             table:
                 input format: org.apache.hadoop.mapred.TextInputFormat
                 output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
@@ -4976,12 +5058,12 @@ PREHOOK: query: select key, value, ds, hr from srcpart where ds='2008-04-08' and
 PREHOOK: type: QUERY
 PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
 PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
-PREHOOK: Output: file:/tmp/nzhang/hive_2011-04-05_21-06-01_148_8165682917471640963/-mr-10000
+PREHOOK: Output: file:/tmp/tomasz/hive_2011-06-01_20-15-34_577_8045421042585772080/-mr-10000
 POSTHOOK: query: select key, value, ds, hr from srcpart where ds='2008-04-08' and (hr='11' or hr='12') and key=11 order by key, ds, hr
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
 POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
-POSTHOOK: Output: file:/tmp/nzhang/hive_2011-04-05_21-06-01_148_8165682917471640963/-mr-10000
+POSTHOOK: Output: file:/tmp/tomasz/hive_2011-06-01_20-15-34_577_8045421042585772080/-mr-10000
 POSTHOOK: Lineage: pcr_t1 PARTITION(ds=2000-04-08).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: pcr_t1 PARTITION(ds=2000-04-08).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: pcr_t1 PARTITION(ds=2000-04-09).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
@@ -5077,10 +5159,10 @@ STAGE PLANS:
                           type: string
       Needs Tagging: false
       Path -> Alias:
-        pfile:/data/users/nzhang/work/3/apache-hive/build/ql/test/data/warehouse/srcpart/ds=2008-04-08/hr=11 [srcpart]
-        pfile:/data/users/nzhang/work/3/apache-hive/build/ql/test/data/warehouse/srcpart/ds=2008-04-09/hr=11 [srcpart]
+        pfile:/data/users/tomasz/apache-hive/build/ql/test/data/warehouse/srcpart/ds=2008-04-08/hr=11 [srcpart]
+        pfile:/data/users/tomasz/apache-hive/build/ql/test/data/warehouse/srcpart/ds=2008-04-09/hr=11 [srcpart]
       Path -> Partition:
-        pfile:/data/users/nzhang/work/3/apache-hive/build/ql/test/data/warehouse/srcpart/ds=2008-04-08/hr=11 
+        pfile:/data/users/tomasz/apache-hive/build/ql/test/data/warehouse/srcpart/ds=2008-04-08/hr=11 
           Partition
             base file name: hr=11
             input format: org.apache.hadoop.mapred.TextInputFormat
@@ -5094,13 +5176,13 @@ STAGE PLANS:
               columns.types string:string
               file.inputformat org.apache.hadoop.mapred.TextInputFormat
               file.outputformat org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-              location pfile:/data/users/nzhang/work/3/apache-hive/build/ql/test/data/warehouse/srcpart/ds=2008-04-08/hr=11
+              location pfile:/data/users/tomasz/apache-hive/build/ql/test/data/warehouse/srcpart/ds=2008-04-08/hr=11
               name default.srcpart
               partition_columns ds/hr
               serialization.ddl struct srcpart { string key, string value}
               serialization.format 1
               serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              transient_lastDdlTime 1302062607
+              transient_lastDdlTime 1306977859
             serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
           
               input format: org.apache.hadoop.mapred.TextInputFormat
@@ -5111,17 +5193,17 @@ STAGE PLANS:
                 columns.types string:string
                 file.inputformat org.apache.hadoop.mapred.TextInputFormat
                 file.outputformat org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                location pfile:/data/users/nzhang/work/3/apache-hive/build/ql/test/data/warehouse/srcpart
+                location pfile:/data/users/tomasz/apache-hive/build/ql/test/data/warehouse/srcpart
                 name default.srcpart
                 partition_columns ds/hr
                 serialization.ddl struct srcpart { string key, string value}
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                transient_lastDdlTime 1302062605
+                transient_lastDdlTime 1306977857
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: default.srcpart
             name: default.srcpart
-        pfile:/data/users/nzhang/work/3/apache-hive/build/ql/test/data/warehouse/srcpart/ds=2008-04-09/hr=11 
+        pfile:/data/users/tomasz/apache-hive/build/ql/test/data/warehouse/srcpart/ds=2008-04-09/hr=11 
           Partition
             base file name: hr=11
             input format: org.apache.hadoop.mapred.TextInputFormat
@@ -5135,13 +5217,13 @@ STAGE PLANS:
               columns.types string:string
               file.inputformat org.apache.hadoop.mapred.TextInputFormat
               file.outputformat org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-              location pfile:/data/users/nzhang/work/3/apache-hive/build/ql/test/data/warehouse/srcpart/ds=2008-04-09/hr=11
+              location pfile:/data/users/tomasz/apache-hive/build/ql/test/data/warehouse/srcpart/ds=2008-04-09/hr=11
               name default.srcpart
               partition_columns ds/hr
               serialization.ddl struct srcpart { string key, string value}
               serialization.format 1
               serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              transient_lastDdlTime 1302062608
+              transient_lastDdlTime 1306977860
             serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
           
               input format: org.apache.hadoop.mapred.TextInputFormat
@@ -5152,13 +5234,13 @@ STAGE PLANS:
                 columns.types string:string
                 file.inputformat org.apache.hadoop.mapred.TextInputFormat
                 file.outputformat org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                location pfile:/data/users/nzhang/work/3/apache-hive/build/ql/test/data/warehouse/srcpart
+                location pfile:/data/users/tomasz/apache-hive/build/ql/test/data/warehouse/srcpart
                 name default.srcpart
                 partition_columns ds/hr
                 serialization.ddl struct srcpart { string key, string value}
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                transient_lastDdlTime 1302062605
+                transient_lastDdlTime 1306977857
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: default.srcpart
             name: default.srcpart
@@ -5167,9 +5249,9 @@ STAGE PLANS:
           File Output Operator
             compressed: false
             GlobalTableId: 0
-            directory: file:/tmp/nzhang/hive_2011-04-05_21-06-04_549_8890513882901906088/-ext-10001
+            directory: file:/tmp/tomasz/hive_2011-06-01_20-15-37_742_6162655498763425797/-ext-10001
             NumFilesPerFileSink: 1
-            Stats Publishing Key Prefix: file:/tmp/nzhang/hive_2011-04-05_21-06-04_549_8890513882901906088/-ext-10001/
+            Stats Publishing Key Prefix: file:/tmp/tomasz/hive_2011-06-01_20-15-37_742_6162655498763425797/-ext-10001/
             table:
                 input format: org.apache.hadoop.mapred.TextInputFormat
                 output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
@@ -5190,12 +5272,12 @@ PREHOOK: query: select key, value, ds, hr from srcpart where hr='11' and key=11 
 PREHOOK: type: QUERY
 PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
 PREHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
-PREHOOK: Output: file:/tmp/nzhang/hive_2011-04-05_21-06-04_675_6138695701068871772/-mr-10000
+PREHOOK: Output: file:/tmp/tomasz/hive_2011-06-01_20-15-37_861_2917598676593294983/-mr-10000
 POSTHOOK: query: select key, value, ds, hr from srcpart where hr='11' and key=11 order by key, ds, hr
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
 POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
-POSTHOOK: Output: file:/tmp/nzhang/hive_2011-04-05_21-06-04_675_6138695701068871772/-mr-10000
+POSTHOOK: Output: file:/tmp/tomasz/hive_2011-06-01_20-15-37_861_2917598676593294983/-mr-10000
 POSTHOOK: Lineage: pcr_t1 PARTITION(ds=2000-04-08).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: pcr_t1 PARTITION(ds=2000-04-08).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: pcr_t1 PARTITION(ds=2000-04-09).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]

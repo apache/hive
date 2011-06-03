@@ -24,6 +24,7 @@ import java.util.List;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.apache.hadoop.hive.serde2.SerDeStatsStruct;
 import org.apache.hadoop.hive.serde2.lazy.ByteArrayRef;
 import org.apache.hadoop.hive.serde2.lazy.LazyFactory;
 import org.apache.hadoop.hive.serde2.lazy.LazyObject;
@@ -40,7 +41,7 @@ import org.apache.hadoop.io.Text;
  * lazy way.
  *
  */
-public class ColumnarStruct {
+public class ColumnarStruct implements SerDeStatsStruct{
 
   private static final Log LOG = LogFactory.getLog(ColumnarStruct.class);
 
@@ -173,6 +174,16 @@ public class ColumnarStruct {
     }
 
     /**
+     * Return the uncompressed size of this field
+     */
+    public long getSerializedSize(){
+      if (rawBytesField == null) {
+        return 0;
+      }
+      return rawBytesField.getLength();
+    }
+
+    /**
      * Get the field out of the row without checking parsed. This is called by
      * both getField and getFieldsAsList.
      *
@@ -255,5 +266,13 @@ public class ColumnarStruct {
       cachedList.add(fieldInfoList[i].uncheckedGetField());
     }
     return cachedList;
+  }
+
+  public long getRawDataSerializedSize() {
+    long serializedSize = 0;
+    for (int i = 0; i < fieldInfoList.length; ++i) {
+      serializedSize += fieldInfoList[i].getSerializedSize();
+    }
+    return serializedSize;
   }
 }

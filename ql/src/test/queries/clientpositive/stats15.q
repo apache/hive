@@ -1,8 +1,5 @@
 set datanucleus.cache.collections=false;
-set hive.stats.autogather=true;
-set hive.ststs.atomic=false;
-
-set hive.stats.dbclass=hbase;
+set hive.stats.collect.uncompressedsize=false;
 
 create table stats_src like src;
 insert overwrite table stats_src select * from src;

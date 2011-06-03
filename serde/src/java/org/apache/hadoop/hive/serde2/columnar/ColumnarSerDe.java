@@ -30,14 +30,15 @@ import org.apache.hadoop.hive.serde2.ByteStream;
 import org.apache.hadoop.hive.serde2.ColumnProjectionUtils;
 import org.apache.hadoop.hive.serde2.SerDe;
 import org.apache.hadoop.hive.serde2.SerDeException;
+import org.apache.hadoop.hive.serde2.SerDeStats;
 import org.apache.hadoop.hive.serde2.SerDeUtils;
 import org.apache.hadoop.hive.serde2.lazy.LazyFactory;
 import org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe;
 import org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe.SerDeParameters;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
+import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector.Category;
 import org.apache.hadoop.hive.serde2.objectinspector.StructField;
 import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
-import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector.Category;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorFactory;
 import org.apache.hadoop.hive.serde2.typeinfo.StructTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
@@ -55,6 +56,11 @@ public class ColumnarSerDe implements SerDe {
   // We need some initial values in case user don't call initialize()
   private ObjectInspector cachedObjectInspector;
 
+  private long serializedSize;
+  private SerDeStats stats;
+  private boolean lastOperationSerialize;
+  private boolean lastOperationDeserialize;
+
   @Override
   public String toString() {
     return getClass().toString()
@@ -62,10 +68,10 @@ public class ColumnarSerDe implements SerDe {
         + Arrays.asList(serdeParams.getSeparators())
         + ":"
         + ((StructTypeInfo) serdeParams.getRowTypeInfo())
-        .getAllStructFieldNames()
+            .getAllStructFieldNames()
         + ":"
         + ((StructTypeInfo) serdeParams.getRowTypeInfo())
-        .getAllStructFieldTypeInfos() + "]";
+            .getAllStructFieldTypeInfos() + "]";
   }
 
   public static final Log LOG = LogFactory
@@ -78,7 +84,7 @@ public class ColumnarSerDe implements SerDe {
 
   /**
    * Initialize the SerDe given the parameters.
-   * 
+   *
    * @see SerDe#initialize(Configuration, Properties)
    */
   public void initialize(Configuration job, Properties tbl) throws SerDeException {
@@ -89,12 +95,13 @@ public class ColumnarSerDe implements SerDe {
     // ColumnarObject uses same ObjectInpector as LazyStruct
     cachedObjectInspector = LazyFactory.createColumnarStructInspector(
         serdeParams.getColumnNames(), serdeParams.getColumnTypes(), serdeParams
-        .getSeparators(), serdeParams.getNullSequence(), serdeParams
-        .isEscaped(), serdeParams.getEscapeChar());
+            .getSeparators(), serdeParams.getNullSequence(), serdeParams
+            .isEscaped(), serdeParams.getEscapeChar());
 
     java.util.ArrayList<Integer> notSkipIDs = ColumnProjectionUtils.getReadColumnIDs(job);
 
-    cachedLazyStruct = new ColumnarStruct(cachedObjectInspector, notSkipIDs, serdeParams.getNullSequence());
+    cachedLazyStruct = new ColumnarStruct(cachedObjectInspector, notSkipIDs,
+        serdeParams.getNullSequence());
 
     int size = serdeParams.getColumnTypes().size();
     field = new BytesRefWritable[size];
@@ -108,6 +115,11 @@ public class ColumnarSerDe implements SerDe {
         + serdeParams.getColumnTypes() + " separator="
         + Arrays.asList(serdeParams.getSeparators()) + " nullstring="
         + serdeParams.getNullString());
+
+    serializedSize = 0;
+    stats = new SerDeStats();
+    lastOperationSerialize = false;
+    lastOperationDeserialize = false;
   }
 
   // The object for storing row data
@@ -125,6 +137,8 @@ public class ColumnarSerDe implements SerDe {
 
     BytesRefArrayWritable cols = (BytesRefArrayWritable) blob;
     cachedLazyStruct.init(cols);
+    lastOperationSerialize = false;
+    lastOperationDeserialize = true;
     return cachedLazyStruct;
   }
 
@@ -137,7 +151,7 @@ public class ColumnarSerDe implements SerDe {
 
   /**
    * Returns the Writable Class after serialization.
-   * 
+   *
    * @see SerDe#getSerializedClass()
    */
   public Class<? extends Writable> getSerializedClass() {
@@ -150,7 +164,7 @@ public class ColumnarSerDe implements SerDe {
 
   /**
    * Serialize a row of data.
-   * 
+   *
    * @param obj
    *          The row object
    * @param objInspector
@@ -178,6 +192,7 @@ public class ColumnarSerDe implements SerDe {
     try {
       // used for avoid extra byte copy
       serializeStream.reset();
+      serializedSize = 0;
       int count = 0;
       // Serialize each field
       for (int i = 0; i < fields.size(); i++) {
@@ -200,14 +215,14 @@ public class ColumnarSerDe implements SerDe {
         // delimited way.
         if (!foi.getCategory().equals(Category.PRIMITIVE)
             && (declaredFields == null || declaredFields.get(i)
-            .getFieldObjectInspector().getCategory().equals(
-            Category.PRIMITIVE))) {
+                .getFieldObjectInspector().getCategory().equals(
+                    Category.PRIMITIVE))) {
           LazySimpleSerDe.serialize(serializeStream, SerDeUtils.getJSONString(
               f, foi),
               PrimitiveObjectInspectorFactory.javaStringObjectInspector,
               serdeParams.getSeparators(), 1, serdeParams.getNullSequence(),
               serdeParams.isEscaped(), serdeParams.getEscapeChar(), serdeParams
-              .getNeedsEscape());
+                  .getNeedsEscape());
         } else {
           LazySimpleSerDe.serialize(serializeStream, f, foi, serdeParams
               .getSeparators(), 1, serdeParams.getNullSequence(), serdeParams
@@ -220,9 +235,29 @@ public class ColumnarSerDe implements SerDe {
             - count);
         count = serializeStream.getCount();
       }
+      serializedSize = serializeStream.getCount();
+      lastOperationSerialize = true;
+      lastOperationDeserialize = false;
     } catch (IOException e) {
       throw new SerDeException(e);
     }
     return serializeCache;
+  }
+
+  /**
+   * Returns the statistics after (de)serialization)
+   */
+
+  public SerDeStats getSerDeStats() {
+    // must be different
+    assert (lastOperationSerialize != lastOperationDeserialize);
+
+    if (lastOperationSerialize) {
+      stats.setRawDataSize(serializedSize);
+    } else {
+      stats.setRawDataSize(cachedLazyStruct.getRawDataSerializedSize());
+    }
+    return stats;
+
   }
 }

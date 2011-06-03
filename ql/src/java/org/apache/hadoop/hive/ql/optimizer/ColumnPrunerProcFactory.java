@@ -183,6 +183,12 @@ public final class ColumnPrunerProcFactory {
       TableScanDesc desc = scanOp.getConf();
       List<VirtualColumn> virtualCols = desc.getVirtualCols();
       List<VirtualColumn> newVirtualCols = new ArrayList<VirtualColumn>();
+
+      // add virtual columns for ANALYZE TABLE
+      if(scanOp.getConf().isGatherStats()) {
+        cols.add(VirtualColumn.RAWDATASIZE.getName());
+      }
+
       for (int i = 0; i < cols.size(); i++) {
         String[] tabCol = inputRR.reverseLookup(cols.get(i));
         if(tabCol == null) {

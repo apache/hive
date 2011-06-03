@@ -23,6 +23,7 @@ import java.util.List;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.apache.hadoop.hive.serde2.SerDeStatsStruct;
 import org.apache.hadoop.hive.serde2.lazy.ByteArrayRef;
 import org.apache.hadoop.hive.serde2.lazybinary.LazyBinaryUtils.RecordInfo;
 import org.apache.hadoop.hive.serde2.lazybinary.objectinspector.LazyBinaryStructObjectInspector;
@@ -42,7 +43,7 @@ import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
  * all struct fields are serialized.
  */
 public class LazyBinaryStruct extends
-    LazyBinaryNonPrimitive<LazyBinaryStructObjectInspector> {
+    LazyBinaryNonPrimitive<LazyBinaryStructObjectInspector> implements SerDeStatsStruct {
 
   private static Log LOG = LogFactory.getLog(LazyBinaryStruct.class.getName());
 
@@ -50,6 +51,11 @@ public class LazyBinaryStruct extends
    * Whether the data is already parsed or not.
    */
   boolean parsed;
+
+  /**
+   * Size of serialized data
+   */
+  long serializedSize;
 
   /**
    * The fields of the struct.
@@ -85,6 +91,7 @@ public class LazyBinaryStruct extends
   public void init(ByteArrayRef bytes, int start, int length) {
     super.init(bytes, start, length);
     parsed = false;
+    serializedSize = length;
   }
 
   RecordInfo recordInfo = new LazyBinaryUtils.RecordInfo();
@@ -103,8 +110,8 @@ public class LazyBinaryStruct extends
     if (fields == null) {
       fields = new LazyBinaryObject[fieldRefs.size()];
       for (int i = 0; i < fields.length; i++) {
-        ObjectInspector insp = fieldRefs.get(i).getFieldObjectInspector() ;
-        fields[i] = insp == null? null: LazyBinaryFactory.createLazyBinaryObject(insp);
+        ObjectInspector insp = fieldRefs.get(i).getFieldObjectInspector();
+        fields[i] = insp == null ? null : LazyBinaryFactory.createLazyBinaryObject(insp);
       }
       fieldInited = new boolean[fields.length];
       fieldIsNull = new boolean[fields.length];
@@ -236,5 +243,9 @@ public class LazyBinaryStruct extends
   @Override
   public Object getObject() {
     return this;
+  }
+
+  public long getRawDataSerializedSize() {
+    return serializedSize;
   }
 }

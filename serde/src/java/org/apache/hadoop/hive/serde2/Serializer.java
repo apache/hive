@@ -28,13 +28,13 @@ import org.apache.hadoop.io.Writable;
  * HiveSerializer is used to serialize data to a Hadoop Writable object. The
  * serialize In addition to the interface below, all implementations are assume
  * to have a ctor that takes a single 'Table' object as argument.
- * 
+ *
  */
 public interface Serializer {
 
   /**
    * Initialize the HiveSerializer.
-   * 
+   *
    * @param conf
    *          System properties
    * @param tbl
@@ -57,4 +57,9 @@ public interface Serializer {
    * returned value.
    */
   Writable serialize(Object obj, ObjectInspector objInspector) throws SerDeException;
+
+  /**
+   * Returns statistics collected when serializing
+   */
+  SerDeStats getSerDeStats();
 }

@@ -37,11 +37,11 @@ value               	string              	default
 # Detailed Table Information	 	 
 Database:           	default             	 
 Owner:              	null                	 
-CreateTime:         	Wed Jun 01 18:17:56 PDT 2011	 
+CreateTime:         	Wed Jun 01 20:42:44 PDT 2011	 
 LastAccessTime:     	UNKNOWN             	 
 Protect Mode:       	None                	 
 Retention:          	0                   	 
-Location:           	pfile:/data/users/tomasz/apache-hive/build/hbase-handler/test/data/warehouse/stats_src	 
+Location:           	pfile:/data/users/tomasz/apache-hive/build/ql/test/data/warehouse/stats_src	 
 Table Type:         	MANAGED_TABLE       	 
 Table Parameters:	 	 
 	numFiles            	1                   
@@ -49,7 +49,7 @@ Table Parameters:
 	numRows             	500                 
 	rawDataSize         	5312                
 	totalSize           	5812                
-	transient_lastDdlTime	1306977484          
+	transient_lastDdlTime	1306986172          
 	 	 
 # Storage Information	 	 
 SerDe Library:      	org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe	 
@@ -168,11 +168,11 @@ hr                  	string              	None
 # Detailed Table Information	 	 
 Database:           	default             	 
 Owner:              	null                	 
-CreateTime:         	Wed Jun 01 18:18:04 PDT 2011	 
-LastAccessTime:     	UNKNOWN             	 
+CreateTime:         	Wed Jun 01 20:42:52 PDT 2011	 
+LastAccessTime:     	Wed Jun 01 20:23:19 PDT 2011	 
 Protect Mode:       	None                	 
 Retention:          	0                   	 
-Location:           	pfile:/data/users/tomasz/apache-hive/build/hbase-handler/test/data/warehouse/stats_part	 
+Location:           	pfile:/data/users/tomasz/apache-hive/build/ql/test/data/warehouse/stats_part	 
 Table Type:         	MANAGED_TABLE       	 
 Table Parameters:	 	 
 	numFiles            	3                   
@@ -180,7 +180,7 @@ Table Parameters:
 	numRows             	1500                
 	rawDataSize         	15936               
 	totalSize           	17436               
-	transient_lastDdlTime	1306977503          
+	transient_lastDdlTime	1306986193          
 	 	 
 # Storage Information	 	 
 SerDe Library:      	org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe	 
@@ -219,16 +219,16 @@ hr                  	string              	None
 Partition Value:    	[2010-04-08, 11]    	 
 Database:           	default             	 
 Table:              	stats_part          	 
-CreateTime:         	Wed Jun 01 18:18:08 PDT 2011	 
+CreateTime:         	Wed Jun 01 20:42:56 PDT 2011	 
 LastAccessTime:     	UNKNOWN             	 
 Protect Mode:       	None                	 
-Location:           	pfile:/data/users/tomasz/apache-hive/build/hbase-handler/test/data/warehouse/stats_part/ds=2010-04-08/hr=11	 
+Location:           	pfile:/data/users/tomasz/apache-hive/build/ql/test/data/warehouse/stats_part/ds=2010-04-08/hr=11	 
 Partition Parameters:	 	 
 	numFiles            	1                   
 	numRows             	500                 
 	rawDataSize         	5312                
 	totalSize           	5812                
-	transient_lastDdlTime	1306977496          
+	transient_lastDdlTime	1306986185          
 	 	 
 # Storage Information	 	 
 SerDe Library:      	org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe	 
@@ -267,16 +267,16 @@ hr                  	string              	None
 Partition Value:    	[2010-04-08, 12]    	 
 Database:           	default             	 
 Table:              	stats_part          	 
-CreateTime:         	Wed Jun 01 18:18:12 PDT 2011	 
+CreateTime:         	Wed Jun 01 20:43:00 PDT 2011	 
 LastAccessTime:     	UNKNOWN             	 
 Protect Mode:       	None                	 
-Location:           	pfile:/data/users/tomasz/apache-hive/build/hbase-handler/test/data/warehouse/stats_part/ds=2010-04-08/hr=12	 
+Location:           	pfile:/data/users/tomasz/apache-hive/build/ql/test/data/warehouse/stats_part/ds=2010-04-08/hr=12	 
 Partition Parameters:	 	 
 	numFiles            	1                   
 	numRows             	500                 
 	rawDataSize         	5312                
 	totalSize           	5812                
-	transient_lastDdlTime	1306977499          
+	transient_lastDdlTime	1306986189          
 	 	 
 # Storage Information	 	 
 SerDe Library:      	org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe	 
@@ -340,11 +340,11 @@ hr                  	string              	None
 # Detailed Table Information	 	 
 Database:           	default             	 
 Owner:              	null                	 
-CreateTime:         	Wed Jun 01 18:18:04 PDT 2011	 
-LastAccessTime:     	UNKNOWN             	 
+CreateTime:         	Wed Jun 01 20:42:52 PDT 2011	 
+LastAccessTime:     	Wed Jun 01 20:23:19 PDT 2011	 
 Protect Mode:       	None                	 
 Retention:          	0                   	 
-Location:           	pfile:/data/users/tomasz/apache-hive/build/hbase-handler/test/data/warehouse/stats_part	 
+Location:           	pfile:/data/users/tomasz/apache-hive/build/ql/test/data/warehouse/stats_part	 
 Table Type:         	MANAGED_TABLE       	 
 Table Parameters:	 	 
 	numFiles            	3                   
@@ -352,7 +352,7 @@ Table Parameters:
 	numRows             	1500                
 	rawDataSize         	15936               
 	totalSize           	17436               
-	transient_lastDdlTime	1306977508          
+	transient_lastDdlTime	1306986198          
 	 	 
 # Storage Information	 	 
 SerDe Library:      	org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe	 

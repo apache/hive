@@ -27,17 +27,17 @@ import org.apache.hadoop.io.Writable;
 /**
  * HiveDeserializer is used to deserialize the data from hadoop Writable to a
  * custom java object that can be of any type that the developer wants.
- * 
+ *
  * HiveDeserializer also provides the ObjectInspector which can be used to
  * inspect the internal structure of the object (that is returned by deserialize
  * function).
- * 
+ *
  */
 public interface Deserializer {
 
   /**
    * Initialize the HiveDeserializer.
-   * 
+   *
    * @param conf
    *          System properties
    * @param tbl
@@ -52,7 +52,7 @@ public interface Deserializer {
    * returned object. If the client wants to keep a copy of the object, the
    * client needs to clone the returned value by calling
    * ObjectInspectorUtils.getStandardObject().
-   * 
+   *
    * @param blob
    *          The Writable object containing a serialized object
    * @return A Java object representing the contents in the blob.
@@ -64,4 +64,9 @@ public interface Deserializer {
    * structure of the Object returned from deserialize(...).
    */
   ObjectInspector getObjectInspector() throws SerDeException;
+
+  /**
+   * Returns statistics collected when serializing
+   */
+  SerDeStats getSerDeStats();
 }

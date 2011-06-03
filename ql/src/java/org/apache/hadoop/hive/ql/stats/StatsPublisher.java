@@ -18,6 +18,8 @@
 
 package org.apache.hadoop.hive.ql.stats;
 
+import java.util.Map;
+
 import org.apache.hadoop.conf.Configuration;
 
 /**
@@ -47,17 +49,19 @@ public interface StatsPublisher {
   /**
    * This method publishes a given statistic into a disk storage, possibly HBase or MySQL.
    *
-   * fileID   : a string identification the statistics to be published by all mappers/reducers
-   *            and then gathered. The statID is unique per output partition per task, e.g.,:
-   *                 the output directory name (uniq per FileSinkOperator) +
-   *                 the partition specs (only for dynamic partitions) +
-   *                 taskID (last component of task file)
-   *
-   * statType : a string noting the key to be published. Ex: "numRows".
-   *
-   * value    : an integer noting the value of the published key.
+   * @param fileID
+   *          : a string identification the statistics to be published by all mappers/reducers
+   *          and then gathered. The statID is unique per output partition per task, e.g.,:
+   *          the output directory name (uniq per FileSinkOperator) +
+   *          the partition specs (only for dynamic partitions) +
+   *          taskID (last component of task file)
+   * @param stats
+   *          : a map containing key-value pairs, where key is a string representing the statistic
+   *          to be published,
+   *          and value is a string representing the value for the given statistic
+   * @return true if successful, false otherwise
    */
-  public boolean publishStat(String fileID, String statType, String value);
+  public boolean publishStat(String fileID, Map<String, String> stats);
 
   /**
    * This method closes the connection to the temporary storage.

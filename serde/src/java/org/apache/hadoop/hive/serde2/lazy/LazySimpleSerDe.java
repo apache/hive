@@ -32,14 +32,15 @@ import org.apache.hadoop.hive.serde.Constants;
 import org.apache.hadoop.hive.serde2.ByteStream;
 import org.apache.hadoop.hive.serde2.SerDe;
 import org.apache.hadoop.hive.serde2.SerDeException;
+import org.apache.hadoop.hive.serde2.SerDeStats;
 import org.apache.hadoop.hive.serde2.objectinspector.ListObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.MapObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
+import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector.Category;
 import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.StructField;
 import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.UnionObjectInspector;
-import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector.Category;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorFactory;
 import org.apache.hadoop.hive.serde2.typeinfo.StructTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
@@ -68,6 +69,11 @@ public class LazySimpleSerDe implements SerDe {
 
   private ObjectInspector cachedObjectInspector;
 
+  private long serializedSize;
+  private SerDeStats stats;
+  private boolean lastOperationSerialize;
+  private boolean lastOperationDeserialize;
+
   @Override
   public String toString() {
     return getClass().toString()
@@ -77,7 +83,7 @@ public class LazySimpleSerDe implements SerDe {
         + ((StructTypeInfo) serdeParams.rowTypeInfo).getAllStructFieldNames()
         + ":"
         + ((StructTypeInfo) serdeParams.rowTypeInfo)
-        .getAllStructFieldTypeInfos() + "]";
+            .getAllStructFieldTypeInfos() + "]";
   }
 
   public LazySimpleSerDe() throws SerDeException {
@@ -192,6 +198,12 @@ public class LazySimpleSerDe implements SerDe {
         + " separator=" + Arrays.asList(serdeParams.separators)
         + " nullstring=" + serdeParams.nullString + " lastColumnTakesRest="
         + serdeParams.lastColumnTakesRest);
+
+    serializedSize = 0;
+    stats = new SerDeStats();
+    lastOperationSerialize = false;
+    lastOperationDeserialize = false;
+
   }
 
   public static SerDeParameters initSerdeParams(Configuration job,
@@ -309,6 +321,8 @@ public class LazySimpleSerDe implements SerDe {
       throw new SerDeException(getClass().toString()
           + ": expects either BytesWritable or Text object!");
     }
+    lastOperationSerialize = false;
+    lastOperationDeserialize = true;
     return cachedLazyStruct;
   }
 
@@ -361,6 +375,7 @@ public class LazySimpleSerDe implements SerDe {
         : null;
 
     serializeStream.reset();
+    serializedSize = 0;
 
     // Serialize each field
     for (int i = 0; i < fields.size(); i++) {
@@ -387,6 +402,9 @@ public class LazySimpleSerDe implements SerDe {
     // since we cannot directly set the private byte[] field inside Text.
     serializeCache
         .set(serializeStream.getData(), 0, serializeStream.getCount());
+    serializedSize = serializeStream.getCount();
+    lastOperationSerialize = true;
+    lastOperationDeserialize = false;
     return serializeCache;
   }
 
@@ -525,5 +543,22 @@ public class LazySimpleSerDe implements SerDe {
 
     throw new RuntimeException("Unknown category type: "
         + objInspector.getCategory());
+  }
+
+  /**
+   * Returns the statistics after (de)serialization)
+   */
+
+  public SerDeStats getSerDeStats() {
+    // must be different
+    assert (lastOperationSerialize != lastOperationDeserialize);
+
+    if (lastOperationSerialize) {
+      stats.setRawDataSize(serializedSize);
+    } else {
+      stats.setRawDataSize(cachedLazyStruct.getRawDataSerializedSize());
+    }
+    return stats;
+
   }
 }
