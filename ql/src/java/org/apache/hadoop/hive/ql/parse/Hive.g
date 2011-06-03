@@ -1933,20 +1933,30 @@ precedenceBitwiseOrExpression
     ;
 
 
+// Equal operators supporting NOT prefix
+precedenceEqualNegatableOperator
+    :
+    KW_LIKE | KW_RLIKE | KW_REGEXP
+    ;
+
 precedenceEqualOperator
     :
-    EQUAL | NOTEQUAL | LESSTHANOREQUALTO | LESSTHAN | GREATERTHANOREQUALTO | GREATERTHAN
-    | KW_LIKE | KW_RLIKE | KW_REGEXP
+    precedenceEqualNegatableOperator | EQUAL | NOTEQUAL | LESSTHANOREQUALTO | LESSTHAN | GREATERTHANOREQUALTO | GREATERTHAN
     ;
 
 precedenceEqualExpression
     :
-    precedenceBitwiseOrExpression ( (precedenceEqualOperator^ precedenceBitwiseOrExpression) | (inOperator^ expressions) )*
-    ;
-
-inOperator
-    :
-    KW_IN -> ^(TOK_FUNCTION KW_IN)
+    (left=precedenceBitwiseOrExpression -> $left)
+    (
+       (KW_NOT precedenceEqualNegatableOperator notExpr=precedenceBitwiseOrExpression)
+       -> ^(KW_NOT ^(precedenceEqualNegatableOperator $precedenceEqualExpression $notExpr))
+    | (precedenceEqualOperator equalExpr=precedenceBitwiseOrExpression)
+       -> ^(precedenceEqualOperator $precedenceEqualExpression $equalExpr)
+    | (KW_NOT KW_IN expressions)
+       -> ^(KW_NOT ^(TOK_FUNCTION KW_IN $precedenceEqualExpression expressions))
+    | (KW_IN expressions)
+       -> ^(TOK_FUNCTION KW_IN $precedenceEqualExpression expressions)
+    )*
     ;
 
 expressions
