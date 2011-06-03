@@ -29,17 +29,18 @@ import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.serde.Constants;
 import org.apache.hadoop.hive.serde2.ByteStream;
+import org.apache.hadoop.hive.serde2.ByteStream.Output;
 import org.apache.hadoop.hive.serde2.SerDe;
 import org.apache.hadoop.hive.serde2.SerDeException;
-import org.apache.hadoop.hive.serde2.ByteStream.Output;
+import org.apache.hadoop.hive.serde2.SerDeStats;
 import org.apache.hadoop.hive.serde2.lazy.ByteArrayRef;
 import org.apache.hadoop.hive.serde2.objectinspector.ListObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.MapObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
+import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector.Category;
 import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.StructField;
 import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
-import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector.Category;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.BooleanObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.ByteObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.DoubleObjectInspector;
@@ -78,6 +79,11 @@ public class LazyBinarySerDe implements SerDe {
   // The object for storing row data
   LazyBinaryStruct cachedLazyBinaryStruct;
 
+  private int serializedSize;
+  private SerDeStats stats;
+  private boolean lastOperationSerialize;
+  private boolean lastOperationDeserialize;
+
   /**
    * Initialize the SerDe with configuration and table information.
    */
@@ -109,6 +115,12 @@ public class LazyBinarySerDe implements SerDe {
     // output debug info
     LOG.debug("LazyBinarySerDe initialized with: columnNames=" + columnNames
         + " columnTypes=" + columnTypes);
+
+    serializedSize = 0;
+    stats = new SerDeStats();
+    lastOperationSerialize = false;
+    lastOperationDeserialize = false;
+
   }
 
   /**
@@ -157,6 +169,8 @@ public class LazyBinarySerDe implements SerDe {
       throw new SerDeException(getClass().toString()
           + ": expects either BytesWritable or Text object!");
     }
+    lastOperationSerialize = false;
+    lastOperationDeserialize = true;
     return cachedLazyBinaryStruct;
   }
 
@@ -186,6 +200,10 @@ public class LazyBinarySerDe implements SerDe {
     // return the serialized bytes
     serializeBytesWritable.set(serializeByteStream.getData(), 0,
         serializeByteStream.getCount());
+
+    serializedSize = serializeByteStream.getCount();
+    lastOperationSerialize = true;
+    lastOperationDeserialize = false;
     return serializeBytesWritable;
   }
 
@@ -194,7 +212,7 @@ public class LazyBinarySerDe implements SerDe {
   /**
    * Serialize a struct object without writing the byte size. This function is
    * shared by both row serialization and struct serialization.
-   * 
+   *
    * @param byteStream
    *          the byte stream storing the serialization data
    * @param obj
@@ -239,7 +257,7 @@ public class LazyBinarySerDe implements SerDe {
   /**
    * A recursive function that serialize an object to a byte buffer based on its
    * object inspector.
-   * 
+   *
    * @param byteStream
    *          the byte stream storing the serialization data
    * @param obj
@@ -469,5 +487,22 @@ public class LazyBinarySerDe implements SerDe {
           + objInspector.getCategory());
     }
     }
+  }
+
+  /**
+   * Returns the statistics after (de)serialization)
+   */
+
+  public SerDeStats getSerDeStats() {
+    // must be different
+    assert (lastOperationSerialize != lastOperationDeserialize);
+
+    if (lastOperationSerialize) {
+      stats.setRawDataSize(serializedSize);
+    } else {
+      stats.setRawDataSize(cachedLazyBinaryStruct.getRawDataSerializedSize());
+    }
+    return stats;
+
   }
 }

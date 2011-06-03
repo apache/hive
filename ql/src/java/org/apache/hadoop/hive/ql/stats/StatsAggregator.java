@@ -28,7 +28,9 @@ public interface StatsAggregator {
 
   /**
    * This method connects to the temporary storage.
-   * @param hconf HiveConf that contains the connection parameters.
+   *
+   * @param hconf
+   *          HiveConf that contains the connection parameters.
    * @return true if connection is successful, false otherwise.
    */
   public boolean connect(Configuration hconf);
@@ -38,34 +40,43 @@ public interface StatsAggregator {
    * After aggregation, this method also automatically removes all records
    * that have been aggregated.
    *
-   * @param keyPrefix a prefix of the keys used in StatsPublisher to publish stats.
-   * Any rows that starts with the same prefix will be aggregated. For example, if
-   * the StatsPublisher uses the following compound key to publish stats:
+   * @param keyPrefix
+   *          a prefix of the keys used in StatsPublisher to publish stats.
+   *          Any rows that starts with the same prefix will be aggregated. For example, if
+   *          the StatsPublisher uses the following compound key to publish stats:
    *
-   *     the output directory name (unique per FileSinkOperator) +
-   *     the partition specs (only for dynamic partitions) +
-   *     taskID (last component of task file)
+   *          the output directory name (unique per FileSinkOperator) +
+   *          the partition specs (only for dynamic partitions) +
+   *          taskID (last component of task file)
    *
-   * The keyPrefix for aggregation could be first 2 components. This will aggregates stats
-   * across all tasks for each partition.
+   *          The keyPrefix for aggregation could be first 2 components. This will aggregates stats
+   *          across all tasks for each partition.
    *
-   * @param statType a string noting the key to be published. Ex: "numRows".
+   * @param statType
+   *          a string noting the key to be published. Ex: "numRows".
    * @return a string representation of a long value, null if there are any error/exception.
    */
   public String aggregateStats(String keyPrefix, String statType);
 
   /**
    * This method closes the connection to the temporary storage.
+   *
    * @return true if close connection is successful, false otherwise.
    */
   public boolean closeConnection();
 
   /**
-   * This method clears the temporary statistics that have been published without being aggregated.
-   * Typically this happens when a job fails, or is forcibly stopped after publishing some statistics.
+   * This method is called after all statistics have been aggregated. Since we support multiple
+   * statistics, we do not perform automatic cleanup after aggregation.
+   * After this method is called, closeConnection must be called as well.
+   * This method is also used to clear the temporary statistics that have been published without
+   * being aggregated.
+   * Typically this happens when a job fails, or is forcibly stopped after publishing some
+   * statistics.
    *
-   * @param keyPrefix a prefix of the keys used in StatsPublisher to publish stats. It is the same
-   * as the first parameter in aggregateStats().
+   * @param keyPrefix
+   *          a prefix of the keys used in StatsPublisher to publish stats. It is the same
+   *          as the first parameter in aggregateStats().
    * @return true if cleanup is successful, false otherwise.
    */
   public boolean cleanUp(String keyPrefix);

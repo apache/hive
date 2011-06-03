@@ -395,6 +395,8 @@ public class HiveConf extends Configuration {
         0),     // maximum # of retries to insert/select/delete the stats DB
     HIVE_STATS_RETRIES_WAIT("hive.stats.retries.wait",
         3000),  // # milliseconds to wait before the next retry
+    HIVE_STATS_COLLECT_RAWDATASIZE("hive.stats.collect.rawdatasize", true),
+    // should the raw data size be collected when analayzing tables
 
 
     // Concurrency

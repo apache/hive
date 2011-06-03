@@ -37,7 +37,7 @@ value               	string              	default
 # Detailed Table Information	 	 
 Database:           	default             	 
 Owner:              	null                	 
-CreateTime:         	Wed Jun 01 18:17:56 PDT 2011	 
+CreateTime:         	Wed Jun 01 18:18:40 PDT 2011	 
 LastAccessTime:     	UNKNOWN             	 
 Protect Mode:       	None                	 
 Retention:          	0                   	 
@@ -49,7 +49,7 @@ Table Parameters:
 	numRows             	500                 
 	rawDataSize         	5312                
 	totalSize           	5812                
-	transient_lastDdlTime	1306977484          
+	transient_lastDdlTime	1306977527          
 	 	 
 # Storage Information	 	 
 SerDe Library:      	org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe	 
@@ -168,7 +168,7 @@ hr                  	string              	None
 # Detailed Table Information	 	 
 Database:           	default             	 
 Owner:              	null                	 
-CreateTime:         	Wed Jun 01 18:18:04 PDT 2011	 
+CreateTime:         	Wed Jun 01 18:18:48 PDT 2011	 
 LastAccessTime:     	UNKNOWN             	 
 Protect Mode:       	None                	 
 Retention:          	0                   	 
@@ -180,7 +180,7 @@ Table Parameters:
 	numRows             	1500                
 	rawDataSize         	15936               
 	totalSize           	17436               
-	transient_lastDdlTime	1306977503          
+	transient_lastDdlTime	1306977547          
 	 	 
 # Storage Information	 	 
 SerDe Library:      	org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe	 
@@ -219,7 +219,7 @@ hr                  	string              	None
 Partition Value:    	[2010-04-08, 11]    	 
 Database:           	default             	 
 Table:              	stats_part          	 
-CreateTime:         	Wed Jun 01 18:18:08 PDT 2011	 
+CreateTime:         	Wed Jun 01 18:18:51 PDT 2011	 
 LastAccessTime:     	UNKNOWN             	 
 Protect Mode:       	None                	 
 Location:           	pfile:/data/users/tomasz/apache-hive/build/hbase-handler/test/data/warehouse/stats_part/ds=2010-04-08/hr=11	 
@@ -228,7 +228,7 @@ Partition Parameters:
 	numRows             	500                 
 	rawDataSize         	5312                
 	totalSize           	5812                
-	transient_lastDdlTime	1306977496          
+	transient_lastDdlTime	1306977539          
 	 	 
 # Storage Information	 	 
 SerDe Library:      	org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe	 
@@ -267,7 +267,7 @@ hr                  	string              	None
 Partition Value:    	[2010-04-08, 12]    	 
 Database:           	default             	 
 Table:              	stats_part          	 
-CreateTime:         	Wed Jun 01 18:18:12 PDT 2011	 
+CreateTime:         	Wed Jun 01 18:18:56 PDT 2011	 
 LastAccessTime:     	UNKNOWN             	 
 Protect Mode:       	None                	 
 Location:           	pfile:/data/users/tomasz/apache-hive/build/hbase-handler/test/data/warehouse/stats_part/ds=2010-04-08/hr=12	 
@@ -276,7 +276,7 @@ Partition Parameters:
 	numRows             	500                 
 	rawDataSize         	5312                
 	totalSize           	5812                
-	transient_lastDdlTime	1306977499          
+	transient_lastDdlTime	1306977543          
 	 	 
 # Storage Information	 	 
 SerDe Library:      	org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe	 
@@ -340,7 +340,7 @@ hr                  	string              	None
 # Detailed Table Information	 	 
 Database:           	default             	 
 Owner:              	null                	 
-CreateTime:         	Wed Jun 01 18:18:04 PDT 2011	 
+CreateTime:         	Wed Jun 01 18:18:48 PDT 2011	 
 LastAccessTime:     	UNKNOWN             	 
 Protect Mode:       	None                	 
 Retention:          	0                   	 
@@ -352,7 +352,7 @@ Table Parameters:
 	numRows             	1500                
 	rawDataSize         	15936               
 	totalSize           	17436               
-	transient_lastDdlTime	1306977508          
+	transient_lastDdlTime	1306977552          
 	 	 
 # Storage Information	 	 
 SerDe Library:      	org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe	 

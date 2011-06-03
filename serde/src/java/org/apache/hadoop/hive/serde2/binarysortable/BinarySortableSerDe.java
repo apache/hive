@@ -32,6 +32,7 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.serde.Constants;
 import org.apache.hadoop.hive.serde2.SerDe;
 import org.apache.hadoop.hive.serde2.SerDeException;
+import org.apache.hadoop.hive.serde2.SerDeStats;
 import org.apache.hadoop.hive.serde2.io.ByteWritable;
 import org.apache.hadoop.hive.serde2.io.DoubleWritable;
 import org.apache.hadoop.hive.serde2.io.ShortWritable;
@@ -39,10 +40,10 @@ import org.apache.hadoop.hive.serde2.objectinspector.ListObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.MapObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector;
+import org.apache.hadoop.hive.serde2.objectinspector.StandardUnionObjectInspector.StandardUnion;
 import org.apache.hadoop.hive.serde2.objectinspector.StructField;
 import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.UnionObjectInspector;
-import org.apache.hadoop.hive.serde2.objectinspector.StandardUnionObjectInspector.StandardUnion;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.BooleanObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.ByteObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.DoubleObjectInspector;
@@ -70,7 +71,7 @@ import org.apache.hadoop.io.Writable;
 /**
  * BinarySortableSerDe can be used to write data in a way that the data can be
  * compared byte-by-byte with the same order.
- * 
+ *
  * The data format: NULL: a single byte \0 NON-NULL Primitives: ALWAYS prepend a
  * single byte \1, and then: Boolean: FALSE = \1, TRUE = \2 Byte: flip the
  * sign-bit to make sure negative comes before positive Short: flip the sign-bit
@@ -82,13 +83,13 @@ import org.apache.hadoop.io.Writable;
  * ALWAYS prepend a single byte \1, and then: Struct: one field by one field.
  * List: \1 followed by each element, and \0 to terminate Map: \1 followed by
  * each key and then each value, and \0 to terminate
- * 
+ *
  * This SerDe takes an additional parameter SERIALIZATION_SORT_ORDER which is a
  * string containing only "+" and "-". The length of the string should equal to
  * the number of fields in the top-level struct for serialization. "+" means the
  * field should be sorted ascendingly, and "-" means descendingly. The sub
  * fields in the same top-level field will have the same sort order.
- * 
+ *
  */
 public class BinarySortableSerDe implements SerDe {
 
@@ -597,5 +598,10 @@ public class BinarySortableSerDe implements SerDe {
     }
     }
 
+  }
+
+  public SerDeStats getSerDeStats() {
+    // no support for statistics
+    return null;
   }
 }

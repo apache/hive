@@ -19,14 +19,11 @@
 package org.apache.hadoop.hive.ql.metadata;
 
 import java.io.Serializable;
-import java.util.Map;
-import java.util.HashMap;
-import java.util.List;
 import java.util.ArrayList;
+import java.util.List;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.conf.HiveConf;
-import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 
@@ -37,8 +34,10 @@ public class VirtualColumn implements Serializable {
   public static VirtualColumn FILENAME = new VirtualColumn("INPUT__FILE__NAME", (PrimitiveTypeInfo)TypeInfoFactory.stringTypeInfo);
   public static VirtualColumn BLOCKOFFSET = new VirtualColumn("BLOCK__OFFSET__INSIDE__FILE", (PrimitiveTypeInfo)TypeInfoFactory.longTypeInfo);
   public static VirtualColumn ROWOFFSET = new VirtualColumn("ROW__OFFSET__INSIDE__BLOCK", (PrimitiveTypeInfo)TypeInfoFactory.longTypeInfo);
-  
-  
+
+  public static VirtualColumn RAWDATASIZE = new VirtualColumn("RAW__DATA__SIZE", (PrimitiveTypeInfo)TypeInfoFactory.longTypeInfo);
+
+
   private String name;
   private PrimitiveTypeInfo typeInfo;
   private boolean isHidden = true;
@@ -49,11 +48,19 @@ public class VirtualColumn implements Serializable {
   public VirtualColumn(String name, PrimitiveTypeInfo typeInfo) {
     this(name, typeInfo, true);
   }
-  
+
   VirtualColumn(String name, PrimitiveTypeInfo typeInfo, boolean isHidden) {
     this.name = name;
     this.typeInfo = typeInfo;
     this.isHidden = isHidden;
+  }
+
+  public static List<VirtualColumn> getStatsRegistry(Configuration conf) {
+    List<VirtualColumn> l = new ArrayList<VirtualColumn>();
+    if (HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVE_STATS_COLLECT_RAWDATASIZE)) {
+      l.add(RAWDATASIZE);
+    }
+    return l;
   }
 
   public static List<VirtualColumn> getRegistry(Configuration conf) {
@@ -66,7 +73,7 @@ public class VirtualColumn implements Serializable {
 
     return l;
   }
-  
+
   public PrimitiveTypeInfo getTypeInfo() {
     return typeInfo;
   }
@@ -78,15 +85,15 @@ public class VirtualColumn implements Serializable {
   public String getName() {
     return this.name;
   }
-  
+
   public void setName(String name) {
     this.name = name;
   }
-  
+
   public boolean isHidden() {
     return isHidden;
   }
-  
+
   public boolean getIsHidden() {
     return isHidden;
   }
@@ -94,7 +101,8 @@ public class VirtualColumn implements Serializable {
   public void setIsHidden(boolean isHidden) {
     this.isHidden = isHidden;
   }
-  
+
+  @Override
   public boolean equals(Object o) {
     if (o == null) {
       return false;

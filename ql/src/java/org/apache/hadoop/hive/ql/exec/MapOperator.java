@@ -22,13 +22,13 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
-import java.util.HashSet;
 import java.util.Map.Entry;
 import java.util.Properties;
+import java.util.Set;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
@@ -36,12 +36,13 @@ import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.io.IOContext;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.VirtualColumn;
-import org.apache.hadoop.hive.ql.plan.api.OperatorType;
 import org.apache.hadoop.hive.ql.plan.MapredWork;
 import org.apache.hadoop.hive.ql.plan.PartitionDesc;
 import org.apache.hadoop.hive.ql.plan.TableScanDesc;
+import org.apache.hadoop.hive.ql.plan.api.OperatorType;
 import org.apache.hadoop.hive.serde2.Deserializer;
 import org.apache.hadoop.hive.serde2.SerDeException;
+import org.apache.hadoop.hive.serde2.SerDeStats;
 import org.apache.hadoop.hive.serde2.SerDeUtils;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorFactory;
@@ -81,7 +82,7 @@ public class MapOperator extends Operator<MapredWork> implements Serializable {
   private transient boolean isPartitioned;
   private transient boolean hasVC;
   private Map<MapInputPath, MapOpCtx> opCtxMap;
-  private Set<MapInputPath> listInputPaths = new HashSet<MapInputPath>();
+  private final Set<MapInputPath> listInputPaths = new HashSet<MapInputPath>();
 
   private Map<Operator<? extends Serializable>, java.util.ArrayList<String>> operatorToPaths;
 
@@ -137,7 +138,7 @@ public class MapOperator extends Operator<MapredWork> implements Serializable {
 
   private static class MapOpCtx {
     boolean isPartitioned;
-    StructObjectInspector rawRowObjectInspector; //without partition
+    StructObjectInspector rawRowObjectInspector; // without partition
     StructObjectInspector partObjectInspector; // partition
     StructObjectInspector rowObjectInspector;
     Object[] rowWithPart;
@@ -223,7 +224,7 @@ public class MapOperator extends Operator<MapredWork> implements Serializable {
       if ((className == "") || (className == null)) {
         throw new HiveException(
             "SerDe class or the SerDe class name is not set for table: "
-            + td.getProperties().getProperty("name"));
+                + td.getProperties().getProperty("name"));
       }
       sdclass = hconf.getClassByName(className);
     }
@@ -269,14 +270,16 @@ public class MapOperator extends Operator<MapredWork> implements Serializable {
       rowWithPart[1] = partValues;
       StructObjectInspector rowObjectInspector = ObjectInspectorFactory
           .getUnionStructObjectInspector(Arrays
-          .asList(new StructObjectInspector[] {rawRowObjectInspector, partObjectInspector}));
+              .asList(new StructObjectInspector[] {rawRowObjectInspector, partObjectInspector}));
       // LOG.info("dump " + tableName + " " + partName + " " +
       // rowObjectInspector.getTypeName());
-      opCtx = new MapOpCtx(true, rowObjectInspector, rawRowObjectInspector ,partObjectInspector,rowWithPart, deserializer);
+      opCtx = new MapOpCtx(true, rowObjectInspector, rawRowObjectInspector, partObjectInspector,
+          rowWithPart, deserializer);
     } else {
       // LOG.info("dump2 " + tableName + " " + partName + " " +
       // rowObjectInspector.getTypeName());
-      opCtx = new MapOpCtx(false, rawRowObjectInspector, rawRowObjectInspector, null, null, deserializer);
+      opCtx = new MapOpCtx(false, rawRowObjectInspector, rawRowObjectInspector, null, null,
+          deserializer);
     }
     opCtx.tableName = tableName;
     opCtx.partName = partName;
@@ -290,9 +293,9 @@ public class MapOperator extends Operator<MapredWork> implements Serializable {
   private void setInspectorInput(MapInputPath inp) {
     Operator<? extends Serializable> op = inp.getOp();
 
-    deserializer  = opCtxMap.get(inp).getDeserializer();
+    deserializer = opCtxMap.get(inp).getDeserializer();
     isPartitioned = opCtxMap.get(inp).isPartitioned();
-    rowWithPart   = opCtxMap.get(inp).getRowWithPart();
+    rowWithPart = opCtxMap.get(inp).getRowWithPart();
     rowObjectInspector = opCtxMap.get(inp).getRowObjectInspector();
     if (listInputPaths.contains(inp)) {
       return;
@@ -304,7 +307,7 @@ public class MapOperator extends Operator<MapredWork> implements Serializable {
     if (op instanceof TableScanOperator) {
       TableScanOperator tsOp = (TableScanOperator) op;
       TableScanDesc tsDesc = tsOp.getConf();
-      if(tsDesc != null) {
+      if (tsDesc != null) {
         this.vcs = tsDesc.getVirtualCols();
         if (vcs != null && vcs.size() > 0) {
           this.hasVC = true;
@@ -314,12 +317,12 @@ public class MapOperator extends Operator<MapredWork> implements Serializable {
           for (int i = 0; i < vcs.size(); i++) {
             VirtualColumn vc = vcs.get(i);
             vcsObjectInspectors.add(
-              PrimitiveObjectInspectorFactory.getPrimitiveWritableObjectInspector(
-                ((PrimitiveTypeInfo) vc.getTypeInfo()).getPrimitiveCategory()));
+                PrimitiveObjectInspectorFactory.getPrimitiveWritableObjectInspector(
+                    ((PrimitiveTypeInfo) vc.getTypeInfo()).getPrimitiveCategory()));
             vcNames.add(vc.getName());
           }
           StructObjectInspector vcStructObjectInspector = ObjectInspectorFactory
-            .getStandardStructObjectInspector(vcNames,
+              .getStandardStructObjectInspector(vcNames,
                                               vcsObjectInspectors);
           if (isPartitioned) {
             this.rowWithPartAndVC = new Object[3];
@@ -327,14 +330,15 @@ public class MapOperator extends Operator<MapredWork> implements Serializable {
           } else {
             this.rowWithPartAndVC = new Object[2];
           }
-          if(partObjectInspector == null) {
+          if (partObjectInspector == null) {
             this.rowObjectInspector = ObjectInspectorFactory.getUnionStructObjectInspector(Arrays
                                         .asList(new StructObjectInspector[] {
-                                            rowObjectInspector, vcStructObjectInspector }));
+                                            rowObjectInspector, vcStructObjectInspector}));
           } else {
             this.rowObjectInspector = ObjectInspectorFactory.getUnionStructObjectInspector(Arrays
                                         .asList(new StructObjectInspector[] {
-                                            rawRowObjectInspector, partObjectInspector, vcStructObjectInspector }));
+                                            rawRowObjectInspector, partObjectInspector,
+                                            vcStructObjectInspector}));
           }
           opCtxMap.get(inp).rowObjectInspector = this.rowObjectInspector;
         }
@@ -460,6 +464,7 @@ public class MapOperator extends Operator<MapredWork> implements Serializable {
 
   // Change the serializer etc. since it is a new file, and split can span
   // multiple files/partitions.
+  @Override
   public void cleanUpInputFileChangedOp() throws HiveException {
     Path fpath = new Path((new Path(this.getExecContext().getCurrentInputFile()))
                           .toUri().getPath());
@@ -471,7 +476,7 @@ public class MapOperator extends Operator<MapredWork> implements Serializable {
       if (!onepath.toUri().relativize(fpath.toUri()).equals(fpath.toUri())) {
         String onealias = conf.getPathToAliases().get(onefile).get(0);
         Operator<? extends Serializable> op =
-          conf.getAliasToWork().get(onealias);
+            conf.getAliasToWork().get(onealias);
 
         LOG.info("Processing alias " + onealias + " for file " + onefile);
 
@@ -501,9 +506,9 @@ public class MapOperator extends Operator<MapredWork> implements Serializable {
         populateVirtualColumnValues();
         this.rowWithPartAndVC[vcPos] = this.vcValues;
       } else if (!isPartitioned) {
-        row = deserializer.deserialize((Writable)value);
+        row = deserializer.deserialize((Writable) value);
       } else {
-        rowWithPart[0] = deserializer.deserialize((Writable)value);
+        rowWithPart[0] = deserializer.deserialize((Writable) value);
       }
     } catch (Exception e) {
       // Serialize the row and output.
@@ -568,6 +573,21 @@ public class MapOperator extends Operator<MapredWork> implements Serializable {
           }
         } else if (vc.equals(VirtualColumn.ROWOFFSET)) {
           long current = ioCxt.getCurrentRow();
+          LongWritable old = (LongWritable) this.vcValues[i];
+          if (old == null) {
+            old = new LongWritable(current);
+            this.vcValues[i] = old;
+            continue;
+          }
+          if (current != old.get()) {
+            old.set(current);
+          }
+        } else if (vc.equals(VirtualColumn.RAWDATASIZE)) {
+          long current = 0L;
+          SerDeStats stats = this.deserializer.getSerDeStats();
+          if(stats != null) {
+            current = stats.getRawDataSize();
+          }
           LongWritable old = (LongWritable) this.vcValues[i];
           if (old == null) {
             old = new LongWritable(current);

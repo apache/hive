@@ -23,6 +23,7 @@ import java.util.List;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.apache.hadoop.hive.serde2.SerDeStatsStruct;
 import org.apache.hadoop.hive.serde2.lazy.objectinspector.LazySimpleStructObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.StructField;
 import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
@@ -31,12 +32,12 @@ import org.apache.hadoop.io.Text;
 /**
  * LazyObject for storing a struct. The field of a struct can be primitive or
  * non-primitive.
- * 
+ *
  * LazyStruct does not deal with the case of a NULL struct. That is handled by
  * the parent LazyObject.
  */
-public class LazyStruct extends
-    LazyNonPrimitive<LazySimpleStructObjectInspector> {
+public class LazyStruct extends LazyNonPrimitive<LazySimpleStructObjectInspector> implements
+    SerDeStatsStruct {
 
   private static Log LOG = LogFactory.getLog(LazyStruct.class.getName());
 
@@ -44,6 +45,11 @@ public class LazyStruct extends
    * Whether the data is already parsed or not.
    */
   boolean parsed;
+
+  /**
+   * Size of serialized data
+   */
+  long serializedSize;
 
   /**
    * The start positions of struct fields. Only valid when the data is parsed.
@@ -71,13 +77,14 @@ public class LazyStruct extends
 
   /**
    * Set the row data for this LazyStruct.
-   * 
+   *
    * @see LazyObject#init(ByteArrayRef, int, int)
    */
   @Override
   public void init(ByteArrayRef bytes, int start, int length) {
     super.init(bytes, start, length);
     parsed = false;
+    serializedSize = length;
   }
 
   boolean missingFieldWarned = false;
@@ -167,13 +174,13 @@ public class LazyStruct extends
 
   /**
    * Get one field out of the struct.
-   * 
+   *
    * If the field is a primitive field, return the actual object. Otherwise
    * return the LazyObject. This is because PrimitiveObjectInspector does not
    * have control over the object used by the user - the user simply directly
    * use the Object instead of going through Object
    * PrimitiveObjectInspector.get(Object).
-   * 
+   *
    * @param fieldID
    *          The field ID
    * @return The field as a LazyObject
@@ -188,7 +195,7 @@ public class LazyStruct extends
   /**
    * Get the field out of the row without checking parsed. This is called by
    * both getField and getFieldsAsList.
-   * 
+   *
    * @param fieldID
    *          The id of the field starting from 0.
    * @param nullSequence
@@ -203,8 +210,8 @@ public class LazyStruct extends
     int fieldLength = startPosition[fieldID + 1] - startPosition[fieldID] - 1;
     if ((fieldLength < 0)
         || (fieldLength == nullSequence.getLength() && LazyUtils.compare(bytes
-        .getData(), fieldByteBegin, fieldLength, nullSequence.getBytes(),
-        0, nullSequence.getLength()) == 0)) {
+            .getData(), fieldByteBegin, fieldLength, nullSequence.getBytes(),
+            0, nullSequence.getLength()) == 0)) {
       return null;
     }
     if (!fieldInited[fieldID]) {
@@ -218,7 +225,7 @@ public class LazyStruct extends
 
   /**
    * Get the values of the fields as an ArrayList.
-   * 
+   *
    * @return The values of the fields as an ArrayList.
    */
   public ArrayList<Object> getFieldsAsList() {
@@ -244,7 +251,7 @@ public class LazyStruct extends
   protected boolean getParsed() {
     return parsed;
   }
-  
+
   protected void setParsed(boolean parsed) {
     this.parsed = parsed;
   }
@@ -256,12 +263,16 @@ public class LazyStruct extends
   protected void setFields(LazyObject[] fields) {
     this.fields = fields;
   }
-  
+
   protected boolean[] getFieldInited() {
     return fieldInited;
   }
-  
+
   protected void setFieldInited(boolean[] fieldInited) {
     this.fieldInited = fieldInited;
+  }
+
+  public long getRawDataSerializedSize() {
+    return serializedSize;
   }
 }

@@ -82,4 +82,9 @@ public abstract class TypedSerDe implements SerDe {
     throw new RuntimeException("not supported");
   }
 
+  public SerDeStats getSerDeStats() {
+    // no support for statistics
+    return null;
+  }
+
 }

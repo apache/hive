@@ -15,18 +15,37 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.hadoop.hive.ql.stats.jdbc;
 
-public final class JDBCStatsSetupConstants {
+package org.apache.hadoop.hive.serde2;
 
-  public static final String PART_STAT_ID_COLUMN_NAME = "ID";
+public class SerDeStats {
 
-  public static final String PART_STAT_TABLE_NAME = "PARTITION_STAT_TBL";
+  /**
+   * Class used to pass statistics information from serializer/deserializer to the tasks.
+   * A SerDeStats object is returned by calling SerDe.getStats().
+   */
 
-  // supported statistics - column names
+  // currently we support only raw data size stat
+  private long rawDataSize;
 
-  public static final String PART_STAT_ROW_COUNT_COLUMN_NAME = "ROW_COUNT";
+  public SerDeStats() {
+    rawDataSize = 0;
+  }
 
-  public static final String PART_STAT_RAW_DATA_SIZE_COLUMN_NAME = "RAW_DATA_SIZE";
+  /**
+   * Return the raw data size
+   * @return raw data size
+   */
+  public long getRawDataSize() {
+    return rawDataSize;
+  }
+
+  /**
+   * Set the raw data size
+   * @param uSize - size to be set
+   */
+  public void setRawDataSize(long uSize) {
+    rawDataSize = uSize;
+  }
 
 }

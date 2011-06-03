@@ -113,6 +113,10 @@ public class TableScanDesc implements Serializable {
     this.virtualCols = virtualCols;
   }
 
+  public void addVirtualCols(List<VirtualColumn> virtualCols) {
+    this.virtualCols.addAll(virtualCols);
+  }
+
   public void setStatsAggPrefix(String k) {
     statsAggKeyPrefix = k;
   }

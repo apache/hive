@@ -18,20 +18,62 @@
 
 package org.apache.hadoop.hive.ql.exec;
 
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.Map;
+
+import org.apache.hadoop.io.LongWritable;
+
 public class Stat {
 
-  private long numRows;
+  // stored stats
+  private final Map<String, LongWritable> statsMap;
 
-  public Stat () {
-    numRows = 0;
+  // additional bookkeeping info for the stored stats
+  private final Map<String, Integer> bookkeepingInfo;
+
+  public Stat() {
+    statsMap = new HashMap<String, LongWritable>();
+    bookkeepingInfo = new HashMap<String, Integer>();
   }
 
-  public void increaseNumRows(long amount) {
-    numRows += amount;
+  public void addToStat(String statType, long amount) {
+    LongWritable currentValue = statsMap.get(statType);
+    if (currentValue == null) {
+      statsMap.put(statType, new LongWritable(amount));
+    } else {
+      currentValue.set(currentValue.get() + amount);
+    }
   }
 
-  public long getNumRows() {
-    return numRows;
+  public long getStat(String statType) {
+    LongWritable currValue = statsMap.get(statType);
+    if (currValue == null) {
+      return 0;
+    }
+    return currValue.get();
+  }
+
+  public Collection<String> getStoredStats() {
+    return statsMap.keySet();
+  }
+
+  public void clear() {
+    statsMap.clear();
+  }
+
+  // additional information about stats (e.g., virtual column number
+
+  public void setBookkeepingInfo(String statType, int info) {
+    bookkeepingInfo.put(statType, info);
+  }
+
+  public int getBookkeepingInfo(String statType) {
+    Integer info = bookkeepingInfo.get(statType);
+    if (info == null) {
+      return -1;
+    }
+    return info.intValue();
   }
 
 }
