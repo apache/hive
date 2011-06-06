@@ -121,8 +121,18 @@ public final class FileUtils {
     for (char c = 0; c < ' '; c++) {
       charToEscape.set(c);
     }
-    char[] clist = new char[] {'"', '#', '%', '\'', '*', '/', ':', '=', '?', '\\', '\u007F', '{',
-        ']'};
+    
+    /**
+     * ASCII 01-1F are HTTP control characters that need to be escaped.
+     * \u000A and \u000D are \n and \r, respectively.
+     */
+    char[] clist = new char[] {'\u0001', '\u0002', '\u0003', '\u0004',
+        '\u0005', '\u0006', '\u0007', '\u0008', '\u0009', '\n', '\u000B',
+        '\u000C', '\r', '\u000E', '\u000F', '\u0010', '\u0011', '\u0012',
+        '\u0013', '\u0014', '\u0015', '\u0016', '\u0017', '\u0018', '\u0019',
+        '\u001A', '\u001B', '\u001C', '\u001D', '\u001E', '\u001F',
+        '"', '#', '%', '\'', '*', '/', ':', '=', '?', '\\', '\u007F', '{',
+        '[', ']'};
     for (char c : clist) {
       charToEscape.set(c);
     }
