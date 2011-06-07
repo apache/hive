@@ -22,6 +22,10 @@ import org.apache.hadoop.hive.cassandra.CassandraProxyClient;
 import org.apache.hadoop.io.Writable;
 import org.apache.thrift.TException;
 
+/**
+ * This represents the super column family in Cassandra.
+ *
+ */
 public class CassandraSuperPut implements Writable, Put {
   private ByteBuffer key;
   private List<CassandraPut> subColumns;

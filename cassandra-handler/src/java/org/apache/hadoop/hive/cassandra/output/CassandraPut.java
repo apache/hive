@@ -18,6 +18,10 @@ import org.apache.hadoop.hive.cassandra.CassandraProxyClient;
 import org.apache.hadoop.io.Writable;
 import org.apache.thrift.TException;
 
+/**
+ * This represents a standard column family. It implements hadoop Writable interface.
+ *
+ */
 public class CassandraPut implements Writable, Put {
 
   private ByteBuffer key;

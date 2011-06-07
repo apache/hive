@@ -6,5 +6,13 @@ import org.apache.cassandra.thrift.ConsistencyLevel;
 import org.apache.hadoop.hive.cassandra.CassandraProxyClient;
 
 public interface Put {
+  /**
+   * Write this object into the given keyspace in cassandra using cassandra proxy client with given consistency level.
+   *
+   * @param keySpace key space to be written into
+   * @param client cassandra proxy client
+   * @param flevel consistency level
+   * @throws IOException error writing into cassandra
+   */
   void write(String keySpace, CassandraProxyClient client, ConsistencyLevel flevel) throws IOException;
 }

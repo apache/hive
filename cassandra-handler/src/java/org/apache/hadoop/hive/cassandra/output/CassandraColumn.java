@@ -6,6 +6,10 @@ import java.io.IOException;
 
 import org.apache.hadoop.io.Writable;
 
+/**
+ * This represents a cassandra column.
+ *
+ */
 public class CassandraColumn implements Writable{
 
   private String columnFamily;
