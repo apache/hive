@@ -1,0 +1,233 @@
+PREHOOK: query: DROP TABLE accessLog
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@accesslog
+PREHOOK: Output: default@accesslog
+POSTHOOK: query: DROP TABLE accessLog
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@accesslog
+POSTHOOK: Output: default@accesslog
+PREHOOK: query: CREATE EXTERNAL TABLE accessLog
+      (row_key string, column_name string,  value string)
+      STORED BY 'org.apache.hadoop.hive.cassandra.CassandraStorageHandler'
+WITH SERDEPROPERTIES ("cassandra.host" = "127.0.0.1" , "cassandra.port" = "9170")
+TBLPROPERTIES ("cassandra.ks.name" = "Hive")
+PREHOOK: type: CREATETABLE
+POSTHOOK: query: CREATE EXTERNAL TABLE accessLog
+      (row_key string, column_name string,  value string)
+      STORED BY 'org.apache.hadoop.hive.cassandra.CassandraStorageHandler'
+WITH SERDEPROPERTIES ("cassandra.host" = "127.0.0.1" , "cassandra.port" = "9170")
+TBLPROPERTIES ("cassandra.ks.name" = "Hive")
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: default@accessLog
+PREHOOK: query: INSERT OVERWRITE TABLE accessLog
+select key, 'divide7', value  from src where (key%7)=0
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@accesslog
+POSTHOOK: query: INSERT OVERWRITE TABLE accessLog
+select key, 'divide7', value  from src where (key%7)=0
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@accesslog
+PREHOOK: query: select * from accessLog
+PREHOOK: type: QUERY
+PREHOOK: Input: default@accesslog
+PREHOOK: Output: file:/var/folders/b-/b-vBB2wVHpaVQzxVjeViaE+++TI/-Tmp-/yeweizhang/hive_2011-06-07_00-03-17_642_7822765290598207690/-mr-10000
+POSTHOOK: query: select * from accessLog
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@accesslog
+POSTHOOK: Output: file:/var/folders/b-/b-vBB2wVHpaVQzxVjeViaE+++TI/-Tmp-/yeweizhang/hive_2011-06-07_00-03-17_642_7822765290598207690/-mr-10000
+0	divide7	val_0
+105	divide7	val_105
+119	divide7	val_119
+126	divide7	val_126
+133	divide7	val_133
+168	divide7	val_168
+175	divide7	val_175
+189	divide7	val_189
+196	divide7	val_196
+203	divide7	val_203
+217	divide7	val_217
+224	divide7	val_224
+238	divide7	val_238
+252	divide7	val_252
+266	divide7	val_266
+273	divide7	val_273
+28	divide7	val_28
+280	divide7	val_280
+287	divide7	val_287
+308	divide7	val_308
+315	divide7	val_315
+322	divide7	val_322
+336	divide7	val_336
+35	divide7	val_35
+364	divide7	val_364
+378	divide7	val_378
+392	divide7	val_392
+399	divide7	val_399
+406	divide7	val_406
+413	divide7	val_413
+42	divide7	val_42
+427	divide7	val_427
+448	divide7	val_448
+455	divide7	val_455
+462	divide7	val_462
+469	divide7	val_469
+483	divide7	val_483
+490	divide7	val_490
+497	divide7	val_497
+70	divide7	val_70
+77	divide7	val_77
+84	divide7	val_84
+98	divide7	val_98
+PREHOOK: query: INSERT OVERWRITE TABLE accessLog
+select key, 'divide9', value  from src where (key%9)=0
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@accesslog
+POSTHOOK: query: INSERT OVERWRITE TABLE accessLog
+select key, 'divide9', value  from src where (key%9)=0
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@accesslog
+PREHOOK: query: select * from accessLog
+PREHOOK: type: QUERY
+PREHOOK: Input: default@accesslog
+PREHOOK: Output: file:/var/folders/b-/b-vBB2wVHpaVQzxVjeViaE+++TI/-Tmp-/yeweizhang/hive_2011-06-07_00-03-21_315_3201182136726865453/-mr-10000
+POSTHOOK: query: select * from accessLog
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@accesslog
+POSTHOOK: Output: file:/var/folders/b-/b-vBB2wVHpaVQzxVjeViaE+++TI/-Tmp-/yeweizhang/hive_2011-06-07_00-03-21_315_3201182136726865453/-mr-10000
+0	divide7	val_0
+0	divide9	val_0
+105	divide7	val_105
+119	divide7	val_119
+126	divide7	val_126
+126	divide9	val_126
+133	divide7	val_133
+153	divide9	val_153
+162	divide9	val_162
+168	divide7	val_168
+175	divide7	val_175
+18	divide9	val_18
+180	divide9	val_180
+189	divide7	val_189
+189	divide9	val_189
+196	divide7	val_196
+203	divide7	val_203
+207	divide9	val_207
+216	divide9	val_216
+217	divide7	val_217
+224	divide7	val_224
+238	divide7	val_238
+252	divide7	val_252
+252	divide9	val_252
+266	divide7	val_266
+27	divide9	val_27
+273	divide7	val_273
+28	divide7	val_28
+280	divide7	val_280
+287	divide7	val_287
+288	divide9	val_288
+306	divide9	val_306
+308	divide7	val_308
+315	divide7	val_315
+315	divide9	val_315
+322	divide7	val_322
+333	divide9	val_333
+336	divide7	val_336
+342	divide9	val_342
+35	divide7	val_35
+351	divide9	val_351
+360	divide9	val_360
+364	divide7	val_364
+369	divide9	val_369
+378	divide7	val_378
+378	divide9	val_378
+392	divide7	val_392
+396	divide9	val_396
+399	divide7	val_399
+406	divide7	val_406
+413	divide7	val_413
+414	divide9	val_414
+42	divide7	val_42
+427	divide7	val_427
+432	divide9	val_432
+448	divide7	val_448
+455	divide7	val_455
+459	divide9	val_459
+462	divide7	val_462
+468	divide9	val_468
+469	divide7	val_469
+477	divide9	val_477
+483	divide7	val_483
+490	divide7	val_490
+495	divide9	val_495
+497	divide7	val_497
+54	divide9	val_54
+70	divide7	val_70
+72	divide9	val_72
+77	divide7	val_77
+84	divide7	val_84
+9	divide9	val_9
+90	divide9	val_90
+98	divide7	val_98
+PREHOOK: query: select * from accessLog where column_name != 'divide9'
+PREHOOK: type: QUERY
+PREHOOK: Input: default@accesslog
+PREHOOK: Output: file:/var/folders/b-/b-vBB2wVHpaVQzxVjeViaE+++TI/-Tmp-/yeweizhang/hive_2011-06-07_00-03-21_377_5742203877272784328/-mr-10000
+POSTHOOK: query: select * from accessLog where column_name != 'divide9'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@accesslog
+POSTHOOK: Output: file:/var/folders/b-/b-vBB2wVHpaVQzxVjeViaE+++TI/-Tmp-/yeweizhang/hive_2011-06-07_00-03-21_377_5742203877272784328/-mr-10000
+0	divide7	val_0
+105	divide7	val_105
+119	divide7	val_119
+126	divide7	val_126
+133	divide7	val_133
+168	divide7	val_168
+175	divide7	val_175
+189	divide7	val_189
+196	divide7	val_196
+203	divide7	val_203
+217	divide7	val_217
+224	divide7	val_224
+238	divide7	val_238
+252	divide7	val_252
+266	divide7	val_266
+273	divide7	val_273
+28	divide7	val_28
+280	divide7	val_280
+287	divide7	val_287
+308	divide7	val_308
+315	divide7	val_315
+322	divide7	val_322
+336	divide7	val_336
+35	divide7	val_35
+364	divide7	val_364
+378	divide7	val_378
+392	divide7	val_392
+399	divide7	val_399
+406	divide7	val_406
+413	divide7	val_413
+42	divide7	val_42
+427	divide7	val_427
+448	divide7	val_448
+455	divide7	val_455
+462	divide7	val_462
+469	divide7	val_469
+483	divide7	val_483
+490	divide7	val_490
+497	divide7	val_497
+70	divide7	val_70
+77	divide7	val_77
+84	divide7	val_84
+98	divide7	val_98
+PREHOOK: query: DROP TABLE accessLog
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@accesslog
+PREHOOK: Output: default@accesslog
+POSTHOOK: query: DROP TABLE accessLog
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@accesslog
+POSTHOOK: Output: default@accesslog

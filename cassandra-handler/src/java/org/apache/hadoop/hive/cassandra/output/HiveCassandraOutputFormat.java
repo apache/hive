@@ -3,12 +3,7 @@ package org.apache.hadoop.hive.cassandra.output;
 import java.io.IOException;
 import java.util.Properties;
 
-import org.apache.cassandra.thrift.Column;
-import org.apache.cassandra.thrift.ColumnParent;
 import org.apache.cassandra.thrift.ConsistencyLevel;
-import org.apache.cassandra.thrift.InvalidRequestException;
-import org.apache.cassandra.thrift.TimedOutException;
-import org.apache.cassandra.thrift.UnavailableException;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.fs.FileSystem;
@@ -23,7 +18,6 @@ import org.apache.hadoop.io.Writable;
 import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.mapred.OutputFormat;
 import org.apache.hadoop.util.Progressable;
-import org.apache.thrift.TException;
 
 @SuppressWarnings("deprecation")
 public class HiveCassandraOutputFormat implements HiveOutputFormat<Text, CassandraPut>,
@@ -69,8 +63,10 @@ public class HiveCassandraOutputFormat implements HiveOutputFormat<Text, Cassand
 
       @Override
       public void write(Writable w) throws IOException {
-        CassandraPut put = (CassandraPut) w;
+        Put put = (Put) w;
+        put.write(cassandraKeySpace, client, fLevel);
 
+        /*
         for (CassandraColumn c : put.getColumns()) {
           ColumnParent parent = new ColumnParent();
           parent.setColumn_family(c.getColumnFamily());
@@ -90,7 +86,8 @@ public class HiveCassandraOutputFormat implements HiveOutputFormat<Text, Cassand
           } catch (TException e) {
             throw new IOException(e);
           }
-        }
+
+        }*/
       }
 
     };

@@ -7,10 +7,18 @@ import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.cassandra.thrift.Column;
+import org.apache.cassandra.thrift.ColumnParent;
+import org.apache.cassandra.thrift.ConsistencyLevel;
+import org.apache.cassandra.thrift.InvalidRequestException;
+import org.apache.cassandra.thrift.TimedOutException;
+import org.apache.cassandra.thrift.UnavailableException;
 import org.apache.cassandra.utils.ByteBufferUtil;
+import org.apache.hadoop.hive.cassandra.CassandraProxyClient;
 import org.apache.hadoop.io.Writable;
+import org.apache.thrift.TException;
 
-public class CassandraPut implements Writable{
+public class CassandraPut implements Writable, Put {
 
   private ByteBuffer key;
   //private ConsistencyLevel level;
@@ -59,16 +67,6 @@ public class CassandraPut implements Writable{
     this.key = key;
   }
 
-  /*
-  public ConsistencyLevel getLevel() {
-    return level;
-  }
-
-  public void setLevel(ConsistencyLevel level) {
-    this.level = level;
-  }
-*/
-
   public List<CassandraColumn> getColumns() {
     return columns;
   }
@@ -88,5 +86,30 @@ public class CassandraPut implements Writable{
       sb.append( "]" );
     }
     return sb.toString();
+  }
+
+  @Override
+  public void write(String keySpace, CassandraProxyClient client, ConsistencyLevel flevel) throws IOException {
+    for (CassandraColumn c : columns) {
+      ColumnParent parent = new ColumnParent();
+      parent.setColumn_family(c.getColumnFamily());
+      try {
+        Column col = new Column();
+        col.setValue(c.getValue());
+        col.setTimestamp(c.getTimeStamp());
+        col.setName(c.getColumn());
+        client.getProxyConnection().set_keyspace(keySpace);
+        client.getProxyConnection().insert(key, parent, col, flevel);
+      } catch (InvalidRequestException e) {
+        throw new IOException(e);
+      } catch (UnavailableException e) {
+        throw new IOException(e);
+      } catch (TimedOutException e) {
+        throw new IOException(e);
+      } catch (TException e) {
+        throw new IOException(e);
+      }
+    }
+
   }
 }

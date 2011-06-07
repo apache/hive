@@ -35,7 +35,6 @@ public class CassandraStorageHandler
 
     String keyspace = tableProperties.getProperty(StandardColumnSerDe.CASSANDRA_KEYSPACE_NAME);
     String columnFamily = tableProperties.getProperty(StandardColumnSerDe.CASSANDRA_CF_NAME);
-    String columnInfo = tableProperties.getProperty(StandardColumnSerDe.CASSANDRA_COL_MAPPING);
 
     //Identify Keyspace
     if (keyspace == null) {
@@ -52,6 +51,7 @@ public class CassandraStorageHandler
     jobProperties.put(StandardColumnSerDe.CASSANDRA_CF_NAME, columnFamily);
 
     //If no column mapping has been configured, we should create the default column mapping.
+    String columnInfo = tableProperties.getProperty(StandardColumnSerDe.CASSANDRA_COL_MAPPING);
     if(columnInfo == null) {
       columnInfo = StandardColumnSerDe.createColumnMappingString(
         tableProperties.getProperty(org.apache.hadoop.hive.serde.Constants.LIST_COLUMNS));
