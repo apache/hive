@@ -65,29 +65,6 @@ public class HiveCassandraOutputFormat implements HiveOutputFormat<Text, Cassand
       public void write(Writable w) throws IOException {
         Put put = (Put) w;
         put.write(cassandraKeySpace, client, fLevel);
-
-        /*
-        for (CassandraColumn c : put.getColumns()) {
-          ColumnParent parent = new ColumnParent();
-          parent.setColumn_family(c.getColumnFamily());
-          try {
-            Column col = new Column();
-            col.setValue(c.getValue());
-            col.setTimestamp(c.getTimeStamp());
-            col.setName(c.getColumn());
-            client.getProxyConnection().set_keyspace(cassandraKeySpace);
-            client.getProxyConnection().insert(put.getKey(), parent, col, fLevel);
-          } catch (InvalidRequestException e) {
-            throw new IOException(e);
-          } catch (UnavailableException e) {
-            throw new IOException(e);
-          } catch (TimedOutException e) {
-            throw new IOException(e);
-          } catch (TException e) {
-            throw new IOException(e);
-          }
-
-        }*/
       }
 
     };
