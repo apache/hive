@@ -85,7 +85,7 @@
   	        clusterMode="${clustermode}"
   	              resultsDirectory="${cassandra-handler.test.results.dir}" className="TestNegativeCassandraCliDriver"
   	              logFile="${test.log.dir}/testcassandraclidrivergen.log"
-  	              logDirectory="${test.log.dir}/cassandra-handler/negative"/>
+  	              logDirectory="${test.log.dir}/negative"/>
   <!--
     <qtestgen outputDirectory="${test.build.src}/org/apache/hadoop/hive/cli"
               templatePath="${ql.cassandra.test.template.dir}" template="TestCassandraCliDriver.vm"

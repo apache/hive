@@ -293,7 +293,7 @@ public class StandardColumnSerDe implements SerDe {
    */
   public static String createColumnMappingString(String tblColumnStr)
   {
-    if(tblColumnStr == null || tblColumnStr.trim().isEmpty()) {
+    if(StringUtils.isBlank(tblColumnStr)) {
       throw new IllegalArgumentException("table must have columns");
     }
 
@@ -336,9 +336,10 @@ public class StandardColumnSerDe implements SerDe {
     }
 
     //Regular non-transposed logic. The first column maps to the key automatically.
-    StringBuffer mappingStr = new StringBuffer(CASSANDRA_KEY_COLUMN);
+    StringBuilder mappingStr = new StringBuilder(CASSANDRA_KEY_COLUMN);
     for (int i = 1; i < colNames.length; i++) {
-      mappingStr.append("," + colNames[i]);
+      mappingStr.append(",");
+      mappingStr.append(colNames[i]);
     }
 
     return mappingStr.toString();
@@ -398,7 +399,7 @@ public class StandardColumnSerDe implements SerDe {
    */
   public static List<String> parseColumnMapping(String columnMapping)
   {
-    assert columnMapping != null && !columnMapping.equals("");
+    assert StringUtils.isNotBlank(columnMapping);
     String[] columnArray = columnMapping.split(",");
 
     List<String> columnList = Arrays.asList(columnArray);
