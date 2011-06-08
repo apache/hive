@@ -15,6 +15,14 @@ WITH SERDEPROPERTIES ("cassandra.host" = "127.0.0.1" , "cassandra.port" = "9170"
 TBLPROPERTIES ("cassandra.ks.name" = "Hive")
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: default@accessLog
+PREHOOK: query: select * from accessLog
+PREHOOK: type: QUERY
+PREHOOK: Input: default@accesslog
+PREHOOK: Output: file:/var/folders/b-/b-vBB2wVHpaVQzxVjeViaE+++TI/-Tmp-/yeweizhang/hive_2011-06-08_11-56-29_053_7929958253759752340/-mr-10000
+POSTHOOK: query: select * from accessLog
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@accesslog
+POSTHOOK: Output: file:/var/folders/b-/b-vBB2wVHpaVQzxVjeViaE+++TI/-Tmp-/yeweizhang/hive_2011-06-08_11-56-29_053_7929958253759752340/-mr-10000
 PREHOOK: query: INSERT OVERWRITE TABLE accessLog
 select key, 'divide7', value  from src where (key%7)=0
 PREHOOK: type: QUERY
@@ -25,14 +33,14 @@ select key, 'divide7', value  from src where (key%7)=0
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 POSTHOOK: Output: default@accesslog
-PREHOOK: query: select * from accessLog
+PREHOOK: query: select row_key, column_name, value from accessLog
 PREHOOK: type: QUERY
 PREHOOK: Input: default@accesslog
-PREHOOK: Output: file:/var/folders/b-/b-vBB2wVHpaVQzxVjeViaE+++TI/-Tmp-/yeweizhang/hive_2011-06-07_23-32-08_966_7099179187333085248/-mr-10000
-POSTHOOK: query: select * from accessLog
+PREHOOK: Output: file:/var/folders/b-/b-vBB2wVHpaVQzxVjeViaE+++TI/-Tmp-/yeweizhang/hive_2011-06-08_11-56-33_548_6455153051076367116/-mr-10000
+POSTHOOK: query: select row_key, column_name, value from accessLog
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@accesslog
-POSTHOOK: Output: file:/var/folders/b-/b-vBB2wVHpaVQzxVjeViaE+++TI/-Tmp-/yeweizhang/hive_2011-06-07_23-32-08_966_7099179187333085248/-mr-10000
+POSTHOOK: Output: file:/var/folders/b-/b-vBB2wVHpaVQzxVjeViaE+++TI/-Tmp-/yeweizhang/hive_2011-06-08_11-56-33_548_6455153051076367116/-mr-10000
 0	divide7	val_0
 105	divide7	val_105
 119	divide7	val_119
@@ -86,14 +94,233 @@ select key, 'divide9', value  from src where (key%9)=0
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 POSTHOOK: Output: default@accesslog
+PREHOOK: query: select row_key from accessLog
+PREHOOK: type: QUERY
+PREHOOK: Input: default@accesslog
+PREHOOK: Output: file:/var/folders/b-/b-vBB2wVHpaVQzxVjeViaE+++TI/-Tmp-/yeweizhang/hive_2011-06-08_11-56-40_589_2703660810164210969/-mr-10000
+POSTHOOK: query: select row_key from accessLog
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@accesslog
+POSTHOOK: Output: file:/var/folders/b-/b-vBB2wVHpaVQzxVjeViaE+++TI/-Tmp-/yeweizhang/hive_2011-06-08_11-56-40_589_2703660810164210969/-mr-10000
+0
+0
+105
+119
+126
+126
+133
+153
+162
+168
+175
+18
+180
+189
+189
+196
+203
+207
+216
+217
+224
+238
+252
+252
+266
+27
+273
+28
+280
+287
+288
+306
+308
+315
+315
+322
+333
+336
+342
+35
+351
+360
+364
+369
+378
+378
+392
+396
+399
+406
+413
+414
+42
+427
+432
+448
+455
+459
+462
+468
+469
+477
+483
+490
+495
+497
+54
+70
+72
+77
+84
+9
+90
+98
+PREHOOK: query: select * from accessLog where column_name != 'divide9'
+PREHOOK: type: QUERY
+PREHOOK: Input: default@accesslog
+PREHOOK: Output: file:/var/folders/b-/b-vBB2wVHpaVQzxVjeViaE+++TI/-Tmp-/yeweizhang/hive_2011-06-08_11-56-44_840_3506468508020362817/-mr-10000
+POSTHOOK: query: select * from accessLog where column_name != 'divide9'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@accesslog
+POSTHOOK: Output: file:/var/folders/b-/b-vBB2wVHpaVQzxVjeViaE+++TI/-Tmp-/yeweizhang/hive_2011-06-08_11-56-44_840_3506468508020362817/-mr-10000
+0	divide7	val_0
+105	divide7	val_105
+119	divide7	val_119
+126	divide7	val_126
+133	divide7	val_133
+168	divide7	val_168
+175	divide7	val_175
+189	divide7	val_189
+196	divide7	val_196
+203	divide7	val_203
+217	divide7	val_217
+224	divide7	val_224
+238	divide7	val_238
+252	divide7	val_252
+266	divide7	val_266
+273	divide7	val_273
+28	divide7	val_28
+280	divide7	val_280
+287	divide7	val_287
+308	divide7	val_308
+315	divide7	val_315
+322	divide7	val_322
+336	divide7	val_336
+35	divide7	val_35
+364	divide7	val_364
+378	divide7	val_378
+392	divide7	val_392
+399	divide7	val_399
+406	divide7	val_406
+413	divide7	val_413
+42	divide7	val_42
+427	divide7	val_427
+448	divide7	val_448
+455	divide7	val_455
+462	divide7	val_462
+469	divide7	val_469
+483	divide7	val_483
+490	divide7	val_490
+497	divide7	val_497
+70	divide7	val_70
+77	divide7	val_77
+84	divide7	val_84
+98	divide7	val_98
+PREHOOK: query: select row_key, count(*) from accessLog where row_key > 70 group by row_key
+PREHOOK: type: QUERY
+PREHOOK: Input: default@accesslog
+PREHOOK: Output: file:/var/folders/b-/b-vBB2wVHpaVQzxVjeViaE+++TI/-Tmp-/yeweizhang/hive_2011-06-08_11-56-50_092_6945142294162122727/-mr-10000
+POSTHOOK: query: select row_key, count(*) from accessLog where row_key > 70 group by row_key
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@accesslog
+POSTHOOK: Output: file:/var/folders/b-/b-vBB2wVHpaVQzxVjeViaE+++TI/-Tmp-/yeweizhang/hive_2011-06-08_11-56-50_092_6945142294162122727/-mr-10000
+105	1
+119	1
+126	2
+133	1
+153	1
+162	1
+168	1
+175	1
+180	1
+189	2
+196	1
+203	1
+207	1
+216	1
+217	1
+224	1
+238	1
+252	2
+266	1
+273	1
+280	1
+287	1
+288	1
+306	1
+308	1
+315	2
+322	1
+333	1
+336	1
+342	1
+351	1
+360	1
+364	1
+369	1
+378	2
+392	1
+396	1
+399	1
+406	1
+413	1
+414	1
+427	1
+432	1
+448	1
+455	1
+459	1
+462	1
+468	1
+469	1
+477	1
+483	1
+490	1
+495	1
+497	1
+72	1
+77	1
+84	1
+90	1
+98	1
+PREHOOK: query: --SuperColumn Mapping
+DROP TABLE superLog
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: --SuperColumn Mapping
+DROP TABLE superLog
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: CREATE EXTERNAL TABLE superLog
+      (row_key string, column_name string, sub_column_name string, value string)
+      STORED BY 'org.apache.hadoop.hive.cassandra.CassandraStorageHandler'
+WITH SERDEPROPERTIES ("cassandra.host" = "127.0.0.1" , "cassandra.port" = "9170")
+TBLPROPERTIES ("cassandra.ks.name" = "Hive")
+PREHOOK: type: CREATETABLE
+POSTHOOK: query: CREATE EXTERNAL TABLE superLog
+      (row_key string, column_name string, sub_column_name string, value string)
+      STORED BY 'org.apache.hadoop.hive.cassandra.CassandraStorageHandler'
+WITH SERDEPROPERTIES ("cassandra.host" = "127.0.0.1" , "cassandra.port" = "9170")
+TBLPROPERTIES ("cassandra.ks.name" = "Hive")
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: default@superLog
 PREHOOK: query: select * from accessLog
 PREHOOK: type: QUERY
 PREHOOK: Input: default@accesslog
-PREHOOK: Output: file:/var/folders/b-/b-vBB2wVHpaVQzxVjeViaE+++TI/-Tmp-/yeweizhang/hive_2011-06-07_23-32-13_447_1860926698749046638/-mr-10000
+PREHOOK: Output: file:/var/folders/b-/b-vBB2wVHpaVQzxVjeViaE+++TI/-Tmp-/yeweizhang/hive_2011-06-08_11-57-05_542_1267549754954369600/-mr-10000
 POSTHOOK: query: select * from accessLog
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@accesslog
-POSTHOOK: Output: file:/var/folders/b-/b-vBB2wVHpaVQzxVjeViaE+++TI/-Tmp-/yeweizhang/hive_2011-06-07_23-32-13_447_1860926698749046638/-mr-10000
+POSTHOOK: Output: file:/var/folders/b-/b-vBB2wVHpaVQzxVjeViaE+++TI/-Tmp-/yeweizhang/hive_2011-06-08_11-57-05_542_1267549754954369600/-mr-10000
 0	divide7	val_0
 0	divide9	val_0
 105	divide7	val_105
@@ -168,76 +395,6 @@ POSTHOOK: Output: file:/var/folders/b-/b-vBB2wVHpaVQzxVjeViaE+++TI/-Tmp-/yeweizh
 9	divide9	val_9
 90	divide9	val_90
 98	divide7	val_98
-PREHOOK: query: select * from accessLog where column_name != 'divide9'
-PREHOOK: type: QUERY
-PREHOOK: Input: default@accesslog
-PREHOOK: Output: file:/var/folders/b-/b-vBB2wVHpaVQzxVjeViaE+++TI/-Tmp-/yeweizhang/hive_2011-06-07_23-32-13_528_583083944357250713/-mr-10000
-POSTHOOK: query: select * from accessLog where column_name != 'divide9'
-POSTHOOK: type: QUERY
-POSTHOOK: Input: default@accesslog
-POSTHOOK: Output: file:/var/folders/b-/b-vBB2wVHpaVQzxVjeViaE+++TI/-Tmp-/yeweizhang/hive_2011-06-07_23-32-13_528_583083944357250713/-mr-10000
-0	divide7	val_0
-105	divide7	val_105
-119	divide7	val_119
-126	divide7	val_126
-133	divide7	val_133
-168	divide7	val_168
-175	divide7	val_175
-189	divide7	val_189
-196	divide7	val_196
-203	divide7	val_203
-217	divide7	val_217
-224	divide7	val_224
-238	divide7	val_238
-252	divide7	val_252
-266	divide7	val_266
-273	divide7	val_273
-28	divide7	val_28
-280	divide7	val_280
-287	divide7	val_287
-308	divide7	val_308
-315	divide7	val_315
-322	divide7	val_322
-336	divide7	val_336
-35	divide7	val_35
-364	divide7	val_364
-378	divide7	val_378
-392	divide7	val_392
-399	divide7	val_399
-406	divide7	val_406
-413	divide7	val_413
-42	divide7	val_42
-427	divide7	val_427
-448	divide7	val_448
-455	divide7	val_455
-462	divide7	val_462
-469	divide7	val_469
-483	divide7	val_483
-490	divide7	val_490
-497	divide7	val_497
-70	divide7	val_70
-77	divide7	val_77
-84	divide7	val_84
-98	divide7	val_98
-PREHOOK: query: --SuperColumn Mapping
-DROP TABLE superLog
-PREHOOK: type: DROPTABLE
-POSTHOOK: query: --SuperColumn Mapping
-DROP TABLE superLog
-POSTHOOK: type: DROPTABLE
-PREHOOK: query: CREATE EXTERNAL TABLE superLog
-      (row_key string, column_name string, sub_column_name string, value string)
-      STORED BY 'org.apache.hadoop.hive.cassandra.CassandraStorageHandler'
-WITH SERDEPROPERTIES ("cassandra.host" = "127.0.0.1" , "cassandra.port" = "9170")
-TBLPROPERTIES ("cassandra.ks.name" = "Hive")
-PREHOOK: type: CREATETABLE
-POSTHOOK: query: CREATE EXTERNAL TABLE superLog
-      (row_key string, column_name string, sub_column_name string, value string)
-      STORED BY 'org.apache.hadoop.hive.cassandra.CassandraStorageHandler'
-WITH SERDEPROPERTIES ("cassandra.host" = "127.0.0.1" , "cassandra.port" = "9170")
-TBLPROPERTIES ("cassandra.ks.name" = "Hive")
-POSTHOOK: type: CREATETABLE
-POSTHOOK: Output: default@superLog
 PREHOOK: query: INSERT OVERWRITE TABLE superLog
 select key, 'divide', '5', value  from src where (key%5)=0
 PREHOOK: type: QUERY
@@ -251,11 +408,11 @@ POSTHOOK: Output: default@superlog
 PREHOOK: query: select * from superLog
 PREHOOK: type: QUERY
 PREHOOK: Input: default@superlog
-PREHOOK: Output: file:/var/folders/b-/b-vBB2wVHpaVQzxVjeViaE+++TI/-Tmp-/yeweizhang/hive_2011-06-07_23-32-21_149_224729640027213489/-mr-10000
+PREHOOK: Output: file:/var/folders/b-/b-vBB2wVHpaVQzxVjeViaE+++TI/-Tmp-/yeweizhang/hive_2011-06-08_11-57-09_404_2185494963825382575/-mr-10000
 POSTHOOK: query: select * from superLog
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@superlog
-POSTHOOK: Output: file:/var/folders/b-/b-vBB2wVHpaVQzxVjeViaE+++TI/-Tmp-/yeweizhang/hive_2011-06-07_23-32-21_149_224729640027213489/-mr-10000
+POSTHOOK: Output: file:/var/folders/b-/b-vBB2wVHpaVQzxVjeViaE+++TI/-Tmp-/yeweizhang/hive_2011-06-08_11-57-09_404_2185494963825382575/-mr-10000
 0	divide	5	val_0
 10	divide	5	val_10
 100	divide	5	val_100
@@ -324,115 +481,263 @@ select key, 'divide', '3', value  from src where (key%3)=0
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 POSTHOOK: Output: default@superlog
-PREHOOK: query: select * from superLog where column_name = 'divide' and sub_column_name = '3'
+PREHOOK: query: select row_key, sub_column_name, value from superLog
 PREHOOK: type: QUERY
 PREHOOK: Input: default@superlog
-PREHOOK: Output: file:/var/folders/b-/b-vBB2wVHpaVQzxVjeViaE+++TI/-Tmp-/yeweizhang/hive_2011-06-07_23-32-27_279_1299284010478734902/-mr-10000
-POSTHOOK: query: select * from superLog where column_name = 'divide' and sub_column_name = '3'
+PREHOOK: Output: file:/var/folders/b-/b-vBB2wVHpaVQzxVjeViaE+++TI/-Tmp-/yeweizhang/hive_2011-06-08_11-57-15_788_703562284572232127/-mr-10000
+POSTHOOK: query: select row_key, sub_column_name, value from superLog
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@superlog
-POSTHOOK: Output: file:/var/folders/b-/b-vBB2wVHpaVQzxVjeViaE+++TI/-Tmp-/yeweizhang/hive_2011-06-07_23-32-27_279_1299284010478734902/-mr-10000
-0	divide	3	val_0
-105	divide	3	val_105
-111	divide	3	val_111
-114	divide	3	val_114
-12	divide	3	val_12
-120	divide	3	val_120
-126	divide	3	val_126
-129	divide	3	val_129
-138	divide	3	val_138
-15	divide	3	val_15
-150	divide	3	val_150
-153	divide	3	val_153
-156	divide	3	val_156
-162	divide	3	val_162
-165	divide	3	val_165
-168	divide	3	val_168
-174	divide	3	val_174
-177	divide	3	val_177
-18	divide	3	val_18
-180	divide	3	val_180
-183	divide	3	val_183
-186	divide	3	val_186
-189	divide	3	val_189
-192	divide	3	val_192
-195	divide	3	val_195
-201	divide	3	val_201
-207	divide	3	val_207
-213	divide	3	val_213
-216	divide	3	val_216
-219	divide	3	val_219
-222	divide	3	val_222
-228	divide	3	val_228
-237	divide	3	val_237
-24	divide	3	val_24
-249	divide	3	val_249
-252	divide	3	val_252
-255	divide	3	val_255
-258	divide	3	val_258
-27	divide	3	val_27
-273	divide	3	val_273
-282	divide	3	val_282
-285	divide	3	val_285
-288	divide	3	val_288
-291	divide	3	val_291
-30	divide	3	val_30
-306	divide	3	val_306
-309	divide	3	val_309
-315	divide	3	val_315
-318	divide	3	val_318
-321	divide	3	val_321
-327	divide	3	val_327
-33	divide	3	val_33
-333	divide	3	val_333
-336	divide	3	val_336
-339	divide	3	val_339
-342	divide	3	val_342
-345	divide	3	val_345
-348	divide	3	val_348
-351	divide	3	val_351
-360	divide	3	val_360
-366	divide	3	val_366
-369	divide	3	val_369
-375	divide	3	val_375
-378	divide	3	val_378
-384	divide	3	val_384
-393	divide	3	val_393
-396	divide	3	val_396
-399	divide	3	val_399
-402	divide	3	val_402
-411	divide	3	val_411
-414	divide	3	val_414
-417	divide	3	val_417
-42	divide	3	val_42
-429	divide	3	val_429
-432	divide	3	val_432
-435	divide	3	val_435
-438	divide	3	val_438
-444	divide	3	val_444
-453	divide	3	val_453
-459	divide	3	val_459
-462	divide	3	val_462
-468	divide	3	val_468
-477	divide	3	val_477
-480	divide	3	val_480
-483	divide	3	val_483
-489	divide	3	val_489
-492	divide	3	val_492
-495	divide	3	val_495
-498	divide	3	val_498
-51	divide	3	val_51
-54	divide	3	val_54
-57	divide	3	val_57
-66	divide	3	val_66
-69	divide	3	val_69
-72	divide	3	val_72
-78	divide	3	val_78
-84	divide	3	val_84
-87	divide	3	val_87
-9	divide	3	val_9
-90	divide	3	val_90
-96	divide	3	val_96
+POSTHOOK: Output: file:/var/folders/b-/b-vBB2wVHpaVQzxVjeViaE+++TI/-Tmp-/yeweizhang/hive_2011-06-08_11-57-15_788_703562284572232127/-mr-10000
+0	3	val_0
+10	5	val_10
+100	5	val_100
+105	3	val_105
+111	3	val_111
+114	3	val_114
+12	3	val_12
+120	3	val_120
+125	5	val_125
+126	3	val_126
+129	3	val_129
+138	3	val_138
+145	5	val_145
+15	3	val_15
+150	3	val_150
+153	3	val_153
+155	5	val_155
+156	3	val_156
+160	5	val_160
+162	3	val_162
+165	3	val_165
+168	3	val_168
+170	5	val_170
+174	3	val_174
+175	5	val_175
+177	3	val_177
+18	3	val_18
+180	3	val_180
+183	3	val_183
+186	3	val_186
+189	3	val_189
+190	5	val_190
+192	3	val_192
+195	3	val_195
+20	5	val_20
+200	5	val_200
+201	3	val_201
+205	5	val_205
+207	3	val_207
+213	3	val_213
+216	3	val_216
+219	3	val_219
+222	3	val_222
+228	3	val_228
+230	5	val_230
+235	5	val_235
+237	3	val_237
+24	3	val_24
+249	3	val_249
+252	3	val_252
+255	3	val_255
+258	3	val_258
+260	5	val_260
+265	5	val_265
+27	3	val_27
+273	3	val_273
+275	5	val_275
+280	5	val_280
+282	3	val_282
+285	3	val_285
+288	3	val_288
+291	3	val_291
+30	3	val_30
+305	5	val_305
+306	3	val_306
+309	3	val_309
+310	5	val_310
+315	3	val_315
+318	3	val_318
+321	3	val_321
+325	5	val_325
+327	3	val_327
+33	3	val_33
+333	3	val_333
+335	5	val_335
+336	3	val_336
+339	3	val_339
+342	3	val_342
+345	3	val_345
+348	3	val_348
+35	5	val_35
+351	3	val_351
+360	3	val_360
+365	5	val_365
+366	3	val_366
+369	3	val_369
+375	3	val_375
+378	3	val_378
+384	3	val_384
+393	3	val_393
+395	5	val_395
+396	3	val_396
+399	3	val_399
+400	5	val_400
+402	3	val_402
+411	3	val_411
+414	3	val_414
+417	3	val_417
+42	3	val_42
+429	3	val_429
+430	5	val_430
+432	3	val_432
+435	3	val_435
+438	3	val_438
+444	3	val_444
+453	3	val_453
+455	5	val_455
+459	3	val_459
+460	5	val_460
+462	3	val_462
+468	3	val_468
+470	5	val_470
+475	5	val_475
+477	3	val_477
+480	3	val_480
+483	3	val_483
+485	5	val_485
+489	3	val_489
+490	5	val_490
+492	3	val_492
+495	3	val_495
+498	3	val_498
+5	5	val_5
+51	3	val_51
+54	3	val_54
+57	3	val_57
+65	5	val_65
+66	3	val_66
+69	3	val_69
+70	5	val_70
+72	3	val_72
+78	3	val_78
+80	5	val_80
+84	3	val_84
+85	5	val_85
+87	3	val_87
+9	3	val_9
+90	3	val_90
+95	5	val_95
+96	3	val_96
+PREHOOK: query: select row_key, value from superLog where column_name = 'divide' and sub_column_name = '3'
+PREHOOK: type: QUERY
+PREHOOK: Input: default@superlog
+PREHOOK: Output: file:/var/folders/b-/b-vBB2wVHpaVQzxVjeViaE+++TI/-Tmp-/yeweizhang/hive_2011-06-08_11-57-20_275_4556668032447586952/-mr-10000
+POSTHOOK: query: select row_key, value from superLog where column_name = 'divide' and sub_column_name = '3'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@superlog
+POSTHOOK: Output: file:/var/folders/b-/b-vBB2wVHpaVQzxVjeViaE+++TI/-Tmp-/yeweizhang/hive_2011-06-08_11-57-20_275_4556668032447586952/-mr-10000
+0	val_0
+105	val_105
+111	val_111
+114	val_114
+12	val_12
+120	val_120
+126	val_126
+129	val_129
+138	val_138
+15	val_15
+150	val_150
+153	val_153
+156	val_156
+162	val_162
+165	val_165
+168	val_168
+174	val_174
+177	val_177
+18	val_18
+180	val_180
+183	val_183
+186	val_186
+189	val_189
+192	val_192
+195	val_195
+201	val_201
+207	val_207
+213	val_213
+216	val_216
+219	val_219
+222	val_222
+228	val_228
+237	val_237
+24	val_24
+249	val_249
+252	val_252
+255	val_255
+258	val_258
+27	val_27
+273	val_273
+282	val_282
+285	val_285
+288	val_288
+291	val_291
+30	val_30
+306	val_306
+309	val_309
+315	val_315
+318	val_318
+321	val_321
+327	val_327
+33	val_33
+333	val_333
+336	val_336
+339	val_339
+342	val_342
+345	val_345
+348	val_348
+351	val_351
+360	val_360
+366	val_366
+369	val_369
+375	val_375
+378	val_378
+384	val_384
+393	val_393
+396	val_396
+399	val_399
+402	val_402
+411	val_411
+414	val_414
+417	val_417
+42	val_42
+429	val_429
+432	val_432
+435	val_435
+438	val_438
+444	val_444
+453	val_453
+459	val_459
+462	val_462
+468	val_468
+477	val_477
+480	val_480
+483	val_483
+489	val_489
+492	val_492
+495	val_495
+498	val_498
+51	val_51
+54	val_54
+57	val_57
+66	val_66
+69	val_69
+72	val_72
+78	val_78
+84	val_84
+87	val_87
+9	val_9
+90	val_90
+96	val_96
 PREHOOK: query: DROP TABLE accessLog
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@accesslog
