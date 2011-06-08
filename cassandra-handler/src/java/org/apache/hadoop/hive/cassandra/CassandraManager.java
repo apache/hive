@@ -1,5 +1,7 @@
 package org.apache.hadoop.hive.cassandra;
 
+import java.util.Arrays;
+import java.util.List;
 import java.util.Map;
 
 import org.apache.cassandra.thrift.CfDef;
@@ -8,10 +10,10 @@ import org.apache.cassandra.thrift.KsDef;
 import org.apache.cassandra.thrift.NotFoundException;
 import org.apache.cassandra.thrift.SchemaDisagreementException;
 import org.apache.hadoop.hive.cassandra.serde.StandardColumnSerDe;
+import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.thrift.TException;
-import org.apache.thrift.transport.TTransport;
 
 /**
  * A class to handle the transaction to cassandra backend database.
@@ -30,15 +32,8 @@ public class CassandraManager {
   //Cassandra proxy client
   private CassandraProxyClient clientHolder;
 
-
-  //TTransport
-  private TTransport trans;
-
   //Whether or not use framed connection
   private boolean framedConnection;
-
-  //Whether or not use randomized method to pick up the next server
-  private boolean randomizedConnection;
 
   //table property
   private final Table tbl;
@@ -81,7 +76,6 @@ public class CassandraManager {
     this.keyspace = getCassandraKeyspace();
     this.columnFamilyName = getCassandraColumnFamily();
     this.framedConnection = true;
-    this.randomizedConnection = true;
   }
 
   /**
@@ -127,7 +121,7 @@ public class CassandraManager {
   }
 
   /**
-   * Get Column family based on the configuration in the table.
+   * Get Column family based on the configuration in the table. If nothing is found, return null.
    */
   private CfDef getColumnFamily(KsDef ks) {
     for (CfDef cf : ks.getCf_defs()) {
@@ -137,6 +131,19 @@ public class CassandraManager {
     }
 
     return null;
+  }
+
+  /**
+   * Get CfDef based on the configuration in the table.
+   */
+  private CfDef getCfDef() throws MetaException {
+    CfDef cf = new CfDef();
+    cf.setKeyspace(keyspace);
+    cf.setName(columnFamilyName);
+
+    cf.setColumn_type(getColumnType());
+
+    return cf;
   }
 
   /**
@@ -150,11 +157,7 @@ public class CassandraManager {
       ks.setReplication_factor(getReplicationFactor());
       ks.setStrategy_class(getStrategy());
 
-      CfDef cf = new CfDef();
-      cf.setKeyspace(keyspace);
-      cf.setName(columnFamilyName);
-
-      ks.addToCf_defs(cf);
+      ks.addToCf_defs(getCfDef());
 
       clientHolder.getProxyConnection().system_add_keyspace(ks);
       clientHolder.getProxyConnection().set_keyspace(keyspace);
@@ -191,9 +194,7 @@ public class CassandraManager {
    * Create column family based on the configuration in the table.
    */
   public CfDef createColumnFamily() throws MetaException {
-    CfDef cf = new CfDef();
-    cf.setKeyspace(keyspace);
-    cf.setName(columnFamilyName);
+    CfDef cf = getCfDef();
     try {
       clientHolder.getProxyConnection().set_keyspace(keyspace);
       clientHolder.getProxyConnection().system_add_column_family(cf);
@@ -209,6 +210,56 @@ public class CassandraManager {
           + e.getMessage());
     }
 
+  }
+
+  private String getColumnType() throws MetaException {
+    String prop = getPropertyFromTable(StandardColumnSerDe.CASSANDRA_COL_MAPPING);
+    List<String> mapping;
+    if (prop != null) {
+      mapping = StandardColumnSerDe.parseColumnMapping(prop);
+    } else {
+      List<FieldSchema> schema = tbl.getSd().getCols();
+      if (schema.size() ==0) {
+        throw new MetaException("Can't find table column definitions");
+      }
+
+      String[] colNames = new String[schema.size()];
+      for (int i = 0; i < schema.size(); i++) {
+        colNames[i] = schema.get(i).getName();
+      }
+
+      String mappingStr = StandardColumnSerDe.createColumnMappingString(colNames);
+      mapping = Arrays.asList(mappingStr.split(","));
+    }
+
+    boolean hasKey = false;
+    boolean hasColumn = false;
+    boolean hasValue = false;
+    boolean hasSubColumn = false;
+
+    for (String column : mapping) {
+      if (column.equalsIgnoreCase(StandardColumnSerDe.CASSANDRA_KEY_COLUMN)) {
+          hasKey = true;
+      } else if (column.equalsIgnoreCase(StandardColumnSerDe.CASSANDRA_COLUMN_COLUMN)) {
+          hasColumn = true;
+      } else if (column.equalsIgnoreCase(StandardColumnSerDe.CASSANDRA_SUBCOLUMN_COLUMN)) {
+        hasSubColumn = true;
+      } else if (column.equalsIgnoreCase(StandardColumnSerDe.CASSANDRA_VALUE_COLUMN)) {
+        hasValue = true;
+      } else {
+        return "Standard";
+      }
+    }
+
+    if (hasKey && hasColumn && hasValue) {
+      if (hasSubColumn) {
+        return "Super";
+      } else {
+        return "Standard";
+      }
+    } else {
+      return "Standard";
+    }
   }
 
   /**
@@ -266,12 +317,7 @@ public class CassandraManager {
    * @return cassandra column family name
    */
   private String getCassandraColumnFamily() {
-    String tableName = tbl.getParameters().get(StandardColumnSerDe.CASSANDRA_CF_NAME);
-
-    if (tableName == null) {
-      tableName = tbl.getSd().getSerdeInfo().getParameters().get(
-          StandardColumnSerDe.CASSANDRA_CF_NAME);
-    }
+    String tableName = getPropertyFromTable(StandardColumnSerDe.CASSANDRA_CF_NAME);
 
     if (tableName == null) {
       tableName = tbl.getTableName();

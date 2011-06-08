@@ -132,7 +132,6 @@ public class StandardColumnSerDe implements SerDe {
           " (counting the key if implicit)");
     }
 
-
     // we just can make sure that "StandardColumn:" is mapped to MAP<String,?>
     for (int i = 0; i < cassandraColumnNames.size(); i++) {
       String cassandraColName = cassandraColumnNames.get(i);
@@ -291,13 +290,24 @@ public class StandardColumnSerDe implements SerDe {
    *
    * @param tblColumnStr hive table column names
    */
-  public static String createColumnMappingString(String tblColumnStr)
-  {
+  public static String createColumnMappingString(String tblColumnStr) {
     if(StringUtils.isBlank(tblColumnStr)) {
       throw new IllegalArgumentException("table must have columns");
     }
 
     String[] colNames = tblColumnStr.split(",");
+
+    return createColumnMappingString(colNames);
+  }
+
+
+  /**
+   * Return the column mapping created from column names.
+   *
+   * @param colNames column names in array format
+   * @return column mapping string
+   */
+  public static String createColumnMappingString(String[] colNames) {
 
     //First check of this is a "transposed_table" by seeing if all
     //values match our special column names

@@ -169,17 +169,22 @@ public class HiveCassandraStandardColumnInputFormat extends
                 subcolumnIterator = null;
               }
 
+              //is this a super column
+              boolean superColumn = entry.getValue() instanceof SuperColumn;
+
               // Column name
               HiveIColumn hic = new HiveIColumn();
               hic.setName(StandardColumnSerDe.CASSANDRA_COLUMN_COLUMN.getBytes());
               hic.setValue(ByteBufferUtil.getArray(entry.getValue().name()));
-              hic.setTimestamp(entry.getValue().timestamp());
+              if (!superColumn) {
+                hic.setTimestamp(entry.getValue().timestamp());
+              }
 
               theMap.put(new BytesWritable(StandardColumnSerDe.CASSANDRA_COLUMN_COLUMN.getBytes()),
                   hic);
 
               // SubColumn?
-              if (entry.getValue() instanceof SuperColumn) {
+              if (superColumn) {
                 if (subcolumnIterator == null) {
                   subcolumnIterator = ((SuperColumn) entry.getValue()).getSubColumns().iterator();
                 }
