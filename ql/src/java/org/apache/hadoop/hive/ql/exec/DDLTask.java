@@ -1167,6 +1167,11 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
       HadoopShims shim = ShimLoader.getHadoopShims();
       int ret=0;
       try {
+        int maxJobNameLen = conf.getIntVar(HiveConf.ConfVars.HIVEJOBNAMELENGTH);
+        String jobname = String.format("Archiving %s@%s",
+          tbl.getTableName(), p.getName());
+        jobname = Utilities.abbreviate(jobname, maxJobNameLen - 6);
+        conf.setVar(HiveConf.ConfVars.HADOOPJOBNAME, jobname);
         ret = shim.createHadoopArchive(conf, originalDir, tmpDir, archiveName);
       } catch (Exception e) {
         throw new HiveException(e);
