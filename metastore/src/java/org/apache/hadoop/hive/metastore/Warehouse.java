@@ -61,7 +61,7 @@ public class Warehouse {
   private static final String DATABASE_WAREHOUSE_SUFFIX = ".db";
 
   public static final Log LOG = LogFactory.getLog("hive.metastore.warehouse");
-  
+
   private MetaStoreFS fsHandler = null;
   private boolean storageAuthCheck = false;
 
@@ -73,10 +73,10 @@ public class Warehouse {
           + " is not set in the config or blank");
     }
     fsHandler = getMetaStoreFsHandler(conf);
-    storageAuthCheck = HiveConf.getBoolVar(conf, 
+    storageAuthCheck = HiveConf.getBoolVar(conf,
         HiveConf.ConfVars.METASTORE_AUTHORIZATION_STORAGE_AUTH_CHECKS);
   }
-  
+
   private MetaStoreFS getMetaStoreFsHandler(Configuration conf)
       throws MetaException {
     String handlerClassStr = HiveConf.getVar(conf,
@@ -150,6 +150,11 @@ public class Warehouse {
     return whRoot;
   }
 
+  public Path getTablePath(String whRootString, String tableName) throws MetaException {
+    Path whRoot = getDnsPath(new Path(whRootString));
+    return new Path(whRoot, tableName.toLowerCase());
+  }
+
   public Path getDefaultDatabasePath(String dbName) throws MetaException {
     if (dbName.equalsIgnoreCase(DEFAULT_DATABASE_NAME)) {
       return getWhRoot();
@@ -207,7 +212,7 @@ public class Warehouse {
     }
     String user = ShimLoader.getHadoopShims().getShortUserName(ugi);
     //check whether owner can delete
-    if (stat.getOwner().equals(user) && 
+    if (stat.getOwner().equals(user) &&
         stat.getPermission().getUserAction().implies(FsAction.WRITE)) {
       return true;
     }
@@ -216,7 +221,7 @@ public class Warehouse {
       String[] groups = ugi.getGroupNames();
       if (ArrayUtils.contains(groups, stat.getGroup())) {
         return true;
-      }  
+      }
     }
     //check whether others can delete (uncommon case!!)
     if (stat.getPermission().getOtherAction().implies(FsAction.WRITE)) {
