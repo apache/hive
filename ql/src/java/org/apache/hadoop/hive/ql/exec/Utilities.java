@@ -1693,6 +1693,21 @@ public final class Utilities {
         }
 
         if (executor != null) {
+          for (Future<?> result : results) {
+            boolean executorDone = false;
+            do {
+              try {
+                result.get();
+                executorDone = true;
+              } catch (InterruptedException e) {
+                LOG.info("Interrupted when waiting threads: ", e);
+                Thread.currentThread().interrupt();
+                break;
+              } catch (ExecutionException e) {
+                throw new IOException(e);
+              }
+            } while (!executorDone);
+	  }
           executor.shutdown();
         }
         HiveInterruptUtils.checkInterrupted();
