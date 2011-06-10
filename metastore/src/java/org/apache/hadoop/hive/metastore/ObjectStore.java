@@ -26,9 +26,9 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Properties;
 import java.util.Set;
-import java.util.Map.Entry;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
@@ -71,6 +71,7 @@ import org.apache.hadoop.hive.metastore.api.SerDeInfo;
 import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
 import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.metastore.api.Type;
+import org.apache.hadoop.hive.metastore.api.UnknownDBException;
 import org.apache.hadoop.hive.metastore.model.MDBPrivilege;
 import org.apache.hadoop.hive.metastore.model.MDatabase;
 import org.apache.hadoop.hive.metastore.model.MFieldSchema;
@@ -88,9 +89,9 @@ import org.apache.hadoop.hive.metastore.model.MTable;
 import org.apache.hadoop.hive.metastore.model.MTableColumnPrivilege;
 import org.apache.hadoop.hive.metastore.model.MTablePrivilege;
 import org.apache.hadoop.hive.metastore.model.MType;
+import org.apache.hadoop.hive.metastore.parser.ExpressionTree.ANTLRNoCaseStringStream;
 import org.apache.hadoop.hive.metastore.parser.FilterLexer;
 import org.apache.hadoop.hive.metastore.parser.FilterParser;
-import org.apache.hadoop.hive.metastore.parser.ExpressionTree.ANTLRNoCaseStringStream;
 import org.apache.hadoop.util.StringUtils;
 
 /**
@@ -785,6 +786,43 @@ public class ObjectStore implements RawStore, Configurable {
       }
     }
     return mtbl;
+  }
+
+  public List<Table> getTableObjectsByName(String db, List<String> tbl_names)
+      throws MetaException, UnknownDBException {
+    List<Table> tables = new ArrayList<Table>();
+    boolean committed = false;
+    try {
+      openTransaction();
+
+      db = db.toLowerCase().trim();
+      Query dbExistsQuery = pm.newQuery(MDatabase.class, "name == db");
+      dbExistsQuery.declareParameters("java.lang.String db");
+      dbExistsQuery.setUnique(true);
+      dbExistsQuery.setResult("name");
+      String dbNameIfExists = (String) dbExistsQuery.execute(db);
+      if (dbNameIfExists == null || dbNameIfExists.isEmpty()) {
+        throw new UnknownDBException("Could not find database " + db);
+      }
+
+      List<String> lowered_tbl_names = new ArrayList<String>();
+      for (String t : tbl_names) {
+        lowered_tbl_names.add(t.toLowerCase().trim());
+      }
+      Query query = pm.newQuery(MTable.class);
+      query.setFilter("database.name == db && tbl_names.contains(tableName)");
+      query.declareParameters("java.lang.String db, java.util.Collection tbl_names");
+      Collection mtables = (Collection) query.execute(db, lowered_tbl_names);
+      for (Iterator iter = mtables.iterator(); iter.hasNext();) {
+        tables.add(convertToTable((MTable) iter.next()));
+      }
+      committed = commitTransaction();
+    } finally {
+      if (!committed) {
+        rollbackTransaction();
+      }
+    }
+    return tables;
   }
 
   private Table convertToTable(MTable mtbl) throws MetaException {

@@ -516,6 +516,11 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       return startFunction(function, " : db=" + db + " tbl=" + tbl);
     }
 
+    public String startMultiTableFunction(String function, String db, List<String> tbls) {
+      String tableNames = join(tbls, ",");
+      return startFunction(function, " : db=" + db + " tbls=" + tableNames);
+    }
+
     public String startPartitionFunction(String function, String db, String tbl,
         List<String> partVals) {
       return startFunction(function, " : db=" + db + " tbl=" + tbl
@@ -1132,6 +1137,54 @@ public class HiveMetaStore extends ThriftHiveMetastore {
         endFunction("get_table");
       }
       return t;
+    }
+
+    /**
+     * Gets multiple tables from the hive metastore.
+     * @param dbname
+     *        The name of the database in which the tables reside
+     * @param names
+     *        The names of the tables to get.
+     *
+     * @return A list of tables whose names are in the the list "names" and
+     *   are retrievable from the database specified by "dbnames."
+     *   There is no guarantee of the order of the returned tables.
+     *   If there are duplicate names, only one instance of the table will be returned.
+     * @throws MetaException
+     * @throws InvalidOperationException
+     * @throws UnknownDBException
+     */
+    public List<Table> get_table_objects_by_name(final String dbname, final List<String> names)
+      throws MetaException, InvalidOperationException, UnknownDBException {
+      List<Table> tables = new ArrayList<Table>();
+      startMultiTableFunction("get_multi_table", dbname, names);
+      try {
+        tables = executeWithRetry(new Command<List<Table>>() {
+          @Override
+          public List<Table> run(RawStore ms) throws Exception {
+            if (dbname == null || dbname.isEmpty()) {
+              throw new UnknownDBException("DB name is null or empty");
+            }
+            if (names == null)
+            {
+              throw new InvalidOperationException(dbname + " cannot find null tables");
+            }
+            List<Table> foundTables = ms.getTableObjectsByName(dbname, names);
+            return foundTables;
+          }
+        });
+      } catch (MetaException e) {
+        throw e;
+      } catch (InvalidOperationException e) {
+        throw e;
+      } catch (UnknownDBException e) {
+        throw e;
+      } catch (Exception e) {
+        throw new MetaException(e.toString());
+      } finally {
+        endFunction("get_multi_table");
+      }
+      return tables;
     }
 
     public boolean set_table_parameters(String dbname, String name,

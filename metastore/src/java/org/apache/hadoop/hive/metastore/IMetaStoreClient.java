@@ -207,6 +207,28 @@ public interface IMetaStoreClient {
       TException, NoSuchObjectException;
 
   /**
+   *
+   * @param dbName
+   *          The database the tables are located in.
+   * @param tableNames
+   *          The names of the tables to fetch
+   * @return A list of objects representing the tables.
+   *          Only the tables that can be retrieved from the database are returned.  For example,
+   *          if none of the requested tables could be retrieved, an empty list is returned.
+   *          There is no guarantee of ordering of the returned tables.
+   * @throws InvalidOperationException
+   *          The input to this operation is invalid (e.g., the list of tables names is null)
+   * @throws UnknownDBException
+   *          The requested database could not be fetched.
+   * @throws TException
+   *          A thrift communication error occurred
+   * @throws MetaException
+   *          Any other errors
+   */
+  public List<Table> getTableObjectsByName(String dbName, List<String> tableNames)
+      throws MetaException, InvalidOperationException, UnknownDBException, TException;
+
+  /**
    * @param tableName
    * @param dbName
    * @param partVals
