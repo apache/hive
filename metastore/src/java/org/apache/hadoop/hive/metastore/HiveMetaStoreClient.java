@@ -688,6 +688,12 @@ public class HiveMetaStoreClient implements IMetaStoreClient {
     return getTable(DEFAULT_DATABASE_NAME, tableName);
   }
 
+  /** {@inheritDoc} */
+  public List<Table> getTableObjectsByName(String dbName, List<String> tableNames)
+      throws MetaException, InvalidOperationException, UnknownDBException, TException {
+    return deepCopyTables(client.get_table_objects_by_name(dbName, tableNames));
+  }
+
   /**
    * @param name
    * @return the type
@@ -1064,7 +1070,7 @@ public class HiveMetaStoreClient implements IMetaStoreClient {
     String owner = conf.getUser();
     return getDelegationToken(owner, renewerKerberosPrincipalName);
   }
-  
+
   @Override
   public String getDelegationToken(String owner, String renewerKerberosPrincipalName) throws
   MetaException, TException {

@@ -298,6 +298,24 @@ module ThriftHiveMetastore
       raise ::Thrift::ApplicationException.new(::Thrift::ApplicationException::MISSING_RESULT, 'get_table failed: unknown result')
     end
 
+    def get_table_objects_by_name(dbname, tbl_names)
+      send_get_table_objects_by_name(dbname, tbl_names)
+      return recv_get_table_objects_by_name()
+    end
+
+    def send_get_table_objects_by_name(dbname, tbl_names)
+      send_message('get_table_objects_by_name', Get_table_objects_by_name_args, :dbname => dbname, :tbl_names => tbl_names)
+    end
+
+    def recv_get_table_objects_by_name()
+      result = receive_message(Get_table_objects_by_name_result)
+      return result.success unless result.success.nil?
+      raise result.o1 unless result.o1.nil?
+      raise result.o2 unless result.o2.nil?
+      raise result.o3 unless result.o3.nil?
+      raise ::Thrift::ApplicationException.new(::Thrift::ApplicationException::MISSING_RESULT, 'get_table_objects_by_name failed: unknown result')
+    end
+
     def alter_table(dbname, tbl_name, new_tbl)
       send_alter_table(dbname, tbl_name, new_tbl)
       recv_alter_table()
@@ -1186,6 +1204,21 @@ module ThriftHiveMetastore
         result.o2 = o2
       end
       write_result(result, oprot, 'get_table', seqid)
+    end
+
+    def process_get_table_objects_by_name(seqid, iprot, oprot)
+      args = read_args(iprot, Get_table_objects_by_name_args)
+      result = Get_table_objects_by_name_result.new()
+      begin
+        result.success = @handler.get_table_objects_by_name(args.dbname, args.tbl_names)
+      rescue MetaException => o1
+        result.o1 = o1
+      rescue InvalidOperationException => o2
+        result.o2 = o2
+      rescue UnknownDBException => o3
+        result.o3 = o3
+      end
+      write_result(result, oprot, 'get_table_objects_by_name', seqid)
     end
 
     def process_alter_table(seqid, iprot, oprot)
@@ -2293,6 +2326,46 @@ module ThriftHiveMetastore
       SUCCESS => {:type => ::Thrift::Types::STRUCT, :name => 'success', :class => Table},
       O1 => {:type => ::Thrift::Types::STRUCT, :name => 'o1', :class => MetaException},
       O2 => {:type => ::Thrift::Types::STRUCT, :name => 'o2', :class => NoSuchObjectException}
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+    end
+
+    ::Thrift::Struct.generate_accessors self
+  end
+
+  class Get_table_objects_by_name_args
+    include ::Thrift::Struct, ::Thrift::Struct_Union
+    DBNAME = 1
+    TBL_NAMES = 2
+
+    FIELDS = {
+      DBNAME => {:type => ::Thrift::Types::STRING, :name => 'dbname'},
+      TBL_NAMES => {:type => ::Thrift::Types::LIST, :name => 'tbl_names', :element => {:type => ::Thrift::Types::STRING}}
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+    end
+
+    ::Thrift::Struct.generate_accessors self
+  end
+
+  class Get_table_objects_by_name_result
+    include ::Thrift::Struct, ::Thrift::Struct_Union
+    SUCCESS = 0
+    O1 = 1
+    O2 = 2
+    O3 = 3
+
+    FIELDS = {
+      SUCCESS => {:type => ::Thrift::Types::LIST, :name => 'success', :element => {:type => ::Thrift::Types::STRUCT, :class => Table}},
+      O1 => {:type => ::Thrift::Types::STRUCT, :name => 'o1', :class => MetaException},
+      O2 => {:type => ::Thrift::Types::STRUCT, :name => 'o2', :class => InvalidOperationException},
+      O3 => {:type => ::Thrift::Types::STRUCT, :name => 'o3', :class => UnknownDBException}
     }
 
     def struct_fields; FIELDS; end

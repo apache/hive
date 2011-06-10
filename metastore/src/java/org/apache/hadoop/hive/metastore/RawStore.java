@@ -33,6 +33,7 @@ import org.apache.hadoop.hive.metastore.api.PrivilegeBag;
 import org.apache.hadoop.hive.metastore.api.Role;
 import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.metastore.api.Type;
+import org.apache.hadoop.hive.metastore.api.UnknownDBException;
 import org.apache.hadoop.hive.metastore.model.MDBPrivilege;
 import org.apache.hadoop.hive.metastore.model.MGlobalPrivilege;
 import org.apache.hadoop.hive.metastore.model.MPartitionColumnPrivilege;
@@ -113,6 +114,19 @@ public interface RawStore extends Configurable {
 
   public List<String> getTables(String dbName, String pattern)
       throws MetaException;
+
+  /**
+   * @param dbname
+   *        The name of the database from which to retrieve the tables
+   * @param tableNames
+   *        The names of the tables to retrieve.
+   * @return A list of the tables retrievable from the database
+   *          whose names are in the list tableNames.
+   *         If there are duplicate names, only one instance of the table will be returned
+   * @throws MetaException
+   */
+  public List<Table> getTableObjectsByName(String dbname, List<String> tableNames)
+      throws MetaException, UnknownDBException;
 
   public List<String> getAllTables(String dbName) throws MetaException;
 

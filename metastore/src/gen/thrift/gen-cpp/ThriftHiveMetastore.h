@@ -32,6 +32,7 @@ class ThriftHiveMetastoreIf : virtual public facebook::fb303::FacebookServiceIf 
   virtual void get_tables(std::vector<std::string> & _return, const std::string& db_name, const std::string& pattern) = 0;
   virtual void get_all_tables(std::vector<std::string> & _return, const std::string& db_name) = 0;
   virtual void get_table(Table& _return, const std::string& dbname, const std::string& tbl_name) = 0;
+  virtual void get_table_objects_by_name(std::vector<Table> & _return, const std::string& dbname, const std::vector<std::string> & tbl_names) = 0;
   virtual void alter_table(const std::string& dbname, const std::string& tbl_name, const Table& new_tbl) = 0;
   virtual void add_partition(Partition& _return, const Partition& new_part) = 0;
   virtual void append_partition(Partition& _return, const std::string& db_name, const std::string& tbl_name, const std::vector<std::string> & part_vals) = 0;
@@ -128,6 +129,9 @@ class ThriftHiveMetastoreNull : virtual public ThriftHiveMetastoreIf , virtual p
     return;
   }
   void get_table(Table& /* _return */, const std::string& /* dbname */, const std::string& /* tbl_name */) {
+    return;
+  }
+  void get_table_objects_by_name(std::vector<Table> & /* _return */, const std::string& /* dbname */, const std::vector<std::string> & /* tbl_names */) {
     return;
   }
   void alter_table(const std::string& /* dbname */, const std::string& /* tbl_name */, const Table& /* new_tbl */) {
@@ -2178,6 +2182,129 @@ class ThriftHiveMetastore_get_table_presult {
   NoSuchObjectException o2;
 
   _ThriftHiveMetastore_get_table_presult__isset __isset;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+
+};
+
+typedef struct _ThriftHiveMetastore_get_table_objects_by_name_args__isset {
+  _ThriftHiveMetastore_get_table_objects_by_name_args__isset() : dbname(false), tbl_names(false) {}
+  bool dbname;
+  bool tbl_names;
+} _ThriftHiveMetastore_get_table_objects_by_name_args__isset;
+
+class ThriftHiveMetastore_get_table_objects_by_name_args {
+ public:
+
+  ThriftHiveMetastore_get_table_objects_by_name_args() : dbname("") {
+  }
+
+  virtual ~ThriftHiveMetastore_get_table_objects_by_name_args() throw() {}
+
+  std::string dbname;
+  std::vector<std::string>  tbl_names;
+
+  _ThriftHiveMetastore_get_table_objects_by_name_args__isset __isset;
+
+  bool operator == (const ThriftHiveMetastore_get_table_objects_by_name_args & rhs) const
+  {
+    if (!(dbname == rhs.dbname))
+      return false;
+    if (!(tbl_names == rhs.tbl_names))
+      return false;
+    return true;
+  }
+  bool operator != (const ThriftHiveMetastore_get_table_objects_by_name_args &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const ThriftHiveMetastore_get_table_objects_by_name_args & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+
+class ThriftHiveMetastore_get_table_objects_by_name_pargs {
+ public:
+
+
+  virtual ~ThriftHiveMetastore_get_table_objects_by_name_pargs() throw() {}
+
+  const std::string* dbname;
+  const std::vector<std::string> * tbl_names;
+
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+typedef struct _ThriftHiveMetastore_get_table_objects_by_name_result__isset {
+  _ThriftHiveMetastore_get_table_objects_by_name_result__isset() : success(false), o1(false), o2(false), o3(false) {}
+  bool success;
+  bool o1;
+  bool o2;
+  bool o3;
+} _ThriftHiveMetastore_get_table_objects_by_name_result__isset;
+
+class ThriftHiveMetastore_get_table_objects_by_name_result {
+ public:
+
+  ThriftHiveMetastore_get_table_objects_by_name_result() {
+  }
+
+  virtual ~ThriftHiveMetastore_get_table_objects_by_name_result() throw() {}
+
+  std::vector<Table>  success;
+  MetaException o1;
+  InvalidOperationException o2;
+  UnknownDBException o3;
+
+  _ThriftHiveMetastore_get_table_objects_by_name_result__isset __isset;
+
+  bool operator == (const ThriftHiveMetastore_get_table_objects_by_name_result & rhs) const
+  {
+    if (!(success == rhs.success))
+      return false;
+    if (!(o1 == rhs.o1))
+      return false;
+    if (!(o2 == rhs.o2))
+      return false;
+    if (!(o3 == rhs.o3))
+      return false;
+    return true;
+  }
+  bool operator != (const ThriftHiveMetastore_get_table_objects_by_name_result &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const ThriftHiveMetastore_get_table_objects_by_name_result & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+typedef struct _ThriftHiveMetastore_get_table_objects_by_name_presult__isset {
+  _ThriftHiveMetastore_get_table_objects_by_name_presult__isset() : success(false), o1(false), o2(false), o3(false) {}
+  bool success;
+  bool o1;
+  bool o2;
+  bool o3;
+} _ThriftHiveMetastore_get_table_objects_by_name_presult__isset;
+
+class ThriftHiveMetastore_get_table_objects_by_name_presult {
+ public:
+
+
+  virtual ~ThriftHiveMetastore_get_table_objects_by_name_presult() throw() {}
+
+  std::vector<Table> * success;
+  MetaException o1;
+  InvalidOperationException o2;
+  UnknownDBException o3;
+
+  _ThriftHiveMetastore_get_table_objects_by_name_presult__isset __isset;
 
   uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
 
@@ -6961,6 +7088,9 @@ class ThriftHiveMetastoreClient : virtual public ThriftHiveMetastoreIf, public f
   void get_table(Table& _return, const std::string& dbname, const std::string& tbl_name);
   void send_get_table(const std::string& dbname, const std::string& tbl_name);
   void recv_get_table(Table& _return);
+  void get_table_objects_by_name(std::vector<Table> & _return, const std::string& dbname, const std::vector<std::string> & tbl_names);
+  void send_get_table_objects_by_name(const std::string& dbname, const std::vector<std::string> & tbl_names);
+  void recv_get_table_objects_by_name(std::vector<Table> & _return);
   void alter_table(const std::string& dbname, const std::string& tbl_name, const Table& new_tbl);
   void send_alter_table(const std::string& dbname, const std::string& tbl_name, const Table& new_tbl);
   void recv_alter_table();
@@ -7106,6 +7236,7 @@ class ThriftHiveMetastoreProcessor : virtual public ::apache::thrift::TProcessor
   void process_get_tables(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot);
   void process_get_all_tables(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot);
   void process_get_table(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot);
+  void process_get_table_objects_by_name(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot);
   void process_alter_table(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot);
   void process_add_partition(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot);
   void process_append_partition(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot);
@@ -7167,6 +7298,7 @@ class ThriftHiveMetastoreProcessor : virtual public ::apache::thrift::TProcessor
     processMap_["get_tables"] = &ThriftHiveMetastoreProcessor::process_get_tables;
     processMap_["get_all_tables"] = &ThriftHiveMetastoreProcessor::process_get_all_tables;
     processMap_["get_table"] = &ThriftHiveMetastoreProcessor::process_get_table;
+    processMap_["get_table_objects_by_name"] = &ThriftHiveMetastoreProcessor::process_get_table_objects_by_name;
     processMap_["alter_table"] = &ThriftHiveMetastoreProcessor::process_alter_table;
     processMap_["add_partition"] = &ThriftHiveMetastoreProcessor::process_add_partition;
     processMap_["append_partition"] = &ThriftHiveMetastoreProcessor::process_append_partition;
@@ -7403,6 +7535,18 @@ class ThriftHiveMetastoreMultiface : virtual public ThriftHiveMetastoreIf, publi
         return;
       } else {
         ifaces_[i]->get_table(_return, dbname, tbl_name);
+      }
+    }
+  }
+
+  void get_table_objects_by_name(std::vector<Table> & _return, const std::string& dbname, const std::vector<std::string> & tbl_names) {
+    uint32_t sz = ifaces_.size();
+    for (uint32_t i = 0; i < sz; ++i) {
+      if (i == sz - 1) {
+        ifaces_[i]->get_table_objects_by_name(_return, dbname, tbl_names);
+        return;
+      } else {
+        ifaces_[i]->get_table_objects_by_name(_return, dbname, tbl_names);
       }
     }
   }

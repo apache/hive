@@ -246,6 +246,9 @@ service ThriftHiveMetastore extends fb303.FacebookService
 
   Table get_table(1:string dbname, 2:string tbl_name)
                        throws (1:MetaException o1, 2:NoSuchObjectException o2)
+  list<Table> get_table_objects_by_name(1:string dbname, 2:list<string> tbl_names) 
+      				   throws (1:MetaException o1, 2:InvalidOperationException o2, 3:UnknownDBException o3)
+                       
   // alter table applies to only future partitions not for existing partitions
   // * See notes on DDL_TIME
   void alter_table(1:string dbname, 2:string tbl_name, 3:Table new_tbl)
