@@ -13,7 +13,7 @@ import org.apache.hadoop.hive.serde2.objectinspector.StructField;
 import org.apache.hadoop.io.Writable;
 
 public class TransposedMapping extends TableMapping {
-  /* Track the index of :column, :subcolumn, and :value. This would only be set when isTransposed is true*/
+  /* Track the index of :column, :subcolumn, and :value. This would only be set when it is a transposed table*/
   private int columnName = -1;
   private int columnValue = -1;
   private int subColumnName = -1;

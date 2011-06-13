@@ -100,7 +100,6 @@ public class CassandraSuperPut implements Writable, Put {
 
     Map<String, List<Mutation>> maps = new HashMap<String, List<Mutation>>();
     for (CassandraPut c : subColumns) {
-      List<Mutation> mutList = new ArrayList<Mutation>();
       List<Column> columns = new ArrayList<Column>();
       for (CassandraColumn col : c.getColumns()) {
         Column cassCol = new Column();
@@ -114,8 +113,15 @@ public class CassandraSuperPut implements Writable, Put {
 
         Mutation mutation = new Mutation();
         mutation.setColumn_or_supercolumn(thisSuperCol);
+
+        List<Mutation> mutList = maps.get(col.getColumnFamily());
+        if (mutList == null) {
+          mutList = new ArrayList<Mutation>();
+          maps.put(col.getColumnFamily(), mutList);
+        }
+
         mutList.add(mutation);
-        maps.put(col.getColumnFamily(), mutList);
+
       }
     }
     mutation_map.put(key, maps);

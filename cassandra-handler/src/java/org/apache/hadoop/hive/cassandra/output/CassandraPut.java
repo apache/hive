@@ -5,12 +5,15 @@ import java.io.DataOutput;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.apache.cassandra.thrift.Column;
-import org.apache.cassandra.thrift.ColumnParent;
+import org.apache.cassandra.thrift.ColumnOrSuperColumn;
 import org.apache.cassandra.thrift.ConsistencyLevel;
 import org.apache.cassandra.thrift.InvalidRequestException;
+import org.apache.cassandra.thrift.Mutation;
 import org.apache.cassandra.thrift.TimedOutException;
 import org.apache.cassandra.thrift.UnavailableException;
 import org.apache.cassandra.utils.ByteBufferUtil;
@@ -25,7 +28,6 @@ import org.apache.thrift.TException;
 public class CassandraPut implements Writable, Put {
 
   private ByteBuffer key;
-  //private ConsistencyLevel level;
   private List<CassandraColumn> columns;
 
   public CassandraPut(){
@@ -94,26 +96,43 @@ public class CassandraPut implements Writable, Put {
 
   @Override
   public void write(String keySpace, CassandraProxyClient client, ConsistencyLevel flevel) throws IOException {
-    for (CassandraColumn c : columns) {
-      ColumnParent parent = new ColumnParent();
-      parent.setColumn_family(c.getColumnFamily());
-      try {
-        Column col = new Column();
-        col.setValue(c.getValue());
-        col.setTimestamp(c.getTimeStamp());
-        col.setName(c.getColumn());
-        client.getProxyConnection().set_keyspace(keySpace);
-        client.getProxyConnection().insert(key, parent, col, flevel);
-      } catch (InvalidRequestException e) {
-        throw new IOException(e);
-      } catch (UnavailableException e) {
-        throw new IOException(e);
-      } catch (TimedOutException e) {
-        throw new IOException(e);
-      } catch (TException e) {
-        throw new IOException(e);
-      }
-    }
+    Map<ByteBuffer,Map<String,List<Mutation>>> mutation_map = new HashMap<ByteBuffer,Map<String,List<Mutation>>>();
 
+    Map<String, List<Mutation>> maps = new HashMap<String, List<Mutation>>();
+
+    for (CassandraColumn col : columns) {
+      Column cassCol = new Column();
+      cassCol.setValue(col.getValue());
+      cassCol.setTimestamp(col.getTimeStamp());
+      cassCol.setName(col.getColumn());
+
+      ColumnOrSuperColumn thisCol = new ColumnOrSuperColumn();
+      thisCol.setColumn(cassCol);
+
+      Mutation mutation = new Mutation();
+      mutation.setColumn_or_supercolumn(thisCol);
+
+      List<Mutation> mutList = maps.get(col.getColumnFamily());
+      if (mutList == null) {
+        mutList = new ArrayList<Mutation>();
+        maps.put(col.getColumnFamily(), mutList);
+      }
+
+      mutList.add(mutation);
+    }
+    mutation_map.put(key, maps);
+
+    try {
+      client.getProxyConnection().set_keyspace(keySpace);
+      client.getProxyConnection().batch_mutate(mutation_map, flevel);
+    } catch (InvalidRequestException e) {
+      throw new IOException(e);
+    } catch (UnavailableException e) {
+      throw new IOException(e);
+    } catch (TimedOutException e) {
+      throw new IOException(e);
+    } catch (TException e) {
+      throw new IOException(e);
+    }
   }
 }
