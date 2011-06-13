@@ -1059,17 +1059,30 @@ public class Hive {
        * processes might move forward with partial data
        */
 
-      Partition oldPart = getPartition(tbl, partSpec, false, null);
-      Path oldPartPath = null;
-      if(oldPart != null) {
-        oldPartPath = oldPart.getPartitionPath();
-      }
-
       Path partPath = new Path(tbl.getDataLocation().getPath(),
           Warehouse.makePartPath(partSpec));
 
       Path newPartPath = new Path(loadPath.toUri().getScheme(), loadPath
           .toUri().getAuthority(), partPath.toUri().getPath());
+
+      Partition oldPart = getPartition(tbl, partSpec, false, null);
+      Path oldPartPath = null;
+      if(oldPart != null) {
+        oldPartPath = oldPart.getPartitionPath();
+
+        /*
+         * If we are moving the partition across filesystem boundaries
+         * inherit from the table properties. Otherwise (same filesystem) use the
+         * original partition location.
+         *
+         * See: HIVE-1707 and HIVE-2117 for background
+         */
+        FileSystem oldPartPathFS = oldPartPath.getFileSystem(getConf());
+        FileSystem loadPathFS = loadPath.getFileSystem(getConf());
+        if (oldPartPathFS.equals(loadPathFS)) {
+          newPartPath = oldPartPath;
+        }
+      }
 
       if (replace) {
         Hive.replaceFiles(loadPath, newPartPath, oldPartPath, getConf());
