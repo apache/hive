@@ -91,7 +91,7 @@ public abstract class TableMapping {
    */
   protected boolean useJsonSerialize(int index, List<? extends StructField> declaredFields) {
     return (declaredFields == null ||
-        declaredFields.get(iKey).getFieldObjectInspector().getCategory()
+        declaredFields.get(index).getFieldObjectInspector().getCategory()
         .equals(Category.PRIMITIVE) || useJSONSerialize);
   }
 
