@@ -12,21 +12,18 @@ import java.util.Map;
 import org.apache.cassandra.thrift.Column;
 import org.apache.cassandra.thrift.ColumnOrSuperColumn;
 import org.apache.cassandra.thrift.ConsistencyLevel;
-import org.apache.cassandra.thrift.InvalidRequestException;
 import org.apache.cassandra.thrift.Mutation;
 import org.apache.cassandra.thrift.SuperColumn;
-import org.apache.cassandra.thrift.TimedOutException;
-import org.apache.cassandra.thrift.UnavailableException;
 import org.apache.cassandra.utils.ByteBufferUtil;
 import org.apache.hadoop.hive.cassandra.CassandraProxyClient;
 import org.apache.hadoop.io.Writable;
-import org.apache.thrift.TException;
+import org.apache.hadoop.mapred.JobConf;
 
 /**
  * This represents the super column family in Cassandra.
  *
  */
-public class CassandraSuperPut implements Writable, Put {
+public class CassandraSuperPut extends CassandraAbstractPut implements Writable {
   private ByteBuffer key;
   private List<CassandraPut> subColumns;
 
@@ -95,10 +92,13 @@ public class CassandraSuperPut implements Writable, Put {
   }
 
   @Override
-  public void write(String keySpace, CassandraProxyClient client, ConsistencyLevel flevel) throws IOException {
+  public void write(String keySpace, CassandraProxyClient client, JobConf jc) throws IOException {
+    ConsistencyLevel flevel = getConsistencyLevel(jc);
+    int batchMutation = getBatchMutationSize(jc);
     Map<ByteBuffer,Map<String,List<Mutation>>> mutation_map = new HashMap<ByteBuffer,Map<String,List<Mutation>>>();
-
     Map<String, List<Mutation>> maps = new HashMap<String, List<Mutation>>();
+
+    int count = 0;
     for (CassandraPut c : subColumns) {
       List<Column> columns = new ArrayList<Column>();
       for (CassandraColumn col : c.getColumns()) {
@@ -122,22 +122,25 @@ public class CassandraSuperPut implements Writable, Put {
 
         mutList.add(mutation);
 
+        count ++;
+
+        if (count == batchMutation) {
+          mutation_map.put(key, maps);
+
+          commitChanges(keySpace, client, flevel, mutation_map);
+
+          //reset mutation map, maps and count;
+          mutation_map = new HashMap<ByteBuffer,Map<String,List<Mutation>>>();
+          maps = new HashMap<String, List<Mutation>>();
+          count = 0;
+        }
+
       }
     }
-    mutation_map.put(key, maps);
 
-    try {
-      client.getProxyConnection().set_keyspace(keySpace);
-      client.getProxyConnection().batch_mutate(mutation_map, flevel);
-    } catch (InvalidRequestException e) {
-      throw new IOException(e);
-    } catch (UnavailableException e) {
-      throw new IOException(e);
-    } catch (TimedOutException e) {
-      throw new IOException(e);
-    } catch (TException e) {
-      throw new IOException(e);
+    if(count > 0) {
+      mutation_map.put(key, maps);
+      commitChanges(keySpace, client, flevel, mutation_map);
     }
-
   }
 }

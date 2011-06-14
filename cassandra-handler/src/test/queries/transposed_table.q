@@ -28,10 +28,10 @@ DROP TABLE superLog;
 CREATE EXTERNAL TABLE superLog
       (row_key string, column_name string, sub_column_name string, value string)
       STORED BY 'org.apache.hadoop.hive.cassandra.CassandraStorageHandler'
-WITH SERDEPROPERTIES ("cassandra.host" = "127.0.0.1" , "cassandra.port" = "9170")
+WITH SERDEPROPERTIES ("cassandra.host" = "127.0.0.1" , "cassandra.port" = "9170",  "cassandra.batchmutate.size" = "1")
 TBLPROPERTIES ("cassandra.ks.name" = "Hive");
 
-select * from accessLog;
+select * from superLog;
 
 INSERT OVERWRITE TABLE superLog
 select key, 'divide', '5', value  from src where (key%5)=0;

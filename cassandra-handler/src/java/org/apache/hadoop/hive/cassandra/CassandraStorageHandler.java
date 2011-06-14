@@ -87,6 +87,11 @@ public class CassandraStorageHandler
     jobProperties.put(StandardColumnSerDe.CASSANDRA_SPLIT_SIZE,
       tableProperties.getProperty(StandardColumnSerDe.CASSANDRA_SPLIT_SIZE,
           Integer.toString(StandardColumnSerDe.DEFAULT_SPLIT_SIZE)));
+
+
+    jobProperties.put(StandardColumnSerDe.CASSANDRA_BATCH_MUTATION_SIZE,
+        tableProperties.getProperty(StandardColumnSerDe.CASSANDRA_BATCH_MUTATION_SIZE,
+            Integer.toString(StandardColumnSerDe.DEFAULT_BATCH_MUTATION_SIZE)));
   }
 
   @Override

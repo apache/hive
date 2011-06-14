@@ -3,7 +3,6 @@ package org.apache.hadoop.hive.cassandra.output;
 import java.io.IOException;
 import java.util.Properties;
 
-import org.apache.cassandra.thrift.ConsistencyLevel;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.fs.FileSystem;
@@ -26,16 +25,14 @@ public class HiveCassandraOutputFormat implements HiveOutputFormat<Text, Cassand
   static final Log LOG = LogFactory.getLog(HiveCassandraOutputFormat.class);
 
   @Override
-  public RecordWriter getHiveRecordWriter(JobConf jc, Path finalOutPath,
+  public RecordWriter getHiveRecordWriter(final JobConf jc, Path finalOutPath,
       Class<? extends Writable> valueClass, boolean isCompressed, Properties tableProperties,
       Progressable progress) throws IOException {
 
     final String cassandraKeySpace = jc.get(StandardColumnSerDe.CASSANDRA_KEYSPACE_NAME);
     final String cassandraHost = jc.get(StandardColumnSerDe.CASSANDRA_HOST);
     final int cassandraPort = Integer.parseInt(jc.get(StandardColumnSerDe.CASSANDRA_PORT));
-    final String consistencyLevel = jc.get(StandardColumnSerDe.CASSANDRA_CONSISTENCY_LEVEL,
-      StandardColumnSerDe.DEFAULT_CONSISTENCY_LEVEL);
-    ConsistencyLevel level = null;
+
     final CassandraProxyClient client;
     try {
       client = new CassandraProxyClient(
@@ -43,14 +40,6 @@ public class HiveCassandraOutputFormat implements HiveOutputFormat<Text, Cassand
     } catch (CassandraException e) {
       throw new IOException(e);
     }
-
-    try {
-      level = ConsistencyLevel.valueOf(consistencyLevel);
-    } catch (IllegalArgumentException e) {
-      level = ConsistencyLevel.ONE;
-    }
-
-    final ConsistencyLevel fLevel = level;
 
     return new RecordWriter() {
 
@@ -64,7 +53,7 @@ public class HiveCassandraOutputFormat implements HiveOutputFormat<Text, Cassand
       @Override
       public void write(Writable w) throws IOException {
         Put put = (Put) w;
-        put.write(cassandraKeySpace, client, fLevel);
+        put.write(cassandraKeySpace, client, jc);
       }
 
     };

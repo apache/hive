@@ -44,6 +44,7 @@ public class StandardColumnSerDe implements SerDe {
   public static final String CASSANDRA_PORT = "cassandra.port"; // rcpPort
   public static final String CASSANDRA_PARTITIONER = "cassandra.partitioner"; // partitioner
   public static final String CASSANDRA_COL_MAPPING = "cassandra.columns.mapping";
+  public static final String CASSANDRA_BATCH_MUTATION_SIZE = "cassandra.batchmutate.size";
 
   public static final String CASSANDRA_SPECIAL_COLUMN_KEY = "row_key";
   public static final String CASSANDRA_SPECIAL_COLUMN_COL = "column_name";
@@ -64,6 +65,7 @@ public class StandardColumnSerDe implements SerDe {
   public static final String DEFAULT_CASSANDRA_HOST = "localhost";
   public static final String DEFAULT_CASSANDRA_PORT = "9160";
   public static final String DEFAULT_CONSISTENCY_LEVEL = "ONE";
+  public static final int DEFAULT_BATCH_MUTATION_SIZE = 500;
 
   /* names of columns from SerdeParameters */
   private List<String> cassandraColumnNames;
@@ -431,4 +433,5 @@ public class StandardColumnSerDe implements SerDe {
   public int getKeyColumnOffset() {
     return iKey;
   }
+
 }
