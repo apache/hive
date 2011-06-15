@@ -18,11 +18,15 @@
 
 package org.apache.hadoop.hive.jdbc;
 
+import java.io.IOException;
+import java.net.URL;
 import java.sql.Connection;
 import java.sql.Driver;
 import java.sql.DriverPropertyInfo;
 import java.sql.SQLException;
 import java.util.Properties;
+import java.util.jar.Attributes;
+import java.util.jar.Manifest;
 import java.util.regex.Pattern;
 
 /**
@@ -38,16 +42,6 @@ public class HiveDriver implements Driver {
       e.printStackTrace();
     }
   }
-
-  /**
-   * Major version number of this driver.
-   */
-  private static final int MAJOR_VERSION = 0;
-
-  /**
-   * Minor version number of this driver.
-   */
-  private static final int MINOR_VERSION = 0;
 
   /**
    * Is this driver JDBC compliant?
@@ -111,19 +105,65 @@ public class HiveDriver implements Driver {
   }
 
   /**
+   * Package scoped access to the Driver's Major Version 
+   * @return The Major version number of the driver. -1 if it cannot be determined from
+   * the manifest.mf file.
+   */
+  static int getMajorDriverVersion() {
+    int version = -1;
+    try {
+      String fullVersion = HiveDriver.fetchManifestAttribute(
+          Attributes.Name.IMPLEMENTATION_VERSION);
+      String[] tokens = fullVersion.split("\\."); //$NON-NLS-1$
+      
+      if(tokens != null && tokens.length > 0 && tokens[0] != null) {
+        version = Integer.parseInt(tokens[0]);
+      }
+    } catch (Exception e) {
+      // Possible reasons to end up here:
+      // - Unable to read version from manifest.mf
+      // - Version string is not in the proper X.x.xxx format
+      version = -1;
+    }
+    return version;
+  }
+  
+  /**
+   * Package scoped access to the Driver's Minor Version 
+   * @return The Minor version number of the driver. -1 if it cannot be determined from the
+   * manifest.mf file.
+   */
+  static int getMinorDriverVersion() {
+    int version = -1;
+    try {
+      String fullVersion = HiveDriver.fetchManifestAttribute(
+          Attributes.Name.IMPLEMENTATION_VERSION);
+      String[] tokens = fullVersion.split("\\."); //$NON-NLS-1$
+      
+      if(tokens != null && tokens.length > 1 && tokens[1] != null) {
+        version = Integer.parseInt(tokens[1]);
+      }
+    } catch (Exception e) {
+      // Possible reasons to end up here:
+      // - Unable to read version from manifest.mf
+      // - Version string is not in the proper X.x.xxx format
+      version = -1;
+    }
+    return version;
+  }
+  
+  /**
    * Returns the major version of this driver.
    */
-
   public int getMajorVersion() {
-    return MAJOR_VERSION;
+    return HiveDriver.getMajorDriverVersion();
   }
 
   /**
    * Returns the minor version of this driver.
    */
-
   public int getMinorVersion() {
-    return MINOR_VERSION;
+    return HiveDriver.getMinorDriverVersion();
   }
 
   public DriverPropertyInfo[] getPropertyInfo(String url, Properties info) throws SQLException {
@@ -211,5 +251,47 @@ public class HiveDriver implements Driver {
     }
 
     return urlProps;
+  }
+  
+  /**
+   * Lazy-load manifest attributes as needed.
+   */
+  private static Attributes manifestAttributes = null;
+
+  /**
+   * Loads the manifest attributes from the jar.
+   * 
+   * @throws java.net.MalformedURLException
+   * @throws IOException
+   */
+  private static synchronized void loadManifestAttributes() throws IOException {
+    if (manifestAttributes != null) {
+      return;
+    }
+    Class<?> clazz = HiveDriver.class;
+    String classContainer = clazz.getProtectionDomain().getCodeSource()
+        .getLocation().toString();
+    URL manifestUrl = new URL("jar:" + classContainer
+        + "!/META-INF/MANIFEST.MF");
+    Manifest manifest = new Manifest(manifestUrl.openStream());
+    manifestAttributes = manifest.getMainAttributes();
+  }
+
+  /**
+   * Package scoped to allow manifest fetching from other HiveDriver classes
+   * Helper to initialize attributes and return one.
+   * 
+   * @param attributeName
+   * @return
+   * @throws SQLException
+   */
+  static String fetchManifestAttribute(Attributes.Name attributeName)
+      throws SQLException {
+    try {
+      loadManifestAttributes();
+    } catch (IOException e) {
+      throw new SQLException("Couldn't load manifest attributes.", e);
+    }
+    return manifestAttributes.getValue(attributeName);
   }
 }
