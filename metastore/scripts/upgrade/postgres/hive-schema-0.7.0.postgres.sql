@@ -369,6 +369,28 @@ CREATE TABLE "ROLES" (
 );
 
 --
+-- Table: SEQUENCE_TABLE
+--
+CREATE TABLE "SEQUENCE_TABLE" (
+    "SEQUENCE_NAME" character varying(255) NOT NULL,
+    "NEXT_VAL" bigint NOT NULL,
+    PRIMARY KEY ("SEQUENCE_NAME")
+);
+
+--
+-- Table: NUCLEUS_TABLES
+--
+CREATE TABLE "NUCLEUS_TABLES" (
+    "CLASS_NAME" character varying(128) NOT NULL,
+    "TABLE_NAME" character varying(128) NOT NULL,
+    "TYPE" character varying(4) NOT NULL,
+    "OWNER" character varying(2) NOT NULL,
+    "VERSION" character varying(20) NOT NULL,
+    "INTERFACE_NAME" character varying(255) DEFAULT NULL,
+     PRIMARY KEY ("CLASS_NAME")
+);
+
+--
 -- Table: TYPES
 --
 CREATE TABLE "TYPES" (
