@@ -1,3 +1,24 @@
+Release Notes - Hive - Version 0.7.1
+
+** Bug
+    * [HIVE-2054] - Exception on windows when using the jdbc driver.
+                    "IOException: The system cannot find the path specified"
+    * [HIVE-2176] - Schema creation scripts are incomplete since they leave
+                    out tables that are specific to DataNucleus
+
+** Improvement
+    * [HIVE-1731] - Improve miscellaneous error messages
+    * [HIVE-2140] - Return correct Major / Minor version numbers for
+                    JDBC Hive Driver
+    * [HIVE-2158] - Add the HivePreparedStatement implementation based
+                    on current HIVE supported data-type
+
+** Task
+    * [HIVE-1095] - Hive in Maven
+    * [HIVE-2076] - Provide Metastore upgrade scripts and default schemas
+                    for PostgreSQL
+
+
 Release Notes - Hive - Version 0.7.0
 
 ** New Feature
