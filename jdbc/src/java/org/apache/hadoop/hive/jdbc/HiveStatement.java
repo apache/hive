@@ -55,6 +55,11 @@ public class HiveStatement implements java.sql.Statement {
    * Keep state so we can fail certain calls made after close().
    */
   private boolean isClosed = false;
+  
+  /**
+   * keep the current ResultRet update count
+   */
+  private final int updateCount=0;
 
   /**
    *
@@ -204,7 +209,7 @@ public class HiveStatement implements java.sql.Statement {
     } catch (Exception ex) {
       throw new SQLException(ex.toString());
     }
-    throw new SQLException("Method not supported");
+    return updateCount;
   }
 
   /*
@@ -374,7 +379,7 @@ public class HiveStatement implements java.sql.Statement {
    */
 
   public int getUpdateCount() throws SQLException {
-    return 0;
+    return updateCount;
   }
 
   /*
