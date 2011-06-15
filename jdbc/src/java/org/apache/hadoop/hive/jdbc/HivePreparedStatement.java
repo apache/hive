@@ -40,6 +40,7 @@ import java.sql.SQLXML;
 import java.sql.Time;
 import java.sql.Timestamp;
 import java.util.Calendar;
+import java.util.HashMap;
 
 import org.apache.hadoop.hive.service.HiveInterface;
 import org.apache.hadoop.hive.service.HiveServerException;
@@ -49,8 +50,13 @@ import org.apache.hadoop.hive.service.HiveServerException;
  *
  */
 public class HivePreparedStatement implements PreparedStatement {
-  private String sql;
+  private final String sql;
   private HiveInterface client;
+  /**
+   * save the SQL parameters {paramLoc:paramValue}
+   */
+  private final HashMap<Integer, String> parameters=new HashMap<Integer, String>();
+
   /**
    * We need to keep a reference to the result set to support the following:
    * <code>
@@ -62,17 +68,22 @@ public class HivePreparedStatement implements PreparedStatement {
   /**
    * The maximum number of rows this statement should return (0 => all rows).
    */
-  private final int maxRows = 0;
+  private  int maxRows = 0;
 
   /**
    * Add SQLWarnings to the warningChain if needed.
    */
-  private final SQLWarning warningChain = null;
+  private  SQLWarning warningChain = null;
 
   /**
    * Keep state so we can fail certain calls made after close().
    */
   private boolean isClosed = false;
+
+  /**
+   * keep the current ResultRet update count
+   */
+  private final int updateCount=0;
 
   /**
    *
@@ -101,8 +112,7 @@ public class HivePreparedStatement implements PreparedStatement {
    */
 
   public void clearParameters() throws SQLException {
-    // TODO Auto-generated method stub
-    // throw new SQLException("Method not supported");
+    this.parameters.clear();
   }
 
   /**
@@ -137,8 +147,8 @@ public class HivePreparedStatement implements PreparedStatement {
    */
 
   public int executeUpdate() throws SQLException {
-    // TODO Auto-generated method stub
-    throw new SQLException("Method not supported");
+    executeImmediate(sql);
+    return updateCount;
   }
 
   /**
@@ -157,7 +167,11 @@ public class HivePreparedStatement implements PreparedStatement {
     }
 
     try {
+      clearWarnings();
       resultSet = null;
+      if (sql.contains("?")) {
+        sql = updateSql(sql, parameters);
+      }
       client.execute(sql);
     } catch (HiveServerException e) {
       throw new SQLException(e.getMessage(), e.getSQLState(), e.getErrorCode());
@@ -166,6 +180,61 @@ public class HivePreparedStatement implements PreparedStatement {
     }
     resultSet = new HiveQueryResultSet(client, maxRows);
     return resultSet;
+  }
+
+  /**
+   * update the SQL string with parameters set by setXXX methods of {@link PreparedStatement}
+   *
+   * @param sql
+   * @param parameters
+   * @return updated SQL string
+   */
+  private String updateSql(final String sql, HashMap<Integer, String> parameters) {
+
+    StringBuffer newSql = new StringBuffer(sql);
+
+    int paramLoc = 1;
+    while (getCharIndexFromSqlByParamLocation(sql, '?', paramLoc) > 0) {
+      // check the user has set the needs parameters
+      if (parameters.containsKey(paramLoc)) {
+        int tt = getCharIndexFromSqlByParamLocation(newSql.toString(), '?', 1);
+        newSql.deleteCharAt(tt);
+        newSql.insert(tt, parameters.get(paramLoc));
+      }
+      paramLoc++;
+    }
+
+    return newSql.toString();
+
+  }
+
+  /**
+   * Get the index of given char from the SQL string by parameter location
+   * </br> The -1 will be return, if nothing found
+   *
+   * @param sql
+   * @param cchar
+   * @param paramLoc
+   * @return
+   */
+  private int getCharIndexFromSqlByParamLocation(final String sql, final char cchar, final int paramLoc) {
+    int signalCount = 0;
+    int charIndex = -1;
+    int num = 0;
+    for (int i = 0; i < sql.length(); i++) {
+      char c = sql.charAt(i);
+      if (c == '\'' || c == '\\')// record the count of char "'" and char "\"
+      {
+        signalCount++;
+      } else if (c == cchar && signalCount % 2 == 0) {// check if the ? is really the parameter
+        num++;
+        if (num == paramLoc) {
+          charIndex = i;
+          break;
+        }
+      }
+    }
+    return charIndex;
   }
 
 
@@ -325,8 +394,7 @@ public class HivePreparedStatement implements PreparedStatement {
    */
 
   public void setBoolean(int parameterIndex, boolean x) throws SQLException {
-    // TODO Auto-generated method stub
-    throw new SQLException("Method not supported");
+    this.parameters.put(parameterIndex, ""+x);
   }
 
   /*
@@ -336,8 +404,7 @@ public class HivePreparedStatement implements PreparedStatement {
    */
 
   public void setByte(int parameterIndex, byte x) throws SQLException {
-    // TODO Auto-generated method stub
-    throw new SQLException("Method not supported");
+    this.parameters.put(parameterIndex, ""+x);
   }
 
   /*
@@ -451,8 +518,7 @@ public class HivePreparedStatement implements PreparedStatement {
    */
 
   public void setDouble(int parameterIndex, double x) throws SQLException {
-    // TODO Auto-generated method stub
-    throw new SQLException("Method not supported");
+    this.parameters.put(parameterIndex,""+x);
   }
 
   /*
@@ -462,8 +528,7 @@ public class HivePreparedStatement implements PreparedStatement {
    */
 
   public void setFloat(int parameterIndex, float x) throws SQLException {
-    // TODO Auto-generated method stub
-    throw new SQLException("Method not supported");
+    this.parameters.put(parameterIndex,""+x);
   }
 
   /*
@@ -473,8 +538,7 @@ public class HivePreparedStatement implements PreparedStatement {
    */
 
   public void setInt(int parameterIndex, int x) throws SQLException {
-    // TODO Auto-generated method stub
-    throw new SQLException("Method not supported");
+    this.parameters.put(parameterIndex,""+x);
   }
 
   /*
@@ -484,8 +548,7 @@ public class HivePreparedStatement implements PreparedStatement {
    */
 
   public void setLong(int parameterIndex, long x) throws SQLException {
-    // TODO Auto-generated method stub
-    throw new SQLException("Method not supported");
+    this.parameters.put(parameterIndex,""+x);
   }
 
   /*
@@ -653,8 +716,7 @@ public class HivePreparedStatement implements PreparedStatement {
    */
 
   public void setShort(int parameterIndex, short x) throws SQLException {
-    // TODO Auto-generated method stub
-    throw new SQLException("Method not supported");
+    this.parameters.put(parameterIndex,""+x);
   }
 
   /*
@@ -664,8 +726,8 @@ public class HivePreparedStatement implements PreparedStatement {
    */
 
   public void setString(int parameterIndex, String x) throws SQLException {
-    // TODO Auto-generated method stub
-    throw new SQLException("Method not supported");
+     x=x.replace("'", "\\'");
+     this.parameters.put(parameterIndex,"'"+x+"'");
   }
 
   /*
@@ -779,8 +841,7 @@ public class HivePreparedStatement implements PreparedStatement {
    */
 
   public void clearWarnings() throws SQLException {
-    // TODO Auto-generated method stub
-    throw new SQLException("Method not supported");
+     warningChain=null;
   }
 
   /**
@@ -970,8 +1031,7 @@ public class HivePreparedStatement implements PreparedStatement {
    */
 
   public int getMaxRows() throws SQLException {
-    // TODO Auto-generated method stub
-    throw new SQLException("Method not supported");
+    return this.maxRows;
   }
 
   /*
@@ -1014,8 +1074,7 @@ public class HivePreparedStatement implements PreparedStatement {
    */
 
   public ResultSet getResultSet() throws SQLException {
-    // TODO Auto-generated method stub
-    throw new SQLException("Method not supported");
+    return this.resultSet;
   }
 
   /*
@@ -1058,8 +1117,7 @@ public class HivePreparedStatement implements PreparedStatement {
    */
 
   public int getUpdateCount() throws SQLException {
-    // TODO Auto-generated method stub
-    throw new SQLException("Method not supported");
+    return updateCount;
   }
 
   /*
@@ -1069,8 +1127,7 @@ public class HivePreparedStatement implements PreparedStatement {
    */
 
   public SQLWarning getWarnings() throws SQLException {
-    // TODO Auto-generated method stub
-    throw new SQLException("Method not supported");
+    return warningChain;
   }
 
   /*
@@ -1080,8 +1137,7 @@ public class HivePreparedStatement implements PreparedStatement {
    */
 
   public boolean isClosed() throws SQLException {
-    // TODO Auto-generated method stub
-    throw new SQLException("Method not supported");
+    return isClosed;
   }
 
   /*
@@ -1157,8 +1213,10 @@ public class HivePreparedStatement implements PreparedStatement {
    */
 
   public void setMaxRows(int max) throws SQLException {
-    // TODO Auto-generated method stub
-    // throw new SQLException("Method not supported");
+    if (max < 0) {
+      throw new SQLException("max must be >= 0");
+    }
+    this.maxRows = max;
   }
 
   /*
