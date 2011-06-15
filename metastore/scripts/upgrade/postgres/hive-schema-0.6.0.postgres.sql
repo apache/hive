@@ -79,7 +79,7 @@ CREATE INDEX "PARTITION_PARAMS_N49" on "PARTITION_PARAMS" ("PART_ID");
 CREATE TABLE "SDS" (
   "SD_ID" bigint NOT NULL,
   "INPUT_FORMAT" character varying(4000) DEFAULT NULL,
-  "IS_COMPRESSED" bit(1) NOT NULL,
+  "IS_COMPRESSED" boolean NOT NULL,
   "LOCATION" character varying(4000) DEFAULT NULL,
   "NUM_BUCKETS" bigint NOT NULL,
   "OUTPUT_FORMAT" character varying(4000) DEFAULT NULL,
@@ -187,6 +187,28 @@ CREATE TABLE "DBS" (
   "NAME" character varying(128) DEFAULT NULL,
   PRIMARY KEY ("DB_ID"),
   CONSTRAINT "UNIQUE_DATABASE" UNIQUE ("NAME")
+);
+
+--
+-- Table: SEQUENCE_TABLE
+--
+CREATE TABLE "SEQUENCE_TABLE" (
+    "SEQUENCE_NAME" character varying(255) NOT NULL,
+    "NEXT_VAL" bigint NOT NULL,
+    PRIMARY KEY ("SEQUENCE_NAME")
+);
+
+--
+-- Table: NUCLEUS_TABLES
+--
+CREATE TABLE "NUCLEUS_TABLES" (
+    "CLASS_NAME" character varying(128) NOT NULL,
+    "TABLE_NAME" character varying(128) NOT NULL,
+    "TYPE" character varying(4) NOT NULL,
+    "OWNER" character varying(2) NOT NULL,
+    "VERSION" character varying(20) NOT NULL,
+    "INTERFACE_NAME" character varying(255) DEFAULT NULL,
+     PRIMARY KEY ("CLASS_NAME")
 );
 
 --
