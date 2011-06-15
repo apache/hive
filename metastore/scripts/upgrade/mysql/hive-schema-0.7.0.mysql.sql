@@ -516,6 +516,36 @@ CREATE TABLE IF NOT EXISTS `ROLES` (
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
+-- Table structure for table `SEQUENCE_TABLE`
+--
+
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE IF NOT EXISTS `SEQUENCE_TABLE` (
+  `SEQUENCE_NAME` varchar(255) CHARACTER SET latin1 COLLATE latin1_bin NOT NULL,
+  `NEXT_VAL` bigint(20) NOT NULL,
+  PRIMARY KEY (`SEQUENCE_NAME`)
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `NUCLEUS_TABLES`
+--
+
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE IF NOT EXISTS `NUCLEUS_TABLES` (
+  `CLASS_NAME` varchar(128) CHARACTER SET latin1 COLLATE latin1_bin NOT NULL,
+  `TABLE_NAME` varchar(128) CHARACTER SET latin1 COLLATE latin1_bin NOT NULL,
+  `TYPE` varchar(4) CHARACTER SET latin1 COLLATE latin1_bin NOT NULL,
+  `OWNER` varchar(2) CHARACTER SET latin1 COLLATE latin1_bin NOT NULL,
+  `VERSION` varchar(20) CHARACTER SET latin1 COLLATE latin1_bin NOT NULL,
+  `INTERFACE_NAME` varchar(255) CHARACTER SET latin1 COLLATE latin1_bin DEFAULT NULL,
+  PRIMARY KEY (`CLASS_NAME`)
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
 -- Table structure for table `TYPES`
 --
 
