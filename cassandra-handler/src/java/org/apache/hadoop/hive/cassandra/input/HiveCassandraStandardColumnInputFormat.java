@@ -39,7 +39,7 @@ import org.apache.hadoop.mapreduce.lib.input.FileInputFormat;
 public class HiveCassandraStandardColumnInputFormat extends
     ColumnFamilyInputFormat implements InputFormat<Text, HiveCassandraStandardRowResult> {
 
-  static final Log LOG = LogFactory.getLog(HiveCassandraStandardColumnInputFormat.class);
+  private final static Log LOG = LogFactory.getLog(HiveCassandraStandardColumnInputFormat.class);
 
   private boolean isTransposed;
   private Iterator<Map.Entry<ByteBuffer, IColumn>> currentRecordIterator;
@@ -86,6 +86,8 @@ public class HiveCassandraStandardColumnInputFormat extends
       int iKey = columns.indexOf(StandardColumnSerDe.CASSANDRA_KEY_COLUMN);
       predicate.setColumn_names(getColumnNames(iKey, columns, readColIDs));
     }
+
+    LOG.debug("slice predicate: " + predicate);
 
     final org.apache.hadoop.mapreduce.RecordReader<ByteBuffer, SortedMap<ByteBuffer, IColumn>> recordReader = createRecordReader(
         cfSplit, tac);
@@ -206,6 +208,8 @@ public class HiveCassandraStandardColumnInputFormat extends
                 hic.setValue(ByteBufferUtil.getArray(subCol.value()));
                 hic.setTimestamp(subCol.timestamp());
 
+                LOG.debug("Super column fetched: " + hic);
+
                 theMap.put(
                     new BytesWritable(StandardColumnSerDe.CASSANDRA_VALUE_COLUMN.getBytes()), hic);
 
@@ -217,6 +221,8 @@ public class HiveCassandraStandardColumnInputFormat extends
                 hic.setValue(ByteBufferUtil.getArray(entry.getValue().value()));
                 hic.setTimestamp(entry.getValue().timestamp());
 
+                LOG.debug("Column fetched: " + hic);
+
                 theMap.put(
                     new BytesWritable(StandardColumnSerDe.CASSANDRA_VALUE_COLUMN.getBytes()), hic);
 
@@ -226,6 +232,8 @@ public class HiveCassandraStandardColumnInputFormat extends
               // Done
               value.setKey(rowKey);
               value.setValue(theMap);
+
+              LOG.debug("Fetch next in transposed table: " + value);
             }
 
 
@@ -238,13 +246,18 @@ public class HiveCassandraStandardColumnInputFormat extends
               for (Map.Entry<ByteBuffer, IColumn> entry : recordReader.getCurrentValue().entrySet()) {
                 HiveIColumn hic = new HiveIColumn();
                 byte[] name = ByteBufferUtil.getArray(entry.getValue().name());
+                LOG.debug("Name: " + ByteBufferUtil.string(entry.getValue().name()));
                 hic.setName(name);
                 hic.setValue(ByteBufferUtil.getArray(entry.getValue().value()));
                 hic.setTimestamp(entry.getValue().timestamp());
+                LOG.debug("Fetch Column: " + hic);
+                LOG.debug("Map Key: " + new BytesWritable(name));
                 theMap.put(new BytesWritable(name), hic);
               }
               value.setKey(rowKey);
               value.setValue(theMap);
+
+              LOG.debug("Fetch next in regular table: " + value);
             }
           }
         } catch (InterruptedException e) {
@@ -351,8 +364,9 @@ public class HiveCassandraStandardColumnInputFormat extends
     int maxSize = columns.size();
 
     for (Integer i : readColIDs) {
-      assert(i < maxSize);
+      assert i < maxSize;
       if (i != iKey) {
+        LOG.debug("Column Name: " + columns.get(i.intValue()));
         results.add(ByteBufferUtil.bytes(columns.get(i.intValue())));
       }
     }

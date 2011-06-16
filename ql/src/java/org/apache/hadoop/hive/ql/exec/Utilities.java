@@ -96,8 +96,8 @@ import org.apache.hadoop.hive.ql.plan.MapredLocalWork;
 import org.apache.hadoop.hive.ql.plan.MapredWork;
 import org.apache.hadoop.hive.ql.plan.PartitionDesc;
 import org.apache.hadoop.hive.ql.plan.PlanUtils;
-import org.apache.hadoop.hive.ql.plan.TableDesc;
 import org.apache.hadoop.hive.ql.plan.PlanUtils.ExpressionTypes;
+import org.apache.hadoop.hive.ql.plan.TableDesc;
 import org.apache.hadoop.hive.ql.stats.StatsFactory;
 import org.apache.hadoop.hive.ql.stats.StatsPublisher;
 import org.apache.hadoop.hive.serde.Constants;
@@ -611,8 +611,10 @@ public final class Utilities {
   }
 
   public static TableDesc getTableDesc(Table tbl) {
-    return (new TableDesc(tbl.getDeserializer().getClass(), tbl.getInputFormatClass(), tbl
-        .getOutputFormatClass(), tbl.getSchema()));
+   TableDesc desc = new TableDesc(tbl.getDeserializer().getClass(), tbl.getInputFormatClass(), tbl
+        .getOutputFormatClass(), tbl.getSchema());
+   desc.setJobProperties(tbl.getParameters());
+   return desc;
   }
 
   // column names and column types are all delimited by comma
