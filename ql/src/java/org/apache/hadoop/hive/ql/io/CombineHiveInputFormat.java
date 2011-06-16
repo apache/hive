@@ -510,7 +510,7 @@ public class CombineHiveInputFormat<K extends WritableComparable, V extends Writ
   }
 
   static class CombineFilter implements PathFilter {
-    private final List<String> pStrings = new ArrayList<String>();
+    private final Set<String> pStrings = new HashSet<String>();
 
     // store a path prefix in this TestFilter
     // PRECONDITION: p should always be a directory
@@ -522,19 +522,22 @@ public class CombineHiveInputFormat<K extends WritableComparable, V extends Writ
     }
 
     public void addPath(Path p) {
-      String pString = p.toUri().getPath().toString() + File.separator;;
+      String pString = p.toUri().getPath().toString();
       pStrings.add(pString);
     }
 
     // returns true if the specified path matches the prefix stored
     // in this TestFilter.
     public boolean accept(Path path) {
-      for (String pString : pStrings) {
-        if (path.toString().indexOf(pString) == 0) {
-          return true;
+      boolean find = false;
+      while (path != null && !find) {
+        if(pStrings.contains(path.toString())) {
+          find = true;
+          break;
         }
+        path = path.getParent();
       }
-      return false;
+      return find;
     }
 
     @Override
