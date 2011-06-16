@@ -267,6 +267,7 @@ public class StandardColumnSerDe implements SerDe {
 
       if (tblColumnStr != null) {
 
+        LOG.debug("table column string: " + tblColumnStr);
         //auto-create
         String mappingStr = createColumnMappingString(tblColumnStr);
 
@@ -413,8 +414,12 @@ public class StandardColumnSerDe implements SerDe {
   {
     assert StringUtils.isNotBlank(columnMapping);
     String[] columnArray = columnMapping.split(",");
+    String[] trimmedColumnArray = new String[columnArray.length];
+    for (int i = 0; i < columnArray.length; i++) {
+      trimmedColumnArray[i] = columnArray[i].trim();
+    }
 
-    List<String> columnList = Arrays.asList(columnArray);
+    List<String> columnList = Arrays.asList(trimmedColumnArray);
 
     int iKey = columnList.indexOf(CASSANDRA_KEY_COLUMN);
 
