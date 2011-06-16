@@ -31,7 +31,9 @@ import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Enumeration;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
@@ -809,8 +811,8 @@ public class ExecDriver extends Task<MapredWork> implements Serializable, Hadoop
       throws Exception {
     int numEmptyPaths = 0;
 
-    List<String> pathsProcessed = new ArrayList<String>();
-
+    Set<String> pathsProcessed = new HashSet<String>();
+    List<String> pathsToAdd = new LinkedList<String>();
     // AliasToWork contains all the aliases
     for (String oneAlias : work.getAliasToWork().keySet()) {
       LOG.info("Processing alias " + oneAlias);
@@ -828,15 +830,14 @@ public class ExecDriver extends Task<MapredWork> implements Serializable, Hadoop
           if (pathsProcessed.contains(path)) {
             continue;
           }
+
           pathsProcessed.add(path);
 
           LOG.info("Adding input file " + path);
-
-          Path dirPath = new Path(path);
-          if (!Utilities.isEmptyPath(job, path, ctx)) {
-            FileInputFormat.addInputPath(job, dirPath);
-          } else {
+          if (Utilities.isEmptyPath(job, path, ctx)) {
             emptyPaths.add(path);
+          } else {
+            pathsToAdd.add(path);
           }
         }
       }
@@ -860,6 +861,21 @@ public class ExecDriver extends Task<MapredWork> implements Serializable, Hadoop
             oneAlias);
       }
     }
+    setInputPaths(job, pathsToAdd);
+  }
+
+  private static void setInputPaths(JobConf job, List<String> pathsToAdd) {
+    Path[] addedPaths = FileInputFormat.getInputPaths(job);
+    List<Path> toAddPathList = new ArrayList<Path>();
+    if(addedPaths != null) {
+      for(Path added: addedPaths) {
+        toAddPathList.add(added);
+      }
+    }
+    for(String toAdd: pathsToAdd) {
+      toAddPathList.add(new Path(toAdd));
+    }
+    FileInputFormat.setInputPaths(job, toAddPathList.toArray(new Path[0]));
   }
 
   @Override
