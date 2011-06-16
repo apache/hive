@@ -266,10 +266,13 @@ public class StandardColumnSerDe implements SerDe {
       String tblColumnStr = tbl.getProperty(Constants.LIST_COLUMNS);
 
       if (tblColumnStr != null) {
-
-        LOG.debug("table column string: " + tblColumnStr);
         //auto-create
         String mappingStr = createColumnMappingString(tblColumnStr);
+
+        if (LOG.isDebugEnabled()) {
+          LOG.debug("table column string: " + tblColumnStr);
+          LOG.debug("Auto-created mapping string: " + mappingStr);
+        }
 
         return Arrays.asList(mappingStr.split(","));
 
