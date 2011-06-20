@@ -54,6 +54,8 @@ class ThriftHiveMetastoreIf : virtual public facebook::fb303::FacebookServiceIf 
   virtual void get_config_value(std::string& _return, const std::string& name, const std::string& defaultValue) = 0;
   virtual void partition_name_to_vals(std::vector<std::string> & _return, const std::string& part_name) = 0;
   virtual void partition_name_to_spec(std::map<std::string, std::string> & _return, const std::string& part_name) = 0;
+  virtual void markPartitionForEvent(const std::string& db_name, const std::string& tbl_name, const std::map<std::string, std::string> & part_vals, const PartitionEventType::type eventType) = 0;
+  virtual bool isPartitionMarkedForEvent(const std::string& db_name, const std::string& tbl_name, const std::map<std::string, std::string> & part_vals, const PartitionEventType::type eventType) = 0;
   virtual void add_index(Index& _return, const Index& new_index, const Table& index_table) = 0;
   virtual void alter_index(const std::string& dbname, const std::string& base_tbl_name, const std::string& idx_name, const Index& new_idx) = 0;
   virtual bool drop_index_by_name(const std::string& db_name, const std::string& tbl_name, const std::string& index_name, const bool deleteData) = 0;
@@ -198,6 +200,13 @@ class ThriftHiveMetastoreNull : virtual public ThriftHiveMetastoreIf , virtual p
   }
   void partition_name_to_spec(std::map<std::string, std::string> & /* _return */, const std::string& /* part_name */) {
     return;
+  }
+  void markPartitionForEvent(const std::string& /* db_name */, const std::string& /* tbl_name */, const std::map<std::string, std::string> & /* part_vals */, const PartitionEventType::type /* eventType */) {
+    return;
+  }
+  bool isPartitionMarkedForEvent(const std::string& /* db_name */, const std::string& /* tbl_name */, const std::map<std::string, std::string> & /* part_vals */, const PartitionEventType::type /* eventType */) {
+    bool _return = false;
+    return _return;
   }
   void add_index(Index& /* _return */, const Index& /* new_index */, const Table& /* index_table */) {
     return;
@@ -4867,6 +4876,302 @@ class ThriftHiveMetastore_partition_name_to_spec_presult {
 
 };
 
+typedef struct _ThriftHiveMetastore_markPartitionForEvent_args__isset {
+  _ThriftHiveMetastore_markPartitionForEvent_args__isset() : db_name(false), tbl_name(false), part_vals(false), eventType(false) {}
+  bool db_name;
+  bool tbl_name;
+  bool part_vals;
+  bool eventType;
+} _ThriftHiveMetastore_markPartitionForEvent_args__isset;
+
+class ThriftHiveMetastore_markPartitionForEvent_args {
+ public:
+
+  ThriftHiveMetastore_markPartitionForEvent_args() : db_name(""), tbl_name("") {
+  }
+
+  virtual ~ThriftHiveMetastore_markPartitionForEvent_args() throw() {}
+
+  std::string db_name;
+  std::string tbl_name;
+  std::map<std::string, std::string>  part_vals;
+  PartitionEventType::type eventType;
+
+  _ThriftHiveMetastore_markPartitionForEvent_args__isset __isset;
+
+  bool operator == (const ThriftHiveMetastore_markPartitionForEvent_args & rhs) const
+  {
+    if (!(db_name == rhs.db_name))
+      return false;
+    if (!(tbl_name == rhs.tbl_name))
+      return false;
+    if (!(part_vals == rhs.part_vals))
+      return false;
+    if (!(eventType == rhs.eventType))
+      return false;
+    return true;
+  }
+  bool operator != (const ThriftHiveMetastore_markPartitionForEvent_args &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const ThriftHiveMetastore_markPartitionForEvent_args & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+
+class ThriftHiveMetastore_markPartitionForEvent_pargs {
+ public:
+
+
+  virtual ~ThriftHiveMetastore_markPartitionForEvent_pargs() throw() {}
+
+  const std::string* db_name;
+  const std::string* tbl_name;
+  const std::map<std::string, std::string> * part_vals;
+  const PartitionEventType::type* eventType;
+
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+typedef struct _ThriftHiveMetastore_markPartitionForEvent_result__isset {
+  _ThriftHiveMetastore_markPartitionForEvent_result__isset() : o1(false), o2(false), o3(false), o4(false), o5(false), o6(false) {}
+  bool o1;
+  bool o2;
+  bool o3;
+  bool o4;
+  bool o5;
+  bool o6;
+} _ThriftHiveMetastore_markPartitionForEvent_result__isset;
+
+class ThriftHiveMetastore_markPartitionForEvent_result {
+ public:
+
+  ThriftHiveMetastore_markPartitionForEvent_result() {
+  }
+
+  virtual ~ThriftHiveMetastore_markPartitionForEvent_result() throw() {}
+
+  MetaException o1;
+  NoSuchObjectException o2;
+  UnknownDBException o3;
+  UnknownTableException o4;
+  UnknownPartitionException o5;
+  InvalidPartitionException o6;
+
+  _ThriftHiveMetastore_markPartitionForEvent_result__isset __isset;
+
+  bool operator == (const ThriftHiveMetastore_markPartitionForEvent_result & rhs) const
+  {
+    if (!(o1 == rhs.o1))
+      return false;
+    if (!(o2 == rhs.o2))
+      return false;
+    if (!(o3 == rhs.o3))
+      return false;
+    if (!(o4 == rhs.o4))
+      return false;
+    if (!(o5 == rhs.o5))
+      return false;
+    if (!(o6 == rhs.o6))
+      return false;
+    return true;
+  }
+  bool operator != (const ThriftHiveMetastore_markPartitionForEvent_result &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const ThriftHiveMetastore_markPartitionForEvent_result & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+typedef struct _ThriftHiveMetastore_markPartitionForEvent_presult__isset {
+  _ThriftHiveMetastore_markPartitionForEvent_presult__isset() : o1(false), o2(false), o3(false), o4(false), o5(false), o6(false) {}
+  bool o1;
+  bool o2;
+  bool o3;
+  bool o4;
+  bool o5;
+  bool o6;
+} _ThriftHiveMetastore_markPartitionForEvent_presult__isset;
+
+class ThriftHiveMetastore_markPartitionForEvent_presult {
+ public:
+
+
+  virtual ~ThriftHiveMetastore_markPartitionForEvent_presult() throw() {}
+
+  MetaException o1;
+  NoSuchObjectException o2;
+  UnknownDBException o3;
+  UnknownTableException o4;
+  UnknownPartitionException o5;
+  InvalidPartitionException o6;
+
+  _ThriftHiveMetastore_markPartitionForEvent_presult__isset __isset;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+
+};
+
+typedef struct _ThriftHiveMetastore_isPartitionMarkedForEvent_args__isset {
+  _ThriftHiveMetastore_isPartitionMarkedForEvent_args__isset() : db_name(false), tbl_name(false), part_vals(false), eventType(false) {}
+  bool db_name;
+  bool tbl_name;
+  bool part_vals;
+  bool eventType;
+} _ThriftHiveMetastore_isPartitionMarkedForEvent_args__isset;
+
+class ThriftHiveMetastore_isPartitionMarkedForEvent_args {
+ public:
+
+  ThriftHiveMetastore_isPartitionMarkedForEvent_args() : db_name(""), tbl_name("") {
+  }
+
+  virtual ~ThriftHiveMetastore_isPartitionMarkedForEvent_args() throw() {}
+
+  std::string db_name;
+  std::string tbl_name;
+  std::map<std::string, std::string>  part_vals;
+  PartitionEventType::type eventType;
+
+  _ThriftHiveMetastore_isPartitionMarkedForEvent_args__isset __isset;
+
+  bool operator == (const ThriftHiveMetastore_isPartitionMarkedForEvent_args & rhs) const
+  {
+    if (!(db_name == rhs.db_name))
+      return false;
+    if (!(tbl_name == rhs.tbl_name))
+      return false;
+    if (!(part_vals == rhs.part_vals))
+      return false;
+    if (!(eventType == rhs.eventType))
+      return false;
+    return true;
+  }
+  bool operator != (const ThriftHiveMetastore_isPartitionMarkedForEvent_args &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const ThriftHiveMetastore_isPartitionMarkedForEvent_args & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+
+class ThriftHiveMetastore_isPartitionMarkedForEvent_pargs {
+ public:
+
+
+  virtual ~ThriftHiveMetastore_isPartitionMarkedForEvent_pargs() throw() {}
+
+  const std::string* db_name;
+  const std::string* tbl_name;
+  const std::map<std::string, std::string> * part_vals;
+  const PartitionEventType::type* eventType;
+
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+typedef struct _ThriftHiveMetastore_isPartitionMarkedForEvent_result__isset {
+  _ThriftHiveMetastore_isPartitionMarkedForEvent_result__isset() : success(false), o1(false), o2(false), o3(false), o4(false), o5(false), o6(false) {}
+  bool success;
+  bool o1;
+  bool o2;
+  bool o3;
+  bool o4;
+  bool o5;
+  bool o6;
+} _ThriftHiveMetastore_isPartitionMarkedForEvent_result__isset;
+
+class ThriftHiveMetastore_isPartitionMarkedForEvent_result {
+ public:
+
+  ThriftHiveMetastore_isPartitionMarkedForEvent_result() : success(0) {
+  }
+
+  virtual ~ThriftHiveMetastore_isPartitionMarkedForEvent_result() throw() {}
+
+  bool success;
+  MetaException o1;
+  NoSuchObjectException o2;
+  UnknownDBException o3;
+  UnknownTableException o4;
+  UnknownPartitionException o5;
+  InvalidPartitionException o6;
+
+  _ThriftHiveMetastore_isPartitionMarkedForEvent_result__isset __isset;
+
+  bool operator == (const ThriftHiveMetastore_isPartitionMarkedForEvent_result & rhs) const
+  {
+    if (!(success == rhs.success))
+      return false;
+    if (!(o1 == rhs.o1))
+      return false;
+    if (!(o2 == rhs.o2))
+      return false;
+    if (!(o3 == rhs.o3))
+      return false;
+    if (!(o4 == rhs.o4))
+      return false;
+    if (!(o5 == rhs.o5))
+      return false;
+    if (!(o6 == rhs.o6))
+      return false;
+    return true;
+  }
+  bool operator != (const ThriftHiveMetastore_isPartitionMarkedForEvent_result &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const ThriftHiveMetastore_isPartitionMarkedForEvent_result & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+typedef struct _ThriftHiveMetastore_isPartitionMarkedForEvent_presult__isset {
+  _ThriftHiveMetastore_isPartitionMarkedForEvent_presult__isset() : success(false), o1(false), o2(false), o3(false), o4(false), o5(false), o6(false) {}
+  bool success;
+  bool o1;
+  bool o2;
+  bool o3;
+  bool o4;
+  bool o5;
+  bool o6;
+} _ThriftHiveMetastore_isPartitionMarkedForEvent_presult__isset;
+
+class ThriftHiveMetastore_isPartitionMarkedForEvent_presult {
+ public:
+
+
+  virtual ~ThriftHiveMetastore_isPartitionMarkedForEvent_presult() throw() {}
+
+  bool* success;
+  MetaException o1;
+  NoSuchObjectException o2;
+  UnknownDBException o3;
+  UnknownTableException o4;
+  UnknownPartitionException o5;
+  InvalidPartitionException o6;
+
+  _ThriftHiveMetastore_isPartitionMarkedForEvent_presult__isset __isset;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+
+};
+
 typedef struct _ThriftHiveMetastore_add_index_args__isset {
   _ThriftHiveMetastore_add_index_args__isset() : new_index(false), index_table(false) {}
   bool new_index;
@@ -7154,6 +7459,12 @@ class ThriftHiveMetastoreClient : virtual public ThriftHiveMetastoreIf, public f
   void partition_name_to_spec(std::map<std::string, std::string> & _return, const std::string& part_name);
   void send_partition_name_to_spec(const std::string& part_name);
   void recv_partition_name_to_spec(std::map<std::string, std::string> & _return);
+  void markPartitionForEvent(const std::string& db_name, const std::string& tbl_name, const std::map<std::string, std::string> & part_vals, const PartitionEventType::type eventType);
+  void send_markPartitionForEvent(const std::string& db_name, const std::string& tbl_name, const std::map<std::string, std::string> & part_vals, const PartitionEventType::type eventType);
+  void recv_markPartitionForEvent();
+  bool isPartitionMarkedForEvent(const std::string& db_name, const std::string& tbl_name, const std::map<std::string, std::string> & part_vals, const PartitionEventType::type eventType);
+  void send_isPartitionMarkedForEvent(const std::string& db_name, const std::string& tbl_name, const std::map<std::string, std::string> & part_vals, const PartitionEventType::type eventType);
+  bool recv_isPartitionMarkedForEvent();
   void add_index(Index& _return, const Index& new_index, const Table& index_table);
   void send_add_index(const Index& new_index, const Table& index_table);
   void recv_add_index(Index& _return);
@@ -7258,6 +7569,8 @@ class ThriftHiveMetastoreProcessor : virtual public ::apache::thrift::TProcessor
   void process_get_config_value(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot);
   void process_partition_name_to_vals(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot);
   void process_partition_name_to_spec(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot);
+  void process_markPartitionForEvent(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot);
+  void process_isPartitionMarkedForEvent(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot);
   void process_add_index(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot);
   void process_alter_index(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot);
   void process_drop_index_by_name(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot);
@@ -7320,6 +7633,8 @@ class ThriftHiveMetastoreProcessor : virtual public ::apache::thrift::TProcessor
     processMap_["get_config_value"] = &ThriftHiveMetastoreProcessor::process_get_config_value;
     processMap_["partition_name_to_vals"] = &ThriftHiveMetastoreProcessor::process_partition_name_to_vals;
     processMap_["partition_name_to_spec"] = &ThriftHiveMetastoreProcessor::process_partition_name_to_spec;
+    processMap_["markPartitionForEvent"] = &ThriftHiveMetastoreProcessor::process_markPartitionForEvent;
+    processMap_["isPartitionMarkedForEvent"] = &ThriftHiveMetastoreProcessor::process_isPartitionMarkedForEvent;
     processMap_["add_index"] = &ThriftHiveMetastoreProcessor::process_add_index;
     processMap_["alter_index"] = &ThriftHiveMetastoreProcessor::process_alter_index;
     processMap_["drop_index_by_name"] = &ThriftHiveMetastoreProcessor::process_drop_index_by_name;
@@ -7787,6 +8102,24 @@ class ThriftHiveMetastoreMultiface : virtual public ThriftHiveMetastoreIf, publi
         return;
       } else {
         ifaces_[i]->partition_name_to_spec(_return, part_name);
+      }
+    }
+  }
+
+  void markPartitionForEvent(const std::string& db_name, const std::string& tbl_name, const std::map<std::string, std::string> & part_vals, const PartitionEventType::type eventType) {
+    uint32_t sz = ifaces_.size();
+    for (uint32_t i = 0; i < sz; ++i) {
+      ifaces_[i]->markPartitionForEvent(db_name, tbl_name, part_vals, eventType);
+    }
+  }
+
+  bool isPartitionMarkedForEvent(const std::string& db_name, const std::string& tbl_name, const std::map<std::string, std::string> & part_vals, const PartitionEventType::type eventType) {
+    uint32_t sz = ifaces_.size();
+    for (uint32_t i = 0; i < sz; ++i) {
+      if (i == sz - 1) {
+        return ifaces_[i]->isPartitionMarkedForEvent(db_name, tbl_name, part_vals, eventType);
+      } else {
+        ifaces_[i]->isPartitionMarkedForEvent(db_name, tbl_name, part_vals, eventType);
       }
     }
   }

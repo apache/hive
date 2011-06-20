@@ -665,5 +665,32 @@
       </field>
     </class>
 
+    <class name="MPartitionEvent"  table="PARTITION_EVENTS" identity-type="datastore" detachable="true">  
+       
+      <index name="PartitionEventIndex" unique="false">
+        <column name="PARTITION_NAME"/>
+      </index>
+      
+      <datastore-identity>
+        <column name="PART_NAME_ID"/>
+      </datastore-identity>
+      
+      <field name="dbName">  
+        <column name="DB_NAME" length="128" jdbc-type="VARCHAR"/>
+      </field>
+      <field name="tblName">
+        <column name="TBL_NAME" length="128" jdbc-type="VARCHAR"/>
+      </field>
+       <field name="partName">
+        <column name="PARTITION_NAME" length="767" jdbc-type="VARCHAR"/>
+      </field>
+      <field name="eventType">
+        <column name="EVENT_TYPE"  jdbc-type="integer"/>
+      </field>
+     <field name="eventTime">
+        <column name="EVENT_TIME"  jdbc-type="BIGINT"/>
+      </field>
+
+    </class>
   </package>
 </jdo>

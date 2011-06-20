@@ -30,6 +30,7 @@ import org.apache.hadoop.hive.metastore.events.DropDatabaseEvent;
 import org.apache.hadoop.hive.metastore.events.DropPartitionEvent;
 import org.apache.hadoop.hive.metastore.events.DropTableEvent;
 import org.apache.hadoop.hive.metastore.events.ListenerEvent;
+import org.apache.hadoop.hive.metastore.events.LoadPartitionDoneEvent;
 
 /** A dummy implementation for
  * {@link org.apache.hadoop.hive.metastore.hadooorg.apache.hadoop.hive.metastore.MetaStoreEventListener}
@@ -71,5 +72,10 @@ public class DummyListener extends MetaStoreEventListener{
   @Override
   public void onDropTable(DropTableEvent table) throws MetaException {
     notifyList.add(table);
+  }
+
+  @Override
+  public void onLoadPartitionDone(LoadPartitionDoneEvent partEvent) throws MetaException {
+    notifyList.add(partEvent);
   }
 }

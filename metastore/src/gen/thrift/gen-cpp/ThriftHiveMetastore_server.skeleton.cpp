@@ -217,6 +217,16 @@ class ThriftHiveMetastoreHandler : virtual public ThriftHiveMetastoreIf {
     printf("partition_name_to_spec\n");
   }
 
+  void markPartitionForEvent(const std::string& db_name, const std::string& tbl_name, const std::map<std::string, std::string> & part_vals, const PartitionEventType::type eventType) {
+    // Your implementation goes here
+    printf("markPartitionForEvent\n");
+  }
+
+  bool isPartitionMarkedForEvent(const std::string& db_name, const std::string& tbl_name, const std::map<std::string, std::string> & part_vals, const PartitionEventType::type eventType) {
+    // Your implementation goes here
+    printf("isPartitionMarkedForEvent\n");
+  }
+
   void add_index(Index& _return, const Index& new_index, const Table& index_table) {
     // Your implementation goes here
     printf("add_index\n");

@@ -43,6 +43,10 @@ enum PrincipalType {
   GROUP = 3,
 }
 
+enum PartitionEventType {
+  LOAD_DONE = 1,  
+}
+
 struct HiveObjectRef{
   1: HiveObjectType objectType,
   2: string dbName,
@@ -179,6 +183,14 @@ exception UnknownDBException {
 }
 
 exception AlreadyExistsException {
+  1: string message
+}
+
+exception InvalidPartitionException {
+  1: string message
+}
+
+exception UnknownPartitionException {
   1: string message
 }
 
@@ -331,6 +343,15 @@ service ThriftHiveMetastore extends fb303.FacebookService
   map<string, string> partition_name_to_spec(1: string part_name)
                           throws(1: MetaException o1)
   
+  void markPartitionForEvent(1:string db_name, 2:string tbl_name, 3:map<string,string> part_vals,
+                  4:PartitionEventType eventType) throws (1: MetaException o1, 2: NoSuchObjectException o2, 
+                  3: UnknownDBException o3, 4: UnknownTableException o4, 5: UnknownPartitionException o5,
+                  6: InvalidPartitionException o6) 
+  bool isPartitionMarkedForEvent(1:string db_name, 2:string tbl_name, 3:map<string,string> part_vals, 
+                  4: PartitionEventType eventType) throws (1: MetaException o1, 2:NoSuchObjectException o2,
+                  3: UnknownDBException o3, 4: UnknownTableException o4, 5: UnknownPartitionException o5,
+                  6: InvalidPartitionException o6) 
+                         
   //index
   Index add_index(1:Index new_index, 2: Table index_table)
                        throws(1:InvalidObjectException o1, 2:AlreadyExistsException o2, 3:MetaException o3)

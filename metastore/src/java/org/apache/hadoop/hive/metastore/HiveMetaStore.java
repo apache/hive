@@ -54,9 +54,11 @@ import org.apache.hadoop.hive.metastore.api.Index;
 import org.apache.hadoop.hive.metastore.api.IndexAlreadyExistsException;
 import org.apache.hadoop.hive.metastore.api.InvalidObjectException;
 import org.apache.hadoop.hive.metastore.api.InvalidOperationException;
+import org.apache.hadoop.hive.metastore.api.InvalidPartitionException;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.NoSuchObjectException;
 import org.apache.hadoop.hive.metastore.api.Partition;
+import org.apache.hadoop.hive.metastore.api.PartitionEventType;
 import org.apache.hadoop.hive.metastore.api.PrincipalPrivilegeSet;
 import org.apache.hadoop.hive.metastore.api.PrincipalType;
 import org.apache.hadoop.hive.metastore.api.PrivilegeBag;
@@ -66,6 +68,7 @@ import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.metastore.api.ThriftHiveMetastore;
 import org.apache.hadoop.hive.metastore.api.Type;
 import org.apache.hadoop.hive.metastore.api.UnknownDBException;
+import org.apache.hadoop.hive.metastore.api.UnknownPartitionException;
 import org.apache.hadoop.hive.metastore.api.UnknownTableException;
 import org.apache.hadoop.hive.metastore.events.AddPartitionEvent;
 import org.apache.hadoop.hive.metastore.events.CreateDatabaseEvent;
@@ -73,6 +76,7 @@ import org.apache.hadoop.hive.metastore.events.CreateTableEvent;
 import org.apache.hadoop.hive.metastore.events.DropDatabaseEvent;
 import org.apache.hadoop.hive.metastore.events.DropPartitionEvent;
 import org.apache.hadoop.hive.metastore.events.DropTableEvent;
+import org.apache.hadoop.hive.metastore.events.LoadPartitionDoneEvent;
 import org.apache.hadoop.hive.metastore.hooks.JDOConnectionURLHook;
 import org.apache.hadoop.hive.metastore.model.MDBPrivilege;
 import org.apache.hadoop.hive.metastore.model.MGlobalPrivilege;
@@ -525,6 +529,11 @@ public class HiveMetaStore extends ThriftHiveMetastore {
         List<String> partVals) {
       return startFunction(function, " : db=" + db + " tbl=" + tbl
           + "[" + join(partVals, ",") + "]" );
+    }
+
+    public String startPartitionFunction(String function, String db, String tbl,
+        Map<String,String> partName) {
+      return startFunction(function, " : db=" + db + " tbl=" + tbl + "partition=" + partName);
     }
 
     public void endFunction(String function) {
@@ -3173,7 +3182,96 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       }
     }
 
+    @Override
+    public void markPartitionForEvent(final String db_name, final String tbl_name,
+        final Map<String,String> partName, final PartitionEventType evtType) throws
+    MetaException,TException, NoSuchObjectException, UnknownDBException, UnknownTableException,
+    InvalidPartitionException, UnknownPartitionException {
+
+      try {
+        startPartitionFunction("markPartitionForEvent", db_name, tbl_name, partName);
+        Table tbl = null;
+        try{
+          tbl = executeWithRetry(new Command<Table>(){
+            @Override
+            public Table run(RawStore ms) throws Exception {
+              return ms.markPartitionForEvent(db_name, tbl_name, partName, evtType);
+            }
+          });
+        } catch (Exception original) {
+          LOG.error(original);
+          if (original instanceof NoSuchObjectException) {
+            throw (NoSuchObjectException)original;
+          } else if(original instanceof UnknownTableException){
+            throw (UnknownTableException)original;
+          } else if(original instanceof UnknownDBException){
+            throw (UnknownDBException)original;
+          } else if(original instanceof UnknownPartitionException){
+            throw (UnknownPartitionException)original;
+          } else if(original instanceof InvalidPartitionException){
+            throw (InvalidPartitionException)original;
+          } else if(original instanceof MetaException){
+            throw (MetaException)original;
+          } else{
+            MetaException me = new MetaException(original.toString());
+            me.initCause(original);
+            throw me;
+          }
+        }
+        if (null == tbl) {
+          throw new UnknownTableException("Table: "+tbl_name + " not found.");
+        } else{
+          for(MetaStoreEventListener listener : listeners){
+            listener.onLoadPartitionDone(new LoadPartitionDoneEvent(true, this, tbl, partName));
+          }
+        }
+      }
+      finally{
+        endFunction("markPartitionForEvent");
+      }
+    }
+
+    @Override
+    public boolean isPartitionMarkedForEvent(final String db_name, final String tbl_name,
+        final Map<String,String> partName, final PartitionEventType evtType) throws
+        MetaException, NoSuchObjectException, UnknownDBException, UnknownTableException,
+        TException, UnknownPartitionException, InvalidPartitionException {
+
+      startPartitionFunction("isPartitionMarkedForEvent", db_name, tbl_name, partName);
+      try {
+        return executeWithRetry(new Command<Boolean>(){
+          @Override
+          public Boolean run(RawStore ms) throws Exception {
+            return ms.isPartitionMarkedForEvent(db_name, tbl_name, partName, evtType);
+          }
+
+        });
+      } catch (Exception original) {
+        LOG.error(original);
+        if (original instanceof NoSuchObjectException) {
+          throw (NoSuchObjectException)original;
+        } else if(original instanceof UnknownTableException){
+          throw (UnknownTableException)original;
+        } else if(original instanceof UnknownDBException){
+          throw (UnknownDBException)original;
+        } else if(original instanceof UnknownPartitionException){
+          throw (UnknownPartitionException)original;
+        } else if(original instanceof InvalidPartitionException){
+          throw (InvalidPartitionException)original;
+        } else if(original instanceof MetaException){
+          throw (MetaException)original;
+        } else{
+          MetaException me = new MetaException(original.toString());
+          me.initCause(original);
+          throw me;
+        }
+      }
+      finally{
+        endFunction("isPartitionMarkedForEvent");
+      }
+    }
   }
+
 
   /**
    * Discard a current delegation token.

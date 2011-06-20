@@ -48,6 +48,17 @@ final class metastore_PrincipalType {
   );
 }
 
+$GLOBALS['metastore_E_PartitionEventType'] = array(
+  'LOAD_DONE' => 1,
+);
+
+final class metastore_PartitionEventType {
+  const LOAD_DONE = 1;
+  static public $__names = array(
+    1 => 'LOAD_DONE',
+  );
+}
+
 class metastore_Version {
   static $_TSPEC;
 
@@ -3574,6 +3585,150 @@ class metastore_AlreadyExistsException extends TException {
   public function write($output) {
     $xfer = 0;
     $xfer += $output->writeStructBegin('AlreadyExistsException');
+    if ($this->message !== null) {
+      $xfer += $output->writeFieldBegin('message', TType::STRING, 1);
+      $xfer += $output->writeString($this->message);
+      $xfer += $output->writeFieldEnd();
+    }
+    $xfer += $output->writeFieldStop();
+    $xfer += $output->writeStructEnd();
+    return $xfer;
+  }
+
+}
+
+class metastore_InvalidPartitionException extends TException {
+  static $_TSPEC;
+
+  public $message = null;
+
+  public function __construct($vals=null) {
+    if (!isset(self::$_TSPEC)) {
+      self::$_TSPEC = array(
+        1 => array(
+          'var' => 'message',
+          'type' => TType::STRING,
+          ),
+        );
+    }
+    if (is_array($vals)) {
+      if (isset($vals['message'])) {
+        $this->message = $vals['message'];
+      }
+    }
+  }
+
+  public function getName() {
+    return 'InvalidPartitionException';
+  }
+
+  public function read($input)
+  {
+    $xfer = 0;
+    $fname = null;
+    $ftype = 0;
+    $fid = 0;
+    $xfer += $input->readStructBegin($fname);
+    while (true)
+    {
+      $xfer += $input->readFieldBegin($fname, $ftype, $fid);
+      if ($ftype == TType::STOP) {
+        break;
+      }
+      switch ($fid)
+      {
+        case 1:
+          if ($ftype == TType::STRING) {
+            $xfer += $input->readString($this->message);
+          } else {
+            $xfer += $input->skip($ftype);
+          }
+          break;
+        default:
+          $xfer += $input->skip($ftype);
+          break;
+      }
+      $xfer += $input->readFieldEnd();
+    }
+    $xfer += $input->readStructEnd();
+    return $xfer;
+  }
+
+  public function write($output) {
+    $xfer = 0;
+    $xfer += $output->writeStructBegin('InvalidPartitionException');
+    if ($this->message !== null) {
+      $xfer += $output->writeFieldBegin('message', TType::STRING, 1);
+      $xfer += $output->writeString($this->message);
+      $xfer += $output->writeFieldEnd();
+    }
+    $xfer += $output->writeFieldStop();
+    $xfer += $output->writeStructEnd();
+    return $xfer;
+  }
+
+}
+
+class metastore_UnknownPartitionException extends TException {
+  static $_TSPEC;
+
+  public $message = null;
+
+  public function __construct($vals=null) {
+    if (!isset(self::$_TSPEC)) {
+      self::$_TSPEC = array(
+        1 => array(
+          'var' => 'message',
+          'type' => TType::STRING,
+          ),
+        );
+    }
+    if (is_array($vals)) {
+      if (isset($vals['message'])) {
+        $this->message = $vals['message'];
+      }
+    }
+  }
+
+  public function getName() {
+    return 'UnknownPartitionException';
+  }
+
+  public function read($input)
+  {
+    $xfer = 0;
+    $fname = null;
+    $ftype = 0;
+    $fid = 0;
+    $xfer += $input->readStructBegin($fname);
+    while (true)
+    {
+      $xfer += $input->readFieldBegin($fname, $ftype, $fid);
+      if ($ftype == TType::STOP) {
+        break;
+      }
+      switch ($fid)
+      {
+        case 1:
+          if ($ftype == TType::STRING) {
+            $xfer += $input->readString($this->message);
+          } else {
+            $xfer += $input->skip($ftype);
+          }
+          break;
+        default:
+          $xfer += $input->skip($ftype);
+          break;
+      }
+      $xfer += $input->readFieldEnd();
+    }
+    $xfer += $input->readStructEnd();
+    return $xfer;
+  }
+
+  public function write($output) {
+    $xfer = 0;
+    $xfer += $output->writeStructBegin('UnknownPartitionException');
     if ($this->message !== null) {
       $xfer += $output->writeFieldBegin('message', TType::STRING, 1);
       $xfer += $output->writeString($this->message);

@@ -60,6 +60,8 @@ if len(sys.argv) <= 1 or sys.argv[1] == '--help':
   print '  string get_config_value(string name, string defaultValue)'
   print '   partition_name_to_vals(string part_name)'
   print '   partition_name_to_spec(string part_name)'
+  print '  void markPartitionForEvent(string db_name, string tbl_name,  part_vals, PartitionEventType eventType)'
+  print '  bool isPartitionMarkedForEvent(string db_name, string tbl_name,  part_vals, PartitionEventType eventType)'
   print '  Index add_index(Index new_index, Table index_table)'
   print '  void alter_index(string dbname, string base_tbl_name, string idx_name, Index new_idx)'
   print '  bool drop_index_by_name(string db_name, string tbl_name, string index_name, bool deleteData)'
@@ -362,6 +364,18 @@ elif cmd == 'partition_name_to_spec':
     print 'partition_name_to_spec requires 1 args'
     sys.exit(1)
   pp.pprint(client.partition_name_to_spec(args[0],))
+
+elif cmd == 'markPartitionForEvent':
+  if len(args) != 4:
+    print 'markPartitionForEvent requires 4 args'
+    sys.exit(1)
+  pp.pprint(client.markPartitionForEvent(args[0],args[1],eval(args[2]),eval(args[3]),))
+
+elif cmd == 'isPartitionMarkedForEvent':
+  if len(args) != 4:
+    print 'isPartitionMarkedForEvent requires 4 args'
+    sys.exit(1)
+  pp.pprint(client.isPartitionMarkedForEvent(args[0],args[1],eval(args[2]),eval(args[3]),))
 
 elif cmd == 'add_index':
   if len(args) != 2:

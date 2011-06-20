@@ -18,6 +18,8 @@
 
 package org.apache.hadoop.hive.metastore;
 
+import static org.apache.commons.lang.StringUtils.join;
+
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -58,10 +60,12 @@ import org.apache.hadoop.hive.metastore.api.HiveObjectRef;
 import org.apache.hadoop.hive.metastore.api.HiveObjectType;
 import org.apache.hadoop.hive.metastore.api.Index;
 import org.apache.hadoop.hive.metastore.api.InvalidObjectException;
+import org.apache.hadoop.hive.metastore.api.InvalidPartitionException;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.NoSuchObjectException;
 import org.apache.hadoop.hive.metastore.api.Order;
 import org.apache.hadoop.hive.metastore.api.Partition;
+import org.apache.hadoop.hive.metastore.api.PartitionEventType;
 import org.apache.hadoop.hive.metastore.api.PrincipalPrivilegeSet;
 import org.apache.hadoop.hive.metastore.api.PrincipalType;
 import org.apache.hadoop.hive.metastore.api.PrivilegeBag;
@@ -72,6 +76,8 @@ import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
 import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.metastore.api.Type;
 import org.apache.hadoop.hive.metastore.api.UnknownDBException;
+import org.apache.hadoop.hive.metastore.api.UnknownPartitionException;
+import org.apache.hadoop.hive.metastore.api.UnknownTableException;
 import org.apache.hadoop.hive.metastore.model.MDBPrivilege;
 import org.apache.hadoop.hive.metastore.model.MDatabase;
 import org.apache.hadoop.hive.metastore.model.MFieldSchema;
@@ -80,6 +86,7 @@ import org.apache.hadoop.hive.metastore.model.MIndex;
 import org.apache.hadoop.hive.metastore.model.MOrder;
 import org.apache.hadoop.hive.metastore.model.MPartition;
 import org.apache.hadoop.hive.metastore.model.MPartitionColumnPrivilege;
+import org.apache.hadoop.hive.metastore.model.MPartitionEvent;
 import org.apache.hadoop.hive.metastore.model.MPartitionPrivilege;
 import org.apache.hadoop.hive.metastore.model.MRole;
 import org.apache.hadoop.hive.metastore.model.MRoleMap;
@@ -3398,4 +3405,72 @@ public class ObjectStore implements RawStore, Configurable {
     return mSecurityColumnList;
   }
 
+  @Override
+  public boolean isPartitionMarkedForEvent(String dbName, String tblName,
+      Map<String, String> partName, PartitionEventType evtType) throws UnknownTableException,
+      MetaException, InvalidPartitionException, UnknownPartitionException {
+
+    Collection<MPartitionEvent> partEvents;
+    boolean success = false;
+    LOG.debug("Begin Executing isPartitionMarkedForEvent");
+    try{
+    openTransaction();
+    Query query = pm.newQuery(MPartitionEvent.class, "dbName == t1 && tblName == t2 && partName == t3 && eventType == t4");
+    query.declareParameters("java.lang.String t1, java.lang.String t2, java.lang.String t3, int t4");
+    Table tbl = getTable(dbName, tblName); // Make sure dbName and tblName are valid.
+    if(null == tbl) {
+      throw new UnknownTableException("Table: "+ tblName + " is not found.");
+    }
+    partEvents = (Collection<MPartitionEvent>) query.executeWithArray(dbName, tblName, getPartitionStr(tbl, partName), evtType.getValue());
+    pm.retrieveAll(partEvents);
+    success = commitTransaction();
+    LOG.debug("Done executing isPartitionMarkedForEvent");
+    } finally{
+      if (!success) {
+        rollbackTransaction();
+      }
+    }
+    return (partEvents != null  && !partEvents.isEmpty()) ? true : false;
+
+  }
+
+  @Override
+  public Table markPartitionForEvent(String dbName, String tblName, Map<String,String> partName,
+      PartitionEventType evtType) throws MetaException, UnknownTableException, InvalidPartitionException, UnknownPartitionException {
+
+    LOG.debug("Begin executing markPartitionForEvent");
+    boolean success = false;
+    Table tbl = null;
+    try{
+    openTransaction();
+    tbl = getTable(dbName, tblName); // Make sure dbName and tblName are valid.
+    if(null == tbl) {
+      throw new UnknownTableException("Table: "+ tblName + " is not found.");
+    }
+    pm.makePersistent(new MPartitionEvent(dbName,tblName,getPartitionStr(tbl, partName), evtType.getValue()));
+    success = commitTransaction();
+    LOG.debug("Done executing markPartitionForEvent");
+    } finally {
+      if(!success) {
+        rollbackTransaction();
+      }
+    }
+    return tbl;
+  }
+
+  private String getPartitionStr(Table tbl, Map<String,String> partName) throws InvalidPartitionException{
+    if(tbl.getPartitionKeysSize() != partName.size()){
+      throw new InvalidPartitionException("Number of partition columns in table: "+ tbl.getPartitionKeysSize() +
+          " doesn't match with number of supplied partition values: "+partName.size());
+    }
+    final List<String> storedVals = new ArrayList<String>(tbl.getPartitionKeysSize());
+    for(FieldSchema partKey : tbl.getPartitionKeys()){
+      String partVal = partName.get(partKey.getName());
+      if(null == partVal) {
+        throw new InvalidPartitionException("No value found for partition column: "+partKey.getName());
+      }
+      storedVals.add(partVal);
+    }
+    return join(storedVals,',');
+  }
 }

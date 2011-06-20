@@ -27,6 +27,7 @@ import org.apache.hadoop.hive.metastore.events.CreateTableEvent;
 import org.apache.hadoop.hive.metastore.events.DropDatabaseEvent;
 import org.apache.hadoop.hive.metastore.events.DropPartitionEvent;
 import org.apache.hadoop.hive.metastore.events.DropTableEvent;
+import org.apache.hadoop.hive.metastore.events.LoadPartitionDoneEvent;
 
 /**
  * This abstract class needs to be extended to  provide implementation of actions that needs
@@ -77,6 +78,12 @@ public abstract class MetaStoreEventListener implements Configurable {
    * @throws MetaException
    */
   public abstract void onDropDatabase (DropDatabaseEvent dbEvent) throws MetaException;
+
+  /**
+   * @param partSetDoneEvent
+   * @throws MetaException
+   */
+  public abstract void onLoadPartitionDone(LoadPartitionDoneEvent partSetDoneEvent) throws MetaException;
 
   @Override
   public Configuration getConf() {

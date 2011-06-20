@@ -25,6 +25,12 @@ module PrincipalType
   VALID_VALUES = Set.new([USER, ROLE, GROUP]).freeze
 end
 
+module PartitionEventType
+  LOAD_DONE = 1
+  VALUE_MAP = {1 => "LOAD_DONE"}
+  VALID_VALUES = Set.new([LOAD_DONE]).freeze
+end
+
 class Version
   include ::Thrift::Struct, ::Thrift::Struct_Union
   VERSION = 1
@@ -502,6 +508,48 @@ class UnknownDBException < ::Thrift::Exception
 end
 
 class AlreadyExistsException < ::Thrift::Exception
+  include ::Thrift::Struct, ::Thrift::Struct_Union
+  def initialize(message=nil)
+    super()
+    self.message = message
+  end
+
+  MESSAGE = 1
+
+  FIELDS = {
+    MESSAGE => {:type => ::Thrift::Types::STRING, :name => 'message'}
+  }
+
+  def struct_fields; FIELDS; end
+
+  def validate
+  end
+
+  ::Thrift::Struct.generate_accessors self
+end
+
+class InvalidPartitionException < ::Thrift::Exception
+  include ::Thrift::Struct, ::Thrift::Struct_Union
+  def initialize(message=nil)
+    super()
+    self.message = message
+  end
+
+  MESSAGE = 1
+
+  FIELDS = {
+    MESSAGE => {:type => ::Thrift::Types::STRING, :name => 'message'}
+  }
+
+  def struct_fields; FIELDS; end
+
+  def validate
+  end
+
+  ::Thrift::Struct.generate_accessors self
+end
+
+class UnknownPartitionException < ::Thrift::Exception
   include ::Thrift::Struct, ::Thrift::Struct_Union
   def initialize(message=nil)
     super()

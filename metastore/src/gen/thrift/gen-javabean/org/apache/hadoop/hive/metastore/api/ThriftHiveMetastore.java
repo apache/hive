@@ -111,6 +111,10 @@ public class ThriftHiveMetastore {
 
     public Map<String,String> partition_name_to_spec(String part_name) throws MetaException, TException;
 
+    public void markPartitionForEvent(String db_name, String tbl_name, Map<String,String> part_vals, PartitionEventType eventType) throws MetaException, NoSuchObjectException, UnknownDBException, UnknownTableException, UnknownPartitionException, InvalidPartitionException, TException;
+
+    public boolean isPartitionMarkedForEvent(String db_name, String tbl_name, Map<String,String> part_vals, PartitionEventType eventType) throws MetaException, NoSuchObjectException, UnknownDBException, UnknownTableException, UnknownPartitionException, InvalidPartitionException, TException;
+
     public Index add_index(Index new_index, Table index_table) throws InvalidObjectException, AlreadyExistsException, MetaException, TException;
 
     public void alter_index(String dbname, String base_tbl_name, String idx_name, Index new_idx) throws InvalidOperationException, MetaException, TException;
@@ -230,6 +234,10 @@ public class ThriftHiveMetastore {
     public void partition_name_to_vals(String part_name, AsyncMethodCallback<AsyncClient.partition_name_to_vals_call> resultHandler) throws TException;
 
     public void partition_name_to_spec(String part_name, AsyncMethodCallback<AsyncClient.partition_name_to_spec_call> resultHandler) throws TException;
+
+    public void markPartitionForEvent(String db_name, String tbl_name, Map<String,String> part_vals, PartitionEventType eventType, AsyncMethodCallback<AsyncClient.markPartitionForEvent_call> resultHandler) throws TException;
+
+    public void isPartitionMarkedForEvent(String db_name, String tbl_name, Map<String,String> part_vals, PartitionEventType eventType, AsyncMethodCallback<AsyncClient.isPartitionMarkedForEvent_call> resultHandler) throws TException;
 
     public void add_index(Index new_index, Table index_table, AsyncMethodCallback<AsyncClient.add_index_call> resultHandler) throws TException;
 
@@ -1963,6 +1971,117 @@ public class ThriftHiveMetastore {
         throw result.o1;
       }
       throw new TApplicationException(TApplicationException.MISSING_RESULT, "partition_name_to_spec failed: unknown result");
+    }
+
+    public void markPartitionForEvent(String db_name, String tbl_name, Map<String,String> part_vals, PartitionEventType eventType) throws MetaException, NoSuchObjectException, UnknownDBException, UnknownTableException, UnknownPartitionException, InvalidPartitionException, TException
+    {
+      send_markPartitionForEvent(db_name, tbl_name, part_vals, eventType);
+      recv_markPartitionForEvent();
+    }
+
+    public void send_markPartitionForEvent(String db_name, String tbl_name, Map<String,String> part_vals, PartitionEventType eventType) throws TException
+    {
+      oprot_.writeMessageBegin(new TMessage("markPartitionForEvent", TMessageType.CALL, ++seqid_));
+      markPartitionForEvent_args args = new markPartitionForEvent_args();
+      args.setDb_name(db_name);
+      args.setTbl_name(tbl_name);
+      args.setPart_vals(part_vals);
+      args.setEventType(eventType);
+      args.write(oprot_);
+      oprot_.writeMessageEnd();
+      oprot_.getTransport().flush();
+    }
+
+    public void recv_markPartitionForEvent() throws MetaException, NoSuchObjectException, UnknownDBException, UnknownTableException, UnknownPartitionException, InvalidPartitionException, TException
+    {
+      TMessage msg = iprot_.readMessageBegin();
+      if (msg.type == TMessageType.EXCEPTION) {
+        TApplicationException x = TApplicationException.read(iprot_);
+        iprot_.readMessageEnd();
+        throw x;
+      }
+      if (msg.seqid != seqid_) {
+        throw new TApplicationException(TApplicationException.BAD_SEQUENCE_ID, "markPartitionForEvent failed: out of sequence response");
+      }
+      markPartitionForEvent_result result = new markPartitionForEvent_result();
+      result.read(iprot_);
+      iprot_.readMessageEnd();
+      if (result.o1 != null) {
+        throw result.o1;
+      }
+      if (result.o2 != null) {
+        throw result.o2;
+      }
+      if (result.o3 != null) {
+        throw result.o3;
+      }
+      if (result.o4 != null) {
+        throw result.o4;
+      }
+      if (result.o5 != null) {
+        throw result.o5;
+      }
+      if (result.o6 != null) {
+        throw result.o6;
+      }
+      return;
+    }
+
+    public boolean isPartitionMarkedForEvent(String db_name, String tbl_name, Map<String,String> part_vals, PartitionEventType eventType) throws MetaException, NoSuchObjectException, UnknownDBException, UnknownTableException, UnknownPartitionException, InvalidPartitionException, TException
+    {
+      send_isPartitionMarkedForEvent(db_name, tbl_name, part_vals, eventType);
+      return recv_isPartitionMarkedForEvent();
+    }
+
+    public void send_isPartitionMarkedForEvent(String db_name, String tbl_name, Map<String,String> part_vals, PartitionEventType eventType) throws TException
+    {
+      oprot_.writeMessageBegin(new TMessage("isPartitionMarkedForEvent", TMessageType.CALL, ++seqid_));
+      isPartitionMarkedForEvent_args args = new isPartitionMarkedForEvent_args();
+      args.setDb_name(db_name);
+      args.setTbl_name(tbl_name);
+      args.setPart_vals(part_vals);
+      args.setEventType(eventType);
+      args.write(oprot_);
+      oprot_.writeMessageEnd();
+      oprot_.getTransport().flush();
+    }
+
+    public boolean recv_isPartitionMarkedForEvent() throws MetaException, NoSuchObjectException, UnknownDBException, UnknownTableException, UnknownPartitionException, InvalidPartitionException, TException
+    {
+      TMessage msg = iprot_.readMessageBegin();
+      if (msg.type == TMessageType.EXCEPTION) {
+        TApplicationException x = TApplicationException.read(iprot_);
+        iprot_.readMessageEnd();
+        throw x;
+      }
+      if (msg.seqid != seqid_) {
+        throw new TApplicationException(TApplicationException.BAD_SEQUENCE_ID, "isPartitionMarkedForEvent failed: out of sequence response");
+      }
+      isPartitionMarkedForEvent_result result = new isPartitionMarkedForEvent_result();
+      result.read(iprot_);
+      iprot_.readMessageEnd();
+      if (result.isSetSuccess()) {
+        return result.success;
+      }
+      if (result.o1 != null) {
+        throw result.o1;
+      }
+      if (result.o2 != null) {
+        throw result.o2;
+      }
+      if (result.o3 != null) {
+        throw result.o3;
+      }
+      if (result.o4 != null) {
+        throw result.o4;
+      }
+      if (result.o5 != null) {
+        throw result.o5;
+      }
+      if (result.o6 != null) {
+        throw result.o6;
+      }
+      throw new TApplicationException(TApplicationException.MISSING_RESULT, "isPartitionMarkedForEvent failed: unknown result");
     }
 
     public Index add_index(Index new_index, Table index_table) throws InvalidObjectException, AlreadyExistsException, MetaException, TException
@@ -4138,6 +4257,86 @@ public class ThriftHiveMetastore {
       }
     }
 
+    public void markPartitionForEvent(String db_name, String tbl_name, Map<String,String> part_vals, PartitionEventType eventType, AsyncMethodCallback<markPartitionForEvent_call> resultHandler) throws TException {
+      checkReady();
+      markPartitionForEvent_call method_call = new markPartitionForEvent_call(db_name, tbl_name, part_vals, eventType, resultHandler, this, protocolFactory, transport);
+      manager.call(method_call);
+    }
+
+    public static class markPartitionForEvent_call extends TAsyncMethodCall {
+      private String db_name;
+      private String tbl_name;
+      private Map<String,String> part_vals;
+      private PartitionEventType eventType;
+      public markPartitionForEvent_call(String db_name, String tbl_name, Map<String,String> part_vals, PartitionEventType eventType, AsyncMethodCallback<markPartitionForEvent_call> resultHandler, TAsyncClient client, TProtocolFactory protocolFactory, TNonblockingTransport transport) throws TException {
+        super(client, protocolFactory, transport, resultHandler, false);
+        this.db_name = db_name;
+        this.tbl_name = tbl_name;
+        this.part_vals = part_vals;
+        this.eventType = eventType;
+      }
+
+      public void write_args(TProtocol prot) throws TException {
+        prot.writeMessageBegin(new TMessage("markPartitionForEvent", TMessageType.CALL, 0));
+        markPartitionForEvent_args args = new markPartitionForEvent_args();
+        args.setDb_name(db_name);
+        args.setTbl_name(tbl_name);
+        args.setPart_vals(part_vals);
+        args.setEventType(eventType);
+        args.write(prot);
+        prot.writeMessageEnd();
+      }
+
+      public void getResult() throws MetaException, NoSuchObjectException, UnknownDBException, UnknownTableException, UnknownPartitionException, InvalidPartitionException, TException {
+        if (getState() != State.RESPONSE_READ) {
+          throw new IllegalStateException("Method call not finished!");
+        }
+        TMemoryInputTransport memoryTransport = new TMemoryInputTransport(getFrameBuffer().array());
+        TProtocol prot = client.getProtocolFactory().getProtocol(memoryTransport);
+        (new Client(prot)).recv_markPartitionForEvent();
+      }
+    }
+
+    public void isPartitionMarkedForEvent(String db_name, String tbl_name, Map<String,String> part_vals, PartitionEventType eventType, AsyncMethodCallback<isPartitionMarkedForEvent_call> resultHandler) throws TException {
+      checkReady();
+      isPartitionMarkedForEvent_call method_call = new isPartitionMarkedForEvent_call(db_name, tbl_name, part_vals, eventType, resultHandler, this, protocolFactory, transport);
+      manager.call(method_call);
+    }
+
+    public static class isPartitionMarkedForEvent_call extends TAsyncMethodCall {
+      private String db_name;
+      private String tbl_name;
+      private Map<String,String> part_vals;
+      private PartitionEventType eventType;
+      public isPartitionMarkedForEvent_call(String db_name, String tbl_name, Map<String,String> part_vals, PartitionEventType eventType, AsyncMethodCallback<isPartitionMarkedForEvent_call> resultHandler, TAsyncClient client, TProtocolFactory protocolFactory, TNonblockingTransport transport) throws TException {
+        super(client, protocolFactory, transport, resultHandler, false);
+        this.db_name = db_name;
+        this.tbl_name = tbl_name;
+        this.part_vals = part_vals;
+        this.eventType = eventType;
+      }
+
+      public void write_args(TProtocol prot) throws TException {
+        prot.writeMessageBegin(new TMessage("isPartitionMarkedForEvent", TMessageType.CALL, 0));
+        isPartitionMarkedForEvent_args args = new isPartitionMarkedForEvent_args();
+        args.setDb_name(db_name);
+        args.setTbl_name(tbl_name);
+        args.setPart_vals(part_vals);
+        args.setEventType(eventType);
+        args.write(prot);
+        prot.writeMessageEnd();
+      }
+
+      public boolean getResult() throws MetaException, NoSuchObjectException, UnknownDBException, UnknownTableException, UnknownPartitionException, InvalidPartitionException, TException {
+        if (getState() != State.RESPONSE_READ) {
+          throw new IllegalStateException("Method call not finished!");
+        }
+        TMemoryInputTransport memoryTransport = new TMemoryInputTransport(getFrameBuffer().array());
+        TProtocol prot = client.getProtocolFactory().getProtocol(memoryTransport);
+        return (new Client(prot)).recv_isPartitionMarkedForEvent();
+      }
+    }
+
     public void add_index(Index new_index, Table index_table, AsyncMethodCallback<add_index_call> resultHandler) throws TException {
       checkReady();
       add_index_call method_call = new add_index_call(new_index, index_table, resultHandler, this, protocolFactory, transport);
@@ -4849,6 +5048,8 @@ public class ThriftHiveMetastore {
       processMap_.put("get_config_value", new get_config_value());
       processMap_.put("partition_name_to_vals", new partition_name_to_vals());
       processMap_.put("partition_name_to_spec", new partition_name_to_spec());
+      processMap_.put("markPartitionForEvent", new markPartitionForEvent());
+      processMap_.put("isPartitionMarkedForEvent", new isPartitionMarkedForEvent());
       processMap_.put("add_index", new add_index());
       processMap_.put("alter_index", new alter_index());
       processMap_.put("drop_index_by_name", new drop_index_by_name());
@@ -6447,6 +6648,103 @@ public class ThriftHiveMetastore {
           return;
         }
         oprot.writeMessageBegin(new TMessage("partition_name_to_spec", TMessageType.REPLY, seqid));
+        result.write(oprot);
+        oprot.writeMessageEnd();
+        oprot.getTransport().flush();
+      }
+
+    }
+
+    private class markPartitionForEvent implements ProcessFunction {
+      public void process(int seqid, TProtocol iprot, TProtocol oprot) throws TException
+      {
+        markPartitionForEvent_args args = new markPartitionForEvent_args();
+        try {
+          args.read(iprot);
+        } catch (TProtocolException e) {
+          iprot.readMessageEnd();
+          TApplicationException x = new TApplicationException(TApplicationException.PROTOCOL_ERROR, e.getMessage());
+          oprot.writeMessageBegin(new TMessage("markPartitionForEvent", TMessageType.EXCEPTION, seqid));
+          x.write(oprot);
+          oprot.writeMessageEnd();
+          oprot.getTransport().flush();
+          return;
+        }
+        iprot.readMessageEnd();
+        markPartitionForEvent_result result = new markPartitionForEvent_result();
+        try {
+          iface_.markPartitionForEvent(args.db_name, args.tbl_name, args.part_vals, args.eventType);
+        } catch (MetaException o1) {
+          result.o1 = o1;
+        } catch (NoSuchObjectException o2) {
+          result.o2 = o2;
+        } catch (UnknownDBException o3) {
+          result.o3 = o3;
+        } catch (UnknownTableException o4) {
+          result.o4 = o4;
+        } catch (UnknownPartitionException o5) {
+          result.o5 = o5;
+        } catch (InvalidPartitionException o6) {
+          result.o6 = o6;
+        } catch (Throwable th) {
+          LOGGER.error("Internal error processing markPartitionForEvent", th);
+          TApplicationException x = new TApplicationException(TApplicationException.INTERNAL_ERROR, "Internal error processing markPartitionForEvent");
+          oprot.writeMessageBegin(new TMessage("markPartitionForEvent", TMessageType.EXCEPTION, seqid));
+          x.write(oprot);
+          oprot.writeMessageEnd();
+          oprot.getTransport().flush();
+          return;
+        }
+        oprot.writeMessageBegin(new TMessage("markPartitionForEvent", TMessageType.REPLY, seqid));
+        result.write(oprot);
+        oprot.writeMessageEnd();
+        oprot.getTransport().flush();
+      }
+
+    }
+
+    private class isPartitionMarkedForEvent implements ProcessFunction {
+      public void process(int seqid, TProtocol iprot, TProtocol oprot) throws TException
+      {
+        isPartitionMarkedForEvent_args args = new isPartitionMarkedForEvent_args();
+        try {
+          args.read(iprot);
+        } catch (TProtocolException e) {
+          iprot.readMessageEnd();
+          TApplicationException x = new TApplicationException(TApplicationException.PROTOCOL_ERROR, e.getMessage());
+          oprot.writeMessageBegin(new TMessage("isPartitionMarkedForEvent", TMessageType.EXCEPTION, seqid));
+          x.write(oprot);
+          oprot.writeMessageEnd();
+          oprot.getTransport().flush();
+          return;
+        }
+        iprot.readMessageEnd();
+        isPartitionMarkedForEvent_result result = new isPartitionMarkedForEvent_result();
+        try {
+          result.success = iface_.isPartitionMarkedForEvent(args.db_name, args.tbl_name, args.part_vals, args.eventType);
+          result.setSuccessIsSet(true);
+        } catch (MetaException o1) {
+          result.o1 = o1;
+        } catch (NoSuchObjectException o2) {
+          result.o2 = o2;
+        } catch (UnknownDBException o3) {
+          result.o3 = o3;
+        } catch (UnknownTableException o4) {
+          result.o4 = o4;
+        } catch (UnknownPartitionException o5) {
+          result.o5 = o5;
+        } catch (InvalidPartitionException o6) {
+          result.o6 = o6;
+        } catch (Throwable th) {
+          LOGGER.error("Internal error processing isPartitionMarkedForEvent", th);
+          TApplicationException x = new TApplicationException(TApplicationException.INTERNAL_ERROR, "Internal error processing isPartitionMarkedForEvent");
+          oprot.writeMessageBegin(new TMessage("isPartitionMarkedForEvent", TMessageType.EXCEPTION, seqid));
+          x.write(oprot);
+          oprot.writeMessageEnd();
+          oprot.getTransport().flush();
+          return;
+        }
+        oprot.writeMessageBegin(new TMessage("isPartitionMarkedForEvent", TMessageType.REPLY, seqid));
         result.write(oprot);
         oprot.writeMessageEnd();
         oprot.getTransport().flush();
@@ -41159,6 +41457,2727 @@ public class ThriftHiveMetastore {
 
   }
 
+  public static class markPartitionForEvent_args implements TBase<markPartitionForEvent_args, markPartitionForEvent_args._Fields>, java.io.Serializable, Cloneable   {
+    private static final TStruct STRUCT_DESC = new TStruct("markPartitionForEvent_args");
+
+    private static final TField DB_NAME_FIELD_DESC = new TField("db_name", TType.STRING, (short)1);
+    private static final TField TBL_NAME_FIELD_DESC = new TField("tbl_name", TType.STRING, (short)2);
+    private static final TField PART_VALS_FIELD_DESC = new TField("part_vals", TType.MAP, (short)3);
+    private static final TField EVENT_TYPE_FIELD_DESC = new TField("eventType", TType.I32, (short)4);
+
+    private String db_name;
+    private String tbl_name;
+    private Map<String,String> part_vals;
+    private PartitionEventType eventType;
+
+    /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
+    public enum _Fields implements TFieldIdEnum {
+      DB_NAME((short)1, "db_name"),
+      TBL_NAME((short)2, "tbl_name"),
+      PART_VALS((short)3, "part_vals"),
+      /**
+       * 
+       * @see PartitionEventType
+       */
+      EVENT_TYPE((short)4, "eventType");
+
+      private static final Map<String, _Fields> byName = new HashMap<String, _Fields>();
+
+      static {
+        for (_Fields field : EnumSet.allOf(_Fields.class)) {
+          byName.put(field.getFieldName(), field);
+        }
+      }
+
+      /**
+       * Find the _Fields constant that matches fieldId, or null if its not found.
+       */
+      public static _Fields findByThriftId(int fieldId) {
+        switch(fieldId) {
+          case 1: // DB_NAME
+            return DB_NAME;
+          case 2: // TBL_NAME
+            return TBL_NAME;
+          case 3: // PART_VALS
+            return PART_VALS;
+          case 4: // EVENT_TYPE
+            return EVENT_TYPE;
+          default:
+            return null;
+        }
+      }
+
+      /**
+       * Find the _Fields constant that matches fieldId, throwing an exception
+       * if it is not found.
+       */
+      public static _Fields findByThriftIdOrThrow(int fieldId) {
+        _Fields fields = findByThriftId(fieldId);
+        if (fields == null) throw new IllegalArgumentException("Field " + fieldId + " doesn't exist!");
+        return fields;
+      }
+
+      /**
+       * Find the _Fields constant that matches name, or null if its not found.
+       */
+      public static _Fields findByName(String name) {
+        return byName.get(name);
+      }
+
+      private final short _thriftId;
+      private final String _fieldName;
+
+      _Fields(short thriftId, String fieldName) {
+        _thriftId = thriftId;
+        _fieldName = fieldName;
+      }
+
+      public short getThriftFieldId() {
+        return _thriftId;
+      }
+
+      public String getFieldName() {
+        return _fieldName;
+      }
+    }
+
+    // isset id assignments
+
+    public static final Map<_Fields, FieldMetaData> metaDataMap;
+    static {
+      Map<_Fields, FieldMetaData> tmpMap = new EnumMap<_Fields, FieldMetaData>(_Fields.class);
+      tmpMap.put(_Fields.DB_NAME, new FieldMetaData("db_name", TFieldRequirementType.DEFAULT, 
+          new FieldValueMetaData(TType.STRING)));
+      tmpMap.put(_Fields.TBL_NAME, new FieldMetaData("tbl_name", TFieldRequirementType.DEFAULT, 
+          new FieldValueMetaData(TType.STRING)));
+      tmpMap.put(_Fields.PART_VALS, new FieldMetaData("part_vals", TFieldRequirementType.DEFAULT, 
+          new MapMetaData(TType.MAP, 
+              new FieldValueMetaData(TType.STRING), 
+              new FieldValueMetaData(TType.STRING))));
+      tmpMap.put(_Fields.EVENT_TYPE, new FieldMetaData("eventType", TFieldRequirementType.DEFAULT, 
+          new EnumMetaData(TType.ENUM, PartitionEventType.class)));
+      metaDataMap = Collections.unmodifiableMap(tmpMap);
+      FieldMetaData.addStructMetaDataMap(markPartitionForEvent_args.class, metaDataMap);
+    }
+
+    public markPartitionForEvent_args() {
+    }
+
+    public markPartitionForEvent_args(
+      String db_name,
+      String tbl_name,
+      Map<String,String> part_vals,
+      PartitionEventType eventType)
+    {
+      this();
+      this.db_name = db_name;
+      this.tbl_name = tbl_name;
+      this.part_vals = part_vals;
+      this.eventType = eventType;
+    }
+
+    /**
+     * Performs a deep copy on <i>other</i>.
+     */
+    public markPartitionForEvent_args(markPartitionForEvent_args other) {
+      if (other.isSetDb_name()) {
+        this.db_name = other.db_name;
+      }
+      if (other.isSetTbl_name()) {
+        this.tbl_name = other.tbl_name;
+      }
+      if (other.isSetPart_vals()) {
+        Map<String,String> __this__part_vals = new HashMap<String,String>();
+        for (Map.Entry<String, String> other_element : other.part_vals.entrySet()) {
+
+          String other_element_key = other_element.getKey();
+          String other_element_value = other_element.getValue();
+
+          String __this__part_vals_copy_key = other_element_key;
+
+          String __this__part_vals_copy_value = other_element_value;
+
+          __this__part_vals.put(__this__part_vals_copy_key, __this__part_vals_copy_value);
+        }
+        this.part_vals = __this__part_vals;
+      }
+      if (other.isSetEventType()) {
+        this.eventType = other.eventType;
+      }
+    }
+
+    public markPartitionForEvent_args deepCopy() {
+      return new markPartitionForEvent_args(this);
+    }
+
+    @Override
+    public void clear() {
+      this.db_name = null;
+      this.tbl_name = null;
+      this.part_vals = null;
+      this.eventType = null;
+    }
+
+    public String getDb_name() {
+      return this.db_name;
+    }
+
+    public void setDb_name(String db_name) {
+      this.db_name = db_name;
+    }
+
+    public void unsetDb_name() {
+      this.db_name = null;
+    }
+
+    /** Returns true if field db_name is set (has been asigned a value) and false otherwise */
+    public boolean isSetDb_name() {
+      return this.db_name != null;
+    }
+
+    public void setDb_nameIsSet(boolean value) {
+      if (!value) {
+        this.db_name = null;
+      }
+    }
+
+    public String getTbl_name() {
+      return this.tbl_name;
+    }
+
+    public void setTbl_name(String tbl_name) {
+      this.tbl_name = tbl_name;
+    }
+
+    public void unsetTbl_name() {
+      this.tbl_name = null;
+    }
+
+    /** Returns true if field tbl_name is set (has been asigned a value) and false otherwise */
+    public boolean isSetTbl_name() {
+      return this.tbl_name != null;
+    }
+
+    public void setTbl_nameIsSet(boolean value) {
+      if (!value) {
+        this.tbl_name = null;
+      }
+    }
+
+    public int getPart_valsSize() {
+      return (this.part_vals == null) ? 0 : this.part_vals.size();
+    }
+
+    public void putToPart_vals(String key, String val) {
+      if (this.part_vals == null) {
+        this.part_vals = new HashMap<String,String>();
+      }
+      this.part_vals.put(key, val);
+    }
+
+    public Map<String,String> getPart_vals() {
+      return this.part_vals;
+    }
+
+    public void setPart_vals(Map<String,String> part_vals) {
+      this.part_vals = part_vals;
+    }
+
+    public void unsetPart_vals() {
+      this.part_vals = null;
+    }
+
+    /** Returns true if field part_vals is set (has been asigned a value) and false otherwise */
+    public boolean isSetPart_vals() {
+      return this.part_vals != null;
+    }
+
+    public void setPart_valsIsSet(boolean value) {
+      if (!value) {
+        this.part_vals = null;
+      }
+    }
+
+    /**
+     * 
+     * @see PartitionEventType
+     */
+    public PartitionEventType getEventType() {
+      return this.eventType;
+    }
+
+    /**
+     * 
+     * @see PartitionEventType
+     */
+    public void setEventType(PartitionEventType eventType) {
+      this.eventType = eventType;
+    }
+
+    public void unsetEventType() {
+      this.eventType = null;
+    }
+
+    /** Returns true if field eventType is set (has been asigned a value) and false otherwise */
+    public boolean isSetEventType() {
+      return this.eventType != null;
+    }
+
+    public void setEventTypeIsSet(boolean value) {
+      if (!value) {
+        this.eventType = null;
+      }
+    }
+
+    public void setFieldValue(_Fields field, Object value) {
+      switch (field) {
+      case DB_NAME:
+        if (value == null) {
+          unsetDb_name();
+        } else {
+          setDb_name((String)value);
+        }
+        break;
+
+      case TBL_NAME:
+        if (value == null) {
+          unsetTbl_name();
+        } else {
+          setTbl_name((String)value);
+        }
+        break;
+
+      case PART_VALS:
+        if (value == null) {
+          unsetPart_vals();
+        } else {
+          setPart_vals((Map<String,String>)value);
+        }
+        break;
+
+      case EVENT_TYPE:
+        if (value == null) {
+          unsetEventType();
+        } else {
+          setEventType((PartitionEventType)value);
+        }
+        break;
+
+      }
+    }
+
+    public Object getFieldValue(_Fields field) {
+      switch (field) {
+      case DB_NAME:
+        return getDb_name();
+
+      case TBL_NAME:
+        return getTbl_name();
+
+      case PART_VALS:
+        return getPart_vals();
+
+      case EVENT_TYPE:
+        return getEventType();
+
+      }
+      throw new IllegalStateException();
+    }
+
+    /** Returns true if field corresponding to fieldID is set (has been asigned a value) and false otherwise */
+    public boolean isSet(_Fields field) {
+      if (field == null) {
+        throw new IllegalArgumentException();
+      }
+
+      switch (field) {
+      case DB_NAME:
+        return isSetDb_name();
+      case TBL_NAME:
+        return isSetTbl_name();
+      case PART_VALS:
+        return isSetPart_vals();
+      case EVENT_TYPE:
+        return isSetEventType();
+      }
+      throw new IllegalStateException();
+    }
+
+    @Override
+    public boolean equals(Object that) {
+      if (that == null)
+        return false;
+      if (that instanceof markPartitionForEvent_args)
+        return this.equals((markPartitionForEvent_args)that);
+      return false;
+    }
+
+    public boolean equals(markPartitionForEvent_args that) {
+      if (that == null)
+        return false;
+
+      boolean this_present_db_name = true && this.isSetDb_name();
+      boolean that_present_db_name = true && that.isSetDb_name();
+      if (this_present_db_name || that_present_db_name) {
+        if (!(this_present_db_name && that_present_db_name))
+          return false;
+        if (!this.db_name.equals(that.db_name))
+          return false;
+      }
+
+      boolean this_present_tbl_name = true && this.isSetTbl_name();
+      boolean that_present_tbl_name = true && that.isSetTbl_name();
+      if (this_present_tbl_name || that_present_tbl_name) {
+        if (!(this_present_tbl_name && that_present_tbl_name))
+          return false;
+        if (!this.tbl_name.equals(that.tbl_name))
+          return false;
+      }
+
+      boolean this_present_part_vals = true && this.isSetPart_vals();
+      boolean that_present_part_vals = true && that.isSetPart_vals();
+      if (this_present_part_vals || that_present_part_vals) {
+        if (!(this_present_part_vals && that_present_part_vals))
+          return false;
+        if (!this.part_vals.equals(that.part_vals))
+          return false;
+      }
+
+      boolean this_present_eventType = true && this.isSetEventType();
+      boolean that_present_eventType = true && that.isSetEventType();
+      if (this_present_eventType || that_present_eventType) {
+        if (!(this_present_eventType && that_present_eventType))
+          return false;
+        if (!this.eventType.equals(that.eventType))
+          return false;
+      }
+
+      return true;
+    }
+
+    @Override
+    public int hashCode() {
+      return 0;
+    }
+
+    public int compareTo(markPartitionForEvent_args other) {
+      if (!getClass().equals(other.getClass())) {
+        return getClass().getName().compareTo(other.getClass().getName());
+      }
+
+      int lastComparison = 0;
+      markPartitionForEvent_args typedOther = (markPartitionForEvent_args)other;
+
+      lastComparison = Boolean.valueOf(isSetDb_name()).compareTo(typedOther.isSetDb_name());
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+      if (isSetDb_name()) {
+        lastComparison = TBaseHelper.compareTo(this.db_name, typedOther.db_name);
+        if (lastComparison != 0) {
+          return lastComparison;
+        }
+      }
+      lastComparison = Boolean.valueOf(isSetTbl_name()).compareTo(typedOther.isSetTbl_name());
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+      if (isSetTbl_name()) {
+        lastComparison = TBaseHelper.compareTo(this.tbl_name, typedOther.tbl_name);
+        if (lastComparison != 0) {
+          return lastComparison;
+        }
+      }
+      lastComparison = Boolean.valueOf(isSetPart_vals()).compareTo(typedOther.isSetPart_vals());
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+      if (isSetPart_vals()) {
+        lastComparison = TBaseHelper.compareTo(this.part_vals, typedOther.part_vals);
+        if (lastComparison != 0) {
+          return lastComparison;
+        }
+      }
+      lastComparison = Boolean.valueOf(isSetEventType()).compareTo(typedOther.isSetEventType());
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+      if (isSetEventType()) {
+        lastComparison = TBaseHelper.compareTo(this.eventType, typedOther.eventType);
+        if (lastComparison != 0) {
+          return lastComparison;
+        }
+      }
+      return 0;
+    }
+
+    public _Fields fieldForId(int fieldId) {
+      return _Fields.findByThriftId(fieldId);
+    }
+
+    public void read(TProtocol iprot) throws TException {
+      TField field;
+      iprot.readStructBegin();
+      while (true)
+      {
+        field = iprot.readFieldBegin();
+        if (field.type == TType.STOP) { 
+          break;
+        }
+        switch (field.id) {
+          case 1: // DB_NAME
+            if (field.type == TType.STRING) {
+              this.db_name = iprot.readString();
+            } else { 
+              TProtocolUtil.skip(iprot, field.type);
+            }
+            break;
+          case 2: // TBL_NAME
+            if (field.type == TType.STRING) {
+              this.tbl_name = iprot.readString();
+            } else { 
+              TProtocolUtil.skip(iprot, field.type);
+            }
+            break;
+          case 3: // PART_VALS
+            if (field.type == TType.MAP) {
+              {
+                TMap _map220 = iprot.readMapBegin();
+                this.part_vals = new HashMap<String,String>(2*_map220.size);
+                for (int _i221 = 0; _i221 < _map220.size; ++_i221)
+                {
+                  String _key222;
+                  String _val223;
+                  _key222 = iprot.readString();
+                  _val223 = iprot.readString();
+                  this.part_vals.put(_key222, _val223);
+                }
+                iprot.readMapEnd();
+              }
+            } else { 
+              TProtocolUtil.skip(iprot, field.type);
+            }
+            break;
+          case 4: // EVENT_TYPE
+            if (field.type == TType.I32) {
+              this.eventType = PartitionEventType.findByValue(iprot.readI32());
+            } else { 
+              TProtocolUtil.skip(iprot, field.type);
+            }
+            break;
+          default:
+            TProtocolUtil.skip(iprot, field.type);
+        }
+        iprot.readFieldEnd();
+      }
+      iprot.readStructEnd();
+      validate();
+    }
+
+    public void write(TProtocol oprot) throws TException {
+      validate();
+
+      oprot.writeStructBegin(STRUCT_DESC);
+      if (this.db_name != null) {
+        oprot.writeFieldBegin(DB_NAME_FIELD_DESC);
+        oprot.writeString(this.db_name);
+        oprot.writeFieldEnd();
+      }
+      if (this.tbl_name != null) {
+        oprot.writeFieldBegin(TBL_NAME_FIELD_DESC);
+        oprot.writeString(this.tbl_name);
+        oprot.writeFieldEnd();
+      }
+      if (this.part_vals != null) {
+        oprot.writeFieldBegin(PART_VALS_FIELD_DESC);
+        {
+          oprot.writeMapBegin(new TMap(TType.STRING, TType.STRING, this.part_vals.size()));
+          for (Map.Entry<String, String> _iter224 : this.part_vals.entrySet())
+          {
+            oprot.writeString(_iter224.getKey());
+            oprot.writeString(_iter224.getValue());
+          }
+          oprot.writeMapEnd();
+        }
+        oprot.writeFieldEnd();
+      }
+      if (this.eventType != null) {
+        oprot.writeFieldBegin(EVENT_TYPE_FIELD_DESC);
+        oprot.writeI32(this.eventType.getValue());
+        oprot.writeFieldEnd();
+      }
+      oprot.writeFieldStop();
+      oprot.writeStructEnd();
+    }
+
+    @Override
+    public String toString() {
+      StringBuilder sb = new StringBuilder("markPartitionForEvent_args(");
+      boolean first = true;
+
+      sb.append("db_name:");
+      if (this.db_name == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.db_name);
+      }
+      first = false;
+      if (!first) sb.append(", ");
+      sb.append("tbl_name:");
+      if (this.tbl_name == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.tbl_name);
+      }
+      first = false;
+      if (!first) sb.append(", ");
+      sb.append("part_vals:");
+      if (this.part_vals == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.part_vals);
+      }
+      first = false;
+      if (!first) sb.append(", ");
+      sb.append("eventType:");
+      if (this.eventType == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.eventType);
+      }
+      first = false;
+      sb.append(")");
+      return sb.toString();
+    }
+
+    public void validate() throws TException {
+      // check for required fields
+    }
+
+  }
+
+  public static class markPartitionForEvent_result implements TBase<markPartitionForEvent_result, markPartitionForEvent_result._Fields>, java.io.Serializable, Cloneable   {
+    private static final TStruct STRUCT_DESC = new TStruct("markPartitionForEvent_result");
+
+    private static final TField O1_FIELD_DESC = new TField("o1", TType.STRUCT, (short)1);
+    private static final TField O2_FIELD_DESC = new TField("o2", TType.STRUCT, (short)2);
+    private static final TField O3_FIELD_DESC = new TField("o3", TType.STRUCT, (short)3);
+    private static final TField O4_FIELD_DESC = new TField("o4", TType.STRUCT, (short)4);
+    private static final TField O5_FIELD_DESC = new TField("o5", TType.STRUCT, (short)5);
+    private static final TField O6_FIELD_DESC = new TField("o6", TType.STRUCT, (short)6);
+
+    private MetaException o1;
+    private NoSuchObjectException o2;
+    private UnknownDBException o3;
+    private UnknownTableException o4;
+    private UnknownPartitionException o5;
+    private InvalidPartitionException o6;
+
+    /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
+    public enum _Fields implements TFieldIdEnum {
+      O1((short)1, "o1"),
+      O2((short)2, "o2"),
+      O3((short)3, "o3"),
+      O4((short)4, "o4"),
+      O5((short)5, "o5"),
+      O6((short)6, "o6");
+
+      private static final Map<String, _Fields> byName = new HashMap<String, _Fields>();
+
+      static {
+        for (_Fields field : EnumSet.allOf(_Fields.class)) {
+          byName.put(field.getFieldName(), field);
+        }
+      }
+
+      /**
+       * Find the _Fields constant that matches fieldId, or null if its not found.
+       */
+      public static _Fields findByThriftId(int fieldId) {
+        switch(fieldId) {
+          case 1: // O1
+            return O1;
+          case 2: // O2
+            return O2;
+          case 3: // O3
+            return O3;
+          case 4: // O4
+            return O4;
+          case 5: // O5
+            return O5;
+          case 6: // O6
+            return O6;
+          default:
+            return null;
+        }
+      }
+
+      /**
+       * Find the _Fields constant that matches fieldId, throwing an exception
+       * if it is not found.
+       */
+      public static _Fields findByThriftIdOrThrow(int fieldId) {
+        _Fields fields = findByThriftId(fieldId);
+        if (fields == null) throw new IllegalArgumentException("Field " + fieldId + " doesn't exist!");
+        return fields;
+      }
+
+      /**
+       * Find the _Fields constant that matches name, or null if its not found.
+       */
+      public static _Fields findByName(String name) {
+        return byName.get(name);
+      }
+
+      private final short _thriftId;
+      private final String _fieldName;
+
+      _Fields(short thriftId, String fieldName) {
+        _thriftId = thriftId;
+        _fieldName = fieldName;
+      }
+
+      public short getThriftFieldId() {
+        return _thriftId;
+      }
+
+      public String getFieldName() {
+        return _fieldName;
+      }
+    }
+
+    // isset id assignments
+
+    public static final Map<_Fields, FieldMetaData> metaDataMap;
+    static {
+      Map<_Fields, FieldMetaData> tmpMap = new EnumMap<_Fields, FieldMetaData>(_Fields.class);
+      tmpMap.put(_Fields.O1, new FieldMetaData("o1", TFieldRequirementType.DEFAULT, 
+          new FieldValueMetaData(TType.STRUCT)));
+      tmpMap.put(_Fields.O2, new FieldMetaData("o2", TFieldRequirementType.DEFAULT, 
+          new FieldValueMetaData(TType.STRUCT)));
+      tmpMap.put(_Fields.O3, new FieldMetaData("o3", TFieldRequirementType.DEFAULT, 
+          new FieldValueMetaData(TType.STRUCT)));
+      tmpMap.put(_Fields.O4, new FieldMetaData("o4", TFieldRequirementType.DEFAULT, 
+          new FieldValueMetaData(TType.STRUCT)));
+      tmpMap.put(_Fields.O5, new FieldMetaData("o5", TFieldRequirementType.DEFAULT, 
+          new FieldValueMetaData(TType.STRUCT)));
+      tmpMap.put(_Fields.O6, new FieldMetaData("o6", TFieldRequirementType.DEFAULT, 
+          new FieldValueMetaData(TType.STRUCT)));
+      metaDataMap = Collections.unmodifiableMap(tmpMap);
+      FieldMetaData.addStructMetaDataMap(markPartitionForEvent_result.class, metaDataMap);
+    }
+
+    public markPartitionForEvent_result() {
+    }
+
+    public markPartitionForEvent_result(
+      MetaException o1,
+      NoSuchObjectException o2,
+      UnknownDBException o3,
+      UnknownTableException o4,
+      UnknownPartitionException o5,
+      InvalidPartitionException o6)
+    {
+      this();
+      this.o1 = o1;
+      this.o2 = o2;
+      this.o3 = o3;
+      this.o4 = o4;
+      this.o5 = o5;
+      this.o6 = o6;
+    }
+
+    /**
+     * Performs a deep copy on <i>other</i>.
+     */
+    public markPartitionForEvent_result(markPartitionForEvent_result other) {
+      if (other.isSetO1()) {
+        this.o1 = new MetaException(other.o1);
+      }
+      if (other.isSetO2()) {
+        this.o2 = new NoSuchObjectException(other.o2);
+      }
+      if (other.isSetO3()) {
+        this.o3 = new UnknownDBException(other.o3);
+      }
+      if (other.isSetO4()) {
+        this.o4 = new UnknownTableException(other.o4);
+      }
+      if (other.isSetO5()) {
+        this.o5 = new UnknownPartitionException(other.o5);
+      }
+      if (other.isSetO6()) {
+        this.o6 = new InvalidPartitionException(other.o6);
+      }
+    }
+
+    public markPartitionForEvent_result deepCopy() {
+      return new markPartitionForEvent_result(this);
+    }
+
+    @Override
+    public void clear() {
+      this.o1 = null;
+      this.o2 = null;
+      this.o3 = null;
+      this.o4 = null;
+      this.o5 = null;
+      this.o6 = null;
+    }
+
+    public MetaException getO1() {
+      return this.o1;
+    }
+
+    public void setO1(MetaException o1) {
+      this.o1 = o1;
+    }
+
+    public void unsetO1() {
+      this.o1 = null;
+    }
+
+    /** Returns true if field o1 is set (has been asigned a value) and false otherwise */
+    public boolean isSetO1() {
+      return this.o1 != null;
+    }
+
+    public void setO1IsSet(boolean value) {
+      if (!value) {
+        this.o1 = null;
+      }
+    }
+
+    public NoSuchObjectException getO2() {
+      return this.o2;
+    }
+
+    public void setO2(NoSuchObjectException o2) {
+      this.o2 = o2;
+    }
+
+    public void unsetO2() {
+      this.o2 = null;
+    }
+
+    /** Returns true if field o2 is set (has been asigned a value) and false otherwise */
+    public boolean isSetO2() {
+      return this.o2 != null;
+    }
+
+    public void setO2IsSet(boolean value) {
+      if (!value) {
+        this.o2 = null;
+      }
+    }
+
+    public UnknownDBException getO3() {
+      return this.o3;
+    }
+
+    public void setO3(UnknownDBException o3) {
+      this.o3 = o3;
+    }
+
+    public void unsetO3() {
+      this.o3 = null;
+    }
+
+    /** Returns true if field o3 is set (has been asigned a value) and false otherwise */
+    public boolean isSetO3() {
+      return this.o3 != null;
+    }
+
+    public void setO3IsSet(boolean value) {
+      if (!value) {
+        this.o3 = null;
+      }
+    }
+
+    public UnknownTableException getO4() {
+      return this.o4;
+    }
+
+    public void setO4(UnknownTableException o4) {
+      this.o4 = o4;
+    }
+
+    public void unsetO4() {
+      this.o4 = null;
+    }
+
+    /** Returns true if field o4 is set (has been asigned a value) and false otherwise */
+    public boolean isSetO4() {
+      return this.o4 != null;
+    }
+
+    public void setO4IsSet(boolean value) {
+      if (!value) {
+        this.o4 = null;
+      }
+    }
+
+    public UnknownPartitionException getO5() {
+      return this.o5;
+    }
+
+    public void setO5(UnknownPartitionException o5) {
+      this.o5 = o5;
+    }
+
+    public void unsetO5() {
+      this.o5 = null;
+    }
+
+    /** Returns true if field o5 is set (has been asigned a value) and false otherwise */
+    public boolean isSetO5() {
+      return this.o5 != null;
+    }
+
+    public void setO5IsSet(boolean value) {
+      if (!value) {
+        this.o5 = null;
+      }
+    }
+
+    public InvalidPartitionException getO6() {
+      return this.o6;
+    }
+
+    public void setO6(InvalidPartitionException o6) {
+      this.o6 = o6;
+    }
+
+    public void unsetO6() {
+      this.o6 = null;
+    }
+
+    /** Returns true if field o6 is set (has been asigned a value) and false otherwise */
+    public boolean isSetO6() {
+      return this.o6 != null;
+    }
+
+    public void setO6IsSet(boolean value) {
+      if (!value) {
+        this.o6 = null;
+      }
+    }
+
+    public void setFieldValue(_Fields field, Object value) {
+      switch (field) {
+      case O1:
+        if (value == null) {
+          unsetO1();
+        } else {
+          setO1((MetaException)value);
+        }
+        break;
+
+      case O2:
+        if (value == null) {
+          unsetO2();
+        } else {
+          setO2((NoSuchObjectException)value);
+        }
+        break;
+
+      case O3:
+        if (value == null) {
+          unsetO3();
+        } else {
+          setO3((UnknownDBException)value);
+        }
+        break;
+
+      case O4:
+        if (value == null) {
+          unsetO4();
+        } else {
+          setO4((UnknownTableException)value);
+        }
+        break;
+
+      case O5:
+        if (value == null) {
+          unsetO5();
+        } else {
+          setO5((UnknownPartitionException)value);
+        }
+        break;
+
+      case O6:
+        if (value == null) {
+          unsetO6();
+        } else {
+          setO6((InvalidPartitionException)value);
+        }
+        break;
+
+      }
+    }
+
+    public Object getFieldValue(_Fields field) {
+      switch (field) {
+      case O1:
+        return getO1();
+
+      case O2:
+        return getO2();
+
+      case O3:
+        return getO3();
+
+      case O4:
+        return getO4();
+
+      case O5:
+        return getO5();
+
+      case O6:
+        return getO6();
+
+      }
+      throw new IllegalStateException();
+    }
+
+    /** Returns true if field corresponding to fieldID is set (has been asigned a value) and false otherwise */
+    public boolean isSet(_Fields field) {
+      if (field == null) {
+        throw new IllegalArgumentException();
+      }
+
+      switch (field) {
+      case O1:
+        return isSetO1();
+      case O2:
+        return isSetO2();
+      case O3:
+        return isSetO3();
+      case O4:
+        return isSetO4();
+      case O5:
+        return isSetO5();
+      case O6:
+        return isSetO6();
+      }
+      throw new IllegalStateException();
+    }
+
+    @Override
+    public boolean equals(Object that) {
+      if (that == null)
+        return false;
+      if (that instanceof markPartitionForEvent_result)
+        return this.equals((markPartitionForEvent_result)that);
+      return false;
+    }
+
+    public boolean equals(markPartitionForEvent_result that) {
+      if (that == null)
+        return false;
+
+      boolean this_present_o1 = true && this.isSetO1();
+      boolean that_present_o1 = true && that.isSetO1();
+      if (this_present_o1 || that_present_o1) {
+        if (!(this_present_o1 && that_present_o1))
+          return false;
+        if (!this.o1.equals(that.o1))
+          return false;
+      }
+
+      boolean this_present_o2 = true && this.isSetO2();
+      boolean that_present_o2 = true && that.isSetO2();
+      if (this_present_o2 || that_present_o2) {
+        if (!(this_present_o2 && that_present_o2))
+          return false;
+        if (!this.o2.equals(that.o2))
+          return false;
+      }
+
+      boolean this_present_o3 = true && this.isSetO3();
+      boolean that_present_o3 = true && that.isSetO3();
+      if (this_present_o3 || that_present_o3) {
+        if (!(this_present_o3 && that_present_o3))
+          return false;
+        if (!this.o3.equals(that.o3))
+          return false;
+      }
+
+      boolean this_present_o4 = true && this.isSetO4();
+      boolean that_present_o4 = true && that.isSetO4();
+      if (this_present_o4 || that_present_o4) {
+        if (!(this_present_o4 && that_present_o4))
+          return false;
+        if (!this.o4.equals(that.o4))
+          return false;
+      }
+
+      boolean this_present_o5 = true && this.isSetO5();
+      boolean that_present_o5 = true && that.isSetO5();
+      if (this_present_o5 || that_present_o5) {
+        if (!(this_present_o5 && that_present_o5))
+          return false;
+        if (!this.o5.equals(that.o5))
+          return false;
+      }
+
+      boolean this_present_o6 = true && this.isSetO6();
+      boolean that_present_o6 = true && that.isSetO6();
+      if (this_present_o6 || that_present_o6) {
+        if (!(this_present_o6 && that_present_o6))
+          return false;
+        if (!this.o6.equals(that.o6))
+          return false;
+      }
+
+      return true;
+    }
+
+    @Override
+    public int hashCode() {
+      return 0;
+    }
+
+    public int compareTo(markPartitionForEvent_result other) {
+      if (!getClass().equals(other.getClass())) {
+        return getClass().getName().compareTo(other.getClass().getName());
+      }
+
+      int lastComparison = 0;
+      markPartitionForEvent_result typedOther = (markPartitionForEvent_result)other;
+
+      lastComparison = Boolean.valueOf(isSetO1()).compareTo(typedOther.isSetO1());
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+      if (isSetO1()) {
+        lastComparison = TBaseHelper.compareTo(this.o1, typedOther.o1);
+        if (lastComparison != 0) {
+          return lastComparison;
+        }
+      }
+      lastComparison = Boolean.valueOf(isSetO2()).compareTo(typedOther.isSetO2());
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+      if (isSetO2()) {
+        lastComparison = TBaseHelper.compareTo(this.o2, typedOther.o2);
+        if (lastComparison != 0) {
+          return lastComparison;
+        }
+      }
+      lastComparison = Boolean.valueOf(isSetO3()).compareTo(typedOther.isSetO3());
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+      if (isSetO3()) {
+        lastComparison = TBaseHelper.compareTo(this.o3, typedOther.o3);
+        if (lastComparison != 0) {
+          return lastComparison;
+        }
+      }
+      lastComparison = Boolean.valueOf(isSetO4()).compareTo(typedOther.isSetO4());
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+      if (isSetO4()) {
+        lastComparison = TBaseHelper.compareTo(this.o4, typedOther.o4);
+        if (lastComparison != 0) {
+          return lastComparison;
+        }
+      }
+      lastComparison = Boolean.valueOf(isSetO5()).compareTo(typedOther.isSetO5());
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+      if (isSetO5()) {
+        lastComparison = TBaseHelper.compareTo(this.o5, typedOther.o5);
+        if (lastComparison != 0) {
+          return lastComparison;
+        }
+      }
+      lastComparison = Boolean.valueOf(isSetO6()).compareTo(typedOther.isSetO6());
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+      if (isSetO6()) {
+        lastComparison = TBaseHelper.compareTo(this.o6, typedOther.o6);
+        if (lastComparison != 0) {
+          return lastComparison;
+        }
+      }
+      return 0;
+    }
+
+    public _Fields fieldForId(int fieldId) {
+      return _Fields.findByThriftId(fieldId);
+    }
+
+    public void read(TProtocol iprot) throws TException {
+      TField field;
+      iprot.readStructBegin();
+      while (true)
+      {
+        field = iprot.readFieldBegin();
+        if (field.type == TType.STOP) { 
+          break;
+        }
+        switch (field.id) {
+          case 1: // O1
+            if (field.type == TType.STRUCT) {
+              this.o1 = new MetaException();
+              this.o1.read(iprot);
+            } else { 
+              TProtocolUtil.skip(iprot, field.type);
+            }
+            break;
+          case 2: // O2
+            if (field.type == TType.STRUCT) {
+              this.o2 = new NoSuchObjectException();
+              this.o2.read(iprot);
+            } else { 
+              TProtocolUtil.skip(iprot, field.type);
+            }
+            break;
+          case 3: // O3
+            if (field.type == TType.STRUCT) {
+              this.o3 = new UnknownDBException();
+              this.o3.read(iprot);
+            } else { 
+              TProtocolUtil.skip(iprot, field.type);
+            }
+            break;
+          case 4: // O4
+            if (field.type == TType.STRUCT) {
+              this.o4 = new UnknownTableException();
+              this.o4.read(iprot);
+            } else { 
+              TProtocolUtil.skip(iprot, field.type);
+            }
+            break;
+          case 5: // O5
+            if (field.type == TType.STRUCT) {
+              this.o5 = new UnknownPartitionException();
+              this.o5.read(iprot);
+            } else { 
+              TProtocolUtil.skip(iprot, field.type);
+            }
+            break;
+          case 6: // O6
+            if (field.type == TType.STRUCT) {
+              this.o6 = new InvalidPartitionException();
+              this.o6.read(iprot);
+            } else { 
+              TProtocolUtil.skip(iprot, field.type);
+            }
+            break;
+          default:
+            TProtocolUtil.skip(iprot, field.type);
+        }
+        iprot.readFieldEnd();
+      }
+      iprot.readStructEnd();
+      validate();
+    }
+
+    public void write(TProtocol oprot) throws TException {
+      oprot.writeStructBegin(STRUCT_DESC);
+
+      if (this.isSetO1()) {
+        oprot.writeFieldBegin(O1_FIELD_DESC);
+        this.o1.write(oprot);
+        oprot.writeFieldEnd();
+      } else if (this.isSetO2()) {
+        oprot.writeFieldBegin(O2_FIELD_DESC);
+        this.o2.write(oprot);
+        oprot.writeFieldEnd();
+      } else if (this.isSetO3()) {
+        oprot.writeFieldBegin(O3_FIELD_DESC);
+        this.o3.write(oprot);
+        oprot.writeFieldEnd();
+      } else if (this.isSetO4()) {
+        oprot.writeFieldBegin(O4_FIELD_DESC);
+        this.o4.write(oprot);
+        oprot.writeFieldEnd();
+      } else if (this.isSetO5()) {
+        oprot.writeFieldBegin(O5_FIELD_DESC);
+        this.o5.write(oprot);
+        oprot.writeFieldEnd();
+      } else if (this.isSetO6()) {
+        oprot.writeFieldBegin(O6_FIELD_DESC);
+        this.o6.write(oprot);
+        oprot.writeFieldEnd();
+      }
+      oprot.writeFieldStop();
+      oprot.writeStructEnd();
+    }
+
+    @Override
+    public String toString() {
+      StringBuilder sb = new StringBuilder("markPartitionForEvent_result(");
+      boolean first = true;
+
+      sb.append("o1:");
+      if (this.o1 == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.o1);
+      }
+      first = false;
+      if (!first) sb.append(", ");
+      sb.append("o2:");
+      if (this.o2 == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.o2);
+      }
+      first = false;
+      if (!first) sb.append(", ");
+      sb.append("o3:");
+      if (this.o3 == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.o3);
+      }
+      first = false;
+      if (!first) sb.append(", ");
+      sb.append("o4:");
+      if (this.o4 == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.o4);
+      }
+      first = false;
+      if (!first) sb.append(", ");
+      sb.append("o5:");
+      if (this.o5 == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.o5);
+      }
+      first = false;
+      if (!first) sb.append(", ");
+      sb.append("o6:");
+      if (this.o6 == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.o6);
+      }
+      first = false;
+      sb.append(")");
+      return sb.toString();
+    }
+
+    public void validate() throws TException {
+      // check for required fields
+    }
+
+  }
+
+  public static class isPartitionMarkedForEvent_args implements TBase<isPartitionMarkedForEvent_args, isPartitionMarkedForEvent_args._Fields>, java.io.Serializable, Cloneable   {
+    private static final TStruct STRUCT_DESC = new TStruct("isPartitionMarkedForEvent_args");
+
+    private static final TField DB_NAME_FIELD_DESC = new TField("db_name", TType.STRING, (short)1);
+    private static final TField TBL_NAME_FIELD_DESC = new TField("tbl_name", TType.STRING, (short)2);
+    private static final TField PART_VALS_FIELD_DESC = new TField("part_vals", TType.MAP, (short)3);
+    private static final TField EVENT_TYPE_FIELD_DESC = new TField("eventType", TType.I32, (short)4);
+
+    private String db_name;
+    private String tbl_name;
+    private Map<String,String> part_vals;
+    private PartitionEventType eventType;
+
+    /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
+    public enum _Fields implements TFieldIdEnum {
+      DB_NAME((short)1, "db_name"),
+      TBL_NAME((short)2, "tbl_name"),
+      PART_VALS((short)3, "part_vals"),
+      /**
+       * 
+       * @see PartitionEventType
+       */
+      EVENT_TYPE((short)4, "eventType");
+
+      private static final Map<String, _Fields> byName = new HashMap<String, _Fields>();
+
+      static {
+        for (_Fields field : EnumSet.allOf(_Fields.class)) {
+          byName.put(field.getFieldName(), field);
+        }
+      }
+
+      /**
+       * Find the _Fields constant that matches fieldId, or null if its not found.
+       */
+      public static _Fields findByThriftId(int fieldId) {
+        switch(fieldId) {
+          case 1: // DB_NAME
+            return DB_NAME;
+          case 2: // TBL_NAME
+            return TBL_NAME;
+          case 3: // PART_VALS
+            return PART_VALS;
+          case 4: // EVENT_TYPE
+            return EVENT_TYPE;
+          default:
+            return null;
+        }
+      }
+
+      /**
+       * Find the _Fields constant that matches fieldId, throwing an exception
+       * if it is not found.
+       */
+      public static _Fields findByThriftIdOrThrow(int fieldId) {
+        _Fields fields = findByThriftId(fieldId);
+        if (fields == null) throw new IllegalArgumentException("Field " + fieldId + " doesn't exist!");
+        return fields;
+      }
+
+      /**
+       * Find the _Fields constant that matches name, or null if its not found.
+       */
+      public static _Fields findByName(String name) {
+        return byName.get(name);
+      }
+
+      private final short _thriftId;
+      private final String _fieldName;
+
+      _Fields(short thriftId, String fieldName) {
+        _thriftId = thriftId;
+        _fieldName = fieldName;
+      }
+
+      public short getThriftFieldId() {
+        return _thriftId;
+      }
+
+      public String getFieldName() {
+        return _fieldName;
+      }
+    }
+
+    // isset id assignments
+
+    public static final Map<_Fields, FieldMetaData> metaDataMap;
+    static {
+      Map<_Fields, FieldMetaData> tmpMap = new EnumMap<_Fields, FieldMetaData>(_Fields.class);
+      tmpMap.put(_Fields.DB_NAME, new FieldMetaData("db_name", TFieldRequirementType.DEFAULT, 
+          new FieldValueMetaData(TType.STRING)));
+      tmpMap.put(_Fields.TBL_NAME, new FieldMetaData("tbl_name", TFieldRequirementType.DEFAULT, 
+          new FieldValueMetaData(TType.STRING)));
+      tmpMap.put(_Fields.PART_VALS, new FieldMetaData("part_vals", TFieldRequirementType.DEFAULT, 
+          new MapMetaData(TType.MAP, 
+              new FieldValueMetaData(TType.STRING), 
+              new FieldValueMetaData(TType.STRING))));
+      tmpMap.put(_Fields.EVENT_TYPE, new FieldMetaData("eventType", TFieldRequirementType.DEFAULT, 
+          new EnumMetaData(TType.ENUM, PartitionEventType.class)));
+      metaDataMap = Collections.unmodifiableMap(tmpMap);
+      FieldMetaData.addStructMetaDataMap(isPartitionMarkedForEvent_args.class, metaDataMap);
+    }
+
+    public isPartitionMarkedForEvent_args() {
+    }
+
+    public isPartitionMarkedForEvent_args(
+      String db_name,
+      String tbl_name,
+      Map<String,String> part_vals,
+      PartitionEventType eventType)
+    {
+      this();
+      this.db_name = db_name;
+      this.tbl_name = tbl_name;
+      this.part_vals = part_vals;
+      this.eventType = eventType;
+    }
+
+    /**
+     * Performs a deep copy on <i>other</i>.
+     */
+    public isPartitionMarkedForEvent_args(isPartitionMarkedForEvent_args other) {
+      if (other.isSetDb_name()) {
+        this.db_name = other.db_name;
+      }
+      if (other.isSetTbl_name()) {
+        this.tbl_name = other.tbl_name;
+      }
+      if (other.isSetPart_vals()) {
+        Map<String,String> __this__part_vals = new HashMap<String,String>();
+        for (Map.Entry<String, String> other_element : other.part_vals.entrySet()) {
+
+          String other_element_key = other_element.getKey();
+          String other_element_value = other_element.getValue();
+
+          String __this__part_vals_copy_key = other_element_key;
+
+          String __this__part_vals_copy_value = other_element_value;
+
+          __this__part_vals.put(__this__part_vals_copy_key, __this__part_vals_copy_value);
+        }
+        this.part_vals = __this__part_vals;
+      }
+      if (other.isSetEventType()) {
+        this.eventType = other.eventType;
+      }
+    }
+
+    public isPartitionMarkedForEvent_args deepCopy() {
+      return new isPartitionMarkedForEvent_args(this);
+    }
+
+    @Override
+    public void clear() {
+      this.db_name = null;
+      this.tbl_name = null;
+      this.part_vals = null;
+      this.eventType = null;
+    }
+
+    public String getDb_name() {
+      return this.db_name;
+    }
+
+    public void setDb_name(String db_name) {
+      this.db_name = db_name;
+    }
+
+    public void unsetDb_name() {
+      this.db_name = null;
+    }
+
+    /** Returns true if field db_name is set (has been asigned a value) and false otherwise */
+    public boolean isSetDb_name() {
+      return this.db_name != null;
+    }
+
+    public void setDb_nameIsSet(boolean value) {
+      if (!value) {
+        this.db_name = null;
+      }
+    }
+
+    public String getTbl_name() {
+      return this.tbl_name;
+    }
+
+    public void setTbl_name(String tbl_name) {
+      this.tbl_name = tbl_name;
+    }
+
+    public void unsetTbl_name() {
+      this.tbl_name = null;
+    }
+
+    /** Returns true if field tbl_name is set (has been asigned a value) and false otherwise */
+    public boolean isSetTbl_name() {
+      return this.tbl_name != null;
+    }
+
+    public void setTbl_nameIsSet(boolean value) {
+      if (!value) {
+        this.tbl_name = null;
+      }
+    }
+
+    public int getPart_valsSize() {
+      return (this.part_vals == null) ? 0 : this.part_vals.size();
+    }
+
+    public void putToPart_vals(String key, String val) {
+      if (this.part_vals == null) {
+        this.part_vals = new HashMap<String,String>();
+      }
+      this.part_vals.put(key, val);
+    }
+
+    public Map<String,String> getPart_vals() {
+      return this.part_vals;
+    }
+
+    public void setPart_vals(Map<String,String> part_vals) {
+      this.part_vals = part_vals;
+    }
+
+    public void unsetPart_vals() {
+      this.part_vals = null;
+    }
+
+    /** Returns true if field part_vals is set (has been asigned a value) and false otherwise */
+    public boolean isSetPart_vals() {
+      return this.part_vals != null;
+    }
+
+    public void setPart_valsIsSet(boolean value) {
+      if (!value) {
+        this.part_vals = null;
+      }
+    }
+
+    /**
+     * 
+     * @see PartitionEventType
+     */
+    public PartitionEventType getEventType() {
+      return this.eventType;
+    }
+
+    /**
+     * 
+     * @see PartitionEventType
+     */
+    public void setEventType(PartitionEventType eventType) {
+      this.eventType = eventType;
+    }
+
+    public void unsetEventType() {
+      this.eventType = null;
+    }
+
+    /** Returns true if field eventType is set (has been asigned a value) and false otherwise */
+    public boolean isSetEventType() {
+      return this.eventType != null;
+    }
+
+    public void setEventTypeIsSet(boolean value) {
+      if (!value) {
+        this.eventType = null;
+      }
+    }
+
+    public void setFieldValue(_Fields field, Object value) {
+      switch (field) {
+      case DB_NAME:
+        if (value == null) {
+          unsetDb_name();
+        } else {
+          setDb_name((String)value);
+        }
+        break;
+
+      case TBL_NAME:
+        if (value == null) {
+          unsetTbl_name();
+        } else {
+          setTbl_name((String)value);
+        }
+        break;
+
+      case PART_VALS:
+        if (value == null) {
+          unsetPart_vals();
+        } else {
+          setPart_vals((Map<String,String>)value);
+        }
+        break;
+
+      case EVENT_TYPE:
+        if (value == null) {
+          unsetEventType();
+        } else {
+          setEventType((PartitionEventType)value);
+        }
+        break;
+
+      }
+    }
+
+    public Object getFieldValue(_Fields field) {
+      switch (field) {
+      case DB_NAME:
+        return getDb_name();
+
+      case TBL_NAME:
+        return getTbl_name();
+
+      case PART_VALS:
+        return getPart_vals();
+
+      case EVENT_TYPE:
+        return getEventType();
+
+      }
+      throw new IllegalStateException();
+    }
+
+    /** Returns true if field corresponding to fieldID is set (has been asigned a value) and false otherwise */
+    public boolean isSet(_Fields field) {
+      if (field == null) {
+        throw new IllegalArgumentException();
+      }
+
+      switch (field) {
+      case DB_NAME:
+        return isSetDb_name();
+      case TBL_NAME:
+        return isSetTbl_name();
+      case PART_VALS:
+        return isSetPart_vals();
+      case EVENT_TYPE:
+        return isSetEventType();
+      }
+      throw new IllegalStateException();
+    }
+
+    @Override
+    public boolean equals(Object that) {
+      if (that == null)
+        return false;
+      if (that instanceof isPartitionMarkedForEvent_args)
+        return this.equals((isPartitionMarkedForEvent_args)that);
+      return false;
+    }
+
+    public boolean equals(isPartitionMarkedForEvent_args that) {
+      if (that == null)
+        return false;
+
+      boolean this_present_db_name = true && this.isSetDb_name();
+      boolean that_present_db_name = true && that.isSetDb_name();
+      if (this_present_db_name || that_present_db_name) {
+        if (!(this_present_db_name && that_present_db_name))
+          return false;
+        if (!this.db_name.equals(that.db_name))
+          return false;
+      }
+
+      boolean this_present_tbl_name = true && this.isSetTbl_name();
+      boolean that_present_tbl_name = true && that.isSetTbl_name();
+      if (this_present_tbl_name || that_present_tbl_name) {
+        if (!(this_present_tbl_name && that_present_tbl_name))
+          return false;
+        if (!this.tbl_name.equals(that.tbl_name))
+          return false;
+      }
+
+      boolean this_present_part_vals = true && this.isSetPart_vals();
+      boolean that_present_part_vals = true && that.isSetPart_vals();
+      if (this_present_part_vals || that_present_part_vals) {
+        if (!(this_present_part_vals && that_present_part_vals))
+          return false;
+        if (!this.part_vals.equals(that.part_vals))
+          return false;
+      }
+
+      boolean this_present_eventType = true && this.isSetEventType();
+      boolean that_present_eventType = true && that.isSetEventType();
+      if (this_present_eventType || that_present_eventType) {
+        if (!(this_present_eventType && that_present_eventType))
+          return false;
+        if (!this.eventType.equals(that.eventType))
+          return false;
+      }
+
+      return true;
+    }
+
+    @Override
+    public int hashCode() {
+      return 0;
+    }
+
+    public int compareTo(isPartitionMarkedForEvent_args other) {
+      if (!getClass().equals(other.getClass())) {
+        return getClass().getName().compareTo(other.getClass().getName());
+      }
+
+      int lastComparison = 0;
+      isPartitionMarkedForEvent_args typedOther = (isPartitionMarkedForEvent_args)other;
+
+      lastComparison = Boolean.valueOf(isSetDb_name()).compareTo(typedOther.isSetDb_name());
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+      if (isSetDb_name()) {
+        lastComparison = TBaseHelper.compareTo(this.db_name, typedOther.db_name);
+        if (lastComparison != 0) {
+          return lastComparison;
+        }
+      }
+      lastComparison = Boolean.valueOf(isSetTbl_name()).compareTo(typedOther.isSetTbl_name());
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+      if (isSetTbl_name()) {
+        lastComparison = TBaseHelper.compareTo(this.tbl_name, typedOther.tbl_name);
+        if (lastComparison != 0) {
+          return lastComparison;
+        }
+      }
+      lastComparison = Boolean.valueOf(isSetPart_vals()).compareTo(typedOther.isSetPart_vals());
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+      if (isSetPart_vals()) {
+        lastComparison = TBaseHelper.compareTo(this.part_vals, typedOther.part_vals);
+        if (lastComparison != 0) {
+          return lastComparison;
+        }
+      }
+      lastComparison = Boolean.valueOf(isSetEventType()).compareTo(typedOther.isSetEventType());
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+      if (isSetEventType()) {
+        lastComparison = TBaseHelper.compareTo(this.eventType, typedOther.eventType);
+        if (lastComparison != 0) {
+          return lastComparison;
+        }
+      }
+      return 0;
+    }
+
+    public _Fields fieldForId(int fieldId) {
+      return _Fields.findByThriftId(fieldId);
+    }
+
+    public void read(TProtocol iprot) throws TException {
+      TField field;
+      iprot.readStructBegin();
+      while (true)
+      {
+        field = iprot.readFieldBegin();
+        if (field.type == TType.STOP) { 
+          break;
+        }
+        switch (field.id) {
+          case 1: // DB_NAME
+            if (field.type == TType.STRING) {
+              this.db_name = iprot.readString();
+            } else { 
+              TProtocolUtil.skip(iprot, field.type);
+            }
+            break;
+          case 2: // TBL_NAME
+            if (field.type == TType.STRING) {
+              this.tbl_name = iprot.readString();
+            } else { 
+              TProtocolUtil.skip(iprot, field.type);
+            }
+            break;
+          case 3: // PART_VALS
+            if (field.type == TType.MAP) {
+              {
+                TMap _map225 = iprot.readMapBegin();
+                this.part_vals = new HashMap<String,String>(2*_map225.size);
+                for (int _i226 = 0; _i226 < _map225.size; ++_i226)
+                {
+                  String _key227;
+                  String _val228;
+                  _key227 = iprot.readString();
+                  _val228 = iprot.readString();
+                  this.part_vals.put(_key227, _val228);
+                }
+                iprot.readMapEnd();
+              }
+            } else { 
+              TProtocolUtil.skip(iprot, field.type);
+            }
+            break;
+          case 4: // EVENT_TYPE
+            if (field.type == TType.I32) {
+              this.eventType = PartitionEventType.findByValue(iprot.readI32());
+            } else { 
+              TProtocolUtil.skip(iprot, field.type);
+            }
+            break;
+          default:
+            TProtocolUtil.skip(iprot, field.type);
+        }
+        iprot.readFieldEnd();
+      }
+      iprot.readStructEnd();
+      validate();
+    }
+
+    public void write(TProtocol oprot) throws TException {
+      validate();
+
+      oprot.writeStructBegin(STRUCT_DESC);
+      if (this.db_name != null) {
+        oprot.writeFieldBegin(DB_NAME_FIELD_DESC);
+        oprot.writeString(this.db_name);
+        oprot.writeFieldEnd();
+      }
+      if (this.tbl_name != null) {
+        oprot.writeFieldBegin(TBL_NAME_FIELD_DESC);
+        oprot.writeString(this.tbl_name);
+        oprot.writeFieldEnd();
+      }
+      if (this.part_vals != null) {
+        oprot.writeFieldBegin(PART_VALS_FIELD_DESC);
+        {
+          oprot.writeMapBegin(new TMap(TType.STRING, TType.STRING, this.part_vals.size()));
+          for (Map.Entry<String, String> _iter229 : this.part_vals.entrySet())
+          {
+            oprot.writeString(_iter229.getKey());
+            oprot.writeString(_iter229.getValue());
+          }
+          oprot.writeMapEnd();
+        }
+        oprot.writeFieldEnd();
+      }
+      if (this.eventType != null) {
+        oprot.writeFieldBegin(EVENT_TYPE_FIELD_DESC);
+        oprot.writeI32(this.eventType.getValue());
+        oprot.writeFieldEnd();
+      }
+      oprot.writeFieldStop();
+      oprot.writeStructEnd();
+    }
+
+    @Override
+    public String toString() {
+      StringBuilder sb = new StringBuilder("isPartitionMarkedForEvent_args(");
+      boolean first = true;
+
+      sb.append("db_name:");
+      if (this.db_name == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.db_name);
+      }
+      first = false;
+      if (!first) sb.append(", ");
+      sb.append("tbl_name:");
+      if (this.tbl_name == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.tbl_name);
+      }
+      first = false;
+      if (!first) sb.append(", ");
+      sb.append("part_vals:");
+      if (this.part_vals == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.part_vals);
+      }
+      first = false;
+      if (!first) sb.append(", ");
+      sb.append("eventType:");
+      if (this.eventType == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.eventType);
+      }
+      first = false;
+      sb.append(")");
+      return sb.toString();
+    }
+
+    public void validate() throws TException {
+      // check for required fields
+    }
+
+  }
+
+  public static class isPartitionMarkedForEvent_result implements TBase<isPartitionMarkedForEvent_result, isPartitionMarkedForEvent_result._Fields>, java.io.Serializable, Cloneable   {
+    private static final TStruct STRUCT_DESC = new TStruct("isPartitionMarkedForEvent_result");
+
+    private static final TField SUCCESS_FIELD_DESC = new TField("success", TType.BOOL, (short)0);
+    private static final TField O1_FIELD_DESC = new TField("o1", TType.STRUCT, (short)1);
+    private static final TField O2_FIELD_DESC = new TField("o2", TType.STRUCT, (short)2);
+    private static final TField O3_FIELD_DESC = new TField("o3", TType.STRUCT, (short)3);
+    private static final TField O4_FIELD_DESC = new TField("o4", TType.STRUCT, (short)4);
+    private static final TField O5_FIELD_DESC = new TField("o5", TType.STRUCT, (short)5);
+    private static final TField O6_FIELD_DESC = new TField("o6", TType.STRUCT, (short)6);
+
+    private boolean success;
+    private MetaException o1;
+    private NoSuchObjectException o2;
+    private UnknownDBException o3;
+    private UnknownTableException o4;
+    private UnknownPartitionException o5;
+    private InvalidPartitionException o6;
+
+    /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
+    public enum _Fields implements TFieldIdEnum {
+      SUCCESS((short)0, "success"),
+      O1((short)1, "o1"),
+      O2((short)2, "o2"),
+      O3((short)3, "o3"),
+      O4((short)4, "o4"),
+      O5((short)5, "o5"),
+      O6((short)6, "o6");
+
+      private static final Map<String, _Fields> byName = new HashMap<String, _Fields>();
+
+      static {
+        for (_Fields field : EnumSet.allOf(_Fields.class)) {
+          byName.put(field.getFieldName(), field);
+        }
+      }
+
+      /**
+       * Find the _Fields constant that matches fieldId, or null if its not found.
+       */
+      public static _Fields findByThriftId(int fieldId) {
+        switch(fieldId) {
+          case 0: // SUCCESS
+            return SUCCESS;
+          case 1: // O1
+            return O1;
+          case 2: // O2
+            return O2;
+          case 3: // O3
+            return O3;
+          case 4: // O4
+            return O4;
+          case 5: // O5
+            return O5;
+          case 6: // O6
+            return O6;
+          default:
+            return null;
+        }
+      }
+
+      /**
+       * Find the _Fields constant that matches fieldId, throwing an exception
+       * if it is not found.
+       */
+      public static _Fields findByThriftIdOrThrow(int fieldId) {
+        _Fields fields = findByThriftId(fieldId);
+        if (fields == null) throw new IllegalArgumentException("Field " + fieldId + " doesn't exist!");
+        return fields;
+      }
+
+      /**
+       * Find the _Fields constant that matches name, or null if its not found.
+       */
+      public static _Fields findByName(String name) {
+        return byName.get(name);
+      }
+
+      private final short _thriftId;
+      private final String _fieldName;
+
+      _Fields(short thriftId, String fieldName) {
+        _thriftId = thriftId;
+        _fieldName = fieldName;
+      }
+
+      public short getThriftFieldId() {
+        return _thriftId;
+      }
+
+      public String getFieldName() {
+        return _fieldName;
+      }
+    }
+
+    // isset id assignments
+    private static final int __SUCCESS_ISSET_ID = 0;
+    private BitSet __isset_bit_vector = new BitSet(1);
+
+    public static final Map<_Fields, FieldMetaData> metaDataMap;
+    static {
+      Map<_Fields, FieldMetaData> tmpMap = new EnumMap<_Fields, FieldMetaData>(_Fields.class);
+      tmpMap.put(_Fields.SUCCESS, new FieldMetaData("success", TFieldRequirementType.DEFAULT, 
+          new FieldValueMetaData(TType.BOOL)));
+      tmpMap.put(_Fields.O1, new FieldMetaData("o1", TFieldRequirementType.DEFAULT, 
+          new FieldValueMetaData(TType.STRUCT)));
+      tmpMap.put(_Fields.O2, new FieldMetaData("o2", TFieldRequirementType.DEFAULT, 
+          new FieldValueMetaData(TType.STRUCT)));
+      tmpMap.put(_Fields.O3, new FieldMetaData("o3", TFieldRequirementType.DEFAULT, 
+          new FieldValueMetaData(TType.STRUCT)));
+      tmpMap.put(_Fields.O4, new FieldMetaData("o4", TFieldRequirementType.DEFAULT, 
+          new FieldValueMetaData(TType.STRUCT)));
+      tmpMap.put(_Fields.O5, new FieldMetaData("o5", TFieldRequirementType.DEFAULT, 
+          new FieldValueMetaData(TType.STRUCT)));
+      tmpMap.put(_Fields.O6, new FieldMetaData("o6", TFieldRequirementType.DEFAULT, 
+          new FieldValueMetaData(TType.STRUCT)));
+      metaDataMap = Collections.unmodifiableMap(tmpMap);
+      FieldMetaData.addStructMetaDataMap(isPartitionMarkedForEvent_result.class, metaDataMap);
+    }
+
+    public isPartitionMarkedForEvent_result() {
+    }
+
+    public isPartitionMarkedForEvent_result(
+      boolean success,
+      MetaException o1,
+      NoSuchObjectException o2,
+      UnknownDBException o3,
+      UnknownTableException o4,
+      UnknownPartitionException o5,
+      InvalidPartitionException o6)
+    {
+      this();
+      this.success = success;
+      setSuccessIsSet(true);
+      this.o1 = o1;
+      this.o2 = o2;
+      this.o3 = o3;
+      this.o4 = o4;
+      this.o5 = o5;
+      this.o6 = o6;
+    }
+
+    /**
+     * Performs a deep copy on <i>other</i>.
+     */
+    public isPartitionMarkedForEvent_result(isPartitionMarkedForEvent_result other) {
+      __isset_bit_vector.clear();
+      __isset_bit_vector.or(other.__isset_bit_vector);
+      this.success = other.success;
+      if (other.isSetO1()) {
+        this.o1 = new MetaException(other.o1);
+      }
+      if (other.isSetO2()) {
+        this.o2 = new NoSuchObjectException(other.o2);
+      }
+      if (other.isSetO3()) {
+        this.o3 = new UnknownDBException(other.o3);
+      }
+      if (other.isSetO4()) {
+        this.o4 = new UnknownTableException(other.o4);
+      }
+      if (other.isSetO5()) {
+        this.o5 = new UnknownPartitionException(other.o5);
+      }
+      if (other.isSetO6()) {
+        this.o6 = new InvalidPartitionException(other.o6);
+      }
+    }
+
+    public isPartitionMarkedForEvent_result deepCopy() {
+      return new isPartitionMarkedForEvent_result(this);
+    }
+
+    @Override
+    public void clear() {
+      setSuccessIsSet(false);
+      this.success = false;
+      this.o1 = null;
+      this.o2 = null;
+      this.o3 = null;
+      this.o4 = null;
+      this.o5 = null;
+      this.o6 = null;
+    }
+
+    public boolean isSuccess() {
+      return this.success;
+    }
+
+    public void setSuccess(boolean success) {
+      this.success = success;
+      setSuccessIsSet(true);
+    }
+
+    public void unsetSuccess() {
+      __isset_bit_vector.clear(__SUCCESS_ISSET_ID);
+    }
+
+    /** Returns true if field success is set (has been asigned a value) and false otherwise */
+    public boolean isSetSuccess() {
+      return __isset_bit_vector.get(__SUCCESS_ISSET_ID);
+    }
+
+    public void setSuccessIsSet(boolean value) {
+      __isset_bit_vector.set(__SUCCESS_ISSET_ID, value);
+    }
+
+    public MetaException getO1() {
+      return this.o1;
+    }
+
+    public void setO1(MetaException o1) {
+      this.o1 = o1;
+    }
+
+    public void unsetO1() {
+      this.o1 = null;
+    }
+
+    /** Returns true if field o1 is set (has been asigned a value) and false otherwise */
+    public boolean isSetO1() {
+      return this.o1 != null;
+    }
+
+    public void setO1IsSet(boolean value) {
+      if (!value) {
+        this.o1 = null;
+      }
+    }
+
+    public NoSuchObjectException getO2() {
+      return this.o2;
+    }
+
+    public void setO2(NoSuchObjectException o2) {
+      this.o2 = o2;
+    }
+
+    public void unsetO2() {
+      this.o2 = null;
+    }
+
+    /** Returns true if field o2 is set (has been asigned a value) and false otherwise */
+    public boolean isSetO2() {
+      return this.o2 != null;
+    }
+
+    public void setO2IsSet(boolean value) {
+      if (!value) {
+        this.o2 = null;
+      }
+    }
+
+    public UnknownDBException getO3() {
+      return this.o3;
+    }
+
+    public void setO3(UnknownDBException o3) {
+      this.o3 = o3;
+    }
+
+    public void unsetO3() {
+      this.o3 = null;
+    }
+
+    /** Returns true if field o3 is set (has been asigned a value) and false otherwise */
+    public boolean isSetO3() {
+      return this.o3 != null;
+    }
+
+    public void setO3IsSet(boolean value) {
+      if (!value) {
+        this.o3 = null;
+      }
+    }
+
+    public UnknownTableException getO4() {
+      return this.o4;
+    }
+
+    public void setO4(UnknownTableException o4) {
+      this.o4 = o4;
+    }
+
+    public void unsetO4() {
+      this.o4 = null;
+    }
+
+    /** Returns true if field o4 is set (has been asigned a value) and false otherwise */
+    public boolean isSetO4() {
+      return this.o4 != null;
+    }
+
+    public void setO4IsSet(boolean value) {
+      if (!value) {
+        this.o4 = null;
+      }
+    }
+
+    public UnknownPartitionException getO5() {
+      return this.o5;
+    }
+
+    public void setO5(UnknownPartitionException o5) {
+      this.o5 = o5;
+    }
+
+    public void unsetO5() {
+      this.o5 = null;
+    }
+
+    /** Returns true if field o5 is set (has been asigned a value) and false otherwise */
+    public boolean isSetO5() {
+      return this.o5 != null;
+    }
+
+    public void setO5IsSet(boolean value) {
+      if (!value) {
+        this.o5 = null;
+      }
+    }
+
+    public InvalidPartitionException getO6() {
+      return this.o6;
+    }
+
+    public void setO6(InvalidPartitionException o6) {
+      this.o6 = o6;
+    }
+
+    public void unsetO6() {
+      this.o6 = null;
+    }
+
+    /** Returns true if field o6 is set (has been asigned a value) and false otherwise */
+    public boolean isSetO6() {
+      return this.o6 != null;
+    }
+
+    public void setO6IsSet(boolean value) {
+      if (!value) {
+        this.o6 = null;
+      }
+    }
+
+    public void setFieldValue(_Fields field, Object value) {
+      switch (field) {
+      case SUCCESS:
+        if (value == null) {
+          unsetSuccess();
+        } else {
+          setSuccess((Boolean)value);
+        }
+        break;
+
+      case O1:
+        if (value == null) {
+          unsetO1();
+        } else {
+          setO1((MetaException)value);
+        }
+        break;
+
+      case O2:
+        if (value == null) {
+          unsetO2();
+        } else {
+          setO2((NoSuchObjectException)value);
+        }
+        break;
+
+      case O3:
+        if (value == null) {
+          unsetO3();
+        } else {
+          setO3((UnknownDBException)value);
+        }
+        break;
+
+      case O4:
+        if (value == null) {
+          unsetO4();
+        } else {
+          setO4((UnknownTableException)value);
+        }
+        break;
+
+      case O5:
+        if (value == null) {
+          unsetO5();
+        } else {
+          setO5((UnknownPartitionException)value);
+        }
+        break;
+
+      case O6:
+        if (value == null) {
+          unsetO6();
+        } else {
+          setO6((InvalidPartitionException)value);
+        }
+        break;
+
+      }
+    }
+
+    public Object getFieldValue(_Fields field) {
+      switch (field) {
+      case SUCCESS:
+        return new Boolean(isSuccess());
+
+      case O1:
+        return getO1();
+
+      case O2:
+        return getO2();
+
+      case O3:
+        return getO3();
+
+      case O4:
+        return getO4();
+
+      case O5:
+        return getO5();
+
+      case O6:
+        return getO6();
+
+      }
+      throw new IllegalStateException();
+    }
+
+    /** Returns true if field corresponding to fieldID is set (has been asigned a value) and false otherwise */
+    public boolean isSet(_Fields field) {
+      if (field == null) {
+        throw new IllegalArgumentException();
+      }
+
+      switch (field) {
+      case SUCCESS:
+        return isSetSuccess();
+      case O1:
+        return isSetO1();
+      case O2:
+        return isSetO2();
+      case O3:
+        return isSetO3();
+      case O4:
+        return isSetO4();
+      case O5:
+        return isSetO5();
+      case O6:
+        return isSetO6();
+      }
+      throw new IllegalStateException();
+    }
+
+    @Override
+    public boolean equals(Object that) {
+      if (that == null)
+        return false;
+      if (that instanceof isPartitionMarkedForEvent_result)
+        return this.equals((isPartitionMarkedForEvent_result)that);
+      return false;
+    }
+
+    public boolean equals(isPartitionMarkedForEvent_result that) {
+      if (that == null)
+        return false;
+
+      boolean this_present_success = true;
+      boolean that_present_success = true;
+      if (this_present_success || that_present_success) {
+        if (!(this_present_success && that_present_success))
+          return false;
+        if (this.success != that.success)
+          return false;
+      }
+
+      boolean this_present_o1 = true && this.isSetO1();
+      boolean that_present_o1 = true && that.isSetO1();
+      if (this_present_o1 || that_present_o1) {
+        if (!(this_present_o1 && that_present_o1))
+          return false;
+        if (!this.o1.equals(that.o1))
+          return false;
+      }
+
+      boolean this_present_o2 = true && this.isSetO2();
+      boolean that_present_o2 = true && that.isSetO2();
+      if (this_present_o2 || that_present_o2) {
+        if (!(this_present_o2 && that_present_o2))
+          return false;
+        if (!this.o2.equals(that.o2))
+          return false;
+      }
+
+      boolean this_present_o3 = true && this.isSetO3();
+      boolean that_present_o3 = true && that.isSetO3();
+      if (this_present_o3 || that_present_o3) {
+        if (!(this_present_o3 && that_present_o3))
+          return false;
+        if (!this.o3.equals(that.o3))
+          return false;
+      }
+
+      boolean this_present_o4 = true && this.isSetO4();
+      boolean that_present_o4 = true && that.isSetO4();
+      if (this_present_o4 || that_present_o4) {
+        if (!(this_present_o4 && that_present_o4))
+          return false;
+        if (!this.o4.equals(that.o4))
+          return false;
+      }
+
+      boolean this_present_o5 = true && this.isSetO5();
+      boolean that_present_o5 = true && that.isSetO5();
+      if (this_present_o5 || that_present_o5) {
+        if (!(this_present_o5 && that_present_o5))
+          return false;
+        if (!this.o5.equals(that.o5))
+          return false;
+      }
+
+      boolean this_present_o6 = true && this.isSetO6();
+      boolean that_present_o6 = true && that.isSetO6();
+      if (this_present_o6 || that_present_o6) {
+        if (!(this_present_o6 && that_present_o6))
+          return false;
+        if (!this.o6.equals(that.o6))
+          return false;
+      }
+
+      return true;
+    }
+
+    @Override
+    public int hashCode() {
+      return 0;
+    }
+
+    public int compareTo(isPartitionMarkedForEvent_result other) {
+      if (!getClass().equals(other.getClass())) {
+        return getClass().getName().compareTo(other.getClass().getName());
+      }
+
+      int lastComparison = 0;
+      isPartitionMarkedForEvent_result typedOther = (isPartitionMarkedForEvent_result)other;
+
+      lastComparison = Boolean.valueOf(isSetSuccess()).compareTo(typedOther.isSetSuccess());
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+      if (isSetSuccess()) {
+        lastComparison = TBaseHelper.compareTo(this.success, typedOther.success);
+        if (lastComparison != 0) {
+          return lastComparison;
+        }
+      }
+      lastComparison = Boolean.valueOf(isSetO1()).compareTo(typedOther.isSetO1());
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+      if (isSetO1()) {
+        lastComparison = TBaseHelper.compareTo(this.o1, typedOther.o1);
+        if (lastComparison != 0) {
+          return lastComparison;
+        }
+      }
+      lastComparison = Boolean.valueOf(isSetO2()).compareTo(typedOther.isSetO2());
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+      if (isSetO2()) {
+        lastComparison = TBaseHelper.compareTo(this.o2, typedOther.o2);
+        if (lastComparison != 0) {
+          return lastComparison;
+        }
+      }
+      lastComparison = Boolean.valueOf(isSetO3()).compareTo(typedOther.isSetO3());
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+      if (isSetO3()) {
+        lastComparison = TBaseHelper.compareTo(this.o3, typedOther.o3);
+        if (lastComparison != 0) {
+          return lastComparison;
+        }
+      }
+      lastComparison = Boolean.valueOf(isSetO4()).compareTo(typedOther.isSetO4());
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+      if (isSetO4()) {
+        lastComparison = TBaseHelper.compareTo(this.o4, typedOther.o4);
+        if (lastComparison != 0) {
+          return lastComparison;
+        }
+      }
+      lastComparison = Boolean.valueOf(isSetO5()).compareTo(typedOther.isSetO5());
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+      if (isSetO5()) {
+        lastComparison = TBaseHelper.compareTo(this.o5, typedOther.o5);
+        if (lastComparison != 0) {
+          return lastComparison;
+        }
+      }
+      lastComparison = Boolean.valueOf(isSetO6()).compareTo(typedOther.isSetO6());
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+      if (isSetO6()) {
+        lastComparison = TBaseHelper.compareTo(this.o6, typedOther.o6);
+        if (lastComparison != 0) {
+          return lastComparison;
+        }
+      }
+      return 0;
+    }
+
+    public _Fields fieldForId(int fieldId) {
+      return _Fields.findByThriftId(fieldId);
+    }
+
+    public void read(TProtocol iprot) throws TException {
+      TField field;
+      iprot.readStructBegin();
+      while (true)
+      {
+        field = iprot.readFieldBegin();
+        if (field.type == TType.STOP) { 
+          break;
+        }
+        switch (field.id) {
+          case 0: // SUCCESS
+            if (field.type == TType.BOOL) {
+              this.success = iprot.readBool();
+              setSuccessIsSet(true);
+            } else { 
+              TProtocolUtil.skip(iprot, field.type);
+            }
+            break;
+          case 1: // O1
+            if (field.type == TType.STRUCT) {
+              this.o1 = new MetaException();
+              this.o1.read(iprot);
+            } else { 
+              TProtocolUtil.skip(iprot, field.type);
+            }
+            break;
+          case 2: // O2
+            if (field.type == TType.STRUCT) {
+              this.o2 = new NoSuchObjectException();
+              this.o2.read(iprot);
+            } else { 
+              TProtocolUtil.skip(iprot, field.type);
+            }
+            break;
+          case 3: // O3
+            if (field.type == TType.STRUCT) {
+              this.o3 = new UnknownDBException();
+              this.o3.read(iprot);
+            } else { 
+              TProtocolUtil.skip(iprot, field.type);
+            }
+            break;
+          case 4: // O4
+            if (field.type == TType.STRUCT) {
+              this.o4 = new UnknownTableException();
+              this.o4.read(iprot);
+            } else { 
+              TProtocolUtil.skip(iprot, field.type);
+            }
+            break;
+          case 5: // O5
+            if (field.type == TType.STRUCT) {
+              this.o5 = new UnknownPartitionException();
+              this.o5.read(iprot);
+            } else { 
+              TProtocolUtil.skip(iprot, field.type);
+            }
+            break;
+          case 6: // O6
+            if (field.type == TType.STRUCT) {
+              this.o6 = new InvalidPartitionException();
+              this.o6.read(iprot);
+            } else { 
+              TProtocolUtil.skip(iprot, field.type);
+            }
+            break;
+          default:
+            TProtocolUtil.skip(iprot, field.type);
+        }
+        iprot.readFieldEnd();
+      }
+      iprot.readStructEnd();
+      validate();
+    }
+
+    public void write(TProtocol oprot) throws TException {
+      oprot.writeStructBegin(STRUCT_DESC);
+
+      if (this.isSetSuccess()) {
+        oprot.writeFieldBegin(SUCCESS_FIELD_DESC);
+        oprot.writeBool(this.success);
+        oprot.writeFieldEnd();
+      } else if (this.isSetO1()) {
+        oprot.writeFieldBegin(O1_FIELD_DESC);
+        this.o1.write(oprot);
+        oprot.writeFieldEnd();
+      } else if (this.isSetO2()) {
+        oprot.writeFieldBegin(O2_FIELD_DESC);
+        this.o2.write(oprot);
+        oprot.writeFieldEnd();
+      } else if (this.isSetO3()) {
+        oprot.writeFieldBegin(O3_FIELD_DESC);
+        this.o3.write(oprot);
+        oprot.writeFieldEnd();
+      } else if (this.isSetO4()) {
+        oprot.writeFieldBegin(O4_FIELD_DESC);
+        this.o4.write(oprot);
+        oprot.writeFieldEnd();
+      } else if (this.isSetO5()) {
+        oprot.writeFieldBegin(O5_FIELD_DESC);
+        this.o5.write(oprot);
+        oprot.writeFieldEnd();
+      } else if (this.isSetO6()) {
+        oprot.writeFieldBegin(O6_FIELD_DESC);
+        this.o6.write(oprot);
+        oprot.writeFieldEnd();
+      }
+      oprot.writeFieldStop();
+      oprot.writeStructEnd();
+    }
+
+    @Override
+    public String toString() {
+      StringBuilder sb = new StringBuilder("isPartitionMarkedForEvent_result(");
+      boolean first = true;
+
+      sb.append("success:");
+      sb.append(this.success);
+      first = false;
+      if (!first) sb.append(", ");
+      sb.append("o1:");
+      if (this.o1 == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.o1);
+      }
+      first = false;
+      if (!first) sb.append(", ");
+      sb.append("o2:");
+      if (this.o2 == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.o2);
+      }
+      first = false;
+      if (!first) sb.append(", ");
+      sb.append("o3:");
+      if (this.o3 == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.o3);
+      }
+      first = false;
+      if (!first) sb.append(", ");
+      sb.append("o4:");
+      if (this.o4 == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.o4);
+      }
+      first = false;
+      if (!first) sb.append(", ");
+      sb.append("o5:");
+      if (this.o5 == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.o5);
+      }
+      first = false;
+      if (!first) sb.append(", ");
+      sb.append("o6:");
+      if (this.o6 == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.o6);
+      }
+      first = false;
+      sb.append(")");
+      return sb.toString();
+    }
+
+    public void validate() throws TException {
+      // check for required fields
+    }
+
+  }
+
   public static class add_index_args implements TBase<add_index_args, add_index_args._Fields>, java.io.Serializable, Cloneable   {
     private static final TStruct STRUCT_DESC = new TStruct("add_index_args");
 
@@ -45719,14 +48738,14 @@ public class ThriftHiveMetastore {
           case 0: // SUCCESS
             if (field.type == TType.LIST) {
               {
-                TList _list220 = iprot.readListBegin();
-                this.success = new ArrayList<Index>(_list220.size);
-                for (int _i221 = 0; _i221 < _list220.size; ++_i221)
+                TList _list230 = iprot.readListBegin();
+                this.success = new ArrayList<Index>(_list230.size);
+                for (int _i231 = 0; _i231 < _list230.size; ++_i231)
                 {
-                  Index _elem222;
-                  _elem222 = new Index();
-                  _elem222.read(iprot);
-                  this.success.add(_elem222);
+                  Index _elem232;
+                  _elem232 = new Index();
+                  _elem232.read(iprot);
+                  this.success.add(_elem232);
                 }
                 iprot.readListEnd();
               }
@@ -45766,9 +48785,9 @@ public class ThriftHiveMetastore {
         oprot.writeFieldBegin(SUCCESS_FIELD_DESC);
         {
           oprot.writeListBegin(new TList(TType.STRUCT, this.success.size()));
-          for (Index _iter223 : this.success)
+          for (Index _iter233 : this.success)
           {
-            _iter223.write(oprot);
+            _iter233.write(oprot);
           }
           oprot.writeListEnd();
         }
@@ -46596,13 +49615,13 @@ public class ThriftHiveMetastore {
           case 0: // SUCCESS
             if (field.type == TType.LIST) {
               {
-                TList _list224 = iprot.readListBegin();
-                this.success = new ArrayList<String>(_list224.size);
-                for (int _i225 = 0; _i225 < _list224.size; ++_i225)
+                TList _list234 = iprot.readListBegin();
+                this.success = new ArrayList<String>(_list234.size);
+                for (int _i235 = 0; _i235 < _list234.size; ++_i235)
                 {
-                  String _elem226;
-                  _elem226 = iprot.readString();
-                  this.success.add(_elem226);
+                  String _elem236;
+                  _elem236 = iprot.readString();
+                  this.success.add(_elem236);
                 }
                 iprot.readListEnd();
               }
@@ -46634,9 +49653,9 @@ public class ThriftHiveMetastore {
         oprot.writeFieldBegin(SUCCESS_FIELD_DESC);
         {
           oprot.writeListBegin(new TList(TType.STRING, this.success.size()));
-          for (String _iter227 : this.success)
+          for (String _iter237 : this.success)
           {
-            oprot.writeString(_iter227);
+            oprot.writeString(_iter237);
           }
           oprot.writeListEnd();
         }
@@ -48469,13 +51488,13 @@ public class ThriftHiveMetastore {
           case 0: // SUCCESS
             if (field.type == TType.LIST) {
               {
-                TList _list228 = iprot.readListBegin();
-                this.success = new ArrayList<String>(_list228.size);
-                for (int _i229 = 0; _i229 < _list228.size; ++_i229)
+                TList _list238 = iprot.readListBegin();
+                this.success = new ArrayList<String>(_list238.size);
+                for (int _i239 = 0; _i239 < _list238.size; ++_i239)
                 {
-                  String _elem230;
-                  _elem230 = iprot.readString();
-                  this.success.add(_elem230);
+                  String _elem240;
+                  _elem240 = iprot.readString();
+                  this.success.add(_elem240);
                 }
                 iprot.readListEnd();
               }
@@ -48507,9 +51526,9 @@ public class ThriftHiveMetastore {
         oprot.writeFieldBegin(SUCCESS_FIELD_DESC);
         {
           oprot.writeListBegin(new TList(TType.STRING, this.success.size()));
-          for (String _iter231 : this.success)
+          for (String _iter241 : this.success)
           {
-            oprot.writeString(_iter231);
+            oprot.writeString(_iter241);
           }
           oprot.writeListEnd();
         }
@@ -51185,14 +54204,14 @@ public class ThriftHiveMetastore {
           case 0: // SUCCESS
             if (field.type == TType.LIST) {
               {
-                TList _list232 = iprot.readListBegin();
-                this.success = new ArrayList<Role>(_list232.size);
-                for (int _i233 = 0; _i233 < _list232.size; ++_i233)
+                TList _list242 = iprot.readListBegin();
+                this.success = new ArrayList<Role>(_list242.size);
+                for (int _i243 = 0; _i243 < _list242.size; ++_i243)
                 {
-                  Role _elem234;
-                  _elem234 = new Role();
-                  _elem234.read(iprot);
-                  this.success.add(_elem234);
+                  Role _elem244;
+                  _elem244 = new Role();
+                  _elem244.read(iprot);
+                  this.success.add(_elem244);
                 }
                 iprot.readListEnd();
               }
@@ -51224,9 +54243,9 @@ public class ThriftHiveMetastore {
         oprot.writeFieldBegin(SUCCESS_FIELD_DESC);
         {
           oprot.writeListBegin(new TList(TType.STRUCT, this.success.size()));
-          for (Role _iter235 : this.success)
+          for (Role _iter245 : this.success)
           {
-            _iter235.write(oprot);
+            _iter245.write(oprot);
           }
           oprot.writeListEnd();
         }
@@ -51671,13 +54690,13 @@ public class ThriftHiveMetastore {
           case 3: // GROUP_NAMES
             if (field.type == TType.LIST) {
               {
-                TList _list236 = iprot.readListBegin();
-                this.group_names = new ArrayList<String>(_list236.size);
-                for (int _i237 = 0; _i237 < _list236.size; ++_i237)
+                TList _list246 = iprot.readListBegin();
+                this.group_names = new ArrayList<String>(_list246.size);
+                for (int _i247 = 0; _i247 < _list246.size; ++_i247)
                 {
-                  String _elem238;
-                  _elem238 = iprot.readString();
-                  this.group_names.add(_elem238);
+                  String _elem248;
+                  _elem248 = iprot.readString();
+                  this.group_names.add(_elem248);
                 }
                 iprot.readListEnd();
               }
@@ -51712,9 +54731,9 @@ public class ThriftHiveMetastore {
         oprot.writeFieldBegin(GROUP_NAMES_FIELD_DESC);
         {
           oprot.writeListBegin(new TList(TType.STRING, this.group_names.size()));
-          for (String _iter239 : this.group_names)
+          for (String _iter249 : this.group_names)
           {
-            oprot.writeString(_iter239);
+            oprot.writeString(_iter249);
           }
           oprot.writeListEnd();
         }
@@ -52913,14 +55932,14 @@ public class ThriftHiveMetastore {
           case 0: // SUCCESS
             if (field.type == TType.LIST) {
               {
-                TList _list240 = iprot.readListBegin();
-                this.success = new ArrayList<HiveObjectPrivilege>(_list240.size);
-                for (int _i241 = 0; _i241 < _list240.size; ++_i241)
+                TList _list250 = iprot.readListBegin();
+                this.success = new ArrayList<HiveObjectPrivilege>(_list250.size);
+                for (int _i251 = 0; _i251 < _list250.size; ++_i251)
                 {
-                  HiveObjectPrivilege _elem242;
-                  _elem242 = new HiveObjectPrivilege();
-                  _elem242.read(iprot);
-                  this.success.add(_elem242);
+                  HiveObjectPrivilege _elem252;
+                  _elem252 = new HiveObjectPrivilege();
+                  _elem252.read(iprot);
+                  this.success.add(_elem252);
                 }
                 iprot.readListEnd();
               }
@@ -52952,9 +55971,9 @@ public class ThriftHiveMetastore {
         oprot.writeFieldBegin(SUCCESS_FIELD_DESC);
         {
           oprot.writeListBegin(new TList(TType.STRUCT, this.success.size()));
-          for (HiveObjectPrivilege _iter243 : this.success)
+          for (HiveObjectPrivilege _iter253 : this.success)
           {
-            _iter243.write(oprot);
+            _iter253.write(oprot);
           }
           oprot.writeListEnd();
         }
