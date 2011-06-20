@@ -251,6 +251,7 @@ public abstract class TestHiveMetaStore extends TestCase {
       String partName = "ds=2008-07-01 14%3A13%3A12/hr=14";
       String part2Name = "ds=2008-07-01 14%3A13%3A12/hr=15";
       String part3Name ="ds=2008-07-02 14%3A13%3A12/hr=15";
+      String part4Name ="ds=2008-07-03 14%3A13%3A12/hr=151";
 
       part_get = client.getPartition(dbName, tblName, partName);
       assertTrue("Partitions are not the same", part.equals(part_get));
@@ -273,6 +274,14 @@ public abstract class TestHiveMetaStore extends TestCase {
       List<String> partialNames = client.listPartitionNames(dbName, tblName, partialVals,
           (short) -1);
       assertTrue("Should have returned 2 partition names", partialNames.size() == 2);
+      assertTrue("Not all part names returned", partialNames.containsAll(partNames));
+
+      partNames.add(part3Name);
+      partNames.add(part4Name);
+      partialVals.clear();
+      partialVals.add("");
+      partialNames = client.listPartitionNames(dbName, tblName, partialVals, (short) -1);
+      assertTrue("Should have returned 4 partition names", partialNames.size() == 4);
       assertTrue("Not all part names returned", partialNames.containsAll(partNames));
 
       // Test partition listing with a partial spec - hr is specified but ds is not

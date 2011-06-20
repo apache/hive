@@ -94,15 +94,27 @@ public final class FileUtils {
 
 
   public static String makePartName(List<String> partCols, List<String> vals) {
+    return makePartName(partCols, vals, null);
+  }
 
+  /**
+   * Makes a valid partition name.
+   * @param partCols The partition keys' names
+   * @param vals The partition values
+   * @param defaultStr
+   *         The default name given to a partition value if the respective value is empty or null.
+   * @return An escaped, valid partition name.
+   */
+  public static String makePartName(List<String> partCols, List<String> vals,
+      String defaultStr) {
     StringBuilder name = new StringBuilder();
     for (int i = 0; i < partCols.size(); i++) {
       if (i > 0) {
         name.append(Path.SEPARATOR);
       }
-      name.append(escapePathName((partCols.get(i)).toLowerCase()));
+      name.append(escapePathName((partCols.get(i)).toLowerCase(), defaultStr));
       name.append('=');
-      name.append(escapePathName(vals.get(i)));
+      name.append(escapePathName(vals.get(i), defaultStr));
     }
     return name.toString();
   }
@@ -121,7 +133,7 @@ public final class FileUtils {
     for (char c = 0; c < ' '; c++) {
       charToEscape.set(c);
     }
-    
+
     /**
      * ASCII 01-1F are HTTP control characters that need to be escaped.
      * \u000A and \u000D are \n and \r, respectively.
@@ -143,11 +155,28 @@ public final class FileUtils {
   }
 
   public static String escapePathName(String path) {
+    return escapePathName(path, null);
+  }
 
-    // __HIVE_DEFAULT_NULL__ is the system default value for null and empty string. We should
+  /**
+   * Escapes a path name.
+   * @param path The path to escape.
+   * @param defaultPath
+   *          The default name for the path, if the given path is empty or null.
+   * @return An escaped path name.
+   */
+  public static String escapePathName(String path, String defaultPath) {
+
+    // __HIVE_DEFAULT_NULL__ is the system default value for null and empty string.
     // TODO: we should allow user to specify default partition or HDFS file location.
     if (path == null || path.length() == 0) {
-      return "__HIVE_DEFAULT_PARTITION__";
+      if (defaultPath == null) {
+        //previously, when path is empty or null and no default path is specified,
+        // __HIVE_DEFAULT_PARTITION__ was the return value for escapePathName
+        return "__HIVE_DEFAULT_PARTITION__";
+      } else {
+        return defaultPath;
+      }
     }
 
     StringBuilder sb = new StringBuilder();
