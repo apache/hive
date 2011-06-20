@@ -34,6 +34,12 @@ struct PrincipalType {
   };
 };
 
+struct PartitionEventType {
+  enum type {
+    LOAD_DONE = 1
+  };
+};
+
 typedef struct _Version__isset {
   _Version__isset() : version(false), comments(false) {}
   bool version;
@@ -1081,6 +1087,80 @@ class AlreadyExistsException : public ::apache::thrift::TException {
   }
 
   bool operator < (const AlreadyExistsException & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+typedef struct _InvalidPartitionException__isset {
+  _InvalidPartitionException__isset() : message(false) {}
+  bool message;
+} _InvalidPartitionException__isset;
+
+class InvalidPartitionException : public ::apache::thrift::TException {
+ public:
+
+  static const char* ascii_fingerprint; // = "EFB929595D312AC8F305D5A794CFEDA1";
+  static const uint8_t binary_fingerprint[16]; // = {0xEF,0xB9,0x29,0x59,0x5D,0x31,0x2A,0xC8,0xF3,0x05,0xD5,0xA7,0x94,0xCF,0xED,0xA1};
+
+  InvalidPartitionException() : message("") {
+  }
+
+  virtual ~InvalidPartitionException() throw() {}
+
+  std::string message;
+
+  _InvalidPartitionException__isset __isset;
+
+  bool operator == (const InvalidPartitionException & rhs) const
+  {
+    if (!(message == rhs.message))
+      return false;
+    return true;
+  }
+  bool operator != (const InvalidPartitionException &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const InvalidPartitionException & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+typedef struct _UnknownPartitionException__isset {
+  _UnknownPartitionException__isset() : message(false) {}
+  bool message;
+} _UnknownPartitionException__isset;
+
+class UnknownPartitionException : public ::apache::thrift::TException {
+ public:
+
+  static const char* ascii_fingerprint; // = "EFB929595D312AC8F305D5A794CFEDA1";
+  static const uint8_t binary_fingerprint[16]; // = {0xEF,0xB9,0x29,0x59,0x5D,0x31,0x2A,0xC8,0xF3,0x05,0xD5,0xA7,0x94,0xCF,0xED,0xA1};
+
+  UnknownPartitionException() : message("") {
+  }
+
+  virtual ~UnknownPartitionException() throw() {}
+
+  std::string message;
+
+  _UnknownPartitionException__isset __isset;
+
+  bool operator == (const UnknownPartitionException & rhs) const
+  {
+    if (!(message == rhs.message))
+      return false;
+    return true;
+  }
+  bool operator != (const UnknownPartitionException &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const UnknownPartitionException & ) const;
 
   uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
   uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;

@@ -18,7 +18,9 @@
 
 package org.apache.hadoop.hive.metastore;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import junit.framework.TestCase;
 
@@ -27,6 +29,7 @@ import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.api.Partition;
+import org.apache.hadoop.hive.metastore.api.PartitionEventType;
 import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.metastore.events.AddPartitionEvent;
 import org.apache.hadoop.hive.metastore.events.CreateDatabaseEvent;
@@ -35,6 +38,7 @@ import org.apache.hadoop.hive.metastore.events.DropDatabaseEvent;
 import org.apache.hadoop.hive.metastore.events.DropPartitionEvent;
 import org.apache.hadoop.hive.metastore.events.DropTableEvent;
 import org.apache.hadoop.hive.metastore.events.ListenerEvent;
+import org.apache.hadoop.hive.metastore.events.LoadPartitionDoneEvent;
 import org.apache.hadoop.hive.ql.Driver;
 import org.apache.hadoop.hive.ql.session.SessionState;
 
@@ -60,7 +64,6 @@ public class TestMetaStoreEventListener extends TestCase {
         assert false;
       }
     }
-
   }
 
   @Override
@@ -119,17 +122,26 @@ public class TestMetaStoreEventListener extends TestCase {
     assert partEvent.getStatus();
     assertEquals(part, partEvent.getPartition());
 
-    driver.run("alter table tmptbl drop partition (b='2011')");
+    Map<String,String> kvs = new HashMap<String, String>(1);
+    kvs.put("b", "2011");
+    msc.markPartitionForEvent("tmpdb", "tmptbl", kvs, PartitionEventType.LOAD_DONE);
     assertEquals(notifyList.size(), 4);
-    DropPartitionEvent dropPart = (DropPartitionEvent)notifyList.get(3);
+    LoadPartitionDoneEvent partMarkEvent = (LoadPartitionDoneEvent)notifyList.get(3);
+    assert partMarkEvent.getStatus();
+    assertEquals(partMarkEvent.getPartitionName(), kvs);
+    assertEquals(partMarkEvent.getTable().getTableName(), "tmptbl");
+
+    driver.run("alter table tmptbl drop partition (b='2011')");
+    assertEquals(notifyList.size(), 5);
+    DropPartitionEvent dropPart = (DropPartitionEvent)notifyList.get(4);
     assert dropPart.getStatus();
     assertEquals(part.getValues(), dropPart.getPartition().getValues());
     assertEquals(part.getDbName(), dropPart.getPartition().getDbName());
     assertEquals(part.getTableName(), dropPart.getPartition().getTableName());
 
     driver.run("drop table tmptbl");
-    assertEquals(notifyList.size(), 5);
-    DropTableEvent dropTbl = (DropTableEvent)notifyList.get(4);
+    assertEquals(notifyList.size(), 6);
+    DropTableEvent dropTbl = (DropTableEvent)notifyList.get(5);
     assert dropTbl.getStatus();
     assertEquals(tbl.getTableName(), dropTbl.getTable().getTableName());
     assertEquals(tbl.getDbName(), dropTbl.getTable().getDbName());
@@ -137,8 +149,8 @@ public class TestMetaStoreEventListener extends TestCase {
 
 
     driver.run("drop database tmpdb");
-    assertEquals(notifyList.size(), 6);
-    DropDatabaseEvent dropDB = (DropDatabaseEvent)notifyList.get(5);
+    assertEquals(notifyList.size(), 7);
+    DropDatabaseEvent dropDB = (DropDatabaseEvent)notifyList.get(6);
     assert dropDB.getStatus();
     assertEquals(db, dropDB.getDatabase());
   }

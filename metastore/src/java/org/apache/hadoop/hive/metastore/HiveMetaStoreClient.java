@@ -45,9 +45,11 @@ import org.apache.hadoop.hive.metastore.api.HiveObjectRef;
 import org.apache.hadoop.hive.metastore.api.Index;
 import org.apache.hadoop.hive.metastore.api.InvalidObjectException;
 import org.apache.hadoop.hive.metastore.api.InvalidOperationException;
+import org.apache.hadoop.hive.metastore.api.InvalidPartitionException;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.NoSuchObjectException;
 import org.apache.hadoop.hive.metastore.api.Partition;
+import org.apache.hadoop.hive.metastore.api.PartitionEventType;
 import org.apache.hadoop.hive.metastore.api.PrincipalPrivilegeSet;
 import org.apache.hadoop.hive.metastore.api.PrincipalType;
 import org.apache.hadoop.hive.metastore.api.PrivilegeBag;
@@ -56,6 +58,7 @@ import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.metastore.api.ThriftHiveMetastore;
 import org.apache.hadoop.hive.metastore.api.Type;
 import org.apache.hadoop.hive.metastore.api.UnknownDBException;
+import org.apache.hadoop.hive.metastore.api.UnknownPartitionException;
 import org.apache.hadoop.hive.metastore.api.UnknownTableException;
 import org.apache.hadoop.hive.shims.ShimLoader;
 import org.apache.hadoop.hive.thrift.HadoopThriftAuthBridge;
@@ -1135,6 +1138,26 @@ public class HiveMetaStoreClient implements IMetaStoreClient {
         throw e.getTargetException();
       }
     }
+  }
+
+  @Override
+  public void markPartitionForEvent(String db_name, String tbl_name, Map<String,String> partKVs, PartitionEventType eventType)
+      throws MetaException, TException, NoSuchObjectException, UnknownDBException, UnknownTableException,
+      InvalidPartitionException, UnknownPartitionException {
+    assert db_name != null;
+    assert tbl_name != null;
+    assert partKVs != null;
+    client.markPartitionForEvent(db_name, tbl_name, partKVs, eventType);
+  }
+
+  @Override
+  public boolean isPartitionMarkedForEvent(String db_name, String tbl_name, Map<String,String> partKVs, PartitionEventType eventType)
+      throws MetaException, NoSuchObjectException, UnknownTableException, UnknownDBException, TException,
+      InvalidPartitionException, UnknownPartitionException {
+    assert db_name != null;
+    assert tbl_name != null;
+    assert partKVs != null;
+    return client.isPartitionMarkedForEvent(db_name, tbl_name, partKVs, eventType);
   }
 
 }

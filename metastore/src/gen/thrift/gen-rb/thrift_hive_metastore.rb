@@ -668,6 +668,47 @@ module ThriftHiveMetastore
       raise ::Thrift::ApplicationException.new(::Thrift::ApplicationException::MISSING_RESULT, 'partition_name_to_spec failed: unknown result')
     end
 
+    def markPartitionForEvent(db_name, tbl_name, part_vals, eventType)
+      send_markPartitionForEvent(db_name, tbl_name, part_vals, eventType)
+      recv_markPartitionForEvent()
+    end
+
+    def send_markPartitionForEvent(db_name, tbl_name, part_vals, eventType)
+      send_message('markPartitionForEvent', MarkPartitionForEvent_args, :db_name => db_name, :tbl_name => tbl_name, :part_vals => part_vals, :eventType => eventType)
+    end
+
+    def recv_markPartitionForEvent()
+      result = receive_message(MarkPartitionForEvent_result)
+      raise result.o1 unless result.o1.nil?
+      raise result.o2 unless result.o2.nil?
+      raise result.o3 unless result.o3.nil?
+      raise result.o4 unless result.o4.nil?
+      raise result.o5 unless result.o5.nil?
+      raise result.o6 unless result.o6.nil?
+      return
+    end
+
+    def isPartitionMarkedForEvent(db_name, tbl_name, part_vals, eventType)
+      send_isPartitionMarkedForEvent(db_name, tbl_name, part_vals, eventType)
+      return recv_isPartitionMarkedForEvent()
+    end
+
+    def send_isPartitionMarkedForEvent(db_name, tbl_name, part_vals, eventType)
+      send_message('isPartitionMarkedForEvent', IsPartitionMarkedForEvent_args, :db_name => db_name, :tbl_name => tbl_name, :part_vals => part_vals, :eventType => eventType)
+    end
+
+    def recv_isPartitionMarkedForEvent()
+      result = receive_message(IsPartitionMarkedForEvent_result)
+      return result.success unless result.success.nil?
+      raise result.o1 unless result.o1.nil?
+      raise result.o2 unless result.o2.nil?
+      raise result.o3 unless result.o3.nil?
+      raise result.o4 unless result.o4.nil?
+      raise result.o5 unless result.o5.nil?
+      raise result.o6 unless result.o6.nil?
+      raise ::Thrift::ApplicationException.new(::Thrift::ApplicationException::MISSING_RESULT, 'isPartitionMarkedForEvent failed: unknown result')
+    end
+
     def add_index(new_index, index_table)
       send_add_index(new_index, index_table)
       return recv_add_index()
@@ -1486,6 +1527,48 @@ module ThriftHiveMetastore
         result.o1 = o1
       end
       write_result(result, oprot, 'partition_name_to_spec', seqid)
+    end
+
+    def process_markPartitionForEvent(seqid, iprot, oprot)
+      args = read_args(iprot, MarkPartitionForEvent_args)
+      result = MarkPartitionForEvent_result.new()
+      begin
+        @handler.markPartitionForEvent(args.db_name, args.tbl_name, args.part_vals, args.eventType)
+      rescue MetaException => o1
+        result.o1 = o1
+      rescue NoSuchObjectException => o2
+        result.o2 = o2
+      rescue UnknownDBException => o3
+        result.o3 = o3
+      rescue UnknownTableException => o4
+        result.o4 = o4
+      rescue UnknownPartitionException => o5
+        result.o5 = o5
+      rescue InvalidPartitionException => o6
+        result.o6 = o6
+      end
+      write_result(result, oprot, 'markPartitionForEvent', seqid)
+    end
+
+    def process_isPartitionMarkedForEvent(seqid, iprot, oprot)
+      args = read_args(iprot, IsPartitionMarkedForEvent_args)
+      result = IsPartitionMarkedForEvent_result.new()
+      begin
+        result.success = @handler.isPartitionMarkedForEvent(args.db_name, args.tbl_name, args.part_vals, args.eventType)
+      rescue MetaException => o1
+        result.o1 = o1
+      rescue NoSuchObjectException => o2
+        result.o2 = o2
+      rescue UnknownDBException => o3
+        result.o3 = o3
+      rescue UnknownTableException => o4
+        result.o4 = o4
+      rescue UnknownPartitionException => o5
+        result.o5 = o5
+      rescue InvalidPartitionException => o6
+        result.o6 = o6
+      end
+      write_result(result, oprot, 'isPartitionMarkedForEvent', seqid)
     end
 
     def process_add_index(seqid, iprot, oprot)
@@ -3206,6 +3289,110 @@ module ThriftHiveMetastore
     FIELDS = {
       SUCCESS => {:type => ::Thrift::Types::MAP, :name => 'success', :key => {:type => ::Thrift::Types::STRING}, :value => {:type => ::Thrift::Types::STRING}},
       O1 => {:type => ::Thrift::Types::STRUCT, :name => 'o1', :class => MetaException}
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+    end
+
+    ::Thrift::Struct.generate_accessors self
+  end
+
+  class MarkPartitionForEvent_args
+    include ::Thrift::Struct, ::Thrift::Struct_Union
+    DB_NAME = 1
+    TBL_NAME = 2
+    PART_VALS = 3
+    EVENTTYPE = 4
+
+    FIELDS = {
+      DB_NAME => {:type => ::Thrift::Types::STRING, :name => 'db_name'},
+      TBL_NAME => {:type => ::Thrift::Types::STRING, :name => 'tbl_name'},
+      PART_VALS => {:type => ::Thrift::Types::MAP, :name => 'part_vals', :key => {:type => ::Thrift::Types::STRING}, :value => {:type => ::Thrift::Types::STRING}},
+      EVENTTYPE => {:type => ::Thrift::Types::I32, :name => 'eventType', :enum_class => PartitionEventType}
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+      unless @eventType.nil? || PartitionEventType::VALID_VALUES.include?(@eventType)
+        raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Invalid value of field eventType!')
+      end
+    end
+
+    ::Thrift::Struct.generate_accessors self
+  end
+
+  class MarkPartitionForEvent_result
+    include ::Thrift::Struct, ::Thrift::Struct_Union
+    O1 = 1
+    O2 = 2
+    O3 = 3
+    O4 = 4
+    O5 = 5
+    O6 = 6
+
+    FIELDS = {
+      O1 => {:type => ::Thrift::Types::STRUCT, :name => 'o1', :class => MetaException},
+      O2 => {:type => ::Thrift::Types::STRUCT, :name => 'o2', :class => NoSuchObjectException},
+      O3 => {:type => ::Thrift::Types::STRUCT, :name => 'o3', :class => UnknownDBException},
+      O4 => {:type => ::Thrift::Types::STRUCT, :name => 'o4', :class => UnknownTableException},
+      O5 => {:type => ::Thrift::Types::STRUCT, :name => 'o5', :class => UnknownPartitionException},
+      O6 => {:type => ::Thrift::Types::STRUCT, :name => 'o6', :class => InvalidPartitionException}
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+    end
+
+    ::Thrift::Struct.generate_accessors self
+  end
+
+  class IsPartitionMarkedForEvent_args
+    include ::Thrift::Struct, ::Thrift::Struct_Union
+    DB_NAME = 1
+    TBL_NAME = 2
+    PART_VALS = 3
+    EVENTTYPE = 4
+
+    FIELDS = {
+      DB_NAME => {:type => ::Thrift::Types::STRING, :name => 'db_name'},
+      TBL_NAME => {:type => ::Thrift::Types::STRING, :name => 'tbl_name'},
+      PART_VALS => {:type => ::Thrift::Types::MAP, :name => 'part_vals', :key => {:type => ::Thrift::Types::STRING}, :value => {:type => ::Thrift::Types::STRING}},
+      EVENTTYPE => {:type => ::Thrift::Types::I32, :name => 'eventType', :enum_class => PartitionEventType}
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+      unless @eventType.nil? || PartitionEventType::VALID_VALUES.include?(@eventType)
+        raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Invalid value of field eventType!')
+      end
+    end
+
+    ::Thrift::Struct.generate_accessors self
+  end
+
+  class IsPartitionMarkedForEvent_result
+    include ::Thrift::Struct, ::Thrift::Struct_Union
+    SUCCESS = 0
+    O1 = 1
+    O2 = 2
+    O3 = 3
+    O4 = 4
+    O5 = 5
+    O6 = 6
+
+    FIELDS = {
+      SUCCESS => {:type => ::Thrift::Types::BOOL, :name => 'success'},
+      O1 => {:type => ::Thrift::Types::STRUCT, :name => 'o1', :class => MetaException},
+      O2 => {:type => ::Thrift::Types::STRUCT, :name => 'o2', :class => NoSuchObjectException},
+      O3 => {:type => ::Thrift::Types::STRUCT, :name => 'o3', :class => UnknownDBException},
+      O4 => {:type => ::Thrift::Types::STRUCT, :name => 'o4', :class => UnknownTableException},
+      O5 => {:type => ::Thrift::Types::STRUCT, :name => 'o5', :class => UnknownPartitionException},
+      O6 => {:type => ::Thrift::Types::STRUCT, :name => 'o6', :class => InvalidPartitionException}
     }
 
     def struct_fields; FIELDS; end
