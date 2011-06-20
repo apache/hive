@@ -2133,7 +2133,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
         final short max_parts) throws MetaException, TException {
       startPartitionFunction("get_partitions_ps", db_name, tbl_name, part_vals);
       try {
-        return this.get_partitions_ps_with_auth(db_name, tbl_name, part_vals,
+        return get_partitions_ps_with_auth(db_name, tbl_name, part_vals,
             max_parts, null, null);
       }
       finally {
@@ -2148,32 +2148,26 @@ public class HiveMetaStore extends ThriftHiveMetastore {
         final List<String> groupNames) throws MetaException, TException {
       startPartitionFunction("get_partitions_ps_with_auth", db_name, tbl_name,
           part_vals);
-      List<Partition> parts = null;
-      List<Partition> matchingParts = new ArrayList<Partition>();
-
+      List<Partition> ret;
       try {
-        // This gets all the partitions and then filters based on the specified
-        // criteria. An alternative approach would be to get all the partition
-        // names, do the filtering on the names, and get the partition for each
-        // of the names. that match.
-
-        try {
-           parts = get_partitions(db_name, tbl_name, (short) -1);
-        } catch (NoSuchObjectException e) {
-          throw new MetaException(e.getMessage());
-        }
-
-        for (Partition p : parts) {
-          if (MetaStoreUtils.pvalMatches(part_vals, p.getValues())) {
-            matchingParts.add(p);
+        ret = executeWithRetry(new Command<List<Partition>>() {
+          @Override
+          public List<Partition> run(RawStore ms) throws Exception {
+            return ms.listPartitionsPsWithAuth(db_name, tbl_name, part_vals, max_parts,
+                userName, groupNames);
           }
-        }
-
-        return matchingParts;
-      }
-      finally {
+        });
+      } catch (MetaException e) {
+        throw e;
+      } catch (InvalidObjectException e) {
+         throw new MetaException(e.getMessage());
+      } catch (Exception e) {
+        assert(e instanceof RuntimeException);
+        throw (RuntimeException)e;
+      } finally {
         endFunction("get_partitions_ps_with_auth");
       }
+      return ret;
     }
 
     @Override
@@ -2181,34 +2175,23 @@ public class HiveMetaStore extends ThriftHiveMetastore {
         final String tbl_name, final List<String> part_vals, final short max_parts)
         throws MetaException, TException {
       startPartitionFunction("get_partitions_names_ps", db_name, tbl_name, part_vals);
+      List<String> ret;
       try {
-        Table t;
-        try {
-          t = get_table(db_name, tbl_name);
-        } catch (NoSuchObjectException e) {
-          throw new MetaException(e.getMessage());
-        }
-
-       List<String> partNames = get_partition_names(db_name, tbl_name, max_parts);
-       List<String> filteredPartNames = new ArrayList<String>();
-
-        for(String name : partNames) {
-          LinkedHashMap<String, String> spec = Warehouse.makeSpecFromName(name);
-          List<String> vals = new ArrayList<String>();
-          // Since we are iterating through a LinkedHashMap, iteration should
-          // return the partition values in the correct order for comparison.
-          for (String val : spec.values()) {
-            vals.add(val);
+        ret = executeWithRetry(new Command<List<String>>() {
+          @Override
+          public List<String> run(RawStore ms) throws Exception {
+            return ms.listPartitionNamesPs(db_name, tbl_name, part_vals, max_parts);
           }
-          if (MetaStoreUtils.pvalMatches(part_vals, vals)) {
-            filteredPartNames.add(name);
-          }
-        }
-
-        return filteredPartNames;
+        });
+      } catch (MetaException e) {
+        throw e;
+      } catch (Exception e) {
+        assert(e instanceof RuntimeException);
+        throw (RuntimeException)e;
       } finally {
         endFunction("get_partitions_names_ps");
       }
+      return ret;
     }
 
     @Override

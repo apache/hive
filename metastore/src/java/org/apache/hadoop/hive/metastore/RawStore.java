@@ -241,6 +241,49 @@ public interface RawStore extends Configurable {
 
   public abstract List<Partition> getPartitionsWithAuth(String dbName,
       String tblName, short maxParts, String userName, List<String> groupNames)
-      throws MetaException, NoSuchObjectException, InvalidObjectException;;
+      throws MetaException, NoSuchObjectException, InvalidObjectException;
 
+  /**
+   * Lists partition names that match a given partial specification
+   * @param db_name
+   *          The name of the database which has the partitions
+   * @param tbl_name
+   *          The name of the table which has the partitions
+   * @param part_vals
+   *          A partial list of values for partitions in order of the table's partition keys.
+   *          Entries can be empty if you only want to specify latter partitions.
+   * @param max_parts
+   *          The maximum number of partitions to return
+   * @return A list of partition names that match the partial spec.
+   * @throws MetaException
+   * @throws NoSuchObjectException
+   */
+  public abstract List<String> listPartitionNamesPs(String db_name, String tbl_name,
+      List<String> part_vals, short max_parts)
+      throws MetaException;
+
+  /**
+   * Lists partitions that match a given partial specification and sets their auth privileges.
+   *   If userName and groupNames null, then no auth privileges are set.
+   * @param db_name
+   *          The name of the database which has the partitions
+   * @param tbl_name
+   *          The name of the table which has the partitions
+   * @param part_vals
+   *          A partial list of values for partitions in order of the table's partition keys
+   *          Entries can be empty if you need to specify latter partitions.
+   * @param max_parts
+   *          The maximum number of partitions to return
+   * @param userName
+   *          The user name for the partition for authentication privileges
+   * @param groupNames
+   *          The groupNames for the partition for authentication privileges
+   * @return A list of partitions that match the partial spec.
+   * @throws MetaException
+   * @throws NoSuchObjectException
+   * @throws InvalidObjectException
+   */
+  public abstract List<Partition> listPartitionsPsWithAuth(String db_name, String tbl_name,
+      List<String> part_vals, short max_parts, String userName, List<String> groupNames)
+      throws MetaException, InvalidObjectException;
 }

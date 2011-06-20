@@ -1282,6 +1282,120 @@ public class ObjectStore implements RawStore, Configurable {
     return pns;
   }
 
+  /**
+   * Retrieves a Collection of partition-related results from the database that match
+   *  the partial specification given for a specific table.
+   * @param dbName the name of the database
+   * @param tableName the name of the table
+   * @param part_vals the partial specification values
+   * @param max_parts the maximum number of partitions to return
+   * @param resultsCol the metadata column of the data to return, e.g. partitionName, etc.
+   *        if resultsCol is empty or null, a collection of MPartition objects is returned
+   * @results A Collection of partition-related items from the db that match the partial spec
+   *          for a table.  The type of each item in the collection corresponds to the column
+   *          you want results for.  E.g., if resultsCol is partitionName, the Collection
+   *          has types of String, and if resultsCol is null, the types are MPartition.
+   */
+  private Collection getPartitionPsQueryResults(String dbName, String tableName,
+      List<String> part_vals, short max_parts, String resultsCol)
+      throws MetaException {
+    dbName = dbName.toLowerCase().trim();
+    tableName = tableName.toLowerCase().trim();
+    Table table = getTable(dbName, tableName);
+
+    List<FieldSchema> partCols = table.getPartitionKeys();
+    int numPartKeys = partCols.size();
+    if (part_vals.size() > numPartKeys) {
+      throw new MetaException("Incorrect number of partition values");
+    }
+
+    partCols = partCols.subList(0, part_vals.size());
+    //Construct a pattern of the form: partKey=partVal/partKey2=partVal2/...
+    // where partVal is either the escaped partition value given as input,
+    // or a regex of the form ".*"
+    //This works because the "=" and "/" separating key names and partition key/values
+    // are not escaped.
+    String partNameMatcher = Warehouse.makePartName(partCols, part_vals, ".*");
+    //add ".*" to the regex to match anything else afterwards the partial spec.
+    if (part_vals.size() < numPartKeys) {
+      partNameMatcher += ".*";
+    }
+
+    Query q = pm.newQuery(MPartition.class);
+    StringBuilder queryFilter = new StringBuilder("table.database.name == dbName");
+    queryFilter.append(" && table.tableName == tableName");
+    queryFilter.append(" && partitionName.matches(partialRegex)");
+    q.setFilter(queryFilter.toString());
+    q.declareParameters("java.lang.String dbName, " +
+        "java.lang.String tableName, java.lang.String partialRegex");
+
+    if( max_parts >= 0 ) {
+      //User specified a row limit, set it on the Query
+      q.setRange(0, max_parts);
+    }
+    if (resultsCol != null && !resultsCol.isEmpty()) {
+      q.setResult(resultsCol);
+    }
+
+    return (Collection) q.execute(dbName, tableName, partNameMatcher);
+  }
+
+  @Override
+  public List<Partition> listPartitionsPsWithAuth(String db_name, String tbl_name,
+      List<String> part_vals, short max_parts, String userName, List<String> groupNames)
+      throws MetaException, InvalidObjectException {
+    List<Partition> partitions = new ArrayList<Partition>();
+    boolean success = false;
+    try {
+      openTransaction();
+      LOG.debug("executing listPartitionNamesPsWithAuth");
+      Collection parts = getPartitionPsQueryResults(db_name, tbl_name,
+          part_vals, max_parts, null);
+      MTable mtbl = getMTable(db_name, tbl_name);
+      for (Object o : parts) {
+        Partition part = convertToPart((MPartition) o);
+        //set auth privileges
+        if (null != userName && null != groupNames &&
+            "TRUE".equalsIgnoreCase(mtbl.getParameters().get("PARTITION_LEVEL_PRIVILEGE"))) {
+          String partName = Warehouse.makePartName(this.convertToFieldSchemas(mtbl
+              .getPartitionKeys()), part.getValues());
+          PrincipalPrivilegeSet partAuth = getPartitionPrivilegeSet(db_name,
+              tbl_name, partName, userName, groupNames);
+          part.setPrivileges(partAuth);
+        }
+        partitions.add(part);
+      }
+      success = commitTransaction();
+    } finally {
+      if (!success) {
+        rollbackTransaction();
+      }
+    }
+    return partitions;
+  }
+
+  @Override
+  public List<String> listPartitionNamesPs(String dbName, String tableName,
+      List<String> part_vals, short max_parts) throws MetaException {
+    List<String> partitionNames = new ArrayList<String>();
+    boolean success = false;
+    try {
+      openTransaction();
+      LOG.debug("Executing listPartitionNamesPs");
+      Collection names = getPartitionPsQueryResults(dbName, tableName,
+          part_vals, max_parts, "partitionName");
+      for (Object o : names) {
+        partitionNames.add((String) o);
+      }
+      success = commitTransaction();
+    } finally {
+      if (!success) {
+        rollbackTransaction();
+      }
+    }
+    return partitionNames;
+  }
+
   // TODO:pc implement max
   private List<MPartition> listMPartitions(String dbName, String tableName,
       int max) {
@@ -1484,7 +1598,6 @@ public class ObjectStore implements RawStore, Configurable {
       Map<String, String> params = new HashMap<String, String>();
       String queryFilterString =
         makeQueryFilterString(mtable, filter, params);
-
       Query query = pm.newQuery(
           "select partitionName from org.apache.hadoop.hive.metastore.model.MPartition "
           + "where " + queryFilterString);

@@ -390,6 +390,20 @@ public class Warehouse {
 
   public static String makePartName(List<FieldSchema> partCols,
       List<String> vals) throws MetaException {
+    return makePartName(partCols, vals, null);
+  }
+
+  /**
+   * Makes a valid partition name.
+   * @param partCols The partition columns
+   * @param vals The partition values
+   * @param defaultStr
+   *    The default name given to a partition value if the respective value is empty or null.
+   * @return An escaped, valid partition name.
+   * @throws MetaException
+   */
+  public static String makePartName(List<FieldSchema> partCols,
+      List<String> vals, String defaultStr) throws MetaException {
     if ((partCols.size() != vals.size()) || (partCols.size() == 0)) {
       throw new MetaException("Invalid partition key & values");
     }
@@ -397,7 +411,7 @@ public class Warehouse {
     for (FieldSchema col: partCols) {
       colNames.add(col.getName());
     }
-    return FileUtils.makePartName(colNames, vals);
+    return FileUtils.makePartName(colNames, vals, defaultStr);
   }
 
   public static List<String> getPartValuesFromPartName(String partName)
