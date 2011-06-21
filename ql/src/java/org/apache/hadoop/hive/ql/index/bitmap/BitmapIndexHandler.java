@@ -21,10 +21,14 @@ package org.apache.hadoop.hive.ql.index.bitmap;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.List;
 import java.util.Set;
-import java.util.Map.Entry;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.apache.hadoop.hive.ql.plan.MapredWork;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
@@ -33,25 +37,172 @@ import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
 import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.ql.Driver;
 import org.apache.hadoop.hive.ql.exec.Task;
-import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.hooks.ReadEntity;
 import org.apache.hadoop.hive.ql.hooks.WriteEntity;
-import org.apache.hadoop.hive.ql.index.TableBasedIndexHandler;
-import org.apache.hadoop.hive.ql.metadata.HiveException;
-import org.apache.hadoop.hive.ql.metadata.HiveUtils;
-import org.apache.hadoop.hive.ql.metadata.Partition;
-import org.apache.hadoop.hive.ql.metadata.VirtualColumn;
-import org.apache.hadoop.hive.ql.parse.SemanticException;
-import org.apache.hadoop.hive.ql.plan.PartitionDesc;
-import org.apache.hadoop.hive.ql.plan.TableDesc;
+import org.apache.hadoop.hive.ql.index.HiveIndexQueryContext;
+import org.apache.hadoop.hive.ql.index.HiveIndexedInputFormat;;
 import org.apache.hadoop.hive.ql.index.IndexMetadataChangeTask;
 import org.apache.hadoop.hive.ql.index.IndexMetadataChangeWork;
+import org.apache.hadoop.hive.ql.index.IndexPredicateAnalyzer;
+import org.apache.hadoop.hive.ql.index.IndexSearchCondition;
+import org.apache.hadoop.hive.ql.index.TableBasedIndexHandler;
+import org.apache.hadoop.hive.ql.metadata.HiveStoragePredicateHandler.DecomposedPredicate;
+import org.apache.hadoop.hive.ql.metadata.HiveException;
+import org.apache.hadoop.hive.ql.metadata.HiveUtils;
+import org.apache.hadoop.hive.ql.metadata.VirtualColumn;
+import org.apache.hadoop.hive.ql.metadata.Partition;
+import org.apache.hadoop.hive.ql.parse.ParseContext;
+import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
+import org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc;
+import org.apache.hadoop.hive.ql.index.bitmap.BitmapQuery;
+import org.apache.hadoop.hive.ql.plan.PartitionDesc;
+import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPEqual;
+import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPEqualOrGreaterThan;
+import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPEqualOrLessThan;
+import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPGreaterThan;
+import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPLessThan;
 
 /**
  * Index handler for the bitmap index. Bitmap index uses an EWAH-compressed
  * bitmap to represent the values in a table.
  */
 public class BitmapIndexHandler extends TableBasedIndexHandler {
+
+  private Configuration configuration;
+  private static final Log LOG = LogFactory.getLog(BitmapIndexHandler.class.getName());
+
+  @Override
+  public void generateIndexQuery(List<Index> indexes, ExprNodeDesc predicate,
+    ParseContext pctx, HiveIndexQueryContext queryContext) {
+
+    Map<Index, ExprNodeDesc> indexPredicates  = decomposePredicate(
+                                                              predicate,
+                                                              indexes,
+                                                              queryContext);
+
+    if (indexPredicates == null) {
+      LOG.info("No decomposed predicate found");
+      queryContext.setQueryTasks(null);
+      return; // abort if we couldn't pull out anything from the predicate
+    }
+
+    // Build reentrant QL for index query
+    StringBuilder qlCommand = new StringBuilder("INSERT OVERWRITE DIRECTORY ");
+
+    String tmpFile = pctx.getContext().getMRTmpFileURI();
+    qlCommand.append( "\"" + tmpFile + "\" ");            // QL includes " around file name
+    qlCommand.append("SELECT bucketname AS `_bucketname` , COLLECT_SET(offset) AS `_offsets` FROM ");
+    qlCommand.append("(SELECT `_bucketname` AS bucketname , `_offset` AS offset FROM ");
+
+    List<BitmapInnerQuery> iqs = new ArrayList<BitmapInnerQuery>(indexes.size());
+    int i = 0;
+    for (Index index : indexes) {
+      ExprNodeDesc indexPredicate = indexPredicates.get(index);
+      if (indexPredicate != null) {
+        iqs.add(new BitmapInnerQuery(
+              index.getIndexTableName(),
+              indexPredicate,
+              "ind" + i++));
+      }
+    }
+
+    BitmapQuery head = iqs.get(0);
+    for ( i = 1; i < iqs.size(); i++) {
+      head = new BitmapOuterQuery("oind"+i, head, iqs.get(i));
+    }
+    qlCommand.append(head.toString());
+    qlCommand.append(" WHERE NOT EWAH_BITMAP_EMPTY(" + head.getAlias() + ".`_bitmaps`) ) tmp_index GROUP BY bucketname");
+
+    // generate tasks from index query string
+    LOG.info("Generating tasks for re-entrant QL query: " + qlCommand.toString());
+    Driver driver = new Driver(pctx.getConf());
+    driver.compile(qlCommand.toString(), false);
+
+    // setup TableScanOperator to change input format for original query
+    queryContext.setIndexInputFormat(HiveIndexedInputFormat.class.getName());
+    queryContext.setIndexIntermediateFile(tmpFile);
+
+    queryContext.addAdditionalSemanticInputs(driver.getPlan().getInputs());
+    queryContext.setQueryTasks(driver.getPlan().getRootTasks());
+  }
+
+  /**
+   * Split the predicate into the piece we can deal with (pushed), and the one we can't (residual)
+   * @param predicate
+   * @param index
+   * @return
+   */
+  private Map<Index, ExprNodeDesc> decomposePredicate(ExprNodeDesc predicate, List<Index> indexes,
+      HiveIndexQueryContext queryContext) {
+
+    Map<Index, ExprNodeDesc> indexPredicates = new HashMap<Index, ExprNodeDesc>();
+    // compute overall residual
+    IndexPredicateAnalyzer analyzer = getIndexPredicateAnalyzer(indexes, queryContext.getQueryPartitions());
+    List<IndexSearchCondition> searchConditions = new ArrayList<IndexSearchCondition>();
+    ExprNodeDesc residualPredicate = analyzer.analyzePredicate(predicate, searchConditions);
+    // pass residual predicate back out for further processing
+    queryContext.setResidualPredicate(residualPredicate);
+
+    if (searchConditions.size() == 0) {
+      return null;
+    }
+
+    for (Index index : indexes) {
+      ArrayList<Index> in = new ArrayList<Index>(1);
+      in.add(index);
+      analyzer = getIndexPredicateAnalyzer(in, queryContext.getQueryPartitions());
+      searchConditions = new ArrayList<IndexSearchCondition>();
+      // split predicate into pushed (what we can handle), and residual (what we can't handle)
+      // pushed predicate from translateSearchConditions is stored for the current index
+      // This ensures that we apply all possible predicates to each index
+      analyzer.analyzePredicate(predicate, searchConditions);
+      if (searchConditions.size() == 0) {
+        indexPredicates.put(index, null);
+      } else {
+        indexPredicates.put(index, analyzer.translateSearchConditions(searchConditions));
+      }
+    }
+
+    return indexPredicates;
+  }
+
+  /**
+   * Instantiate a new predicate analyzer suitable for determining
+   * whether we can use an index, based on rules for indexes in
+   * WHERE clauses that we support
+   *
+   * @return preconfigured predicate analyzer for WHERE queries
+   */
+  private IndexPredicateAnalyzer getIndexPredicateAnalyzer(List<Index> indexes, Set<Partition> queryPartitions)  {
+    IndexPredicateAnalyzer analyzer = new IndexPredicateAnalyzer();
+
+    analyzer.addComparisonOp(GenericUDFOPEqual.class.getName());
+    analyzer.addComparisonOp(GenericUDFOPLessThan.class.getName());
+    analyzer.addComparisonOp(GenericUDFOPEqualOrLessThan.class.getName());
+    analyzer.addComparisonOp(GenericUDFOPGreaterThan.class.getName());
+    analyzer.addComparisonOp(GenericUDFOPEqualOrGreaterThan.class.getName());
+
+    // only return results for columns in the list of indexes
+    for (Index index : indexes) {
+      List<FieldSchema> columnSchemas = index.getSd().getCols();
+      for (FieldSchema column : columnSchemas) {
+        analyzer.allowColumnName(column.getName());
+      }
+    }
+
+    // partitioned columns are treated as if they have indexes so that the partitions
+    // are used during the index query generation
+    for (Partition part : queryPartitions) {
+      if (part.getSpec().isEmpty()) {
+        continue; // empty partitions are from whole tables, so we don't want to add them in
+      }
+      for (String column : part.getSpec().keySet()) {
+        analyzer.allowColumnName(column);
+      }
+    }
+
+    return analyzer;
+  }
 
   @Override
   public void analyzeIndexDefinition(Table baseTable, Index index,
@@ -78,6 +229,8 @@ public class BitmapIndexHandler extends TableBasedIndexHandler {
 
     HiveConf conf = new HiveConf(getConf(), BitmapIndexHandler.class);
     HiveConf.setBoolVar(conf, HiveConf.ConfVars.HIVEROWOFFSET, true);
+    // Don't try to index optimize the query to build the index
+    HiveConf.setBoolVar(conf, HiveConf.ConfVars.HIVEOPTINDEXFILTER, false);
 
     String indexCols = HiveUtils.getUnparsedColumnNamesFromFieldSchema(indexField);
 
@@ -130,9 +283,9 @@ public class BitmapIndexHandler extends TableBasedIndexHandler {
       command.append(",");
       command.append(HiveUtils.unparseIdentifier(fieldSchema.getName()));
     }
-    
+
     // Require clusterby ROWOFFSET if map-size aggregation is off.
-    if (!configuration.get("hive.map.aggr", null).equals("true")) {
+    if (!conf.get("hive.map.aggr", null).equals("true")) {
       command.append(" CLUSTER BY ");
       command.append(VirtualColumn.ROWOFFSET.getName());
     }
@@ -151,4 +304,18 @@ public class BitmapIndexHandler extends TableBasedIndexHandler {
 
     return rootTask;
   }
+
+  @Override
+  /**
+   * No lower bound on bitmap index query size, so this will always return true
+   */
+  public boolean checkQuerySize(long querySize, HiveConf hiveConf) {
+    return true;
+  }
+
+  @Override
+  public boolean usesIndexTable() {
+    return true;
+  }
+
 }

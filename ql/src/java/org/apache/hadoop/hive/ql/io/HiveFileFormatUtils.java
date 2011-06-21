@@ -262,6 +262,7 @@ public final class HiveFileFormatUtils {
       boolean ignoreSchema) throws IOException {
 
     PartitionDesc part = doGetPartitionDescFromPath(pathToPartitionInfo, dir);
+
     if (part == null
         && (ignoreSchema || (dir.toUri().getScheme() == null || dir.toUri().getScheme().trim()
             .equals("")))) {
@@ -281,7 +282,6 @@ public final class HiveFileFormatUtils {
       }
       part = doGetPartitionDescFromPath(newPathToPartitionInfo, dir);
     }
-
     if (part != null) {
       return part;
     } else {

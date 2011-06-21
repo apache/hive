@@ -53,6 +53,7 @@ import org.apache.hadoop.hive.ql.parse.PrunedPartitionList;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
 import org.apache.hadoop.hive.ql.plan.FilterDesc;
+import org.apache.hadoop.hive.ql.plan.TableScanDesc;
 import org.apache.hadoop.hive.ql.plan.MapredWork;
 
 /**
@@ -74,17 +75,24 @@ public class IndexWhereProcessor implements NodeProcessor {
 
   @Override
   /**
-   * Process a node of the operator tree.  This matches on the rule in IndexWhereTaskDispatcher
+   * Process a node of the operator tree. This matches on the rule in IndexWhereTaskDispatcher
    */
   public Object process(Node nd, Stack<Node> stack, NodeProcessorCtx procCtx,
                         Object... nodeOutputs) throws SemanticException {
 
-    FilterOperator operator = (FilterOperator) nd;
-    FilterDesc operatorDesc = operator.getConf();
-    ExprNodeDesc predicate = operatorDesc.getPredicate();
+    TableScanOperator operator = (TableScanOperator) nd;
+    List<Node> opChildren = operator.getChildren();
+    TableScanDesc operatorDesc = operator.getConf();
+    ExprNodeDesc predicate = operatorDesc.getFilterExpr();
 
     IndexWhereProcCtx context = (IndexWhereProcCtx) procCtx;
     ParseContext pctx = context.getParseContext();
+    LOG.info("Processing predicate for index optimization");
+    if (predicate == null) {
+      LOG.info("null predicate pushed down");
+      return null;
+    }
+    LOG.info(predicate.getExprString());
 
     // check if we have indexes on all partitions in this table scan
     Set<Partition> queryPartitions;
@@ -108,18 +116,46 @@ public class IndexWhereProcessor implements NodeProcessor {
     Map<Index, HiveIndexQueryContext> queryContexts = new HashMap<Index, HiveIndexQueryContext>();
     Collection<List<Index>> tableIndexes = indexes.values();
     for (List<Index> indexesOnTable : tableIndexes) {
+      List<List<Index>> indexesByType = new ArrayList<List<Index>>();
       for (Index index : indexesOnTable) {
-        HiveIndexQueryContext queryContext = new HiveIndexQueryContext();
-        queryContext.setQueryPartitions(queryPartitions);
-        rewriteForIndex(predicate, index, pctx, currentTask, queryContext);
-        List<Task<?>> indexTasks = queryContext.getQueryTasks();
-
-        if (indexTasks != null && indexTasks.size() > 0) {
-          queryContexts.put(index, queryContext);
+        boolean added = false;
+        for (List<Index> indexType : indexesByType) {
+          if (indexType.isEmpty()) {
+            indexType.add(index);
+            added = true;
+          } else if (indexType.get(0).getIndexHandlerClass().equals(
+                index.getIndexHandlerClass())) {
+            indexType.add(index);
+            added = true;
+            break;
+          }
+        }
+        if (!added) {
+          List<Index> newType = new ArrayList<Index>();
+          newType.add(index);
+          indexesByType.add(newType);
         }
       }
-    }
 
+      // choose index type with most indexes of the same type on the table
+      // TODO HIVE-2130 This would be a good place for some sort of cost based choice?
+      List<Index> bestIndexes = indexesByType.get(0);
+      for (List<Index> indexTypes : indexesByType) {
+        if (bestIndexes.size() < indexTypes.size()) {
+          bestIndexes = indexTypes;
+        }
+      }
+
+      // rewrite index queries for the chosen index type
+      HiveIndexQueryContext queryContext = new HiveIndexQueryContext();
+      queryContext.setQueryPartitions(queryPartitions);
+      rewriteForIndexes(predicate, bestIndexes, pctx, currentTask, queryContext);
+      List<Task<?>> indexTasks = queryContext.getQueryTasks();
+
+      if (indexTasks != null && indexTasks.size() > 0) {
+        queryContexts.put(bestIndexes.get(0), queryContext);
+      }
+    }
     // choose an index rewrite to use
     if (queryContexts.size() > 0) {
       // TODO HIVE-2130 This would be a good place for some sort of cost based choice?
@@ -137,7 +173,6 @@ public class IndexWhereProcessor implements NodeProcessor {
       // modify inputs based on index query
       Set<ReadEntity> inputs = pctx.getSemanticInputs();
       inputs.addAll(queryContext.getAdditionalSemanticInputs());
-
       List<Task<?>> chosenRewrite = queryContext.getQueryTasks();
 
       // add dependencies so index query runs first
@@ -157,11 +192,14 @@ public class IndexWhereProcessor implements NodeProcessor {
    * @param task original task before rewrite
    * @param queryContext stores return values
    */
-  private void rewriteForIndex(ExprNodeDesc predicate, Index index,
+  private void rewriteForIndexes(ExprNodeDesc predicate, List<Index> indexes,
                                 ParseContext pctx, Task<MapredWork> task,
                                 HiveIndexQueryContext queryContext)
                                 throws SemanticException {
     HiveIndexHandler indexHandler;
+    // All indexes in the list are of the same type, and therefore can use the
+    // same handler to generate the index query tasks
+    Index index = indexes.get(0);
     try {
       indexHandler = HiveUtils.getIndexHandler(pctx.getConf(), index.getIndexHandlerClass());
     } catch (HiveException e) {
@@ -182,7 +220,7 @@ public class IndexWhereProcessor implements NodeProcessor {
     }
 
     // use the IndexHandler to generate the index query
-    indexHandler.generateIndexQuery(index, predicate, pctx, queryContext);
+    indexHandler.generateIndexQuery(indexes, predicate, pctx, queryContext);
     // TODO HIVE-2115 use queryContext.residualPredicate to process residual predicate
 
     return;
@@ -197,9 +235,8 @@ public class IndexWhereProcessor implements NodeProcessor {
    * @param operator
    * @return partitions used by query.  null if they do not exist in index table
    */
-  private Set<Partition> checkPartitionsCoveredByIndex(FilterOperator operator, ParseContext pctx)
+  private Set<Partition> checkPartitionsCoveredByIndex(TableScanOperator tableScan, ParseContext pctx)
     throws HiveException {
-    TableScanOperator tableScan = (TableScanOperator) operator.getParentOperators().get(0);
     Hive hive = Hive.get(pctx.getConf());
 
     // make sure each partition exists on the index table

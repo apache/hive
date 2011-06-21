@@ -30,6 +30,7 @@ import java.util.Stack;
 import org.apache.hadoop.hive.metastore.api.Index;
 import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.index.compact.CompactIndexHandler;
+import org.apache.hadoop.hive.ql.index.bitmap.BitmapIndexHandler;
 import org.apache.hadoop.hive.ql.lib.DefaultGraphWalker;
 import org.apache.hadoop.hive.ql.lib.DefaultRuleDispatcher;
 import org.apache.hadoop.hive.ql.lib.Dispatcher;
@@ -105,6 +106,7 @@ public class IndexWhereTaskDispatcher implements Dispatcher {
 
     List<String> supportedIndexes = new ArrayList<String>();
     supportedIndexes.add(CompactIndexHandler.class.getName());
+    supportedIndexes.add(BitmapIndexHandler.class.getName());
 
     // query the metastore to know what columns we have indexed
     Collection<Table> topTables = pctx.getTopToTable().values();
@@ -122,8 +124,9 @@ public class IndexWhereTaskDispatcher implements Dispatcher {
       return null;
     }
 
-    // FIL% is a filter operator, a WHERE shows up as a filter on a table scan operator (TS%)
-    operatorRules.put(new RuleRegExp("RULEWhere", "TS%FIL%"), new IndexWhereProcessor(indexes));
+    // We set the pushed predicate from the WHERE clause as the filter expr on
+    // all table scan operators, so we look for table scan operators(TS%)
+    operatorRules.put(new RuleRegExp("RULEWhere", "TS%"), new IndexWhereProcessor(indexes));
 
     return operatorRules;
   }

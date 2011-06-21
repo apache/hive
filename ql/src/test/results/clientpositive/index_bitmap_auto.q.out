@@ -1,7 +1,24 @@
-PREHOOK: query: EXPLAIN
+PREHOOK: query: -- try the query without indexing, with manual indexing, and with automatic indexing
+-- without indexing
+SELECT key, value FROM src WHERE key=0 AND value = "val_0" ORDER BY key
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: file:/var/folders/5V/5V4Zq77qGD4aSK9m8V3frVsFdRU/-Tmp-/salbiz/hive_2011-06-16_11-40-41_008_4687706156924520636/-mr-10000
+POSTHOOK: query: -- try the query without indexing, with manual indexing, and with automatic indexing
+-- without indexing
+SELECT key, value FROM src WHERE key=0 AND value = "val_0" ORDER BY key
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: file:/var/folders/5V/5V4Zq77qGD4aSK9m8V3frVsFdRU/-Tmp-/salbiz/hive_2011-06-16_11-40-41_008_4687706156924520636/-mr-10000
+0	val_0
+0	val_0
+0	val_0
+PREHOOK: query: -- create indices
+EXPLAIN
 CREATE INDEX src1_index ON TABLE src(key) as 'BITMAP' WITH DEFERRED REBUILD
 PREHOOK: type: CREATEINDEX
-POSTHOOK: query: EXPLAIN
+POSTHOOK: query: -- create indices
+EXPLAIN
 CREATE INDEX src1_index ON TABLE src(key) as 'BITMAP' WITH DEFERRED REBUILD
 POSTHOOK: type: CREATEINDEX
 ABSTRACT SYNTAX TREE:
@@ -69,11 +86,11 @@ POSTHOOK: Lineage: default__src_src2_index__.value SIMPLE [(src)src.FieldSchema(
 PREHOOK: query: SELECT * FROM default__src_src1_index__ ORDER BY key
 PREHOOK: type: QUERY
 PREHOOK: Input: default@default__src_src1_index__
-PREHOOK: Output: file:/var/folders/5V/5V4Zq77qGD4aSK9m8V3frVsFdRU/-Tmp-/salbiz/hive_2011-06-16_11-39-57_849_5882004057461456090/-mr-10000
+PREHOOK: Output: file:/var/folders/5V/5V4Zq77qGD4aSK9m8V3frVsFdRU/-Tmp-/salbiz/hive_2011-06-16_11-41-04_577_1685257770377373886/-mr-10000
 POSTHOOK: query: SELECT * FROM default__src_src1_index__ ORDER BY key
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@default__src_src1_index__
-POSTHOOK: Output: file:/var/folders/5V/5V4Zq77qGD4aSK9m8V3frVsFdRU/-Tmp-/salbiz/hive_2011-06-16_11-39-57_849_5882004057461456090/-mr-10000
+POSTHOOK: Output: file:/var/folders/5V/5V4Zq77qGD4aSK9m8V3frVsFdRU/-Tmp-/salbiz/hive_2011-06-16_11-41-04_577_1685257770377373886/-mr-10000
 POSTHOOK: Lineage: default__src_src1_index__._bitmaps EXPRESSION [(src)src.FieldSchema(name:ROW__OFFSET__INSIDE__BLOCK, type:bigint, comment:), ]
 POSTHOOK: Lineage: default__src_src1_index__._bucketname SIMPLE [(src)src.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
 POSTHOOK: Lineage: default__src_src1_index__._offset SIMPLE [(src)src.FieldSchema(name:BLOCK__OFFSET__INSIDE__FILE, type:bigint, comment:), ]
@@ -585,11 +602,11 @@ POSTHOOK: Lineage: default__src_src2_index__.value SIMPLE [(src)src.FieldSchema(
 PREHOOK: query: SELECT * FROM default__src_src2_index__ ORDER BY value
 PREHOOK: type: QUERY
 PREHOOK: Input: default@default__src_src2_index__
-PREHOOK: Output: file:/var/folders/5V/5V4Zq77qGD4aSK9m8V3frVsFdRU/-Tmp-/salbiz/hive_2011-06-16_11-40-04_266_6840977120720746380/-mr-10000
+PREHOOK: Output: file:/var/folders/5V/5V4Zq77qGD4aSK9m8V3frVsFdRU/-Tmp-/salbiz/hive_2011-06-16_11-41-10_648_7441443189543400112/-mr-10000
 POSTHOOK: query: SELECT * FROM default__src_src2_index__ ORDER BY value
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@default__src_src2_index__
-POSTHOOK: Output: file:/var/folders/5V/5V4Zq77qGD4aSK9m8V3frVsFdRU/-Tmp-/salbiz/hive_2011-06-16_11-40-04_266_6840977120720746380/-mr-10000
+POSTHOOK: Output: file:/var/folders/5V/5V4Zq77qGD4aSK9m8V3frVsFdRU/-Tmp-/salbiz/hive_2011-06-16_11-41-10_648_7441443189543400112/-mr-10000
 POSTHOOK: Lineage: default__src_src1_index__._bitmaps EXPRESSION [(src)src.FieldSchema(name:ROW__OFFSET__INSIDE__BLOCK, type:bigint, comment:), ]
 POSTHOOK: Lineage: default__src_src1_index__._bucketname SIMPLE [(src)src.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
 POSTHOOK: Lineage: default__src_src1_index__._offset SIMPLE [(src)src.FieldSchema(name:BLOCK__OFFSET__INSIDE__FILE, type:bigint, comment:), ]
@@ -1098,7 +1115,8 @@ val_97	pfile:/Users/salbiz/dev/hive/build/ql/test/data/warehouse/src/kv1.txt	557
 val_97	pfile:/Users/salbiz/dev/hive/build/ql/test/data/warehouse/src/kv1.txt	5802	[1,2,4,8589934592,1,0]
 val_98	pfile:/Users/salbiz/dev/hive/build/ql/test/data/warehouse/src/kv1.txt	92	[1,2,4,8589934592,1,0]
 val_98	pfile:/Users/salbiz/dev/hive/build/ql/test/data/warehouse/src/kv1.txt	2458	[1,2,4,8589934592,1,0]
-PREHOOK: query: EXPLAIN
+PREHOOK: query: -- manual indexing
+EXPLAIN
 SELECT a.bucketname AS `_bucketname`, COLLECT_SET(a.offset) as `_offsets`
 FROM (SELECT `_bucketname` AS bucketname, `_offset` AS offset, `_bitmaps` AS bitmaps FROM default__src_src1_index__
         WHERE key = 0) a
@@ -1109,7 +1127,8 @@ FROM (SELECT `_bucketname` AS bucketname, `_offset` AS offset, `_bitmaps` AS bit
     a.bucketname = b.bucketname AND a.offset = b.offset WHERE NOT
 EWAH_BITMAP_EMPTY(EWAH_BITMAP_AND(a.bitmaps, b.bitmaps)) GROUP BY a.bucketname
 PREHOOK: type: QUERY
-POSTHOOK: query: EXPLAIN
+POSTHOOK: query: -- manual indexing
+EXPLAIN
 SELECT a.bucketname AS `_bucketname`, COLLECT_SET(a.offset) as `_offsets`
 FROM (SELECT `_bucketname` AS bucketname, `_offset` AS offset, `_bitmaps` AS bitmaps FROM default__src_src1_index__
         WHERE key = 0) a
@@ -1255,7 +1274,7 @@ STAGE PLANS:
   Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/var/folders/5V/5V4Zq77qGD4aSK9m8V3frVsFdRU/-Tmp-/salbiz/hive_2011-06-16_11-40-11_145_6593391369966420886/-mr-10002 
+        file:/var/folders/5V/5V4Zq77qGD4aSK9m8V3frVsFdRU/-Tmp-/salbiz/hive_2011-06-16_11-41-17_222_6307031333609964813/-mr-10002 
             Reduce Output Operator
               key expressions:
                     expr: _col0
@@ -1336,11 +1355,11 @@ POSTHOOK: Lineage: default__src_src2_index__.value SIMPLE [(src)src.FieldSchema(
 PREHOOK: query: SELECT key, value FROM src WHERE key=0 AND value = "val_0" ORDER BY key
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/var/folders/5V/5V4Zq77qGD4aSK9m8V3frVsFdRU/-Tmp-/salbiz/hive_2011-06-16_11-40-25_514_5032099765945324550/-mr-10000
+PREHOOK: Output: file:/var/folders/5V/5V4Zq77qGD4aSK9m8V3frVsFdRU/-Tmp-/salbiz/hive_2011-06-16_11-41-31_720_5176895406027359920/-mr-10000
 POSTHOOK: query: SELECT key, value FROM src WHERE key=0 AND value = "val_0" ORDER BY key
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: file:/var/folders/5V/5V4Zq77qGD4aSK9m8V3frVsFdRU/-Tmp-/salbiz/hive_2011-06-16_11-40-25_514_5032099765945324550/-mr-10000
+POSTHOOK: Output: file:/var/folders/5V/5V4Zq77qGD4aSK9m8V3frVsFdRU/-Tmp-/salbiz/hive_2011-06-16_11-41-31_720_5176895406027359920/-mr-10000
 POSTHOOK: Lineage: default__src_src1_index__._bitmaps EXPRESSION [(src)src.FieldSchema(name:ROW__OFFSET__INSIDE__BLOCK, type:bigint, comment:), ]
 POSTHOOK: Lineage: default__src_src1_index__._bucketname SIMPLE [(src)src.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
 POSTHOOK: Lineage: default__src_src1_index__._offset SIMPLE [(src)src.FieldSchema(name:BLOCK__OFFSET__INSIDE__FILE, type:bigint, comment:), ]
@@ -1354,12 +1373,16 @@ POSTHOOK: Lineage: default__src_src2_index__.value SIMPLE [(src)src.FieldSchema(
 0	val_0
 PREHOOK: query: SELECT key, value FROM src WHERE key=0 AND value = "val_0" ORDER BY key
 PREHOOK: type: QUERY
+PREHOOK: Input: default@default__src_src1_index__
+PREHOOK: Input: default@default__src_src2_index__
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/var/folders/5V/5V4Zq77qGD4aSK9m8V3frVsFdRU/-Tmp-/salbiz/hive_2011-06-16_11-40-33_111_821728602530856393/-mr-10000
+PREHOOK: Output: file:/var/folders/5V/5V4Zq77qGD4aSK9m8V3frVsFdRU/-Tmp-/salbiz/hive_2011-06-16_11-41-39_021_3462768853360912472/-mr-10000
 POSTHOOK: query: SELECT key, value FROM src WHERE key=0 AND value = "val_0" ORDER BY key
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@default__src_src1_index__
+POSTHOOK: Input: default@default__src_src2_index__
 POSTHOOK: Input: default@src
-POSTHOOK: Output: file:/var/folders/5V/5V4Zq77qGD4aSK9m8V3frVsFdRU/-Tmp-/salbiz/hive_2011-06-16_11-40-33_111_821728602530856393/-mr-10000
+POSTHOOK: Output: file:/var/folders/5V/5V4Zq77qGD4aSK9m8V3frVsFdRU/-Tmp-/salbiz/hive_2011-06-16_11-41-39_021_3462768853360912472/-mr-10000
 POSTHOOK: Lineage: default__src_src1_index__._bitmaps EXPRESSION [(src)src.FieldSchema(name:ROW__OFFSET__INSIDE__BLOCK, type:bigint, comment:), ]
 POSTHOOK: Lineage: default__src_src1_index__._bucketname SIMPLE [(src)src.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
 POSTHOOK: Lineage: default__src_src1_index__._offset SIMPLE [(src)src.FieldSchema(name:BLOCK__OFFSET__INSIDE__FILE, type:bigint, comment:), ]
