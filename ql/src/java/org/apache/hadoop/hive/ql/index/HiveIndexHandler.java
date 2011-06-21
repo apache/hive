@@ -118,14 +118,19 @@ public interface HiveIndexHandler extends Configurable {
       throws HiveException;
 
   /**
-   * Generate the list of tasks required to run an index sub-query for the
-   * given predicate, using the given index
-   * @param index
+   * Generate the list of tasks required to run an index optimized sub-query for the
+   * given predicate, using the given indexes. If multiple indexes are
+   * provided, it is up to the handler whether to use none, one, some or all of
+   * them. The supplied predicate may reference any of the columns from any of
+   * the indexes. If the handler decides to use more than one index, it is
+   * responsible for generating tasks to combine their search results 
+   * (e.g. performing a JOIN on the result).
+   * @param indexes
    * @param predicate
    * @param parseContext
    * @param queryContext contains results, such as query tasks and input configuration
    */
-  void generateIndexQuery(Index index, ExprNodeDesc predicate,
+  void generateIndexQuery(List<Index> indexes, ExprNodeDesc predicate,
     ParseContext pctx, HiveIndexQueryContext queryContext);
 
   /**

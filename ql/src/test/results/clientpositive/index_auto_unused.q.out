@@ -40,6 +40,9 @@ STAGE PLANS:
         src 
           TableScan
             alias: src
+            filterExpr:
+                expr: ((key > 80) and (key < 100))
+                type: boolean
             Filter Operator
               predicate:
                   expr: ((key > 80) and (key < 100))
@@ -83,11 +86,11 @@ STAGE PLANS:
 PREHOOK: query: SELECT * FROM src WHERE key > 80 AND key < 100 ORDER BY key
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/var/folders/D-/D-v4r3JYHU4wWmtdk5+mbU+++TI/-Tmp-/rmelick/hive_2011-04-21_20-13-34_118_2447968768171073218/-mr-10000
+PREHOOK: Output: file:/var/folders/5V/5V4Zq77qGD4aSK9m8V3frVsFdRU/-Tmp-/salbiz/hive_2011-06-15_16-09-25_374_4374810764646255651/-mr-10000
 POSTHOOK: query: SELECT * FROM src WHERE key > 80 AND key < 100 ORDER BY key
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: file:/var/folders/D-/D-v4r3JYHU4wWmtdk5+mbU+++TI/-Tmp-/rmelick/hive_2011-04-21_20-13-34_118_2447968768171073218/-mr-10000
+POSTHOOK: Output: file:/var/folders/5V/5V4Zq77qGD4aSK9m8V3frVsFdRU/-Tmp-/salbiz/hive_2011-06-15_16-09-25_374_4374810764646255651/-mr-10000
 POSTHOOK: Lineage: default__src_src_index__._bucketname SIMPLE [(src)src.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
 POSTHOOK: Lineage: default__src_src_index__._offsets EXPRESSION [(src)src.FieldSchema(name:BLOCK__OFFSET__INSIDE__FILE, type:bigint, comment:), ]
 POSTHOOK: Lineage: default__src_src_index__.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
@@ -133,6 +136,9 @@ STAGE PLANS:
         src 
           TableScan
             alias: src
+            filterExpr:
+                expr: ((key > 80) and (key < 100))
+                type: boolean
             Filter Operator
               predicate:
                   expr: ((key > 80) and (key < 100))
@@ -176,11 +182,11 @@ STAGE PLANS:
 PREHOOK: query: SELECT * FROM src WHERE key > 80 AND key < 100 ORDER BY key
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/var/folders/D-/D-v4r3JYHU4wWmtdk5+mbU+++TI/-Tmp-/rmelick/hive_2011-04-21_20-13-42_868_8608290458938388381/-mr-10000
+PREHOOK: Output: file:/var/folders/5V/5V4Zq77qGD4aSK9m8V3frVsFdRU/-Tmp-/salbiz/hive_2011-06-15_16-09-33_059_3495425540612459913/-mr-10000
 POSTHOOK: query: SELECT * FROM src WHERE key > 80 AND key < 100 ORDER BY key
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: file:/var/folders/D-/D-v4r3JYHU4wWmtdk5+mbU+++TI/-Tmp-/rmelick/hive_2011-04-21_20-13-42_868_8608290458938388381/-mr-10000
+POSTHOOK: Output: file:/var/folders/5V/5V4Zq77qGD4aSK9m8V3frVsFdRU/-Tmp-/salbiz/hive_2011-06-15_16-09-33_059_3495425540612459913/-mr-10000
 POSTHOOK: Lineage: default__src_src_index__._bucketname SIMPLE [(src)src.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
 POSTHOOK: Lineage: default__src_src_index__._offsets EXPRESSION [(src)src.FieldSchema(name:BLOCK__OFFSET__INSIDE__FILE, type:bigint, comment:), ]
 POSTHOOK: Lineage: default__src_src_index__.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
@@ -226,6 +232,9 @@ STAGE PLANS:
         src 
           TableScan
             alias: src
+            filterExpr:
+                expr: ((key < 10) or (key > 480))
+                type: boolean
             Filter Operator
               predicate:
                   expr: ((key < 10) or (key > 480))
@@ -269,11 +278,11 @@ STAGE PLANS:
 PREHOOK: query: SELECT * FROM src WHERE key < 10 OR key > 480 ORDER BY key
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/var/folders/D-/D-v4r3JYHU4wWmtdk5+mbU+++TI/-Tmp-/rmelick/hive_2011-04-21_20-13-51_158_1683546756150736409/-mr-10000
+PREHOOK: Output: file:/var/folders/5V/5V4Zq77qGD4aSK9m8V3frVsFdRU/-Tmp-/salbiz/hive_2011-06-15_16-09-41_214_8813442842757881648/-mr-10000
 POSTHOOK: query: SELECT * FROM src WHERE key < 10 OR key > 480 ORDER BY key
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: file:/var/folders/D-/D-v4r3JYHU4wWmtdk5+mbU+++TI/-Tmp-/rmelick/hive_2011-04-21_20-13-51_158_1683546756150736409/-mr-10000
+POSTHOOK: Output: file:/var/folders/5V/5V4Zq77qGD4aSK9m8V3frVsFdRU/-Tmp-/salbiz/hive_2011-06-15_16-09-41_214_8813442842757881648/-mr-10000
 POSTHOOK: Lineage: default__src_src_index__._bucketname SIMPLE [(src)src.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
 POSTHOOK: Lineage: default__src_src_index__._offsets EXPRESSION [(src)src.FieldSchema(name:BLOCK__OFFSET__INSIDE__FILE, type:bigint, comment:), ]
 POSTHOOK: Lineage: default__src_src_index__.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
@@ -363,6 +372,9 @@ STAGE PLANS:
         src 
           TableScan
             alias: src
+            filterExpr:
+                expr: ((key > 80) and (key < 100))
+                type: boolean
             Filter Operator
               predicate:
                   expr: ((key > 80) and (key < 100))
@@ -406,11 +418,11 @@ STAGE PLANS:
 PREHOOK: query: SELECT * FROM src WHERE key > 80 AND key < 100 ORDER BY key
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/var/folders/D-/D-v4r3JYHU4wWmtdk5+mbU+++TI/-Tmp-/rmelick/hive_2011-04-21_20-14-14_046_9000844070247643784/-mr-10000
+PREHOOK: Output: file:/var/folders/5V/5V4Zq77qGD4aSK9m8V3frVsFdRU/-Tmp-/salbiz/hive_2011-06-15_16-09-56_659_721280297272334789/-mr-10000
 POSTHOOK: query: SELECT * FROM src WHERE key > 80 AND key < 100 ORDER BY key
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: file:/var/folders/D-/D-v4r3JYHU4wWmtdk5+mbU+++TI/-Tmp-/rmelick/hive_2011-04-21_20-14-14_046_9000844070247643784/-mr-10000
+POSTHOOK: Output: file:/var/folders/5V/5V4Zq77qGD4aSK9m8V3frVsFdRU/-Tmp-/salbiz/hive_2011-06-15_16-09-56_659_721280297272334789/-mr-10000
 POSTHOOK: Lineage: default__src_src_index__._bucketname SIMPLE [(src)src.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
 POSTHOOK: Lineage: default__src_src_index__._offsets EXPRESSION [(src)src.FieldSchema(name:BLOCK__OFFSET__INSIDE__FILE, type:bigint, comment:), ]
 POSTHOOK: Lineage: default__src_src_index__.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
@@ -502,6 +514,9 @@ STAGE PLANS:
         srcpart 
           TableScan
             alias: srcpart
+            filterExpr:
+                expr: (((ds = '2008-04-09') and (hr = 12)) and (key < 10))
+                type: boolean
             Filter Operator
               predicate:
                   expr: (key < 10)
@@ -553,11 +568,11 @@ STAGE PLANS:
 PREHOOK: query: SELECT * FROM srcpart WHERE ds='2008-04-09' AND hr=12 AND key < 10 ORDER BY key
 PREHOOK: type: QUERY
 PREHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
-PREHOOK: Output: file:/var/folders/D-/D-v4r3JYHU4wWmtdk5+mbU+++TI/-Tmp-/rmelick/hive_2011-04-21_20-14-40_408_253015798760330492/-mr-10000
+PREHOOK: Output: file:/var/folders/5V/5V4Zq77qGD4aSK9m8V3frVsFdRU/-Tmp-/salbiz/hive_2011-06-15_16-10-13_765_2757201616794436574/-mr-10000
 POSTHOOK: query: SELECT * FROM srcpart WHERE ds='2008-04-09' AND hr=12 AND key < 10 ORDER BY key
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
-POSTHOOK: Output: file:/var/folders/D-/D-v4r3JYHU4wWmtdk5+mbU+++TI/-Tmp-/rmelick/hive_2011-04-21_20-14-40_408_253015798760330492/-mr-10000
+POSTHOOK: Output: file:/var/folders/5V/5V4Zq77qGD4aSK9m8V3frVsFdRU/-Tmp-/salbiz/hive_2011-06-15_16-10-13_765_2757201616794436574/-mr-10000
 POSTHOOK: Lineage: default__src_src_index__._bucketname SIMPLE [(src)src.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
 POSTHOOK: Lineage: default__src_src_index__._offsets EXPRESSION [(src)src.FieldSchema(name:BLOCK__OFFSET__INSIDE__FILE, type:bigint, comment:), ]
 POSTHOOK: Lineage: default__src_src_index__.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]

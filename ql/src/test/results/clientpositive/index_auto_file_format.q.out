@@ -41,6 +41,9 @@ STAGE PLANS:
         default__src_src_index__ 
           TableScan
             alias: default__src_src_index__
+            filterExpr:
+                expr: (key = 86)
+                type: boolean
             Filter Operator
               predicate:
                   expr: (key = 86)
@@ -70,13 +73,13 @@ STAGE PLANS:
     Move Operator
       files:
           hdfs directory: true
-          destination: file:/Users/rmelick/hive/build/ql/scratchdir/hive_2011-04-15_22-34-34_553_2035287069819677240/-ext-10000
+          destination: file:/Users/salbiz/dev/hive/build/ql/scratchdir/hive_2011-06-15_16-16-40_411_4815505312955631583/-ext-10000
 
   Stage: Stage-2
     Move Operator
       files:
           hdfs directory: true
-          destination: file:/var/folders/D-/D-v4r3JYHU4wWmtdk5+mbU+++TI/-Tmp-/rmelick/hive_2011-04-15_22-34-33_550_5081238212103104306/-mr-10002
+          destination: file:/var/folders/5V/5V4Zq77qGD4aSK9m8V3frVsFdRU/-Tmp-/salbiz/hive_2011-06-15_16-16-40_275_2821007696524201513/-mr-10002
 
   Stage: Stage-1
     Map Reduce
@@ -84,6 +87,9 @@ STAGE PLANS:
         src 
           TableScan
             alias: src
+            filterExpr:
+                expr: (key = 86)
+                type: boolean
             Filter Operator
               predicate:
                   expr: (key = 86)
@@ -122,7 +128,7 @@ STAGE PLANS:
   Stage: Stage-4
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/Users/rmelick/hive/build/ql/scratchdir/hive_2011-04-15_22-34-34_553_2035287069819677240/-ext-10001 
+        file:/Users/salbiz/dev/hive/build/ql/scratchdir/hive_2011-06-15_16-16-40_411_4815505312955631583/-ext-10001 
             File Output Operator
               compressed: false
               GlobalTableId: 0
@@ -139,12 +145,12 @@ PREHOOK: query: SELECT key, value FROM src WHERE key=86 ORDER BY key
 PREHOOK: type: QUERY
 PREHOOK: Input: default@default__src_src_index__
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/var/folders/D-/D-v4r3JYHU4wWmtdk5+mbU+++TI/-Tmp-/rmelick/hive_2011-04-15_22-34-35_027_2206378732102210462/-mr-10000
+PREHOOK: Output: file:/var/folders/5V/5V4Zq77qGD4aSK9m8V3frVsFdRU/-Tmp-/salbiz/hive_2011-06-15_16-16-40_552_3841543983008204664/-mr-10000
 POSTHOOK: query: SELECT key, value FROM src WHERE key=86 ORDER BY key
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@default__src_src_index__
 POSTHOOK: Input: default@src
-POSTHOOK: Output: file:/var/folders/D-/D-v4r3JYHU4wWmtdk5+mbU+++TI/-Tmp-/rmelick/hive_2011-04-15_22-34-35_027_2206378732102210462/-mr-10000
+POSTHOOK: Output: file:/var/folders/5V/5V4Zq77qGD4aSK9m8V3frVsFdRU/-Tmp-/salbiz/hive_2011-06-15_16-16-40_552_3841543983008204664/-mr-10000
 POSTHOOK: Lineage: default__src_src_index__._bucketname SIMPLE [(src)src.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
 POSTHOOK: Lineage: default__src_src_index__._offsets EXPRESSION [(src)src.FieldSchema(name:BLOCK__OFFSET__INSIDE__FILE, type:bigint, comment:), ]
 POSTHOOK: Lineage: default__src_src_index__.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
@@ -175,6 +181,9 @@ STAGE PLANS:
         default__src_src_index__ 
           TableScan
             alias: default__src_src_index__
+            filterExpr:
+                expr: (key = 86)
+                type: boolean
             Filter Operator
               predicate:
                   expr: (key = 86)
@@ -204,13 +213,13 @@ STAGE PLANS:
     Move Operator
       files:
           hdfs directory: true
-          destination: file:/Users/rmelick/hive/build/ql/scratchdir/hive_2011-04-15_22-34-55_926_5572346744193019133/-ext-10000
+          destination: file:/Users/salbiz/dev/hive/build/ql/scratchdir/hive_2011-06-15_16-16-55_117_7145184773994968051/-ext-10000
 
   Stage: Stage-2
     Move Operator
       files:
           hdfs directory: true
-          destination: file:/var/folders/D-/D-v4r3JYHU4wWmtdk5+mbU+++TI/-Tmp-/rmelick/hive_2011-04-15_22-34-55_774_5724664415454979907/-mr-10002
+          destination: file:/var/folders/5V/5V4Zq77qGD4aSK9m8V3frVsFdRU/-Tmp-/salbiz/hive_2011-06-15_16-16-54_980_8246330207973926102/-mr-10002
 
   Stage: Stage-1
     Map Reduce
@@ -218,6 +227,9 @@ STAGE PLANS:
         src 
           TableScan
             alias: src
+            filterExpr:
+                expr: (key = 86)
+                type: boolean
             Filter Operator
               predicate:
                   expr: (key = 86)
@@ -256,7 +268,7 @@ STAGE PLANS:
   Stage: Stage-4
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/Users/rmelick/hive/build/ql/scratchdir/hive_2011-04-15_22-34-55_926_5572346744193019133/-ext-10001 
+        file:/Users/salbiz/dev/hive/build/ql/scratchdir/hive_2011-06-15_16-16-55_117_7145184773994968051/-ext-10001 
             File Output Operator
               compressed: false
               GlobalTableId: 0
@@ -273,12 +285,12 @@ PREHOOK: query: SELECT key, value FROM src WHERE key=86 ORDER BY key
 PREHOOK: type: QUERY
 PREHOOK: Input: default@default__src_src_index__
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/var/folders/D-/D-v4r3JYHU4wWmtdk5+mbU+++TI/-Tmp-/rmelick/hive_2011-04-15_22-34-56_142_8911654156491576181/-mr-10000
+PREHOOK: Output: file:/var/folders/5V/5V4Zq77qGD4aSK9m8V3frVsFdRU/-Tmp-/salbiz/hive_2011-06-15_16-16-55_246_5645043276355070579/-mr-10000
 POSTHOOK: query: SELECT key, value FROM src WHERE key=86 ORDER BY key
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@default__src_src_index__
 POSTHOOK: Input: default@src
-POSTHOOK: Output: file:/var/folders/D-/D-v4r3JYHU4wWmtdk5+mbU+++TI/-Tmp-/rmelick/hive_2011-04-15_22-34-56_142_8911654156491576181/-mr-10000
+POSTHOOK: Output: file:/var/folders/5V/5V4Zq77qGD4aSK9m8V3frVsFdRU/-Tmp-/salbiz/hive_2011-06-15_16-16-55_246_5645043276355070579/-mr-10000
 POSTHOOK: Lineage: default__src_src_index__._bucketname SIMPLE [(src)src.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
 POSTHOOK: Lineage: default__src_src_index__._offsets EXPRESSION [(src)src.FieldSchema(name:BLOCK__OFFSET__INSIDE__FILE, type:bigint, comment:), ]
 POSTHOOK: Lineage: default__src_src_index__.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]

@@ -42,6 +42,8 @@ import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFBridge;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 /**
  * IndexPredicateAnalyzer decomposes predicates, separating the parts
@@ -52,6 +54,7 @@ import org.apache.hadoop.hive.ql.udf.generic.GenericUDFBridge;
  */
 public class IndexPredicateAnalyzer
 {
+  private static final Log LOG = LogFactory.getLog(IndexPredicateAnalyzer.class.getName());
   private Set<String> udfNames;
 
   private Set<String> allowedColumnNames;

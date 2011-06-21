@@ -450,6 +450,12 @@ public final class OpProcFactory {
 
     TableScanDesc tableScanDesc = tableScanOp.getConf();
     Table tbl = owi.getParseContext().getTopToTable().get(tableScanOp);
+    if (HiveConf.getBoolVar(hiveConf, HiveConf.ConfVars.HIVEOPTINDEXFILTER)) {
+      // attach the original predicate to the table scan operator for index
+      // optimizations that require the pushed predicate before pcr & later
+      // optimizations are applied
+      tableScanDesc.setFilterExpr(originalPredicate);
+    }
     if (!tbl.isNonNative()) {
       return originalPredicate;
     }

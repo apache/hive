@@ -481,6 +481,7 @@ public class ExecDriver extends Task<MapredWork> implements Serializable, Hadoop
     }
     if (work.getIndexIntermediateFile() != null) {
       conf.set("hive.index.compact.file", work.getIndexIntermediateFile());
+      conf.set("hive.index.blockfilter.file", work.getIndexIntermediateFile());
     }
   }
 

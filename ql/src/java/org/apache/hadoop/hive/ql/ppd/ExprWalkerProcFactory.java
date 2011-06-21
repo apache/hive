@@ -24,6 +24,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Stack;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.hive.ql.exec.FunctionRegistry;
 import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.lib.DefaultGraphWalker;
@@ -48,6 +50,9 @@ import org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc;
  * pushdown optimization for the given operator
  */
 public final class ExprWalkerProcFactory {
+  
+  private static final Log LOG = LogFactory
+      .getLog(ExprWalkerProcFactory.class.getName());
 
   /**
    * ColumnExprProcessor.

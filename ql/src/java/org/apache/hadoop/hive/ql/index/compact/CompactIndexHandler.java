@@ -48,6 +48,7 @@ import org.apache.hadoop.hive.ql.metadata.VirtualColumn;
 import org.apache.hadoop.hive.ql.metadata.HiveStoragePredicateHandler.DecomposedPredicate;
 import org.apache.hadoop.hive.ql.parse.ParseContext;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
+import org.apache.hadoop.hive.ql.plan.MapredWork;
 import org.apache.hadoop.hive.ql.plan.PartitionDesc;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPEqual;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPEqualOrGreaterThan;
@@ -127,7 +128,10 @@ public class CompactIndexHandler extends TableBasedIndexHandler {
     command.append(" GROUP BY ");
     command.append(indexCols + ", " + VirtualColumn.FILENAME.getName());
 
-    Driver driver = new Driver(new HiveConf(getConf(), CompactIndexHandler.class));
+    HiveConf builderConf = new HiveConf(getConf(), CompactIndexHandler.class);
+    // Don't try to index optimize the query to build the index
+    HiveConf.setBoolVar(builderConf, HiveConf.ConfVars.HIVEOPTINDEXFILTER, false);
+    Driver driver = new Driver(builderConf);
     driver.compile(command.toString());
 
     Task<?> rootTask = driver.getPlan().getRootTasks().get(0);
@@ -143,9 +147,10 @@ public class CompactIndexHandler extends TableBasedIndexHandler {
   }
 
   @Override
-  public void generateIndexQuery(Index index, ExprNodeDesc predicate,
+  public void generateIndexQuery(List<Index> indexes, ExprNodeDesc predicate,
     ParseContext pctx, HiveIndexQueryContext queryContext) {
 
+    Index index = indexes.get(0);
     DecomposedPredicate decomposedPredicate = decomposePredicate(predicate, index,
                                                                   queryContext.getQueryPartitions());
 
@@ -235,9 +240,8 @@ public class CompactIndexHandler extends TableBasedIndexHandler {
       if (part.getSpec().isEmpty()) {
         continue; // empty partitions are from whole tables, so we don't want to add them in
       }
-      List<FieldSchema> partitionColumns = part.getCols();
-      for (FieldSchema column : partitionColumns) {
-        analyzer.allowColumnName(column.getName());
+      for (String column : part.getSpec().keySet()) {
+        analyzer.allowColumnName(column);
       }
     }
 
