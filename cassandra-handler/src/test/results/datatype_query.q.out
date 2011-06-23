@@ -1,0 +1,52 @@
+PREHOOK: query: DROP TABLE cf_demo_TBL
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: DROP TABLE cf_demo_TBL
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: --Test LongType and IntegerType
+CREATE EXTERNAL TABLE cf_demo_TBL(row_key STRING,
+                                             uniqueid String,
+                                             countLong BIGINT,
+                                             countInt INT)
+      STORED BY 'org.apache.hadoop.hive.cassandra.CassandraStorageHandler'
+      WITH SERDEPROPERTIES ("cassandra.port" = "9170",
+                            "cassandra.columns.mapping" = ":key,
+                                                           uniqueid,
+                                                           countLong,
+                                                           countInt")
+      TBLPROPERTIES ("cassandra.ks.name" = "ks_demo",
+                     "cassandra.slice.predicate.size" = "100",
+                     "cassandra.cf.name" = "cf_demo")
+PREHOOK: type: CREATETABLE
+POSTHOOK: query: --Test LongType and IntegerType
+CREATE EXTERNAL TABLE cf_demo_TBL(row_key STRING,
+                                             uniqueid String,
+                                             countLong BIGINT,
+                                             countInt INT)
+      STORED BY 'org.apache.hadoop.hive.cassandra.CassandraStorageHandler'
+      WITH SERDEPROPERTIES ("cassandra.port" = "9170",
+                            "cassandra.columns.mapping" = ":key,
+                                                           uniqueid,
+                                                           countLong,
+                                                           countInt")
+      TBLPROPERTIES ("cassandra.ks.name" = "ks_demo",
+                     "cassandra.slice.predicate.size" = "100",
+                     "cassandra.cf.name" = "cf_demo")
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: default@cf_demo_TBL
+PREHOOK: query: select row_key, uniqueid, countLong, countInt from cf_demo_TBL
+PREHOOK: type: QUERY
+PREHOOK: Input: default@cf_demo_tbl
+PREHOOK: Output: file:/var/folders/b-/b-vBB2wVHpaVQzxVjeViaE+++TI/-Tmp-/yeweizhang/hive_2011-06-23_10-48-37_260_4811649608525203822/-mr-10000
+POSTHOOK: query: select row_key, uniqueid, countLong, countInt from cf_demo_TBL
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@cf_demo_tbl
+POSTHOOK: Output: file:/var/folders/b-/b-vBB2wVHpaVQzxVjeViaE+++TI/-Tmp-/yeweizhang/hive_2011-06-23_10-48-37_260_4811649608525203822/-mr-10000
+rowKey1	abcde	1223456	234
+PREHOOK: query: DROP TABLE cf_demo_TBL
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@cf_demo_tbl
+PREHOOK: Output: default@cf_demo_tbl
+POSTHOOK: query: DROP TABLE cf_demo_TBL
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@cf_demo_tbl
+POSTHOOK: Output: default@cf_demo_tbl

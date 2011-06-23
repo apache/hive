@@ -6,9 +6,9 @@ import java.util.List;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.apache.hadoop.hive.cassandra.serde.CassandraLazyFactory;
 import org.apache.hadoop.hive.cassandra.serde.StandardColumnSerDe;
 import org.apache.hadoop.hive.serde2.lazy.ByteArrayRef;
-import org.apache.hadoop.hive.serde2.lazy.LazyFactory;
 import org.apache.hadoop.hive.serde2.lazy.LazyObject;
 import org.apache.hadoop.hive.serde2.lazy.LazyStruct;
 import org.apache.hadoop.hive.serde2.lazy.objectinspector.LazyMapObjectInspector;
@@ -51,7 +51,7 @@ public class LazyCassandraRow extends LazyStruct {
         } else {
           // otherwise only interested in a single column
           LOG.debug("Field REF: " + fieldRefs.get(i).getFieldObjectInspector());
-          getFields()[i] = LazyFactory.createLazyObject(
+          getFields()[i] = CassandraLazyFactory.createLazyObject(
               fieldRefs.get(i).getFieldObjectInspector());
         }
       }
@@ -75,6 +75,7 @@ public class LazyCassandraRow extends LazyStruct {
       ByteArrayRef ref = null;
       String columnName = cassandraColumns.get(fieldID);
 
+      LazyObject obj = getFields()[fieldID];
       if (columnName.equals(StandardColumnSerDe.CASSANDRA_KEY_COLUMN)) {
         // user is asking for key column
         ref = new ByteArrayRef();
@@ -101,7 +102,7 @@ public class LazyCassandraRow extends LazyStruct {
       }
       if (ref != null) {
         LOG.debug("getFields() " + fieldID + ": ");
-        getFields()[fieldID].init(ref, 0, ref.getData().length);
+        obj.init(ref, 0, ref.getData().length);
       }
     }
     return getFields()[fieldID].getObject();

@@ -26,7 +26,7 @@ import org.apache.hadoop.io.Writable;
 public abstract class LazyPrimitive<OI extends ObjectInspector, T extends Writable>
     extends LazyObject<OI> {
 
-  LazyPrimitive(OI oi) {
+  protected LazyPrimitive(OI oi) {
     super(oi);
   }
 
@@ -35,8 +35,8 @@ public abstract class LazyPrimitive<OI extends ObjectInspector, T extends Writab
     isNull = copy.isNull;
   }
 
-  T data;
-  boolean isNull = false;
+  protected T data;
+  protected boolean isNull = false;
 
   /**
    * Returns the primitive object represented by this LazyObject. This is useful
