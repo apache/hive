@@ -204,10 +204,6 @@ public class MapRedTask extends ExecDriver implements Serializable {
           sb.append(" -D" + element + "=" + p.getProperty(element));
         }
       }
-
-      //TODO: REMOVE DEBUG LINE later
-      sb.append(" -Xdebug -Xrunjdwp:transport=dt_socket,address=8000,server=y,suspend=y");
-
       hadoopOpts = sb.toString();
       // Inherit the environment variables
       String[] env;

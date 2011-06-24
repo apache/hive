@@ -4,8 +4,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.hive.cassandra.serde.CassandraLazyFactory;
 import org.apache.hadoop.hive.cassandra.serde.StandardColumnSerDe;
 import org.apache.hadoop.hive.serde2.lazy.ByteArrayRef;
@@ -19,8 +17,6 @@ import org.apache.hadoop.io.BytesWritable;
 import org.apache.hadoop.io.Writable;
 
 public class LazyCassandraRow extends LazyStruct {
-  private final static Log LOG = LogFactory.getLog(LazyCassandraRow.class);
-
   private List<String> cassandraColumns;
   private HiveCassandraStandardRowResult rowResult;
   private ArrayList<Object> cachedList;
@@ -49,6 +45,7 @@ public class LazyCassandraRow extends LazyStruct {
               fieldRefs.get(i).getFieldObjectInspector());
         } else {
           // otherwise only interested in a single column
+
           getFields()[i] = CassandraLazyFactory.createLazyObject(
               fieldRefs.get(i).getFieldObjectInspector());
         }
