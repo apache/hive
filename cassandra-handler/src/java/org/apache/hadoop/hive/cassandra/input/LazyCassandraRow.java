@@ -43,14 +43,12 @@ public class LazyCassandraRow extends LazyStruct {
       setFields(new LazyObject[fieldRefs.size()]);
       for (int i = 0; i < getFields().length; i++) {
         String cassandraColumn = this.cassandraColumns.get(i);
-        LOG.debug("column: " + cassandraColumn);
         if (cassandraColumn.endsWith(":")) {
           // want all columns as a map
           getFields()[i] = new LazyCassandraCellMap((LazyMapObjectInspector)
               fieldRefs.get(i).getFieldObjectInspector());
         } else {
           // otherwise only interested in a single column
-          LOG.debug("Field REF: " + fieldRefs.get(i).getFieldObjectInspector());
           getFields()[i] = CassandraLazyFactory.createLazyObject(
               fieldRefs.get(i).getFieldObjectInspector());
         }
@@ -86,22 +84,16 @@ public class LazyCassandraRow extends LazyStruct {
         return null;
       } else {
         // user wants the value of a single column
-        LOG.debug("retrieve column name: " + columnName + " bytes: " + columnName.getBytes());
-        LOG.debug("retrieve Key: " + new BytesWritable(columnName.getBytes()));
         Writable res = rowResult.getValue().get(new BytesWritable(columnName.getBytes()));
         HiveIColumn hiveIColumn = (HiveIColumn) res;
         if (hiveIColumn != null) {
-          LOG.debug("Find iColumn: " + hiveIColumn);
           ref = new ByteArrayRef();
           ref.setData(hiveIColumn.value().array());
-          LOG.debug("REF: " + ref);
-          LOG.debug("Data: " + new BytesWritable(hiveIColumn.value().array()));
         } else {
           return null;
         }
       }
       if (ref != null) {
-        LOG.debug("getFields() " + fieldID + ": ");
         obj.init(ref, 0, ref.getData().length);
       }
     }
