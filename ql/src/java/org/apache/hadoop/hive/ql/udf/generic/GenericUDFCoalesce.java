@@ -42,7 +42,7 @@ public class GenericUDFCoalesce extends GenericUDF {
 
     argumentOIs = arguments;
 
-    returnOIResolver = new GenericUDFUtils.ReturnObjectInspectorResolver();
+    returnOIResolver = new GenericUDFUtils.ReturnObjectInspectorResolver(true);
     for (int i = 0; i < arguments.length; i++) {
       if (!returnOIResolver.update(arguments[i])) {
         throw new UDFArgumentTypeException(i,

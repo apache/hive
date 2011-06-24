@@ -74,7 +74,7 @@ public class UnionOperator extends Operator<UnionDesc> implements Serializable {
     // Get outputFieldOIs
     columnTypeResolvers = new ReturnObjectInspectorResolver[columns];
     for (int c = 0; c < columns; c++) {
-      columnTypeResolvers[c] = new ReturnObjectInspectorResolver();
+      columnTypeResolvers[c] = new ReturnObjectInspectorResolver(true);
     }
 
     for (int p = 0; p < parents; p++) {

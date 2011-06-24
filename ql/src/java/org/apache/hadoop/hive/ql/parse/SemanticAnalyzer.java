@@ -5918,7 +5918,10 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
             getPositionFromInternalName(rInfo.getInternalName())
             + ". Column positions should match for a UNION"));
       }
-      if (!lInfo.getType().getTypeName().equals(rInfo.getType().getTypeName())) {
+      //try widening coversion, otherwise fail union
+      TypeInfo commonTypeInfo = FunctionRegistry.getCommonClassForComparison(lInfo.getType(),
+          rInfo.getType());
+      if (commonTypeInfo == null) {
         throw new SemanticException(generateErrorMessage(tabref,
             "Schema of both sides of union should match: Column " + field
             + " is of type " + lInfo.getType().getTypeName()
@@ -5932,6 +5935,9 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     for (Map.Entry<String, ColumnInfo> lEntry : leftmap.entrySet()) {
       String field = lEntry.getKey();
       ColumnInfo lInfo = lEntry.getValue();
+      ColumnInfo rInfo = rightmap.get(field);
+      lInfo.setType(FunctionRegistry.getCommonClassForComparison(lInfo.getType(),
+            rInfo.getType()));
       unionoutRR.put(unionalias, field, lInfo);
     }
 
