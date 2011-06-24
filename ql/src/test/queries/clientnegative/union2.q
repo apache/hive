@@ -1,6 +1,6 @@
 
 
-create table if not exists union2_t1(r string, c string, v string);
+create table if not exists union2_t1(r string, c string, v array<string>);
 create table if not exists union2_t2(s string, c string, v string);
 
 explain
