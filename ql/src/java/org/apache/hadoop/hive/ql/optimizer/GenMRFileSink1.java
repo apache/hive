@@ -44,6 +44,8 @@ import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.exec.TaskFactory;
 import org.apache.hadoop.hive.ql.exec.UnionOperator;
 import org.apache.hadoop.hive.ql.exec.Utilities;
+import org.apache.hadoop.hive.ql.io.RCFileInputFormat;
+import org.apache.hadoop.hive.ql.io.rcfile.merge.MergeWork;
 import org.apache.hadoop.hive.ql.lib.Node;
 import org.apache.hadoop.hive.ql.lib.NodeProcessor;
 import org.apache.hadoop.hive.ql.lib.NodeProcessorCtx;
@@ -55,6 +57,7 @@ import org.apache.hadoop.hive.ql.parse.SemanticAnalyzer;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.parse.TypeCheckProcFactory;
 import org.apache.hadoop.hive.ql.plan.ConditionalResolverMergeFiles;
+import org.apache.hadoop.hive.ql.plan.ConditionalResolverMergeFiles.ConditionalResolverMergeFilesCtx;
 import org.apache.hadoop.hive.ql.plan.ConditionalWork;
 import org.apache.hadoop.hive.ql.plan.DynamicPartitionCtx;
 import org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc;
@@ -71,8 +74,8 @@ import org.apache.hadoop.hive.ql.plan.ReduceSinkDesc;
 import org.apache.hadoop.hive.ql.plan.StatsWork;
 import org.apache.hadoop.hive.ql.plan.TableDesc;
 import org.apache.hadoop.hive.ql.plan.TableScanDesc;
-import org.apache.hadoop.hive.ql.plan.ConditionalResolverMergeFiles.ConditionalResolverMergeFilesCtx;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
+import org.apache.hadoop.mapred.InputFormat;
 
 /**
  * Processor for the rule - table scan followed by reduce sink.
@@ -313,7 +316,7 @@ public class GenMRFileSink1 implements NodeProcessor {
    * directories.
    *
    */
-  private void createMap4Merge(FileSinkOperator fsInput, GenMRProcContext ctx, String finalName) {
+  private void createMap4Merge(FileSinkOperator fsInput, GenMRProcContext ctx, String finalName) throws SemanticException {
 
     //
     // 1. create the operator tree
@@ -374,8 +377,31 @@ public class GenMRFileSink1 implements NodeProcessor {
     MapRedTask currTask = (MapRedTask) ctx.getCurrTask();
     MoveWork dummyMv = new MoveWork(null, null, null,
         new LoadFileDesc(fsInputDesc.getDirName(), finalName, true, null, null), false);
-    MapredWork cplan = createMergeTask(ctx.getConf(), tsMerge, fsInputDesc);
-    // use CombineHiveInputFormat for map-only merging
+    MapredWork cplan;
+
+    if(parseCtx.getConf().getBoolVar(HiveConf.ConfVars.
+        HIVEMERGERCFILEBLOCKLEVEL) &&
+        fsInputDesc.getTableInfo().getInputFileFormatClass().
+        equals(RCFileInputFormat.class)) {
+
+      // Check if InputFormatClass is valid
+      String inputFormatClass = parseCtx.getConf().
+          getVar(HiveConf.ConfVars.HIVEMERGEINPUTFORMATBLOCKLEVEL);
+      try {
+        Class c = (Class <? extends InputFormat>) Class.forName(inputFormatClass);
+
+        LOG.info("RCFile format- Using block level merge");
+        cplan = createRCFileMergeTask(fsInputDesc, finalName,
+            dpCtx != null && dpCtx.getNumDPCols() > 0);
+      } catch (ClassNotFoundException e) {
+        String msg = "Illegal input format class: " + inputFormatClass;
+        throw new SemanticException(msg);
+      }
+
+    } else {
+      cplan = createMergeTask(ctx.getConf(), tsMerge, fsInputDesc);
+      // use CombineHiveInputFormat for map-only merging
+    }
     cplan.setInputformat("org.apache.hadoop.hive.ql.io.CombineHiveInputFormat");
     // NOTE: we should gather stats in MR1 rather than MR2 at merge job since we don't
     // know if merge MR2 will be triggered at execution time
@@ -434,6 +460,46 @@ public class GenMRFileSink1 implements NodeProcessor {
 
     return cplan;
   }
+
+  /**
+   * Create a block level merge task for RCFiles.
+   * @param fsInputDesc
+   * @param finalName
+   * @return MergeWork if table is stored as RCFile,
+   *         null otherwise
+   */
+  private MapredWork createRCFileMergeTask(FileSinkDesc fsInputDesc,
+      String finalName, boolean hasDynamicPartitions) throws SemanticException {
+
+    String inputDir = fsInputDesc.getDirName();
+    TableDesc tblDesc = fsInputDesc.getTableInfo();
+
+    if(tblDesc.getInputFileFormatClass().equals(RCFileInputFormat.class)) {
+      ArrayList<String> inputDirs = new ArrayList<String>();
+      if (!hasDynamicPartitions) {
+        inputDirs.add(inputDir);
+      }
+
+      MergeWork work = new MergeWork(inputDirs, finalName,
+          hasDynamicPartitions);
+      LinkedHashMap<String, ArrayList<String>> pathToAliases =
+          new LinkedHashMap<String, ArrayList<String>>();
+      pathToAliases.put(inputDir, (ArrayList<String>) inputDirs.clone());
+      work.setMapperCannotSpanPartns(true);
+      work.setPathToAliases(pathToAliases);
+      work.setAliasToWork(
+          new LinkedHashMap<String, Operator<? extends Serializable>>());
+      if (hasDynamicPartitions) {
+        work.getPathToPartitionInfo().put(inputDir,
+            new PartitionDesc(tblDesc, null));
+      }
+
+      return work;
+    }
+
+    throw new SemanticException("createRCFileMergeTask called on non-RCFile table");
+  }
+
   /**
    * Construct a conditional task given the current leaf task, the MoveWork and the MapredWork.
    * @param conf HiveConf

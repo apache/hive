@@ -25,6 +25,7 @@ import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.io.RCFile;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
@@ -57,6 +58,11 @@ public class RCFileMergeMapper extends MapReduceBase implements
   CompressionCodec codec = null;
   int columnNumber = 0;
 
+  boolean hasDynamicPartitions = false;
+  boolean tmpPathFixed = false;
+  Path tmpPath;
+  Path dpPath;
+
   public final static Log LOG = LogFactory.getLog("RCFileMergeMapper");
 
   public RCFileMergeMapper() {
@@ -64,12 +70,12 @@ public class RCFileMergeMapper extends MapReduceBase implements
 
   public void configure(JobConf job) {
     jc = job;
+    hasDynamicPartitions = HiveConf.getBoolVar(job,
+        HiveConf.ConfVars.HIVEMERGECURRENTJOBHASDYNAMICPARTITIONS);
+
     String specPath = RCFileBlockMergeOutputFormat.getMergeOutputPath(job)
         .toString();
-    Path tmpPath = Utilities.toTempPath(specPath);
-    String taskId = Utilities.getTaskId(job);
-    finalPath = new Path(tmpPath, taskId);
-    outPath = new Path(tmpPath, Utilities.toTempPath(taskId));
+    updatePaths(Utilities.toTempPath(specPath));
     try {
       fs = (new Path(specPath)).getFileSystem(job);
       autoDelete = ShimLoader.getHadoopShims().fileSystemDeleteOnExit(fs,
@@ -78,6 +84,13 @@ public class RCFileMergeMapper extends MapReduceBase implements
       this.exception = true;
       throw new RuntimeException(e);
     }
+  }
+
+  private void updatePaths(Path tmpPath) {
+    String taskId = Utilities.getTaskId(jc);
+    this.tmpPath = tmpPath;
+    finalPath = new Path(tmpPath, taskId);
+    outPath = new Path(tmpPath, Utilities.toTempPath(taskId));
   }
 
   @Override
@@ -91,6 +104,16 @@ public class RCFileMergeMapper extends MapReduceBase implements
         key = (RCFileKeyBufferWrapper) ((CombineHiveKey) k).getKey();
       } else {
         key = (RCFileKeyBufferWrapper) k;
+      }
+
+      if (hasDynamicPartitions) {
+        if (tmpPathFixed) {
+          checkPartitionsMatch(key.inputPath.getParent());
+        } else {
+          // We haven't fixed the TMP path for this mapper yet
+          fixTmpPath(key.inputPath.getParent());
+          tmpPathFixed = true;
+        }
       }
 
       if (outWriter == null) {
@@ -115,6 +138,46 @@ public class RCFileMergeMapper extends MapReduceBase implements
       close();
       throw new IOException(e);
     }
+  }
+
+  /**
+   * Validates that each input path belongs to the same partition
+   * since each mapper merges the input to a single output directory
+   *
+   * @param inputPath
+   * @throws HiveException
+   */
+  private void checkPartitionsMatch(Path inputPath) throws HiveException {
+    if (!dpPath.equals(inputPath)) {
+      // Temp partition input path does not match exist temp path
+      String msg = "Multiple partitions for one block merge mapper: " +
+          dpPath + " NOT EQUAL TO " + inputPath;
+      LOG.error(msg);
+      throw new HiveException(msg);
+    }
+  }
+
+  /**
+   * Fixes tmpPath to point to the correct partition.
+   * Before this is called, tmpPath will default to the root tmp table dir
+   *
+   * @param inputPath
+   * @throws HiveException
+   */
+  private void fixTmpPath(Path inputPath)
+      throws HiveException {
+    dpPath = inputPath;
+    Path newPath = new Path(".");
+    int inputDepth = inputPath.depth();
+    int tmpDepth = tmpPath.depth();
+
+    // Build the path from bottom up
+    while (inputPath != null && inputPath.depth() > tmpDepth) {
+      newPath = new Path(inputPath.getName(), newPath);
+      inputDepth--;
+      inputPath = inputPath.getParent();
+    }
+    updatePaths(new Path(tmpPath, newPath));
   }
 
   public void close() throws IOException {

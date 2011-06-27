@@ -26,6 +26,8 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.parse.OpParseContext;
@@ -429,6 +431,12 @@ public class MapredWork implements Serializable {
   public void setOpParseCtxMap(
       LinkedHashMap<Operator<? extends Serializable>, OpParseContext> opParseCtxMap) {
     this.opParseCtxMap = opParseCtxMap;
+  }
+
+  public void resolveDynamicPartitionMerge(HiveConf conf, Path path,
+      TableDesc tblDesc, ArrayList<String> aliases, PartitionDesc partDesc) {
+    pathToAliases.put(path.toString(), aliases);
+    pathToPartitionInfo.put(path.toString(), partDesc);
   }
 
 }

@@ -23,6 +23,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.ql.io.rcfile.merge.BlockMergeTask;
+import org.apache.hadoop.hive.ql.io.rcfile.merge.MergeWork;
 import org.apache.hadoop.hive.ql.plan.ConditionalWork;
 import org.apache.hadoop.hive.ql.plan.CopyWork;
 import org.apache.hadoop.hive.ql.plan.DDLWork;
@@ -74,6 +76,8 @@ public final class TaskFactory {
         MapredLocalTask.class));
     taskvec.add(new taskTuple<StatsWork>(StatsWork.class,
         StatsTask.class));
+    taskvec.add(new taskTuple<MergeWork>(MergeWork.class,
+        BlockMergeTask.class));
 
 
   }

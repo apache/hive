@@ -49,11 +49,11 @@ import org.apache.hadoop.hive.ql.session.SessionState.LogHelper;
 import org.apache.hadoop.hive.shims.ShimLoader;
 import org.apache.hadoop.io.NullWritable;
 import org.apache.hadoop.mapred.Counters;
+import org.apache.hadoop.mapred.FileInputFormat;
 import org.apache.hadoop.mapred.InputFormat;
 import org.apache.hadoop.mapred.JobClient;
 import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.mapred.RunningJob;
-import org.apache.hadoop.mapred.FileInputFormat;
 import org.apache.log4j.Appender;
 import org.apache.log4j.FileAppender;
 import org.apache.log4j.LogManager;
@@ -74,7 +74,7 @@ public class BlockMergeTask extends Task<MergeWork> implements Serializable,
     job = new JobConf(conf, BlockMergeTask.class);
     jobExecHelper = new HadoopJobExecHelper(job, this.console, this, this);
   }
-  
+
   public boolean requireLock() {
     return true;
   }
@@ -91,7 +91,7 @@ public class BlockMergeTask extends Task<MergeWork> implements Serializable,
     success = true;
     ShimLoader.getHadoopShims().setNullOutputFormat(job);
     job.setMapperClass(work.getMapperClass());
-    
+
     Context ctx = driverContext.getCtx();
     boolean ctxCreated = false;
     try {
@@ -109,9 +109,9 @@ public class BlockMergeTask extends Task<MergeWork> implements Serializable,
     job.setMapOutputKeyClass(NullWritable.class);
     job.setMapOutputValueClass(NullWritable.class);
     if(work.getNumMapTasks() != null) {
-      job.setNumMapTasks(work.getNumMapTasks());      
+      job.setNumMapTasks(work.getNumMapTasks());
     }
-    
+
     // zero reducers
     job.setNumReduceTasks(0);
 
@@ -145,18 +145,22 @@ public class BlockMergeTask extends Task<MergeWork> implements Serializable,
     job.setOutputKeyClass(NullWritable.class);
     job.setOutputValueClass(NullWritable.class);
 
+    HiveConf.setBoolVar(job,
+        HiveConf.ConfVars.HIVEMERGECURRENTJOBHASDYNAMICPARTITIONS,
+        work.hasDynamicPartitions());
+
     int returnVal = 0;
     RunningJob rj = null;
     boolean noName = StringUtils.isEmpty(HiveConf.getVar(job,
         HiveConf.ConfVars.HADOOPJOBNAME));
-    
+
     String jobName = null;
     if (noName && this.getQueryPlan() != null) {
       int maxlen = conf.getIntVar(HiveConf.ConfVars.HIVEJOBNAMELENGTH);
       jobName = Utilities.abbreviate(this.getQueryPlan().getQueryStr(),
           maxlen - 6);
     }
-    
+
     if (noName) {
       // This is for a special case to ensure unit tests pass
       HiveConf.setVar(job, HiveConf.ConfVars.HADOOPJOBNAME,
@@ -165,7 +169,7 @@ public class BlockMergeTask extends Task<MergeWork> implements Serializable,
 
     try {
       addInputPaths(job, work);
-      
+
       Utilities.setMapRedWork(job, work, ctx.getMRTmpFileURI());
 
       // remove the pwd from conf file so that job tracker doesn't show this
@@ -265,7 +269,7 @@ public class BlockMergeTask extends Task<MergeWork> implements Serializable,
     if (paths == null || paths.length == 0) {
       printUsage();
     }
-    
+
     FileSystem fs = null;
     JobConf conf = new JobConf(BlockMergeTask.class);
     HiveConf hiveConf = new HiveConf(conf, BlockMergeTask.class);

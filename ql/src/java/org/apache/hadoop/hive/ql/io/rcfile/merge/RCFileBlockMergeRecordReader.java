@@ -36,11 +36,12 @@ public class RCFileBlockMergeRecordReader implements
   private final long start;
   private final long end;
   private boolean more = true;
+  private final Path path;
   protected Configuration conf;
 
   public RCFileBlockMergeRecordReader(Configuration conf, FileSplit split)
       throws IOException {
-    Path path = split.getPath();
+    path = split.getPath();
     FileSystem fs = path.getFileSystem(conf);
     this.in = new RCFile.Reader(fs, path, conf);
     this.end = split.getStart() + split.getLength();
@@ -87,12 +88,13 @@ public class RCFileBlockMergeRecordReader implements
     if (!more) {
       return false;
     }
-    
+
     keyWrapper.keyBuffer = this.in.getCurrentKeyBufferObj();
     keyWrapper.recordLength = this.in.getCurrentBlockLength();
     keyWrapper.keyLength = this.in.getCurrentKeyLength();
     keyWrapper.compressedKeyLength = this.in.getCurrentCompressedKeyLen();
     keyWrapper.codec = this.in.getCompressionCodec();
+    keyWrapper.inputPath = path;
 
     valueWrapper.valueBuffer = this.in.getCurrentValueBufferObj();
 
@@ -106,7 +108,7 @@ public class RCFileBlockMergeRecordReader implements
 
   /**
    * Return the progress within the input split.
-   * 
+   *
    * @return 0.0 to 1.0 of the input byte range
    */
   public float getProgress() throws IOException {
