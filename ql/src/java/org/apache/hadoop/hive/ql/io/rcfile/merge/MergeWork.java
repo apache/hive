@@ -19,33 +19,49 @@
 package org.apache.hadoop.hive.ql.io.rcfile.merge;
 
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 
+import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.io.CombineHiveInputFormat;
+import org.apache.hadoop.hive.ql.plan.Explain;
 import org.apache.hadoop.hive.ql.plan.MapredWork;
 import org.apache.hadoop.hive.ql.plan.PartitionDesc;
-import org.apache.hadoop.mapred.FileInputFormat;
+import org.apache.hadoop.hive.ql.plan.TableDesc;
+import org.apache.hadoop.mapred.InputFormat;
 import org.apache.hadoop.mapred.Mapper;
 
+@Explain(displayName = "Block level merge")
 public class MergeWork extends MapredWork implements Serializable {
 
   private static final long serialVersionUID = 1L;
 
   private List<String> inputPaths;
   private String outputDir;
+  private boolean hasDynamicPartitions;
 
   public MergeWork() {
   }
-  
+
   public MergeWork(List<String> inputPaths, String outputDir) {
+    this(inputPaths, outputDir, false);
+  }
+
+  public MergeWork(List<String> inputPaths, String outputDir,
+      boolean hasDynamicPartitions) {
     super();
     this.inputPaths = inputPaths;
     this.outputDir = outputDir;
+    this.hasDynamicPartitions = hasDynamicPartitions;
     PartitionDesc partDesc = new PartitionDesc();
     partDesc.setInputFileFormatClass(RCFileBlockMergeInputFormat.class);
     if(this.getPathToPartitionInfo() == null) {
       this.setPathToPartitionInfo(new LinkedHashMap<String, PartitionDesc>());
+    }
+    if(this.getNumReduceTasks() == null) {
+      this.setNumReduceTasks(0);
     }
     for(String path: this.inputPaths) {
       this.getPathToPartitionInfo().put(path, partDesc);
@@ -82,6 +98,32 @@ public class MergeWork extends MapredWork implements Serializable {
 
   public boolean isGatheringStats() {
     return false;
+  }
+
+  public boolean hasDynamicPartitions() {
+    return this.hasDynamicPartitions;
+  }
+
+  public void setHasDynamicPartitions(boolean hasDynamicPartitions) {
+    this.hasDynamicPartitions = hasDynamicPartitions;
+  }
+
+  @Override
+  public void resolveDynamicPartitionMerge(HiveConf conf, Path path,
+      TableDesc tblDesc, ArrayList<String> aliases, PartitionDesc partDesc) {
+
+    String inputFormatClass = conf.getVar(HiveConf.ConfVars.HIVEMERGEINPUTFORMATBLOCKLEVEL);
+    try {
+      partDesc.setInputFileFormatClass((Class <? extends InputFormat>)
+          Class.forName(inputFormatClass));
+    } catch (ClassNotFoundException e) {
+      String msg = "Merge input format class not found";
+      throw new RuntimeException(msg);
+    }
+    super.resolveDynamicPartitionMerge(conf, path, tblDesc, aliases, partDesc);
+
+    // Add the DP path to the list of input paths
+    inputPaths.add(path.toString());
   }
 
 }

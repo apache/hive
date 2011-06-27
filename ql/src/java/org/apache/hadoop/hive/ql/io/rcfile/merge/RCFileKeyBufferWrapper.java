@@ -22,6 +22,7 @@ import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
 
+import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.ql.io.RCFile.KeyBuffer;
 import org.apache.hadoop.io.WritableComparable;
 import org.apache.hadoop.io.compress.CompressionCodec;
@@ -33,7 +34,8 @@ public class RCFileKeyBufferWrapper implements
   protected int recordLength;
   protected int keyLength;
   protected int compressedKeyLength;
-  
+  protected Path inputPath;
+
   protected CompressionCodec codec;
 
   protected RCFileKeyBufferWrapper() {

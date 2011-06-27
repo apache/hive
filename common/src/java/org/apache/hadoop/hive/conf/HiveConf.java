@@ -319,6 +319,11 @@ public class HiveConf extends Configuration {
     HIVEMERGEMAPREDFILES("hive.merge.mapredfiles", false),
     HIVEMERGEMAPFILESSIZE("hive.merge.size.per.task", (long) (256 * 1000 * 1000)),
     HIVEMERGEMAPFILESAVGSIZE("hive.merge.smallfiles.avgsize", (long) (16 * 1000 * 1000)),
+    HIVEMERGERCFILEBLOCKLEVEL("hive.merge.rcfile.block.level", true),
+    HIVEMERGEINPUTFORMATBLOCKLEVEL("hive.merge.input.format.block.level",
+        "org.apache.hadoop.hive.ql.io.rcfile.merge.RCFileBlockMergeInputFormat"),
+    HIVEMERGECURRENTJOBHASDYNAMICPARTITIONS(
+        "hive.merge.current.job.has.dynamic.partitions", false),
 
     HIVESKEWJOIN("hive.optimize.skewjoin", false),
     HIVECONVERTJOIN("hive.auto.convert.join", false),
