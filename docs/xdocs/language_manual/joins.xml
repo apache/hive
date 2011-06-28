@@ -30,7 +30,7 @@
     <section name="Join Syntax" href="join_syntax">
 
     <source><![CDATA[join_table:
-    table_reference JOIN table_factor [join_condition]
+    table_reference [INNER] JOIN table_factor [join_condition]
   | table_reference {LEFT|RIGHT|FULL} [OUTER] JOIN table_reference join_condition
   | table_reference LEFT SEMI JOIN table_reference join_condition
 
