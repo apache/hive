@@ -53,6 +53,7 @@ import org.apache.hadoop.hive.common.FileUtils;
 import org.apache.hadoop.hive.common.classification.InterfaceAudience;
 import org.apache.hadoop.hive.common.classification.InterfaceStability;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.HiveObjectPrivilege;
@@ -3585,5 +3586,28 @@ public class ObjectStore implements RawStore, Configurable {
       storedVals.add(partVal);
     }
     return join(storedVals,',');
+  }
+
+  @Override
+  public long cleanupEvents() {
+    boolean commited = false;
+    long delCnt;
+    LOG.debug("Begin executing cleanupEvents");
+    Long expiryTime = HiveConf.getLongVar(getConf(), ConfVars.METASTORE_EVENT_EXPIRY_DURATION) * 1000L;
+    Long curTime = System.currentTimeMillis();
+    try {
+      openTransaction();
+      Query query = pm.newQuery(MPartitionEvent.class,"curTime - eventTime > expiryTime");
+      query.declareParameters("java.lang.Long curTime, java.lang.Long expiryTime");
+      delCnt = query.deletePersistentAll(curTime, expiryTime);
+      commited = commitTransaction();
+    }
+    finally {
+      if (!commited) {
+        rollbackTransaction();
+      }
+      LOG.debug("Done executing cleanupEvents");
+    }
+    return delCnt;
   }
 }

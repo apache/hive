@@ -233,6 +233,18 @@
 </property>
 
 <property>
+  <name>hive.metastore.event.expiry.duration</name>
+  <value>0L</value>
+  <description>Duration after which events expire from events table (in seconds)</description>
+</property>
+
+<property>
+  <name>hive.metastore.event.clean.freq</name>
+  <value>0L</value>
+  <description>Frequency at which timer task runs to purge expired events in metastore(in seconds).</description>
+</property>
+
+<property>
   <name>hive.metastore.connect.retries</name>
   <value>5</value>
   <description>Number of retries while opening a connection to metastore</description>
