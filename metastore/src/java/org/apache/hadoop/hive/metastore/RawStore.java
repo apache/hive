@@ -286,4 +286,6 @@ public interface RawStore extends Configurable {
   public abstract List<Partition> listPartitionsPsWithAuth(String db_name, String tbl_name,
       List<String> part_vals, short max_parts, String userName, List<String> groupNames)
       throws MetaException, InvalidObjectException;
+ 
+ public abstract long cleanupEvents();
 }

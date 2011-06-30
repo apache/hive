@@ -25,6 +25,7 @@ import junit.framework.TestCase;
 
 import org.apache.hadoop.hive.cli.CliSessionState;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.metastore.api.InvalidPartitionException;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.NoSuchObjectException;
@@ -46,6 +47,8 @@ public class TestMarkPartition extends TestCase{
   protected void setUp() throws Exception {
 
     super.setUp();
+    System.setProperty(ConfVars.METASTORE_EVENT_CLEAN_FREQ.varname, "2");
+    System.setProperty(ConfVars.METASTORE_EVENT_EXPIRY_DURATION.varname, "5");
     hiveConf = new HiveConf(this.getClass());
     hiveConf.set(HiveConf.ConfVars.PREEXECHOOKS.varname, "");
     hiveConf.set(HiveConf.ConfVars.POSTEXECHOOKS.varname, "");
@@ -56,7 +59,7 @@ public class TestMarkPartition extends TestCase{
 
   public void testMarkingPartitionSet() throws CommandNeedRetryException, MetaException,
   TException, NoSuchObjectException, UnknownDBException, UnknownTableException,
-  InvalidPartitionException, UnknownPartitionException {
+  InvalidPartitionException, UnknownPartitionException, InterruptedException {
     HiveMetaStoreClient msc = new HiveMetaStoreClient(hiveConf, null);
     driver = new Driver(hiveConf);
     driver.run("drop database if exists tmpdb cascade");
@@ -69,6 +72,8 @@ public class TestMarkPartition extends TestCase{
     kvs.put("b", "'2011'");
     msc.markPartitionForEvent("tmpdb", "tmptbl", kvs, PartitionEventType.LOAD_DONE);
     assert msc.isPartitionMarkedForEvent("tmpdb", "tmptbl", kvs, PartitionEventType.LOAD_DONE);
+    Thread.sleep(10000);
+    assert !msc.isPartitionMarkedForEvent("tmpdb", "tmptbl", kvs, PartitionEventType.LOAD_DONE);
 
     kvs.put("b", "'2012'");
     assert !msc.isPartitionMarkedForEvent("tmpdb", "tmptbl", kvs, PartitionEventType.LOAD_DONE);

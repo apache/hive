@@ -218,7 +218,8 @@ public class HiveConf extends Configuration {
     METASTORE_EVENT_LISTENERS("hive.metastore.event.listeners", ""),
     // should we do checks against the storage (usually hdfs) for operations like drop_partition
     METASTORE_AUTHORIZATION_STORAGE_AUTH_CHECKS("hive.metastore.authorization.storage.checks", false),
-
+    METASTORE_EVENT_CLEAN_FREQ("hive.metastore.event.clean.freq",0L),
+    METASTORE_EVENT_EXPIRY_DURATION("hive.metastore.event.expiry.duration",0L),
     // Default parameters for creating tables
     NEWTABLEDEFAULTPARA("hive.table.parameters.default",""),
 
