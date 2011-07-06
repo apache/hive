@@ -202,11 +202,9 @@
   </target>
 
   <target name="test" depends="clean-test,jar-test" description="Run tests">
-  <!-- TODO: temp comment out for testing
     <antcall target="test-shims">
       <param name="hadoop.version.ant-internal" value="${hadoop.security.version}" />
     </antcall>
-    -->
     <for keepgoing="${test.continue.on.failure}" param="file">
       <path>
         <fileset dir="." includes="*/build.xml" excludes="ant/*,odbc/*,shims/*"/>
