@@ -353,7 +353,7 @@ public class HiveConf extends Configuration {
 
     HIVEJOBPROGRESS("hive.task.progress", false),
 
-    HIVEINPUTFORMAT("hive.input.format", ""),
+    HIVEINPUTFORMAT("hive.input.format", "org.apache.hadoop.hive.ql.io.CombineHiveInputFormat"),
 
     HIVEENFORCEBUCKETING("hive.enforce.bucketing", false),
     HIVEENFORCESORTING("hive.enforce.sorting", false),
