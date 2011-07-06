@@ -34,14 +34,14 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
-import java.util.HashSet;
+import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
-import java.util.Map.Entry;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -97,6 +97,7 @@ import org.apache.hadoop.hive.ql.plan.AddPartitionDesc;
 import org.apache.hadoop.hive.ql.plan.AlterDatabaseDesc;
 import org.apache.hadoop.hive.ql.plan.AlterIndexDesc;
 import org.apache.hadoop.hive.ql.plan.AlterTableDesc;
+import org.apache.hadoop.hive.ql.plan.AlterTableDesc.AlterTableTypes;
 import org.apache.hadoop.hive.ql.plan.AlterTableSimpleDesc;
 import org.apache.hadoop.hive.ql.plan.CreateDatabaseDesc;
 import org.apache.hadoop.hive.ql.plan.CreateIndexDesc;
@@ -129,7 +130,6 @@ import org.apache.hadoop.hive.ql.plan.ShowTableStatusDesc;
 import org.apache.hadoop.hive.ql.plan.ShowTablesDesc;
 import org.apache.hadoop.hive.ql.plan.SwitchDatabaseDesc;
 import org.apache.hadoop.hive.ql.plan.UnlockTableDesc;
-import org.apache.hadoop.hive.ql.plan.AlterTableDesc.AlterTableTypes;
 import org.apache.hadoop.hive.ql.plan.api.StageType;
 import org.apache.hadoop.hive.ql.security.authorization.Privilege;
 import org.apache.hadoop.hive.serde.Constants;
@@ -162,6 +162,7 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
   private static String INTERMEDIATE_ORIGINAL_DIR_SUFFIX;
   private static String INTERMEDIATE_EXTRACTED_DIR_SUFFIX;
 
+  @Override
   public boolean requireLock() {
     return this.work != null && this.work.getNeedLock();
   }
@@ -2926,13 +2927,16 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
           dropTbl.getExpectView());
       }
 
-      // get all partitions of the table
+      // get all partition names of the table
       List<String> partitionNames =
         db.getPartitionNames(dropTbl.getTableName(), (short) -1);
-      Set<Map<String, String>> partitions = new HashSet<Map<String, String>>();
+      //Build a hashtable of a "sorted partition name" to the original partition spec
+      //We need a sorted partition name so we can compare partitions by their names
+      Hashtable<String,Map<String,String>> partitions = new Hashtable<String,Map<String,String>>();
       for (String partitionName : partitionNames) {
         try {
-          partitions.add(Warehouse.makeSpecFromName(partitionName));
+          Map<String, String> spec = Warehouse.makeSpecFromName(partitionName);
+          partitions.put(Warehouse.makeSortedPartName(spec, false), spec);
         } catch (MetaException e) {
           LOG.warn("Unrecognized partition name from metastore: " + partitionName);
         }
@@ -2940,28 +2944,26 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
       // drop partitions in the list
       List<Partition> partsToDelete = new ArrayList<Partition>();
       for (Map<String, String> partSpec : dropTbl.getPartSpecs()) {
-        Iterator<Map<String, String>> it = partitions.iterator();
-        while (it.hasNext()) {
-          Map<String, String> part = it.next();
-          // test if partSpec matches part
-          boolean match = true;
-          for (Map.Entry<String, String> item : partSpec.entrySet()) {
-            if (!item.getValue().equals(part.get(item.getKey()))) {
-              match = false;
-              break;
-            }
+        String partSpecStr;
+        try {
+          partSpecStr = Warehouse.makeSortedPartName(partSpec, false);
+        } catch (MetaException e) {
+          //If the partition spec to remove is empty or null, just move on gracefully
+          LOG.warn(e.getMessage());
+          continue;
+        }
+        Map<String, String> origPart = null;
+        //If the partition we wish to delete exists in our hashtable of all partition names,
+        //get the partition and add it to our list of partitions to delete
+        if ((origPart = partitions.get(partSpecStr)) != null) {
+          Partition p = db.getPartition(tbl, origPart, false);
+          if (!p.canDrop()) {
+            throw new HiveException("Table " + tbl.getTableName() +
+                " Partition " + p.getName() +
+                " is protected from being dropped");
           }
-          if (match) {
-            Partition p = db.getPartition(tbl, part, false);
-            if (!p.canDrop()) {
-              throw new HiveException("Table " + tbl.getTableName() +
-                  " Partition " + p.getName() +
-                  " is protected from being dropped");
-            }
-
-            partsToDelete.add(p);
-            it.remove();
-          }
+          partsToDelete.add(p);
+          partitions.remove(partSpecStr);
         }
       }
 

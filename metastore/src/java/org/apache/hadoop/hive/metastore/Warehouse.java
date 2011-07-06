@@ -27,6 +27,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.TreeMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -277,17 +278,20 @@ public class Warehouse {
   }
 
   /**
-   * Makes a partition name from a specification
-   * @param spec
-   * @param addTrailingSeperator if true, adds a trailing separator e.g. 'ds=1/'
-   * @return
+   * A common function for constructing a partition name
+   * @param spec the partition spec
+   * @param addTrailingSeparator whether to add a trailing separator at the end
+   * @param isSorted whether the partition name should be sorted by key
+   * @return a partition name
    * @throws MetaException
    */
-  public static String makePartName(Map<String, String> spec,
-      boolean addTrailingSeperator)
-      throws MetaException {
+  private static String makePartNameCommon(Map<String, String> spec,
+      boolean addTrailingSeparator, boolean isSorted) throws MetaException {
     StringBuilder suffixBuf = new StringBuilder();
     int i = 0;
+    if (isSorted) {
+      spec = new TreeMap<String, String>(spec);
+    }
     for (Entry<String, String> e : spec.entrySet()) {
       if (e.getValue() == null || e.getValue().length() == 0) {
         throw new MetaException("Partition spec is incorrect. " + spec);
@@ -300,11 +304,39 @@ public class Warehouse {
       suffixBuf.append(escapePathName(e.getValue()));
       i++;
     }
-    if (addTrailingSeperator) {
+    if (addTrailingSeparator) {
       suffixBuf.append(Path.SEPARATOR);
     }
     return suffixBuf.toString();
   }
+
+  /**
+   * Makes a partition name from a specification
+   * @param spec
+   * @param addTrailingSeperator if true, adds a trailing separator e.g. 'ds=1/'
+   * @return
+   * @throws MetaException
+   */
+  public static String makePartName(Map<String, String> spec,
+      boolean addTrailingSeperator)
+      throws MetaException {
+    return makePartNameCommon(spec, addTrailingSeperator, false);
+  }
+
+  /**
+   * Makes a partition name from a specification.  The keys/value pairs in the partition
+   * name are sorted by key name.  E.g., created=4/ds=1/hr=3.  Sorting the keys is useful
+   * for comparison of partition names.
+   * @param spec the partition spec
+   * @param addTrailingSeparator whether to add a trailing separator at the end of the name
+   * @return a partition name in which the keys are sorted
+   * @throws MetaException
+   */
+  public static String makeSortedPartName(Map<String, String> spec,
+      boolean addTrailingSeparator) throws MetaException {
+    return makePartNameCommon(spec, addTrailingSeparator, true);
+  }
+
   /**
    * Given a dynamic partition specification, return the path corresponding to the
    * static part of partition specification. This is basically a copy of makePartName
@@ -421,5 +453,4 @@ public class Warehouse {
     values.addAll(partSpec.values());
     return values;
   }
-
 }
