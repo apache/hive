@@ -23,6 +23,11 @@ public abstract class CassandraLazyPrimitive<OI extends ObjectInspector, T exten
     super(oi);
   }
 
+  protected CassandraLazyPrimitive(CassandraLazyPrimitive<OI, T> copy) {
+    super(copy.getInspector());
+    isNull = copy.isNull;
+  }
+
   @Override
   public void init(ByteArrayRef bytes, int start, int length) {
     //Set primitive size
