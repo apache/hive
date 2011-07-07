@@ -10,6 +10,7 @@ import junit.extensions.TestSetup;
 import junit.framework.Test;
 
 import org.apache.cassandra.contrib.utils.service.CassandraServiceDataCleaner;
+import org.apache.cassandra.db.marshal.LexicalUUIDType;
 import org.apache.cassandra.hadoop.ColumnFamilyInputFormat;
 import org.apache.cassandra.service.EmbeddedCassandraService;
 import org.apache.cassandra.thrift.Cassandra;
@@ -28,24 +29,24 @@ import org.apache.hadoop.hive.cassandra.serde.StandardColumnSerDe;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.mapred.JobConf;
 
-public class CassandraTestSetup extends TestSetup{
+public class CassandraTestSetup extends TestSetup {
 
   static final Log LOG = LogFactory.getLog(CassandraTestSetup.class);
   private EmbeddedCassandraService cassandra;
 
-  public CassandraTestSetup(Test test){
+  public CassandraTestSetup(Test test) {
     super(test);
   }
 
   @SuppressWarnings("deprecation")
   void preTest(HiveConf conf) throws Exception {
-    if (cassandra == null){
+    if (cassandra == null) {
       CassandraServiceDataCleaner cleaner = new CassandraServiceDataCleaner();
       cleaner.prepare();
       cassandra = new EmbeddedCassandraService();
       cassandra.start();
 
-      //Make sure that this server is connectable.
+      // Make sure that this server is connectable.
       CassandraProxyClient client = new CassandraProxyClient(
           "127.0.0.1", 9170, true, true);
 
@@ -56,13 +57,15 @@ public class CassandraTestSetup extends TestSetup{
 
     String auxJars = conf.getAuxJars();
     auxJars = ((auxJars == null) ? "" : (auxJars + ",")) + "file://"
-      + new JobConf(conf, Cassandra.Client.class).getJar();
+        + new JobConf(conf, Cassandra.Client.class).getJar();
     auxJars += ",file://" + new JobConf(conf, ColumnFamilyInputFormat.class).getJar();
     auxJars += ",file://" + new JobConf(conf, StandardColumnSerDe.class).getJar();
     auxJars += ",file://" + new JobConf(conf, org.apache.thrift.transport.TSocket.class).getJar();
-    auxJars += ",file://" + new JobConf(conf, com.google.common.collect.AbstractIterator.class).getJar();
+    auxJars += ",file://"
+        + new JobConf(conf, com.google.common.collect.AbstractIterator.class).getJar();
     auxJars += ",file://" + new JobConf(conf, org.apache.commons.lang.ArrayUtils.class).getJar();
-    auxJars += ",file://" + new JobConf(conf, org.apache.thrift.meta_data.FieldValueMetaData.class).getJar();
+    auxJars += ",file://"
+        + new JobConf(conf, org.apache.thrift.meta_data.FieldValueMetaData.class).getJar();
     conf.setAuxJars(auxJars);
 
     System.err.println(auxJars);
@@ -97,7 +100,7 @@ public class CassandraTestSetup extends TestSetup{
     ColumnDef uniqueid = new ColumnDef();
     String key1 = "uniqueid";
     uniqueid.setName(ByteBufferUtil.bytes(key1));
-    uniqueid.setValidation_class(utfType);
+    uniqueid.setValidation_class("LexicalUUIDType");
     uniqueid.setIndex_type(IndexType.KEYS);
     columns.add(uniqueid);
 
@@ -129,7 +132,7 @@ public class CassandraTestSetup extends TestSetup{
     List<Mutation> mutationList = new ArrayList<Mutation>();
     Column cassCol = new Column();
     cassCol.setName(key1.getBytes());
-    cassCol.setValue("abcde".getBytes());
+    cassCol.setValue(LexicalUUIDType.instance.fromString("4fd1d3a0-a76d-11e0-0000-c6fa7f155dfe"));
     cassCol.setTimestamp(timestamp);
     ColumnOrSuperColumn thisCol = new ColumnOrSuperColumn();
     thisCol.setColumn(cassCol);
@@ -169,10 +172,9 @@ public class CassandraTestSetup extends TestSetup{
 
   @Override
   protected void tearDown() throws Exception {
-    //do we need this?
+    // do we need this?
     CassandraServiceDataCleaner cleaner = new CassandraServiceDataCleaner();
     cleaner.prepare();
   }
 
 }
-

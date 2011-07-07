@@ -30,7 +30,7 @@ public abstract class LazyPrimitive<OI extends ObjectInspector, T extends Writab
     super(oi);
   }
 
-  LazyPrimitive(LazyPrimitive<OI, T> copy) {
+  protected LazyPrimitive(LazyPrimitive<OI, T> copy) {
     super(copy.oi);
     isNull = copy.isNull;
   }

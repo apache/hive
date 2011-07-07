@@ -8,6 +8,7 @@ import org.apache.cassandra.thrift.NotFoundException;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.cassandra.input.HiveCassandraStandardColumnInputFormat;
 import org.apache.hadoop.hive.cassandra.output.HiveCassandraOutputFormat;
+import org.apache.hadoop.hive.cassandra.serde.CassandraColumnSerDe;
 import org.apache.hadoop.hive.cassandra.serde.StandardColumnSerDe;
 import org.apache.hadoop.hive.metastore.HiveMetaHook;
 import org.apache.hadoop.hive.metastore.MetaStoreUtils;
@@ -111,7 +112,7 @@ public class CassandraStorageHandler
 
   @Override
   public Class<? extends SerDe> getSerDeClass() {
-    return StandardColumnSerDe.class;
+    return CassandraColumnSerDe.class;
   }
 
   @Override
