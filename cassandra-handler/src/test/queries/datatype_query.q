@@ -16,7 +16,8 @@ CREATE EXTERNAL TABLE cf_demo_TBL(row_key STRING,
                      "cassandra.slice.predicate.size" = "100",
                      "cassandra.cf.name" = "cf_demo");
 
-select row_key, uniqueid, countLong, countInt from cf_demo_TBL;
+--Skip uiniqueid as invalid characters will show up
+select row_key, countLong, countInt from cf_demo_TBL;
 
 --Test cassandra.cf.validatorType setting
 DROP TABLE cf_demo_TBL;
