@@ -24,6 +24,8 @@ import java.util.List;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.events.AddPartitionEvent;
+import org.apache.hadoop.hive.metastore.events.AlterPartitionEvent;
+import org.apache.hadoop.hive.metastore.events.AlterTableEvent;
 import org.apache.hadoop.hive.metastore.events.CreateDatabaseEvent;
 import org.apache.hadoop.hive.metastore.events.CreateTableEvent;
 import org.apache.hadoop.hive.metastore.events.DropDatabaseEvent;
@@ -72,6 +74,16 @@ public class DummyListener extends MetaStoreEventListener{
   @Override
   public void onDropTable(DropTableEvent table) throws MetaException {
     notifyList.add(table);
+  }
+
+  @Override
+  public void onAlterTable(AlterTableEvent event) throws MetaException {
+    notifyList.add(event);
+  }
+
+  @Override
+  public void onAlterPartition(AlterPartitionEvent event) throws MetaException {
+    notifyList.add(event);
   }
 
   @Override

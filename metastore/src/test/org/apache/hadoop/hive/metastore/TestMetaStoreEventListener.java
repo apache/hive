@@ -19,6 +19,7 @@
 package org.apache.hadoop.hive.metastore;
 
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
@@ -28,10 +29,13 @@ import org.apache.hadoop.hive.cli.CliSessionState;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.metastore.api.Database;
+import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.Partition;
 import org.apache.hadoop.hive.metastore.api.PartitionEventType;
 import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.metastore.events.AddPartitionEvent;
+import org.apache.hadoop.hive.metastore.events.AlterPartitionEvent;
+import org.apache.hadoop.hive.metastore.events.AlterTableEvent;
 import org.apache.hadoop.hive.metastore.events.CreateDatabaseEvent;
 import org.apache.hadoop.hive.metastore.events.CreateTableEvent;
 import org.apache.hadoop.hive.metastore.events.DropDatabaseEvent;
@@ -47,7 +51,6 @@ import org.apache.hadoop.hive.ql.session.SessionState;
  * {@link org.apache.hadoop.hive.metastore.hadooorg.apache.hadoop.hive.metastore.MetaStoreEventListener}
  */
 public class TestMetaStoreEventListener extends TestCase {
-
   private static final String msPort = "20001";
   private HiveConf hiveConf;
   private HiveMetaStoreClient msc;
@@ -93,64 +96,142 @@ public class TestMetaStoreEventListener extends TestCase {
   }
 
   public void testListener() throws Exception {
+    String dbName = "tmpdb";
+    String tblName = "tmptbl";
+    String renamed = "tmptbl2";
+    int listSize = 0;
 
     List<ListenerEvent> notifyList = DummyListener.notifyList;
-    assertEquals(notifyList.size(), 0);
+    assertEquals(notifyList.size(), listSize);
 
-    driver.run("create database tmpdb");
-    Database db = msc.getDatabase("tmpdb");
-    assertEquals(1, notifyList.size());
-    CreateDatabaseEvent dbEvent = (CreateDatabaseEvent)(notifyList.get(0));
+    driver.run("create database " + dbName);
+    listSize++;
+    Database db = msc.getDatabase(dbName);
+    assertEquals(listSize, notifyList.size());
+    CreateDatabaseEvent dbEvent = (CreateDatabaseEvent)(notifyList.get(listSize - 1));
     assert dbEvent.getStatus();
     assertEquals(db.getName(), dbEvent.getDatabase().getName());
     assertEquals(db.getLocationUri(), dbEvent.getDatabase().getLocationUri());
 
-    driver.run("use tmpdb");
-    driver.run("create table tmptbl (a string) partitioned by (b string)");
-    Table tbl = msc.getTable("tmpdb", "tmptbl");
-    assertEquals(notifyList.size(), 2);
-    CreateTableEvent tblEvent = (CreateTableEvent)(notifyList.get(1));
+    driver.run("use " + dbName);
+    driver.run(String.format("create table %s (a string) partitioned by (b string)", tblName));
+    listSize++;
+    Table tbl = msc.getTable(dbName, tblName);
+    assertEquals(notifyList.size(), listSize);
+    CreateTableEvent tblEvent = (CreateTableEvent)(notifyList.get(listSize - 1));
     assert tblEvent.getStatus();
     assertEquals(tbl.getTableName(), tblEvent.getTable().getTableName());
     assertEquals(tbl.getDbName(), tblEvent.getTable().getDbName());
     assertEquals(tbl.getSd().getLocation(), tblEvent.getTable().getSd().getLocation());
 
     driver.run("alter table tmptbl add partition (b='2011')");
+    listSize++;
     Partition part = msc.getPartition("tmpdb", "tmptbl", "b=2011");
-    assertEquals(notifyList.size(), 3);
-    AddPartitionEvent partEvent = (AddPartitionEvent)(notifyList.get(2));
+    assertEquals(notifyList.size(), listSize);
+    AddPartitionEvent partEvent = (AddPartitionEvent)(notifyList.get(listSize-1));
     assert partEvent.getStatus();
     assertEquals(part, partEvent.getPartition());
+
+    driver.run(String.format("alter table %s touch partition (%s)", tblName, "b='2011'"));
+    listSize++;
+    assertEquals(notifyList.size(), listSize);
+    AlterPartitionEvent alterPartEvent = (AlterPartitionEvent)notifyList.get(listSize - 1);
+    assert alterPartEvent.getStatus();
+    Partition origP = msc.getPartition(dbName, tblName, "b=2011");
+    assertEquals(origP.getValues(), alterPartEvent.getOldPartition().getValues());
+    assertEquals(origP.getDbName(), alterPartEvent.getOldPartition().getDbName());
+    assertEquals(origP.getTableName(), alterPartEvent.getOldPartition().getTableName());
+    //the partition did not change,
+    // so the new partition should be similar to the original partition
+    assertEquals(origP.getValues(), alterPartEvent.getNewPartition().getValues());
+    assertEquals(origP.getDbName(), alterPartEvent.getNewPartition().getDbName());
+    assertEquals(origP.getTableName(), alterPartEvent.getNewPartition().getTableName());
+
+    driver.run(String.format("alter table %s rename to %s", tblName, renamed));
+    listSize++;
+    assertEquals(notifyList.size(), listSize);
+    Table renamedTable = msc.getTable(dbName, renamed);
+    AlterTableEvent alterTableE = (AlterTableEvent) notifyList.get(listSize-1);
+    assert alterTableE.getStatus();
+    Table oldTable = alterTableE.getOldTable();
+    Table newTable = alterTableE.getNewTable();
+    assertEquals(tbl.getDbName(), oldTable.getDbName());
+    assertEquals(tbl.getTableName(), oldTable.getTableName());
+    assertEquals(tbl.getSd().getLocation(), oldTable.getSd().getLocation());
+    assertEquals(renamedTable.getDbName(), newTable.getDbName());
+    assertEquals(renamedTable.getTableName(), newTable.getTableName());
+    assertEquals(renamedTable.getSd().getLocation(), newTable.getSd().getLocation());
+
+    //change the table name back
+    driver.run(String.format("alter table %s rename to %s", renamed, tblName));
+    listSize++;
+    assertEquals(notifyList.size(), listSize);
+
+    driver.run(String.format("alter table %s ADD COLUMNS (c int)", tblName));
+    listSize++;
+    assertEquals(notifyList.size(), listSize);
+    Table altTable = msc.getTable(dbName, tblName);
+    alterTableE = (AlterTableEvent) notifyList.get(listSize-1);
+    assert alterTableE.getStatus();
+    oldTable = alterTableE.getOldTable();
+    List<FieldSchema> origCols = tbl.getSd().getCols();
+    List<FieldSchema> oldCols = oldTable.getSd().getCols();
+    List<FieldSchema> altCols = altTable.getSd().getCols();
+    List<FieldSchema> newCols = altTable.getSd().getCols();
+
+    Iterator<FieldSchema> i = origCols.iterator();
+    Iterator<FieldSchema> j = oldCols.iterator();
+    while (i.hasNext()) {
+      assertEquals(i.next().getName(), j.next().getName());
+    }
+
+    i = altCols.iterator();
+    j = newCols.iterator();
+    while (i.hasNext()) {
+      String name = i.next().getName();
+      assertEquals(name, j.next().getName());
+    }
+
+    newTable = alterTableE.getNewTable();
+    assertEquals(tbl.getDbName(), oldTable.getDbName());
+    assertEquals(tbl.getTableName(), oldTable.getTableName());
+    assertEquals(tbl.getSd().getLocation(), oldTable.getSd().getLocation());
+    assertEquals(altTable.getDbName(), newTable.getDbName());
+    assertEquals(altTable.getTableName(), newTable.getTableName());
+    assertEquals(altTable.getSd().getLocation(), newTable.getSd().getLocation());
 
     Map<String,String> kvs = new HashMap<String, String>(1);
     kvs.put("b", "2011");
     msc.markPartitionForEvent("tmpdb", "tmptbl", kvs, PartitionEventType.LOAD_DONE);
-    assertEquals(notifyList.size(), 4);
-    LoadPartitionDoneEvent partMarkEvent = (LoadPartitionDoneEvent)notifyList.get(3);
+    listSize++;
+    assertEquals(notifyList.size(), listSize);
+    LoadPartitionDoneEvent partMarkEvent = (LoadPartitionDoneEvent)notifyList.get(listSize - 1);
     assert partMarkEvent.getStatus();
     assertEquals(partMarkEvent.getPartitionName(), kvs);
     assertEquals(partMarkEvent.getTable().getTableName(), "tmptbl");
 
-    driver.run("alter table tmptbl drop partition (b='2011')");
-    assertEquals(notifyList.size(), 5);
-    DropPartitionEvent dropPart = (DropPartitionEvent)notifyList.get(4);
+    driver.run(String.format("alter table %s drop partition (b='2011')", tblName));
+    listSize++;
+    assertEquals(notifyList.size(), listSize);
+    DropPartitionEvent dropPart = (DropPartitionEvent)notifyList.get(listSize - 1);
     assert dropPart.getStatus();
     assertEquals(part.getValues(), dropPart.getPartition().getValues());
     assertEquals(part.getDbName(), dropPart.getPartition().getDbName());
     assertEquals(part.getTableName(), dropPart.getPartition().getTableName());
 
-    driver.run("drop table tmptbl");
-    assertEquals(notifyList.size(), 6);
-    DropTableEvent dropTbl = (DropTableEvent)notifyList.get(5);
+    driver.run("drop table " + tblName);
+    listSize++;
+    assertEquals(notifyList.size(), listSize);
+    DropTableEvent dropTbl = (DropTableEvent)notifyList.get(listSize-1);
     assert dropTbl.getStatus();
     assertEquals(tbl.getTableName(), dropTbl.getTable().getTableName());
     assertEquals(tbl.getDbName(), dropTbl.getTable().getDbName());
     assertEquals(tbl.getSd().getLocation(), dropTbl.getTable().getSd().getLocation());
 
-
-    driver.run("drop database tmpdb");
-    assertEquals(notifyList.size(), 7);
-    DropDatabaseEvent dropDB = (DropDatabaseEvent)notifyList.get(6);
+    driver.run("drop database " + dbName);
+    listSize++;
+    assertEquals(notifyList.size(), listSize);
+    DropDatabaseEvent dropDB = (DropDatabaseEvent)notifyList.get(listSize-1);
     assert dropDB.getStatus();
     assertEquals(db, dropDB.getDatabase());
   }

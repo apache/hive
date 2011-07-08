@@ -73,6 +73,8 @@ import org.apache.hadoop.hive.metastore.api.UnknownDBException;
 import org.apache.hadoop.hive.metastore.api.UnknownPartitionException;
 import org.apache.hadoop.hive.metastore.api.UnknownTableException;
 import org.apache.hadoop.hive.metastore.events.AddPartitionEvent;
+import org.apache.hadoop.hive.metastore.events.AlterPartitionEvent;
+import org.apache.hadoop.hive.metastore.events.AlterTableEvent;
 import org.apache.hadoop.hive.metastore.events.CreateDatabaseEvent;
 import org.apache.hadoop.hive.metastore.events.CreateTableEvent;
 import org.apache.hadoop.hive.metastore.events.DropDatabaseEvent;
@@ -708,8 +710,8 @@ public class HiveMetaStore extends ThriftHiveMetastore {
         }
         for (MetaStoreEventListener listener : listeners) {
           listener.onDropDatabase(new DropDatabaseEvent(db, success, this));
+        }
       }
-    }
     }
 
     public void drop_database(final String dbName, final boolean deleteData, final boolean cascade)
@@ -1717,8 +1719,15 @@ public class HiveMetaStore extends ThriftHiveMetastore {
           new_part.putToParameters(Constants.DDL_TIME, Long.toString(System
               .currentTimeMillis() / 1000));
         }
+        Partition oldPart = ms.getPartition(db_name, tbl_name, new_part.getValues());
         ms.alterPartition(db_name, tbl_name, new_part);
+        for (MetaStoreEventListener listener : listeners) {
+          listener.onAlterPartition(new AlterPartitionEvent(oldPart, new_part, true, this));
+        }
       } catch (InvalidObjectException e) {
+        throw new InvalidOperationException("alter is not possible");
+      } catch (NoSuchObjectException e){
+        //old partition does not exist
         throw new InvalidOperationException("alter is not possible");
       }
     }
@@ -1804,20 +1813,25 @@ public class HiveMetaStore extends ThriftHiveMetastore {
         newTable.putToParameters(Constants.DDL_TIME, Long.toString(System
             .currentTimeMillis() / 1000));
       }
-
-
       try {
-        executeWithRetry(new Command<Boolean>() {
+        Table oldt = get_table(dbname, name);
+        boolean success = executeWithRetry(new Command<Boolean>() {
           @Override
           public Boolean run(RawStore ms) throws Exception {
             alterHandler.alterTable(ms, wh, dbname, name, newTable);
             return Boolean.TRUE;
           }
         });
+        for (MetaStoreEventListener listener : listeners) {
+          listener.onAlterTable(new AlterTableEvent(oldt, newTable, success, this));
+        }
       } catch (MetaException e) {
         throw e;
       } catch (InvalidOperationException e) {
         throw e;
+      } catch (NoSuchObjectException e) {
+        //thrown when the table to be altered does not exist
+        throw new InvalidOperationException(e.getMessage());
       } catch (Exception e) {
         assert(e instanceof RuntimeException);
         throw (RuntimeException)e;

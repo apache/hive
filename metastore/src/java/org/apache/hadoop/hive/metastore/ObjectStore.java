@@ -1729,6 +1729,8 @@ public class ObjectStore implements RawStore, Configurable {
     } finally {
       if (!success) {
         rollbackTransaction();
+        throw new MetaException(
+            "The transaction for alter partition did not commit successfully.");
       }
     }
   }
