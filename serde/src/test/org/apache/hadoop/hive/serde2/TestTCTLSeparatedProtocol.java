@@ -30,6 +30,8 @@ import org.apache.thrift.protocol.TList;
 import org.apache.thrift.protocol.TMap;
 import org.apache.thrift.protocol.TStruct;
 import org.apache.thrift.transport.TMemoryBuffer;
+import org.apache.thrift.transport.TTransport;
+import org.apache.thrift.transport.TTransportException;
 
 /**
  * TestTCTLSeparatedProtocol.
@@ -474,4 +476,36 @@ public class TestTCTLSeparatedProtocol extends TestCase {
     assertTrue(ret1 == 0);
   }
 
+  public void testShouldThrowRunTimeExceptionIfUnableToInitializeTokenizer() throws Exception {
+    TCTLSeparatedProtocol separatedProtocol = new TCTLSeparatedProtocol(new TTransport() {
+      @Override
+      public void close() {
+      }
+
+      @Override
+      public boolean isOpen() {
+        return false;
+      }
+
+      @Override
+      public void open() throws TTransportException {
+      }
+
+      @Override
+      public int read(byte[] buf, int off, int len) throws TTransportException {
+        throw new TTransportException();
+      }
+
+      @Override
+      public void write(byte[] buf, int off, int len) throws TTransportException {
+      }
+    });
+    separatedProtocol.initialize(null, new Properties());
+    try {
+      separatedProtocol.readStructBegin();
+      fail("Runtime Exception is expected if the intialization of tokenizer failed.");
+    } catch (Exception e) {
+      assertTrue(e.getCause() instanceof TTransportException);
+    }
+  }
 }
