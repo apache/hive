@@ -22,6 +22,8 @@ import org.apache.hadoop.conf.Configurable;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.events.AddPartitionEvent;
+import org.apache.hadoop.hive.metastore.events.AlterPartitionEvent;
+import org.apache.hadoop.hive.metastore.events.AlterTableEvent;
 import org.apache.hadoop.hive.metastore.events.CreateDatabaseEvent;
 import org.apache.hadoop.hive.metastore.events.CreateTableEvent;
 import org.apache.hadoop.hive.metastore.events.DropDatabaseEvent;
@@ -43,6 +45,7 @@ public abstract class MetaStoreEventListener implements Configurable {
   public MetaStoreEventListener(Configuration config){
     this.conf = config;
   }
+
   /**
    * @param create table event.
    * @throws MetaException
@@ -59,6 +62,14 @@ public abstract class MetaStoreEventListener implements Configurable {
    * @param add partition event
    * @throws MetaException
    */
+
+  /**
+   * @param tableEvent alter table event
+   * @throws MetaException
+   */
+  public abstract void onAlterTable (AlterTableEvent tableEvent) throws MetaException;
+
+
   public abstract void onAddPartition (AddPartitionEvent partitionEvent)  throws MetaException;
 
   /**
@@ -66,6 +77,12 @@ public abstract class MetaStoreEventListener implements Configurable {
    * @throws MetaException
    */
   public abstract void onDropPartition (DropPartitionEvent partitionEvent)  throws MetaException;
+
+  /**
+   * @param alter partition event
+   * @throws MetaException
+   */
+  public abstract void onAlterPartition (AlterPartitionEvent partitionEvent)  throws MetaException;
 
   /**
    * @param create database event
@@ -94,4 +111,7 @@ public abstract class MetaStoreEventListener implements Configurable {
   public void setConf(Configuration config) {
     this.conf = config;
   }
+
+
+
 }
