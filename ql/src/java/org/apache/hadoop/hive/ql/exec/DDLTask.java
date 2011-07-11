@@ -1458,6 +1458,7 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
       case ADDPARTITION:
       case DROPPARTITION:
       case ADDPROPS:
+      case RENAME:
         // allow this form
         break;
       default:

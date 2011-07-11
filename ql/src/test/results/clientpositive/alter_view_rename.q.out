@@ -1,0 +1,61 @@
+PREHOOK: query: CREATE TABLE invites (foo INT, bar STRING) PARTITIONED BY (ds STRING)
+PREHOOK: type: CREATETABLE
+POSTHOOK: query: CREATE TABLE invites (foo INT, bar STRING) PARTITIONED BY (ds STRING)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: default@invites
+PREHOOK: query: CREATE VIEW view1 as SELECT * FROM invites
+PREHOOK: type: CREATEVIEW
+PREHOOK: Output: file:/var/folders/Qf/QfKIM3uNGnOkRTnqDyLPXU+++TI/-Tmp-/ccy/hive_2011-07-08_08-17-02_744_6543104997331484125/-mr-10000
+POSTHOOK: query: CREATE VIEW view1 as SELECT * FROM invites
+POSTHOOK: type: CREATEVIEW
+POSTHOOK: Output: default@view1
+POSTHOOK: Output: file:/var/folders/Qf/QfKIM3uNGnOkRTnqDyLPXU+++TI/-Tmp-/ccy/hive_2011-07-08_08-17-02_744_6543104997331484125/-mr-10000
+PREHOOK: query: DESCRIBE EXTENDED view1
+PREHOOK: type: DESCTABLE
+POSTHOOK: query: DESCRIBE EXTENDED view1
+POSTHOOK: type: DESCTABLE
+foo	int	
+bar	string	
+ds	string	
+	 	 
+Detailed Table Information	Table(tableName:view1, dbName:default, owner:ccy, createTime:1310138222, lastAccessTime:0, retention:0, sd:StorageDescriptor(cols:[FieldSchema(name:foo, type:int, comment:null), FieldSchema(name:bar, type:string, comment:null), FieldSchema(name:ds, type:string, comment:null)], location:null, inputFormat:org.apache.hadoop.mapred.SequenceFileInputFormat, outputFormat:org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat, compressed:false, numBuckets:-1, serdeInfo:SerDeInfo(name:null, serializationLib:null, parameters:{}), bucketCols:[], sortCols:[], parameters:{}), partitionKeys:[], parameters:{transient_lastDdlTime=1310138222}, viewOriginalText:SELECT * FROM invites, viewExpandedText:SELECT `invites`.`foo`, `invites`.`bar`, `invites`.`ds` FROM `invites`, tableType:VIRTUAL_VIEW)	
+PREHOOK: query: ALTER VIEW view1 RENAME TO view2
+PREHOOK: type: null
+PREHOOK: Input: default@view1
+PREHOOK: Output: default@view1
+POSTHOOK: query: ALTER VIEW view1 RENAME TO view2
+POSTHOOK: type: null
+POSTHOOK: Input: default@view1
+POSTHOOK: Output: default@view1
+POSTHOOK: Output: default@view2
+PREHOOK: query: DESCRIBE EXTENDED view2
+PREHOOK: type: DESCTABLE
+POSTHOOK: query: DESCRIBE EXTENDED view2
+POSTHOOK: type: DESCTABLE
+foo	int	
+bar	string	
+ds	string	
+	 	 
+Detailed Table Information	Table(tableName:view2, dbName:default, owner:ccy, createTime:1310138222, lastAccessTime:0, retention:0, sd:StorageDescriptor(cols:[FieldSchema(name:foo, type:int, comment:null), FieldSchema(name:bar, type:string, comment:null), FieldSchema(name:ds, type:string, comment:null)], location:null, inputFormat:org.apache.hadoop.mapred.SequenceFileInputFormat, outputFormat:org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat, compressed:false, numBuckets:-1, serdeInfo:SerDeInfo(name:null, serializationLib:null, parameters:{}), bucketCols:[], sortCols:[], parameters:{}), partitionKeys:[], parameters:{last_modified_by=ccy, last_modified_time=1310138222, transient_lastDdlTime=1310138222}, viewOriginalText:SELECT * FROM invites, viewExpandedText:SELECT `invites`.`foo`, `invites`.`bar`, `invites`.`ds` FROM `invites`, tableType:VIRTUAL_VIEW)	
+PREHOOK: query: SELECT * FROM view2
+PREHOOK: type: QUERY
+PREHOOK: Output: file:/var/folders/Qf/QfKIM3uNGnOkRTnqDyLPXU+++TI/-Tmp-/ccy/hive_2011-07-08_08-17-03_123_5668598932827588963/-mr-10000
+POSTHOOK: query: SELECT * FROM view2
+POSTHOOK: type: QUERY
+POSTHOOK: Output: file:/var/folders/Qf/QfKIM3uNGnOkRTnqDyLPXU+++TI/-Tmp-/ccy/hive_2011-07-08_08-17-03_123_5668598932827588963/-mr-10000
+PREHOOK: query: DROP TABLE invites
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@invites
+PREHOOK: Output: default@invites
+POSTHOOK: query: DROP TABLE invites
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@invites
+POSTHOOK: Output: default@invites
+PREHOOK: query: DROP VIEW view2
+PREHOOK: type: DROPVIEW
+PREHOOK: Input: default@view2
+PREHOOK: Output: default@view2
+POSTHOOK: query: DROP VIEW view2
+POSTHOOK: type: DROPVIEW
+POSTHOOK: Input: default@view2
+POSTHOOK: Output: default@view2
