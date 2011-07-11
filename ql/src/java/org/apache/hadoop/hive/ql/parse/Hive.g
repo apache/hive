@@ -243,6 +243,7 @@ TOK_SHOWINDEXES;
 TOK_INDEXCOMMENT;
 TOK_DESCDATABASE;
 TOK_DATABASEPROPERTIES;
+TOK_DATABASELOCATION;
 TOK_DBPROPLIST;
 TOK_ALTERDATABASE_PROPERTIES;
 TOK_ALTERTABLE_ALTERPARTS_MERGEFILES;
@@ -375,9 +376,17 @@ createDatabaseStatement
     : KW_CREATE (KW_DATABASE|KW_SCHEMA)
         ifNotExists?
         name=Identifier
+        dbLocation?
         databaseComment?
         (KW_WITH KW_DBPROPERTIES dbprops=dbProperties)?
-    -> ^(TOK_CREATEDATABASE $name ifNotExists? databaseComment? $dbprops?)
+    -> ^(TOK_CREATEDATABASE $name ifNotExists? dbLocation? databaseComment? $dbprops?)
+    ;
+
+dbLocation
+@init { msgs.push("database location specification"); }
+@after { msgs.pop(); }
+    :
+      KW_LOCATION locn=StringLiteral -> ^(TOK_DATABASELOCATION $locn)
     ;
 
 dbProperties
@@ -591,7 +600,7 @@ alterDatabaseStatementSuffix
 @after { msgs.pop(); }
     : alterDatabaseSuffixProperties
     ;
-    
+
 alterDatabaseSuffixProperties
 @init { msgs.push("alter database properties statement"); }
 @after { msgs.pop(); }

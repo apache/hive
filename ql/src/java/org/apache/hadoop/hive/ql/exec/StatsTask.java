@@ -294,7 +294,7 @@ public class StatsTask extends Task<StatsWork> implements Serializable {
         if (!tableStatsExist && atomic) {
           return 0;
         }
-        Path tablePath = wh.getDefaultTablePath(table.getDbName(), table.getTableName());
+        Path tablePath = wh.getTablePath(db.getDatabase(table.getDbName()), table.getTableName());
         fileSys = tablePath.getFileSystem(conf);
         fileStatus = Utilities.getFileStatusRecurse(tablePath, 1, fileSys);
 

@@ -30,6 +30,7 @@ import junit.framework.TestCase;
 
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.fs.permission.FsPermission;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.api.AlreadyExistsException;
 import org.apache.hadoop.hive.metastore.api.ConfigValSecurityException;
@@ -473,7 +474,7 @@ public abstract class TestHiveMetaStore extends TestCase {
       assertEquals("name of returned db is different from that of inserted db",
           TEST_DB1_NAME, db.getName());
       assertEquals("location of the returned db is different from that of inserted db",
-          warehouse.getDefaultDatabasePath(TEST_DB1_NAME).toString(), db.getLocationUri());
+          warehouse.getDatabasePath(db).toString(), db.getLocationUri());
 
       Database db2 = new Database();
       db2.setName(TEST_DB2_NAME);
@@ -484,7 +485,7 @@ public abstract class TestHiveMetaStore extends TestCase {
       assertEquals("name of returned db is different from that of inserted db",
           TEST_DB2_NAME, db2.getName());
       assertEquals("location of the returned db is different from that of inserted db",
-          warehouse.getDefaultDatabasePath(TEST_DB2_NAME).toString(), db2.getLocationUri());
+          warehouse.getDatabasePath(db2).toString(), db2.getLocationUri());
 
       List<String> dbs = client.getDatabases(".*");
 
@@ -501,6 +502,96 @@ public abstract class TestHiveMetaStore extends TestCase {
       throw e;
     }
   }
+
+  public void testDatabaseLocation() throws Throwable {
+    try {
+      // clear up any existing databases
+      silentDropDatabase(TEST_DB1_NAME);
+
+      Database db = new Database();
+      db.setName(TEST_DB1_NAME);
+      String dbLocation =
+          HiveConf.getVar(hiveConf, HiveConf.ConfVars.METASTOREWAREHOUSE) + "/_testDB_create_";
+      db.setLocationUri(dbLocation);
+      client.createDatabase(db);
+
+      db = client.getDatabase(TEST_DB1_NAME);
+
+      assertEquals("name of returned db is different from that of inserted db",
+          TEST_DB1_NAME, db.getName());
+      assertEquals("location of the returned db is different from that of inserted db",
+          warehouse.getDnsPath(new Path(dbLocation)).toString(), db.getLocationUri());
+
+      client.dropDatabase(TEST_DB1_NAME);
+      silentDropDatabase(TEST_DB1_NAME);
+
+      db = new Database();
+      db.setName(TEST_DB1_NAME);
+      dbLocation =
+          HiveConf.getVar(hiveConf, HiveConf.ConfVars.METASTOREWAREHOUSE) + "/test/_testDB_create_";
+      FileSystem fs = FileSystem.get(new Path(dbLocation).toUri(), hiveConf);
+      fs.mkdirs(
+          new Path(HiveConf.getVar(hiveConf, HiveConf.ConfVars.METASTOREWAREHOUSE) + "/test"),
+          new FsPermission((short) 0));
+      db.setLocationUri(dbLocation);
+
+      boolean createFailed = false;
+      try {
+        client.createDatabase(db);
+      } catch (MetaException cantCreateDB) {
+        createFailed = true;
+      }
+      assertTrue("Database creation succeeded even with permission problem", createFailed);
+
+      boolean objectNotExist = false;
+      try {
+        client.getDatabase(TEST_DB1_NAME);
+      } catch (NoSuchObjectException e) {
+        objectNotExist = true;
+      }
+      assertTrue("Database " + TEST_DB1_NAME + " exists ", objectNotExist);
+
+      // Cleanup
+      fs.setPermission(
+          new Path(HiveConf.getVar(hiveConf, HiveConf.ConfVars.METASTOREWAREHOUSE) + "/test"),
+          new FsPermission((short) 755));
+      fs.delete(new Path(HiveConf.getVar(hiveConf, HiveConf.ConfVars.METASTOREWAREHOUSE) + "/test"), true);
+
+
+      db = new Database();
+      db.setName(TEST_DB1_NAME);
+      dbLocation =
+          HiveConf.getVar(hiveConf, HiveConf.ConfVars.METASTOREWAREHOUSE) + "/_testDB_file_";
+      fs = FileSystem.get(new Path(dbLocation).toUri(), hiveConf);
+      fs.createNewFile(new Path(dbLocation));
+      fs.deleteOnExit(new Path(dbLocation));
+      db.setLocationUri(dbLocation);
+
+      createFailed = false;
+      try {
+        client.createDatabase(db);
+      } catch (MetaException cantCreateDB) {
+        System.err.println(cantCreateDB.getMessage());
+        createFailed = true;
+      }
+      assertTrue("Database creation succeeded even location exists and is a file", createFailed);
+
+      objectNotExist = false;
+      try {
+        client.getDatabase(TEST_DB1_NAME);
+      } catch (NoSuchObjectException e) {
+        objectNotExist = true;
+      }
+      assertTrue("Database " + TEST_DB1_NAME + " exists when location is specified and is a file",
+          objectNotExist);
+
+    } catch (Throwable e) {
+      System.err.println(StringUtils.stringifyException(e));
+      System.err.println("testDatabaseLocation() failed.");
+      throw e;
+    }
+  }
+
 
   public void testSimpleTypeApi() throws Exception {
     try {
@@ -995,6 +1086,60 @@ public abstract class TestHiveMetaStore extends TestCase {
       client.dropDatabase(dbName);
     }
   }
+
+  public void testTableDatabase() throws Exception {
+    String dbName = "testDb";
+    String tblName_1 = "testTbl_1";
+    String tblName_2 = "testTbl_2";
+
+    try {
+      silentDropDatabase(dbName);
+
+      Database db = new Database();
+      db.setName(dbName);
+      String dbLocation =
+          HiveConf.getVar(hiveConf, HiveConf.ConfVars.METASTOREWAREHOUSE) + "_testDB_table_create_";
+      db.setLocationUri(dbLocation);
+      client.createDatabase(db);
+      db = client.getDatabase(dbName);
+
+      Table tbl = new Table();
+      tbl.setDbName(dbName);
+      tbl.setTableName(tblName_1);
+
+      ArrayList<FieldSchema> cols = new ArrayList<FieldSchema>(2);
+      cols.add(new FieldSchema("name", Constants.STRING_TYPE_NAME, ""));
+      cols.add(new FieldSchema("income", Constants.INT_TYPE_NAME, ""));
+
+      StorageDescriptor sd = new StorageDescriptor();
+      sd.setSerdeInfo(new SerDeInfo());
+      sd.getSerdeInfo().setName(tbl.getTableName());
+      sd.getSerdeInfo().setParameters(new HashMap<String, String>());
+      sd.setParameters(new HashMap<String, String>());
+      sd.getSerdeInfo().getParameters().put(
+          org.apache.hadoop.hive.serde.Constants.SERIALIZATION_FORMAT, "9");
+      sd.getSerdeInfo().setSerializationLib(
+          org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe.class.getName());
+
+      tbl.setSd(sd);
+      tbl.getSd().setCols(cols);
+      client.createTable(tbl);
+      tbl = client.getTable(dbName, tblName_1);
+
+      Path path = new Path(tbl.getSd().getLocation());
+      System.err.println("Table's location " + path + ", Database's location " + db.getLocationUri());
+      assertEquals("Table location is not a subset of the database location",
+          path.getParent().toString(), db.getLocationUri());
+
+    } catch (Exception e) {
+      System.err.println(StringUtils.stringifyException(e));
+      System.err.println("testTableDatabase() failed.");
+      throw e;
+    } finally {
+      silentDropDatabase(dbName);
+    }
+  }
+
 
   public void testGetConfigValue() {
 

@@ -463,7 +463,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       } catch (NoSuchObjectException e) {
         ms.createDatabase(
             new Database(DEFAULT_DATABASE_NAME, DEFAULT_DATABASE_COMMENT,
-                wh.getDefaultDatabasePath(DEFAULT_DATABASE_NAME).toString(), null));
+                getDefaultDatabasePath(DEFAULT_DATABASE_NAME).toString(), null));
       }
       HMSHandler.createDefaultDB = true;
     }
@@ -570,30 +570,52 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       logInfo("Metastore shutdown complete.");
     }
 
+    private static final String DATABASE_WAREHOUSE_SUFFIX = ".db";
+
+    private Path getDefaultDatabasePath(String dbName) throws MetaException {
+      if (dbName.equalsIgnoreCase(DEFAULT_DATABASE_NAME)) {
+        return wh.getWhRoot();
+      }
+      return new Path(wh.getWhRoot(), dbName.toLowerCase() + DATABASE_WAREHOUSE_SUFFIX);
+    }
+
     private void create_database_core(RawStore ms, final Database db)
         throws AlreadyExistsException, InvalidObjectException, MetaException,
         IOException {
       if (!validateName(db.getName())) {
         throw new InvalidObjectException(db.getName() + " is not a valid database name");
       }
+      if (null == db.getLocationUri()) {
+        db.setLocationUri(getDefaultDatabasePath(db.getName()).toString());
+      } else {
+        db.setLocationUri(wh.getDnsPath(new Path(db.getLocationUri())).toString());
+      }
+      Path dbPath = new Path(db.getLocationUri());
       boolean success = false;
+      boolean madeDir = false;
       try {
-        ms.openTransaction();
-        if (null == db.getLocationUri()) {
-          db.setLocationUri(wh.getDefaultDatabasePath(db.getName()).toString());
+        if (!wh.isDir(dbPath)) {
+          if (!wh.mkdirs(dbPath)) {
+            throw new MetaException("Unable to create database path " + dbPath +
+                ", failed to create database " + db.getName());
+          }
+          madeDir = true;
         }
+
+        ms.openTransaction();
         ms.createDatabase(db);
         success = ms.commitTransaction();
       } finally {
         if (!success) {
           ms.rollbackTransaction();
-        } else {
-          wh.mkdirs(new Path(db.getLocationUri()));
+          if (madeDir) {
+            wh.deleteDir(dbPath, true);
+          }
         }
         for (MetaStoreEventListener listener : listeners) {
           listener.onCreateDatabase(new CreateDatabaseEvent(db, success, this));
+        }
       }
-    }
     }
 
     public void create_database(final Database db)
@@ -923,7 +945,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
     }
 
     private void create_table_core(final RawStore ms, final Table tbl)
-        throws AlreadyExistsException, MetaException, InvalidObjectException {
+        throws AlreadyExistsException, MetaException, InvalidObjectException, NoSuchObjectException {
 
       if (!MetaStoreUtils.validateName(tbl.getTableName())
           || !MetaStoreUtils.validateColNames(tbl.getSd().getCols())
@@ -947,8 +969,8 @@ public class HiveMetaStore extends ThriftHiveMetastore {
         if (!TableType.VIRTUAL_VIEW.toString().equals(tbl.getTableType())) {
           if (tbl.getSd().getLocation() == null
             || tbl.getSd().getLocation().isEmpty()) {
-            tblPath = wh.getDefaultTablePath(
-              tbl.getDbName(), tbl.getTableName());
+            tblPath = wh.getTablePath(
+                ms.getDatabase(tbl.getDbName()), tbl.getTableName());
           } else {
             if (!isExternal(tbl) && !MetaStoreUtils.isNonNativeTable(tbl)) {
               LOG.warn("Location: " + tbl.getSd().getLocation()
