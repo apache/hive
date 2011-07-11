@@ -31,7 +31,7 @@ import org.apache.hadoop.hive.ql.session.SessionState;
 public final class SemanticAnalyzerFactory {
 
   static HashMap<Integer, HiveOperation> commandType = new HashMap<Integer, HiveOperation>();
-  static HashMap<Integer, HiveOperation[]> tablePartitionCommandType = new HashMap<Integer, HiveOperation[]>(); 
+  static HashMap<Integer, HiveOperation[]> tablePartitionCommandType = new HashMap<Integer, HiveOperation[]>();
 
   static {
     commandType.put(HiveParser.TOK_EXPLAIN, HiveOperation.EXPLAIN);
@@ -147,6 +147,7 @@ public final class SemanticAnalyzerFactory {
       case HiveParser.TOK_ALTERVIEW_PROPERTIES:
       case HiveParser.TOK_ALTERVIEW_ADDPARTS:
       case HiveParser.TOK_ALTERVIEW_DROPPARTS:
+      case HiveParser.TOK_ALTERVIEW_RENAME:
       case HiveParser.TOK_SHOWDATABASES:
       case HiveParser.TOK_SHOWTABLES:
       case HiveParser.TOK_SHOW_TABLESTATUS:

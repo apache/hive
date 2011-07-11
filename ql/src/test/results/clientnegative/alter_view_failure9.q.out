@@ -1,0 +1,22 @@
+PREHOOK: query: DROP VIEW xxx4
+PREHOOK: type: DROPVIEW
+POSTHOOK: query: DROP VIEW xxx4
+POSTHOOK: type: DROPVIEW
+PREHOOK: query: CREATE VIEW xxx4 
+AS 
+SELECT * FROM src
+PREHOOK: type: CREATEVIEW
+PREHOOK: Output: file:/var/folders/fe/fefl-ow3ElaEd1ns0G7jB0uewEQ/-Tmp-/charleschen/hive_2011-07-07_12-15-48_683_5899334144357618678/-mr-10000
+POSTHOOK: query: CREATE VIEW xxx4 
+AS 
+SELECT * FROM src
+POSTHOOK: type: CREATEVIEW
+POSTHOOK: Output: default@xxx4
+POSTHOOK: Output: file:/var/folders/fe/fefl-ow3ElaEd1ns0G7jB0uewEQ/-Tmp-/charleschen/hive_2011-07-07_12-15-48_683_5899334144357618678/-mr-10000
+PREHOOK: query: -- should fail:  need to use ALTER VIEW, not ALTER TABLE
+ALTER TABLE xxx4 RENAME TO xxx4a
+PREHOOK: type: ALTERTABLE_RENAME
+PREHOOK: Input: default@xxx4
+PREHOOK: Output: default@xxx4
+FAILED: Error in metadata: Cannot alter a view with ALTER TABLE
+FAILED: Execution Error, return code 1 from org.apache.hadoop.hive.ql.exec.DDLTask

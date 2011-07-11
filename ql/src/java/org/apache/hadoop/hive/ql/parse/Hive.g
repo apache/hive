@@ -186,6 +186,7 @@ TOK_DROPVIEW;
 TOK_ALTERVIEW_PROPERTIES;
 TOK_ALTERVIEW_ADDPARTS;
 TOK_ALTERVIEW_DROPPARTS;
+TOK_ALTERVIEW_RENAME;
 TOK_VIEWPARTCOLS;
 TOK_EXPLAIN;
 TOK_TABLESERIALIZER;
@@ -561,6 +562,8 @@ alterViewStatementSuffix
 @init { msgs.push("alter view statement"); }
 @after { msgs.pop(); }
     : alterViewSuffixProperties
+    | alterStatementSuffixRename
+        -> ^(TOK_ALTERVIEW_RENAME alterStatementSuffixRename)
     | alterStatementSuffixAddPartitions
         -> ^(TOK_ALTERVIEW_ADDPARTS alterStatementSuffixAddPartitions)
     | alterStatementSuffixDropPartitions

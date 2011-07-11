@@ -260,8 +260,13 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
       // view from table; unwrap it now
       analyzeAlterTableDropParts((ASTNode) ast.getChild(0), true);
       break;
+    case HiveParser.TOK_ALTERVIEW_RENAME:
+      // for ALTER VIEW RENAME, we wrapped the RENAME to discriminate
+      // view from table; unwrap it now
+      analyzeAlterTableRename(((ASTNode) ast.getChild(0)), true);
+      break;
     case HiveParser.TOK_ALTERTABLE_RENAME:
-      analyzeAlterTableRename(ast);
+      analyzeAlterTableRename(ast, false);
       break;
     case HiveParser.TOK_ALTERTABLE_TOUCH:
       analyzeAlterTableTouch(ast);
@@ -1619,10 +1624,10 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
   }
 
 
-  private void analyzeAlterTableRename(ASTNode ast) throws SemanticException {
+  private void analyzeAlterTableRename(ASTNode ast, boolean expectView) throws SemanticException {
     String tblName = getUnescapedName((ASTNode)ast.getChild(0));
     AlterTableDesc alterTblDesc = new AlterTableDesc(tblName,
-        getUnescapedName((ASTNode)ast.getChild(1)));
+        getUnescapedName((ASTNode)ast.getChild(1)), expectView);
     try {
       Table tab = db.getTable(db.getCurrentDatabase(), tblName, false);
       if (tab != null) {
