@@ -46,6 +46,7 @@ import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.exec.TaskFactory;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.hooks.WriteEntity;
+import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.InvalidTableException;
 import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.plan.AddPartitionDesc;
@@ -234,8 +235,8 @@ public class ImportSemanticAnalyzer extends BaseSemanticAnalyzer {
             tblDesc), conf);
         Table table = new Table(dbname, tblDesc.getTableName());
         conf.set("import.destination.dir",
-            wh.getDnsPath(wh.getDefaultTablePath(
-                db.getCurrentDatabase(), tblDesc.getTableName())).toString());
+            wh.getTablePath(db.getDatabase(db.getCurrentDatabase()),
+                tblDesc.getTableName()).toString());
         if ((tblDesc.getPartCols() != null) && (tblDesc.getPartCols().size() != 0)) {
           for (AddPartitionDesc addPartitionDesc : partitionDescs) {
             t.addDependentTask(
@@ -252,8 +253,7 @@ public class ImportSemanticAnalyzer extends BaseSemanticAnalyzer {
             if (tblDesc.getLocation() != null) {
               tablePath = new Path(tblDesc.getLocation());
             } else {
-              tablePath = wh.getDnsPath(wh.getDefaultTablePath(
-                  db.getCurrentDatabase(), tblDesc.getTableName()));
+              tablePath = wh.getTablePath(db.getDatabase(db.getCurrentDatabase()), tblDesc.getTableName());
             }
             checkTargetLocationEmpty(fs, tablePath);
             t.addDependentTask(loadTable(fromURI, table));
@@ -288,7 +288,7 @@ public class ImportSemanticAnalyzer extends BaseSemanticAnalyzer {
 
   private Task<?> addSinglePartition(URI fromURI, FileSystem fs, CreateTableDesc tblDesc,
       Table table, Warehouse wh,
-      AddPartitionDesc addPartitionDesc) throws MetaException, IOException, SemanticException {
+      AddPartitionDesc addPartitionDesc) throws MetaException, IOException, HiveException {
     if (tblDesc.isExternal() && tblDesc.getLocation() == null) {
       LOG.debug("Importing in-place: adding AddPart for partition "
           + partSpecToString(addPartitionDesc.getPartSpec()));
@@ -304,8 +304,8 @@ public class ImportSemanticAnalyzer extends BaseSemanticAnalyzer {
           tgtPath = new Path(table.getDataLocation().toString(),
               Warehouse.makePartPath(addPartitionDesc.getPartSpec()));
         } else {
-          tgtPath = new Path(wh.getDnsPath(wh.getDefaultTablePath(
-              db.getCurrentDatabase(), tblDesc.getTableName())),
+          tgtPath = new Path(wh.getTablePath(
+              db.getDatabase(db.getCurrentDatabase()), tblDesc.getTableName()),
               Warehouse.makePartPath(addPartitionDesc.getPartSpec()));
         }
       } else {

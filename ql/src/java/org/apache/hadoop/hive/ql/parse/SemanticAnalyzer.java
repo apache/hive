@@ -6810,7 +6810,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
             try {
               dumpTable = db.newTable(qb.getTableDesc().getTableName());
               Warehouse wh = new Warehouse(conf);
-              targetPath = wh.getDefaultTablePath(dumpTable.getDbName(), dumpTable
+              targetPath = wh.getTablePath(db.getDatabase(dumpTable.getDbName()), dumpTable
                   .getTableName());
             } catch (HiveException e) {
               throw new SemanticException(e);

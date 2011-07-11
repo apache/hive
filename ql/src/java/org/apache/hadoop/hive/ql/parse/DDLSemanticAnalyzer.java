@@ -628,6 +628,7 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
     String dbName = unescapeIdentifier(ast.getChild(0).getText());
     boolean ifNotExists = false;
     String dbComment = null;
+    String dbLocation = null;
     Map<String, String> dbProps = null;
 
     for (int i = 1; i < ast.getChildCount(); i++) {
@@ -642,16 +643,16 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
       case HiveParser.TOK_DATABASEPROPERTIES:
         dbProps = DDLSemanticAnalyzer.getProps((ASTNode) childNode.getChild(0));
         break;
+      case HiveParser.TOK_DATABASELOCATION:
+        dbLocation = unescapeSQLString(childNode.getChild(0).getText());
+        break;
       default:
         throw new SemanticException("Unrecognized token in CREATE DATABASE statement");
       }
     }
 
-    CreateDatabaseDesc createDatabaseDesc = new CreateDatabaseDesc();
-    createDatabaseDesc.setName(dbName);
-    createDatabaseDesc.setComment(dbComment);
-    createDatabaseDesc.setIfNotExists(ifNotExists);
-    createDatabaseDesc.setLocationUri(null);
+    CreateDatabaseDesc createDatabaseDesc =
+        new CreateDatabaseDesc(dbName, dbComment, dbLocation, ifNotExists);
     if (dbProps != null) {
       createDatabaseDesc.setDatabaseProperties(dbProps);
     }

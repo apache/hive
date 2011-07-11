@@ -45,6 +45,7 @@ import org.apache.hadoop.fs.permission.FsAction;
 import org.apache.hadoop.hive.common.FileUtils;
 import org.apache.hadoop.hive.common.JavaUtils;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.shims.ShimLoader;
@@ -58,8 +59,6 @@ public class Warehouse {
   private Path whRoot;
   private final Configuration conf;
   private final String whRootString;
-
-  private static final String DATABASE_WAREHOUSE_SUFFIX = ".db";
 
   public static final Log LOG = LogFactory.getLog("hive.metastore.warehouse");
 
@@ -143,7 +142,7 @@ public class Warehouse {
    * dir (but that should be ok given that this is only called during DDL
    * statements for non-external tables).
    */
-  private Path getWhRoot() throws MetaException {
+  public Path getWhRoot() throws MetaException {
     if (whRoot != null) {
       return whRoot;
     }
@@ -156,16 +155,16 @@ public class Warehouse {
     return new Path(whRoot, tableName.toLowerCase());
   }
 
-  public Path getDefaultDatabasePath(String dbName) throws MetaException {
-    if (dbName.equalsIgnoreCase(DEFAULT_DATABASE_NAME)) {
+  public Path getDatabasePath(Database db) throws MetaException {
+    if (db.getName().equalsIgnoreCase(DEFAULT_DATABASE_NAME)) {
       return getWhRoot();
     }
-    return new Path(getWhRoot(), dbName.toLowerCase() + DATABASE_WAREHOUSE_SUFFIX);
+    return new Path(db.getLocationUri());
   }
 
-  public Path getDefaultTablePath(String dbName, String tableName)
+  public Path getTablePath(Database db, String tableName)
       throws MetaException {
-    return new Path(getDefaultDatabasePath(dbName), tableName.toLowerCase());
+    return getDnsPath(new Path(getDatabasePath(db), tableName.toLowerCase()));
   }
 
   public boolean mkdirs(Path f) throws MetaException {
@@ -393,9 +392,9 @@ public class Warehouse {
     }
   }
 
-  public Path getPartitionPath(String dbName, String tableName,
+  public Path getPartitionPath(Database db, String tableName,
       LinkedHashMap<String, String> pm) throws MetaException {
-    return new Path(getDefaultTablePath(dbName, tableName), makePartPath(pm));
+    return new Path(getTablePath(db, tableName), makePartPath(pm));
   }
 
   public Path getPartitionPath(Path tblPath, LinkedHashMap<String, String> pm)

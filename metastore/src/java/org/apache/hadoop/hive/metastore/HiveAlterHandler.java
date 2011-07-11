@@ -32,6 +32,7 @@ import org.apache.hadoop.hive.metastore.api.InvalidOperationException;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.Partition;
 import org.apache.hadoop.hive.metastore.api.Table;
+import org.apache.hadoop.hive.metastore.api.NoSuchObjectException;
 
 /**
  * Hive specific implementation of alter
@@ -115,7 +116,7 @@ public class HiveAlterHandler implements AlterHandler {
         // that means user is asking metastore to move data to new location
         // corresponding to the new name
         // get new location
-        newTblLoc = wh.getDefaultTablePath(newt.getDbName(), newt.getTableName()).toString();
+        newTblLoc = wh.getTablePath(msdb.getDatabase(newt.getDbName()), newt.getTableName()).toString();
         newt.getSd().setLocation(newTblLoc);
         oldTblLoc = oldt.getSd().getLocation();
         moveData = true;
@@ -175,6 +176,11 @@ public class HiveAlterHandler implements AlterHandler {
       LOG.debug(e);
       throw new InvalidOperationException(
           "Unable to change partition or table."
+              + " Check metastore logs for detailed stack." + e.getMessage());
+    } catch (NoSuchObjectException e) {
+      LOG.debug(e);
+      throw new InvalidOperationException(
+          "Unable to change partition or table. Database " + dbname + " does not exist"
               + " Check metastore logs for detailed stack." + e.getMessage());
     } finally {
       if (!success) {
