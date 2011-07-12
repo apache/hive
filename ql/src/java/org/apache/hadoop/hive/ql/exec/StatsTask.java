@@ -307,17 +307,8 @@ public class StatsTask extends Task<StatsWork> implements Serializable {
 
         // In case of a non-partitioned table, the key for stats temporary store is "rootDir"
         if (statsAggregator != null) {
-          String value;
-          for (String statType : collectableStats) {
-            value = statsAggregator.aggregateStats(work.getAggKey(), statType);
-            if (value != null) {
-              tblStats.setStat(statType, Long.parseLong(value));
-            } else {
-              if (atomic) {
-                throw new HiveException("StatsAggregator failed to get statistics.");
-              }
-            }
-          }
+          updateStats(collectableStats, tblStats, statsAggregator, parameters, 
+              work.getAggKey(), atomic);
           statsAggregator.cleanUp(work.getAggKey());
         }
       } else {
@@ -355,17 +346,8 @@ public class StatsTask extends Task<StatsWork> implements Serializable {
           LOG.info("Stats aggregator : " + partitionID);
 
           if (statsAggregator != null) {
-            String value;
-            for (String statType : collectableStats) {
-              value = statsAggregator.aggregateStats(partitionID, statType);
-              if (value != null) {
-                newPartStats.setStat(statType, Long.parseLong(value));
-              } else {
-                if (atomic) {
-                  throw new HiveException("StatsAggregator failed to get statistics.");
-                }
-              }
-            }
+            updateStats(collectableStats, newPartStats, statsAggregator, 
+                parameters, partitionID, atomic);
           } else {
             for (String statType : collectableStats) {
               newPartStats.setStat(statType, currentValues.get(statType));
@@ -449,6 +431,32 @@ public class StatsTask extends Task<StatsWork> implements Serializable {
         || parameters.containsKey(StatsSetupConst.TOTAL_SIZE)
         || parameters.containsKey(StatsSetupConst.RAW_DATA_SIZE)
         || parameters.containsKey(StatsSetupConst.NUM_PARTITIONS);
+  }
+
+  private void updateStats(List<String> statsList, PartitionStatistics stats,
+      StatsAggregator statsAggregator, Map<String, String> parameters,
+      String aggKey, boolean atomic) throws HiveException {
+
+    String value;
+    Long longValue;
+    for (String statType : statsList) {
+      value = statsAggregator.aggregateStats(aggKey, statType);
+      if (value != null) {
+        longValue = Long.parseLong(value);
+
+        if (!work.getLoadTableDesc().getReplace()) {
+          String originalValue = parameters.get(statType);
+          if (originalValue != null) {
+            longValue += Long.parseLong(originalValue);
+          }
+        }
+        stats.setStat(statType, longValue);
+      } else {
+        if (atomic) {
+          throw new HiveException("StatsAggregator failed to get statistics.");
+        }
+      }
+    }
   }
 
   /**

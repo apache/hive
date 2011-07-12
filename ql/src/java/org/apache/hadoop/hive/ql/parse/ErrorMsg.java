@@ -179,6 +179,7 @@ public enum ErrorMsg {
   TABLE_DATA_EXISTS("Table exists and contains data files"),
   INCOMPATIBLE_SCHEMA("The existing table is not compatible with the import spec. "),
   EXIM_FOR_NON_NATIVE("Export/Import cannot be done for a non-native table. "),
+  INSERT_INTO_BUCKETIZED_TABLE("Bucketized tables do not support INSERT INTO:"),
       ;
 
   private String mesg;

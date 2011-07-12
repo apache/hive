@@ -38,6 +38,7 @@ TOK_DIR;
 TOK_LOCAL_DIR;
 TOK_TABREF;
 TOK_SUBQUERY;
+TOK_INSERT_INTO;
 TOK_DESTINATION;
 TOK_ALLCOLREF;
 TOK_TABLE_OR_COL;
@@ -1404,7 +1405,9 @@ insertClause
 @init { msgs.push("insert clause"); }
 @after { msgs.pop(); }
    :
-   KW_INSERT KW_OVERWRITE destination -> ^(TOK_DESTINATION destination)
+     KW_INSERT KW_OVERWRITE destination -> ^(TOK_DESTINATION destination)
+   | KW_INSERT KW_INTO KW_TABLE tableOrPartition 
+       -> ^(TOK_INSERT_INTO ^(tableOrPartition))
    ;
 
 destination

@@ -1,0 +1,18 @@
+PREHOOK: query: DROP TABLE insert_into1_neg
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: DROP TABLE insert_into1_neg
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: CREATE TABLE insert_into1_neg (key int, value string)
+PREHOOK: type: CREATETABLE
+POSTHOOK: query: CREATE TABLE insert_into1_neg (key int, value string)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: default@insert_into1_neg
+PREHOOK: query: LOCK TABLE insert_into1_neg EXCLUSIVE
+PREHOOK: type: LOCKTABLE
+POSTHOOK: query: LOCK TABLE insert_into1_neg EXCLUSIVE
+POSTHOOK: type: LOCKTABLE
+conflicting lock present for default@insert_into1_neg mode EXCLUSIVE
+conflicting lock present for default@insert_into1_neg mode EXCLUSIVE
+conflicting lock present for default@insert_into1_neg mode EXCLUSIVE
+conflicting lock present for default@insert_into1_neg mode EXCLUSIVE
+FAILED: Error in acquiring locks: Locks on the underlying objects cannot be acquired. retry after some time
