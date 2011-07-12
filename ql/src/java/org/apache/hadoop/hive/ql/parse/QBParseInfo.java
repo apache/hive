@@ -20,6 +20,7 @@ package org.apache.hadoop.hive.ql.parse;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -49,6 +50,7 @@ public class QBParseInfo {
   private final HashMap<String, ASTNode> destToWhereExpr;
   private final HashMap<String, ASTNode> destToGroupby;
   private final Map<String, ASTNode> destToHaving;
+  private final HashSet<String> insertIntoTables;
 
   private boolean isAnalyzeCommand; // used for the analyze command (statistics)
   private boolean isInsertToTable;  // used for insert overwrite command (statistics)
@@ -102,6 +104,7 @@ public class QBParseInfo {
     destToSortby = new HashMap<String, ASTNode>();
     destToOrderby = new HashMap<String, ASTNode>();
     destToLimit = new HashMap<String, Integer>();
+    insertIntoTables = new HashSet<String>();
 
     destToAggregationExprs = new LinkedHashMap<String, LinkedHashMap<String, ASTNode>>();
     destToDistinctFuncExprs = new HashMap<String, List<ASTNode>>();
@@ -127,6 +130,14 @@ public class QBParseInfo {
     } else {
       destToAggregationExprs.put(clause, aggregationTrees);
     }
+  }
+
+  public void addInsertIntoTable(String table) {
+    insertIntoTables.add(table);
+  }
+
+  public boolean isInsertIntoTable(String table) {
+    return insertIntoTables.contains(table);
   }
 
   public HashMap<String, ASTNode> getAggregationExprsForClause(String clause) {
