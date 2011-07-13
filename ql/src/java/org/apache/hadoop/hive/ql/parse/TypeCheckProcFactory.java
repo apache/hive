@@ -384,8 +384,15 @@ public final class TypeCheckProcFactory {
         if (colInfo == null) {
           // It's not a column or a table alias.
           if (input.getIsExprResolver()) {
-            stack.pop();
-            ctx.setError(ErrorMsg.NON_KEY_EXPR_IN_GROUPBY.getMsg((ASTNode) stack.peek()), expr);
+            ASTNode exprNode = expr;
+            if (!stack.empty()) {
+              ASTNode tmp = (ASTNode) stack.pop();
+              if (!stack.empty()) {
+                exprNode = (ASTNode) stack.peek();
+              }
+              stack.push(tmp);
+            }
+            ctx.setError(ErrorMsg.NON_KEY_EXPR_IN_GROUPBY.getMsg(exprNode), expr);
             return null;
           } else {
             ctx.setError(ErrorMsg.INVALID_TABLE_OR_COLUMN.getMsg(expr
