@@ -675,6 +675,24 @@ public abstract class Operator<T extends Serializable> implements Serializable,
     }
   }
 
+  public void removeParent(Operator<? extends Serializable> parent) {
+    int parentIndex = parentOperators.indexOf(parent);
+    assert parentIndex != -1;
+    if (parentOperators.size() == 1) {
+      parentOperators = null;
+    } else {
+      parentOperators.remove(parentIndex);
+    }
+
+    int childIndex = parent.getChildOperators().indexOf(this);
+    assert childIndex != -1;
+    if (parent.getChildOperators().size() == 1) {
+      parent.setChildOperators(null);
+    } else {
+      parent.getChildOperators().remove(childIndex);
+    }
+  }
+
   /**
    * Replace one parent with another at the same position. Chilren of the new
    * parent are not updated

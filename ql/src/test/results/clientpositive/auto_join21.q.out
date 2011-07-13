@@ -54,25 +54,21 @@ STAGE PLANS:
               predicate:
                   expr: (key > 10)
                   type: boolean
-              Filter Operator
-                predicate:
-                    expr: (key > 10)
-                    type: boolean
-                HashTable Sink Operator
-                  condition expressions:
-                    0 {key} {value}
-                    1 {key} {value}
-                    2 {key} {value}
-                  filter predicates:
-                    0 {(key < 10)}
-                    1 
-                    2 {(key < 10)}
-                  handleSkewJoin: false
-                  keys:
-                    0 [Column[key]]
-                    1 [Column[key]]
-                    2 [Column[key]]
-                  Position of Big Table: 2
+              HashTable Sink Operator
+                condition expressions:
+                  0 {key} {value}
+                  1 {key} {value}
+                  2 {key} {value}
+                filter predicates:
+                  0 {(key < 10)}
+                  1 
+                  2 {(key < 10)}
+                handleSkewJoin: false
+                keys:
+                  0 [Column[key]]
+                  1 [Column[key]]
+                  2 [Column[key]]
+                Position of Big Table: 2
 
   Stage: Stage-5
     Map Reduce
@@ -192,24 +188,20 @@ STAGE PLANS:
               predicate:
                   expr: (key > 10)
                   type: boolean
-              Filter Operator
-                predicate:
-                    expr: (key > 10)
-                    type: boolean
-                Reduce Output Operator
-                  key expressions:
-                        expr: key
-                        type: string
-                  sort order: +
-                  Map-reduce partition columns:
-                        expr: key
-                        type: string
-                  tag: 1
-                  value expressions:
-                        expr: key
-                        type: string
-                        expr: value
-                        type: string
+              Reduce Output Operator
+                key expressions:
+                      expr: key
+                      type: string
+                sort order: +
+                Map-reduce partition columns:
+                      expr: key
+                      type: string
+                tag: 1
+                value expressions:
+                      expr: key
+                      type: string
+                      expr: value
+                      type: string
         src3 
           TableScan
             alias: src3

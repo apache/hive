@@ -150,51 +150,46 @@ STAGE PLANS:
             1 {VALUE._col1}
           handleSkewJoin: false
           outputColumnNames: _col0, _col2, _col3, _col7
-          Filter Operator
-            isSamplingPred: false
-            predicate:
-                expr: ((_col2 = '2008-04-08') and (_col3 = '12'))
-                type: boolean
+          Select Operator
+            expressions:
+                  expr: _col0
+                  type: string
+                  expr: _col7
+                  type: string
+            outputColumnNames: _col0, _col1
             Select Operator
               expressions:
-                    expr: _col0
-                    type: string
-                    expr: _col7
+                    expr: UDFToInteger(_col0)
+                    type: int
+                    expr: _col1
                     type: string
               outputColumnNames: _col0, _col1
-              Select Operator
-                expressions:
-                      expr: UDFToInteger(_col0)
-                      type: int
-                      expr: _col1
-                      type: string
-                outputColumnNames: _col0, _col1
-                File Output Operator
-                  compressed: false
-                  GlobalTableId: 1
-                  directory: pfile:/data/users/sdong/www/open-source-hive1/build/ql/scratchdir/hive_2011-02-10_16-08-44_532_2940878602076923711/-ext-10000
-                  NumFilesPerFileSink: 1
-                  Stats Publishing Key Prefix: pfile:/data/users/sdong/www/open-source-hive1/build/ql/scratchdir/hive_2011-02-10_16-08-44_532_2940878602076923711/-ext-10000/
-                  table:
-                      input format: org.apache.hadoop.mapred.TextInputFormat
-                      output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                      properties:
-                        bucket_count -1
-                        columns key,value
-                        columns.types int:string
-                        file.inputformat org.apache.hadoop.mapred.TextInputFormat
-                        file.outputformat org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                        location pfile:/data/users/sdong/www/open-source-hive1/build/ql/test/data/warehouse/dest1
-                        name default.dest1
-                        serialization.ddl struct dest1 { i32 key, string value}
-                        serialization.format 1
-                        serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                        transient_lastDdlTime 1297382924
-                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                      name: default.dest1
-                  TotalFiles: 1
-                  GatherStats: true
-                  MultiFileSpray: false
+              File Output Operator
+                compressed: false
+                GlobalTableId: 1
+                directory: pfile:/Users/amarsri/Documents/workspace/hive/build/ql/scratchdir/hive_2011-03-17_09-37-30_985_6005635493455371640/-ext-10000
+                NumFilesPerFileSink: 1
+                Stats Publishing Key Prefix: pfile:/Users/amarsri/Documents/workspace/hive/build/ql/scratchdir/hive_2011-03-17_09-37-30_985_6005635493455371640/-ext-10000/
+                table:
+                    input format: org.apache.hadoop.mapred.TextInputFormat
+                    output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                    properties:
+                      bucket_count -1
+                      columns key,value
+                      columns.types int:string
+                      file.inputformat org.apache.hadoop.mapred.TextInputFormat
+                      file.outputformat org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                      location pfile:/Users/amarsri/Documents/workspace/hive/build/ql/test/data/warehouse/dest1
+                      name default.dest1
+                      serialization.ddl struct dest1 { i32 key, string value}
+                      serialization.format 1
+                      serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                      transient_lastDdlTime 1300379850
+                    serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                    name: default.dest1
+                TotalFiles: 1
+                GatherStats: true
+                MultiFileSpray: false
 
   Stage: Stage-0
     Move Operator

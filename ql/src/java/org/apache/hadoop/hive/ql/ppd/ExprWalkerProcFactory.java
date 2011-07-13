@@ -26,6 +26,7 @@ import java.util.Stack;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.exec.FunctionRegistry;
 import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.lib.DefaultGraphWalker;
@@ -277,9 +278,10 @@ public final class ExprWalkerProcFactory {
 
     egw.startWalking(startNodes, null);
 
+    HiveConf conf = opContext.getParseContext().getConf();
     // check the root expression for final candidates
     for (ExprNodeDesc pred : clonedPreds) {
-      extractFinalCandidates(pred, exprContext);
+      extractFinalCandidates(pred, exprContext, conf);
     }
     return exprContext;
   }
@@ -289,17 +291,20 @@ public final class ExprWalkerProcFactory {
    * candidates.
    */
   private static void extractFinalCandidates(ExprNodeDesc expr,
-      ExprWalkerInfo ctx) {
+      ExprWalkerInfo ctx, HiveConf conf) {
     if (ctx.isCandidate(expr)) {
       ctx.addFinalCandidate(expr);
       return;
+    } else if (!FunctionRegistry.isOpAnd(expr) &&
+        HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVEPPDREMOVEDUPLICATEFILTERS)) {
+      ctx.addNonFinalCandidate(expr);
     }
 
     if (FunctionRegistry.isOpAnd(expr)) {
       // If the operator is AND, we need to determine if any of the children are
       // final candidates.
       for (Node ch : expr.getChildren()) {
-        extractFinalCandidates((ExprNodeDesc) ch, ctx);
+        extractFinalCandidates((ExprNodeDesc) ch, ctx, conf);
       }
     }
   }

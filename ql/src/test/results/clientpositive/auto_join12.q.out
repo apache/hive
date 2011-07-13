@@ -82,21 +82,17 @@ STAGE PLANS:
                       expr: key
                       type: string
                 outputColumnNames: _col0
-                Filter Operator
-                  predicate:
-                      expr: (_col0 < 80)
-                      type: boolean
-                  HashTable Sink Operator
-                    condition expressions:
-                      0 {_col0}
-                      1 {_col1}
-                      2 
-                    handleSkewJoin: false
-                    keys:
-                      0 [Column[_col0]]
-                      1 [Column[_col0]]
-                      2 [Column[_col0]]
-                    Position of Big Table: 0
+                HashTable Sink Operator
+                  condition expressions:
+                    0 {_col0}
+                    1 {_col1}
+                    2 
+                  handleSkewJoin: false
+                  keys:
+                    0 [Column[_col0]]
+                    1 [Column[_col0]]
+                    2 [Column[_col0]]
+                  Position of Big Table: 0
 
   Stage: Stage-5
     Map Reduce
@@ -113,44 +109,40 @@ STAGE PLANS:
                       expr: key
                       type: string
                 outputColumnNames: _col0
-                Filter Operator
-                  predicate:
-                      expr: (_col0 < 100)
-                      type: boolean
-                  Map Join Operator
-                    condition map:
-                         Inner Join 0 to 1
-                         Inner Join 0 to 2
-                    condition expressions:
-                      0 {_col0}
-                      1 {_col1}
-                      2 
-                    handleSkewJoin: false
-                    keys:
-                      0 [Column[_col0]]
-                      1 [Column[_col0]]
-                      2 [Column[_col0]]
+                Map Join Operator
+                  condition map:
+                       Inner Join 0 to 1
+                       Inner Join 0 to 2
+                  condition expressions:
+                    0 {_col0}
+                    1 {_col1}
+                    2 
+                  handleSkewJoin: false
+                  keys:
+                    0 [Column[_col0]]
+                    1 [Column[_col0]]
+                    2 [Column[_col0]]
+                  outputColumnNames: _col0, _col3
+                  Position of Big Table: 0
+                  Select Operator
+                    expressions:
+                          expr: _col0
+                          type: string
+                          expr: _col3
+                          type: string
                     outputColumnNames: _col0, _col3
-                    Position of Big Table: 0
-                    Select Operator
-                      expressions:
-                            expr: _col0
-                            type: string
-                            expr: _col3
-                            type: string
-                      outputColumnNames: _col0, _col3
-                      Group By Operator
-                        aggregations:
-                              expr: sum(hash(_col0,_col3))
-                        bucketGroup: false
-                        mode: hash
-                        outputColumnNames: _col0
-                        File Output Operator
-                          compressed: false
-                          GlobalTableId: 0
-                          table:
-                              input format: org.apache.hadoop.mapred.SequenceFileInputFormat
-                              output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                    Group By Operator
+                      aggregations:
+                            expr: sum(hash(_col0,_col3))
+                      bucketGroup: false
+                      mode: hash
+                      outputColumnNames: _col0
+                      File Output Operator
+                        compressed: false
+                        GlobalTableId: 0
+                        table:
+                            input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                            output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
       Local Work:
         Map Reduce Local Work
 
@@ -205,21 +197,17 @@ STAGE PLANS:
                       expr: key
                       type: string
                 outputColumnNames: _col0
-                Filter Operator
-                  predicate:
-                      expr: (_col0 < 100)
-                      type: boolean
-                  HashTable Sink Operator
-                    condition expressions:
-                      0 {_col0}
-                      1 {_col1}
-                      2 
-                    handleSkewJoin: false
-                    keys:
-                      0 [Column[_col0]]
-                      1 [Column[_col0]]
-                      2 [Column[_col0]]
-                    Position of Big Table: 1
+                HashTable Sink Operator
+                  condition expressions:
+                    0 {_col0}
+                    1 {_col1}
+                    2 
+                  handleSkewJoin: false
+                  keys:
+                    0 [Column[_col0]]
+                    1 [Column[_col0]]
+                    2 [Column[_col0]]
+                  Position of Big Table: 1
         src3:src 
           TableScan
             alias: src
@@ -232,21 +220,17 @@ STAGE PLANS:
                       expr: key
                       type: string
                 outputColumnNames: _col0
-                Filter Operator
-                  predicate:
-                      expr: (_col0 < 80)
-                      type: boolean
-                  HashTable Sink Operator
-                    condition expressions:
-                      0 {_col0}
-                      1 {_col1}
-                      2 
-                    handleSkewJoin: false
-                    keys:
-                      0 [Column[_col0]]
-                      1 [Column[_col0]]
-                      2 [Column[_col0]]
-                    Position of Big Table: 1
+                HashTable Sink Operator
+                  condition expressions:
+                    0 {_col0}
+                    1 {_col1}
+                    2 
+                  handleSkewJoin: false
+                  keys:
+                    0 [Column[_col0]]
+                    1 [Column[_col0]]
+                    2 [Column[_col0]]
+                  Position of Big Table: 1
 
   Stage: Stage-6
     Map Reduce
@@ -320,21 +304,17 @@ STAGE PLANS:
                       expr: key
                       type: string
                 outputColumnNames: _col0
-                Filter Operator
-                  predicate:
-                      expr: (_col0 < 100)
-                      type: boolean
-                  HashTable Sink Operator
-                    condition expressions:
-                      0 {_col0}
-                      1 {_col1}
-                      2 
-                    handleSkewJoin: false
-                    keys:
-                      0 [Column[_col0]]
-                      1 [Column[_col0]]
-                      2 [Column[_col0]]
-                    Position of Big Table: 2
+                HashTable Sink Operator
+                  condition expressions:
+                    0 {_col0}
+                    1 {_col1}
+                    2 
+                  handleSkewJoin: false
+                  keys:
+                    0 [Column[_col0]]
+                    1 [Column[_col0]]
+                    2 [Column[_col0]]
+                  Position of Big Table: 2
         src2:src 
           TableScan
             alias: src
@@ -372,44 +352,40 @@ STAGE PLANS:
                       expr: key
                       type: string
                 outputColumnNames: _col0
-                Filter Operator
-                  predicate:
-                      expr: (_col0 < 80)
-                      type: boolean
-                  Map Join Operator
-                    condition map:
-                         Inner Join 0 to 1
-                         Inner Join 0 to 2
-                    condition expressions:
-                      0 {_col0}
-                      1 {_col1}
-                      2 
-                    handleSkewJoin: false
-                    keys:
-                      0 [Column[_col0]]
-                      1 [Column[_col0]]
-                      2 [Column[_col0]]
+                Map Join Operator
+                  condition map:
+                       Inner Join 0 to 1
+                       Inner Join 0 to 2
+                  condition expressions:
+                    0 {_col0}
+                    1 {_col1}
+                    2 
+                  handleSkewJoin: false
+                  keys:
+                    0 [Column[_col0]]
+                    1 [Column[_col0]]
+                    2 [Column[_col0]]
+                  outputColumnNames: _col0, _col3
+                  Position of Big Table: 2
+                  Select Operator
+                    expressions:
+                          expr: _col0
+                          type: string
+                          expr: _col3
+                          type: string
                     outputColumnNames: _col0, _col3
-                    Position of Big Table: 2
-                    Select Operator
-                      expressions:
-                            expr: _col0
-                            type: string
-                            expr: _col3
-                            type: string
-                      outputColumnNames: _col0, _col3
-                      Group By Operator
-                        aggregations:
-                              expr: sum(hash(_col0,_col3))
-                        bucketGroup: false
-                        mode: hash
-                        outputColumnNames: _col0
-                        File Output Operator
-                          compressed: false
-                          GlobalTableId: 0
-                          table:
-                              input format: org.apache.hadoop.mapred.SequenceFileInputFormat
-                              output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                    Group By Operator
+                      aggregations:
+                            expr: sum(hash(_col0,_col3))
+                      bucketGroup: false
+                      mode: hash
+                      outputColumnNames: _col0
+                      File Output Operator
+                        compressed: false
+                        GlobalTableId: 0
+                        table:
+                            input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                            output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
       Local Work:
         Map Reduce Local Work
 
@@ -428,22 +404,18 @@ STAGE PLANS:
                       expr: key
                       type: string
                 outputColumnNames: _col0
-                Filter Operator
-                  predicate:
-                      expr: (_col0 < 100)
-                      type: boolean
-                  Reduce Output Operator
-                    key expressions:
-                          expr: _col0
-                          type: string
-                    sort order: +
-                    Map-reduce partition columns:
-                          expr: _col0
-                          type: string
-                    tag: 0
-                    value expressions:
-                          expr: _col0
-                          type: string
+                Reduce Output Operator
+                  key expressions:
+                        expr: _col0
+                        type: string
+                  sort order: +
+                  Map-reduce partition columns:
+                        expr: _col0
+                        type: string
+                  tag: 0
+                  value expressions:
+                        expr: _col0
+                        type: string
         src2:src 
           TableScan
             alias: src
@@ -478,19 +450,15 @@ STAGE PLANS:
                       expr: key
                       type: string
                 outputColumnNames: _col0
-                Filter Operator
-                  predicate:
-                      expr: (_col0 < 80)
-                      type: boolean
-                  Reduce Output Operator
-                    key expressions:
-                          expr: _col0
-                          type: string
-                    sort order: +
-                    Map-reduce partition columns:
-                          expr: _col0
-                          type: string
-                    tag: 2
+                Reduce Output Operator
+                  key expressions:
+                        expr: _col0
+                        type: string
+                  sort order: +
+                  Map-reduce partition columns:
+                        expr: _col0
+                        type: string
+                  tag: 2
       Reduce Operator Tree:
         Join Operator
           condition map:

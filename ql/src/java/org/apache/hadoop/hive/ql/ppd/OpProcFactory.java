@@ -88,6 +88,26 @@ public final class OpProcFactory {
       // script operator is a black-box to hive so no optimization here
       // assuming that nothing can be pushed above the script op
       // same with LIMIT op
+      // create a filter with all children predicates
+      OpWalkerInfo owi = (OpWalkerInfo) procCtx;
+      if (HiveConf.getBoolVar(owi.getParseContext().getConf(),
+          HiveConf.ConfVars.HIVEPPDREMOVEDUPLICATEFILTERS)) {
+        ExprWalkerInfo unpushedPreds = mergeChildrenPred(nd, owi, null, false);
+        return createFilter((Operator)nd, unpushedPreds, owi);
+      }
+      return null;
+    }
+
+  }
+
+  public static class UDTFPPD extends DefaultPPD implements NodeProcessor {
+    @Override
+    public Object process(Node nd, Stack<Node> stack, NodeProcessorCtx procCtx,
+        Object... nodeOutputs) throws SemanticException {
+      LOG.info("Processing for " + nd.getName() + "("
+          + ((Operator) nd).getIdentifier() + ")");
+      //Predicates for UDTF wont be candidates for its children. So, nothing to
+      //optimize here. See lateral_view_ppd.q for example.
       return null;
     }
 
@@ -102,6 +122,10 @@ public final class OpProcFactory {
           + ((Operator) nd).getIdentifier() + ")");
       OpWalkerInfo owi = (OpWalkerInfo) procCtx;
 
+      // The lateral view forward operator has 2 children, a SELECT(*) and
+      // a SELECT(cols) (for the UDTF operator) The child at index 0 is the
+      // SELECT(*) because that's the way that the DAG was constructed. We
+      // only want to get the predicates from the SELECT(*).
       ExprWalkerInfo childPreds = owi
       .getPrunedPreds((Operator<? extends Serializable>) nd.getChildren()
       .get(0));
@@ -146,22 +170,32 @@ public final class OpProcFactory {
       OpWalkerInfo owi = (OpWalkerInfo) procCtx;
       Operator<? extends Serializable> op = (Operator<? extends Serializable>) nd;
       ExprNodeDesc predicate = (((FilterOperator) nd).getConf()).getPredicate();
-      // get pushdown predicates for this operator's predicate
-      ExprWalkerInfo ewi = ExprWalkerProcFactory.extractPushdownPreds(owi, op,
-          predicate);
-      if (!ewi.isDeterministic()) {
-        /* predicate is not deterministic */
-        if (op.getChildren() != null && op.getChildren().size() == 1) {
-          createFilter(op, owi
-              .getPrunedPreds((Operator<? extends Serializable>) (op
-              .getChildren().get(0))), owi);
+      ExprWalkerInfo ewi = new ExprWalkerInfo();
+      // Don't push a sampling predicate since createFilter() always creates filter
+      // with isSamplePred = false. Also, the filterop with sampling pred is always
+      // a child of TableScan, so there is no need to push this predicate.
+      if (!((FilterOperator)op).getConf().getIsSamplingPred()) {
+        // get pushdown predicates for this operator's predicate
+        ewi = ExprWalkerProcFactory.extractPushdownPreds(owi, op, predicate);
+        if (!ewi.isDeterministic()) {
+          /* predicate is not deterministic */
+          if (op.getChildren() != null && op.getChildren().size() == 1) {
+            createFilter(op, owi
+                .getPrunedPreds((Operator<? extends Serializable>) (op
+                .getChildren().get(0))), owi);
+          }
+          return null;
         }
-
-        return null;
+        if (HiveConf.getBoolVar(owi.getParseContext().getConf(),
+            HiveConf.ConfVars.HIVEPPDREMOVEDUPLICATEFILTERS)) {
+          // add this filter for deletion, if it does not have non-final candidates
+          if (ewi.getNonFinalCandidates().values().isEmpty()) {
+            owi.addCandidateFilterOp((FilterOperator)op);
+          }
+        }
+        logExpr(nd, ewi);
+        owi.putPrunedPreds((Operator<? extends Serializable>) nd, ewi);
       }
-
-      logExpr(nd, ewi);
-      owi.putPrunedPreds(op, ewi);
       // merge it with children predicates
       mergeWithChildrenPred(op, owi, ewi, null, false);
 
@@ -182,7 +216,15 @@ public final class OpProcFactory {
       OpWalkerInfo owi = (OpWalkerInfo) procCtx;
       Set<String> aliases = getQualifiedAliases((JoinOperator) nd, owi
           .getRowResolver(nd));
-      mergeWithChildrenPred(nd, owi, null, aliases, false);
+      boolean hasUnpushedPredicates = mergeWithChildrenPred(nd, owi, null, aliases, false);
+      if (HiveConf.getBoolVar(owi.getParseContext().getConf(),
+          HiveConf.ConfVars.HIVEPPDREMOVEDUPLICATEFILTERS)) {
+        if (hasUnpushedPredicates) {
+          aliases = null;
+        }
+        ExprWalkerInfo unpushedPreds = mergeChildrenPred(nd, owi, aliases, false);
+        return createFilter((Operator)nd, unpushedPreds, owi);
+      }
       return null;
     }
 
@@ -283,7 +325,15 @@ public final class OpProcFactory {
         Object... nodeOutputs) throws SemanticException {
       LOG.info("Processing for " + nd.getName() + "("
           + ((Operator) nd).getIdentifier() + ")");
-      mergeWithChildrenPred(nd, (OpWalkerInfo) procCtx, null, null, false);
+      OpWalkerInfo owi = (OpWalkerInfo) procCtx;
+      boolean hasUnpushedPredicates = mergeWithChildrenPred(nd, owi, null, null, false);
+      if (HiveConf.getBoolVar(owi.getParseContext().getConf(),
+          HiveConf.ConfVars.HIVEPPDREMOVEDUPLICATEFILTERS)) {
+        if (hasUnpushedPredicates) {
+          ExprWalkerInfo unpushedPreds = mergeChildrenPred(nd, owi, null, false);
+          return createFilter((Operator)nd, unpushedPreds, owi);
+        }
+      }
       return null;
     }
 
@@ -318,20 +368,21 @@ public final class OpProcFactory {
      * @param ignoreAliases
      * @throws SemanticException
      */
-    protected void mergeWithChildrenPred(Node nd, OpWalkerInfo owi,
+    protected boolean mergeWithChildrenPred(Node nd, OpWalkerInfo owi,
         ExprWalkerInfo ewi, Set<String> aliases, boolean ignoreAliases)
         throws SemanticException {
+      boolean hasUnpushedPredicates = false;
       if (nd.getChildren() == null || nd.getChildren().size() > 1) {
         // ppd for multi-insert query is not yet implemented
         // no-op for leafs
-        return;
+        return hasUnpushedPredicates;
       }
       Operator<? extends Serializable> op = (Operator<? extends Serializable>) nd;
       ExprWalkerInfo childPreds = owi
           .getPrunedPreds((Operator<? extends Serializable>) nd.getChildren()
           .get(0));
       if (childPreds == null) {
-        return;
+        return hasUnpushedPredicates;
       }
       if (ewi == null) {
         ewi = new ExprWalkerInfo();
@@ -344,11 +395,40 @@ public final class OpProcFactory {
           // input8.q
           ExprWalkerInfo extractPushdownPreds = ExprWalkerProcFactory
               .extractPushdownPreds(owi, op, e.getValue());
+          if (!extractPushdownPreds.getNonFinalCandidates().isEmpty()) {
+            hasUnpushedPredicates = true;
+          }
           ewi.merge(extractPushdownPreds);
           logExpr(nd, extractPushdownPreds);
         }
       }
       owi.putPrunedPreds((Operator<? extends Serializable>) nd, ewi);
+      return hasUnpushedPredicates;
+    }
+
+    protected ExprWalkerInfo mergeChildrenPred(Node nd, OpWalkerInfo owi,
+        Set<String> excludedAliases, boolean ignoreAliases)
+        throws SemanticException {
+      if (nd.getChildren() == null) {
+        return null;
+      }
+      Operator<? extends Serializable> op = (Operator<? extends Serializable>) nd;
+      ExprWalkerInfo ewi = new ExprWalkerInfo();
+      for (Operator<? extends Serializable> child : op.getChildOperators()) {
+        ExprWalkerInfo childPreds = owi.getPrunedPreds(child);
+        if (childPreds == null) {
+          continue;
+        }
+        for (Entry<String, List<ExprNodeDesc>> e : childPreds
+            .getFinalCandidates().entrySet()) {
+          if (ignoreAliases || excludedAliases == null ||
+              !excludedAliases.contains(e.getKey()) || e.getKey() == null) {
+            ewi.addPushDowns(e.getKey(), e.getValue());
+            logExpr(nd, ewi);
+          }
+        }
+      }
+      return ewi;
     }
   }
 
@@ -386,7 +466,7 @@ public final class OpProcFactory {
     if (condn == null) {
       return null;
     }
-    
+
     if (op instanceof TableScanOperator) {
       boolean pushFilterToStorage;
       HiveConf hiveConf = owi.getParseContext().getConf();
@@ -423,6 +503,24 @@ public final class OpProcFactory {
     }
     OpParseContext ctx = new OpParseContext(inputRR);
     owi.put(output, ctx);
+
+    if (HiveConf.getBoolVar(owi.getParseContext().getConf(),
+        HiveConf.ConfVars.HIVEPPDREMOVEDUPLICATEFILTERS)) {
+      // remove the candidate filter ops
+      for (FilterOperator fop : owi.getCandidateFilterOps()) {
+        List<Operator<? extends Serializable>> children = fop.getChildOperators();
+        List<Operator<? extends Serializable>> parents = fop.getParentOperators();
+        for (Operator<? extends Serializable> parent : parents) {
+          parent.getChildOperators().addAll(children);
+          parent.removeChild(fop);
+        }
+        for (Operator<? extends Serializable> child : children) {
+          child.getParentOperators().addAll(parents);
+          child.removeParent(fop);
+        }
+      }
+      owi.getCandidateFilterOps().clear();
+    }
     return output;
   }
 
@@ -506,7 +604,7 @@ public final class OpProcFactory {
     tableScanDesc.setFilterExpr(decomposed.pushedPredicate);
     return decomposed.residualPredicate;
   }
-  
+
   public static NodeProcessor getFilterProc() {
     return new FilterPPD();
   }
@@ -536,7 +634,7 @@ public final class OpProcFactory {
   }
 
   public static NodeProcessor getUDTFProc() {
-    return new ScriptPPD();
+    return new UDTFPPD();
   }
 
   public static NodeProcessor getLVFProc() {

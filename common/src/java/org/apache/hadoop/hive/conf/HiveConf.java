@@ -368,6 +368,7 @@ public class HiveConf extends Configuration {
     HIVEOPTCP("hive.optimize.cp", true), // column pruner
     HIVEOPTINDEXFILTER("hive.optimize.index.filter", false), // automatically use indexes
     HIVEOPTPPD("hive.optimize.ppd", true), // predicate pushdown
+    HIVEPPDREMOVEDUPLICATEFILTERS("hive.ppd.remove.duplicatefilters", true),
     // push predicates down to storage handlers
     HIVEOPTPPD_STORAGE("hive.optimize.ppd.storage", true),
     HIVEOPTGROUPBY("hive.optimize.groupby", true), // optimize group by

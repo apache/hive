@@ -35,23 +35,19 @@ STAGE PLANS:
               predicate:
                   expr: (((hash(key) & 2147483647) % 2) = 0)
                   type: boolean
-              Filter Operator
-                predicate:
-                    expr: (((hash(key) & 2147483647) % 2) = 0)
-                    type: boolean
-                Select Operator
-                  Group By Operator
-                    aggregations:
-                          expr: count(1)
-                    bucketGroup: false
-                    mode: hash
-                    outputColumnNames: _col0
-                    Reduce Output Operator
-                      sort order: 
-                      tag: -1
-                      value expressions:
-                            expr: _col0
-                            type: bigint
+              Select Operator
+                Group By Operator
+                  aggregations:
+                        expr: count(1)
+                  bucketGroup: false
+                  mode: hash
+                  outputColumnNames: _col0
+                  Reduce Output Operator
+                    sort order: 
+                    tag: -1
+                    value expressions:
+                          expr: _col0
+                          type: bigint
       Reduce Operator Tree:
         Group By Operator
           aggregations:

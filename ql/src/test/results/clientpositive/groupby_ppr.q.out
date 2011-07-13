@@ -33,29 +33,24 @@ STAGE PLANS:
           TableScan
             alias: src
             GatherStats: false
-            Filter Operator
-              isSamplingPred: false
-              predicate:
-                  expr: (ds = '2008-04-08')
-                  type: boolean
-              Select Operator
-                expressions:
-                      expr: key
+            Select Operator
+              expressions:
+                    expr: key
+                    type: string
+                    expr: value
+                    type: string
+              outputColumnNames: key, value
+              Reduce Output Operator
+                key expressions:
+                      expr: substr(key, 1, 1)
                       type: string
-                      expr: value
+                      expr: substr(value, 5)
                       type: string
-                outputColumnNames: key, value
-                Reduce Output Operator
-                  key expressions:
-                        expr: substr(key, 1, 1)
-                        type: string
-                        expr: substr(value, 5)
-                        type: string
-                  sort order: ++
-                  Map-reduce partition columns:
-                        expr: substr(key, 1, 1)
-                        type: string
-                  tag: -1
+                sort order: ++
+                Map-reduce partition columns:
+                      expr: substr(key, 1, 1)
+                      type: string
+                tag: -1
       Needs Tagging: false
       Path -> Alias:
         pfile:/data/users/sdong/www/open-source-hive1/build/ql/test/data/warehouse/srcpart/ds=2008-04-08/hr=11 [src]

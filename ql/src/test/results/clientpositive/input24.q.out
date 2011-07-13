@@ -30,23 +30,19 @@ STAGE PLANS:
         x 
           TableScan
             alias: x
-            Filter Operator
-              predicate:
-                  expr: (d = '2009-01-01')
-                  type: boolean
-              Select Operator
-                Group By Operator
-                  aggregations:
-                        expr: count(1)
-                  bucketGroup: false
-                  mode: hash
-                  outputColumnNames: _col0
-                  Reduce Output Operator
-                    sort order: 
-                    tag: -1
-                    value expressions:
-                          expr: _col0
-                          type: bigint
+            Select Operator
+              Group By Operator
+                aggregations:
+                      expr: count(1)
+                bucketGroup: false
+                mode: hash
+                outputColumnNames: _col0
+                Reduce Output Operator
+                  sort order: 
+                  tag: -1
+                  value expressions:
+                        expr: _col0
+                        type: bigint
       Reduce Operator Tree:
         Group By Operator
           aggregations:

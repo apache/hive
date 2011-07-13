@@ -209,21 +209,21 @@
                 <void property="counterNames"> 
                  <object class="java.util.ArrayList"> 
                   <void method="add"> 
-                   <string>CNTR_NAME_FS_308_NUM_INPUT_ROWS</string> 
+                   <string>CNTR_NAME_FS_303_NUM_INPUT_ROWS</string> 
                   </void> 
                   <void method="add"> 
-                   <string>CNTR_NAME_FS_308_NUM_OUTPUT_ROWS</string> 
+                   <string>CNTR_NAME_FS_303_NUM_OUTPUT_ROWS</string> 
                   </void> 
                   <void method="add"> 
-                   <string>CNTR_NAME_FS_308_TIME_TAKEN</string> 
+                   <string>CNTR_NAME_FS_303_TIME_TAKEN</string> 
                   </void> 
                   <void method="add"> 
-                   <string>CNTR_NAME_FS_308_FATAL_ERROR</string> 
+                   <string>CNTR_NAME_FS_303_FATAL_ERROR</string> 
                   </void> 
                  </object> 
                 </void> 
                 <void property="operatorId"> 
-                 <string>FS_308</string> 
+                 <string>FS_303</string> 
                 </void> 
                 <void property="parentOperators"> 
                  <object class="java.util.ArrayList"> 
@@ -497,21 +497,21 @@
             <void property="counterNames"> 
              <object class="java.util.ArrayList"> 
               <void method="add"> 
-               <string>CNTR_NAME_SEL_307_NUM_INPUT_ROWS</string> 
+               <string>CNTR_NAME_SEL_302_NUM_INPUT_ROWS</string> 
               </void> 
               <void method="add"> 
-               <string>CNTR_NAME_SEL_307_NUM_OUTPUT_ROWS</string> 
+               <string>CNTR_NAME_SEL_302_NUM_OUTPUT_ROWS</string> 
               </void> 
               <void method="add"> 
-               <string>CNTR_NAME_SEL_307_TIME_TAKEN</string> 
+               <string>CNTR_NAME_SEL_302_TIME_TAKEN</string> 
               </void> 
               <void method="add"> 
-               <string>CNTR_NAME_SEL_307_FATAL_ERROR</string> 
+               <string>CNTR_NAME_SEL_302_FATAL_ERROR</string> 
               </void> 
              </object> 
             </void> 
             <void property="operatorId"> 
-             <string>SEL_307</string> 
+             <string>SEL_302</string> 
             </void> 
             <void property="parentOperators"> 
              <object class="java.util.ArrayList"> 
@@ -584,16 +584,16 @@
         <void property="counterNames"> 
          <object class="java.util.ArrayList"> 
           <void method="add"> 
-           <string>CNTR_NAME_TS_306_NUM_INPUT_ROWS</string> 
+           <string>CNTR_NAME_TS_301_NUM_INPUT_ROWS</string> 
           </void> 
           <void method="add"> 
-           <string>CNTR_NAME_TS_306_NUM_OUTPUT_ROWS</string> 
+           <string>CNTR_NAME_TS_301_NUM_OUTPUT_ROWS</string> 
           </void> 
           <void method="add"> 
-           <string>CNTR_NAME_TS_306_TIME_TAKEN</string> 
+           <string>CNTR_NAME_TS_301_TIME_TAKEN</string> 
           </void> 
           <void method="add"> 
-           <string>CNTR_NAME_TS_306_FATAL_ERROR</string> 
+           <string>CNTR_NAME_TS_301_FATAL_ERROR</string> 
           </void> 
          </object> 
         </void> 
@@ -611,7 +611,7 @@
          </object> 
         </void> 
         <void property="operatorId"> 
-         <string>TS_306</string> 
+         <string>TS_301</string> 
         </void> 
         <void property="schema"> 
          <object class="org.apache.hadoop.hive.ql.exec.RowSchema"> 

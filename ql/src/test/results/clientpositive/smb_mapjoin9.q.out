@@ -88,27 +88,23 @@ STAGE PLANS:
                       expr: _col7
                       type: string
                 outputColumnNames: _col0, _col2, _col5, _col6, _col7
-                Filter Operator
-                  predicate:
-                      expr: (((_col2 = '2010-10-15') and (_col7 = '2010-10-15')) and _col5 is not null)
-                      type: boolean
-                  Select Operator
-                    expressions:
-                          expr: _col5
-                          type: int
-                          expr: _col6
-                          type: string
-                          expr: _col7
-                          type: string
-                          expr: _col0
-                          type: int
-                    outputColumnNames: _col0, _col1, _col2, _col3
-                    File Output Operator
-                      compressed: false
-                      GlobalTableId: 1
-                      table:
-                          input format: org.apache.hadoop.mapred.TextInputFormat
-                          output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                Select Operator
+                  expressions:
+                        expr: _col5
+                        type: int
+                        expr: _col6
+                        type: string
+                        expr: _col7
+                        type: string
+                        expr: _col0
+                        type: int
+                  outputColumnNames: _col0, _col1, _col2, _col3
+                  File Output Operator
+                    compressed: false
+                    GlobalTableId: 1
+                    table:
+                        input format: org.apache.hadoop.mapred.TextInputFormat
+                        output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
 
   Stage: Stage-0
     Move Operator

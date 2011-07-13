@@ -44,36 +44,32 @@ STAGE PLANS:
         clustergroupby 
           TableScan
             alias: clustergroupby
-            Filter Operator
-              predicate:
-                  expr: (ds = '100')
-                  type: boolean
-              Select Operator
-                expressions:
+            Select Operator
+              expressions:
+                    expr: key
+                    type: string
+              outputColumnNames: key
+              Group By Operator
+                aggregations:
+                      expr: count(1)
+                bucketGroup: false
+                keys:
                       expr: key
                       type: string
-                outputColumnNames: key
-                Group By Operator
-                  aggregations:
-                        expr: count(1)
-                  bucketGroup: false
-                  keys:
-                        expr: key
+                mode: hash
+                outputColumnNames: _col0, _col1
+                Reduce Output Operator
+                  key expressions:
+                        expr: _col0
                         type: string
-                  mode: hash
-                  outputColumnNames: _col0, _col1
-                  Reduce Output Operator
-                    key expressions:
-                          expr: _col0
-                          type: string
-                    sort order: +
-                    Map-reduce partition columns:
-                          expr: _col0
-                          type: string
-                    tag: -1
-                    value expressions:
-                          expr: _col1
-                          type: bigint
+                  sort order: +
+                  Map-reduce partition columns:
+                        expr: _col0
+                        type: string
+                  tag: -1
+                  value expressions:
+                        expr: _col1
+                        type: bigint
       Reduce Operator Tree:
         Group By Operator
           aggregations:
@@ -183,36 +179,32 @@ STAGE PLANS:
         clustergroupby 
           TableScan
             alias: clustergroupby
-            Filter Operator
-              predicate:
-                  expr: (ds = '101')
-                  type: boolean
-              Select Operator
-                expressions:
+            Select Operator
+              expressions:
+                    expr: key
+                    type: string
+              outputColumnNames: key
+              Group By Operator
+                aggregations:
+                      expr: count(1)
+                bucketGroup: true
+                keys:
                       expr: key
                       type: string
-                outputColumnNames: key
-                Group By Operator
-                  aggregations:
-                        expr: count(1)
-                  bucketGroup: true
-                  keys:
-                        expr: key
+                mode: hash
+                outputColumnNames: _col0, _col1
+                Reduce Output Operator
+                  key expressions:
+                        expr: _col0
                         type: string
-                  mode: hash
-                  outputColumnNames: _col0, _col1
-                  Reduce Output Operator
-                    key expressions:
-                          expr: _col0
-                          type: string
-                    sort order: +
-                    Map-reduce partition columns:
-                          expr: _col0
-                          type: string
-                    tag: -1
-                    value expressions:
-                          expr: _col1
-                          type: bigint
+                  sort order: +
+                  Map-reduce partition columns:
+                        expr: _col0
+                        type: string
+                  tag: -1
+                  value expressions:
+                        expr: _col1
+                        type: bigint
       Reduce Operator Tree:
         Group By Operator
           aggregations:
@@ -291,36 +283,32 @@ STAGE PLANS:
         clustergroupby 
           TableScan
             alias: clustergroupby
-            Filter Operator
-              predicate:
-                  expr: (ds = '101')
-                  type: boolean
-              Select Operator
-                expressions:
-                      expr: key
-                      type: string
-                outputColumnNames: key
-                Group By Operator
-                  aggregations:
-                        expr: count(1)
-                  bucketGroup: true
-                  keys:
-                        expr: length(key)
+            Select Operator
+              expressions:
+                    expr: key
+                    type: string
+              outputColumnNames: key
+              Group By Operator
+                aggregations:
+                      expr: count(1)
+                bucketGroup: true
+                keys:
+                      expr: length(key)
+                      type: int
+                mode: hash
+                outputColumnNames: _col0, _col1
+                Reduce Output Operator
+                  key expressions:
+                        expr: _col0
                         type: int
-                  mode: hash
-                  outputColumnNames: _col0, _col1
-                  Reduce Output Operator
-                    key expressions:
-                          expr: _col0
-                          type: int
-                    sort order: +
-                    Map-reduce partition columns:
-                          expr: _col0
-                          type: int
-                    tag: -1
-                    value expressions:
-                          expr: _col1
-                          type: bigint
+                  sort order: +
+                  Map-reduce partition columns:
+                        expr: _col0
+                        type: int
+                  tag: -1
+                  value expressions:
+                        expr: _col1
+                        type: bigint
       Reduce Operator Tree:
         Group By Operator
           aggregations:
@@ -390,36 +378,32 @@ STAGE PLANS:
         clustergroupby 
           TableScan
             alias: clustergroupby
-            Filter Operator
-              predicate:
-                  expr: (ds = '101')
-                  type: boolean
-              Select Operator
-                expressions:
-                      expr: key
-                      type: string
-                outputColumnNames: key
-                Group By Operator
-                  aggregations:
-                        expr: count(1)
-                  bucketGroup: true
-                  keys:
-                        expr: abs(length(key))
+            Select Operator
+              expressions:
+                    expr: key
+                    type: string
+              outputColumnNames: key
+              Group By Operator
+                aggregations:
+                      expr: count(1)
+                bucketGroup: true
+                keys:
+                      expr: abs(length(key))
+                      type: int
+                mode: hash
+                outputColumnNames: _col0, _col1
+                Reduce Output Operator
+                  key expressions:
+                        expr: _col0
                         type: int
-                  mode: hash
-                  outputColumnNames: _col0, _col1
-                  Reduce Output Operator
-                    key expressions:
-                          expr: _col0
-                          type: int
-                    sort order: +
-                    Map-reduce partition columns:
-                          expr: _col0
-                          type: int
-                    tag: -1
-                    value expressions:
-                          expr: _col1
-                          type: bigint
+                  sort order: +
+                  Map-reduce partition columns:
+                        expr: _col0
+                        type: int
+                  tag: -1
+                  value expressions:
+                        expr: _col1
+                        type: bigint
       Reduce Operator Tree:
         Group By Operator
           aggregations:
@@ -491,42 +475,38 @@ STAGE PLANS:
         clustergroupby 
           TableScan
             alias: clustergroupby
-            Filter Operator
-              predicate:
-                  expr: (ds = '101')
-                  type: boolean
-              Select Operator
-                expressions:
+            Select Operator
+              expressions:
+                    expr: key
+                    type: string
+              outputColumnNames: key
+              Group By Operator
+                aggregations:
+                      expr: count(1)
+                bucketGroup: true
+                keys:
                       expr: key
                       type: string
-                outputColumnNames: key
-                Group By Operator
-                  aggregations:
-                        expr: count(1)
-                  bucketGroup: true
-                  keys:
-                        expr: key
+                      expr: 3
+                      type: int
+                mode: hash
+                outputColumnNames: _col0, _col1, _col2
+                Reduce Output Operator
+                  key expressions:
+                        expr: _col0
                         type: string
-                        expr: 3
+                        expr: _col1
                         type: int
-                  mode: hash
-                  outputColumnNames: _col0, _col1, _col2
-                  Reduce Output Operator
-                    key expressions:
-                          expr: _col0
-                          type: string
-                          expr: _col1
-                          type: int
-                    sort order: ++
-                    Map-reduce partition columns:
-                          expr: _col0
-                          type: string
-                          expr: _col1
-                          type: int
-                    tag: -1
-                    value expressions:
-                          expr: _col2
-                          type: bigint
+                  sort order: ++
+                  Map-reduce partition columns:
+                        expr: _col0
+                        type: string
+                        expr: _col1
+                        type: int
+                  tag: -1
+                  value expressions:
+                        expr: _col2
+                        type: bigint
       Reduce Operator Tree:
         Group By Operator
           aggregations:
@@ -607,41 +587,37 @@ STAGE PLANS:
         subq:clustergroupby 
           TableScan
             alias: clustergroupby
-            Filter Operator
-              predicate:
-                  expr: (ds = '101')
-                  type: boolean
+            Select Operator
+              expressions:
+                    expr: value
+                    type: string
+              outputColumnNames: _col0
               Select Operator
                 expressions:
-                      expr: value
+                      expr: _col0
                       type: string
                 outputColumnNames: _col0
-                Select Operator
-                  expressions:
+                Group By Operator
+                  aggregations:
+                        expr: count(1)
+                  bucketGroup: false
+                  keys:
                         expr: _col0
                         type: string
-                  outputColumnNames: _col0
-                  Group By Operator
-                    aggregations:
-                          expr: count(1)
-                    bucketGroup: false
-                    keys:
+                  mode: hash
+                  outputColumnNames: _col0, _col1
+                  Reduce Output Operator
+                    key expressions:
                           expr: _col0
                           type: string
-                    mode: hash
-                    outputColumnNames: _col0, _col1
-                    Reduce Output Operator
-                      key expressions:
-                            expr: _col0
-                            type: string
-                      sort order: +
-                      Map-reduce partition columns:
-                            expr: _col0
-                            type: string
-                      tag: -1
-                      value expressions:
-                            expr: _col1
-                            type: bigint
+                    sort order: +
+                    Map-reduce partition columns:
+                          expr: _col0
+                          type: string
+                    tag: -1
+                    value expressions:
+                          expr: _col1
+                          type: bigint
       Reduce Operator Tree:
         Group By Operator
           aggregations:
@@ -1250,36 +1226,32 @@ STAGE PLANS:
         clustergroupby 
           TableScan
             alias: clustergroupby
-            Filter Operator
-              predicate:
-                  expr: (ds = '102')
-                  type: boolean
-              Select Operator
-                expressions:
+            Select Operator
+              expressions:
+                    expr: key
+                    type: string
+              outputColumnNames: key
+              Group By Operator
+                aggregations:
+                      expr: count(1)
+                bucketGroup: true
+                keys:
                       expr: key
                       type: string
-                outputColumnNames: key
-                Group By Operator
-                  aggregations:
-                        expr: count(1)
-                  bucketGroup: true
-                  keys:
-                        expr: key
+                mode: hash
+                outputColumnNames: _col0, _col1
+                Reduce Output Operator
+                  key expressions:
+                        expr: _col0
                         type: string
-                  mode: hash
-                  outputColumnNames: _col0, _col1
-                  Reduce Output Operator
-                    key expressions:
-                          expr: _col0
-                          type: string
-                    sort order: +
-                    Map-reduce partition columns:
-                          expr: _col0
-                          type: string
-                    tag: -1
-                    value expressions:
-                          expr: _col1
-                          type: bigint
+                  sort order: +
+                  Map-reduce partition columns:
+                        expr: _col0
+                        type: string
+                  tag: -1
+                  value expressions:
+                        expr: _col1
+                        type: bigint
       Reduce Operator Tree:
         Group By Operator
           aggregations:
@@ -1360,36 +1332,32 @@ STAGE PLANS:
         clustergroupby 
           TableScan
             alias: clustergroupby
-            Filter Operator
-              predicate:
-                  expr: (ds = '102')
-                  type: boolean
-              Select Operator
-                expressions:
+            Select Operator
+              expressions:
+                    expr: value
+                    type: string
+              outputColumnNames: value
+              Group By Operator
+                aggregations:
+                      expr: count(1)
+                bucketGroup: false
+                keys:
                       expr: value
                       type: string
-                outputColumnNames: value
-                Group By Operator
-                  aggregations:
-                        expr: count(1)
-                  bucketGroup: false
-                  keys:
-                        expr: value
+                mode: hash
+                outputColumnNames: _col0, _col1
+                Reduce Output Operator
+                  key expressions:
+                        expr: _col0
                         type: string
-                  mode: hash
-                  outputColumnNames: _col0, _col1
-                  Reduce Output Operator
-                    key expressions:
-                          expr: _col0
-                          type: string
-                    sort order: +
-                    Map-reduce partition columns:
-                          expr: _col0
-                          type: string
-                    tag: -1
-                    value expressions:
-                          expr: _col1
-                          type: bigint
+                  sort order: +
+                  Map-reduce partition columns:
+                        expr: _col0
+                        type: string
+                  tag: -1
+                  value expressions:
+                        expr: _col1
+                        type: bigint
       Reduce Operator Tree:
         Group By Operator
           aggregations:
@@ -1470,44 +1438,40 @@ STAGE PLANS:
         clustergroupby 
           TableScan
             alias: clustergroupby
-            Filter Operator
-              predicate:
-                  expr: (ds = '102')
-                  type: boolean
-              Select Operator
-                expressions:
+            Select Operator
+              expressions:
+                    expr: key
+                    type: string
+                    expr: value
+                    type: string
+              outputColumnNames: key, value
+              Group By Operator
+                aggregations:
+                      expr: count(1)
+                bucketGroup: true
+                keys:
                       expr: key
                       type: string
                       expr: value
                       type: string
-                outputColumnNames: key, value
-                Group By Operator
-                  aggregations:
-                        expr: count(1)
-                  bucketGroup: true
-                  keys:
-                        expr: key
+                mode: hash
+                outputColumnNames: _col0, _col1, _col2
+                Reduce Output Operator
+                  key expressions:
+                        expr: _col0
                         type: string
-                        expr: value
+                        expr: _col1
                         type: string
-                  mode: hash
-                  outputColumnNames: _col0, _col1, _col2
-                  Reduce Output Operator
-                    key expressions:
-                          expr: _col0
-                          type: string
-                          expr: _col1
-                          type: string
-                    sort order: ++
-                    Map-reduce partition columns:
-                          expr: _col0
-                          type: string
-                          expr: _col1
-                          type: string
-                    tag: -1
-                    value expressions:
-                          expr: _col2
-                          type: bigint
+                  sort order: ++
+                  Map-reduce partition columns:
+                        expr: _col0
+                        type: string
+                        expr: _col1
+                        type: string
+                  tag: -1
+                  value expressions:
+                        expr: _col2
+                        type: bigint
       Reduce Operator Tree:
         Group By Operator
           aggregations:
@@ -1637,36 +1601,32 @@ STAGE PLANS:
         clustergroupby 
           TableScan
             alias: clustergroupby
-            Filter Operator
-              predicate:
-                  expr: (ds = '103')
-                  type: boolean
-              Select Operator
-                expressions:
+            Select Operator
+              expressions:
+                    expr: key
+                    type: string
+              outputColumnNames: key
+              Group By Operator
+                aggregations:
+                      expr: count(1)
+                bucketGroup: true
+                keys:
                       expr: key
                       type: string
-                outputColumnNames: key
-                Group By Operator
-                  aggregations:
-                        expr: count(1)
-                  bucketGroup: true
-                  keys:
-                        expr: key
+                mode: hash
+                outputColumnNames: _col0, _col1
+                Reduce Output Operator
+                  key expressions:
+                        expr: _col0
                         type: string
-                  mode: hash
-                  outputColumnNames: _col0, _col1
-                  Reduce Output Operator
-                    key expressions:
-                          expr: _col0
-                          type: string
-                    sort order: +
-                    Map-reduce partition columns:
-                          expr: _col0
-                          type: string
-                    tag: -1
-                    value expressions:
-                          expr: _col1
-                          type: bigint
+                  sort order: +
+                  Map-reduce partition columns:
+                        expr: _col0
+                        type: string
+                  tag: -1
+                  value expressions:
+                        expr: _col1
+                        type: bigint
       Reduce Operator Tree:
         Group By Operator
           aggregations:
@@ -1751,44 +1711,40 @@ STAGE PLANS:
         clustergroupby 
           TableScan
             alias: clustergroupby
-            Filter Operator
-              predicate:
-                  expr: (ds = '103')
-                  type: boolean
-              Select Operator
-                expressions:
+            Select Operator
+              expressions:
+                    expr: value
+                    type: string
+                    expr: key
+                    type: string
+              outputColumnNames: value, key
+              Group By Operator
+                aggregations:
+                      expr: count(1)
+                bucketGroup: false
+                keys:
                       expr: value
                       type: string
                       expr: key
                       type: string
-                outputColumnNames: value, key
-                Group By Operator
-                  aggregations:
-                        expr: count(1)
-                  bucketGroup: false
-                  keys:
-                        expr: value
+                mode: hash
+                outputColumnNames: _col0, _col1, _col2
+                Reduce Output Operator
+                  key expressions:
+                        expr: _col0
                         type: string
-                        expr: key
+                        expr: _col1
                         type: string
-                  mode: hash
-                  outputColumnNames: _col0, _col1, _col2
-                  Reduce Output Operator
-                    key expressions:
-                          expr: _col0
-                          type: string
-                          expr: _col1
-                          type: string
-                    sort order: ++
-                    Map-reduce partition columns:
-                          expr: _col0
-                          type: string
-                          expr: _col1
-                          type: string
-                    tag: -1
-                    value expressions:
-                          expr: _col2
-                          type: bigint
+                  sort order: ++
+                  Map-reduce partition columns:
+                        expr: _col0
+                        type: string
+                        expr: _col1
+                        type: string
+                  tag: -1
+                  value expressions:
+                        expr: _col2
+                        type: bigint
       Reduce Operator Tree:
         Group By Operator
           aggregations:

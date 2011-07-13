@@ -33,49 +33,39 @@ STAGE PLANS:
             alias: s
             GatherStats: false
             Filter Operator
-              isSamplingPred: false
+              isSamplingPred: true
               predicate:
                   expr: (((hash(key) & 2147483647) % 1) = 0)
                   type: boolean
-              Filter Operator
-                isSamplingPred: true
-                predicate:
-                    expr: (((hash(key) & 2147483647) % 1) = 0)
-                    type: boolean
-                Reduce Output Operator
-                  sort order: 
-                  tag: 0
-                  value expressions:
-                        expr: key
-                        type: string
-                        expr: value
-                        type: string
-                        expr: ds
-                        type: string
-                        expr: hr
-                        type: string
+              Reduce Output Operator
+                sort order: 
+                tag: 0
+                value expressions:
+                      expr: key
+                      type: string
+                      expr: value
+                      type: string
+                      expr: ds
+                      type: string
+                      expr: hr
+                      type: string
         t 
           TableScan
             alias: t
             GatherStats: false
             Filter Operator
-              isSamplingPred: false
+              isSamplingPred: true
               predicate:
                   expr: (((hash(key) & 2147483647) % 10) = 0)
                   type: boolean
-              Filter Operator
-                isSamplingPred: true
-                predicate:
-                    expr: (((hash(key) & 2147483647) % 10) = 0)
-                    type: boolean
-                Reduce Output Operator
-                  sort order: 
-                  tag: 1
-                  value expressions:
-                        expr: key
-                        type: string
-                        expr: value
-                        type: string
+              Reduce Output Operator
+                sort order: 
+                tag: 1
+                value expressions:
+                      expr: key
+                      type: string
+                      expr: value
+                      type: string
       Needs Tagging: true
       Path -> Alias:
         pfile:/data/users/sdong/www/open-source-hive1/build/ql/test/data/warehouse/srcpart/ds=2008-04-08/hr=11 [t, s]
