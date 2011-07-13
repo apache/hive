@@ -48,28 +48,18 @@ STAGE PLANS:
               predicate:
                   expr: key is not null
                   type: boolean
-              Filter Operator
-                isSamplingPred: false
-                predicate:
-                    expr: (ds = '2008-04-08')
-                    type: boolean
-                Filter Operator
-                  isSamplingPred: false
-                  predicate:
-                      expr: key is not null
-                      type: boolean
-                  Reduce Output Operator
-                    key expressions:
-                          expr: key
-                          type: int
-                    sort order: +
-                    Map-reduce partition columns:
-                          expr: key
-                          type: int
-                    tag: 0
-                    value expressions:
-                          expr: key
-                          type: int
+              Reduce Output Operator
+                key expressions:
+                      expr: key
+                      type: int
+                sort order: +
+                Map-reduce partition columns:
+                      expr: key
+                      type: int
+                tag: 0
+                value expressions:
+                      expr: key
+                      type: int
         m 
           TableScan
             alias: m
@@ -79,25 +69,20 @@ STAGE PLANS:
               predicate:
                   expr: (value is not null and (value <> ''))
                   type: boolean
-              Filter Operator
-                isSamplingPred: false
-                predicate:
-                    expr: (ds = '2008-04-08')
-                    type: boolean
-                Reduce Output Operator
-                  key expressions:
-                        expr: key
-                        type: int
-                  sort order: +
-                  Map-reduce partition columns:
-                        expr: key
-                        type: int
-                  tag: 1
-                  value expressions:
-                        expr: value
-                        type: string
-                        expr: ds
-                        type: string
+              Reduce Output Operator
+                key expressions:
+                      expr: key
+                      type: int
+                sort order: +
+                Map-reduce partition columns:
+                      expr: key
+                      type: int
+                tag: 1
+                value expressions:
+                      expr: value
+                      type: string
+                      expr: ds
+                      type: string
       Needs Tagging: true
       Path -> Alias:
         pfile:/data/users/tomasz/apache-hive/build/ql/test/data/warehouse/filter_join_breaktask/ds=2008-04-08 [f, m]
@@ -161,36 +146,21 @@ STAGE PLANS:
             1 {VALUE._col1} {VALUE._col2}
           handleSkewJoin: false
           outputColumnNames: _col0, _col6, _col7
-          Filter Operator
-            isSamplingPred: false
-            predicate:
-                expr: (_col7 = '2008-04-08')
-                type: boolean
-            Filter Operator
-              isSamplingPred: false
-              predicate:
-                  expr: _col6 is not null
-                  type: boolean
-              Filter Operator
-                isSamplingPred: false
-                predicate:
-                    expr: (_col6 <> '')
-                    type: boolean
-                File Output Operator
-                  compressed: false
-                  GlobalTableId: 0
-                  directory: file:/tmp/tomasz/hive_2011-06-01_19-00-51_695_3409169030364207424/-mr-10002
-                  NumFilesPerFileSink: 1
-                  table:
-                      input format: org.apache.hadoop.mapred.SequenceFileInputFormat
-                      output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
-                      properties:
-                        columns _col0,_col6
-                        columns.types int,string
-                        escape.delim \
-                  TotalFiles: 1
-                  GatherStats: false
-                  MultiFileSpray: false
+          File Output Operator
+            compressed: false
+            GlobalTableId: 0
+            directory: file:/tmp/amarsri/hive_2011-07-11_01-46-22_446_957936931018191228/-mr-10002
+            NumFilesPerFileSink: 1
+            table:
+                input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                properties:
+                  columns _col0,_col6,_col7
+                  columns.types int,string,string
+                  escape.delim \
+            TotalFiles: 1
+            GatherStats: false
+            MultiFileSpray: false
 
   Stage: Stage-2
     Map Reduce
@@ -212,23 +182,18 @@ STAGE PLANS:
           TableScan
             alias: g
             GatherStats: false
-            Filter Operator
-              isSamplingPred: false
-              predicate:
-                  expr: (ds = '2008-04-08')
-                  type: boolean
-              Reduce Output Operator
-                key expressions:
-                      expr: value
-                      type: string
-                sort order: +
-                Map-reduce partition columns:
-                      expr: value
-                      type: string
-                tag: 1
-                value expressions:
-                      expr: value
-                      type: string
+            Reduce Output Operator
+              key expressions:
+                    expr: value
+                    type: string
+              sort order: +
+              Map-reduce partition columns:
+                    expr: value
+                    type: string
+              tag: 1
+              value expressions:
+                    expr: value
+                    type: string
       Needs Tagging: true
       Path -> Alias:
         file:/tmp/tomasz/hive_2011-06-01_19-00-51_695_3409169030364207424/-mr-10002 [$INTNAME]
@@ -240,15 +205,15 @@ STAGE PLANS:
             input format: org.apache.hadoop.mapred.SequenceFileInputFormat
             output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
             properties:
-              columns _col0,_col6
-              columns.types int,string
+              columns _col0,_col6,_col7
+              columns.types int,string,string
               escape.delim \
           
               input format: org.apache.hadoop.mapred.SequenceFileInputFormat
               output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
               properties:
-                columns _col0,_col6
-                columns.types int,string
+                columns _col0,_col6,_col7
+                columns.types int,string,string
                 escape.delim \
         pfile:/data/users/tomasz/apache-hive/build/ql/test/data/warehouse/filter_join_breaktask/ds=2008-04-08 
           Partition

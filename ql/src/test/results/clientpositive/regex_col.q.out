@@ -216,27 +216,23 @@ STAGE PLANS:
               predicate:
                   expr: (key = 103)
                   type: boolean
-              Filter Operator
-                predicate:
-                    expr: (key = 103)
-                    type: boolean
-                Reduce Output Operator
-                  key expressions:
-                        expr: key
-                        type: string
-                        expr: hr
-                        type: string
-                        expr: ds
-                        type: string
-                  sort order: +++
-                  Map-reduce partition columns:
-                        expr: key
-                        type: string
-                        expr: hr
-                        type: string
-                        expr: ds
-                        type: string
-                  tag: 0
+              Reduce Output Operator
+                key expressions:
+                      expr: key
+                      type: string
+                      expr: hr
+                      type: string
+                      expr: ds
+                      type: string
+                sort order: +++
+                Map-reduce partition columns:
+                      expr: key
+                      type: string
+                      expr: hr
+                      type: string
+                      expr: ds
+                      type: string
+                tag: 0
         b 
           TableScan
             alias: b

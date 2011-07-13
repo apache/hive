@@ -26,21 +26,17 @@ STAGE PLANS:
               predicate:
                   expr: (((hash(key) & 2147483647) % 5) = 0)
                   type: boolean
-              Filter Operator
-                predicate:
-                    expr: (((hash(key) & 2147483647) % 5) = 0)
-                    type: boolean
-                Select Operator
-                  expressions:
-                        expr: key
-                        type: int
-                  outputColumnNames: _col0
-                  File Output Operator
-                    compressed: false
-                    GlobalTableId: 0
-                    table:
-                        input format: org.apache.hadoop.mapred.TextInputFormat
-                        output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+              Select Operator
+                expressions:
+                      expr: key
+                      type: int
+                outputColumnNames: _col0
+                File Output Operator
+                  compressed: false
+                  GlobalTableId: 0
+                  table:
+                      input format: org.apache.hadoop.mapred.TextInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
 
   Stage: Stage-0
     Fetch Operator

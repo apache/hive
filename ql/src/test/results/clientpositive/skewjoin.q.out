@@ -1198,22 +1198,18 @@ STAGE PLANS:
                       expr: key
                       type: string
                 outputColumnNames: _col0
-                Filter Operator
-                  predicate:
-                      expr: (_col0 < 100)
-                      type: boolean
-                  Reduce Output Operator
-                    key expressions:
-                          expr: _col0
-                          type: string
-                    sort order: +
-                    Map-reduce partition columns:
-                          expr: _col0
-                          type: string
-                    tag: 0
-                    value expressions:
-                          expr: _col0
-                          type: string
+                Reduce Output Operator
+                  key expressions:
+                        expr: _col0
+                        type: string
+                  sort order: +
+                  Map-reduce partition columns:
+                        expr: _col0
+                        type: string
+                  tag: 0
+                  value expressions:
+                        expr: _col0
+                        type: string
         src2:src 
           TableScan
             alias: src
@@ -1248,19 +1244,15 @@ STAGE PLANS:
                       expr: key
                       type: string
                 outputColumnNames: _col0
-                Filter Operator
-                  predicate:
-                      expr: (_col0 < 80)
-                      type: boolean
-                  Reduce Output Operator
-                    key expressions:
-                          expr: _col0
-                          type: string
-                    sort order: +
-                    Map-reduce partition columns:
-                          expr: _col0
-                          type: string
-                    tag: 2
+                Reduce Output Operator
+                  key expressions:
+                        expr: _col0
+                        type: string
+                  sort order: +
+                  Map-reduce partition columns:
+                        expr: _col0
+                        type: string
+                  tag: 2
       Reduce Operator Tree:
         Join Operator
           condition map:

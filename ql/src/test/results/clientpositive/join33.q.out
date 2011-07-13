@@ -155,28 +155,18 @@ STAGE PLANS:
           TableScan
             alias: z
             GatherStats: false
-            Filter Operator
-              isSamplingPred: false
-              predicate:
-                  expr: (ds = '2008-04-08')
-                  type: boolean
-              Filter Operator
-                isSamplingPred: false
-                predicate:
-                    expr: (hr = 11)
-                    type: boolean
-                Reduce Output Operator
-                  key expressions:
-                        expr: value
-                        type: string
-                  sort order: +
-                  Map-reduce partition columns:
-                        expr: value
-                        type: string
-                  tag: 1
-                  value expressions:
-                        expr: value
-                        type: string
+            Reduce Output Operator
+              key expressions:
+                    expr: value
+                    type: string
+              sort order: +
+              Map-reduce partition columns:
+                    expr: value
+                    type: string
+              tag: 1
+              value expressions:
+                    expr: value
+                    type: string
       Needs Tagging: true
       Path -> Alias:
         file:/tmp/sdong/hive_2011-02-10_16-05-42_624_7730493356150230026/-mr-10002 [file:/tmp/sdong/hive_2011-02-10_16-05-42_624_7730493356150230026/-mr-10002]

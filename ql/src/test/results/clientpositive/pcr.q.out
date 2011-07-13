@@ -81,35 +81,30 @@ STAGE PLANS:
               predicate:
                   expr: (key < 5)
                   type: boolean
-              Filter Operator
-                isSamplingPred: false
-                predicate:
-                    expr: ((ds <= '2000-04-09') and (key < 5))
-                    type: boolean
-                Select Operator
-                  expressions:
-                        expr: key
+              Select Operator
+                expressions:
+                      expr: key
+                      type: int
+                      expr: value
+                      type: string
+                      expr: ds
+                      type: string
+                outputColumnNames: _col0, _col1, _col2
+                Reduce Output Operator
+                  key expressions:
+                        expr: _col0
                         type: int
-                        expr: value
+                        expr: _col2
                         type: string
-                        expr: ds
+                  sort order: ++
+                  tag: -1
+                  value expressions:
+                        expr: _col0
+                        type: int
+                        expr: _col1
                         type: string
-                  outputColumnNames: _col0, _col1, _col2
-                  Reduce Output Operator
-                    key expressions:
-                          expr: _col0
-                          type: int
-                          expr: _col2
-                          type: string
-                    sort order: ++
-                    tag: -1
-                    value expressions:
-                          expr: _col0
-                          type: int
-                          expr: _col1
-                          type: string
-                          expr: _col2
-                          type: string
+                        expr: _col2
+                        type: string
       Needs Tagging: false
       Path -> Alias:
         pfile:/data/users/tomasz/apache-hive/build/ql/test/data/warehouse/pcr_t1/ds=2000-04-08 [pcr_t1]
@@ -295,29 +290,24 @@ STAGE PLANS:
               predicate:
                   expr: ((ds <= '2000-04-09') or (key < 5))
                   type: boolean
-              Filter Operator
-                isSamplingPred: false
-                predicate:
-                    expr: ((ds <= '2000-04-09') or (key < 5))
-                    type: boolean
-                Select Operator
-                  expressions:
-                        expr: key
+              Select Operator
+                expressions:
+                      expr: key
+                      type: int
+                      expr: value
+                      type: string
+                outputColumnNames: _col0, _col1
+                Reduce Output Operator
+                  key expressions:
+                        expr: _col0
                         type: int
-                        expr: value
+                  sort order: +
+                  tag: -1
+                  value expressions:
+                        expr: _col0
+                        type: int
+                        expr: _col1
                         type: string
-                  outputColumnNames: _col0, _col1
-                  Reduce Output Operator
-                    key expressions:
-                          expr: _col0
-                          type: int
-                    sort order: +
-                    tag: -1
-                    value expressions:
-                          expr: _col0
-                          type: int
-                          expr: _col1
-                          type: string
       Needs Tagging: false
       Path -> Alias:
         pfile:/data/users/tomasz/apache-hive/build/ql/test/data/warehouse/pcr_t1/ds=2000-04-08 [pcr_t1]
@@ -591,35 +581,30 @@ STAGE PLANS:
               predicate:
                   expr: ((key < 5) and (value <> 'val_2'))
                   type: boolean
-              Filter Operator
-                isSamplingPred: false
-                predicate:
-                    expr: (((ds <= '2000-04-09') and (key < 5)) and (value <> 'val_2'))
-                    type: boolean
-                Select Operator
-                  expressions:
-                        expr: key
+              Select Operator
+                expressions:
+                      expr: key
+                      type: int
+                      expr: value
+                      type: string
+                      expr: ds
+                      type: string
+                outputColumnNames: _col0, _col1, _col2
+                Reduce Output Operator
+                  key expressions:
+                        expr: _col0
                         type: int
-                        expr: value
+                        expr: _col2
                         type: string
-                        expr: ds
+                  sort order: ++
+                  tag: -1
+                  value expressions:
+                        expr: _col0
+                        type: int
+                        expr: _col1
                         type: string
-                  outputColumnNames: _col0, _col1, _col2
-                  Reduce Output Operator
-                    key expressions:
-                          expr: _col0
-                          type: int
-                          expr: _col2
-                          type: string
-                    sort order: ++
-                    tag: -1
-                    value expressions:
-                          expr: _col0
-                          type: int
-                          expr: _col1
-                          type: string
-                          expr: _col2
-                          type: string
+                        expr: _col2
+                        type: string
       Needs Tagging: false
       Path -> Alias:
         pfile:/data/users/tomasz/apache-hive/build/ql/test/data/warehouse/pcr_t1/ds=2000-04-08 [pcr_t1]
@@ -807,35 +792,30 @@ STAGE PLANS:
               predicate:
                   expr: (((ds < '2000-04-09') and (key < 5)) or ((ds > '2000-04-09') and (value = 'val_5')))
                   type: boolean
-              Filter Operator
-                isSamplingPred: false
-                predicate:
-                    expr: (((ds < '2000-04-09') and (key < 5)) or ((ds > '2000-04-09') and (value = 'val_5')))
-                    type: boolean
-                Select Operator
-                  expressions:
-                        expr: key
+              Select Operator
+                expressions:
+                      expr: key
+                      type: int
+                      expr: value
+                      type: string
+                      expr: ds
+                      type: string
+                outputColumnNames: _col0, _col1, _col2
+                Reduce Output Operator
+                  key expressions:
+                        expr: _col0
                         type: int
-                        expr: value
+                        expr: _col2
                         type: string
-                        expr: ds
+                  sort order: ++
+                  tag: -1
+                  value expressions:
+                        expr: _col0
+                        type: int
+                        expr: _col1
                         type: string
-                  outputColumnNames: _col0, _col1, _col2
-                  Reduce Output Operator
-                    key expressions:
-                          expr: _col0
-                          type: int
-                          expr: _col2
-                          type: string
-                    sort order: ++
-                    tag: -1
-                    value expressions:
-                          expr: _col0
-                          type: int
-                          expr: _col1
-                          type: string
-                          expr: _col2
-                          type: string
+                        expr: _col2
+                        type: string
       Needs Tagging: false
       Path -> Alias:
         pfile:/data/users/tomasz/apache-hive/build/ql/test/data/warehouse/pcr_t1/ds=2000-04-08 [pcr_t1]
@@ -1025,35 +1005,30 @@ STAGE PLANS:
               predicate:
                   expr: (((ds < '2000-04-10') and (key < 5)) or ((ds > '2000-04-08') and (value = 'val_5')))
                   type: boolean
-              Filter Operator
-                isSamplingPred: false
-                predicate:
-                    expr: (((ds < '2000-04-10') and (key < 5)) or ((ds > '2000-04-08') and (value = 'val_5')))
-                    type: boolean
-                Select Operator
-                  expressions:
-                        expr: key
+              Select Operator
+                expressions:
+                      expr: key
+                      type: int
+                      expr: value
+                      type: string
+                      expr: ds
+                      type: string
+                outputColumnNames: _col0, _col1, _col2
+                Reduce Output Operator
+                  key expressions:
+                        expr: _col0
                         type: int
-                        expr: value
+                        expr: _col2
                         type: string
-                        expr: ds
+                  sort order: ++
+                  tag: -1
+                  value expressions:
+                        expr: _col0
+                        type: int
+                        expr: _col1
                         type: string
-                  outputColumnNames: _col0, _col1, _col2
-                  Reduce Output Operator
-                    key expressions:
-                          expr: _col0
-                          type: int
-                          expr: _col2
-                          type: string
-                    sort order: ++
-                    tag: -1
-                    value expressions:
-                          expr: _col0
-                          type: int
-                          expr: _col1
-                          type: string
-                          expr: _col2
-                          type: string
+                        expr: _col2
+                        type: string
       Needs Tagging: false
       Path -> Alias:
         pfile:/data/users/tomasz/apache-hive/build/ql/test/data/warehouse/pcr_t1/ds=2000-04-08 [pcr_t1]
@@ -1304,35 +1279,30 @@ STAGE PLANS:
               predicate:
                   expr: (((ds < '2000-04-10') or (key < 5)) and ((ds > '2000-04-08') or (value = 'val_5')))
                   type: boolean
-              Filter Operator
-                isSamplingPred: false
-                predicate:
-                    expr: (((ds < '2000-04-10') or (key < 5)) and ((ds > '2000-04-08') or (value = 'val_5')))
-                    type: boolean
-                Select Operator
-                  expressions:
-                        expr: key
+              Select Operator
+                expressions:
+                      expr: key
+                      type: int
+                      expr: value
+                      type: string
+                      expr: ds
+                      type: string
+                outputColumnNames: _col0, _col1, _col2
+                Reduce Output Operator
+                  key expressions:
+                        expr: _col0
                         type: int
-                        expr: value
+                        expr: _col2
                         type: string
-                        expr: ds
+                  sort order: ++
+                  tag: -1
+                  value expressions:
+                        expr: _col0
+                        type: int
+                        expr: _col1
                         type: string
-                  outputColumnNames: _col0, _col1, _col2
-                  Reduce Output Operator
-                    key expressions:
-                          expr: _col0
-                          type: int
-                          expr: _col2
-                          type: string
-                    sort order: ++
-                    tag: -1
-                    value expressions:
-                          expr: _col0
-                          type: int
-                          expr: _col1
-                          type: string
-                          expr: _col2
-                          type: string
+                        expr: _col2
+                        type: string
       Needs Tagging: false
       Path -> Alias:
         pfile:/data/users/tomasz/apache-hive/build/ql/test/data/warehouse/pcr_t1/ds=2000-04-08 [pcr_t1]
@@ -1591,31 +1561,26 @@ STAGE PLANS:
               predicate:
                   expr: (key = 14)
                   type: boolean
-              Filter Operator
-                isSamplingPred: false
-                predicate:
-                    expr: (((ds = '2000-04-08') or (ds = '2000-04-09')) and (key = 14))
-                    type: boolean
-                Select Operator
-                  expressions:
-                        expr: key
+              Select Operator
+                expressions:
+                      expr: key
+                      type: int
+                      expr: value
+                      type: string
+                outputColumnNames: _col0, _col1
+                Reduce Output Operator
+                  key expressions:
+                        expr: _col0
                         type: int
-                        expr: value
+                        expr: _col1
                         type: string
-                  outputColumnNames: _col0, _col1
-                  Reduce Output Operator
-                    key expressions:
-                          expr: _col0
-                          type: int
-                          expr: _col1
-                          type: string
-                    sort order: ++
-                    tag: -1
-                    value expressions:
-                          expr: _col0
-                          type: int
-                          expr: _col1
-                          type: string
+                  sort order: ++
+                  tag: -1
+                  value expressions:
+                        expr: _col0
+                        type: int
+                        expr: _col1
+                        type: string
       Needs Tagging: false
       Path -> Alias:
         pfile:/data/users/tomasz/apache-hive/build/ql/test/data/warehouse/pcr_t1/ds=2000-04-08 [pcr_t1]
@@ -1786,31 +1751,26 @@ STAGE PLANS:
           TableScan
             alias: pcr_t1
             GatherStats: false
-            Filter Operator
-              isSamplingPred: false
-              predicate:
-                  expr: ((ds = '2000-04-08') or (ds = '2000-04-09'))
-                  type: boolean
-              Select Operator
-                expressions:
-                      expr: key
+            Select Operator
+              expressions:
+                    expr: key
+                    type: int
+                    expr: value
+                    type: string
+              outputColumnNames: _col0, _col1
+              Reduce Output Operator
+                key expressions:
+                      expr: _col0
                       type: int
-                      expr: value
+                      expr: _col1
                       type: string
-                outputColumnNames: _col0, _col1
-                Reduce Output Operator
-                  key expressions:
-                        expr: _col0
-                        type: int
-                        expr: _col1
-                        type: string
-                  sort order: ++
-                  tag: -1
-                  value expressions:
-                        expr: _col0
-                        type: int
-                        expr: _col1
-                        type: string
+                sort order: ++
+                tag: -1
+                value expressions:
+                      expr: _col0
+                      type: int
+                      expr: _col1
+                      type: string
       Needs Tagging: false
       Path -> Alias:
         pfile:/data/users/tomasz/apache-hive/build/ql/test/data/warehouse/pcr_t1/ds=2000-04-08 [pcr_t1]
@@ -2021,31 +1981,26 @@ STAGE PLANS:
           TableScan
             alias: pcr_t1
             GatherStats: false
-            Filter Operator
-              isSamplingPred: false
-              predicate:
-                  expr: ((ds >= '2000-04-08') or (ds < '2000-04-10'))
-                  type: boolean
-              Select Operator
-                expressions:
-                      expr: key
+            Select Operator
+              expressions:
+                    expr: key
+                    type: int
+                    expr: value
+                    type: string
+              outputColumnNames: _col0, _col1
+              Reduce Output Operator
+                key expressions:
+                      expr: _col0
                       type: int
-                      expr: value
+                      expr: _col1
                       type: string
-                outputColumnNames: _col0, _col1
-                Reduce Output Operator
-                  key expressions:
-                        expr: _col0
-                        type: int
-                        expr: _col1
-                        type: string
-                  sort order: ++
-                  tag: -1
-                  value expressions:
-                        expr: _col0
-                        type: int
-                        expr: _col1
-                        type: string
+                sort order: ++
+                tag: -1
+                value expressions:
+                      expr: _col0
+                      type: int
+                      expr: _col1
+                      type: string
       Needs Tagging: false
       Path -> Alias:
         pfile:/data/users/tomasz/apache-hive/build/ql/test/data/warehouse/pcr_t1/ds=2000-04-08 [pcr_t1]
@@ -2334,37 +2289,32 @@ STAGE PLANS:
               predicate:
                   expr: (((ds = '2000-04-08') and (key = 1)) or ((ds = '2000-04-09') and (key = 2)))
                   type: boolean
-              Filter Operator
-                isSamplingPred: false
-                predicate:
-                    expr: (((ds = '2000-04-08') and (key = 1)) or ((ds = '2000-04-09') and (key = 2)))
-                    type: boolean
-                Select Operator
-                  expressions:
-                        expr: key
+              Select Operator
+                expressions:
+                      expr: key
+                      type: int
+                      expr: value
+                      type: string
+                      expr: ds
+                      type: string
+                outputColumnNames: _col0, _col1, _col2
+                Reduce Output Operator
+                  key expressions:
+                        expr: _col0
                         type: int
-                        expr: value
+                        expr: _col1
                         type: string
-                        expr: ds
+                        expr: _col2
                         type: string
-                  outputColumnNames: _col0, _col1, _col2
-                  Reduce Output Operator
-                    key expressions:
-                          expr: _col0
-                          type: int
-                          expr: _col1
-                          type: string
-                          expr: _col2
-                          type: string
-                    sort order: +++
-                    tag: -1
-                    value expressions:
-                          expr: _col0
-                          type: int
-                          expr: _col1
-                          type: string
-                          expr: _col2
-                          type: string
+                  sort order: +++
+                  tag: -1
+                  value expressions:
+                        expr: _col0
+                        type: int
+                        expr: _col1
+                        type: string
+                        expr: _col2
+                        type: string
       Needs Tagging: false
       Path -> Alias:
         pfile:/data/users/tomasz/apache-hive/build/ql/test/data/warehouse/pcr_t1/ds=2000-04-08 [pcr_t1]
@@ -2537,52 +2487,42 @@ STAGE PLANS:
           TableScan
             alias: t1
             GatherStats: false
-            Filter Operator
-              isSamplingPred: false
-              predicate:
-                  expr: (ds = '2000-04-08')
-                  type: boolean
-              Reduce Output Operator
-                key expressions:
-                      expr: key
-                      type: int
-                sort order: +
-                Map-reduce partition columns:
-                      expr: key
-                      type: int
-                tag: 0
-                value expressions:
-                      expr: key
-                      type: int
-                      expr: value
-                      type: string
-                      expr: ds
-                      type: string
+            Reduce Output Operator
+              key expressions:
+                    expr: key
+                    type: int
+              sort order: +
+              Map-reduce partition columns:
+                    expr: key
+                    type: int
+              tag: 0
+              value expressions:
+                    expr: key
+                    type: int
+                    expr: value
+                    type: string
+                    expr: ds
+                    type: string
         t2 
           TableScan
             alias: t2
             GatherStats: false
-            Filter Operator
-              isSamplingPred: false
-              predicate:
-                  expr: (ds = '2000-04-08')
-                  type: boolean
-              Reduce Output Operator
-                key expressions:
-                      expr: key
-                      type: int
-                sort order: +
-                Map-reduce partition columns:
-                      expr: key
-                      type: int
-                tag: 1
-                value expressions:
-                      expr: key
-                      type: int
-                      expr: value
-                      type: string
-                      expr: ds
-                      type: string
+            Reduce Output Operator
+              key expressions:
+                    expr: key
+                    type: int
+              sort order: +
+              Map-reduce partition columns:
+                    expr: key
+                    type: int
+              tag: 1
+              value expressions:
+                    expr: key
+                    type: int
+                    expr: value
+                    type: string
+                    expr: ds
+                    type: string
       Needs Tagging: true
       Path -> Alias:
         pfile:/data/users/tomasz/apache-hive/build/ql/test/data/warehouse/pcr_t1/ds=2000-04-08 [t2, t1]
@@ -2822,52 +2762,42 @@ STAGE PLANS:
           TableScan
             alias: t1
             GatherStats: false
-            Filter Operator
-              isSamplingPred: false
-              predicate:
-                  expr: (ds = '2000-04-08')
-                  type: boolean
-              Reduce Output Operator
-                key expressions:
-                      expr: key
-                      type: int
-                sort order: +
-                Map-reduce partition columns:
-                      expr: key
-                      type: int
-                tag: 0
-                value expressions:
-                      expr: key
-                      type: int
-                      expr: value
-                      type: string
-                      expr: ds
-                      type: string
+            Reduce Output Operator
+              key expressions:
+                    expr: key
+                    type: int
+              sort order: +
+              Map-reduce partition columns:
+                    expr: key
+                    type: int
+              tag: 0
+              value expressions:
+                    expr: key
+                    type: int
+                    expr: value
+                    type: string
+                    expr: ds
+                    type: string
         t2 
           TableScan
             alias: t2
             GatherStats: false
-            Filter Operator
-              isSamplingPred: false
-              predicate:
-                  expr: (ds = '2000-04-09')
-                  type: boolean
-              Reduce Output Operator
-                key expressions:
-                      expr: key
-                      type: int
-                sort order: +
-                Map-reduce partition columns:
-                      expr: key
-                      type: int
-                tag: 1
-                value expressions:
-                      expr: key
-                      type: int
-                      expr: value
-                      type: string
-                      expr: ds
-                      type: string
+            Reduce Output Operator
+              key expressions:
+                    expr: key
+                    type: int
+              sort order: +
+              Map-reduce partition columns:
+                    expr: key
+                    type: int
+              tag: 1
+              value expressions:
+                    expr: key
+                    type: int
+                    expr: value
+                    type: string
+                    expr: ds
+                    type: string
       Needs Tagging: true
       Path -> Alias:
         pfile:/data/users/tomasz/apache-hive/build/ql/test/data/warehouse/pcr_t1/ds=2000-04-08 [t1]
@@ -3182,37 +3112,32 @@ STAGE PLANS:
               predicate:
                   expr: (((ds > '2000-04-08') and (ds < '2000-04-11')) or (key = 2))
                   type: boolean
-              Filter Operator
-                isSamplingPred: false
-                predicate:
-                    expr: (((ds > '2000-04-08') and (ds < '2000-04-11')) or (((ds >= '2000-04-08') and (ds <= '2000-04-11')) and (key = 2)))
-                    type: boolean
-                Select Operator
-                  expressions:
-                        expr: key
+              Select Operator
+                expressions:
+                      expr: key
+                      type: int
+                      expr: value
+                      type: string
+                      expr: ds
+                      type: string
+                outputColumnNames: _col0, _col1, _col2
+                Reduce Output Operator
+                  key expressions:
+                        expr: _col0
                         type: int
-                        expr: value
+                        expr: _col1
                         type: string
-                        expr: ds
+                        expr: _col2
                         type: string
-                  outputColumnNames: _col0, _col1, _col2
-                  Reduce Output Operator
-                    key expressions:
-                          expr: _col0
-                          type: int
-                          expr: _col1
-                          type: string
-                          expr: _col2
-                          type: string
-                    sort order: +++
-                    tag: -1
-                    value expressions:
-                          expr: _col0
-                          type: int
-                          expr: _col1
-                          type: string
-                          expr: _col2
-                          type: string
+                  sort order: +++
+                  tag: -1
+                  value expressions:
+                        expr: _col0
+                        type: int
+                        expr: _col1
+                        type: string
+                        expr: _col2
+                        type: string
       Needs Tagging: false
       Path -> Alias:
         pfile:/data/users/tomasz/apache-hive/build/ql/test/data/warehouse/pcr_t1/ds=2000-04-08 [pcr_t1]
@@ -3540,37 +3465,32 @@ STAGE PLANS:
               predicate:
                   expr: ((ds > '2000-04-08') or ((ds <= '2000-04-09') and (key = 2)))
                   type: boolean
-              Filter Operator
-                isSamplingPred: false
-                predicate:
-                    expr: (((ds > '2000-04-08') and (ds < '2000-04-11')) or ((ds <= '2000-04-09') and (key = 2)))
-                    type: boolean
-                Select Operator
-                  expressions:
-                        expr: key
+              Select Operator
+                expressions:
+                      expr: key
+                      type: int
+                      expr: value
+                      type: string
+                      expr: ds
+                      type: string
+                outputColumnNames: _col0, _col1, _col2
+                Reduce Output Operator
+                  key expressions:
+                        expr: _col0
                         type: int
-                        expr: value
+                        expr: _col1
                         type: string
-                        expr: ds
+                        expr: _col2
                         type: string
-                  outputColumnNames: _col0, _col1, _col2
-                  Reduce Output Operator
-                    key expressions:
-                          expr: _col0
-                          type: int
-                          expr: _col1
-                          type: string
-                          expr: _col2
-                          type: string
-                    sort order: +++
-                    tag: -1
-                    value expressions:
-                          expr: _col0
-                          type: int
-                          expr: _col1
-                          type: string
-                          expr: _col2
-                          type: string
+                  sort order: +++
+                  tag: -1
+                  value expressions:
+                        expr: _col0
+                        type: int
+                        expr: _col1
+                        type: string
+                        expr: _col2
+                        type: string
       Needs Tagging: false
       Path -> Alias:
         pfile:/data/users/tomasz/apache-hive/build/ql/test/data/warehouse/pcr_t1/ds=2000-04-08 [pcr_t1]
@@ -4753,29 +4673,24 @@ STAGE PLANS:
           TableScan
             alias: srcpart
             GatherStats: false
-            Filter Operator
-              isSamplingPred: false
-              predicate:
-                  expr: ((ds = '2008-04-08') and (hr = 11))
-                  type: boolean
-              Select Operator
-                expressions:
-                      expr: key
+            Select Operator
+              expressions:
+                    expr: key
+                    type: string
+                    expr: value
+                    type: string
+              outputColumnNames: _col0, _col1
+              Reduce Output Operator
+                key expressions:
+                      expr: _col0
                       type: string
-                      expr: value
+                sort order: +
+                tag: -1
+                value expressions:
+                      expr: _col0
                       type: string
-                outputColumnNames: _col0, _col1
-                Reduce Output Operator
-                  key expressions:
-                        expr: _col0
-                        type: string
-                  sort order: +
-                  tag: -1
-                  value expressions:
-                        expr: _col0
-                        type: string
-                        expr: _col1
-                        type: string
+                      expr: _col1
+                      type: string
       Needs Tagging: false
       Path -> Alias:
         pfile:/data/users/tomasz/apache-hive/build/ql/test/data/warehouse/srcpart/ds=2008-04-08/hr=11 [srcpart]
@@ -4908,41 +4823,36 @@ STAGE PLANS:
               predicate:
                   expr: (key = 11)
                   type: boolean
-              Filter Operator
-                isSamplingPred: false
-                predicate:
-                    expr: (((ds = '2008-04-08') and ((hr = '11') or (hr = '12'))) and (key = 11))
-                    type: boolean
-                Select Operator
-                  expressions:
-                        expr: key
+              Select Operator
+                expressions:
+                      expr: key
+                      type: string
+                      expr: value
+                      type: string
+                      expr: ds
+                      type: string
+                      expr: hr
+                      type: string
+                outputColumnNames: _col0, _col1, _col2, _col3
+                Reduce Output Operator
+                  key expressions:
+                        expr: _col0
                         type: string
-                        expr: value
+                        expr: _col2
                         type: string
-                        expr: ds
+                        expr: _col3
                         type: string
-                        expr: hr
+                  sort order: +++
+                  tag: -1
+                  value expressions:
+                        expr: _col0
                         type: string
-                  outputColumnNames: _col0, _col1, _col2, _col3
-                  Reduce Output Operator
-                    key expressions:
-                          expr: _col0
-                          type: string
-                          expr: _col2
-                          type: string
-                          expr: _col3
-                          type: string
-                    sort order: +++
-                    tag: -1
-                    value expressions:
-                          expr: _col0
-                          type: string
-                          expr: _col1
-                          type: string
-                          expr: _col2
-                          type: string
-                          expr: _col3
-                          type: string
+                        expr: _col1
+                        type: string
+                        expr: _col2
+                        type: string
+                        expr: _col3
+                        type: string
       Needs Tagging: false
       Path -> Alias:
         pfile:/data/users/tomasz/apache-hive/build/ql/test/data/warehouse/srcpart/ds=2008-04-08/hr=11 [srcpart]
@@ -5122,41 +5032,36 @@ STAGE PLANS:
               predicate:
                   expr: (key = 11)
                   type: boolean
-              Filter Operator
-                isSamplingPred: false
-                predicate:
-                    expr: ((hr = '11') and (key = 11))
-                    type: boolean
-                Select Operator
-                  expressions:
-                        expr: key
+              Select Operator
+                expressions:
+                      expr: key
+                      type: string
+                      expr: value
+                      type: string
+                      expr: ds
+                      type: string
+                      expr: hr
+                      type: string
+                outputColumnNames: _col0, _col1, _col2, _col3
+                Reduce Output Operator
+                  key expressions:
+                        expr: _col0
                         type: string
-                        expr: value
+                        expr: _col2
                         type: string
-                        expr: ds
+                        expr: _col3
                         type: string
-                        expr: hr
+                  sort order: +++
+                  tag: -1
+                  value expressions:
+                        expr: _col0
                         type: string
-                  outputColumnNames: _col0, _col1, _col2, _col3
-                  Reduce Output Operator
-                    key expressions:
-                          expr: _col0
-                          type: string
-                          expr: _col2
-                          type: string
-                          expr: _col3
-                          type: string
-                    sort order: +++
-                    tag: -1
-                    value expressions:
-                          expr: _col0
-                          type: string
-                          expr: _col1
-                          type: string
-                          expr: _col2
-                          type: string
-                          expr: _col3
-                          type: string
+                        expr: _col1
+                        type: string
+                        expr: _col2
+                        type: string
+                        expr: _col3
+                        type: string
       Needs Tagging: false
       Path -> Alias:
         pfile:/data/users/tomasz/apache-hive/build/ql/test/data/warehouse/srcpart/ds=2008-04-08/hr=11 [srcpart]

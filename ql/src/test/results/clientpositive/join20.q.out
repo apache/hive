@@ -25,24 +25,20 @@ STAGE PLANS:
               predicate:
                   expr: (key < 10)
                   type: boolean
-              Filter Operator
-                predicate:
-                    expr: (key < 10)
-                    type: boolean
-                Reduce Output Operator
-                  key expressions:
-                        expr: key
-                        type: string
-                  sort order: +
-                  Map-reduce partition columns:
-                        expr: key
-                        type: string
-                  tag: 0
-                  value expressions:
-                        expr: key
-                        type: string
-                        expr: value
-                        type: string
+              Reduce Output Operator
+                key expressions:
+                      expr: key
+                      type: string
+                sort order: +
+                Map-reduce partition columns:
+                      expr: key
+                      type: string
+                tag: 0
+                value expressions:
+                      expr: key
+                      type: string
+                      expr: value
+                      type: string
         src2 
           TableScan
             alias: src2
@@ -746,24 +742,20 @@ STAGE PLANS:
               predicate:
                   expr: (key < 10)
                   type: boolean
-              Filter Operator
-                predicate:
-                    expr: (key < 10)
-                    type: boolean
-                Reduce Output Operator
-                  key expressions:
-                        expr: key
-                        type: string
-                  sort order: +
-                  Map-reduce partition columns:
-                        expr: key
-                        type: string
-                  tag: 0
-                  value expressions:
-                        expr: key
-                        type: string
-                        expr: value
-                        type: string
+              Reduce Output Operator
+                key expressions:
+                      expr: key
+                      type: string
+                sort order: +
+                Map-reduce partition columns:
+                      expr: key
+                      type: string
+                tag: 0
+                value expressions:
+                      expr: key
+                      type: string
+                      expr: value
+                      type: string
         src2 
           TableScan
             alias: src2
@@ -771,24 +763,20 @@ STAGE PLANS:
               predicate:
                   expr: (key < 15)
                   type: boolean
-              Filter Operator
-                predicate:
-                    expr: (key < 15)
-                    type: boolean
-                Reduce Output Operator
-                  key expressions:
-                        expr: key
-                        type: string
-                  sort order: +
-                  Map-reduce partition columns:
-                        expr: key
-                        type: string
-                  tag: 1
-                  value expressions:
-                        expr: key
-                        type: string
-                        expr: value
-                        type: string
+              Reduce Output Operator
+                key expressions:
+                      expr: key
+                      type: string
+                sort order: +
+                Map-reduce partition columns:
+                      expr: key
+                      type: string
+                tag: 1
+                value expressions:
+                      expr: key
+                      type: string
+                      expr: value
+                      type: string
         src3 
           TableScan
             alias: src3

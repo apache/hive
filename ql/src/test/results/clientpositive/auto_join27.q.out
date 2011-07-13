@@ -119,19 +119,15 @@ STAGE PLANS:
                       expr: key
                       type: string
                 outputColumnNames: _col0
-                Filter Operator
-                  predicate:
-                      expr: (_col0 < 200)
-                      type: boolean
-                  HashTable Sink Operator
-                    condition expressions:
-                      0 
-                      1 
-                    handleSkewJoin: false
-                    keys:
-                      0 [Column[_col0]]
-                      1 [Column[_col0]]
-                    Position of Big Table: 0
+                HashTable Sink Operator
+                  condition expressions:
+                    0 
+                    1 
+                  handleSkewJoin: false
+                  keys:
+                    0 [Column[_col0]]
+                    1 [Column[_col0]]
+                  Position of Big Table: 0
 
   Stage: Stage-6
     Map Reduce
@@ -268,34 +264,30 @@ STAGE PLANS:
                       expr: key
                       type: string
                 outputColumnNames: _col0
-                Filter Operator
-                  predicate:
-                      expr: (_col0 < 200)
-                      type: boolean
-                  Map Join Operator
-                    condition map:
-                         Inner Join 0 to 1
-                    condition expressions:
-                      0 
-                      1 
-                    handleSkewJoin: false
-                    keys:
-                      0 [Column[_col0]]
-                      1 [Column[_col0]]
-                    Position of Big Table: 1
-                    Select Operator
-                      Group By Operator
-                        aggregations:
-                              expr: count(1)
-                        bucketGroup: false
-                        mode: hash
-                        outputColumnNames: _col0
-                        File Output Operator
-                          compressed: false
-                          GlobalTableId: 0
-                          table:
-                              input format: org.apache.hadoop.mapred.SequenceFileInputFormat
-                              output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                Map Join Operator
+                  condition map:
+                       Inner Join 0 to 1
+                  condition expressions:
+                    0 
+                    1 
+                  handleSkewJoin: false
+                  keys:
+                    0 [Column[_col0]]
+                    1 [Column[_col0]]
+                  Position of Big Table: 1
+                  Select Operator
+                    Group By Operator
+                      aggregations:
+                            expr: count(1)
+                      bucketGroup: false
+                      mode: hash
+                      outputColumnNames: _col0
+                      File Output Operator
+                        compressed: false
+                        GlobalTableId: 0
+                        table:
+                            input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                            output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
       Local Work:
         Map Reduce Local Work
 
@@ -336,19 +328,15 @@ STAGE PLANS:
                       expr: key
                       type: string
                 outputColumnNames: _col0
-                Filter Operator
-                  predicate:
-                      expr: (_col0 < 200)
-                      type: boolean
-                  Reduce Output Operator
-                    key expressions:
-                          expr: _col0
-                          type: string
-                    sort order: +
-                    Map-reduce partition columns:
-                          expr: _col0
-                          type: string
-                    tag: 1
+                Reduce Output Operator
+                  key expressions:
+                        expr: _col0
+                        type: string
+                  sort order: +
+                  Map-reduce partition columns:
+                        expr: _col0
+                        type: string
+                  tag: 1
       Reduce Operator Tree:
         Join Operator
           condition map:

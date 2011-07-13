@@ -66,21 +66,30 @@ public class ExprWalkerInfo implements NodeProcessorCtx {
   private RowResolver toRR = null;
 
   /**
-   * this map contains a expr infos. Each key is a node in the expression tree
-   * and the information for each node is the value which is used while walking
-   * the tree by its parent.
-   */
-  private final Map<String, List<ExprNodeDesc>> pushdownPreds;
-  /**
    * Values the expression sub-trees (predicates) that can be pushed down for
    * root expression tree. Since there can be more than one alias in an
    * expression tree, this is a map from the alias to predicates.
+   */
+  private final Map<String, List<ExprNodeDesc>> pushdownPreds;
+
+  /**
+   * Values the expression sub-trees (predicates) that can not be pushed down for
+   * root expression tree. Since there can be more than one alias in an
+   * expression tree, this is a map from the alias to predicates.
+   */
+  private final Map<String, List<ExprNodeDesc>> nonFinalPreds;
+
+  /**
+   * this map contains a expr infos. Each key is a node in the expression tree
+   * and the information for each node is the value which is used while walking
+   * the tree by its parent.
    */
   private final Map<ExprNodeDesc, ExprInfo> exprInfoMap;
   private boolean isDeterministic = true;
 
   public ExprWalkerInfo() {
     pushdownPreds = new HashMap<String, List<ExprNodeDesc>>();
+    nonFinalPreds = new HashMap<String, List<ExprNodeDesc>>();
     exprInfoMap = new HashMap<ExprNodeDesc, ExprInfo>();
   }
 
@@ -91,6 +100,7 @@ public class ExprWalkerInfo implements NodeProcessorCtx {
 
     pushdownPreds = new HashMap<String, List<ExprNodeDesc>>();
     exprInfoMap = new HashMap<ExprNodeDesc, ExprInfo>();
+    nonFinalPreds = new HashMap<String, List<ExprNodeDesc>>();
   }
 
   /**
@@ -214,6 +224,19 @@ public class ExprWalkerInfo implements NodeProcessorCtx {
   }
 
   /**
+   * Adds the passed list of pushDowns for the alias.
+   *
+   * @param alias
+   * @param pushDowns
+   */
+  public void addPushDowns(String alias, List<ExprNodeDesc> pushDowns) {
+    if (pushdownPreds.get(alias) == null) {
+      pushdownPreds.put(alias, new ArrayList<ExprNodeDesc>());
+    }
+    pushdownPreds.get(alias).addAll(pushDowns);
+  }
+
+  /**
    * Returns the list of pushdown expressions for each alias that appear in the
    * current operator's RowResolver. The exprs in each list can be combined
    * using conjunction (AND).
@@ -222,6 +245,28 @@ public class ExprWalkerInfo implements NodeProcessorCtx {
    */
   public Map<String, List<ExprNodeDesc>> getFinalCandidates() {
     return pushdownPreds;
+  }
+
+  /**
+   * Adds the specified expr as a non-final candidate
+   *
+   * @param expr
+   */
+  public void addNonFinalCandidate(ExprNodeDesc expr) {
+    String alias = getAlias(expr);
+    if (nonFinalPreds.get(alias) == null) {
+      nonFinalPreds.put(alias, new ArrayList<ExprNodeDesc>());
+    }
+    nonFinalPreds.get(alias).add(expr.clone());
+  }
+
+  /**
+   * Returns list of non-final candidate predicate for each map.
+   *
+   * @return
+   */
+  public Map<String, List<ExprNodeDesc>> getNonFinalCandidates() {
+    return nonFinalPreds;
   }
 
   /**

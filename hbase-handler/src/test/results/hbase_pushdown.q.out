@@ -103,23 +103,19 @@ STAGE PLANS:
               predicate:
                   expr: (value like '%90%')
                   type: boolean
-              Filter Operator
-                predicate:
-                    expr: ((key = 90) and (value like '%90%'))
-                    type: boolean
-                Select Operator
-                  expressions:
-                        expr: key
-                        type: int
-                        expr: value
-                        type: string
-                  outputColumnNames: _col0, _col1
-                  File Output Operator
-                    compressed: false
-                    GlobalTableId: 0
-                    table:
-                        input format: org.apache.hadoop.mapred.TextInputFormat
-                        output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+              Select Operator
+                expressions:
+                      expr: key
+                      type: int
+                      expr: value
+                      type: string
+                outputColumnNames: _col0, _col1
+                File Output Operator
+                  compressed: false
+                  GlobalTableId: 0
+                  table:
+                      input format: org.apache.hadoop.mapred.TextInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
 
   Stage: Stage-0
     Fetch Operator
@@ -166,23 +162,19 @@ STAGE PLANS:
               predicate:
                   expr: ((value like '%90%') and (key = UDFToInteger(value)))
                   type: boolean
-              Filter Operator
-                predicate:
-                    expr: (((key = 90) and (value like '%90%')) and (key = UDFToInteger(value)))
-                    type: boolean
-                Select Operator
-                  expressions:
-                        expr: key
-                        type: int
-                        expr: value
-                        type: string
-                  outputColumnNames: _col0, _col1
-                  File Output Operator
-                    compressed: false
-                    GlobalTableId: 0
-                    table:
-                        input format: org.apache.hadoop.mapred.TextInputFormat
-                        output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+              Select Operator
+                expressions:
+                      expr: key
+                      type: int
+                      expr: value
+                      type: string
+                outputColumnNames: _col0, _col1
+                File Output Operator
+                  compressed: false
+                  GlobalTableId: 0
+                  table:
+                      input format: org.apache.hadoop.mapred.TextInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
 
   Stage: Stage-0
     Fetch Operator
@@ -217,23 +209,19 @@ STAGE PLANS:
               predicate:
                   expr: (((key = 80) and (key = 90)) and (value like '%90%'))
                   type: boolean
-              Filter Operator
-                predicate:
-                    expr: (((key = 80) and (key = 90)) and (value like '%90%'))
-                    type: boolean
-                Select Operator
-                  expressions:
-                        expr: key
-                        type: int
-                        expr: value
-                        type: string
-                  outputColumnNames: _col0, _col1
-                  File Output Operator
-                    compressed: false
-                    GlobalTableId: 0
-                    table:
-                        input format: org.apache.hadoop.mapred.TextInputFormat
-                        output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+              Select Operator
+                expressions:
+                      expr: key
+                      type: int
+                      expr: value
+                      type: string
+                outputColumnNames: _col0, _col1
+                File Output Operator
+                  compressed: false
+                  GlobalTableId: 0
+                  table:
+                      input format: org.apache.hadoop.mapred.TextInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
 
   Stage: Stage-0
     Fetch Operator
@@ -300,23 +288,19 @@ STAGE PLANS:
               predicate:
                   expr: (CASE WHEN ((key = 90)) THEN (2) ELSE (4) END > 3)
                   type: boolean
-              Filter Operator
-                predicate:
-                    expr: (CASE WHEN ((key = 90)) THEN (2) ELSE (4) END > 3)
-                    type: boolean
-                Select Operator
-                  expressions:
-                        expr: key
-                        type: int
-                        expr: value
-                        type: string
-                  outputColumnNames: _col0, _col1
-                  File Output Operator
-                    compressed: false
-                    GlobalTableId: 0
-                    table:
-                        input format: org.apache.hadoop.mapred.TextInputFormat
-                        output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+              Select Operator
+                expressions:
+                      expr: key
+                      type: int
+                      expr: value
+                      type: string
+                outputColumnNames: _col0, _col1
+                File Output Operator
+                  compressed: false
+                  GlobalTableId: 0
+                  table:
+                      input format: org.apache.hadoop.mapred.TextInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
 
   Stage: Stage-0
     Fetch Operator
@@ -353,23 +337,19 @@ STAGE PLANS:
               predicate:
                   expr: ((key = 80) or (value like '%90%'))
                   type: boolean
-              Filter Operator
-                predicate:
-                    expr: ((key = 80) or (value like '%90%'))
-                    type: boolean
-                Select Operator
-                  expressions:
-                        expr: key
-                        type: int
-                        expr: value
-                        type: string
-                  outputColumnNames: _col0, _col1
-                  File Output Operator
-                    compressed: false
-                    GlobalTableId: 0
-                    table:
-                        input format: org.apache.hadoop.mapred.TextInputFormat
-                        output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+              Select Operator
+                expressions:
+                      expr: key
+                      type: int
+                      expr: value
+                      type: string
+                outputColumnNames: _col0, _col1
+                File Output Operator
+                  compressed: false
+                  GlobalTableId: 0
+                  table:
+                      input format: org.apache.hadoop.mapred.TextInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
 
   Stage: Stage-0
     Fetch Operator
@@ -402,23 +382,19 @@ STAGE PLANS:
               predicate:
                   expr: (key = 90)
                   type: boolean
-              Filter Operator
-                predicate:
-                    expr: (key = 90)
-                    type: boolean
-                Select Operator
-                  expressions:
-                        expr: key
-                        type: int
-                        expr: value
-                        type: string
-                  outputColumnNames: _col0, _col1
-                  File Output Operator
-                    compressed: false
-                    GlobalTableId: 0
-                    table:
-                        input format: org.apache.hadoop.mapred.TextInputFormat
-                        output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+              Select Operator
+                expressions:
+                      expr: key
+                      type: int
+                      expr: value
+                      type: string
+                outputColumnNames: _col0, _col1
+                File Output Operator
+                  compressed: false
+                  GlobalTableId: 0
+                  table:
+                      input format: org.apache.hadoop.mapred.TextInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
 
   Stage: Stage-0
     Fetch Operator

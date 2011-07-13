@@ -143,38 +143,33 @@ STAGE PLANS:
               predicate:
                   expr: (not ((key > 50) or (key < 10)))
                   type: boolean
-              Filter Operator
-                isSamplingPred: false
-                predicate:
-                    expr: (((ds = '2008-04-08') and (not ((key > 50) or (key < 10)))) and (hr like '%2'))
-                    type: boolean
-                Select Operator
-                  expressions:
-                        expr: key
-                        type: string
-                        expr: value
-                        type: string
-                        expr: ds
-                        type: string
-                        expr: hr
-                        type: string
-                  outputColumnNames: _col0, _col1, _col2, _col3
-                  File Output Operator
-                    compressed: false
-                    GlobalTableId: 0
-                    directory: file:/tmp/sdong/hive_2011-02-10_16-59-31_097_6104330106842070340/-ext-10001
-                    NumFilesPerFileSink: 1
-                    Stats Publishing Key Prefix: file:/tmp/sdong/hive_2011-02-10_16-59-31_097_6104330106842070340/-ext-10001/
-                    table:
-                        input format: org.apache.hadoop.mapred.TextInputFormat
-                        output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                        properties:
-                          columns _col0,_col1,_col2,_col3
-                          columns.types string:string:string:string
-                          serialization.format 1
-                    TotalFiles: 1
-                    GatherStats: false
-                    MultiFileSpray: false
+              Select Operator
+                expressions:
+                      expr: key
+                      type: string
+                      expr: value
+                      type: string
+                      expr: ds
+                      type: string
+                      expr: hr
+                      type: string
+                outputColumnNames: _col0, _col1, _col2, _col3
+                File Output Operator
+                  compressed: false
+                  GlobalTableId: 0
+                  directory: file:/var/folders/uc/ucuNeMAVGQGzy3459D8z2+++Z0Q/-Tmp-/amarsri/hive_2011-03-17_11-41-58_245_7085869776801424539/-ext-10001
+                  NumFilesPerFileSink: 1
+                  Stats Publishing Key Prefix: file:/var/folders/uc/ucuNeMAVGQGzy3459D8z2+++Z0Q/-Tmp-/amarsri/hive_2011-03-17_11-41-58_245_7085869776801424539/-ext-10001/
+                  table:
+                      input format: org.apache.hadoop.mapred.TextInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                      properties:
+                        columns _col0,_col1,_col2,_col3
+                        columns.types string:string:string:string
+                        serialization.format 1
+                  TotalFiles: 1
+                  GatherStats: false
+                  MultiFileSpray: false
       Needs Tagging: false
       Path -> Alias:
         pfile:/data/users/sdong/www/open-source-hive1/build/ql/test/data/warehouse/srcpart/ds=2008-04-08/hr=12 [a]

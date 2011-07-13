@@ -57,23 +57,15 @@ STAGE PLANS:
         z 
           TableScan
             alias: z
-            Filter Operator
-              predicate:
-                  expr: (ds = '2008-04-08')
-                  type: boolean
-              Filter Operator
-                predicate:
-                    expr: (hr = 11)
-                    type: boolean
-                HashTable Sink Operator
-                  condition expressions:
-                    0 {_col0}
-                    1 {value}
-                  handleSkewJoin: false
-                  keys:
-                    0 [Column[_col0]]
-                    1 [Column[key]]
-                  Position of Big Table: 0
+            HashTable Sink Operator
+              condition expressions:
+                0 {_col0}
+                1 {value}
+              handleSkewJoin: false
+              keys:
+                0 [Column[_col0]]
+                1 [Column[key]]
+              Position of Big Table: 0
 
   Stage: Stage-1
     Map Reduce
