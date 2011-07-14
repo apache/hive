@@ -44,15 +44,15 @@ import org.apache.hadoop.hive.conf.HiveConf;
  *
  */
 public class TestJdbcDriver extends TestCase {
-  private static String driverName = "org.apache.hadoop.hive.jdbc.HiveDriver";
-  private static String tableName = "testHiveJdbcDriverTable";
-  private static String tableComment = "Simple table";
-  private static String viewName = "testHiveJdbcDriverView";
-  private static String viewComment = "Simple view";
-  private static String partitionedTableName = "testHiveJdbcDriverPartitionedTable";
-  private static String partitionedTableComment = "Partitioned table";
-  private static String dataTypeTableName = "testDataTypeTable";
-  private static String dataTypeTableComment = "Table with many column data types";
+  private static final String driverName = "org.apache.hadoop.hive.jdbc.HiveDriver";
+  private static final String tableName = "testHiveJdbcDriver_Table";
+  private static final String tableComment = "Simple table";
+  private static final String viewName = "testHiveJdbcDriverView";
+  private static final String viewComment = "Simple view";
+  private static final String partitionedTableName = "testHiveJdbcDriverPartitionedTable";
+  private static final String partitionedTableComment = "Partitioned table";
+  private static final String dataTypeTableName = "testDataTypeTable";
+  private static final String dataTypeTableComment = "Table with many column data types";
   private final HiveConf conf;
   private final Path dataFilePath;
   private final Path dataTypeDataFilePath;
@@ -97,7 +97,8 @@ public class TestJdbcDriver extends TestCase {
 
     // create table
     ResultSet res = stmt.executeQuery("create table " + tableName
-        + " (key int comment 'the key', value string) comment '"+tableComment+"'");
+        + " (under_col int comment 'the under column', value string) comment '"
+        + tableComment + "'");
     assertFalse(res.next());
 
     // load data
@@ -115,7 +116,7 @@ public class TestJdbcDriver extends TestCase {
     }
 
     res = stmt.executeQuery("create table " + partitionedTableName
-        + " (key int, value string) comment '"+partitionedTableComment
+        + " (under_col int, value string) comment '"+partitionedTableComment
             +"' partitioned by (dt STRING)");
     assertFalse(res.next());
 
@@ -421,8 +422,8 @@ public class TestJdbcDriver extends TestCase {
     while (moreRow) {
       try {
         i++;
-        assertEquals(res.getInt(1), res.getInt("key"));
-        assertEquals(res.getString(1), res.getString("key"));
+        assertEquals(res.getInt(1), res.getInt("under_col"));
+        assertEquals(res.getString(1), res.getString("under_col"));
         assertEquals(res.getString(2), res.getString("value"));
         assertFalse("Last result value was not null", res.wasNull());
         assertNull("No warnings should be found on ResultSet", res
@@ -478,7 +479,7 @@ public class TestJdbcDriver extends TestCase {
     doTestErrorCase("SELECT invalid_column FROM " + tableName,
         "Invalid table alias or column reference", invalidSyntaxSQLState,
         parseErrorCode);
-    doTestErrorCase("SELECT invalid_function(key) FROM " + tableName,
+    doTestErrorCase("SELECT invalid_function(under_col) FROM " + tableName,
         "Invalid function", invalidSyntaxSQLState, parseErrorCode);
 
     // TODO: execute errors like this currently don't return good messages (i.e.
@@ -533,14 +534,17 @@ public class TestJdbcDriver extends TestCase {
 
   public void testMetaDataGetTables() throws SQLException {
     Map<String, Object[]> tests = new HashMap<String, Object[]>();
-    tests.put("test%jdbc%", new Object[]{"testhivejdbcdriverpartitionedtable"
-            , "testhivejdbcdrivertable"
+    tests.put("test%jdbc%", new Object[]{"testhivejdbcdriver_table"
+            , "testhivejdbcdriverpartitionedtable"
             , "testhivejdbcdriverview"});
-    tests.put("%jdbcdrivertable", new Object[]{"testhivejdbcdrivertable"});
-    tests.put("testhivejdbcdrivertable", new Object[]{"testhivejdbcdrivertable"});
-    tests.put("test_ivejdbcdri_ertable", new Object[]{"testhivejdbcdrivertable"});
-    tests.put("%jdbc%", new Object[]{"testhivejdbcdriverpartitionedtable"
-            , "testhivejdbcdrivertable"
+    tests.put("%jdbcdriver\\_table", new Object[]{"testhivejdbcdriver_table"});
+    tests.put("testhivejdbcdriver\\_table", new Object[]{"testhivejdbcdriver_table"});
+    tests.put("test_ivejdbcdri_er\\_table", new Object[]{"testhivejdbcdriver_table"});
+    tests.put("test_ivejdbcdri_er_table", new Object[]{"testhivejdbcdriver_table"});
+    tests.put("test_ivejdbcdri_er%table", new Object[]{
+        "testhivejdbcdriver_table", "testhivejdbcdriverpartitionedtable" });
+    tests.put("%jdbc%", new Object[]{ "testhivejdbcdriver_table"
+            , "testhivejdbcdriverpartitionedtable"
             , "testhivejdbcdriverview"});
     tests.put("", new Object[]{});
 
@@ -625,12 +629,15 @@ public class TestJdbcDriver extends TestCase {
 
   public void testMetaDataGetColumns() throws SQLException {
     Map<String[], Integer> tests = new HashMap<String[], Integer>();
-    tests.put(new String[]{"testhivejdbcdrivertable", null}, 2);
+    tests.put(new String[]{"testhivejdbcdriver\\_table", null}, 2);
     tests.put(new String[]{"testhivejdbc%", null}, 6);
-    tests.put(new String[]{"%jdbcdrivertable", null}, 2);
-    tests.put(new String[]{"%jdbcdrivertable%", "key"}, 1);
-    tests.put(new String[]{"%jdbcdrivertable%", "ke_"}, 1);
-    tests.put(new String[]{"%jdbcdrivertable%", "ke%"}, 1);
+    tests.put(new String[]{"%jdbcdriver\\_table", null}, 2);
+    tests.put(new String[]{"%jdbcdriver\\_table%", "under\\_col"}, 1);
+    tests.put(new String[]{"%jdbcdriver\\_table%", "under\\_co_"}, 1);
+    tests.put(new String[]{"%jdbcdriver\\_table%", "under_col"}, 1);
+    tests.put(new String[]{"%jdbcdriver\\_table%", "und%"}, 1);
+    tests.put(new String[]{"%jdbcdriver\\_table%", "%"}, 2);
+    tests.put(new String[]{"%jdbcdriver\\_table%", "_%"}, 2);
 
     for (String[] checkPattern: tests.keySet()) {
       ResultSet rs = (ResultSet)con.getMetaData().getColumns(null, null
@@ -641,7 +648,7 @@ public class TestJdbcDriver extends TestCase {
         int ordinalPos = rs.getInt("ORDINAL_POSITION");
         switch(cnt) {
           case 0:
-            assertEquals("Wrong column name found", "key", columnname);
+            assertEquals("Wrong column name found", "under_col", columnname);
             assertEquals("Wrong ordinal position found", ordinalPos, 1);
             break;
           case 1:
@@ -705,8 +712,8 @@ public class TestJdbcDriver extends TestCase {
     ResultSet res = stmt.executeQuery("describe " + tableName);
 
     res.next();
-    assertEquals("Column name 'key' not found", "key", res.getString(1));
-    assertEquals("Column type 'int' for column key not found", "int", res
+    assertEquals("Column name 'under_col' not found", "under_col", res.getString(1));
+    assertEquals("Column type 'under_col' for column under_col not found", "int", res
         .getString(2));
     res.next();
     assertEquals("Column name 'value' not found", "value", res.getString(1));
