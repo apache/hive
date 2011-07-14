@@ -18,8 +18,6 @@
 
 package org.apache.hadoop.hive.jdbc;
 
-import java.io.IOException;
-import java.net.URL;
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
 import java.sql.ResultSet;
@@ -31,7 +29,6 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 import java.util.jar.Attributes;
-import java.util.jar.Manifest;
 
 import org.apache.hadoop.hive.metastore.TableType;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
@@ -47,6 +44,8 @@ public class HiveDatabaseMetaData implements java.sql.DatabaseMetaData {
 
   private final HiveInterface client;
   private static final String CATALOG_SEPARATOR = ".";
+
+  private static final char SEARCH_STRING_ESCAPE = '\\';
 
   //  The maximum column length = MFieldSchema.FNAME in metastore/src/model/package.jdo
   private static final int maxColumnNameLength = 128;
@@ -140,11 +139,44 @@ public class HiveDatabaseMetaData implements java.sql.DatabaseMetaData {
     throw new SQLException("Method not supported");
   }
 
+  /**
+   * Convert a pattern containing JDBC catalog search wildcards into
+   * Java regex patterns.
+   *
+   * @param pattern input which may contain '%' or '_' wildcard characters, or
+   * these characters escaped using {@link #getSearchStringEscape()}.
+   * @return replace %/_ with regex search characters, also handle escaped
+   * characters.
+   */
   private String convertPattern(final String pattern) {
     if (pattern==null) {
       return ".*";
     } else {
-      return pattern.replace("%", ".*").replace("_", ".");
+      StringBuilder result = new StringBuilder(pattern.length());
+
+      boolean escaped = false;
+      for (int i = 0, len = pattern.length(); i < len; i++) {
+        char c = pattern.charAt(i);
+        if (escaped) {
+          if (c != SEARCH_STRING_ESCAPE) {
+            escaped = false;
+          }
+          result.append(c);
+        } else {
+          if (c == SEARCH_STRING_ESCAPE) {
+            escaped = true;
+            continue;
+          } else if (c == '%') {
+            result.append(".*");
+          } else if (c == '_') {
+            result.append('.');
+          } else {
+            result.append(c);
+          }
+        }
+      }
+
+      return result.toString();
     }
   }
 
@@ -488,7 +520,7 @@ public class HiveDatabaseMetaData implements java.sql.DatabaseMetaData {
   }
 
   public String getSearchStringEscape() throws SQLException {
-    throw new SQLException("Method not supported");
+    return String.valueOf(SEARCH_STRING_ESCAPE);
   }
 
   public String getStringFunctions() throws SQLException {
