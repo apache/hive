@@ -379,7 +379,10 @@ public class CliDriver {
     StringBuilder qsb = new StringBuilder();
 
     while ((line = r.readLine()) != null) {
-      qsb.append(line + "\n");
+      // Skipping through comments
+      if (! line.startsWith("--")) {
+        qsb.append(line + "\n");
+      }
     }
 
     return (processLine(qsb.toString()));
