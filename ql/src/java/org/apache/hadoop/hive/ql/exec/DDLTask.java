@@ -1363,7 +1363,7 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
       try {
 
         // Copy the files out of the archive into the temporary directory
-        String copySource = (new Path(sourceDir, "*")).toString();
+        String copySource = sourceDir.toString();
         String copyDest = tmpDir.toString();
         List<String> args = new ArrayList<String>();
         args.add("-cp");

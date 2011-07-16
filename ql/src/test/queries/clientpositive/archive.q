@@ -7,7 +7,7 @@ drop table tstsrcpart;
 create table tstsrc like src;
 insert overwrite table tstsrc select key, value from src;
 
-create table tstsrcpart like srcpart;
+create table tstsrcpart (key string, value string) partitioned by (ds string, hr string) clustered by (key) into 10 buckets;
 
 insert overwrite table tstsrcpart partition (ds='2008-04-08', hr='11')
 select key, value from srcpart where ds='2008-04-08' and hr='11';
