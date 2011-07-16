@@ -76,6 +76,7 @@
               logFile="${test.log.dir}/testcontribparsegen.log"
               logDirectory="${test.log.dir}/contribpositive"/>
     
+ <!-- the TestContribParseNegative.java got removed? 
     <qtestgen outputDirectory="${test.build.src}/org/apache/hadoop/hive/ql/parse" 
               templatePath="${ql.test.template.dir}" template="TestParseNegative.vm" 
               queryDirectory="${contrib.test.query.dir}/negative" 
@@ -85,6 +86,7 @@
               resultsDirectory="${contrib.test.results.dir}/compiler/errors" className="TestContribParseNegative"
               logFile="${test.log.dir}/testcontribparseneggen.log"
               logDirectory="${test.log.dir}/contribnegative"/>
+   -->
 
     <qtestgen outputDirectory="${test.build.src}/org/apache/hadoop/hive/cli" 
               templatePath="${ql.test.template.dir}" template="TestCliDriver.vm" 

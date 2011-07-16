@@ -10,7 +10,7 @@
   <classpathentry exported="true" kind="lib" path="cli/lib/jline-@jline.version@.jar"/>
   <classpathentry exported="true" kind="lib" path="lib/json.jar"/>
   <classpathentry exported="true" kind="lib" path="lib/asm-@asm.version@.jar"/>
-  <classpathentry exported="true" kind="lib" path="lib/commons-codec-@commons-codec.version@.jar"/>
+  <classpathentry exported="true" kind="lib" path="build/hadoopcore/hadoop-@HADOOPVER@/lib/commons-codec-@commons-codec.version@.jar"/>
   <classpathentry exported="true" kind="lib" path="lib/commons-lang-@commons-lang.version@.jar"/>
   <classpathentry exported="true" kind="lib" path="lib/commons-logging-@commons-logging.version@.jar"/>
   <classpathentry exported="true" kind="lib" path="lib/commons-logging-api-@commons-logging-api.version@.jar"/>
