@@ -19,6 +19,7 @@
 package org.apache.hadoop.hive.ql.plan;
 
 import java.io.Serializable;
+import java.util.Map;
 
 /**
  * CreateTableLikeDesc.
@@ -29,6 +30,10 @@ public class CreateTableLikeDesc extends DDLDesc implements Serializable {
   private static final long serialVersionUID = 1L;
   String tableName;
   boolean isExternal;
+  String defaultInputFormat;
+  String defaultOutputFormat;
+  String defaultSerName;
+  Map<String, String> defaultSerdeProps;
   String location;
   boolean ifNotExists;
   String likeTableName;
@@ -37,9 +42,15 @@ public class CreateTableLikeDesc extends DDLDesc implements Serializable {
   }
 
   public CreateTableLikeDesc(String tableName, boolean isExternal,
-      String location, boolean ifNotExists, String likeTableName) {
+      String defaultInputFormat, String defaultOutputFormat, String location,
+      String defaultSerName, Map<String, String> defaultSerdeProps, boolean ifNotExists,
+      String likeTableName) {
     this.tableName = tableName;
     this.isExternal = isExternal;
+    this.defaultInputFormat=defaultInputFormat;
+    this.defaultOutputFormat=defaultOutputFormat;
+    this.defaultSerName=defaultSerName;
+    this.defaultSerdeProps=defaultSerdeProps;
     this.location = location;
     this.ifNotExists = ifNotExists;
     this.likeTableName = likeTableName;
@@ -63,6 +74,24 @@ public class CreateTableLikeDesc extends DDLDesc implements Serializable {
     this.tableName = tableName;
   }
 
+  @Explain(displayName = "default input format")
+  public String getDefaultInputFormat() {
+    return defaultInputFormat;
+  }
+
+  public void setInputFormat(String inputFormat) {
+    this.defaultInputFormat = inputFormat;
+  }
+
+  @Explain(displayName = "default output format")
+  public String getDefaultOutputFormat() {
+    return defaultOutputFormat;
+  }
+
+  public void setOutputFormat(String outputFormat) {
+    this.defaultOutputFormat = outputFormat;
+  }
+
   @Explain(displayName = "location")
   public String getLocation() {
     return location;
@@ -79,6 +108,38 @@ public class CreateTableLikeDesc extends DDLDesc implements Serializable {
 
   public void setExternal(boolean isExternal) {
     this.isExternal = isExternal;
+  }
+
+  /**
+   * @return the default serDeName
+   */
+  @Explain(displayName = "default serde name")
+  public String getDefaultSerName() {
+    return defaultSerName;
+  }
+
+  /**
+   * @param serName
+   *          the serName to set
+   */
+  public void setDefaultSerName(String serName) {
+    this.defaultSerName = serName;
+  }
+
+  /**
+   * @return the default serDe properties
+   */
+  @Explain(displayName = "serde properties")
+  public Map<String, String> getDefaultSerdeProps() {
+    return defaultSerdeProps;
+  }
+
+  /**
+   * @param serdeProps
+   *          the default serde properties to set
+   */
+  public void setDefaultSerdeProps(Map<String, String> serdeProps) {
+    this.defaultSerdeProps = serdeProps;
   }
 
   @Explain(displayName = "like")

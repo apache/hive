@@ -3223,30 +3223,80 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
    */
   private int createTableLike(Hive db, CreateTableLikeDesc crtTbl) throws HiveException {
     // Get the existing table
-    Table tbl = db.getTable(crtTbl.getLikeTableName());
+    Table oldtbl = db.getTable(crtTbl.getLikeTableName());
+    Table tbl;
+    if (oldtbl.getTableType() == TableType.VIRTUAL_VIEW) {
+      String targetTableName = crtTbl.getTableName();
+      tbl=db.newTable(targetTableName);
 
-    // find out database name and table name of target table
-    String targetTableName = crtTbl.getTableName();
-    Table newTable = db.newTable(targetTableName);
+      tbl.setTableType(TableType.MANAGED_TABLE);
 
-    tbl.setDbName(newTable.getDbName());
-    tbl.setTableName(newTable.getTableName());
+      if (crtTbl.isExternal()) {
+        tbl.setProperty("EXTERNAL", "TRUE");
+        tbl.setTableType(TableType.EXTERNAL_TABLE);
+      }
 
-    if (crtTbl.isExternal()) {
-      tbl.setProperty("EXTERNAL", "TRUE");
+      tbl.setFields(oldtbl.getCols());
+      tbl.setPartCols(oldtbl.getPartCols());
+
+      if (crtTbl.getDefaultSerName() == null) {
+        LOG.info("Default to LazySimpleSerDe for table " + crtTbl.getTableName());
+        tbl.setSerializationLib(org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe.class.getName());
+      } else {
+        // let's validate that the serde exists
+        validateSerDe(crtTbl.getDefaultSerName());
+        tbl.setSerializationLib(crtTbl.getDefaultSerName());
+      }
+
+      if (crtTbl.getDefaultSerdeProps() != null) {
+        Iterator<Entry<String, String>> iter = crtTbl.getDefaultSerdeProps().entrySet()
+          .iterator();
+        while (iter.hasNext()) {
+          Entry<String, String> m = iter.next();
+          tbl.setSerdeParam(m.getKey(), m.getValue());
+        }
+      }
+
+      tbl.setInputFormatClass(crtTbl.getDefaultInputFormat());
+      tbl.setOutputFormatClass(crtTbl.getDefaultOutputFormat());
+
+      tbl.getTTable().getSd().setInputFormat(
+          tbl.getInputFormatClass().getName());
+      tbl.getTTable().getSd().setOutputFormat(
+          tbl.getOutputFormatClass().getName());
     } else {
-      tbl.setProperty("EXTERNAL", "FALSE");
+      tbl=oldtbl;
+
+      // find out database name and table name of target table
+      String targetTableName = crtTbl.getTableName();
+      Table newTable = db.newTable(targetTableName);
+
+      tbl.setDbName(newTable.getDbName());
+      tbl.setTableName(newTable.getTableName());
+
+      if (crtTbl.getLocation() != null) {
+        tbl.setDataLocation(new Path(crtTbl.getLocation()).toUri());
+      } else {
+        tbl.unsetDataLocation();
+      }
+
+      // we should reset table specific parameters including (stats, lastDDLTime etc.)
+      Map<String, String> params = tbl.getParameters();
+      params.clear();
+
+      if (crtTbl.isExternal()) {
+        tbl.setProperty("EXTERNAL", "TRUE");
+        tbl.setTableType(TableType.EXTERNAL_TABLE);
+      } else {
+        tbl.getParameters().remove("EXTERNAL");
+      }
     }
 
-    if (crtTbl.getLocation() != null) {
-      tbl.setDataLocation(new Path(crtTbl.getLocation()).toUri());
-    } else {
-      tbl.unsetDataLocation();
+    // reset owner and creation time
+    int rc = setGenericTableAttributes(tbl);
+    if (rc != 0) {
+      return rc;
     }
-
-    // we should reset table specific parameters including (stats, lastDDLTime etc.)
-    Map<String, String> params = tbl.getParameters();
-    params.clear();
 
     // create the table
     db.createTable(tbl, crtTbl.getIfNotExists());
