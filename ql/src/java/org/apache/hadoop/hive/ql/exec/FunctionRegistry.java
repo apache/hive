@@ -74,6 +74,7 @@ import org.apache.hadoop.hive.ql.udf.UDFLpad;
 import org.apache.hadoop.hive.ql.udf.UDFMinute;
 import org.apache.hadoop.hive.ql.udf.UDFMonth;
 import org.apache.hadoop.hive.ql.udf.UDFNow;
+import org.apache.hadoop.hive.ql.udf.UDFNvl;
 import org.apache.hadoop.hive.ql.udf.UDFOPBitAnd;
 import org.apache.hadoop.hive.ql.udf.UDFOPBitNot;
 import org.apache.hadoop.hive.ql.udf.UDFOPBitOr;
@@ -279,6 +280,7 @@ public final class FunctionRegistry {
 
 
     registerUDF("now", UDFNow.class, false);
+    registerGenericUDF("nvl", UDFNvl.class);
 
     registerGenericUDF("split", GenericUDFSplit.class);
     registerGenericUDF("str_to_map", GenericUDFStringToMap.class);
