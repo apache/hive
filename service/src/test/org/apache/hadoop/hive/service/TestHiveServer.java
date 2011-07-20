@@ -88,6 +88,11 @@ public class TestHiveServer extends TestCase {
   protected void tearDown() throws Exception {
     super.tearDown();
     if (standAloneServer) {
+      try {
+        client.clean();
+      } catch (Exception e) {
+        e.printStackTrace();
+      }
       transport.close();
     }
   }
