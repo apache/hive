@@ -32,6 +32,7 @@ import org.apache.hadoop.io.ArrayWritable;
 import org.apache.hadoop.io.BooleanWritable;
 import org.apache.hadoop.io.BytesWritable;
 import org.apache.hadoop.io.FloatWritable;
+import org.apache.hadoop.io.IOUtils;
 import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.MapWritable;
@@ -380,22 +381,29 @@ public class TypedBytesWritableInput implements Configurable {
   }
 
   public Writable readWritable(Writable writable) throws IOException {
-    ByteArrayInputStream bais = new ByteArrayInputStream(in.readBytes());
-    DataInputStream dis = new DataInputStream(bais);
-    String className = WritableUtils.readString(dis);
-    if (writable == null) {
-      try {
-        Class<? extends Writable> cls = conf.getClassByName(className)
-            .asSubclass(Writable.class);
-        writable = (Writable) ReflectionUtils.newInstance(cls, conf);
-      } catch (ClassNotFoundException e) {
-        throw new IOException(e);
+    DataInputStream dis = null;
+    try {
+      ByteArrayInputStream bais = new ByteArrayInputStream(in.readBytes());
+      dis = new DataInputStream(bais);
+      String className = WritableUtils.readString(dis);
+      if (writable == null) {
+        try {
+          Class<? extends Writable> cls = conf.getClassByName(className)
+              .asSubclass(Writable.class);
+          writable = (Writable) ReflectionUtils.newInstance(cls, conf);
+        } catch (ClassNotFoundException e) {
+          throw new IOException(e);
+        }
+      } else if (!writable.getClass().getName().equals(className)) {
+        throw new IOException("wrong Writable class given");
       }
-    } else if (!writable.getClass().getName().equals(className)) {
-      throw new IOException("wrong Writable class given");
+      writable.readFields(dis);
+      dis.close();
+      dis = null;
+      return writable;
+    } finally {
+      IOUtils.closeStream(dis);
     }
-    writable.readFields(dis);
-    return writable;
   }
 
   public Writable readWritable() throws IOException {

@@ -61,6 +61,7 @@ import org.apache.hadoop.hive.ql.session.SessionState.LogHelper;
 import org.apache.hadoop.hive.service.HiveClient;
 import org.apache.hadoop.hive.service.HiveServerException;
 import org.apache.hadoop.hive.shims.ShimLoader;
+import org.apache.hadoop.io.IOUtils;
 import org.apache.thrift.TException;
 
 import sun.misc.Signal;
@@ -390,14 +391,18 @@ public class CliDriver {
 
   public int processFile(String fileName) throws IOException {
     FileReader fileReader = null;
+    BufferedReader bufferReader = null;
+    int rc = 0;
     try {
       fileReader = new FileReader(fileName);
-      return processReader(new BufferedReader(fileReader));
+      bufferReader = new BufferedReader(fileReader);
+      rc = processReader(bufferReader);
+      bufferReader.close();
+      bufferReader = null;
     } finally {
-      if (fileReader != null) {
-        fileReader.close();
-      }
+      IOUtils.closeStream(bufferReader);
     }
+    return rc;
   }
 
   public void processInitFiles(CliSessionState ss) throws IOException {
