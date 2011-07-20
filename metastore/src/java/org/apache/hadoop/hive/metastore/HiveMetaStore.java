@@ -31,6 +31,7 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Timer;
 import java.util.regex.Pattern;
 
@@ -1344,16 +1345,24 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       logInfo("add_partitions : db=" + db + " tbl=" + tbl);
 
       boolean success = false;
+      Map<Partition,Boolean> addedPartitions = new HashMap<Partition,Boolean>();
       try {
         ms.openTransaction();
         for (Partition part : parts) {
-          add_partition(part);
+          Entry<Partition, Boolean> e = add_partition_core_notxn(ms,part);
+          addedPartitions.put(e.getKey(),e.getValue());
         }
         success = true;
         ms.commitTransaction();
       } finally {
         if (!success) {
           ms.rollbackTransaction();
+          for (Entry<Partition,Boolean> e : addedPartitions.entrySet()){
+            if (e.getValue()){
+              wh.deleteDir(new Path(e.getKey().getSd().getLocation()), true);
+              // we just created this directory - it's not a case of pre-creation, so we nuke
+            }
+          }
         }
       }
       return parts.size();
@@ -1390,12 +1399,23 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       return ret;
     }
 
-    private Partition add_partition_core(final RawStore ms, final Partition part)
-        throws InvalidObjectException, AlreadyExistsException, MetaException {
+    /**
+     * An implementation of add_partition_core that does not commit
+     * transaction or rollback transaction as part of its operation
+     * - it is assumed that will be tended to from outside this call
+     * @param ms
+     * @param part
+     * @return
+     * @throws InvalidObjectException
+     * @throws AlreadyExistsException
+     * @throws MetaException
+     */
+    private Entry<Partition,Boolean> add_partition_core_notxn(
+        final RawStore ms, final Partition part)
+    throws InvalidObjectException, AlreadyExistsException, MetaException {
       boolean success = false, madeDir = false;
       Path partLocation = null;
       try {
-        ms.openTransaction();
         Partition old_part = null;
         try {
           old_part = ms.getPartition(part.getDbName(), part
@@ -1456,20 +1476,39 @@ public class HiveMetaStore extends ThriftHiveMetastore {
             part.getParameters().get(Constants.DDL_TIME) == null) {
           part.putToParameters(Constants.DDL_TIME, Long.toString(time));
         }
-        success = ms.addPartition(part) && ms.commitTransaction();
+        success = ms.addPartition(part);
 
       } finally {
         if (!success) {
-          ms.rollbackTransaction();
           if (madeDir) {
             wh.deleteDir(partLocation, true);
           }
         }
         for(MetaStoreEventListener listener : listeners){
           listener.onAddPartition(new AddPartitionEvent(part, success, this));
+        }
       }
+      Map<Partition,Boolean> returnVal = new HashMap<Partition,Boolean>();
+      returnVal.put(part, madeDir);
+      return returnVal.entrySet().iterator().next();
+    }
+
+    private Partition add_partition_core(final RawStore ms, final Partition part)
+    throws InvalidObjectException, AlreadyExistsException, MetaException {
+      boolean success = false;
+      Partition retPtn = null;
+      try{
+        ms.openTransaction();
+        retPtn = add_partition_core_notxn(ms,part).getKey();
+        // we proceed only if we'd actually succeeded anyway, otherwise,
+        // we'd have thrown an exception
+        success = ms.commitTransaction();
+      }finally{
+        if (!success){
+          ms.rollbackTransaction();
+        }
       }
-      return part;
+      return retPtn;
     }
 
     public Partition add_partition(final Partition part)

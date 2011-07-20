@@ -19,6 +19,7 @@
 package org.apache.hadoop.hive.metastore;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
@@ -116,20 +117,10 @@ public abstract class TestHiveMetaStore extends TestCase {
       String dbName = "compdb";
       String tblName = "comptbl";
       String typeName = "Person";
-      List<String> vals = new ArrayList<String>(2);
-      vals.add("2008-07-01 14:13:12");
-      vals.add("14");
-      List <String> vals2 = new ArrayList<String>(2);
-      vals2.add("2008-07-01 14:13:12");
-      vals2.add("15");
-      List <String> vals3 = new ArrayList<String>(2);
-      vals3 = new ArrayList<String>(2);
-      vals3.add("2008-07-02 14:13:12");
-      vals3.add("15");
-      List <String> vals4 = new ArrayList<String>(2);
-      vals4 = new ArrayList<String>(2);
-      vals4.add("2008-07-03 14:13:12");
-      vals4.add("151");
+      List<String> vals = makeVals("2008-07-01 14:13:12", "14");
+      List<String> vals2 = makeVals("2008-07-01 14:13:12", "15");
+      List<String> vals3 = makeVals("2008-07-02 14:13:12", "15");
+      List<String> vals4 = makeVals("2008-07-03 14:13:12", "151");
 
       client.dropTable(dbName, tblName);
       silentDropDatabase(dbName);
@@ -182,43 +173,12 @@ public abstract class TestHiveMetaStore extends TestCase {
         tbl = client.getTable(dbName, tblName);
       }
 
-      Partition part = new Partition();
-      part.setDbName(dbName);
-      part.setTableName(tblName);
-      part.setValues(vals);
-      part.setParameters(new HashMap<String, String>());
-      part.setSd(tbl.getSd());
-      part.getSd().setSerdeInfo(tbl.getSd().getSerdeInfo());
-      part.getSd().setLocation(tbl.getSd().getLocation() + "/part1");
+      Partition part = makePartitionObject(dbName, tblName, vals, tbl, "/part1");
+      Partition part2 = makePartitionObject(dbName, tblName, vals2, tbl, "/part2");
+      Partition part3 = makePartitionObject(dbName, tblName, vals3, tbl, "/part3");
+      Partition part4 = makePartitionObject(dbName, tblName, vals4, tbl, "/part4");
 
-      Partition part2 = new Partition();
-      part2.setDbName(dbName);
-      part2.setTableName(tblName);
-      part2.setValues(vals2);
-      part2.setParameters(new HashMap<String, String>());
-      part2.setSd(tbl.getSd());
-      part2.getSd().setSerdeInfo(tbl.getSd().getSerdeInfo());
-      part2.getSd().setLocation(tbl.getSd().getLocation() + "/part2");
-
-      Partition part3 = new Partition();
-      part3.setDbName(dbName);
-      part3.setTableName(tblName);
-      part3.setValues(vals3);
-      part3.setParameters(new HashMap<String, String>());
-      part3.setSd(tbl.getSd());
-      part3.getSd().setSerdeInfo(tbl.getSd().getSerdeInfo());
-      part3.getSd().setLocation(tbl.getSd().getLocation() + "/part3");
-
-      Partition part4 = new Partition();
-      part4.setDbName(dbName);
-      part4.setTableName(tblName);
-      part4.setValues(vals4);
-      part4.setParameters(new HashMap<String, String>());
-      part4.setSd(tbl.getSd());
-      part4.getSd().setSerdeInfo(tbl.getSd().getSerdeInfo());
-      part4.getSd().setLocation(tbl.getSd().getLocation() + "/part4");
-
-      // check if the partition exists (it shouldn;t)
+      // check if the partition exists (it shouldn't)
       boolean exceptionThrown = false;
       try {
         Partition p = client.getPartition(dbName, tblName, vals);
@@ -236,6 +196,8 @@ public abstract class TestHiveMetaStore extends TestCase {
       assertNotNull("Unable to create partition " + part3, retp3);
       Partition retp4 = client.add_partition(part4);
       assertNotNull("Unable to create partition " + part4, retp4);
+
+
 
       Partition part_get = client.getPartition(dbName, tblName, part.getValues());
       if(isThriftClient) {
@@ -316,7 +278,7 @@ public abstract class TestHiveMetaStore extends TestCase {
       }
       assertTrue("Bad partition spec should have thrown an exception", exceptionThrown);
 
-      Path partPath = new Path(part2.getSd().getLocation());
+      Path partPath = new Path(part.getSd().getLocation());
       FileSystem fs = FileSystem.get(partPath.toUri(), hiveConf);
 
 
@@ -340,6 +302,71 @@ public abstract class TestHiveMetaStore extends TestCase {
       // tested
       retp = client.add_partition(part);
       assertNotNull("Unable to create partition " + part, retp);
+
+      // test add_partitions
+
+      List<String> mvals1 = makeVals("2008-07-04 14:13:12", "14641");
+      List<String> mvals2 = makeVals("2008-07-04 14:13:12", "14642");
+      List<String> mvals3 = makeVals("2008-07-04 14:13:12", "14643");
+      List<String> mvals4 = makeVals("2008-07-04 14:13:12", "14643"); // equal to 3
+      List<String> mvals5 = makeVals("2008-07-04 14:13:12", "14645");
+
+      Exception savedException;
+
+      // add_partitions(empty list) : ok, normal operation
+      client.add_partitions(new ArrayList<Partition>());
+
+      // add_partitions(1,2,3) : ok, normal operation
+      Partition mpart1 = makePartitionObject(dbName, tblName, mvals1, tbl, "/mpart1");
+      Partition mpart2 = makePartitionObject(dbName, tblName, mvals2, tbl, "/mpart2");
+      Partition mpart3 = makePartitionObject(dbName, tblName, mvals3, tbl, "/mpart3");
+      client.add_partitions(Arrays.asList(mpart1,mpart2,mpart3));
+
+      if(isThriftClient) {
+        // do DDL time munging if thrift mode
+        adjust(client, mpart1, dbName, tblName);
+        adjust(client, mpart2, dbName, tblName);
+        adjust(client, mpart3, dbName, tblName);
+      }
+      verifyPartitionsPublished(client, dbName, tblName,
+          Arrays.asList(mvals1.get(0)),
+          Arrays.asList(mpart1,mpart2,mpart3));
+
+      Partition mpart4 = makePartitionObject(dbName, tblName, mvals4, tbl, "/mpart4");
+      Partition mpart5 = makePartitionObject(dbName, tblName, mvals5, tbl, "/mpart5");
+
+      // create dir for /mpart5
+      Path mp5Path = new Path(mpart5.getSd().getLocation());
+      warehouse.mkdirs(mp5Path);
+      assertTrue(fs.exists(mp5Path));
+
+      // add_partitions(5,4) : err = duplicate keyvals on mpart4
+      savedException = null;
+      try {
+        client.add_partitions(Arrays.asList(mpart5,mpart4));
+      } catch (Exception e) {
+        savedException = e;
+      } finally {
+        assertNotNull(savedException);
+      }
+
+      // check that /mpart4 does not exist, but /mpart5 still does.
+      assertTrue(fs.exists(mp5Path));
+      assertFalse(fs.exists(new Path(mpart4.getSd().getLocation())));
+
+      // add_partitions(5) : ok
+      client.add_partitions(Arrays.asList(mpart5));
+
+      if(isThriftClient) {
+        // do DDL time munging if thrift mode
+        adjust(client, mpart5, dbName, tblName);
+      }
+
+      verifyPartitionsPublished(client, dbName, tblName,
+          Arrays.asList(mvals1.get(0)),
+          Arrays.asList(mpart1,mpart2,mpart3,mpart5));
+
+      //// end add_partitions tests
 
       client.dropTable(dbName, tblName);
 
@@ -366,6 +393,41 @@ public abstract class TestHiveMetaStore extends TestCase {
       System.err.println("testPartition() failed.");
       throw e;
     }
+  }
+
+  private static void verifyPartitionsPublished(HiveMetaStoreClient client,
+      String dbName, String tblName, List<String> partialSpec,
+      List<Partition> expectedPartitions)
+          throws NoSuchObjectException, MetaException, TException {
+    // Test partition listing with a partial spec
+
+    List<Partition> mpartial = client.listPartitions(dbName, tblName, partialSpec,
+        (short) -1);
+    assertEquals("Should have returned "+expectedPartitions.size()+
+        " partitions, returned " + mpartial.size(),
+        expectedPartitions.size(), mpartial.size());
+    assertTrue("Not all parts returned", mpartial.containsAll(expectedPartitions));
+  }
+
+  private static List<String> makeVals(String ds, String id) {
+    List <String> vals4 = new ArrayList<String>(2);
+    vals4 = new ArrayList<String>(2);
+    vals4.add(ds);
+    vals4.add(id);
+    return vals4;
+  }
+
+  private static Partition makePartitionObject(String dbName, String tblName,
+      List<String> ptnVals, Table tbl, String ptnLocationSuffix) {
+    Partition part4 = new Partition();
+    part4.setDbName(dbName);
+    part4.setTableName(tblName);
+    part4.setValues(ptnVals);
+    part4.setParameters(new HashMap<String, String>());
+    part4.setSd(tbl.getSd().deepCopy());
+    part4.getSd().setSerdeInfo(tbl.getSd().getSerdeInfo().deepCopy());
+    part4.getSd().setLocation(tbl.getSd().getLocation() + ptnLocationSuffix);
+    return part4;
   }
 
   public void testAlterPartition() throws Throwable {

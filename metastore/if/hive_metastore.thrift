@@ -270,6 +270,8 @@ service ThriftHiveMetastore extends fb303.FacebookService
   // * See notes on DDL_TIME
   Partition add_partition(1:Partition new_part)
                        throws(1:InvalidObjectException o1, 2:AlreadyExistsException o2, 3:MetaException o3)
+  i32 add_partitions(1:list<Partition> new_parts)
+                       throws(1:InvalidObjectException o1, 2:AlreadyExistsException o2, 3:MetaException o3)
   Partition append_partition(1:string db_name, 2:string tbl_name, 3:list<string> part_vals)
                        throws (1:InvalidObjectException o1, 2:AlreadyExistsException o2, 3:MetaException o3)
   Partition append_partition_by_name(1:string db_name, 2:string tbl_name, 3:string part_name)

@@ -292,6 +292,20 @@ public class HiveMetaStoreClient implements IMetaStoreClient {
   }
 
   /**
+   * @param new_parts
+   * @throws InvalidObjectException
+   * @throws AlreadyExistsException
+   * @throws MetaException
+   * @throws TException
+   * @see org.apache.hadoop.hive.metastore.api.ThriftHiveMetastore.Iface#add_partitions(List<org.apache.hadoop.hive.metastore.api.Partition>)
+   */
+  public int add_partitions(List<Partition> new_parts)
+      throws InvalidObjectException, AlreadyExistsException, MetaException,
+      TException {
+    return client.add_partitions(new_parts);
+  }
+
+  /**
    * @param table_name
    * @param db_name
    * @param part_vals
