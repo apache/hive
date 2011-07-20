@@ -249,6 +249,7 @@ public interface IMetaStoreClient {
 
   public Partition appendPartition(String tableName, String dbName, String name)
       throws InvalidObjectException, AlreadyExistsException, MetaException, TException;
+
   /**
    * Add a partition to the table.
    *
@@ -265,6 +266,24 @@ public interface IMetaStoreClient {
    *           Thrift exception
    */
   public Partition add_partition(Partition partition)
+      throws InvalidObjectException, AlreadyExistsException, MetaException,
+      TException;
+
+  /**
+   * Add partitions to the table.
+   *
+   * @param partitions
+   *          The partitions to add
+   * @throws InvalidObjectException
+   *           Could not find table to add to
+   * @throws AlreadyExistsException
+   *           Partition already exists
+   * @throws MetaException
+   *           Could not add partition
+   * @throws TException
+   *           Thrift exception
+   */
+  public int add_partitions(List<Partition> partitions)
       throws InvalidObjectException, AlreadyExistsException, MetaException,
       TException;
 

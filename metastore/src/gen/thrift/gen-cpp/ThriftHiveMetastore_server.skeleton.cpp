@@ -122,6 +122,11 @@ class ThriftHiveMetastoreHandler : virtual public ThriftHiveMetastoreIf {
     printf("add_partition\n");
   }
 
+  int32_t add_partitions(const std::vector<Partition> & new_parts) {
+    // Your implementation goes here
+    printf("add_partitions\n");
+  }
+
   void append_partition(Partition& _return, const std::string& db_name, const std::string& tbl_name, const std::vector<std::string> & part_vals) {
     // Your implementation goes here
     printf("append_partition\n");
