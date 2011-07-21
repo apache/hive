@@ -61,6 +61,7 @@ public class RCFileMergeMapper extends MapReduceBase implements
   boolean hasDynamicPartitions = false;
   boolean tmpPathFixed = false;
   Path tmpPath;
+  Path taskTmpPath;
   Path dpPath;
 
   public final static Log LOG = LogFactory.getLog("RCFileMergeMapper");
@@ -68,6 +69,7 @@ public class RCFileMergeMapper extends MapReduceBase implements
   public RCFileMergeMapper() {
   }
 
+  @Override
   public void configure(JobConf job) {
     jc = job;
     hasDynamicPartitions = HiveConf.getBoolVar(job,
@@ -75,7 +77,9 @@ public class RCFileMergeMapper extends MapReduceBase implements
 
     String specPath = RCFileBlockMergeOutputFormat.getMergeOutputPath(job)
         .toString();
-    updatePaths(Utilities.toTempPath(specPath));
+    Path tmpPath = Utilities.toTempPath(specPath);
+    Path taskTmpPath = Utilities.toTaskTempPath(specPath);
+    updatePaths(tmpPath, taskTmpPath);
     try {
       fs = (new Path(specPath)).getFileSystem(job);
       autoDelete = ShimLoader.getHadoopShims().fileSystemDeleteOnExit(fs,
@@ -86,11 +90,12 @@ public class RCFileMergeMapper extends MapReduceBase implements
     }
   }
 
-  private void updatePaths(Path tmpPath) {
+  private void updatePaths(Path tmpPath, Path taskTmpPath) {
     String taskId = Utilities.getTaskId(jc);
     this.tmpPath = tmpPath;
+    this.taskTmpPath = taskTmpPath;
     finalPath = new Path(tmpPath, taskId);
-    outPath = new Path(tmpPath, Utilities.toTempPath(taskId));
+    outPath = new Path(taskTmpPath, Utilities.toTempPath(taskId));
   }
 
   @Override
@@ -163,9 +168,10 @@ public class RCFileMergeMapper extends MapReduceBase implements
    *
    * @param inputPath
    * @throws HiveException
+   * @throws IOException
    */
   private void fixTmpPath(Path inputPath)
-      throws HiveException {
+      throws HiveException, IOException {
     dpPath = inputPath;
     Path newPath = new Path(".");
     int inputDepth = inputPath.depth();
@@ -177,9 +183,16 @@ public class RCFileMergeMapper extends MapReduceBase implements
       inputDepth--;
       inputPath = inputPath.getParent();
     }
-    updatePaths(new Path(tmpPath, newPath));
+
+    Path newTmpPath = new Path(tmpPath, newPath);
+    Path newTaskTmpPath = new Path(taskTmpPath, newPath);
+    if (!fs.exists(newTmpPath)) {
+      fs.mkdirs(newTmpPath);
+    }
+    updatePaths(newTmpPath, newTaskTmpPath);
   }
 
+  @Override
   public void close() throws IOException {
     // close writer
     if (outWriter == null) {

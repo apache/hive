@@ -77,9 +77,6 @@ public class RCFileOutputFormat extends
 
     Path outputPath = getWorkOutputPath(job);
     FileSystem fs = outputPath.getFileSystem(job);
-    if (!fs.exists(outputPath)) {
-      fs.mkdirs(outputPath);
-    }
     Path file = new Path(outputPath, name);
     CompressionCodec codec = null;
     if (getCompressOutput(job)) {

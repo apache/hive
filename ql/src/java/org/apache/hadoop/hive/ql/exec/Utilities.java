@@ -117,8 +117,8 @@ import org.apache.hadoop.hive.ql.plan.MapredLocalWork;
 import org.apache.hadoop.hive.ql.plan.MapredWork;
 import org.apache.hadoop.hive.ql.plan.PartitionDesc;
 import org.apache.hadoop.hive.ql.plan.PlanUtils;
-import org.apache.hadoop.hive.ql.plan.PlanUtils.ExpressionTypes;
 import org.apache.hadoop.hive.ql.plan.TableDesc;
+import org.apache.hadoop.hive.ql.plan.PlanUtils.ExpressionTypes;
 import org.apache.hadoop.hive.ql.stats.StatsFactory;
 import org.apache.hadoop.hive.ql.stats.StatsPublisher;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDF;
@@ -133,8 +133,8 @@ import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.hadoop.hive.shims.ShimLoader;
 import org.apache.hadoop.io.IOUtils;
 import org.apache.hadoop.io.SequenceFile;
-import org.apache.hadoop.io.SequenceFile.CompressionType;
 import org.apache.hadoop.io.Writable;
+import org.apache.hadoop.io.SequenceFile.CompressionType;
 import org.apache.hadoop.io.compress.CompressionCodec;
 import org.apache.hadoop.io.compress.DefaultCodec;
 import org.apache.hadoop.mapred.FileOutputFormat;
@@ -1012,6 +1012,18 @@ public final class Utilities {
   }
 
   private static final String tmpPrefix = "_tmp.";
+  private static final String taskTmpPrefix = "_task_tmp.";
+
+  public static Path toTaskTempPath(Path orig) {
+    if (orig.getName().indexOf(taskTmpPrefix) == 0) {
+      return orig;
+    }
+    return new Path(orig.getParent(), taskTmpPrefix + orig.getName());
+  }
+
+  public static Path toTaskTempPath(String orig) {
+    return toTaskTempPath(new Path(orig));
+  }
 
   public static Path toTempPath(Path orig) {
     if (orig.getName().indexOf(tmpPrefix) == 0) {
@@ -1211,6 +1223,7 @@ public final class Utilities {
 
     FileSystem fs = (new Path(specPath)).getFileSystem(hconf);
     Path tmpPath = Utilities.toTempPath(specPath);
+    Path taskTmpPath = Utilities.toTaskTempPath(specPath);
     Path intermediatePath = new Path(tmpPath.getParent(), tmpPath.getName()
         + ".intermediate");
     Path finalPath = new Path(specPath);
@@ -1236,6 +1249,7 @@ public final class Utilities {
     } else {
       fs.delete(tmpPath, true);
     }
+    fs.delete(taskTmpPath, true);
   }
 
   /**
