@@ -32,18 +32,20 @@ import java.util.Map;
 import java.util.Set;
 
 import jline.ArgumentCompletor;
+import jline.ArgumentCompletor.AbstractArgumentDelimiter;
+import jline.ArgumentCompletor.ArgumentDelimiter;
 import jline.Completor;
 import jline.ConsoleReader;
 import jline.History;
 import jline.SimpleCompletor;
-import jline.ArgumentCompletor.AbstractArgumentDelimiter;
-import jline.ArgumentCompletor.ArgumentDelimiter;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.common.HiveInterruptUtils;
+import org.apache.hadoop.hive.common.LogUtils;
+import org.apache.hadoop.hive.common.LogUtils.LogInitializationException;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.Schema;
@@ -512,7 +514,14 @@ public class CliDriver {
 
     // NOTE: It is critical to do this here so that log4j is reinitialized
     // before any of the other core hive classes are loaded
-    SessionState.initHiveLog4j();
+    boolean logInitFailed = false;
+    String logInitDetailMessage;
+    try {
+      logInitDetailMessage = LogUtils.initHiveLog4j();
+    } catch (LogInitializationException e) {
+      logInitFailed = true;
+      logInitDetailMessage = e.getMessage();
+    }
 
     CliSessionState ss = new CliSessionState(new HiveConf(SessionState.class));
     ss.in = System.in;
@@ -526,7 +535,14 @@ public class CliDriver {
     if (!oproc.process_stage2(ss)) {
       System.exit(2);
     }
-    ss.printInitInfo();
+
+    if (!ss.getIsSilent()) {
+      if (logInitFailed) {
+        System.err.println(logInitDetailMessage);
+      } else {
+        SessionState.getConsole().printInfo(logInitDetailMessage);
+      }
+    }
 
     // set all properties specified via command line
     HiveConf conf = ss.getConf();

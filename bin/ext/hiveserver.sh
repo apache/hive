@@ -25,11 +25,11 @@ hiveserver() {
   JAR=${HIVE_LIB}/hive-service-*.jar
 
   # hadoop 20 or newer - skip the aux_jars option and hiveconf
-  exec $HADOOP jar $JAR $CLASS $HIVE_PORT "$@"
+
+  exec $HADOOP jar $JAR $CLASS "$@"
 }
 
 hiveserver_help() {
-  echo "usage HIVE_PORT=xxxx ./hive --service hiveserver" 
-  echo "  HIVE_PORT : Specify the server port"
+  hiveserver -h
 }
 

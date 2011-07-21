@@ -29,6 +29,8 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.hive.cli.CliSessionState;
 import org.apache.hadoop.hive.cli.OptionsProcessor;
+import org.apache.hadoop.hive.common.LogUtils;
+import org.apache.hadoop.hive.common.LogUtils.LogInitializationException;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.CommandNeedRetryException;
 import org.apache.hadoop.hive.ql.Driver;
@@ -140,7 +142,11 @@ public class HWISessionItem implements Runnable, Comparable<HWISessionItem> {
       }
     }
 
-    SessionState.initHiveLog4j();
+    try {
+      LogUtils.initHiveLog4j();
+    } catch (LogInitializationException e) {
+      l4j.warn(e);
+    }
     conf = new HiveConf(SessionState.class);
     ss = new CliSessionState(conf);
     SessionState.start(ss);

@@ -28,9 +28,15 @@ import java.io.PrintStream;
 import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.Properties;
 
+import org.apache.commons.cli.OptionBuilder;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.apache.hadoop.hive.common.LogUtils;
+import org.apache.hadoop.hive.common.LogUtils.LogInitializationException;
+import org.apache.hadoop.hive.common.cli.CommonCliOptions;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.HiveMetaStore;
 import org.apache.hadoop.hive.metastore.api.MetaException;
@@ -64,6 +70,21 @@ public class HiveServer extends ThriftHive {
   private static final String VERSION = "1";
 
   /**
+   * default port on which to start the Hive server
+   */
+  private static final int DEFAULT_HIVE_SERVER_PORT = 10000;
+
+  /**
+   * default minimum number of threads serving the Hive server
+   */
+  private static final int DEFAULT_MIN_WORKER_THREADS = 100;
+
+  /**
+   * default maximum number of threads serving the Hive server
+   */
+  private static final int DEFAULT_MAX_WORKER_THREADS = Integer.MAX_VALUE;
+
+  /**
    * Handler which implements the Hive Interface This class can be used in lieu
    * of the HiveClient class to get an embedded server.
    */
@@ -89,14 +110,26 @@ public class HiveServer extends ThriftHive {
     public static final Log LOG = LogFactory.getLog(HiveServer.class.getName());
 
     /**
-     * A constructor.
+     * Construct a new handler.
+     *
+     * @throws MetaException unable to create metastore
      */
     public HiveServerHandler() throws MetaException {
-      super(HiveServer.class.getName());
+      this(new HiveConf(SessionState.class));
+    }
+
+    /**
+     * Construct a new handler with the specified hive configuration.
+     *
+     * @param conf caller specified hive configuration
+     * @throws MetaException unable to create metastore
+     */
+    public HiveServerHandler(HiveConf conf) throws MetaException {
+      super(HiveServer.class.getName(), conf);
 
       isHiveQuery = false;
       driver = null;
-      SessionState session = new SessionState(new HiveConf(SessionState.class));
+      SessionState session = new SessionState(conf);
       SessionState.start(session);
       setupSessionIO(session);
     }
@@ -510,14 +543,17 @@ public class HiveServer extends ThriftHive {
    *
    */
   public static class ThriftHiveProcessorFactory extends TProcessorFactory {
-    public ThriftHiveProcessorFactory(TProcessor processor) {
+    private final HiveConf conf;
+
+    public ThriftHiveProcessorFactory(TProcessor processor, HiveConf conf) {
       super(processor);
+      this.conf = conf;
     }
 
     @Override
     public TProcessor getProcessor(TTransport trans) {
       try {
-        Iface handler = new HiveServerHandler();
+        Iface handler = new HiveServerHandler(conf);
         return new ThriftHive.Processor(handler);
       } catch (Exception e) {
         throw new RuntimeException(e);
@@ -525,27 +561,132 @@ public class HiveServer extends ThriftHive {
     }
   }
 
-  public static void main(String[] args) {
-    try {
-      //Initializing log for the HiveServer Mode
-      SessionState.initHiveLog4j();
+  /**
+   * HiveServer specific CLI
+   *
+   */
+  static public class HiveServerCli extends CommonCliOptions {
+    private static final String OPTION_MAX_WORKER_THREADS = "maxWorkerThreads";
+    private static final String OPTION_MIN_WORKER_THREADS = "minWorkerThreads";
 
-      int port = 10000;
-      int minWorkerThreads = 100; // default number of threads serving the Hive server
+    public int port = DEFAULT_HIVE_SERVER_PORT;
+    public int minWorkerThreads = DEFAULT_MIN_WORKER_THREADS;
+    public int maxWorkerThreads = DEFAULT_MAX_WORKER_THREADS;
+
+    @SuppressWarnings("static-access")
+    public HiveServerCli() {
+      super("hiveserver", true);
+
+      // -p port
+      OPTIONS.addOption(OptionBuilder
+          .hasArg()
+          .withArgName("port")
+          .withDescription("Hive Server port number, default:"
+              + DEFAULT_HIVE_SERVER_PORT)
+          .create('p'));
+
+      // min worker thread count
+      OPTIONS.addOption(OptionBuilder
+          .hasArg()
+          .withLongOpt(OPTION_MIN_WORKER_THREADS)
+          .withDescription("minimum number of worker threads, default:"
+              + DEFAULT_MIN_WORKER_THREADS)
+          .create());
+
+      // max worker thread count
+      OPTIONS.addOption(OptionBuilder
+          .hasArg()
+          .withLongOpt(OPTION_MAX_WORKER_THREADS)
+          .withDescription("maximum number of worker threads, default:"
+              + DEFAULT_MAX_WORKER_THREADS)
+          .create());
+    }
+
+    @Override
+    public void parse(String[] args) {
+      super.parse(args);
+
+      // support the old syntax "hiveserver [port [threads]]" but complain
+      args = commandLine.getArgs();
       if (args.length >= 1) {
+        // complain about the deprecated syntax -- but still run
+        System.err.println(
+            "This usage has been deprecated, consider using the new command "
+            + "line syntax (run with -h to see usage information)");
+
         port = Integer.parseInt(args[0]);
       }
       if (args.length >= 2) {
         minWorkerThreads = Integer.parseInt(args[1]);
       }
-      TServerTransport serverTransport = new TServerSocket(port);
-      ThriftHiveProcessorFactory hfactory = new ThriftHiveProcessorFactory(null);
+
+      // notice that command line options take precedence over the
+      // deprecated (old style) naked args...
+      if (commandLine.hasOption('p')) {
+        port = Integer.parseInt(commandLine.getOptionValue('p'));
+      } else {
+        // legacy handling
+        String hivePort = System.getenv("HIVE_PORT");
+        if (hivePort != null) {
+          port = Integer.parseInt(hivePort);
+        }
+      }
+      if (commandLine.hasOption(OPTION_MIN_WORKER_THREADS)) {
+        minWorkerThreads = Integer.parseInt(
+            commandLine.getOptionValue(OPTION_MIN_WORKER_THREADS));
+      }
+      if (commandLine.hasOption(OPTION_MAX_WORKER_THREADS)) {
+        maxWorkerThreads = Integer.parseInt(
+            commandLine.getOptionValue(OPTION_MAX_WORKER_THREADS));
+      }
+    }
+  }
+
+  public static void main(String[] args) {
+    try {
+      HiveServerCli cli = new HiveServerCli();
+
+      cli.parse(args);
+
+      // NOTE: It is critical to do this prior to initializing log4j, otherwise
+      // any log specific settings via hiveconf will be ignored
+      Properties hiveconf = cli.addHiveconfToSystemProperties();
+
+      // NOTE: It is critical to do this here so that log4j is reinitialized
+      // before any of the other core hive classes are loaded
+      try {
+        LogUtils.initHiveLog4j();
+      } catch (LogInitializationException e) {
+        HiveServerHandler.LOG.warn(e.getMessage());
+      }
+
+      TServerTransport serverTransport = new TServerSocket(cli.port);
+
+      HiveConf conf = new HiveConf(HiveServerHandler.class);
+
+      // set all properties specified on the command line
+      for (Map.Entry<Object, Object> item : hiveconf.entrySet()) {
+        conf.set((String) item.getKey(), (String) item.getValue());
+      }
+
+      ThriftHiveProcessorFactory hfactory =
+        new ThriftHiveProcessorFactory(null, conf);
+
       TThreadPoolServer.Options options = new TThreadPoolServer.Options();
-      options.minWorkerThreads = minWorkerThreads;
+      options.minWorkerThreads = cli.minWorkerThreads;
+      options.maxWorkerThreads = cli.maxWorkerThreads;
       TServer server = new TThreadPoolServer(hfactory, serverTransport,
           new TTransportFactory(), new TTransportFactory(),
           new TBinaryProtocol.Factory(), new TBinaryProtocol.Factory(), options);
-      HiveServerHandler.LOG.info("Starting hive server on port " + port);
+
+      String msg = "Starting hive server on port " + cli.port
+        + " with " + cli.minWorkerThreads + " min worker threads and "
+        + cli.maxWorkerThreads + " max worker threads";
+      HiveServerHandler.LOG.info(msg);
+      if (cli.isVerbose()) {
+        System.err.println(msg);
+      }
+
       server.serve();
     } catch (Exception x) {
       x.printStackTrace();
