@@ -75,6 +75,7 @@ public class BlockMergeTask extends Task<MergeWork> implements Serializable,
     jobExecHelper = new HadoopJobExecHelper(job, this.console, this, this);
   }
 
+  @Override
   public boolean requireLock() {
     return true;
   }
@@ -140,6 +141,17 @@ public class BlockMergeTask extends Task<MergeWork> implements Serializable,
     }
 
     String outputPath = this.work.getOutputDir();
+    Path tempOutPath = Utilities.toTempPath(new Path(outputPath));
+    try {
+      FileSystem fs = tempOutPath.getFileSystem(job);
+      if (!fs.exists(tempOutPath)) {
+        fs.mkdirs(tempOutPath);
+      }
+    } catch (IOException e) {
+      console.printError("Can't make path " + outputPath + " : " + e.getMessage());
+      return 6;
+    }
+
     RCFileBlockMergeOutputFormat.setMergeOutputPath(job, new Path(outputPath));
 
     job.setOutputKeyClass(NullWritable.class);
