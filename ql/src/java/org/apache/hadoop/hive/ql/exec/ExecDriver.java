@@ -48,6 +48,7 @@ import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.FileUtils;
+import org.apache.hadoop.hive.common.LogUtils;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.ql.Context;
@@ -562,9 +563,9 @@ public class ExecDriver extends Task<MapredWork> implements Serializable, Hadoop
    */
 
   private static void setupChildLog4j(Configuration conf) {
-    URL hive_l4j = ExecDriver.class.getClassLoader().getResource(SessionState.HIVE_EXEC_L4J);
+    URL hive_l4j = ExecDriver.class.getClassLoader().getResource(LogUtils.HIVE_EXEC_L4J);
     if (hive_l4j == null) {
-      hive_l4j = ExecDriver.class.getClassLoader().getResource(SessionState.HIVE_L4J);
+      hive_l4j = ExecDriver.class.getClassLoader().getResource(LogUtils.HIVE_L4J);
     }
 
     if (hive_l4j != null) {

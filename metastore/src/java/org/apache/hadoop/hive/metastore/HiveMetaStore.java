@@ -32,16 +32,21 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Properties;
 import java.util.Timer;
 import java.util.regex.Pattern;
 
+import org.apache.commons.cli.OptionBuilder;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.JavaUtils;
+import org.apache.hadoop.hive.common.LogUtils;
+import org.apache.hadoop.hive.common.LogUtils.LogInitializationException;
 import org.apache.hadoop.hive.common.classification.InterfaceAudience;
 import org.apache.hadoop.hive.common.classification.InterfaceStability;
+import org.apache.hadoop.hive.common.cli.CommonCliOptions;
 import org.apache.hadoop.hive.common.metrics.Metrics;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
@@ -118,6 +123,11 @@ import com.facebook.fb303.fb_status;
 public class HiveMetaStore extends ThriftHiveMetastore {
   public static final Log LOG = LogFactory.getLog(
     HiveMetaStore.class);
+
+  /**
+   * default port on which to start the Hive server
+   */
+  private static final int DEFAULT_HIVE_METASTORE_PORT = 9083;
 
   private static HadoopThriftAuthBridge.Server saslServer;
   private static boolean useSasl;
@@ -3367,16 +3377,90 @@ public class HiveMetaStore extends ThriftHiveMetastore {
   }
 
   /**
+   * HiveMetaStore specific CLI
+   *
+   */
+  static public class HiveMetastoreCli extends CommonCliOptions {
+    int port = DEFAULT_HIVE_METASTORE_PORT;
+
+    @SuppressWarnings("static-access")
+    public HiveMetastoreCli() {
+      super("hivemetastore", true);
+
+      // -p port
+      OPTIONS.addOption(OptionBuilder
+          .hasArg()
+          .withArgName("port")
+          .withDescription("Hive Metastore port number, default:"
+              + DEFAULT_HIVE_METASTORE_PORT)
+          .create('p'));
+
+    }
+
+    @Override
+    public void parse(String[] args) {
+      super.parse(args);
+
+      // support the old syntax "hivemetastore [port]" but complain
+      args = commandLine.getArgs();
+      if (args.length > 0) {
+        // complain about the deprecated syntax -- but still run
+        System.err.println(
+            "This usage has been deprecated, consider using the new command "
+            + "line syntax (run with -h to see usage information)");
+
+        port = new Integer(args[0]);
+      }
+
+      // notice that command line options take precedence over the
+      // deprecated (old style) naked args...
+      if (commandLine.hasOption('p')) {
+        port = Integer.parseInt(commandLine.getOptionValue('p'));
+      } else {
+        // legacy handling
+        String metastorePort = System.getenv("METASTORE_PORT");
+        if (metastorePort != null) {
+          port = Integer.parseInt(metastorePort);
+        }
+      }
+    }
+  }
+
+  /**
    * @param args
    */
-  public static void main(String[] args) throws Throwable{
-    int port = 9083;
+  public static void main(String[] args) throws Throwable {
+    HiveMetastoreCli cli = new HiveMetastoreCli();
 
-    if (args.length > 0) {
-      port = new Integer(args[0]);
-    }
+    cli.parse(args);
+
+    // NOTE: It is critical to do this prior to initializing log4j, otherwise
+    // any log specific settings via hiveconf will be ignored
+    Properties hiveconf = cli.addHiveconfToSystemProperties();
+
+    // NOTE: It is critical to do this here so that log4j is reinitialized
+    // before any of the other core hive classes are loaded
     try {
-      startMetaStore(port, ShimLoader.getHadoopThriftAuthBridge());
+      LogUtils.initHiveLog4j();
+    } catch (LogInitializationException e) {
+      HMSHandler.LOG.warn(e.getMessage());
+    }
+
+    try {
+      String msg = "Starting hive metastore on port " + cli.port;
+      HMSHandler.LOG.info(msg);
+      if (cli.isVerbose()) {
+        System.err.println(msg);
+      }
+
+      HiveConf conf = new HiveConf(HMSHandler.class);
+
+      // set all properties specified on the command line
+      for (Map.Entry<Object, Object> item : hiveconf.entrySet()) {
+        conf.set((String) item.getKey(), (String) item.getValue());
+      }
+
+      startMetaStore(cli.port, ShimLoader.getHadoopThriftAuthBridge(), conf);
     } catch (Throwable t) {
       // Catch the exception, log it and rethrow it.
       HMSHandler.LOG
@@ -3393,10 +3477,20 @@ public class HiveMetaStore extends ThriftHiveMetastore {
    */
   public static void startMetaStore(int port, HadoopThriftAuthBridge bridge)
   throws Throwable {
-    try {
+    startMetaStore(port, bridge, new HiveConf(HMSHandler.class));
+  }
 
-      HMSHandler handler = new HMSHandler("new db based metaserver");
-      HiveConf conf = handler.getHiveConf();
+  /**
+   * Start Metastore based on a passed {@link HadoopThriftAuthBridge}
+   * @param port
+   * @param bridge
+   * @param hiveconf configuration overrides
+   * @throws Throwable
+   */
+  public static void startMetaStore(int port, HadoopThriftAuthBridge bridge,
+      HiveConf conf) throws Throwable {
+    try {
+      HMSHandler handler = new HMSHandler("new db based metaserver", conf);
 
       // Server will create new threads up to max as necessary. After an idle
       // period, it will destory threads to keep the number of threads in the

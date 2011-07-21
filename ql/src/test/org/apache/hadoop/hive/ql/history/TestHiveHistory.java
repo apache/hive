@@ -28,6 +28,8 @@ import junit.framework.TestCase;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.cli.CliSessionState;
+import org.apache.hadoop.hive.common.LogUtils;
+import org.apache.hadoop.hive.common.LogUtils.LogInitializationException;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.MetaStoreUtils;
 import org.apache.hadoop.hive.ql.Driver;
@@ -137,7 +139,11 @@ public class TestHiveHistory extends TestCase {
       // NOTE: It is critical to do this here so that log4j is reinitialized
       // before
       // any of the other core hive classes are loaded
-      SessionState.initHiveLog4j();
+      try {
+        LogUtils.initHiveLog4j();
+      } catch (LogInitializationException e) {
+        // ignore
+      }
 
       CliSessionState ss = new CliSessionState(new HiveConf(SessionState.class));
       ss.in = System.in;

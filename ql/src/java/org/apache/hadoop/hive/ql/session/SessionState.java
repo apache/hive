@@ -23,7 +23,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.PrintStream;
 import java.net.URI;
-import java.net.URL;
 import java.util.Calendar;
 import java.util.GregorianCalendar;
 import java.util.HashMap;
@@ -46,8 +45,6 @@ import org.apache.hadoop.hive.ql.plan.HiveOperation;
 import org.apache.hadoop.hive.ql.security.HiveAuthenticationProvider;
 import org.apache.hadoop.hive.ql.security.authorization.HiveAuthorizationProvider;
 import org.apache.hadoop.hive.ql.util.DosToUnix;
-import org.apache.log4j.LogManager;
-import org.apache.log4j.PropertyConfigurator;
 
 /**
  * SessionState encapsulates common data associated with a session.
@@ -276,29 +273,6 @@ public class SessionState {
         + String.format("%1$4d%2$02d%3$02d%4$02d%5$02d", gc.get(Calendar.YEAR),
         gc.get(Calendar.MONTH) + 1, gc.get(Calendar.DAY_OF_MONTH), gc
         .get(Calendar.HOUR_OF_DAY), gc.get(Calendar.MINUTE));
-  }
-
-  public static final String HIVE_L4J = "hive-log4j.properties";
-  public static final String HIVE_EXEC_L4J = "hive-exec-log4j.properties";
-
-  public static void initHiveLog4j() {
-    // allow hive log4j to override any normal initialized one
-    URL hive_l4j = SessionState.class.getClassLoader().getResource(HIVE_L4J);
-    if (hive_l4j != null) {
-      LogManager.resetConfiguration();
-      PropertyConfigurator.configure(hive_l4j);
-    }
-  }
-
-  public void printInitInfo() {
-    URL hive_l4j = SessionState.class.getClassLoader().getResource(HIVE_L4J);
-    if (!isSilent) {
-      if (hive_l4j == null) {
-        System.err.println("Unable to initialize logging. " + HIVE_L4J + " not found on CLASSPATH!");
-      } else {
-        SessionState.getConsole().printInfo("Logging initialized using configuration in " + hive_l4j);
-      }
-    }
   }
 
   /**

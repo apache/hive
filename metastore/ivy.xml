@@ -26,6 +26,7 @@
         <dependency org="hadoop" name="core" rev="${hadoop.version.ant-internal}">
           <artifact name="hadoop" type="source" ext="tar.gz"/>
         </dependency>
+        <dependency org="commons-cli" name="commons-cli" rev="${commons-cli.version}"/>
 	<dependency org="commons-dbcp" name="commons-dbcp" rev="${commons-dbcp.version}">
           <exclude module="commons-pool" />
           <exclude org="org.apache.geronimo.specs" module="geronimo-jta_1.1_spec"/>
