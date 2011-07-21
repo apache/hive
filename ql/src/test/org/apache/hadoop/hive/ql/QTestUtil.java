@@ -938,6 +938,7 @@ public class QTestUtil {
         "-I", "CreateTime",
         "-I", "LastAccessTime",
         "-I", "Location",
+        "-I", "LOCATION '",
         "-I", "transient_lastDdlTime",
         "-I", "last_modified_",
         "-I", "java.lang.RuntimeException",
