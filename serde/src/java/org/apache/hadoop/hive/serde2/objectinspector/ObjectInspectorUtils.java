@@ -515,6 +515,14 @@ public final class ObjectInspectorUtils {
    */
   public static int compare(Object o1, ObjectInspector oi1, Object o2,
       ObjectInspector oi2) {
+    return compare(o1, oi1, o2, oi2, null);
+  }
+  
+  /**
+   * Compare two objects with their respective ObjectInspectors.
+   */
+  public static int compare(Object o1, ObjectInspector oi1, Object o2,
+      ObjectInspector oi2, MapEqualComparer mapEqualComparer) {
     if (oi1.getCategory() != oi2.getCategory()) {
       return oi1.getCategory().compareTo(oi2.getCategory());
     }
@@ -599,7 +607,8 @@ public final class ObjectInspectorUtils {
       for (int i = 0; i < minimum; i++) {
         int r = compare(soi1.getStructFieldData(o1, fields1.get(i)), fields1
             .get(i).getFieldObjectInspector(), soi2.getStructFieldData(o2,
-            fields2.get(i)), fields2.get(i).getFieldObjectInspector());
+            fields2.get(i)), fields2.get(i).getFieldObjectInspector(), 
+            mapEqualComparer);
         if (r != 0) {
           return r;
         }
@@ -613,7 +622,8 @@ public final class ObjectInspectorUtils {
       for (int i = 0; i < minimum; i++) {
         int r = compare(loi1.getListElement(o1, i), loi1
             .getListElementObjectInspector(), loi2.getListElement(o2, i), loi2
-            .getListElementObjectInspector());
+            .getListElementObjectInspector(),
+            mapEqualComparer);
         if (r != 0) {
           return r;
         }
@@ -621,7 +631,11 @@ public final class ObjectInspectorUtils {
       return loi1.getListLength(o1) - loi2.getListLength(o2);
     }
     case MAP: {
-      throw new RuntimeException("Compare on map type not supported!");
+      if (mapEqualComparer == null) {
+        throw new RuntimeException("Compare on map type not supported!");
+      } else {
+        return mapEqualComparer.compare(o1, (MapObjectInspector)oi1, o2, (MapObjectInspector)oi2);
+      }
     }
     case UNION: {
       UnionObjectInspector uoi1 = (UnionObjectInspector) oi1;
@@ -633,7 +647,8 @@ public final class ObjectInspectorUtils {
       }
       return compare(uoi1.getField(o1),
           uoi1.getObjectInspectors().get(tag1),
-          uoi2.getField(o2), uoi2.getObjectInspectors().get(tag2));
+          uoi2.getField(o2), uoi2.getObjectInspectors().get(tag2),
+          mapEqualComparer);
     }
     default:
       throw new RuntimeException("Compare on unknown type: "
