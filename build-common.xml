@@ -458,6 +458,7 @@
       <sysproperty key="hadoop.log.dir" value="${test.log.dir}"/>
       <sysproperty key="test.silent" value="${test.silent}"/>
       <sysproperty key="test.tmp.dir" value="${build.dir}/tmp"/>
+      <sysproperty key="test.src.data.dir" value="${test.src.data.dir}"/>
       <sysproperty key="test.warehouse.dir" value="${test.warehouse.dir}"/>
       <sysproperty key="mapred.job.tracker" value="${mapred.job.tracker}"/>
       <sysproperty key="fs.default.name" value="${fs.default.name}"/>
