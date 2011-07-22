@@ -1816,10 +1816,25 @@ public class Hive {
             // Note: there are race conditions here, but I don't believe
             // they're worse than what was already present.
             int counter = 1;
+            
+            // Strip off the file type, if any so we don't make:
+            // 000000_0.gz -> 000000_0.gz_copy_1
+            String name = itemStaging.getName();
+            String filetype;
+            int index = name.lastIndexOf('.');
+            if (index >= 0) {
+              filetype = name.substring(index);
+              name = name.substring(0, index);
+            } else {
+              filetype = "";
+            }
+            
             Path itemDest = new Path(destf, itemStaging.getName());
-
+            Path itemStagingBase = new Path(itemStaging.getParent(), name);
+            
             while (fs.exists(itemDest)) {
-              Path proposedStaging = itemStaging.suffix("_copy_" + counter++);
+              Path proposedStaging = itemStagingBase
+                  .suffix("_copy_" + counter++).suffix(filetype);
               Path proposedDest = new Path(destf, proposedStaging.getName());
 
               if (fs.exists(proposedDest)) {
