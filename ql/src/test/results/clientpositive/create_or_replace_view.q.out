@@ -1,0 +1,339 @@
+PREHOOK: query: drop view v
+PREHOOK: type: DROPVIEW
+POSTHOOK: query: drop view v
+POSTHOOK: type: DROPVIEW
+PREHOOK: query: create view v as select * from srcpart
+PREHOOK: type: CREATEVIEW
+PREHOOK: Output: file:/var/folders/fe/fefl-ow3ElaEd1ns0G7jB0uewEQ/-Tmp-/charleschen/hive_2011-07-19_17-34-54_878_6732266159103898080/-mr-10000
+POSTHOOK: query: create view v as select * from srcpart
+POSTHOOK: type: CREATEVIEW
+POSTHOOK: Output: default@v
+POSTHOOK: Output: file:/var/folders/fe/fefl-ow3ElaEd1ns0G7jB0uewEQ/-Tmp-/charleschen/hive_2011-07-19_17-34-54_878_6732266159103898080/-mr-10000
+PREHOOK: query: describe formatted v
+PREHOOK: type: DESCTABLE
+POSTHOOK: query: describe formatted v
+POSTHOOK: type: DESCTABLE
+# col_name            	data_type           	comment             
+	 	 
+key                 	string              	None                
+value               	string              	None                
+ds                  	string              	None                
+hr                  	string              	None                
+	 	 
+# Detailed Table Information	 	 
+Database:           	default             	 
+Owner:              	charleschen         	 
+CreateTime:         	Tue Jul 19 17:34:54 PDT 2011	 
+LastAccessTime:     	UNKNOWN             	 
+Protect Mode:       	None                	 
+Retention:          	0                   	 
+Table Type:         	VIRTUAL_VIEW        	 
+Table Parameters:	 	 
+	transient_lastDdlTime	1311122094          
+	 	 
+# Storage Information	 	 
+SerDe Library:      	null                	 
+InputFormat:        	org.apache.hadoop.mapred.SequenceFileInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	-1                  	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
+	 	 
+# View Information	 	 
+View Original Text: 	select * from srcpart	 
+View Expanded Text: 	select `srcpart`.`key`, `srcpart`.`value`, `srcpart`.`ds`, `srcpart`.`hr` from `srcpart`	 
+PREHOOK: query: -- modifying definition of unpartitioned view
+create or replace view v partitioned on (ds, hr) as select * from srcpart
+PREHOOK: type: CREATEVIEW
+PREHOOK: Output: file:/var/folders/fe/fefl-ow3ElaEd1ns0G7jB0uewEQ/-Tmp-/charleschen/hive_2011-07-19_17-34-55_095_6852446605722181312/-mr-10000
+POSTHOOK: query: -- modifying definition of unpartitioned view
+create or replace view v partitioned on (ds, hr) as select * from srcpart
+POSTHOOK: type: CREATEVIEW
+POSTHOOK: Output: default@v
+POSTHOOK: Output: file:/var/folders/fe/fefl-ow3ElaEd1ns0G7jB0uewEQ/-Tmp-/charleschen/hive_2011-07-19_17-34-55_095_6852446605722181312/-mr-10000
+PREHOOK: query: alter view v add partition (ds='2008-04-08',hr='11')
+PREHOOK: type: QUERY
+PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
+PREHOOK: Input: default@v
+POSTHOOK: query: alter view v add partition (ds='2008-04-08',hr='11')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
+POSTHOOK: Input: default@v
+POSTHOOK: Output: default@v@ds=2008-04-08/hr=11
+PREHOOK: query: alter view v add partition (ds='2008-04-08',hr='12')
+PREHOOK: type: QUERY
+PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
+PREHOOK: Input: default@v
+POSTHOOK: query: alter view v add partition (ds='2008-04-08',hr='12')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
+POSTHOOK: Input: default@v
+POSTHOOK: Output: default@v@ds=2008-04-08/hr=12
+PREHOOK: query: select * from v where value='val_409' and ds='2008-04-08' and hr='11'
+PREHOOK: type: QUERY
+PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
+PREHOOK: Output: file:/var/folders/fe/fefl-ow3ElaEd1ns0G7jB0uewEQ/-Tmp-/charleschen/hive_2011-07-19_17-34-55_760_500788128633787119/-mr-10000
+POSTHOOK: query: select * from v where value='val_409' and ds='2008-04-08' and hr='11'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
+POSTHOOK: Output: file:/var/folders/fe/fefl-ow3ElaEd1ns0G7jB0uewEQ/-Tmp-/charleschen/hive_2011-07-19_17-34-55_760_500788128633787119/-mr-10000
+409	val_409	2008-04-08	11
+409	val_409	2008-04-08	11
+409	val_409	2008-04-08	11
+PREHOOK: query: describe formatted v
+PREHOOK: type: DESCTABLE
+POSTHOOK: query: describe formatted v
+POSTHOOK: type: DESCTABLE
+# col_name            	data_type           	comment             
+	 	 
+key                 	string              	None                
+value               	string              	None                
+	 	 
+# Partition Information	 	 
+# col_name            	data_type           	comment             
+	 	 
+ds                  	string              	None                
+hr                  	string              	None                
+	 	 
+# Detailed Table Information	 	 
+Database:           	default             	 
+Owner:              	charleschen         	 
+CreateTime:         	Tue Jul 19 17:34:54 PDT 2011	 
+LastAccessTime:     	UNKNOWN             	 
+Protect Mode:       	None                	 
+Retention:          	0                   	 
+Table Type:         	VIRTUAL_VIEW        	 
+Table Parameters:	 	 
+	transient_lastDdlTime	1311122095          
+	 	 
+# Storage Information	 	 
+SerDe Library:      	null                	 
+InputFormat:        	org.apache.hadoop.mapred.SequenceFileInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	-1                  	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
+	 	 
+# View Information	 	 
+View Original Text: 	select * from srcpart	 
+View Expanded Text: 	select `srcpart`.`key`, `srcpart`.`value`, `srcpart`.`ds`, `srcpart`.`hr` from `srcpart`	 
+PREHOOK: query: show partitions v
+PREHOOK: type: SHOWPARTITIONS
+POSTHOOK: query: show partitions v
+POSTHOOK: type: SHOWPARTITIONS
+ds=2008-04-08/hr=11
+ds=2008-04-08/hr=12
+PREHOOK: query: -- altering partitioned view 1
+create or replace view v partitioned on (ds, hr) as select value, ds, hr from srcpart
+PREHOOK: type: CREATEVIEW
+PREHOOK: Output: file:/var/folders/fe/fefl-ow3ElaEd1ns0G7jB0uewEQ/-Tmp-/charleschen/hive_2011-07-19_17-35-01_367_3079170845179274932/-mr-10000
+POSTHOOK: query: -- altering partitioned view 1
+create or replace view v partitioned on (ds, hr) as select value, ds, hr from srcpart
+POSTHOOK: type: CREATEVIEW
+POSTHOOK: Output: default@v
+POSTHOOK: Output: file:/var/folders/fe/fefl-ow3ElaEd1ns0G7jB0uewEQ/-Tmp-/charleschen/hive_2011-07-19_17-35-01_367_3079170845179274932/-mr-10000
+PREHOOK: query: select * from v where value='val_409' and ds='2008-04-08' and hr='11'
+PREHOOK: type: QUERY
+PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
+PREHOOK: Output: file:/var/folders/fe/fefl-ow3ElaEd1ns0G7jB0uewEQ/-Tmp-/charleschen/hive_2011-07-19_17-35-01_478_4136837350460982570/-mr-10000
+POSTHOOK: query: select * from v where value='val_409' and ds='2008-04-08' and hr='11'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
+POSTHOOK: Output: file:/var/folders/fe/fefl-ow3ElaEd1ns0G7jB0uewEQ/-Tmp-/charleschen/hive_2011-07-19_17-35-01_478_4136837350460982570/-mr-10000
+val_409	2008-04-08	11
+val_409	2008-04-08	11
+val_409	2008-04-08	11
+PREHOOK: query: describe formatted v
+PREHOOK: type: DESCTABLE
+POSTHOOK: query: describe formatted v
+POSTHOOK: type: DESCTABLE
+# col_name            	data_type           	comment             
+	 	 
+value               	string              	None                
+	 	 
+# Partition Information	 	 
+# col_name            	data_type           	comment             
+	 	 
+ds                  	string              	None                
+hr                  	string              	None                
+	 	 
+# Detailed Table Information	 	 
+Database:           	default             	 
+Owner:              	charleschen         	 
+CreateTime:         	Tue Jul 19 17:34:54 PDT 2011	 
+LastAccessTime:     	UNKNOWN             	 
+Protect Mode:       	None                	 
+Retention:          	0                   	 
+Table Type:         	VIRTUAL_VIEW        	 
+Table Parameters:	 	 
+	transient_lastDdlTime	1311122101          
+	 	 
+# Storage Information	 	 
+SerDe Library:      	null                	 
+InputFormat:        	org.apache.hadoop.mapred.SequenceFileInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	-1                  	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
+	 	 
+# View Information	 	 
+View Original Text: 	select value, ds, hr from srcpart	 
+View Expanded Text: 	select `srcpart`.`value`, `srcpart`.`ds`, `srcpart`.`hr` from `srcpart`	 
+PREHOOK: query: show partitions v
+PREHOOK: type: SHOWPARTITIONS
+POSTHOOK: query: show partitions v
+POSTHOOK: type: SHOWPARTITIONS
+ds=2008-04-08/hr=11
+ds=2008-04-08/hr=12
+PREHOOK: query: -- altering partitioned view 2
+create or replace view v partitioned on (ds, hr) as select key, value, ds, hr from srcpart
+PREHOOK: type: CREATEVIEW
+PREHOOK: Output: file:/var/folders/fe/fefl-ow3ElaEd1ns0G7jB0uewEQ/-Tmp-/charleschen/hive_2011-07-19_17-35-06_293_404398995477036687/-mr-10000
+POSTHOOK: query: -- altering partitioned view 2
+create or replace view v partitioned on (ds, hr) as select key, value, ds, hr from srcpart
+POSTHOOK: type: CREATEVIEW
+POSTHOOK: Output: default@v
+POSTHOOK: Output: file:/var/folders/fe/fefl-ow3ElaEd1ns0G7jB0uewEQ/-Tmp-/charleschen/hive_2011-07-19_17-35-06_293_404398995477036687/-mr-10000
+PREHOOK: query: select * from v where value='val_409' and ds='2008-04-08' and hr='11'
+PREHOOK: type: QUERY
+PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
+PREHOOK: Output: file:/var/folders/fe/fefl-ow3ElaEd1ns0G7jB0uewEQ/-Tmp-/charleschen/hive_2011-07-19_17-35-06_369_6280534937916662695/-mr-10000
+POSTHOOK: query: select * from v where value='val_409' and ds='2008-04-08' and hr='11'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
+POSTHOOK: Output: file:/var/folders/fe/fefl-ow3ElaEd1ns0G7jB0uewEQ/-Tmp-/charleschen/hive_2011-07-19_17-35-06_369_6280534937916662695/-mr-10000
+409	val_409	2008-04-08	11
+409	val_409	2008-04-08	11
+409	val_409	2008-04-08	11
+PREHOOK: query: describe formatted v
+PREHOOK: type: DESCTABLE
+POSTHOOK: query: describe formatted v
+POSTHOOK: type: DESCTABLE
+# col_name            	data_type           	comment             
+	 	 
+key                 	string              	None                
+value               	string              	None                
+	 	 
+# Partition Information	 	 
+# col_name            	data_type           	comment             
+	 	 
+ds                  	string              	None                
+hr                  	string              	None                
+	 	 
+# Detailed Table Information	 	 
+Database:           	default             	 
+Owner:              	charleschen         	 
+CreateTime:         	Tue Jul 19 17:34:54 PDT 2011	 
+LastAccessTime:     	UNKNOWN             	 
+Protect Mode:       	None                	 
+Retention:          	0                   	 
+Table Type:         	VIRTUAL_VIEW        	 
+Table Parameters:	 	 
+	transient_lastDdlTime	1311122106          
+	 	 
+# Storage Information	 	 
+SerDe Library:      	null                	 
+InputFormat:        	org.apache.hadoop.mapred.SequenceFileInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	-1                  	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
+	 	 
+# View Information	 	 
+View Original Text: 	select key, value, ds, hr from srcpart	 
+View Expanded Text: 	select `srcpart`.`key`, `srcpart`.`value`, `srcpart`.`ds`, `srcpart`.`hr` from `srcpart`	 
+PREHOOK: query: show partitions v
+PREHOOK: type: SHOWPARTITIONS
+POSTHOOK: query: show partitions v
+POSTHOOK: type: SHOWPARTITIONS
+ds=2008-04-08/hr=11
+ds=2008-04-08/hr=12
+PREHOOK: query: drop view v
+PREHOOK: type: DROPVIEW
+PREHOOK: Input: default@v
+PREHOOK: Output: default@v
+POSTHOOK: query: drop view v
+POSTHOOK: type: DROPVIEW
+POSTHOOK: Input: default@v
+POSTHOOK: Output: default@v
+PREHOOK: query: -- updating to fix view with invalid definition
+create table srcpart_temp like srcpart
+PREHOOK: type: CREATETABLE
+POSTHOOK: query: -- updating to fix view with invalid definition
+create table srcpart_temp like srcpart
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: default@srcpart_temp
+PREHOOK: query: create view v partitioned on (ds, hr) as select * from srcpart_temp
+PREHOOK: type: CREATEVIEW
+PREHOOK: Output: file:/var/folders/fe/fefl-ow3ElaEd1ns0G7jB0uewEQ/-Tmp-/charleschen/hive_2011-07-19_17-35-11_359_8793253638417040051/-mr-10000
+POSTHOOK: query: create view v partitioned on (ds, hr) as select * from srcpart_temp
+POSTHOOK: type: CREATEVIEW
+POSTHOOK: Output: default@v
+POSTHOOK: Output: file:/var/folders/fe/fefl-ow3ElaEd1ns0G7jB0uewEQ/-Tmp-/charleschen/hive_2011-07-19_17-35-11_359_8793253638417040051/-mr-10000
+PREHOOK: query: drop table srcpart_temp
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@srcpart_temp
+PREHOOK: Output: default@srcpart_temp
+POSTHOOK: query: drop table srcpart_temp
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@srcpart_temp
+POSTHOOK: Output: default@srcpart_temp
+PREHOOK: query: -- v is now invalid
+create or replace view v partitioned on (ds, hr) as select * from srcpart
+PREHOOK: type: CREATEVIEW
+PREHOOK: Output: file:/var/folders/fe/fefl-ow3ElaEd1ns0G7jB0uewEQ/-Tmp-/charleschen/hive_2011-07-19_17-35-11_545_8300926509521526863/-mr-10000
+POSTHOOK: query: -- v is now invalid
+create or replace view v partitioned on (ds, hr) as select * from srcpart
+POSTHOOK: type: CREATEVIEW
+POSTHOOK: Output: default@v
+POSTHOOK: Output: file:/var/folders/fe/fefl-ow3ElaEd1ns0G7jB0uewEQ/-Tmp-/charleschen/hive_2011-07-19_17-35-11_545_8300926509521526863/-mr-10000
+PREHOOK: query: describe formatted v
+PREHOOK: type: DESCTABLE
+POSTHOOK: query: describe formatted v
+POSTHOOK: type: DESCTABLE
+# col_name            	data_type           	comment             
+	 	 
+key                 	string              	None                
+value               	string              	None                
+	 	 
+# Partition Information	 	 
+# col_name            	data_type           	comment             
+	 	 
+ds                  	string              	None                
+hr                  	string              	None                
+	 	 
+# Detailed Table Information	 	 
+Database:           	default             	 
+Owner:              	charleschen         	 
+CreateTime:         	Tue Jul 19 17:35:11 PDT 2011	 
+LastAccessTime:     	UNKNOWN             	 
+Protect Mode:       	None                	 
+Retention:          	0                   	 
+Table Type:         	VIRTUAL_VIEW        	 
+Table Parameters:	 	 
+	transient_lastDdlTime	1311122111          
+	 	 
+# Storage Information	 	 
+SerDe Library:      	null                	 
+InputFormat:        	org.apache.hadoop.mapred.SequenceFileInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	-1                  	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
+	 	 
+# View Information	 	 
+View Original Text: 	select * from srcpart	 
+View Expanded Text: 	select `srcpart`.`key`, `srcpart`.`value`, `srcpart`.`ds`, `srcpart`.`hr` from `srcpart`	 
+PREHOOK: query: drop view v
+PREHOOK: type: DROPVIEW
+PREHOOK: Input: default@v
+PREHOOK: Output: default@v
+POSTHOOK: query: drop view v
+POSTHOOK: type: DROPVIEW
+POSTHOOK: Input: default@v
+POSTHOOK: Output: default@v

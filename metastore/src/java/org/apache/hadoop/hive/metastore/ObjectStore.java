@@ -1664,6 +1664,8 @@ public class ObjectStore implements RawStore, Configurable {
       oldt.setPartitionKeys(newt.getPartitionKeys());
       oldt.setTableType(newt.getTableType());
       oldt.setLastAccessTime(newt.getLastAccessTime());
+      oldt.setViewOriginalText(newt.getViewOriginalText());
+      oldt.setViewExpandedText(newt.getViewExpandedText());
 
       // commit the changes
       success = commitTransaction();

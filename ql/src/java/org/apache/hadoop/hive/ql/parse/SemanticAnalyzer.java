@@ -195,6 +195,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
   Map<String, PrunedPartitionList> prunedPartitions;
   private List<FieldSchema> resultSchema;
   private CreateViewDesc createVwDesc;
+  private ArrayList<String> viewsExpanded;
   private ASTNode viewSelect;
   private final UnparseTranslator unparseTranslator;
   private final GlobalLimitCtx globalLimitCtx = new GlobalLimitCtx();
@@ -873,6 +874,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       // We have to materialize the table alias list since we might
       // modify it in the middle for view rewrite.
       List<String> tabAliases = new ArrayList<String>(qb.getTabAliases());
+      Map<String, String> aliasToViewName = new HashMap<String, String>();
       for (String alias : tabAliases) {
         String tab_name = qb.getTabNameForAlias(alias);
         Table tab = null;
@@ -911,7 +913,15 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
           if (qb.getParseInfo().isAnalyzeCommand()) {
             throw new SemanticException(ErrorMsg.ANALYZE_VIEW.getMsg());
           }
+          String fullViewName = tab.getDbName()+"."+tab.getTableName();
+          // Prevent view cycles
+          if(viewsExpanded.contains(fullViewName)){
+            throw new SemanticException("Recursive view " + fullViewName +
+                " detected (cycle: " + StringUtils.join(viewsExpanded, " -> ") +
+                " -> " + fullViewName + ").");
+          }
           replaceViewReferenceWithDefinition(qb, tab, tab_name, alias);
+          aliasToViewName.put(alias, fullViewName);
           continue;
         }
 
@@ -940,8 +950,15 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       LOG.info("Get metadata for subqueries");
       // Go over the subqueries and getMetaData for these
       for (String alias : qb.getSubqAliases()) {
+        boolean wasView = aliasToViewName.containsKey(alias);
+        if (wasView) {
+          viewsExpanded.add(aliasToViewName.get(alias));
+        }
         QBExpr qbexpr = qb.getSubqForAlias(alias);
         getMetaData(qbexpr);
+        if (wasView) {
+           viewsExpanded.remove(viewsExpanded.size()-1);
+        }
       }
 
       LOG.info("Get metadata for destination tables");
@@ -7124,6 +7141,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     this.qb = qb;
     this.ast = ast;
     ASTNode child = ast;
+    viewsExpanded = new ArrayList<String>();
 
     LOG.info("Starting Semantic Analysis");
 
@@ -7145,6 +7163,8 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         return;
       }
       viewSelect = child;
+      // prevent view from referencing itself
+      viewsExpanded.add(db.getCurrentDatabase()+"."+createVwDesc.getViewName());
     }
 
     // continue analyzing from the child ASTNode.
@@ -7778,6 +7798,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     String tableName = getUnescapedName((ASTNode)ast.getChild(0));
     List<FieldSchema> cols = null;
     boolean ifNotExists = false;
+    boolean orReplace = false;
     String comment = null;
     ASTNode selectStmt = null;
     Map<String, String> tblProps = null;
@@ -7791,6 +7812,9 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       switch (child.getToken().getType()) {
       case HiveParser.TOK_IFNOTEXISTS:
         ifNotExists = true;
+        break;
+      case HiveParser.TOK_ORREPLACE:
+        orReplace = true;
         break;
       case HiveParser.TOK_QUERY:
         selectStmt = child;
@@ -7812,8 +7836,12 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       }
     }
 
+    if (ifNotExists && orReplace){
+      throw new SemanticException("Can't combine IF NOT EXISTS and OR REPLACE.");
+    }
+
     createVwDesc = new CreateViewDesc(
-      tableName, cols, comment, tblProps, partColNames, ifNotExists);
+      tableName, cols, comment, tblProps, partColNames, ifNotExists, orReplace);
     unparseTranslator.enable();
     rootTasks.add(TaskFactory.get(new DDLWork(getInputs(), getOutputs(),
         createVwDesc), conf));

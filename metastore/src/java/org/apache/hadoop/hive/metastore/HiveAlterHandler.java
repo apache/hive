@@ -30,9 +30,9 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.metastore.api.InvalidObjectException;
 import org.apache.hadoop.hive.metastore.api.InvalidOperationException;
 import org.apache.hadoop.hive.metastore.api.MetaException;
+import org.apache.hadoop.hive.metastore.api.NoSuchObjectException;
 import org.apache.hadoop.hive.metastore.api.Partition;
 import org.apache.hadoop.hive.metastore.api.Table;
-import org.apache.hadoop.hive.metastore.api.NoSuchObjectException;
 
 /**
  * Hive specific implementation of alter
@@ -97,11 +97,13 @@ public class HiveAlterHandler implements AlterHandler {
             + newt.getTableName() + " doesn't exist");
       }
 
-      // check that partition keys have not changed
-      if (oldt.getPartitionKeys().size() != newt.getPartitionKeys().size()
-          || !oldt.getPartitionKeys().containsAll(newt.getPartitionKeys())) {
-        throw new InvalidOperationException(
-            "partition keys can not be changed.");
+      // check that partition keys have not changed, except for virtual views
+      if(!oldt.getTableType().equals(TableType.VIRTUAL_VIEW.toString())){
+        if (oldt.getPartitionKeys().size() != newt.getPartitionKeys().size()
+            || !oldt.getPartitionKeys().containsAll(newt.getPartitionKeys())) {
+          throw new InvalidOperationException(
+              "partition keys can not be changed.");
+        }
       }
 
       // if this alter is a rename, the table is not a virtual view, the user
