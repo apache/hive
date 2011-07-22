@@ -3369,31 +3369,70 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
    *           Throws this exception if an unexpected error occurs.
    */
   private int createView(Hive db, CreateViewDesc crtView) throws HiveException {
-    Table tbl = db.newTable(crtView.getViewName());
-    tbl.setTableType(TableType.VIRTUAL_VIEW);
-    tbl.setSerializationLib(null);
-    tbl.clearSerDeInfo();
-    tbl.setViewOriginalText(crtView.getViewOriginalText());
-    tbl.setViewExpandedText(crtView.getViewExpandedText());
-    tbl.setFields(crtView.getSchema());
-    if (crtView.getComment() != null) {
-      tbl.setProperty("comment", crtView.getComment());
-    }
-    if (crtView.getTblProps() != null) {
-      tbl.getTTable().getParameters().putAll(crtView.getTblProps());
-    }
+    Table oldview = db.getTable(crtView.getViewName(), false);
+    if (crtView.getOrReplace() && oldview != null) {
+      // replace existing view
+      if (!oldview.getTableType().equals(TableType.VIRTUAL_VIEW)) {
+        throw new HiveException("Existing table is not a view");
+      }
 
-    if (crtView.getPartCols() != null) {
-      tbl.setPartCols(crtView.getPartCols());
-    }
+      if (crtView.getPartCols() == null
+          || crtView.getPartCols().isEmpty()
+          || !crtView.getPartCols().equals(oldview.getPartCols())) {
+        // if we are changing partition columns, check that partitions don't exist
+        if (!oldview.getPartCols().isEmpty() &&
+            !db.getPartitions(oldview).isEmpty()) {
+          throw new HiveException(
+              "Cannot add or drop partition columns with CREATE OR REPLACE VIEW if partitions currently exist");
+        }
+      }
 
-    int rc = setGenericTableAttributes(tbl);
-    if (rc != 0) {
-      return rc;
-    }
+      // remove the existing partition columns from the field schema
+      oldview.setViewOriginalText(crtView.getViewOriginalText());
+      oldview.setViewExpandedText(crtView.getViewExpandedText());
+      oldview.setFields(crtView.getSchema());
+      if (crtView.getComment() != null) {
+        oldview.setProperty("comment", crtView.getComment());
+      }
+      if (crtView.getTblProps() != null) {
+        oldview.getTTable().getParameters().putAll(crtView.getTblProps());
+      }
+      oldview.setPartCols(crtView.getPartCols());
+      oldview.checkValidity();
+      try {
+        db.alterTable(crtView.getViewName(), oldview);
+      } catch (InvalidOperationException e) {
+        throw new HiveException(e);
+      }
+      work.getOutputs().add(new WriteEntity(oldview));
+    } else {
+      // create new view
+      Table tbl = db.newTable(crtView.getViewName());
+      tbl.setTableType(TableType.VIRTUAL_VIEW);
+      tbl.setSerializationLib(null);
+      tbl.clearSerDeInfo();
+      tbl.setViewOriginalText(crtView.getViewOriginalText());
+      tbl.setViewExpandedText(crtView.getViewExpandedText());
+      tbl.setFields(crtView.getSchema());
+      if (crtView.getComment() != null) {
+        tbl.setProperty("comment", crtView.getComment());
+      }
+      if (crtView.getTblProps() != null) {
+        tbl.getTTable().getParameters().putAll(crtView.getTblProps());
+      }
 
-    db.createTable(tbl, crtView.getIfNotExists());
-    work.getOutputs().add(new WriteEntity(tbl));
+      if (crtView.getPartCols() != null) {
+        tbl.setPartCols(crtView.getPartCols());
+      }
+
+      int rc = setGenericTableAttributes(tbl);
+      if (rc != 0) {
+        return rc;
+      }
+
+      db.createTable(tbl, crtView.getIfNotExists());
+      work.getOutputs().add(new WriteEntity(tbl));
+    }
     return 0;
   }
 

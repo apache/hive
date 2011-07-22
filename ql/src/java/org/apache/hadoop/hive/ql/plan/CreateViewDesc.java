@@ -42,22 +42,24 @@ public class CreateViewDesc extends DDLDesc implements Serializable {
   private List<FieldSchema> partCols;
   private String comment;
   private boolean ifNotExists;
+  private boolean orReplace;
 
   /**
    * For serialization only.
    */
   public CreateViewDesc() {
   }
-  
+
   public CreateViewDesc(String viewName, List<FieldSchema> schema,
       String comment, Map<String, String> tblProps,
-      List<String> partColNames, boolean ifNotExists) {
+      List<String> partColNames, boolean ifNotExists, boolean orReplace) {
     this.viewName = viewName;
     this.schema = schema;
     this.comment = comment;
     this.tblProps = tblProps;
     this.partColNames = partColNames;
     this.ifNotExists = ifNotExists;
+    this.orReplace = orReplace;
   }
 
   @Explain(displayName = "name")
@@ -146,5 +148,14 @@ public class CreateViewDesc extends DDLDesc implements Serializable {
 
   public void setIfNotExists(boolean ifNotExists) {
     this.ifNotExists = ifNotExists;
+  }
+
+  @Explain(displayName = "or replace")
+  public boolean getOrReplace() {
+    return orReplace;
+  }
+
+  public void setOrReplace(boolean orReplace) {
+    this.orReplace = orReplace;
   }
 }
