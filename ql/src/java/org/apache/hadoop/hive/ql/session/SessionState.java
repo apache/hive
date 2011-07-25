@@ -37,6 +37,7 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.ql.MapRedStats;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.history.HiveHistory;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
@@ -106,6 +107,8 @@ public class SessionState {
   private HiveAuthenticationProvider authenticator;
 
   private CreateTableAutomaticGrant createTableGrants;
+
+  private List<MapRedStats> lastMapRedStatsList;
 
   /**
    * Lineage state.
@@ -640,5 +643,13 @@ public class SessionState {
 
   public void setCreateTableGrants(CreateTableAutomaticGrant createTableGrants) {
     this.createTableGrants = createTableGrants;
+  }
+
+  public List<MapRedStats> getLastMapRedStatsList() {
+    return lastMapRedStatsList;
+  }
+
+  public void setLastMapRedStatsList(List<MapRedStats> lastMapRedStatsList) {
+    this.lastMapRedStatsList = lastMapRedStatsList;
   }
 }

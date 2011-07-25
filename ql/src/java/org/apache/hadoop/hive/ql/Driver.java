@@ -1036,6 +1036,8 @@ public class Driver implements CommandProcessor {
 
       DriverContext driverCxt = new DriverContext(runnable, ctx);
 
+      SessionState.get().setLastMapRedStatsList(new ArrayList<MapRedStats>());
+
       // Add root Tasks to runnable
 
       for (Task<? extends Serializable> tsk : plan.getRootTasks()) {
@@ -1180,6 +1182,17 @@ public class Driver implements CommandProcessor {
         conf.setVar(HiveConf.ConfVars.HADOOPJOBNAME, "");
       }
       Utilities.PerfLogEnd(LOG, "Driver.execute");
+
+      if (SessionState.get().getLastMapRedStatsList() != null
+          && SessionState.get().getLastMapRedStatsList().size() > 0) {
+        long totalCpu = 0;
+        console.printInfo("MapReduce Jobs Launched: ");
+        for (int i = 0; i < SessionState.get().getLastMapRedStatsList().size(); i++) {
+          console.printInfo("Job " + i + ": " + SessionState.get().getLastMapRedStatsList().get(i));
+          totalCpu += SessionState.get().getLastMapRedStatsList().get(i).getCpuMSec();
+        }
+        console.printInfo("Total MapReduce CPU Time Spent: " + Utilities.formatMsecToStr(totalCpu));
+      }
     }
     plan.setDone();
 
