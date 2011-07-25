@@ -30,6 +30,7 @@ import java.util.Map;
 import java.util.Set;
 
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.ql.MapRedStats;
 import org.apache.hadoop.hive.ql.exec.Operator.ProgressCounter;
 import org.apache.hadoop.hive.ql.exec.errors.ErrorAndSolution;
 import org.apache.hadoop.hive.ql.exec.errors.TaskLogProcessor;
@@ -43,12 +44,13 @@ import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.mapred.RunningJob;
 import org.apache.hadoop.mapred.TaskCompletionEvent;
 import org.apache.hadoop.mapred.TaskReport;
+import org.apache.hadoop.mapred.Counters.Counter;
 
 public class HadoopJobExecHelper {
-  
+
   protected transient JobConf job;
   protected Task<? extends Serializable> task;
-  
+
   protected transient int mapProgress = 0;
   protected transient int reduceProgress = 0;
   public transient String jobId;
@@ -69,10 +71,10 @@ public class HadoopJobExecHelper {
       return;
     }
     if(callBackObj != null) {
-      callBackObj.updateCounters(ctrs, rj);      
+      callBackObj.updateCounters(ctrs, rj);
     }
   }
-  
+
   /**
    * This msg pattern is used to track when a job is started.
    *
@@ -113,7 +115,7 @@ public class HadoopJobExecHelper {
     return reduceProgress == 100;
   }
 
-  
+
   public String getJobId() {
     return jobId;
   }
@@ -122,10 +124,10 @@ public class HadoopJobExecHelper {
     this.jobId = jobId;
   }
 
-  
+
   public HadoopJobExecHelper() {
   }
-  
+
   public HadoopJobExecHelper(JobConf job, LogHelper console,
       Task<? extends Serializable> task, HadoopJobExecHook hookCallBack) {
     this.job = job;
@@ -134,7 +136,7 @@ public class HadoopJobExecHelper {
     this.callBackObj = hookCallBack;
   }
 
-  
+
   /**
    * A list of the currently running jobs spawned in this Hive instance that is used to kill all
    * running jobs in the event of an unexpected shutdown - i.e., the JVM shuts down while there are
@@ -143,7 +145,7 @@ public class HadoopJobExecHelper {
   public static Map<String, String> runningJobKillURIs = Collections
       .synchronizedMap(new HashMap<String, String>());
 
-  
+
   /**
    * In Hive, when the user control-c's the command line, any running jobs spawned from that command
    * line are best-effort killed.
@@ -200,12 +202,13 @@ public class HadoopJobExecHelper {
     }
     return this.callBackObj.checkFatalErrors(ctrs, errMsg);
   }
-  
-  private boolean progress(ExecDriverTaskHandle th) throws IOException {
+
+  private MapRedStats progress(ExecDriverTaskHandle th) throws IOException {
     JobClient jc = th.getJobClient();
     RunningJob rj = th.getRunningJob();
     String lastReport = "";
     SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss,SSS");
+    //DecimalFormat longFormatter = new DecimalFormat("###,###");
     long reportTime = System.currentTimeMillis();
     long maxReportInterval = 60 * 1000; // One minute
     boolean fatal = false;
@@ -213,6 +216,10 @@ public class HadoopJobExecHelper {
     long pullInterval = HiveConf.getLongVar(job, HiveConf.ConfVars.HIVECOUNTERSPULLINTERVAL);
     boolean initializing = true;
     boolean initOutputPrinted = false;
+    long cpuMsec = -1;
+    int numMap = -1;
+    int numReduce = -1;
+
     while (!rj.isComplete()) {
       try {
         Thread.sleep(pullInterval);
@@ -233,24 +240,24 @@ public class HadoopJobExecHelper {
 
         String logMapper;
         String logReducer;
-	
+
         TaskReport[] mappers = jc.getMapTaskReports(rj.getJobID());
         if (mappers == null) {
           logMapper = "no information for number of mappers; ";
         } else {
-          int numMap = mappers.length;
+          numMap = mappers.length;
           if (ss != null) {
             ss.getHiveHistory().setTaskProperty(SessionState.get().getQueryId(), getId(),
               Keys.TASK_NUM_MAPPERS, Integer.toString(numMap));
           }
           logMapper = "number of mappers: " + numMap + "; ";
         }
-	
+
         TaskReport[] reducers = jc.getReduceTaskReports(rj.getJobID());
         if (reducers == null) {
           logReducer = "no information for number of reducers. ";
         } else {
-          int numReduce = reducers.length;
+          numReduce = reducers.length;
           if (ss != null) {
             ss.getHiveHistory().setTaskProperty(SessionState.get().getQueryId(), getId(),
               Keys.TASK_NUM_REDUCERS, Integer.toString(numReduce));
@@ -295,8 +302,22 @@ public class HadoopJobExecHelper {
       String report = " " + getId() + " map = " + mapProgress + "%,  reduce = " + reduceProgress
           + "%";
 
+
       if (!report.equals(lastReport)
           || System.currentTimeMillis() >= reportTime + maxReportInterval) {
+        // find out CPU msecs
+        // In the case that we can't find out this number, we just skip the step to print
+        // it out.
+        Counter counterCpuMsec = ctrs.findCounter("org.apache.hadoop.mapred.Task$Counter",
+            "CPU_MILLISECONDS");
+        if (counterCpuMsec != null) {
+          long newCpuMSec = counterCpuMsec.getValue();
+          if (newCpuMSec > 0) {
+            cpuMsec = newCpuMSec;
+            report += ", Cumulative CPU "
+              + (cpuMsec / 1000D) + " sec";
+          }
+        }
 
         // write out serialized plan with counters to log file
         // LOG.info(queryPlan);
@@ -315,9 +336,14 @@ public class HadoopJobExecHelper {
       }
     }
 
-    boolean success;
-    Counters ctrs = th.getCounters();
+    if (cpuMsec > 0) {
+      console.printInfo("MapReduce Total cumulative CPU time: "
+          + Utilities.formatMsecToStr(cpuMsec));
+    }
 
+    boolean success;
+
+    Counters ctrs = th.getCounters();
     if (fatal) {
       success = false;
     } else {
@@ -331,6 +357,61 @@ public class HadoopJobExecHelper {
       }
     }
 
+    Counter counterCpuMsec = ctrs.findCounter("org.apache.hadoop.mapred.Task$Counter",
+        "CPU_MILLISECONDS");
+    if (counterCpuMsec != null) {
+      long newCpuMSec = counterCpuMsec.getValue();
+      if (newCpuMSec > cpuMsec) {
+        cpuMsec = newCpuMSec;
+      }
+    }
+
+    MapRedStats mapRedStats = new MapRedStats(numMap, numReduce, cpuMsec, success);
+
+    Counter ctr;
+
+    ctr = ctrs.findCounter("org.apache.hadoop.mapred.Task$Counter",
+        "REDUCE_SHUFFLE_BYTES");
+    if (ctr != null) {
+      mapRedStats.setReduceShuffleBytes(ctr.getValue());
+    }
+
+    ctr = ctrs.findCounter("org.apache.hadoop.mapred.Task$Counter",
+        "MAP_INPUT_RECORDS");
+    if (ctr != null) {
+      mapRedStats.setMapInputRecords(ctr.getValue());
+    }
+
+    ctr = ctrs.findCounter("org.apache.hadoop.mapred.Task$Counter",
+        "MAP_OUTPUT_RECORDS");
+    if (ctr != null) {
+      mapRedStats.setMapOutputRecords(ctr.getValue());
+    }
+
+    ctr = ctrs.findCounter("org.apache.hadoop.mapred.Task$Counter",
+        "REDUCE_INPUT_RECORDS");
+    if (ctr != null) {
+      mapRedStats.setReduceInputRecords(ctr.getValue());
+    }
+
+    ctr = ctrs.findCounter("org.apache.hadoop.mapred.Task$Counter",
+        "REDUCE_OUTPUT_RECORDS");
+    if (ctr != null) {
+      mapRedStats.setReduceOutputRecords(ctr.getValue());
+    }
+
+    ctr = ctrs.findCounter("FileSystemCounters",
+        "HDFS_BYTES_READ");
+    if (ctr != null) {
+      mapRedStats.setHdfsRead(ctr.getValue());
+    }
+
+    ctr = ctrs.findCounter("FileSystemCounters",
+        "HDFS_BYTES_WRITTEN");
+    if (ctr != null) {
+      mapRedStats.setHdfsWrite(ctr.getValue());
+    }
+
     this.task.setDone();
     // update based on the final value of the counters
     updateCounters(ctrs, rj);
@@ -340,9 +421,9 @@ public class HadoopJobExecHelper {
       this.callBackObj.logPlanProgress(ss);
     }
     // LOG.info(queryPlan);
-    return (success);
+    return mapRedStats;
   }
-  
+
   private String getId() {
     return this.task.getId();
   }
@@ -396,7 +477,7 @@ public class HadoopJobExecHelper {
       return rj.getCounters();
     }
   }
-  
+
   // Used for showJobFailDebugInfo
   private static class TaskInfo {
     String jobId;
@@ -419,7 +500,7 @@ public class HadoopJobExecHelper {
       return jobId;
     }
   }
-  
+
   @SuppressWarnings("deprecation")
   private void showJobFailDebugInfo(JobConf conf, RunningJob rj) throws IOException {
     // Mapping from task ID to the number of failures
@@ -549,9 +630,9 @@ public class HadoopJobExecHelper {
 
   public int progress(RunningJob rj, JobClient jc) throws IOException {
     jobId = rj.getJobID();
-    
+
     int returnVal = 0;
-    
+
     // remove the pwd from conf file so that job tracker doesn't show this
     // logs
     String pwd = HiveConf.getVar(job, HiveConf.ConfVars.METASTOREPWD);
@@ -570,7 +651,14 @@ public class HadoopJobExecHelper {
 
     ExecDriverTaskHandle th = new ExecDriverTaskHandle(jc, rj);
     jobInfo(rj);
-    boolean success = progress(th);
+    MapRedStats mapRedStats = progress(th);
+
+    // Not always there is a SessionState. Sometimes ExeDriver is directly invoked
+    // for special modes. In that case, SessionState.get() is empty.
+    if (SessionState.get() != null) {
+      SessionState.get().getLastMapRedStatsList().add(mapRedStats);
+    }
+    boolean success = mapRedStats.isSuccess();
 
     String statusMesg = getJobEndMsg(rj.getJobID());
     if (!success) {
@@ -583,7 +671,7 @@ public class HadoopJobExecHelper {
     } else {
       console.printInfo(statusMesg);
     }
-    
+
     return returnVal;
   }
 }
