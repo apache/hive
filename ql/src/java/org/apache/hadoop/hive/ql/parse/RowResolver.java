@@ -22,6 +22,7 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -165,6 +166,26 @@ public class RowResolver implements Serializable{
 
   public ArrayList<ColumnInfo> getColumnInfos() {
     return rowSchema.getSignature();
+  }
+
+  /**
+   * Get a list of non-hidden column names
+   * @param max the maximum number of columns to return
+   * @return a list of non-hidden column names no greater in size than max
+   */
+  public List<String> getNonHiddenColumnNames(int max) {
+    List<String> columnNames = new ArrayList<String>();
+    int count = 0;
+    for (ColumnInfo columnInfo : getColumnInfos()) {
+      if (max > 0 && count >= max) {
+        break;
+      }
+      if (!columnInfo.isHiddenVirtualCol()) {
+        columnNames.add(columnInfo.getInternalName());
+        count++;
+      }
+    }
+    return columnNames;
   }
 
   public HashMap<String, ColumnInfo> getFieldMap(String tabAlias) {
