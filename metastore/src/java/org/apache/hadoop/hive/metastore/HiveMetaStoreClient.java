@@ -711,6 +711,12 @@ public class HiveMetaStoreClient implements IMetaStoreClient {
     return deepCopyTables(client.get_table_objects_by_name(dbName, tableNames));
   }
 
+  /** {@inheritDoc} */
+  public List<String> listTableNamesByFilter(String dbName, String filter, short maxTables)
+      throws MetaException, TException, InvalidOperationException, UnknownDBException {
+    return client.get_table_names_by_filter(dbName, filter, maxTables);
+  }
+
   /**
    * @param name
    * @return the type

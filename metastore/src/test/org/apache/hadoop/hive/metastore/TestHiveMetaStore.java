@@ -1590,4 +1590,186 @@ public abstract class TestHiveMetaStore extends TestCase {
     List<String> databases = synchronizedClient.getAllDatabases();
     assertEquals(1, databases.size());
   }
+
+  public void testTableFilter() throws Exception {
+    try {
+      String dbName = "testTableFilter";
+      String owner1 = "testOwner1";
+      String owner2 = "testOwner2";
+      int lastAccessTime1 = 90;
+      int lastAccessTime2 = 30;
+      String tableName1 = "table1";
+      String tableName2 = "table2";
+      String tableName3 = "table3";
+
+      client.dropTable(dbName, tableName1);
+      client.dropTable(dbName, tableName2);
+      client.dropTable(dbName, tableName3);
+      silentDropDatabase(dbName);
+      Database db = new Database();
+      db.setName(dbName);
+      db.setDescription("Alter Partition Test database");
+      client.createDatabase(db);
+
+      Table table1 = createTableForTestFilter(dbName,tableName1, owner1, lastAccessTime1, true);
+      Table table2 = createTableForTestFilter(dbName,tableName2, owner2, lastAccessTime2, true);
+      Table table3 = createTableForTestFilter(dbName,tableName3, owner1, lastAccessTime2, false);
+
+      List<String> tableNames;
+      String filter;
+      //test owner
+      //owner like ".*Owner.*" and owner like "test.*"
+      filter = org.apache.hadoop.hive.metastore.api.Constants.HIVE_FILTER_FIELD_OWNER +
+          " like \".*Owner.*\" and " +
+          org.apache.hadoop.hive.metastore.api.Constants.HIVE_FILTER_FIELD_OWNER +
+          " like  \"test.*\"";
+      tableNames = client.listTableNamesByFilter(dbName, filter, (short)-1);
+      assertEquals(tableNames.size(), 3);
+      assert(tableNames.contains(table1.getTableName()));
+      assert(tableNames.contains(table2.getTableName()));
+      assert(tableNames.contains(table3.getTableName()));
+
+      //owner = "testOwner1"
+      filter = org.apache.hadoop.hive.metastore.api.Constants.HIVE_FILTER_FIELD_OWNER +
+          " = \"testOwner1\"";
+
+      tableNames = client.listTableNamesByFilter(dbName, filter, (short)-1);
+      assertEquals(2, tableNames.size());
+      assert(tableNames.contains(table1.getTableName()));
+      assert(tableNames.contains(table3.getTableName()));
+
+      //lastAccessTime < 90
+      filter = org.apache.hadoop.hive.metastore.api.Constants.HIVE_FILTER_FIELD_LAST_ACCESS +
+          " < 90";
+
+      tableNames = client.listTableNamesByFilter(dbName, filter, (short)-1);
+      assertEquals(2, tableNames.size());
+      assert(tableNames.contains(table2.getTableName()));
+      assert(tableNames.contains(table3.getTableName()));
+
+      //lastAccessTime > 90
+      filter = org.apache.hadoop.hive.metastore.api.Constants.HIVE_FILTER_FIELD_LAST_ACCESS +
+      " > 90";
+
+      tableNames = client.listTableNamesByFilter(dbName, filter, (short)-1);
+      assertEquals(0, tableNames.size());
+
+      //test params
+      //test_param_2 = "50"
+      filter = org.apache.hadoop.hive.metastore.api.Constants.HIVE_FILTER_FIELD_PARAMS +
+          "test_param_2 = \"50\"";
+
+      tableNames = client.listTableNamesByFilter(dbName, filter, (short)-1);
+      assertEquals(2, tableNames.size());
+      assert(tableNames.contains(table1.getTableName()));
+      assert(tableNames.contains(table2.getTableName()));
+
+      //test_param_2 = "75"
+      filter = org.apache.hadoop.hive.metastore.api.Constants.HIVE_FILTER_FIELD_PARAMS +
+          "test_param_2 = \"75\"";
+
+      tableNames = client.listTableNamesByFilter(dbName, filter, (short)-1);
+      assertEquals(0, tableNames.size());
+
+      //key_dne = "50"
+      filter = org.apache.hadoop.hive.metastore.api.Constants.HIVE_FILTER_FIELD_PARAMS +
+          "key_dne = \"50\"";
+
+      tableNames = client.listTableNamesByFilter(dbName, filter, (short)-1);
+      assertEquals(0, tableNames.size());
+
+      //test_param_1 != "yellow"
+      filter = org.apache.hadoop.hive.metastore.api.Constants.HIVE_FILTER_FIELD_PARAMS +
+          "test_param_1 <> \"yellow\"";
+
+      tableNames = client.listTableNamesByFilter(dbName, filter, (short) 2);
+      assertEquals(2, tableNames.size());
+
+      //owner = "testOwner1" and (lastAccessTime = 30 or test_param_1 = "hi")
+      filter = org.apache.hadoop.hive.metastore.api.Constants.HIVE_FILTER_FIELD_OWNER +
+        " = \"testOwner1\" and (" +
+        org.apache.hadoop.hive.metastore.api.Constants.HIVE_FILTER_FIELD_LAST_ACCESS +
+        " = 30 or " +
+        org.apache.hadoop.hive.metastore.api.Constants.HIVE_FILTER_FIELD_PARAMS +
+        "test_param_1 = \"hi\")";
+      tableNames = client.listTableNamesByFilter(dbName, filter, (short)-1);
+
+      assertEquals(2, tableNames.size());
+      assert(tableNames.contains(table1.getTableName()));
+      assert(tableNames.contains(table3.getTableName()));
+
+      //Negative tests
+      Exception me = null;
+      try {
+        filter = "badKey = \"testOwner1\"";
+        tableNames = client.listTableNamesByFilter(dbName, filter, (short) -1);
+      } catch(MetaException e) {
+        me = e;
+      }
+      assertNotNull(me);
+      assertTrue("Bad filter key test", me.getMessage().contains(
+            "Invalid key name in filter"));
+
+      client.dropTable(dbName, tableName1);
+      client.dropTable(dbName, tableName2);
+      client.dropTable(dbName, tableName3);
+      client.dropDatabase(dbName);
+    } catch (Exception e) {
+      System.err.println(StringUtils.stringifyException(e));
+      System.err.println("testTableFilter() failed.");
+      throw e;
+    }
+  }
+
+  private Table createTableForTestFilter(String dbName, String tableName, String owner, int lastAccessTime, boolean hasSecondParam) throws Exception {
+    client.dropTable(dbName, tableName);
+
+    ArrayList<FieldSchema> cols = new ArrayList<FieldSchema>(2);
+    cols.add(new FieldSchema("name", Constants.STRING_TYPE_NAME, ""));
+    cols.add(new FieldSchema("income", Constants.INT_TYPE_NAME, ""));
+
+    Table tbl = new Table();
+    tbl.setDbName(dbName);
+    tbl.setTableName(tableName);
+    tbl.setParameters(new HashMap<String, String>());
+    tbl.getParameters().put("test_param_1", "hi");
+    if (hasSecondParam) {
+      tbl.getParameters().put("test_param_2", "50");
+    }
+    StorageDescriptor sd = new StorageDescriptor();
+    tbl.setSd(sd);
+    sd.setCols(cols);
+    sd.setCompressed(false);
+    sd.setNumBuckets(1);
+    sd.setParameters(new HashMap<String, String>());
+    sd.getParameters().put("sd_param_1", "Use this for comments etc");
+    sd.setBucketCols(new ArrayList<String>(2));
+    sd.getBucketCols().add("name");
+    sd.setSerdeInfo(new SerDeInfo());
+    sd.getSerdeInfo().setName(tbl.getTableName());
+    sd.getSerdeInfo().setParameters(new HashMap<String, String>());
+    sd.getSerdeInfo().getParameters()
+        .put(Constants.SERIALIZATION_FORMAT, "1");
+    sd.setSortCols(new ArrayList<Order>());
+
+    tbl.setOwner(owner);
+    tbl.setLastAccessTime(lastAccessTime);
+
+    tbl.setPartitionKeys(new ArrayList<FieldSchema>(2));
+    tbl.getPartitionKeys().add(
+        new FieldSchema("ds", Constants.STRING_TYPE_NAME, ""));
+    tbl.getPartitionKeys().add(
+        new FieldSchema("hr", Constants.INT_TYPE_NAME, ""));
+
+    client.createTable(tbl);
+
+    if (isThriftClient) {
+      // the createTable() above does not update the location in the 'tbl'
+      // object when the client is a thrift client and the code below relies
+      // on the location being present in the 'tbl' object - so get the table
+      // from the metastore
+      tbl = client.getTable(dbName, tableName);
+    }
+    return tbl;
+  }
 }

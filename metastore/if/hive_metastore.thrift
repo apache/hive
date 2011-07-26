@@ -43,6 +43,10 @@ enum PrincipalType {
   GROUP = 3,
 }
 
+const string HIVE_FILTER_FIELD_OWNER = "hive_filter_field_owner__"
+const string HIVE_FILTER_FIELD_PARAMS = "hive_filter_field_params__"
+const string HIVE_FILTER_FIELD_LAST_ACCESS = "hive_filter_field_last_access__"
+
 enum PartitionEventType {
   LOAD_DONE = 1,  
 }
@@ -258,9 +262,46 @@ service ThriftHiveMetastore extends fb303.FacebookService
 
   Table get_table(1:string dbname, 2:string tbl_name)
                        throws (1:MetaException o1, 2:NoSuchObjectException o2)
-  list<Table> get_table_objects_by_name(1:string dbname, 2:list<string> tbl_names) 
-      				   throws (1:MetaException o1, 2:InvalidOperationException o2, 3:UnknownDBException o3)
-                       
+  list<Table> get_table_objects_by_name(1:string dbname, 2:list<string> tbl_names)
+				   throws (1:MetaException o1, 2:InvalidOperationException o2, 3:UnknownDBException o3)
+
+  // Get a list of table names that match a filter.
+  // The filter operators are LIKE, <, <=, >, >=, =, <>
+  //
+  // In the filter statement, values interpreted as strings must be enclosed in quotes,
+  // while values interpreted as integers should not be.  Strings and integers are the only
+  // supported value types.
+  //
+  // The currently supported key names in the filter are:
+  // Constants.HIVE_FILTER_FIELD_OWNER, which filters on the tables' owner's name
+  //   and supports all filter operators
+  // Constants.HIVE_FILTER_FIELD_LAST_ACCESS, which filters on the last access times
+  //   and supports all filter operators except LIKE
+  // Constants.HIVE_FILTER_FIELD_PARAMS, which filters on the tables' parameter keys and values
+  //   and only supports the filter operators = and <>.
+  //   Append the parameter key name to HIVE_FILTER_FIELD_PARAMS in the filter statement.
+  //   For example, to filter on parameter keys called "retention", the key name in the filter
+  //   statement should be Constants.HIVE_FILTER_FIELD_PARAMS + "retention"
+  //   Also, = and <> only work for keys that exist
+  //   in the tables. E.g., if you are looking for tables where key1 <> value, it will only
+  //   look at tables that have a value for the parameter key1.
+  // Some example filter statements include:
+  // filter = Constants.HIVE_FILTER_FIELD_OWNER + " like \".*test.*\" and " +
+  //   Constants.HIVE_FILTER_FIELD_LAST_ACCESS + " = 0";
+  // filter = Constants.HIVE_FILTER_FIELD_PARAMS + "retention = \"30\" or " +
+  //   Constants.HIVE_FILTER_FIELD_PARAMS + "retention = \"90\""
+  // @param dbName
+  //          The name of the database from which you will retrieve the table names
+  // @param filterType
+  //          The type of filter
+  // @param filter
+  //          The filter string
+  // @param max_tables
+  //          The maximum number of tables returned
+  // @return  A list of table names that match the desired filter
+  list<string> get_table_names_by_filter(1:string dbname, 2:string filter, 3:i16 max_tables=-1)
+                       throws (1:MetaException o1, 2:InvalidOperationException o2, 3:UnknownDBException o3)
+
   // alter table applies to only future partitions not for existing partitions
   // * See notes on DDL_TIME
   void alter_table(1:string dbname, 2:string tbl_name, 3:Table new_tbl)

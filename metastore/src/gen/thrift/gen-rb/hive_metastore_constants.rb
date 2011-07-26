@@ -8,6 +8,12 @@ require 'hive_metastore_types'
 
 DDL_TIME = %q"transient_lastDdlTime"
 
+HIVE_FILTER_FIELD_OWNER = %q"hive_filter_field_owner__"
+
+HIVE_FILTER_FIELD_PARAMS = %q"hive_filter_field_params__"
+
+HIVE_FILTER_FIELD_LAST_ACCESS = %q"hive_filter_field_last_access__"
+
 IS_ARCHIVED = %q"is_archived"
 
 ORIGINAL_LOCATION = %q"original_location"

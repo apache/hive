@@ -1483,31 +1483,49 @@ public class ObjectStore implements RawStore, Configurable {
     return parts;
   }
 
+  private FilterParser getFilterParser(String filter) throws MetaException {
+    CharStream cs = new ANTLRNoCaseStringStream(filter);
+    FilterLexer lexer = new FilterLexer(cs);
+
+    CommonTokenStream tokens = new CommonTokenStream();
+    tokens.setTokenSource (lexer);
+
+    FilterParser parser = new FilterParser(tokens);
+
+    try {
+      parser.filter();
+    } catch(RecognitionException re) {
+      throw new MetaException("Error parsing partition filter : " + re);
+    }
+    return parser;
+  }
+
+  /**
+   * Makes a JDO query filter string
+   * if mtable is not null, generates the query to filter over partitions in a table.
+   * if mtable is null, generates the query to filter over tables in a database
+   */
   private String makeQueryFilterString(MTable mtable, String filter,
-      Map<String, String> params)
+      Map<String, Object> params)
       throws MetaException {
-    StringBuilder queryBuilder = new StringBuilder(
-        "table.tableName == t1 && table.database.name == t2");
 
-    if( filter != null && filter.length() > 0) {
+    StringBuilder queryBuilder = new StringBuilder();
+    if (mtable != null) {
+      queryBuilder.append("table.tableName == t1 && table.database.name == t2");
+    } else {
+      queryBuilder.append("database.name == dbName");
+    }
 
-      Table table = convertToTable(mtable);
+    if (filter != null && filter.length() > 0) {
+      FilterParser parser = getFilterParser(filter);
+      String jdoFilter;
 
-      CharStream cs = new ANTLRNoCaseStringStream(filter);
-      FilterLexer lexer = new FilterLexer(cs);
-
-      CommonTokenStream tokens = new CommonTokenStream();
-      tokens.setTokenSource (lexer);
-
-      FilterParser parser = new FilterParser(tokens);
-
-      try {
-        parser.filter();
-      } catch(RecognitionException re) {
-        throw new MetaException("Error parsing partition filter : " + re);
+      if (mtable != null) {
+        Table table = convertToTable(mtable);
+        jdoFilter = parser.tree.generateJDOFilter(table, params);
+      } else {
+        jdoFilter = parser.tree.generateJDOFilter(null, params);
       }
-
-      String jdoFilter = parser.tree.generateJDOFilter(table, params);
       LOG.debug("jdoFilter = " + jdoFilter);
 
       if( jdoFilter.trim().length() > 0 ) {
@@ -1519,11 +1537,29 @@ public class ObjectStore implements RawStore, Configurable {
     return queryBuilder.toString();
   }
 
+  private String makeTableQueryFilterString(String filter,
+      Map<String, Object> params)
+      throws MetaException {
+    return makeQueryFilterString(null, filter, params);
+  }
+
   private String makeParameterDeclarationString(Map<String, String> params) {
     //Create the parameter declaration string
     StringBuilder paramDecl = new StringBuilder();
-    for(String key : params.keySet() ) {
-      paramDecl.append(", java.lang.String  " + key);
+    for (String key : params.keySet()) {
+      paramDecl.append(", java.lang.String " + key);
+    }
+    return paramDecl.toString();
+  }
+
+  private String makeParameterDeclarationStringObj(Map<String, Object> params) {
+    //Create the parameter declaration string
+    StringBuilder paramDecl = new StringBuilder();
+    for (Entry<String, Object> entry : params.entrySet()) {
+      paramDecl.append(", ");
+      paramDecl.append(entry.getValue().getClass().getName());
+      paramDecl.append(" ");
+      paramDecl.append(entry.getKey());
     }
     return paramDecl.toString();
   }
@@ -1543,7 +1579,7 @@ public class ObjectStore implements RawStore, Configurable {
         throw new NoSuchObjectException("Specified database/table does not exist : "
             + dbName + "." + tableName);
       }
-      Map<String, String> params = new HashMap<String, String>();
+      Map<String, Object> params = new HashMap<String, Object>();
       String queryFilterString =
         makeQueryFilterString(mtable, filter, params);
 
@@ -1561,7 +1597,7 @@ public class ObjectStore implements RawStore, Configurable {
       params.put("t1", tableName.trim());
       params.put("t2", dbName.trim());
 
-      String parameterDeclaration = makeParameterDeclarationString(params);
+      String parameterDeclaration = makeParameterDeclarationStringObj(params);
       query.declareParameters(parameterDeclaration);
       query.setOrdering("partitionName ascending");
 
@@ -1577,6 +1613,52 @@ public class ObjectStore implements RawStore, Configurable {
       }
     }
     return mparts;
+  }
+
+  @Override
+  public List<String> listTableNamesByFilter(String dbName, String filter, short maxTables)
+      throws MetaException {
+    boolean success = false;
+    List<String> tableNames = new ArrayList<String>();
+    try {
+      openTransaction();
+      LOG.debug("Executing listTableNamesByFilter");
+      dbName = dbName.toLowerCase().trim();
+      Map<String, Object> params = new HashMap<String, Object>();
+      String queryFilterString = makeTableQueryFilterString(filter, params);
+      Query query = pm.newQuery(MTable.class);
+      query.declareImports("import java.lang.String");
+      query.setResult("tableName");
+      query.setResultClass(java.lang.String.class);
+      if (maxTables >= 0) {
+        query.setRange(0, maxTables);
+      }
+      LOG.debug("filter specified is " + filter + "," + " JDOQL filter is " + queryFilterString);
+      params.put("dbName", dbName);
+      for (Entry<String, Object> entry : params.entrySet()) {
+        LOG.debug("key: " + entry.getKey() + " value: " + entry.getValue() +
+            " class: " + entry.getValue().getClass().getName());
+      }
+      String parameterDeclaration = makeParameterDeclarationStringObj(params);
+      query.declareParameters(parameterDeclaration);
+      query.setFilter(queryFilterString);
+      Collection names = (Collection) query.executeWithMap(params);
+      //have to emulate "distinct", otherwise tables with the same name may be returned
+      Set<String> tableNamesSet = new HashSet<String>();
+      for (Iterator i = names.iterator(); i.hasNext();) {
+        tableNamesSet.add((String) i.next());
+      }
+      tableNames = new ArrayList<String>(tableNamesSet);
+      LOG.debug("Done executing query for listTableNamesByFilter");
+      success = commitTransaction();
+      LOG.debug("Done retrieving all objects for listTableNamesByFilter");
+
+    } finally {
+      if (!success) {
+        rollbackTransaction();
+      }
+    }
+    return tableNames;
   }
 
   @Override
@@ -1596,7 +1678,7 @@ public class ObjectStore implements RawStore, Configurable {
         // table or db does not exist, we return an empty list
         return partNames;
       }
-      Map<String, String> params = new HashMap<String, String>();
+      Map<String, Object> params = new HashMap<String, Object>();
       String queryFilterString =
         makeQueryFilterString(mtable, filter, params);
       Query query = pm.newQuery(
@@ -1615,7 +1697,7 @@ public class ObjectStore implements RawStore, Configurable {
       params.put("t1", tableName.trim());
       params.put("t2", dbName.trim());
 
-      String parameterDeclaration = makeParameterDeclarationString(params);
+      String parameterDeclaration = makeParameterDeclarationStringObj(params);
       query.declareParameters(parameterDeclaration);
       query.setOrdering("partitionName ascending");
       query.setResult("partitionName");
