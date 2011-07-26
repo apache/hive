@@ -82,7 +82,7 @@ public class HiveIndexResult {
   BytesRefWritable[] bytesRef = new BytesRefWritable[2];
   boolean ignoreHdfsLoc = false;
 
-  public HiveIndexResult(String indexFile, JobConf conf) throws IOException,
+  public HiveIndexResult(List<String> indexFiles, JobConf conf) throws IOException,
       HiveException {
     job = conf;
 
@@ -90,18 +90,20 @@ public class HiveIndexResult {
     bytesRef[1] = new BytesRefWritable();
     ignoreHdfsLoc = HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVE_INDEX_IGNORE_HDFS_LOC);
 
-    if (indexFile != null) {
-      Path indexFilePath = new Path(indexFile);
+    if (indexFiles != null && indexFiles.size() > 0) {
       FileSystem fs = FileSystem.get(conf);
-      FileStatus indexStat = fs.getFileStatus(indexFilePath);
       List<Path> paths = new ArrayList<Path>();
-      if (indexStat.isDir()) {
-        FileStatus[] fss = fs.listStatus(indexFilePath);
-        for (FileStatus f : fss) {
-          paths.add(f.getPath());
+      for (String indexFile : indexFiles) {
+        Path indexFilePath = new Path(indexFile);
+        FileStatus indexStat = fs.getFileStatus(indexFilePath);
+        if (indexStat.isDir()) {
+          FileStatus[] fss = fs.listStatus(indexFilePath);
+          for (FileStatus f : fss) {
+            paths.add(f.getPath());
+          }
+        } else {
+          paths.add(indexFilePath);
         }
-      } else {
-        paths.add(indexFilePath);
       }
 
       long maxEntriesToLoad = HiveConf.getLongVar(conf, HiveConf.ConfVars.HIVE_INDEX_COMPACT_QUERY_MAX_ENTRIES);

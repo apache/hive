@@ -387,8 +387,12 @@ public class MapredWork implements Serializable {
     return indexIntermediateFile;
   }
 
-  public void setIndexIntermediateFile(String fileName) {
-    this.indexIntermediateFile = fileName;
+  public void addIndexIntermediateFile(String fileName) {
+    if (this.indexIntermediateFile == null) {
+      this.indexIntermediateFile = fileName;
+    } else {
+      this.indexIntermediateFile += "," + fileName;
+    }
   }
 
   public void setGatheringStats(boolean gatherStats) {

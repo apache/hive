@@ -161,11 +161,14 @@ public class CompactIndexHandler extends TableBasedIndexHandler {
 
     // pass residual predicate back out for further processing
     queryContext.setResidualPredicate(decomposedPredicate.residualPredicate);
+    // setup TableScanOperator to change input format for original query
+    queryContext.setIndexInputFormat(HiveCompactIndexInputFormat.class.getName());
 
     // Build reentrant QL for index query
     StringBuilder qlCommand = new StringBuilder("INSERT OVERWRITE DIRECTORY ");
 
     String tmpFile = pctx.getContext().getMRTmpFileURI();
+    queryContext.setIndexIntermediateFile(tmpFile);
     qlCommand.append( "\"" + tmpFile + "\" ");            // QL includes " around file name
     qlCommand.append("SELECT `_bucketname` ,  `_offsets` FROM ");
     qlCommand.append(HiveUtils.unparseIdentifier(index.getIndexTableName()));
@@ -179,9 +182,6 @@ public class CompactIndexHandler extends TableBasedIndexHandler {
     Driver driver = new Driver(pctx.getConf());
     driver.compile(qlCommand.toString(), false);
 
-    // setup TableScanOperator to change input format for original query
-    queryContext.setIndexInputFormat(HiveCompactIndexInputFormat.class.getName());
-    queryContext.setIndexIntermediateFile(tmpFile);
 
     queryContext.addAdditionalSemanticInputs(driver.getPlan().getInputs());
     queryContext.setQueryTasks(driver.getPlan().getRootTasks());
