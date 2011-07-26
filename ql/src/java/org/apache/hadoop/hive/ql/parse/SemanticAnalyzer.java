@@ -7997,7 +7997,8 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
                    + numReducers);
         }
 
-        if(MapRedTask.isEligibleForLocalMode(conf, inputSummary, numReducers) != null) {
+        if(MapRedTask.isEligibleForLocalMode(conf, numReducers,
+            inputSummary.getLength(), inputSummary.getFileCount()) != null) {
           hasNonLocalJob = true;
           break;
         }else{
