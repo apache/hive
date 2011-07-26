@@ -17,10 +17,14 @@
  */
 package org.apache.hadoop.hive.serde2.lazybinary;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.apache.hadoop.hive.serde2.lazybinary.objectinspector.LazyBinaryListObjectInspector;
 import org.apache.hadoop.hive.serde2.lazybinary.objectinspector.LazyBinaryMapObjectInspector;
 import org.apache.hadoop.hive.serde2.lazybinary.objectinspector.LazyBinaryStructObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
+import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorFactory;
 import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector.PrimitiveCategory;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.WritableBooleanObjectInspector;
@@ -32,6 +36,7 @@ import org.apache.hadoop.hive.serde2.objectinspector.primitive.WritableLongObjec
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.WritableShortObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.WritableStringObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.WritableVoidObjectInspector;
+import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 
 /**
  * LazyBinaryFactory.
@@ -90,5 +95,17 @@ public final class LazyBinaryFactory {
 
   private LazyBinaryFactory() {
     // prevent instantiation
+  }
+
+  public static ObjectInspector createColumnarStructInspector(List<String> columnNames,
+      List<TypeInfo> columnTypes) {
+    ArrayList<ObjectInspector> columnObjectInspectors = new ArrayList<ObjectInspector>(
+        columnTypes.size());
+    for (int i = 0; i < columnTypes.size(); i++) {
+      columnObjectInspectors
+          .add(LazyBinaryUtils.getLazyBinaryObjectInspectorFromTypeInfo(columnTypes.get(i)));
+    }
+    return ObjectInspectorFactory.getColumnarStructObjectInspector(columnNames,
+        columnObjectInspectors);
   }
 }

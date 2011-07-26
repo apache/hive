@@ -214,7 +214,7 @@ public final class LazyFactory {
           separators, 1, nullSequence, escaped, escapeChar));
     }
     return ObjectInspectorFactory.getColumnarStructObjectInspector(columnNames,
-        columnObjectInspectors, nullSequence);
+        columnObjectInspectors);
   }
 
   private LazyFactory() {

@@ -173,7 +173,9 @@ public abstract class BaseSemanticAnalyzer {
       case HiveParser.TOK_TBLRCFILE:
         inputFormat = RCFILE_INPUT;
         outputFormat = RCFILE_OUTPUT;
-        shared.serde = COLUMNAR_SERDE;
+        if (shared.serde == null) {
+          shared.serde = COLUMNAR_SERDE;
+        }
         storageFormat = true;
         break;
       case HiveParser.TOK_TABLEFILEFORMAT:

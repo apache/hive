@@ -51,15 +51,7 @@ import org.apache.hadoop.io.Writable;
  * (2) ColumnarSerDe initialize ColumnarStruct's field directly. But under the
  * field level, it works like LazySimpleSerDe<br>
  */
-public class ColumnarSerDe implements SerDe {
-
-  // We need some initial values in case user don't call initialize()
-  private ObjectInspector cachedObjectInspector;
-
-  private long serializedSize;
-  private SerDeStats stats;
-  private boolean lastOperationSerialize;
-  private boolean lastOperationDeserialize;
+public class ColumnarSerDe extends ColumnarSerDeBase {
 
   @Override
   public String toString() {
@@ -104,63 +96,13 @@ public class ColumnarSerDe implements SerDe {
         serdeParams.getNullSequence());
 
     int size = serdeParams.getColumnTypes().size();
-    field = new BytesRefWritable[size];
-    for (int i = 0; i < size; i++) {
-      field[i] = new BytesRefWritable();
-      serializeCache.set(i, field[i]);
-    }
-
+    super.initialize(size);
     LOG.debug("ColumnarSerDe initialized with: columnNames="
         + serdeParams.getColumnNames() + " columnTypes="
         + serdeParams.getColumnTypes() + " separator="
         + Arrays.asList(serdeParams.getSeparators()) + " nullstring="
         + serdeParams.getNullString());
-
-    serializedSize = 0;
-    stats = new SerDeStats();
-    lastOperationSerialize = false;
-    lastOperationDeserialize = false;
   }
-
-  // The object for storing row data
-  ColumnarStruct cachedLazyStruct;
-
-  /**
-   * Deserialize a row from the Writable to a LazyObject.
-   */
-  public Object deserialize(Writable blob) throws SerDeException {
-
-    if (!(blob instanceof BytesRefArrayWritable)) {
-      throw new SerDeException(getClass().toString()
-          + ": expects BytesRefArrayWritable!");
-    }
-
-    BytesRefArrayWritable cols = (BytesRefArrayWritable) blob;
-    cachedLazyStruct.init(cols);
-    lastOperationSerialize = false;
-    lastOperationDeserialize = true;
-    return cachedLazyStruct;
-  }
-
-  /**
-   * Returns the ObjectInspector for the row.
-   */
-  public ObjectInspector getObjectInspector() throws SerDeException {
-    return cachedObjectInspector;
-  }
-
-  /**
-   * Returns the Writable Class after serialization.
-   *
-   * @see SerDe#getSerializedClass()
-   */
-  public Class<? extends Writable> getSerializedClass() {
-    return BytesRefArrayWritable.class;
-  }
-
-  BytesRefArrayWritable serializeCache = new BytesRefArrayWritable();
-  BytesRefWritable field[];
-  ByteStream.Output serializeStream = new ByteStream.Output();
 
   /**
    * Serialize a row of data.
@@ -244,20 +186,4 @@ public class ColumnarSerDe implements SerDe {
     return serializeCache;
   }
 
-  /**
-   * Returns the statistics after (de)serialization)
-   */
-
-  public SerDeStats getSerDeStats() {
-    // must be different
-    assert (lastOperationSerialize != lastOperationDeserialize);
-
-    if (lastOperationSerialize) {
-      stats.setRawDataSize(serializedSize);
-    } else {
-      stats.setRawDataSize(cachedLazyStruct.getRawDataSerializedSize());
-    }
-    return stats;
-
-  }
 }
