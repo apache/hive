@@ -60,6 +60,10 @@ public class MapRedTask extends ExecDriver implements Serializable {
   private transient ContentSummary inputSummary = null;
   private transient boolean runningViaChild = false;
 
+  private transient boolean inputSizeEstimated = false;
+  private transient long totalInputFileSize;
+  private transient long totalInputNumFiles;
+
   public MapRedTask() {
     super();
   }
@@ -91,16 +95,21 @@ public class MapRedTask extends ExecDriver implements Serializable {
           inputSummary = Utilities.getInputSummary(driverContext.getCtx(), work, null);
         }
 
+        // set the values of totalInputFileSize and totalInputNumFiles, estimating them
+        // if percentage block sampling is being used
+        estimateInputSize();
+
         // at this point the number of reducers is precisely defined in the plan
         int numReducers = work.getNumReduceTasks();
 
         if (LOG.isDebugEnabled()) {
           LOG.debug("Task: " + getId() + ", Summary: " +
-                    inputSummary.getLength() + "," + inputSummary.getFileCount() + ","
+                    totalInputFileSize + "," + totalInputNumFiles + ","
                     + numReducers);
         }
 
-        String reason = MapRedTask.isEligibleForLocalMode(conf, inputSummary, numReducers);
+        String reason = MapRedTask.isEligibleForLocalMode(conf, numReducers,
+            totalInputFileSize, totalInputNumFiles);
         if (reason == null) {
           // clone configuration before modifying it on per-task basis
           cloneConf();
@@ -366,9 +375,50 @@ public class MapRedTask extends ExecDriver implements Serializable {
       inputSummary =  Utilities.getInputSummary(driverContext.getCtx(), work, null);
     }
 
-    long totalInputFileSize = inputSummary.getLength();
-
     // if all inputs are sampled, we should shrink the size of reducers accordingly.
+    estimateInputSize();
+
+    if (totalInputFileSize != inputSummary.getLength()) {
+      LOG.info("BytesPerReducer=" + bytesPerReducer + " maxReducers="
+          + maxReducers + " estimated totalInputFileSize=" + totalInputFileSize);
+    } else {
+      LOG.info("BytesPerReducer=" + bytesPerReducer + " maxReducers="
+        + maxReducers + " totalInputFileSize=" + totalInputFileSize);
+    }
+
+    int reducers = (int) ((totalInputFileSize + bytesPerReducer - 1) / bytesPerReducer);
+    reducers = Math.max(1, reducers);
+    reducers = Math.min(maxReducers, reducers);
+    return reducers;
+  }
+
+  /**
+   * Sets the values of totalInputFileSize and totalInputNumFiles.  If percentage
+   * block sampling is used, these values are estimates based on the highest
+   * percentage being used for sampling multiplied by the value obtained from the
+   * input summary.  Otherwise, these values are set to the exact value obtained
+   * from the input summary.
+   *
+   * Once the function completes, inputSizeEstimated is set so that the logic is
+   * never run more than once.
+   */
+  private void estimateInputSize() {
+    if (inputSizeEstimated) {
+      // If we've already run this function, return
+      return;
+    }
+
+    // Initialize the values to be those taken from the input summary
+    totalInputFileSize = inputSummary.getLength();
+    totalInputNumFiles = inputSummary.getFileCount();
+
+    if (work.getNameToSplitSample() == null || work.getNameToSplitSample().isEmpty()) {
+      // If percentage block sampling wasn't used, we don't need to do any estimation
+      inputSizeEstimated = true;
+      return;
+    }
+
+    // if all inputs are sampled, we should shrink the size of the input accordingly
     double highestSamplePercentage = 0;
     boolean allSample = false;
     for (String alias : work.getAliasToWork().keySet()) {
@@ -385,42 +435,38 @@ public class MapRedTask extends ExecDriver implements Serializable {
     }
     if (allSample) {
       // This is a little bit dangerous if inputs turns out not to be able to be sampled.
-      // In that case, we significantly underestimate number of reducers.
-      // It's the same as other cases of estimateNumberOfReducers(). It's just our best
+      // In that case, we significantly underestimate the input.
+      // It's the same as estimateNumberOfReducers(). It's just our best
       // guess and there is no guarantee.
       totalInputFileSize = Math.min((long) (totalInputFileSize * highestSamplePercentage / 100D)
           , totalInputFileSize);
-      LOG.info("BytesPerReducer=" + bytesPerReducer + " maxReducers="
-          + maxReducers + " estimated totalInputFileSize=" + totalInputFileSize);
-    } else {
-      LOG.info("BytesPerReducer=" + bytesPerReducer + " maxReducers="
-        + maxReducers + " totalInputFileSize=" + totalInputFileSize);
+      totalInputNumFiles = Math.min((long) (totalInputNumFiles * highestSamplePercentage / 100D)
+          , totalInputNumFiles);
     }
 
-    int reducers = (int) ((totalInputFileSize + bytesPerReducer - 1) / bytesPerReducer);
-    reducers = Math.max(1, reducers);
-    reducers = Math.min(maxReducers, reducers);
-    return reducers;
+    inputSizeEstimated = true;
   }
 
   /**
    * Find out if a job can be run in local mode based on it's characteristics
    *
    * @param conf Hive Configuration
-   * @param inputSummary summary about the input files for this job
    * @param numReducers total number of reducers for this job
+   * @param inputLength the size of the input
+   * @param inputFileCount the number of files of input
    * @return String null if job is eligible for local mode, reason otherwise
    */
   public static String isEligibleForLocalMode(HiveConf conf,
-                                              ContentSummary inputSummary,
-                                              int numReducers) {
+                                              int numReducers,
+                                              long inputLength,
+                                              long inputFileCount) {
 
     long maxBytes = conf.getLongVar(HiveConf.ConfVars.LOCALMODEMAXBYTES);
     long maxTasks = conf.getIntVar(HiveConf.ConfVars.LOCALMODEMAXTASKS);
 
     // check for max input size
-    if (inputSummary.getLength() > maxBytes) {
-      return "Input Size (= " + inputSummary.getLength() + ") is larger than " +
+    if (inputLength > maxBytes) {
+      return "Input Size (= " + inputLength + ") is larger than " +
         HiveConf.ConfVars.LOCALMODEMAXBYTES.varname + " (= " + maxBytes + ")";
     }
 
@@ -428,8 +474,8 @@ public class MapRedTask extends ExecDriver implements Serializable {
     // in the absence of an easy way to get the number of splits - do this
     // based on the total number of files (pessimistically assumming that
     // splits are equal to number of files in worst case)
-    if (inputSummary.getFileCount() > maxTasks) {
-      return "Number of Input Files (= " + inputSummary.getFileCount() +
+    if (inputFileCount > maxTasks) {
+      return "Number of Input Files (= " + inputFileCount +
         ") is larger than " +
         HiveConf.ConfVars.LOCALMODEMAXTASKS.varname + "(= " + maxTasks + ")";
     }
