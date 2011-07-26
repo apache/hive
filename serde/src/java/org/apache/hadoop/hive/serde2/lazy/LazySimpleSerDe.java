@@ -19,7 +19,6 @@
 package org.apache.hadoop.hive.serde2.lazy;
 
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
@@ -232,39 +231,7 @@ public class LazySimpleSerDe implements SerDe {
     serdeParams.lastColumnTakesRest = (lastColumnTakesRestString != null && lastColumnTakesRestString
         .equalsIgnoreCase("true"));
 
-    // Read the configuration parameters
-    String columnNameProperty = tbl.getProperty(Constants.LIST_COLUMNS);
-    // NOTE: if "columns.types" is missing, all columns will be of String type
-    String columnTypeProperty = tbl.getProperty(Constants.LIST_COLUMN_TYPES);
-
-    // Parse the configuration parameters
-
-    if (columnNameProperty != null && columnNameProperty.length() > 0) {
-      serdeParams.columnNames = Arrays.asList(columnNameProperty.split(","));
-    } else {
-      serdeParams.columnNames = new ArrayList<String>();
-    }
-    if (columnTypeProperty == null) {
-      // Default type: all string
-      StringBuilder sb = new StringBuilder();
-      for (int i = 0; i < serdeParams.columnNames.size(); i++) {
-        if (i > 0) {
-          sb.append(":");
-        }
-        sb.append(Constants.STRING_TYPE_NAME);
-      }
-      columnTypeProperty = sb.toString();
-    }
-
-    serdeParams.columnTypes = TypeInfoUtils
-        .getTypeInfosFromTypeString(columnTypeProperty);
-
-    if (serdeParams.columnNames.size() != serdeParams.columnTypes.size()) {
-      throw new SerDeException(serdeName + ": columns has "
-          + serdeParams.columnNames.size()
-          + " elements while columns.types has "
-          + serdeParams.columnTypes.size() + " elements!");
-    }
+    LazyUtils.extractColumnInfo(tbl, serdeParams, serdeName);
 
     // Create the LazyObject for storing the rows
     serdeParams.rowTypeInfo = TypeInfoFactory.getStructTypeInfo(

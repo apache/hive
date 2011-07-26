@@ -30,7 +30,6 @@ import java.util.Map;
 
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorFactory;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorUtils;
-import org.apache.hadoop.io.Text;
 
 /**
  * ObjectInspectorFactory is the primary way to create new ObjectInspector
@@ -273,16 +272,15 @@ public final class ObjectInspectorFactory {
 
   public static ColumnarStructObjectInspector getColumnarStructObjectInspector(
       List<String> structFieldNames,
-      List<ObjectInspector> structFieldObjectInspectors, Text nullSequence) {
+      List<ObjectInspector> structFieldObjectInspectors) {
     ArrayList<Object> signature = new ArrayList<Object>();
     signature.add(structFieldNames);
     signature.add(structFieldObjectInspectors);
-    signature.add(nullSequence.toString());
     ColumnarStructObjectInspector result = cachedColumnarStructObjectInspector
         .get(signature);
     if (result == null) {
       result = new ColumnarStructObjectInspector(structFieldNames,
-          structFieldObjectInspectors, nullSequence);
+          structFieldObjectInspectors);
       cachedColumnarStructObjectInspector.put(signature, result);
     }
     return result;

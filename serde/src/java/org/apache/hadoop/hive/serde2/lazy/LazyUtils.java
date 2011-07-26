@@ -21,7 +21,13 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.nio.ByteBuffer;
 import java.nio.charset.CharacterCodingException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Properties;
 
+import org.apache.hadoop.hive.serde.Constants;
+import org.apache.hadoop.hive.serde2.SerDeException;
+import org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe.SerDeParameters;
 import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.BooleanObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.ByteObjectInspector;
@@ -31,6 +37,7 @@ import org.apache.hadoop.hive.serde2.objectinspector.primitive.IntObjectInspecto
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.LongObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.ShortObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.StringObjectInspector;
+import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
 import org.apache.hadoop.io.Text;
 
 /**
@@ -220,6 +227,43 @@ public final class LazyUtils {
       hash = (31 * hash) + data[i];
     }
     return hash;
+  }
+
+  public static void extractColumnInfo(Properties tbl, SerDeParameters serdeParams,
+      String serdeName) throws SerDeException {
+    // Read the configuration parameters
+    String columnNameProperty = tbl.getProperty(Constants.LIST_COLUMNS);
+    // NOTE: if "columns.types" is missing, all columns will be of String type
+    String columnTypeProperty = tbl.getProperty(Constants.LIST_COLUMN_TYPES);
+
+    // Parse the configuration parameters
+
+    if (columnNameProperty != null && columnNameProperty.length() > 0) {
+      serdeParams.columnNames = Arrays.asList(columnNameProperty.split(","));
+    } else {
+      serdeParams.columnNames = new ArrayList<String>();
+    }
+    if (columnTypeProperty == null) {
+      // Default type: all string
+      StringBuilder sb = new StringBuilder();
+      for (int i = 0; i < serdeParams.columnNames.size(); i++) {
+        if (i > 0) {
+          sb.append(":");
+        }
+        sb.append(Constants.STRING_TYPE_NAME);
+      }
+      columnTypeProperty = sb.toString();
+    }
+
+    serdeParams.columnTypes = TypeInfoUtils
+        .getTypeInfosFromTypeString(columnTypeProperty);
+
+    if (serdeParams.columnNames.size() != serdeParams.columnTypes.size()) {
+      throw new SerDeException(serdeName + ": columns has "
+          + serdeParams.columnNames.size()
+          + " elements while columns.types has "
+          + serdeParams.columnTypes.size() + " elements!");
+    }
   }
 
   private LazyUtils() {
