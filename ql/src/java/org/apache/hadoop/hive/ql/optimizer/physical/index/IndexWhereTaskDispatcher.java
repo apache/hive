@@ -45,6 +45,7 @@ import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.optimizer.physical.PhysicalContext;
 import org.apache.hadoop.hive.ql.parse.ParseContext;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
+import org.apache.hadoop.hive.ql.plan.MapredWork;
 
 /**
  *
@@ -87,10 +88,14 @@ public class IndexWhereTaskDispatcher implements Dispatcher {
                                                       operatorRules,
                                                       indexWhereOptimizeCtx);
 
-    // walk the mapper operator(not task) tree
+    // walk the mapper operator(not task) tree for each specific task
     GraphWalker ogw = new DefaultGraphWalker(dispatcher);
     ArrayList<Node> topNodes = new ArrayList<Node>();
-    topNodes.addAll(pctx.getTopOps().values());
+    if (task.getWork() instanceof MapredWork) {
+      topNodes.addAll(((MapredWork)task.getWork()).getAliasToWork().values());
+    } else {
+      return null;
+    }
     ogw.startWalking(topNodes, null);
 
     return null;

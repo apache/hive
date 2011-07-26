@@ -81,14 +81,6 @@ public class BitmapIndexHandler extends TableBasedIndexHandler {
       return; // abort if we couldn't pull out anything from the predicate
     }
 
-    // Build reentrant QL for index query
-    StringBuilder qlCommand = new StringBuilder("INSERT OVERWRITE DIRECTORY ");
-
-    String tmpFile = pctx.getContext().getMRTmpFileURI();
-    qlCommand.append( "\"" + tmpFile + "\" ");            // QL includes " around file name
-    qlCommand.append("SELECT bucketname AS `_bucketname` , COLLECT_SET(offset) AS `_offsets` FROM ");
-    qlCommand.append("(SELECT `_bucketname` AS bucketname , `_offset` AS offset FROM ");
-
     List<BitmapInnerQuery> iqs = new ArrayList<BitmapInnerQuery>(indexes.size());
     int i = 0;
     for (Index index : indexes) {
@@ -100,6 +92,17 @@ public class BitmapIndexHandler extends TableBasedIndexHandler {
               "ind" + i++));
       }
     }
+    // setup TableScanOperator to change input format for original query
+    queryContext.setIndexInputFormat(HiveIndexedInputFormat.class.getName());
+
+    // Build reentrant QL for index query
+    StringBuilder qlCommand = new StringBuilder("INSERT OVERWRITE DIRECTORY ");
+
+    String tmpFile = pctx.getContext().getMRTmpFileURI();
+    qlCommand.append( "\"" + tmpFile + "\" ");            // QL includes " around file name
+    qlCommand.append("SELECT bucketname AS `_bucketname` , COLLECT_SET(offset) AS `_offsets` FROM ");
+    qlCommand.append("(SELECT `_bucketname` AS bucketname , `_offset` AS offset FROM ");
+
 
     BitmapQuery head = iqs.get(0);
     for ( i = 1; i < iqs.size(); i++) {
@@ -113,10 +116,7 @@ public class BitmapIndexHandler extends TableBasedIndexHandler {
     Driver driver = new Driver(pctx.getConf());
     driver.compile(qlCommand.toString(), false);
 
-    // setup TableScanOperator to change input format for original query
-    queryContext.setIndexInputFormat(HiveIndexedInputFormat.class.getName());
     queryContext.setIndexIntermediateFile(tmpFile);
-
     queryContext.addAdditionalSemanticInputs(driver.getPlan().getInputs());
     queryContext.setQueryTasks(driver.getPlan().getRootTasks());
   }

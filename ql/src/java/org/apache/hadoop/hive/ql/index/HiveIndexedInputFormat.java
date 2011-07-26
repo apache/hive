@@ -20,12 +20,18 @@ package org.apache.hadoop.hive.ql.index;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Iterator;
 import java.util.Set;
+import java.util.Map;
+import java.util.Arrays;
+import java.util.HashMap;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.fs.FileStatus;
+import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.ql.exec.Utilities;
@@ -91,15 +97,27 @@ public class HiveIndexedInputFormat extends HiveInputFormat {
     return result.toArray(new HiveInputSplit[result.size()]);
   }
 
+  public static List<String> getIndexFiles(String indexFileStr) {
+    // tokenize and store string of form (path,)+
+    if (indexFileStr == null) {
+      return null;
+    }
+    String[] chunks = indexFileStr.split(",");
+    return Arrays.asList(chunks);
+  }
+
   @Override
   public InputSplit[] getSplits(JobConf job, int numSplits) throws IOException {
     String indexFileStr = job.get(indexFile);
     l4j.info("index_file is " + indexFileStr);
+    List<String> indexFiles = getIndexFiles(indexFileStr);
 
     HiveIndexResult hiveIndexResult = null;
-    if (indexFileStr != null) {
+    if (indexFiles != null) {
+      boolean first = true;
+      StringBuilder newInputPaths = new StringBuilder();
       try {
-        hiveIndexResult = new HiveIndexResult(indexFileStr, job);
+        hiveIndexResult = new HiveIndexResult(indexFiles, job);
       } catch (HiveException e) {
         l4j.error("Unable to read index..");
         throw new IOException(e);
@@ -107,8 +125,6 @@ public class HiveIndexedInputFormat extends HiveInputFormat {
 
       Set<String> inputFiles = hiveIndexResult.buckets.keySet();
       Iterator<String> iter = inputFiles.iterator();
-      boolean first = true;
-      StringBuilder newInputPaths = new StringBuilder();
       while(iter.hasNext()) {
         String path = iter.next();
         if (path.trim().equalsIgnoreCase("")) {
@@ -121,7 +137,6 @@ public class HiveIndexedInputFormat extends HiveInputFormat {
         }
         newInputPaths.append(path);
       }
-
       FileInputFormat.setInputPaths(job, newInputPaths.toString());
     } else {
       return super.getSplits(job, numSplits);
