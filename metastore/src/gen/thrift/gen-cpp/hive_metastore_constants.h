@@ -15,6 +15,9 @@ class hive_metastoreConstants {
   hive_metastoreConstants();
 
   std::string DDL_TIME;
+  std::string HIVE_FILTER_FIELD_OWNER;
+  std::string HIVE_FILTER_FIELD_PARAMS;
+  std::string HIVE_FILTER_FIELD_LAST_ACCESS;
   std::string IS_ARCHIVED;
   std::string ORIGINAL_LOCATION;
   std::string META_TABLE_COLUMNS;

@@ -24,6 +24,12 @@ public class Constants {
 
   public static final String DDL_TIME = "transient_lastDdlTime";
 
+  public static final String HIVE_FILTER_FIELD_OWNER = "hive_filter_field_owner__";
+
+  public static final String HIVE_FILTER_FIELD_PARAMS = "hive_filter_field_params__";
+
+  public static final String HIVE_FILTER_FIELD_LAST_ACCESS = "hive_filter_field_last_access__";
+
   public static final String IS_ARCHIVED = "is_archived";
 
   public static final String ORIGINAL_LOCATION = "original_location";

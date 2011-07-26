@@ -316,6 +316,24 @@ module ThriftHiveMetastore
       raise ::Thrift::ApplicationException.new(::Thrift::ApplicationException::MISSING_RESULT, 'get_table_objects_by_name failed: unknown result')
     end
 
+    def get_table_names_by_filter(dbname, filter, max_tables)
+      send_get_table_names_by_filter(dbname, filter, max_tables)
+      return recv_get_table_names_by_filter()
+    end
+
+    def send_get_table_names_by_filter(dbname, filter, max_tables)
+      send_message('get_table_names_by_filter', Get_table_names_by_filter_args, :dbname => dbname, :filter => filter, :max_tables => max_tables)
+    end
+
+    def recv_get_table_names_by_filter()
+      result = receive_message(Get_table_names_by_filter_result)
+      return result.success unless result.success.nil?
+      raise result.o1 unless result.o1.nil?
+      raise result.o2 unless result.o2.nil?
+      raise result.o3 unless result.o3.nil?
+      raise ::Thrift::ApplicationException.new(::Thrift::ApplicationException::MISSING_RESULT, 'get_table_names_by_filter failed: unknown result')
+    end
+
     def alter_table(dbname, tbl_name, new_tbl)
       send_alter_table(dbname, tbl_name, new_tbl)
       recv_alter_table()
@@ -1278,6 +1296,21 @@ module ThriftHiveMetastore
         result.o3 = o3
       end
       write_result(result, oprot, 'get_table_objects_by_name', seqid)
+    end
+
+    def process_get_table_names_by_filter(seqid, iprot, oprot)
+      args = read_args(iprot, Get_table_names_by_filter_args)
+      result = Get_table_names_by_filter_result.new()
+      begin
+        result.success = @handler.get_table_names_by_filter(args.dbname, args.filter, args.max_tables)
+      rescue MetaException => o1
+        result.o1 = o1
+      rescue InvalidOperationException => o2
+        result.o2 = o2
+      rescue UnknownDBException => o3
+        result.o3 = o3
+      end
+      write_result(result, oprot, 'get_table_names_by_filter', seqid)
     end
 
     def process_alter_table(seqid, iprot, oprot)
@@ -2479,6 +2512,48 @@ module ThriftHiveMetastore
 
     FIELDS = {
       SUCCESS => {:type => ::Thrift::Types::LIST, :name => 'success', :element => {:type => ::Thrift::Types::STRUCT, :class => Table}},
+      O1 => {:type => ::Thrift::Types::STRUCT, :name => 'o1', :class => MetaException},
+      O2 => {:type => ::Thrift::Types::STRUCT, :name => 'o2', :class => InvalidOperationException},
+      O3 => {:type => ::Thrift::Types::STRUCT, :name => 'o3', :class => UnknownDBException}
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+    end
+
+    ::Thrift::Struct.generate_accessors self
+  end
+
+  class Get_table_names_by_filter_args
+    include ::Thrift::Struct, ::Thrift::Struct_Union
+    DBNAME = 1
+    FILTER = 2
+    MAX_TABLES = 3
+
+    FIELDS = {
+      DBNAME => {:type => ::Thrift::Types::STRING, :name => 'dbname'},
+      FILTER => {:type => ::Thrift::Types::STRING, :name => 'filter'},
+      MAX_TABLES => {:type => ::Thrift::Types::I16, :name => 'max_tables', :default => -1}
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+    end
+
+    ::Thrift::Struct.generate_accessors self
+  end
+
+  class Get_table_names_by_filter_result
+    include ::Thrift::Struct, ::Thrift::Struct_Union
+    SUCCESS = 0
+    O1 = 1
+    O2 = 2
+    O3 = 3
+
+    FIELDS = {
+      SUCCESS => {:type => ::Thrift::Types::LIST, :name => 'success', :element => {:type => ::Thrift::Types::STRING}},
       O1 => {:type => ::Thrift::Types::STRUCT, :name => 'o1', :class => MetaException},
       O2 => {:type => ::Thrift::Types::STRUCT, :name => 'o2', :class => InvalidOperationException},
       O3 => {:type => ::Thrift::Types::STRUCT, :name => 'o3', :class => UnknownDBException}

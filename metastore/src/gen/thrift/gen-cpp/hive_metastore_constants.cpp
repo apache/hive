@@ -12,6 +12,12 @@ const hive_metastoreConstants g_hive_metastore_constants;
 hive_metastoreConstants::hive_metastoreConstants() {
   DDL_TIME = "transient_lastDdlTime";
 
+  HIVE_FILTER_FIELD_OWNER = "hive_filter_field_owner__";
+
+  HIVE_FILTER_FIELD_PARAMS = "hive_filter_field_params__";
+
+  HIVE_FILTER_FIELD_LAST_ACCESS = "hive_filter_field_last_access__";
+
   IS_ARCHIVED = "is_archived";
 
   ORIGINAL_LOCATION = "original_location";

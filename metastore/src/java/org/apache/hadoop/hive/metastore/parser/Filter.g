@@ -63,17 +63,26 @@ expression
 operatorExpression 
 @init { 
     boolean isReverseOrder = false;
+    Object val = null;
 }
     :
     (
-       (key = Identifier op = operator  value = StringLiteral)
-       | 
-       (value = StringLiteral  op = operator key = Identifier) { isReverseOrder = true; }
+       (
+	       (key = Identifier op = operator  value = StringLiteral)
+	       |
+	       (value = StringLiteral  op = operator key = Identifier) { isReverseOrder = true; }
+       ) { val = TrimQuotes(value.getText()); }
+       |
+       (
+	       (key = Identifier op = operator value = IntLiteral)
+	       |
+	       (value = IntLiteral op = operator key = Identifier) { isReverseOrder = true; }
+       ) { val = Integer.parseInt(value.getText()); }
     )
     {
         LeafNode node = new LeafNode();
         node.keyName = key.getText();
-        node.value = TrimQuotes(value.getText());
+        node.value = val;
         node.operator = op;
         node.isReverseOrder = isReverseOrder;
 
@@ -121,10 +130,15 @@ StringLiteral
     )
     ;
 
+
+IntLiteral
+    :
+    (Digit)+
+    ;
+
 Identifier
     :
     (Letter | Digit) (Letter | Digit | '_')*
     ;
 
 WS  :   (' '|'\r'|'\t'|'\n')+ { skip(); } ;
-

@@ -10,6 +10,12 @@ $GLOBALS['hive_metastore_CONSTANTS'] = array();
 
 $GLOBALS['hive_metastore_CONSTANTS']['DDL_TIME'] = "transient_lastDdlTime";
 
+$GLOBALS['hive_metastore_CONSTANTS']['HIVE_FILTER_FIELD_OWNER'] = "hive_filter_field_owner__";
+
+$GLOBALS['hive_metastore_CONSTANTS']['HIVE_FILTER_FIELD_PARAMS'] = "hive_filter_field_params__";
+
+$GLOBALS['hive_metastore_CONSTANTS']['HIVE_FILTER_FIELD_LAST_ACCESS'] = "hive_filter_field_last_access__";
+
 $GLOBALS['hive_metastore_CONSTANTS']['IS_ARCHIVED'] = "is_archived";
 
 $GLOBALS['hive_metastore_CONSTANTS']['ORIGINAL_LOCATION'] = "original_location";

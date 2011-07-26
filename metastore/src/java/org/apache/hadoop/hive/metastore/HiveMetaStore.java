@@ -1240,6 +1240,40 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       return tables;
     }
 
+    @Override
+    public List<String> get_table_names_by_filter(
+        final String dbName, final String filter, final short maxTables)
+        throws MetaException, InvalidOperationException, UnknownDBException {
+      List<String> tables = new ArrayList<String>();
+      startFunction("get_table_names_by_filter", ": db = " + dbName + ", filter = " + filter);
+      try {
+        tables = executeWithRetry(new Command<List<String>>() {
+          @Override
+          public List<String> run(RawStore ms) throws Exception {
+            if (dbName == null || dbName.isEmpty()) {
+              throw new UnknownDBException("DB name is null or empty");
+            }
+            if (filter == null) {
+              throw new InvalidOperationException(filter + " cannot apply null filter");
+            }
+            List<String> tables = ms.listTableNamesByFilter(dbName, filter, maxTables);
+            return tables;
+          }
+        });
+      } catch (MetaException e) {
+        throw e;
+      } catch (InvalidOperationException e) {
+        throw e;
+      } catch (UnknownDBException e) {
+        throw e;
+      } catch (Exception e) {
+        throw new MetaException(e.toString());
+      } finally {
+        endFunction("get_table_names_by_filter");
+      }
+      return tables;
+    }
+
     public boolean set_table_parameters(String dbname, String name,
         Map<String, String> params) throws NoSuchObjectException, MetaException {
       endFunction(startTableFunction("set_table_parameters", dbname, name));

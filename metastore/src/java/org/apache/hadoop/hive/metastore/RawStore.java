@@ -135,6 +135,23 @@ public interface RawStore extends Configurable {
 
   public List<String> getAllTables(String dbName) throws MetaException;
 
+  /**
+   * Gets a list of tables based on a filter string and filter type.
+   * @param dbName
+   *          The name of the database from which you will retrieve the table names
+   * @param filterType
+   *          The type of filter
+   * @param filter
+   *          The filter string
+   * @param max_tables
+   *          The maximum number of tables returned
+   * @return  A list of table names that match the desired filter
+   * @throws MetaException
+   * @throws UnknownDBException
+   */
+  public abstract List<String> listTableNamesByFilter(String dbName,
+      String filter, short max_tables) throws MetaException, UnknownDBException;
+
   public abstract List<String> listPartitionNames(String db_name,
       String tbl_name, short max_parts) throws MetaException;
 
