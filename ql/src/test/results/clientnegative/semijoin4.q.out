@@ -1,1 +1,1 @@
-FAILED: Error in semantic analysis: Line 2:112 Invalid table alias or column reference 'b'
+FAILED: Error in semantic analysis: Line 2:112 Invalid table alias or column reference 'b': (possible column names are: _col0, _col1)

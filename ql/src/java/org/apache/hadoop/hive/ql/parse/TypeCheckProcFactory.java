@@ -26,6 +26,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Stack;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.hive.ql.exec.ColumnInfo;
@@ -395,8 +396,11 @@ public final class TypeCheckProcFactory {
             ctx.setError(ErrorMsg.NON_KEY_EXPR_IN_GROUPBY.getMsg(exprNode), expr);
             return null;
           } else {
-            ctx.setError(ErrorMsg.INVALID_TABLE_OR_COLUMN.getMsg(expr
-                .getChild(0)), expr);
+            List<String> possibleColumnNames = input.getNonHiddenColumnNames(-1);
+            String reason = String.format("(possible column names are: %s)",
+                StringUtils.join(possibleColumnNames, ", "));
+            ctx.setError(ErrorMsg.INVALID_TABLE_OR_COLUMN.getMsg(expr.getChild(0), reason),
+                expr);
             LOG.debug(ErrorMsg.INVALID_TABLE_OR_COLUMN.toString() + ":"
                 + input.toString());
             return null;
