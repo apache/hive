@@ -19,7 +19,6 @@
 package org.apache.hadoop.hive.metastore;
 
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
@@ -179,18 +178,8 @@ public class TestMetaStoreEventListener extends TestCase {
     List<FieldSchema> altCols = altTable.getSd().getCols();
     List<FieldSchema> newCols = altTable.getSd().getCols();
 
-    Iterator<FieldSchema> i = origCols.iterator();
-    Iterator<FieldSchema> j = oldCols.iterator();
-    while (i.hasNext()) {
-      assertEquals(i.next().getName(), j.next().getName());
-    }
-
-    i = altCols.iterator();
-    j = newCols.iterator();
-    while (i.hasNext()) {
-      String name = i.next().getName();
-      assertEquals(name, j.next().getName());
-    }
+    assertEquals(origCols, oldCols);
+    assertEquals(altCols, newCols);
 
     newTable = alterTableE.getNewTable();
     assertEquals(tbl.getDbName(), oldTable.getDbName());
