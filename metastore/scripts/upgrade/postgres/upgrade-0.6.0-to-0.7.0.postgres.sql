@@ -5,7 +5,7 @@ SELECT '< HIVE-417 Implement Indexing in Hive >';
 CREATE TABLE "IDXS" (
   "INDEX_ID" bigint NOT NULL,
   "CREATE_TIME" bigint NOT NULL,
-  "DEFERRED_REBUILD" bit(1) NOT NULL,
+  "DEFERRED_REBUILD" boolean NOT NULL,
   "INDEX_HANDLER_CLASS" character varying(256) DEFAULT NULL,
   "INDEX_NAME" character varying(128) DEFAULT NULL,
   "INDEX_TBL_ID" bigint DEFAULT NULL,
