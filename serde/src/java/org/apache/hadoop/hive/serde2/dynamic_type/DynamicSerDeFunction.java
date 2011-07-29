@@ -29,7 +29,7 @@ public class DynamicSerDeFunction extends DynamicSerDeStructBase {
   // production is: Async() FunctionType() NAME FieldList() Throws()
   // [CommaOrSemicolon]
 
-  private final int FD_FIELD_LIST = 2;
+  private static final int FD_FIELD_LIST = 2;
 
   public DynamicSerDeFunction(int i) {
     super(i);

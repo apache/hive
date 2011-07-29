@@ -814,7 +814,7 @@ public abstract class Operator<T extends Serializable> implements Serializable,
    * @return the name of the operator
    */
   public String getName() {
-    return new String("OP");
+    return "OP";
   }
 
   /**

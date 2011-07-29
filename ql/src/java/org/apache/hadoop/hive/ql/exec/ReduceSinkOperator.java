@@ -310,7 +310,7 @@ public class ReduceSinkOperator extends TerminalOperator<ReduceSinkDesc>
    */
   @Override
   public String getName() {
-    return new String("RS");
+    return "RS";
   }
 
   @Override

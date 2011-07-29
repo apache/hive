@@ -752,7 +752,6 @@ transient boolean newGroupStarted = false;
 
   protected void checkAndGenObject() throws HiveException {
     if (condn[0].getType() == JoinDesc.UNIQUE_JOIN) {
-      new IntermediateObject(new ArrayList[numAliases], 0);
 
       // Check if results need to be emitted.
       // Results only need to be emitted if there is a non-null entry in a table

@@ -99,7 +99,7 @@ public class ParseContext {
 
   private HashSet<ReadEntity> semanticInputs;
   private List<Task<? extends Serializable>> rootTasks;
-  
+
   public ParseContext() {
   }
 
@@ -176,7 +176,6 @@ public class ParseContext {
     this.uCtx = uCtx;
     this.listMapJoinOpsNoReducer = listMapJoinOpsNoReducer;
     hasNonPartCols = false;
-    this.groupOpToInputTables = new HashMap<GroupByOperator, Set<String>>();
     this.groupOpToInputTables = groupOpToInputTables;
     this.prunedPartitions = prunedPartitions;
     this.opToSamplePruner = opToSamplePruner;

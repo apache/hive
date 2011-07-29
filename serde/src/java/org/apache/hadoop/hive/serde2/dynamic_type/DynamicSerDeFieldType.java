@@ -27,7 +27,7 @@ public class DynamicSerDeFieldType extends DynamicSerDeSimpleNode {
 
   // production: this.name | BaseType() | MapType() | SetType() | ListType()
 
-  private final int FD_FIELD_TYPE = 0;
+  private static final int FD_FIELD_TYPE = 0;
 
   public DynamicSerDeFieldType(int i) {
     super(i);

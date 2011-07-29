@@ -104,7 +104,7 @@ public class FilterOperator extends Operator<FilterDesc> implements
    */
   @Override
   public String getName() {
-    return new String("FIL");
+    return "FIL";
   }
 
   @Override
