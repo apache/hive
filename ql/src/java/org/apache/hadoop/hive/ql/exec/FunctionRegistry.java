@@ -20,7 +20,6 @@ package org.apache.hadoop.hive.ql.exec;
 
 import java.lang.reflect.Method;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
@@ -122,7 +121,6 @@ import org.apache.hadoop.hive.ql.udf.UDFUpper;
 import org.apache.hadoop.hive.ql.udf.UDFWeekOfYear;
 import org.apache.hadoop.hive.ql.udf.UDFYear;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDAFAverage;
-import org.apache.hadoop.hive.ql.udf.generic.GenericUDAFEWAHBitmap;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDAFBridge;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDAFCollectSet;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDAFContextNGrams;
@@ -130,6 +128,7 @@ import org.apache.hadoop.hive.ql.udf.generic.GenericUDAFCorrelation;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDAFCount;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDAFCovariance;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDAFCovarianceSample;
+import org.apache.hadoop.hive.ql.udf.generic.GenericUDAFEWAHBitmap;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDAFEvaluator;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDAFHistogramNumeric;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDAFMax;
@@ -147,13 +146,13 @@ import org.apache.hadoop.hive.ql.udf.generic.GenericUDAFnGrams;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDF;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFArray;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFArrayContains;
-import org.apache.hadoop.hive.ql.udf.generic.GenericUDFEWAHBitmapAnd;
-import org.apache.hadoop.hive.ql.udf.generic.GenericUDFEWAHBitmapOr;
-import org.apache.hadoop.hive.ql.udf.generic.GenericUDFEWAHBitmapEmpty;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFBridge;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFCase;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFCoalesce;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFConcatWS;
+import org.apache.hadoop.hive.ql.udf.generic.GenericUDFEWAHBitmapAnd;
+import org.apache.hadoop.hive.ql.udf.generic.GenericUDFEWAHBitmapEmpty;
+import org.apache.hadoop.hive.ql.udf.generic.GenericUDFEWAHBitmapOr;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFElt;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFField;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFHash;
@@ -210,7 +209,7 @@ import org.apache.hadoop.util.ReflectionUtils;
  */
 public final class FunctionRegistry {
 
-  private static Log LOG = LogFactory.getLog("org.apache.hadoop.hive.ql.exec.FunctionRegistry");
+  private static Log LOG = LogFactory.getLog(FunctionRegistry.class);
 
   /**
    * The mapping from expression function names to expression classes.
@@ -707,7 +706,7 @@ public final class FunctionRegistry {
 
     List<Method> mlist = new ArrayList<Method>();
 
-    for (Method m : Arrays.asList(udfClass.getMethods())) {
+    for (Method m : udfClass.getMethods()) {
       if (m.getName().equals(methodName)) {
         mlist.add(m);
       }

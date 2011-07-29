@@ -22,8 +22,8 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.hive.common.JavaUtils;
 import org.apache.hadoop.hive.conf.HiveConf;
-import org.apache.hadoop.hive.ql.DriverContext;
 import org.apache.hadoop.hive.ql.Context;
+import org.apache.hadoop.hive.ql.DriverContext;
 import org.apache.hadoop.hive.ql.QueryPlan;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.plan.CreateFunctionDesc;
@@ -42,7 +42,7 @@ import org.apache.hadoop.util.StringUtils;
  */
 public class FunctionTask extends Task<FunctionWork> {
   private static final long serialVersionUID = 1L;
-  private static final Log LOG = LogFactory.getLog("hive.ql.exec.FunctionTask");
+  private static transient final Log LOG = LogFactory.getLog(FunctionTask.class);
 
   transient HiveConf conf;
 

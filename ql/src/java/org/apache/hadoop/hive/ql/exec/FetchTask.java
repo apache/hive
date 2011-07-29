@@ -23,6 +23,8 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Properties;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.hive.common.JavaUtils;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.CommandNeedRetryException;
@@ -52,6 +54,7 @@ public class FetchTask extends Task<FetchWork> implements Serializable {
   private FetchOperator ftOp;
   private SerDe mSerde;
   private int totalRows;
+  private static transient final Log LOG = LogFactory.getLog(FetchTask.class);
 
   public FetchTask() {
     super();

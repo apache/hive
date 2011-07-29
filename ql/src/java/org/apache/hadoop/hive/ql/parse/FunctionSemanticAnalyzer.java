@@ -36,7 +36,7 @@ import org.apache.hadoop.hive.ql.plan.FunctionWork;
  */
 public class FunctionSemanticAnalyzer extends BaseSemanticAnalyzer {
   private static final Log LOG = LogFactory
-      .getLog("hive.ql.parse.FunctionSemanticAnalyzer");
+      .getLog(FunctionSemanticAnalyzer.class);
 
   public FunctionSemanticAnalyzer(HiveConf conf) throws SemanticException {
     super(conf);

@@ -20,6 +20,8 @@ package org.apache.hadoop.hive.ql.exec;
 
 import java.io.Serializable;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.FileUtil;
@@ -37,6 +39,8 @@ import org.apache.hadoop.util.StringUtils;
 public class CopyTask extends Task<CopyWork> implements Serializable {
 
   private static final long serialVersionUID = 1L;
+
+  private static transient final Log LOG = LogFactory.getLog(CopyTask.class);
 
   public CopyTask() {
     super();

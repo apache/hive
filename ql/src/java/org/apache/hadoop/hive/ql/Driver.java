@@ -127,7 +127,7 @@ public class Driver implements CommandProcessor {
 
   // A limit on the number of threads that can be launched
   private int maxthreads;
-  private final int sleeptime = 2000;
+  private static final int SLEEP_TIME = 2000;
   protected int tryCount = Integer.MAX_VALUE;
 
   private boolean checkLockManager() {
@@ -1287,7 +1287,7 @@ public class Driver implements CommandProcessor {
       // In this loop, nothing was found
       // Sleep 10 seconds and restart
       try {
-        Thread.sleep(sleeptime);
+        Thread.sleep(SLEEP_TIME);
       } catch (InterruptedException ie) {
         // Do Nothing
         ;

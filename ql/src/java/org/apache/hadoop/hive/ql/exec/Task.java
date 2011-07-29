@@ -53,7 +53,6 @@ public abstract class Task<T extends Serializable> implements Serializable, Node
   protected transient boolean queued;
   protected transient HiveConf conf;
   protected transient Hive db;
-  protected static transient Log LOG;
   protected transient LogHelper console;
   protected transient QueryPlan queryPlan;
   protected transient TaskHandle taskHandle;
@@ -62,6 +61,7 @@ public abstract class Task<T extends Serializable> implements Serializable, Node
   protected transient boolean clonedConf = false;
   protected Task<? extends Serializable> backupTask;
   protected List<Task<? extends Serializable>> backupChildrenTasks = new ArrayList<Task<? extends Serializable>>();
+  protected static transient Log LOG = LogFactory.getLog(Task.class);
   protected int taskTag;
   private boolean isLocalMode =false;
   private boolean retryCmdWhenFail = false;
@@ -91,7 +91,6 @@ public abstract class Task<T extends Serializable> implements Serializable, Node
     started = false;
     initialized = false;
     queued = false;
-    LOG = LogFactory.getLog(this.getClass().getName());
     this.taskCounters = new HashMap<String, Long>();
     taskTag = Task.NO_TAG;
   }
@@ -474,7 +473,7 @@ public abstract class Task<T extends Serializable> implements Serializable, Node
   public void setLocalMode(boolean isLocalMode) {
     this.isLocalMode = isLocalMode;
   }
-  
+
   public boolean requireLock() {
     return false;
   }
@@ -486,11 +485,11 @@ public abstract class Task<T extends Serializable> implements Serializable, Node
   public void setRetryCmdWhenFail(boolean retryCmdWhenFail) {
     this.retryCmdWhenFail = retryCmdWhenFail;
   }
-  
+
   public QueryPlan getQueryPlan() {
     return queryPlan;
   }
-  
+
   public void setQueryPlan(QueryPlan queryPlan) {
     this.queryPlan = queryPlan;
   }

@@ -64,11 +64,12 @@ public class MapredLocalTask extends Task<MapredLocalWork> implements Serializab
 
   private Map<String, FetchOperator> fetchOperators;
   private JobConf job;
-  public static final Log l4j = LogFactory.getLog("MapredLocalTask");
+  public static transient final Log l4j = LogFactory.getLog(MapredLocalTask.class);
   static final String HADOOP_MEM_KEY = "HADOOP_HEAPSIZE";
   static final String HADOOP_OPTS_KEY = "HADOOP_OPTS";
   static final String[] HIVE_SYS_PROP = {"build.dir", "build.dir.hive"};
   public static MemoryMXBean memoryMXBean;
+  private static final Log LOG = LogFactory.getLog(MapredLocalTask.class);
 
   // not sure we need this exec context; but all the operators in the work
   // will pass this context throught
@@ -81,7 +82,6 @@ public class MapredLocalTask extends Task<MapredLocalWork> implements Serializab
   public MapredLocalTask(MapredLocalWork plan, JobConf job, boolean isSilent) throws HiveException {
     setWork(plan);
     this.job = job;
-    LOG = LogFactory.getLog(this.getClass().getName());
     console = new LogHelper(LOG, isSilent);
   }
 
@@ -97,6 +97,7 @@ public class MapredLocalTask extends Task<MapredLocalWork> implements Serializab
     return sdf.format(cal.getTime());
   }
 
+  @Override
   public boolean requireLock() {
     return true;
   }
