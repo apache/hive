@@ -3858,8 +3858,8 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
               + dest_path, e);
         }
       }
-      String cols = new String();
-      String colTypes = new String();
+      String cols = "";
+      String colTypes = "";
       ArrayList<ColumnInfo> colInfos = inputRR.getColumnInfos();
 
       // CTAS case: the file output format and serde are defined by the create
@@ -4277,7 +4277,6 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
   private ArrayList<ExprNodeDesc> getParitionColsFromBucketCols(String dest, QB qb, Table tab,
                                                                 TableDesc table_desc, Operator input, boolean convert)
     throws SemanticException {
-    RowResolver inputRR = opParseCtx.get(input).getRowResolver();
     List<String> tabBucketCols = tab.getBucketCols();
     List<FieldSchema> tabCols  = tab.getCols();
 

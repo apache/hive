@@ -451,11 +451,11 @@ public class GroupByOperator extends Operator<GroupByDesc> implements
    **/
   private int getSize(int pos, Class<?> c, Field f) {
     if (c.isPrimitive()
-        || c.isInstance(new Boolean(true))
-        || c.isInstance(new Byte((byte) 0))
-        || c.isInstance(new Short((short) 0))
-        || c.isInstance(new Integer(0))
-        || c.isInstance(new Long(0))
+        || c.isInstance(Boolean.valueOf(true))
+        || c.isInstance(Byte.valueOf((byte) 0))
+        || c.isInstance(Short.valueOf((short) 0))
+        || c.isInstance(Integer.valueOf(0))
+        || c.isInstance(Long.valueOf(0))
         || c.isInstance(new Float(0))
         || c.isInstance(new Double(0))) {
       return javaSizePrimitiveType;
@@ -1051,7 +1051,7 @@ public class GroupByOperator extends Operator<GroupByDesc> implements
    */
   @Override
   public String getName() {
-    return new String("GBY");
+    return "GBY";
   }
 
   @Override

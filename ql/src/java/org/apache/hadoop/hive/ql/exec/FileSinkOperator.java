@@ -740,7 +740,7 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
    */
   @Override
   public String getName() {
-    return new String("FS");
+    return "FS";
   }
 
   @Override

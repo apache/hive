@@ -71,7 +71,7 @@ public class ASTNode extends CommonTree implements Node,Serializable {
    * @see org.apache.hadoop.hive.ql.lib.Node#getName()
    */
   public String getName() {
-    return (new Integer(super.getToken().getType())).toString();
+    return (Integer.valueOf(super.getToken().getType())).toString();
   }
 
   /**

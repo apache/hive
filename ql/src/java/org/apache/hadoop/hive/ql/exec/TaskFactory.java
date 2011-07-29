@@ -85,7 +85,7 @@ public final class TaskFactory {
   private static ThreadLocal<Integer> tid = new ThreadLocal<Integer>() {
     @Override
     protected synchronized Integer initialValue() {
-      return new Integer(0);
+      return Integer.valueOf(0);
     }
   };
 
@@ -96,7 +96,7 @@ public final class TaskFactory {
   }
 
   public static void resetId() {
-    tid.set(new Integer(0));
+    tid.set(Integer.valueOf(0));
   }
 
   @SuppressWarnings("unchecked")
