@@ -26,6 +26,8 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
@@ -54,6 +56,7 @@ import org.apache.hadoop.util.StringUtils;
 public class StatsTask extends Task<StatsWork> implements Serializable {
 
   private static final long serialVersionUID = 1L;
+  private static transient final Log LOG = LogFactory.getLog(StatsTask.class);
 
   private Table table;
   private List<LinkedHashMap<String, String>> dpPartSpecs;

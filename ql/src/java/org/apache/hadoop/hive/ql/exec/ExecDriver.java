@@ -99,12 +99,13 @@ public class ExecDriver extends Task<MapredWork> implements Serializable, Hadoop
   public static MemoryMXBean memoryMXBean;
   protected HadoopJobExecHelper jobExecHelper;
 
+  protected static transient final Log LOG = LogFactory.getLog(ExecDriver.class);
+
   /**
    * Constructor when invoked from QL.
    */
   public ExecDriver() {
     super();
-    LOG = LogFactory.getLog(this.getClass().getName());
     console = new LogHelper(LOG);
     this.jobExecHelper = new HadoopJobExecHelper(job, console, this, this);
   }
@@ -178,7 +179,6 @@ public class ExecDriver extends Task<MapredWork> implements Serializable, Hadoop
   public ExecDriver(MapredWork plan, JobConf job, boolean isSilent) throws HiveException {
     setWork(plan);
     this.job = job;
-    LOG = LogFactory.getLog(this.getClass().getName());
     console = new LogHelper(LOG, isSilent);
     this.jobExecHelper = new HadoopJobExecHelper(job, console, this, this);
   }
