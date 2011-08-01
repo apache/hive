@@ -1,24 +1,24 @@
-PREHOOK: query: create database db1
+PREHOOK: query: CREATE DATABASE db1
 PREHOOK: type: CREATEDATABASE
-POSTHOOK: query: create database db1
+POSTHOOK: query: CREATE DATABASE db1
 POSTHOOK: type: CREATEDATABASE
-PREHOOK: query: describe database extended db1
+PREHOOK: query: DESCRIBE DATABASE EXTENDED db1
 PREHOOK: type: DESCDATABASE
-POSTHOOK: query: describe database extended db1
+POSTHOOK: query: DESCRIBE DATABASE EXTENDED db1
 POSTHOOK: type: DESCDATABASE
-db1		pfile:/home/thiruvel/projects/hive/secure.trunk/build/ql/test/data/warehouse/db1.db	
-PREHOOK: query: use db1
+db1		pfile:/Users/carl/Work/repos/hive3/build/ql/test/data/warehouse/db1.db
+PREHOOK: query: USE db1
 PREHOOK: type: SWITCHDATABASE
-POSTHOOK: query: use db1
+POSTHOOK: query: USE db1
 POSTHOOK: type: SWITCHDATABASE
-PREHOOK: query: create table table_db1 (name string, value int)
+PREHOOK: query: CREATE TABLE table_db1 (name STRING, value INT)
 PREHOOK: type: CREATETABLE
-POSTHOOK: query: create table table_db1 (name string, value int)
+POSTHOOK: query: CREATE TABLE table_db1 (name STRING, value INT)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: db1@table_db1
-PREHOOK: query: describe formatted table_db1
+PREHOOK: query: DESCRIBE FORMATTED table_db1
 PREHOOK: type: DESCTABLE
-POSTHOOK: query: describe formatted table_db1
+POSTHOOK: query: DESCRIBE FORMATTED table_db1
 POSTHOOK: type: DESCTABLE
 # col_name            	data_type           	comment             
 	 	 
@@ -27,15 +27,15 @@ value               	int                 	None
 	 	 
 # Detailed Table Information	 	 
 Database:           	db1                 	 
-Owner:              	thiruvel            	 
-CreateTime:         	Tue Jun 21 06:57:44 PDT 2011	 
+Owner:              	carl
+CreateTime:         	Tue Jul 19 16:34:59 PDT 2011
 LastAccessTime:     	UNKNOWN             	 
 Protect Mode:       	None                	 
 Retention:          	0                   	 
-Location:           	pfile:/home/thiruvel/projects/hive/secure.trunk/build/ql/test/data/warehouse/db1.db/table_db1	 
+Location:           	pfile:/Users/carl/Work/repos/hive3/build/ql/test/data/warehouse/db1.db/table_db1
 Table Type:         	MANAGED_TABLE       	 
 Table Parameters:	 	 
-	transient_lastDdlTime	1308664664          
+	transient_lastDdlTime	1311118499
 	 	 
 # Storage Information	 	 
 SerDe Library:      	org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe	 
@@ -47,32 +47,36 @@ Bucket Columns:     	[]
 Sort Columns:       	[]                  	 
 Storage Desc Params:	 	 
 	serialization.format	1                   
-PREHOOK: query: show tables
+PREHOOK: query: SHOW TABLES
 PREHOOK: type: SHOWTABLES
-POSTHOOK: query: show tables
+POSTHOOK: query: SHOW TABLES
 POSTHOOK: type: SHOWTABLES
 table_db1
-PREHOOK: query: create database db2 location 'pfile:///home/thiruvel/projects/hive/secure.trunk/build/ql/test/data/warehouse/db2'
+PREHOOK: query: CREATE DATABASE db2
+COMMENT 'database 2'
+LOCATION 'pfile:///Users/carl/Work/repos/hive3/build/ql/test/data/warehouse/db2'
 PREHOOK: type: CREATEDATABASE
-POSTHOOK: query: create database db2 location 'pfile:///home/thiruvel/projects/hive/secure.trunk/build/ql/test/data/warehouse/db2'
+POSTHOOK: query: CREATE DATABASE db2
+COMMENT 'database 2'
+LOCATION 'pfile:///Users/carl/Work/repos/hive3/build/ql/test/data/warehouse/db2'
 POSTHOOK: type: CREATEDATABASE
-PREHOOK: query: describe database extended db2
+PREHOOK: query: DESCRIBE DATABASE EXTENDED db2
 PREHOOK: type: DESCDATABASE
-POSTHOOK: query: describe database extended db2
+POSTHOOK: query: DESCRIBE DATABASE EXTENDED db2
 POSTHOOK: type: DESCDATABASE
-db2		pfile:/home/thiruvel/projects/hive/secure.trunk/build/ql/test/data/warehouse/db2	
-PREHOOK: query: use db2
+db2	database 2	pfile:/Users/carl/Work/repos/hive3/build/ql/test/data/warehouse/db2
+PREHOOK: query: USE db2
 PREHOOK: type: SWITCHDATABASE
-POSTHOOK: query: use db2
+POSTHOOK: query: USE db2
 POSTHOOK: type: SWITCHDATABASE
-PREHOOK: query: create table table_db2 (name string, value int)
+PREHOOK: query: CREATE TABLE table_db2 (name STRING, value INT)
 PREHOOK: type: CREATETABLE
-POSTHOOK: query: create table table_db2 (name string, value int)
+POSTHOOK: query: CREATE TABLE table_db2 (name STRING, value INT)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: db2@table_db2
-PREHOOK: query: describe formatted table_db2
+PREHOOK: query: DESCRIBE FORMATTED table_db2
 PREHOOK: type: DESCTABLE
-POSTHOOK: query: describe formatted table_db2
+POSTHOOK: query: DESCRIBE FORMATTED table_db2
 POSTHOOK: type: DESCTABLE
 # col_name            	data_type           	comment             
 	 	 
@@ -81,15 +85,15 @@ value               	int                 	None
 	 	 
 # Detailed Table Information	 	 
 Database:           	db2                 	 
-Owner:              	thiruvel            	 
-CreateTime:         	Tue Jun 21 06:57:45 PDT 2011	 
+Owner:              	carl
+CreateTime:         	Tue Jul 19 16:35:00 PDT 2011
 LastAccessTime:     	UNKNOWN             	 
 Protect Mode:       	None                	 
 Retention:          	0                   	 
-Location:           	pfile:/home/thiruvel/projects/hive/secure.trunk/build/ql/test/data/warehouse/db2/table_db2	 
+Location:           	pfile:/Users/carl/Work/repos/hive3/build/ql/test/data/warehouse/db2/table_db2
 Table Type:         	MANAGED_TABLE       	 
 Table Parameters:	 	 
-	transient_lastDdlTime	1308664665          
+	transient_lastDdlTime	1311118500
 	 	 
 # Storage Information	 	 
 SerDe Library:      	org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe	 
@@ -101,16 +105,8 @@ Bucket Columns:     	[]
 Sort Columns:       	[]                  	 
 Storage Desc Params:	 	 
 	serialization.format	1                   
-PREHOOK: query: show tables
+PREHOOK: query: SHOW TABLES
 PREHOOK: type: SHOWTABLES
-POSTHOOK: query: show tables
+POSTHOOK: query: SHOW TABLES
 POSTHOOK: type: SHOWTABLES
 table_db2
-PREHOOK: query: drop database db2 cascade
-PREHOOK: type: DROPDATABASE
-POSTHOOK: query: drop database db2 cascade
-POSTHOOK: type: DROPDATABASE
-PREHOOK: query: drop database db1 cascade
-PREHOOK: type: DROPDATABASE
-POSTHOOK: query: drop database db1 cascade
-POSTHOOK: type: DROPDATABASE

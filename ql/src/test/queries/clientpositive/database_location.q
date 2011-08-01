@@ -1,16 +1,20 @@
-create database db1;
-describe database extended db1;
-use db1;
-create table table_db1 (name string, value int);
-describe formatted table_db1;
-show tables;
+CREATE DATABASE db1;
+DESCRIBE DATABASE EXTENDED db1;
 
-create database db2 location '${hiveconf:hive.metastore.warehouse.dir}/db2';
-describe database extended db2;
-use db2;
-create table table_db2 (name string, value int);
-describe formatted table_db2;
-show tables;
+USE db1;
+CREATE TABLE table_db1 (name STRING, value INT);
 
-drop database db2 cascade;
-drop database db1 cascade;
+DESCRIBE FORMATTED table_db1;
+SHOW TABLES;
+
+CREATE DATABASE db2
+COMMENT 'database 2'
+LOCATION '${hiveconf:hive.metastore.warehouse.dir}/db2';
+
+DESCRIBE DATABASE EXTENDED db2;
+
+USE db2;
+CREATE TABLE table_db2 (name STRING, value INT);
+
+DESCRIBE FORMATTED table_db2;
+SHOW TABLES;

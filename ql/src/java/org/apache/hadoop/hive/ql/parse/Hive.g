@@ -385,8 +385,8 @@ createDatabaseStatement
     : KW_CREATE (KW_DATABASE|KW_SCHEMA)
         ifNotExists?
         name=Identifier
-        dbLocation?
         databaseComment?
+        dbLocation?
         (KW_WITH KW_DBPROPERTIES dbprops=dbProperties)?
     -> ^(TOK_CREATEDATABASE $name ifNotExists? dbLocation? databaseComment? $dbprops?)
     ;
