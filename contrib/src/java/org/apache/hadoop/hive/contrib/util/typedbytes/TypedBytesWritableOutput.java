@@ -149,11 +149,11 @@ public class TypedBytesWritableOutput {
   }
 
   public void writeTypedBytes(TypedBytesWritable tbw) throws IOException {
-    out.writeRaw(tbw.get(), 0, tbw.getSize());
+    out.writeRaw(tbw.getBytes(), 0, tbw.getLength());
   }
 
   public void writeBytes(BytesWritable bw) throws IOException {
-    byte[] bytes = Arrays.copyOfRange(bw.get(), 0, bw.getSize());
+    byte[] bytes = Arrays.copyOfRange(bw.getBytes(), 0, bw.getLength());
     out.writeBytes(bytes);
   }
 

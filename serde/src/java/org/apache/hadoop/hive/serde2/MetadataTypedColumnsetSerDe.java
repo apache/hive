@@ -30,10 +30,10 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.serde.Constants;
 import org.apache.hadoop.hive.serde2.objectinspector.MetadataListStructObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
-import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector.Category;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorFactory;
 import org.apache.hadoop.hive.serde2.objectinspector.StructField;
 import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
+import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector.Category;
 import org.apache.hadoop.io.BytesWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.io.Writable;
@@ -172,7 +172,7 @@ public class MetadataTypedColumnsetSerDe implements SerDe {
     if (field instanceof BytesWritable) {
       BytesWritable b = (BytesWritable) field;
       try {
-        row = Text.decode(b.get(), 0, b.getSize());
+        row = Text.decode(b.getBytes(), 0, b.getLength());
       } catch (CharacterCodingException e) {
         throw new SerDeException(e);
       }

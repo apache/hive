@@ -35,11 +35,11 @@ import org.apache.hadoop.hive.serde2.SerDeStats;
 import org.apache.hadoop.hive.serde2.objectinspector.ListObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.MapObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
-import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector.Category;
 import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.StructField;
 import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.UnionObjectInspector;
+import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector.Category;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorFactory;
 import org.apache.hadoop.hive.serde2.typeinfo.StructTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
@@ -278,8 +278,8 @@ public class LazySimpleSerDe implements SerDe {
     if (field instanceof BytesWritable) {
       BytesWritable b = (BytesWritable) field;
       // For backward-compatibility with hadoop 0.17
-      byteArrayRef.setData(b.get());
-      cachedLazyStruct.init(byteArrayRef, 0, b.getSize());
+      byteArrayRef.setData(b.getBytes());
+      cachedLazyStruct.init(byteArrayRef, 0, b.getLength());
     } else if (field instanceof Text) {
       Text t = (Text) field;
       byteArrayRef.setData(t.getBytes());

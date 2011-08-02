@@ -29,18 +29,18 @@ import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.serde.Constants;
 import org.apache.hadoop.hive.serde2.ByteStream;
-import org.apache.hadoop.hive.serde2.ByteStream.Output;
 import org.apache.hadoop.hive.serde2.SerDe;
 import org.apache.hadoop.hive.serde2.SerDeException;
 import org.apache.hadoop.hive.serde2.SerDeStats;
+import org.apache.hadoop.hive.serde2.ByteStream.Output;
 import org.apache.hadoop.hive.serde2.lazy.ByteArrayRef;
 import org.apache.hadoop.hive.serde2.objectinspector.ListObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.MapObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
-import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector.Category;
 import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.StructField;
 import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
+import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector.Category;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.BooleanObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.ByteObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.DoubleObjectInspector;
@@ -152,12 +152,12 @@ public class LazyBinarySerDe implements SerDe {
     }
     if (field instanceof BytesWritable) {
       BytesWritable b = (BytesWritable) field;
-      if (b.getSize() == 0) {
+      if (b.getLength() == 0) {
         return null;
       }
       // For backward-compatibility with hadoop 0.17
-      byteArrayRef.setData(b.get());
-      cachedLazyBinaryStruct.init(byteArrayRef, 0, b.getSize());
+      byteArrayRef.setData(b.getBytes());
+      cachedLazyBinaryStruct.init(byteArrayRef, 0, b.getLength());
     } else if (field instanceof Text) {
       Text t = (Text) field;
       if (t.getLength() == 0) {

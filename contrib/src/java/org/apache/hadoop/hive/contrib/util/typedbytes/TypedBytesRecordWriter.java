@@ -41,7 +41,7 @@ public class TypedBytesRecordWriter implements RecordWriter {
 
   public void write(Writable row) throws IOException {
     BytesWritable brow = (BytesWritable) row;
-    out.write(brow.get(), 0, brow.getSize());
+    out.write(brow.getBytes(), 0, brow.getLength());
   }
 
   public void close() throws IOException {

@@ -57,7 +57,7 @@ public class TypedBytesWritable extends BytesWritable {
   /** Get the typed bytes as a Java object. */
   public Object getValue() {
     try {
-      ByteArrayInputStream bais = new ByteArrayInputStream(get());
+      ByteArrayInputStream bais = new ByteArrayInputStream(getBytes());
       TypedBytesInput tbi = TypedBytesInput.get(new DataInputStream(bais));
       Object obj = tbi.read();
       return obj;
@@ -68,7 +68,7 @@ public class TypedBytesWritable extends BytesWritable {
 
   /** Get the type code embedded in the first byte. */
   public Type getType() {
-    byte[] bytes = get();
+    byte[] bytes = getBytes();
     if (bytes == null || bytes.length == 0) {
       return null;
     }
