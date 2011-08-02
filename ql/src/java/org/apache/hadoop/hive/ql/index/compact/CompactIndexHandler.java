@@ -81,7 +81,7 @@ public class CompactIndexHandler extends TableBasedIndexHandler {
   protected Task<?> getIndexBuilderMapRedTask(Set<ReadEntity> inputs, Set<WriteEntity> outputs,
       List<FieldSchema> indexField, boolean partitioned,
       PartitionDesc indexTblPartDesc, String indexTableName,
-      PartitionDesc baseTablePartDesc, String baseTableName, String dbName) {
+      PartitionDesc baseTablePartDesc, String baseTableName, String dbName) throws HiveException {
 
     String indexCols = HiveUtils.getUnparsedColumnNamesFromFieldSchema(indexField);
 

@@ -220,7 +220,7 @@ public class BitmapIndexHandler extends TableBasedIndexHandler {
   protected Task<?> getIndexBuilderMapRedTask(Set<ReadEntity> inputs, Set<WriteEntity> outputs,
       List<FieldSchema> indexField, boolean partitioned,
       PartitionDesc indexTblPartDesc, String indexTableName,
-      PartitionDesc baseTablePartDesc, String baseTableName, String dbName) {
+      PartitionDesc baseTablePartDesc, String baseTableName, String dbName) throws HiveException {
 
     HiveConf conf = new HiveConf(getConf(), BitmapIndexHandler.class);
     HiveConf.setBoolVar(conf, HiveConf.ConfVars.HIVEROWOFFSET, true);
@@ -280,9 +280,9 @@ public class BitmapIndexHandler extends TableBasedIndexHandler {
     }
 
     // Require clusterby ROWOFFSET if map-size aggregation is off.
+    // TODO: Make this work without map side aggregation
     if (!conf.get("hive.map.aggr", null).equals("true")) {
-      command.append(" CLUSTER BY ");
-      command.append(VirtualColumn.ROWOFFSET.getName());
+      throw new HiveException("Cannot construct index without map-side aggregation");
     }
 
     Driver driver = new Driver(conf);
