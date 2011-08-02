@@ -152,7 +152,7 @@ public class DynamicSerDe implements SerDe, Serializable {
         bis_.reset(b.getBytes(), b.getLength());
       } else {
         BytesWritable b = (BytesWritable) field;
-        bis_.reset(b.get(), b.getSize());
+        bis_.reset(b.getBytes(), b.getLength());
       }
       deserializeReuse = bt.deserialize(deserializeReuse, iprot_);
       return deserializeReuse;

@@ -137,7 +137,7 @@ public class S3LogDeserializer implements Deserializer {
     if (field instanceof BytesWritable) {
       BytesWritable b = (BytesWritable) field;
       try {
-        row = Text.decode(b.get(), 0, b.getSize());
+        row = Text.decode(b.getBytes(), 0, b.getLength());
       } catch (CharacterCodingException e) {
         throw new SerDeException(e);
       }
