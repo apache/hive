@@ -101,7 +101,7 @@ public abstract class TableBasedIndexHandler extends AbstractIndexHandler {
   abstract protected Task<?> getIndexBuilderMapRedTask(Set<ReadEntity> inputs, Set<WriteEntity> outputs,
       List<FieldSchema> indexField, boolean partitioned,
       PartitionDesc indexTblPartDesc, String indexTableName,
-      PartitionDesc baseTablePartDesc, String baseTableName, String dbName);
+      PartitionDesc baseTablePartDesc, String baseTableName, String dbName) throws HiveException;
 
   protected List<String> getPartKVPairStringArray(
       LinkedHashMap<String, String> partSpec) {
