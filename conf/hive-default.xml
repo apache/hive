@@ -872,7 +872,7 @@
 
 <property>
   <name>hive.zookeeper.session.timeout</name>
-  <value></value>
+  <value>600000</value>
   <description>Zookeeper client's session timeout. The client is disconnected, and as a result, all locks released, if a heartbeat is not sent in the timeout.</description>
 </property>
 
