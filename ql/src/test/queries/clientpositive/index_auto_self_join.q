@@ -1,6 +1,5 @@
 -- try the query without indexing, with manual indexing, and with automatic indexing
 
--- without indexing
 EXPLAIN SELECT a.key, b.key FROM src a JOIN src b ON (a.value = b.value) WHERE a.key > 80 AND a.key < 100 AND b.key > 70 AND b.key < 90 ORDER BY a.key;
 SELECT a.key, b.key FROM src a JOIN src b ON (a.value = b.value) WHERE a.key > 80 AND a.key < 100 AND b.key > 70 AND b.key < 90 ORDER BY a.key;
 
@@ -11,7 +10,6 @@ SET hive.input.format=org.apache.hadoop.hive.ql.io.HiveInputFormat;
 SET hive.optimize.index.filter=true;
 SET hive.optimize.index.filter.compact.minsize=0;
 
--- automatic indexing
 EXPLAIN SELECT a.key, b.key FROM src a JOIN src b ON (a.value = b.value) WHERE a.key > 80 AND a.key < 100 AND b.key > 70 AND b.key < 90 ORDER BY a.key;
 SELECT a.key, b.key FROM src a JOIN src b ON (a.value = b.value) WHERE a.key > 80 AND a.key < 100 AND b.key > 70 AND b.key < 90 ORDER BY a.key;
 

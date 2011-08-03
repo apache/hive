@@ -15,7 +15,6 @@ SET hive.input.format=org.apache.hadoop.hive.ql.io.HiveInputFormat;
 SET hive.optimize.index.filter=true;
 SET hive.optimize.index.filter.compact.minsize=0;
 
--- automatic indexing
 EXPLAIN SELECT a.key, a.value FROM src a JOIN srcpart b ON (a.key = b.key) WHERE a.key > 80 AND a.key < 100 AND b.key > 70 AND b.key < 90 ORDER BY a.key;
 SELECT a.key, a.value FROM src a JOIN srcpart b ON (a.key = b.key) WHERE a.key > 80 AND a.key < 100 AND b.key > 70 AND b.key < 90 ORDER BY a.key;
 

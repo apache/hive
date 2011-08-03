@@ -366,18 +366,16 @@ public class MapOperator extends Operator<MapredWork> implements Serializable {
 
         for (String onealias : aliases) {
           Operator<? extends Serializable> op = conf.getAliasToWork().get(
-              onealias);
+            onealias);
           LOG.info("Adding alias " + onealias + " to work list for file "
-              + onefile);
+            + onefile);
           MapInputPath inp = new MapInputPath(onefile, onealias, op);
           opCtxMap.put(inp, opCtx);
           if (operatorToPaths.get(op) == null) {
             operatorToPaths.put(op, new java.util.ArrayList<String>());
           }
           operatorToPaths.get(op).add(onefile);
-
-          op
-              .setParentOperators(new ArrayList<Operator<? extends Serializable>>());
+          op.setParentOperators(new ArrayList<Operator<? extends Serializable>>());
           op.getParentOperators().add(this);
           // check for the operators who will process rows coming to this Map
           // Operator
@@ -386,13 +384,12 @@ public class MapOperator extends Operator<MapredWork> implements Serializable {
             childrenPaths.add(onefile);
             LOG.info("dump " + op.getName() + " "
                 + opCtxMap.get(inp).getRowObjectInspector().getTypeName());
-            if (!done) {
-              setInspectorInput(inp);
-              done = true;
-            }
           }
+          setInspectorInput(inp);
+          done = true;
         }
       }
+      
       if (children.size() == 0) {
         // didn't find match for input file path in configuration!
         // serious problem ..
@@ -413,6 +410,8 @@ public class MapOperator extends Operator<MapredWork> implements Serializable {
     // set that parent initialization is done and call initialize on children
     state = State.INIT;
     List<Operator<? extends Serializable>> children = getChildOperators();
+    Path fpath = new Path((new Path(HiveConf.getVar(hconf,
+        HiveConf.ConfVars.HADOOPMAPFILENAME))).toUri().getPath());
 
     for (Entry<MapInputPath, MapOpCtx> entry : opCtxMap.entrySet()) {
       // Add alias, table name, and partitions to hadoop conf so that their
