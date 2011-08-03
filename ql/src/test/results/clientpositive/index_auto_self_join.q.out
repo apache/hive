@@ -1,11 +1,9 @@
 PREHOOK: query: -- try the query without indexing, with manual indexing, and with automatic indexing
 
--- without indexing
 EXPLAIN SELECT a.key, b.key FROM src a JOIN src b ON (a.value = b.value) WHERE a.key > 80 AND a.key < 100 AND b.key > 70 AND b.key < 90 ORDER BY a.key
 PREHOOK: type: QUERY
 POSTHOOK: query: -- try the query without indexing, with manual indexing, and with automatic indexing
 
--- without indexing
 EXPLAIN SELECT a.key, b.key FROM src a JOIN src b ON (a.value = b.value) WHERE a.key > 80 AND a.key < 100 AND b.key > 70 AND b.key < 90 ORDER BY a.key
 POSTHOOK: type: QUERY
 ABSTRACT SYNTAX TREE:
@@ -84,7 +82,7 @@ STAGE PLANS:
   Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/var/folders/5V/5V4Zq77qGD4aSK9m8V3frVsFdRU/-Tmp-/salbiz/hive_2011-07-25_11-52-09_745_6885930417140409942/-mr-10002 
+        file:/tmp/heyongqiang/hive_2011-08-02_16-20-46_897_8857433213666459560/-mr-10002 
             Reduce Output Operator
               key expressions:
                     expr: _col0
@@ -113,11 +111,11 @@ STAGE PLANS:
 PREHOOK: query: SELECT a.key, b.key FROM src a JOIN src b ON (a.value = b.value) WHERE a.key > 80 AND a.key < 100 AND b.key > 70 AND b.key < 90 ORDER BY a.key
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/var/folders/5V/5V4Zq77qGD4aSK9m8V3frVsFdRU/-Tmp-/salbiz/hive_2011-07-25_11-52-09_850_4835801559936339690/-mr-10000
+PREHOOK: Output: file:/tmp/heyongqiang/hive_2011-08-02_16-20-47_055_5824956672610237767/-mr-10000
 POSTHOOK: query: SELECT a.key, b.key FROM src a JOIN src b ON (a.value = b.value) WHERE a.key > 80 AND a.key < 100 AND b.key > 70 AND b.key < 90 ORDER BY a.key
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: file:/var/folders/5V/5V4Zq77qGD4aSK9m8V3frVsFdRU/-Tmp-/salbiz/hive_2011-07-25_11-52-09_850_4835801559936339690/-mr-10000
+POSTHOOK: Output: file:/tmp/heyongqiang/hive_2011-08-02_16-20-47_055_5824956672610237767/-mr-10000
 82	82
 83	83
 83	83
@@ -146,11 +144,9 @@ POSTHOOK: Lineage: default__src_src_index__._bitmaps EXPRESSION [(src)src.FieldS
 POSTHOOK: Lineage: default__src_src_index__._bucketname SIMPLE [(src)src.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
 POSTHOOK: Lineage: default__src_src_index__._offset SIMPLE [(src)src.FieldSchema(name:BLOCK__OFFSET__INSIDE__FILE, type:bigint, comment:), ]
 POSTHOOK: Lineage: default__src_src_index__.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-PREHOOK: query: -- automatic indexing
-EXPLAIN SELECT a.key, b.key FROM src a JOIN src b ON (a.value = b.value) WHERE a.key > 80 AND a.key < 100 AND b.key > 70 AND b.key < 90 ORDER BY a.key
+PREHOOK: query: EXPLAIN SELECT a.key, b.key FROM src a JOIN src b ON (a.value = b.value) WHERE a.key > 80 AND a.key < 100 AND b.key > 70 AND b.key < 90 ORDER BY a.key
 PREHOOK: type: QUERY
-POSTHOOK: query: -- automatic indexing
-EXPLAIN SELECT a.key, b.key FROM src a JOIN src b ON (a.value = b.value) WHERE a.key > 80 AND a.key < 100 AND b.key > 70 AND b.key < 90 ORDER BY a.key
+POSTHOOK: query: EXPLAIN SELECT a.key, b.key FROM src a JOIN src b ON (a.value = b.value) WHERE a.key > 80 AND a.key < 100 AND b.key > 70 AND b.key < 90 ORDER BY a.key
 POSTHOOK: type: QUERY
 POSTHOOK: Lineage: default__src_src_index__._bitmaps EXPRESSION [(src)src.FieldSchema(name:ROW__OFFSET__INSIDE__BLOCK, type:bigint, comment:), ]
 POSTHOOK: Lineage: default__src_src_index__._bucketname SIMPLE [(src)src.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
@@ -254,7 +250,7 @@ STAGE PLANS:
     Move Operator
       files:
           hdfs directory: true
-          destination: file:/var/folders/5V/5V4Zq77qGD4aSK9m8V3frVsFdRU/-Tmp-/salbiz/hive_2011-07-25_11-52-30_115_3399336884670906022/-mr-10003
+          destination: file:/tmp/heyongqiang/hive_2011-08-02_16-20-57_341_4740837259291256044/-mr-10003
 
   Stage: Stage-1
     Map Reduce
@@ -329,7 +325,7 @@ STAGE PLANS:
   Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/var/folders/5V/5V4Zq77qGD4aSK9m8V3frVsFdRU/-Tmp-/salbiz/hive_2011-07-25_11-52-30_115_3399336884670906022/-mr-10002 
+        file:/tmp/heyongqiang/hive_2011-08-02_16-20-57_341_4740837259291256044/-mr-10002 
             Reduce Output Operator
               key expressions:
                     expr: _col0
@@ -435,7 +431,7 @@ STAGE PLANS:
     Move Operator
       files:
           hdfs directory: true
-          destination: file:/var/folders/5V/5V4Zq77qGD4aSK9m8V3frVsFdRU/-Tmp-/salbiz/hive_2011-07-25_11-52-30_115_3399336884670906022/-mr-10004
+          destination: file:/tmp/heyongqiang/hive_2011-08-02_16-20-57_341_4740837259291256044/-mr-10004
 
   Stage: Stage-0
     Fetch Operator
@@ -446,12 +442,12 @@ PREHOOK: query: SELECT a.key, b.key FROM src a JOIN src b ON (a.value = b.value)
 PREHOOK: type: QUERY
 PREHOOK: Input: default@default__src_src_index__
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/var/folders/5V/5V4Zq77qGD4aSK9m8V3frVsFdRU/-Tmp-/salbiz/hive_2011-07-25_11-52-30_457_5636524164788077312/-mr-10000
+PREHOOK: Output: file:/tmp/heyongqiang/hive_2011-08-02_16-20-57_700_5860392294353197259/-mr-10000
 POSTHOOK: query: SELECT a.key, b.key FROM src a JOIN src b ON (a.value = b.value) WHERE a.key > 80 AND a.key < 100 AND b.key > 70 AND b.key < 90 ORDER BY a.key
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@default__src_src_index__
 POSTHOOK: Input: default@src
-POSTHOOK: Output: file:/var/folders/5V/5V4Zq77qGD4aSK9m8V3frVsFdRU/-Tmp-/salbiz/hive_2011-07-25_11-52-30_457_5636524164788077312/-mr-10000
+POSTHOOK: Output: file:/tmp/heyongqiang/hive_2011-08-02_16-20-57_700_5860392294353197259/-mr-10000
 POSTHOOK: Lineage: default__src_src_index__._bitmaps EXPRESSION [(src)src.FieldSchema(name:ROW__OFFSET__INSIDE__BLOCK, type:bigint, comment:), ]
 POSTHOOK: Lineage: default__src_src_index__._bucketname SIMPLE [(src)src.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
 POSTHOOK: Lineage: default__src_src_index__._offset SIMPLE [(src)src.FieldSchema(name:BLOCK__OFFSET__INSIDE__FILE, type:bigint, comment:), ]
