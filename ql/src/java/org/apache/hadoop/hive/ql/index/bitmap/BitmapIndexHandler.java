@@ -113,7 +113,9 @@ public class BitmapIndexHandler extends TableBasedIndexHandler {
 
     // generate tasks from index query string
     LOG.info("Generating tasks for re-entrant QL query: " + qlCommand.toString());
-    Driver driver = new Driver(pctx.getConf());
+    HiveConf queryConf = new HiveConf(pctx.getConf(), BitmapIndexHandler.class);
+    HiveConf.setBoolVar(queryConf, HiveConf.ConfVars.COMPRESSRESULT, false);
+    Driver driver = new Driver(queryConf);
     driver.compile(qlCommand.toString(), false);
 
     queryContext.setIndexIntermediateFile(tmpFile);
