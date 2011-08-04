@@ -5,7 +5,7 @@ POSTHOOK: query: -- test automatic use of index on table with partitions
 CREATE INDEX src_part_index ON TABLE srcpart(key) as 'COMPACT' WITH DEFERRED REBUILD
 POSTHOOK: type: CREATEINDEX
 PREHOOK: query: ALTER INDEX src_part_index ON srcpart REBUILD
-PREHOOK: type: QUERY
+PREHOOK: type: ALTERINDEX_REBUILD
 PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
 PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
 PREHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
@@ -15,7 +15,7 @@ PREHOOK: Output: default@default__srcpart_src_part_index__@ds=2008-04-08/hr=12
 PREHOOK: Output: default@default__srcpart_src_part_index__@ds=2008-04-09/hr=11
 PREHOOK: Output: default@default__srcpart_src_part_index__@ds=2008-04-09/hr=12
 POSTHOOK: query: ALTER INDEX src_part_index ON srcpart REBUILD
-POSTHOOK: type: QUERY
+POSTHOOK: type: ALTERINDEX_REBUILD
 POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
 POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
 POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
@@ -81,13 +81,13 @@ STAGE PLANS:
     Move Operator
       files:
           hdfs directory: true
-          destination: file:/Users/salbiz/dev/hive/build/ql/scratchdir/hive_2011-06-15_16-00-25_190_7313794997314528333/-ext-10000
+          destination: file:/data/users/salbiz/apache-hive/build/ql/scratchdir/hive_2011-08-01_13-38-11_108_7095217129648103584/-ext-10000
 
   Stage: Stage-2
     Move Operator
       files:
           hdfs directory: true
-          destination: file:/var/folders/5V/5V4Zq77qGD4aSK9m8V3frVsFdRU/-Tmp-/salbiz/hive_2011-06-15_16-00-24_901_7521678807552233457/-mr-10002
+          destination: file:/tmp/salbiz/hive_2011-08-01_13-38-10_834_396766414838846531/-mr-10002
 
   Stage: Stage-1
     Map Reduce
@@ -132,7 +132,7 @@ STAGE PLANS:
   Stage: Stage-4
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/Users/salbiz/dev/hive/build/ql/scratchdir/hive_2011-06-15_16-00-25_190_7313794997314528333/-ext-10001 
+        file:/data/users/salbiz/apache-hive/build/ql/scratchdir/hive_2011-08-01_13-38-11_108_7095217129648103584/-ext-10001 
             File Output Operator
               compressed: false
               GlobalTableId: 0
@@ -151,14 +151,14 @@ PREHOOK: Input: default@default__srcpart_src_part_index__@ds=2008-04-09/hr=11
 PREHOOK: Input: default@default__srcpart_src_part_index__@ds=2008-04-09/hr=12
 PREHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
 PREHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
-PREHOOK: Output: file:/var/folders/5V/5V4Zq77qGD4aSK9m8V3frVsFdRU/-Tmp-/salbiz/hive_2011-06-15_16-00-25_389_6851974893264734752/-mr-10000
+PREHOOK: Output: file:/tmp/salbiz/hive_2011-08-01_13-38-11_214_7966551397812297662/-mr-10000
 POSTHOOK: query: SELECT key, value FROM srcpart WHERE key=86 AND ds='2008-04-09' ORDER BY key
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@default__srcpart_src_part_index__@ds=2008-04-09/hr=11
 POSTHOOK: Input: default@default__srcpart_src_part_index__@ds=2008-04-09/hr=12
 POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
 POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
-POSTHOOK: Output: file:/var/folders/5V/5V4Zq77qGD4aSK9m8V3frVsFdRU/-Tmp-/salbiz/hive_2011-06-15_16-00-25_389_6851974893264734752/-mr-10000
+POSTHOOK: Output: file:/tmp/salbiz/hive_2011-08-01_13-38-11_214_7966551397812297662/-mr-10000
 POSTHOOK: Lineage: default__srcpart_src_part_index__ PARTITION(ds=2008-04-09,hr=12)._bucketname SIMPLE [(srcpart)srcpart.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
 POSTHOOK: Lineage: default__srcpart_src_part_index__ PARTITION(ds=2008-04-09,hr=12)._offsets EXPRESSION [(srcpart)srcpart.FieldSchema(name:BLOCK__OFFSET__INSIDE__FILE, type:bigint, comment:), ]
 POSTHOOK: Lineage: default__srcpart_src_part_index__ PARTITION(ds=2008-04-09,hr=12).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]

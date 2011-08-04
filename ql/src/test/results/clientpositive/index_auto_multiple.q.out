@@ -11,22 +11,22 @@ PREHOOK: type: CREATEINDEX
 POSTHOOK: query: CREATE INDEX src_val_index ON TABLE src(value) as 'COMPACT' WITH DEFERRED REBUILD
 POSTHOOK: type: CREATEINDEX
 PREHOOK: query: ALTER INDEX src_key_index ON src REBUILD
-PREHOOK: type: QUERY
+PREHOOK: type: ALTERINDEX_REBUILD
 PREHOOK: Input: default@src
 PREHOOK: Output: default@default__src_src_key_index__
 POSTHOOK: query: ALTER INDEX src_key_index ON src REBUILD
-POSTHOOK: type: QUERY
+POSTHOOK: type: ALTERINDEX_REBUILD
 POSTHOOK: Input: default@src
 POSTHOOK: Output: default@default__src_src_key_index__
 POSTHOOK: Lineage: default__src_src_key_index__._bucketname SIMPLE [(src)src.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
 POSTHOOK: Lineage: default__src_src_key_index__._offsets EXPRESSION [(src)src.FieldSchema(name:BLOCK__OFFSET__INSIDE__FILE, type:bigint, comment:), ]
 POSTHOOK: Lineage: default__src_src_key_index__.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 PREHOOK: query: ALTER INDEX src_val_index ON src REBUILD
-PREHOOK: type: QUERY
+PREHOOK: type: ALTERINDEX_REBUILD
 PREHOOK: Input: default@src
 PREHOOK: Output: default@default__src_src_val_index__
 POSTHOOK: query: ALTER INDEX src_val_index ON src REBUILD
-POSTHOOK: type: QUERY
+POSTHOOK: type: ALTERINDEX_REBUILD
 POSTHOOK: Input: default@src
 POSTHOOK: Output: default@default__src_src_val_index__
 POSTHOOK: Lineage: default__src_src_key_index__._bucketname SIMPLE [(src)src.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
@@ -92,13 +92,13 @@ STAGE PLANS:
     Move Operator
       files:
           hdfs directory: true
-          destination: file:/Users/salbiz/dev/hive/build/ql/scratchdir/hive_2011-06-15_16-17-27_086_2000600421786753633/-ext-10000
+          destination: file:/data/users/salbiz/apache-hive/build/ql/scratchdir/hive_2011-08-01_13-37-45_571_1388780604523388920/-ext-10000
 
   Stage: Stage-2
     Move Operator
       files:
           hdfs directory: true
-          destination: file:/var/folders/5V/5V4Zq77qGD4aSK9m8V3frVsFdRU/-Tmp-/salbiz/hive_2011-06-15_16-17-26_945_142379732782210508/-mr-10002
+          destination: file:/tmp/salbiz/hive_2011-08-01_13-37-45_441_8809194499630065291/-mr-10002
 
   Stage: Stage-1
     Map Reduce
@@ -143,7 +143,7 @@ STAGE PLANS:
   Stage: Stage-4
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/Users/salbiz/dev/hive/build/ql/scratchdir/hive_2011-06-15_16-17-27_086_2000600421786753633/-ext-10001 
+        file:/data/users/salbiz/apache-hive/build/ql/scratchdir/hive_2011-08-01_13-37-45_571_1388780604523388920/-ext-10001 
             File Output Operator
               compressed: false
               GlobalTableId: 0
@@ -160,12 +160,12 @@ PREHOOK: query: SELECT key, value FROM src WHERE key=86 ORDER BY key
 PREHOOK: type: QUERY
 PREHOOK: Input: default@default__src_src_key_index__
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/var/folders/5V/5V4Zq77qGD4aSK9m8V3frVsFdRU/-Tmp-/salbiz/hive_2011-06-15_16-17-27_239_7970970441956583684/-mr-10000
+PREHOOK: Output: file:/tmp/salbiz/hive_2011-08-01_13-37-45_651_8938647545203357334/-mr-10000
 POSTHOOK: query: SELECT key, value FROM src WHERE key=86 ORDER BY key
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@default__src_src_key_index__
 POSTHOOK: Input: default@src
-POSTHOOK: Output: file:/var/folders/5V/5V4Zq77qGD4aSK9m8V3frVsFdRU/-Tmp-/salbiz/hive_2011-06-15_16-17-27_239_7970970441956583684/-mr-10000
+POSTHOOK: Output: file:/tmp/salbiz/hive_2011-08-01_13-37-45_651_8938647545203357334/-mr-10000
 POSTHOOK: Lineage: default__src_src_key_index__._bucketname SIMPLE [(src)src.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
 POSTHOOK: Lineage: default__src_src_key_index__._offsets EXPRESSION [(src)src.FieldSchema(name:BLOCK__OFFSET__INSIDE__FILE, type:bigint, comment:), ]
 POSTHOOK: Lineage: default__src_src_key_index__.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]

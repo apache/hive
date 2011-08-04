@@ -359,6 +359,9 @@ public class CliDriver {
         }
 
         ret = processCmd(command);
+        //wipe cli query state
+        SessionState ss = SessionState.get();
+        ss.setCommandType(null);
         command = "";
         lastRet = ret;
         boolean ignoreErrors = HiveConf.getBoolVar(conf, HiveConf.ConfVars.CLIIGNOREERRORS);

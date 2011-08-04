@@ -1,0 +1,72 @@
+PREHOOK: query: create table foobar(key int, value string) PARTITIONED BY (ds string, hr string)
+PREHOOK: type: CREATETABLE
+POSTHOOK: query: create table foobar(key int, value string) PARTITIONED BY (ds string, hr string)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: default@foobar
+PREHOOK: query: alter table foobar add partition (ds='2008-04-08',hr='12')
+PREHOOK: type: ALTERTABLE_ADDPARTS
+PREHOOK: Input: default@foobar
+POSTHOOK: query: alter table foobar add partition (ds='2008-04-08',hr='12')
+POSTHOOK: type: ALTERTABLE_ADDPARTS
+POSTHOOK: Input: default@foobar
+POSTHOOK: Output: default@foobar@ds=2008-04-08/hr=12
+PREHOOK: query: CREATE INDEX srcpart_auth_index ON TABLE foobar(key) as 'BITMAP' WITH DEFERRED REBUILD
+PREHOOK: type: CREATEINDEX
+POSTHOOK: query: CREATE INDEX srcpart_auth_index ON TABLE foobar(key) as 'BITMAP' WITH DEFERRED REBUILD
+POSTHOOK: type: CREATEINDEX
+PREHOOK: query: grant select on table foobar to user hive_test_user
+PREHOOK: type: GRANT_PRIVILEGE
+PREHOOK: Output: default@foobar
+POSTHOOK: query: grant select on table foobar to user hive_test_user
+POSTHOOK: type: GRANT_PRIVILEGE
+POSTHOOK: Output: default@foobar
+PREHOOK: query: grant select on table default__foobar_srcpart_auth_index__ to user hive_test_user
+PREHOOK: type: GRANT_PRIVILEGE
+PREHOOK: Output: default@default__foobar_srcpart_auth_index__
+POSTHOOK: query: grant select on table default__foobar_srcpart_auth_index__ to user hive_test_user
+POSTHOOK: type: GRANT_PRIVILEGE
+POSTHOOK: Output: default@default__foobar_srcpart_auth_index__
+PREHOOK: query: grant update on table default__foobar_srcpart_auth_index__ to user hive_test_user
+PREHOOK: type: GRANT_PRIVILEGE
+PREHOOK: Output: default@default__foobar_srcpart_auth_index__
+POSTHOOK: query: grant update on table default__foobar_srcpart_auth_index__ to user hive_test_user
+POSTHOOK: type: GRANT_PRIVILEGE
+POSTHOOK: Output: default@default__foobar_srcpart_auth_index__
+PREHOOK: query: grant create on table default__foobar_srcpart_auth_index__ to user hive_test_user
+PREHOOK: type: GRANT_PRIVILEGE
+PREHOOK: Output: default@default__foobar_srcpart_auth_index__
+POSTHOOK: query: grant create on table default__foobar_srcpart_auth_index__ to user hive_test_user
+POSTHOOK: type: GRANT_PRIVILEGE
+POSTHOOK: Output: default@default__foobar_srcpart_auth_index__
+PREHOOK: query: ALTER INDEX srcpart_auth_index ON foobar PARTITION (ds='2008-04-08',hr='12')  REBUILD
+PREHOOK: type: ALTERINDEX_REBUILD
+PREHOOK: Input: default@foobar@ds=2008-04-08/hr=12
+PREHOOK: Output: default@default__foobar_srcpart_auth_index__@ds=2008-04-08/hr=12
+POSTHOOK: query: ALTER INDEX srcpart_auth_index ON foobar PARTITION (ds='2008-04-08',hr='12')  REBUILD
+POSTHOOK: type: ALTERINDEX_REBUILD
+POSTHOOK: Input: default@foobar@ds=2008-04-08/hr=12
+POSTHOOK: Output: default@default__foobar_srcpart_auth_index__@ds=2008-04-08/hr=12
+POSTHOOK: Lineage: default__foobar_srcpart_auth_index__ PARTITION(ds=2008-04-08,hr=12)._bitmaps EXPRESSION [(foobar)foobar.FieldSchema(name:ROW__OFFSET__INSIDE__BLOCK, type:bigint, comment:), ]
+POSTHOOK: Lineage: default__foobar_srcpart_auth_index__ PARTITION(ds=2008-04-08,hr=12)._bucketname SIMPLE [(foobar)foobar.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
+POSTHOOK: Lineage: default__foobar_srcpart_auth_index__ PARTITION(ds=2008-04-08,hr=12)._offset SIMPLE [(foobar)foobar.FieldSchema(name:BLOCK__OFFSET__INSIDE__FILE, type:bigint, comment:), ]
+POSTHOOK: Lineage: default__foobar_srcpart_auth_index__ PARTITION(ds=2008-04-08,hr=12).key SIMPLE [(foobar)foobar.FieldSchema(name:key, type:int, comment:null), ]
+PREHOOK: query: DROP INDEX srcpart_auth_index on foobar
+PREHOOK: type: DROPINDEX
+POSTHOOK: query: DROP INDEX srcpart_auth_index on foobar
+POSTHOOK: type: DROPINDEX
+POSTHOOK: Lineage: default__foobar_srcpart_auth_index__ PARTITION(ds=2008-04-08,hr=12)._bitmaps EXPRESSION [(foobar)foobar.FieldSchema(name:ROW__OFFSET__INSIDE__BLOCK, type:bigint, comment:), ]
+POSTHOOK: Lineage: default__foobar_srcpart_auth_index__ PARTITION(ds=2008-04-08,hr=12)._bucketname SIMPLE [(foobar)foobar.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
+POSTHOOK: Lineage: default__foobar_srcpart_auth_index__ PARTITION(ds=2008-04-08,hr=12)._offset SIMPLE [(foobar)foobar.FieldSchema(name:BLOCK__OFFSET__INSIDE__FILE, type:bigint, comment:), ]
+POSTHOOK: Lineage: default__foobar_srcpart_auth_index__ PARTITION(ds=2008-04-08,hr=12).key SIMPLE [(foobar)foobar.FieldSchema(name:key, type:int, comment:null), ]
+PREHOOK: query: DROP TABLE foobar
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@foobar
+PREHOOK: Output: default@foobar
+POSTHOOK: query: DROP TABLE foobar
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@foobar
+POSTHOOK: Output: default@foobar
+POSTHOOK: Lineage: default__foobar_srcpart_auth_index__ PARTITION(ds=2008-04-08,hr=12)._bitmaps EXPRESSION [(foobar)foobar.FieldSchema(name:ROW__OFFSET__INSIDE__BLOCK, type:bigint, comment:), ]
+POSTHOOK: Lineage: default__foobar_srcpart_auth_index__ PARTITION(ds=2008-04-08,hr=12)._bucketname SIMPLE [(foobar)foobar.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
+POSTHOOK: Lineage: default__foobar_srcpart_auth_index__ PARTITION(ds=2008-04-08,hr=12)._offset SIMPLE [(foobar)foobar.FieldSchema(name:BLOCK__OFFSET__INSIDE__FILE, type:bigint, comment:), ]
+POSTHOOK: Lineage: default__foobar_srcpart_auth_index__ PARTITION(ds=2008-04-08,hr=12).key SIMPLE [(foobar)foobar.FieldSchema(name:key, type:int, comment:null), ]

@@ -82,7 +82,7 @@ STAGE PLANS:
   Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/tmp/heyongqiang/hive_2011-08-02_16-20-46_897_8857433213666459560/-mr-10002 
+        file:/tmp/salbiz/hive_2011-08-03_11-42-30_405_5068275561507065717/-mr-10002 
             Reduce Output Operator
               key expressions:
                     expr: _col0
@@ -111,11 +111,11 @@ STAGE PLANS:
 PREHOOK: query: SELECT a.key, b.key FROM src a JOIN src b ON (a.value = b.value) WHERE a.key > 80 AND a.key < 100 AND b.key > 70 AND b.key < 90 ORDER BY a.key
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/tmp/heyongqiang/hive_2011-08-02_16-20-47_055_5824956672610237767/-mr-10000
+PREHOOK: Output: file:/tmp/salbiz/hive_2011-08-03_11-42-30_508_513747522661258530/-mr-10000
 POSTHOOK: query: SELECT a.key, b.key FROM src a JOIN src b ON (a.value = b.value) WHERE a.key > 80 AND a.key < 100 AND b.key > 70 AND b.key < 90 ORDER BY a.key
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: file:/tmp/heyongqiang/hive_2011-08-02_16-20-47_055_5824956672610237767/-mr-10000
+POSTHOOK: Output: file:/tmp/salbiz/hive_2011-08-03_11-42-30_508_513747522661258530/-mr-10000
 82	82
 83	83
 83	83
@@ -133,11 +133,11 @@ PREHOOK: type: CREATEINDEX
 POSTHOOK: query: CREATE INDEX src_index ON TABLE src(key) as 'BITMAP' WITH DEFERRED REBUILD
 POSTHOOK: type: CREATEINDEX
 PREHOOK: query: ALTER INDEX src_index ON src REBUILD
-PREHOOK: type: QUERY
+PREHOOK: type: ALTERINDEX_REBUILD
 PREHOOK: Input: default@src
 PREHOOK: Output: default@default__src_src_index__
 POSTHOOK: query: ALTER INDEX src_index ON src REBUILD
-POSTHOOK: type: QUERY
+POSTHOOK: type: ALTERINDEX_REBUILD
 POSTHOOK: Input: default@src
 POSTHOOK: Output: default@default__src_src_index__
 POSTHOOK: Lineage: default__src_src_index__._bitmaps EXPRESSION [(src)src.FieldSchema(name:ROW__OFFSET__INSIDE__BLOCK, type:bigint, comment:), ]
@@ -250,7 +250,7 @@ STAGE PLANS:
     Move Operator
       files:
           hdfs directory: true
-          destination: file:/tmp/heyongqiang/hive_2011-08-02_16-20-57_341_4740837259291256044/-mr-10003
+          destination: file:/tmp/salbiz/hive_2011-08-03_11-42-40_557_1279576820158523709/-mr-10003
 
   Stage: Stage-1
     Map Reduce
@@ -325,7 +325,7 @@ STAGE PLANS:
   Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/tmp/heyongqiang/hive_2011-08-02_16-20-57_341_4740837259291256044/-mr-10002 
+        file:/tmp/salbiz/hive_2011-08-03_11-42-40_557_1279576820158523709/-mr-10002 
             Reduce Output Operator
               key expressions:
                     expr: _col0
@@ -431,7 +431,7 @@ STAGE PLANS:
     Move Operator
       files:
           hdfs directory: true
-          destination: file:/tmp/heyongqiang/hive_2011-08-02_16-20-57_341_4740837259291256044/-mr-10004
+          destination: file:/tmp/salbiz/hive_2011-08-03_11-42-40_557_1279576820158523709/-mr-10004
 
   Stage: Stage-0
     Fetch Operator
@@ -442,12 +442,12 @@ PREHOOK: query: SELECT a.key, b.key FROM src a JOIN src b ON (a.value = b.value)
 PREHOOK: type: QUERY
 PREHOOK: Input: default@default__src_src_index__
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/tmp/heyongqiang/hive_2011-08-02_16-20-57_700_5860392294353197259/-mr-10000
+PREHOOK: Output: file:/tmp/salbiz/hive_2011-08-03_11-42-40_942_8561053341711300653/-mr-10000
 POSTHOOK: query: SELECT a.key, b.key FROM src a JOIN src b ON (a.value = b.value) WHERE a.key > 80 AND a.key < 100 AND b.key > 70 AND b.key < 90 ORDER BY a.key
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@default__src_src_index__
 POSTHOOK: Input: default@src
-POSTHOOK: Output: file:/tmp/heyongqiang/hive_2011-08-02_16-20-57_700_5860392294353197259/-mr-10000
+POSTHOOK: Output: file:/tmp/salbiz/hive_2011-08-03_11-42-40_942_8561053341711300653/-mr-10000
 POSTHOOK: Lineage: default__src_src_index__._bitmaps EXPRESSION [(src)src.FieldSchema(name:ROW__OFFSET__INSIDE__BLOCK, type:bigint, comment:), ]
 POSTHOOK: Lineage: default__src_src_index__._bucketname SIMPLE [(src)src.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
 POSTHOOK: Lineage: default__src_src_index__._offset SIMPLE [(src)src.FieldSchema(name:BLOCK__OFFSET__INSIDE__FILE, type:bigint, comment:), ]

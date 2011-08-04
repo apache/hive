@@ -24,6 +24,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Stack;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -336,6 +337,52 @@ public class Driver implements CommandProcessor {
   }
 
   /**
+   * Hold state variables specific to each query being executed, that may not
+   * be consistent in the overall SessionState
+   */
+  private static class QueryState {
+    private HiveOperation op;
+    private String cmd;
+    private boolean init = false;
+
+    /**
+     * Initialize the queryState with the query state variables
+     */
+    public void init(HiveOperation op, String cmd) {
+      this.op = op;
+      this.cmd = cmd;
+      this.init = true;
+    }
+
+    public boolean isInitialized() {
+      return this.init;
+    }
+    
+    public HiveOperation getOp() {
+      return this.op;
+    }
+
+    public String getCmd() {
+      return this.cmd;
+    }
+  }
+
+  public void saveSession(QueryState qs) {
+    SessionState oldss = SessionState.get();
+    if (oldss != null && oldss.getHiveOperation() != null) {
+      qs.init(oldss.getHiveOperation(), oldss.getCmd());
+    }
+  }
+
+  public void restoreSession(QueryState qs) {
+    SessionState ss = SessionState.get();
+    if (ss != null && qs != null && qs.isInitialized()) {
+      ss.setCmd(qs.getCmd());
+      ss.setCommandType(qs.getOp());
+    }
+  }
+
+  /**
    * Compile a new query, but potentially reset taskID counter.  Not resetting task counter
    * is useful for generating re-entrant QL queries.
    * @param command  The HiveQL query to compile
@@ -345,6 +392,8 @@ public class Driver implements CommandProcessor {
   public int compile(String command, boolean resetTaskIds) {
 
     Utilities.PerfLogBegin(LOG, "compile");
+    //holder for parent command type/string when executing reentrant queries
+    QueryState queryState = new QueryState();
 
     if (plan != null) {
       close();
@@ -352,8 +401,9 @@ public class Driver implements CommandProcessor {
     }
 
     if (resetTaskIds) {
-    TaskFactory.resetId();
+      TaskFactory.resetId();
     }
+    saveSession(queryState);
 
     try {
       command = new VariableSubstitution().substitute(conf,command);
@@ -438,6 +488,8 @@ public class Driver implements CommandProcessor {
         }
       }
 
+      //restore state after we're done executing a specific query
+
       return 0;
     } catch (SemanticException e) {
       errorMessage = "FAILED: Error in semantic analysis: " + e.getMessage();
@@ -458,6 +510,7 @@ public class Driver implements CommandProcessor {
           + org.apache.hadoop.util.StringUtils.stringifyException(e));
       return (12);
     } finally {
+      restoreSession(queryState);
       Utilities.PerfLogEnd(LOG, "compile");
     }
   }
