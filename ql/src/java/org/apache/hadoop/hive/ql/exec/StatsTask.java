@@ -447,7 +447,8 @@ public class StatsTask extends Task<StatsWork> implements Serializable {
       if (value != null) {
         longValue = Long.parseLong(value);
 
-        if (!work.getLoadTableDesc().getReplace()) {
+        if (work.getLoadTableDesc() != null && 
+            !work.getLoadTableDesc().getReplace()) {
           String originalValue = parameters.get(statType);
           if (originalValue != null) {
             longValue += Long.parseLong(originalValue);
