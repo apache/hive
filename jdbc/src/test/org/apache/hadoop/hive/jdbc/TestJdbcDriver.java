@@ -642,6 +642,11 @@ public class TestJdbcDriver extends TestCase {
     for (String[] checkPattern: tests.keySet()) {
       ResultSet rs = (ResultSet)con.getMetaData().getColumns(null, null
               , checkPattern[0], checkPattern[1]);
+
+      // validate the metadata for the getColumns result set
+      ResultSetMetaData rsmd = rs.getMetaData();
+      assertEquals("TABLE_CAT", rsmd.getColumnName(1));
+
       int cnt = 0;
       while (rs.next()) {
         String columnname = rs.getString("COLUMN_NAME");
@@ -663,6 +668,24 @@ public class TestJdbcDriver extends TestCase {
       rs.close();
       assertEquals("Found less columns then we test for.", tests.get(checkPattern).intValue(), cnt);
     }
+  }
+
+  /**
+   * Validate the Metadata for the result set of a metadata getColumns call.
+   */
+  public void testMetaDataGetColumnsMetaData() throws SQLException {
+    ResultSet rs = (ResultSet)con.getMetaData().getColumns(null, null
+            , "testhivejdbcdriver\\_table", null);
+
+    ResultSetMetaData rsmd = rs.getMetaData();
+
+    assertEquals("TABLE_CAT", rsmd.getColumnName(1));
+    assertEquals(Types.VARCHAR, rsmd.getColumnType(1));
+    assertEquals(Integer.MAX_VALUE, rsmd.getColumnDisplaySize(1));
+
+    assertEquals("ORDINAL_POSITION", rsmd.getColumnName(17));
+    assertEquals(Types.INTEGER, rsmd.getColumnType(17));
+    assertEquals(11, rsmd.getColumnDisplaySize(17));
   }
 
   public void testConversionsBaseResultSet() throws SQLException {
@@ -793,30 +816,32 @@ public class TestJdbcDriver extends TestCase {
     assertEquals("int", meta.getColumnTypeName(13));
     assertEquals("string", meta.getColumnTypeName(14));
 
-    assertEquals(16, meta.getColumnDisplaySize(1));
-    assertEquals(8, meta.getColumnDisplaySize(2));
-    assertEquals(16, meta.getColumnDisplaySize(3));
-    assertEquals(32, meta.getColumnDisplaySize(4));
-    assertEquals(32, meta.getColumnDisplaySize(5));
-    assertEquals(32, meta.getColumnDisplaySize(6));
-    assertEquals(32, meta.getColumnDisplaySize(7));
-    assertEquals(32, meta.getColumnDisplaySize(8));
-    assertEquals(2, meta.getColumnDisplaySize(9));
-    assertEquals(32, meta.getColumnDisplaySize(10));
-    assertEquals(32, meta.getColumnDisplaySize(11));
-    assertEquals(32, meta.getColumnDisplaySize(12));
-    assertEquals(16, meta.getColumnDisplaySize(13));
-    assertEquals(32, meta.getColumnDisplaySize(14));
+    assertEquals(11, meta.getColumnDisplaySize(1));
+    assertEquals(1, meta.getColumnDisplaySize(2));
+    assertEquals(25, meta.getColumnDisplaySize(3));
+    assertEquals(Integer.MAX_VALUE, meta.getColumnDisplaySize(4));
+    assertEquals(Integer.MAX_VALUE, meta.getColumnDisplaySize(5));
+    assertEquals(Integer.MAX_VALUE, meta.getColumnDisplaySize(6));
+    assertEquals(Integer.MAX_VALUE, meta.getColumnDisplaySize(7));
+    assertEquals(Integer.MAX_VALUE, meta.getColumnDisplaySize(8));
+    assertEquals(4, meta.getColumnDisplaySize(9));
+    assertEquals(6, meta.getColumnDisplaySize(10));
+    assertEquals(24, meta.getColumnDisplaySize(11));
+    assertEquals(20, meta.getColumnDisplaySize(12));
+    assertEquals(11, meta.getColumnDisplaySize(13));
+    assertEquals(Integer.MAX_VALUE, meta.getColumnDisplaySize(14));
 
+    int[] expectedPrecision = {10, 1, 15, Integer.MAX_VALUE, Integer.MAX_VALUE,
+        Integer.MAX_VALUE, Integer.MAX_VALUE, Integer.MAX_VALUE, 3, 5, 7, 19,
+        10, Integer.MAX_VALUE};
+    int[] expectedScale = {0, 0, 15, 0, 0, 0, 0, 0, 0, 0, 7, 0, 0, 0};
     for (int i = 1; i <= meta.getColumnCount(); i++) {
       assertFalse(meta.isAutoIncrement(i));
       assertFalse(meta.isCurrency(i));
       assertEquals(ResultSetMetaData.columnNullable, meta.isNullable(i));
 
-      int expectedPrecision = i == 3 ? -1 : 0;
-      int expectedScale = i == 3 ? -1 : 0;
-      assertEquals(expectedPrecision, meta.getPrecision(i));
-      assertEquals(expectedScale, meta.getScale(i));
+      assertEquals(expectedPrecision[i-1], meta.getPrecision(i));
+      assertEquals(expectedScale[i-1], meta.getScale(i));
     }
   }
 

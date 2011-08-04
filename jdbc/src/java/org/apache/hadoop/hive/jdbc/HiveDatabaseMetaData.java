@@ -215,10 +215,10 @@ public class HiveDatabaseMetaData implements java.sql.DatabaseMetaData {
                       , "SQL_DATETIME_SUB", "CHAR_OCTET_LENGTH", "ORDINAL_POSITION"
                       , "IS_NULLABLE", "SCOPE_CATLOG", "SCOPE_SCHEMA", "SCOPE_TABLE"
                       , "SOURCE_DATA_TYPE")
-              , Arrays.asList("STRING", "STRING", "STRING", "STRING", "I32", "STRING"
-                , "I32", "I32", "I32", "I32", "I32", "STRING"
-                , "STRING", "I32", "I32", "I32", "I32"
-                , "STRING", "STRING", "STRING", "STRING", "I32")
+              , Arrays.asList("STRING", "STRING", "STRING", "STRING", "INT", "STRING"
+                , "INT", "INT", "INT", "INT", "INT", "STRING"
+                , "STRING", "INT", "INT", "INT", "INT"
+                , "STRING", "STRING", "STRING", "STRING", "INT")
               , columns) {
 
         private int cnt = 0;
@@ -684,7 +684,7 @@ public class HiveDatabaseMetaData implements java.sql.DatabaseMetaData {
     return new HiveMetaDataResultSet(
             Arrays.asList("TYPE_CAT", "TYPE_SCHEM", "TYPE_NAME", "CLASS_NAME", "DATA_TYPE"
                     , "REMARKS", "BASE_TYPE")
-            , Arrays.asList("STRING", "STRING", "STRING", "STRING", "I32", "STRING", "I32")
+            , Arrays.asList("STRING", "STRING", "STRING", "STRING", "INT", "STRING", "INT")
             , null) {
 
       public boolean next() throws SQLException {
