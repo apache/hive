@@ -30,8 +30,8 @@ import org.apache.hadoop.hive.serde.Constants;
  *
  */
 public class HiveResultSetMetaData implements java.sql.ResultSetMetaData {
-  private List<String> columnNames;
-  private List<String> columnTypes;
+  private final List<String> columnNames;
+  private final List<String> columnTypes;
 
   public HiveResultSetMetaData(List<String> columnNames,
       List<String> columnTypes) {
@@ -52,21 +52,9 @@ public class HiveResultSetMetaData implements java.sql.ResultSetMetaData {
   }
 
   public int getColumnDisplaySize(int column) throws SQLException {
-    // taking a stab at appropriate values
-    switch (getColumnType(column)) {
-    case Types.VARCHAR:
-    case Types.BIGINT:
-      return 32;
-    case Types.TINYINT:
-      return 2;
-    case Types.BOOLEAN:
-      return 8;
-    case Types.DOUBLE:
-    case Types.INTEGER:
-      return 16;
-    default:
-      return 32;
-    }
+    int columnType = getColumnType(column);
+
+    return JdbcColumn.columnSize(columnType);
   }
 
   public String getColumnLabel(int column) throws SQLException {
@@ -91,42 +79,8 @@ public class HiveResultSetMetaData implements java.sql.ResultSetMetaData {
     String type = columnTypes.get(column - 1);
 
     // we need to convert the thrift type to the SQL type
-    return hiveTypeToSqlType(type);
+    return Utils.hiveTypeToSqlType(type);
   }
-
-  /**
-   * Convert hive types to sql types.
-   * @param type
-   * @return Integer java.sql.Types values
-   * @throws SQLException
-   */
-  public static int hiveTypeToSqlType(String type) throws SQLException {
-    if ("string".equalsIgnoreCase(type)) {
-      return Types.VARCHAR;
-    } else if ("float".equalsIgnoreCase(type)) {
-      return Types.FLOAT;
-    } else if ("double".equalsIgnoreCase(type)) {
-      return Types.DOUBLE;
-    } else if ("boolean".equalsIgnoreCase(type)) {
-      return Types.BOOLEAN;
-    } else if ("tinyint".equalsIgnoreCase(type)) {
-      return Types.TINYINT;
-    } else if ("smallint".equalsIgnoreCase(type)) {
-      return Types.SMALLINT;
-    } else if ("int".equalsIgnoreCase(type)) {
-      return Types.INTEGER;
-    } else if ("bigint".equalsIgnoreCase(type)) {
-      return Types.BIGINT;
-    } else if (type.startsWith("map<")) {
-      return Types.VARCHAR;
-    } else if (type.startsWith("array<")) {
-      return Types.VARCHAR;
-    } else if (type.startsWith("struct<")) {
-      return Types.VARCHAR;
-    }
-    throw new SQLException("Unrecognized column type: " + type);
-  }
-
 
   public String getColumnTypeName(int column) throws SQLException {
     if (columnTypes == null) {
@@ -169,19 +123,30 @@ public class HiveResultSetMetaData implements java.sql.ResultSetMetaData {
   }
 
   public int getPrecision(int column) throws SQLException {
-    if (Types.DOUBLE == getColumnType(column)) {
-      return -1; // Do we have a precision limit?
-    }
+    int columnType = getColumnType(column);
 
-    return 0;
+    return JdbcColumn.columnPrecision(columnType);
   }
 
   public int getScale(int column) throws SQLException {
-    if (Types.DOUBLE == getColumnType(column)) {
-      return -1; // Do we have a scale limit?
-    }
+    int columnType = getColumnType(column);
 
-    return 0;
+    // according to hiveTypeToSqlType possible options are:
+    switch(columnType) {
+    case Types.BOOLEAN:
+    case Types.VARCHAR:
+    case Types.TINYINT:
+    case Types.SMALLINT:
+    case Types.INTEGER:
+    case Types.BIGINT:
+      return 0;
+    case Types.FLOAT:
+      return 7;
+    case Types.DOUBLE:
+      return 15;
+    default:
+      throw new SQLException("Invalid column value: " + column);
+    }
   }
 
   public String getSchemaName(int column) throws SQLException {
