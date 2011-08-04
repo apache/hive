@@ -18,11 +18,11 @@ POSTHOOK: Output: default@accessLog
 PREHOOK: query: select * from accessLog
 PREHOOK: type: QUERY
 PREHOOK: Input: default@accesslog
-PREHOOK: Output: file:/var/folders/b-/b-vBB2wVHpaVQzxVjeViaE+++TI/-Tmp-/yeweizhang/hive_2011-06-13_17-43-12_800_4021658363540237256/-mr-10000
+PREHOOK: Output: file:/var/folders/hn/vg_2g82d2jqbj5ws1k7rdgs80000gn/T/aaron/hive_2011-07-31_03-38-17_432_4707153886360149325/-mr-10000
 POSTHOOK: query: select * from accessLog
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@accesslog
-POSTHOOK: Output: file:/var/folders/b-/b-vBB2wVHpaVQzxVjeViaE+++TI/-Tmp-/yeweizhang/hive_2011-06-13_17-43-12_800_4021658363540237256/-mr-10000
+POSTHOOK: Output: file:/var/folders/hn/vg_2g82d2jqbj5ws1k7rdgs80000gn/T/aaron/hive_2011-07-31_03-38-17_432_4707153886360149325/-mr-10000
 PREHOOK: query: INSERT OVERWRITE TABLE accessLog
 select key, 'divide7', value  from src where (key%7)=0
 PREHOOK: type: QUERY
@@ -36,11 +36,11 @@ POSTHOOK: Output: default@accesslog
 PREHOOK: query: select row_key, column_name, value from accessLog
 PREHOOK: type: QUERY
 PREHOOK: Input: default@accesslog
-PREHOOK: Output: file:/var/folders/b-/b-vBB2wVHpaVQzxVjeViaE+++TI/-Tmp-/yeweizhang/hive_2011-06-13_17-43-17_105_6611791197122205293/-mr-10000
+PREHOOK: Output: file:/var/folders/hn/vg_2g82d2jqbj5ws1k7rdgs80000gn/T/aaron/hive_2011-07-31_03-38-22_019_630264497183045473/-mr-10000
 POSTHOOK: query: select row_key, column_name, value from accessLog
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@accesslog
-POSTHOOK: Output: file:/var/folders/b-/b-vBB2wVHpaVQzxVjeViaE+++TI/-Tmp-/yeweizhang/hive_2011-06-13_17-43-17_105_6611791197122205293/-mr-10000
+POSTHOOK: Output: file:/var/folders/hn/vg_2g82d2jqbj5ws1k7rdgs80000gn/T/aaron/hive_2011-07-31_03-38-22_019_630264497183045473/-mr-10000
 0	divide7	val_0
 105	divide7	val_105
 119	divide7	val_119
@@ -97,11 +97,11 @@ POSTHOOK: Output: default@accesslog
 PREHOOK: query: select row_key from accessLog
 PREHOOK: type: QUERY
 PREHOOK: Input: default@accesslog
-PREHOOK: Output: file:/var/folders/b-/b-vBB2wVHpaVQzxVjeViaE+++TI/-Tmp-/yeweizhang/hive_2011-06-13_17-43-24_123_175759811298163883/-mr-10000
+PREHOOK: Output: file:/var/folders/hn/vg_2g82d2jqbj5ws1k7rdgs80000gn/T/aaron/hive_2011-07-31_03-38-30_990_178493848308681423/-mr-10000
 POSTHOOK: query: select row_key from accessLog
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@accesslog
-POSTHOOK: Output: file:/var/folders/b-/b-vBB2wVHpaVQzxVjeViaE+++TI/-Tmp-/yeweizhang/hive_2011-06-13_17-43-24_123_175759811298163883/-mr-10000
+POSTHOOK: Output: file:/var/folders/hn/vg_2g82d2jqbj5ws1k7rdgs80000gn/T/aaron/hive_2011-07-31_03-38-30_990_178493848308681423/-mr-10000
 0
 0
 105
@@ -179,11 +179,11 @@ POSTHOOK: Output: file:/var/folders/b-/b-vBB2wVHpaVQzxVjeViaE+++TI/-Tmp-/yeweizh
 PREHOOK: query: select * from accessLog where column_name != 'divide9'
 PREHOOK: type: QUERY
 PREHOOK: Input: default@accesslog
-PREHOOK: Output: file:/var/folders/b-/b-vBB2wVHpaVQzxVjeViaE+++TI/-Tmp-/yeweizhang/hive_2011-06-13_17-43-28_170_8622998756035269978/-mr-10000
+PREHOOK: Output: file:/var/folders/hn/vg_2g82d2jqbj5ws1k7rdgs80000gn/T/aaron/hive_2011-07-31_03-38-35_338_3816008941884923956/-mr-10000
 POSTHOOK: query: select * from accessLog where column_name != 'divide9'
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@accesslog
-POSTHOOK: Output: file:/var/folders/b-/b-vBB2wVHpaVQzxVjeViaE+++TI/-Tmp-/yeweizhang/hive_2011-06-13_17-43-28_170_8622998756035269978/-mr-10000
+POSTHOOK: Output: file:/var/folders/hn/vg_2g82d2jqbj5ws1k7rdgs80000gn/T/aaron/hive_2011-07-31_03-38-35_338_3816008941884923956/-mr-10000
 0	divide7	val_0
 105	divide7	val_105
 119	divide7	val_119
@@ -230,11 +230,11 @@ POSTHOOK: Output: file:/var/folders/b-/b-vBB2wVHpaVQzxVjeViaE+++TI/-Tmp-/yeweizh
 PREHOOK: query: select row_key, count(*) from accessLog where row_key > 70 group by row_key
 PREHOOK: type: QUERY
 PREHOOK: Input: default@accesslog
-PREHOOK: Output: file:/var/folders/b-/b-vBB2wVHpaVQzxVjeViaE+++TI/-Tmp-/yeweizhang/hive_2011-06-13_17-43-32_851_8662349843217796802/-mr-10000
+PREHOOK: Output: file:/var/folders/hn/vg_2g82d2jqbj5ws1k7rdgs80000gn/T/aaron/hive_2011-07-31_03-38-39_929_8126565956859467025/-mr-10000
 POSTHOOK: query: select row_key, count(*) from accessLog where row_key > 70 group by row_key
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@accesslog
-POSTHOOK: Output: file:/var/folders/b-/b-vBB2wVHpaVQzxVjeViaE+++TI/-Tmp-/yeweizhang/hive_2011-06-13_17-43-32_851_8662349843217796802/-mr-10000
+POSTHOOK: Output: file:/var/folders/hn/vg_2g82d2jqbj5ws1k7rdgs80000gn/T/aaron/hive_2011-07-31_03-38-39_929_8126565956859467025/-mr-10000
 105	1
 119	1
 126	2
@@ -316,11 +316,11 @@ POSTHOOK: Output: default@superLog
 PREHOOK: query: select * from superLog
 PREHOOK: type: QUERY
 PREHOOK: Input: default@superlog
-PREHOOK: Output: file:/var/folders/b-/b-vBB2wVHpaVQzxVjeViaE+++TI/-Tmp-/yeweizhang/hive_2011-06-13_17-43-39_448_5374271894869754952/-mr-10000
+PREHOOK: Output: file:/var/folders/hn/vg_2g82d2jqbj5ws1k7rdgs80000gn/T/aaron/hive_2011-07-31_03-38-45_519_8906867808175603517/-mr-10000
 POSTHOOK: query: select * from superLog
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@superlog
-POSTHOOK: Output: file:/var/folders/b-/b-vBB2wVHpaVQzxVjeViaE+++TI/-Tmp-/yeweizhang/hive_2011-06-13_17-43-39_448_5374271894869754952/-mr-10000
+POSTHOOK: Output: file:/var/folders/hn/vg_2g82d2jqbj5ws1k7rdgs80000gn/T/aaron/hive_2011-07-31_03-38-45_519_8906867808175603517/-mr-10000
 PREHOOK: query: INSERT OVERWRITE TABLE superLog
 select key, 'divide', '5', value  from src where (key%5)=0
 PREHOOK: type: QUERY
@@ -334,11 +334,11 @@ POSTHOOK: Output: default@superlog
 PREHOOK: query: select * from superLog
 PREHOOK: type: QUERY
 PREHOOK: Input: default@superlog
-PREHOOK: Output: file:/var/folders/b-/b-vBB2wVHpaVQzxVjeViaE+++TI/-Tmp-/yeweizhang/hive_2011-06-13_17-43-46_203_8517016729424708687/-mr-10000
+PREHOOK: Output: file:/var/folders/hn/vg_2g82d2jqbj5ws1k7rdgs80000gn/T/aaron/hive_2011-07-31_03-38-51_484_6199091505608884722/-mr-10000
 POSTHOOK: query: select * from superLog
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@superlog
-POSTHOOK: Output: file:/var/folders/b-/b-vBB2wVHpaVQzxVjeViaE+++TI/-Tmp-/yeweizhang/hive_2011-06-13_17-43-46_203_8517016729424708687/-mr-10000
+POSTHOOK: Output: file:/var/folders/hn/vg_2g82d2jqbj5ws1k7rdgs80000gn/T/aaron/hive_2011-07-31_03-38-51_484_6199091505608884722/-mr-10000
 0	divide	5	val_0
 10	divide	5	val_10
 100	divide	5	val_100
@@ -410,11 +410,11 @@ POSTHOOK: Output: default@superlog
 PREHOOK: query: select row_key, sub_column_name, value from superLog
 PREHOOK: type: QUERY
 PREHOOK: Input: default@superlog
-PREHOOK: Output: file:/var/folders/b-/b-vBB2wVHpaVQzxVjeViaE+++TI/-Tmp-/yeweizhang/hive_2011-06-13_17-43-53_126_6543748693195910529/-mr-10000
+PREHOOK: Output: file:/var/folders/hn/vg_2g82d2jqbj5ws1k7rdgs80000gn/T/aaron/hive_2011-07-31_03-38-58_867_5588144740086665487/-mr-10000
 POSTHOOK: query: select row_key, sub_column_name, value from superLog
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@superlog
-POSTHOOK: Output: file:/var/folders/b-/b-vBB2wVHpaVQzxVjeViaE+++TI/-Tmp-/yeweizhang/hive_2011-06-13_17-43-53_126_6543748693195910529/-mr-10000
+POSTHOOK: Output: file:/var/folders/hn/vg_2g82d2jqbj5ws1k7rdgs80000gn/T/aaron/hive_2011-07-31_03-38-58_867_5588144740086665487/-mr-10000
 0	3	val_0
 10	5	val_10
 100	5	val_100
@@ -558,11 +558,11 @@ POSTHOOK: Output: file:/var/folders/b-/b-vBB2wVHpaVQzxVjeViaE+++TI/-Tmp-/yeweizh
 PREHOOK: query: select row_key, value from superLog where column_name = 'divide' and sub_column_name = '3'
 PREHOOK: type: QUERY
 PREHOOK: Input: default@superlog
-PREHOOK: Output: file:/var/folders/b-/b-vBB2wVHpaVQzxVjeViaE+++TI/-Tmp-/yeweizhang/hive_2011-06-13_17-43-59_154_5538934266031746077/-mr-10000
+PREHOOK: Output: file:/var/folders/hn/vg_2g82d2jqbj5ws1k7rdgs80000gn/T/aaron/hive_2011-07-31_03-39-03_709_4288118115051074902/-mr-10000
 POSTHOOK: query: select row_key, value from superLog where column_name = 'divide' and sub_column_name = '3'
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@superlog
-POSTHOOK: Output: file:/var/folders/b-/b-vBB2wVHpaVQzxVjeViaE+++TI/-Tmp-/yeweizhang/hive_2011-06-13_17-43-59_154_5538934266031746077/-mr-10000
+POSTHOOK: Output: file:/var/folders/hn/vg_2g82d2jqbj5ws1k7rdgs80000gn/T/aaron/hive_2011-07-31_03-39-03_709_4288118115051074902/-mr-10000
 0	val_0
 105	val_105
 111	val_111
@@ -664,6 +664,24 @@ POSTHOOK: Output: file:/var/folders/b-/b-vBB2wVHpaVQzxVjeViaE+++TI/-Tmp-/yeweizh
 9	val_9
 90	val_90
 96	val_96
+PREHOOK: query: select * from accessLog limit 1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@accesslog
+PREHOOK: Output: file:/var/folders/hn/vg_2g82d2jqbj5ws1k7rdgs80000gn/T/aaron/hive_2011-07-31_03-39-08_690_1829116516767204906/-mr-10000
+POSTHOOK: query: select * from accessLog limit 1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@accesslog
+POSTHOOK: Output: file:/var/folders/hn/vg_2g82d2jqbj5ws1k7rdgs80000gn/T/aaron/hive_2011-07-31_03-39-08_690_1829116516767204906/-mr-10000
+0	divide7	val_0
+PREHOOK: query: select * from accessLog limit 1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@accesslog
+PREHOOK: Output: file:/var/folders/hn/vg_2g82d2jqbj5ws1k7rdgs80000gn/T/aaron/hive_2011-07-31_03-39-08_746_4956529330014868408/-mr-10000
+POSTHOOK: query: select * from accessLog limit 1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@accesslog
+POSTHOOK: Output: file:/var/folders/hn/vg_2g82d2jqbj5ws1k7rdgs80000gn/T/aaron/hive_2011-07-31_03-39-08_746_4956529330014868408/-mr-10000
+0	divide7	val_0
 PREHOOK: query: DROP TABLE accessLog
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@accesslog

@@ -45,6 +45,9 @@ select row_key, sub_column_name, value from superLog;
 
 select row_key, value from superLog where column_name = 'divide' and sub_column_name = '3';
 
+select * from accessLog limit 1;
+select * from accessLog limit 1;
+
 DROP TABLE accessLog;
 DROP TABLE superLog;
 
