@@ -42,7 +42,6 @@ public class HiveCassandraStandardColumnInputFormat extends
   static final Log LOG = LogFactory.getLog(HiveCassandraStandardColumnInputFormat.class);
 
   private boolean isTransposed;
-  private Iterator<Map.Entry<ByteBuffer, IColumn>> currentRecordIterator;
   private Map.Entry<ByteBuffer, IColumn> currentEntry;
   private Iterator<IColumn> subcolumnIterator;
 
@@ -109,6 +108,7 @@ public class HiveCassandraStandardColumnInputFormat extends
       throw new IOException(ie);
     }
     return new RecordReader<Text, HiveCassandraStandardRowResult>() {
+      private Iterator<Map.Entry<ByteBuffer, IColumn>> currentRecordIterator;
 
       @Override
       public void close() throws IOException {
