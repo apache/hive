@@ -17,7 +17,7 @@ FROM src
 GROUP BY CAST(key AS INT) DIV 10
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/tmp/nzhang/hive_2010-09-30_14-31-04_657_7695062961081758326/-mr-10000
+PREHOOK: Output: file:/tmp/vaggarw/hive_2011-08-03_16-51-19_229_229298108005701394/-mr-10000
 POSTHOOK: query: SELECT CAST(key AS INT) DIV 10,
        percentile(CAST(substr(value, 5) AS INT), 0.0),
        percentile(CAST(substr(value, 5) AS INT), 0.5),
@@ -27,7 +27,7 @@ FROM src
 GROUP BY CAST(key AS INT) DIV 10
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: file:/tmp/nzhang/hive_2010-09-30_14-31-04_657_7695062961081758326/-mr-10000
+POSTHOOK: Output: file:/tmp/vaggarw/hive_2011-08-03_16-51-19_229_229298108005701394/-mr-10000
 0	0.0	4.5	9.0	[0.0,4.5,8.91,9.0]
 1	10.0	15.0	19.0	[10.0,15.0,18.91,19.0]
 2	20.0	26.0	28.0	[20.0,26.0,27.939999999999998,28.0]
@@ -87,7 +87,7 @@ FROM src
 GROUP BY CAST(key AS INT) DIV 10
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/tmp/nzhang/hive_2010-09-30_14-31-08_328_1503104614300611608/-mr-10000
+PREHOOK: Output: file:/tmp/vaggarw/hive_2011-08-03_16-51-29_468_4052086802164753043/-mr-10000
 POSTHOOK: query: SELECT CAST(key AS INT) DIV 10,
        percentile(CAST(substr(value, 5) AS INT), 0.0),
        percentile(CAST(substr(value, 5) AS INT), 0.5),
@@ -97,7 +97,7 @@ FROM src
 GROUP BY CAST(key AS INT) DIV 10
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: file:/tmp/nzhang/hive_2010-09-30_14-31-08_328_1503104614300611608/-mr-10000
+POSTHOOK: Output: file:/tmp/vaggarw/hive_2011-08-03_16-51-29_468_4052086802164753043/-mr-10000
 0	0.0	4.5	9.0	[0.0,4.5,8.91,9.0]
 1	10.0	15.0	19.0	[10.0,15.0,18.91,19.0]
 2	20.0	26.0	28.0	[20.0,26.0,27.939999999999998,28.0]
@@ -157,7 +157,7 @@ FROM src
 GROUP BY CAST(key AS INT) DIV 10
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/tmp/nzhang/hive_2010-09-30_14-31-11_970_2555122074334450746/-mr-10000
+PREHOOK: Output: file:/tmp/vaggarw/hive_2011-08-03_16-51-33_467_2230640342817411126/-mr-10000
 POSTHOOK: query: SELECT CAST(key AS INT) DIV 10,
        percentile(CAST(substr(value, 5) AS INT), 0.0),
        percentile(CAST(substr(value, 5) AS INT), 0.5),
@@ -167,7 +167,7 @@ FROM src
 GROUP BY CAST(key AS INT) DIV 10
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: file:/tmp/nzhang/hive_2010-09-30_14-31-11_970_2555122074334450746/-mr-10000
+POSTHOOK: Output: file:/tmp/vaggarw/hive_2011-08-03_16-51-33_467_2230640342817411126/-mr-10000
 0	0.0	4.5	9.0	[0.0,4.5,8.91,9.0]
 1	10.0	15.0	19.0	[10.0,15.0,18.91,19.0]
 2	20.0	26.0	28.0	[20.0,26.0,27.939999999999998,28.0]
@@ -227,7 +227,7 @@ FROM src
 GROUP BY CAST(key AS INT) DIV 10
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/tmp/nzhang/hive_2010-09-30_14-31-18_605_6781388888873576931/-mr-10000
+PREHOOK: Output: file:/tmp/vaggarw/hive_2011-08-03_16-51-40_017_576118838654068690/-mr-10000
 POSTHOOK: query: SELECT CAST(key AS INT) DIV 10,
        percentile(CAST(substr(value, 5) AS INT), 0.0),
        percentile(CAST(substr(value, 5) AS INT), 0.5),
@@ -237,7 +237,7 @@ FROM src
 GROUP BY CAST(key AS INT) DIV 10
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: file:/tmp/nzhang/hive_2010-09-30_14-31-18_605_6781388888873576931/-mr-10000
+POSTHOOK: Output: file:/tmp/vaggarw/hive_2011-08-03_16-51-40_017_576118838654068690/-mr-10000
 0	0.0	4.5	9.0	[0.0,4.5,8.91,9.0]
 1	10.0	15.0	19.0	[10.0,15.0,18.91,19.0]
 2	20.0	26.0	28.0	[20.0,26.0,27.939999999999998,28.0]
@@ -296,7 +296,7 @@ FROM src
 GROUP BY CAST(key AS INT) DIV 10
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/tmp/nzhang/hive_2010-09-30_14-31-25_414_6485719353317968460/-mr-10000
+PREHOOK: Output: file:/tmp/vaggarw/hive_2011-08-03_16-51-47_862_7148515659095482613/-mr-10000
 POSTHOOK: query: -- test null handling
 SELECT CAST(key AS INT) DIV 10,
        percentile(NULL, 0.0),
@@ -305,7 +305,7 @@ FROM src
 GROUP BY CAST(key AS INT) DIV 10
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: file:/tmp/nzhang/hive_2010-09-30_14-31-25_414_6485719353317968460/-mr-10000
+POSTHOOK: Output: file:/tmp/vaggarw/hive_2011-08-03_16-51-47_862_7148515659095482613/-mr-10000
 0	NULL	null
 1	NULL	null
 2	NULL	null
@@ -364,7 +364,7 @@ FROM src
 GROUP BY CAST(key AS INT) DIV 10
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/tmp/nzhang/hive_2010-09-30_14-31-29_005_976735399684431468/-mr-10000
+PREHOOK: Output: file:/tmp/vaggarw/hive_2011-08-03_16-51-51_352_8018632011548743374/-mr-10000
 POSTHOOK: query: -- test empty array handling
 SELECT CAST(key AS INT) DIV 10,
        percentile(IF(CAST(key AS INT) DIV 10 < 5, 1, NULL), 0.5),
@@ -373,7 +373,7 @@ FROM src
 GROUP BY CAST(key AS INT) DIV 10
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: file:/tmp/nzhang/hive_2010-09-30_14-31-29_005_976735399684431468/-mr-10000
+POSTHOOK: Output: file:/tmp/vaggarw/hive_2011-08-03_16-51-51_352_8018632011548743374/-mr-10000
 0	1.0	[1.0,1.0,1.0,1.0]
 1	1.0	[1.0,1.0,1.0,1.0]
 2	1.0	[1.0,1.0,1.0,1.0]
@@ -427,9 +427,20 @@ POSTHOOK: Output: file:/tmp/nzhang/hive_2010-09-30_14-31-29_005_9767353996844314
 PREHOOK: query: select percentile(cast(key as bigint), 0.5) from src where false
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/tmp/nzhang/hive_2010-09-30_14-31-32_978_7090615707538391094/-mr-10000
+PREHOOK: Output: file:/tmp/vaggarw/hive_2011-08-03_16-51-54_854_2642064924422783933/-mr-10000
 POSTHOOK: query: select percentile(cast(key as bigint), 0.5) from src where false
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: file:/tmp/nzhang/hive_2010-09-30_14-31-32_978_7090615707538391094/-mr-10000
+POSTHOOK: Output: file:/tmp/vaggarw/hive_2011-08-03_16-51-54_854_2642064924422783933/-mr-10000
 NULL
+PREHOOK: query: -- test where percentile list is empty
+select percentile(cast(key as bigint), array()) from src where false
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: file:/tmp/vaggarw/hive_2011-08-03_16-51-58_262_3535107702589215611/-mr-10000
+POSTHOOK: query: -- test where percentile list is empty
+select percentile(cast(key as bigint), array()) from src where false
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: file:/tmp/vaggarw/hive_2011-08-03_16-51-58_262_3535107702589215611/-mr-10000
+null
