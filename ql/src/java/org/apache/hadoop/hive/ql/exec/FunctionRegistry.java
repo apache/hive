@@ -162,6 +162,8 @@ import org.apache.hadoop.hive.ql.udf.generic.GenericUDFIndex;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFInstr;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFLocate;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFMap;
+import org.apache.hadoop.hive.ql.udf.generic.GenericUDFMapKeys;
+import org.apache.hadoop.hive.ql.udf.generic.GenericUDFMapValues;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPAnd;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPEqual;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPEqualOrGreaterThan;
@@ -415,6 +417,8 @@ public final class FunctionRegistry {
     registerGenericUDF("concat_ws", GenericUDFConcatWS.class);
     registerGenericUDF("array_contains", GenericUDFArrayContains.class);
     registerGenericUDF("sentences", GenericUDFSentences.class);
+    registerGenericUDF("map_keys", GenericUDFMapKeys.class);
+    registerGenericUDF("map_values", GenericUDFMapValues.class);
 
     // Generic UDTF's
     registerGenericUDTF("explode", GenericUDTFExplode.class);

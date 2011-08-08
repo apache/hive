@@ -91,6 +91,8 @@ lower
 lpad
 ltrim
 map
+map_keys
+map_values
 max
 min
 minute
