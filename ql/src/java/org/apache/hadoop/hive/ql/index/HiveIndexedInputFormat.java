@@ -124,6 +124,10 @@ public class HiveIndexedInputFormat extends HiveInputFormat {
       }
 
       Set<String> inputFiles = hiveIndexResult.buckets.keySet();
+      if (inputFiles == null || inputFiles.size() <= 0) {
+        // return empty splits if index results were empty
+        return new InputSplit[0];
+      }
       Iterator<String> iter = inputFiles.iterator();
       while(iter.hasNext()) {
         String path = iter.next();
