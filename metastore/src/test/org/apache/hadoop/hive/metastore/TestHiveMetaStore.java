@@ -1019,6 +1019,39 @@ public abstract class TestHiveMetaStore extends TestCase {
         assertTrue("Able to rename table with invalid name: " + invTblName,
             false);
       }
+
+      //try an invalid alter table with partition key name
+      Table tbl_pk = client.getTable(tbl.getDbName(), tbl.getTableName());
+      List<FieldSchema> partitionKeys = tbl_pk.getPartitionKeys();
+      for (FieldSchema fs : partitionKeys) {
+        fs.setName("invalid_to_change_name");
+        fs.setComment("can_change_comment");
+      }
+      tbl_pk.setPartitionKeys(partitionKeys);
+      try {
+        client.alter_table(dbName, tblName, tbl_pk);
+      } catch (InvalidOperationException ex) {
+        failed = true;
+      }
+      assertTrue("Should not have succeeded in altering partition key name", failed);
+
+      //try a valid alter table partition key comment
+      failed = false;
+      tbl_pk = client.getTable(tbl.getDbName(), tbl.getTableName());
+      partitionKeys = tbl_pk.getPartitionKeys();
+      for (FieldSchema fs : partitionKeys) {
+        fs.setComment("can_change_comment");
+      }
+      tbl_pk.setPartitionKeys(partitionKeys);
+      try {
+        client.alter_table(dbName, tblName, tbl_pk);
+      } catch (InvalidOperationException ex) {
+        failed = true;
+      }
+      assertFalse("Should not have failed alter table partition comment", failed);
+      Table newT = client.getTable(tbl.getDbName(), tbl.getTableName());
+      assertEquals(partitionKeys, newT.getPartitionKeys());
+
       // try a valid alter table
       tbl2.setTableName(tblName + "_renamed");
       tbl2.getSd().setCols(cols);
