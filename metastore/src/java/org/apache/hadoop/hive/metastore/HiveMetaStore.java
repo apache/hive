@@ -3465,7 +3465,6 @@ public class HiveMetaStore extends ThriftHiveMetastore {
    */
   public static void main(String[] args) throws Throwable {
     HiveMetastoreCli cli = new HiveMetastoreCli();
-
     cli.parse(args);
 
     // NOTE: It is critical to do this prior to initializing log4j, otherwise

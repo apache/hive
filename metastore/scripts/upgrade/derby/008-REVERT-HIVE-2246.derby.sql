@@ -1,0 +1,13 @@
+/*
+ * Remove the CD_ID column from SDS
+ * Delete the CDS table
+ * Delete the COLUMNS_V2 table
+ */
+
+ALTER TABLE SDS DROP CONSTRAINT SDS_FK2;
+
+ALTER TABLE SDS DROP COLUMN CD_ID;
+
+DROP TABLE COLUMNS_V2;
+
+DROP TABLE CDS;

@@ -79,6 +79,7 @@ import org.apache.hadoop.hive.metastore.api.Type;
 import org.apache.hadoop.hive.metastore.api.UnknownDBException;
 import org.apache.hadoop.hive.metastore.api.UnknownPartitionException;
 import org.apache.hadoop.hive.metastore.api.UnknownTableException;
+import org.apache.hadoop.hive.metastore.model.MColumnDescriptor;
 import org.apache.hadoop.hive.metastore.model.MDBPrivilege;
 import org.apache.hadoop.hive.metastore.model.MDatabase;
 import org.apache.hadoop.hive.metastore.model.MFieldSchema;
@@ -701,7 +702,17 @@ public class ObjectStore implements RawStore, Configurable {
         if (partColGrants != null && partColGrants.size() > 0) {
           pm.deletePersistentAll(partColGrants);
         }
-        pm.deletePersistentAll(listMPartitions(dbName, tableName, -1));
+
+        // call dropPartition on each of the table's partitions to follow the
+        // procedure for cleanly dropping partitions.
+        List<MPartition> partsToDelete = listMPartitions(dbName, tableName, -1);
+        if (partsToDelete != null) {
+          for (MPartition mpart : partsToDelete) {
+            dropPartitionCommon(mpart);
+          }
+        }
+
+        preDropStorageDescriptor(tbl.getSd());
         // then remove the table
         pm.deletePersistentAll(tbl);
       }
@@ -885,6 +896,7 @@ public class ObjectStore implements RawStore, Configurable {
       }
     }
 
+    // A new table is always created with a new column descriptor
     return new MTable(tbl.getTableName().toLowerCase(), mdb,
         convertToMStorageDescriptor(tbl.getSd()), tbl.getOwner(), tbl
             .getCreateTime(), tbl.getLastAccessTime(), tbl.getRetention(),
@@ -955,6 +967,18 @@ public class ObjectStore implements RawStore, Configurable {
         .getParameters());
   }
 
+  /**
+   * Given a list of model field schemas, create a new model column descriptor.
+   * @param cols the columns the column descriptor contains
+   * @return a new column descriptor db-backed object
+   */
+  private MColumnDescriptor createNewMColumnDescriptor(List<MFieldSchema> cols) {
+    if (cols == null) {
+      return null;
+    }
+    return new MColumnDescriptor(cols);
+  }
+
   // MSD and SD should be same objects. Not sure how to make then same right now
   // MSerdeInfo *& SerdeInfo should be same as well
   private StorageDescriptor convertToStorageDescriptor(MStorageDescriptor msd,
@@ -963,7 +987,8 @@ public class ObjectStore implements RawStore, Configurable {
     if (msd == null) {
       return null;
     }
-    return new StorageDescriptor(noFS ? null: convertToFieldSchemas(msd.getCols()),
+    List<MFieldSchema> mFieldSchemas = msd.getCD() == null ? null : msd.getCD().getCols();
+    return new StorageDescriptor(noFS ? null: convertToFieldSchemas(mFieldSchemas),
         msd.getLocation(), msd.getInputFormat(), msd.getOutputFormat(), msd
         .isCompressed(), msd.getNumBuckets(), converToSerDeInfo(msd
         .getSerDeInfo()), msd.getBucketCols(), convertToOrders(msd
@@ -975,12 +1000,37 @@ public class ObjectStore implements RawStore, Configurable {
     return convertToStorageDescriptor(msd, false);
   }
 
+  /**
+   * Converts a storage descriptor to a db-backed storage descriptor.  Creates a
+   *   new db-backed column descriptor object for this SD.
+   * @param sd the storage descriptor to wrap in a db-backed object
+   * @return the storage descriptor db-backed object
+   * @throws MetaException
+   */
   private MStorageDescriptor convertToMStorageDescriptor(StorageDescriptor sd)
       throws MetaException {
     if (sd == null) {
       return null;
     }
-    return new MStorageDescriptor(convertToMFieldSchemas(sd.getCols()), sd
+    MColumnDescriptor mcd = createNewMColumnDescriptor(convertToMFieldSchemas(sd.getCols()));
+    return convertToMStorageDescriptor(sd, mcd);
+  }
+
+  /**
+   * Converts a storage descriptor to a db-backed storage descriptor.  It points the
+   * storage descriptor's column descriptor to the one passed as an argument,
+   * so it does not create a new mcolumn descriptor object.
+   * @param sd the storage descriptor to wrap in a db-backed object
+   * @param mcd the db-backed column descriptor
+   * @return the db-backed storage descriptor object
+   * @throws MetaException
+   */
+  private MStorageDescriptor convertToMStorageDescriptor(StorageDescriptor sd,
+      MColumnDescriptor mcd) throws MetaException {
+    if (sd == null) {
+      return null;
+    }
+    return new MStorageDescriptor(mcd, sd
         .getLocation(), sd.getInputFormat(), sd.getOutputFormat(), sd
         .isCompressed(), sd.getNumBuckets(), converToMSerDeInfo(sd
         .getSerdeInfo()), sd.getBucketCols(),
@@ -1002,7 +1052,7 @@ public class ObjectStore implements RawStore, Configurable {
             part.getDbName(), part.getTableName());
       }
       openTransaction();
-      MPartition mpart = convertToMPart(part);
+      MPartition mpart = convertToMPart(part, true);
       pm.makePersistent(mpart);
 
       int now = (int)(System.currentTimeMillis()/1000);
@@ -1086,7 +1136,18 @@ public class ObjectStore implements RawStore, Configurable {
     return mpart;
   }
 
-  private MPartition convertToMPart(Partition part)
+  /**
+   * Convert a Partition object into an MPartition, which is an object backed by the db
+   * If the Partition's set of columns is the same as the parent table's AND useTableCD
+   * is true, then this partition's storage descriptor's column descriptor will point
+   * to the same one as the table's storage descriptor.
+   * @param part the partition to convert
+   * @param useTableCD whether to try to use the parent table's column descriptor.
+   * @return the model partition object
+   * @throws InvalidObjectException
+   * @throws MetaException
+   */
+  private MPartition convertToMPart(Partition part, boolean useTableCD)
       throws InvalidObjectException, MetaException {
     if (part == null) {
       return null;
@@ -1096,10 +1157,26 @@ public class ObjectStore implements RawStore, Configurable {
       throw new InvalidObjectException(
           "Partition doesn't have a valid table or database name");
     }
+
+    // If this partition's set of columns is the same as the parent table's,
+    // use the parent table's, so we do not create a duplicate column descriptor,
+    // thereby saving space
+    MStorageDescriptor msd;
+    if (useTableCD &&
+        mt.getSd() != null && mt.getSd().getCD() != null &&
+        mt.getSd().getCD().getCols() != null &&
+        part.getSd() != null &&
+        convertToFieldSchemas(mt.getSd().getCD().getCols()).
+        equals(part.getSd().getCols())) {
+      msd = convertToMStorageDescriptor(part.getSd(), mt.getSd().getCD());
+    } else {
+      msd = convertToMStorageDescriptor(part.getSd());
+    }
+
     return new MPartition(Warehouse.makePartName(convertToFieldSchemas(mt
         .getPartitionKeys()), part.getValues()), mt, part.getValues(), part
         .getCreateTime(), part.getLastAccessTime(),
-        convertToMStorageDescriptor(part.getSd()), part.getParameters());
+        msd, part.getParameters());
   }
 
   private Partition convertToPart(MPartition mpart) throws MetaException {
@@ -1122,33 +1199,58 @@ public class ObjectStore implements RawStore, Configurable {
         mpart.getParameters());
   }
 
+  @Override
   public boolean dropPartition(String dbName, String tableName,
       List<String> part_vals) throws MetaException {
     boolean success = false;
     try {
       openTransaction();
       MPartition part = getMPartition(dbName, tableName, part_vals);
+      dropPartitionCommon(part);
+      success = commitTransaction();
+    } finally {
+      if (!success) {
+        rollbackTransaction();
+      }
+    }
+    return success;
+  }
+
+  /**
+   * Drop an MPartition and cascade deletes (e.g., delete partition privilege grants,
+   *   drop the storage descriptor cleanly, etc.)
+   * @param part - the MPartition to drop
+   * @return whether the transaction committed successfully
+   */
+  private boolean dropPartitionCommon(MPartition part) {
+    boolean success = false;
+    try {
+      openTransaction();
       if (part != null) {
         List<MFieldSchema> schemas = part.getTable().getPartitionKeys();
         List<String> colNames = new ArrayList<String>();
         for (MFieldSchema col: schemas) {
           colNames.add(col.getName());
         }
-        String partName = FileUtils.makePartName(colNames, part_vals);
+        String partName = FileUtils.makePartName(colNames, part.getValues());
 
         List<MPartitionPrivilege> partGrants = listPartitionGrants(
-            dbName, tableName, partName);
+            part.getTable().getDatabase().getName(),
+            part.getTable().getTableName(),
+            partName);
 
         if (partGrants != null && partGrants.size() > 0) {
           pm.deletePersistentAll(partGrants);
         }
 
         List<MPartitionColumnPrivilege> partColumnGrants = listPartitionAllColumnGrants(
-            dbName, tableName, partName);
+            part.getTable().getDatabase().getName(),
+            part.getTable().getTableName(),
+            partName);
         if (partColumnGrants != null && partColumnGrants.size() > 0) {
           pm.deletePersistentAll(partColumnGrants);
         }
-
+        preDropStorageDescriptor(part.getSd());
         pm.deletePersistent(part);
       }
       success = commitTransaction();
@@ -1740,7 +1842,9 @@ public class ObjectStore implements RawStore, Configurable {
       oldt.setTableName(newt.getTableName().toLowerCase());
       oldt.setParameters(newt.getParameters());
       oldt.setOwner(newt.getOwner());
-      oldt.setSd(newt.getSd());
+      // Fully copy over the contents of the new SD into the old SD,
+      // so we don't create an extra SD in the metastore db that has no references.
+      fullCopyMSD(newt.getSd(), oldt.getSd());
       oldt.setDatabase(newt.getDatabase());
       oldt.setRetention(newt.getRetention());
       oldt.setPartitionKeys(newt.getPartitionKeys());
@@ -1796,7 +1900,7 @@ public class ObjectStore implements RawStore, Configurable {
       name = name.toLowerCase();
       dbname = dbname.toLowerCase();
       MPartition oldp = getMPartition(dbname, name, newPart.getValues());
-      MPartition newp = convertToMPart(newPart);
+      MPartition newp = convertToMPart(newPart, false);
       if (oldp == null || newp == null) {
         throw new InvalidObjectException("partition does not exist.");
       }
@@ -1821,7 +1925,25 @@ public class ObjectStore implements RawStore, Configurable {
 
   private void copyMSD(MStorageDescriptor newSd, MStorageDescriptor oldSd) {
     oldSd.setLocation(newSd.getLocation());
-    oldSd.setCols(newSd.getCols());
+    MColumnDescriptor oldCD = oldSd.getCD();
+    // If the columns of the old column descriptor != the columns of the new one,
+    // then change the old storage descriptor's column descriptor.
+    // Convert the MFieldSchema's to their thrift object counterparts, because we maintain
+    // datastore identity (i.e., identity of the model objects are managed by JDO,
+    // not the application).
+    if (!(oldSd != null && oldSd.getCD() != null &&
+         oldSd.getCD().getCols() != null &&
+         newSd != null && newSd.getCD() != null &&
+         newSd.getCD().getCols() != null &&
+         convertToFieldSchemas(newSd.getCD().getCols()).
+         equals(convertToFieldSchemas(oldSd.getCD().getCols()))
+       )) {
+        oldSd.setCD(newSd.getCD());
+    }
+
+    //If oldCd does not have any more references, then we should delete it
+    // from the backend db
+    removeUnusedColumnDescriptor(oldCD);
     oldSd.setBucketCols(newSd.getBucketCols());
     oldSd.setCompressed(newSd.isCompressed());
     oldSd.setInputFormat(newSd.getInputFormat());
@@ -1831,6 +1953,92 @@ public class ObjectStore implements RawStore, Configurable {
     oldSd.getSerDeInfo().setSerializationLib(
         newSd.getSerDeInfo().getSerializationLib());
     oldSd.getSerDeInfo().setParameters(newSd.getSerDeInfo().getParameters());
+  }
+
+  /**
+   * copy over all fields from newSd to oldSd
+   * @param newSd the new storage descriptor
+   * @param oldSd the old descriptor that gets copied over
+   */
+  private void fullCopyMSD(MStorageDescriptor newSd, MStorageDescriptor oldSd) {
+    copyMSD(newSd, oldSd);
+    oldSd.setSortCols(newSd.getSortCols());
+    oldSd.setParameters(newSd.getParameters());
+  }
+
+  /**
+   * Checks if a column descriptor has any remaining references by storage descriptors
+   * in the db.  If it does not, then delete the CD.  If it does, then do nothing.
+   * @param oldCD the column descriptor to delete if it is no longer referenced anywhere
+   */
+  private void removeUnusedColumnDescriptor(MColumnDescriptor oldCD) {
+    if (oldCD == null) {
+      return;
+    }
+
+    boolean success = false;
+    try {
+      openTransaction();
+      LOG.debug("execute removeUnusedColumnDescriptor");
+      List<MStorageDescriptor> referencedSDs = listStorageDescriptorsWithCD(oldCD);
+      //if no other SD references this CD, we can throw it out.
+      if (referencedSDs != null && referencedSDs.isEmpty()) {
+        pm.retrieve(oldCD);
+        pm.deletePersistent(oldCD);
+      }
+      success = commitTransaction();
+      LOG.debug("successfully deleted a CD in removeUnusedColumnDescriptor");
+    } finally {
+      if (!success) {
+        rollbackTransaction();
+      }
+    }
+  }
+
+  /**
+   * Called right before an action that would drop a storage descriptor.
+   * This function makes the SD's reference to a CD null, and then deletes the CD
+   * if it no longer is referenced in the table.
+   * @param msd the storage descriptor to drop
+   */
+  private void preDropStorageDescriptor(MStorageDescriptor msd) {
+    if (msd == null || msd.getCD() == null) {
+      return;
+    }
+
+    MColumnDescriptor mcd = msd.getCD();
+    // Because there is a 1-N relationship between CDs and SDs,
+    // we must set the SD's CD to null first before dropping the storage descriptor
+    // to satisfy foriegn key constraints.
+    msd.setCD(null);
+    removeUnusedColumnDescriptor(mcd);
+  }
+
+  /**
+   * Get a list of storage descriptors that reference a particular Column Descriptor
+   * @param oldCD the column descriptor to get storage descriptors for
+   * @return a list of storage descriptors
+   */
+  private List<MStorageDescriptor> listStorageDescriptorsWithCD(MColumnDescriptor oldCD) {
+    boolean success = false;
+    List<MStorageDescriptor> sds = null;
+    try {
+      openTransaction();
+      LOG.debug("Executing listStorageDescriptorsWithCD");
+      Query query = pm.newQuery(MStorageDescriptor.class,
+          "this.cd == inCD");
+      query.declareParameters("MColumnDescriptor inCD");
+      sds = (List<MStorageDescriptor>) query.execute(oldCD);
+      LOG.debug("Done executing query for listStorageDescriptorsWithCD");
+      pm.retrieveAll(sds);
+      success = commitTransaction();
+      LOG.debug("Done retrieving all objects for listStorageDescriptorsWithCD");
+    } finally {
+      if (!success) {
+        rollbackTransaction();
+      }
+    }
+    return sds;
   }
 
   @Override
