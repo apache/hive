@@ -59,6 +59,7 @@ public abstract class Task<T extends Serializable> implements Serializable, Node
   protected transient HashMap<String, Long> taskCounters;
   protected transient DriverContext driverContext;
   protected transient boolean clonedConf = false;
+  protected transient String jobID;
   protected Task<? extends Serializable> backupTask;
   protected List<Task<? extends Serializable>> backupChildrenTasks = new ArrayList<Task<? extends Serializable>>();
   protected static transient Log LOG = LogFactory.getLog(Task.class);
@@ -492,5 +493,9 @@ public abstract class Task<T extends Serializable> implements Serializable, Node
 
   public void setQueryPlan(QueryPlan queryPlan) {
     this.queryPlan = queryPlan;
+  }
+
+  public String getJobID() {
+    return jobID;
   }
 }
