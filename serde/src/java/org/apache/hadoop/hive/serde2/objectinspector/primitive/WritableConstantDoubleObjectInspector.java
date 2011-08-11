@@ -19,7 +19,7 @@ package org.apache.hadoop.hive.serde2.objectinspector.primitive;
 
 import org.apache.hadoop.hive.serde2.objectinspector.ConstantObjectInspector;
 
-import org.apache.hadoop.io.DoubleWritable;
+import org.apache.hadoop.hive.serde2.io.DoubleWritable;
 
 /**
  * A WritableConstantDoubleObjectInspector is a WritableDoubleObjectInspector
