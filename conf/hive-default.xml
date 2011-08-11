@@ -533,6 +533,12 @@
 </property>
 
 <property>
+  <name>hive.exec.failure.hooks</name>
+  <value></value>
+  <description>Comma-separated list of on-failure hooks to be invoked for each statement.  An on-failure hook is specified as the name of Java class which implements the org.apache.hadoop.hive.ql.hooks.ExecuteWithHookContext interface.</description>
+</property>
+
+<property>
   <name>hive.merge.mapfiles</name>
   <value>true</value>
   <description>Merge small files at the end of a map-only job</description>
