@@ -20,10 +20,19 @@ package org.apache.hadoop.hive.serde2.objectinspector.primitive;
 
 import java.util.HashMap;
 
+import org.apache.hadoop.hive.serde2.objectinspector.ConstantObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector.PrimitiveCategory;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorUtils.PrimitiveTypeEntry;
 import org.apache.hadoop.io.Writable;
+import org.apache.hadoop.io.BooleanWritable;
+import org.apache.hadoop.io.ByteWritable;
+import org.apache.hadoop.hive.serde2.io.ShortWritable;
+import org.apache.hadoop.io.IntWritable;
+import org.apache.hadoop.io.LongWritable;
+import org.apache.hadoop.io.FloatWritable;
+import org.apache.hadoop.io.DoubleWritable;
+import org.apache.hadoop.io.Text;
 
 /**
  * PrimitiveObjectInspectorFactory is the primary way to create new
@@ -134,6 +143,40 @@ public final class PrimitiveObjectInspectorFactory {
           + " for " + primitiveCategory);
     }
     return result;
+  }
+
+  /**
+   * Returns a PrimitiveWritableObjectInspector which implements ConstantObjectInspector 
+   * for the PrimitiveCategory.
+   * 
+   * @param primitiveCategory
+   * @param value
+   */
+  public static ConstantObjectInspector getPrimitiveWritableConstantObjectInspector(
+      PrimitiveCategory primitiveCategory, Object value) {
+    switch (primitiveCategory) {
+    case BOOLEAN:
+      return new WritableConstantBooleanObjectInspector((BooleanWritable)value);
+    case BYTE:
+      return new WritableConstantByteObjectInspector((ByteWritable)value);
+    case SHORT:
+      return new WritableConstantShortObjectInspector((ShortWritable)value);
+    case INT:
+      return new WritableConstantIntObjectInspector((IntWritable)value);
+    case LONG:
+      return new WritableConstantLongObjectInspector((LongWritable)value);
+    case FLOAT:
+      return new WritableConstantFloatObjectInspector((FloatWritable)value);
+    case DOUBLE:
+      return new WritableConstantDoubleObjectInspector((DoubleWritable)value);
+    case STRING:
+      return new WritableConstantStringObjectInspector((Text)value);
+    case VOID:
+      return new WritableConstantVoidObjectInspector();
+    default:
+      throw new RuntimeException("Internal error: Cannot find "
+        + "ConstantObjectInspector for " + primitiveCategory);
+    }
   }
 
   /**

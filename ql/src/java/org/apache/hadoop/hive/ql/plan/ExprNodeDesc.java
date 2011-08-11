@@ -23,6 +23,8 @@ import java.util.List;
 
 import org.apache.hadoop.hive.ql.lib.Node;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
+import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
+import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 
 /**
  * ExprNodeDesc.
@@ -62,6 +64,11 @@ public abstract class ExprNodeDesc implements Serializable, Node {
   public String getExprString() {
     assert (false);
     return null;
+  }
+
+  public ObjectInspector getWritableObjectInspector() {
+    return TypeInfoUtils
+      .getStandardWritableObjectInspectorFromTypeInfo(typeInfo);
   }
 
   @Explain(displayName = "type")
