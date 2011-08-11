@@ -39,7 +39,7 @@ import org.apache.hadoop.security.UserGroupInformation;
 public class HookContext {
 
   static public enum HookType {
-    PRE_EXEC_HOOK, POST_EXEC_HOOK
+    PRE_EXEC_HOOK, POST_EXEC_HOOK, ON_FAILURE_HOOK
   }
 
   private QueryPlan queryPlan;

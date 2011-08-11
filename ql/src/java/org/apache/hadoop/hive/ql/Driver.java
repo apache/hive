@@ -24,7 +24,6 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.Serializable;
 import java.util.ArrayList;
-import java.util.Stack;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -357,7 +356,7 @@ public class Driver implements CommandProcessor {
     public boolean isInitialized() {
       return this.init;
     }
-    
+
     public HiveOperation getOp() {
       return this.op;
     }
@@ -976,7 +975,7 @@ public class Driver implements CommandProcessor {
 
 
   private List<Hook> getPreExecHooks() throws Exception {
-    ArrayList<Hook> pehooks = new ArrayList<Hook>();
+    List<Hook> pehooks = new ArrayList<Hook>();
     String pestr = conf.getVar(HiveConf.ConfVars.PREEXECHOOKS);
     pestr = pestr.trim();
     if (pestr.equals("")) {
@@ -999,7 +998,7 @@ public class Driver implements CommandProcessor {
   }
 
   private List<Hook> getPostExecHooks() throws Exception {
-    ArrayList<Hook> pehooks = new ArrayList<Hook>();
+    List<Hook> pehooks = new ArrayList<Hook>();
     String pestr = conf.getVar(HiveConf.ConfVars.POSTEXECHOOKS);
     pestr = pestr.trim();
     if (pestr.equals("")) {
@@ -1019,6 +1018,29 @@ public class Driver implements CommandProcessor {
     }
 
     return pehooks;
+  }
+
+  private List<Hook> getOnFailureHooks() throws Exception {
+    List<Hook> ofhooks = new ArrayList<Hook>();
+    String ofstr = conf.getVar(HiveConf.ConfVars.ONFAILUREHOOKS);
+    ofstr = ofstr.trim();
+    if (ofstr.equals("")) {
+      return ofhooks;
+    }
+
+    String[] ofClasses = ofstr.split(",");
+
+    for (String ofClass : ofClasses) {
+      try {
+        ofhooks.add((Hook) Class.forName(ofClass.trim(), true, JavaUtils.getClassLoader())
+            .newInstance());
+      } catch (ClassNotFoundException e) {
+        console.printError("On Failure Hook Class not found:" + e.getMessage());
+        throw e;
+      }
+    }
+
+    return ofhooks;
   }
 
   public int execute() throws CommandNeedRetryException {
@@ -1139,6 +1161,16 @@ public class Driver implements CommandProcessor {
             continue;
 
           } else {
+            hookContext.setHookType(HookContext.HookType.ON_FAILURE_HOOK);
+            // Get all the failure execution hooks and execute them.
+            for (Hook ofh : getOnFailureHooks()) {
+              Utilities.PerfLogBegin(LOG, "FailureHook." + ofh.getClass().getSimpleName());
+
+              ((ExecuteWithHookContext) ofh).run(hookContext);
+
+              Utilities.PerfLogEnd(LOG, "FailureHook." + ofh.getClass().getSimpleName());
+            }
+
             // TODO: This error messaging is not very informative. Fix that.
             errorMessage = "FAILED: Execution Error, return code " + exitVal + " from "
                 + tsk.getClass().getName();

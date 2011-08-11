@@ -122,6 +122,7 @@ public class HiveConf extends Configuration {
     MAXREDUCERS("hive.exec.reducers.max", 999),
     PREEXECHOOKS("hive.exec.pre.hooks", ""),
     POSTEXECHOOKS("hive.exec.post.hooks", ""),
+    ONFAILUREHOOKS("hive.exec.failure.hooks", ""),
     EXECPARALLEL("hive.exec.parallel", false), // parallel query launching
     EXECPARALLETHREADNUMBER("hive.exec.parallel.thread.number", 8),
     HIVESPECULATIVEEXECREDUCERS("hive.mapred.reduce.tasks.speculative.execution", true),
