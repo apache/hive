@@ -197,8 +197,14 @@ public final class OpProcFactory {
         owi.putPrunedPreds((Operator<? extends Serializable>) nd, ewi);
       }
       // merge it with children predicates
-      mergeWithChildrenPred(op, owi, ewi, null, false);
-
+      boolean hasUnpushedPredicates = mergeWithChildrenPred(nd, owi, ewi, null, false);
+      if (HiveConf.getBoolVar(owi.getParseContext().getConf(),
+          HiveConf.ConfVars.HIVEPPDREMOVEDUPLICATEFILTERS)) {
+        if (hasUnpushedPredicates) {
+          ExprWalkerInfo unpushedPreds = mergeChildrenPred(nd, owi, null, false);
+          return createFilter((Operator)nd, unpushedPreds, owi);
+        }
+      }
       return null;
     }
   }

@@ -73,6 +73,7 @@ public final class ExprWalkerProcFactory {
       Operator<? extends Serializable> op = ctx.getOp();
       String[] colAlias = toRR.reverseLookup(colref.getColumn());
 
+      boolean isCandidate = true;
       if (op.getColumnExprMap() != null) {
         // replace the output expression with the input expression so that
         // parent op can understand this expression
@@ -82,9 +83,13 @@ public final class ExprWalkerProcFactory {
           // group by
           ctx.setIsCandidate(colref, false);
           return false;
+        } else {
+          if (exp instanceof ExprNodeGenericFuncDesc) {
+            isCandidate = false;
+          }
         }
         ctx.addConvertedNode(colref, exp);
-        ctx.setIsCandidate(exp, true);
+        ctx.setIsCandidate(exp, isCandidate);
         ctx.addAlias(exp, colAlias[0]);
       } else {
         if (colAlias == null) {
@@ -92,8 +97,8 @@ public final class ExprWalkerProcFactory {
         }
         ctx.addAlias(colref, colAlias[0]);
       }
-      ctx.setIsCandidate(colref, true);
-      return true;
+      ctx.setIsCandidate(colref, isCandidate);
+      return isCandidate;
     }
 
   }
