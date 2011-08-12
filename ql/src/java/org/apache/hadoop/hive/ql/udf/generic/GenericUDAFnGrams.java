@@ -113,6 +113,7 @@ public class GenericUDAFnGrams implements GenericUDAFResolver {
     case SHORT:
     case INT:
     case LONG:
+    case TIMESTAMP:
       break;
 
     default:
@@ -130,6 +131,7 @@ public class GenericUDAFnGrams implements GenericUDAFResolver {
     case SHORT:
     case INT:
     case LONG:
+    case TIMESTAMP:
       break;
 
     default:
@@ -148,6 +150,7 @@ public class GenericUDAFnGrams implements GenericUDAFResolver {
       case SHORT:
       case INT:
       case LONG:
+      case TIMESTAMP:
         break;
 
       default:

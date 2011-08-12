@@ -28,7 +28,7 @@ import org.apache.hadoop.io.Writable;
 /**
  * PrimitiveObjectInspectorFactory is the primary way to create new
  * PrimitiveObjectInspector instances.
- * 
+ *
  * The reason of having caches here is that ObjectInspector is because
  * ObjectInspectors do not have an internal state - so ObjectInspectors with the
  * same construction parameters should result in exactly the same
@@ -54,6 +54,8 @@ public final class PrimitiveObjectInspectorFactory {
       new JavaStringObjectInspector();
   public static final JavaVoidObjectInspector javaVoidObjectInspector =
       new JavaVoidObjectInspector();
+  public static final JavaTimestampObjectInspector javaTimestampObjectInspector =
+      new JavaTimestampObjectInspector();
 
   public static final WritableBooleanObjectInspector writableBooleanObjectInspector =
       new WritableBooleanObjectInspector();
@@ -73,6 +75,8 @@ public final class PrimitiveObjectInspectorFactory {
       new WritableStringObjectInspector();
   public static final WritableVoidObjectInspector writableVoidObjectInspector =
       new WritableVoidObjectInspector();
+  public static final WritableTimestampObjectInspector writableTimestampObjectInspector =
+      new WritableTimestampObjectInspector();
 
   private static HashMap<PrimitiveCategory, AbstractPrimitiveWritableObjectInspector> cachedPrimitiveWritableInspectorCache =
       new HashMap<PrimitiveCategory, AbstractPrimitiveWritableObjectInspector>();
@@ -95,6 +99,8 @@ public final class PrimitiveObjectInspectorFactory {
         writableStringObjectInspector);
     cachedPrimitiveWritableInspectorCache.put(PrimitiveCategory.VOID,
         writableVoidObjectInspector);
+    cachedPrimitiveWritableInspectorCache.put(PrimitiveCategory.TIMESTAMP,
+        writableTimestampObjectInspector);
   }
 
   private static HashMap<PrimitiveCategory, AbstractPrimitiveJavaObjectInspector> cachedPrimitiveJavaInspectorCache =
@@ -118,11 +124,13 @@ public final class PrimitiveObjectInspectorFactory {
         javaStringObjectInspector);
     cachedPrimitiveJavaInspectorCache.put(PrimitiveCategory.VOID,
         javaVoidObjectInspector);
+    cachedPrimitiveJavaInspectorCache.put(PrimitiveCategory.TIMESTAMP,
+        javaTimestampObjectInspector);
   }
 
   /**
    * Returns the PrimitiveWritableObjectInspector for the PrimitiveCategory.
-   * 
+   *
    * @param primitiveCategory
    */
   public static AbstractPrimitiveWritableObjectInspector getPrimitiveWritableObjectInspector(
@@ -138,7 +146,7 @@ public final class PrimitiveObjectInspectorFactory {
 
   /**
    * Returns the PrimitiveJavaObjectInspector for the PrimitiveCategory.
-   * 
+   *
    * @param primitiveCategory
    */
   public static AbstractPrimitiveJavaObjectInspector getPrimitiveJavaObjectInspector(
@@ -155,7 +163,7 @@ public final class PrimitiveObjectInspectorFactory {
   /**
    * Returns an ObjectInspector for a primitive Class. The Class can be a Hive
    * Writable class, or a Java Primitive Class.
-   * 
+   *
    * A runtimeException will be thrown if the class is not recognized as a
    * primitive type by Hive.
    */

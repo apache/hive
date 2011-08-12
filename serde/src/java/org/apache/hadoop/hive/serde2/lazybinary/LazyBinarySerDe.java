@@ -29,18 +29,19 @@ import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.serde.Constants;
 import org.apache.hadoop.hive.serde2.ByteStream;
+import org.apache.hadoop.hive.serde2.ByteStream.Output;
 import org.apache.hadoop.hive.serde2.SerDe;
 import org.apache.hadoop.hive.serde2.SerDeException;
 import org.apache.hadoop.hive.serde2.SerDeStats;
-import org.apache.hadoop.hive.serde2.ByteStream.Output;
+import org.apache.hadoop.hive.serde2.io.TimestampWritable;
 import org.apache.hadoop.hive.serde2.lazy.ByteArrayRef;
 import org.apache.hadoop.hive.serde2.objectinspector.ListObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.MapObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
+import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector.Category;
 import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.StructField;
 import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
-import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector.Category;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.BooleanObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.ByteObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.DoubleObjectInspector;
@@ -49,6 +50,7 @@ import org.apache.hadoop.hive.serde2.objectinspector.primitive.IntObjectInspecto
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.LongObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.ShortObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.StringObjectInspector;
+import org.apache.hadoop.hive.serde2.objectinspector.primitive.TimestampObjectInspector;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
@@ -218,8 +220,8 @@ public class LazyBinarySerDe implements SerDe {
    *          the struct object to serialize
    * @param objInspector
    *          the struct object inspector
-   * @param warnedOnceNullMapKey a boolean indicating whether a warning 
-   *          has been issued once already when encountering null map keys 
+   * @param warnedOnceNullMapKey a boolean indicating whether a warning
+   *          has been issued once already when encountering null map keys
    * @return a boolean indicating whether a warning for null map keys has been issued
    *          once already
    */
@@ -237,6 +239,7 @@ public class LazyBinarySerDe implements SerDe {
     int size = fields.size();
     int lasti = 0;
     byte nullByte = 0;
+
     for (int i = 0; i < size; i++) {
       // set bit to 1 if a field is not null
       if (null != soi.getStructFieldData(obj, fields.get(i))) {
@@ -270,8 +273,8 @@ public class LazyBinarySerDe implements SerDe {
    *          the object inspector
    * @param skipLengthPrefix a boolean indicating whether length prefix is
    *          needed for list/map/struct
-   * @param warnedOnceNullMapKey a boolean indicating whether a warning 
-   *          has been issued once already when encountering null map keys 
+   * @param warnedOnceNullMapKey a boolean indicating whether a warning
+   *          has been issued once already when encountering null map keys
    * @return a boolean indicating whether a warning for null map keys has been issued
    *          once already
    */
@@ -355,6 +358,12 @@ public class LazyBinarySerDe implements SerDe {
         byteStream.write(data, 0, length);
         return warnedOnceNullMapKey;
       }
+      case TIMESTAMP: {
+        TimestampObjectInspector toi = (TimestampObjectInspector) poi;
+        TimestampWritable t = toi.getPrimitiveWritableObject(obj);
+        t.writeToByteStream(byteStream);
+        return warnedOnceNullMapKey;
+      }
       default: {
         throw new RuntimeException("Unrecognized type: "
             + poi.getPrimitiveCategory());
@@ -398,7 +407,7 @@ public class LazyBinarySerDe implements SerDe {
 
       // 4/ write element by element from the list
       for (int eid = 0; eid < size; eid++) {
-        warnedOnceNullMapKey = serialize(byteStream, loi.getListElement(obj, eid), eoi, 
+        warnedOnceNullMapKey = serialize(byteStream, loi.getListElement(obj, eid), eoi,
             false, warnedOnceNullMapKey);
       }
 
@@ -432,7 +441,7 @@ public class LazyBinarySerDe implements SerDe {
         byteStream.write((byte) 0);
         mapStart = byteStream.getCount();
       }
-      
+
       // 2/ write the size of the map which is a VInt
       int size = map.size();
       LazyBinaryUtils.writeVInt(byteStream, size);

@@ -36,6 +36,7 @@ import org.apache.hadoop.hive.serde2.SerDeStats;
 import org.apache.hadoop.hive.serde2.io.ByteWritable;
 import org.apache.hadoop.hive.serde2.io.DoubleWritable;
 import org.apache.hadoop.hive.serde2.io.ShortWritable;
+import org.apache.hadoop.hive.serde2.io.TimestampWritable;
 import org.apache.hadoop.hive.serde2.objectinspector.ListObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.MapObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
@@ -52,6 +53,7 @@ import org.apache.hadoop.hive.serde2.objectinspector.primitive.IntObjectInspecto
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.LongObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.ShortObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.StringObjectInspector;
+import org.apache.hadoop.hive.serde2.objectinspector.primitive.TimestampObjectInspector;
 import org.apache.hadoop.hive.serde2.typeinfo.ListTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.MapTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
@@ -310,6 +312,17 @@ public class BinarySortableSerDe implements SerDe {
         }
         return r;
       }
+      case TIMESTAMP:
+        TimestampWritable t = (reuse == null ? new TimestampWritable() :
+            (TimestampWritable) reuse);
+        byte[] bytes = new byte[8];
+
+        for (int i = 0; i < bytes.length; i++) {
+          bytes[i] = buffer.read(invert);
+        }
+        t.setBinarySortable(bytes, 0);
+        return t;
+
       default: {
         throw new RuntimeException("Unrecognized type: "
             + ptype.getPrimitiveCategory());
@@ -537,6 +550,15 @@ public class BinarySortableSerDe implements SerDe {
           }
         }
         buffer.write((byte) 0, invert);
+        return;
+      }
+      case TIMESTAMP: {
+        TimestampObjectInspector toi = (TimestampObjectInspector) poi;
+        TimestampWritable t = toi.getPrimitiveWritableObject(o);
+        byte[] data = t.getBinarySortable();
+        for (int i = 0; i < data.length; i++) {
+          buffer.write(data[i], invert);
+        }
         return;
       }
       default: {

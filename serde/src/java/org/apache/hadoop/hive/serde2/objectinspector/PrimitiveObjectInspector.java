@@ -27,7 +27,7 @@ public interface PrimitiveObjectInspector extends ObjectInspector {
    * The primitive types supported by Hive.
    */
   public static enum PrimitiveCategory {
-    VOID, BOOLEAN, BYTE, SHORT, INT, LONG, FLOAT, DOUBLE, STRING, UNKNOWN
+    VOID, BOOLEAN, BYTE, SHORT, INT, LONG, FLOAT, DOUBLE, STRING, TIMESTAMP, UNKNOWN
   };
 
   /**
@@ -61,7 +61,7 @@ public interface PrimitiveObjectInspector extends ObjectInspector {
   /**
    * Get a copy of the Object in the same class, so the return value can be
    * stored independently of the parameter.
-   * 
+   *
    * If the Object is a Primitive Java Object, we just return the parameter
    * since Primitive Java Object is immutable.
    */

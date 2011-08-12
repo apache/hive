@@ -30,6 +30,7 @@ import java.util.Map;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.hive.serde.Constants;
+import org.apache.hadoop.hive.serde2.io.TimestampWritable;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector.Category;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorFactory.ObjectInspectorOptions;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.BooleanObjectInspector;
@@ -41,6 +42,7 @@ import org.apache.hadoop.hive.serde2.objectinspector.primitive.LongObjectInspect
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorFactory;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.ShortObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.StringObjectInspector;
+import org.apache.hadoop.hive.serde2.objectinspector.primitive.TimestampObjectInspector;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
 import org.apache.hadoop.hive.shims.ShimLoader;
 import org.apache.hadoop.io.Text;
@@ -440,6 +442,10 @@ public final class ObjectInspectorUtils {
         }
         return r;
       }
+      case TIMESTAMP:
+        TimestampWritable t = ((TimestampObjectInspector) poi)
+            .getPrimitiveWritableObject(o);
+        return t.hashCode();
       default: {
         throw new RuntimeException("Unknown type: "
             + poi.getPrimitiveCategory());
@@ -591,6 +597,13 @@ public final class ObjectInspectorUtils {
           return s1 == null ? (s2 == null ? 0 : -1) : (s2 == null ? 1 : s1
               .compareTo(s2));
         }
+      }
+      case TIMESTAMP: {
+        TimestampWritable t1 = ((TimestampObjectInspector) poi1)
+            .getPrimitiveWritableObject(o1);
+        TimestampWritable t2 = ((TimestampObjectInspector) poi2)
+            .getPrimitiveWritableObject(o2);
+        return t1.compareTo(t2);
       }
       default: {
         throw new RuntimeException("Unknown type: "

@@ -34,6 +34,7 @@ import org.apache.hadoop.hive.serde2.lazy.objectinspector.primitive.LazyLongObje
 import org.apache.hadoop.hive.serde2.lazy.objectinspector.primitive.LazyPrimitiveObjectInspectorFactory;
 import org.apache.hadoop.hive.serde2.lazy.objectinspector.primitive.LazyShortObjectInspector;
 import org.apache.hadoop.hive.serde2.lazy.objectinspector.primitive.LazyStringObjectInspector;
+import org.apache.hadoop.hive.serde2.lazy.objectinspector.primitive.LazyTimestampObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorFactory;
 import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector;
@@ -75,6 +76,8 @@ public final class LazyFactory {
       return new LazyDouble((LazyDoubleObjectInspector) oi);
     case STRING:
       return new LazyString((LazyStringObjectInspector) oi);
+    case TIMESTAMP:
+      return new LazyTimestamp((LazyTimestampObjectInspector) oi);
     default:
       throw new RuntimeException("Internal error: no LazyObject for " + p);
     }

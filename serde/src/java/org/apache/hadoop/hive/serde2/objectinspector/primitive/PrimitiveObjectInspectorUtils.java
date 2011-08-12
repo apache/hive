@@ -21,6 +21,7 @@ package org.apache.hadoop.hive.serde2.objectinspector.primitive;
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
+import java.sql.Timestamp;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -28,6 +29,7 @@ import org.apache.hadoop.hive.serde.Constants;
 import org.apache.hadoop.hive.serde2.io.ByteWritable;
 import org.apache.hadoop.hive.serde2.io.DoubleWritable;
 import org.apache.hadoop.hive.serde2.io.ShortWritable;
+import org.apache.hadoop.hive.serde2.io.TimestampWritable;
 import org.apache.hadoop.hive.serde2.lazy.LazyInteger;
 import org.apache.hadoop.hive.serde2.lazy.LazyLong;
 import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector;
@@ -44,7 +46,7 @@ import org.apache.hadoop.io.WritableUtils;
 /**
  * ObjectInspectorFactory is the primary way to create new ObjectInspector
  * instances.
- * 
+ *
  * SerDe classes should call the static functions in this library to create an
  * ObjectInspector to return to the caller of SerDe2.getObjectInspector().
  */
@@ -167,6 +169,9 @@ public final class PrimitiveObjectInspectorUtils {
   public static final PrimitiveTypeEntry shortTypeEntry = new PrimitiveTypeEntry(
       PrimitiveCategory.SHORT, Constants.SMALLINT_TYPE_NAME, Short.TYPE,
       Short.class, ShortWritable.class);
+  public static final PrimitiveTypeEntry timestampTypeEntry = new PrimitiveTypeEntry(
+      PrimitiveCategory.TIMESTAMP, Constants.TIMESTAMP_TYPE_NAME, null,
+      Object.class, TimestampWritable.class);
 
   // The following is a complex type for special handling
   public static final PrimitiveTypeEntry unknownTypeEntry = new PrimitiveTypeEntry(
@@ -182,6 +187,7 @@ public final class PrimitiveObjectInspectorUtils {
     registerType(doubleTypeEntry);
     registerType(byteTypeEntry);
     registerType(shortTypeEntry);
+    registerType(timestampTypeEntry);
     registerType(unknownTypeEntry);
   }
 
@@ -341,6 +347,10 @@ public final class PrimitiveObjectInspectorUtils {
           .getPrimitiveWritableObject(o2);
       return t1.equals(t2);
     }
+    case TIMESTAMP: {
+      return ((TimestampObjectInspector) oi1).getPrimitiveWritableObject(o1)
+          .equals(((TimestampObjectInspector) oi2).getPrimitiveWritableObject(o2));
+    }
     default:
       return false;
     }
@@ -367,6 +377,9 @@ public final class PrimitiveObjectInspectorUtils {
       return ((DoubleObjectInspector) oi).get(o);
     case STRING:
       return Double.valueOf(((StringObjectInspector) oi).getPrimitiveJavaObject(o));
+    case TIMESTAMP:
+      return ((TimestampObjectInspector) oi).getPrimitiveWritableObject(o)
+          .getDouble();
     default:
       throw new NumberFormatException();
     }
@@ -436,6 +449,10 @@ public final class PrimitiveObjectInspectorUtils {
         String s = soi.getPrimitiveJavaObject(o);
         result = s.length() != 0;
       }
+      break;
+    case TIMESTAMP:
+      result = (((TimestampObjectInspector) oi)
+          .getPrimitiveWritableObject(o).getSeconds() != 0);
       break;
     default:
       throw new RuntimeException("Hive 2 Internal error: unknown type: "
@@ -513,6 +530,10 @@ public final class PrimitiveObjectInspectorUtils {
       }
       break;
     }
+    case TIMESTAMP:
+      result = (int) (((TimestampObjectInspector) oi)
+          .getPrimitiveWritableObject(o).getSeconds());
+      break;
     default: {
       throw new RuntimeException("Hive 2 Internal error: unknown type: "
           + oi.getTypeName());
@@ -563,6 +584,10 @@ public final class PrimitiveObjectInspectorUtils {
         result = Long.parseLong(s);
       }
       break;
+    case TIMESTAMP:
+      result = ((TimestampObjectInspector) oi).getPrimitiveWritableObject(o)
+          .getSeconds();
+      break;
     default:
       throw new RuntimeException("Hive 2 Internal error: unknown type: "
           + oi.getTypeName());
@@ -606,6 +631,9 @@ public final class PrimitiveObjectInspectorUtils {
       StringObjectInspector soi = (StringObjectInspector) oi;
       String s = soi.getPrimitiveJavaObject(o);
       result = Double.parseDouble(s);
+      break;
+    case TIMESTAMP:
+      result = ((TimestampObjectInspector) oi).getPrimitiveWritableObject(o).getDouble();
       break;
     default:
       throw new RuntimeException("Hive 2 Internal error: unknown type: "
@@ -663,6 +691,67 @@ public final class PrimitiveObjectInspectorUtils {
     case STRING:
       StringObjectInspector soi = (StringObjectInspector) oi;
       result = soi.getPrimitiveJavaObject(o);
+      break;
+    case TIMESTAMP:
+      result = ((TimestampObjectInspector) oi).getPrimitiveWritableObject(o).toString();
+      break;
+    default:
+      throw new RuntimeException("Hive 2 Internal error: unknown type: "
+          + oi.getTypeName());
+    }
+    return result;
+  }
+
+  public static Timestamp getTimestamp(Object o, PrimitiveObjectInspector oi) {
+    if (o == null) {
+      return null;
+    }
+
+    Timestamp result = null;
+    switch (oi.getPrimitiveCategory()) {
+    case VOID:
+      result = null;
+      break;
+    case BOOLEAN:
+      result = new Timestamp(((BooleanObjectInspector) oi).get(o) ? 1 : 0);
+      break;
+    case BYTE:
+      result = new Timestamp(((ByteObjectInspector) oi).get(o));
+      break;
+    case SHORT:
+      result = new Timestamp(((ShortObjectInspector) oi).get(o));
+      break;
+    case INT:
+      result = new Timestamp(((IntObjectInspector) oi).get(o));
+      break;
+    case LONG:
+      result = new Timestamp(((LongObjectInspector) oi).get(o));
+      break;
+    case FLOAT:
+      result = TimestampWritable.floatToTimestamp(((FloatObjectInspector) oi).get(o));
+      break;
+    case DOUBLE:
+      result = TimestampWritable.doubleToTimestamp(((DoubleObjectInspector) oi).get(o));
+      break;
+    case STRING:
+      StringObjectInspector soi = (StringObjectInspector) oi;
+      String s = soi.getPrimitiveJavaObject(o).trim();
+
+      // Throw away extra if more than 9 decimal places
+      int periodIdx = s.indexOf(".");
+      if (periodIdx != -1) {
+        if (s.length() - periodIdx > 9) {
+          s = s.substring(0, periodIdx + 10);
+        }
+      }
+      try {
+        result = Timestamp.valueOf(s);
+      } catch (IllegalArgumentException e) {
+        result = null;
+      }
+      break;
+    case TIMESTAMP:
+      result = ((TimestampObjectInspector) oi).getPrimitiveWritableObject(o).getTimestamp();
       break;
     default:
       throw new RuntimeException("Hive 2 Internal error: unknown type: "

@@ -60,6 +60,7 @@ public class GenericUDAFSum extends AbstractGenericUDAFResolver {
     case SHORT:
     case INT:
     case LONG:
+    case TIMESTAMP:
       return new GenericUDAFSumLong();
     case FLOAT:
     case DOUBLE:

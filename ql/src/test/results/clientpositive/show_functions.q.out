@@ -66,6 +66,7 @@ find_in_set
 float
 floor
 from_unixtime
+from_utc_timestamp
 get_json_object
 hash
 hex
@@ -142,8 +143,10 @@ substr
 substring
 sum
 tan
+timestamp
 tinyint
 to_date
+to_utc_timestamp
 trim
 ucase
 unhex
