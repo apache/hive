@@ -46,6 +46,16 @@ public final class LazyObjectInspectorFactory {
       List<ObjectInspector> structFieldObjectInspectors, byte separator,
       Text nullSequence, boolean lastColumnTakesRest, boolean escaped,
       byte escapeChar) {
+    return getLazySimpleStructObjectInspector(structFieldNames,
+      structFieldObjectInspectors, null, separator, nullSequence,
+      lastColumnTakesRest, escaped, escapeChar);
+  }
+
+  public static LazySimpleStructObjectInspector getLazySimpleStructObjectInspector(
+      List<String> structFieldNames,
+      List<ObjectInspector> structFieldObjectInspectors, List<String> structFieldComments,
+      byte separator, Text nullSequence, boolean lastColumnTakesRest,
+      boolean escaped,byte escapeChar) {
     ArrayList<Object> signature = new ArrayList<Object>();
     signature.add(structFieldNames);
     signature.add(structFieldObjectInspectors);
@@ -54,12 +64,15 @@ public final class LazyObjectInspectorFactory {
     signature.add(Boolean.valueOf(lastColumnTakesRest));
     signature.add(Boolean.valueOf(escaped));
     signature.add(Byte.valueOf(escapeChar));
+    if(structFieldComments != null) {
+      signature.add(structFieldComments);
+    }
     LazySimpleStructObjectInspector result = cachedLazySimpleStructObjectInspector
         .get(signature);
     if (result == null) {
       result = new LazySimpleStructObjectInspector(structFieldNames,
-          structFieldObjectInspectors, separator, nullSequence,
-          lastColumnTakesRest, escaped, escapeChar);
+          structFieldObjectInspectors, structFieldComments, separator,
+          nullSequence, lastColumnTakesRest, escaped, escapeChar);
       cachedLazySimpleStructObjectInspector.put(signature, result);
     }
     return result;
