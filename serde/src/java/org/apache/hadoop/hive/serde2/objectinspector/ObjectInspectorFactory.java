@@ -242,14 +242,22 @@ public final class ObjectInspectorFactory {
   public static StandardStructObjectInspector getStandardStructObjectInspector(
       List<String> structFieldNames,
       List<ObjectInspector> structFieldObjectInspectors) {
-    ArrayList<List<?>> signature = new ArrayList<List<?>>();
+    return getStandardStructObjectInspector(structFieldNames, structFieldObjectInspectors, null);
+  }
+
+  public static StandardStructObjectInspector getStandardStructObjectInspector(
+      List<String> structFieldNames,
+      List<ObjectInspector> structFieldObjectInspectors,
+      List<String> structComments) {
+    ArrayList<List<?>> signature = new ArrayList<List<?>>(3);
     signature.add(structFieldNames);
     signature.add(structFieldObjectInspectors);
-    StandardStructObjectInspector result = cachedStandardStructObjectInspector
-        .get(signature);
-    if (result == null) {
-      result = new StandardStructObjectInspector(structFieldNames,
-          structFieldObjectInspectors);
+    if(structComments != null) {
+      signature.add(structComments);
+    }
+    StandardStructObjectInspector result = cachedStandardStructObjectInspector.get(signature);
+    if(result == null) {
+      result = new StandardStructObjectInspector(structFieldNames, structFieldObjectInspectors, structComments);
       cachedStandardStructObjectInspector.put(signature, result);
     }
     return result;
@@ -273,14 +281,23 @@ public final class ObjectInspectorFactory {
   public static ColumnarStructObjectInspector getColumnarStructObjectInspector(
       List<String> structFieldNames,
       List<ObjectInspector> structFieldObjectInspectors) {
-    ArrayList<Object> signature = new ArrayList<Object>();
+    return getColumnarStructObjectInspector(structFieldNames, structFieldObjectInspectors, null);
+  }
+
+  public static ColumnarStructObjectInspector getColumnarStructObjectInspector(
+      List<String> structFieldNames,
+      List<ObjectInspector> structFieldObjectInspectors, List<String> structFieldComments) {
+    ArrayList<Object> signature = new ArrayList<Object>(3);
     signature.add(structFieldNames);
     signature.add(structFieldObjectInspectors);
+    if(structFieldComments != null) {
+      signature.add(structFieldComments);
+    }
     ColumnarStructObjectInspector result = cachedColumnarStructObjectInspector
         .get(signature);
     if (result == null) {
       result = new ColumnarStructObjectInspector(structFieldNames,
-          structFieldObjectInspectors);
+          structFieldObjectInspectors, structFieldComments);
       cachedColumnarStructObjectInspector.put(signature, result);
     }
     return result;

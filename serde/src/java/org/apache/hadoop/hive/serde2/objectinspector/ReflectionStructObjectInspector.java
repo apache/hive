@@ -58,6 +58,10 @@ public class ReflectionStructObjectInspector extends
       return fieldObjectInspector;
     }
 
+    public String getFieldComment() {
+      return null;
+    }
+
     @Override
     public String toString() {
       return field.toString();

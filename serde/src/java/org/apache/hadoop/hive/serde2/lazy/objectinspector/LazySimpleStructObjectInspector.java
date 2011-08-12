@@ -49,12 +49,18 @@ public class LazySimpleStructObjectInspector extends StructObjectInspector {
     protected int fieldID;
     protected String fieldName;
     protected ObjectInspector fieldObjectInspector;
+    protected String fieldComment;
 
     public MyField(int fieldID, String fieldName,
         ObjectInspector fieldObjectInspector) {
       this.fieldID = fieldID;
       this.fieldName = fieldName.toLowerCase();
       this.fieldObjectInspector = fieldObjectInspector;
+    }
+
+    public MyField(int fieldID, String fieldName, ObjectInspector fieldObjectInspector, String fieldComment) {
+      this(fieldID, fieldName, fieldObjectInspector);
+      this.fieldComment = fieldComment;
     }
 
     public int getFieldID() {
@@ -67,6 +73,10 @@ public class LazySimpleStructObjectInspector extends StructObjectInspector {
 
     public ObjectInspector getFieldObjectInspector() {
       return fieldObjectInspector;
+    }
+
+    public String getFieldComment() {
+      return fieldComment;
     }
 
     @Override
@@ -95,15 +105,26 @@ public class LazySimpleStructObjectInspector extends StructObjectInspector {
       List<ObjectInspector> structFieldObjectInspectors, byte separator,
       Text nullSequence, boolean lastColumnTakesRest, boolean escaped,
       byte escapeChar) {
-    init(structFieldNames, structFieldObjectInspectors, separator,
+    init(structFieldNames, structFieldObjectInspectors, null, separator,
         nullSequence, lastColumnTakesRest, escaped, escapeChar);
   }
 
+  public LazySimpleStructObjectInspector(List<String> structFieldNames,
+      List<ObjectInspector> structFieldObjectInspectors,
+      List<String> structFieldComments, byte separator, Text nullSequence,
+      boolean lastColumnTakesRest, boolean escaped, byte escapeChar) {
+    init(structFieldNames, structFieldObjectInspectors, structFieldComments,
+        separator, nullSequence, lastColumnTakesRest, escaped, escapeChar);
+  }
+
   protected void init(List<String> structFieldNames,
-      List<ObjectInspector> structFieldObjectInspectors, byte separator,
+      List<ObjectInspector> structFieldObjectInspectors,
+      List<String> structFieldComments, byte separator,
       Text nullSequence, boolean lastColumnTakesRest, boolean escaped,
       byte escapeChar) {
     assert (structFieldNames.size() == structFieldObjectInspectors.size());
+    assert (structFieldComments == null ||
+            structFieldNames.size() == structFieldComments.size());
 
     this.separator = separator;
     this.nullSequence = nullSequence;
@@ -114,7 +135,8 @@ public class LazySimpleStructObjectInspector extends StructObjectInspector {
     fields = new ArrayList<MyField>(structFieldNames.size());
     for (int i = 0; i < structFieldNames.size(); i++) {
       fields.add(new MyField(i, structFieldNames.get(i),
-          structFieldObjectInspectors.get(i)));
+          structFieldObjectInspectors.get(i),
+          structFieldComments == null ? null : structFieldComments.get(i)));
     }
   }
 
@@ -131,7 +153,7 @@ public class LazySimpleStructObjectInspector extends StructObjectInspector {
     this.fields = new ArrayList<MyField>(fields.size());
     for (int i = 0; i < fields.size(); i++) {
       this.fields.add(new MyField(i, fields.get(i).getFieldName(), fields
-          .get(i).getFieldObjectInspector()));
+          .get(i).getFieldObjectInspector(), fields.get(i).getFieldComment()));
     }
   }
 

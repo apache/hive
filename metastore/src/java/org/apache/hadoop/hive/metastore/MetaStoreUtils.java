@@ -823,19 +823,25 @@ public class MetaStoreUtils {
     // rules on how to recurse the ObjectInspector based on its type
     if (oi.getCategory() != Category.STRUCT) {
       str_fields.add(new FieldSchema(last_name, oi.getTypeName(),
-          "from deserializer"));
+          FROM_SERIALIZER));
     } else {
       List<? extends StructField> fields = ((StructObjectInspector) oi)
           .getAllStructFieldRefs();
       for (int i = 0; i < fields.size(); i++) {
-        String fieldName = fields.get(i).getFieldName();
-        String fieldTypeName = fields.get(i).getFieldObjectInspector()
-            .getTypeName();
-        str_fields.add(new FieldSchema(fieldName, fieldTypeName,
-            "from deserializer"));
+        StructField structField = fields.get(i);
+        String fieldName = structField.getFieldName();
+        String fieldTypeName = structField.getFieldObjectInspector().getTypeName();
+        String fieldComment = determineFieldComment(structField.getFieldComment());
+
+        str_fields.add(new FieldSchema(fieldName, fieldTypeName, fieldComment));
       }
     }
     return str_fields;
+  }
+
+  private static final String FROM_SERIALIZER = "from deserializer";
+  private static String determineFieldComment(String comment) {
+    return (comment == null || comment.isEmpty()) ? FROM_SERIALIZER : comment;
   }
 
   /**

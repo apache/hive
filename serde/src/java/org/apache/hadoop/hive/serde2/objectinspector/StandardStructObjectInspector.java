@@ -46,12 +46,19 @@ public class StandardStructObjectInspector extends
     protected int fieldID;
     protected String fieldName;
     protected ObjectInspector fieldObjectInspector;
+    protected String fieldComment;
 
     public MyField(int fieldID, String fieldName,
         ObjectInspector fieldObjectInspector) {
       this.fieldID = fieldID;
       this.fieldName = fieldName.toLowerCase();
       this.fieldObjectInspector = fieldObjectInspector;
+    }
+
+    public MyField(int fieldID, String fieldName,
+        ObjectInspector fieldObjectInspector, String fieldComment) {
+      this(fieldID, fieldName, fieldObjectInspector);
+      this.fieldComment = fieldComment;
     }
 
     public int getFieldID() {
@@ -64,6 +71,10 @@ public class StandardStructObjectInspector extends
 
     public ObjectInspector getFieldObjectInspector() {
       return fieldObjectInspector;
+    }
+
+    public String getFieldComment() {
+      return fieldComment;
     }
 
     @Override
@@ -83,17 +94,30 @@ public class StandardStructObjectInspector extends
    */
   protected StandardStructObjectInspector(List<String> structFieldNames,
       List<ObjectInspector> structFieldObjectInspectors) {
-    init(structFieldNames, structFieldObjectInspectors);
+    init(structFieldNames, structFieldObjectInspectors, null);
+  }
+
+  /**
+  * Call ObjectInspectorFactory.getStandardListObjectInspector instead.
+  */
+  protected StandardStructObjectInspector(List<String> structFieldNames,
+      List<ObjectInspector> structFieldObjectInspectors,
+      List<String> structFieldComments) {
+    init(structFieldNames, structFieldObjectInspectors, structFieldComments);
   }
 
   protected void init(List<String> structFieldNames,
-      List<ObjectInspector> structFieldObjectInspectors) {
+      List<ObjectInspector> structFieldObjectInspectors,
+      List<String> structFieldComments) {
     assert (structFieldNames.size() == structFieldObjectInspectors.size());
+    assert (structFieldComments == null ||
+            (structFieldNames.size() == structFieldComments.size()));
 
     fields = new ArrayList<MyField>(structFieldNames.size());
     for (int i = 0; i < structFieldNames.size(); i++) {
       fields.add(new MyField(i, structFieldNames.get(i),
-          structFieldObjectInspectors.get(i)));
+          structFieldObjectInspectors.get(i),
+          structFieldComments == null ? null : structFieldComments.get(i)));
     }
   }
 
