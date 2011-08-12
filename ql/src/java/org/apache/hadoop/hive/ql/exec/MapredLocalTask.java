@@ -63,6 +63,7 @@ import org.apache.hadoop.util.ReflectionUtils;
 public class MapredLocalTask extends Task<MapredLocalWork> implements Serializable {
 
   private Map<String, FetchOperator> fetchOperators;
+  protected HadoopJobExecHelper jobExecHelper;
   private JobConf job;
   public static transient final Log l4j = LogFactory.getLog(MapredLocalTask.class);
   static final String HADOOP_MEM_KEY = "HADOOP_HEAPSIZE";
@@ -89,6 +90,8 @@ public class MapredLocalTask extends Task<MapredLocalWork> implements Serializab
   public void initialize(HiveConf conf, QueryPlan queryPlan, DriverContext driverContext) {
     super.initialize(conf, queryPlan, driverContext);
     job = new JobConf(conf, ExecDriver.class);
+    //we don't use the HadoopJobExecHooks for local tasks
+    this.jobExecHelper = new HadoopJobExecHelper(job, console, this, null);
   }
 
   public static String now() {
@@ -213,7 +216,7 @@ public class MapredLocalTask extends Task<MapredLocalWork> implements Serializab
       outPrinter.start();
       errPrinter.start();
 
-      int exitVal = executor.waitFor();
+      int exitVal = jobExecHelper.progressLocal(executor, getId());
 
       if (exitVal != 0) {
         LOG.error("Execution failed with exit status: " + exitVal);

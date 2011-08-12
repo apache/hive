@@ -31,5 +31,15 @@ POSTHOOK: Lineage: default__src_src_index__.key SIMPLE [(src)src.FieldSchema(nam
 PREHOOK: query: SELECT key, value FROM src WHERE key=100 ORDER BY key
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/tmp/salbiz/hive_2011-08-01_16-15-40_648_4958727540603697272/-mr-10000
+PREHOOK: Output: file:/tmp/salbiz/hive_2011-08-05_12-04-23_821_264262594564060016/-mr-10000
+Execution failed with exit status: 2
+Obtaining error information
+
+Task failed!
+Task ID:
+  Stage-1
+
+Logs:
+
+/data/users/salbiz/apache-hive/build/ql/tmp//hive.log
 FAILED: Execution Error, return code 2 from org.apache.hadoop.hive.ql.exec.MapRedTask

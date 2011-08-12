@@ -119,6 +119,19 @@
                   logDirectory="${test.log.dir}/clientpositive"
                   hadoopVersion="${hadoopVersion}"
                   />
+
+        <qtestgen outputDirectory="${test.build.src}/org/apache/hadoop/hive/cli" 
+                  templatePath="${ql.test.template.dir}" template="TestNegativeCliDriver.vm" 
+                  queryDirectory="${ql.test.query.dir}/clientnegative" 
+                  queryFile="${minimr.query.negative.files}"
+                  queryFileRegex="${qfile_negative_regex}"
+                  clusterMode="miniMR"
+                  runDisabled="${run_disabled}"
+                  resultsDirectory="${ql.test.results.dir}/clientnegative" className="TestNegativeMinimrCliDriver"
+                  logFile="${test.log.dir}/testnegativeminimrclidrivergen.log"
+                  logDirectory="${test.log.dir}/clientnegative"
+                  hadoopVersion="${hadoopVersion}"
+                  />
       </then>
     </if>
 
@@ -127,6 +140,7 @@
               queryDirectory="${ql.test.query.dir}/clientnegative" 
               queryFile="${qfile}"
               queryFileRegex="${qfile_regex}"
+              excludeQueryFile="${minimr.query.negative.files}"
               runDisabled="${run_disabled}"
               resultsDirectory="${ql.test.results.dir}/clientnegative" className="TestNegativeCliDriver"
               logFile="${test.log.dir}/testnegclidrivergen.log"

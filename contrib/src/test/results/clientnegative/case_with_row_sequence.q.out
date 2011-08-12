@@ -14,5 +14,15 @@ SELECT CASE WHEN 3 > 2 THEN 10 WHEN row_sequence() > 5 THEN 20 ELSE 30 END
 FROM src LIMIT 1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/var/folders/7P/7PeC14kXFIWq0PIYyexGbmKuXUk/-Tmp-/jsichi/hive_2011-02-22_23-14-39_576_5692614556807208481/-mr-10000
+PREHOOK: Output: file:/tmp/salbiz/hive_2011-08-05_12-14-46_686_3062563290565430667/-mr-10000
+Execution failed with exit status: 2
+Obtaining error information
+
+Task failed!
+Task ID:
+  Stage-1
+
+Logs:
+
+/data/users/salbiz/apache-hive/build/ql/tmp//hive.log
 FAILED: Execution Error, return code 2 from org.apache.hadoop.hive.ql.exec.MapRedTask
