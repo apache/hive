@@ -155,6 +155,7 @@ import org.apache.hadoop.hive.ql.udf.generic.GenericUDFEWAHBitmapEmpty;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFEWAHBitmapOr;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFElt;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFField;
+import org.apache.hadoop.hive.ql.udf.generic.GenericUDFFromUtcTimestamp;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFHash;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFIf;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFIn;
@@ -181,6 +182,8 @@ import org.apache.hadoop.hive.ql.udf.generic.GenericUDFSize;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFSplit;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFStringToMap;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFStruct;
+import org.apache.hadoop.hive.ql.udf.generic.GenericUDFTimestamp;
+import org.apache.hadoop.hive.ql.udf.generic.GenericUDFToUtcTimestamp;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFUnion;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFWhen;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDTF;
@@ -368,6 +371,9 @@ public final class FunctionRegistry {
     registerUDF(Constants.STRING_TYPE_NAME, UDFToString.class, false,
         UDFToString.class.getSimpleName());
 
+    registerGenericUDF(Constants.TIMESTAMP_TYPE_NAME,
+        GenericUDFTimestamp.class);
+
     // Aggregate functions
     registerGenericUDAF("max", new GenericUDAFMax());
     registerGenericUDAF("min", new GenericUDAFMin());
@@ -419,6 +425,10 @@ public final class FunctionRegistry {
     registerGenericUDF("sentences", GenericUDFSentences.class);
     registerGenericUDF("map_keys", GenericUDFMapKeys.class);
     registerGenericUDF("map_values", GenericUDFMapValues.class);
+
+    registerGenericUDF("from_utc_timestamp", GenericUDFFromUtcTimestamp.class);
+    registerGenericUDF("to_utc_timestamp", GenericUDFToUtcTimestamp.class);
+
 
     // Generic UDTF's
     registerGenericUDTF("explode", GenericUDTFExplode.class);
@@ -622,6 +632,9 @@ public final class FunctionRegistry {
    * @return null if no common class could be found.
    */
   public static TypeInfo getCommonClass(TypeInfo a, TypeInfo b) {
+    if (a.equals(b)) {
+      return a;
+    }
     Integer ai = numericTypes.get(a);
     Integer bi = numericTypes.get(b);
     if (ai == null || bi == null) {
@@ -646,6 +659,11 @@ public final class FunctionRegistry {
     }
     // Void can be converted to any type
     if (from.equals(TypeInfoFactory.voidTypeInfo)) {
+      return true;
+    }
+
+    if (from.equals(TypeInfoFactory.timestampTypeInfo)
+        && to.equals(TypeInfoFactory.stringTypeInfo)) {
       return true;
     }
 

@@ -91,6 +91,7 @@ public class GenericUDAFPercentileApprox implements GenericUDAFResolver {
     case LONG:
     case FLOAT:
     case DOUBLE:
+    case TIMESTAMP:
       break;
     default:
       throw new UDFArgumentTypeException(0,
@@ -155,6 +156,7 @@ public class GenericUDAFPercentileApprox implements GenericUDAFResolver {
       case SHORT:
       case INT:
       case LONG:
+      case TIMESTAMP:
         break;
       default:
         throw new UDFArgumentTypeException(2, "Only an integer argument is accepted as "

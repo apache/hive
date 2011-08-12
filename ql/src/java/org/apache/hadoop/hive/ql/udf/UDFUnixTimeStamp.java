@@ -24,6 +24,7 @@ import java.util.Date;
 
 import org.apache.hadoop.hive.ql.exec.Description;
 import org.apache.hadoop.hive.ql.exec.UDF;
+import org.apache.hadoop.hive.serde2.io.TimestampWritable;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.Text;
 
@@ -48,7 +49,7 @@ public class UDFUnixTimeStamp extends UDF {
 
   /**
    * Return current UnixTime.
-   * 
+   *
    * @return long Number of seconds from 1970-01-01 00:00:00
    */
   public LongWritable evaluate() {
@@ -59,7 +60,7 @@ public class UDFUnixTimeStamp extends UDF {
 
   /**
    * Convert time string to UnixTime.
-   * 
+   *
    * @param dateText
    *          Time string in format yyyy-MM-dd HH:mm:ss
    * @return long Number of seconds from 1970-01-01 00:00:00
@@ -82,7 +83,7 @@ public class UDFUnixTimeStamp extends UDF {
 
   /**
    * Convert time string to UnixTime with user defined pattern.
-   * 
+   *
    * @param dateText
    *          Time string in format patternstring
    * @param patternText
@@ -103,5 +104,14 @@ public class UDFUnixTimeStamp extends UDF {
     }
 
     return evaluate(dateText);
+  }
+
+  public LongWritable evaluate(TimestampWritable i) {
+    if (i == null) {
+      return null;
+    } else {
+      result.set(i.getSeconds());
+      return result;
+    }
   }
 }

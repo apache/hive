@@ -151,8 +151,8 @@ public enum ErrorMsg {
       + "Please check your hive.input.format setting and make sure your Hadoop version support "
       + "CombineFileInputFormat"),
   NONEXISTPARTCOL("Non-Partition column appears in the partition specification: "),
-  UNSUPPORTED_TYPE("DATE, DATETIME, and TIMESTAMP types aren't supported yet. Please use "
-      + "STRING instead"),
+  UNSUPPORTED_TYPE("DATE and DATETIME types aren't supported yet. Please use "
+      + "TIMESTAMP instead"),
   CREATE_NON_NATIVE_AS("CREATE TABLE AS SELECT cannot be used for a non-native table"),
   LOAD_INTO_NON_NATIVE("A non-native table cannot be used as target for LOAD"),
   LOCKMGR_NOT_SPECIFIED("Lock manager not specified correctly, set hive.lock.manager"),

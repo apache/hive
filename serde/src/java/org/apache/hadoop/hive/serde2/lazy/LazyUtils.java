@@ -37,6 +37,7 @@ import org.apache.hadoop.hive.serde2.objectinspector.primitive.IntObjectInspecto
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.LongObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.ShortObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.StringObjectInspector;
+import org.apache.hadoop.hive.serde2.objectinspector.primitive.TimestampObjectInspector;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
 import org.apache.hadoop.io.Text;
 
@@ -48,7 +49,7 @@ public final class LazyUtils {
 
   /**
    * Returns the digit represented by character b.
-   * 
+   *
    * @param b
    *          The ascii code of the character
    * @param radix
@@ -102,7 +103,7 @@ public final class LazyUtils {
 
   /**
    * Convert a UTF-8 byte array to String.
-   * 
+   *
    * @param bytes
    *          The byte[] containing the UTF-8 String.
    * @param start
@@ -124,7 +125,7 @@ public final class LazyUtils {
 
   /**
    * Write the bytes with special characters escaped.
-   * 
+   *
    * @param escaped
    *          Whether the data should be written out in an escaped way.
    * @param escapeChar
@@ -158,7 +159,7 @@ public final class LazyUtils {
   /**
    * Write out the text representation of a Primitive Object to a UTF8 byte
    * stream.
-   * 
+   *
    * @param out
    *          The UTF8 byte OutputStream
    * @param o
@@ -213,6 +214,11 @@ public final class LazyUtils {
       Text t = ((StringObjectInspector) oi).getPrimitiveWritableObject(o);
       writeEscaped(out, t.getBytes(), 0, t.getLength(), escaped, escapeChar,
           needsEscape);
+      break;
+    }
+    case TIMESTAMP: {
+      LazyTimestamp.writeUTF8(out,
+          ((TimestampObjectInspector) oi).getPrimitiveWritableObject(o));
       break;
     }
     default: {

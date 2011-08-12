@@ -53,6 +53,8 @@ public final class LazyPrimitiveObjectInspectorFactory {
       new LazyDoubleObjectInspector();
   public static final LazyVoidObjectInspector LAZY_VOID_OBJECT_INSPECTOR =
       new LazyVoidObjectInspector();
+  public static final LazyTimestampObjectInspector LAZY_TIMESTAMP_OBJECT_INSPECTOR =
+      new LazyTimestampObjectInspector();
 
   static HashMap<ArrayList<Object>, LazyStringObjectInspector> cachedLazyStringObjectInspector =
       new HashMap<ArrayList<Object>, LazyStringObjectInspector>();
@@ -93,6 +95,8 @@ public final class LazyPrimitiveObjectInspectorFactory {
       return getLazyStringObjectInspector(escaped, escapeChar);
     case VOID:
       return LAZY_VOID_OBJECT_INSPECTOR;
+    case TIMESTAMP:
+      return LAZY_TIMESTAMP_OBJECT_INSPECTOR;
     default:
       throw new RuntimeException("Internal error: Cannot find ObjectInspector "
           + " for " + primitiveCategory);

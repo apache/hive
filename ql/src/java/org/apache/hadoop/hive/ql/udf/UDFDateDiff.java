@@ -20,10 +20,12 @@ package org.apache.hadoop.hive.ql.udf;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.TimeZone;
 
 import org.apache.hadoop.hive.ql.exec.Description;
 import org.apache.hadoop.hive.ql.exec.UDF;
+import org.apache.hadoop.hive.serde2.io.TimestampWritable;
 import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.Text;
 
@@ -42,7 +44,7 @@ import org.apache.hadoop.io.Text;
 public class UDFDateDiff extends UDF {
   private final SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd");
 
-  private IntWritable result = new IntWritable();
+  private final IntWritable result = new IntWritable();
 
   public UDFDateDiff() {
     formatter.setTimeZone(TimeZone.getTimeZone("UTC"));
@@ -52,7 +54,7 @@ public class UDFDateDiff extends UDF {
    * Calculate the difference in the number of days. The time part of the string
    * will be ignored. If dateString1 is earlier than dateString2, then the
    * result can be negative.
-   * 
+   *
    * @param dateString1
    *          the date string in the format of "yyyy-MM-dd HH:mm:ss" or
    *          "yyyy-MM-dd".
@@ -62,22 +64,54 @@ public class UDFDateDiff extends UDF {
    * @return the difference in days.
    */
   public IntWritable evaluate(Text dateString1, Text dateString2) {
+    return evaluate(toDate(dateString1), toDate(dateString2));
+  }
 
-    if (dateString1 == null || dateString2 == null) {
+  public IntWritable evaluate(TimestampWritable t1, TimestampWritable t2) {
+    return evaluate(toDate(t1), toDate(t2));
+  }
+
+  public IntWritable evaluate(TimestampWritable t, Text dateString) {
+    return evaluate(toDate(t), toDate(dateString));
+  }
+
+  public IntWritable evaluate(Text dateString, TimestampWritable t) {
+    return evaluate(toDate(dateString), toDate(t));
+  }
+
+  private IntWritable evaluate(Date date, Date date2) {
+    if (date == null || date2 == null) {
       return null;
     }
 
+    // NOTE: This implementation avoids the extra-second problem
+    // by comparing with UTC epoch and integer division.
+    // 86400 is the number of seconds in a day
+    long diffInMilliSeconds = date.getTime() - date2.getTime();
+    result.set((int) (diffInMilliSeconds / (86400 * 1000)));
+    return result;
+  }
+
+  private Date format(String dateString) {
     try {
-      // NOTE: This implementation avoids the extra-second problem
-      // by comparing with UTC epoch and integer division.
-      long diffInMilliSeconds = (formatter.parse(dateString1.toString())
-          .getTime() - formatter.parse(dateString2.toString()).getTime());
-      // 86400 is the number of seconds in a day
-      result.set((int) (diffInMilliSeconds / (86400 * 1000)));
-      return result;
+      return formatter.parse(dateString);
     } catch (ParseException e) {
       return null;
     }
+  }
+
+  private Date toDate(Text dateString) {
+    if (dateString == null) {
+      return null;
+    }
+    return format(dateString.toString());
+  }
+
+  private Date toDate(TimestampWritable t) {
+    if (t == null) {
+      return null;
+    }
+    return t.getTimestamp();
   }
 
 }
