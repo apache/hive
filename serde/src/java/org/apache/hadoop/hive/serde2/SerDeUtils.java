@@ -94,6 +94,7 @@ public final class SerDeUtils {
     nativeSerDeNames.add("org.apache.hadoop.hive.serde.thrift.columnsetSerDe");
     nativeSerDeNames
         .add(org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe.class.getName());
+    nativeSerDeNames.add(org.apache.hadoop.hive.serde2.columnar.ColumnarSerDe.class.getName());
   }
 
   public static boolean shouldGetColsFromSerDe(String serde) {

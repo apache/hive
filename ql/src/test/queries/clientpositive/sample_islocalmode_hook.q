@@ -15,8 +15,8 @@ create table sih_i_part (key int, value string) partitioned by (p string);
 insert overwrite table sih_i_part partition (p='1') select key, value from src;
 insert overwrite table sih_i_part partition (p='2') select key+10000, value from src;
 insert overwrite table sih_i_part partition (p='3') select key+20000, value from src;
-create table sih_src as select key, value from sih_i_part;
-create table sih_src2 as select key, value from sih_src;
+create table sih_src as select key, value from sih_i_part order by key, value;
+create table sih_src2 as select key, value from sih_src order by key, value;
 
 set hive.exec.post.hooks = org.apache.hadoop.hive.ql.hooks.VerifyIsLocalModeHook ;
 set mapred.job.tracker=does.notexist.com:666;
