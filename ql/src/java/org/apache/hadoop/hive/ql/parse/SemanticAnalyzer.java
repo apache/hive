@@ -5812,8 +5812,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         if (qbp.getAggregationExprsForClause(dest).size() != 0
             || getGroupByForClause(qbp, dest).size() > 0) {
           //multiple distincts is not supported with skew in data
-          if (conf.getVar(HiveConf.ConfVars.HIVEGROUPBYSKEW)
-              .equalsIgnoreCase("true") &&
+          if (conf.getBoolVar(HiveConf.ConfVars.HIVEGROUPBYSKEW) &&
              qbp.getDistinctFuncExprsForClause(dest).size() > 1) {
             throw new SemanticException(ErrorMsg.UNSUPPORTED_MULTIPLE_DISTINCTS.
                 getMsg());
@@ -5821,16 +5820,13 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
           // insert a select operator here used by the ColumnPruner to reduce
           // the data to shuffle
           curr = insertSelectAllPlanForGroupBy(dest, curr);
-          if (conf.getVar(HiveConf.ConfVars.HIVEMAPSIDEAGGREGATE)
-              .equalsIgnoreCase("true")) {
-            if (conf.getVar(HiveConf.ConfVars.HIVEGROUPBYSKEW)
-                .equalsIgnoreCase("false")) {
+          if (conf.getBoolVar(HiveConf.ConfVars.HIVEMAPSIDEAGGREGATE)) {
+            if (!conf.getBoolVar(HiveConf.ConfVars.HIVEGROUPBYSKEW)) {
               curr = genGroupByPlanMapAggr1MR(dest, qb, curr);
             } else {
               curr = genGroupByPlanMapAggr2MR(dest, qb, curr);
             }
-          } else if (conf.getVar(HiveConf.ConfVars.HIVEGROUPBYSKEW)
-              .equalsIgnoreCase("true")) {
+          } else if (conf.getBoolVar(HiveConf.ConfVars.HIVEGROUPBYSKEW)) {
             curr = genGroupByPlan2MR(dest, qb, curr);
           } else {
             curr = genGroupByPlan1MR(dest, qb, curr);

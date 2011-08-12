@@ -950,6 +950,7 @@ public class QTestUtil {
         "-I", "LOCK_QUERYID:",
         "-I", "grantTime",
         "-I", "[.][.][.] [0-9]* more",
+        "-I", "job_[0-9]*_[0-9]*",
         "-I", "USING 'java -cp",
         (new File(logDir, tname + ".out")).getPath(),
         outFileName };

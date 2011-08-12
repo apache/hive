@@ -28,6 +28,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.Enumeration;
 
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.MapRedStats;
@@ -45,6 +46,11 @@ import org.apache.hadoop.mapred.RunningJob;
 import org.apache.hadoop.mapred.TaskCompletionEvent;
 import org.apache.hadoop.mapred.TaskReport;
 import org.apache.hadoop.mapred.Counters.Counter;
+import org.apache.log4j.Appender;
+import org.apache.log4j.BasicConfigurator;
+import org.apache.log4j.FileAppender;
+import org.apache.log4j.LogManager;
+import org.apache.log4j.PropertyConfigurator;
 
 public class HadoopJobExecHelper {
 
@@ -512,6 +518,7 @@ public class HadoopJobExecHelper {
 
     int startIndex = 0;
 
+    console.printError("Error during job, obtaining debugging information...");
     // Loop to get all task completion events because getTaskCompletionEvents
     // only returns a subset per call
     while (true) {
@@ -537,6 +544,7 @@ public class HadoopJobExecHelper {
         // and the logs
         String taskId = taskJobIds[0];
         String jobId = taskJobIds[1];
+        console.printError("Examining task ID: " + taskId + " from job " + jobId);
 
         TaskInfo ti = taskIdToInfo.get(taskId);
         if (ti == null) {
@@ -544,7 +552,7 @@ public class HadoopJobExecHelper {
           taskIdToInfo.put(taskId, ti);
         }
         // These tasks should have come from the same job.
-        assert (ti.getJobId() == jobId);
+        assert (ti.getJobId() != null && ti.getJobId().equals(jobId));
         ti.getLogUrls().add(getTaskAttemptLogUrl(t.getTaskTrackerHttp(), t.getTaskId()));
 
         // If a task failed, then keep track of the total number of failures
@@ -619,7 +627,6 @@ public class HadoopJobExecHelper {
         sb.append("-----\n");
 
         console.printError(sb.toString());
-
         // Only print out one task because that's good enough for debugging.
         break;
       }
@@ -627,6 +634,45 @@ public class HadoopJobExecHelper {
     return;
 
   }
+
+  public void localJobDebugger(int exitVal, String taskId) {
+    StringBuilder sb = new StringBuilder();
+    sb.append("\n");
+    sb.append("Task failed!\n");
+    sb.append("Task ID:\n  " + taskId + "\n\n");
+    sb.append("Logs:\n");
+    console.printError(sb.toString());
+
+    for (Appender a : Collections.list((Enumeration<Appender>)
+          LogManager.getRootLogger().getAllAppenders())) {
+      if (a instanceof FileAppender) {
+        console.printError(((FileAppender)a).getFile());
+      }
+    }
+  }
+
+  public int progressLocal(Process runningJob, String taskId) {
+    int exitVal = -101;
+    try {
+      exitVal = runningJob.waitFor(); //TODO: poll periodically
+    } catch (InterruptedException e) {
+    }
+
+    if (exitVal != 0) {
+      console.printError("Execution failed with exit status: " + exitVal);
+      console.printError("Obtaining error information");
+      if (HiveConf.getBoolVar(job, HiveConf.ConfVars.SHOW_JOB_FAIL_DEBUG_INFO)) {
+        // Since local jobs are run sequentially, all relevant information is already available
+        // Therefore, no need to fetch job debug info asynchronously
+        localJobDebugger(exitVal, taskId);
+      }
+    } else {
+      console.printInfo("Execution completed successfully");
+      console.printInfo("Mapred Local Task Succeeded . Convert the Join into MapJoin");
+    }
+    return exitVal;
+  }
+
 
   public int progress(RunningJob rj, JobClient jc) throws IOException {
     jobId = rj.getJobID();
@@ -666,7 +712,15 @@ public class HadoopJobExecHelper {
       returnVal = 2;
       console.printError(statusMesg);
       if (HiveConf.getBoolVar(job, HiveConf.ConfVars.SHOW_JOB_FAIL_DEBUG_INFO)) {
-        showJobFailDebugInfo(job, rj);
+        try {
+          JobDebugger jd = new JobDebugger(job, rj, console);
+          Thread t = new Thread(jd);
+          t.start();
+          t.join(HiveConf.getIntVar(job, HiveConf.ConfVars.JOB_DEBUG_TIMEOUT));
+        } catch (InterruptedException e) {
+          console.printError("Timed out trying to grab more detailed job failure"
+              + " information, please check jobtracker for more info");
+        }
       }
     } else {
       console.printInfo(statusMesg);

@@ -137,6 +137,8 @@ public class HiveConf extends Configuration {
     DEFAULT_ZOOKEEPER_PARTITION_NAME("hive.lockmgr.zookeeper.default.partition.name", "__HIVE_DEFAULT_ZOOKEEPER_PARTITION__"),
     // Whether to show a link to the most failed task + debugging tips
     SHOW_JOB_FAIL_DEBUG_INFO("hive.exec.show.job.failure.debug.info", true),
+    JOB_DEBUG_TIMEOUT("hive.exec.job.debug.timeout", 30000),
+    TASKLOG_DEBUG_TIMEOUT("hive.exec.tasklog.debug.timeout", 20000),
 
     // should hive determine whether to run in local mode automatically ?
     LOCALMODEAUTO("hive.exec.mode.local.auto", false),
@@ -264,8 +266,8 @@ public class HiveConf extends Configuration {
     HIVESCRIPTIDENVVAR("hive.script.operator.id.env.var", "HIVE_SCRIPT_OPERATOR_ID"),
     HIVEMAPREDMODE("hive.mapred.mode", "nonstrict"),
     HIVEALIAS("hive.alias", ""),
-    HIVEMAPSIDEAGGREGATE("hive.map.aggr", "true"),
-    HIVEGROUPBYSKEW("hive.groupby.skewindata", "false"),
+    HIVEMAPSIDEAGGREGATE("hive.map.aggr", true),
+    HIVEGROUPBYSKEW("hive.groupby.skewindata", false),
     HIVEJOINEMITINTERVAL("hive.join.emit.interval", 1000),
     HIVEJOINCACHESIZE("hive.join.cache.size", 25000),
     HIVEMAPJOINBUCKETCACHESIZE("hive.mapjoin.bucket.cache.size", 100),
