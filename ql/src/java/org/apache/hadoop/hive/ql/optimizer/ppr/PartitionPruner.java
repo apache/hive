@@ -44,6 +44,7 @@ import org.apache.hadoop.hive.ql.lib.Node;
 import org.apache.hadoop.hive.ql.lib.NodeProcessor;
 import org.apache.hadoop.hive.ql.lib.Rule;
 import org.apache.hadoop.hive.ql.lib.RuleRegExp;
+import org.apache.hadoop.hive.ql.log.PerfLogger;
 import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.Partition;
@@ -320,7 +321,9 @@ public class PartitionPruner implements Transform {
     List<String> trueNames = null;
     List<String> unknNames = null;
 
-    Utilities.PerfLogBegin(LOG, "prune-listing");
+    PerfLogger perfLogger = PerfLogger.getPerfLogger();
+
+    perfLogger.PerfLogBegin(LOG, PerfLogger.PRUNE_LISTING);
 
     List<String> partNames = Hive.get().getPartitionNames(tab.getDbName(),
         tab.getTableName(), (short) -1);
@@ -366,9 +369,9 @@ public class PartitionPruner implements Transform {
         LOG.debug("retained partition: " + partName);
       }
     }
-    Utilities.PerfLogEnd(LOG, "prune-listing");
+    perfLogger.PerfLogEnd(LOG, PerfLogger.PRUNE_LISTING);
 
-    Utilities.PerfLogBegin(LOG, "partition-retrieving");
+    perfLogger.PerfLogBegin(LOG, PerfLogger.PARTITION_RETRIEVING);
     if (trueNames != null) {
       List<Partition> parts = Hive.get().getPartitionsByNames(tab, trueNames);
       true_parts.addAll(parts);
@@ -377,7 +380,7 @@ public class PartitionPruner implements Transform {
       List<Partition> parts = Hive.get().getPartitionsByNames(tab, unknNames);
       unkn_parts.addAll(parts);
     }
-    Utilities.PerfLogEnd(LOG, "partition-retrieving");
+    perfLogger.PerfLogEnd(LOG, PerfLogger.PARTITION_RETRIEVING);
   }
 
   /**
