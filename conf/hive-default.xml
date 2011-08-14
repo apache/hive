@@ -1144,4 +1144,10 @@
 		by record readers</description>
 </property>
 
+<property>
+  <name>hive.exec.perf.logger</name>
+  <value>org.apache.hadoop.hive.ql.log.PerfLogger</value>
+  <description>The class responsible logging client side performance metrics.  Must be a subclass of org.apache.hadoop.hive.ql.log.PerfLogger</description>
+</property>
+
 </configuration>
