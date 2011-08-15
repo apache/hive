@@ -640,8 +640,8 @@ public class TestJdbcDriver extends TestCase {
     tests.put(new String[]{"%jdbcdriver\\_table%", "_%"}, 2);
 
     for (String[] checkPattern: tests.keySet()) {
-      ResultSet rs = (ResultSet)con.getMetaData().getColumns(null, null
-              , checkPattern[0], checkPattern[1]);
+      ResultSet rs = con.getMetaData().getColumns(null, null, checkPattern[0],
+          checkPattern[1]);
 
       // validate the metadata for the getColumns result set
       ResultSetMetaData rsmd = rs.getMetaData();
@@ -764,84 +764,215 @@ public class TestJdbcDriver extends TestCase {
 
   public void testResultSetMetaData() throws SQLException {
     Statement stmt = con.createStatement();
+
     ResultSet res = stmt.executeQuery(
         "select c1, c2, c3, c4, c5 as a, c6, c7, c8, c9, c10, c11, c12, " +
         "c1*2, sentences(null, null, null) as b from " + dataTypeTableName + " limit 1");
     ResultSetMetaData meta = res.getMetaData();
 
+    ResultSet colRS = con.getMetaData().getColumns(null, null,
+        dataTypeTableName.toLowerCase(), null);
+
     assertEquals(14, meta.getColumnCount());
 
+    assertTrue(colRS.next());
+
     assertEquals("c1", meta.getColumnName(1));
-    assertEquals("c2", meta.getColumnName(2));
-    assertEquals("c3", meta.getColumnName(3));
-    assertEquals("c4", meta.getColumnName(4));
-    assertEquals("a", meta.getColumnName(5));
-    assertEquals("c6", meta.getColumnName(6));
-    assertEquals("c7", meta.getColumnName(7));
-    assertEquals("c8", meta.getColumnName(8));
-    assertEquals("c9", meta.getColumnName(9));
-    assertEquals("c10", meta.getColumnName(10));
-    assertEquals("c11", meta.getColumnName(11));
-    assertEquals("c12", meta.getColumnName(12));
-    assertEquals("_c12", meta.getColumnName(13));
-    assertEquals("b", meta.getColumnName(14));
-
     assertEquals(Types.INTEGER, meta.getColumnType(1));
-    assertEquals(Types.BOOLEAN, meta.getColumnType(2));
-    assertEquals(Types.DOUBLE, meta.getColumnType(3));
-    assertEquals(Types.VARCHAR, meta.getColumnType(4));
-    assertEquals(Types.VARCHAR, meta.getColumnType(5));
-    assertEquals(Types.VARCHAR, meta.getColumnType(6));
-    assertEquals(Types.VARCHAR, meta.getColumnType(7));
-    assertEquals(Types.VARCHAR, meta.getColumnType(8));
-    assertEquals(Types.TINYINT, meta.getColumnType(9));
-    assertEquals(Types.SMALLINT, meta.getColumnType(10));
-    assertEquals(Types.FLOAT, meta.getColumnType(11));
-    assertEquals(Types.BIGINT, meta.getColumnType(12));
-    assertEquals(Types.INTEGER, meta.getColumnType(13));
-    assertEquals(Types.VARCHAR, meta.getColumnType(14));
-
     assertEquals("int", meta.getColumnTypeName(1));
-    assertEquals("boolean", meta.getColumnTypeName(2));
-    assertEquals("double", meta.getColumnTypeName(3));
-    assertEquals("string", meta.getColumnTypeName(4));
-    assertEquals("string", meta.getColumnTypeName(5));
-    assertEquals("string", meta.getColumnTypeName(6));
-    assertEquals("string", meta.getColumnTypeName(7));
-    assertEquals("string", meta.getColumnTypeName(8));
-    assertEquals("tinyint", meta.getColumnTypeName(9));
-    assertEquals("smallint", meta.getColumnTypeName(10));
-    assertEquals("float", meta.getColumnTypeName(11));
-    assertEquals("bigint", meta.getColumnTypeName(12));
-    assertEquals("int", meta.getColumnTypeName(13));
-    assertEquals("string", meta.getColumnTypeName(14));
-
     assertEquals(11, meta.getColumnDisplaySize(1));
-    assertEquals(1, meta.getColumnDisplaySize(2));
-    assertEquals(25, meta.getColumnDisplaySize(3));
-    assertEquals(Integer.MAX_VALUE, meta.getColumnDisplaySize(4));
-    assertEquals(Integer.MAX_VALUE, meta.getColumnDisplaySize(5));
-    assertEquals(Integer.MAX_VALUE, meta.getColumnDisplaySize(6));
-    assertEquals(Integer.MAX_VALUE, meta.getColumnDisplaySize(7));
-    assertEquals(Integer.MAX_VALUE, meta.getColumnDisplaySize(8));
-    assertEquals(4, meta.getColumnDisplaySize(9));
-    assertEquals(6, meta.getColumnDisplaySize(10));
-    assertEquals(24, meta.getColumnDisplaySize(11));
-    assertEquals(20, meta.getColumnDisplaySize(12));
-    assertEquals(11, meta.getColumnDisplaySize(13));
-    assertEquals(Integer.MAX_VALUE, meta.getColumnDisplaySize(14));
+    assertEquals(10, meta.getPrecision(1));
+    assertEquals(0, meta.getScale(1));
 
-    int[] expectedPrecision = {10, 1, 15, Integer.MAX_VALUE, Integer.MAX_VALUE,
-        Integer.MAX_VALUE, Integer.MAX_VALUE, Integer.MAX_VALUE, 3, 5, 7, 19,
-        10, Integer.MAX_VALUE};
-    int[] expectedScale = {0, 0, 15, 0, 0, 0, 0, 0, 0, 0, 7, 0, 0, 0};
+    assertEquals("c1", colRS.getString("COLUMN_NAME"));
+    assertEquals(Types.INTEGER, colRS.getInt("DATA_TYPE"));
+    assertEquals("int", colRS.getString("TYPE_NAME").toLowerCase());
+    assertEquals(meta.getPrecision(1), colRS.getInt("COLUMN_SIZE"));
+    assertEquals(meta.getScale(1), colRS.getInt("DECIMAL_DIGITS"));
+
+    assertTrue(colRS.next());
+
+    assertEquals("c2", meta.getColumnName(2));
+    assertEquals("boolean", meta.getColumnTypeName(2));
+    assertEquals(Types.BOOLEAN, meta.getColumnType(2));
+    assertEquals(1, meta.getColumnDisplaySize(2));
+    assertEquals(1, meta.getPrecision(2));
+    assertEquals(0, meta.getScale(2));
+
+    assertEquals("c2", colRS.getString("COLUMN_NAME"));
+    assertEquals(Types.BOOLEAN, colRS.getInt("DATA_TYPE"));
+    assertEquals("boolean", colRS.getString("TYPE_NAME").toLowerCase());
+    assertEquals(meta.getPrecision(2), colRS.getInt("COLUMN_SIZE"));
+    assertEquals(meta.getScale(2), colRS.getInt("DECIMAL_DIGITS"));
+
+    assertTrue(colRS.next());
+
+    assertEquals("c3", meta.getColumnName(3));
+    assertEquals(Types.DOUBLE, meta.getColumnType(3));
+    assertEquals("double", meta.getColumnTypeName(3));
+    assertEquals(25, meta.getColumnDisplaySize(3));
+    assertEquals(15, meta.getPrecision(3));
+    assertEquals(15, meta.getScale(3));
+
+    assertEquals("c3", colRS.getString("COLUMN_NAME"));
+    assertEquals(Types.DOUBLE, colRS.getInt("DATA_TYPE"));
+    assertEquals("double", colRS.getString("TYPE_NAME").toLowerCase());
+    assertEquals(meta.getPrecision(3), colRS.getInt("COLUMN_SIZE"));
+    assertEquals(meta.getScale(3), colRS.getInt("DECIMAL_DIGITS"));
+
+    assertTrue(colRS.next());
+
+    assertEquals("c4", meta.getColumnName(4));
+    assertEquals(Types.VARCHAR, meta.getColumnType(4));
+    assertEquals("string", meta.getColumnTypeName(4));
+    assertEquals(Integer.MAX_VALUE, meta.getColumnDisplaySize(4));
+    assertEquals(Integer.MAX_VALUE, meta.getPrecision(4));
+    assertEquals(0, meta.getScale(4));
+
+    assertEquals("c4", colRS.getString("COLUMN_NAME"));
+    assertEquals(Types.VARCHAR, colRS.getInt("DATA_TYPE"));
+    assertEquals("string", colRS.getString("TYPE_NAME").toLowerCase());
+    assertEquals(meta.getPrecision(4), colRS.getInt("COLUMN_SIZE"));
+    assertEquals(meta.getScale(4), colRS.getInt("DECIMAL_DIGITS"));
+
+    assertTrue(colRS.next());
+
+    assertEquals("a", meta.getColumnName(5));
+    assertEquals(Types.VARCHAR, meta.getColumnType(5));
+    assertEquals("string", meta.getColumnTypeName(5));
+    assertEquals(Integer.MAX_VALUE, meta.getColumnDisplaySize(5));
+    assertEquals(Integer.MAX_VALUE, meta.getPrecision(5));
+    assertEquals(0, meta.getScale(5));
+
+    assertEquals("c5", colRS.getString("COLUMN_NAME"));
+    assertEquals(Types.VARCHAR, colRS.getInt("DATA_TYPE"));
+    assertEquals("array<int>", colRS.getString("TYPE_NAME").toLowerCase());
+    assertEquals(meta.getPrecision(5), colRS.getInt("COLUMN_SIZE"));
+    assertEquals(meta.getScale(5), colRS.getInt("DECIMAL_DIGITS"));
+
+    assertTrue(colRS.next());
+
+    assertEquals("c6", meta.getColumnName(6));
+    assertEquals(Types.VARCHAR, meta.getColumnType(6));
+    assertEquals("string", meta.getColumnTypeName(6));
+    assertEquals(Integer.MAX_VALUE, meta.getColumnDisplaySize(6));
+    assertEquals(Integer.MAX_VALUE, meta.getPrecision(6));
+    assertEquals(0, meta.getScale(6));
+
+    assertEquals("c6", colRS.getString("COLUMN_NAME"));
+    assertEquals(Types.VARCHAR, colRS.getInt("DATA_TYPE"));
+    assertEquals("map<int,string>", colRS.getString("TYPE_NAME").toLowerCase());
+    assertEquals(meta.getPrecision(6), colRS.getInt("COLUMN_SIZE"));
+    assertEquals(meta.getScale(6), colRS.getInt("DECIMAL_DIGITS"));
+
+    assertTrue(colRS.next());
+
+    assertEquals("c7", meta.getColumnName(7));
+    assertEquals(Types.VARCHAR, meta.getColumnType(7));
+    assertEquals("string", meta.getColumnTypeName(7));
+    assertEquals(Integer.MAX_VALUE, meta.getColumnDisplaySize(7));
+    assertEquals(Integer.MAX_VALUE, meta.getPrecision(7));
+    assertEquals(0, meta.getScale(7));
+
+    assertEquals("c7", colRS.getString("COLUMN_NAME"));
+    assertEquals(Types.VARCHAR, colRS.getInt("DATA_TYPE"));
+    assertEquals("map<string,string>", colRS.getString("TYPE_NAME").toLowerCase());
+    assertEquals(meta.getPrecision(7), colRS.getInt("COLUMN_SIZE"));
+    assertEquals(meta.getScale(7), colRS.getInt("DECIMAL_DIGITS"));
+
+    assertTrue(colRS.next());
+
+    assertEquals("c8", meta.getColumnName(8));
+    assertEquals(Types.VARCHAR, meta.getColumnType(8));
+    assertEquals("string", meta.getColumnTypeName(8));
+    assertEquals(Integer.MAX_VALUE, meta.getColumnDisplaySize(8));
+    assertEquals(Integer.MAX_VALUE, meta.getPrecision(8));
+    assertEquals(0, meta.getScale(8));
+
+    assertEquals("c8", colRS.getString("COLUMN_NAME"));
+    assertEquals(Types.VARCHAR, colRS.getInt("DATA_TYPE"));
+    assertEquals("struct<r:string,s:int,t:double>", colRS.getString("TYPE_NAME").toLowerCase());
+    assertEquals(meta.getPrecision(8), colRS.getInt("COLUMN_SIZE"));
+    assertEquals(meta.getScale(8), colRS.getInt("DECIMAL_DIGITS"));
+
+    assertTrue(colRS.next());
+
+    assertEquals("c9", meta.getColumnName(9));
+    assertEquals(Types.TINYINT, meta.getColumnType(9));
+    assertEquals("tinyint", meta.getColumnTypeName(9));
+    assertEquals(4, meta.getColumnDisplaySize(9));
+    assertEquals(3, meta.getPrecision(9));
+    assertEquals(0, meta.getScale(9));
+
+    assertEquals("c9", colRS.getString("COLUMN_NAME"));
+    assertEquals(Types.TINYINT, colRS.getInt("DATA_TYPE"));
+    assertEquals("tinyint", colRS.getString("TYPE_NAME").toLowerCase());
+    assertEquals(meta.getPrecision(9), colRS.getInt("COLUMN_SIZE"));
+    assertEquals(meta.getScale(9), colRS.getInt("DECIMAL_DIGITS"));
+
+    assertTrue(colRS.next());
+
+    assertEquals("c10", meta.getColumnName(10));
+    assertEquals(Types.SMALLINT, meta.getColumnType(10));
+    assertEquals("smallint", meta.getColumnTypeName(10));
+    assertEquals(6, meta.getColumnDisplaySize(10));
+    assertEquals(5, meta.getPrecision(10));
+    assertEquals(0, meta.getScale(10));
+
+    assertEquals("c10", colRS.getString("COLUMN_NAME"));
+    assertEquals(Types.SMALLINT, colRS.getInt("DATA_TYPE"));
+    assertEquals("smallint", colRS.getString("TYPE_NAME").toLowerCase());
+    assertEquals(meta.getPrecision(10), colRS.getInt("COLUMN_SIZE"));
+    assertEquals(meta.getScale(10), colRS.getInt("DECIMAL_DIGITS"));
+
+    assertTrue(colRS.next());
+
+    assertEquals("c11", meta.getColumnName(11));
+    assertEquals(Types.FLOAT, meta.getColumnType(11));
+    assertEquals("float", meta.getColumnTypeName(11));
+    assertEquals(24, meta.getColumnDisplaySize(11));
+    assertEquals(7, meta.getPrecision(11));
+    assertEquals(7, meta.getScale(11));
+
+    assertEquals("c11", colRS.getString("COLUMN_NAME"));
+    assertEquals(Types.FLOAT, colRS.getInt("DATA_TYPE"));
+    assertEquals("float", colRS.getString("TYPE_NAME").toLowerCase());
+    assertEquals(meta.getPrecision(11), colRS.getInt("COLUMN_SIZE"));
+    assertEquals(meta.getScale(11), colRS.getInt("DECIMAL_DIGITS"));
+
+    assertTrue(colRS.next());
+
+    assertEquals("c12", meta.getColumnName(12));
+    assertEquals(Types.BIGINT, meta.getColumnType(12));
+    assertEquals("bigint", meta.getColumnTypeName(12));
+    assertEquals(20, meta.getColumnDisplaySize(12));
+    assertEquals(19, meta.getPrecision(12));
+    assertEquals(0, meta.getScale(12));
+
+    assertEquals("c12", colRS.getString("COLUMN_NAME"));
+    assertEquals(Types.BIGINT, colRS.getInt("DATA_TYPE"));
+    assertEquals("bigint", colRS.getString("TYPE_NAME").toLowerCase());
+    assertEquals(meta.getPrecision(12), colRS.getInt("COLUMN_SIZE"));
+    assertEquals(meta.getScale(12), colRS.getInt("DECIMAL_DIGITS"));
+
+    assertEquals("_c12", meta.getColumnName(13));
+    assertEquals(Types.INTEGER, meta.getColumnType(13));
+    assertEquals("int", meta.getColumnTypeName(13));
+    assertEquals(11, meta.getColumnDisplaySize(13));
+    assertEquals(10, meta.getPrecision(13));
+    assertEquals(0, meta.getScale(13));
+
+    assertEquals("b", meta.getColumnName(14));
+    assertEquals(Types.VARCHAR, meta.getColumnType(14));
+    assertEquals("string", meta.getColumnTypeName(14));
+    assertEquals(Integer.MAX_VALUE, meta.getColumnDisplaySize(14));
+    assertEquals(Integer.MAX_VALUE, meta.getPrecision(14));
+    assertEquals(0, meta.getScale(14));
+
     for (int i = 1; i <= meta.getColumnCount(); i++) {
       assertFalse(meta.isAutoIncrement(i));
       assertFalse(meta.isCurrency(i));
       assertEquals(ResultSetMetaData.columnNullable, meta.isNullable(i));
-
-      assertEquals(expectedPrecision[i-1], meta.getPrecision(i));
-      assertEquals(expectedScale[i-1], meta.getScale(i));
     }
   }
 
