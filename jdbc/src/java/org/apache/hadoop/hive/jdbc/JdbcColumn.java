@@ -62,7 +62,7 @@ public class JdbcColumn {
     return Utils.hiveTypeToSqlType(type);
   }
 
-  static int columnSize(int columnType) throws SQLException {
+  static int columnDisplaySize(int columnType) throws SQLException {
     // according to hiveTypeToSqlType possible options are:
     switch(columnType) {
     case Types.BOOLEAN:
@@ -110,8 +110,33 @@ public class JdbcColumn {
     }
   }
 
+  static int columnScale(int columnType) throws SQLException {
+    // according to hiveTypeToSqlType possible options are:
+    switch(columnType) {
+    case Types.BOOLEAN:
+    case Types.VARCHAR:
+    case Types.TINYINT:
+    case Types.SMALLINT:
+    case Types.INTEGER:
+    case Types.BIGINT:
+      return 0;
+    case Types.FLOAT:
+      return 7;
+    case Types.DOUBLE:
+      return 15;
+    default:
+      throw new SQLException("Invalid column type: " + columnType);
+    }
+  }
+
   public Integer getColumnSize() throws SQLException {
-    return columnSize(Utils.hiveTypeToSqlType(type));
+    int precision = columnPrecision(Utils.hiveTypeToSqlType(type));
+
+    return precision == 0 ? null : precision;
+  }
+
+  public Integer getDecimalDigits() throws SQLException {
+    return columnScale(Utils.hiveTypeToSqlType(type));
   }
 
   public Integer getNumPrecRadix() {
@@ -128,20 +153,6 @@ public class JdbcColumn {
     } else if (type.equalsIgnoreCase("double")) {
       return 2;
     } else { // anything else including boolean and string is null
-      return null;
-    }
-  }
-
-  public Integer getDecimalDigits() {
-    if (type.equalsIgnoreCase("tinyint")) {
-      return 0;
-    } else if (type.equalsIgnoreCase("smallint")) {
-      return 0;
-    } else if (type.equalsIgnoreCase("int")) {
-      return 0;
-    } else if (type.equalsIgnoreCase("bigint")) {
-      return 0;
-    } else { // anything else including float and double is null
       return null;
     }
   }

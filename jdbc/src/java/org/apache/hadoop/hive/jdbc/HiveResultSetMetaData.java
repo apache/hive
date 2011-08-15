@@ -54,7 +54,7 @@ public class HiveResultSetMetaData implements java.sql.ResultSetMetaData {
   public int getColumnDisplaySize(int column) throws SQLException {
     int columnType = getColumnType(column);
 
-    return JdbcColumn.columnSize(columnType);
+    return JdbcColumn.columnDisplaySize(columnType);
   }
 
   public String getColumnLabel(int column) throws SQLException {
@@ -131,22 +131,7 @@ public class HiveResultSetMetaData implements java.sql.ResultSetMetaData {
   public int getScale(int column) throws SQLException {
     int columnType = getColumnType(column);
 
-    // according to hiveTypeToSqlType possible options are:
-    switch(columnType) {
-    case Types.BOOLEAN:
-    case Types.VARCHAR:
-    case Types.TINYINT:
-    case Types.SMALLINT:
-    case Types.INTEGER:
-    case Types.BIGINT:
-      return 0;
-    case Types.FLOAT:
-      return 7;
-    case Types.DOUBLE:
-      return 15;
-    default:
-      throw new SQLException("Invalid column value: " + column);
-    }
+    return JdbcColumn.columnScale(columnType);
   }
 
   public String getSchemaName(int column) throws SQLException {
