@@ -461,6 +461,11 @@ public class HiveConf extends Configuration {
     HIVE_REWORK_MAPREDWORK("hive.rework.mapredwork", false),
     HIVE_CONCATENATE_CHECK_INDEX ("hive.exec.concatenate.check.index", true),
 
+    //prefix used to auto generated column aliases
+    HIVE_AUTOGEN_COLUMNALIAS_PREFIX_LABEL("hive.autogen.columnalias.prefix.label", "_c"),
+    HIVE_AUTOGEN_COLUMNALIAS_PREFIX_INCLUDEFUNCNAME(
+                               "hive.autogen.columnalias.prefix.includefuncname", false),
+
     // The class responsible for logging client side performance metrics
     // Must be a subclass of org.apache.hadoop.hive.ql.log.PerfLogger
     HIVE_PERF_LOGGER("hive.exec.perf.logger", "org.apache.hadoop.hive.ql.log.PerfLogger"),
