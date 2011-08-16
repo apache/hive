@@ -98,6 +98,7 @@ max
 min
 minute
 month
+named_struct
 negative
 ngrams
 not

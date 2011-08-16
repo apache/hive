@@ -21,6 +21,10 @@ package org.apache.hadoop.hive.ql.plan;
 import java.io.Serializable;
 
 import org.apache.hadoop.hive.serde.Constants;
+import org.apache.hadoop.hive.serde2.objectinspector.ConstantObjectInspector;
+import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector.PrimitiveCategory;
+import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorFactory;
+import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 
@@ -51,6 +55,19 @@ public class ExprNodeConstantDesc extends ExprNodeDesc implements Serializable {
   public Object getValue() {
     return value;
   }
+
+  @Override
+  public ConstantObjectInspector getWritableObjectInspector() {
+    PrimitiveCategory pc = ((PrimitiveTypeInfo)getTypeInfo())
+        .getPrimitiveCategory();
+    // Convert from Java to Writable
+    Object writableValue = PrimitiveObjectInspectorFactory
+        .getPrimitiveJavaObjectInspector(pc).getPrimitiveWritableObject(
+          getValue());
+    return PrimitiveObjectInspectorFactory
+        .getPrimitiveWritableConstantObjectInspector(pc, writableValue);
+  }
+
 
   @Override
   public String toString() {

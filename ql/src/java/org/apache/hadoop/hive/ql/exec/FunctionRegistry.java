@@ -165,6 +165,7 @@ import org.apache.hadoop.hive.ql.udf.generic.GenericUDFLocate;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFMap;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFMapKeys;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFMapValues;
+import org.apache.hadoop.hive.ql.udf.generic.GenericUDFNamedStruct;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPAnd;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPEqual;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPEqualOrGreaterThan;
@@ -410,6 +411,7 @@ public final class FunctionRegistry {
     registerGenericUDF("array", GenericUDFArray.class);
     registerGenericUDF("map", GenericUDFMap.class);
     registerGenericUDF("struct", GenericUDFStruct.class);
+    registerGenericUDF("named_struct", GenericUDFNamedStruct.class);
     registerGenericUDF("create_union", GenericUDFUnion.class);
 
     registerGenericUDF("case", GenericUDFCase.class);
