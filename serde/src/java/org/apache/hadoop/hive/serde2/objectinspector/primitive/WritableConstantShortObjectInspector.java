@@ -15,36 +15,29 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.apache.hadoop.hive.serde2.objectinspector.primitive;
 
-package org.apache.hadoop.hive.ql.exec;
-
-import org.apache.hadoop.hive.ql.metadata.HiveException;
-import org.apache.hadoop.hive.ql.plan.ExprNodeConstantDesc;
 import org.apache.hadoop.hive.serde2.objectinspector.ConstantObjectInspector;
-import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
+
+import org.apache.hadoop.hive.serde2.io.ShortWritable;
 
 /**
- * ExprNodeConstantEvaluator.
- *
+ * A WritableConstantShortObjectInspector is a WritableShortObjectInspector
+ * that implements ConstantObjectInspector.
  */
-public class ExprNodeConstantEvaluator extends ExprNodeEvaluator {
+public class WritableConstantShortObjectInspector extends
+    WritableShortObjectInspector implements
+    ConstantObjectInspector {
 
-  protected ExprNodeConstantDesc expr;
-  transient ConstantObjectInspector writableObjectInspector;
+  private ShortWritable value;
 
-  public ExprNodeConstantEvaluator(ExprNodeConstantDesc expr) {
-    this.expr = expr;
-    writableObjectInspector = expr.getWritableObjectInspector();
+  WritableConstantShortObjectInspector(ShortWritable value) {
+    super();
+    this.value = value;
   }
 
   @Override
-  public ObjectInspector initialize(ObjectInspector rowInspector) throws HiveException {
-    return writableObjectInspector;
+  public ShortWritable getWritableConstantValue() {
+    return value;
   }
-
-  @Override
-  public Object evaluate(Object row) throws HiveException {
-    return writableObjectInspector.getWritableConstantValue();
-  }
-
 }

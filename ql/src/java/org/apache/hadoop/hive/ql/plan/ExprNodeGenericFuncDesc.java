@@ -145,9 +145,7 @@ public class ExprNodeGenericFuncDesc extends ExprNodeDesc implements
       List<ExprNodeDesc> children) throws UDFArgumentException {
     ObjectInspector[] childrenOIs = new ObjectInspector[children.size()];
     for (int i = 0; i < childrenOIs.length; i++) {
-      childrenOIs[i] = TypeInfoUtils
-          .getStandardWritableObjectInspectorFromTypeInfo(children.get(i)
-          .getTypeInfo());
+      childrenOIs[i] = children.get(i).getWritableObjectInspector();
     }
 
     ObjectInspector oi = genericUDF.initialize(childrenOIs);
