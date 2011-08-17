@@ -210,9 +210,9 @@ public class CassandraTestSetup extends TestSetup {
       "key1".getBytes("utf-8"),
       timestamp);
 
-    //addSuperColumnToMutation(mutationList,
-    //  "key2".getBytes("utf-8"),
-    //  timestamp);
+    addSuperColumnToMutation(mutationList,
+      "key2".getBytes("utf-8"),
+      timestamp);
 
     map1.put(SUPERCF, mutationList);
 

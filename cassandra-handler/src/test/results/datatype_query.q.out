@@ -41,12 +41,12 @@ PREHOOK: query: --Skip uiniqueid as invalid characters will show up
 select row_key, countLong, countInt from cf_demo_TBL
 PREHOOK: type: QUERY
 PREHOOK: Input: default@cf_demo_tbl
-PREHOOK: Output: file:/var/folders/b-/b-vBB2wVHpaVQzxVjeViaE+++TI/-Tmp-/yeweizhang/hive_2011-07-14_16-40-50_946_5309435965820226004/-mr-10000
+PREHOOK: Output: file:/var/folders/1j/slkp1q2x5l396rl25rhlw8qw0000gn/T/yeweizhang/hive_2011-08-16_23-25-36_325_5238374836810972481/-mr-10000
 POSTHOOK: query: --Skip uiniqueid as invalid characters will show up
 select row_key, countLong, countInt from cf_demo_TBL
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@cf_demo_tbl
-POSTHOOK: Output: file:/var/folders/b-/b-vBB2wVHpaVQzxVjeViaE+++TI/-Tmp-/yeweizhang/hive_2011-07-14_16-40-50_946_5309435965820226004/-mr-10000
+POSTHOOK: Output: file:/var/folders/1j/slkp1q2x5l396rl25rhlw8qw0000gn/T/yeweizhang/hive_2011-08-16_23-25-36_325_5238374836810972481/-mr-10000
 rowKey1	1223456	234
 PREHOOK: query: --Test cassandra.cf.validatorType setting
 DROP TABLE cf_demo_TBL
@@ -98,11 +98,11 @@ POSTHOOK: Output: default@cf_demo_TBL
 PREHOOK: query: select row_key, uniqueid, countLong, countInt from cf_demo_TBL
 PREHOOK: type: QUERY
 PREHOOK: Input: default@cf_demo_tbl
-PREHOOK: Output: file:/var/folders/b-/b-vBB2wVHpaVQzxVjeViaE+++TI/-Tmp-/yeweizhang/hive_2011-07-14_16-41-00_673_5283741408296916761/-mr-10000
+PREHOOK: Output: file:/var/folders/1j/slkp1q2x5l396rl25rhlw8qw0000gn/T/yeweizhang/hive_2011-08-16_23-25-39_911_6082435943148896909/-mr-10000
 POSTHOOK: query: select row_key, uniqueid, countLong, countInt from cf_demo_TBL
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@cf_demo_tbl
-POSTHOOK: Output: file:/var/folders/b-/b-vBB2wVHpaVQzxVjeViaE+++TI/-Tmp-/yeweizhang/hive_2011-07-14_16-41-00_673_5283741408296916761/-mr-10000
+POSTHOOK: Output: file:/var/folders/1j/slkp1q2x5l396rl25rhlw8qw0000gn/T/yeweizhang/hive_2011-08-16_23-25-39_911_6082435943148896909/-mr-10000
 rowKey1	4fd1d3a0-a76d-11e0-0000-c6fa7f155dfe	1223456	234
 PREHOOK: query: --Test cassandra.cf.validatorType setting in different format
 DROP TABLE cf_demo_TBL
@@ -148,11 +148,11 @@ POSTHOOK: Output: default@cf_demo_TBL
 PREHOOK: query: select row_key, uniqueid, countLong, countInt from cf_demo_TBL
 PREHOOK: type: QUERY
 PREHOOK: Input: default@cf_demo_tbl
-PREHOOK: Output: file:/var/folders/b-/b-vBB2wVHpaVQzxVjeViaE+++TI/-Tmp-/yeweizhang/hive_2011-07-14_16-41-05_256_4760165522011430101/-mr-10000
+PREHOOK: Output: file:/var/folders/1j/slkp1q2x5l396rl25rhlw8qw0000gn/T/yeweizhang/hive_2011-08-16_23-25-46_205_1017936674975282246/-mr-10000
 POSTHOOK: query: select row_key, uniqueid, countLong, countInt from cf_demo_TBL
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@cf_demo_tbl
-POSTHOOK: Output: file:/var/folders/b-/b-vBB2wVHpaVQzxVjeViaE+++TI/-Tmp-/yeweizhang/hive_2011-07-14_16-41-05_256_4760165522011430101/-mr-10000
+POSTHOOK: Output: file:/var/folders/1j/slkp1q2x5l396rl25rhlw8qw0000gn/T/yeweizhang/hive_2011-08-16_23-25-46_205_1017936674975282246/-mr-10000
 726f774b657931	4fd1d3a0-a76d-11e0-0000-c6fa7f155dfe	000000000012ab20	234
 PREHOOK: query: --Test super column family
 DROP TABLE super_demo_TBL

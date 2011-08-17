@@ -155,6 +155,11 @@ public class HiveCassandraStandardColumnInputFormat extends
                 currentRecordIterator = recordReader.getCurrentValue().entrySet().iterator();
                 subcolumnIterator = null;
                 currentEntry = null;
+              } else {
+                //More sub columns for super columns.
+                if (subcolumnIterator != null && subcolumnIterator.hasNext()) {
+                  next = true;
+                }
               }
             } else {
               next = true;
@@ -166,6 +171,7 @@ public class HiveCassandraStandardColumnInputFormat extends
               Map.Entry<ByteBuffer, IColumn> entry = currentEntry;
               if (subcolumnIterator == null || !subcolumnIterator.hasNext()) {
                 entry = currentRecordIterator.next();
+                currentEntry = entry;
                 subcolumnIterator = null;
               }
 
