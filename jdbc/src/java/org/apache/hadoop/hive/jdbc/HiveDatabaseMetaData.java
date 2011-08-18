@@ -195,7 +195,7 @@ public class HiveDatabaseMetaData implements java.sql.DatabaseMetaData {
       List<String> tables = client.get_tables(catalog, "*");
       for (String table: tables) {
         if (table.matches(regtableNamePattern)) {
-          List<FieldSchema> fields = client.get_fields(catalog, table);
+          List<FieldSchema> fields = client.get_schema(catalog, table);
           int ordinalPos = 1;
           for (FieldSchema field: fields) {
             if (field.getName().matches(regcolumnNamePattern)) {
