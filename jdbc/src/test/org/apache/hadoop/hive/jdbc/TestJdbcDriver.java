@@ -50,6 +50,8 @@ public class TestJdbcDriver extends TestCase {
   private static final String viewName = "testHiveJdbcDriverView";
   private static final String viewComment = "Simple view";
   private static final String partitionedTableName = "testHiveJdbcDriverPartitionedTable";
+  private static final String partitionedColumnName = "partcolabc";
+  private static final String partitionedColumnValue = "20090619";
   private static final String partitionedTableComment = "Partitioned table";
   private static final String dataTypeTableName = "testDataTypeTable";
   private static final String dataTypeTableComment = "Table with many column data types";
@@ -117,13 +119,14 @@ public class TestJdbcDriver extends TestCase {
 
     res = stmt.executeQuery("create table " + partitionedTableName
         + " (under_col int, value string) comment '"+partitionedTableComment
-            +"' partitioned by (dt STRING)");
+            +"' partitioned by (" + partitionedColumnName + " STRING)");
     assertFalse(res.next());
 
     // load data
     res = stmt.executeQuery("load data local inpath '"
         + dataFilePath.toString() + "' into table " + partitionedTableName
-        + " PARTITION (dt='20090619')");
+        + " PARTITION (" + partitionedColumnName + "="
+        + partitionedColumnValue + ")");
     assertFalse(res.next());
 
     // drop table. ignore error.
@@ -383,6 +386,8 @@ public class TestJdbcDriver extends TestCase {
   }
 
   private void doTestSelectAll(String tableName, int maxRows, int fetchSize) throws Exception {
+    boolean isPartitionTable = tableName.equals(partitionedTableName);
+
     Statement stmt = con.createStatement();
     if (maxRows >= 0) {
       stmt.setMaxRows(maxRows);
@@ -411,10 +416,7 @@ public class TestJdbcDriver extends TestCase {
     int i = 0;
 
     ResultSetMetaData meta = res.getMetaData();
-    int expectedColCount = 2;
-    if (tableName.equals(partitionedTableName)) {
-      ++expectedColCount;
-    }
+    int expectedColCount = isPartitionTable ? 3 : 2;
     assertEquals(
       "Unexpected column count", expectedColCount, meta.getColumnCount());
 
@@ -425,6 +427,10 @@ public class TestJdbcDriver extends TestCase {
         assertEquals(res.getInt(1), res.getInt("under_col"));
         assertEquals(res.getString(1), res.getString("under_col"));
         assertEquals(res.getString(2), res.getString("value"));
+        if (isPartitionTable) {
+          assertEquals(res.getString(3), partitionedColumnValue);
+          assertEquals(res.getString(3), res.getString(partitionedColumnName));
+        }
         assertFalse("Last result value was not null", res.wasNull());
         assertNull("No warnings should be found on ResultSet", res
             .getWarnings());
@@ -630,7 +636,7 @@ public class TestJdbcDriver extends TestCase {
   public void testMetaDataGetColumns() throws SQLException {
     Map<String[], Integer> tests = new HashMap<String[], Integer>();
     tests.put(new String[]{"testhivejdbcdriver\\_table", null}, 2);
-    tests.put(new String[]{"testhivejdbc%", null}, 6);
+    tests.put(new String[]{"testhivejdbc%", null}, 7);
     tests.put(new String[]{"%jdbcdriver\\_table", null}, 2);
     tests.put(new String[]{"%jdbcdriver\\_table%", "under\\_col"}, 1);
     tests.put(new String[]{"%jdbcdriver\\_table%", "under\\_co_"}, 1);
