@@ -28,5 +28,6 @@
           <artifact name="hadoop" type="source" ext="tar.gz"/>
         </dependency>
         <dependency org="commons-cli" name="commons-cli" rev="${commons-cli.version}"/>
+        <dependency org="org.mockito" name="mockito-all" rev="${mockito-all.version}" />
     </dependencies>
 </ivy-module>

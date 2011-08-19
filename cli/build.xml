@@ -41,8 +41,4 @@ to call at top-level: ant deploy-contrib compile-core-test
     </javac>
   </target>
 
-  <target name="test">
-    <echo message="Nothing to do!"/>
-  </target>
-
 </project>
