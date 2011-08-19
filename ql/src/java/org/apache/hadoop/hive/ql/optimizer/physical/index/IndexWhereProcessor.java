@@ -31,6 +31,9 @@ import java.util.Stack;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.fs.ContentSummary;
+import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.fs.FileSystem;
+import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.hive.metastore.api.Index;
 import org.apache.hadoop.hive.ql.exec.FilterOperator;
 import org.apache.hadoop.hive.ql.exec.MapRedTask;
@@ -68,10 +71,12 @@ public class IndexWhereProcessor implements NodeProcessor {
 
   private static final Log LOG = LogFactory.getLog(IndexWhereProcessor.class.getName());
   private final Map<Table, List<Index>> indexes;
+  private Map<Index, Table> indexToIndexTable;
 
   public IndexWhereProcessor(Map<Table, List<Index>> indexes) {
     super();
     this.indexes = indexes;
+    this.indexToIndexTable = new HashMap<Index, Table>();
   }
 
   @Override
@@ -243,12 +248,29 @@ public class IndexWhereProcessor implements NodeProcessor {
 
     for (Partition part : queryPartitions) {
       List<Table> sourceIndexTables = getIndexTables(hive, part);
-      if (!containsPartition(hive, sourceIndexTables, part)) {
+      if (!containsPartition(hive, part)) {
         return null; // problem if it doesn't contain the partition
       }
     }
 
     return queryPartitions;
+  }
+
+  /**
+   * return index tables associated with a given base table
+   */
+  private List<Table> getIndexTables(Hive hive, Table table) throws
+    HiveException {
+    List<Table> indexTables = new ArrayList<Table>();
+    if (indexes == null || indexes.get(table) == null) {
+      return indexTables;
+    }
+    for (Index index : indexes.get(table)) {
+      Table indexTable = hive.getTable(index.getIndexTableName());
+      indexToIndexTable.put(index, indexTable);
+      indexTables.add(indexTable);
+    }
+    return indexTables;
   }
 
   /**
@@ -261,32 +283,99 @@ public class IndexWhereProcessor implements NodeProcessor {
       return indexTables;
     }
     for (Index index : indexes.get(partitionedTable)) {
-      indexTables.add(hive.getTable(index.getIndexTableName()));
+      Table indexTable = hive.getTable(index.getIndexTableName());
+      indexToIndexTable.put(index, indexTable);
+      indexTables.add(indexTable);
     }
     return indexTables;
   }
 
   /**
-   * check that every index table contains the given partition
+   * check that every index table contains the given partition and is fresh
    */
-  private boolean containsPartition(Hive hive, List<Table> indexTables, Partition part)
+  private boolean containsPartition(Hive hive, Partition part)
     throws HiveException {
     HashMap<String, String> partSpec = part.getSpec();
 
-    if (partSpec.isEmpty()) {
-      return true; // empty specs come from non-partitioned tables
-    }
-
-    if (indexTables == null || indexTables.size() == 0) {
+    if (indexes == null || indexes.get(part.getTable()) == null) {
       return false;
     }
 
-    for (Table indexTable : indexTables) {
+    if (partSpec.isEmpty()) {
+      // empty specs come from non-partitioned tables
+      return isIndexTableFresh(hive, indexes.get(part.getTable()), part.getTable());
+    }
+
+    for (Index index : indexes.get(part.getTable())) {
+      Table indexTable = indexToIndexTable.get(index);
       // get partitions that match the spec
       List<Partition> matchingPartitions = hive.getPartitions(indexTable, partSpec);
       if (matchingPartitions == null || matchingPartitions.size() == 0) {
         LOG.info("Index table " + indexTable + "did not contain built partition that matched " + partSpec);
         return false;
+      } else if (!isIndexPartitionFresh(hive, index, part)) {
+        return false;
+      }
+    }
+    return true;
+  }
+
+  /**
+   * Check the index partitions on a parttioned table exist and are fresh
+   */
+  private boolean isIndexPartitionFresh(Hive hive, Index index,
+      Partition part) throws HiveException {
+    LOG.info("checking index staleness...");
+    try {
+      FileSystem partFs = part.getPartitionPath().getFileSystem(hive.getConf());
+      FileStatus partFss = partFs.getFileStatus(part.getPartitionPath());
+      String ts = index.getParameters().get(part.getSpec().toString());
+      if (ts == null) {
+        return false;
+      }
+      long indexTs = Long.parseLong(ts);
+      LOG.info(partFss.getModificationTime());
+      LOG.info(ts);
+      if (partFss.getModificationTime() > indexTs) {
+        LOG.info("index is stale on the partitions that matched " + part.getSpec());
+        return false;
+      }
+    } catch (IOException e) {
+      LOG.info("failed to grab timestamp info");
+      throw new HiveException(e);
+    }
+    return true;
+  }
+
+  /**
+   * Check that the indexes on the unpartioned table exist and are fresh
+   */
+  private boolean isIndexTableFresh(Hive hive, List<Index> indexes, Table src)
+    throws HiveException {
+    //check that they exist
+    if (indexes == null || indexes.size() == 0) {
+      return false;
+    }
+    //check that they are not stale
+    for (Index index : indexes) {
+      LOG.info("checking index staleness...");
+      try {
+        FileSystem srcFs = src.getPath().getFileSystem(hive.getConf());
+        FileStatus srcFss= srcFs.getFileStatus(src.getPath());
+        String ts = index.getParameters().get("base_timestamp");
+        if (ts == null) {
+          return false;
+        }
+        long indexTs = Long.parseLong(ts);
+        LOG.info(srcFss.getModificationTime());
+        LOG.info(ts);
+        if (srcFss.getModificationTime() > indexTs) {
+          LOG.info("index is stale ");
+          return false;
+        }
+      } catch (IOException e) {
+        LOG.info("failed to grab timestamp info");
+        throw new HiveException(e);
       }
     }
     return true;
