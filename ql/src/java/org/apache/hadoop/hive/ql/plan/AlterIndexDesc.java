@@ -20,7 +20,7 @@ package org.apache.hadoop.hive.ql.plan;
 
 import java.io.Serializable;
 import java.util.ArrayList;
-import java.util.HashMap;
+import java.util.Map;
 import java.util.List;
 
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
@@ -37,7 +37,7 @@ public class AlterIndexDesc extends DDLDesc implements Serializable {
   private String indexName;
   private String baseTable;
   private String dbName;
-  private HashMap<String, String> props;
+  private Map<String, String> props;
 
   /**
    * alterIndexTypes.
@@ -121,7 +121,7 @@ public class AlterIndexDesc extends DDLDesc implements Serializable {
    * @return the props
    */
   @Explain(displayName = "properties")
-  public HashMap<String, String> getProps() {
+  public Map<String, String> getProps() {
     return props;
   }
 
@@ -129,7 +129,7 @@ public class AlterIndexDesc extends DDLDesc implements Serializable {
    * @param props
    *          the props to set
    */
-  public void setProps(HashMap<String, String> props) {
+  public void setProps(Map<String, String> props) {
     this.props = props;
   }
 }
