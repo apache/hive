@@ -27,7 +27,7 @@ STAGE PLANS:
   Stage: Stage-1
     Map Reduce
       Alias -> Map Operator Tree:
-        src
+        src 
           TableScan
             alias: src
             Select Operator
