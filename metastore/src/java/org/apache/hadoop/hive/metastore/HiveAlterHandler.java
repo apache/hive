@@ -193,7 +193,6 @@ public class HiveAlterHandler implements AlterHandler {
     } finally {
       if (!success) {
         msdb.rollbackTransaction();
-        throw new MetaException("Committing the alter table transaction was not successful.");
       }
       if (success && moveData) {
         // change the file name in hdfs
@@ -219,6 +218,9 @@ public class HiveAlterHandler implements AlterHandler {
               + srcPath + " for table " + dbname + "." + name);
         }
       }
+    }
+    if (!success) {
+      throw new MetaException("Committing the alter table transaction was not successful.");
     }
   }
 
