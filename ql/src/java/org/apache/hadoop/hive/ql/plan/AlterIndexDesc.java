@@ -37,6 +37,7 @@ public class AlterIndexDesc extends DDLDesc implements Serializable {
   private String indexName;
   private String baseTable;
   private String dbName;
+  private Map<String, String> partSpec; // partition specification of partitions touched
   private Map<String, String> props;
 
   /**
@@ -44,6 +45,7 @@ public class AlterIndexDesc extends DDLDesc implements Serializable {
    *
    */
   public static enum AlterIndexTypes {
+    UPDATETIMESTAMP,
     ADDPROPS};
 
   AlterIndexTypes op;
@@ -85,6 +87,21 @@ public class AlterIndexDesc extends DDLDesc implements Serializable {
    */
   public void setBaseTableName(String baseTable) {
     this.baseTable = baseTable;
+  }
+
+  /**
+   * @return the partition spec
+   */
+  public Map<String, String> getSpec() {
+    return partSpec;
+  }
+
+  /**
+   * @param partSpec
+   *          the partition spec to set
+   */
+  public void setSpec(Map<String, String> partSpec) {
+    this.partSpec = partSpec;
   }
 
   /**
