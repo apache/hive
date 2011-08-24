@@ -328,24 +328,26 @@ public class RCFile {
           return loadedColumnsValueBuffer[index].getData();
         }
 
-        NonSyncDataOutputBuffer compressedData = loadedColumnsValueBuffer[index];
-        NonSyncDataOutputBuffer decompressedData = new NonSyncDataOutputBuffer();
+        NonSyncDataOutputBuffer compressedData = compressedColumnsValueBuffer[index];
         decompressBuffer.reset();
         DataInputStream valueIn = new DataInputStream(deflatFilter);
         deflatFilter.resetState();
         decompressBuffer.reset(compressedData.getData(),
             keyBuffer.eachColumnValueLen[colIndex]);
-        decompressedData.write(valueIn,
+
+        NonSyncDataOutputBuffer decompressedColBuf = loadedColumnsValueBuffer[index];
+        decompressedColBuf.reset();
+        decompressedColBuf.write(valueIn,
             keyBuffer.eachColumnUncompressedValueLen[colIndex]);
-        loadedColumnsValueBuffer[index] = decompressedData;
         decompressedFlag[index] = true;
         numCompressed--;
-        return decompressedData.getData();
+        return decompressedColBuf.getData();
       }
     }
 
     // used to load columns' value into memory
     private NonSyncDataOutputBuffer[] loadedColumnsValueBuffer = null;
+    private NonSyncDataOutputBuffer[] compressedColumnsValueBuffer = null;
     private boolean[] decompressedFlag = null;
     private int numCompressed;
     private LazyDecompressionCallbackImpl[] lazyDecompressCallbackObjs = null;
@@ -405,6 +407,8 @@ public class RCFile {
       decompressedFlag = new boolean[columnNumber - skipped];
       lazyDecompressCallbackObjs = new LazyDecompressionCallbackImpl[columnNumber
           - skipped];
+      compressedColumnsValueBuffer = new NonSyncDataOutputBuffer[columnNumber
+                                                                 - skipped];
       this.codec = codec;
       if (codec != null) {
         valDecompressor = CodecPool.getDecompressor(codec);
@@ -425,6 +429,7 @@ public class RCFile {
           decompressedFlag[readIndex] = false;
           lazyDecompressCallbackObjs[readIndex] = new LazyDecompressionCallbackImpl(
               readIndex, k);
+          compressedColumnsValueBuffer[readIndex] = new NonSyncDataOutputBuffer();
         } else {
           decompressedFlag[readIndex] = true;
         }
@@ -454,7 +459,13 @@ public class RCFile {
           skipTotal = 0;
         }
 
-        NonSyncDataOutputBuffer valBuf = loadedColumnsValueBuffer[addIndex];
+        NonSyncDataOutputBuffer valBuf;
+        if (codec != null){
+           // load into compressed buf first
+          valBuf = compressedColumnsValueBuffer[addIndex];
+        } else {
+          valBuf = loadedColumnsValueBuffer[addIndex];
+        }
         valBuf.reset();
         valBuf.write(in, vaRowsLen);
         if (codec != null) {
