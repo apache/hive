@@ -6857,7 +6857,20 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         Task<MoveWork> tsk = TaskFactory.get(new MoveWork(null, null, ltd, null, false),
             conf);
         mvTask.add(tsk);
+        // Check to see if we are stale'ing any indexes and auto-update them if we want
+        if (HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVEINDEXAUTOUPDATE)) {
+          IndexUpdater indexUpdater = new IndexUpdater(loadTableWork, getInputs(), conf);
+          try {
+            List<Task<? extends Serializable>> indexUpdateTasks = indexUpdater.generateUpdateTasks();
+            for (Task<? extends Serializable> updateTask : indexUpdateTasks) {
+              tsk.addDependentTask(updateTask);
+            }
+          } catch (HiveException e) {
+            console.printInfo("WARNING: could not auto-update stale indexes, indexes are not in of sync");
+          }
+        }
       }
+
 
       boolean oneLoadFile = true;
       for (LoadFileDesc lfd : loadFileWork) {

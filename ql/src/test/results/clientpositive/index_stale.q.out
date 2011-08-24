@@ -111,11 +111,11 @@ STAGE PLANS:
 PREHOOK: query: SELECT * FROM temp WHERE key  = 86
 PREHOOK: type: QUERY
 PREHOOK: Input: default@temp
-PREHOOK: Output: file:/var/folders/5V/5V4Zq77qGD4aSK9m8V3frVsFdRU/-Tmp-/salbiz/hive_2011-08-18_03-05-26_984_9114308663658944615/-mr-10000
+PREHOOK: Output: file:/var/folders/5V/5V4Zq77qGD4aSK9m8V3frVsFdRU/-Tmp-/salbiz/hive_2011-08-19_11-59-43_705_6075260497976129969/-mr-10000
 POSTHOOK: query: SELECT * FROM temp WHERE key  = 86
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@temp
-POSTHOOK: Output: file:/var/folders/5V/5V4Zq77qGD4aSK9m8V3frVsFdRU/-Tmp-/salbiz/hive_2011-08-18_03-05-26_984_9114308663658944615/-mr-10000
+POSTHOOK: Output: file:/var/folders/5V/5V4Zq77qGD4aSK9m8V3frVsFdRU/-Tmp-/salbiz/hive_2011-08-19_11-59-43_705_6075260497976129969/-mr-10000
 POSTHOOK: Lineage: default__temp_temp_index__._bucketname SIMPLE [(temp)temp.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
 POSTHOOK: Lineage: default__temp_temp_index__._offsets EXPRESSION [(temp)temp.FieldSchema(name:BLOCK__OFFSET__INSIDE__FILE, type:bigint, comment:), ]
 POSTHOOK: Lineage: default__temp_temp_index__.key SIMPLE [(temp)temp.FieldSchema(name:key, type:string, comment:null), ]

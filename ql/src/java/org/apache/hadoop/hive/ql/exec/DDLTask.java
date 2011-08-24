@@ -37,6 +37,7 @@ import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.HashMap;
 import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
@@ -828,11 +829,52 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
     String indexName = alterIndex.getIndexName();
     Index idx = db.getIndex(dbName, baseTableName, indexName);
 
-    if (alterIndex.getOp() == AlterIndexDesc.AlterIndexTypes.ADDPROPS) {
-      idx.getParameters().putAll(alterIndex.getProps());
-    } else {
-      console.printError("Unsupported Alter commnad");
-      return 1;
+    switch(alterIndex.getOp()) {
+      case ADDPROPS: 
+        idx.getParameters().putAll(alterIndex.getProps());
+        break;
+      case UPDATETIMESTAMP:
+        try {
+          Map<String, String> props = new HashMap<String, String>();
+          Map<Map<String, String>, Long> basePartTs = new HashMap<Map<String, String>, Long>();
+          Table baseTbl = db.getTable(db.getCurrentDatabase(), baseTableName);
+          if (baseTbl.isPartitioned()) {
+            List<Partition> baseParts;
+            if (alterIndex.getSpec() != null) {
+              baseParts = db.getPartitions(baseTbl, alterIndex.getSpec());
+            } else {
+              baseParts = db.getPartitions(baseTbl);
+            }
+            if (baseParts != null) {
+              for (Partition p : baseParts) {
+                FileSystem fs = p.getPartitionPath().getFileSystem(db.getConf());
+                FileStatus fss = fs.getFileStatus(p.getPartitionPath());
+                basePartTs.put(p.getSpec(), fss.getModificationTime());
+              }
+            }
+          } else {
+            FileSystem fs = baseTbl.getPath().getFileSystem(db.getConf());
+            FileStatus fss = fs.getFileStatus(baseTbl.getPath());
+            basePartTs.put(null, fss.getModificationTime());
+          }
+          for (Map<String, String> spec : basePartTs.keySet()) {
+            if (spec != null) {
+              props.put(spec.toString(), basePartTs.get(spec).toString());
+            } else {
+              props.put("base_timestamp", basePartTs.get(null).toString());
+            }
+          }
+          idx.getParameters().putAll(props);
+        } catch (HiveException e) {
+          throw new HiveException("ERROR: Failed to update index timestamps");
+        } catch (IOException e) {
+          throw new HiveException("ERROR: Failed to look up timestamps on filesystem");
+        }
+
+        break;
+      default:
+        console.printError("Unsupported Alter commnad");
+        return 1;
     }
 
     // set last modified by properties

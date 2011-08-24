@@ -271,5 +271,21 @@ public class LoadSemanticAnalyzer extends BaseSemanticAnalyzer {
     }
 
     rootTasks.add(rTask);
+    if (HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVEINDEXAUTOUPDATE)) {
+      IndexUpdater indexUpdater = new IndexUpdater(loadTableWork, getInputs(), conf);
+      try {
+        List<Task<? extends Serializable>> indexUpdateTasks = indexUpdater.generateUpdateTasks();
+        for (Task<? extends Serializable> updateTask : indexUpdateTasks) {
+          //LOAD DATA will either have a copy & move or just a move, we always want the update to be dependent on the move
+          if (rTask.getChildren() == null || rTask.getChildren().size() == 0) {
+            rTask.addDependentTask(updateTask);
+          } else {
+            ((Task<? extends Serializable>)rTask.getChildren().get(0)).addDependentTask(updateTask);
+          }
+        }
+      } catch (HiveException e) {
+        console.printInfo("WARNING: could not auto-update stale indexes, indexes are not out of sync");
+      }
+    }
   }
 }
