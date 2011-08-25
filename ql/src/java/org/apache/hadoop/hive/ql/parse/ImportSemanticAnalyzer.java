@@ -309,7 +309,8 @@ public class ImportSemanticAnalyzer extends BaseSemanticAnalyzer {
               Warehouse.makePartPath(addPartitionDesc.getPartSpec()));
         }
       } else {
-        tgtPath = new Path(tblDesc.getLocation());
+        tgtPath = new Path(tblDesc.getLocation(),
+            Warehouse.makePartPath(addPartitionDesc.getPartSpec()));
       }
       checkTargetLocationEmpty(fs, tgtPath);
       addPartitionDesc.setLocation(tgtPath.toString());
