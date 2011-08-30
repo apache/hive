@@ -5413,16 +5413,21 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     ArrayList<ColumnInfo> columns = inputRR.getColumnInfos();
     ArrayList<ExprNodeDesc> colList = new ArrayList<ExprNodeDesc>();
     ArrayList<String> columnNames = new ArrayList<String>();
+    Map<String, ExprNodeDesc> columnExprMap =
+        new HashMap<String, ExprNodeDesc>();
     for (int i = 0; i < columns.size(); i++) {
       ColumnInfo col = columns.get(i);
       colList.add(new ExprNodeColumnDesc(col.getType(), col.getInternalName(),
           col.getTabAlias(), col.getIsVirtualCol()));
       columnNames.add(col.getInternalName());
+      columnExprMap.put(col.getInternalName(),
+          new ExprNodeColumnDesc(col.getType(), col.getInternalName(),
+              col.getTabAlias(), col.getIsVirtualCol()));
     }
     Operator output = putOpInsertMap(OperatorFactory.getAndMakeChild(
         new SelectDesc(colList, columnNames, true), new RowSchema(inputRR
         .getColumnInfos()), input), inputRR);
-    output.setColumnExprMap(input.getColumnExprMap());
+    output.setColumnExprMap(columnExprMap);
     return output;
   }
 
