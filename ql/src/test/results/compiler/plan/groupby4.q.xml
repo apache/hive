@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?> 
-<java version="1.6.0_07" class="java.beans.XMLDecoder"> 
+<java version="1.6.0_24" class="java.beans.XMLDecoder"> 
  <object class="org.apache.hadoop.hive.ql.exec.MapRedTask"> 
   <void property="id"> 
    <string>Stage-3</string> 
@@ -62,11 +62,11 @@
          </void> 
          <void method="put"> 
           <string>location</string> 
-          <string>pfile:/data/users/sdong/www/open-source-hive1/build/ql/test/data/warehouse/src</string> 
+          <string>pfile:/data/users/charleschen/hivetests/ht08302011-131137/61/build/ql/test/data/warehouse/src</string> 
          </void> 
          <void method="put"> 
           <string>transient_lastDdlTime</string> 
-          <string>1304060000</string> 
+          <string>1314735825</string> 
          </void> 
         </object> 
        </void> 
@@ -124,11 +124,11 @@
            </void> 
            <void method="put"> 
             <string>location</string> 
-            <string>pfile:/data/users/sdong/www/open-source-hive1/build/ql/test/data/warehouse/src</string> 
+            <string>pfile:/data/users/charleschen/hivetests/ht08302011-131137/61/build/ql/test/data/warehouse/src</string> 
            </void> 
            <void method="put"> 
             <string>transient_lastDdlTime</string> 
-            <string>1304060000</string> 
+            <string>1314735825</string> 
            </void> 
           </object> 
          </void> 
@@ -470,6 +470,76 @@
               </void> 
              </object> 
             </void> 
+            <void property="columnExprMap"> 
+             <object class="java.util.HashMap"> 
+              <void method="put"> 
+               <string>BLOCK__OFFSET__INSIDE__FILE</string> 
+               <object class="org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc"> 
+                <void property="column"> 
+                 <string>BLOCK__OFFSET__INSIDE__FILE</string> 
+                </void> 
+                <void property="isPartitionColOrVirtualCol"> 
+                 <boolean>true</boolean> 
+                </void> 
+                <void property="tabAlias"> 
+                 <string>src</string> 
+                </void> 
+                <void property="typeInfo"> 
+                 <object id="PrimitiveTypeInfo2" class="org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo"> 
+                  <void property="typeName"> 
+                   <string>bigint</string> 
+                  </void> 
+                 </object> 
+                </void> 
+               </object> 
+              </void> 
+              <void method="put"> 
+               <string>INPUT__FILE__NAME</string> 
+               <object class="org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc"> 
+                <void property="column"> 
+                 <string>INPUT__FILE__NAME</string> 
+                </void> 
+                <void property="isPartitionColOrVirtualCol"> 
+                 <boolean>true</boolean> 
+                </void> 
+                <void property="tabAlias"> 
+                 <string>src</string> 
+                </void> 
+                <void property="typeInfo"> 
+                 <object idref="PrimitiveTypeInfo0"/> 
+                </void> 
+               </object> 
+              </void> 
+              <void method="put"> 
+               <string>value</string> 
+               <object class="org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc"> 
+                <void property="column"> 
+                 <string>value</string> 
+                </void> 
+                <void property="tabAlias"> 
+                 <string>src</string> 
+                </void> 
+                <void property="typeInfo"> 
+                 <object idref="PrimitiveTypeInfo0"/> 
+                </void> 
+               </object> 
+              </void> 
+              <void method="put"> 
+               <string>key</string> 
+               <object class="org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc"> 
+                <void property="column"> 
+                 <string>key</string> 
+                </void> 
+                <void property="tabAlias"> 
+                 <string>src</string> 
+                </void> 
+                <void property="typeInfo"> 
+                 <object idref="PrimitiveTypeInfo0"/> 
+                </void> 
+               </object> 
+              </void> 
+             </object> 
+            </void> 
             <void property="conf"> 
              <object class="org.apache.hadoop.hive.ql.plan.SelectDesc"> 
               <void property="colList"> 
@@ -620,11 +690,7 @@
                <string>src</string> 
               </void> 
               <void property="type"> 
-               <object class="org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo"> 
-                <void property="typeName"> 
-                 <string>bigint</string> 
-                </void> 
-               </object> 
+               <object idref="PrimitiveTypeInfo2"/> 
               </void> 
              </object> 
             </void> 
@@ -664,7 +730,7 @@
     <void property="pathToAliases"> 
      <object class="java.util.LinkedHashMap"> 
       <void method="put"> 
-       <string>pfile:/data/users/sdong/www/open-source-hive1/build/ql/test/data/warehouse/src</string> 
+       <string>pfile:/data/users/charleschen/hivetests/ht08302011-131137/61/build/ql/test/data/warehouse/src</string> 
        <object class="java.util.ArrayList"> 
         <void method="add"> 
          <string>src</string> 
@@ -676,7 +742,7 @@
     <void property="pathToPartitionInfo"> 
      <object class="java.util.LinkedHashMap"> 
       <void method="put"> 
-       <string>pfile:/data/users/sdong/www/open-source-hive1/build/ql/test/data/warehouse/src</string> 
+       <string>pfile:/data/users/charleschen/hivetests/ht08302011-131137/61/build/ql/test/data/warehouse/src</string> 
        <object class="org.apache.hadoop.hive.ql.plan.PartitionDesc"> 
         <void property="baseFileName"> 
          <string>src</string> 
@@ -733,11 +799,11 @@
           </void> 
           <void method="put"> 
            <string>location</string> 
-           <string>pfile:/data/users/sdong/www/open-source-hive1/build/ql/test/data/warehouse/src</string> 
+           <string>pfile:/data/users/charleschen/hivetests/ht08302011-131137/61/build/ql/test/data/warehouse/src</string> 
           </void> 
           <void method="put"> 
            <string>transient_lastDdlTime</string> 
-           <string>1304060000</string> 
+           <string>1314735825</string> 
           </void> 
          </object> 
         </void> 
@@ -795,11 +861,11 @@
             </void> 
             <void method="put"> 
              <string>location</string> 
-             <string>pfile:/data/users/sdong/www/open-source-hive1/build/ql/test/data/warehouse/src</string> 
+             <string>pfile:/data/users/charleschen/hivetests/ht08302011-131137/61/build/ql/test/data/warehouse/src</string> 
             </void> 
             <void method="put"> 
              <string>transient_lastDdlTime</string> 
-             <string>1304060000</string> 
+             <string>1314735825</string> 
             </void> 
            </object> 
           </void> 
@@ -825,13 +891,13 @@
               <void property="conf"> 
                <object class="org.apache.hadoop.hive.ql.plan.FileSinkDesc"> 
                 <void property="dirName"> 
-                 <string>file:/tmp/sdong/hive_2011-04-28_23-53-22_783_4211806616452121435/-ext-10001</string> 
+                 <string>file:/tmp/charleschen/hive_2011-08-30_13-23-46_919_8273996101542787867/-ext-10001</string> 
                 </void> 
                 <void property="numFiles"> 
                  <int>1</int> 
                 </void> 
                 <void property="statsAggPrefix"> 
-                 <string>file:/tmp/sdong/hive_2011-04-28_23-53-22_783_4211806616452121435/-ext-10001/</string> 
+                 <string>file:/tmp/charleschen/hive_2011-08-30_13-23-46_919_8273996101542787867/-ext-10001/</string> 
                 </void> 
                 <void property="tableInfo"> 
                  <object class="org.apache.hadoop.hive.ql.plan.TableDesc"> 
