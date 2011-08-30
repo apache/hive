@@ -58,6 +58,12 @@
 </property>
 
 <property>
+  <name>hive.cli.print.current.db</name>
+  <value>false</value>
+  <description>Whether to include the current database in the hive prompt.</description>
+</property>
+
+<property>
   <name>hive.exec.scratchdir</name>
   <value>/tmp/hive-${user.name}</value>
   <description>Scratch space for Hive jobs</description>

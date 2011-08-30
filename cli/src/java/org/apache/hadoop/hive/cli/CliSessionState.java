@@ -23,6 +23,8 @@ import java.util.List;
 import java.util.Properties;
 
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.ql.metadata.Hive;
+import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.service.HiveClient;
 import org.apache.thrift.TException;
@@ -67,6 +69,8 @@ public class CliSessionState extends SessionState {
 
   private TTransport transport;
   private HiveClient client;
+
+  private Hive hive; // currently only used (and init'ed) in getCurrentDbName
 
   public CliSessionState() {
     super();
@@ -118,5 +122,20 @@ public class CliSessionState extends SessionState {
 
   public HiveClient getClient() {
     return client;
+  }
+
+  /**
+   * Return the name of the current database
+   * @return the name of the current database or, if an error, null
+   */
+  public String getCurrentDbName() {
+    if (hive == null) {
+      try {
+        hive = Hive.get(conf);
+      } catch (HiveException e) {
+        return null;
+      }
+    }
+    return hive.getCurrentDatabase();
   }
 }
