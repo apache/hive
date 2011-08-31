@@ -23,9 +23,9 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 import java.util.Stack;
-import java.util.Map.Entry;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -43,7 +43,6 @@ import org.apache.hadoop.hive.ql.lib.NodeProcessor;
 import org.apache.hadoop.hive.ql.lib.NodeProcessorCtx;
 import org.apache.hadoop.hive.ql.metadata.HiveStorageHandler;
 import org.apache.hadoop.hive.ql.metadata.HiveStoragePredicateHandler;
-import org.apache.hadoop.hive.ql.metadata.HiveUtils;
 import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.parse.OpParseContext;
 import org.apache.hadoop.hive.ql.parse.RowResolver;
@@ -222,14 +221,49 @@ public final class OpProcFactory {
       OpWalkerInfo owi = (OpWalkerInfo) procCtx;
       Set<String> aliases = getQualifiedAliases((JoinOperator) nd, owi
           .getRowResolver(nd));
-      boolean hasUnpushedPredicates = mergeWithChildrenPred(nd, owi, null, aliases, false);
-      if (HiveConf.getBoolVar(owi.getParseContext().getConf(),
-          HiveConf.ConfVars.HIVEPPDREMOVEDUPLICATEFILTERS)) {
-        if (hasUnpushedPredicates) {
-          aliases = null;
+      // we pass null for aliases here because mergeWithChildrenPred filters
+      // aliases in the children node context and we need to filter them in
+      // the current JoinOperator's context
+      boolean hasUnpushedPredicates =
+          mergeWithChildrenPred(nd, owi, null, null, false);
+      ExprWalkerInfo prunePreds =
+          owi.getPrunedPreds((Operator<? extends Serializable>) nd);
+      if (prunePreds != null) {
+        Set<String> toRemove = new HashSet<String>();
+        // we don't push down any expressions that refer to aliases that can;t
+        // be pushed down per getQualifiedAliases
+        for (String key : prunePreds.getFinalCandidates().keySet()) {
+          if (!aliases.contains(key)) {
+            toRemove.add(key);
+          }
         }
-        ExprWalkerInfo unpushedPreds = mergeChildrenPred(nd, owi, aliases, false);
-        return createFilter((Operator)nd, unpushedPreds, owi);
+        for (String alias : toRemove) {
+          for (ExprNodeDesc expr :
+            prunePreds.getFinalCandidates().get(alias)) {
+            // add expr to the list of predicates rejected from further pushing
+            // so that we know to add it in createFilter()
+            prunePreds.addAlias(expr, alias);
+            prunePreds.addNonFinalCandidate(expr);
+          }
+          prunePreds.getFinalCandidates().remove(alias);
+        }
+        if (HiveConf.getBoolVar(owi.getParseContext().getConf(),
+            HiveConf.ConfVars.HIVEPPDREMOVEDUPLICATEFILTERS)) {
+          // Here, we add all the "non-final candidiates", ie. the predicates
+          // rejected from pushdown through this operator to unpushedPreds
+          // and pass it to createFilter
+          ExprWalkerInfo unpushedPreds = new ExprWalkerInfo();
+          for (Entry<String, List<ExprNodeDesc>> entry :
+            prunePreds.getNonFinalCandidates().entrySet()) {
+            for (ExprNodeDesc expr : entry.getValue()) {
+              assert prunePreds.getNewToOldExprMap().containsKey(expr);
+              ExprNodeDesc oldExpr = prunePreds.getNewToOldExprMap().get(expr);
+              unpushedPreds.addAlias(oldExpr, entry.getKey());
+              unpushedPreds.addFinalCandidate(oldExpr);
+            }
+          }
+          return createFilter((Operator)nd, unpushedPreds, owi);
+        }
       }
       return null;
     }
