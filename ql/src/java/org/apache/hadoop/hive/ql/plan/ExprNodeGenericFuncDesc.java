@@ -22,13 +22,22 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.exec.FunctionRegistry;
 import org.apache.hadoop.hive.ql.exec.UDFArgumentException;
 import org.apache.hadoop.hive.ql.exec.Utilities;
+import org.apache.hadoop.hive.ql.parse.ErrorMsg;
+import org.apache.hadoop.hive.ql.session.SessionState;
+import org.apache.hadoop.hive.ql.session.SessionState.LogHelper;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDF;
+import org.apache.hadoop.hive.ql.udf.generic.GenericUDFBaseCompare;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFBridge;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
+import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
 
 /**
@@ -39,9 +48,12 @@ public class ExprNodeGenericFuncDesc extends ExprNodeDesc implements
 
   private static final long serialVersionUID = 1L;
 
+  private static final Log LOG = LogFactory
+      .getLog(ExprNodeGenericFuncDesc.class.getName());
+
   /**
    * In case genericUDF is Serializable, we will serialize the object.
-   * 
+   *
    * In case genericUDF does not implement Serializable, Java will remember the
    * class of genericUDF and creates a new instance when deserialized. This is
    * exactly what we want.
@@ -138,7 +150,7 @@ public class ExprNodeGenericFuncDesc extends ExprNodeDesc implements
   /**
    * Create a exprNodeGenericFuncDesc based on the genericUDFClass and the
    * children parameters.
-   * 
+   *
    * @throws UDFArgumentException
    */
   public static ExprNodeGenericFuncDesc newInstance(GenericUDF genericUDF,
@@ -146,6 +158,36 @@ public class ExprNodeGenericFuncDesc extends ExprNodeDesc implements
     ObjectInspector[] childrenOIs = new ObjectInspector[children.size()];
     for (int i = 0; i < childrenOIs.length; i++) {
       childrenOIs[i] = children.get(i).getWritableObjectInspector();
+    }
+
+    // Check if a bigint is implicitely cast to a double as part of a comparison
+    // Perform the check here instead of in GenericUDFBaseCompare to guarantee it is only run once per operator
+    if (genericUDF instanceof GenericUDFBaseCompare && children.size() == 2) {
+
+      TypeInfo oiTypeInfo0 = children.get(0).getTypeInfo();
+      TypeInfo oiTypeInfo1 = children.get(1).getTypeInfo();
+
+      SessionState ss = SessionState.get();
+      Configuration conf = (ss != null) ? ss.getConf() : new Configuration();
+
+      LogHelper console = new LogHelper(LOG);
+
+      // For now, if a bigint is going to be cast to a double throw an error or warning
+      if ((oiTypeInfo0.equals(TypeInfoFactory.stringTypeInfo) && oiTypeInfo1.equals(TypeInfoFactory.longTypeInfo)) ||
+          (oiTypeInfo0.equals(TypeInfoFactory.longTypeInfo) && oiTypeInfo1.equals(TypeInfoFactory.stringTypeInfo))) {
+        if (HiveConf.getVar(conf, HiveConf.ConfVars.HIVEMAPREDMODE).equalsIgnoreCase("strict")) {
+          throw new UDFArgumentException(ErrorMsg.NO_COMPARE_BIGINT_STRING.getMsg());
+        } else {
+          console.printError("WARNING: Comparing a bigint and a string may result in a loss of precision.");
+        }
+      } else if ((oiTypeInfo0.equals(TypeInfoFactory.doubleTypeInfo) && oiTypeInfo1.equals(TypeInfoFactory.longTypeInfo)) ||
+          (oiTypeInfo0.equals(TypeInfoFactory.longTypeInfo) && oiTypeInfo1.equals(TypeInfoFactory.doubleTypeInfo))) {
+        if (HiveConf.getVar(conf, HiveConf.ConfVars.HIVEMAPREDMODE).equalsIgnoreCase("strict")) {
+          throw new UDFArgumentException(ErrorMsg.NO_COMPARE_BIGINT_DOUBLE.getMsg());
+        } else {
+          console.printError("WARNING: Comparing a bigint and a double may result in a loss of precision.");
+        }
+      }
     }
 
     ObjectInspector oi = genericUDF.initialize(childrenOIs);

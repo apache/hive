@@ -180,6 +180,12 @@ public enum ErrorMsg {
   INCOMPATIBLE_SCHEMA("The existing table is not compatible with the import spec. "),
   EXIM_FOR_NON_NATIVE("Export/Import cannot be done for a non-native table. "),
   INSERT_INTO_BUCKETIZED_TABLE("Bucketized tables do not support INSERT INTO:"),
+  NO_COMPARE_BIGINT_STRING("In strict mode, comparing bigints and strings is not allowed, "
+      + "it may result in a loss of precision. "
+      + "If you really want to perform the operation, set hive.mapred.mode=nonstrict"),
+  NO_COMPARE_BIGINT_DOUBLE("In strict mode, comparing bigints and doubles is not allowed, "
+      + "it may result in a loss of precision. "
+      + "If you really want to perform the operation, set hive.mapred.mode=nonstrict"),
       ;
 
   private String mesg;
