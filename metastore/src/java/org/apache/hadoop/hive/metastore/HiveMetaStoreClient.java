@@ -77,7 +77,6 @@ public class HiveMetaStoreClient implements IMetaStoreClient {
   private TTransport transport = null;
   private boolean isConnected = false;
   private URI metastoreUris[];
-  private final boolean standAloneClient = false;
   private final HiveMetaHookLoader hookLoader;
   private final HiveConf conf;
   private String tokenStrForm;
@@ -264,15 +263,15 @@ public class HiveMetaStoreClient implements IMetaStoreClient {
     if ((transport != null) && transport.isOpen()) {
       transport.close();
     }
-    if (standAloneClient) {
-      try {
+    try {
+      if (null != client) {
         client.shutdown();
-      } catch (TException e) {
-        // TODO:pc cleanup the exceptions
-        LOG.error("Unable to shutdown local metastore client");
-        LOG.error(e.getStackTrace());
-        // throw new RuntimeException(e.getMessage());
       }
+    } catch (TException e) {
+      // TODO:pc cleanup the exceptions
+      LOG.error("Unable to shutdown local metastore client");
+      LOG.error(e.getStackTrace());
+      // throw new RuntimeException(e.getMessage());
     }
   }
 
