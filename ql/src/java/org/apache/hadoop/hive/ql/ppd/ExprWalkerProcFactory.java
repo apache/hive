@@ -51,7 +51,7 @@ import org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc;
  * pushdown optimization for the given operator
  */
 public final class ExprWalkerProcFactory {
-  
+
   private static final Log LOG = LogFactory
       .getLog(ExprWalkerProcFactory.class.getName());
 
@@ -239,7 +239,7 @@ public final class ExprWalkerProcFactory {
 
   /**
    * Extracts pushdown predicates from the given list of predicate expression.
-   * 
+   *
    * @param opContext
    *          operator context used for resolving column references
    * @param op
@@ -277,7 +277,9 @@ public final class ExprWalkerProcFactory {
     List<Node> startNodes = new ArrayList<Node>();
     List<ExprNodeDesc> clonedPreds = new ArrayList<ExprNodeDesc>();
     for (ExprNodeDesc node : preds) {
-      clonedPreds.add(node.clone());
+      ExprNodeDesc clone = node.clone();
+      clonedPreds.add(clone);
+      exprContext.getNewToOldExprMap().put(clone, node);
     }
     startNodes.addAll(clonedPreds);
 
@@ -308,8 +310,16 @@ public final class ExprWalkerProcFactory {
     if (FunctionRegistry.isOpAnd(expr)) {
       // If the operator is AND, we need to determine if any of the children are
       // final candidates.
-      for (Node ch : expr.getChildren()) {
-        extractFinalCandidates((ExprNodeDesc) ch, ctx, conf);
+
+      // For the children, we populate the NewToOldExprMap to keep track of
+      // the original condition before rewriting it for this operator
+      assert ctx.getNewToOldExprMap().containsKey(expr);
+      for (int i = 0; i < expr.getChildren().size(); i++) {
+        ctx.getNewToOldExprMap().put(
+            (ExprNodeDesc) expr.getChildren().get(i),
+            ctx.getNewToOldExprMap().get(expr).getChildren().get(i));
+        extractFinalCandidates((ExprNodeDesc) expr.getChildren().get(i),
+            ctx, conf);
       }
     }
   }
