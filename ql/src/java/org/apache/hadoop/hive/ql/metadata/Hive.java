@@ -191,6 +191,7 @@ public class Hive {
     LOG.info("Closing current thread's connection to Hive Metastore.");
     if (metaStoreClient != null) {
       metaStoreClient.close();
+      metaStoreClient = null;
     }
   }
 
