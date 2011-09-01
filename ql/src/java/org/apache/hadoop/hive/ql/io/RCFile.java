@@ -484,8 +484,14 @@ public class RCFile {
 
     @Override
     public void write(DataOutput out) throws IOException {
-      for (NonSyncDataOutputBuffer currentBuf : loadedColumnsValueBuffer) {
-        out.write(currentBuf.getData(), 0, currentBuf.getLength());
+      if (codec != null) {
+        for (NonSyncDataOutputBuffer currentBuf : compressedColumnsValueBuffer) {
+          out.write(currentBuf.getData(), 0, currentBuf.getLength());
+        }
+      } else {
+        for (NonSyncDataOutputBuffer currentBuf : loadedColumnsValueBuffer) {
+          out.write(currentBuf.getData(), 0, currentBuf.getLength());
+        }
       }
     }
 
