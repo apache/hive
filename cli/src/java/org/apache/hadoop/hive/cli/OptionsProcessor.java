@@ -18,7 +18,9 @@
 
 package org.apache.hadoop.hive.cli;
 
+import java.util.HashMap;
 import java.util.Arrays;
+import java.util.Map;
 import java.util.Properties;
 
 import org.apache.commons.cli.GnuParser;
@@ -38,7 +40,7 @@ public class OptionsProcessor {
   protected static final Log l4j = LogFactory.getLog(OptionsProcessor.class.getName());
   private final Options options = new Options();
   private org.apache.commons.cli.CommandLine commandLine;
-
+  Map<String, String> hiveVariables = new HashMap<String, String>();
 
   @SuppressWarnings("static-access")
   public OptionsProcessor() {
@@ -87,6 +89,24 @@ public class OptionsProcessor {
         .withDescription("connecting to Hive Server on port number")
         .create('p'));
 
+    // Substitution option -d, --define
+    options.addOption(OptionBuilder
+        .withValueSeparator()
+        .hasArgs(2)
+        .withArgName("key=value")
+        .withLongOpt("define")
+        .withDescription("Variable subsitution to apply to hive commands. e.g. -d A=B or --define A=B")
+        .create('d'));
+
+    // Substitution option --hivevar
+    options.addOption(OptionBuilder
+        .withValueSeparator()
+        .hasArgs(2)
+        .withArgName("key=value")
+        .withLongOpt("hivevar")
+        .withDescription("Variable subsitution to apply to hive commands. e.g. --hivevar A=B")
+        .create());
+
     // [-S|--silent]
     options.addOption(new Option("S", "silent", false, "Silent mode in interactive shell"));
 
@@ -104,6 +124,16 @@ public class OptionsProcessor {
       Properties confProps = commandLine.getOptionProperties("hiveconf");
       for (String propKey : confProps.stringPropertyNames()) {
         System.setProperty(propKey, confProps.getProperty(propKey));
+      }
+
+      Properties hiveVars = commandLine.getOptionProperties("define");
+      for (String propKey : hiveVars.stringPropertyNames()) {
+        hiveVariables.put(propKey, hiveVars.getProperty(propKey));
+      }
+
+      Properties hiveVars2 = commandLine.getOptionProperties("hivevar");
+      for (String propKey : hiveVars2.stringPropertyNames()) {
+        hiveVariables.put(propKey, hiveVars2.getProperty(propKey));
       }
     } catch (ParseException e) {
       System.err.println(e.getMessage());
@@ -156,5 +186,9 @@ public class OptionsProcessor {
 
   private void printUsage() {
     new HelpFormatter().printHelp("hive", options);
+  }
+
+  public Map<String, String> getHiveVariables() {
+    return hiveVariables;
   }
 }
