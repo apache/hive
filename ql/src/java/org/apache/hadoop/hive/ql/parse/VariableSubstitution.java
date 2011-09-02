@@ -25,12 +25,42 @@ import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.ql.processors.SetProcessor;
+import org.apache.hadoop.hive.ql.session.SessionState;
 
 public class VariableSubstitution {
 
   private static final Log l4j = LogFactory.getLog(VariableSubstitution.class);
   protected static Pattern varPat = Pattern.compile("\\$\\{[^\\}\\$\u0020]+\\}");
   protected static int MAX_SUBST = 40;
+
+  private String getSubstitute(HiveConf conf, String var) {
+    String val = null;
+    try {
+      if (var.startsWith(SetProcessor.SYSTEM_PREFIX)) {
+        val = System.getProperty(var.substring(SetProcessor.SYSTEM_PREFIX.length()));
+      }
+    } catch(SecurityException se) {
+      l4j.warn("Unexpected SecurityException in Configuration", se);
+    }
+    if (val ==null){
+      if (var.startsWith(SetProcessor.ENV_PREFIX)){
+        val = System.getenv(var.substring(SetProcessor.ENV_PREFIX.length()));
+      }
+    }
+    if (val == null) {
+      if (var.startsWith(SetProcessor.HIVECONF_PREFIX)){
+        val = conf.get(var.substring(SetProcessor.HIVECONF_PREFIX.length()));
+      }
+    }
+    if (val ==null){
+      if(var.startsWith(SetProcessor.HIVEVAR_PREFIX)){
+        val =  SessionState.get().getHiveVariables().get(var.substring(SetProcessor.HIVEVAR_PREFIX.length()));
+      } else {
+        val = SessionState.get().getHiveVariables().get(var);
+      }
+    }
+    return val;
+  }
 
   public String substitute (HiveConf conf, String expr) {
 
@@ -51,27 +81,11 @@ public class VariableSubstitution {
       }
       String var = match.group();
       var = var.substring(2, var.length()-1); // remove ${ .. }
-      String val = null;
-      try {
-        if (var.startsWith(SetProcessor.SYSTEM_PREFIX)) {
-          val = System.getProperty(var.substring(SetProcessor.SYSTEM_PREFIX.length()));
-        }
-      } catch(SecurityException se) {
-        l4j.warn("Unexpected SecurityException in Configuration", se);
-      }
-      if (val ==null){
-        if (var.startsWith(SetProcessor.ENV_PREFIX)){
-          val = System.getenv(var.substring(SetProcessor.ENV_PREFIX.length()));
-        }
-      }
-      if (val == null) {
-        if (var.startsWith(SetProcessor.HIVECONF_PREFIX)){
-          val = conf.get(var.substring(SetProcessor.HIVECONF_PREFIX.length()));
-        }
-      }
+      String val = getSubstitute(conf, var);
+
       if (val == null) {
         l4j.debug("Interpolation result: "+eval);
-        return eval; // return literal ${var}: var is unbound
+        return eval; // return literal, no substitution found
       }
       // substitute
       eval = eval.substring(0, match.start())+val+eval.substring(match.end());

@@ -621,6 +621,7 @@ public class CliDriver {
     }
 
     CliDriver cli = new CliDriver();
+    cli.setHiveVariables(oproc.getHiveVariables());
 
     // Execute -i init files (always in silent mode)
     cli.processInitFiles(ss);
@@ -708,6 +709,10 @@ public class CliDriver {
       return "";
     }
     return String.format("%1$-" + s.length() +"s", "");
+  }
+
+  public void setHiveVariables(Map<String, String> hiveVariables) {
+    SessionState.get().setHiveVariables(hiveVariables);
   }
 
 }

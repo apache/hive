@@ -28,6 +28,7 @@ import java.util.GregorianCalendar;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import org.apache.commons.lang.StringUtils;
@@ -110,6 +111,8 @@ public class SessionState {
 
   private List<MapRedStats> lastMapRedStatsList;
 
+  private Map<String, String> hiveVariables;
+
   /**
    * Lineage state.
    */
@@ -183,6 +186,17 @@ public class SessionState {
 
   public String getQueryId() {
     return (conf.getVar(HiveConf.ConfVars.HIVEQUERYID));
+  }
+
+  public Map<String, String> getHiveVariables() {
+    if (hiveVariables == null) {
+      hiveVariables = new HashMap<String, String>();
+    }
+    return hiveVariables;
+  }
+
+  public void setHiveVariables(Map<String, String> hiveVariables) {
+    this.hiveVariables = hiveVariables;
   }
 
   public String getSessionId() {
