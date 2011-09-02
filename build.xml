@@ -15,12 +15,13 @@
    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
    See the License for the specific language governing permissions and
    limitations under the License.
+     <property name="hive.root" location="${basedir}"/>
+   
 -->
 
 
 <project name="hive" default="jar" xmlns:artifact="urn:maven-artifact-ant" >
-
-  <property name="hive.root" location="${basedir}"/>
+	<property name="hive.root" location="${basedir}"/>
   <property file="${hive.root}/build.properties"/>
   <property file="${user.home}/build.properties" />
   <property file="${basedir}/build.properties" />
@@ -210,9 +211,11 @@
   </target>
 
   <target name="test" depends="clean-test,jar-test" description="Run tests">
+<!--
     <antcall target="test-shims">
       <param name="hadoop.version.ant-internal" value="${hadoop.security.version}" />
     </antcall>
+-->
     <for keepgoing="${test.continue.on.failure}" param="file">
       <path>
         <fileset dir="." includes="*/build.xml" excludes="ant/*,odbc/*,shims/*"/>

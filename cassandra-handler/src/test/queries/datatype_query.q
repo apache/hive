@@ -1,6 +1,6 @@
 SET hive.support.concurrency=false;
 
-DROP TABLE cf_demo_TBL;
+DROP TABLE IF EXISTS cf_demo_TBL;
 --Test LongType and IntegerType without using validatorType setting
 CREATE EXTERNAL TABLE cf_demo_TBL(row_key STRING,
                                              uniqueid String,
@@ -20,7 +20,7 @@ CREATE EXTERNAL TABLE cf_demo_TBL(row_key STRING,
 select row_key, countLong, countInt from cf_demo_TBL;
 
 --Test cassandra.cf.validatorType setting
-DROP TABLE cf_demo_TBL;
+DROP TABLE IF EXISTS cf_demo_TBL;
 CREATE EXTERNAL TABLE cf_demo_TBL(row_key STRING,
                                              uniqueid String,
                                              countLong BIGINT,
@@ -42,7 +42,7 @@ CREATE EXTERNAL TABLE cf_demo_TBL(row_key STRING,
 select row_key, uniqueid, countLong, countInt from cf_demo_TBL;
 
 --Test cassandra.cf.validatorType setting in different format
-DROP TABLE cf_demo_TBL;
+DROP TABLE IF EXISTS cf_demo_TBL;
 CREATE EXTERNAL TABLE cf_demo_TBL(row_key STRING,
                                              uniqueid String,
                                              countLong BIGINT,
@@ -61,7 +61,7 @@ CREATE EXTERNAL TABLE cf_demo_TBL(row_key STRING,
 select row_key, uniqueid, countLong, countInt from cf_demo_TBL;
 
 --Test super column family
-DROP TABLE super_demo_TBL;
+DROP TABLE IF EXISTS super_demo_TBL;
 CREATE EXTERNAL TABLE super_demo_TBL(row_key STRING,
                                      uniqueid String,
                                      countLong BIGINT,

@@ -38,7 +38,7 @@ import org.apache.thrift.transport.TSaslServerTransport;
 import org.apache.thrift.transport.TTransportException;
 import org.apache.thrift.transport.TTransportFactory;
 
-public class TestHadoop20SAuthBridge extends TestCase {
+public class NorunHadoop20SAuthBridge extends TestCase {
 
   private static class MyHadoopThriftAuthBridge20S extends HadoopThriftAuthBridge20S {
     @Override
@@ -70,7 +70,7 @@ public class TestHadoop20SAuthBridge extends TestCase {
 
   private final HiveConf conf;
 
-  public TestHadoop20SAuthBridge(String name) {
+  public NorunHadoop20SAuthBridge(String name) {
     super(name);
     System.setProperty(HiveConf.ConfVars.METASTORE_USE_THRIFT_SASL.varname,
         "true");
@@ -78,7 +78,7 @@ public class TestHadoop20SAuthBridge extends TestCase {
         "thrift://localhost:" + port);
     System.setProperty(HiveConf.ConfVars.METASTOREWAREHOUSE.varname, new Path(
         System.getProperty("test.build.data", "/tmp")).toString());
-    conf = new HiveConf(TestHadoop20SAuthBridge.class);
+    conf = new HiveConf(NorunHadoop20SAuthBridge.class);
     conf.setBoolean("hive.metastore.local", false);
   }
 

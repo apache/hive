@@ -1,6 +1,7 @@
 SET hive.support.concurrency=false;
 
-DROP TABLE cassandra_hive_table;
+DROP TABLE IF EXISTS cassandra_hive_table;
+
 CREATE EXTERNAL TABLE
 cassandra_hive_table(key int, value string)
 STORED BY 'org.apache.hadoop.hive.cassandra.CassandraStorageHandler'

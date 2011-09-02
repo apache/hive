@@ -1,6 +1,6 @@
-PREHOOK: query: DROP TABLE cassandra_hive_table
+PREHOOK: query: DROP TABLE IF EXISTS cassandra_hive_table
 PREHOOK: type: DROPTABLE
-POSTHOOK: query: DROP TABLE cassandra_hive_table
+POSTHOOK: query: DROP TABLE IF EXISTS cassandra_hive_table
 POSTHOOK: type: DROPTABLE
 PREHOOK: query: CREATE EXTERNAL TABLE
 cassandra_hive_table(key int, value string)

@@ -1,6 +1,6 @@
 SET hive.support.concurrency=false;
 
-DROP TABLE cassandra_hive_table;
+DROP TABLE IF EXISTS cassandra_hive_table;
 CREATE EXTERNAL TABLE
 cassandra_hive_table(key int, value string)
 STORED BY 'org.apache.hadoop.hive.cassandra.CassandraStorageHandler'
@@ -46,7 +46,7 @@ JOIN
 ON (x.key = Y.key)
 ORDER BY key, value LIMIT 20;
 
-DROP TABLE cassandra_hive_table2;
+DROP TABLE IF EXISTS cassandra_hive_table2;
 CREATE EXTERNAL TABLE cassandra_hive_table2(key int, value string)
 STORED BY 'org.apache.hadoop.hive.cassandra.CassandraStorageHandler'
 WITH SERDEPROPERTIES ("cassandra.cf.name" = "Table2" , "cassandra.host" = "127.0.0.1" , "cassandra.port" = "9170", "cassandra.partitioner" = "org.apache.cassandra.dht.RandomPartitioner" )
@@ -69,13 +69,13 @@ JOIN
 ON (x.key = Y.key)
 ORDER BY key,value;
 
-DROP TABLE empty_cassandra_table;
+DROP TABLE IF EXISTS empty_cassandra_table;
 CREATE EXTERNAL TABLE empty_cassandra_table(key int, value string)
 STORED BY 'org.apache.hadoop.hive.cassandra.CassandraStorageHandler'
 WITH SERDEPROPERTIES ("cassandra.cf.name" = "emptyTable" , "cassandra.host" = "127.0.0.1" , "cassandra.port" = "9170", "cassandra.partitioner" = "org.apache.cassandra.dht.RandomPartitioner" )
 TBLPROPERTIES ("cassandra.ks.name" = "Hive", "cassandra.ks.repfactor" = "1", "cassandra.ks.strategy" = "org.apache.cassandra.locator.SimpleStrategy");
 
-DROP TABLE empty_normal_table;
+DROP TABLE IF EXISTS empty_normal_table;
 CREATE TABLE empty_normal_table(key int, value string);
 
 select * from (select count(1) as c from empty_normal_table union all select count(1) as c from empty_cassandra_table) x order by c;
@@ -83,7 +83,7 @@ select * from (select count(1) c from empty_normal_table union all select count(
 select * from (select count(1) c from src union all select count(1) as c from empty_cassandra_table) x order by c;
 select * from (select count(1) c from src union all select count(1) as c from cassandra_hive_table) x order by c;
 
-DROP TABLE cassandra_hive_table3;
+DROP TABLE IF EXISTS cassandra_hive_table3;
 CREATE EXTERNAL TABLE cassandra_hive_table3(key int, value string, count int)
 STORED BY 'org.apache.hadoop.hive.cassandra.CassandraStorageHandler'
 WITH SERDEPROPERTIES ("cassandra.columns.mapping" = ":key,value,count" , "cassandra.cf.name" = "Table3" , "cassandra.host" = "127.0.0.1" , "cassandra.port" = "9170", "cassandra.partitioner" = "org.apache.cassandra.dht.RandomPartitioner" )
@@ -110,7 +110,7 @@ select count(1) from cassandra_hive_table3;
 select * from cassandra_hive_table3 order by key, value limit 5;
 select key, count from cassandra_hive_table3 order by key, count desc limit 5;
 
-DROP TABLE cassandra_hive_table4;
+DROP TABLE IF EXISTS cassandra_hive_table4;
 CREATE EXTERNAL TABLE cassandra_hive_table4(key int, value1 string, value2 int, value3 int)
 STORED BY 'org.apache.hadoop.hive.cassandra.CassandraStorageHandler'
 WITH SERDEPROPERTIES ("cassandra.columns.mapping" = ":key,value1,value2,value3" , "cassandra.cf.name" = "Table4" , "cassandra.host" = "127.0.0.1" , "cassandra.port" = "9170", "cassandra.partitioner" = "org.apache.cassandra.dht.RandomPartitioner" )
@@ -121,7 +121,7 @@ FROM src WHERE key=98 OR key=100;
 
 SELECT * FROM cassandra_hive_table4 ORDER BY key;
 
-DROP TABLE cassandra_hive_table5;
+DROP TABLE IF EXISTS cassandra_hive_table5;
 CREATE EXTERNAL TABLE cassandra_hive_table5(key int, value map<string,string>)
 STORED BY 'org.apache.hadoop.hive.cassandra.CassandraStorageHandler'
 WITH SERDEPROPERTIES ("cassandra.cf.name" = "Table5" , "cassandra.host" = "127.0.0.1" , "cassandra.port" = "9170", "cassandra.partitioner" = "org.apache.cassandra.dht.RandomPartitioner" )
@@ -133,7 +133,7 @@ WHERE key=98 OR key=100;
 SELECT * FROM cassandra_hive_table5 ORDER BY key;
 
 --Test batch mutation size
-DROP TABLE cassandra_hive_table6;
+DROP TABLE IF EXISTS cassandra_hive_table6;
 CREATE EXTERNAL TABLE cassandra_hive_table6(key int, value1 string, value2 int, value3 int, value4 int, value5 String)
 STORED BY 'org.apache.hadoop.hive.cassandra.CassandraStorageHandler'
 WITH SERDEPROPERTIES ("cassandra.columns.mapping" = ":key,value1,value2,value3,value4,value5" ,"cassandra.cf.name" = "Table6" , "cassandra.host" = "127.0.0.1" , "cassandra.port" = "9170", "cassandra.batchmutate.size" = "2" )
@@ -144,10 +144,10 @@ FROM src WHERE (key%21)=0;
 
 SELECT * FROM cassandra_hive_table6 ORDER BY key;
 
-DROP TABLE cassandra_hive_table;
-DROP TABLE cassandra_hive_table2;
-DROP TABLE cassandra_hive_table3;
-DROP TABLE cassandra_hive_table4;
-DROP TABLE cassandra_hive_table5;
-DROP TABLE empty_cassandra_table;
-DROP TABLE cassandra_hive_table6;
+DROP TABLE IF EXISTS cassandra_hive_table;
+DROP TABLE IF EXISTS cassandra_hive_table2;
+DROP TABLE IF EXISTS cassandra_hive_table3;
+DROP TABLE IF EXISTS cassandra_hive_table4;
+DROP TABLE IF EXISTS cassandra_hive_table5;
+DROP TABLE IF EXISTS empty_cassandra_table;
+DROP TABLE IF EXISTS cassandra_hive_table6;
