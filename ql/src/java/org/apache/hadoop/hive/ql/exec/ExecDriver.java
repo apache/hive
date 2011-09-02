@@ -115,7 +115,7 @@ public class ExecDriver extends Task<MapredWork> implements Serializable, Hadoop
     return true;
   }
 
-  protected static String getResourceFiles(Configuration conf, SessionState.ResourceType t) {
+  public static String getResourceFiles(Configuration conf, SessionState.ResourceType t) {
     // fill in local files to be added to the task environment
     SessionState ss = SessionState.get();
     Set<String> files = (ss == null) ? null : ss.list_resource(t, null);

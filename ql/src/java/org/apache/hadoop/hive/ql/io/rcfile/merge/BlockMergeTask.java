@@ -37,6 +37,7 @@ import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.Context;
 import org.apache.hadoop.hive.ql.DriverContext;
 import org.apache.hadoop.hive.ql.QueryPlan;
+import org.apache.hadoop.hive.ql.exec.ExecDriver;
 import org.apache.hadoop.hive.ql.exec.HadoopJobExecHelper;
 import org.apache.hadoop.hive.ql.exec.HadoopJobExecHook;
 import org.apache.hadoop.hive.ql.exec.Task;
@@ -191,6 +192,11 @@ public class BlockMergeTask extends Task<MergeWork> implements Serializable,
         HiveConf.setVar(job, HiveConf.ConfVars.METASTOREPWD, "HIVE");
       }
       JobClient jc = new JobClient(job);
+      
+      String addedJars = ExecDriver.getResourceFiles(job, SessionState.ResourceType.JAR);
+      if (!addedJars.isEmpty()) {
+        job.set("tmpjars", addedJars);
+      }
 
       // make this client wait if job trcker is not behaving well.
       Throttle.checkJobTracker(job, LOG);
