@@ -270,18 +270,21 @@ public final class OpProcFactory {
 
     /**
      * Figures out the aliases for whom it is safe to push predicates based on
-     * ANSI SQL semantics For inner join, all predicates for all aliases can be
-     * pushed For full outer join, none of the predicates can be pushed as that
-     * would limit the number of rows for join For left outer join, all the
-     * predicates on the left side aliases can be pushed up For right outer
-     * join, all the predicates on the right side aliases can be pushed up Joins
-     * chain containing both left and right outer joins are treated as full
-     * outer join. TODO: further optimization opportunity for the case a.c1 =
-     * b.c1 and b.c2 = c.c2 a and b are first joined and then the result with c.
-     * But the second join op currently treats a and b as separate aliases and
-     * thus disallowing predicate expr containing both tables a and b (such as
-     * a.c3 + a.c4 > 20). Such predicates also can be pushed just above the
-     * second join and below the first join
+     * ANSI SQL semantics. The join conditions are left associative so "a
+     * RIGHT OUTER JOIN b LEFT OUTER JOIN c INNER JOIN d" is interpreted as
+     * "((a RIGHT OUTER JOIN b) LEFT OUTER JOIN c) INNER JOIN d".  For inner
+     * joins, both the left and right join subexpressions are considered for
+     * pushing down aliases, for the right outer join, the right subexpression
+     * is considered and the left ignored and for the left outer join, the
+     * left subexpression is considered and the left ignored. Here, aliases b
+     * and d are eligible to be pushed up.
+     *
+     * TODO: further optimization opportunity for the case a.c1 = b.c1 and b.c2
+     * = c.c2 a and b are first joined and then the result with c. But the
+     * second join op currently treats a and b as separate aliases and thus
+     * disallowing predicate expr containing both tables a and b (such as a.c3
+     * + a.c4 > 20). Such predicates also can be pushed just above the second
+     * join and below the first join
      *
      * @param op
      *          Join Operator
@@ -291,40 +294,23 @@ public final class OpProcFactory {
      */
     private Set<String> getQualifiedAliases(JoinOperator op, RowResolver rr) {
       Set<String> aliases = new HashSet<String>();
-      int loj = Integer.MAX_VALUE;
-      int roj = -1;
-      boolean oj = false;
       JoinCondDesc[] conds = op.getConf().getConds();
       Map<Integer, Set<String>> posToAliasMap = op.getPosToAliasMap();
-      for (JoinCondDesc jc : conds) {
-        if (jc.getType() == JoinDesc.FULL_OUTER_JOIN) {
-          oj = true;
+      int i;
+      for (i=conds.length-1; i>=0; i--){
+        if (conds[i].getType() == JoinDesc.INNER_JOIN) {
+          aliases.addAll(posToAliasMap.get(i+1));
+        } else if (conds[i].getType() == JoinDesc.FULL_OUTER_JOIN) {
           break;
-        } else if (jc.getType() == JoinDesc.LEFT_OUTER_JOIN) {
-          if (jc.getLeft() < loj) {
-            loj = jc.getLeft();
-          }
-        } else if (jc.getType() == JoinDesc.RIGHT_OUTER_JOIN) {
-          if (jc.getRight() > roj) {
-            roj = jc.getRight();
-          }
+        } else if (conds[i].getType() == JoinDesc.RIGHT_OUTER_JOIN) {
+          aliases.addAll(posToAliasMap.get(i+1));
+          break;
+        } else if (conds[i].getType() == JoinDesc.LEFT_OUTER_JOIN) {
+          continue;
         }
       }
-      if (oj || (loj != Integer.MAX_VALUE && roj != -1)) {
-        return aliases;
-      }
-      for (Entry<Integer, Set<String>> pa : posToAliasMap.entrySet()) {
-        if (loj != Integer.MAX_VALUE) {
-          if (pa.getKey() <= loj) {
-            aliases.addAll(pa.getValue());
-          }
-        } else if (roj != -1) {
-          if (pa.getKey() >= roj) {
-            aliases.addAll(pa.getValue());
-          }
-        } else {
-          aliases.addAll(pa.getValue());
-        }
+      if(i == -1){
+        aliases.addAll(posToAliasMap.get(0));
       }
       Set<String> aliases2 = rr.getTableNames();
       aliases.retainAll(aliases2);
