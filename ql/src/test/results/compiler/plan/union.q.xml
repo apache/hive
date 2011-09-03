@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?> 
-<java version="1.6.0_01" class="java.beans.XMLDecoder"> 
+<java version="1.6.0_24" class="java.beans.XMLDecoder"> 
  <object id="MapRedTask0" class="org.apache.hadoop.hive.ql.exec.MapRedTask"> 
   <void property="childTasks"> 
    <object class="java.util.ArrayList"> 
@@ -41,7 +41,7 @@
                     <void property="aliasToWork"> 
                      <object class="java.util.LinkedHashMap"> 
                       <void method="put"> 
-                       <string>file:/home/amarsri/workspace/hive/build/ql/scratchdir/hive_2011-07-11_04-06-57_227_5273764780066863405/-ext-10001</string> 
+                       <string>file:/data/users/charleschen/hive-trunk/build/ql/scratchdir/hive_2011-09-01_02-46-28_013_2141535371402489810/-ext-10001</string> 
                        <object id="TableScanOperator0" class="org.apache.hadoop.hive.ql.exec.TableScanOperator"> 
                         <void property="childOperators"> 
                          <object class="java.util.ArrayList"> 
@@ -50,7 +50,7 @@
                             <void property="conf"> 
                              <object class="org.apache.hadoop.hive.ql.plan.FileSinkDesc"> 
                               <void property="dirName"> 
-                               <string>file:/home/amarsri/workspace/hive/build/ql/scratchdir/hive_2011-07-11_04-06-57_227_5273764780066863405/-ext-10000</string> 
+                               <string>file:/data/users/charleschen/hive-trunk/build/ql/scratchdir/hive_2011-09-01_02-46-28_013_2141535371402489810/-ext-10000</string> 
                               </void> 
                               <void property="numFiles"> 
                                <int>1</int> 
@@ -195,10 +195,10 @@
                     <void property="pathToAliases"> 
                      <object class="java.util.LinkedHashMap"> 
                       <void method="put"> 
-                       <string>file:/home/amarsri/workspace/hive/build/ql/scratchdir/hive_2011-07-11_04-06-57_227_5273764780066863405/-ext-10001</string> 
+                       <string>file:/data/users/charleschen/hive-trunk/build/ql/scratchdir/hive_2011-09-01_02-46-28_013_2141535371402489810/-ext-10001</string> 
                        <object class="java.util.ArrayList"> 
                         <void method="add"> 
-                         <string>file:/home/amarsri/workspace/hive/build/ql/scratchdir/hive_2011-07-11_04-06-57_227_5273764780066863405/-ext-10001</string> 
+                         <string>file:/data/users/charleschen/hive-trunk/build/ql/scratchdir/hive_2011-09-01_02-46-28_013_2141535371402489810/-ext-10001</string> 
                         </void> 
                        </object> 
                       </void> 
@@ -207,7 +207,7 @@
                     <void property="pathToPartitionInfo"> 
                      <object class="java.util.LinkedHashMap"> 
                       <void method="put"> 
-                       <string>file:/home/amarsri/workspace/hive/build/ql/scratchdir/hive_2011-07-11_04-06-57_227_5273764780066863405/-ext-10001</string> 
+                       <string>file:/data/users/charleschen/hive-trunk/build/ql/scratchdir/hive_2011-09-01_02-46-28_013_2141535371402489810/-ext-10001</string> 
                        <object class="org.apache.hadoop.hive.ql.plan.PartitionDesc"> 
                         <void property="baseFileName"> 
                          <string>-ext-10001</string> 
@@ -280,7 +280,7 @@
                    <boolean>true</boolean> 
                   </void> 
                   <void property="sourceDir"> 
-                   <string>file:/home/amarsri/workspace/hive/build/ql/scratchdir/hive_2011-07-11_04-06-57_227_5273764780066863405/-ext-10000</string> 
+                   <string>file:/data/users/charleschen/hive-trunk/build/ql/scratchdir/hive_2011-09-01_02-46-28_013_2141535371402489810/-ext-10000</string> 
                   </void> 
                   <void property="targetDir"> 
                    <string>../build/ql/test/data/warehouse/union.out</string> 
@@ -304,10 +304,10 @@
                <boolean>true</boolean> 
               </void> 
               <void property="sourceDir"> 
-               <string>file:/home/amarsri/workspace/hive/build/ql/scratchdir/hive_2011-07-11_04-06-57_227_5273764780066863405/-ext-10001</string> 
+               <string>file:/data/users/charleschen/hive-trunk/build/ql/scratchdir/hive_2011-09-01_02-46-28_013_2141535371402489810/-ext-10001</string> 
               </void> 
               <void property="targetDir"> 
-               <string>file:/home/amarsri/workspace/hive/build/ql/scratchdir/hive_2011-07-11_04-06-57_227_5273764780066863405/-ext-10000</string> 
+               <string>file:/data/users/charleschen/hive-trunk/build/ql/scratchdir/hive_2011-09-01_02-46-28_013_2141535371402489810/-ext-10000</string> 
               </void> 
              </object> 
             </void> 
@@ -333,7 +333,7 @@
       <void property="resolverCtx"> 
        <object class="org.apache.hadoop.hive.ql.plan.ConditionalResolverMergeFiles$ConditionalResolverMergeFilesCtx"> 
         <void property="dir"> 
-         <string>file:/home/amarsri/workspace/hive/build/ql/scratchdir/hive_2011-07-11_04-06-57_227_5273764780066863405/-ext-10001</string> 
+         <string>file:/data/users/charleschen/hive-trunk/build/ql/scratchdir/hive_2011-09-01_02-46-28_013_2141535371402489810/-ext-10001</string> 
         </void> 
         <void property="listTasks"> 
          <object idref="ArrayList0"/> 
@@ -419,11 +419,11 @@
          </void> 
          <void method="put"> 
           <string>location</string> 
-          <string>pfile:/home/amarsri/workspace/hive/build/ql/test/data/warehouse/src</string> 
+          <string>pfile:/data/users/charleschen/hive-trunk/build/ql/test/data/warehouse/src</string> 
          </void> 
          <void method="put"> 
           <string>transient_lastDdlTime</string> 
-          <string>1310382416</string> 
+          <string>1314870387</string> 
          </void> 
         </object> 
        </void> 
@@ -481,11 +481,11 @@
            </void> 
            <void method="put"> 
             <string>location</string> 
-            <string>pfile:/home/amarsri/workspace/hive/build/ql/test/data/warehouse/src</string> 
+            <string>pfile:/data/users/charleschen/hive-trunk/build/ql/test/data/warehouse/src</string> 
            </void> 
            <void method="put"> 
             <string>transient_lastDdlTime</string> 
-            <string>1310382416</string> 
+            <string>1314870387</string> 
            </void> 
           </object> 
          </void> 
@@ -551,11 +551,11 @@
          </void> 
          <void method="put"> 
           <string>location</string> 
-          <string>pfile:/home/amarsri/workspace/hive/build/ql/test/data/warehouse/src</string> 
+          <string>pfile:/data/users/charleschen/hive-trunk/build/ql/test/data/warehouse/src</string> 
          </void> 
          <void method="put"> 
           <string>transient_lastDdlTime</string> 
-          <string>1310382416</string> 
+          <string>1314870387</string> 
          </void> 
         </object> 
        </void> 
@@ -613,11 +613,11 @@
            </void> 
            <void method="put"> 
             <string>location</string> 
-            <string>pfile:/home/amarsri/workspace/hive/build/ql/test/data/warehouse/src</string> 
+            <string>pfile:/data/users/charleschen/hive-trunk/build/ql/test/data/warehouse/src</string> 
            </void> 
            <void method="put"> 
             <string>transient_lastDdlTime</string> 
-            <string>1310382416</string> 
+            <string>1314870387</string> 
            </void> 
           </object> 
          </void> 
@@ -660,13 +660,13 @@
                                <int>1</int> 
                               </void> 
                               <void property="dirName"> 
-                               <string>file:/home/amarsri/workspace/hive/build/ql/scratchdir/hive_2011-07-11_04-06-57_227_5273764780066863405/-ext-10001</string> 
+                               <string>file:/data/users/charleschen/hive-trunk/build/ql/scratchdir/hive_2011-09-01_02-46-28_013_2141535371402489810/-ext-10001</string> 
                               </void> 
                               <void property="numFiles"> 
                                <int>1</int> 
                               </void> 
                               <void property="statsAggPrefix"> 
-                               <string>file:/home/amarsri/workspace/hive/build/ql/scratchdir/hive_2011-07-11_04-06-57_227_5273764780066863405/-ext-10000/</string> 
+                               <string>file:/data/users/charleschen/hive-trunk/build/ql/scratchdir/hive_2011-09-01_02-46-28_013_2141535371402489810/-ext-10000/</string> 
                               </void> 
                               <void property="tableInfo"> 
                                <object idref="TableDesc0"/> 
@@ -1539,7 +1539,7 @@
     <void property="pathToAliases"> 
      <object class="java.util.LinkedHashMap"> 
       <void method="put"> 
-       <string>pfile:/home/amarsri/workspace/hive/build/ql/test/data/warehouse/src</string> 
+       <string>pfile:/data/users/charleschen/hive-trunk/build/ql/test/data/warehouse/src</string> 
        <object class="java.util.ArrayList"> 
         <void method="add"> 
          <string>null-subquery1:unioninput-subquery1:src</string> 
@@ -1554,7 +1554,7 @@
     <void property="pathToPartitionInfo"> 
      <object class="java.util.LinkedHashMap"> 
       <void method="put"> 
-       <string>pfile:/home/amarsri/workspace/hive/build/ql/test/data/warehouse/src</string> 
+       <string>pfile:/data/users/charleschen/hive-trunk/build/ql/test/data/warehouse/src</string> 
        <object class="org.apache.hadoop.hive.ql.plan.PartitionDesc"> 
         <void property="baseFileName"> 
          <string>src</string> 
@@ -1611,11 +1611,11 @@
           </void> 
           <void method="put"> 
            <string>location</string> 
-           <string>pfile:/home/amarsri/workspace/hive/build/ql/test/data/warehouse/src</string> 
+           <string>pfile:/data/users/charleschen/hive-trunk/build/ql/test/data/warehouse/src</string> 
           </void> 
           <void method="put"> 
            <string>transient_lastDdlTime</string> 
-           <string>1310382416</string> 
+           <string>1314870387</string> 
           </void> 
          </object> 
         </void> 
@@ -1673,11 +1673,11 @@
             </void> 
             <void method="put"> 
              <string>location</string> 
-             <string>pfile:/home/amarsri/workspace/hive/build/ql/test/data/warehouse/src</string> 
+             <string>pfile:/data/users/charleschen/hive-trunk/build/ql/test/data/warehouse/src</string> 
             </void> 
             <void method="put"> 
              <string>transient_lastDdlTime</string> 
-             <string>1310382416</string> 
+             <string>1314870387</string> 
             </void> 
            </object> 
           </void> 

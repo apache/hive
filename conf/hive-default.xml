@@ -367,6 +367,12 @@
 </property>
 
 <property>
+  <name>hive.ppd.recognizetransivity</name>
+  <value>true</value>
+  <description>Whether to transitively replicate predicate filters over equijoin conditions.</description>
+</property>
+
+<property>
   <name>hive.optimize.pruner</name>
   <value>true</value>
   <description>Whether to enable the new partition pruner which depends on predicate pushdown. If this is disabled,

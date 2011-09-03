@@ -64,11 +64,11 @@ STAGE PLANS:
 PREHOOK: query: SELECT * FROM SRC x where x.key = 10 CLUSTER BY x.key
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/tmp/sdong/hive_2011-02-10_16-56-22_369_8709666241977580995/-mr-10000
+PREHOOK: Output: file:/tmp/charleschen/hive_2011-08-04_15-36-34_074_7000535872788278693/-mr-10000
 POSTHOOK: query: SELECT * FROM SRC x where x.key = 10 CLUSTER BY x.key
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: file:/tmp/sdong/hive_2011-02-10_16-56-22_369_8709666241977580995/-mr-10000
+POSTHOOK: Output: file:/tmp/charleschen/hive_2011-08-04_15-36-34_074_7000535872788278693/-mr-10000
 10	val_10
 PREHOOK: query: EXPLAIN 
 SELECT x.key, x.value as v1, y.key  FROM SRC x JOIN SRC y ON (x.key = y.key)  where x.key = 20 CLUSTER BY v1
@@ -112,18 +112,22 @@ STAGE PLANS:
         y 
           TableScan
             alias: y
-            Reduce Output Operator
-              key expressions:
-                    expr: key
-                    type: string
-              sort order: +
-              Map-reduce partition columns:
-                    expr: key
-                    type: string
-              tag: 1
-              value expressions:
-                    expr: key
-                    type: string
+            Filter Operator
+              predicate:
+                  expr: (key = 20)
+                  type: boolean
+              Reduce Output Operator
+                key expressions:
+                      expr: key
+                      type: string
+                sort order: +
+                Map-reduce partition columns:
+                      expr: key
+                      type: string
+                tag: 1
+                value expressions:
+                      expr: key
+                      type: string
       Reduce Operator Tree:
         Join Operator
           condition map:
@@ -156,7 +160,7 @@ STAGE PLANS:
   Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/tmp/sdong/hive_2011-02-10_16-56-25_857_6745085956410995305/-mr-10002 
+        file:/tmp/charleschen/hive_2011-08-04_15-36-37_183_5233818336294938355/-mr-10002 
             Reduce Output Operator
               key expressions:
                     expr: _col1
@@ -190,11 +194,11 @@ STAGE PLANS:
 PREHOOK: query: SELECT x.key, x.value as v1, y.key  FROM SRC x JOIN SRC y ON (x.key = y.key) where x.key = 20 CLUSTER BY v1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/tmp/sdong/hive_2011-02-10_16-56-25_950_4577225496126879083/-mr-10000
+PREHOOK: Output: file:/tmp/charleschen/hive_2011-08-04_15-36-37_259_5028248286950507899/-mr-10000
 POSTHOOK: query: SELECT x.key, x.value as v1, y.key  FROM SRC x JOIN SRC y ON (x.key = y.key) where x.key = 20 CLUSTER BY v1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: file:/var/folders/uc/ucuNeMAVGQGzy3459D8z2+++Z0Q/-Tmp-/amarsri/hive_2011-03-22_02-06-51_471_1696629323983265212/-mr-10000
+POSTHOOK: Output: file:/tmp/charleschen/hive_2011-08-04_15-36-37_259_5028248286950507899/-mr-10000
 20	val_20	20
 PREHOOK: query: EXPLAIN
 SELECT * FROM SRC x where x.key = 10 CLUSTER BY x.key
@@ -258,11 +262,11 @@ STAGE PLANS:
 PREHOOK: query: SELECT * FROM SRC x where x.key = 10 CLUSTER BY x.key
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/var/folders/uc/ucuNeMAVGQGzy3459D8z2+++Z0Q/-Tmp-/amarsri/hive_2011-03-22_02-07-07_755_9086280220307924310/-mr-10000
+PREHOOK: Output: file:/tmp/charleschen/hive_2011-08-04_15-36-43_271_3465064583325875867/-mr-10000
 POSTHOOK: query: SELECT * FROM SRC x where x.key = 10 CLUSTER BY x.key
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: file:/var/folders/uc/ucuNeMAVGQGzy3459D8z2+++Z0Q/-Tmp-/amarsri/hive_2011-03-22_02-07-07_755_9086280220307924310/-mr-10000
+POSTHOOK: Output: file:/tmp/charleschen/hive_2011-08-04_15-36-43_271_3465064583325875867/-mr-10000
 10	val_10
 PREHOOK: query: EXPLAIN 
 SELECT x.key, x.value as v1, y.key  FROM SRC x JOIN SRC y ON (x.key = y.key)  where x.key = 20 CLUSTER BY v1
@@ -306,18 +310,22 @@ STAGE PLANS:
         y 
           TableScan
             alias: y
-            Reduce Output Operator
-              key expressions:
-                    expr: key
-                    type: string
-              sort order: +
-              Map-reduce partition columns:
-                    expr: key
-                    type: string
-              tag: 1
-              value expressions:
-                    expr: key
-                    type: string
+            Filter Operator
+              predicate:
+                  expr: (key = 20)
+                  type: boolean
+              Reduce Output Operator
+                key expressions:
+                      expr: key
+                      type: string
+                sort order: +
+                Map-reduce partition columns:
+                      expr: key
+                      type: string
+                tag: 1
+                value expressions:
+                      expr: key
+                      type: string
       Reduce Operator Tree:
         Join Operator
           condition map:
@@ -346,7 +354,7 @@ STAGE PLANS:
   Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/var/folders/uc/ucuNeMAVGQGzy3459D8z2+++Z0Q/-Tmp-/amarsri/hive_2011-03-22_02-07-16_261_4934200005006221322/-mr-10002 
+        file:/tmp/charleschen/hive_2011-08-04_15-36-46_356_4821991475262302737/-mr-10002 
             Reduce Output Operator
               key expressions:
                     expr: _col1
@@ -380,9 +388,9 @@ STAGE PLANS:
 PREHOOK: query: SELECT x.key, x.value as v1, y.key  FROM SRC x JOIN SRC y ON (x.key = y.key) where x.key = 20 CLUSTER BY v1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/var/folders/uc/ucuNeMAVGQGzy3459D8z2+++Z0Q/-Tmp-/amarsri/hive_2011-03-22_02-07-16_525_2344085515974635436/-mr-10000
+PREHOOK: Output: file:/tmp/charleschen/hive_2011-08-04_15-36-46_432_7875891648142135101/-mr-10000
 POSTHOOK: query: SELECT x.key, x.value as v1, y.key  FROM SRC x JOIN SRC y ON (x.key = y.key) where x.key = 20 CLUSTER BY v1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: file:/var/folders/uc/ucuNeMAVGQGzy3459D8z2+++Z0Q/-Tmp-/amarsri/hive_2011-03-22_02-07-16_525_2344085515974635436/-mr-10000
+POSTHOOK: Output: file:/tmp/charleschen/hive_2011-08-04_15-36-46_432_7875891648142135101/-mr-10000
 20	val_20	20

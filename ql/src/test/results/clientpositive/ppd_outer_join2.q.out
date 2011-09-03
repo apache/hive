@@ -30,20 +30,24 @@ STAGE PLANS:
         a 
           TableScan
             alias: a
-            Reduce Output Operator
-              key expressions:
-                    expr: key
-                    type: string
-              sort order: +
-              Map-reduce partition columns:
-                    expr: key
-                    type: string
-              tag: 0
-              value expressions:
-                    expr: key
-                    type: string
-                    expr: value
-                    type: string
+            Filter Operator
+              predicate:
+                  expr: ((key > '15') and (key < '25'))
+                  type: boolean
+              Reduce Output Operator
+                key expressions:
+                      expr: key
+                      type: string
+                sort order: +
+                Map-reduce partition columns:
+                      expr: key
+                      type: string
+                tag: 0
+                value expressions:
+                      expr: key
+                      type: string
+                      expr: value
+                      type: string
         b 
           TableScan
             alias: b
@@ -110,7 +114,7 @@ PREHOOK: query: FROM
  WHERE a.key > '10' AND a.key < '20' AND b.key > '15' AND b.key < '25'
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/var/folders/uc/ucuNeMAVGQGzy3459D8z2+++Z0Q/-Tmp-/amarsri/hive_2011-03-22_02-32-34_464_515670423172601583/-mr-10000
+PREHOOK: Output: file:/tmp/charleschen/hive_2011-08-04_15-38-12_487_4675144577619468840/-mr-10000
 POSTHOOK: query: FROM 
   src a
  RIGHT OUTER JOIN 
@@ -120,7 +124,7 @@ POSTHOOK: query: FROM
  WHERE a.key > '10' AND a.key < '20' AND b.key > '15' AND b.key < '25'
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: file:/var/folders/uc/ucuNeMAVGQGzy3459D8z2+++Z0Q/-Tmp-/amarsri/hive_2011-03-22_02-32-34_464_515670423172601583/-mr-10000
+POSTHOOK: Output: file:/tmp/charleschen/hive_2011-08-04_15-38-12_487_4675144577619468840/-mr-10000
 150	val_150	150	val_150
 152	val_152	152	val_152
 152	val_152	152	val_152
@@ -279,20 +283,24 @@ STAGE PLANS:
         a 
           TableScan
             alias: a
-            Reduce Output Operator
-              key expressions:
-                    expr: key
-                    type: string
-              sort order: +
-              Map-reduce partition columns:
-                    expr: key
-                    type: string
-              tag: 0
-              value expressions:
-                    expr: key
-                    type: string
-                    expr: value
-                    type: string
+            Filter Operator
+              predicate:
+                  expr: ((key > '15') and (key < '25'))
+                  type: boolean
+              Reduce Output Operator
+                key expressions:
+                      expr: key
+                      type: string
+                sort order: +
+                Map-reduce partition columns:
+                      expr: key
+                      type: string
+                tag: 0
+                value expressions:
+                      expr: key
+                      type: string
+                      expr: value
+                      type: string
         b 
           TableScan
             alias: b
@@ -359,7 +367,7 @@ PREHOOK: query: FROM
  WHERE a.key > '10' AND a.key < '20' AND b.key > '15' AND b.key < '25'
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/var/folders/uc/ucuNeMAVGQGzy3459D8z2+++Z0Q/-Tmp-/amarsri/hive_2011-03-22_02-32-44_509_6575656481631571931/-mr-10000
+PREHOOK: Output: file:/tmp/charleschen/hive_2011-08-04_15-38-15_904_8893399901344877562/-mr-10000
 POSTHOOK: query: FROM 
   src a
  RIGHT OUTER JOIN 
@@ -369,7 +377,7 @@ POSTHOOK: query: FROM
  WHERE a.key > '10' AND a.key < '20' AND b.key > '15' AND b.key < '25'
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: file:/var/folders/uc/ucuNeMAVGQGzy3459D8z2+++Z0Q/-Tmp-/amarsri/hive_2011-03-22_02-32-44_509_6575656481631571931/-mr-10000
+POSTHOOK: Output: file:/tmp/charleschen/hive_2011-08-04_15-38-15_904_8893399901344877562/-mr-10000
 150	val_150	150	val_150
 152	val_152	152	val_152
 152	val_152	152	val_152

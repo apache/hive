@@ -299,14 +299,9 @@ public final class ExprWalkerProcFactory {
    */
   private static void extractFinalCandidates(ExprNodeDesc expr,
       ExprWalkerInfo ctx, HiveConf conf) {
-    if (ctx.isCandidate(expr)) {
-      ctx.addFinalCandidate(expr);
-      return;
-    } else if (!FunctionRegistry.isOpAnd(expr) &&
-        HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVEPPDREMOVEDUPLICATEFILTERS)) {
-      ctx.addNonFinalCandidate(expr);
-    }
-
+    // We decompose an AND expression into its parts before checking if the
+    // entire expression is a candidate because each part may be a candidate
+    // for replicating transitively over an equijoin condition.
     if (FunctionRegistry.isOpAnd(expr)) {
       // If the operator is AND, we need to determine if any of the children are
       // final candidates.
@@ -321,6 +316,15 @@ public final class ExprWalkerProcFactory {
         extractFinalCandidates((ExprNodeDesc) expr.getChildren().get(i),
             ctx, conf);
       }
+      return;
+    }
+
+    if (ctx.isCandidate(expr)) {
+      ctx.addFinalCandidate(expr);
+      return;
+    } else if (!FunctionRegistry.isOpAnd(expr) &&
+        HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVEPPDREMOVEDUPLICATEFILTERS)) {
+      ctx.addNonFinalCandidate(expr);
     }
   }
 

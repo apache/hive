@@ -38,7 +38,7 @@ STAGE PLANS:
             alias: src
             Filter Operator
               predicate:
-                  expr: (((key <> '11') and (key < '400')) and ((key > '0') and ((value <> 'val_500') or (key > '1'))))
+                  expr: ((((((key <> '11') and (key < '400')) and (key > '0')) and ((value <> 'val_500') or (key > '1'))) and (key <> '4')) and (key <> '1'))
                   type: boolean
               Filter Operator
                 predicate:
@@ -74,7 +74,7 @@ STAGE PLANS:
             alias: src
             Filter Operator
               predicate:
-                  expr: ((key <> '12') and (key <> '4'))
+                  expr: ((((key <> '12') and (key <> '4')) and (key > '0')) and (key <> '1'))
                   type: boolean
               Filter Operator
                 predicate:
@@ -106,7 +106,7 @@ STAGE PLANS:
             alias: src
             Filter Operator
               predicate:
-                  expr: ((key <> '13') and (key <> '1'))
+                  expr: ((((key <> '13') and (key <> '1')) and (key > '0')) and (key <> '4'))
                   type: boolean
               Filter Operator
                 predicate:
@@ -175,7 +175,7 @@ ON src1.c1 = src3.c5
 WHERE src1.c1 > '0' and (src1.c2 <> 'val_500' or src1.c1 > '1') and (src2.c3 > '10' or src1.c1 <> '10') and (src2.c3 <> '4') and (src3.c5 <> '1')
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/var/folders/uc/ucuNeMAVGQGzy3459D8z2+++Z0Q/-Tmp-/amarsri/hive_2011-03-22_02-25-08_238_6256269886850027827/-mr-10000
+PREHOOK: Output: file:/tmp/charleschen/hive_2011-09-02_01-43-07_619_1453826768084640880/-mr-10000
 POSTHOOK: query: SELECT src1.c1, src2.c4 
 FROM
 (SELECT src.key as c1, src.value as c2 from src where src.key <> '11' ) src1
@@ -188,7 +188,7 @@ ON src1.c1 = src3.c5
 WHERE src1.c1 > '0' and (src1.c2 <> 'val_500' or src1.c1 > '1') and (src2.c3 > '10' or src1.c1 <> '10') and (src2.c3 <> '4') and (src3.c5 <> '1')
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: file:/var/folders/uc/ucuNeMAVGQGzy3459D8z2+++Z0Q/-Tmp-/amarsri/hive_2011-03-22_02-25-08_238_6256269886850027827/-mr-10000
+POSTHOOK: Output: file:/tmp/charleschen/hive_2011-09-02_01-43-07_619_1453826768084640880/-mr-10000
 100	val_100
 100	val_100
 100	val_100
@@ -1804,7 +1804,7 @@ STAGE PLANS:
             alias: src
             Filter Operator
               predicate:
-                  expr: (((key <> '11') and (key < '400')) and ((key > '0') and ((value <> 'val_500') or (key > '1'))))
+                  expr: ((((((key <> '11') and (key < '400')) and (key > '0')) and ((value <> 'val_500') or (key > '1'))) and (key <> '4')) and (key <> '1'))
                   type: boolean
               Select Operator
                 expressions:
@@ -1832,7 +1832,7 @@ STAGE PLANS:
             alias: src
             Filter Operator
               predicate:
-                  expr: ((key <> '12') and (key <> '4'))
+                  expr: ((((key <> '12') and (key <> '4')) and (key > '0')) and (key <> '1'))
                   type: boolean
               Select Operator
                 expressions:
@@ -1860,7 +1860,7 @@ STAGE PLANS:
             alias: src
             Filter Operator
               predicate:
-                  expr: ((key <> '13') and (key <> '1'))
+                  expr: ((((key <> '13') and (key <> '1')) and (key > '0')) and (key <> '4'))
                   type: boolean
               Select Operator
                 expressions:
@@ -1925,7 +1925,7 @@ ON src1.c1 = src3.c5
 WHERE src1.c1 > '0' and (src1.c2 <> 'val_500' or src1.c1 > '1') and (src2.c3 > '10' or src1.c1 <> '10') and (src2.c3 <> '4') and (src3.c5 <> '1')
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/var/folders/uc/ucuNeMAVGQGzy3459D8z2+++Z0Q/-Tmp-/amarsri/hive_2011-03-22_02-25-20_069_5364583495609185769/-mr-10000
+PREHOOK: Output: file:/tmp/charleschen/hive_2011-09-02_01-43-11_066_6822218162992622708/-mr-10000
 POSTHOOK: query: SELECT src1.c1, src2.c4 
 FROM
 (SELECT src.key as c1, src.value as c2 from src where src.key <> '11' ) src1
@@ -1938,7 +1938,7 @@ ON src1.c1 = src3.c5
 WHERE src1.c1 > '0' and (src1.c2 <> 'val_500' or src1.c1 > '1') and (src2.c3 > '10' or src1.c1 <> '10') and (src2.c3 <> '4') and (src3.c5 <> '1')
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: file:/var/folders/uc/ucuNeMAVGQGzy3459D8z2+++Z0Q/-Tmp-/amarsri/hive_2011-03-22_02-25-20_069_5364583495609185769/-mr-10000
+POSTHOOK: Output: file:/tmp/charleschen/hive_2011-09-02_01-43-11_066_6822218162992622708/-mr-10000
 100	val_100
 100	val_100
 100	val_100

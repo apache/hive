@@ -78,7 +78,7 @@ STAGE PLANS:
             alias: src2
             Filter Operator
               predicate:
-                  expr: ((key > 15) and (key < 25))
+                  expr: (((key > 15) and (key < 25)) and key is not null)
                   type: boolean
               Select Operator
                 expressions:
@@ -209,11 +209,11 @@ POSTHOOK: Lineage: dest1.c4 SIMPLE [(src)src2.FieldSchema(name:value, type:strin
 PREHOOK: query: SELECT dest1.* FROM dest1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@dest1
-PREHOOK: Output: file:/var/folders/nt/ng21tg0n1jl4547lw0k8lg6hq_nw87/T/charleschen/hive_2011-08-30_19-14-28_754_928376312270623780/-mr-10000
+PREHOOK: Output: file:/tmp/charleschen/hive_2011-09-01_00-11-39_732_8229663903723256/-mr-10000
 POSTHOOK: query: SELECT dest1.* FROM dest1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@dest1
-POSTHOOK: Output: file:/var/folders/nt/ng21tg0n1jl4547lw0k8lg6hq_nw87/T/charleschen/hive_2011-08-30_19-14-28_754_928376312270623780/-mr-10000
+POSTHOOK: Output: file:/tmp/charleschen/hive_2011-09-01_00-11-39_732_8229663903723256/-mr-10000
 POSTHOOK: Lineage: dest1.c1 EXPRESSION [(src)src1.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: dest1.c2 SIMPLE [(src)src1.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: dest1.c3 EXPRESSION [(src)src2.FieldSchema(name:key, type:string, comment:default), ]

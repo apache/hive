@@ -373,6 +373,7 @@ public class HiveConf extends Configuration {
     HIVEOPTINDEXFILTER("hive.optimize.index.filter", false), // automatically use indexes
     HIVEINDEXAUTOUPDATE("hive.optimize.index.autoupdate", false), //automatically update stale indexes
     HIVEOPTPPD("hive.optimize.ppd", true), // predicate pushdown
+    HIVEPPDRECOGNIZETRANSITIVITY("hive.ppd.recognizetransivity", true), // predicate pushdown
     HIVEPPDREMOVEDUPLICATEFILTERS("hive.ppd.remove.duplicatefilters", true),
     // push predicates down to storage handlers
     HIVEOPTPPD_STORAGE("hive.optimize.ppd.storage", true),

@@ -35,7 +35,7 @@ STAGE PLANS:
             alias: src
             Filter Operator
               predicate:
-                  expr: (((key > '1') and (key < '400')) and ((key > '20') and ((value < 'val_50') or (key > '2'))))
+                  expr: (((((key > '1') and (key < '400')) and (key > '20')) and ((value < 'val_50') or (key > '2'))) and (key <> '4'))
                   type: boolean
               Filter Operator
                 predicate:
@@ -71,7 +71,7 @@ STAGE PLANS:
             alias: src
             Filter Operator
               predicate:
-                  expr: ((key > '2') and (key <> '4'))
+                  expr: (((key > '2') and (key <> '4')) and (key > '20'))
                   type: boolean
               Filter Operator
                 predicate:
@@ -131,7 +131,7 @@ STAGE PLANS:
   Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/var/folders/uc/ucuNeMAVGQGzy3459D8z2+++Z0Q/-Tmp-/amarsri/hive_2011-03-22_02-14-53_815_8679319347089159838/-mr-10002 
+        file:/tmp/charleschen/hive_2011-09-02_01-42-48_535_4878843339526148696/-mr-10002 
             Reduce Output Operator
               key expressions:
                     expr: _col0
@@ -210,7 +210,7 @@ STAGE PLANS:
             alias: src
             Filter Operator
               predicate:
-                  expr: (((key > '1') and (key < '400')) and ((key > '20') and ((value < 'val_50') or (key > '2'))))
+                  expr: (((((key > '1') and (key < '400')) and (key > '20')) and ((value < 'val_50') or (key > '2'))) and (key <> '4'))
                   type: boolean
               Select Operator
                 expressions:
@@ -238,7 +238,7 @@ STAGE PLANS:
             alias: src
             Filter Operator
               predicate:
-                  expr: ((key > '2') and (key <> '4'))
+                  expr: (((key > '2') and (key <> '4')) and (key > '20'))
                   type: boolean
               Select Operator
                 expressions:
@@ -294,7 +294,7 @@ STAGE PLANS:
   Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/var/folders/uc/ucuNeMAVGQGzy3459D8z2+++Z0Q/-Tmp-/amarsri/hive_2011-03-22_02-14-54_718_7102065647101283820/-mr-10002 
+        file:/tmp/charleschen/hive_2011-09-02_01-42-48_602_2740815544468478597/-mr-10002 
             Reduce Output Operator
               key expressions:
                     expr: _col0
