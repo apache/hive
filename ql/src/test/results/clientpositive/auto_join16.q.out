@@ -63,7 +63,7 @@ STAGE PLANS:
             alias: a
             Filter Operator
               predicate:
-                  expr: ((key > 10) and (key > 20))
+                  expr: (((key > 10) and (key > 20)) and (value < 200))
                   type: boolean
               Select Operator
                 expressions:
@@ -109,7 +109,7 @@ STAGE PLANS:
   Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/tmp/sdong/hive_2011-02-10_01-14-34_877_5596761155901891451/-mr-10002 
+        file:/tmp/charleschen/hive_2011-08-04_13-40-09_960_3421937651195483585/-mr-10002 
             Reduce Output Operator
               sort order: 
               tag: -1
@@ -147,7 +147,7 @@ STAGE PLANS:
             alias: a
             Filter Operator
               predicate:
-                  expr: ((key > 10) and (key > 20))
+                  expr: (((key > 10) and (key > 20)) and (value < 200))
                   type: boolean
               Select Operator
                 expressions:
@@ -218,7 +218,7 @@ STAGE PLANS:
             alias: a
             Filter Operator
               predicate:
-                  expr: ((key > 10) and (key > 20))
+                  expr: (((key > 10) and (key > 20)) and (value < 200))
                   type: boolean
               Select Operator
                 expressions:
@@ -308,7 +308,7 @@ ON (subq.key = tab.key and subq.key > 20 and subq.value = tab.value)
 where tab.value < 200
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/tmp/sdong/hive_2011-02-10_01-14-35_133_7289459318323276940/-mr-10000
+PREHOOK: Output: file:/tmp/charleschen/hive_2011-08-04_13-40-10_383_7393462303376577042/-mr-10000
 POSTHOOK: query: SELECT sum(hash(subq.key, tab.value)) 
 FROM 
 (select a.key, a.value from src a where a.key > 10 ) subq 
@@ -317,5 +317,5 @@ ON (subq.key = tab.key and subq.key > 20 and subq.value = tab.value)
 where tab.value < 200
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: file:/tmp/sdong/hive_2011-02-10_01-14-35_133_7289459318323276940/-mr-10000
+POSTHOOK: Output: file:/tmp/charleschen/hive_2011-08-04_13-40-10_383_7393462303376577042/-mr-10000
 NULL

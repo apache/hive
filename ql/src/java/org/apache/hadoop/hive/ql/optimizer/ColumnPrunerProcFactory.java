@@ -508,6 +508,8 @@ public final class ColumnPrunerProcFactory {
       String[] nm = parResover.reverseLookup(outputCol);
       ColumnInfo colInfo = oldRR.get(nm[0], nm[1]);
       if (colInfo != null) {
+        String internalName=colInfo.getInternalName();
+        newMap.put(internalName, oldMap.get(internalName));
         newRR.put(nm[0], nm[1], colInfo);
       }
     }

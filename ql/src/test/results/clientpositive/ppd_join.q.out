@@ -32,7 +32,7 @@ STAGE PLANS:
             alias: src
             Filter Operator
               predicate:
-                  expr: (((key > '1') and (key < '400')) and ((key > '20') and ((value < 'val_50') or (key > '2'))))
+                  expr: (((((key > '1') and (key < '400')) and (key > '20')) and ((value < 'val_50') or (key > '2'))) and (key <> '4'))
                   type: boolean
               Filter Operator
                 predicate:
@@ -68,7 +68,7 @@ STAGE PLANS:
             alias: src
             Filter Operator
               predicate:
-                  expr: ((key > '2') and (key <> '4'))
+                  expr: (((key > '2') and (key <> '4')) and (key > '20'))
                   type: boolean
               Filter Operator
                 predicate:
@@ -136,7 +136,7 @@ ON src1.c1 = src2.c3 AND src1.c1 < '400'
 WHERE src1.c1 > '20' and (src1.c2 < 'val_50' or src1.c1 > '2') and (src2.c3 > '50' or src1.c1 < '50') and (src2.c3 <> '4')
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/var/folders/uc/ucuNeMAVGQGzy3459D8z2+++Z0Q/-Tmp-/amarsri/hive_2011-03-22_02-19-54_404_4275400666711143229/-mr-10000
+PREHOOK: Output: file:/tmp/charleschen/hive_2011-09-02_01-42-48_824_3632303142451515406/-mr-10000
 POSTHOOK: query: SELECT src1.c1, src2.c4 
 FROM
 (SELECT src.key as c1, src.value as c2 from src where src.key > '1' ) src1
@@ -146,7 +146,7 @@ ON src1.c1 = src2.c3 AND src1.c1 < '400'
 WHERE src1.c1 > '20' and (src1.c2 < 'val_50' or src1.c1 > '2') and (src2.c3 > '50' or src1.c1 < '50') and (src2.c3 <> '4')
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: file:/var/folders/uc/ucuNeMAVGQGzy3459D8z2+++Z0Q/-Tmp-/amarsri/hive_2011-03-22_02-19-54_404_4275400666711143229/-mr-10000
+POSTHOOK: Output: file:/tmp/charleschen/hive_2011-09-02_01-42-48_824_3632303142451515406/-mr-10000
 200	val_200
 200	val_200
 200	val_200
@@ -599,7 +599,7 @@ STAGE PLANS:
             alias: src
             Filter Operator
               predicate:
-                  expr: (((key > '1') and (key < '400')) and ((key > '20') and ((value < 'val_50') or (key > '2'))))
+                  expr: (((((key > '1') and (key < '400')) and (key > '20')) and ((value < 'val_50') or (key > '2'))) and (key <> '4'))
                   type: boolean
               Select Operator
                 expressions:
@@ -627,7 +627,7 @@ STAGE PLANS:
             alias: src
             Filter Operator
               predicate:
-                  expr: ((key > '2') and (key <> '4'))
+                  expr: (((key > '2') and (key <> '4')) and (key > '20'))
                   type: boolean
               Select Operator
                 expressions:
@@ -691,7 +691,7 @@ ON src1.c1 = src2.c3 AND src1.c1 < '400'
 WHERE src1.c1 > '20' and (src1.c2 < 'val_50' or src1.c1 > '2') and (src2.c3 > '50' or src1.c1 < '50') and (src2.c3 <> '4')
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/var/folders/uc/ucuNeMAVGQGzy3459D8z2+++Z0Q/-Tmp-/amarsri/hive_2011-03-22_02-20-04_832_4076756605206612832/-mr-10000
+PREHOOK: Output: file:/tmp/charleschen/hive_2011-09-02_01-42-51_952_8897790092802296390/-mr-10000
 POSTHOOK: query: SELECT src1.c1, src2.c4 
 FROM
 (SELECT src.key as c1, src.value as c2 from src where src.key > '1' ) src1
@@ -701,7 +701,7 @@ ON src1.c1 = src2.c3 AND src1.c1 < '400'
 WHERE src1.c1 > '20' and (src1.c2 < 'val_50' or src1.c1 > '2') and (src2.c3 > '50' or src1.c1 < '50') and (src2.c3 <> '4')
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: file:/var/folders/uc/ucuNeMAVGQGzy3459D8z2+++Z0Q/-Tmp-/amarsri/hive_2011-03-22_02-20-04_832_4076756605206612832/-mr-10000
+POSTHOOK: Output: file:/tmp/charleschen/hive_2011-09-02_01-42-51_952_8897790092802296390/-mr-10000
 200	val_200
 200	val_200
 200	val_200

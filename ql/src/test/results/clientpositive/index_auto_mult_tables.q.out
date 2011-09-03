@@ -25,7 +25,7 @@ STAGE PLANS:
             alias: a
             Filter Operator
               predicate:
-                  expr: ((key > 80) and (key < 100))
+                  expr: ((((key > 80) and (key < 100)) and (key > 70)) and (key < 90))
                   type: boolean
               Reduce Output Operator
                 key expressions:
@@ -46,7 +46,7 @@ STAGE PLANS:
             alias: b
             Filter Operator
               predicate:
-                  expr: ((key > 70) and (key < 90))
+                  expr: ((((key > 70) and (key < 90)) and (key > 80)) and (key < 100))
                   type: boolean
               Reduce Output Operator
                 key expressions:
@@ -86,7 +86,7 @@ STAGE PLANS:
   Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/var/folders/nt/ng21tg0n1jl4547lw0k8lg6hq_nw87/T/charleschen/hive_2011-08-30_19-11-37_886_962059869422887819/-mr-10002 
+        file:/tmp/charleschen/hive_2011-09-02_00-40-32_210_8369520160583859081/-mr-10002 
             Reduce Output Operator
               key expressions:
                     expr: _col0
@@ -119,7 +119,7 @@ PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
 PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
 PREHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
 PREHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
-PREHOOK: Output: file:/var/folders/nt/ng21tg0n1jl4547lw0k8lg6hq_nw87/T/charleschen/hive_2011-08-30_19-11-38_313_2643938706286429021/-mr-10000
+PREHOOK: Output: file:/tmp/charleschen/hive_2011-09-02_00-40-32_298_7062969703447731515/-mr-10000
 POSTHOOK: query: SELECT a.key, a.value FROM src a JOIN srcpart b ON (a.key = b.key) WHERE a.key > 80 AND a.key < 100 AND b.key > 70 AND b.key < 90 ORDER BY a.key
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
@@ -127,7 +127,7 @@ POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
 POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
 POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
 POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
-POSTHOOK: Output: file:/var/folders/nt/ng21tg0n1jl4547lw0k8lg6hq_nw87/T/charleschen/hive_2011-08-30_19-11-38_313_2643938706286429021/-mr-10000
+POSTHOOK: Output: file:/tmp/charleschen/hive_2011-09-02_00-40-32_298_7062969703447731515/-mr-10000
 82	val_82
 82	val_82
 82	val_82
@@ -260,11 +260,11 @@ STAGE PLANS:
           TableScan
             alias: default__srcpart_srcpart_index__
             filterExpr:
-                expr: (((key > 70) and (key < 90)) and (not EWAH_BITMAP_EMPTY(_bitmaps)))
+                expr: (((((key > 70) and (key < 90)) and (key > 80)) and (key < 100)) and (not EWAH_BITMAP_EMPTY(_bitmaps)))
                 type: boolean
             Filter Operator
               predicate:
-                  expr: (((key > 70) and (key < 90)) and (not EWAH_BITMAP_EMPTY(_bitmaps)))
+                  expr: (((((key > 70) and (key < 90)) and (key > 80)) and (key < 100)) and (not EWAH_BITMAP_EMPTY(_bitmaps)))
                   type: boolean
               Select Operator
                 expressions:
@@ -338,7 +338,7 @@ STAGE PLANS:
     Move Operator
       files:
           hdfs directory: true
-          destination: file:/var/folders/nt/ng21tg0n1jl4547lw0k8lg6hq_nw87/T/charleschen/hive_2011-08-30_19-12-29_480_7231326688955426901/-mr-10003
+          destination: file:/tmp/charleschen/hive_2011-09-02_00-40-58_026_6087921660802846126/-mr-10003
 
   Stage: Stage-1
     Map Reduce
@@ -347,11 +347,11 @@ STAGE PLANS:
           TableScan
             alias: a
             filterExpr:
-                expr: ((key > 80) and (key < 100))
+                expr: ((((key > 80) and (key < 100)) and (key > 70)) and (key < 90))
                 type: boolean
             Filter Operator
               predicate:
-                  expr: ((key > 80) and (key < 100))
+                  expr: ((((key > 80) and (key < 100)) and (key > 70)) and (key < 90))
                   type: boolean
               Reduce Output Operator
                 key expressions:
@@ -371,11 +371,11 @@ STAGE PLANS:
           TableScan
             alias: b
             filterExpr:
-                expr: ((key > 70) and (key < 90))
+                expr: ((((key > 70) and (key < 90)) and (key > 80)) and (key < 100))
                 type: boolean
             Filter Operator
               predicate:
-                  expr: ((key > 70) and (key < 90))
+                  expr: ((((key > 70) and (key < 90)) and (key > 80)) and (key < 100))
                   type: boolean
               Reduce Output Operator
                 key expressions:
@@ -415,7 +415,7 @@ STAGE PLANS:
   Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/var/folders/nt/ng21tg0n1jl4547lw0k8lg6hq_nw87/T/charleschen/hive_2011-08-30_19-12-29_480_7231326688955426901/-mr-10002 
+        file:/tmp/charleschen/hive_2011-09-02_00-40-58_026_6087921660802846126/-mr-10002 
             Reduce Output Operator
               key expressions:
                     expr: _col0
@@ -443,11 +443,11 @@ STAGE PLANS:
           TableScan
             alias: default__src_src_index__
             filterExpr:
-                expr: (((key > 80) and (key < 100)) and (not EWAH_BITMAP_EMPTY(_bitmaps)))
+                expr: (((((key > 80) and (key < 100)) and (key > 70)) and (key < 90)) and (not EWAH_BITMAP_EMPTY(_bitmaps)))
                 type: boolean
             Filter Operator
               predicate:
-                  expr: (((key > 80) and (key < 100)) and (not EWAH_BITMAP_EMPTY(_bitmaps)))
+                  expr: (((((key > 80) and (key < 100)) and (key > 70)) and (key < 90)) and (not EWAH_BITMAP_EMPTY(_bitmaps)))
                   type: boolean
               Select Operator
                 expressions:
@@ -521,7 +521,7 @@ STAGE PLANS:
     Move Operator
       files:
           hdfs directory: true
-          destination: file:/var/folders/nt/ng21tg0n1jl4547lw0k8lg6hq_nw87/T/charleschen/hive_2011-08-30_19-12-29_480_7231326688955426901/-mr-10004
+          destination: file:/tmp/charleschen/hive_2011-09-02_00-40-58_026_6087921660802846126/-mr-10004
 
   Stage: Stage-0
     Fetch Operator
@@ -540,7 +540,7 @@ PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
 PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
 PREHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
 PREHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
-PREHOOK: Output: file:/var/folders/nt/ng21tg0n1jl4547lw0k8lg6hq_nw87/T/charleschen/hive_2011-08-30_19-12-30_228_1386208254160104156/-mr-10000
+PREHOOK: Output: file:/tmp/charleschen/hive_2011-09-02_00-40-58_428_4655402597563090498/-mr-10000
 POSTHOOK: query: SELECT a.key, a.value FROM src a JOIN srcpart b ON (a.key = b.key) WHERE a.key > 80 AND a.key < 100 AND b.key > 70 AND b.key < 90 ORDER BY a.key
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@default__src_src_index__
@@ -553,7 +553,7 @@ POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
 POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
 POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
 POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
-POSTHOOK: Output: file:/var/folders/nt/ng21tg0n1jl4547lw0k8lg6hq_nw87/T/charleschen/hive_2011-08-30_19-12-30_228_1386208254160104156/-mr-10000
+POSTHOOK: Output: file:/tmp/charleschen/hive_2011-09-02_00-40-58_428_4655402597563090498/-mr-10000
 POSTHOOK: Lineage: default__src_src_index__._bitmaps EXPRESSION [(src)src.FieldSchema(name:ROW__OFFSET__INSIDE__BLOCK, type:bigint, comment:), ]
 POSTHOOK: Lineage: default__src_src_index__._bucketname SIMPLE [(src)src.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
 POSTHOOK: Lineage: default__src_src_index__._offset SIMPLE [(src)src.FieldSchema(name:BLOCK__OFFSET__INSIDE__FILE, type:bigint, comment:), ]

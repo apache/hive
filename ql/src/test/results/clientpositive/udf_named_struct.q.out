@@ -54,10 +54,10 @@ PREHOOK: query: SELECT named_struct("foo", 1, "bar", 2),
        named_struct("foo", 1, "bar", 2).foo FROM src LIMIT 1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/var/folders/C4/C40caRNsEM4C4yVangruonVUe7Y/-Tmp-/jonchang/hive_2011-08-11_01-02-24_658_503462155153078291/-mr-10000
+PREHOOK: Output: file:/tmp/charleschen/hive_2011-08-17_22-16-07_735_3705561327372616732/-mr-10000
 POSTHOOK: query: SELECT named_struct("foo", 1, "bar", 2),
        named_struct("foo", 1, "bar", 2).foo FROM src LIMIT 1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: file:/var/folders/C4/C40caRNsEM4C4yVangruonVUe7Y/-Tmp-/jonchang/hive_2011-08-11_01-02-24_658_503462155153078291/-mr-10000
+POSTHOOK: Output: file:/tmp/charleschen/hive_2011-08-17_22-16-07_735_3705561327372616732/-mr-10000
 {"foo":1,"bar":2}	1

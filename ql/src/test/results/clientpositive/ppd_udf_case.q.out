@@ -64,24 +64,28 @@ STAGE PLANS:
         b 
           TableScan
             alias: b
-            Reduce Output Operator
-              key expressions:
-                    expr: key
-                    type: string
-              sort order: +
-              Map-reduce partition columns:
-                    expr: key
-                    type: string
-              tag: 1
-              value expressions:
-                    expr: key
-                    type: string
-                    expr: value
-                    type: string
-                    expr: ds
-                    type: string
-                    expr: hr
-                    type: string
+            Filter Operator
+              predicate:
+                  expr: CASE (key) WHEN ('27') THEN (true) WHEN ('38') THEN (false) ELSE (null) END
+                  type: boolean
+              Reduce Output Operator
+                key expressions:
+                      expr: key
+                      type: string
+                sort order: +
+                Map-reduce partition columns:
+                      expr: key
+                      type: string
+                tag: 1
+                value expressions:
+                      expr: key
+                      type: string
+                      expr: value
+                      type: string
+                      expr: ds
+                      type: string
+                      expr: hr
+                      type: string
       Reduce Operator Tree:
         Join Operator
           condition map:
@@ -124,7 +128,7 @@ STAGE PLANS:
   Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/var/folders/uc/ucuNeMAVGQGzy3459D8z2+++Z0Q/-Tmp-/amarsri/hive_2011-03-22_02-53-19_011_6078693060764998539/-mr-10002 
+        file:/tmp/charleschen/hive_2011-08-04_15-38-40_124_3085325060954835780/-mr-10002 
             Reduce Output Operator
               key expressions:
                     expr: _col0
@@ -190,7 +194,7 @@ ORDER BY a.key, a.value, a.ds, a.hr, b.key, b.value, b.ds, b.hr
 PREHOOK: type: QUERY
 PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
 PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
-PREHOOK: Output: file:/var/folders/uc/ucuNeMAVGQGzy3459D8z2+++Z0Q/-Tmp-/amarsri/hive_2011-03-22_02-53-20_085_7457265695938103038/-mr-10000
+PREHOOK: Output: file:/tmp/charleschen/hive_2011-08-04_15-38-40_241_9100931972676880091/-mr-10000
 POSTHOOK: query: SELECT *
 FROM srcpart a JOIN srcpart b
 ON a.key = b.key
@@ -205,7 +209,7 @@ ORDER BY a.key, a.value, a.ds, a.hr, b.key, b.value, b.ds, b.hr
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
 POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
-POSTHOOK: Output: file:/var/folders/uc/ucuNeMAVGQGzy3459D8z2+++Z0Q/-Tmp-/amarsri/hive_2011-03-22_02-53-20_085_7457265695938103038/-mr-10000
+POSTHOOK: Output: file:/tmp/charleschen/hive_2011-08-04_15-38-40_241_9100931972676880091/-mr-10000
 27	val_27	2008-04-08	11	27	val_27	2008-04-08	11
 27	val_27	2008-04-08	11	27	val_27	2008-04-08	12
 27	val_27	2008-04-08	12	27	val_27	2008-04-08	11
@@ -276,24 +280,28 @@ STAGE PLANS:
         b 
           TableScan
             alias: b
-            Reduce Output Operator
-              key expressions:
-                    expr: key
-                    type: string
-              sort order: +
-              Map-reduce partition columns:
-                    expr: key
-                    type: string
-              tag: 1
-              value expressions:
-                    expr: key
-                    type: string
-                    expr: value
-                    type: string
-                    expr: ds
-                    type: string
-                    expr: hr
-                    type: string
+            Filter Operator
+              predicate:
+                  expr: CASE (key) WHEN ('27') THEN (true) WHEN ('38') THEN (false) ELSE (null) END
+                  type: boolean
+              Reduce Output Operator
+                key expressions:
+                      expr: key
+                      type: string
+                sort order: +
+                Map-reduce partition columns:
+                      expr: key
+                      type: string
+                tag: 1
+                value expressions:
+                      expr: key
+                      type: string
+                      expr: value
+                      type: string
+                      expr: ds
+                      type: string
+                      expr: hr
+                      type: string
       Reduce Operator Tree:
         Join Operator
           condition map:
@@ -332,7 +340,7 @@ STAGE PLANS:
   Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/var/folders/uc/ucuNeMAVGQGzy3459D8z2+++Z0Q/-Tmp-/amarsri/hive_2011-03-22_02-53-40_322_7654615073140246084/-mr-10002 
+        file:/tmp/charleschen/hive_2011-08-04_15-38-46_616_4592989379602081302/-mr-10002 
             Reduce Output Operator
               key expressions:
                     expr: _col0
@@ -398,7 +406,7 @@ ORDER BY a.key, a.value, a.ds, a.hr, b.key, b.value, b.ds, b.hr
 PREHOOK: type: QUERY
 PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
 PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
-PREHOOK: Output: file:/var/folders/uc/ucuNeMAVGQGzy3459D8z2+++Z0Q/-Tmp-/amarsri/hive_2011-03-22_02-53-40_840_3692167909003016050/-mr-10000
+PREHOOK: Output: file:/tmp/charleschen/hive_2011-08-04_15-38-46_730_8355573912192239451/-mr-10000
 POSTHOOK: query: SELECT *
 FROM srcpart a JOIN srcpart b
 ON a.key = b.key
@@ -413,7 +421,7 @@ ORDER BY a.key, a.value, a.ds, a.hr, b.key, b.value, b.ds, b.hr
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
 POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
-POSTHOOK: Output: file:/var/folders/uc/ucuNeMAVGQGzy3459D8z2+++Z0Q/-Tmp-/amarsri/hive_2011-03-22_02-53-40_840_3692167909003016050/-mr-10000
+POSTHOOK: Output: file:/tmp/charleschen/hive_2011-08-04_15-38-46_730_8355573912192239451/-mr-10000
 27	val_27	2008-04-08	11	27	val_27	2008-04-08	11
 27	val_27	2008-04-08	11	27	val_27	2008-04-08	12
 27	val_27	2008-04-08	12	27	val_27	2008-04-08	11

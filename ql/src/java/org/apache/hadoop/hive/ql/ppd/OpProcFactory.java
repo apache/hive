@@ -19,6 +19,7 @@ package org.apache.hadoop.hive.ql.ppd;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
@@ -30,6 +31,7 @@ import java.util.Stack;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.ql.exec.ColumnInfo;
 import org.apache.hadoop.hive.ql.exec.FilterOperator;
 import org.apache.hadoop.hive.ql.exec.FunctionRegistry;
 import org.apache.hadoop.hive.ql.exec.JoinOperator;
@@ -44,9 +46,13 @@ import org.apache.hadoop.hive.ql.lib.NodeProcessorCtx;
 import org.apache.hadoop.hive.ql.metadata.HiveStorageHandler;
 import org.apache.hadoop.hive.ql.metadata.HiveStoragePredicateHandler;
 import org.apache.hadoop.hive.ql.metadata.Table;
+import org.apache.hadoop.hive.ql.parse.ASTNode;
+import org.apache.hadoop.hive.ql.parse.BaseSemanticAnalyzer;
+import org.apache.hadoop.hive.ql.parse.HiveParser;
 import org.apache.hadoop.hive.ql.parse.OpParseContext;
 import org.apache.hadoop.hive.ql.parse.RowResolver;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
+import org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc;
 import org.apache.hadoop.hive.ql.plan.FilterDesc;
@@ -248,6 +254,10 @@ public final class OpProcFactory {
           prunePreds.getFinalCandidates().remove(alias);
         }
         if (HiveConf.getBoolVar(owi.getParseContext().getConf(),
+            HiveConf.ConfVars.HIVEPPDRECOGNIZETRANSITIVITY)) {
+          applyFilterTransitivity((JoinOperator) nd, owi);
+        }
+        if (HiveConf.getBoolVar(owi.getParseContext().getConf(),
             HiveConf.ConfVars.HIVEPPDREMOVEDUPLICATEFILTERS)) {
           // Here, we add all the "non-final candidiates", ie. the predicates
           // rejected from pushdown through this operator to unpushedPreds
@@ -266,6 +276,170 @@ public final class OpProcFactory {
         }
       }
       return null;
+    }
+
+    /**
+     * Adds additional pushdown predicates for a join operator by replicating
+     * filters transitively over all the equijoin conditions.
+     *
+     * If we have a predicate "t.col=1" and the equijoin conditions
+     * "t.col=s.col" and "t.col=u.col", we add the filters "s.col=1" and
+     * "u.col=1". Note that this does not depend on the types of joins (ie.
+     * inner, left/right/full outer) between the tables s, t and u because if
+     * a predicate, eg. "t.col=1" is present in getFinalCandidates() at this
+     * point, we have already verified that it can be pushed down, so any rows
+     * emitted must satisfy s.col=t.col=u.col=1 and replicating the filters
+     * like this is ok.
+     */
+    private void applyFilterTransitivity(JoinOperator nd, OpWalkerInfo owi)
+        throws SemanticException {
+      ExprWalkerInfo prunePreds =
+          owi.getPrunedPreds((Operator<? extends Serializable>) nd);
+      if (prunePreds != null) {
+        // We want to use the row resolvers of the parents of the join op
+        // because the rowresolver refers to the output columns of an operator
+        // and the filters at this point refer to the input columns of the join
+        // operator.
+        Map<String, RowResolver> aliasToRR =
+            new HashMap<String, RowResolver>();
+        for (Operator<? extends Serializable> o : (nd).getParentOperators()) {
+          for (String alias : owi.getRowResolver(o).getTableNames()){
+            aliasToRR.put(alias, owi.getRowResolver(o));
+          }
+        }
+
+        // eqExpressions is a list of ArrayList<ASTNode>'s, one for each table
+        // in the join. Then for each i, j and k, the join condition is that
+        // eqExpressions[i][k]=eqExpressions[j][k] (*) (ie. the columns referenced
+        // by the corresponding ASTNodes are equal). For example, if the query
+        // was SELECT * FROM a join b on a.col=b.col and a.col2=b.col2 left
+        // outer join c on b.col=c.col and b.col2=c.col2 WHERE c.col=1,
+        // eqExpressions would be [[a.col1, a.col2], [b.col1, b.col2],
+        // [c.col1, c.col2]].
+        //
+        // numEqualities is the number of equal columns in each equality
+        // "chain" and numColumns is the number of such chains.
+        //
+        // Note that (*) is guaranteed to be true for the
+        // join operator: if the equijoin condititions can't be expressed in
+        // these equal-length lists of equal columns (for example if we had the
+        // query SELECT * FROM a join b on a.col=b.col and a.col2=b.col2 left
+        // outer join c on b.col=c.col), more than one join operator is used.
+        ArrayList<ArrayList<ASTNode>> eqExpressions =
+            owi.getParseContext().getJoinContext().get(nd).getExpressions();
+        int numColumns = eqExpressions.size();
+        int numEqualities = eqExpressions.get(0).size();
+
+        // joins[i] is the join between table i and i+1 in the JoinOperator
+        JoinCondDesc[] joins = (nd).getConf().getConds();
+
+        // oldFilters contains the filters to be pushed down
+        Map<String, List<ExprNodeDesc>> oldFilters =
+            prunePreds.getFinalCandidates();
+        Map<String, List<ExprNodeDesc>> newFilters =
+            new HashMap<String, List<ExprNodeDesc>>();
+
+        // We loop through for each chain of equalities
+        for (int i=0; i<numEqualities; i++) {
+          // equalColumns[i] is the ColumnInfo corresponding to the ith term
+          // of the equality or null if the term is not a simple column
+          // reference
+          ColumnInfo[] equalColumns=new ColumnInfo[numColumns];
+          for (int j=0; j<numColumns; j++) {
+            equalColumns[j] =
+                getColumnInfoFromAST(eqExpressions.get(j).get(i), aliasToRR);
+          }
+          for (int j=0; j<numColumns; j++) {
+            for (int k=0; k<numColumns; k++) {
+              if (j != k && equalColumns[j]!= null
+                  && equalColumns[k] != null) {
+                // terms j and k in the equality chain are simple columns,
+                // so we can replace instances of column j with column k
+                // in the filter and ad the replicated filter.
+                ColumnInfo left = equalColumns[j];
+                ColumnInfo right = equalColumns[k];
+                if (oldFilters.get(left.getTabAlias()) != null){
+                  for (ExprNodeDesc expr :
+                    oldFilters.get(left.getTabAlias())) {
+                    // Only replicate the filter if there is exactly one column
+                    // referenced
+                    Set<String> colsreferenced =
+                        new HashSet<String>(expr.getCols());
+                    if (colsreferenced.size() == 1
+                        && colsreferenced.contains(left.getInternalName())){
+                      ExprNodeDesc newexpr = expr.clone();
+                      // Replace the column reference in the filter
+                      replaceColumnReference(newexpr, left.getInternalName(),
+                          right.getInternalName());
+                      if (newFilters.get(right.getTabAlias()) == null) {
+                        newFilters.put(right.getTabAlias(),
+                            new ArrayList<ExprNodeDesc>());
+                      }
+                      newFilters.get(right.getTabAlias()).add(newexpr);
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+
+        for (Entry<String, List<ExprNodeDesc>> aliasToFilters
+            : newFilters.entrySet()){
+          owi.getPrunedPreds((Operator<? extends Serializable>) nd)
+            .addPushDowns(aliasToFilters.getKey(), aliasToFilters.getValue());
+        }
+      }
+    }
+
+    /**
+     * Replaces the ColumnInfo for the column referred to by an ASTNode
+     * representing "table.column" or null if the ASTNode is not in that form
+     */
+    private ColumnInfo getColumnInfoFromAST(ASTNode nd,
+        Map<String, RowResolver> aliastoRR) throws SemanticException {
+      // this bit is messy since we are parsing an ASTNode at this point
+      if (nd.getType()==HiveParser.DOT) {
+        if (nd.getChildCount()==2) {
+          if (nd.getChild(0).getType()==HiveParser.TOK_TABLE_OR_COL
+              && nd.getChild(0).getChildCount()==1
+              && nd.getChild(1).getType()==HiveParser.Identifier){
+            // We unescape the identifiers and make them lower case--this
+            // really shouldn't be done here, but getExpressions gives us the
+            // raw ASTNodes. The same thing is done in SemanticAnalyzer.
+            // parseJoinCondPopulateAlias().
+            String alias = BaseSemanticAnalyzer.unescapeIdentifier(
+                nd.getChild(0).getChild(0).getText().toLowerCase());
+            String column = BaseSemanticAnalyzer.unescapeIdentifier(
+                nd.getChild(1).getText().toLowerCase());
+            RowResolver rr=aliastoRR.get(alias);
+            if (rr == null) {
+              return null;
+            }
+            return rr.get(alias, column);
+          }
+        }
+      }
+      return null;
+    }
+
+    /**
+     * Replaces all instances of oldColumn with newColumn in the
+     * ExprColumnDesc's of the ExprNodeDesc
+     */
+    private void replaceColumnReference(ExprNodeDesc expr,
+        String oldColumn, String newColumn) {
+      if (expr instanceof ExprNodeColumnDesc) {
+        if (((ExprNodeColumnDesc) expr).getColumn().equals(oldColumn)){
+          ((ExprNodeColumnDesc) expr).setColumn(newColumn);
+        }
+      }
+
+      if (expr.getChildren() != null){
+        for (ExprNodeDesc childexpr : expr.getChildren()) {
+          replaceColumnReference(childexpr, oldColumn, newColumn);
+        }
+      }
     }
 
     /**
