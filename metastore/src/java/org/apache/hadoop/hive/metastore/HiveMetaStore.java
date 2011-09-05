@@ -3552,18 +3552,20 @@ public class HiveMetaStore extends ThriftHiveMetastore {
         transFactory = new TTransportFactory();
       }
 
-      TThreadPoolServer.Options options = new TThreadPoolServer.Options();
-      options.minWorkerThreads = minWorkerThreads;
-      options.maxWorkerThreads = maxWorkerThreads;
-      TServer tServer = new TThreadPoolServer(processor, serverTransport,
-          transFactory, transFactory,
-          new TBinaryProtocol.Factory(), new TBinaryProtocol.Factory(), options);
+      TThreadPoolServer.Args args = new TThreadPoolServer.Args(serverTransport)
+        .processor(processor)
+        .transportFactory(transFactory)
+        .protocolFactory(new TBinaryProtocol.Factory())
+        .minWorkerThreads(minWorkerThreads)
+        .maxWorkerThreads(maxWorkerThreads);
+
+      TServer tServer = new TThreadPoolServer(args);
       HMSHandler.LOG.info("Started the new metaserver on port [" + port
           + "]...");
       HMSHandler.LOG.info("Options.minWorkerThreads = "
-          + options.minWorkerThreads);
+          + minWorkerThreads);
       HMSHandler.LOG.info("Options.maxWorkerThreads = "
-          + options.maxWorkerThreads);
+          + maxWorkerThreads);
       HMSHandler.LOG.info("TCP keepalive = " + tcpKeepAlive);
       tServer.serve();
     } catch (Throwable x) {

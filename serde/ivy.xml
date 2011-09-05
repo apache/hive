@@ -29,5 +29,9 @@
         <dependency org="org.slf4j" name="slf4j-api" rev="${slf4j-api.version}"/>
         <dependency org="org.slf4j" name="slf4j-log4j12" rev="${slf4j-log4j12.version}"/>
         <dependency org="org.mockito" name="mockito-all" rev="${mockito-all.version}"/>
+        <dependency org="org.apache.thrift" name="libthrift" rev="${libthrift.version}"
+                    transitive="false"/>
+        <dependency org="org.apache.thrift" name="libfb303" rev="${libfb303.version}"
+                    transitive="false"/>
     </dependencies>
 </ivy-module>
