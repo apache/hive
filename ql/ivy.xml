@@ -40,5 +40,7 @@
         </dependency>
         <dependency org="com.google.guava" name="guava" rev="${guava.version}"
                     transitive="false"/>
+        <dependency org="org.apache.thrift" name="libthrift" rev="${libthrift.version}"
+                    transitive="false"/>
     </dependencies>
 </ivy-module>

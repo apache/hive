@@ -29,7 +29,9 @@
         </dependency> 
         <dependency org="hadoop" name="core" rev="${hadoop.security.version}">
           <artifact name="hadoop" type="source" ext="tar.gz"/>
-        </dependency> 
+        </dependency>
+        <dependency org="org.apache.thrift" name="libthrift" rev="${libthrift.version}"
+                    transitive="false"/>
         <conflict manager="all" />
     </dependencies>
 </ivy-module>

@@ -29,5 +29,7 @@
         </dependency>
         <dependency org="commons-cli" name="commons-cli" rev="${commons-cli.version}"/>
         <dependency org="org.mockito" name="mockito-all" rev="${mockito-all.version}" />
+        <dependency org="org.apache.thrift" name="libthrift" rev="${libthrift.version}"
+                    transitive="false"/>
     </dependencies>
 </ivy-module>

@@ -672,12 +672,14 @@ public class HiveServer extends ThriftHive {
       ThriftHiveProcessorFactory hfactory =
         new ThriftHiveProcessorFactory(null, conf);
 
-      TThreadPoolServer.Options options = new TThreadPoolServer.Options();
-      options.minWorkerThreads = cli.minWorkerThreads;
-      options.maxWorkerThreads = cli.maxWorkerThreads;
-      TServer server = new TThreadPoolServer(hfactory, serverTransport,
-          new TTransportFactory(), new TTransportFactory(),
-          new TBinaryProtocol.Factory(), new TBinaryProtocol.Factory(), options);
+      TThreadPoolServer.Args sargs = new TThreadPoolServer.Args(serverTransport)
+        .processorFactory(hfactory)
+        .transportFactory(new TTransportFactory())
+        .protocolFactory(new TBinaryProtocol.Factory())
+        .minWorkerThreads(cli.minWorkerThreads)
+        .maxWorkerThreads(cli.maxWorkerThreads);
+      
+      TServer server = new TThreadPoolServer(sargs);
 
       String msg = "Starting hive server on port " + cli.port
         + " with " + cli.minWorkerThreads + " min worker threads and "

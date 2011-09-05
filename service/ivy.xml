@@ -23,4 +23,10 @@
         http://wiki.apache.org/hadoop/Hive
       </description>
     </info>
+    <dependencies>
+      <dependency org="org.apache.thrift" name="libthrift" rev="${libthrift.version}"
+                  transitive="false"/>
+      <dependency org="org.apache.thrift" name="libfb303" rev="${libfb303.version}"
+                  transitive="false"/>
+    </dependencies>
 </ivy-module>
