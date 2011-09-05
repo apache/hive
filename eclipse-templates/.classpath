@@ -17,8 +17,8 @@
   <classpathentry exported="true" kind="lib" path="lib/derby.jar"/>
   <classpathentry exported="true" kind="lib" path="build/dist/lib/hbase-@hbase.version@.jar"/>
   <classpathentry exported="true" kind="lib" path="build/dist/lib/hbase-@hbase-test.version@-tests.jar"/>
-  <classpathentry exported="true" kind="lib" path="lib/thrift-fb303-@thrift-fb303.version@.jar"/>
-  <classpathentry exported="true" kind="lib" path="lib/thrift-@thrift.version@.jar"/>
+  <classpathentry exported="true" kind="lib" path="build/dist/lib/libfb303-@libfb303.version@.jar"/>
+  <classpathentry exported="true" kind="lib" path="build/dist/lib/libthrift-@libthrift.version@.jar"/>
   <classpathentry exported="true" kind="lib" path="build/dist/lib/zookeeper-@zookeeper.version@.jar"/>
   <classpathentry exported="true" kind="lib" path="lib/log4j-@log4j.version@.jar"/>
   <classpathentry exported="true" kind="lib" path="ql/lib/antlr-@antlr.version@.jar"/>

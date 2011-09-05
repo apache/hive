@@ -389,8 +389,8 @@
     </chmod>
 
     <!-- create symlinks for libthrift.jar, libfb303.jar, etc. for backward compatibility -->
-    <symlink overwrite="true" link="${target.lib.dir}/libthrift.jar" resource="thrift-${thrift.version}.jar"/>
-    <symlink overwrite="true" link="${target.lib.dir}/libfb303.jar" resource="thrift-fb303-${thrift-fb303.version}.jar"/>
+    <symlink overwrite="true" link="${target.lib.dir}/libthrift.jar" resource="libthrift-${thrift.version}.jar"/>
+    <symlink overwrite="true" link="${target.lib.dir}/libfb303.jar" resource="libfb303-${thrift-fb303.version}.jar"/>
     <symlink overwrite="true" link="${target.lib.dir}/hive_contrib.jar" resource="hive-contrib-${version}.jar"/>
   </target>
 
