@@ -19,10 +19,12 @@
 package org.apache.hadoop.hive.ql.io;
 
 import java.io.IOException;
+import java.io.RandomAccessFile;
 import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
 import java.util.List;
 import java.util.Properties;
+import java.util.Random;
 
 import junit.framework.TestCase;
 
@@ -202,6 +204,59 @@ public class TestRCFile extends TestCase {
           assertEquals("Field " + i, standardWritableData, expectedRecord_2[j]);
         }
       }
+    }
+
+    reader.close();
+  }
+
+  public void testReadCorruptFile() throws IOException, SerDeException {
+    fs.delete(file, true);
+
+    byte[][] record = {null, null, null, null, null, null, null, null};
+
+    RCFileOutputFormat.setColumnNumber(conf, expectedFieldsData.length);
+    RCFile.Writer writer = new RCFile.Writer(fs, conf, file, null,
+        new DefaultCodec());
+    BytesRefArrayWritable bytes = new BytesRefArrayWritable(record.length);
+    final int recCount = 100;
+    Random rand = new Random();
+    for (int recIdx = 0; recIdx < recCount; recIdx++) {
+      for (int i = 0; i < record.length; i++) {
+        record[i] = new Integer(rand.nextInt()).toString().getBytes("UTF-8");
+      }
+      for (int i = 0; i < record.length; i++) {
+        BytesRefWritable cu = new BytesRefWritable(record[i], 0,
+            record[i].length);
+        bytes.set(i, cu);
+      }
+      writer.append(bytes);
+      bytes.clear();
+    }
+    writer.close();
+
+    // Insert junk in middle of file. Assumes file is on local disk.
+    RandomAccessFile raf = new RandomAccessFile(file.toUri().getPath(), "rw");
+    long corruptOffset = raf.length() / 2;
+    LOG.info("corrupting " + raf + " at offset " + corruptOffset);
+    raf.seek(corruptOffset);
+    raf.writeBytes("junkjunkjunkjunkjunkjunkjunkjunk");
+    raf.close();
+
+    // Set the option for tolerating corruptions. The read should succeed.
+    Configuration tmpConf = new Configuration(conf);
+    tmpConf.setBoolean("hive.io.rcfile.tolerate.corruptions", true);
+    RCFile.Reader reader = new RCFile.Reader(fs, file, tmpConf);
+
+    LongWritable rowID = new LongWritable();
+
+    while (true) {
+      boolean more = reader.next(rowID);
+      if (!more) {
+        break;
+      }
+      BytesRefArrayWritable cols = new BytesRefArrayWritable();
+      reader.getCurrentRow(cols);
+      cols.resetValid(8);
     }
 
     reader.close();
