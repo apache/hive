@@ -58,9 +58,12 @@ class UnparseTranslator {
 
   /**
    * Register a translation to be performed as part of unparse.
-   * The translation must not overlap with any previously
-   * registered translations (unless it is identical to an
-   * existing translation, in which case it is ignored).
+   * If the translation overlaps with any previously
+   * registered translation, then it must be either
+   * identical or a prefix (in which cases it is ignored),
+   * or else it must extend the existing translation (i.e.
+   * the existing translation must be a prefix of the new translation).
+   * All other overlap cases result in assertion failures.
    *
    * @param node
    *          target node whose subtree is to be replaced
@@ -87,10 +90,11 @@ class UnparseTranslator {
     translation.tokenStopIndex = tokenStopIndex;
     translation.replacementText = replacementText;
 
-    // Sanity check: no overlap with regions already being expanded
+    // Sanity check for overlap with regions already being expanded
     assert (tokenStopIndex >= tokenStartIndex);
     Map.Entry<Integer, Translation> existingEntry;
     existingEntry = translations.floorEntry(tokenStartIndex);
+    boolean prefix = false;
     if (existingEntry != null) {
       if (existingEntry.getKey().equals(tokenStartIndex)) {
         if (existingEntry.getValue().tokenStopIndex == tokenStopIndex) {
@@ -99,16 +103,32 @@ class UnparseTranslator {
             // redundant, but we'll let it pass
             return;
           }
+        } else if (tokenStopIndex > existingEntry.getValue().tokenStopIndex) {
+          // is existing mapping a prefix for new mapping? if so, that's also
+          // redundant, but in this case we need to expand it
+          prefix = replacementText.startsWith(
+            existingEntry.getValue().replacementText);
+          assert(prefix);
+        } else {
+          // new mapping is a prefix for existing mapping:  ignore it
+          prefix = existingEntry.getValue().replacementText.startsWith(
+            replacementText);
+          assert(prefix);
+          return;
         }
       }
-      assert (existingEntry.getValue().tokenStopIndex < tokenStartIndex);
+      if (!prefix) {
+        assert (existingEntry.getValue().tokenStopIndex < tokenStartIndex);
+      }
     }
-    existingEntry = translations.ceilingEntry(tokenStartIndex);
-    if (existingEntry != null) {
-      assert (existingEntry.getKey() > tokenStopIndex);
+    if (!prefix) {
+      existingEntry = translations.ceilingEntry(tokenStartIndex);
+      if (existingEntry != null) {
+        assert (existingEntry.getKey() > tokenStopIndex);
+      }
     }
 
-    // It's all good: create a new entry in the map
+    // It's all good: create a new entry in the map (or update existing one)
     translations.put(tokenStartIndex, translation);
   }
 
