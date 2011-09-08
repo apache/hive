@@ -49,7 +49,7 @@ public class UDFLike extends UDF {
     COMPLEX, // all other cases, such as "ab%c_de"
   }
 
-  private PatternType type = PatternType.COMPLEX;
+  private PatternType type = PatternType.NONE;
   private final Text simplePattern = new Text();
 
   private final BooleanWritable result = new BooleanWritable();
