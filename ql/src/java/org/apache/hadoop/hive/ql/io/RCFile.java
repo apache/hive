@@ -479,9 +479,8 @@ public class RCFile {
         valBuf.reset();
         valBuf.write(in, vaRowsLen);
         if (codec != null) {
-          if (lazyDecompress) {
-            decompressedFlag[addIndex] = false;
-          } else {
+          decompressedFlag[addIndex] = false;
+          if (!lazyDecompress) {
             lazyDecompressCallbackObjs[addIndex].decompress();
             decompressedFlag[addIndex] = true;
           }
