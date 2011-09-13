@@ -948,6 +948,7 @@ public class QTestUtil {
         "-I", "at junit",
         "-I", "Caused by:",
         "-I", "LOCK_QUERYID:",
+        "-I", "LOCK_TIME:",
         "-I", "grantTime",
         "-I", "[.][.][.] [0-9]* more",
         "-I", "job_[0-9]*_[0-9]*",

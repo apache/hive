@@ -31,13 +31,16 @@ public class HiveLockObject {
     private String lockTime; // time at which lock was acquired
     // mode of the lock: EXPLICIT(lock command)/IMPLICIT(query)
     private String lockMode;
+    private String queryStr;
 
     public HiveLockObjectData(String queryId,
                               String lockTime,
-                              String lockMode) {
+                              String lockMode,
+                              String queryStr) {
       this.queryId  = queryId;
       this.lockTime = lockTime;
       this.lockMode = lockMode;
+      this.queryStr = queryStr.trim();
     }
 
 
@@ -50,6 +53,7 @@ public class HiveLockObject {
       queryId  = elem[0];
       lockTime = elem[1];
       lockMode = elem[2];
+      queryStr = elem[3];
     }
 
     public String getQueryId() {
@@ -64,8 +68,12 @@ public class HiveLockObject {
       return lockMode;
     }
 
+    public String getQueryStr() {
+      return queryStr;
+    }
+
     public String toString() {
-      return queryId + ":" + lockTime + ":" + lockMode;
+      return queryId + ":" + lockTime + ":" + lockMode + ":" + queryStr;
     }
   }
 

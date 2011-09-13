@@ -73,6 +73,7 @@ public class Context {
   private final Configuration conf;
   protected int pathid = 10000;
   protected boolean explain = false;
+  protected String cmd = "";
   // number of previous attempts
   protected int tryCount = 0;
   private TokenRewriteStream tokenRewriteStream;
@@ -125,6 +126,21 @@ public class Context {
     return explain;
   }
 
+  /**
+   * Set the original query command.
+   * @param cmd the original query command string
+   */
+  public void setCmd(String cmd) {
+    this.cmd = cmd;
+  }
+
+  /**
+   * Find the original query command.
+   * @return the original query command string
+   */
+  public String getCmd () {
+    return cmd;
+  }
 
   /**
    * Get a tmp directory on specified URI
