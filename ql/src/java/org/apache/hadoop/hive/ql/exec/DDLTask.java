@@ -1976,12 +1976,16 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
         outStream.write(separator);
         outStream.writeBytes(lock.getHiveLockMode().toString());
         if (isExt) {
-          outStream.write(terminator);
           HiveLockObjectData lockData = lock.getHiveLockObject().getData();
           if (lockData != null) {
-            outStream.writeBytes("LOCK_QUERYID:" + lockData.getQueryId() + " ");
-            outStream.writeBytes("LOCK_TIME:" + lockData.getLockTime() + " ");
-            outStream.writeBytes("LOCK_MODE:" + lockData.getLockMode() + " ");
+            outStream.write(terminator);
+            outStream.writeBytes("LOCK_QUERYID:" + lockData.getQueryId());
+            outStream.write(terminator);
+            outStream.writeBytes("LOCK_TIME:" + lockData.getLockTime());
+            outStream.write(terminator);
+            outStream.writeBytes("LOCK_MODE:" + lockData.getLockMode());
+            outStream.write(terminator);
+            outStream.writeBytes("LOCK_QUERYSTRING:" + lockData.getQueryStr());
           }
         }
         outStream.write(terminator);
@@ -2029,7 +2033,8 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
     HiveLockObjectData lockData =
       new HiveLockObjectData(lockTbl.getQueryId(),
                              String.valueOf(System.currentTimeMillis()),
-                             "EXPLICIT");
+                             "EXPLICIT",
+                             lockTbl.getQueryStr());
 
     if (partSpec == null) {
       HiveLock lck = lockMgr.lock(new HiveLockObject(tbl, lockData), mode, true);

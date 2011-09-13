@@ -410,6 +410,7 @@ public class Driver implements CommandProcessor {
       command = new VariableSubstitution().substitute(conf,command);
       ctx = new Context(conf);
       ctx.setTryCount(getTryCount());
+      ctx.setCmd(command);
 
       ParseDriver pd = new ParseDriver();
       ASTNode tree = pd.parse(command, ctx);
@@ -706,7 +707,8 @@ public class Driver implements CommandProcessor {
     HiveLockObjectData lockData =
       new HiveLockObjectData(plan.getQueryId(),
                              String.valueOf(System.currentTimeMillis()),
-                             "IMPLICIT");
+                             "IMPLICIT",
+                             plan.getQueryStr());
 
     if (t != null) {
       locks.add(new HiveLockObj(new HiveLockObject(t, lockData), mode));
@@ -806,7 +808,8 @@ public class Driver implements CommandProcessor {
       HiveLockObjectData lockData =
         new HiveLockObjectData(plan.getQueryId(),
                                String.valueOf(System.currentTimeMillis()),
-                               "IMPLICIT");
+                               "IMPLICIT",
+                               plan.getQueryStr());
 
       // Lock the database also
       try {
