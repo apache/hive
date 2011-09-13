@@ -66,7 +66,7 @@
          </void> 
          <void method="put"> 
           <string>transient_lastDdlTime</string> 
-          <string>1310382265</string> 
+          <string>1311936574</string> 
          </void> 
         </object> 
        </void> 
@@ -128,7 +128,7 @@
            </void> 
            <void method="put"> 
             <string>transient_lastDdlTime</string> 
-            <string>1310382265</string> 
+            <string>1311936574</string> 
            </void> 
           </object> 
          </void> 
@@ -160,13 +160,13 @@
                     <void property="conf"> 
                      <object class="org.apache.hadoop.hive.ql.plan.FileSinkDesc"> 
                       <void property="dirName"> 
-                       <string>file:/tmp/amarsri/hive_2011-07-11_04-04-26_769_5192710661051968856/-ext-10001</string> 
+                       <string>file:/tmp/amarsri/hive_2011-07-29_03-49-35_427_6117010919874585016/-ext-10001</string> 
                       </void> 
                       <void property="numFiles"> 
                        <int>1</int> 
                       </void> 
                       <void property="statsAggPrefix"> 
-                       <string>file:/tmp/amarsri/hive_2011-07-11_04-04-26_769_5192710661051968856/-ext-10001/</string> 
+                       <string>file:/tmp/amarsri/hive_2011-07-29_03-49-35_427_6117010919874585016/-ext-10001/</string> 
                       </void> 
                       <void property="tableInfo"> 
                        <object class="org.apache.hadoop.hive.ql.plan.TableDesc"> 
@@ -192,6 +192,10 @@
                           <void method="put"> 
                            <string>columns.types</string> 
                            <string>int:double:double:double:int:boolean:int</string> 
+                          </void> 
+                          <void method="put"> 
+                           <string>escape.delim</string> 
+                           <string>\</string> 
                           </void> 
                          </object> 
                         </void> 
@@ -1111,7 +1115,7 @@
           </void> 
           <void method="put"> 
            <string>transient_lastDdlTime</string> 
-           <string>1310382265</string> 
+           <string>1311936574</string> 
           </void> 
          </object> 
         </void> 
@@ -1173,7 +1177,7 @@
             </void> 
             <void method="put"> 
              <string>transient_lastDdlTime</string> 
-             <string>1310382265</string> 
+             <string>1311936574</string> 
             </void> 
            </object> 
           </void> 

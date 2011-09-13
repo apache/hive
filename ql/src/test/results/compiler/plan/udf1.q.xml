@@ -193,6 +193,10 @@
                            <string>columns.types</string> 
                            <string>boolean:boolean:boolean:boolean:boolean:boolean:boolean:boolean:boolean:boolean:boolean:boolean:boolean:string:string:string:string</string> 
                           </void> 
+                          <void method="put"> 
+                           <string>escape.delim</string> 
+                           <string>\</string> 
+                          </void> 
                          </object> 
                         </void> 
                        </object> 
