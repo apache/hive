@@ -431,6 +431,10 @@ public class HiveConf extends Configuration {
     // For har files
     HIVEARCHIVEENABLED("hive.archive.enabled", false),
     HIVEHARPARENTDIRSETTABLE("hive.archive.har.parentdir.settable", false),
+
+    //Enable/Disable gbToIdx rewrite rule
+    HIVEOPTGBYUSINGINDEX("hive.optimize.index.groupby", false),
+
     HIVEOUTERJOINSUPPORTSFILTERS("hive.outerjoin.supports.filters", true),
 
     // Serde for FetchTask
