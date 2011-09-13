@@ -128,7 +128,7 @@ PREHOOK: Input: default@combine2@value=val_5
 PREHOOK: Input: default@combine2@value=val_8
 PREHOOK: Input: default@combine2@value=val_9
 PREHOOK: Input: default@combine2@value=|
-PREHOOK: Output: file:/tmp/tomasz/hive_2011-06-01_18-51-37_725_5254308986550821577/-mr-10000
+PREHOOK: Output: file:/tmp/amarsri/hive_2011-07-29_01-14-22_741_2285484594643850014/-mr-10000
 POSTHOOK: query: select key, value from combine2 where value is not null order by key
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@combine2@value=2010-04-21 09%3A45%3A00
@@ -139,7 +139,7 @@ POSTHOOK: Input: default@combine2@value=val_5
 POSTHOOK: Input: default@combine2@value=val_8
 POSTHOOK: Input: default@combine2@value=val_9
 POSTHOOK: Input: default@combine2@value=|
-POSTHOOK: Output: file:/tmp/tomasz/hive_2011-06-01_18-51-37_725_5254308986550821577/-mr-10000
+POSTHOOK: Output: file:/tmp/amarsri/hive_2011-07-29_01-14-22_741_2285484594643850014/-mr-10000
 POSTHOOK: Lineage: combine2 PARTITION(value=2010-04-21 09:45:00).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: combine2 PARTITION(value=val_0).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: combine2 PARTITION(value=val_2).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:key, type:string, comment:default), ]
@@ -204,16 +204,16 @@ STAGE PLANS:
                         type: bigint
       Needs Tagging: false
       Path -> Alias:
-        pfile:/data/users/tomasz/apache-hive/build/ql/test/data/warehouse/combine2/value=2010-04-21 09%3A45%3A00 [combine2]
-        pfile:/data/users/tomasz/apache-hive/build/ql/test/data/warehouse/combine2/value=val_0 [combine2]
-        pfile:/data/users/tomasz/apache-hive/build/ql/test/data/warehouse/combine2/value=val_2 [combine2]
-        pfile:/data/users/tomasz/apache-hive/build/ql/test/data/warehouse/combine2/value=val_4 [combine2]
-        pfile:/data/users/tomasz/apache-hive/build/ql/test/data/warehouse/combine2/value=val_5 [combine2]
-        pfile:/data/users/tomasz/apache-hive/build/ql/test/data/warehouse/combine2/value=val_8 [combine2]
-        pfile:/data/users/tomasz/apache-hive/build/ql/test/data/warehouse/combine2/value=val_9 [combine2]
-        pfile:/data/users/tomasz/apache-hive/build/ql/test/data/warehouse/combine2/value=| [combine2]
+        pfile:/home/amarsri/workspace/hive/build/ql/test/data/warehouse/combine2/value=2010-04-21 09%3A45%3A00 [combine2]
+        pfile:/home/amarsri/workspace/hive/build/ql/test/data/warehouse/combine2/value=val_0 [combine2]
+        pfile:/home/amarsri/workspace/hive/build/ql/test/data/warehouse/combine2/value=val_2 [combine2]
+        pfile:/home/amarsri/workspace/hive/build/ql/test/data/warehouse/combine2/value=val_4 [combine2]
+        pfile:/home/amarsri/workspace/hive/build/ql/test/data/warehouse/combine2/value=val_5 [combine2]
+        pfile:/home/amarsri/workspace/hive/build/ql/test/data/warehouse/combine2/value=val_8 [combine2]
+        pfile:/home/amarsri/workspace/hive/build/ql/test/data/warehouse/combine2/value=val_9 [combine2]
+        pfile:/home/amarsri/workspace/hive/build/ql/test/data/warehouse/combine2/value=| [combine2]
       Path -> Partition:
-        pfile:/data/users/tomasz/apache-hive/build/ql/test/data/warehouse/combine2/value=2010-04-21 09%3A45%3A00 
+        pfile:/home/amarsri/workspace/hive/build/ql/test/data/warehouse/combine2/value=2010-04-21 09%3A45%3A00 
           Partition
             base file name: value=2010-04-21 09%3A45%3A00
             input format: org.apache.hadoop.mapred.TextInputFormat
@@ -226,7 +226,7 @@ STAGE PLANS:
               columns.types string
               file.inputformat org.apache.hadoop.mapred.TextInputFormat
               file.outputformat org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-              location pfile:/data/users/tomasz/apache-hive/build/ql/test/data/warehouse/combine2/value=2010-04-21 09%3A45%3A00
+              location pfile:/home/amarsri/workspace/hive/build/ql/test/data/warehouse/combine2/value=2010-04-21 09%3A45%3A00
               name default.combine2
               numFiles 1
               numPartitions 8
@@ -237,7 +237,7 @@ STAGE PLANS:
               serialization.format 1
               serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               totalSize 3
-              transient_lastDdlTime 1306979496
+              transient_lastDdlTime 1311927262
             serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
           
               input format: org.apache.hadoop.mapred.TextInputFormat
@@ -248,7 +248,7 @@ STAGE PLANS:
                 columns.types string
                 file.inputformat org.apache.hadoop.mapred.TextInputFormat
                 file.outputformat org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                location pfile:/data/users/tomasz/apache-hive/build/ql/test/data/warehouse/combine2
+                location pfile:/home/amarsri/workspace/hive/build/ql/test/data/warehouse/combine2
                 name default.combine2
                 numFiles 8
                 numPartitions 8
@@ -259,11 +259,11 @@ STAGE PLANS:
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                 totalSize 26
-                transient_lastDdlTime 1306979497
+                transient_lastDdlTime 1311927262
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: default.combine2
             name: default.combine2
-        pfile:/data/users/tomasz/apache-hive/build/ql/test/data/warehouse/combine2/value=val_0 
+        pfile:/home/amarsri/workspace/hive/build/ql/test/data/warehouse/combine2/value=val_0 
           Partition
             base file name: value=val_0
             input format: org.apache.hadoop.mapred.TextInputFormat
@@ -276,7 +276,7 @@ STAGE PLANS:
               columns.types string
               file.inputformat org.apache.hadoop.mapred.TextInputFormat
               file.outputformat org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-              location pfile:/data/users/tomasz/apache-hive/build/ql/test/data/warehouse/combine2/value=val_0
+              location pfile:/home/amarsri/workspace/hive/build/ql/test/data/warehouse/combine2/value=val_0
               name default.combine2
               numFiles 1
               numPartitions 8
@@ -287,7 +287,7 @@ STAGE PLANS:
               serialization.format 1
               serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               totalSize 6
-              transient_lastDdlTime 1306979496
+              transient_lastDdlTime 1311927262
             serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
           
               input format: org.apache.hadoop.mapred.TextInputFormat
@@ -298,7 +298,7 @@ STAGE PLANS:
                 columns.types string
                 file.inputformat org.apache.hadoop.mapred.TextInputFormat
                 file.outputformat org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                location pfile:/data/users/tomasz/apache-hive/build/ql/test/data/warehouse/combine2
+                location pfile:/home/amarsri/workspace/hive/build/ql/test/data/warehouse/combine2
                 name default.combine2
                 numFiles 8
                 numPartitions 8
@@ -309,11 +309,11 @@ STAGE PLANS:
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                 totalSize 26
-                transient_lastDdlTime 1306979497
+                transient_lastDdlTime 1311927262
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: default.combine2
             name: default.combine2
-        pfile:/data/users/tomasz/apache-hive/build/ql/test/data/warehouse/combine2/value=val_2 
+        pfile:/home/amarsri/workspace/hive/build/ql/test/data/warehouse/combine2/value=val_2 
           Partition
             base file name: value=val_2
             input format: org.apache.hadoop.mapred.TextInputFormat
@@ -326,7 +326,7 @@ STAGE PLANS:
               columns.types string
               file.inputformat org.apache.hadoop.mapred.TextInputFormat
               file.outputformat org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-              location pfile:/data/users/tomasz/apache-hive/build/ql/test/data/warehouse/combine2/value=val_2
+              location pfile:/home/amarsri/workspace/hive/build/ql/test/data/warehouse/combine2/value=val_2
               name default.combine2
               numFiles 1
               numPartitions 8
@@ -337,7 +337,7 @@ STAGE PLANS:
               serialization.format 1
               serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               totalSize 2
-              transient_lastDdlTime 1306979497
+              transient_lastDdlTime 1311927262
             serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
           
               input format: org.apache.hadoop.mapred.TextInputFormat
@@ -348,7 +348,7 @@ STAGE PLANS:
                 columns.types string
                 file.inputformat org.apache.hadoop.mapred.TextInputFormat
                 file.outputformat org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                location pfile:/data/users/tomasz/apache-hive/build/ql/test/data/warehouse/combine2
+                location pfile:/home/amarsri/workspace/hive/build/ql/test/data/warehouse/combine2
                 name default.combine2
                 numFiles 8
                 numPartitions 8
@@ -359,11 +359,11 @@ STAGE PLANS:
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                 totalSize 26
-                transient_lastDdlTime 1306979497
+                transient_lastDdlTime 1311927262
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: default.combine2
             name: default.combine2
-        pfile:/data/users/tomasz/apache-hive/build/ql/test/data/warehouse/combine2/value=val_4 
+        pfile:/home/amarsri/workspace/hive/build/ql/test/data/warehouse/combine2/value=val_4 
           Partition
             base file name: value=val_4
             input format: org.apache.hadoop.mapred.TextInputFormat
@@ -376,7 +376,7 @@ STAGE PLANS:
               columns.types string
               file.inputformat org.apache.hadoop.mapred.TextInputFormat
               file.outputformat org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-              location pfile:/data/users/tomasz/apache-hive/build/ql/test/data/warehouse/combine2/value=val_4
+              location pfile:/home/amarsri/workspace/hive/build/ql/test/data/warehouse/combine2/value=val_4
               name default.combine2
               numFiles 1
               numPartitions 8
@@ -387,7 +387,7 @@ STAGE PLANS:
               serialization.format 1
               serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               totalSize 2
-              transient_lastDdlTime 1306979497
+              transient_lastDdlTime 1311927262
             serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
           
               input format: org.apache.hadoop.mapred.TextInputFormat
@@ -398,7 +398,7 @@ STAGE PLANS:
                 columns.types string
                 file.inputformat org.apache.hadoop.mapred.TextInputFormat
                 file.outputformat org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                location pfile:/data/users/tomasz/apache-hive/build/ql/test/data/warehouse/combine2
+                location pfile:/home/amarsri/workspace/hive/build/ql/test/data/warehouse/combine2
                 name default.combine2
                 numFiles 8
                 numPartitions 8
@@ -409,11 +409,11 @@ STAGE PLANS:
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                 totalSize 26
-                transient_lastDdlTime 1306979497
+                transient_lastDdlTime 1311927262
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: default.combine2
             name: default.combine2
-        pfile:/data/users/tomasz/apache-hive/build/ql/test/data/warehouse/combine2/value=val_5 
+        pfile:/home/amarsri/workspace/hive/build/ql/test/data/warehouse/combine2/value=val_5 
           Partition
             base file name: value=val_5
             input format: org.apache.hadoop.mapred.TextInputFormat
@@ -426,7 +426,7 @@ STAGE PLANS:
               columns.types string
               file.inputformat org.apache.hadoop.mapred.TextInputFormat
               file.outputformat org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-              location pfile:/data/users/tomasz/apache-hive/build/ql/test/data/warehouse/combine2/value=val_5
+              location pfile:/home/amarsri/workspace/hive/build/ql/test/data/warehouse/combine2/value=val_5
               name default.combine2
               numFiles 1
               numPartitions 8
@@ -437,7 +437,7 @@ STAGE PLANS:
               serialization.format 1
               serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               totalSize 6
-              transient_lastDdlTime 1306979497
+              transient_lastDdlTime 1311927262
             serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
           
               input format: org.apache.hadoop.mapred.TextInputFormat
@@ -448,7 +448,7 @@ STAGE PLANS:
                 columns.types string
                 file.inputformat org.apache.hadoop.mapred.TextInputFormat
                 file.outputformat org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                location pfile:/data/users/tomasz/apache-hive/build/ql/test/data/warehouse/combine2
+                location pfile:/home/amarsri/workspace/hive/build/ql/test/data/warehouse/combine2
                 name default.combine2
                 numFiles 8
                 numPartitions 8
@@ -459,11 +459,11 @@ STAGE PLANS:
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                 totalSize 26
-                transient_lastDdlTime 1306979497
+                transient_lastDdlTime 1311927262
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: default.combine2
             name: default.combine2
-        pfile:/data/users/tomasz/apache-hive/build/ql/test/data/warehouse/combine2/value=val_8 
+        pfile:/home/amarsri/workspace/hive/build/ql/test/data/warehouse/combine2/value=val_8 
           Partition
             base file name: value=val_8
             input format: org.apache.hadoop.mapred.TextInputFormat
@@ -476,7 +476,7 @@ STAGE PLANS:
               columns.types string
               file.inputformat org.apache.hadoop.mapred.TextInputFormat
               file.outputformat org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-              location pfile:/data/users/tomasz/apache-hive/build/ql/test/data/warehouse/combine2/value=val_8
+              location pfile:/home/amarsri/workspace/hive/build/ql/test/data/warehouse/combine2/value=val_8
               name default.combine2
               numFiles 1
               numPartitions 8
@@ -487,7 +487,7 @@ STAGE PLANS:
               serialization.format 1
               serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               totalSize 2
-              transient_lastDdlTime 1306979497
+              transient_lastDdlTime 1311927262
             serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
           
               input format: org.apache.hadoop.mapred.TextInputFormat
@@ -498,7 +498,7 @@ STAGE PLANS:
                 columns.types string
                 file.inputformat org.apache.hadoop.mapred.TextInputFormat
                 file.outputformat org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                location pfile:/data/users/tomasz/apache-hive/build/ql/test/data/warehouse/combine2
+                location pfile:/home/amarsri/workspace/hive/build/ql/test/data/warehouse/combine2
                 name default.combine2
                 numFiles 8
                 numPartitions 8
@@ -509,11 +509,11 @@ STAGE PLANS:
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                 totalSize 26
-                transient_lastDdlTime 1306979497
+                transient_lastDdlTime 1311927262
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: default.combine2
             name: default.combine2
-        pfile:/data/users/tomasz/apache-hive/build/ql/test/data/warehouse/combine2/value=val_9 
+        pfile:/home/amarsri/workspace/hive/build/ql/test/data/warehouse/combine2/value=val_9 
           Partition
             base file name: value=val_9
             input format: org.apache.hadoop.mapred.TextInputFormat
@@ -526,7 +526,7 @@ STAGE PLANS:
               columns.types string
               file.inputformat org.apache.hadoop.mapred.TextInputFormat
               file.outputformat org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-              location pfile:/data/users/tomasz/apache-hive/build/ql/test/data/warehouse/combine2/value=val_9
+              location pfile:/home/amarsri/workspace/hive/build/ql/test/data/warehouse/combine2/value=val_9
               name default.combine2
               numFiles 1
               numPartitions 8
@@ -537,7 +537,7 @@ STAGE PLANS:
               serialization.format 1
               serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               totalSize 2
-              transient_lastDdlTime 1306979497
+              transient_lastDdlTime 1311927262
             serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
           
               input format: org.apache.hadoop.mapred.TextInputFormat
@@ -548,7 +548,7 @@ STAGE PLANS:
                 columns.types string
                 file.inputformat org.apache.hadoop.mapred.TextInputFormat
                 file.outputformat org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                location pfile:/data/users/tomasz/apache-hive/build/ql/test/data/warehouse/combine2
+                location pfile:/home/amarsri/workspace/hive/build/ql/test/data/warehouse/combine2
                 name default.combine2
                 numFiles 8
                 numPartitions 8
@@ -559,11 +559,11 @@ STAGE PLANS:
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                 totalSize 26
-                transient_lastDdlTime 1306979497
+                transient_lastDdlTime 1311927262
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: default.combine2
             name: default.combine2
-        pfile:/data/users/tomasz/apache-hive/build/ql/test/data/warehouse/combine2/value=| 
+        pfile:/home/amarsri/workspace/hive/build/ql/test/data/warehouse/combine2/value=| 
           Partition
             base file name: value=|
             input format: org.apache.hadoop.mapred.TextInputFormat
@@ -576,7 +576,7 @@ STAGE PLANS:
               columns.types string
               file.inputformat org.apache.hadoop.mapred.TextInputFormat
               file.outputformat org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-              location pfile:/data/users/tomasz/apache-hive/build/ql/test/data/warehouse/combine2/value=|
+              location pfile:/home/amarsri/workspace/hive/build/ql/test/data/warehouse/combine2/value=|
               name default.combine2
               numFiles 1
               numPartitions 8
@@ -587,7 +587,7 @@ STAGE PLANS:
               serialization.format 1
               serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               totalSize 3
-              transient_lastDdlTime 1306979496
+              transient_lastDdlTime 1311927262
             serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
           
               input format: org.apache.hadoop.mapred.TextInputFormat
@@ -598,7 +598,7 @@ STAGE PLANS:
                 columns.types string
                 file.inputformat org.apache.hadoop.mapred.TextInputFormat
                 file.outputformat org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                location pfile:/data/users/tomasz/apache-hive/build/ql/test/data/warehouse/combine2
+                location pfile:/home/amarsri/workspace/hive/build/ql/test/data/warehouse/combine2
                 name default.combine2
                 numFiles 8
                 numPartitions 8
@@ -609,7 +609,7 @@ STAGE PLANS:
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                 totalSize 26
-                transient_lastDdlTime 1306979497
+                transient_lastDdlTime 1311927262
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: default.combine2
             name: default.combine2
@@ -628,15 +628,16 @@ STAGE PLANS:
             File Output Operator
               compressed: false
               GlobalTableId: 0
-              directory: file:/tmp/tomasz/hive_2011-06-01_18-51-41_419_8501262958534635510/-ext-10001
+              directory: file:/tmp/amarsri/hive_2011-07-29_01-14-25_785_3311326813954316235/-ext-10001
               NumFilesPerFileSink: 1
-              Stats Publishing Key Prefix: file:/tmp/tomasz/hive_2011-06-01_18-51-41_419_8501262958534635510/-ext-10001/
+              Stats Publishing Key Prefix: file:/tmp/amarsri/hive_2011-07-29_01-14-25_785_3311326813954316235/-ext-10001/
               table:
                   input format: org.apache.hadoop.mapred.TextInputFormat
                   output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                   properties:
                     columns _col0
                     columns.types bigint
+                    escape.delim \
                     serialization.format 1
               TotalFiles: 1
               GatherStats: false
@@ -657,7 +658,7 @@ PREHOOK: Input: default@combine2@value=val_5
 PREHOOK: Input: default@combine2@value=val_8
 PREHOOK: Input: default@combine2@value=val_9
 PREHOOK: Input: default@combine2@value=|
-PREHOOK: Output: file:/tmp/tomasz/hive_2011-06-01_18-51-41_554_2942361479619017336/-mr-10000
+PREHOOK: Output: file:/tmp/amarsri/hive_2011-07-29_01-14-25_892_527486031009601879/-mr-10000
 POSTHOOK: query: select count(1) from combine2 where value is not null
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@combine2@value=2010-04-21 09%3A45%3A00
@@ -668,7 +669,7 @@ POSTHOOK: Input: default@combine2@value=val_5
 POSTHOOK: Input: default@combine2@value=val_8
 POSTHOOK: Input: default@combine2@value=val_9
 POSTHOOK: Input: default@combine2@value=|
-POSTHOOK: Output: file:/tmp/tomasz/hive_2011-06-01_18-51-41_554_2942361479619017336/-mr-10000
+POSTHOOK: Output: file:/tmp/amarsri/hive_2011-07-29_01-14-25_892_527486031009601879/-mr-10000
 POSTHOOK: Lineage: combine2 PARTITION(value=2010-04-21 09:45:00).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: combine2 PARTITION(value=val_0).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: combine2 PARTITION(value=val_2).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:key, type:string, comment:default), ]
@@ -767,14 +768,14 @@ PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
 PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
 PREHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
 PREHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
-PREHOOK: Output: file:/tmp/tomasz/hive_2011-06-01_18-51-45_373_517425372919749437/-mr-10000
+PREHOOK: Output: file:/tmp/amarsri/hive_2011-07-29_01-14-29_008_4318866609287968840/-mr-10000
 POSTHOOK: query: select ds, count(1) from srcpart where ds is not null group by ds
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
 POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
 POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
 POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
-POSTHOOK: Output: file:/tmp/tomasz/hive_2011-06-01_18-51-45_373_517425372919749437/-mr-10000
+POSTHOOK: Output: file:/tmp/amarsri/hive_2011-07-29_01-14-29_008_4318866609287968840/-mr-10000
 POSTHOOK: Lineage: combine2 PARTITION(value=2010-04-21 09:45:00).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: combine2 PARTITION(value=val_0).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: combine2 PARTITION(value=val_2).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:key, type:string, comment:default), ]

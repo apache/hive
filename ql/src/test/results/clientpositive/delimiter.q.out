@@ -1,0 +1,49 @@
+PREHOOK: query: create table impressions (imp string, msg string)
+row format delimited
+fields terminated by '\t'
+lines terminated by '\n'
+stored as textfile
+PREHOOK: type: CREATETABLE
+POSTHOOK: query: create table impressions (imp string, msg string)
+row format delimited
+fields terminated by '\t'
+lines terminated by '\n'
+stored as textfile
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: default@impressions
+PREHOOK: query: LOAD DATA LOCAL INPATH '../data/files/in7.txt' INTO TABLE impressions
+PREHOOK: type: LOAD
+PREHOOK: Output: default@impressions
+POSTHOOK: query: LOAD DATA LOCAL INPATH '../data/files/in7.txt' INTO TABLE impressions
+POSTHOOK: type: LOAD
+POSTHOOK: Output: default@impressions
+PREHOOK: query: select * from impressions
+PREHOOK: type: QUERY
+PREHOOK: Input: default@impressions
+PREHOOK: Output: file:/var/folders/uc/ucuNeMAVGQGzy3459D8z2+++Z0Q/-Tmp-/amarsri/hive_2011-07-28_22-22-05_087_4079188620089903829/-mr-10000
+POSTHOOK: query: select * from impressions
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@impressions
+POSTHOOK: Output: file:/var/folders/uc/ucuNeMAVGQGzy3459D8z2+++Z0Q/-Tmp-/amarsri/hive_2011-07-28_22-22-05_087_4079188620089903829/-mr-10000
+35	40
+48	32
+100100	40
+PREHOOK: query: select imp,msg from impressions
+PREHOOK: type: QUERY
+PREHOOK: Input: default@impressions
+PREHOOK: Output: file:/var/folders/uc/ucuNeMAVGQGzy3459D8z2+++Z0Q/-Tmp-/amarsri/hive_2011-07-28_22-22-05_611_3078194510979662520/-mr-10000
+POSTHOOK: query: select imp,msg from impressions
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@impressions
+POSTHOOK: Output: file:/var/folders/uc/ucuNeMAVGQGzy3459D8z2+++Z0Q/-Tmp-/amarsri/hive_2011-07-28_22-22-05_611_3078194510979662520/-mr-10000
+35	40
+48	32
+100100	40
+PREHOOK: query: drop table impressions
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@impressions
+PREHOOK: Output: default@impressions
+POSTHOOK: query: drop table impressions
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@impressions
+POSTHOOK: Output: default@impressions

@@ -43,15 +43,16 @@ STAGE PLANS:
                   File Output Operator
                     compressed: false
                     GlobalTableId: 0
-                    directory: file:/tmp/amarsri/hive_2011-07-11_02-58-35_476_3346956740908751236/-ext-10001
+                    directory: file:/tmp/amarsri/hive_2011-07-29_02-38-07_729_6216050030210281505/-ext-10001
                     NumFilesPerFileSink: 1
-                    Stats Publishing Key Prefix: file:/tmp/amarsri/hive_2011-07-11_02-58-35_476_3346956740908751236/-ext-10001/
+                    Stats Publishing Key Prefix: file:/tmp/amarsri/hive_2011-07-29_02-38-07_729_6216050030210281505/-ext-10001/
                     table:
                         input format: org.apache.hadoop.mapred.TextInputFormat
                         output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                         properties:
                           columns _col0,_col1
                           columns.types int:string
+                          escape.delim \
                           serialization.format 1
                     TotalFiles: 1
                     GatherStats: false
@@ -77,7 +78,7 @@ STAGE PLANS:
               serialization.ddl struct srcbucket { i32 key, string value}
               serialization.format 1
               serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              transient_lastDdlTime 1310371847
+              transient_lastDdlTime 1311925581
             serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
           
               input format: org.apache.hadoop.mapred.TextInputFormat
@@ -94,7 +95,7 @@ STAGE PLANS:
                 serialization.ddl struct srcbucket { i32 key, string value}
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                transient_lastDdlTime 1310371847
+                transient_lastDdlTime 1311925581
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: default.srcbucket
             name: default.srcbucket
@@ -108,12 +109,12 @@ PREHOOK: query: SELECT s.*
 FROM (SELECT a.* FROM srcbucket TABLESAMPLE (BUCKET 1 OUT OF 2 on key) a) s
 PREHOOK: type: QUERY
 PREHOOK: Input: default@srcbucket
-PREHOOK: Output: file:/tmp/amarsri/hive_2011-07-11_02-58-35_521_5870581689660228083/-mr-10000
+PREHOOK: Output: file:/tmp/amarsri/hive_2011-07-29_02-38-07_775_5736364788936244813/-mr-10000
 POSTHOOK: query: SELECT s.*
 FROM (SELECT a.* FROM srcbucket TABLESAMPLE (BUCKET 1 OUT OF 2 on key) a) s
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@srcbucket
-POSTHOOK: Output: file:/tmp/amarsri/hive_2011-07-11_02-58-35_521_5870581689660228083/-mr-10000
+POSTHOOK: Output: file:/tmp/amarsri/hive_2011-07-29_02-38-07_775_5736364788936244813/-mr-10000
 474	val_475
 62	val_63
 468	val_469

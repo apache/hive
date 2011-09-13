@@ -193,6 +193,10 @@
                            <string>columns.types</string> 
                            <string>int:int</string> 
                           </void> 
+                          <void method="put"> 
+                           <string>escape.delim</string> 
+                           <string>\</string> 
+                          </void> 
                          </object> 
                         </void> 
                        </object> 

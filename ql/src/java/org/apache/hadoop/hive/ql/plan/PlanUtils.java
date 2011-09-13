@@ -209,8 +209,10 @@ public final class PlanUtils {
 
   public static TableDesc getDefaultQueryOutputTableDesc(String cols, String colTypes,
       String fileFormat) {
-    return getTableDesc(LazySimpleSerDe.class, "" + Utilities.ctrlaCode, cols, colTypes,
+    TableDesc tblDesc = getTableDesc(LazySimpleSerDe.class, "" + Utilities.ctrlaCode, cols, colTypes,
         false, false, fileFormat);
+    tblDesc.getProperties().setProperty(Constants.ESCAPE_CHAR, "\\");
+    return tblDesc;
   }
 
  /**
