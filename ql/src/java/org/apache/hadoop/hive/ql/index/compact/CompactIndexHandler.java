@@ -36,8 +36,6 @@ import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.hooks.ReadEntity;
 import org.apache.hadoop.hive.ql.hooks.WriteEntity;
 import org.apache.hadoop.hive.ql.index.HiveIndexQueryContext;
-import org.apache.hadoop.hive.ql.index.IndexMetadataChangeTask;
-import org.apache.hadoop.hive.ql.index.IndexMetadataChangeWork;
 import org.apache.hadoop.hive.ql.index.IndexPredicateAnalyzer;
 import org.apache.hadoop.hive.ql.index.IndexSearchCondition;
 import org.apache.hadoop.hive.ql.index.TableBasedIndexHandler;
@@ -46,9 +44,9 @@ import org.apache.hadoop.hive.ql.metadata.HiveUtils;
 import org.apache.hadoop.hive.ql.metadata.Partition;
 import org.apache.hadoop.hive.ql.metadata.VirtualColumn;
 import org.apache.hadoop.hive.ql.metadata.HiveStoragePredicateHandler.DecomposedPredicate;
+import org.apache.hadoop.hive.ql.optimizer.IndexUtils;
 import org.apache.hadoop.hive.ql.parse.ParseContext;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
-import org.apache.hadoop.hive.ql.plan.MapredWork;
 import org.apache.hadoop.hive.ql.plan.PartitionDesc;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPEqual;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPEqualOrGreaterThan;
@@ -129,20 +127,8 @@ public class CompactIndexHandler extends TableBasedIndexHandler {
     command.append(indexCols + ", " + VirtualColumn.FILENAME.getName());
 
     HiveConf builderConf = new HiveConf(getConf(), CompactIndexHandler.class);
-    // Don't try to index optimize the query to build the index
-    HiveConf.setBoolVar(builderConf, HiveConf.ConfVars.HIVEOPTINDEXFILTER, false);
-    Driver driver = new Driver(builderConf);
-    driver.compile(command.toString());
-
-    Task<?> rootTask = driver.getPlan().getRootTasks().get(0);
-    inputs.addAll(driver.getPlan().getInputs());
-    outputs.addAll(driver.getPlan().getOutputs());
-
-    IndexMetadataChangeWork indexMetaChange = new IndexMetadataChangeWork(partSpec, indexTableName, dbName);
-    IndexMetadataChangeTask indexMetaChangeTsk = new IndexMetadataChangeTask();
-    indexMetaChangeTsk.setWork(indexMetaChange);
-    rootTask.addDependentTask(indexMetaChangeTsk);
-
+    Task<?> rootTask = IndexUtils.createRootTask(builderConf, inputs, outputs,
+        command, partSpec, indexTableName, dbName);
     return rootTask;
   }
 

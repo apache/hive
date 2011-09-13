@@ -29,8 +29,8 @@ import java.util.Stack;
 
 import org.apache.hadoop.hive.metastore.api.Index;
 import org.apache.hadoop.hive.ql.exec.Task;
-import org.apache.hadoop.hive.ql.index.compact.CompactIndexHandler;
 import org.apache.hadoop.hive.ql.index.bitmap.BitmapIndexHandler;
+import org.apache.hadoop.hive.ql.index.compact.CompactIndexHandler;
 import org.apache.hadoop.hive.ql.lib.DefaultGraphWalker;
 import org.apache.hadoop.hive.ql.lib.DefaultRuleDispatcher;
 import org.apache.hadoop.hive.ql.lib.Dispatcher;
@@ -40,8 +40,8 @@ import org.apache.hadoop.hive.ql.lib.NodeProcessor;
 import org.apache.hadoop.hive.ql.lib.NodeProcessorCtx;
 import org.apache.hadoop.hive.ql.lib.Rule;
 import org.apache.hadoop.hive.ql.lib.RuleRegExp;
-import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.Table;
+import org.apache.hadoop.hive.ql.optimizer.IndexUtils;
 import org.apache.hadoop.hive.ql.optimizer.physical.PhysicalContext;
 import org.apache.hadoop.hive.ql.parse.ParseContext;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
@@ -118,7 +118,7 @@ public class IndexWhereTaskDispatcher implements Dispatcher {
     Map<Table, List<Index>> indexes = new HashMap<Table, List<Index>>();
     for (Table tbl : topTables)
     {
-      List<Index> tblIndexes = getIndexes(tbl, supportedIndexes);
+      List<Index> tblIndexes = IndexUtils.getIndexes(tbl, supportedIndexes);
       if (tblIndexes.size() > 0) {
         indexes.put(tbl, tblIndexes);
       }
@@ -136,29 +136,6 @@ public class IndexWhereTaskDispatcher implements Dispatcher {
     return operatorRules;
   }
 
-  /**
-   * Get a list of indexes on a table that match given types.
-   * Copied from HIVE-1694 patch
-   */
-  private List<Index> getIndexes(Table baseTableMetaData, List<String> matchIndexTypes)
-    throws SemanticException {
-    List<Index> matchingIndexes = new ArrayList<Index>();
-    List<Index> indexesOnTable = null;
-
-    try {
-      indexesOnTable = baseTableMetaData.getAllIndexes((short) -1); // get all indexes
-    } catch (HiveException e) {
-      throw new SemanticException("Error accessing metastore", e);
-    }
-
-    for (Index index : indexesOnTable) {
-      String indexType = index.getIndexHandlerClass();
-      if (matchIndexTypes.contains(indexType)) {
-        matchingIndexes.add(index);
-      }
-    }
-    return matchingIndexes;
-  }
 
   private NodeProcessor getDefaultProcessor() {
     return new NodeProcessor() {

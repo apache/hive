@@ -20,7 +20,6 @@ package org.apache.hadoop.hive.ql.optimizer.physical.index;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -31,11 +30,7 @@ import java.util.Stack;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.fs.ContentSummary;
-import org.apache.hadoop.fs.Path;
-import org.apache.hadoop.fs.FileSystem;
-import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.hive.metastore.api.Index;
-import org.apache.hadoop.hive.ql.exec.FilterOperator;
 import org.apache.hadoop.hive.ql.exec.MapRedTask;
 import org.apache.hadoop.hive.ql.exec.TableScanOperator;
 import org.apache.hadoop.hive.ql.exec.Task;
@@ -46,19 +41,17 @@ import org.apache.hadoop.hive.ql.index.HiveIndexQueryContext;
 import org.apache.hadoop.hive.ql.lib.Node;
 import org.apache.hadoop.hive.ql.lib.NodeProcessor;
 import org.apache.hadoop.hive.ql.lib.NodeProcessorCtx;
-import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.HiveUtils;
 import org.apache.hadoop.hive.ql.metadata.Partition;
 import org.apache.hadoop.hive.ql.metadata.Table;
+import org.apache.hadoop.hive.ql.optimizer.IndexUtils;
 import org.apache.hadoop.hive.ql.parse.ParseContext;
-import org.apache.hadoop.hive.ql.parse.PrunedPartitionList;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
-import org.apache.hadoop.hive.ql.plan.FilterDesc;
+import org.apache.hadoop.hive.ql.plan.MapredWork;
 import org.apache.hadoop.hive.ql.plan.TableDesc;
 import org.apache.hadoop.hive.ql.plan.TableScanDesc;
-import org.apache.hadoop.hive.ql.plan.MapredWork;
 
 /**
 *
@@ -71,12 +64,10 @@ public class IndexWhereProcessor implements NodeProcessor {
 
   private static final Log LOG = LogFactory.getLog(IndexWhereProcessor.class.getName());
   private final Map<Table, List<Index>> indexes;
-  private Map<Index, Table> indexToIndexTable;
 
   public IndexWhereProcessor(Map<Table, List<Index>> indexes) {
     super();
     this.indexes = indexes;
-    this.indexToIndexTable = new HashMap<Index, Table>();
   }
 
   @Override
@@ -107,7 +98,7 @@ public class IndexWhereProcessor implements NodeProcessor {
     // check if we have indexes on all partitions in this table scan
     Set<Partition> queryPartitions;
     try {
-      queryPartitions = checkPartitionsCoveredByIndex(operator, pctx);
+      queryPartitions = IndexUtils.checkPartitionsCoveredByIndex(operator, pctx, indexes);
       if (queryPartitions == null) { // partitions not covered
         return null;
       }
@@ -228,157 +219,6 @@ public class IndexWhereProcessor implements NodeProcessor {
     // TODO HIVE-2115 use queryContext.residualPredicate to process residual predicate
 
     return;
-  }
-
-  /**
-   * Check the partitions used by the table scan to make sure they also exist in the
-   * index table
-   * @param pctx
-   * @param operator
-   * @return partitions used by query.  null if they do not exist in index table
-   */
-  private Set<Partition> checkPartitionsCoveredByIndex(TableScanOperator tableScan, ParseContext pctx)
-    throws HiveException {
-    Hive hive = Hive.get(pctx.getConf());
-
-
-    // make sure each partition exists on the index table
-    PrunedPartitionList queryPartitionList = pctx.getOpToPartList().get(tableScan);
-    Set<Partition> queryPartitions = queryPartitionList.getConfirmedPartns();
-
-    for (Partition part : queryPartitions) {
-      List<Table> sourceIndexTables = getIndexTables(hive, part);
-      if (!containsPartition(hive, part)) {
-        return null; // problem if it doesn't contain the partition
-      }
-    }
-
-    return queryPartitions;
-  }
-
-  /**
-   * return index tables associated with a given base table
-   */
-  private List<Table> getIndexTables(Hive hive, Table table) throws
-    HiveException {
-    List<Table> indexTables = new ArrayList<Table>();
-    if (indexes == null || indexes.get(table) == null) {
-      return indexTables;
-    }
-    for (Index index : indexes.get(table)) {
-      Table indexTable = hive.getTable(index.getIndexTableName());
-      indexToIndexTable.put(index, indexTable);
-      indexTables.add(indexTable);
-    }
-    return indexTables;
-  }
-
-  /**
-   * return index tables associated with the base table of the partition
-   */
-  private List<Table> getIndexTables(Hive hive, Partition part) throws HiveException {
-    List<Table> indexTables = new ArrayList<Table>();
-    Table partitionedTable = part.getTable();
-    if (indexes == null || indexes.get(partitionedTable) == null) {
-      return indexTables;
-    }
-    for (Index index : indexes.get(partitionedTable)) {
-      Table indexTable = hive.getTable(index.getIndexTableName());
-      indexToIndexTable.put(index, indexTable);
-      indexTables.add(indexTable);
-    }
-    return indexTables;
-  }
-
-  /**
-   * check that every index table contains the given partition and is fresh
-   */
-  private boolean containsPartition(Hive hive, Partition part)
-    throws HiveException {
-    HashMap<String, String> partSpec = part.getSpec();
-
-    if (indexes == null || indexes.get(part.getTable()) == null) {
-      return false;
-    }
-
-    if (partSpec.isEmpty()) {
-      // empty specs come from non-partitioned tables
-      return isIndexTableFresh(hive, indexes.get(part.getTable()), part.getTable());
-    }
-
-    for (Index index : indexes.get(part.getTable())) {
-      Table indexTable = indexToIndexTable.get(index);
-      // get partitions that match the spec
-      List<Partition> matchingPartitions = hive.getPartitions(indexTable, partSpec);
-      if (matchingPartitions == null || matchingPartitions.size() == 0) {
-        LOG.info("Index table " + indexTable + "did not contain built partition that matched " + partSpec);
-        return false;
-      } else if (!isIndexPartitionFresh(hive, index, part)) {
-        return false;
-      }
-    }
-    return true;
-  }
-
-  /**
-   * Check the index partitions on a parttioned table exist and are fresh
-   */
-  private boolean isIndexPartitionFresh(Hive hive, Index index,
-      Partition part) throws HiveException {
-    LOG.info("checking index staleness...");
-    try {
-      FileSystem partFs = part.getPartitionPath().getFileSystem(hive.getConf());
-      FileStatus partFss = partFs.getFileStatus(part.getPartitionPath());
-      String ts = index.getParameters().get(part.getSpec().toString());
-      if (ts == null) {
-        return false;
-      }
-      long indexTs = Long.parseLong(ts);
-      LOG.info(partFss.getModificationTime());
-      LOG.info(ts);
-      if (partFss.getModificationTime() > indexTs) {
-        LOG.info("index is stale on the partitions that matched " + part.getSpec());
-        return false;
-      }
-    } catch (IOException e) {
-      LOG.info("failed to grab timestamp info");
-      throw new HiveException(e);
-    }
-    return true;
-  }
-
-  /**
-   * Check that the indexes on the unpartioned table exist and are fresh
-   */
-  private boolean isIndexTableFresh(Hive hive, List<Index> indexes, Table src)
-    throws HiveException {
-    //check that they exist
-    if (indexes == null || indexes.size() == 0) {
-      return false;
-    }
-    //check that they are not stale
-    for (Index index : indexes) {
-      LOG.info("checking index staleness...");
-      try {
-        FileSystem srcFs = src.getPath().getFileSystem(hive.getConf());
-        FileStatus srcFss= srcFs.getFileStatus(src.getPath());
-        String ts = index.getParameters().get("base_timestamp");
-        if (ts == null) {
-          return false;
-        }
-        long indexTs = Long.parseLong(ts);
-        LOG.info(srcFss.getModificationTime());
-        LOG.info(ts);
-        if (srcFss.getModificationTime() > indexTs) {
-          LOG.info("index is stale ");
-          return false;
-        }
-      } catch (IOException e) {
-        LOG.info("failed to grab timestamp info");
-        throw new HiveException(e);
-      }
-    }
-    return true;
   }
 
 

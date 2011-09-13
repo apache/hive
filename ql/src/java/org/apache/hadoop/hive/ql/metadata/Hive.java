@@ -657,12 +657,13 @@ public class Hive {
       Index indexDesc = new Index(indexName, indexHandlerClass, dbName, tableName, time, time, indexTblName,
           storageDescriptor, params, deferredRebuild);
       indexDesc.getParameters().put("comment", indexComment);
-      indexHandler.analyzeIndexDefinition(baseTbl, indexDesc, tt);
 
       if (idxProps != null)
       {
         indexDesc.getParameters().putAll(idxProps);
       }
+
+      indexHandler.analyzeIndexDefinition(baseTbl, indexDesc, tt);
 
       this.getMSC().createIndex(indexDesc, tt);
 
@@ -703,7 +704,7 @@ public class Hive {
     } catch (NoSuchObjectException e) {
       throw new HiveException("Partition or table doesn't exist.", e);
     } catch (Exception e) {
-      throw new HiveException("Unknow error. Please check logs.", e);
+      throw new HiveException("Unknown error. Please check logs.", e);
     }
   }
 
@@ -1419,7 +1420,7 @@ public class Hive {
     } catch (NoSuchObjectException e) {
       throw new HiveException("Partition or table doesn't exist.", e);
     } catch (Exception e) {
-      throw new HiveException("Unknow error. Please check logs.", e);
+      throw new HiveException("Unknown error. Please check logs.", e);
     }
   }
 
@@ -2098,6 +2099,4 @@ public class Hive {
   private static String[] getQualifiedNames(String qualifiedName) {
     return qualifiedName.split("\\.");
   }
-
-
 };

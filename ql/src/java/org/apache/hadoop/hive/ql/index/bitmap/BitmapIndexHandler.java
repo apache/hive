@@ -39,8 +39,6 @@ import org.apache.hadoop.hive.ql.hooks.ReadEntity;
 import org.apache.hadoop.hive.ql.hooks.WriteEntity;
 import org.apache.hadoop.hive.ql.index.HiveIndexQueryContext;
 import org.apache.hadoop.hive.ql.index.HiveIndexedInputFormat;
-import org.apache.hadoop.hive.ql.index.IndexMetadataChangeTask;
-import org.apache.hadoop.hive.ql.index.IndexMetadataChangeWork;
 import org.apache.hadoop.hive.ql.index.IndexPredicateAnalyzer;
 import org.apache.hadoop.hive.ql.index.IndexSearchCondition;
 import org.apache.hadoop.hive.ql.index.TableBasedIndexHandler;
@@ -48,6 +46,7 @@ import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.HiveUtils;
 import org.apache.hadoop.hive.ql.metadata.Partition;
 import org.apache.hadoop.hive.ql.metadata.VirtualColumn;
+import org.apache.hadoop.hive.ql.optimizer.IndexUtils;
 import org.apache.hadoop.hive.ql.parse.ParseContext;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
 import org.apache.hadoop.hive.ql.plan.PartitionDesc;
@@ -224,10 +223,8 @@ public class BitmapIndexHandler extends TableBasedIndexHandler {
       PartitionDesc indexTblPartDesc, String indexTableName,
       PartitionDesc baseTablePartDesc, String baseTableName, String dbName) throws HiveException {
 
-    HiveConf conf = new HiveConf(getConf(), BitmapIndexHandler.class);
-    HiveConf.setBoolVar(conf, HiveConf.ConfVars.HIVEROWOFFSET, true);
-    // Don't try to index optimize the query to build the index
-    HiveConf.setBoolVar(conf, HiveConf.ConfVars.HIVEOPTINDEXFILTER, false);
+    HiveConf builderConf = new HiveConf(getConf(), BitmapIndexHandler.class);
+    HiveConf.setBoolVar(builderConf, HiveConf.ConfVars.HIVEROWOFFSET, true);
 
     String indexCols = HiveUtils.getUnparsedColumnNamesFromFieldSchema(indexField);
 
@@ -283,21 +280,12 @@ public class BitmapIndexHandler extends TableBasedIndexHandler {
 
     // Require clusterby ROWOFFSET if map-size aggregation is off.
     // TODO: Make this work without map side aggregation
-    if (!conf.get("hive.map.aggr", null).equals("true")) {
+    if (!builderConf.get("hive.map.aggr", null).equals("true")) {
       throw new HiveException("Cannot construct index without map-side aggregation");
     }
 
-    Driver driver = new Driver(conf);
-    driver.compile(command.toString());
-
-    Task<?> rootTask = driver.getPlan().getRootTasks().get(0);
-    inputs.addAll(driver.getPlan().getInputs());
-    outputs.addAll(driver.getPlan().getOutputs());
-
-    IndexMetadataChangeWork indexMetaChange = new IndexMetadataChangeWork(partSpec, indexTableName, dbName);
-    IndexMetadataChangeTask indexMetaChangeTsk = new IndexMetadataChangeTask();
-    indexMetaChangeTsk.setWork(indexMetaChange);
-    rootTask.addDependentTask(indexMetaChangeTsk);
+    Task<?> rootTask = IndexUtils.createRootTask(builderConf, inputs, outputs,
+        command, (LinkedHashMap<String, String>) partSpec, indexTableName, dbName);
 
     return rootTask;
   }
