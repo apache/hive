@@ -26,6 +26,7 @@ import static org.apache.hadoop.hive.metastore.MetaStoreUtils.validateName;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Formatter;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
@@ -2679,6 +2680,8 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       } else if (hiveObject.getObjectType() == HiveObjectType.TABLE) {
         return this.get_table_privilege_set(hiveObject.getDbName(), hiveObject
             .getObjectName(), userName, groupNames);
+      } else if (hiveObject.getObjectType() == HiveObjectType.GLOBAL) {
+        return this.get_user_privilege_set(userName, groupNames);
       }
       return null;
     }
@@ -3035,7 +3038,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
               partName = Warehouse.makePartName(tbl.getPartitionKeys(), partValues);
             }
 
-            List<HiveObjectPrivilege> result = null;
+            List<HiveObjectPrivilege> result = Collections.<HiveObjectPrivilege>emptyList();
 
             if (partName != null) {
               Partition part = null;
@@ -3119,7 +3122,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
               }
               return result;
             }
-            return null;
+            return Collections.<HiveObjectPrivilege>emptyList();
           }
         });
       } catch (MetaException e) {
@@ -3163,7 +3166,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
               }
               return result;
             }
-            return null;
+            return Collections.<HiveObjectPrivilege>emptyList();
           }
         });
       } catch (MetaException e) {
@@ -3202,7 +3205,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
               }
               return result;
             }
-            return null;
+            return Collections.<HiveObjectPrivilege>emptyList();
           }
         });
       } catch (MetaException e) {
@@ -3240,7 +3243,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
               }
               return result;
             }
-            return null;
+            return Collections.<HiveObjectPrivilege>emptyList();
           }
         });
       } catch (MetaException e) {
