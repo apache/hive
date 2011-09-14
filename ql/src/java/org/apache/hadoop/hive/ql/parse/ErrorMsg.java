@@ -186,6 +186,7 @@ public enum ErrorMsg {
   NO_COMPARE_BIGINT_DOUBLE("In strict mode, comparing bigints and doubles is not allowed, "
       + "it may result in a loss of precision. "
       + "If you really want to perform the operation, set hive.mapred.mode=nonstrict"),
+      FUNCTIONS_ARE_NOT_SUPPORTED_IN_ORDER_BY("functions are not supported in order by"),
       ;
 
   private String mesg;
