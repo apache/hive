@@ -92,8 +92,8 @@
   <!-- Maven properties set here -->
   <property name="hive.ivy.org" value="org.apache.hive"/>
   <property name="mvn.publish.repo" value="snapshots"/>
-  <property name="mvn.publish.repo.id" value="apache.${mvn.publish.repo}.https" />
-  <property name="mvn.publish.repo.url" value="https://repository.apache.org/content/repositories/${mvn.publish.repo}"/>
+  <property name="mvn.publish.repo.id" value="datastax-${mvn.publish.repo}" />
+  <property name="mvn.publish.repo.url" value="http://mvn.riptano.com/content/repositories/${mvn.publish.repo}"/>
 
   <condition property="offline">
     <istrue value="${is-offline}"/>

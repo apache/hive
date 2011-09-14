@@ -687,6 +687,8 @@
           todir="${build.dir.hive}/maven/jars/" />
     <copy file="${build.dir.hive}/shims/hive-shims-${version}.jar"
           todir="${build.dir.hive}/maven/jars/" />
+    <copy file="${build.dir.hive}/cassandra-handler/hive-cassandra-handler-${version}.jar"
+          todir="${build.dir.hive}/maven/jars/" />
 
     <!-- copy over maven pom files created using the make-pom target and rename to maven convention -->
     <copy file="${build.dir.hive}/anttasks/pom.xml"
@@ -713,6 +715,8 @@
           tofile="${build.dir.hive}/maven/poms/hive-service-${version}.pom" />
     <copy file="${build.dir.hive}/shims/pom.xml"
           tofile="${build.dir.hive}/maven/poms/hive-shims-${version}.pom" />
+    <copy file="${build.dir.hive}/cassandra-handler/pom.xml"
+          tofile="${build.dir.hive}/maven/poms/hive-cassandra-handler-${version}.pom" />
 
     <!-- copy over licence -->
     <copy file="${hive.root}/LICENSE" todir="${build.dir.hive}/maven/licences/" />
@@ -753,7 +757,7 @@
   <target name="maven-publish" description="Publish Maven artifacts">
     <antcall target="maven-publish-artifact">
       <param name="hive.project" value="anttasks" />
-    </antcall>
+    </antcall> 
     <antcall target="maven-publish-artifact">
       <param name="hive.project" value="cli" />
     </antcall>
@@ -786,6 +790,9 @@
     </antcall>
     <antcall target="maven-publish-artifact">
       <param name="hive.project" value="shims" />
+    </antcall>
+    <antcall target="maven-publish-artifact">
+      <param name="hive.project" value="cassandra-handler" />
     </antcall>
   </target>
 
