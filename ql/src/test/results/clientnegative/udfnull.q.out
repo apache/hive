@@ -1,0 +1,19 @@
+PREHOOK: query: CREATE TEMPORARY FUNCTION example_arraysum AS 'org.apache.hadoop.hive.contrib.udf.example.UDFExampleArraySum'
+PREHOOK: type: CREATEFUNCTION
+POSTHOOK: query: CREATE TEMPORARY FUNCTION example_arraysum AS 'org.apache.hadoop.hive.contrib.udf.example.UDFExampleArraySum'
+POSTHOOK: type: CREATEFUNCTION
+PREHOOK: query: SELECT example_arraysum(lint)FROM src_thrift
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src_thrift
+PREHOOK: Output: file:/tmp/root/hive_2011-09-13_12-56-56_329_7268414984445633109/-mr-10000
+Execution failed with exit status: 2
+Obtaining error information
+
+Task failed!
+Task ID:
+  Stage-1
+
+Logs:
+
+/home/opensrc/13thsep/workspace/build/ql/tmp//hive.log
+FAILED: Execution Error, return code 2 from org.apache.hadoop.hive.ql.exec.MapRedTask

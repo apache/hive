@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?> 
-<java version="1.6.0_24" class="java.beans.XMLDecoder"> 
+<java version="1.6.0_13" class="java.beans.XMLDecoder"> 
  <object id="MapRedTask0" class="org.apache.hadoop.hive.ql.exec.MapRedTask"> 
   <void property="childTasks"> 
    <object class="java.util.ArrayList"> 
@@ -22,7 +22,7 @@
           <void property="work"> 
            <object class="org.apache.hadoop.hive.ql.plan.StatsWork"> 
             <void property="aggKey"> 
-             <string>pfile:/data/users/charleschen/hivetests/ht08302011-131137/61/build/ql/scratchdir/hive_2011-08-30_13-23-31_510_1697498805648472139/-ext-10000/</string> 
+             <string>pfile:/home/opensrc/13thsep/workspace/build/ql/scratchdir/hive_2011-09-13_11-30-34_965_123050217146448279/-ext-10000/</string> 
             </void> 
            </object> 
           </void> 
@@ -58,7 +58,7 @@
            <boolean>true</boolean> 
           </void> 
           <void property="sourceDir"> 
-           <string>pfile:/data/users/charleschen/hivetests/ht08302011-131137/61/build/ql/scratchdir/hive_2011-08-30_13-23-31_510_1697498805648472139/-ext-10000</string> 
+           <string>pfile:/home/opensrc/13thsep/workspace/build/ql/scratchdir/hive_2011-09-13_11-30-34_965_123050217146448279/-ext-10000</string> 
           </void> 
           <void property="table"> 
            <object id="TableDesc0" class="org.apache.hadoop.hive.ql.plan.TableDesc"> 
@@ -111,11 +111,11 @@
               </void> 
               <void method="put"> 
                <string>location</string> 
-               <string>pfile:/data/users/charleschen/hivetests/ht08302011-131137/61/build/ql/test/data/warehouse/dest1</string> 
+               <string>pfile:/home/opensrc/13thsep/workspace/build/ql/test/data/warehouse/dest1</string> 
               </void> 
               <void method="put"> 
                <string>transient_lastDdlTime</string> 
-               <string>1314735811</string> 
+               <string>1315938634</string> 
               </void> 
              </object> 
             </void> 
@@ -125,7 +125,7 @@
            </object> 
           </void> 
           <void property="tmpDir"> 
-           <string>pfile:/data/users/charleschen/hivetests/ht08302011-131137/61/build/ql/scratchdir/hive_2011-08-30_13-23-31_510_1697498805648472139/-ext-10001</string> 
+           <string>pfile:/home/opensrc/13thsep/workspace/build/ql/scratchdir/hive_2011-09-13_11-30-34_965_123050217146448279/-ext-10001</string> 
           </void> 
          </object> 
         </void> 
@@ -196,11 +196,11 @@
          </void> 
          <void method="put"> 
           <string>location</string> 
-          <string>pfile:/data/users/charleschen/hivetests/ht08302011-131137/61/build/ql/test/data/warehouse/src</string> 
+          <string>pfile:/home/opensrc/13thsep/workspace/build/ql/test/data/warehouse/src</string> 
          </void> 
          <void method="put"> 
           <string>transient_lastDdlTime</string> 
-          <string>1314735810</string> 
+          <string>1315938632</string> 
          </void> 
         </object> 
        </void> 
@@ -258,11 +258,11 @@
            </void> 
            <void method="put"> 
             <string>location</string> 
-            <string>pfile:/data/users/charleschen/hivetests/ht08302011-131137/61/build/ql/test/data/warehouse/src</string> 
+            <string>pfile:/home/opensrc/13thsep/workspace/build/ql/test/data/warehouse/src</string> 
            </void> 
            <void method="put"> 
             <string>transient_lastDdlTime</string> 
-            <string>1314735810</string> 
+            <string>1315938632</string> 
            </void> 
           </object> 
          </void> 
@@ -564,6 +564,9 @@
                            <object class="org.apache.hadoop.hive.ql.udf.generic.GenericUDFBridge"> 
                             <void property="udfClass"> 
                              <class>org.apache.hadoop.hive.ql.udf.UDFSubstr</class> 
+                            </void> 
+                            <void property="udfClassName"> 
+                             <string>org.apache.hadoop.hive.ql.udf.UDFSubstr</string> 
                             </void> 
                             <void property="udfName"> 
                              <string>substr</string> 
@@ -960,7 +963,7 @@
     <void property="pathToAliases"> 
      <object class="java.util.LinkedHashMap"> 
       <void method="put"> 
-       <string>pfile:/data/users/charleschen/hivetests/ht08302011-131137/61/build/ql/test/data/warehouse/src</string> 
+       <string>pfile:/home/opensrc/13thsep/workspace/build/ql/test/data/warehouse/src</string> 
        <object class="java.util.ArrayList"> 
         <void method="add"> 
          <string>src</string> 
@@ -972,7 +975,7 @@
     <void property="pathToPartitionInfo"> 
      <object class="java.util.LinkedHashMap"> 
       <void method="put"> 
-       <string>pfile:/data/users/charleschen/hivetests/ht08302011-131137/61/build/ql/test/data/warehouse/src</string> 
+       <string>pfile:/home/opensrc/13thsep/workspace/build/ql/test/data/warehouse/src</string> 
        <object class="org.apache.hadoop.hive.ql.plan.PartitionDesc"> 
         <void property="baseFileName"> 
          <string>src</string> 
@@ -1029,11 +1032,11 @@
           </void> 
           <void method="put"> 
            <string>location</string> 
-           <string>pfile:/data/users/charleschen/hivetests/ht08302011-131137/61/build/ql/test/data/warehouse/src</string> 
+           <string>pfile:/home/opensrc/13thsep/workspace/build/ql/test/data/warehouse/src</string> 
           </void> 
           <void method="put"> 
            <string>transient_lastDdlTime</string> 
-           <string>1314735810</string> 
+           <string>1315938632</string> 
           </void> 
          </object> 
         </void> 
@@ -1091,11 +1094,11 @@
             </void> 
             <void method="put"> 
              <string>location</string> 
-             <string>pfile:/data/users/charleschen/hivetests/ht08302011-131137/61/build/ql/test/data/warehouse/src</string> 
+             <string>pfile:/home/opensrc/13thsep/workspace/build/ql/test/data/warehouse/src</string> 
             </void> 
             <void method="put"> 
              <string>transient_lastDdlTime</string> 
-             <string>1314735810</string> 
+             <string>1315938632</string> 
             </void> 
            </object> 
           </void> 
@@ -1124,7 +1127,7 @@
                  <int>1</int> 
                 </void> 
                 <void property="dirName"> 
-                 <string>pfile:/data/users/charleschen/hivetests/ht08302011-131137/61/build/ql/scratchdir/hive_2011-08-30_13-23-31_510_1697498805648472139/-ext-10000</string> 
+                 <string>pfile:/home/opensrc/13thsep/workspace/build/ql/scratchdir/hive_2011-09-13_11-30-34_965_123050217146448279/-ext-10000</string> 
                 </void> 
                 <void property="gatherStats"> 
                  <boolean>true</boolean> 
@@ -1133,7 +1136,7 @@
                  <int>1</int> 
                 </void> 
                 <void property="statsAggPrefix"> 
-                 <string>pfile:/data/users/charleschen/hivetests/ht08302011-131137/61/build/ql/scratchdir/hive_2011-08-30_13-23-31_510_1697498805648472139/-ext-10000/</string> 
+                 <string>pfile:/home/opensrc/13thsep/workspace/build/ql/scratchdir/hive_2011-09-13_11-30-34_965_123050217146448279/-ext-10000/</string> 
                 </void> 
                 <void property="tableInfo"> 
                  <object idref="TableDesc0"/> 

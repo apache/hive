@@ -60,6 +60,11 @@ public class GenericUDFBridge extends GenericUDF implements Serializable {
   Class<? extends UDF> udfClass;
 
   /**
+   * The underlying UDF class Name.
+   */
+  String udfClassName;
+
+  /**
    * Greate a new GenericUDFBridge object.
    * 
    * @param udfName
@@ -72,6 +77,7 @@ public class GenericUDFBridge extends GenericUDF implements Serializable {
     this.udfName = udfName;
     this.isOperator = isOperator;
     this.udfClass = udfClass;
+    this.udfClassName = udfClass != null ? udfClass.getName() : null;
   }
 
   // For Java serialization only
@@ -84,6 +90,14 @@ public class GenericUDFBridge extends GenericUDF implements Serializable {
 
   public String getUdfName() {
     return udfName;
+  }
+
+  public String getUdfClassName() {
+    return udfClassName;
+  }
+
+  public void setUdfClassName(String udfClassName) {
+    this.udfClassName = udfClassName;
   }
 
   public boolean isOperator() {
@@ -123,6 +137,11 @@ public class GenericUDFBridge extends GenericUDF implements Serializable {
   @Override
   public ObjectInspector initialize(ObjectInspector[] arguments) throws UDFArgumentException {
 
+    if (udfClass == null) {
+      throw new UDFArgumentException(
+          "The UDF implementation class '" + udfClassName
+              + "' is not present in the class path");
+    }
     udf = (UDF) ReflectionUtils.newInstance(udfClass, null);
 
     // Resolve for the method based on argument types
