@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?> 
-<java version="1.6.0_24" class="java.beans.XMLDecoder"> 
+<java version="1.6.0_13" class="java.beans.XMLDecoder"> 
  <object class="org.apache.hadoop.hive.ql.exec.MapRedTask"> 
   <void property="id"> 
    <string>Stage-3</string> 
@@ -62,11 +62,11 @@
          </void> 
          <void method="put"> 
           <string>location</string> 
-          <string>pfile:/data/users/charleschen/hivetests/ht08302011-131137/61/build/ql/test/data/warehouse/src</string> 
+          <string>pfile:/home/opensrc/13thsep/workspace/build/ql/test/data/warehouse/src</string> 
          </void> 
          <void method="put"> 
           <string>transient_lastDdlTime</string> 
-          <string>1314735825</string> 
+          <string>1315938661</string> 
          </void> 
         </object> 
        </void> 
@@ -124,11 +124,11 @@
            </void> 
            <void method="put"> 
             <string>location</string> 
-            <string>pfile:/data/users/charleschen/hivetests/ht08302011-131137/61/build/ql/test/data/warehouse/src</string> 
+            <string>pfile:/home/opensrc/13thsep/workspace/build/ql/test/data/warehouse/src</string> 
            </void> 
            <void method="put"> 
             <string>transient_lastDdlTime</string> 
-            <string>1314735825</string> 
+            <string>1315938661</string> 
            </void> 
           </object> 
          </void> 
@@ -374,6 +374,9 @@
                      <object class="org.apache.hadoop.hive.ql.udf.generic.GenericUDFBridge"> 
                       <void property="udfClass"> 
                        <class>org.apache.hadoop.hive.ql.udf.UDFSubstr</class> 
+                      </void> 
+                      <void property="udfClassName"> 
+                       <string>org.apache.hadoop.hive.ql.udf.UDFSubstr</string> 
                       </void> 
                       <void property="udfName"> 
                        <string>substr</string> 
@@ -730,7 +733,7 @@
     <void property="pathToAliases"> 
      <object class="java.util.LinkedHashMap"> 
       <void method="put"> 
-       <string>pfile:/data/users/charleschen/hivetests/ht08302011-131137/61/build/ql/test/data/warehouse/src</string> 
+       <string>pfile:/home/opensrc/13thsep/workspace/build/ql/test/data/warehouse/src</string> 
        <object class="java.util.ArrayList"> 
         <void method="add"> 
          <string>src</string> 
@@ -742,7 +745,7 @@
     <void property="pathToPartitionInfo"> 
      <object class="java.util.LinkedHashMap"> 
       <void method="put"> 
-       <string>pfile:/data/users/charleschen/hivetests/ht08302011-131137/61/build/ql/test/data/warehouse/src</string> 
+       <string>pfile:/home/opensrc/13thsep/workspace/build/ql/test/data/warehouse/src</string> 
        <object class="org.apache.hadoop.hive.ql.plan.PartitionDesc"> 
         <void property="baseFileName"> 
          <string>src</string> 
@@ -799,11 +802,11 @@
           </void> 
           <void method="put"> 
            <string>location</string> 
-           <string>pfile:/data/users/charleschen/hivetests/ht08302011-131137/61/build/ql/test/data/warehouse/src</string> 
+           <string>pfile:/home/opensrc/13thsep/workspace/build/ql/test/data/warehouse/src</string> 
           </void> 
           <void method="put"> 
            <string>transient_lastDdlTime</string> 
-           <string>1314735825</string> 
+           <string>1315938661</string> 
           </void> 
          </object> 
         </void> 
@@ -861,11 +864,11 @@
             </void> 
             <void method="put"> 
              <string>location</string> 
-             <string>pfile:/data/users/charleschen/hivetests/ht08302011-131137/61/build/ql/test/data/warehouse/src</string> 
+             <string>pfile:/home/opensrc/13thsep/workspace/build/ql/test/data/warehouse/src</string> 
             </void> 
             <void method="put"> 
              <string>transient_lastDdlTime</string> 
-             <string>1314735825</string> 
+             <string>1315938661</string> 
             </void> 
            </object> 
           </void> 
@@ -891,13 +894,13 @@
               <void property="conf"> 
                <object class="org.apache.hadoop.hive.ql.plan.FileSinkDesc"> 
                 <void property="dirName"> 
-                 <string>file:/tmp/charleschen/hive_2011-08-30_13-23-46_919_8273996101542787867/-ext-10001</string> 
+                 <string>file:/tmp/root/hive_2011-09-13_11-31-03_639_5777385075875934749/-ext-10001</string> 
                 </void> 
                 <void property="numFiles"> 
                  <int>1</int> 
                 </void> 
                 <void property="statsAggPrefix"> 
-                 <string>file:/tmp/charleschen/hive_2011-08-30_13-23-46_919_8273996101542787867/-ext-10001/</string> 
+                 <string>file:/tmp/root/hive_2011-09-13_11-31-03_639_5777385075875934749/-ext-10001/</string> 
                 </void> 
                 <void property="tableInfo"> 
                  <object class="org.apache.hadoop.hive.ql.plan.TableDesc"> 

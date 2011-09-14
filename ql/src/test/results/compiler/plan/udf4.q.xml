@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?> 
-<java version="1.6.0_24" class="java.beans.XMLDecoder"> 
+<java version="1.6.0_13" class="java.beans.XMLDecoder"> 
  <object class="org.apache.hadoop.hive.ql.exec.MapRedTask"> 
   <void property="id"> 
    <string>Stage-3</string> 
@@ -62,11 +62,11 @@
          </void> 
          <void method="put"> 
           <string>location</string> 
-          <string>pfile:/data/users/charleschen/hive-trunk/build/ql/test/data/warehouse/dest1</string> 
+          <string>pfile:/home/opensrc/13thsep/workspace/build/ql/test/data/warehouse/dest1</string> 
          </void> 
          <void method="put"> 
           <string>transient_lastDdlTime</string> 
-          <string>1314870358</string> 
+          <string>1315938954</string> 
          </void> 
         </object> 
        </void> 
@@ -124,11 +124,11 @@
            </void> 
            <void method="put"> 
             <string>location</string> 
-            <string>pfile:/data/users/charleschen/hive-trunk/build/ql/test/data/warehouse/dest1</string> 
+            <string>pfile:/home/opensrc/13thsep/workspace/build/ql/test/data/warehouse/dest1</string> 
            </void> 
            <void method="put"> 
             <string>transient_lastDdlTime</string> 
-            <string>1314870358</string> 
+            <string>1315938954</string> 
            </void> 
           </object> 
          </void> 
@@ -156,13 +156,13 @@
                 <void property="conf"> 
                  <object class="org.apache.hadoop.hive.ql.plan.FileSinkDesc"> 
                   <void property="dirName"> 
-                   <string>file:/tmp/charleschen/hive_2011-09-01_02-45-58_786_3691385468128577866/-ext-10001</string> 
+                   <string>file:/tmp/root/hive_2011-09-13_11-35-54_840_3013899200254464987/-ext-10001</string> 
                   </void> 
                   <void property="numFiles"> 
                    <int>1</int> 
                   </void> 
                   <void property="statsAggPrefix"> 
-                   <string>file:/tmp/charleschen/hive_2011-09-01_02-45-58_786_3691385468128577866/-ext-10001/</string> 
+                   <string>file:/tmp/root/hive_2011-09-13_11-35-54_840_3013899200254464987/-ext-10001/</string> 
                   </void> 
                   <void property="tableInfo"> 
                    <object class="org.apache.hadoop.hive.ql.plan.TableDesc"> 
@@ -523,6 +523,9 @@
                   <void property="udfClass"> 
                    <class>org.apache.hadoop.hive.ql.udf.UDFSqrt</class> 
                   </void> 
+                  <void property="udfClassName"> 
+                   <string>org.apache.hadoop.hive.ql.udf.UDFSqrt</string> 
+                  </void> 
                   <void property="udfName"> 
                    <string>sqrt</string> 
                   </void> 
@@ -562,6 +565,9 @@
                       <void property="udfClass"> 
                        <class>org.apache.hadoop.hive.ql.udf.UDFOPNegative</class> 
                       </void> 
+                      <void property="udfClassName"> 
+                       <string>org.apache.hadoop.hive.ql.udf.UDFOPNegative</string> 
+                      </void> 
                       <void property="udfName"> 
                        <string>-</string> 
                       </void> 
@@ -578,6 +584,9 @@
                  <object class="org.apache.hadoop.hive.ql.udf.generic.GenericUDFBridge"> 
                   <void property="udfClass"> 
                    <class>org.apache.hadoop.hive.ql.udf.UDFSqrt</class> 
+                  </void> 
+                  <void property="udfClassName"> 
+                   <string>org.apache.hadoop.hive.ql.udf.UDFSqrt</string> 
                   </void> 
                   <void property="udfName"> 
                    <string>sqrt</string> 
@@ -610,6 +619,9 @@
                  <object class="org.apache.hadoop.hive.ql.udf.generic.GenericUDFBridge"> 
                   <void property="udfClass"> 
                    <class>org.apache.hadoop.hive.ql.udf.UDFSqrt</class> 
+                  </void> 
+                  <void property="udfClassName"> 
+                   <string>org.apache.hadoop.hive.ql.udf.UDFSqrt</string> 
                   </void> 
                   <void property="udfName"> 
                    <string>sqrt</string> 
@@ -650,6 +662,9 @@
                       <void property="udfClass"> 
                        <class>org.apache.hadoop.hive.ql.udf.UDFOPNegative</class> 
                       </void> 
+                      <void property="udfClassName"> 
+                       <string>org.apache.hadoop.hive.ql.udf.UDFOPNegative</string> 
+                      </void> 
                       <void property="udfName"> 
                        <string>-</string> 
                       </void> 
@@ -666,6 +681,9 @@
                  <object class="org.apache.hadoop.hive.ql.udf.generic.GenericUDFBridge"> 
                   <void property="udfClass"> 
                    <class>org.apache.hadoop.hive.ql.udf.UDFFloor</class> 
+                  </void> 
+                  <void property="udfClassName"> 
+                   <string>org.apache.hadoop.hive.ql.udf.UDFFloor</string> 
                   </void> 
                   <void property="udfName"> 
                    <string>floor</string> 
@@ -699,6 +717,9 @@
                   <void property="udfClass"> 
                    <class>org.apache.hadoop.hive.ql.udf.UDFFloor</class> 
                   </void> 
+                  <void property="udfClassName"> 
+                   <string>org.apache.hadoop.hive.ql.udf.UDFFloor</string> 
+                  </void> 
                   <void property="udfName"> 
                    <string>floor</string> 
                   </void> 
@@ -730,6 +751,9 @@
                  <object class="org.apache.hadoop.hive.ql.udf.generic.GenericUDFBridge"> 
                   <void property="udfClass"> 
                    <class>org.apache.hadoop.hive.ql.udf.UDFFloor</class> 
+                  </void> 
+                  <void property="udfClassName"> 
+                   <string>org.apache.hadoop.hive.ql.udf.UDFFloor</string> 
                   </void> 
                   <void property="udfName"> 
                    <string>floor</string> 
@@ -770,6 +794,9 @@
                       <void property="udfClass"> 
                        <class>org.apache.hadoop.hive.ql.udf.UDFOPNegative</class> 
                       </void> 
+                      <void property="udfClassName"> 
+                       <string>org.apache.hadoop.hive.ql.udf.UDFOPNegative</string> 
+                      </void> 
                       <void property="udfName"> 
                        <string>-</string> 
                       </void> 
@@ -786,6 +813,9 @@
                  <object class="org.apache.hadoop.hive.ql.udf.generic.GenericUDFBridge"> 
                   <void property="udfClass"> 
                    <class>org.apache.hadoop.hive.ql.udf.UDFRound</class> 
+                  </void> 
+                  <void property="udfClassName"> 
+                   <string>org.apache.hadoop.hive.ql.udf.UDFRound</string> 
                   </void> 
                   <void property="udfName"> 
                    <string>round</string> 
@@ -819,6 +849,9 @@
                   <void property="udfClass"> 
                    <class>org.apache.hadoop.hive.ql.udf.UDFRound</class> 
                   </void> 
+                  <void property="udfClassName"> 
+                   <string>org.apache.hadoop.hive.ql.udf.UDFRound</string> 
+                  </void> 
                   <void property="udfName"> 
                    <string>round</string> 
                   </void> 
@@ -850,6 +883,9 @@
                  <object class="org.apache.hadoop.hive.ql.udf.generic.GenericUDFBridge"> 
                   <void property="udfClass"> 
                    <class>org.apache.hadoop.hive.ql.udf.UDFCeil</class> 
+                  </void> 
+                  <void property="udfClassName"> 
+                   <string>org.apache.hadoop.hive.ql.udf.UDFCeil</string> 
                   </void> 
                   <void property="udfName"> 
                    <string>ceil</string> 
@@ -883,6 +919,9 @@
                   <void property="udfClass"> 
                    <class>org.apache.hadoop.hive.ql.udf.UDFRand</class> 
                   </void> 
+                  <void property="udfClassName"> 
+                   <string>org.apache.hadoop.hive.ql.udf.UDFRand</string> 
+                  </void> 
                   <void property="udfName"> 
                    <string>rand</string> 
                   </void> 
@@ -914,6 +953,9 @@
                  <object class="org.apache.hadoop.hive.ql.udf.generic.GenericUDFBridge"> 
                   <void property="udfClass"> 
                    <class>org.apache.hadoop.hive.ql.udf.UDFCeil</class> 
+                  </void> 
+                  <void property="udfClassName"> 
+                   <string>org.apache.hadoop.hive.ql.udf.UDFCeil</string> 
                   </void> 
                   <void property="udfName"> 
                    <string>ceiling</string> 
@@ -954,6 +996,9 @@
                       <void property="udfClass"> 
                        <class>org.apache.hadoop.hive.ql.udf.UDFOPNegative</class> 
                       </void> 
+                      <void property="udfClassName"> 
+                       <string>org.apache.hadoop.hive.ql.udf.UDFOPNegative</string> 
+                      </void> 
                       <void property="udfName"> 
                        <string>-</string> 
                       </void> 
@@ -970,6 +1015,9 @@
                  <object class="org.apache.hadoop.hive.ql.udf.generic.GenericUDFBridge"> 
                   <void property="udfClass"> 
                    <class>org.apache.hadoop.hive.ql.udf.UDFCeil</class> 
+                  </void> 
+                  <void property="udfClassName"> 
+                   <string>org.apache.hadoop.hive.ql.udf.UDFCeil</string> 
                   </void> 
                   <void property="udfName"> 
                    <string>ceil</string> 
@@ -1002,6 +1050,9 @@
                  <object class="org.apache.hadoop.hive.ql.udf.generic.GenericUDFBridge"> 
                   <void property="udfClass"> 
                    <class>org.apache.hadoop.hive.ql.udf.UDFCeil</class> 
+                  </void> 
+                  <void property="udfClassName"> 
+                   <string>org.apache.hadoop.hive.ql.udf.UDFCeil</string> 
                   </void> 
                   <void property="udfName"> 
                    <string>ceil</string> 
@@ -1052,6 +1103,9 @@
                       <void property="udfClass"> 
                        <class>org.apache.hadoop.hive.ql.udf.UDFOPNegative</class> 
                       </void> 
+                      <void property="udfClassName"> 
+                       <string>org.apache.hadoop.hive.ql.udf.UDFOPNegative</string> 
+                      </void> 
                       <void property="udfName"> 
                        <string>-</string> 
                       </void> 
@@ -1071,6 +1125,9 @@
                   </void> 
                   <void property="udfClass"> 
                    <class>org.apache.hadoop.hive.ql.udf.UDFOPPlus</class> 
+                  </void> 
+                  <void property="udfClassName"> 
+                   <string>org.apache.hadoop.hive.ql.udf.UDFOPPlus</string> 
                   </void> 
                   <void property="udfName"> 
                    <string>+</string> 
@@ -1117,6 +1174,9 @@
                   <void property="udfClass"> 
                    <class>org.apache.hadoop.hive.ql.udf.UDFOPPlus</class> 
                   </void> 
+                  <void property="udfClassName"> 
+                   <string>org.apache.hadoop.hive.ql.udf.UDFOPPlus</string> 
+                  </void> 
                   <void property="udfName"> 
                    <string>+</string> 
                   </void> 
@@ -1151,6 +1211,9 @@
                   </void> 
                   <void property="udfClass"> 
                    <class>org.apache.hadoop.hive.ql.udf.UDFOPNegative</class> 
+                  </void> 
+                  <void property="udfClassName"> 
+                   <string>org.apache.hadoop.hive.ql.udf.UDFOPNegative</string> 
                   </void> 
                   <void property="udfName"> 
                    <string>-</string> 
@@ -1195,6 +1258,9 @@
                   <void property="udfClass"> 
                    <class>org.apache.hadoop.hive.ql.udf.UDFRound</class> 
                   </void> 
+                  <void property="udfClassName"> 
+                   <string>org.apache.hadoop.hive.ql.udf.UDFRound</string> 
+                  </void> 
                   <void property="udfName"> 
                    <string>round</string> 
                   </void> 
@@ -1229,6 +1295,9 @@
                   </void> 
                   <void property="udfClass"> 
                    <class>org.apache.hadoop.hive.ql.udf.UDFOPBitNot</class> 
+                  </void> 
+                  <void property="udfClassName"> 
+                   <string>org.apache.hadoop.hive.ql.udf.UDFOPBitNot</string> 
                   </void> 
                   <void property="udfName"> 
                    <string>~</string> 
@@ -1765,7 +1834,7 @@
     <void property="pathToAliases"> 
      <object class="java.util.LinkedHashMap"> 
       <void method="put"> 
-       <string>pfile:/data/users/charleschen/hive-trunk/build/ql/test/data/warehouse/dest1</string> 
+       <string>pfile:/home/opensrc/13thsep/workspace/build/ql/test/data/warehouse/dest1</string> 
        <object class="java.util.ArrayList"> 
         <void method="add"> 
          <string>dest1</string> 
@@ -1777,7 +1846,7 @@
     <void property="pathToPartitionInfo"> 
      <object class="java.util.LinkedHashMap"> 
       <void method="put"> 
-       <string>pfile:/data/users/charleschen/hive-trunk/build/ql/test/data/warehouse/dest1</string> 
+       <string>pfile:/home/opensrc/13thsep/workspace/build/ql/test/data/warehouse/dest1</string> 
        <object class="org.apache.hadoop.hive.ql.plan.PartitionDesc"> 
         <void property="baseFileName"> 
          <string>dest1</string> 
@@ -1834,11 +1903,11 @@
           </void> 
           <void method="put"> 
            <string>location</string> 
-           <string>pfile:/data/users/charleschen/hive-trunk/build/ql/test/data/warehouse/dest1</string> 
+           <string>pfile:/home/opensrc/13thsep/workspace/build/ql/test/data/warehouse/dest1</string> 
           </void> 
           <void method="put"> 
            <string>transient_lastDdlTime</string> 
-           <string>1314870358</string> 
+           <string>1315938954</string> 
           </void> 
          </object> 
         </void> 
@@ -1896,11 +1965,11 @@
             </void> 
             <void method="put"> 
              <string>location</string> 
-             <string>pfile:/data/users/charleschen/hive-trunk/build/ql/test/data/warehouse/dest1</string> 
+             <string>pfile:/home/opensrc/13thsep/workspace/build/ql/test/data/warehouse/dest1</string> 
             </void> 
             <void method="put"> 
              <string>transient_lastDdlTime</string> 
-             <string>1314870358</string> 
+             <string>1315938954</string> 
             </void> 
            </object> 
           </void> 
