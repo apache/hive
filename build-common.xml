@@ -543,6 +543,25 @@
 	     uri="urn:maven-artifact-ant" classpathref="maven-ant-tasks.classpath" />
   </target>
 
+  <target name="maven-publish-deps" depends="mvn-taskdef">
+    <!-- add all dependencies -->
+    <artifact:pom
+	file="${build.dir.hive}/maven/poms/hive-deps-${version}.pom"
+	id="hive.project.pom" />
+    
+    <artifact:install-provider artifactId="wagon-http"
+			              version="1.0-beta-2" />
+    
+    <artifact:deploy settingsFile="${settings.file}">
+      <remoteRepository id="${mvn.publish.repo.id}" url="${mvn.publish.repo.url}" />
+      <pom refid="hive.project.pom"/>
+      <attach file="${basedir}/lib/derby.jar" type="jar" classifier="derby"/> 
+      <attach file="${basedir}/lib/thrift-0.6.0.jar" type="jar" classifier="thrift"/>
+      <attach file="${basedir}/lib/thrift-fb303-0.6.0.jar" type="jar" classifier="thrift-fb303"/>
+      <attach file="${basedir}/lib/json.jar" type="jar" classifier="json"/>
+    </artifact:deploy>
+  </target>
+
   <!-- Deploy a single artifact to the maven repository -->
   <target name="maven-publish-artifact" depends="mvn-taskdef">
     <artifact:pom

@@ -52,7 +52,7 @@
   <property name="checkstyle.conf.dir" location="${hive.root}/checkstyle"/>
   <property name="checkstyle.build.dir" location="${build.dir.hive}/checkstyle"/>
   <property name="md5sum.format" value="{0}  {1}"/>
-
+  <property name="settings.file" value="${user.home}/.m2/settings.xml"/>
 
   <condition property="is-offline" value="true" else="false">
     <isset property="offline"/>
@@ -119,7 +119,7 @@
       <subant target="@{target}">
         <property name="build.dir.hive" location="${build.dir.hive}"/>
         <property name="is-offline" value="${is-offline}"/>
-        <filelist dir="." files="ant/build.xml,shims/build.xml,common/build.xml,serde/build.xml,metastore/build.xml,ql/build.xml,cli/build.xml,contrib/build.xml,service/build.xml,jdbc/build.xml,hwi/build.xml,hbase-handler/build.xml,cassandra-handler/build.xml,ant/build.xml"/>
+        <filelist dir="." files="ant/build.xml,shims/build.xml,common/build.xml,serde/build.xml,metastore/build.xml,ql/build.xml,cli/build.xml,contrib/build.xml,service/build.xml,jdbc/build.xml,hwi/build.xml,hbase-handler/build.xml,cassandra-handler/build.xml,ant/build.xml,lib/build.xml"/>
       </subant>
     </sequential>
   </macrodef>
@@ -717,6 +717,10 @@
           tofile="${build.dir.hive}/maven/poms/hive-shims-${version}.pom" />
     <copy file="${build.dir.hive}/cassandra-handler/pom.xml"
           tofile="${build.dir.hive}/maven/poms/hive-cassandra-handler-${version}.pom" />
+    <copy file="${build.dir.hive}/cassandra-handler/pom.xml"
+          tofile="${build.dir.hive}/maven/poms/hive-cassandra-handler-${version}.pom" />
+    <copy file="${build.dir.hive}/hive-deps/pom.xml"
+          tofile="${build.dir.hive}/maven/poms/hive-deps-${version}.pom" />
 
     <!-- copy over licence -->
     <copy file="${hive.root}/LICENSE" todir="${build.dir.hive}/maven/licences/" />
@@ -794,6 +798,8 @@
     <antcall target="maven-publish-artifact">
       <param name="hive.project" value="cassandra-handler" />
     </antcall>
+    
+    <antcall target="maven-publish-deps"/>
   </target>
 
 </project>
