@@ -4524,6 +4524,9 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
           // ClusterBy
           order.append("+");
         }
+        if (cl.getType() == HiveParser.TOK_FUNCTION) {
+          throw new SemanticException(ErrorMsg.FUNCTIONS_ARE_NOT_SUPPORTED_IN_ORDER_BY.getMsg());
+        }
         ExprNodeDesc exprNode = genExprNodeDesc(cl, inputRR);
         sortCols.add(exprNode);
       }
