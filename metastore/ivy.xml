@@ -15,23 +15,23 @@
    limitations under the License.
 -->
 <ivy-module version="2.0">
-    <info organisation="org.apache.hive" module="hive-metastore" revision="${version}">
-     <license name="The Apache Software License, Version 2.0" url="http://www.apache.org/licenses/LICENSE-2.0.txt" />
-     <description homepage="http://hive.apache.org">
-       Hive is a data warehouse infrastructure built on top of Hadoop see
-       http://wiki.apache.org/hadoop/Hive
-     </description>
+    <info organisation="${hive.ivy.org}" module="hive-metastore" revision="${version}">
+      <license name="The Apache Software License, Version 2.0" url="http://www.apache.org/licenses/LICENSE-2.0.txt" />
+      <description homepage="http://hive.apache.org">
+        Hive is a data warehouse infrastructure built on top of Hadoop see
+        http://wiki.apache.org/hadoop/Hive
+      </description>
     </info>
     <dependencies>
         <dependency org="hadoop" name="core" rev="${hadoop.version.ant-internal}">
           <artifact name="hadoop" type="source" ext="tar.gz"/>
         </dependency>
-	<dependency org="commons-dbcp" name="commons-dbcp" rev="${commons-dbcp.version}" conf="default">
+	<dependency org="commons-dbcp" name="commons-dbcp" rev="${commons-dbcp.version}">
           <exclude module="commons-pool" />
           <exclude org="org.apache.geronimo.specs" module="geronimo-jta_1.1_spec"/>
         </dependency>
-        <dependency org="commons-pool" name="commons-pool" rev="${commons-pool.version}" conf="default"/>
-        <dependency org="org.datanucleus" name="datanucleus-connectionpool" rev="${datanucleus-connectionpool.version}" conf="default">
+        <dependency org="commons-pool" name="commons-pool" rev="${commons-pool.version}"/>
+        <dependency org="org.datanucleus" name="datanucleus-connectionpool" rev="${datanucleus-connectionpool.version}">
           <exclude module="proxool" />
           <exclude module="c3p0" />
           <exclude module="datanucleus-core" />
@@ -41,7 +41,7 @@
           <exclude module="commons-dbcp" />
           <exclude org="com.jolbox" module="bonecp"/>
         </dependency>
-        <dependency org="org.datanucleus" name="datanucleus-core" rev="${datanucleus-core.version}" conf="default">
+        <dependency org="org.datanucleus" name="datanucleus-core" rev="${datanucleus-core.version}">
           <exclude org="javax.jdo" module="jdo2-api"/>
           <exclude org="org.apache.geronimo.specs" module="geronimo-jta_1.1_spec"/>
           <exclude org="org.eclipse.equinox" module="org.eclipse.equinox.registry"/>
@@ -50,13 +50,13 @@
           <exclude org="org.eclipse.osgi" module="org.eclipse.osgi"/>
           <exclude org="log4j" module="log4j"/>
         </dependency>
-        <dependency org="org.datanucleus" name="datanucleus-enhancer" rev="${datanucleus-enhancer.version}" conf="default">
+        <dependency org="org.datanucleus" name="datanucleus-enhancer" rev="${datanucleus-enhancer.version}">
           <exclude org="org.datanucleus" module="datanucleus-core"/>
           <exclude org="javax.jdo" module="jdo2-api"/>
           <exclude org="asm" module="asm"/>
           <exclude org="org.apache.ant" module="ant"/>
         </dependency>
-        <dependency org="org.datanucleus" name="datanucleus-rdbms" rev="${datanucleus-rdbms.version}" conf="default">
+        <dependency org="org.datanucleus" name="datanucleus-rdbms" rev="${datanucleus-rdbms.version}">
           <exclude org="org.datanucleus" module="datanucleus-core"/>
           <exclude org="javax.jdo" module="jdo2-api"/>
           <exclude org="org.apache.geronimo.specs" module="geronimo-jta_1.1_spec"/>
@@ -64,12 +64,12 @@
           <exclude org="org.apache.ant" module="ant"/>
           <exclude org="oracle" module="ojdbc14_g"/>
         </dependency>
-        <dependency org="javax.jdo" name="jdo2-api" rev="${jdo-api.version}" conf="default">
+        <dependency org="javax.jdo" name="jdo2-api" rev="${jdo-api.version}">
           <exclude org="javax.transaction" module="jta"/>
           <exclude org="org.apache.ant" module="ant"/>
           <exclude org="org.apache.geronimo.specs" module="geronimo-jpa_3.0_spec"/>
         </dependency>
-        <dependency org="org.slf4j" name="slf4j-api" rev="${slf4j-api.version}" conf="default"/>
-        <dependency org="org.slf4j" name="slf4j-log4j12" rev="${slf4j-log4j12.version}" conf="default"/>
+        <dependency org="org.slf4j" name="slf4j-api" rev="${slf4j-api.version}"/>
+        <dependency org="org.slf4j" name="slf4j-log4j12" rev="${slf4j-log4j12.version}"/>
     </dependencies>
 </ivy-module>

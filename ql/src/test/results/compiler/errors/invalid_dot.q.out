@@ -1,2 +1,2 @@
 Semantic Exception: 
-line 2:36 . operator is only supported on struct or list of struct types member
+Line 2:36 . Operator is only supported on struct or list of struct types member

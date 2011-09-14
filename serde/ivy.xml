@@ -15,12 +15,12 @@
    limitations under the License.
 -->
 <ivy-module version="2.0">
-    <info organisation="org.apache.hive" module="hive-serde" revision="${version}">
-     <license name="The Apache Software License, Version 2.0" url="http://www.apache.org/licenses/LICENSE-2.0.txt" />
-     <description homepage="http://hive.apache.org">
+    <info organisation="${hive.ivy.org}" module="hive-serde" revision="${version}">
+      <license name="The Apache Software License, Version 2.0" url="http://www.apache.org/licenses/LICENSE-2.0.txt" />
+      <description homepage="http://hive.apache.org">
         Hive is a data warehouse infrastructure built on top of Hadoop see
         http://wiki.apache.org/hadoop/Hive
-     </description>
+      </description>
     </info>
     <dependencies>
         <dependency org="hadoop" name="core" rev="${hadoop.version.ant-internal}">

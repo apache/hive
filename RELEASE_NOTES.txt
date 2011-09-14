@@ -1,3 +1,24 @@
+Release Notes - Hive - Version 0.7.1
+
+** Bug
+    * [HIVE-2054] - Exception on windows when using the jdbc driver.
+                    "IOException: The system cannot find the path specified"
+    * [HIVE-2176] - Schema creation scripts are incomplete since they leave
+                    out tables that are specific to DataNucleus
+
+** Improvement
+    * [HIVE-1731] - Improve miscellaneous error messages
+    * [HIVE-2140] - Return correct Major / Minor version numbers for
+                    JDBC Hive Driver
+    * [HIVE-2158] - Add the HivePreparedStatement implementation based
+                    on current HIVE supported data-type
+
+** Task
+    * [HIVE-1095] - Hive in Maven
+    * [HIVE-2076] - Provide Metastore upgrade scripts and default schemas
+                    for PostgreSQL
+
+
 Release Notes - Hive - Version 0.7.0
 
 ** New Feature
@@ -14,6 +35,7 @@ Release Notes - Hive - Version 0.7.0
     * [HIVE-1413] - bring a table/partition offline
     * [HIVE-1438] - sentences() UDF for natural language tokenization
     * [HIVE-1481] - ngrams() UDAF for estimating top-k n-gram frequencies
+    * [HIVE-1514] - Be able to modify a partition's fileformat and file location information.
     * [HIVE-1518] - context_ngrams() UDAF for estimating top-k contextual n-grams
     * [HIVE-1528] - Add json_tuple() UDTF function
     * [HIVE-1529] - Add ANSI SQL covariance aggregate functions: covar_pop and covar_samp.
@@ -21,17 +43,25 @@ Release Notes - Hive - Version 0.7.0
     * [HIVE-1609] - Support partition filtering in metastore
     * [HIVE-1624] - Patch to allows scripts in S3 location
     * [HIVE-1636] - Implement "SHOW TABLES {FROM | IN} db_name"
+    * [HIVE-1659] - parse_url_tuple: a UDTF version of parse_url
     * [HIVE-1661] - Default values for parameters
     * [HIVE-1779] - Implement GenericUDF str_to_map
     * [HIVE-1790] - Patch to support HAVING clause in Hive
     * [HIVE-1792] - track the joins which are being converted to map-join automatically
     * [HIVE-1818] - Call frequency and duration metrics for HiveMetaStore via jmx
+    * [HIVE-1819] - maintain lastAccessTime in the metastore
     * [HIVE-1820] - Make Hive database data center aware
+    * [HIVE-1827] - Add a new local mode flag in Task.
+    * [HIVE-1835] - Better auto-complete for Hive
+    * [HIVE-1840] - Support ALTER DATABASE to change database properties
     * [HIVE-1856] - Implement DROP TABLE/VIEW ... IF EXISTS
     * [HIVE-1858] - Implement DROP {PARTITION, INDEX, TEMPORARY FUNCTION} IF EXISTS
     * [HIVE-1881] - Make the MetaStore filesystem interface pluggable via the hive.metastore.fs.handler.class configuration property
+    * [HIVE-1889] - add an option (hive.index.compact.file.ignore.hdfs) to ignore HDFS location stored in index files.
+    * [HIVE-1971] - Verbose/echo mode for the Hive CLI
 
 ** Improvement
+    * [HIVE-138] - Provide option to export a HEADER
     * [HIVE-474] - Support for distinct selection on two or more columns
     * [HIVE-558] - describe extended table/partition output is cryptic
     * [HIVE-1126] - Missing some Jdbc functionality like getTables getColumns and HiveResultSet.get* methods based on column name.
@@ -48,6 +78,7 @@ Release Notes - Hive - Version 0.7.0
     * [HIVE-1441] - Extend ivy offline mode to cover metastore downloads
     * [HIVE-1443] - Add support to turn off bucketing with ALTER TABLE
     * [HIVE-1447] - Speed up reflection method calls in GenericUDFBridge and GenericUDAFBridge
+    * [HIVE-1456] - potentail NullPointerException
     * [HIVE-1463] - hive output file names are unnecessarily large
     * [HIVE-1469] - replace isArray() calls and remove LOG.isInfoEnabled() in Operator.forward()
     * [HIVE-1495] - supply correct information to hooks and lineage for index rebuild
@@ -59,12 +90,16 @@ Release Notes - Hive - Version 0.7.0
     * [HIVE-1533] - Use ZooKeeper from maven
     * [HIVE-1536] - Add support for JDBC PreparedStatements
     * [HIVE-1546] - Ability to plug custom Semantic Analyzers for Hive Grammar
+    * [HIVE-1581] - CompactIndexInputFormat should create split only for files in the index output file.
+    * [HIVE-1605] - regression and improvements in handling NULLs in joins
+    * [HIVE-1611] - Add alternative search-provider to Hive site
     * [HIVE-1616] - Add ProtocolBuffersStructObjectInspector
     * [HIVE-1617] - ScriptOperator's AutoProgressor can lead to an infinite loop
     * [HIVE-1622] - Use CombineHiveInputFormat for the merge job if hive.merge.mapredfiles=true
     * [HIVE-1638] - convert commonly used udfs to generic udfs
     * [HIVE-1641] - add map joined table to distributed cache
     * [HIVE-1642] - Convert join queries to map-join based on size of table/row
+    * [HIVE-1645] - ability to specify parent directory for zookeeper lock manager
     * [HIVE-1655] - Adding consistency check at jobClose() when committing dynamic partitions
     * [HIVE-1660] - Change get_partitions_ps to pass partition filter to database
     * [HIVE-1692] - FetchOperator.getInputFormatFromCache hides causal exception
@@ -79,21 +114,39 @@ Release Notes - Hive - Version 0.7.0
     * [HIVE-1754] - Remove JDBM component from Map Join
     * [HIVE-1757] - test cleanup for Hive-1641
     * [HIVE-1758] - optimize group by hash map memory
+    * [HIVE-1761] - Support show locks for a particular table
+    * [HIVE-1765] - Add queryid while locking
     * [HIVE-1768] - Update transident_lastDdlTime only if not specified
+    * [HIVE-1782] - add more debug information for hive locking
+    * [HIVE-1783] - CommonJoinOperator optimize the case of 1:1 join
     * [HIVE-1785] - change Pre/Post Query Hooks to take in 1 parameter: HookContext
     * [HIVE-1786] - Improve documentation for str_to_map() UDF
+    * [HIVE-1787] - optimize the code path when there are no outer joins
     * [HIVE-1796] - dumps time at which lock was taken along with the queryid in show locks <T> extended
+    * [HIVE-1797] - Compressed the hashtable dump file before put into distributed cache
+    * [HIVE-1798] - Clear empty files in Hive
+    * [HIVE-1801] - HiveInputFormat or CombineHiveInputFormat always sync blocks of RCFile twice
     * [HIVE-1811] - Show the time the local task takes
+    * [HIVE-1824] - create a new ZooKeeper instance when retrying lock, and more info for debug
     * [HIVE-1831] - Add a option to run task to check map-join possibility in non-local mode
+    * [HIVE-1834] - more debugging for locking
+    * [HIVE-1843] - add an option in dynamic partition inserts to throw an error if 0 partitions are created
     * [HIVE-1852] - Reduce unnecessary DFSClient.rename() calls
+    * [HIVE-1855] - Include Process ID in the log4j log file name
+    * [HIVE-1865] - redo zookeeper hive lock manager
     * [HIVE-1899] - add a factory method for creating a synchronized wrapper for IMetaStoreClient
+    * [HIVE-1900] - a mapper should be able to span multiple partitions
     * [HIVE-1907] - Store jobid in ExecDriver
     * [HIVE-1910] - Provide config parameters to control cache object pinning
+    * [HIVE-1923] - Allow any type of stats publisher and aggregator in addition to HBase and JDBC
     * [HIVE-1929] - Find a way to disable owner grants
     * [HIVE-1931] - Improve the implementation of the METASTORE_CACHE_PINOBJTYPES config
     * [HIVE-1948] - Have audit logging in the Metastore
     * [HIVE-1956] - "Provide DFS initialization script for Hive
+    * [HIVE-1961] - Make Stats gathering more flexible with timeout and atomicity
     * [HIVE-1962] - make a libthrift.jar and libfb303.jar in dist package for backward compatibility
+    * [HIVE-1970] - Modify build to run all tests regardless of subproject failures
+    * [HIVE-1978] - Hive SymlinkTextInputFormat does not estimate input size correctly
 
 ** Bug
     * [HIVE-307] - "LOAD DATA LOCAL INPATH" fails when the table already contains a file of the same name
@@ -121,15 +174,20 @@ Release Notes - Hive - Version 0.7.0
     * [HIVE-1509] - Monitor the working set of the number of files
     * [HIVE-1510] - HiveCombineInputFormat should not use prefix matching to find the partitionDesc for a given path
     * [HIVE-1520] - hive.mapred.local.mem should only be used in case of local mode job submissions
+    * [HIVE-1523] - ql tests no longer work in miniMR mode
+    * [HIVE-1532] - Replace globStatus with listStatus inside Hive.java's replaceFiles.
+    * [HIVE-1534] - Join filters do not work correctly with outer joins
     * [HIVE-1535] - alter partition should throw exception if the specified partition does not exist.
     * [HIVE-1547] - Unarchiving operation throws NPE
     * [HIVE-1548] - populate inputs and outputs for all statements
     * [HIVE-1556] - Fix TestContribCliDriver test
+    * [HIVE-1561] - smb_mapjoin_8.q returns different results in miniMr mode
     * [HIVE-1563] - HBase tests broken
     * [HIVE-1564] - bucketizedhiveinputformat.q fails in minimr mode
     * [HIVE-1570] - referencing an added file by it's name in a transform script does not work in hive local mode
     * [HIVE-1578] - Add conf. property hive.exec.show.job.failure.debug.info to enable/disable displaying link to the task with most failures
     * [HIVE-1580] - cleanup ExecDriver.progress
+    * [HIVE-1583] - Hive should not override Hadoop specific system properties
     * [HIVE-1584] - wrong log files in contrib client positive
     * [HIVE-1589] - Add HBase/ZK JARs to Eclipse classpath
     * [HIVE-1593] - udtf_explode.q is an empty file
@@ -142,14 +200,20 @@ Release Notes - Hive - Version 0.7.0
     * [HIVE-1628] - Fix Base64TextInputFormat to be compatible with commons codec 1.4
     * [HIVE-1629] - Patch to fix hashCode method in DoubleWritable class
     * [HIVE-1630] - bug in NO_DROP
+    * [HIVE-1633] - CombineHiveInputFormat fails with "cannot find dir for emptyFile"
+    * [HIVE-1639] - ExecDriver.addInputPaths() error if partition name contains a comma
     * [HIVE-1647] - Incorrect initialization of thread local variable inside IOContext ( implementation is not threadsafe )
+    * [HIVE-1650] - TestContribNegativeCliDriver fails
     * [HIVE-1656] - All TestJdbcDriver test cases fail in Eclipse unless a property is added in run config
+    * [HIVE-1657] - join results are displayed wrongly for some complex joins using select *
+    * [HIVE-1658] - Fix describe     * [extended] column formatting
     * [HIVE-1663] - ql/src/java/org/apache/hadoop/hive/ql/parse/SamplePruner.java is empty
     * [HIVE-1664] - Eclipse build broken
     * [HIVE-1670] - MapJoin throws EOFExeption when the mapjoined table has 0 column selected
     * [HIVE-1671] - multithreading on Context.pathToCS
     * [HIVE-1673] - Create table bug causes the row format property lost when serde is specified.
     * [HIVE-1674] - count(*) returns wrong result when a mapper returns empty results
+    * [HIVE-1678] - NPE in MapJoin
     * [HIVE-1688] - In the MapJoinOperator, the code uses tag as alias, which is not always true
     * [HIVE-1691] - ANALYZE TABLE command should check columns in partition spec
     * [HIVE-1699] - incorrect partition pruning ANALYZE TABLE
@@ -165,6 +229,7 @@ Release Notes - Hive - Version 0.7.0
     * [HIVE-1748] - Statistics broken for tables with size in excess of Integer.MAX_VALUE
     * [HIVE-1753] - HIVE 1633 hit for Stage2 jobs with CombineHiveInputFormat
     * [HIVE-1756] - failures in fatal.q in TestNegativeCliDriver
+    * [HIVE-1759] - Many important broken links on Hive web page
     * [HIVE-1760] - Mismatched open/commit transaction calls in case of connection retry
     * [HIVE-1767] - Merge files does not work with dynamic partition
     * [HIVE-1769] - pcr.q output is non-deterministic
@@ -173,21 +238,34 @@ Release Notes - Hive - Version 0.7.0
     * [HIVE-1776] - parallel execution and auto-local mode combine to place plan file in wrong file system
     * [HIVE-1777] - Outdated comments for GenericUDTF.close()
     * [HIVE-1780] - Typo in hive-default.xml
+    * [HIVE-1781] - outputs not populated for dynamic partitions at compile time
+    * [HIVE-1794] - GenericUDFOr and GenericUDFAnd cannot receive boolean typed object
     * [HIVE-1795] - outputs not correctly populated for alter table
     * [HIVE-1804] - Mapjoin will fail if there are no files associating with the join tables
+    * [HIVE-1806] - The merge criteria on dynamic partitons should be per partiton
     * [HIVE-1807] - No Element found exception in BucketMapJoinOptimizer
+    * [HIVE-1808] - bug in auto_join25.q
     * [HIVE-1809] - Hive comparison operators are broken for NaN values
     * [HIVE-1812] - spurious rmr failure messages when inserting with dynamic partitioning
+    * [HIVE-1828] - show locks should not use getTable()/getPartition
     * [HIVE-1829] - Fix intermittent failures in TestRemoteMetaStore
     * [HIVE-1830] - mappers in group followed by joins may die OOM
+    * [HIVE-1844] - Hanging hive client caused by TaskRunner's OutOfMemoryError
+    * [HIVE-1845] - Some attributes in the Eclipse template file is deprecated
     * [HIVE-1846] - change hive assumption that local mode mappers/reducers always run in same jvm
+    * [HIVE-1848] - bug in MAPJOIN
+    * [HIVE-1849] - add more logging to partition pruning
     * [HIVE-1853] - downgrade JDO version
+    * [HIVE-1854] - Temporarily disable metastore tests for listPartitionsByFilter()
     * [HIVE-1857] - mixed case tablename on lefthand side of LATERAL VIEW results in query failing with confusing error message
     * [HIVE-1860] - Hive's smallint datatype is not supported by the Hive JDBC driver
     * [HIVE-1861] - Hive's float datatype is not supported by the Hive JDBC driver
     * [HIVE-1862] - Revive partition filtering in the Hive MetaStore
     * [HIVE-1863] - Boolean columns in Hive tables containing NULL are treated as FALSE by the Hive JDBC driver.
     * [HIVE-1864] - test load_overwrite.q fails
+    * [HIVE-1867] - Add mechanism for disabling tests with intermittent failures
+    * [HIVE-1870] - TestRemoteHiveMetaStore.java accidentally deleted during commit of HIVE-1845
+    * [HIVE-1871] - bug introduced by HIVE-1806
     * [HIVE-1873] - Fix 'tar' build target broken in HIVE-1526
     * [HIVE-1874] - fix HBase filter pushdown broken by HIVE-1638
     * [HIVE-1878] - Set the version of Hive trunk to '0.7.0-SNAPSHOT' to avoid confusing it with a release
@@ -196,26 +274,37 @@ Release Notes - Hive - Version 0.7.0
     * [HIVE-1902] - create script for the metastore upgrade due to HIVE-78
     * [HIVE-1903] - Can't join HBase tables if one's name is the beginning of the other
     * [HIVE-1908] - FileHandler leak on partial iteration of the resultset.
+    * [HIVE-1912] - Double escaping special chars when removing old partitions in rmr
     * [HIVE-1913] - use partition level serde properties
     * [HIVE-1914] - failures in testhbaseclidriver
     * [HIVE-1915] - authorization on database level is broken.
+    * [HIVE-1917] - CTAS (create-table-as-select) throws exception when showing results
     * [HIVE-1927] - Fix TestHadoop20SAuthBridge failure on Hudson
     * [HIVE-1928] - GRANT/REVOKE should handle privileges as tokens, not identifiers
     * [HIVE-1934] - alter table rename messes the location
     * [HIVE-1936] - hive.semantic.analyzer.hook cannot have multiple values
     * [HIVE-1939] - Fix test failure in TestContribCliDriver/url_hook.q
+    * [HIVE-1944] - dynamic partition insert creating different directories for the same partition during merge
+    * [HIVE-1951] - input16_cc.q is failing in testminimrclidriver
+    * [HIVE-1952] - fix some outputs and make some tests deterministic
     * [HIVE-1964] - add fully deterministic ORDER BY in test union22.q and input40.q
     * [HIVE-1969] - TestMinimrCliDriver merge_dynamic_partition2 and 3 are failing on trunk
     * [HIVE-1979] - fix hbase_bulk.m by setting HiveInputFormat
     * [HIVE-1981] - TestHadoop20SAuthBridge failed on current trunk
-    * [HIVE-1997] - Map join followed by multi-table insert will generate duplicated result
+    * [HIVE-1995] - Mismatched open/commit transaction calls when using get_partition()
     * [HIVE-1998] - Update README.txt and add missing ASF headers
+    * [HIVE-2007] - Executing queries using Hive Server is not logging to the log file specified in hive-log4j.properties
+    * [HIVE-2010] - Improve naming and README files for MetaStore upgrade scripts
+    * [HIVE-2011] - upgrade-0.6.0.mysql.sql script attempts to increase size of PK COLUMNS.TYPE_NAME to 4000
+    * [HIVE-2059] - Add datanucleus.identifierFactory property to HiveConf to avoid unintentional MetaStore Schema corruption
+    * [HIVE-2064] - Make call to SecurityUtil.getServerPrincipal unambiguous
 
 ** Sub-task
     * [HIVE-1361] - table/partition level statistics
     * [HIVE-1696] - Add delegation token support to metastore
     * [HIVE-1810] - a followup patch for changing the description of hive.exec.pre/post.hooks in conf/hive-default.xml
     * [HIVE-1823] - upgrade the database thrift interface to allow parameters key-value pairs
+    * [HIVE-1836] - Extend the CREATE DATABASE command with DBPROPERTIES
     * [HIVE-1842] - Add the local flag to all the map red tasks, if the query is running locally.
 
 ** Task
@@ -225,12 +314,12 @@ Release Notes - Hive - Version 0.7.0
     * [HIVE-1882] - Remove CHANGES.txt
     * [HIVE-1904] - Create MetaStore schema upgrade scripts for changes made in HIVE-417
     * [HIVE-1905] - Provide MetaStore schema upgrade scripts for changes made in HIVE-1823
-    * [HIVE-1906] - Fix Eclipse classpath and add Eclipse launch configurations for HiveServer and MetaStoreServer
 
 ** Test
     * [HIVE-1464] - improve test query performance
     * [HIVE-1755] - JDBM diff in test caused by Hive-1641
     * [HIVE-1774] - merge_dynamic_part's result is not deterministic
+    * [HIVE-1942] - change the value of hive.input.format to CombineHiveInputFormat for tests
 
 
 Release Notes - Hive - Version 0.6.0
@@ -271,7 +360,6 @@ Release Notes - Hive - Version 0.6.0
     * [HIVE-1401] - Web Interface can ony browse default
     * [HIVE-1410] - Add TCP keepalive option for the metastore server
     * [HIVE-1439] - Alter the number of buckets for a table
-
 
 ** Bug
     * [HIVE-287] - support count(*) and count distinct on multiple columns
@@ -447,16 +535,11 @@ Release Notes - Hive - Version 0.6.0
     * [HIVE-1726] - Update README file for 0.6.0 release
     * [HIVE-1729] - Satisfy ASF release management requirements
 
-
 ** Sub-task
     * [HIVE-1340] - checking VOID type for NULL in LazyBinarySerde
-
 
 ** Test
     * [HIVE-1188] - NPE when running TestJdbcDriver/TestHiveServer
     * [HIVE-1236] - test HBase input format plus CombinedHiveInputFormat
     * [HIVE-1279] - temporarily disable HBase test execution
     * [HIVE-1359] - Unit test should be shim-aware
-
-
-
