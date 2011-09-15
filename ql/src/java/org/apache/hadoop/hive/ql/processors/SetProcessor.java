@@ -18,11 +18,17 @@
 
 package org.apache.hadoop.hive.ql.processors;
 
+import static org.apache.hadoop.hive.serde.Constants.STRING_TYPE_NAME;
+import static org.apache.hadoop.hive.serde.Constants.SERIALIZATION_NULL_FORMAT;
+import static org.apache.hadoop.hive.serde2.MetadataTypedColumnsetSerDe.defaultNullString;
+
 import java.util.Map;
 import java.util.Properties;
 import java.util.SortedMap;
 import java.util.TreeMap;
 
+import org.apache.hadoop.hive.metastore.api.Schema;
+import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.ql.parse.VariableSubstitution;
 import org.apache.hadoop.hive.ql.session.SessionState;
 
@@ -37,6 +43,7 @@ public class SetProcessor implements CommandProcessor {
   public static final String SYSTEM_PREFIX = "system:";
   public static final String HIVECONF_PREFIX = "hiveconf:";
   public static final String HIVEVAR_PREFIX = "hivevar:";
+  public static final String SET_COLUMN_NAME = "set";
 
   public static boolean getBoolean(String value) {
     if (value.equals("on") || value.equals("true")) {
@@ -183,16 +190,17 @@ public class SetProcessor implements CommandProcessor {
 
   public CommandProcessorResponse run(String command) {
     SessionState ss = SessionState.get();
+    Schema sch = getSchema();
 
     String nwcmd = command.trim();
     if (nwcmd.equals("")) {
       dumpOptions(ss.getConf().getChangedProperties());
-      return new CommandProcessorResponse(0);
+      return new CommandProcessorResponse(0, null, null, sch);
     }
 
     if (nwcmd.equals("-v")) {
       dumpOptions(ss.getConf().getAllProperties());
-      return new CommandProcessorResponse(0);
+      return new CommandProcessorResponse(0, null, null, sch);
     }
 
     String[] part = new String[2];
@@ -216,4 +224,19 @@ public class SetProcessor implements CommandProcessor {
     }
 
   }
+
+// create a Schema object containing the give column
+  private Schema getSchema() {
+    Schema sch = new Schema();
+    FieldSchema tmpFieldSchema = new FieldSchema();
+
+    tmpFieldSchema.setName(SET_COLUMN_NAME);
+
+    tmpFieldSchema.setType(STRING_TYPE_NAME);
+    sch.putToProperties(SERIALIZATION_NULL_FORMAT, defaultNullString);
+    sch.addToFieldSchemas(tmpFieldSchema);
+
+    return sch;
+  }
+
 }

@@ -96,6 +96,7 @@ public class HiveServer extends ThriftHive {
      * It is the instance of the last Hive query.
      */
     private Driver driver;
+    private CommandProcessorResponse response;
     /**
      * For processors other than Hive queries (Driver), they output to session.out (a temp file)
      * first and the fetchOne/fetchN/fetchAll functions get the output from pipeIn.
@@ -177,7 +178,6 @@ public class HiveServer extends ThriftHive {
 
       try {
         CommandProcessor proc = CommandProcessorFactory.get(tokens[0]);
-        CommandProcessorResponse response = null;
         if (proc != null) {
           if (proc instanceof Driver) {
             isHiveQuery = true;
@@ -273,8 +273,14 @@ public class HiveServer extends ThriftHive {
      */
     public Schema getSchema() throws HiveServerException, TException {
       if (!isHiveQuery) {
-        // Return empty schema if the last command was not a Hive query
-        return new Schema();
+        Schema schema = response.getSchema();
+        if (schema == null) {
+          // Return empty schema if the last command was not a Hive query
+          return new Schema();
+        }
+        else {
+          return schema;
+        }
       }
 
       assert driver != null: "getSchema() is called on a Hive query and driver is NULL.";
