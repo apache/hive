@@ -39,11 +39,14 @@ public class MapRedStats {
   long reduceShuffleBytes = -1;
   boolean success;
 
-  public MapRedStats(int numMap, int numReduce, long cpuMSec, boolean ifSuccess) {
+  String jobId;
+
+  public MapRedStats(int numMap, int numReduce, long cpuMSec, boolean ifSuccess, String jobId) {
     this.numMap = numMap;
     this.numReduce = numReduce;
     this.cpuMSec = cpuMSec;
     this.success = ifSuccess;
+    this.jobId = jobId;
   }
 
   public boolean isSuccess() {
@@ -132,6 +135,14 @@ public class MapRedStats {
 
   public void setSuccess(boolean success) {
     this.success = success;
+  }
+
+  public String getJobId() {
+    return jobId;
+  }
+
+  public void setJobId(String jobId) {
+    this.jobId = jobId;
   }
 
   @Override

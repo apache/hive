@@ -372,7 +372,7 @@ public class HadoopJobExecHelper {
       }
     }
 
-    MapRedStats mapRedStats = new MapRedStats(numMap, numReduce, cpuMsec, success);
+    MapRedStats mapRedStats = new MapRedStats(numMap, numReduce, cpuMsec, success, rj.getID().toString());
 
     Counter ctr;
 
