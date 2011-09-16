@@ -31,7 +31,6 @@ import org.apache.hadoop.hive.service.HiveServerException;
  *
  */
 public class HiveStatement implements java.sql.Statement {
-  private JdbcSessionState session;
   private HiveInterface client;
   /**
    * We need to keep a reference to the result set to support the following:
@@ -56,12 +55,16 @@ public class HiveStatement implements java.sql.Statement {
    * Keep state so we can fail certain calls made after close().
    */
   private boolean isClosed = false;
+  
+  /**
+   * keep the current ResultRet update count
+   */
+  private final int updateCount=0;
 
   /**
    *
    */
-  public HiveStatement(JdbcSessionState session, HiveInterface client) {
-    this.session = session;
+  public HiveStatement(HiveInterface client) {
     this.client = client;
   }
 
@@ -206,7 +209,7 @@ public class HiveStatement implements java.sql.Statement {
     } catch (Exception ex) {
       throw new SQLException(ex.toString());
     }
-    throw new SQLException("Method not supported");
+    return updateCount;
   }
 
   /*
@@ -376,7 +379,7 @@ public class HiveStatement implements java.sql.Statement {
    */
 
   public int getUpdateCount() throws SQLException {
-    return 0;
+    return updateCount;
   }
 
   /*

@@ -18,14 +18,11 @@
 
 package org.apache.hadoop.hive.jdbc;
 
-import junit.framework.TestCase;
-import org.apache.hadoop.fs.Path;
-import org.apache.hadoop.hive.conf.HiveConf;
-
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
 import java.sql.DriverManager;
 import java.sql.DriverPropertyInfo;
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
@@ -36,6 +33,11 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+
+import junit.framework.TestCase;
+
+import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.hive.conf.HiveConf;
 
 /**
  * TestJdbcDriver.
@@ -68,6 +70,7 @@ public class TestJdbcDriver extends TestCase {
         .getProperty("test.service.standalone.server"));
   }
 
+  @Override
   protected void setUp() throws Exception {
     super.setUp();
     Class.forName(driverName);
@@ -160,6 +163,7 @@ public class TestJdbcDriver extends TestCase {
     assertFalse(res.next());
   }
 
+  @Override
   protected void tearDown() throws Exception {
     super.tearDown();
 
@@ -185,6 +189,115 @@ public class TestJdbcDriver extends TestCase {
 
     assertNotNull(
         "createStatement() on closed connection should throw exception",
+        expectedException);
+  }
+
+  public void testPrepareStatement() {
+
+    String sql = "from (select count(1) from "
+        + tableName
+        + " where   'not?param?not?param' <> 'not_param??not_param' and ?=? "
+        + " and 1=? and 2=? and 3.0=? and 4.0=? and 'test\\'string\"'=? and 5=? and ?=? "
+        + " ) t  select '2011-03-25' ddate,'China',true bv, 10 num limit 10";
+
+     ///////////////////////////////////////////////
+    //////////////////// correct testcase
+    //////////////////////////////////////////////
+    try {
+      PreparedStatement ps = con.prepareStatement(sql);
+
+      ps.setBoolean(1, true);
+      ps.setBoolean(2, true);
+
+      ps.setShort(3, Short.valueOf("1"));
+      ps.setInt(4, 2);
+      ps.setFloat(5, 3f);
+      ps.setDouble(6, Double.valueOf(4));
+      ps.setString(7, "test'string\"");
+      ps.setLong(8, 5L);
+      ps.setByte(9, (byte) 1);
+      ps.setByte(10, (byte) 1);
+
+      ps.setMaxRows(2);
+
+      assertTrue(true);
+
+      ResultSet res = ps.executeQuery();
+      assertNotNull(res);
+
+      while (res.next()) {
+        assertEquals("2011-03-25", res.getString("ddate"));
+        assertEquals("10", res.getString("num"));
+        assertEquals((byte) 10, res.getByte("num"));
+        assertEquals("2011-03-25", res.getDate("ddate").toString());
+        assertEquals(Double.valueOf(10).doubleValue(), res.getDouble("num"), 0.1);
+        assertEquals(10, res.getInt("num"));
+        assertEquals(Short.valueOf("10").shortValue(), res.getShort("num"));
+        assertEquals(10L, res.getLong("num"));
+        assertEquals(true, res.getBoolean("bv"));
+        Object o = res.getObject("ddate");
+        assertNotNull(o);
+        o = res.getObject("num");
+        assertNotNull(o);
+      }
+      res.close();
+      assertTrue(true);
+
+      ps.close();
+      assertTrue(true);
+
+    } catch (Exception e) {
+      e.printStackTrace();
+      fail(e.toString());
+    }
+
+     ///////////////////////////////////////////////
+    //////////////////// other failure testcases
+    //////////////////////////////////////////////
+    // set nothing for prepared sql
+    Exception expectedException = null;
+    try {
+      PreparedStatement ps = con.prepareStatement(sql);
+      ps.executeQuery();
+    } catch (Exception e) {
+      expectedException = e;
+    }
+    assertNotNull(
+        "Execute the un-setted sql statement should throw exception",
+        expectedException);
+
+    // set some of parameters for prepared sql, not all of them.
+    expectedException = null;
+    try {
+      PreparedStatement ps = con.prepareStatement(sql);
+      ps.setBoolean(1, true);
+      ps.setBoolean(2, true);
+      ps.executeQuery();
+    } catch (Exception e) {
+      expectedException = e;
+    }
+    assertNotNull(
+        "Execute the invalid setted sql statement should throw exception",
+        expectedException);
+
+    // set the wrong type parameters for prepared sql.
+    expectedException = null;
+    try {
+      PreparedStatement ps = con.prepareStatement(sql);
+
+      // wrong type here
+      ps.setString(1, "wrong");
+
+      assertTrue(true);
+      ResultSet res = ps.executeQuery();
+      if (!res.next()) {
+        throw new Exception("there must be a empty result set");
+      }
+    } catch (Exception e) {
+      expectedException = e;
+    }
+    assertNotNull(
+        "Execute the invalid setted sql statement should throw exception",
         expectedException);
   }
 
@@ -343,16 +456,16 @@ public class TestJdbcDriver extends TestCase {
     // sure
     // how to get around that.
     doTestErrorCase("SELECTT * FROM " + tableName,
-        "cannot recognize input 'SELECTT'", invalidSyntaxSQLState, 11);
+        "cannot recognize input near 'SELECTT' '*' 'FROM'", invalidSyntaxSQLState, 11);
     doTestErrorCase("SELECT * FROM some_table_that_does_not_exist",
-        "Table not found", "42S02", parseErrorCode);
+        "Table not found", "42000", parseErrorCode);
     doTestErrorCase("drop table some_table_that_does_not_exist",
-        "Table not found", "42S02", parseErrorCode);
+        "Table not found", "4200", parseErrorCode);
     doTestErrorCase("SELECT invalid_column FROM " + tableName,
-        "Invalid Table Alias or Column Reference", invalidSyntaxSQLState,
+        "Invalid table alias or column reference", invalidSyntaxSQLState,
         parseErrorCode);
     doTestErrorCase("SELECT invalid_function(key) FROM " + tableName,
-        "Invalid Function", invalidSyntaxSQLState, parseErrorCode);
+        "Invalid function", invalidSyntaxSQLState, parseErrorCode);
 
     // TODO: execute errors like this currently don't return good messages (i.e.
     // 'Table already exists'). This is because the Driver class calls
@@ -702,4 +815,6 @@ public class TestJdbcDriver extends TestCase {
     assertEquals("Invalid DriverPropertyInfo value", value, dpi.value);
     assertEquals("Invalid DriverPropertyInfo required", false, dpi.required);
   }
+
+
 }

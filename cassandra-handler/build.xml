@@ -19,7 +19,7 @@
   <property name="src.dir"  location="${basedir}/src/java"/>
   <property name="cassandra-handler.test.query.dir" location="${basedir}/src/test/queries"/>
   <property name="ql.test.template.dir" location="${basedir}/../ql/src/test/templates"/>
-  <property name="ql.cassandra.test.template.dir" location="${basedir}/src/test/templates"/>  
+  <property name="ql.cassandra.test.template.dir" location="${basedir}/src/test/templates"/>
   <property name="cassandra.resource.dir" location="conf" />
   <import file="../build-common.xml"/>
   <property name="cassandra-handler.test.results.dir" location="${build.dir.hive}/cassandra-handler/test/logs/cassandra-handler"/>
@@ -36,10 +36,6 @@
     <pathelement location="${hive.root}/cli/lib/jline-0.9.94.jar"/>
     <pathelement location="${hadoop.oldstyle-name.test.jar}"/>
     <pathelement location="${hadoop.newstyle-name.test.jar}"/>
-
-    <!--<pathelement location="../build/ivy/lib/default/*.jar"/>-->
-    <fileset dir="../build/ivy/lib/default/" includes="*.jar"/>
-
     <pathelement location="${jetty.test.jar}"/>
     <pathelement location="${servlet.test.jar}"/>
     <pathelement location="${jasper.test.jar}"/>
@@ -63,17 +59,18 @@
 
   <target name="gen-test" depends="deploy-ant-tasks, test-conditions, test-init" >
     <taskdef name="qtestgen" classname="org.apache.hadoop.hive.ant.QTestGenTask"
-             classpath="${build.dir.hive}/anttasks/hive-anttasks-${version}.jar:${hive.root}/lib/velocity-1.5.jar:${hive.root}/lib/commons-collections-3.2.1.jar:${hive.root}/lib/commons-lang-2.4.jar"/>
-
+             classpath="${build.dir.hive}/anttasks/hive-anttasks-${version}.jar:${hive.root}/lib/velocity-1.5.jar:${hive.root}/lib/commons-collections-3.2.1.jar:${hive.root}/lib/commons-lang-2.4.jar">
+    </taskdef>
+    
     <mkdir dir="${test.build.src}/org/apache/hadoop/hive/cli"/>
     <mkdir dir="${test.log.dir}/cassandra-handler"/>
     <mkdir dir="${cassandra-handler.test.results.dir}"/>
 
-    <qtestgen outputDirectory="${test.build.src}/org/apache/hadoop/hive/cli"
-              templatePath="${ql.cassandra.test.template.dir}" template="TestCassandraCliDriver.vm"
-              queryDirectory="${cassandra-handler.test.query.dir}"
+    <qtestgen outputDirectory="${test.build.src}/org/apache/hadoop/hive/cli" 
+              templatePath="${ql.cassandra.test.template.dir}" template="TestCassandraCliDriver.vm" 
+              queryDirectory="${cassandra-handler.test.query.dir}" 
               queryFile="${qfile}"
-	      clusterMode="${clustermode}"
+	      clusterMode="${clustermode}"              
               resultsDirectory="${cassandra-handler.test.results.dir}" className="TestCassandraCliDriver"
               logFile="${test.log.dir}/testcassandraclidrivergen.log"
               logDirectory="${test.log.dir}/cassandra-handler"/>
@@ -86,11 +83,11 @@
   	              logFile="${test.log.dir}/testcassandraclidrivergen.log"
   	              logDirectory="${test.log.dir}/negative"/>
   <!--
-    <qtestgen outputDirectory="${test.build.src}/org/apache/hadoop/hive/cli"
-              templatePath="${ql.cassandra.test.template.dir}" template="TestCassandraCliDriver.vm"
-              queryDirectory="${cassandra-handler.test.query.dir}"
+    <qtestgen outputDirectory="${test.build.src}/org/apache/hadoop/hive/cli" 
+              templatePath="${ql.cassandra.test.template.dir}" template="TestCassandraCliDriver.vm" 
+              queryDirectory="${cassandra-handler.test.query.dir}" 
               queryFile="cassandra_bulk.m"
-
+              
               resultsDirectory="${cassandra-handler.test.results.dir}" className="TestCassandraMinimrCliDriver"
               logFile="${test.log.dir}/testcassandraminimrclidrivergen.log"
               logDirectory="${test.log.dir}/cassandra-handler"/>

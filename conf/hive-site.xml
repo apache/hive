@@ -11,20 +11,5 @@
 
 <!-- Hive Execution Parameters -->
 
-<property>
-  <name>hive.exec.mode.local.auto</name>
-  <value>false</value>
-  <description>
-    Let hive determine whether to run in local mode automatically
-  </description>
-</property>
-
-<property>
-  <name>mapred.job.tracker</name>
-  <value>localhost:8012</value>
-  <description>
-    The address of the job tracker
-  </description>
-</property>
 
 </configuration>

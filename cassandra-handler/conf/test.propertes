@@ -1,0 +1,2 @@
+log4j.configuration=log4j-server.properties
+log4j.defaultInitOverride=true

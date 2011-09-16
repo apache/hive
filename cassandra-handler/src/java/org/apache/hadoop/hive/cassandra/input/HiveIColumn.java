@@ -12,6 +12,7 @@ import org.apache.cassandra.db.ColumnFamilyStore;
 import org.apache.cassandra.db.IColumn;
 import org.apache.cassandra.db.marshal.AbstractType;
 import org.apache.cassandra.db.marshal.MarshalException;
+import org.apache.cassandra.utils.Allocator;
 import org.apache.hadoop.io.Writable;
 
 public class HiveIColumn implements IColumn, Writable {
@@ -105,7 +106,7 @@ public class HiveIColumn implements IColumn, Writable {
   }
 
   @Override
-  public void addColumn(IColumn arg0) {
+  public void addColumn(IColumn arg0, Allocator allocator) {
     throw new UnsupportedOperationException();
   }
 
@@ -166,19 +167,47 @@ public class HiveIColumn implements IColumn, Writable {
   }
 
   @Override
-  public IColumn reconcile(IColumn arg0) {
-    throw new UnsupportedOperationException();
-  }
-
-  public IColumn localCopy(ColumnFamilyStore arg0) {
-    throw new UnsupportedOperationException();
-  }
-
   public int serializationFlags() {
     throw new UnsupportedOperationException();
   }
 
+  @Override
   public void validateFields(CFMetaData arg0) throws MarshalException {
+    throw new UnsupportedOperationException();
+  }
+
+  @Override
+  public IColumn localCopy(ColumnFamilyStore arg0, Allocator arg1) {
+    throw new UnsupportedOperationException();
+  }
+
+  @Override
+  public long maxTimestamp() {
+    throw new UnsupportedOperationException();
+  }
+
+  @Override
+  public long minTimestamp() {
+    throw new UnsupportedOperationException();
+  }
+
+  @Override
+  public IColumn reconcile(IColumn arg0, Allocator arg1) {
+    throw new UnsupportedOperationException();
+  }
+
+  @Override
+  public void addColumn(IColumn arg0) {
+    throw new UnsupportedOperationException();
+  }
+
+  @Override
+  public IColumn localCopy(ColumnFamilyStore arg0) {
+    throw new UnsupportedOperationException();
+  }
+
+  @Override
+  public IColumn reconcile(IColumn arg0) {
     throw new UnsupportedOperationException();
   }
 }

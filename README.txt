@@ -64,7 +64,7 @@ Upgrading from older versions of Hive
 =====================================
 
 - Hive @VERSION@ includes changes to the MetaStore schema. If
-  you are upgrading from an earlier version of Hive it is
+  you are upgrading from an earlier minor version of Hive it is
   imperative that you upgrade the MetaStore schema by
   running the appropriate schema upgrade scripts located in
   the scripts/metastore/upgrade directory.
@@ -74,7 +74,7 @@ Upgrading from older versions of Hive
   to provide your own upgrade script.
 
 - Hive @VERSION@ includes new configuration properties. If you
-  are upgrading from an earlier version of Hive it is imperative
+  are upgrading from an earlier minor version of Hive it is imperative
   that you replace all of the old copies of the hive-default.xml
   configuration file with the new version located in the conf/
   directory.

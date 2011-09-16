@@ -10,8 +10,8 @@ import junit.framework.TestCase;
 
 import org.apache.cassandra.config.CFMetaData;
 import org.apache.cassandra.config.ConfigurationException;
-import org.apache.cassandra.config.DatabaseDescriptor;
 import org.apache.cassandra.config.KSMetaData;
+import org.apache.cassandra.config.Schema;
 import org.apache.cassandra.contrib.utils.service.CassandraServiceDataCleaner;
 import org.apache.cassandra.db.ColumnFamilyType;
 import org.apache.cassandra.db.marshal.BytesType;
@@ -61,9 +61,10 @@ public abstract class BaseCassandraConnectionTest extends TestCase {
           for (KSMetaData ksm : schemaDefinition())
           {
               for (CFMetaData cfm : ksm.cfMetaData().values()) {
-                CFMetaData.map(cfm);
+
+                  Schema.instance.load(cfm);
               }
-              DatabaseDescriptor.setTableDefinition(ksm, DatabaseDescriptor.getDefsVersion());
+              Schema.instance.setTableDefinition(ksm, Schema.instance.getVersion());
           }
       }
       catch (ConfigurationException e)

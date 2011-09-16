@@ -281,19 +281,19 @@ public class HiveDatabaseMetaData implements java.sql.DatabaseMetaData {
   }
 
   public int getDriverMajorVersion() {
-    return 0;
+    return HiveDriver.getMajorDriverVersion();
   }
 
   public int getDriverMinorVersion() {
-    return 0;
+    return HiveDriver.getMinorDriverVersion();
   }
 
   public String getDriverName() throws SQLException {
-    return fetchManifestAttribute(Attributes.Name.IMPLEMENTATION_TITLE);
+    return HiveDriver.fetchManifestAttribute(Attributes.Name.IMPLEMENTATION_TITLE);
   }
 
   public String getDriverVersion() throws SQLException {
-    return fetchManifestAttribute(Attributes.Name.IMPLEMENTATION_VERSION);
+    return HiveDriver.fetchManifestAttribute(Attributes.Name.IMPLEMENTATION_VERSION);
   }
 
   public ResultSet getExportedKeys(String catalog, String schema, String table)
@@ -1043,47 +1043,6 @@ public class HiveDatabaseMetaData implements java.sql.DatabaseMetaData {
 
   public <T> T unwrap(Class<T> iface) throws SQLException {
     throw new SQLException("Method not supported");
-  }
-
-  /**
-   * Lazy-load manifest attributes as needed.
-   */
-  private static Attributes manifestAttributes = null;
-
-  /**
-   * Loads the manifest attributes from the jar.
-   * 
-   * @throws java.net.MalformedURLException
-   * @throws IOException
-   */
-  private synchronized void loadManifestAttributes() throws IOException {
-    if (manifestAttributes != null) {
-      return;
-    }
-    Class clazz = this.getClass();
-    String classContainer = clazz.getProtectionDomain().getCodeSource()
-        .getLocation().toString();
-    URL manifestUrl = new URL("jar:" + classContainer
-        + "!/META-INF/MANIFEST.MF");
-    Manifest manifest = new Manifest(manifestUrl.openStream());
-    manifestAttributes = manifest.getMainAttributes();
-  }
-
-  /**
-   * Helper to initialize attributes and return one.
-   * 
-   * @param attributeName
-   * @return
-   * @throws SQLException
-   */
-  private String fetchManifestAttribute(Attributes.Name attributeName)
-      throws SQLException {
-    try {
-      loadManifestAttributes();
-    } catch (IOException e) {
-      throw new SQLException("Couldn't load manifest attributes.", e);
-    }
-    return manifestAttributes.getValue(attributeName);
   }
 
   public static void main(String[] args) throws SQLException {

@@ -1,2 +1,2 @@
-FAILED: Parse Error: line 0:-1 cannot recognize input '<EOF>' in column type
+FAILED: Parse Error: line 1:27 cannot recognize input near '<EOF>' '<EOF>' '<EOF>' in column type
 

@@ -18,7 +18,9 @@
 -->
 
 
-<project xmlns:ivy="antlib:org.apache.ivy.ant" name="hivecommon" default="jar">
+<project xmlns:ivy="antlib:org.apache.ivy.ant"
+         xmlns:artifact="urn:maven-artifact-ant"
+         name="hivecommon" default="jar">
 
   <property name="hive.root" location="${basedir}/.."/>
   <property file="${hive.root}/build.properties"/>
@@ -84,10 +86,14 @@
   <loadproperties srcfile="${ivy.conf.dir}/libraries.properties"/>
   <property name="ivy.jar" location="${build.ivy.lib.dir}/ivy-${ivy.version}.jar"/>
   <property name="ivysettings.xml" location="${ivy.conf.dir}/ivysettings.xml" />
-  <property name="ivy.org" value="org.apache.hadoop"/>
-  <property name="mvn.repo" value="http://repo2.maven.org/maven2"/>  
-  <property name="ant_task_repo_url" value="${mvn.repo}/org/apache/maven/maven-ant-tasks/${ant-task.version}/maven-ant-tasks-${ant-task.version}.jar"/>
+  <property name="mvn.repo" value="http://repo2.maven.org/maven2"/>
   <property name="ivy_repo_url" value="${mvn.repo}/org/apache/ivy/ivy/${ivy.version}/ivy-${ivy.version}.jar"/>
+
+  <!-- Maven properties set here -->
+  <property name="hive.ivy.org" value="org.apache.hive"/>
+  <property name="mvn.publish.repo" value="snapshots"/>
+  <property name="mvn.publish.repo.id" value="datastax-${mvn.publish.repo}" />
+  <property name="mvn.publish.repo.url" value="http://mvn.riptano.com/content/repositories/${mvn.publish.repo}"/>
 
   <condition property="offline">
     <istrue value="${is-offline}"/>
@@ -179,6 +185,19 @@
       pattern="${build.ivy.lib.dir}/${ivy.artifact.retrieve.pattern}"
       log="${ivyresolvelog}"/>
     <ivy:cachepath pathid="checkstyle-classpath" conf="checkstyle"/>
+  </target>
+
+  <target name="ivy-resolve-maven-ant-tasks" depends="ivy-init">
+    <ivy:resolve settingsRef="${ant.project.name}.ivy.settings" conf="maven"
+      log="${ivyresolvelog}"/>
+  </target>
+
+  <target name="ivy-retrieve-maven-ant-tasks" depends="ivy-resolve-maven-ant-tasks"
+    description="Retrieve Ivy-managed artifacts for the maven-ant-tasks configurations">
+    <ivy:retrieve settingsRef="${ant.project.name}.ivy.settings"
+      pattern="${build.ivy.lib.dir}/${ivy.artifact.retrieve.pattern}"
+      log="${ivyresolvelog}"/>
+    <ivy:cachepath pathid="maven-ant-tasks.classpath" conf="maven"/>
   </target>
 
   <target name="ivy-retrieve-hadoop-source" depends="ivy-init"
@@ -493,28 +512,69 @@
   </target>
 
   <target name="make-pom" if="ivy.present" depends="check-ivy, jar">
-               <echo> Writing POM to ${build.dir}/pom.xml</echo>
+    <echo> Writing POM to ${build.dir}/pom.xml</echo>
 
-               <ivy:makepom ivyfile="${basedir}/ivy.xml" pomfile="${build.dir}/pom.xml">
-                       <mapping conf="default" scope="compile" />
-                       <mapping conf="runtime" scope="runtime" />
-               </ivy:makepom>
-               <replace file="${build.dir}/pom.xml">
-                       <replacetoken>&lt;dependencies&gt;</replacetoken>
-                       <replacevalue>
-                               &lt;description&gt;Hive is a data warehouse infrastructure built on top of Hadoop see
-                               http://wiki.apache.org/hadoop/Hive &lt;/description&gt;
-                               &lt;licenses&gt;
-                               &lt;license&gt;
-                               &lt;name&gt;The Apache Software License, Version 2.0&lt;/name&gt;
-                               &lt;url&gt;http://www.apache.org/licenses/LICENSE-2.0.txt&lt;/url&gt;
-                               &lt;distribution&gt;repo&lt;/distribution&gt;
-                               &lt;/license&gt;
-                               &lt;/licenses&gt;
-                               &lt;scm&gt;
-                               &lt;url&gt;http://svn.apache.org/repos/asf/hadoop/hive/&lt;/url&gt;
-                               &lt;/scm&gt;
-                               &lt;dependencies&gt; </replacevalue>
-               </replace>
+    <ivy:makepom ivyfile="${basedir}/ivy.xml" pomfile="${build.dir}/pom.xml">
+      <mapping conf="default" scope="compile" />
+      <mapping conf="runtime" scope="runtime" />
+    </ivy:makepom>
+    <replace file="${build.dir}/pom.xml">
+      <replacetoken>&lt;dependencies&gt;</replacetoken>
+      <replacevalue>
+        &lt;description&gt;Hive is a data warehouse infrastructure built on top of Hadoop see
+        http://wiki.apache.org/hadoop/Hive &lt;/description&gt;
+        &lt;licenses&gt;
+        &lt;license&gt;
+        &lt;name&gt;The Apache Software License, Version 2.0&lt;/name&gt;
+        &lt;url&gt;http://www.apache.org/licenses/LICENSE-2.0.txt&lt;/url&gt;
+        &lt;distribution&gt;repo&lt;/distribution&gt;
+        &lt;/license&gt;
+        &lt;/licenses&gt;
+        &lt;scm&gt;
+        &lt;url&gt;http://svn.apache.org/repos/asf/hive/&lt;/url&gt;
+        &lt;/scm&gt;
+        &lt;dependencies&gt;
+      </replacevalue>
+    </replace>
   </target>
+
+  <target name="mvn-taskdef" depends="ivy-retrieve-maven-ant-tasks">
+    <typedef resource="org/apache/maven/artifact/ant/antlib.xml"
+	     uri="urn:maven-artifact-ant" classpathref="maven-ant-tasks.classpath" />
+  </target>
+
+  <target name="maven-publish-deps" depends="mvn-taskdef">
+    <!-- add all dependencies -->
+    <artifact:pom
+	file="${build.dir.hive}/maven/poms/hive-deps-${version}.pom"
+	id="hive.project.pom" />
+    
+    <artifact:install-provider artifactId="wagon-http"
+			              version="1.0-beta-2" />
+    
+    <artifact:deploy settingsFile="${settings.file}">
+      <remoteRepository id="${mvn.publish.repo.id}" url="${mvn.publish.repo.url}" />
+      <pom refid="hive.project.pom"/>
+      <attach file="${basedir}/lib/derby.jar" type="jar" classifier="derby"/> 
+      <attach file="${basedir}/lib/thrift-0.6.0.jar" type="jar" classifier="thrift"/>
+      <attach file="${basedir}/lib/thrift-fb303-0.6.0.jar" type="jar" classifier="thrift-fb303"/>
+      <attach file="${basedir}/lib/json.jar" type="jar" classifier="json"/>
+    </artifact:deploy>
+  </target>
+
+  <!-- Deploy a single artifact to the maven repository -->
+  <target name="maven-publish-artifact" depends="mvn-taskdef">
+    <artifact:pom
+       file="${build.dir.hive}/maven/poms/hive-${hive.project}-${version}.pom"
+       id="hive.project.pom" />
+
+    <artifact:install-provider artifactId="wagon-http" version="1.0-beta-2" />
+    <artifact:deploy
+       file="${build.dir.hive}/maven/jars/hive-${hive.project}-${version}.jar"
+       settingsFile="${settings.file}">
+      <remoteRepository id="${mvn.publish.repo.id}" url="${mvn.publish.repo.url}" />
+      <pom refid="hive.project.pom" />
+    </artifact:deploy>
+  </target>
+
 </project>

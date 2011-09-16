@@ -31,4 +31,4 @@ POSTHOOK: type: SHOWPARTITIONS
 b=1/c=1
 b=1/c=2
 b=2/c=2
-FAILED: Error in semantic analysis: line 3:31 Partition not found '3'
+FAILED: Error in semantic analysis: Line 3:31 Partition not found '3'
