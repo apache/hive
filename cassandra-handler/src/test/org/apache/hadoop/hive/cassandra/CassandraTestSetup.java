@@ -20,6 +20,7 @@ import org.apache.cassandra.thrift.Column;
 import org.apache.cassandra.thrift.ColumnDef;
 import org.apache.cassandra.thrift.ColumnOrSuperColumn;
 import org.apache.cassandra.thrift.ConsistencyLevel;
+import org.apache.cassandra.thrift.CounterColumn;
 import org.apache.cassandra.thrift.IndexType;
 import org.apache.cassandra.thrift.KsDef;
 import org.apache.cassandra.thrift.Mutation;
@@ -40,6 +41,9 @@ public class CassandraTestSetup extends TestSetup {
   private final String CF = "cf_demo";
   private final String SUPERKS = "super_ks_demo";
   private final String SUPERCF = "super_cf_demo";
+  private final String COUNTERKS = "counter_ks_demo";
+  private final String COUNTERCF = "counter_cf_demo";
+
   private final String UUID_STR = "uniqueid";
   private final ByteBuffer UUID_KEY = ByteBufferUtil.bytes(UUID_STR);
   private final String LONG_STR = "countLong";
@@ -48,6 +52,8 @@ public class CassandraTestSetup extends TestSetup {
   private final ByteBuffer INT_KEY = ByteBufferUtil.bytes(INT_STR);
   private final String UTF8_STR = "utf8";
   private final ByteBuffer UTF8_KEY = ByteBufferUtil.bytes(UTF8_STR);
+  private final String COUNTER_LONG_STR = "counterColumnLong";
+  private final ByteBuffer COUNTER_LONG_KEY = ByteBufferUtil.bytes(COUNTER_LONG_STR);
 
   public CassandraTestSetup(Test test) {
     super(test);
@@ -74,6 +80,10 @@ public class CassandraTestSetup extends TestSetup {
       //create schema for a super column family and insert some data into it
       createSuperCFSchema(client);
       addSuperCFData(client);
+
+      // create for counter cf and add some data
+      createCounterCFSchema(client);
+      addCounterCFData(client);
     }
 
     String auxJars = conf.getAuxJars();
@@ -245,6 +255,65 @@ public class CassandraTestSetup extends TestSetup {
     mutation.setColumn_or_supercolumn(thisCol);
 
     mutationList.add(mutation);
+  }
+
+  /**
+   * Insert some test data for counters external table mapping
+   *
+   * @throws Exception
+   */
+  private void createCounterCFSchema(CassandraProxyClient client) throws Exception {
+    KsDef ks = new KsDef();
+
+    ks.setName(COUNTERKS);
+    ks.setStrategy_class("org.apache.cassandra.locator.SimpleStrategy");
+    Map<String, String> strategy_options = new HashMap<String, String> ();
+    strategy_options.put("replication_factor", "1");
+    ks.setStrategy_options(strategy_options);
+
+    CfDef cf = new CfDef();
+    cf.setKeyspace(COUNTERKS);
+    cf.setName(COUNTERCF);
+
+    cf.setDefault_validation_class("CounterColumnType");
+    cf.setKey_validation_class("UTF8Type");
+
+
+
+    ks.addToCf_defs(cf);
+    client.getProxyConnection().system_add_keyspace(ks);
+    client.getProxyConnection().set_keyspace(COUNTERKS);
+  }
+
+  private void addCounterCFData(CassandraProxyClient client) throws Exception {
+      //add data into this column family
+      Map<ByteBuffer,Map<String,List<Mutation>>> mutation_map = new HashMap<ByteBuffer,Map<String,List<Mutation>>>();
+      Map<String, List<Mutation>> map1 = new HashMap<String, List<Mutation>>();
+      List<Mutation> mutationList = new ArrayList<Mutation>();
+
+      addCounterColumnToMutation(mutationList,
+              COUNTER_LONG_STR.getBytes(),
+              123456);
+
+      map1.put(COUNTERCF, mutationList);
+
+      mutation_map.put(ByteBufferUtil.bytes("counterRow1"), map1);
+      mutation_map.put(ByteBufferUtil.bytes("counterRow2"), map1);
+
+      client.getProxyConnection().batch_mutate(mutation_map, ConsistencyLevel.ONE);
+  }
+
+  private void addCounterColumnToMutation(List<Mutation> mutationList, byte[] key, long value) throws Exception {
+      CounterColumn cassCol = new CounterColumn();
+      cassCol.setName(key);
+      cassCol.setValue(value);
+
+      ColumnOrSuperColumn thisCol = new ColumnOrSuperColumn();
+      thisCol.setCounter_column(cassCol);
+      Mutation mutation = new Mutation();
+      mutation.setColumn_or_supercolumn(thisCol);
+
+      mutationList.add(mutation);
   }
 
   @Override

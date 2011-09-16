@@ -8,6 +8,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.SortedMap;
 
+import org.apache.cassandra.db.Column;
 import org.apache.cassandra.db.IColumn;
 import org.apache.cassandra.db.SuperColumn;
 import org.apache.cassandra.hadoop.ColumnFamilyInputFormat;
@@ -246,7 +247,10 @@ public class HiveCassandraStandardColumnInputFormat extends
                 byte[] name = ByteBufferUtil.getArray(entry.getValue().name());
                 hic.setName(name);
                 hic.setValue(ByteBufferUtil.getArray(entry.getValue().value()));
-                hic.setTimestamp(entry.getValue().timestamp());
+                if ( entry.getValue() instanceof Column )
+                {
+                    hic.setTimestamp(entry.getValue().timestamp());
+                }
                 theMap.put(new BytesWritable(name), hic);
               }
               value.setKey(rowKey);

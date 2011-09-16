@@ -1,6 +1,20 @@
 SET hive.support.concurrency=false;
 
 DROP TABLE IF EXISTS cf_demo_TBL;
+--Test cassandra.cf.validatorType setting with counters
+DROP TABLE cf_demo_TBL;
+CREATE EXTERNAL TABLE cf_demo_TBL(row_key STRING, counterColumnLong INT)
+      STORED BY 'org.apache.hadoop.hive.cassandra.CassandraStorageHandler'
+      WITH SERDEPROPERTIES ("cassandra.port" = "9170",
+                            "cassandra.columns.mapping" = ":key,
+                                                           counterColumnLong")                            
+      TBLPROPERTIES ("cassandra.ks.name" = "counter_ks_demo",
+                     "cassandra.slice.predicate.size" = "100",
+                     "cassandra.cf.name" = "counter_cf_demo");
+
+select row_key, counterColumnLong from cf_demo_TBL;
+
+DROP TABLE cf_demo_TBL;
 --Test LongType and IntegerType without using validatorType setting
 CREATE EXTERNAL TABLE cf_demo_TBL(row_key STRING,
                                              uniqueid String,

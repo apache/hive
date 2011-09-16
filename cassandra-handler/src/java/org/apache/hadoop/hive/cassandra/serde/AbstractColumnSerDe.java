@@ -19,9 +19,9 @@ import org.apache.hadoop.hive.serde2.SerDeException;
 import org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe.SerDeParameters;
 import org.apache.hadoop.hive.serde2.lazy.objectinspector.LazySimpleStructObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
-import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector.Category;
 import org.apache.hadoop.hive.serde2.objectinspector.StructField;
 import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
+import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector.Category;
 import org.apache.hadoop.hive.serde2.typeinfo.StructTypeInfo;
 import org.apache.hadoop.io.Writable;
 
@@ -33,6 +33,7 @@ public abstract class AbstractColumnSerDe implements SerDe {
   public static final String CASSANDRA_KEYSPACE_STRATEGY = "cassandra.ks.strategy"; //keyspace replica placement strategy
 
   public static final String CASSANDRA_CF_NAME = "cassandra.cf.name"; // column family
+  public static final String CASSANDRA_CF_COUNTERS = "cassandra.cf.counters"; // flag this as a counter CF
   public static final String CASSANDRA_RANGE_BATCH_SIZE = "cassandra.range.size";
   public static final String CASSANDRA_SLICE_PREDICATE_SIZE = "cassandra.slice.predicate.size";
   public static final String CASSANDRA_SPLIT_SIZE = "cassandra.input.split.size";

@@ -100,7 +100,7 @@ public class CassandraPut extends CassandraAbstractPut implements Writable {
     Map<String, List<Mutation>> maps = new HashMap<String, List<Mutation>>();
 
     int count = 0;
-
+    // TODO check for counter
     for (CassandraColumn col : columns) {
       Column cassCol = new Column();
       cassCol.setValue(col.getValue());
