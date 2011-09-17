@@ -551,6 +551,18 @@
 </property>
 
 <property>
+  <name>hive.client.stats.publishers</name>
+  <value></value>
+  <description>Comma-separated list of statistics publishers to be invoked on counters on each job.  A client stats publisher is specified as the name of a Java class which implements the org.apache.hadoop.hive.ql.stats.ClientStatsPublisher interface.</description>
+</property>
+
+<property>
+  <name>hive.client.stats.counters</name>
+  <value></value>
+  <description>Subset of counters that should be of interest for hive.client.stats.publishers (when one wants to limit their publishing). Non-display names should be used</description>
+</property>
+
+<property>
   <name>hive.merge.mapfiles</name>
   <value>true</value>
   <description>Merge small files at the end of a map-only job</description>

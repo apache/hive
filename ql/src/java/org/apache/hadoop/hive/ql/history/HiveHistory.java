@@ -299,7 +299,7 @@ public class HiveHistory {
   }
 
   /**
-   * Called at the start of job Driver.run().
+   * Called at the start of job Driver.execute().
    */
   public void startQuery(String cmd, String id) {
     SessionState ss = SessionState.get();

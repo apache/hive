@@ -21,6 +21,7 @@ package org.apache.hadoop.hive.ql.exec;
 import java.io.IOException;
 import java.io.Serializable;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collections;
 import java.util.HashMap;
@@ -30,6 +31,9 @@ import java.util.Map;
 import java.util.Set;
 import java.util.Enumeration;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.apache.hadoop.hive.common.JavaUtils;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.MapRedStats;
 import org.apache.hadoop.hive.ql.exec.Operator.ProgressCounter;
@@ -38,6 +42,7 @@ import org.apache.hadoop.hive.ql.exec.errors.TaskLogProcessor;
 import org.apache.hadoop.hive.ql.history.HiveHistory.Keys;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.ql.session.SessionState.LogHelper;
+import org.apache.hadoop.hive.ql.stats.ClientStatsPublisher;
 import org.apache.hadoop.hive.shims.ShimLoader;
 import org.apache.hadoop.mapred.Counters;
 import org.apache.hadoop.mapred.JobClient;
@@ -53,6 +58,8 @@ import org.apache.log4j.LogManager;
 import org.apache.log4j.PropertyConfigurator;
 
 public class HadoopJobExecHelper {
+
+  static final private Log LOG = LogFactory.getLog(HadoopJobExecHelper.class.getName());
 
   protected transient JobConf job;
   protected Task<? extends Serializable> task;
@@ -225,6 +232,7 @@ public class HadoopJobExecHelper {
     long cpuMsec = -1;
     int numMap = -1;
     int numReduce = -1;
+    List<ClientStatsPublisher> clientStatPublishers = getClientStatPublishers();
 
     while (!rj.isComplete()) {
       try {
@@ -362,6 +370,14 @@ public class HadoopJobExecHelper {
         success = rj.isSuccessful();
       }
     }
+
+    //Prepare data for Client Stat Publishers (if any present) and execute them
+     if (clientStatPublishers.size() > 0){
+        Map<String, Double> exctractedCounters = extractAllCounterValues(ctrs);
+        for(ClientStatsPublisher clientStatPublisher : clientStatPublishers){
+          clientStatPublisher.run(exctractedCounters, rj.getID().toString());
+        }
+      }
 
     Counter counterCpuMsec = ctrs.findCounter("org.apache.hadoop.mapred.Task$Counter",
         "CPU_MILLISECONDS");
@@ -704,6 +720,7 @@ public class HadoopJobExecHelper {
     if (SessionState.get() != null) {
       SessionState.get().getLastMapRedStatsList().add(mapRedStats);
     }
+
     boolean success = mapRedStats.isSuccess();
 
     String statusMesg = getJobEndMsg(rj.getJobID());
@@ -727,5 +744,41 @@ public class HadoopJobExecHelper {
     }
 
     return returnVal;
+  }
+
+  private Map<String, Double> extractAllCounterValues(Counters counters) {
+    Map<String, Double> exctractedCounters = new HashMap<String, Double>();
+    for (Counters.Group cg : counters) {
+      for (Counter c : cg) {
+        exctractedCounters.put(cg.getName() + "::" + c.getName(), new Double(c.getCounter()));
+      }
+    }
+    return exctractedCounters;
+  }
+
+  private List<ClientStatsPublisher> getClientStatPublishers() {
+    List<ClientStatsPublisher> clientStatsPublishers = new ArrayList<ClientStatsPublisher>();
+    String confString = HiveConf.getVar(job, HiveConf.ConfVars.CLIENTSTATSPUBLISHERS);
+    confString = confString.trim();
+    if (confString.equals("")) {
+      return clientStatsPublishers;
+    }
+
+    String[] clientStatsPublisherClasses = confString.split(",");
+
+    for (String clientStatsPublisherClass : clientStatsPublisherClasses) {
+      try {
+        clientStatsPublishers.add((ClientStatsPublisher) Class.forName(
+            clientStatsPublisherClass.trim(), true, JavaUtils.getClassLoader()).newInstance());
+      } catch (RuntimeException e) {
+        throw e;
+      } catch (Exception e) {
+        LOG.warn(e.getClass().getName() + " occured when trying to create class: "
+            + clientStatsPublisherClass.trim() + " implementing ClientStatsPublisher interface");
+        LOG.warn("The exception message is: " + e.getMessage());
+        LOG.warn("Program will continue, but without this ClientStatsPublisher working");
+      }
+    }
+    return clientStatsPublishers;
   }
 }
