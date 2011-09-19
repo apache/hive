@@ -161,8 +161,8 @@ public class JDBCStatsUtils {
    */
   public static String getDeleteAggr(String rowID, String comment) {
     String delete = "DELETE /* " + comment + " */ " +
-        " FROM " + getStatTableName() + " WHERE " + JDBCStatsUtils.getIdColumnName() + " LIKE '"
-        + rowID + "%'";
+        " FROM " + getStatTableName() + " WHERE " + JDBCStatsUtils.getIdColumnName() +
+        " LIKE ? ESCAPE ?";
     return delete;
   }
 

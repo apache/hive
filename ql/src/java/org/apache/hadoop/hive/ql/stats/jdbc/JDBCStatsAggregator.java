@@ -210,8 +210,13 @@ public class JDBCStatsAggregator implements StatsAggregator {
     };
     try {
 
+      String keyPrefix = Utilities.escapeSqlLike(rowID) + "%";
+
       PreparedStatement delStmt = Utilities.prepareWithRetry(conn,
           JDBCStatsUtils.getDeleteAggr(rowID, comment), waitWindow, maxRetries);
+      delStmt.setString(1, keyPrefix);
+      delStmt.setString(2, Character.toString(Utilities.sqlEscapeChar));
+
       for (int failures = 0;; failures++) {
         try {
             Utilities.executeWithRetry(execUpdate, delStmt, waitWindow, maxRetries);
