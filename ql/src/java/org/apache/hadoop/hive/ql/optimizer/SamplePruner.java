@@ -104,7 +104,7 @@ public class SamplePruner implements Transform {
         .getOpToSamplePruner());
 
     Map<Rule, NodeProcessor> opRules = new LinkedHashMap<Rule, NodeProcessor>();
-    opRules.put(new RuleRegExp("R1", "(TS%FIL%FIL%)"), getFilterProc());
+    opRules.put(new RuleRegExp("R1", "(TS%FIL%FIL%|TS%FIL%)"), getFilterProc());
 
     // The dispatcher fires the processor corresponding to the closest matching
     // rule and passes the context along
@@ -136,7 +136,9 @@ public class SamplePruner implements Transform {
         return null;
       }
 
-      assert stack.size() == 3;
+      assert (stack.size() == 3 && stack.get(1) instanceof FilterOperator) ||
+          stack.size() == 2;
+
       TableScanOperator tsOp = (TableScanOperator) stack.get(0);
       ((SamplePrunerCtx) procCtx).getOpToSamplePruner().put(tsOp, sampleDescr);
       return null;
