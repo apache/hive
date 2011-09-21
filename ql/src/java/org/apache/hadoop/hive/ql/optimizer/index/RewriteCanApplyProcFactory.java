@@ -127,7 +127,7 @@ public final class RewriteCanApplyProcFactory {
                  }else if(para.size() == 0){
                    //count(*) case
                    canApplyCtx.setCountOnAllCols(true);
-                   canApplyCtx.setAggFunction("_count_Of_ALL");
+                   canApplyCtx.setAggFunction("_count_of_all");
                  }else{
                    assert para.size()==1;
                    for(int i=0; i< para.size(); i++){
@@ -144,12 +144,12 @@ public final class RewriteCanApplyProcFactory {
                        //if columns contained in agg func are index key columns
                        canApplyCtx.getAggFuncColList().add(
                            ((ExprNodeColumnDesc) expr).getColumn());
-                       canApplyCtx.setAggFunction("_count_Of_" +
+                       canApplyCtx.setAggFunction("_count_of_" +
                            ((ExprNodeColumnDesc) expr).getColumn() + "");
                      }else if(expr instanceof ExprNodeConstantDesc){
                        //count(1) case
                        canApplyCtx.setCountOfOne(true);
-                       canApplyCtx.setAggFunction("_count_Of_1");
+                       canApplyCtx.setAggFunction("_count_of_1");
                      }
                    }
                  }

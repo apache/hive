@@ -63,7 +63,7 @@ import org.apache.hadoop.hive.ql.parse.SemanticException;
  * </code>
  *  to
  *  <code>
- *   select sum(_count_Of_key)
+ *   select sum(_count_of_key)
  *   from idx_table
  *   group by key;
  *  </code>
@@ -250,7 +250,7 @@ public class RewriteGBUsingIndex implements Transform {
             String aggregationFunction = indexTableMap.get(index).toString();
             aggregationFunction = aggregationFunction.substring(1,
                 aggregationFunction.length() - 1);
-            canApplyCtx.setAggFunction("_count_Of_" + aggregationFunction + "");
+            canApplyCtx.setAggFunction("_count_of_" + aggregationFunction + "");
           }
         }
         break;

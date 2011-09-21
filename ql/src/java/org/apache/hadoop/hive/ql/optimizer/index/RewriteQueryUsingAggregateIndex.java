@@ -84,7 +84,7 @@ public final class RewriteQueryUsingAggregateIndex {
 
       //we need to set the colList, outputColumnNames, colExprMap,
       // rowSchema for only that SelectOperator which precedes the GroupByOperator
-      // count(indexed_key_column) needs to be replaced by sum(`_count_Of_indexed_key_column`)
+      // count(indexed_key_column) needs to be replaced by sum(`_count_of_indexed_key_column`)
       if (childOp instanceof GroupByOperator){
         List<ExprNodeDesc> selColList =
           operator.getConf().getColList();
@@ -97,7 +97,7 @@ public final class RewriteQueryUsingAggregateIndex {
         RowSchema selRS = operator.getSchema();
         List<ColumnInfo> selRSSignature =
           selRS.getSignature();
-        //Need to create a new type for Column[_count_Of_indexed_key_column] node
+        //Need to create a new type for Column[_count_of_indexed_key_column] node
         PrimitiveTypeInfo pti = (PrimitiveTypeInfo) TypeInfoFactory.getPrimitiveTypeInfo("bigint");
         pti.setTypeName("bigint");
         ColumnInfo newCI = new ColumnInfo(rewriteQueryCtx.getAggregateFunction(), pti, "", false);
