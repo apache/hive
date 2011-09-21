@@ -25,8 +25,6 @@ import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
  * IndexSearchCondition represents an individual search condition
  * found by {@link IndexPredicateAnalyzer}.
  *
- * @author John Sichi
- * @version $Id:$
  */
 public class IndexSearchCondition
 {
