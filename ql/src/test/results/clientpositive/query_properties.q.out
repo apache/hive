@@ -1,0 +1,143 @@
+PREHOOK: query: select * from src a join src b on a.key = b.key limit 1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: file:/var/folders/Y1/Y1Kf7th8FAawW1lYb6Tt+l+pemQ/-Tmp-/kevinwilfong/hive_2011-09-19_10-05-36_498_5805697535865823342/-mr-10000
+Has Join: true
+Has Group By: false
+Has Sort By: false
+Has Order By: false
+Has Group By After Join: false
+Uses Script: false
+Has Distribute By: false
+Has Cluster By: false
+0	val_0	0	val_0
+PREHOOK: query: select * from src group by src.key, src.value limit 1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: file:/var/folders/Y1/Y1Kf7th8FAawW1lYb6Tt+l+pemQ/-Tmp-/kevinwilfong/hive_2011-09-19_10-05-43_789_6053740454386954709/-mr-10000
+Has Join: false
+Has Group By: true
+Has Sort By: false
+Has Order By: false
+Has Group By After Join: false
+Uses Script: false
+Has Distribute By: false
+Has Cluster By: false
+0	val_0
+PREHOOK: query: select * from src order by src.key limit 1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: file:/var/folders/Y1/Y1Kf7th8FAawW1lYb6Tt+l+pemQ/-Tmp-/kevinwilfong/hive_2011-09-19_10-05-49_494_5633179368399155497/-mr-10000
+Has Join: false
+Has Group By: false
+Has Sort By: false
+Has Order By: true
+Has Group By After Join: false
+Uses Script: false
+Has Distribute By: false
+Has Cluster By: false
+0	val_0
+PREHOOK: query: select * from src sort by src.key limit 1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: file:/var/folders/Y1/Y1Kf7th8FAawW1lYb6Tt+l+pemQ/-Tmp-/kevinwilfong/hive_2011-09-19_10-05-54_060_1716409037097699334/-mr-10000
+Has Join: false
+Has Group By: false
+Has Sort By: true
+Has Order By: false
+Has Group By After Join: false
+Uses Script: false
+Has Distribute By: false
+Has Cluster By: false
+0	val_0
+PREHOOK: query: select a.key, sum(b.value) from src a join src b on a.key = b.key group by a.key limit 1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: file:/var/folders/Y1/Y1Kf7th8FAawW1lYb6Tt+l+pemQ/-Tmp-/kevinwilfong/hive_2011-09-19_10-06-03_249_6504006179961788750/-mr-10000
+Has Join: true
+Has Group By: true
+Has Sort By: false
+Has Order By: false
+Has Group By After Join: true
+Uses Script: false
+Has Distribute By: false
+Has Cluster By: false
+0	0.0
+PREHOOK: query: select transform(*) using 'cat' from src limit 1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: file:/var/folders/Y1/Y1Kf7th8FAawW1lYb6Tt+l+pemQ/-Tmp-/kevinwilfong/hive_2011-09-19_10-06-12_911_7465302042210333387/-mr-10000
+Has Join: false
+Has Group By: false
+Has Sort By: false
+Has Order By: false
+Has Group By After Join: false
+Uses Script: true
+Has Distribute By: false
+Has Cluster By: false
+238	val_238
+PREHOOK: query: select * from src distribute by src.key limit 1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: file:/var/folders/Y1/Y1Kf7th8FAawW1lYb6Tt+l+pemQ/-Tmp-/kevinwilfong/hive_2011-09-19_10-06-16_972_9071341919141171271/-mr-10000
+Has Join: false
+Has Group By: false
+Has Sort By: false
+Has Order By: false
+Has Group By After Join: false
+Uses Script: false
+Has Distribute By: true
+Has Cluster By: false
+238	val_238
+PREHOOK: query: select * from src cluster by src.key limit 1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: file:/var/folders/Y1/Y1Kf7th8FAawW1lYb6Tt+l+pemQ/-Tmp-/kevinwilfong/hive_2011-09-19_10-06-22_255_3542540661923174882/-mr-10000
+Has Join: false
+Has Group By: false
+Has Sort By: false
+Has Order By: false
+Has Group By After Join: false
+Uses Script: false
+Has Distribute By: false
+Has Cluster By: true
+0	val_0
+PREHOOK: query: select key, sum(value) from (select a.key as key, b.value as value from src a join src b on a.key = b.key) c group by key limit 1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: file:/var/folders/Y1/Y1Kf7th8FAawW1lYb6Tt+l+pemQ/-Tmp-/kevinwilfong/hive_2011-09-19_10-06-31_368_2134351032646287700/-mr-10000
+Has Join: true
+Has Group By: true
+Has Sort By: false
+Has Order By: false
+Has Group By After Join: false
+Uses Script: false
+Has Distribute By: false
+Has Cluster By: false
+0	0.0
+PREHOOK: query: select * from src a join src b on a.key = b.key order by a.key limit 1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: file:/var/folders/Y1/Y1Kf7th8FAawW1lYb6Tt+l+pemQ/-Tmp-/kevinwilfong/hive_2011-09-19_10-06-41_181_4145247126888779334/-mr-10000
+Has Join: true
+Has Group By: false
+Has Sort By: false
+Has Order By: true
+Has Group By After Join: false
+Uses Script: false
+Has Distribute By: false
+Has Cluster By: false
+0	val_0	0	val_0
+PREHOOK: query: select * from src a join src b on a.key = b.key distribute by a.key sort by a.key, b.value limit 1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: file:/var/folders/Y1/Y1Kf7th8FAawW1lYb6Tt+l+pemQ/-Tmp-/kevinwilfong/hive_2011-09-19_10-06-50_866_7828522265237898435/-mr-10000
+Has Join: true
+Has Group By: false
+Has Sort By: true
+Has Order By: false
+Has Group By After Join: false
+Uses Script: false
+Has Distribute By: true
+Has Cluster By: false
+0	val_0	0	val_0

@@ -36,6 +36,7 @@ import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.Order;
 import org.apache.hadoop.hive.ql.Context;
+import org.apache.hadoop.hive.ql.QueryProperties;
 import org.apache.hadoop.hive.ql.exec.FetchTask;
 import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.exec.Utilities;
@@ -71,6 +72,7 @@ public abstract class BaseSemanticAnalyzer {
 
   protected Context ctx;
   protected HashMap<String, String> idToTableNameMap;
+  protected QueryProperties queryProperties;
 
   public static int HIVE_COLUMN_ORDER_ASC = 1;
   public static int HIVE_COLUMN_ORDER_DESC = 0;
@@ -761,5 +763,9 @@ public abstract class BaseSemanticAnalyzer {
 
   public Hive getDb() {
     return db;
+  }
+
+  public QueryProperties getQueryProperties() {
+    return queryProperties;
   }
 }
