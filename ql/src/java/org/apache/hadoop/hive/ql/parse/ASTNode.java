@@ -26,7 +26,6 @@ import org.antlr.runtime.tree.CommonTree;
 import org.apache.hadoop.hive.ql.lib.Node;
 
 /**
- * @author athusoo
  *
  */
 public class ASTNode extends CommonTree implements Node,Serializable {
