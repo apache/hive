@@ -1193,4 +1193,10 @@
   <description>The class responsible logging client side performance metrics.  Must be a subclass of org.apache.hadoop.hive.ql.log.PerfLogger</description>
 </property>
 
+<property>
+  <name>hive.start.cleanup.scratchdir</name>
+  <value>false</value>
+  <description>To cleanup the hive scratchdir while starting the hive server</description>
+</property>
+
 </configuration>
