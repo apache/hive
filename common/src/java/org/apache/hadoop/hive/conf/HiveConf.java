@@ -478,6 +478,8 @@ public class HiveConf extends Configuration {
     // The class responsible for logging client side performance metrics
     // Must be a subclass of org.apache.hadoop.hive.ql.log.PerfLogger
     HIVE_PERF_LOGGER("hive.exec.perf.logger", "org.apache.hadoop.hive.ql.log.PerfLogger"),
+    // Whether to delete the scratchdir while startup
+    HIVE_START_CLEANUP_SCRATCHDIR("hive.start.cleanup.scratchdir", false),
     ;
 
     public final String varname;

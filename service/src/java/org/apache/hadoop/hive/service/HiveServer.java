@@ -34,6 +34,7 @@ import java.util.Properties;
 import org.apache.commons.cli.OptionBuilder;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.apache.hadoop.hive.common.ServerUtils;
 import org.apache.hadoop.hive.common.LogUtils;
 import org.apache.hadoop.hive.common.LogUtils.LogInitializationException;
 import org.apache.hadoop.hive.common.cli.CommonCliOptions;
@@ -60,7 +61,8 @@ import org.apache.thrift.transport.TServerSocket;
 import org.apache.thrift.transport.TServerTransport;
 import org.apache.thrift.transport.TTransport;
 import org.apache.thrift.transport.TTransportFactory;
-
+import org.apache.hadoop.fs.FileSystem;
+import org.apache.hadoop.fs.Path;
 import com.facebook.fb303.fb_status;
 
 /**
@@ -647,7 +649,7 @@ public class HiveServer extends ThriftHive {
       }
     }
   }
-
+  
   public static void main(String[] args) {
     try {
       HiveServerCli cli = new HiveServerCli();
@@ -666,9 +668,9 @@ public class HiveServer extends ThriftHive {
         HiveServerHandler.LOG.warn(e.getMessage());
       }
 
-      TServerTransport serverTransport = new TServerSocket(cli.port);
-
       HiveConf conf = new HiveConf(HiveServerHandler.class);
+      ServerUtils.cleanUpScratchDir(conf);
+      TServerTransport serverTransport = new TServerSocket(cli.port);
 
       // set all properties specified on the command line
       for (Map.Entry<Object, Object> item : hiveconf.entrySet()) {

@@ -23,7 +23,9 @@ import java.util.Properties;
 import junit.framework.TestCase;
 
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.hive.common.ServerUtils;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.Schema;
@@ -388,6 +390,35 @@ public class TestHiveServer extends TestCase {
     if (!queryExecutionFailed) {
       fail("It should trow exception since archive does not exist");
     }
+  }
+
+  public void testScratchDirShouldNotClearWhileStartup() throws Exception {
+    FileSystem fs = FileSystem.get(conf);
+    Path scratchDirPath = new Path(HiveConf.getVar(conf,
+        HiveConf.ConfVars.SCRATCHDIR));
+    boolean fileExists = fs.exists(scratchDirPath);
+    if (!fileExists) {
+      fileExists = fs.mkdirs(scratchDirPath);
+    }
+    ServerUtils.cleanUpScratchDir(conf);
+    assertTrue("Scratch dir is not available after startup", fs.exists(scratchDirPath));
+  }
+
+  public void testScratchDirShouldClearWhileStartup() throws Exception {
+    FileSystem fs = FileSystem.get(conf);
+    Path scratchDirPath = new Path(HiveConf.getVar(conf,
+        HiveConf.ConfVars.SCRATCHDIR));
+    boolean fileExists = fs.exists(scratchDirPath);
+    if (!fileExists) {
+      fileExists = fs.mkdirs(scratchDirPath);
+    }
+    try {
+      conf.setBoolVar(HiveConf.ConfVars.HIVE_START_CLEANUP_SCRATCHDIR, true);
+      ServerUtils.cleanUpScratchDir(conf);
+    } finally {
+      conf.setBoolVar(HiveConf.ConfVars.HIVE_START_CLEANUP_SCRATCHDIR, false);
+    }
+    assertFalse("Scratch dir is available after startup", fs.exists(scratchDirPath));
   }
 
 }
