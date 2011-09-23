@@ -25,6 +25,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
+import org.apache.hadoop.hive.ql.QueryPlan;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.util.ReflectionUtils;
 
@@ -120,5 +121,14 @@ public class PerfLogger {
     _log.info(sb);
 
     return duration;
+  }
+
+  /**
+   * Call this function at the end of processing a query (any time after the last call to PerfLogEnd
+   * for a given query) to run any cleanup/final steps that need to be run
+   * @param _log
+   */
+  public void close(Log _log, QueryPlan queryPlan) {
+
   }
 }

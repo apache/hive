@@ -952,6 +952,7 @@ public class Driver implements CommandProcessor {
 
     //if needRequireLock is false, the release here will do nothing because there is no lock
     releaseLocks(ctx.getHiveLocks());
+    PerfLogger.getPerfLogger().close(LOG, plan);
     return new CommandProcessorResponse(ret);
   }
 
