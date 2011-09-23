@@ -1,3 +1,5 @@
+SELECT '< HIVE-2246 Dedupe tables column schemas from partitions in the metastore db >' AS ' ';
+
 DELIMITER $$
 DROP PROCEDURE IF EXISTS REVERT $$
 DROP PROCEDURE IF EXISTS ALTER_SDS $$
@@ -137,7 +139,7 @@ CREATE PROCEDURE MIGRATE_PARTITIONS()
     SET sd.CD_ID = t.SD_ID
     where p.SD_ID is not null
     ;
-    SELECT 'Updated CD_IDs in SDS for partitions'
+    SELECT 'Updated CD_IDs in SDS for partitions';
       
   END $$
 
@@ -204,3 +206,5 @@ CREATE PROCEDURE MIGRATE()
   END $$
 
 DELIMITER ;
+
+CALL MIGRATE();
