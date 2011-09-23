@@ -1618,7 +1618,7 @@ joinToken
 @after { msgs.pop(); }
     :
       KW_JOIN                     -> TOK_JOIN
-    | KW_INNER KW_JOIN            -> TOK_JOIN
+    | kwInner  KW_JOIN            -> TOK_JOIN
     | KW_LEFT  KW_OUTER KW_JOIN   -> TOK_LEFTOUTERJOIN
     | KW_RIGHT KW_OUTER KW_JOIN   -> TOK_RIGHTOUTERJOIN
     | KW_FULL  KW_OUTER KW_JOIN   -> TOK_FULLOUTERJOIN
@@ -2102,6 +2102,10 @@ kwRole
 : 
 {input.LT(1).getText().equalsIgnoreCase("role")}? Identifier;
 
+kwInner
+: 
+{input.LT(1).getText().equalsIgnoreCase("inner")}? Identifier;
+
 KW_TRUE : 'TRUE';
 KW_FALSE : 'FALSE';
 KW_ALL : 'ALL';
@@ -2130,7 +2134,6 @@ KW_OUTER : 'OUTER';
 KW_UNIQUEJOIN : 'UNIQUEJOIN';
 KW_PRESERVE : 'PRESERVE';
 KW_JOIN : 'JOIN';
-KW_INNER : 'INNER';
 KW_LEFT : 'LEFT';
 KW_RIGHT : 'RIGHT';
 KW_FULL : 'FULL';
