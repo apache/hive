@@ -1199,4 +1199,10 @@
   <description>To cleanup the hive scratchdir while starting the hive server</description>
 </property>
 
+<property>
+  <name>hive.output.file.extension</name>
+  <value></value>
+  <description>String used as a file extension for output files. If not set, defaults to the codec extension for text files (e.g. ".gz"), or no extension otherwise.</description>
+</property>
+
 </configuration>

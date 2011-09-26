@@ -448,14 +448,11 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
           // OutputFormat.getRecordWriter() is that
           // getRecordWriter does not give us enough control over the file name that
           // we create.
+          String extension = Utilities.getFileExtension(jc, isCompressed,
+              hiveOutputFormat);
           if (!bDynParts) {
-            fsp.finalPaths[filesIdx] = HiveFileFormatUtils.getOutputFormatFinalPath(
-                parent, taskId, jc, hiveOutputFormat, isCompressed, fsp.finalPaths[filesIdx]);
+            fsp.finalPaths[filesIdx] = fsp.getFinalPath(taskId, parent, extension);
           } else {
-            String extension = null;
-            if (hiveOutputFormat instanceof HiveIgnoreKeyTextOutputFormat) {
-              extension = Utilities.getFileExtension(jc, isCompressed);
-            }
             fsp.finalPaths[filesIdx] = fsp.getFinalPath(taskId, fsp.tmpPath, extension);
           }
 
