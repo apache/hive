@@ -107,7 +107,9 @@ public final class HiveFileFormatUtils {
    *          parent dir of the expected final output path
    * @param jc
    *          job configuration
+   * @deprecated
    */
+  @Deprecated
   public static Path getOutputFormatFinalPath(Path parent, String taskId, JobConf jc,
       HiveOutputFormat<?, ?> hiveOutputFormat, boolean isCompressed,
       Path defaultFinalPath) throws IOException {

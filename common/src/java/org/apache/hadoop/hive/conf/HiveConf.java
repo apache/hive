@@ -140,6 +140,7 @@ public class HiveConf extends Configuration {
     SHOW_JOB_FAIL_DEBUG_INFO("hive.exec.show.job.failure.debug.info", true),
     JOB_DEBUG_TIMEOUT("hive.exec.job.debug.timeout", 30000),
     TASKLOG_DEBUG_TIMEOUT("hive.exec.tasklog.debug.timeout", 20000),
+    OUTPUT_FILE_EXTENSION("hive.output.file.extension", null),
 
     // should hive determine whether to run in local mode automatically ?
     LOCALMODEAUTO("hive.exec.mode.local.auto", false),
