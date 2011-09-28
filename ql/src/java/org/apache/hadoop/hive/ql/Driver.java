@@ -767,9 +767,6 @@ public class Driver implements CommandProcessor {
     perfLogger.PerfLogBegin(LOG, PerfLogger.ACQUIRE_READ_WRITE_LOCKS);
 
     try {
-      int sleepTime = conf.getIntVar(HiveConf.ConfVars.HIVE_LOCK_SLEEP_BETWEEN_RETRIES) * 1000;
-      int numRetries = conf.getIntVar(HiveConf.ConfVars.HIVE_LOCK_NUMRETRIES);
-
       boolean supportConcurrency = conf.getBoolVar(HiveConf.ConfVars.HIVE_SUPPORT_CONCURRENCY);
       if (!supportConcurrency) {
         return 0;
@@ -821,24 +818,7 @@ public class Driver implements CommandProcessor {
         throw new SemanticException(e.getMessage());
       }
 
-      List<HiveLock> hiveLocks = null;
-
-      int tryNum = 1;
-      do {
-
-        ctx.getHiveLockMgr().prepareRetry();
-        hiveLocks = ctx.getHiveLockMgr().lock(lockObjects, false);
-
-        if (hiveLocks != null) {
-          break;
-        }
-
-        tryNum++;
-        try {
-          Thread.sleep(sleepTime);
-        } catch (InterruptedException e) {
-        }
-      } while (tryNum < numRetries);
+      List<HiveLock> hiveLocks = ctx.getHiveLockMgr().lock(lockObjects, false);
 
       if (hiveLocks == null) {
         throw new SemanticException(ErrorMsg.LOCK_CANNOT_BE_ACQUIRED.getMsg());

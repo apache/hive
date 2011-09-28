@@ -40,4 +40,10 @@ public interface HiveLockManager {
   public List<HiveLock> getLocks(HiveLockObject key, boolean verifyTablePartitions, boolean fetchData) throws LockException;
   public void close() throws LockException;
   public void prepareRetry() throws LockException;
+
+  /**
+   * refresh to enable new configurations.
+   */
+  public void refresh();
+
 }

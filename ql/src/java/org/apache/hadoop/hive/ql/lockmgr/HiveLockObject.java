@@ -32,6 +32,7 @@ public class HiveLockObject {
     // mode of the lock: EXPLICIT(lock command)/IMPLICIT(query)
     private String lockMode;
     private String queryStr;
+    private String clientIp; 
 
     public HiveLockObjectData(String queryId,
                               String lockTime,
@@ -73,7 +74,16 @@ public class HiveLockObject {
     }
 
     public String toString() {
-      return queryId + ":" + lockTime + ":" + lockMode + ":" + queryStr;
+      return queryId + ":" + lockTime + ":" + lockMode + ":" + queryStr + ":"
+          + clientIp;
+    }
+    
+    public String getClientIp() {
+      return this.clientIp;
+    }
+    
+    public void setClientIp(String clientIp) {
+      this.clientIp = clientIp;
     }
   }
 

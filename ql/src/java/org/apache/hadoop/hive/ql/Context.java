@@ -498,6 +498,9 @@ public class Context {
   }
 
   public HiveLockManager getHiveLockMgr() {
+    if (hiveLockMgr != null) {
+      hiveLockMgr.refresh();
+    }
     return hiveLockMgr;
   }
 

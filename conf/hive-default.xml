@@ -889,6 +889,12 @@
 </property>
 
 <property>
+  <name>hive.unlock.numretries</name>
+  <value>10</value>
+  <description>The number of times you want to retry to do one unlock</description>
+</property>
+
+<property>
   <name>hive.lock.sleep.between.retries</name>
   <value>60</value>
   <description>The sleep time (in seconds) between various retries</description>
