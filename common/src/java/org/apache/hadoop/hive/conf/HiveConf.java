@@ -419,6 +419,7 @@ public class HiveConf extends Configuration {
     HIVE_SUPPORT_CONCURRENCY("hive.support.concurrency", false),
     HIVE_LOCK_MANAGER("hive.lock.manager", "org.apache.hadoop.hive.ql.lockmgr.zookeeper.ZooKeeperHiveLockManager"),
     HIVE_LOCK_NUMRETRIES("hive.lock.numretries", 100),
+    HIVE_UNLOCK_NUMRETRIES("hive.unlock.numretries", 10),
     HIVE_LOCK_SLEEP_BETWEEN_RETRIES("hive.lock.sleep.between.retries", 60),
     HIVE_LOCK_MAPRED_ONLY("hive.lock.mapred.only.operation", false),
 
