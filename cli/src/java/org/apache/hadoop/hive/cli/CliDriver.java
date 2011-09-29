@@ -549,10 +549,15 @@ public class CliDriver {
   }
 
   public static void main(String[] args) throws Exception {
+    int ret = run(args);
+    System.exit(ret);
+  }
+
+  public static int run(String[] args) throws Exception {
 
     OptionsProcessor oproc = new OptionsProcessor();
     if (!oproc.process_stage1(args)) {
-      System.exit(1);
+      return 1;
     }
 
     // NOTE: It is critical to do this here so that log4j is reinitialized
@@ -572,11 +577,11 @@ public class CliDriver {
       ss.out = new PrintStream(System.out, true, "UTF-8");
       ss.err = new PrintStream(System.err, true, "UTF-8");
     } catch (UnsupportedEncodingException e) {
-      System.exit(3);
+      return 3;
     }
 
     if (!oproc.process_stage2(ss)) {
-      System.exit(2);
+      return 2;
     }
 
     if (!ss.getIsSilent()) {
@@ -627,16 +632,16 @@ public class CliDriver {
     cli.processInitFiles(ss);
 
     if (ss.execString != null) {
-      System.exit(cli.processLine(ss.execString));
+      return cli.processLine(ss.execString);
     }
 
     try {
       if (ss.fileName != null) {
-        System.exit(cli.processFile(ss.fileName));
+        return cli.processFile(ss.fileName);
       }
     } catch (FileNotFoundException e) {
       System.err.println("Could not open input file for reading. (" + e.getMessage() + ")");
-      System.exit(3);
+      return 3;
     }
 
     ConsoleReader reader = new ConsoleReader();
@@ -675,7 +680,7 @@ public class CliDriver {
 
     ss.close();
 
-    System.exit(ret);
+    return ret;
   }
 
   /**
