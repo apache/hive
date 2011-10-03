@@ -35,7 +35,7 @@
   <classpathentry kind="lib" path="build/dist/lib/commons-pool-@commons-pool.version@.jar"/>
   <classpathentry kind="lib" path="build/dist/lib/slf4j-api-@slf4j-api.version@.jar"/>
   <classpathentry kind="lib" path="build/dist/lib/slf4j-log4j12-@slf4j-log4j12.version@.jar"/>
-  <classpathentry kind="lib" path="build/dist/lib/javaewah-0.2.jar"/>
+  <classpathentry kind="lib" path="build/dist/lib/javaewah-0.3.jar"/>
   <classpathentry kind="lib" path="build/dist/lib/mockito-all-@mockito-all.version@.jar"/>
   <classpathentry kind="src" path="build/contrib/test/src"/>
   <classpathentry kind="src" path="build/metastore/gen/antlr/gen-java"/>
