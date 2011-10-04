@@ -210,4 +210,9 @@ public class HiveIColumn implements IColumn, Writable {
   public IColumn reconcile(IColumn arg0) {
     throw new UnsupportedOperationException();
   }
+
+  @Override
+  public boolean hasExpiredTombstones(int arg0) {
+    throw new UnsupportedOperationException();
+  }
 }
