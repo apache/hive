@@ -95,9 +95,12 @@ public class FunctionTask extends Task<FunctionWork> {
             .newInstance(udfClass, null));
         return 0;
       }
+      console.printError("FAILED: Class " + createFunctionDesc.getClassName()
+          + " does not implement UDF, GenericUDF, or UDAF");
       return 1;
 
     } catch (ClassNotFoundException e) {
+      console.printError("FAILED: Class " + createFunctionDesc.getClassName() + " not found");
       LOG.info("create function: " + StringUtils.stringifyException(e));
       return 1;
     }
