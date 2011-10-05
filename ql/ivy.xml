@@ -37,11 +37,9 @@
         <dependency org="org.apache.cassandra" name="cassandra-all" rev="${cassandra.version}" >
 	  <exclude module="commons-cli"/>
           <exclude module="antlr" />
-	  <exclude module="jamm"/>
 	</dependency>  
         <dependency org="org.apache.cassandra" name="cassandra-thrift" rev="${cassandra.version}">
 	</dependency>
-	<dependency org="com.github.stephenc" name="jamm" rev="0.2.2"/>
         <dependency org="org.apache.zookeeper" name="zookeeper"
                     rev="${zookeeper.version}" transitive="false">
           <include type="jar"/>
