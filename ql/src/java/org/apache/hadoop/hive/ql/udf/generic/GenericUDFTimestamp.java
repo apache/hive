@@ -73,9 +73,9 @@ public class GenericUDFTimestamp extends GenericUDF {
   public String getDisplayString(String[] children) {
     assert (children.length == 1);
     StringBuilder sb = new StringBuilder();
-    sb.append("CAST ");
+    sb.append("CAST( ");
     sb.append(children[0]);
-    sb.append(" AS TIMESTAMP");
+    sb.append(" AS TIMESTAMP)");
     return sb.toString();
   }
 

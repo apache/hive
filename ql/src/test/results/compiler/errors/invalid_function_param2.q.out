@@ -1,2 +1,2 @@
 Semantic Exception: 
-Line 2:36 Wrong arguments ''abc'': No matching method for class org.apache.hadoop.hive.ql.udf.UDFSubstr with (string, string). Possible choices: _FUNC_(string, int, int)  _FUNC_(string, int)  
+Line 2:36 Wrong arguments ''abc'': No matching method for class org.apache.hadoop.hive.ql.udf.UDFSubstr with (string, string). Possible choices: _FUNC_(string, int, int)  _FUNC_(string, int)  _FUNC_(binary, int, int)  _FUNC_(binary, int)  

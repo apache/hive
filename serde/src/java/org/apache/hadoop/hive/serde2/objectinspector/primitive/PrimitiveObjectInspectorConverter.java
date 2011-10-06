@@ -21,6 +21,7 @@ package org.apache.hadoop.hive.serde2.objectinspector.primitive;
 import java.sql.Timestamp;
 
 import org.apache.hadoop.hive.serde2.ByteStream;
+import org.apache.hadoop.hive.serde2.lazy.ByteArrayRef;
 import org.apache.hadoop.hive.serde2.lazy.LazyInteger;
 import org.apache.hadoop.hive.serde2.lazy.LazyLong;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorConverters.Converter;
@@ -257,6 +258,29 @@ public class PrimitiveObjectInspectorConverter {
     }
   }
 
+  public static class BinaryConverter implements Converter{
+
+    PrimitiveObjectInspector inputOI;
+    SettableBinaryObjectInspector outputOI;
+    Object r;
+
+    public BinaryConverter(PrimitiveObjectInspector inputOI,
+        SettableBinaryObjectInspector outputOI) {
+      this.inputOI = inputOI;
+      this.outputOI = outputOI;
+      ByteArrayRef ba = new ByteArrayRef();
+      ba.setData(new byte[]{});
+      r = outputOI.create(ba);
+    }
+
+    @Override
+    public Object convert(Object input) {
+      return outputOI.set(r, PrimitiveObjectInspectorUtils.getBinary(input,
+          inputOI));
+    }
+
+  }
+
   /**
    * A helper class to convert any primitive to Text.
    */
@@ -317,6 +341,9 @@ public class PrimitiveObjectInspectorConverter {
       case TIMESTAMP:
         t.set(((TimestampObjectInspector) inputOI)
             .getPrimitiveWritableObject(input).toString());
+        return t;
+      case BINARY:
+        t.set(((BinaryObjectInspector) inputOI).getPrimitiveWritableObject(input).getBytes());
         return t;
       default:
         throw new RuntimeException("Hive 2 Internal error: type = " + inputOI.getTypeName());

@@ -27,6 +27,7 @@ import org.apache.hadoop.hive.serde2.SerDeUtils;
 import org.apache.hadoop.hive.serde2.io.ByteWritable;
 import org.apache.hadoop.hive.serde2.io.DoubleWritable;
 import org.apache.hadoop.hive.serde2.io.ShortWritable;
+import org.apache.hadoop.hive.serde2.lazy.ByteArrayRef;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector.Category;
 import org.apache.hadoop.hive.serde2.objectinspector.StandardUnionObjectInspector.StandardUnion;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorFactory;
@@ -35,6 +36,7 @@ import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
 import org.apache.hadoop.hive.serde2.typeinfo.UnionTypeInfo;
 import org.apache.hadoop.io.BooleanWritable;
+import org.apache.hadoop.io.BytesWritable;
 import org.apache.hadoop.io.FloatWritable;
 import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.LongWritable;
@@ -87,6 +89,7 @@ public class TestStandardObjectInspectors extends TestCase {
       doTestStandardPrimitiveObjectInspector(FloatWritable.class, Float.class);
       doTestStandardPrimitiveObjectInspector(DoubleWritable.class, Double.class);
       doTestStandardPrimitiveObjectInspector(Text.class, String.class);
+      doTestStandardPrimitiveObjectInspector(BytesWritable.class, ByteArrayRef.class);
     } catch (Throwable e) {
       e.printStackTrace();
       throw e;
@@ -138,6 +141,9 @@ public class TestStandardObjectInspectors extends TestCase {
       doTestJavaPrimitiveObjectInspector(DoubleWritable.class, Double.class,
           (double) 1);
       doTestJavaPrimitiveObjectInspector(Text.class, String.class, "a");
+      ByteArrayRef ba = new ByteArrayRef();
+      ba.setData(new byte[]{'3'});
+      doTestJavaPrimitiveObjectInspector(BytesWritable.class, ByteArrayRef.class, ba);
 
     } catch (Throwable e) {
       e.printStackTrace();
@@ -291,7 +297,9 @@ public class TestStandardObjectInspectors extends TestCase {
       fieldComments.add("secondString comment");
       fieldComments.add("thirdBoolean comment");
     } else { // should have null for non-specified comments
-      for(int i = 0; i < 3; i++) fieldComments.add(null);
+      for(int i = 0; i < 3; i++) {
+        fieldComments.add(null);
+    }
     }
 
     StandardStructObjectInspector soi1 = testComments ?

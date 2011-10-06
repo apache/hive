@@ -102,6 +102,7 @@ TOK_DATE;
 TOK_DATETIME;
 TOK_TIMESTAMP;
 TOK_STRING;
+TOK_BINARY;
 TOK_LIST;
 TOK_STRUCT;
 TOK_MAP;
@@ -1301,6 +1302,7 @@ primitiveType
     | KW_DATETIME      ->    TOK_DATETIME
     | KW_TIMESTAMP     ->    TOK_TIMESTAMP
     | KW_STRING        ->    TOK_STRING
+    | KW_BINARY        ->    TOK_BINARY
     ;
 
 listType
@@ -2060,6 +2062,7 @@ sysFuncNames
     | KW_DOUBLE
     | KW_BOOLEAN
     | KW_STRING
+    | KW_BINARY
     | KW_ARRAY
     | KW_MAP
     | KW_STRUCT

@@ -42,6 +42,7 @@ import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector.Category;
 import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.StructField;
 import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
+import org.apache.hadoop.hive.serde2.objectinspector.primitive.BinaryObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.BooleanObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.ByteObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.DoubleObjectInspector;
@@ -358,6 +359,23 @@ public class LazyBinarySerDe implements SerDe {
         byteStream.write(data, 0, length);
         return warnedOnceNullMapKey;
       }
+
+      case BINARY: {
+        BinaryObjectInspector baoi = (BinaryObjectInspector) poi;
+        BytesWritable bw = baoi.getPrimitiveWritableObject(obj);
+        int length = bw.getLength();
+        if(!skipLengthPrefix){
+          LazyBinaryUtils.writeVInt(byteStream, length);
+        } else {
+          if (length == 0){
+            throw new RuntimeException("LazyBinaryColumnarSerde cannot serialize a non-null " +
+            		"zero length binary field. Consider using either LazyBinarySerde or ColumnarSerde.");
+          }
+        }
+        byteStream.write(bw.getBytes(),0,length);
+        return warnedOnceNullMapKey;
+      }
+
       case TIMESTAMP: {
         TimestampObjectInspector toi = (TimestampObjectInspector) poi;
         TimestampWritable t = toi.getPrimitiveWritableObject(obj);

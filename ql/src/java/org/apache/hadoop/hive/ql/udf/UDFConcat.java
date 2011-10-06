@@ -20,6 +20,7 @@ package org.apache.hadoop.hive.ql.udf;
 
 import org.apache.hadoop.hive.ql.exec.Description;
 import org.apache.hadoop.hive.ql.exec.UDF;
+import org.apache.hadoop.io.BytesWritable;
 import org.apache.hadoop.io.Text;
 
 /**
@@ -27,7 +28,9 @@ import org.apache.hadoop.io.Text;
  *
  */
 @Description(name = "concat",
-    value = "_FUNC_(str1, str2, ... strN) - returns the concatenation of str1, str2, ... strN",
+    value = "_FUNC_(str1, str2, ... strN) - returns the concatenation of str1, str2, ... strN or "+
+            "_FUNC_(bin1, bin2, ... binN) - returns the concatenation of bytes in binary data " +
+            " bin1, bin2, ... binN",
     extended = "Returns NULL if any argument is NULL.\n"
     + "Example:\n"
     + "  > SELECT _FUNC_('abc', 'def') FROM src LIMIT 1;\n"
@@ -37,7 +40,7 @@ public class UDFConcat extends UDF {
   public UDFConcat() {
   }
 
-  private Text text = new Text();
+  private final Text text = new Text();
 
   public Text evaluate(Text... args) {
     text.clear();
@@ -50,4 +53,23 @@ public class UDFConcat extends UDF {
     return text;
   }
 
+  public BytesWritable evaluate(BytesWritable... bw){
+
+    int len = 0;
+    for(BytesWritable bytes : bw){
+      if (bytes == null){
+        return null;
+}
+      len += bytes.getLength();
+    }
+
+    byte[] out = new byte[len];
+    int curLen = 0;
+    // Need to iterate twice since BytesWritable doesn't support append.
+    for (BytesWritable bytes : bw){
+      System.arraycopy(bytes.getBytes(), 0, out, curLen, bytes.getLength());
+      curLen += bytes.getLength();
+    }
+    return new BytesWritable(out);
+  }
 }

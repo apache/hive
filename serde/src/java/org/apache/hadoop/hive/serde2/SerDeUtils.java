@@ -31,6 +31,7 @@ import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.StructField;
 import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.UnionObjectInspector;
+import org.apache.hadoop.hive.serde2.objectinspector.primitive.BinaryObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.BooleanObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.ByteObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.DoubleObjectInspector;
@@ -40,6 +41,8 @@ import org.apache.hadoop.hive.serde2.objectinspector.primitive.LongObjectInspect
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.ShortObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.StringObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.TimestampObjectInspector;
+import org.apache.hadoop.io.BytesWritable;
+import org.apache.hadoop.io.Text;
 
 /**
  * SerDeUtils.
@@ -261,6 +264,13 @@ public final class SerDeUtils {
           sb.append(((TimestampObjectInspector) poi)
               .getPrimitiveWritableObject(o));
           sb.append('"');
+          break;
+        }
+        case BINARY: {
+          BytesWritable bw = ((BinaryObjectInspector) oi).getPrimitiveWritableObject(o);
+          Text txt = new Text();
+          txt.set(bw.getBytes(), 0, bw.getLength());
+          sb.append(txt.toString());
           break;
         }
         default:

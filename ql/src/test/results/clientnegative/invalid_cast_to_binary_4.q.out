@@ -1,0 +1,1 @@
+FAILED: Error in semantic analysis: Line 0:-1 Wrong arguments '2': Only string or binary data can be cast into binary data types.

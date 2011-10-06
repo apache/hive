@@ -24,6 +24,7 @@ import org.apache.hadoop.hive.serde2.io.ByteWritable;
 import org.apache.hadoop.hive.serde2.io.DoubleWritable;
 import org.apache.hadoop.hive.serde2.io.ShortWritable;
 import org.apache.hadoop.hive.serde2.lazy.objectinspector.primitive.LazyPrimitiveObjectInspectorFactory;
+import org.apache.hadoop.io.BytesWritable;
 import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.Text;
@@ -371,6 +372,19 @@ public class TestLazyPrimitive extends TestCase {
       e.printStackTrace();
       throw e;
     }
+  }
+
+  public void testLazyBinary() {
+
+    LazyBinary ba = new LazyBinary(LazyPrimitiveObjectInspectorFactory.LAZY_BINARY_OBJECT_INSPECTOR);
+    initLazyObject(ba, new byte[]{}, 0, 0);
+    assertEquals(new BytesWritable(), ba.getWritableObject());
+    initLazyObject(ba, new byte[]{'%'}, 0, 1);
+    assertEquals(new BytesWritable(new byte[]{'%'}), ba.getWritableObject());
+    initLazyObject(ba, new byte[]{'2','>','3'}, 1, 1);
+    assertEquals(new BytesWritable(new byte[]{'>'}), ba.getWritableObject());
+    initLazyObject(ba, new byte[]{'2','?','3'}, 0, 3);
+    assertEquals(new BytesWritable(new byte[]{'2','?','3'}), ba.getWritableObject());
   }
 
   public void testLazyIntegerWrite() throws Throwable {

@@ -20,6 +20,7 @@ package org.apache.hadoop.hive.ql.udf;
 import org.apache.hadoop.hive.ql.exec.Description;
 import org.apache.hadoop.hive.ql.exec.UDF;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFUtils;
+import org.apache.hadoop.io.BytesWritable;
 import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.Text;
 
@@ -28,7 +29,7 @@ import org.apache.hadoop.io.Text;
  *
  */
 @Description(name = "length",
-    value = "_FUNC_(str) - Returns the length of str ",
+    value = "_FUNC_(str | binary) - Returns the length of str or number of bytes in binary data",
     extended = "Example:\n"
     + "  > SELECT _FUNC_('Facebook') FROM src LIMIT 1;\n" + "  8")
 public class UDFLength extends UDF {
@@ -48,6 +49,15 @@ public class UDFLength extends UDF {
     }
 
     result.set(len);
+    return result;
+  }
+
+  public IntWritable evaluate(BytesWritable bw){
+    if (bw == null){
+      return null;
+
+}
+    result.set(bw.getLength());
     return result;
   }
 }

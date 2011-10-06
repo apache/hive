@@ -62,6 +62,8 @@ serdeConstants::serdeConstants() {
 
   TIMESTAMP_TYPE_NAME = "timestamp";
 
+  BINARY_TYPE_NAME = "binary";
+
   LIST_TYPE_NAME = "array";
 
   MAP_TYPE_NAME = "map";
@@ -86,6 +88,7 @@ serdeConstants::serdeConstants() {
   PrimitiveTypes.insert("date");
   PrimitiveTypes.insert("datetime");
   PrimitiveTypes.insert("timestamp");
+  PrimitiveTypes.insert("binary");
 
   CollectionTypes.insert("array");
   CollectionTypes.insert("map");

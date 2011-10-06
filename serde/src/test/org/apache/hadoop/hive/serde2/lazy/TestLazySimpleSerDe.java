@@ -22,6 +22,7 @@ import java.util.Properties;
 
 import junit.framework.TestCase;
 
+import org.apache.commons.codec.binary.Base64;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.serde.Constants;
 import org.apache.hadoop.hive.serde2.SerDeException;
@@ -30,6 +31,7 @@ import org.apache.hadoop.hive.serde2.io.DoubleWritable;
 import org.apache.hadoop.hive.serde2.io.ShortWritable;
 import org.apache.hadoop.hive.serde2.objectinspector.StructField;
 import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
+import org.apache.hadoop.io.BytesWritable;
 import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.Text;
@@ -48,16 +50,24 @@ public class TestLazySimpleSerDe extends TestCase {
       // Create the SerDe
       LazySimpleSerDe serDe = new LazySimpleSerDe();
       Configuration conf = new Configuration();
-      Properties tbl = createProperties();
+      Properties tbl = new Properties();
+      tbl.setProperty(Constants.SERIALIZATION_FORMAT, "9");
+      tbl.setProperty("columns",
+          "abyte,ashort,aint,along,adouble,astring,anullint,anullstring,aba");
+      tbl.setProperty("columns.types",
+          "tinyint:smallint:int:bigint:double:string:int:string:binary");
+      tbl.setProperty(Constants.SERIALIZATION_NULL_FORMAT, "NULL");
       serDe.initialize(conf, tbl);
 
       // Data
-      Text t = new Text("123\t456\t789\t1000\t5.3\thive and hadoop\t1.\tNULL");
-      String s = "123\t456\t789\t1000\t5.3\thive and hadoop\tNULL\tNULL";
+      Text t = new Text("123\t456\t789\t1000\t5.3\thive and hadoop\t1.\tNULL\t");
+      t.append(new byte[]{(byte)Integer.parseInt("10111111", 2)}, 0, 1);
+      StringBuffer sb = new StringBuffer("123\t456\t789\t1000\t5.3\thive and hadoop\tNULL\tNULL\t");
+      String s = sb.append(new String(Base64.encodeBase64(new byte[]{(byte)Integer.parseInt("10111111", 2)}))).toString();
       Object[] expectedFieldsData = {new ByteWritable((byte) 123),
           new ShortWritable((short) 456), new IntWritable(789),
           new LongWritable(1000), new DoubleWritable(5.3),
-          new Text("hive and hadoop"), null, null};
+          new Text("hive and hadoop"), null, null, new BytesWritable(new byte[]{(byte)Integer.parseInt("10111111", 2)})};
 
       // Test
       deserializeAndSerialize(serDe, t, s, expectedFieldsData);
@@ -74,7 +84,7 @@ public class TestLazySimpleSerDe extends TestCase {
     StructObjectInspector oi = (StructObjectInspector) serDe
         .getObjectInspector();
     List<? extends StructField> fieldRefs = oi.getAllStructFieldRefs();
-    assertEquals(8, fieldRefs.size());
+    assertEquals(expectedFieldsData.length, fieldRefs.size());
 
     // Deserialize
     Object row = serDe.deserialize(t);

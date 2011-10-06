@@ -458,6 +458,8 @@ public final class TypeCheckProcFactory {
           Constants.DOUBLE_TYPE_NAME);
       conversionFunctionTextHashMap.put(HiveParser.TOK_STRING,
           Constants.STRING_TYPE_NAME);
+      conversionFunctionTextHashMap.put(HiveParser.TOK_BINARY,
+          Constants.BINARY_TYPE_NAME);
       conversionFunctionTextHashMap.put(HiveParser.TOK_TIMESTAMP,
           Constants.TIMESTAMP_TYPE_NAME);
     }

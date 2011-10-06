@@ -1,0 +1,30 @@
+PREHOOK: query: drop table ba_test
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: drop table ba_test
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: -- this query tests all the udfs provided to work with binary works.
+
+select length (cast(src.key as binary)) as len, concat(cast(src.key as binary), cast(src.value as binary)), substr(src.value, 5,1) as sub from src order by sub limit 10
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: file:/tmp/ashutosh/hive_2011-09-30_10-03-20_582_7221639642811332048/-mr-10000
+POSTHOOK: query: -- this query tests all the udfs provided to work with binary works.
+
+select length (cast(src.key as binary)) as len, concat(cast(src.key as binary), cast(src.value as binary)), substr(src.value, 5,1) as sub from src order by sub limit 10
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: file:/tmp/ashutosh/hive_2011-09-30_10-03-20_582_7221639642811332048/-mr-10000
+1	0val_0	0
+1	0val_0	0
+1	0val_0	0
+3	120val_120	1
+3	192val_192	1
+3	119val_119	1
+3	187val_187	1
+3	176val_176	1
+3	199val_199	1
+3	118val_118	1
+PREHOOK: query: drop table ba_test
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: drop table ba_test
+POSTHOOK: type: DROPTABLE

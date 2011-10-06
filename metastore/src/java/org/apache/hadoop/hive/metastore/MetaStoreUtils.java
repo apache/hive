@@ -360,6 +360,8 @@ public class MetaStoreUtils {
         org.apache.hadoop.hive.serde.Constants.MAP_TYPE_NAME, "map");
     typeToThriftTypeMap.put(
         org.apache.hadoop.hive.serde.Constants.STRING_TYPE_NAME, "string");
+    typeToThriftTypeMap.put(
+        org.apache.hadoop.hive.serde.Constants.BINARY_TYPE_NAME, "binary");
     // These 3 types are not supported yet.
     // We should define a complex type date in thrift that contains a single int
     // member, and DynamicSerDe

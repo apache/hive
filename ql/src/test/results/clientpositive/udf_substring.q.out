@@ -4,12 +4,12 @@ PREHOOK: type: DESCFUNCTION
 POSTHOOK: query: -- Synonym. See udf_substr.q
 DESCRIBE FUNCTION substring
 POSTHOOK: type: DESCFUNCTION
-substring(str, pos[, len]) - returns the substring of str that starts at pos and is of length len
+substring(str, pos[, len]) - returns the substring of str that starts at pos and is of length len orsubstring(bin, pos[, len]) - returns the slice of byte array that starts at pos and is of length len
 PREHOOK: query: DESCRIBE FUNCTION EXTENDED substring
 PREHOOK: type: DESCFUNCTION
 POSTHOOK: query: DESCRIBE FUNCTION EXTENDED substring
 POSTHOOK: type: DESCFUNCTION
-substring(str, pos[, len]) - returns the substring of str that starts at pos and is of length len
+substring(str, pos[, len]) - returns the substring of str that starts at pos and is of length len orsubstring(bin, pos[, len]) - returns the slice of byte array that starts at pos and is of length len
 Synonyms: substr
 pos is a 1-based index. If pos<0 the starting position is determined by counting backwards from the end of str.
 Example:

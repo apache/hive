@@ -31,6 +31,7 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.serde.Constants;
 import org.apache.hadoop.hive.serde2.SerDeException;
 import org.apache.hadoop.hive.serde2.SerDeUtils;
+import org.apache.hadoop.hive.serde2.lazy.ByteArrayRef;
 import org.apache.hadoop.hive.serde2.objectinspector.CrossMapEqualComparer;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorFactory;
@@ -58,6 +59,7 @@ public class TestLazyBinaryColumnarSerDe extends TestCase {
     Float mFloat;
     Double mDouble;
     String mString;
+    ByteArrayRef mBA;
     List<InnerStruct> mArray;
     Map<String, InnerStruct> mMap;
     InnerStruct mStruct;
@@ -81,6 +83,9 @@ public class TestLazyBinaryColumnarSerDe extends TestCase {
     outerStruct.mFloat = 5.01f;
     outerStruct.mDouble = 6.001d;
     outerStruct.mString = "seven";
+    ByteArrayRef ba = new ByteArrayRef();
+    ba.setData(new byte[]{'2'});
+    outerStruct.mBA =  ba;
     InnerStruct is1 = new InnerStruct(8, 9l);
     InnerStruct is2 = new InnerStruct(10, 11l);
     outerStruct.mArray = new ArrayList<InnerStruct>(2);
@@ -121,6 +126,9 @@ public class TestLazyBinaryColumnarSerDe extends TestCase {
     outerStruct.mFloat = 5005.01f;
     outerStruct.mDouble = 6006.001d;
     outerStruct.mString = "";
+    ByteArrayRef ba = new ByteArrayRef();
+    ba.setData(new byte[]{'a'});
+    outerStruct.mBA = ba;
     outerStruct.mArray = new ArrayList<InnerStruct>();
     outerStruct.mMap = new TreeMap<String, InnerStruct>();
     outerStruct.mStruct = new InnerStruct(180018, 190019l);
@@ -137,6 +145,40 @@ public class TestLazyBinaryColumnarSerDe extends TestCase {
     }
   }
 
+  public void testLazyBinaryColumnarSerDeWithEmptyBinary() throws SerDeException {
+    StructObjectInspector oi = (StructObjectInspector) ObjectInspectorFactory
+        .getReflectionObjectInspector(OuterStruct.class, ObjectInspectorOptions.JAVA);
+    String cols = ObjectInspectorUtils.getFieldNames(oi);
+    Properties props = new Properties();
+    props.setProperty(Constants.LIST_COLUMNS, cols);
+    props.setProperty(Constants.LIST_COLUMN_TYPES, ObjectInspectorUtils.getFieldTypes(oi));
+    LazyBinaryColumnarSerDe serde = new LazyBinaryColumnarSerDe();
+    serde.initialize(new Configuration(), props);
+
+    OuterStruct outerStruct = new OuterStruct();
+    outerStruct.mByte  = 101;
+    outerStruct.mShort = 2002;
+    outerStruct.mInt = 3003;
+    outerStruct.mLong = 4004l;
+    outerStruct.mFloat = 5005.01f;
+    outerStruct.mDouble = 6006.001d;
+    outerStruct.mString = "";
+    ByteArrayRef ba = new ByteArrayRef();
+    ba.setData(new byte[]{});
+    outerStruct.mBA = ba;
+    outerStruct.mArray = new ArrayList<InnerStruct>();
+    outerStruct.mMap = new TreeMap<String, InnerStruct>();
+    outerStruct.mStruct = new InnerStruct(180018, 190019l);
+    try{
+      serde.serialize(outerStruct, oi);
+    }
+    catch (RuntimeException re){
+      assertEquals(re.getMessage(), "LazyBinaryColumnarSerde cannot serialize a non-null " +
+                "zero length binary field. Consider using either LazyBinarySerde or ColumnarSerde.");
+      return;
+    }
+    assert false;
+  }
 
   public void testSerDeOuterNulls() throws SerDeException {
     StructObjectInspector oi = (StructObjectInspector) ObjectInspectorFactory
@@ -180,6 +222,9 @@ public class TestLazyBinaryColumnarSerDe extends TestCase {
     outerStruct.mFloat = 5.01f;
     outerStruct.mDouble = 6.001d;
     outerStruct.mString = "seven";
+    ByteArrayRef ba = new ByteArrayRef();
+    ba.setData(new byte[]{'3'});
+    outerStruct.mBA = ba;
     InnerStruct is1 = new InnerStruct(null, 9l);
     InnerStruct is2 = new InnerStruct(10, null);
     outerStruct.mArray = new ArrayList<InnerStruct>(2);

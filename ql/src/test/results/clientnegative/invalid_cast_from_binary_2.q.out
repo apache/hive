@@ -1,0 +1,6 @@
+PREHOOK: query: create table tbl (a binary)
+PREHOOK: type: CREATETABLE
+POSTHOOK: query: create table tbl (a binary)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: default@tbl
+FAILED: Error in semantic analysis: Line 0:-1 Wrong arguments 'a': No matching method for class org.apache.hadoop.hive.ql.udf.UDFToByte with (binary). Possible choices: _FUNC_(void)  _FUNC_(boolean)  _FUNC_(smallint)  _FUNC_(int)  _FUNC_(bigint)  _FUNC_(float)  _FUNC_(double)  _FUNC_(string)  _FUNC_(timestamp)  
