@@ -30,20 +30,21 @@
             value="${plugin.libname}-${plugin.version}.jar"/>
 
   <property environment="env"/>
+  <property name="hadoop.home" value="${env.HADOOP_HOME}"/>
 
   <path id="plugin.classpath">
     <fileset dir="${install.dir}" includes="lib/hive-exec-*.jar"/>
     <fileset dir="${install.dir}" includes="lib/hive-pdk-*.jar"/>
     <fileset dir="${install.dir}" includes="lib/commons-lang-*.jar"/>
     <fileset dir="${install.dir}" includes="lib/commons-logging-*.jar"/>
-    <fileset dir="${env.HADOOP_HOME}" includes="hadoop-*-core.jar"/>
+    <fileset dir="${hadoop.home}" includes="hadoop-*-core.jar"/>
     <pathelement location="${build.classes}"/>
   </path>
 
   <path id="plugin.test.classpath">
     <pathelement path="${install.dir}/conf"/>
     <fileset dir="${install.dir}" includes="lib/*.jar"/>
-    <fileset dir="${env.HADOOP_HOME}" includes="hadoop-*-core.jar"/>
+    <fileset dir="${hadoop.home}" includes="hadoop-*-core.jar"/>
     <fileset dir="${build.dir}" includes="${plugin.jar.basename}"/>
   </path>
 
@@ -118,7 +119,7 @@
       <classpath refid="plugin.test.classpath"/>
       <sysproperty key="hive.plugin.root.dir" value="${plugin.dir}"/>
       <sysproperty key="hive.plugin.class.list" value="${class.list}"/>
-      <env key="HADOOP_HOME" value="${env.HADOOP_HOME}"/>
+      <env key="HADOOP_HOME" value="${hadoop.home}"/>
       <env key="HIVE_CONF_DIR" value="${install.dir}/conf"/>
       <env key="HIVE_HOME" value="${install.dir}"/>
       <env key="HIVE_PLUGIN_ROOT_DIR" value="${plugin.dir}"/>
