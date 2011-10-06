@@ -49,10 +49,12 @@
     <ant antfile="${build.dir}/test-plugin/build.xml"
          target="package" inheritAll="false" inheritRefs="false">
       <property name="hive.install.dir" value="${build.dir.hive}/dist"/>
+      <property name="hadoop.home" value="${hadoop.root}"/>
     </ant>
     <ant antfile="${build.dir}/test-plugin/build.xml"
          target="test" inheritAll="false" inheritRefs="false">
       <property name="hive.install.dir" value="${build.dir.hive}/dist"/>
+      <property name="hadoop.home" value="${hadoop.root}"/>
     </ant>
   </target>
 
