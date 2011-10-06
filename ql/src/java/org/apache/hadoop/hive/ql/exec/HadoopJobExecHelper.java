@@ -52,10 +52,8 @@ import org.apache.hadoop.mapred.TaskCompletionEvent;
 import org.apache.hadoop.mapred.TaskReport;
 import org.apache.hadoop.mapred.Counters.Counter;
 import org.apache.log4j.Appender;
-import org.apache.log4j.BasicConfigurator;
 import org.apache.log4j.FileAppender;
 import org.apache.log4j.LogManager;
-import org.apache.log4j.PropertyConfigurator;
 
 public class HadoopJobExecHelper {
 
@@ -393,52 +391,7 @@ public class HadoopJobExecHelper {
     }
 
     MapRedStats mapRedStats = new MapRedStats(numMap, numReduce, cpuMsec, success, rj.getID().toString());
-
-    if (ctrs != null) {
-      Counter ctr;
-
-      ctr = ctrs.findCounter("org.apache.hadoop.mapred.Task$Counter",
-          "REDUCE_SHUFFLE_BYTES");
-      if (ctr != null) {
-        mapRedStats.setReduceShuffleBytes(ctr.getValue());
-      }
-
-      ctr = ctrs.findCounter("org.apache.hadoop.mapred.Task$Counter",
-          "MAP_INPUT_RECORDS");
-      if (ctr != null) {
-        mapRedStats.setMapInputRecords(ctr.getValue());
-      }
-
-      ctr = ctrs.findCounter("org.apache.hadoop.mapred.Task$Counter",
-          "MAP_OUTPUT_RECORDS");
-      if (ctr != null) {
-        mapRedStats.setMapOutputRecords(ctr.getValue());
-      }
-
-      ctr = ctrs.findCounter("org.apache.hadoop.mapred.Task$Counter",
-          "REDUCE_INPUT_RECORDS");
-      if (ctr != null) {
-        mapRedStats.setReduceInputRecords(ctr.getValue());
-      }
-
-      ctr = ctrs.findCounter("org.apache.hadoop.mapred.Task$Counter",
-          "REDUCE_OUTPUT_RECORDS");
-      if (ctr != null) {
-        mapRedStats.setReduceOutputRecords(ctr.getValue());
-      }
-
-      ctr = ctrs.findCounter("FileSystemCounters",
-          "HDFS_BYTES_READ");
-      if (ctr != null) {
-        mapRedStats.setHdfsRead(ctr.getValue());
-      }
-
-      ctr = ctrs.findCounter("FileSystemCounters",
-          "HDFS_BYTES_WRITTEN");
-      if (ctr != null) {
-        mapRedStats.setHdfsWrite(ctr.getValue());
-      }
-    }
+    mapRedStats.setCounters(ctrs);
 
     this.task.setDone();
     // update based on the final value of the counters
