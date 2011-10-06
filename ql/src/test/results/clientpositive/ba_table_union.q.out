@@ -1,0 +1,61 @@
+PREHOOK: query: drop table ba_test
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: drop table ba_test
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: -- this query tests ba_table1.q + nested queries with multiple operations on binary data types + union on binary types 
+create table ba_test (ba_key binary, ba_val binary)
+PREHOOK: type: CREATETABLE
+POSTHOOK: query: -- this query tests ba_table1.q + nested queries with multiple operations on binary data types + union on binary types 
+create table ba_test (ba_key binary, ba_val binary)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: default@ba_test
+PREHOOK: query: describe extended ba_test
+PREHOOK: type: DESCTABLE
+POSTHOOK: query: describe extended ba_test
+POSTHOOK: type: DESCTABLE
+ba_key	binary	
+ba_val	binary	
+	 	 
+Detailed Table Information	Table(tableName:ba_test, dbName:default, owner:ashutosh, createTime:1317685080, lastAccessTime:0, retention:0, sd:StorageDescriptor(cols:[FieldSchema(name:ba_key, type:binary, comment:null), FieldSchema(name:ba_val, type:binary, comment:null)], location:pfile:/home/ashutosh/workspace/hive-2380/build/ql/test/data/warehouse/ba_test, inputFormat:org.apache.hadoop.mapred.TextInputFormat, outputFormat:org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat, compressed:false, numBuckets:-1, serdeInfo:SerDeInfo(name:null, serializationLib:org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe, parameters:{serialization.format=1}), bucketCols:[], sortCols:[], parameters:{}), partitionKeys:[], parameters:{transient_lastDdlTime=1317685080}, viewOriginalText:null, viewExpandedText:null, tableType:MANAGED_TABLE)	
+PREHOOK: query: from src insert overwrite table ba_test select cast (src.key as binary), cast (src.value as binary)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@ba_test
+POSTHOOK: query: from src insert overwrite table ba_test select cast (src.key as binary), cast (src.value as binary)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@ba_test
+POSTHOOK: Lineage: ba_test.ba_key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: ba_test.ba_val EXPRESSION [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: select * from ( select key  from src where key < 50 union all select cast(ba_key as string) as key from ba_test limit 50) unioned order by key limit 10
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ba_test
+PREHOOK: Input: default@src
+PREHOOK: Output: file:/tmp/ashutosh/hive_2011-10-03_16-38-05_720_778887133255753507/-mr-10000
+POSTHOOK: query: select * from ( select key  from src where key < 50 union all select cast(ba_key as string) as key from ba_test limit 50) unioned order by key limit 10
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ba_test
+POSTHOOK: Input: default@src
+POSTHOOK: Output: file:/tmp/ashutosh/hive_2011-10-03_16-38-05_720_778887133255753507/-mr-10000
+POSTHOOK: Lineage: ba_test.ba_key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: ba_test.ba_val EXPRESSION [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+0
+0
+0
+10
+11
+12
+12
+128
+145
+146
+PREHOOK: query: drop table ba_test
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@ba_test
+PREHOOK: Output: default@ba_test
+POSTHOOK: query: drop table ba_test
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@ba_test
+POSTHOOK: Output: default@ba_test
+POSTHOOK: Lineage: ba_test.ba_key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: ba_test.ba_val EXPRESSION [(src)src.FieldSchema(name:value, type:string, comment:default), ]

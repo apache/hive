@@ -74,6 +74,8 @@ public class Constants {
 
   public static final String TIMESTAMP_TYPE_NAME = "timestamp";
 
+  public static final String BINARY_TYPE_NAME = "binary";
+
   public static final String LIST_TYPE_NAME = "array";
 
   public static final String MAP_TYPE_NAME = "map";
@@ -100,6 +102,7 @@ public class Constants {
     PrimitiveTypes.add("date");
     PrimitiveTypes.add("datetime");
     PrimitiveTypes.add("timestamp");
+    PrimitiveTypes.add("binary");
   }
 
   public static final Set<String> CollectionTypes = new HashSet<String>();

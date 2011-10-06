@@ -29,11 +29,12 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.serde.Constants;
 import org.apache.hadoop.hive.serde2.SerDe;
 import org.apache.hadoop.hive.serde2.SerDeUtils;
+import org.apache.hadoop.hive.serde2.lazy.ByteArrayRef;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorFactory;
+import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorFactory.ObjectInspectorOptions;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils;
 import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
-import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorFactory.ObjectInspectorOptions;
 import org.apache.hadoop.io.BytesWritable;
 
 /**
@@ -150,6 +151,16 @@ public class TestBinarySortableSerDe extends TestCase {
     return result;
   }
 
+  public static ByteArrayRef getRandBA(Random r, int len){
+    byte[] bytes = new byte[len];
+    for (int j = 0; j < len; j++){
+      bytes[j] = Byte.valueOf((byte) r.nextInt());
+    }
+    ByteArrayRef ba = new ByteArrayRef();
+    ba.setData(bytes);
+    return ba;
+  }
+
   public void testBinarySortableSerDe() throws Throwable {
     try {
 
@@ -174,6 +185,7 @@ public class TestBinarySortableSerDe extends TestCase {
         t.myStruct = randField > 7 ? null : new MyTestInnerStruct(
             r.nextInt(5) - 2, r.nextInt(5) - 2);
         t.myList = randField > 8 ? null : getRandIntegerArray(r);
+        t.myBA = getRandBA(r, i);
         rows[i] = t;
       }
 

@@ -1,0 +1,48 @@
+PREHOOK: query: drop table ba_test
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: drop table ba_test
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: -- All the tests of ba_table1.q + test for a group-by and aggregation on a binary key.
+
+create table ba_test (ba_key binary, ba_val binary)
+PREHOOK: type: CREATETABLE
+POSTHOOK: query: -- All the tests of ba_table1.q + test for a group-by and aggregation on a binary key.
+
+create table ba_test (ba_key binary, ba_val binary)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: default@ba_test
+PREHOOK: query: from src insert overwrite table ba_test select cast (src.key as binary), cast (src.value as binary)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@ba_test
+POSTHOOK: query: from src insert overwrite table ba_test select cast (src.key as binary), cast (src.value as binary)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@ba_test
+POSTHOOK: Lineage: ba_test.ba_key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: ba_test.ba_val EXPRESSION [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: select ba_test.ba_key, count(ba_test.ba_val) from ba_test group by ba_test.ba_key order by ba_key limit 5
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ba_test
+PREHOOK: Output: file:/tmp/ashutosh/hive_2011-09-30_10-14-55_668_450609422871908961/-mr-10000
+POSTHOOK: query: select ba_test.ba_key, count(ba_test.ba_val) from ba_test group by ba_test.ba_key order by ba_key limit 5
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ba_test
+POSTHOOK: Output: file:/tmp/ashutosh/hive_2011-09-30_10-14-55_668_450609422871908961/-mr-10000
+POSTHOOK: Lineage: ba_test.ba_key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: ba_test.ba_val EXPRESSION [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+0	3
+10	1
+100	2
+103	2
+104	2
+PREHOOK: query: drop table ba_test
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@ba_test
+PREHOOK: Output: default@ba_test
+POSTHOOK: query: drop table ba_test
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@ba_test
+POSTHOOK: Output: default@ba_test
+POSTHOOK: Lineage: ba_test.ba_key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: ba_test.ba_val EXPRESSION [(src)src.FieldSchema(name:value, type:string, comment:default), ]

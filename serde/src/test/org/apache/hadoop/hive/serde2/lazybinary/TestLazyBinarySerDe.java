@@ -34,14 +34,15 @@ import org.apache.hadoop.hive.serde2.SerDeUtils;
 import org.apache.hadoop.hive.serde2.binarysortable.MyTestClass;
 import org.apache.hadoop.hive.serde2.binarysortable.MyTestInnerStruct;
 import org.apache.hadoop.hive.serde2.binarysortable.TestBinarySortableSerDe;
+import org.apache.hadoop.hive.serde2.lazy.ByteArrayRef;
 import org.apache.hadoop.hive.serde2.lazybinary.objectinspector.LazyBinaryMapObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.MapObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorFactory;
+import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorFactory.ObjectInspectorOptions;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils;
 import org.apache.hadoop.hive.serde2.objectinspector.StructField;
 import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
-import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorFactory.ObjectInspectorOptions;
 import org.apache.hadoop.io.BytesWritable;
 
 /**
@@ -194,6 +195,7 @@ public class TestLazyBinarySerDe extends TestCase {
           .nextInt(5) - 2, r.nextInt(5) - 2);
       List<Integer> li = randField > 8 ? null : TestBinarySortableSerDe
           .getRandIntegerArray(r);
+      ByteArrayRef ba  = TestBinarySortableSerDe.getRandBA(r, itest);
       Map<String, List<MyTestInnerStruct>> mp = new HashMap<String, List<MyTestInnerStruct>>();
       String key = TestBinarySortableSerDe.getRandString(r);
       List<MyTestInnerStruct> value = randField > 10 ? null
@@ -206,7 +208,7 @@ public class TestLazyBinarySerDe extends TestCase {
       mp.put(key2, value2);
 
       MyTestClassBigger input = new MyTestClassBigger(b, s, n, l, f, d, st, is,
-          li, mp);
+          li, ba, mp);
       BytesWritable bw = (BytesWritable) serde1.serialize(input, rowOI1);
       Object output = serde2.deserialize(bw);
 
@@ -260,8 +262,8 @@ public class TestLazyBinarySerDe extends TestCase {
           .nextInt(5) - 2, r.nextInt(5) - 2);
       List<Integer> li = randField > 8 ? null : TestBinarySortableSerDe
           .getRandIntegerArray(r);
-
-      MyTestClass input = new MyTestClass(b, s, n, l, f, d, st, is, li);
+      ByteArrayRef ba = TestBinarySortableSerDe.getRandBA(r, itest);
+      MyTestClass input = new MyTestClass(b, s, n, l, f, d, st, is, li, ba);
       BytesWritable bw = (BytesWritable) serde1.serialize(input, rowOI1);
       Object output = serde2.deserialize(bw);
 
@@ -315,8 +317,8 @@ public class TestLazyBinarySerDe extends TestCase {
           .nextInt(5) - 2, r.nextInt(5) - 2);
       List<Integer> li = randField > 8 ? null : TestBinarySortableSerDe
           .getRandIntegerArray(r);
-
-      MyTestClass input = new MyTestClass(b, s, n, l, f, d, st, is, li);
+      ByteArrayRef ba = TestBinarySortableSerDe.getRandBA(r, itest);
+      MyTestClass input = new MyTestClass(b, s, n, l, f, d, st, is, li,ba);
       BytesWritable bw = (BytesWritable) serde1.serialize(input, rowOI1);
       Object output = serde2.deserialize(bw);
 
@@ -399,13 +401,13 @@ public class TestLazyBinarySerDe extends TestCase {
     StructObjectInspector soi1 = (StructObjectInspector) serdeOI;
     List<? extends StructField> fields1 = soi1.getAllStructFieldRefs();
     LazyBinaryMapObjectInspector lazympoi = (LazyBinaryMapObjectInspector) fields1
-        .get(9).getFieldObjectInspector();
+        .get(10).getFieldObjectInspector();
     ObjectInspector lazympkeyoi = lazympoi.getMapKeyObjectInspector();
     ObjectInspector lazympvalueoi = lazympoi.getMapValueObjectInspector();
 
     StructObjectInspector soi2 = rowOI;
     List<? extends StructField> fields2 = soi2.getAllStructFieldRefs();
-    MapObjectInspector inputmpoi = (MapObjectInspector) fields2.get(9)
+    MapObjectInspector inputmpoi = (MapObjectInspector) fields2.get(10)
         .getFieldObjectInspector();
     ObjectInspector inputmpkeyoi = inputmpoi.getMapKeyObjectInspector();
     ObjectInspector inputmpvalueoi = inputmpoi.getMapValueObjectInspector();
@@ -425,10 +427,10 @@ public class TestLazyBinarySerDe extends TestCase {
       }
 
       MyTestClassBigger input = new MyTestClassBigger(null, null, null, null,
-          null, null, null, null, null, mp);
+          null, null, null, null, null, null, mp);
       BytesWritable bw = (BytesWritable) serde.serialize(input, rowOI);
       Object output = serde.deserialize(bw);
-      Object lazyobj = soi1.getStructFieldData(output, fields1.get(9));
+      Object lazyobj = soi1.getStructFieldData(output, fields1.get(10));
       Map<?, ?> outputmp = lazympoi.getMap(lazyobj);
 
       if (outputmp.size() != mp.size()) {
@@ -488,7 +490,8 @@ public class TestLazyBinarySerDe extends TestCase {
             .nextInt(5) - 2, r.nextInt(5) - 2);
         List<Integer> li = randField > 8 ? null : TestBinarySortableSerDe
             .getRandIntegerArray(r);
-        MyTestClass t = new MyTestClass(b, s, n, l, f, d, st, is, li);
+        ByteArrayRef ba = TestBinarySortableSerDe.getRandBA(r, i);
+        MyTestClass t = new MyTestClass(b, s, n, l, f, d, st, is, li, ba);
         rows[i] = t;
       }
 

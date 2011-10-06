@@ -2,12 +2,12 @@ PREHOOK: query: DESCRIBE FUNCTION concat
 PREHOOK: type: DESCFUNCTION
 POSTHOOK: query: DESCRIBE FUNCTION concat
 POSTHOOK: type: DESCFUNCTION
-concat(str1, str2, ... strN) - returns the concatenation of str1, str2, ... strN
+concat(str1, str2, ... strN) - returns the concatenation of str1, str2, ... strN or concat(bin1, bin2, ... binN) - returns the concatenation of bytes in binary data  bin1, bin2, ... binN
 PREHOOK: query: DESCRIBE FUNCTION EXTENDED concat
 PREHOOK: type: DESCFUNCTION
 POSTHOOK: query: DESCRIBE FUNCTION EXTENDED concat
 POSTHOOK: type: DESCFUNCTION
-concat(str1, str2, ... strN) - returns the concatenation of str1, str2, ... strN
+concat(str1, str2, ... strN) - returns the concatenation of str1, str2, ... strN or concat(bin1, bin2, ... binN) - returns the concatenation of bytes in binary data  bin1, bin2, ... binN
 Returns NULL if any argument is NULL.
 Example:
   > SELECT concat('abc', 'def') FROM src LIMIT 1;
@@ -26,7 +26,7 @@ PREHOOK: query: SELECT
 FROM src LIMIT 1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/data/users/pyang/trunk/VENDOR.hive/trunk/build/ql/tmp/1314227124/10000
+PREHOOK: Output: file:/tmp/ashutosh/hive_2011-10-05_09-47-32_899_6312686275071560276/-mr-10000
 POSTHOOK: query: SELECT
   concat('a', 'b'),
   concat('a', 'b', 'c'),
@@ -41,5 +41,5 @@ POSTHOOK: query: SELECT
 FROM src LIMIT 1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: file:/data/users/pyang/trunk/VENDOR.hive/trunk/build/ql/tmp/1314227124/10000
+POSTHOOK: Output: file:/tmp/ashutosh/hive_2011-10-05_09-47-32_899_6312686275071560276/-mr-10000
 ab	abc	NULL	NULL	a	NULL	123a	12	1	1234abcextra argument

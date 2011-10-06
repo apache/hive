@@ -29,6 +29,7 @@ atan
 avg
 bigint
 bin
+binary
 boolean
 case
 ceil

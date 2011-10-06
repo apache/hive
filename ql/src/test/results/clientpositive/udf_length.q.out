@@ -2,12 +2,12 @@ PREHOOK: query: DESCRIBE FUNCTION length
 PREHOOK: type: DESCFUNCTION
 POSTHOOK: query: DESCRIBE FUNCTION length
 POSTHOOK: type: DESCFUNCTION
-length(str) - Returns the length of str 
+length(str | binary) - Returns the length of str or number of bytes in binary data
 PREHOOK: query: DESCRIBE FUNCTION EXTENDED length
 PREHOOK: type: DESCFUNCTION
 POSTHOOK: query: DESCRIBE FUNCTION EXTENDED length
 POSTHOOK: type: DESCFUNCTION
-length(str) - Returns the length of str 
+length(str | binary) - Returns the length of str or number of bytes in binary data
 Example:
   > SELECT length('Facebook') FROM src LIMIT 1;
   8
@@ -59,7 +59,7 @@ STAGE PLANS:
     Move Operator
       files:
           hdfs directory: true
-          destination: pfile:/home/krishnak/hive-howl/hive-git-apache/build/ql/scratchdir/hive_2011-03-21_05-34-26_324_5327305333350769794/-ext-10000
+          destination: pfile:/home/ashutosh/workspace/hive-2380/build/ql/scratchdir/hive_2011-10-05_09-52-19_113_8314061758898168794/-ext-10000
 
   Stage: Stage-0
     Move Operator
@@ -77,7 +77,7 @@ STAGE PLANS:
   Stage: Stage-3
     Map Reduce
       Alias -> Map Operator Tree:
-        pfile:/home/krishnak/hive-howl/hive-git-apache/build/ql/scratchdir/hive_2011-03-21_05-34-26_324_5327305333350769794/-ext-10002 
+        pfile:/home/ashutosh/workspace/hive-2380/build/ql/scratchdir/hive_2011-10-05_09-52-19_113_8314061758898168794/-ext-10002 
             File Output Operator
               compressed: false
               GlobalTableId: 0
@@ -100,11 +100,11 @@ POSTHOOK: Lineage: dest1.len EXPRESSION [(src1)src1.FieldSchema(name:value, type
 PREHOOK: query: SELECT dest1.* FROM dest1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@dest1
-PREHOOK: Output: file:/tmp/krishnak/hive_2011-03-21_05-34-30_517_1435949390197102187/-mr-10000
+PREHOOK: Output: file:/tmp/ashutosh/hive_2011-10-05_09-52-25_510_4350006026019413926/-mr-10000
 POSTHOOK: query: SELECT dest1.* FROM dest1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@dest1
-POSTHOOK: Output: file:/tmp/krishnak/hive_2011-03-21_05-34-30_517_1435949390197102187/-mr-10000
+POSTHOOK: Output: file:/tmp/ashutosh/hive_2011-10-05_09-52-25_510_4350006026019413926/-mr-10000
 POSTHOOK: Lineage: dest1.len EXPRESSION [(src1)src1.FieldSchema(name:value, type:string, comment:default), ]
 7
 0
@@ -194,10 +194,10 @@ STAGE PLANS:
 PREHOOK: query: SELECT length(dest1.name) FROM dest1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@dest1
-PREHOOK: Output: file:/tmp/krishnak/hive_2011-03-21_05-34-30_836_6536693317435884383/-mr-10000
+PREHOOK: Output: file:/tmp/ashutosh/hive_2011-10-05_09-52-27_079_7431090385926695202/-mr-10000
 POSTHOOK: query: SELECT length(dest1.name) FROM dest1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@dest1
-POSTHOOK: Output: file:/tmp/krishnak/hive_2011-03-21_05-34-30_836_6536693317435884383/-mr-10000
+POSTHOOK: Output: file:/tmp/ashutosh/hive_2011-10-05_09-52-27_079_7431090385926695202/-mr-10000
 POSTHOOK: Lineage: dest1.len EXPRESSION [(src1)src1.FieldSchema(name:value, type:string, comment:default), ]
 2

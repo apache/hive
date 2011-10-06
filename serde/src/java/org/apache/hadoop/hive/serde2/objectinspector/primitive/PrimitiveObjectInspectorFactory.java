@@ -65,6 +65,8 @@ public final class PrimitiveObjectInspectorFactory {
       new JavaVoidObjectInspector();
   public static final JavaTimestampObjectInspector javaTimestampObjectInspector =
       new JavaTimestampObjectInspector();
+  public static final JavaBinaryObjectInspector javaByteArrayObjectInspector =
+      new JavaBinaryObjectInspector();
 
   public static final WritableBooleanObjectInspector writableBooleanObjectInspector =
       new WritableBooleanObjectInspector();
@@ -86,6 +88,8 @@ public final class PrimitiveObjectInspectorFactory {
       new WritableVoidObjectInspector();
   public static final WritableTimestampObjectInspector writableTimestampObjectInspector =
       new WritableTimestampObjectInspector();
+  public static final WritableBinaryObjectInspector writableBinaryObjectInspector =
+      new WritableBinaryObjectInspector();
 
   private static HashMap<PrimitiveCategory, AbstractPrimitiveWritableObjectInspector> cachedPrimitiveWritableInspectorCache =
       new HashMap<PrimitiveCategory, AbstractPrimitiveWritableObjectInspector>();
@@ -110,6 +114,8 @@ public final class PrimitiveObjectInspectorFactory {
         writableVoidObjectInspector);
     cachedPrimitiveWritableInspectorCache.put(PrimitiveCategory.TIMESTAMP,
         writableTimestampObjectInspector);
+    cachedPrimitiveWritableInspectorCache.put(PrimitiveCategory.BINARY,
+        writableBinaryObjectInspector);
   }
 
   private static HashMap<PrimitiveCategory, AbstractPrimitiveJavaObjectInspector> cachedPrimitiveJavaInspectorCache =
@@ -135,6 +141,8 @@ public final class PrimitiveObjectInspectorFactory {
         javaVoidObjectInspector);
     cachedPrimitiveJavaInspectorCache.put(PrimitiveCategory.TIMESTAMP,
         javaTimestampObjectInspector);
+    cachedPrimitiveJavaInspectorCache.put(PrimitiveCategory.BINARY,
+        javaByteArrayObjectInspector);
   }
 
   /**

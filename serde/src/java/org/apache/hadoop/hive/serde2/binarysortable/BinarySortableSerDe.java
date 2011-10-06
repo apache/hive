@@ -41,10 +41,11 @@ import org.apache.hadoop.hive.serde2.objectinspector.ListObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.MapObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector;
+import org.apache.hadoop.hive.serde2.objectinspector.StandardUnionObjectInspector.StandardUnion;
 import org.apache.hadoop.hive.serde2.objectinspector.StructField;
 import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.UnionObjectInspector;
-import org.apache.hadoop.hive.serde2.objectinspector.StandardUnionObjectInspector.StandardUnion;
+import org.apache.hadoop.hive.serde2.objectinspector.primitive.BinaryObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.BooleanObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.ByteObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.DoubleObjectInspector;
@@ -312,6 +313,53 @@ public class BinarySortableSerDe implements SerDe {
         }
         return r;
       }
+
+      case BINARY: {
+        BytesWritable bw = new BytesWritable() ;
+        // Get the actual length first
+        int start = buffer.tell();
+        int length = 0;
+        do {
+          byte b = buffer.read(invert);
+          if (b == 0) {
+            // end of string
+            break;
+          }
+          if (b == 1) {
+            // the last char is an escape char. read the actual char
+            buffer.read(invert);
+          }
+          length++;
+        } while (true);
+
+        if (length == buffer.tell() - start) {
+          // No escaping happened, so we are already done.
+          bw.set(buffer.getData(), start, length);
+        } else {
+          // Escaping happened, we need to copy byte-by-byte.
+          // 1. Set the length first.
+          bw.set(buffer.getData(), start, length);
+          // 2. Reset the pointer.
+          buffer.seek(start);
+          // 3. Copy the data.
+          byte[] rdata = bw.getBytes();
+          for (int i = 0; i < length; i++) {
+            byte b = buffer.read(invert);
+            if (b == 1) {
+              // The last char is an escape char, read the actual char.
+              // The serialization format escape \0 to \1, and \1 to \2,
+              // to make sure the string is null-terminated.
+              b = (byte) (buffer.read(invert) - 1);
+            }
+            rdata[i] = b;
+          }
+          // 4. Read the null terminator.
+          byte b = buffer.read(invert);
+          assert (b == 0);
+        }
+        return bw;
+      }
+
       case TIMESTAMP:
         TimestampWritable t = (reuse == null ? new TimestampWritable() :
             (TimestampWritable) reuse);
@@ -539,17 +587,16 @@ public class BinarySortableSerDe implements SerDe {
       case STRING: {
         StringObjectInspector soi = (StringObjectInspector) poi;
         Text t = soi.getPrimitiveWritableObject(o);
-        byte[] data = t.getBytes();
-        int length = t.getLength();
-        for (int i = 0; i < length; i++) {
-          if (data[i] == 0 || data[i] == 1) {
-            buffer.write((byte) 1, invert);
-            buffer.write((byte) (data[i] + 1), invert);
-          } else {
-            buffer.write(data[i], invert);
+        serializeBytes(buffer, t.getBytes(), t.getLength(), invert);
+        return;
           }
-        }
-        buffer.write((byte) 0, invert);
+
+      case BINARY: {
+        BinaryObjectInspector baoi = (BinaryObjectInspector) poi;
+        BytesWritable ba = baoi.getPrimitiveWritableObject(o);
+        byte[] toSer = new byte[ba.getLength()];
+        System.arraycopy(ba.getBytes(), 0, toSer, 0, ba.getLength());
+        serializeBytes(buffer, toSer, ba.getLength(), invert);
         return;
       }
       case TIMESTAMP: {
@@ -622,6 +669,17 @@ public class BinarySortableSerDe implements SerDe {
 
   }
 
+  private static void serializeBytes(OutputByteBuffer buffer, byte[] data, int length, boolean invert){
+    for (int i = 0; i < length; i++) {
+      if (data[i] == 0 || data[i] == 1) {
+        buffer.write((byte) 1, invert);
+        buffer.write((byte) (data[i] + 1), invert);
+      } else {
+        buffer.write(data[i], invert);
+      }
+    }
+    buffer.write((byte) 0, invert);
+  }
   public SerDeStats getSerDeStats() {
     // no support for statistics
     return null;

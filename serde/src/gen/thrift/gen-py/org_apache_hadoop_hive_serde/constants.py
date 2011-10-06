@@ -33,6 +33,7 @@ STRING_TYPE_NAME = "string"
 DATE_TYPE_NAME = "date"
 DATETIME_TYPE_NAME = "datetime"
 TIMESTAMP_TYPE_NAME = "timestamp"
+BINARY_TYPE_NAME = "binary"
 LIST_TYPE_NAME = "array"
 MAP_TYPE_NAME = "map"
 STRUCT_TYPE_NAME = "struct"
@@ -52,6 +53,7 @@ PrimitiveTypes = set([
   "date",
   "datetime",
   "timestamp",
+  "binary",
 ])
 CollectionTypes = set([
   "array",

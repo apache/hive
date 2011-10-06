@@ -116,6 +116,7 @@ public class ParseDriver {
     xlateMap.put("KW_DATETIME", "DATETIME");
     xlateMap.put("KW_TIMESTAMP", "TIMESTAMP");
     xlateMap.put("KW_STRING", "STRING");
+    xlateMap.put("KW_BINARY", "BINARY");
     xlateMap.put("KW_ARRAY", "ARRAY");
     xlateMap.put("KW_MAP", "MAP");
     xlateMap.put("KW_REDUCE", "REDUCE");

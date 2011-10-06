@@ -184,6 +184,7 @@ import org.apache.hadoop.hive.ql.udf.generic.GenericUDFSplit;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFStringToMap;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFStruct;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFTimestamp;
+import org.apache.hadoop.hive.ql.udf.generic.GenericUDFToBinary;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFToUtcTimestamp;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFUnion;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFWhen;
@@ -374,6 +375,8 @@ public final class FunctionRegistry {
 
     registerGenericUDF(Constants.TIMESTAMP_TYPE_NAME,
         GenericUDFTimestamp.class);
+    registerGenericUDF(Constants.BINARY_TYPE_NAME,
+        GenericUDFToBinary.class);
 
     // Aggregate functions
     registerGenericUDAF("max", new GenericUDAFMax());
