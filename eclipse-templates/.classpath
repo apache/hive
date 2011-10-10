@@ -65,5 +65,10 @@
   <classpathentry kind="src" path="shims/src/common/java"/>
   <classpathentry kind="src" path="hwi/src/java"/>
   <classpathentry kind="src" path="hwi/src/test"/>
+  <classpathentry kind="src" path="hbase-handler/src/java"/>
+  <classpathentry excluding="queries/|results/|templates/" kind="src" path="hbase-handler/src/test"/>
+  <classpathentry kind="src" path="pdk/src/java"/>
+  <classpathentry kind="src" path="pdk/test-plugin/src"/>
+  <classpathentry kind="src" path="cli/src/test"/>
   <classpathentry kind="output" path="build/eclipse-classes"/>
 </classpath>
