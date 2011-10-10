@@ -119,6 +119,7 @@
       <classpath refid="plugin.test.classpath"/>
       <sysproperty key="hive.plugin.root.dir" value="${plugin.dir}"/>
       <sysproperty key="hive.plugin.class.list" value="${class.list}"/>
+      <sysproperty key="hive.metastore.warehouse.dir" value="${build.dir}/warehouse"/>
       <env key="HADOOP_HOME" value="${hadoop.home}"/>
       <env key="HIVE_CONF_DIR" value="${install.dir}/conf"/>
       <env key="HIVE_HOME" value="${install.dir}"/>
