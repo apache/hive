@@ -1,0 +1,168 @@
+PREHOOK: query: -- test table
+create table test_table (id int, query string, name string)
+PREHOOK: type: CREATETABLE
+POSTHOOK: query: -- test table
+create table test_table (id int, query string, name string)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: default@test_table
+PREHOOK: query: describe extended test_table
+PREHOOK: type: DESCTABLE
+POSTHOOK: query: describe extended test_table
+POSTHOOK: type: DESCTABLE
+id	int	
+query	string	
+name	string	
+	 	 
+Detailed Table Information	Table(tableName:test_table, dbName:default, owner:xiaol, createTime:1317799666, lastAccessTime:0, retention:0, sd:StorageDescriptor(cols:[FieldSchema(name:id, type:int, comment:null), FieldSchema(name:query, type:string, comment:null), FieldSchema(name:name, type:string, comment:null)], location:pfile:/Users/xiaol/Tools/hive-trunk/build/ql/test/data/warehouse/test_table, inputFormat:org.apache.hadoop.mapred.TextInputFormat, outputFormat:org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat, compressed:false, numBuckets:-1, serdeInfo:SerDeInfo(name:null, serializationLib:org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe, parameters:{serialization.format=1}), bucketCols:[], sortCols:[], parameters:{}), partitionKeys:[], parameters:{transient_lastDdlTime=1317799666}, viewOriginalText:null, viewExpandedText:null, tableType:MANAGED_TABLE)	
+PREHOOK: query: alter table test_table set serde 'org.apache.hadoop.hive.serde2.columnar.ColumnarSerDe'
+PREHOOK: type: ALTERTABLE_SERIALIZER
+PREHOOK: Input: default@test_table
+PREHOOK: Output: default@test_table
+POSTHOOK: query: alter table test_table set serde 'org.apache.hadoop.hive.serde2.columnar.ColumnarSerDe'
+POSTHOOK: type: ALTERTABLE_SERIALIZER
+POSTHOOK: Input: default@test_table
+POSTHOOK: Output: default@test_table
+PREHOOK: query: describe extended test_table
+PREHOOK: type: DESCTABLE
+POSTHOOK: query: describe extended test_table
+POSTHOOK: type: DESCTABLE
+id	int	from deserializer
+query	string	from deserializer
+name	string	from deserializer
+	 	 
+Detailed Table Information	Table(tableName:test_table, dbName:default, owner:xiaol, createTime:1317799666, lastAccessTime:0, retention:0, sd:StorageDescriptor(cols:[FieldSchema(name:id, type:int, comment:from deserializer), FieldSchema(name:query, type:string, comment:from deserializer), FieldSchema(name:name, type:string, comment:from deserializer)], location:pfile:/Users/xiaol/Tools/hive-trunk/build/ql/test/data/warehouse/test_table, inputFormat:org.apache.hadoop.mapred.TextInputFormat, outputFormat:org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat, compressed:false, numBuckets:-1, serdeInfo:SerDeInfo(name:null, serializationLib:org.apache.hadoop.hive.serde2.columnar.ColumnarSerDe, parameters:{serialization.format=1}), bucketCols:[], sortCols:[], parameters:{}), partitionKeys:[], parameters:{last_modified_by=xiaol, last_modified_time=1317799666, transient_lastDdlTime=1317799666}, viewOriginalText:null, viewExpandedText:null, tableType:MANAGED_TABLE)	
+PREHOOK: query: alter table test_table set serdeproperties ('field.delim' = ',')
+PREHOOK: type: ALTERTABLE_SERDEPROPERTIES
+PREHOOK: Input: default@test_table
+PREHOOK: Output: default@test_table
+POSTHOOK: query: alter table test_table set serdeproperties ('field.delim' = ',')
+POSTHOOK: type: ALTERTABLE_SERDEPROPERTIES
+POSTHOOK: Input: default@test_table
+POSTHOOK: Output: default@test_table
+PREHOOK: query: describe extended test_table
+PREHOOK: type: DESCTABLE
+POSTHOOK: query: describe extended test_table
+POSTHOOK: type: DESCTABLE
+id	int	from deserializer
+query	string	from deserializer
+name	string	from deserializer
+	 	 
+Detailed Table Information	Table(tableName:test_table, dbName:default, owner:xiaol, createTime:1317799666, lastAccessTime:0, retention:0, sd:StorageDescriptor(cols:[FieldSchema(name:id, type:int, comment:from deserializer), FieldSchema(name:query, type:string, comment:from deserializer), FieldSchema(name:name, type:string, comment:from deserializer)], location:pfile:/Users/xiaol/Tools/hive-trunk/build/ql/test/data/warehouse/test_table, inputFormat:org.apache.hadoop.mapred.TextInputFormat, outputFormat:org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat, compressed:false, numBuckets:-1, serdeInfo:SerDeInfo(name:null, serializationLib:org.apache.hadoop.hive.serde2.columnar.ColumnarSerDe, parameters:{serialization.format=1, field.delim=,}), bucketCols:[], sortCols:[], parameters:{}), partitionKeys:[], parameters:{last_modified_by=xiaol, last_modified_time=1317799666, transient_lastDdlTime=1317799666}, viewOriginalText:null, viewExpandedText:null, tableType:MANAGED_TABLE)	
+PREHOOK: query: drop table test_table
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@test_table
+PREHOOK: Output: default@test_table
+POSTHOOK: query: drop table test_table
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@test_table
+POSTHOOK: Output: default@test_table
+PREHOOK: query: --- test partitioned table
+create table test_table (id int, query string, name string) partitioned by (dt string)
+PREHOOK: type: CREATETABLE
+POSTHOOK: query: --- test partitioned table
+create table test_table (id int, query string, name string) partitioned by (dt string)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: default@test_table
+PREHOOK: query: alter table test_table add partition (dt = '2011')
+PREHOOK: type: ALTERTABLE_ADDPARTS
+PREHOOK: Input: default@test_table
+POSTHOOK: query: alter table test_table add partition (dt = '2011')
+POSTHOOK: type: ALTERTABLE_ADDPARTS
+POSTHOOK: Input: default@test_table
+POSTHOOK: Output: default@test_table@dt=2011
+PREHOOK: query: describe extended test_table partition (dt='2011')
+PREHOOK: type: DESCTABLE
+POSTHOOK: query: describe extended test_table partition (dt='2011')
+POSTHOOK: type: DESCTABLE
+id	int	
+query	string	
+name	string	
+dt	string	
+	 	 
+Detailed Partition Information	Partition(values:[2011], dbName:default, tableName:test_table, createTime:1317799667, lastAccessTime:0, sd:StorageDescriptor(cols:[FieldSchema(name:id, type:int, comment:null), FieldSchema(name:query, type:string, comment:null), FieldSchema(name:name, type:string, comment:null)], location:pfile:/Users/xiaol/Tools/hive-trunk/build/ql/test/data/warehouse/test_table/dt=2011, inputFormat:org.apache.hadoop.mapred.TextInputFormat, outputFormat:org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat, compressed:false, numBuckets:-1, serdeInfo:SerDeInfo(name:null, serializationLib:org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe, parameters:{serialization.format=1}), bucketCols:[], sortCols:[], parameters:{}), parameters:{transient_lastDdlTime=1317799667})	
+PREHOOK: query: alter table test_table set serde 'org.apache.hadoop.hive.serde2.columnar.ColumnarSerDe'
+PREHOOK: type: ALTERTABLE_SERIALIZER
+PREHOOK: Input: default@test_table
+PREHOOK: Output: default@test_table
+POSTHOOK: query: alter table test_table set serde 'org.apache.hadoop.hive.serde2.columnar.ColumnarSerDe'
+POSTHOOK: type: ALTERTABLE_SERIALIZER
+POSTHOOK: Input: default@test_table
+POSTHOOK: Output: default@test_table
+PREHOOK: query: describe extended test_table partition (dt='2011')
+PREHOOK: type: DESCTABLE
+POSTHOOK: query: describe extended test_table partition (dt='2011')
+POSTHOOK: type: DESCTABLE
+id	int	from deserializer
+query	string	from deserializer
+name	string	from deserializer
+dt	string	
+	 	 
+Detailed Partition Information	Partition(values:[2011], dbName:default, tableName:test_table, createTime:1317799667, lastAccessTime:0, sd:StorageDescriptor(cols:[FieldSchema(name:id, type:int, comment:null), FieldSchema(name:query, type:string, comment:null), FieldSchema(name:name, type:string, comment:null)], location:pfile:/Users/xiaol/Tools/hive-trunk/build/ql/test/data/warehouse/test_table/dt=2011, inputFormat:org.apache.hadoop.mapred.TextInputFormat, outputFormat:org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat, compressed:false, numBuckets:-1, serdeInfo:SerDeInfo(name:null, serializationLib:org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe, parameters:{serialization.format=1}), bucketCols:[], sortCols:[], parameters:{}), parameters:{transient_lastDdlTime=1317799667})	
+PREHOOK: query: alter table test_table set serdeproperties ('field.delim' = ',')
+PREHOOK: type: ALTERTABLE_SERDEPROPERTIES
+PREHOOK: Input: default@test_table
+PREHOOK: Output: default@test_table
+POSTHOOK: query: alter table test_table set serdeproperties ('field.delim' = ',')
+POSTHOOK: type: ALTERTABLE_SERDEPROPERTIES
+POSTHOOK: Input: default@test_table
+POSTHOOK: Output: default@test_table
+PREHOOK: query: describe extended test_table partition (dt='2011')
+PREHOOK: type: DESCTABLE
+POSTHOOK: query: describe extended test_table partition (dt='2011')
+POSTHOOK: type: DESCTABLE
+id	int	from deserializer
+query	string	from deserializer
+name	string	from deserializer
+dt	string	
+	 	 
+Detailed Partition Information	Partition(values:[2011], dbName:default, tableName:test_table, createTime:1317799667, lastAccessTime:0, sd:StorageDescriptor(cols:[FieldSchema(name:id, type:int, comment:null), FieldSchema(name:query, type:string, comment:null), FieldSchema(name:name, type:string, comment:null)], location:pfile:/Users/xiaol/Tools/hive-trunk/build/ql/test/data/warehouse/test_table/dt=2011, inputFormat:org.apache.hadoop.mapred.TextInputFormat, outputFormat:org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat, compressed:false, numBuckets:-1, serdeInfo:SerDeInfo(name:null, serializationLib:org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe, parameters:{serialization.format=1}), bucketCols:[], sortCols:[], parameters:{}), parameters:{transient_lastDdlTime=1317799667})	
+PREHOOK: query: -- test partitions
+
+alter table test_table partition(dt='2011') set serde 'org.apache.hadoop.hive.serde2.columnar.ColumnarSerDe'
+PREHOOK: type: ALTERPARTITION_SERIALIZER
+PREHOOK: Input: default@test_table
+PREHOOK: Output: default@test_table@dt=2011
+POSTHOOK: query: -- test partitions
+
+alter table test_table partition(dt='2011') set serde 'org.apache.hadoop.hive.serde2.columnar.ColumnarSerDe'
+POSTHOOK: type: ALTERPARTITION_SERIALIZER
+POSTHOOK: Input: default@test_table
+POSTHOOK: Input: default@test_table@dt=2011
+POSTHOOK: Output: default@test_table@dt=2011
+PREHOOK: query: describe extended test_table partition (dt='2011')
+PREHOOK: type: DESCTABLE
+POSTHOOK: query: describe extended test_table partition (dt='2011')
+POSTHOOK: type: DESCTABLE
+id	int	from deserializer
+query	string	from deserializer
+name	string	from deserializer
+dt	string	
+	 	 
+Detailed Partition Information	Partition(values:[2011], dbName:default, tableName:test_table, createTime:1317799667, lastAccessTime:0, sd:StorageDescriptor(cols:[FieldSchema(name:id, type:int, comment:null), FieldSchema(name:query, type:string, comment:null), FieldSchema(name:name, type:string, comment:null)], location:pfile:/Users/xiaol/Tools/hive-trunk/build/ql/test/data/warehouse/test_table/dt=2011, inputFormat:org.apache.hadoop.mapred.TextInputFormat, outputFormat:org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat, compressed:false, numBuckets:-1, serdeInfo:SerDeInfo(name:null, serializationLib:org.apache.hadoop.hive.serde2.columnar.ColumnarSerDe, parameters:{serialization.format=1}), bucketCols:[], sortCols:[], parameters:{}), parameters:{last_modified_by=xiaol, last_modified_time=1317799667, transient_lastDdlTime=1317799667})	
+PREHOOK: query: alter table test_table partition(dt='2011') set serdeproperties ('field.delim' = ',')
+PREHOOK: type: ALTERPARTITION_SERDEPROPERTIES
+PREHOOK: Input: default@test_table
+PREHOOK: Output: default@test_table@dt=2011
+POSTHOOK: query: alter table test_table partition(dt='2011') set serdeproperties ('field.delim' = ',')
+POSTHOOK: type: ALTERPARTITION_SERDEPROPERTIES
+POSTHOOK: Input: default@test_table
+POSTHOOK: Input: default@test_table@dt=2011
+POSTHOOK: Output: default@test_table@dt=2011
+PREHOOK: query: describe extended test_table partition (dt='2011')
+PREHOOK: type: DESCTABLE
+POSTHOOK: query: describe extended test_table partition (dt='2011')
+POSTHOOK: type: DESCTABLE
+id	int	from deserializer
+query	string	from deserializer
+name	string	from deserializer
+dt	string	
+	 	 
+Detailed Partition Information	Partition(values:[2011], dbName:default, tableName:test_table, createTime:1317799667, lastAccessTime:0, sd:StorageDescriptor(cols:[FieldSchema(name:id, type:int, comment:null), FieldSchema(name:query, type:string, comment:null), FieldSchema(name:name, type:string, comment:null)], location:pfile:/Users/xiaol/Tools/hive-trunk/build/ql/test/data/warehouse/test_table/dt=2011, inputFormat:org.apache.hadoop.mapred.TextInputFormat, outputFormat:org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat, compressed:false, numBuckets:-1, serdeInfo:SerDeInfo(name:null, serializationLib:org.apache.hadoop.hive.serde2.columnar.ColumnarSerDe, parameters:{serialization.format=1, field.delim=,}), bucketCols:[], sortCols:[], parameters:{}), parameters:{last_modified_by=xiaol, last_modified_time=1317799668, transient_lastDdlTime=1317799668})	
+PREHOOK: query: drop table test_table
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@test_table
+PREHOOK: Output: default@test_table
+POSTHOOK: query: drop table test_table
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@test_table
+POSTHOOK: Output: default@test_table

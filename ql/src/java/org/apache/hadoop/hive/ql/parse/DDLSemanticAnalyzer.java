@@ -195,6 +195,10 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
         analyzeAlterTableLocation(ast, tableName, partSpec);
       } else if (ast.getToken().getType() == HiveParser.TOK_ALTERTABLE_ALTERPARTS_MERGEFILES) {
         analyzeAlterTablePartMergeFiles(tablePart, ast, tableName, partSpec);
+      } else if (ast.getToken().getType() == HiveParser.TOK_ALTERTABLE_SERIALIZER) {
+        analyzeAlterTableSerde(ast, tableName, partSpec);
+      } else if (ast.getToken().getType() == HiveParser.TOK_ALTERTABLE_SERDEPROPERTIES) {
+        analyzeAlterTableSerdeProps(ast, tableName, partSpec);
       }
       break;
     }
@@ -293,12 +297,6 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
       break;
     case HiveParser.TOK_ALTERTABLE_PROPERTIES:
       analyzeAlterTableProps(ast, false);
-      break;
-    case HiveParser.TOK_ALTERTABLE_SERDEPROPERTIES:
-      analyzeAlterTableSerdeProps(ast);
-      break;
-    case HiveParser.TOK_ALTERTABLE_SERIALIZER:
-      analyzeAlterTableSerde(ast);
       break;
     case HiveParser.TOK_ALTERTABLE_CLUSTER_SORT:
       analyzeAlterTableClusterSort(ast);
@@ -945,52 +943,38 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
         alterTblDesc), conf));
   }
 
-  private void analyzeAlterTableSerdeProps(ASTNode ast)
+  private void analyzeAlterTableSerdeProps(ASTNode ast, String tableName,
+      HashMap<String, String> partSpec)
       throws SemanticException {
-    String tableName = getUnescapedName((ASTNode)ast.getChild(0));
-    HashMap<String, String> mapProp = getProps((ASTNode) (ast.getChild(1))
+    HashMap<String, String> mapProp = getProps((ASTNode) (ast.getChild(0))
         .getChild(0));
     AlterTableDesc alterTblDesc = new AlterTableDesc(
         AlterTableTypes.ADDSERDEPROPS);
     alterTblDesc.setProps(mapProp);
     alterTblDesc.setOldName(tableName);
+    alterTblDesc.setPartSpec(partSpec);
 
-    try {
-      Table tab = db.getTable(db.getCurrentDatabase(), tableName, false);
-      if (tab != null) {
-        inputs.add(new ReadEntity(tab));
-        outputs.add(new WriteEntity(tab));
-      }
-    } catch (HiveException e) {
-      throw new SemanticException(ErrorMsg.INVALID_TABLE.getMsg(tableName));
-    }
-
+    addInputsOutputsAlterTable(tableName, partSpec);
     rootTasks.add(TaskFactory.get(new DDLWork(getInputs(), getOutputs(),
         alterTblDesc), conf));
   }
 
-  private void analyzeAlterTableSerde(ASTNode ast) throws SemanticException {
-    String tableName = getUnescapedName((ASTNode)ast.getChild(0));
-    String serdeName = unescapeSQLString(ast.getChild(1).getText());
+  private void analyzeAlterTableSerde(ASTNode ast, String tableName,
+      HashMap<String, String> partSpec)
+      throws SemanticException {
+
+    String serdeName = unescapeSQLString(ast.getChild(0).getText());
     AlterTableDesc alterTblDesc = new AlterTableDesc(AlterTableTypes.ADDSERDE);
-    if (ast.getChildCount() > 2) {
-      HashMap<String, String> mapProp = getProps((ASTNode) (ast.getChild(2))
+    if (ast.getChildCount() > 1) {
+      HashMap<String, String> mapProp = getProps((ASTNode) (ast.getChild(1))
           .getChild(0));
       alterTblDesc.setProps(mapProp);
     }
     alterTblDesc.setOldName(tableName);
     alterTblDesc.setSerdeName(serdeName);
+    alterTblDesc.setPartSpec(partSpec);
 
-    try {
-      Table tab = db.getTable(db.getCurrentDatabase(), tableName, false);
-      if (tab != null) {
-        inputs.add(new ReadEntity(tab));
-        outputs.add(new WriteEntity(tab));
-      }
-    } catch (HiveException e) {
-      throw new SemanticException(ErrorMsg.INVALID_TABLE.getMsg(tableName));
-    }
-
+    addInputsOutputsAlterTable(tableName, partSpec);
     rootTasks.add(TaskFactory.get(new DDLWork(getInputs(), getOutputs(),
         alterTblDesc), conf));
   }
