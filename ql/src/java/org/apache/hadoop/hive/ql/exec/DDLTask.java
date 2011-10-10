@@ -2801,16 +2801,31 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
     } else if (alterTbl.getOp() == AlterTableDesc.AlterTableTypes.ADDPROPS) {
       tbl.getTTable().getParameters().putAll(alterTbl.getProps());
     } else if (alterTbl.getOp() == AlterTableDesc.AlterTableTypes.ADDSERDEPROPS) {
-      tbl.getTTable().getSd().getSerdeInfo().getParameters().putAll(
-          alterTbl.getProps());
-    } else if (alterTbl.getOp() == AlterTableDesc.AlterTableTypes.ADDSERDE) {
-      tbl.setSerializationLib(alterTbl.getSerdeName());
-      if ((alterTbl.getProps() != null) && (alterTbl.getProps().size() > 0)) {
+      if (part != null) {
+        part.getTPartition().getSd().getSerdeInfo().getParameters().putAll(
+            alterTbl.getProps());
+      } else {
         tbl.getTTable().getSd().getSerdeInfo().getParameters().putAll(
             alterTbl.getProps());
       }
-      tbl.setFields(Hive.getFieldsFromDeserializer(tbl.getTableName(), tbl
-          .getDeserializer()));
+    } else if (alterTbl.getOp() == AlterTableDesc.AlterTableTypes.ADDSERDE) {
+      String serdeName = alterTbl.getSerdeName();
+      if (part != null) {
+        part.getTPartition().getSd().getSerdeInfo().setSerializationLib(serdeName);
+        if ((alterTbl.getProps() != null) && (alterTbl.getProps().size() > 0)) {
+          part.getTPartition().getSd().getSerdeInfo().getParameters().putAll(
+              alterTbl.getProps());
+        }
+        part.getTPartition().getSd().setCols(part.getTPartition().getSd().getCols());
+      } else {
+        tbl.setSerializationLib(alterTbl.getSerdeName());
+        if ((alterTbl.getProps() != null) && (alterTbl.getProps().size() > 0)) {
+          tbl.getTTable().getSd().getSerdeInfo().getParameters().putAll(
+              alterTbl.getProps());
+        }
+        tbl.setFields(Hive.getFieldsFromDeserializer(tbl.getTableName(), tbl.
+              getDeserializer()));
+      }
     } else if (alterTbl.getOp() == AlterTableDesc.AlterTableTypes.ADDFILEFORMAT) {
       if(part != null) {
         part.getTPartition().getSd().setInputFormat(alterTbl.getInputFormat());

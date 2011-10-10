@@ -572,7 +572,6 @@ alterTableStatementSuffix
     | alterStatementSuffixArchive
     | alterStatementSuffixUnArchive
     | alterStatementSuffixProperties
-    | alterStatementSuffixSerdeProperties
     | alterTblPartitionStatement
     | alterStatementSuffixClusterbySortby
     ;
@@ -705,10 +704,10 @@ alterViewSuffixProperties
 alterStatementSuffixSerdeProperties
 @init { msgs.push("alter serdes statement"); }
 @after { msgs.pop(); }
-    : name=Identifier KW_SET KW_SERDE serdeName=StringLiteral (KW_WITH KW_SERDEPROPERTIES tableProperties)?
-    -> ^(TOK_ALTERTABLE_SERIALIZER $name $serdeName tableProperties?)
-    | name=Identifier KW_SET KW_SERDEPROPERTIES tableProperties
-    -> ^(TOK_ALTERTABLE_SERDEPROPERTIES $name tableProperties)
+    : KW_SET KW_SERDE serdeName=StringLiteral (KW_WITH KW_SERDEPROPERTIES tableProperties)?
+    -> ^(TOK_ALTERTABLE_SERIALIZER $serdeName tableProperties?)
+    | KW_SET KW_SERDEPROPERTIES tableProperties
+    -> ^(TOK_ALTERTABLE_SERDEPROPERTIES tableProperties)
     ;
 
 tablePartitionPrefix
@@ -732,6 +731,7 @@ alterTblPartitionStatementSuffix
   | alterStatementSuffixLocation
   | alterStatementSuffixProtectMode
   | alterStatementSuffixMergeFiles
+  | alterStatementSuffixSerdeProperties
   ;
 
 alterStatementSuffixFileFormat

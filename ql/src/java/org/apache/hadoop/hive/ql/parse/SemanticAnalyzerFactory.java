@@ -56,8 +56,6 @@ public final class SemanticAnalyzerFactory {
     commandType.put(HiveParser.TOK_ALTERTABLE_ARCHIVE, HiveOperation.ALTERTABLE_ARCHIVE);
     commandType.put(HiveParser.TOK_ALTERTABLE_UNARCHIVE, HiveOperation.ALTERTABLE_UNARCHIVE);
     commandType.put(HiveParser.TOK_ALTERTABLE_PROPERTIES, HiveOperation.ALTERTABLE_PROPERTIES);
-    commandType.put(HiveParser.TOK_ALTERTABLE_SERIALIZER, HiveOperation.ALTERTABLE_SERIALIZER);
-    commandType.put(HiveParser.TOK_ALTERTABLE_SERDEPROPERTIES, HiveOperation.ALTERTABLE_SERDEPROPERTIES);
     commandType.put(HiveParser.TOK_ALTERTABLE_CLUSTER_SORT, HiveOperation.ALTERTABLE_CLUSTER_SORT);
     commandType.put(HiveParser.TOK_SHOWDATABASES, HiveOperation.SHOWDATABASES);
     commandType.put(HiveParser.TOK_SHOWTABLES, HiveOperation.SHOWTABLES);
@@ -104,8 +102,14 @@ public final class SemanticAnalyzerFactory {
         new HiveOperation[] { HiveOperation.ALTERTABLE_LOCATION,
             HiveOperation.ALTERPARTITION_LOCATION });
     tablePartitionCommandType.put(HiveParser.TOK_ALTERTABLE_ALTERPARTS_MERGEFILES,
-            new HiveOperation[] {HiveOperation.ALTERTABLE_MERGEFILES,
+        new HiveOperation[] {HiveOperation.ALTERTABLE_MERGEFILES,
             HiveOperation.ALTERPARTITION_MERGEFILES });
+    tablePartitionCommandType.put(HiveParser.TOK_ALTERTABLE_SERIALIZER,
+        new HiveOperation[] {HiveOperation.ALTERTABLE_SERIALIZER,
+            HiveOperation.ALTERPARTITION_SERIALIZER });
+    tablePartitionCommandType.put(HiveParser.TOK_ALTERTABLE_SERDEPROPERTIES,
+        new HiveOperation[] {HiveOperation.ALTERTABLE_SERDEPROPERTIES,
+            HiveOperation.ALTERPARTITION_SERDEPROPERTIES });
   }
 
   public static BaseSemanticAnalyzer get(HiveConf conf, ASTNode tree)
