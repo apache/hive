@@ -48,6 +48,7 @@
   </path>
 
   <target name="test-jar" depends="compile-test, jar">
+    <echo message="Project: ${ant.project.name}"/>
     <delete file="${test.build.dir}/test-udfs.jar"/>
     <jar jarfile="${test.build.dir}/test-udfs.jar">
         <fileset dir="${test.build.classes}" includes="**/udf/*.class"/>
@@ -55,7 +56,8 @@
     </jar>
   </target>
 
-  <target name="gen-test" depends="deploy-ant-tasks, test-conditions, test-init" >
+  <target name="gen-test" depends="test-conditions, test-init" >
+    <echo message="Project: ${ant.project.name}"/>
     <taskdef name="qtestgen" classname="org.apache.hadoop.hive.ant.QTestGenTask"
              classpath="${build.dir.hive}/anttasks/hive-anttasks-${version}.jar:${hive.root}/lib/velocity-1.5.jar:${hive.root}/lib/commons-collections-3.2.1.jar:${hive.root}/lib/commons-lang-2.4.jar"/>
     

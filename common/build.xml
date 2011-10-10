@@ -28,7 +28,7 @@ to call at top-level: ant deploy-contrib compile-core-test
   <import file="../build-common.xml"/>
 
   <target name="compile" depends="init, setup, ivy-retrieve">
-    <echo message="Compiling: ${ant.project.name}"/>
+    <echo message="Project: ${ant.project.name}"/>
     <javac
      encoding="${build.encoding}"
      srcdir="${src.dir}"
@@ -45,6 +45,7 @@ to call at top-level: ant deploy-contrib compile-core-test
   </target>
 
   <target name="test">
+    <echo message="Project: ${ant.project.name}"/>
     <echo message="Nothing to do!"/>
   </target>
 

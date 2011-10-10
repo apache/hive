@@ -42,6 +42,7 @@ to call at top-level: ant deploy-contrib compile-core-test
 
   <target name="build_shims" depends="install-hadoopcore-internal, ivy-retrieve-hadoop-source"
           description="Build shims against a particular hadoop version">
+    <echo message="Project: ${ant.project.name}"/>
     <getversionpref property="hadoop.version.ant-internal.prefix" input="${hadoop.version.ant-internal}" />
     <echo message="Compiling shims against hadoop ${hadoop.version.ant-internal} (${hadoop.root})"/>
     <javac
@@ -59,6 +60,7 @@ to call at top-level: ant deploy-contrib compile-core-test
   </target>
 
   <target name="compile" depends="init">
+    <echo message="Project: ${ant.project.name}"/>
     <antcall target="build_shims" inheritRefs="false" inheritAll="false">
       <param name="hadoop.version.ant-internal" value="${hadoop.version}" />
     </antcall>
@@ -81,6 +83,7 @@ to call at top-level: ant deploy-contrib compile-core-test
   
   <target name="compile_secure_test" depends="install-hadoopcore-internal, ivy-retrieve-hadoop-source" 
           description="Test shims against a particular hadoop version">
+    <echo message="Project: ${ant.project.name}"/>
     <getversionpref property="hadoop.version.ant-internal.prefix" input="${hadoop.version.ant-internal}" />
     <echo message="Compiling shim tests against hadoop ${hadoop.version.ant-internal} (${hadoop.root})"/>
     <javac
@@ -111,7 +114,9 @@ to call at top-level: ant deploy-contrib compile-core-test
       <classpath refid="classpath"/>
     </javac>
   </target>
+  
   <target name="compile-test" depends="compile">
+    <echo message="Project: ${ant.project.name}"/>
     <antcall target="compile_secure_test" inheritRefs="false" inheritAll="false">
       <param name="hadoop.version.ant-internal" value="${hadoop.security.version}" />
       <param name="hadoop.version.ant-internal.prefix" value="0.20S" />

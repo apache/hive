@@ -28,7 +28,7 @@
   </path>
 
   <target name="compile" depends="init, setup">
-    <echo message="Compiling: ${ant.project.name}"/>
+    <echo message="Project: ${ant.project.name}"/>
     <javac
      encoding="${build.encoding}"
      srcdir="${src.dir}"
@@ -42,6 +42,7 @@
   </target>
 
   <target name="test" unless="testcase">
+    <echo message="Project: ${ant.project.name}"/>
     <delete quiet="true" dir="${build.dir}/test-plugin"/>
     <copy todir="${build.dir}/test-plugin">
       <fileset dir="${basedir}/test-plugin"/>
