@@ -41,6 +41,7 @@
   </path>
 
   <target name="core-compile" depends="init">
+    <echo message="Project: ${ant.project.name}"/>
     <javac
      encoding="${build.encoding}"
      srcdir="${src.dir}/java"
@@ -54,9 +55,11 @@
   </target>
  
   <target name="compile" depends="core-compile">
+    <echo message="Project: ${ant.project.name}"/>
   </target>
 
   <target name="clean">
-      <delete dir="${build.classes}/../"/>
+    <echo message="Project: ${ant.project.name}"/>
+    <delete dir="${build.classes}/../"/>
   </target>
 </project>

@@ -23,6 +23,7 @@
   <property name="model.dir" value="${src.dir}/model"/>
 
   <target name="thriftif" depends="check-thrift-home">
+    <echo message="Project: ${ant.project.name}"/>
     <fail unless="thrift.home">You must set the 'thrift.home' property!</fail>
     <echo>Executing ${thrift.home}/bin/thrift on ${ant.project.name}/if/hive_metastore.thrift</echo>
     <exec executable="${thrift.home}/bin/thrift"  failonerror="true" dir=".">
@@ -36,6 +37,7 @@
   </uptodate>
 
   <target name="build-grammar" unless="grammarBuild.notRequired">
+    <echo message="Project: ${ant.project.name}"/>
     <echo>Building Grammar ${src.dir}/java/org/apache/hadoop/hive/metastore/parser/Filter.g  ....</echo>
     <java classname="org.antlr.Tool" classpathref="classpath" fork="false">
        <arg value="-fo" />
@@ -45,11 +47,12 @@
   </target>
 
   <target name="metastore-init">
+    <echo message="Project: ${ant.project.name}"/>
     <mkdir dir="${build.dir}/gen/antlr/gen-java/org/apache/hadoop/hive/metastore/parser"/>
   </target>
 
   <target name="core-compile" depends="init,metastore-init,build-grammar,model-compile,ivy-retrieve">
-    <echo message="Compiling: "/>
+    <echo message="Project: ${ant.project.name}"/>
     <javac
      encoding="${build.encoding}"
      srcdir="${src.dir}/java:${src.dir}/gen/thrift/gen-javabean:${build.dir}/gen/antlr/gen-java"
@@ -63,9 +66,11 @@
   </target>
 
   <target name="compile" depends="core-compile, model-compile, model-enhance">
+    <echo message="Project: ${ant.project.name}"/>
   </target>
 
   <target name="model-compile" depends="init">
+    <echo message="Project: ${ant.project.name}"/>
     <javac srcdir="${model.dir}"  destdir="${build.classes}" debug="${javac.debug}">
        <classpath refid="classpath"/>
     </javac>
@@ -79,6 +84,7 @@
   </uptodate>
 
   <target name="model-enhance" depends="model-compile" unless="enhanceModel.notRequired" >
+    <echo message="Project: ${ant.project.name}"/>
     <taskdef name="datanucleusenhancer"
                 classname="org.datanucleus.enhancer.tools.EnhancerTask">
        <classpath refid="classpath"/>
@@ -96,8 +102,10 @@
 	<jvmarg line="-Dlog4j.configuration=${basedir}/../conf/hive-log4j.properties"/>
     </datanucleusenhancer>
   </target>
+
+
   <target name="model-jar" depends="model-enhance">
-    <echo message="Jar: ${name}"/>
+    <echo message="Project: ${ant.project.name}"/>
     <jar
       jarfile="${build.dir}/${name}-model-${version}.jar"
       basedir="${build.classes}"
@@ -114,6 +122,7 @@
   </target>
 
   <target name="generate-schema">
+    <echo message="Project: ${ant.project.name}"/>
     <java classname="org.jpox.SchemaTool"  failonerror="true" dir="${basedir}" fork="true">
       <classpath>
         <path refid="classpath"/>

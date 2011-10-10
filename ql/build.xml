@@ -55,6 +55,7 @@
   </path>
 
   <target name="thriftif" depends="check-thrift-home">
+    <echo message="Project: ${ant.project.name}"/>
     <fail unless="thrift.home">You must set the 'thrift.home' property!</fail>
     <echo>Executing ${thrift.home}/bin/thrift on ${ant.project.name}/if/queryplan.thrift</echo>
     <exec executable="${thrift.home}/bin/thrift"  failonerror="true" dir=".">
@@ -62,7 +63,8 @@
     </exec>
   </target>
 
-  <target name="gen-test" depends="deploy-ant-tasks, test-conditions, test-init" >
+  <target name="gen-test" depends="test-conditions, test-init" >
+    <echo message="Project: ${ant.project.name}"/>
     <taskdef name="qtestgen" classname="org.apache.hadoop.hive.ant.QTestGenTask"
              classpath="${build.dir.hive}/anttasks/hive-anttasks-${version}.jar:${hive.root}/lib/velocity-1.5.jar:${hive.root}/lib/commons-collections-3.2.1.jar:${hive.root}/lib/commons-lang-2.4.jar:${hive.root}/lib/derby.jar"/>
     
@@ -155,6 +157,7 @@
   </uptodate>
 
   <target name="build-grammar" unless="grammarBuild.notRequired">
+    <echo message="Project: ${ant.project.name}"/>
     <echo>Building Grammar ${src.dir}/org/apache/hadoop/hive/ql/parse/Hive.g  ....</echo>
     <java classname="org.antlr.Tool" classpathref="classpath" fork="true">
        <arg value="-fo" />
@@ -164,11 +167,12 @@
   </target>
 
   <target name="ql-init">
+    <echo message="Project: ${ant.project.name}"/>
     <mkdir dir="${build.dir}/gen/antlr/gen-java/org/apache/hadoop/hive/ql/parse"/>
   </target>
 
   <target name="compile" depends="init, ql-init, build-grammar, ivy-retrieve">
-    <echo message="Compiling: ${name}"/>
+    <echo message="Project: ${ant.project.name}"/>
     <javac
      encoding="${build.encoding}"
      srcdir="${src.dir}:${basedir}/src/gen/thrift/gen-javabean:${build.dir}/gen/antlr/gen-java"
@@ -187,7 +191,7 @@
   <!-- Override jar target to specify main class and compiler stuff -->
 
   <target name="jar" depends="compile">
-    <echo message="Jar: ${name}"/>
+    <echo message="Project: ${ant.project.name}"/>
     <unzip src="${build.ivy.lib.dir}/default/libthrift-${libthrift.version}.jar" dest="${build.dir.hive}/thrift/classes">
       <patternset>
           <exclude name="META-INF"/>
@@ -228,7 +232,7 @@
 
   <!-- Override deploy since we are deploying hive_exec and not hive_ql -->
   <target name="deploy" depends="jar">
-    <echo message="hive: ${name}"/>
+    <echo message="Project: ${ant.project.name}"/>
     <mkdir dir="${deploy.dir}"/>
     <copy file="${build.dir}/hive-exec-${version}.jar"
           todir="${deploy.dir}"/>

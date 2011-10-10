@@ -44,6 +44,7 @@
 
   <!--hive_hwi.war file contains only the JSP sources -->
   <target name="war">
+    <echo message="Project: ${ant.project.name}"/>
     <jar jarfile="${build.dir.hive}/hwi/hive-hwi-${version}.war" basedir="${basedir}/web">
       <manifest>
         <!-- Not putting these in their own manifest section, since that inserts
@@ -61,7 +62,7 @@
        is called without changes to the upstream build infrastructure.
   -->
   <target name="compile" depends="init, install-hadoopcore, setup, war">
-    <echo message="Compiling: ${ant.project.name}"/>
+    <echo message="Project: ${ant.project.name}"/>
     <javac
      encoding="${build.encoding}"
      srcdir="${src.dir}"

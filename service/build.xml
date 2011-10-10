@@ -41,6 +41,7 @@
   </path>
 
   <target name="thriftif" depends="check-thrift-home">
+    <echo message="Project: ${ant.project.name}"/>
     <fail unless="thrift.home">You must set the 'thrift.home' property!</fail>
     <echo>Executing ${thrift.home}/bin/thrift on ${ant.project.name}/if/hive_service.thrift</echo>
     <exec executable="${thrift.home}/bin/thrift"  failonerror="true" dir=".">
@@ -49,6 +50,7 @@
   </target>
 
   <target name="core-compile" depends="init">
+    <echo message="Project: ${ant.project.name}"/>
     <javac
      encoding="${build.encoding}"
      srcdir="${src.dir}/java:${src.dir}/gen/thrift/gen-javabean"
@@ -62,9 +64,11 @@
   </target>
  
   <target name="compile" depends="core-compile">
+    <echo message="Project: ${ant.project.name}"/>
   </target>
 
   <target name="clean">
-      <delete dir="${build.classes}/../"/>
+    <echo message="Project: ${ant.project.name}"/>
+    <delete dir="${build.classes}/../"/>
   </target>
 </project>
