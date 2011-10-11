@@ -67,7 +67,7 @@ public ObjectInspector initialize(ObjectInspector[] arguments) throws UDFArgumen
 
   @Override
   public Object evaluate(DeferredObject[] arguments) throws HiveException {
-    assert (arguments.length == 2);
+    assert (arguments.length == 1);
     Object b = arguments[0].get();
 
     ListObjectInspector lloi = (ListObjectInspector) bitmapOI;

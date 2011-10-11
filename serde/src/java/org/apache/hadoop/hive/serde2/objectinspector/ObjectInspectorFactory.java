@@ -204,6 +204,12 @@ public final class ObjectInspectorFactory {
     return result;
   }
 
+  public static StandardConstantListObjectInspector getStandardConstantListObjectInspector(
+      ObjectInspector listElementObjectInspector, List<?> constantValue) {
+    return new StandardConstantListObjectInspector(listElementObjectInspector, constantValue);
+  }
+
+
   static HashMap<List<ObjectInspector>, StandardMapObjectInspector> cachedStandardMapObjectInspector = new HashMap<List<ObjectInspector>, StandardMapObjectInspector>();
 
   public static StandardMapObjectInspector getStandardMapObjectInspector(
@@ -220,6 +226,14 @@ public final class ObjectInspectorFactory {
       cachedStandardMapObjectInspector.put(signature, result);
     }
     return result;
+  }
+
+  public static StandardConstantMapObjectInspector getStandardConstantMapObjectInspector(
+      ObjectInspector mapKeyObjectInspector,
+      ObjectInspector mapValueObjectInspector,
+      Map<?, ?> constantValue) {
+    return new StandardConstantMapObjectInspector(mapKeyObjectInspector,
+          mapValueObjectInspector, constantValue);
   }
 
   static HashMap<List<ObjectInspector>, StandardUnionObjectInspector>

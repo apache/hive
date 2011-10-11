@@ -26,7 +26,9 @@ import org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDF;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFCase;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFWhen;
+import org.apache.hadoop.hive.serde2.objectinspector.ConstantObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
+import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils;
 
 /**
  * ExprNodeGenericFuncEvaluator.
@@ -41,6 +43,7 @@ public class ExprNodeGenericFuncEvaluator extends ExprNodeEvaluator {
 
   transient GenericUDF genericUDF;
   transient Object rowObject;
+  transient ObjectInspector outputOI;
   transient ExprNodeEvaluator[] children;
   transient GenericUDF.DeferredObject[] deferredChildren;
   transient boolean isEager;
@@ -130,12 +133,17 @@ public class ExprNodeGenericFuncEvaluator extends ExprNodeEvaluator {
       throw new HiveException(
         "Stateful expressions cannot be used inside of CASE");
     }
-    return genericUDF.initialize(childrenOIs);
+    this.outputOI = genericUDF.initializeAndFoldConstants(childrenOIs);
+    return this.outputOI;
   }
 
   @Override
   public Object evaluate(Object row) throws HiveException {
     rowObject = row;
+    if (ObjectInspectorUtils.isConstantObjectInspector(outputOI)) {
+      // The output of this UDF is constant, so don't even bother evaluating.
+      return ((ConstantObjectInspector)outputOI).getWritableConstantValue();
+    }
     if (isEager) {
       for (int i = 0; i < deferredChildren.length; i++) {
         ((EagerExprObject) deferredChildren[i]).evaluate();

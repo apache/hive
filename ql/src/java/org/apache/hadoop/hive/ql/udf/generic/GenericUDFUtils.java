@@ -97,8 +97,11 @@ public final class GenericUDFUtils {
       }
 
       if (returnObjectInspector == null) {
-        // The first argument, just set it.
-        returnObjectInspector = oi;
+        // The first argument, just set the return to be the standard
+        // writable version of this OI.
+        returnObjectInspector = ObjectInspectorUtils
+            .getStandardObjectInspector(oi,
+            ObjectInspectorCopyOption.WRITABLE);
         return true;
       }
 
