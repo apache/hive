@@ -15,29 +15,34 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.hadoop.hive.serde2.objectinspector.primitive;
 
-import org.apache.hadoop.hive.serde2.objectinspector.ConstantObjectInspector;
+package org.apache.hadoop.hive.serde2.objectinspector;
 
-import org.apache.hadoop.hive.serde2.io.ByteWritable;
+import java.util.Map;
 
 /**
- * A WritableConstantByteObjectInspector is a WritableByteObjectInspector
- * that implements ConstantObjectInspector.
+ * A StandardMapObjectInspector which also implements the
+ * ConstantObjectInspector interface.
+ *
+ * Always use the ObjectInspectorFactory to create new ObjectInspector objects,
+ * instead of directly creating an instance of this class.
  */
-public class WritableConstantByteObjectInspector extends
-    WritableByteObjectInspector implements
-    ConstantObjectInspector {
+public class StandardConstantMapObjectInspector extends StandardMapObjectInspector
+  implements ConstantObjectInspector {
 
-  private ByteWritable value;
+  private Map<?, ?> value;
 
-  WritableConstantByteObjectInspector(ByteWritable value) {
-    super();
+  /**
+   * Call ObjectInspectorFactory.getStandardMapObjectInspector instead.
+   */
+   protected StandardConstantMapObjectInspector(ObjectInspector mapKeyObjectInspector,
+       ObjectInspector mapValueObjectInspector, Map<?, ?> value) {
+    super(mapKeyObjectInspector, mapValueObjectInspector);
     this.value = value;
   }
 
   @Override
-  public ByteWritable getWritableConstantValue() {
+  public Map<?, ?> getWritableConstantValue() {
     return value;
   }
 }

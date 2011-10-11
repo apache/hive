@@ -36,6 +36,7 @@ import org.apache.hadoop.hive.ql.udf.generic.GenericUDF;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFBaseCompare;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFBridge;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
+import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
@@ -60,16 +61,34 @@ public class ExprNodeGenericFuncDesc extends ExprNodeDesc implements
    */
   private GenericUDF genericUDF;
   private List<ExprNodeDesc> childExprs;
+  /**
+   * This class uses a writableObjectInspector rather than a TypeInfo to store
+   * the canonical type information for this NodeDesc.
+   */
+  private ObjectInspector writableObjectInspector;
 
   public ExprNodeGenericFuncDesc() {
   }
 
   public ExprNodeGenericFuncDesc(TypeInfo typeInfo, GenericUDF genericUDF,
       List<ExprNodeDesc> children) {
-    super(typeInfo);
+    this(TypeInfoUtils.getStandardWritableObjectInspectorFromTypeInfo(typeInfo),
+         genericUDF, children);
+  }
+
+  public ExprNodeGenericFuncDesc(ObjectInspector oi, GenericUDF genericUDF,
+      List<ExprNodeDesc> children) {
+    super(TypeInfoUtils.getTypeInfoFromObjectInspector(oi));
+    this.writableObjectInspector =
+        ObjectInspectorUtils.getWritableObjectInspector(oi);
     assert (genericUDF != null);
     this.genericUDF = genericUDF;
-    childExprs = children;
+    this.childExprs = children;
+  }
+
+  @Override
+  public ObjectInspector getWritableObjectInspector() {
+    return writableObjectInspector;
   }
 
   public GenericUDF getGenericUDF() {
@@ -190,9 +209,8 @@ public class ExprNodeGenericFuncDesc extends ExprNodeDesc implements
       }
     }
 
-    ObjectInspector oi = genericUDF.initialize(childrenOIs);
-    return new ExprNodeGenericFuncDesc(TypeInfoUtils
-        .getTypeInfoFromObjectInspector(oi), genericUDF, children);
+    ObjectInspector oi = genericUDF.initializeAndFoldConstants(childrenOIs);
+    return new ExprNodeGenericFuncDesc(oi, genericUDF, children);
   }
 
   @Override

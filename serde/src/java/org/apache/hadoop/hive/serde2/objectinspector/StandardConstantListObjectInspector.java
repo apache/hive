@@ -15,34 +15,34 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.hadoop.hive.serde2.objectinspector.primitive;
 
-import org.apache.hadoop.hive.serde2.objectinspector.ConstantObjectInspector;
+package org.apache.hadoop.hive.serde2.objectinspector;
+
+import java.util.List;
 
 /**
- * A WritableVoidObjectInspector inspects a NullWritable Object.
- * Note that this is also a constant object inspector.
+ * A StandardListObjectInspector which also implements the
+ * ConstantObjectInspector interface.
+ *
+ * Always use the ObjectInspectorFactory to create new ObjectInspector objects,
+ * instead of directly creating an instance of this class.
  */
-public class WritableVoidObjectInspector extends
-    AbstractPrimitiveWritableObjectInspector implements
-    VoidObjectInspector, ConstantObjectInspector {
+public class StandardConstantListObjectInspector extends StandardListObjectInspector
+  implements ConstantObjectInspector {
 
-  WritableVoidObjectInspector() {
-    super(PrimitiveObjectInspectorUtils.voidTypeEntry);
+  private List<?> value;
+
+  /**
+   * Call ObjectInspectorFactory.getStandardListObjectInspector instead.
+   */
+  protected StandardConstantListObjectInspector(
+      ObjectInspector listElementObjectInspector, List<?> value) {
+    super(listElementObjectInspector);
+    this.value = value;
   }
 
   @Override
-  public Object copyObject(Object o) {
-    return o;
-  }
-
-  @Override
-  public Object getWritableConstantValue() {
-    return null;
-  }
-
-  @Override
-  public Object getPrimitiveJavaObject(Object o) {
-    throw new RuntimeException("Internal error: cannot create Void object.");
+  public List<?> getWritableConstantValue() {
+    return value;
   }
 }
