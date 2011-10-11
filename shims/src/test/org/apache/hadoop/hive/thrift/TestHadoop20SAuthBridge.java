@@ -207,6 +207,7 @@ public class TestHadoop20SAuthBridge extends TestCase {
     //kerberos, this needs to be done
     HadoopThriftAuthBridge20S.Server.authenticationMethod
                              .set(AuthenticationMethod.KERBEROS);
+    HadoopThriftAuthBridge20S.Server.remoteAddress.set(InetAddress.getLocalHost()); 
     return
         HiveMetaStore.getDelegationToken(ownerUgi.getShortUserName(), 
             realUgi.getShortUserName());

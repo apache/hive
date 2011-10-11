@@ -39,15 +39,15 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.security.SaslRpcServer;
+import org.apache.hadoop.security.SaslRpcServer.AuthMethod;
 import org.apache.hadoop.security.SecurityUtil;
 import org.apache.hadoop.security.UserGroupInformation;
-import org.apache.hadoop.security.SaslRpcServer.AuthMethod;
 import org.apache.hadoop.security.UserGroupInformation.AuthenticationMethod;
 import org.apache.hadoop.security.authorize.AuthorizationException;
 import org.apache.hadoop.security.authorize.ProxyUsers;
+import org.apache.hadoop.security.token.SecretManager.InvalidToken;
 import org.apache.hadoop.security.token.Token;
 import org.apache.hadoop.security.token.TokenIdentifier;
-import org.apache.hadoop.security.token.SecretManager.InvalidToken;
 import org.apache.thrift.TException;
 import org.apache.thrift.TProcessor;
 import org.apache.thrift.protocol.TProtocol;
@@ -425,7 +425,7 @@ import org.apache.thrift.transport.TTransportFactory;
      }
 
      @Override
-     public String getDelegationToken(final String owner, final String renewer) 
+     public String getDelegationToken(final String owner, final String renewer)
      throws IOException, InterruptedException {
        if (!authenticationMethod.get().equals(AuthenticationMethod.KERBEROS)) {
          throw new AuthorizationException(
@@ -439,26 +439,19 @@ import org.apache.thrift.transport.TTransportFactory;
        UserGroupInformation currUser = UserGroupInformation.getCurrentUser();
        UserGroupInformation ownerUgi = UserGroupInformation.createRemoteUser(owner);
        if (!ownerUgi.getShortUserName().equals(currUser.getShortUserName())) {
-         //in the case of proxy users, the getCurrentUser will return the 
-         //real user (for e.g. oozie) due to the doAs that happened just before the 
+         //in the case of proxy users, the getCurrentUser will return the
+         //real user (for e.g. oozie) due to the doAs that happened just before the
          //server started executing the method getDelegationToken in the MetaStore
          ownerUgi = UserGroupInformation.createProxyUser(owner,
            UserGroupInformation.getCurrentUser());
          InetAddress remoteAddr = getRemoteAddress();
-         //A hack (127.0.1.1 is used as the remote address in case remoteAddr is null)
-         //to make a testcase TestHadoop20SAuthBridge.testMetastoreProxyUser
-         //pass. Once we have updated hive to have a thrift release with
-         //THIFT-1053 in, we can remove the check for remoteAddr being null, and this
-         //hack
-         ProxyUsers.authorize(ownerUgi, 
-              remoteAddr != null ? remoteAddr.getHostAddress() : "127.0.1.1", 
-              null);
+         ProxyUsers.authorize(ownerUgi,remoteAddr.getHostAddress(), null);
        }
        return ownerUgi.doAs(new PrivilegedExceptionAction<String>() {
          public String run() throws IOException {
            return secretManager.getDelegationToken(renewer);
          }
-       }); 
+       });
      }
 
      @Override
@@ -475,28 +468,27 @@ import org.apache.thrift.transport.TTransportFactory;
        secretManager.cancelDelegationToken(tokenStrForm);
      }
 
-     private final static ThreadLocal<InetAddress> remoteAddress =
+     final static ThreadLocal<InetAddress> remoteAddress =
        new ThreadLocal<InetAddress>() {
        @Override
        protected synchronized InetAddress initialValue() {
          return null;
        }
      };
-     
+
      @Override
      public InetAddress getRemoteAddress() {
        return remoteAddress.get();
      }
-     
-     //declare the field public so that testcases can set it to an explicit value
-     public final static ThreadLocal<AuthenticationMethod> authenticationMethod =
+
+     final static ThreadLocal<AuthenticationMethod> authenticationMethod =
        new ThreadLocal<AuthenticationMethod>() {
        @Override
        protected synchronized AuthenticationMethod initialValue() {
          return AuthenticationMethod.TOKEN;
        }
      };
-     
+
     /** CallbackHandler for SASL DIGEST-MD5 mechanism */
     // This code is pretty much completely based on Hadoop's
     // SaslRpcServer.SaslDigestCallbackHandler - the only reason we could not
@@ -608,10 +600,8 @@ import org.apache.thrift.transport.TTransportFactory;
              throw new TException(e.getMessage());
            }
          }
-         if (TSocket.class.isAssignableFrom(inProt.getTransport().getClass())) {
-           Socket socket = ((TSocket)inProt.getTransport()).getSocket();
-           remoteAddress.set(socket.getInetAddress());
-         }
+         Socket socket = ((TSocket)(saslTrans.getUnderlyingTransport())).getSocket();
+         remoteAddress.set(socket.getInetAddress());
          try {
            UserGroupInformation clientUgi = UserGroupInformation.createProxyUser(
               endUser, UserGroupInformation.getLoginUser());
