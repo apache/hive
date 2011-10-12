@@ -227,7 +227,7 @@
     <pathelement location="${build.dir.hive}/cli/classes"/>
     <pathelement location="${build.dir.hive}/shims/classes"/>
     <pathelement location="${build.dir.hive}/hwi/classes"/>
-    <fileset erroronmissingdir="false" dir="${hadoop.root}"
+    <fileset erroronmissingdir="false" dir="${build.dir.hadoop}/hadoop-${hadoop.security.version}"
              includes="lib/commons-codec-*.jar"/>
     <path refid="common-classpath"/>
     <fileset dir="${basedir}" includes="lib/*.jar"/>
