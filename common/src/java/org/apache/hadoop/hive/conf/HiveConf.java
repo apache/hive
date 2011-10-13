@@ -311,7 +311,7 @@ public class HiveConf extends Configuration {
     HIVEHADOOPMAXMEM("hive.mapred.local.mem", 0),
 
     //small table file size
-    HIVESMALLTABLESFILESIZE("hive.smalltable.filesize",25000000L), //25M
+    HIVESMALLTABLESFILESIZE("hive.mapjoin.smalltable.filesize",25000000L), //25M
 
     // random number for split sampling
     HIVESAMPLERANDOMNUM("hive.sample.seednumber", 0),
