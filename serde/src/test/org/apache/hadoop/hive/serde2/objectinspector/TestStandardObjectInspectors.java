@@ -517,7 +517,7 @@ public class TestStandardObjectInspectors extends TestCase {
       Throwable th = null;
       try {
         ObjectInspectorUtils.compare(union, uoi1,
-            new StandardUnion((byte) 4, map.clone()), uoi2);
+            new StandardUnion((byte) 4, map.clone()), uoi2, null);
       } catch (Throwable t) {
         th = t;
       }

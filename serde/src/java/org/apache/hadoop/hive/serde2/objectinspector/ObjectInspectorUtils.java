@@ -474,9 +474,28 @@ public final class ObjectInspectorUtils {
       }
       }
     }
+    case LIST: {
+      int r = 0;
+      ListObjectInspector listOI = (ListObjectInspector)objIns;
+      ObjectInspector elemOI = listOI.getListElementObjectInspector();
+      for (int ii = 0; ii < listOI.getListLength(o); ++ii) {
+        r = 31 * r + hashCode(listOI.getListElement(o, ii), elemOI);
+      }
+      return r;
+    }
+    case MAP: {
+      int r = 0;
+      MapObjectInspector mapOI = (MapObjectInspector)objIns;
+      ObjectInspector keyOI = mapOI.getMapKeyObjectInspector();
+      ObjectInspector valueOI = mapOI.getMapValueObjectInspector();
+      Map<?, ?> map = mapOI.getMap(o);
+      for (Map.Entry entry : map.entrySet()) {
+        r += hashCode(entry.getKey(), keyOI) ^ 
+             hashCode(entry.getValue(), valueOI);
+      }
+      return r;
+    }
     case STRUCT:
-    case LIST:
-    case MAP:
     case UNION:
     default:
       throw new RuntimeException(
@@ -543,7 +562,7 @@ public final class ObjectInspectorUtils {
    */
   public static int compare(Object o1, ObjectInspector oi1, Object o2,
       ObjectInspector oi2) {
-    return compare(o1, oi1, o2, oi2, null);
+    return compare(o1, oi1, o2, oi2, new FullMapEqualComparer());
   }
   
   /**
