@@ -27,8 +27,11 @@ import org.apache.hadoop.hive.ql.exec.UDFArgumentTypeException;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.serde2.io.DoubleWritable;
+import org.apache.hadoop.hive.serde2.objectinspector.ConstantObjectInspector;
+import org.apache.hadoop.hive.serde2.objectinspector.ListObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorFactory;
+import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils;
 import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.StandardMapObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.StandardListObjectInspector;
@@ -38,9 +41,6 @@ import org.apache.hadoop.hive.serde2.objectinspector.primitive.DoubleObjectInspe
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.WritableDoubleObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorFactory;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorUtils;
-import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
-import org.apache.hadoop.hive.serde2.typeinfo.ListTypeInfo;
-import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.hadoop.util.StringUtils;
 
 /**
@@ -67,11 +67,12 @@ import org.apache.hadoop.util.StringUtils;
                "Example (three percentiles requested using a finer histogram approximation):\n" +
                "> SELECT percentile_approx(val, array(0.5, 0.95, 0.98), 100000) FROM somedata;\n" +
                "[0.05,1.64,2.26]\n")
-public class GenericUDAFPercentileApprox implements GenericUDAFResolver {
+public class GenericUDAFPercentileApprox extends AbstractGenericUDAFResolver {
   static final Log LOG = LogFactory.getLog(GenericUDAFPercentileApprox.class.getName());
 
   @Override
-  public GenericUDAFEvaluator getEvaluator(TypeInfo[] parameters) throws SemanticException {
+  public GenericUDAFEvaluator getEvaluator(GenericUDAFParameterInfo info) throws SemanticException {
+    ObjectInspector[] parameters = info.getParameterObjectInspectors();
     if (parameters.length != 2 && parameters.length != 3) {
       throw new UDFArgumentTypeException(parameters.length - 1,
           "Please specify either two or three arguments.");
@@ -84,7 +85,7 @@ public class GenericUDAFPercentileApprox implements GenericUDAFResolver {
           "Only primitive type arguments are accepted but "
           + parameters[0].getTypeName() + " was passed as parameter 1.");
     }
-    switch (((PrimitiveTypeInfo) parameters[0]).getPrimitiveCategory()) {
+    switch (((PrimitiveObjectInspector) parameters[0]).getPrimitiveCategory()) {
     case BYTE:
     case SHORT:
     case INT:
@@ -104,7 +105,7 @@ public class GenericUDAFPercentileApprox implements GenericUDAFResolver {
     switch(parameters[1].getCategory()) {
     case PRIMITIVE:
       // Only a single double was passed as parameter 2, a single quantile is being requested
-      switch(((PrimitiveTypeInfo) parameters[1]).getPrimitiveCategory()) {
+      switch(((PrimitiveObjectInspector) parameters[1]).getPrimitiveCategory()) {
       case FLOAT:
       case DOUBLE:
         break;
@@ -117,7 +118,7 @@ public class GenericUDAFPercentileApprox implements GenericUDAFResolver {
 
     case LIST:
       // An array was passed as parameter 2, make sure it's an array of primitives
-      if(((ListTypeInfo) parameters[1]).getListElementTypeInfo().getCategory() !=
+      if(((ListObjectInspector) parameters[1]).getListElementObjectInspector().getCategory() !=
          ObjectInspector.Category.PRIMITIVE) {
           throw new UDFArgumentTypeException(1,
             "A float/double array argument may be passed as parameter 2, but "
@@ -125,7 +126,7 @@ public class GenericUDAFPercentileApprox implements GenericUDAFResolver {
       }
       // Now make sure it's an array of doubles or floats. We don't allow integer types here
       // because percentile (really, quantile) values should generally be strictly between 0 and 1.
-      switch(((PrimitiveTypeInfo)((ListTypeInfo) parameters[1]).getListElementTypeInfo()).
+      switch(((PrimitiveObjectInspector)((ListObjectInspector) parameters[1]).getListElementObjectInspector()).
              getPrimitiveCategory()) {
       case FLOAT:
       case DOUBLE:
@@ -143,6 +144,12 @@ public class GenericUDAFPercentileApprox implements GenericUDAFResolver {
         "Only a float/double or float/double array argument is accepted as parameter 2, but "
         + parameters[1].getTypeName() + " was passed instead.");
     }
+    // Also make sure it is a constant.
+    if (!ObjectInspectorUtils.isConstantObjectInspector(parameters[1])) {
+      throw new UDFArgumentTypeException(1,
+        "The second argument must be a constant, but " + parameters[1].getTypeName() + 
+        " was passed instead.");
+    }
 
     // If a third parameter has been specified, it should be an integer that specifies the number
     // of histogram bins to use in the percentile approximation.
@@ -151,7 +158,7 @@ public class GenericUDAFPercentileApprox implements GenericUDAFResolver {
         throw new UDFArgumentTypeException(2, "Only a primitive argument is accepted as "
            + "parameter 3, but " + parameters[2].getTypeName() + " was passed instead.");
       }
-      switch(((PrimitiveTypeInfo) parameters[2]).getPrimitiveCategory()) {
+      switch(((PrimitiveObjectInspector) parameters[2]).getPrimitiveCategory()) {
       case BYTE:
       case SHORT:
       case INT:
@@ -161,6 +168,12 @@ public class GenericUDAFPercentileApprox implements GenericUDAFResolver {
       default:
         throw new UDFArgumentTypeException(2, "Only an integer argument is accepted as "
            + "parameter 3, but " + parameters[2].getTypeName() + " was passed instead.");
+      }
+      // Also make sure it is a constant.
+      if (!ObjectInspectorUtils.isConstantObjectInspector(parameters[2])) {
+        throw new UDFArgumentTypeException(2,
+          "The third argument must be a constant, but " + parameters[2].getTypeName() + 
+          " was passed instead.");
       }
     }
 
@@ -182,9 +195,11 @@ public class GenericUDAFPercentileApprox implements GenericUDAFResolver {
       // init input object inspectors
       if (m == Mode.PARTIAL1 || m == Mode.COMPLETE) {
         inputOI = (PrimitiveObjectInspector) parameters[0];
-        quantilesOI = parameters[1];
+        quantiles = getQuantileArray((ConstantObjectInspector)parameters[1]);
         if(parameters.length > 2) {
-          nbinsOI = (PrimitiveObjectInspector) parameters[2];
+          nbins = PrimitiveObjectInspectorUtils.getInt(
+              ((ConstantObjectInspector) parameters[2]).getWritableConstantValue(),
+              (PrimitiveObjectInspector)parameters[2]);
         }
       } else {
         loi = (StandardListObjectInspector) parameters[0];
@@ -230,9 +245,11 @@ public class GenericUDAFPercentileApprox implements GenericUDAFResolver {
       // init input object inspectors
       if (m == Mode.PARTIAL1 || m == Mode.COMPLETE) {
         inputOI = (PrimitiveObjectInspector) parameters[0];
-        quantilesOI = parameters[1];
+        quantiles = getQuantileArray((ConstantObjectInspector)parameters[1]);
         if(parameters.length > 2) {
-          nbinsOI = (PrimitiveObjectInspector) parameters[2];
+          nbins = PrimitiveObjectInspectorUtils.getInt(
+              ((ConstantObjectInspector) parameters[2]).getWritableConstantValue(),
+              (PrimitiveObjectInspector)parameters[2]);
         }
       } else {
         loi = (StandardListObjectInspector) parameters[0];
@@ -274,8 +291,8 @@ public class GenericUDAFPercentileApprox implements GenericUDAFResolver {
   public abstract static class GenericUDAFPercentileApproxEvaluator extends GenericUDAFEvaluator {
     // For PARTIAL1 and COMPLETE: ObjectInspectors for original data
     protected PrimitiveObjectInspector inputOI;
-    protected ObjectInspector quantilesOI;
-    protected PrimitiveObjectInspector nbinsOI;
+    protected double quantiles[];
+    protected Integer nbins = 10000;
 
     // For PARTIAL2 and FINAL: ObjectInspectors for partial aggregations (list of doubles)
     protected StandardListObjectInspector loi;
@@ -328,49 +345,6 @@ public class GenericUDAFPercentileApprox implements GenericUDAFResolver {
       }
       PercentileAggBuf myagg = (PercentileAggBuf) agg;
 
-      // Parse out the requested quantiles just once, if we haven't already done so before.
-      if(myagg.quantiles == null) {
-        if(quantilesOI.getCategory() == ObjectInspector.Category.LIST) {
-          // Multiple quantiles are requested
-          int nquantiles = ((StandardListObjectInspector) quantilesOI).getListLength(parameters[1]);
-          assert(nquantiles >= 1);
-          myagg.quantiles = new double[nquantiles];
-          StandardListObjectInspector sloi = (StandardListObjectInspector) quantilesOI;
-          for(int i = 0; i < nquantiles; i++) {
-            myagg.quantiles[i] = PrimitiveObjectInspectorUtils.getDouble(
-                                  sloi.getListElement(parameters[1], i), 
-                                  (PrimitiveObjectInspector) sloi.getListElementObjectInspector());
-          }
-        } else {
-          // Just one quantile is requested
-          myagg.quantiles = new double[1];
-          myagg.quantiles[0] = PrimitiveObjectInspectorUtils.getDouble(parameters[1], 
-                               (PrimitiveObjectInspector) quantilesOI);
-        }
-
-
-        // Validate requested quantiles, make sure they're in [0,1]
-        for(int i = 0; i < myagg.quantiles.length; i++) {
-          if(myagg.quantiles[i] <= 0 || myagg.quantiles[i] >= 1) {
-            throw new HiveException(getClass().getSimpleName() + " requires percentile values to "
-                                    + "lie strictly between 0 and 1, but you supplied "
-                                    + myagg.quantiles[i]);
-
-          }
-        } 
-      }
-
-      // Parse out the number of histogram bins just once, if we haven't done so before.
-      if(!myagg.histogram.isReady()) {
-        if(parameters.length == 3 && nbinsOI != null) {
-          // User has specified the number of histogram bins to use
-          myagg.histogram.allocate(PrimitiveObjectInspectorUtils.getInt(parameters[2], nbinsOI)); 
-        } else {
-          // Choose a nice default value.
-          myagg.histogram.allocate(10000);
-        }
-      }
-
       // Get and process the current datum
       double v = PrimitiveObjectInspectorUtils.getDouble(parameters[0], inputOI);
       myagg.histogram.add(v);
@@ -391,11 +365,45 @@ public class GenericUDAFPercentileApprox implements GenericUDAFResolver {
       return result;
     }
 
+    protected double[] getQuantileArray(ConstantObjectInspector quantileOI)
+        throws HiveException {
+      double[] result = null;
+      Object quantileObj = quantileOI.getWritableConstantValue();
+      if (quantileOI instanceof ListObjectInspector) {
+        ObjectInspector elemOI =
+            ((ListObjectInspector)quantileOI).getListElementObjectInspector();
+        result = new double[((List<?>)quantileObj).size()];
+        assert(result.length >= 1);
+        for (int ii = 0; ii < result.length; ++ii) {
+          result[ii] = PrimitiveObjectInspectorUtils.getDouble(
+              ((List<?>)quantileObj).get(ii),
+              (PrimitiveObjectInspector)elemOI);
+        }
+      } else {
+        result = new double[1];
+        result[0] = PrimitiveObjectInspectorUtils.getDouble(
+              quantileObj, 
+              (PrimitiveObjectInspector)quantileOI);
+      }
+      for(int ii = 0; ii < result.length; ++ii) {
+        if (result[ii] <= 0 || result[ii] >= 1) {
+          throw new HiveException(
+              getClass().getSimpleName() + " requires percentile values to " +
+              "lie strictly between 0 and 1, but you supplied " + result[ii]);
+        }
+      }
+
+      return result;
+    }
+
     @Override
     public void reset(AggregationBuffer agg) throws HiveException {
       PercentileAggBuf result = (PercentileAggBuf) agg;
       result.histogram.reset();
       result.quantiles = null;
+
+      result.histogram.allocate(nbins);
+      result.quantiles = quantiles;
     }
   }
 }

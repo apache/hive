@@ -2309,6 +2309,17 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
   }
 
   /**
+   * Convert exprNodeDesc array to ObjectInspector array.
+   */
+  static ArrayList<ObjectInspector> getWritableObjectInspector(ArrayList<ExprNodeDesc> exprs) {
+    ArrayList<ObjectInspector> result = new ArrayList<ObjectInspector>();
+    for (ExprNodeDesc expr : exprs) {
+      result.add(expr.getWritableObjectInspector());
+    }
+    return result;
+  }
+
+  /**
    * Convert exprNodeDesc array to Typeinfo array.
    */
   static ObjectInspector[] getStandardObjectInspector(ArrayList<TypeInfo> exprs) {
@@ -2328,7 +2339,8 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       ArrayList<ExprNodeDesc> aggParameters, ASTNode aggTree,
       boolean isDistinct, boolean isAllColumns)
       throws SemanticException {
-    ArrayList<TypeInfo> originalParameterTypeInfos = getTypeInfo(aggParameters);
+    ArrayList<ObjectInspector> originalParameterTypeInfos =
+      getWritableObjectInspector(aggParameters);
     GenericUDAFEvaluator result = FunctionRegistry.getGenericUDAFEvaluator(
         aggName, originalParameterTypeInfos, isDistinct, isAllColumns);
     if (null == result) {
@@ -2365,9 +2377,12 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     // set r.returnType
     ObjectInspector returnOI = null;
     try {
-      ObjectInspector[] aggObjectInspectors =
-          getStandardObjectInspector(getTypeInfo(aggParameters));
-      returnOI = r.genericUDAFEvaluator.init(emode, aggObjectInspectors);
+      ArrayList<ObjectInspector> aggOIs = getWritableObjectInspector(aggParameters);
+      ObjectInspector[] aggOIArray = new ObjectInspector[aggOIs.size()];
+      for (int ii = 0; ii < aggOIs.size(); ++ii) {
+        aggOIArray[ii] = aggOIs.get(ii);
+      }
+      returnOI = r.genericUDAFEvaluator.init(emode, aggOIArray);
       r.returnType = TypeInfoUtils.getTypeInfoFromObjectInspector(returnOI);
     } catch (HiveException e) {
       throw new SemanticException(e);
