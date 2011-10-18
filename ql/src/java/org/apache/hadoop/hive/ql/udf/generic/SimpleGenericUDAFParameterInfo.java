@@ -17,7 +17,9 @@
  */
 package org.apache.hadoop.hive.ql.udf.generic;
 
+import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
+import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
 
 /**
  * A simple implementation of <tt>GenericUDAFParameterInfo</tt>.
@@ -26,11 +28,11 @@ import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 public class SimpleGenericUDAFParameterInfo implements GenericUDAFParameterInfo
 {
 
-  private final TypeInfo[] parameters;
+  private final ObjectInspector[] parameters;
   private final boolean distinct;
   private final boolean allColumns;
 
-  public SimpleGenericUDAFParameterInfo(TypeInfo[] params, boolean distinct,
+  public SimpleGenericUDAFParameterInfo(ObjectInspector[] params, boolean distinct,
       boolean allColumns) {
     this.parameters = params;
     this.distinct = distinct;
@@ -38,7 +40,17 @@ public class SimpleGenericUDAFParameterInfo implements GenericUDAFParameterInfo
   }
 
   @Override
+  @Deprecated
   public TypeInfo[] getParameters() {
+    TypeInfo[] result = new TypeInfo[parameters.length];
+    for (int ii = 0; ii < parameters.length; ++ii) {
+      result[ii] =
+        TypeInfoUtils.getTypeInfoFromObjectInspector(parameters[ii]);
+    }
+    return result;
+  }
+
+  public ObjectInspector[] getParameterObjectInspectors() {
     return parameters;
   }
 

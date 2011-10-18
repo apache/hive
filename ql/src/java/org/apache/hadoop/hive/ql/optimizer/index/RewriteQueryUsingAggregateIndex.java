@@ -54,6 +54,7 @@ import org.apache.hadoop.hive.ql.plan.GroupByDesc;
 import org.apache.hadoop.hive.ql.plan.TableScanDesc;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDAFEvaluator;
 import org.apache.hadoop.hive.serde2.SerDeException;
+import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.StructField;
 import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
 import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
@@ -299,12 +300,12 @@ public final class RewriteQueryUsingAggregateIndex {
         if(childAggrList != null && childAggrList.size() > 0){
           for (AggregationDesc aggregationDesc : childAggrList) {
             List<ExprNodeDesc> paraList = aggregationDesc.getParameters();
-            List<TypeInfo> parametersTypeInfoList = new ArrayList<TypeInfo>();
+            List<ObjectInspector> parametersOIList = new ArrayList<ObjectInspector>();
             for (ExprNodeDesc expr : paraList) {
-              parametersTypeInfoList.add(expr.getTypeInfo());
+              parametersOIList.add(expr.getWritableObjectInspector());
             }
             GenericUDAFEvaluator evaluator = FunctionRegistry.getGenericUDAFEvaluator(
-                "sum", parametersTypeInfoList, false, false);
+                "sum", parametersOIList, false, false);
             aggregationDesc.setGenericUDAFEvaluator(evaluator);
             aggregationDesc.setGenericUDAFName("sum");
           }
