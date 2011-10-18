@@ -310,6 +310,20 @@ public class HadoopJobExecHelper {
       errMsg.setLength(0);
 
       updateCounters(ctrs, rj);
+      
+      // Prepare data for Client Stat Publishers (if any present) and execute them
+      if (clientStatPublishers.size() > 0 && ctrs != null) {
+        Map<String, Double> exctractedCounters = extractAllCounterValues(ctrs);
+        for (ClientStatsPublisher clientStatPublisher : clientStatPublishers) {
+          try {
+            clientStatPublisher.run(exctractedCounters, rj.getID().toString());
+          } catch (RuntimeException runtimeException) {
+            LOG.error("Exception " + runtimeException.getClass().getCanonicalName()
+                + " thrown when running clientStatsPublishers. The stack trace is: ",
+                runtimeException);
+          }
+        }
+      }
 
       String report = " " + getId() + " map = " + mapProgress + "%,  reduce = " + reduceProgress
           + "%";
@@ -370,14 +384,6 @@ public class HadoopJobExecHelper {
         success = rj.isSuccessful();
       }
     }
-
-    //Prepare data for Client Stat Publishers (if any present) and execute them
-     if (clientStatPublishers.size() > 0 && ctrs != null){
-        Map<String, Double> exctractedCounters = extractAllCounterValues(ctrs);
-        for(ClientStatsPublisher clientStatPublisher : clientStatPublishers){
-          clientStatPublisher.run(exctractedCounters, rj.getID().toString());
-        }
-      }
 
     if (ctrs != null) {
       Counter counterCpuMsec = ctrs.findCounter("org.apache.hadoop.mapred.Task$Counter",
