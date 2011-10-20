@@ -23,7 +23,7 @@
   <import file="../build-common.xml"/>
 
   <path id="classpath-pdk">
-    <fileset dir="${hive.root}/testlibs" includes="junit-3.8.1.jar"/>
+    <fileset dir="${hive.root}/testlibs" includes="junit-4.10.jar"/>
     <path refid="classpath"/>
   </path>
 
