@@ -18,8 +18,8 @@
     <info organisation="${hive.ivy.org}" module="hive-anttasks" revision="${version}">
       <license name="The Apache Software License, Version 2.0" url="http://www.apache.org/licenses/LICENSE-2.0.txt" />
       <description homepage="http://hive.apache.org">
-        Hive is a data warehouse infrastructure built on top of Hadoop see
-        http://wiki.apache.org/hadoop/Hive
+        The Apache Hive (TM) data warehouse software facilitates querying and managing large datasets residing in distributed storage.
+        https://cwiki.apache.org/confluence/display/Hive/Home
       </description>
     </info>
 
