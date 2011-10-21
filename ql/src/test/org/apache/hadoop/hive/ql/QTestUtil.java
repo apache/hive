@@ -88,10 +88,6 @@ public class QTestUtil {
   private static final Log LOG = LogFactory.getLog("QTestUtil");
 
   private String testWarehouse;
-  private final String tmpdir= System.getProperty("test.tmp.dir") ;
-  private final Path tmppath = new Path(tmpdir);
-
-
   private final String testFiles;
   protected final String outDir;
   protected final String logDir;
@@ -234,7 +230,13 @@ public class QTestUtil {
 
     initConf();
 
-    testFiles = conf.get("test.data.files").replace('\\', '/')
+    // Use the current directory if it is not specified
+    String dataDir = conf.get("test.data.files");
+    if (dataDir == null) {
+    	dataDir = new File(".").getAbsolutePath() + "/data/files";
+    }
+
+    testFiles = dataDir.replace('\\', '/')
         .replace("c:", "");
 
     String ow = System.getProperty("test.output.overwrite");
