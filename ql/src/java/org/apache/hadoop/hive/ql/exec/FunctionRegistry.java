@@ -192,6 +192,7 @@ import org.apache.hadoop.hive.ql.udf.generic.GenericUDTF;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDTFExplode;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDTFJSONTuple;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDTFParseUrlTuple;
+import org.apache.hadoop.hive.ql.udf.generic.GenericUDTFStack;
 import org.apache.hadoop.hive.ql.udf.generic.SimpleGenericUDAFParameterInfo;
 import org.apache.hadoop.hive.ql.udf.xml.GenericUDFXPath;
 import org.apache.hadoop.hive.ql.udf.xml.UDFXPathBoolean;
@@ -440,6 +441,7 @@ public final class FunctionRegistry {
     registerGenericUDTF("explode", GenericUDTFExplode.class);
     registerGenericUDTF("json_tuple", GenericUDTFJSONTuple.class);
     registerGenericUDTF("parse_url_tuple", GenericUDTFParseUrlTuple.class);
+    registerGenericUDTF("stack", GenericUDTFStack.class);
   }
 
   public static void registerTemporaryUDF(String functionName,
