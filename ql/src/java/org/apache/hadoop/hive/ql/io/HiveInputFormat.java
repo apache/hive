@@ -147,7 +147,7 @@ public class HiveInputFormat<K extends WritableComparable, V extends Writable>
       } catch (Exception e) {
         throw new IOException(
             "Cannot create an instance of InputSplit class = "
-            + inputSplitClassName + ":" + e.getMessage());
+            + inputSplitClassName + ":" + e.getMessage(), e);
       }
       inputSplit.readFields(in);
       inputFormatClassName = in.readUTF();
@@ -215,7 +215,7 @@ public class HiveInputFormat<K extends WritableComparable, V extends Writable>
       inputFormatClassName = hsplit.inputFormatClassName();
       inputFormatClass = job.getClassByName(inputFormatClassName);
     } catch (Exception e) {
-      throw new IOException("cannot find class " + inputFormatClassName);
+      throw new IOException("cannot find class " + inputFormatClassName, e);
     }
 
     // clone a jobConf for setting needed columns for reading
