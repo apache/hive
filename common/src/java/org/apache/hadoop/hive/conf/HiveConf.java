@@ -344,7 +344,6 @@ public class HiveConf extends Configuration {
     HIVEMERGEMAPONLY("hive.mergejob.maponly", true),
 
     HIVESENDHEARTBEAT("hive.heartbeat.interval", 1000),
-    HIVEMAXMAPJOINSIZE("hive.mapjoin.maxsize", 100000),
     HIVELIMITMAXROWSIZE("hive.limit.row.max.size", 100000L),
     HIVELIMITOPTLIMITFILE("hive.limit.optimize.limit.file", 10),
     HIVELIMITOPTENABLE("hive.limit.optimize.enable", false),

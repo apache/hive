@@ -63,8 +63,8 @@ public abstract class AbstractMapJoinOperator <T extends MapJoinDesc> extends Co
 
   private static final transient String[] FATAL_ERR_MSG = {
       null, // counter value 0 means no error
-      "Mapside join size exceeds hive.mapjoin.maxsize. "
-          + "Please increase that or remove the mapjoin hint."
+      "Mapside join exceeds available memory. "
+          + "Please try removing the mapjoin hint."
       };
 
   transient boolean firstRow;
