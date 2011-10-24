@@ -57,13 +57,12 @@ public class MapJoinOperator extends AbstractMapJoinOperator<MapJoinDesc> implem
 
   private static final transient String[] FATAL_ERR_MSG = {
       null, // counter value 0 means no error
-      "Mapside join size exceeds hive.mapjoin.maxsize. "
-          + "Please increase that or remove the mapjoin hint."};
+      "Mapside join exceeds available memory. "
+          + "Please try removing the mapjoin hint."};
 
   protected transient Map<Byte, MapJoinRowContainer<ArrayList<Object>>> rowContainerMap;
   transient int metadataKeyTag;
   transient int[] metadataValueTag;
-  transient int maxMapJoinSize;
   transient boolean hashTblInitedOnce;
   private int bigTableAlias;
 
@@ -78,8 +77,6 @@ public class MapJoinOperator extends AbstractMapJoinOperator<MapJoinDesc> implem
   protected void initializeOp(Configuration hconf) throws HiveException {
 
     super.initializeOp(hconf);
-
-    maxMapJoinSize = HiveConf.getIntVar(hconf, HiveConf.ConfVars.HIVEMAXMAPJOINSIZE);
 
     metadataValueTag = new int[numAliases];
     for (int pos = 0; pos < numAliases; pos++) {
@@ -153,7 +150,7 @@ public class MapJoinOperator extends AbstractMapJoinOperator<MapJoinDesc> implem
         hashTblInitedOnce = true;
       }
     }
-    
+
     boolean localMode = HiveConf.getVar(hconf, HiveConf.ConfVars.HADOOPJT).equals("local");
     String baseDir = null;
 
