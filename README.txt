@@ -1,7 +1,7 @@
 Apache Hive @VERSION@
 =================
 
-Hive is a data warehouse system for Hadoop that facilitates
+Apache Hive is a data warehouse system for Hadoop that facilitates
 easy data summarization, ad-hoc querying and analysis of large
 datasets stored in Hadoop compatible file systems. Hive provides a
 mechanism to put structure on this data and query the data using a
@@ -43,13 +43,13 @@ Getting Started
 ===============
 
 - Installation Instructions and a quick tutorial:
-  http://wiki.apache.org/hadoop/Hive/GettingStarted
+  https://cwiki.apache.org/confluence/display/Hive/GettingStarted
 
 - A longer tutorial that covers more features of HiveQL:
-  http://wiki.apache.org/hadoop/Hive/Tutorial
+  https://cwiki.apache.org/confluence/display/Hive/Tutorial
 
 - The HiveQL Language Manual:
-  http://wiki.apache.org/hadoop/Hive/LanguageManual
+  https://cwiki.apache.org/confluence/display/Hive/LanguageManual
 
 
 Requirements
