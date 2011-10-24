@@ -2249,7 +2249,8 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         }
 
         out_rwsch.put(tabAlias, colAlias, new ColumnInfo(
-            getColumnInternalName(pos), exp.getTypeInfo(), tabAlias, false));
+            getColumnInternalName(pos), exp.getWritableObjectInspector(),
+            tabAlias, false));
 
         pos = Integer.valueOf(pos.intValue() + 1);
       }
@@ -4266,9 +4267,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     ObjectInspector[] colOIs = new ObjectInspector[inputCols.size()];
     for (int i = 0; i < inputCols.size(); i++) {
       colNames.add(inputCols.get(i).getInternalName());
-      colOIs[i] = TypeInfoUtils
-          .getStandardWritableObjectInspectorFromTypeInfo(inputCols.get(i)
-          .getType());
+      colOIs[i] = inputCols.get(i).getObjectInspector();
     }
     StructObjectInspector outputOI = genericUDTF.initialize(colOIs);
 

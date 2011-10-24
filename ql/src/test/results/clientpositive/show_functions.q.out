@@ -134,6 +134,7 @@ smallint
 space
 split
 sqrt
+stack
 std
 stddev
 stddev_pop
