@@ -129,7 +129,10 @@ public final class TypeCheckProcFactory {
 
     opRules.put(new RuleRegExp("R1", HiveParser.TOK_NULL + "%"),
         getNullExprProcessor());
-    opRules.put(new RuleRegExp("R2", HiveParser.Number + "%"),
+    opRules.put(new RuleRegExp("R2", HiveParser.Number + "%|" +
+        HiveParser.TinyintLiteral + "%|" +
+        HiveParser.SmallintLiteral + "%|" +
+        HiveParser.BigintLiteral + "%"),
         getNumExprProcessor());
     opRules
         .put(new RuleRegExp("R3", HiveParser.Identifier + "%|"
@@ -217,9 +220,23 @@ public final class TypeCheckProcFactory {
       // try to parse the expression in that order to ensure that the
       // most specific type is used for conversion.
       try {
-        v = Double.valueOf(expr.getText());
-        v = Long.valueOf(expr.getText());
-        v = Integer.valueOf(expr.getText());
+        if (expr.getText().endsWith("L")) {
+          // Literal bigint.
+          v = Long.valueOf(expr.getText().substring(
+                0, expr.getText().length() - 1));
+        } else if (expr.getText().endsWith("S")) {
+          // Literal smallint.
+          v = Short.valueOf(expr.getText().substring(
+                0, expr.getText().length() - 1));
+        } else if (expr.getText().endsWith("Y")) {
+          // Literal tinyint.
+          v = Byte.valueOf(expr.getText().substring(
+                0, expr.getText().length() - 1));
+        } else {
+          v = Double.valueOf(expr.getText());
+          v = Long.valueOf(expr.getText());
+          v = Integer.valueOf(expr.getText());
+        }
       } catch (NumberFormatException e) {
         // do nothing here, we will throw an exception in the following block
       }

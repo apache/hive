@@ -1846,6 +1846,9 @@ constant
     :
     Number
     | StringLiteral
+    | BigintLiteral
+    | SmallintLiteral
+    | TinyintLiteral
     | charSetStringLiteral
     | booleanValue
     ;
@@ -2398,6 +2401,21 @@ CharSetLiteral
     :
     StringLiteral
     | '0' 'X' (HexDigit|Digit)+
+    ;
+
+BigintLiteral
+    :
+    (Digit)+ 'L'
+    ;
+
+SmallintLiteral
+    :
+    (Digit)+ 'S'
+    ;
+
+TinyintLiteral
+    :
+    (Digit)+ 'Y'
     ;
 
 Number
