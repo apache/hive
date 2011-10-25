@@ -186,7 +186,9 @@ public enum ErrorMsg {
   NO_COMPARE_BIGINT_DOUBLE("In strict mode, comparing bigints and doubles is not allowed, "
       + "it may result in a loss of precision. "
       + "If you really want to perform the operation, set hive.mapred.mode=nonstrict"),
-      FUNCTIONS_ARE_NOT_SUPPORTED_IN_ORDER_BY("functions are not supported in order by"),
+  FUNCTIONS_ARE_NOT_SUPPORTED_IN_ORDER_BY("functions are not supported in order by"),
+  PARTSPEC_DIFFER_FROM_SCHEMA("Partition columns in partition specification are not the same as "
+      + "that defined in the table schema. The names and orders have to be exactly the same."),
       ;
 
   private String mesg;

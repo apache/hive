@@ -23,6 +23,7 @@ import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -675,17 +676,30 @@ public abstract class BaseSemanticAnalyzer {
               conf.getVar(HiveConf.ConfVars.DYNAMICPARTITIONINGMODE).equalsIgnoreCase("strict")) {
             throw new SemanticException(ErrorMsg.DYNAMIC_PARTITION_STRICT_MODE.getMsg());
           }
-        	for (FieldSchema fs: parts) {
-        	  if (partSpec.get(fs.getName().toLowerCase()) == null) {
-        	    if (numStaPart > 0) { // found a DP, but there exists ST as subpartition
-        	      throw new SemanticException(
-        	          ErrorMsg.PARTITION_DYN_STA_ORDER.getMsg(ast.getChild(childIndex)));
-        	    }
-        	    break;
-          	} else {
-          	  --numStaPart;
-          	}
-        	}
+
+          // check the partitions in partSpec be the same as defined in table schema
+          if (partSpec.keySet().size() != parts.size()) {
+            ErrorPartSpec(partSpec, parts);
+          }
+          Iterator<String> itrPsKeys = partSpec.keySet().iterator();
+          for (FieldSchema fs: parts) {
+            if (!itrPsKeys.next().toLowerCase().equals(fs.getName().toLowerCase())) {
+              ErrorPartSpec(partSpec, parts);
+            }
+          }
+
+          // check if static partition appear after dynamic partitions
+          for (FieldSchema fs: parts) {
+            if (partSpec.get(fs.getName().toLowerCase()) == null) {
+              if (numStaPart > 0) { // found a DP, but there exists ST as subpartition
+                throw new SemanticException(
+                    ErrorMsg.PARTITION_DYN_STA_ORDER.getMsg(ast.getChild(childIndex)));
+              }
+              break;
+            } else {
+              --numStaPart;
+            }
+          }
           partHandle = null;
           specType = SpecType.DYNAMIC_PARTITION;
         } else {
@@ -714,6 +728,26 @@ public abstract class BaseSemanticAnalyzer {
       }
     }
 
+    private void ErrorPartSpec(Map<String, String> partSpec, List<FieldSchema> parts)
+       throws SemanticException {
+      StringBuilder sb = new StringBuilder("Partition columns in the table schema are: (");
+      for (FieldSchema fs: parts) {
+        sb.append(fs.getName()).append(", ");
+      }
+      sb.setLength(sb.length() - 2); // remove the last ", "
+      sb.append("), while the partitions specified in the query are: (");
+
+      Iterator<String> itrPsKeys = partSpec.keySet().iterator();
+      while (itrPsKeys.hasNext()) {
+        sb.append(itrPsKeys.next()).append(", ");
+      }
+      sb.setLength(sb.length() - 2); // remove the last ", "
+      sb.append(").");
+
+      throw new SemanticException(
+          ErrorMsg.PARTSPEC_DIFFER_FROM_SCHEMA.getMsg(sb.toString()));
+    }
+
     public Map<String, String> getPartSpec() {
       return this.partSpec;
     }
@@ -730,6 +764,7 @@ public abstract class BaseSemanticAnalyzer {
         return tableHandle.toString();
       }
     }
+
   }
 
   /**
