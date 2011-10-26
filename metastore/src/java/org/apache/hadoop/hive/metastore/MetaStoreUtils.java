@@ -677,7 +677,10 @@ public class MetaStoreUtils {
 
     if (parameters != null) {
       for (Entry<String, String> e : parameters.entrySet()) {
-        schema.setProperty(e.getKey(), e.getValue());
+        // add non-null parameters to the schema
+        if ( e.getValue() != null) {
+          schema.setProperty(e.getKey(), e.getValue());
+        }
       }
     }
 
