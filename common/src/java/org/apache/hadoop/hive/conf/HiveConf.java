@@ -54,6 +54,7 @@ public class HiveConf extends Configuration {
       HiveConf.ConfVars.METASTOREDIRECTORY,
       HiveConf.ConfVars.METASTOREWAREHOUSE,
       HiveConf.ConfVars.METASTOREURIS,
+      HiveConf.ConfVars.METASTORE_MODE,
       HiveConf.ConfVars.METASTORETHRIFTRETRIES,
       HiveConf.ConfVars.METASTORE_CLIENT_CONNECT_RETRY_DELAY,
       HiveConf.ConfVars.METASTORE_CLIENT_SOCKET_TIMEOUT,
@@ -225,6 +226,7 @@ public class HiveConf extends Configuration {
     METASTORE_AUTHORIZATION_STORAGE_AUTH_CHECKS("hive.metastore.authorization.storage.checks", false),
     METASTORE_EVENT_CLEAN_FREQ("hive.metastore.event.clean.freq",0L),
     METASTORE_EVENT_EXPIRY_DURATION("hive.metastore.event.expiry.duration",0L),
+    METASTORE_MODE("hive.metastore.local",true),
     // Default parameters for creating tables
     NEWTABLEDEFAULTPARA("hive.table.parameters.default",""),
 

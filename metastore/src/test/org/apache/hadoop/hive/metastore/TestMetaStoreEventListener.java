@@ -78,7 +78,7 @@ public class TestMetaStoreEventListener extends TestCase {
     t.start();
     Thread.sleep(40000);
     hiveConf = new HiveConf(this.getClass());
-    hiveConf.set("hive.metastore.local", "false");
+    hiveConf.setBoolVar(ConfVars.METASTORE_MODE, false);
     hiveConf.setVar(HiveConf.ConfVars.METASTOREURIS, "thrift://localhost:" + msPort);
     hiveConf.setIntVar(HiveConf.ConfVars.METASTORETHRIFTRETRIES, 3);
     hiveConf.set(HiveConf.ConfVars.PREEXECHOOKS.varname, "");

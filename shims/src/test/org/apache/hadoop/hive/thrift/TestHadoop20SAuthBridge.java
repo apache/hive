@@ -22,9 +22,7 @@ import java.io.ByteArrayInputStream;
 import java.io.DataInputStream;
 import java.io.IOException;
 import java.net.InetAddress;
-import java.net.InetSocketAddress;
 import java.net.NetworkInterface;
-import java.net.Socket;
 import java.security.PrivilegedExceptionAction;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -35,6 +33,7 @@ import junit.framework.TestCase;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.metastore.HiveMetaStore;
 import org.apache.hadoop.hive.metastore.HiveMetaStoreClient;
 import org.apache.hadoop.hive.metastore.MetaStoreUtils;
@@ -42,8 +41,8 @@ import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.security.SaslRpcServer;
-import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.hadoop.security.SaslRpcServer.AuthMethod;
+import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.hadoop.security.UserGroupInformation.AuthenticationMethod;
 import org.apache.hadoop.security.authorize.AuthorizationException;
 import org.apache.hadoop.security.authorize.ProxyUsers;
@@ -117,7 +116,7 @@ public class TestHadoop20SAuthBridge extends TestCase {
     System.setProperty(HiveConf.ConfVars.METASTOREWAREHOUSE.varname, new Path(
         System.getProperty("test.build.data", "/tmp")).toString());
     conf = new HiveConf(TestHadoop20SAuthBridge.class);
-    conf.setBoolean("hive.metastore.local", false);
+    conf.setBoolVar(ConfVars.METASTORE_MODE, false);
     MetaStoreUtils.startMetaStore(port, new MyHadoopThriftAuthBridge20S());
   }
 
