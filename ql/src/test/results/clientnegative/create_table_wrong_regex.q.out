@@ -1,0 +1,12 @@
+PREHOOK: query: drop table aa
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: drop table aa
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: create table aa ( test STRING )
+  ROW FORMAT SERDE 'org.apache.hadoop.hive.contrib.serde2.RegexSerDe'
+  WITH SERDEPROPERTIES ("input.regex" = "[^\\](.*)", "output.format.string" = "$1s")
+PREHOOK: type: CREATETABLE
+FAILED: Error in metadata: java.util.regex.PatternSyntaxException: Unclosed character class near index 7
+[^\](.*)
+       ^
+FAILED: Execution Error, return code 1 from org.apache.hadoop.hive.ql.exec.DDLTask
