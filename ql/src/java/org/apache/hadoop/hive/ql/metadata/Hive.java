@@ -36,6 +36,8 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Set;
+import java.util.HashSet;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -1155,41 +1157,53 @@ public class Hive {
       int numDP, boolean holdDDLTime)
       throws HiveException {
 
+    Set<Path> validPartitions = new HashSet<Path>();
     try {
       ArrayList<LinkedHashMap<String, String>> fullPartSpecs =
         new ArrayList<LinkedHashMap<String, String>>();
 
       FileSystem fs = loadPath.getFileSystem(conf);
-      FileStatus[] status = Utilities.getFileStatusRecurse(loadPath, numDP, fs);
-      if (status.length == 0) {
+      FileStatus[] leafStatus = Utilities.getFileStatusRecurse(loadPath, numDP+1, fs);
+      // Check for empty partitions
+      for (FileStatus s : leafStatus) {
+        if (s.isDir()) {
+          // No leaves in this directory
+          LOG.info("NOT moving empty directory: " + s.getPath());
+        } else {
+          validPartitions.add(s.getPath().getParent());
+        }
+      }
+      
+      if (validPartitions.size() == 0) {
         LOG.warn("No partition is genereated by dynamic partitioning");
       }
 
-      if (status.length > conf.getIntVar(HiveConf.ConfVars.DYNAMICPARTITIONMAXPARTS)) {
-        throw new HiveException("Number of dynamic partitions created is " + status.length
+      if (validPartitions.size() > conf.getIntVar(HiveConf.ConfVars.DYNAMICPARTITIONMAXPARTS)) {
+        throw new HiveException("Number of dynamic partitions created is " + validPartitions.size()
             + ", which is more than "
             + conf.getIntVar(HiveConf.ConfVars.DYNAMICPARTITIONMAXPARTS)
             +". To solve this try to set " + HiveConf.ConfVars.DYNAMICPARTITIONMAXPARTS.varname
-            + " to at least " + status.length + '.');
+            + " to at least " + validPartitions.size() + '.');
       }
 
       // for each dynamically created DP directory, construct a full partition spec
       // and load the partition based on that
-      for (int i= 0; i < status.length; ++i) {
+      Iterator<Path> iter = validPartitions.iterator();
+      while (iter.hasNext()) {
         // get the dynamically created directory
-        Path partPath = status[i].getPath();
+        Path partPath = iter.next();
         assert fs.getFileStatus(partPath).isDir():
           "partitions " + partPath + " is not a directory !";
-
+        
         // generate a full partition specification
         LinkedHashMap<String, String> fullPartSpec = new LinkedHashMap<String, String>(partSpec);
         Warehouse.makeSpecFromName(fullPartSpec, partPath);
-      	fullPartSpecs.add(fullPartSpec);
+        fullPartSpecs.add(fullPartSpec);
 
         // finally load the partition -- move the file to the final table address
-      	loadPartition(partPath, tableName, fullPartSpec, replace, holdDDLTime, true);
-      	LOG.info("New loading path = " + partPath + " with partSpec " + fullPartSpec);
-    	}
+        loadPartition(partPath, tableName, fullPartSpec, replace, holdDDLTime, true);
+        LOG.info("New loading path = " + partPath + " with partSpec " + fullPartSpec);
+      }
       return fullPartSpecs;
     } catch (IOException e) {
       throw new HiveException(e);
