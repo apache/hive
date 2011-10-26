@@ -561,6 +561,34 @@
     </delete>
   </target>
 
+  <!-- ====================================================== -->
+  <!-- Get Arc-JIRA library.                                  -->
+  <!-- ====================================================== -->
+  
+  <target name="arc-setup" description="Get Arc-JIRA library" depends="init">
+    <get
+      dest="${build.dir.hive}/arc-jira.tar.gz"
+      src="https://github.com/facebook/arc-jira/tarball/master"/>
+    <untar src="${build.dir.hive}/arc-jira.tar.gz" compression="gzip"
+ 		dest="${build.dir.hive}">
+      <patternset>
+        <include name="facebook-arc-jira-*/arc_jira_lib/**"/>
+      </patternset>
+    </untar>
+    <move todir="${hive.root}">
+      <fileset dir="${build.dir.hive}">
+        <include name="facebook-arc-jira-*/arc_jira_lib/**"/>
+       </fileset>
+      <mapper type="regexp" from="^facebook-arc-jira-([^/])*/(.*)" to="\.\2"/>
+    </move>
+    <delete includeemptydirs="true">
+      <fileset dir="${build.dir.hive}">
+        <include name="facebook-arc-jira-*"/>
+        <include name="arc-jira.tar.gz"/>
+      </fileset>
+    </delete> 
+  </target>
+
   <!-- ================================================================== -->
   <!-- Documentation                                                      -->
   <!-- ================================================================== -->
