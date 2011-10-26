@@ -102,7 +102,7 @@ public class HiveMetaStoreClient implements IMetaStoreClient {
     }
     this.conf = conf;
 
-    localMetaStore = conf.getBoolean("hive.metastore.local", false);
+    localMetaStore = conf.getBoolVar(ConfVars.METASTORE_MODE);
     if (localMetaStore) {
       // instantiate the metastore server handler directly instead of connecting
       // through the network

@@ -64,7 +64,7 @@ public class TestRemoteHiveMetaStore extends TestHiveMetaStore {
     Thread.sleep(5000);
 
     // hive.metastore.local should be defined in HiveConf
-    hiveConf.set("hive.metastore.local", "false");
+    hiveConf.setBoolVar(ConfVars.METASTORE_MODE, false);
     hiveConf.setVar(HiveConf.ConfVars.METASTOREURIS, "thrift://localhost:" + METASTORE_PORT);
     hiveConf.setIntVar(HiveConf.ConfVars.METASTORETHRIFTRETRIES, 3);
     hiveConf.setIntVar(ConfVars.METASTORE_CLIENT_CONNECT_RETRY_DELAY, 60);
