@@ -154,8 +154,12 @@ public class Hive {
     if (db == null || needsRefresh) {
       closeCurrent();
       c.set("fs.scheme.class", "dfs");
-      db = new Hive(c);
-      hiveDB.set(db);
+      Hive newdb = new Hive(c);
+      if (db != null && db.getCurrentDatabase() != null){
+        newdb.setCurrentDatabase(db.getCurrentDatabase());
+      }
+      hiveDB.set(newdb);
+      return newdb;
     }
     return db;
   }

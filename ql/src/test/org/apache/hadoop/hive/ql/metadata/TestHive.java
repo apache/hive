@@ -372,4 +372,14 @@ public class TestHive extends TestCase {
       throw e;
     }
   }
+
+  public void testHiveRefreshDatabase() throws Throwable{
+    String testDatabaseName = "test_database";
+    Database testDatabase = new Database();
+    testDatabase.setName(testDatabaseName);
+    hm.createDatabase(testDatabase, true);
+    hm.setCurrentDatabase(testDatabaseName);
+    hm = Hive.get(hiveConf, true); //refresh Hive instance
+    assertEquals(testDatabaseName, hm.getCurrentDatabase());
+  }
 }
