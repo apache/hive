@@ -6,5 +6,6 @@
     "arc_jira_lib" : ".arc_jira_lib"
   },
   "arcanist_configuration" : "ArcJIRAConfiguration",
-  "jira_api_url" : "https://issues.apache.org/jira/si/"
+  "jira_api_url" : "https://issues.apache.org/jira/si/",
+  "jira_project" : "HIVE"
 }
