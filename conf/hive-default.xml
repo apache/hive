@@ -1205,4 +1205,11 @@
   <description>String used as a file extension for output files. If not set, defaults to the codec extension for text files (e.g. ".gz"), or no extension otherwise.</description>
 </property>
 
+<property>
+  <name>hive.insert.into.multilevel.dirs</name>
+  <value>false</value>
+  <description>Where to insert into multilevel directories like 
+  "insert directory '/HIVEFT25686/chinna/' from table"</description>
+</property>
+
 </configuration>
