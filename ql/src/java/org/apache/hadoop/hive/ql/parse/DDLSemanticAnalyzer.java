@@ -93,6 +93,7 @@ import org.apache.hadoop.hive.ql.plan.MsckDesc;
 import org.apache.hadoop.hive.ql.plan.PrincipalDesc;
 import org.apache.hadoop.hive.ql.plan.PrivilegeDesc;
 import org.apache.hadoop.hive.ql.plan.PrivilegeObjectDesc;
+import org.apache.hadoop.hive.ql.plan.RenamePartitionDesc;
 import org.apache.hadoop.hive.ql.plan.RevokeDesc;
 import org.apache.hadoop.hive.ql.plan.RoleDDLDesc;
 import org.apache.hadoop.hive.ql.plan.ShowDatabasesDesc;
@@ -199,6 +200,8 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
         analyzeAlterTableSerde(ast, tableName, partSpec);
       } else if (ast.getToken().getType() == HiveParser.TOK_ALTERTABLE_SERDEPROPERTIES) {
         analyzeAlterTableSerdeProps(ast, tableName, partSpec);
+      } else if (ast.getToken().getType() == HiveParser.TOK_ALTERTABLE_RENAMEPART) {
+        analyzeAlterTableRenamePart(ast, tableName, partSpec);
       }
       break;
     }
@@ -1683,6 +1686,32 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
 
     rootTasks.add(TaskFactory.get(new DDLWork(getInputs(), getOutputs(),
         alterTblDesc), conf));
+  }
+
+  private void analyzeAlterTableRenamePart(ASTNode ast, String tblName,
+      HashMap<String, String> oldPartSpec) throws SemanticException {
+    Map<String, String> newPartSpec = extractPartitionSpecs((ASTNode)ast.getChild(0));
+    if (newPartSpec == null) {
+      throw new SemanticException("RENAME PARTITION Missing Destination" + ast);
+    }
+    try {
+      Table tab = db.getTable(db.getCurrentDatabase(), tblName, false);
+      if (tab != null) {
+        inputs.add(new ReadEntity(tab));
+      } else {
+        throw new SemanticException(ErrorMsg.INVALID_TABLE.getMsg(tblName));
+      }
+    } catch (HiveException e) {
+      throw new SemanticException(ErrorMsg.INVALID_TABLE.getMsg(tblName));
+    }
+    List<Map<String, String>> partSpecs = new ArrayList<Map<String, String>>();
+    partSpecs.add(oldPartSpec);
+    partSpecs.add(newPartSpec);
+    addTablePartsOutputs(tblName, partSpecs);
+    RenamePartitionDesc renamePartitionDesc = new RenamePartitionDesc(
+        db.getCurrentDatabase(), tblName, oldPartSpec, newPartSpec);
+    rootTasks.add(TaskFactory.get(new DDLWork(getInputs(), getOutputs(),
+        renamePartitionDesc), conf));
   }
 
   private void analyzeAlterTableModifyCols(ASTNode ast,

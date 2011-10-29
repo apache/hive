@@ -172,7 +172,7 @@ public class HiveAlterHandler implements AlterHandler {
                                       oldUri.getAuthority(),
                                       newPath);
             part.getSd().setLocation(newPartLocPath.toString());
-            msdb.alterPartition(dbname, name, part);
+            msdb.alterPartition(dbname, name, part.getValues(), part);
           }
         }
       }

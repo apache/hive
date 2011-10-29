@@ -167,6 +167,22 @@ public class HiveMetaStoreClient implements IMetaStoreClient {
     client.alter_table(dbname, tbl_name, new_tbl);
   }
 
+  /**
+   * @param dbname
+   * @param name
+   * @param part_vals
+   * @param newPart
+   * @throws InvalidOperationException
+   * @throws MetaException
+   * @throws TException
+   * @see org.apache.hadoop.hive.metastore.api.ThriftHiveMetastore.Iface#rename_partition(
+   *      java.lang.String, java.lang.String, java.util.List, org.apache.hadoop.hive.metastore.api.Partition)
+   */
+  public void renamePartition(final String dbname, final String name, final List<String> part_vals, final Partition newPart)
+      throws InvalidOperationException, MetaException, TException {
+    client.alter_partition(dbname, name, part_vals, newPart);
+  }
+
   private void open() throws MetaException {
     for (URI store : metastoreUris) {
       LOG.info("Trying to connect to metastore with URI " + store);
@@ -778,7 +794,7 @@ public class HiveMetaStoreClient implements IMetaStoreClient {
 
   public void alter_partition(String dbName, String tblName, Partition newPart)
       throws InvalidOperationException, MetaException, TException {
-    client.alter_partition(dbName, tblName, newPart);
+    client.alter_partition(dbName, tblName, null, newPart);
   }
 
   public void alterDatabase(String dbName, Database db)

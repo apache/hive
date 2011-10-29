@@ -521,6 +521,136 @@ public abstract class TestHiveMetaStore extends TestCase {
     }
   }
 
+  public void testRenamePartition() throws Throwable {
+
+    try {
+      String dbName = "compdb1";
+      String tblName = "comptbl1";
+      List<String> vals = new ArrayList<String>(2);
+      vals.add("2011-07-11");
+      vals.add("8");
+      String part_path = "/ds=2011-07-11/hr=8";
+      List<String> tmp_vals = new ArrayList<String>(2);
+      tmp_vals.add("tmp_2011-07-11");
+      tmp_vals.add("-8");
+      String part2_path = "/ds=tmp_2011-07-11/hr=-8";
+
+      client.dropTable(dbName, tblName);
+      silentDropDatabase(dbName);
+      Database db = new Database();
+      db.setName(dbName);
+      db.setDescription("Rename Partition Test database");
+      client.createDatabase(db);
+
+      ArrayList<FieldSchema> cols = new ArrayList<FieldSchema>(2);
+      cols.add(new FieldSchema("name", Constants.STRING_TYPE_NAME, ""));
+      cols.add(new FieldSchema("income", Constants.INT_TYPE_NAME, ""));
+
+      Table tbl = new Table();
+      tbl.setDbName(dbName);
+      tbl.setTableName(tblName);
+      StorageDescriptor sd = new StorageDescriptor();
+      tbl.setSd(sd);
+      sd.setCols(cols);
+      sd.setCompressed(false);
+      sd.setNumBuckets(1);
+      sd.setParameters(new HashMap<String, String>());
+      sd.getParameters().put("test_param_1", "Use this for comments etc");
+      sd.setBucketCols(new ArrayList<String>(2));
+      sd.getBucketCols().add("name");
+      sd.setSerdeInfo(new SerDeInfo());
+      sd.getSerdeInfo().setName(tbl.getTableName());
+      sd.getSerdeInfo().setParameters(new HashMap<String, String>());
+      sd.getSerdeInfo().getParameters()
+          .put(Constants.SERIALIZATION_FORMAT, "1");
+      sd.setSortCols(new ArrayList<Order>());
+
+      tbl.setPartitionKeys(new ArrayList<FieldSchema>(2));
+      tbl.getPartitionKeys().add(
+          new FieldSchema("ds", Constants.STRING_TYPE_NAME, ""));
+      tbl.getPartitionKeys().add(
+          new FieldSchema("hr", Constants.INT_TYPE_NAME, ""));
+
+      client.createTable(tbl);
+
+      if (isThriftClient) {
+        // the createTable() above does not update the location in the 'tbl'
+        // object when the client is a thrift client and the code below relies
+        // on the location being present in the 'tbl' object - so get the table
+        // from the metastore
+        tbl = client.getTable(dbName, tblName);
+      }
+
+      Partition part = new Partition();
+      part.setDbName(dbName);
+      part.setTableName(tblName);
+      part.setValues(vals);
+      part.setParameters(new HashMap<String, String>());
+      part.setSd(tbl.getSd().deepCopy());
+      part.getSd().setSerdeInfo(tbl.getSd().getSerdeInfo());
+      part.getSd().setLocation(tbl.getSd().getLocation() + "/part1");
+      part.getParameters().put("retention", "10");
+      part.getSd().setNumBuckets(12);
+      part.getSd().getSerdeInfo().getParameters().put("abc", "1");
+
+      client.add_partition(part);
+
+      part.setValues(tmp_vals);
+      client.renamePartition(dbName, tblName, vals, part);
+
+      boolean exceptionThrown = false;
+      try {
+        Partition p = client.getPartition(dbName, tblName, vals);
+      } catch(Exception e) {
+        assertEquals("partition should not have existed",
+            NoSuchObjectException.class, e.getClass());
+        exceptionThrown = true;
+      }
+      assertTrue("Expected NoSuchObjectException", exceptionThrown);
+
+      Partition part3 = client.getPartition(dbName, tblName, tmp_vals);
+      assertEquals("couldn't rename partition", part3.getParameters().get(
+          "retention"), "10");
+      assertEquals("couldn't rename partition", part3.getSd().getSerdeInfo()
+          .getParameters().get("abc"), "1");
+      assertEquals("couldn't rename partition", part3.getSd().getNumBuckets(),
+          12);
+      assertEquals("new partition sd matches", part3.getSd().getLocation(),
+          tbl.getSd().getLocation() + part2_path);
+
+      part.setValues(vals);
+      client.renamePartition(dbName, tblName, tmp_vals, part);
+
+      exceptionThrown = false;
+      try {
+        Partition p = client.getPartition(dbName, tblName, tmp_vals);
+      } catch(Exception e) {
+        assertEquals("partition should not have existed",
+            NoSuchObjectException.class, e.getClass());
+        exceptionThrown = true;
+      }
+      assertTrue("Expected NoSuchObjectException", exceptionThrown);
+
+      part3 = client.getPartition(dbName, tblName, vals);
+      assertEquals("couldn't rename partition", part3.getParameters().get(
+          "retention"), "10");
+      assertEquals("couldn't rename partition", part3.getSd().getSerdeInfo()
+          .getParameters().get("abc"), "1");
+      assertEquals("couldn't rename partition", part3.getSd().getNumBuckets(),
+          12);
+      assertEquals("new partition sd matches", part3.getSd().getLocation(),
+          tbl.getSd().getLocation() + part_path);
+
+      client.dropTable(dbName, tblName);
+
+      client.dropDatabase(dbName);
+    } catch (Exception e) {
+      System.err.println(StringUtils.stringifyException(e));
+      System.err.println("testRenamePartition() failed.");
+      throw e;
+    }
+  }
+
   public void testDatabase() throws Throwable {
     try {
       // clear up any existing databases

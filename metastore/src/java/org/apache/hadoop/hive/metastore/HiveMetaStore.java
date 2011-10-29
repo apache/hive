@@ -40,6 +40,7 @@ import org.apache.commons.cli.OptionBuilder;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.JavaUtils;
 import org.apache.hadoop.hive.common.LogUtils;
@@ -1813,46 +1814,28 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       return ret;
     }
 
-    private void alter_partition_core(final RawStore ms, final String db_name,
-        final String tbl_name, final Partition new_part)
-        throws InvalidOperationException, MetaException, TException {
-      try {
-        // Set DDL time to now if not specified
-        if (new_part.getParameters() == null ||
-            new_part.getParameters().get(Constants.DDL_TIME) == null ||
-            Integer.parseInt(new_part.getParameters().get(Constants.DDL_TIME)) == 0) {
-          new_part.putToParameters(Constants.DDL_TIME, Long.toString(System
-              .currentTimeMillis() / 1000));
-        }
-        Partition oldPart = ms.getPartition(db_name, tbl_name, new_part.getValues());
-        ms.alterPartition(db_name, tbl_name, new_part);
-        for (MetaStoreEventListener listener : listeners) {
-          listener.onAlterPartition(new AlterPartitionEvent(oldPart, new_part, true, this));
-        }
-      } catch (InvalidObjectException e) {
-        throw new InvalidOperationException("alter is not possible");
-      } catch (NoSuchObjectException e){
-        //old partition does not exist
-        throw new InvalidOperationException("alter is not possible");
-      }
-    }
-
-    public void alter_partition(final String db_name, final String tbl_name,
-        final Partition new_part) throws InvalidOperationException, MetaException,
+    public void alter_partition(final String db_name, final String tbl_name, 
+        final List<String> part_vals, final Partition new_part)
+        throws InvalidOperationException, MetaException,
         TException {
       startTableFunction("alter_partition", db_name, tbl_name);
-      LOG.info("Partition values:" + new_part.getValues());
-
+      LOG.info("New partition values:" + new_part.getValues());
+      if (part_vals != null && part_vals.size() > 0) {
+        LOG.info("Old Partition values:" + part_vals);
+      }
+      
       try {
         executeWithRetry(new Command<Boolean>() {
           @Override
           public Boolean run(RawStore ms) throws Exception {
-            alter_partition_core(ms, db_name, tbl_name, new_part);
+            alter_partition_core(ms, db_name, tbl_name, part_vals, new_part);
             return Boolean.TRUE;
           }
         });
-      } catch (InvalidOperationException e) {
-        throw e;
+      } catch (InvalidObjectException e) {
+        throw new InvalidOperationException(e.getMessage());
+      } catch (AlreadyExistsException e) {
+        throw new InvalidOperationException(e.getMessage());
       } catch (MetaException e) {
         throw e;
       } catch (TException e) {
@@ -1864,6 +1847,149 @@ public class HiveMetaStore extends ThriftHiveMetastore {
         endFunction("alter_partition");
       }
       return;
+    }
+
+    private void alter_partition_core(final RawStore ms, final String dbname, final String name, final List<String> part_vals, final Partition new_part)
+        throws InvalidOperationException, InvalidObjectException, AlreadyExistsException, MetaException {
+      boolean success = false;
+
+      Path srcPath = null;
+      Path destPath = null;
+      FileSystem srcFs = null;
+      FileSystem destFs = null;
+      Table tbl = null;
+      Partition oldPart = null;
+      String oldPartLoc = null;
+      String newPartLoc = null;
+      // Set DDL time to now if not specified
+      if (new_part.getParameters() == null ||
+          new_part.getParameters().get(Constants.DDL_TIME) == null ||
+          Integer.parseInt(new_part.getParameters().get(Constants.DDL_TIME)) == 0) {
+        new_part.putToParameters(Constants.DDL_TIME, Long.toString(System
+            .currentTimeMillis() / 1000));
+      }
+      //alter partition
+      if (part_vals == null || part_vals.size() == 0) {
+        try {
+          oldPart = ms.getPartition(dbname, name, new_part.getValues());
+          ms.alterPartition(dbname, name, new_part.getValues(), new_part);
+          for (MetaStoreEventListener listener : listeners) {
+            listener.onAlterPartition(new AlterPartitionEvent(oldPart, new_part, true, this));
+          }
+        } catch (InvalidObjectException e) {
+          throw new InvalidOperationException("alter is not possible");
+        } catch (NoSuchObjectException e){
+          //old partition does not exist
+          throw new InvalidOperationException("alter is not possible");
+        }
+        return;
+      }
+      //rename partition
+      try {
+        ms.openTransaction();
+        try {
+          oldPart = ms.getPartition(dbname, name, part_vals);
+        } catch (NoSuchObjectException e) {
+          // this means there is no existing partition
+          throw new InvalidObjectException(
+              "Unable to rename partition because old partition does not exist");
+        }
+        Partition check_part = null;
+        try {
+          check_part = ms.getPartition(dbname, name, new_part.getValues());
+        } catch(NoSuchObjectException e) {
+          // this means there is no existing partition
+          check_part = null;
+        }
+        if (check_part != null) {
+          throw new AlreadyExistsException("Partition already exists:" + dbname + "." + name + "." + new_part.getValues());
+        }
+        tbl = ms.getTable(dbname, name);
+        if (tbl == null) {
+          throw new InvalidObjectException(
+              "Unable to rename partition because table or database do not exist");
+        }
+        try {
+          destPath = new Path(wh.getTablePath(ms.getDatabase(dbname), name), Warehouse.makePartName(tbl.getPartitionKeys(), 
+            new_part.getValues()));
+        } catch (NoSuchObjectException e) {
+          LOG.debug(e);
+          throw new InvalidOperationException(
+              "Unable to change partition or table. Database " + dbname + " does not exist"
+                  + " Check metastore logs for detailed stack." + e.getMessage());
+        }
+        if (destPath != null) {
+          newPartLoc = destPath.toString();
+          oldPartLoc = oldPart.getSd().getLocation();
+
+          srcPath = new Path(oldPartLoc);
+
+          LOG.info("srcPath:" + oldPartLoc);
+          LOG.info("descPath:" + newPartLoc);
+          srcFs = wh.getFs(srcPath);
+          destFs = wh.getFs(destPath);
+          // check that src and dest are on the same file system
+          if (srcFs != destFs) {
+            throw new InvalidOperationException("table new location " + destPath
+                + " is on a different file system than the old location "
+                + srcPath + ". This operation is not supported");
+          }
+          try {
+            srcFs.exists(srcPath); // check that src exists and also checks
+            if (newPartLoc.compareTo(oldPartLoc) != 0 && destFs.exists(destPath)) {
+              throw new InvalidOperationException("New location for this table "
+                  + tbl.getDbName() + "." + tbl.getTableName()
+                  + " already exists : " + destPath);
+            }
+          } catch (IOException e) {
+            Warehouse.closeFs(srcFs);
+            Warehouse.closeFs(destFs);
+            throw new InvalidOperationException("Unable to access new location "
+                + destPath + " for partition " + tbl.getDbName() + "."
+                + tbl.getTableName() + " " + new_part.getValues());
+          }
+          new_part.getSd().setLocation(newPartLoc);
+          ms.alterPartition(dbname, name, part_vals, new_part);
+        }
+
+        success = ms.commitTransaction();
+      } finally {
+        if (!success) {
+          ms.rollbackTransaction();
+        }
+        if (success && newPartLoc.compareTo(oldPartLoc) != 0) {
+          //rename the data directory
+          try{
+            if (srcFs.exists(srcPath)) {
+              //if destPath's parent path doesn't exist, we should mkdir it
+              Path destParentPath = destPath.getParent();
+              if (!wh.mkdirs(destParentPath)) {
+                  throw new IOException("Unable to create path " + destParentPath);
+              }
+              srcFs.rename(srcPath, destPath);
+              LOG.info("rename done!");
+            }
+          } catch (IOException e) {
+            boolean revertMetaDataTransaction = false;
+            try {
+              ms.openTransaction();
+              ms.alterPartition(dbname, name, new_part.getValues(), oldPart);
+              revertMetaDataTransaction = ms.commitTransaction();
+            } catch (Exception e1) {
+              LOG.error("Reverting metadata opeation failed During HDFS operation failed", e1);
+              if (!revertMetaDataTransaction) {
+                ms.rollbackTransaction();
+              }
+            }
+            throw new InvalidOperationException("Unable to access old location "
+                + srcPath + " for partition " + tbl.getDbName() + "."
+                + tbl.getTableName() + " " + part_vals);
+          }
+        }
+        for (MetaStoreEventListener listener : listeners) {
+          listener.onAlterPartition(new AlterPartitionEvent(oldPart, new_part, true, this));
+        }
+      }
     }
 
     public boolean create_index(Index index_def)

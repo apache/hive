@@ -121,6 +121,7 @@ TOK_ALTERTABLE_PARTITION;
 TOK_ALTERTABLE_RENAME;
 TOK_ALTERTABLE_ADDCOLS;
 TOK_ALTERTABLE_RENAMECOL;
+TOK_ALTERTABLE_RENAMEPART;
 TOK_ALTERTABLE_REPLACECOLS;
 TOK_ALTERTABLE_ADDPARTS;
 TOK_ALTERTABLE_DROPPARTS;
@@ -638,6 +639,7 @@ alterStatementSuffixRenameCol
     : Identifier KW_CHANGE KW_COLUMN? oldName=Identifier newName=Identifier colType (KW_COMMENT comment=StringLiteral)? alterStatementChangeColPosition?
     ->^(TOK_ALTERTABLE_RENAMECOL Identifier $oldName $newName colType $comment? alterStatementChangeColPosition?)
     ;
+    
 
 alterStatementChangeColPosition
     : first=KW_FIRST|KW_AFTER afterCol=Identifier
@@ -732,6 +734,7 @@ alterTblPartitionStatementSuffix
   | alterStatementSuffixProtectMode
   | alterStatementSuffixMergeFiles
   | alterStatementSuffixSerdeProperties
+  | alterStatementSuffixRenamePart
   ;
 
 alterStatementSuffixFileFormat
@@ -753,6 +756,13 @@ alterStatementSuffixProtectMode
 @after { msgs.pop(); }
     : alterProtectMode
     -> ^(TOK_ALTERTABLE_ALTERPARTS_PROTECTMODE alterProtectMode)
+    ;
+
+alterStatementSuffixRenamePart
+@init { msgs.push("alter table rename partition statement"); }
+@after { msgs.pop(); }
+    : KW_RENAME KW_TO partitionSpec
+    ->^(TOK_ALTERTABLE_RENAMEPART partitionSpec)
     ;
 
 alterStatementSuffixMergeFiles
