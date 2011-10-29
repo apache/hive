@@ -110,6 +110,8 @@ public final class SemanticAnalyzerFactory {
     tablePartitionCommandType.put(HiveParser.TOK_ALTERTABLE_SERDEPROPERTIES,
         new HiveOperation[] {HiveOperation.ALTERTABLE_SERDEPROPERTIES,
             HiveOperation.ALTERPARTITION_SERDEPROPERTIES });
+    tablePartitionCommandType.put(HiveParser.TOK_ALTERTABLE_RENAMEPART,
+        new HiveOperation[] {null, HiveOperation.ALTERTABLE_RENAMEPART});
   }
 
   public static BaseSemanticAnalyzer get(HiveConf conf, ASTNode tree)

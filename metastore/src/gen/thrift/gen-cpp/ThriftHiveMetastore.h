@@ -52,7 +52,7 @@ class ThriftHiveMetastoreIf : virtual public facebook::fb303::FacebookServiceIf 
   virtual void get_partition_names_ps(std::vector<std::string> & _return, const std::string& db_name, const std::string& tbl_name, const std::vector<std::string> & part_vals, const int16_t max_parts) = 0;
   virtual void get_partitions_by_filter(std::vector<Partition> & _return, const std::string& db_name, const std::string& tbl_name, const std::string& filter, const int16_t max_parts) = 0;
   virtual void get_partitions_by_names(std::vector<Partition> & _return, const std::string& db_name, const std::string& tbl_name, const std::vector<std::string> & names) = 0;
-  virtual void alter_partition(const std::string& db_name, const std::string& tbl_name, const Partition& new_part) = 0;
+  virtual void alter_partition(const std::string& db_name, const std::string& tbl_name, const std::vector<std::string> & part_vals, const Partition& new_part) = 0;
   virtual void get_config_value(std::string& _return, const std::string& name, const std::string& defaultValue) = 0;
   virtual void partition_name_to_vals(std::vector<std::string> & _return, const std::string& part_name) = 0;
   virtual void partition_name_to_spec(std::map<std::string, std::string> & _return, const std::string& part_name) = 0;
@@ -198,7 +198,7 @@ class ThriftHiveMetastoreNull : virtual public ThriftHiveMetastoreIf , virtual p
   void get_partitions_by_names(std::vector<Partition> & /* _return */, const std::string& /* db_name */, const std::string& /* tbl_name */, const std::vector<std::string> & /* names */) {
     return;
   }
-  void alter_partition(const std::string& /* db_name */, const std::string& /* tbl_name */, const Partition& /* new_part */) {
+  void alter_partition(const std::string& /* db_name */, const std::string& /* tbl_name */, const std::vector<std::string> & /* part_vals */, const Partition& /* new_part */) {
     return;
   }
   void get_config_value(std::string& /* _return */, const std::string& /* name */, const std::string& /* defaultValue */) {
@@ -5501,9 +5501,10 @@ class ThriftHiveMetastore_get_partitions_by_names_presult {
 };
 
 typedef struct _ThriftHiveMetastore_alter_partition_args__isset {
-  _ThriftHiveMetastore_alter_partition_args__isset() : db_name(false), tbl_name(false), new_part(false) {}
+  _ThriftHiveMetastore_alter_partition_args__isset() : db_name(false), tbl_name(false), part_vals(false), new_part(false) {}
   bool db_name;
   bool tbl_name;
+  bool part_vals;
   bool new_part;
 } _ThriftHiveMetastore_alter_partition_args__isset;
 
@@ -5517,6 +5518,7 @@ class ThriftHiveMetastore_alter_partition_args {
 
   std::string db_name;
   std::string tbl_name;
+  std::vector<std::string>  part_vals;
   Partition new_part;
 
   _ThriftHiveMetastore_alter_partition_args__isset __isset;
@@ -5529,6 +5531,10 @@ class ThriftHiveMetastore_alter_partition_args {
     tbl_name = val;
   }
 
+  void __set_part_vals(const std::vector<std::string> & val) {
+    part_vals = val;
+  }
+
   void __set_new_part(const Partition& val) {
     new_part = val;
   }
@@ -5538,6 +5544,8 @@ class ThriftHiveMetastore_alter_partition_args {
     if (!(db_name == rhs.db_name))
       return false;
     if (!(tbl_name == rhs.tbl_name))
+      return false;
+    if (!(part_vals == rhs.part_vals))
       return false;
     if (!(new_part == rhs.new_part))
       return false;
@@ -5563,6 +5571,7 @@ class ThriftHiveMetastore_alter_partition_pargs {
 
   const std::string* db_name;
   const std::string* tbl_name;
+  const std::vector<std::string> * part_vals;
   const Partition* new_part;
 
   uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
@@ -9004,8 +9013,8 @@ class ThriftHiveMetastoreClient : virtual public ThriftHiveMetastoreIf, public f
   void get_partitions_by_names(std::vector<Partition> & _return, const std::string& db_name, const std::string& tbl_name, const std::vector<std::string> & names);
   void send_get_partitions_by_names(const std::string& db_name, const std::string& tbl_name, const std::vector<std::string> & names);
   void recv_get_partitions_by_names(std::vector<Partition> & _return);
-  void alter_partition(const std::string& db_name, const std::string& tbl_name, const Partition& new_part);
-  void send_alter_partition(const std::string& db_name, const std::string& tbl_name, const Partition& new_part);
+  void alter_partition(const std::string& db_name, const std::string& tbl_name, const std::vector<std::string> & part_vals, const Partition& new_part);
+  void send_alter_partition(const std::string& db_name, const std::string& tbl_name, const std::vector<std::string> & part_vals, const Partition& new_part);
   void recv_alter_partition();
   void get_config_value(std::string& _return, const std::string& name, const std::string& defaultValue);
   void send_get_config_value(const std::string& name, const std::string& defaultValue);
@@ -9647,10 +9656,10 @@ class ThriftHiveMetastoreMultiface : virtual public ThriftHiveMetastoreIf, publi
     }
   }
 
-  void alter_partition(const std::string& db_name, const std::string& tbl_name, const Partition& new_part) {
+  void alter_partition(const std::string& db_name, const std::string& tbl_name, const std::vector<std::string> & part_vals, const Partition& new_part) {
     size_t sz = ifaces_.size();
     for (size_t i = 0; i < sz; ++i) {
-      ifaces_[i]->alter_partition(db_name, tbl_name, new_part);
+      ifaces_[i]->alter_partition(db_name, tbl_name, part_vals, new_part);
     }
   }
 

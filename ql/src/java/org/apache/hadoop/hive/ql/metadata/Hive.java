@@ -63,6 +63,7 @@ import org.apache.hadoop.hive.metastore.api.HiveObjectPrivilege;
 import org.apache.hadoop.hive.metastore.api.HiveObjectRef;
 import org.apache.hadoop.hive.metastore.api.HiveObjectType;
 import org.apache.hadoop.hive.metastore.api.Index;
+import org.apache.hadoop.hive.metastore.api.InvalidObjectException;
 import org.apache.hadoop.hive.metastore.api.InvalidOperationException;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.NoSuchObjectException;
@@ -429,6 +430,53 @@ public class Hive {
       throw new HiveException("Unable to alter partition.", e);
     } catch (TException e) {
       throw new HiveException("Unable to alter partition.", e);
+    }
+  }
+
+  /**
+   * Rename a old partition to new partition
+   *
+   * @param tbl
+   *          existing table
+   * @param oldPartSpec
+   *          spec of old partition
+   * @param newPart
+   *          new partition
+   * @throws InvalidOperationException
+   *           if the changes in metadata is not acceptable
+   * @throws TException
+   */
+  public void renamePartition(Table tbl, Map<String, String> oldPartSpec, Partition newPart)
+      throws HiveException {
+    try {
+      Map<String, String> newPartSpec = newPart.getSpec();
+      if (oldPartSpec.keySet().size() != tbl.getPartCols().size()
+          || newPartSpec.keySet().size() != tbl.getPartCols().size()) {
+        throw new HiveException("Unable to rename partition to the same name: number of partition cols don't match. ");
+      }
+      if (!oldPartSpec.keySet().equals(newPartSpec.keySet())){
+        throw new HiveException("Unable to rename partition to the same name: old and new partition cols don't match. ");
+      }
+      List<String> pvals = new ArrayList<String>();
+      
+      for (FieldSchema field : tbl.getPartCols()) {
+        String val = oldPartSpec.get(field.getName());
+        if (val == null || val.length() == 0) {
+          throw new HiveException("get partition: Value for key "
+              + field.getName() + " is null or empty");
+        } else if (val != null){
+          pvals.add(val);
+        }
+      }
+      getMSC().renamePartition(tbl.getDbName(), tbl.getTableName(), pvals,
+          newPart.getTPartition());
+
+    } catch (InvalidOperationException e){
+      throw new HiveException("Unable to rename partition.", e);
+    } catch (MetaException e) {
+      throw new HiveException("Unable to rename partition.", e);
+    } catch (TException e) {
+      throw new HiveException("Unable to rename partition.", e);
     }
   }
 

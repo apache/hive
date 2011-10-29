@@ -117,6 +117,7 @@ import org.apache.hadoop.hive.ql.plan.MsckDesc;
 import org.apache.hadoop.hive.ql.plan.PrincipalDesc;
 import org.apache.hadoop.hive.ql.plan.PrivilegeDesc;
 import org.apache.hadoop.hive.ql.plan.PrivilegeObjectDesc;
+import org.apache.hadoop.hive.ql.plan.RenamePartitionDesc;
 import org.apache.hadoop.hive.ql.plan.RevokeDesc;
 import org.apache.hadoop.hive.ql.plan.RoleDDLDesc;
 import org.apache.hadoop.hive.ql.plan.ShowDatabasesDesc;
@@ -261,6 +262,11 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
       AddPartitionDesc addPartitionDesc = work.getAddPartitionDesc();
       if (addPartitionDesc != null) {
         return addPartition(db, addPartitionDesc);
+      }
+
+      RenamePartitionDesc renamePartitionDesc = work.getRenamePartitionDesc();
+      if (renamePartitionDesc != null) {
+        return renamePartition(db, renamePartitionDesc);
       }
 
       AlterTableSimpleDesc simpleDesc = work.getAlterTblSimpleDesc();
@@ -969,6 +975,34 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
   }
 
   /**
+   * Rename a partition in a table
+   *
+   * @param db
+   *          Database to rename the partition.
+   * @param renamePartitionDesc
+   *          rename old Partition to new one.
+   * @return Returns 0 when execution succeeds and above 0 if it fails.
+   * @throws HiveException
+   */
+  private int renamePartition(Hive db, RenamePartitionDesc renamePartitionDesc) throws HiveException {
+
+    Table tbl = db.getTable(renamePartitionDesc.getDbName(), renamePartitionDesc.getTableName());
+
+    validateAlterTableType(
+      tbl, AlterTableDesc.AlterTableTypes.RENAMEPARTITION,
+      false);
+    Partition oldPart = db.getPartition(tbl, renamePartitionDesc.getOldPartSpec(), false);
+    Partition part = db.getPartition(tbl, renamePartitionDesc.getOldPartSpec(), false);
+    part.setValues(renamePartitionDesc.getNewPartSpec());
+    db.renamePartition(tbl, renamePartitionDesc.getOldPartSpec(), part);
+    Partition newPart = db
+        .getPartition(tbl, renamePartitionDesc.getNewPartSpec(), false);
+    work.getInputs().add(new ReadEntity(oldPart));
+    work.getOutputs().add(new WriteEntity(newPart));
+    return 0;
+  }
+
+  /**
    * Rewrite the partition's metadata and force the pre/post execute hooks to
    * be fired.
    *
@@ -1507,6 +1541,7 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
       switch (alterType) {
       case ADDPARTITION:
       case DROPPARTITION:
+      case RENAMEPARTITION:
       case ADDPROPS:
       case RENAME:
         // allow this form

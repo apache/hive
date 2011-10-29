@@ -555,6 +555,27 @@ public interface IMetaStoreClient {
       throws InvalidOperationException, MetaException, TException;
 
   /**
+   * rename a partition to a new partition
+   *
+   * @param dbname
+   *          database of the old partition
+   * @param name
+   *          table name of the old partition
+   * @param part_vals
+   *          values of the old partition
+   * @param newPart
+   *          new partition
+   * @throws InvalidOperationException
+   *           if srcFs and destFs are different
+   * @throws MetaException
+   *          if error in updating metadata
+   * @throws TException
+   *          if error in communicating with metastore server
+   */
+  public void renamePartition(final String dbname, final String name, final List<String> part_vals, final Partition newPart)
+      throws InvalidOperationException, MetaException, TException;
+
+  /**
    * @param db
    * @param tableName
    * @throws UnknownTableException

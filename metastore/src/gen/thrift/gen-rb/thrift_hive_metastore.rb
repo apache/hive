@@ -640,13 +640,13 @@ module ThriftHiveMetastore
       raise ::Thrift::ApplicationException.new(::Thrift::ApplicationException::MISSING_RESULT, 'get_partitions_by_names failed: unknown result')
     end
 
-    def alter_partition(db_name, tbl_name, new_part)
-      send_alter_partition(db_name, tbl_name, new_part)
+    def alter_partition(db_name, tbl_name, part_vals, new_part)
+      send_alter_partition(db_name, tbl_name, part_vals, new_part)
       recv_alter_partition()
     end
 
-    def send_alter_partition(db_name, tbl_name, new_part)
-      send_message('alter_partition', Alter_partition_args, :db_name => db_name, :tbl_name => tbl_name, :new_part => new_part)
+    def send_alter_partition(db_name, tbl_name, part_vals, new_part)
+      send_message('alter_partition', Alter_partition_args, :db_name => db_name, :tbl_name => tbl_name, :part_vals => part_vals, :new_part => new_part)
     end
 
     def recv_alter_partition()
@@ -1553,7 +1553,7 @@ module ThriftHiveMetastore
       args = read_args(iprot, Alter_partition_args)
       result = Alter_partition_result.new()
       begin
-        @handler.alter_partition(args.db_name, args.tbl_name, args.new_part)
+        @handler.alter_partition(args.db_name, args.tbl_name, args.part_vals, args.new_part)
       rescue InvalidOperationException => o1
         result.o1 = o1
       rescue MetaException => o2
@@ -3307,11 +3307,13 @@ module ThriftHiveMetastore
     include ::Thrift::Struct, ::Thrift::Struct_Union
     DB_NAME = 1
     TBL_NAME = 2
-    NEW_PART = 3
+    PART_VALS = 3
+    NEW_PART = 4
 
     FIELDS = {
       DB_NAME => {:type => ::Thrift::Types::STRING, :name => 'db_name'},
       TBL_NAME => {:type => ::Thrift::Types::STRING, :name => 'tbl_name'},
+      PART_VALS => {:type => ::Thrift::Types::LIST, :name => 'part_vals', :element => {:type => ::Thrift::Types::STRING}},
       NEW_PART => {:type => ::Thrift::Types::STRUCT, :name => 'new_part', :class => Partition}
     }
 

@@ -1892,18 +1892,20 @@ public class ObjectStore implements RawStore, Configurable {
     }
   }
 
-  public void alterPartition(String dbname, String name, Partition newPart)
+  public void alterPartition(String dbname, String name, List<String> part_vals, Partition newPart)
       throws InvalidObjectException, MetaException {
     boolean success = false;
     try {
       openTransaction();
       name = name.toLowerCase();
       dbname = dbname.toLowerCase();
-      MPartition oldp = getMPartition(dbname, name, newPart.getValues());
+      MPartition oldp = getMPartition(dbname, name, part_vals);
       MPartition newp = convertToMPart(newPart, false);
       if (oldp == null || newp == null) {
         throw new InvalidObjectException("partition does not exist.");
       }
+      oldp.setValues(newp.getValues());
+      oldp.setPartitionName(newp.getPartitionName());
       oldp.setParameters(newPart.getParameters());
       copyMSD(newp.getSd(), oldp.getSd());
       if (newp.getCreateTime() != oldp.getCreateTime()) {
