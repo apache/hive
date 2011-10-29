@@ -18,7 +18,7 @@
 
 package org.apache.hadoop.fs;
 
-import java.io.*;
+import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 
@@ -91,6 +91,7 @@ public class ProxyFileSystem extends FilterFileSystem {
     this.myUri = myUri;
   }
 
+  @Override
   public void initialize(URI name, Configuration conf) throws IOException {
     try {
       URI realUri = new URI (realScheme, realAuthority,
@@ -101,38 +102,46 @@ public class ProxyFileSystem extends FilterFileSystem {
     }
   }
 
+  @Override
   public URI getUri() {
     return myUri;
   }
 
+  @Override
   public String getName() {
     return getUri().toString();
   }
 
+  @Override
   public Path makeQualified(Path path) {
     return swizzleReturnPath(super.makeQualified(swizzleParamPath(path)));
   }
 
 
+  @Override
   protected void checkPath(Path path) {
     super.checkPath(swizzleParamPath(path));
   }
 
+  @Override
   public BlockLocation[] getFileBlockLocations(FileStatus file, long start,
     long len) throws IOException {
     return super.getFileBlockLocations(swizzleFileStatus(file, true),
                                        start, len);
   }
 
+  @Override
   public FSDataInputStream open(Path f, int bufferSize) throws IOException {
     return super.open(swizzleParamPath(f), bufferSize);
   }
 
+  @Override
   public FSDataOutputStream append(Path f, int bufferSize,
       Progressable progress) throws IOException {
     return super.append(swizzleParamPath(f), bufferSize, progress);
   }
 
+  @Override
   public FSDataOutputStream create(Path f, FsPermission permission,
       boolean overwrite, int bufferSize, short replication, long blockSize,
       Progressable progress) throws IOException {
@@ -140,22 +149,27 @@ public class ProxyFileSystem extends FilterFileSystem {
         overwrite, bufferSize, replication, blockSize, progress);
   }
 
+  @Override
   public boolean setReplication(Path src, short replication) throws IOException {
     return super.setReplication(swizzleParamPath(src), replication);
   }
 
+  @Override
   public boolean rename(Path src, Path dst) throws IOException {
     return super.rename(swizzleParamPath(src), swizzleParamPath(dst));
   }
   
+  @Override
   public boolean delete(Path f, boolean recursive) throws IOException {
     return super.delete(swizzleParamPath(f), recursive);
   }
 
+  @Override
   public boolean deleteOnExit(Path f) throws IOException {
     return super.deleteOnExit(swizzleParamPath(f));
   }    
     
+  @Override
   public FileStatus[] listStatus(Path f) throws IOException {
     FileStatus[] orig = super.listStatus(swizzleParamPath(f));
     FileStatus[] ret = new FileStatus [orig.length];
@@ -165,101 +179,92 @@ public class ProxyFileSystem extends FilterFileSystem {
     return ret;
   }
   
+  @Override
   public Path getHomeDirectory() {
     return swizzleReturnPath(super.getHomeDirectory());
   }
 
+  @Override
   public void setWorkingDirectory(Path newDir) {
     super.setWorkingDirectory(swizzleParamPath(newDir));
   }
   
+  @Override
   public Path getWorkingDirectory() {
     return swizzleReturnPath(super.getWorkingDirectory());
   }
   
+  @Override
   public boolean mkdirs(Path f, FsPermission permission) throws IOException {
     return super.mkdirs(swizzleParamPath(f), permission);
   }
 
+  @Override
   public void copyFromLocalFile(boolean delSrc, Path src, Path dst)
     throws IOException {
     super.copyFromLocalFile(delSrc, swizzleParamPath(src), swizzleParamPath(dst));
   }
 
+  @Override
   public void copyFromLocalFile(boolean delSrc, boolean overwrite, 
                                 Path[] srcs, Path dst)
     throws IOException {
     super.copyFromLocalFile(delSrc, overwrite, srcs, swizzleParamPath(dst));
   }
   
+  @Override
   public void copyFromLocalFile(boolean delSrc, boolean overwrite, 
                                 Path src, Path dst)
     throws IOException {
     super.copyFromLocalFile(delSrc, overwrite, src, swizzleParamPath(dst));
   }
 
+  @Override
   public void copyToLocalFile(boolean delSrc, Path src, Path dst)
     throws IOException {
     super.copyToLocalFile(delSrc, swizzleParamPath(src), dst);
   }
 
+  @Override
   public Path startLocalOutput(Path fsOutputFile, Path tmpLocalFile)
     throws IOException {
     return super.startLocalOutput(swizzleParamPath(fsOutputFile), tmpLocalFile);
   }
 
+  @Override
   public void completeLocalOutput(Path fsOutputFile, Path tmpLocalFile)
     throws IOException {
     super.completeLocalOutput(swizzleParamPath(fsOutputFile), tmpLocalFile);
   }
 
-  public long getUsed() throws IOException{
-    return super.getUsed();
-  }
-  
-  public long getDefaultBlockSize() {
-    return super.getDefaultBlockSize();
-  }
-  
-  public short getDefaultReplication() {
-    return super.getDefaultReplication();
-  }
-
+  @Override
   public ContentSummary getContentSummary(Path f) throws IOException {
     return super.getContentSummary(swizzleParamPath(f));
   }
 
+  @Override
   public FileStatus getFileStatus(Path f) throws IOException {
     return swizzleFileStatus(super.getFileStatus(swizzleParamPath(f)), false);
   }
 
+  @Override
   public FileChecksum getFileChecksum(Path f) throws IOException {
     return super.getFileChecksum(swizzleParamPath(f));
   }
   
-  public void setVerifyChecksum(boolean verifyChecksum) {
-    super.setVerifyChecksum(verifyChecksum);
-  }
-
-  public Configuration getConf() {
-    return super.getConf();
-  }
-  
-  public void close() throws IOException {
-    super.close();
-    super.close();
-  }
-
+  @Override
   public void setOwner(Path p, String username, String groupname
       ) throws IOException {
     super.setOwner(swizzleParamPath(p), username, groupname);
   }
 
+  @Override
   public void setTimes(Path p, long mtime, long atime
       ) throws IOException {
     super.setTimes(swizzleParamPath(p), mtime, atime);
   }
 
+  @Override
   public void setPermission(Path p, FsPermission permission
       ) throws IOException {
     super.setPermission(swizzleParamPath(p), permission);
