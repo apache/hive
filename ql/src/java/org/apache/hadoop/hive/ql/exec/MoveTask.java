@@ -77,7 +77,21 @@ public class MoveTask extends Task<MoveWork> implements Serializable {
       fs.delete(targetPath, true);
       // if source exists, rename. Otherwise, create a empty directory
       if (fs.exists(sourcePath)) {
+        Path deletePath = null;
+        // If it multiple level of folder are there fs.rename is failing so first
+        // create the targetpath.getParent() if it not exist
+        if (HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVE_INSERT_INTO_MULTILEVEL_DIRS)) {
+        deletePath = createTargetPath(targetPath, fs);
+        }
         if (!fs.rename(sourcePath, targetPath)) {
+          try {
+            if (deletePath != null) {
+              fs.delete(deletePath, true);
+            }
+          } catch (IOException e) {
+            LOG.info("Unable to delete the path created for facilitating rename"
+                + deletePath);
+          }
           throw new HiveException("Unable to rename: " + sourcePath
               + " to: " + targetPath);
         }
@@ -110,6 +124,26 @@ public class MoveTask extends Task<MoveWork> implements Serializable {
             + targetPath);
       }
     }
+  }
+
+  private Path createTargetPath(Path targetPath, FileSystem fs) throws IOException {
+    Path deletePath = null;
+    Path mkDirPath = targetPath.getParent();
+    if (mkDirPath != null & !fs.exists(mkDirPath)) {
+      Path actualPath = mkDirPath;
+      // targetPath path is /x/y/z/1/2/3 here /x/y/z is present in the file system
+      // create the structure till /x/y/z/1/2 to work rename for multilevel directory
+      // and if rename fails delete the path /x/y/z/1
+      // If targetPath have multilevel directories like /x/y/z/1/2/3 , /x/y/z/1/2/4
+      // the renaming of the directories are not atomic the execution will happen one
+      // by one
+      while (actualPath != null && !fs.exists(actualPath)) {
+        deletePath = actualPath;
+        actualPath = actualPath.getParent();
+      }
+      fs.mkdirs(mkDirPath);
+    }
+    return deletePath;
   }
 
   @Override
