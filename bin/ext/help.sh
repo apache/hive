@@ -28,6 +28,7 @@ help() {
   echo "  HIVE_OPT : Hive options"
   echo "For help on a particular service:"
   echo "  ./hive --service serviceName --help"
+  echo "Debug help:  ./hive --debug --help"
 }
 
 help_help(){

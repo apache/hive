@@ -55,6 +55,10 @@ public class MapRedTask extends ExecDriver implements Serializable {
 
   static final String HADOOP_MEM_KEY = "HADOOP_HEAPSIZE";
   static final String HADOOP_OPTS_KEY = "HADOOP_OPTS";
+  static final String HADOOP_CLIENT_OPTS = "HADOOP_CLIENT_OPTS";
+  static final String HIVE_DEBUG_RECURSIVE = "HIVE_DEBUG_RECURSIVE";
+  static final String HIVE_MAIN_CLIENT_DEBUG_OPTS = "HIVE_MAIN_CLIENT_DEBUG_OPTS";
+  static final String HIVE_CHILD_CLIENT_DEBUG_OPTS = "HIVE_CHILD_CLIENT_DEBUG_OPTS";
   static final String[] HIVE_SYS_PROP = {"build.dir", "build.dir.hive"};
 
   private transient ContentSummary inputSummary = null;
@@ -247,6 +251,11 @@ public class MapRedTask extends ExecDriver implements Serializable {
       } else {
         variables.put(HADOOP_OPTS_KEY, hadoopOpts);
       }
+
+      if(variables.containsKey(HIVE_DEBUG_RECURSIVE)) {
+        configureDebugVariablesForChildJVM(variables);
+      }
+
       env = new String[variables.size()];
       int pos = 0;
       for (Map.Entry<String, String> entry : variables.entrySet()) {
@@ -292,6 +301,48 @@ public class MapRedTask extends ExecDriver implements Serializable {
         LOG.error("Exception: " + e.getMessage());
       }
     }
+  }
+
+  private void configureDebugVariablesForChildJVM(Map<String, String> environmentVariables) {
+    // this method contains various asserts to warn if environment variables are in a buggy state
+    assert environmentVariables.containsKey(HADOOP_CLIENT_OPTS)
+        && environmentVariables.get(HADOOP_CLIENT_OPTS) != null : HADOOP_CLIENT_OPTS
+        + " environment variable must be set when JVM in debug mode";
+
+    String hadoopClientOpts = environmentVariables.get(HADOOP_CLIENT_OPTS);
+
+    assert environmentVariables.containsKey(HIVE_MAIN_CLIENT_DEBUG_OPTS)
+        && environmentVariables.get(HIVE_MAIN_CLIENT_DEBUG_OPTS) != null : HIVE_MAIN_CLIENT_DEBUG_OPTS
+        + " environment variable must be set when JVM in debug mode";
+
+    assert hadoopClientOpts.contains(environmentVariables.get(HIVE_MAIN_CLIENT_DEBUG_OPTS)) : HADOOP_CLIENT_OPTS
+        + " environment variable must contain debugging parameters, when JVM in debugging mode";
+
+    assert "y".equals(environmentVariables.get(HIVE_DEBUG_RECURSIVE))
+        || "n".equals(environmentVariables.get(HIVE_DEBUG_RECURSIVE)) : HIVE_DEBUG_RECURSIVE
+        + " environment variable must be set to \"y\" or \"n\" when debugging";
+
+    if (environmentVariables.get(HIVE_DEBUG_RECURSIVE).equals("y")) {
+      // swap debug options in HADOOP_CLIENT_OPTS to those that the child JVM should have
+      assert environmentVariables.containsKey(HIVE_CHILD_CLIENT_DEBUG_OPTS)
+          && environmentVariables.get(HIVE_MAIN_CLIENT_DEBUG_OPTS) != null : HIVE_CHILD_CLIENT_DEBUG_OPTS
+          + " environment variable must be set when JVM in debug mode";
+      String newHadoopClientOpts = hadoopClientOpts.replace(
+          environmentVariables.get(HIVE_MAIN_CLIENT_DEBUG_OPTS),
+          environmentVariables.get(HIVE_CHILD_CLIENT_DEBUG_OPTS));
+      environmentVariables.put(HADOOP_CLIENT_OPTS, newHadoopClientOpts);
+    } else {
+      // remove from HADOOP_CLIENT_OPTS any debug related options
+      String newHadoopClientOpts = hadoopClientOpts.replace(
+          environmentVariables.get(HIVE_MAIN_CLIENT_DEBUG_OPTS), "").trim();
+      if (newHadoopClientOpts.isEmpty()) {
+        environmentVariables.remove(HADOOP_CLIENT_OPTS);
+      } else {
+        environmentVariables.put(HADOOP_CLIENT_OPTS, newHadoopClientOpts);
+      }
+    }
+    // child JVM won't need to change debug parameters when creating it's own children
+    environmentVariables.remove(HIVE_DEBUG_RECURSIVE);
   }
 
   @Override

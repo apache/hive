@@ -42,6 +42,10 @@ while [ $# -gt 0 ]; do
       HELP=_help
       shift
       ;;
+    --debug*)
+      DEBUG=$1
+      shift
+      ;;
     *)
       break
       ;;
@@ -196,6 +200,16 @@ done
 for i in "$bin"/ext/util/*.sh ; do
   . $i
 done
+
+if [ "$DEBUG" ]; then
+  if [ "$HELP" ]; then
+    debug_help
+    exit 0
+  else
+    get_debug_params "$DEBUG"
+    export HADOOP_CLIENT_OPTS="$HADOOP_CLIENT_OPTS $HIVE_MAIN_CLIENT_DEBUG_OPTS"
+  fi
+fi
 
 TORUN=""
 for j in $SERVICE_LIST ; do
