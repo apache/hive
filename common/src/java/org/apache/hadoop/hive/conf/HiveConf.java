@@ -378,6 +378,7 @@ public class HiveConf extends Configuration {
     HIVEOPTPPD("hive.optimize.ppd", true), // predicate pushdown
     HIVEPPDRECOGNIZETRANSITIVITY("hive.ppd.recognizetransivity", true), // predicate pushdown
     HIVEPPDREMOVEDUPLICATEFILTERS("hive.ppd.remove.duplicatefilters", true),
+    HIVEMETADATAONLYQUERIES("hive.optimize.metadataonly", true),
     // push predicates down to storage handlers
     HIVEOPTPPD_STORAGE("hive.optimize.ppd.storage", true),
     HIVEOPTGROUPBY("hive.optimize.groupby", true), // optimize group by

@@ -23,6 +23,7 @@ import org.apache.hadoop.hive.ql.exec.Description;
 import org.apache.hadoop.hive.ql.exec.UDFArgumentTypeException;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
+import org.apache.hadoop.hive.ql.udf.UDFType;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils.ObjectInspectorCopyOption;
@@ -49,6 +50,7 @@ public class GenericUDAFMax extends AbstractGenericUDAFResolver {
     return new GenericUDAFMaxEvaluator();
   }
 
+  @UDFType(distinctLike=true)
   public static class GenericUDAFMaxEvaluator extends GenericUDAFEvaluator {
 
     ObjectInspector inputOI;

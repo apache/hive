@@ -26,6 +26,7 @@ import java.lang.management.MemoryMXBean;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
@@ -451,6 +452,11 @@ public class MapredLocalTask extends Task<MapredLocalWork> implements Serializab
     return true;
   }
 
+  @Override
+  public Collection<Operator<? extends Serializable>> getTopOperators() {
+    return getWork().getAliasToWork().values();
+  }
+  
   @Override
   public String getName() {
     return "MAPREDLOCAL";
