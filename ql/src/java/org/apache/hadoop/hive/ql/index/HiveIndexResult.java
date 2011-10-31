@@ -52,7 +52,7 @@ public class HiveIndexResult {
   // IndexBucket
   static class IBucket {
     private String name = null;
-    private SortedSet<Long> offsets = new TreeSet<Long>();
+    private final SortedSet<Long> offsets = new TreeSet<Long>();
 
     public IBucket(String n) {
       name = n;
@@ -70,6 +70,7 @@ public class HiveIndexResult {
       return offsets;
     }
 
+    @Override
     public boolean equals(Object obj) {
       if (obj.getClass() != this.getClass()) {
         return false;
@@ -91,10 +92,10 @@ public class HiveIndexResult {
     ignoreHdfsLoc = HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVE_INDEX_IGNORE_HDFS_LOC);
 
     if (indexFiles != null && indexFiles.size() > 0) {
-      FileSystem fs = FileSystem.get(conf);
       List<Path> paths = new ArrayList<Path>();
       for (String indexFile : indexFiles) {
         Path indexFilePath = new Path(indexFile);
+        FileSystem fs = indexFilePath.getFileSystem(conf);
         FileStatus indexStat = fs.getFileStatus(indexFilePath);
         if (indexStat.isDir()) {
           FileStatus[] fss = fs.listStatus(indexFilePath);
@@ -113,6 +114,7 @@ public class HiveIndexResult {
 
       long lineCounter = 0;
       for (Path indexFinalPath : paths) {
+        FileSystem fs = indexFinalPath.getFileSystem(conf);
         FSDataInputStream ifile = fs.open(indexFinalPath);
         LineReader lr = new LineReader(ifile, conf);
         try {
