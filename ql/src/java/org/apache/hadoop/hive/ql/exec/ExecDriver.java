@@ -29,6 +29,7 @@ import java.net.URL;
 import java.net.URLDecoder;
 import java.net.URLEncoder;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Enumeration;
 import java.util.HashSet;
@@ -769,6 +770,11 @@ public class ExecDriver extends Task<MapredWork> implements Serializable, Hadoop
     return true;
   }
 
+  @Override
+  public Collection<Operator<? extends Serializable>> getTopOperators() {
+    return getWork().getAliasToWork().values();
+  }
+  
   @Override
   public boolean hasReduce() {
     MapredWork w = getWork();

@@ -539,4 +539,9 @@ public class MapRedTask extends ExecDriver implements Serializable {
 
     return null;
   }
+  
+  @Override
+  public Operator<? extends Serializable> getReducer() {
+    return getWork().getReducer();
+  }
 }
