@@ -2389,7 +2389,7 @@ Digit
 fragment
 Exponent
     :
-    'e' ( PLUS|MINUS )? (Digit)+
+    ('e' | 'E') ( PLUS|MINUS )? (Digit)+
     ;
 
 fragment
