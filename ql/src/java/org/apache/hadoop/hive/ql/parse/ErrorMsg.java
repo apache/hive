@@ -118,6 +118,7 @@ public enum ErrorMsg {
       + "table"),
   CTAS_MULTI_LOADFILE("CREATE-TABLE-AS-SELECT results in multiple file load"),
   CTAS_EXTTBL_COEXISTENCE("CREATE-TABLE-AS-SELECT cannot create external table"),
+  DATABASE_NOT_EXISTS("Database does not exist:"),
   TABLE_ALREADY_EXISTS("Table already exists:", "42S02"),
   COLUMN_ALIAS_ALREADY_EXISTS("Column alias already exists:", "42S02"),
   UDTF_MULTIPLE_EXPR("Only a single expression in the SELECT clause is supported with UDTF's"),
