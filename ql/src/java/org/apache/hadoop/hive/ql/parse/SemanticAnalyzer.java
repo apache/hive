@@ -7840,6 +7840,9 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       // Verify that the table does not already exist
       try {
         Table dumpTable = db.newTable(tableName);
+        if (null == db.getDatabase(dumpTable.getDbName()) ) {
+          throw new SemanticException(ErrorMsg.DATABASE_NOT_EXISTS.getMsg(dumpTable.getDbName()));
+        }
         if (null != db.getTable(dumpTable.getDbName(), dumpTable.getTableName(), false)) {
           throw new SemanticException(ErrorMsg.TABLE_ALREADY_EXISTS.getMsg(tableName));
         }

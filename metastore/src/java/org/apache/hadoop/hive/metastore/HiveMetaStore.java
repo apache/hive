@@ -972,6 +972,10 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       try {
         ms.openTransaction();
 
+        if(ms.getDatabase(tbl.getDbName()) == null){
+          throw new NoSuchObjectException("The database " + tbl.getDbName() + " does not exist");
+        }
+
         // get_table checks whether database exists, it should be moved here
         if (is_table_exists(ms, tbl.getDbName(), tbl.getTableName())) {
           throw new AlreadyExistsException("Table " + tbl.getTableName()
@@ -1044,6 +1048,8 @@ public class HiveMetaStore extends ThriftHiveMetastore {
         throw e;
       } catch (InvalidObjectException e) {
         throw e;
+      }catch (NoSuchObjectException e) {
+        throw new InvalidObjectException(e.getMessage());
       } catch (Exception e) {
         assert(e instanceof RuntimeException);
         throw (RuntimeException)e;
