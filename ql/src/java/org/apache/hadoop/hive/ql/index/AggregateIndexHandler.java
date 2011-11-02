@@ -150,6 +150,8 @@ public class AggregateIndexHandler extends CompactIndexHandler {
       command.append(indexCols + ", " + VirtualColumn.FILENAME.getName());
 
       HiveConf builderConf = new HiveConf(getConf(), AggregateIndexHandler.class);
+      builderConf.setBoolVar(HiveConf.ConfVars.HIVEMERGEMAPFILES, false);
+      builderConf.setBoolVar(HiveConf.ConfVars.HIVEMERGEMAPREDFILES, false);
       Task<?> rootTask = IndexUtils.createRootTask(builderConf, inputs, outputs,
           command, (LinkedHashMap<String, String>) partSpec, indexTableName, dbName);
 
