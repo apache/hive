@@ -40,10 +40,10 @@ import org.apache.hadoop.hive.ql.index.IndexPredicateAnalyzer;
 import org.apache.hadoop.hive.ql.index.IndexSearchCondition;
 import org.apache.hadoop.hive.ql.index.TableBasedIndexHandler;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
+import org.apache.hadoop.hive.ql.metadata.HiveStoragePredicateHandler.DecomposedPredicate;
 import org.apache.hadoop.hive.ql.metadata.HiveUtils;
 import org.apache.hadoop.hive.ql.metadata.Partition;
 import org.apache.hadoop.hive.ql.metadata.VirtualColumn;
-import org.apache.hadoop.hive.ql.metadata.HiveStoragePredicateHandler.DecomposedPredicate;
 import org.apache.hadoop.hive.ql.optimizer.IndexUtils;
 import org.apache.hadoop.hive.ql.parse.ParseContext;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
@@ -127,6 +127,8 @@ public class CompactIndexHandler extends TableBasedIndexHandler {
     command.append(indexCols + ", " + VirtualColumn.FILENAME.getName());
 
     HiveConf builderConf = new HiveConf(getConf(), CompactIndexHandler.class);
+    builderConf.setBoolVar(HiveConf.ConfVars.HIVEMERGEMAPFILES, false);
+    builderConf.setBoolVar(HiveConf.ConfVars.HIVEMERGEMAPREDFILES, false);
     Task<?> rootTask = IndexUtils.createRootTask(builderConf, inputs, outputs,
         command, partSpec, indexTableName, dbName);
     return rootTask;
