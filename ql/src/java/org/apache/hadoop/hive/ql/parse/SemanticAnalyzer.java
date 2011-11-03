@@ -162,6 +162,8 @@ import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector.Category;
 import org.apache.hadoop.hive.serde2.objectinspector.StructField;
 import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
+import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorUtils;
+import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorUtils.PrimitiveTypeEntry;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
@@ -8022,7 +8024,14 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       // there is no overlap between columns and partitioning columns
       Iterator<FieldSchema> partColsIter = crtTblDesc.getPartCols().iterator();
       while (partColsIter.hasNext()) {
-        String partCol = partColsIter.next().getName();
+        FieldSchema fs = partColsIter.next();
+        String partCol = fs.getName();
+        PrimitiveTypeEntry pte = PrimitiveObjectInspectorUtils.getTypeEntryFromTypeName(
+            fs.getType());
+        if(null == pte){
+          throw new SemanticException(ErrorMsg.PARTITION_COLUMN_NON_PRIMITIVE.getMsg() + " Found "
+        + partCol + " of type: " + fs.getType());
+        }
         Iterator<String> colNamesIter = colNames.iterator();
         while (colNamesIter.hasNext()) {
           String colName = unescapeIdentifier(colNamesIter.next());

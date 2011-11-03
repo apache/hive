@@ -189,6 +189,7 @@ public enum ErrorMsg {
       + "If you really want to perform the operation, set hive.mapred.mode=nonstrict"),
   PARTSPEC_DIFFER_FROM_SCHEMA("Partition columns in partition specification are not the same as "
       + "that defined in the table schema. The names and orders have to be exactly the same."),
+  PARTITION_COLUMN_NON_PRIMITIVE("Partition column must be of primitive type."),
       ;
 
   private String mesg;
