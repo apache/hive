@@ -53,6 +53,7 @@ public class LazyByte extends
       isNull = false;
     } catch (NumberFormatException e) {
       isNull = true;
+      logExceptionMessage(bytes, start, length, "TINYINT");
     }
   }
 

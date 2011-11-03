@@ -19,6 +19,8 @@ package org.apache.hadoop.hive.serde2.lazy;
 
 import java.nio.charset.CharacterCodingException;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.hive.serde2.lazy.objectinspector.primitive.LazyFloatObjectInspector;
 import org.apache.hadoop.io.FloatWritable;
 import org.apache.hadoop.io.Text;
@@ -30,6 +32,7 @@ import org.apache.hadoop.io.Text;
 public class LazyFloat extends
     LazyPrimitive<LazyFloatObjectInspector, FloatWritable> {
 
+  private static final Log LOG = LogFactory.getLog(LazyFloat.class);
   public LazyFloat(LazyFloatObjectInspector oi) {
     super(oi);
     data = new FloatWritable();
@@ -42,13 +45,18 @@ public class LazyFloat extends
 
   @Override
   public void init(ByteArrayRef bytes, int start, int length) {
+    String byteData = null;
     try {
-      data.set(Float.parseFloat(Text.decode(bytes.getData(), start, length)));
+      byteData = Text.decode(bytes.getData(), start, length);
+      data.set(Float.parseFloat(byteData));
       isNull = false;
     } catch (NumberFormatException e) {
       isNull = true;
+      LOG.debug("Data not in the Float data type range so converted to null. Given data is :"
+          + byteData, e);
     } catch (CharacterCodingException e) {
       isNull = true;
+      LOG.debug("Data not in the Float data type range so converted to null.", e);
     }
   }
 

@@ -19,6 +19,8 @@ package org.apache.hadoop.hive.serde2.lazy;
 
 import java.nio.charset.CharacterCodingException;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.hive.serde2.io.DoubleWritable;
 import org.apache.hadoop.hive.serde2.lazy.objectinspector.primitive.LazyDoubleObjectInspector;
 import org.apache.hadoop.io.Text;
@@ -30,6 +32,7 @@ import org.apache.hadoop.io.Text;
 public class LazyDouble extends
     LazyPrimitive<LazyDoubleObjectInspector, DoubleWritable> {
 
+  private static final Log LOG = LogFactory.getLog(LazyDouble.class);
   public LazyDouble(LazyDoubleObjectInspector oi) {
     super(oi);
     data = new DoubleWritable();
@@ -42,13 +45,18 @@ public class LazyDouble extends
 
   @Override
   public void init(ByteArrayRef bytes, int start, int length) {
+    String byteData = null;
     try {
-      data.set(Double.parseDouble(Text.decode(bytes.getData(), start, length)));
+      byteData = Text.decode(bytes.getData(), start, length);
+      data.set(Double.parseDouble(byteData));
       isNull = false;
     } catch (NumberFormatException e) {
       isNull = true;
+      LOG.debug("Data not in the Double data type range so converted to null. Given data is :"
+          + byteData, e);
     } catch (CharacterCodingException e) {
       isNull = true;
+      LOG.debug("Data not in the Double data type range so converted to null.", e);
     }
   }
 
