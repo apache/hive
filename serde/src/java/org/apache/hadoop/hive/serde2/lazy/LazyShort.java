@@ -53,6 +53,7 @@ public class LazyShort extends
       isNull = false;
     } catch (NumberFormatException e) {
       isNull = true;
+      logExceptionMessage(bytes, start, length, "SMALLINT");
     }
   }
 

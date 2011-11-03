@@ -18,11 +18,18 @@
 
 package org.apache.hadoop.hive.serde2.lazy;
 
+import java.nio.charset.CharacterCodingException;
+
 import org.apache.commons.codec.binary.Base64;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.hive.serde2.lazy.objectinspector.primitive.LazyBinaryObjectInspector;
 import org.apache.hadoop.io.BytesWritable;
+import org.apache.hadoop.io.Text;
 
 public class LazyBinary extends LazyPrimitive<LazyBinaryObjectInspector, BytesWritable> {
+
+  private static final Log LOG = LogFactory.getLog(LazyBinary.class);
 
   LazyBinary(LazyBinaryObjectInspector oi) {
     super(oi);
@@ -42,7 +49,12 @@ public class LazyBinary extends LazyPrimitive<LazyBinaryObjectInspector, BytesWr
 
     byte[] recv = new byte[length];
     System.arraycopy(bytes.getData(), start, recv, 0, length);
-    byte[] decoded = Base64.isArrayByteBase64(recv) ? Base64.decodeBase64(recv) : recv;
+    boolean arrayByteBase64 = Base64.isArrayByteBase64(recv);
+    if (arrayByteBase64) {
+      LOG.debug("Data not contains valid characters within the Base64 alphabet so " +
+                "decoded the data.");
+    }
+    byte[] decoded = arrayByteBase64 ? Base64.decodeBase64(recv) : recv;
     data.set(decoded, 0, decoded.length);
   }
 

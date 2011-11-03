@@ -56,6 +56,7 @@ public class LazyInteger extends
       isNull = false;
     } catch (NumberFormatException e) {
       isNull = true;
+      logExceptionMessage(bytes, start, length, "INT");
     }
   }
 

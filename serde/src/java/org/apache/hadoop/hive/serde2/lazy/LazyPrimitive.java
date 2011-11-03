@@ -17,7 +17,12 @@
  */
 package org.apache.hadoop.hive.serde2.lazy;
 
+import java.nio.charset.CharacterCodingException;
+
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
+import org.apache.hadoop.io.Text;
 import org.apache.hadoop.io.Writable;
 
 /**
@@ -26,6 +31,7 @@ import org.apache.hadoop.io.Writable;
 public abstract class LazyPrimitive<OI extends ObjectInspector, T extends Writable>
     extends LazyObject<OI> {
 
+  private static final Log LOG = LogFactory.getLog(LazyPrimitive.class);
   LazyPrimitive(OI oi) {
     super(oi);
   }
@@ -59,6 +65,17 @@ public abstract class LazyPrimitive<OI extends ObjectInspector, T extends Writab
   @Override
   public int hashCode() {
     return isNull ? 0 : data.hashCode();
+  }
+
+  public void logExceptionMessage(ByteArrayRef bytes, int start, int length, String dataType) {
+    try {
+      String byteData = Text.decode(bytes.getData(), start, length);
+      LOG.debug("Data not in the " + dataType
+          + " data type range so converted to null. Given data is :" +
+                  byteData);
+    } catch (CharacterCodingException e1) {
+      LOG.debug("Data not in the " + dataType + " data type range so converted to null.", e1);
+    }
   }
 
 }

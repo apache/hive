@@ -375,16 +375,17 @@ public class TestLazyPrimitive extends TestCase {
   }
 
   public void testLazyBinary() {
-
     LazyBinary ba = new LazyBinary(LazyPrimitiveObjectInspectorFactory.LAZY_BINARY_OBJECT_INSPECTOR);
-    initLazyObject(ba, new byte[]{}, 0, 0);
+    initLazyObject(ba, new byte[] {}, 0, 0);
     assertEquals(new BytesWritable(), ba.getWritableObject());
-    initLazyObject(ba, new byte[]{'%'}, 0, 1);
-    assertEquals(new BytesWritable(new byte[]{'%'}), ba.getWritableObject());
-    initLazyObject(ba, new byte[]{'2','>','3'}, 1, 1);
-    assertEquals(new BytesWritable(new byte[]{'>'}), ba.getWritableObject());
-    initLazyObject(ba, new byte[]{'2','?','3'}, 0, 3);
-    assertEquals(new BytesWritable(new byte[]{'2','?','3'}), ba.getWritableObject());
+    initLazyObject(ba, new byte[] {'%'}, 0, 1);
+    assertEquals(new BytesWritable(new byte[] {'%'}), ba.getWritableObject());
+    initLazyObject(ba, new byte[] {'2', '>', '3'}, 1, 1);
+    assertEquals(new BytesWritable(new byte[] {'>'}), ba.getWritableObject());
+    initLazyObject(ba, new byte[] {'2', '?', '3'}, 0, 3);
+    assertEquals(new BytesWritable(new byte[] {'2', '?', '3'}), ba.getWritableObject());
+    initLazyObject(ba, new byte[] {'\n'}, 0, 1);
+    assertEquals(new BytesWritable(new byte[] {}), ba.getWritableObject());
   }
 
   public void testLazyIntegerWrite() throws Throwable {
