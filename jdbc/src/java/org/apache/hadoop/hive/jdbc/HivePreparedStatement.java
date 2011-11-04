@@ -174,9 +174,9 @@ public class HivePreparedStatement implements PreparedStatement {
       }
       client.execute(sql);
     } catch (HiveServerException e) {
-      throw new SQLException(e.getMessage(), e.getSQLState(), e.getErrorCode());
+      throw new SQLException(e.getMessage(), e.getSQLState(), e.getErrorCode(), e);
     } catch (Exception ex) {
-      throw new SQLException(ex.toString(), "08S01");
+      throw new SQLException(ex.toString(), "08S01", ex);
     }
     resultSet = new HiveQueryResultSet(client, maxRows);
     return resultSet;
