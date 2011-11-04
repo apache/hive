@@ -27,6 +27,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -732,18 +733,22 @@ public class Driver implements CommandProcessor {
         name = p.getName().split("@")[2];
       }
 
-      String partName = name;
       String partialName = "";
       String[] partns = name.split("/");
       int len = p instanceof DummyPartition ? partns.length : partns.length - 1;
+      Map<String, String> partialSpec = new LinkedHashMap<String, String>();
       for (int idx = 0; idx < len; idx++) {
         String partn = partns[idx];
         partialName += partn;
+        String[] nameValue = partn.split("=");
+        assert(nameValue.length == 2);
+        partialSpec.put(nameValue[0], nameValue[1]);
         try {
           locks.add(new HiveLockObj(
                       new HiveLockObject(new DummyPartition(p.getTable(), p.getTable().getDbName()
                                                             + "/" + p.getTable().getTableName()
-                                                            + "/" + partialName), lockData), mode));
+                                                            + "/" + partialName,
+                                                              partialSpec), lockData), mode));
           partialName += "/";
         } catch (HiveException e) {
           throw new SemanticException(e.getMessage());

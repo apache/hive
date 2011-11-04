@@ -18,8 +18,14 @@
 
 package org.apache.hadoop.hive.ql.metadata;
 
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.apache.hadoop.hive.metastore.api.FieldSchema;
 
 /**
  * A Hive Table Partition: is a fundamental storage unit within a Table. Currently, Hive does not support
@@ -35,12 +41,20 @@ public class DummyPartition extends Partition {
       .getLog("hive.ql.metadata.DummyPartition");
 
   private String name;
+  private LinkedHashMap<String, String> partSpec;
   public DummyPartition() {
   }
-
+  
   public DummyPartition(Table tbl, String name) throws HiveException {
     setTable(tbl);
     this.name = name;
+  }  
+
+  public DummyPartition(Table tbl, String name,
+      Map<String, String> partSpec) throws HiveException {
+    setTable(tbl);
+    this.name = name;
+    this.partSpec = new LinkedHashMap<String, String>(partSpec);
   }
 
   public String getName() {
@@ -54,4 +68,19 @@ public class DummyPartition extends Partition {
   public String getCompleteName() {
     return getName();
   }
+
+  @Override
+  public LinkedHashMap<String, String> getSpec() {
+    return partSpec;
+  }
+
+  @Override
+  public List<String> getValues() {
+    List<String> values = new ArrayList<String>();
+    for (FieldSchema fs : this.getTable().getPartCols()) {
+      values.add(partSpec.get(fs.getName()));
+    }
+    return values;
+  }
+
 }

@@ -27,9 +27,9 @@ import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Set;
 import java.util.TreeSet;
+import java.util.Map.Entry;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 
@@ -58,6 +58,7 @@ import org.apache.hadoop.hive.ql.exec.FunctionRegistry;
 import org.apache.hadoop.hive.ql.exec.GroupByOperator;
 import org.apache.hadoop.hive.ql.exec.JoinOperator;
 import org.apache.hadoop.hive.ql.exec.MapRedTask;
+import org.apache.hadoop.hive.ql.exec.ArchiveUtils;
 import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.exec.OperatorFactory;
 import org.apache.hadoop.hive.ql.exec.RecordReader;
@@ -93,7 +94,6 @@ import org.apache.hadoop.hive.ql.metadata.VirtualColumn;
 import org.apache.hadoop.hive.ql.optimizer.GenMRFileSink1;
 import org.apache.hadoop.hive.ql.optimizer.GenMROperator;
 import org.apache.hadoop.hive.ql.optimizer.GenMRProcContext;
-import org.apache.hadoop.hive.ql.optimizer.GenMRProcContext.GenMapRedCtx;
 import org.apache.hadoop.hive.ql.optimizer.GenMRRedSink1;
 import org.apache.hadoop.hive.ql.optimizer.GenMRRedSink2;
 import org.apache.hadoop.hive.ql.optimizer.GenMRRedSink3;
@@ -103,10 +103,14 @@ import org.apache.hadoop.hive.ql.optimizer.GenMRUnion1;
 import org.apache.hadoop.hive.ql.optimizer.GenMapRedUtils;
 import org.apache.hadoop.hive.ql.optimizer.MapJoinFactory;
 import org.apache.hadoop.hive.ql.optimizer.Optimizer;
+import org.apache.hadoop.hive.ql.optimizer.GenMRProcContext.GenMapRedCtx;
 import org.apache.hadoop.hive.ql.optimizer.physical.PhysicalContext;
 import org.apache.hadoop.hive.ql.optimizer.physical.PhysicalOptimizer;
 import org.apache.hadoop.hive.ql.optimizer.ppr.PartitionPruner;
 import org.apache.hadoop.hive.ql.optimizer.unionproc.UnionProcContext;
+import org.apache.hadoop.hive.ql.parse.BaseSemanticAnalyzer.AnalyzeCreateCommonVars;
+import org.apache.hadoop.hive.ql.parse.BaseSemanticAnalyzer.RowFormatParams;
+import org.apache.hadoop.hive.ql.parse.BaseSemanticAnalyzer.StorageFormat;
 import org.apache.hadoop.hive.ql.parse.BaseSemanticAnalyzer.tableSpec.SpecType;
 import org.apache.hadoop.hive.ql.plan.AggregationDesc;
 import org.apache.hadoop.hive.ql.plan.CreateTableDesc;
@@ -123,7 +127,6 @@ import org.apache.hadoop.hive.ql.plan.ExtractDesc;
 import org.apache.hadoop.hive.ql.plan.FetchWork;
 import org.apache.hadoop.hive.ql.plan.FileSinkDesc;
 import org.apache.hadoop.hive.ql.plan.FilterDesc;
-import org.apache.hadoop.hive.ql.plan.FilterDesc.sampleDesc;
 import org.apache.hadoop.hive.ql.plan.ForwardDesc;
 import org.apache.hadoop.hive.ql.plan.GroupByDesc;
 import org.apache.hadoop.hive.ql.plan.HiveOperation;
@@ -146,12 +149,13 @@ import org.apache.hadoop.hive.ql.plan.TableDesc;
 import org.apache.hadoop.hive.ql.plan.TableScanDesc;
 import org.apache.hadoop.hive.ql.plan.UDTFDesc;
 import org.apache.hadoop.hive.ql.plan.UnionDesc;
+import org.apache.hadoop.hive.ql.plan.FilterDesc.sampleDesc;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.ql.session.SessionState.ResourceType;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDAFEvaluator;
-import org.apache.hadoop.hive.ql.udf.generic.GenericUDAFEvaluator.Mode;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFHash;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDTF;
+import org.apache.hadoop.hive.ql.udf.generic.GenericUDAFEvaluator.Mode;
 import org.apache.hadoop.hive.serde.Constants;
 import org.apache.hadoop.hive.serde2.Deserializer;
 import org.apache.hadoop.hive.serde2.MetadataTypedColumnsetSerDe;
@@ -3835,8 +3839,9 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
             String ppath = dpCtx.getSPPath();
             ppath = ppath.substring(0, ppath.length()-1);
             DummyPartition p =
-              new DummyPartition(dest_tab,
-                                 dest_tab.getDbName() + "@" + dest_tab.getTableName() + "@" + ppath);
+                new DummyPartition(dest_tab, dest_tab.getDbName()
+                    + "@" + dest_tab.getTableName() + "@" + ppath,
+                    partSpec);
             outputs.add(new WriteEntity(p, false));
           } catch (HiveException e) {
             throw new SemanticException(e.getMessage());
@@ -3858,10 +3863,6 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       dest_path = new Path(tabPath.toUri().getScheme(), tabPath.toUri()
           .getAuthority(), partPath.toUri().getPath());
 
-      if ("har".equalsIgnoreCase(dest_path.toUri().getScheme())) {
-        throw new SemanticException(ErrorMsg.OVERWRITE_ARCHIVED_PART
-            .getMsg(qb.getParseInfo().getDestForClause(dest)));
-      }
       queryTmpdir = ctx.getExternalTmpFileURI(dest_path.toUri());
       table_desc = Utilities.getTableDesc(dest_tab);
 
@@ -7517,6 +7518,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
 
   @Override
   public void validate() throws SemanticException {
+    LOG.debug("validation start");
     // Validate inputs and outputs have right protectmode to execute the query
     for (ReadEntity readEntity: getInputs()) {
       ReadEntity.Type type = readEntity.getType();
@@ -7549,8 +7551,30 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     for (WriteEntity writeEntity: getOutputs()) {
       WriteEntity.Type type = writeEntity.getType();
 
+
+      if(type == WriteEntity.Type.PARTITION || type == WriteEntity.Type.DUMMYPARTITION) {
+        String conflictingArchive;
+        try {
+          Partition usedp = writeEntity.getPartition();
+          Table tbl = usedp.getTable();
+
+          LOG.debug("validated " + usedp.getName());
+          LOG.debug(usedp.getTable());
+          conflictingArchive = ArchiveUtils
+              .conflictingArchiveNameOrNull(db, tbl, usedp.getSpec());
+        } catch (HiveException e) {
+          throw new SemanticException(e);
+        }
+        if(conflictingArchive != null) {
+          String message = String.format("Insert conflict with existing archive: %s",
+              conflictingArchive);
+          throw new SemanticException(message);
+        }
+      }
+
       if (type != WriteEntity.Type.TABLE &&
           type != WriteEntity.Type.PARTITION) {
+        LOG.debug("not validating writeEntity, because entity is neither table nor partition");
         continue;
       }
 
@@ -7582,8 +7606,10 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
               " Table " + tbl.getTableName() +
               " Partition " + p.getName()));
         }
+
       }
       else {
+        LOG.debug("Not a partition.");
         tbl = writeEntity.getTable();
       }
 

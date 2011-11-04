@@ -51,6 +51,7 @@ import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.Order;
 import org.apache.hadoop.hive.metastore.api.PrincipalType;
 import org.apache.hadoop.hive.ql.Driver;
+import org.apache.hadoop.hive.ql.exec.ArchiveUtils;
 import org.apache.hadoop.hive.ql.exec.FetchTask;
 import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.exec.TaskFactory;
@@ -1158,7 +1159,7 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
           }
           bucketCols = part.getBucketCols();
           inputFormatClass = part.getInputFormatClass();
-          isArchived = Utilities.isArchived(part);
+          isArchived = ArchiveUtils.isArchived(part);
           tblPartLoc = part.getDataLocation().toString();
         }
       } else {
@@ -1759,7 +1760,7 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
       // configured not to fail silently
       boolean throwException =
         !ifExists && !HiveConf.getBoolVar(conf, ConfVars.DROPIGNORESNONEXISTENT);
-      addTablePartsOutputs(tblName, partSpecs, throwException, ast);
+      addTablePartsOutputs(tblName, partSpecs, throwException, false, ast);
     }
 
     rootTasks.add(TaskFactory.get(new DDLWork(getInputs(), getOutputs(),
@@ -1954,15 +1955,16 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
     // partition name to value
     List<Map<String, String>> partSpecs = getPartitionSpecs(ast);
 
+    Table tab = null;
     try {
-      Table tab = db.getTable(db.getCurrentDatabase(), tblName, false);
+      tab = db.getTable(db.getCurrentDatabase(), tblName, false);
       if (tab != null) {
         inputs.add(new ReadEntity(tab));
       }
     } catch (HiveException e) {
       throw new SemanticException(ErrorMsg.INVALID_TABLE.getMsg(tblName));
     }
-    addTablePartsOutputs(tblName, partSpecs);
+    addTablePartsOutputs(tblName, partSpecs, true);
 
     if (partSpecs.size() > 1 ) {
       throw new SemanticException(isUnArchive ?
@@ -1974,6 +1976,11 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
     }
 
     Map<String,String> partSpec = partSpecs.get(0);
+    try {
+      isValidPrefixSpec(tab, partSpec);
+    } catch(HiveException e) {
+      throw new SemanticException(e.getMessage(), e);
+    }
       AlterTableSimpleDesc archiveDesc = new AlterTableSimpleDesc(
           db.getCurrentDatabase(), tblName, partSpec,
           (isUnArchive ? AlterTableTypes.UNARCHIVE : AlterTableTypes.ARCHIVE));
@@ -2064,7 +2071,16 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
    */
   private void addTablePartsOutputs(String tblName, List<Map<String, String>> partSpecs)
     throws SemanticException {
-    addTablePartsOutputs(tblName, partSpecs, false, null);
+    addTablePartsOutputs(tblName, partSpecs, false, false, null);
+  }
+
+  /**
+   * Add the table partitions to be modified in the output, so that it is available for the
+   * pre-execution hook. If the partition does not exist, no error is thrown.
+   */
+  private void addTablePartsOutputs(String tblName, List<Map<String, String>> partSpecs, boolean allowMany)
+    throws SemanticException {
+    addTablePartsOutputs(tblName, partSpecs, false, allowMany, null);
   }
 
   /**
@@ -2073,7 +2089,7 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
    * throwIfNonExistent is true, otherwise ignore it.
    */
   private void addTablePartsOutputs(String tblName, List<Map<String, String>> partSpecs,
-				    boolean throwIfNonExistent, ASTNode ast)
+				    boolean throwIfNonExistent, boolean allowMany, ASTNode ast)
     throws SemanticException {
     Table tab;
     try {
@@ -2085,18 +2101,32 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
     Iterator<Map<String, String>> i;
     int index;
     for (i = partSpecs.iterator(), index = 1; i.hasNext(); ++index) {
-	Map<String, String> partSpec = i.next();
-      try {
-        Partition part = db.getPartition(tab, partSpec, false);
-        if (part == null) {
-          continue;
+      Map<String, String> partSpec = i.next();
+      List<Partition> parts = null;
+      if(allowMany) {
+        try {
+          parts = db.getPartitions(tab, partSpec);
+        } catch (HiveException e) {
+          LOG.error("Got HiveException during obtaining list of partitions");
         }
-        outputs.add(new WriteEntity(part));
-      } catch (HiveException e) {
-        // Ignore the error if the partition does not exist
-	  if (throwIfNonExistent) {
-	    throw new SemanticException(ErrorMsg.INVALID_PARTITION.getMsg(ast.getChild(index)));
-	  }
+      } else {
+        parts = new ArrayList<Partition>();
+        try {
+          Partition p = db.getPartition(tab, partSpec, false);
+          if(p != null) {
+            parts.add(p);
+          }
+        } catch(HiveException e) {
+          LOG.debug("Wrong specification");
+        }
+      }
+      if (parts.isEmpty()) {
+        if(throwIfNonExistent) {
+          throw new SemanticException(ErrorMsg.INVALID_PARTITION.getMsg(ast.getChild(index)));
+        }
+      }
+      for(Partition p: parts) {
+        outputs.add(new WriteEntity(p));
       }
     }
   }

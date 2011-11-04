@@ -1957,22 +1957,6 @@ public final class Utilities {
   }
 
   /**
-   * Determines whether a partition has been archived
-   *
-   * @param p
-   * @return
-   */
-  public static boolean isArchived(Partition p) {
-    Map<String, String> params = p.getParameters();
-    if ("true".equalsIgnoreCase(params.get(
-        org.apache.hadoop.hive.metastore.api.Constants.IS_ARCHIVED))) {
-      return true;
-    } else {
-      return false;
-    }
-  }
-
-  /**
    * Check if a function can be pushed down to JDO.
    * Now only {=, AND, OR} are supported.
    * @param func a generic function.

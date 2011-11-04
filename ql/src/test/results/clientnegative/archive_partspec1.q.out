@@ -21,19 +21,4 @@ POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
 POSTHOOK: Output: default@srcpart_archived@ds=2008-04-08/hr=12
 POSTHOOK: Lineage: srcpart_archived PARTITION(ds=2008-04-08,hr=12).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: srcpart_archived PARTITION(ds=2008-04-08,hr=12).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
-PREHOOK: query: ALTER TABLE srcpart_archived ARCHIVE PARTITION (ds='2008-04-08', hr='12')
-PREHOOK: type: ALTERTABLE_ARCHIVE
-PREHOOK: Input: default@srcpart_archived
-PREHOOK: Output: default@srcpart_archived@ds=2008-04-08/hr=12
-POSTHOOK: query: ALTER TABLE srcpart_archived ARCHIVE PARTITION (ds='2008-04-08', hr='12')
-POSTHOOK: type: ALTERTABLE_ARCHIVE
-POSTHOOK: Input: default@srcpart_archived
-POSTHOOK: Output: default@srcpart_archived@ds=2008-04-08/hr=12
-POSTHOOK: Lineage: srcpart_archived PARTITION(ds=2008-04-08,hr=12).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: srcpart_archived PARTITION(ds=2008-04-08,hr=12).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
-PREHOOK: query: ALTER TABLE srcpart_archived ARCHIVE PARTITION (ds='2008-04-08', hr='12')
-PREHOOK: type: ALTERTABLE_ARCHIVE
-PREHOOK: Input: default@srcpart_archived
-PREHOOK: Output: default@srcpart_archived@ds=2008-04-08/hr=12
-FAILED: Error in metadata: Partition(s) already archived
-FAILED: Execution Error, return code 1 from org.apache.hadoop.hive.ql.exec.DDLTask
+FAILED: Error in semantic analysis: Partition columns in partition specification are not the same as that defined in the table schema. The names and orders have to be exactly the same. Partition columns in the table schema are: (ds, hr), while the partitions specified in the query are: (ds, nonexistingpart).

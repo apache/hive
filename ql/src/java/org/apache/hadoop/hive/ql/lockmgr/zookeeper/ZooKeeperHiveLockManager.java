@@ -693,7 +693,7 @@ public class ZooKeeperHiveLockManager implements HiveLockManager {
       }
 
       if (partn == null) {
-        return new HiveLockObject(new DummyPartition(tab, path), data);
+        return new HiveLockObject(new DummyPartition(tab, path, partSpec), data);
       }
 
       return new HiveLockObject(partn, data);

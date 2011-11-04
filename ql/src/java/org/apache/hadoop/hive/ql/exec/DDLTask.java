@@ -74,6 +74,7 @@ import org.apache.hadoop.hive.metastore.api.Role;
 import org.apache.hadoop.hive.ql.Context;
 import org.apache.hadoop.hive.ql.DriverContext;
 import org.apache.hadoop.hive.ql.QueryPlan;
+import org.apache.hadoop.hive.ql.exec.ArchiveUtils.PartSpecInfo;
 import org.apache.hadoop.hive.ql.hooks.ReadEntity;
 import org.apache.hadoop.hive.ql.hooks.WriteEntity;
 import org.apache.hadoop.hive.ql.io.rcfile.merge.BlockMergeTask;
@@ -1045,22 +1046,37 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
     return 0;
   }
 
-  private void setIsArchived(Partition p, boolean state) {
+  /**
+   * Sets archiving flag locally; it has to be pushed into metastore
+   * @param p partition to set flag
+   * @param state desired state of IS_ARCHIVED flag
+   * @param level desired level for state == true, anything for false
+   */
+  private void setIsArchived(Partition p, boolean state, int level) {
     Map<String, String> params = p.getParameters();
     if (state) {
       params.put(org.apache.hadoop.hive.metastore.api.Constants.IS_ARCHIVED,
           "true");
+      params.put(ArchiveUtils.ARCHIVING_LEVEL, Integer
+          .toString(level));
     } else {
       params.remove(org.apache.hadoop.hive.metastore.api.Constants.IS_ARCHIVED);
+      params.remove(ArchiveUtils.ARCHIVING_LEVEL);
     }
   }
 
+  /**
+   * Returns original partition of archived partition, null for unarchived one
+   */
   private String getOriginalLocation(Partition p) {
     Map<String, String> params = p.getParameters();
     return params.get(
         org.apache.hadoop.hive.metastore.api.Constants.ORIGINAL_LOCATION);
   }
 
+  /**
+   * Sets original location of partition which is to be archived
+   */
   private void setOriginalLocation(Partition p, String loc) {
     Map<String, String> params = p.getParameters();
     if (loc == null) {
@@ -1070,56 +1086,19 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
     }
   }
 
-  // Returns only the path component of the URI
-  private String getArchiveDirOnly(Path parentDir, String archiveName) {
-    URI parentUri = parentDir.toUri();
-    Path harDir = new Path(parentUri.getPath(), archiveName);
-    return harDir.toString();
-  }
-
   /**
    * Sets the appropriate attributes in the supplied Partition object to mark
    * it as archived. Note that the metastore is not touched - a separate
    * call to alter_partition is needed.
    *
    * @param p - the partition object to modify
-   * @param parentDir - the parent directory of the archive, which is the
-   * original directory that the partition's files resided in
-   * @param dirInArchive - the directory within the archive file that contains
-   * the partitions files
-   * @param archiveName - the name of the archive
-   * @throws URISyntaxException
+   * @param harPath - new location of partition (har schema URI)
    */
-  private void setArchived(Partition p, Path parentDir, String dirInArchive, String archiveName)
-      throws URISyntaxException {
-    assert(Utilities.isArchived(p) == false);
-    Map<String, String> params = p.getParameters();
-
-    URI parentUri = parentDir.toUri();
-    String parentHost = parentUri.getHost();
-    String harHost = null;
-    if (parentHost == null) {
-     harHost = "";
-    } else {
-      harHost = parentUri.getScheme() + "-" + parentHost;
-    }
-
-    // harUri is used to access the partition's files, which are in the archive
-    // The format of the RI is something like:
-    // har://underlyingfsscheme-host:port/archivepath
-    URI harUri = null;
-    if (dirInArchive.length() == 0) {
-      harUri = new URI("har", parentUri.getUserInfo(), harHost, parentUri.getPort(),
-          getArchiveDirOnly(parentDir, archiveName),
-          parentUri.getQuery(), parentUri.getFragment());
-    } else {
-      harUri = new URI("har", parentUri.getUserInfo(), harHost, parentUri.getPort(),
-          new Path(getArchiveDirOnly(parentDir, archiveName), dirInArchive).toUri().getPath(),
-          parentUri.getQuery(), parentUri.getFragment());
-    }
-    setIsArchived(p, true);
-    setOriginalLocation(p, parentDir.toString());
-    p.setLocation(harUri.toString());
+  private void setArchived(Partition p, Path harPath, int level) {
+    assert(ArchiveUtils.isArchived(p) == false);
+    setIsArchived(p, true, level);
+    setOriginalLocation(p, p.getLocation());
+    p.setLocation(harPath.toString());
   }
 
   /**
@@ -1130,9 +1109,9 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
    * @param p - the partition to modify
    */
   private void setUnArchived(Partition p) {
-    assert(Utilities.isArchived(p) == true);
+    assert(ArchiveUtils.isArchived(p) == true);
     String parentDir = getOriginalLocation(p);
-    setIsArchived(p, false);
+    setIsArchived(p, false, 0);
     setOriginalLocation(p, null);
     assert(parentDir != null);
     p.setLocation(parentDir);
@@ -1166,7 +1145,35 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
     }
   }
 
-  private int archive(Hive db, AlterTableSimpleDesc simpleDesc, DriverContext driverContext)
+  /**
+   * Checks in partition is in custom (not-standard) location.
+   * @param tbl - table in which partition is
+   * @param p - partition
+   * @return true if partition location is custom, false if it is standard
+   */
+  boolean partitionInCustomLocation(Table tbl, Partition p)
+      throws HiveException {
+    String subdir = null;
+    try {
+      subdir = Warehouse.makePartName(tbl.getPartCols(), p.getValues());
+    } catch (MetaException e) {
+      throw new HiveException("Unable to get partition's directory", e);
+    }
+    URI tableDir = tbl.getDataLocation();
+    if(tableDir == null) {
+      throw new HiveException("Table has no location set");
+    }
+
+    String standardLocation = (new Path(tableDir.toString(), subdir)).toString();
+    if(ArchiveUtils.isArchived(p)) {
+      return !getOriginalLocation(p).equals(standardLocation);
+    } else {
+      return !p.getLocation().equals(standardLocation);
+    }
+  }
+
+  private int archive(Hive db, AlterTableSimpleDesc simpleDesc,
+      DriverContext driverContext)
       throws HiveException {
     String dbName = simpleDesc.getDbName();
     String tblName = simpleDesc.getTableName();
@@ -1174,45 +1181,85 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
     Table tbl = db.getTable(dbName, tblName);
     validateAlterTableType(tbl, AlterTableDesc.AlterTableTypes.ARCHIVE);
 
-    Map<String, String> partSpec = simpleDesc.getPartSpec();
-    Partition p = db.getPartition(tbl, partSpec, false);
-
     if (tbl.getTableType() != TableType.MANAGED_TABLE) {
       throw new HiveException("ARCHIVE can only be performed on managed tables");
     }
 
-    if (p == null) {
-      throw new HiveException("Specified partition does not exist");
-    }
+    Map<String, String> partSpec = simpleDesc.getPartSpec();
+    PartSpecInfo partSpecInfo = PartSpecInfo.create(tbl, partSpec);
+    List<Partition> partitions = db.getPartitions(tbl, partSpec);
 
-    if (Utilities.isArchived(p)) {
-      // If there were a failure right after the metadata was updated in an
-      // archiving operation, it's possible that the original, unarchived files
-      // weren't deleted.
-      Path originalDir = new Path(getOriginalLocation(p));
-      Path leftOverIntermediateOriginal = new Path(originalDir.getParent(),
-          originalDir.getName() + INTERMEDIATE_ORIGINAL_DIR_SUFFIX);
+    Path originalDir = null;
 
-      if (pathExists(leftOverIntermediateOriginal)) {
-        console.printInfo("Deleting " + leftOverIntermediateOriginal +
-        " left over from a previous archiving operation");
-        deleteDir(leftOverIntermediateOriginal);
+    // when we have partial partitions specification we must assume partitions
+    // lie in standard place - if they were in custom locations putting
+    // them into one archive would involve mass amount of copying
+    // in full partition specification case we allow custom locations
+    // to keep backward compatibility
+    if (partitions.isEmpty()) {
+      throw new HiveException("No partition matches the specification");
+    } else if(partSpecInfo.values.size() != tbl.getPartCols().size()) {
+      // for partial specifications we need partitions to follow the scheme
+      for(Partition p: partitions){
+        if(partitionInCustomLocation(tbl, p)) {
+          String message = String.format("ARCHIVE cannot run for partition " +
+          		        "groups with custom locations like %s", p.getLocation());
+          throw new HiveException(message);
+        }
       }
-
-      throw new HiveException("Specified partition is already archived");
+      originalDir = partSpecInfo.createPath(tbl);
+    } else {
+      Partition p = partitions.get(0);
+      // partition can be archived if during recovery
+      if(ArchiveUtils.isArchived(p)) {
+        originalDir = new Path(getOriginalLocation(p));
+      } else {
+        originalDir = p.getPartitionPath();
+      }
     }
 
-    Path originalDir = p.getPartitionPath();
     Path intermediateArchivedDir = new Path(originalDir.getParent(),
         originalDir.getName() + INTERMEDIATE_ARCHIVED_DIR_SUFFIX);
     Path intermediateOriginalDir = new Path(originalDir.getParent(),
         originalDir.getName() + INTERMEDIATE_ORIGINAL_DIR_SUFFIX);
+    
+    console.printInfo("intermediate.archived is " + intermediateArchivedDir.toString());
+    console.printInfo("intermediate.original is " + intermediateOriginalDir.toString());
+    
     String archiveName = "data.har";
     FileSystem fs = null;
     try {
       fs = originalDir.getFileSystem(conf);
     } catch (IOException e) {
       throw new HiveException(e);
+    }
+
+    URI archiveUri = (new Path(originalDir, archiveName)).toUri();
+    URI originalUri = ArchiveUtils.addSlash(originalDir.toUri());
+    ArchiveUtils.HarPathHelper harHelper = new ArchiveUtils.HarPathHelper(
+        conf, archiveUri, originalUri);
+
+    // we checked if partitions matching specification are marked as archived
+    // in the metadata; if they are and their levels are the same as we would
+    // set it later it means previous run failed and we have to do the recovery;
+    // if they are different, we throw an error
+    for(Partition p: partitions) {
+      if(ArchiveUtils.isArchived(p)) {
+        if(ArchiveUtils.getArchivingLevel(p) != partSpecInfo.values.size()) {
+          String name = ArchiveUtils.getPartialName(p, ArchiveUtils.getArchivingLevel(p));
+          String m = String.format("Conflict with existing archive %s", name);
+          throw new HiveException(m);
+        } else {
+          throw new HiveException("Partition(s) already archived");
+        }
+      }
+    }
+
+    boolean recovery = false;
+    if (pathExists(intermediateArchivedDir)
+        || pathExists(intermediateOriginalDir)) {
+      recovery = true;
+      console.printInfo("Starting recovery after failed ARCHIVE");
     }
 
     // The following steps seem roundabout, but they are meant to aid in
@@ -1242,10 +1289,12 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
 
       // First create the archive in a tmp dir so that if the job fails, the
       // bad files don't pollute the filesystem
-      Path tmpDir = new Path(driverContext.getCtx().getExternalTmpFileURI(originalDir.toUri()), "partlevel");
+      Path tmpPath = new Path(driverContext.getCtx()
+                    .getExternalTmpFileURI(originalDir.toUri()), "partlevel");
 
-      console.printInfo("Creating " + archiveName + " for " + originalDir.toString());
-      console.printInfo("in " + tmpDir);
+      console.printInfo("Creating " + archiveName +
+                        " for " + originalDir.toString());
+      console.printInfo("in " + tmpPath);
       console.printInfo("Please wait... (this may take a while)");
 
       // Create the Hadoop archive
@@ -1254,10 +1303,10 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
       try {
         int maxJobNameLen = conf.getIntVar(HiveConf.ConfVars.HIVEJOBNAMELENGTH);
         String jobname = String.format("Archiving %s@%s",
-          tbl.getTableName(), p.getName());
+          tbl.getTableName(), partSpecInfo.getName());
         jobname = Utilities.abbreviate(jobname, maxJobNameLen - 6);
         conf.setVar(HiveConf.ConfVars.HADOOPJOBNAME, jobname);
-        ret = shim.createHadoopArchive(conf, originalDir, tmpDir, archiveName);
+        ret = shim.createHadoopArchive(conf, originalDir, tmpPath, archiveName);
       } catch (Exception e) {
         throw new HiveException(e);
       }
@@ -1267,11 +1316,11 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
       // Move from the tmp dir to an intermediate directory, in the same level as
       // the partition directory. e.g. .../hr=12-intermediate-archived
       try {
-        console.printInfo("Moving " + tmpDir + " to " + intermediateArchivedDir);
+        console.printInfo("Moving " + tmpPath + " to " + intermediateArchivedDir);
         if (pathExists(intermediateArchivedDir)) {
           throw new HiveException("The intermediate archive directory already exists.");
         }
-        fs.rename(tmpDir, intermediateArchivedDir);
+        fs.rename(tmpPath, intermediateArchivedDir);
       } catch (IOException e) {
         throw new HiveException("Error while moving tmp directory");
       }
@@ -1315,38 +1364,28 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
 
     // Record this change in the metastore
     try {
-      boolean parentSettable =
-        conf.getBoolVar(HiveConf.ConfVars.HIVEHARPARENTDIRSETTABLE);
-
-      // dirInArchive is the directory within the archive that has all the files
-      // for this partition. With older versions of Hadoop, archiving a
-      // a directory would produce the same directory structure
-      // in the archive. So if you created myArchive.har of /tmp/myDir, the
-      // files in /tmp/myDir would be located under myArchive.har/tmp/myDir/*
-      // In this case, dirInArchive should be tmp/myDir
-
-      // With newer versions of Hadoop, the parent directory could be specified.
-      // Assuming the parent directory was set to /tmp/myDir when creating the
-      // archive, the files can be found under myArchive.har/*
-      // In this case, dirInArchive should be empty
-
-      String dirInArchive = "";
-      if (!parentSettable) {
-        dirInArchive = originalDir.toUri().getPath();
-        if(dirInArchive.length() > 1 && dirInArchive.charAt(0)=='/') {
-          dirInArchive = dirInArchive.substring(1);
-        }
+      for(Partition p: partitions) {
+        URI originalPartitionUri = ArchiveUtils.addSlash(p.getPartitionPath().toUri());
+        URI harPartitionDir = harHelper.getHarUri(originalPartitionUri);
+        Path harPath = new Path(harPartitionDir.getScheme(),
+            harPartitionDir.getAuthority(),
+            harPartitionDir.getPath()); // make in Path to ensure no slash at the end
+        setArchived(p, harPath, partSpecInfo.values.size());
+        db.alterPartition(tblName, p);
       }
-      setArchived(p, originalDir, dirInArchive, archiveName);
-      db.alterPartition(tblName, p);
     } catch (Exception e) {
       throw new HiveException("Unable to change the partition info for HAR", e);
     }
 
     // If a failure occurs here, the directory containing the original files
     // will not be deleted. The user will run ARCHIVE again to clear this up
-    deleteDir(intermediateOriginalDir);
+    if(pathExists(intermediateOriginalDir)) {
+      deleteDir(intermediateOriginalDir);
+    }
 
+    if(recovery) {
+      console.printInfo("Recovery after ARCHIVE succeeded");
+    }
 
     return 0;
   }
@@ -1361,118 +1400,152 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
 
     // Means user specified a table, not a partition
     if (simpleDesc.getPartSpec() == null) {
-      throw new HiveException("ARCHIVE is for partitions only");
+      throw new HiveException("UNARCHIVE is for partitions only");
     }
-
-    Map<String, String> partSpec = simpleDesc.getPartSpec();
-    Partition p = db.getPartition(tbl, partSpec, false);
 
     if (tbl.getTableType() != TableType.MANAGED_TABLE) {
       throw new HiveException("UNARCHIVE can only be performed on managed tables");
     }
 
-    if (p == null) {
-      throw new HiveException("Specified partition does not exist");
-    }
+    Map<String, String> partSpec = simpleDesc.getPartSpec();
+    PartSpecInfo partSpecInfo = PartSpecInfo.create(tbl, partSpec);
+    List<Partition> partitions = db.getPartitions(tbl, partSpec);
 
-    if (!Utilities.isArchived(p)) {
-      Path location = new Path(p.getLocation());
-      Path leftOverArchiveDir = new Path(location.getParent(),
-          location.getName() + INTERMEDIATE_ARCHIVED_DIR_SUFFIX);
+    int partSpecLevel = partSpec.size();
+    
+    Path originalDir = null;
 
-      if (pathExists(leftOverArchiveDir)) {
-        console.printInfo("Deleting " + leftOverArchiveDir + " left over " +
-        "from a previous unarchiving operation");
-        deleteDir(leftOverArchiveDir);
+    // when we have partial partitions specification we must assume partitions
+    // lie in standard place - if they were in custom locations putting
+    // them into one archive would involve mass amount of copying
+    // in full partition specification case we allow custom locations
+    // to keep backward compatibility
+    if (partitions.isEmpty()) {
+      throw new HiveException("No partition matches the specification");
+    } else if(partSpecInfo.values.size() != tbl.getPartCols().size()) {
+      // for partial specifications we need partitions to follow the scheme
+      for(Partition p: partitions){
+        if(partitionInCustomLocation(tbl, p)) {
+          String message = String.format("UNARCHIVE cannot run for partition " +
+                      "groups with custom locations like %s", p.getLocation());
+          throw new HiveException(message);
+        }
       }
-
-      throw new HiveException("Specified partition is not archived");
+      originalDir = partSpecInfo.createPath(tbl);
+    } else {
+      Partition p = partitions.get(0);
+      if(ArchiveUtils.isArchived(p)) {
+        originalDir = new Path(getOriginalLocation(p));        
+      } else {
+        originalDir = new Path(p.getLocation());
+      }
     }
-
-    Path originalLocation = new Path(getOriginalLocation(p));
-    Path sourceDir = new Path(p.getLocation());
-    Path intermediateArchiveDir = new Path(originalLocation.getParent(),
-        originalLocation.getName() + INTERMEDIATE_ARCHIVED_DIR_SUFFIX);
-    Path intermediateExtractedDir = new Path(originalLocation.getParent(),
-        originalLocation.getName() + INTERMEDIATE_EXTRACTED_DIR_SUFFIX);
-
-    Path tmpDir = new Path(driverContext
-          .getCtx()
-          .getExternalTmpFileURI(originalLocation.toUri()));
-
+    
+    URI originalUri = ArchiveUtils.addSlash(originalDir.toUri());
+    Path intermediateArchivedDir = new Path(originalDir.getParent(),
+        originalDir.getName() + INTERMEDIATE_ARCHIVED_DIR_SUFFIX);
+    Path intermediateExtractedDir = new Path(originalDir.getParent(),
+        originalDir.getName() + INTERMEDIATE_EXTRACTED_DIR_SUFFIX);
+    boolean recovery = false;
+    if(pathExists(intermediateArchivedDir) || pathExists(intermediateExtractedDir)) {
+      recovery = true;
+      console.printInfo("Starting recovery after failed UNARCHIVE");
+    }
+    
+    for(Partition p: partitions) {
+      checkArchiveProperty(partSpecLevel, recovery, p);
+    }
+    
+    String archiveName = "data.har";
     FileSystem fs = null;
     try {
-      fs = tmpDir.getFileSystem(conf);
-      // Verify that there are no files in the tmp dir, because if there are, it
-      // would be copied to the partition
-      FileStatus [] filesInTmpDir = fs.listStatus(tmpDir);
-      if (filesInTmpDir != null && filesInTmpDir.length != 0) {
-        for (FileStatus file : filesInTmpDir) {
-          console.printInfo(file.getPath().toString());
-        }
-        throw new HiveException("Temporary directory " + tmpDir + " is not empty");
-      }
+      fs = originalDir.getFileSystem(conf);
+    } catch (IOException e) {
+      throw new HiveException(e);
+    }
 
+    // assume the archive is in the original dir, check if it exists
+    Path archivePath = new Path(originalDir, archiveName);
+    URI archiveUri = archivePath.toUri();
+    ArchiveUtils.HarPathHelper harHelper = new ArchiveUtils.HarPathHelper(conf,
+        archiveUri, originalUri);
+    URI sourceUri = harHelper.getHarUri(originalUri);
+    Path sourceDir = new Path(sourceUri.getScheme(), sourceUri.getAuthority(), sourceUri.getPath());
+
+    if(!pathExists(intermediateArchivedDir) && !pathExists(archivePath)) {
+      throw new HiveException("Haven't found any archive where it should be");
+    }
+
+    Path tmpPath = new Path(driverContext
+          .getCtx()
+          .getExternalTmpFileURI(originalDir.toUri()));
+
+    try {
+      fs = tmpPath.getFileSystem(conf);
     } catch (IOException e) {
       throw new HiveException(e);
     }
 
     // Some sanity checks
-    if (originalLocation == null) {
+    if (originalDir == null) {
       throw new HiveException("Missing archive data in the partition");
-    }
-    if (!"har".equals(sourceDir.toUri().getScheme())) {
-      throw new HiveException("Location should refer to a HAR");
     }
 
     // Clarification of terms:
-    // - The originalLocation directory represents the original directory of the
-    //   partition's files. They now contain an archived version of those files
+    // - The originalDir directory represents the original directory of the
+    //   partitions' files. They now contain an archived version of those files
     //   eg. hdfs:/warehouse/myTable/ds=1/
     // - The source directory is the directory containing all the files that
-    //   should be in the partition. e.g. har:/warehouse/myTable/ds=1/myTable.har/
+    //   should be in the partitions. e.g. har:/warehouse/myTable/ds=1/myTable.har/
     //   Note the har:/ scheme
 
     // Steps:
     // 1. Extract the archive in a temporary folder
     // 2. Move the archive dir to an intermediate dir that is in at the same
     //    dir as originalLocation. Call the new dir intermediate-extracted.
-    // 3. Rename the original partition dir to an intermediate dir. Call the
+    // 3. Rename the original partitions dir to an intermediate dir. Call the
     //    renamed dir intermediate-archive
-    // 4. Rename intermediate-extracted to the original partition dir
+    // 4. Rename intermediate-extracted to the original partitions dir
     // 5. Change the metadata
-    // 6. Delete the archived partition files in intermediate-archive
+    // 6. Delete the archived partitions files in intermediate-archive
 
     if (!pathExists(intermediateExtractedDir) &&
-        !pathExists(intermediateArchiveDir)) {
+        !pathExists(intermediateArchivedDir)) {
       try {
-
+        
         // Copy the files out of the archive into the temporary directory
         String copySource = sourceDir.toString();
-        String copyDest = tmpDir.toString();
+        String copyDest = tmpPath.toString();
         List<String> args = new ArrayList<String>();
         args.add("-cp");
         args.add(copySource);
         args.add(copyDest);
 
         console.printInfo("Copying " + copySource + " to " + copyDest);
+        FileSystem srcFs = FileSystem.get(sourceDir.toUri(), conf);
+        srcFs.initialize(sourceDir.toUri(), conf);
+        
         FsShell fss = new FsShell(conf);
         int ret = 0;
         try {
           ret = ToolRunner.run(fss, args.toArray(new String[0]));
         } catch (Exception e) {
+          e.printStackTrace();
           throw new HiveException(e);
         }
+
         if (ret != 0) {
-          throw new HiveException("Error while copying files from archive");
+          throw new HiveException("Error while copying files from archive, return code=" + ret);
+        } else {
+          console.printInfo("Succefully Copied " + copySource + " to " + copyDest);
         }
 
-        console.printInfo("Moving " + tmpDir + " to " + intermediateExtractedDir);
+        console.printInfo("Moving " + tmpPath + " to " + intermediateExtractedDir);
         if (fs.exists(intermediateExtractedDir)) {
           throw new HiveException("Invalid state: the intermediate extracted " +
               "directory already exists.");
         }
-        fs.rename(tmpDir, intermediateExtractedDir);
+        fs.rename(tmpPath, intermediateExtractedDir);
       } catch (Exception e) {
         throw new HiveException(e);
       }
@@ -1481,15 +1554,15 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
     // At this point, we know that the extracted files are in the intermediate
     // extracted dir, or in the the original directory.
 
-    if (!pathExists(intermediateArchiveDir)) {
+    if (!pathExists(intermediateArchivedDir)) {
       try {
-        console.printInfo("Moving " + originalLocation + " to " + intermediateArchiveDir);
-        fs.rename(originalLocation, intermediateArchiveDir);
+        console.printInfo("Moving " + originalDir + " to " + intermediateArchivedDir);
+        fs.rename(originalDir, intermediateArchivedDir);
       } catch (IOException e) {
         throw new HiveException(e);
       }
     } else {
-      console.printInfo(intermediateArchiveDir + " already exists. " +
+      console.printInfo(intermediateArchivedDir + " already exists. " +
       "Assuming it contains the archived version of the partition");
     }
 
@@ -1499,29 +1572,53 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
     // If the original location exists here, then it must be the extracted files
     // because in the previous step, we moved the previous original location
     // (containing the archived version of the files) to intermediateArchiveDir
-    if (!pathExists(originalLocation)) {
+    if (!pathExists(originalDir)) {
       try {
-        console.printInfo("Moving " + intermediateExtractedDir + " to " + originalLocation);
-        fs.rename(intermediateExtractedDir, originalLocation);
+        console.printInfo("Moving " + intermediateExtractedDir + " to " + originalDir);
+        fs.rename(intermediateExtractedDir, originalDir);
       } catch (IOException e) {
         throw new HiveException(e);
       }
     } else {
-      console.printInfo(originalLocation + " already exists. " +
+      console.printInfo(originalDir + " already exists. " +
       "Assuming it contains the extracted files in the partition");
     }
 
-    setUnArchived(p);
-    try {
-      db.alterPartition(tblName, p);
-    } catch (InvalidOperationException e) {
-      throw new HiveException(e);
+    for(Partition p: partitions) {
+      setUnArchived(p);
+      try {
+        db.alterPartition(tblName, p);
+      } catch (InvalidOperationException e) {
+        throw new HiveException(e);
+      }
     }
+
     // If a failure happens here, the intermediate archive files won't be
     // deleted. The user will need to call unarchive again to clear those up.
-    deleteDir(intermediateArchiveDir);
+    if(pathExists(intermediateArchivedDir)) {
+      deleteDir(intermediateArchivedDir);
+    }
+
+    if(recovery) {
+      console.printInfo("Recovery after UNARCHIVE succeeded");
+    }
 
     return 0;
+  }
+
+  private void checkArchiveProperty(int partSpecLevel,
+      boolean recovery, Partition p) throws HiveException {
+    if (!ArchiveUtils.isArchived(p) && !recovery) {
+      throw new HiveException("Partition " + p.getName()
+          + " is not archived.");
+    }
+    int archiveLevel = ArchiveUtils.getArchivingLevel(p);
+    if (partSpecLevel > archiveLevel) {
+      throw new HiveException("Partition " + p.getName()
+          + " is archived at level " + archiveLevel
+          + ", and given partspec only has " + partSpecLevel
+          + " specs.");
+    }
   }
 
   private void validateAlterTableType(
@@ -2937,9 +3034,9 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
     } else if (alterTbl.getOp() == AlterTableDesc.AlterTableTypes.ALTERLOCATION) {
       String newLocation = alterTbl.getNewLocation();
       try {
-        URI locURI = new URI(newLocation);
-        if (!locURI.isAbsolute() || locURI.getScheme() == null
-            || locURI.getScheme().trim().equals("")) {
+        URI locUri = new URI(newLocation);
+        if (!locUri.isAbsolute() || locUri.getScheme() == null
+            || locUri.getScheme().trim().equals("")) {
           throw new HiveException(
               newLocation
                   + " is not absolute or has no scheme information. "
@@ -2948,7 +3045,7 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
         if (part != null) {
           part.setLocation(newLocation);
         } else {
-          tbl.setDataLocation(locURI);
+          tbl.setDataLocation(locUri);
         }
       } catch (URISyntaxException e) {
         throw new HiveException(e);
@@ -3080,14 +3177,32 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
       List<Partition> partsToDelete = new ArrayList<Partition>();
       for (Map<String, String> partSpec : dropTbl.getPartSpecs()) {
         List<Partition> partitions = db.getPartitions(tbl, partSpec);
+        // this is to prevent dropping archived partition which is archived in a
+        // different level the drop command specified.
+        int partPrefixToDrop = 0;
+        for (FieldSchema fs : tbl.getPartCols()) {
+          if (partSpec.get(fs.getName()) != null) {
+            partPrefixToDrop += 1;
+          } else {
+            break;
+          }
+        }
         for (Partition p : partitions) {
           if (!p.canDrop()) {
-            throw new HiveException("Table " + tbl.getTableName() +
-                " Partition " + p.getName() +
-                " is protected from being dropped");
+            throw new HiveException("Table " + tbl.getTableName()
+                + " Partition " + p.getName()
+                + " is protected from being dropped");
+          } else if (ArchiveUtils.isArchived(p)) {
+            int partAchiveLevel = ArchiveUtils.getArchivingLevel(p);
+            // trying to drop partitions inside a har, disallow it.
+            if (partAchiveLevel < partPrefixToDrop) {
+              throw new HiveException(
+                  "Cannot drop a subset of partitions in an archive, partition "
+                      + p.getName());
+            }
           }
-          partsToDelete.add(p);
         }
+        partsToDelete.addAll(partitions);
       }
 
       // drop all existing partitions from the list

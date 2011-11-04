@@ -728,26 +728,6 @@ public abstract class BaseSemanticAnalyzer {
       }
     }
 
-    private void ErrorPartSpec(Map<String, String> partSpec, List<FieldSchema> parts)
-       throws SemanticException {
-      StringBuilder sb = new StringBuilder("Partition columns in the table schema are: (");
-      for (FieldSchema fs: parts) {
-        sb.append(fs.getName()).append(", ");
-      }
-      sb.setLength(sb.length() - 2); // remove the last ", "
-      sb.append("), while the partitions specified in the query are: (");
-
-      Iterator<String> itrPsKeys = partSpec.keySet().iterator();
-      while (itrPsKeys.hasNext()) {
-        sb.append(itrPsKeys.next()).append(", ");
-      }
-      sb.setLength(sb.length() - 2); // remove the last ", "
-      sb.append(").");
-
-      throw new SemanticException(
-          ErrorMsg.PARTSPEC_DIFFER_FROM_SCHEMA.getMsg(sb.toString()));
-    }
-
     public Map<String, String> getPartSpec() {
       return this.partSpec;
     }
@@ -794,6 +774,73 @@ public abstract class BaseSemanticAnalyzer {
       partSpec.put(partspec_val.getChild(0).getText().toLowerCase(), val);
     }
     return partSpec;
+  }
+  
+  /**
+   * Checks if given specification is proper specification for prefix of
+   * partition cols, for table partitioned by ds, hr, min valid ones are
+   * (ds='2008-04-08'), (ds='2008-04-08', hr='12'), (ds='2008-04-08', hr='12', min='30')
+   * invalid one is for example (ds='2008-04-08', min='30')
+   * @param spec specification key-value map
+   * @return true if the specification is prefix; never returns false, but throws
+   * @throws HiveException
+   */
+  final public boolean isValidPrefixSpec(Table tTable, Map<String, String> spec)
+ throws HiveException {
+
+    // TODO - types need to be checked.
+    List<FieldSchema> partCols = tTable.getPartitionKeys();
+    if (partCols == null || (partCols.size() == 0)) {
+      if (spec != null) {
+        throw new HiveException(
+            "table is not partitioned but partition spec exists: "
+                + spec);
+      } else {
+        return true;
+      }
+    }
+
+    if (spec == null) {
+      throw new HiveException("partition spec is not specified");
+    }
+    
+    Iterator<String> itrPsKeys = spec.keySet().iterator();
+    for (FieldSchema fs: partCols) {
+      if(!itrPsKeys.hasNext()) {
+        break;
+      }
+      if (!itrPsKeys.next().toLowerCase().equals(
+              fs.getName().toLowerCase())) {
+        ErrorPartSpec(spec, partCols);
+      }
+    }
+    
+    if(itrPsKeys.hasNext()) {
+      ErrorPartSpec(spec, partCols);
+    }
+
+    return true;
+  }
+  
+  private static void ErrorPartSpec(Map<String, String> partSpec,
+      List<FieldSchema> parts) throws SemanticException {
+    StringBuilder sb =
+        new StringBuilder(
+            "Partition columns in the table schema are: (");
+    for (FieldSchema fs : parts) {
+      sb.append(fs.getName()).append(", ");
+    }
+    sb.setLength(sb.length() - 2); // remove the last ", "
+    sb.append("), while the partitions specified in the query are: (");
+
+    Iterator<String> itrPsKeys = partSpec.keySet().iterator();
+    while (itrPsKeys.hasNext()) {
+      sb.append(itrPsKeys.next()).append(", ");
+    }
+    sb.setLength(sb.length() - 2); // remove the last ", "
+    sb.append(").");
+    throw new SemanticException(ErrorMsg.PARTSPEC_DIFFER_FROM_SCHEMA
+        .getMsg(sb.toString()));
   }
 
   public Hive getDb() {
