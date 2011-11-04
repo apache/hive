@@ -1,0 +1,363 @@
+/**
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+package org.apache.hadoop.hive.ql.exec;
+
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.LinkedHashMap;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.metastore.Warehouse;
+import org.apache.hadoop.hive.metastore.api.FieldSchema;
+import org.apache.hadoop.hive.metastore.api.MetaException;
+import org.apache.hadoop.hive.ql.metadata.Hive;
+import org.apache.hadoop.hive.ql.metadata.HiveException;
+import org.apache.hadoop.hive.ql.metadata.Partition;
+import org.apache.hadoop.hive.ql.metadata.Table;
+
+/**
+ * ArchiveUtils.
+ *
+ */
+@SuppressWarnings("nls")
+public final class ArchiveUtils {
+  private static final Log LOG = LogFactory.getLog(ArchiveUtils.class.getName());
+  
+  public static String ARCHIVING_LEVEL = "archiving_level";
+
+  /**
+   * PartSpecInfo keeps fields and values extracted from partial partition info
+   * which is prefix of the full info.
+   */
+  public static class PartSpecInfo {
+    public List<FieldSchema> fields;
+    public List<String> values;
+    private PartSpecInfo(List<FieldSchema> fields, List<String> values) {
+      this.fields = fields;
+      this.values = values;
+    }
+
+    /**
+     * Extract partial prefix specification from table and key-value map
+     *
+     * @param tbl table in which partition is
+     * @param partSpec specification of partition
+     * @return extracted specification
+     */
+    static public PartSpecInfo create(Table tbl, Map<String, String> partSpec)
+        throws HiveException {
+      // we have to check if we receive prefix of partition keys so in table
+      // scheme like table/ds=2011-01-02/hr=13/
+      // ARCHIVE PARTITION (ds='2011-01-02') will work and
+      // ARCHIVE PARTITION(hr='13') won't
+      List<FieldSchema> prefixFields = new ArrayList<FieldSchema>();
+      List<String> prefixValues = new ArrayList<String>();
+      List<FieldSchema> partCols = tbl.getPartCols();
+      Iterator<String> itrPsKeys = partSpec.keySet().iterator();
+      for (FieldSchema fs : partCols) {
+        if (!itrPsKeys.hasNext()) {
+          break;
+        }
+        if (!itrPsKeys.next().toLowerCase().equals(
+            fs.getName().toLowerCase())) {
+          throw new HiveException("Invalid partition specifiation: "
+              + partSpec);
+        }
+        prefixFields.add(fs);
+        prefixValues.add(partSpec.get(fs.getName()));
+      }
+      
+      return new PartSpecInfo(prefixFields, prefixValues);
+    }
+
+    /**
+     * Creates path where partitions matching prefix should lie in filesystem
+     * @param tbl table in which partition is
+     * @return expected location of partitions matching prefix in filesystem
+     */
+    public Path createPath(Table tbl) throws HiveException {
+      String prefixSubdir;
+      try {
+        prefixSubdir = Warehouse.makePartName(fields, values);
+      } catch (MetaException e) {
+        throw new HiveException("Unable to get partitions directories prefix", e);
+      }
+      URI tableDir = tbl.getDataLocation();
+      if(tableDir == null) {
+        throw new HiveException("Table has no location set");
+      }
+      return new Path(tableDir.toString(), prefixSubdir);
+    }
+    /**
+     * Generates name for prefix partial partition specification.
+     */
+    public String getName() throws HiveException {
+      try {
+        return Warehouse.makePartName(fields, values);
+      } catch (MetaException e) {
+        throw new HiveException("Unable to create partial name", e);
+      }
+    }
+  }
+
+  /**
+   * HarPathHelper helps to create har:/ URIs for locations inside of archive.
+   */
+  public static class HarPathHelper {
+    boolean parentSettable;
+    private final URI base, originalBase;
+
+    /**
+     * Creates helper for archive.
+     * @param archive absolute location of archive in underlying filesystem
+     * @param originalBase directory for which Hadoop archive was created
+     */
+    public HarPathHelper(HiveConf hconf, URI archive, URI originalBase) throws HiveException {
+      parentSettable = hconf.getBoolVar(HiveConf.ConfVars.HIVEHARPARENTDIRSETTABLE);
+      this.originalBase = addSlash(originalBase);
+      String parentHost = archive.getHost();
+      String harHost = null;
+      if (parentHost == null) {
+        harHost = archive.getScheme();
+      } else {
+        harHost = archive.getScheme() + "-" + parentHost;
+      }
+
+      // have to make sure there's slash after .har, otherwise resolve doesn't work
+      String path = addSlash(archive.getPath());
+      if(!path.endsWith(".har/")) {
+        throw new HiveException("HAR archive path must end with .har");
+      }
+      // harUri is used to access the partition's files, which are in the archive
+      // The format of the RI is something like:
+      // har://underlyingfsscheme-host:port/archivepath
+      try {
+        base = new URI("har", archive.getUserInfo(), harHost, archive.getPort(),
+              path, archive.getQuery(), archive.getFragment());
+      } catch (URISyntaxException e) {
+        throw new HiveException("Couldn't create har URI from archive URI", e);
+      }
+    }
+
+    /**
+     * Creates har URI for file/directory that was put there when creating HAR.
+     *
+     *  With older versions of Hadoop, archiving a directory would produce
+     *  the same directory structure, reflecting absoulute paths.
+     *  If you created myArchive.har of /tmp/myDir the files in /tmp/myDir
+     *  will be located under myArchive.har/tmp/myDir/*
+     *
+     *  With newer versions, the parent directory can be specified. Assuming
+     *  the parent directory was set to /tmp/myDir when creating the archive,
+     *  the files can be found under myArchive.har/*
+     *
+     *  This is why originalBase is argument - with new versions we can
+     *  relativize URI, in older we keep absolute one.
+     *
+     * @param original file/directory path
+     * @return absolute HAR uri
+     */
+    public URI getHarUri(URI original) throws HiveException {
+      URI relative = null;
+      if (!parentSettable) {
+        String dirInArchive = original.getPath();
+        if(dirInArchive.length() > 1 && dirInArchive.charAt(0)=='/') {
+          dirInArchive = dirInArchive.substring(1);
+        }
+        try {
+          relative = new URI(null, null, dirInArchive, null);
+        } catch (URISyntaxException e) {
+          throw new HiveException("Couldn't create har URI for location");
+        } // relative URI with path only
+      }
+      else {
+        relative = originalBase.relativize(original);
+        if(relative.isAbsolute()) {
+          throw new HiveException("Unable to relativize URI");
+        }
+      }
+      return base.resolve(relative);
+    }
+  }
+
+  public static String addSlash(String s) {
+    return s.endsWith("/") ? s : s + "/";
+  }
+
+  /**
+   * Makes sure, that URI points to directory by adding slash to it.
+   * Useful in relativizing URIs.
+   */
+  public static URI addSlash(URI u) throws HiveException {
+    if(u.getPath().endsWith("/")) {
+      return u;
+    } else {
+      try {
+        return new URI(u.getScheme(), u.getAuthority(), u.getPath() + "/", u.getQuery(), u.getFragment());
+      } catch (URISyntaxException e) {
+        throw new HiveException("Couldn't append slash to a URI", e);
+      }
+    }
+  }
+
+  /**
+   * Determines whether a partition has been archived
+   *
+   * @param p
+   * @return
+   */
+  public static boolean isArchived(Partition p) {
+    Map<String, String> params = p.getParameters();
+    if ("true".equalsIgnoreCase(params.get(
+        org.apache.hadoop.hive.metastore.api.Constants.IS_ARCHIVED))) {
+      return true;
+    } else {
+      return false;
+    }
+  }
+
+  /**
+   * Returns archiving level, which is how many fields were set in partial
+   * specification ARCHIVE was run for
+   */
+  public static int getArchivingLevel(Partition p) throws HiveException {
+    if(!isArchived(p)) {
+      throw new HiveException("Getting level of unarchived partition");
+    }
+
+    Map<String, String> params = p.getParameters();
+    String lv = params.get(ArchiveUtils.ARCHIVING_LEVEL);
+    if(lv != null) {
+      return Integer.parseInt(lv);
+    } else {  // partitions archived before introducing multiple archiving
+      return p.getValues().size();
+    }
+  }
+
+  /**
+   * Get a prefix of the given parition's string representation. The sencond
+   * argument, level, is used for the prefix length. For example, partition
+   * (ds='2010-01-01', hr='00', min='00'), level 1 will reture 'ds=2010-01-01',
+   * and level 2 will return 'ds=2010-01-01/hr=00'.
+   * 
+   * @param p
+   *          partition object
+   * @param level
+   *          level for prefix depth
+   * @return
+   * @throws HiveException
+   */
+  public static String getPartialName(Partition p, int level) throws HiveException {
+    List<FieldSchema> ffields = p.getTable().getPartCols();
+    List<FieldSchema> fields = new ArrayList<FieldSchema>(level);
+    List<String> fvalues = p.getValues();
+    List<String> values = new ArrayList<String>(level);
+    for(int i =0;i<level;i++) {
+      FieldSchema fs = ffields.get(i);
+      String s = fvalues.get(i);
+      fields.add(fs);
+      values.add(s);
+    }
+    try {
+      return Warehouse.makePartName(fields, values);
+    } catch (MetaException e) {
+      throw new HiveException("Wasn't able to generate name" +
+                                " for partial specification");
+    }
+  }
+
+  /**
+   * Determines if one can insert into partition(s), or there's a conflict with
+   * archive. It can be because partition is itself archived or it is to be
+   * created inside existing archive. The second case is when partition doesn't
+   * exist yet, but it would be inside of an archive if it existed. This one is
+   * quite tricky to check, we need to find at least one partition inside of
+   * the parent directory. If it is archived and archiving level tells that
+   * the archival was done of directory partition is in it means we cannot
+   * insert; otherwise we can.
+   * This method works both for full specifications and partial ones - in second
+   * case it checks if any partition that could possibly match such
+   * specification is inside archive.
+   *
+   * @param db - Hive object
+   * @param tbl - table where partition is
+   * @param partSpec - partition specification with possible nulls in case of
+   * dynamic partiton inserts
+   * @return null if partition can be inserted, string with colliding archive
+   * name when it can't
+   * @throws HiveException
+   */
+  public static String conflictingArchiveNameOrNull(Hive db, Table tbl,
+        LinkedHashMap<String, String> partSpec)
+      throws HiveException {
+    
+    List<FieldSchema> partKeys = tbl.getPartitionKeys();
+    int partSpecLevel = 0;
+    for (FieldSchema partKey : partKeys) {
+      if (!partSpec.containsKey(partKey.getName())) {
+        break;
+      }
+      partSpecLevel++;
+    }
+    
+    if(partSpecLevel != partSpec.size()) {
+      throw new HiveException("partspec " + partSpec
+          + " is wrong for table " + tbl.getTableName());
+    }
+
+    Map<String, String> spec = new HashMap<String, String>(partSpec);
+    List<String> reversedKeys = new LinkedList<String>();
+    for (FieldSchema fs : tbl.getPartCols()) {
+      if (spec.containsKey(fs.getName())) {
+        reversedKeys.add(0, fs.getName());
+      }
+    }
+
+    for (String rk : reversedKeys) {
+      List<Partition> parts = db.getPartitions(tbl, spec, (short) 1);
+      if (parts.size() != 0) {
+        Partition p = parts.get(0);
+        if (!isArchived(p)) {
+          // if archiving was done at this or at upper level, every matched
+          // partition would be archived, so it not being archived means
+          // no archiving was done neither at this nor at upper level
+          return null;
+        } else if (getArchivingLevel(p) > spec.size()) {
+          // if archiving was done at this or at upper level its level
+          // would be lesser or equal to specification size
+          // it is not, which means no archiving at this or upper level
+          return null;
+        } else {
+          return getPartialName(p, getArchivingLevel(p));
+        }
+      }
+      spec.remove(rk);
+    }
+    return null;
+  }
+}

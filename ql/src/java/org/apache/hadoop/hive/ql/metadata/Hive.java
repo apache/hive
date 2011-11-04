@@ -1574,14 +1574,16 @@ public class Hive {
    *
    * @param tbl
    *          object for which partition is needed. Must be partitioned.
+   * @param limit number of partitions to return
    * @return list of partition objects
    * @throws HiveException
    */
-  public List<Partition> getPartitions(Table tbl, Map<String, String> partialPartSpec)
+  public List<Partition> getPartitions(Table tbl, Map<String, String> partialPartSpec,
+      short limit)
   throws HiveException {
     if (!tbl.isPartitioned()) {
       throw new HiveException("Partition spec should only be supplied for a " +
-      		"partitioned table");
+          "partitioned table");
     }
 
     List<String> partialPvals = getPvals(tbl.getPartCols(), partialPartSpec);
@@ -1589,7 +1591,7 @@ public class Hive {
     List<org.apache.hadoop.hive.metastore.api.Partition> partitions = null;
     try {
       partitions = getMSC().listPartitionsWithAuthInfo(tbl.getDbName(), tbl.getTableName(),
-          partialPvals, (short) -1, getUserName(), getGroupNames());
+          partialPvals, limit, getUserName(), getGroupNames());
     } catch (Exception e) {
       throw new HiveException(e);
     }
@@ -1600,6 +1602,21 @@ public class Hive {
     }
 
     return qlPartitions;
+  }
+
+  /**
+   * get all the partitions of the table that matches the given partial
+   * specification. partition columns whose value is can be anything should be
+   * an empty string.
+   *
+   * @param tbl
+   *          object for which partition is needed. Must be partitioned.
+   * @return list of partition objects
+   * @throws HiveException
+   */
+  public List<Partition> getPartitions(Table tbl, Map<String, String> partialPartSpec)
+  throws HiveException {
+    return getPartitions(tbl, partialPartSpec, (short)-1);
   }
 
   /**
@@ -1884,7 +1901,7 @@ public class Hive {
             // Note: there are race conditions here, but I don't believe
             // they're worse than what was already present.
             int counter = 1;
-            
+
             // Strip off the file type, if any so we don't make:
             // 000000_0.gz -> 000000_0.gz_copy_1
             String name = itemStaging.getName();
@@ -1896,10 +1913,10 @@ public class Hive {
             } else {
               filetype = "";
             }
-            
+
             Path itemDest = new Path(destf, itemStaging.getName());
             Path itemStagingBase = new Path(itemStaging.getParent(), name);
-            
+
             while (fs.exists(itemDest)) {
               Path proposedStaging = itemStagingBase
                   .suffix("_copy_" + counter++).suffix(filetype);
