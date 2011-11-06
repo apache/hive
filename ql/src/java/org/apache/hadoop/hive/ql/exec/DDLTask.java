@@ -2516,7 +2516,7 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
       Path resFile = new Path(descTbl.getResFile());
       if (tbl == null) {
         FileSystem fs = resFile.getFileSystem(conf);
-        outStream = (DataOutput) fs.open(resFile);
+        outStream = fs.create(resFile);
         String errMsg = "Table " + tableName + " does not exist";
         outStream.write(errMsg.getBytes("UTF-8"));
         ((FSDataOutputStream) outStream).close();
@@ -2527,7 +2527,7 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
         part = db.getPartition(tbl, descTbl.getPartSpec(), false);
         if (part == null) {
           FileSystem fs = resFile.getFileSystem(conf);
-          outStream = (DataOutput) fs.open(resFile);
+          outStream = fs.create(resFile);
           String errMsg = "Partition " + descTbl.getPartSpec() + " for table "
               + tableName + " does not exist";
           outStream.write(errMsg.getBytes("UTF-8"));

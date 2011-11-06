@@ -2,6 +2,3 @@ PREHOOK: query: create external table external1(a int, b int) location 'invalids
 PREHOOK: type: CREATETABLE
 FAILED: Error in metadata: MetaException(message:Got exception: java.io.IOException No FileSystem for scheme: invalidscheme)
 FAILED: Execution Error, return code 1 from org.apache.hadoop.hive.ql.exec.DDLTask
-PREHOOK: query: describe external1
-PREHOOK: type: DESCTABLE
-FAILED: Execution Error, return code 1 from org.apache.hadoop.hive.ql.exec.DDLTask
