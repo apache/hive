@@ -58,7 +58,7 @@ public class HiveDataSource implements DataSource {
     try {
       return new HiveConnection("", null);
     } catch (Exception ex) {
-      throw new SQLException();
+      throw new SQLException("Error in getting HiveConnection",ex);
     }
   }
 

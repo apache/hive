@@ -151,7 +151,7 @@ public class Partition implements Serializable {
       sd.read(prot);
     } catch (TException e) {
       LOG.error("Could not create a copy of StorageDescription");
-      throw new HiveException("Could not create a copy of StorageDescription");
+      throw new HiveException("Could not create a copy of StorageDescription",e);
     }
 
     tpart.setSd(sd);

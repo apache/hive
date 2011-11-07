@@ -34,14 +34,14 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.HashMap;
+import java.util.Map.Entry;
 import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
-import java.util.Map.Entry;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -98,6 +98,7 @@ import org.apache.hadoop.hive.ql.plan.AddPartitionDesc;
 import org.apache.hadoop.hive.ql.plan.AlterDatabaseDesc;
 import org.apache.hadoop.hive.ql.plan.AlterIndexDesc;
 import org.apache.hadoop.hive.ql.plan.AlterTableDesc;
+import org.apache.hadoop.hive.ql.plan.AlterTableDesc.AlterTableTypes;
 import org.apache.hadoop.hive.ql.plan.AlterTableSimpleDesc;
 import org.apache.hadoop.hive.ql.plan.CreateDatabaseDesc;
 import org.apache.hadoop.hive.ql.plan.CreateIndexDesc;
@@ -131,7 +132,6 @@ import org.apache.hadoop.hive.ql.plan.ShowTableStatusDesc;
 import org.apache.hadoop.hive.ql.plan.ShowTablesDesc;
 import org.apache.hadoop.hive.ql.plan.SwitchDatabaseDesc;
 import org.apache.hadoop.hive.ql.plan.UnlockTableDesc;
-import org.apache.hadoop.hive.ql.plan.AlterTableDesc.AlterTableTypes;
 import org.apache.hadoop.hive.ql.plan.api.StageType;
 import org.apache.hadoop.hive.ql.security.authorization.Privilege;
 import org.apache.hadoop.hive.serde.Constants;
@@ -837,7 +837,7 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
     Index idx = db.getIndex(dbName, baseTableName, indexName);
 
     switch(alterIndex.getOp()) {
-      case ADDPROPS: 
+      case ADDPROPS:
         idx.getParameters().putAll(alterIndex.getProps());
         break;
       case UPDATETIMESTAMP:
@@ -1819,12 +1819,12 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
       outStream = null;
     } catch (FileNotFoundException e) {
       LOG.info("show partitions: " + stringifyException(e));
-      throw new HiveException(e.toString());
+      throw new HiveException(e);
     } catch (IOException e) {
       LOG.info("show partitions: " + stringifyException(e));
-      throw new HiveException(e.toString());
+      throw new HiveException(e);
     } catch (Exception e) {
-      throw new HiveException(e.toString());
+      throw new HiveException(e);
     } finally {
       IOUtils.closeStream((FSDataOutputStream) outStream);
     }
@@ -2039,7 +2039,7 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
       LOG.warn("show function: " + stringifyException(e));
       return 1;
     } catch (Exception e) {
-      throw new HiveException(e.toString());
+      throw new HiveException(e);
     } finally {
       IOUtils.closeStream((FSDataOutputStream) outStream);
     }
@@ -2300,7 +2300,7 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
       LOG.warn("describe function: " + stringifyException(e));
       return 1;
     } catch (Exception e) {
-      throw new HiveException(e.toString());
+      throw new HiveException(e);
     } finally {
       IOUtils.closeStream((FSDataOutputStream) outStream);
     }
