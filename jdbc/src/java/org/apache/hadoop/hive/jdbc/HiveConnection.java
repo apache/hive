@@ -76,7 +76,7 @@ public class HiveConnection implements java.sql.Connection {
         client = new HiveServer.HiveServerHandler();
       } catch (MetaException e) {
         throw new SQLException("Error accessing Hive metastore: "
-            + e.getMessage(), "08S01");
+            + e.getMessage(), "08S01",e);
       }
     } else {
       // parse uri
