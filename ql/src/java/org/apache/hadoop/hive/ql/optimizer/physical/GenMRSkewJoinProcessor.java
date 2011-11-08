@@ -58,7 +58,6 @@ import org.apache.hadoop.hive.ql.plan.TableDesc;
 import org.apache.hadoop.hive.ql.plan.TableScanDesc;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
-import org.apache.hadoop.hive.ql.metadata.HiveException;
 
 /**
  * GenMRSkewJoinProcessor.
@@ -280,10 +279,11 @@ public final class GenMRSkewJoinProcessor {
       assert reducer instanceof JoinOperator;
       JoinOperator cloneJoinOp = (JoinOperator) reducer;
 
+      String dumpFilePrefix = "mapfile"+PlanUtils.getCountForMapJoinDumpFilePrefix();
       MapJoinDesc mapJoinDescriptor = new MapJoinDesc(newJoinKeys, keyTblDesc,
           newJoinValues, newJoinValueTblDesc, newJoinValueTblDesc,joinDescriptor
           .getOutputColumnNames(), i, joinDescriptor.getConds(),
-          joinDescriptor.getFilters(), joinDescriptor.getNoOuterJoin());
+          joinDescriptor.getFilters(), joinDescriptor.getNoOuterJoin(), dumpFilePrefix);
       mapJoinDescriptor.setTagOrder(tags);
       mapJoinDescriptor.setHandleSkewJoin(false);
 
