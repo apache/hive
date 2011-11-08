@@ -181,6 +181,7 @@ TOK_TABLESPLITSAMPLE;
 TOK_TMP_FILE;
 TOK_TABSORTCOLNAMEASC;
 TOK_TABSORTCOLNAMEDESC;
+TOK_STRINGLITERALSEQUENCE;
 TOK_CHARSETLITERAL;
 TOK_CREATEFUNCTION;
 TOK_DROPFUNCTION;
@@ -1856,11 +1857,17 @@ constant
     :
     Number
     | StringLiteral
+    | stringLiteralSequence
     | BigintLiteral
     | SmallintLiteral
     | TinyintLiteral
     | charSetStringLiteral
     | booleanValue
+    ;
+
+stringLiteralSequence
+    :
+    StringLiteral StringLiteral+ -> ^(TOK_STRINGLITERALSEQUENCE StringLiteral StringLiteral+)
     ;
 
 charSetStringLiteral
