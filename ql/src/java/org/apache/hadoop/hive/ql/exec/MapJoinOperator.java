@@ -188,7 +188,7 @@ public class MapJoinOperator extends AbstractMapJoinOperator<MapJoinDesc> implem
           .entrySet()) {
         Byte pos = entry.getKey();
         HashMapWrapper<AbstractMapJoinKey, MapJoinObjectValue> hashtable = entry.getValue();
-        String filePath = Utilities.generatePath(baseDir, pos, currentFileName);
+        String filePath = Utilities.generatePath(baseDir, conf.getDumpFilePrefix(), pos, currentFileName);
         Path path = new Path(filePath);
         LOG.info("\tLoad back 1 hashtable file from tmp file uri:" + path.toString());
         hashtable.initilizePersistentHash(path.toUri().getPath());

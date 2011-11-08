@@ -403,7 +403,9 @@ public class MapredLocalTask extends Task<MapredLocalWork> implements Serializab
     if (bigBucketFileName == null || bigBucketFileName.length() == 0) {
       bigBucketFileName = "-";
     }
-    String tmpURIPath = Utilities.generatePath(tmpURI, tag, bigBucketFileName);
+    HashTableSinkOperator htso = (HashTableSinkOperator)childOp;
+    String tmpURIPath = Utilities.generatePath(tmpURI, htso.getConf().getDumpFilePrefix(),
+        tag, bigBucketFileName);
     console.printInfo(Utilities.now() + "\tDump the hashtable into file: " + tmpURIPath);
     Path path = new Path(tmpURIPath);
     FileSystem fs = path.getFileSystem(job);

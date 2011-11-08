@@ -25,8 +25,8 @@ import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.Map.Entry;
+import java.util.Set;
 
 /**
  * Map Join operator Descriptor implementation.
@@ -81,6 +81,9 @@ public class HashTableSinkDesc extends JoinDesc implements Serializable {
   private LinkedHashMap<String, Integer> bucketFileNameMapping;
   private float hashtableMemoryUsage;
 
+  //map join dump file name
+  private String dumpFilePrefix;
+
   public HashTableSinkDesc() {
     bucketFileNameMapping = new LinkedHashMap<String, Integer>();
   }
@@ -109,6 +112,7 @@ public class HashTableSinkDesc extends JoinDesc implements Serializable {
     this.bigTableAlias = clone.getBigTableAlias();
     this.aliasBucketFileNameMapping = clone.getAliasBucketFileNameMapping();
     this.bucketFileNameMapping = clone.getBucketFileNameMapping();
+    this.dumpFilePrefix = clone.getDumpFilePrefix();
   }
 
 
@@ -132,6 +136,21 @@ public class HashTableSinkDesc extends JoinDesc implements Serializable {
 
   public void setHashtableMemoryUsage(float hashtableMemoryUsage) {
     this.hashtableMemoryUsage = hashtableMemoryUsage;
+  }
+
+  /**
+   * @return the dumpFilePrefix
+   */
+  public String getDumpFilePrefix() {
+    return dumpFilePrefix;
+  }
+
+  /**
+   * @param dumpFilePrefix
+   *          the dumpFilePrefix to set
+   */
+  public void setDumpFilePrefix(String dumpFilePrefix) {
+    this.dumpFilePrefix = dumpFilePrefix;
   }
 
   public boolean isHandleSkewJoin() {

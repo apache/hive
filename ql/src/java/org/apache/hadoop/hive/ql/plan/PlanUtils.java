@@ -69,6 +69,8 @@ public final class PlanUtils {
 
   protected static final Log LOG = LogFactory.getLog("org.apache.hadoop.hive.ql.plan.PlanUtils");
 
+  private static long countForMapJoinDumpFilePrefix = 0;
+
   /**
    * ExpressionTypes.
    *
@@ -76,6 +78,10 @@ public final class PlanUtils {
   public static enum ExpressionTypes {
     FIELD, JEXL
   };
+
+  public static long getCountForMapJoinDumpFilePrefix() {
+    return countForMapJoinDumpFilePrefix++;
+  }
 
   @SuppressWarnings("nls")
   public static MapredWork getMapRedWork() {
