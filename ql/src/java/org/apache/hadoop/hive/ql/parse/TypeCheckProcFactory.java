@@ -136,7 +136,8 @@ public final class TypeCheckProcFactory {
         getNumExprProcessor());
     opRules
         .put(new RuleRegExp("R3", HiveParser.Identifier + "%|"
-        + HiveParser.StringLiteral + "%|" + HiveParser.TOK_CHARSETLITERAL
+        + HiveParser.StringLiteral + "%|" + HiveParser.TOK_CHARSETLITERAL + "%|"
+        + HiveParser.TOK_STRINGLITERALSEQUENCE + "%|"
         + "%|" + HiveParser.KW_IF + "%|" + HiveParser.KW_CASE + "%|"
         + HiveParser.KW_WHEN + "%|" + HiveParser.KW_IN + "%|"
         + HiveParser.KW_ARRAY + "%|" + HiveParser.KW_MAP + "%|"
@@ -283,6 +284,14 @@ public final class TypeCheckProcFactory {
       switch (expr.getToken().getType()) {
       case HiveParser.StringLiteral:
         str = BaseSemanticAnalyzer.unescapeSQLString(expr.getText());
+        break;
+      case HiveParser.TOK_STRINGLITERALSEQUENCE:
+        StringBuilder sb = new StringBuilder();
+        for (Node n : expr.getChildren()) {
+          sb.append(
+              BaseSemanticAnalyzer.unescapeSQLString(((ASTNode)n).getText()));
+        }
+        str = sb.toString();
         break;
       case HiveParser.TOK_CHARSETLITERAL:
         str = BaseSemanticAnalyzer.charSetString(expr.getChild(0).getText(),
