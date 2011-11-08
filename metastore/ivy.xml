@@ -15,66 +15,57 @@
    limitations under the License.
 -->
 <ivy-module version="2.0">
-    <info organisation="${hive.ivy.org}" module="hive-metastore" revision="${version}">
-      <license name="The Apache Software License, Version 2.0" url="http://www.apache.org/licenses/LICENSE-2.0.txt" />
-      <description homepage="http://hive.apache.org">
-        The Apache Hive (TM) data warehouse software facilitates querying and managing large datasets residing in distributed storage.
-        https://cwiki.apache.org/confluence/display/Hive/Home
-      </description>
-    </info>
-    <dependencies>
-        <dependency org="hadoop" name="core" rev="${hadoop.version.ant-internal}">
-          <artifact name="hadoop" type="source" ext="tar.gz"/>
-        </dependency>
-        <dependency org="commons-cli" name="commons-cli" rev="${commons-cli.version}"/>
-	<dependency org="commons-dbcp" name="commons-dbcp" rev="${commons-dbcp.version}">
-          <exclude module="commons-pool" />
-          <exclude org="org.apache.geronimo.specs" module="geronimo-jta_1.1_spec"/>
-        </dependency>
-        <dependency org="commons-pool" name="commons-pool" rev="${commons-pool.version}"/>
-        <dependency org="org.datanucleus" name="datanucleus-connectionpool" rev="${datanucleus-connectionpool.version}">
-          <exclude module="proxool" />
-          <exclude module="c3p0" />
-          <exclude module="datanucleus-core" />
-          <exclude module="datanucleus-rdbms" />
-          <exclude module="commons-collections" />
-          <exclude module="commons-pool" />
-          <exclude module="commons-dbcp" />
-          <exclude org="com.jolbox" module="bonecp"/>
-        </dependency>
-        <dependency org="org.datanucleus" name="datanucleus-core" rev="${datanucleus-core.version}">
-          <exclude org="javax.jdo" module="jdo2-api"/>
-          <exclude org="org.apache.geronimo.specs" module="geronimo-jta_1.1_spec"/>
-          <exclude org="org.eclipse.equinox" module="org.eclipse.equinox.registry"/>
-          <exclude org="org.eclipse.equinox" module="org.eclipse.equinox.common"/>
-          <exclude org="org.eclipse.core" module="org.eclipse.core.runtime"/>
-          <exclude org="org.eclipse.osgi" module="org.eclipse.osgi"/>
-          <exclude org="log4j" module="log4j"/>
-        </dependency>
-        <dependency org="org.datanucleus" name="datanucleus-enhancer" rev="${datanucleus-enhancer.version}">
-          <exclude org="org.datanucleus" module="datanucleus-core"/>
-          <exclude org="javax.jdo" module="jdo2-api"/>
-          <exclude org="asm" module="asm"/>
-          <exclude org="org.apache.ant" module="ant"/>
-        </dependency>
-        <dependency org="org.datanucleus" name="datanucleus-rdbms" rev="${datanucleus-rdbms.version}">
-          <exclude org="org.datanucleus" module="datanucleus-core"/>
-          <exclude org="javax.jdo" module="jdo2-api"/>
-          <exclude org="org.apache.geronimo.specs" module="geronimo-jta_1.1_spec"/>
-          <exclude org="org.datanucleus" module="datanucleus-thirdparty"/>
-          <exclude org="org.apache.ant" module="ant"/>
-          <exclude org="oracle" module="ojdbc14_g"/>
-        </dependency>
-        <dependency org="javax.jdo" name="jdo2-api" rev="${jdo-api.version}">
-          <exclude org="javax.transaction" module="jta"/>
-          <exclude org="org.apache.ant" module="ant"/>
-          <exclude org="org.apache.geronimo.specs" module="geronimo-jpa_3.0_spec"/>
-        </dependency>
-        <dependency org="org.slf4j" name="slf4j-api" rev="${slf4j-api.version}"/>
-        <dependency org="org.slf4j" name="slf4j-log4j12" rev="${slf4j-log4j12.version}"/>
-        <dependency org="org.apache.thrift" name="libthrift" rev="${libthrift.version}"
-                    transitive="false"/>
-        <dependency org="org.apache.thrift" name="libfb303" rev="${libfb303.version}"
-                    transitive="false"/>
-    </dependencies>
+  <info organisation="${hive.ivy.org}" module="hive-metastore" revision="${version}">
+    <license name="The Apache Software License, Version 2.0" url="http://www.apache.org/licenses/LICENSE-2.0.txt" />
+    <description homepage="http://hive.apache.org">
+      The Apache Hive (TM) data warehouse software facilitates querying and managing large datasets residing in distributed storage.
+      https://cwiki.apache.org/confluence/display/Hive/Home
+    </description>
+  </info>
+  <configurations>
+    <include file="${ivy.conf.dir}/common-configurations.xml"/>
+  </configurations>
+  <dependencies>
+    <dependency org="hadoop" name="core" rev="${hadoop.version.ant-internal}">
+      <artifact name="hadoop" type="source" ext="tar.gz"/>
+    </dependency>
+    <dependency org="org.apache.hive" name="hive-common" rev="${version}"
+                conf="runtime" transitive="false"/>
+    <dependency org="org.apache.hive" name="hive-serde" rev="${version}"
+                conf="runtime" transitive="false"/>
+    <dependency org="org.apache.hive" name="hive-shims" rev="${version}"
+                conf="runtime" transitive="false"/>
+    <dependency org="org.antlr" name="antlr" rev="${antlr.version}"/>
+    <dependency org="org.antlr" name="antlr-runtime" rev="${antlr-runtime.version}"/>
+    <dependency org="commons-cli" name="commons-cli" rev="${commons-cli.version}"/>
+    <dependency org="commons-lang" name="commons-lang" rev="${commons-lang.version}"/>
+    <dependency org="commons-logging" name="commons-logging" rev="${commons-logging.version}"
+                transitive="false"/>
+    <dependency org="commons-logging" name="commons-logging-api" rev="${commons-logging-api.version}"
+                transitive="false"/>
+    <dependency org="commons-dbcp" name="commons-dbcp" rev="${commons-dbcp.version}">
+      <exclude module="commons-pool" />
+      <exclude org="org.apache.geronimo.specs" module="geronimo-jta_1.1_spec"/>
+    </dependency>
+    <dependency org="commons-pool" name="commons-pool" rev="${commons-pool.version}"/>
+    <dependency org="org.datanucleus" name="datanucleus-connectionpool" rev="${datanucleus-connectionpool.version}"
+                transitive="false"/>
+    <dependency org="org.datanucleus" name="datanucleus-core" rev="${datanucleus-core.version}"
+                transitive="false"/>
+    <dependency org="org.datanucleus" name="datanucleus-enhancer" rev="${datanucleus-enhancer.version}"
+                transitive="false"/>
+    <dependency org="org.datanucleus" name="datanucleus-rdbms" rev="${datanucleus-rdbms.version}"
+                transitive="false"/>
+    <dependency org="javax.jdo" name="jdo2-api" rev="${jdo-api.version}"
+                transitive="false"/>
+    <dependency org="org.apache.derby" name="derby" rev="${derby.version}"/>
+    <dependency org="org.slf4j" name="slf4j-api" rev="${slf4j-api.version}"/>
+    <dependency org="org.slf4j" name="slf4j-log4j12" rev="${slf4j-log4j12.version}"
+                transitive="false"/>
+    <dependency org="org.apache.thrift" name="libthrift" rev="${libthrift.version}"
+                transitive="false"/>
+    <dependency org="org.apache.thrift" name="libfb303" rev="${libfb303.version}"
+                transitive="false"/>
+    <dependency org="asm" name="asm" rev="${asm.version}"/>
+  </dependencies>
 </ivy-module>

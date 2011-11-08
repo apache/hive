@@ -1,5 +1,3 @@
-<?xml version="1.0"?>
-
 <!--
    Licensed to the Apache Software Foundation (ASF) under one or more
    contributor license agreements.  See the NOTICE file distributed with
@@ -16,30 +14,10 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 -->
-
-
-<!-- 
-Before you can run these subtargets directly, you need 
-to call at top-level: ant deploy-contrib compile-core-test
--->
-<project name="cli" default="jar">
-
-  <property name="src.dir"  location="${basedir}/src/java"/>
-  <import file="../build-common.xml"/>
-
-  <target name="compile" depends="init, setup, ivy-retrieve">
-    <echo message="Project: ${ant.project.name}"/>
-    <javac
-     encoding="${build.encoding}"
-     srcdir="${src.dir}"
-     includes="**/*.java"
-     destdir="${build.classes}"
-     debug="${javac.debug}"
-     deprecation="${javac.deprecation}"
-     includeantruntime="false">
-      <compilerarg line="${javac.args} ${javac.args.warnings}" />
-      <classpath refid="classpath"/>
-    </javac>
-  </target>
-
-</project>
+<configurations defaultconfmapping="default">
+  <!--these match the Maven configurations-->
+  <conf name="default" extends="master,compile"/>
+  <conf name="master" description="contains the artifact but no dependencies"/>
+  <conf name="compile" description="contains the artifact but no dependencies"/>
+  <conf name="runtime" description="runtime but not the artifact"/>
+</configurations>

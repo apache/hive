@@ -16,22 +16,29 @@
    limitations under the License.
 -->
 <ivy-module version="2.0">
-    <info organisation="${hive.ivy.org}" module="hive-shims" revision="${version}">
-      <license name="The Apache Software License, Version 2.0" url="http://www.apache.org/licenses/LICENSE-2.0.txt" />
-      <description homepage="http://hive.apache.org">
-        The Apache Hive (TM) data warehouse software facilitates querying and managing large datasets residing in distributed storage.
-        https://cwiki.apache.org/confluence/display/Hive/Home
-      </description>
-    </info>
-    <dependencies>
-        <dependency org="hadoop" name="core" rev="${hadoop.version}">
-          <artifact name="hadoop" type="source" ext="tar.gz"/>
-        </dependency> 
-        <dependency org="hadoop" name="core" rev="${hadoop.security.version}">
-          <artifact name="hadoop" type="source" ext="tar.gz"/>
-        </dependency>
-        <dependency org="org.apache.thrift" name="libthrift" rev="${libthrift.version}"
-                    transitive="false"/>
-        <conflict manager="all" />
-    </dependencies>
+  <info organisation="${hive.ivy.org}" module="hive-shims" revision="${version}">
+    <license name="The Apache Software License, Version 2.0" url="http://www.apache.org/licenses/LICENSE-2.0.txt" />
+    <description homepage="http://hive.apache.org">
+      The Apache Hive (TM) data warehouse software facilitates querying and managing large datasets residing in distributed storage.
+      https://cwiki.apache.org/confluence/display/Hive/Home
+    </description>
+  </info>
+  <configurations>
+    <include file="${ivy.conf.dir}/common-configurations.xml"/>
+  </configurations>
+  <dependencies>
+    <dependency org="hadoop" name="core" rev="${hadoop.version}">
+      <artifact name="hadoop" type="source" ext="tar.gz"/>
+    </dependency> 
+    <dependency org="hadoop" name="core" rev="${hadoop.security.version}">
+      <artifact name="hadoop" type="source" ext="tar.gz"/>
+    </dependency>
+    <dependency org="org.apache.thrift" name="libthrift" rev="${libthrift.version}"
+                transitive="false"/>
+    <dependency org="commons-logging" name="commons-logging" rev="${commons-logging.version}"
+                transitive="false"/>
+    <dependency org="commons-logging" name="commons-logging-api" rev="${commons-logging-api.version}"
+                transitive="false"/>
+    <conflict manager="all" />
+  </dependencies>
 </ivy-module>

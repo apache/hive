@@ -16,15 +16,28 @@
    limitations under the License.
 -->
 <ivy-module version="2.0">
-    <info organisation="${hive.ivy.org}" module="hive-jdbc" revision="${version}">
-      <license name="The Apache Software License, Version 2.0" url="http://www.apache.org/licenses/LICENSE-2.0.txt" />
-      <description homepage="http://hive.apache.org">
-        The Apache Hive (TM) data warehouse software facilitates querying and managing large datasets residing in distributed storage.
-        https://cwiki.apache.org/confluence/display/Hive/Home
-      </description>
-    </info>
-    <dependencies>
-      <dependency org="org.apache.thrift" name="libthrift" rev="${libthrift.version}"
-                  transitive="false"/>
-    </dependencies>
+  <info organisation="${hive.ivy.org}" module="hive-jdbc" revision="${version}">
+    <license name="The Apache Software License, Version 2.0" url="http://www.apache.org/licenses/LICENSE-2.0.txt" />
+    <description homepage="http://hive.apache.org">
+      The Apache Hive (TM) data warehouse software facilitates querying and managing large datasets residing in distributed storage.
+      https://cwiki.apache.org/confluence/display/Hive/Home
+    </description>
+  </info>
+  <configurations>
+    <include file="${ivy.conf.dir}/common-configurations.xml"/>
+  </configurations>
+  <dependencies>
+    <dependency org="org.apache.hive" name="hive-common" rev="${version}"
+                conf="runtime" transitive="false"/>
+    <dependency org="org.apache.hive" name="hive-metastore" rev="${version}"
+                conf="runtime" transitive="false"/>
+    <dependency org="org.apache.hive" name="hive-serde" rev="${version}"
+                conf="runtime" transitive="false"/>
+    <dependency org="org.apache.hive" name="hive-service" rev="${version}"
+                conf="runtime" transitive="false"/>
+    <dependency org="org.apache.thrift" name="libthrift" rev="${libthrift.version}"
+                transitive="false"/>
+    <dependency org="commons-logging" name="commons-logging" rev="${commons-logging.version}"
+                transitive="false"/>
+  </dependencies>
 </ivy-module>

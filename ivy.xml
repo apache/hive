@@ -23,11 +23,7 @@
   </info>
 
   <configurations defaultconfmapping="default">
-    <!--these match the Maven configurations-->
-    <conf name="default" extends="master,runtime"/>
-    <conf name="master" description="contains the artifact but no dependencies"/>
-    <conf name="compile" description="contains the artifact but no dependencies"/>
-    <conf name="runtime" description="runtime but not the artifact"/>
+    <include file="${ivy.conf.dir}/common-configurations.xml"/>
     <!-- Private configurations -->
     <conf name="docs" visibility="private"/>
     <conf name="checkstyle" visibility="private"/>
