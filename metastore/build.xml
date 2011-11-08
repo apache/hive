@@ -36,10 +36,10 @@
     <mapper type="merge" to="${build.dir}/gen/antlr/gen-java/org/apache/hadoop/hive/metastore/parser/FilterParser.java"/>
   </uptodate>
 
-  <target name="build-grammar" unless="grammarBuild.notRequired">
+  <target name="build-grammar" unless="grammarBuild.notRequired" depends="ivy-retrieve">
     <echo message="Project: ${ant.project.name}"/>
     <echo>Building Grammar ${src.dir}/java/org/apache/hadoop/hive/metastore/parser/Filter.g  ....</echo>
-    <java classname="org.antlr.Tool" classpathref="classpath" fork="false">
+    <java classname="org.antlr.Tool" classpathref="classpath" fork="false" failonerror="true">
        <arg value="-fo" />
        <arg value="${build.dir}/gen/antlr/gen-java/org/apache/hadoop/hive/metastore/parser" />
        <arg value="${src.dir}/java/org/apache/hadoop/hive/metastore/parser/Filter.g" />
@@ -60,7 +60,7 @@
      destdir="${build.classes}"
      debug="${javac.debug}"
      deprecation="${javac.deprecation}"
-     >
+     includeantruntime="false">
       <classpath refid="classpath"/>
     </javac>
   </target>
@@ -71,7 +71,11 @@
 
   <target name="model-compile" depends="init">
     <echo message="Project: ${ant.project.name}"/>
-    <javac srcdir="${model.dir}"  destdir="${build.classes}" debug="${javac.debug}">
+    <javac
+        srcdir="${model.dir}"
+        destdir="${build.classes}"
+        debug="${javac.debug}"
+        includeantruntime="false">
        <classpath refid="classpath"/>
     </javac>
     <!-- ORM data for model -->

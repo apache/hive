@@ -61,7 +61,7 @@
        We include the war target as a dependency. In this way the war target
        is called without changes to the upstream build infrastructure.
   -->
-  <target name="compile" depends="init, install-hadoopcore, setup, war">
+  <target name="compile" depends="init, setup, ivy-retrieve, war">
     <echo message="Project: ${ant.project.name}"/>
     <javac
      encoding="${build.encoding}"

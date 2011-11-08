@@ -27,7 +27,7 @@
     <path refid="classpath"/>
   </path>
 
-  <target name="compile" depends="init, setup">
+  <target name="compile" depends="init, setup, ivy-retrieve">
     <echo message="Project: ${ant.project.name}"/>
     <javac
      encoding="${build.encoding}"
@@ -35,7 +35,8 @@
      includes="**/*.java"
      destdir="${build.classes}"
      debug="${javac.debug}"
-     deprecation="${javac.deprecation}">
+     deprecation="${javac.deprecation}"
+     includeantruntime="false">
       <compilerarg line="${javac.args} ${javac.args.warnings}" />
       <classpath refid="classpath-pdk"/>
     </javac>

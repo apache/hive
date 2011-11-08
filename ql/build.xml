@@ -38,7 +38,6 @@
     <pathelement location="${hadoop.conf.dir}"/>
     <pathelement location="${test.src.data.dir}/conf"/>
     <pathelement location="${hive.conf.dir}"/>
-    <pathelement location="${hive.root}/cli/lib/jline-0.9.94.jar"/>
     <pathelement location="${hadoop.oldstyle-name.test.jar}"/>
     <pathelement location="${hadoop.newstyle-name.test.jar}"/>
     <pathelement location="${jetty.test.jar}"/>
@@ -47,7 +46,7 @@
     <pathelement location="${jasperc.test.jar}"/>
     <pathelement location="${jsp.test.jar}"/>
     <pathelement location="${common.jar}"/>
-    <pathelement location="${hive.root}/lib/derby.jar"/>
+    <pathelement location="${hive.root}/build/ivy/lib/default/derby-${derby.version}.jar"/>
     <fileset dir="${hive.root}" includes="testlibs/*.jar"/>
     <fileset dir="${hadoop.root}/lib" includes="*.jar"/>
     <fileset dir="${hadoop.root}/lib" includes="jsp-2.1/*.jar"/>
@@ -55,7 +54,7 @@
   </path>
 
   <target name="thriftif" depends="check-thrift-home">
-    <echo message="Project: ${ant.project.name}"/>
+    <echo message="${ant.project.name}"/>
     <fail unless="thrift.home">You must set the 'thrift.home' property!</fail>
     <echo>Executing ${thrift.home}/bin/thrift on ${ant.project.name}/if/queryplan.thrift</echo>
     <exec executable="${thrift.home}/bin/thrift"  failonerror="true" dir=".">
@@ -64,9 +63,9 @@
   </target>
 
   <target name="gen-test" depends="test-conditions, test-init" >
-    <echo message="Project: ${ant.project.name}"/>
+    <echo message="${ant.project.name}"/>
     <taskdef name="qtestgen" classname="org.apache.hadoop.hive.ant.QTestGenTask"
-             classpath="${build.dir.hive}/anttasks/hive-anttasks-${version}.jar:${hive.root}/lib/velocity-1.5.jar:${hive.root}/lib/commons-collections-3.2.1.jar:${hive.root}/lib/commons-lang-2.4.jar:${hive.root}/lib/derby.jar"/>
+             classpath="${build.dir.hive}/anttasks/hive-anttasks-${version}.jar:${build.ivy.lib.dir}/default/velocity-${velocity.version}.jar:${build.ivy.lib.dir}/default/commons-collections-${commons-collections.version}.jar:${build.ivy.lib.dir}/default/commons-lang-${commons-lang.version}.jar:${build.ivy.lib.dir}/default/derby-${derby.version}.jar"/>
     
     <qtestgen outputDirectory="${test.build.src}/org/apache/hadoop/hive/ql/parse" 
               templatePath="${ql.test.template.dir}" template="TestParse.vm" 
@@ -171,7 +170,7 @@
     <mkdir dir="${build.dir}/gen/antlr/gen-java/org/apache/hadoop/hive/ql/parse"/>
   </target>
 
-  <target name="compile" depends="init, ql-init, build-grammar, ivy-retrieve">
+  <target name="compile" depends="init, ql-init, ivy-retrieve, build-grammar">
     <echo message="Project: ${ant.project.name}"/>
     <javac
      encoding="${build.encoding}"
@@ -179,7 +178,8 @@
      includes="**/*.java"
      destdir="${build.classes}"
      debug="${javac.debug}"
-     deprecation="${javac.deprecation}">
+     deprecation="${javac.deprecation}"
+     includeantruntime="false">
       <compilerarg line="${javac.args} ${javac.args.warnings}" />
       <classpath refid="classpath"/>
     </javac>
@@ -198,16 +198,22 @@
           <exclude name="META-INF/MANIFEST.MF"/>
       </patternset>
     </unzip>
-    <unzip src="${hive.root}/lib/commons-lang-2.4.jar" dest="${build.dir.hive}/commons-lang/classes">
+    <unzip src="${build.ivy.lib.dir}/default/commons-lang-${commons-lang.version}.jar" dest="${build.dir.hive}/commons-lang/classes">
       <patternset>
           <exclude name="META-INF"/>
           <exclude name="META-INF/MANIFEST.MF"/>
       </patternset>
     </unzip>
-    <unzip src="${hive.root}/lib/json.jar" dest="${build.dir.hive}/json/classes">
+    <unzip src="${build.ivy.lib.dir}/default/json-${json.version}.jar" dest="${build.dir.hive}/json/classes">
       <patternset>
           <exclude name="META-INF"/>
           <exclude name="META-INF/MANIFEST.MF"/>
+      </patternset>
+    </unzip>
+    <unzip src="${hive.root}/lib/javaewah-${javaewah.version}.jar" dest="${build.dir.hive}/javaewah/classes">
+      <patternset>
+        <exclude name="meta-inf"/>
+        <exclude name="meta-inf/manifest.mf"/>
       </patternset>
     </unzip>
     <!-- jar jarfile="${build.dir}/hive_${name}.jar" basedir="${build.classes}" / -->
@@ -219,6 +225,7 @@
       <fileset dir="${build.dir.hive}/commons-lang/classes" includes="**/StringUtils.class,**/WordUtils.class"/>
       <fileset dir="${build.dir.hive}/json/classes" includes="**/*.class"/>
       <fileset dir="${build.dir.hive}/shims/classes" includes="**/*.class"/>
+      <fileset dir="${build.dir.hive}/javaewah/classes" includes="**/*.class"/>
       <manifest>
         <!-- Not putting these in their own manifest section, since that inserts
              a new-line, which breaks the reading of the attributes. -->
@@ -232,7 +239,7 @@
 
   <!-- Override deploy since we are deploying hive_exec and not hive_ql -->
   <target name="deploy" depends="jar">
-    <echo message="Project: ${ant.project.name}"/>
+    <echo message="${ant.project.name}"/>
     <mkdir dir="${deploy.dir}"/>
     <copy file="${build.dir}/hive-exec-${version}.jar"
           todir="${deploy.dir}"/>

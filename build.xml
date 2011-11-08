@@ -18,12 +18,15 @@
 -->
 
 
-<project name="hive" default="jar" xmlns:artifact="urn:maven-artifact-ant" >
+<project name="hive" default="jar"
+         xmlns:ivy="antlib:org.apache.ivy.ant"
+         xmlns:artifact="urn:maven-artifact-ant" >
 
   <property name="hive.root" location="${basedir}"/>
   <property file="${hive.root}/build.properties"/>
   <property file="${user.home}/build.properties" />
   <property file="${basedir}/build.properties" />
+  <loadproperties srcfile="${ivy.conf.dir}/libraries.properties"/>
 
   <property environment="env"/>
 
@@ -56,6 +59,17 @@
 
   <condition property="is-offline" value="true" else="false">
     <isset property="offline"/>
+  </condition>
+
+  <condition property="ivy.cache.name" value="offline" else="online">
+    <isset property="offline"/>
+  </condition>
+
+  <condition property="ivy.skip">
+    <and>
+      <isset property="offline"/>
+      <available file="${build.dir.hadoop}/hadoop-${hadoop.version.ant-internal}.installed"/>
+    </and>
   </condition>
 
   <condition property="staging">
@@ -152,7 +166,6 @@
     <pathelement location="${build.dir.hive}/classes"/>
     <fileset dir="${hive.root}" includes="hive-*.jar"/>
     <fileset dir="${hive.root}/lib" includes="*.jar"/>
-    <fileset dir="${hive.root}/ql/lib" includes="*.jar"/>
     <fileset dir="${build.dir.hive}/ivy/lib/default" includes="*.jar"
 	excludes="*hadoop*.jar" erroronmissingdir="false"/>
   </path>
@@ -170,8 +183,14 @@
     <path refid="common-classpath"/>
   </path>
 
-
-
+  <target name="ivy-init-settings">
+    <!--Configure Ivy by reading in the settings file
+        If anyone has already read in a settings file into this settings ID, it gets priority
+    -->
+    <echo message="Project: ${ant.project.name}"/>
+    <ivy:settings id="${ant.project.name}.ivy.settings" file="${ivysettings.xml}"/>
+  </target>
+  
   <target name="ivy-init-dirs">
     <echo message="Project: ${ant.project.name}"/>
     <mkdir dir="${build.ivy.dir}" />
@@ -192,7 +211,7 @@
     <echo message="Project: ${ant.project.name}"/>
     <get src="${ivy_repo_url}" dest="${ivy.jar}" usetimestamp="true"/>
   </target>
-
+  
   <!--
   To avoid Ivy leaking things across big projects, always load Ivy in the same classloader.
   Also note how we skip loading Ivy if it is already there, just to make sure all is well.
@@ -300,6 +319,15 @@
         </ant>
       </sequential>
     </for>
+  </target>
+
+  <target name="test-shims">
+    <echo message="Project: ${ant.project.name}"/>
+    <subant target="test">
+      <property name="hadoop.version" value="${hadoop.security.version}"/>
+      <property name="hadoop.security.version" value="${hadoop.security.version}"/>
+      <fileset dir="${hive.root}/shims" includes="build.xml"/>
+    </subant>
   </target>
 
   <!-- create an html report from junit output files -->
@@ -727,9 +755,23 @@
   <!-- Checkstyle                                                         -->
   <!-- ================================================================== -->
 
-  <import file="${hive.root}/build-common.xml"/>
 
-  <target name="checkstyle" depends="ivy-retrieve-checkstyle,check-for-checkstyle"
+  <target name="ivy-resolve-checkstyle" depends="ivy-init-settings">
+    <echo message="Project: ${ant.project.name}"/>
+    <ivy:resolve settingsRef="${ant.project.name}.ivy.settings" conf="checkstyle"
+                 log="${ivyresolvelog}"/>
+  </target>
+  
+  <target name="ivy-retrieve-checkstyle" depends="ivy-resolve-checkstyle"
+    description="Retrieve Ivy-managed artifacts for the checkstyle configurations">
+    <echo message="Project: ${ant.project.name}"/>
+    <ivy:retrieve settingsRef="${ant.project.name}.ivy.settings"
+      pattern="${build.ivy.lib.dir}/${ivy.artifact.retrieve.pattern}"
+      log="${ivyresolvelog}"/>
+    <ivy:cachepath pathid="checkstyle-classpath" conf="checkstyle"/>
+  </target>
+
+  <target name="checkstyle" depends="init,ivy-retrieve-checkstyle,check-for-checkstyle"
           if="checkstyle.present"
           description="Run Checkstyle on source files">
     <echo message="Project: ${ant.project.name}"/>
@@ -763,6 +805,15 @@
     </available>
   </target>
 
+  <target name="ivy-docs" depends="ivy-init-settings"
+    description="Resolve, Retrieve Ivy-managed artifacts for docs configuration">
+    <echo message="Project: ${ant.project.name}"/>
+    <ivy:resolve settingsRef="${ant.project.name}.ivy.settings" conf="docs"/>
+    <ivy:retrieve settingsRef="${ant.project.name}.ivy.settings"
+                  pattern="${build.ivy.lib.dir}/${ivy.artifact.retrieve.pattern}" conf="docs"/>
+    <ivy:cachepath pathid="docs-classpath" conf="docs"/>
+  </target>
+  
   <target name="docs-anakia" depends="ivy-docs">
     <echo message="Project: ${ant.project.name}"/>
     <echo message="Building xdocs with anakia"/>
@@ -792,6 +843,22 @@
 
   <!-- Prepare for maven deploy i.e. jars, poms, and licence -->
 
+  <target name="ivy-resolve-maven-ant-tasks" depends="ivy-init-settings">
+    <echo message="Project: ${ant.project.name}"/>
+    <ivy:resolve settingsRef="${ant.project.name}.ivy.settings" conf="maven"
+      log="${ivyresolvelog}"/>
+  </target>
+
+  <target name="ivy-retrieve-maven-ant-tasks" depends="ivy-resolve-maven-ant-tasks"
+    description="Retrieve Ivy-managed artifacts for the maven-ant-tasks configurations">
+    <echo message="Project: ${ant.project.name}"/>
+    <ivy:retrieve settingsRef="${ant.project.name}.ivy.settings"
+      pattern="${build.ivy.lib.dir}/${ivy.artifact.retrieve.pattern}"
+      log="${ivyresolvelog}"/>
+    <ivy:cachepath pathid="maven-ant-tasks.classpath" conf="maven"/>
+  </target>
+
+  
   <target name="mvn-taskdef" depends="ivy-retrieve-maven-ant-tasks">
     <echo message="Project: ${ant.project.name}"/>
     <typedef resource="org/apache/maven/artifact/ant/antlib.xml"
@@ -889,7 +956,42 @@
     </echo>
   </target>
 
-  <target name="maven-publish" depends="mvn-taskdef,maven-sign"
+  <!-- Deploy a single artifact to the maven repository -->
+  <target name="maven-publish-artifact">
+    <echo message="Project: ${ant.project.name}"/>
+    <artifact:pom
+       file="${mvn.pom.dir}/hive-${hive.project}-${version}.pom"
+       id="hive.project.pom" />
+    <artifact:install-provider artifactId="wagon-http" version="1.0-beta-2" />
+    <if>
+      <equals arg1="${mvn.publish.repo}" arg2="staging" />
+      <then>
+        <artifact:deploy
+            file="${mvn.jar.dir}/hive-${hive.project}-${version}.jar">
+          <pom refid="hive.project.pom" />
+          <remoteRepository
+              id="apache.staging.https"
+              url="https://repository.apache.org/service/local/staging/deploy/maven2" />
+          <attach file="${mvn.jar.dir}/hive-${hive.project}-${version}.jar.asc"
+                  type="jar.asc"/>
+          <attach file="${mvn.pom.dir}/hive-${hive.project}-${version}.pom.asc"
+                  type="pom.asc"/>
+        </artifact:deploy>
+      </then>
+      <else>
+        <artifact:deploy
+            file="${mvn.jar.dir}/hive-${hive.project}-${version}.jar">
+          <pom refid="hive.project.pom" />
+          <remoteRepository
+              id="apache.snapshots.https"
+              url="https://repository.apache.org/content/repositories/snapshots" />
+        </artifact:deploy>
+      </else>
+    </if>
+  </target>
+
+  
+  <target name="maven-publish" depends="init,mvn-taskdef,maven-sign"
           description="Publish Maven artifacts">
     <echo message="Project: ${ant.project.name}"/>
     <antcall target="maven-publish-artifact">

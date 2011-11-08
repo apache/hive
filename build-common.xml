@@ -72,24 +72,7 @@
   </path>
 
 
-  <!-- IVY properties set here -->
-  <property name="build.ivy.dir" location="${build.dir.hive}/ivy"/>
-  <property name="build.ivy.lib.dir" location="${build.ivy.dir}/lib"/>
-  <property name="build.ivy.report.dir" location="${build.ivy.dir}/report"/>
-  <property name="build.ivy.maven.dir" location="${build.ivy.dir}/maven"/>
-  <property name="ivy.conf.dir" location="${hive.root}/ivy"/>
   <loadproperties srcfile="${ivy.conf.dir}/libraries.properties"/>
-  <property name="ivy.jar" location="${build.ivy.lib.dir}/ivy-${ivy.version}.jar"/>
-  <property name="ivysettings.xml" location="${ivy.conf.dir}/ivysettings.xml" />
-  <property name="mvn.repo" value="http://repo2.maven.org/maven2"/>
-  <property name="ivy_repo_url" value="${mvn.repo}/org/apache/ivy/ivy/${ivy.version}/ivy-${ivy.version}.jar"/>
-
-  <!-- Maven properties set here -->
-  <property name="hive.ivy.org" value="org.apache.hive"/>
-  <property name="mvn.publish.repo" value="snapshots"/>
-  <property name="mvn.jar.dir" value="${build.dir.hive}/maven/jars"/>
-  <property name="mvn.pom.dir" value="${build.dir.hive}/maven/poms"/>
-  <property name="mvn.license.dir" value="${build.dir.hive}/maven/licenses"/>
 
   <condition property="offline">
     <istrue value="${is-offline}"/>
@@ -107,10 +90,7 @@
   <!--this is the naming policy for artifacts we want pulled down-->
   <property name="ivy.artifact.retrieve.pattern" value="[conf]/[artifact]-[revision](-[classifier]).[ext]"/>
 
-  <property name="ivyresolvelog" value="download-only"/>
-  <property name="ivyretrievelog" value="quite"/>
-
-  <target name="ivy-init">
+  <target name="ivy-init-settings">
     <!--Configure Ivy by reading in the settings file
         If anyone has already read in a settings file into this settings ID, it gets priority
     -->
@@ -118,10 +98,12 @@
     <ivy:settings id="${ant.project.name}.ivy.settings" file="${ivysettings.xml}"/>
   </target>
 
-  <target name="ivy-resolve" depends="ivy-init" unless="offline">
+  <target name="ivy-resolve" depends="ivy-init-settings" unless="offline">
     <echo message="Project: ${ant.project.name}"/>
     <ivy:resolve settingsRef="${ant.project.name}.ivy.settings"
-      log="${ivyresolvelog}"/>
+      conf="default" log="${ivyresolvelog}"/>
+    <ivy:report todir="${build.ivy.report.dir}" settingsRef="${ant.project.name}.ivy.settings"
+                graph="false" />
   </target>
 
   <target name="ivy-retrieve" depends="ivy-resolve"
@@ -132,52 +114,15 @@
       log="${ivyresolvelog}"/>
   </target>
 
-  <target name="ivy-resolve-checkstyle" depends="ivy-init">
-    <echo message="Project: ${ant.project.name}"/>
-    <ivy:resolve settingsRef="${ant.project.name}.ivy.settings" conf="checkstyle"
-      log="${ivyresolvelog}"/>
-  </target>
 
-  <target name="ivy-retrieve-checkstyle" depends="ivy-resolve-checkstyle"
-    description="Retrieve Ivy-managed artifacts for the checkstyle configurations">
-    <echo message="Project: ${ant.project.name}"/>
-    <ivy:retrieve settingsRef="${ant.project.name}.ivy.settings"
-      pattern="${build.ivy.lib.dir}/${ivy.artifact.retrieve.pattern}"
-      log="${ivyresolvelog}"/>
-    <ivy:cachepath pathid="checkstyle-classpath" conf="checkstyle"/>
-  </target>
-
-  <target name="ivy-resolve-maven-ant-tasks" depends="ivy-init">
-    <echo message="Project: ${ant.project.name}"/>
-    <ivy:resolve settingsRef="${ant.project.name}.ivy.settings" conf="maven"
-      log="${ivyresolvelog}"/>
-  </target>
-
-  <target name="ivy-retrieve-maven-ant-tasks" depends="ivy-resolve-maven-ant-tasks"
-    description="Retrieve Ivy-managed artifacts for the maven-ant-tasks configurations">
-    <echo message="Project: ${ant.project.name}"/>
-    <ivy:retrieve settingsRef="${ant.project.name}.ivy.settings"
-      pattern="${build.ivy.lib.dir}/${ivy.artifact.retrieve.pattern}"
-      log="${ivyresolvelog}"/>
-    <ivy:cachepath pathid="maven-ant-tasks.classpath" conf="maven"/>
-  </target>
-
-  <target name="ivy-retrieve-hadoop-source" depends="ivy-init"
+  <target name="ivy-retrieve-hadoop-source" depends="ivy-init-settings"
     description="Retrieve Ivy-managed Hadoop source artifacts" unless="ivy.skip">
     <echo message="Project: ${ant.project.name}"/>
     <ivy:retrieve settingsRef="${ant.project.name}.ivy.settings"
       pattern="${build.dir.hadoop}/[artifact]-[revision].[ext]"/>
   </target>
 
-  <target name="ivy-docs" depends="ivy-init"
-    description="Resolve, Retrieve Ivy-managed artifacts for docs configuration">
-    <echo message="Project: ${ant.project.name}"/>
-    <ivy:resolve settingsRef="${ant.project.name}.ivy.settings" conf="docs"/>
-    <ivy:retrieve settingsRef="${ant.project.name}.ivy.settings"
-                  pattern="${build.ivy.lib.dir}/${ivy.artifact.retrieve.pattern}" conf="docs"/>
-    <ivy:cachepath pathid="docs-classpath" conf="docs"/>
-  </target>
-
+  
   <available property="hadoopcore.${hadoop.version.ant-internal}.install.done"
     file="${build.dir.hadoop}/hadoop-${hadoop.version.ant-internal}.installed"/>
 
@@ -213,7 +158,6 @@
     <pathelement location="${build.dir.hive}/classes"/>
     <fileset dir="${build.dir.hive}" includes="*/*.jar"/>
     <fileset dir="${hive.root}/lib" includes="*.jar"/>
-    <fileset dir="${hive.root}/ql/lib" includes="*.jar"/>
     <fileset dir="${build.ivy.lib.dir}/default" includes="*.jar" excludes="*hadoop*.jar"
              erroronmissingdir="false"/>
   </path>
@@ -234,6 +178,7 @@
   </path>
 
   <target name="create-dirs">
+    <echo message="Project: ${ant.project.name}"/>
     <mkdir dir="${build.dir.hive}"/>
     <mkdir dir="${build.dir}"/>
     <mkdir dir="${build.classes}"/>
@@ -263,7 +208,7 @@
     <echo message="Project: ${ant.project.name}"/>
   </target>
 
-  <target name="compile" depends="init, setup">
+  <target name="compile" depends="init, setup, ivy-retrieve">
     <echo message="Project: ${ant.project.name}"/>
     <javac
      encoding="${build.encoding}"
@@ -271,7 +216,8 @@
      includes="**/*.java"
      destdir="${build.classes}"
      debug="${javac.debug}"
-     deprecation="${javac.deprecation}">
+     deprecation="${javac.deprecation}"
+     includeantruntime="false">
       <compilerarg line="${javac.args} ${javac.args.warnings}" />
       <classpath refid="classpath"/>
     </javac>
@@ -281,7 +227,7 @@
   </target>
 
   <target name="jar" depends="compile">
-    <echo message="Project: ${ant.project.name}"/>
+    <echo message="Project: ${ant.project.name}" />
     <jar
       jarfile="${build.dir}/hive-${ant.project.name}-${version}.jar"
       basedir="${build.classes}">
@@ -309,7 +255,8 @@
      optimize="${javac.optimize}"
      target="${javac.version}"
      source="${javac.version}"
-     deprecation="${javac.deprecation}">
+     deprecation="${javac.deprecation}"
+     includeantruntime="false">
       <compilerarg line="${javac.args} ${javac.args.warnings}" />
       <classpath refid="test.classpath"/>
     </javac>
@@ -322,7 +269,8 @@
      optimize="${javac.optimize}"
      target="${javac.version}"
      source="${javac.version}"
-     deprecation="${javac.deprecation}">
+     deprecation="${javac.deprecation}"
+     includeantruntime="false">
       <compilerarg line="${javac.args} ${javac.args.warnings}" />
       <classpath refid="test.classpath"/>
     </javac>
@@ -339,7 +287,6 @@
 
   <target name="test-conditions">
     <echo message="Project: ${ant.project.name}"/>
-
     <condition property="qfile" value="">
       <not>
         <isset property="qfile"/>
@@ -405,7 +352,7 @@
            errorProperty="tests.failed" failureProperty="tests.failed" filtertrace="off">
      
       <env key="HADOOP_HOME" value="${hadoop.root}"/>
-      <env key="HADOOP_CLASSPATH" value="${test.src.data.dir}/conf:${build.dir.hive}/dist/lib/derby.jar:${build.dir.hive}/dist/lib/javaewah-0.3.jar"/>
+      <env key="HADOOP_CLASSPATH" value="${test.src.data.dir}/conf:${build.dir.hive}/dist/lib/derby-${derby.version}.jar:${build.dir.hive}/dist/lib/javaewah-${javaewah.version}.jar"/>
       <env key="TZ" value="US/Pacific"/>
       <sysproperty key="test.output.overwrite" value="${overwrite}"/>
       <sysproperty key="test.service.standalone.server" value="${standalone}"/>
@@ -424,6 +371,8 @@
       <sysproperty key="fs.default.name" value="${fs.default.name}"/>
       <sysproperty key="build.dir" value="${build.dir}"/>
       <sysproperty key="build.dir.hive" value="${build.dir.hive}"/>
+      <sysproperty key="build.ivy.lib.dir" value="${build.ivy.lib.dir}"/>
+      <sysproperty key="derby.version" value="${derby.version}"/>
       <sysproperty key="hive.version" value="${version}"/>
 
       <classpath refid="${test.classpath.id}"/>
@@ -441,15 +390,6 @@
       </assertions>
     </junit>
     <fail if="tests.failed">Tests failed!</fail>
-  </target>
-  
-  <target name="test-shims">
-    <echo message="Project: ${ant.project.name}"/>
-     <subant target="test">
-       <property name="hadoop.version" value="${hadoop.security.version}"/>
-       <property name="hadoop.security.version" value="${hadoop.security.version}"/>
-       <fileset dir="${hive.root}/shims" includes="build.xml"/>
-     </subant>
   </target>
 
   <target name="clean-test">
@@ -476,9 +416,9 @@
     </condition>
   </target>
 
-  <target name="check-ivy" depends="ivy-init">
+  <target name="check-ivy" depends="ivy-init-settings">
     <echo message="Project: ${ant.project.name}"/>
-   <available file="${basedir}/ivy.xml" property="ivy.present"/>
+    <available file="${basedir}/ivy.xml" property="ivy.present"/>
   </target>
 
   <target name="make-pom" if="ivy.present" depends="check-ivy, jar">
@@ -487,7 +427,7 @@
 
     <ivy:makepom ivyfile="${basedir}/ivy.xml" pomfile="${build.dir}/pom.xml">
       <mapping conf="default" scope="compile" />
-      <mapping conf="runtime" scope="runtime" />
+      <mapping conf="runtime" scope="compile" />
     </ivy:makepom>
     <replace file="${build.dir}/pom.xml">
       <replacetoken>&lt;dependencies&gt;</replacetoken>
@@ -507,40 +447,6 @@
         &lt;dependencies&gt;
       </replacevalue>
     </replace>
-  </target>
-
-  <!-- Deploy a single artifact to the maven repository -->
-  <target name="maven-publish-artifact">
-    <echo message="Project: ${ant.project.name}"/>
-    <artifact:pom
-       file="${mvn.pom.dir}/hive-${hive.project}-${version}.pom"
-       id="hive.project.pom" />
-    <artifact:install-provider artifactId="wagon-http" version="1.0-beta-2" />
-    <if>
-      <equals arg1="${mvn.publish.repo}" arg2="staging" />
-      <then>
-        <artifact:deploy
-            file="${mvn.jar.dir}/hive-${hive.project}-${version}.jar">
-          <pom refid="hive.project.pom" />
-          <remoteRepository
-              id="apache.staging.https"
-              url="https://repository.apache.org/service/local/staging/deploy/maven2" />
-          <attach file="${mvn.jar.dir}/hive-${hive.project}-${version}.jar.asc"
-                  type="jar.asc"/>
-          <attach file="${mvn.pom.dir}/hive-${hive.project}-${version}.pom.asc"
-                  type="pom.asc"/>
-        </artifact:deploy>
-      </then>
-      <else>
-        <artifact:deploy
-            file="${mvn.jar.dir}/hive-${hive.project}-${version}.jar">
-          <pom refid="hive.project.pom" />
-          <remoteRepository
-              id="apache.snapshots.https"
-              url="https://repository.apache.org/content/repositories/snapshots" />
-        </artifact:deploy>
-      </else>
-    </if>
   </target>
 
 </project>

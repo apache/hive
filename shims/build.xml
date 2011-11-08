@@ -51,7 +51,8 @@ to call at top-level: ant deploy-contrib compile-core-test
      excludes="**/Proxy*.java"
      destdir="${build.classes}"
      debug="${javac.debug}"
-     deprecation="${javac.deprecation}">
+     deprecation="${javac.deprecation}"
+     includeantruntime="false">
       <compilerarg line="${javac.args} ${javac.args.warnings}" />
       <classpath refid="classpath"/>
       <src path="${basedir}/src/${hadoop.version.ant-internal.prefix}/java" />
@@ -59,7 +60,7 @@ to call at top-level: ant deploy-contrib compile-core-test
     </javac>
   </target>
 
-  <target name="compile" depends="init">
+  <target name="compile" depends="init,ivy-retrieve">
     <echo message="Project: ${ant.project.name}"/>
     <antcall target="build_shims" inheritRefs="false" inheritAll="false">
       <param name="hadoop.version.ant-internal" value="${hadoop.version}" />
@@ -74,7 +75,8 @@ to call at top-level: ant deploy-contrib compile-core-test
      includes="**/Proxy*.java"
      destdir="${build.classes}"
      debug="${javac.debug}"
-     deprecation="${javac.deprecation}">
+     deprecation="${javac.deprecation}"
+     includeantruntime="false">
       <compilerarg line="${javac.args} ${javac.args.warnings}" />
       <classpath refid="classpath"/>
       <src path="${basedir}/src/${hadoop.version.ant-internal.prefix}/java" />
@@ -96,7 +98,8 @@ to call at top-level: ant deploy-contrib compile-core-test
      optimize="${javac.optimize}"
      target="${javac.version}"
      source="${javac.version}"
-     deprecation="${javac.deprecation}">
+     deprecation="${javac.deprecation}"
+     includeantruntime="false">
       <compilerarg line="${javac.args} ${javac.args.warnings}" />
       <classpath refid="classpath"/>
     </javac>
@@ -109,7 +112,8 @@ to call at top-level: ant deploy-contrib compile-core-test
      optimize="${javac.optimize}"
      target="${javac.version}"
      source="${javac.version}"
-     deprecation="${javac.deprecation}">
+     deprecation="${javac.deprecation}"
+     includeantruntime="false">
       <compilerarg line="${javac.args} ${javac.args.warnings}" />
       <classpath refid="classpath"/>
     </javac>
