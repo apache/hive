@@ -1820,7 +1820,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       return ret;
     }
 
-    public void alter_partition(final String db_name, final String tbl_name, 
+    public void alter_partition(final String db_name, final String tbl_name,
         final List<String> part_vals, final Partition new_part)
         throws InvalidOperationException, MetaException,
         TException {
@@ -1829,7 +1829,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       if (part_vals != null && part_vals.size() > 0) {
         LOG.info("Old Partition values:" + part_vals);
       }
-      
+
       try {
         executeWithRetry(new Command<Boolean>() {
           @Override
@@ -1916,7 +1916,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
               "Unable to rename partition because table or database do not exist");
         }
         try {
-          destPath = new Path(wh.getTablePath(ms.getDatabase(dbname), name), Warehouse.makePartName(tbl.getPartitionKeys(), 
+          destPath = new Path(wh.getTablePath(ms.getDatabase(dbname), name), Warehouse.makePartName(tbl.getPartitionKeys(),
             new_part.getValues()));
         } catch (NoSuchObjectException e) {
           LOG.debug(e);
@@ -3605,12 +3605,16 @@ public class HiveMetaStore extends ThriftHiveMetastore {
     // any log specific settings via hiveconf will be ignored
     Properties hiveconf = cli.addHiveconfToSystemProperties();
 
-    // NOTE: It is critical to do this here so that log4j is reinitialized
-    // before any of the other core hive classes are loaded
-    try {
-      LogUtils.initHiveLog4j();
-    } catch (LogInitializationException e) {
-      HMSHandler.LOG.warn(e.getMessage());
+    // If the log4j.configuration property hasn't already been explicitly set, use Hive's default
+    // log4j configuration
+    if (System.getProperty("log4j.configuration") == null) {
+      // NOTE: It is critical to do this here so that log4j is reinitialized
+      // before any of the other core hive classes are loaded
+      try {
+        LogUtils.initHiveLog4j();
+      } catch (LogInitializationException e) {
+        HMSHandler.LOG.warn(e.getMessage());
+      }
     }
 
     try {
