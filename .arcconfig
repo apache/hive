@@ -8,5 +8,7 @@
   "arcanist_configuration" : "ArcJIRAConfiguration",
   "jira_base_url" : "https://issues.apache.org/jira/secure/",
   "jira_api_url" : "https://issues.apache.org/jira/si/",
-  "jira_project" : "HIVE"
+  "jira_project" : "HIVE",
+  "lint_engine" : "JavaLintEngine",
+  "max_line_length" : "100"
 }
