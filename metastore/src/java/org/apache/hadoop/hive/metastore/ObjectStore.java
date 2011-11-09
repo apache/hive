@@ -1980,7 +1980,7 @@ public class ObjectStore implements RawStore, Configurable {
     try {
       openTransaction();
       LOG.debug("execute removeUnusedColumnDescriptor");
-      List<MStorageDescriptor> referencedSDs = listStorageDescriptorsWithCD(oldCD);
+      List<MStorageDescriptor> referencedSDs = listStorageDescriptorsWithCD(oldCD, 1);
       //if no other SD references this CD, we can throw it out.
       if (referencedSDs != null && referencedSDs.isEmpty()) {
         pm.retrieve(oldCD);
@@ -2017,9 +2017,11 @@ public class ObjectStore implements RawStore, Configurable {
   /**
    * Get a list of storage descriptors that reference a particular Column Descriptor
    * @param oldCD the column descriptor to get storage descriptors for
+   * @param maxSDs the maximum number of SDs to return
    * @return a list of storage descriptors
    */
-  private List<MStorageDescriptor> listStorageDescriptorsWithCD(MColumnDescriptor oldCD) {
+  private List<MStorageDescriptor> listStorageDescriptorsWithCD(MColumnDescriptor oldCD,
+      long maxSDs) {
     boolean success = false;
     List<MStorageDescriptor> sds = null;
     try {
@@ -2028,6 +2030,10 @@ public class ObjectStore implements RawStore, Configurable {
       Query query = pm.newQuery(MStorageDescriptor.class,
           "this.cd == inCD");
       query.declareParameters("MColumnDescriptor inCD");
+      if(maxSDs >= 0) {
+        //User specified a row limit, set it on the Query
+        query.setRange(0, maxSDs);
+      }
       sds = (List<MStorageDescriptor>) query.execute(oldCD);
       LOG.debug("Done executing query for listStorageDescriptorsWithCD");
       pm.retrieveAll(sds);
