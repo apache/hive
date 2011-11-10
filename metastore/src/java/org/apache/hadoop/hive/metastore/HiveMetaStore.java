@@ -1821,6 +1821,13 @@ public class HiveMetaStore extends ThriftHiveMetastore {
     }
 
     public void alter_partition(final String db_name, final String tbl_name,
+        final Partition new_part)
+        throws InvalidOperationException, MetaException,
+        TException {
+      rename_partition(db_name, tbl_name, null, new_part);
+    }
+
+    public void rename_partition(final String db_name, final String tbl_name,
         final List<String> part_vals, final Partition new_part)
         throws InvalidOperationException, MetaException,
         TException {

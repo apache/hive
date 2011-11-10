@@ -180,7 +180,7 @@ public class HiveMetaStoreClient implements IMetaStoreClient {
    */
   public void renamePartition(final String dbname, final String name, final List<String> part_vals, final Partition newPart)
       throws InvalidOperationException, MetaException, TException {
-    client.alter_partition(dbname, name, part_vals, newPart);
+    client.rename_partition(dbname, name, part_vals, newPart);
   }
 
   private void open() throws MetaException {
@@ -794,7 +794,7 @@ public class HiveMetaStoreClient implements IMetaStoreClient {
 
   public void alter_partition(String dbName, String tblName, Partition newPart)
       throws InvalidOperationException, MetaException, TException {
-    client.alter_partition(dbName, tblName, null, newPart);
+    client.alter_partition(dbName, tblName, newPart);
   }
 
   public void alterDatabase(String dbName, Database db)

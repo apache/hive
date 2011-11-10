@@ -640,17 +640,33 @@ module ThriftHiveMetastore
       raise ::Thrift::ApplicationException.new(::Thrift::ApplicationException::MISSING_RESULT, 'get_partitions_by_names failed: unknown result')
     end
 
-    def alter_partition(db_name, tbl_name, part_vals, new_part)
-      send_alter_partition(db_name, tbl_name, part_vals, new_part)
+    def alter_partition(db_name, tbl_name, new_part)
+      send_alter_partition(db_name, tbl_name, new_part)
       recv_alter_partition()
     end
 
-    def send_alter_partition(db_name, tbl_name, part_vals, new_part)
-      send_message('alter_partition', Alter_partition_args, :db_name => db_name, :tbl_name => tbl_name, :part_vals => part_vals, :new_part => new_part)
+    def send_alter_partition(db_name, tbl_name, new_part)
+      send_message('alter_partition', Alter_partition_args, :db_name => db_name, :tbl_name => tbl_name, :new_part => new_part)
     end
 
     def recv_alter_partition()
       result = receive_message(Alter_partition_result)
+      raise result.o1 unless result.o1.nil?
+      raise result.o2 unless result.o2.nil?
+      return
+    end
+
+    def rename_partition(db_name, tbl_name, part_vals, new_part)
+      send_rename_partition(db_name, tbl_name, part_vals, new_part)
+      recv_rename_partition()
+    end
+
+    def send_rename_partition(db_name, tbl_name, part_vals, new_part)
+      send_message('rename_partition', Rename_partition_args, :db_name => db_name, :tbl_name => tbl_name, :part_vals => part_vals, :new_part => new_part)
+    end
+
+    def recv_rename_partition()
+      result = receive_message(Rename_partition_result)
       raise result.o1 unless result.o1.nil?
       raise result.o2 unless result.o2.nil?
       return
@@ -1553,13 +1569,26 @@ module ThriftHiveMetastore
       args = read_args(iprot, Alter_partition_args)
       result = Alter_partition_result.new()
       begin
-        @handler.alter_partition(args.db_name, args.tbl_name, args.part_vals, args.new_part)
+        @handler.alter_partition(args.db_name, args.tbl_name, args.new_part)
       rescue InvalidOperationException => o1
         result.o1 = o1
       rescue MetaException => o2
         result.o2 = o2
       end
       write_result(result, oprot, 'alter_partition', seqid)
+    end
+
+    def process_rename_partition(seqid, iprot, oprot)
+      args = read_args(iprot, Rename_partition_args)
+      result = Rename_partition_result.new()
+      begin
+        @handler.rename_partition(args.db_name, args.tbl_name, args.part_vals, args.new_part)
+      rescue InvalidOperationException => o1
+        result.o1 = o1
+      rescue MetaException => o2
+        result.o2 = o2
+      end
+      write_result(result, oprot, 'rename_partition', seqid)
     end
 
     def process_get_config_value(seqid, iprot, oprot)
@@ -3307,6 +3336,44 @@ module ThriftHiveMetastore
     include ::Thrift::Struct, ::Thrift::Struct_Union
     DB_NAME = 1
     TBL_NAME = 2
+    NEW_PART = 3
+
+    FIELDS = {
+      DB_NAME => {:type => ::Thrift::Types::STRING, :name => 'db_name'},
+      TBL_NAME => {:type => ::Thrift::Types::STRING, :name => 'tbl_name'},
+      NEW_PART => {:type => ::Thrift::Types::STRUCT, :name => 'new_part', :class => Partition}
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+    end
+
+    ::Thrift::Struct.generate_accessors self
+  end
+
+  class Alter_partition_result
+    include ::Thrift::Struct, ::Thrift::Struct_Union
+    O1 = 1
+    O2 = 2
+
+    FIELDS = {
+      O1 => {:type => ::Thrift::Types::STRUCT, :name => 'o1', :class => InvalidOperationException},
+      O2 => {:type => ::Thrift::Types::STRUCT, :name => 'o2', :class => MetaException}
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+    end
+
+    ::Thrift::Struct.generate_accessors self
+  end
+
+  class Rename_partition_args
+    include ::Thrift::Struct, ::Thrift::Struct_Union
+    DB_NAME = 1
+    TBL_NAME = 2
     PART_VALS = 3
     NEW_PART = 4
 
@@ -3325,7 +3392,7 @@ module ThriftHiveMetastore
     ::Thrift::Struct.generate_accessors self
   end
 
-  class Alter_partition_result
+  class Rename_partition_result
     include ::Thrift::Struct, ::Thrift::Struct_Union
     O1 = 1
     O2 = 2
