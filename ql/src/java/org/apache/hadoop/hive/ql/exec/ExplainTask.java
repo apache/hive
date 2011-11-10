@@ -40,7 +40,8 @@ import org.apache.hadoop.hive.ql.plan.ExplainWork;
 import org.apache.hadoop.hive.ql.plan.api.StageType;
 import org.apache.hadoop.io.IOUtils;
 import org.apache.hadoop.util.StringUtils;
-
+import org.json.JSONException;
+import org.json.JSONObject;
 
 /**
  * ExplainTask implementation.
@@ -53,6 +54,47 @@ public class ExplainTask extends Task<ExplainWork> implements Serializable {
     super();
   }
 
+  static public JSONObject getJSONPlan(PrintStream out, ExplainWork work)
+      throws Exception {
+    // If the user asked for a formatted output, dump the json output
+    // in the output stream
+    JSONObject outJSONObject = new JSONObject();
+    boolean jsonOutput = work.isFormatted();
+    if (jsonOutput) {
+      out = null;
+    }
+
+    // Print out the parse AST
+    String jsonAST = outputAST(work.getAstStringTree(), out, jsonOutput, 0);
+    if (out != null) {
+      out.println();
+    }
+
+    if (jsonOutput) {
+      outJSONObject.put("ABSTRACT SYNTAX TREE", jsonAST);
+    }
+
+    JSONObject jsonDependencies = outputDependencies(out, jsonOutput,
+        work.getRootTasks(), 0);
+
+    if (out != null) {
+      out.println();
+    }
+
+    if (jsonOutput) {
+      outJSONObject.put("STAGE DEPENDENCIES", jsonDependencies);
+    }
+
+    // Go over all the tasks and dump out the plans
+    JSONObject jsonPlan = outputStagePlans(out, work, work.getRootTasks(), 0);
+
+    if (jsonOutput) {
+      outJSONObject.put("STAGE PLANS", jsonPlan);
+    }
+
+    return jsonOutput ? outJSONObject : null;
+  }
+
   @Override
   public int execute(DriverContext driverContext) {
 
@@ -62,29 +104,27 @@ public class ExplainTask extends Task<ExplainWork> implements Serializable {
       OutputStream outS = resFile.getFileSystem(conf).create(resFile);
       out = new PrintStream(outS);
 
-      // Print out the parse AST
-      outputAST(work.getAstStringTree(), out, 0);
-      out.println();
+      JSONObject jsonPlan = getJSONPlan(out, work);
 
-      outputDependencies(out, work.getRootTasks(), 0);
-      out.println();
+      if (work.isFormatted()) {
+        out.print(jsonPlan);
+      }
 
-      // Go over all the tasks and dump out the plans
-      outputStagePlans(out, work.getRootTasks(), 0);
       out.close();
       out = null;
-
       return (0);
-    } catch (Exception e) {
-      console.printError("Failed with exception " + e.getMessage(), "\n"
-          + StringUtils.stringifyException(e));
+    }
+    catch (Exception e) {
+      console.printError("Failed with exception " + e.getMessage(),
+          "\n" + StringUtils.stringifyException(e));
       return (1);
-    } finally {
+    }
+    finally {
       IOUtils.closeStream(out);
     }
   }
 
-  private String indentString(int indent) {
+  private static String indentString(int indent) {
     StringBuilder sb = new StringBuilder();
     for (int i = 0; i < indent; ++i) {
       sb.append(" ");
@@ -93,73 +133,112 @@ public class ExplainTask extends Task<ExplainWork> implements Serializable {
     return sb.toString();
   }
 
-  private void outputMap(Map<?, ?> mp, String header, PrintStream out,
-      boolean extended, int indent) throws Exception {
+  private static JSONObject outputMap(Map<?, ?> mp, String header, PrintStream out,
+      boolean extended, boolean jsonOutput, int indent) throws Exception {
 
     boolean first_el = true;
     TreeMap<Object, Object> tree = new TreeMap<Object, Object>();
     tree.putAll(mp);
+    JSONObject json = jsonOutput ? new JSONObject() : null;
     for (Entry<?, ?> ent : tree.entrySet()) {
-      if (first_el) {
+      if (first_el && (out != null)) {
         out.println(header);
       }
       first_el = false;
 
       // Print the key
-      out.print(indentString(indent));
-      out.printf("%s ", ent.getKey().toString());
+      if (out != null) {
+        out.print(indentString(indent));
+        out.printf("%s ", ent.getKey().toString());
+      }
+
       // Print the value
       if (isPrintable(ent.getValue())) {
-        out.print(ent.getValue());
-        out.println();
-      } else if (ent.getValue() instanceof List
-          || ent.getValue() instanceof Map) {
-        out.print(ent.getValue().toString());
-        out.println();
-      } else if (ent.getValue() instanceof Serializable) {
-        out.println();
-        outputPlan((Serializable) ent.getValue(), out, extended, indent + 2);
-      } else {
-        out.println();
+        if (out != null) {
+          out.print(ent.getValue());
+          out.println();
+        }
+        if (jsonOutput) {
+          json.put(ent.getKey().toString(), ent.getValue().toString());
+        }
+      }
+      else if (ent.getValue() instanceof List || ent.getValue() instanceof Map) {
+        if (out != null) {
+          out.print(ent.getValue().toString());
+          out.println();
+        }
+        if (jsonOutput) {
+          json.put(ent.getKey().toString(), ent.getValue().toString());
+        }
+      }
+      else if (ent.getValue() instanceof Serializable) {
+        if (out != null) {
+          out.println();
+        }
+        JSONObject jsonOut = outputPlan((Serializable) ent.getValue(), out,
+            extended, jsonOutput, jsonOutput ? 0 : indent + 2);
+        if (jsonOutput) {
+          json.put(ent.getKey().toString(), jsonOut);
+        }
+      }
+      else {
+        if (out != null) {
+          out.println();
+        }
       }
     }
+
+    return jsonOutput ? json : null;
   }
 
-  private void outputList(List<?> l, String header, PrintStream out,
-      boolean extended, int indent) throws Exception {
+  private static String outputList(List<?> l, String header, PrintStream out,
+      boolean extended, boolean jsonOutput, int indent) throws Exception {
 
     boolean first_el = true;
     boolean nl = false;
+    StringBuffer s = new StringBuffer();
     for (Object o : l) {
-      if (first_el) {
+      if (first_el && (out != null)) {
         out.print(header);
       }
 
       if (isPrintable(o)) {
-        if (!first_el) {
-          out.print(", ");
-        } else {
-          out.print(" ");
+        String delim = first_el ? " " : ", ";
+        if (out != null) {
+          out.print(delim);
+          out.print(o);
         }
 
-        out.print(o);
+        if (jsonOutput) {
+          s.append(delim);
+          s.append(o);
+        }
         nl = true;
-      } else if (o instanceof Serializable) {
-        if (first_el) {
+      }
+      else if (o instanceof Serializable) {
+        if (first_el && (out != null)) {
           out.println();
         }
-        outputPlan((Serializable) o, out, extended, indent + 2);
+        JSONObject jsonOut = outputPlan((Serializable) o, out, extended,
+            jsonOutput, jsonOutput ? 0 : indent + 2);
+        if (jsonOutput) {
+          if (!first_el) {
+            s.append(", ");
+          }
+          s.append(jsonOut);
+        }
       }
 
       first_el = false;
     }
 
-    if (nl) {
+    if (nl && (out != null)) {
       out.println();
     }
+    return jsonOutput ? s.toString() : null;
   }
 
-  private boolean isPrintable(Object val) {
+  private static boolean isPrintable(Object val) {
     if (val instanceof Boolean || val instanceof String
         || val instanceof Integer || val instanceof Byte
         || val instanceof Float || val instanceof Double) {
@@ -173,33 +252,56 @@ public class ExplainTask extends Task<ExplainWork> implements Serializable {
     return false;
   }
 
-  private void outputPlan(Serializable work, PrintStream out, boolean extended,
-      int indent) throws Exception {
+  private static JSONObject outputPlan(Serializable work, PrintStream out,
+      boolean extended, boolean jsonOutput, int indent) throws Exception {
     // Check if work has an explain annotation
     Annotation note = work.getClass().getAnnotation(Explain.class);
+
+    String keyJSONObject = null;
 
     if (note instanceof Explain) {
       Explain xpl_note = (Explain) note;
       if (extended || xpl_note.normalExplain()) {
-        out.print(indentString(indent));
-        out.println(xpl_note.displayName());
+        keyJSONObject = xpl_note.displayName();
+        if (out != null) {
+          out.print(indentString(indent));
+          out.println(xpl_note.displayName());
+        }
       }
     }
 
+    JSONObject json = jsonOutput ? new JSONObject() : null;
     // If this is an operator then we need to call the plan generation on the
-    // conf and then
-    // the children
+    // conf and then the children
     if (work instanceof Operator) {
       Operator<? extends Serializable> operator = (Operator<? extends Serializable>) work;
       if (operator.getConf() != null) {
-        outputPlan(operator.getConf(), out, extended, indent);
-      }
-      if (operator.getChildOperators() != null) {
-        for (Operator<? extends Serializable> op : operator.getChildOperators()) {
-          outputPlan(op, out, extended, indent + 2);
+        JSONObject jsonOut = outputPlan(operator.getConf(), out, extended,
+            jsonOutput, jsonOutput ? 0 : indent);
+        if (jsonOutput) {
+          json.put(operator.getOperatorId(), jsonOut);
         }
       }
-      return;
+
+      if (operator.getChildOperators() != null) {
+        for (Operator<? extends Serializable> op : operator.getChildOperators()) {
+          JSONObject jsonOut = outputPlan(op, out, extended, jsonOutput, jsonOutput ? 0 : indent + 2);
+          if (jsonOutput) {
+            json.put(operator.getOperatorId(), jsonOut);
+          }
+        }
+      }
+
+      if (jsonOutput) {
+        if (keyJSONObject != null) {
+          JSONObject ret = new JSONObject();
+          ret.put(keyJSONObject, json);
+          return ret;
+        }
+
+        return json;
+      }
+      return null;
     }
 
     // We look at all methods that generate values for explain
@@ -207,7 +309,7 @@ public class ExplainTask extends Task<ExplainWork> implements Serializable {
     Arrays.sort(methods, new MethodComparator());
 
     for (Method m : methods) {
-      int prop_indents = indent + 2;
+      int prop_indents = jsonOutput ? 0 : indent + 2;
       note = m.getAnnotation(Explain.class);
 
       if (note instanceof Explain) {
@@ -224,179 +326,286 @@ public class ExplainTask extends Task<ExplainWork> implements Serializable {
           String header = null;
           if (!xpl_note.displayName().equals("")) {
             header = indentString(prop_indents) + xpl_note.displayName() + ":";
-          } else {
+          }
+          else {
             prop_indents = indent;
             header = indentString(prop_indents);
           }
 
           if (isPrintable(val)) {
-
-            out.printf("%s ", header);
-            out.println(val);
+            if (out != null) {
+              out.printf("%s ", header);
+              out.println(val);
+            }
+            if (jsonOutput) {
+              json.put(header, val.toString());
+            }
             continue;
           }
           // Try this as a map
           try {
             // Go through the map and print out the stuff
             Map<?, ?> mp = (Map<?, ?>) val;
-            outputMap(mp, header, out, extended, prop_indents + 2);
+            JSONObject jsonOut = outputMap(mp, header, out, extended, jsonOutput,
+                jsonOutput ? 0 : prop_indents + 2);
+            if (jsonOutput) {
+              json.put(header, jsonOut);
+            }
             continue;
-          } catch (ClassCastException ce) {
+          }
+          catch (ClassCastException ce) {
             // Ignore - all this means is that this is not a map
           }
 
           // Try this as a list
           try {
             List<?> l = (List<?>) val;
-            outputList(l, header, out, extended, prop_indents + 2);
-
+            String jsonOut = outputList(l, header, out, extended, jsonOutput,
+                jsonOutput ? 0 : prop_indents + 2);
+            if (jsonOutput) {
+              json.put(header, jsonOut);
+            }
             continue;
-          } catch (ClassCastException ce) {
+          }
+          catch (ClassCastException ce) {
             // Ignore
           }
 
           // Finally check if it is serializable
           try {
             Serializable s = (Serializable) val;
-            out.println(header);
-            outputPlan(s, out, extended, prop_indents + 2);
-
+            if (out != null) {
+              out.println(header);
+            }
+            JSONObject jsonOut = outputPlan(s, out, extended, jsonOutput,
+                jsonOutput ? 0 : prop_indents + 2);
+            if (jsonOutput) {
+              json.put(header, jsonOut);
+            }
             continue;
-          } catch (ClassCastException ce) {
+          }
+          catch (ClassCastException ce) {
             // Ignore
           }
         }
       }
     }
+
+    if (jsonOutput) {
+      if (keyJSONObject != null) {
+        JSONObject ret = new JSONObject();
+        ret.put(keyJSONObject, json);
+        return ret;
+      }
+
+      return json;
+    }
+
+    return null;
   }
 
-  private void outputPlan(Task<? extends Serializable> task, PrintStream out,
-      boolean extended, HashSet<Task<? extends Serializable>> displayedSet,
+  private static JSONObject outputPlan(Task<? extends Serializable> task,
+      PrintStream out, JSONObject parentJSON, boolean extended,
+      boolean jsonOutput, HashSet<Task<? extends Serializable>> displayedSet,
       int indent) throws Exception {
 
     if (displayedSet.contains(task)) {
-      return;
+      return null;
     }
     displayedSet.add(task);
 
-    out.print(indentString(indent));
-    out.printf("Stage: %s\n", task.getId());
+    if (out != null) {
+      out.print(indentString(indent));
+      out.printf("Stage: %s\n", task.getId());
+    }
+
     // Start by getting the work part of the task and call the output plan for
     // the work
-    outputPlan(task.getWork(), out, extended, indent + 2);
-    out.println();
+    JSONObject jsonOutputPlan = outputPlan(task.getWork(), out, extended,
+        jsonOutput, jsonOutput ? 0 : indent + 2);
+
+    if (out != null) {
+      out.println();
+    }
+
+    if (jsonOutput) {
+      parentJSON.put(task.getId(), jsonOutputPlan);
+    }
+
     if (task instanceof ConditionalTask
         && ((ConditionalTask) task).getListTasks() != null) {
-      for (Task<? extends Serializable> con : ((ConditionalTask) task)
-          .getListTasks()) {
-        outputPlan(con, out, extended, displayedSet, indent);
+      for (Task<? extends Serializable> con : ((ConditionalTask) task).getListTasks()) {
+        outputPlan(con, out, parentJSON, extended, jsonOutput, displayedSet,
+            jsonOutput ? 0 : indent);
       }
     }
     if (task.getChildTasks() != null) {
       for (Task<? extends Serializable> child : task.getChildTasks()) {
-        outputPlan(child, out, extended, displayedSet, indent);
+        outputPlan(child, out, parentJSON, extended, jsonOutput, displayedSet,
+            jsonOutput ? 0 : indent);
       }
     }
+    return null;
   }
 
-  private final Set<Task<? extends Serializable>> dependeciesTaskSet =
-    new HashSet<Task<? extends Serializable>>();
-
-  private void outputDependencies(Task<? extends Serializable> task,
-      PrintStream out, int indent, boolean rootTskCandidate) throws Exception {
+  private static JSONObject outputDependencies(Task<? extends Serializable> task,
+      Set<Task<? extends Serializable>> dependeciesTaskSet, PrintStream out,
+      JSONObject parentJson, boolean jsonOutput, int indent,
+      boolean rootTskCandidate) throws Exception {
 
     if (dependeciesTaskSet.contains(task)) {
-      return;
+      return null;
     }
     dependeciesTaskSet.add(task);
     boolean first = true;
-    out.print(indentString(indent));
-    out.printf("%s", task.getId());
+    JSONObject json = jsonOutput ? new JSONObject() : null;
+    if (out != null) {
+      out.print(indentString(indent));
+      out.printf("%s", task.getId());
+    }
+
     if ((task.getParentTasks() == null || task.getParentTasks().isEmpty())) {
       if (rootTskCandidate) {
-        out.print(" is a root stage");
+        if (out != null) {
+          out.print(" is a root stage");
+        }
+
+        if (jsonOutput) {
+          json.put("ROOT STAGE", "TRUE");
+        }
       }
-    } else {
-      out.print(" depends on stages: ");
+    }
+    else {
+      StringBuffer s = new StringBuffer();
       first = true;
       for (Task<? extends Serializable> parent : task.getParentTasks()) {
         if (!first) {
-          out.print(", ");
+          s.append(", ");
         }
         first = false;
-        out.print(parent.getId());
+        s.append(parent.getId());
+      }
+
+      if (out != null) {
+        out.print(" depends on stages: ");
+        out.print(s.toString());
+      }
+      if (jsonOutput) {
+        json.put("DEPENDENT STAGES", s.toString());
       }
     }
 
-    Task<? extends Serializable> cuurBackupTask = task.getBackupTask();
-    if(cuurBackupTask != null) {
-      out.print(" has a backup stage: ");
-      if (!first) {
-        out.print(", ");
+    Task<? extends Serializable> currBackupTask = task.getBackupTask();
+    if (currBackupTask != null) {
+      if (out != null) {
+        out.print(" has a backup stage: ");
+        out.print(currBackupTask.getId());
       }
-      first = false;
-      out.print(cuurBackupTask.getId());
+      if (jsonOutput) {
+        json.put("BACKUP STAGE", currBackupTask.getId());
+      }
     }
-
 
     if (task instanceof ConditionalTask
         && ((ConditionalTask) task).getListTasks() != null) {
-      out.print(" , consists of ");
+      StringBuffer s = new StringBuffer();
       first = true;
-      for (Task<? extends Serializable> con : ((ConditionalTask) task)
-          .getListTasks()) {
+      for (Task<? extends Serializable> con : ((ConditionalTask) task).getListTasks()) {
         if (!first) {
-          out.print(", ");
+          s.append(", ");
         }
         first = false;
-        out.print(con.getId());
+        s.append(con.getId());
+      }
+
+      if (out != null) {
+        out.print(" , consists of ");
+        out.print(s.toString());
+      }
+      if (jsonOutput) {
+        json.put("CONDITIONAL CHILD TASKS", s.toString());
       }
     }
 
-
-    out.println();
+    if (out != null) {
+      out.println();
+    }
 
     if (task instanceof ConditionalTask
         && ((ConditionalTask) task).getListTasks() != null) {
-      for (Task<? extends Serializable> con : ((ConditionalTask) task)
-          .getListTasks()) {
-        outputDependencies(con, out, indent, false);
+      for (Task<? extends Serializable> con : ((ConditionalTask) task).getListTasks()) {
+        JSONObject jsonOut = outputDependencies(con, dependeciesTaskSet, out,
+            parentJson, jsonOutput, jsonOutput ? 0 : indent, false);
+        if (jsonOutput && (jsonOut != null)) {
+          parentJson.put(con.getId(), jsonOut);
+        }
       }
     }
 
     if (task.getChildTasks() != null) {
       for (Task<? extends Serializable> child : task.getChildTasks()) {
-        outputDependencies(child, out, indent, true);
+        JSONObject jsonOut = outputDependencies(child, dependeciesTaskSet, out,
+            parentJson, jsonOutput, jsonOutput ? 0 : indent, true);
+        if (jsonOutput && (jsonOut != null)) {
+          parentJson.put(child.getId(), jsonOut);
+        }
+      }
+    }
+    return jsonOutput ? json : null;
+  }
+
+  public static String outputAST(String treeString, PrintStream out,
+      boolean jsonOutput, int indent) throws JSONException {
+    if (out != null) {
+      out.print(indentString(indent));
+      out.println("ABSTRACT SYNTAX TREE:");
+      out.print(indentString(indent + 2));
+      out.println(treeString);
+    }
+
+    return jsonOutput ? treeString : null;
+  }
+
+  public static JSONObject outputDependencies(PrintStream out, boolean jsonOutput,
+      List<Task<? extends Serializable>> rootTasks, int indent)
+      throws Exception {
+    if (out != null) {
+      out.print(indentString(indent));
+      out.println("STAGE DEPENDENCIES:");
+    }
+
+    JSONObject json = jsonOutput ? new JSONObject() : null;
+    Set<Task<? extends Serializable>> dependenciesTaskSet =
+      new HashSet<Task<? extends Serializable>>();
+
+    for (Task<? extends Serializable> rootTask : rootTasks) {
+      JSONObject jsonOut = outputDependencies(rootTask,
+          dependenciesTaskSet, out, json, jsonOutput,
+          jsonOutput ? 0 : indent + 2, true);
+      if (jsonOutput && (jsonOut != null)) {
+        json.put(rootTask.getId(), jsonOut);
       }
     }
 
+    return jsonOutput ? json : null;
   }
 
-  public void outputAST(String treeString, PrintStream out, int indent) {
-    out.print(indentString(indent));
-    out.println("ABSTRACT SYNTAX TREE:");
-    out.print(indentString(indent + 2));
-    out.println(treeString);
-  }
-
-  public void outputDependencies(PrintStream out,
-      List<Task<? extends Serializable>> rootTasks, int indent) throws Exception {
-    out.print(indentString(indent));
-    out.println("STAGE DEPENDENCIES:");
-    for (Task<? extends Serializable> rootTask : rootTasks) {
-      outputDependencies(rootTask, out, indent + 2, true);
+  public static JSONObject outputStagePlans(PrintStream out, ExplainWork work,
+      List<Task<? extends Serializable>> rootTasks, int indent)
+      throws Exception {
+    boolean jsonOutput = work.isFormatted();
+    if (out != null) {
+      out.print(indentString(indent));
+      out.println("STAGE PLANS:");
     }
-  }
 
-  public void outputStagePlans(PrintStream out,
-      List<Task<? extends Serializable>> rootTasks, int indent) throws Exception {
-    out.print(indentString(indent));
-    out.println("STAGE PLANS:");
-    HashSet<Task<? extends Serializable>> displayedSet =
-      new HashSet<Task<? extends Serializable>>();
+    JSONObject json = jsonOutput ? new JSONObject() : null;
+    HashSet<Task<? extends Serializable>> displayedSet = new HashSet<Task<? extends Serializable>>();
     for (Task<? extends Serializable> rootTask : rootTasks) {
-      outputPlan(rootTask, out, work.getExtended(), displayedSet, indent + 2);
+      outputPlan(rootTask, out, json, work.getExtended(), jsonOutput,
+          displayedSet, jsonOutput ? 0 : indent + 2);
     }
+    return jsonOutput ? json : null;
   }
 
   /**
@@ -425,7 +634,7 @@ public class ExplainTask extends Task<ExplainWork> implements Serializable {
   protected void localizeMRTmpFilesImpl(Context ctx) {
     // explain task has nothing to localize
     // we don't expect to enter this code path at all
-    throw new RuntimeException ("Unexpected call");
+    throw new RuntimeException("Unexpected call");
   }
 
 }

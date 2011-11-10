@@ -286,7 +286,8 @@ statement
 explainStatement
 @init { msgs.push("explain statement"); }
 @after { msgs.pop(); }
-	: KW_EXPLAIN (isExtended=KW_EXTENDED)? execStatement -> ^(TOK_EXPLAIN execStatement $isExtended?)
+	: KW_EXPLAIN (explainOptions=KW_EXTENDED|explainOptions=KW_FORMATTED)? execStatement 
+      -> ^(TOK_EXPLAIN execStatement $explainOptions?)
 	;
 
 execStatement
@@ -640,7 +641,6 @@ alterStatementSuffixRenameCol
     : Identifier KW_CHANGE KW_COLUMN? oldName=Identifier newName=Identifier colType (KW_COMMENT comment=StringLiteral)? alterStatementChangeColPosition?
     ->^(TOK_ALTERTABLE_RENAMECOL Identifier $oldName $newName colType $comment? alterStatementChangeColPosition?)
     ;
-    
 
 alterStatementChangeColPosition
     : first=KW_FIRST|KW_AFTER afterCol=Identifier
