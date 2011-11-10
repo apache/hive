@@ -19,8 +19,8 @@ STAGE DEPENDENCIES:
 STAGE PLANS:
   Stage: Stage-0
     Copy
-      source: file:/Users/krishnak/Projects/hdp/sources/hive-git-apache/data/files/kv1.txt
-      destination: pfile:/Users/krishnak/Projects/hdp/sources/hive-git-apache/build/ql/scratchdir/hive_2011-03-20_23-49-16_008_2588436210508896099/-ext-10000
+      source: file:/data/users/njain/hive_commit1/data/files/kv1.txt
+      destination: pfile:/data/users/njain/hive_commit1/build/ql/scratchdir/hive_2011-11-03_16-47-14_258_1757057361379982466/-ext-10000
 
   Stage: Stage-1
     Move Operator
@@ -39,14 +39,21 @@ PREHOOK: Output: default@input4
 POSTHOOK: query: LOAD DATA LOCAL INPATH '../data/files/kv1.txt' INTO TABLE INPUT4
 POSTHOOK: type: LOAD
 POSTHOOK: Output: default@input4
+PREHOOK: query: EXPLAIN FORMATTED
+SELECT INPUT4.VALUE, INPUT4.KEY FROM INPUT4
+PREHOOK: type: QUERY
+POSTHOOK: query: EXPLAIN FORMATTED
+SELECT INPUT4.VALUE, INPUT4.KEY FROM INPUT4
+POSTHOOK: type: QUERY
+{"STAGE PLANS":{"Stage-1":{"Map Reduce":{"Alias -> Map Operator Tree:":{"input4":{"TS_0":{"SEL_1":{"FS_2":{"File Output Operator":{"GlobalTableId:":"0","compressed:":"false","table:":{"input format:":"org.apache.hadoop.mapred.TextInputFormat","output format:":"org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat"}}}}}}},"Percentage Sample:":{}}},"Stage-0":{"Fetch Operator":{"limit:":"-1"}}},"STAGE DEPENDENCIES":{"Stage-1":{"ROOT STAGE":"TRUE"},"Stage-0":{"ROOT STAGE":"TRUE"}},"ABSTRACT SYNTAX TREE":"(TOK_QUERY (TOK_FROM (TOK_TABREF (TOK_TABNAME INPUT4))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (. (TOK_TABLE_OR_COL INPUT4) VALUE)) (TOK_SELEXPR (. (TOK_TABLE_OR_COL INPUT4) KEY)))))"}
 PREHOOK: query: SELECT INPUT4.VALUE, INPUT4.KEY FROM INPUT4
 PREHOOK: type: QUERY
 PREHOOK: Input: default@input4
-PREHOOK: Output: file:/var/folders/67/67R3POPtF90VG63KSmCbcU++F0U/-Tmp-/krishnak/hive_2011-03-20_23-49-17_477_5960644229997823855/-mr-10000
+PREHOOK: Output: file:/tmp/njain/hive_2011-11-03_16-47-15_010_2383066747887433640/-mr-10000
 POSTHOOK: query: SELECT INPUT4.VALUE, INPUT4.KEY FROM INPUT4
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@input4
-POSTHOOK: Output: file:/var/folders/67/67R3POPtF90VG63KSmCbcU++F0U/-Tmp-/krishnak/hive_2011-03-20_23-49-17_477_5960644229997823855/-mr-10000
+POSTHOOK: Output: file:/tmp/njain/hive_2011-11-03_16-47-15_010_2383066747887433640/-mr-10000
 val_238	238
 val_86	86
 val_311	311
