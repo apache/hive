@@ -52,7 +52,8 @@ class ThriftHiveMetastoreIf : virtual public facebook::fb303::FacebookServiceIf 
   virtual void get_partition_names_ps(std::vector<std::string> & _return, const std::string& db_name, const std::string& tbl_name, const std::vector<std::string> & part_vals, const int16_t max_parts) = 0;
   virtual void get_partitions_by_filter(std::vector<Partition> & _return, const std::string& db_name, const std::string& tbl_name, const std::string& filter, const int16_t max_parts) = 0;
   virtual void get_partitions_by_names(std::vector<Partition> & _return, const std::string& db_name, const std::string& tbl_name, const std::vector<std::string> & names) = 0;
-  virtual void alter_partition(const std::string& db_name, const std::string& tbl_name, const std::vector<std::string> & part_vals, const Partition& new_part) = 0;
+  virtual void alter_partition(const std::string& db_name, const std::string& tbl_name, const Partition& new_part) = 0;
+  virtual void rename_partition(const std::string& db_name, const std::string& tbl_name, const std::vector<std::string> & part_vals, const Partition& new_part) = 0;
   virtual void get_config_value(std::string& _return, const std::string& name, const std::string& defaultValue) = 0;
   virtual void partition_name_to_vals(std::vector<std::string> & _return, const std::string& part_name) = 0;
   virtual void partition_name_to_spec(std::map<std::string, std::string> & _return, const std::string& part_name) = 0;
@@ -198,7 +199,10 @@ class ThriftHiveMetastoreNull : virtual public ThriftHiveMetastoreIf , virtual p
   void get_partitions_by_names(std::vector<Partition> & /* _return */, const std::string& /* db_name */, const std::string& /* tbl_name */, const std::vector<std::string> & /* names */) {
     return;
   }
-  void alter_partition(const std::string& /* db_name */, const std::string& /* tbl_name */, const std::vector<std::string> & /* part_vals */, const Partition& /* new_part */) {
+  void alter_partition(const std::string& /* db_name */, const std::string& /* tbl_name */, const Partition& /* new_part */) {
+    return;
+  }
+  void rename_partition(const std::string& /* db_name */, const std::string& /* tbl_name */, const std::vector<std::string> & /* part_vals */, const Partition& /* new_part */) {
     return;
   }
   void get_config_value(std::string& /* _return */, const std::string& /* name */, const std::string& /* defaultValue */) {
@@ -5501,10 +5505,9 @@ class ThriftHiveMetastore_get_partitions_by_names_presult {
 };
 
 typedef struct _ThriftHiveMetastore_alter_partition_args__isset {
-  _ThriftHiveMetastore_alter_partition_args__isset() : db_name(false), tbl_name(false), part_vals(false), new_part(false) {}
+  _ThriftHiveMetastore_alter_partition_args__isset() : db_name(false), tbl_name(false), new_part(false) {}
   bool db_name;
   bool tbl_name;
-  bool part_vals;
   bool new_part;
 } _ThriftHiveMetastore_alter_partition_args__isset;
 
@@ -5518,7 +5521,6 @@ class ThriftHiveMetastore_alter_partition_args {
 
   std::string db_name;
   std::string tbl_name;
-  std::vector<std::string>  part_vals;
   Partition new_part;
 
   _ThriftHiveMetastore_alter_partition_args__isset __isset;
@@ -5531,10 +5533,6 @@ class ThriftHiveMetastore_alter_partition_args {
     tbl_name = val;
   }
 
-  void __set_part_vals(const std::vector<std::string> & val) {
-    part_vals = val;
-  }
-
   void __set_new_part(const Partition& val) {
     new_part = val;
   }
@@ -5544,8 +5542,6 @@ class ThriftHiveMetastore_alter_partition_args {
     if (!(db_name == rhs.db_name))
       return false;
     if (!(tbl_name == rhs.tbl_name))
-      return false;
-    if (!(part_vals == rhs.part_vals))
       return false;
     if (!(new_part == rhs.new_part))
       return false;
@@ -5571,7 +5567,6 @@ class ThriftHiveMetastore_alter_partition_pargs {
 
   const std::string* db_name;
   const std::string* tbl_name;
-  const std::vector<std::string> * part_vals;
   const Partition* new_part;
 
   uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
@@ -5640,6 +5635,151 @@ class ThriftHiveMetastore_alter_partition_presult {
   MetaException o2;
 
   _ThriftHiveMetastore_alter_partition_presult__isset __isset;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+
+};
+
+typedef struct _ThriftHiveMetastore_rename_partition_args__isset {
+  _ThriftHiveMetastore_rename_partition_args__isset() : db_name(false), tbl_name(false), part_vals(false), new_part(false) {}
+  bool db_name;
+  bool tbl_name;
+  bool part_vals;
+  bool new_part;
+} _ThriftHiveMetastore_rename_partition_args__isset;
+
+class ThriftHiveMetastore_rename_partition_args {
+ public:
+
+  ThriftHiveMetastore_rename_partition_args() : db_name(""), tbl_name("") {
+  }
+
+  virtual ~ThriftHiveMetastore_rename_partition_args() throw() {}
+
+  std::string db_name;
+  std::string tbl_name;
+  std::vector<std::string>  part_vals;
+  Partition new_part;
+
+  _ThriftHiveMetastore_rename_partition_args__isset __isset;
+
+  void __set_db_name(const std::string& val) {
+    db_name = val;
+  }
+
+  void __set_tbl_name(const std::string& val) {
+    tbl_name = val;
+  }
+
+  void __set_part_vals(const std::vector<std::string> & val) {
+    part_vals = val;
+  }
+
+  void __set_new_part(const Partition& val) {
+    new_part = val;
+  }
+
+  bool operator == (const ThriftHiveMetastore_rename_partition_args & rhs) const
+  {
+    if (!(db_name == rhs.db_name))
+      return false;
+    if (!(tbl_name == rhs.tbl_name))
+      return false;
+    if (!(part_vals == rhs.part_vals))
+      return false;
+    if (!(new_part == rhs.new_part))
+      return false;
+    return true;
+  }
+  bool operator != (const ThriftHiveMetastore_rename_partition_args &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const ThriftHiveMetastore_rename_partition_args & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+
+class ThriftHiveMetastore_rename_partition_pargs {
+ public:
+
+
+  virtual ~ThriftHiveMetastore_rename_partition_pargs() throw() {}
+
+  const std::string* db_name;
+  const std::string* tbl_name;
+  const std::vector<std::string> * part_vals;
+  const Partition* new_part;
+
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+typedef struct _ThriftHiveMetastore_rename_partition_result__isset {
+  _ThriftHiveMetastore_rename_partition_result__isset() : o1(false), o2(false) {}
+  bool o1;
+  bool o2;
+} _ThriftHiveMetastore_rename_partition_result__isset;
+
+class ThriftHiveMetastore_rename_partition_result {
+ public:
+
+  ThriftHiveMetastore_rename_partition_result() {
+  }
+
+  virtual ~ThriftHiveMetastore_rename_partition_result() throw() {}
+
+  InvalidOperationException o1;
+  MetaException o2;
+
+  _ThriftHiveMetastore_rename_partition_result__isset __isset;
+
+  void __set_o1(const InvalidOperationException& val) {
+    o1 = val;
+  }
+
+  void __set_o2(const MetaException& val) {
+    o2 = val;
+  }
+
+  bool operator == (const ThriftHiveMetastore_rename_partition_result & rhs) const
+  {
+    if (!(o1 == rhs.o1))
+      return false;
+    if (!(o2 == rhs.o2))
+      return false;
+    return true;
+  }
+  bool operator != (const ThriftHiveMetastore_rename_partition_result &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const ThriftHiveMetastore_rename_partition_result & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+typedef struct _ThriftHiveMetastore_rename_partition_presult__isset {
+  _ThriftHiveMetastore_rename_partition_presult__isset() : o1(false), o2(false) {}
+  bool o1;
+  bool o2;
+} _ThriftHiveMetastore_rename_partition_presult__isset;
+
+class ThriftHiveMetastore_rename_partition_presult {
+ public:
+
+
+  virtual ~ThriftHiveMetastore_rename_partition_presult() throw() {}
+
+  InvalidOperationException o1;
+  MetaException o2;
+
+  _ThriftHiveMetastore_rename_partition_presult__isset __isset;
 
   uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
 
@@ -9013,9 +9153,12 @@ class ThriftHiveMetastoreClient : virtual public ThriftHiveMetastoreIf, public f
   void get_partitions_by_names(std::vector<Partition> & _return, const std::string& db_name, const std::string& tbl_name, const std::vector<std::string> & names);
   void send_get_partitions_by_names(const std::string& db_name, const std::string& tbl_name, const std::vector<std::string> & names);
   void recv_get_partitions_by_names(std::vector<Partition> & _return);
-  void alter_partition(const std::string& db_name, const std::string& tbl_name, const std::vector<std::string> & part_vals, const Partition& new_part);
-  void send_alter_partition(const std::string& db_name, const std::string& tbl_name, const std::vector<std::string> & part_vals, const Partition& new_part);
+  void alter_partition(const std::string& db_name, const std::string& tbl_name, const Partition& new_part);
+  void send_alter_partition(const std::string& db_name, const std::string& tbl_name, const Partition& new_part);
   void recv_alter_partition();
+  void rename_partition(const std::string& db_name, const std::string& tbl_name, const std::vector<std::string> & part_vals, const Partition& new_part);
+  void send_rename_partition(const std::string& db_name, const std::string& tbl_name, const std::vector<std::string> & part_vals, const Partition& new_part);
+  void recv_rename_partition();
   void get_config_value(std::string& _return, const std::string& name, const std::string& defaultValue);
   void send_get_config_value(const std::string& name, const std::string& defaultValue);
   void recv_get_config_value(std::string& _return);
@@ -9134,6 +9277,7 @@ class ThriftHiveMetastoreProcessor : virtual public ::apache::thrift::TProcessor
   void process_get_partitions_by_filter(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
   void process_get_partitions_by_names(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
   void process_alter_partition(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
+  void process_rename_partition(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
   void process_get_config_value(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
   void process_partition_name_to_vals(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
   void process_partition_name_to_spec(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
@@ -9200,6 +9344,7 @@ class ThriftHiveMetastoreProcessor : virtual public ::apache::thrift::TProcessor
     processMap_["get_partitions_by_filter"] = &ThriftHiveMetastoreProcessor::process_get_partitions_by_filter;
     processMap_["get_partitions_by_names"] = &ThriftHiveMetastoreProcessor::process_get_partitions_by_names;
     processMap_["alter_partition"] = &ThriftHiveMetastoreProcessor::process_alter_partition;
+    processMap_["rename_partition"] = &ThriftHiveMetastoreProcessor::process_rename_partition;
     processMap_["get_config_value"] = &ThriftHiveMetastoreProcessor::process_get_config_value;
     processMap_["partition_name_to_vals"] = &ThriftHiveMetastoreProcessor::process_partition_name_to_vals;
     processMap_["partition_name_to_spec"] = &ThriftHiveMetastoreProcessor::process_partition_name_to_spec;
@@ -9656,10 +9801,17 @@ class ThriftHiveMetastoreMultiface : virtual public ThriftHiveMetastoreIf, publi
     }
   }
 
-  void alter_partition(const std::string& db_name, const std::string& tbl_name, const std::vector<std::string> & part_vals, const Partition& new_part) {
+  void alter_partition(const std::string& db_name, const std::string& tbl_name, const Partition& new_part) {
     size_t sz = ifaces_.size();
     for (size_t i = 0; i < sz; ++i) {
-      ifaces_[i]->alter_partition(db_name, tbl_name, part_vals, new_part);
+      ifaces_[i]->alter_partition(db_name, tbl_name, new_part);
+    }
+  }
+
+  void rename_partition(const std::string& db_name, const std::string& tbl_name, const std::vector<std::string> & part_vals, const Partition& new_part) {
+    size_t sz = ifaces_.size();
+    for (size_t i = 0; i < sz; ++i) {
+      ifaces_[i]->rename_partition(db_name, tbl_name, part_vals, new_part);
     }
   }
 

@@ -47,7 +47,8 @@ interface ThriftHiveMetastoreIf extends FacebookServiceIf {
   public function get_partition_names_ps($db_name, $tbl_name, $part_vals, $max_parts);
   public function get_partitions_by_filter($db_name, $tbl_name, $filter, $max_parts);
   public function get_partitions_by_names($db_name, $tbl_name, $names);
-  public function alter_partition($db_name, $tbl_name, $part_vals, $new_part);
+  public function alter_partition($db_name, $tbl_name, $new_part);
+  public function rename_partition($db_name, $tbl_name, $part_vals, $new_part);
   public function get_config_value($name, $defaultValue);
   public function partition_name_to_vals($part_name);
   public function partition_name_to_spec($part_name);
@@ -2240,18 +2241,17 @@ class ThriftHiveMetastoreClient extends FacebookServiceClient implements ThriftH
     throw new Exception("get_partitions_by_names failed: unknown result");
   }
 
-  public function alter_partition($db_name, $tbl_name, $part_vals, $new_part)
+  public function alter_partition($db_name, $tbl_name, $new_part)
   {
-    $this->send_alter_partition($db_name, $tbl_name, $part_vals, $new_part);
+    $this->send_alter_partition($db_name, $tbl_name, $new_part);
     $this->recv_alter_partition();
   }
 
-  public function send_alter_partition($db_name, $tbl_name, $part_vals, $new_part)
+  public function send_alter_partition($db_name, $tbl_name, $new_part)
   {
     $args = new ThriftHiveMetastore_alter_partition_args();
     $args->db_name = $db_name;
     $args->tbl_name = $tbl_name;
-    $args->part_vals = $part_vals;
     $args->new_part = $new_part;
     $bin_accel = ($this->output_ instanceof TProtocol::$TBINARYPROTOCOLACCELERATED) && function_exists('thrift_protocol_write_binary');
     if ($bin_accel)
@@ -2285,6 +2285,63 @@ class ThriftHiveMetastoreClient extends FacebookServiceClient implements ThriftH
         throw $x;
       }
       $result = new ThriftHiveMetastore_alter_partition_result();
+      $result->read($this->input_);
+      $this->input_->readMessageEnd();
+    }
+    if ($result->o1 !== null) {
+      throw $result->o1;
+    }
+    if ($result->o2 !== null) {
+      throw $result->o2;
+    }
+    return;
+  }
+
+  public function rename_partition($db_name, $tbl_name, $part_vals, $new_part)
+  {
+    $this->send_rename_partition($db_name, $tbl_name, $part_vals, $new_part);
+    $this->recv_rename_partition();
+  }
+
+  public function send_rename_partition($db_name, $tbl_name, $part_vals, $new_part)
+  {
+    $args = new ThriftHiveMetastore_rename_partition_args();
+    $args->db_name = $db_name;
+    $args->tbl_name = $tbl_name;
+    $args->part_vals = $part_vals;
+    $args->new_part = $new_part;
+    $bin_accel = ($this->output_ instanceof TProtocol::$TBINARYPROTOCOLACCELERATED) && function_exists('thrift_protocol_write_binary');
+    if ($bin_accel)
+    {
+      thrift_protocol_write_binary($this->output_, 'rename_partition', TMessageType::CALL, $args, $this->seqid_, $this->output_->isStrictWrite());
+    }
+    else
+    {
+      $this->output_->writeMessageBegin('rename_partition', TMessageType::CALL, $this->seqid_);
+      $args->write($this->output_);
+      $this->output_->writeMessageEnd();
+      $this->output_->getTransport()->flush();
+    }
+  }
+
+  public function recv_rename_partition()
+  {
+    $bin_accel = ($this->input_ instanceof TProtocol::$TBINARYPROTOCOLACCELERATED) && function_exists('thrift_protocol_read_binary');
+    if ($bin_accel) $result = thrift_protocol_read_binary($this->input_, 'ThriftHiveMetastore_rename_partition_result', $this->input_->isStrictRead());
+    else
+    {
+      $rseqid = 0;
+      $fname = null;
+      $mtype = 0;
+
+      $this->input_->readMessageBegin($fname, $mtype, $rseqid);
+      if ($mtype == TMessageType::EXCEPTION) {
+        $x = new TApplicationException();
+        $x->read($this->input_);
+        $this->input_->readMessageEnd();
+        throw $x;
+      }
+      $result = new ThriftHiveMetastore_rename_partition_result();
       $result->read($this->input_);
       $this->input_->readMessageEnd();
     }
@@ -12602,7 +12659,6 @@ class ThriftHiveMetastore_alter_partition_args {
 
   public $db_name = null;
   public $tbl_name = null;
-  public $part_vals = null;
   public $new_part = null;
 
   public function __construct($vals=null) {
@@ -12617,14 +12673,6 @@ class ThriftHiveMetastore_alter_partition_args {
           'type' => TType::STRING,
           ),
         3 => array(
-          'var' => 'part_vals',
-          'type' => TType::LST,
-          'etype' => TType::STRING,
-          'elem' => array(
-            'type' => TType::STRING,
-            ),
-          ),
-        4 => array(
           'var' => 'new_part',
           'type' => TType::STRUCT,
           'class' => 'Partition',
@@ -12637,9 +12685,6 @@ class ThriftHiveMetastore_alter_partition_args {
       }
       if (isset($vals['tbl_name'])) {
         $this->tbl_name = $vals['tbl_name'];
-      }
-      if (isset($vals['part_vals'])) {
-        $this->part_vals = $vals['part_vals'];
       }
       if (isset($vals['new_part'])) {
         $this->new_part = $vals['new_part'];
@@ -12681,23 +12726,6 @@ class ThriftHiveMetastore_alter_partition_args {
           }
           break;
         case 3:
-          if ($ftype == TType::LST) {
-            $this->part_vals = array();
-            $_size386 = 0;
-            $_etype389 = 0;
-            $xfer += $input->readListBegin($_etype389, $_size386);
-            for ($_i390 = 0; $_i390 < $_size386; ++$_i390)
-            {
-              $elem391 = null;
-              $xfer += $input->readString($elem391);
-              $this->part_vals []= $elem391;
-            }
-            $xfer += $input->readListEnd();
-          } else {
-            $xfer += $input->skip($ftype);
-          }
-          break;
-        case 4:
           if ($ftype == TType::STRUCT) {
             $this->new_part = new Partition();
             $xfer += $this->new_part->read($input);
@@ -12728,28 +12756,11 @@ class ThriftHiveMetastore_alter_partition_args {
       $xfer += $output->writeString($this->tbl_name);
       $xfer += $output->writeFieldEnd();
     }
-    if ($this->part_vals !== null) {
-      if (!is_array($this->part_vals)) {
-        throw new TProtocolException('Bad type in structure.', TProtocolException::INVALID_DATA);
-      }
-      $xfer += $output->writeFieldBegin('part_vals', TType::LST, 3);
-      {
-        $output->writeListBegin(TType::STRING, count($this->part_vals));
-        {
-          foreach ($this->part_vals as $iter392)
-          {
-            $xfer += $output->writeString($iter392);
-          }
-        }
-        $output->writeListEnd();
-      }
-      $xfer += $output->writeFieldEnd();
-    }
     if ($this->new_part !== null) {
       if (!is_object($this->new_part)) {
         throw new TProtocolException('Bad type in structure.', TProtocolException::INVALID_DATA);
       }
-      $xfer += $output->writeFieldBegin('new_part', TType::STRUCT, 4);
+      $xfer += $output->writeFieldBegin('new_part', TType::STRUCT, 3);
       $xfer += $this->new_part->write($output);
       $xfer += $output->writeFieldEnd();
     }
@@ -12839,6 +12850,265 @@ class ThriftHiveMetastore_alter_partition_result {
   public function write($output) {
     $xfer = 0;
     $xfer += $output->writeStructBegin('ThriftHiveMetastore_alter_partition_result');
+    if ($this->o1 !== null) {
+      $xfer += $output->writeFieldBegin('o1', TType::STRUCT, 1);
+      $xfer += $this->o1->write($output);
+      $xfer += $output->writeFieldEnd();
+    }
+    if ($this->o2 !== null) {
+      $xfer += $output->writeFieldBegin('o2', TType::STRUCT, 2);
+      $xfer += $this->o2->write($output);
+      $xfer += $output->writeFieldEnd();
+    }
+    $xfer += $output->writeFieldStop();
+    $xfer += $output->writeStructEnd();
+    return $xfer;
+  }
+
+}
+
+class ThriftHiveMetastore_rename_partition_args {
+  static $_TSPEC;
+
+  public $db_name = null;
+  public $tbl_name = null;
+  public $part_vals = null;
+  public $new_part = null;
+
+  public function __construct($vals=null) {
+    if (!isset(self::$_TSPEC)) {
+      self::$_TSPEC = array(
+        1 => array(
+          'var' => 'db_name',
+          'type' => TType::STRING,
+          ),
+        2 => array(
+          'var' => 'tbl_name',
+          'type' => TType::STRING,
+          ),
+        3 => array(
+          'var' => 'part_vals',
+          'type' => TType::LST,
+          'etype' => TType::STRING,
+          'elem' => array(
+            'type' => TType::STRING,
+            ),
+          ),
+        4 => array(
+          'var' => 'new_part',
+          'type' => TType::STRUCT,
+          'class' => 'Partition',
+          ),
+        );
+    }
+    if (is_array($vals)) {
+      if (isset($vals['db_name'])) {
+        $this->db_name = $vals['db_name'];
+      }
+      if (isset($vals['tbl_name'])) {
+        $this->tbl_name = $vals['tbl_name'];
+      }
+      if (isset($vals['part_vals'])) {
+        $this->part_vals = $vals['part_vals'];
+      }
+      if (isset($vals['new_part'])) {
+        $this->new_part = $vals['new_part'];
+      }
+    }
+  }
+
+  public function getName() {
+    return 'ThriftHiveMetastore_rename_partition_args';
+  }
+
+  public function read($input)
+  {
+    $xfer = 0;
+    $fname = null;
+    $ftype = 0;
+    $fid = 0;
+    $xfer += $input->readStructBegin($fname);
+    while (true)
+    {
+      $xfer += $input->readFieldBegin($fname, $ftype, $fid);
+      if ($ftype == TType::STOP) {
+        break;
+      }
+      switch ($fid)
+      {
+        case 1:
+          if ($ftype == TType::STRING) {
+            $xfer += $input->readString($this->db_name);
+          } else {
+            $xfer += $input->skip($ftype);
+          }
+          break;
+        case 2:
+          if ($ftype == TType::STRING) {
+            $xfer += $input->readString($this->tbl_name);
+          } else {
+            $xfer += $input->skip($ftype);
+          }
+          break;
+        case 3:
+          if ($ftype == TType::LST) {
+            $this->part_vals = array();
+            $_size386 = 0;
+            $_etype389 = 0;
+            $xfer += $input->readListBegin($_etype389, $_size386);
+            for ($_i390 = 0; $_i390 < $_size386; ++$_i390)
+            {
+              $elem391 = null;
+              $xfer += $input->readString($elem391);
+              $this->part_vals []= $elem391;
+            }
+            $xfer += $input->readListEnd();
+          } else {
+            $xfer += $input->skip($ftype);
+          }
+          break;
+        case 4:
+          if ($ftype == TType::STRUCT) {
+            $this->new_part = new Partition();
+            $xfer += $this->new_part->read($input);
+          } else {
+            $xfer += $input->skip($ftype);
+          }
+          break;
+        default:
+          $xfer += $input->skip($ftype);
+          break;
+      }
+      $xfer += $input->readFieldEnd();
+    }
+    $xfer += $input->readStructEnd();
+    return $xfer;
+  }
+
+  public function write($output) {
+    $xfer = 0;
+    $xfer += $output->writeStructBegin('ThriftHiveMetastore_rename_partition_args');
+    if ($this->db_name !== null) {
+      $xfer += $output->writeFieldBegin('db_name', TType::STRING, 1);
+      $xfer += $output->writeString($this->db_name);
+      $xfer += $output->writeFieldEnd();
+    }
+    if ($this->tbl_name !== null) {
+      $xfer += $output->writeFieldBegin('tbl_name', TType::STRING, 2);
+      $xfer += $output->writeString($this->tbl_name);
+      $xfer += $output->writeFieldEnd();
+    }
+    if ($this->part_vals !== null) {
+      if (!is_array($this->part_vals)) {
+        throw new TProtocolException('Bad type in structure.', TProtocolException::INVALID_DATA);
+      }
+      $xfer += $output->writeFieldBegin('part_vals', TType::LST, 3);
+      {
+        $output->writeListBegin(TType::STRING, count($this->part_vals));
+        {
+          foreach ($this->part_vals as $iter392)
+          {
+            $xfer += $output->writeString($iter392);
+          }
+        }
+        $output->writeListEnd();
+      }
+      $xfer += $output->writeFieldEnd();
+    }
+    if ($this->new_part !== null) {
+      if (!is_object($this->new_part)) {
+        throw new TProtocolException('Bad type in structure.', TProtocolException::INVALID_DATA);
+      }
+      $xfer += $output->writeFieldBegin('new_part', TType::STRUCT, 4);
+      $xfer += $this->new_part->write($output);
+      $xfer += $output->writeFieldEnd();
+    }
+    $xfer += $output->writeFieldStop();
+    $xfer += $output->writeStructEnd();
+    return $xfer;
+  }
+
+}
+
+class ThriftHiveMetastore_rename_partition_result {
+  static $_TSPEC;
+
+  public $o1 = null;
+  public $o2 = null;
+
+  public function __construct($vals=null) {
+    if (!isset(self::$_TSPEC)) {
+      self::$_TSPEC = array(
+        1 => array(
+          'var' => 'o1',
+          'type' => TType::STRUCT,
+          'class' => 'InvalidOperationException',
+          ),
+        2 => array(
+          'var' => 'o2',
+          'type' => TType::STRUCT,
+          'class' => 'MetaException',
+          ),
+        );
+    }
+    if (is_array($vals)) {
+      if (isset($vals['o1'])) {
+        $this->o1 = $vals['o1'];
+      }
+      if (isset($vals['o2'])) {
+        $this->o2 = $vals['o2'];
+      }
+    }
+  }
+
+  public function getName() {
+    return 'ThriftHiveMetastore_rename_partition_result';
+  }
+
+  public function read($input)
+  {
+    $xfer = 0;
+    $fname = null;
+    $ftype = 0;
+    $fid = 0;
+    $xfer += $input->readStructBegin($fname);
+    while (true)
+    {
+      $xfer += $input->readFieldBegin($fname, $ftype, $fid);
+      if ($ftype == TType::STOP) {
+        break;
+      }
+      switch ($fid)
+      {
+        case 1:
+          if ($ftype == TType::STRUCT) {
+            $this->o1 = new InvalidOperationException();
+            $xfer += $this->o1->read($input);
+          } else {
+            $xfer += $input->skip($ftype);
+          }
+          break;
+        case 2:
+          if ($ftype == TType::STRUCT) {
+            $this->o2 = new MetaException();
+            $xfer += $this->o2->read($input);
+          } else {
+            $xfer += $input->skip($ftype);
+          }
+          break;
+        default:
+          $xfer += $input->skip($ftype);
+          break;
+      }
+      $xfer += $input->readFieldEnd();
+    }
+    $xfer += $input->readStructEnd();
+    return $xfer;
+  }
+
+  public function write($output) {
+    $xfer = 0;
+    $xfer += $output->writeStructBegin('ThriftHiveMetastore_rename_partition_result');
     if ($this->o1 !== null) {
       $xfer += $output->writeFieldBegin('o1', TType::STRUCT, 1);
       $xfer += $this->o1->write($output);

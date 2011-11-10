@@ -101,7 +101,9 @@ public class ThriftHiveMetastore {
 
     public List<Partition> get_partitions_by_names(String db_name, String tbl_name, List<String> names) throws MetaException, NoSuchObjectException, org.apache.thrift.TException;
 
-    public void alter_partition(String db_name, String tbl_name, List<String> part_vals, Partition new_part) throws InvalidOperationException, MetaException, org.apache.thrift.TException;
+    public void alter_partition(String db_name, String tbl_name, Partition new_part) throws InvalidOperationException, MetaException, org.apache.thrift.TException;
+
+    public void rename_partition(String db_name, String tbl_name, List<String> part_vals, Partition new_part) throws InvalidOperationException, MetaException, org.apache.thrift.TException;
 
     public String get_config_value(String name, String defaultValue) throws ConfigValSecurityException, org.apache.thrift.TException;
 
@@ -229,7 +231,9 @@ public class ThriftHiveMetastore {
 
     public void get_partitions_by_names(String db_name, String tbl_name, List<String> names, org.apache.thrift.async.AsyncMethodCallback<AsyncClient.get_partitions_by_names_call> resultHandler) throws org.apache.thrift.TException;
 
-    public void alter_partition(String db_name, String tbl_name, List<String> part_vals, Partition new_part, org.apache.thrift.async.AsyncMethodCallback<AsyncClient.alter_partition_call> resultHandler) throws org.apache.thrift.TException;
+    public void alter_partition(String db_name, String tbl_name, Partition new_part, org.apache.thrift.async.AsyncMethodCallback<AsyncClient.alter_partition_call> resultHandler) throws org.apache.thrift.TException;
+
+    public void rename_partition(String db_name, String tbl_name, List<String> part_vals, Partition new_part, org.apache.thrift.async.AsyncMethodCallback<AsyncClient.rename_partition_call> resultHandler) throws org.apache.thrift.TException;
 
     public void get_config_value(String name, String defaultValue, org.apache.thrift.async.AsyncMethodCallback<AsyncClient.get_config_value_call> resultHandler) throws org.apache.thrift.TException;
 
@@ -1426,18 +1430,17 @@ public class ThriftHiveMetastore {
       throw new org.apache.thrift.TApplicationException(org.apache.thrift.TApplicationException.MISSING_RESULT, "get_partitions_by_names failed: unknown result");
     }
 
-    public void alter_partition(String db_name, String tbl_name, List<String> part_vals, Partition new_part) throws InvalidOperationException, MetaException, org.apache.thrift.TException
+    public void alter_partition(String db_name, String tbl_name, Partition new_part) throws InvalidOperationException, MetaException, org.apache.thrift.TException
     {
-      send_alter_partition(db_name, tbl_name, part_vals, new_part);
+      send_alter_partition(db_name, tbl_name, new_part);
       recv_alter_partition();
     }
 
-    public void send_alter_partition(String db_name, String tbl_name, List<String> part_vals, Partition new_part) throws org.apache.thrift.TException
+    public void send_alter_partition(String db_name, String tbl_name, Partition new_part) throws org.apache.thrift.TException
     {
       alter_partition_args args = new alter_partition_args();
       args.setDb_name(db_name);
       args.setTbl_name(tbl_name);
-      args.setPart_vals(part_vals);
       args.setNew_part(new_part);
       sendBase("alter_partition", args);
     }
@@ -1446,6 +1449,35 @@ public class ThriftHiveMetastore {
     {
       alter_partition_result result = new alter_partition_result();
       receiveBase(result, "alter_partition");
+      if (result.o1 != null) {
+        throw result.o1;
+      }
+      if (result.o2 != null) {
+        throw result.o2;
+      }
+      return;
+    }
+
+    public void rename_partition(String db_name, String tbl_name, List<String> part_vals, Partition new_part) throws InvalidOperationException, MetaException, org.apache.thrift.TException
+    {
+      send_rename_partition(db_name, tbl_name, part_vals, new_part);
+      recv_rename_partition();
+    }
+
+    public void send_rename_partition(String db_name, String tbl_name, List<String> part_vals, Partition new_part) throws org.apache.thrift.TException
+    {
+      rename_partition_args args = new rename_partition_args();
+      args.setDb_name(db_name);
+      args.setTbl_name(tbl_name);
+      args.setPart_vals(part_vals);
+      args.setNew_part(new_part);
+      sendBase("rename_partition", args);
+    }
+
+    public void recv_rename_partition() throws InvalidOperationException, MetaException, org.apache.thrift.TException
+    {
+      rename_partition_result result = new rename_partition_result();
+      receiveBase(result, "rename_partition");
       if (result.o1 != null) {
         throw result.o1;
       }
@@ -3517,9 +3549,9 @@ public class ThriftHiveMetastore {
       }
     }
 
-    public void alter_partition(String db_name, String tbl_name, List<String> part_vals, Partition new_part, org.apache.thrift.async.AsyncMethodCallback<alter_partition_call> resultHandler) throws org.apache.thrift.TException {
+    public void alter_partition(String db_name, String tbl_name, Partition new_part, org.apache.thrift.async.AsyncMethodCallback<alter_partition_call> resultHandler) throws org.apache.thrift.TException {
       checkReady();
-      alter_partition_call method_call = new alter_partition_call(db_name, tbl_name, part_vals, new_part, resultHandler, this, ___protocolFactory, ___transport);
+      alter_partition_call method_call = new alter_partition_call(db_name, tbl_name, new_part, resultHandler, this, ___protocolFactory, ___transport);
       this.___currentMethod = method_call;
       ___manager.call(method_call);
     }
@@ -3527,9 +3559,47 @@ public class ThriftHiveMetastore {
     public static class alter_partition_call extends org.apache.thrift.async.TAsyncMethodCall {
       private String db_name;
       private String tbl_name;
+      private Partition new_part;
+      public alter_partition_call(String db_name, String tbl_name, Partition new_part, org.apache.thrift.async.AsyncMethodCallback<alter_partition_call> resultHandler, org.apache.thrift.async.TAsyncClient client, org.apache.thrift.protocol.TProtocolFactory protocolFactory, org.apache.thrift.transport.TNonblockingTransport transport) throws org.apache.thrift.TException {
+        super(client, protocolFactory, transport, resultHandler, false);
+        this.db_name = db_name;
+        this.tbl_name = tbl_name;
+        this.new_part = new_part;
+      }
+
+      public void write_args(org.apache.thrift.protocol.TProtocol prot) throws org.apache.thrift.TException {
+        prot.writeMessageBegin(new org.apache.thrift.protocol.TMessage("alter_partition", org.apache.thrift.protocol.TMessageType.CALL, 0));
+        alter_partition_args args = new alter_partition_args();
+        args.setDb_name(db_name);
+        args.setTbl_name(tbl_name);
+        args.setNew_part(new_part);
+        args.write(prot);
+        prot.writeMessageEnd();
+      }
+
+      public void getResult() throws InvalidOperationException, MetaException, org.apache.thrift.TException {
+        if (getState() != org.apache.thrift.async.TAsyncMethodCall.State.RESPONSE_READ) {
+          throw new IllegalStateException("Method call not finished!");
+        }
+        org.apache.thrift.transport.TMemoryInputTransport memoryTransport = new org.apache.thrift.transport.TMemoryInputTransport(getFrameBuffer().array());
+        org.apache.thrift.protocol.TProtocol prot = client.getProtocolFactory().getProtocol(memoryTransport);
+        (new Client(prot)).recv_alter_partition();
+      }
+    }
+
+    public void rename_partition(String db_name, String tbl_name, List<String> part_vals, Partition new_part, org.apache.thrift.async.AsyncMethodCallback<rename_partition_call> resultHandler) throws org.apache.thrift.TException {
+      checkReady();
+      rename_partition_call method_call = new rename_partition_call(db_name, tbl_name, part_vals, new_part, resultHandler, this, ___protocolFactory, ___transport);
+      this.___currentMethod = method_call;
+      ___manager.call(method_call);
+    }
+
+    public static class rename_partition_call extends org.apache.thrift.async.TAsyncMethodCall {
+      private String db_name;
+      private String tbl_name;
       private List<String> part_vals;
       private Partition new_part;
-      public alter_partition_call(String db_name, String tbl_name, List<String> part_vals, Partition new_part, org.apache.thrift.async.AsyncMethodCallback<alter_partition_call> resultHandler, org.apache.thrift.async.TAsyncClient client, org.apache.thrift.protocol.TProtocolFactory protocolFactory, org.apache.thrift.transport.TNonblockingTransport transport) throws org.apache.thrift.TException {
+      public rename_partition_call(String db_name, String tbl_name, List<String> part_vals, Partition new_part, org.apache.thrift.async.AsyncMethodCallback<rename_partition_call> resultHandler, org.apache.thrift.async.TAsyncClient client, org.apache.thrift.protocol.TProtocolFactory protocolFactory, org.apache.thrift.transport.TNonblockingTransport transport) throws org.apache.thrift.TException {
         super(client, protocolFactory, transport, resultHandler, false);
         this.db_name = db_name;
         this.tbl_name = tbl_name;
@@ -3538,8 +3608,8 @@ public class ThriftHiveMetastore {
       }
 
       public void write_args(org.apache.thrift.protocol.TProtocol prot) throws org.apache.thrift.TException {
-        prot.writeMessageBegin(new org.apache.thrift.protocol.TMessage("alter_partition", org.apache.thrift.protocol.TMessageType.CALL, 0));
-        alter_partition_args args = new alter_partition_args();
+        prot.writeMessageBegin(new org.apache.thrift.protocol.TMessage("rename_partition", org.apache.thrift.protocol.TMessageType.CALL, 0));
+        rename_partition_args args = new rename_partition_args();
         args.setDb_name(db_name);
         args.setTbl_name(tbl_name);
         args.setPart_vals(part_vals);
@@ -3554,7 +3624,7 @@ public class ThriftHiveMetastore {
         }
         org.apache.thrift.transport.TMemoryInputTransport memoryTransport = new org.apache.thrift.transport.TMemoryInputTransport(getFrameBuffer().array());
         org.apache.thrift.protocol.TProtocol prot = client.getProtocolFactory().getProtocol(memoryTransport);
-        (new Client(prot)).recv_alter_partition();
+        (new Client(prot)).recv_rename_partition();
       }
     }
 
@@ -4473,6 +4543,7 @@ public class ThriftHiveMetastore {
       processMap.put("get_partitions_by_filter", new get_partitions_by_filter());
       processMap.put("get_partitions_by_names", new get_partitions_by_names());
       processMap.put("alter_partition", new alter_partition());
+      processMap.put("rename_partition", new rename_partition());
       processMap.put("get_config_value", new get_config_value());
       processMap.put("partition_name_to_vals", new partition_name_to_vals());
       processMap.put("partition_name_to_spec", new partition_name_to_spec());
@@ -5341,7 +5412,29 @@ public class ThriftHiveMetastore {
       protected alter_partition_result getResult(I iface, alter_partition_args args) throws org.apache.thrift.TException {
         alter_partition_result result = new alter_partition_result();
         try {
-          iface.alter_partition(args.db_name, args.tbl_name, args.part_vals, args.new_part);
+          iface.alter_partition(args.db_name, args.tbl_name, args.new_part);
+        } catch (InvalidOperationException o1) {
+          result.o1 = o1;
+        } catch (MetaException o2) {
+          result.o2 = o2;
+        }
+        return result;
+      }
+    }
+
+    private static class rename_partition<I extends Iface> extends org.apache.thrift.ProcessFunction<I, rename_partition_args> {
+      public rename_partition() {
+        super("rename_partition");
+      }
+
+      protected rename_partition_args getEmptyArgsInstance() {
+        return new rename_partition_args();
+      }
+
+      protected rename_partition_result getResult(I iface, rename_partition_args args) throws org.apache.thrift.TException {
+        rename_partition_result result = new rename_partition_result();
+        try {
+          iface.rename_partition(args.db_name, args.tbl_name, args.part_vals, args.new_part);
         } catch (InvalidOperationException o1) {
           result.o1 = o1;
         } catch (MetaException o2) {
@@ -40017,20 +40110,17 @@ public class ThriftHiveMetastore {
 
     private static final org.apache.thrift.protocol.TField DB_NAME_FIELD_DESC = new org.apache.thrift.protocol.TField("db_name", org.apache.thrift.protocol.TType.STRING, (short)1);
     private static final org.apache.thrift.protocol.TField TBL_NAME_FIELD_DESC = new org.apache.thrift.protocol.TField("tbl_name", org.apache.thrift.protocol.TType.STRING, (short)2);
-    private static final org.apache.thrift.protocol.TField PART_VALS_FIELD_DESC = new org.apache.thrift.protocol.TField("part_vals", org.apache.thrift.protocol.TType.LIST, (short)3);
-    private static final org.apache.thrift.protocol.TField NEW_PART_FIELD_DESC = new org.apache.thrift.protocol.TField("new_part", org.apache.thrift.protocol.TType.STRUCT, (short)4);
+    private static final org.apache.thrift.protocol.TField NEW_PART_FIELD_DESC = new org.apache.thrift.protocol.TField("new_part", org.apache.thrift.protocol.TType.STRUCT, (short)3);
 
     private String db_name; // required
     private String tbl_name; // required
-    private List<String> part_vals; // required
     private Partition new_part; // required
 
     /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
     public enum _Fields implements org.apache.thrift.TFieldIdEnum {
       DB_NAME((short)1, "db_name"),
       TBL_NAME((short)2, "tbl_name"),
-      PART_VALS((short)3, "part_vals"),
-      NEW_PART((short)4, "new_part");
+      NEW_PART((short)3, "new_part");
 
       private static final Map<String, _Fields> byName = new HashMap<String, _Fields>();
 
@@ -40049,9 +40139,7 @@ public class ThriftHiveMetastore {
             return DB_NAME;
           case 2: // TBL_NAME
             return TBL_NAME;
-          case 3: // PART_VALS
-            return PART_VALS;
-          case 4: // NEW_PART
+          case 3: // NEW_PART
             return NEW_PART;
           default:
             return null;
@@ -40101,9 +40189,6 @@ public class ThriftHiveMetastore {
           new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
       tmpMap.put(_Fields.TBL_NAME, new org.apache.thrift.meta_data.FieldMetaData("tbl_name", org.apache.thrift.TFieldRequirementType.DEFAULT, 
           new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
-      tmpMap.put(_Fields.PART_VALS, new org.apache.thrift.meta_data.FieldMetaData("part_vals", org.apache.thrift.TFieldRequirementType.DEFAULT, 
-          new org.apache.thrift.meta_data.ListMetaData(org.apache.thrift.protocol.TType.LIST, 
-              new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING))));
       tmpMap.put(_Fields.NEW_PART, new org.apache.thrift.meta_data.FieldMetaData("new_part", org.apache.thrift.TFieldRequirementType.DEFAULT, 
           new org.apache.thrift.meta_data.StructMetaData(org.apache.thrift.protocol.TType.STRUCT, Partition.class)));
       metaDataMap = Collections.unmodifiableMap(tmpMap);
@@ -40116,13 +40201,11 @@ public class ThriftHiveMetastore {
     public alter_partition_args(
       String db_name,
       String tbl_name,
-      List<String> part_vals,
       Partition new_part)
     {
       this();
       this.db_name = db_name;
       this.tbl_name = tbl_name;
-      this.part_vals = part_vals;
       this.new_part = new_part;
     }
 
@@ -40135,13 +40218,6 @@ public class ThriftHiveMetastore {
       }
       if (other.isSetTbl_name()) {
         this.tbl_name = other.tbl_name;
-      }
-      if (other.isSetPart_vals()) {
-        List<String> __this__part_vals = new ArrayList<String>();
-        for (String other_element : other.part_vals) {
-          __this__part_vals.add(other_element);
-        }
-        this.part_vals = __this__part_vals;
       }
       if (other.isSetNew_part()) {
         this.new_part = new Partition(other.new_part);
@@ -40156,7 +40232,6 @@ public class ThriftHiveMetastore {
     public void clear() {
       this.db_name = null;
       this.tbl_name = null;
-      this.part_vals = null;
       this.new_part = null;
     }
 
@@ -40206,44 +40281,6 @@ public class ThriftHiveMetastore {
       }
     }
 
-    public int getPart_valsSize() {
-      return (this.part_vals == null) ? 0 : this.part_vals.size();
-    }
-
-    public java.util.Iterator<String> getPart_valsIterator() {
-      return (this.part_vals == null) ? null : this.part_vals.iterator();
-    }
-
-    public void addToPart_vals(String elem) {
-      if (this.part_vals == null) {
-        this.part_vals = new ArrayList<String>();
-      }
-      this.part_vals.add(elem);
-    }
-
-    public List<String> getPart_vals() {
-      return this.part_vals;
-    }
-
-    public void setPart_vals(List<String> part_vals) {
-      this.part_vals = part_vals;
-    }
-
-    public void unsetPart_vals() {
-      this.part_vals = null;
-    }
-
-    /** Returns true if field part_vals is set (has been assigned a value) and false otherwise */
-    public boolean isSetPart_vals() {
-      return this.part_vals != null;
-    }
-
-    public void setPart_valsIsSet(boolean value) {
-      if (!value) {
-        this.part_vals = null;
-      }
-    }
-
     public Partition getNew_part() {
       return this.new_part;
     }
@@ -40285,14 +40322,6 @@ public class ThriftHiveMetastore {
         }
         break;
 
-      case PART_VALS:
-        if (value == null) {
-          unsetPart_vals();
-        } else {
-          setPart_vals((List<String>)value);
-        }
-        break;
-
       case NEW_PART:
         if (value == null) {
           unsetNew_part();
@@ -40312,9 +40341,6 @@ public class ThriftHiveMetastore {
       case TBL_NAME:
         return getTbl_name();
 
-      case PART_VALS:
-        return getPart_vals();
-
       case NEW_PART:
         return getNew_part();
 
@@ -40333,8 +40359,6 @@ public class ThriftHiveMetastore {
         return isSetDb_name();
       case TBL_NAME:
         return isSetTbl_name();
-      case PART_VALS:
-        return isSetPart_vals();
       case NEW_PART:
         return isSetNew_part();
       }
@@ -40369,15 +40393,6 @@ public class ThriftHiveMetastore {
         if (!(this_present_tbl_name && that_present_tbl_name))
           return false;
         if (!this.tbl_name.equals(that.tbl_name))
-          return false;
-      }
-
-      boolean this_present_part_vals = true && this.isSetPart_vals();
-      boolean that_present_part_vals = true && that.isSetPart_vals();
-      if (this_present_part_vals || that_present_part_vals) {
-        if (!(this_present_part_vals && that_present_part_vals))
-          return false;
-        if (!this.part_vals.equals(that.part_vals))
           return false;
       }
 
@@ -40426,16 +40441,6 @@ public class ThriftHiveMetastore {
           return lastComparison;
         }
       }
-      lastComparison = Boolean.valueOf(isSetPart_vals()).compareTo(typedOther.isSetPart_vals());
-      if (lastComparison != 0) {
-        return lastComparison;
-      }
-      if (isSetPart_vals()) {
-        lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.part_vals, typedOther.part_vals);
-        if (lastComparison != 0) {
-          return lastComparison;
-        }
-      }
       lastComparison = Boolean.valueOf(isSetNew_part()).compareTo(typedOther.isSetNew_part());
       if (lastComparison != 0) {
         return lastComparison;
@@ -40477,24 +40482,7 @@ public class ThriftHiveMetastore {
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
             }
             break;
-          case 3: // PART_VALS
-            if (field.type == org.apache.thrift.protocol.TType.LIST) {
-              {
-                org.apache.thrift.protocol.TList _list219 = iprot.readListBegin();
-                this.part_vals = new ArrayList<String>(_list219.size);
-                for (int _i220 = 0; _i220 < _list219.size; ++_i220)
-                {
-                  String _elem221; // required
-                  _elem221 = iprot.readString();
-                  this.part_vals.add(_elem221);
-                }
-                iprot.readListEnd();
-              }
-            } else { 
-              org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
-            }
-            break;
-          case 4: // NEW_PART
+          case 3: // NEW_PART
             if (field.type == org.apache.thrift.protocol.TType.STRUCT) {
               this.new_part = new Partition();
               this.new_part.read(iprot);
@@ -40525,18 +40513,6 @@ public class ThriftHiveMetastore {
         oprot.writeString(this.tbl_name);
         oprot.writeFieldEnd();
       }
-      if (this.part_vals != null) {
-        oprot.writeFieldBegin(PART_VALS_FIELD_DESC);
-        {
-          oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRING, this.part_vals.size()));
-          for (String _iter222 : this.part_vals)
-          {
-            oprot.writeString(_iter222);
-          }
-          oprot.writeListEnd();
-        }
-        oprot.writeFieldEnd();
-      }
       if (this.new_part != null) {
         oprot.writeFieldBegin(NEW_PART_FIELD_DESC);
         this.new_part.write(oprot);
@@ -40564,14 +40540,6 @@ public class ThriftHiveMetastore {
         sb.append("null");
       } else {
         sb.append(this.tbl_name);
-      }
-      first = false;
-      if (!first) sb.append(", ");
-      sb.append("part_vals:");
-      if (this.part_vals == null) {
-        sb.append("null");
-      } else {
-        sb.append(this.part_vals);
       }
       first = false;
       if (!first) sb.append(", ");
@@ -40947,6 +40915,984 @@ public class ThriftHiveMetastore {
     @Override
     public String toString() {
       StringBuilder sb = new StringBuilder("alter_partition_result(");
+      boolean first = true;
+
+      sb.append("o1:");
+      if (this.o1 == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.o1);
+      }
+      first = false;
+      if (!first) sb.append(", ");
+      sb.append("o2:");
+      if (this.o2 == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.o2);
+      }
+      first = false;
+      sb.append(")");
+      return sb.toString();
+    }
+
+    public void validate() throws org.apache.thrift.TException {
+      // check for required fields
+    }
+
+    private void writeObject(java.io.ObjectOutputStream out) throws java.io.IOException {
+      try {
+        write(new org.apache.thrift.protocol.TCompactProtocol(new org.apache.thrift.transport.TIOStreamTransport(out)));
+      } catch (org.apache.thrift.TException te) {
+        throw new java.io.IOException(te);
+      }
+    }
+
+    private void readObject(java.io.ObjectInputStream in) throws java.io.IOException, ClassNotFoundException {
+      try {
+        read(new org.apache.thrift.protocol.TCompactProtocol(new org.apache.thrift.transport.TIOStreamTransport(in)));
+      } catch (org.apache.thrift.TException te) {
+        throw new java.io.IOException(te);
+      }
+    }
+
+  }
+
+  public static class rename_partition_args implements org.apache.thrift.TBase<rename_partition_args, rename_partition_args._Fields>, java.io.Serializable, Cloneable   {
+    private static final org.apache.thrift.protocol.TStruct STRUCT_DESC = new org.apache.thrift.protocol.TStruct("rename_partition_args");
+
+    private static final org.apache.thrift.protocol.TField DB_NAME_FIELD_DESC = new org.apache.thrift.protocol.TField("db_name", org.apache.thrift.protocol.TType.STRING, (short)1);
+    private static final org.apache.thrift.protocol.TField TBL_NAME_FIELD_DESC = new org.apache.thrift.protocol.TField("tbl_name", org.apache.thrift.protocol.TType.STRING, (short)2);
+    private static final org.apache.thrift.protocol.TField PART_VALS_FIELD_DESC = new org.apache.thrift.protocol.TField("part_vals", org.apache.thrift.protocol.TType.LIST, (short)3);
+    private static final org.apache.thrift.protocol.TField NEW_PART_FIELD_DESC = new org.apache.thrift.protocol.TField("new_part", org.apache.thrift.protocol.TType.STRUCT, (short)4);
+
+    private String db_name; // required
+    private String tbl_name; // required
+    private List<String> part_vals; // required
+    private Partition new_part; // required
+
+    /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
+    public enum _Fields implements org.apache.thrift.TFieldIdEnum {
+      DB_NAME((short)1, "db_name"),
+      TBL_NAME((short)2, "tbl_name"),
+      PART_VALS((short)3, "part_vals"),
+      NEW_PART((short)4, "new_part");
+
+      private static final Map<String, _Fields> byName = new HashMap<String, _Fields>();
+
+      static {
+        for (_Fields field : EnumSet.allOf(_Fields.class)) {
+          byName.put(field.getFieldName(), field);
+        }
+      }
+
+      /**
+       * Find the _Fields constant that matches fieldId, or null if its not found.
+       */
+      public static _Fields findByThriftId(int fieldId) {
+        switch(fieldId) {
+          case 1: // DB_NAME
+            return DB_NAME;
+          case 2: // TBL_NAME
+            return TBL_NAME;
+          case 3: // PART_VALS
+            return PART_VALS;
+          case 4: // NEW_PART
+            return NEW_PART;
+          default:
+            return null;
+        }
+      }
+
+      /**
+       * Find the _Fields constant that matches fieldId, throwing an exception
+       * if it is not found.
+       */
+      public static _Fields findByThriftIdOrThrow(int fieldId) {
+        _Fields fields = findByThriftId(fieldId);
+        if (fields == null) throw new IllegalArgumentException("Field " + fieldId + " doesn't exist!");
+        return fields;
+      }
+
+      /**
+       * Find the _Fields constant that matches name, or null if its not found.
+       */
+      public static _Fields findByName(String name) {
+        return byName.get(name);
+      }
+
+      private final short _thriftId;
+      private final String _fieldName;
+
+      _Fields(short thriftId, String fieldName) {
+        _thriftId = thriftId;
+        _fieldName = fieldName;
+      }
+
+      public short getThriftFieldId() {
+        return _thriftId;
+      }
+
+      public String getFieldName() {
+        return _fieldName;
+      }
+    }
+
+    // isset id assignments
+
+    public static final Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
+    static {
+      Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
+      tmpMap.put(_Fields.DB_NAME, new org.apache.thrift.meta_data.FieldMetaData("db_name", org.apache.thrift.TFieldRequirementType.DEFAULT, 
+          new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
+      tmpMap.put(_Fields.TBL_NAME, new org.apache.thrift.meta_data.FieldMetaData("tbl_name", org.apache.thrift.TFieldRequirementType.DEFAULT, 
+          new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
+      tmpMap.put(_Fields.PART_VALS, new org.apache.thrift.meta_data.FieldMetaData("part_vals", org.apache.thrift.TFieldRequirementType.DEFAULT, 
+          new org.apache.thrift.meta_data.ListMetaData(org.apache.thrift.protocol.TType.LIST, 
+              new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING))));
+      tmpMap.put(_Fields.NEW_PART, new org.apache.thrift.meta_data.FieldMetaData("new_part", org.apache.thrift.TFieldRequirementType.DEFAULT, 
+          new org.apache.thrift.meta_data.StructMetaData(org.apache.thrift.protocol.TType.STRUCT, Partition.class)));
+      metaDataMap = Collections.unmodifiableMap(tmpMap);
+      org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(rename_partition_args.class, metaDataMap);
+    }
+
+    public rename_partition_args() {
+    }
+
+    public rename_partition_args(
+      String db_name,
+      String tbl_name,
+      List<String> part_vals,
+      Partition new_part)
+    {
+      this();
+      this.db_name = db_name;
+      this.tbl_name = tbl_name;
+      this.part_vals = part_vals;
+      this.new_part = new_part;
+    }
+
+    /**
+     * Performs a deep copy on <i>other</i>.
+     */
+    public rename_partition_args(rename_partition_args other) {
+      if (other.isSetDb_name()) {
+        this.db_name = other.db_name;
+      }
+      if (other.isSetTbl_name()) {
+        this.tbl_name = other.tbl_name;
+      }
+      if (other.isSetPart_vals()) {
+        List<String> __this__part_vals = new ArrayList<String>();
+        for (String other_element : other.part_vals) {
+          __this__part_vals.add(other_element);
+        }
+        this.part_vals = __this__part_vals;
+      }
+      if (other.isSetNew_part()) {
+        this.new_part = new Partition(other.new_part);
+      }
+    }
+
+    public rename_partition_args deepCopy() {
+      return new rename_partition_args(this);
+    }
+
+    @Override
+    public void clear() {
+      this.db_name = null;
+      this.tbl_name = null;
+      this.part_vals = null;
+      this.new_part = null;
+    }
+
+    public String getDb_name() {
+      return this.db_name;
+    }
+
+    public void setDb_name(String db_name) {
+      this.db_name = db_name;
+    }
+
+    public void unsetDb_name() {
+      this.db_name = null;
+    }
+
+    /** Returns true if field db_name is set (has been assigned a value) and false otherwise */
+    public boolean isSetDb_name() {
+      return this.db_name != null;
+    }
+
+    public void setDb_nameIsSet(boolean value) {
+      if (!value) {
+        this.db_name = null;
+      }
+    }
+
+    public String getTbl_name() {
+      return this.tbl_name;
+    }
+
+    public void setTbl_name(String tbl_name) {
+      this.tbl_name = tbl_name;
+    }
+
+    public void unsetTbl_name() {
+      this.tbl_name = null;
+    }
+
+    /** Returns true if field tbl_name is set (has been assigned a value) and false otherwise */
+    public boolean isSetTbl_name() {
+      return this.tbl_name != null;
+    }
+
+    public void setTbl_nameIsSet(boolean value) {
+      if (!value) {
+        this.tbl_name = null;
+      }
+    }
+
+    public int getPart_valsSize() {
+      return (this.part_vals == null) ? 0 : this.part_vals.size();
+    }
+
+    public java.util.Iterator<String> getPart_valsIterator() {
+      return (this.part_vals == null) ? null : this.part_vals.iterator();
+    }
+
+    public void addToPart_vals(String elem) {
+      if (this.part_vals == null) {
+        this.part_vals = new ArrayList<String>();
+      }
+      this.part_vals.add(elem);
+    }
+
+    public List<String> getPart_vals() {
+      return this.part_vals;
+    }
+
+    public void setPart_vals(List<String> part_vals) {
+      this.part_vals = part_vals;
+    }
+
+    public void unsetPart_vals() {
+      this.part_vals = null;
+    }
+
+    /** Returns true if field part_vals is set (has been assigned a value) and false otherwise */
+    public boolean isSetPart_vals() {
+      return this.part_vals != null;
+    }
+
+    public void setPart_valsIsSet(boolean value) {
+      if (!value) {
+        this.part_vals = null;
+      }
+    }
+
+    public Partition getNew_part() {
+      return this.new_part;
+    }
+
+    public void setNew_part(Partition new_part) {
+      this.new_part = new_part;
+    }
+
+    public void unsetNew_part() {
+      this.new_part = null;
+    }
+
+    /** Returns true if field new_part is set (has been assigned a value) and false otherwise */
+    public boolean isSetNew_part() {
+      return this.new_part != null;
+    }
+
+    public void setNew_partIsSet(boolean value) {
+      if (!value) {
+        this.new_part = null;
+      }
+    }
+
+    public void setFieldValue(_Fields field, Object value) {
+      switch (field) {
+      case DB_NAME:
+        if (value == null) {
+          unsetDb_name();
+        } else {
+          setDb_name((String)value);
+        }
+        break;
+
+      case TBL_NAME:
+        if (value == null) {
+          unsetTbl_name();
+        } else {
+          setTbl_name((String)value);
+        }
+        break;
+
+      case PART_VALS:
+        if (value == null) {
+          unsetPart_vals();
+        } else {
+          setPart_vals((List<String>)value);
+        }
+        break;
+
+      case NEW_PART:
+        if (value == null) {
+          unsetNew_part();
+        } else {
+          setNew_part((Partition)value);
+        }
+        break;
+
+      }
+    }
+
+    public Object getFieldValue(_Fields field) {
+      switch (field) {
+      case DB_NAME:
+        return getDb_name();
+
+      case TBL_NAME:
+        return getTbl_name();
+
+      case PART_VALS:
+        return getPart_vals();
+
+      case NEW_PART:
+        return getNew_part();
+
+      }
+      throw new IllegalStateException();
+    }
+
+    /** Returns true if field corresponding to fieldID is set (has been assigned a value) and false otherwise */
+    public boolean isSet(_Fields field) {
+      if (field == null) {
+        throw new IllegalArgumentException();
+      }
+
+      switch (field) {
+      case DB_NAME:
+        return isSetDb_name();
+      case TBL_NAME:
+        return isSetTbl_name();
+      case PART_VALS:
+        return isSetPart_vals();
+      case NEW_PART:
+        return isSetNew_part();
+      }
+      throw new IllegalStateException();
+    }
+
+    @Override
+    public boolean equals(Object that) {
+      if (that == null)
+        return false;
+      if (that instanceof rename_partition_args)
+        return this.equals((rename_partition_args)that);
+      return false;
+    }
+
+    public boolean equals(rename_partition_args that) {
+      if (that == null)
+        return false;
+
+      boolean this_present_db_name = true && this.isSetDb_name();
+      boolean that_present_db_name = true && that.isSetDb_name();
+      if (this_present_db_name || that_present_db_name) {
+        if (!(this_present_db_name && that_present_db_name))
+          return false;
+        if (!this.db_name.equals(that.db_name))
+          return false;
+      }
+
+      boolean this_present_tbl_name = true && this.isSetTbl_name();
+      boolean that_present_tbl_name = true && that.isSetTbl_name();
+      if (this_present_tbl_name || that_present_tbl_name) {
+        if (!(this_present_tbl_name && that_present_tbl_name))
+          return false;
+        if (!this.tbl_name.equals(that.tbl_name))
+          return false;
+      }
+
+      boolean this_present_part_vals = true && this.isSetPart_vals();
+      boolean that_present_part_vals = true && that.isSetPart_vals();
+      if (this_present_part_vals || that_present_part_vals) {
+        if (!(this_present_part_vals && that_present_part_vals))
+          return false;
+        if (!this.part_vals.equals(that.part_vals))
+          return false;
+      }
+
+      boolean this_present_new_part = true && this.isSetNew_part();
+      boolean that_present_new_part = true && that.isSetNew_part();
+      if (this_present_new_part || that_present_new_part) {
+        if (!(this_present_new_part && that_present_new_part))
+          return false;
+        if (!this.new_part.equals(that.new_part))
+          return false;
+      }
+
+      return true;
+    }
+
+    @Override
+    public int hashCode() {
+      return 0;
+    }
+
+    public int compareTo(rename_partition_args other) {
+      if (!getClass().equals(other.getClass())) {
+        return getClass().getName().compareTo(other.getClass().getName());
+      }
+
+      int lastComparison = 0;
+      rename_partition_args typedOther = (rename_partition_args)other;
+
+      lastComparison = Boolean.valueOf(isSetDb_name()).compareTo(typedOther.isSetDb_name());
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+      if (isSetDb_name()) {
+        lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.db_name, typedOther.db_name);
+        if (lastComparison != 0) {
+          return lastComparison;
+        }
+      }
+      lastComparison = Boolean.valueOf(isSetTbl_name()).compareTo(typedOther.isSetTbl_name());
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+      if (isSetTbl_name()) {
+        lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.tbl_name, typedOther.tbl_name);
+        if (lastComparison != 0) {
+          return lastComparison;
+        }
+      }
+      lastComparison = Boolean.valueOf(isSetPart_vals()).compareTo(typedOther.isSetPart_vals());
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+      if (isSetPart_vals()) {
+        lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.part_vals, typedOther.part_vals);
+        if (lastComparison != 0) {
+          return lastComparison;
+        }
+      }
+      lastComparison = Boolean.valueOf(isSetNew_part()).compareTo(typedOther.isSetNew_part());
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+      if (isSetNew_part()) {
+        lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.new_part, typedOther.new_part);
+        if (lastComparison != 0) {
+          return lastComparison;
+        }
+      }
+      return 0;
+    }
+
+    public _Fields fieldForId(int fieldId) {
+      return _Fields.findByThriftId(fieldId);
+    }
+
+    public void read(org.apache.thrift.protocol.TProtocol iprot) throws org.apache.thrift.TException {
+      org.apache.thrift.protocol.TField field;
+      iprot.readStructBegin();
+      while (true)
+      {
+        field = iprot.readFieldBegin();
+        if (field.type == org.apache.thrift.protocol.TType.STOP) { 
+          break;
+        }
+        switch (field.id) {
+          case 1: // DB_NAME
+            if (field.type == org.apache.thrift.protocol.TType.STRING) {
+              this.db_name = iprot.readString();
+            } else { 
+              org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
+            }
+            break;
+          case 2: // TBL_NAME
+            if (field.type == org.apache.thrift.protocol.TType.STRING) {
+              this.tbl_name = iprot.readString();
+            } else { 
+              org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
+            }
+            break;
+          case 3: // PART_VALS
+            if (field.type == org.apache.thrift.protocol.TType.LIST) {
+              {
+                org.apache.thrift.protocol.TList _list219 = iprot.readListBegin();
+                this.part_vals = new ArrayList<String>(_list219.size);
+                for (int _i220 = 0; _i220 < _list219.size; ++_i220)
+                {
+                  String _elem221; // required
+                  _elem221 = iprot.readString();
+                  this.part_vals.add(_elem221);
+                }
+                iprot.readListEnd();
+              }
+            } else { 
+              org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
+            }
+            break;
+          case 4: // NEW_PART
+            if (field.type == org.apache.thrift.protocol.TType.STRUCT) {
+              this.new_part = new Partition();
+              this.new_part.read(iprot);
+            } else { 
+              org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
+            }
+            break;
+          default:
+            org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
+        }
+        iprot.readFieldEnd();
+      }
+      iprot.readStructEnd();
+      validate();
+    }
+
+    public void write(org.apache.thrift.protocol.TProtocol oprot) throws org.apache.thrift.TException {
+      validate();
+
+      oprot.writeStructBegin(STRUCT_DESC);
+      if (this.db_name != null) {
+        oprot.writeFieldBegin(DB_NAME_FIELD_DESC);
+        oprot.writeString(this.db_name);
+        oprot.writeFieldEnd();
+      }
+      if (this.tbl_name != null) {
+        oprot.writeFieldBegin(TBL_NAME_FIELD_DESC);
+        oprot.writeString(this.tbl_name);
+        oprot.writeFieldEnd();
+      }
+      if (this.part_vals != null) {
+        oprot.writeFieldBegin(PART_VALS_FIELD_DESC);
+        {
+          oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRING, this.part_vals.size()));
+          for (String _iter222 : this.part_vals)
+          {
+            oprot.writeString(_iter222);
+          }
+          oprot.writeListEnd();
+        }
+        oprot.writeFieldEnd();
+      }
+      if (this.new_part != null) {
+        oprot.writeFieldBegin(NEW_PART_FIELD_DESC);
+        this.new_part.write(oprot);
+        oprot.writeFieldEnd();
+      }
+      oprot.writeFieldStop();
+      oprot.writeStructEnd();
+    }
+
+    @Override
+    public String toString() {
+      StringBuilder sb = new StringBuilder("rename_partition_args(");
+      boolean first = true;
+
+      sb.append("db_name:");
+      if (this.db_name == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.db_name);
+      }
+      first = false;
+      if (!first) sb.append(", ");
+      sb.append("tbl_name:");
+      if (this.tbl_name == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.tbl_name);
+      }
+      first = false;
+      if (!first) sb.append(", ");
+      sb.append("part_vals:");
+      if (this.part_vals == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.part_vals);
+      }
+      first = false;
+      if (!first) sb.append(", ");
+      sb.append("new_part:");
+      if (this.new_part == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.new_part);
+      }
+      first = false;
+      sb.append(")");
+      return sb.toString();
+    }
+
+    public void validate() throws org.apache.thrift.TException {
+      // check for required fields
+    }
+
+    private void writeObject(java.io.ObjectOutputStream out) throws java.io.IOException {
+      try {
+        write(new org.apache.thrift.protocol.TCompactProtocol(new org.apache.thrift.transport.TIOStreamTransport(out)));
+      } catch (org.apache.thrift.TException te) {
+        throw new java.io.IOException(te);
+      }
+    }
+
+    private void readObject(java.io.ObjectInputStream in) throws java.io.IOException, ClassNotFoundException {
+      try {
+        read(new org.apache.thrift.protocol.TCompactProtocol(new org.apache.thrift.transport.TIOStreamTransport(in)));
+      } catch (org.apache.thrift.TException te) {
+        throw new java.io.IOException(te);
+      }
+    }
+
+  }
+
+  public static class rename_partition_result implements org.apache.thrift.TBase<rename_partition_result, rename_partition_result._Fields>, java.io.Serializable, Cloneable   {
+    private static final org.apache.thrift.protocol.TStruct STRUCT_DESC = new org.apache.thrift.protocol.TStruct("rename_partition_result");
+
+    private static final org.apache.thrift.protocol.TField O1_FIELD_DESC = new org.apache.thrift.protocol.TField("o1", org.apache.thrift.protocol.TType.STRUCT, (short)1);
+    private static final org.apache.thrift.protocol.TField O2_FIELD_DESC = new org.apache.thrift.protocol.TField("o2", org.apache.thrift.protocol.TType.STRUCT, (short)2);
+
+    private InvalidOperationException o1; // required
+    private MetaException o2; // required
+
+    /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
+    public enum _Fields implements org.apache.thrift.TFieldIdEnum {
+      O1((short)1, "o1"),
+      O2((short)2, "o2");
+
+      private static final Map<String, _Fields> byName = new HashMap<String, _Fields>();
+
+      static {
+        for (_Fields field : EnumSet.allOf(_Fields.class)) {
+          byName.put(field.getFieldName(), field);
+        }
+      }
+
+      /**
+       * Find the _Fields constant that matches fieldId, or null if its not found.
+       */
+      public static _Fields findByThriftId(int fieldId) {
+        switch(fieldId) {
+          case 1: // O1
+            return O1;
+          case 2: // O2
+            return O2;
+          default:
+            return null;
+        }
+      }
+
+      /**
+       * Find the _Fields constant that matches fieldId, throwing an exception
+       * if it is not found.
+       */
+      public static _Fields findByThriftIdOrThrow(int fieldId) {
+        _Fields fields = findByThriftId(fieldId);
+        if (fields == null) throw new IllegalArgumentException("Field " + fieldId + " doesn't exist!");
+        return fields;
+      }
+
+      /**
+       * Find the _Fields constant that matches name, or null if its not found.
+       */
+      public static _Fields findByName(String name) {
+        return byName.get(name);
+      }
+
+      private final short _thriftId;
+      private final String _fieldName;
+
+      _Fields(short thriftId, String fieldName) {
+        _thriftId = thriftId;
+        _fieldName = fieldName;
+      }
+
+      public short getThriftFieldId() {
+        return _thriftId;
+      }
+
+      public String getFieldName() {
+        return _fieldName;
+      }
+    }
+
+    // isset id assignments
+
+    public static final Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
+    static {
+      Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
+      tmpMap.put(_Fields.O1, new org.apache.thrift.meta_data.FieldMetaData("o1", org.apache.thrift.TFieldRequirementType.DEFAULT, 
+          new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRUCT)));
+      tmpMap.put(_Fields.O2, new org.apache.thrift.meta_data.FieldMetaData("o2", org.apache.thrift.TFieldRequirementType.DEFAULT, 
+          new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRUCT)));
+      metaDataMap = Collections.unmodifiableMap(tmpMap);
+      org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(rename_partition_result.class, metaDataMap);
+    }
+
+    public rename_partition_result() {
+    }
+
+    public rename_partition_result(
+      InvalidOperationException o1,
+      MetaException o2)
+    {
+      this();
+      this.o1 = o1;
+      this.o2 = o2;
+    }
+
+    /**
+     * Performs a deep copy on <i>other</i>.
+     */
+    public rename_partition_result(rename_partition_result other) {
+      if (other.isSetO1()) {
+        this.o1 = new InvalidOperationException(other.o1);
+      }
+      if (other.isSetO2()) {
+        this.o2 = new MetaException(other.o2);
+      }
+    }
+
+    public rename_partition_result deepCopy() {
+      return new rename_partition_result(this);
+    }
+
+    @Override
+    public void clear() {
+      this.o1 = null;
+      this.o2 = null;
+    }
+
+    public InvalidOperationException getO1() {
+      return this.o1;
+    }
+
+    public void setO1(InvalidOperationException o1) {
+      this.o1 = o1;
+    }
+
+    public void unsetO1() {
+      this.o1 = null;
+    }
+
+    /** Returns true if field o1 is set (has been assigned a value) and false otherwise */
+    public boolean isSetO1() {
+      return this.o1 != null;
+    }
+
+    public void setO1IsSet(boolean value) {
+      if (!value) {
+        this.o1 = null;
+      }
+    }
+
+    public MetaException getO2() {
+      return this.o2;
+    }
+
+    public void setO2(MetaException o2) {
+      this.o2 = o2;
+    }
+
+    public void unsetO2() {
+      this.o2 = null;
+    }
+
+    /** Returns true if field o2 is set (has been assigned a value) and false otherwise */
+    public boolean isSetO2() {
+      return this.o2 != null;
+    }
+
+    public void setO2IsSet(boolean value) {
+      if (!value) {
+        this.o2 = null;
+      }
+    }
+
+    public void setFieldValue(_Fields field, Object value) {
+      switch (field) {
+      case O1:
+        if (value == null) {
+          unsetO1();
+        } else {
+          setO1((InvalidOperationException)value);
+        }
+        break;
+
+      case O2:
+        if (value == null) {
+          unsetO2();
+        } else {
+          setO2((MetaException)value);
+        }
+        break;
+
+      }
+    }
+
+    public Object getFieldValue(_Fields field) {
+      switch (field) {
+      case O1:
+        return getO1();
+
+      case O2:
+        return getO2();
+
+      }
+      throw new IllegalStateException();
+    }
+
+    /** Returns true if field corresponding to fieldID is set (has been assigned a value) and false otherwise */
+    public boolean isSet(_Fields field) {
+      if (field == null) {
+        throw new IllegalArgumentException();
+      }
+
+      switch (field) {
+      case O1:
+        return isSetO1();
+      case O2:
+        return isSetO2();
+      }
+      throw new IllegalStateException();
+    }
+
+    @Override
+    public boolean equals(Object that) {
+      if (that == null)
+        return false;
+      if (that instanceof rename_partition_result)
+        return this.equals((rename_partition_result)that);
+      return false;
+    }
+
+    public boolean equals(rename_partition_result that) {
+      if (that == null)
+        return false;
+
+      boolean this_present_o1 = true && this.isSetO1();
+      boolean that_present_o1 = true && that.isSetO1();
+      if (this_present_o1 || that_present_o1) {
+        if (!(this_present_o1 && that_present_o1))
+          return false;
+        if (!this.o1.equals(that.o1))
+          return false;
+      }
+
+      boolean this_present_o2 = true && this.isSetO2();
+      boolean that_present_o2 = true && that.isSetO2();
+      if (this_present_o2 || that_present_o2) {
+        if (!(this_present_o2 && that_present_o2))
+          return false;
+        if (!this.o2.equals(that.o2))
+          return false;
+      }
+
+      return true;
+    }
+
+    @Override
+    public int hashCode() {
+      return 0;
+    }
+
+    public int compareTo(rename_partition_result other) {
+      if (!getClass().equals(other.getClass())) {
+        return getClass().getName().compareTo(other.getClass().getName());
+      }
+
+      int lastComparison = 0;
+      rename_partition_result typedOther = (rename_partition_result)other;
+
+      lastComparison = Boolean.valueOf(isSetO1()).compareTo(typedOther.isSetO1());
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+      if (isSetO1()) {
+        lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.o1, typedOther.o1);
+        if (lastComparison != 0) {
+          return lastComparison;
+        }
+      }
+      lastComparison = Boolean.valueOf(isSetO2()).compareTo(typedOther.isSetO2());
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+      if (isSetO2()) {
+        lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.o2, typedOther.o2);
+        if (lastComparison != 0) {
+          return lastComparison;
+        }
+      }
+      return 0;
+    }
+
+    public _Fields fieldForId(int fieldId) {
+      return _Fields.findByThriftId(fieldId);
+    }
+
+    public void read(org.apache.thrift.protocol.TProtocol iprot) throws org.apache.thrift.TException {
+      org.apache.thrift.protocol.TField field;
+      iprot.readStructBegin();
+      while (true)
+      {
+        field = iprot.readFieldBegin();
+        if (field.type == org.apache.thrift.protocol.TType.STOP) { 
+          break;
+        }
+        switch (field.id) {
+          case 1: // O1
+            if (field.type == org.apache.thrift.protocol.TType.STRUCT) {
+              this.o1 = new InvalidOperationException();
+              this.o1.read(iprot);
+            } else { 
+              org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
+            }
+            break;
+          case 2: // O2
+            if (field.type == org.apache.thrift.protocol.TType.STRUCT) {
+              this.o2 = new MetaException();
+              this.o2.read(iprot);
+            } else { 
+              org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
+            }
+            break;
+          default:
+            org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
+        }
+        iprot.readFieldEnd();
+      }
+      iprot.readStructEnd();
+      validate();
+    }
+
+    public void write(org.apache.thrift.protocol.TProtocol oprot) throws org.apache.thrift.TException {
+      oprot.writeStructBegin(STRUCT_DESC);
+
+      if (this.isSetO1()) {
+        oprot.writeFieldBegin(O1_FIELD_DESC);
+        this.o1.write(oprot);
+        oprot.writeFieldEnd();
+      } else if (this.isSetO2()) {
+        oprot.writeFieldBegin(O2_FIELD_DESC);
+        this.o2.write(oprot);
+        oprot.writeFieldEnd();
+      }
+      oprot.writeFieldStop();
+      oprot.writeStructEnd();
+    }
+
+    @Override
+    public String toString() {
+      StringBuilder sb = new StringBuilder("rename_partition_result(");
       boolean first = true;
 
       sb.append("o1:");
