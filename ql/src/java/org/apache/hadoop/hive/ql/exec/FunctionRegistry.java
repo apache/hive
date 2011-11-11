@@ -146,6 +146,7 @@ import org.apache.hadoop.hive.ql.udf.generic.GenericUDAFnGrams;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDF;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFArray;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFArrayContains;
+import org.apache.hadoop.hive.ql.udf.generic.GenericUDFAssertTrue;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFBridge;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFCase;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFCoalesce;
@@ -414,6 +415,7 @@ public final class FunctionRegistry {
     registerGenericUDF("reflect", GenericUDFReflect.class);
 
     registerGenericUDF("array", GenericUDFArray.class);
+    registerGenericUDF("assert_true", GenericUDFAssertTrue.class);
     registerGenericUDF("map", GenericUDFMap.class);
     registerGenericUDF("struct", GenericUDFStruct.class);
     registerGenericUDF("named_struct", GenericUDFNamedStruct.class);

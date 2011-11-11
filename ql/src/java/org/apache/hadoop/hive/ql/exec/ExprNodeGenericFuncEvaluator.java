@@ -138,9 +138,19 @@ public class ExprNodeGenericFuncEvaluator extends ExprNodeEvaluator {
   }
 
   @Override
+  public boolean isDeterministic() {
+    boolean result = FunctionRegistry.isDeterministic(genericUDF);
+    for (ExprNodeEvaluator child : children) {
+      result = result && child.isDeterministic();
+    }
+    return result;
+  }
+
+  @Override
   public Object evaluate(Object row) throws HiveException {
     rowObject = row;
-    if (ObjectInspectorUtils.isConstantObjectInspector(outputOI)) {
+    if (ObjectInspectorUtils.isConstantObjectInspector(outputOI) &&
+        isDeterministic()) {
       // The output of this UDF is constant, so don't even bother evaluating.
       return ((ConstantObjectInspector)outputOI).getWritableConstantValue();
     }
