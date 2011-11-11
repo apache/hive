@@ -25,6 +25,7 @@ array
 array_contains
 ascii
 asin
+assert_true
 atan
 avg
 bigint
@@ -195,6 +196,7 @@ PREHOOK: query: SHOW FUNCTIONS '.*e$'
 PREHOOK: type: SHOWFUNCTIONS
 POSTHOOK: query: SHOW FUNCTIONS '.*e$'
 POSTHOOK: type: SHOWFUNCTIONS
+assert_true
 case
 coalesce
 double
