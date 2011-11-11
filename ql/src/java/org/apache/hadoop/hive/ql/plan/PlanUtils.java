@@ -269,6 +269,11 @@ public final class PlanUtils {
         properties.setProperty(Constants.LINE_DELIM, crtTblDesc.getLineDelim());
       }
 
+      if (crtTblDesc.getTableName() != null && crtTblDesc.getDatabaseName() != null) {
+        properties.setProperty(org.apache.hadoop.hive.metastore.api.Constants.META_TABLE_NAME,
+            crtTblDesc.getDatabaseName() + "." + crtTblDesc.getTableName());
+      }
+
       // replace the default input & output file format with those found in
       // crtTblDesc
       Class c1 = Class.forName(crtTblDesc.getInputFormat());

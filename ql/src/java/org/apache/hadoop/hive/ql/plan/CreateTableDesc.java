@@ -20,7 +20,6 @@ package org.apache.hadoop.hive.ql.plan;
 
 import java.io.Serializable;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -35,6 +34,7 @@ import org.apache.hadoop.hive.ql.exec.Utilities;
 @Explain(displayName = "Create Table")
 public class CreateTableDesc extends DDLDesc implements Serializable {
   private static final long serialVersionUID = 1L;
+  String databaseName;
   String tableName;
   boolean isExternal;
   ArrayList<FieldSchema> cols;
@@ -58,6 +58,26 @@ public class CreateTableDesc extends DDLDesc implements Serializable {
   boolean ifNotExists;
 
   public CreateTableDesc() {
+  }
+
+  public CreateTableDesc(String databaseName, String tableName, boolean isExternal,
+      List<FieldSchema> cols, List<FieldSchema> partCols,
+      List<String> bucketCols, List<Order> sortCols, int numBuckets,
+      String fieldDelim, String fieldEscape, String collItemDelim,
+      String mapKeyDelim, String lineDelim, String comment, String inputFormat,
+      String outputFormat, String location, String serName,
+      String storageHandler,
+      Map<String, String> serdeProps,
+      Map<String, String> tblProps,
+      boolean ifNotExists) {
+
+    this(tableName, isExternal, cols, partCols,
+        bucketCols, sortCols, numBuckets, fieldDelim, fieldEscape,
+        collItemDelim, mapKeyDelim, lineDelim, comment, inputFormat,
+        outputFormat, location, serName, storageHandler, serdeProps,
+        tblProps, ifNotExists);
+
+    this.databaseName = databaseName;
   }
 
   public CreateTableDesc(String tableName, boolean isExternal,
@@ -115,6 +135,10 @@ public class CreateTableDesc extends DDLDesc implements Serializable {
   @Explain(displayName = "name")
   public String getTableName() {
     return tableName;
+  }
+
+  public String getDatabaseName(){
+    return databaseName;
   }
 
   public void setTableName(String tableName) {

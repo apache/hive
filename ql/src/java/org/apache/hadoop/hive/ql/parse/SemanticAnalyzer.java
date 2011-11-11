@@ -27,9 +27,9 @@ import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 import java.util.TreeSet;
-import java.util.Map.Entry;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 
@@ -65,6 +65,7 @@ import org.apache.hadoop.hive.ql.exec.RecordReader;
 import org.apache.hadoop.hive.ql.exec.RecordWriter;
 import org.apache.hadoop.hive.ql.exec.ReduceSinkOperator;
 import org.apache.hadoop.hive.ql.exec.RowSchema;
+import org.apache.hadoop.hive.ql.exec.StatsTask;
 import org.apache.hadoop.hive.ql.exec.TableScanOperator;
 import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.exec.TaskFactory;
@@ -94,6 +95,7 @@ import org.apache.hadoop.hive.ql.metadata.VirtualColumn;
 import org.apache.hadoop.hive.ql.optimizer.GenMRFileSink1;
 import org.apache.hadoop.hive.ql.optimizer.GenMROperator;
 import org.apache.hadoop.hive.ql.optimizer.GenMRProcContext;
+import org.apache.hadoop.hive.ql.optimizer.GenMRProcContext.GenMapRedCtx;
 import org.apache.hadoop.hive.ql.optimizer.GenMRRedSink1;
 import org.apache.hadoop.hive.ql.optimizer.GenMRRedSink2;
 import org.apache.hadoop.hive.ql.optimizer.GenMRRedSink3;
@@ -103,14 +105,10 @@ import org.apache.hadoop.hive.ql.optimizer.GenMRUnion1;
 import org.apache.hadoop.hive.ql.optimizer.GenMapRedUtils;
 import org.apache.hadoop.hive.ql.optimizer.MapJoinFactory;
 import org.apache.hadoop.hive.ql.optimizer.Optimizer;
-import org.apache.hadoop.hive.ql.optimizer.GenMRProcContext.GenMapRedCtx;
 import org.apache.hadoop.hive.ql.optimizer.physical.PhysicalContext;
 import org.apache.hadoop.hive.ql.optimizer.physical.PhysicalOptimizer;
 import org.apache.hadoop.hive.ql.optimizer.ppr.PartitionPruner;
 import org.apache.hadoop.hive.ql.optimizer.unionproc.UnionProcContext;
-import org.apache.hadoop.hive.ql.parse.BaseSemanticAnalyzer.AnalyzeCreateCommonVars;
-import org.apache.hadoop.hive.ql.parse.BaseSemanticAnalyzer.RowFormatParams;
-import org.apache.hadoop.hive.ql.parse.BaseSemanticAnalyzer.StorageFormat;
 import org.apache.hadoop.hive.ql.parse.BaseSemanticAnalyzer.tableSpec.SpecType;
 import org.apache.hadoop.hive.ql.plan.AggregationDesc;
 import org.apache.hadoop.hive.ql.plan.CreateTableDesc;
@@ -127,6 +125,7 @@ import org.apache.hadoop.hive.ql.plan.ExtractDesc;
 import org.apache.hadoop.hive.ql.plan.FetchWork;
 import org.apache.hadoop.hive.ql.plan.FileSinkDesc;
 import org.apache.hadoop.hive.ql.plan.FilterDesc;
+import org.apache.hadoop.hive.ql.plan.FilterDesc.sampleDesc;
 import org.apache.hadoop.hive.ql.plan.ForwardDesc;
 import org.apache.hadoop.hive.ql.plan.GroupByDesc;
 import org.apache.hadoop.hive.ql.plan.HiveOperation;
@@ -149,13 +148,12 @@ import org.apache.hadoop.hive.ql.plan.TableDesc;
 import org.apache.hadoop.hive.ql.plan.TableScanDesc;
 import org.apache.hadoop.hive.ql.plan.UDTFDesc;
 import org.apache.hadoop.hive.ql.plan.UnionDesc;
-import org.apache.hadoop.hive.ql.plan.FilterDesc.sampleDesc;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.ql.session.SessionState.ResourceType;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDAFEvaluator;
+import org.apache.hadoop.hive.ql.udf.generic.GenericUDAFEvaluator.Mode;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFHash;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDTF;
-import org.apache.hadoop.hive.ql.udf.generic.GenericUDAFEvaluator.Mode;
 import org.apache.hadoop.hive.serde.Constants;
 import org.apache.hadoop.hive.serde2.Deserializer;
 import org.apache.hadoop.hive.serde2.MetadataTypedColumnsetSerDe;
@@ -1052,6 +1050,13 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
               } catch (Exception e) {
                 throw new SemanticException(generateErrorMessage(ast,
                       "Error creating temporary folder on: " + location), e);
+              }
+              if (HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVESTATSAUTOGATHER)) {
+                tableSpec ts = new tableSpec(db, conf, this.ast);
+                // Set that variable to automatically collect stats during the MapReduce job
+                qb.getParseInfo().setIsInsertToTable(true);
+                // Add the table spec for the destination table.
+                qb.getParseInfo().addTableSpec(ts.tableName.toLowerCase(), ts);
               }
             } else {
               qb.setIsQuery(true);
@@ -3994,7 +3999,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       }
 
       boolean isDfsDir = (dest_type.intValue() == QBMetaData.DEST_DFS_FILE);
-      loadFileWork.add(new LoadFileDesc(queryTmpdir, destStr, isDfsDir, cols,
+      loadFileWork.add(new LoadFileDesc(tblDesc, queryTmpdir, destStr, isDfsDir, cols,
           colTypes));
 
       if (tblDesc == null) {
@@ -6920,6 +6925,10 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
             Path targetPath;
             try {
               dumpTable = db.newTable(qb.getTableDesc().getTableName());
+              if (!db.databaseExists(dumpTable.getDbName())) {
+                throw new SemanticException("ERROR: The database " + dumpTable.getDbName()
+                    + " does not exist.");
+              }
               Warehouse wh = new Warehouse(conf);
               targetPath = wh.getTablePath(db.getDatabase(dumpTable.getDbName()), dumpTable
                   .getTableName());
@@ -7034,7 +7043,18 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       getLeafTasks(rootTasks, leaves);
       assert (leaves.size() > 0);
       for (Task<? extends Serializable> task : leaves) {
-        task.addDependentTask(crtTblTask);
+        if (task instanceof StatsTask){
+          //StatsTask require table to already exist
+          for (Task<? extends Serializable> parentOfStatsTask : task.getParentTasks()){
+            parentOfStatsTask.addDependentTask(crtTblTask);
+          }
+          for (Task<? extends Serializable> parentOfCrtTblTask : crtTblTask.getParentTasks()){
+            parentOfCrtTblTask.removeDependentTask(task);
+          }
+          crtTblTask.addDependentTask(task);
+        } else {
+          task.addDependentTask(crtTblTask);
+        }
       }
     }
 
@@ -7867,8 +7887,10 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     case CTAS: // create table as select
 
       // Verify that the table does not already exist
+      String databaseName;
       try {
         Table dumpTable = db.newTable(tableName);
+        databaseName = dumpTable.getDbName();
         if (null == db.getDatabase(dumpTable.getDbName()) ) {
           throw new SemanticException(ErrorMsg.DATABASE_NOT_EXISTS.getMsg(dumpTable.getDbName()));
         }
@@ -7881,7 +7903,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
 
       tblProps = addDefaultProperties(tblProps);
 
-      crtTblDesc = new CreateTableDesc(tableName, isExt, cols, partCols,
+      crtTblDesc = new CreateTableDesc(databaseName, tableName, isExt, cols, partCols,
           bucketCols, sortCols, numBuckets, rowFormatParams.fieldDelim, rowFormatParams.fieldEscape,
           rowFormatParams.collItemDelim, rowFormatParams.mapKeyDelim, rowFormatParams.lineDelim, comment, storageFormat.inputFormat,
           storageFormat.outputFormat, location, shared.serde, storageFormat.storageHandler, shared.serdeProps,

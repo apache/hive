@@ -619,7 +619,8 @@ public abstract class BaseSemanticAnalyzer {
 
       assert (ast.getToken().getType() == HiveParser.TOK_TAB
           || ast.getToken().getType() == HiveParser.TOK_TABLE_PARTITION
-          || ast.getToken().getType() == HiveParser.TOK_TABTYPE);
+          || ast.getToken().getType() == HiveParser.TOK_TABTYPE
+          || ast.getToken().getType() == HiveParser.TOK_CREATETABLE);
       int childIndex = 0;
       numDynParts = 0;
 
@@ -631,8 +632,9 @@ public abstract class BaseSemanticAnalyzer {
           tableName = conf.getVar(HiveConf.ConfVars.HIVETESTMODEPREFIX)
               + tableName;
         }
-
-        tableHandle = db.getTable(tableName);
+        if (ast.getToken().getType() != HiveParser.TOK_CREATETABLE) {
+          tableHandle = db.getTable(tableName);
+        }
       } catch (InvalidTableException ite) {
         throw new SemanticException(ErrorMsg.INVALID_TABLE.getMsg(ast
             .getChild(0)), ite);
@@ -642,7 +644,7 @@ public abstract class BaseSemanticAnalyzer {
       }
 
       // get partition metadata if partition specified
-      if (ast.getChildCount() == 2) {
+      if (ast.getChildCount() == 2 && ast.getToken().getType() != HiveParser.TOK_CREATETABLE) {
         childIndex = 1;
         ASTNode partspec = (ASTNode) ast.getChild(1);
         partitions = new ArrayList<Partition>();
