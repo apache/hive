@@ -216,16 +216,27 @@ public class StatsTask extends Task<StatsWork> implements Serializable {
   public int execute(DriverContext driverContext) {
 
     LOG.info("Executing stats task");
-    // Make sure that it is either an ANALYZE command or an INSERT OVERWRITE command
-    assert (work.getLoadTableDesc() != null && work.getTableSpecs() == null || work
-        .getLoadTableDesc() == null && work.getTableSpecs() != null);
+    // Make sure that it is either an ANALYZE, INSERT OVERWRITE or CTAS command
+    short workComponentsPresent = 0;
+    if (work.getLoadTableDesc() != null)
+      workComponentsPresent++;
+    if (work.getTableSpecs() != null)
+      workComponentsPresent++;
+    if (work.getLoadFileDesc() != null)
+      workComponentsPresent++;
+
+    assert (workComponentsPresent == 1);
+
     String tableName = "";
     try {
       if (work.getLoadTableDesc() != null) {
         tableName = work.getLoadTableDesc().getTable().getTableName();
-      } else {
+      } else if (work.getTableSpecs() != null){
         tableName = work.getTableSpecs().tableName;
+      } else {
+        tableName = work.getLoadFileDesc().getDestinationCreateTable();
       }
+
       table = db.getTable(tableName);
 
     } catch (HiveException e) {
@@ -310,7 +321,7 @@ public class StatsTask extends Task<StatsWork> implements Serializable {
 
         // In case of a non-partitioned table, the key for stats temporary store is "rootDir"
         if (statsAggregator != null) {
-          updateStats(collectableStats, tblStats, statsAggregator, parameters, 
+          updateStats(collectableStats, tblStats, statsAggregator, parameters,
               work.getAggKey(), atomic);
           statsAggregator.cleanUp(work.getAggKey());
         }
@@ -349,7 +360,7 @@ public class StatsTask extends Task<StatsWork> implements Serializable {
           LOG.info("Stats aggregator : " + partitionID);
 
           if (statsAggregator != null) {
-            updateStats(collectableStats, newPartStats, statsAggregator, 
+            updateStats(collectableStats, newPartStats, statsAggregator,
                 parameters, partitionID, atomic);
           } else {
             for (String statType : collectableStats) {
@@ -447,7 +458,7 @@ public class StatsTask extends Task<StatsWork> implements Serializable {
       if (value != null) {
         longValue = Long.parseLong(value);
 
-        if (work.getLoadTableDesc() != null && 
+        if (work.getLoadTableDesc() != null &&
             !work.getLoadTableDesc().getReplace()) {
           String originalValue = parameters.get(statType);
           if (originalValue != null) {
@@ -472,6 +483,9 @@ public class StatsTask extends Task<StatsWork> implements Serializable {
    * @throws HiveException
    */
   private List<Partition> getPartitionsList() throws HiveException {
+    if (work.getLoadFileDesc() != null) {
+      return null; //we are in CTAS, so we know there are no partitions
+    }
 
     List<Partition> list = new ArrayList<Partition>();
 

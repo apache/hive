@@ -31,8 +31,21 @@ public class LoadFileDesc extends LoadDesc implements Serializable {
   // list of columns, comma separated
   private String columns;
   private String columnTypes;
+  private String destinationCreateTable;
 
   public LoadFileDesc() {
+  }
+
+  public LoadFileDesc(final CreateTableDesc createTableDesc, final String sourceDir,
+      final String targetDir,
+      final boolean isDfsDir, final String columns, final String columnTypes) {
+    this(sourceDir, targetDir, isDfsDir, columns, columnTypes);
+    if (createTableDesc != null && createTableDesc.getDatabaseName() != null
+        && createTableDesc.getTableName() != null) {
+      destinationCreateTable = (createTableDesc.getTableName().contains(".") ? "" : createTableDesc
+          .getDatabaseName() + ".")
+          + createTableDesc.getTableName();
+    }
   }
 
   public LoadFileDesc(final String sourceDir, final String targetDir,
@@ -91,5 +104,12 @@ public class LoadFileDesc extends LoadDesc implements Serializable {
    */
   public void setColumnTypes(String columnTypes) {
     this.columnTypes = columnTypes;
+  }
+
+  /**
+   * @return the destinationCreateTable
+   */
+  public String getDestinationCreateTable(){
+    return destinationCreateTable;
   }
 }

@@ -54,7 +54,8 @@ ABSTRACT SYNTAX TREE:
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
-  Stage-3 depends on stages: Stage-0
+  Stage-4 depends on stages: Stage-0
+  Stage-2 depends on stages: Stage-4
 
 STAGE PLANS:
   Stage: Stage-1
@@ -109,14 +110,15 @@ STAGE PLANS:
                       table:
                           input format: org.apache.hadoop.mapred.TextInputFormat
                           output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                          name: default.smb_mapjoin9_results
 
   Stage: Stage-0
     Move Operator
       files:
           hdfs directory: true
-          destination: pfile:/data/users/charleschen/hive-trunk/build/ql/test/data/warehouse/smb_mapjoin9_results
+          destination: pfile:/data/users/rsurowka/JAVA_HIVE/apache-hive/build/ql/test/data/warehouse/smb_mapjoin9_results
 
-  Stage: Stage-3
+  Stage: Stage-4
       Create Table Operator:
         Create Table
           columns: k1 int, value string, ds string, k2 int
@@ -126,6 +128,9 @@ STAGE PLANS:
           output format: org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat
           name: smb_mapjoin9_results
           isExternal: false
+
+  Stage: Stage-2
+    Stats-Aggr Operator
 
 
 PREHOOK: query: create table smb_mapjoin9_results as

@@ -21,6 +21,7 @@ create table merge_src2 as
 select key, value from merge_src;
 
 select * from merge_src2;
+describe formatted merge_src2;
 
 create table merge_src_part2 like merge_src_part;
 

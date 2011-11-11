@@ -167,7 +167,14 @@ public class GenMRFileSink1 implements NodeProcessor {
       Task<? extends Serializable> currTask, HiveConf hconf) {
 
     MoveWork mvWork = ((MoveTask)mvTask).getWork();
-    StatsWork statsWork = new StatsWork(mvWork.getLoadTableWork());
+    StatsWork statsWork = null;
+    if(mvWork.getLoadTableWork() != null){
+       statsWork = new StatsWork(mvWork.getLoadTableWork());
+    }else if (mvWork.getLoadFileWork() != null){
+       statsWork = new StatsWork(mvWork.getLoadFileWork());
+    }
+    assert statsWork != null : "Error when genereting StatsTask";
+
     MapredWork mrWork = (MapredWork) currTask.getWork();
 
     // AggKey in StatsWork is used for stats aggregation while StatsAggPrefix
