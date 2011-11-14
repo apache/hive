@@ -30,7 +30,7 @@ import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector.Category;
  * StructTypeInfo represents the TypeInfo of a struct. A struct contains one or
  * more fields each of which has a unique name and its own TypeInfo. Different
  * fields can have the same or different TypeInfo.
- * 
+ *
  * Always use the TypeInfoFactory to create new TypeInfo objects, instead of
  * directly creating an instance of this class.
  */
@@ -82,10 +82,8 @@ public final class StructTypeInfo extends TypeInfo implements Serializable {
    * For TypeInfoFactory use only.
    */
   StructTypeInfo(List<String> names, List<TypeInfo> typeInfos) {
-    allStructFieldNames = new ArrayList<String>();
-    allStructFieldNames.addAll(names);
-    allStructFieldTypeInfos = new ArrayList<TypeInfo>();
-    allStructFieldTypeInfos.addAll(typeInfos);
+    allStructFieldNames = new ArrayList<String>(names);
+    allStructFieldTypeInfos = new ArrayList<TypeInfo>(typeInfos);
   }
 
   @Override
