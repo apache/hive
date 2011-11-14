@@ -379,13 +379,6 @@
 </property>
 
 <property>
-  <name>hive.optimize.pruner</name>
-  <value>true</value>
-  <description>Whether to enable the new partition pruner which depends on predicate pushdown. If this is disabled,
-  the old partition pruner which is based on AST will be enabled.</description>
-</property>
-
-<property>
   <name>hive.optimize.groupby</name>
   <value>true</value>
   <description>Whether to enable the bucketed group by from bucketed partitions/tables.</description>
@@ -596,19 +589,6 @@
   <name>hive.merge.smallfiles.avgsize</name>
   <value>16000000</value>
   <description>When the average output file size of a job is less than this number, Hive will start an additional map-reduce job to merge the output files into bigger files.  This is only done for map-only jobs if hive.merge.mapfiles is true, and for map-reduce jobs if hive.merge.mapredfiles is true.</description>
-</property>
-
-
-<property>
-  <name>hive.mapjoin.hashtable.initialCapacity</name>
-  <value>100000</value>
-  <description>In the process of Mapjoin, the key/value will be hold in the hashtable. This value means the initialCapacity of the in-memory hashtable</description>
-</property>
-
-<property>
-  <name>hive.mapjoin.hashtable.loadfactor</name>
-  <value>0.75</value>
-  <description>In the process of Mapjoin, the key/value will be hold in the hashtable. This value means the load factor for the in-memory hashtable</description>
 </property>
 
 <property>
@@ -847,12 +827,6 @@
 </property>
 
 <property>
-  <name>hive.stats.jdbc.atomic</name>
-  <value>false</value>
-  <description>If this is set to true then the metastore stats will be updated only if all types of stats (# of rows, # of files, # of bytes etc.) are available. Otherwise metastore stats are updated in a best effort fashion with whatever are available.</description>
-</property>
-
-<property>
   <name>hive.stats.retries.max</name>
   <value>0</value>
   <description>Maximum number of retries when stats publisher/aggregator got an exception updating intermediate database. Default is no tries on failures.</description>
@@ -868,12 +842,6 @@
   <name>hive.support.concurrency</name>
   <value>false</value>
   <description>Whether hive supports concurrency or not. A zookeeper instance must be up and running for the default hive lock manager to support read-write locks.</description>
-</property>
-
-<property>
-  <name>hive.concurrency.manager</name>
-  <value>org.apache.hadoop.hive.ql.lockmgr.ZooKeeperLockMgr</value>
-  <description>The concurrency manager for hive.</description>
 </property>
 
 <property>
