@@ -36,9 +36,9 @@ import org.apache.hadoop.hive.ql.stats.StatsPublisher;
 import org.apache.hadoop.hive.ql.stats.StatsSetupConst;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils;
+import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils.ObjectInspectorCopyOption;
 import org.apache.hadoop.hive.serde2.objectinspector.StructField;
 import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
-import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils.ObjectInspectorCopyOption;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.mapred.JobConf;
 
@@ -71,8 +71,8 @@ public class TableScanOperator extends Operator<TableScanDesc> implements
   /**
    * Other than gathering statistics for the ANALYZE command, the table scan operator
    * does not do anything special other than just forwarding the row. Since the table
-   * data is always read as part of the map-reduce framework by the mapper. But, this
-   * assumption is not true, i.e table data is not only read by the mapper, this
+   * data is always read as part of the map-reduce framework by the mapper. But, when this
+   * assumption stops to be true, i.e table data won't be only read by the mapper, this
    * operator will be enhanced to read the table.
    **/
   @Override
