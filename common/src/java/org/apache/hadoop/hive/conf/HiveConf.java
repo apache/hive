@@ -87,6 +87,11 @@ public class HiveConf extends Configuration {
       HiveConf.ConfVars.METASTORE_IDENTIFIER_FACTORY,
       HiveConf.ConfVars.METASTORE_PLUGIN_REGISTRY_BUNDLE_CHECK,
       HiveConf.ConfVars.METASTORE_AUTHORIZATION_STORAGE_AUTH_CHECKS,
+      HiveConf.ConfVars.METASTORE_BATCH_RETRIEVE_MAX,
+      HiveConf.ConfVars.METASTORE_EVENT_LISTENERS,
+      HiveConf.ConfVars.METASTORE_EVENT_CLEAN_FREQ,
+      HiveConf.ConfVars.METASTORE_EVENT_EXPIRY_DURATION,
+      HiveConf.ConfVars.METASTORE_RAW_STORE_IMPL,
       };
 
   /**
@@ -111,7 +116,7 @@ public class HiveConf extends Configuration {
     // QL execution stuff
     SCRIPTWRAPPER("hive.exec.script.wrapper", null),
     PLAN("hive.exec.plan", null),
-    SCRATCHDIR("hive.exec.scratchdir", "/tmp/" + System.getProperty("user.name") + "/hive"),
+    SCRATCHDIR("hive.exec.scratchdir", "/tmp/hive-" + System.getProperty("user.name")),
     SUBMITVIACHILD("hive.exec.submitviachild", false),
     SCRIPTERRORLIMIT("hive.exec.script.maxerrsize", 100000),
     ALLOWPARTIALCONSUMP("hive.exec.script.allow.partial.consumption", false),
@@ -163,14 +168,14 @@ public class HiveConf extends Configuration {
     HADOOPMAPREDINPUTDIR("mapred.input.dir", null),
     HADOOPMAPREDINPUTDIRRECURSIVE("mapred.input.dir.recursive", false),
     HADOOPJT("mapred.job.tracker", "local"),
-    HADOOPNUMREDUCERS("mapred.reduce.tasks", 1),
+    HADOOPNUMREDUCERS("mapred.reduce.tasks", -1),
     HADOOPJOBNAME("mapred.job.name", null),
     HADOOPSPECULATIVEEXECREDUCERS("mapred.reduce.tasks.speculative.execution", false),
 
     // Metastore stuff. Be sure to update HiveConf.metaVars when you add
     // something here!
     METASTOREDIRECTORY("hive.metastore.metadb.dir", ""),
-    METASTOREWAREHOUSE("hive.metastore.warehouse.dir", ""),
+    METASTOREWAREHOUSE("hive.metastore.warehouse.dir", "/user/hive/warehouse"),
     METASTOREURIS("hive.metastore.uris", ""),
     // Number of times to retry a connection to a Thrift metastore server
     METASTORETHRIFTRETRIES("hive.metastore.connect.retries", 5),
@@ -178,12 +183,13 @@ public class HiveConf extends Configuration {
     METASTORE_CLIENT_CONNECT_RETRY_DELAY("hive.metastore.client.connect.retry.delay", 1),
     // Socket timeout for the client connection (in seconds)
     METASTORE_CLIENT_SOCKET_TIMEOUT("hive.metastore.client.socket.timeout", 20),
-    METASTOREPWD("javax.jdo.option.ConnectionPassword", ""),
+    METASTOREPWD("javax.jdo.option.ConnectionPassword", "mine"),
     // Class name of JDO connection url hook
     METASTORECONNECTURLHOOK("hive.metastore.ds.connection.url.hook", ""),
-    METASTOREMULTITHREADED("javax.jdo.option.Multithreaded", "true"),
+    METASTOREMULTITHREADED("javax.jdo.option.Multithreaded", true),
     // Name of the connection url in the configuration
-    METASTORECONNECTURLKEY("javax.jdo.option.ConnectionURL", ""),
+    METASTORECONNECTURLKEY("javax.jdo.option.ConnectionURL",
+        "jdbc:derby:;databaseName=metastore_db;create=true"),
     // Number of attempts to retry connecting after there is a JDO datastore err
     METASTOREATTEMPTS("hive.metastore.ds.retry.attempts", 1),
     // Number of miliseconds to wait between attepting
@@ -194,7 +200,7 @@ public class HiveConf extends Configuration {
     // testing only.
     METASTOREFORCERELOADCONF("hive.metastore.force.reload.conf", false),
     METASTORESERVERMINTHREADS("hive.metastore.server.min.threads", 200),
-    METASTORESERVERMAXTHREADS("hive.metastore.server.max.threads", Integer.MAX_VALUE),
+    METASTORESERVERMAXTHREADS("hive.metastore.server.max.threads", 100000),
     METASTORE_TCP_KEEP_ALIVE("hive.metastore.server.tcp.keepalive", true),
     // Intermediate dir suffixes used for archiving. Not important what they
     // are, as long as collisions are avoided
@@ -205,7 +211,8 @@ public class HiveConf extends Configuration {
     METASTORE_INT_EXTRACTED("hive.metastore.archive.intermediate.extracted",
         "_INTERMEDIATE_EXTRACTED"),
     METASTORE_KERBEROS_KEYTAB_FILE("hive.metastore.kerberos.keytab.file", ""),
-    METASTORE_KERBEROS_PRINCIPAL("hive.metastore.kerberos.principal", ""),
+    METASTORE_KERBEROS_PRINCIPAL("hive.metastore.kerberos.principal",
+        "hive-metastore/_HOST@EXAMPLE.COM"),
     METASTORE_USE_THRIFT_SASL("hive.metastore.sasl.enabled", false),
     METASTORE_CACHE_PINOBJTYPES("hive.metastore.cache.pinobjtypes", "Table,StorageDescriptor,SerDeInfo,Partition,Database,Type,FieldSchema,Order"),
     METASTORE_CONNECTION_POOLING_TYPE("datanucleus.connectionPoolingType", "DBCP"),
@@ -228,7 +235,16 @@ public class HiveConf extends Configuration {
     METASTORE_EVENT_EXPIRY_DURATION("hive.metastore.event.expiry.duration",0L),
     METASTORE_MODE("hive.metastore.local",true),
     // Default parameters for creating tables
-    NEWTABLEDEFAULTPARA("hive.table.parameters.default",""),
+    NEWTABLEDEFAULTPARA("hive.table.parameters.default", ""),
+    METASTORE_RAW_STORE_IMPL("hive.metastore.rawstore.impl",
+        "org.apache.hadoop.hive.metastore.ObjectStore"),
+    METASTORE_CONNECTION_DRIVER("javax.jdo.option.ConnectionDriverName",
+        "org.apache.derby.jdbc.EmbeddedDriver"),
+    METASTORE_MANAGER_FACTORY_CLASS("javax.jdo.PersistenceManagerFactoryClass",
+        "org.datanucleus.jdo.JDOPersistenceManagerFactory"),
+    METASTORE_DETACH_ALL_ON_COMMIT("javax.jdo.option.DetachAllOnCommit", true),
+    METASTORE_NON_TRANSACTIONAL_READ("javax.jdo.option.NonTransactionalRead", true),
+    METASTORE_CONNECTION_USER_NAME("javax.jdo.option.ConnectionUserName", "APP"),
 
     // CLI
     CLIIGNOREERRORS("hive.cli.errors.ignore", false),
@@ -336,7 +352,7 @@ public class HiveConf extends Configuration {
 
     HIVESKEWJOIN("hive.optimize.skewjoin", false),
     HIVECONVERTJOIN("hive.auto.convert.join", false),
-    HIVESKEWJOINKEY("hive.skewjoin.key", 1000000),
+    HIVESKEWJOINKEY("hive.skewjoin.key", 100000),
     HIVESKEWJOINMAPJOINNUMMAPTASK("hive.skewjoin.mapjoin.map.tasks", 10000),
     HIVESKEWJOINMAPJOINMINSPLIT("hive.skewjoin.mapjoin.min.split", 33554432L), //32M
     MAPREDMAXSPLITSIZE("mapred.max.split.size", 256000000L),
@@ -426,7 +442,7 @@ public class HiveConf extends Configuration {
     HIVE_LOCK_MAPRED_ONLY("hive.lock.mapred.only.operation", false),
 
     HIVE_ZOOKEEPER_QUORUM("hive.zookeeper.quorum", ""),
-    HIVE_ZOOKEEPER_CLIENT_PORT("hive.zookeeper.client.port", ""),
+    HIVE_ZOOKEEPER_CLIENT_PORT("hive.zookeeper.client.port", "2181"),
     HIVE_ZOOKEEPER_SESSION_TIMEOUT("hive.zookeeper.session.timeout", 600*1000),
     HIVE_ZOOKEEPER_NAMESPACE("hive.zookeeper.namespace", "hive_zookeeper_namespace"),
     HIVE_ZOOKEEPER_CLEAN_EXTRA_NODES("hive.zookeeper.clean.extra.nodes", false),
@@ -452,13 +468,17 @@ public class HiveConf extends Configuration {
     SEMANTIC_ANALYZER_HOOK("hive.semantic.analyzer.hook",null),
 
     HIVE_AUTHORIZATION_ENABLED("hive.security.authorization.enabled", false),
-    HIVE_AUTHORIZATION_MANAGER("hive.security.authorization.manager", null),
-    HIVE_AUTHENTICATOR_MANAGER("hive.security.authenticator.manager", null),
+    HIVE_AUTHORIZATION_MANAGER("hive.security.authorization.manager",
+        "org.apache.hadoop.hive.ql.security.authorization.DefaultHiveAuthorizationProvider"),
+    HIVE_AUTHENTICATOR_MANAGER("hive.security.authenticator.manager",
+        "org.apache.hadoop.hive.ql.security.HadoopDefaultAuthenticator"),
+    HIVE_AUTHORIZATION_TABLE_USER_GRANTS("hive.security.authorization.createtable.user.grants", ""),
+    HIVE_AUTHORIZATION_TABLE_GROUP_GRANTS("hive.security.authorization.createtable.group.grants",
+        ""),
+    HIVE_AUTHORIZATION_TABLE_ROLE_GRANTS("hive.security.authorization.createtable.role.grants", ""),
+    HIVE_AUTHORIZATION_TABLE_OWNER_GRANTS("hive.security.authorization.createtable.owner.grants",
+        ""),
 
-    HIVE_AUTHORIZATION_TABLE_USER_GRANTS("hive.security.authorization.createtable.user.grants", null),
-    HIVE_AUTHORIZATION_TABLE_GROUP_GRANTS("hive.security.authorization.createtable.group.grants", null),
-    HIVE_AUTHORIZATION_TABLE_ROLE_GRANTS("hive.security.authorization.createtable.role.grants", null),
-    HIVE_AUTHORIZATION_TABLE_OWNER_GRANTS("hive.security.authorization.createtable.owner.grants", null),
     // Print column names in output
     HIVE_CLI_PRINT_HEADER("hive.cli.print.header", false),
 
@@ -473,6 +493,7 @@ public class HiveConf extends Configuration {
     HIVE_MAPPER_CANNOT_SPAN_MULTIPLE_PARTITIONS("hive.mapper.cannot.span.multiple.partitions", false),
     HIVE_REWORK_MAPREDWORK("hive.rework.mapredwork", false),
     HIVE_CONCATENATE_CHECK_INDEX ("hive.exec.concatenate.check.index", true),
+    HIVE_IO_EXCEPTION_HANDLERS("hive.io.exception.handlers", ""),
 
     //prefix used to auto generated column aliases
     HIVE_AUTOGEN_COLUMNALIAS_PREFIX_LABEL("hive.autogen.columnalias.prefix.label", "_c"),
@@ -482,6 +503,7 @@ public class HiveConf extends Configuration {
     // The class responsible for logging client side performance metrics
     // Must be a subclass of org.apache.hadoop.hive.ql.log.PerfLogger
     HIVE_PERF_LOGGER("hive.exec.perf.logger", "org.apache.hadoop.hive.ql.log.PerfLogger"),
+    HIVE_FS_HAR_IMPL("fs.har.impl", "org.apache.hadoop.hive.shims.HiveHarFileSystem"),
     // Whether to delete the scratchdir while startup
     HIVE_START_CLEANUP_SCRATCHDIR("hive.start.cleanup.scratchdir", false),
     HIVE_INSERT_INTO_MULTILEVEL_DIRS("hive.insert.into.multilevel.dirs", false),

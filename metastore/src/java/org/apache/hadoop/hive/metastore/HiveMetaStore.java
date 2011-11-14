@@ -239,7 +239,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
     }
 
     private boolean init() throws MetaException {
-      rawStoreClassName = hiveConf.get("hive.metastore.rawstore.impl");
+      rawStoreClassName = hiveConf.getVar(HiveConf.ConfVars.METASTORE_RAW_STORE_IMPL);
       checkForDefaultDb = hiveConf.getBoolean(
           "hive.metastore.checkForDefaultDb", true);
       String alterHandlerName = hiveConf.get("hive.metastore.alter.impl",
