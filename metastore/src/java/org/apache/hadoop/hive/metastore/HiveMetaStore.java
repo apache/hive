@@ -3523,7 +3523,6 @@ public class HiveMetaStore extends ThriftHiveMetastore {
   public static void startMetaStore(int port, HadoopThriftAuthBridge bridge,
       HiveConf conf) throws Throwable {
     try {
-      HMSHandler handler = new HMSHandler("new db based metaserver", conf);
 
       // Server will create new threads up to max as necessary. After an idle
       // period, it will destory threads to keep the number of threads in the
@@ -3536,7 +3535,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       TServerTransport serverTransport = tcpKeepAlive ?
           new TServerSocketKeepAlive(port) : new TServerSocket(port);
 
-      TProcessor processor = new ThriftHiveMetastore.Processor(handler);
+      TProcessor processor;
       TTransportFactory transFactory;
       if (useSasl) {
          saslServer = bridge.createServer(
@@ -3546,8 +3545,11 @@ public class HiveMetaStore extends ThriftHiveMetastore {
         // start delegation token manager
         saslServer.startDelegationTokenSecretManager(conf);
         transFactory = saslServer.createTransportFactory();
-        processor = saslServer.wrapProcessor(processor);
+        processor = saslServer.wrapProcessor(new ThriftHiveMetastore.Processor(
+            new HMSHandler("new db based metaserver", conf)));
       } else {
+        processor = new ThriftHiveMetastore.Processor(
+            new HMSHandler("new db based metaserver", conf));
         transFactory = new TTransportFactory();
       }
 
