@@ -17,8 +17,7 @@ ABSTRACT SYNTAX TREE:
 
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
-  Stage-2 depends on stages: Stage-1, Stage-3
-  Stage-3 is a root stage
+  Stage-2 depends on stages: Stage-1
   Stage-0 is a root stage
 
 STAGE PLANS:
@@ -65,62 +64,72 @@ STAGE PLANS:
   Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/tmp/sdong/hive_2011-02-10_17-53-02_429_1226872131608807757/-mr-10002 
-          Union
-            Select Operator
-              expressions:
-                    expr: _col0
-                    type: string
-              outputColumnNames: _col0
-              Group By Operator
-                aggregations:
-                      expr: count(1)
-                bucketGroup: false
-                keys:
+        file:/tmp/njain/hive_2011-11-11_18-48-09_210_8425017124003834085/-mr-10002 
+          TableScan
+            Union
+              Select Operator
+                expressions:
                       expr: _col0
                       type: string
-                mode: hash
-                outputColumnNames: _col0, _col1
-                Reduce Output Operator
-                  key expressions:
+                outputColumnNames: _col0
+                Group By Operator
+                  aggregations:
+                        expr: count(1)
+                  bucketGroup: false
+                  keys:
                         expr: _col0
                         type: string
-                  sort order: +
-                  Map-reduce partition columns:
-                        expr: _col0
-                        type: string
-                  tag: -1
-                  value expressions:
-                        expr: _col1
-                        type: bigint
-        file:/tmp/sdong/hive_2011-02-10_17-53-02_429_1226872131608807757/-mr-10003 
-          Union
+                  mode: hash
+                  outputColumnNames: _col0, _col1
+                  Reduce Output Operator
+                    key expressions:
+                          expr: _col0
+                          type: string
+                    sort order: +
+                    Map-reduce partition columns:
+                          expr: _col0
+                          type: string
+                    tag: -1
+                    value expressions:
+                          expr: _col1
+                          type: bigint
+        null-subquery2:unionsrc-subquery2:s2 
+          TableScan
+            alias: s2
             Select Operator
               expressions:
-                    expr: _col0
+                    expr: key
                     type: string
-              outputColumnNames: _col0
-              Group By Operator
-                aggregations:
-                      expr: count(1)
-                bucketGroup: false
-                keys:
-                      expr: _col0
-                      type: string
-                mode: hash
-                outputColumnNames: _col0, _col1
-                Reduce Output Operator
-                  key expressions:
+                    expr: value
+                    type: string
+              outputColumnNames: _col0, _col1
+              Union
+                Select Operator
+                  expressions:
                         expr: _col0
                         type: string
-                  sort order: +
-                  Map-reduce partition columns:
-                        expr: _col0
-                        type: string
-                  tag: -1
-                  value expressions:
-                        expr: _col1
-                        type: bigint
+                  outputColumnNames: _col0
+                  Group By Operator
+                    aggregations:
+                          expr: count(1)
+                    bucketGroup: false
+                    keys:
+                          expr: _col0
+                          type: string
+                    mode: hash
+                    outputColumnNames: _col0, _col1
+                    Reduce Output Operator
+                      key expressions:
+                            expr: _col0
+                            type: string
+                      sort order: +
+                      Map-reduce partition columns:
+                            expr: _col0
+                            type: string
+                      tag: -1
+                      value expressions:
+                            expr: _col1
+                            type: bigint
       Reduce Operator Tree:
         Group By Operator
           aggregations:
@@ -145,26 +154,6 @@ STAGE PLANS:
                   input format: org.apache.hadoop.mapred.TextInputFormat
                   output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
 
-  Stage: Stage-3
-    Map Reduce
-      Alias -> Map Operator Tree:
-        null-subquery2:unionsrc-subquery2:s2 
-          TableScan
-            alias: s2
-            Select Operator
-              expressions:
-                    expr: key
-                    type: string
-                    expr: value
-                    type: string
-              outputColumnNames: _col0, _col1
-              File Output Operator
-                compressed: false
-                GlobalTableId: 0
-                table:
-                    input format: org.apache.hadoop.mapred.SequenceFileInputFormat
-                    output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
-
   Stage: Stage-0
     Fetch Operator
       limit: -1
@@ -176,14 +165,14 @@ PREHOOK: query: select unionsrc.key, count(1) FROM (select 'tst1' as key, cast(c
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
 PREHOOK: Input: default@src1
-PREHOOK: Output: file:/tmp/sdong/hive_2011-02-10_17-53-02_548_1106278616475122301/-mr-10000
+PREHOOK: Output: file:/tmp/njain/hive_2011-11-11_18-48-09_302_258460663317337490/-mr-10000
 POSTHOOK: query: select unionsrc.key, count(1) FROM (select 'tst1' as key, cast(count(1) as string) as value from src s1
                                       UNION  ALL  
                                     select s2.key as key, s2.value as value from src1 s2) unionsrc group by unionsrc.key
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 POSTHOOK: Input: default@src1
-POSTHOOK: Output: file:/tmp/sdong/hive_2011-02-10_17-53-02_548_1106278616475122301/-mr-10000
+POSTHOOK: Output: file:/tmp/njain/hive_2011-11-11_18-48-09_302_258460663317337490/-mr-10000
 	10
 128	1
 146	1

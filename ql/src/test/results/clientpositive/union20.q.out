@@ -29,11 +29,9 @@ ABSTRACT SYNTAX TREE:
 
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
-  Stage-2 depends on stages: Stage-1, Stage-3, Stage-5
-  Stage-3 is a root stage
-  Stage-4 is a root stage
-  Stage-5 depends on stages: Stage-4, Stage-6
+  Stage-2 depends on stages: Stage-1, Stage-5
   Stage-6 is a root stage
+  Stage-5 depends on stages: Stage-6
   Stage-0 is a root stage
 
 STAGE PLANS:
@@ -95,38 +93,52 @@ STAGE PLANS:
                     type: string
                     expr: _col1
                     type: string
-        file:/tmp/sdong/hive_2011-02-10_17-50-58_273_8747453587292923422/-mr-10002 
-          Union
-            Reduce Output Operator
-              key expressions:
-                    expr: _col0
-                    type: string
-              sort order: +
-              Map-reduce partition columns:
-                    expr: _col0
-                    type: string
-              tag: 1
-              value expressions:
-                    expr: _col0
-                    type: string
-                    expr: _col1
-                    type: string
-        file:/tmp/sdong/hive_2011-02-10_17-50-58_273_8747453587292923422/-mr-10003 
-          Union
-            Reduce Output Operator
-              key expressions:
-                    expr: _col0
-                    type: string
-              sort order: +
-              Map-reduce partition columns:
-                    expr: _col0
-                    type: string
-              tag: 1
-              value expressions:
-                    expr: _col0
-                    type: string
-                    expr: _col1
-                    type: string
+        file:/tmp/njain/hive_2011-11-11_18-45-31_836_8101530069181152276/-mr-10002 
+          TableScan
+            Union
+              Reduce Output Operator
+                key expressions:
+                      expr: _col0
+                      type: string
+                sort order: +
+                Map-reduce partition columns:
+                      expr: _col0
+                      type: string
+                tag: 1
+                value expressions:
+                      expr: _col0
+                      type: string
+                      expr: _col1
+                      type: string
+        null-subquery2:unionsrc2-subquery2:s4 
+          TableScan
+            alias: s4
+            Filter Operator
+              predicate:
+                  expr: (key < 10)
+                  type: boolean
+              Select Operator
+                expressions:
+                      expr: key
+                      type: string
+                      expr: value
+                      type: string
+                outputColumnNames: _col0, _col1
+                Union
+                  Reduce Output Operator
+                    key expressions:
+                          expr: _col0
+                          type: string
+                    sort order: +
+                    Map-reduce partition columns:
+                          expr: _col0
+                          type: string
+                    tag: 1
+                    value expressions:
+                          expr: _col0
+                          type: string
+                          expr: _col1
+                          type: string
       Reduce Operator Tree:
         Join Operator
           condition map:
@@ -153,74 +165,6 @@ STAGE PLANS:
               table:
                   input format: org.apache.hadoop.mapred.TextInputFormat
                   output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-
-  Stage: Stage-3
-    Map Reduce
-      Alias -> Map Operator Tree:
-        null-subquery2:unionsrc2-subquery2:s4 
-          TableScan
-            alias: s4
-            Filter Operator
-              predicate:
-                  expr: (key < 10)
-                  type: boolean
-              Select Operator
-                expressions:
-                      expr: key
-                      type: string
-                      expr: value
-                      type: string
-                outputColumnNames: _col0, _col1
-                File Output Operator
-                  compressed: false
-                  GlobalTableId: 0
-                  table:
-                      input format: org.apache.hadoop.mapred.SequenceFileInputFormat
-                      output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
-
-  Stage: Stage-4
-    Map Reduce
-      Alias -> Map Operator Tree:
-        null-subquery2:unionsrc1-subquery2:s2 
-          TableScan
-            alias: s2
-            Filter Operator
-              predicate:
-                  expr: (key < 10)
-                  type: boolean
-              Select Operator
-                expressions:
-                      expr: key
-                      type: string
-                      expr: value
-                      type: string
-                outputColumnNames: _col0, _col1
-                File Output Operator
-                  compressed: false
-                  GlobalTableId: 0
-                  table:
-                      input format: org.apache.hadoop.mapred.SequenceFileInputFormat
-                      output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
-
-  Stage: Stage-5
-    Map Reduce
-      Alias -> Map Operator Tree:
-        file:/tmp/sdong/hive_2011-02-10_17-50-58_273_8747453587292923422/-mr-10004 
-          Union
-            File Output Operator
-              compressed: false
-              GlobalTableId: 0
-              table:
-                  input format: org.apache.hadoop.mapred.SequenceFileInputFormat
-                  output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
-        file:/tmp/sdong/hive_2011-02-10_17-50-58_273_8747453587292923422/-mr-10006 
-          Union
-            File Output Operator
-              compressed: false
-              GlobalTableId: 0
-              table:
-                  input format: org.apache.hadoop.mapred.SequenceFileInputFormat
-                  output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
 
   Stage: Stage-6
     Map Reduce
@@ -262,6 +206,40 @@ STAGE PLANS:
                   input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                   output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
 
+  Stage: Stage-5
+    Map Reduce
+      Alias -> Map Operator Tree:
+        file:/tmp/njain/hive_2011-11-11_18-45-31_836_8101530069181152276/-mr-10004 
+          TableScan
+            Union
+              File Output Operator
+                compressed: false
+                GlobalTableId: 0
+                table:
+                    input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                    output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+        null-subquery2:unionsrc1-subquery2:s2 
+          TableScan
+            alias: s2
+            Filter Operator
+              predicate:
+                  expr: (key < 10)
+                  type: boolean
+              Select Operator
+                expressions:
+                      expr: key
+                      type: string
+                      expr: value
+                      type: string
+                outputColumnNames: _col0, _col1
+                Union
+                  File Output Operator
+                    compressed: false
+                    GlobalTableId: 0
+                    table:
+                        input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                        output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+
   Stage: Stage-0
     Fetch Operator
       limit: -1
@@ -278,7 +256,7 @@ JOIN
 ON (unionsrc1.key = unionsrc2.key)
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/tmp/sdong/hive_2011-02-10_17-50-58_427_7809802233568190458/-mr-10000
+PREHOOK: Output: file:/tmp/njain/hive_2011-11-11_18-45-31_982_246659288493998228/-mr-10000
 POSTHOOK: query: SELECT unionsrc1.key, unionsrc1.value, unionsrc2.key, unionsrc2.value
 FROM (select 'tst1' as key, cast(count(1) as string) as value from src s1
                          UNION  ALL  
@@ -290,7 +268,7 @@ JOIN
 ON (unionsrc1.key = unionsrc2.key)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: file:/tmp/sdong/hive_2011-02-10_17-50-58_427_7809802233568190458/-mr-10000
+POSTHOOK: Output: file:/tmp/njain/hive_2011-11-11_18-45-31_982_246659288493998228/-mr-10000
 0	val_0	0	val_0
 0	val_0	0	val_0
 0	val_0	0	val_0

@@ -27,14 +27,13 @@ ABSTRACT SYNTAX TREE:
 
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
-  Stage-8 depends on stages: Stage-1, Stage-4 , consists of Stage-9, Stage-10, Stage-2
+  Stage-8 depends on stages: Stage-1 , consists of Stage-9, Stage-10, Stage-2
   Stage-9 has a backup stage: Stage-2
   Stage-6 depends on stages: Stage-9
   Stage-3 depends on stages: Stage-2, Stage-6, Stage-7
   Stage-10 has a backup stage: Stage-2
   Stage-7 depends on stages: Stage-10
   Stage-2
-  Stage-4 is a root stage
   Stage-0 is a root stage
 
 STAGE PLANS:
@@ -132,65 +131,75 @@ STAGE PLANS:
   Stage: Stage-6
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/tmp/njain/hive_2011-03-23_22-02-43_416_1632994873933518743/-mr-10002 
-          Union
-            Map Join Operator
-              condition map:
-                   Inner Join 0 to 1
-              condition expressions:
-                0 
-                1 
-              handleSkewJoin: false
-              keys:
-                0 [Column[_col0]]
-                1 [Column[_col0]]
-              Position of Big Table: 0
-              Select Operator
-                Group By Operator
-                  aggregations:
-                        expr: count(1)
-                  bucketGroup: false
-                  mode: hash
-                  outputColumnNames: _col0
-                  File Output Operator
-                    compressed: false
-                    GlobalTableId: 0
-                    table:
-                        input format: org.apache.hadoop.mapred.SequenceFileInputFormat
-                        output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
-        file:/tmp/njain/hive_2011-03-23_22-02-43_416_1632994873933518743/-mr-10004 
-          Union
-            Map Join Operator
-              condition map:
-                   Inner Join 0 to 1
-              condition expressions:
-                0 
-                1 
-              handleSkewJoin: false
-              keys:
-                0 [Column[_col0]]
-                1 [Column[_col0]]
-              Position of Big Table: 0
-              Select Operator
-                Group By Operator
-                  aggregations:
-                        expr: count(1)
-                  bucketGroup: false
-                  mode: hash
-                  outputColumnNames: _col0
-                  File Output Operator
-                    compressed: false
-                    GlobalTableId: 0
-                    table:
-                        input format: org.apache.hadoop.mapred.SequenceFileInputFormat
-                        output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+        file:/var/folders/bZ/bZe+iKfoFTuPoShRd6dy6-tOU9Y/-Tmp-/njain/hive_2011-11-11_17-36-43_167_4198125662621366018/-mr-10002 
+          TableScan
+            Union
+              Map Join Operator
+                condition map:
+                     Inner Join 0 to 1
+                condition expressions:
+                  0 
+                  1 
+                handleSkewJoin: false
+                keys:
+                  0 [Column[_col0]]
+                  1 [Column[_col0]]
+                Position of Big Table: 0
+                Select Operator
+                  Group By Operator
+                    aggregations:
+                          expr: count(1)
+                    bucketGroup: false
+                    mode: hash
+                    outputColumnNames: _col0
+                    File Output Operator
+                      compressed: false
+                      GlobalTableId: 0
+                      table:
+                          input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                          output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+        null-subquery1:src_12-subquery1:src 
+          TableScan
+            alias: src
+            Select Operator
+              expressions:
+                    expr: key
+                    type: string
+                    expr: value
+                    type: string
+              outputColumnNames: _col0, _col1
+              Union
+                Map Join Operator
+                  condition map:
+                       Inner Join 0 to 1
+                  condition expressions:
+                    0 
+                    1 
+                  handleSkewJoin: false
+                  keys:
+                    0 [Column[_col0]]
+                    1 [Column[_col0]]
+                  Position of Big Table: 0
+                  Select Operator
+                    Group By Operator
+                      aggregations:
+                            expr: count(1)
+                      bucketGroup: false
+                      mode: hash
+                      outputColumnNames: _col0
+                      File Output Operator
+                        compressed: false
+                        GlobalTableId: 0
+                        table:
+                            input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                            output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
       Local Work:
         Map Reduce Local Work
 
   Stage: Stage-3
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/tmp/njain/hive_2011-03-23_22-02-43_416_1632994873933518743/-mr-10003 
+        file:/var/folders/bZ/bZe+iKfoFTuPoShRd6dy6-tOU9Y/-Tmp-/njain/hive_2011-11-11_17-36-43_167_4198125662621366018/-mr-10003 
             Reduce Output Operator
               sort order: 
               tag: -1
@@ -219,35 +228,45 @@ STAGE PLANS:
   Stage: Stage-10
     Map Reduce Local Work
       Alias -> Map Local Tables:
-        file:/tmp/njain/hive_2011-03-23_22-02-43_416_1632994873933518743/-mr-10002 
+        file:/var/folders/bZ/bZe+iKfoFTuPoShRd6dy6-tOU9Y/-Tmp-/njain/hive_2011-11-11_17-36-43_167_4198125662621366018/-mr-10002 
           Fetch Operator
             limit: -1
-        file:/tmp/njain/hive_2011-03-23_22-02-43_416_1632994873933518743/-mr-10004 
+        null-subquery1:src_12-subquery1:src 
           Fetch Operator
             limit: -1
       Alias -> Map Local Operator Tree:
-        file:/tmp/njain/hive_2011-03-23_22-02-43_416_1632994873933518743/-mr-10002 
-          Union
-            HashTable Sink Operator
-              condition expressions:
-                0 
-                1 
-              handleSkewJoin: false
-              keys:
-                0 [Column[_col0]]
-                1 [Column[_col0]]
-              Position of Big Table: 1
-        file:/tmp/njain/hive_2011-03-23_22-02-43_416_1632994873933518743/-mr-10004 
-          Union
-            HashTable Sink Operator
-              condition expressions:
-                0 
-                1 
-              handleSkewJoin: false
-              keys:
-                0 [Column[_col0]]
-                1 [Column[_col0]]
-              Position of Big Table: 1
+        file:/var/folders/bZ/bZe+iKfoFTuPoShRd6dy6-tOU9Y/-Tmp-/njain/hive_2011-11-11_17-36-43_167_4198125662621366018/-mr-10002 
+          TableScan
+            Union
+              HashTable Sink Operator
+                condition expressions:
+                  0 
+                  1 
+                handleSkewJoin: false
+                keys:
+                  0 [Column[_col0]]
+                  1 [Column[_col0]]
+                Position of Big Table: 1
+        null-subquery1:src_12-subquery1:src 
+          TableScan
+            alias: src
+            Select Operator
+              expressions:
+                    expr: key
+                    type: string
+                    expr: value
+                    type: string
+              outputColumnNames: _col0, _col1
+              Union
+                HashTable Sink Operator
+                  condition expressions:
+                    0 
+                    1 
+                  handleSkewJoin: false
+                  keys:
+                    0 [Column[_col0]]
+                    1 [Column[_col0]]
+                  Position of Big Table: 1
 
   Stage: Stage-7
     Map Reduce
@@ -294,28 +313,38 @@ STAGE PLANS:
   Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/tmp/njain/hive_2011-03-23_22-02-43_416_1632994873933518743/-mr-10002 
-          Union
-            Reduce Output Operator
-              key expressions:
-                    expr: _col0
+        file:/var/folders/bZ/bZe+iKfoFTuPoShRd6dy6-tOU9Y/-Tmp-/njain/hive_2011-11-11_17-36-43_167_4198125662621366018/-mr-10002 
+          TableScan
+            Union
+              Reduce Output Operator
+                key expressions:
+                      expr: _col0
+                      type: string
+                sort order: +
+                Map-reduce partition columns:
+                      expr: _col0
+                      type: string
+                tag: 0
+        null-subquery1:src_12-subquery1:src 
+          TableScan
+            alias: src
+            Select Operator
+              expressions:
+                    expr: key
                     type: string
-              sort order: +
-              Map-reduce partition columns:
-                    expr: _col0
+                    expr: value
                     type: string
-              tag: 0
-        file:/tmp/njain/hive_2011-03-23_22-02-43_416_1632994873933518743/-mr-10004 
-          Union
-            Reduce Output Operator
-              key expressions:
-                    expr: _col0
-                    type: string
-              sort order: +
-              Map-reduce partition columns:
-                    expr: _col0
-                    type: string
-              tag: 0
+              outputColumnNames: _col0, _col1
+              Union
+                Reduce Output Operator
+                  key expressions:
+                        expr: _col0
+                        type: string
+                  sort order: +
+                  Map-reduce partition columns:
+                        expr: _col0
+                        type: string
+                  tag: 0
         src3:src 
           TableScan
             alias: src
@@ -359,26 +388,6 @@ STAGE PLANS:
                     input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                     output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
 
-  Stage: Stage-4
-    Map Reduce
-      Alias -> Map Operator Tree:
-        null-subquery1:src_12-subquery1:src 
-          TableScan
-            alias: src
-            Select Operator
-              expressions:
-                    expr: key
-                    type: string
-                    expr: value
-                    type: string
-              outputColumnNames: _col0, _col1
-              File Output Operator
-                compressed: false
-                GlobalTableId: 0
-                table:
-                    input format: org.apache.hadoop.mapred.SequenceFileInputFormat
-                    output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
-
   Stage: Stage-0
     Fetch Operator
       limit: -1
@@ -396,7 +405,7 @@ JOIN
 ON src_12.key = src3.k AND src3.k < 200
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/tmp/njain/hive_2011-03-23_22-02-44_469_912794075622273367/-mr-10000
+PREHOOK: Output: file:/var/folders/bZ/bZe+iKfoFTuPoShRd6dy6-tOU9Y/-Tmp-/njain/hive_2011-11-11_17-36-44_708_3827922999145042039/-mr-10000
 POSTHOOK: query: SELECT count(1)
 FROM
 (
@@ -409,5 +418,5 @@ JOIN
 ON src_12.key = src3.k AND src3.k < 200
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: file:/tmp/njain/hive_2011-03-23_22-02-44_469_912794075622273367/-mr-10000
+POSTHOOK: Output: file:/var/folders/bZ/bZe+iKfoFTuPoShRd6dy6-tOU9Y/-Tmp-/njain/hive_2011-11-11_17-36-44_708_3827922999145042039/-mr-10000
 548

@@ -65,62 +65,64 @@ STAGE PLANS:
   Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/tmp/sdong/hive_2011-02-10_17-52-35_634_8721217390847331165/-mr-10002 
-          Union
-            Select Operator
-              expressions:
-                    expr: _col0
-                    type: string
-              outputColumnNames: _col0
-              Group By Operator
-                aggregations:
-                      expr: count(1)
-                bucketGroup: false
-                keys:
+        file:/var/folders/bZ/bZe+iKfoFTuPoShRd6dy6-tOU9Y/-Tmp-/njain/hive_2011-11-11_11-02-22_497_2122916937878156980/-mr-10002 
+          TableScan
+            Union
+              Select Operator
+                expressions:
                       expr: _col0
                       type: string
-                mode: hash
-                outputColumnNames: _col0, _col1
-                Reduce Output Operator
-                  key expressions:
+                outputColumnNames: _col0
+                Group By Operator
+                  aggregations:
+                        expr: count(1)
+                  bucketGroup: false
+                  keys:
                         expr: _col0
                         type: string
-                  sort order: +
-                  Map-reduce partition columns:
-                        expr: _col0
-                        type: string
-                  tag: -1
-                  value expressions:
-                        expr: _col1
-                        type: bigint
-        file:/tmp/sdong/hive_2011-02-10_17-52-35_634_8721217390847331165/-mr-10003 
-          Union
-            Select Operator
-              expressions:
-                    expr: _col0
-                    type: string
-              outputColumnNames: _col0
-              Group By Operator
-                aggregations:
-                      expr: count(1)
-                bucketGroup: false
-                keys:
+                  mode: hash
+                  outputColumnNames: _col0, _col1
+                  Reduce Output Operator
+                    key expressions:
+                          expr: _col0
+                          type: string
+                    sort order: +
+                    Map-reduce partition columns:
+                          expr: _col0
+                          type: string
+                    tag: -1
+                    value expressions:
+                          expr: _col1
+                          type: bigint
+        file:/var/folders/bZ/bZe+iKfoFTuPoShRd6dy6-tOU9Y/-Tmp-/njain/hive_2011-11-11_11-02-22_497_2122916937878156980/-mr-10003 
+          TableScan
+            Union
+              Select Operator
+                expressions:
                       expr: _col0
                       type: string
-                mode: hash
-                outputColumnNames: _col0, _col1
-                Reduce Output Operator
-                  key expressions:
+                outputColumnNames: _col0
+                Group By Operator
+                  aggregations:
+                        expr: count(1)
+                  bucketGroup: false
+                  keys:
                         expr: _col0
                         type: string
-                  sort order: +
-                  Map-reduce partition columns:
-                        expr: _col0
-                        type: string
-                  tag: -1
-                  value expressions:
-                        expr: _col1
-                        type: bigint
+                  mode: hash
+                  outputColumnNames: _col0, _col1
+                  Reduce Output Operator
+                    key expressions:
+                          expr: _col0
+                          type: string
+                    sort order: +
+                    Map-reduce partition columns:
+                          expr: _col0
+                          type: string
+                    tag: -1
+                    value expressions:
+                          expr: _col1
+                          type: bigint
       Reduce Operator Tree:
         Group By Operator
           aggregations:
@@ -195,12 +197,12 @@ PREHOOK: query: select unionsrc.key, count(1) FROM (select 'tst1' as key, count(
                                     select 'tst2' as key, count(1) as value from src s2) unionsrc group by unionsrc.key
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/tmp/sdong/hive_2011-02-10_17-52-35_751_1142412284544355296/-mr-10000
+PREHOOK: Output: file:/var/folders/bZ/bZe+iKfoFTuPoShRd6dy6-tOU9Y/-Tmp-/njain/hive_2011-11-11_11-02-22_619_2544238133674437727/-mr-10000
 POSTHOOK: query: select unionsrc.key, count(1) FROM (select 'tst1' as key, count(1) as value from src s1
                                   UNION  ALL  
                                     select 'tst2' as key, count(1) as value from src s2) unionsrc group by unionsrc.key
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: file:/tmp/sdong/hive_2011-02-10_17-52-35_751_1142412284544355296/-mr-10000
+POSTHOOK: Output: file:/var/folders/bZ/bZe+iKfoFTuPoShRd6dy6-tOU9Y/-Tmp-/njain/hive_2011-11-11_11-02-22_619_2544238133674437727/-mr-10000
 tst1	1
 tst2	1
