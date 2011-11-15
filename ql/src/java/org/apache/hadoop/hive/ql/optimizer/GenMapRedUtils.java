@@ -326,12 +326,18 @@ public final class GenMapRedUtils {
     assert uCtx != null;
 
     List<String> taskTmpDirLst = uCtx.getTaskTmpDir();
+    if ((taskTmpDirLst == null) || (taskTmpDirLst.isEmpty())) {
+      return;
+    }
+    
     List<TableDesc> tt_descLst = uCtx.getTTDesc();
     assert !taskTmpDirLst.isEmpty() && !tt_descLst.isEmpty();
     assert taskTmpDirLst.size() == tt_descLst.size();
     int size = taskTmpDirLst.size();
     assert local == false;
 
+    List<Operator<? extends Serializable>> topOperators = uCtx.getListTopOperators();
+    
     for (int pos = 0; pos < size; pos++) {
       String taskTmpDir = taskTmpDirLst.get(pos);
       TableDesc tt_desc = tt_descLst.get(pos);
@@ -340,7 +346,7 @@ public final class GenMapRedUtils {
         plan.getPathToAliases().get(taskTmpDir).add(taskTmpDir);
         plan.getPathToPartitionInfo().put(taskTmpDir,
             new PartitionDesc(tt_desc, null));
-        plan.getAliasToWork().put(taskTmpDir, currUnionOp);
+        plan.getAliasToWork().put(taskTmpDir, topOperators.get(pos));
       }
     }
   }

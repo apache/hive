@@ -88,58 +88,62 @@ STAGE PLANS:
   Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/tmp/sdong/hive_2011-02-10_17-51-51_326_4169637411351606098/-mr-10002 
-          Union
-            Select Operator
-              expressions:
-                    expr: _col0
-                    type: int
-              outputColumnNames: _col0
-              File Output Operator
-                compressed: false
-                GlobalTableId: 0
-                table:
-                    input format: org.apache.hadoop.mapred.TextInputFormat
-                    output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-        file:/tmp/sdong/hive_2011-02-10_17-51-51_326_4169637411351606098/-mr-10003 
-          Union
-            Select Operator
-              expressions:
-                    expr: _col0
-                    type: int
-              outputColumnNames: _col0
-              File Output Operator
-                compressed: false
-                GlobalTableId: 0
-                table:
-                    input format: org.apache.hadoop.mapred.TextInputFormat
-                    output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-        file:/tmp/sdong/hive_2011-02-10_17-51-51_326_4169637411351606098/-mr-10005 
-          Union
-            Select Operator
-              expressions:
-                    expr: _col0
-                    type: int
-              outputColumnNames: _col0
-              File Output Operator
-                compressed: false
-                GlobalTableId: 0
-                table:
-                    input format: org.apache.hadoop.mapred.TextInputFormat
-                    output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-        file:/tmp/sdong/hive_2011-02-10_17-51-51_326_4169637411351606098/-mr-10007 
-          Union
-            Select Operator
-              expressions:
-                    expr: _col0
-                    type: int
-              outputColumnNames: _col0
-              File Output Operator
-                compressed: false
-                GlobalTableId: 0
-                table:
-                    input format: org.apache.hadoop.mapred.TextInputFormat
-                    output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+        file:/var/folders/bZ/bZe+iKfoFTuPoShRd6dy6-tOU9Y/-Tmp-/njain/hive_2011-11-11_11-01-00_814_2332491237056487962/-mr-10002 
+          TableScan
+            Union
+              Select Operator
+                expressions:
+                      expr: _col0
+                      type: int
+                outputColumnNames: _col0
+                File Output Operator
+                  compressed: false
+                  GlobalTableId: 0
+                  table:
+                      input format: org.apache.hadoop.mapred.TextInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+        file:/var/folders/bZ/bZe+iKfoFTuPoShRd6dy6-tOU9Y/-Tmp-/njain/hive_2011-11-11_11-01-00_814_2332491237056487962/-mr-10003 
+          TableScan
+            Union
+              Select Operator
+                expressions:
+                      expr: _col0
+                      type: int
+                outputColumnNames: _col0
+                File Output Operator
+                  compressed: false
+                  GlobalTableId: 0
+                  table:
+                      input format: org.apache.hadoop.mapred.TextInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+        file:/var/folders/bZ/bZe+iKfoFTuPoShRd6dy6-tOU9Y/-Tmp-/njain/hive_2011-11-11_11-01-00_814_2332491237056487962/-mr-10005 
+          TableScan
+            Union
+              Select Operator
+                expressions:
+                      expr: _col0
+                      type: int
+                outputColumnNames: _col0
+                File Output Operator
+                  compressed: false
+                  GlobalTableId: 0
+                  table:
+                      input format: org.apache.hadoop.mapred.TextInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+        file:/var/folders/bZ/bZe+iKfoFTuPoShRd6dy6-tOU9Y/-Tmp-/njain/hive_2011-11-11_11-01-00_814_2332491237056487962/-mr-10007 
+          TableScan
+            Union
+              Select Operator
+                expressions:
+                      expr: _col0
+                      type: int
+                outputColumnNames: _col0
+                File Output Operator
+                  compressed: false
+                  GlobalTableId: 0
+                  table:
+                      input format: org.apache.hadoop.mapred.TextInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
 
   Stage: Stage-3
     Map Reduce
@@ -218,7 +222,7 @@ STAGE PLANS:
   Stage: Stage-5
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/tmp/sdong/hive_2011-02-10_17-51-51_326_4169637411351606098/-mr-10004 
+        file:/var/folders/bZ/bZe+iKfoFTuPoShRd6dy6-tOU9Y/-Tmp-/njain/hive_2011-11-11_11-01-00_814_2332491237056487962/-mr-10004 
             Reduce Output Operator
               key expressions:
                     expr: _col0
@@ -280,7 +284,7 @@ STAGE PLANS:
   Stage: Stage-7
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/tmp/sdong/hive_2011-02-10_17-51-51_326_4169637411351606098/-mr-10006 
+        file:/var/folders/bZ/bZe+iKfoFTuPoShRd6dy6-tOU9Y/-Tmp-/njain/hive_2011-11-11_11-01-00_814_2332491237056487962/-mr-10006 
             Reduce Output Operator
               key expressions:
                     expr: _col0
@@ -356,11 +360,11 @@ POSTHOOK: Lineage: union_out.id EXPRESSION []
 PREHOOK: query: select * from union_out cluster by id
 PREHOOK: type: QUERY
 PREHOOK: Input: default@union_out
-PREHOOK: Output: file:/tmp/sdong/hive_2011-02-10_17-52-15_670_1956987222899492132/-mr-10000
+PREHOOK: Output: file:/var/folders/bZ/bZe+iKfoFTuPoShRd6dy6-tOU9Y/-Tmp-/njain/hive_2011-11-11_11-01-46_186_6136409345520993079/-mr-10000
 POSTHOOK: query: select * from union_out cluster by id
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@union_out
-POSTHOOK: Output: file:/tmp/sdong/hive_2011-02-10_17-52-15_670_1956987222899492132/-mr-10000
+POSTHOOK: Output: file:/var/folders/bZ/bZe+iKfoFTuPoShRd6dy6-tOU9Y/-Tmp-/njain/hive_2011-11-11_11-01-46_186_6136409345520993079/-mr-10000
 POSTHOOK: Lineage: union_out.id EXPRESSION []
 1
 2

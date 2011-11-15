@@ -680,16 +680,19 @@ public abstract class Operator<T extends Serializable> implements Serializable,
     assert parentIndex != -1;
     if (parentOperators.size() == 1) {
       parentOperators = null;
-    } else {
+    }
+    else {
       parentOperators.remove(parentIndex);
     }
 
     int childIndex = parent.getChildOperators().indexOf(this);
-    assert childIndex != -1;
-    if (parent.getChildOperators().size() == 1) {
-      parent.setChildOperators(null);
-    } else {
-      parent.getChildOperators().remove(childIndex);
+    if (childIndex >= 0) {
+      if (parent.getChildOperators().size() == 1) {
+        parent.setChildOperators(null);
+      }
+      else {
+        parent.getChildOperators().remove(childIndex);
+      }
     }
   }
 
