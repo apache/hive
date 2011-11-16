@@ -65,13 +65,15 @@ public class ExplainTask extends Task<ExplainWork> implements Serializable {
     }
 
     // Print out the parse AST
-    String jsonAST = outputAST(work.getAstStringTree(), out, jsonOutput, 0);
-    if (out != null) {
-      out.println();
-    }
+    if (work.getAstStringTree() != null) {
+      String jsonAST = outputAST(work.getAstStringTree(), out, jsonOutput, 0);
+      if (out != null) {
+        out.println();
+      }
 
-    if (jsonOutput) {
-      outJSONObject.put("ABSTRACT SYNTAX TREE", jsonAST);
+      if (jsonOutput) {
+        outJSONObject.put("ABSTRACT SYNTAX TREE", jsonAST);
+      }
     }
 
     JSONObject jsonDependencies = outputDependencies(out, jsonOutput,
