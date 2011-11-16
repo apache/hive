@@ -45,6 +45,24 @@ public class IOContext {
   boolean isBlockPointer;
   boolean ioExceptions;
 
+  // Are we using the fact the input is sorted
+  boolean useSorted = false;
+  // Are we currently performing a binary search
+  boolean isBinarySearching = false;
+  // Do we want to end the binary search
+  boolean endBinarySearch = false;
+  // The result of the comparison of the last row processed
+  Comparison comparison = null;
+  // The class name of the generic UDF being used by the filter
+  String genericUDFClassName = null;
+
+  public static enum Comparison {
+    GREATER,
+    LESS,
+    EQUAL,
+    UNKNOWN
+  }
+
   String inputFile;
 
   public IOContext() {
@@ -101,5 +119,70 @@ public class IOContext {
 
   public boolean getIOExceptions() {
     return ioExceptions;
+  }
+
+  public boolean useSorted() {
+    return useSorted;
+  }
+
+  public void setUseSorted(boolean useSorted) {
+    this.useSorted = useSorted;
+  }
+
+  public boolean isBinarySearching() {
+    return isBinarySearching;
+  }
+
+  public void setIsBinarySearching(boolean isBinarySearching) {
+    this.isBinarySearching = isBinarySearching;
+  }
+
+  public boolean shouldEndBinarySearch() {
+    return endBinarySearch;
+  }
+
+  public void setEndBinarySearch(boolean endBinarySearch) {
+    this.endBinarySearch = endBinarySearch;
+  }
+
+  public Comparison getComparison() {
+    return comparison;
+  }
+
+  public void setComparison(Integer comparison) {
+    if (comparison == null && this.isBinarySearching) {
+      // Nothing we can do here, so just proceed normally from now on
+      endBinarySearch = true;
+    } else {
+      if (comparison == null) {
+        this.comparison = Comparison.UNKNOWN;
+      } else if (comparison.intValue() < 0) {
+        this.comparison = Comparison.LESS;
+      } else if (comparison.intValue() > 0) {
+        this.comparison = Comparison.GREATER;
+      } else {
+        this.comparison = Comparison.EQUAL;
+      }
+    }
+  }
+
+  public String getGenericUDFClassName() {
+    return genericUDFClassName;
+  }
+
+  public void setGenericUDFClassName(String genericUDFClassName) {
+    this.genericUDFClassName = genericUDFClassName;
+  }
+
+  /**
+   * The thread local IOContext is static, we may need to restart the search if, for instance,
+   * multiple files are being searched as part of a CombinedHiveRecordReader
+   */
+  public void resetSortingValues() {
+    this.useSorted = false;
+    this.isBinarySearching = false;
+    this.endBinarySearch = false;
+    this.comparison = null;
+    this.genericUDFClassName = null;
   }
 }

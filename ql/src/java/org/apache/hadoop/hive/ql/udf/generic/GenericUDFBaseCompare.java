@@ -22,11 +22,13 @@ import org.apache.hadoop.hive.ql.exec.Description;
 import org.apache.hadoop.hive.ql.exec.FunctionRegistry;
 import org.apache.hadoop.hive.ql.exec.UDFArgumentException;
 import org.apache.hadoop.hive.ql.exec.UDFArgumentTypeException;
+import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFUtils.ReturnObjectInspectorResolver;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
-import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorConverters;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector.Category;
+import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorConverters;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorConverters.Converter;
+import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.BooleanObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.ByteObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.IntObjectInspector;
@@ -159,6 +161,34 @@ public abstract class GenericUDFBaseCompare extends GenericUDF {
 
   }
 
+  public Integer compare(DeferredObject[] arguments) throws HiveException {
+    Object o0,o1;
+    o0 = arguments[0].get();
+    if (o0 == null) {
+      return null;
+    }
+    o1 = arguments[1].get();
+    if (o1 == null) {
+      return null;
+    }
+
+    if (compareType == CompareType.NEED_CONVERT) {
+      Object converted_o0 = converter0.convert(o0);
+      if (converted_o0 == null) {
+        return null;
+      }
+      Object converted_o1 = converter1.convert(o1);
+      if (converted_o1 == null) {
+        return null;
+      }
+      return ObjectInspectorUtils.compare(
+          converted_o0, compareOI,
+          converted_o1, compareOI);
+    } else {
+      return ObjectInspectorUtils.compare(
+          o0, argumentOIs[0], o1, argumentOIs[1]);
+    }
+  }
 
   @Override
   public String getDisplayString(String[] children) {

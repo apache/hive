@@ -68,6 +68,8 @@ public class FilterDesc implements Serializable {
   private org.apache.hadoop.hive.ql.plan.ExprNodeDesc predicate;
   private boolean isSamplingPred;
   private transient sampleDesc sampleDescr;
+  //Is this a filter that should perform a comparison for sorted searches
+  private boolean isSortedFilter;
 
   public FilterDesc() {
   }
@@ -114,6 +116,14 @@ public class FilterDesc implements Serializable {
 
   public void setSampleDescr(final sampleDesc sampleDescr) {
     this.sampleDescr = sampleDescr;
+  }
+
+  public boolean isSortedFilter() {
+    return isSortedFilter;
+  }
+
+  public void setSortedFilter(boolean isSortedFilter) {
+    this.isSortedFilter = isSortedFilter;
   }
 
 }

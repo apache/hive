@@ -527,6 +527,9 @@ public class ExecDriver extends Task<MapredWork> implements Serializable, Hadoop
       conf.set("hive.index.compact.file", work.getIndexIntermediateFile());
       conf.set("hive.index.blockfilter.file", work.getIndexIntermediateFile());
     }
+
+    // Intentionally overwrites anything the user may have put here
+    conf.setBoolean("hive.input.format.sorted", work.isInputFormatSorted());
   }
 
   public boolean mapStarted() {

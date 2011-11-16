@@ -1071,6 +1071,12 @@
 </property>
 
 <property>
+  <name>hive.index.compact.binary.search</name>
+  <value>true</value>
+  <description>Whether or not to use a binary search to find the entries in an index table that match the filter, where possible</description>
+</property>
+
+<property>
   <name>hive.exim.uri.scheme.whitelist</name>
   <value>hdfs,pfile</value>
   <description>A comma separated list of acceptable URI schemes for import and export.</description>

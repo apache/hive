@@ -18,7 +18,10 @@
 
 package org.apache.hadoop.hive.ql.index.compact;
 
+import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Set;
@@ -27,11 +30,14 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.Index;
 import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
 import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.ql.Driver;
+import org.apache.hadoop.hive.ql.exec.FilterOperator;
+import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.hooks.ReadEntity;
 import org.apache.hadoop.hive.ql.hooks.WriteEntity;
@@ -39,6 +45,7 @@ import org.apache.hadoop.hive.ql.index.HiveIndexQueryContext;
 import org.apache.hadoop.hive.ql.index.IndexPredicateAnalyzer;
 import org.apache.hadoop.hive.ql.index.IndexSearchCondition;
 import org.apache.hadoop.hive.ql.index.TableBasedIndexHandler;
+import org.apache.hadoop.hive.ql.io.HiveInputFormat;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.HiveStoragePredicateHandler.DecomposedPredicate;
 import org.apache.hadoop.hive.ql.metadata.HiveUtils;
@@ -46,7 +53,10 @@ import org.apache.hadoop.hive.ql.metadata.Partition;
 import org.apache.hadoop.hive.ql.metadata.VirtualColumn;
 import org.apache.hadoop.hive.ql.optimizer.IndexUtils;
 import org.apache.hadoop.hive.ql.parse.ParseContext;
+import org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
+import org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc;
+import org.apache.hadoop.hive.ql.plan.MapredWork;
 import org.apache.hadoop.hive.ql.plan.PartitionDesc;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPEqual;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPEqualOrGreaterThan;
@@ -57,6 +67,10 @@ import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPLessThan;
 public class CompactIndexHandler extends TableBasedIndexHandler {
 
   private Configuration configuration;
+  // The names of the partition columns
+  private Set<String> partitionCols;
+  // Whether or not the conditions have been met to use the fact the index is sorted
+  private boolean useSorted;
   private static final Log LOG = LogFactory.getLog(CompactIndexHandler.class.getName());
 
 
@@ -172,10 +186,118 @@ public class CompactIndexHandler extends TableBasedIndexHandler {
     Driver driver = new Driver(queryConf);
     driver.compile(qlCommand.toString(), false);
 
+    if (pctx.getConf().getBoolVar(ConfVars.HIVE_INDEX_COMPACT_BINARY_SEARCH) && useSorted) {
+      // For now, only works if the predicate is a single condition
+      MapredWork work = null;
+      String originalInputFormat = null;
+      for (Task task : driver.getPlan().getRootTasks()) {
+        // The index query should have one and only one map reduce task in the root tasks
+        // Otherwise something is wrong, log the problem and continue using the default format
+        if (task.getWork() instanceof MapredWork) {
+          if (work != null) {
+            LOG.error("Tried to use a binary search on a compact index but there were an " +
+                      "unexpected number (>1) of root level map reduce tasks in the " +
+                      "reentrant query plan.");
+            work.setInputformat(null);
+            work.setInputFormatSorted(false);
+            break;
+          }
+          work = (MapredWork)task.getWork();
+          String inputFormat = work.getInputformat();
+          originalInputFormat = inputFormat;
+          if (inputFormat == null) {
+            inputFormat = HiveConf.getVar(pctx.getConf(), HiveConf.ConfVars.HIVEINPUTFORMAT);
+          }
+
+          // We can only perform a binary search with HiveInputFormat and CombineHiveInputFormat
+          // and BucketizedHiveInputFormat
+          try {
+            if (!HiveInputFormat.class.isAssignableFrom(Class.forName(inputFormat))) {
+              work = null;
+              break;
+            }
+          } catch (ClassNotFoundException e) {
+            LOG.error("Map reduce work's input format class: " + inputFormat + " was not found. " +
+                       "Cannot use the fact the compact index is sorted.");
+            work = null;
+            break;
+          }
+
+          work.setInputFormatSorted(true);
+        }
+      }
+
+      if (work != null) {
+        // Find the filter operator and expr node which act on the index column and mark them
+        if (!findIndexColumnFilter(work.getAliasToWork().values())) {
+          LOG.error("Could not locate the index column's filter operator and expr node. Cannot " +
+                    "use the fact the compact index is sorted.");
+          work.setInputformat(originalInputFormat);
+          work.setInputFormatSorted(false);
+        }
+      }
+    }
+
 
     queryContext.addAdditionalSemanticInputs(driver.getPlan().getInputs());
     queryContext.setQueryTasks(driver.getPlan().getRootTasks());
     return;
+  }
+
+  /**
+   * Does a depth first search on the operator tree looking for a filter operator whose predicate
+   * has one child which is a column which is not in the partition
+   * @param operators
+   * @return whether or not it has found its target
+   */
+  private boolean findIndexColumnFilter(Collection<Operator<? extends Serializable>> operators) {
+    for (Operator<? extends Serializable> op : operators) {
+      if (op instanceof FilterOperator && ((FilterOperator)op).getConf().getPredicate().getChildren() != null) {
+        // Is this the target
+        if (findIndexColumnExprNodeDesc(((FilterOperator)op).getConf().getPredicate())) {
+          ((FilterOperator)op).getConf().setSortedFilter(true);
+          return true;
+        }
+      }
+
+      // If the target has been found, no need to continue
+      if (findIndexColumnFilter(op.getChildOperators())) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  private boolean findIndexColumnExprNodeDesc(ExprNodeDesc expression) {
+    if (expression.getChildren() == null) {
+      return false;
+    }
+
+    if (expression.getChildren().size() == 2) {
+      ExprNodeColumnDesc columnDesc = null;
+      if (expression.getChildren().get(0) instanceof ExprNodeColumnDesc) {
+        columnDesc = (ExprNodeColumnDesc)expression.getChildren().get(0);
+      } else if (expression.getChildren().get(1) instanceof ExprNodeColumnDesc) {
+        columnDesc = (ExprNodeColumnDesc)expression.getChildren().get(1);
+      }
+
+      // Is this the target
+      if (columnDesc != null && !partitionCols.contains(columnDesc.getColumn())) {
+        assert expression instanceof ExprNodeGenericFuncDesc :
+               "Expression containing index column is does not support sorting, should not try" +
+               "and sort";
+        ((ExprNodeGenericFuncDesc)expression).setSortedExpr(true);
+        return true;
+      }
+    }
+
+    for (ExprNodeDesc child : expression.getChildren()) {
+      // If the target has been found, no need to continue
+      if (findIndexColumnExprNodeDesc(child)) {
+        return true;
+      }
+    }
+    return false;
   }
 
   /**
@@ -193,6 +315,20 @@ public class CompactIndexHandler extends TableBasedIndexHandler {
 
     if (searchConditions.size() == 0) {
       return null;
+    }
+
+    int numIndexCols = 0;
+    for (IndexSearchCondition searchCondition : searchConditions) {
+      if (!partitionCols.contains(searchCondition.getColumnDesc().getColumn())) {
+        numIndexCols++;
+      }
+    }
+
+    // For now, only works if the predicate has a single condition on an index column
+    if (numIndexCols == 1) {
+      useSorted = true;
+    } else {
+      useSorted = false;
     }
 
     DecomposedPredicate decomposedPredicate = new DecomposedPredicate();
@@ -226,12 +362,14 @@ public class CompactIndexHandler extends TableBasedIndexHandler {
 
     // partitioned columns are treated as if they have indexes so that the partitions
     // are used during the index query generation
+    partitionCols = new HashSet<String>();
     for (Partition part : queryPartitions) {
       if (part.getSpec().isEmpty()) {
         continue; // empty partitions are from whole tables, so we don't want to add them in
       }
       for (String column : part.getSpec().keySet()) {
         analyzer.allowColumnName(column);
+        partitionCols.add(column);
       }
     }
 
