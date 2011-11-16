@@ -87,6 +87,9 @@ public class MapredWork implements Serializable {
 
   private boolean mapperCannotSpanPartns;
 
+  // used to indicate the input is sorted, and so a BinarySearchRecordReader shoudl be used
+  private boolean inputFormatSorted = false;
+
   public MapredWork() {
     aliasToPartnInfo = new LinkedHashMap<String, PartitionDesc>();
   }
@@ -435,6 +438,14 @@ public class MapredWork implements Serializable {
   public void setOpParseCtxMap(
       LinkedHashMap<Operator<? extends Serializable>, OpParseContext> opParseCtxMap) {
     this.opParseCtxMap = opParseCtxMap;
+  }
+
+  public boolean isInputFormatSorted() {
+    return inputFormatSorted;
+  }
+
+  public void setInputFormatSorted(boolean inputFormatSorted) {
+    this.inputFormatSorted = inputFormatSorted;
   }
 
   public void resolveDynamicPartitionMerge(HiveConf conf, Path path,

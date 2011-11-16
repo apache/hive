@@ -23,12 +23,10 @@ import java.io.IOException;
 import org.apache.hadoop.hive.io.HiveIOExceptionHandlerUtil;
 import org.apache.hadoop.io.Writable;
 import org.apache.hadoop.io.WritableComparable;
+import org.apache.hadoop.mapred.FileSplit;
 import org.apache.hadoop.mapred.InputFormat;
-import org.apache.hadoop.mapred.InputSplit;
 import org.apache.hadoop.mapred.JobConf;
-import org.apache.hadoop.mapred.RecordReader;
 import org.apache.hadoop.mapred.Reporter;
-import org.apache.hadoop.mapred.SequenceFileInputFormat;
 
 /**
  * BucketizedHiveRecordReader is a wrapper on a list of RecordReader. It behaves
@@ -39,68 +37,66 @@ public class BucketizedHiveRecordReader<K extends WritableComparable, V extends 
     extends HiveContextAwareRecordReader<K, V> {
   protected final BucketizedHiveInputSplit split;
   protected final InputFormat inputFormat;
-  protected final JobConf jobConf;
   protected final Reporter reporter;
-  protected RecordReader<K,V> curReader;
   protected long progress;
   protected int idx;
-  
+
   public BucketizedHiveRecordReader(InputFormat inputFormat,
       BucketizedHiveInputSplit bucketizedSplit, JobConf jobConf,
       Reporter reporter) throws IOException {
+    super(jobConf);
+
     this.split = bucketizedSplit;
     this.inputFormat = inputFormat;
-    this.jobConf = jobConf;
     this.reporter = reporter;
     initNextRecordReader();
   }
 
+  @Override
   public void doClose() throws IOException {
-    if (curReader != null) {
-      curReader.close();
-      curReader = null;
+    if (recordReader != null) {
+      recordReader.close();
+      recordReader = null;
     }
     idx = 0;
   }
 
   public K createKey() {
-    return (K) curReader.createKey();
+    return (K) recordReader.createKey();
   }
 
   public V createValue() {
-    return (V) curReader.createValue();
+    return (V) recordReader.createValue();
   }
 
   public long getPos() throws IOException {
-    if (curReader != null) {
-      return curReader.getPos();
+    if (recordReader != null) {
+      return recordReader.getPos();
     } else {
       return 0;
     }
   }
 
+  @Override
   public float getProgress() throws IOException {
     // The calculation is strongly dependent on the assumption that all splits
     // came from the same file
-    return Math.min(1.0f, ((curReader == null) ? progress : curReader.getPos())
-        / (float) (split.getLength()));
+    return Math.min(1.0f, ((recordReader == null || this.getIOContext().isBinarySearching()) ?
+        progress : recordReader.getPos()) / (float) (split.getLength()));
   }
 
+  @Override
   public boolean doNext(K key, V value) throws IOException {
-    while ((curReader == null) || !doNextWithExceptionHandler(key, value)) {
+    while ((recordReader == null) || !doNextWithExceptionHandler(key, value)) {
       if (!initNextRecordReader()) {
         return false;
       }
     }
     return true;
   }
-  
+
   private boolean doNextWithExceptionHandler(K key, V value) throws IOException {
-    try {
-      return curReader.next(key, value);
-    } catch (Exception e) {
-      return HiveIOExceptionHandlerUtil.handleRecordReaderNextException(e, jobConf);
-    }
+    return super.doNext(key, value);
   }
 
   /**
@@ -108,9 +104,9 @@ public class BucketizedHiveRecordReader<K extends WritableComparable, V extends 
    * BucketizedHiveRecordReader.
    */
   protected boolean initNextRecordReader() throws IOException {
-    if (curReader != null) {
-      curReader.close();
-      curReader = null;
+    if (recordReader != null) {
+      recordReader.close();
+      recordReader = null;
       if (idx > 0) {
         progress += split.getLength(idx - 1); // done processing so far
       }
@@ -123,10 +119,15 @@ public class BucketizedHiveRecordReader<K extends WritableComparable, V extends 
 
     // get a record reader for the idx-th chunk
     try {
-      curReader = inputFormat.getRecordReader(split.getSplit(idx), jobConf,
+      recordReader = inputFormat.getRecordReader(split.getSplit(idx), jobConf,
           reporter);
     } catch (Exception e) {
-      curReader = HiveIOExceptionHandlerUtil.handleRecordReaderCreationException(e, jobConf);
+      recordReader = HiveIOExceptionHandlerUtil.handleRecordReaderCreationException(e, jobConf);
+    }
+
+    // if we're performing a binary search, we need to restart it
+    if (isSorted) {
+      initIOContextSortedProps((FileSplit) split.getSplit(idx), recordReader, jobConf);
     }
     idx++;
     return true;

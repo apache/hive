@@ -20,7 +20,6 @@ package org.apache.hadoop.hive.ql.io;
 
 import java.io.IOException;
 
-import org.apache.hadoop.hive.io.HiveIOExceptionHandlerUtil;
 import org.apache.hadoop.hive.ql.exec.ExecMapper;
 import org.apache.hadoop.io.Writable;
 import org.apache.hadoop.io.WritableComparable;
@@ -34,21 +33,19 @@ import org.apache.hadoop.mapred.RecordReader;
 public class HiveRecordReader<K extends WritableComparable, V extends Writable>
     extends HiveContextAwareRecordReader<K, V> {
 
-  private final RecordReader recordReader;
-  
-  private JobConf jobConf;
+
 
   public HiveRecordReader(RecordReader recordReader)
       throws IOException {
-    this.recordReader = recordReader;
-  }
-  
-  public HiveRecordReader(RecordReader recordReader, JobConf conf)
-      throws IOException {
-    this.recordReader = recordReader;
-    this.jobConf = conf;
+    super(recordReader);
   }
 
+  public HiveRecordReader(RecordReader recordReader, JobConf conf)
+      throws IOException {
+    super(recordReader, conf);
+  }
+
+  @Override
   public void doClose() throws IOException {
     recordReader.close();
   }
@@ -65,7 +62,12 @@ public class HiveRecordReader<K extends WritableComparable, V extends Writable>
     return recordReader.getPos();
   }
 
+  @Override
   public float getProgress() throws IOException {
+    if (isSorted) {
+      return super.getProgress();
+    }
+
     return recordReader.getProgress();
   }
 
@@ -74,11 +76,7 @@ public class HiveRecordReader<K extends WritableComparable, V extends Writable>
     if (ExecMapper.getDone()) {
       return false;
     }
-    try {
-      return recordReader.next(key, value);
-    } catch (Exception e) {
-      return HiveIOExceptionHandlerUtil.handleRecordReaderNextException(e, jobConf);
-    }
+    return super.doNext(key, value);
   }
 
 }

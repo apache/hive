@@ -129,6 +129,14 @@ public class RCFileRecordReader<K extends LongWritable, V extends BytesRefArrayW
     in.seek(pos);
   }
 
+  public void sync(long pos) throws IOException {
+    in.sync(pos);
+  }
+
+  public void resetBuffer() {
+    in.resetBuffer();
+  }
+
   public long getStart() {
     return start;
   }

@@ -66,6 +66,8 @@ public class ExprNodeGenericFuncDesc extends ExprNodeDesc implements
    * the canonical type information for this NodeDesc.
    */
   private ObjectInspector writableObjectInspector;
+  //Is this an expression that should perform a comparison for sorted searches
+  private boolean isSortedExpr;
 
   public ExprNodeGenericFuncDesc() {
   }
@@ -245,6 +247,14 @@ public class ExprNodeGenericFuncDesc extends ExprNodeDesc implements
     }
 
     return true;
+  }
+
+  public boolean isSortedExpr() {
+    return isSortedExpr;
+  }
+
+  public void setSortedExpr(boolean isSortedExpr) {
+    this.isSortedExpr = isSortedExpr;
   }
 
 }

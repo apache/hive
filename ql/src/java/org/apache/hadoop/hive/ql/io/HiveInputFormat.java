@@ -33,8 +33,6 @@ import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.conf.Configurable;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
-import org.apache.hadoop.hive.io.HiveIOExceptionHandler;
-import org.apache.hadoop.hive.io.HiveIOExceptionHandlerChain;
 import org.apache.hadoop.hive.io.HiveIOExceptionHandlerUtil;
 import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.exec.TableScanOperator;
@@ -174,7 +172,7 @@ public class HiveInputFormat<K extends WritableComparable, V extends Writable>
   }
 
   JobConf job;
-  
+
   public void configure(JobConf job) {
     this.job = job;
   }
@@ -207,7 +205,7 @@ public class HiveInputFormat<K extends WritableComparable, V extends Writable>
       Reporter reporter) throws IOException {
 
     HiveInputSplit hsplit = (HiveInputSplit) split;
-    
+
     InputSplit inputSplit = hsplit.getInputSplit();
     String inputFormatClassName = null;
     Class inputFormatClass = null;
@@ -249,7 +247,7 @@ public class HiveInputFormat<K extends WritableComparable, V extends Writable>
     rr.initIOContext(hsplit, job, inputFormatClass, innerReader);
     return rr;
   }
-  
+
   protected Map<String, PartitionDesc> pathToPartitionInfo;
   MapredWork mrwork = null;
 
@@ -382,11 +380,11 @@ public class HiveInputFormat<K extends WritableComparable, V extends Writable>
     if (this.mrwork == null) {
       init(job);
     }
-    
+
     if(this.mrwork.getPathToAliases() == null) {
       return;
     }
-    
+
     ArrayList<String> aliases = new ArrayList<String>();
     Iterator<Entry<String, ArrayList<String>>> iterator = this.mrwork
         .getPathToAliases().entrySet().iterator();
