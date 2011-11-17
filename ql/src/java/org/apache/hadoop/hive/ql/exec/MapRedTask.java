@@ -303,7 +303,7 @@ public class MapRedTask extends ExecDriver implements Serializable {
     }
   }
 
-  private void configureDebugVariablesForChildJVM(Map<String, String> environmentVariables) {
+  static void configureDebugVariablesForChildJVM(Map<String, String> environmentVariables) {
     // this method contains various asserts to warn if environment variables are in a buggy state
     assert environmentVariables.containsKey(HADOOP_CLIENT_OPTS)
         && environmentVariables.get(HADOOP_CLIENT_OPTS) != null : HADOOP_CLIENT_OPTS
@@ -539,7 +539,7 @@ public class MapRedTask extends ExecDriver implements Serializable {
 
     return null;
   }
-  
+
   @Override
   public Operator<? extends Serializable> getReducer() {
     return getWork().getReducer();
