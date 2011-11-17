@@ -39,6 +39,11 @@ set_debug_param(){
       childSuspend)
       child_suspend="suspend=${pair[1]}"
       ;;
+      swapSuspend)
+      tmp=$child_suspend
+      child_suspend=$main_suspend
+      main_suspend=$tmp
+      ;;
       *)
       ;;
   esac
@@ -89,5 +94,6 @@ debug_help(){
   echo "port=<port_number>          Port on which main JVM listens for debug connection. Default: 8000"
   echo "mainSuspend=<y|n>           Should main JVM wait with execution for the debugger to connect. Default: y"
   echo "childSuspend=<y|n>          Should child JVMs wait with execution for the debugger to connect. Default: n"
+  echo "swapSuspend                 Swaps suspend options between main and child JVMs"
   echo
 }

@@ -200,6 +200,11 @@ public class MapredLocalTask extends Task<MapredLocalWork> implements Serializab
       } else {
         variables.put(HADOOP_OPTS_KEY, hadoopOpts);
       }
+
+      if(variables.containsKey(MapRedTask.HIVE_DEBUG_RECURSIVE)) {
+        MapRedTask.configureDebugVariablesForChildJVM(variables);
+      }
+
       env = new String[variables.size()];
       int pos = 0;
       for (Map.Entry<String, String> entry : variables.entrySet()) {
@@ -458,7 +463,7 @@ public class MapredLocalTask extends Task<MapredLocalWork> implements Serializab
   public Collection<Operator<? extends Serializable>> getTopOperators() {
     return getWork().getAliasToWork().values();
   }
-  
+
   @Override
   public String getName() {
     return "MAPREDLOCAL";
