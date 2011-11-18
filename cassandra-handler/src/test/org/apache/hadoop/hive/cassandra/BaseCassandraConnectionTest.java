@@ -82,7 +82,7 @@ public abstract class BaseCassandraConnectionTest extends TestCase {
       Map<String, String> opts_rf1 = KSMetaData.optsWithRF(1);
 
       // initial test keyspace
-      schema.add(new KSMetaData(
+      schema.add(KSMetaData.testMetadata(
               ksName,
               simple,
               opts_rf1,
