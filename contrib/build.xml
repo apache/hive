@@ -59,7 +59,7 @@
   <target name="gen-test" depends="test-conditions, test-init" >
     <echo message="Project: ${ant.project.name}"/>
     <taskdef name="qtestgen" classname="org.apache.hadoop.hive.ant.QTestGenTask"
-             classpath="${build.dir.hive}/anttasks/hive-anttasks-${version}.jar:${hive.root}/lib/velocity-1.5.jar:${hive.root}/lib/commons-collections-3.2.1.jar:${hive.root}/lib/commons-lang-2.4.jar"/>
+             classpath="${build.dir.hive}/anttasks/hive-anttasks-${version}.jar:${build.ivy.lib.dir}/default/velocity-${velocity.version}.jar:${build.ivy.lib.dir}/default/commons-collections-${commons-collections.version}.jar:${build.ivy.lib.dir}/default/commons-lang-${commons-lang.version}.jar"/>
     
     <mkdir dir="${test.build.src}/org/apache/hadoop/hive/ql/parse"/>
     <mkdir dir="${test.build.src}/org/apache/hadoop/hive/cli"/>

@@ -7,22 +7,22 @@
   <classpathentry exported="true" kind="lib" path="build/hadoopcore/hadoop-@HADOOPVER@/lib/@SERVLETAPIJAR@"/>
   <classpathentry exported="true" kind="lib" path="build/hadoopcore/hadoop-@HADOOPVER@/lib/@JETTYJAR@"/>
   <classpathentry exported="true" kind="lib" path="build/hadoopcore/hadoop-@HADOOPVER@/lib/@JETTYUTILJAR@"/>
-  <classpathentry exported="true" kind="lib" path="cli/lib/jline-@jline.version@.jar"/>
-  <classpathentry exported="true" kind="lib" path="lib/json.jar"/>
-  <classpathentry exported="true" kind="lib" path="lib/asm-@asm.version@.jar"/>
+  <classpathentry exported="true" kind="lib" path="build/dist/lib/jline-@jline.version@.jar"/>
+  <classpathentry exported="true" kind="lib" path="build/dist/lib/json-@json.version@.jar"/>
+  <classpathentry exported="true" kind="lib" path="build/dist/lib/asm-@asm.version@.jar"/>
   <classpathentry exported="true" kind="lib" path="build/hadoopcore/hadoop-@HADOOPVER@/lib/commons-codec-@commons-codec.version@.jar"/>
-  <classpathentry exported="true" kind="lib" path="lib/commons-lang-@commons-lang.version@.jar"/>
-  <classpathentry exported="true" kind="lib" path="lib/commons-logging-@commons-logging.version@.jar"/>
-  <classpathentry exported="true" kind="lib" path="lib/commons-logging-api-@commons-logging-api.version@.jar"/>
-  <classpathentry exported="true" kind="lib" path="lib/derby.jar"/>
+  <classpathentry exported="true" kind="lib" path="build/dist/lib/commons-lang-@commons-lang.version@.jar"/>
+  <classpathentry exported="true" kind="lib" path="build/dist/lib/commons-logging-@commons-logging.version@.jar"/>
+  <classpathentry exported="true" kind="lib" path="build/dist/lib/commons-logging-api-@commons-logging-api.version@.jar"/>
+  <classpathentry exported="true" kind="lib" path="build/dist/lib/derby-@derby.version@.jar"/>
   <classpathentry exported="true" kind="lib" path="build/dist/lib/hbase-@hbase.version@.jar"/>
   <classpathentry exported="true" kind="lib" path="build/dist/lib/hbase-@hbase-test.version@-tests.jar"/>
   <classpathentry exported="true" kind="lib" path="build/dist/lib/libfb303-@libfb303.version@.jar"/>
   <classpathentry exported="true" kind="lib" path="build/dist/lib/libthrift-@libthrift.version@.jar"/>
   <classpathentry exported="true" kind="lib" path="build/dist/lib/zookeeper-@zookeeper.version@.jar"/>
-  <classpathentry exported="true" kind="lib" path="lib/log4j-@log4j.version@.jar"/>
-  <classpathentry exported="true" kind="lib" path="ql/lib/antlr-@antlr.version@.jar"/>
-  <classpathentry exported="true" kind="lib" path="ql/lib/antlr-runtime-@antlr-runtime.version@.jar"/>
+  <classpathentry exported="true" kind="lib" path="build/dist/lib/log4j-@log4j.version@.jar"/>
+  <classpathentry exported="true" kind="lib" path="build/dist/lib/antlr-@antlr.version@.jar"/>
+  <classpathentry exported="true" kind="lib" path="build/dist/lib/antlr-runtime-@antlr-runtime.version@.jar"/>
   <classpathentry exported="true" kind="lib" path="testlibs/junit-@junit.version@.jar"/>
   <classpathentry kind="lib" path="build/dist/lib/jdo2-api-@jdo-api.version@.jar"/>
   <classpathentry kind="lib" path="build/dist/lib/datanucleus-core-@datanucleus-core.version@.jar"/>

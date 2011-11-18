@@ -49,7 +49,7 @@
     </exec>
   </target>
 
-  <target name="core-compile" depends="init">
+  <target name="compile" depends="init,ivy-retrieve">
     <echo message="Project: ${ant.project.name}"/>
     <javac
      encoding="${build.encoding}"
@@ -58,15 +58,11 @@
      destdir="${build.classes}"
      debug="${javac.debug}"
      deprecation="${javac.deprecation}"
-     >
+     includeantruntime="false">
       <classpath refid="classpath"/>
     </javac>
   </target>
  
-  <target name="compile" depends="core-compile">
-    <echo message="Project: ${ant.project.name}"/>
-  </target>
-
   <target name="clean">
     <echo message="Project: ${ant.project.name}"/>
     <delete dir="${build.classes}/../"/>

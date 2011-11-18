@@ -61,11 +61,11 @@
     </filesystem>
 
     <chain name="default" dual="true" returnFirst="true" checkmodified="true" changingPattern=".*SNAPSHOT">
-      <resolver ref="hadoop-source"/>
-      <resolver ref="hadoop-source2"/>
       <resolver ref="apache-snapshot"/>
       <resolver ref="maven2"/>
       <resolver ref="datanucleus-repo"/>
+      <resolver ref="hadoop-source"/>
+      <resolver ref="hadoop-source2"/>
     </chain>
 
     <chain name="internal" dual="true">

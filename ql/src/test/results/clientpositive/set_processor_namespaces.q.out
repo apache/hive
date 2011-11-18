@@ -47,13 +47,12 @@ STAGE PLANS:
 PREHOOK: query: SELECT * FROM src where key=5
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/tmp/sdong/hive_2011-02-10_17-07-36_889_4709058180675925800/-mr-10000
+PREHOOK: Output: file:/tmp/carl/hive_2011-11-04_15-25-57_635_7657597640646099982/-mr-10000
 POSTHOOK: query: SELECT * FROM src where key=5
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: file:/tmp/sdong/hive_2011-02-10_17-07-36_889_4709058180675925800/-mr-10000
+POSTHOOK: Output: file:/tmp/carl/hive_2011-11-04_15-25-57_635_7657597640646099982/-mr-10000
 5	val_5
 5	val_5
 5	val_5
 c=1
-../lib/derby.jar

@@ -27,12 +27,8 @@ to call at top-level: ant deploy-contrib compile-core-test
   <property name="src.dir"  location="${basedir}/src"/>
   <import file="../build-common.xml"/>
 
-  <target name="init" depends="create-dirs">
-    <echo message="Project: ${ant.project.name}"/>
-  </target>
-
-  <target name="compile" depends="init">
-    <echo message="Project: ${ant.project.name}"/>
+  <target name="compile" depends="init,ivy-retrieve">
+    <echo message="${ant.project.name}"/>
     <javac
      encoding="${build.encoding}"
      srcdir="${src.dir}"
@@ -46,7 +42,7 @@ to call at top-level: ant deploy-contrib compile-core-test
   </target>
 
   <target name="jar" depends="compile">
-    <echo message="Project: ${ant.project.name}"/>
+    <echo message="${ant.project.name}"/>
     <copy file="${src.dir}/org/apache/hadoop/hive/ant/antlib.xml"
           todir="${build.dir}/classes/org/apache/hadoop/hive/ant"/>
     <jar destfile="${build.dir}/hive-anttasks-${version}.jar">
