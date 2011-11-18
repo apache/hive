@@ -77,15 +77,7 @@
   <condition property="offline">
     <istrue value="${is-offline}"/>
   </condition>
-  <condition property="ivy.cache.name" value="offline" else="online">
-    <isset property="offline"/>
-  </condition>
-  <condition property="ivy.skip">
-    <and>
-      <isset property="offline"/>
-      <available file="${build.dir.hadoop}/hadoop-${hadoop.version.ant-internal}.installed"/>
-    </and>
-  </condition>
+  <import file="build-offline.xml"/>
 
   <!--this is the naming policy for artifacts we want pulled down-->
   <property name="ivy.artifact.retrieve.pattern" value="[conf]/[artifact]-[revision](-[classifier]).[ext]"/>

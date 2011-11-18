@@ -49,7 +49,8 @@
 
     <ibiblio name="maven2" root="${repo.maven.org}" pattern="${maven2.pattern.ext}" m2compatible="true"/>
     <ibiblio name="apache-snapshot" root="${snapshot.apache.org}" m2compatible="true"
-        checkmodified="true" changingPattern=".*SNAPSHOT"/>
+             checkmodified="${ivy.checkmodified}" 
+             changingPattern="${ivy.changingPattern}"/>
 
     <url name="datanucleus-repo" m2compatible="true">
       <artifact pattern="${datanucleus.repo}/[organisation]/[module]/[revision]/[module]-[revision].[ext]"/>
@@ -60,7 +61,9 @@
        <ivy pattern="${repo.dir}/org/apache/hadoop/[module]/[revision]/[module]-[revision].pom"/>
     </filesystem>
 
-    <chain name="default" dual="true" returnFirst="true" checkmodified="true" changingPattern=".*SNAPSHOT">
+    <chain name="default" dual="true" returnFirst="true" 
+           checkmodified="${ivy.checkmodified}" 
+           changingPattern="${ivy.changingPattern}">
       <resolver ref="apache-snapshot"/>
       <resolver ref="maven2"/>
       <resolver ref="datanucleus-repo"/>
@@ -86,7 +89,8 @@
      <module organisation="org.apache.hadoop" name="hadoop-*" resolver="${resolvers}"/>
   </modules>
 
-  <caches default="${ivy.cache.name}">
+  <caches default="${ivy.cache.name}" 
+          resolutionCacheDir="${build.ivy.dir}/resolution-cache">
     <cache name="online"/>
     <!--
          Set the defaultTTL to 1000 days. Ivy 2.1.0 allows you to

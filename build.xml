@@ -61,16 +61,7 @@
     <isset property="offline"/>
   </condition>
 
-  <condition property="ivy.cache.name" value="offline" else="online">
-    <isset property="offline"/>
-  </condition>
-
-  <condition property="ivy.skip">
-    <and>
-      <isset property="offline"/>
-      <available file="${build.dir.hadoop}/hadoop-${hadoop.version.ant-internal}.installed"/>
-    </and>
-  </condition>
+  <import file="build-offline.xml"/>
 
   <condition property="staging">
     <equals arg1="${mvn.publish.repo}" arg2="staging"/>
