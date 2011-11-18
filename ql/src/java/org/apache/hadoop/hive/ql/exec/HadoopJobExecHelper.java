@@ -24,12 +24,12 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collections;
+import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.Enumeration;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -45,12 +45,12 @@ import org.apache.hadoop.hive.ql.session.SessionState.LogHelper;
 import org.apache.hadoop.hive.ql.stats.ClientStatsPublisher;
 import org.apache.hadoop.hive.shims.ShimLoader;
 import org.apache.hadoop.mapred.Counters;
+import org.apache.hadoop.mapred.Counters.Counter;
 import org.apache.hadoop.mapred.JobClient;
 import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.mapred.RunningJob;
 import org.apache.hadoop.mapred.TaskCompletionEvent;
 import org.apache.hadoop.mapred.TaskReport;
-import org.apache.hadoop.mapred.Counters.Counter;
 import org.apache.log4j.Appender;
 import org.apache.log4j.FileAppender;
 import org.apache.log4j.LogManager;
@@ -310,7 +310,7 @@ public class HadoopJobExecHelper {
       errMsg.setLength(0);
 
       updateCounters(ctrs, rj);
-      
+
       // Prepare data for Client Stat Publishers (if any present) and execute them
       if (clientStatPublishers.size() > 0 && ctrs != null) {
         Map<String, Double> exctractedCounters = extractAllCounterValues(ctrs);
@@ -510,6 +510,7 @@ public class HadoopJobExecHelper {
       }
 
       boolean more = true;
+      boolean firstError = true;
       for (TaskCompletionEvent t : taskCompletions) {
         // getTaskJobIDs returns Strings for compatibility with Hadoop versions
         // without TaskID or TaskAttemptID
@@ -525,7 +526,10 @@ public class HadoopJobExecHelper {
         // and the logs
         String taskId = taskJobIds[0];
         String jobId = taskJobIds[1];
-        console.printError("Examining task ID: " + taskId + " from job " + jobId);
+        if (firstError) {
+          console.printError("Examining task ID: " + taskId + " (and more) from job " + jobId);
+          firstError = false;
+        }
 
         TaskInfo ti = taskIdToInfo.get(taskId);
         if (ti == null) {
