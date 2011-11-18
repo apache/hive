@@ -19,10 +19,6 @@
 package org.apache.hadoop.hive.ql.exec;
 
 import java.io.IOException;
-import java.io.Serializable;
-import java.text.SimpleDateFormat;
-import java.util.Calendar;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -30,31 +26,26 @@ import java.util.Map;
 import java.util.Set;
 
 import org.apache.hadoop.hive.conf.HiveConf;
-import org.apache.hadoop.hive.ql.exec.Operator.ProgressCounter;
 import org.apache.hadoop.hive.ql.exec.errors.ErrorAndSolution;
 import org.apache.hadoop.hive.ql.exec.errors.TaskLogProcessor;
-import org.apache.hadoop.hive.ql.history.HiveHistory.Keys;
-import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.ql.session.SessionState.LogHelper;
 import org.apache.hadoop.hive.shims.ShimLoader;
-import org.apache.hadoop.mapred.Counters;
-import org.apache.hadoop.mapred.JobClient;
 import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.mapred.RunningJob;
 import org.apache.hadoop.mapred.TaskCompletionEvent;
-import org.apache.hadoop.mapred.TaskReport;
 
 /**
  * JobDebugger takes a RunningJob that has failed and grabs the top 4 failing
  * tasks and outputs this information to the Hive CLI.
  */
 public class JobDebugger implements Runnable {
-  private JobConf conf;
-  private RunningJob rj;
-  private LogHelper console;
-  private Map<String, Integer> failures = new HashMap<String, Integer>(); // Mapping from task ID to the number of failures
-  private Set<String> successes = new HashSet<String>(); // Successful task ID's
-  private Map<String, TaskInfo> taskIdToInfo = new HashMap<String, TaskInfo>();
+  private final JobConf conf;
+  private final RunningJob rj;
+  private final LogHelper console;
+  // Mapping from task ID to the number of failures
+  private final Map<String, Integer> failures = new HashMap<String, Integer>();
+  private final Set<String> successes = new HashSet<String>(); // Successful task ID's
+  private final Map<String, TaskInfo> taskIdToInfo = new HashMap<String, TaskInfo>();
 
   // Used for showJobFailDebugInfo
   private static class TaskInfo {
@@ -116,6 +107,7 @@ public class JobDebugger implements Runnable {
         }
 
         boolean more = true;
+        boolean firstError = true;
         for (TaskCompletionEvent t : taskCompletions) {
           // getTaskJobIDs returns Strings for compatibility with Hadoop versions
           // without TaskID or TaskAttemptID
@@ -131,7 +123,10 @@ public class JobDebugger implements Runnable {
           // and the logs
           String taskId = taskJobIds[0];
           String jobId = taskJobIds[1];
-          console.printError("Examining task ID: " + taskId + " from job " + jobId);
+          if (firstError) {
+            console.printError("Examining task ID: " + taskId + " (and more) from job " + jobId);
+            firstError = false;
+          }
 
           TaskInfo ti = taskIdToInfo.get(taskId);
           if (ti == null) {
@@ -181,7 +176,7 @@ public class JobDebugger implements Runnable {
       console.printError("Timed out trying to finish grabbing task log URLs, "
           + "some task info may be missing");
     }
-    
+
     // Remove failures for tasks that succeeded
     for (String task : successes) {
       failures.remove(task);
