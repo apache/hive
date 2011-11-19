@@ -1,3 +1,279 @@
+
+Release Notes - Hive - Version 0.8.0
+
+** Sub-task
+    * [HIVE-559] - Support JDBC ResultSetMetadata
+    * [HIVE-1983] - Bundle Log4j configuration files in Hive JARs
+    * [HIVE-2049] - Push down partition pruning to JDO filtering for a subset of partition predicates
+    * [HIVE-2050] - batch processing partition pruning process
+    * [HIVE-2114] - Backward incompatibility introduced from HIVE-2082 in MetaStoreUtils.getPartSchemaFromTableSchema()
+    * [HIVE-2118] - Partition Pruning bug in the case of hive.mapred.mode=nonstrict
+    * [HIVE-2140] - Return correct Major / Minor version numbers for Hive Driver
+    * [HIVE-2158] - add the HivePreparedStatement implementation based on current HIVE supported data-type
+    * [HIVE-2436] - Update project naming and description in Hive website
+    * [HIVE-2437] - update project website navigation links
+    * [HIVE-2438] - add trademark attributions to Hive homepage
+    * [HIVE-2476] - Update project description and wiki link in ivy.xml files
+
+** Bug
+    * [HIVE-106] - Join operation fails for some queries
+    * [HIVE-1218] - CREATE TABLE t LIKE some_view should create a new empty base table, but instead creates a copy of view
+    * [HIVE-1538] - FilterOperator is applied twice with ppd on.
+    * [HIVE-1595] - job name for alter table <T> archive partition <P> is not correct
+    * [HIVE-1631] - JDBC driver returns wrong precision, scale, or column size for some data types
+    * [HIVE-1675] - SAXParseException on plan.xml during local mode.
+    * [HIVE-1884] - Potential risk of resource leaks in Hive
+    * [HIVE-1937] - DDLSemanticAnalyzer won't take newly set Hive parameters
+    * [HIVE-1943] - Metastore operations (like drop_partition) could be improved in terms of maintaining consistency of metadata and data
+    * [HIVE-1959] - Potential memory leak when same connection used for long time. TaskInfo and QueryInfo objects are getting accumulated on executing more queries on the same connection.
+    * [HIVE-1963] - Don't set ivy.home in build-common.xml
+    * [HIVE-1965] - Auto convert mapjoin should not throw exception if the top operator is union operator.
+    * [HIVE-1973] - Getting error when join on tables where name of table has uppercase letters
+    * [HIVE-1974] - In error scenario some opened streams may not closed in ScriptOperator.java, Utilities.java 
+    * [HIVE-1976] - Exception should be thrown when invalid jar,file,archive is given to add command
+    * [HIVE-1980] - Merging using mapreduce rather than map-only job failed in case of dynamic partition inserts
+    * [HIVE-1987] - HWI admin_list_jobs JSP page throws exception
+    * [HIVE-1988] - Make the delegation token issued by the MetaStore owned by the right user
+    * [HIVE-2001] - Add inputs and outputs to authorization DDL commands
+    * [HIVE-2003] - LOAD compilation does not set the outputs during semantic analysis resulting in no authorization checks being done for it.
+    * [HIVE-2008] - keyword_1.q is failing
+    * [HIVE-2022] - Making JDO thread-safe by default
+    * [HIVE-2024] - In Driver.execute(), mapred.job.tracker is not restored if one of the task fails.
+    * [HIVE-2025] - Fix TestEmbeddedHiveMetaStore and TestRemoteHiveMetaStore broken by HIVE-2022
+    * [HIVE-2031] - Correct the exception message for the better traceability for the scenario load into the partitioned table having 2  partitions by specifying only one partition in the load statement. 
+    * [HIVE-2032] - create database does not honour warehouse.dir in dbproperties
+    * [HIVE-2033] - A database's warehouse.dir is not used for tables created in it.
+    * [HIVE-2034] - Backport HIVE-1991 after overridden by HIVE-1950
+    * [HIVE-2037] - Merge result file size should honor hive.merge.size.per.task
+    * [HIVE-2040] - the retry logic in Hive's concurrency  is not working correctly.
+    * [HIVE-2042] - In error scenario some opened streams may not closed
+    * [HIVE-2045] - TCTLSeparatedProtocol.SimpleTransportTokenizer.nextToken() throws Null Pointer Exception in some cases
+    * [HIVE-2054] - Exception on windows when using the jdbc driver. "IOException: The system cannot find the path specified"
+    * [HIVE-2060] - CLI local mode hit NPE when exiting by ^D
+    * [HIVE-2061] - Create a hive_contrib.jar symlink to hive-contrib-{version}.jar for backward compatibility
+    * [HIVE-2062] - HivePreparedStatement.executeImmediate always throw exception
+    * [HIVE-2069] - NullPointerException on getSchemas
+    * [HIVE-2080] - Few code improvements in the ql and serde packages.
+    * [HIVE-2083] - Bug: RowContainer was set to 1 in JoinUtils.
+    * [HIVE-2086] - Add test coverage for external table data loss issue
+    * [HIVE-2095] - auto convert map join bug
+    * [HIVE-2096] - throw a error if the input is larger than a threshold for index input format
+    * [HIVE-2098] - Make couple of convenience methods in EximUtil public
+    * [HIVE-2100] - virtual column references inside subqueries cause execution exceptions
+    * [HIVE-2107] - Log4J initialization info should not be printed out if -S is specified
+    * [HIVE-2113] - In shell mode, local mode continues if a local-mode task throws exception in pre-hooks
+    * [HIVE-2117] - insert overwrite ignoring partition location
+    * [HIVE-2120] - auto convert map join may miss good candidates
+    * [HIVE-2122] - Remove usage of deprecated methods from org.apache.hadoop.io package
+    * [HIVE-2125] - alter table concatenate fails and deletes data
+    * [HIVE-2131] - Bitmap Operation UDF doesn't clear return list
+    * [HIVE-2138] - Exception when no splits returned from index
+    * [HIVE-2142] - Jobs do not get killed even when they created too many files.
+    * [HIVE-2146] - Block Sampling should adjust number of reducers accordingly to make it useful
+    * [HIVE-2151] - Too many open files in running negative cli tests
+    * [HIVE-2153] - Stats JDBC LIKE queries should escape '_' and '%'
+    * [HIVE-2157] - NPE in MapJoinObjectKey
+    * [HIVE-2159] - TableSample(percent ) uses one intermediate size to be int, which overflows for large sampled size, making the sampling never triggered.
+    * [HIVE-2160] - Few code improvements in the metastore,hwi and ql packages.
+    * [HIVE-2176] - Schema creation scripts are incomplete since they leave out tables that are specific to DataNucleus
+    * [HIVE-2183] - In Task class and its subclasses logger is initialized in constructor
+    * [HIVE-2186] - Dynamic Partitioning Failing because of characters not supported globStatus
+    * [HIVE-2192] - Stats table schema incompatible after HIVE-2185
+    * [HIVE-2198] - While using Hive in server mode, HiveConnection.close() is not cleaning up server side resources
+    * [HIVE-2199] - incorrect success flag passed to jobClose
+    * [HIVE-2204] - unable to get column names for a specific table that has '_' as part of its table name
+    * [HIVE-2211] - Fix a bug caused by HIVE-243
+    * [HIVE-2214] - CommandNeedRetryException.java is missing ASF header
+    * [HIVE-2222] - runnable queue in Driver and DriverContext is not thread safe
+    * [HIVE-2237] - hive fails to build in eclipse due to syntax error in BitmapIndexHandler.java
+    * [HIVE-2243] - Can't publish maven release artifacts to apache repository
+    * [HIVE-2248] - Comparison Operators convert number types to common type instead of double if possible
+    * [HIVE-2257] - Enable TestHadoop20SAuthBridge
+    * [HIVE-2259] - Skip comments in hive script
+    * [HIVE-2260] - ExecDriver::addInputPaths should pass the table properties to the record writer
+    * [HIVE-2275] - Revert HIVE-2219 and apply correct patch to improve the efficiency of dropping multiple partitions
+    * [HIVE-2276] - Fix Inconsistency between RB and JIRA patches for HIVE-2194
+    * [HIVE-2281] - Regression introduced from HIVE-2155
+    * [HIVE-2286] - ClassCastException when building index with security.authorization turned on
+    * [HIVE-2287] - Error during UNARCHIVE of a partition
+    * [HIVE-2292] - Comment clause should immediately follow identifier field in CREATE DATABASE statement
+    * [HIVE-2294] - Allow ShimLoader to work with Hadoop 0.20-append
+    * [HIVE-2296] - bad compressed file names from insert into
+    * [HIVE-2298] - Fix UDAFPercentile to tolerate null percentiles
+    * [HIVE-2307] - Schema creation scripts for PostgreSQL use bit(1) instead of boolean
+    * [HIVE-2309] - Incorrect regular expression for extracting task id from filename
+    * [HIVE-2315] - DatabaseMetadata.getColumns() does not return partition column names for a table
+    * [HIVE-2319] - Calling alter_table after changing partition comment throws an exception
+    * [HIVE-2326] - Turn off bitmap indexing when map-side aggregation is turned off
+    * [HIVE-2328] - hive.zookeeper.session.timeout is set to null in hive-default.xml
+    * [HIVE-2331] - Turn off compression when generating index intermediate results
+    * [HIVE-2334] - DESCRIBE TABLE causes NPE when hive.cli.print.header=true
+    * [HIVE-2335] - Indexes are still automatically queried when out of sync with their source tables
+    * [HIVE-2338] - Alter table always throws an unhelpful error on failure
+    * [HIVE-2342] - mirror.facebook.net is 404ing
+    * [HIVE-2343] - stats not updated for non "load table desc" operations
+    * [HIVE-2344] - filter is removed due to regression of HIVE-1538
+    * [HIVE-2356] - Fix udtf_explode.q and udf_explode.q test failures
+    * [HIVE-2358] - JDBC DatabaseMetaData and ResultSetMetaData need to match for particular types
+    * [HIVE-2362] - HiveConf properties not appearing in the output of 'set' or 'set -v'
+    * [HIVE-2366] - Metastore upgrade scripts for HIVE-2246 do not migrate indexes nor rename the old COLUMNS table
+    * [HIVE-2368] - Slow dropping of partitions caused by full listing of storage descriptors
+    * [HIVE-2384] - import of multiple partitions from a partitioned table with external location overwrites files
+    * [HIVE-2386] - Add Mockito to LICENSE file
+    * [HIVE-2391] - published POMs in Maven repo are incorrect
+    * [HIVE-2393] - Fix whitespace test diff accidentally introduced in HIVE-1360
+    * [HIVE-2407] - File extensions not preserved in Hive.checkPaths when renaming new destination file
+    * [HIVE-2411] - Metastore server tries to connect to NN without authenticating itself
+    * [HIVE-2431] - upgrading thrift version didn't upgrade libthrift.jar symlink correctly
+    * [HIVE-2474] - Hive PDK needs an Ivy configuration file
+    * [HIVE-2488] - PDK tests failing on Hudson because HADOOP_HOME is not defined
+    * [HIVE-2492] - PDK PluginTest failing on Hudson
+    * [HIVE-2547] - Tiny bug in init-hive-dfs.sh 
+    * [HIVE-2548] - How to submit documentation fixes
+    * [HIVE-2556] - upgrade script 008-HIVE-2246.mysql.sql contains syntax errors
+    * [HIVE-2568] - HIVE-2246 upgrade script needs to drop foreign key in COLUMNS_OLD
+    * [HIVE-2572] - HIVE-2246 upgrade script changed the COLUMNS_V2.COMMENT length
+    * [HIVE-2580] - Hive build fails with error "java.io.IOException: Not in GZIP format"
+    * [HIVE-2583] - bug in ivy 2.2.0 breaks build
+    * [HIVE-2598] - Update README.txt file to use description from wiki
+
+** Improvement
+    * [HIVE-1078] - CREATE VIEW followup:  CREATE OR REPLACE
+    * [HIVE-1360] - Allow UDFs to access constant parameter values at compile time
+    * [HIVE-1644] - use filter pushdown for automatically accessing indexes
+    * [HIVE-1731] - Improve miscellaneous error messages
+    * [HIVE-1740] - support NOT IN and NOT LIKE syntax
+    * [HIVE-1784] - Ctrl+c should kill currently running query, but not exit the CLI
+    * [HIVE-1815] - The class HiveResultSet should implement batch fetching.
+    * [HIVE-1833] - Task-cleanup task should be disabled
+    * [HIVE-1887] - HIVE-78 Followup: group partitions by tables when do authorizations and there is no partition level privilege
+    * [HIVE-1916] - Change Default Alias For Aggregated Columns (_c1)
+    * [HIVE-1966] - mapjoin operator should not load hashtable for each new inputfile if the hashtable to be loaded is already there.
+    * [HIVE-1991] - Hive Shell to output number of mappers and number of reducers
+    * [HIVE-1994] - Support new annotation @UDFType(stateful = true)
+    * [HIVE-2000] - adding comments to Hive Stats JDBC queries 
+    * [HIVE-2002] - Expand exceptions caught for metastore operations
+    * [HIVE-2018] - avoid loading Hive aux jars in CLI remote mode
+    * [HIVE-2020] - Create a separate namespace for Hive variables
+    * [HIVE-2028] - Performance instruments for client side execution
+    * [HIVE-2030] - isEmptyPath() to use ContentSummary cache
+    * [HIVE-2035] - Use block-level merge for RCFile if merging intermediate results are needed
+    * [HIVE-2036] - Update bitmap indexes for automatic usage
+    * [HIVE-2038] - Metastore listener
+    * [HIVE-2039] - remove hadoop version check from hive cli shell script
+    * [HIVE-2051] - getInputSummary() to call FileSystem.getContentSummary() in parallel
+    * [HIVE-2052] - PostHook and PreHook API to add flag to indicate it is pre or post hook plus cache for content summary
+    * [HIVE-2056] - Generate single MR job for multi groupby query if hive.multigroupby.singlemr is enabled.
+    * [HIVE-2068] - Speed up query "select xx,xx from xxx LIMIT xxx" if no filtering or aggregation
+    * [HIVE-2070] - SHOW GRANT grantTime field should be a human-readable timestamp
+    * [HIVE-2082] - Reduce memory consumption in preparing MapReduce job
+    * [HIVE-2106] - Increase the number of operator counter 
+    * [HIVE-2109] - No lock for some non-mapred tasks config variable hive.lock.mapred.only.operation added
+    * [HIVE-2126] - Hive's symlink text input format should be able to work with ComineHiveInputFormat
+    * [HIVE-2127] - Improve stats gathering reliability by retries on failures with hive.stats.retries.max and hive.stats.retries.wait
+    * [HIVE-2128] - Automatic Indexing with multiple tables
+    * [HIVE-2133] - DROP TABLE IF EXISTS should not fail if a view of that name exists
+    * [HIVE-2134] - Remove System.exit 
+    * [HIVE-2139] - Enables HiveServer to accept -hiveconf option
+    * [HIVE-2144] - reduce workload generated by JDBCStatsPublisher
+    * [HIVE-2147] - Add api to send / receive message to metastore
+    * [HIVE-2148] - Add interface classification in Hive.
+    * [HIVE-2154] - add exception handling to hive's record reader 
+    * [HIVE-2155] - Improve error messages emitted during semantic analysis
+    * [HIVE-2156] - Improve error messages emitted during task execution
+    * [HIVE-2171] - Allow custom serdes to set field comments
+    * [HIVE-2191] - Allow optional [inner] on equi-join.
+    * [HIVE-2194] - Add actions for alter table and alter partition events for metastore event listeners
+    * [HIVE-2201] - reduce name node calls in hive by creating temporary directories
+    * [HIVE-2208] - create a new API in Warehouse where the root directory is specified
+    * [HIVE-2209] - Provide a way by which ObjectInspectorUtils.compare can be extended by the caller for comparing maps which are part of the object
+    * [HIVE-2210] - ALTER VIEW RENAME
+    * [HIVE-2213] - Optimize partial specification metastore functions
+    * [HIVE-2218] - speedup addInputPaths
+    * [HIVE-2219] - Make "alter table drop partition" more efficient
+    * [HIVE-2221] - Provide metastore upgarde script for HIVE-2215
+    * [HIVE-2224] - Ability to add partitions atomically
+    * [HIVE-2226] - Add API to retrieve table names by an arbitrary filter, e.g., by owner, retention, parameters, etc.
+    * [HIVE-2245] - Make CombineHiveInputFormat the default hive.input.format
+    * [HIVE-2246] - Dedupe tables' column schemas from partitions in the metastore db
+    * [HIVE-2252] - Display a sample of partitions created when Fatal Error occurred due to too many partitioned created
+    * [HIVE-2256] - Better error message in CLI on invalid column name
+    * [HIVE-2282] - Local mode needs to work well with block sampling
+    * [HIVE-2284] - bucketized map join should allow join key as a superset of bucketized columns
+    * [HIVE-2299] - Optimize Hive query startup time for multiple partitions
+    * [HIVE-2346] - Add hooks to run when execution fails.
+    * [HIVE-2347] - Make Hadoop Job ID available after task finishes executing
+    * [HIVE-2350] - Improve RCFile Read Speed
+    * [HIVE-2354] - Support automatic rebuilding of indexes when they go stale
+    * [HIVE-2364] - Make performance logging configurable.
+    * [HIVE-2370] - Improve RCFileCat performance significantly
+    * [HIVE-2385] - Local Mode can be more aggressive if LIMIT optimization is on
+    * [HIVE-2396] - RCFileReader Buffer Reuse
+    * [HIVE-2446] - Introduction of client statistics publishers possibility
+
+** New Feature
+    * [HIVE-192] - Add TIMESTAMP column type for thrift dynamic_type
+    * [HIVE-306] - Support "INSERT [INTO] destination"
+    * [HIVE-788] - Triggers when a new partition is created for a table
+    * [HIVE-818] - Create a Hive CLI that connects to hive ThriftServer
+    * [HIVE-872] - Allow type widening on COALESCE/UNION ALL
+    * [HIVE-956] - Add support of columnar binary serde
+    * [HIVE-1343] - add an interface in RCFile to support concatenation of two files without (de)compression
+    * [HIVE-1537] - Allow users to specify LOCATION in CREATE DATABASE statement
+    * [HIVE-1734] - Implement map_keys() and map_values() UDFs
+    * [HIVE-1735] - Extend Explode UDTF to handle Maps
+    * [HIVE-1803] - Implement bitmap indexing in Hive
+    * [HIVE-1918] - Add export/import facilities to the hive system
+    * [HIVE-1941] - support explicit view partitioning
+    * [HIVE-1950] - Block merge for RCFile
+    * [HIVE-2090] - Add "DROP DATABASE ... CASCADE/RESTRICT"
+    * [HIVE-2121] - Input Sampling By Splits
+    * [HIVE-2185] - extend table statistics to store the size of uncompressed data (+extend interfaces for collecting other types of statistics)
+    * [HIVE-2188] - Add get_table_objects_by_name() to Hive MetaStore
+    * [HIVE-2215] - Add api for marking / querying set of partitions for events
+    * [HIVE-2225] - Purge expired events
+    * [HIVE-2236] - Cli: Print Hadoop's CPU milliseconds
+    * [HIVE-2244] - Add a Plugin Developer Kit to Hive
+    * [HIVE-2272] - add TIMESTAMP data type
+
+** Task
+    * [HIVE-1095] - Hive in Maven
+    * [HIVE-2076] - Provide Metastore upgrade scripts and default schemas for PostgreSQL
+    * [HIVE-2161] - Remaining patch for HIVE-2148
+    * [HIVE-2239] - Use the version commons-codec from Hadoop
+    * [HIVE-2376] - Upgrade Hive's Thrift dependency to version 0.7.0
+    * [HIVE-2441] - Metastore upgrade scripts for schema change introduced in HIVE-2215
+    * [HIVE-2442] - Metastore upgrade script and schema DDL for Hive 0.8.0
+    * [HIVE-2491] - Add pdk, hbase-handler etc as source dir in eclipse
+    * [HIVE-2521] - Update wiki links in README file
+    * [HIVE-2552] - Omit incomplete Postgres upgrade scripts from release tarball
+
+** Wish
+    * [HIVE-243] - ^C breaks out of running query, but not whole CLI
+
+
+
+Release Notes - Hive - Version 0.7.1
+
+** Bug
+    * [HIVE-2054] - Exception on windows when using the jdbc driver.
+                    "IOException: The system cannot find the path specified"
+    * [HIVE-2176] - Schema creation scripts are incomplete since they leave
+                    out tables that are specific to DataNucleus
+
+** Improvement
+    * [HIVE-1731] - Improve miscellaneous error messages
+    * [HIVE-2140] - Return correct Major / Minor version numbers for
+                    JDBC Hive Driver
+    * [HIVE-2158] - Add the HivePreparedStatement implementation based
+                    on current HIVE supported data-type
+
+** Task
+    * [HIVE-1095] - Hive in Maven
+    * [HIVE-2076] - Provide Metastore upgrade scripts and default schemas
+                    for PostgreSQL
+
+
 Release Notes - Hive - Version 0.7.0
 
 ** New Feature
