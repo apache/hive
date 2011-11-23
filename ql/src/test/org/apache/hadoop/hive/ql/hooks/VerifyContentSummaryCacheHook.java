@@ -32,9 +32,10 @@ public class VerifyContentSummaryCacheHook implements ExecuteWithHookContext {
       Assert.assertEquals(0, inputToCS.size());
     } else {
       Assert.assertEquals(1, inputToCS.size());
+      String tmp_dir = System.getProperty("test.tmp.dir");
       for (String key : inputToCS.keySet()) {
-        if (!key.equals("/tmp/VerifyContentSummaryCacheHook") &&
-            !key.equals("pfile:/tmp/VerifyContentSummaryCacheHook")) {
+        if (!key.equals(tmp_dir + "/VerifyContentSummaryCacheHook") &&
+            !key.equals("pfile:" + tmp_dir + "/VerifyContentSummaryCacheHook")) {
           Assert.fail("VerifyContentSummaryCacheHook fails the input path check");
         }
       }

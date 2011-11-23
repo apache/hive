@@ -23,7 +23,7 @@ FROM (SELECT `_bucketname` AS bucketname, `_offset` AS offset, `_bitmaps` AS bit
     a.bucketname = b.bucketname AND a.offset = b.offset WHERE NOT
 EWAH_BITMAP_EMPTY(EWAH_BITMAP_AND(a.bitmaps, b.bitmaps)) GROUP BY a.bucketname;
 
-INSERT OVERWRITE DIRECTORY "/tmp/index_result" 
+INSERT OVERWRITE DIRECTORY "${system:test.tmp.dir}/index_result" 
 SELECT a.bucketname AS `_bucketname`, COLLECT_SET(a.offset) as `_offsets`
 FROM (SELECT `_bucketname` AS bucketname, `_offset` AS offset, `_bitmaps` AS bitmaps FROM default__src_src1_index__
         WHERE key = 0) a
@@ -34,7 +34,7 @@ FROM (SELECT `_bucketname` AS bucketname, `_offset` AS offset, `_bitmaps` AS bit
     a.bucketname = b.bucketname AND a.offset = b.offset WHERE NOT
 EWAH_BITMAP_EMPTY(EWAH_BITMAP_AND(a.bitmaps, b.bitmaps)) GROUP BY a.bucketname;
 
-SET hive.index.blockfilter.file=/tmp/index_result;
+SET hive.index.blockfilter.file=${system:test.tmp.dir}/index_result;
 SET hive.input.format=org.apache.hadoop.hive.ql.index.HiveIndexedInputFormat;
 
 SELECT key, value FROM src WHERE key=0 AND value = "val_0" ORDER BY key;
