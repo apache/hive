@@ -12,7 +12,7 @@ SELECT * FROM default__src_src2_index__ ORDER BY value;
 
 SET hive.input.format=org.apache.hadoop.hive.ql.io.HiveInputFormat;
 
-INSERT OVERWRITE DIRECTORY "/tmp/index_result" 
+INSERT OVERWRITE DIRECTORY "${system:test.tmp.dir}/index_result" 
 SELECT t.bucketname as `_bucketname`, COLLECT_SET(t.offset) AS `_offsets` FROM
   (SELECT `_bucketname` AS bucketname, `_offset` AS offset
       FROM default__src_src1_index__ 
@@ -22,7 +22,7 @@ SELECT t.bucketname as `_bucketname`, COLLECT_SET(t.offset) AS `_offsets` FROM
       WHERE value = "val2" AND NOT EWAH_BITMAP_EMPTY(`_bitmaps`)) t
 GROUP BY t.bucketname;
 
-SET hive.index.blockfilter.file=/tmp/index_result;
+SET hive.index.blockfilter.file=${system:test.tmp.dir}/index_result;
 SET hive.input.format=org.apache.hadoop.hive.ql.index.HiveIndexedInputFormat;
 
 SELECT key, value FROM src WHERE key=0 OR value = "val_2" ORDER BY key;

@@ -196,38 +196,38 @@ select * from src_multi2 order by key, value;
 set hive.merge.mapfiles=false;
 set hive.merge.mapredfiles=false;
 
-!rm -fr /tmp/hive_test/multiins_local;
+!rm -fr ${system:test.tmp.dir}/hive_test/multiins_local;
 
 explain
 from src 
-insert overwrite local directory '/tmp/hive_test/multiins_local/0' select * where key = 0
-insert overwrite local directory '/tmp/hive_test/multiins_local/2' select * where key = 2
-insert overwrite local directory '/tmp/hive_test/multiins_local/4' select * where key = 4;
+insert overwrite local directory '${system:test.tmp.dir}/hive_test/multiins_local/0' select * where key = 0
+insert overwrite local directory '${system:test.tmp.dir}/hive_test/multiins_local/2' select * where key = 2
+insert overwrite local directory '${system:test.tmp.dir}/hive_test/multiins_local/4' select * where key = 4;
 
 from src 
-insert overwrite local directory '/tmp/hive_test/multiins_local/0' select * where key = 0
-insert overwrite local directory '/tmp/hive_test/multiins_local/2' select * where key = 2
-insert overwrite local directory '/tmp/hive_test/multiins_local/4' select * where key = 4;
+insert overwrite local directory '${system:test.tmp.dir}/hive_test/multiins_local/0' select * where key = 0
+insert overwrite local directory '${system:test.tmp.dir}/hive_test/multiins_local/2' select * where key = 2
+insert overwrite local directory '${system:test.tmp.dir}/hive_test/multiins_local/4' select * where key = 4;
 
-!ls /tmp/hive_test/multiins_local;
-!rm -fr /tmp/hive_test/multiins_local;
+!ls ${system:test.tmp.dir}/hive_test/multiins_local;
+!rm -fr ${system:test.tmp.dir}/hive_test/multiins_local;
 
 set hive.merge.mapfiles=true;
 set hive.merge.mapredfiles=false;
 
 explain
 from src 
-insert overwrite local directory '/tmp/hive_test/multiins_local/0' select * where key = 0
-insert overwrite local directory '/tmp/hive_test/multiins_local/2' select * where key = 2
-insert overwrite local directory '/tmp/hive_test/multiins_local/4' select * where key = 4;
+insert overwrite local directory '${system:test.tmp.dir}/hive_test/multiins_local/0' select * where key = 0
+insert overwrite local directory '${system:test.tmp.dir}/hive_test/multiins_local/2' select * where key = 2
+insert overwrite local directory '${system:test.tmp.dir}/hive_test/multiins_local/4' select * where key = 4;
 
 from src 
-insert overwrite local directory '/tmp/hive_test/multiins_local/0' select * where key = 0
-insert overwrite local directory '/tmp/hive_test/multiins_local/2' select * where key = 2
-insert overwrite local directory '/tmp/hive_test/multiins_local/4' select * where key = 4;
+insert overwrite local directory '${system:test.tmp.dir}/hive_test/multiins_local/0' select * where key = 0
+insert overwrite local directory '${system:test.tmp.dir}/hive_test/multiins_local/2' select * where key = 2
+insert overwrite local directory '${system:test.tmp.dir}/hive_test/multiins_local/4' select * where key = 4;
 
-!ls /tmp/hive_test/multiins_local;
-!rm -fr /tmp/hive_test/multiins_local;
+!ls ${system:test.tmp.dir}/hive_test/multiins_local;
+!rm -fr ${system:test.tmp.dir}/hive_test/multiins_local;
 
 set hive.merge.mapfiles=false;
 set hive.merge.mapredfiles=true;
@@ -235,31 +235,31 @@ set hive.merge.mapredfiles=true;
 
 explain
 from src 
-insert overwrite local directory '/tmp/hive_test/multiins_local/0' select * where key = 0
-insert overwrite local directory '/tmp/hive_test/multiins_local/2' select * where key = 2
-insert overwrite local directory '/tmp/hive_test/multiins_local/4' select * where key = 4;
+insert overwrite local directory '${system:test.tmp.dir}/hive_test/multiins_local/0' select * where key = 0
+insert overwrite local directory '${system:test.tmp.dir}/hive_test/multiins_local/2' select * where key = 2
+insert overwrite local directory '${system:test.tmp.dir}/hive_test/multiins_local/4' select * where key = 4;
 
 from src 
-insert overwrite local directory '/tmp/hive_test/multiins_local/0' select * where key = 0
-insert overwrite local directory '/tmp/hive_test/multiins_local/2' select * where key = 2
-insert overwrite local directory '/tmp/hive_test/multiins_local/4' select * where key = 4;
+insert overwrite local directory '${system:test.tmp.dir}/hive_test/multiins_local/0' select * where key = 0
+insert overwrite local directory '${system:test.tmp.dir}/hive_test/multiins_local/2' select * where key = 2
+insert overwrite local directory '${system:test.tmp.dir}/hive_test/multiins_local/4' select * where key = 4;
 
-!ls /tmp/hive_test/multiins_local;
-!rm -fr /tmp/hive_test/multiins_local;
+!ls ${system:test.tmp.dir}/hive_test/multiins_local;
+!rm -fr ${system:test.tmp.dir}/hive_test/multiins_local;
 
 set hive.merge.mapfiles=true;
 set hive.merge.mapredfiles=true;
 
 explain
 from src 
-insert overwrite local directory '/tmp/hive_test/multiins_local/0' select * where key = 0
-insert overwrite local directory '/tmp/hive_test/multiins_local/2' select * where key = 2
-insert overwrite local directory '/tmp/hive_test/multiins_local/4' select * where key = 4;
+insert overwrite local directory '${system:test.tmp.dir}/hive_test/multiins_local/0' select * where key = 0
+insert overwrite local directory '${system:test.tmp.dir}/hive_test/multiins_local/2' select * where key = 2
+insert overwrite local directory '${system:test.tmp.dir}/hive_test/multiins_local/4' select * where key = 4;
 
 from src 
-insert overwrite local directory '/tmp/hive_test/multiins_local/0' select * where key = 0
-insert overwrite local directory '/tmp/hive_test/multiins_local/2' select * where key = 2
-insert overwrite local directory '/tmp/hive_test/multiins_local/4' select * where key = 4;
+insert overwrite local directory '${system:test.tmp.dir}/hive_test/multiins_local/0' select * where key = 0
+insert overwrite local directory '${system:test.tmp.dir}/hive_test/multiins_local/2' select * where key = 2
+insert overwrite local directory '${system:test.tmp.dir}/hive_test/multiins_local/4' select * where key = 4;
 
-!ls /tmp/hive_test/multiins_local;
-!rm -fr /tmp/hive_test/multiins_local;
+!ls ${system:test.tmp.dir}/hive_test/multiins_local;
+!rm -fr ${system:test.tmp.dir}/hive_test/multiins_local;
