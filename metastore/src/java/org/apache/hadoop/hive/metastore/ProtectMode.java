@@ -24,11 +24,13 @@ public class ProtectMode {
 
   public static String FLAG_OFFLINE = "OFFLINE";
   public static String FLAG_NO_DROP = "NO_DROP";
+  public static String FLAG_NO_DROP_CASCADE = "NO_DROP_CASCADE";
   public static String FLAG_READ_ONLY = "READ_ONLY";
 
   public boolean offline = false;
   public boolean readOnly = false;
   public boolean noDrop = false;
+  public boolean noDropCascade = false;
 
   static public ProtectMode getProtectModeFromString(String sourceString) {
     return new ProtectMode(sourceString);
@@ -41,6 +43,8 @@ public class ProtectMode {
         offline = true;
       } else if (token.equalsIgnoreCase(FLAG_NO_DROP)) {
         noDrop = true;
+      } else if (token.equalsIgnoreCase(FLAG_NO_DROP_CASCADE)) {
+        noDropCascade = true;
       } else if (token.equalsIgnoreCase(FLAG_READ_ONLY)) {
         readOnly = true;
       }
@@ -65,6 +69,16 @@ public class ProtectMode {
       else
       {
         retString = FLAG_NO_DROP;
+      }
+    }
+
+    if (noDropCascade) {
+      if (retString != null) {
+        retString = retString + "," + FLAG_NO_DROP_CASCADE;
+      }
+      else
+      {
+        retString = FLAG_NO_DROP_CASCADE;
       }
     }
 

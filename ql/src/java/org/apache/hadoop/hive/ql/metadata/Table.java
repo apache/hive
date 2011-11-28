@@ -262,7 +262,7 @@ public class Table implements Serializable {
       throw new RuntimeException(e);
     } catch (HiveException e) {
       throw new RuntimeException(e);
-    }    
+    }
   }
 
   public HiveStorageHandler getStorageHandler() {
@@ -713,7 +713,7 @@ public class Table implements Serializable {
   public boolean isView() {
     return TableType.VIRTUAL_VIEW.equals(getTableType());
   }
-  
+
   /**
    * @return whether this table is actually an index table
    */
@@ -800,7 +800,7 @@ public class Table implements Serializable {
    */
   public boolean canDrop() {
     ProtectMode mode = getProtectMode();
-    return (!mode.noDrop && !mode.offline && !mode.readOnly);
+    return (!mode.noDrop && !mode.offline && !mode.readOnly && !mode.noDropCascade);
   }
 
   /**

@@ -525,7 +525,7 @@ public class Partition implements Serializable {
    * @throws HiveException
    *           Thrown if we could not create the partition.
    */
-  public void setValues(Map<String, String> partSpec) 
+  public void setValues(Map<String, String> partSpec)
       throws HiveException {
     List<String> pvals = new ArrayList<String>();
     for (FieldSchema field : table.getPartCols()) {
@@ -584,7 +584,8 @@ public class Partition implements Serializable {
    */
   public boolean canDrop() {
     ProtectMode mode = getProtectMode();
-    return (!mode.noDrop && !mode.offline && !mode.readOnly);
+    ProtectMode parentMode = table.getProtectMode();
+    return (!mode.noDrop && !mode.offline && !mode.readOnly && !parentMode.noDropCascade);
   }
 
   /**

@@ -286,7 +286,7 @@ statement
 explainStatement
 @init { msgs.push("explain statement"); }
 @after { msgs.pop(); }
-	: KW_EXPLAIN (explainOptions=KW_EXTENDED|explainOptions=KW_FORMATTED)? execStatement 
+	: KW_EXPLAIN (explainOptions=KW_EXTENDED|explainOptions=KW_FORMATTED)? execStatement
       -> ^(TOK_EXPLAIN execStatement $explainOptions?)
 	;
 
@@ -416,7 +416,7 @@ dbPropertiesList
       keyValueProperty (COMMA keyValueProperty)* -> ^(TOK_DBPROPLIST keyValueProperty+)
     ;
 
- 
+
 switchDatabaseStatement
 @init { msgs.push("switch database statement"); }
 @after { msgs.pop(); }
@@ -482,7 +482,7 @@ createIndexStatement
       tableLocation?
       tablePropertiesPrefixed?
       indexComment?
-    ->^(TOK_CREATEINDEX $indexName $typeName $tab $indexedCols 
+    ->^(TOK_CREATEINDEX $indexName $typeName $tab $indexedCols
         autoRebuild?
         indexPropertiesPrefixed?
         indexTblName?
@@ -784,7 +784,7 @@ alterProtectModeMode
 @init { msgs.push("protect mode specification enable"); }
 @after { msgs.pop(); }
     : KW_OFFLINE  -> ^(TOK_OFFLINE)
-    | KW_NO_DROP  -> ^(TOK_NO_DROP)
+    | KW_NO_DROP KW_CASCADE? -> ^(TOK_NO_DROP KW_CASCADE?)
     | KW_READONLY  -> ^(TOK_READONLY)
     ;
 
@@ -848,7 +848,7 @@ showStatement
     -> ^(TOK_SHOW_TABLESTATUS showStmtIdentifier $db_name? partitionSpec?)
     | KW_SHOW KW_LOCKS (parttype=partTypeExpr)? (isExtended=KW_EXTENDED)? -> ^(TOK_SHOWLOCKS $parttype? $isExtended?)
     | KW_SHOW (showOptions=KW_FORMATTED)? (KW_INDEX|KW_INDEXES) KW_ON showStmtIdentifier ((KW_FROM|KW_IN) db_name=Identifier)?
-    -> ^(TOK_SHOWINDEXES showStmtIdentifier $showOptions? $db_name?)  
+    -> ^(TOK_SHOWINDEXES showStmtIdentifier $showOptions? $db_name?)
     ;
 
 lockStatement
@@ -886,7 +886,7 @@ dropRoleStatement
 grantPrivileges
 @init {msgs.push("grant privileges");}
 @after {msgs.pop();}
-    : KW_GRANT privList=privilegeList 
+    : KW_GRANT privList=privilegeList
       privilegeObject?
       KW_TO principalSpecification
       (KW_WITH withOption)?
@@ -945,7 +945,7 @@ privilegeObject
 privilegeList
 @init {msgs.push("grant privilege list");}
 @after {msgs.pop();}
-    : privlegeDef (COMMA privlegeDef)* 
+    : privlegeDef (COMMA privlegeDef)*
     -> ^(TOK_PRIVILEGE_LIST privlegeDef+)
     ;
 
@@ -955,7 +955,7 @@ privlegeDef
     : privilegeType (LPAREN cols=columnNameList RPAREN)?
     -> ^(TOK_PRIVILEGE privilegeType $cols?)
     ;
-    
+
 privilegeType
 @init {msgs.push("privilege type");}
 @after {msgs.pop();}
@@ -1428,7 +1428,7 @@ insertClause
 @after { msgs.pop(); }
    :
      KW_INSERT KW_OVERWRITE destination -> ^(TOK_DESTINATION destination)
-   | KW_INSERT KW_INTO KW_TABLE tableOrPartition 
+   | KW_INSERT KW_INTO KW_TABLE tableOrPartition
        -> ^(TOK_INSERT_INTO ^(tableOrPartition))
    ;
 
@@ -1672,14 +1672,14 @@ splitSample
     :
     KW_TABLESAMPLE LPAREN  (numerator=Number) KW_PERCENT RPAREN -> ^(TOK_TABLESPLITSAMPLE $numerator)
     ;
-    
+
 tableSample
 @init { msgs.push("table sample specification"); }
 @after { msgs.pop(); }
     :
     tableBucketSample |
     splitSample
-    ;    
+    ;
 
 tableSource
 @init { msgs.push("table source"); }
@@ -2117,16 +2117,16 @@ descFuncNames
 
 // Keywords
 
-kwUser 
-: 
+kwUser
+:
 {input.LT(1).getText().equalsIgnoreCase("user")}? Identifier;
 
-kwRole 
-: 
+kwRole
+:
 {input.LT(1).getText().equalsIgnoreCase("role")}? Identifier;
 
 kwInner
-: 
+:
 {input.LT(1).getText().equalsIgnoreCase("inner")}? Identifier;
 
 KW_TRUE : 'TRUE';
