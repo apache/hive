@@ -1222,10 +1222,10 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
         originalDir.getName() + INTERMEDIATE_ARCHIVED_DIR_SUFFIX);
     Path intermediateOriginalDir = new Path(originalDir.getParent(),
         originalDir.getName() + INTERMEDIATE_ORIGINAL_DIR_SUFFIX);
-    
+
     console.printInfo("intermediate.archived is " + intermediateArchivedDir.toString());
     console.printInfo("intermediate.original is " + intermediateOriginalDir.toString());
-    
+
     String archiveName = "data.har";
     FileSystem fs = null;
     try {
@@ -1412,7 +1412,7 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
     List<Partition> partitions = db.getPartitions(tbl, partSpec);
 
     int partSpecLevel = partSpec.size();
-    
+
     Path originalDir = null;
 
     // when we have partial partitions specification we must assume partitions
@@ -1435,12 +1435,12 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
     } else {
       Partition p = partitions.get(0);
       if(ArchiveUtils.isArchived(p)) {
-        originalDir = new Path(getOriginalLocation(p));        
+        originalDir = new Path(getOriginalLocation(p));
       } else {
         originalDir = new Path(p.getLocation());
       }
     }
-    
+
     URI originalUri = ArchiveUtils.addSlash(originalDir.toUri());
     Path intermediateArchivedDir = new Path(originalDir.getParent(),
         originalDir.getName() + INTERMEDIATE_ARCHIVED_DIR_SUFFIX);
@@ -1451,11 +1451,11 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
       recovery = true;
       console.printInfo("Starting recovery after failed UNARCHIVE");
     }
-    
+
     for(Partition p: partitions) {
       checkArchiveProperty(partSpecLevel, recovery, p);
     }
-    
+
     String archiveName = "data.har";
     FileSystem fs = null;
     try {
@@ -1512,7 +1512,7 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
     if (!pathExists(intermediateExtractedDir) &&
         !pathExists(intermediateArchivedDir)) {
       try {
-        
+
         // Copy the files out of the archive into the temporary directory
         String copySource = sourceDir.toString();
         String copyDest = tmpPath.toString();
@@ -1524,7 +1524,7 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
         console.printInfo("Copying " + copySource + " to " + copyDest);
         FileSystem srcFs = FileSystem.get(sourceDir.toUri(), conf);
         srcFs.initialize(sourceDir.toUri(), conf);
-        
+
         FsShell fss = new FsShell(conf);
         int ret = 0;
         try {
@@ -2990,12 +2990,18 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
       } else if (protectModeEnable
           && protectMode == AlterTableDesc.ProtectModeType.NO_DROP) {
         mode.noDrop = true;
+      } else if (protectModeEnable
+          && protectMode == AlterTableDesc.ProtectModeType.NO_DROP_CASCADE) {
+        mode.noDropCascade = true;
       } else if (!protectModeEnable
           && protectMode == AlterTableDesc.ProtectModeType.OFFLINE) {
         mode.offline = false;
       } else if (!protectModeEnable
           && protectMode == AlterTableDesc.ProtectModeType.NO_DROP) {
         mode.noDrop = false;
+      } else if (!protectModeEnable
+          && protectMode == AlterTableDesc.ProtectModeType.NO_DROP_CASCADE) {
+        mode.noDropCascade = false;
       }
 
       if (part != null) {

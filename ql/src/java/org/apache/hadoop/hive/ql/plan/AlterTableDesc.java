@@ -47,7 +47,7 @@ public class AlterTableDesc extends DDLDesc implements Serializable {
   };
 
   public static enum ProtectModeType {
-    NO_DROP, OFFLINE, READ_ONLY
+    NO_DROP, OFFLINE, READ_ONLY, NO_DROP_CASCADE
   };
 
 

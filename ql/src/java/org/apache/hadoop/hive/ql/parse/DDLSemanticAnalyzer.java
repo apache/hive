@@ -830,7 +830,7 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
     alterIdxDesc.setBaseTableName(baseTableName);
     alterIdxDesc.setDbName(db.getCurrentDatabase());
     alterIdxDesc.setSpec(partSpec);
-        
+
     Task<?> tsTask = TaskFactory.get(new DDLWork(alterIdxDesc), conf);
     for (Task<?> t : indexBuilder) {
       t.addDependentTask(tsTask);
@@ -1105,7 +1105,12 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
       alterTblDesc.setProtectModeType(AlterTableDesc.ProtectModeType.OFFLINE);
       break;
     case HiveParser.TOK_NO_DROP:
-      alterTblDesc.setProtectModeType(AlterTableDesc.ProtectModeType.NO_DROP);
+      if (grandChild.getChildCount() > 0) {
+        alterTblDesc.setProtectModeType(AlterTableDesc.ProtectModeType.NO_DROP_CASCADE);
+      }
+      else {
+        alterTblDesc.setProtectModeType(AlterTableDesc.ProtectModeType.NO_DROP);
+      }
       break;
     case HiveParser.TOK_READONLY:
       throw new SemanticException(
