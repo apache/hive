@@ -212,6 +212,25 @@ public class ExprNodeGenericFuncDesc extends ExprNodeDesc implements
     }
 
     ObjectInspector oi = genericUDF.initializeAndFoldConstants(childrenOIs);
+
+    String[] requiredJars = genericUDF.getRequiredJars();
+    String[] requiredFiles = genericUDF.getRequiredFiles();
+    SessionState ss = SessionState.get();
+
+    if (requiredJars != null) {
+      SessionState.ResourceType t = SessionState.find_resource_type("JAR");
+      for (String jarPath : requiredJars) {
+        ss.add_resource(t, jarPath);
+      }
+    }
+
+    if (requiredFiles != null) {
+      SessionState.ResourceType t = SessionState.find_resource_type("FILE");
+      for (String filePath : requiredFiles) {
+        ss.add_resource(t, filePath);
+      }
+    }
+
     return new ExprNodeGenericFuncDesc(oi, genericUDF, children);
   }
 

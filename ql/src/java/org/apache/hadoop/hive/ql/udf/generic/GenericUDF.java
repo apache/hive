@@ -75,7 +75,7 @@ public abstract class GenericUDF {
   /**
    * Initialize this GenericUDF. This will be called once and only once per
    * GenericUDF instance.
-   * 
+   *
    * @param arguments
    *          The ObjectInspector for the arguments
    * @throws UDFArgumentException
@@ -96,6 +96,13 @@ public abstract class GenericUDF {
       throws UDFArgumentException {
 
     ObjectInspector oi = initialize(arguments);
+
+    // If the UDF depends on any external resources, we can't fold because the
+    // resources may not be available at compile time.
+    if (getRequiredFiles() != null ||
+        getRequiredJars() != null) {
+      return oi;
+    }
 
     boolean allConstant = true;
     for (int ii = 0; ii < arguments.length; ++ii) {
@@ -124,6 +131,19 @@ public abstract class GenericUDF {
       }
     }
     return oi;
+  }
+
+  /**
+   * The following two functions can be overridden to automatically include
+   * additional resources required by this UDF.  The return types should be
+   * arrays of paths.
+   */
+  public String[] getRequiredJars() {
+    return null;
+  }
+
+  public String[] getRequiredFiles() {
+    return null;
   }
 
   /**

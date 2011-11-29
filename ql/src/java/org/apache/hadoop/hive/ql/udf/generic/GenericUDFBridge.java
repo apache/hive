@@ -37,10 +37,10 @@ import org.apache.hadoop.util.ReflectionUtils;
 /**
  * GenericUDFBridge encapsulates UDF to provide the same interface as
  * GenericUDF.
- * 
+ *
  * Note that GenericUDFBridge implements Serializable because the name of the
  * UDF class needs to be serialized with the plan.
- * 
+ *
  */
 public class GenericUDFBridge extends GenericUDF implements Serializable {
   /**
@@ -66,7 +66,7 @@ public class GenericUDFBridge extends GenericUDF implements Serializable {
 
   /**
    * Greate a new GenericUDFBridge object.
-   * 
+   *
    * @param udfName
    *          The name of the corresponding udf.
    * @param isOperator
@@ -208,6 +208,16 @@ public class GenericUDFBridge extends GenericUDF implements Serializable {
       sb.append(")");
       return sb.toString();
     }
+  }
+
+  @Override
+  public String[] getRequiredJars() {
+    return udf.getRequiredJars();
+  }
+
+  @Override
+  public String[] getRequiredFiles() {
+    return udf.getRequiredFiles();
   }
 
 }
