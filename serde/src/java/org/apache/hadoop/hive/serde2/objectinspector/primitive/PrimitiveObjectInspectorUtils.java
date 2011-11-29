@@ -33,6 +33,8 @@ import org.apache.hadoop.hive.serde2.io.TimestampWritable;
 import org.apache.hadoop.hive.serde2.lazy.ByteArrayRef;
 import org.apache.hadoop.hive.serde2.lazy.LazyInteger;
 import org.apache.hadoop.hive.serde2.lazy.LazyLong;
+import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
+import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector.Category;
 import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector.PrimitiveCategory;
 import org.apache.hadoop.io.BooleanWritable;
@@ -794,6 +796,16 @@ public final class PrimitiveObjectInspectorUtils {
           + oi.getTypeName());
     }
     return result;
+  }
+
+  public static Class<?> getJavaPrimitiveClassFromObjectInspector(ObjectInspector oi) {
+    if (oi.getCategory() != Category.PRIMITIVE) {
+      return null;
+    }
+    PrimitiveObjectInspector poi = (PrimitiveObjectInspector)oi;
+    PrimitiveTypeEntry t =
+        getTypeEntryFromPrimitiveCategory(poi.getPrimitiveCategory());
+    return t == null ? null : t.primitiveJavaClass;
   }
 
   private PrimitiveObjectInspectorUtils() {

@@ -76,6 +76,7 @@ histogram_numeric
 hour
 if
 in
+in_file
 index
 instr
 int
@@ -203,6 +204,7 @@ double
 e
 explode
 from_unixtime
+in_file
 json_tuple
 lcase
 like

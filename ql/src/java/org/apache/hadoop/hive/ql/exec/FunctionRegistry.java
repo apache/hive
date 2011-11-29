@@ -161,6 +161,7 @@ import org.apache.hadoop.hive.ql.udf.generic.GenericUDFHash;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFIf;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFIn;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFIndex;
+import org.apache.hadoop.hive.ql.udf.generic.GenericUDFInFile;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFInstr;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFLocate;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFMap;
@@ -426,6 +427,7 @@ public final class FunctionRegistry {
     registerGenericUDF("hash", GenericUDFHash.class);
     registerGenericUDF("coalesce", GenericUDFCoalesce.class);
     registerGenericUDF("index", GenericUDFIndex.class);
+    registerGenericUDF("in_file", GenericUDFInFile.class);
     registerGenericUDF("instr", GenericUDFInstr.class);
     registerGenericUDF("locate", GenericUDFLocate.class);
     registerGenericUDF("elt", GenericUDFElt.class);
@@ -710,7 +712,7 @@ public final class FunctionRegistry {
 
     GenericUDAFEvaluator udafEvaluator = null;
     ObjectInspector args[] = new ObjectInspector[argumentOIs.size()];
-    // Can't use toArray here because Java is dumb when it comes to 
+    // Can't use toArray here because Java is dumb when it comes to
     // generics + arrays.
     for (int ii = 0; ii < argumentOIs.size(); ++ii) {
       args[ii] = argumentOIs.get(ii);
