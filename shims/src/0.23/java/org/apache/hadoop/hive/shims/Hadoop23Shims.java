@@ -34,6 +34,8 @@ import org.apache.hadoop.fs.PathFilter;
 import org.apache.hadoop.hdfs.MiniDFSCluster;
 import org.apache.hadoop.hive.io.HiveIOExceptionHandlerChain;
 import org.apache.hadoop.hive.io.HiveIOExceptionHandlerUtil;
+import org.apache.hadoop.hive.shims.HadoopShims.JobTrackerState;
+import org.apache.hadoop.hive.thrift.DelegationTokenSelector23;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapred.ClusterStatus;
 import org.apache.hadoop.mapred.FileInputFormat;
@@ -54,16 +56,20 @@ import org.apache.hadoop.mapred.lib.CombineFileSplit;
 import org.apache.hadoop.mapred.lib.NullOutputFormat;
 import org.apache.hadoop.mapreduce.Job;
 import org.apache.hadoop.mapreduce.TaskAttemptID;
-import org.apache.hadoop.security.UnixUserGroupInformation;
+import org.apache.hadoop.mapreduce.task.JobContextImpl;
+import org.apache.hadoop.mapreduce.task.TaskAttemptContextImpl;
 import org.apache.hadoop.security.UserGroupInformation;
+import org.apache.hadoop.security.token.Token;
+import org.apache.hadoop.security.token.TokenIdentifier;
+import org.apache.hadoop.security.token.TokenSelector;
 import org.apache.hadoop.tools.HadoopArchives;
 import org.apache.hadoop.util.Progressable;
 import org.apache.hadoop.util.ToolRunner;
 
 /**
- * Implemention of shims against Hadoop 0.20.0.
+ * Implemention of shims against Hadoop 0.23.0.
  */
-public class Hadoop20Shims implements HadoopShims {
+public class Hadoop23Shims implements HadoopShims {
   public boolean usesJobShell() {
     return false;
   }
@@ -215,7 +221,7 @@ public class Hadoop20Shims implements HadoopShims {
     protected RecordReader<K, V> curReader;
     protected boolean isShrinked;
     protected long shrinkedLength;
-
+    
     public boolean next(K key, V value) throws IOException {
 
       while ((curReader == null)
@@ -291,9 +297,9 @@ public class Hadoop20Shims implements HadoopShims {
       }
       initNextRecordReader(null);
     }
-
+    
     /**
-     * do next and handle exception inside it.
+     * do next and handle exception inside it. 
      * @param key
      * @param value
      * @return
@@ -382,11 +388,11 @@ public class Hadoop20Shims implements HadoopShims {
         super.setMaxSplitSize(minSize);
       }
 
-      CombineFileSplit[] splits = (CombineFileSplit[]) super.getSplits(job, numSplits);
+      InputSplit[] splits = super.getSplits(job, numSplits);
 
       InputSplitShim[] isplits = new InputSplitShim[splits.length];
       for (int pos = 0; pos < splits.length; pos++) {
-        isplits[pos] = new InputSplitShim(splits[pos]);
+        isplits[pos] = new InputSplitShim((CombineFileSplit) splits[pos]);
       }
 
       return isplits;
@@ -473,7 +479,7 @@ public class Hadoop20Shims implements HadoopShims {
 
   public void setNullOutputFormat(JobConf conf) {
     conf.setOutputFormat(NullOutputFormat.class);
-    conf.setOutputCommitter(Hadoop20Shims.NullOutputCommitter.class);
+    conf.setOutputCommitter(Hadoop23Shims.NullOutputCommitter.class);
 
     // option to bypass job setup and cleanup was introduced in hadoop-21 (MAPREDUCE-463)
     // but can be backported. So we disable setup/cleanup in all versions >= 0.19
@@ -485,47 +491,47 @@ public class Hadoop20Shims implements HadoopShims {
   }
 
   @Override
-  public UserGroupInformation getUGIForConf(Configuration conf) throws LoginException {
-    UserGroupInformation ugi =
-      UnixUserGroupInformation.readFromConf(conf, UnixUserGroupInformation.UGI_PROPERTY_NAME);
-    if(ugi == null) {
-      ugi = UserGroupInformation.login(conf);
-    }
-    return ugi;
+  public UserGroupInformation getUGIForConf(Configuration conf) throws IOException {
+    return UserGroupInformation.getCurrentUser();
   }
 
   @Override
   public boolean isSecureShimImpl() {
-    return false;
+    return true;
   }
 
   @Override
   public String getShortUserName(UserGroupInformation ugi) {
-    return ugi.getUserName();
+    return ugi.getShortUserName();
   }
 
   @Override
   public String getTokenStrForm(String tokenSignature) throws IOException {
-    throw new UnsupportedOperationException("Tokens are not supported in current hadoop version");
-  }
+    UserGroupInformation ugi = UserGroupInformation.getCurrentUser();
+    TokenSelector<? extends TokenIdentifier> tokenSelector = new DelegationTokenSelector23();
 
+    Token<? extends TokenIdentifier> token = tokenSelector.selectToken(
+        tokenSignature == null ? new Text() : new Text(tokenSignature), ugi.getTokens());
+    return token != null ? token.encodeToUrlString() : null;
+  }
+  
   @Override
   public JobTrackerState getJobTrackerState(ClusterStatus clusterStatus) throws Exception {
     JobTrackerState state;
-    switch (clusterStatus.getJobTrackerState()) {
+    switch (clusterStatus.getJobTrackerStatus()) {
     case INITIALIZING:
       return JobTrackerState.INITIALIZING;
     case RUNNING:
       return JobTrackerState.RUNNING;
     default:
-      String errorMsg = "Unrecognized JobTracker state: " + clusterStatus.getJobTrackerState();
+      String errorMsg = "Unrecognized JobTracker state: " + clusterStatus.getJobTrackerStatus();
       throw new Exception(errorMsg);
     }
   }
-
+  
   @Override
   public org.apache.hadoop.mapreduce.TaskAttemptContext newTaskAttemptContext(Configuration conf, final Progressable progressable) {
-    return new org.apache.hadoop.mapreduce.TaskAttemptContext(conf, new TaskAttemptID()) {
+    return new TaskAttemptContextImpl(conf, new TaskAttemptID()) {
       @Override
       public void progress() {
         progressable.progress();
@@ -535,6 +541,6 @@ public class Hadoop20Shims implements HadoopShims {
 
   @Override
   public org.apache.hadoop.mapreduce.JobContext newJobContext(Job job) {
-    return new org.apache.hadoop.mapreduce.JobContext(job.getConfiguration(), job.getJobID());
+    return new JobContextImpl(job.getConfiguration(), job.getJobID());
   }
 }

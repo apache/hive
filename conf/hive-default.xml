@@ -240,13 +240,13 @@
 
 <property>
   <name>hive.metastore.event.expiry.duration</name>
-  <value>0L</value>
+  <value>0</value>
   <description>Duration after which events expire from events table (in seconds)</description>
 </property>
 
 <property>
   <name>hive.metastore.event.clean.freq</name>
-  <value>0L</value>
+  <value>0</value>
   <description>Frequency at which timer task runs to purge expired events in metastore(in seconds).</description>
 </property>
 

@@ -33,6 +33,7 @@ import org.apache.hadoop.hbase.mapreduce.TableOutputFormat;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.exec.FileSinkOperator.RecordWriter;
 import org.apache.hadoop.hive.ql.io.HiveOutputFormat;
+import org.apache.hadoop.hive.shims.ShimLoader;
 import org.apache.hadoop.io.Writable;
 import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.mapred.OutputFormat;
@@ -104,8 +105,7 @@ public class HiveHBaseTableOutputFormat extends
     String hbaseTableName = jc.get(HBaseSerDe.HBASE_TABLE_NAME);
     jc.set(TableOutputFormat.OUTPUT_TABLE, hbaseTableName);
     Job job = new Job(jc);
-    JobContext jobContext =
-      new JobContext(job.getConfiguration(), job.getJobID());
+    JobContext jobContext = ShimLoader.getHadoopShims().newJobContext(job);
 
     try {
       checkOutputSpecs(jobContext);
