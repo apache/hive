@@ -5435,8 +5435,12 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
           root = root.getJoinSrc();
         }
       } else {
-        parent = parent.getJoinSrc();
-        root = parent.getJoinSrc();
+        if (merged) {
+          root = root.getJoinSrc();
+        } else {
+          parent = parent.getJoinSrc();
+          root = parent.getJoinSrc();
+        }
       }
     }
   }
