@@ -288,7 +288,7 @@ public class HadoopJobExecHelper {
         // of finished jobs (because it has purged them from memory). From
         // hive's perspective - it's equivalent to the job having failed.
         // So raise a meaningful exception
-        throw new IOException("Could not find status of job: + rj.getJobID()");
+        throw new IOException("Could not find status of job:" + rj.getJobID());
       } else {
         th.setRunningJob(newRj);
         rj = newRj;

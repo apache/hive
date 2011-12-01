@@ -37,6 +37,14 @@
     <fileset dir="${test.src.data.dir}" includes="files/*.jar"/>
     <fileset dir="${hive.root}" includes="testlibs/*.jar"/>
     <pathelement location="${build.dir.hive}/ql/test/classes"/>
+    <fileset dir="${hadoop.root}">
+      <include name="lib/**/*.jar" />
+      <exclude name="lib/**/excluded/" />
+      <!-- below is for 0.23 onwards -->
+      <include name="share/hadoop/common/lib/*.jar" />
+      <exclude name="share/hadoop/common/lib/hadoop-mapreduce-*.jar" />
+      <exclude name="share/hadoop/common/lib/hadoop-yarn-*.jar" />
+    </fileset>
     <path refid="classpath"/>
   </path>
 

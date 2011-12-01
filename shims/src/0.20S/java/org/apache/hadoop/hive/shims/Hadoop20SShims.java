@@ -38,6 +38,7 @@ import org.apache.hadoop.hive.shims.Hadoop20Shims.InputSplitShim;
 import org.apache.hadoop.hive.thrift.DelegationTokenSelector;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.io.WritableComparable;
+import org.apache.hadoop.mapred.ClusterStatus;
 import org.apache.hadoop.mapred.FileInputFormat;
 import org.apache.hadoop.mapred.InputFormat;
 import org.apache.hadoop.mapred.InputSplit;
@@ -54,11 +55,14 @@ import org.apache.hadoop.mapred.TaskID;
 import org.apache.hadoop.mapred.lib.CombineFileInputFormat;
 import org.apache.hadoop.mapred.lib.CombineFileSplit;
 import org.apache.hadoop.mapred.lib.NullOutputFormat;
+import org.apache.hadoop.mapreduce.Job;
+import org.apache.hadoop.mapreduce.TaskAttemptID;
 import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.hadoop.security.token.Token;
 import org.apache.hadoop.security.token.TokenIdentifier;
 import org.apache.hadoop.security.token.TokenSelector;
 import org.apache.hadoop.tools.HadoopArchives;
+import org.apache.hadoop.util.Progressable;
 import org.apache.hadoop.util.ToolRunner;
 
 /**
@@ -510,5 +514,34 @@ public class Hadoop20SShims implements HadoopShims {
     Token<? extends TokenIdentifier> token = tokenSelector.selectToken(
         tokenSignature == null ? new Text() : new Text(tokenSignature), ugi.getTokens());
     return token != null ? token.encodeToUrlString() : null;
+  }
+  
+  @Override
+  public JobTrackerState getJobTrackerState(ClusterStatus clusterStatus) throws Exception {
+    JobTrackerState state;
+    switch (clusterStatus.getJobTrackerState()) {
+    case INITIALIZING:
+      return JobTrackerState.INITIALIZING;
+    case RUNNING:
+      return JobTrackerState.RUNNING;
+    default:
+      String errorMsg = "Unrecognized JobTracker state: " + clusterStatus.getJobTrackerState();
+      throw new Exception(errorMsg);
+    }
+  }
+  
+  @Override
+  public org.apache.hadoop.mapreduce.TaskAttemptContext newTaskAttemptContext(Configuration conf, final Progressable progressable) {
+    return new org.apache.hadoop.mapreduce.TaskAttemptContext(conf, new TaskAttemptID()) {
+      @Override
+      public void progress() {
+        progressable.progress();
+      }
+    };
+  }
+
+  @Override
+  public org.apache.hadoop.mapreduce.JobContext newJobContext(Job job) {
+    return new org.apache.hadoop.mapreduce.JobContext(job.getConfiguration(), job.getJobID());
   }
 }

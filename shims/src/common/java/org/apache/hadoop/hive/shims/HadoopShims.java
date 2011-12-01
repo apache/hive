@@ -31,6 +31,7 @@ import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.fs.PathFilter;
 import org.apache.hadoop.io.Text;
+import org.apache.hadoop.mapred.ClusterStatus;
 import org.apache.hadoop.mapred.InputFormat;
 import org.apache.hadoop.mapred.InputSplit;
 import org.apache.hadoop.mapred.JobConf;
@@ -38,7 +39,11 @@ import org.apache.hadoop.mapred.RecordReader;
 import org.apache.hadoop.mapred.Reporter;
 import org.apache.hadoop.mapred.RunningJob;
 import org.apache.hadoop.mapred.TaskCompletionEvent;
+import org.apache.hadoop.mapreduce.Job;
+import org.apache.hadoop.mapreduce.JobContext;
+import org.apache.hadoop.mapreduce.TaskAttemptContext;
 import org.apache.hadoop.security.UserGroupInformation;
+import org.apache.hadoop.util.Progressable;
 
 /**
  * In order to be compatible with multiple versions of Hadoop, all parts
@@ -188,6 +193,22 @@ public interface HadoopShims {
    * @throws IOException
    */
   String getTokenStrForm(String tokenSignature) throws IOException;
+
+
+  /**
+   * Convert the ClusterStatus to its Thrift equivalent: JobTrackerState.
+   * See MAPREDUCE-2455 for why this is a part of the shim.
+   * @param clusterStatus
+   * @return the matching JobTrackerState
+   * @throws Exception if no equivalent JobTrackerState exists
+   */
+  enum JobTrackerState { INITIALIZING, RUNNING };
+
+  public JobTrackerState getJobTrackerState(ClusterStatus clusterStatus) throws Exception;
+
+  public TaskAttemptContext newTaskAttemptContext(Configuration conf, final Progressable progressable);
+
+  public JobContext newJobContext(Job job);
 
   /**
    * InputSplitShim.

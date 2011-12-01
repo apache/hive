@@ -40,6 +40,7 @@ public abstract class ShimLoader {
   static {
     HADOOP_SHIM_CLASSES.put("0.20", "org.apache.hadoop.hive.shims.Hadoop20Shims");
     HADOOP_SHIM_CLASSES.put("0.20S", "org.apache.hadoop.hive.shims.Hadoop20SShims");
+    HADOOP_SHIM_CLASSES.put("0.23", "org.apache.hadoop.hive.shims.Hadoop23Shims");
   }
 
   /**
@@ -52,6 +53,7 @@ public abstract class ShimLoader {
   static {
     JETTY_SHIM_CLASSES.put("0.20", "org.apache.hadoop.hive.shims.Jetty20Shims");
     JETTY_SHIM_CLASSES.put("0.20S", "org.apache.hadoop.hive.shims.Jetty20SShims");
+    JETTY_SHIM_CLASSES.put("0.23", "org.apache.hadoop.hive.shims.Jetty23Shims");
   }
 
   /**
@@ -122,7 +124,9 @@ public abstract class ShimLoader {
     try {
       Class.forName("org.apache.hadoop.security.UnixUserGroupInformation");
     } catch (ClassNotFoundException cnf) {
-      majorVersion += "S";
+      if ("0.20".equals(majorVersion)) {
+        majorVersion += "S";
+      }
     }
     return majorVersion;
   }

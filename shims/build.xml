@@ -26,9 +26,13 @@ to call at top-level: ant deploy-contrib compile-core-test
   <import file="../build-common.xml"/>
 
   <path id="classpath">
-    <fileset dir="${hadoop.root}/lib">
-      <include name="**/*.jar" />
-      <exclude name="**/excluded/" />
+    <fileset dir="${hadoop.root}">
+      <include name="lib/**/*.jar" />
+      <exclude name="lib/**/excluded/" />
+      <!-- below is for 0.23 onwards -->
+      <include name="share/hadoop/common/lib/*.jar" />
+      <exclude name="share/hadoop/common/lib/hadoop-mapreduce-*.jar" />
+      <exclude name="share/hadoop/common/lib/hadoop-yarn-*.jar" />
     </fileset>
     <pathelement location="${hadoop.oldstyle-name.jar}"/>
     <pathelement location="${hadoop.oldstyle-name.tools.jar}"/>
@@ -36,6 +40,13 @@ to call at top-level: ant deploy-contrib compile-core-test
     <pathelement location="${hadoop.newstyle-name.jar}"/>
     <pathelement location="${hadoop.newstyle-name.test.jar}"/>
     <pathelement location="${hadoop.newstyle-name.tools.jar}"/>
+    <pathelement location="${hadoop.common.jar}"/>
+    <pathelement location="${hadoop.common.test.jar}"/>
+    <pathelement location="${hadoop.hdfs.jar}"/>
+    <pathelement location="${hadoop.hdfs.test.jar}"/>
+    <pathelement location="${hadoop.mapreduce.jar}"/>
+    <pathelement location="${hadoop.mapreduce.test.jar}"/>
+    <pathelement location="${hadoop.mapreduce.tools.jar}"/>
   	<fileset dir="../lib" includes="*.jar" />
     <path refid="common-classpath"/>
   </path>
@@ -67,7 +78,7 @@ to call at top-level: ant deploy-contrib compile-core-test
     </antcall>
     <antcall target="build_shims" inheritRefs="false" inheritAll="false">
       <param name="hadoop.version.ant-internal" value="${hadoop.security.version}" />
-      <param name="hadoop.version.ant-internal.prefix" value="0.20S" />
+      <param name="hadoop.version.ant-internal.prefix" value="${hadoop.security.version.prefix}" />
     </antcall>
     <getversionpref property="hadoop.version.ant-internal.prefix" input="${hadoop.version}" />
     <javac
@@ -79,7 +90,7 @@ to call at top-level: ant deploy-contrib compile-core-test
      includeantruntime="false">
       <compilerarg line="${javac.args} ${javac.args.warnings}" />
       <classpath refid="classpath"/>
-      <src path="${basedir}/src/${hadoop.version.ant-internal.prefix}/java" />
+      <src path="${basedir}/src/common/java" />
     </javac>
   </target>
   
@@ -121,9 +132,10 @@ to call at top-level: ant deploy-contrib compile-core-test
   
   <target name="compile-test" depends="compile">
     <echo message="Project: ${ant.project.name}"/>
-    <antcall target="compile_secure_test" inheritRefs="false" inheritAll="false">
+    <!-- TODO: move tests to version directory -->
+    <!--antcall target="compile_secure_test" inheritRefs="false" inheritAll="false">
       <param name="hadoop.version.ant-internal" value="${hadoop.security.version}" />
-      <param name="hadoop.version.ant-internal.prefix" value="0.20S" />
-    </antcall>
+      <param name="hadoop.version.ant-internal.prefix" value="${hadoop.security.version.prefix}" />
+    </antcall-->
   </target>
 </project>

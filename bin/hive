@@ -179,7 +179,7 @@ else
     exit 5
 fi
 
-if [ $hadoop_minor_ver -ne 20 -o $hadoop_patch_ver -eq 0 ]; then
+if [ "$hadoop_minor_ver$hadoop_patch_ver" -lt "201" ]; then
     echo "Hive requires Hadoop 0.20.x (x >= 1)."
     echo "'hadoop version' returned:"
     echo `$HADOOP version`

@@ -35,6 +35,7 @@ import org.apache.hadoop.hbase.mapreduce.HFileOutputFormat;
 import org.apache.hadoop.hbase.util.Bytes;
 import org.apache.hadoop.hive.ql.exec.FileSinkOperator.RecordWriter;
 import org.apache.hadoop.hive.ql.io.HiveOutputFormat;
+import org.apache.hadoop.hive.shims.ShimLoader;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.io.Writable;
 import org.apache.hadoop.mapred.JobConf;
@@ -95,12 +96,9 @@ public class HiveHFileOutputFormat extends
 
     // Create the HFile writer
     final org.apache.hadoop.mapreduce.TaskAttemptContext tac =
-      new TaskAttemptContext(job.getConfiguration(), new TaskAttemptID()) {
-        @Override
-        public void progress() {
-          progressable.progress();
-        }
-      };
+      ShimLoader.getHadoopShims().newTaskAttemptContext(
+          job.getConfiguration(), progressable);
+
     final Path outputdir = FileOutputFormat.getOutputPath(tac);
     final org.apache.hadoop.mapreduce.RecordWriter<
       ImmutableBytesWritable, KeyValue> fileWriter = getFileWriter(tac);

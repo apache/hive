@@ -159,6 +159,9 @@
   <path id="common-classpath">
     <pathelement location="${hadoop.oldstyle-name.jar}"/>
     <pathelement location="${hadoop.newstyle-name.jar}"/>
+    <pathelement location="${hadoop.common.jar}"/>
+    <pathelement location="${hadoop.hdfs.jar}"/>
+    <pathelement location="${hadoop.mapreduce.jar}"/>
     <pathelement location="${build.dir.hive}/classes"/>
     <fileset dir="${hive.root}" includes="hive-*.jar"/>
     <fileset dir="${hive.root}/lib" includes="*.jar"/>
