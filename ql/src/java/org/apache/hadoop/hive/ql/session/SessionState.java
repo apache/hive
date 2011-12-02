@@ -23,6 +23,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.PrintStream;
 import java.net.URI;
+import java.net.URL;
 import java.util.Calendar;
 import java.util.GregorianCalendar;
 import java.util.HashMap;
@@ -39,6 +40,7 @@ import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.MapRedStats;
+import org.apache.hadoop.hive.ql.exec.FunctionRegistry;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.history.HiveHistory;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
@@ -174,6 +176,19 @@ public class SessionState {
     this.conf = conf;
     isSilent = conf.getBoolVar(HiveConf.ConfVars.HIVESESSIONSILENT);
     ls = new LineageState();
+
+    // Register the Hive builtins jar and all of its functions
+    try {
+      Class<?> pluginClass = Utilities.getBuiltinUtilsClass();
+      URL jarLocation = pluginClass.getProtectionDomain().getCodeSource()
+        .getLocation();
+      add_builtin_resource(
+        ResourceType.JAR, jarLocation.toString());
+      FunctionRegistry.registerFunctionsFromPluginJar(
+        jarLocation, pluginClass.getClassLoader());
+    } catch (Exception ex) {
+      throw new RuntimeException("Failed to load Hive builtin functions", ex);
+    }
   }
 
   public void setCmd(String cmdString) {
@@ -509,8 +524,8 @@ public class SessionState {
     return null;
   }
 
-  private final HashMap<ResourceType, HashSet<String>> resource_map =
-    new HashMap<ResourceType, HashSet<String>>();
+  private final HashMap<ResourceType, Set<String>> resource_map =
+    new HashMap<ResourceType, Set<String>>();
 
   public String add_resource(ResourceType t, String value) {
     // By default don't convert to unix
@@ -525,21 +540,32 @@ public class SessionState {
       return null;
     }
 
-    if (resource_map.get(t) == null) {
-      resource_map.put(t, new HashSet<String>());
-    }
+    Set<String> resourceMap = getResourceMap(t);
 
     String fnlVal = value;
     if (t.hook != null) {
-      fnlVal = t.hook.preHook(resource_map.get(t), value);
+      fnlVal = t.hook.preHook(resourceMap, value);
       if (fnlVal == null) {
         return fnlVal;
       }
     }
     getConsole().printInfo("Added resource: " + fnlVal);
-    resource_map.get(t).add(fnlVal);
+    resourceMap.add(fnlVal);
 
     return fnlVal;
+  }
+
+  public void add_builtin_resource(ResourceType t, String value) {
+    getResourceMap(t).add(value);
+  }
+
+  private Set<String> getResourceMap(ResourceType t) {
+    Set<String> result = resource_map.get(t);
+    if (result == null) {
+      result = new HashSet<String>();
+      resource_map.put(t, result);
+    }
+    return result;
   }
 
   /**

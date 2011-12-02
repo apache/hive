@@ -69,6 +69,7 @@
   <classpathentry excluding="queries/|results/|templates/" kind="src" path="hbase-handler/src/test"/>
   <classpathentry kind="src" path="pdk/src/java"/>
   <classpathentry kind="src" path="pdk/test-plugin/src"/>
+  <classpathentry kind="src" path="builtins/src/java"/>
   <classpathentry kind="src" path="cli/src/test"/>
   <classpathentry kind="output" path="build/eclipse-classes"/>
 </classpath>

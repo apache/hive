@@ -18,7 +18,9 @@
 
 package org.apache.hadoop.hive.ql.exec;
 
+import java.io.InputStream;
 import java.lang.reflect.Method;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -29,6 +31,9 @@ import java.util.Set;
 import java.util.TreeSet;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
+
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -212,8 +217,13 @@ import org.apache.hadoop.hive.serde2.typeinfo.MapTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
+import org.apache.hadoop.io.IOUtils;
 import org.apache.hadoop.util.ReflectionUtils;
 
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
 
 /**
  * FunctionRegistry.
@@ -1128,6 +1138,82 @@ public final class FunctionRegistry {
   public static boolean isOpPositive(ExprNodeDesc desc) {
     Class<? extends UDF> udfClass = getUDFClassFromExprDesc(desc);
     return UDFOPPositive.class == udfClass;
+  }
+
+  /**
+   * Registers the appropriate kind of temporary function based on a class's
+   * type.
+   *
+   * @param functionName name under which to register function
+   *
+   * @param udfClass class implementing UD[A|T]F
+   *
+   * @return true if udfClass's type was recognized (so registration
+   * succeeded); false otherwise
+   */
+  public static boolean registerTemporaryFunction(
+    String functionName, Class<?> udfClass) {
+
+    if (UDF.class.isAssignableFrom(udfClass)) {
+      FunctionRegistry.registerTemporaryUDF(
+        functionName, (Class<? extends UDF>) udfClass, false);
+    } else if (GenericUDF.class.isAssignableFrom(udfClass)) {
+      FunctionRegistry.registerTemporaryGenericUDF(
+        functionName, (Class<? extends GenericUDF>) udfClass);
+    } else if (GenericUDTF.class.isAssignableFrom(udfClass)) {
+      FunctionRegistry.registerTemporaryGenericUDTF(
+        functionName, (Class<? extends GenericUDTF>) udfClass);
+    } else if (UDAF.class.isAssignableFrom(udfClass)) {
+      FunctionRegistry.registerTemporaryUDAF(
+        functionName, (Class<? extends UDAF>) udfClass);
+    } else if (GenericUDAFResolver.class.isAssignableFrom(udfClass)) {
+      FunctionRegistry.registerTemporaryGenericUDAF(
+        functionName, (GenericUDAFResolver)
+        ReflectionUtils.newInstance(udfClass, null));
+    } else {
+      return false;
+    }
+    return true;
+  }
+
+  /**
+   * Registers Hive functions from a plugin jar, using metadata from
+   * the jar's META-INF/class-info.xml.
+   *
+   * @param jarLocation URL for reading jar file
+   *
+   * @param classLoader classloader to use for loading function classes
+   */
+  public static void registerFunctionsFromPluginJar(
+    URL jarLocation,
+    ClassLoader classLoader) throws Exception {
+
+    URL url = new URL("jar:" + jarLocation + "!/META-INF/class-info.xml");
+    InputStream inputStream = null;
+    try {
+      inputStream = url.openStream();
+      DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
+      DocumentBuilder docBuilder = dbf.newDocumentBuilder();
+      Document doc = docBuilder.parse(inputStream);
+      Element root = doc.getDocumentElement();
+      if (!root.getTagName().equals("ClassList")) {
+        return;
+      }
+      NodeList children = root.getElementsByTagName("Class");
+      for (int i = 0; i < children.getLength(); ++i) {
+        Element child = (Element) children.item(i);
+        String javaName = child.getAttribute("javaname");
+        String sqlName = child.getAttribute("sqlname");
+        Class<?> udfClass = Class.forName(javaName, true, classLoader);
+        boolean registered = registerTemporaryFunction(sqlName, udfClass);
+        if (!registered) {
+          throw new RuntimeException(
+            "Class " + udfClass + " is not a Hive function implementation");
+        }
+      }
+    } finally {
+      IOUtils.closeStream(inputStream);
+    }
   }
 
   private FunctionRegistry() {

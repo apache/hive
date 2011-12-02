@@ -59,10 +59,14 @@
     </javac>
   </target>
 
-  <target name="jar" depends="compile">
+  <target name="jar" depends="extract-functions">
     <jar
       jarfile="${build.dir}/${plugin.jar.basename}"
       basedir="${build.classes}">
+      <metainf dir="${build.metadata}">
+        <include name="class-info.xml"/>
+        <include name="class-registration.sql"/>
+      </metainf>
       <manifest>
         <attribute name="Implementation-Title" value="${plugin.title}"/>
         <attribute name="Implementation-Version" value="${plugin.version}"/>
@@ -111,7 +115,7 @@
     <delete quiet="true" dir="${build.dir}"/>
   </target>
 
-  <target name="package" depends="jar,extract-functions"/>
+  <target name="package" depends="jar"/>
 
   <target name="test" depends="package" unless="testcase">
     <junit fork="true" printsummary="on" haltonfailure="true"
