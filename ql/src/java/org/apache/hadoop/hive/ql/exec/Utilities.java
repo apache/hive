@@ -2275,4 +2275,8 @@ public final class Utilities {
 
     return sb.toString();
   }
+
+  public static Class getBuiltinUtilsClass() throws ClassNotFoundException {
+    return Class.forName("org.apache.hive.builtins.BuiltinUtils");
+  }
 }

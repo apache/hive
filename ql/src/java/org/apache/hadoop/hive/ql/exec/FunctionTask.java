@@ -73,32 +73,15 @@ public class FunctionTask extends Task<FunctionWork> {
   private int createFunction(CreateFunctionDesc createFunctionDesc) {
     try {
       Class<?> udfClass = getUdfClass(createFunctionDesc);
-      if (UDF.class.isAssignableFrom(udfClass)) {
-        FunctionRegistry.registerTemporaryUDF(createFunctionDesc
-            .getFunctionName(), (Class<? extends UDF>) udfClass, false);
-        return 0;
-      } else if (GenericUDF.class.isAssignableFrom(udfClass)) {
-        FunctionRegistry.registerTemporaryGenericUDF(createFunctionDesc
-            .getFunctionName(), (Class<? extends GenericUDF>) udfClass);
-        return 0;
-      } else if (GenericUDTF.class.isAssignableFrom(udfClass)) {
-        FunctionRegistry.registerTemporaryGenericUDTF(createFunctionDesc
-            .getFunctionName(), (Class<? extends GenericUDTF>) udfClass);
-        return 0;
-      } else if (UDAF.class.isAssignableFrom(udfClass)) {
-        FunctionRegistry.registerTemporaryUDAF(createFunctionDesc
-            .getFunctionName(), (Class<? extends UDAF>) udfClass);
-        return 0;
-      } else if (GenericUDAFResolver.class.isAssignableFrom(udfClass)) {
-        FunctionRegistry.registerTemporaryGenericUDAF(createFunctionDesc
-            .getFunctionName(), (GenericUDAFResolver) ReflectionUtils
-            .newInstance(udfClass, null));
+      boolean registered = FunctionRegistry.registerTemporaryFunction(
+        createFunctionDesc.getFunctionName(),
+        udfClass);
+      if (registered) {
         return 0;
       }
       console.printError("FAILED: Class " + createFunctionDesc.getClassName()
           + " does not implement UDF, GenericUDF, or UDAF");
       return 1;
-
     } catch (ClassNotFoundException e) {
       console.printError("FAILED: Class " + createFunctionDesc.getClassName() + " not found");
       LOG.info("create function: " + StringUtils.stringifyException(e));

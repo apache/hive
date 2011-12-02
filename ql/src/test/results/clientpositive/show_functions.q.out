@@ -155,6 +155,7 @@ to_utc_timestamp
 trim
 ucase
 unhex
+union_map
 unix_timestamp
 upper
 var_pop
