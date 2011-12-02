@@ -239,6 +239,12 @@
 </property>
 
 <property>
+  <name>hive.metastore.end.function.listeners</name>
+  <value></value>
+  <description>list of comma separated listeners for the end of metastore functions.</description>
+</property>
+
+<property>
   <name>hive.metastore.event.expiry.duration</name>
   <value>0</value>
   <description>Duration after which events expire from events table (in seconds)</description>

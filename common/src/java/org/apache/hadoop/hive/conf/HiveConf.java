@@ -92,6 +92,7 @@ public class HiveConf extends Configuration {
       HiveConf.ConfVars.METASTORE_EVENT_CLEAN_FREQ,
       HiveConf.ConfVars.METASTORE_EVENT_EXPIRY_DURATION,
       HiveConf.ConfVars.METASTORE_RAW_STORE_IMPL,
+      HiveConf.ConfVars.METASTORE_END_FUNCTION_LISTENERS,
       };
 
   /**
@@ -245,6 +246,7 @@ public class HiveConf extends Configuration {
     METASTORE_DETACH_ALL_ON_COMMIT("javax.jdo.option.DetachAllOnCommit", true),
     METASTORE_NON_TRANSACTIONAL_READ("javax.jdo.option.NonTransactionalRead", true),
     METASTORE_CONNECTION_USER_NAME("javax.jdo.option.ConnectionUserName", "APP"),
+    METASTORE_END_FUNCTION_LISTENERS("hive.metastore.end.function.listeners", ""),
 
     // CLI
     CLIIGNOREERRORS("hive.cli.errors.ignore", false),
