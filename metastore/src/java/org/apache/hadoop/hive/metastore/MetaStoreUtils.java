@@ -960,27 +960,28 @@ public class MetaStoreUtils {
 
   /**
    * create listener instances as per the configuration.
+   *
+   * @param clazz
    * @param conf
+   * @param listenerImplList
    * @return
    * @throws MetaException
    */
-  static List<MetaStoreEventListener> getMetaStoreListener (HiveConf conf)
-  throws MetaException {
+  static <T> List<T> getMetaStoreListeners(Class<T> clazz,
+      HiveConf conf, String listenerImplList) throws MetaException {
 
-    List<MetaStoreEventListener> listeners = new ArrayList<MetaStoreEventListener>();
-    String listenerImplList = conf.getVar(HiveConf.ConfVars.METASTORE_EVENT_LISTENERS);
+    List<T> listeners = new ArrayList<T>();
     listenerImplList = listenerImplList.trim();
     if (listenerImplList.equals("")) {
       return listeners;
-}
+    }
 
     String[] listenerImpls = listenerImplList.split(",");
     for (String listenerImpl : listenerImpls) {
       try {
-        MetaStoreEventListener listener = (MetaStoreEventListener) Class.forName(
+        T listener = (T) Class.forName(
             listenerImpl.trim(), true, JavaUtils.getClassLoader()).getConstructor(
                 Configuration.class).newInstance(conf);
-        listener.setConf(conf);
         listeners.add(listener);
       } catch (Exception e) {
         throw new MetaException("Failed to instantiate listener named: "+
