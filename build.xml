@@ -910,7 +910,7 @@
           todir="${mvn.jar.dir}" />
     <copy file="${build.dir.hive}/pdk/hive-pdk-${version}.jar"
           todir="${mvn.jar.dir}" />
-    <copy file="${build.dir.hive}/pdk/hive-builtins-${version}.jar"
+    <copy file="${build.dir.hive}/builtins/hive-builtins-${version}.jar"
           todir="${mvn.jar.dir}" />
 
     <!-- copy over maven pom files created using the make-pom target and rename to maven convention -->
