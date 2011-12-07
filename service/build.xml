@@ -20,13 +20,6 @@
 <project name="service" default="jar">
   <property name="src.dir" value="${basedir}/src"/>
 
-  <!--
-    Override properties defined in ../build-common.xml.
-  -->
-  <property name="test.junit.output.format" value="plain"/>
-  <property name="test.output" value="false"/>
-  <property name="test.junit.output.usefile" value="false"/>
-
   <import file="../build-common.xml"/>
 
   <path id="test.classpath">
