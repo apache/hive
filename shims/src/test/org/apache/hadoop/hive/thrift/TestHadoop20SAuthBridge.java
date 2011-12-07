@@ -39,6 +39,7 @@ import org.apache.hadoop.hive.metastore.HiveMetaStoreClient;
 import org.apache.hadoop.hive.metastore.MetaStoreUtils;
 import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.api.MetaException;
+import org.apache.hadoop.hive.thrift.TokenStoreDelegationTokenSecretManager.TokenStore;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.security.SaslRpcServer;
 import org.apache.hadoop.security.SaslRpcServer.AuthMethod;
@@ -46,7 +47,10 @@ import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.hadoop.security.UserGroupInformation.AuthenticationMethod;
 import org.apache.hadoop.security.authorize.AuthorizationException;
 import org.apache.hadoop.security.authorize.ProxyUsers;
+import org.apache.hadoop.security.token.SecretManager.InvalidToken;
 import org.apache.hadoop.security.token.Token;
+import org.apache.hadoop.security.token.delegation.AbstractDelegationTokenSecretManager.DelegationTokenInformation;
+import org.apache.hadoop.security.token.delegation.DelegationKey;
 import org.apache.hadoop.util.StringUtils;
 import org.apache.thrift.transport.TSaslServerTransport;
 import org.apache.thrift.transport.TTransportException;
@@ -78,12 +82,19 @@ public class TestHadoop20SAuthBridge extends TestCase {
 
         return new TUGIAssumingTransportFactory(transFactory, realUgi);
       }
+      static TokenStore TOKEN_STORE = new MemoryTokenStore();
+      //static TokenStore TOKEN_STORE = new ZooKeeperTokenStore("localhost:2181");
+
+      @Override
+      protected TokenStore getTokenStore(Configuration conf) throws IOException {
+        return TOKEN_STORE;
+      }
     }
   }
-  
+
 
   private HiveConf conf;
-  
+
   private void configureSuperUserIPAddresses(Configuration conf,
       String superUserShortName) throws IOException {
     ArrayList<String> ipList = new ArrayList<String>();
@@ -107,7 +118,7 @@ public class TestHadoop20SAuthBridge extends TestCase {
     conf.setStrings(ProxyUsers.getProxySuperuserIpConfKey(superUserShortName),
         builder.toString());
   }
-  
+
   public void setup(final int port) throws Exception {
     System.setProperty(HiveConf.ConfVars.METASTORE_USE_THRIFT_SASL.varname,
         "true");
@@ -120,28 +131,105 @@ public class TestHadoop20SAuthBridge extends TestCase {
     MetaStoreUtils.startMetaStore(port, new MyHadoopThriftAuthBridge20S());
   }
 
+  /**
+   * Test delegation token store/load from shared store.
+   * @throws Exception
+   */
+  public void testDelegationTokenSharedStore() throws Exception {
+    UserGroupInformation clientUgi = UserGroupInformation.getCurrentUser();
+
+    TokenStoreDelegationTokenSecretManager tokenManager =
+        new TokenStoreDelegationTokenSecretManager(0, 60*60*1000, 60*60*1000, 0,
+            MyHadoopThriftAuthBridge20S.Server.TOKEN_STORE);
+    // initializes current key
+    tokenManager.startThreads();
+    tokenManager.stopThreads();
+
+    String tokenStrForm = tokenManager.getDelegationToken(clientUgi.getShortUserName());
+    Token<DelegationTokenIdentifier> t= new Token<DelegationTokenIdentifier>();
+    t.decodeFromUrlString(tokenStrForm);
+
+    //check whether the username in the token is what we expect
+    DelegationTokenIdentifier d = new DelegationTokenIdentifier();
+    d.readFields(new DataInputStream(new ByteArrayInputStream(
+        t.getIdentifier())));
+    assertTrue("Usernames don't match",
+        clientUgi.getShortUserName().equals(d.getUser().getShortUserName()));
+
+    DelegationTokenInformation tokenInfo = MyHadoopThriftAuthBridge20S.Server.TOKEN_STORE
+        .getToken(d);
+    assertNotNull("token not in store", tokenInfo);
+    assertFalse("duplicate token add",
+        MyHadoopThriftAuthBridge20S.Server.TOKEN_STORE.addToken(d, tokenInfo));
+
+    // check keys are copied from token store when token is loaded
+    TokenStoreDelegationTokenSecretManager anotherManager =
+        new TokenStoreDelegationTokenSecretManager(0, 0, 0, 0,
+            MyHadoopThriftAuthBridge20S.Server.TOKEN_STORE);
+   assertEquals("master keys empty on init", 0,
+        anotherManager.getAllKeys().length);
+    assertNotNull("token loaded",
+        anotherManager.retrievePassword(d));
+    anotherManager.renewToken(t, clientUgi.getShortUserName());
+    assertEquals("master keys not loaded from store",
+        MyHadoopThriftAuthBridge20S.Server.TOKEN_STORE.getMasterKeys().length,
+        anotherManager.getAllKeys().length);
+
+    // cancel the delegation token
+    tokenManager.cancelDelegationToken(tokenStrForm);
+    assertNull("token not removed from store after cancel",
+        MyHadoopThriftAuthBridge20S.Server.TOKEN_STORE.getToken(d));
+    assertFalse("token removed (again)",
+        MyHadoopThriftAuthBridge20S.Server.TOKEN_STORE.removeToken(d));
+    try {
+      anotherManager.retrievePassword(d);
+      fail("InvalidToken expected after cancel");
+    } catch (InvalidToken ex) {
+      // expected
+    }
+
+    // token expiration
+    MyHadoopThriftAuthBridge20S.Server.TOKEN_STORE.addToken(d,
+        new DelegationTokenInformation(0, t.getPassword()));
+    assertNotNull(MyHadoopThriftAuthBridge20S.Server.TOKEN_STORE.getToken(d));
+    anotherManager.removeExpiredTokens();
+    assertNull("Expired token not removed",
+        MyHadoopThriftAuthBridge20S.Server.TOKEN_STORE.getToken(d));
+
+    // key expiration - create an already expired key
+    anotherManager.startThreads(); // generates initial key
+    anotherManager.stopThreads();
+    DelegationKey expiredKey = new DelegationKey(-1, 0, anotherManager.getAllKeys()[0].getKey());
+    anotherManager.logUpdateMasterKey(expiredKey); // updates key with sequence number
+    assertTrue("expired key not in allKeys",
+        anotherManager.reloadKeys().containsKey(expiredKey.getKeyId()));
+    anotherManager.rollMasterKeyExt();
+    assertFalse("Expired key not removed",
+        anotherManager.reloadKeys().containsKey(expiredKey.getKeyId()));
+  }
+
   public void testSaslWithHiveMetaStore() throws Exception {
     setup(10000);
     UserGroupInformation clientUgi = UserGroupInformation.getCurrentUser();
     obtainTokenAndAddIntoUGI(clientUgi, null);
     obtainTokenAndAddIntoUGI(clientUgi, "tokenForFooTablePartition");
   }
-  
+
   public void testMetastoreProxyUser() throws Exception {
     setup(10010);
-    
+
     final String proxyUserName = "proxyUser";
-    //set the configuration up such that proxyUser can act on 
+    //set the configuration up such that proxyUser can act on
     //behalf of all users belonging to the group foo_bar_group (
     //a dummy group)
     String[] groupNames =
       new String[] { "foo_bar_group" };
     setGroupsInConf(groupNames, proxyUserName);
-    
-    final UserGroupInformation delegationTokenUser = 
+
+    final UserGroupInformation delegationTokenUser =
       UserGroupInformation.getCurrentUser();
-        
-    final UserGroupInformation proxyUserUgi = 
+
+    final UserGroupInformation proxyUserUgi =
       UserGroupInformation.createRemoteUser(proxyUserName);
     String tokenStrForm = proxyUserUgi.doAs(new PrivilegedExceptionAction<String>() {
       public String run() throws Exception {
@@ -154,11 +242,11 @@ public class TestHadoop20SAuthBridge extends TestCase {
         }
       }
     });
-    assertTrue("Expected the getDelegationToken call to fail", 
+    assertTrue("Expected the getDelegationToken call to fail",
         tokenStrForm == null);
-    
-    //set the configuration up such that proxyUser can act on 
-    //behalf of all users belonging to the real group(s) that the 
+
+    //set the configuration up such that proxyUser can act on
+    //behalf of all users belonging to the real group(s) that the
     //user running the test belongs to
     setGroupsInConf(UserGroupInformation.getCurrentUser().getGroupNames(),
         proxyUserName);
@@ -173,7 +261,7 @@ public class TestHadoop20SAuthBridge extends TestCase {
         }
       }
     });
-    assertTrue("Expected the getDelegationToken call to not fail", 
+    assertTrue("Expected the getDelegationToken call to not fail",
         tokenStrForm != null);
     Token<DelegationTokenIdentifier> t= new Token<DelegationTokenIdentifier>();
     t.decodeFromUrlString(tokenStrForm);
@@ -181,12 +269,12 @@ public class TestHadoop20SAuthBridge extends TestCase {
     DelegationTokenIdentifier d = new DelegationTokenIdentifier();
     d.readFields(new DataInputStream(new ByteArrayInputStream(
         t.getIdentifier())));
-    assertTrue("Usernames don't match", 
+    assertTrue("Usernames don't match",
         delegationTokenUser.getShortUserName().equals(d.getUser().getShortUserName()));
-    
+
   }
-  
-  private void setGroupsInConf(String[] groupNames, String proxyUserName) 
+
+  private void setGroupsInConf(String[] groupNames, String proxyUserName)
   throws IOException {
    conf.set(
       ProxyUsers.getProxySuperuserGroupConfKey(proxyUserName),
@@ -194,21 +282,21 @@ public class TestHadoop20SAuthBridge extends TestCase {
     configureSuperUserIPAddresses(conf, proxyUserName);
     ProxyUsers.refreshSuperUserGroupsConfiguration(conf);
   }
-  
-  private String getDelegationTokenStr(UserGroupInformation ownerUgi, 
+
+  private String getDelegationTokenStr(UserGroupInformation ownerUgi,
       UserGroupInformation realUgi) throws Exception {
     //obtain a token by directly invoking the metastore operation(without going
     //through the thrift interface). Obtaining a token makes the secret manager
     //aware of the user and that it gave the token to the user
-    //also set the authentication method explicitly to KERBEROS. Since the 
+    //also set the authentication method explicitly to KERBEROS. Since the
     //metastore checks whether the authentication method is KERBEROS or not
-    //for getDelegationToken, and the testcases don't use 
+    //for getDelegationToken, and the testcases don't use
     //kerberos, this needs to be done
     HadoopThriftAuthBridge20S.Server.authenticationMethod
                              .set(AuthenticationMethod.KERBEROS);
-    HadoopThriftAuthBridge20S.Server.remoteAddress.set(InetAddress.getLocalHost()); 
+    HadoopThriftAuthBridge20S.Server.remoteAddress.set(InetAddress.getLocalHost());
     return
-        HiveMetaStore.getDelegationToken(ownerUgi.getShortUserName(), 
+        HiveMetaStore.getDelegationToken(ownerUgi.getShortUserName(),
             realUgi.getShortUserName());
   }
 
@@ -217,14 +305,14 @@ public class TestHadoop20SAuthBridge extends TestCase {
     String tokenStrForm = getDelegationTokenStr(clientUgi, clientUgi);
     Token<DelegationTokenIdentifier> t= new Token<DelegationTokenIdentifier>();
     t.decodeFromUrlString(tokenStrForm);
-    
+
     //check whether the username in the token is what we expect
     DelegationTokenIdentifier d = new DelegationTokenIdentifier();
     d.readFields(new DataInputStream(new ByteArrayInputStream(
         t.getIdentifier())));
-    assertTrue("Usernames don't match", 
+    assertTrue("Usernames don't match",
         clientUgi.getShortUserName().equals(d.getUser().getShortUserName()));
-    
+
     if (tokenSig != null) {
       conf.set("hive.metastore.token.signature", tokenSig);
       t.setService(new Text(tokenSig));
@@ -247,7 +335,7 @@ public class TestHadoop20SAuthBridge extends TestCase {
 
     //try out some metastore operations
     createDBAndVerifyExistence(hiveClient);
-    
+
     //check that getDelegationToken fails since we are not authenticating
     //over kerberos
     boolean pass = false;

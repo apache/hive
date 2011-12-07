@@ -33,6 +33,10 @@
     <dependency org="org.apache.hadoop" name="hadoop-core" rev="${hadoop.security.version}">
       <artifact name="hadoop" type="source" ext="tar.gz"/>
     </dependency>
+    <dependency org="org.apache.zookeeper" name="zookeeper"
+                rev="${zookeeper.version}" transitive="false">
+      <include type="jar"/>
+    </dependency>
     <dependency org="org.apache.thrift" name="libthrift" rev="${libthrift.version}"
                 transitive="false"/>
     <dependency org="commons-logging" name="commons-logging" rev="${commons-logging.version}"
