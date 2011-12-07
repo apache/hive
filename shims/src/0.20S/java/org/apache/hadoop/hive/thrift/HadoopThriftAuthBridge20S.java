@@ -35,6 +35,7 @@ import javax.security.sasl.SaslException;
 import javax.security.sasl.SaslServer;
 
 import org.apache.commons.codec.binary.Base64;
+import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.conf.Configuration;
@@ -48,6 +49,7 @@ import org.apache.hadoop.security.authorize.ProxyUsers;
 import org.apache.hadoop.security.token.SecretManager.InvalidToken;
 import org.apache.hadoop.security.token.Token;
 import org.apache.hadoop.security.token.TokenIdentifier;
+import org.apache.hadoop.util.ReflectionUtils;
 import org.apache.thrift.TException;
 import org.apache.thrift.TProcessor;
 import org.apache.thrift.protocol.TProtocol;
@@ -330,6 +332,14 @@ import org.apache.thrift.transport.TTransportFactory;
        "hive.cluster.delegation.token.max-lifetime";
      public static final long    DELEGATION_TOKEN_MAX_LIFETIME_DEFAULT =
        7*24*60*60*1000; // 7 days
+     public static final String DELEGATION_TOKEN_STORE_CLS =
+       "hive.cluster.delegation.token.store.class";
+     public static final String DELEGATION_TOKEN_STORE_ZK_CONNECT_STR =
+         "hive.cluster.delegation.token.store.zookeeper.connectString";
+     public static final String DELEGATION_TOKEN_STORE_ZK_ROOT_NODE =
+         "hive.cluster.delegation.token.store.zookeeper.rootNode";
+     public static final String DELEGATION_TOKEN_STORE_ZK_ROOT_NODE_DEFAULT =
+         "/hive/cluster/delegation";
 
      public Server() throws TTransportException {
        try {
@@ -404,6 +414,23 @@ import org.apache.thrift.transport.TTransportFactory;
       return new TUGIAssumingProcessor(processor, secretManager);
      }
 
+    protected TokenStoreDelegationTokenSecretManager.TokenStore getTokenStore(Configuration conf)
+        throws IOException {
+       String tokenStoreClassName = conf.get(DELEGATION_TOKEN_STORE_CLS, "");
+       if (StringUtils.isBlank(tokenStoreClassName)) {
+         return new MemoryTokenStore();
+       }
+       try {
+        Class<? extends TokenStoreDelegationTokenSecretManager.TokenStore> storeClass = Class
+            .forName(tokenStoreClassName).asSubclass(
+                TokenStoreDelegationTokenSecretManager.TokenStore.class);
+        return ReflectionUtils.newInstance(storeClass, conf);
+       } catch (ClassNotFoundException e) {
+        throw new IOException("Error initializing delegation token store: " + tokenStoreClassName,
+            e);
+       }
+     }
+
      @Override
      public void startDelegationTokenSecretManager(Configuration conf)
      throws IOException{
@@ -416,11 +443,11 @@ import org.apache.thrift.transport.TTransportFactory;
        long tokenRenewInterval =
            conf.getLong(DELEGATION_TOKEN_RENEW_INTERVAL_KEY,
                         DELEGATION_TOKEN_RENEW_INTERVAL_DEFAULT);
-       secretManager =
-           new DelegationTokenSecretManager(secretKeyInterval,
-                                            tokenMaxLifetime,
-                                            tokenRenewInterval,
-                                            DELEGATION_TOKEN_GC_INTERVAL);
+
+       secretManager = new TokenStoreDelegationTokenSecretManager(secretKeyInterval,
+             tokenMaxLifetime,
+             tokenRenewInterval,
+             DELEGATION_TOKEN_GC_INTERVAL, getTokenStore(conf));
        secretManager.startThreads();
      }
 
