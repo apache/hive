@@ -45,11 +45,13 @@
   <!-- configuration needed for tests -->
   <property name="test.src.dir" value="${basedir}/src/test"/>
   <property name="test.src.data.dir" value="${hive.root}/data"/>
+  <property name="test.resources.dir" value="${basedir}/src/test/resources"/>
   <property name="test.build.dir" value="${build.dir}/test"/>
   <property name="test.log.dir" value="${test.build.dir}/logs"/>
   <property name="test.data.dir" value="${test.build.dir}/data"/>
   <property name="test.build.src" value="${test.build.dir}/src"/>
   <property name="test.build.classes" value="${test.build.dir}/classes"/>
+  <property name="test.build.resources" value="${test.build.dir}/resources"/>
   <property name="test.include" value="Test*"/>
   <property name="test.classpath.id" value="test.classpath"/>
   <property name="test.output" value="true"/>
@@ -64,6 +66,7 @@
 
   <path id="test.classpath">
     <pathelement location="${test.build.classes}" />
+    <pathelement location="${test.build.resources}" />
     <pathelement location="" />
     <pathelement location="${test.src.data.dir}/conf"/>
     <pathelement location="${hive.conf.dir}"/>
@@ -189,6 +192,10 @@
     <mkdir dir="${test.build.dir}"/>
     <mkdir dir="${test.build.src}"/>
     <mkdir dir="${test.build.classes}"/>
+    <mkdir dir="${test.build.resources}"/>
+    <copy todir="${test.build.resources}" failonerror="false">
+      <fileset dir="${test.resources.dir}"/>
+    </copy>
   </target>
 
   <target name="init" depends="create-dirs">
@@ -369,6 +376,7 @@
       <sysproperty key="test.tmp.dir" value="${build.dir}/tmp"/>
       <sysproperty key="test.src.data.dir" value="${test.src.data.dir}"/>
       <sysproperty key="test.warehouse.dir" value="${test.warehouse.dir}"/>
+      <sysproperty key="test.build.resources" value="${test.build.resources}"/>
       <sysproperty key="mapred.job.tracker" value="${mapred.job.tracker}"/>
       <sysproperty key="fs.default.name" value="${fs.default.name}"/>
       <sysproperty key="build.dir" value="${build.dir}"/>

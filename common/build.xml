@@ -44,10 +44,5 @@ to call at top-level: ant deploy-contrib compile-core-test
       <fileset dir="${src.dir}/conf"/>
     </copy>
   </target>
-
-  <target name="test">
-    <echo message="Project: ${ant.project.name}"/>
-    <echo message="Nothing to do!"/>
-  </target>
-
+  
 </project>

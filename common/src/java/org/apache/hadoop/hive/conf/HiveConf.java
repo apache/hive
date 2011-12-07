@@ -18,6 +18,8 @@
 
 package org.apache.hadoop.hive.conf;
 
+import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.PrintStream;
 import java.net.URL;
@@ -44,6 +46,30 @@ public class HiveConf extends Configuration {
   protected Properties origProp;
   protected String auxJars;
   private static final Log l4j = LogFactory.getLog(HiveConf.class);
+  private static URL hiveSiteURL = null;
+  private static URL confVarURL = null;
+
+  static {
+    ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
+    if (classLoader == null) {
+      classLoader = HiveConf.class.getClassLoader();
+    }
+
+    // Log a warning if hive-default.xml is found on the classpath
+    URL hiveDefaultURL = classLoader.getResource("hive-default.xml");
+    if (hiveDefaultURL != null) {
+      l4j.warn("DEPRECATED: Ignoring hive-default.xml found on the CLASSPATH at " +
+               hiveDefaultURL.getPath());
+    }
+
+    // Look for hive-site.xml on the CLASSPATH and log its location if found.
+    hiveSiteURL = classLoader.getResource("hive-site.xml");
+    if (hiveSiteURL == null) {
+      l4j.warn("hive-site.xml not found on CLASSPATH");
+    } else {
+      l4j.debug("Using hive-site.xml found on CLASSPATH at " + hiveSiteURL.getPath());
+    }
+  }
 
   /**
    * Metastore related options that the db is initialized against. When a conf
@@ -115,8 +141,8 @@ public class HiveConf extends Configuration {
    */
   public static enum ConfVars {
     // QL execution stuff
-    SCRIPTWRAPPER("hive.exec.script.wrapper", null),
-    PLAN("hive.exec.plan", null),
+    SCRIPTWRAPPER("hive.exec.script.wrapper", ""),
+    PLAN("hive.exec.plan", ""),
     SCRATCHDIR("hive.exec.scratchdir", "/tmp/hive-" + System.getProperty("user.name")),
     SUBMITVIACHILD("hive.exec.submitviachild", false),
     SCRIPTERRORLIMIT("hive.exec.script.maxerrsize", 100000),
@@ -147,7 +173,7 @@ public class HiveConf extends Configuration {
     SHOW_JOB_FAIL_DEBUG_INFO("hive.exec.show.job.failure.debug.info", true),
     JOB_DEBUG_TIMEOUT("hive.exec.job.debug.timeout", 30000),
     TASKLOG_DEBUG_TIMEOUT("hive.exec.tasklog.debug.timeout", 20000),
-    OUTPUT_FILE_EXTENSION("hive.output.file.extension", null),
+    OUTPUT_FILE_EXTENSION("hive.output.file.extension", ""),
 
     // should hive determine whether to run in local mode automatically ?
     LOCALMODEAUTO("hive.exec.mode.local.auto", false),
@@ -165,12 +191,12 @@ public class HiveConf extends Configuration {
     HADOOPBIN("hadoop.bin.path", System.getenv("HADOOP_HOME") + "/bin/hadoop"),
     HADOOPCONF("hadoop.config.dir", System.getenv("HADOOP_HOME") + "/conf"),
     HADOOPFS("fs.default.name", "file:///"),
-    HADOOPMAPFILENAME("map.input.file", null),
-    HADOOPMAPREDINPUTDIR("mapred.input.dir", null),
+    HADOOPMAPFILENAME("map.input.file", ""),
+    HADOOPMAPREDINPUTDIR("mapred.input.dir", ""),
     HADOOPMAPREDINPUTDIRRECURSIVE("mapred.input.dir.recursive", false),
     HADOOPJT("mapred.job.tracker", "local"),
     HADOOPNUMREDUCERS("mapred.reduce.tasks", -1),
-    HADOOPJOBNAME("mapred.job.name", null),
+    HADOOPJOBNAME("mapred.job.name", ""),
     HADOOPSPECULATIVEEXECREDUCERS("mapred.reduce.tasks.speculative.execution", false),
 
     // Metastore stuff. Be sure to update HiveConf.metaVars when you add
@@ -325,7 +351,9 @@ public class HiveConf extends Configuration {
     // HWI
     HIVEHWILISTENHOST("hive.hwi.listen.host", "0.0.0.0"),
     HIVEHWILISTENPORT("hive.hwi.listen.port", "9999"),
-    HIVEHWIWARFILE("hive.hwi.war.file", System.getenv("HWI_WAR_FILE")),
+    HIVEHWIWARFILE("hive.hwi.war.file",
+        (System.getenv("HWI_WAR_FILE") != null) ?
+            System.getenv("HWI_WAR_FILE") : ""),
 
     // mapper/reducer memory in local mode
     HIVEHADOOPMAXMEM("hive.mapred.local.mem", 0),
@@ -468,7 +496,7 @@ public class HiveConf extends Configuration {
     // Hive Variables
     HIVEVARIABLESUBSTITUTE("hive.variable.substitute", true),
 
-    SEMANTIC_ANALYZER_HOOK("hive.semantic.analyzer.hook",null),
+    SEMANTIC_ANALYZER_HOOK("hive.semantic.analyzer.hook", ""),
 
     HIVE_AUTHORIZATION_ENABLED("hive.security.authorization.enabled", false),
     HIVE_AUTHORIZATION_MANAGER("hive.security.authorization.manager",
@@ -576,6 +604,33 @@ public class HiveConf extends Configuration {
     }
   }
 
+  /**
+   * Writes the default ConfVars out to a temporary File and returns
+   * a URL pointing to the temporary file.
+   * We need this in order to initialize the ConfVar properties
+   * in the underling Configuration object using the addResource()
+   * method.
+   */
+  private static synchronized URL getConfVarURL() {
+    if (confVarURL == null) {
+      try {
+        File confVarFile = File.createTempFile("hive-default-", ".xml");
+        Configuration conf = new Configuration(false);
+
+        applyDefaultConfVars(conf);
+
+        FileOutputStream fout = new FileOutputStream(confVarFile);
+        conf.writeXml(fout);
+        fout.close();
+        confVarURL = confVarFile.toURI().toURL();
+      } catch (Exception e) {
+        // We're pretty screwed if we can't load the default conf vars
+        throw new RuntimeException(e);
+      }
+    }
+    return confVarURL;
+  }
+
   public static int getIntVar(Configuration conf, ConfVars var) {
     assert (var.valClass == Integer.class);
     return conf.getInt(var.varname, var.defaultIntVal);
@@ -674,6 +729,7 @@ public class HiveConf extends Configuration {
 
   public HiveConf() {
     super();
+    initialize(this.getClass());
   }
 
   public HiveConf(Class<?> cls) {
@@ -696,8 +752,12 @@ public class HiveConf extends Configuration {
     origProp = (Properties)other.origProp.clone();
   }
 
-  private Properties getUnderlyingProps() {
-    Iterator<Map.Entry<String, String>> iter = this.iterator();
+  public Properties getAllProperties() {
+    return getProperties(this);
+  }
+
+  private static Properties getProperties(Configuration conf) {
+    Iterator<Map.Entry<String, String>> iter = conf.iterator();
     Properties p = new Properties();
     while (iter.hasNext()) {
       Map.Entry<String, String> e = iter.next();
@@ -710,33 +770,25 @@ public class HiveConf extends Configuration {
     hiveJar = (new JobConf(cls)).getJar();
 
     // preserve the original configuration
-    origProp = getUnderlyingProps();
+    origProp = getAllProperties();
 
-    // let's add the hive configuration
-    URL hconfurl = getClassLoader().getResource("hive-default.xml");
-    if (hconfurl == null) {
-      l4j.debug("hive-default.xml not found.");
-    } else {
-      addResource(hconfurl);
-    }
-    URL hsiteurl = getClassLoader().getResource("hive-site.xml");
-    if (hsiteurl == null) {
-      l4j.debug("hive-site.xml not found.");
-    } else {
-      addResource(hsiteurl);
+    // Overlay the default ConfVars
+    addResource(getConfVarURL());
+
+    // Overlay hive-site.xml if it exists
+    if (hiveSiteURL != null) {
+      addResource(hiveSiteURL);
     }
 
     // if hadoop configuration files are already in our path - then define
     // the containing directory as the configuration directory
-    URL hadoopconfurl = getClassLoader().getResource("hadoop-default.xml");
-    if (hadoopconfurl == null) {
-      hadoopconfurl = getClassLoader().getResource("hadoop-site.xml");
-    }
+    URL hadoopconfurl = getClassLoader().getResource("core-site.xml");
     if (hadoopconfurl != null) {
       String conffile = hadoopconfurl.getPath();
       this.setVar(ConfVars.HADOOPCONF, conffile.substring(0, conffile.lastIndexOf('/')));
     }
 
+    // Overlay system properties
     applySystemProperties();
 
     // if the running class was loaded directly (through eclipse) rather than through a
@@ -748,10 +800,9 @@ public class HiveConf extends Configuration {
     if (auxJars == null) {
       auxJars = this.get(ConfVars.HIVEAUXJARS.varname);
     }
-
   }
 
-  public void applySystemProperties() {
+  private void applySystemProperties() {
     for (ConfVars oneVar : ConfVars.values()) {
       if (System.getProperty(oneVar.varname) != null) {
         if (System.getProperty(oneVar.varname).length() > 0) {
@@ -761,9 +812,27 @@ public class HiveConf extends Configuration {
     }
   }
 
+  private static void applyDefaultConfVars(Configuration conf) {
+    for (ConfVars var : ConfVars.values()) {
+      if (String.class.equals(var.valClass)) {
+        conf.set(var.varname, var.defaultVal);
+      } else if (Integer.class.equals(var.valClass)) {
+        conf.setInt(var.varname, var.defaultIntVal);
+      } else if (Long.class.equals(var.valClass)) {
+        conf.setLong(var.varname, var.defaultLongVal);
+      } else if (Float.class.equals(var.valClass)) {
+        conf.setFloat(var.varname, var.defaultFloatVal);
+      } else if (Boolean.class.equals(var.valClass)) {
+        conf.setBoolean(var.varname, var.defaultBoolVal);
+      } else {
+        l4j.warn("Unable to set default configuration value for " + var.varname);
+      }
+    }
+  }
+
   public Properties getChangedProperties() {
     Properties ret = new Properties();
-    Properties newProp = getUnderlyingProps();
+    Properties newProp = getAllProperties();
 
     for (Object one : newProp.keySet()) {
       String oneProp = (String) one;
@@ -775,8 +844,8 @@ public class HiveConf extends Configuration {
     return (ret);
   }
 
-  public Properties getAllProperties() {
-    return getUnderlyingProps();
+  public String getHiveSitePath() {
+    return hiveSiteURL.getPath();
   }
 
   public String getJar() {
@@ -824,5 +893,4 @@ public class HiveConf extends Configuration {
       return -1;
     }
   }
-
 }

@@ -43,6 +43,7 @@
   <classpathentry kind="src" path="build/ql/gen/antlr/gen-java"/>
   <classpathentry kind="src" path="cli/src/java"/>
   <classpathentry kind="src" path="common/src/java"/>
+  <classpathentry kind="src" path="common/src/test"/>
   <classpathentry kind="src" path="contrib/src/java"/>
   <classpathentry kind="src" path="contrib/src/test"/>
   <classpathentry kind="src" path="metastore/src/gen/thrift/gen-javabean"/>
