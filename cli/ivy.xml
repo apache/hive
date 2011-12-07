@@ -28,7 +28,7 @@
   </configurations>
   <dependencies>
     <!-- Runtime Dependencies -->
-    <dependency org="hadoop" name="core" rev="${hadoop.version.ant-internal}">
+    <dependency org="org.apache.hadoop" name="hadoop-core" rev="${hadoop.version.ant-internal}">
       <artifact name="hadoop" type="source" ext="tar.gz"/>
     </dependency>
     <dependency org="commons-cli" name="commons-cli" rev="${commons-cli.version}"/>

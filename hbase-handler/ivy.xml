@@ -26,7 +26,7 @@
     <include file="${ivy.conf.dir}/common-configurations.xml"/>
   </configurations>  
   <dependencies>
-    <dependency org="hadoop" name="core" rev="${hadoop.version.ant-internal}">
+    <dependency org="org.apache.hadoop" name="hadoop-core" rev="${hadoop.version.ant-internal}">
       <artifact name="hadoop" type="source" ext="tar.gz"/>
     </dependency>
     <dependency org="org.apache.hive" name="hive-common" rev="${version}"
