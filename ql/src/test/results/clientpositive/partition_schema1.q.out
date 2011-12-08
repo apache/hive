@@ -1,0 +1,53 @@
+PREHOOK: query: create table partition_schema1(key string, value string) partitioned by (dt string)
+PREHOOK: type: CREATETABLE
+POSTHOOK: query: create table partition_schema1(key string, value string) partitioned by (dt string)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: default@partition_schema1
+PREHOOK: query: insert overwrite table partition_schema1 partition(dt='100') select * from src1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src1
+PREHOOK: Output: default@partition_schema1@dt=100
+POSTHOOK: query: insert overwrite table partition_schema1 partition(dt='100') select * from src1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src1
+POSTHOOK: Output: default@partition_schema1@dt=100
+POSTHOOK: Lineage: partition_schema1 PARTITION(dt=100).key SIMPLE [(src1)src1.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: partition_schema1 PARTITION(dt=100).value SIMPLE [(src1)src1.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: desc partition_schema1 partition(dt='100')
+PREHOOK: type: DESCTABLE
+POSTHOOK: query: desc partition_schema1 partition(dt='100')
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Lineage: partition_schema1 PARTITION(dt=100).key SIMPLE [(src1)src1.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: partition_schema1 PARTITION(dt=100).value SIMPLE [(src1)src1.FieldSchema(name:value, type:string, comment:default), ]
+key	string	
+value	string	
+dt	string	
+PREHOOK: query: alter table partition_schema1 add columns (x string)
+PREHOOK: type: ALTERTABLE_ADDCOLS
+PREHOOK: Input: default@partition_schema1
+PREHOOK: Output: default@partition_schema1
+POSTHOOK: query: alter table partition_schema1 add columns (x string)
+POSTHOOK: type: ALTERTABLE_ADDCOLS
+POSTHOOK: Input: default@partition_schema1
+POSTHOOK: Output: default@partition_schema1
+POSTHOOK: Lineage: partition_schema1 PARTITION(dt=100).key SIMPLE [(src1)src1.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: partition_schema1 PARTITION(dt=100).value SIMPLE [(src1)src1.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: desc partition_schema1
+PREHOOK: type: DESCTABLE
+POSTHOOK: query: desc partition_schema1
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Lineage: partition_schema1 PARTITION(dt=100).key SIMPLE [(src1)src1.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: partition_schema1 PARTITION(dt=100).value SIMPLE [(src1)src1.FieldSchema(name:value, type:string, comment:default), ]
+key	string	
+value	string	
+x	string	
+dt	string	
+PREHOOK: query: desc partition_schema1 partition (dt='100')
+PREHOOK: type: DESCTABLE
+POSTHOOK: query: desc partition_schema1 partition (dt='100')
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Lineage: partition_schema1 PARTITION(dt=100).key SIMPLE [(src1)src1.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: partition_schema1 PARTITION(dt=100).value SIMPLE [(src1)src1.FieldSchema(name:value, type:string, comment:default), ]
+key	string	
+value	string	
+dt	string	
