@@ -50,7 +50,6 @@ import org.apache.hadoop.hive.ql.plan.MapredWork;
 import org.apache.hadoop.hive.ql.plan.PartitionDesc;
 import org.apache.hadoop.hive.ql.plan.PlanUtils;
 import org.apache.hadoop.hive.ql.plan.TableDesc;
-import org.apache.hadoop.hive.ql.plan.TableScanDesc;
 
 /**
  * Processor for the rule - TableScan followed by Union.
@@ -61,145 +60,13 @@ public class GenMRUnion1 implements NodeProcessor {
   }
 
   /**
-   * Process the union if all sub-queries are map-only
-   * 
-   * @return
-   * @throws SemanticException
-   */
-  private Object processMapOnlyUnion(UnionOperator union, Stack<Node> stack,
-      GenMRProcContext ctx, UnionProcContext uCtx) throws SemanticException {
-    // merge currTask from multiple topOps
-    HashMap<Operator<? extends Serializable>, Task<? extends Serializable>> opTaskMap = ctx.getOpTaskMap();
-    if (opTaskMap != null && opTaskMap.size() > 0) {
-      Task<? extends Serializable> tsk = opTaskMap.get(null);
-      if (tsk != null) {
-        ctx.setCurrTask(tsk);
-      }
-    }
-
-    UnionParseContext uPrsCtx = uCtx.getUnionParseContext(union);
-    if ((uPrsCtx != null) && (uPrsCtx.getMapJoinQuery())) {
-      GenMapRedUtils.mergeMapJoinUnion(union, ctx,
-          UnionProcFactory.getPositionParent(union, stack));
-    }
-    else {
-      ctx.getMapCurrCtx().put(
-          (Operator<? extends Serializable>) union,
-          new GenMapRedCtx(ctx.getCurrTask(), ctx.getCurrTopOp(),
-              ctx.getCurrAliasId()));
-    }
-    return null;
-  }
-
-  /**
-   * Process the union when the parent is a map-reduce job. Create a temporary
-   * output, and let the union task read from the temporary output.
-   * 
-   * The files created for all the inputs are in the union context and later
-   * used to initialize the union plan
-   * 
-   * @param parent
-   * @param child
-   * @param uTask
-   * @param ctx
-   * @param uCtxTask
-   */
-  private void processSubQueryUnionCreateIntermediate(
-      Operator<? extends Serializable> parent,
-      Operator<? extends Serializable> child,
-      Task<? extends Serializable> uTask, GenMRProcContext ctx,
-      GenMRUnionCtx uCtxTask) {
-    ParseContext parseCtx = ctx.getParseCtx();
-
-    TableDesc tt_desc = PlanUtils.getIntermediateFileTableDesc(PlanUtils.getFieldSchemasFromRowSchema(
-        parent.getSchema(), "temporarycol"));
-
-    // generate the temporary file
-    Context baseCtx = parseCtx.getContext();
-    String taskTmpDir = baseCtx.getMRTmpFileURI();
-
-    // Create a file sink operator for this file name
-    Operator<? extends Serializable> fs_op = OperatorFactory.get(
-        new FileSinkDesc(taskTmpDir, tt_desc, parseCtx.getConf().getBoolVar(
-            HiveConf.ConfVars.COMPRESSINTERMEDIATE)), parent.getSchema());
-
-    assert parent.getChildOperators().size() == 1;
-    parent.getChildOperators().set(0, fs_op);
-
-    List<Operator<? extends Serializable>> parentOpList = new ArrayList<Operator<? extends Serializable>>();
-    parentOpList.add(parent);
-    fs_op.setParentOperators(parentOpList);
-
-    // Create a dummy table scan operator
-    Operator<? extends Serializable> ts_op = OperatorFactory.get(
-        new TableScanDesc(), parent.getSchema());
-    List<Operator<? extends Serializable>> childOpList = new ArrayList<Operator<? extends Serializable>>();
-    childOpList.add(child);
-    ts_op.setChildOperators(childOpList);
-    child.replaceParent(parent, ts_op);
-
-    // Add the path to alias mapping
-
-    uCtxTask.addTaskTmpDir(taskTmpDir);
-    uCtxTask.addTTDesc(tt_desc);
-    uCtxTask.addListTopOperators(ts_op);
-
-    // The union task is empty. The files created for all the inputs are
-    // assembled in the union context and later used to initialize the union
-    // plan
-
-    ctx.getCurrTask().addDependentTask(uTask);
-  }
-
-  /**
-   * Union Operator encountered. A map-only query is encountered at the given
-   * position. However, atleast of the sub-qeuries is a map-reduce job. Copy the
-   * information from the current top operator to the union context.
-   * 
-   * @param ctx
-   * @param uCtxTask
-   * @param union
-   * @param stack
-   * @throws SemanticException
-   */
-  private void processSubQueryUnionMerge(GenMRProcContext ctx,
-      GenMRUnionCtx uCtxTask, UnionOperator union, Stack<Node> stack)
-      throws SemanticException {
-    // The current plan can be thrown away after being merged with the union
-    // plan
-    Task<? extends Serializable> uTask = uCtxTask.getUTask();
-    MapredWork plan = (MapredWork) uTask.getWork();
-    Operator<? extends Serializable> currTopOp = ctx.getCurrTopOp();
-    String currAliasId = ctx.getCurrAliasId();
-    GenMapRedUtils.setTaskPlan(ctx.getCurrAliasId(), ctx.getCurrTopOp(), plan,
-        false, ctx);
-  }
-
-  private void processSubQueryUnionMapJoin(GenMRProcContext ctx) {
-    AbstractMapJoinOperator<? extends MapJoinDesc> mjOp = ctx.getCurrMapJoinOp();
-    assert mjOp != null;
-    GenMRMapJoinCtx mjCtx = ctx.getMapJoinCtx(mjOp);
-    assert mjCtx != null;
-    MapredWork plan = (MapredWork) ctx.getCurrTask().getWork();
-
-    String taskTmpDir = mjCtx.getTaskTmpDir();
-    TableDesc tt_desc = mjCtx.getTTDesc();
-    assert plan.getPathToAliases().get(taskTmpDir) == null;
-    plan.getPathToAliases().put(taskTmpDir, new ArrayList<String>());
-    plan.getPathToAliases().get(taskTmpDir).add(taskTmpDir);
-    plan.getPathToPartitionInfo().put(taskTmpDir,
-        new PartitionDesc(tt_desc, null));
-    plan.getAliasToWork().put(taskTmpDir, mjCtx.getRootMapJoinOp());
-  }
-
-  /**
    * Union Operator encountered . Currently, the algorithm is pretty simple: If
-   * all the sub-queries are map-only, don't do anything. However, if there is a
+   * all the sub-queries are map-only, dont do anything. However, if there is a
    * mapjoin followed by the union, merge at the union Otherwise, insert a
    * FileSink on top of all the sub-queries.
-   * 
+   *
    * This can be optimized later on.
-   * 
+   *
    * @param nd
    *          the file sink operator encountered
    * @param opProcCtx
@@ -214,12 +81,31 @@ public class GenMRUnion1 implements NodeProcessor {
 
     // Map-only subqueries can be optimized in future to not write to a file in
     // future
-    Map<Operator<? extends Serializable>, GenMapRedCtx> mapCurrCtx = ctx.getMapCurrCtx();
+    Map<Operator<? extends Serializable>, GenMapRedCtx> mapCurrCtx = ctx
+        .getMapCurrCtx();
 
     // The plan needs to be broken only if one of the sub-queries involve a
     // map-reduce job
     if (uCtx.isMapOnlySubq()) {
-      return processMapOnlyUnion(union, stack, ctx, uCtx);
+      // merge currTask from multiple topOps
+      HashMap<Operator<? extends Serializable>, Task<? extends Serializable>> opTaskMap = ctx
+          .getOpTaskMap();
+      if (opTaskMap != null && opTaskMap.size() > 0) {
+        Task<? extends Serializable> tsk = opTaskMap.get(null);
+        if (tsk != null) {
+          ctx.setCurrTask(tsk);
+        }
+      }
+
+      UnionParseContext uPrsCtx = uCtx.getUnionParseContext(union);
+      if ((uPrsCtx != null) && (uPrsCtx.getMapJoinQuery())) {
+        GenMapRedUtils.mergeMapJoinUnion(union, ctx, UnionProcFactory
+            .getPositionParent(union, stack));
+      } else {
+        mapCurrCtx.put((Operator<? extends Serializable>) nd, new GenMapRedCtx(
+            ctx.getCurrTask(), ctx.getCurrTopOp(), ctx.getCurrAliasId()));
+      }
+      return null;
     }
 
     ctx.setCurrUnionOp(union);
@@ -230,8 +116,16 @@ public class GenMRUnion1 implements NodeProcessor {
     Task<? extends Serializable> currTask = ctx.getCurrTask();
     int pos = UnionProcFactory.getPositionParent(union, stack);
 
+    // is the current task a root task
+    if (uPrsCtx.getRootTask(pos) && (!ctx.getRootTasks().contains(currTask))) {
+      ctx.getRootTasks().add(currTask);
+    }
+
     GenMRUnionCtx uCtxTask = ctx.getUnionTask(union);
     Task<? extends Serializable> uTask = null;
+
+    Operator<? extends Serializable> parent = union.getParentOperators().get(
+        pos);
     MapredWork uPlan = null;
 
     // union is encountered for the first time
@@ -241,36 +135,70 @@ public class GenMRUnion1 implements NodeProcessor {
       uTask = TaskFactory.get(uPlan, parseCtx.getConf());
       uCtxTask.setUTask(uTask);
       ctx.setUnionTask(union, uCtxTask);
-    }
-    else {
+    } else {
       uTask = uCtxTask.getUTask();
     }
 
-    // Copy into the current union task plan if  
-    if (uPrsCtx.getMapOnlySubq(pos) && uPrsCtx.getRootTask(pos)
-        && !uPrsCtx.getMapJoinSubq(pos)) {
-      processSubQueryUnionMerge(ctx, uCtxTask, union, stack);
-    }
-    // If it a map-reduce job, create a temporary file
-    else {
-      // is the current task a root task
-      if (uPrsCtx.getRootTask(pos) && (!ctx.getRootTasks().contains(currTask))) {
-        ctx.getRootTasks().add(currTask);
-      }
-      // If there is a mapjoin at position 'pos'
-      if (uPrsCtx.getMapJoinSubq(pos)) {
-        processSubQueryUnionMapJoin(ctx);
-      }
+    // If there is a mapjoin at position 'pos'
+    if (uPrsCtx.getMapJoinSubq(pos)) {
+      AbstractMapJoinOperator<? extends MapJoinDesc> mjOp = ctx.getCurrMapJoinOp();
+      assert mjOp != null;
+      GenMRMapJoinCtx mjCtx = ctx.getMapJoinCtx(mjOp);
+      assert mjCtx != null;
+      MapredWork plan = (MapredWork) currTask.getWork();
 
-      processSubQueryUnionCreateIntermediate(union.getParentOperators().get(pos), union, uTask, ctx, uCtxTask);
+      String taskTmpDir = mjCtx.getTaskTmpDir();
+      TableDesc tt_desc = mjCtx.getTTDesc();
+      assert plan.getPathToAliases().get(taskTmpDir) == null;
+      plan.getPathToAliases().put(taskTmpDir, new ArrayList<String>());
+      plan.getPathToAliases().get(taskTmpDir).add(taskTmpDir);
+      plan.getPathToPartitionInfo().put(taskTmpDir,
+          new PartitionDesc(tt_desc, null));
+      plan.getAliasToWork().put(taskTmpDir, mjCtx.getRootMapJoinOp());
+    }
+
+    TableDesc tt_desc = PlanUtils.getIntermediateFileTableDesc(PlanUtils
+        .getFieldSchemasFromRowSchema(parent.getSchema(), "temporarycol"));
+
+    // generate the temporary file
+    Context baseCtx = parseCtx.getContext();
+    String taskTmpDir = baseCtx.getMRTmpFileURI();
+
+    // Add the path to alias mapping
+    uCtxTask.addTaskTmpDir(taskTmpDir);
+    uCtxTask.addTTDesc(tt_desc);
+
+    // The union task is empty. The files created for all the inputs are
+    // assembled in the
+    // union context and later used to initialize the union plan
+
+    // Create a file sink operator for this file name
+    Operator<? extends Serializable> fs_op = OperatorFactory.get(
+        new FileSinkDesc(taskTmpDir, tt_desc, parseCtx.getConf().getBoolVar(
+        HiveConf.ConfVars.COMPRESSINTERMEDIATE)), parent.getSchema());
+
+    assert parent.getChildOperators().size() == 1;
+    parent.getChildOperators().set(0, fs_op);
+
+    List<Operator<? extends Serializable>> parentOpList =
+      new ArrayList<Operator<? extends Serializable>>();
+    parentOpList.add(parent);
+    fs_op.setParentOperators(parentOpList);
+
+    currTask.addDependentTask(uTask);
+
+    // If it is map-only task, add the files to be processed
+    if (uPrsCtx.getMapOnlySubq(pos) && uPrsCtx.getRootTask(pos)) {
+      GenMapRedUtils.setTaskPlan(ctx.getCurrAliasId(), ctx.getCurrTopOp(),
+          (MapredWork) currTask.getWork(), false, ctx);
     }
 
     ctx.setCurrTask(uTask);
     ctx.setCurrAliasId(null);
     ctx.setCurrTopOp(null);
 
-    mapCurrCtx.put((Operator<? extends Serializable>) nd,
-        new GenMapRedCtx(ctx.getCurrTask(), null, null));
+    mapCurrCtx.put((Operator<? extends Serializable>) nd, new GenMapRedCtx(ctx
+        .getCurrTask(), null, null));
 
     return null;
   }
