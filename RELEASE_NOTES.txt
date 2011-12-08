@@ -219,6 +219,7 @@ Release Notes - Hive - Version 0.8.0
     * [HIVE-2624] - Fix eclipse classpath template broken in HIVE-2523
     * [HIVE-2625] - Fix maven-build Ant target
     * [HIVE-2630] - TestHiveServer doesn't produce a JUnit report file
+    * [HIVE-2634] - revert HIVE-2566
 
 ** Improvement
     * [HIVE-1078] - CREATE VIEW followup:  CREATE OR REPLACE
