@@ -86,11 +86,17 @@ Upgrading from older versions of Hive
   you are using a different database for your MetaStore you will need
   to provide your own upgrade script.
 
-- Hive @VERSION@ includes new configuration properties. If you
-  are upgrading from an earlier version of Hive it is imperative
-  that you replace all of the old copies of the hive-default.xml
-  configuration file with the new version located in the conf/
-  directory.
+- Please be aware that the Hive 0.8.0 MetaStore upgrade scripts remove
+  support for partition-level column information from the MetaStore
+  schema. Since this information was not previously exposed by Hive
+  the only people potentially impacted by this change are those who
+  access the MetaStore directly via the Thrift API. If you fall into
+  the latter category please consult HIVE-2246 for more information.
+
+- Hive 0.8.0 ignores the hive-default.xml file, though we continue
+  to provide it for reference purposes. Any changes that you
+  previously made to hive-default.xml must now be moved to the
+  hive-site.xml file.
 
 
 Useful mailing lists
