@@ -150,14 +150,14 @@ group by l_shipdate
 order by l_shipdate
 PREHOOK: type: QUERY
 PREHOOK: Input: default@lineitem
-PREHOOK: Output: file:/var/folders/bZ/bZe+iKfoFTuPoShRd6dy6-tOU9Y/-Tmp-/njain/hive_2011-11-11_18-03-58_256_4359739093927465788/-mr-10000
+PREHOOK: Output: file:/tmp/njain/hive_2011-12-07_18-00-52_012_8071976135987072046/-mr-10000
 POSTHOOK: query: select l_shipdate, count(l_shipdate)
 from lineitem
 group by l_shipdate
 order by l_shipdate
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@lineitem
-POSTHOOK: Output: file:/var/folders/bZ/bZe+iKfoFTuPoShRd6dy6-tOU9Y/-Tmp-/njain/hive_2011-11-11_18-03-58_256_4359739093927465788/-mr-10000
+POSTHOOK: Output: file:/tmp/njain/hive_2011-12-07_18-00-52_012_8071976135987072046/-mr-10000
 POSTHOOK: Lineage: default__lineitem_lineitem_lshipdate_idx__._bucketname SIMPLE [(lineitem)lineitem.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
 POSTHOOK: Lineage: default__lineitem_lineitem_lshipdate_idx__._count_of_l_shipdate EXPRESSION [(lineitem)lineitem.FieldSchema(name:l_shipdate, type:string, comment:null), ]
 POSTHOOK: Lineage: default__lineitem_lineitem_lshipdate_idx__._offsets EXPRESSION [(lineitem)lineitem.FieldSchema(name:BLOCK__OFFSET__INSIDE__FILE, type:bigint, comment:), ]
@@ -346,14 +346,14 @@ group by l_shipdate
 order by l_shipdate
 PREHOOK: type: QUERY
 PREHOOK: Input: default@default__lineitem_lineitem_lshipdate_idx__
-PREHOOK: Output: file:/var/folders/bZ/bZe+iKfoFTuPoShRd6dy6-tOU9Y/-Tmp-/njain/hive_2011-11-11_18-04-11_823_1547404645018211524/-mr-10000
+PREHOOK: Output: file:/tmp/njain/hive_2011-12-07_18-00-58_386_5252653541132989710/-mr-10000
 POSTHOOK: query: select l_shipdate, count(l_shipdate)
 from lineitem
 group by l_shipdate
 order by l_shipdate
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@default__lineitem_lineitem_lshipdate_idx__
-POSTHOOK: Output: file:/var/folders/bZ/bZe+iKfoFTuPoShRd6dy6-tOU9Y/-Tmp-/njain/hive_2011-11-11_18-04-11_823_1547404645018211524/-mr-10000
+POSTHOOK: Output: file:/tmp/njain/hive_2011-12-07_18-00-58_386_5252653541132989710/-mr-10000
 POSTHOOK: Lineage: default__lineitem_lineitem_lshipdate_idx__._bucketname SIMPLE [(lineitem)lineitem.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
 POSTHOOK: Lineage: default__lineitem_lineitem_lshipdate_idx__._count_of_l_shipdate EXPRESSION [(lineitem)lineitem.FieldSchema(name:l_shipdate, type:string, comment:null), ]
 POSTHOOK: Lineage: default__lineitem_lineitem_lshipdate_idx__._offsets EXPRESSION [(lineitem)lineitem.FieldSchema(name:BLOCK__OFFSET__INSIDE__FILE, type:bigint, comment:), ]
@@ -549,7 +549,7 @@ STAGE PLANS:
   Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/var/folders/bZ/bZe+iKfoFTuPoShRd6dy6-tOU9Y/-Tmp-/njain/hive_2011-11-11_18-04-25_528_4656091135628161209/-mr-10002 
+        file:/tmp/njain/hive_2011-12-07_18-01-05_039_3668243048784602339/-mr-10002 
             Reduce Output Operator
               key expressions:
                     expr: _col0
@@ -587,7 +587,7 @@ group by year(l_shipdate), month(l_shipdate)
 order by year, month
 PREHOOK: type: QUERY
 PREHOOK: Input: default@lineitem
-PREHOOK: Output: file:/var/folders/bZ/bZe+iKfoFTuPoShRd6dy6-tOU9Y/-Tmp-/njain/hive_2011-11-11_18-04-25_613_8938618162298839937/-mr-10000
+PREHOOK: Output: file:/tmp/njain/hive_2011-12-07_18-01-05_145_7846787341043525292/-mr-10000
 POSTHOOK: query: select year(l_shipdate) as year,
         month(l_shipdate) as month,
         count(l_shipdate) as monthly_shipments
@@ -596,7 +596,7 @@ group by year(l_shipdate), month(l_shipdate)
 order by year, month
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@lineitem
-POSTHOOK: Output: file:/var/folders/bZ/bZe+iKfoFTuPoShRd6dy6-tOU9Y/-Tmp-/njain/hive_2011-11-11_18-04-25_613_8938618162298839937/-mr-10000
+POSTHOOK: Output: file:/tmp/njain/hive_2011-12-07_18-01-05_145_7846787341043525292/-mr-10000
 POSTHOOK: Lineage: default__lineitem_lineitem_lshipdate_idx__._bucketname SIMPLE [(lineitem)lineitem.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
 POSTHOOK: Lineage: default__lineitem_lineitem_lshipdate_idx__._count_of_l_shipdate EXPRESSION [(lineitem)lineitem.FieldSchema(name:l_shipdate, type:string, comment:null), ]
 POSTHOOK: Lineage: default__lineitem_lineitem_lshipdate_idx__._offsets EXPRESSION [(lineitem)lineitem.FieldSchema(name:BLOCK__OFFSET__INSIDE__FILE, type:bigint, comment:), ]
@@ -742,7 +742,7 @@ STAGE PLANS:
   Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/var/folders/bZ/bZe+iKfoFTuPoShRd6dy6-tOU9Y/-Tmp-/njain/hive_2011-11-11_18-04-47_584_6045415739978643731/-mr-10002 
+        file:/tmp/njain/hive_2011-12-07_18-01-11_386_3243920698852999950/-mr-10002 
             Reduce Output Operator
               key expressions:
                     expr: _col0
@@ -780,7 +780,7 @@ group by year(l_shipdate), month(l_shipdate)
 order by year, month
 PREHOOK: type: QUERY
 PREHOOK: Input: default@default__lineitem_lineitem_lshipdate_idx__
-PREHOOK: Output: file:/var/folders/bZ/bZe+iKfoFTuPoShRd6dy6-tOU9Y/-Tmp-/njain/hive_2011-11-11_18-04-47_791_5806712921581936542/-mr-10000
+PREHOOK: Output: file:/tmp/njain/hive_2011-12-07_18-01-11_523_7411731261235643286/-mr-10000
 POSTHOOK: query: select year(l_shipdate) as year,
         month(l_shipdate) as month,
         count(l_shipdate) as monthly_shipments
@@ -789,7 +789,7 @@ group by year(l_shipdate), month(l_shipdate)
 order by year, month
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@default__lineitem_lineitem_lshipdate_idx__
-POSTHOOK: Output: file:/var/folders/bZ/bZe+iKfoFTuPoShRd6dy6-tOU9Y/-Tmp-/njain/hive_2011-11-11_18-04-47_791_5806712921581936542/-mr-10000
+POSTHOOK: Output: file:/tmp/njain/hive_2011-12-07_18-01-11_523_7411731261235643286/-mr-10000
 POSTHOOK: Lineage: default__lineitem_lineitem_lshipdate_idx__._bucketname SIMPLE [(lineitem)lineitem.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
 POSTHOOK: Lineage: default__lineitem_lineitem_lshipdate_idx__._count_of_l_shipdate EXPRESSION [(lineitem)lineitem.FieldSchema(name:l_shipdate, type:string, comment:null), ]
 POSTHOOK: Lineage: default__lineitem_lineitem_lshipdate_idx__._offsets EXPRESSION [(lineitem)lineitem.FieldSchema(name:BLOCK__OFFSET__INSIDE__FILE, type:bigint, comment:), ]
@@ -1115,7 +1115,8 @@ ABSTRACT SYNTAX TREE:
 
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
-  Stage-2 depends on stages: Stage-1
+  Stage-2 depends on stages: Stage-1, Stage-3
+  Stage-3 is a root stage
   Stage-0 is a root stage
 
 STAGE PLANS:
@@ -1180,22 +1181,40 @@ STAGE PLANS:
   Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/var/folders/bZ/bZe+iKfoFTuPoShRd6dy6-tOU9Y/-Tmp-/njain/hive_2011-11-11_18-05-09_490_5748831156089956075/-mr-10002 
-          TableScan
-            Union
-              Select Operator
-                expressions:
-                      expr: _col0
-                      type: string
-                      expr: _col1
-                      type: bigint
-                outputColumnNames: _col0, _col1
-                File Output Operator
-                  compressed: false
-                  GlobalTableId: 0
-                  table:
-                      input format: org.apache.hadoop.mapred.TextInputFormat
-                      output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+        file:/tmp/njain/hive_2011-12-07_18-01-18_107_7914726636641975616/-mr-10002 
+          Union
+            Select Operator
+              expressions:
+                    expr: _col0
+                    type: string
+                    expr: _col1
+                    type: bigint
+              outputColumnNames: _col0, _col1
+              File Output Operator
+                compressed: false
+                GlobalTableId: 0
+                table:
+                    input format: org.apache.hadoop.mapred.TextInputFormat
+                    output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+        file:/tmp/njain/hive_2011-12-07_18-01-18_107_7914726636641975616/-mr-10003 
+          Union
+            Select Operator
+              expressions:
+                    expr: _col0
+                    type: string
+                    expr: _col1
+                    type: bigint
+              outputColumnNames: _col0, _col1
+              File Output Operator
+                compressed: false
+                GlobalTableId: 0
+                table:
+                    input format: org.apache.hadoop.mapred.TextInputFormat
+                    output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+
+  Stage: Stage-3
+    Map Reduce
+      Alias -> Map Operator Tree:
         null-subquery2:dummy-subquery2:lineitem 
           TableScan
             alias: lineitem
@@ -1206,20 +1225,12 @@ STAGE PLANS:
                     expr: l_orderkey
                     type: int
               outputColumnNames: _col0, _col1
-              Union
-                Select Operator
-                  expressions:
-                        expr: _col0
-                        type: string
-                        expr: _col1
-                        type: bigint
-                  outputColumnNames: _col0, _col1
-                  File Output Operator
-                    compressed: false
-                    GlobalTableId: 0
-                    table:
-                        input format: org.apache.hadoop.mapred.TextInputFormat
-                        output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+              File Output Operator
+                compressed: false
+                GlobalTableId: 0
+                table:
+                    input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                    output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
 
   Stage: Stage-0
     Fetch Operator
@@ -3764,7 +3775,7 @@ STAGE PLANS:
   Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/var/folders/bZ/bZe+iKfoFTuPoShRd6dy6-tOU9Y/-Tmp-/njain/hive_2011-11-11_18-06-49_654_5924927149801403952/-mr-10002 
+        file:/tmp/njain/hive_2011-12-07_18-02-11_412_1990342123241011719/-mr-10002 
             Reduce Output Operator
               key expressions:
                     expr: _col0
@@ -3793,11 +3804,11 @@ STAGE PLANS:
 PREHOOK: query: select key, count(key) from tbl group by key order by key
 PREHOOK: type: QUERY
 PREHOOK: Input: default@tbl
-PREHOOK: Output: file:/var/folders/bZ/bZe+iKfoFTuPoShRd6dy6-tOU9Y/-Tmp-/njain/hive_2011-11-11_18-06-49_751_2601799861432475313/-mr-10000
+PREHOOK: Output: file:/tmp/njain/hive_2011-12-07_18-02-11_492_2440459618491904996/-mr-10000
 POSTHOOK: query: select key, count(key) from tbl group by key order by key
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@tbl
-POSTHOOK: Output: file:/var/folders/bZ/bZe+iKfoFTuPoShRd6dy6-tOU9Y/-Tmp-/njain/hive_2011-11-11_18-06-49_751_2601799861432475313/-mr-10000
+POSTHOOK: Output: file:/tmp/njain/hive_2011-12-07_18-02-11_492_2440459618491904996/-mr-10000
 POSTHOOK: Lineage: default__lineitem_lineitem_lshipdate_idx__._bucketname SIMPLE [(lineitem)lineitem.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
 POSTHOOK: Lineage: default__lineitem_lineitem_lshipdate_idx__._count_of_l_shipdate EXPRESSION [(lineitem)lineitem.FieldSchema(name:l_shipdate, type:string, comment:null), ]
 POSTHOOK: Lineage: default__lineitem_lineitem_lshipdate_idx__._offsets EXPRESSION [(lineitem)lineitem.FieldSchema(name:BLOCK__OFFSET__INSIDE__FILE, type:bigint, comment:), ]
@@ -3950,7 +3961,7 @@ STAGE PLANS:
   Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/var/folders/bZ/bZe+iKfoFTuPoShRd6dy6-tOU9Y/-Tmp-/njain/hive_2011-11-11_18-07-00_174_9033409821752767504/-mr-10002 
+        file:/tmp/njain/hive_2011-12-07_18-02-17_666_9208222129968129531/-mr-10002 
             Reduce Output Operator
               key expressions:
                     expr: _col0
@@ -3979,11 +3990,11 @@ STAGE PLANS:
 PREHOOK: query: select key, count(key) from tbl group by key order by key
 PREHOOK: type: QUERY
 PREHOOK: Input: default@default__tbl_tbl_key_idx__
-PREHOOK: Output: file:/var/folders/bZ/bZe+iKfoFTuPoShRd6dy6-tOU9Y/-Tmp-/njain/hive_2011-11-11_18-07-00_328_6505949201900258519/-mr-10000
+PREHOOK: Output: file:/tmp/njain/hive_2011-12-07_18-02-17_798_1950624779635034326/-mr-10000
 POSTHOOK: query: select key, count(key) from tbl group by key order by key
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@default__tbl_tbl_key_idx__
-POSTHOOK: Output: file:/var/folders/bZ/bZe+iKfoFTuPoShRd6dy6-tOU9Y/-Tmp-/njain/hive_2011-11-11_18-07-00_328_6505949201900258519/-mr-10000
+POSTHOOK: Output: file:/tmp/njain/hive_2011-12-07_18-02-17_798_1950624779635034326/-mr-10000
 POSTHOOK: Lineage: default__lineitem_lineitem_lshipdate_idx__._bucketname SIMPLE [(lineitem)lineitem.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
 POSTHOOK: Lineage: default__lineitem_lineitem_lshipdate_idx__._count_of_l_shipdate EXPRESSION [(lineitem)lineitem.FieldSchema(name:l_shipdate, type:string, comment:null), ]
 POSTHOOK: Lineage: default__lineitem_lineitem_lshipdate_idx__._offsets EXPRESSION [(lineitem)lineitem.FieldSchema(name:BLOCK__OFFSET__INSIDE__FILE, type:bigint, comment:), ]

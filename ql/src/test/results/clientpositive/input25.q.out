@@ -80,42 +80,40 @@ STAGE PLANS:
   Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/var/folders/bZ/bZe+iKfoFTuPoShRd6dy6-tOU9Y/-Tmp-/njain/hive_2011-11-11_10-23-45_579_6808174009465727795/-mr-10002 
-          TableScan
-            Union
-              Select Operator
-                expressions:
-                      expr: _col0
-                      type: int
-                      expr: _col1
-                      type: int
-                      expr: _col2
-                      type: string
-                outputColumnNames: _col0, _col1, _col2
-                File Output Operator
-                  compressed: false
-                  GlobalTableId: 0
-                  table:
-                      input format: org.apache.hadoop.mapred.TextInputFormat
-                      output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-        file:/var/folders/bZ/bZe+iKfoFTuPoShRd6dy6-tOU9Y/-Tmp-/njain/hive_2011-11-11_10-23-45_579_6808174009465727795/-mr-10003 
-          TableScan
-            Union
-              Select Operator
-                expressions:
-                      expr: _col0
-                      type: int
-                      expr: _col1
-                      type: int
-                      expr: _col2
-                      type: string
-                outputColumnNames: _col0, _col1, _col2
-                File Output Operator
-                  compressed: false
-                  GlobalTableId: 0
-                  table:
-                      input format: org.apache.hadoop.mapred.TextInputFormat
-                      output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+        file:/tmp/njain/hive_2011-12-07_17-57-51_725_5932902027949948969/-mr-10002 
+          Union
+            Select Operator
+              expressions:
+                    expr: _col0
+                    type: int
+                    expr: _col1
+                    type: int
+                    expr: _col2
+                    type: string
+              outputColumnNames: _col0, _col1, _col2
+              File Output Operator
+                compressed: false
+                GlobalTableId: 0
+                table:
+                    input format: org.apache.hadoop.mapred.TextInputFormat
+                    output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+        file:/tmp/njain/hive_2011-12-07_17-57-51_725_5932902027949948969/-mr-10003 
+          Union
+            Select Operator
+              expressions:
+                    expr: _col0
+                    type: int
+                    expr: _col1
+                    type: int
+                    expr: _col2
+                    type: string
+              outputColumnNames: _col0, _col1, _col2
+              File Output Operator
+                compressed: false
+                GlobalTableId: 0
+                table:
+                    input format: org.apache.hadoop.mapred.TextInputFormat
+                    output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
 
   Stage: Stage-3
     Map Reduce
@@ -166,7 +164,7 @@ PREHOOK: query: select * from (
 PREHOOK: type: QUERY
 PREHOOK: Input: default@tst@d=2009-01-01
 PREHOOK: Input: default@tst@d=2009-02-02
-PREHOOK: Output: file:/var/folders/bZ/bZe+iKfoFTuPoShRd6dy6-tOU9Y/-Tmp-/njain/hive_2011-11-11_10-23-45_772_1308096997862615956/-mr-10000
+PREHOOK: Output: file:/tmp/njain/hive_2011-12-07_17-57-51_941_2422734399279293092/-mr-10000
 POSTHOOK: query: select * from (
   select * from tst x where x.d='2009-01-01' limit 10
     union all
@@ -175,4 +173,4 @@ POSTHOOK: query: select * from (
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@tst@d=2009-01-01
 POSTHOOK: Input: default@tst@d=2009-02-02
-POSTHOOK: Output: file:/var/folders/bZ/bZe+iKfoFTuPoShRd6dy6-tOU9Y/-Tmp-/njain/hive_2011-11-11_10-23-45_772_1308096997862615956/-mr-10000
+POSTHOOK: Output: file:/tmp/njain/hive_2011-12-07_17-57-51_941_2422734399279293092/-mr-10000
