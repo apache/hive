@@ -48,22 +48,6 @@ public final class MetaDataFormatUtils {
   private MetaDataFormatUtils() {
   }
 
-  public static String getAllColumnsInformation(Table table) {
-
-    StringBuilder columnInformation = new StringBuilder(DEFAULT_STRINGBUILDER_SIZE);
-    formatColumnsHeader(columnInformation);
-    formatAllFields(columnInformation, table.getCols());
-
-    // Partitions
-    if (table.isPartitioned()) {
-      columnInformation.append(LINE_DELIM).append("# Partition Information")
-          .append(LINE_DELIM);
-      formatColumnsHeader(columnInformation);
-      formatAllFields(columnInformation, table.getPartCols());
-    }
-    return columnInformation.toString();
-  }
-
   private static void formatColumnsHeader(StringBuilder columnInformation) {
     columnInformation.append("# "); // Easy for shell scripts to ignore
     formatOutput(getColumnsHeader(), columnInformation);
@@ -74,6 +58,21 @@ public final class MetaDataFormatUtils {
     StringBuilder columnInformation = new StringBuilder(DEFAULT_STRINGBUILDER_SIZE);
     formatColumnsHeader(columnInformation);
     formatAllFields(columnInformation, cols);
+    return columnInformation.toString();
+  }
+
+  public static String getAllColumnsInformation(List<FieldSchema> cols, List<FieldSchema> partCols) {
+    StringBuilder columnInformation = new StringBuilder(DEFAULT_STRINGBUILDER_SIZE);
+    formatColumnsHeader(columnInformation);
+    formatAllFields(columnInformation, cols);
+
+    if ((partCols != null) && (!partCols.isEmpty())) {
+      columnInformation.append(LINE_DELIM).append("# Partition Information")
+        .append(LINE_DELIM);
+      formatColumnsHeader(columnInformation);
+      formatAllFields(columnInformation, partCols);
+    }
+
     return columnInformation.toString();
   }
 

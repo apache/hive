@@ -2556,14 +2556,17 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
       outStream = fs.create(resFile);
 
       if (colPath.equals(tableName)) {
+        List<FieldSchema> cols = (part == null) ? tbl.getCols() : part.getCols();
+
         if (!descTbl.isFormatted()) {
-          List<FieldSchema> cols = tbl.getCols();
           if (tableName.equals(colPath)) {
             cols.addAll(tbl.getPartCols());
           }
           outStream.writeBytes(MetaDataFormatUtils.displayColsUnformatted(cols));
         } else {
-          outStream.writeBytes(MetaDataFormatUtils.getAllColumnsInformation(tbl));
+          outStream.writeBytes(
+            MetaDataFormatUtils.getAllColumnsInformation(cols,
+              tbl.isPartitioned() ? tbl.getPartCols() : null));
         }
       } else {
         List<FieldSchema> cols = Hive.getFieldsFromDeserializer(colPath, tbl.getDeserializer());
