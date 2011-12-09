@@ -42,6 +42,7 @@ import org.apache.hadoop.io.IOUtils;
 import org.apache.hadoop.util.StringUtils;
 import org.json.JSONException;
 import org.json.JSONObject;
+import java.lang.reflect.InvocationTargetException;
 
 /**
  * ExplainTask implementation.
@@ -319,7 +320,14 @@ public class ExplainTask extends Task<ExplainWork> implements Serializable {
 
         if (extended || xpl_note.normalExplain()) {
 
-          Object val = m.invoke(work);
+          Object val = null;
+          try {
+            val = m.invoke(work);
+          }
+          catch (InvocationTargetException ex) {
+            // Ignore the exception, this may be caused by external jars
+            val = null;
+          }
 
           if (val == null) {
             continue;
