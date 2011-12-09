@@ -116,26 +116,6 @@ public class ExecDriver extends Task<MapredWork> implements Serializable, Hadoop
     return true;
   }
 
-  public static String getResourceFiles(Configuration conf, SessionState.ResourceType t) {
-    // fill in local files to be added to the task environment
-    SessionState ss = SessionState.get();
-    Set<String> files = (ss == null) ? null : ss.list_resource(t, null);
-    if (files != null) {
-      List<String> realFiles = new ArrayList<String>(files.size());
-      for (String one : files) {
-        try {
-          realFiles.add(Utilities.realFile(one, conf));
-        } catch (IOException e) {
-          throw new RuntimeException("Cannot validate file " + one + "due to exception: "
-              + e.getMessage(), e);
-        }
-      }
-      return StringUtils.join(realFiles, ",");
-    } else {
-      return "";
-    }
-  }
-
   private void initializeFiles(String prop, String files) {
     if (files != null && files.length() > 0) {
       job.set(prop, files);
@@ -159,15 +139,15 @@ public class ExecDriver extends Task<MapredWork> implements Serializable, Hadoop
     //
     // "tmpfiles" and "tmpjars" are set by the method ExecDriver.execute(),
     // which will be called by both local and NON-local mode.
-    String addedFiles = getResourceFiles(job, SessionState.ResourceType.FILE);
+    String addedFiles = Utilities.getResourceFiles(job, SessionState.ResourceType.FILE);
     if (StringUtils.isNotBlank(addedFiles)) {
       HiveConf.setVar(job, ConfVars.HIVEADDEDFILES, addedFiles);
     }
-    String addedJars = getResourceFiles(job, SessionState.ResourceType.JAR);
+    String addedJars = Utilities.getResourceFiles(job, SessionState.ResourceType.JAR);
     if (StringUtils.isNotBlank(addedJars)) {
       HiveConf.setVar(job, ConfVars.HIVEADDEDJARS, addedJars);
     }
-    String addedArchives = getResourceFiles(job, SessionState.ResourceType.ARCHIVE);
+    String addedArchives = Utilities.getResourceFiles(job, SessionState.ResourceType.ARCHIVE);
     if (StringUtils.isNotBlank(addedArchives)) {
       HiveConf.setVar(job, ConfVars.HIVEADDEDARCHIVES, addedArchives);
     }
@@ -777,7 +757,7 @@ public class ExecDriver extends Task<MapredWork> implements Serializable, Hadoop
   public Collection<Operator<? extends Serializable>> getTopOperators() {
     return getWork().getAliasToWork().values();
   }
-  
+
   @Override
   public boolean hasReduce() {
     MapredWork w = getWork();
