@@ -192,8 +192,8 @@ public class BlockMergeTask extends Task<MergeWork> implements Serializable,
         HiveConf.setVar(job, HiveConf.ConfVars.METASTOREPWD, "HIVE");
       }
       JobClient jc = new JobClient(job);
-      
-      String addedJars = ExecDriver.getResourceFiles(job, SessionState.ResourceType.JAR);
+
+      String addedJars = Utilities.getResourceFiles(job, SessionState.ResourceType.JAR);
       if (!addedJars.isEmpty()) {
         job.set("tmpjars", addedJars);
       }

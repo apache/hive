@@ -144,6 +144,7 @@ import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.mapred.SequenceFileInputFormat;
 import org.apache.hadoop.mapred.SequenceFileOutputFormat;
 import org.apache.hadoop.util.ReflectionUtils;
+import org.apache.hadoop.hive.ql.session.SessionState;
 
 /**
  * Utilities.
@@ -403,8 +404,11 @@ public final class Utilities {
     } catch (UnsupportedEncodingException ex) {
       throw new RuntimeException("UTF-8 support required", ex);
     }
+
     ByteArrayInputStream bais = new ByteArrayInputStream(bytes);
-    XMLDecoder decoder = new XMLDecoder(bais, null, null, conf.getClassLoader());
+
+    XMLDecoder decoder = new XMLDecoder(bais, null, null,
+                                       addResourceFilesToClassPath(conf));
     try {
       ExprNodeDesc expr = (ExprNodeDesc) decoder.readObject();
       return expr;
@@ -477,7 +481,8 @@ public final class Utilities {
   public static QueryPlan deserializeQueryPlan(InputStream in, Configuration conf) {
     XMLDecoder d = null;
     try {
-      d = new XMLDecoder(in, null, null, conf.getClassLoader());
+      d = new XMLDecoder(in, null, null,
+                         addResourceFilesToClassPath(conf));
       QueryPlan ret = (QueryPlan) d.readObject();
       return (ret);
     } finally {
@@ -510,7 +515,8 @@ public final class Utilities {
   public static MapredWork deserializeMapRedWork(InputStream in, Configuration conf) {
     XMLDecoder d = null;
     try {
-      d = new XMLDecoder(in, null, null, conf.getClassLoader());
+      d = new XMLDecoder(in, null, null,
+                         addResourceFilesToClassPath(conf));
       MapredWork ret = (MapredWork) d.readObject();
       return (ret);
     } finally {
@@ -542,7 +548,8 @@ public final class Utilities {
   public static MapredLocalWork deserializeMapRedLocalWork(InputStream in, Configuration conf) {
     XMLDecoder d = null;
     try {
-      d = new XMLDecoder(in, null, null, conf.getClassLoader());
+      d = new XMLDecoder(in, null, null,
+                         addResourceFilesToClassPath(conf));
       MapredLocalWork ret = (MapredLocalWork) d.readObject();
       return (ret);
     } finally {
@@ -1446,6 +1453,26 @@ public final class Utilities {
     return e.getClass().getName() + "(" + e.getMessage() + ")";
   }
 
+  public static String getResourceFiles(Configuration conf, SessionState.ResourceType t) {
+    // fill in local files to be added to the task environment
+    SessionState ss = SessionState.get();
+    Set<String> files = (ss == null) ? null : ss.list_resource(t, null);
+    if (files != null) {
+      List<String> realFiles = new ArrayList<String>(files.size());
+      for (String one : files) {
+        try {
+          realFiles.add(realFile(one, conf));
+        } catch (IOException e) {
+          throw new RuntimeException("Cannot validate file " + one + "due to exception: "
+              + e.getMessage(), e);
+        }
+      }
+      return StringUtils.join(realFiles, ",");
+    } else {
+      return "";
+    }
+  }
+
   /**
    * Add new elements to the classpath.
    *
@@ -1476,6 +1503,18 @@ public final class Utilities {
     }
 
     return new URLClassLoader(curPath.toArray(new URL[0]), loader);
+  }
+
+  public static ClassLoader addResourceFilesToClassPath(Configuration conf) {
+    try {
+      String addedJars = getResourceFiles(conf, SessionState.ResourceType.JAR);
+      if (!StringUtils.isNotBlank(addedJars)) {
+        return conf.getClassLoader();
+      }
+      return addToClassPath(conf.getClassLoader(), StringUtils.split(addedJars, ','));
+    } catch (Exception e) {
+      throw new RuntimeException("Error in adding jars to conf ", e);
+    }
   }
 
   /**

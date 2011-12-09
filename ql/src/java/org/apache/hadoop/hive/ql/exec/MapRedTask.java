@@ -147,7 +147,7 @@ public class MapRedTask extends ExecDriver implements Serializable {
       String hiveJar = conf.getJar();
 
       String libJarsOption;
-      String addedJars = getResourceFiles(conf, SessionState.ResourceType.JAR);
+      String addedJars = Utilities.getResourceFiles(conf, SessionState.ResourceType.JAR);
       conf.setVar(ConfVars.HIVEADDEDJARS, addedJars);
       String auxJars = conf.getAuxJars();
       // Put auxjars and addedjars together into libjars
@@ -188,7 +188,7 @@ public class MapRedTask extends ExecDriver implements Serializable {
           + planPath.toString() + " " + isSilent + " " + hiveConfArgs;
 
       String workDir = (new File(".")).getCanonicalPath();
-      String files = getResourceFiles(conf, SessionState.ResourceType.FILE);
+      String files = Utilities.getResourceFiles(conf, SessionState.ResourceType.FILE);
       if (!files.isEmpty()) {
         cmdLine = cmdLine + " -files " + files;
 

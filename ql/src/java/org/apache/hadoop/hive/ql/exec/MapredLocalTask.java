@@ -134,7 +134,7 @@ public class MapredLocalTask extends Task<MapredLocalWork> implements Serializab
           + " " + isSilent + " " + hiveConfArgs;
 
       String workDir = (new File(".")).getCanonicalPath();
-      String files = ExecDriver.getResourceFiles(conf, SessionState.ResourceType.FILE);
+      String files = Utilities.getResourceFiles(conf, SessionState.ResourceType.FILE);
 
       if (!files.isEmpty()) {
         cmdLine = cmdLine + " -files " + files;
