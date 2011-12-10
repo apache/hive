@@ -86,7 +86,7 @@ public class MapOperator extends Operator<MapredWork> implements Serializable {
 
   private Map<Operator<? extends Serializable>, java.util.ArrayList<String>> operatorToPaths;
 
-  private final Map<Operator<? extends Serializable>, MapOpCtx> childrenOpToOpCtxMap = 
+  private final Map<Operator<? extends Serializable>, MapOpCtx> childrenOpToOpCtxMap =
     new HashMap<Operator<? extends Serializable>, MapOpCtx>();
 
   private ArrayList<Operator<? extends Serializable>> extraChildrenToClose = null;
@@ -391,7 +391,7 @@ public class MapOperator extends Operator<MapredWork> implements Serializable {
           setInspectorInput(inp);
         }
       }
-      
+
       if (children.size() == 0) {
         // didn't find match for input file path in configuration!
         // serious problem ..
@@ -412,7 +412,7 @@ public class MapOperator extends Operator<MapredWork> implements Serializable {
     // set that parent initialization is done and call initialize on children
     state = State.INIT;
     List<Operator<? extends Serializable>> children = getChildOperators();
-    
+
     for (Entry<Operator<? extends Serializable>, MapOpCtx> entry : childrenOpToOpCtxMap
         .entrySet()) {
       Operator<? extends Serializable> child = entry.getKey();
@@ -491,8 +491,6 @@ public class MapOperator extends Operator<MapredWork> implements Serializable {
     // The serializers need to be reset if the input file changed
     if ((this.getExecContext() != null) &&
         this.getExecContext().inputFileChanged()) {
-      LOG.info("Processing path " + this.getExecContext().getCurrentInputFile());
-
       // The child operators cleanup if input file has changed
       cleanUpInputFileChanged();
     }
