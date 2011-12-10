@@ -152,6 +152,8 @@ public abstract class CommonJoinOperator<T extends JoinDesc> extends
 
   transient boolean handleSkewJoin = false;
 
+  transient boolean hasLeftSemiJoin = false;
+
   protected transient int countAfterReport;
   protected transient int heartbeatInterval;
   protected static final int NOTSKIPBIGTABLE = -1;
@@ -324,6 +326,13 @@ public abstract class CommonJoinOperator<T extends JoinDesc> extends
 
     outputObjInspector = getJoinOutputObjectInspector(order,
         joinValuesStandardObjectInspectors, conf);
+
+    for( int i = 0; i < condn.length; i++ ) {
+      if(condn[i].getType() == JoinDesc.LEFT_SEMI_JOIN) {
+        hasLeftSemiJoin = true;
+      }
+    }
+
     LOG.info("JOIN "
         + ((StructObjectInspector) outputObjInspector).getTypeName()
         + " totalsz = " + totalSz);
@@ -835,7 +844,7 @@ transient boolean newGroupStarted = false;
         LOG.trace("calling genAllOneUniqueJoinObject");
         genAllOneUniqueJoinObject();
         LOG.trace("called genAllOneUniqueJoinObject");
-      } else if (!hasEmpty) {
+      } else if (!hasEmpty && !hasLeftSemiJoin) {
         LOG.trace("calling genUniqueJoinObject");
         genUniqueJoinObject(0, 0);
         LOG.trace("called genUniqueJoinObject");
