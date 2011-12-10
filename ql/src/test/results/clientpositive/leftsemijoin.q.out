@@ -1,0 +1,94 @@
+PREHOOK: query: drop table sales
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: drop table sales
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: drop table things
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: drop table things
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: CREATE TABLE sales (name STRING, id INT)
+ROW FORMAT DELIMITED FIELDS TERMINATED BY '\t'
+PREHOOK: type: CREATETABLE
+POSTHOOK: query: CREATE TABLE sales (name STRING, id INT)
+ROW FORMAT DELIMITED FIELDS TERMINATED BY '\t'
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: default@sales
+PREHOOK: query: CREATE TABLE things (id INT, name STRING) partitioned by (ds string)
+ROW FORMAT DELIMITED FIELDS TERMINATED BY '\t'
+PREHOOK: type: CREATETABLE
+POSTHOOK: query: CREATE TABLE things (id INT, name STRING) partitioned by (ds string)
+ROW FORMAT DELIMITED FIELDS TERMINATED BY '\t'
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: default@things
+PREHOOK: query: load data local inpath '../data/files/sales.txt' INTO TABLE sales
+PREHOOK: type: LOAD
+PREHOOK: Output: default@sales
+POSTHOOK: query: load data local inpath '../data/files/sales.txt' INTO TABLE sales
+POSTHOOK: type: LOAD
+POSTHOOK: Output: default@sales
+PREHOOK: query: load data local inpath '../data/files/things.txt' INTO TABLE things partition(ds='2011-10-23')
+PREHOOK: type: LOAD
+PREHOOK: Output: default@things
+POSTHOOK: query: load data local inpath '../data/files/things.txt' INTO TABLE things partition(ds='2011-10-23')
+POSTHOOK: type: LOAD
+POSTHOOK: Output: default@things
+POSTHOOK: Output: default@things@ds=2011-10-23
+PREHOOK: query: load data local inpath '../data/files/things2.txt' INTO TABLE things partition(ds='2011-10-24')
+PREHOOK: type: LOAD
+PREHOOK: Output: default@things
+POSTHOOK: query: load data local inpath '../data/files/things2.txt' INTO TABLE things partition(ds='2011-10-24')
+POSTHOOK: type: LOAD
+POSTHOOK: Output: default@things
+POSTHOOK: Output: default@things@ds=2011-10-24
+PREHOOK: query: SELECT name,id FROM sales
+PREHOOK: type: QUERY
+PREHOOK: Input: default@sales
+PREHOOK: Output: file:/tmp/tianzhao/hive_2011-10-23_05-36-12_283_7096383933800103176/-mr-10000
+POSTHOOK: query: SELECT name,id FROM sales
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@sales
+POSTHOOK: Output: file:/tmp/tianzhao/hive_2011-10-23_05-36-12_283_7096383933800103176/-mr-10000
+Joe	2
+Hank	2
+PREHOOK: query: SELECT id,name FROM things
+PREHOOK: type: QUERY
+PREHOOK: Input: default@things@ds=2011-10-23
+PREHOOK: Input: default@things@ds=2011-10-24
+PREHOOK: Output: file:/tmp/tianzhao/hive_2011-10-23_05-36-15_002_3055350251358186725/-mr-10000
+POSTHOOK: query: SELECT id,name FROM things
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@things@ds=2011-10-23
+POSTHOOK: Input: default@things@ds=2011-10-24
+POSTHOOK: Output: file:/tmp/tianzhao/hive_2011-10-23_05-36-15_002_3055350251358186725/-mr-10000
+2	Tie
+2	Tie
+PREHOOK: query: SELECT name,id FROM sales LEFT SEMI JOIN things ON (sales.id = things.id)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@sales
+PREHOOK: Input: default@things@ds=2011-10-23
+PREHOOK: Input: default@things@ds=2011-10-24
+PREHOOK: Output: file:/tmp/tianzhao/hive_2011-10-23_05-36-17_568_6975264437881894106/-mr-10000
+POSTHOOK: query: SELECT name,id FROM sales LEFT SEMI JOIN things ON (sales.id = things.id)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@sales
+POSTHOOK: Input: default@things@ds=2011-10-23
+POSTHOOK: Input: default@things@ds=2011-10-24
+POSTHOOK: Output: file:/tmp/tianzhao/hive_2011-10-23_05-36-17_568_6975264437881894106/-mr-10000
+Joe	2
+Hank	2
+PREHOOK: query: drop table sales
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@sales
+PREHOOK: Output: default@sales
+POSTHOOK: query: drop table sales
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@sales
+POSTHOOK: Output: default@sales
+PREHOOK: query: drop table things
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@things
+PREHOOK: Output: default@things
+POSTHOOK: query: drop table things
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@things
+POSTHOOK: Output: default@things
