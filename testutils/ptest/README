@@ -1,0 +1,49 @@
+= Configuration file =
+
+Configuration file is JSON formated, example:
+
+{
+    "qfile_hosts": [
+        ["hostname1", 2],
+        ["hostname2", 4],
+        ["hostname3", 4],
+    ],
+    "other_hosts": [
+        ["hostname1", 2],
+        ["hostname4", 5]
+    ],
+    "master_base_path": "${{HOME}}/hivetests",
+    "host_base_path": "/mnt/drive/hivetests"
+    "java_home": "/opt/jdk"
+}
+
+== qfile_hosts ==
+List of hosts that should run TestCliDriver and TestNegativeCliDriver test
+cases.  Number following the host name is number of simultaneous tests that
+should be run on this host, you should probably set it near number of cores that
+host has.
+
+== other_hosts ==
+List of hosts that should run all other test cases.  Number has the same meaning
+as in `qfile_hosts`.
+
+== master_base_path ==
+Path on localhost (master) where this script can build Hive, store reports, etc.
+This path should be available from every slave node and should point to the same
+data (home on NFS would be a good choice).
+
+== host_base_path ==
+Path on slaves where Hive repo will be cloned and tests will be run.
+'-your_user_name' will be actually appended to this path to allow parallel runs
+by different users.
+
+== java_home ==
+Should point to Java environment that should be used.
+
+== About paths ==
+You can use environmental variables with `${{my_env}}`, as home is used in the
+example.
+
+You shouldn't point this paths to your work repository or any directory that
+stores data you don't want to lose.  This script might wipe everything under
+`master_base_path` and `host_base_path` as needed.

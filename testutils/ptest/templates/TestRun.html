@@ -1,0 +1,90 @@
+<!doctype html>
+<!--
+  - Licensed to the Apache Software Foundation (ASF) under one or more
+  - contributor license agreements.  See the NOTICE file distributed with
+  - this work for additional information regarding copyright ownership.
+  - The ASF licenses this file to You under the Apache License, Version 2.0
+  - (the "License"); you may not use this file except in compliance with
+  - the License.  You may obtain a copy of the License at
+  -
+  -     http://www.apache.org/licenses/LICENSE-2.0
+  -
+  - Unless required by applicable law or agreed to in writing, software
+  - distributed under the License is distributed on an "AS IS" BASIS,
+  - WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  - See the License for the specific language governing permissions and
+  - limitations under the License.
+-->
+<html>
+  <head>
+    <title>Unit Test Results.</title>
+    <style type="text/css">
+      ${this.render('templates/common.css')}
+    </style>
+  </head>
+  <body>
+    <h1 id="top">Unit Test Results.</h1>
+
+    <h2>Summary</h2>
+    <table>
+      <tr>
+        <th>Tests</th>
+        <th>Passes</th>
+        <th>Failures</th>
+        <th>Errors</th>
+        <th>Success rate</th>
+        <th>Time</th>
+      </tr>
+      <tr
+        % if this.failures() + this.errors():
+          class="failure"
+        % endif
+      >
+        <td>${this.tests()}</td>
+        <td>${this.passes()}</td>
+        <td>${this.failures()}</td>
+        <td>${this.errors()}</td>
+        <td>${round(this.success_rate(), 2)}%</td>
+        <td>${round(this.time(), 2)}s</td>
+      </tr>
+    </table>
+
+    % if this.test_suites:
+      <h2>Test results</h2>
+      <table>
+        <tr>
+          <th>Host</th>
+          <th>Name</th>
+          <th>Tests</th>
+          <th>Passes</th>
+          <th>Failures</th>
+          <th>Errors</th>
+          <th>Time</th>
+        </tr>
+        % for test_suite in this.test_suites:
+          <tr
+            % if test_suite.failures() + test_suite.errors():
+              class="failure"
+            % endif
+          >
+            <td>
+              <a href="#${test_suite.label()}">
+                ${test_suite.host_name()}
+              </a>
+            </td>
+            <td>${test_suite.name()}</td>
+            <td>${test_suite.tests()}</td>
+            <td>${test_suite.passes()}</td>
+            <td>${test_suite.failures()}</td>
+            <td>${test_suite.errors()}</td>
+            <td>${round(test_suite.time(), 2)}s</td>
+          </tr>
+        % endfor
+      </table>
+    % endif
+
+    % for test_suite in this.test_suites:
+      ${test_suite.render()}
+    % endfor
+  </body>
+</html>

@@ -1,0 +1,72 @@
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+body {
+  font-size: 0.85em;
+}
+
+a {
+  color: blue;
+}
+
+table {
+  width: 100%;
+}
+
+table.properties {
+  table-layout: fixed;
+}
+
+table.properties th:first-child {
+  width: 30%;
+}
+
+table.properties th:first-child + th {
+  width: 70%;
+}
+
+table th {
+  background-color: #a6caf0;
+  padding: 0.3em;
+  text-align: left;
+}
+
+table td {
+  background-color: #eeeee0;
+  padding: 0.3em;
+}
+
+table tr.failure {
+  color: red;
+  font-weight: bold;
+}
+
+table tr.failure a {
+  color: red;
+}
+
+.long-lines {
+  word-wrap: break-word;
+}
+
+.float-right {
+  float: right;
+}
+
+.wide {
+  width: 100%;
+}
