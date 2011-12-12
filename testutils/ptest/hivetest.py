@@ -114,6 +114,7 @@ def get_ant():
 
     if local.run('test -d "{0}"'.format(ant_path), warn_only = True,
             abandon_output = False) is None:
+        local.run('mkdir -p "{0}"'.format(master_base_path))
         local.cd(master_base_path)
         local.run('curl "http://apache.osuosl.org//ant/binaries/apache-ant-1.8.2-bin.tar.gz" | tar xz')
     else:
