@@ -44,5 +44,30 @@ to call at top-level: ant deploy-contrib compile-core-test
       <fileset dir="${src.dir}/conf"/>
     </copy>
   </target>
+
+  <!-- target to run the tests -->
+  <target name="test"
+  	depends="test-conditions,gen-test,compile-test,test-jar,test-init">
+    <echo message="Project: ${ant.project.name}"/>
+    <junit showoutput="${test.output}" printsummary="yes" haltonfailure="no"
+           fork="yes" maxmemory="512m" dir="${basedir}" timeout="${test.timeout}"
+           errorProperty="tests.failed" failureProperty="tests.failed" filtertrace="off">
+      <sysproperty key="test.build.resources" value="${test.build.resources}"/>            
+      <classpath refid="${test.classpath.id}"/>
+      <formatter type="${test.junit.output.format}" usefile="${test.junit.output.usefile}" />
+      <batchtest todir="${test.build.dir}" unless="testcase">
+        <fileset dir="${test.build.classes}"
+                 includes="**/${test.include}.class"
+                 excludes="**/*$*.class" />
+      </batchtest>
+      <batchtest todir="${test.build.dir}" if="testcase">
+        <fileset dir="${test.build.classes}" includes="**/${testcase}.class"/>
+      </batchtest>
+      <assertions>
+        <enable />
+      </assertions>
+    </junit>
+    <fail if="tests.failed">Tests failed!</fail>
+  </target>
   
 </project>
