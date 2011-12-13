@@ -138,10 +138,20 @@ public class HiveConf extends Configuration {
   /**
    * ConfVars.
    *
+   * These are the default configuration properties for Hive. Each HiveConf
+   * object is initialized as follows:
+   *
+   * 1) Hadoop configuration properties are applied.
+   * 2) ConfVar properties with non-null values are overlayed.
+   * 3) hive-site.xml properties are overlayed.
+   *
+   * WARNING: think twice before adding any Hadoop configuration properties
+   * with non-null values to this list as they will override any values defined
+   * in the underlying Hadoop configuration.
    */
   public static enum ConfVars {
     // QL execution stuff
-    SCRIPTWRAPPER("hive.exec.script.wrapper", ""),
+    SCRIPTWRAPPER("hive.exec.script.wrapper", null),
     PLAN("hive.exec.plan", ""),
     SCRATCHDIR("hive.exec.scratchdir", "/tmp/hive-" + System.getProperty("user.name")),
     SUBMITVIACHILD("hive.exec.submitviachild", false),
@@ -173,7 +183,7 @@ public class HiveConf extends Configuration {
     SHOW_JOB_FAIL_DEBUG_INFO("hive.exec.show.job.failure.debug.info", true),
     JOB_DEBUG_TIMEOUT("hive.exec.job.debug.timeout", 30000),
     TASKLOG_DEBUG_TIMEOUT("hive.exec.tasklog.debug.timeout", 20000),
-    OUTPUT_FILE_EXTENSION("hive.output.file.extension", ""),
+    OUTPUT_FILE_EXTENSION("hive.output.file.extension", null),
 
     // should hive determine whether to run in local mode automatically ?
     LOCALMODEAUTO("hive.exec.mode.local.auto", false),
@@ -187,17 +197,28 @@ public class HiveConf extends Configuration {
     // not specified
     DROPIGNORESNONEXISTENT("hive.exec.drop.ignorenonexistent", true),
 
-    // hadoop stuff
+    // Hadoop Configuration Properties
+    // Properties with null values are ignored and exist only for the purpose of giving us
+    // a symbolic name to reference in the Hive source code. Properties with non-null
+    // values will override any values set in the underlying Hadoop configuration.
     HADOOPBIN("hadoop.bin.path", System.getenv("HADOOP_HOME") + "/bin/hadoop"),
     HADOOPCONF("hadoop.config.dir", System.getenv("HADOOP_HOME") + "/conf"),
-    HADOOPFS("fs.default.name", "file:///"),
-    HADOOPMAPFILENAME("map.input.file", ""),
-    HADOOPMAPREDINPUTDIR("mapred.input.dir", ""),
+    HADOOPFS("fs.default.name", null),
+    HIVE_FS_HAR_IMPL("fs.har.impl", "org.apache.hadoop.hive.shims.HiveHarFileSystem"),
+    HADOOPMAPFILENAME("map.input.file", null),
+    HADOOPMAPREDINPUTDIR("mapred.input.dir", null),
     HADOOPMAPREDINPUTDIRRECURSIVE("mapred.input.dir.recursive", false),
-    HADOOPJT("mapred.job.tracker", "local"),
+    HADOOPJT("mapred.job.tracker", null),
+    MAPREDMAXSPLITSIZE("mapred.max.split.size", 256000000L),
+    MAPREDMINSPLITSIZE("mapred.min.split.size", 1L),
+    MAPREDMINSPLITSIZEPERNODE("mapred.min.split.size.per.rack", 1L),
+    MAPREDMINSPLITSIZEPERRACK("mapred.min.split.size.per.node", 1L),
+    // The number of reduce tasks per job. Hadoop sets this value to 1 by default
+    // By setting this property to -1, Hive will automatically determine the correct
+    // number of reducers.
     HADOOPNUMREDUCERS("mapred.reduce.tasks", -1),
-    HADOOPJOBNAME("mapred.job.name", ""),
-    HADOOPSPECULATIVEEXECREDUCERS("mapred.reduce.tasks.speculative.execution", false),
+    HADOOPJOBNAME("mapred.job.name", null),
+    HADOOPSPECULATIVEEXECREDUCERS("mapred.reduce.tasks.speculative.execution", true),
 
     // Metastore stuff. Be sure to update HiveConf.metaVars when you add
     // something here!
@@ -351,9 +372,7 @@ public class HiveConf extends Configuration {
     // HWI
     HIVEHWILISTENHOST("hive.hwi.listen.host", "0.0.0.0"),
     HIVEHWILISTENPORT("hive.hwi.listen.port", "9999"),
-    HIVEHWIWARFILE("hive.hwi.war.file",
-        (System.getenv("HWI_WAR_FILE") != null) ?
-            System.getenv("HWI_WAR_FILE") : ""),
+    HIVEHWIWARFILE("hive.hwi.war.file", System.getenv("HWI_WAR_FILE")),
 
     // mapper/reducer memory in local mode
     HIVEHADOOPMAXMEM("hive.mapred.local.mem", 0),
@@ -385,10 +404,6 @@ public class HiveConf extends Configuration {
     HIVESKEWJOINKEY("hive.skewjoin.key", 100000),
     HIVESKEWJOINMAPJOINNUMMAPTASK("hive.skewjoin.mapjoin.map.tasks", 10000),
     HIVESKEWJOINMAPJOINMINSPLIT("hive.skewjoin.mapjoin.min.split", 33554432L), //32M
-    MAPREDMAXSPLITSIZE("mapred.max.split.size", 256000000L),
-    MAPREDMINSPLITSIZE("mapred.min.split.size", 1L),
-    MAPREDMINSPLITSIZEPERNODE("mapred.min.split.size.per.rack", 1L),
-    MAPREDMINSPLITSIZEPERRACK("mapred.min.split.size.per.node", 1L),
     HIVEMERGEMAPONLY("hive.mergejob.maponly", true),
 
     HIVESENDHEARTBEAT("hive.heartbeat.interval", 1000),
@@ -534,7 +549,6 @@ public class HiveConf extends Configuration {
     // The class responsible for logging client side performance metrics
     // Must be a subclass of org.apache.hadoop.hive.ql.log.PerfLogger
     HIVE_PERF_LOGGER("hive.exec.perf.logger", "org.apache.hadoop.hive.ql.log.PerfLogger"),
-    HIVE_FS_HAR_IMPL("fs.har.impl", "org.apache.hadoop.hive.shims.HiveHarFileSystem"),
     // Whether to delete the scratchdir while startup
     HIVE_START_CLEANUP_SCRATCHDIR("hive.start.cleanup.scratchdir", false),
     HIVE_INSERT_INTO_MULTILEVEL_DIRS("hive.insert.into.multilevel.dirs", false),
@@ -561,7 +575,7 @@ public class HiveConf extends Configuration {
     ConfVars(String varname, int defaultIntVal) {
       this.varname = varname;
       this.valClass = Integer.class;
-      this.defaultVal = null;
+      this.defaultVal = Integer.toString(defaultIntVal);
       this.defaultIntVal = defaultIntVal;
       this.defaultLongVal = -1;
       this.defaultFloatVal = -1;
@@ -571,7 +585,7 @@ public class HiveConf extends Configuration {
     ConfVars(String varname, long defaultLongVal) {
       this.varname = varname;
       this.valClass = Long.class;
-      this.defaultVal = null;
+      this.defaultVal = Long.toString(defaultLongVal);
       this.defaultIntVal = -1;
       this.defaultLongVal = defaultLongVal;
       this.defaultFloatVal = -1;
@@ -581,7 +595,7 @@ public class HiveConf extends Configuration {
     ConfVars(String varname, float defaultFloatVal) {
       this.varname = varname;
       this.valClass = Float.class;
-      this.defaultVal = null;
+      this.defaultVal = Float.toString(defaultFloatVal);
       this.defaultIntVal = -1;
       this.defaultLongVal = -1;
       this.defaultFloatVal = defaultFloatVal;
@@ -591,7 +605,7 @@ public class HiveConf extends Configuration {
     ConfVars(String varname, boolean defaultBoolVal) {
       this.varname = varname;
       this.valClass = Boolean.class;
-      this.defaultVal = null;
+      this.defaultVal = Boolean.toString(defaultBoolVal);
       this.defaultIntVal = -1;
       this.defaultLongVal = -1;
       this.defaultFloatVal = -1;
@@ -608,16 +622,21 @@ public class HiveConf extends Configuration {
    * Writes the default ConfVars out to a temporary File and returns
    * a URL pointing to the temporary file.
    * We need this in order to initialize the ConfVar properties
-   * in the underling Configuration object using the addResource()
+   * in the underling Configuration object using the addResource(URL)
    * method.
+   *
+   * Using Configuration.addResource(InputStream) would be a preferable
+   * approach, but it turns out that method is broken since Configuration
+   * tries to read the entire contents of the same InputStream repeatedly.
    */
   private static synchronized URL getConfVarURL() {
     if (confVarURL == null) {
       try {
+        Configuration conf = new Configuration();
         File confVarFile = File.createTempFile("hive-default-", ".xml");
-        Configuration conf = new Configuration(false);
+        confVarFile.deleteOnExit();
 
-        applyDefaultConfVars(conf);
+        applyDefaultNonNullConfVars(conf);
 
         FileOutputStream fout = new FileOutputStream(confVarFile);
         conf.writeXml(fout);
@@ -625,7 +644,7 @@ public class HiveConf extends Configuration {
         confVarURL = confVarFile.toURI().toURL();
       } catch (Exception e) {
         // We're pretty screwed if we can't load the default conf vars
-        throw new RuntimeException(e);
+        throw new RuntimeException("Failed to initialize default Hive configuration variables!", e);
       }
     }
     return confVarURL;
@@ -654,6 +673,10 @@ public class HiveConf extends Configuration {
     return conf.getLong(var.varname, var.defaultLongVal);
   }
 
+  public static long getLongVar(Configuration conf, ConfVars var, long defaultVal) {
+    return conf.getLong(var.varname, defaultVal);
+  }
+
   public static void setLongVar(Configuration conf, ConfVars var, long val) {
     assert (var.valClass == Long.class);
     conf.setLong(var.varname, val);
@@ -670,6 +693,10 @@ public class HiveConf extends Configuration {
   public static float getFloatVar(Configuration conf, ConfVars var) {
     assert (var.valClass == Float.class);
     return conf.getFloat(var.varname, var.defaultFloatVal);
+  }
+
+  public static float getFloatVar(Configuration conf, ConfVars var, float defaultVal) {
+    return conf.getFloat(var.varname, defaultVal);
   }
 
   public static void setFloatVar(Configuration conf, ConfVars var, float val) {
@@ -690,6 +717,10 @@ public class HiveConf extends Configuration {
     return conf.getBoolean(var.varname, var.defaultBoolVal);
   }
 
+  public static boolean getBoolVar(Configuration conf, ConfVars var, boolean defaultVal) {
+    return conf.getBoolean(var.varname, defaultVal);
+  }
+
   public static void setBoolVar(Configuration conf, ConfVars var, boolean val) {
     assert (var.valClass == Boolean.class);
     conf.setBoolean(var.varname, val);
@@ -706,6 +737,10 @@ public class HiveConf extends Configuration {
   public static String getVar(Configuration conf, ConfVars var) {
     assert (var.valClass == String.class);
     return conf.get(var.varname, var.defaultVal);
+  }
+
+  public static String getVar(Configuration conf, ConfVars var, String defaultVal) {
+    return conf.get(var.varname, defaultVal);
   }
 
   public static void setVar(Configuration conf, ConfVars var, String val) {
@@ -772,7 +807,7 @@ public class HiveConf extends Configuration {
     // preserve the original configuration
     origProp = getAllProperties();
 
-    // Overlay the default ConfVars
+    // Overlay the ConfVars. Note that this ignores ConfVars with null values
     addResource(getConfVarURL());
 
     // Overlay hive-site.xml if it exists
@@ -788,7 +823,7 @@ public class HiveConf extends Configuration {
       this.setVar(ConfVars.HADOOPCONF, conffile.substring(0, conffile.lastIndexOf('/')));
     }
 
-    // Overlay system properties
+    // Overlay the values of any system properties whose names appear in the list of ConfVars
     applySystemProperties();
 
     // if the running class was loaded directly (through eclipse) rather than through a
@@ -802,6 +837,10 @@ public class HiveConf extends Configuration {
     }
   }
 
+  /**
+   * Apply system properties to this object if the property name is defined in ConfVars
+   * and the value is non-null and not an empty string.
+   */
   private void applySystemProperties() {
     for (ConfVars oneVar : ConfVars.values()) {
       if (System.getProperty(oneVar.varname) != null) {
@@ -812,21 +851,20 @@ public class HiveConf extends Configuration {
     }
   }
 
-  private static void applyDefaultConfVars(Configuration conf) {
+  /**
+   * Overlays ConfVar properties with non-null values
+   */
+  private static void applyDefaultNonNullConfVars(Configuration conf) {
     for (ConfVars var : ConfVars.values()) {
-      if (String.class.equals(var.valClass)) {
-        conf.set(var.varname, var.defaultVal);
-      } else if (Integer.class.equals(var.valClass)) {
-        conf.setInt(var.varname, var.defaultIntVal);
-      } else if (Long.class.equals(var.valClass)) {
-        conf.setLong(var.varname, var.defaultLongVal);
-      } else if (Float.class.equals(var.valClass)) {
-        conf.setFloat(var.varname, var.defaultFloatVal);
-      } else if (Boolean.class.equals(var.valClass)) {
-        conf.setBoolean(var.varname, var.defaultBoolVal);
-      } else {
-        l4j.warn("Unable to set default configuration value for " + var.varname);
+      if (var.defaultVal == null) {
+        // Don't override ConfVars with null values
+        continue;
       }
+      if (conf.get(var.varname) != null) {
+        l4j.debug("Overriding Hadoop conf property " + var.varname + "='" + conf.get(var.varname)
+                  + "' with Hive default value '" + var.defaultVal +"'");
+      }
+      conf.set(var.varname, var.defaultVal);
     }
   }
 
