@@ -220,6 +220,7 @@ Release Notes - Hive - Version 0.8.0
     * [HIVE-2625] - Fix maven-build Ant target
     * [HIVE-2630] - TestHiveServer doesn't produce a JUnit report file
     * [HIVE-2634] - revert HIVE-2566
+    * [HIVE-2643] - Recent patch prevents Hadoop confs from loading in 0.20.204
 
 ** Improvement
     * [HIVE-1078] - CREATE VIEW followup:  CREATE OR REPLACE
