@@ -23,6 +23,7 @@ from threading import Thread
 import os.path
 import collections
 import re
+import os
 
 import Report
 import config
@@ -80,6 +81,11 @@ def read_conf(config_file):
 
     master_base_path = config.master_base_path
     host_base_path = config.host_base_path
+
+    if 'HIVE_PTEST_SUFFIX' in os.environ:
+        suffix = os.environ['HIVE_PTEST_SUFFIX']
+        master_base_path += '-' + suffix
+        host_base_path  += '-' + suffix
 
     ant_path = master_base_path + '/apache-ant-1.8.2'
     arc_path = master_base_path + '/arcanist'
