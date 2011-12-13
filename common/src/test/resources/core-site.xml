@@ -20,23 +20,8 @@
 <!-- Test file for TestHiveConf -->
 
 <configuration>
-
-<property>
-  <name>javax.jdo.option.ConnectionDriverName</name>
-  <value>hive-site.xml</value>
-  <description>Override ConfVar defined in HiveConf</description>
-</property>
-
-<property>
-  <name>test.property1</name>
-  <value>hive-site.xml</value>
-  <description>Test property defined in hive-site.xml only</description>
-</property>
-
-<property>
-  <name>test.var.hiveconf.property</name>
-  <value>${hive.exec.default.partition.name}</value>
-  <description>Test hiveconf property substitution</description>
-</property>
-
+  <property>
+    <name>fs.default.name</name>
+    <value>core-site.xml</value>
+  </property>
 </configuration>
