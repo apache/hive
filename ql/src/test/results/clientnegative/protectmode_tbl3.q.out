@@ -14,11 +14,11 @@ POSTHOOK: Output: default@tbl_protectmode_4
 PREHOOK: query: select col from tbl_protectmode_4
 PREHOOK: type: QUERY
 PREHOOK: Input: default@tbl_protectmode_4
-PREHOOK: Output: file:/tmp/thiruvel/hive_2010-10-11_12-49-17_303_4577482854819832625/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: select col from tbl_protectmode_4
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@tbl_protectmode_4
-POSTHOOK: Output: file:/tmp/thiruvel/hive_2010-10-11_12-49-17_303_4577482854819832625/-mr-10000
+#### A masked pattern was here ####
 PREHOOK: query: alter table tbl_protectmode_4 enable offline
 PREHOOK: type: ALTERTABLE_PROTECTMODE
 PREHOOK: Input: default@tbl_protectmode_4
@@ -33,5 +33,5 @@ POSTHOOK: query: desc extended tbl_protectmode_4
 POSTHOOK: type: DESCTABLE
 col	string	
 	 	 
-Detailed Table Information	Table(tableName:tbl_protectmode_4, dbName:default, owner:thiruvel, createTime:1286826557, lastAccessTime:0, retention:0, sd:StorageDescriptor(cols:[FieldSchema(name:col, type:string, comment:null)], location:pfile:/home/thiruvel/projects/hive/hive.unsecure/build/ql/test/data/warehouse/tbl_protectmode_4, inputFormat:org.apache.hadoop.mapred.TextInputFormat, outputFormat:org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat, compressed:false, numBuckets:-1, serdeInfo:SerDeInfo(name:null, serializationLib:org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe, parameters:{serialization.format=1}), bucketCols:[], sortCols:[], parameters:{}), partitionKeys:[], parameters:{last_modified_by=thiruvel, last_modified_time=1286826559, PROTECT_MODE=OFFLINE, transient_lastDdlTime=1286826559}, viewOriginalText:null, viewExpandedText:null, tableType:MANAGED_TABLE)	
+#### A masked pattern was here ####
 FAILED: Error in semantic analysis: Query against an offline table or partition Table tbl_protectmode_4

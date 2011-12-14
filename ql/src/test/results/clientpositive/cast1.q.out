@@ -64,7 +64,7 @@ STAGE PLANS:
     Move Operator
       files:
           hdfs directory: true
-          destination: pfile:/data/users/sdong/www/open-source-hive1/build/ql/scratchdir/hive_2011-02-10_01-38-54_938_5912405912327837002/-ext-10000
+#### A masked pattern was here ####
 
   Stage: Stage-0
     Move Operator
@@ -82,7 +82,7 @@ STAGE PLANS:
   Stage: Stage-3
     Map Reduce
       Alias -> Map Operator Tree:
-        pfile:/data/users/sdong/www/open-source-hive1/build/ql/scratchdir/hive_2011-02-10_01-38-54_938_5912405912327837002/-ext-10002 
+#### A masked pattern was here ####
             File Output Operator
               compressed: false
               GlobalTableId: 0
@@ -111,11 +111,11 @@ POSTHOOK: Lineage: dest1.c7 EXPRESSION []
 PREHOOK: query: select dest1.* FROM dest1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@dest1
-PREHOOK: Output: file:/tmp/sdong/hive_2011-02-10_01-38-59_759_61484658803136536/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: select dest1.* FROM dest1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@dest1
-POSTHOOK: Output: file:/tmp/sdong/hive_2011-02-10_01-38-59_759_61484658803136536/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: Lineage: dest1.c1 EXPRESSION []
 POSTHOOK: Lineage: dest1.c2 EXPRESSION []
 POSTHOOK: Lineage: dest1.c3 EXPRESSION []

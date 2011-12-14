@@ -4,13 +4,13 @@ SELECT count(1) FROM
   SELECT TRANSFORM('echo $MY_ID') USING 'bash' AS key FROM src LIMIT 1 ) a GROUP BY key
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/data/users/pyang/hive-946/trunk/VENDOR.hive/trunk/build/ql/tmp/1036835170/10000
+#### A masked pattern was here ####
 POSTHOOK: query: -- Same test as script_env_var1, but test setting the variable name
 SELECT count(1) FROM
 ( SELECT TRANSFORM('echo $MY_ID') USING 'bash' AS key FROM src LIMIT 1 UNION ALL
   SELECT TRANSFORM('echo $MY_ID') USING 'bash' AS key FROM src LIMIT 1 ) a GROUP BY key
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: file:/data/users/pyang/hive-946/trunk/VENDOR.hive/trunk/build/ql/tmp/1036835170/10000
+#### A masked pattern was here ####
 1
 1

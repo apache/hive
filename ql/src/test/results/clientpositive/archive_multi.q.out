@@ -103,7 +103,7 @@ FROM (SELECT * FROM tstsrcpart WHERE ds='2008-04-08') subq1) subq2
 PREHOOK: type: QUERY
 PREHOOK: Input: default@tstsrcpart@ds=2008-04-08/hr=11
 PREHOOK: Input: default@tstsrcpart@ds=2008-04-08/hr=12
-PREHOOK: Output: file:/tmp/marcin/hive_2011-07-26_19-45-21_228_2560964695734311201/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: -- EXCLUDE_HADOOP_MAJOR_VERSIONS(0.17, 0.18, 0.19)
 
 SELECT SUM(hash(col)) FROM (SELECT transform(*) using 'tr "\t" "_"' AS col
@@ -111,7 +111,7 @@ FROM (SELECT * FROM tstsrcpart WHERE ds='2008-04-08') subq1) subq2
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@tstsrcpart@ds=2008-04-08/hr=11
 POSTHOOK: Input: default@tstsrcpart@ds=2008-04-08/hr=12
-POSTHOOK: Output: file:/tmp/marcin/hive_2011-07-26_19-45-21_228_2560964695734311201/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: Lineage: tstsrc.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: tstsrc.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: tstsrcpart PARTITION(ds=2008-04-08,hr=11).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
@@ -148,13 +148,13 @@ FROM (SELECT * FROM tstsrcpart WHERE ds='2008-04-08') subq1) subq2
 PREHOOK: type: QUERY
 PREHOOK: Input: default@tstsrcpart@ds=2008-04-08/hr=11
 PREHOOK: Input: default@tstsrcpart@ds=2008-04-08/hr=12
-PREHOOK: Output: file:/tmp/marcin/hive_2011-07-26_19-45-28_034_424539810414173134/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: SELECT SUM(hash(col)) FROM (SELECT transform(*) using 'tr "\t" "_"' AS col
 FROM (SELECT * FROM tstsrcpart WHERE ds='2008-04-08') subq1) subq2
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@tstsrcpart@ds=2008-04-08/hr=11
 POSTHOOK: Input: default@tstsrcpart@ds=2008-04-08/hr=12
-POSTHOOK: Output: file:/tmp/marcin/hive_2011-07-26_19-45-28_034_424539810414173134/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: Lineage: tstsrc.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: tstsrc.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: tstsrcpart PARTITION(ds=2008-04-08,hr=11).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
@@ -169,11 +169,11 @@ POSTHOOK: Lineage: tstsrcpart PARTITION(ds=2008-04-09,hr=12).value SIMPLE [(srcp
 PREHOOK: query: SELECT key, count(1) FROM tstsrcpart WHERE ds='2008-04-08' AND hr='12' AND key='0' GROUP BY key
 PREHOOK: type: QUERY
 PREHOOK: Input: default@tstsrcpart@ds=2008-04-08/hr=12
-PREHOOK: Output: file:/tmp/marcin/hive_2011-07-26_19-45-31_642_7853891038069299073/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: SELECT key, count(1) FROM tstsrcpart WHERE ds='2008-04-08' AND hr='12' AND key='0' GROUP BY key
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@tstsrcpart@ds=2008-04-08/hr=12
-POSTHOOK: Output: file:/tmp/marcin/hive_2011-07-26_19-45-31_642_7853891038069299073/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: Lineage: tstsrc.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: tstsrc.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: tstsrcpart PARTITION(ds=2008-04-08,hr=11).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
@@ -190,13 +190,13 @@ WHERE a.ds='2008-04-08' AND a.hr='12' AND a.key='0'
 PREHOOK: type: QUERY
 PREHOOK: Input: default@tstsrc
 PREHOOK: Input: default@tstsrcpart@ds=2008-04-08/hr=12
-PREHOOK: Output: file:/tmp/marcin/hive_2011-07-26_19-45-35_365_2814905405536965778/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: SELECT * FROM tstsrcpart a JOIN tstsrc b ON a.key=b.key
 WHERE a.ds='2008-04-08' AND a.hr='12' AND a.key='0'
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@tstsrc
 POSTHOOK: Input: default@tstsrcpart@ds=2008-04-08/hr=12
-POSTHOOK: Output: file:/tmp/marcin/hive_2011-07-26_19-45-35_365_2814905405536965778/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: Lineage: tstsrc.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: tstsrc.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: tstsrcpart PARTITION(ds=2008-04-08,hr=11).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
@@ -241,13 +241,13 @@ FROM (SELECT * FROM tstsrcpart WHERE ds='2008-04-08') subq1) subq2
 PREHOOK: type: QUERY
 PREHOOK: Input: default@tstsrcpart@ds=2008-04-08/hr=11
 PREHOOK: Input: default@tstsrcpart@ds=2008-04-08/hr=12
-PREHOOK: Output: file:/tmp/marcin/hive_2011-07-26_19-45-40_944_4568299913242010267/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: SELECT SUM(hash(col)) FROM (SELECT transform(*) using 'tr "\t" "_"' AS col
 FROM (SELECT * FROM tstsrcpart WHERE ds='2008-04-08') subq1) subq2
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@tstsrcpart@ds=2008-04-08/hr=11
 POSTHOOK: Input: default@tstsrcpart@ds=2008-04-08/hr=12
-POSTHOOK: Output: file:/tmp/marcin/hive_2011-07-26_19-45-40_944_4568299913242010267/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: Lineage: tstsrc.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: tstsrc.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: tstsrcpart PARTITION(ds=2008-04-08,hr=11).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]

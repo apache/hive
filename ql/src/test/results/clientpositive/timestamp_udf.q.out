@@ -42,14 +42,14 @@ select unix_timestamp(t), year(t), month(t), day(t), dayofmonth(t),
   from timestamp_udf
 PREHOOK: type: QUERY
 PREHOOK: Input: default@timestamp_udf
-PREHOOK: Output: file:/tmp/franklin/hive_2011-08-10_11-29-23_171_7947076159754995294/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: -- Test UDFs with Timestamp input
 select unix_timestamp(t), year(t), month(t), day(t), dayofmonth(t),
     weekofyear(t), hour(t), minute(t), second(t), to_date(t)
   from timestamp_udf
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@timestamp_udf
-POSTHOOK: Output: file:/tmp/franklin/hive_2011-08-10_11-29-23_171_7947076159754995294/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: Lineage: timestamp_udf.t EXPRESSION []
 POSTHOOK: Lineage: timestamp_udf_string.t SIMPLE []
 1304690889	2011	5	6	6	18	7	8	9	2011-05-06
@@ -57,12 +57,12 @@ PREHOOK: query: select date_add(t, 5), date_sub(t, 10)
   from timestamp_udf
 PREHOOK: type: QUERY
 PREHOOK: Input: default@timestamp_udf
-PREHOOK: Output: file:/tmp/franklin/hive_2011-08-10_11-29-26_332_7736225081611226782/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: select date_add(t, 5), date_sub(t, 10)
   from timestamp_udf
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@timestamp_udf
-POSTHOOK: Output: file:/tmp/franklin/hive_2011-08-10_11-29-26_332_7736225081611226782/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: Lineage: timestamp_udf.t EXPRESSION []
 POSTHOOK: Lineage: timestamp_udf_string.t SIMPLE []
 2011-05-11	2011-04-26
@@ -70,12 +70,12 @@ PREHOOK: query: select datediff(t, t), datediff(t, '2002-03-21'), datediff('2002
   from timestamp_udf
 PREHOOK: type: QUERY
 PREHOOK: Input: default@timestamp_udf
-PREHOOK: Output: file:/tmp/franklin/hive_2011-08-10_11-29-29_301_1140620362250414035/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: select datediff(t, t), datediff(t, '2002-03-21'), datediff('2002-03-21', t)
   from timestamp_udf
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@timestamp_udf
-POSTHOOK: Output: file:/tmp/franklin/hive_2011-08-10_11-29-29_301_1140620362250414035/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: Lineage: timestamp_udf.t EXPRESSION []
 POSTHOOK: Lineage: timestamp_udf_string.t SIMPLE []
 0	3333	-3333
@@ -83,12 +83,12 @@ PREHOOK: query: select from_utc_timestamp(t, 'America/Chicago')
   from timestamp_udf
 PREHOOK: type: QUERY
 PREHOOK: Input: default@timestamp_udf
-PREHOOK: Output: file:/tmp/franklin/hive_2011-08-10_11-29-32_281_8587314075270802684/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: select from_utc_timestamp(t, 'America/Chicago')
   from timestamp_udf
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@timestamp_udf
-POSTHOOK: Output: file:/tmp/franklin/hive_2011-08-10_11-29-32_281_8587314075270802684/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: Lineage: timestamp_udf.t EXPRESSION []
 POSTHOOK: Lineage: timestamp_udf_string.t SIMPLE []
 2011-05-06 02:08:09.2464567
@@ -96,12 +96,12 @@ PREHOOK: query: select to_utc_timestamp(t, 'America/Chicago')
   from timestamp_udf
 PREHOOK: type: QUERY
 PREHOOK: Input: default@timestamp_udf
-PREHOOK: Output: file:/tmp/franklin/hive_2011-08-10_11-29-35_219_3365806571591781180/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: select to_utc_timestamp(t, 'America/Chicago')
   from timestamp_udf
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@timestamp_udf
-POSTHOOK: Output: file:/tmp/franklin/hive_2011-08-10_11-29-35_219_3365806571591781180/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: Lineage: timestamp_udf.t EXPRESSION []
 POSTHOOK: Lineage: timestamp_udf_string.t SIMPLE []
 2011-05-06 12:08:09.2464567
@@ -111,25 +111,25 @@ select unix_timestamp(t), year(t), month(t), day(t), dayofmonth(t),
   from timestamp_udf_string
 PREHOOK: type: QUERY
 PREHOOK: Input: default@timestamp_udf_string
-PREHOOK: Output: file:/tmp/franklin/hive_2011-08-10_11-29-38_187_2248272713610212604/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: -- Test UDFs with string input
 select unix_timestamp(t), year(t), month(t), day(t), dayofmonth(t), 
     weekofyear(t), hour(t), minute(t), second(t), to_date(t)
   from timestamp_udf_string
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@timestamp_udf_string
-POSTHOOK: Output: file:/tmp/franklin/hive_2011-08-10_11-29-38_187_2248272713610212604/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: Lineage: timestamp_udf.t EXPRESSION []
 POSTHOOK: Lineage: timestamp_udf_string.t SIMPLE []
 1304690889	2011	5	6	6	18	7	8	9	2011-05-06
 PREHOOK: query: select date_add(t, 5), date_sub(t, 10)  from timestamp_udf_string
 PREHOOK: type: QUERY
 PREHOOK: Input: default@timestamp_udf_string
-PREHOOK: Output: file:/tmp/franklin/hive_2011-08-10_11-29-41_233_7026658402237219829/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: select date_add(t, 5), date_sub(t, 10)  from timestamp_udf_string
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@timestamp_udf_string
-POSTHOOK: Output: file:/tmp/franklin/hive_2011-08-10_11-29-41_233_7026658402237219829/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: Lineage: timestamp_udf.t EXPRESSION []
 POSTHOOK: Lineage: timestamp_udf_string.t SIMPLE []
 2011-05-11	2011-04-26
@@ -137,12 +137,12 @@ PREHOOK: query: select datediff(t, t), datediff(t, '2002-03-21'), datediff('2002
   from timestamp_udf_string
 PREHOOK: type: QUERY
 PREHOOK: Input: default@timestamp_udf_string
-PREHOOK: Output: file:/tmp/franklin/hive_2011-08-10_11-29-44_229_1408313723115883676/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: select datediff(t, t), datediff(t, '2002-03-21'), datediff('2002-03-21', t)
   from timestamp_udf_string
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@timestamp_udf_string
-POSTHOOK: Output: file:/tmp/franklin/hive_2011-08-10_11-29-44_229_1408313723115883676/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: Lineage: timestamp_udf.t EXPRESSION []
 POSTHOOK: Lineage: timestamp_udf_string.t SIMPLE []
 0	3333	-3333
@@ -150,12 +150,12 @@ PREHOOK: query: select from_utc_timestamp(t, 'America/Chicago')
   from timestamp_udf_string
 PREHOOK: type: QUERY
 PREHOOK: Input: default@timestamp_udf_string
-PREHOOK: Output: file:/tmp/franklin/hive_2011-08-10_11-29-47_192_7770480524717901723/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: select from_utc_timestamp(t, 'America/Chicago')
   from timestamp_udf_string
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@timestamp_udf_string
-POSTHOOK: Output: file:/tmp/franklin/hive_2011-08-10_11-29-47_192_7770480524717901723/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: Lineage: timestamp_udf.t EXPRESSION []
 POSTHOOK: Lineage: timestamp_udf_string.t SIMPLE []
 2011-05-06 02:08:09.2464567
@@ -163,12 +163,12 @@ PREHOOK: query: select to_utc_timestamp(t, 'America/Chicago')
   from timestamp_udf_string
 PREHOOK: type: QUERY
 PREHOOK: Input: default@timestamp_udf_string
-PREHOOK: Output: file:/tmp/franklin/hive_2011-08-10_11-29-50_086_9149577780206626620/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: select to_utc_timestamp(t, 'America/Chicago')
   from timestamp_udf_string
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@timestamp_udf_string
-POSTHOOK: Output: file:/tmp/franklin/hive_2011-08-10_11-29-50_086_9149577780206626620/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: Lineage: timestamp_udf.t EXPRESSION []
 POSTHOOK: Lineage: timestamp_udf_string.t SIMPLE []
 2011-05-06 12:08:09.2464567

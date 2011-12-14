@@ -111,11 +111,11 @@ POSTHOOK: Lineage: dest1.e SIMPLE [(src_thrift)src_thrift.FieldSchema(name:astri
 PREHOOK: query: SELECT dest1.* FROM dest1 DISTRIBUTE BY 1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@dest1
-PREHOOK: Output: file:/tmp/sdong/hive_2011-02-10_15-59-27_012_6907776692718827268/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: SELECT dest1.* FROM dest1 DISTRIBUTE BY 1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@dest1
-POSTHOOK: Output: file:/tmp/sdong/hive_2011-02-10_15-59-27_012_6907776692718827268/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: Lineage: dest1.a SIMPLE [(src_thrift)src_thrift.FieldSchema(name:lint, type:array<int>, comment:from deserializer), ]
 POSTHOOK: Lineage: dest1.b SIMPLE [(src_thrift)src_thrift.FieldSchema(name:lstring, type:array<string>, comment:from deserializer), ]
 POSTHOOK: Lineage: dest1.c SIMPLE [(src_thrift)src_thrift.FieldSchema(name:mstringstring, type:map<string,string>, comment:from deserializer), ]
@@ -135,11 +135,11 @@ null	null	null	0	NULL
 PREHOOK: query: SELECT dest1.a[0], dest1.b[0], dest1.c['key2'], dest1.d, dest1.e FROM dest1 DISTRIBUTE BY 1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@dest1
-PREHOOK: Output: file:/tmp/sdong/hive_2011-02-10_15-59-37_706_4561860868628039953/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: SELECT dest1.a[0], dest1.b[0], dest1.c['key2'], dest1.d, dest1.e FROM dest1 DISTRIBUTE BY 1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@dest1
-POSTHOOK: Output: file:/tmp/sdong/hive_2011-02-10_15-59-37_706_4561860868628039953/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: Lineage: dest1.a SIMPLE [(src_thrift)src_thrift.FieldSchema(name:lint, type:array<int>, comment:from deserializer), ]
 POSTHOOK: Lineage: dest1.b SIMPLE [(src_thrift)src_thrift.FieldSchema(name:lstring, type:array<string>, comment:from deserializer), ]
 POSTHOOK: Lineage: dest1.c SIMPLE [(src_thrift)src_thrift.FieldSchema(name:mstringstring, type:map<string,string>, comment:from deserializer), ]
@@ -196,11 +196,11 @@ POSTHOOK: Lineage: dest1.e SIMPLE [(src_thrift)src_thrift.FieldSchema(name:astri
 PREHOOK: query: SELECT * from dest1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@dest1
-PREHOOK: Output: file:/tmp/sdong/hive_2011-02-10_15-59-45_869_5135781993086236128/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: SELECT * from dest1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@dest1
-POSTHOOK: Output: file:/tmp/sdong/hive_2011-02-10_15-59-45_869_5135781993086236128/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: Lineage: dest1.a SIMPLE [(src_thrift)src_thrift.FieldSchema(name:lint, type:array<int>, comment:from deserializer), ]
 POSTHOOK: Lineage: dest1.a SIMPLE [(src_thrift)src_thrift.FieldSchema(name:lint, type:array<int>, comment:from deserializer), ]
 POSTHOOK: Lineage: dest1.b SIMPLE [(src_thrift)src_thrift.FieldSchema(name:lstring, type:array<string>, comment:from deserializer), ]
@@ -261,11 +261,11 @@ POSTHOOK: Lineage: dest1.e SIMPLE [(src_thrift)src_thrift.FieldSchema(name:astri
 PREHOOK: query: SELECT * from dest1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@dest1
-PREHOOK: Output: file:/tmp/sdong/hive_2011-02-10_15-59-51_903_541462711007953039/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: SELECT * from dest1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@dest1
-POSTHOOK: Output: file:/tmp/sdong/hive_2011-02-10_15-59-51_903_541462711007953039/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: Lineage: dest1.a SIMPLE [(src_thrift)src_thrift.FieldSchema(name:lint, type:array<int>, comment:from deserializer), ]
 POSTHOOK: Lineage: dest1.a SIMPLE [(src_thrift)src_thrift.FieldSchema(name:lint, type:array<int>, comment:from deserializer), ]
 POSTHOOK: Lineage: dest1.a SIMPLE [(src_thrift)src_thrift.FieldSchema(name:mstringstring, type:map<string,string>, comment:from deserializer), ]

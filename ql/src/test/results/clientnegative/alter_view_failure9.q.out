@@ -6,13 +6,13 @@ PREHOOK: query: CREATE VIEW xxx4
 AS 
 SELECT * FROM src
 PREHOOK: type: CREATEVIEW
-PREHOOK: Output: file:/var/folders/fe/fefl-ow3ElaEd1ns0G7jB0uewEQ/-Tmp-/charleschen/hive_2011-07-07_12-15-48_683_5899334144357618678/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: CREATE VIEW xxx4 
 AS 
 SELECT * FROM src
 POSTHOOK: type: CREATEVIEW
 POSTHOOK: Output: default@xxx4
-POSTHOOK: Output: file:/var/folders/fe/fefl-ow3ElaEd1ns0G7jB0uewEQ/-Tmp-/charleschen/hive_2011-07-07_12-15-48_683_5899334144357618678/-mr-10000
+#### A masked pattern was here ####
 PREHOOK: query: -- should fail:  need to use ALTER VIEW, not ALTER TABLE
 ALTER TABLE xxx4 RENAME TO xxx4a
 PREHOOK: type: ALTERTABLE_RENAME

@@ -71,7 +71,7 @@ STAGE PLANS:
   Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/tmp/njain/hive_2011-12-07_18-02-24_750_6534230780541205365/-mr-10002 
+#### A masked pattern was here ####
           Union
             Select Operator
               expressions:
@@ -88,7 +88,7 @@ STAGE PLANS:
                     output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                     serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                     name: default.tmptable
-        file:/tmp/njain/hive_2011-12-07_18-02-24_750_6534230780541205365/-mr-10003 
+#### A masked pattern was here ####
           Union
             Select Operator
               expressions:
@@ -163,11 +163,11 @@ POSTHOOK: Lineage: tmptable.value EXPRESSION [(src)s1.null, (src1)s2.FieldSchema
 PREHOOK: query: SELECT * FROM tmptable x SORT BY x.key, x.value
 PREHOOK: type: QUERY
 PREHOOK: Input: default@tmptable
-PREHOOK: Output: file:/tmp/njain/hive_2011-12-07_18-02-35_439_727433938178853804/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: SELECT * FROM tmptable x SORT BY x.key, x.value
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@tmptable
-POSTHOOK: Output: file:/tmp/njain/hive_2011-12-07_18-02-35_439_727433938178853804/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: Lineage: tmptable.key EXPRESSION [(src1)s2.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: tmptable.value EXPRESSION [(src)s1.null, (src1)s2.FieldSchema(name:value, type:string, comment:default), ]
 	
@@ -205,4 +205,4 @@ POSTHOOK: Lineage: tmptable.value EXPRESSION [(src)s1.null, (src1)s2.FieldSchema
 key	string	
 value	string	
 	 	 
-Detailed Table Information	Table(tableName:tmptable, dbName:default, owner:njain, createTime:1323309744, lastAccessTime:0, retention:0, sd:StorageDescriptor(cols:[FieldSchema(name:key, type:string, comment:null), FieldSchema(name:value, type:string, comment:null)], location:pfile:/data/users/njain/hive_commit2/build/ql/test/data/warehouse/tmptable, inputFormat:org.apache.hadoop.mapred.TextInputFormat, outputFormat:org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat, compressed:false, numBuckets:-1, serdeInfo:SerDeInfo(name:null, serializationLib:org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe, parameters:{serialization.format=1}), bucketCols:[], sortCols:[], parameters:{}), partitionKeys:[], parameters:{numPartitions=0, numFiles=1, transient_lastDdlTime=1323309755, numRows=26, totalSize=225, rawDataSize=199}, viewOriginalText:null, viewExpandedText:null, tableType:MANAGED_TABLE)	
+#### A masked pattern was here ####

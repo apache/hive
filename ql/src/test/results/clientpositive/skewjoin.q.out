@@ -223,11 +223,11 @@ POSTHOOK: Lineage: dest_j1.value SIMPLE [(src)src2.FieldSchema(name:value, type:
 PREHOOK: query: SELECT sum(hash(key)), sum(hash(value)) FROM dest_j1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@dest_j1
-PREHOOK: Output: file:/tmp/krishnak/hive_2011-03-21_05-12-39_124_8499663962960487492/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: SELECT sum(hash(key)), sum(hash(value)) FROM dest_j1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@dest_j1
-POSTHOOK: Output: file:/tmp/krishnak/hive_2011-03-21_05-12-39_124_8499663962960487492/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: Lineage: dest_j1.key EXPRESSION [(src)src1.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: dest_j1.value SIMPLE [(src)src2.FieldSchema(name:value, type:string, comment:default), ]
 278697	101852390308
@@ -377,7 +377,7 @@ PREHOOK: Input: default@t1
 PREHOOK: Input: default@t2
 PREHOOK: Input: default@t3
 PREHOOK: Input: default@t4
-PREHOOK: Output: file:/tmp/krishnak/hive_2011-03-21_05-12-44_417_8615201222142995528/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: SELECT /*+ STREAMTABLE(a) */ *
 FROM T1 a JOIN T2 b ON a.key = b.key
           JOIN T3 c ON b.key = c.key
@@ -387,7 +387,7 @@ POSTHOOK: Input: default@t1
 POSTHOOK: Input: default@t2
 POSTHOOK: Input: default@t3
 POSTHOOK: Input: default@t4
-POSTHOOK: Output: file:/tmp/krishnak/hive_2011-03-21_05-12-44_417_8615201222142995528/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: Lineage: dest_j1.key EXPRESSION [(src)src1.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: dest_j1.value SIMPLE [(src)src2.FieldSchema(name:value, type:string, comment:default), ]
 2	12	2	22	2	12	2	12
@@ -537,7 +537,7 @@ PREHOOK: Input: default@t1
 PREHOOK: Input: default@t2
 PREHOOK: Input: default@t3
 PREHOOK: Input: default@t4
-PREHOOK: Output: file:/tmp/krishnak/hive_2011-03-21_05-12-48_110_6020068436781124721/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: SELECT /*+ STREAMTABLE(a,c) */ *
 FROM T1 a JOIN T2 b ON a.key = b.key
           JOIN T3 c ON b.key = c.key
@@ -547,7 +547,7 @@ POSTHOOK: Input: default@t1
 POSTHOOK: Input: default@t2
 POSTHOOK: Input: default@t3
 POSTHOOK: Input: default@t4
-POSTHOOK: Output: file:/tmp/krishnak/hive_2011-03-21_05-12-48_110_6020068436781124721/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: Lineage: dest_j1.key EXPRESSION [(src)src1.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: dest_j1.value SIMPLE [(src)src2.FieldSchema(name:value, type:string, comment:default), ]
 2	12	2	22	2	12	2	12
@@ -637,7 +637,7 @@ STAGE PLANS:
   Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/tmp/krishnak/hive_2011-03-21_05-12-51_835_6819175691231831354/-mr-10002 
+#### A masked pattern was here ####
             Reduce Output Operator
               sort order: 
               tag: -1
@@ -682,12 +682,12 @@ PREHOOK: query: FROM T1 a JOIN src c ON c.key+1=a.key SELECT /*+ STREAMTABLE(a) 
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
 PREHOOK: Input: default@t1
-PREHOOK: Output: file:/tmp/krishnak/hive_2011-03-21_05-12-51_884_6262244889614083574/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: FROM T1 a JOIN src c ON c.key+1=a.key SELECT /*+ STREAMTABLE(a) */ sum(hash(a.key)), sum(hash(a.val)), sum(hash(c.key))
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 POSTHOOK: Input: default@t1
-POSTHOOK: Output: file:/tmp/krishnak/hive_2011-03-21_05-12-51_884_6262244889614083574/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: Lineage: dest_j1.key EXPRESSION [(src)src1.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: dest_j1.value SIMPLE [(src)src2.FieldSchema(name:value, type:string, comment:default), ]
 198	6274	194
@@ -856,7 +856,7 @@ STAGE PLANS:
   Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/tmp/krishnak/hive_2011-03-21_05-12-57_953_4945774471783378386/-mr-10002 
+#### A masked pattern was here ####
             Reduce Output Operator
               sort order: 
               tag: -1
@@ -900,7 +900,7 @@ ON (x.key = Y.key)
 SELECT sum(hash(Y.key)), sum(hash(Y.value))
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/tmp/krishnak/hive_2011-03-21_05-12-58_163_800940325414135052/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: FROM 
 (SELECT src.* FROM src) x
 JOIN 
@@ -909,7 +909,7 @@ ON (x.key = Y.key)
 SELECT sum(hash(Y.key)), sum(hash(Y.value))
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: file:/tmp/krishnak/hive_2011-03-21_05-12-58_163_800940325414135052/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: Lineage: dest_j1.key EXPRESSION [(src)src1.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: dest_j1.value SIMPLE [(src)src2.FieldSchema(name:value, type:string, comment:default), ]
 44481300	101852390308
@@ -1088,7 +1088,7 @@ STAGE PLANS:
   Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/tmp/krishnak/hive_2011-03-21_05-13-14_707_4314938642894836917/-mr-10002 
+#### A masked pattern was here ####
             Reduce Output Operator
               sort order: 
               tag: -1
@@ -1132,7 +1132,7 @@ ON (x.key = Y.key and substring(x.value, 5)=substring(y.value, 5)+1)
 SELECT sum(hash(Y.key)), sum(hash(Y.value))
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/tmp/krishnak/hive_2011-03-21_05-13-14_932_6774927167099830935/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: FROM 
 (SELECT src.* FROM src) x
 JOIN 
@@ -1141,7 +1141,7 @@ ON (x.key = Y.key and substring(x.value, 5)=substring(y.value, 5)+1)
 SELECT sum(hash(Y.key)), sum(hash(Y.value))
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: file:/tmp/krishnak/hive_2011-03-21_05-13-14_932_6774927167099830935/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: Lineage: dest_j1.key EXPRESSION [(src)src1.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: dest_j1.value SIMPLE [(src)src2.FieldSchema(name:value, type:string, comment:default), ]
 NULL	NULL
@@ -1368,7 +1368,7 @@ STAGE PLANS:
   Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/tmp/krishnak/hive_2011-03-21_05-13-29_011_8679483484583098714/-mr-10002 
+#### A masked pattern was here ####
             Reduce Output Operator
               sort order: 
               tag: -1
@@ -1492,7 +1492,7 @@ JOIN
 ON src1.c1 = src3.c5 AND src3.c5 < 80
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/tmp/krishnak/hive_2011-03-21_05-13-29_545_3577757536432154532/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: SELECT sum(hash(src1.c1)), sum(hash(src2.c4))
 FROM
 (SELECT src.key as c1, src.value as c2 from src) src1
@@ -1504,7 +1504,7 @@ JOIN
 ON src1.c1 = src3.c5 AND src3.c5 < 80
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: file:/tmp/krishnak/hive_2011-03-21_05-13-29_545_3577757536432154532/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: Lineage: dest_j1.key EXPRESSION [(src)src1.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: dest_j1.value SIMPLE [(src)src2.FieldSchema(name:value, type:string, comment:default), ]
 293143	-136853010385
@@ -1576,7 +1576,7 @@ STAGE PLANS:
   Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/tmp/krishnak/hive_2011-03-21_05-13-48_944_400848671018495057/-mr-10002 
+#### A masked pattern was here ####
           Select Operator
             expressions:
                   expr: _col0
@@ -1636,55 +1636,55 @@ STAGE PLANS:
 PREHOOK: query: SELECT /*+ mapjoin(v)*/ sum(hash(k.key)), sum(hash(v.val)) FROM T1 k LEFT OUTER JOIN T1 v ON k.key+1=v.key
 PREHOOK: type: QUERY
 PREHOOK: Input: default@t1
-PREHOOK: Output: file:/tmp/krishnak/hive_2011-03-21_05-13-48_991_2752880130812440243/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: SELECT /*+ mapjoin(v)*/ sum(hash(k.key)), sum(hash(v.val)) FROM T1 k LEFT OUTER JOIN T1 v ON k.key+1=v.key
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@t1
-POSTHOOK: Output: file:/tmp/krishnak/hive_2011-03-21_05-13-48_991_2752880130812440243/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: Lineage: dest_j1.key EXPRESSION [(src)src1.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: dest_j1.value SIMPLE [(src)src2.FieldSchema(name:value, type:string, comment:default), ]
 372	6320
 PREHOOK: query: select /*+ mapjoin(k)*/ sum(hash(k.key)), sum(hash(v.val)) from T1 k join T1 v on k.key=v.val
 PREHOOK: type: QUERY
 PREHOOK: Input: default@t1
-PREHOOK: Output: file:/tmp/krishnak/hive_2011-03-21_05-13-56_315_5522276206269942577/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: select /*+ mapjoin(k)*/ sum(hash(k.key)), sum(hash(v.val)) from T1 k join T1 v on k.key=v.val
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@t1
-POSTHOOK: Output: file:/tmp/krishnak/hive_2011-03-21_05-13-56_315_5522276206269942577/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: Lineage: dest_j1.key EXPRESSION [(src)src1.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: dest_j1.value SIMPLE [(src)src2.FieldSchema(name:value, type:string, comment:default), ]
 NULL	NULL
 PREHOOK: query: select /*+ mapjoin(k)*/ sum(hash(k.key)), sum(hash(v.val)) from T1 k join T1 v on k.key=v.key
 PREHOOK: type: QUERY
 PREHOOK: Input: default@t1
-PREHOOK: Output: file:/tmp/krishnak/hive_2011-03-21_05-14-03_750_9039515450445472024/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: select /*+ mapjoin(k)*/ sum(hash(k.key)), sum(hash(v.val)) from T1 k join T1 v on k.key=v.key
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@t1
-POSTHOOK: Output: file:/tmp/krishnak/hive_2011-03-21_05-14-03_750_9039515450445472024/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: Lineage: dest_j1.key EXPRESSION [(src)src1.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: dest_j1.value SIMPLE [(src)src2.FieldSchema(name:value, type:string, comment:default), ]
 429	12643
 PREHOOK: query: select sum(hash(k.key)), sum(hash(v.val)) from T1 k join T1 v on k.key=v.key
 PREHOOK: type: QUERY
 PREHOOK: Input: default@t1
-PREHOOK: Output: file:/tmp/krishnak/hive_2011-03-21_05-14-10_966_7576870338948271924/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: select sum(hash(k.key)), sum(hash(v.val)) from T1 k join T1 v on k.key=v.key
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@t1
-POSTHOOK: Output: file:/tmp/krishnak/hive_2011-03-21_05-14-10_966_7576870338948271924/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: Lineage: dest_j1.key EXPRESSION [(src)src1.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: dest_j1.value SIMPLE [(src)src2.FieldSchema(name:value, type:string, comment:default), ]
 429	12643
 PREHOOK: query: select count(1) from  T1 a join T1 b on a.key = b.key
 PREHOOK: type: QUERY
 PREHOOK: Input: default@t1
-PREHOOK: Output: file:/tmp/krishnak/hive_2011-03-21_05-14-21_254_5258559304339508830/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: select count(1) from  T1 a join T1 b on a.key = b.key
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@t1
-POSTHOOK: Output: file:/tmp/krishnak/hive_2011-03-21_05-14-21_254_5258559304339508830/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: Lineage: dest_j1.key EXPRESSION [(src)src1.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: dest_j1.value SIMPLE [(src)src2.FieldSchema(name:value, type:string, comment:default), ]
 8
@@ -1692,12 +1692,12 @@ PREHOOK: query: FROM T1 a LEFT OUTER JOIN T2 c ON c.key+1=a.key SELECT sum(hash(
 PREHOOK: type: QUERY
 PREHOOK: Input: default@t1
 PREHOOK: Input: default@t2
-PREHOOK: Output: file:/tmp/krishnak/hive_2011-03-21_05-14-31_322_8323595700138921493/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: FROM T1 a LEFT OUTER JOIN T2 c ON c.key+1=a.key SELECT sum(hash(a.key)), sum(hash(a.val)), sum(hash(c.key))
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@t1
 POSTHOOK: Input: default@t2
-POSTHOOK: Output: file:/tmp/krishnak/hive_2011-03-21_05-14-31_322_8323595700138921493/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: Lineage: dest_j1.key EXPRESSION [(src)src1.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: dest_j1.value SIMPLE [(src)src2.FieldSchema(name:value, type:string, comment:default), ]
 317	9462	50
@@ -1705,12 +1705,12 @@ PREHOOK: query: FROM T1 a RIGHT OUTER JOIN T2 c ON c.key+1=a.key SELECT /*+ STRE
 PREHOOK: type: QUERY
 PREHOOK: Input: default@t1
 PREHOOK: Input: default@t2
-PREHOOK: Output: file:/tmp/krishnak/hive_2011-03-21_05-14-37_309_7694104922236621988/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: FROM T1 a RIGHT OUTER JOIN T2 c ON c.key+1=a.key SELECT /*+ STREAMTABLE(a) */ sum(hash(a.key)), sum(hash(a.val)), sum(hash(c.key))
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@t1
 POSTHOOK: Input: default@t2
-POSTHOOK: Output: file:/tmp/krishnak/hive_2011-03-21_05-14-37_309_7694104922236621988/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: Lineage: dest_j1.key EXPRESSION [(src)src1.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: dest_j1.value SIMPLE [(src)src2.FieldSchema(name:value, type:string, comment:default), ]
 51	1570	318
@@ -1718,12 +1718,12 @@ PREHOOK: query: FROM T1 a FULL OUTER JOIN T2 c ON c.key+1=a.key SELECT /*+ STREA
 PREHOOK: type: QUERY
 PREHOOK: Input: default@t1
 PREHOOK: Input: default@t2
-PREHOOK: Output: file:/tmp/krishnak/hive_2011-03-21_05-14-43_386_5303830935370216758/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: FROM T1 a FULL OUTER JOIN T2 c ON c.key+1=a.key SELECT /*+ STREAMTABLE(a) */ sum(hash(a.key)), sum(hash(a.val)), sum(hash(c.key))
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@t1
 POSTHOOK: Input: default@t2
-POSTHOOK: Output: file:/tmp/krishnak/hive_2011-03-21_05-14-43_386_5303830935370216758/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: Lineage: dest_j1.key EXPRESSION [(src)src1.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: dest_j1.value SIMPLE [(src)src2.FieldSchema(name:value, type:string, comment:default), ]
 317	9462	318
@@ -1731,12 +1731,12 @@ PREHOOK: query: SELECT sum(hash(src1.key)), sum(hash(src1.val)), sum(hash(src2.k
 PREHOOK: type: QUERY
 PREHOOK: Input: default@t1
 PREHOOK: Input: default@t2
-PREHOOK: Output: file:/tmp/krishnak/hive_2011-03-21_05-14-49_530_4648267060577846267/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: SELECT sum(hash(src1.key)), sum(hash(src1.val)), sum(hash(src2.key)) FROM T1 src1 LEFT OUTER JOIN T2 src2 ON src1.key+1 = src2.key RIGHT OUTER JOIN T2 src3 ON src2.key = src3.key
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@t1
 POSTHOOK: Input: default@t2
-POSTHOOK: Output: file:/tmp/krishnak/hive_2011-03-21_05-14-49_530_4648267060577846267/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: Lineage: dest_j1.key EXPRESSION [(src)src1.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: dest_j1.value SIMPLE [(src)src2.FieldSchema(name:value, type:string, comment:default), ]
 370	11003	377
@@ -1744,23 +1744,23 @@ PREHOOK: query: SELECT sum(hash(src1.key)), sum(hash(src1.val)), sum(hash(src2.k
 PREHOOK: type: QUERY
 PREHOOK: Input: default@t1
 PREHOOK: Input: default@t2
-PREHOOK: Output: file:/tmp/krishnak/hive_2011-03-21_05-14-55_581_6275517415764613958/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: SELECT sum(hash(src1.key)), sum(hash(src1.val)), sum(hash(src2.key)) FROM T1 src1 JOIN T2 src2 ON src1.key+1 = src2.key JOIN T2 src3 ON src2.key = src3.key
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@t1
 POSTHOOK: Input: default@t2
-POSTHOOK: Output: file:/tmp/krishnak/hive_2011-03-21_05-14-55_581_6275517415764613958/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: Lineage: dest_j1.key EXPRESSION [(src)src1.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: dest_j1.value SIMPLE [(src)src2.FieldSchema(name:value, type:string, comment:default), ]
 370	11003	377
 PREHOOK: query: select /*+ mapjoin(v)*/ sum(hash(k.key)), sum(hash(v.val)) from T1 k left outer join T1 v on k.key+1=v.key
 PREHOOK: type: QUERY
 PREHOOK: Input: default@t1
-PREHOOK: Output: file:/tmp/krishnak/hive_2011-03-21_05-15-10_897_7173780524760752211/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: select /*+ mapjoin(v)*/ sum(hash(k.key)), sum(hash(v.val)) from T1 k left outer join T1 v on k.key+1=v.key
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@t1
-POSTHOOK: Output: file:/tmp/krishnak/hive_2011-03-21_05-15-10_897_7173780524760752211/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: Lineage: dest_j1.key EXPRESSION [(src)src1.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: dest_j1.value SIMPLE [(src)src2.FieldSchema(name:value, type:string, comment:default), ]
 372	6320

@@ -123,11 +123,11 @@ POSTHOOK: Lineage: bucket3_1 PARTITION(ds=2).value SIMPLE [(src)src.FieldSchema(
 PREHOOK: query: select * from bucket3_1 tablesample (bucket 1 out of 2) s where ds = '1' order by key
 PREHOOK: type: QUERY
 PREHOOK: Input: default@bucket3_1@ds=1
-PREHOOK: Output: file:/tmp/sdong/hive_2011-02-10_17-19-52_464_981092535554765261/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: select * from bucket3_1 tablesample (bucket 1 out of 2) s where ds = '1' order by key
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@bucket3_1@ds=1
-POSTHOOK: Output: file:/tmp/sdong/hive_2011-02-10_17-19-52_464_981092535554765261/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: Lineage: bucket3_1 PARTITION(ds=1).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: bucket3_1 PARTITION(ds=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: bucket3_1 PARTITION(ds=1).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
@@ -444,7 +444,7 @@ key	int
 value	string	
 ds	string	
 	 	 
-Detailed Partition Information	Partition(values:[1], dbName:default, tableName:bucket3_1, createTime:1297387182, lastAccessTime:0, sd:StorageDescriptor(cols:[FieldSchema(name:key, type:int, comment:null), FieldSchema(name:value, type:string, comment:null)], location:pfile:/data/users/sdong/www/open-source-hive1/build/ql/test/data/warehouse/bucket3_1/ds=1, inputFormat:org.apache.hadoop.mapred.TextInputFormat, outputFormat:org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat, compressed:false, numBuckets:2, serdeInfo:SerDeInfo(name:null, serializationLib:org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe, parameters:{serialization.format=1}), bucketCols:[key], sortCols:[], parameters:{}), parameters:{numFiles=2, transient_lastDdlTime=1297387200, totalSize=5812, numRows=0})	
+#### A masked pattern was here ####
 PREHOOK: query: describe extended bucket3_1 partition (ds='2')
 PREHOOK: type: DESCTABLE
 POSTHOOK: query: describe extended bucket3_1 partition (ds='2')
@@ -459,7 +459,7 @@ key	int
 value	string	
 ds	string	
 	 	 
-Detailed Partition Information	Partition(values:[2], dbName:default, tableName:bucket3_1, createTime:1297387192, lastAccessTime:0, sd:StorageDescriptor(cols:[FieldSchema(name:key, type:int, comment:null), FieldSchema(name:value, type:string, comment:null)], location:pfile:/data/users/sdong/www/open-source-hive1/build/ql/test/data/warehouse/bucket3_1/ds=2, inputFormat:org.apache.hadoop.mapred.TextInputFormat, outputFormat:org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat, compressed:false, numBuckets:2, serdeInfo:SerDeInfo(name:null, serializationLib:org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe, parameters:{serialization.format=1}), bucketCols:[key], sortCols:[], parameters:{}), parameters:{numFiles=2, transient_lastDdlTime=1297387200, numRows=247, totalSize=5812})	
+#### A masked pattern was here ####
 PREHOOK: query: describe extended bucket3_1
 PREHOOK: type: DESCTABLE
 POSTHOOK: query: describe extended bucket3_1
@@ -474,4 +474,4 @@ key	int
 value	string	
 ds	string	
 	 	 
-Detailed Table Information	Table(tableName:bucket3_1, dbName:default, owner:sdong, createTime:1297387177, lastAccessTime:0, retention:0, sd:StorageDescriptor(cols:[FieldSchema(name:key, type:int, comment:null), FieldSchema(name:value, type:string, comment:null), FieldSchema(name:ds, type:string, comment:null)], location:pfile:/data/users/sdong/www/open-source-hive1/build/ql/test/data/warehouse/bucket3_1, inputFormat:org.apache.hadoop.mapred.TextInputFormat, outputFormat:org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat, compressed:false, numBuckets:2, serdeInfo:SerDeInfo(name:null, serializationLib:org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe, parameters:{serialization.format=1}), bucketCols:[key], sortCols:[], parameters:{}), partitionKeys:[FieldSchema(name:ds, type:string, comment:null)], parameters:{numPartitions=2, numFiles=4, transient_lastDdlTime=1297387200, numRows=247, totalSize=11624}, viewOriginalText:null, viewExpandedText:null, tableType:MANAGED_TABLE)	
+#### A masked pattern was here ####

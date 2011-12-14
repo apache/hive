@@ -122,11 +122,11 @@ POSTHOOK: Lineage: src_multi2.value SIMPLE [(src)src.FieldSchema(name:value, typ
 PREHOOK: query: select * from src_multi1 order by key, value
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src_multi1
-PREHOOK: Output: file:/tmp/sdong/hive_2011-02-10_16-43-28_145_3241710195767422128/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: select * from src_multi1 order by key, value
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src_multi1
-POSTHOOK: Output: file:/tmp/sdong/hive_2011-02-10_16-43-28_145_3241710195767422128/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: Lineage: src_multi1.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: src_multi1.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: src_multi2.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
@@ -144,11 +144,11 @@ POSTHOOK: Lineage: src_multi2.value SIMPLE [(src)src.FieldSchema(name:value, typ
 PREHOOK: query: select * from src_multi2 order by key, value
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src_multi2
-PREHOOK: Output: file:/tmp/sdong/hive_2011-02-10_16-43-31_438_9069228920663463258/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: select * from src_multi2 order by key, value
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src_multi2
-POSTHOOK: Output: file:/tmp/sdong/hive_2011-02-10_16-43-31_438_9069228920663463258/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: Lineage: src_multi1.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: src_multi1.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: src_multi2.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
@@ -245,7 +245,7 @@ STAGE PLANS:
     Move Operator
       files:
           hdfs directory: true
-          destination: pfile:/data/users/sdong/www/open-source-hive1/build/ql/scratchdir/hive_2011-02-10_16-43-34_769_237323934229498156/-ext-10000
+#### A masked pattern was here ####
 
   Stage: Stage-0
     Move Operator
@@ -263,7 +263,7 @@ STAGE PLANS:
   Stage: Stage-4
     Map Reduce
       Alias -> Map Operator Tree:
-        pfile:/data/users/sdong/www/open-source-hive1/build/ql/scratchdir/hive_2011-02-10_16-43-34_769_237323934229498156/-ext-10004 
+#### A masked pattern was here ####
             File Output Operator
               compressed: false
               GlobalTableId: 0
@@ -280,7 +280,7 @@ STAGE PLANS:
     Move Operator
       files:
           hdfs directory: true
-          destination: pfile:/data/users/sdong/www/open-source-hive1/build/ql/scratchdir/hive_2011-02-10_16-43-34_769_237323934229498156/-ext-10002
+#### A masked pattern was here ####
 
   Stage: Stage-1
     Move Operator
@@ -298,7 +298,7 @@ STAGE PLANS:
   Stage: Stage-8
     Map Reduce
       Alias -> Map Operator Tree:
-        pfile:/data/users/sdong/www/open-source-hive1/build/ql/scratchdir/hive_2011-02-10_16-43-34_769_237323934229498156/-ext-10005 
+#### A masked pattern was here ####
             File Output Operator
               compressed: false
               GlobalTableId: 0
@@ -334,11 +334,11 @@ POSTHOOK: Lineage: src_multi2.value SIMPLE [(src)src.FieldSchema(name:value, typ
 PREHOOK: query: select * from src_multi1 order by key, value
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src_multi1
-PREHOOK: Output: file:/tmp/sdong/hive_2011-02-10_16-43-40_108_540422556150441780/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: select * from src_multi1 order by key, value
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src_multi1
-POSTHOOK: Output: file:/tmp/sdong/hive_2011-02-10_16-43-40_108_540422556150441780/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: Lineage: src_multi1.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: src_multi1.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: src_multi1.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
@@ -360,11 +360,11 @@ POSTHOOK: Lineage: src_multi2.value SIMPLE [(src)src.FieldSchema(name:value, typ
 PREHOOK: query: select * from src_multi2 order by key, value
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src_multi2
-PREHOOK: Output: file:/tmp/sdong/hive_2011-02-10_16-43-43_386_4508980303632676768/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: select * from src_multi2 order by key, value
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src_multi2
-POSTHOOK: Output: file:/tmp/sdong/hive_2011-02-10_16-43-43_386_4508980303632676768/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: Lineage: src_multi1.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: src_multi1.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: src_multi1.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
@@ -512,11 +512,11 @@ POSTHOOK: Lineage: src_multi2.value SIMPLE [(src)src.FieldSchema(name:value, typ
 PREHOOK: query: select * from src_multi1 order by key, value
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src_multi1
-PREHOOK: Output: file:/tmp/sdong/hive_2011-02-10_16-43-52_773_729013797916091277/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: select * from src_multi1 order by key, value
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src_multi1
-POSTHOOK: Output: file:/tmp/sdong/hive_2011-02-10_16-43-52_773_729013797916091277/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: Lineage: src_multi1.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: src_multi1.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: src_multi1.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
@@ -542,11 +542,11 @@ POSTHOOK: Lineage: src_multi2.value SIMPLE [(src)src.FieldSchema(name:value, typ
 PREHOOK: query: select * from src_multi2 order by key, value
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src_multi2
-PREHOOK: Output: file:/tmp/sdong/hive_2011-02-10_16-43-56_122_5865497182262054478/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: select * from src_multi2 order by key, value
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src_multi2
-POSTHOOK: Output: file:/tmp/sdong/hive_2011-02-10_16-43-56_122_5865497182262054478/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: Lineage: src_multi1.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: src_multi1.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: src_multi1.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
@@ -659,7 +659,7 @@ STAGE PLANS:
     Move Operator
       files:
           hdfs directory: true
-          destination: pfile:/data/users/sdong/www/open-source-hive1/build/ql/scratchdir/hive_2011-02-10_16-43-59_397_2100362781804635792/-ext-10000
+#### A masked pattern was here ####
 
   Stage: Stage-0
     Move Operator
@@ -677,7 +677,7 @@ STAGE PLANS:
   Stage: Stage-4
     Map Reduce
       Alias -> Map Operator Tree:
-        pfile:/data/users/sdong/www/open-source-hive1/build/ql/scratchdir/hive_2011-02-10_16-43-59_397_2100362781804635792/-ext-10004 
+#### A masked pattern was here ####
             File Output Operator
               compressed: false
               GlobalTableId: 0
@@ -694,7 +694,7 @@ STAGE PLANS:
     Move Operator
       files:
           hdfs directory: true
-          destination: pfile:/data/users/sdong/www/open-source-hive1/build/ql/scratchdir/hive_2011-02-10_16-43-59_397_2100362781804635792/-ext-10002
+#### A masked pattern was here ####
 
   Stage: Stage-1
     Move Operator
@@ -712,7 +712,7 @@ STAGE PLANS:
   Stage: Stage-8
     Map Reduce
       Alias -> Map Operator Tree:
-        pfile:/data/users/sdong/www/open-source-hive1/build/ql/scratchdir/hive_2011-02-10_16-43-59_397_2100362781804635792/-ext-10005 
+#### A masked pattern was here ####
             File Output Operator
               compressed: false
               GlobalTableId: 0
@@ -756,11 +756,11 @@ POSTHOOK: Lineage: src_multi2.value SIMPLE [(src)src.FieldSchema(name:value, typ
 PREHOOK: query: select * from src_multi1 order by key, value
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src_multi1
-PREHOOK: Output: file:/tmp/sdong/hive_2011-02-10_16-44-04_792_6847429891760050580/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: select * from src_multi1 order by key, value
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src_multi1
-POSTHOOK: Output: file:/tmp/sdong/hive_2011-02-10_16-44-04_792_6847429891760050580/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: Lineage: src_multi1.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: src_multi1.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: src_multi1.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
@@ -790,11 +790,11 @@ POSTHOOK: Lineage: src_multi2.value SIMPLE [(src)src.FieldSchema(name:value, typ
 PREHOOK: query: select * from src_multi2 order by key, value
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src_multi2
-PREHOOK: Output: file:/tmp/sdong/hive_2011-02-10_16-44-08_124_6485128554403267461/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: select * from src_multi2 order by key, value
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src_multi2
-POSTHOOK: Output: file:/tmp/sdong/hive_2011-02-10_16-44-08_124_6485128554403267461/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: Lineage: src_multi1.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: src_multi1.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: src_multi1.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
@@ -965,7 +965,7 @@ STAGE PLANS:
   Stage: Stage-4
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/tmp/sdong/hive_2011-02-10_16-44-11_407_9168756298659685920/-mr-10004 
+#### A masked pattern was here ####
             Reduce Output Operator
               key expressions:
                     expr: _col0
@@ -1056,11 +1056,11 @@ POSTHOOK: Lineage: src_multi2.value SIMPLE [(src)src.FieldSchema(name:value, typ
 PREHOOK: query: select * from src_multi1 order by key, value
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src_multi1
-PREHOOK: Output: file:/tmp/sdong/hive_2011-02-10_16-44-20_601_2082131829649381741/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: select * from src_multi1 order by key, value
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src_multi1
-POSTHOOK: Output: file:/tmp/sdong/hive_2011-02-10_16-44-20_601_2082131829649381741/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: Lineage: src_multi1.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: src_multi1.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: src_multi1.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
@@ -1090,11 +1090,11 @@ POSTHOOK: Lineage: src_multi2.value SIMPLE [(src)src.FieldSchema(name:value, typ
 PREHOOK: query: select * from src_multi2 order by key, value
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src_multi2
-PREHOOK: Output: file:/tmp/sdong/hive_2011-02-10_16-44-23_902_3199219428684690703/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: select * from src_multi2 order by key, value
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src_multi2
-POSTHOOK: Output: file:/tmp/sdong/hive_2011-02-10_16-44-23_902_3199219428684690703/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: Lineage: src_multi1.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: src_multi1.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: src_multi1.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
@@ -1267,7 +1267,7 @@ STAGE PLANS:
     Move Operator
       files:
           hdfs directory: true
-          destination: pfile:/data/users/sdong/www/open-source-hive1/build/ql/scratchdir/hive_2011-02-10_16-44-27_249_7623279141540150203/-ext-10000
+#### A masked pattern was here ####
 
   Stage: Stage-0
     Move Operator
@@ -1285,7 +1285,7 @@ STAGE PLANS:
   Stage: Stage-4
     Map Reduce
       Alias -> Map Operator Tree:
-        pfile:/data/users/sdong/www/open-source-hive1/build/ql/scratchdir/hive_2011-02-10_16-44-27_249_7623279141540150203/-ext-10004 
+#### A masked pattern was here ####
             File Output Operator
               compressed: false
               GlobalTableId: 0
@@ -1298,7 +1298,7 @@ STAGE PLANS:
   Stage: Stage-7
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/tmp/sdong/hive_2011-02-10_16-44-27_249_7623279141540150203/-mr-10005 
+#### A masked pattern was here ####
             Reduce Output Operator
               key expressions:
                     expr: _col0
@@ -1345,7 +1345,7 @@ STAGE PLANS:
     Move Operator
       files:
           hdfs directory: true
-          destination: pfile:/data/users/sdong/www/open-source-hive1/build/ql/scratchdir/hive_2011-02-10_16-44-27_249_7623279141540150203/-ext-10002
+#### A masked pattern was here ####
 
   Stage: Stage-1
     Move Operator
@@ -1363,7 +1363,7 @@ STAGE PLANS:
   Stage: Stage-9
     Map Reduce
       Alias -> Map Operator Tree:
-        pfile:/data/users/sdong/www/open-source-hive1/build/ql/scratchdir/hive_2011-02-10_16-44-27_249_7623279141540150203/-ext-10006 
+#### A masked pattern was here ####
             File Output Operator
               compressed: false
               GlobalTableId: 0
@@ -1415,11 +1415,11 @@ POSTHOOK: Lineage: src_multi2.value SIMPLE [(src)src.FieldSchema(name:value, typ
 PREHOOK: query: select * from src_multi1 order by key, value
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src_multi1
-PREHOOK: Output: file:/tmp/sdong/hive_2011-02-10_16-44-36_779_3999780121139346937/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: select * from src_multi1 order by key, value
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src_multi1
-POSTHOOK: Output: file:/tmp/sdong/hive_2011-02-10_16-44-36_779_3999780121139346937/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: Lineage: src_multi1.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: src_multi1.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: src_multi1.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
@@ -1453,11 +1453,11 @@ POSTHOOK: Lineage: src_multi2.value SIMPLE [(src)src.FieldSchema(name:value, typ
 PREHOOK: query: select * from src_multi2 order by key, value
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src_multi2
-PREHOOK: Output: file:/tmp/sdong/hive_2011-02-10_16-44-40_077_8576725772660015791/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: select * from src_multi2 order by key, value
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src_multi2
-POSTHOOK: Output: file:/tmp/sdong/hive_2011-02-10_16-44-40_077_8576725772660015791/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: Lineage: src_multi1.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: src_multi1.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: src_multi1.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
@@ -1641,7 +1641,7 @@ STAGE PLANS:
   Stage: Stage-4
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/tmp/sdong/hive_2011-02-10_16-44-43_411_3281118470745972569/-mr-10004 
+#### A masked pattern was here ####
             Reduce Output Operator
               key expressions:
                     expr: _col0
@@ -1740,11 +1740,11 @@ POSTHOOK: Lineage: src_multi2.value SIMPLE [(src)src.FieldSchema(name:value, typ
 PREHOOK: query: select * from src_multi1 order by key, value
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src_multi1
-PREHOOK: Output: file:/tmp/sdong/hive_2011-02-10_16-44-52_616_346709338376813267/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: select * from src_multi1 order by key, value
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src_multi1
-POSTHOOK: Output: file:/tmp/sdong/hive_2011-02-10_16-44-52_616_346709338376813267/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: Lineage: src_multi1.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: src_multi1.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: src_multi1.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
@@ -1782,11 +1782,11 @@ POSTHOOK: Lineage: src_multi2.value SIMPLE [(src)src.FieldSchema(name:value, typ
 PREHOOK: query: select * from src_multi2 order by key, value
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src_multi2
-PREHOOK: Output: file:/tmp/sdong/hive_2011-02-10_16-44-55_913_8458628626122262799/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: select * from src_multi2 order by key, value
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src_multi2
-POSTHOOK: Output: file:/tmp/sdong/hive_2011-02-10_16-44-55_913_8458628626122262799/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: Lineage: src_multi1.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: src_multi1.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: src_multi1.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
@@ -1975,7 +1975,7 @@ STAGE PLANS:
     Move Operator
       files:
           hdfs directory: true
-          destination: pfile:/data/users/sdong/www/open-source-hive1/build/ql/scratchdir/hive_2011-02-10_16-44-59_247_2084251084570958888/-ext-10000
+#### A masked pattern was here ####
 
   Stage: Stage-0
     Move Operator
@@ -1993,7 +1993,7 @@ STAGE PLANS:
   Stage: Stage-4
     Map Reduce
       Alias -> Map Operator Tree:
-        pfile:/data/users/sdong/www/open-source-hive1/build/ql/scratchdir/hive_2011-02-10_16-44-59_247_2084251084570958888/-ext-10004 
+#### A masked pattern was here ####
             File Output Operator
               compressed: false
               GlobalTableId: 0
@@ -2006,7 +2006,7 @@ STAGE PLANS:
   Stage: Stage-7
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/tmp/sdong/hive_2011-02-10_16-44-59_247_2084251084570958888/-mr-10005 
+#### A masked pattern was here ####
             Reduce Output Operator
               key expressions:
                     expr: _col0
@@ -2053,7 +2053,7 @@ STAGE PLANS:
     Move Operator
       files:
           hdfs directory: true
-          destination: pfile:/data/users/sdong/www/open-source-hive1/build/ql/scratchdir/hive_2011-02-10_16-44-59_247_2084251084570958888/-ext-10002
+#### A masked pattern was here ####
 
   Stage: Stage-1
     Move Operator
@@ -2071,7 +2071,7 @@ STAGE PLANS:
   Stage: Stage-9
     Map Reduce
       Alias -> Map Operator Tree:
-        pfile:/data/users/sdong/www/open-source-hive1/build/ql/scratchdir/hive_2011-02-10_16-44-59_247_2084251084570958888/-ext-10006 
+#### A masked pattern was here ####
             File Output Operator
               compressed: false
               GlobalTableId: 0
@@ -2131,11 +2131,11 @@ POSTHOOK: Lineage: src_multi2.value SIMPLE [(src)src.FieldSchema(name:value, typ
 PREHOOK: query: select * from src_multi1 order by key, value
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src_multi1
-PREHOOK: Output: file:/tmp/sdong/hive_2011-02-10_16-45-08_936_3832443917120699457/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: select * from src_multi1 order by key, value
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src_multi1
-POSTHOOK: Output: file:/tmp/sdong/hive_2011-02-10_16-45-08_936_3832443917120699457/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: Lineage: src_multi1.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: src_multi1.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: src_multi1.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
@@ -2177,11 +2177,11 @@ POSTHOOK: Lineage: src_multi2.value SIMPLE [(src)src.FieldSchema(name:value, typ
 PREHOOK: query: select * from src_multi2 order by key, value
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src_multi2
-PREHOOK: Output: file:/tmp/sdong/hive_2011-02-10_16-45-12_235_8496683191765892867/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: select * from src_multi2 order by key, value
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src_multi2
-POSTHOOK: Output: file:/tmp/sdong/hive_2011-02-10_16-45-12_235_8496683191765892867/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: Lineage: src_multi1.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: src_multi1.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: src_multi1.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
@@ -2455,11 +2455,11 @@ POSTHOOK: Lineage: src_multi2.value EXPRESSION [(src)src.FieldSchema(name:value,
 PREHOOK: query: select * from src_multi1 order by key, value
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src_multi1
-PREHOOK: Output: file:/tmp/sdong/hive_2011-02-10_16-45-20_844_3953463844343651944/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: select * from src_multi1 order by key, value
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src_multi1
-POSTHOOK: Output: file:/tmp/sdong/hive_2011-02-10_16-45-20_844_3953463844343651944/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: Lineage: src_multi1.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: src_multi1.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: src_multi1.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
@@ -2519,11 +2519,11 @@ POSTHOOK: Lineage: src_multi2.value EXPRESSION [(src)src.FieldSchema(name:value,
 PREHOOK: query: select * from src_multi2 order by key, value
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src_multi2
-PREHOOK: Output: file:/tmp/sdong/hive_2011-02-10_16-45-24_204_8850515575535942770/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: select * from src_multi2 order by key, value
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src_multi2
-POSTHOOK: Output: file:/tmp/sdong/hive_2011-02-10_16-45-24_204_8850515575535942770/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: Lineage: src_multi1.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: src_multi1.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: src_multi1.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
@@ -2750,7 +2750,7 @@ STAGE PLANS:
     Move Operator
       files:
           hdfs directory: true
-          destination: pfile:/data/users/sdong/www/open-source-hive1/build/ql/scratchdir/hive_2011-02-10_16-45-27_536_7429276394415406616/-ext-10000
+#### A masked pattern was here ####
 
   Stage: Stage-0
     Move Operator
@@ -2768,7 +2768,7 @@ STAGE PLANS:
   Stage: Stage-4
     Map Reduce
       Alias -> Map Operator Tree:
-        pfile:/data/users/sdong/www/open-source-hive1/build/ql/scratchdir/hive_2011-02-10_16-45-27_536_7429276394415406616/-ext-10004 
+#### A masked pattern was here ####
             File Output Operator
               compressed: false
               GlobalTableId: 0
@@ -2785,7 +2785,7 @@ STAGE PLANS:
     Move Operator
       files:
           hdfs directory: true
-          destination: pfile:/data/users/sdong/www/open-source-hive1/build/ql/scratchdir/hive_2011-02-10_16-45-27_536_7429276394415406616/-ext-10002
+#### A masked pattern was here ####
 
   Stage: Stage-1
     Move Operator
@@ -2803,7 +2803,7 @@ STAGE PLANS:
   Stage: Stage-8
     Map Reduce
       Alias -> Map Operator Tree:
-        pfile:/data/users/sdong/www/open-source-hive1/build/ql/scratchdir/hive_2011-02-10_16-45-27_536_7429276394415406616/-ext-10005 
+#### A masked pattern was here ####
             File Output Operator
               compressed: false
               GlobalTableId: 0
@@ -2871,11 +2871,11 @@ POSTHOOK: Lineage: src_multi2.value EXPRESSION [(src)src.FieldSchema(name:value,
 PREHOOK: query: select * from src_multi1 order by key, value
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src_multi1
-PREHOOK: Output: file:/tmp/sdong/hive_2011-02-10_16-45-33_056_5316411913010951123/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: select * from src_multi1 order by key, value
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src_multi1
-POSTHOOK: Output: file:/tmp/sdong/hive_2011-02-10_16-45-33_056_5316411913010951123/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: Lineage: src_multi1.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: src_multi1.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: src_multi1.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
@@ -2939,11 +2939,11 @@ POSTHOOK: Lineage: src_multi2.value EXPRESSION [(src)src.FieldSchema(name:value,
 PREHOOK: query: select * from src_multi2 order by key, value
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src_multi2
-PREHOOK: Output: file:/tmp/sdong/hive_2011-02-10_16-45-36_350_5514837416722271487/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: select * from src_multi2 order by key, value
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src_multi2
-POSTHOOK: Output: file:/tmp/sdong/hive_2011-02-10_16-45-36_350_5514837416722271487/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: Lineage: src_multi1.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: src_multi1.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: src_multi1.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
@@ -3253,11 +3253,11 @@ POSTHOOK: Lineage: src_multi2.value EXPRESSION [(src)src.FieldSchema(name:value,
 PREHOOK: query: select * from src_multi1 order by key, value
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src_multi1
-PREHOOK: Output: file:/tmp/sdong/hive_2011-02-10_16-45-44_972_7203180363224865270/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: select * from src_multi1 order by key, value
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src_multi1
-POSTHOOK: Output: file:/tmp/sdong/hive_2011-02-10_16-45-44_972_7203180363224865270/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: Lineage: src_multi1.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: src_multi1.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: src_multi1.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
@@ -3325,11 +3325,11 @@ POSTHOOK: Lineage: src_multi2.value EXPRESSION [(src)src.FieldSchema(name:value,
 PREHOOK: query: select * from src_multi2 order by key, value
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src_multi2
-PREHOOK: Output: file:/tmp/sdong/hive_2011-02-10_16-45-48_259_494334402336133464/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: select * from src_multi2 order by key, value
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src_multi2
-POSTHOOK: Output: file:/tmp/sdong/hive_2011-02-10_16-45-48_259_494334402336133464/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: Lineage: src_multi1.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: src_multi1.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: src_multi1.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
@@ -3572,7 +3572,7 @@ STAGE PLANS:
     Move Operator
       files:
           hdfs directory: true
-          destination: pfile:/data/users/sdong/www/open-source-hive1/build/ql/scratchdir/hive_2011-02-10_16-45-51_569_2379485967482742559/-ext-10000
+#### A masked pattern was here ####
 
   Stage: Stage-0
     Move Operator
@@ -3590,7 +3590,7 @@ STAGE PLANS:
   Stage: Stage-4
     Map Reduce
       Alias -> Map Operator Tree:
-        pfile:/data/users/sdong/www/open-source-hive1/build/ql/scratchdir/hive_2011-02-10_16-45-51_569_2379485967482742559/-ext-10004 
+#### A masked pattern was here ####
             File Output Operator
               compressed: false
               GlobalTableId: 0
@@ -3607,7 +3607,7 @@ STAGE PLANS:
     Move Operator
       files:
           hdfs directory: true
-          destination: pfile:/data/users/sdong/www/open-source-hive1/build/ql/scratchdir/hive_2011-02-10_16-45-51_569_2379485967482742559/-ext-10002
+#### A masked pattern was here ####
 
   Stage: Stage-1
     Move Operator
@@ -3625,7 +3625,7 @@ STAGE PLANS:
   Stage: Stage-8
     Map Reduce
       Alias -> Map Operator Tree:
-        pfile:/data/users/sdong/www/open-source-hive1/build/ql/scratchdir/hive_2011-02-10_16-45-51_569_2379485967482742559/-ext-10005 
+#### A masked pattern was here ####
             File Output Operator
               compressed: false
               GlobalTableId: 0
@@ -3701,11 +3701,11 @@ POSTHOOK: Lineage: src_multi2.value EXPRESSION [(src)src.FieldSchema(name:value,
 PREHOOK: query: select * from src_multi1 order by key, value
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src_multi1
-PREHOOK: Output: file:/tmp/sdong/hive_2011-02-10_16-45-57_111_2267878231944588124/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: select * from src_multi1 order by key, value
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src_multi1
-POSTHOOK: Output: file:/tmp/sdong/hive_2011-02-10_16-45-57_111_2267878231944588124/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: Lineage: src_multi1.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: src_multi1.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: src_multi1.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
@@ -3777,11 +3777,11 @@ POSTHOOK: Lineage: src_multi2.value EXPRESSION [(src)src.FieldSchema(name:value,
 PREHOOK: query: select * from src_multi2 order by key, value
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src_multi2
-PREHOOK: Output: file:/tmp/sdong/hive_2011-02-10_16-46-00_422_7771858013824678476/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: select * from src_multi2 order by key, value
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src_multi2
-POSTHOOK: Output: file:/tmp/sdong/hive_2011-02-10_16-46-00_422_7771858013824678476/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: Lineage: src_multi1.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: src_multi1.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: src_multi1.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
@@ -3850,15 +3850,11 @@ POSTHOOK: Lineage: src_multi2.value EXPRESSION [(src)src.FieldSchema(name:value,
 19	val_19
 PREHOOK: query: explain
 from src 
-insert overwrite local directory '/tmp/hive_test/multiins_local/0' select * where key = 0
-insert overwrite local directory '/tmp/hive_test/multiins_local/2' select * where key = 2
-insert overwrite local directory '/tmp/hive_test/multiins_local/4' select * where key = 4
+#### A masked pattern was here ####
 PREHOOK: type: QUERY
 POSTHOOK: query: explain
 from src 
-insert overwrite local directory '/tmp/hive_test/multiins_local/0' select * where key = 0
-insert overwrite local directory '/tmp/hive_test/multiins_local/2' select * where key = 2
-insert overwrite local directory '/tmp/hive_test/multiins_local/4' select * where key = 4
+#### A masked pattern was here ####
 POSTHOOK: type: QUERY
 POSTHOOK: Lineage: src_multi1.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: src_multi1.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
@@ -3909,7 +3905,7 @@ POSTHOOK: Lineage: src_multi2.value EXPRESSION [(src)src.FieldSchema(name:value,
 POSTHOOK: Lineage: src_multi2.value EXPRESSION [(src)src.FieldSchema(name:value, type:string, comment:default), (src)src.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: src_multi2.value EXPRESSION [(src)src.FieldSchema(name:value, type:string, comment:default), (src)src.FieldSchema(name:value, type:string, comment:default), ]
 ABSTRACT SYNTAX TREE:
-  (TOK_QUERY (TOK_FROM (TOK_TABREF (TOK_TABNAME src))) (TOK_INSERT (TOK_DESTINATION (TOK_LOCAL_DIR '/tmp/hive_test/multiins_local/0')) (TOK_SELECT (TOK_SELEXPR TOK_ALLCOLREF)) (TOK_WHERE (= (TOK_TABLE_OR_COL key) 0))) (TOK_INSERT (TOK_DESTINATION (TOK_LOCAL_DIR '/tmp/hive_test/multiins_local/2')) (TOK_SELECT (TOK_SELEXPR TOK_ALLCOLREF)) (TOK_WHERE (= (TOK_TABLE_OR_COL key) 2))) (TOK_INSERT (TOK_DESTINATION (TOK_LOCAL_DIR '/tmp/hive_test/multiins_local/4')) (TOK_SELECT (TOK_SELEXPR TOK_ALLCOLREF)) (TOK_WHERE (= (TOK_TABLE_OR_COL key) 4))))
+#### A masked pattern was here ####
 
 STAGE DEPENDENCIES:
   Stage-3 is a root stage
@@ -3980,39 +3976,31 @@ STAGE PLANS:
     Move Operator
       files:
           hdfs directory: false
-          destination: /tmp/hive_test/multiins_local/0
+#### A masked pattern was here ####
 
   Stage: Stage-1
     Move Operator
       files:
           hdfs directory: false
-          destination: /tmp/hive_test/multiins_local/2
+#### A masked pattern was here ####
 
   Stage: Stage-2
     Move Operator
       files:
           hdfs directory: false
-          destination: /tmp/hive_test/multiins_local/4
+#### A masked pattern was here ####
 
 
 PREHOOK: query: from src 
-insert overwrite local directory '/tmp/hive_test/multiins_local/0' select * where key = 0
-insert overwrite local directory '/tmp/hive_test/multiins_local/2' select * where key = 2
-insert overwrite local directory '/tmp/hive_test/multiins_local/4' select * where key = 4
+#### A masked pattern was here ####
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: /tmp/hive_test/multiins_local/0
-PREHOOK: Output: /tmp/hive_test/multiins_local/2
-PREHOOK: Output: /tmp/hive_test/multiins_local/4
+#### A masked pattern was here ####
 POSTHOOK: query: from src 
-insert overwrite local directory '/tmp/hive_test/multiins_local/0' select * where key = 0
-insert overwrite local directory '/tmp/hive_test/multiins_local/2' select * where key = 2
-insert overwrite local directory '/tmp/hive_test/multiins_local/4' select * where key = 4
+#### A masked pattern was here ####
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: /tmp/hive_test/multiins_local/0
-POSTHOOK: Output: /tmp/hive_test/multiins_local/2
-POSTHOOK: Output: /tmp/hive_test/multiins_local/4
+#### A masked pattern was here ####
 POSTHOOK: Lineage: src_multi1.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: src_multi1.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: src_multi1.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
@@ -4066,15 +4054,11 @@ POSTHOOK: Lineage: src_multi2.value EXPRESSION [(src)src.FieldSchema(name:value,
 4
 PREHOOK: query: explain
 from src 
-insert overwrite local directory '/tmp/hive_test/multiins_local/0' select * where key = 0
-insert overwrite local directory '/tmp/hive_test/multiins_local/2' select * where key = 2
-insert overwrite local directory '/tmp/hive_test/multiins_local/4' select * where key = 4
+#### A masked pattern was here ####
 PREHOOK: type: QUERY
 POSTHOOK: query: explain
 from src 
-insert overwrite local directory '/tmp/hive_test/multiins_local/0' select * where key = 0
-insert overwrite local directory '/tmp/hive_test/multiins_local/2' select * where key = 2
-insert overwrite local directory '/tmp/hive_test/multiins_local/4' select * where key = 4
+#### A masked pattern was here ####
 POSTHOOK: type: QUERY
 POSTHOOK: Lineage: src_multi1.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: src_multi1.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
@@ -4125,7 +4109,7 @@ POSTHOOK: Lineage: src_multi2.value EXPRESSION [(src)src.FieldSchema(name:value,
 POSTHOOK: Lineage: src_multi2.value EXPRESSION [(src)src.FieldSchema(name:value, type:string, comment:default), (src)src.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: src_multi2.value EXPRESSION [(src)src.FieldSchema(name:value, type:string, comment:default), (src)src.FieldSchema(name:value, type:string, comment:default), ]
 ABSTRACT SYNTAX TREE:
-  (TOK_QUERY (TOK_FROM (TOK_TABREF (TOK_TABNAME src))) (TOK_INSERT (TOK_DESTINATION (TOK_LOCAL_DIR '/tmp/hive_test/multiins_local/0')) (TOK_SELECT (TOK_SELEXPR TOK_ALLCOLREF)) (TOK_WHERE (= (TOK_TABLE_OR_COL key) 0))) (TOK_INSERT (TOK_DESTINATION (TOK_LOCAL_DIR '/tmp/hive_test/multiins_local/2')) (TOK_SELECT (TOK_SELEXPR TOK_ALLCOLREF)) (TOK_WHERE (= (TOK_TABLE_OR_COL key) 2))) (TOK_INSERT (TOK_DESTINATION (TOK_LOCAL_DIR '/tmp/hive_test/multiins_local/4')) (TOK_SELECT (TOK_SELEXPR TOK_ALLCOLREF)) (TOK_WHERE (= (TOK_TABLE_OR_COL key) 4))))
+#### A masked pattern was here ####
 
 STAGE DEPENDENCIES:
   Stage-3 is a root stage
@@ -4196,39 +4180,31 @@ STAGE PLANS:
     Move Operator
       files:
           hdfs directory: false
-          destination: /tmp/hive_test/multiins_local/0
+#### A masked pattern was here ####
 
   Stage: Stage-1
     Move Operator
       files:
           hdfs directory: false
-          destination: /tmp/hive_test/multiins_local/2
+#### A masked pattern was here ####
 
   Stage: Stage-2
     Move Operator
       files:
           hdfs directory: false
-          destination: /tmp/hive_test/multiins_local/4
+#### A masked pattern was here ####
 
 
 PREHOOK: query: from src 
-insert overwrite local directory '/tmp/hive_test/multiins_local/0' select * where key = 0
-insert overwrite local directory '/tmp/hive_test/multiins_local/2' select * where key = 2
-insert overwrite local directory '/tmp/hive_test/multiins_local/4' select * where key = 4
+#### A masked pattern was here ####
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: /tmp/hive_test/multiins_local/0
-PREHOOK: Output: /tmp/hive_test/multiins_local/2
-PREHOOK: Output: /tmp/hive_test/multiins_local/4
+#### A masked pattern was here ####
 POSTHOOK: query: from src 
-insert overwrite local directory '/tmp/hive_test/multiins_local/0' select * where key = 0
-insert overwrite local directory '/tmp/hive_test/multiins_local/2' select * where key = 2
-insert overwrite local directory '/tmp/hive_test/multiins_local/4' select * where key = 4
+#### A masked pattern was here ####
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: /tmp/hive_test/multiins_local/0
-POSTHOOK: Output: /tmp/hive_test/multiins_local/2
-POSTHOOK: Output: /tmp/hive_test/multiins_local/4
+#### A masked pattern was here ####
 POSTHOOK: Lineage: src_multi1.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: src_multi1.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: src_multi1.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
@@ -4282,15 +4258,11 @@ POSTHOOK: Lineage: src_multi2.value EXPRESSION [(src)src.FieldSchema(name:value,
 4
 PREHOOK: query: explain
 from src 
-insert overwrite local directory '/tmp/hive_test/multiins_local/0' select * where key = 0
-insert overwrite local directory '/tmp/hive_test/multiins_local/2' select * where key = 2
-insert overwrite local directory '/tmp/hive_test/multiins_local/4' select * where key = 4
+#### A masked pattern was here ####
 PREHOOK: type: QUERY
 POSTHOOK: query: explain
 from src 
-insert overwrite local directory '/tmp/hive_test/multiins_local/0' select * where key = 0
-insert overwrite local directory '/tmp/hive_test/multiins_local/2' select * where key = 2
-insert overwrite local directory '/tmp/hive_test/multiins_local/4' select * where key = 4
+#### A masked pattern was here ####
 POSTHOOK: type: QUERY
 POSTHOOK: Lineage: src_multi1.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: src_multi1.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
@@ -4341,7 +4313,7 @@ POSTHOOK: Lineage: src_multi2.value EXPRESSION [(src)src.FieldSchema(name:value,
 POSTHOOK: Lineage: src_multi2.value EXPRESSION [(src)src.FieldSchema(name:value, type:string, comment:default), (src)src.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: src_multi2.value EXPRESSION [(src)src.FieldSchema(name:value, type:string, comment:default), (src)src.FieldSchema(name:value, type:string, comment:default), ]
 ABSTRACT SYNTAX TREE:
-  (TOK_QUERY (TOK_FROM (TOK_TABREF (TOK_TABNAME src))) (TOK_INSERT (TOK_DESTINATION (TOK_LOCAL_DIR '/tmp/hive_test/multiins_local/0')) (TOK_SELECT (TOK_SELEXPR TOK_ALLCOLREF)) (TOK_WHERE (= (TOK_TABLE_OR_COL key) 0))) (TOK_INSERT (TOK_DESTINATION (TOK_LOCAL_DIR '/tmp/hive_test/multiins_local/2')) (TOK_SELECT (TOK_SELEXPR TOK_ALLCOLREF)) (TOK_WHERE (= (TOK_TABLE_OR_COL key) 2))) (TOK_INSERT (TOK_DESTINATION (TOK_LOCAL_DIR '/tmp/hive_test/multiins_local/4')) (TOK_SELECT (TOK_SELEXPR TOK_ALLCOLREF)) (TOK_WHERE (= (TOK_TABLE_OR_COL key) 4))))
+#### A masked pattern was here ####
 
 STAGE DEPENDENCIES:
   Stage-3 is a root stage
@@ -4412,39 +4384,31 @@ STAGE PLANS:
     Move Operator
       files:
           hdfs directory: false
-          destination: /tmp/hive_test/multiins_local/0
+#### A masked pattern was here ####
 
   Stage: Stage-1
     Move Operator
       files:
           hdfs directory: false
-          destination: /tmp/hive_test/multiins_local/2
+#### A masked pattern was here ####
 
   Stage: Stage-2
     Move Operator
       files:
           hdfs directory: false
-          destination: /tmp/hive_test/multiins_local/4
+#### A masked pattern was here ####
 
 
 PREHOOK: query: from src 
-insert overwrite local directory '/tmp/hive_test/multiins_local/0' select * where key = 0
-insert overwrite local directory '/tmp/hive_test/multiins_local/2' select * where key = 2
-insert overwrite local directory '/tmp/hive_test/multiins_local/4' select * where key = 4
+#### A masked pattern was here ####
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: /tmp/hive_test/multiins_local/0
-PREHOOK: Output: /tmp/hive_test/multiins_local/2
-PREHOOK: Output: /tmp/hive_test/multiins_local/4
+#### A masked pattern was here ####
 POSTHOOK: query: from src 
-insert overwrite local directory '/tmp/hive_test/multiins_local/0' select * where key = 0
-insert overwrite local directory '/tmp/hive_test/multiins_local/2' select * where key = 2
-insert overwrite local directory '/tmp/hive_test/multiins_local/4' select * where key = 4
+#### A masked pattern was here ####
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: /tmp/hive_test/multiins_local/0
-POSTHOOK: Output: /tmp/hive_test/multiins_local/2
-POSTHOOK: Output: /tmp/hive_test/multiins_local/4
+#### A masked pattern was here ####
 POSTHOOK: Lineage: src_multi1.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: src_multi1.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: src_multi1.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
@@ -4498,15 +4462,11 @@ POSTHOOK: Lineage: src_multi2.value EXPRESSION [(src)src.FieldSchema(name:value,
 4
 PREHOOK: query: explain
 from src 
-insert overwrite local directory '/tmp/hive_test/multiins_local/0' select * where key = 0
-insert overwrite local directory '/tmp/hive_test/multiins_local/2' select * where key = 2
-insert overwrite local directory '/tmp/hive_test/multiins_local/4' select * where key = 4
+#### A masked pattern was here ####
 PREHOOK: type: QUERY
 POSTHOOK: query: explain
 from src 
-insert overwrite local directory '/tmp/hive_test/multiins_local/0' select * where key = 0
-insert overwrite local directory '/tmp/hive_test/multiins_local/2' select * where key = 2
-insert overwrite local directory '/tmp/hive_test/multiins_local/4' select * where key = 4
+#### A masked pattern was here ####
 POSTHOOK: type: QUERY
 POSTHOOK: Lineage: src_multi1.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: src_multi1.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
@@ -4557,7 +4517,7 @@ POSTHOOK: Lineage: src_multi2.value EXPRESSION [(src)src.FieldSchema(name:value,
 POSTHOOK: Lineage: src_multi2.value EXPRESSION [(src)src.FieldSchema(name:value, type:string, comment:default), (src)src.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: src_multi2.value EXPRESSION [(src)src.FieldSchema(name:value, type:string, comment:default), (src)src.FieldSchema(name:value, type:string, comment:default), ]
 ABSTRACT SYNTAX TREE:
-  (TOK_QUERY (TOK_FROM (TOK_TABREF (TOK_TABNAME src))) (TOK_INSERT (TOK_DESTINATION (TOK_LOCAL_DIR '/tmp/hive_test/multiins_local/0')) (TOK_SELECT (TOK_SELEXPR TOK_ALLCOLREF)) (TOK_WHERE (= (TOK_TABLE_OR_COL key) 0))) (TOK_INSERT (TOK_DESTINATION (TOK_LOCAL_DIR '/tmp/hive_test/multiins_local/2')) (TOK_SELECT (TOK_SELEXPR TOK_ALLCOLREF)) (TOK_WHERE (= (TOK_TABLE_OR_COL key) 2))) (TOK_INSERT (TOK_DESTINATION (TOK_LOCAL_DIR '/tmp/hive_test/multiins_local/4')) (TOK_SELECT (TOK_SELEXPR TOK_ALLCOLREF)) (TOK_WHERE (= (TOK_TABLE_OR_COL key) 4))))
+#### A masked pattern was here ####
 
 STAGE DEPENDENCIES:
   Stage-3 is a root stage
@@ -4628,39 +4588,31 @@ STAGE PLANS:
     Move Operator
       files:
           hdfs directory: false
-          destination: /tmp/hive_test/multiins_local/0
+#### A masked pattern was here ####
 
   Stage: Stage-1
     Move Operator
       files:
           hdfs directory: false
-          destination: /tmp/hive_test/multiins_local/2
+#### A masked pattern was here ####
 
   Stage: Stage-2
     Move Operator
       files:
           hdfs directory: false
-          destination: /tmp/hive_test/multiins_local/4
+#### A masked pattern was here ####
 
 
 PREHOOK: query: from src 
-insert overwrite local directory '/tmp/hive_test/multiins_local/0' select * where key = 0
-insert overwrite local directory '/tmp/hive_test/multiins_local/2' select * where key = 2
-insert overwrite local directory '/tmp/hive_test/multiins_local/4' select * where key = 4
+#### A masked pattern was here ####
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: /tmp/hive_test/multiins_local/0
-PREHOOK: Output: /tmp/hive_test/multiins_local/2
-PREHOOK: Output: /tmp/hive_test/multiins_local/4
+#### A masked pattern was here ####
 POSTHOOK: query: from src 
-insert overwrite local directory '/tmp/hive_test/multiins_local/0' select * where key = 0
-insert overwrite local directory '/tmp/hive_test/multiins_local/2' select * where key = 2
-insert overwrite local directory '/tmp/hive_test/multiins_local/4' select * where key = 4
+#### A masked pattern was here ####
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: /tmp/hive_test/multiins_local/0
-POSTHOOK: Output: /tmp/hive_test/multiins_local/2
-POSTHOOK: Output: /tmp/hive_test/multiins_local/4
+#### A masked pattern was here ####
 POSTHOOK: Lineage: src_multi1.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: src_multi1.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: src_multi1.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]

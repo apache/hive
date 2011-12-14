@@ -57,12 +57,12 @@ PREHOOK: query: SELECT in_file("303", "../data/files/test2.dat"),
 FROM src LIMIT 1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/var/folders/71/h_j6fpg10r33hvx1lcxlgttcw61_4s/T/jonchang/hive_2011-11-20_01-14-47_787_473222432824773238/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: SELECT in_file("303", "../data/files/test2.dat"),
        in_file("304", "../data/files/test2.dat"),
        in_file(CAST(NULL AS STRING), "../data/files/test2.dat")
 FROM src LIMIT 1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: file:/var/folders/71/h_j6fpg10r33hvx1lcxlgttcw61_4s/T/jonchang/hive_2011-11-20_01-14-47_787_473222432824773238/-mr-10000
+#### A masked pattern was here ####
 true	false	NULL

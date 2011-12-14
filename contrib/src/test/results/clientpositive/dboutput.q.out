@@ -94,7 +94,7 @@ dboutput('jdbc:derby:../build/test_dboutput_db','','',
 limit 1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/tmp/sdong/hive_2011-02-16_20-09-23_328_8680925253427995225/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: FROM src 
 
 SELECT dboutput ( 'jdbc:derby:../build/test_dboutput_db;create=true','','',
@@ -109,7 +109,7 @@ dboutput('jdbc:derby:../build/test_dboutput_db','','',
 limit 1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: file:/tmp/sdong/hive_2011-02-16_20-09-23_328_8680925253427995225/-mr-10000
+#### A masked pattern was here ####
 0	0	1
 PREHOOK: query: EXPLAIN SELECT
 
@@ -168,7 +168,7 @@ dboutput('jdbc:derby:../build/test_dboutput_db','','',
 FROM src WHERE key < 10
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/tmp/sdong/hive_2011-02-16_20-09-28_953_3029021215935953778/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: SELECT
 
 dboutput('jdbc:derby:../build/test_dboutput_db','','',
@@ -177,7 +177,7 @@ dboutput('jdbc:derby:../build/test_dboutput_db','','',
 FROM src WHERE key < 10
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: file:/tmp/sdong/hive_2011-02-16_20-09-28_953_3029021215935953778/-mr-10000
+#### A masked pattern was here ####
 0
 0
 0
@@ -188,8 +188,7 @@ POSTHOOK: Output: file:/tmp/sdong/hive_2011-02-16_20-09-28_953_30290212159359537
 0
 1
 0
-Deleted file:/data/users/sdong/www/open-source-hive3/build/test_dboutput_db
-Deleted file:/data/users/sdong/www/open-source-hive3/contrib/derby.log
+#### A masked pattern was here ####
 PREHOOK: query: DROP TEMPORARY FUNCTION dboutput
 PREHOOK: type: DROPFUNCTION
 POSTHOOK: query: DROP TEMPORARY FUNCTION dboutput

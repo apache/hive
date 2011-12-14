@@ -137,9 +137,9 @@ STAGE PLANS:
                   File Output Operator
                     compressed: false
                     GlobalTableId: 1
-                    directory: pfile:/Users/krishnak/Projects/hdp/sources/hive-git-apache/build/ql/scratchdir/hive_2011-03-20_22-40-04_795_456683208827501157/-ext-10002
+#### A masked pattern was here ####
                     NumFilesPerFileSink: 1
-                    Stats Publishing Key Prefix: pfile:/Users/krishnak/Projects/hdp/sources/hive-git-apache/build/ql/scratchdir/hive_2011-03-20_22-40-04_795_456683208827501157/-ext-10000/
+#### A masked pattern was here ####
                     table:
                         input format: org.apache.hadoop.mapred.TextInputFormat
                         output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
@@ -147,14 +147,12 @@ STAGE PLANS:
                           bucket_count -1
                           columns key,value1,value2
                           columns.types string:string:string
-                          file.inputformat org.apache.hadoop.mapred.TextInputFormat
-                          file.outputformat org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                          location pfile:/Users/krishnak/Projects/hdp/sources/hive-git-apache/build/ql/test/data/warehouse/bucketmapjoin_tmp_result
+#### A masked pattern was here ####
                           name default.bucketmapjoin_tmp_result
                           serialization.ddl struct bucketmapjoin_tmp_result { string key, string value1, string value2}
                           serialization.format 1
                           serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                          transient_lastDdlTime 1300686004
+#### A masked pattern was here ####
                         serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                         name: default.bucketmapjoin_tmp_result
                     TotalFiles: 1
@@ -164,9 +162,9 @@ STAGE PLANS:
         Map Reduce Local Work
       Needs Tagging: false
       Path -> Alias:
-        pfile:/Users/krishnak/Projects/hdp/sources/hive-git-apache/build/ql/test/data/warehouse/srcbucket_mapjoin [a]
+#### A masked pattern was here ####
       Path -> Partition:
-        pfile:/Users/krishnak/Projects/hdp/sources/hive-git-apache/build/ql/test/data/warehouse/srcbucket_mapjoin 
+#### A masked pattern was here ####
           Partition
             base file name: srcbucket_mapjoin
             input format: org.apache.hadoop.mapred.TextInputFormat
@@ -176,14 +174,12 @@ STAGE PLANS:
               bucket_field_name key
               columns key,value
               columns.types int:string
-              file.inputformat org.apache.hadoop.mapred.TextInputFormat
-              file.outputformat org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-              location pfile:/Users/krishnak/Projects/hdp/sources/hive-git-apache/build/ql/test/data/warehouse/srcbucket_mapjoin
+#### A masked pattern was here ####
               name default.srcbucket_mapjoin
               serialization.ddl struct srcbucket_mapjoin { i32 key, string value}
               serialization.format 1
               serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              transient_lastDdlTime 1300686000
+#### A masked pattern was here ####
             serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
           
               input format: org.apache.hadoop.mapred.TextInputFormat
@@ -193,14 +189,12 @@ STAGE PLANS:
                 bucket_field_name key
                 columns key,value
                 columns.types int:string
-                file.inputformat org.apache.hadoop.mapred.TextInputFormat
-                file.outputformat org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                location pfile:/Users/krishnak/Projects/hdp/sources/hive-git-apache/build/ql/test/data/warehouse/srcbucket_mapjoin
+#### A masked pattern was here ####
                 name default.srcbucket_mapjoin
                 serialization.ddl struct srcbucket_mapjoin { i32 key, string value}
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                transient_lastDdlTime 1300686000
+#### A masked pattern was here ####
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: default.srcbucket_mapjoin
             name: default.srcbucket_mapjoin
@@ -212,14 +206,13 @@ STAGE PLANS:
     Move Operator
       files:
           hdfs directory: true
-          source: pfile:/Users/krishnak/Projects/hdp/sources/hive-git-apache/build/ql/scratchdir/hive_2011-03-20_22-40-04_795_456683208827501157/-ext-10002
-          destination: pfile:/Users/krishnak/Projects/hdp/sources/hive-git-apache/build/ql/scratchdir/hive_2011-03-20_22-40-04_795_456683208827501157/-ext-10000
+#### A masked pattern was here ####
 
   Stage: Stage-0
     Move Operator
       tables:
           replace: true
-          source: pfile:/Users/krishnak/Projects/hdp/sources/hive-git-apache/build/ql/scratchdir/hive_2011-03-20_22-40-04_795_456683208827501157/-ext-10000
+#### A masked pattern was here ####
           table:
               input format: org.apache.hadoop.mapred.TextInputFormat
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
@@ -227,30 +220,28 @@ STAGE PLANS:
                 bucket_count -1
                 columns key,value1,value2
                 columns.types string:string:string
-                file.inputformat org.apache.hadoop.mapred.TextInputFormat
-                file.outputformat org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                location pfile:/Users/krishnak/Projects/hdp/sources/hive-git-apache/build/ql/test/data/warehouse/bucketmapjoin_tmp_result
+#### A masked pattern was here ####
                 name default.bucketmapjoin_tmp_result
                 serialization.ddl struct bucketmapjoin_tmp_result { string key, string value1, string value2}
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                transient_lastDdlTime 1300686004
+#### A masked pattern was here ####
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: default.bucketmapjoin_tmp_result
-          tmp directory: pfile:/Users/krishnak/Projects/hdp/sources/hive-git-apache/build/ql/scratchdir/hive_2011-03-20_22-40-04_795_456683208827501157/-ext-10001
+#### A masked pattern was here ####
 
   Stage: Stage-2
     Stats-Aggr Operator
-      Stats Aggregation Key Prefix: pfile:/Users/krishnak/Projects/hdp/sources/hive-git-apache/build/ql/scratchdir/hive_2011-03-20_22-40-04_795_456683208827501157/-ext-10000/
+#### A masked pattern was here ####
 
   Stage: Stage-3
     Map Reduce
       Alias -> Map Operator Tree:
-        pfile:/Users/krishnak/Projects/hdp/sources/hive-git-apache/build/ql/scratchdir/hive_2011-03-20_22-40-04_795_456683208827501157/-ext-10002 
+#### A masked pattern was here ####
             File Output Operator
               compressed: false
               GlobalTableId: 0
-              directory: pfile:/Users/krishnak/Projects/hdp/sources/hive-git-apache/build/ql/scratchdir/hive_2011-03-20_22-40-04_795_456683208827501157/-ext-10000
+#### A masked pattern was here ####
               NumFilesPerFileSink: 1
               table:
                   input format: org.apache.hadoop.mapred.TextInputFormat
@@ -259,14 +250,12 @@ STAGE PLANS:
                     bucket_count -1
                     columns key,value1,value2
                     columns.types string:string:string
-                    file.inputformat org.apache.hadoop.mapred.TextInputFormat
-                    file.outputformat org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                    location pfile:/Users/krishnak/Projects/hdp/sources/hive-git-apache/build/ql/test/data/warehouse/bucketmapjoin_tmp_result
+#### A masked pattern was here ####
                     name default.bucketmapjoin_tmp_result
                     serialization.ddl struct bucketmapjoin_tmp_result { string key, string value1, string value2}
                     serialization.format 1
                     serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                    transient_lastDdlTime 1300686004
+#### A masked pattern was here ####
                   serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                   name: default.bucketmapjoin_tmp_result
               TotalFiles: 1
@@ -274,9 +263,9 @@ STAGE PLANS:
               MultiFileSpray: false
       Needs Tagging: false
       Path -> Alias:
-        pfile:/Users/krishnak/Projects/hdp/sources/hive-git-apache/build/ql/scratchdir/hive_2011-03-20_22-40-04_795_456683208827501157/-ext-10002 [pfile:/Users/krishnak/Projects/hdp/sources/hive-git-apache/build/ql/scratchdir/hive_2011-03-20_22-40-04_795_456683208827501157/-ext-10002]
+#### A masked pattern was here ####
       Path -> Partition:
-        pfile:/Users/krishnak/Projects/hdp/sources/hive-git-apache/build/ql/scratchdir/hive_2011-03-20_22-40-04_795_456683208827501157/-ext-10002 
+#### A masked pattern was here ####
           Partition
             base file name: -ext-10002
             input format: org.apache.hadoop.mapred.TextInputFormat
@@ -285,14 +274,12 @@ STAGE PLANS:
               bucket_count -1
               columns key,value1,value2
               columns.types string:string:string
-              file.inputformat org.apache.hadoop.mapred.TextInputFormat
-              file.outputformat org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-              location pfile:/Users/krishnak/Projects/hdp/sources/hive-git-apache/build/ql/test/data/warehouse/bucketmapjoin_tmp_result
+#### A masked pattern was here ####
               name default.bucketmapjoin_tmp_result
               serialization.ddl struct bucketmapjoin_tmp_result { string key, string value1, string value2}
               serialization.format 1
               serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              transient_lastDdlTime 1300686004
+#### A masked pattern was here ####
             serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
           
               input format: org.apache.hadoop.mapred.TextInputFormat
@@ -301,14 +288,12 @@ STAGE PLANS:
                 bucket_count -1
                 columns key,value1,value2
                 columns.types string:string:string
-                file.inputformat org.apache.hadoop.mapred.TextInputFormat
-                file.outputformat org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                location pfile:/Users/krishnak/Projects/hdp/sources/hive-git-apache/build/ql/test/data/warehouse/bucketmapjoin_tmp_result
+#### A masked pattern was here ####
                 name default.bucketmapjoin_tmp_result
                 serialization.ddl struct bucketmapjoin_tmp_result { string key, string value1, string value2}
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                transient_lastDdlTime 1300686004
+#### A masked pattern was here ####
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: default.bucketmapjoin_tmp_result
             name: default.bucketmapjoin_tmp_result

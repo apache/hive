@@ -48,11 +48,11 @@ STAGE PLANS:
 PREHOOK: query: select str_to_map('a=1,b=2,c=3',',','=')['a'] from src limit 3
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/var/folders/71/h_j6fpg10r33hvx1lcxlgttcw61_4s/T/jonchang/hive_2011-10-05_16-24-51_124_7056362201665426304/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: select str_to_map('a=1,b=2,c=3',',','=')['a'] from src limit 3
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: file:/var/folders/71/h_j6fpg10r33hvx1lcxlgttcw61_4s/T/jonchang/hive_2011-10-05_16-24-51_124_7056362201665426304/-mr-10000
+#### A masked pattern was here ####
 1
 1
 1
@@ -95,11 +95,11 @@ STAGE PLANS:
 PREHOOK: query: select str_to_map('a:1,b:2,c:3') from src limit 3
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/var/folders/71/h_j6fpg10r33hvx1lcxlgttcw61_4s/T/jonchang/hive_2011-10-05_16-24-56_651_6773854971430318122/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: select str_to_map('a:1,b:2,c:3') from src limit 3
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: file:/var/folders/71/h_j6fpg10r33hvx1lcxlgttcw61_4s/T/jonchang/hive_2011-10-05_16-24-56_651_6773854971430318122/-mr-10000
+#### A masked pattern was here ####
 {"b":"2","a":"1","c":"3"}
 {"b":"2","a":"1","c":"3"}
 {"b":"2","a":"1","c":"3"}
@@ -142,11 +142,11 @@ STAGE PLANS:
 PREHOOK: query: select str_to_map('a:1,b:2,c:3',',',':') from src limit 3
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/var/folders/71/h_j6fpg10r33hvx1lcxlgttcw61_4s/T/jonchang/hive_2011-10-05_16-25-01_804_3299719471006117768/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: select str_to_map('a:1,b:2,c:3',',',':') from src limit 3
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: file:/var/folders/71/h_j6fpg10r33hvx1lcxlgttcw61_4s/T/jonchang/hive_2011-10-05_16-25-01_804_3299719471006117768/-mr-10000
+#### A masked pattern was here ####
 {"b":"2","a":"1","c":"3"}
 {"b":"2","a":"1","c":"3"}
 {"b":"2","a":"1","c":"3"}
@@ -205,13 +205,13 @@ from (select transform('a:1,b:2,c:3') using 'cat' as (ss) from src) t
 limit 3
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/var/folders/71/h_j6fpg10r33hvx1lcxlgttcw61_4s/T/jonchang/hive_2011-10-05_16-25-06_779_3938364123634391474/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: select str_to_map(t.ss,',',':')['a']
 from (select transform('a:1,b:2,c:3') using 'cat' as (ss) from src) t
 limit 3
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: file:/var/folders/71/h_j6fpg10r33hvx1lcxlgttcw61_4s/T/jonchang/hive_2011-10-05_16-25-06_779_3938364123634391474/-mr-10000
+#### A masked pattern was here ####
 1
 1
 1
@@ -229,11 +229,11 @@ POSTHOOK: Output: default@tbl_s2m
 PREHOOK: query: select str_to_map(t,'_','=')['333'] from tbl_s2m
 PREHOOK: type: QUERY
 PREHOOK: Input: default@tbl_s2m
-PREHOOK: Output: file:/var/folders/71/h_j6fpg10r33hvx1lcxlgttcw61_4s/T/jonchang/hive_2011-10-05_16-25-17_345_8328527994867118991/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: select str_to_map(t,'_','=')['333'] from tbl_s2m
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@tbl_s2m
-POSTHOOK: Output: file:/var/folders/71/h_j6fpg10r33hvx1lcxlgttcw61_4s/T/jonchang/hive_2011-10-05_16-25-17_345_8328527994867118991/-mr-10000
+#### A masked pattern was here ####
 444
 444
 444

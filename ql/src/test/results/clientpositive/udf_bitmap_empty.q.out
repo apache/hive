@@ -1,18 +1,18 @@
 PREHOOK: query: select ewah_bitmap_empty(array(13,2,4,8589934592,0,0)) from src limit 1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/var/folders/nt/ng21tg0n1jl4547lw0k8lg6hq_nw87/T/charleschen/hive_2011-08-30_21-53-10_432_2740171013501038928/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: select ewah_bitmap_empty(array(13,2,4,8589934592,0,0)) from src limit 1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: file:/var/folders/nt/ng21tg0n1jl4547lw0k8lg6hq_nw87/T/charleschen/hive_2011-08-30_21-53-10_432_2740171013501038928/-mr-10000
+#### A masked pattern was here ####
 true
 PREHOOK: query: select ewah_bitmap_empty(array(13,2,4,8589934592,4096,0)) from src limit 1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/var/folders/nt/ng21tg0n1jl4547lw0k8lg6hq_nw87/T/charleschen/hive_2011-08-30_21-53-20_267_7328220720920988696/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: select ewah_bitmap_empty(array(13,2,4,8589934592,4096,0)) from src limit 1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: file:/var/folders/nt/ng21tg0n1jl4547lw0k8lg6hq_nw87/T/charleschen/hive_2011-08-30_21-53-20_267_7328220720920988696/-mr-10000
+#### A masked pattern was here ####
 false

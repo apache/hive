@@ -4,14 +4,14 @@ PREHOOK: query: SELECT explode(col) AS myCol FROM
      SELECT IF(false, array(1,2,3), NULL) AS col FROM src LIMIT 1) a
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/var/folders/uc/ucuNeMAVGQGzy3459D8z2+++Z0Q/-Tmp-/amarsri/hive_2011-08-02_02-31-35_640_8127575371135726411/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: SELECT explode(col) AS myCol FROM 
     (SELECT array(1,2,3) AS col FROM src LIMIT 1 
      UNION ALL
      SELECT IF(false, array(1,2,3), NULL) AS col FROM src LIMIT 1) a
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: file:/var/folders/uc/ucuNeMAVGQGzy3459D8z2+++Z0Q/-Tmp-/amarsri/hive_2011-08-02_02-31-35_640_8127575371135726411/-mr-10000
+#### A masked pattern was here ####
 1
 2
 3
@@ -21,14 +21,14 @@ PREHOOK: query: SELECT explode(col) AS (myCol1,myCol2) FROM
      SELECT IF(false, map(1,'one',2,'two',3,'three'), NULL) AS col FROM src LIMIT 1) a
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/var/folders/uc/ucuNeMAVGQGzy3459D8z2+++Z0Q/-Tmp-/amarsri/hive_2011-08-02_02-31-59_963_8019504615296284121/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: SELECT explode(col) AS (myCol1,myCol2) FROM
     (SELECT map(1,'one',2,'two',3,'three') AS col FROM src LIMIT 1
      UNION ALL
      SELECT IF(false, map(1,'one',2,'two',3,'three'), NULL) AS col FROM src LIMIT 1) a
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: file:/var/folders/uc/ucuNeMAVGQGzy3459D8z2+++Z0Q/-Tmp-/amarsri/hive_2011-08-02_02-31-59_963_8019504615296284121/-mr-10000
+#### A masked pattern was here ####
 1	one
 2	two
 3	three

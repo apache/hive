@@ -53,11 +53,11 @@ STAGE PLANS:
 PREHOOK: query: SELECT x.* FROM SRC x SORT BY key
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/tmp/sdong/hive_2011-02-10_17-18-54_398_3884116706574170174/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: SELECT x.* FROM SRC x SORT BY key
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: file:/tmp/sdong/hive_2011-02-10_17-18-54_398_3884116706574170174/-mr-10000
+#### A masked pattern was here ####
 0	val_0
 0	val_0
 0	val_0

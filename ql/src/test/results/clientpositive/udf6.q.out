@@ -53,11 +53,11 @@ STAGE PLANS:
 PREHOOK: query: SELECT IF(TRUE, 1, 2) FROM dest1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@dest1
-PREHOOK: Output: file:/tmp/sdong/hive_2011-02-10_17-28-59_140_3645085199757793595/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: SELECT IF(TRUE, 1, 2) FROM dest1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@dest1
-POSTHOOK: Output: file:/tmp/sdong/hive_2011-02-10_17-28-59_140_3645085199757793595/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: Lineage: dest1.c1 SIMPLE []
 1
 PREHOOK: query: EXPLAIN
@@ -136,7 +136,7 @@ PREHOOK: query: SELECT IF(TRUE, 1, 2), IF(FALSE, 1, 2), IF(NULL, 1, 2), IF(TRUE,
        CAST('128' AS STRING) FROM dest1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@dest1
-PREHOOK: Output: file:/tmp/sdong/hive_2011-02-10_17-29-02_502_4098914104410705690/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: SELECT IF(TRUE, 1, 2), IF(FALSE, 1, 2), IF(NULL, 1, 2), IF(TRUE, "a", "b"),
        IF(TRUE, 0.1, 0.2), IF(FALSE, CAST(1 AS BIGINT), CAST(2 AS BIGINT)),
        IF(FALSE, CAST(127 AS TINYINT), CAST(126 AS TINYINT)),
@@ -145,6 +145,6 @@ POSTHOOK: query: SELECT IF(TRUE, 1, 2), IF(FALSE, 1, 2), IF(NULL, 1, 2), IF(TRUE
        CAST('128' AS STRING) FROM dest1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@dest1
-POSTHOOK: Output: file:/tmp/sdong/hive_2011-02-10_17-29-02_502_4098914104410705690/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: Lineage: dest1.c1 SIMPLE []
 1	2	2	a	0.1	2	126	128	128	1.0	128

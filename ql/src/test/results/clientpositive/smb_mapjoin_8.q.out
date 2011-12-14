@@ -50,12 +50,12 @@ PREHOOK: query: select /*+mapjoin(a)*/ * from smb_bucket4_1 a full outer join sm
 PREHOOK: type: QUERY
 PREHOOK: Input: default@smb_bucket4_1
 PREHOOK: Input: default@smb_bucket4_2
-PREHOOK: Output: hdfs://localhost.localdomain:37175/data/users/sohanjain/test_builds/hive_2322/hive-trunk/build/ql/scratchdir/hive_2011-08-05_17-47-03_558_4175460079084168706/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: select /*+mapjoin(a)*/ * from smb_bucket4_1 a full outer join smb_bucket4_2 b on a.key = b.key
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@smb_bucket4_1
 POSTHOOK: Input: default@smb_bucket4_2
-POSTHOOK: Output: hdfs://localhost.localdomain:37175/data/users/sohanjain/test_builds/hive_2322/hive-trunk/build/ql/scratchdir/hive_2011-08-05_17-47-03_558_4175460079084168706/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: Lineage: smb_bucket4_1.key SIMPLE [(smb_bucket_input)smb_bucket_input.FieldSchema(name:key, type:int, comment:null), ]
 POSTHOOK: Lineage: smb_bucket4_1.value SIMPLE [(smb_bucket_input)smb_bucket_input.FieldSchema(name:value, type:string, comment:null), ]
 POSTHOOK: Lineage: smb_bucket4_2.key SIMPLE [(smb_bucket_input)smb_bucket_input.FieldSchema(name:key, type:int, comment:null), ]
@@ -70,12 +70,12 @@ PREHOOK: query: select /*+mapjoin(b)*/ * from smb_bucket4_1 a full outer join sm
 PREHOOK: type: QUERY
 PREHOOK: Input: default@smb_bucket4_1
 PREHOOK: Input: default@smb_bucket4_2
-PREHOOK: Output: hdfs://localhost.localdomain:37175/data/users/sohanjain/test_builds/hive_2322/hive-trunk/build/ql/scratchdir/hive_2011-08-05_17-47-15_789_5111262345540612249/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: select /*+mapjoin(b)*/ * from smb_bucket4_1 a full outer join smb_bucket4_2 b on a.key = b.key
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@smb_bucket4_1
 POSTHOOK: Input: default@smb_bucket4_2
-POSTHOOK: Output: hdfs://localhost.localdomain:37175/data/users/sohanjain/test_builds/hive_2322/hive-trunk/build/ql/scratchdir/hive_2011-08-05_17-47-15_789_5111262345540612249/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: Lineage: smb_bucket4_1.key SIMPLE [(smb_bucket_input)smb_bucket_input.FieldSchema(name:key, type:int, comment:null), ]
 POSTHOOK: Lineage: smb_bucket4_1.value SIMPLE [(smb_bucket_input)smb_bucket_input.FieldSchema(name:value, type:string, comment:null), ]
 POSTHOOK: Lineage: smb_bucket4_2.key SIMPLE [(smb_bucket_input)smb_bucket_input.FieldSchema(name:key, type:int, comment:null), ]
@@ -120,12 +120,12 @@ PREHOOK: query: select /*+mapjoin(a)*/ * from smb_bucket4_1 a full outer join sm
 PREHOOK: type: QUERY
 PREHOOK: Input: default@smb_bucket4_1
 PREHOOK: Input: default@smb_bucket4_2
-PREHOOK: Output: hdfs://localhost.localdomain:37175/data/users/sohanjain/test_builds/hive_2322/hive-trunk/build/ql/scratchdir/hive_2011-08-05_17-48-16_164_1168580802515730007/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: select /*+mapjoin(a)*/ * from smb_bucket4_1 a full outer join smb_bucket4_2 b on a.key = b.key
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@smb_bucket4_1
 POSTHOOK: Input: default@smb_bucket4_2
-POSTHOOK: Output: hdfs://localhost.localdomain:37175/data/users/sohanjain/test_builds/hive_2322/hive-trunk/build/ql/scratchdir/hive_2011-08-05_17-48-16_164_1168580802515730007/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: Lineage: smb_bucket4_1.key SIMPLE [(smb_bucket_input)smb_bucket_input.FieldSchema(name:key, type:int, comment:null), ]
 POSTHOOK: Lineage: smb_bucket4_1.key SIMPLE [(smb_bucket_input)smb_bucket_input.FieldSchema(name:key, type:int, comment:null), ]
 POSTHOOK: Lineage: smb_bucket4_1.value SIMPLE [(smb_bucket_input)smb_bucket_input.FieldSchema(name:value, type:string, comment:null), ]
@@ -142,12 +142,12 @@ PREHOOK: query: select /*+mapjoin(b)*/ * from smb_bucket4_1 a full outer join sm
 PREHOOK: type: QUERY
 PREHOOK: Input: default@smb_bucket4_1
 PREHOOK: Input: default@smb_bucket4_2
-PREHOOK: Output: hdfs://localhost.localdomain:37175/data/users/sohanjain/test_builds/hive_2322/hive-trunk/build/ql/scratchdir/hive_2011-08-05_17-48-28_252_8624738230326374105/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: select /*+mapjoin(b)*/ * from smb_bucket4_1 a full outer join smb_bucket4_2 b on a.key = b.key
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@smb_bucket4_1
 POSTHOOK: Input: default@smb_bucket4_2
-POSTHOOK: Output: hdfs://localhost.localdomain:37175/data/users/sohanjain/test_builds/hive_2322/hive-trunk/build/ql/scratchdir/hive_2011-08-05_17-48-28_252_8624738230326374105/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: Lineage: smb_bucket4_1.key SIMPLE [(smb_bucket_input)smb_bucket_input.FieldSchema(name:key, type:int, comment:null), ]
 POSTHOOK: Lineage: smb_bucket4_1.key SIMPLE [(smb_bucket_input)smb_bucket_input.FieldSchema(name:key, type:int, comment:null), ]
 POSTHOOK: Lineage: smb_bucket4_1.value SIMPLE [(smb_bucket_input)smb_bucket_input.FieldSchema(name:value, type:string, comment:null), ]
@@ -202,12 +202,12 @@ PREHOOK: query: select /*+mapjoin(a)*/ * from smb_bucket4_1 a full outer join sm
 PREHOOK: type: QUERY
 PREHOOK: Input: default@smb_bucket4_1
 PREHOOK: Input: default@smb_bucket4_2
-PREHOOK: Output: hdfs://localhost.localdomain:37175/data/users/sohanjain/test_builds/hive_2322/hive-trunk/build/ql/scratchdir/hive_2011-08-05_17-49-28_382_7069852983837639446/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: select /*+mapjoin(a)*/ * from smb_bucket4_1 a full outer join smb_bucket4_2 b on a.key = b.key
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@smb_bucket4_1
 POSTHOOK: Input: default@smb_bucket4_2
-POSTHOOK: Output: hdfs://localhost.localdomain:37175/data/users/sohanjain/test_builds/hive_2322/hive-trunk/build/ql/scratchdir/hive_2011-08-05_17-49-28_382_7069852983837639446/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: Lineage: smb_bucket4_1.key SIMPLE [(smb_bucket_input)smb_bucket_input.FieldSchema(name:key, type:int, comment:null), ]
 POSTHOOK: Lineage: smb_bucket4_1.key SIMPLE [(smb_bucket_input)smb_bucket_input.FieldSchema(name:key, type:int, comment:null), ]
 POSTHOOK: Lineage: smb_bucket4_1.key SIMPLE [(smb_bucket_input)smb_bucket_input.FieldSchema(name:key, type:int, comment:null), ]
@@ -226,12 +226,12 @@ PREHOOK: query: select /*+mapjoin(b)*/ * from smb_bucket4_1 a full outer join sm
 PREHOOK: type: QUERY
 PREHOOK: Input: default@smb_bucket4_1
 PREHOOK: Input: default@smb_bucket4_2
-PREHOOK: Output: hdfs://localhost.localdomain:37175/data/users/sohanjain/test_builds/hive_2322/hive-trunk/build/ql/scratchdir/hive_2011-08-05_17-49-39_695_7174133393505446308/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: select /*+mapjoin(b)*/ * from smb_bucket4_1 a full outer join smb_bucket4_2 b on a.key = b.key
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@smb_bucket4_1
 POSTHOOK: Input: default@smb_bucket4_2
-POSTHOOK: Output: hdfs://localhost.localdomain:37175/data/users/sohanjain/test_builds/hive_2322/hive-trunk/build/ql/scratchdir/hive_2011-08-05_17-49-39_695_7174133393505446308/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: Lineage: smb_bucket4_1.key SIMPLE [(smb_bucket_input)smb_bucket_input.FieldSchema(name:key, type:int, comment:null), ]
 POSTHOOK: Lineage: smb_bucket4_1.key SIMPLE [(smb_bucket_input)smb_bucket_input.FieldSchema(name:key, type:int, comment:null), ]
 POSTHOOK: Lineage: smb_bucket4_1.key SIMPLE [(smb_bucket_input)smb_bucket_input.FieldSchema(name:key, type:int, comment:null), ]
@@ -296,12 +296,12 @@ PREHOOK: query: select /*+mapjoin(a)*/ * from smb_bucket4_1 a full outer join sm
 PREHOOK: type: QUERY
 PREHOOK: Input: default@smb_bucket4_1
 PREHOOK: Input: default@smb_bucket4_2
-PREHOOK: Output: hdfs://localhost.localdomain:37175/data/users/sohanjain/test_builds/hive_2322/hive-trunk/build/ql/scratchdir/hive_2011-08-05_17-50-40_667_5622314917525445231/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: select /*+mapjoin(a)*/ * from smb_bucket4_1 a full outer join smb_bucket4_2 b on a.key = b.key
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@smb_bucket4_1
 POSTHOOK: Input: default@smb_bucket4_2
-POSTHOOK: Output: hdfs://localhost.localdomain:37175/data/users/sohanjain/test_builds/hive_2322/hive-trunk/build/ql/scratchdir/hive_2011-08-05_17-50-40_667_5622314917525445231/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: Lineage: smb_bucket4_1.key SIMPLE [(smb_bucket_input)smb_bucket_input.FieldSchema(name:key, type:int, comment:null), ]
 POSTHOOK: Lineage: smb_bucket4_1.key SIMPLE [(smb_bucket_input)smb_bucket_input.FieldSchema(name:key, type:int, comment:null), ]
 POSTHOOK: Lineage: smb_bucket4_1.key SIMPLE [(smb_bucket_input)smb_bucket_input.FieldSchema(name:key, type:int, comment:null), ]
@@ -325,12 +325,12 @@ PREHOOK: query: select /*+mapjoin(b)*/ * from smb_bucket4_1 a full outer join sm
 PREHOOK: type: QUERY
 PREHOOK: Input: default@smb_bucket4_1
 PREHOOK: Input: default@smb_bucket4_2
-PREHOOK: Output: hdfs://localhost.localdomain:37175/data/users/sohanjain/test_builds/hive_2322/hive-trunk/build/ql/scratchdir/hive_2011-08-05_17-50-52_642_7861389365966780469/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: select /*+mapjoin(b)*/ * from smb_bucket4_1 a full outer join smb_bucket4_2 b on a.key = b.key
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@smb_bucket4_1
 POSTHOOK: Input: default@smb_bucket4_2
-POSTHOOK: Output: hdfs://localhost.localdomain:37175/data/users/sohanjain/test_builds/hive_2322/hive-trunk/build/ql/scratchdir/hive_2011-08-05_17-50-52_642_7861389365966780469/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: Lineage: smb_bucket4_1.key SIMPLE [(smb_bucket_input)smb_bucket_input.FieldSchema(name:key, type:int, comment:null), ]
 POSTHOOK: Lineage: smb_bucket4_1.key SIMPLE [(smb_bucket_input)smb_bucket_input.FieldSchema(name:key, type:int, comment:null), ]
 POSTHOOK: Lineage: smb_bucket4_1.key SIMPLE [(smb_bucket_input)smb_bucket_input.FieldSchema(name:key, type:int, comment:null), ]
@@ -440,14 +440,14 @@ PREHOOK: type: QUERY
 PREHOOK: Input: default@smb_bucket4_1
 PREHOOK: Input: default@smb_bucket4_2
 PREHOOK: Input: default@smb_bucket4_3
-PREHOOK: Output: hdfs://localhost.localdomain:37175/data/users/sohanjain/test_builds/hive_2322/hive-trunk/build/ql/scratchdir/hive_2011-08-05_17-52-18_193_1903408674773789960/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: select /*+mapjoin(b,c)*/ * from smb_bucket4_1 a full outer join smb_bucket4_2 b on a.key = b.key
 full outer join smb_bucket4_3 c on a.key=c.key
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@smb_bucket4_1
 POSTHOOK: Input: default@smb_bucket4_2
 POSTHOOK: Input: default@smb_bucket4_3
-POSTHOOK: Output: hdfs://localhost.localdomain:37175/data/users/sohanjain/test_builds/hive_2322/hive-trunk/build/ql/scratchdir/hive_2011-08-05_17-52-18_193_1903408674773789960/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: Lineage: smb_bucket4_1.key SIMPLE [(smb_bucket_input)smb_bucket_input.FieldSchema(name:key, type:int, comment:null), ]
 POSTHOOK: Lineage: smb_bucket4_1.key SIMPLE [(smb_bucket_input)smb_bucket_input.FieldSchema(name:key, type:int, comment:null), ]
 POSTHOOK: Lineage: smb_bucket4_1.key SIMPLE [(smb_bucket_input)smb_bucket_input.FieldSchema(name:key, type:int, comment:null), ]
@@ -582,14 +582,14 @@ PREHOOK: type: QUERY
 PREHOOK: Input: default@smb_bucket4_1
 PREHOOK: Input: default@smb_bucket4_2
 PREHOOK: Input: default@smb_bucket4_3
-PREHOOK: Output: hdfs://localhost.localdomain:37175/data/users/sohanjain/test_builds/hive_2322/hive-trunk/build/ql/scratchdir/hive_2011-08-05_17-53-44_629_5211205824010581943/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: select /*+mapjoin(b,c)*/ * from smb_bucket4_1 a full outer join smb_bucket4_2 b on a.key = b.key
 full outer join smb_bucket4_3 c on a.key=c.key
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@smb_bucket4_1
 POSTHOOK: Input: default@smb_bucket4_2
 POSTHOOK: Input: default@smb_bucket4_3
-POSTHOOK: Output: hdfs://localhost.localdomain:37175/data/users/sohanjain/test_builds/hive_2322/hive-trunk/build/ql/scratchdir/hive_2011-08-05_17-53-44_629_5211205824010581943/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: Lineage: smb_bucket4_1.key SIMPLE [(smb_bucket_input)smb_bucket_input.FieldSchema(name:key, type:int, comment:null), ]
 POSTHOOK: Lineage: smb_bucket4_1.key SIMPLE [(smb_bucket_input)smb_bucket_input.FieldSchema(name:key, type:int, comment:null), ]
 POSTHOOK: Lineage: smb_bucket4_1.key SIMPLE [(smb_bucket_input)smb_bucket_input.FieldSchema(name:key, type:int, comment:null), ]
@@ -747,14 +747,14 @@ PREHOOK: type: QUERY
 PREHOOK: Input: default@smb_bucket4_1
 PREHOOK: Input: default@smb_bucket4_2
 PREHOOK: Input: default@smb_bucket4_3
-PREHOOK: Output: hdfs://localhost.localdomain:37175/data/users/sohanjain/test_builds/hive_2322/hive-trunk/build/ql/scratchdir/hive_2011-08-05_17-55-09_174_6621361197771237756/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: select /*+mapjoin(b,c)*/ * from smb_bucket4_1 a full outer join smb_bucket4_2 b on a.key = b.key
 full outer join smb_bucket4_3 c on a.key=c.key
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@smb_bucket4_1
 POSTHOOK: Input: default@smb_bucket4_2
 POSTHOOK: Input: default@smb_bucket4_3
-POSTHOOK: Output: hdfs://localhost.localdomain:37175/data/users/sohanjain/test_builds/hive_2322/hive-trunk/build/ql/scratchdir/hive_2011-08-05_17-55-09_174_6621361197771237756/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: Lineage: smb_bucket4_1.key SIMPLE [(smb_bucket_input)smb_bucket_input.FieldSchema(name:key, type:int, comment:null), ]
 POSTHOOK: Lineage: smb_bucket4_1.key SIMPLE [(smb_bucket_input)smb_bucket_input.FieldSchema(name:key, type:int, comment:null), ]
 POSTHOOK: Lineage: smb_bucket4_1.key SIMPLE [(smb_bucket_input)smb_bucket_input.FieldSchema(name:key, type:int, comment:null), ]
@@ -935,14 +935,14 @@ PREHOOK: type: QUERY
 PREHOOK: Input: default@smb_bucket4_1
 PREHOOK: Input: default@smb_bucket4_2
 PREHOOK: Input: default@smb_bucket4_3
-PREHOOK: Output: hdfs://localhost.localdomain:37175/data/users/sohanjain/test_builds/hive_2322/hive-trunk/build/ql/scratchdir/hive_2011-08-05_17-56-33_246_5968187259888530703/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: select /*+mapjoin(b,c)*/ * from smb_bucket4_1 a full outer join smb_bucket4_2 b on a.key = b.key
 full outer join smb_bucket4_3 c on a.key=c.key
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@smb_bucket4_1
 POSTHOOK: Input: default@smb_bucket4_2
 POSTHOOK: Input: default@smb_bucket4_3
-POSTHOOK: Output: hdfs://localhost.localdomain:37175/data/users/sohanjain/test_builds/hive_2322/hive-trunk/build/ql/scratchdir/hive_2011-08-05_17-56-33_246_5968187259888530703/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: Lineage: smb_bucket4_1.key SIMPLE [(smb_bucket_input)smb_bucket_input.FieldSchema(name:key, type:int, comment:null), ]
 POSTHOOK: Lineage: smb_bucket4_1.key SIMPLE [(smb_bucket_input)smb_bucket_input.FieldSchema(name:key, type:int, comment:null), ]
 POSTHOOK: Lineage: smb_bucket4_1.key SIMPLE [(smb_bucket_input)smb_bucket_input.FieldSchema(name:key, type:int, comment:null), ]
@@ -1147,14 +1147,14 @@ PREHOOK: type: QUERY
 PREHOOK: Input: default@smb_bucket4_1
 PREHOOK: Input: default@smb_bucket4_2
 PREHOOK: Input: default@smb_bucket4_3
-PREHOOK: Output: hdfs://localhost.localdomain:37175/data/users/sohanjain/test_builds/hive_2322/hive-trunk/build/ql/scratchdir/hive_2011-08-05_17-57-57_671_2177289702566695407/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: select /*+mapjoin(b,c)*/ * from smb_bucket4_1 a full outer join smb_bucket4_2 b on a.key = b.key
 full outer join smb_bucket4_3 c on a.key=c.key
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@smb_bucket4_1
 POSTHOOK: Input: default@smb_bucket4_2
 POSTHOOK: Input: default@smb_bucket4_3
-POSTHOOK: Output: hdfs://localhost.localdomain:37175/data/users/sohanjain/test_builds/hive_2322/hive-trunk/build/ql/scratchdir/hive_2011-08-05_17-57-57_671_2177289702566695407/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: Lineage: smb_bucket4_1.key SIMPLE [(smb_bucket_input)smb_bucket_input.FieldSchema(name:key, type:int, comment:null), ]
 POSTHOOK: Lineage: smb_bucket4_1.key SIMPLE [(smb_bucket_input)smb_bucket_input.FieldSchema(name:key, type:int, comment:null), ]
 POSTHOOK: Lineage: smb_bucket4_1.key SIMPLE [(smb_bucket_input)smb_bucket_input.FieldSchema(name:key, type:int, comment:null), ]

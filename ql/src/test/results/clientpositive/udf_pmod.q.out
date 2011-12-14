@@ -12,32 +12,32 @@ PREHOOK: query: SELECT pmod(null, null)
 FROM src LIMIT 1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/Users/carl/Projects/hd9/hive-trunk/build/ql/tmp/1159318893/10000
+#### A masked pattern was here ####
 POSTHOOK: query: SELECT pmod(null, null)
 FROM src LIMIT 1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: file:/Users/carl/Projects/hd9/hive-trunk/build/ql/tmp/1159318893/10000
+#### A masked pattern was here ####
 NULL
 PREHOOK: query: SELECT pmod(-100,9), pmod(-50,101), pmod(-1000,29)
 FROM src LIMIT 1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/Users/carl/Projects/hd9/hive-trunk/build/ql/tmp/1059038526/10000
+#### A masked pattern was here ####
 POSTHOOK: query: SELECT pmod(-100,9), pmod(-50,101), pmod(-1000,29)
 FROM src LIMIT 1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: file:/Users/carl/Projects/hd9/hive-trunk/build/ql/tmp/1059038526/10000
+#### A masked pattern was here ####
 8	51	15
 PREHOOK: query: SELECT pmod(100,19), pmod(50,125), pmod(300,15)
 FROM src LIMIT 1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/Users/carl/Projects/hd9/hive-trunk/build/ql/tmp/2064781823/10000
+#### A masked pattern was here ####
 POSTHOOK: query: SELECT pmod(100,19), pmod(50,125), pmod(300,15)
 FROM src LIMIT 1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: file:/Users/carl/Projects/hd9/hive-trunk/build/ql/tmp/2064781823/10000
+#### A masked pattern was here ####
 5	50	0

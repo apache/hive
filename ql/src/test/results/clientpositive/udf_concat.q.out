@@ -26,7 +26,7 @@ PREHOOK: query: SELECT
 FROM src LIMIT 1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/tmp/ashutosh/hive_2011-10-05_09-47-32_899_6312686275071560276/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: SELECT
   concat('a', 'b'),
   concat('a', 'b', 'c'),
@@ -41,5 +41,5 @@ POSTHOOK: query: SELECT
 FROM src LIMIT 1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: file:/tmp/ashutosh/hive_2011-10-05_09-47-32_899_6312686275071560276/-mr-10000
+#### A masked pattern was here ####
 ab	abc	NULL	NULL	a	NULL	123a	12	1	1234abcextra argument

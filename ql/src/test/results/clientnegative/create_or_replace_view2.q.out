@@ -8,11 +8,11 @@ drop view v
 POSTHOOK: type: DROPVIEW
 PREHOOK: query: create view v partitioned on (ds, hr) as select * from srcpart
 PREHOOK: type: CREATEVIEW
-PREHOOK: Output: file:/tmp/salbiz/hive_2011-08-01_16-13-57_421_5329923480305070124/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: create view v partitioned on (ds, hr) as select * from srcpart
 POSTHOOK: type: CREATEVIEW
 POSTHOOK: Output: default@v
-POSTHOOK: Output: file:/tmp/salbiz/hive_2011-08-01_16-13-57_421_5329923480305070124/-mr-10000
+#### A masked pattern was here ####
 PREHOOK: query: alter view v add partition (ds='1',hr='2')
 PREHOOK: type: ALTERTABLE_ADDPARTS
 PREHOOK: Input: default@v
@@ -22,6 +22,6 @@ POSTHOOK: Input: default@v
 POSTHOOK: Output: default@v@ds=1/hr=2
 PREHOOK: query: create or replace view v partitioned on (hr) as select * from srcpart
 PREHOOK: type: CREATEVIEW
-PREHOOK: Output: file:/tmp/salbiz/hive_2011-08-01_16-13-57_632_8177289347251099189/-mr-10000
+#### A masked pattern was here ####
 FAILED: Error in metadata: Cannot add or drop partition columns with CREATE OR REPLACE VIEW if partitions currently exist
 FAILED: Execution Error, return code 1 from org.apache.hadoop.hive.ql.exec.DDLTask

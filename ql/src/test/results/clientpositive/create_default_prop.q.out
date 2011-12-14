@@ -9,7 +9,7 @@ POSTHOOK: query: DESC EXTENDED table_p1
 POSTHOOK: type: DESCTABLE
 a	string	
 	 	 
-Detailed Table Information	Table(tableName:table_p1, dbName:default, owner:heyongqiang, createTime:1290111690, lastAccessTime:0, retention:0, sd:StorageDescriptor(cols:[FieldSchema(name:a, type:string, comment:null)], location:pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/table_p1, inputFormat:org.apache.hadoop.mapred.TextInputFormat, outputFormat:org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat, compressed:false, numBuckets:-1, serdeInfo:SerDeInfo(name:null, serializationLib:org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe, parameters:{serialization.format=1}), bucketCols:[], sortCols:[], parameters:{}), partitionKeys:[], parameters:{p1=v1, transient_lastDdlTime=1290111690, P2=v21=v22=v23}, viewOriginalText:null, viewExpandedText:null, tableType:MANAGED_TABLE)	
+#### A masked pattern was here ####
 PREHOOK: query: CREATE TABLE table_p2 LIKE table_p1
 PREHOOK: type: CREATETABLE
 POSTHOOK: query: CREATE TABLE table_p2 LIKE table_p1
@@ -21,7 +21,7 @@ POSTHOOK: query: DESC EXTENDED table_p2
 POSTHOOK: type: DESCTABLE
 a	string	
 	 	 
-Detailed Table Information	Table(tableName:table_p2, dbName:default, owner:heyongqiang, createTime:1290111690, lastAccessTime:0, retention:0, sd:StorageDescriptor(cols:[FieldSchema(name:a, type:string, comment:null)], location:pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/table_p2, inputFormat:org.apache.hadoop.mapred.TextInputFormat, outputFormat:org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat, compressed:false, numBuckets:-1, serdeInfo:SerDeInfo(name:null, serializationLib:org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe, parameters:{serialization.format=1}), bucketCols:[], sortCols:[], parameters:{}), partitionKeys:[], parameters:{transient_lastDdlTime=1290111690}, viewOriginalText:null, viewExpandedText:null, tableType:MANAGED_TABLE)	
+#### A masked pattern was here ####
 PREHOOK: query: CREATE TABLE table_p3 AS SELECT * FROM table_p1
 PREHOOK: type: CREATETABLE_AS_SELECT
 PREHOOK: Input: default@table_p1
@@ -35,4 +35,4 @@ POSTHOOK: query: DESC EXTENDED table_p3
 POSTHOOK: type: DESCTABLE
 a	string	
 	 	 
-Detailed Table Information	Table(tableName:table_p3, dbName:default, owner:heyongqiang, createTime:1290111696, lastAccessTime:0, retention:0, sd:StorageDescriptor(cols:[FieldSchema(name:a, type:string, comment:null)], location:pfile:/Users/heyongqiang/Documents/workspace/Hive-2/build/ql/test/data/warehouse/table_p3, inputFormat:org.apache.hadoop.mapred.TextInputFormat, outputFormat:org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat, compressed:false, numBuckets:-1, serdeInfo:SerDeInfo(name:null, serializationLib:org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe, parameters:{serialization.format=1}), bucketCols:[], sortCols:[], parameters:{}), partitionKeys:[], parameters:{p3=v3, transient_lastDdlTime=1290111696}, viewOriginalText:null, viewExpandedText:null, tableType:MANAGED_TABLE)	
+#### A masked pattern was here ####

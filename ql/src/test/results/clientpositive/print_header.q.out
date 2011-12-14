@@ -7,7 +7,7 @@ PREHOOK: query: SELECT src1.key as k1, src1.value as v1,
   LIMIT 10
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/var/folders/Uq/UqBVUjdIE+qhrtZHnLNzc++++TM/-Tmp-/jhoman/hive_2011-08-08_12-36-14_972_2863485419468463022/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: SELECT src1.key as k1, src1.value as v1, 
        src2.key as k2, src2.value as v2 FROM 
   (SELECT * FROM src WHERE src.key < 10) src1 
@@ -17,7 +17,7 @@ POSTHOOK: query: SELECT src1.key as k1, src1.value as v1,
   LIMIT 10
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: file:/var/folders/Uq/UqBVUjdIE+qhrtZHnLNzc++++TM/-Tmp-/jhoman/hive_2011-08-08_12-36-14_972_2863485419468463022/-mr-10000
+#### A masked pattern was here ####
 k1	v1	k2	v2
 0	val_0	0	val_0
 0	val_0	0	val_0
@@ -32,11 +32,11 @@ k1	v1	k2	v2
 PREHOOK: query: SELECT src.key, sum(substr(src.value,5)) FROM src GROUP BY src.key LIMIT 10
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/var/folders/Uq/UqBVUjdIE+qhrtZHnLNzc++++TM/-Tmp-/jhoman/hive_2011-08-08_12-36-28_635_5275683580628567895/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: SELECT src.key, sum(substr(src.value,5)) FROM src GROUP BY src.key LIMIT 10
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: file:/var/folders/Uq/UqBVUjdIE+qhrtZHnLNzc++++TM/-Tmp-/jhoman/hive_2011-08-08_12-36-28_635_5275683580628567895/-mr-10000
+#### A masked pattern was here ####
 key	_c1
 0	0.0
 10	10.0

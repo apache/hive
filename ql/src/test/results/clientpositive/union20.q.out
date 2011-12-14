@@ -95,7 +95,7 @@ STAGE PLANS:
                     type: string
                     expr: _col1
                     type: string
-        file:/tmp/njain/hive_2011-12-07_18-05-02_524_3478183075357722431/-mr-10002 
+#### A masked pattern was here ####
           Union
             Reduce Output Operator
               key expressions:
@@ -111,7 +111,7 @@ STAGE PLANS:
                     type: string
                     expr: _col1
                     type: string
-        file:/tmp/njain/hive_2011-12-07_18-05-02_524_3478183075357722431/-mr-10003 
+#### A masked pattern was here ####
           Union
             Reduce Output Operator
               key expressions:
@@ -205,7 +205,7 @@ STAGE PLANS:
   Stage: Stage-5
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/tmp/njain/hive_2011-12-07_18-05-02_524_3478183075357722431/-mr-10004 
+#### A masked pattern was here ####
           Union
             File Output Operator
               compressed: false
@@ -213,7 +213,7 @@ STAGE PLANS:
               table:
                   input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                   output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
-        file:/tmp/njain/hive_2011-12-07_18-05-02_524_3478183075357722431/-mr-10006 
+#### A masked pattern was here ####
           Union
             File Output Operator
               compressed: false
@@ -278,7 +278,7 @@ JOIN
 ON (unionsrc1.key = unionsrc2.key)
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/tmp/njain/hive_2011-12-07_18-05-02_728_8213800151047927461/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: SELECT unionsrc1.key, unionsrc1.value, unionsrc2.key, unionsrc2.value
 FROM (select 'tst1' as key, cast(count(1) as string) as value from src s1
                          UNION  ALL  
@@ -290,7 +290,7 @@ JOIN
 ON (unionsrc1.key = unionsrc2.key)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: file:/tmp/njain/hive_2011-12-07_18-05-02_728_8213800151047927461/-mr-10000
+#### A masked pattern was here ####
 0	val_0	0	val_0
 0	val_0	0	val_0
 0	val_0	0	val_0

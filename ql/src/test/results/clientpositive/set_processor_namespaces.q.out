@@ -47,11 +47,11 @@ STAGE PLANS:
 PREHOOK: query: SELECT * FROM src where key=5
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/tmp/carl/hive_2011-11-04_15-25-57_635_7657597640646099982/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: SELECT * FROM src where key=5
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: file:/tmp/carl/hive_2011-11-04_15-25-57_635_7657597640646099982/-mr-10000
+#### A masked pattern was here ####
 5	val_5
 5	val_5
 5	val_5

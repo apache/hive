@@ -100,7 +100,7 @@ ON (x.key = Y.key)
 SELECT Y.*
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/tmp/sdong/hive_2011-02-10_16-01-54_803_7290939721001790358/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: FROM 
 (SELECT src.* FROM src) x
 JOIN 
@@ -109,7 +109,7 @@ ON (x.key = Y.key)
 SELECT Y.*
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: file:/tmp/sdong/hive_2011-02-10_16-01-54_803_7290939721001790358/-mr-10000
+#### A masked pattern was here ####
 0	val_0
 0	val_0
 0	val_0

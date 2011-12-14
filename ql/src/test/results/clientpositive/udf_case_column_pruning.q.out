@@ -81,7 +81,7 @@ STAGE PLANS:
   Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/tmp/sdong/hive_2011-02-10_17-31-08_047_5397855627467107431/-mr-10002 
+#### A masked pattern was here ####
             Reduce Output Operator
               key expressions:
                     expr: _col0
@@ -116,7 +116,7 @@ ON a.key = b.key
 ORDER BY key LIMIT 10
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/tmp/sdong/hive_2011-02-10_17-31-08_144_3622242941929236732/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: SELECT CASE a.key
         WHEN '1' THEN 2
         WHEN '3' THEN 4
@@ -127,7 +127,7 @@ ON a.key = b.key
 ORDER BY key LIMIT 10
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: file:/tmp/sdong/hive_2011-02-10_17-31-08_144_3622242941929236732/-mr-10000
+#### A masked pattern was here ####
 5
 5
 5

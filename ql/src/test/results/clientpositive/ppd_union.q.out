@@ -114,7 +114,7 @@ SELECT unioned_query.*
   WHERE key > '4' and value > 'val_4'
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/tmp/charleschen/hive_2011-09-02_01-44-09_715_1551540406669139169/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: FROM (
   FROM src select src.key, src.value WHERE src.key < '100'
     UNION ALL
@@ -124,7 +124,7 @@ SELECT unioned_query.*
   WHERE key > '4' and value > 'val_4'
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: file:/tmp/charleschen/hive_2011-09-02_01-44-09_715_1551540406669139169/-mr-10000
+#### A masked pattern was here ####
 86	val_86
 409	val_409
 98	val_98
@@ -396,7 +396,7 @@ SELECT unioned_query.*
   WHERE key > '4' and value > 'val_4'
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/tmp/charleschen/hive_2011-09-02_01-44-12_643_7895934749177186967/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: FROM (
   FROM src select src.key, src.value WHERE src.key < '100'
     UNION ALL
@@ -406,7 +406,7 @@ SELECT unioned_query.*
   WHERE key > '4' and value > 'val_4'
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: file:/tmp/charleschen/hive_2011-09-02_01-44-12_643_7895934749177186967/-mr-10000
+#### A masked pattern was here ####
 86	val_86
 409	val_409
 98	val_98

@@ -102,10 +102,10 @@ POSTHOOK: Lineage: tst_dest30.a EXPRESSION [(src)src.null, ]
 PREHOOK: query: select * from tst_dest30
 PREHOOK: type: QUERY
 PREHOOK: Input: default@tst_dest30
-PREHOOK: Output: file:/tmp/sdong/hive_2011-02-10_15-55-14_824_7555560565228029700/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: select * from tst_dest30
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@tst_dest30
-POSTHOOK: Output: file:/tmp/sdong/hive_2011-02-10_15-55-14_824_7555560565228029700/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: Lineage: tst_dest30.a EXPRESSION [(src)src.null, ]
 18

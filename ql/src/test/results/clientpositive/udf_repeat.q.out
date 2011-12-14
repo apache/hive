@@ -71,7 +71,7 @@ PREHOOK: query: SELECT
 FROM src LIMIT 1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/tmp/sdong/hive_2011-02-10_17-40-06_666_1593299454433613583/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: SELECT
   repeat("Facebook", 3),
   repeat("", 4),
@@ -80,5 +80,5 @@ POSTHOOK: query: SELECT
 FROM src LIMIT 1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: file:/tmp/sdong/hive_2011-02-10_17-40-06_666_1593299454433613583/-mr-10000
+#### A masked pattern was here ####
 FacebookFacebookFacebook			

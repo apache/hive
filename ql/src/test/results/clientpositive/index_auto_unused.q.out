@@ -82,11 +82,11 @@ STAGE PLANS:
 PREHOOK: query: SELECT * FROM src WHERE key > 80 AND key < 100 ORDER BY key
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/tmp/salbiz/hive_2011-08-01_13-38-25_598_5647295864312347044/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: SELECT * FROM src WHERE key > 80 AND key < 100 ORDER BY key
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: file:/tmp/salbiz/hive_2011-08-01_13-38-25_598_5647295864312347044/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: Lineage: default__src_src_index__._bucketname SIMPLE [(src)src.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
 POSTHOOK: Lineage: default__src_src_index__._offsets EXPRESSION [(src)src.FieldSchema(name:BLOCK__OFFSET__INSIDE__FILE, type:bigint, comment:), ]
 POSTHOOK: Lineage: default__src_src_index__.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
@@ -174,11 +174,11 @@ STAGE PLANS:
 PREHOOK: query: SELECT * FROM src WHERE key > 80 AND key < 100 ORDER BY key
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/tmp/salbiz/hive_2011-08-01_13-38-28_723_4839341622204701979/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: SELECT * FROM src WHERE key > 80 AND key < 100 ORDER BY key
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: file:/tmp/salbiz/hive_2011-08-01_13-38-28_723_4839341622204701979/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: Lineage: default__src_src_index__._bucketname SIMPLE [(src)src.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
 POSTHOOK: Lineage: default__src_src_index__._offsets EXPRESSION [(src)src.FieldSchema(name:BLOCK__OFFSET__INSIDE__FILE, type:bigint, comment:), ]
 POSTHOOK: Lineage: default__src_src_index__.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
@@ -266,11 +266,11 @@ STAGE PLANS:
 PREHOOK: query: SELECT * FROM src WHERE key < 10 OR key > 480 ORDER BY key
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/tmp/salbiz/hive_2011-08-01_13-38-31_904_45216609237645171/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: SELECT * FROM src WHERE key < 10 OR key > 480 ORDER BY key
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: file:/tmp/salbiz/hive_2011-08-01_13-38-31_904_45216609237645171/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: Lineage: default__src_src_index__._bucketname SIMPLE [(src)src.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
 POSTHOOK: Lineage: default__src_src_index__._offsets EXPRESSION [(src)src.FieldSchema(name:BLOCK__OFFSET__INSIDE__FILE, type:bigint, comment:), ]
 POSTHOOK: Lineage: default__src_src_index__.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
@@ -402,11 +402,11 @@ STAGE PLANS:
 PREHOOK: query: SELECT * FROM src WHERE key > 80 AND key < 100 ORDER BY key
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/tmp/salbiz/hive_2011-08-01_13-38-39_438_6054980592070594322/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: SELECT * FROM src WHERE key > 80 AND key < 100 ORDER BY key
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: file:/tmp/salbiz/hive_2011-08-01_13-38-39_438_6054980592070594322/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: Lineage: default__src_src_index__._bucketname SIMPLE [(src)src.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
 POSTHOOK: Lineage: default__src_src_index__._offsets EXPRESSION [(src)src.FieldSchema(name:BLOCK__OFFSET__INSIDE__FILE, type:bigint, comment:), ]
 POSTHOOK: Lineage: default__src_src_index__.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
@@ -548,11 +548,11 @@ STAGE PLANS:
 PREHOOK: query: SELECT * FROM srcpart WHERE ds='2008-04-09' AND hr=12 AND key < 10 ORDER BY key
 PREHOOK: type: QUERY
 PREHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
-PREHOOK: Output: file:/tmp/salbiz/hive_2011-08-01_13-38-47_244_8856542049125864022/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: SELECT * FROM srcpart WHERE ds='2008-04-09' AND hr=12 AND key < 10 ORDER BY key
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
-POSTHOOK: Output: file:/tmp/salbiz/hive_2011-08-01_13-38-47_244_8856542049125864022/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: Lineage: default__src_src_index__._bucketname SIMPLE [(src)src.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
 POSTHOOK: Lineage: default__src_src_index__._offsets EXPRESSION [(src)src.FieldSchema(name:BLOCK__OFFSET__INSIDE__FILE, type:bigint, comment:), ]
 POSTHOOK: Lineage: default__src_src_index__.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]

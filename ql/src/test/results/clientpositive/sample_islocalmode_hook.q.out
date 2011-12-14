@@ -87,20 +87,20 @@ PREHOOK: query: -- sample split, running locally limited by num tasks
 select count(1) from sih_src tablesample(1 percent)
 PREHOOK: type: QUERY
 PREHOOK: Input: default@sih_src
-PREHOOK: Output: file:/data/users/sohanjain/test_builds/hive_2322/hive-try-again/build/ql/scratchdir/hive_2011-08-05_17-46-49_020_8262258405659096288/-mr-10000
+#### A masked pattern was here ####
 1500
 PREHOOK: query: -- sample two tables
 select count(1) from sih_src tablesample(1 percent)a join sih_src2 tablesample(1 percent)b on a.key = b.key
 PREHOOK: type: QUERY
 PREHOOK: Input: default@sih_src
 PREHOOK: Input: default@sih_src2
-PREHOOK: Output: file:/data/users/sohanjain/test_builds/hive_2322/hive-try-again/build/ql/scratchdir/hive_2011-08-05_17-46-52_122_5621191023091460071/-mr-10000
+#### A masked pattern was here ####
 3084
 PREHOOK: query: -- sample split, running locally limited by max bytes
 select count(1) from sih_src tablesample(1 percent)
 PREHOOK: type: QUERY
 PREHOOK: Input: default@sih_src
-PREHOOK: Output: file:/data/users/sohanjain/test_builds/hive_2322/hive-try-again/build/ql/scratchdir/hive_2011-08-05_17-46-59_564_6203463538254574353/-mr-10000
+#### A masked pattern was here ####
 1500
 PREHOOK: query: drop table sih_i_part
 PREHOOK: type: DROPTABLE

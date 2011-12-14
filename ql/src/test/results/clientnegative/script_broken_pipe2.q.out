@@ -2,7 +2,7 @@ PREHOOK: query: -- Tests exception in ScriptOperator.processOp() by passing extr
 SELECT TRANSFORM(key, value, key, value, key, value, key, value, key, value, key, value, key, value, key, value, key, value, key, value, key, value, key, value) USING 'true' as a,b,c,d FROM src
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/tmp/salbiz/hive_2011-08-02_17-12-25_737_1025187653570997701/-mr-10000
+#### A masked pattern was here ####
 Execution failed with exit status: 2
 Obtaining error information
 
@@ -12,5 +12,5 @@ Task ID:
 
 Logs:
 
-/data/users/salbiz/apache-hive/build/ql/tmp//hive.log
+#### A masked pattern was here ####
 FAILED: Execution Error, return code 2 from org.apache.hadoop.hive.ql.exec.MapRedTask

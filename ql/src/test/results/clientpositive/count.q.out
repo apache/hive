@@ -12,11 +12,11 @@ POSTHOOK: Output: default@abcd
 PREHOOK: query: select * from abcd
 PREHOOK: type: QUERY
 PREHOOK: Input: default@abcd
-PREHOOK: Output: file:/var/folders/67/67R3POPtF90VG63KSmCbcU++F0U/-Tmp-/krishnak/hive_2011-03-20_22-46-53_458_612862284528268304/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: select * from abcd
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@abcd
-POSTHOOK: Output: file:/var/folders/67/67R3POPtF90VG63KSmCbcU++F0U/-Tmp-/krishnak/hive_2011-03-20_22-46-53_458_612862284528268304/-mr-10000
+#### A masked pattern was here ####
 NULL	35	23	6
 10	1000	50	1
 100	100	10	3
@@ -126,11 +126,11 @@ STAGE PLANS:
 PREHOOK: query: select a, count(distinct b), count(distinct c), sum(d) from abcd group by a
 PREHOOK: type: QUERY
 PREHOOK: Input: default@abcd
-PREHOOK: Output: file:/var/folders/67/67R3POPtF90VG63KSmCbcU++F0U/-Tmp-/krishnak/hive_2011-03-20_22-46-54_530_5497111678274590113/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: select a, count(distinct b), count(distinct c), sum(d) from abcd group by a
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@abcd
-POSTHOOK: Output: file:/var/folders/67/67R3POPtF90VG63KSmCbcU++F0U/-Tmp-/krishnak/hive_2011-03-20_22-46-54_530_5497111678274590113/-mr-10000
+#### A masked pattern was here ####
 NULL	1	1	6
 10	2	2	10
 12	1	2	9
@@ -341,11 +341,11 @@ STAGE PLANS:
 PREHOOK: query: select count(1), count(*), count(a), count(b), count(c), count(d), count(distinct a), count(distinct b), count(distinct c), count(distinct d), count(distinct a,b), count(distinct b,c), count(distinct c,d), count(distinct a,d), count(distinct a,c), count(distinct b,d), count(distinct a,b,c), count(distinct b,c,d), count(distinct a,c,d), count(distinct a,b,d), count(distinct a,b,c,d) from abcd
 PREHOOK: type: QUERY
 PREHOOK: Input: default@abcd
-PREHOOK: Output: file:/var/folders/67/67R3POPtF90VG63KSmCbcU++F0U/-Tmp-/krishnak/hive_2011-03-20_22-47-01_430_3407527654800696294/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: select count(1), count(*), count(a), count(b), count(c), count(d), count(distinct a), count(distinct b), count(distinct c), count(distinct d), count(distinct a,b), count(distinct b,c), count(distinct c,d), count(distinct a,d), count(distinct a,c), count(distinct b,d), count(distinct a,b,c), count(distinct b,c,d), count(distinct a,c,d), count(distinct a,b,d), count(distinct a,b,c,d) from abcd
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@abcd
-POSTHOOK: Output: file:/var/folders/67/67R3POPtF90VG63KSmCbcU++F0U/-Tmp-/krishnak/hive_2011-03-20_22-47-01_430_3407527654800696294/-mr-10000
+#### A masked pattern was here ####
 7	7	6	6	6	7	3	3	6	7	4	5	6	6	5	6	4	5	5	5	4
 PREHOOK: query: explain select a, count(distinct b), count(distinct c), sum(d) from abcd group by a
 PREHOOK: type: QUERY
@@ -430,11 +430,11 @@ STAGE PLANS:
 PREHOOK: query: select a, count(distinct b), count(distinct c), sum(d) from abcd group by a
 PREHOOK: type: QUERY
 PREHOOK: Input: default@abcd
-PREHOOK: Output: file:/var/folders/67/67R3POPtF90VG63KSmCbcU++F0U/-Tmp-/krishnak/hive_2011-03-20_22-47-10_928_4191678549398242821/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: select a, count(distinct b), count(distinct c), sum(d) from abcd group by a
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@abcd
-POSTHOOK: Output: file:/var/folders/67/67R3POPtF90VG63KSmCbcU++F0U/-Tmp-/krishnak/hive_2011-03-20_22-47-10_928_4191678549398242821/-mr-10000
+#### A masked pattern was here ####
 NULL	1	1	6
 10	2	2	10
 12	1	2	9
@@ -570,9 +570,9 @@ STAGE PLANS:
 PREHOOK: query: select count(1), count(*), count(a), count(b), count(c), count(d), count(distinct a), count(distinct b), count(distinct c), count(distinct d), count(distinct a,b), count(distinct b,c), count(distinct c,d), count(distinct a,d), count(distinct a,c), count(distinct b,d), count(distinct a,b,c), count(distinct b,c,d), count(distinct a,c,d), count(distinct a,b,d), count(distinct a,b,c,d) from abcd
 PREHOOK: type: QUERY
 PREHOOK: Input: default@abcd
-PREHOOK: Output: file:/var/folders/67/67R3POPtF90VG63KSmCbcU++F0U/-Tmp-/krishnak/hive_2011-03-20_22-47-23_137_2355783462946349645/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: select count(1), count(*), count(a), count(b), count(c), count(d), count(distinct a), count(distinct b), count(distinct c), count(distinct d), count(distinct a,b), count(distinct b,c), count(distinct c,d), count(distinct a,d), count(distinct a,c), count(distinct b,d), count(distinct a,b,c), count(distinct b,c,d), count(distinct a,c,d), count(distinct a,b,d), count(distinct a,b,c,d) from abcd
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@abcd
-POSTHOOK: Output: file:/var/folders/67/67R3POPtF90VG63KSmCbcU++F0U/-Tmp-/krishnak/hive_2011-03-20_22-47-23_137_2355783462946349645/-mr-10000
+#### A masked pattern was here ####
 7	7	6	6	6	7	3	3	6	7	4	5	6	6	5	6	4	5	5	5	4

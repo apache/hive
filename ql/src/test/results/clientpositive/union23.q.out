@@ -117,7 +117,7 @@ from (
 order by s.key2, s.value2
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/tmp/sdong/hive_2011-02-10_17-51-47_650_3633014816211994448/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: select s.key2, s.value2
 from (
   select transform(key, value) using 'cat' as (key2, value2)
@@ -127,7 +127,7 @@ from (
 order by s.key2, s.value2
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: file:/tmp/sdong/hive_2011-02-10_17-51-47_650_3633014816211994448/-mr-10000
+#### A masked pattern was here ####
 0	val_0
 0	val_0
 0	val_0

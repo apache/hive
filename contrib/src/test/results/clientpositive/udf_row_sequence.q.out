@@ -79,7 +79,7 @@ STAGE PLANS:
   Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/var/folders/7P/7PeC14kXFIWq0PIYyexGbmKuXUk/-Tmp-/jsichi/hive_2011-02-22_22-26-27_614_6714509994567553903/-mr-10002 
+#### A masked pattern was here ####
             Reduce Output Operator
               key expressions:
                     expr: _col1
@@ -110,13 +110,13 @@ from (select key from src order by key) x
 order by r
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/var/folders/7P/7PeC14kXFIWq0PIYyexGbmKuXUk/-Tmp-/jsichi/hive_2011-02-22_22-26-27_973_4395636849347592535/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: select key, row_sequence() as r
 from (select key from src order by key) x
 order by r
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: file:/var/folders/7P/7PeC14kXFIWq0PIYyexGbmKuXUk/-Tmp-/jsichi/hive_2011-02-22_22-26-27_973_4395636849347592535/-mr-10000
+#### A masked pattern was here ####
 0	1
 0	2
 0	3
@@ -624,7 +624,7 @@ from (select key from src order by key) x
 order by key limit 20
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/var/folders/7P/7PeC14kXFIWq0PIYyexGbmKuXUk/-Tmp-/jsichi/hive_2011-02-22_22-26-43_815_3305291736093408641/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: -- make sure stateful functions do not get short-circuited away
 -- a true result for key=105 would indicate undesired short-circuiting
 select key, (key = 105) and (row_sequence() = 1)
@@ -632,7 +632,7 @@ from (select key from src order by key) x
 order by key limit 20
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: file:/var/folders/7P/7PeC14kXFIWq0PIYyexGbmKuXUk/-Tmp-/jsichi/hive_2011-02-22_22-26-43_815_3305291736093408641/-mr-10000
+#### A masked pattern was here ####
 0	false
 0	false
 0	false

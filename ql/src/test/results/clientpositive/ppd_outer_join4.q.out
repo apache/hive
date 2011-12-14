@@ -146,7 +146,7 @@ PREHOOK: query: FROM
  WHERE a.key > '10' AND a.key < '20' AND b.key > '15' AND b.key < '25' AND sqrt(c.key) <> 13
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/tmp/charleschen/hive_2011-09-01_23-11-00_875_1322768464355263916/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: FROM 
   src a
  LEFT OUTER JOIN
@@ -159,7 +159,7 @@ POSTHOOK: query: FROM
  WHERE a.key > '10' AND a.key < '20' AND b.key > '15' AND b.key < '25' AND sqrt(c.key) <> 13
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: file:/tmp/charleschen/hive_2011-09-01_23-11-00_875_1322768464355263916/-mr-10000
+#### A masked pattern was here ####
 150	val_150	150	val_150	150
 152	val_152	152	val_152	152
 152	val_152	152	val_152	152
@@ -538,7 +538,7 @@ PREHOOK: query: FROM
  WHERE a.key > '10' AND a.key < '20' AND b.key > '15' AND b.key < '25' AND sqrt(c.key) <> 13
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/tmp/charleschen/hive_2011-09-01_23-11-04_380_1054655426630257377/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: FROM 
   src a
  LEFT OUTER JOIN
@@ -551,7 +551,7 @@ POSTHOOK: query: FROM
  WHERE a.key > '10' AND a.key < '20' AND b.key > '15' AND b.key < '25' AND sqrt(c.key) <> 13
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: file:/tmp/charleschen/hive_2011-09-01_23-11-04_380_1054655426630257377/-mr-10000
+#### A masked pattern was here ####
 150	val_150	150	val_150	150
 152	val_152	152	val_152	152
 152	val_152	152	val_152	152

@@ -27,14 +27,14 @@ UNION ALL
 SELECT c AS cola FROM rcfile_unionTable) s
 PREHOOK: type: QUERY
 PREHOOK: Input: default@rcfile_uniontable
-PREHOOK: Output: file:/tmp/jssarma/hive_2010-07-21_11-48-53_001_5783976192735479261/10000
+#### A masked pattern was here ####
 POSTHOOK: query: SELECT * FROM (
 SELECT b AS cola FROM rcfile_unionTable
 UNION ALL
 SELECT c AS cola FROM rcfile_unionTable) s
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@rcfile_uniontable
-POSTHOOK: Output: file:/tmp/jssarma/hive_2010-07-21_11-48-53_001_5783976192735479261/10000
+#### A masked pattern was here ####
 POSTHOOK: Lineage: rcfile_uniontable.b SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: rcfile_uniontable.c SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 val_238

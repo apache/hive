@@ -253,11 +253,11 @@ POSTHOOK: Lineage: t4 PARTITION(ds=2010-04-17).c9 SIMPLE []
 PREHOOK: query: select * from T2
 PREHOOK: type: QUERY
 PREHOOK: Input: default@t2@ds=2010-04-17
-PREHOOK: Output: file:/tmp/jsichi/hive_2010-08-26_15-41-10_566_4433224025311049348/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: select * from T2
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@t2@ds=2010-04-17
-POSTHOOK: Output: file:/tmp/jsichi/hive_2010-08-26_15-41-10_566_4433224025311049348/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: Lineage: t1 PARTITION(ds=2010-04-17).c1 SIMPLE []
 POSTHOOK: Lineage: t1 PARTITION(ds=2010-04-17).c2 SIMPLE []
 POSTHOOK: Lineage: t1 PARTITION(ds=2010-04-17).c3 SIMPLE []
@@ -382,11 +382,11 @@ POSTHOOK: Lineage: t4 PARTITION(ds=2010-04-17).c9 SIMPLE []
 PREHOOK: query: select * from T1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@t1@ds=2010-04-17
-PREHOOK: Output: file:/tmp/jsichi/hive_2010-08-26_15-41-10_954_8596376016737090385/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: select * from T1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@t1@ds=2010-04-17
-POSTHOOK: Output: file:/tmp/jsichi/hive_2010-08-26_15-41-10_954_8596376016737090385/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: Lineage: t1 PARTITION(ds=2010-04-17).c1 SIMPLE []
 POSTHOOK: Lineage: t1 PARTITION(ds=2010-04-17).c2 SIMPLE []
 POSTHOOK: Lineage: t1 PARTITION(ds=2010-04-17).c3 SIMPLE []
@@ -511,11 +511,11 @@ POSTHOOK: Lineage: t4 PARTITION(ds=2010-04-17).c9 SIMPLE []
 PREHOOK: query: select * from T3
 PREHOOK: type: QUERY
 PREHOOK: Input: default@t3@ds=2010-04-17
-PREHOOK: Output: file:/tmp/jsichi/hive_2010-08-26_15-41-11_371_4261884027917519942/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: select * from T3
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@t3@ds=2010-04-17
-POSTHOOK: Output: file:/tmp/jsichi/hive_2010-08-26_15-41-11_371_4261884027917519942/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: Lineage: t1 PARTITION(ds=2010-04-17).c1 SIMPLE []
 POSTHOOK: Lineage: t1 PARTITION(ds=2010-04-17).c2 SIMPLE []
 POSTHOOK: Lineage: t1 PARTITION(ds=2010-04-17).c3 SIMPLE []
@@ -640,11 +640,11 @@ POSTHOOK: Lineage: t4 PARTITION(ds=2010-04-17).c9 SIMPLE []
 PREHOOK: query: select * from T4
 PREHOOK: type: QUERY
 PREHOOK: Input: default@t4@ds=2010-04-17
-PREHOOK: Output: file:/tmp/jsichi/hive_2010-08-26_15-41-11_796_8203509595344384965/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: select * from T4
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@t4@ds=2010-04-17
-POSTHOOK: Output: file:/tmp/jsichi/hive_2010-08-26_15-41-11_796_8203509595344384965/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: Lineage: t1 PARTITION(ds=2010-04-17).c1 SIMPLE []
 POSTHOOK: Lineage: t1 PARTITION(ds=2010-04-17).c2 SIMPLE []
 POSTHOOK: Lineage: t1 PARTITION(ds=2010-04-17).c3 SIMPLE []
@@ -778,7 +778,7 @@ PREHOOK: Input: default@t1@ds=2010-04-17
 PREHOOK: Input: default@t2@ds=2010-04-17
 PREHOOK: Input: default@t3@ds=2010-04-17
 PREHOOK: Input: default@t4@ds=2010-04-17
-PREHOOK: Output: file:/tmp/jsichi/hive_2010-08-26_15-41-12_248_6929768884094642056/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: SELECT a.c1 as a_c1, b.c1 b_c1, d.c0 as d_c0
 FROM T1 a JOIN T2 b 
        ON (a.c1 = b.c1 AND a.ds='2010-04-17' AND b.ds='2010-04-17')
@@ -791,7 +791,7 @@ POSTHOOK: Input: default@t1@ds=2010-04-17
 POSTHOOK: Input: default@t2@ds=2010-04-17
 POSTHOOK: Input: default@t3@ds=2010-04-17
 POSTHOOK: Input: default@t4@ds=2010-04-17
-POSTHOOK: Output: file:/tmp/jsichi/hive_2010-08-26_15-41-12_248_6929768884094642056/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: Lineage: t1 PARTITION(ds=2010-04-17).c1 SIMPLE []
 POSTHOOK: Lineage: t1 PARTITION(ds=2010-04-17).c2 SIMPLE []
 POSTHOOK: Lineage: t1 PARTITION(ds=2010-04-17).c3 SIMPLE []

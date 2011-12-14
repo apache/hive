@@ -152,20 +152,20 @@ STAGE PLANS:
 PREHOOK: query: SELECT x, y FROM src LATERAL VIEW STACK(2, 'x', array(1), 'z') a AS x, y LIMIT 2
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/var/folders/71/h_j6fpg10r33hvx1lcxlgttcw61_4s/T/jonchang/hive_2011-10-19_16-00-57_244_5388245899892483193/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: SELECT x, y FROM src LATERAL VIEW STACK(2, 'x', array(1), 'z') a AS x, y LIMIT 2
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: file:/var/folders/71/h_j6fpg10r33hvx1lcxlgttcw61_4s/T/jonchang/hive_2011-10-19_16-00-57_244_5388245899892483193/-mr-10000
+#### A masked pattern was here ####
 x	[1]
 z	null
 PREHOOK: query: SELECT x, y FROM src LATERAL VIEW STACK(2, 'x', array(1), 'z', array(4)) a AS x, y LIMIT 2
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/var/folders/71/h_j6fpg10r33hvx1lcxlgttcw61_4s/T/jonchang/hive_2011-10-19_16-01-01_819_5490987258076691735/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: SELECT x, y FROM src LATERAL VIEW STACK(2, 'x', array(1), 'z', array(4)) a AS x, y LIMIT 2
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: file:/var/folders/71/h_j6fpg10r33hvx1lcxlgttcw61_4s/T/jonchang/hive_2011-10-19_16-01-01_819_5490987258076691735/-mr-10000
+#### A masked pattern was here ####
 x	[1]
 z	[4]

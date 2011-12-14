@@ -70,7 +70,7 @@ PREHOOK: query: SELECT 'face''book', 'face' 'book', 'face'
        "face"'book', 'facebook' FROM src LIMIT 1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/var/folders/71/h_j6fpg10r33hvx1lcxlgttcw61_4s/T/jonchang/hive_2011-11-06_11-17-00_593_8968392215771784039/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: SELECT 'face''book', 'face' 'book', 'face'
                                     'book',
        "face""book", "face" "book", "face"
@@ -79,5 +79,5 @@ POSTHOOK: query: SELECT 'face''book', 'face' 'book', 'face'
        "face"'book', 'facebook' FROM src LIMIT 1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: file:/var/folders/71/h_j6fpg10r33hvx1lcxlgttcw61_4s/T/jonchang/hive_2011-11-06_11-17-00_593_8968392215771784039/-mr-10000
+#### A masked pattern was here ####
 facebook	facebook	facebook	facebook	facebook	facebook	facebook	facebook	facebook	facebook

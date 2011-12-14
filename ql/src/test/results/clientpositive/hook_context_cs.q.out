@@ -7,14 +7,14 @@ PREHOOK: type: CREATETABLE
 POSTHOOK: query: CREATE TABLE vcsc (c STRING) PARTITIONED BY (ds STRING)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: default@vcsc
-PREHOOK: query: ALTER TABLE vcsc ADD partition (ds='dummy') location '/tmp/VerifyContentSummaryCacheHook'
+#### A masked pattern was here ####
 PREHOOK: type: ALTERTABLE_ADDPARTS
 PREHOOK: Input: default@vcsc
-POSTHOOK: query: ALTER TABLE vcsc ADD partition (ds='dummy') location '/tmp/VerifyContentSummaryCacheHook'
+#### A masked pattern was here ####
 POSTHOOK: type: ALTERTABLE_ADDPARTS
 POSTHOOK: Input: default@vcsc
 POSTHOOK: Output: default@vcsc@ds=dummy
 POSTHOOK: query: SELECT a.c, b.c FROM vcsc a JOIN vcsc b ON a.ds = 'dummy' AND b.ds = 'dummy' AND a.c = b.c
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@vcsc@ds=dummy
-POSTHOOK: Output: file:/tmp/sdong/hive_2011-03-14_04-46-27_374_2422598099938727948/-mr-10000
+#### A masked pattern was here ####

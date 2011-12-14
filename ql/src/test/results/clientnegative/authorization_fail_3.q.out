@@ -26,7 +26,7 @@ table	authorization_fail_3
 principalName	hive_test_user	
 principalType	USER	
 privilege	Create	
-grantTime	1298430475	
+#### A masked pattern was here ####
 grantor	hive_test_user	
 PREHOOK: query: show grant user hive_test_user on table authorization_fail_3 partition (ds='2010')
 PREHOOK: type: SHOW_GRANT

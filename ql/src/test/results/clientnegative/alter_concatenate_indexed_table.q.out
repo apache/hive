@@ -26,8 +26,7 @@ PREHOOK: type: SHOW_TABLESTATUS
 POSTHOOK: query: show table extended like `src_rc_concatenate_test`
 POSTHOOK: type: SHOW_TABLESTATUS
 tableName:src_rc_concatenate_test
-owner:heyongqiang
-location:pfile:/Users/heyongqiang/Documents/workspace/Hive-3/build/ql/test/data/warehouse/src_rc_concatenate_test
+#### A masked pattern was here ####
 inputformat:org.apache.hadoop.hive.ql.io.RCFileInputFormat
 outputformat:org.apache.hadoop.hive.ql.io.RCFileOutputFormat
 columns:struct columns { i32 key, string value}
@@ -37,26 +36,25 @@ totalNumberFiles:3
 totalFileSize:636
 maxFileSize:222
 minFileSize:206
-lastAccessTime:0
-lastUpdateTime:1303856313000
+#### A masked pattern was here ####
 
 PREHOOK: query: select count(1) from src_rc_concatenate_test
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src_rc_concatenate_test
-PREHOOK: Output: file:/var/folders/6g/6grtCwPMEf4sqHUPpy6xQG9ByHg/-Tmp-/heyongqiang/hive_2011-04-26_15-18-34_169_7540361530581615138/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: select count(1) from src_rc_concatenate_test
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src_rc_concatenate_test
-POSTHOOK: Output: file:/var/folders/6g/6grtCwPMEf4sqHUPpy6xQG9ByHg/-Tmp-/heyongqiang/hive_2011-04-26_15-18-34_169_7540361530581615138/-mr-10000
+#### A masked pattern was here ####
 15
 PREHOOK: query: select sum(hash(key)), sum(hash(value)) from src_rc_concatenate_test
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src_rc_concatenate_test
-PREHOOK: Output: file:/var/folders/6g/6grtCwPMEf4sqHUPpy6xQG9ByHg/-Tmp-/heyongqiang/hive_2011-04-26_15-18-42_067_46716291029153270/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: select sum(hash(key)), sum(hash(value)) from src_rc_concatenate_test
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src_rc_concatenate_test
-POSTHOOK: Output: file:/var/folders/6g/6grtCwPMEf4sqHUPpy6xQG9ByHg/-Tmp-/heyongqiang/hive_2011-04-26_15-18-42_067_46716291029153270/-mr-10000
+#### A masked pattern was here ####
 214	-7678496319
 PREHOOK: query: create index src_rc_concatenate_test_index on table src_rc_concatenate_test(key) as 'compact' WITH DEFERRED REBUILD IDXPROPERTIES ("prop1"="val1", "prop2"="val2")
 PREHOOK: type: CREATEINDEX

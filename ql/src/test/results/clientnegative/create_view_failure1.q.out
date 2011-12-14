@@ -11,6 +11,6 @@ POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: default@xxx12
 PREHOOK: query: CREATE VIEW xxx12 AS SELECT key FROM src
 PREHOOK: type: CREATEVIEW
-PREHOOK: Output: file:/tmp/jssarma/hive_2010-07-21_13-43-17_176_344624644454180304/10000
+#### A masked pattern was here ####
 FAILED: Error in metadata: AlreadyExistsException(message:Table xxx12 already exists)
 FAILED: Execution Error, return code 1 from org.apache.hadoop.hive.ql.exec.DDLTask

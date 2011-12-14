@@ -5,21 +5,21 @@ POSTHOOK: type: CREATEFUNCTION
 PREHOOK: query: SELECT udtfCount2(key) AS count FROM src
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/data/users/pyang/task/trunk/VENDOR.hive/trunk/build/contrib/scratchdir/hive_2010-04-07_19-27-17_031_6344870299379030501/10000
+#### A masked pattern was here ####
 POSTHOOK: query: SELECT udtfCount2(key) AS count FROM src
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: file:/data/users/pyang/task/trunk/VENDOR.hive/trunk/build/contrib/scratchdir/hive_2010-04-07_19-27-17_031_6344870299379030501/10000
+#### A masked pattern was here ####
 500
 500
 PREHOOK: query: SELECT * FROM src LATERAL VIEW udtfCount2(key) myTable AS myCol
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/data/users/pyang/task/trunk/VENDOR.hive/trunk/build/contrib/scratchdir/hive_2010-04-07_19-27-21_181_94664289955554193/10000
+#### A masked pattern was here ####
 POSTHOOK: query: SELECT * FROM src LATERAL VIEW udtfCount2(key) myTable AS myCol
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: file:/data/users/pyang/task/trunk/VENDOR.hive/trunk/build/contrib/scratchdir/hive_2010-04-07_19-27-21_181_94664289955554193/10000
+#### A masked pattern was here ####
 97	val_97	500
 97	val_97	500
 PREHOOK: query: DROP TEMPORARY FUNCTION udtfCount

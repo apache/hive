@@ -55,9 +55,9 @@ STAGE PLANS:
             File Output Operator
               compressed: false
               GlobalTableId: 0
-              directory: file:/var/folders/bZ/bZe+iKfoFTuPoShRd6dy6-tOU9Y/-Tmp-/njain/hive_2011-10-27_11-43-12_585_1868075955473519664/-ext-10001
+#### A masked pattern was here ####
               NumFilesPerFileSink: 1
-              Stats Publishing Key Prefix: file:/var/folders/bZ/bZe+iKfoFTuPoShRd6dy6-tOU9Y/-Tmp-/njain/hive_2011-10-27_11-43-12_585_1868075955473519664/-ext-10001/
+#### A masked pattern was here ####
               table:
                   input format: org.apache.hadoop.mapred.TextInputFormat
                   output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
@@ -77,10 +77,10 @@ STAGE PLANS:
 
 PREHOOK: query: select max(ds) from TEST1
 PREHOOK: type: QUERY
-PREHOOK: Output: file:/var/folders/bZ/bZe+iKfoFTuPoShRd6dy6-tOU9Y/-Tmp-/njain/hive_2011-10-27_11-43-12_860_603571457300760090/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: select max(ds) from TEST1
 POSTHOOK: type: QUERY
-POSTHOOK: Output: file:/var/folders/bZ/bZe+iKfoFTuPoShRd6dy6-tOU9Y/-Tmp-/njain/hive_2011-10-27_11-43-12_860_603571457300760090/-mr-10000
+#### A masked pattern was here ####
 
 PREHOOK: query: alter table TEST1 add partition (ds='1')
 PREHOOK: type: ALTERTABLE_ADDPARTS
@@ -140,15 +140,13 @@ STAGE PLANS:
               bucket_count -1
               columns a,b
               columns.types int:double
-              file.inputformat org.apache.hadoop.mapred.TextInputFormat
-              file.outputformat org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-              location pfile:/Users/njain/hive/hive2/build/ql/test/data/warehouse/test1/ds=1
+#### A masked pattern was here ####
               name default.test1
               partition_columns ds
               serialization.ddl struct test1 { i32 a, double b}
               serialization.format 1
               serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              transient_lastDdlTime 1319740998
+#### A masked pattern was here ####
             serde: org.apache.hadoop.hive.serde2.NullStructSerDe
           
               input format: org.apache.hadoop.mapred.TextInputFormat
@@ -157,15 +155,13 @@ STAGE PLANS:
                 bucket_count -1
                 columns a,b
                 columns.types int:double
-                file.inputformat org.apache.hadoop.mapred.TextInputFormat
-                file.outputformat org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                location pfile:/Users/njain/hive/hive2/build/ql/test/data/warehouse/test1
+#### A masked pattern was here ####
                 name default.test1
                 partition_columns ds
                 serialization.ddl struct test1 { i32 a, double b}
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                transient_lastDdlTime 1319740992
+#### A masked pattern was here ####
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: default.test1
             name: default.test1
@@ -184,9 +180,9 @@ STAGE PLANS:
             File Output Operator
               compressed: false
               GlobalTableId: 0
-              directory: file:/var/folders/bZ/bZe+iKfoFTuPoShRd6dy6-tOU9Y/-Tmp-/njain/hive_2011-10-27_11-43-18_858_3586583087895818520/-ext-10001
+#### A masked pattern was here ####
               NumFilesPerFileSink: 1
-              Stats Publishing Key Prefix: file:/var/folders/bZ/bZe+iKfoFTuPoShRd6dy6-tOU9Y/-Tmp-/njain/hive_2011-10-27_11-43-18_858_3586583087895818520/-ext-10001/
+#### A masked pattern was here ####
               table:
                   input format: org.apache.hadoop.mapred.TextInputFormat
                   output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
@@ -207,11 +203,11 @@ STAGE PLANS:
 PREHOOK: query: select max(ds) from TEST1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@test1@ds=1
-PREHOOK: Output: file:/var/folders/bZ/bZe+iKfoFTuPoShRd6dy6-tOU9Y/-Tmp-/njain/hive_2011-10-27_11-43-18_974_2551947253137562059/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: select max(ds) from TEST1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@test1@ds=1
-POSTHOOK: Output: file:/var/folders/bZ/bZe+iKfoFTuPoShRd6dy6-tOU9Y/-Tmp-/njain/hive_2011-10-27_11-43-18_974_2551947253137562059/-mr-10000
+#### A masked pattern was here ####
 1
 PREHOOK: query: explain extended select count(distinct ds) from TEST1
 PREHOOK: type: QUERY
@@ -270,15 +266,13 @@ STAGE PLANS:
               bucket_count -1
               columns a,b
               columns.types int:double
-              file.inputformat org.apache.hadoop.mapred.TextInputFormat
-              file.outputformat org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-              location pfile:/Users/njain/hive/hive2/build/ql/test/data/warehouse/test1/ds=1
+#### A masked pattern was here ####
               name default.test1
               partition_columns ds
               serialization.ddl struct test1 { i32 a, double b}
               serialization.format 1
               serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              transient_lastDdlTime 1319740998
+#### A masked pattern was here ####
             serde: org.apache.hadoop.hive.serde2.NullStructSerDe
           
               input format: org.apache.hadoop.mapred.TextInputFormat
@@ -287,15 +281,13 @@ STAGE PLANS:
                 bucket_count -1
                 columns a,b
                 columns.types int:double
-                file.inputformat org.apache.hadoop.mapred.TextInputFormat
-                file.outputformat org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                location pfile:/Users/njain/hive/hive2/build/ql/test/data/warehouse/test1
+#### A masked pattern was here ####
                 name default.test1
                 partition_columns ds
                 serialization.ddl struct test1 { i32 a, double b}
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                transient_lastDdlTime 1319740992
+#### A masked pattern was here ####
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: default.test1
             name: default.test1
@@ -314,9 +306,9 @@ STAGE PLANS:
             File Output Operator
               compressed: false
               GlobalTableId: 0
-              directory: file:/var/folders/bZ/bZe+iKfoFTuPoShRd6dy6-tOU9Y/-Tmp-/njain/hive_2011-10-27_11-43-24_614_8262716029839319533/-ext-10001
+#### A masked pattern was here ####
               NumFilesPerFileSink: 1
-              Stats Publishing Key Prefix: file:/var/folders/bZ/bZe+iKfoFTuPoShRd6dy6-tOU9Y/-Tmp-/njain/hive_2011-10-27_11-43-24_614_8262716029839319533/-ext-10001/
+#### A masked pattern was here ####
               table:
                   input format: org.apache.hadoop.mapred.TextInputFormat
                   output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
@@ -337,11 +329,11 @@ STAGE PLANS:
 PREHOOK: query: select count(distinct ds) from TEST1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@test1@ds=1
-PREHOOK: Output: file:/var/folders/bZ/bZe+iKfoFTuPoShRd6dy6-tOU9Y/-Tmp-/njain/hive_2011-10-27_11-43-24_727_7465805034346288209/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: select count(distinct ds) from TEST1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@test1@ds=1
-POSTHOOK: Output: file:/var/folders/bZ/bZe+iKfoFTuPoShRd6dy6-tOU9Y/-Tmp-/njain/hive_2011-10-27_11-43-24_727_7465805034346288209/-mr-10000
+#### A masked pattern was here ####
 1
 PREHOOK: query: explain extended select count(ds) from TEST1
 PREHOOK: type: QUERY
@@ -381,9 +373,9 @@ STAGE PLANS:
                         type: bigint
       Needs Tagging: false
       Path -> Alias:
-        pfile:/Users/njain/hive/hive2/build/ql/test/data/warehouse/test1/ds=1 [test1]
+#### A masked pattern was here ####
       Path -> Partition:
-        pfile:/Users/njain/hive/hive2/build/ql/test/data/warehouse/test1/ds=1 
+#### A masked pattern was here ####
           Partition
             base file name: ds=1
             input format: org.apache.hadoop.mapred.TextInputFormat
@@ -394,15 +386,13 @@ STAGE PLANS:
               bucket_count -1
               columns a,b
               columns.types int:double
-              file.inputformat org.apache.hadoop.mapred.TextInputFormat
-              file.outputformat org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-              location pfile:/Users/njain/hive/hive2/build/ql/test/data/warehouse/test1/ds=1
+#### A masked pattern was here ####
               name default.test1
               partition_columns ds
               serialization.ddl struct test1 { i32 a, double b}
               serialization.format 1
               serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              transient_lastDdlTime 1319740998
+#### A masked pattern was here ####
             serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
           
               input format: org.apache.hadoop.mapred.TextInputFormat
@@ -411,15 +401,13 @@ STAGE PLANS:
                 bucket_count -1
                 columns a,b
                 columns.types int:double
-                file.inputformat org.apache.hadoop.mapred.TextInputFormat
-                file.outputformat org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                location pfile:/Users/njain/hive/hive2/build/ql/test/data/warehouse/test1
+#### A masked pattern was here ####
                 name default.test1
                 partition_columns ds
                 serialization.ddl struct test1 { i32 a, double b}
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                transient_lastDdlTime 1319740992
+#### A masked pattern was here ####
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: default.test1
             name: default.test1
@@ -438,9 +426,9 @@ STAGE PLANS:
             File Output Operator
               compressed: false
               GlobalTableId: 0
-              directory: file:/var/folders/bZ/bZe+iKfoFTuPoShRd6dy6-tOU9Y/-Tmp-/njain/hive_2011-10-27_11-43-30_281_2767795707655569681/-ext-10001
+#### A masked pattern was here ####
               NumFilesPerFileSink: 1
-              Stats Publishing Key Prefix: file:/var/folders/bZ/bZe+iKfoFTuPoShRd6dy6-tOU9Y/-Tmp-/njain/hive_2011-10-27_11-43-30_281_2767795707655569681/-ext-10001/
+#### A masked pattern was here ####
               table:
                   input format: org.apache.hadoop.mapred.TextInputFormat
                   output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
@@ -461,11 +449,11 @@ STAGE PLANS:
 PREHOOK: query: select count(ds) from TEST1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@test1@ds=1
-PREHOOK: Output: file:/var/folders/bZ/bZe+iKfoFTuPoShRd6dy6-tOU9Y/-Tmp-/njain/hive_2011-10-27_11-43-30_392_2741280504992120668/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: select count(ds) from TEST1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@test1@ds=1
-POSTHOOK: Output: file:/var/folders/bZ/bZe+iKfoFTuPoShRd6dy6-tOU9Y/-Tmp-/njain/hive_2011-10-27_11-43-30_392_2741280504992120668/-mr-10000
+#### A masked pattern was here ####
 0
 PREHOOK: query: alter table TEST1 add partition (ds='2')
 PREHOOK: type: ALTERTABLE_ADDPARTS
@@ -530,15 +518,13 @@ STAGE PLANS:
               bucket_count -1
               columns a,b
               columns.types int:double
-              file.inputformat org.apache.hadoop.mapred.TextInputFormat
-              file.outputformat org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-              location pfile:/Users/njain/hive/hive2/build/ql/test/data/warehouse/test1/ds=1
+#### A masked pattern was here ####
               name default.test1
               partition_columns ds
               serialization.ddl struct test1 { i32 a, double b}
               serialization.format 1
               serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              transient_lastDdlTime 1319740998
+#### A masked pattern was here ####
             serde: org.apache.hadoop.hive.serde2.NullStructSerDe
           
               input format: org.apache.hadoop.mapred.TextInputFormat
@@ -547,15 +533,13 @@ STAGE PLANS:
                 bucket_count -1
                 columns a,b
                 columns.types int:double
-                file.inputformat org.apache.hadoop.mapred.TextInputFormat
-                file.outputformat org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                location pfile:/Users/njain/hive/hive2/build/ql/test/data/warehouse/test1
+#### A masked pattern was here ####
                 name default.test1
                 partition_columns ds
                 serialization.ddl struct test1 { i32 a, double b}
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                transient_lastDdlTime 1319740992
+#### A masked pattern was here ####
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: default.test1
             name: default.test1
@@ -570,15 +554,13 @@ STAGE PLANS:
               bucket_count -1
               columns a,b
               columns.types int:double
-              file.inputformat org.apache.hadoop.mapred.TextInputFormat
-              file.outputformat org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-              location pfile:/Users/njain/hive/hive2/build/ql/test/data/warehouse/test1/ds=2
+#### A masked pattern was here ####
               name default.test1
               partition_columns ds
               serialization.ddl struct test1 { i32 a, double b}
               serialization.format 1
               serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              transient_lastDdlTime 1319741016
+#### A masked pattern was here ####
             serde: org.apache.hadoop.hive.serde2.NullStructSerDe
           
               input format: org.apache.hadoop.mapred.TextInputFormat
@@ -587,15 +569,13 @@ STAGE PLANS:
                 bucket_count -1
                 columns a,b
                 columns.types int:double
-                file.inputformat org.apache.hadoop.mapred.TextInputFormat
-                file.outputformat org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                location pfile:/Users/njain/hive/hive2/build/ql/test/data/warehouse/test1
+#### A masked pattern was here ####
                 name default.test1
                 partition_columns ds
                 serialization.ddl struct test1 { i32 a, double b}
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                transient_lastDdlTime 1319740992
+#### A masked pattern was here ####
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: default.test1
             name: default.test1
@@ -614,7 +594,7 @@ STAGE PLANS:
             File Output Operator
               compressed: false
               GlobalTableId: 0
-              directory: file:/var/folders/bZ/bZe+iKfoFTuPoShRd6dy6-tOU9Y/-Tmp-/njain/hive_2011-10-27_11-43-36_629_6256982309049932082/-mr-10002
+#### A masked pattern was here ####
               NumFilesPerFileSink: 1
               table:
                   input format: org.apache.hadoop.mapred.SequenceFileInputFormat
@@ -655,11 +635,9 @@ STAGE PLANS:
               tag: 0
       Needs Tagging: true
       Path -> Alias:
-        file:/var/folders/bZ/bZe+iKfoFTuPoShRd6dy6-tOU9Y/-Tmp-/njain/hive_2011-10-27_11-43-36_629_6256982309049932082/-mr-10002 [$INTNAME]
-        pfile:/Users/njain/hive/hive2/build/ql/test/data/warehouse/test1/ds=1 [a2]
-        pfile:/Users/njain/hive/hive2/build/ql/test/data/warehouse/test1/ds=2 [a2]
+#### A masked pattern was here ####
       Path -> Partition:
-        file:/var/folders/bZ/bZe+iKfoFTuPoShRd6dy6-tOU9Y/-Tmp-/njain/hive_2011-10-27_11-43-36_629_6256982309049932082/-mr-10002 
+#### A masked pattern was here ####
           Partition
             base file name: -mr-10002
             input format: org.apache.hadoop.mapred.SequenceFileInputFormat
@@ -675,7 +653,7 @@ STAGE PLANS:
                 columns _col0
                 columns.types string
                 escape.delim \
-        pfile:/Users/njain/hive/hive2/build/ql/test/data/warehouse/test1/ds=1 
+#### A masked pattern was here ####
           Partition
             base file name: ds=1
             input format: org.apache.hadoop.mapred.TextInputFormat
@@ -686,15 +664,13 @@ STAGE PLANS:
               bucket_count -1
               columns a,b
               columns.types int:double
-              file.inputformat org.apache.hadoop.mapred.TextInputFormat
-              file.outputformat org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-              location pfile:/Users/njain/hive/hive2/build/ql/test/data/warehouse/test1/ds=1
+#### A masked pattern was here ####
               name default.test1
               partition_columns ds
               serialization.ddl struct test1 { i32 a, double b}
               serialization.format 1
               serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              transient_lastDdlTime 1319740998
+#### A masked pattern was here ####
             serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
           
               input format: org.apache.hadoop.mapred.TextInputFormat
@@ -703,19 +679,17 @@ STAGE PLANS:
                 bucket_count -1
                 columns a,b
                 columns.types int:double
-                file.inputformat org.apache.hadoop.mapred.TextInputFormat
-                file.outputformat org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                location pfile:/Users/njain/hive/hive2/build/ql/test/data/warehouse/test1
+#### A masked pattern was here ####
                 name default.test1
                 partition_columns ds
                 serialization.ddl struct test1 { i32 a, double b}
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                transient_lastDdlTime 1319740992
+#### A masked pattern was here ####
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: default.test1
             name: default.test1
-        pfile:/Users/njain/hive/hive2/build/ql/test/data/warehouse/test1/ds=2 
+#### A masked pattern was here ####
           Partition
             base file name: ds=2
             input format: org.apache.hadoop.mapred.TextInputFormat
@@ -726,15 +700,13 @@ STAGE PLANS:
               bucket_count -1
               columns a,b
               columns.types int:double
-              file.inputformat org.apache.hadoop.mapred.TextInputFormat
-              file.outputformat org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-              location pfile:/Users/njain/hive/hive2/build/ql/test/data/warehouse/test1/ds=2
+#### A masked pattern was here ####
               name default.test1
               partition_columns ds
               serialization.ddl struct test1 { i32 a, double b}
               serialization.format 1
               serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              transient_lastDdlTime 1319741016
+#### A masked pattern was here ####
             serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
           
               input format: org.apache.hadoop.mapred.TextInputFormat
@@ -743,15 +715,13 @@ STAGE PLANS:
                 bucket_count -1
                 columns a,b
                 columns.types int:double
-                file.inputformat org.apache.hadoop.mapred.TextInputFormat
-                file.outputformat org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                location pfile:/Users/njain/hive/hive2/build/ql/test/data/warehouse/test1
+#### A masked pattern was here ####
                 name default.test1
                 partition_columns ds
                 serialization.ddl struct test1 { i32 a, double b}
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                transient_lastDdlTime 1319740992
+#### A masked pattern was here ####
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: default.test1
             name: default.test1
@@ -773,7 +743,7 @@ STAGE PLANS:
               File Output Operator
                 compressed: false
                 GlobalTableId: 0
-                directory: file:/var/folders/bZ/bZe+iKfoFTuPoShRd6dy6-tOU9Y/-Tmp-/njain/hive_2011-10-27_11-43-36_629_6256982309049932082/-mr-10003
+#### A masked pattern was here ####
                 NumFilesPerFileSink: 1
                 table:
                     input format: org.apache.hadoop.mapred.SequenceFileInputFormat
@@ -789,7 +759,7 @@ STAGE PLANS:
   Stage: Stage-3
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/var/folders/bZ/bZe+iKfoFTuPoShRd6dy6-tOU9Y/-Tmp-/njain/hive_2011-10-27_11-43-36_629_6256982309049932082/-mr-10003 
+#### A masked pattern was here ####
             Reduce Output Operator
               sort order: 
               tag: -1
@@ -798,9 +768,9 @@ STAGE PLANS:
                     type: bigint
       Needs Tagging: false
       Path -> Alias:
-        file:/var/folders/bZ/bZe+iKfoFTuPoShRd6dy6-tOU9Y/-Tmp-/njain/hive_2011-10-27_11-43-36_629_6256982309049932082/-mr-10003 [file:/var/folders/bZ/bZe+iKfoFTuPoShRd6dy6-tOU9Y/-Tmp-/njain/hive_2011-10-27_11-43-36_629_6256982309049932082/-mr-10003]
+#### A masked pattern was here ####
       Path -> Partition:
-        file:/var/folders/bZ/bZe+iKfoFTuPoShRd6dy6-tOU9Y/-Tmp-/njain/hive_2011-10-27_11-43-36_629_6256982309049932082/-mr-10003 
+#### A masked pattern was here ####
           Partition
             base file name: -mr-10003
             input format: org.apache.hadoop.mapred.SequenceFileInputFormat
@@ -831,9 +801,9 @@ STAGE PLANS:
             File Output Operator
               compressed: false
               GlobalTableId: 0
-              directory: file:/var/folders/bZ/bZe+iKfoFTuPoShRd6dy6-tOU9Y/-Tmp-/njain/hive_2011-10-27_11-43-36_629_6256982309049932082/-ext-10001
+#### A masked pattern was here ####
               NumFilesPerFileSink: 1
-              Stats Publishing Key Prefix: file:/var/folders/bZ/bZe+iKfoFTuPoShRd6dy6-tOU9Y/-Tmp-/njain/hive_2011-10-27_11-43-36_629_6256982309049932082/-ext-10001/
+#### A masked pattern was here ####
               table:
                   input format: org.apache.hadoop.mapred.TextInputFormat
                   output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
@@ -855,12 +825,12 @@ PREHOOK: query: select count(*) from TEST1 a2 join (select max(ds) m from TEST1)
 PREHOOK: type: QUERY
 PREHOOK: Input: default@test1@ds=1
 PREHOOK: Input: default@test1@ds=2
-PREHOOK: Output: file:/var/folders/bZ/bZe+iKfoFTuPoShRd6dy6-tOU9Y/-Tmp-/njain/hive_2011-10-27_11-43-36_904_6796791888883698844/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: select count(*) from TEST1 a2 join (select max(ds) m from TEST1) b on a2.ds=b.m
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@test1@ds=1
 POSTHOOK: Input: default@test1@ds=2
-POSTHOOK: Output: file:/var/folders/bZ/bZe+iKfoFTuPoShRd6dy6-tOU9Y/-Tmp-/njain/hive_2011-10-27_11-43-36_904_6796791888883698844/-mr-10000
+#### A masked pattern was here ####
 0
 PREHOOK: query: CREATE TABLE TEST2(A INT, B DOUBLE) partitioned by (ds string, hr string)
 PREHOOK: type: CREATETABLE
@@ -957,15 +927,13 @@ STAGE PLANS:
               bucket_count -1
               columns a,b
               columns.types int:double
-              file.inputformat org.apache.hadoop.mapred.TextInputFormat
-              file.outputformat org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-              location pfile:/Users/njain/hive/hive2/build/ql/test/data/warehouse/test2/ds=1/hr=1
+#### A masked pattern was here ####
               name default.test2
               partition_columns ds/hr
               serialization.ddl struct test2 { i32 a, double b}
               serialization.format 1
               serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              transient_lastDdlTime 1319741034
+#### A masked pattern was here ####
             serde: org.apache.hadoop.hive.serde2.NullStructSerDe
           
               input format: org.apache.hadoop.mapred.TextInputFormat
@@ -974,15 +942,13 @@ STAGE PLANS:
                 bucket_count -1
                 columns a,b
                 columns.types int:double
-                file.inputformat org.apache.hadoop.mapred.TextInputFormat
-                file.outputformat org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                location pfile:/Users/njain/hive/hive2/build/ql/test/data/warehouse/test2
+#### A masked pattern was here ####
                 name default.test2
                 partition_columns ds/hr
                 serialization.ddl struct test2 { i32 a, double b}
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                transient_lastDdlTime 1319741034
+#### A masked pattern was here ####
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: default.test2
             name: default.test2
@@ -998,15 +964,13 @@ STAGE PLANS:
               bucket_count -1
               columns a,b
               columns.types int:double
-              file.inputformat org.apache.hadoop.mapred.TextInputFormat
-              file.outputformat org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-              location pfile:/Users/njain/hive/hive2/build/ql/test/data/warehouse/test2/ds=1/hr=2
+#### A masked pattern was here ####
               name default.test2
               partition_columns ds/hr
               serialization.ddl struct test2 { i32 a, double b}
               serialization.format 1
               serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              transient_lastDdlTime 1319741034
+#### A masked pattern was here ####
             serde: org.apache.hadoop.hive.serde2.NullStructSerDe
           
               input format: org.apache.hadoop.mapred.TextInputFormat
@@ -1015,15 +979,13 @@ STAGE PLANS:
                 bucket_count -1
                 columns a,b
                 columns.types int:double
-                file.inputformat org.apache.hadoop.mapred.TextInputFormat
-                file.outputformat org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                location pfile:/Users/njain/hive/hive2/build/ql/test/data/warehouse/test2
+#### A masked pattern was here ####
                 name default.test2
                 partition_columns ds/hr
                 serialization.ddl struct test2 { i32 a, double b}
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                transient_lastDdlTime 1319741034
+#### A masked pattern was here ####
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: default.test2
             name: default.test2
@@ -1039,15 +1001,13 @@ STAGE PLANS:
               bucket_count -1
               columns a,b
               columns.types int:double
-              file.inputformat org.apache.hadoop.mapred.TextInputFormat
-              file.outputformat org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-              location pfile:/Users/njain/hive/hive2/build/ql/test/data/warehouse/test2/ds=1/hr=3
+#### A masked pattern was here ####
               name default.test2
               partition_columns ds/hr
               serialization.ddl struct test2 { i32 a, double b}
               serialization.format 1
               serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              transient_lastDdlTime 1319741034
+#### A masked pattern was here ####
             serde: org.apache.hadoop.hive.serde2.NullStructSerDe
           
               input format: org.apache.hadoop.mapred.TextInputFormat
@@ -1056,15 +1016,13 @@ STAGE PLANS:
                 bucket_count -1
                 columns a,b
                 columns.types int:double
-                file.inputformat org.apache.hadoop.mapred.TextInputFormat
-                file.outputformat org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                location pfile:/Users/njain/hive/hive2/build/ql/test/data/warehouse/test2
+#### A masked pattern was here ####
                 name default.test2
                 partition_columns ds/hr
                 serialization.ddl struct test2 { i32 a, double b}
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                transient_lastDdlTime 1319741034
+#### A masked pattern was here ####
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: default.test2
             name: default.test2
@@ -1088,9 +1046,9 @@ STAGE PLANS:
             File Output Operator
               compressed: false
               GlobalTableId: 0
-              directory: file:/var/folders/bZ/bZe+iKfoFTuPoShRd6dy6-tOU9Y/-Tmp-/njain/hive_2011-10-27_11-43-54_867_6911418128650417746/-ext-10001
+#### A masked pattern was here ####
               NumFilesPerFileSink: 1
-              Stats Publishing Key Prefix: file:/var/folders/bZ/bZe+iKfoFTuPoShRd6dy6-tOU9Y/-Tmp-/njain/hive_2011-10-27_11-43-54_867_6911418128650417746/-ext-10001/
+#### A masked pattern was here ####
               table:
                   input format: org.apache.hadoop.mapred.TextInputFormat
                   output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
@@ -1113,13 +1071,13 @@ PREHOOK: type: QUERY
 PREHOOK: Input: default@test2@ds=1/hr=1
 PREHOOK: Input: default@test2@ds=1/hr=2
 PREHOOK: Input: default@test2@ds=1/hr=3
-PREHOOK: Output: file:/var/folders/bZ/bZe+iKfoFTuPoShRd6dy6-tOU9Y/-Tmp-/njain/hive_2011-10-27_11-43-55_001_7910447671567792543/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: select ds, count(distinct hr) from TEST2 group by ds
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@test2@ds=1/hr=1
 POSTHOOK: Input: default@test2@ds=1/hr=2
 POSTHOOK: Input: default@test2@ds=1/hr=3
-POSTHOOK: Output: file:/var/folders/bZ/bZe+iKfoFTuPoShRd6dy6-tOU9Y/-Tmp-/njain/hive_2011-10-27_11-43-55_001_7910447671567792543/-mr-10000
+#### A masked pattern was here ####
 1	3
 PREHOOK: query: explain extended select ds, count(hr) from TEST2 group by ds
 PREHOOK: type: QUERY
@@ -1170,11 +1128,9 @@ STAGE PLANS:
                         type: bigint
       Needs Tagging: false
       Path -> Alias:
-        pfile:/Users/njain/hive/hive2/build/ql/test/data/warehouse/test2/ds=1/hr=1 [test2]
-        pfile:/Users/njain/hive/hive2/build/ql/test/data/warehouse/test2/ds=1/hr=2 [test2]
-        pfile:/Users/njain/hive/hive2/build/ql/test/data/warehouse/test2/ds=1/hr=3 [test2]
+#### A masked pattern was here ####
       Path -> Partition:
-        pfile:/Users/njain/hive/hive2/build/ql/test/data/warehouse/test2/ds=1/hr=1 
+#### A masked pattern was here ####
           Partition
             base file name: hr=1
             input format: org.apache.hadoop.mapred.TextInputFormat
@@ -1186,15 +1142,13 @@ STAGE PLANS:
               bucket_count -1
               columns a,b
               columns.types int:double
-              file.inputformat org.apache.hadoop.mapred.TextInputFormat
-              file.outputformat org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-              location pfile:/Users/njain/hive/hive2/build/ql/test/data/warehouse/test2/ds=1/hr=1
+#### A masked pattern was here ####
               name default.test2
               partition_columns ds/hr
               serialization.ddl struct test2 { i32 a, double b}
               serialization.format 1
               serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              transient_lastDdlTime 1319741034
+#### A masked pattern was here ####
             serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
           
               input format: org.apache.hadoop.mapred.TextInputFormat
@@ -1203,19 +1157,17 @@ STAGE PLANS:
                 bucket_count -1
                 columns a,b
                 columns.types int:double
-                file.inputformat org.apache.hadoop.mapred.TextInputFormat
-                file.outputformat org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                location pfile:/Users/njain/hive/hive2/build/ql/test/data/warehouse/test2
+#### A masked pattern was here ####
                 name default.test2
                 partition_columns ds/hr
                 serialization.ddl struct test2 { i32 a, double b}
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                transient_lastDdlTime 1319741034
+#### A masked pattern was here ####
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: default.test2
             name: default.test2
-        pfile:/Users/njain/hive/hive2/build/ql/test/data/warehouse/test2/ds=1/hr=2 
+#### A masked pattern was here ####
           Partition
             base file name: hr=2
             input format: org.apache.hadoop.mapred.TextInputFormat
@@ -1227,15 +1179,13 @@ STAGE PLANS:
               bucket_count -1
               columns a,b
               columns.types int:double
-              file.inputformat org.apache.hadoop.mapred.TextInputFormat
-              file.outputformat org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-              location pfile:/Users/njain/hive/hive2/build/ql/test/data/warehouse/test2/ds=1/hr=2
+#### A masked pattern was here ####
               name default.test2
               partition_columns ds/hr
               serialization.ddl struct test2 { i32 a, double b}
               serialization.format 1
               serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              transient_lastDdlTime 1319741034
+#### A masked pattern was here ####
             serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
           
               input format: org.apache.hadoop.mapred.TextInputFormat
@@ -1244,19 +1194,17 @@ STAGE PLANS:
                 bucket_count -1
                 columns a,b
                 columns.types int:double
-                file.inputformat org.apache.hadoop.mapred.TextInputFormat
-                file.outputformat org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                location pfile:/Users/njain/hive/hive2/build/ql/test/data/warehouse/test2
+#### A masked pattern was here ####
                 name default.test2
                 partition_columns ds/hr
                 serialization.ddl struct test2 { i32 a, double b}
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                transient_lastDdlTime 1319741034
+#### A masked pattern was here ####
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: default.test2
             name: default.test2
-        pfile:/Users/njain/hive/hive2/build/ql/test/data/warehouse/test2/ds=1/hr=3 
+#### A masked pattern was here ####
           Partition
             base file name: hr=3
             input format: org.apache.hadoop.mapred.TextInputFormat
@@ -1268,15 +1216,13 @@ STAGE PLANS:
               bucket_count -1
               columns a,b
               columns.types int:double
-              file.inputformat org.apache.hadoop.mapred.TextInputFormat
-              file.outputformat org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-              location pfile:/Users/njain/hive/hive2/build/ql/test/data/warehouse/test2/ds=1/hr=3
+#### A masked pattern was here ####
               name default.test2
               partition_columns ds/hr
               serialization.ddl struct test2 { i32 a, double b}
               serialization.format 1
               serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              transient_lastDdlTime 1319741034
+#### A masked pattern was here ####
             serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
           
               input format: org.apache.hadoop.mapred.TextInputFormat
@@ -1285,15 +1231,13 @@ STAGE PLANS:
                 bucket_count -1
                 columns a,b
                 columns.types int:double
-                file.inputformat org.apache.hadoop.mapred.TextInputFormat
-                file.outputformat org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                location pfile:/Users/njain/hive/hive2/build/ql/test/data/warehouse/test2
+#### A masked pattern was here ####
                 name default.test2
                 partition_columns ds/hr
                 serialization.ddl struct test2 { i32 a, double b}
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                transient_lastDdlTime 1319741034
+#### A masked pattern was here ####
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: default.test2
             name: default.test2
@@ -1317,9 +1261,9 @@ STAGE PLANS:
             File Output Operator
               compressed: false
               GlobalTableId: 0
-              directory: file:/var/folders/bZ/bZe+iKfoFTuPoShRd6dy6-tOU9Y/-Tmp-/njain/hive_2011-10-27_11-44-00_613_3770359973599871660/-ext-10001
+#### A masked pattern was here ####
               NumFilesPerFileSink: 1
-              Stats Publishing Key Prefix: file:/var/folders/bZ/bZe+iKfoFTuPoShRd6dy6-tOU9Y/-Tmp-/njain/hive_2011-10-27_11-44-00_613_3770359973599871660/-ext-10001/
+#### A masked pattern was here ####
               table:
                   input format: org.apache.hadoop.mapred.TextInputFormat
                   output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
@@ -1342,13 +1286,13 @@ PREHOOK: type: QUERY
 PREHOOK: Input: default@test2@ds=1/hr=1
 PREHOOK: Input: default@test2@ds=1/hr=2
 PREHOOK: Input: default@test2@ds=1/hr=3
-PREHOOK: Output: file:/var/folders/bZ/bZe+iKfoFTuPoShRd6dy6-tOU9Y/-Tmp-/njain/hive_2011-10-27_11-44-00_729_5714201473330188446/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: select ds, count(hr) from TEST2 group by ds
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@test2@ds=1/hr=1
 POSTHOOK: Input: default@test2@ds=1/hr=2
 POSTHOOK: Input: default@test2@ds=1/hr=3
-POSTHOOK: Output: file:/var/folders/bZ/bZe+iKfoFTuPoShRd6dy6-tOU9Y/-Tmp-/njain/hive_2011-10-27_11-44-00_729_5714201473330188446/-mr-10000
+#### A masked pattern was here ####
 PREHOOK: query: explain extended select max(ds) from TEST1
 PREHOOK: type: QUERY
 POSTHOOK: query: explain extended select max(ds) from TEST1
@@ -1401,15 +1345,13 @@ STAGE PLANS:
               bucket_count -1
               columns a,b
               columns.types int:double
-              file.inputformat org.apache.hadoop.mapred.TextInputFormat
-              file.outputformat org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-              location pfile:/Users/njain/hive/hive2/build/ql/test/data/warehouse/test1/ds=1
+#### A masked pattern was here ####
               name default.test1
               partition_columns ds
               serialization.ddl struct test1 { i32 a, double b}
               serialization.format 1
               serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              transient_lastDdlTime 1319740998
+#### A masked pattern was here ####
             serde: org.apache.hadoop.hive.serde2.NullStructSerDe
           
               input format: org.apache.hadoop.mapred.TextInputFormat
@@ -1418,15 +1360,13 @@ STAGE PLANS:
                 bucket_count -1
                 columns a,b
                 columns.types int:double
-                file.inputformat org.apache.hadoop.mapred.TextInputFormat
-                file.outputformat org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                location pfile:/Users/njain/hive/hive2/build/ql/test/data/warehouse/test1
+#### A masked pattern was here ####
                 name default.test1
                 partition_columns ds
                 serialization.ddl struct test1 { i32 a, double b}
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                transient_lastDdlTime 1319740992
+#### A masked pattern was here ####
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: default.test1
             name: default.test1
@@ -1441,15 +1381,13 @@ STAGE PLANS:
               bucket_count -1
               columns a,b
               columns.types int:double
-              file.inputformat org.apache.hadoop.mapred.TextInputFormat
-              file.outputformat org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-              location pfile:/Users/njain/hive/hive2/build/ql/test/data/warehouse/test1/ds=2
+#### A masked pattern was here ####
               name default.test1
               partition_columns ds
               serialization.ddl struct test1 { i32 a, double b}
               serialization.format 1
               serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              transient_lastDdlTime 1319741016
+#### A masked pattern was here ####
             serde: org.apache.hadoop.hive.serde2.NullStructSerDe
           
               input format: org.apache.hadoop.mapred.TextInputFormat
@@ -1458,15 +1396,13 @@ STAGE PLANS:
                 bucket_count -1
                 columns a,b
                 columns.types int:double
-                file.inputformat org.apache.hadoop.mapred.TextInputFormat
-                file.outputformat org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                location pfile:/Users/njain/hive/hive2/build/ql/test/data/warehouse/test1
+#### A masked pattern was here ####
                 name default.test1
                 partition_columns ds
                 serialization.ddl struct test1 { i32 a, double b}
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                transient_lastDdlTime 1319740992
+#### A masked pattern was here ####
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: default.test1
             name: default.test1
@@ -1485,9 +1421,9 @@ STAGE PLANS:
             File Output Operator
               compressed: false
               GlobalTableId: 0
-              directory: file:/var/folders/bZ/bZe+iKfoFTuPoShRd6dy6-tOU9Y/-Tmp-/njain/hive_2011-10-27_11-44-06_562_9209841409592787703/-ext-10001
+#### A masked pattern was here ####
               NumFilesPerFileSink: 1
-              Stats Publishing Key Prefix: file:/var/folders/bZ/bZe+iKfoFTuPoShRd6dy6-tOU9Y/-Tmp-/njain/hive_2011-10-27_11-44-06_562_9209841409592787703/-ext-10001/
+#### A masked pattern was here ####
               table:
                   input format: org.apache.hadoop.mapred.TextInputFormat
                   output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
@@ -1509,10 +1445,10 @@ PREHOOK: query: select max(ds) from TEST1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@test1@ds=1
 PREHOOK: Input: default@test1@ds=2
-PREHOOK: Output: file:/var/folders/bZ/bZe+iKfoFTuPoShRd6dy6-tOU9Y/-Tmp-/njain/hive_2011-10-27_11-44-06_683_5969170878727093036/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: select max(ds) from TEST1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@test1@ds=1
 POSTHOOK: Input: default@test1@ds=2
-POSTHOOK: Output: file:/var/folders/bZ/bZe+iKfoFTuPoShRd6dy6-tOU9Y/-Tmp-/njain/hive_2011-10-27_11-44-06_683_5969170878727093036/-mr-10000
+#### A masked pattern was here ####
 2

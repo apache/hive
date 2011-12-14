@@ -12,11 +12,11 @@ POSTHOOK: Output: default@temp_null
 PREHOOK: query: select null, null from temp_null
 PREHOOK: type: QUERY
 PREHOOK: Input: default@temp_null
-PREHOOK: Output: file:/tmp/krishnak/hive_2011-03-21_04-12-14_968_132347863018039568/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: select null, null from temp_null
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@temp_null
-POSTHOOK: Output: file:/tmp/krishnak/hive_2011-03-21_04-12-14_968_132347863018039568/-mr-10000
+#### A masked pattern was here ####
 NULL	NULL
 NULL	NULL
 NULL	NULL
@@ -41,11 +41,11 @@ POSTHOOK: Lineage: tt.b SIMPLE []
 PREHOOK: query: select * from tt
 PREHOOK: type: QUERY
 PREHOOK: Input: default@tt
-PREHOOK: Output: file:/tmp/krishnak/hive_2011-03-21_04-12-21_935_2770305733005454931/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: select * from tt
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@tt
-POSTHOOK: Output: file:/tmp/krishnak/hive_2011-03-21_04-12-21_935_2770305733005454931/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: Lineage: tt.a EXPRESSION []
 POSTHOOK: Lineage: tt.b SIMPLE []
 NULL	NULL
@@ -76,11 +76,11 @@ POSTHOOK: Lineage: tt_b.b EXPRESSION []
 PREHOOK: query: select * from tt_b
 PREHOOK: type: QUERY
 PREHOOK: Input: default@tt_b
-PREHOOK: Output: file:/tmp/krishnak/hive_2011-03-21_04-12-26_376_896029491694499941/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: select * from tt_b
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@tt_b
-POSTHOOK: Output: file:/tmp/krishnak/hive_2011-03-21_04-12-26_376_896029491694499941/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: Lineage: tt.a EXPRESSION []
 POSTHOOK: Lineage: tt.b SIMPLE []
 POSTHOOK: Lineage: tt_b.a EXPRESSION []
@@ -135,11 +135,11 @@ POSTHOOK: Lineage: tt_b.b EXPRESSION []
 PREHOOK: query: select * from temp_null2 where ds is not null
 PREHOOK: type: QUERY
 PREHOOK: Input: default@temp_null2@ds=2010-04-01
-PREHOOK: Output: file:/tmp/krishnak/hive_2011-03-21_04-12-33_621_2702567711468206526/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: select * from temp_null2 where ds is not null
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@temp_null2@ds=2010-04-01
-POSTHOOK: Output: file:/tmp/krishnak/hive_2011-03-21_04-12-33_621_2702567711468206526/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: Lineage: temp_null2 PARTITION(ds=2010-04-01).key SIMPLE []
 POSTHOOK: Lineage: temp_null2 PARTITION(ds=2010-04-01).value SIMPLE []
 POSTHOOK: Lineage: tt.a EXPRESSION []

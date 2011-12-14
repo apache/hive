@@ -175,11 +175,11 @@ POSTHOOK: Lineage: dest1.c9 EXPRESSION [(src)src.FieldSchema(name:value, type:st
 PREHOOK: query: SELECT dest1.* FROM dest1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@dest1
-PREHOOK: Output: file:/tmp/sdong/hive_2011-02-10_01-50-51_210_190586667911739988/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: SELECT dest1.* FROM dest1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@dest1
-POSTHOOK: Output: file:/tmp/sdong/hive_2011-02-10_01-50-51_210_190586667911739988/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: Lineage: dest1.c1 EXPRESSION [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: dest1.c2 EXPRESSION [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: dest1.c3 EXPRESSION [(src)src.FieldSchema(name:value, type:string, comment:default), ]

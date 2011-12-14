@@ -78,13 +78,13 @@ PREHOOK: query: SELECT example_min_n(substr(value,5),10),
 FROM src
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/tmp/sdong/hive_2011-02-16_20-11-01_335_585269612993069611/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: SELECT example_min_n(substr(value,5),10),
        example_min_n(IF(substr(value,5) < 250, NULL, substr(value,5)),10)
 FROM src
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: file:/tmp/sdong/hive_2011-02-16_20-11-01_335_585269612993069611/-mr-10000
+#### A masked pattern was here ####
 [0.0,0.0,0.0,2.0,4.0,5.0,5.0,5.0,8.0,9.0]	[252.0,255.0,255.0,256.0,256.0,257.0,258.0,260.0,262.0,263.0]
 PREHOOK: query: DROP TEMPORARY FUNCTION example_min_n
 PREHOOK: type: DROPFUNCTION

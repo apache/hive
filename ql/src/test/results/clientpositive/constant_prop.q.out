@@ -65,7 +65,7 @@ PREHOOK: query: SELECT NAMED_STRUCT(
        FROM src LIMIT 1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/var/folders/C4/C40caRNsEM4C4yVangruonVUe7Y/-Tmp-/jonchang/hive_2011-09-27_14-38-28_158_1791133651106020479/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: SELECT NAMED_STRUCT(
          IF(ARRAY_CONTAINS(ARRAY(1, 2), 3), "F1", "B1"), 1,
          IF(ARRAY_CONTAINS(MAP_KEYS(MAP("b", "x")), "b"), "F2", "B2"), 2   
@@ -77,5 +77,5 @@ POSTHOOK: query: SELECT NAMED_STRUCT(
        FROM src LIMIT 1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: file:/var/folders/C4/C40caRNsEM4C4yVangruonVUe7Y/-Tmp-/jonchang/hive_2011-09-27_14-38-28_158_1791133651106020479/-mr-10000
+#### A masked pattern was here ####
 {"b1":1,"f2":2}	2

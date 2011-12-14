@@ -14,22 +14,22 @@ FROM
 (
   FROM documents
   MAP documents.contents
-  USING 'java -cp ../build/ql/test/classes org.apache.hadoop.hive.scripts.extracturl' AS (url, count)
+#### A masked pattern was here ####
 ) subq
 group by url
 PREHOOK: type: QUERY
 PREHOOK: Input: default@documents
-PREHOOK: Output: file:/var/folders/67/67R3POPtF90VG63KSmCbcU++F0U/-Tmp-/krishnak/hive_2011-03-20_23-47-16_580_6937205098312645875/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: select url, count(1) 
 FROM
 (
   FROM documents
   MAP documents.contents
-  USING 'java -cp ../build/ql/test/classes org.apache.hadoop.hive.scripts.extracturl' AS (url, count)
+#### A masked pattern was here ####
 ) subq
 group by url
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@documents
-POSTHOOK: Output: file:/var/folders/67/67R3POPtF90VG63KSmCbcU++F0U/-Tmp-/krishnak/hive_2011-03-20_23-47-16_580_6937205098312645875/-mr-10000
+#### A masked pattern was here ####
 1uauniajqtunlsvadmxhlxvngxpqjuzbpzvdiwmzphmbaicduzkgxgtdeiunduosu.html	4
 4uzsbtwvdypfitqfqdjosynqp.html	4

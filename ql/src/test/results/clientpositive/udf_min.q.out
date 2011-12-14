@@ -13,50 +13,50 @@ PREHOOK: query: SELECT min(struct(CAST(key as INT), value)),
 FROM src
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/data/users/zshao/hadoop_hive_trunk/build/ql/scratchdir/hive_2010-02-03_15-41-56_456_856412388022993829/10000
+#### A masked pattern was here ####
 POSTHOOK: query: SELECT min(struct(CAST(key as INT), value)),
        min(struct(key, value))
 FROM src
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: file:/data/users/zshao/hadoop_hive_trunk/build/ql/scratchdir/hive_2010-02-03_15-41-56_456_856412388022993829/10000
+#### A masked pattern was here ####
 {"col1":0,"col2":"val_0"}	{"col1":"0","col2":"val_0"}
 PREHOOK: query: SELECT min(struct(CAST(key as INT), value)),
        min(struct(key, value))
 FROM src
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/data/users/zshao/hadoop_hive_trunk/build/ql/scratchdir/hive_2010-02-03_15-42-00_236_1435029127724516459/10000
+#### A masked pattern was here ####
 POSTHOOK: query: SELECT min(struct(CAST(key as INT), value)),
        min(struct(key, value))
 FROM src
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: file:/data/users/zshao/hadoop_hive_trunk/build/ql/scratchdir/hive_2010-02-03_15-42-00_236_1435029127724516459/10000
+#### A masked pattern was here ####
 {"col1":0,"col2":"val_0"}	{"col1":"0","col2":"val_0"}
 PREHOOK: query: SELECT min(struct(CAST(key as INT), value)),
        min(struct(key, value))
 FROM src
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/data/users/zshao/hadoop_hive_trunk/build/ql/scratchdir/hive_2010-02-03_15-42-03_693_4768183409983873377/10000
+#### A masked pattern was here ####
 POSTHOOK: query: SELECT min(struct(CAST(key as INT), value)),
        min(struct(key, value))
 FROM src
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: file:/data/users/zshao/hadoop_hive_trunk/build/ql/scratchdir/hive_2010-02-03_15-42-03_693_4768183409983873377/10000
+#### A masked pattern was here ####
 {"col1":0,"col2":"val_0"}	{"col1":"0","col2":"val_0"}
 PREHOOK: query: SELECT min(struct(CAST(key as INT), value)),
        min(struct(key, value))
 FROM src
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/data/users/zshao/hadoop_hive_trunk/build/ql/scratchdir/hive_2010-02-03_15-42-10_355_1063948234120488529/10000
+#### A masked pattern was here ####
 POSTHOOK: query: SELECT min(struct(CAST(key as INT), value)),
        min(struct(key, value))
 FROM src
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: file:/data/users/zshao/hadoop_hive_trunk/build/ql/scratchdir/hive_2010-02-03_15-42-10_355_1063948234120488529/10000
+#### A masked pattern was here ####
 {"col1":0,"col2":"val_0"}	{"col1":"0","col2":"val_0"}

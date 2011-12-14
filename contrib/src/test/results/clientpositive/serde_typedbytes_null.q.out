@@ -19,11 +19,11 @@ POSTHOOK: Lineage: table1.a EXPRESSION []
 PREHOOK: query: SELECT * FROM table1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@table1
-PREHOOK: Output: file:/tmp/njain/hive_2010-08-18_09-50-19_827_3545285661994524649/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: SELECT * FROM table1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@table1
-POSTHOOK: Output: file:/tmp/njain/hive_2010-08-18_09-50-19_827_3545285661994524649/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: Lineage: table1.a EXPRESSION []
 NULL
 NULL
@@ -528,11 +528,11 @@ NULL
 PREHOOK: query: SELECT a FROM table1 WHERE a IS NULL
 PREHOOK: type: QUERY
 PREHOOK: Input: default@table1
-PREHOOK: Output: file:/tmp/njain/hive_2010-08-18_09-50-20_236_7512082563037287837/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: SELECT a FROM table1 WHERE a IS NULL
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@table1
-POSTHOOK: Output: file:/tmp/njain/hive_2010-08-18_09-50-20_236_7512082563037287837/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: Lineage: table1.a EXPRESSION []
 NULL
 NULL
@@ -1037,11 +1037,11 @@ NULL
 PREHOOK: query: SELECT a FROM table1 WHERE a IS NOT NULL
 PREHOOK: type: QUERY
 PREHOOK: Input: default@table1
-PREHOOK: Output: file:/tmp/njain/hive_2010-08-18_09-50-23_499_8078919680902441272/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: SELECT a FROM table1 WHERE a IS NOT NULL
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@table1
-POSTHOOK: Output: file:/tmp/njain/hive_2010-08-18_09-50-23_499_8078919680902441272/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: Lineage: table1.a EXPRESSION []
 PREHOOK: query: DROP TABLE table1
 PREHOOK: type: DROPTABLE

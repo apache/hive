@@ -104,14 +104,14 @@ FROM
 WHERE src1.c1 > 'val_200' and (src1.c2 > 30 or src1.c1 < 'val_400')
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/var/folders/uc/ucuNeMAVGQGzy3459D8z2+++Z0Q/-Tmp-/amarsri/hive_2011-03-22_02-12-18_104_5370641899416935796/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: SELECT src1.c1 
 FROM
 (SELECT src.value as c1, count(src.key) as c2 from src where src.value > 'val_10' group by src.value) src1
 WHERE src1.c1 > 'val_200' and (src1.c2 > 30 or src1.c1 < 'val_400')
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: file:/var/folders/uc/ucuNeMAVGQGzy3459D8z2+++Z0Q/-Tmp-/amarsri/hive_2011-03-22_02-12-18_104_5370641899416935796/-mr-10000
+#### A masked pattern was here ####
 val_201
 val_202
 val_203
@@ -343,14 +343,14 @@ FROM
 WHERE src1.c1 > 'val_200' and (src1.c2 > 30 or src1.c1 < 'val_400')
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/var/folders/uc/ucuNeMAVGQGzy3459D8z2+++Z0Q/-Tmp-/amarsri/hive_2011-03-22_02-12-29_361_5339487985983121248/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: SELECT src1.c1 
 FROM
 (SELECT src.value as c1, count(src.key) as c2 from src where src.value > 'val_10' group by src.value) src1
 WHERE src1.c1 > 'val_200' and (src1.c2 > 30 or src1.c1 < 'val_400')
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: file:/var/folders/uc/ucuNeMAVGQGzy3459D8z2+++Z0Q/-Tmp-/amarsri/hive_2011-03-22_02-12-29_361_5339487985983121248/-mr-10000
+#### A masked pattern was here ####
 val_201
 val_202
 val_203

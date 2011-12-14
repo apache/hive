@@ -4,11 +4,11 @@ POSTHOOK: query: DROP VIEW xxx3
 POSTHOOK: type: DROPVIEW
 PREHOOK: query: CREATE VIEW xxx3 AS SELECT * FROM src
 PREHOOK: type: CREATEVIEW
-PREHOOK: Output: file:/var/folders/7P/7PeC14kXFIWq0PIYyexGbmKuXUk/-Tmp-/jsichi/hive_2011-02-03_16-14-26_185_7721791068067207339/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: CREATE VIEW xxx3 AS SELECT * FROM src
 POSTHOOK: type: CREATEVIEW
 POSTHOOK: Output: default@xxx3
-POSTHOOK: Output: file:/var/folders/7P/7PeC14kXFIWq0PIYyexGbmKuXUk/-Tmp-/jsichi/hive_2011-02-03_16-14-26_185_7721791068067207339/-mr-10000
+#### A masked pattern was here ####
 PREHOOK: query: ALTER TABLE xxx3 REPLACE COLUMNS (xyz int)
 PREHOOK: type: ALTERTABLE_REPLACECOLS
 PREHOOK: Input: default@xxx3

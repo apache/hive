@@ -87,11 +87,11 @@ STAGE PLANS:
 PREHOOK: query: SELECT value, myCol FROM (SELECT * FROM src LATERAL VIEW explode(array(1,2,3)) myTable AS myCol) a WHERE key='0'
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/tmp/sdong/hive_2011-02-10_16-29-54_464_7867404210976270651/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: SELECT value, myCol FROM (SELECT * FROM src LATERAL VIEW explode(array(1,2,3)) myTable AS myCol) a WHERE key='0'
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: file:/tmp/sdong/hive_2011-02-10_16-29-54_464_7867404210976270651/-mr-10000
+#### A masked pattern was here ####
 val_0	1
 val_0	2
 val_0	3
@@ -198,11 +198,11 @@ STAGE PLANS:
 PREHOOK: query: SELECT value, myCol FROM (SELECT * FROM src LATERAL VIEW explode(array(1,2,3)) myTable AS myCol) a WHERE key='0' AND myCol=1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/tmp/sdong/hive_2011-02-10_16-29-57_944_2450289013627148501/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: SELECT value, myCol FROM (SELECT * FROM src LATERAL VIEW explode(array(1,2,3)) myTable AS myCol) a WHERE key='0' AND myCol=1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: file:/tmp/sdong/hive_2011-02-10_16-29-57_944_2450289013627148501/-mr-10000
+#### A masked pattern was here ####
 val_0	1
 val_0	1
 val_0	1
@@ -297,11 +297,11 @@ STAGE PLANS:
 PREHOOK: query: SELECT value, myCol FROM (SELECT * FROM srcpart LATERAL VIEW explode(array(1,2,3)) myTable AS myCol) a WHERE ds='2008-04-08' AND hr="12" LIMIT 12
 PREHOOK: type: QUERY
 PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
-PREHOOK: Output: file:/tmp/sdong/hive_2011-02-10_16-30-01_554_4195891962475541987/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: SELECT value, myCol FROM (SELECT * FROM srcpart LATERAL VIEW explode(array(1,2,3)) myTable AS myCol) a WHERE ds='2008-04-08' AND hr="12" LIMIT 12
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
-POSTHOOK: Output: file:/tmp/sdong/hive_2011-02-10_16-30-01_554_4195891962475541987/-mr-10000
+#### A masked pattern was here ####
 val_238	1
 val_238	2
 val_238	3
@@ -475,11 +475,11 @@ STAGE PLANS:
 PREHOOK: query: SELECT value, myCol FROM (SELECT * FROM src LATERAL VIEW explode(array(1,2,3)) myTable AS myCol LATERAL VIEW explode(array(1,2,3)) myTable2 AS myCol2) a WHERE key='0'
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/tmp/sdong/hive_2011-02-10_16-30-05_187_5336758831799681736/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: SELECT value, myCol FROM (SELECT * FROM src LATERAL VIEW explode(array(1,2,3)) myTable AS myCol LATERAL VIEW explode(array(1,2,3)) myTable2 AS myCol2) a WHERE key='0'
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: file:/tmp/sdong/hive_2011-02-10_16-30-05_187_5336758831799681736/-mr-10000
+#### A masked pattern was here ####
 val_0	1
 val_0	1
 val_0	1

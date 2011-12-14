@@ -68,12 +68,12 @@ PREHOOK: query: -- query should not return any values
 SELECT * FROM default__temp_temp_index__ WHERE key = 86 AND foo='bar'
 PREHOOK: type: QUERY
 PREHOOK: Input: default@default__temp_temp_index__@foo=bar
-PREHOOK: Output: file:/var/folders/5V/5V4Zq77qGD4aSK9m8V3frVsFdRU/-Tmp-/salbiz/hive_2011-08-18_03-05-57_509_3668444901697550522/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: -- query should not return any values
 SELECT * FROM default__temp_temp_index__ WHERE key = 86 AND foo='bar'
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@default__temp_temp_index__@foo=bar
-POSTHOOK: Output: file:/var/folders/5V/5V4Zq77qGD4aSK9m8V3frVsFdRU/-Tmp-/salbiz/hive_2011-08-18_03-05-57_509_3668444901697550522/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: Lineage: default__temp_temp_index__ PARTITION(foo=bar)._bucketname SIMPLE [(temp)temp.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
 POSTHOOK: Lineage: default__temp_temp_index__ PARTITION(foo=bar)._offsets EXPRESSION [(temp)temp.FieldSchema(name:BLOCK__OFFSET__INSIDE__FILE, type:bigint, comment:), ]
 POSTHOOK: Lineage: default__temp_temp_index__ PARTITION(foo=bar).key SIMPLE [(temp)temp.FieldSchema(name:key, type:string, comment:null), ]
@@ -137,11 +137,11 @@ STAGE PLANS:
 PREHOOK: query: SELECT * FROM temp WHERE key  = 86 AND foo = 'bar'
 PREHOOK: type: QUERY
 PREHOOK: Input: default@temp@foo=bar
-PREHOOK: Output: file:/var/folders/5V/5V4Zq77qGD4aSK9m8V3frVsFdRU/-Tmp-/salbiz/hive_2011-08-18_03-06-03_020_8948524785223568173/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: SELECT * FROM temp WHERE key  = 86 AND foo = 'bar'
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@temp@foo=bar
-POSTHOOK: Output: file:/var/folders/5V/5V4Zq77qGD4aSK9m8V3frVsFdRU/-Tmp-/salbiz/hive_2011-08-18_03-06-03_020_8948524785223568173/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: Lineage: default__temp_temp_index__ PARTITION(foo=bar)._bucketname SIMPLE [(temp)temp.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
 POSTHOOK: Lineage: default__temp_temp_index__ PARTITION(foo=bar)._offsets EXPRESSION [(temp)temp.FieldSchema(name:BLOCK__OFFSET__INSIDE__FILE, type:bigint, comment:), ]
 POSTHOOK: Lineage: default__temp_temp_index__ PARTITION(foo=bar).key SIMPLE [(temp)temp.FieldSchema(name:key, type:string, comment:null), ]

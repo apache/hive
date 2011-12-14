@@ -59,7 +59,7 @@ STAGE PLANS:
     Move Operator
       files:
           hdfs directory: true
-          destination: file:/data/users/sdong/www/open-source-hive1/build/ql/scratchdir/hive_2011-02-10_17-24-02_450_5117807678141759845/-ext-10000
+#### A masked pattern was here ####
 
   Stage: Stage-0
     Move Operator
@@ -70,7 +70,7 @@ STAGE PLANS:
   Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/data/users/sdong/www/open-source-hive1/build/ql/scratchdir/hive_2011-02-10_17-24-02_450_5117807678141759845/-ext-10001 
+#### A masked pattern was here ####
             File Output Operator
               compressed: false
               GlobalTableId: 0

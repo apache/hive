@@ -68,11 +68,11 @@ STAGE PLANS:
 PREHOOK: query: SELECT ASSERT_TRUE(x > 0) FROM src LATERAL VIEW EXPLODE(ARRAY(1, 2)) a AS x LIMIT 2
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/var/folders/71/h_j6fpg10r33hvx1lcxlgttcw61_4s/T/jonchang/hive_2011-11-05_15-55-33_934_5378238297627471477/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: SELECT ASSERT_TRUE(x > 0) FROM src LATERAL VIEW EXPLODE(ARRAY(1, 2)) a AS x LIMIT 2
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: file:/var/folders/71/h_j6fpg10r33hvx1lcxlgttcw61_4s/T/jonchang/hive_2011-11-05_15-55-33_934_5378238297627471477/-mr-10000
+#### A masked pattern was here ####
 NULL
 NULL
 PREHOOK: query: EXPLAIN SELECT ASSERT_TRUE(x < 2) FROM src LATERAL VIEW EXPLODE(ARRAY(1, 2)) a AS x LIMIT 2
@@ -140,7 +140,7 @@ STAGE PLANS:
 PREHOOK: query: SELECT ASSERT_TRUE(x < 2) FROM src LATERAL VIEW EXPLODE(ARRAY(1, 2)) a AS x LIMIT 2
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/var/folders/71/h_j6fpg10r33hvx1lcxlgttcw61_4s/T/jonchang/hive_2011-11-05_15-55-39_927_2246328313093384798/-mr-10000
+#### A masked pattern was here ####
 Execution failed with exit status: 2
 Obtaining error information
 
@@ -150,5 +150,5 @@ Task ID:
 
 Logs:
 
-/Users/jonchang/hive/build/ql/tmp//hive.log
+#### A masked pattern was here ####
 FAILED: Execution Error, return code 2 from org.apache.hadoop.hive.ql.exec.MapRedTask

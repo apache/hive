@@ -2,6 +2,6 @@ PREHOOK: query: -- Existing table is not a view
 
 create or replace view src as select ds, hr from srcpart
 PREHOOK: type: CREATEVIEW
-PREHOOK: Output: file:/var/folders/fe/fefl-ow3ElaEd1ns0G7jB0uewEQ/-Tmp-/charleschen/hive_2011-07-12_14-24-14_494_6346712363261665506/-mr-10000
+#### A masked pattern was here ####
 FAILED: Error in metadata: Existing table is not a view
 FAILED: Execution Error, return code 1 from org.apache.hadoop.hive.ql.exec.DDLTask

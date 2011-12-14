@@ -84,7 +84,7 @@ PREHOOK: query: SELECT hash(CAST(1 AS TINYINT)), hash(CAST(2 AS SMALLINT)),
 FROM src LIMIT 1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/tmp/sdong/hive_2011-02-10_17-35-25_458_6587039993846429446/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: SELECT hash(CAST(1 AS TINYINT)), hash(CAST(2 AS SMALLINT)),
        hash(3), hash(CAST('123456789012' AS BIGINT)),
        hash(CAST(1.25 AS FLOAT)), hash(CAST(16.0 AS DOUBLE)),
@@ -93,5 +93,5 @@ POSTHOOK: query: SELECT hash(CAST(1 AS TINYINT)), hash(CAST(2 AS SMALLINT)),
 FROM src LIMIT 1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: file:/tmp/sdong/hive_2011-02-10_17-35-25_458_6587039993846429446/-mr-10000
+#### A masked pattern was here ####
 1	2	3	-1097262584	1067450368	1076887552	51508	96354	1	0	1026

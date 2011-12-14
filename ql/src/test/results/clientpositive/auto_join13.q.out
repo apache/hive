@@ -179,7 +179,7 @@ STAGE PLANS:
   Stage: Stage-3
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/tmp/sdong/hive_2011-02-10_01-13-56_386_7572859568754068460/-mr-10003 
+#### A masked pattern was here ####
             Reduce Output Operator
               sort order: 
               tag: -1
@@ -486,7 +486,7 @@ JOIN
 ON src1.c1 + src2.c3 = src3.c5 AND src3.c5 < 200
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/tmp/sdong/hive_2011-02-10_01-13-56_893_7631917180196604780/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: SELECT sum(hash(src1.c1, src2.c4)) 
 FROM
 (SELECT src.key as c1, src.value as c2 from src) src1
@@ -498,5 +498,5 @@ JOIN
 ON src1.c1 + src2.c3 = src3.c5 AND src3.c5 < 200
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: file:/tmp/sdong/hive_2011-02-10_01-13-56_893_7631917180196604780/-mr-10000
+#### A masked pattern was here ####
 -97670109576

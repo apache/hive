@@ -64,11 +64,11 @@ STAGE PLANS:
 PREHOOK: query: SELECT * FROM SRC x where x.key = 10 CLUSTER BY x.key
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/tmp/charleschen/hive_2011-08-04_15-36-34_074_7000535872788278693/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: SELECT * FROM SRC x where x.key = 10 CLUSTER BY x.key
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: file:/tmp/charleschen/hive_2011-08-04_15-36-34_074_7000535872788278693/-mr-10000
+#### A masked pattern was here ####
 10	val_10
 PREHOOK: query: EXPLAIN 
 SELECT x.key, x.value as v1, y.key  FROM SRC x JOIN SRC y ON (x.key = y.key)  where x.key = 20 CLUSTER BY v1
@@ -160,7 +160,7 @@ STAGE PLANS:
   Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/tmp/charleschen/hive_2011-08-04_15-36-37_183_5233818336294938355/-mr-10002 
+#### A masked pattern was here ####
             Reduce Output Operator
               key expressions:
                     expr: _col1
@@ -194,11 +194,11 @@ STAGE PLANS:
 PREHOOK: query: SELECT x.key, x.value as v1, y.key  FROM SRC x JOIN SRC y ON (x.key = y.key) where x.key = 20 CLUSTER BY v1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/tmp/charleschen/hive_2011-08-04_15-36-37_259_5028248286950507899/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: SELECT x.key, x.value as v1, y.key  FROM SRC x JOIN SRC y ON (x.key = y.key) where x.key = 20 CLUSTER BY v1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: file:/tmp/charleschen/hive_2011-08-04_15-36-37_259_5028248286950507899/-mr-10000
+#### A masked pattern was here ####
 20	val_20	20
 PREHOOK: query: EXPLAIN
 SELECT * FROM SRC x where x.key = 10 CLUSTER BY x.key
@@ -262,11 +262,11 @@ STAGE PLANS:
 PREHOOK: query: SELECT * FROM SRC x where x.key = 10 CLUSTER BY x.key
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/tmp/charleschen/hive_2011-08-04_15-36-43_271_3465064583325875867/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: SELECT * FROM SRC x where x.key = 10 CLUSTER BY x.key
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: file:/tmp/charleschen/hive_2011-08-04_15-36-43_271_3465064583325875867/-mr-10000
+#### A masked pattern was here ####
 10	val_10
 PREHOOK: query: EXPLAIN 
 SELECT x.key, x.value as v1, y.key  FROM SRC x JOIN SRC y ON (x.key = y.key)  where x.key = 20 CLUSTER BY v1
@@ -354,7 +354,7 @@ STAGE PLANS:
   Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/tmp/charleschen/hive_2011-08-04_15-36-46_356_4821991475262302737/-mr-10002 
+#### A masked pattern was here ####
             Reduce Output Operator
               key expressions:
                     expr: _col1
@@ -388,9 +388,9 @@ STAGE PLANS:
 PREHOOK: query: SELECT x.key, x.value as v1, y.key  FROM SRC x JOIN SRC y ON (x.key = y.key) where x.key = 20 CLUSTER BY v1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/tmp/charleschen/hive_2011-08-04_15-36-46_432_7875891648142135101/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: SELECT x.key, x.value as v1, y.key  FROM SRC x JOIN SRC y ON (x.key = y.key) where x.key = 20 CLUSTER BY v1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: file:/tmp/charleschen/hive_2011-08-04_15-36-46_432_7875891648142135101/-mr-10000
+#### A masked pattern was here ####
 20	val_20	20

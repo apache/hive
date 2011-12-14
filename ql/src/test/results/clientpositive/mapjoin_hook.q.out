@@ -34,7 +34,7 @@ Task ID:
 
 Logs:
 
-/data/users/salbiz/apache-hive/build/ql/tmp//hive.log
+#### A masked pattern was here ####
 FAILED: Execution Error, return code 2 from org.apache.hadoop.hive.ql.exec.MapredLocalTask
 ATTEMPT: Execute BackupTask: org.apache.hadoop.hive.ql.exec.MapRedTask
 [MapJoinCounter PostHook] CONVERTED_LOCAL_MAPJOIN: 1 CONVERTED_MAPJOIN: 0 LOCAL_MAPJOIN: 0 COMMON_JOIN: 0 BACKUP_COMMON_JOIN: 1
@@ -52,7 +52,7 @@ Task ID:
 
 Logs:
 
-/data/users/salbiz/apache-hive/build/ql/tmp//hive.log
+#### A masked pattern was here ####
 FAILED: Execution Error, return code 2 from org.apache.hadoop.hive.ql.exec.MapredLocalTask
 ATTEMPT: Execute BackupTask: org.apache.hadoop.hive.ql.exec.MapRedTask
 Execution failed with exit status: 2
@@ -64,7 +64,7 @@ Task ID:
 
 Logs:
 
-/data/users/salbiz/apache-hive/build/ql/tmp//hive.log
+#### A masked pattern was here ####
 FAILED: Execution Error, return code 2 from org.apache.hadoop.hive.ql.exec.MapredLocalTask
 ATTEMPT: Execute BackupTask: org.apache.hadoop.hive.ql.exec.MapRedTask
 [MapJoinCounter PostHook] CONVERTED_LOCAL_MAPJOIN: 2 CONVERTED_MAPJOIN: 0 LOCAL_MAPJOIN: 0 COMMON_JOIN: 0 BACKUP_COMMON_JOIN: 2

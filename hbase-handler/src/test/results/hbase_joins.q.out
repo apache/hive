@@ -92,102 +92,102 @@ ON (u.country = c.key)
 PREHOOK: type: QUERY
 PREHOOK: Input: default@countries
 PREHOOK: Input: default@users
-PREHOOK: Output: file:/var/folders/7P/7PeC14kXFIWq0PIYyexGbmKuXUk/-Tmp-/jsichi/hive_2011-01-10_14-19-29_136_2919119166696342265/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: SELECT u.key, u.country, c.name, c.key FROM users u JOIN countries c 
 ON (u.country = c.key)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@countries
 POSTHOOK: Input: default@users
-POSTHOOK: Output: file:/var/folders/7P/7PeC14kXFIWq0PIYyexGbmKuXUk/-Tmp-/jsichi/hive_2011-01-10_14-19-29_136_2919119166696342265/-mr-10000
+#### A masked pattern was here ####
 user1	USA	United States	USA
 PREHOOK: query: SELECT u.key, u.country, c.name, c.key FROM users u JOIN countries c
 ON (u.country = c.country)
 PREHOOK: type: QUERY
 PREHOOK: Input: default@countries
 PREHOOK: Input: default@users
-PREHOOK: Output: file:/var/folders/7P/7PeC14kXFIWq0PIYyexGbmKuXUk/-Tmp-/jsichi/hive_2011-01-10_14-19-38_418_1418937364423533875/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: SELECT u.key, u.country, c.name, c.key FROM users u JOIN countries c
 ON (u.country = c.country)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@countries
 POSTHOOK: Input: default@users
-POSTHOOK: Output: file:/var/folders/7P/7PeC14kXFIWq0PIYyexGbmKuXUk/-Tmp-/jsichi/hive_2011-01-10_14-19-38_418_1418937364423533875/-mr-10000
+#### A masked pattern was here ####
 user1	USA	United States	USA
 PREHOOK: query: SELECT u.key, u.country, c.name, c.key FROM users u JOIN countries c 
 ON (u.country_id = c.country_id)
 PREHOOK: type: QUERY
 PREHOOK: Input: default@countries
 PREHOOK: Input: default@users
-PREHOOK: Output: file:/var/folders/7P/7PeC14kXFIWq0PIYyexGbmKuXUk/-Tmp-/jsichi/hive_2011-01-10_14-19-47_279_1891102438076444084/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: SELECT u.key, u.country, c.name, c.key FROM users u JOIN countries c 
 ON (u.country_id = c.country_id)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@countries
 POSTHOOK: Input: default@users
-POSTHOOK: Output: file:/var/folders/7P/7PeC14kXFIWq0PIYyexGbmKuXUk/-Tmp-/jsichi/hive_2011-01-10_14-19-47_279_1891102438076444084/-mr-10000
+#### A masked pattern was here ####
 PREHOOK: query: SELECT u.key, u.state, s.name FROM users u JOIN states s 
 ON (u.state = s.key)
 PREHOOK: type: QUERY
 PREHOOK: Input: default@states
 PREHOOK: Input: default@users
-PREHOOK: Output: file:/var/folders/7P/7PeC14kXFIWq0PIYyexGbmKuXUk/-Tmp-/jsichi/hive_2011-01-10_14-19-54_306_2919915084551749896/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: SELECT u.key, u.state, s.name FROM users u JOIN states s 
 ON (u.state = s.key)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@states
 POSTHOOK: Input: default@users
-POSTHOOK: Output: file:/var/folders/7P/7PeC14kXFIWq0PIYyexGbmKuXUk/-Tmp-/jsichi/hive_2011-01-10_14-19-54_306_2919915084551749896/-mr-10000
+#### A masked pattern was here ####
 user1	IA	Iowa
 PREHOOK: query: SELECT u.key, u.country, c.name, c.key FROM users u JOIN countries c 
 ON (u.country = c.key)
 PREHOOK: type: QUERY
 PREHOOK: Input: default@countries
 PREHOOK: Input: default@users
-PREHOOK: Output: file:/var/folders/7P/7PeC14kXFIWq0PIYyexGbmKuXUk/-Tmp-/jsichi/hive_2011-01-10_14-20-03_810_1067780128697572780/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: SELECT u.key, u.country, c.name, c.key FROM users u JOIN countries c 
 ON (u.country = c.key)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@countries
 POSTHOOK: Input: default@users
-POSTHOOK: Output: file:/var/folders/7P/7PeC14kXFIWq0PIYyexGbmKuXUk/-Tmp-/jsichi/hive_2011-01-10_14-20-03_810_1067780128697572780/-mr-10000
+#### A masked pattern was here ####
 user1	USA	United States	USA
 PREHOOK: query: SELECT u.key, u.country, c.name, c.key FROM users u JOIN countries c
 ON (u.country = c.country)
 PREHOOK: type: QUERY
 PREHOOK: Input: default@countries
 PREHOOK: Input: default@users
-PREHOOK: Output: file:/var/folders/7P/7PeC14kXFIWq0PIYyexGbmKuXUk/-Tmp-/jsichi/hive_2011-01-10_14-20-14_736_8923692779050900406/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: SELECT u.key, u.country, c.name, c.key FROM users u JOIN countries c
 ON (u.country = c.country)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@countries
 POSTHOOK: Input: default@users
-POSTHOOK: Output: file:/var/folders/7P/7PeC14kXFIWq0PIYyexGbmKuXUk/-Tmp-/jsichi/hive_2011-01-10_14-20-14_736_8923692779050900406/-mr-10000
+#### A masked pattern was here ####
 user1	USA	United States	USA
 PREHOOK: query: SELECT u.key, u.country, c.name, c.key FROM users u JOIN countries c 
 ON (u.country_id = c.country_id)
 PREHOOK: type: QUERY
 PREHOOK: Input: default@countries
 PREHOOK: Input: default@users
-PREHOOK: Output: file:/var/folders/7P/7PeC14kXFIWq0PIYyexGbmKuXUk/-Tmp-/jsichi/hive_2011-01-10_14-20-22_235_696090037944243521/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: SELECT u.key, u.country, c.name, c.key FROM users u JOIN countries c 
 ON (u.country_id = c.country_id)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@countries
 POSTHOOK: Input: default@users
-POSTHOOK: Output: file:/var/folders/7P/7PeC14kXFIWq0PIYyexGbmKuXUk/-Tmp-/jsichi/hive_2011-01-10_14-20-22_235_696090037944243521/-mr-10000
+#### A masked pattern was here ####
 PREHOOK: query: SELECT u.key, u.state, s.name FROM users u JOIN states s 
 ON (u.state = s.key)
 PREHOOK: type: QUERY
 PREHOOK: Input: default@states
 PREHOOK: Input: default@users
-PREHOOK: Output: file:/var/folders/7P/7PeC14kXFIWq0PIYyexGbmKuXUk/-Tmp-/jsichi/hive_2011-01-10_14-20-28_951_5386570432365997648/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: SELECT u.key, u.state, s.name FROM users u JOIN states s 
 ON (u.state = s.key)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@states
 POSTHOOK: Input: default@users
-POSTHOOK: Output: file:/var/folders/7P/7PeC14kXFIWq0PIYyexGbmKuXUk/-Tmp-/jsichi/hive_2011-01-10_14-20-28_951_5386570432365997648/-mr-10000
+#### A masked pattern was here ####
 user1	IA	Iowa
 PREHOOK: query: DROP TABLE users
 PREHOOK: type: DROPTABLE
@@ -239,7 +239,7 @@ SELECT year(from_unixtime(users.created)) AS year, level, count(users.userid) AS
 PREHOOK: type: QUERY
 PREHOOK: Input: default@users
 PREHOOK: Input: default@users_level
-PREHOOK: Output: file:/var/folders/7P/7PeC14kXFIWq0PIYyexGbmKuXUk/-Tmp-/jsichi/hive_2011-01-10_14-20-47_957_2665969936395506719/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: -- HIVE-1903:  the problem fixed here showed up even without any data,
 -- so no need to load any to test it
 SELECT year(from_unixtime(users.created)) AS year, level, count(users.userid) AS num 
@@ -248,7 +248,7 @@ SELECT year(from_unixtime(users.created)) AS year, level, count(users.userid) AS
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@users
 POSTHOOK: Input: default@users_level
-POSTHOOK: Output: file:/var/folders/7P/7PeC14kXFIWq0PIYyexGbmKuXUk/-Tmp-/jsichi/hive_2011-01-10_14-20-47_957_2665969936395506719/-mr-10000
+#### A masked pattern was here ####
 PREHOOK: query: DROP TABLE users
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@users

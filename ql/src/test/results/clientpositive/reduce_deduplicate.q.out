@@ -50,9 +50,9 @@ STAGE PLANS:
                       type: string
       Needs Tagging: false
       Path -> Alias:
-        hdfs://localhost.localdomain:38821/build/ql/test/data/warehouse/src [src]
+#### A masked pattern was here ####
       Path -> Partition:
-        hdfs://localhost.localdomain:38821/build/ql/test/data/warehouse/src 
+#### A masked pattern was here ####
           Partition
             base file name: src
             input format: org.apache.hadoop.mapred.TextInputFormat
@@ -61,14 +61,12 @@ STAGE PLANS:
               bucket_count -1
               columns key,value
               columns.types string:string
-              file.inputformat org.apache.hadoop.mapred.TextInputFormat
-              file.outputformat org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-              location hdfs://localhost.localdomain:38821/build/ql/test/data/warehouse/src
+#### A masked pattern was here ####
               name default.src
               serialization.ddl struct src { string key, string value}
               serialization.format 1
               serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              transient_lastDdlTime 1297926642
+#### A masked pattern was here ####
             serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
           
               input format: org.apache.hadoop.mapred.TextInputFormat
@@ -77,14 +75,12 @@ STAGE PLANS:
                 bucket_count -1
                 columns key,value
                 columns.types string:string
-                file.inputformat org.apache.hadoop.mapred.TextInputFormat
-                file.outputformat org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                location hdfs://localhost.localdomain:38821/build/ql/test/data/warehouse/src
+#### A masked pattern was here ####
                 name default.src
                 serialization.ddl struct src { string key, string value}
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                transient_lastDdlTime 1297926642
+#### A masked pattern was here ####
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: default.src
             name: default.src
@@ -100,9 +96,9 @@ STAGE PLANS:
             File Output Operator
               compressed: false
               GlobalTableId: 1
-              directory: hdfs://localhost.localdomain:38821/data/users/sdong/www/open-source-hive3/build/ql/scratchdir/hive_2011-02-16_23-18-39_761_1785853226671053277/-ext-10000
+#### A masked pattern was here ####
               NumFilesPerFileSink: 2
-              Stats Publishing Key Prefix: hdfs://localhost.localdomain:38821/data/users/sdong/www/open-source-hive3/build/ql/scratchdir/hive_2011-02-16_23-18-39_761_1785853226671053277/-ext-10000/
+#### A masked pattern was here ####
               table:
                   input format: org.apache.hadoop.mapred.TextInputFormat
                   output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
@@ -111,14 +107,12 @@ STAGE PLANS:
                     bucket_field_name key
                     columns key,value
                     columns.types string:string
-                    file.inputformat org.apache.hadoop.mapred.TextInputFormat
-                    file.outputformat org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                    location hdfs://localhost.localdomain:38821/build/ql/test/data/warehouse/bucket5_1
+#### A masked pattern was here ####
                     name default.bucket5_1
                     serialization.ddl struct bucket5_1 { string key, string value}
                     serialization.format 1
                     serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                    transient_lastDdlTime 1297927119
+#### A masked pattern was here ####
                   serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                   name: default.bucket5_1
               TotalFiles: 2
@@ -129,7 +123,7 @@ STAGE PLANS:
     Move Operator
       tables:
           replace: true
-          source: hdfs://localhost.localdomain:38821/data/users/sdong/www/open-source-hive3/build/ql/scratchdir/hive_2011-02-16_23-18-39_761_1785853226671053277/-ext-10000
+#### A masked pattern was here ####
           table:
               input format: org.apache.hadoop.mapred.TextInputFormat
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
@@ -138,21 +132,19 @@ STAGE PLANS:
                 bucket_field_name key
                 columns key,value
                 columns.types string:string
-                file.inputformat org.apache.hadoop.mapred.TextInputFormat
-                file.outputformat org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                location hdfs://localhost.localdomain:38821/build/ql/test/data/warehouse/bucket5_1
+#### A masked pattern was here ####
                 name default.bucket5_1
                 serialization.ddl struct bucket5_1 { string key, string value}
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                transient_lastDdlTime 1297927119
+#### A masked pattern was here ####
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: default.bucket5_1
-          tmp directory: hdfs://localhost.localdomain:38821/data/users/sdong/www/open-source-hive3/build/ql/scratchdir/hive_2011-02-16_23-18-39_761_1785853226671053277/-ext-10001
+#### A masked pattern was here ####
 
   Stage: Stage-2
     Stats-Aggr Operator
-      Stats Aggregation Key Prefix: hdfs://localhost.localdomain:38821/data/users/sdong/www/open-source-hive3/build/ql/scratchdir/hive_2011-02-16_23-18-39_761_1785853226671053277/-ext-10000/
+#### A masked pattern was here ####
 
 
 PREHOOK: query: insert overwrite table bucket5_1
@@ -170,22 +162,22 @@ POSTHOOK: Lineage: bucket5_1.value SIMPLE [(src)src.FieldSchema(name:value, type
 PREHOOK: query: select sum(hash(key)),sum(hash(value)) from bucket5_1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@bucket5_1
-PREHOOK: Output: hdfs://localhost.localdomain:38821/data/users/sdong/www/open-source-hive3/build/ql/scratchdir/hive_2011-02-16_23-19-03_514_3077800188104319307/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: select sum(hash(key)),sum(hash(value)) from bucket5_1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@bucket5_1
-POSTHOOK: Output: hdfs://localhost.localdomain:38821/data/users/sdong/www/open-source-hive3/build/ql/scratchdir/hive_2011-02-16_23-19-03_514_3077800188104319307/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: Lineage: bucket5_1.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: bucket5_1.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 21025334	36210398070
 PREHOOK: query: select sum(hash(key)),sum(hash(value)) from src
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: hdfs://localhost.localdomain:38821/data/users/sdong/www/open-source-hive3/build/ql/scratchdir/hive_2011-02-16_23-19-26_590_2019406600287972688/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: select sum(hash(key)),sum(hash(value)) from src
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: hdfs://localhost.localdomain:38821/data/users/sdong/www/open-source-hive3/build/ql/scratchdir/hive_2011-02-16_23-19-26_590_2019406600287972688/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: Lineage: bucket5_1.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: bucket5_1.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 21025334	36210398070
@@ -349,10 +341,10 @@ STAGE PLANS:
                 File Output Operator
                   compressed: false
                   GlobalTableId: 1
-                  directory: hdfs://localhost.localdomain:38821/data/users/sdong/www/open-source-hive3/build/ql/scratchdir/hive_2011-02-16_23-19-46_869_7122844119255342858/-ext-10000
+#### A masked pattern was here ####
                   NumFilesPerFileSink: 1
                   Static Partition Specification: ds=2010-03-29/
-                  Stats Publishing Key Prefix: hdfs://localhost.localdomain:38821/data/users/sdong/www/open-source-hive3/build/ql/scratchdir/hive_2011-02-16_23-19-46_869_7122844119255342858/-ext-10000/
+#### A masked pattern was here ####
                   table:
                       input format: org.apache.hadoop.mapred.TextInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
@@ -360,15 +352,13 @@ STAGE PLANS:
                         bucket_count -1
                         columns aid,bid,t,ctime,etime,l,et
                         columns.types string:string:int:string:bigint:string:string
-                        file.inputformat org.apache.hadoop.mapred.TextInputFormat
-                        file.outputformat org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                        location hdfs://localhost.localdomain:38821/build/ql/test/data/warehouse/complex_tbl_1
+#### A masked pattern was here ####
                         name default.complex_tbl_1
                         partition_columns ds
                         serialization.ddl struct complex_tbl_1 { string aid, string bid, i32 t, string ctime, i64 etime, string l, string et}
                         serialization.format 1
                         serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                        transient_lastDdlTime 1297927186
+#### A masked pattern was here ####
                       serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                       name: default.complex_tbl_1
                   TotalFiles: 1
@@ -381,7 +371,7 @@ STAGE PLANS:
           partition:
             ds 2010-03-29
           replace: true
-          source: hdfs://localhost.localdomain:38821/data/users/sdong/www/open-source-hive3/build/ql/scratchdir/hive_2011-02-16_23-19-46_869_7122844119255342858/-ext-10000
+#### A masked pattern was here ####
           table:
               input format: org.apache.hadoop.mapred.TextInputFormat
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
@@ -389,21 +379,19 @@ STAGE PLANS:
                 bucket_count -1
                 columns aid,bid,t,ctime,etime,l,et
                 columns.types string:string:int:string:bigint:string:string
-                file.inputformat org.apache.hadoop.mapred.TextInputFormat
-                file.outputformat org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                location hdfs://localhost.localdomain:38821/build/ql/test/data/warehouse/complex_tbl_1
+#### A masked pattern was here ####
                 name default.complex_tbl_1
                 partition_columns ds
                 serialization.ddl struct complex_tbl_1 { string aid, string bid, i32 t, string ctime, i64 etime, string l, string et}
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                transient_lastDdlTime 1297927186
+#### A masked pattern was here ####
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: default.complex_tbl_1
-          tmp directory: hdfs://localhost.localdomain:38821/data/users/sdong/www/open-source-hive3/build/ql/scratchdir/hive_2011-02-16_23-19-46_869_7122844119255342858/-ext-10001
+#### A masked pattern was here ####
 
   Stage: Stage-2
     Stats-Aggr Operator
-      Stats Aggregation Key Prefix: hdfs://localhost.localdomain:38821/data/users/sdong/www/open-source-hive3/build/ql/scratchdir/hive_2011-02-16_23-19-46_869_7122844119255342858/-ext-10000/
+#### A masked pattern was here ####
 
 

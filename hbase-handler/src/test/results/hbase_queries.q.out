@@ -20,15 +20,15 @@ POSTHOOK: type: DESCTABLE
 key	int	from deserializer
 value	string	from deserializer
 	 	 
-Detailed Table Information	Table(tableName:hbase_table_1, dbName:default, owner:sdong, createTime:1298331870, lastAccessTime:0, retention:0, sd:StorageDescriptor(cols:[FieldSchema(name:key, type:int, comment:null), FieldSchema(name:value, type:string, comment:null)], location:pfile:/data/users/sdong/www/open-source-hive3/build/hbase-handler/test/data/warehouse/hbase_table_1, inputFormat:org.apache.hadoop.hive.hbase.HiveHBaseTableInputFormat, outputFormat:org.apache.hadoop.hive.hbase.HiveHBaseTableOutputFormat, compressed:false, numBuckets:-1, serdeInfo:SerDeInfo(name:null, serializationLib:org.apache.hadoop.hive.hbase.HBaseSerDe, parameters:{serialization.format=1, hbase.columns.mapping=cf:string}), bucketCols:[], sortCols:[], parameters:{}), partitionKeys:[], parameters:{hbase.table.name=hbase_table_0, transient_lastDdlTime=1298331870, storage_handler=org.apache.hadoop.hive.hbase.HBaseStorageHandler}, viewOriginalText:null, viewExpandedText:null, tableType:MANAGED_TABLE)	
+#### A masked pattern was here ####
 PREHOOK: query: select * from hbase_table_1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@hbase_table_1
-PREHOOK: Output: file:/tmp/sdong/hive_2011-02-21_15-44-30_806_2853078850719706801/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: select * from hbase_table_1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@hbase_table_1
-POSTHOOK: Output: file:/tmp/sdong/hive_2011-02-21_15-44-30_806_2853078850719706801/-mr-10000
+#### A masked pattern was here ####
 PREHOOK: query: EXPLAIN FROM src INSERT OVERWRITE TABLE hbase_table_1 SELECT * WHERE (key%2)=0
 PREHOOK: type: QUERY
 POSTHOOK: query: EXPLAIN FROM src INSERT OVERWRITE TABLE hbase_table_1 SELECT * WHERE (key%2)=0
@@ -194,7 +194,7 @@ STAGE PLANS:
   Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/tmp/sdong/hive_2011-02-21_15-44-34_394_2402607732994243594/-mr-10002 
+#### A masked pattern was here ####
             Reduce Output Operator
               key expressions:
                     expr: _col0
@@ -233,7 +233,7 @@ ORDER BY key, value LIMIT 20
 PREHOOK: type: QUERY
 PREHOOK: Input: default@hbase_table_1
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/tmp/sdong/hive_2011-02-21_15-44-34_513_3889777207120661720/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: SELECT Y.* 
 FROM 
 (SELECT hbase_table_1.* FROM hbase_table_1) x
@@ -244,7 +244,7 @@ ORDER BY key, value LIMIT 20
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@hbase_table_1
 POSTHOOK: Input: default@src
-POSTHOOK: Output: file:/tmp/sdong/hive_2011-02-21_15-44-34_513_3889777207120661720/-mr-10000
+#### A masked pattern was here ####
 0	val_0
 0	val_0
 0	val_0
@@ -370,7 +370,7 @@ STAGE PLANS:
   Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/tmp/sdong/hive_2011-02-21_15-44-40_742_3285549482209570456/-mr-10002 
+#### A masked pattern was here ####
             Reduce Output Operator
               key expressions:
                     expr: _col0
@@ -408,7 +408,7 @@ ORDER BY key,value
 PREHOOK: type: QUERY
 PREHOOK: Input: default@hbase_table_1
 PREHOOK: Input: default@hbase_table_2
-PREHOOK: Output: file:/tmp/sdong/hive_2011-02-21_15-44-40_895_3443561784152693031/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: SELECT Y.*
 FROM 
 (SELECT hbase_table_1.* FROM hbase_table_1 WHERE hbase_table_1.key > 100) x
@@ -419,7 +419,7 @@ ORDER BY key,value
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@hbase_table_1
 POSTHOOK: Input: default@hbase_table_2
-POSTHOOK: Output: file:/tmp/sdong/hive_2011-02-21_15-44-40_895_3443561784152693031/-mr-10000
+#### A masked pattern was here ####
 104	val_104
 114	val_114
 116	val_116
@@ -450,48 +450,48 @@ PREHOOK: query: select * from (select count(1) as c from empty_normal_table unio
 PREHOOK: type: QUERY
 PREHOOK: Input: default@empty_hbase_table
 PREHOOK: Input: default@empty_normal_table
-PREHOOK: Output: file:/tmp/sdong/hive_2011-02-21_15-44-47_612_278253531001187186/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: select * from (select count(1) as c from empty_normal_table union all select count(1) as c from empty_hbase_table) x order by c
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@empty_hbase_table
 POSTHOOK: Input: default@empty_normal_table
-POSTHOOK: Output: file:/tmp/sdong/hive_2011-02-21_15-44-47_612_278253531001187186/-mr-10000
+#### A masked pattern was here ####
 0
 0
 PREHOOK: query: select * from (select count(1) c from empty_normal_table union all select count(1) as c from hbase_table_1) x order by c
 PREHOOK: type: QUERY
 PREHOOK: Input: default@empty_normal_table
 PREHOOK: Input: default@hbase_table_1
-PREHOOK: Output: file:/tmp/sdong/hive_2011-02-21_15-44-56_548_6465363500512229349/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: select * from (select count(1) c from empty_normal_table union all select count(1) as c from hbase_table_1) x order by c
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@empty_normal_table
 POSTHOOK: Input: default@hbase_table_1
-POSTHOOK: Output: file:/tmp/sdong/hive_2011-02-21_15-44-56_548_6465363500512229349/-mr-10000
+#### A masked pattern was here ####
 0
 155
 PREHOOK: query: select * from (select count(1) c from src union all select count(1) as c from empty_hbase_table) x order by c
 PREHOOK: type: QUERY
 PREHOOK: Input: default@empty_hbase_table
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/tmp/sdong/hive_2011-02-21_15-45-05_484_705204136346633110/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: select * from (select count(1) c from src union all select count(1) as c from empty_hbase_table) x order by c
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@empty_hbase_table
 POSTHOOK: Input: default@src
-POSTHOOK: Output: file:/tmp/sdong/hive_2011-02-21_15-45-05_484_705204136346633110/-mr-10000
+#### A masked pattern was here ####
 0
 500
 PREHOOK: query: select * from (select count(1) c from src union all select count(1) as c from hbase_table_1) x order by c
 PREHOOK: type: QUERY
 PREHOOK: Input: default@hbase_table_1
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/tmp/sdong/hive_2011-02-21_15-45-14_409_1641131266973050192/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: select * from (select count(1) c from src union all select count(1) as c from hbase_table_1) x order by c
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@hbase_table_1
 POSTHOOK: Input: default@src
-POSTHOOK: Output: file:/tmp/sdong/hive_2011-02-21_15-45-14_409_1641131266973050192/-mr-10000
+#### A masked pattern was here ####
 155
 500
 PREHOOK: query: CREATE TABLE hbase_table_3(key int, value string, count int) 
@@ -691,20 +691,20 @@ POSTHOOK: Output: default@hbase_table_3
 PREHOOK: query: select count(1) from hbase_table_3
 PREHOOK: type: QUERY
 PREHOOK: Input: default@hbase_table_3
-PREHOOK: Output: file:/tmp/sdong/hive_2011-02-21_15-45-29_990_4078694489535031322/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: select count(1) from hbase_table_3
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@hbase_table_3
-POSTHOOK: Output: file:/tmp/sdong/hive_2011-02-21_15-45-29_990_4078694489535031322/-mr-10000
+#### A masked pattern was here ####
 155
 PREHOOK: query: select * from hbase_table_3 order by key, value limit 5
 PREHOOK: type: QUERY
 PREHOOK: Input: default@hbase_table_3
-PREHOOK: Output: file:/tmp/sdong/hive_2011-02-21_15-45-33_323_8287867821398172277/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: select * from hbase_table_3 order by key, value limit 5
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@hbase_table_3
-POSTHOOK: Output: file:/tmp/sdong/hive_2011-02-21_15-45-33_323_8287867821398172277/-mr-10000
+#### A masked pattern was here ####
 0	val_0	3
 2	val_2	1
 4	val_4	1
@@ -713,11 +713,11 @@ POSTHOOK: Output: file:/tmp/sdong/hive_2011-02-21_15-45-33_323_82878678213981722
 PREHOOK: query: select key, count from hbase_table_3 order by key, count desc limit 5
 PREHOOK: type: QUERY
 PREHOOK: Input: default@hbase_table_3
-PREHOOK: Output: file:/tmp/sdong/hive_2011-02-21_15-45-36_677_6875109952722565907/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: select key, count from hbase_table_3 order by key, count desc limit 5
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@hbase_table_3
-POSTHOOK: Output: file:/tmp/sdong/hive_2011-02-21_15-45-36_677_6875109952722565907/-mr-10000
+#### A masked pattern was here ####
 0	3
 2	1
 4	1
@@ -753,11 +753,11 @@ POSTHOOK: Output: default@hbase_table_4
 PREHOOK: query: SELECT * FROM hbase_table_4 ORDER BY key
 PREHOOK: type: QUERY
 PREHOOK: Input: default@hbase_table_4
-PREHOOK: Output: file:/tmp/sdong/hive_2011-02-21_15-45-43_553_7533240624513295031/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: SELECT * FROM hbase_table_4 ORDER BY key
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@hbase_table_4
-POSTHOOK: Output: file:/tmp/sdong/hive_2011-02-21_15-45-43_553_7533240624513295031/-mr-10000
+#### A masked pattern was here ####
 98	val_98	99	100
 100	val_100	101	102
 PREHOOK: query: DROP TABLE hbase_table_5
@@ -778,11 +778,11 @@ POSTHOOK: Output: default@hbase_table_5
 PREHOOK: query: SELECT * FROM hbase_table_5 ORDER BY key
 PREHOOK: type: QUERY
 PREHOOK: Input: default@hbase_table_5
-PREHOOK: Output: file:/tmp/sdong/hive_2011-02-21_15-45-47_039_3578480457841783740/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: SELECT * FROM hbase_table_5 ORDER BY key
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@hbase_table_5
-POSTHOOK: Output: file:/tmp/sdong/hive_2011-02-21_15-45-47_039_3578480457841783740/-mr-10000
+#### A masked pattern was here ####
 98	{"b":"val_98","c":"99"}
 100	{"b":"val_100","c":"101"}
 PREHOOK: query: DROP TABLE hbase_table_6
@@ -815,11 +815,11 @@ POSTHOOK: Output: default@hbase_table_6
 PREHOOK: query: SELECT * FROM hbase_table_6 ORDER BY key
 PREHOOK: type: QUERY
 PREHOOK: Input: default@hbase_table_6
-PREHOOK: Output: file:/tmp/sdong/hive_2011-02-21_15-45-53_844_1542444945759841317/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: SELECT * FROM hbase_table_6 ORDER BY key
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@hbase_table_6
-POSTHOOK: Output: file:/tmp/sdong/hive_2011-02-21_15-45-53_844_1542444945759841317/-mr-10000
+#### A masked pattern was here ####
 98	{"val_98":"98"}
 100	{"val_100":"100"}
 PREHOOK: query: DROP TABLE hbase_table_7
@@ -854,11 +854,11 @@ POSTHOOK: Output: default@hbase_table_7
 PREHOOK: query: SELECT * FROM hbase_table_7 ORDER BY key
 PREHOOK: type: QUERY
 PREHOOK: Input: default@hbase_table_7
-PREHOOK: Output: file:/tmp/sdong/hive_2011-02-21_15-46-00_619_2638006563950201182/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: SELECT * FROM hbase_table_7 ORDER BY key
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@hbase_table_7
-POSTHOOK: Output: file:/tmp/sdong/hive_2011-02-21_15-46-00_619_2638006563950201182/-mr-10000
+#### A masked pattern was here ####
 {"VAL_98":"99.0","val_98":"98"}	98
 {"VAL_100":"101.0","val_100":"100"}	100
 PREHOOK: query: DROP TABLE hbase_table_8
@@ -891,11 +891,11 @@ POSTHOOK: Output: default@hbase_table_8
 PREHOOK: query: SELECT * FROM hbase_table_8 ORDER BY key
 PREHOOK: type: QUERY
 PREHOOK: Input: default@hbase_table_8
-PREHOOK: Output: file:/tmp/sdong/hive_2011-02-21_15-46-07_559_8765288712205554692/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: SELECT * FROM hbase_table_8 ORDER BY key
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@hbase_table_8
-POSTHOOK: Output: file:/tmp/sdong/hive_2011-02-21_15-46-07_559_8765288712205554692/-mr-10000
+#### A masked pattern was here ####
 98	val_98	99	100
 100	val_100	101	102
 PREHOOK: query: DROP TABLE hbase_table_1

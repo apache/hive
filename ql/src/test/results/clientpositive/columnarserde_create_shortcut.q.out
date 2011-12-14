@@ -99,11 +99,11 @@ POSTHOOK: Lineage: columnarserde_create_shortcut.e SIMPLE [(src_thrift)src_thrif
 PREHOOK: query: SELECT columnarserde_create_shortcut.* FROM columnarserde_create_shortcut DISTRIBUTE BY 1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@columnarserde_create_shortcut
-PREHOOK: Output: file:/tmp/sohanjain/hive_2011-08-04_11-34-44_384_8123886521601664581/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: SELECT columnarserde_create_shortcut.* FROM columnarserde_create_shortcut DISTRIBUTE BY 1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@columnarserde_create_shortcut
-POSTHOOK: Output: file:/tmp/sohanjain/hive_2011-08-04_11-34-44_384_8123886521601664581/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: Lineage: columnarserde_create_shortcut.a SIMPLE [(src_thrift)src_thrift.FieldSchema(name:lint, type:array<int>, comment:from deserializer), ]
 POSTHOOK: Lineage: columnarserde_create_shortcut.b SIMPLE [(src_thrift)src_thrift.FieldSchema(name:lstring, type:array<string>, comment:from deserializer), ]
 POSTHOOK: Lineage: columnarserde_create_shortcut.c SIMPLE [(src_thrift)src_thrift.FieldSchema(name:mstringstring, type:map<string,string>, comment:from deserializer), ]
@@ -123,11 +123,11 @@ null	null	null	0	NULL
 PREHOOK: query: SELECT columnarserde_create_shortcut.a[0], columnarserde_create_shortcut.b[0], columnarserde_create_shortcut.c['key2'], columnarserde_create_shortcut.d, columnarserde_create_shortcut.e FROM columnarserde_create_shortcut DISTRIBUTE BY 1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@columnarserde_create_shortcut
-PREHOOK: Output: file:/tmp/sohanjain/hive_2011-08-04_11-34-47_468_6815245334901150592/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: SELECT columnarserde_create_shortcut.a[0], columnarserde_create_shortcut.b[0], columnarserde_create_shortcut.c['key2'], columnarserde_create_shortcut.d, columnarserde_create_shortcut.e FROM columnarserde_create_shortcut DISTRIBUTE BY 1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@columnarserde_create_shortcut
-POSTHOOK: Output: file:/tmp/sohanjain/hive_2011-08-04_11-34-47_468_6815245334901150592/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: Lineage: columnarserde_create_shortcut.a SIMPLE [(src_thrift)src_thrift.FieldSchema(name:lint, type:array<int>, comment:from deserializer), ]
 POSTHOOK: Lineage: columnarserde_create_shortcut.b SIMPLE [(src_thrift)src_thrift.FieldSchema(name:lstring, type:array<string>, comment:from deserializer), ]
 POSTHOOK: Lineage: columnarserde_create_shortcut.c SIMPLE [(src_thrift)src_thrift.FieldSchema(name:mstringstring, type:map<string,string>, comment:from deserializer), ]
@@ -187,11 +187,11 @@ value	string
 PREHOOK: query: SELECT columnShortcutTable.* FROM columnShortcutTable
 PREHOOK: type: QUERY
 PREHOOK: Input: default@columnshortcuttable
-PREHOOK: Output: file:/tmp/sohanjain/hive_2011-08-04_11-34-54_986_5216858820252818300/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: SELECT columnShortcutTable.* FROM columnShortcutTable
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@columnshortcuttable
-POSTHOOK: Output: file:/tmp/sohanjain/hive_2011-08-04_11-34-54_986_5216858820252818300/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: Lineage: columnarserde_create_shortcut.a SIMPLE [(src_thrift)src_thrift.FieldSchema(name:lint, type:array<int>, comment:from deserializer), ]
 POSTHOOK: Lineage: columnarserde_create_shortcut.b SIMPLE [(src_thrift)src_thrift.FieldSchema(name:lstring, type:array<string>, comment:from deserializer), ]
 POSTHOOK: Lineage: columnarserde_create_shortcut.c SIMPLE [(src_thrift)src_thrift.FieldSchema(name:mstringstring, type:map<string,string>, comment:from deserializer), ]
@@ -227,11 +227,11 @@ POSTHOOK: Lineage: columnshortcuttable.value SIMPLE [(src)src.FieldSchema(name:v
 PREHOOK: query: SELECT columnShortcutTable.* FROM columnShortcutTable
 PREHOOK: type: QUERY
 PREHOOK: Input: default@columnshortcuttable
-PREHOOK: Output: file:/tmp/sohanjain/hive_2011-08-04_11-34-55_436_7632412543773667908/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: SELECT columnShortcutTable.* FROM columnShortcutTable
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@columnshortcuttable
-POSTHOOK: Output: file:/tmp/sohanjain/hive_2011-08-04_11-34-55_436_7632412543773667908/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: Lineage: columnarserde_create_shortcut.a SIMPLE [(src_thrift)src_thrift.FieldSchema(name:lint, type:array<int>, comment:from deserializer), ]
 POSTHOOK: Lineage: columnarserde_create_shortcut.b SIMPLE [(src_thrift)src_thrift.FieldSchema(name:lstring, type:array<string>, comment:from deserializer), ]
 POSTHOOK: Lineage: columnarserde_create_shortcut.c SIMPLE [(src_thrift)src_thrift.FieldSchema(name:mstringstring, type:map<string,string>, comment:from deserializer), ]
@@ -267,11 +267,11 @@ POSTHOOK: Lineage: columnshortcuttable.value SIMPLE [(src)src.FieldSchema(name:v
 PREHOOK: query: SELECT columnShortcutTable.* FROM columnShortcutTable
 PREHOOK: type: QUERY
 PREHOOK: Input: default@columnshortcuttable
-PREHOOK: Output: file:/tmp/sohanjain/hive_2011-08-04_11-34-55_878_6423652560204519964/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: SELECT columnShortcutTable.* FROM columnShortcutTable
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@columnshortcuttable
-POSTHOOK: Output: file:/tmp/sohanjain/hive_2011-08-04_11-34-55_878_6423652560204519964/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: Lineage: columnarserde_create_shortcut.a SIMPLE [(src_thrift)src_thrift.FieldSchema(name:lint, type:array<int>, comment:from deserializer), ]
 POSTHOOK: Lineage: columnarserde_create_shortcut.b SIMPLE [(src_thrift)src_thrift.FieldSchema(name:lstring, type:array<string>, comment:from deserializer), ]
 POSTHOOK: Lineage: columnarserde_create_shortcut.c SIMPLE [(src_thrift)src_thrift.FieldSchema(name:mstringstring, type:map<string,string>, comment:from deserializer), ]

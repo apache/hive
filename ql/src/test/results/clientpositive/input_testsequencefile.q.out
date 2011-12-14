@@ -59,7 +59,7 @@ STAGE PLANS:
     Move Operator
       files:
           hdfs directory: true
-          destination: pfile:/data/users/sdong/www/open-source-hive1/build/ql/scratchdir/hive_2011-02-10_16-00-41_421_474493239880871352/-ext-10000
+#### A masked pattern was here ####
 
   Stage: Stage-0
     Move Operator
@@ -77,7 +77,7 @@ STAGE PLANS:
   Stage: Stage-3
     Map Reduce
       Alias -> Map Operator Tree:
-        pfile:/data/users/sdong/www/open-source-hive1/build/ql/scratchdir/hive_2011-02-10_16-00-41_421_474493239880871352/-ext-10002 
+#### A masked pattern was here ####
             File Output Operator
               compressed: false
               GlobalTableId: 0
@@ -103,11 +103,11 @@ POSTHOOK: Lineage: dest4_sequencefile.value SIMPLE [(src)src.FieldSchema(name:va
 PREHOOK: query: SELECT dest4_sequencefile.* FROM dest4_sequencefile
 PREHOOK: type: QUERY
 PREHOOK: Input: default@dest4_sequencefile
-PREHOOK: Output: file:/tmp/sdong/hive_2011-02-10_16-00-46_094_6864851199345231943/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: SELECT dest4_sequencefile.* FROM dest4_sequencefile
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@dest4_sequencefile
-POSTHOOK: Output: file:/tmp/sdong/hive_2011-02-10_16-00-46_094_6864851199345231943/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: Lineage: dest4_sequencefile.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: dest4_sequencefile.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 238	val_238

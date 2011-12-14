@@ -36,15 +36,13 @@ b                   	string              	None
 	 	 
 # Detailed Table Information	 	 
 Database:           	default             	 
-Owner:              	charleschen         	 
-CreateTime:         	Sat Jul 16 15:42:16 PDT 2011	 
-LastAccessTime:     	UNKNOWN             	 
+#### A masked pattern was here ####
 Protect Mode:       	None                	 
 Retention:          	0                   	 
-Location:           	pfile:/Users/charleschen/hive-trunk2/build/ql/test/data/warehouse/table1	 
+#### A masked pattern was here ####
 Table Type:         	MANAGED_TABLE       	 
 Table Parameters:	 	 
-	transient_lastDdlTime	1310856136          
+#### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
 SerDe Library:      	org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe	 
@@ -58,11 +56,11 @@ Storage Desc Params:
 	serialization.format	1                   
 PREHOOK: query: CREATE VIEW view1 AS SELECT * FROM table1
 PREHOOK: type: CREATEVIEW
-PREHOOK: Output: file:/var/folders/fe/fefl-ow3ElaEd1ns0G7jB0uewEQ/-Tmp-/charleschen/hive_2011-07-16_15-42-17_015_678488215389625233/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: CREATE VIEW view1 AS SELECT * FROM table1
 POSTHOOK: type: CREATEVIEW
 POSTHOOK: Output: default@view1
-POSTHOOK: Output: file:/var/folders/fe/fefl-ow3ElaEd1ns0G7jB0uewEQ/-Tmp-/charleschen/hive_2011-07-16_15-42-17_015_678488215389625233/-mr-10000
+#### A masked pattern was here ####
 PREHOOK: query: CREATE TABLE table2 LIKE view1
 PREHOOK: type: CREATETABLE
 POSTHOOK: query: CREATE TABLE table2 LIKE view1
@@ -85,15 +83,13 @@ b                   	string              	None
 	 	 
 # Detailed Table Information	 	 
 Database:           	default             	 
-Owner:              	charleschen         	 
-CreateTime:         	Sat Jul 16 15:42:17 PDT 2011	 
-LastAccessTime:     	UNKNOWN             	 
+#### A masked pattern was here ####
 Protect Mode:       	None                	 
 Retention:          	0                   	 
-Location:           	pfile:/Users/charleschen/hive-trunk2/build/ql/test/data/warehouse/table2	 
+#### A masked pattern was here ####
 Table Type:         	MANAGED_TABLE       	 
 Table Parameters:	 	 
-	transient_lastDdlTime	1310856137          
+#### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
 SerDe Library:      	org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe	 
@@ -135,16 +131,14 @@ b                   	string              	None
 	 	 
 # Detailed Table Information	 	 
 Database:           	default             	 
-Owner:              	charleschen         	 
-CreateTime:         	Sat Jul 16 15:42:17 PDT 2011	 
-LastAccessTime:     	UNKNOWN             	 
+#### A masked pattern was here ####
 Protect Mode:       	None                	 
 Retention:          	0                   	 
-Location:           	pfile:/Users/charleschen/hive-trunk2/build/ql/test/data/warehouse/table3	 
+#### A masked pattern was here ####
 Table Type:         	EXTERNAL_TABLE      	 
 Table Parameters:	 	 
 	EXTERNAL            	TRUE                
-	transient_lastDdlTime	1310856137          
+#### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
 SerDe Library:      	org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe	 
@@ -181,11 +175,11 @@ POSTHOOK: Lineage: table2.b SIMPLE [(src)src.FieldSchema(name:value, type:string
 PREHOOK: query: SELECT * FROM table1 order by a, b
 PREHOOK: type: QUERY
 PREHOOK: Input: default@table1
-PREHOOK: Output: file:/var/folders/fe/fefl-ow3ElaEd1ns0G7jB0uewEQ/-Tmp-/charleschen/hive_2011-07-16_15-42-29_194_1551180376215487165/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: SELECT * FROM table1 order by a, b
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@table1
-POSTHOOK: Output: file:/var/folders/fe/fefl-ow3ElaEd1ns0G7jB0uewEQ/-Tmp-/charleschen/hive_2011-07-16_15-42-29_194_1551180376215487165/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: Lineage: table1.a SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: table1.b SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: table2.a SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
@@ -194,11 +188,11 @@ POSTHOOK: Lineage: table2.b SIMPLE [(src)src.FieldSchema(name:value, type:string
 PREHOOK: query: SELECT * FROM table2 order by a, b
 PREHOOK: type: QUERY
 PREHOOK: Input: default@table2
-PREHOOK: Output: file:/var/folders/fe/fefl-ow3ElaEd1ns0G7jB0uewEQ/-Tmp-/charleschen/hive_2011-07-16_15-42-33_431_277070075655620984/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: SELECT * FROM table2 order by a, b
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@table2
-POSTHOOK: Output: file:/var/folders/fe/fefl-ow3ElaEd1ns0G7jB0uewEQ/-Tmp-/charleschen/hive_2011-07-16_15-42-33_431_277070075655620984/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: Lineage: table1.a SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: table1.b SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: table2.a SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
@@ -244,12 +238,12 @@ POSTHOOK: Lineage: table2.b SIMPLE [(src)src.FieldSchema(name:value, type:string
 PREHOOK: query: -- check partitions
 create view view1 partitioned on (ds, hr) as select * from srcpart
 PREHOOK: type: CREATEVIEW
-PREHOOK: Output: file:/var/folders/fe/fefl-ow3ElaEd1ns0G7jB0uewEQ/-Tmp-/charleschen/hive_2011-07-16_15-42-38_417_1642626087699140210/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: -- check partitions
 create view view1 partitioned on (ds, hr) as select * from srcpart
 POSTHOOK: type: CREATEVIEW
 POSTHOOK: Output: default@view1
-POSTHOOK: Output: file:/var/folders/fe/fefl-ow3ElaEd1ns0G7jB0uewEQ/-Tmp-/charleschen/hive_2011-07-16_15-42-38_417_1642626087699140210/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: Lineage: table1.a SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: table1.b SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: table2.a SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
@@ -284,15 +278,13 @@ hr                  	string              	None
 	 	 
 # Detailed Table Information	 	 
 Database:           	default             	 
-Owner:              	charleschen         	 
-CreateTime:         	Sat Jul 16 15:42:38 PDT 2011	 
-LastAccessTime:     	UNKNOWN             	 
+#### A masked pattern was here ####
 Protect Mode:       	None                	 
 Retention:          	0                   	 
-Location:           	pfile:/Users/charleschen/hive-trunk2/build/ql/test/data/warehouse/table1	 
+#### A masked pattern was here ####
 Table Type:         	MANAGED_TABLE       	 
 Table Parameters:	 	 
-	transient_lastDdlTime	1310856158          
+#### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
 SerDe Library:      	org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe	 

@@ -25,7 +25,7 @@ table	src_autho_test
 principalName	hive_test_user	
 principalType	USER	
 privilege	Select	
-grantTime	1298420358	
+#### A masked pattern was here ####
 grantor	hive_test_user	
 PREHOOK: query: show grant user hive_test_user on table src_autho_test(key)
 PREHOOK: type: SHOW_GRANT
@@ -34,11 +34,11 @@ POSTHOOK: type: SHOW_GRANT
 PREHOOK: query: select key from src_autho_test order by key limit 20
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src_autho_test
-PREHOOK: Output: file:/var/folders/6g/6grtCwPMEf4sqHUPpy6xQG9ByHg/-Tmp-/heyongqiang/hive_2011-02-22_16-19-19_140_1092784940021767167/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: select key from src_autho_test order by key limit 20
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src_autho_test
-POSTHOOK: Output: file:/var/folders/6g/6grtCwPMEf4sqHUPpy6xQG9ByHg/-Tmp-/heyongqiang/hive_2011-02-22_16-19-19_140_1092784940021767167/-mr-10000
+#### A masked pattern was here ####
 0
 0
 0
@@ -98,16 +98,16 @@ columnName	key
 principalName	hive_test_user	
 principalType	USER	
 privilege	Select	
-grantTime	1298420368	
+#### A masked pattern was here ####
 grantor	hive_test_user	
 PREHOOK: query: select key from src_autho_test order by key limit 20
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src_autho_test
-PREHOOK: Output: file:/var/folders/6g/6grtCwPMEf4sqHUPpy6xQG9ByHg/-Tmp-/heyongqiang/hive_2011-02-22_16-19-28_915_5983909727594214023/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: select key from src_autho_test order by key limit 20
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src_autho_test
-POSTHOOK: Output: file:/var/folders/6g/6grtCwPMEf4sqHUPpy6xQG9ByHg/-Tmp-/heyongqiang/hive_2011-02-22_16-19-28_915_5983909727594214023/-mr-10000
+#### A masked pattern was here ####
 0
 0
 0
@@ -162,7 +162,7 @@ table	src_autho_test
 principalName	hive_test_group1	
 principalType	GROUP	
 privilege	Select	
-grantTime	1298420376	
+#### A masked pattern was here ####
 grantor	hive_test_user	
 PREHOOK: query: show grant group hive_test_group1 on table src_autho_test(key)
 PREHOOK: type: SHOW_GRANT
@@ -171,11 +171,11 @@ POSTHOOK: type: SHOW_GRANT
 PREHOOK: query: select key from src_autho_test order by key limit 20
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src_autho_test
-PREHOOK: Output: file:/var/folders/6g/6grtCwPMEf4sqHUPpy6xQG9ByHg/-Tmp-/heyongqiang/hive_2011-02-22_16-19-37_107_8315738520621308755/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: select key from src_autho_test order by key limit 20
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src_autho_test
-POSTHOOK: Output: file:/var/folders/6g/6grtCwPMEf4sqHUPpy6xQG9ByHg/-Tmp-/heyongqiang/hive_2011-02-22_16-19-37_107_8315738520621308755/-mr-10000
+#### A masked pattern was here ####
 0
 0
 0
@@ -235,16 +235,16 @@ columnName	key
 principalName	hive_test_group1	
 principalType	GROUP	
 privilege	Select	
-grantTime	1298420384	
+#### A masked pattern was here ####
 grantor	hive_test_user	
 PREHOOK: query: select key from src_autho_test order by key limit 20
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src_autho_test
-PREHOOK: Output: file:/var/folders/6g/6grtCwPMEf4sqHUPpy6xQG9ByHg/-Tmp-/heyongqiang/hive_2011-02-22_16-19-44_873_1380430443686566573/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: select key from src_autho_test order by key limit 20
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src_autho_test
-POSTHOOK: Output: file:/var/folders/6g/6grtCwPMEf4sqHUPpy6xQG9ByHg/-Tmp-/heyongqiang/hive_2011-02-22_16-19-44_873_1380430443686566573/-mr-10000
+#### A masked pattern was here ####
 0
 0
 0
@@ -320,16 +320,16 @@ columnName	key
 principalName	src_role	
 principalType	ROLE	
 privilege	Select	
-grantTime	1298420392	
+#### A masked pattern was here ####
 grantor	hive_test_user	
 PREHOOK: query: select key from src_autho_test order by key limit 20
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src_autho_test
-PREHOOK: Output: file:/var/folders/6g/6grtCwPMEf4sqHUPpy6xQG9ByHg/-Tmp-/heyongqiang/hive_2011-02-22_16-19-52_300_4610085368597981247/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: select key from src_autho_test order by key limit 20
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src_autho_test
-POSTHOOK: Output: file:/var/folders/6g/6grtCwPMEf4sqHUPpy6xQG9ByHg/-Tmp-/heyongqiang/hive_2011-02-22_16-19-52_300_4610085368597981247/-mr-10000
+#### A masked pattern was here ####
 0
 0
 0
@@ -369,11 +369,11 @@ POSTHOOK: Output: default@src_autho_test
 PREHOOK: query: select key from src_autho_test order by key limit 20
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src_autho_test
-PREHOOK: Output: file:/var/folders/6g/6grtCwPMEf4sqHUPpy6xQG9ByHg/-Tmp-/heyongqiang/hive_2011-02-22_16-19-59_202_5938148548979249829/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: select key from src_autho_test order by key limit 20
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src_autho_test
-POSTHOOK: Output: file:/var/folders/6g/6grtCwPMEf4sqHUPpy6xQG9ByHg/-Tmp-/heyongqiang/hive_2011-02-22_16-19-59_202_5938148548979249829/-mr-10000
+#### A masked pattern was here ####
 0
 0
 0
@@ -404,7 +404,7 @@ table	src_autho_test
 principalName	src_role	
 principalType	ROLE	
 privilege	Select	
-grantTime	1298420399	
+#### A masked pattern was here ####
 grantor	hive_test_user	
 PREHOOK: query: show grant role src_role on table src_autho_test(key)
 PREHOOK: type: SHOW_GRANT

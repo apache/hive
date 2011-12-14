@@ -36,11 +36,11 @@ value	string
 PREHOOK: query: SELECT columnTable.* FROM columnTable
 PREHOOK: type: QUERY
 PREHOOK: Input: default@columntable
-PREHOOK: Output: file:/tmp/sohanjain/hive_2011-08-04_13-18-43_999_5523344018823638089/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: SELECT columnTable.* FROM columnTable
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@columntable
-POSTHOOK: Output: file:/tmp/sohanjain/hive_2011-08-04_13-18-43_999_5523344018823638089/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: Lineage: columntable.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: columntable.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 238	val_238

@@ -49,14 +49,14 @@ PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
 PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
 PREHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
 PREHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
-PREHOOK: Output: file:/tmp/nzhang/hive_2011-04-18_14-24-51_949_3202289309104272621/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: select * from srcpart where key < 10
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
 POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
 POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
 POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
-POSTHOOK: Output: file:/tmp/nzhang/hive_2011-04-18_14-24-51_949_3202289309104272621/-mr-10000
+#### A masked pattern was here ####
 0	val_0	2008-04-08	11
 4	val_4	2008-04-08	11
 8	val_8	2008-04-08	11
@@ -119,14 +119,14 @@ PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
 PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
 PREHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
 PREHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
-PREHOOK: Output: file:/tmp/nzhang/hive_2011-04-18_14-24-56_244_2213457314056653214/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: select * from srcpart
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
 POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
 POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
 POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
-POSTHOOK: Output: file:/tmp/nzhang/hive_2011-04-18_14-24-56_244_2213457314056653214/-mr-10000
+#### A masked pattern was here ####
 238	val_238	2008-04-08	11
 86	val_86	2008-04-08	11
 311	val_311	2008-04-08	11
@@ -2168,14 +2168,14 @@ PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
 PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
 PREHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
 PREHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
-PREHOOK: Output: file:/tmp/nzhang/hive_2011-04-18_14-24-57_285_6142319230895877079/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: select key from srcpart
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
 POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
 POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
 POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
-POSTHOOK: Output: file:/tmp/nzhang/hive_2011-04-18_14-24-57_285_6142319230895877079/-mr-10000
+#### A masked pattern was here ####
 238
 86
 311

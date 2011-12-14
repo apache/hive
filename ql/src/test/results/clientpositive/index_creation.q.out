@@ -46,7 +46,7 @@ key	string	default
 _bucketname	string	
 _offsets	array<bigint>	
 	 	 
-Detailed Table Information	Table(tableName:default__src_src_index_2__, dbName:default, owner:null, createTime:1312484997, lastAccessTime:0, retention:0, sd:StorageDescriptor(cols:[FieldSchema(name:key, type:string, comment:default), FieldSchema(name:_bucketname, type:string, comment:), FieldSchema(name:_offsets, type:array<bigint>, comment:)], location:pfile:/data/users/sohanjain/test_builds/hive_2338/apache-hive/build/ql/test/data/warehouse/default__src_src_index_2__, inputFormat:org.apache.hadoop.mapred.TextInputFormat, outputFormat:org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat, compressed:false, numBuckets:-1, serdeInfo:SerDeInfo(name:null, serializationLib:org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe, parameters:{serialization.format=1}), bucketCols:[], sortCols:[Order(col:key, order:1)], parameters:{}), partitionKeys:[], parameters:{transient_lastDdlTime=1312484997}, viewOriginalText:null, viewExpandedText:null, tableType:INDEX_TABLE)	
+#### A masked pattern was here ####
 PREHOOK: query: create index src_index_3 on table src(key) as 'compact' WITH DEFERRED REBUILD in table src_idx_src_index_3
 PREHOOK: type: CREATEINDEX
 POSTHOOK: query: create index src_index_3 on table src(key) as 'compact' WITH DEFERRED REBUILD in table src_idx_src_index_3
@@ -59,7 +59,7 @@ key	string	default
 _bucketname	string	
 _offsets	array<bigint>	
 	 	 
-Detailed Table Information	Table(tableName:src_idx_src_index_3, dbName:default, owner:null, createTime:1312484997, lastAccessTime:0, retention:0, sd:StorageDescriptor(cols:[FieldSchema(name:key, type:string, comment:default), FieldSchema(name:_bucketname, type:string, comment:), FieldSchema(name:_offsets, type:array<bigint>, comment:)], location:pfile:/data/users/sohanjain/test_builds/hive_2338/apache-hive/build/ql/test/data/warehouse/src_idx_src_index_3, inputFormat:org.apache.hadoop.mapred.TextInputFormat, outputFormat:org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat, compressed:false, numBuckets:-1, serdeInfo:SerDeInfo(name:null, serializationLib:org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe, parameters:{serialization.format=1}), bucketCols:[], sortCols:[Order(col:key, order:1)], parameters:{}), partitionKeys:[], parameters:{transient_lastDdlTime=1312484997}, viewOriginalText:null, viewExpandedText:null, tableType:INDEX_TABLE)	
+#### A masked pattern was here ####
 PREHOOK: query: create index src_index_4 on table src(key) as 'compact' WITH DEFERRED REBUILD ROW FORMAT DELIMITED FIELDS TERMINATED BY '\t' STORED AS TEXTFILE
 PREHOOK: type: CREATEINDEX
 POSTHOOK: query: create index src_index_4 on table src(key) as 'compact' WITH DEFERRED REBUILD ROW FORMAT DELIMITED FIELDS TERMINATED BY '\t' STORED AS TEXTFILE
@@ -72,7 +72,7 @@ key	string	default
 _bucketname	string	
 _offsets	array<bigint>	
 	 	 
-Detailed Table Information	Table(tableName:default__src_src_index_4__, dbName:default, owner:null, createTime:1312484998, lastAccessTime:0, retention:0, sd:StorageDescriptor(cols:[FieldSchema(name:key, type:string, comment:default), FieldSchema(name:_bucketname, type:string, comment:), FieldSchema(name:_offsets, type:array<bigint>, comment:)], location:pfile:/data/users/sohanjain/test_builds/hive_2338/apache-hive/build/ql/test/data/warehouse/default__src_src_index_4__, inputFormat:org.apache.hadoop.mapred.TextInputFormat, outputFormat:org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat, compressed:false, numBuckets:-1, serdeInfo:SerDeInfo(name:null, serializationLib:org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe, parameters:{serialization.format=	, field.delim=
+#### A masked pattern was here ####
 PREHOOK: query: create index src_index_5 on table src(key) as 'compact' WITH DEFERRED REBUILD ROW FORMAT DELIMITED FIELDS TERMINATED BY '\t' ESCAPED BY '\\'
 PREHOOK: type: CREATEINDEX
 POSTHOOK: query: create index src_index_5 on table src(key) as 'compact' WITH DEFERRED REBUILD ROW FORMAT DELIMITED FIELDS TERMINATED BY '\t' ESCAPED BY '\\'
@@ -85,7 +85,7 @@ key	string	default
 _bucketname	string	
 _offsets	array<bigint>	
 	 	 
-Detailed Table Information	Table(tableName:default__src_src_index_5__, dbName:default, owner:null, createTime:1312484998, lastAccessTime:0, retention:0, sd:StorageDescriptor(cols:[FieldSchema(name:key, type:string, comment:default), FieldSchema(name:_bucketname, type:string, comment:), FieldSchema(name:_offsets, type:array<bigint>, comment:)], location:pfile:/data/users/sohanjain/test_builds/hive_2338/apache-hive/build/ql/test/data/warehouse/default__src_src_index_5__, inputFormat:org.apache.hadoop.mapred.TextInputFormat, outputFormat:org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat, compressed:false, numBuckets:-1, serdeInfo:SerDeInfo(name:null, serializationLib:org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe, parameters:{escape.delim=\, serialization.format=	, field.delim=
+#### A masked pattern was here ####
 PREHOOK: query: create index src_index_6 on table src(key) as 'compact' WITH DEFERRED REBUILD STORED AS RCFILE
 PREHOOK: type: CREATEINDEX
 POSTHOOK: query: create index src_index_6 on table src(key) as 'compact' WITH DEFERRED REBUILD STORED AS RCFILE
@@ -98,7 +98,7 @@ key	string	default
 _bucketname	string	
 _offsets	array<bigint>	
 	 	 
-Detailed Table Information	Table(tableName:default__src_src_index_6__, dbName:default, owner:null, createTime:1312484998, lastAccessTime:0, retention:0, sd:StorageDescriptor(cols:[FieldSchema(name:key, type:string, comment:default), FieldSchema(name:_bucketname, type:string, comment:), FieldSchema(name:_offsets, type:array<bigint>, comment:)], location:pfile:/data/users/sohanjain/test_builds/hive_2338/apache-hive/build/ql/test/data/warehouse/default__src_src_index_6__, inputFormat:org.apache.hadoop.hive.ql.io.RCFileInputFormat, outputFormat:org.apache.hadoop.hive.ql.io.RCFileOutputFormat, compressed:false, numBuckets:-1, serdeInfo:SerDeInfo(name:null, serializationLib:org.apache.hadoop.hive.serde2.columnar.ColumnarSerDe, parameters:{serialization.format=1}), bucketCols:[], sortCols:[Order(col:key, order:1)], parameters:{}), partitionKeys:[], parameters:{transient_lastDdlTime=1312484998}, viewOriginalText:null, viewExpandedText:null, tableType:INDEX_TABLE)	
+#### A masked pattern was here ####
 PREHOOK: query: create index src_index_7 on table src(key) as 'compact' WITH DEFERRED REBUILD in table src_idx_src_index_7 STORED AS RCFILE
 PREHOOK: type: CREATEINDEX
 POSTHOOK: query: create index src_index_7 on table src(key) as 'compact' WITH DEFERRED REBUILD in table src_idx_src_index_7 STORED AS RCFILE
@@ -111,7 +111,7 @@ key	string	default
 _bucketname	string	
 _offsets	array<bigint>	
 	 	 
-Detailed Table Information	Table(tableName:src_idx_src_index_7, dbName:default, owner:null, createTime:1312484998, lastAccessTime:0, retention:0, sd:StorageDescriptor(cols:[FieldSchema(name:key, type:string, comment:default), FieldSchema(name:_bucketname, type:string, comment:), FieldSchema(name:_offsets, type:array<bigint>, comment:)], location:pfile:/data/users/sohanjain/test_builds/hive_2338/apache-hive/build/ql/test/data/warehouse/src_idx_src_index_7, inputFormat:org.apache.hadoop.hive.ql.io.RCFileInputFormat, outputFormat:org.apache.hadoop.hive.ql.io.RCFileOutputFormat, compressed:false, numBuckets:-1, serdeInfo:SerDeInfo(name:null, serializationLib:org.apache.hadoop.hive.serde2.columnar.ColumnarSerDe, parameters:{serialization.format=1}), bucketCols:[], sortCols:[Order(col:key, order:1)], parameters:{}), partitionKeys:[], parameters:{transient_lastDdlTime=1312484998}, viewOriginalText:null, viewExpandedText:null, tableType:INDEX_TABLE)	
+#### A masked pattern was here ####
 PREHOOK: query: create index src_index_8 on table src(key) as 'compact' WITH DEFERRED REBUILD IDXPROPERTIES ("prop1"="val1", "prop2"="val2")
 PREHOOK: type: CREATEINDEX
 POSTHOOK: query: create index src_index_8 on table src(key) as 'compact' WITH DEFERRED REBUILD IDXPROPERTIES ("prop1"="val1", "prop2"="val2")
@@ -124,7 +124,7 @@ key	string	default
 _bucketname	string	
 _offsets	array<bigint>	
 	 	 
-Detailed Table Information	Table(tableName:default__src_src_index_8__, dbName:default, owner:null, createTime:1312484998, lastAccessTime:0, retention:0, sd:StorageDescriptor(cols:[FieldSchema(name:key, type:string, comment:default), FieldSchema(name:_bucketname, type:string, comment:), FieldSchema(name:_offsets, type:array<bigint>, comment:)], location:pfile:/data/users/sohanjain/test_builds/hive_2338/apache-hive/build/ql/test/data/warehouse/default__src_src_index_8__, inputFormat:org.apache.hadoop.mapred.TextInputFormat, outputFormat:org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat, compressed:false, numBuckets:-1, serdeInfo:SerDeInfo(name:null, serializationLib:org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe, parameters:{serialization.format=1}), bucketCols:[], sortCols:[Order(col:key, order:1)], parameters:{}), partitionKeys:[], parameters:{transient_lastDdlTime=1312484998}, viewOriginalText:null, viewExpandedText:null, tableType:INDEX_TABLE)	
+#### A masked pattern was here ####
 PREHOOK: query: create index src_index_9 on table src(key) as 'compact' WITH DEFERRED REBUILD TBLPROPERTIES ("prop1"="val1", "prop2"="val2")
 PREHOOK: type: CREATEINDEX
 POSTHOOK: query: create index src_index_9 on table src(key) as 'compact' WITH DEFERRED REBUILD TBLPROPERTIES ("prop1"="val1", "prop2"="val2")
@@ -137,7 +137,7 @@ key	string	default
 _bucketname	string	
 _offsets	array<bigint>	
 	 	 
-Detailed Table Information	Table(tableName:default__src_src_index_9__, dbName:default, owner:null, createTime:1312484999, lastAccessTime:0, retention:0, sd:StorageDescriptor(cols:[FieldSchema(name:key, type:string, comment:default), FieldSchema(name:_bucketname, type:string, comment:), FieldSchema(name:_offsets, type:array<bigint>, comment:)], location:pfile:/data/users/sohanjain/test_builds/hive_2338/apache-hive/build/ql/test/data/warehouse/default__src_src_index_9__, inputFormat:org.apache.hadoop.mapred.TextInputFormat, outputFormat:org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat, compressed:false, numBuckets:-1, serdeInfo:SerDeInfo(name:null, serializationLib:org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe, parameters:{serialization.format=1}), bucketCols:[], sortCols:[Order(col:key, order:1)], parameters:{}), partitionKeys:[], parameters:{prop2=val2, prop1=val1, transient_lastDdlTime=1312484999}, viewOriginalText:null, viewExpandedText:null, tableType:INDEX_TABLE)	
+#### A masked pattern was here ####
 PREHOOK: query: create table `_t`(`_i` int, `_j` int)
 PREHOOK: type: CREATETABLE
 POSTHOOK: query: create table `_t`(`_i` int, `_j` int)

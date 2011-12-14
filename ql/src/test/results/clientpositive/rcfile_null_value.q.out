@@ -16,11 +16,11 @@ POSTHOOK: Lineage: src1_rc.value SIMPLE [(src1)src1.FieldSchema(name:value, type
 PREHOOK: query: SELECT * FROM src1_rc
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src1_rc
-PREHOOK: Output: file:/tmp/sdong/hive_2011-02-10_17-01-12_273_475781980443789988/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: SELECT * FROM src1_rc
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src1_rc
-POSTHOOK: Output: file:/tmp/sdong/hive_2011-02-10_17-01-12_273_475781980443789988/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: Lineage: src1_rc.key SIMPLE [(src1)src1.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: src1_rc.value SIMPLE [(src1)src1.FieldSchema(name:value, type:string, comment:default), ]
 238	val_238
@@ -261,11 +261,11 @@ POSTHOOK: Lineage: src1_rc.value SIMPLE [(src1)src1.FieldSchema(name:value, type
 PREHOOK: query: SELECT dest1_rc.* FROM dest1_rc
 PREHOOK: type: QUERY
 PREHOOK: Input: default@dest1_rc
-PREHOOK: Output: file:/tmp/sdong/hive_2011-02-10_17-01-17_670_7681446333893033573/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: SELECT dest1_rc.* FROM dest1_rc
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@dest1_rc
-POSTHOOK: Output: file:/tmp/sdong/hive_2011-02-10_17-01-17_670_7681446333893033573/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: Lineage: dest1_rc.c1 EXPRESSION [(src)src1.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: dest1_rc.c2 SIMPLE [(src)src1.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: dest1_rc.c3 EXPRESSION [(src)src2.FieldSchema(name:key, type:string, comment:default), ]

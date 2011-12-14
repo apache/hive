@@ -293,7 +293,7 @@ STAGE PLANS:
   Stage: Stage-4
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/var/folders/uc/ucuNeMAVGQGzy3459D8z2+++Z0Q/-Tmp-/amarsri/hive_2011-05-11_02-10-22_407_4726110231826492306/-mr-10004 
+#### A masked pattern was here ####
             Reduce Output Operator
               key expressions:
                     expr: _col0

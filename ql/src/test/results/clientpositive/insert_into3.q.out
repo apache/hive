@@ -105,7 +105,7 @@ STAGE PLANS:
   Stage: Stage-4
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/tmp/franklin/hive_2011-06-06_17-43-17_149_8927736209984693525/-mr-10004 
+#### A masked pattern was here ####
             Reduce Output Operator
               sort order: 
               tag: -1
@@ -168,13 +168,13 @@ PREHOOK: query: SELECT SUM(HASH(c)) FROM (
 ) t
 PREHOOK: type: QUERY
 PREHOOK: Input: default@insert_into3a
-PREHOOK: Output: file:/tmp/franklin/hive_2011-06-06_17-43-26_016_8862433644177742227/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: SELECT SUM(HASH(c)) FROM (
     SELECT TRANSFORM(*) USING 'tr \t _' AS (c) FROM insert_into3a
 ) t
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@insert_into3a
-POSTHOOK: Output: file:/tmp/franklin/hive_2011-06-06_17-43-26_016_8862433644177742227/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: Lineage: insert_into3a.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: insert_into3a.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: insert_into3b.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
@@ -185,13 +185,13 @@ PREHOOK: query: SELECT SUM(HASH(c)) FROM (
 ) t
 PREHOOK: type: QUERY
 PREHOOK: Input: default@insert_into3b
-PREHOOK: Output: file:/tmp/franklin/hive_2011-06-06_17-43-29_210_93955997235568376/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: SELECT SUM(HASH(c)) FROM (
     SELECT TRANSFORM(*) USING 'tr \t _' AS (c) FROM insert_into3b
 ) t
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@insert_into3b
-POSTHOOK: Output: file:/tmp/franklin/hive_2011-06-06_17-43-29_210_93955997235568376/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: Lineage: insert_into3a.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: insert_into3a.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: insert_into3b.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
@@ -290,7 +290,7 @@ STAGE PLANS:
   Stage: Stage-4
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/tmp/franklin/hive_2011-06-06_17-43-32_418_2755556299410634597/-mr-10004 
+#### A masked pattern was here ####
             Reduce Output Operator
               sort order: 
               tag: -1
@@ -357,13 +357,13 @@ PREHOOK: query: SELECT SUM(HASH(c)) FROM (
 ) t
 PREHOOK: type: QUERY
 PREHOOK: Input: default@insert_into3a
-PREHOOK: Output: file:/tmp/franklin/hive_2011-06-06_17-43-41_108_7820508845865896293/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: SELECT SUM(HASH(c)) FROM (
     SELECT TRANSFORM(*) USING 'tr \t _' AS (c) FROM insert_into3a
 ) t
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@insert_into3a
-POSTHOOK: Output: file:/tmp/franklin/hive_2011-06-06_17-43-41_108_7820508845865896293/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: Lineage: insert_into3a.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: insert_into3a.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: insert_into3a.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
@@ -378,13 +378,13 @@ PREHOOK: query: SELECT SUM(HASH(c)) FROM (
 ) t
 PREHOOK: type: QUERY
 PREHOOK: Input: default@insert_into3b
-PREHOOK: Output: file:/tmp/franklin/hive_2011-06-06_17-43-44_306_4143495458350105473/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: SELECT SUM(HASH(c)) FROM (
     SELECT TRANSFORM(*) USING 'tr \t _' AS (c) FROM insert_into3b
 ) t
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@insert_into3b
-POSTHOOK: Output: file:/tmp/franklin/hive_2011-06-06_17-43-44_306_4143495458350105473/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: Lineage: insert_into3a.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: insert_into3a.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: insert_into3a.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]

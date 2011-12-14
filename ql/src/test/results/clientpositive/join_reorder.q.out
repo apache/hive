@@ -194,13 +194,13 @@ SELECT a.key, a.val, c.key
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
 PREHOOK: Input: default@t1
-PREHOOK: Output: file:/tmp/krishnak/hive_2011-03-21_03-57-31_623_2837080214858318814/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: FROM T1 a JOIN src c ON c.key+1=a.key
 SELECT a.key, a.val, c.key
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 POSTHOOK: Input: default@t1
-POSTHOOK: Output: file:/tmp/krishnak/hive_2011-03-21_03-57-31_623_2837080214858318814/-mr-10000
+#### A masked pattern was here ####
 1	11	0
 1	11	0
 1	11	0
@@ -210,13 +210,13 @@ SELECT /*+ STREAMTABLE(a) */ a.key, a.val, c.key
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
 PREHOOK: Input: default@t1
-PREHOOK: Output: file:/tmp/krishnak/hive_2011-03-21_03-57-34_698_3624981517859141195/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: FROM T1 a JOIN src c ON c.key+1=a.key
 SELECT /*+ STREAMTABLE(a) */ a.key, a.val, c.key
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 POSTHOOK: Input: default@t1
-POSTHOOK: Output: file:/tmp/krishnak/hive_2011-03-21_03-57-34_698_3624981517859141195/-mr-10000
+#### A masked pattern was here ####
 1	11	0
 1	11	0
 1	11	0
@@ -503,7 +503,7 @@ PREHOOK: type: QUERY
 PREHOOK: Input: default@t1
 PREHOOK: Input: default@t2
 PREHOOK: Input: default@t3
-PREHOOK: Output: file:/tmp/krishnak/hive_2011-03-21_03-57-37_928_4361307602999951254/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: FROM T1 a
   LEFT OUTER JOIN T2 b ON (b.key=a.key)
   RIGHT OUTER JOIN T3 c ON (c.val = a.val)
@@ -512,7 +512,7 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@t1
 POSTHOOK: Input: default@t2
 POSTHOOK: Input: default@t3
-POSTHOOK: Output: file:/tmp/krishnak/hive_2011-03-21_03-57-37_928_4361307602999951254/-mr-10000
+#### A masked pattern was here ####
 2	2	12	12
 NULL	NULL	NULL	14
 NULL	NULL	NULL	16
@@ -525,7 +525,7 @@ PREHOOK: type: QUERY
 PREHOOK: Input: default@t1
 PREHOOK: Input: default@t2
 PREHOOK: Input: default@t3
-PREHOOK: Output: file:/tmp/krishnak/hive_2011-03-21_03-57-44_013_965933761656921378/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: FROM T1 a
   LEFT OUTER JOIN T2 b ON (b.key=a.key)
   RIGHT OUTER JOIN T3 c ON (c.val = a.val)
@@ -534,7 +534,7 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@t1
 POSTHOOK: Input: default@t2
 POSTHOOK: Input: default@t3
-POSTHOOK: Output: file:/tmp/krishnak/hive_2011-03-21_03-57-44_013_965933761656921378/-mr-10000
+#### A masked pattern was here ####
 2	2	12	12
 NULL	NULL	NULL	14
 NULL	NULL	NULL	16
@@ -772,7 +772,7 @@ PREHOOK: type: QUERY
 PREHOOK: Input: default@t1
 PREHOOK: Input: default@t2
 PREHOOK: Input: default@t3
-PREHOOK: Output: file:/tmp/krishnak/hive_2011-03-21_03-57-50_283_7935840727920713008/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: FROM UNIQUEJOIN
   PRESERVE T1 a (a.key, a.val),
   PRESERVE T2 b (b.key, b.val),
@@ -782,7 +782,7 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@t1
 POSTHOOK: Input: default@t2
 POSTHOOK: Input: default@t3
-POSTHOOK: Output: file:/tmp/krishnak/hive_2011-03-21_03-57-50_283_7935840727920713008/-mr-10000
+#### A masked pattern was here ####
 1	NULL	NULL
 2	NULL	2
 NULL	2	NULL
@@ -803,7 +803,7 @@ PREHOOK: type: QUERY
 PREHOOK: Input: default@t1
 PREHOOK: Input: default@t2
 PREHOOK: Input: default@t3
-PREHOOK: Output: file:/tmp/krishnak/hive_2011-03-21_03-57-53_534_2948703874836264518/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: FROM UNIQUEJOIN
   PRESERVE T1 a (a.key, a.val),
   PRESERVE T2 b (b.key, b.val),
@@ -813,7 +813,7 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@t1
 POSTHOOK: Input: default@t2
 POSTHOOK: Input: default@t3
-POSTHOOK: Output: file:/tmp/krishnak/hive_2011-03-21_03-57-53_534_2948703874836264518/-mr-10000
+#### A masked pattern was here ####
 1	NULL	NULL
 2	NULL	2
 NULL	2	NULL

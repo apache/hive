@@ -21,16 +21,16 @@ table	src_autho_test
 principalName	hive_test_user	
 principalType	USER	
 privilege	All	
-grantTime	1298420420	
+#### A masked pattern was here ####
 grantor	hive_test_user	
 PREHOOK: query: select key from src_autho_test order by key limit 20
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src_autho_test
-PREHOOK: Output: file:/var/folders/6g/6grtCwPMEf4sqHUPpy6xQG9ByHg/-Tmp-/heyongqiang/hive_2011-02-22_16-20-20_277_9141477916042462685/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: select key from src_autho_test order by key limit 20
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src_autho_test
-POSTHOOK: Output: file:/var/folders/6g/6grtCwPMEf4sqHUPpy6xQG9ByHg/-Tmp-/heyongqiang/hive_2011-02-22_16-20-20_277_9141477916042462685/-mr-10000
+#### A masked pattern was here ####
 0
 0
 0

@@ -29,81 +29,81 @@ POSTHOOK: Lineage: timestamp_2.t EXPRESSION []
 PREHOOK: query: select cast(t as boolean) from timestamp_2 limit 1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@timestamp_2
-PREHOOK: Output: file:/tmp/franklin/hive_2011-07-01_12-48-09_254_1677780486046903577/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: select cast(t as boolean) from timestamp_2 limit 1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@timestamp_2
-POSTHOOK: Output: file:/tmp/franklin/hive_2011-07-01_12-48-09_254_1677780486046903577/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: Lineage: timestamp_2.t EXPRESSION []
 true
 PREHOOK: query: select cast(t as tinyint) from timestamp_2 limit 1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@timestamp_2
-PREHOOK: Output: file:/tmp/franklin/hive_2011-07-01_12-48-12_174_8355246285977609781/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: select cast(t as tinyint) from timestamp_2 limit 1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@timestamp_2
-POSTHOOK: Output: file:/tmp/franklin/hive_2011-07-01_12-48-12_174_8355246285977609781/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: Lineage: timestamp_2.t EXPRESSION []
 77
 PREHOOK: query: select cast(t as smallint) from timestamp_2 limit 1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@timestamp_2
-PREHOOK: Output: file:/tmp/franklin/hive_2011-07-01_12-48-15_187_1474177769686631179/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: select cast(t as smallint) from timestamp_2 limit 1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@timestamp_2
-POSTHOOK: Output: file:/tmp/franklin/hive_2011-07-01_12-48-15_187_1474177769686631179/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: Lineage: timestamp_2.t EXPRESSION []
 -4787
 PREHOOK: query: select cast(t as int) from timestamp_2 limit 1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@timestamp_2
-PREHOOK: Output: file:/tmp/franklin/hive_2011-07-01_12-48-18_135_6674553302810288601/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: select cast(t as int) from timestamp_2 limit 1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@timestamp_2
-POSTHOOK: Output: file:/tmp/franklin/hive_2011-07-01_12-48-18_135_6674553302810288601/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: Lineage: timestamp_2.t EXPRESSION []
 1293872461
 PREHOOK: query: select cast(t as bigint) from timestamp_2 limit 1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@timestamp_2
-PREHOOK: Output: file:/tmp/franklin/hive_2011-07-01_12-48-21_147_7439441759500528969/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: select cast(t as bigint) from timestamp_2 limit 1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@timestamp_2
-POSTHOOK: Output: file:/tmp/franklin/hive_2011-07-01_12-48-21_147_7439441759500528969/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: Lineage: timestamp_2.t EXPRESSION []
 1293872461
 PREHOOK: query: select cast(t as float) from timestamp_2 limit 1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@timestamp_2
-PREHOOK: Output: file:/tmp/franklin/hive_2011-07-01_12-48-24_157_8137342921467725858/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: select cast(t as float) from timestamp_2 limit 1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@timestamp_2
-POSTHOOK: Output: file:/tmp/franklin/hive_2011-07-01_12-48-24_157_8137342921467725858/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: Lineage: timestamp_2.t EXPRESSION []
 1.29387251E9
 PREHOOK: query: select cast(t as double) from timestamp_2 limit 1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@timestamp_2
-PREHOOK: Output: file:/tmp/franklin/hive_2011-07-01_12-48-27_115_7570510000112541754/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: select cast(t as double) from timestamp_2 limit 1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@timestamp_2
-POSTHOOK: Output: file:/tmp/franklin/hive_2011-07-01_12-48-27_115_7570510000112541754/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: Lineage: timestamp_2.t EXPRESSION []
 1.293872461E9
 PREHOOK: query: select cast(t as string) from timestamp_2 limit 1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@timestamp_2
-PREHOOK: Output: file:/tmp/franklin/hive_2011-07-01_12-48-30_149_7863201428865842908/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: select cast(t as string) from timestamp_2 limit 1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@timestamp_2
-POSTHOOK: Output: file:/tmp/franklin/hive_2011-07-01_12-48-30_149_7863201428865842908/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: Lineage: timestamp_2.t EXPRESSION []
 2011-01-01 01:01:01
 PREHOOK: query: insert overwrite table timestamp_2
@@ -121,88 +121,88 @@ POSTHOOK: Lineage: timestamp_2.t EXPRESSION []
 PREHOOK: query: select cast(t as boolean) from timestamp_2 limit 1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@timestamp_2
-PREHOOK: Output: file:/tmp/franklin/hive_2011-07-01_12-48-37_326_6078939667797496082/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: select cast(t as boolean) from timestamp_2 limit 1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@timestamp_2
-POSTHOOK: Output: file:/tmp/franklin/hive_2011-07-01_12-48-37_326_6078939667797496082/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: Lineage: timestamp_2.t EXPRESSION []
 POSTHOOK: Lineage: timestamp_2.t EXPRESSION []
 true
 PREHOOK: query: select cast(t as tinyint) from timestamp_2 limit 1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@timestamp_2
-PREHOOK: Output: file:/tmp/franklin/hive_2011-07-01_12-48-40_421_5280108096226979833/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: select cast(t as tinyint) from timestamp_2 limit 1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@timestamp_2
-POSTHOOK: Output: file:/tmp/franklin/hive_2011-07-01_12-48-40_421_5280108096226979833/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: Lineage: timestamp_2.t EXPRESSION []
 POSTHOOK: Lineage: timestamp_2.t EXPRESSION []
 77
 PREHOOK: query: select cast(t as smallint) from timestamp_2 limit 1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@timestamp_2
-PREHOOK: Output: file:/tmp/franklin/hive_2011-07-01_12-48-43_387_7406640498703670553/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: select cast(t as smallint) from timestamp_2 limit 1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@timestamp_2
-POSTHOOK: Output: file:/tmp/franklin/hive_2011-07-01_12-48-43_387_7406640498703670553/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: Lineage: timestamp_2.t EXPRESSION []
 POSTHOOK: Lineage: timestamp_2.t EXPRESSION []
 -4787
 PREHOOK: query: select cast(t as int) from timestamp_2 limit 1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@timestamp_2
-PREHOOK: Output: file:/tmp/franklin/hive_2011-07-01_12-48-46_302_8260175709422432937/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: select cast(t as int) from timestamp_2 limit 1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@timestamp_2
-POSTHOOK: Output: file:/tmp/franklin/hive_2011-07-01_12-48-46_302_8260175709422432937/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: Lineage: timestamp_2.t EXPRESSION []
 POSTHOOK: Lineage: timestamp_2.t EXPRESSION []
 1293872461
 PREHOOK: query: select cast(t as bigint) from timestamp_2 limit 1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@timestamp_2
-PREHOOK: Output: file:/tmp/franklin/hive_2011-07-01_12-48-49_276_8483419191999330874/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: select cast(t as bigint) from timestamp_2 limit 1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@timestamp_2
-POSTHOOK: Output: file:/tmp/franklin/hive_2011-07-01_12-48-49_276_8483419191999330874/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: Lineage: timestamp_2.t EXPRESSION []
 POSTHOOK: Lineage: timestamp_2.t EXPRESSION []
 1293872461
 PREHOOK: query: select cast(t as float) from timestamp_2 limit 1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@timestamp_2
-PREHOOK: Output: file:/tmp/franklin/hive_2011-07-01_12-48-52_296_2341700485252035168/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: select cast(t as float) from timestamp_2 limit 1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@timestamp_2
-POSTHOOK: Output: file:/tmp/franklin/hive_2011-07-01_12-48-52_296_2341700485252035168/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: Lineage: timestamp_2.t EXPRESSION []
 POSTHOOK: Lineage: timestamp_2.t EXPRESSION []
 1.29387251E9
 PREHOOK: query: select cast(t as double) from timestamp_2 limit 1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@timestamp_2
-PREHOOK: Output: file:/tmp/franklin/hive_2011-07-01_12-48-55_268_9219554481193433449/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: select cast(t as double) from timestamp_2 limit 1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@timestamp_2
-POSTHOOK: Output: file:/tmp/franklin/hive_2011-07-01_12-48-55_268_9219554481193433449/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: Lineage: timestamp_2.t EXPRESSION []
 POSTHOOK: Lineage: timestamp_2.t EXPRESSION []
 1.293872461E9
 PREHOOK: query: select cast(t as string) from timestamp_2 limit 1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@timestamp_2
-PREHOOK: Output: file:/tmp/franklin/hive_2011-07-01_12-48-58_231_8887436648539780808/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: select cast(t as string) from timestamp_2 limit 1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@timestamp_2
-POSTHOOK: Output: file:/tmp/franklin/hive_2011-07-01_12-48-58_231_8887436648539780808/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: Lineage: timestamp_2.t EXPRESSION []
 POSTHOOK: Lineage: timestamp_2.t EXPRESSION []
 2011-01-01 01:01:01
@@ -222,11 +222,11 @@ POSTHOOK: Lineage: timestamp_2.t EXPRESSION []
 PREHOOK: query: select cast(t as boolean) from timestamp_2 limit 1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@timestamp_2
-PREHOOK: Output: file:/tmp/franklin/hive_2011-07-01_12-49-05_930_3486792034390357603/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: select cast(t as boolean) from timestamp_2 limit 1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@timestamp_2
-POSTHOOK: Output: file:/tmp/franklin/hive_2011-07-01_12-49-05_930_3486792034390357603/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: Lineage: timestamp_2.t EXPRESSION []
 POSTHOOK: Lineage: timestamp_2.t EXPRESSION []
 POSTHOOK: Lineage: timestamp_2.t EXPRESSION []
@@ -234,11 +234,11 @@ true
 PREHOOK: query: select cast(t as tinyint) from timestamp_2 limit 1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@timestamp_2
-PREHOOK: Output: file:/tmp/franklin/hive_2011-07-01_12-49-08_943_7831453960584727401/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: select cast(t as tinyint) from timestamp_2 limit 1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@timestamp_2
-POSTHOOK: Output: file:/tmp/franklin/hive_2011-07-01_12-49-08_943_7831453960584727401/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: Lineage: timestamp_2.t EXPRESSION []
 POSTHOOK: Lineage: timestamp_2.t EXPRESSION []
 POSTHOOK: Lineage: timestamp_2.t EXPRESSION []
@@ -246,11 +246,11 @@ POSTHOOK: Lineage: timestamp_2.t EXPRESSION []
 PREHOOK: query: select cast(t as smallint) from timestamp_2 limit 1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@timestamp_2
-PREHOOK: Output: file:/tmp/franklin/hive_2011-07-01_12-49-11_943_4793990075197886013/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: select cast(t as smallint) from timestamp_2 limit 1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@timestamp_2
-POSTHOOK: Output: file:/tmp/franklin/hive_2011-07-01_12-49-11_943_4793990075197886013/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: Lineage: timestamp_2.t EXPRESSION []
 POSTHOOK: Lineage: timestamp_2.t EXPRESSION []
 POSTHOOK: Lineage: timestamp_2.t EXPRESSION []
@@ -258,11 +258,11 @@ POSTHOOK: Lineage: timestamp_2.t EXPRESSION []
 PREHOOK: query: select cast(t as int) from timestamp_2 limit 1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@timestamp_2
-PREHOOK: Output: file:/tmp/franklin/hive_2011-07-01_12-49-14_870_3758505695282442742/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: select cast(t as int) from timestamp_2 limit 1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@timestamp_2
-POSTHOOK: Output: file:/tmp/franklin/hive_2011-07-01_12-49-14_870_3758505695282442742/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: Lineage: timestamp_2.t EXPRESSION []
 POSTHOOK: Lineage: timestamp_2.t EXPRESSION []
 POSTHOOK: Lineage: timestamp_2.t EXPRESSION []
@@ -270,11 +270,11 @@ POSTHOOK: Lineage: timestamp_2.t EXPRESSION []
 PREHOOK: query: select cast(t as bigint) from timestamp_2 limit 1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@timestamp_2
-PREHOOK: Output: file:/tmp/franklin/hive_2011-07-01_12-49-17_883_2914296100063525715/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: select cast(t as bigint) from timestamp_2 limit 1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@timestamp_2
-POSTHOOK: Output: file:/tmp/franklin/hive_2011-07-01_12-49-17_883_2914296100063525715/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: Lineage: timestamp_2.t EXPRESSION []
 POSTHOOK: Lineage: timestamp_2.t EXPRESSION []
 POSTHOOK: Lineage: timestamp_2.t EXPRESSION []
@@ -282,11 +282,11 @@ POSTHOOK: Lineage: timestamp_2.t EXPRESSION []
 PREHOOK: query: select cast(t as float) from timestamp_2 limit 1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@timestamp_2
-PREHOOK: Output: file:/tmp/franklin/hive_2011-07-01_12-49-20_934_3487178570616336367/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: select cast(t as float) from timestamp_2 limit 1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@timestamp_2
-POSTHOOK: Output: file:/tmp/franklin/hive_2011-07-01_12-49-20_934_3487178570616336367/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: Lineage: timestamp_2.t EXPRESSION []
 POSTHOOK: Lineage: timestamp_2.t EXPRESSION []
 POSTHOOK: Lineage: timestamp_2.t EXPRESSION []
@@ -294,11 +294,11 @@ POSTHOOK: Lineage: timestamp_2.t EXPRESSION []
 PREHOOK: query: select cast(t as double) from timestamp_2 limit 1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@timestamp_2
-PREHOOK: Output: file:/tmp/franklin/hive_2011-07-01_12-49-23_902_4484213838609434018/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: select cast(t as double) from timestamp_2 limit 1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@timestamp_2
-POSTHOOK: Output: file:/tmp/franklin/hive_2011-07-01_12-49-23_902_4484213838609434018/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: Lineage: timestamp_2.t EXPRESSION []
 POSTHOOK: Lineage: timestamp_2.t EXPRESSION []
 POSTHOOK: Lineage: timestamp_2.t EXPRESSION []
@@ -306,11 +306,11 @@ POSTHOOK: Lineage: timestamp_2.t EXPRESSION []
 PREHOOK: query: select cast(t as string) from timestamp_2 limit 1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@timestamp_2
-PREHOOK: Output: file:/tmp/franklin/hive_2011-07-01_12-49-26_954_2336095754116315212/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: select cast(t as string) from timestamp_2 limit 1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@timestamp_2
-POSTHOOK: Output: file:/tmp/franklin/hive_2011-07-01_12-49-26_954_2336095754116315212/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: Lineage: timestamp_2.t EXPRESSION []
 POSTHOOK: Lineage: timestamp_2.t EXPRESSION []
 POSTHOOK: Lineage: timestamp_2.t EXPRESSION []
@@ -332,11 +332,11 @@ POSTHOOK: Lineage: timestamp_2.t EXPRESSION []
 PREHOOK: query: select cast(t as boolean) from timestamp_2 limit 1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@timestamp_2
-PREHOOK: Output: file:/tmp/franklin/hive_2011-07-01_12-49-34_653_4781838027058443331/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: select cast(t as boolean) from timestamp_2 limit 1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@timestamp_2
-POSTHOOK: Output: file:/tmp/franklin/hive_2011-07-01_12-49-34_653_4781838027058443331/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: Lineage: timestamp_2.t EXPRESSION []
 POSTHOOK: Lineage: timestamp_2.t EXPRESSION []
 POSTHOOK: Lineage: timestamp_2.t EXPRESSION []
@@ -345,11 +345,11 @@ true
 PREHOOK: query: select cast(t as tinyint) from timestamp_2 limit 1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@timestamp_2
-PREHOOK: Output: file:/tmp/franklin/hive_2011-07-01_12-49-38_304_1317016439907140832/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: select cast(t as tinyint) from timestamp_2 limit 1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@timestamp_2
-POSTHOOK: Output: file:/tmp/franklin/hive_2011-07-01_12-49-38_304_1317016439907140832/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: Lineage: timestamp_2.t EXPRESSION []
 POSTHOOK: Lineage: timestamp_2.t EXPRESSION []
 POSTHOOK: Lineage: timestamp_2.t EXPRESSION []
@@ -358,11 +358,11 @@ POSTHOOK: Lineage: timestamp_2.t EXPRESSION []
 PREHOOK: query: select cast(t as smallint) from timestamp_2 limit 1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@timestamp_2
-PREHOOK: Output: file:/tmp/franklin/hive_2011-07-01_12-49-41_275_9148893321464358248/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: select cast(t as smallint) from timestamp_2 limit 1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@timestamp_2
-POSTHOOK: Output: file:/tmp/franklin/hive_2011-07-01_12-49-41_275_9148893321464358248/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: Lineage: timestamp_2.t EXPRESSION []
 POSTHOOK: Lineage: timestamp_2.t EXPRESSION []
 POSTHOOK: Lineage: timestamp_2.t EXPRESSION []
@@ -371,11 +371,11 @@ POSTHOOK: Lineage: timestamp_2.t EXPRESSION []
 PREHOOK: query: select cast(t as int) from timestamp_2 limit 1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@timestamp_2
-PREHOOK: Output: file:/tmp/franklin/hive_2011-07-01_12-49-44_254_5017580943982042165/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: select cast(t as int) from timestamp_2 limit 1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@timestamp_2
-POSTHOOK: Output: file:/tmp/franklin/hive_2011-07-01_12-49-44_254_5017580943982042165/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: Lineage: timestamp_2.t EXPRESSION []
 POSTHOOK: Lineage: timestamp_2.t EXPRESSION []
 POSTHOOK: Lineage: timestamp_2.t EXPRESSION []
@@ -384,11 +384,11 @@ POSTHOOK: Lineage: timestamp_2.t EXPRESSION []
 PREHOOK: query: select cast(t as bigint) from timestamp_2 limit 1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@timestamp_2
-PREHOOK: Output: file:/tmp/franklin/hive_2011-07-01_12-49-47_208_6485422477749545271/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: select cast(t as bigint) from timestamp_2 limit 1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@timestamp_2
-POSTHOOK: Output: file:/tmp/franklin/hive_2011-07-01_12-49-47_208_6485422477749545271/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: Lineage: timestamp_2.t EXPRESSION []
 POSTHOOK: Lineage: timestamp_2.t EXPRESSION []
 POSTHOOK: Lineage: timestamp_2.t EXPRESSION []
@@ -397,11 +397,11 @@ POSTHOOK: Lineage: timestamp_2.t EXPRESSION []
 PREHOOK: query: select cast(t as float) from timestamp_2 limit 1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@timestamp_2
-PREHOOK: Output: file:/tmp/franklin/hive_2011-07-01_12-49-50_163_1281533183229086880/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: select cast(t as float) from timestamp_2 limit 1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@timestamp_2
-POSTHOOK: Output: file:/tmp/franklin/hive_2011-07-01_12-49-50_163_1281533183229086880/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: Lineage: timestamp_2.t EXPRESSION []
 POSTHOOK: Lineage: timestamp_2.t EXPRESSION []
 POSTHOOK: Lineage: timestamp_2.t EXPRESSION []
@@ -410,11 +410,11 @@ POSTHOOK: Lineage: timestamp_2.t EXPRESSION []
 PREHOOK: query: select cast(t as double) from timestamp_2 limit 1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@timestamp_2
-PREHOOK: Output: file:/tmp/franklin/hive_2011-07-01_12-49-53_184_8143474264472938500/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: select cast(t as double) from timestamp_2 limit 1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@timestamp_2
-POSTHOOK: Output: file:/tmp/franklin/hive_2011-07-01_12-49-53_184_8143474264472938500/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: Lineage: timestamp_2.t EXPRESSION []
 POSTHOOK: Lineage: timestamp_2.t EXPRESSION []
 POSTHOOK: Lineage: timestamp_2.t EXPRESSION []
@@ -423,11 +423,11 @@ POSTHOOK: Lineage: timestamp_2.t EXPRESSION []
 PREHOOK: query: select cast(t as string) from timestamp_2 limit 1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@timestamp_2
-PREHOOK: Output: file:/tmp/franklin/hive_2011-07-01_12-49-56_154_7984370185735682521/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: select cast(t as string) from timestamp_2 limit 1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@timestamp_2
-POSTHOOK: Output: file:/tmp/franklin/hive_2011-07-01_12-49-56_154_7984370185735682521/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: Lineage: timestamp_2.t EXPRESSION []
 POSTHOOK: Lineage: timestamp_2.t EXPRESSION []
 POSTHOOK: Lineage: timestamp_2.t EXPRESSION []
@@ -451,11 +451,11 @@ POSTHOOK: Lineage: timestamp_2.t EXPRESSION []
 PREHOOK: query: select cast(t as boolean) from timestamp_2 limit 1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@timestamp_2
-PREHOOK: Output: file:/tmp/franklin/hive_2011-07-01_12-50-03_569_5946080326619912392/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: select cast(t as boolean) from timestamp_2 limit 1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@timestamp_2
-POSTHOOK: Output: file:/tmp/franklin/hive_2011-07-01_12-50-03_569_5946080326619912392/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: Lineage: timestamp_2.t EXPRESSION []
 POSTHOOK: Lineage: timestamp_2.t EXPRESSION []
 POSTHOOK: Lineage: timestamp_2.t EXPRESSION []
@@ -465,11 +465,11 @@ true
 PREHOOK: query: select cast(t as tinyint) from timestamp_2 limit 1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@timestamp_2
-PREHOOK: Output: file:/tmp/franklin/hive_2011-07-01_12-50-06_591_5565829922065788266/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: select cast(t as tinyint) from timestamp_2 limit 1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@timestamp_2
-POSTHOOK: Output: file:/tmp/franklin/hive_2011-07-01_12-50-06_591_5565829922065788266/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: Lineage: timestamp_2.t EXPRESSION []
 POSTHOOK: Lineage: timestamp_2.t EXPRESSION []
 POSTHOOK: Lineage: timestamp_2.t EXPRESSION []
@@ -479,11 +479,11 @@ POSTHOOK: Lineage: timestamp_2.t EXPRESSION []
 PREHOOK: query: select cast(t as smallint) from timestamp_2 limit 1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@timestamp_2
-PREHOOK: Output: file:/tmp/franklin/hive_2011-07-01_12-50-09_607_2753204269820264462/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: select cast(t as smallint) from timestamp_2 limit 1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@timestamp_2
-POSTHOOK: Output: file:/tmp/franklin/hive_2011-07-01_12-50-09_607_2753204269820264462/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: Lineage: timestamp_2.t EXPRESSION []
 POSTHOOK: Lineage: timestamp_2.t EXPRESSION []
 POSTHOOK: Lineage: timestamp_2.t EXPRESSION []
@@ -493,11 +493,11 @@ POSTHOOK: Lineage: timestamp_2.t EXPRESSION []
 PREHOOK: query: select cast(t as int) from timestamp_2 limit 1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@timestamp_2
-PREHOOK: Output: file:/tmp/franklin/hive_2011-07-01_12-50-13_240_3438652433892606992/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: select cast(t as int) from timestamp_2 limit 1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@timestamp_2
-POSTHOOK: Output: file:/tmp/franklin/hive_2011-07-01_12-50-13_240_3438652433892606992/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: Lineage: timestamp_2.t EXPRESSION []
 POSTHOOK: Lineage: timestamp_2.t EXPRESSION []
 POSTHOOK: Lineage: timestamp_2.t EXPRESSION []
@@ -507,11 +507,11 @@ POSTHOOK: Lineage: timestamp_2.t EXPRESSION []
 PREHOOK: query: select cast(t as bigint) from timestamp_2 limit 1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@timestamp_2
-PREHOOK: Output: file:/tmp/franklin/hive_2011-07-01_12-50-16_215_8956544347440517321/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: select cast(t as bigint) from timestamp_2 limit 1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@timestamp_2
-POSTHOOK: Output: file:/tmp/franklin/hive_2011-07-01_12-50-16_215_8956544347440517321/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: Lineage: timestamp_2.t EXPRESSION []
 POSTHOOK: Lineage: timestamp_2.t EXPRESSION []
 POSTHOOK: Lineage: timestamp_2.t EXPRESSION []
@@ -521,11 +521,11 @@ POSTHOOK: Lineage: timestamp_2.t EXPRESSION []
 PREHOOK: query: select cast(t as float) from timestamp_2 limit 1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@timestamp_2
-PREHOOK: Output: file:/tmp/franklin/hive_2011-07-01_12-50-19_172_5977493939798601065/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: select cast(t as float) from timestamp_2 limit 1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@timestamp_2
-POSTHOOK: Output: file:/tmp/franklin/hive_2011-07-01_12-50-19_172_5977493939798601065/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: Lineage: timestamp_2.t EXPRESSION []
 POSTHOOK: Lineage: timestamp_2.t EXPRESSION []
 POSTHOOK: Lineage: timestamp_2.t EXPRESSION []
@@ -535,11 +535,11 @@ POSTHOOK: Lineage: timestamp_2.t EXPRESSION []
 PREHOOK: query: select cast(t as double) from timestamp_2 limit 1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@timestamp_2
-PREHOOK: Output: file:/tmp/franklin/hive_2011-07-01_12-50-22_179_704915874158342655/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: select cast(t as double) from timestamp_2 limit 1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@timestamp_2
-POSTHOOK: Output: file:/tmp/franklin/hive_2011-07-01_12-50-22_179_704915874158342655/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: Lineage: timestamp_2.t EXPRESSION []
 POSTHOOK: Lineage: timestamp_2.t EXPRESSION []
 POSTHOOK: Lineage: timestamp_2.t EXPRESSION []
@@ -549,11 +549,11 @@ POSTHOOK: Lineage: timestamp_2.t EXPRESSION []
 PREHOOK: query: select cast(t as string) from timestamp_2 limit 1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@timestamp_2
-PREHOOK: Output: file:/tmp/franklin/hive_2011-07-01_12-50-25_227_2626758837651763278/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: select cast(t as string) from timestamp_2 limit 1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@timestamp_2
-POSTHOOK: Output: file:/tmp/franklin/hive_2011-07-01_12-50-25_227_2626758837651763278/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: Lineage: timestamp_2.t EXPRESSION []
 POSTHOOK: Lineage: timestamp_2.t EXPRESSION []
 POSTHOOK: Lineage: timestamp_2.t EXPRESSION []
@@ -579,11 +579,11 @@ POSTHOOK: Lineage: timestamp_2.t EXPRESSION []
 PREHOOK: query: select cast(t as boolean) from timestamp_2 limit 1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@timestamp_2
-PREHOOK: Output: file:/tmp/franklin/hive_2011-07-01_12-50-32_419_7429589015864428572/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: select cast(t as boolean) from timestamp_2 limit 1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@timestamp_2
-POSTHOOK: Output: file:/tmp/franklin/hive_2011-07-01_12-50-32_419_7429589015864428572/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: Lineage: timestamp_2.t EXPRESSION []
 POSTHOOK: Lineage: timestamp_2.t EXPRESSION []
 POSTHOOK: Lineage: timestamp_2.t EXPRESSION []
@@ -594,11 +594,11 @@ true
 PREHOOK: query: select cast(t as tinyint) from timestamp_2 limit 1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@timestamp_2
-PREHOOK: Output: file:/tmp/franklin/hive_2011-07-01_12-50-35_412_4900591732686437088/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: select cast(t as tinyint) from timestamp_2 limit 1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@timestamp_2
-POSTHOOK: Output: file:/tmp/franklin/hive_2011-07-01_12-50-35_412_4900591732686437088/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: Lineage: timestamp_2.t EXPRESSION []
 POSTHOOK: Lineage: timestamp_2.t EXPRESSION []
 POSTHOOK: Lineage: timestamp_2.t EXPRESSION []
@@ -609,11 +609,11 @@ POSTHOOK: Lineage: timestamp_2.t EXPRESSION []
 PREHOOK: query: select cast(t as smallint) from timestamp_2 limit 1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@timestamp_2
-PREHOOK: Output: file:/tmp/franklin/hive_2011-07-01_12-50-38_318_138268242299761700/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: select cast(t as smallint) from timestamp_2 limit 1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@timestamp_2
-POSTHOOK: Output: file:/tmp/franklin/hive_2011-07-01_12-50-38_318_138268242299761700/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: Lineage: timestamp_2.t EXPRESSION []
 POSTHOOK: Lineage: timestamp_2.t EXPRESSION []
 POSTHOOK: Lineage: timestamp_2.t EXPRESSION []
@@ -624,11 +624,11 @@ POSTHOOK: Lineage: timestamp_2.t EXPRESSION []
 PREHOOK: query: select cast(t as int) from timestamp_2 limit 1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@timestamp_2
-PREHOOK: Output: file:/tmp/franklin/hive_2011-07-01_12-50-41_280_7066940416696071705/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: select cast(t as int) from timestamp_2 limit 1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@timestamp_2
-POSTHOOK: Output: file:/tmp/franklin/hive_2011-07-01_12-50-41_280_7066940416696071705/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: Lineage: timestamp_2.t EXPRESSION []
 POSTHOOK: Lineage: timestamp_2.t EXPRESSION []
 POSTHOOK: Lineage: timestamp_2.t EXPRESSION []
@@ -639,11 +639,11 @@ POSTHOOK: Lineage: timestamp_2.t EXPRESSION []
 PREHOOK: query: select cast(t as bigint) from timestamp_2 limit 1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@timestamp_2
-PREHOOK: Output: file:/tmp/franklin/hive_2011-07-01_12-50-44_251_8058715338324634255/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: select cast(t as bigint) from timestamp_2 limit 1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@timestamp_2
-POSTHOOK: Output: file:/tmp/franklin/hive_2011-07-01_12-50-44_251_8058715338324634255/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: Lineage: timestamp_2.t EXPRESSION []
 POSTHOOK: Lineage: timestamp_2.t EXPRESSION []
 POSTHOOK: Lineage: timestamp_2.t EXPRESSION []
@@ -654,11 +654,11 @@ POSTHOOK: Lineage: timestamp_2.t EXPRESSION []
 PREHOOK: query: select cast(t as float) from timestamp_2 limit 1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@timestamp_2
-PREHOOK: Output: file:/tmp/franklin/hive_2011-07-01_12-50-47_224_5898144204382843545/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: select cast(t as float) from timestamp_2 limit 1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@timestamp_2
-POSTHOOK: Output: file:/tmp/franklin/hive_2011-07-01_12-50-47_224_5898144204382843545/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: Lineage: timestamp_2.t EXPRESSION []
 POSTHOOK: Lineage: timestamp_2.t EXPRESSION []
 POSTHOOK: Lineage: timestamp_2.t EXPRESSION []
@@ -669,11 +669,11 @@ POSTHOOK: Lineage: timestamp_2.t EXPRESSION []
 PREHOOK: query: select cast(t as double) from timestamp_2 limit 1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@timestamp_2
-PREHOOK: Output: file:/tmp/franklin/hive_2011-07-01_12-50-50_190_2151309129086457111/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: select cast(t as double) from timestamp_2 limit 1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@timestamp_2
-POSTHOOK: Output: file:/tmp/franklin/hive_2011-07-01_12-50-50_190_2151309129086457111/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: Lineage: timestamp_2.t EXPRESSION []
 POSTHOOK: Lineage: timestamp_2.t EXPRESSION []
 POSTHOOK: Lineage: timestamp_2.t EXPRESSION []
@@ -684,11 +684,11 @@ POSTHOOK: Lineage: timestamp_2.t EXPRESSION []
 PREHOOK: query: select cast(t as string) from timestamp_2 limit 1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@timestamp_2
-PREHOOK: Output: file:/tmp/franklin/hive_2011-07-01_12-50-53_108_1539319794662532942/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: select cast(t as string) from timestamp_2 limit 1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@timestamp_2
-POSTHOOK: Output: file:/tmp/franklin/hive_2011-07-01_12-50-53_108_1539319794662532942/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: Lineage: timestamp_2.t EXPRESSION []
 POSTHOOK: Lineage: timestamp_2.t EXPRESSION []
 POSTHOOK: Lineage: timestamp_2.t EXPRESSION []

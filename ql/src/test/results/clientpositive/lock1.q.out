@@ -56,8 +56,7 @@ POSTHOOK: type: SHOWLOCKS
 POSTHOOK: Lineage: tstsrc.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: tstsrc.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 default@tstsrc	SHARED
-LOCK_QUERYID:jiayan_20110907105858_10aedc77-c380-4192-871e-83b17567adab	 
-LOCK_TIME:1315418321759	 
+#### A masked pattern was here ####
 LOCK_MODE:EXPLICIT	 
 LOCK_QUERYSTRING:LOCK TABLE tstsrc shared	 
 PREHOOK: query: UNLOCK TABLE tstsrc
@@ -104,8 +103,7 @@ POSTHOOK: type: SHOWLOCKS
 POSTHOOK: Lineage: tstsrc.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: tstsrc.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 default@tstsrc	SHARED
-LOCK_QUERYID:jiayan_20110907105858_752a7b55-7426-4970-8e3a-af74dc557b70	 
-LOCK_TIME:1315418322548	 
+#### A masked pattern was here ####
 LOCK_MODE:EXPLICIT	 
 LOCK_QUERYSTRING:lock TABLE tstsrc SHARED	 
 PREHOOK: query: SHOW LOCKS tstsrc
@@ -136,13 +134,11 @@ POSTHOOK: type: SHOWLOCKS
 POSTHOOK: Lineage: tstsrc.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: tstsrc.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 default@tstsrc	SHARED
-LOCK_QUERYID:jiayan_20110907105858_752a7b55-7426-4970-8e3a-af74dc557b70	 
-LOCK_TIME:1315418322548	 
+#### A masked pattern was here ####
 LOCK_MODE:EXPLICIT	 
 LOCK_QUERYSTRING:lock TABLE tstsrc SHARED	 
 default@tstsrc	SHARED
-LOCK_QUERYID:jiayan_20110907105858_fa544f90-07cc-4176-813c-ed9a91bc56ac	 
-LOCK_TIME:1315418322895	 
+#### A masked pattern was here ####
 LOCK_MODE:EXPLICIT	 
 LOCK_QUERYSTRING:LOCK TABLE tstsrc SHARED	 
 PREHOOK: query: SHOW LOCKS tstsrc

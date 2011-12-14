@@ -69,7 +69,7 @@ STAGE PLANS:
   Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/tmp/sdong/hive_2011-02-10_16-47-23_485_8778783889856166585/-mr-10002 
+#### A masked pattern was here ####
             Reduce Output Operator
               key expressions:
                     expr: _col0
@@ -114,11 +114,11 @@ STAGE PLANS:
 PREHOOK: query: select x.key, count(1) from src x where x.key > 9999 group by x.key
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/tmp/sdong/hive_2011-02-10_16-47-23_577_8894507172444012224/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: select x.key, count(1) from src x where x.key > 9999 group by x.key
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: file:/tmp/sdong/hive_2011-02-10_16-47-23_577_8894507172444012224/-mr-10000
+#### A masked pattern was here ####
 PREHOOK: query: explain
 select x.key, count(1) from src x where x.key > 9999 group by x.key
 PREHOOK: type: QUERY
@@ -201,11 +201,11 @@ STAGE PLANS:
 PREHOOK: query: select x.key, count(1) from src x where x.key > 9999 group by x.key
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/tmp/sdong/hive_2011-02-10_16-47-30_250_5010910823992231939/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: select x.key, count(1) from src x where x.key > 9999 group by x.key
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: file:/tmp/sdong/hive_2011-02-10_16-47-30_250_5010910823992231939/-mr-10000
+#### A masked pattern was here ####
 PREHOOK: query: explain
 select x.key, count(1) from src x where x.key > 9999 group by x.key
 PREHOOK: type: QUERY
@@ -268,7 +268,7 @@ STAGE PLANS:
   Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/tmp/sdong/hive_2011-02-10_16-47-33_781_7585292931085760023/-mr-10002 
+#### A masked pattern was here ####
             Reduce Output Operator
               key expressions:
                     expr: _col0
@@ -313,11 +313,11 @@ STAGE PLANS:
 PREHOOK: query: select x.key, count(1) from src x where x.key > 9999 group by x.key
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/tmp/sdong/hive_2011-02-10_16-47-33_865_612821867896144563/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: select x.key, count(1) from src x where x.key > 9999 group by x.key
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: file:/tmp/sdong/hive_2011-02-10_16-47-33_865_612821867896144563/-mr-10000
+#### A masked pattern was here ####
 PREHOOK: query: explain
 select x.key, count(1) from src x where x.key > 9999 group by x.key
 PREHOOK: type: QUERY
@@ -391,8 +391,8 @@ STAGE PLANS:
 PREHOOK: query: select x.key, count(1) from src x where x.key > 9999 group by x.key
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/tmp/sdong/hive_2011-02-10_16-47-40_525_8325247838790193112/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: select x.key, count(1) from src x where x.key > 9999 group by x.key
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: file:/tmp/sdong/hive_2011-02-10_16-47-40_525_8325247838790193112/-mr-10000
+#### A masked pattern was here ####

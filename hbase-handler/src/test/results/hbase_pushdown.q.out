@@ -68,11 +68,11 @@ STAGE PLANS:
 PREHOOK: query: select * from hbase_pushdown where key=90
 PREHOOK: type: QUERY
 PREHOOK: Input: default@hbase_pushdown
-PREHOOK: Output: file:/tmp/sdong/hive_2011-02-18_19-02-03_372_1639723360194917209/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: select * from hbase_pushdown where key=90
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@hbase_pushdown
-POSTHOOK: Output: file:/tmp/sdong/hive_2011-02-18_19-02-03_372_1639723360194917209/-mr-10000
+#### A masked pattern was here ####
 90	val_90
 PREHOOK: query: -- with partial pushdown
 
@@ -125,11 +125,11 @@ STAGE PLANS:
 PREHOOK: query: select * from hbase_pushdown where key=90 and value like '%90%'
 PREHOOK: type: QUERY
 PREHOOK: Input: default@hbase_pushdown
-PREHOOK: Output: file:/tmp/sdong/hive_2011-02-18_19-02-06_922_7094561571442494676/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: select * from hbase_pushdown where key=90 and value like '%90%'
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@hbase_pushdown
-POSTHOOK: Output: file:/tmp/sdong/hive_2011-02-18_19-02-06_922_7094561571442494676/-mr-10000
+#### A masked pattern was here ####
 90	val_90
 PREHOOK: query: -- with two residuals
 
@@ -232,12 +232,12 @@ PREHOOK: query: select * from hbase_pushdown
 where key=80 and key=90 and value like '%90%'
 PREHOOK: type: QUERY
 PREHOOK: Input: default@hbase_pushdown
-PREHOOK: Output: file:/tmp/sdong/hive_2011-02-18_19-02-10_558_7297784935989395706/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: select * from hbase_pushdown
 where key=80 and key=90 and value like '%90%'
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@hbase_pushdown
-POSTHOOK: Output: file:/tmp/sdong/hive_2011-02-18_19-02-10_558_7297784935989395706/-mr-10000
+#### A masked pattern was here ####
 PREHOOK: query: -- with nothing to push down
 
 explain select * from hbase_pushdown

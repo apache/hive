@@ -16,13 +16,13 @@ round(1.0/0.0, 0), round(power(-1.0,0.5), 0)
 FROM src LIMIT 1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/var/folders/7P/7PeC14kXFIWq0PIYyexGbmKuXUk/-Tmp-/jsichi/hive_2010-11-08_16-56-14_993_3357575211936904005/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: SELECT round(null), round(null, 0), round(125, null), 
 round(1.0/0.0, 0), round(power(-1.0,0.5), 0)
 FROM src LIMIT 1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: file:/var/folders/7P/7PeC14kXFIWq0PIYyexGbmKuXUk/-Tmp-/jsichi/hive_2010-11-08_16-56-14_993_3357575211936904005/-mr-10000
+#### A masked pattern was here ####
 NULL	NULL	NULL	Infinity	NaN
 PREHOOK: query: SELECT
   round(55555), round(55555, 0), round(55555, 1), round(55555, 2), round(55555, 3),
@@ -31,7 +31,7 @@ PREHOOK: query: SELECT
 FROM src LIMIT 1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/var/folders/7P/7PeC14kXFIWq0PIYyexGbmKuXUk/-Tmp-/jsichi/hive_2010-11-08_16-56-20_970_7160483052515911946/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: SELECT
   round(55555), round(55555, 0), round(55555, 1), round(55555, 2), round(55555, 3),
   round(55555, -1), round(55555, -2), round(55555, -3), round(55555, -4),
@@ -39,7 +39,7 @@ POSTHOOK: query: SELECT
 FROM src LIMIT 1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: file:/var/folders/7P/7PeC14kXFIWq0PIYyexGbmKuXUk/-Tmp-/jsichi/hive_2010-11-08_16-56-20_970_7160483052515911946/-mr-10000
+#### A masked pattern was here ####
 55555	55555.0	55555.0	55555.0	55555.0	55560.0	55600.0	56000.0	60000.0	100000.0	0.0	0.0	0.0
 PREHOOK: query: SELECT
   round(125.315), round(125.315, 0),
@@ -51,7 +51,7 @@ PREHOOK: query: SELECT
 FROM src LIMIT 1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/var/folders/7P/7PeC14kXFIWq0PIYyexGbmKuXUk/-Tmp-/jsichi/hive_2010-11-08_16-56-27_179_2911785663452385939/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: SELECT
   round(125.315), round(125.315, 0),
   round(125.315, 1), round(125.315, 2), round(125.315, 3), round(125.315, 4),
@@ -62,7 +62,7 @@ POSTHOOK: query: SELECT
 FROM src LIMIT 1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: file:/var/folders/7P/7PeC14kXFIWq0PIYyexGbmKuXUk/-Tmp-/jsichi/hive_2010-11-08_16-56-27_179_2911785663452385939/-mr-10000
+#### A masked pattern was here ####
 125	125.0	125.3	125.32	125.315	125.315	130.0	100.0	0.0	0.0	-125	-125.0	-125.3	-125.32	-125.315	-125.315	-130.0	-100.0	0.0	0.0
 PREHOOK: query: SELECT
   round(3.141592653589793, -15), round(3.141592653589793, -16),
@@ -85,7 +85,7 @@ PREHOOK: query: SELECT
 FROM src LIMIT 1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/var/folders/7P/7PeC14kXFIWq0PIYyexGbmKuXUk/-Tmp-/jsichi/hive_2010-11-08_16-56-33_545_5250297469148450676/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: SELECT
   round(3.141592653589793, -15), round(3.141592653589793, -16),
   round(3.141592653589793, -13), round(3.141592653589793, -14),
@@ -107,16 +107,16 @@ POSTHOOK: query: SELECT
 FROM src LIMIT 1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: file:/var/folders/7P/7PeC14kXFIWq0PIYyexGbmKuXUk/-Tmp-/jsichi/hive_2010-11-08_16-56-33_545_5250297469148450676/-mr-10000
+#### A masked pattern was here ####
 0.0	0.0	0.0	0.0	0.0	0.0	0.0	0.0	0.0	0.0	0.0	0.0	0.0	0.0	0.0	0.0	3.0	3.1	3.14	3.142	3.1416	3.14159	3.141593	3.1415927	3.14159265	3.141592654	3.1415926536	3.14159265359	3.14159265359	3.1415926535898	3.1415926535898	3.14159265358979	3.141592653589793	3.141592653589793
 PREHOOK: query: SELECT round(1809242.3151111344, 9), round(-1809242.3151111344, 9)
 FROM src LIMIT 1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/var/folders/7P/7PeC14kXFIWq0PIYyexGbmKuXUk/-Tmp-/jsichi/hive_2010-11-08_16-56-39_684_1531195398096756494/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: SELECT round(1809242.3151111344, 9), round(-1809242.3151111344, 9)
 FROM src LIMIT 1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: file:/var/folders/7P/7PeC14kXFIWq0PIYyexGbmKuXUk/-Tmp-/jsichi/hive_2010-11-08_16-56-39_684_1531195398096756494/-mr-10000
+#### A masked pattern was here ####
 1809242.315111134	-1809242.315111134

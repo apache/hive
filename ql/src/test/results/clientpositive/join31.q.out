@@ -87,11 +87,11 @@ STAGE PLANS:
   Stage: Stage-7
     Map Reduce Local Work
       Alias -> Map Local Tables:
-        file:/tmp/sdong/hive_2011-02-10_16-05-06_899_7793721562335617686/-mr-10004 
+#### A masked pattern was here ####
           Fetch Operator
             limit: -1
       Alias -> Map Local Operator Tree:
-        file:/tmp/sdong/hive_2011-02-10_16-05-06_899_7793721562335617686/-mr-10004 
+#### A masked pattern was here ####
             HashTable Sink Operator
               condition expressions:
                 0 {_col0}
@@ -105,7 +105,7 @@ STAGE PLANS:
   Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/tmp/sdong/hive_2011-02-10_16-05-06_899_7793721562335617686/-mr-10002 
+#### A masked pattern was here ####
             Map Join Operator
               condition map:
                    Inner Join 0 to 1
@@ -130,7 +130,7 @@ STAGE PLANS:
   Stage: Stage-3
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/tmp/sdong/hive_2011-02-10_16-05-06_899_7793721562335617686/-mr-10003 
+#### A masked pattern was here ####
           Select Operator
             expressions:
                   expr: _col0
@@ -286,11 +286,11 @@ POSTHOOK: Lineage: dest_j1.key SIMPLE [(src1)x.FieldSchema(name:key, type:string
 PREHOOK: query: select * from dest_j1 x order by x.key
 PREHOOK: type: QUERY
 PREHOOK: Input: default@dest_j1
-PREHOOK: Output: file:/tmp/sdong/hive_2011-02-10_16-05-23_415_6364740924077362970/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: select * from dest_j1 x order by x.key
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@dest_j1
-POSTHOOK: Output: file:/tmp/sdong/hive_2011-02-10_16-05-23_415_6364740924077362970/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: Lineage: dest_j1.cnt EXPRESSION [(src1)x.null, (src)y.null, ]
 POSTHOOK: Lineage: dest_j1.key SIMPLE [(src1)x.FieldSchema(name:key, type:string, comment:default), ]
 128	1

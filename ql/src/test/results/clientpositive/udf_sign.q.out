@@ -39,29 +39,29 @@ STAGE PLANS:
 PREHOOK: query: select sign(0) FROM src LIMIT 1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/tmp/sdong/hive_2011-02-10_17-41-17_227_1383191053945370419/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: select sign(0) FROM src LIMIT 1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: file:/tmp/sdong/hive_2011-02-10_17-41-17_227_1383191053945370419/-mr-10000
+#### A masked pattern was here ####
 0.0
 PREHOOK: query: select sign(-45) FROM src LIMIT 1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/tmp/sdong/hive_2011-02-10_17-41-20_497_4344647994964610941/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: select sign(-45) FROM src LIMIT 1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: file:/tmp/sdong/hive_2011-02-10_17-41-20_497_4344647994964610941/-mr-10000
+#### A masked pattern was here ####
 -1.0
 PREHOOK: query: select sign(46)  FROM src LIMIT 1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/tmp/sdong/hive_2011-02-10_17-41-23_774_6548968224814030868/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: select sign(46)  FROM src LIMIT 1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: file:/tmp/sdong/hive_2011-02-10_17-41-23_774_6548968224814030868/-mr-10000
+#### A masked pattern was here ####
 1.0
 PREHOOK: query: DESCRIBE FUNCTION sign
 PREHOOK: type: DESCFUNCTION
@@ -117,29 +117,29 @@ STAGE PLANS:
 PREHOOK: query: select sign(0) FROM src LIMIT 1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/tmp/sdong/hive_2011-02-10_17-41-27_267_8942791588882991640/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: select sign(0) FROM src LIMIT 1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: file:/tmp/sdong/hive_2011-02-10_17-41-27_267_8942791588882991640/-mr-10000
+#### A masked pattern was here ####
 0.0
 PREHOOK: query: select sign(-45) FROM src LIMIT 1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/tmp/sdong/hive_2011-02-10_17-41-30_576_4621808874907335472/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: select sign(-45) FROM src LIMIT 1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: file:/tmp/sdong/hive_2011-02-10_17-41-30_576_4621808874907335472/-mr-10000
+#### A masked pattern was here ####
 -1.0
 PREHOOK: query: select sign(46)  FROM src LIMIT 1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/tmp/sdong/hive_2011-02-10_17-41-33_805_4140983550923146966/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: select sign(46)  FROM src LIMIT 1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: file:/tmp/sdong/hive_2011-02-10_17-41-33_805_4140983550923146966/-mr-10000
+#### A masked pattern was here ####
 1.0
 PREHOOK: query: DESCRIBE FUNCTION sign
 PREHOOK: type: DESCFUNCTION

@@ -114,7 +114,7 @@ PREHOOK: query: FROM
  WHERE a.key > 10 AND a.key < 20 AND b.key > 15 AND b.key < 25
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/tmp/charleschen/hive_2011-08-04_15-38-05_529_7524832807059785440/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: FROM 
   src a
  LEFT OUTER JOIN 
@@ -124,7 +124,7 @@ POSTHOOK: query: FROM
  WHERE a.key > 10 AND a.key < 20 AND b.key > 15 AND b.key < 25
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: file:/tmp/charleschen/hive_2011-08-04_15-38-05_529_7524832807059785440/-mr-10000
+#### A masked pattern was here ####
 17	val_17	17	val_17
 18	val_18	18	val_18
 18	val_18	18	val_18
@@ -247,7 +247,7 @@ PREHOOK: query: FROM
  WHERE a.key > 10 AND a.key < 20 AND b.key > 15 AND b.key < 25
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/tmp/charleschen/hive_2011-08-04_15-38-08_922_5421203911417883432/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: FROM 
   src a
  LEFT OUTER JOIN 
@@ -257,7 +257,7 @@ POSTHOOK: query: FROM
  WHERE a.key > 10 AND a.key < 20 AND b.key > 15 AND b.key < 25
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: file:/tmp/charleschen/hive_2011-08-04_15-38-08_922_5421203911417883432/-mr-10000
+#### A masked pattern was here ####
 17	val_17	17	val_17
 18	val_18	18	val_18
 18	val_18	18	val_18

@@ -15,14 +15,14 @@ PREHOOK: query: SELECT
 FROM src LIMIT 1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/Users/carl/Projects/hd9/hive-trunk/build/ql/tmp/1659161710/10000
+#### A masked pattern was here ####
 POSTHOOK: query: SELECT
   '2009-03-20 11:30:01',
   unix_timestamp('2009-03-20 11:30:01')
 FROM src LIMIT 1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: file:/Users/carl/Projects/hd9/hive-trunk/build/ql/tmp/1659161710/10000
+#### A masked pattern was here ####
 2009-03-20 11:30:01	1237573801
 PREHOOK: query: SELECT
   '2009-03-20',
@@ -30,14 +30,14 @@ PREHOOK: query: SELECT
 FROM src LIMIT 1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/Users/carl/Projects/hd9/hive-trunk/build/ql/tmp/1103088265/10000
+#### A masked pattern was here ####
 POSTHOOK: query: SELECT
   '2009-03-20',
   unix_timestamp('2009-03-20', 'yyyy-MM-dd')
 FROM src LIMIT 1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: file:/Users/carl/Projects/hd9/hive-trunk/build/ql/tmp/1103088265/10000
+#### A masked pattern was here ####
 2009-03-20	1237532400
 PREHOOK: query: SELECT
   '2009 Mar 20 11:30:01 am',
@@ -45,14 +45,14 @@ PREHOOK: query: SELECT
 FROM src LIMIT 1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/Users/carl/Projects/hd9/hive-trunk/build/ql/tmp/1519095937/10000
+#### A masked pattern was here ####
 POSTHOOK: query: SELECT
   '2009 Mar 20 11:30:01 am',
   unix_timestamp('2009 Mar 20 11:30:01 am', 'yyyy MMM dd h:mm:ss a')
 FROM src LIMIT 1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: file:/Users/carl/Projects/hd9/hive-trunk/build/ql/tmp/1519095937/10000
+#### A masked pattern was here ####
 2009 Mar 20 11:30:01 am	1237573801
 PREHOOK: query: SELECT
   'random_string',
@@ -60,12 +60,12 @@ PREHOOK: query: SELECT
 FROM src LIMIT 1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/Users/carl/Projects/hd9/hive-trunk/build/ql/tmp/1021450138/10000
+#### A masked pattern was here ####
 POSTHOOK: query: SELECT
   'random_string',
   unix_timestamp('random_string')
 FROM src LIMIT 1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: file:/Users/carl/Projects/hd9/hive-trunk/build/ql/tmp/1021450138/10000
+#### A masked pattern was here ####
 random_string	NULL

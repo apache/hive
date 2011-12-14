@@ -12,7 +12,7 @@ POSTHOOK: type: DESCTABLE
 key	string	
 value	string	
 	 	 
-Detailed Table Information	Table(tableName:nzhang_part14, dbName:default, owner:njain, createTime:1323309520, lastAccessTime:0, retention:0, sd:StorageDescriptor(cols:[FieldSchema(name:key, type:string, comment:null), FieldSchema(name:value, type:string, comment:null)], location:pfile:/data/users/njain/hive_commit2/build/ql/test/data/warehouse/nzhang_part14, inputFormat:org.apache.hadoop.mapred.TextInputFormat, outputFormat:org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat, compressed:false, numBuckets:-1, serdeInfo:SerDeInfo(name:null, serializationLib:org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe, parameters:{serialization.format=1}), bucketCols:[], sortCols:[], parameters:{}), partitionKeys:[FieldSchema(name:value, type:string, comment:null)], parameters:{transient_lastDdlTime=1323309520}, viewOriginalText:null, viewExpandedText:null, tableType:MANAGED_TABLE)	
+#### A masked pattern was here ####
 PREHOOK: query: explain
 insert overwrite table nzhang_part14 partition(value) 
 select key, value from (
@@ -83,7 +83,7 @@ STAGE PLANS:
   Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/tmp/njain/hive_2011-12-07_17-58-40_914_3018145671418748325/-mr-10002 
+#### A masked pattern was here ####
           Union
             Select Operator
               expressions:
@@ -100,7 +100,7 @@ STAGE PLANS:
                     output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                     serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                     name: default.nzhang_part14
-        file:/tmp/njain/hive_2011-12-07_17-58-40_914_3018145671418748325/-mr-10004 
+#### A masked pattern was here ####
           Union
             Select Operator
               expressions:
@@ -117,7 +117,7 @@ STAGE PLANS:
                     output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                     serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                     name: default.nzhang_part14
-        file:/tmp/njain/hive_2011-12-07_17-58-40_914_3018145671418748325/-mr-10005 
+#### A masked pattern was here ####
           Union
             Select Operator
               expressions:
@@ -142,7 +142,7 @@ STAGE PLANS:
     Move Operator
       files:
           hdfs directory: true
-          destination: pfile:/data/users/njain/hive_commit2/build/ql/scratchdir/hive_2011-12-07_17-58-40_914_3018145671418748325/-ext-10000
+#### A masked pattern was here ####
 
   Stage: Stage-0
     Move Operator
@@ -162,7 +162,7 @@ STAGE PLANS:
   Stage: Stage-4
     Map Reduce
       Alias -> Map Operator Tree:
-        pfile:/data/users/njain/hive_commit2/build/ql/scratchdir/hive_2011-12-07_17-58-40_914_3018145671418748325/-ext-10003 
+#### A masked pattern was here ####
             File Output Operator
               compressed: false
               GlobalTableId: 0
@@ -275,13 +275,13 @@ order by key, value
 PREHOOK: type: QUERY
 PREHOOK: Input: default@nzhang_part14@value= 
 PREHOOK: Input: default@nzhang_part14@value=__HIVE_DEFAULT_PARTITION__
-PREHOOK: Output: file:/tmp/njain/hive_2011-12-07_17-58-56_195_4783722404416817168/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: select * from nzhang_part14 where value <> 'a'
 order by key, value
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@nzhang_part14@value= 
 POSTHOOK: Input: default@nzhang_part14@value=__HIVE_DEFAULT_PARTITION__
-POSTHOOK: Output: file:/tmp/njain/hive_2011-12-07_17-58-56_195_4783722404416817168/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: Lineage: nzhang_part14 PARTITION(value= ).key EXPRESSION []
 POSTHOOK: Lineage: nzhang_part14 PARTITION(value=__HIVE_DEFAULT_PARTITION__).key EXPRESSION []
 k1	__HIVE_DEFAULT_PARTITION__

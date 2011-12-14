@@ -92,13 +92,13 @@ STAGE PLANS:
     Move Operator
       files:
           hdfs directory: true
-          destination: file:/data/users/salbiz/apache-hive/build/ql/scratchdir/hive_2011-08-01_13-37-45_571_1388780604523388920/-ext-10000
+#### A masked pattern was here ####
 
   Stage: Stage-2
     Move Operator
       files:
           hdfs directory: true
-          destination: file:/tmp/salbiz/hive_2011-08-01_13-37-45_441_8809194499630065291/-mr-10002
+#### A masked pattern was here ####
 
   Stage: Stage-1
     Map Reduce
@@ -143,7 +143,7 @@ STAGE PLANS:
   Stage: Stage-4
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/data/users/salbiz/apache-hive/build/ql/scratchdir/hive_2011-08-01_13-37-45_571_1388780604523388920/-ext-10001 
+#### A masked pattern was here ####
             File Output Operator
               compressed: false
               GlobalTableId: 0
@@ -160,12 +160,12 @@ PREHOOK: query: SELECT key, value FROM src WHERE key=86 ORDER BY key
 PREHOOK: type: QUERY
 PREHOOK: Input: default@default__src_src_key_index__
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/tmp/salbiz/hive_2011-08-01_13-37-45_651_8938647545203357334/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: SELECT key, value FROM src WHERE key=86 ORDER BY key
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@default__src_src_key_index__
 POSTHOOK: Input: default@src
-POSTHOOK: Output: file:/tmp/salbiz/hive_2011-08-01_13-37-45_651_8938647545203357334/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: Lineage: default__src_src_key_index__._bucketname SIMPLE [(src)src.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
 POSTHOOK: Lineage: default__src_src_key_index__._offsets EXPRESSION [(src)src.FieldSchema(name:BLOCK__OFFSET__INSIDE__FILE, type:bigint, comment:), ]
 POSTHOOK: Lineage: default__src_src_key_index__.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]

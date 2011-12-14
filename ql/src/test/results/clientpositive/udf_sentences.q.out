@@ -34,11 +34,11 @@ POSTHOOK: Lineage: sent_tmp2.val SCRIPT [(sent_tmp)sent_tmp.FieldSchema(name:val
 PREHOOK: query: SELECT hex(val) FROM sent_tmp2
 PREHOOK: type: QUERY
 PREHOOK: Input: default@sent_tmp2
-PREHOOK: Output: file:/tmp/njain/hive_2010-08-17_01-14-11_515_4137923996878514227/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: SELECT hex(val) FROM sent_tmp2
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@sent_tmp2
-POSTHOOK: Output: file:/tmp/njain/hive_2010-08-17_01-14-11_515_4137923996878514227/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: Lineage: sent_tmp.val SCRIPT []
 POSTHOOK: Lineage: sent_tmp2.val SCRIPT [(sent_tmp)sent_tmp.FieldSchema(name:val, type:array<string>, comment:null), ]
 48697665
@@ -155,11 +155,11 @@ POSTHOOK: Lineage: sent_tmp2.val SCRIPT [(sent_tmp)sent_tmp.FieldSchema(name:val
 PREHOOK: query: SELECT hex(val) FROM sent_tmp2
 PREHOOK: type: QUERY
 PREHOOK: Input: default@sent_tmp2
-PREHOOK: Output: file:/tmp/njain/hive_2010-08-17_01-14-24_219_4337186937954414417/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: SELECT hex(val) FROM sent_tmp2
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@sent_tmp2
-POSTHOOK: Output: file:/tmp/njain/hive_2010-08-17_01-14-24_219_4337186937954414417/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: Lineage: sent_tmp.val SCRIPT []
 POSTHOOK: Lineage: sent_tmp.val SCRIPT []
 POSTHOOK: Lineage: sent_tmp2.val SCRIPT [(sent_tmp)sent_tmp.FieldSchema(name:val, type:array<string>, comment:null), ]
@@ -198,11 +198,11 @@ C39C6265727365747A756E67
 PREHOOK: query: SELECT sentences("Hive is an excellent tool for data querying; and perhaps more versatile than machine translation!! Multiple, ill-formed sentences...confounding punctuation--and yet this UDF still works!!!!") FROM src LIMIT 1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/tmp/njain/hive_2010-08-17_01-14-27_435_7157960617048129310/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: SELECT sentences("Hive is an excellent tool for data querying; and perhaps more versatile than machine translation!! Multiple, ill-formed sentences...confounding punctuation--and yet this UDF still works!!!!") FROM src LIMIT 1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: file:/tmp/njain/hive_2010-08-17_01-14-27_435_7157960617048129310/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: Lineage: sent_tmp.val SCRIPT []
 POSTHOOK: Lineage: sent_tmp.val SCRIPT []
 POSTHOOK: Lineage: sent_tmp2.val SCRIPT [(sent_tmp)sent_tmp.FieldSchema(name:val, type:array<string>, comment:null), ]

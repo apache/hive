@@ -6,11 +6,11 @@ POSTHOOK: Output: default@nzhang_Tmp
 PREHOOK: query: select * from nzhang_Tmp
 PREHOOK: type: QUERY
 PREHOOK: Input: default@nzhang_tmp
-PREHOOK: Output: file:/tmp/rsurowka/hive_2011-11-07_19-53-14_493_1342587779151203373/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: select * from nzhang_Tmp
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@nzhang_tmp
-POSTHOOK: Output: file:/tmp/rsurowka/hive_2011-11-07_19-53-14_493_1342587779151203373/-mr-10000
+#### A masked pattern was here ####
 PREHOOK: query: explain create table nzhang_CTAS1 as select key k, value from src sort by k, value limit 10
 PREHOOK: type: CREATETABLE_AS_SELECT
 POSTHOOK: query: explain create table nzhang_CTAS1 as select key k, value from src sort by k, value limit 10
@@ -65,7 +65,7 @@ STAGE PLANS:
   Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/tmp/rsurowka/hive_2011-11-07_19-53-14_740_6068039279320291425/-mr-10002 
+#### A masked pattern was here ####
             Reduce Output Operator
               key expressions:
                     expr: _col0
@@ -94,7 +94,7 @@ STAGE PLANS:
     Move Operator
       files:
           hdfs directory: true
-          destination: pfile:/data/users/rsurowka/JAVA_HIVE/apache-hive/build/ql/test/data/warehouse/nzhang_ctas1
+#### A masked pattern was here ####
 
   Stage: Stage-4
       Create Table Operator:
@@ -121,11 +121,11 @@ POSTHOOK: Output: default@nzhang_CTAS1
 PREHOOK: query: select * from nzhang_CTAS1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@nzhang_ctas1
-PREHOOK: Output: file:/tmp/rsurowka/hive_2011-11-07_19-53-24_168_1052652908826092056/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: select * from nzhang_CTAS1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@nzhang_ctas1
-POSTHOOK: Output: file:/tmp/rsurowka/hive_2011-11-07_19-53-24_168_1052652908826092056/-mr-10000
+#### A masked pattern was here ####
 0	val_0
 0	val_0
 0	val_0
@@ -147,12 +147,10 @@ value               	string              	None
 	 	 
 # Detailed Table Information	 	 
 Database:           	default             	 
-Owner:              	rsurowka            	 
-CreateTime:         	Mon Nov 07 19:53:23 PST 2011	 
-LastAccessTime:     	UNKNOWN             	 
+#### A masked pattern was here ####
 Protect Mode:       	None                	 
 Retention:          	0                   	 
-Location:           	pfile:/data/users/rsurowka/JAVA_HIVE/apache-hive/build/ql/test/data/warehouse/nzhang_ctas1	 
+#### A masked pattern was here ####
 Table Type:         	MANAGED_TABLE       	 
 Table Parameters:	 	 
 	numFiles            	1                   
@@ -160,7 +158,7 @@ Table Parameters:
 	numRows             	10                  
 	rawDataSize         	96                  
 	totalSize           	106                 
-	transient_lastDdlTime	1320724404          
+#### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
 SerDe Library:      	org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe	 
@@ -226,7 +224,7 @@ STAGE PLANS:
   Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/tmp/rsurowka/hive_2011-11-07_19-53-24_458_6741209951969271935/-mr-10002 
+#### A masked pattern was here ####
             Reduce Output Operator
               key expressions:
                     expr: _col0
@@ -255,7 +253,7 @@ STAGE PLANS:
     Move Operator
       files:
           hdfs directory: true
-          destination: pfile:/data/users/rsurowka/JAVA_HIVE/apache-hive/build/ql/test/data/warehouse/nzhang_ctas2
+#### A masked pattern was here ####
 
   Stage: Stage-4
       Create Table Operator:
@@ -282,11 +280,11 @@ POSTHOOK: Output: default@nzhang_ctas2
 PREHOOK: query: select * from nzhang_ctas2
 PREHOOK: type: QUERY
 PREHOOK: Input: default@nzhang_ctas2
-PREHOOK: Output: file:/tmp/rsurowka/hive_2011-11-07_19-53-31_886_3453511835007488493/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: select * from nzhang_ctas2
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@nzhang_ctas2
-POSTHOOK: Output: file:/tmp/rsurowka/hive_2011-11-07_19-53-31_886_3453511835007488493/-mr-10000
+#### A masked pattern was here ####
 0	val_0
 0	val_0
 0	val_0
@@ -308,12 +306,10 @@ value               	string              	None
 	 	 
 # Detailed Table Information	 	 
 Database:           	default             	 
-Owner:              	rsurowka            	 
-CreateTime:         	Mon Nov 07 19:53:31 PST 2011	 
-LastAccessTime:     	UNKNOWN             	 
+#### A masked pattern was here ####
 Protect Mode:       	None                	 
 Retention:          	0                   	 
-Location:           	pfile:/data/users/rsurowka/JAVA_HIVE/apache-hive/build/ql/test/data/warehouse/nzhang_ctas2	 
+#### A masked pattern was here ####
 Table Type:         	MANAGED_TABLE       	 
 Table Parameters:	 	 
 	numFiles            	1                   
@@ -321,7 +317,7 @@ Table Parameters:
 	numRows             	10                  
 	rawDataSize         	96                  
 	totalSize           	106                 
-	transient_lastDdlTime	1320724411          
+#### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
 SerDe Library:      	org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe	 
@@ -387,7 +383,7 @@ STAGE PLANS:
   Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/tmp/rsurowka/hive_2011-11-07_19-53-32_176_3137057323851157959/-mr-10002 
+#### A masked pattern was here ####
             Reduce Output Operator
               key expressions:
                     expr: _col0
@@ -416,7 +412,7 @@ STAGE PLANS:
     Move Operator
       files:
           hdfs directory: true
-          destination: pfile:/data/users/rsurowka/JAVA_HIVE/apache-hive/build/ql/test/data/warehouse/nzhang_ctas3
+#### A masked pattern was here ####
 
   Stage: Stage-4
       Create Table Operator:
@@ -444,11 +440,11 @@ POSTHOOK: Output: default@nzhang_ctas3
 PREHOOK: query: select * from nzhang_ctas3
 PREHOOK: type: QUERY
 PREHOOK: Input: default@nzhang_ctas3
-PREHOOK: Output: file:/tmp/rsurowka/hive_2011-11-07_19-53-39_570_5842680857812811926/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: select * from nzhang_ctas3
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@nzhang_ctas3
-POSTHOOK: Output: file:/tmp/rsurowka/hive_2011-11-07_19-53-39_570_5842680857812811926/-mr-10000
+#### A masked pattern was here ####
 0.0	val_0_con
 0.0	val_0_con
 0.0	val_0_con
@@ -470,12 +466,10 @@ conb                	string              	None
 	 	 
 # Detailed Table Information	 	 
 Database:           	default             	 
-Owner:              	rsurowka            	 
-CreateTime:         	Mon Nov 07 19:53:39 PST 2011	 
-LastAccessTime:     	UNKNOWN             	 
+#### A masked pattern was here ####
 Protect Mode:       	None                	 
 Retention:          	0                   	 
-Location:           	pfile:/data/users/rsurowka/JAVA_HIVE/apache-hive/build/ql/test/data/warehouse/nzhang_ctas3	 
+#### A masked pattern was here ####
 Table Type:         	MANAGED_TABLE       	 
 Table Parameters:	 	 
 	numFiles            	1                   
@@ -483,7 +477,7 @@ Table Parameters:
 	numRows             	10                  
 	rawDataSize         	120                 
 	totalSize           	294                 
-	transient_lastDdlTime	1320724419          
+#### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
 SerDe Library:      	org.apache.hadoop.hive.serde2.columnar.ColumnarSerDe	 
@@ -513,11 +507,11 @@ POSTHOOK: type: CREATETABLE
 PREHOOK: query: select * from nzhang_ctas3
 PREHOOK: type: QUERY
 PREHOOK: Input: default@nzhang_ctas3
-PREHOOK: Output: file:/tmp/rsurowka/hive_2011-11-07_19-53-39_957_8795808764737341610/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: select * from nzhang_ctas3
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@nzhang_ctas3
-POSTHOOK: Output: file:/tmp/rsurowka/hive_2011-11-07_19-53-39_957_8795808764737341610/-mr-10000
+#### A masked pattern was here ####
 0.0	val_0_con
 0.0	val_0_con
 0.0	val_0_con
@@ -539,12 +533,10 @@ conb                	string              	None
 	 	 
 # Detailed Table Information	 	 
 Database:           	default             	 
-Owner:              	rsurowka            	 
-CreateTime:         	Mon Nov 07 19:53:39 PST 2011	 
-LastAccessTime:     	UNKNOWN             	 
+#### A masked pattern was here ####
 Protect Mode:       	None                	 
 Retention:          	0                   	 
-Location:           	pfile:/data/users/rsurowka/JAVA_HIVE/apache-hive/build/ql/test/data/warehouse/nzhang_ctas3	 
+#### A masked pattern was here ####
 Table Type:         	MANAGED_TABLE       	 
 Table Parameters:	 	 
 	numFiles            	1                   
@@ -552,7 +544,7 @@ Table Parameters:
 	numRows             	10                  
 	rawDataSize         	120                 
 	totalSize           	294                 
-	transient_lastDdlTime	1320724419          
+#### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
 SerDe Library:      	org.apache.hadoop.hive.serde2.columnar.ColumnarSerDe	 
@@ -618,7 +610,7 @@ STAGE PLANS:
   Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/tmp/rsurowka/hive_2011-11-07_19-53-40_251_2495661714018508871/-mr-10002 
+#### A masked pattern was here ####
             Reduce Output Operator
               key expressions:
                     expr: _col0
@@ -647,7 +639,7 @@ STAGE PLANS:
     Move Operator
       files:
           hdfs directory: true
-          destination: pfile:/data/users/rsurowka/JAVA_HIVE/apache-hive/build/ql/test/data/warehouse/nzhang_ctas4
+#### A masked pattern was here ####
 
   Stage: Stage-4
       Create Table Operator:
@@ -675,11 +667,11 @@ POSTHOOK: Output: default@nzhang_ctas4
 PREHOOK: query: select * from nzhang_ctas4
 PREHOOK: type: QUERY
 PREHOOK: Input: default@nzhang_ctas4
-PREHOOK: Output: file:/tmp/rsurowka/hive_2011-11-07_19-53-47_574_4018493574829459966/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: select * from nzhang_ctas4
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@nzhang_ctas4
-POSTHOOK: Output: file:/tmp/rsurowka/hive_2011-11-07_19-53-47_574_4018493574829459966/-mr-10000
+#### A masked pattern was here ####
 0	val_0
 0	val_0
 0	val_0
@@ -701,12 +693,10 @@ value               	string              	None
 	 	 
 # Detailed Table Information	 	 
 Database:           	default             	 
-Owner:              	rsurowka            	 
-CreateTime:         	Mon Nov 07 19:53:47 PST 2011	 
-LastAccessTime:     	UNKNOWN             	 
+#### A masked pattern was here ####
 Protect Mode:       	None                	 
 Retention:          	0                   	 
-Location:           	pfile:/data/users/rsurowka/JAVA_HIVE/apache-hive/build/ql/test/data/warehouse/nzhang_ctas4	 
+#### A masked pattern was here ####
 Table Type:         	MANAGED_TABLE       	 
 Table Parameters:	 	 
 	numFiles            	1                   
@@ -714,7 +704,7 @@ Table Parameters:
 	numRows             	10                  
 	rawDataSize         	96                  
 	totalSize           	106                 
-	transient_lastDdlTime	1320724427          
+#### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
 SerDe Library:      	org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe	 
@@ -771,9 +761,9 @@ STAGE PLANS:
                       type: string
       Needs Tagging: false
       Path -> Alias:
-        pfile:/data/users/rsurowka/JAVA_HIVE/apache-hive/build/ql/test/data/warehouse/src [src]
+#### A masked pattern was here ####
       Path -> Partition:
-        pfile:/data/users/rsurowka/JAVA_HIVE/apache-hive/build/ql/test/data/warehouse/src 
+#### A masked pattern was here ####
           Partition
             base file name: src
             input format: org.apache.hadoop.mapred.TextInputFormat
@@ -782,14 +772,12 @@ STAGE PLANS:
               bucket_count -1
               columns key,value
               columns.types string:string
-              file.inputformat org.apache.hadoop.mapred.TextInputFormat
-              file.outputformat org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-              location pfile:/data/users/rsurowka/JAVA_HIVE/apache-hive/build/ql/test/data/warehouse/src
+#### A masked pattern was here ####
               name default.src
               serialization.ddl struct src { string key, string value}
               serialization.format 1
               serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              transient_lastDdlTime 1320724392
+#### A masked pattern was here ####
             serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
           
               input format: org.apache.hadoop.mapred.TextInputFormat
@@ -798,14 +786,12 @@ STAGE PLANS:
                 bucket_count -1
                 columns key,value
                 columns.types string:string
-                file.inputformat org.apache.hadoop.mapred.TextInputFormat
-                file.outputformat org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                location pfile:/data/users/rsurowka/JAVA_HIVE/apache-hive/build/ql/test/data/warehouse/src
+#### A masked pattern was here ####
                 name default.src
                 serialization.ddl struct src { string key, string value}
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                transient_lastDdlTime 1320724392
+#### A masked pattern was here ####
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: default.src
             name: default.src
@@ -815,7 +801,7 @@ STAGE PLANS:
             File Output Operator
               compressed: false
               GlobalTableId: 0
-              directory: file:/tmp/rsurowka/hive_2011-11-07_19-53-47_870_2575560272213439831/-mr-10002
+#### A masked pattern was here ####
               NumFilesPerFileSink: 1
               table:
                   input format: org.apache.hadoop.mapred.SequenceFileInputFormat
@@ -831,7 +817,7 @@ STAGE PLANS:
   Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/tmp/rsurowka/hive_2011-11-07_19-53-47_870_2575560272213439831/-mr-10002 
+#### A masked pattern was here ####
             Reduce Output Operator
               key expressions:
                     expr: _col0
@@ -847,9 +833,9 @@ STAGE PLANS:
                     type: string
       Needs Tagging: false
       Path -> Alias:
-        file:/tmp/rsurowka/hive_2011-11-07_19-53-47_870_2575560272213439831/-mr-10002 [file:/tmp/rsurowka/hive_2011-11-07_19-53-47_870_2575560272213439831/-mr-10002]
+#### A masked pattern was here ####
       Path -> Partition:
-        file:/tmp/rsurowka/hive_2011-11-07_19-53-47_870_2575560272213439831/-mr-10002 
+#### A masked pattern was here ####
           Partition
             base file name: -mr-10002
             input format: org.apache.hadoop.mapred.SequenceFileInputFormat
@@ -871,9 +857,9 @@ STAGE PLANS:
             File Output Operator
               compressed: false
               GlobalTableId: 1
-              directory: pfile:/data/users/rsurowka/JAVA_HIVE/apache-hive/build/ql/scratchdir/hive_2011-11-07_19-53-47_870_2575560272213439831/-ext-10001
+#### A masked pattern was here ####
               NumFilesPerFileSink: 1
-              Stats Publishing Key Prefix: pfile:/data/users/rsurowka/JAVA_HIVE/apache-hive/build/ql/scratchdir/hive_2011-11-07_19-53-47_870_2575560272213439831/-ext-10001/
+#### A masked pattern was here ####
               table:
                   input format: org.apache.hadoop.mapred.TextInputFormat
                   output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
@@ -894,8 +880,7 @@ STAGE PLANS:
     Move Operator
       files:
           hdfs directory: true
-          source: pfile:/data/users/rsurowka/JAVA_HIVE/apache-hive/build/ql/scratchdir/hive_2011-11-07_19-53-47_870_2575560272213439831/-ext-10001
-          destination: pfile:/data/users/rsurowka/JAVA_HIVE/apache-hive/build/ql/test/data/warehouse/nzhang_ctas5
+#### A masked pattern was here ####
 
   Stage: Stage-4
       Create Table Operator:
@@ -913,7 +898,7 @@ STAGE PLANS:
 
   Stage: Stage-3
     Stats-Aggr Operator
-      Stats Aggregation Key Prefix: pfile:/data/users/rsurowka/JAVA_HIVE/apache-hive/build/ql/scratchdir/hive_2011-11-07_19-53-47_870_2575560272213439831/-ext-10001/
+#### A masked pattern was here ####
 
 
 PREHOOK: query: create table nzhang_ctas5 row format delimited fields terminated by ',' lines terminated by '\012' stored as textfile as select key, value from src sort by key, value limit 10

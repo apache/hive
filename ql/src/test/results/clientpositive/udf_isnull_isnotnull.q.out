@@ -79,7 +79,7 @@ FROM src
 WHERE true IS NOT NULL LIMIT 1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/tmp/sdong/hive_2011-02-10_17-36-03_354_6313112205133317265/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: SELECT NULL IS NULL,
        1 IS NOT NULL, 
        'my string' IS NOT NULL
@@ -87,7 +87,7 @@ FROM src
 WHERE true IS NOT NULL LIMIT 1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: file:/tmp/sdong/hive_2011-02-10_17-36-03_354_6313112205133317265/-mr-10000
+#### A masked pattern was here ####
 true	true	true
 PREHOOK: query: EXPLAIN
 FROM src_thrift
@@ -153,7 +153,7 @@ WHERE  src_thrift.lint IS NOT NULL
        AND NOT (src_thrift.mstringstring IS NULL) LIMIT 1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src_thrift
-PREHOOK: Output: file:/tmp/sdong/hive_2011-02-10_17-36-06_768_249335154055687547/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: FROM src_thrift
 SELECT src_thrift.lint IS NOT NULL, 
        src_thrift.lintstring IS NOT NULL, 
@@ -162,5 +162,5 @@ WHERE  src_thrift.lint IS NOT NULL
        AND NOT (src_thrift.mstringstring IS NULL) LIMIT 1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src_thrift
-POSTHOOK: Output: file:/tmp/sdong/hive_2011-02-10_17-36-06_768_249335154055687547/-mr-10000
+#### A masked pattern was here ####
 true	true	true

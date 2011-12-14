@@ -35,11 +35,11 @@ POSTHOOK: Lineage: dest1.len EXPRESSION [(src)src.FieldSchema(name:value, type:s
 PREHOOK: query: SELECT dest1.* FROM dest1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@dest1
-PREHOOK: Output: file:/data/users/athusoo/apache_workspaces/hive_trunk_ws1/.ptest_0/build/ql/scratchdir/hive_2010-04-05_18-40-21_296_2007968470721831903/10000
+#### A masked pattern was here ####
 POSTHOOK: query: SELECT dest1.* FROM dest1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@dest1
-POSTHOOK: Output: file:/data/users/athusoo/apache_workspaces/hive_trunk_ws1/.ptest_0/build/ql/scratchdir/hive_2010-04-05_18-40-21_296_2007968470721831903/10000
+#### A masked pattern was here ####
 POSTHOOK: Lineage: dest1.len EXPRESSION [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 7
 6

@@ -33,7 +33,7 @@ table	authorization_fail
 principalName	hive_test_role_fail	
 principalType	ROLE	
 privilege	Select	
-grantTime	1298430480	
+#### A masked pattern was here ####
 grantor	hive_test_user	
 PREHOOK: query: drop role hive_test_role_fail
 PREHOOK: type: DROPROLE

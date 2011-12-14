@@ -79,9 +79,9 @@ STAGE PLANS:
               File Output Operator
                 compressed: false
                 GlobalTableId: 1
-                directory: pfile:/data/users/rsurowka/JAVA_HIVE/apache-hive/build/ql/scratchdir/hive_2011-11-10_15-15-19_753_2586421080662223289/-ext-10002
+#### A masked pattern was here ####
                 NumFilesPerFileSink: 1
-                Stats Publishing Key Prefix: pfile:/data/users/rsurowka/JAVA_HIVE/apache-hive/build/ql/scratchdir/hive_2011-11-10_15-15-19_753_2586421080662223289/-ext-10001/
+#### A masked pattern was here ####
                 table:
                     input format: org.apache.hadoop.mapred.TextInputFormat
                     output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
@@ -96,9 +96,9 @@ STAGE PLANS:
                 MultiFileSpray: false
       Needs Tagging: false
       Path -> Alias:
-        pfile:/data/users/rsurowka/JAVA_HIVE/apache-hive/build/ql/test/data/warehouse/merge_src [merge_src]
+#### A masked pattern was here ####
       Path -> Partition:
-        pfile:/data/users/rsurowka/JAVA_HIVE/apache-hive/build/ql/test/data/warehouse/merge_src 
+#### A masked pattern was here ####
           Partition
             base file name: merge_src
             input format: org.apache.hadoop.mapred.TextInputFormat
@@ -107,9 +107,7 @@ STAGE PLANS:
               bucket_count -1
               columns key,value
               columns.types string:string
-              file.inputformat org.apache.hadoop.mapred.TextInputFormat
-              file.outputformat org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-              location pfile:/data/users/rsurowka/JAVA_HIVE/apache-hive/build/ql/test/data/warehouse/merge_src
+#### A masked pattern was here ####
               name default.merge_src
               numFiles 4
               numPartitions 0
@@ -119,7 +117,7 @@ STAGE PLANS:
               serialization.format 1
               serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               totalSize 23248
-              transient_lastDdlTime 1320966913
+#### A masked pattern was here ####
             serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
           
               input format: org.apache.hadoop.mapred.TextInputFormat
@@ -128,9 +126,7 @@ STAGE PLANS:
                 bucket_count -1
                 columns key,value
                 columns.types string:string
-                file.inputformat org.apache.hadoop.mapred.TextInputFormat
-                file.outputformat org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                location pfile:/data/users/rsurowka/JAVA_HIVE/apache-hive/build/ql/test/data/warehouse/merge_src
+#### A masked pattern was here ####
                 name default.merge_src
                 numFiles 4
                 numPartitions 0
@@ -140,7 +136,7 @@ STAGE PLANS:
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                 totalSize 23248
-                transient_lastDdlTime 1320966913
+#### A masked pattern was here ####
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: default.merge_src
             name: default.merge_src
@@ -152,15 +148,13 @@ STAGE PLANS:
     Move Operator
       files:
           hdfs directory: true
-          source: pfile:/data/users/rsurowka/JAVA_HIVE/apache-hive/build/ql/scratchdir/hive_2011-11-10_15-15-19_753_2586421080662223289/-ext-10002
-          destination: pfile:/data/users/rsurowka/JAVA_HIVE/apache-hive/build/ql/scratchdir/hive_2011-11-10_15-15-19_753_2586421080662223289/-ext-10001
+#### A masked pattern was here ####
 
   Stage: Stage-0
     Move Operator
       files:
           hdfs directory: true
-          source: pfile:/data/users/rsurowka/JAVA_HIVE/apache-hive/build/ql/scratchdir/hive_2011-11-10_15-15-19_753_2586421080662223289/-ext-10001
-          destination: pfile:/data/users/rsurowka/JAVA_HIVE/apache-hive/build/ql/test/data/warehouse/merge_src2
+#### A masked pattern was here ####
 
   Stage: Stage-6
       Create Table Operator:
@@ -175,16 +169,16 @@ STAGE PLANS:
 
   Stage: Stage-2
     Stats-Aggr Operator
-      Stats Aggregation Key Prefix: pfile:/data/users/rsurowka/JAVA_HIVE/apache-hive/build/ql/scratchdir/hive_2011-11-10_15-15-19_753_2586421080662223289/-ext-10001/
+#### A masked pattern was here ####
 
   Stage: Stage-3
     Map Reduce
       Alias -> Map Operator Tree:
-        pfile:/data/users/rsurowka/JAVA_HIVE/apache-hive/build/ql/scratchdir/hive_2011-11-10_15-15-19_753_2586421080662223289/-ext-10002 
+#### A masked pattern was here ####
             File Output Operator
               compressed: false
               GlobalTableId: 0
-              directory: pfile:/data/users/rsurowka/JAVA_HIVE/apache-hive/build/ql/scratchdir/hive_2011-11-10_15-15-19_753_2586421080662223289/-ext-10001
+#### A masked pattern was here ####
               NumFilesPerFileSink: 1
               table:
                   input format: org.apache.hadoop.mapred.TextInputFormat
@@ -200,9 +194,9 @@ STAGE PLANS:
               MultiFileSpray: false
       Needs Tagging: false
       Path -> Alias:
-        pfile:/data/users/rsurowka/JAVA_HIVE/apache-hive/build/ql/scratchdir/hive_2011-11-10_15-15-19_753_2586421080662223289/-ext-10002 [pfile:/data/users/rsurowka/JAVA_HIVE/apache-hive/build/ql/scratchdir/hive_2011-11-10_15-15-19_753_2586421080662223289/-ext-10002]
+#### A masked pattern was here ####
       Path -> Partition:
-        pfile:/data/users/rsurowka/JAVA_HIVE/apache-hive/build/ql/scratchdir/hive_2011-11-10_15-15-19_753_2586421080662223289/-ext-10002 
+#### A masked pattern was here ####
           Partition
             base file name: -ext-10002
             input format: org.apache.hadoop.mapred.TextInputFormat
@@ -240,11 +234,11 @@ POSTHOOK: Lineage: merge_src_part PARTITION(ds=2008-04-09).value SIMPLE [(srcpar
 PREHOOK: query: select * from merge_src2
 PREHOOK: type: QUERY
 PREHOOK: Input: default@merge_src2
-PREHOOK: Output: file:/tmp/rsurowka/hive_2011-11-10_15-15-28_320_625694146403262646/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: select * from merge_src2
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@merge_src2
-POSTHOOK: Output: file:/tmp/rsurowka/hive_2011-11-10_15-15-28_320_625694146403262646/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: Lineage: merge_src_part PARTITION(ds=2008-04-08).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: merge_src_part PARTITION(ds=2008-04-08).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: merge_src_part PARTITION(ds=2008-04-09).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
@@ -2264,12 +2258,10 @@ value               	string              	None
 	 	 
 # Detailed Table Information	 	 
 Database:           	default             	 
-Owner:              	rsurowka            	 
-CreateTime:         	Thu Nov 10 15:15:28 PST 2011	 
-LastAccessTime:     	UNKNOWN             	 
+#### A masked pattern was here ####
 Protect Mode:       	None                	 
 Retention:          	0                   	 
-Location:           	pfile:/data/users/rsurowka/JAVA_HIVE/apache-hive/build/ql/test/data/warehouse/merge_src2	 
+#### A masked pattern was here ####
 Table Type:         	MANAGED_TABLE       	 
 Table Parameters:	 	 
 	numFiles            	1                   
@@ -2277,7 +2269,7 @@ Table Parameters:
 	numRows             	2000                
 	rawDataSize         	21248               
 	totalSize           	23248               
-	transient_lastDdlTime	1320966928          
+#### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
 SerDe Library:      	org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe	 
@@ -2343,9 +2335,9 @@ STAGE PLANS:
               File Output Operator
                 compressed: false
                 GlobalTableId: 1
-                directory: pfile:/data/users/rsurowka/JAVA_HIVE/apache-hive/build/ql/scratchdir/hive_2011-11-10_15-15-28_784_26196590456392265/-ext-10002
+#### A masked pattern was here ####
                 NumFilesPerFileSink: 1
-                Stats Publishing Key Prefix: pfile:/data/users/rsurowka/JAVA_HIVE/apache-hive/build/ql/scratchdir/hive_2011-11-10_15-15-28_784_26196590456392265/-ext-10000/
+#### A masked pattern was here ####
                 table:
                     input format: org.apache.hadoop.mapred.TextInputFormat
                     output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
@@ -2353,15 +2345,13 @@ STAGE PLANS:
                       bucket_count -1
                       columns key,value
                       columns.types string:string
-                      file.inputformat org.apache.hadoop.mapred.TextInputFormat
-                      file.outputformat org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                      location pfile:/data/users/rsurowka/JAVA_HIVE/apache-hive/build/ql/test/data/warehouse/merge_src_part2
+#### A masked pattern was here ####
                       name default.merge_src_part2
                       partition_columns ds
                       serialization.ddl struct merge_src_part2 { string key, string value}
                       serialization.format 1
                       serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                      transient_lastDdlTime 1320966928
+#### A masked pattern was here ####
                     serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                     name: default.merge_src_part2
                 TotalFiles: 1
@@ -2369,10 +2359,9 @@ STAGE PLANS:
                 MultiFileSpray: false
       Needs Tagging: false
       Path -> Alias:
-        pfile:/data/users/rsurowka/JAVA_HIVE/apache-hive/build/ql/test/data/warehouse/merge_src_part/ds=2008-04-08 [merge_src_part]
-        pfile:/data/users/rsurowka/JAVA_HIVE/apache-hive/build/ql/test/data/warehouse/merge_src_part/ds=2008-04-09 [merge_src_part]
+#### A masked pattern was here ####
       Path -> Partition:
-        pfile:/data/users/rsurowka/JAVA_HIVE/apache-hive/build/ql/test/data/warehouse/merge_src_part/ds=2008-04-08 
+#### A masked pattern was here ####
           Partition
             base file name: ds=2008-04-08
             input format: org.apache.hadoop.mapred.TextInputFormat
@@ -2383,9 +2372,7 @@ STAGE PLANS:
               bucket_count -1
               columns key,value
               columns.types string:string
-              file.inputformat org.apache.hadoop.mapred.TextInputFormat
-              file.outputformat org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-              location pfile:/data/users/rsurowka/JAVA_HIVE/apache-hive/build/ql/test/data/warehouse/merge_src_part/ds=2008-04-08
+#### A masked pattern was here ####
               name default.merge_src_part
               numFiles 2
               numPartitions 2
@@ -2396,7 +2383,7 @@ STAGE PLANS:
               serialization.format 1
               serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               totalSize 11624
-              transient_lastDdlTime 1320966919
+#### A masked pattern was here ####
             serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
           
               input format: org.apache.hadoop.mapred.TextInputFormat
@@ -2405,9 +2392,7 @@ STAGE PLANS:
                 bucket_count -1
                 columns key,value
                 columns.types string:string
-                file.inputformat org.apache.hadoop.mapred.TextInputFormat
-                file.outputformat org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                location pfile:/data/users/rsurowka/JAVA_HIVE/apache-hive/build/ql/test/data/warehouse/merge_src_part
+#### A masked pattern was here ####
                 name default.merge_src_part
                 numFiles 4
                 numPartitions 2
@@ -2418,11 +2403,11 @@ STAGE PLANS:
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                 totalSize 23248
-                transient_lastDdlTime 1320966919
+#### A masked pattern was here ####
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: default.merge_src_part
             name: default.merge_src_part
-        pfile:/data/users/rsurowka/JAVA_HIVE/apache-hive/build/ql/test/data/warehouse/merge_src_part/ds=2008-04-09 
+#### A masked pattern was here ####
           Partition
             base file name: ds=2008-04-09
             input format: org.apache.hadoop.mapred.TextInputFormat
@@ -2433,9 +2418,7 @@ STAGE PLANS:
               bucket_count -1
               columns key,value
               columns.types string:string
-              file.inputformat org.apache.hadoop.mapred.TextInputFormat
-              file.outputformat org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-              location pfile:/data/users/rsurowka/JAVA_HIVE/apache-hive/build/ql/test/data/warehouse/merge_src_part/ds=2008-04-09
+#### A masked pattern was here ####
               name default.merge_src_part
               numFiles 2
               numPartitions 2
@@ -2446,7 +2429,7 @@ STAGE PLANS:
               serialization.format 1
               serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               totalSize 11624
-              transient_lastDdlTime 1320966919
+#### A masked pattern was here ####
             serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
           
               input format: org.apache.hadoop.mapred.TextInputFormat
@@ -2455,9 +2438,7 @@ STAGE PLANS:
                 bucket_count -1
                 columns key,value
                 columns.types string:string
-                file.inputformat org.apache.hadoop.mapred.TextInputFormat
-                file.outputformat org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                location pfile:/data/users/rsurowka/JAVA_HIVE/apache-hive/build/ql/test/data/warehouse/merge_src_part
+#### A masked pattern was here ####
                 name default.merge_src_part
                 numFiles 4
                 numPartitions 2
@@ -2468,7 +2449,7 @@ STAGE PLANS:
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                 totalSize 23248
-                transient_lastDdlTime 1320966919
+#### A masked pattern was here ####
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: default.merge_src_part
             name: default.merge_src_part
@@ -2480,8 +2461,7 @@ STAGE PLANS:
     Move Operator
       files:
           hdfs directory: true
-          source: pfile:/data/users/rsurowka/JAVA_HIVE/apache-hive/build/ql/scratchdir/hive_2011-11-10_15-15-28_784_26196590456392265/-ext-10002
-          destination: pfile:/data/users/rsurowka/JAVA_HIVE/apache-hive/build/ql/scratchdir/hive_2011-11-10_15-15-28_784_26196590456392265/-ext-10000
+#### A masked pattern was here ####
 
   Stage: Stage-0
     Move Operator
@@ -2489,7 +2469,7 @@ STAGE PLANS:
           partition:
             ds 
           replace: true
-          source: pfile:/data/users/rsurowka/JAVA_HIVE/apache-hive/build/ql/scratchdir/hive_2011-11-10_15-15-28_784_26196590456392265/-ext-10000
+#### A masked pattern was here ####
           table:
               input format: org.apache.hadoop.mapred.TextInputFormat
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
@@ -2497,31 +2477,29 @@ STAGE PLANS:
                 bucket_count -1
                 columns key,value
                 columns.types string:string
-                file.inputformat org.apache.hadoop.mapred.TextInputFormat
-                file.outputformat org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                location pfile:/data/users/rsurowka/JAVA_HIVE/apache-hive/build/ql/test/data/warehouse/merge_src_part2
+#### A masked pattern was here ####
                 name default.merge_src_part2
                 partition_columns ds
                 serialization.ddl struct merge_src_part2 { string key, string value}
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                transient_lastDdlTime 1320966928
+#### A masked pattern was here ####
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: default.merge_src_part2
-          tmp directory: pfile:/data/users/rsurowka/JAVA_HIVE/apache-hive/build/ql/scratchdir/hive_2011-11-10_15-15-28_784_26196590456392265/-ext-10001
+#### A masked pattern was here ####
 
   Stage: Stage-2
     Stats-Aggr Operator
-      Stats Aggregation Key Prefix: pfile:/data/users/rsurowka/JAVA_HIVE/apache-hive/build/ql/scratchdir/hive_2011-11-10_15-15-28_784_26196590456392265/-ext-10000/
+#### A masked pattern was here ####
 
   Stage: Stage-3
     Map Reduce
       Alias -> Map Operator Tree:
-        pfile:/data/users/rsurowka/JAVA_HIVE/apache-hive/build/ql/scratchdir/hive_2011-11-10_15-15-28_784_26196590456392265/-ext-10002 
+#### A masked pattern was here ####
             File Output Operator
               compressed: false
               GlobalTableId: 0
-              directory: pfile:/data/users/rsurowka/JAVA_HIVE/apache-hive/build/ql/scratchdir/hive_2011-11-10_15-15-28_784_26196590456392265/-ext-10000
+#### A masked pattern was here ####
               NumFilesPerFileSink: 1
               table:
                   input format: org.apache.hadoop.mapred.TextInputFormat
@@ -2530,15 +2508,13 @@ STAGE PLANS:
                     bucket_count -1
                     columns key,value
                     columns.types string:string
-                    file.inputformat org.apache.hadoop.mapred.TextInputFormat
-                    file.outputformat org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                    location pfile:/data/users/rsurowka/JAVA_HIVE/apache-hive/build/ql/test/data/warehouse/merge_src_part2
+#### A masked pattern was here ####
                     name default.merge_src_part2
                     partition_columns ds
                     serialization.ddl struct merge_src_part2 { string key, string value}
                     serialization.format 1
                     serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                    transient_lastDdlTime 1320966928
+#### A masked pattern was here ####
                   serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                   name: default.merge_src_part2
               TotalFiles: 1
@@ -2546,9 +2522,9 @@ STAGE PLANS:
               MultiFileSpray: false
       Needs Tagging: false
       Path -> Alias:
-        pfile:/data/users/rsurowka/JAVA_HIVE/apache-hive/build/ql/scratchdir/hive_2011-11-10_15-15-28_784_26196590456392265/-ext-10002 [pfile:/data/users/rsurowka/JAVA_HIVE/apache-hive/build/ql/scratchdir/hive_2011-11-10_15-15-28_784_26196590456392265/-ext-10002]
+#### A masked pattern was here ####
       Path -> Partition:
-        pfile:/data/users/rsurowka/JAVA_HIVE/apache-hive/build/ql/scratchdir/hive_2011-11-10_15-15-28_784_26196590456392265/-ext-10002 
+#### A masked pattern was here ####
           Partition
             base file name: -ext-10002
             input format: org.apache.hadoop.mapred.TextInputFormat
@@ -2557,15 +2533,13 @@ STAGE PLANS:
               bucket_count -1
               columns key,value
               columns.types string:string
-              file.inputformat org.apache.hadoop.mapred.TextInputFormat
-              file.outputformat org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-              location pfile:/data/users/rsurowka/JAVA_HIVE/apache-hive/build/ql/test/data/warehouse/merge_src_part2
+#### A masked pattern was here ####
               name default.merge_src_part2
               partition_columns ds
               serialization.ddl struct merge_src_part2 { string key, string value}
               serialization.format 1
               serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              transient_lastDdlTime 1320966928
+#### A masked pattern was here ####
             serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
           
               input format: org.apache.hadoop.mapred.TextInputFormat
@@ -2574,15 +2548,13 @@ STAGE PLANS:
                 bucket_count -1
                 columns key,value
                 columns.types string:string
-                file.inputformat org.apache.hadoop.mapred.TextInputFormat
-                file.outputformat org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                location pfile:/data/users/rsurowka/JAVA_HIVE/apache-hive/build/ql/test/data/warehouse/merge_src_part2
+#### A masked pattern was here ####
                 name default.merge_src_part2
                 partition_columns ds
                 serialization.ddl struct merge_src_part2 { string key, string value}
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                transient_lastDdlTime 1320966928
+#### A masked pattern was here ####
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: default.merge_src_part2
             name: default.merge_src_part2
@@ -2629,12 +2601,12 @@ PREHOOK: query: select * from merge_src_part2 where ds is not null
 PREHOOK: type: QUERY
 PREHOOK: Input: default@merge_src_part2@ds=2008-04-08
 PREHOOK: Input: default@merge_src_part2@ds=2008-04-09
-PREHOOK: Output: file:/tmp/rsurowka/hive_2011-11-10_15-15-38_493_913584916147829798/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: select * from merge_src_part2 where ds is not null
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@merge_src_part2@ds=2008-04-08
 POSTHOOK: Input: default@merge_src_part2@ds=2008-04-09
-POSTHOOK: Output: file:/tmp/rsurowka/hive_2011-11-10_15-15-38_493_913584916147829798/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: Lineage: merge_src_part PARTITION(ds=2008-04-08).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: merge_src_part PARTITION(ds=2008-04-08).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: merge_src_part PARTITION(ds=2008-04-09).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
@@ -4733,10 +4705,9 @@ STAGE PLANS:
                       type: string
       Needs Tagging: false
       Path -> Alias:
-        pfile:/data/users/rsurowka/JAVA_HIVE/apache-hive/build/ql/test/data/warehouse/merge_src_part/ds=2008-04-08 [s:merge_src_part]
-        pfile:/data/users/rsurowka/JAVA_HIVE/apache-hive/build/ql/test/data/warehouse/merge_src_part/ds=2008-04-09 [s:merge_src_part]
+#### A masked pattern was here ####
       Path -> Partition:
-        pfile:/data/users/rsurowka/JAVA_HIVE/apache-hive/build/ql/test/data/warehouse/merge_src_part/ds=2008-04-08 
+#### A masked pattern was here ####
           Partition
             base file name: ds=2008-04-08
             input format: org.apache.hadoop.mapred.TextInputFormat
@@ -4747,9 +4718,7 @@ STAGE PLANS:
               bucket_count -1
               columns key,value
               columns.types string:string
-              file.inputformat org.apache.hadoop.mapred.TextInputFormat
-              file.outputformat org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-              location pfile:/data/users/rsurowka/JAVA_HIVE/apache-hive/build/ql/test/data/warehouse/merge_src_part/ds=2008-04-08
+#### A masked pattern was here ####
               name default.merge_src_part
               numFiles 2
               numPartitions 2
@@ -4760,7 +4729,7 @@ STAGE PLANS:
               serialization.format 1
               serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               totalSize 11624
-              transient_lastDdlTime 1320966919
+#### A masked pattern was here ####
             serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
           
               input format: org.apache.hadoop.mapred.TextInputFormat
@@ -4769,9 +4738,7 @@ STAGE PLANS:
                 bucket_count -1
                 columns key,value
                 columns.types string:string
-                file.inputformat org.apache.hadoop.mapred.TextInputFormat
-                file.outputformat org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                location pfile:/data/users/rsurowka/JAVA_HIVE/apache-hive/build/ql/test/data/warehouse/merge_src_part
+#### A masked pattern was here ####
                 name default.merge_src_part
                 numFiles 4
                 numPartitions 2
@@ -4782,11 +4749,11 @@ STAGE PLANS:
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                 totalSize 23248
-                transient_lastDdlTime 1320966919
+#### A masked pattern was here ####
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: default.merge_src_part
             name: default.merge_src_part
-        pfile:/data/users/rsurowka/JAVA_HIVE/apache-hive/build/ql/test/data/warehouse/merge_src_part/ds=2008-04-09 
+#### A masked pattern was here ####
           Partition
             base file name: ds=2008-04-09
             input format: org.apache.hadoop.mapred.TextInputFormat
@@ -4797,9 +4764,7 @@ STAGE PLANS:
               bucket_count -1
               columns key,value
               columns.types string:string
-              file.inputformat org.apache.hadoop.mapred.TextInputFormat
-              file.outputformat org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-              location pfile:/data/users/rsurowka/JAVA_HIVE/apache-hive/build/ql/test/data/warehouse/merge_src_part/ds=2008-04-09
+#### A masked pattern was here ####
               name default.merge_src_part
               numFiles 2
               numPartitions 2
@@ -4810,7 +4775,7 @@ STAGE PLANS:
               serialization.format 1
               serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               totalSize 11624
-              transient_lastDdlTime 1320966919
+#### A masked pattern was here ####
             serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
           
               input format: org.apache.hadoop.mapred.TextInputFormat
@@ -4819,9 +4784,7 @@ STAGE PLANS:
                 bucket_count -1
                 columns key,value
                 columns.types string:string
-                file.inputformat org.apache.hadoop.mapred.TextInputFormat
-                file.outputformat org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                location pfile:/data/users/rsurowka/JAVA_HIVE/apache-hive/build/ql/test/data/warehouse/merge_src_part
+#### A masked pattern was here ####
                 name default.merge_src_part
                 numFiles 4
                 numPartitions 2
@@ -4832,7 +4795,7 @@ STAGE PLANS:
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                 totalSize 23248
-                transient_lastDdlTime 1320966919
+#### A masked pattern was here ####
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: default.merge_src_part
             name: default.merge_src_part
@@ -4850,9 +4813,9 @@ STAGE PLANS:
             File Output Operator
               compressed: false
               GlobalTableId: 1
-              directory: pfile:/data/users/rsurowka/JAVA_HIVE/apache-hive/build/ql/scratchdir/hive_2011-11-10_15-15-40_167_5563199213782674962/-ext-10002
+#### A masked pattern was here ####
               NumFilesPerFileSink: 1
-              Stats Publishing Key Prefix: pfile:/data/users/rsurowka/JAVA_HIVE/apache-hive/build/ql/scratchdir/hive_2011-11-10_15-15-40_167_5563199213782674962/-ext-10000/
+#### A masked pattern was here ####
               table:
                   input format: org.apache.hadoop.mapred.TextInputFormat
                   output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
@@ -4860,15 +4823,13 @@ STAGE PLANS:
                     bucket_count -1
                     columns key,value
                     columns.types string:string
-                    file.inputformat org.apache.hadoop.mapred.TextInputFormat
-                    file.outputformat org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                    location pfile:/data/users/rsurowka/JAVA_HIVE/apache-hive/build/ql/test/data/warehouse/merge_src_part2
+#### A masked pattern was here ####
                     name default.merge_src_part2
                     partition_columns ds
                     serialization.ddl struct merge_src_part2 { string key, string value}
                     serialization.format 1
                     serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                    transient_lastDdlTime 1320966940
+#### A masked pattern was here ####
                   serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                   name: default.merge_src_part2
               TotalFiles: 1
@@ -4882,8 +4843,7 @@ STAGE PLANS:
     Move Operator
       files:
           hdfs directory: true
-          source: pfile:/data/users/rsurowka/JAVA_HIVE/apache-hive/build/ql/scratchdir/hive_2011-11-10_15-15-40_167_5563199213782674962/-ext-10002
-          destination: pfile:/data/users/rsurowka/JAVA_HIVE/apache-hive/build/ql/scratchdir/hive_2011-11-10_15-15-40_167_5563199213782674962/-ext-10000
+#### A masked pattern was here ####
 
   Stage: Stage-0
     Move Operator
@@ -4891,7 +4851,7 @@ STAGE PLANS:
           partition:
             ds 
           replace: true
-          source: pfile:/data/users/rsurowka/JAVA_HIVE/apache-hive/build/ql/scratchdir/hive_2011-11-10_15-15-40_167_5563199213782674962/-ext-10000
+#### A masked pattern was here ####
           table:
               input format: org.apache.hadoop.mapred.TextInputFormat
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
@@ -4899,31 +4859,29 @@ STAGE PLANS:
                 bucket_count -1
                 columns key,value
                 columns.types string:string
-                file.inputformat org.apache.hadoop.mapred.TextInputFormat
-                file.outputformat org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                location pfile:/data/users/rsurowka/JAVA_HIVE/apache-hive/build/ql/test/data/warehouse/merge_src_part2
+#### A masked pattern was here ####
                 name default.merge_src_part2
                 partition_columns ds
                 serialization.ddl struct merge_src_part2 { string key, string value}
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                transient_lastDdlTime 1320966940
+#### A masked pattern was here ####
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: default.merge_src_part2
-          tmp directory: pfile:/data/users/rsurowka/JAVA_HIVE/apache-hive/build/ql/scratchdir/hive_2011-11-10_15-15-40_167_5563199213782674962/-ext-10001
+#### A masked pattern was here ####
 
   Stage: Stage-2
     Stats-Aggr Operator
-      Stats Aggregation Key Prefix: pfile:/data/users/rsurowka/JAVA_HIVE/apache-hive/build/ql/scratchdir/hive_2011-11-10_15-15-40_167_5563199213782674962/-ext-10000/
+#### A masked pattern was here ####
 
   Stage: Stage-3
     Map Reduce
       Alias -> Map Operator Tree:
-        pfile:/data/users/rsurowka/JAVA_HIVE/apache-hive/build/ql/scratchdir/hive_2011-11-10_15-15-40_167_5563199213782674962/-ext-10002 
+#### A masked pattern was here ####
             File Output Operator
               compressed: false
               GlobalTableId: 0
-              directory: pfile:/data/users/rsurowka/JAVA_HIVE/apache-hive/build/ql/scratchdir/hive_2011-11-10_15-15-40_167_5563199213782674962/-ext-10000
+#### A masked pattern was here ####
               NumFilesPerFileSink: 1
               table:
                   input format: org.apache.hadoop.mapred.TextInputFormat
@@ -4932,15 +4890,13 @@ STAGE PLANS:
                     bucket_count -1
                     columns key,value
                     columns.types string:string
-                    file.inputformat org.apache.hadoop.mapred.TextInputFormat
-                    file.outputformat org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                    location pfile:/data/users/rsurowka/JAVA_HIVE/apache-hive/build/ql/test/data/warehouse/merge_src_part2
+#### A masked pattern was here ####
                     name default.merge_src_part2
                     partition_columns ds
                     serialization.ddl struct merge_src_part2 { string key, string value}
                     serialization.format 1
                     serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                    transient_lastDdlTime 1320966940
+#### A masked pattern was here ####
                   serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                   name: default.merge_src_part2
               TotalFiles: 1
@@ -4948,9 +4904,9 @@ STAGE PLANS:
               MultiFileSpray: false
       Needs Tagging: false
       Path -> Alias:
-        pfile:/data/users/rsurowka/JAVA_HIVE/apache-hive/build/ql/scratchdir/hive_2011-11-10_15-15-40_167_5563199213782674962/-ext-10002 [pfile:/data/users/rsurowka/JAVA_HIVE/apache-hive/build/ql/scratchdir/hive_2011-11-10_15-15-40_167_5563199213782674962/-ext-10002]
+#### A masked pattern was here ####
       Path -> Partition:
-        pfile:/data/users/rsurowka/JAVA_HIVE/apache-hive/build/ql/scratchdir/hive_2011-11-10_15-15-40_167_5563199213782674962/-ext-10002 
+#### A masked pattern was here ####
           Partition
             base file name: -ext-10002
             input format: org.apache.hadoop.mapred.TextInputFormat
@@ -4959,15 +4915,13 @@ STAGE PLANS:
               bucket_count -1
               columns key,value
               columns.types string:string
-              file.inputformat org.apache.hadoop.mapred.TextInputFormat
-              file.outputformat org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-              location pfile:/data/users/rsurowka/JAVA_HIVE/apache-hive/build/ql/test/data/warehouse/merge_src_part2
+#### A masked pattern was here ####
               name default.merge_src_part2
               partition_columns ds
               serialization.ddl struct merge_src_part2 { string key, string value}
               serialization.format 1
               serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              transient_lastDdlTime 1320966940
+#### A masked pattern was here ####
             serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
           
               input format: org.apache.hadoop.mapred.TextInputFormat
@@ -4976,15 +4930,13 @@ STAGE PLANS:
                 bucket_count -1
                 columns key,value
                 columns.types string:string
-                file.inputformat org.apache.hadoop.mapred.TextInputFormat
-                file.outputformat org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                location pfile:/data/users/rsurowka/JAVA_HIVE/apache-hive/build/ql/test/data/warehouse/merge_src_part2
+#### A masked pattern was here ####
                 name default.merge_src_part2
                 partition_columns ds
                 serialization.ddl struct merge_src_part2 { string key, string value}
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                transient_lastDdlTime 1320966940
+#### A masked pattern was here ####
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: default.merge_src_part2
             name: default.merge_src_part2
@@ -5039,12 +4991,12 @@ PREHOOK: query: select * from merge_src_part2 where ds is not null
 PREHOOK: type: QUERY
 PREHOOK: Input: default@merge_src_part2@ds=2008-04-08
 PREHOOK: Input: default@merge_src_part2@ds=2008-04-09
-PREHOOK: Output: file:/tmp/rsurowka/hive_2011-11-10_15-15-46_946_3999072081611150839/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: select * from merge_src_part2 where ds is not null
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@merge_src_part2@ds=2008-04-08
 POSTHOOK: Input: default@merge_src_part2@ds=2008-04-09
-POSTHOOK: Output: file:/tmp/rsurowka/hive_2011-11-10_15-15-46_946_3999072081611150839/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: Lineage: merge_src_part PARTITION(ds=2008-04-08).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: merge_src_part PARTITION(ds=2008-04-08).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: merge_src_part PARTITION(ds=2008-04-09).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]

@@ -39,11 +39,11 @@ STAGE PLANS:
 PREHOOK: query: select E() FROM src LIMIT 1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/tmp/sdong/hive_2011-02-10_17-29-37_447_8042489940271027133/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: select E() FROM src LIMIT 1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: file:/tmp/sdong/hive_2011-02-10_17-29-37_447_8042489940271027133/-mr-10000
+#### A masked pattern was here ####
 2.718281828459045
 PREHOOK: query: DESCRIBE FUNCTION E
 PREHOOK: type: DESCFUNCTION
@@ -100,11 +100,11 @@ STAGE PLANS:
 PREHOOK: query: select E() FROM src LIMIT 1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/tmp/sdong/hive_2011-02-10_17-29-40_986_4023064895654770963/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: select E() FROM src LIMIT 1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: file:/tmp/sdong/hive_2011-02-10_17-29-40_986_4023064895654770963/-mr-10000
+#### A masked pattern was here ####
 2.718281828459045
 PREHOOK: query: DESCRIBE FUNCTION E
 PREHOOK: type: DESCFUNCTION

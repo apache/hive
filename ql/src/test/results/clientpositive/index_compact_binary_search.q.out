@@ -17,7 +17,7 @@ PREHOOK: query: SELECT * FROM src WHERE key = '0'
 PREHOOK: type: QUERY
 PREHOOK: Input: default@default__src_src_index__
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/var/folders/Y1/Y1Kf7th8FAawW1lYb6Tt+l+pemQ/-Tmp-/kevinwilfong/hive_2011-11-03_17-28-16_162_4530544379793726356/-mr-10000
+#### A masked pattern was here ####
 0	val_0
 0	val_0
 0	val_0
@@ -25,7 +25,7 @@ PREHOOK: query: SELECT * FROM src WHERE key < '1'
 PREHOOK: type: QUERY
 PREHOOK: Input: default@default__src_src_index__
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/var/folders/Y1/Y1Kf7th8FAawW1lYb6Tt+l+pemQ/-Tmp-/kevinwilfong/hive_2011-11-03_17-28-24_910_8422770577218536886/-mr-10000
+#### A masked pattern was here ####
 0	val_0
 0	val_0
 0	val_0
@@ -33,7 +33,7 @@ PREHOOK: query: SELECT * FROM src WHERE key <= '0'
 PREHOOK: type: QUERY
 PREHOOK: Input: default@default__src_src_index__
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/var/folders/Y1/Y1Kf7th8FAawW1lYb6Tt+l+pemQ/-Tmp-/kevinwilfong/hive_2011-11-03_17-28-33_506_4731041870462994974/-mr-10000
+#### A masked pattern was here ####
 0	val_0
 0	val_0
 0	val_0
@@ -41,7 +41,7 @@ PREHOOK: query: SELECT * FROM src WHERE key > '8'
 PREHOOK: type: QUERY
 PREHOOK: Input: default@default__src_src_index__
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/var/folders/Y1/Y1Kf7th8FAawW1lYb6Tt+l+pemQ/-Tmp-/kevinwilfong/hive_2011-11-03_17-28-42_116_5213638754635953384/-mr-10000
+#### A masked pattern was here ####
 86	val_86
 98	val_98
 82	val_82
@@ -67,7 +67,7 @@ PREHOOK: query: SELECT * FROM src WHERE key >= '9'
 PREHOOK: type: QUERY
 PREHOOK: Input: default@default__src_src_index__
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/var/folders/Y1/Y1Kf7th8FAawW1lYb6Tt+l+pemQ/-Tmp-/kevinwilfong/hive_2011-11-03_17-28-50_540_3532759530680718240/-mr-10000
+#### A masked pattern was here ####
 98	val_98
 92	val_92
 96	val_96
@@ -92,7 +92,7 @@ PREHOOK: query: SELECT * FROM src WHERE key = '0'
 PREHOOK: type: QUERY
 PREHOOK: Input: default@default__src_src_index__
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/var/folders/Y1/Y1Kf7th8FAawW1lYb6Tt+l+pemQ/-Tmp-/kevinwilfong/hive_2011-11-03_17-29-07_718_5321452601706822472/-mr-10000
+#### A masked pattern was here ####
 0	val_0
 0	val_0
 0	val_0
@@ -100,7 +100,7 @@ PREHOOK: query: SELECT * FROM src WHERE key < '1'
 PREHOOK: type: QUERY
 PREHOOK: Input: default@default__src_src_index__
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/var/folders/Y1/Y1Kf7th8FAawW1lYb6Tt+l+pemQ/-Tmp-/kevinwilfong/hive_2011-11-03_17-29-16_481_5807706878522087187/-mr-10000
+#### A masked pattern was here ####
 0	val_0
 0	val_0
 0	val_0
@@ -108,7 +108,7 @@ PREHOOK: query: SELECT * FROM src WHERE key <= '0'
 PREHOOK: type: QUERY
 PREHOOK: Input: default@default__src_src_index__
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/var/folders/Y1/Y1Kf7th8FAawW1lYb6Tt+l+pemQ/-Tmp-/kevinwilfong/hive_2011-11-03_17-29-24_683_6289978315989311017/-mr-10000
+#### A masked pattern was here ####
 0	val_0
 0	val_0
 0	val_0
@@ -116,7 +116,7 @@ PREHOOK: query: SELECT * FROM src WHERE key > '8'
 PREHOOK: type: QUERY
 PREHOOK: Input: default@default__src_src_index__
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/var/folders/Y1/Y1Kf7th8FAawW1lYb6Tt+l+pemQ/-Tmp-/kevinwilfong/hive_2011-11-03_17-29-33_397_8866306423858815160/-mr-10000
+#### A masked pattern was here ####
 86	val_86
 98	val_98
 82	val_82
@@ -142,7 +142,7 @@ PREHOOK: query: SELECT * FROM src WHERE key >= '9'
 PREHOOK: type: QUERY
 PREHOOK: Input: default@default__src_src_index__
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/var/folders/Y1/Y1Kf7th8FAawW1lYb6Tt+l+pemQ/-Tmp-/kevinwilfong/hive_2011-11-03_17-29-42_150_3909923166888031983/-mr-10000
+#### A masked pattern was here ####
 98	val_98
 92	val_92
 96	val_96
@@ -167,7 +167,7 @@ PREHOOK: query: SELECT * FROM src WHERE key = '0'
 PREHOOK: type: QUERY
 PREHOOK: Input: default@default__src_src_index__
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/var/folders/Y1/Y1Kf7th8FAawW1lYb6Tt+l+pemQ/-Tmp-/kevinwilfong/hive_2011-11-03_17-29-58_166_3678265151794926604/-mr-10000
+#### A masked pattern was here ####
 0	val_0
 0	val_0
 0	val_0
@@ -175,7 +175,7 @@ PREHOOK: query: SELECT * FROM src WHERE key < '1'
 PREHOOK: type: QUERY
 PREHOOK: Input: default@default__src_src_index__
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/var/folders/Y1/Y1Kf7th8FAawW1lYb6Tt+l+pemQ/-Tmp-/kevinwilfong/hive_2011-11-03_17-30-06_723_4428955348995805938/-mr-10000
+#### A masked pattern was here ####
 0	val_0
 0	val_0
 0	val_0
@@ -183,7 +183,7 @@ PREHOOK: query: SELECT * FROM src WHERE key <= '0'
 PREHOOK: type: QUERY
 PREHOOK: Input: default@default__src_src_index__
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/var/folders/Y1/Y1Kf7th8FAawW1lYb6Tt+l+pemQ/-Tmp-/kevinwilfong/hive_2011-11-03_17-30-15_252_6268745784357839984/-mr-10000
+#### A masked pattern was here ####
 0	val_0
 0	val_0
 0	val_0
@@ -191,7 +191,7 @@ PREHOOK: query: SELECT * FROM src WHERE key > '8'
 PREHOOK: type: QUERY
 PREHOOK: Input: default@default__src_src_index__
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/var/folders/Y1/Y1Kf7th8FAawW1lYb6Tt+l+pemQ/-Tmp-/kevinwilfong/hive_2011-11-03_17-30-23_915_5724065339829448949/-mr-10000
+#### A masked pattern was here ####
 86	val_86
 98	val_98
 82	val_82
@@ -217,7 +217,7 @@ PREHOOK: query: SELECT * FROM src WHERE key >= '9'
 PREHOOK: type: QUERY
 PREHOOK: Input: default@default__src_src_index__
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/var/folders/Y1/Y1Kf7th8FAawW1lYb6Tt+l+pemQ/-Tmp-/kevinwilfong/hive_2011-11-03_17-30-32_371_334426532692286168/-mr-10000
+#### A masked pattern was here ####
 98	val_98
 92	val_92
 96	val_96
@@ -242,7 +242,7 @@ PREHOOK: query: SELECT * FROM src WHERE key = '0'
 PREHOOK: type: QUERY
 PREHOOK: Input: default@default__src_src_index__
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/var/folders/Y1/Y1Kf7th8FAawW1lYb6Tt+l+pemQ/-Tmp-/kevinwilfong/hive_2011-11-03_17-30-47_153_9199966558974802063/-mr-10000
+#### A masked pattern was here ####
 0	val_0
 0	val_0
 0	val_0
@@ -250,7 +250,7 @@ PREHOOK: query: SELECT * FROM src WHERE key < '1'
 PREHOOK: type: QUERY
 PREHOOK: Input: default@default__src_src_index__
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/var/folders/Y1/Y1Kf7th8FAawW1lYb6Tt+l+pemQ/-Tmp-/kevinwilfong/hive_2011-11-03_17-30-55_387_6708123102148378807/-mr-10000
+#### A masked pattern was here ####
 0	val_0
 0	val_0
 0	val_0
@@ -258,7 +258,7 @@ PREHOOK: query: SELECT * FROM src WHERE key <= '0'
 PREHOOK: type: QUERY
 PREHOOK: Input: default@default__src_src_index__
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/var/folders/Y1/Y1Kf7th8FAawW1lYb6Tt+l+pemQ/-Tmp-/kevinwilfong/hive_2011-11-03_17-31-03_712_8643764022963931262/-mr-10000
+#### A masked pattern was here ####
 0	val_0
 0	val_0
 0	val_0
@@ -266,7 +266,7 @@ PREHOOK: query: SELECT * FROM src WHERE key > '8'
 PREHOOK: type: QUERY
 PREHOOK: Input: default@default__src_src_index__
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/var/folders/Y1/Y1Kf7th8FAawW1lYb6Tt+l+pemQ/-Tmp-/kevinwilfong/hive_2011-11-03_17-31-12_217_4545846333420817182/-mr-10000
+#### A masked pattern was here ####
 86	val_86
 98	val_98
 82	val_82
@@ -292,7 +292,7 @@ PREHOOK: query: SELECT * FROM src WHERE key >= '9'
 PREHOOK: type: QUERY
 PREHOOK: Input: default@default__src_src_index__
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/var/folders/Y1/Y1Kf7th8FAawW1lYb6Tt+l+pemQ/-Tmp-/kevinwilfong/hive_2011-11-03_17-31-20_405_7128617548959801569/-mr-10000
+#### A masked pattern was here ####
 98	val_98
 92	val_92
 96	val_96
@@ -317,7 +317,7 @@ PREHOOK: query: SELECT * FROM src WHERE key = '0'
 PREHOOK: type: QUERY
 PREHOOK: Input: default@default__src_src_index__
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/var/folders/Y1/Y1Kf7th8FAawW1lYb6Tt+l+pemQ/-Tmp-/kevinwilfong/hive_2011-11-03_17-31-35_592_7263189839927522587/-mr-10000
+#### A masked pattern was here ####
 0	val_0
 0	val_0
 0	val_0
@@ -325,7 +325,7 @@ PREHOOK: query: SELECT * FROM src WHERE key < '1'
 PREHOOK: type: QUERY
 PREHOOK: Input: default@default__src_src_index__
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/var/folders/Y1/Y1Kf7th8FAawW1lYb6Tt+l+pemQ/-Tmp-/kevinwilfong/hive_2011-11-03_17-31-44_027_7622604667919537891/-mr-10000
+#### A masked pattern was here ####
 0	val_0
 0	val_0
 0	val_0
@@ -333,7 +333,7 @@ PREHOOK: query: SELECT * FROM src WHERE key <= '0'
 PREHOOK: type: QUERY
 PREHOOK: Input: default@default__src_src_index__
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/var/folders/Y1/Y1Kf7th8FAawW1lYb6Tt+l+pemQ/-Tmp-/kevinwilfong/hive_2011-11-03_17-31-52_682_8498170072495224496/-mr-10000
+#### A masked pattern was here ####
 0	val_0
 0	val_0
 0	val_0
@@ -341,7 +341,7 @@ PREHOOK: query: SELECT * FROM src WHERE key > '8'
 PREHOOK: type: QUERY
 PREHOOK: Input: default@default__src_src_index__
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/var/folders/Y1/Y1Kf7th8FAawW1lYb6Tt+l+pemQ/-Tmp-/kevinwilfong/hive_2011-11-03_17-32-01_171_3483974250307194429/-mr-10000
+#### A masked pattern was here ####
 86	val_86
 98	val_98
 82	val_82
@@ -367,7 +367,7 @@ PREHOOK: query: SELECT * FROM src WHERE key >= '9'
 PREHOOK: type: QUERY
 PREHOOK: Input: default@default__src_src_index__
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/var/folders/Y1/Y1Kf7th8FAawW1lYb6Tt+l+pemQ/-Tmp-/kevinwilfong/hive_2011-11-03_17-32-09_626_7969856304834644252/-mr-10000
+#### A masked pattern was here ####
 98	val_98
 92	val_92
 96	val_96
@@ -392,7 +392,7 @@ PREHOOK: query: SELECT * FROM src WHERE key = '0'
 PREHOOK: type: QUERY
 PREHOOK: Input: default@default__src_src_index__
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/var/folders/Y1/Y1Kf7th8FAawW1lYb6Tt+l+pemQ/-Tmp-/kevinwilfong/hive_2011-11-03_17-32-24_952_7986831589488854044/-mr-10000
+#### A masked pattern was here ####
 0	val_0
 0	val_0
 0	val_0
@@ -400,7 +400,7 @@ PREHOOK: query: SELECT * FROM src WHERE key < '1'
 PREHOOK: type: QUERY
 PREHOOK: Input: default@default__src_src_index__
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/var/folders/Y1/Y1Kf7th8FAawW1lYb6Tt+l+pemQ/-Tmp-/kevinwilfong/hive_2011-11-03_17-32-33_434_6857699378136194430/-mr-10000
+#### A masked pattern was here ####
 0	val_0
 0	val_0
 0	val_0
@@ -408,7 +408,7 @@ PREHOOK: query: SELECT * FROM src WHERE key <= '0'
 PREHOOK: type: QUERY
 PREHOOK: Input: default@default__src_src_index__
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/var/folders/Y1/Y1Kf7th8FAawW1lYb6Tt+l+pemQ/-Tmp-/kevinwilfong/hive_2011-11-03_17-32-41_908_1172462155728735633/-mr-10000
+#### A masked pattern was here ####
 0	val_0
 0	val_0
 0	val_0
@@ -416,7 +416,7 @@ PREHOOK: query: SELECT * FROM src WHERE key > '8'
 PREHOOK: type: QUERY
 PREHOOK: Input: default@default__src_src_index__
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/var/folders/Y1/Y1Kf7th8FAawW1lYb6Tt+l+pemQ/-Tmp-/kevinwilfong/hive_2011-11-03_17-32-52_719_4367930844159597815/-mr-10000
+#### A masked pattern was here ####
 86	val_86
 98	val_98
 82	val_82
@@ -442,7 +442,7 @@ PREHOOK: query: SELECT * FROM src WHERE key >= '9'
 PREHOOK: type: QUERY
 PREHOOK: Input: default@default__src_src_index__
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/var/folders/Y1/Y1Kf7th8FAawW1lYb6Tt+l+pemQ/-Tmp-/kevinwilfong/hive_2011-11-03_17-33-01_910_3573322999685212570/-mr-10000
+#### A masked pattern was here ####
 98	val_98
 92	val_92
 96	val_96

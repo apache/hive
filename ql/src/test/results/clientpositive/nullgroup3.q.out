@@ -78,12 +78,12 @@ PREHOOK: query: select count(1) from tstparttbl
 PREHOOK: type: QUERY
 PREHOOK: Input: default@tstparttbl@ds=2008-04-08
 PREHOOK: Input: default@tstparttbl@ds=2008-04-09
-PREHOOK: Output: file:/tmp/krishnak/hive_2011-03-21_04-13-07_266_530503210743564414/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: select count(1) from tstparttbl
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@tstparttbl@ds=2008-04-08
 POSTHOOK: Input: default@tstparttbl@ds=2008-04-09
-POSTHOOK: Output: file:/tmp/krishnak/hive_2011-03-21_04-13-07_266_530503210743564414/-mr-10000
+#### A masked pattern was here ####
 500
 PREHOOK: query: CREATE TABLE tstparttbl2(KEY STRING, VALUE STRING) PARTITIONED BY(ds string) STORED AS TEXTFILE
 PREHOOK: type: CREATETABLE
@@ -165,12 +165,12 @@ PREHOOK: query: select count(1) from tstparttbl2
 PREHOOK: type: QUERY
 PREHOOK: Input: default@tstparttbl2@ds=2008-04-08
 PREHOOK: Input: default@tstparttbl2@ds=2008-04-09
-PREHOOK: Output: file:/tmp/krishnak/hive_2011-03-21_04-13-10_685_2521681953062502433/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: select count(1) from tstparttbl2
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@tstparttbl2@ds=2008-04-08
 POSTHOOK: Input: default@tstparttbl2@ds=2008-04-09
-POSTHOOK: Output: file:/tmp/krishnak/hive_2011-03-21_04-13-10_685_2521681953062502433/-mr-10000
+#### A masked pattern was here ####
 0
 PREHOOK: query: DROP TABLE tstparttbl
 PREHOOK: type: DROPTABLE
@@ -260,12 +260,12 @@ PREHOOK: query: select count(1) from tstparttbl
 PREHOOK: type: QUERY
 PREHOOK: Input: default@tstparttbl@ds=2008-04-08
 PREHOOK: Input: default@tstparttbl@ds=2008-04-09
-PREHOOK: Output: file:/tmp/krishnak/hive_2011-03-21_04-13-14_214_6605372656284457620/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: select count(1) from tstparttbl
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@tstparttbl@ds=2008-04-08
 POSTHOOK: Input: default@tstparttbl@ds=2008-04-09
-POSTHOOK: Output: file:/tmp/krishnak/hive_2011-03-21_04-13-14_214_6605372656284457620/-mr-10000
+#### A masked pattern was here ####
 500
 PREHOOK: query: DROP TABLE tstparttbl2
 PREHOOK: type: DROPTABLE
@@ -355,10 +355,10 @@ PREHOOK: query: select count(1) from tstparttbl2
 PREHOOK: type: QUERY
 PREHOOK: Input: default@tstparttbl2@ds=2008-04-08
 PREHOOK: Input: default@tstparttbl2@ds=2008-04-09
-PREHOOK: Output: file:/tmp/krishnak/hive_2011-03-21_04-13-17_713_2865331384408810906/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: select count(1) from tstparttbl2
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@tstparttbl2@ds=2008-04-08
 POSTHOOK: Input: default@tstparttbl2@ds=2008-04-09
-POSTHOOK: Output: file:/tmp/krishnak/hive_2011-03-21_04-13-17_713_2865331384408810906/-mr-10000
+#### A masked pattern was here ####
 0

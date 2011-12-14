@@ -186,7 +186,7 @@ PREHOOK: Input: default@t1
 PREHOOK: Input: default@t2
 PREHOOK: Input: default@t3
 PREHOOK: Input: default@t4
-PREHOOK: Output: file:/tmp/krishnak/hive_2011-03-21_03-58-11_159_4555059335132203811/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: SELECT /*+ STREAMTABLE(a,c) */ *
 FROM T1 a JOIN T2 b ON a.key = b.key
           JOIN T3 c ON b.key = c.key
@@ -196,7 +196,7 @@ POSTHOOK: Input: default@t1
 POSTHOOK: Input: default@t2
 POSTHOOK: Input: default@t3
 POSTHOOK: Input: default@t4
-POSTHOOK: Output: file:/tmp/krishnak/hive_2011-03-21_03-58-11_159_4555059335132203811/-mr-10000
+#### A masked pattern was here ####
 2	12	2	22	2	12	2	12
 PREHOOK: query: EXPLAIN
 SELECT /*+ STREAMTABLE(a,c) */ *
@@ -419,7 +419,7 @@ PREHOOK: Input: default@t1
 PREHOOK: Input: default@t2
 PREHOOK: Input: default@t3
 PREHOOK: Input: default@t4
-PREHOOK: Output: file:/tmp/krishnak/hive_2011-03-21_03-58-15_654_5324680612568899112/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: SELECT /*+ STREAMTABLE(a,c) */ *
 FROM T1 a JOIN T2 b ON a.key = b.key
           JOIN T3 c ON a.val = c.val
@@ -429,5 +429,5 @@ POSTHOOK: Input: default@t1
 POSTHOOK: Input: default@t2
 POSTHOOK: Input: default@t3
 POSTHOOK: Input: default@t4
-POSTHOOK: Output: file:/tmp/krishnak/hive_2011-03-21_03-58-15_654_5324680612568899112/-mr-10000
+#### A masked pattern was here ####
 2	12	2	22	2	12	2	12

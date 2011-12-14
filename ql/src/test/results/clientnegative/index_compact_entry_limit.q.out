@@ -17,21 +17,20 @@ POSTHOOK: Output: default@default__src_src_index__
 POSTHOOK: Lineage: default__src_src_index__._bucketname SIMPLE [(src)src.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
 POSTHOOK: Lineage: default__src_src_index__._offsets EXPRESSION [(src)src.FieldSchema(name:BLOCK__OFFSET__INSIDE__FILE, type:bigint, comment:), ]
 POSTHOOK: Lineage: default__src_src_index__.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-PREHOOK: query: INSERT OVERWRITE DIRECTORY "/tmp/index_result" SELECT `_bucketname` ,  `_offsets` FROM default__src_src_index__ WHERE key<1000
+#### A masked pattern was here ####
 PREHOOK: type: QUERY
 PREHOOK: Input: default@default__src_src_index__
-PREHOOK: Output: /tmp/index_result
-POSTHOOK: query: INSERT OVERWRITE DIRECTORY "/tmp/index_result" SELECT `_bucketname` ,  `_offsets` FROM default__src_src_index__ WHERE key<1000
+#### A masked pattern was here ####
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@default__src_src_index__
-POSTHOOK: Output: /tmp/index_result
+#### A masked pattern was here ####
 POSTHOOK: Lineage: default__src_src_index__._bucketname SIMPLE [(src)src.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
 POSTHOOK: Lineage: default__src_src_index__._offsets EXPRESSION [(src)src.FieldSchema(name:BLOCK__OFFSET__INSIDE__FILE, type:bigint, comment:), ]
 POSTHOOK: Lineage: default__src_src_index__.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 PREHOOK: query: SELECT key, value FROM src WHERE key=100 ORDER BY key
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/tmp/salbiz/hive_2011-08-05_12-04-13_955_1009283972520120333/-mr-10000
+#### A masked pattern was here ####
 Execution failed with exit status: 2
 Obtaining error information
 
@@ -41,5 +40,5 @@ Task ID:
 
 Logs:
 
-/data/users/salbiz/apache-hive/build/ql/tmp//hive.log
+#### A masked pattern was here ####
 FAILED: Execution Error, return code 2 from org.apache.hadoop.hive.ql.exec.MapRedTask

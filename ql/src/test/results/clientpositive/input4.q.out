@@ -19,8 +19,7 @@ STAGE DEPENDENCIES:
 STAGE PLANS:
   Stage: Stage-0
     Copy
-      source: file:/data/users/njain/hive_commit1/data/files/kv1.txt
-      destination: pfile:/data/users/njain/hive_commit1/build/ql/scratchdir/hive_2011-11-03_16-47-14_258_1757057361379982466/-ext-10000
+#### A masked pattern was here ####
 
   Stage: Stage-1
     Move Operator
@@ -49,11 +48,11 @@ POSTHOOK: type: QUERY
 PREHOOK: query: SELECT INPUT4.VALUE, INPUT4.KEY FROM INPUT4
 PREHOOK: type: QUERY
 PREHOOK: Input: default@input4
-PREHOOK: Output: file:/tmp/njain/hive_2011-11-03_16-47-15_010_2383066747887433640/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: SELECT INPUT4.VALUE, INPUT4.KEY FROM INPUT4
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@input4
-POSTHOOK: Output: file:/tmp/njain/hive_2011-11-03_16-47-15_010_2383066747887433640/-mr-10000
+#### A masked pattern was here ####
 val_238	238
 val_86	86
 val_311	311

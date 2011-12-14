@@ -233,7 +233,7 @@ PREHOOK: query: SELECT a.key, a.value, b.key, b.value
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
 PREHOOK: Input: default@src1
-PREHOOK: Output: file:/tmp/sdong/hive_2011-02-10_16-02-34_729_4416344743286504285/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: SELECT a.key, a.value, b.key, b.value
  FROM 
   (
@@ -248,7 +248,7 @@ POSTHOOK: query: SELECT a.key, a.value, b.key, b.value
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 POSTHOOK: Input: default@src1
-POSTHOOK: Output: file:/tmp/sdong/hive_2011-02-10_16-02-34_729_4416344743286504285/-mr-10000
+#### A masked pattern was here ####
 NULL	NULL		7
 0	3	NULL	NULL
 10	1	NULL	NULL

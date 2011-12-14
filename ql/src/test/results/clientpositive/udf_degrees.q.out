@@ -39,11 +39,11 @@ STAGE PLANS:
 PREHOOK: query: select degrees(PI()) FROM src LIMIT 1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/tmp/sdong/hive_2011-02-10_17-32-59_458_5156366208109692774/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: select degrees(PI()) FROM src LIMIT 1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: file:/tmp/sdong/hive_2011-02-10_17-32-59_458_5156366208109692774/-mr-10000
+#### A masked pattern was here ####
 180.0
 PREHOOK: query: DESCRIBE FUNCTION degrees
 PREHOOK: type: DESCFUNCTION
@@ -100,11 +100,11 @@ STAGE PLANS:
 PREHOOK: query: select degrees(PI()) FROM src LIMIT 1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/tmp/sdong/hive_2011-02-10_17-33-03_005_5440568287824883570/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: select degrees(PI()) FROM src LIMIT 1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: file:/tmp/sdong/hive_2011-02-10_17-33-03_005_5440568287824883570/-mr-10000
+#### A masked pattern was here ####
 180.0
 PREHOOK: query: DESCRIBE FUNCTION degrees
 PREHOOK: type: DESCFUNCTION

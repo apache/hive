@@ -506,4 +506,4 @@ POSTHOOK: Output: ../build/ql/test/data/x/y/z
 400val_400
 200val_200
 97val_97
-Deleted file:/home/chinna/opensrc/25oct/workspace/build/ql/test/data/x
+#### A masked pattern was here ####

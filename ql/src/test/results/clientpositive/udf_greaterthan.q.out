@@ -11,9 +11,9 @@ a > b - Returns TRUE if a is greater than b
 PREHOOK: query: SELECT true>false, false>true, false>false, true>true FROM src LIMIT 1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/data/users/pyang/mstore/trunk/VENDOR.hive/trunk/build/ql/scratchdir/hive_2010-04-14_15-39-21_311_8364092782764061396/10000
+#### A masked pattern was here ####
 POSTHOOK: query: SELECT true>false, false>true, false>false, true>true FROM src LIMIT 1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: file:/data/users/pyang/mstore/trunk/VENDOR.hive/trunk/build/ql/scratchdir/hive_2010-04-14_15-39-21_311_8364092782764061396/10000
+#### A masked pattern was here ####
 true	false	false	false

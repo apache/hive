@@ -248,11 +248,11 @@ POSTHOOK: Lineage: dest_j1.value SIMPLE [(src)src2.FieldSchema(name:value, type:
 PREHOOK: query: SELECT sum(hash(dest_j1.key,dest_j1.value)) FROM dest_j1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@dest_j1
-PREHOOK: Output: file:/tmp/sdong/hive_2011-02-10_01-13-24_809_7328726250465740581/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: SELECT sum(hash(dest_j1.key,dest_j1.value)) FROM dest_j1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@dest_j1
-POSTHOOK: Output: file:/tmp/sdong/hive_2011-02-10_01-13-24_809_7328726250465740581/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: Lineage: dest_j1.key EXPRESSION [(src)src1.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: dest_j1.value SIMPLE [(src)src2.FieldSchema(name:value, type:string, comment:default), ]
 101861029915

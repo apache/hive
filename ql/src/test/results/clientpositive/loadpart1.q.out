@@ -26,11 +26,11 @@ POSTHOOK: Lineage: hive_test_dst PARTITION(pcol1=test_part,pcol2=test_Part).col1
 PREHOOK: query: select * from hive_test_dst where pcol1='test_part' and pcol2='test_Part'
 PREHOOK: type: QUERY
 PREHOOK: Input: default@hive_test_dst@pcol1=test_part/pcol2=test_Part
-PREHOOK: Output: file:/tmp/krishnak/hive_2011-03-21_04-03-13_492_110956492101100267/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: select * from hive_test_dst where pcol1='test_part' and pcol2='test_Part'
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@hive_test_dst@pcol1=test_part/pcol2=test_Part
-POSTHOOK: Output: file:/tmp/krishnak/hive_2011-03-21_04-03-13_492_110956492101100267/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: Lineage: hive_test_dst PARTITION(pcol1=test_part,pcol2=test_Part).col1 SIMPLE [(hive_test_src)hive_test_src.FieldSchema(name:col1, type:string, comment:null), ]
 1	test_part	test_Part
 2	test_part	test_Part
@@ -50,20 +50,20 @@ POSTHOOK: Lineage: hive_test_dst PARTITION(pcol1=test_part,pcol2=test_Part).col1
 POSTHOOK: Lineage: hive_test_dst PARTITION(pcol1=test_part,pcol2=test_Part).col1 SIMPLE [(hive_test_src)hive_test_src.FieldSchema(name:col1, type:string, comment:null), ]
 PREHOOK: query: select * from hive_test_dst where pcol1='test_part' and pcol2='test_part'
 PREHOOK: type: QUERY
-PREHOOK: Output: file:/tmp/krishnak/hive_2011-03-21_04-03-17_993_470042897542158842/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: select * from hive_test_dst where pcol1='test_part' and pcol2='test_part'
 POSTHOOK: type: QUERY
-POSTHOOK: Output: file:/tmp/krishnak/hive_2011-03-21_04-03-17_993_470042897542158842/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: Lineage: hive_test_dst PARTITION(pcol1=test_part,pcol2=test_Part).col1 SIMPLE [(hive_test_src)hive_test_src.FieldSchema(name:col1, type:string, comment:null), ]
 POSTHOOK: Lineage: hive_test_dst PARTITION(pcol1=test_part,pcol2=test_Part).col1 SIMPLE [(hive_test_src)hive_test_src.FieldSchema(name:col1, type:string, comment:null), ]
 PREHOOK: query: select * from hive_test_dst where pcol1='test_part'
 PREHOOK: type: QUERY
 PREHOOK: Input: default@hive_test_dst@pcol1=test_part/pcol2=test_Part
-PREHOOK: Output: file:/tmp/krishnak/hive_2011-03-21_04-03-18_029_6310337567229273272/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: select * from hive_test_dst where pcol1='test_part'
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@hive_test_dst@pcol1=test_part/pcol2=test_Part
-POSTHOOK: Output: file:/tmp/krishnak/hive_2011-03-21_04-03-18_029_6310337567229273272/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: Lineage: hive_test_dst PARTITION(pcol1=test_part,pcol2=test_Part).col1 SIMPLE [(hive_test_src)hive_test_src.FieldSchema(name:col1, type:string, comment:null), ]
 POSTHOOK: Lineage: hive_test_dst PARTITION(pcol1=test_part,pcol2=test_Part).col1 SIMPLE [(hive_test_src)hive_test_src.FieldSchema(name:col1, type:string, comment:null), ]
 1	test_part	test_Part
@@ -74,17 +74,17 @@ POSTHOOK: Lineage: hive_test_dst PARTITION(pcol1=test_part,pcol2=test_Part).col1
 6	test_part	test_Part
 PREHOOK: query: select * from hive_test_dst where pcol1='test_part' and pcol2='test_part'
 PREHOOK: type: QUERY
-PREHOOK: Output: file:/tmp/krishnak/hive_2011-03-21_04-03-18_165_4174129265357892821/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: select * from hive_test_dst where pcol1='test_part' and pcol2='test_part'
 POSTHOOK: type: QUERY
-POSTHOOK: Output: file:/tmp/krishnak/hive_2011-03-21_04-03-18_165_4174129265357892821/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: Lineage: hive_test_dst PARTITION(pcol1=test_part,pcol2=test_Part).col1 SIMPLE [(hive_test_src)hive_test_src.FieldSchema(name:col1, type:string, comment:null), ]
 POSTHOOK: Lineage: hive_test_dst PARTITION(pcol1=test_part,pcol2=test_Part).col1 SIMPLE [(hive_test_src)hive_test_src.FieldSchema(name:col1, type:string, comment:null), ]
 PREHOOK: query: select * from hive_test_dst where pcol1='test_Part'
 PREHOOK: type: QUERY
-PREHOOK: Output: file:/tmp/krishnak/hive_2011-03-21_04-03-18_201_4573840101394023858/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: select * from hive_test_dst where pcol1='test_Part'
 POSTHOOK: type: QUERY
-POSTHOOK: Output: file:/tmp/krishnak/hive_2011-03-21_04-03-18_201_4573840101394023858/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: Lineage: hive_test_dst PARTITION(pcol1=test_part,pcol2=test_Part).col1 SIMPLE [(hive_test_src)hive_test_src.FieldSchema(name:col1, type:string, comment:null), ]
 POSTHOOK: Lineage: hive_test_dst PARTITION(pcol1=test_part,pcol2=test_Part).col1 SIMPLE [(hive_test_src)hive_test_src.FieldSchema(name:col1, type:string, comment:null), ]

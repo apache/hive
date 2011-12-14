@@ -28,4 +28,4 @@ mstringstring	map<string,string>	from deserializer
 ds	string	
 country	string	
 	 	 
-Detailed Table Information	Table(tableName:inputddl8, dbName:default, owner:thiruvel, createTime:1286797863, lastAccessTime:0, retention:0, sd:StorageDescriptor(cols:[], location:pfile:/home/thiruvel/projects/hive/hive.unsecure/build/ql/test/data/warehouse/inputddl8, inputFormat:org.apache.hadoop.mapred.SequenceFileInputFormat, outputFormat:org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat, compressed:false, numBuckets:32, serdeInfo:SerDeInfo(name:null, serializationLib:org.apache.hadoop.hive.serde2.thrift.ThriftDeserializer, parameters:{serialization.class=org.apache.hadoop.hive.serde2.thrift.test.Complex, serialization.format=com.facebook.thrift.protocol.TBinaryProtocol}), bucketCols:[aint], sortCols:[Order(col:lint, order:1)], parameters:{}), partitionKeys:[FieldSchema(name:ds, type:string, comment:null), FieldSchema(name:country, type:string, comment:null)], parameters:{transient_lastDdlTime=1286797863, comment=This is a thrift based table}, viewOriginalText:null, viewExpandedText:null, tableType:MANAGED_TABLE)	
+#### A masked pattern was here ####

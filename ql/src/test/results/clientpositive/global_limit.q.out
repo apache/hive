@@ -49,22 +49,22 @@ POSTHOOK: Output: default@gl_tgt
 PREHOOK: query: select * from gl_tgt
 PREHOOK: type: QUERY
 PREHOOK: Input: default@gl_tgt
-PREHOOK: Output: file:/tmp/sdong/hive_2011-04-18_13-06-14_715_6666058695580705176/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: select * from gl_tgt
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@gl_tgt
-POSTHOOK: Output: file:/tmp/sdong/hive_2011-04-18_13-06-14_715_6666058695580705176/-mr-10000
+#### A masked pattern was here ####
 165
 PREHOOK: query: -- need two files
 select 'x', split(value,',') from gl_src1 limit 20
 PREHOOK: type: QUERY
 PREHOOK: Input: default@gl_src1
-PREHOOK: Output: file:/tmp/sdong/hive_2011-04-18_13-06-14_930_3390626062169619061/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: -- need two files
 select 'x', split(value,',') from gl_src1 limit 20
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@gl_src1
-POSTHOOK: Output: file:/tmp/sdong/hive_2011-04-18_13-06-14_930_3390626062169619061/-mr-10000
+#### A masked pattern was here ####
 x	["val_165"]
 x	["val_484"]
 x	["val_150"]
@@ -89,12 +89,12 @@ PREHOOK: query: -- no sufficient files
 select key, value, split(value,',') from gl_src1 limit 30
 PREHOOK: type: QUERY
 PREHOOK: Input: default@gl_src1
-PREHOOK: Output: file:/tmp/sdong/hive_2011-04-18_13-06-17_975_1520062346401074551/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: -- no sufficient files
 select key, value, split(value,',') from gl_src1 limit 30
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@gl_src1
-POSTHOOK: Output: file:/tmp/sdong/hive_2011-04-18_13-06-17_975_1520062346401074551/-mr-10000
+#### A masked pattern was here ####
 165	val_165	["val_165"]
 484	val_484	["val_484"]
 150	val_150	["val_150"]
@@ -129,12 +129,12 @@ PREHOOK: query: -- need all files
 select key from gl_src1 limit 100
 PREHOOK: type: QUERY
 PREHOOK: Input: default@gl_src1
-PREHOOK: Output: file:/tmp/sdong/hive_2011-04-18_13-06-21_006_2990988342025987107/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: -- need all files
 select key from gl_src1 limit 100
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@gl_src1
-POSTHOOK: Output: file:/tmp/sdong/hive_2011-04-18_13-06-21_006_2990988342025987107/-mr-10000
+#### A masked pattern was here ####
 165
 484
 150
@@ -238,11 +238,11 @@ POSTHOOK: Output: file:/tmp/sdong/hive_2011-04-18_13-06-21_006_29909883420259871
 PREHOOK: query: select key from gl_src1 limit 30
 PREHOOK: type: QUERY
 PREHOOK: Input: default@gl_src1
-PREHOOK: Output: file:/tmp/sdong/hive_2011-04-18_13-06-24_041_8059705298736859124/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: select key from gl_src1 limit 30
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@gl_src1
-POSTHOOK: Output: file:/tmp/sdong/hive_2011-04-18_13-06-24_041_8059705298736859124/-mr-10000
+#### A masked pattern was here ####
 165
 484
 150
@@ -277,12 +277,12 @@ PREHOOK: query: -- not qualified cases
 select key, count(1) from gl_src1 group by key order by key limit 5
 PREHOOK: type: QUERY
 PREHOOK: Input: default@gl_src1
-PREHOOK: Output: file:/tmp/sdong/hive_2011-04-18_13-06-27_042_2819477757997397479/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: -- not qualified cases
 select key, count(1) from gl_src1 group by key order by key limit 5
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@gl_src1
-POSTHOOK: Output: file:/tmp/sdong/hive_2011-04-18_13-06-27_042_2819477757997397479/-mr-10000
+#### A masked pattern was here ####
 0	9
 4	3
 8	3
@@ -291,11 +291,11 @@ POSTHOOK: Output: file:/tmp/sdong/hive_2011-04-18_13-06-27_042_28194777579973974
 PREHOOK: query: select distinct key from gl_src1 limit 10
 PREHOOK: type: QUERY
 PREHOOK: Input: default@gl_src1
-PREHOOK: Output: file:/tmp/sdong/hive_2011-04-18_13-06-32_925_3439775789836285636/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: select distinct key from gl_src1 limit 10
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@gl_src1
-POSTHOOK: Output: file:/tmp/sdong/hive_2011-04-18_13-06-32_925_3439775789836285636/-mr-10000
+#### A masked pattern was here ####
 0
 4
 8
@@ -309,22 +309,22 @@ POSTHOOK: Output: file:/tmp/sdong/hive_2011-04-18_13-06-32_925_34397757898362856
 PREHOOK: query: select count(1) from gl_src1 limit 1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@gl_src1
-PREHOOK: Output: file:/tmp/sdong/hive_2011-04-18_13-06-36_043_608144804096350391/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: select count(1) from gl_src1 limit 1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@gl_src1
-POSTHOOK: Output: file:/tmp/sdong/hive_2011-04-18_13-06-36_043_608144804096350391/-mr-10000
+#### A masked pattern was here ####
 354
 PREHOOK: query: select transform(*) using "tr _ \n" as t from
 (select "a_a_a_a_a_a_" from gl_src1 limit 100) subq
 PREHOOK: type: QUERY
 PREHOOK: Input: default@gl_src1
-PREHOOK: Output: file:/tmp/sdong/hive_2011-04-18_13-06-39_121_1333918197839932185/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: select transform(*) using "tr _ \n" as t from
 (select "a_a_a_a_a_a_" from gl_src1 limit 100) subq
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@gl_src1
-POSTHOOK: Output: file:/tmp/sdong/hive_2011-04-18_13-06-39_121_1333918197839932185/-mr-10000
+#### A masked pattern was here ####
 a
 a
 a
@@ -1028,11 +1028,11 @@ a
 PREHOOK: query: select key from (select * from (select key,value from gl_src1)t1 limit 10)t2 limit 2000
 PREHOOK: type: QUERY
 PREHOOK: Input: default@gl_src1
-PREHOOK: Output: file:/tmp/sdong/hive_2011-04-18_13-06-42_255_4842424370651858121/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: select key from (select * from (select key,value from gl_src1)t1 limit 10)t2 limit 2000
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@gl_src1
-POSTHOOK: Output: file:/tmp/sdong/hive_2011-04-18_13-06-42_255_4842424370651858121/-mr-10000
+#### A masked pattern was here ####
 165
 484
 150
@@ -1047,12 +1047,12 @@ PREHOOK: query: -- complicated queries
 select key from (select * from (select key,value from gl_src1 limit 10)t1 )t2
 PREHOOK: type: QUERY
 PREHOOK: Input: default@gl_src1
-PREHOOK: Output: file:/tmp/sdong/hive_2011-04-18_13-06-45_699_2470030147373346756/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: -- complicated queries
 select key from (select * from (select key,value from gl_src1 limit 10)t1 )t2
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@gl_src1
-POSTHOOK: Output: file:/tmp/sdong/hive_2011-04-18_13-06-45_699_2470030147373346756/-mr-10000
+#### A masked pattern was here ####
 165
 484
 150
@@ -1066,11 +1066,11 @@ POSTHOOK: Output: file:/tmp/sdong/hive_2011-04-18_13-06-45_699_24700301473733467
 PREHOOK: query: select key from (select * from (select key,value from gl_src1)t1 limit 10)t2
 PREHOOK: type: QUERY
 PREHOOK: Input: default@gl_src1
-PREHOOK: Output: file:/tmp/sdong/hive_2011-04-18_13-06-48_750_7605887767273501586/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: select key from (select * from (select key,value from gl_src1)t1 limit 10)t2
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@gl_src1
-POSTHOOK: Output: file:/tmp/sdong/hive_2011-04-18_13-06-48_750_7605887767273501586/-mr-10000
+#### A masked pattern was here ####
 165
 484
 150
@@ -1093,11 +1093,11 @@ POSTHOOK: Lineage: gl_tgt.key EXPRESSION [(gl_src1)gl_src1.FieldSchema(name:key,
 PREHOOK: query: select * from gl_tgt
 PREHOOK: type: QUERY
 PREHOOK: Input: default@gl_tgt
-PREHOOK: Output: file:/tmp/sdong/hive_2011-04-18_13-06-57_593_9175560296084414291/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: select * from gl_tgt
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@gl_tgt
-POSTHOOK: Output: file:/tmp/sdong/hive_2011-04-18_13-06-57_593_9175560296084414291/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: Lineage: gl_tgt.key EXPRESSION [(gl_src1)gl_src1.FieldSchema(name:key, type:int, comment:null), ]
 166
 485
@@ -1120,11 +1120,11 @@ POSTHOOK: Lineage: gl_tgt.key EXPRESSION [(gl_src1)gl_src1.FieldSchema(name:key,
 PREHOOK: query: select key from gl_src2 limit 10
 PREHOOK: type: QUERY
 PREHOOK: Input: default@gl_src2
-PREHOOK: Output: file:/tmp/sdong/hive_2011-04-18_13-06-57_846_8904186104857307463/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: select key from gl_src2 limit 10
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@gl_src2
-POSTHOOK: Output: file:/tmp/sdong/hive_2011-04-18_13-06-57_846_8904186104857307463/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: Lineage: gl_tgt.key EXPRESSION [(gl_src1)gl_src1.FieldSchema(name:key, type:int, comment:null), ]
 PREHOOK: query: -- partition
 create table gl_src_part1 (key int, value string) partitioned by (p string) stored as textfile
@@ -1168,12 +1168,12 @@ PREHOOK: query: select key from gl_src_part1 where p like '1%' limit 10
 PREHOOK: type: QUERY
 PREHOOK: Input: default@gl_src_part1@p=11
 PREHOOK: Input: default@gl_src_part1@p=12
-PREHOOK: Output: file:/tmp/sdong/hive_2011-04-18_13-07-03_055_6761445866727035783/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: select key from gl_src_part1 where p like '1%' limit 10
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@gl_src_part1@p=11
 POSTHOOK: Input: default@gl_src_part1@p=12
-POSTHOOK: Output: file:/tmp/sdong/hive_2011-04-18_13-07-03_055_6761445866727035783/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: Lineage: gl_tgt.key EXPRESSION [(gl_src1)gl_src1.FieldSchema(name:key, type:int, comment:null), ]
 27
 409
@@ -1188,11 +1188,11 @@ POSTHOOK: Lineage: gl_tgt.key EXPRESSION [(gl_src1)gl_src1.FieldSchema(name:key,
 PREHOOK: query: select key from gl_src_part1 where p='11' limit 10
 PREHOOK: type: QUERY
 PREHOOK: Input: default@gl_src_part1@p=11
-PREHOOK: Output: file:/tmp/sdong/hive_2011-04-18_13-07-06_080_7097976505609243557/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: select key from gl_src_part1 where p='11' limit 10
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@gl_src_part1@p=11
-POSTHOOK: Output: file:/tmp/sdong/hive_2011-04-18_13-07-06_080_7097976505609243557/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: Lineage: gl_tgt.key EXPRESSION [(gl_src1)gl_src1.FieldSchema(name:key, type:int, comment:null), ]
 27
 409
@@ -1207,11 +1207,11 @@ POSTHOOK: Lineage: gl_tgt.key EXPRESSION [(gl_src1)gl_src1.FieldSchema(name:key,
 PREHOOK: query: select key from gl_src_part1 where p='12' limit 10
 PREHOOK: type: QUERY
 PREHOOK: Input: default@gl_src_part1@p=12
-PREHOOK: Output: file:/tmp/sdong/hive_2011-04-18_13-07-09_087_9176571562410124649/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: select key from gl_src_part1 where p='12' limit 10
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@gl_src_part1@p=12
-POSTHOOK: Output: file:/tmp/sdong/hive_2011-04-18_13-07-09_087_9176571562410124649/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: Lineage: gl_tgt.key EXPRESSION [(gl_src1)gl_src1.FieldSchema(name:key, type:int, comment:null), ]
 165
 484
@@ -1225,10 +1225,10 @@ POSTHOOK: Lineage: gl_tgt.key EXPRESSION [(gl_src1)gl_src1.FieldSchema(name:key,
 327
 PREHOOK: query: select key from gl_src_part1 where p='13' limit 10
 PREHOOK: type: QUERY
-PREHOOK: Output: file:/tmp/sdong/hive_2011-04-18_13-07-12_038_7099507780438686856/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: select key from gl_src_part1 where p='13' limit 10
 POSTHOOK: type: QUERY
-POSTHOOK: Output: file:/tmp/sdong/hive_2011-04-18_13-07-12_038_7099507780438686856/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: Lineage: gl_tgt.key EXPRESSION [(gl_src1)gl_src1.FieldSchema(name:key, type:int, comment:null), ]
 PREHOOK: query: alter table gl_src_part1 add partition (p='13')
 PREHOOK: type: ALTERTABLE_ADDPARTS
@@ -1241,20 +1241,20 @@ POSTHOOK: Lineage: gl_tgt.key EXPRESSION [(gl_src1)gl_src1.FieldSchema(name:key,
 PREHOOK: query: select key from gl_src_part1 where p='13' limit 10
 PREHOOK: type: QUERY
 PREHOOK: Input: default@gl_src_part1@p=13
-PREHOOK: Output: file:/tmp/sdong/hive_2011-04-18_13-07-15_137_3923898954213249104/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: select key from gl_src_part1 where p='13' limit 10
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@gl_src_part1@p=13
-POSTHOOK: Output: file:/tmp/sdong/hive_2011-04-18_13-07-15_137_3923898954213249104/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: Lineage: gl_tgt.key EXPRESSION [(gl_src1)gl_src1.FieldSchema(name:key, type:int, comment:null), ]
 PREHOOK: query: select key from gl_src_part1 where p='12' limit 1000
 PREHOOK: type: QUERY
 PREHOOK: Input: default@gl_src_part1@p=12
-PREHOOK: Output: file:/tmp/sdong/hive_2011-04-18_13-07-18_041_1214817963525981880/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: select key from gl_src_part1 where p='12' limit 1000
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@gl_src_part1@p=12
-POSTHOOK: Output: file:/tmp/sdong/hive_2011-04-18_13-07-18_041_1214817963525981880/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: Lineage: gl_tgt.key EXPRESSION [(gl_src1)gl_src1.FieldSchema(name:key, type:int, comment:null), ]
 165
 484

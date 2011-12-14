@@ -13,13 +13,13 @@ FROM src
 GROUP BY key ORDER BY key limit 20
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/var/folders/6g/6grtCwPMEf4sqHUPpy6xQG9ByHg/-Tmp-/heyongqiang/hive_2010-07-30_17-05-53_522_3530309455217069909/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: SELECT key, collect_set(value)
 FROM src
 GROUP BY key ORDER BY key limit 20
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: file:/var/folders/6g/6grtCwPMEf4sqHUPpy6xQG9ByHg/-Tmp-/heyongqiang/hive_2010-07-30_17-05-53_522_3530309455217069909/-mr-10000
+#### A masked pattern was here ####
 0	["val_0"]
 10	["val_10"]
 100	["val_100"]
@@ -45,13 +45,13 @@ FROM src
 GROUP BY key ORDER BY key limit 20
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/var/folders/6g/6grtCwPMEf4sqHUPpy6xQG9ByHg/-Tmp-/heyongqiang/hive_2010-07-30_17-06-01_685_2541220772134185861/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: SELECT key, collect_set(value)
 FROM src
 GROUP BY key ORDER BY key limit 20
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: file:/var/folders/6g/6grtCwPMEf4sqHUPpy6xQG9ByHg/-Tmp-/heyongqiang/hive_2010-07-30_17-06-01_685_2541220772134185861/-mr-10000
+#### A masked pattern was here ####
 0	["val_0"]
 10	["val_10"]
 100	["val_100"]
@@ -77,13 +77,13 @@ FROM src
 GROUP BY key ORDER BY key limit 20
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/var/folders/6g/6grtCwPMEf4sqHUPpy6xQG9ByHg/-Tmp-/heyongqiang/hive_2010-07-30_17-06-09_632_7957341289614848394/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: SELECT key, collect_set(value)
 FROM src
 GROUP BY key ORDER BY key limit 20
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: file:/var/folders/6g/6grtCwPMEf4sqHUPpy6xQG9ByHg/-Tmp-/heyongqiang/hive_2010-07-30_17-06-09_632_7957341289614848394/-mr-10000
+#### A masked pattern was here ####
 0	["val_0"]
 10	["val_10"]
 100	["val_100"]
@@ -109,13 +109,13 @@ FROM src
 GROUP BY key ORDER BY key limit 20
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/var/folders/6g/6grtCwPMEf4sqHUPpy6xQG9ByHg/-Tmp-/heyongqiang/hive_2010-07-30_17-06-23_542_3742508270905277781/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: SELECT key, collect_set(value)
 FROM src
 GROUP BY key ORDER BY key limit 20
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: file:/var/folders/6g/6grtCwPMEf4sqHUPpy6xQG9ByHg/-Tmp-/heyongqiang/hive_2010-07-30_17-06-23_542_3742508270905277781/-mr-10000
+#### A masked pattern was here ####
 0	["val_0"]
 10	["val_10"]
 100	["val_100"]

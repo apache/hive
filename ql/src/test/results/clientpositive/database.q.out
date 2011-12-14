@@ -138,7 +138,7 @@ DESCRIBE EXTENDED test_table
 POSTHOOK: type: DESCTABLE
 col1	string	
 	 	 
-Detailed Table Information	Table(tableName:test_table, dbName:test_db, owner:rsurowka, createTime:1320966647, lastAccessTime:0, retention:0, sd:StorageDescriptor(cols:[FieldSchema(name:col1, type:string, comment:null)], location:pfile:/data/users/rsurowka/JAVA_HIVE/apache-hive/build/ql/test/data/warehouse/test_db.db/test_table, inputFormat:org.apache.hadoop.mapred.TextInputFormat, outputFormat:org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat, compressed:false, numBuckets:-1, serdeInfo:SerDeInfo(name:null, serializationLib:org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe, parameters:{serialization.format=1}), bucketCols:[], sortCols:[], parameters:{}), partitionKeys:[], parameters:{transient_lastDdlTime=1320966647}, viewOriginalText:null, viewExpandedText:null, tableType:MANAGED_TABLE)	
+#### A masked pattern was here ####
 PREHOOK: query: -- CREATE LIKE in non-default DB
 CREATE TABLE test_table_like LIKE test_table
 PREHOOK: type: CREATETABLE
@@ -158,7 +158,7 @@ POSTHOOK: query: DESCRIBE EXTENDED test_table_like
 POSTHOOK: type: DESCTABLE
 col1	string	
 	 	 
-Detailed Table Information	Table(tableName:test_table_like, dbName:test_db, owner:rsurowka, createTime:1320966647, lastAccessTime:0, retention:0, sd:StorageDescriptor(cols:[FieldSchema(name:col1, type:string, comment:null)], location:pfile:/data/users/rsurowka/JAVA_HIVE/apache-hive/build/ql/test/data/warehouse/test_db.db/test_table_like, inputFormat:org.apache.hadoop.mapred.TextInputFormat, outputFormat:org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat, compressed:false, numBuckets:-1, serdeInfo:SerDeInfo(name:null, serializationLib:org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe, parameters:{serialization.format=1}), bucketCols:[], sortCols:[], parameters:{}), partitionKeys:[], parameters:{transient_lastDdlTime=1320966647}, viewOriginalText:null, viewExpandedText:null, tableType:MANAGED_TABLE)	
+#### A masked pattern was here ####
 PREHOOK: query: -- LOAD and SELECT
 LOAD DATA LOCAL INPATH '../data/files/test.dat'
 OVERWRITE INTO TABLE test_table
@@ -172,11 +172,11 @@ POSTHOOK: Output: test_db@test_table
 PREHOOK: query: SELECT * FROM test_table
 PREHOOK: type: QUERY
 PREHOOK: Input: test_db@test_table
-PREHOOK: Output: file:/tmp/rsurowka/hive_2011-11-10_15-10-48_151_6573920810604836961/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: SELECT * FROM test_table
 POSTHOOK: type: QUERY
 POSTHOOK: Input: test_db@test_table
-POSTHOOK: Output: file:/tmp/rsurowka/hive_2011-11-10_15-10-48_151_6573920810604836961/-mr-10000
+#### A masked pattern was here ####
 1
 2
 3
@@ -212,11 +212,11 @@ test_table_like
 PREHOOK: query: SELECT * FROM test_table
 PREHOOK: type: QUERY
 PREHOOK: Input: test_db@test_table
-PREHOOK: Output: file:/tmp/rsurowka/hive_2011-11-10_15-10-49_633_3443054131161689989/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: SELECT * FROM test_table
 POSTHOOK: type: QUERY
 POSTHOOK: Input: test_db@test_table
-POSTHOOK: Output: file:/tmp/rsurowka/hive_2011-11-10_15-10-49_633_3443054131161689989/-mr-10000
+#### A masked pattern was here ####
 PREHOOK: query: -- CREATE table that already exists in DEFAULT
 USE test_db
 PREHOOK: type: SWITCHDATABASE
@@ -238,11 +238,11 @@ test_table_like
 PREHOOK: query: SELECT * FROM src LIMIT 10
 PREHOOK: type: QUERY
 PREHOOK: Input: test_db@src
-PREHOOK: Output: file:/tmp/rsurowka/hive_2011-11-10_15-10-49_913_7850323324454709675/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: SELECT * FROM src LIMIT 10
 POSTHOOK: type: QUERY
 POSTHOOK: Input: test_db@src
-POSTHOOK: Output: file:/tmp/rsurowka/hive_2011-11-10_15-10-49_913_7850323324454709675/-mr-10000
+#### A masked pattern was here ####
 PREHOOK: query: USE default
 PREHOOK: type: SWITCHDATABASE
 POSTHOOK: query: USE default
@@ -250,11 +250,11 @@ POSTHOOK: type: SWITCHDATABASE
 PREHOOK: query: SELECT * FROM src LIMIT 10
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/tmp/rsurowka/hive_2011-11-10_15-10-50_034_1858621799404782207/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: SELECT * FROM src LIMIT 10
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: file:/tmp/rsurowka/hive_2011-11-10_15-10-50_034_1858621799404782207/-mr-10000
+#### A masked pattern was here ####
 238	val_238
 86	val_86
 311	val_311
@@ -517,12 +517,12 @@ PREHOOK: query: -- SELECT from foreign table
 SELECT * FROM db1.src
 PREHOOK: type: QUERY
 PREHOOK: Input: db1@src
-PREHOOK: Output: file:/tmp/rsurowka/hive_2011-11-10_15-10-58_951_6480997097390226151/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: -- SELECT from foreign table
 SELECT * FROM db1.src
 POSTHOOK: type: QUERY
 POSTHOOK: Input: db1@src
-POSTHOOK: Output: file:/tmp/rsurowka/hive_2011-11-10_15-10-58_951_6480997097390226151/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: Lineage: temp_tbl2.c EXPRESSION [(temp_tbl)temp_tbl.null, ]
 238	val_238
 86	val_86
@@ -1055,13 +1055,13 @@ SELECT key, value FROM db1.srcpart
 WHERE key < 100 AND ds='2008-04-08' AND hr='11'
 PREHOOK: type: QUERY
 PREHOOK: Input: db1@srcpart@ds=2008-04-08/hr=11
-PREHOOK: Output: file:/tmp/rsurowka/hive_2011-11-10_15-10-59_733_7103239820411445554/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: -- SELECT from Partitioned foreign table
 SELECT key, value FROM db1.srcpart
 WHERE key < 100 AND ds='2008-04-08' AND hr='11'
 POSTHOOK: type: QUERY
 POSTHOOK: Input: db1@srcpart@ds=2008-04-08/hr=11
-POSTHOOK: Output: file:/tmp/rsurowka/hive_2011-11-10_15-10-59_733_7103239820411445554/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: Lineage: temp_tbl2.c EXPRESSION [(temp_tbl)temp_tbl.null, ]
 86	val_86
 27	val_27
@@ -1159,13 +1159,13 @@ ON (a.key = b.key)
 PREHOOK: type: QUERY
 PREHOOK: Input: db1@src
 PREHOOK: Input: default@src1
-PREHOOK: Output: file:/tmp/rsurowka/hive_2011-11-10_15-11-03_018_7380318179263286895/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: SELECT a.* FROM db1.src a JOIN default.src1 b
 ON (a.key = b.key)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: db1@src
 POSTHOOK: Input: default@src1
-POSTHOOK: Output: file:/tmp/rsurowka/hive_2011-11-10_15-11-03_018_7380318179263286895/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: Lineage: temp_tbl2.c EXPRESSION [(temp_tbl)temp_tbl.null, ]
 128	val_128
 128	val_128
@@ -1237,7 +1237,7 @@ UNION ALL
 PREHOOK: type: QUERY
 PREHOOK: Input: db1@conflict_name
 PREHOOK: Input: db2@conflict_name
-PREHOOK: Output: file:/tmp/rsurowka/hive_2011-11-10_15-11-15_158_3564242393930132257/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: -- query tables with the same names in different DBs
 SELECT * FROM (
   SELECT value FROM db1.conflict_name
@@ -1247,7 +1247,7 @@ UNION ALL
 POSTHOOK: type: QUERY
 POSTHOOK: Input: db1@conflict_name
 POSTHOOK: Input: db2@conflict_name
-POSTHOOK: Output: file:/tmp/rsurowka/hive_2011-11-10_15-11-15_158_3564242393930132257/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: Lineage: temp_tbl2.c EXPRESSION [(temp_tbl)temp_tbl.null, ]
 val_66
 val_8
@@ -1264,7 +1264,7 @@ UNION ALL
 PREHOOK: type: QUERY
 PREHOOK: Input: db1@conflict_name
 PREHOOK: Input: db2@conflict_name
-PREHOOK: Output: file:/tmp/rsurowka/hive_2011-11-10_15-11-18_535_2030398088007841837/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: SELECT * FROM (
   SELECT value FROM db1.conflict_name
 UNION ALL
@@ -1273,7 +1273,7 @@ UNION ALL
 POSTHOOK: type: QUERY
 POSTHOOK: Input: db1@conflict_name
 POSTHOOK: Input: db2@conflict_name
-POSTHOOK: Output: file:/tmp/rsurowka/hive_2011-11-10_15-11-18_535_2030398088007841837/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: Lineage: temp_tbl2.c EXPRESSION [(temp_tbl)temp_tbl.null, ]
 val_66
 val_8
@@ -1303,11 +1303,11 @@ POSTHOOK: Lineage: temp_tbl2.c EXPRESSION [(temp_tbl)temp_tbl.null, ]
 PREHOOK: query: SELECT key FROM bucketized_src TABLESAMPLE(BUCKET 1 out of 1)
 PREHOOK: type: QUERY
 PREHOOK: Input: default@bucketized_src
-PREHOOK: Output: file:/tmp/rsurowka/hive_2011-11-10_15-11-26_290_4021691896613116755/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: SELECT key FROM bucketized_src TABLESAMPLE(BUCKET 1 out of 1)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@bucketized_src
-POSTHOOK: Output: file:/tmp/rsurowka/hive_2011-11-10_15-11-26_290_4021691896613116755/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: Lineage: bucketized_src.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: bucketized_src.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: temp_tbl2.c EXPRESSION [(temp_tbl)temp_tbl.null, ]
@@ -1339,17 +1339,17 @@ POSTHOOK: Lineage: temp_tbl2.c EXPRESSION [(temp_tbl)temp_tbl.null, ]
 key	string	default
 value	string	default
 	 	 
-Detailed Table Information	Table(tableName:src1, dbName:db2, owner:rsurowka, createTime:1320966689, lastAccessTime:0, retention:0, sd:StorageDescriptor(cols:[FieldSchema(name:key, type:string, comment:default), FieldSchema(name:value, type:string, comment:default)], location:pfile:/data/users/rsurowka/JAVA_HIVE/apache-hive/build/ql/test/data/warehouse/db2.db/src1, inputFormat:org.apache.hadoop.mapred.TextInputFormat, outputFormat:org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat, compressed:false, numBuckets:-1, serdeInfo:SerDeInfo(name:null, serializationLib:org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe, parameters:{serialization.format=1}), bucketCols:[], sortCols:[], parameters:{}), partitionKeys:[], parameters:{transient_lastDdlTime=1320966689}, viewOriginalText:null, viewExpandedText:null, tableType:MANAGED_TABLE)	
+#### A masked pattern was here ####
 PREHOOK: query: -- character escaping
 SELECT key FROM `default`.src ORDER BY key LIMIT 1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/tmp/rsurowka/hive_2011-11-10_15-11-29_546_4593274281731483892/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: -- character escaping
 SELECT key FROM `default`.src ORDER BY key LIMIT 1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: file:/tmp/rsurowka/hive_2011-11-10_15-11-29_546_4593274281731483892/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: Lineage: bucketized_src.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: bucketized_src.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: temp_tbl2.c EXPRESSION [(temp_tbl)temp_tbl.null, ]
@@ -1357,11 +1357,11 @@ POSTHOOK: Lineage: temp_tbl2.c EXPRESSION [(temp_tbl)temp_tbl.null, ]
 PREHOOK: query: SELECT key FROM `default`.`src` ORDER BY key LIMIT 1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/tmp/rsurowka/hive_2011-11-10_15-11-32_633_3376602064902818343/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: SELECT key FROM `default`.`src` ORDER BY key LIMIT 1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: file:/tmp/rsurowka/hive_2011-11-10_15-11-32_633_3376602064902818343/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: Lineage: bucketized_src.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: bucketized_src.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: temp_tbl2.c EXPRESSION [(temp_tbl)temp_tbl.null, ]
@@ -1369,11 +1369,11 @@ POSTHOOK: Lineage: temp_tbl2.c EXPRESSION [(temp_tbl)temp_tbl.null, ]
 PREHOOK: query: SELECT key FROM default.`src` ORDER BY key LIMIT 1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/tmp/rsurowka/hive_2011-11-10_15-11-35_757_6085919975459669346/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: SELECT key FROM default.`src` ORDER BY key LIMIT 1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: file:/tmp/rsurowka/hive_2011-11-10_15-11-35_757_6085919975459669346/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: Lineage: bucketized_src.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: bucketized_src.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: temp_tbl2.c EXPRESSION [(temp_tbl)temp_tbl.null, ]

@@ -27,10 +27,10 @@ POSTHOOK: Lineage: tst PARTITION(d=2009-01-01).b SIMPLE [(src)src.FieldSchema(na
 PREHOOK: query: select * from tst where tst.d='2009-01-01'
 PREHOOK: type: QUERY
 PREHOOK: Input: default@tst@d=2009-01-01
-PREHOOK: Output: file:/tmp/jsichi/hive_2010-08-26_15-51-46_845_5870944866794428279/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: select * from tst where tst.d='2009-01-01'
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@tst@d=2009-01-01
-POSTHOOK: Output: file:/tmp/jsichi/hive_2010-08-26_15-51-46_845_5870944866794428279/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: Lineage: tst PARTITION(d=2009-01-01).a SIMPLE [(tst)tst.FieldSchema(name:a, type:string, comment:null), ]
 POSTHOOK: Lineage: tst PARTITION(d=2009-01-01).b SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]

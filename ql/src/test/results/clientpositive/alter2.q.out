@@ -11,7 +11,7 @@ a	int
 b	int	
 insertdate	string	
 	 	 
-Detailed Table Information	Table(tableName:alter2, dbName:default, owner:thiruvel, createTime:1286799434, lastAccessTime:0, retention:0, sd:StorageDescriptor(cols:[FieldSchema(name:a, type:int, comment:null), FieldSchema(name:b, type:int, comment:null), FieldSchema(name:insertdate, type:string, comment:null)], location:pfile:/home/thiruvel/projects/hive/hive.unsecure/build/ql/test/data/warehouse/alter2, inputFormat:org.apache.hadoop.mapred.TextInputFormat, outputFormat:org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat, compressed:false, numBuckets:-1, serdeInfo:SerDeInfo(name:null, serializationLib:org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe, parameters:{serialization.format=1}), bucketCols:[], sortCols:[], parameters:{}), partitionKeys:[FieldSchema(name:insertdate, type:string, comment:null)], parameters:{transient_lastDdlTime=1286799434}, viewOriginalText:null, viewExpandedText:null, tableType:MANAGED_TABLE)	
+#### A masked pattern was here ####
 PREHOOK: query: show partitions alter2
 PREHOOK: type: SHOWPARTITIONS
 POSTHOOK: query: show partitions alter2
@@ -31,7 +31,7 @@ a	int
 b	int	
 insertdate	string	
 	 	 
-Detailed Table Information	Table(tableName:alter2, dbName:default, owner:thiruvel, createTime:1286799434, lastAccessTime:0, retention:0, sd:StorageDescriptor(cols:[FieldSchema(name:a, type:int, comment:null), FieldSchema(name:b, type:int, comment:null), FieldSchema(name:insertdate, type:string, comment:null)], location:pfile:/home/thiruvel/projects/hive/hive.unsecure/build/ql/test/data/warehouse/alter2, inputFormat:org.apache.hadoop.mapred.TextInputFormat, outputFormat:org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat, compressed:false, numBuckets:-1, serdeInfo:SerDeInfo(name:null, serializationLib:org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe, parameters:{serialization.format=1}), bucketCols:[], sortCols:[], parameters:{}), partitionKeys:[FieldSchema(name:insertdate, type:string, comment:null)], parameters:{transient_lastDdlTime=1286799434}, viewOriginalText:null, viewExpandedText:null, tableType:MANAGED_TABLE)	
+#### A masked pattern was here ####
 PREHOOK: query: show partitions alter2
 PREHOOK: type: SHOWPARTITIONS
 POSTHOOK: query: show partitions alter2
@@ -52,7 +52,7 @@ a	int
 b	int	
 insertdate	string	
 	 	 
-Detailed Table Information	Table(tableName:alter2, dbName:default, owner:thiruvel, createTime:1286799434, lastAccessTime:0, retention:0, sd:StorageDescriptor(cols:[FieldSchema(name:a, type:int, comment:null), FieldSchema(name:b, type:int, comment:null), FieldSchema(name:insertdate, type:string, comment:null)], location:pfile:/home/thiruvel/projects/hive/hive.unsecure/build/ql/test/data/warehouse/alter2, inputFormat:org.apache.hadoop.mapred.TextInputFormat, outputFormat:org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat, compressed:false, numBuckets:-1, serdeInfo:SerDeInfo(name:null, serializationLib:org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe, parameters:{serialization.format=1}), bucketCols:[], sortCols:[], parameters:{}), partitionKeys:[FieldSchema(name:insertdate, type:string, comment:null)], parameters:{transient_lastDdlTime=1286799434}, viewOriginalText:null, viewExpandedText:null, tableType:MANAGED_TABLE)	
+#### A masked pattern was here ####
 PREHOOK: query: show partitions alter2
 PREHOOK: type: SHOWPARTITIONS
 POSTHOOK: query: show partitions alter2
@@ -80,7 +80,7 @@ a	int
 b	int	
 insertdate	string	
 	 	 
-Detailed Table Information	Table(tableName:alter2, dbName:default, owner:thiruvel, createTime:1286799436, lastAccessTime:0, retention:0, sd:StorageDescriptor(cols:[FieldSchema(name:a, type:int, comment:null), FieldSchema(name:b, type:int, comment:null), FieldSchema(name:insertdate, type:string, comment:null)], location:pfile:/home/thiruvel/projects/hive/hive.unsecure/build/ql/test/data/warehouse/alter2, inputFormat:org.apache.hadoop.mapred.TextInputFormat, outputFormat:org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat, compressed:false, numBuckets:-1, serdeInfo:SerDeInfo(name:null, serializationLib:org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe, parameters:{serialization.format=1}), bucketCols:[], sortCols:[], parameters:{}), partitionKeys:[FieldSchema(name:insertdate, type:string, comment:null)], parameters:{EXTERNAL=TRUE, transient_lastDdlTime=1286799436}, viewOriginalText:null, viewExpandedText:null, tableType:EXTERNAL_TABLE)	
+#### A masked pattern was here ####
 PREHOOK: query: show partitions alter2
 PREHOOK: type: SHOWPARTITIONS
 POSTHOOK: query: show partitions alter2
@@ -100,7 +100,7 @@ a	int
 b	int	
 insertdate	string	
 	 	 
-Detailed Table Information	Table(tableName:alter2, dbName:default, owner:thiruvel, createTime:1286799436, lastAccessTime:0, retention:0, sd:StorageDescriptor(cols:[FieldSchema(name:a, type:int, comment:null), FieldSchema(name:b, type:int, comment:null), FieldSchema(name:insertdate, type:string, comment:null)], location:pfile:/home/thiruvel/projects/hive/hive.unsecure/build/ql/test/data/warehouse/alter2, inputFormat:org.apache.hadoop.mapred.TextInputFormat, outputFormat:org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat, compressed:false, numBuckets:-1, serdeInfo:SerDeInfo(name:null, serializationLib:org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe, parameters:{serialization.format=1}), bucketCols:[], sortCols:[], parameters:{}), partitionKeys:[FieldSchema(name:insertdate, type:string, comment:null)], parameters:{EXTERNAL=TRUE, transient_lastDdlTime=1286799436}, viewOriginalText:null, viewExpandedText:null, tableType:EXTERNAL_TABLE)	
+#### A masked pattern was here ####
 PREHOOK: query: show partitions alter2
 PREHOOK: type: SHOWPARTITIONS
 POSTHOOK: query: show partitions alter2
@@ -121,7 +121,7 @@ a	int
 b	int	
 insertdate	string	
 	 	 
-Detailed Table Information	Table(tableName:alter2, dbName:default, owner:thiruvel, createTime:1286799436, lastAccessTime:0, retention:0, sd:StorageDescriptor(cols:[FieldSchema(name:a, type:int, comment:null), FieldSchema(name:b, type:int, comment:null), FieldSchema(name:insertdate, type:string, comment:null)], location:pfile:/home/thiruvel/projects/hive/hive.unsecure/build/ql/test/data/warehouse/alter2, inputFormat:org.apache.hadoop.mapred.TextInputFormat, outputFormat:org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat, compressed:false, numBuckets:-1, serdeInfo:SerDeInfo(name:null, serializationLib:org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe, parameters:{serialization.format=1}), bucketCols:[], sortCols:[], parameters:{}), partitionKeys:[FieldSchema(name:insertdate, type:string, comment:null)], parameters:{EXTERNAL=TRUE, transient_lastDdlTime=1286799436}, viewOriginalText:null, viewExpandedText:null, tableType:EXTERNAL_TABLE)	
+#### A masked pattern was here ####
 PREHOOK: query: show partitions alter2
 PREHOOK: type: SHOWPARTITIONS
 POSTHOOK: query: show partitions alter2
@@ -179,15 +179,15 @@ a	int
 b	int	
 insertdate	string	
 	 	 
-Detailed Table Information	Table(tableName:alter2, dbName:alter2_db, owner:thiruvel, createTime:1286799436, lastAccessTime:0, retention:0, sd:StorageDescriptor(cols:[FieldSchema(name:a, type:int, comment:null), FieldSchema(name:b, type:int, comment:null), FieldSchema(name:insertdate, type:string, comment:null)], location:pfile:/home/thiruvel/projects/hive/hive.unsecure/build/ql/test/data/warehouse/alter2_db.db/alter2, inputFormat:org.apache.hadoop.mapred.TextInputFormat, outputFormat:org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat, compressed:false, numBuckets:-1, serdeInfo:SerDeInfo(name:null, serializationLib:org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe, parameters:{serialization.format=1}), bucketCols:[], sortCols:[], parameters:{}), partitionKeys:[FieldSchema(name:insertdate, type:string, comment:null)], parameters:{transient_lastDdlTime=1286799436}, viewOriginalText:null, viewExpandedText:null, tableType:MANAGED_TABLE)	
+#### A masked pattern was here ####
 PREHOOK: query: SHOW PARTITIONS alter2
 PREHOOK: type: SHOWPARTITIONS
 POSTHOOK: query: SHOW PARTITIONS alter2
 POSTHOOK: type: SHOWPARTITIONS
-PREHOOK: query: ALTER TABLE alter2 ADD PARTITION (insertdate='2008-01-01') LOCATION '2008/01/01'
+#### A masked pattern was here ####
 PREHOOK: type: ALTERTABLE_ADDPARTS
 PREHOOK: Input: alter2_db@alter2
-POSTHOOK: query: ALTER TABLE alter2 ADD PARTITION (insertdate='2008-01-01') LOCATION '2008/01/01'
+#### A masked pattern was here ####
 POSTHOOK: type: ALTERTABLE_ADDPARTS
 POSTHOOK: Input: alter2_db@alter2
 POSTHOOK: Output: alter2_db@alter2@insertdate=2008-01-01
@@ -199,16 +199,16 @@ a	int
 b	int	
 insertdate	string	
 	 	 
-Detailed Table Information	Table(tableName:alter2, dbName:alter2_db, owner:thiruvel, createTime:1286799436, lastAccessTime:0, retention:0, sd:StorageDescriptor(cols:[FieldSchema(name:a, type:int, comment:null), FieldSchema(name:b, type:int, comment:null), FieldSchema(name:insertdate, type:string, comment:null)], location:pfile:/home/thiruvel/projects/hive/hive.unsecure/build/ql/test/data/warehouse/alter2_db.db/alter2, inputFormat:org.apache.hadoop.mapred.TextInputFormat, outputFormat:org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat, compressed:false, numBuckets:-1, serdeInfo:SerDeInfo(name:null, serializationLib:org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe, parameters:{serialization.format=1}), bucketCols:[], sortCols:[], parameters:{}), partitionKeys:[FieldSchema(name:insertdate, type:string, comment:null)], parameters:{transient_lastDdlTime=1286799436}, viewOriginalText:null, viewExpandedText:null, tableType:MANAGED_TABLE)	
+#### A masked pattern was here ####
 PREHOOK: query: SHOW PARTITIONS alter2
 PREHOOK: type: SHOWPARTITIONS
 POSTHOOK: query: SHOW PARTITIONS alter2
 POSTHOOK: type: SHOWPARTITIONS
 insertdate=2008-01-01
-PREHOOK: query: ALTER TABLE alter2 ADD PARTITION (insertdate='2008-01-02') LOCATION '2008/01/02'
+#### A masked pattern was here ####
 PREHOOK: type: ALTERTABLE_ADDPARTS
 PREHOOK: Input: alter2_db@alter2
-POSTHOOK: query: ALTER TABLE alter2 ADD PARTITION (insertdate='2008-01-02') LOCATION '2008/01/02'
+#### A masked pattern was here ####
 POSTHOOK: type: ALTERTABLE_ADDPARTS
 POSTHOOK: Input: alter2_db@alter2
 POSTHOOK: Output: alter2_db@alter2@insertdate=2008-01-02
@@ -220,7 +220,7 @@ a	int
 b	int	
 insertdate	string	
 	 	 
-Detailed Table Information	Table(tableName:alter2, dbName:alter2_db, owner:thiruvel, createTime:1286799436, lastAccessTime:0, retention:0, sd:StorageDescriptor(cols:[FieldSchema(name:a, type:int, comment:null), FieldSchema(name:b, type:int, comment:null), FieldSchema(name:insertdate, type:string, comment:null)], location:pfile:/home/thiruvel/projects/hive/hive.unsecure/build/ql/test/data/warehouse/alter2_db.db/alter2, inputFormat:org.apache.hadoop.mapred.TextInputFormat, outputFormat:org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat, compressed:false, numBuckets:-1, serdeInfo:SerDeInfo(name:null, serializationLib:org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe, parameters:{serialization.format=1}), bucketCols:[], sortCols:[], parameters:{}), partitionKeys:[FieldSchema(name:insertdate, type:string, comment:null)], parameters:{transient_lastDdlTime=1286799436}, viewOriginalText:null, viewExpandedText:null, tableType:MANAGED_TABLE)	
+#### A masked pattern was here ####
 PREHOOK: query: SHOW PARTITIONS alter2
 PREHOOK: type: SHOWPARTITIONS
 POSTHOOK: query: SHOW PARTITIONS alter2
@@ -248,15 +248,15 @@ a	int
 b	int	
 insertdate	string	
 	 	 
-Detailed Table Information	Table(tableName:alter2, dbName:alter2_db, owner:thiruvel, createTime:1286799437, lastAccessTime:0, retention:0, sd:StorageDescriptor(cols:[FieldSchema(name:a, type:int, comment:null), FieldSchema(name:b, type:int, comment:null), FieldSchema(name:insertdate, type:string, comment:null)], location:pfile:/home/thiruvel/projects/hive/hive.unsecure/build/ql/test/data/warehouse/alter2_db.db/alter2, inputFormat:org.apache.hadoop.mapred.TextInputFormat, outputFormat:org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat, compressed:false, numBuckets:-1, serdeInfo:SerDeInfo(name:null, serializationLib:org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe, parameters:{serialization.format=1}), bucketCols:[], sortCols:[], parameters:{}), partitionKeys:[FieldSchema(name:insertdate, type:string, comment:null)], parameters:{EXTERNAL=TRUE, transient_lastDdlTime=1286799437}, viewOriginalText:null, viewExpandedText:null, tableType:EXTERNAL_TABLE)	
+#### A masked pattern was here ####
 PREHOOK: query: SHOW PARTITIONS alter2
 PREHOOK: type: SHOWPARTITIONS
 POSTHOOK: query: SHOW PARTITIONS alter2
 POSTHOOK: type: SHOWPARTITIONS
-PREHOOK: query: ALTER TABLE alter2 ADD PARTITION (insertdate='2008-01-01') LOCATION '2008/01/01'
+#### A masked pattern was here ####
 PREHOOK: type: ALTERTABLE_ADDPARTS
 PREHOOK: Input: alter2_db@alter2
-POSTHOOK: query: ALTER TABLE alter2 ADD PARTITION (insertdate='2008-01-01') LOCATION '2008/01/01'
+#### A masked pattern was here ####
 POSTHOOK: type: ALTERTABLE_ADDPARTS
 POSTHOOK: Input: alter2_db@alter2
 POSTHOOK: Output: alter2_db@alter2@insertdate=2008-01-01
@@ -268,16 +268,16 @@ a	int
 b	int	
 insertdate	string	
 	 	 
-Detailed Table Information	Table(tableName:alter2, dbName:alter2_db, owner:thiruvel, createTime:1286799437, lastAccessTime:0, retention:0, sd:StorageDescriptor(cols:[FieldSchema(name:a, type:int, comment:null), FieldSchema(name:b, type:int, comment:null), FieldSchema(name:insertdate, type:string, comment:null)], location:pfile:/home/thiruvel/projects/hive/hive.unsecure/build/ql/test/data/warehouse/alter2_db.db/alter2, inputFormat:org.apache.hadoop.mapred.TextInputFormat, outputFormat:org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat, compressed:false, numBuckets:-1, serdeInfo:SerDeInfo(name:null, serializationLib:org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe, parameters:{serialization.format=1}), bucketCols:[], sortCols:[], parameters:{}), partitionKeys:[FieldSchema(name:insertdate, type:string, comment:null)], parameters:{EXTERNAL=TRUE, transient_lastDdlTime=1286799437}, viewOriginalText:null, viewExpandedText:null, tableType:EXTERNAL_TABLE)	
+#### A masked pattern was here ####
 PREHOOK: query: SHOW PARTITIONS alter2
 PREHOOK: type: SHOWPARTITIONS
 POSTHOOK: query: SHOW PARTITIONS alter2
 POSTHOOK: type: SHOWPARTITIONS
 insertdate=2008-01-01
-PREHOOK: query: ALTER TABLE alter2 ADD PARTITION (insertdate='2008-01-02') LOCATION '2008/01/02'
+#### A masked pattern was here ####
 PREHOOK: type: ALTERTABLE_ADDPARTS
 PREHOOK: Input: alter2_db@alter2
-POSTHOOK: query: ALTER TABLE alter2 ADD PARTITION (insertdate='2008-01-02') LOCATION '2008/01/02'
+#### A masked pattern was here ####
 POSTHOOK: type: ALTERTABLE_ADDPARTS
 POSTHOOK: Input: alter2_db@alter2
 POSTHOOK: Output: alter2_db@alter2@insertdate=2008-01-02
@@ -289,7 +289,7 @@ a	int
 b	int	
 insertdate	string	
 	 	 
-Detailed Table Information	Table(tableName:alter2, dbName:alter2_db, owner:thiruvel, createTime:1286799437, lastAccessTime:0, retention:0, sd:StorageDescriptor(cols:[FieldSchema(name:a, type:int, comment:null), FieldSchema(name:b, type:int, comment:null), FieldSchema(name:insertdate, type:string, comment:null)], location:pfile:/home/thiruvel/projects/hive/hive.unsecure/build/ql/test/data/warehouse/alter2_db.db/alter2, inputFormat:org.apache.hadoop.mapred.TextInputFormat, outputFormat:org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat, compressed:false, numBuckets:-1, serdeInfo:SerDeInfo(name:null, serializationLib:org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe, parameters:{serialization.format=1}), bucketCols:[], sortCols:[], parameters:{}), partitionKeys:[FieldSchema(name:insertdate, type:string, comment:null)], parameters:{EXTERNAL=TRUE, transient_lastDdlTime=1286799437}, viewOriginalText:null, viewExpandedText:null, tableType:EXTERNAL_TABLE)	
+#### A masked pattern was here ####
 PREHOOK: query: SHOW PARTITIONS alter2
 PREHOOK: type: SHOWPARTITIONS
 POSTHOOK: query: SHOW PARTITIONS alter2

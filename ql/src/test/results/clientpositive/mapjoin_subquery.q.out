@@ -133,7 +133,7 @@ PREHOOK: type: QUERY
 PREHOOK: Input: default@src
 PREHOOK: Input: default@src1
 PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
-PREHOOK: Output: file:/tmp/sdong/hive_2011-02-10_16-39-29_731_509300544483919463/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: SELECT /*+ MAPJOIN(z) */ subq.key1, z.value
 FROM
 (SELECT /*+ MAPJOIN(x) */ x.key as key1, x.value as value1, y.key as key2, y.value as value2 
@@ -143,7 +143,7 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 POSTHOOK: Input: default@src1
 POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
-POSTHOOK: Output: file:/tmp/sdong/hive_2011-02-10_16-39-29_731_509300544483919463/-mr-10000
+#### A masked pattern was here ####
 238	val_238
 238	val_238
 311	val_311
@@ -364,7 +364,7 @@ STAGE PLANS:
   Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/tmp/sdong/hive_2011-02-10_16-39-35_519_3270478772330421829/-mr-10002 
+#### A masked pattern was here ####
           Select Operator
             expressions:
                   expr: _col0
@@ -414,7 +414,7 @@ PREHOOK: type: QUERY
 PREHOOK: Input: default@src
 PREHOOK: Input: default@src1
 PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
-PREHOOK: Output: file:/tmp/sdong/hive_2011-02-10_16-39-35_670_1415465364269978204/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: SELECT /*+ MAPJOIN(z) */ subq.key1, z.value
 FROM
 (SELECT /*+ MAPJOIN(x) */ x.key as key1, x.value as value1, y.key as key2, y.value as value2  
@@ -425,7 +425,7 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 POSTHOOK: Input: default@src1
 POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
-POSTHOOK: Output: file:/tmp/sdong/hive_2011-02-10_16-39-35_670_1415465364269978204/-mr-10000
+#### A masked pattern was here ####
 128	val_128
 128	val_128
 128	val_128

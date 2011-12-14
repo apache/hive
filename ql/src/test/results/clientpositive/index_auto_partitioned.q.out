@@ -81,13 +81,13 @@ STAGE PLANS:
     Move Operator
       files:
           hdfs directory: true
-          destination: file:/data/users/salbiz/apache-hive/build/ql/scratchdir/hive_2011-08-01_13-38-11_108_7095217129648103584/-ext-10000
+#### A masked pattern was here ####
 
   Stage: Stage-2
     Move Operator
       files:
           hdfs directory: true
-          destination: file:/tmp/salbiz/hive_2011-08-01_13-38-10_834_396766414838846531/-mr-10002
+#### A masked pattern was here ####
 
   Stage: Stage-1
     Map Reduce
@@ -132,7 +132,7 @@ STAGE PLANS:
   Stage: Stage-4
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/data/users/salbiz/apache-hive/build/ql/scratchdir/hive_2011-08-01_13-38-11_108_7095217129648103584/-ext-10001 
+#### A masked pattern was here ####
             File Output Operator
               compressed: false
               GlobalTableId: 0
@@ -151,14 +151,14 @@ PREHOOK: Input: default@default__srcpart_src_part_index__@ds=2008-04-09/hr=11
 PREHOOK: Input: default@default__srcpart_src_part_index__@ds=2008-04-09/hr=12
 PREHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
 PREHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
-PREHOOK: Output: file:/tmp/salbiz/hive_2011-08-01_13-38-11_214_7966551397812297662/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: SELECT key, value FROM srcpart WHERE key=86 AND ds='2008-04-09' ORDER BY key
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@default__srcpart_src_part_index__@ds=2008-04-09/hr=11
 POSTHOOK: Input: default@default__srcpart_src_part_index__@ds=2008-04-09/hr=12
 POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
 POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
-POSTHOOK: Output: file:/tmp/salbiz/hive_2011-08-01_13-38-11_214_7966551397812297662/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: Lineage: default__srcpart_src_part_index__ PARTITION(ds=2008-04-09,hr=12)._bucketname SIMPLE [(srcpart)srcpart.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
 POSTHOOK: Lineage: default__srcpart_src_part_index__ PARTITION(ds=2008-04-09,hr=12)._offsets EXPRESSION [(srcpart)srcpart.FieldSchema(name:BLOCK__OFFSET__INSIDE__FILE, type:bigint, comment:), ]
 POSTHOOK: Lineage: default__srcpart_src_part_index__ PARTITION(ds=2008-04-09,hr=12).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]

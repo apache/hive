@@ -1,11 +1,11 @@
-PREHOOK: query: create table load_overwrite (key string, value string) stored as textfile location 'file:/tmp/load_overwrite'
+#### A masked pattern was here ####
 PREHOOK: type: CREATETABLE
-POSTHOOK: query: create table load_overwrite (key string, value string) stored as textfile location 'file:/tmp/load_overwrite'
+#### A masked pattern was here ####
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: default@load_overwrite
-PREHOOK: query: create table load_overwrite2 (key string, value string) stored as textfile location 'file:/tmp/load2_overwrite2'
+#### A masked pattern was here ####
 PREHOOK: type: CREATETABLE
-POSTHOOK: query: create table load_overwrite2 (key string, value string) stored as textfile location 'file:/tmp/load2_overwrite2'
+#### A masked pattern was here ####
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: default@load_overwrite2
 PREHOOK: query: load data local inpath '../data/files/kv1.txt' into table load_overwrite
@@ -31,8 +31,7 @@ PREHOOK: type: SHOW_TABLESTATUS
 POSTHOOK: query: show table extended like load_overwrite
 POSTHOOK: type: SHOW_TABLESTATUS
 tableName:load_overwrite
-owner:krishnak
-location:file:/tmp/load_overwrite
+#### A masked pattern was here ####
 inputformat:org.apache.hadoop.mapred.TextInputFormat
 outputformat:org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
 columns:struct columns { string key, string value}
@@ -42,8 +41,7 @@ totalNumberFiles:3
 totalFileSize:11819
 maxFileSize:5812
 minFileSize:216
-lastAccessTime:0
-lastUpdateTime:1300705348000
+#### A masked pattern was here ####
 
 PREHOOK: query: desc extended load_overwrite
 PREHOOK: type: DESCTABLE
@@ -52,20 +50,20 @@ POSTHOOK: type: DESCTABLE
 key	string	
 value	string	
 	 	 
-Detailed Table Information	Table(tableName:load_overwrite, dbName:default, owner:krishnak, createTime:1300705345, lastAccessTime:0, retention:0, sd:StorageDescriptor(cols:[FieldSchema(name:key, type:string, comment:null), FieldSchema(name:value, type:string, comment:null)], location:file:/tmp/load_overwrite, inputFormat:org.apache.hadoop.mapred.TextInputFormat, outputFormat:org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat, compressed:false, numBuckets:-1, serdeInfo:SerDeInfo(name:null, serializationLib:org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe, parameters:{serialization.format=1}), bucketCols:[], sortCols:[], parameters:{}), partitionKeys:[], parameters:{transient_lastDdlTime=1300705348}, viewOriginalText:null, viewExpandedText:null, tableType:MANAGED_TABLE)	
+#### A masked pattern was here ####
 PREHOOK: query: select count(*) from load_overwrite
 PREHOOK: type: QUERY
 PREHOOK: Input: default@load_overwrite
-PREHOOK: Output: file:/tmp/krishnak/hive_2011-03-21_04-02-29_491_3367221189564886205/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: select count(*) from load_overwrite
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@load_overwrite
-POSTHOOK: Output: file:/tmp/krishnak/hive_2011-03-21_04-02-29_491_3367221189564886205/-mr-10000
+#### A masked pattern was here ####
 1025
-PREHOOK: query: load data inpath '/tmp/load_overwrite/kv*.txt' overwrite into table load_overwrite2
+#### A masked pattern was here ####
 PREHOOK: type: LOAD
 PREHOOK: Output: default@load_overwrite2
-POSTHOOK: query: load data inpath '/tmp/load_overwrite/kv*.txt' overwrite into table load_overwrite2
+#### A masked pattern was here ####
 POSTHOOK: type: LOAD
 POSTHOOK: Output: default@load_overwrite2
 PREHOOK: query: show table extended like load_overwrite2
@@ -73,8 +71,7 @@ PREHOOK: type: SHOW_TABLESTATUS
 POSTHOOK: query: show table extended like load_overwrite2
 POSTHOOK: type: SHOW_TABLESTATUS
 tableName:load_overwrite2
-owner:krishnak
-location:file:/tmp/load2_overwrite2
+#### A masked pattern was here ####
 inputformat:org.apache.hadoop.mapred.TextInputFormat
 outputformat:org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
 columns:struct columns { string key, string value}
@@ -84,8 +81,7 @@ totalNumberFiles:3
 totalFileSize:11819
 maxFileSize:5812
 minFileSize:216
-lastAccessTime:0
-lastUpdateTime:1300705354000
+#### A masked pattern was here ####
 
 PREHOOK: query: desc extended load_overwrite2
 PREHOOK: type: DESCTABLE
@@ -94,20 +90,20 @@ POSTHOOK: type: DESCTABLE
 key	string	
 value	string	
 	 	 
-Detailed Table Information	Table(tableName:load_overwrite2, dbName:default, owner:krishnak, createTime:1300705345, lastAccessTime:0, retention:0, sd:StorageDescriptor(cols:[FieldSchema(name:key, type:string, comment:null), FieldSchema(name:value, type:string, comment:null)], location:file:/tmp/load2_overwrite2, inputFormat:org.apache.hadoop.mapred.TextInputFormat, outputFormat:org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat, compressed:false, numBuckets:-1, serdeInfo:SerDeInfo(name:null, serializationLib:org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe, parameters:{serialization.format=1}), bucketCols:[], sortCols:[], parameters:{}), partitionKeys:[], parameters:{transient_lastDdlTime=1300705354}, viewOriginalText:null, viewExpandedText:null, tableType:MANAGED_TABLE)	
+#### A masked pattern was here ####
 PREHOOK: query: select count(*) from load_overwrite2
 PREHOOK: type: QUERY
 PREHOOK: Input: default@load_overwrite2
-PREHOOK: Output: file:/tmp/krishnak/hive_2011-03-21_04-02-34_934_7051947202127416140/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: select count(*) from load_overwrite2
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@load_overwrite2
-POSTHOOK: Output: file:/tmp/krishnak/hive_2011-03-21_04-02-34_934_7051947202127416140/-mr-10000
+#### A masked pattern was here ####
 1025
-PREHOOK: query: load data inpath '/tmp/load2_*' overwrite into table load_overwrite
+#### A masked pattern was here ####
 PREHOOK: type: LOAD
 PREHOOK: Output: default@load_overwrite
-POSTHOOK: query: load data inpath '/tmp/load2_*' overwrite into table load_overwrite
+#### A masked pattern was here ####
 POSTHOOK: type: LOAD
 POSTHOOK: Output: default@load_overwrite
 PREHOOK: query: show table extended like load_overwrite
@@ -115,8 +111,7 @@ PREHOOK: type: SHOW_TABLESTATUS
 POSTHOOK: query: show table extended like load_overwrite
 POSTHOOK: type: SHOW_TABLESTATUS
 tableName:load_overwrite
-owner:krishnak
-location:file:/tmp/load_overwrite
+#### A masked pattern was here ####
 inputformat:org.apache.hadoop.mapred.TextInputFormat
 outputformat:org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
 columns:struct columns { string key, string value}
@@ -126,15 +121,14 @@ totalNumberFiles:3
 totalFileSize:11819
 maxFileSize:5812
 minFileSize:216
-lastAccessTime:0
-lastUpdateTime:1300705354000
+#### A masked pattern was here ####
 
 PREHOOK: query: select count(*) from load_overwrite
 PREHOOK: type: QUERY
 PREHOOK: Input: default@load_overwrite
-PREHOOK: Output: file:/tmp/krishnak/hive_2011-03-21_04-02-40_269_315571418896887051/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: select count(*) from load_overwrite
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@load_overwrite
-POSTHOOK: Output: file:/tmp/krishnak/hive_2011-03-21_04-02-40_269_315571418896887051/-mr-10000
+#### A masked pattern was here ####
 1025

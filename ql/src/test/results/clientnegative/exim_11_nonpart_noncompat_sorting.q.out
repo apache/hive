@@ -18,11 +18,11 @@ POSTHOOK: Output: default@exim_department
 PREHOOK: query: export table exim_department to 'ql/test/data/exports/exim_department'
 PREHOOK: type: EXPORT
 PREHOOK: Input: default@exim_department
-PREHOOK: Output: pfile:/home/krishnak/hive-howl/hive-git-apache/build/ql/test/data/exports/exim_department
+#### A masked pattern was here ####
 POSTHOOK: query: export table exim_department to 'ql/test/data/exports/exim_department'
 POSTHOOK: type: EXPORT
 POSTHOOK: Input: default@exim_department
-POSTHOOK: Output: pfile:/home/krishnak/hive-howl/hive-git-apache/build/ql/test/data/exports/exim_department
+#### A masked pattern was here ####
 PREHOOK: query: drop table exim_department
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@exim_department

@@ -152,7 +152,7 @@ STAGE PLANS:
   Stage: Stage-3
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/var/folders/6g/6grtCwPMEf4sqHUPpy6xQG9ByHg/-Tmp-/heyongqiang/hive_2011-04-07_19-00-07_239_7580938439193474886/-mr-10003 
+#### A masked pattern was here ####
             Reduce Output Operator
               sort order: 
               tag: -1
@@ -405,7 +405,7 @@ ON (x.key = Z.key)
 select sum(hash(Y.key,Y.value))
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/var/folders/6g/6grtCwPMEf4sqHUPpy6xQG9ByHg/-Tmp-/heyongqiang/hive_2011-04-07_19-00-09_306_4018311873888116476/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: FROM
 (SELECT src.* FROM src sort by key) x
 RIGHT OUTER JOIN
@@ -417,5 +417,5 @@ ON (x.key = Z.key)
 select sum(hash(Y.key,Y.value))
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: file:/var/folders/6g/6grtCwPMEf4sqHUPpy6xQG9ByHg/-Tmp-/heyongqiang/hive_2011-04-07_19-00-09_306_4018311873888116476/-mr-10000
+#### A masked pattern was here ####
 348019368476

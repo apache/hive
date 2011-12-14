@@ -151,11 +151,11 @@ POSTHOOK: Lineage: smb_join_results.v2 SIMPLE [(smb_bucket4_2)b.FieldSchema(name
 PREHOOK: query: select * from smb_join_results order by k1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@smb_join_results
-PREHOOK: Output: file:/tmp/sohanjain/hive_2011-08-04_13-41-04_763_8403364749285421504/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: select * from smb_join_results order by k1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@smb_join_results
-POSTHOOK: Output: file:/tmp/sohanjain/hive_2011-08-04_13-41-04_763_8403364749285421504/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: Lineage: smb_bucket4_1.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: smb_bucket4_1.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: smb_bucket4_2.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
@@ -1217,11 +1217,11 @@ POSTHOOK: Lineage: smb_join_results.v2 SIMPLE [(smb_bucket4_2)b.FieldSchema(name
 PREHOOK: query: select sum(hash(k1)) as k1, sum(hash(k2)) as k2, sum(hash(v1)) as v1, sum(hash(v2)) as v2 from normal_join_results
 PREHOOK: type: QUERY
 PREHOOK: Input: default@normal_join_results
-PREHOOK: Output: file:/tmp/sohanjain/hive_2011-08-04_13-41-13_686_2602694127929727696/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: select sum(hash(k1)) as k1, sum(hash(k2)) as k2, sum(hash(v1)) as v1, sum(hash(v2)) as v2 from normal_join_results
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@normal_join_results
-POSTHOOK: Output: file:/tmp/sohanjain/hive_2011-08-04_13-41-13_686_2602694127929727696/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: Lineage: normal_join_results.k1 SIMPLE [(smb_bucket4_1)a.FieldSchema(name:key, type:int, comment:null), ]
 POSTHOOK: Lineage: normal_join_results.k2 SIMPLE [(smb_bucket4_2)b.FieldSchema(name:key, type:int, comment:null), ]
 POSTHOOK: Lineage: normal_join_results.v1 SIMPLE [(smb_bucket4_1)a.FieldSchema(name:value, type:string, comment:null), ]
@@ -1238,11 +1238,11 @@ POSTHOOK: Lineage: smb_join_results.v2 SIMPLE [(smb_bucket4_2)b.FieldSchema(name
 PREHOOK: query: select sum(hash(k1)) as k1, sum(hash(k2)) as k2, sum(hash(v1)) as v1, sum(hash(v2)) as v2 from smb_join_results
 PREHOOK: type: QUERY
 PREHOOK: Input: default@smb_join_results
-PREHOOK: Output: file:/tmp/sohanjain/hive_2011-08-04_13-41-16_766_1883572716730227091/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: select sum(hash(k1)) as k1, sum(hash(k2)) as k2, sum(hash(v1)) as v1, sum(hash(v2)) as v2 from smb_join_results
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@smb_join_results
-POSTHOOK: Output: file:/tmp/sohanjain/hive_2011-08-04_13-41-16_766_1883572716730227091/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: Lineage: normal_join_results.k1 SIMPLE [(smb_bucket4_1)a.FieldSchema(name:key, type:int, comment:null), ]
 POSTHOOK: Lineage: normal_join_results.k2 SIMPLE [(smb_bucket4_2)b.FieldSchema(name:key, type:int, comment:null), ]
 POSTHOOK: Lineage: normal_join_results.v1 SIMPLE [(smb_bucket4_1)a.FieldSchema(name:value, type:string, comment:null), ]
@@ -1411,11 +1411,11 @@ POSTHOOK: Lineage: smb_join_results.v2 SIMPLE [(smb_bucket4_2)b.FieldSchema(name
 PREHOOK: query: select * from smb_join_results order by k1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@smb_join_results
-PREHOOK: Output: file:/tmp/sohanjain/hive_2011-08-04_13-41-31_957_7532776684605379631/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: select * from smb_join_results order by k1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@smb_join_results
-POSTHOOK: Output: file:/tmp/sohanjain/hive_2011-08-04_13-41-31_957_7532776684605379631/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: Lineage: normal_join_results.k1 SIMPLE [(smb_bucket4_1)a.FieldSchema(name:key, type:int, comment:null), ]
 POSTHOOK: Lineage: normal_join_results.k2 SIMPLE [(smb_bucket4_2)b.FieldSchema(name:key, type:int, comment:null), ]
 POSTHOOK: Lineage: normal_join_results.v1 SIMPLE [(smb_bucket4_1)a.FieldSchema(name:value, type:string, comment:null), ]
@@ -2501,11 +2501,11 @@ POSTHOOK: Lineage: smb_join_results.v2 SIMPLE [(smb_bucket4_2)b.FieldSchema(name
 PREHOOK: query: select sum(hash(k1)) as k1, sum(hash(k2)) as k2, sum(hash(v1)) as v1, sum(hash(v2)) as v2 from normal_join_results
 PREHOOK: type: QUERY
 PREHOOK: Input: default@normal_join_results
-PREHOOK: Output: file:/tmp/sohanjain/hive_2011-08-04_13-41-41_049_6255149927901950217/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: select sum(hash(k1)) as k1, sum(hash(k2)) as k2, sum(hash(v1)) as v1, sum(hash(v2)) as v2 from normal_join_results
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@normal_join_results
-POSTHOOK: Output: file:/tmp/sohanjain/hive_2011-08-04_13-41-41_049_6255149927901950217/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: Lineage: normal_join_results.k1 SIMPLE [(smb_bucket4_1)a.FieldSchema(name:key, type:int, comment:null), ]
 POSTHOOK: Lineage: normal_join_results.k1 SIMPLE [(smb_bucket4_1)a.FieldSchema(name:key, type:int, comment:null), ]
 POSTHOOK: Lineage: normal_join_results.k2 SIMPLE [(smb_bucket4_2)b.FieldSchema(name:key, type:int, comment:null), ]
@@ -2534,11 +2534,11 @@ POSTHOOK: Lineage: smb_join_results.v2 SIMPLE [(smb_bucket4_2)b.FieldSchema(name
 PREHOOK: query: select sum(hash(k1)) as k1, sum(hash(k2)) as k2, sum(hash(v1)) as v1, sum(hash(v2)) as v2 from smb_join_results
 PREHOOK: type: QUERY
 PREHOOK: Input: default@smb_join_results
-PREHOOK: Output: file:/tmp/sohanjain/hive_2011-08-04_13-41-44_158_559334893418909783/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: select sum(hash(k1)) as k1, sum(hash(k2)) as k2, sum(hash(v1)) as v1, sum(hash(v2)) as v2 from smb_join_results
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@smb_join_results
-POSTHOOK: Output: file:/tmp/sohanjain/hive_2011-08-04_13-41-44_158_559334893418909783/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: Lineage: normal_join_results.k1 SIMPLE [(smb_bucket4_1)a.FieldSchema(name:key, type:int, comment:null), ]
 POSTHOOK: Lineage: normal_join_results.k1 SIMPLE [(smb_bucket4_1)a.FieldSchema(name:key, type:int, comment:null), ]
 POSTHOOK: Lineage: normal_join_results.k2 SIMPLE [(smb_bucket4_2)b.FieldSchema(name:key, type:int, comment:null), ]
@@ -2985,12 +2985,12 @@ PREHOOK: query: select /*+mapjoin(b,c)*/ * from smb_bucket4_1 a join smb_bucket4
 PREHOOK: type: QUERY
 PREHOOK: Input: default@smb_bucket4_1
 PREHOOK: Input: default@smb_bucket4_2
-PREHOOK: Output: file:/tmp/sohanjain/hive_2011-08-04_13-41-58_949_6875011891049712046/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: select /*+mapjoin(b,c)*/ * from smb_bucket4_1 a join smb_bucket4_2 b on a.key = b.key join smb_bucket4_2 c on b.key = c.key where a.key>1000
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@smb_bucket4_1
 POSTHOOK: Input: default@smb_bucket4_2
-POSTHOOK: Output: file:/tmp/sohanjain/hive_2011-08-04_13-41-58_949_6875011891049712046/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: Lineage: normal_join_results.k1 SIMPLE [(smb_bucket4_1)a.FieldSchema(name:key, type:int, comment:null), ]
 POSTHOOK: Lineage: normal_join_results.k1 SIMPLE [(smb_bucket4_1)a.FieldSchema(name:key, type:int, comment:null), ]
 POSTHOOK: Lineage: normal_join_results.k2 SIMPLE [(smb_bucket4_2)b.FieldSchema(name:key, type:int, comment:null), ]

@@ -62,10 +62,10 @@ PREHOOK: query: SELECT array(), array()[1], array(1, 2, 3), array(1, 2, 3)[2], a
 array(array(1), array(2), array(3), array(4))[1][0] FROM src LIMIT 1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/tmp/sdong/hive_2011-02-10_17-30-13_402_1307318703365054002/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: SELECT array(), array()[1], array(1, 2, 3), array(1, 2, 3)[2], array(1,"a", 2, 3), array(1,"a", 2, 3)[2],
 array(array(1), array(2), array(3), array(4))[1][0] FROM src LIMIT 1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: file:/tmp/sdong/hive_2011-02-10_17-30-13_402_1307318703365054002/-mr-10000
+#### A masked pattern was here ####
 []	NULL	[1,2,3]	3	["1","a","2","3"]	2	2

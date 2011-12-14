@@ -18,11 +18,11 @@ POSTHOOK: Lineage: dest1.value SIMPLE [(src)src.FieldSchema(name:value, type:str
 PREHOOK: query: SELECT dest1.* FROM dest1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@dest1
-PREHOOK: Output: file:/tmp/jssarma/hive_2010-07-21_12-07-56_820_551394885237380510/10000
+#### A masked pattern was here ####
 POSTHOOK: query: SELECT dest1.* FROM dest1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@dest1
-POSTHOOK: Output: file:/tmp/jssarma/hive_2010-07-21_12-07-56_820_551394885237380510/10000
+#### A masked pattern was here ####
 POSTHOOK: Lineage: dest1.key EXPRESSION []
 POSTHOOK: Lineage: dest1.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 1234abcextra argument	val_86

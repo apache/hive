@@ -20,22 +20,22 @@ POSTHOOK: Output: default@impressions
 PREHOOK: query: select * from impressions
 PREHOOK: type: QUERY
 PREHOOK: Input: default@impressions
-PREHOOK: Output: file:/var/folders/uc/ucuNeMAVGQGzy3459D8z2+++Z0Q/-Tmp-/amarsri/hive_2011-07-28_22-22-05_087_4079188620089903829/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: select * from impressions
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@impressions
-POSTHOOK: Output: file:/var/folders/uc/ucuNeMAVGQGzy3459D8z2+++Z0Q/-Tmp-/amarsri/hive_2011-07-28_22-22-05_087_4079188620089903829/-mr-10000
+#### A masked pattern was here ####
 35	40
 48	32
 100100	40
 PREHOOK: query: select imp,msg from impressions
 PREHOOK: type: QUERY
 PREHOOK: Input: default@impressions
-PREHOOK: Output: file:/var/folders/uc/ucuNeMAVGQGzy3459D8z2+++Z0Q/-Tmp-/amarsri/hive_2011-07-28_22-22-05_611_3078194510979662520/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: select imp,msg from impressions
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@impressions
-POSTHOOK: Output: file:/var/folders/uc/ucuNeMAVGQGzy3459D8z2+++Z0Q/-Tmp-/amarsri/hive_2011-07-28_22-22-05_611_3078194510979662520/-mr-10000
+#### A masked pattern was here ####
 35	40
 48	32
 100100	40

@@ -20,11 +20,11 @@ POSTHOOK: Output: default@abc
 PREHOOK: query: SELECT strct, strct.a, strct.b FROM abc LIMIT 10
 PREHOOK: type: QUERY
 PREHOOK: Input: default@abc
-PREHOOK: Output: file:/var/folders/67/67R3POPtF90VG63KSmCbcU++F0U/-Tmp-/krishnak/hive_2011-03-20_22-50-45_028_3620501678715037894/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: SELECT strct, strct.a, strct.b FROM abc LIMIT 10
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@abc
-POSTHOOK: Output: file:/var/folders/67/67R3POPtF90VG63KSmCbcU++F0U/-Tmp-/krishnak/hive_2011-03-20_22-50-45_028_3620501678715037894/-mr-10000
+#### A masked pattern was here ####
 {"a":238,"b":"val_238","c":null}	238	val_238
 {"a":86,"b":"val_86","c":null}	86	val_86
 {"a":311,"b":"val_311","c":null}	311	val_311

@@ -80,7 +80,7 @@ STAGE PLANS:
   Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/tmp/njain/hive_2011-12-07_17-57-51_725_5932902027949948969/-mr-10002 
+#### A masked pattern was here ####
           Union
             Select Operator
               expressions:
@@ -97,7 +97,7 @@ STAGE PLANS:
                 table:
                     input format: org.apache.hadoop.mapred.TextInputFormat
                     output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-        file:/tmp/njain/hive_2011-12-07_17-57-51_725_5932902027949948969/-mr-10003 
+#### A masked pattern was here ####
           Union
             Select Operator
               expressions:
@@ -164,7 +164,7 @@ PREHOOK: query: select * from (
 PREHOOK: type: QUERY
 PREHOOK: Input: default@tst@d=2009-01-01
 PREHOOK: Input: default@tst@d=2009-02-02
-PREHOOK: Output: file:/tmp/njain/hive_2011-12-07_17-57-51_941_2422734399279293092/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: select * from (
   select * from tst x where x.d='2009-01-01' limit 10
     union all
@@ -173,4 +173,4 @@ POSTHOOK: query: select * from (
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@tst@d=2009-01-01
 POSTHOOK: Input: default@tst@d=2009-02-02
-POSTHOOK: Output: file:/tmp/njain/hive_2011-12-07_17-57-51_941_2422734399279293092/-mr-10000
+#### A masked pattern was here ####

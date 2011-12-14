@@ -89,7 +89,7 @@ STAGE PLANS:
   Stage: Stage-3
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/var/folders/uc/ucuNeMAVGQGzy3459D8z2+++Z0Q/-Tmp-/amarsri/hive_2011-05-11_02-15-33_862_259216797160384461/-mr-10004 
+#### A masked pattern was here ####
             Reduce Output Operator
               key expressions:
                     expr: _col0
@@ -151,7 +151,7 @@ STAGE PLANS:
   Stage: Stage-5
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/var/folders/uc/ucuNeMAVGQGzy3459D8z2+++Z0Q/-Tmp-/amarsri/hive_2011-05-11_02-15-33_862_259216797160384461/-mr-10005 
+#### A masked pattern was here ####
             Reduce Output Operator
               key expressions:
                     expr: _col0
@@ -243,11 +243,11 @@ POSTHOOK: Lineage: dest2.val2 EXPRESSION [(src)src.FieldSchema(name:value, type:
 PREHOOK: query: SELECT DEST1.* FROM DEST1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@dest1
-PREHOOK: Output: file:/var/folders/uc/ucuNeMAVGQGzy3459D8z2+++Z0Q/-Tmp-/amarsri/hive_2011-05-11_02-16-08_293_7429924683538619525/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: SELECT DEST1.* FROM DEST1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@dest1
-POSTHOOK: Output: file:/var/folders/uc/ucuNeMAVGQGzy3459D8z2+++Z0Q/-Tmp-/amarsri/hive_2011-05-11_02-16-08_293_7429924683538619525/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: Lineage: dest1.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: dest1.value EXPRESSION [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: dest2.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
@@ -565,11 +565,11 @@ POSTHOOK: Lineage: dest2.val2 EXPRESSION [(src)src.FieldSchema(name:value, type:
 PREHOOK: query: SELECT DEST2.* FROM DEST2
 PREHOOK: type: QUERY
 PREHOOK: Input: default@dest2
-PREHOOK: Output: file:/var/folders/uc/ucuNeMAVGQGzy3459D8z2+++Z0Q/-Tmp-/amarsri/hive_2011-05-11_02-16-08_668_6870820897021045378/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: SELECT DEST2.* FROM DEST2
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@dest2
-POSTHOOK: Output: file:/var/folders/uc/ucuNeMAVGQGzy3459D8z2+++Z0Q/-Tmp-/amarsri/hive_2011-05-11_02-16-08_668_6870820897021045378/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: Lineage: dest1.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: dest1.value EXPRESSION [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: dest2.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
@@ -970,7 +970,7 @@ STAGE PLANS:
   Stage: Stage-3
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/var/folders/uc/ucuNeMAVGQGzy3459D8z2+++Z0Q/-Tmp-/amarsri/hive_2011-05-11_02-16-09_054_756521726730230471/-mr-10004 
+#### A masked pattern was here ####
             Reduce Output Operator
               key expressions:
                     expr: _col0
@@ -1032,7 +1032,7 @@ STAGE PLANS:
   Stage: Stage-5
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/var/folders/uc/ucuNeMAVGQGzy3459D8z2+++Z0Q/-Tmp-/amarsri/hive_2011-05-11_02-16-09_054_756521726730230471/-mr-10005 
+#### A masked pattern was here ####
             Reduce Output Operator
               key expressions:
                     expr: _col0
@@ -1129,11 +1129,11 @@ POSTHOOK: Lineage: dest2.val2 EXPRESSION [(src)src.FieldSchema(name:value, type:
 PREHOOK: query: SELECT DEST1.* FROM DEST1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@dest1
-PREHOOK: Output: file:/var/folders/uc/ucuNeMAVGQGzy3459D8z2+++Z0Q/-Tmp-/amarsri/hive_2011-05-11_02-16-44_276_5880475121158610160/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: SELECT DEST1.* FROM DEST1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@dest1
-POSTHOOK: Output: file:/var/folders/uc/ucuNeMAVGQGzy3459D8z2+++Z0Q/-Tmp-/amarsri/hive_2011-05-11_02-16-44_276_5880475121158610160/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: Lineage: dest1.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: dest1.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: dest1.value EXPRESSION [(src)src.FieldSchema(name:value, type:string, comment:default), ]
@@ -1456,11 +1456,11 @@ POSTHOOK: Lineage: dest2.val2 EXPRESSION [(src)src.FieldSchema(name:value, type:
 PREHOOK: query: SELECT DEST2.* FROM DEST2
 PREHOOK: type: QUERY
 PREHOOK: Input: default@dest2
-PREHOOK: Output: file:/var/folders/uc/ucuNeMAVGQGzy3459D8z2+++Z0Q/-Tmp-/amarsri/hive_2011-05-11_02-16-44_784_5108066836829341387/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: SELECT DEST2.* FROM DEST2
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@dest2
-POSTHOOK: Output: file:/var/folders/uc/ucuNeMAVGQGzy3459D8z2+++Z0Q/-Tmp-/amarsri/hive_2011-05-11_02-16-44_784_5108066836829341387/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: Lineage: dest1.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: dest1.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: dest1.value EXPRESSION [(src)src.FieldSchema(name:value, type:string, comment:default), ]
@@ -1960,11 +1960,11 @@ POSTHOOK: Lineage: dest2.val2 EXPRESSION [(src)src.FieldSchema(name:value, type:
 PREHOOK: query: SELECT DEST1.* FROM DEST1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@dest1
-PREHOOK: Output: file:/var/folders/uc/ucuNeMAVGQGzy3459D8z2+++Z0Q/-Tmp-/amarsri/hive_2011-05-11_02-16-58_560_7963602050299315972/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: SELECT DEST1.* FROM DEST1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@dest1
-POSTHOOK: Output: file:/var/folders/uc/ucuNeMAVGQGzy3459D8z2+++Z0Q/-Tmp-/amarsri/hive_2011-05-11_02-16-58_560_7963602050299315972/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: Lineage: dest1.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: dest1.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: dest1.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
@@ -2292,11 +2292,11 @@ POSTHOOK: Lineage: dest2.val2 EXPRESSION [(src)src.FieldSchema(name:value, type:
 PREHOOK: query: SELECT DEST2.* FROM DEST2
 PREHOOK: type: QUERY
 PREHOOK: Input: default@dest2
-PREHOOK: Output: file:/var/folders/uc/ucuNeMAVGQGzy3459D8z2+++Z0Q/-Tmp-/amarsri/hive_2011-05-11_02-16-58_834_1833873061276074904/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: SELECT DEST2.* FROM DEST2
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@dest2
-POSTHOOK: Output: file:/var/folders/uc/ucuNeMAVGQGzy3459D8z2+++Z0Q/-Tmp-/amarsri/hive_2011-05-11_02-16-58_834_1833873061276074904/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: Lineage: dest1.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: dest1.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: dest1.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
@@ -2812,11 +2812,11 @@ POSTHOOK: Lineage: dest2.val2 EXPRESSION [(src)src.FieldSchema(name:value, type:
 PREHOOK: query: SELECT DEST1.* FROM DEST1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@dest1
-PREHOOK: Output: file:/var/folders/uc/ucuNeMAVGQGzy3459D8z2+++Z0Q/-Tmp-/amarsri/hive_2011-05-11_02-17-12_890_6380160763542148885/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: SELECT DEST1.* FROM DEST1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@dest1
-POSTHOOK: Output: file:/var/folders/uc/ucuNeMAVGQGzy3459D8z2+++Z0Q/-Tmp-/amarsri/hive_2011-05-11_02-17-12_890_6380160763542148885/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: Lineage: dest1.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: dest1.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: dest1.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
@@ -3149,11 +3149,11 @@ POSTHOOK: Lineage: dest2.val2 EXPRESSION [(src)src.FieldSchema(name:value, type:
 PREHOOK: query: SELECT DEST2.* FROM DEST2
 PREHOOK: type: QUERY
 PREHOOK: Input: default@dest2
-PREHOOK: Output: file:/var/folders/uc/ucuNeMAVGQGzy3459D8z2+++Z0Q/-Tmp-/amarsri/hive_2011-05-11_02-17-13_193_7339074127411194349/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: SELECT DEST2.* FROM DEST2
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@dest2
-POSTHOOK: Output: file:/var/folders/uc/ucuNeMAVGQGzy3459D8z2+++Z0Q/-Tmp-/amarsri/hive_2011-05-11_02-17-13_193_7339074127411194349/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: Lineage: dest1.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: dest1.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: dest1.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
@@ -3584,7 +3584,7 @@ STAGE PLANS:
   Stage: Stage-3
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/var/folders/uc/ucuNeMAVGQGzy3459D8z2+++Z0Q/-Tmp-/amarsri/hive_2011-05-11_02-17-13_497_4987436197286921147/-mr-10004 
+#### A masked pattern was here ####
             Reduce Output Operator
               key expressions:
                     expr: _col0
@@ -3646,7 +3646,7 @@ STAGE PLANS:
   Stage: Stage-5
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/var/folders/uc/ucuNeMAVGQGzy3459D8z2+++Z0Q/-Tmp-/amarsri/hive_2011-05-11_02-17-13_497_4987436197286921147/-mr-10005 
+#### A masked pattern was here ####
             Reduce Output Operator
               key expressions:
                     expr: _col0
@@ -3758,11 +3758,11 @@ POSTHOOK: Lineage: dest2.val2 EXPRESSION [(src)src.FieldSchema(name:value, type:
 PREHOOK: query: SELECT DEST1.* FROM DEST1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@dest1
-PREHOOK: Output: file:/var/folders/uc/ucuNeMAVGQGzy3459D8z2+++Z0Q/-Tmp-/amarsri/hive_2011-05-11_02-17-45_975_5081969405039841540/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: SELECT DEST1.* FROM DEST1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@dest1
-POSTHOOK: Output: file:/var/folders/uc/ucuNeMAVGQGzy3459D8z2+++Z0Q/-Tmp-/amarsri/hive_2011-05-11_02-17-45_975_5081969405039841540/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: Lineage: dest1.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: dest1.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: dest1.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
@@ -4100,11 +4100,11 @@ POSTHOOK: Lineage: dest2.val2 EXPRESSION [(src)src.FieldSchema(name:value, type:
 PREHOOK: query: SELECT DEST2.* FROM DEST2
 PREHOOK: type: QUERY
 PREHOOK: Input: default@dest2
-PREHOOK: Output: file:/var/folders/uc/ucuNeMAVGQGzy3459D8z2+++Z0Q/-Tmp-/amarsri/hive_2011-05-11_02-17-46_291_8513836760939670649/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: SELECT DEST2.* FROM DEST2
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@dest2
-POSTHOOK: Output: file:/var/folders/uc/ucuNeMAVGQGzy3459D8z2+++Z0Q/-Tmp-/amarsri/hive_2011-05-11_02-17-46_291_8513836760939670649/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: Lineage: dest1.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: dest1.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: dest1.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]

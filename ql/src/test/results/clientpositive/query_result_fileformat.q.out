@@ -14,11 +14,11 @@ POSTHOOK: Output: default@nzhang_test1
 PREHOOK: query: select * from nzhang_test1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@nzhang_test1
-PREHOOK: Output: file:/tmp/sdong/hive_2011-02-10_16-58-38_165_4398929323400556725/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: select * from nzhang_test1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@nzhang_test1
-POSTHOOK: Output: file:/tmp/sdong/hive_2011-02-10_16-58-38_165_4398929323400556725/-mr-10000
+#### A masked pattern was here ####
 key1	value
 1
 
@@ -26,11 +26,11 @@ http://asdf
 PREHOOK: query: select count(*) from nzhang_test1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@nzhang_test1
-PREHOOK: Output: file:/tmp/sdong/hive_2011-02-10_16-58-38_483_2004173313003151664/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: select count(*) from nzhang_test1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@nzhang_test1
-POSTHOOK: Output: file:/tmp/sdong/hive_2011-02-10_16-58-38_483_2004173313003151664/-mr-10000
+#### A masked pattern was here ####
 1
 PREHOOK: query: explain
 select * from nzhang_test1 where key='key1'
@@ -78,11 +78,11 @@ STAGE PLANS:
 PREHOOK: query: select * from nzhang_test1 where key='key1'
 PREHOOK: type: QUERY
 PREHOOK: Input: default@nzhang_test1
-PREHOOK: Output: file:/tmp/sdong/hive_2011-02-10_16-58-41_833_3189826843679768337/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: select * from nzhang_test1 where key='key1'
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@nzhang_test1
-POSTHOOK: Output: file:/tmp/sdong/hive_2011-02-10_16-58-41_833_3189826843679768337/-mr-10000
+#### A masked pattern was here ####
 key1	value
 1	NULL
 	NULL
@@ -90,11 +90,11 @@ http://asdf	NULL
 PREHOOK: query: select * from nzhang_test1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@nzhang_test1
-PREHOOK: Output: file:/tmp/sdong/hive_2011-02-10_16-58-45_103_1272902040402843427/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: select * from nzhang_test1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@nzhang_test1
-POSTHOOK: Output: file:/tmp/sdong/hive_2011-02-10_16-58-45_103_1272902040402843427/-mr-10000
+#### A masked pattern was here ####
 key1	value
 1
 
@@ -102,11 +102,11 @@ http://asdf
 PREHOOK: query: select count(*) from nzhang_test1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@nzhang_test1
-PREHOOK: Output: file:/tmp/sdong/hive_2011-02-10_16-58-45_450_6448276977789466042/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: select count(*) from nzhang_test1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@nzhang_test1
-POSTHOOK: Output: file:/tmp/sdong/hive_2011-02-10_16-58-45_450_6448276977789466042/-mr-10000
+#### A masked pattern was here ####
 1
 PREHOOK: query: explain
 select * from nzhang_test1 where key='key1'
@@ -154,11 +154,11 @@ STAGE PLANS:
 PREHOOK: query: select * from nzhang_test1 where key='key1'
 PREHOOK: type: QUERY
 PREHOOK: Input: default@nzhang_test1
-PREHOOK: Output: file:/tmp/sdong/hive_2011-02-10_16-58-48_816_283858652484794783/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: select * from nzhang_test1 where key='key1'
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@nzhang_test1
-POSTHOOK: Output: file:/tmp/sdong/hive_2011-02-10_16-58-48_816_283858652484794783/-mr-10000
+#### A masked pattern was here ####
 key1	value
 1
 

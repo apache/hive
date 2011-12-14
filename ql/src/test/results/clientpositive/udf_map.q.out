@@ -60,10 +60,10 @@ PREHOOK: query: SELECT map(), map(1, "a", 2, "b", 3, "c"), map(1, 2, "a", "b"),
 map(1, "a", 2, "b", 3, "c")[2],  map(1, 2, "a", "b")["a"], map(1, array("a"))[1][0] FROM src LIMIT 1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/tmp/sdong/hive_2011-02-10_17-37-45_169_6675304528734778116/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: SELECT map(), map(1, "a", 2, "b", 3, "c"), map(1, 2, "a", "b"), 
 map(1, "a", 2, "b", 3, "c")[2],  map(1, 2, "a", "b")["a"], map(1, array("a"))[1][0] FROM src LIMIT 1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: file:/tmp/sdong/hive_2011-02-10_17-37-45_169_6675304528734778116/-mr-10000
+#### A masked pattern was here ####
 {}	{1:"a",2:"b",3:"c"}	{"1":"2","a":"b"}	b	b	a

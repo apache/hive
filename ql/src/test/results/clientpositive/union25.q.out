@@ -90,7 +90,7 @@ STAGE PLANS:
   Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/tmp/njain/hive_2011-12-07_21-55-17_940_6667012806736485678/-mr-10002 
+#### A masked pattern was here ####
           Union
             Select Operator
               expressions:
@@ -113,7 +113,7 @@ STAGE PLANS:
                         expr: _col0
                         type: string
                   tag: -1
-        file:/tmp/njain/hive_2011-12-07_21-55-17_940_6667012806736485678/-mr-10004 
+#### A masked pattern was here ####
           Union
             Select Operator
               expressions:
@@ -166,7 +166,7 @@ STAGE PLANS:
   Stage: Stage-3
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/tmp/njain/hive_2011-12-07_21-55-17_940_6667012806736485678/-mr-10003 
+#### A masked pattern was here ####
           Union
             Select Operator
               expressions:
@@ -202,7 +202,7 @@ STAGE PLANS:
                   value expressions:
                         expr: _col2
                         type: bigint
-        file:/tmp/njain/hive_2011-12-07_21-55-17_940_6667012806736485678/-mr-10005 
+#### A masked pattern was here ####
           Union
             Select Operator
               expressions:
@@ -271,7 +271,7 @@ STAGE PLANS:
     Move Operator
       files:
           hdfs directory: true
-          destination: pfile:/data/users/njain/hive_commit2/build/ql/test/data/warehouse/tmp_unionall
+#### A masked pattern was here ####
 
   Stage: Stage-7
       Create Table Operator:

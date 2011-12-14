@@ -20,8 +20,7 @@ POSTHOOK: type: SHOW_TABLESTATUS
 POSTHOOK: Lineage: partition_test_partitioned PARTITION(dt=100).key SIMPLE [(src1)src1.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: partition_test_partitioned PARTITION(dt=100).value SIMPLE [(src1)src1.FieldSchema(name:value, type:string, comment:default), ]
 tableName:partition_test_partitioned
-owner:njain
-location:pfile:/data/users/njain/hive_commit2/hive_commit2/build/ql/test/data/warehouse/partition_test_partitioned
+#### A masked pattern was here ####
 inputformat:org.apache.hadoop.mapred.TextInputFormat
 outputformat:org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
 columns:struct columns { string key, string value}
@@ -31,8 +30,7 @@ totalNumberFiles:1
 totalFileSize:216
 maxFileSize:216
 minFileSize:216
-lastAccessTime:0
-lastUpdateTime:1282030124000
+#### A masked pattern was here ####
 
 PREHOOK: query: show table extended like partition_test_partitioned partition(dt=100)
 PREHOOK: type: SHOW_TABLESTATUS
@@ -41,8 +39,7 @@ POSTHOOK: type: SHOW_TABLESTATUS
 POSTHOOK: Lineage: partition_test_partitioned PARTITION(dt=100).key SIMPLE [(src1)src1.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: partition_test_partitioned PARTITION(dt=100).value SIMPLE [(src1)src1.FieldSchema(name:value, type:string, comment:default), ]
 tableName:partition_test_partitioned
-owner:njain
-location:pfile:/data/users/njain/hive_commit2/hive_commit2/build/ql/test/data/warehouse/partition_test_partitioned/dt=100
+#### A masked pattern was here ####
 inputformat:org.apache.hadoop.mapred.TextInputFormat
 outputformat:org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
 columns:struct columns { string key, string value}
@@ -52,17 +49,16 @@ totalNumberFiles:1
 totalFileSize:216
 maxFileSize:216
 minFileSize:216
-lastAccessTime:0
-lastUpdateTime:1282030124000
+#### A masked pattern was here ####
 
 PREHOOK: query: select key from partition_test_partitioned where dt=100
 PREHOOK: type: QUERY
 PREHOOK: Input: default@partition_test_partitioned@dt=100
-PREHOOK: Output: file:/tmp/njain/hive_2010-08-17_00-28-45_751_169876228483688017/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: select key from partition_test_partitioned where dt=100
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@partition_test_partitioned@dt=100
-POSTHOOK: Output: file:/tmp/njain/hive_2010-08-17_00-28-45_751_169876228483688017/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: Lineage: partition_test_partitioned PARTITION(dt=100).key SIMPLE [(src1)src1.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: partition_test_partitioned PARTITION(dt=100).value SIMPLE [(src1)src1.FieldSchema(name:value, type:string, comment:default), ]
 238
@@ -93,11 +89,11 @@ POSTHOOK: Lineage: partition_test_partitioned PARTITION(dt=100).value SIMPLE [(s
 PREHOOK: query: select key from partition_test_partitioned
 PREHOOK: type: QUERY
 PREHOOK: Input: default@partition_test_partitioned@dt=100
-PREHOOK: Output: file:/tmp/njain/hive_2010-08-17_00-28-49_132_7250201183436014876/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: select key from partition_test_partitioned
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@partition_test_partitioned@dt=100
-POSTHOOK: Output: file:/tmp/njain/hive_2010-08-17_00-28-49_132_7250201183436014876/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: Lineage: partition_test_partitioned PARTITION(dt=100).key SIMPLE [(src1)src1.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: partition_test_partitioned PARTITION(dt=100).value SIMPLE [(src1)src1.FieldSchema(name:value, type:string, comment:default), ]
 238
@@ -156,8 +152,7 @@ POSTHOOK: Lineage: partition_test_partitioned PARTITION(dt=100).value SIMPLE [(s
 POSTHOOK: Lineage: partition_test_partitioned PARTITION(dt=101).key SIMPLE [(src1)src1.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: partition_test_partitioned PARTITION(dt=101).value SIMPLE [(src1)src1.FieldSchema(name:value, type:string, comment:default), ]
 tableName:partition_test_partitioned
-owner:njain
-location:pfile:/data/users/njain/hive_commit2/hive_commit2/build/ql/test/data/warehouse/partition_test_partitioned
+#### A masked pattern was here ####
 inputformat:org.apache.hadoop.hive.ql.io.RCFileInputFormat
 outputformat:org.apache.hadoop.hive.ql.io.RCFileOutputFormat
 columns:struct columns { string key, string value}
@@ -167,8 +162,7 @@ totalNumberFiles:2
 totalFileSize:586
 maxFileSize:370
 minFileSize:216
-lastAccessTime:0
-lastUpdateTime:1282030136000
+#### A masked pattern was here ####
 
 PREHOOK: query: show table extended like partition_test_partitioned partition(dt=100)
 PREHOOK: type: SHOW_TABLESTATUS
@@ -179,8 +173,7 @@ POSTHOOK: Lineage: partition_test_partitioned PARTITION(dt=100).value SIMPLE [(s
 POSTHOOK: Lineage: partition_test_partitioned PARTITION(dt=101).key SIMPLE [(src1)src1.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: partition_test_partitioned PARTITION(dt=101).value SIMPLE [(src1)src1.FieldSchema(name:value, type:string, comment:default), ]
 tableName:partition_test_partitioned
-owner:njain
-location:pfile:/data/users/njain/hive_commit2/hive_commit2/build/ql/test/data/warehouse/partition_test_partitioned/dt=100
+#### A masked pattern was here ####
 inputformat:org.apache.hadoop.mapred.TextInputFormat
 outputformat:org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
 columns:struct columns { string key, string value}
@@ -190,8 +183,7 @@ totalNumberFiles:1
 totalFileSize:216
 maxFileSize:216
 minFileSize:216
-lastAccessTime:0
-lastUpdateTime:1282030136000
+#### A masked pattern was here ####
 
 PREHOOK: query: show table extended like partition_test_partitioned partition(dt=101)
 PREHOOK: type: SHOW_TABLESTATUS
@@ -202,8 +194,7 @@ POSTHOOK: Lineage: partition_test_partitioned PARTITION(dt=100).value SIMPLE [(s
 POSTHOOK: Lineage: partition_test_partitioned PARTITION(dt=101).key SIMPLE [(src1)src1.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: partition_test_partitioned PARTITION(dt=101).value SIMPLE [(src1)src1.FieldSchema(name:value, type:string, comment:default), ]
 tableName:partition_test_partitioned
-owner:njain
-location:pfile:/data/users/njain/hive_commit2/hive_commit2/build/ql/test/data/warehouse/partition_test_partitioned/dt=101
+#### A masked pattern was here ####
 inputformat:org.apache.hadoop.hive.ql.io.RCFileInputFormat
 outputformat:org.apache.hadoop.hive.ql.io.RCFileOutputFormat
 columns:struct columns { string key, string value}
@@ -213,17 +204,16 @@ totalNumberFiles:1
 totalFileSize:370
 maxFileSize:370
 minFileSize:370
-lastAccessTime:0
-lastUpdateTime:1282030136000
+#### A masked pattern was here ####
 
 PREHOOK: query: select key from partition_test_partitioned where dt=100
 PREHOOK: type: QUERY
 PREHOOK: Input: default@partition_test_partitioned@dt=100
-PREHOOK: Output: file:/tmp/njain/hive_2010-08-17_00-28-57_738_4221917279395084924/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: select key from partition_test_partitioned where dt=100
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@partition_test_partitioned@dt=100
-POSTHOOK: Output: file:/tmp/njain/hive_2010-08-17_00-28-57_738_4221917279395084924/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: Lineage: partition_test_partitioned PARTITION(dt=100).key SIMPLE [(src1)src1.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: partition_test_partitioned PARTITION(dt=100).value SIMPLE [(src1)src1.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: partition_test_partitioned PARTITION(dt=101).key SIMPLE [(src1)src1.FieldSchema(name:key, type:string, comment:default), ]
@@ -256,11 +246,11 @@ POSTHOOK: Lineage: partition_test_partitioned PARTITION(dt=101).value SIMPLE [(s
 PREHOOK: query: select key from partition_test_partitioned where dt=101
 PREHOOK: type: QUERY
 PREHOOK: Input: default@partition_test_partitioned@dt=101
-PREHOOK: Output: file:/tmp/njain/hive_2010-08-17_00-29-01_104_7633460107807770575/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: select key from partition_test_partitioned where dt=101
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@partition_test_partitioned@dt=101
-POSTHOOK: Output: file:/tmp/njain/hive_2010-08-17_00-29-01_104_7633460107807770575/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: Lineage: partition_test_partitioned PARTITION(dt=100).key SIMPLE [(src1)src1.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: partition_test_partitioned PARTITION(dt=100).value SIMPLE [(src1)src1.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: partition_test_partitioned PARTITION(dt=101).key SIMPLE [(src1)src1.FieldSchema(name:key, type:string, comment:default), ]
@@ -294,12 +284,12 @@ PREHOOK: query: select key from partition_test_partitioned
 PREHOOK: type: QUERY
 PREHOOK: Input: default@partition_test_partitioned@dt=100
 PREHOOK: Input: default@partition_test_partitioned@dt=101
-PREHOOK: Output: file:/tmp/njain/hive_2010-08-17_00-29-04_462_387937014678398458/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: select key from partition_test_partitioned
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@partition_test_partitioned@dt=100
 POSTHOOK: Input: default@partition_test_partitioned@dt=101
-POSTHOOK: Output: file:/tmp/njain/hive_2010-08-17_00-29-04_462_387937014678398458/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: Lineage: partition_test_partitioned PARTITION(dt=100).key SIMPLE [(src1)src1.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: partition_test_partitioned PARTITION(dt=100).value SIMPLE [(src1)src1.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: partition_test_partitioned PARTITION(dt=101).key SIMPLE [(src1)src1.FieldSchema(name:key, type:string, comment:default), ]
@@ -391,8 +381,7 @@ POSTHOOK: Lineage: partition_test_partitioned PARTITION(dt=101).value SIMPLE [(s
 POSTHOOK: Lineage: partition_test_partitioned PARTITION(dt=102).key SIMPLE [(src1)src1.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: partition_test_partitioned PARTITION(dt=102).value SIMPLE [(src1)src1.FieldSchema(name:value, type:string, comment:default), ]
 tableName:partition_test_partitioned
-owner:njain
-location:pfile:/data/users/njain/hive_commit2/hive_commit2/build/ql/test/data/warehouse/partition_test_partitioned
+#### A masked pattern was here ####
 inputformat:org.apache.hadoop.mapred.SequenceFileInputFormat
 outputformat:org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
 columns:struct columns { string key, string value}
@@ -402,8 +391,7 @@ totalNumberFiles:3
 totalFileSize:1474
 maxFileSize:888
 minFileSize:216
-lastAccessTime:0
-lastUpdateTime:1282030151000
+#### A masked pattern was here ####
 
 PREHOOK: query: show table extended like partition_test_partitioned partition(dt=100)
 PREHOOK: type: SHOW_TABLESTATUS
@@ -416,8 +404,7 @@ POSTHOOK: Lineage: partition_test_partitioned PARTITION(dt=101).value SIMPLE [(s
 POSTHOOK: Lineage: partition_test_partitioned PARTITION(dt=102).key SIMPLE [(src1)src1.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: partition_test_partitioned PARTITION(dt=102).value SIMPLE [(src1)src1.FieldSchema(name:value, type:string, comment:default), ]
 tableName:partition_test_partitioned
-owner:njain
-location:pfile:/data/users/njain/hive_commit2/hive_commit2/build/ql/test/data/warehouse/partition_test_partitioned/dt=100
+#### A masked pattern was here ####
 inputformat:org.apache.hadoop.mapred.TextInputFormat
 outputformat:org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
 columns:struct columns { string key, string value}
@@ -427,8 +414,7 @@ totalNumberFiles:1
 totalFileSize:216
 maxFileSize:216
 minFileSize:216
-lastAccessTime:0
-lastUpdateTime:1282030151000
+#### A masked pattern was here ####
 
 PREHOOK: query: show table extended like partition_test_partitioned partition(dt=101)
 PREHOOK: type: SHOW_TABLESTATUS
@@ -441,8 +427,7 @@ POSTHOOK: Lineage: partition_test_partitioned PARTITION(dt=101).value SIMPLE [(s
 POSTHOOK: Lineage: partition_test_partitioned PARTITION(dt=102).key SIMPLE [(src1)src1.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: partition_test_partitioned PARTITION(dt=102).value SIMPLE [(src1)src1.FieldSchema(name:value, type:string, comment:default), ]
 tableName:partition_test_partitioned
-owner:njain
-location:pfile:/data/users/njain/hive_commit2/hive_commit2/build/ql/test/data/warehouse/partition_test_partitioned/dt=101
+#### A masked pattern was here ####
 inputformat:org.apache.hadoop.hive.ql.io.RCFileInputFormat
 outputformat:org.apache.hadoop.hive.ql.io.RCFileOutputFormat
 columns:struct columns { string key, string value}
@@ -452,8 +437,7 @@ totalNumberFiles:1
 totalFileSize:370
 maxFileSize:370
 minFileSize:370
-lastAccessTime:0
-lastUpdateTime:1282030151000
+#### A masked pattern was here ####
 
 PREHOOK: query: show table extended like partition_test_partitioned partition(dt=102)
 PREHOOK: type: SHOW_TABLESTATUS
@@ -466,8 +450,7 @@ POSTHOOK: Lineage: partition_test_partitioned PARTITION(dt=101).value SIMPLE [(s
 POSTHOOK: Lineage: partition_test_partitioned PARTITION(dt=102).key SIMPLE [(src1)src1.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: partition_test_partitioned PARTITION(dt=102).value SIMPLE [(src1)src1.FieldSchema(name:value, type:string, comment:default), ]
 tableName:partition_test_partitioned
-owner:njain
-location:pfile:/data/users/njain/hive_commit2/hive_commit2/build/ql/test/data/warehouse/partition_test_partitioned/dt=102
+#### A masked pattern was here ####
 inputformat:org.apache.hadoop.mapred.SequenceFileInputFormat
 outputformat:org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
 columns:struct columns { string key, string value}
@@ -477,17 +460,16 @@ totalNumberFiles:1
 totalFileSize:888
 maxFileSize:888
 minFileSize:888
-lastAccessTime:0
-lastUpdateTime:1282030151000
+#### A masked pattern was here ####
 
 PREHOOK: query: select key from partition_test_partitioned where dt=100
 PREHOOK: type: QUERY
 PREHOOK: Input: default@partition_test_partitioned@dt=100
-PREHOOK: Output: file:/tmp/njain/hive_2010-08-17_00-29-13_648_4852070201967333188/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: select key from partition_test_partitioned where dt=100
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@partition_test_partitioned@dt=100
-POSTHOOK: Output: file:/tmp/njain/hive_2010-08-17_00-29-13_648_4852070201967333188/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: Lineage: partition_test_partitioned PARTITION(dt=100).key SIMPLE [(src1)src1.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: partition_test_partitioned PARTITION(dt=100).value SIMPLE [(src1)src1.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: partition_test_partitioned PARTITION(dt=101).key SIMPLE [(src1)src1.FieldSchema(name:key, type:string, comment:default), ]
@@ -522,11 +504,11 @@ POSTHOOK: Lineage: partition_test_partitioned PARTITION(dt=102).value SIMPLE [(s
 PREHOOK: query: select key from partition_test_partitioned where dt=101
 PREHOOK: type: QUERY
 PREHOOK: Input: default@partition_test_partitioned@dt=101
-PREHOOK: Output: file:/tmp/njain/hive_2010-08-17_00-29-16_874_2144423925129213549/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: select key from partition_test_partitioned where dt=101
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@partition_test_partitioned@dt=101
-POSTHOOK: Output: file:/tmp/njain/hive_2010-08-17_00-29-16_874_2144423925129213549/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: Lineage: partition_test_partitioned PARTITION(dt=100).key SIMPLE [(src1)src1.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: partition_test_partitioned PARTITION(dt=100).value SIMPLE [(src1)src1.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: partition_test_partitioned PARTITION(dt=101).key SIMPLE [(src1)src1.FieldSchema(name:key, type:string, comment:default), ]
@@ -561,11 +543,11 @@ POSTHOOK: Lineage: partition_test_partitioned PARTITION(dt=102).value SIMPLE [(s
 PREHOOK: query: select key from partition_test_partitioned where dt=102
 PREHOOK: type: QUERY
 PREHOOK: Input: default@partition_test_partitioned@dt=102
-PREHOOK: Output: file:/tmp/njain/hive_2010-08-17_00-29-20_202_7935828228211072259/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: select key from partition_test_partitioned where dt=102
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@partition_test_partitioned@dt=102
-POSTHOOK: Output: file:/tmp/njain/hive_2010-08-17_00-29-20_202_7935828228211072259/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: Lineage: partition_test_partitioned PARTITION(dt=100).key SIMPLE [(src1)src1.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: partition_test_partitioned PARTITION(dt=100).value SIMPLE [(src1)src1.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: partition_test_partitioned PARTITION(dt=101).key SIMPLE [(src1)src1.FieldSchema(name:key, type:string, comment:default), ]
@@ -602,13 +584,13 @@ PREHOOK: type: QUERY
 PREHOOK: Input: default@partition_test_partitioned@dt=100
 PREHOOK: Input: default@partition_test_partitioned@dt=101
 PREHOOK: Input: default@partition_test_partitioned@dt=102
-PREHOOK: Output: file:/tmp/njain/hive_2010-08-17_00-29-23_498_1472831792275217567/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: select key from partition_test_partitioned
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@partition_test_partitioned@dt=100
 POSTHOOK: Input: default@partition_test_partitioned@dt=101
 POSTHOOK: Input: default@partition_test_partitioned@dt=102
-POSTHOOK: Output: file:/tmp/njain/hive_2010-08-17_00-29-23_498_1472831792275217567/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: Lineage: partition_test_partitioned PARTITION(dt=100).key SIMPLE [(src1)src1.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: partition_test_partitioned PARTITION(dt=100).value SIMPLE [(src1)src1.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: partition_test_partitioned PARTITION(dt=101).key SIMPLE [(src1)src1.FieldSchema(name:key, type:string, comment:default), ]
@@ -695,13 +677,13 @@ PREHOOK: type: QUERY
 PREHOOK: Input: default@partition_test_partitioned@dt=100
 PREHOOK: Input: default@partition_test_partitioned@dt=101
 PREHOOK: Input: default@partition_test_partitioned@dt=102
-PREHOOK: Output: file:/tmp/njain/hive_2010-08-17_00-29-26_942_5352511744427811614/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: select key from partition_test_partitioned where dt >=100 and dt <= 102
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@partition_test_partitioned@dt=100
 POSTHOOK: Input: default@partition_test_partitioned@dt=101
 POSTHOOK: Input: default@partition_test_partitioned@dt=102
-POSTHOOK: Output: file:/tmp/njain/hive_2010-08-17_00-29-26_942_5352511744427811614/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: Lineage: partition_test_partitioned PARTITION(dt=100).key SIMPLE [(src1)src1.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: partition_test_partitioned PARTITION(dt=100).value SIMPLE [(src1)src1.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: partition_test_partitioned PARTITION(dt=101).key SIMPLE [(src1)src1.FieldSchema(name:key, type:string, comment:default), ]

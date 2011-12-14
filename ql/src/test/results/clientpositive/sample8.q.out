@@ -68,12 +68,9 @@ STAGE PLANS:
                       type: string
       Needs Tagging: true
       Path -> Alias:
-        pfile:/home/amarsri/workspace/hive/build/ql/test/data/warehouse/srcpart/ds=2008-04-08/hr=11 [t, s]
-        pfile:/home/amarsri/workspace/hive/build/ql/test/data/warehouse/srcpart/ds=2008-04-08/hr=12 [t]
-        pfile:/home/amarsri/workspace/hive/build/ql/test/data/warehouse/srcpart/ds=2008-04-09/hr=11 [t]
-        pfile:/home/amarsri/workspace/hive/build/ql/test/data/warehouse/srcpart/ds=2008-04-09/hr=12 [t]
+#### A masked pattern was here ####
       Path -> Partition:
-        pfile:/home/amarsri/workspace/hive/build/ql/test/data/warehouse/srcpart/ds=2008-04-08/hr=11 
+#### A masked pattern was here ####
           Partition
             base file name: hr=11
             input format: org.apache.hadoop.mapred.TextInputFormat
@@ -85,15 +82,13 @@ STAGE PLANS:
               bucket_count -1
               columns key,value
               columns.types string:string
-              file.inputformat org.apache.hadoop.mapred.TextInputFormat
-              file.outputformat org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-              location pfile:/home/amarsri/workspace/hive/build/ql/test/data/warehouse/srcpart/ds=2008-04-08/hr=11
+#### A masked pattern was here ####
               name default.srcpart
               partition_columns ds/hr
               serialization.ddl struct srcpart { string key, string value}
               serialization.format 1
               serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              transient_lastDdlTime 1311932220
+#### A masked pattern was here ####
             serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
           
               input format: org.apache.hadoop.mapred.TextInputFormat
@@ -102,19 +97,17 @@ STAGE PLANS:
                 bucket_count -1
                 columns key,value
                 columns.types string:string
-                file.inputformat org.apache.hadoop.mapred.TextInputFormat
-                file.outputformat org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                location pfile:/home/amarsri/workspace/hive/build/ql/test/data/warehouse/srcpart
+#### A masked pattern was here ####
                 name default.srcpart
                 partition_columns ds/hr
                 serialization.ddl struct srcpart { string key, string value}
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                transient_lastDdlTime 1311932221
+#### A masked pattern was here ####
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: default.srcpart
             name: default.srcpart
-        pfile:/home/amarsri/workspace/hive/build/ql/test/data/warehouse/srcpart/ds=2008-04-08/hr=12 
+#### A masked pattern was here ####
           Partition
             base file name: hr=12
             input format: org.apache.hadoop.mapred.TextInputFormat
@@ -126,15 +119,13 @@ STAGE PLANS:
               bucket_count -1
               columns key,value
               columns.types string:string
-              file.inputformat org.apache.hadoop.mapred.TextInputFormat
-              file.outputformat org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-              location pfile:/home/amarsri/workspace/hive/build/ql/test/data/warehouse/srcpart/ds=2008-04-08/hr=12
+#### A masked pattern was here ####
               name default.srcpart
               partition_columns ds/hr
               serialization.ddl struct srcpart { string key, string value}
               serialization.format 1
               serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              transient_lastDdlTime 1311932220
+#### A masked pattern was here ####
             serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
           
               input format: org.apache.hadoop.mapred.TextInputFormat
@@ -143,19 +134,17 @@ STAGE PLANS:
                 bucket_count -1
                 columns key,value
                 columns.types string:string
-                file.inputformat org.apache.hadoop.mapred.TextInputFormat
-                file.outputformat org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                location pfile:/home/amarsri/workspace/hive/build/ql/test/data/warehouse/srcpart
+#### A masked pattern was here ####
                 name default.srcpart
                 partition_columns ds/hr
                 serialization.ddl struct srcpart { string key, string value}
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                transient_lastDdlTime 1311932221
+#### A masked pattern was here ####
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: default.srcpart
             name: default.srcpart
-        pfile:/home/amarsri/workspace/hive/build/ql/test/data/warehouse/srcpart/ds=2008-04-09/hr=11 
+#### A masked pattern was here ####
           Partition
             base file name: hr=11
             input format: org.apache.hadoop.mapred.TextInputFormat
@@ -167,15 +156,13 @@ STAGE PLANS:
               bucket_count -1
               columns key,value
               columns.types string:string
-              file.inputformat org.apache.hadoop.mapred.TextInputFormat
-              file.outputformat org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-              location pfile:/home/amarsri/workspace/hive/build/ql/test/data/warehouse/srcpart/ds=2008-04-09/hr=11
+#### A masked pattern was here ####
               name default.srcpart
               partition_columns ds/hr
               serialization.ddl struct srcpart { string key, string value}
               serialization.format 1
               serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              transient_lastDdlTime 1311932220
+#### A masked pattern was here ####
             serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
           
               input format: org.apache.hadoop.mapred.TextInputFormat
@@ -184,19 +171,17 @@ STAGE PLANS:
                 bucket_count -1
                 columns key,value
                 columns.types string:string
-                file.inputformat org.apache.hadoop.mapred.TextInputFormat
-                file.outputformat org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                location pfile:/home/amarsri/workspace/hive/build/ql/test/data/warehouse/srcpart
+#### A masked pattern was here ####
                 name default.srcpart
                 partition_columns ds/hr
                 serialization.ddl struct srcpart { string key, string value}
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                transient_lastDdlTime 1311932221
+#### A masked pattern was here ####
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: default.srcpart
             name: default.srcpart
-        pfile:/home/amarsri/workspace/hive/build/ql/test/data/warehouse/srcpart/ds=2008-04-09/hr=12 
+#### A masked pattern was here ####
           Partition
             base file name: hr=12
             input format: org.apache.hadoop.mapred.TextInputFormat
@@ -208,15 +193,13 @@ STAGE PLANS:
               bucket_count -1
               columns key,value
               columns.types string:string
-              file.inputformat org.apache.hadoop.mapred.TextInputFormat
-              file.outputformat org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-              location pfile:/home/amarsri/workspace/hive/build/ql/test/data/warehouse/srcpart/ds=2008-04-09/hr=12
+#### A masked pattern was here ####
               name default.srcpart
               partition_columns ds/hr
               serialization.ddl struct srcpart { string key, string value}
               serialization.format 1
               serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              transient_lastDdlTime 1311932221
+#### A masked pattern was here ####
             serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
           
               input format: org.apache.hadoop.mapred.TextInputFormat
@@ -225,15 +208,13 @@ STAGE PLANS:
                 bucket_count -1
                 columns key,value
                 columns.types string:string
-                file.inputformat org.apache.hadoop.mapred.TextInputFormat
-                file.outputformat org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                location pfile:/home/amarsri/workspace/hive/build/ql/test/data/warehouse/srcpart
+#### A masked pattern was here ####
                 name default.srcpart
                 partition_columns ds/hr
                 serialization.ddl struct srcpart { string key, string value}
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                transient_lastDdlTime 1311932221
+#### A masked pattern was here ####
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: default.srcpart
             name: default.srcpart
@@ -265,7 +246,7 @@ STAGE PLANS:
               File Output Operator
                 compressed: false
                 GlobalTableId: 0
-                directory: file:/tmp/amarsri/hive_2011-07-29_02-37-59_202_2481097602976410482/-mr-10002
+#### A masked pattern was here ####
                 NumFilesPerFileSink: 1
                 table:
                     input format: org.apache.hadoop.mapred.SequenceFileInputFormat
@@ -281,7 +262,7 @@ STAGE PLANS:
   Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/tmp/amarsri/hive_2011-07-29_02-37-59_202_2481097602976410482/-mr-10002 
+#### A masked pattern was here ####
             Reduce Output Operator
               key expressions:
                     expr: _col0
@@ -306,9 +287,9 @@ STAGE PLANS:
                     type: string
       Needs Tagging: false
       Path -> Alias:
-        file:/tmp/amarsri/hive_2011-07-29_02-37-59_202_2481097602976410482/-mr-10002 [file:/tmp/amarsri/hive_2011-07-29_02-37-59_202_2481097602976410482/-mr-10002]
+#### A masked pattern was here ####
       Path -> Partition:
-        file:/tmp/amarsri/hive_2011-07-29_02-37-59_202_2481097602976410482/-mr-10002 
+#### A masked pattern was here ####
           Partition
             base file name: -mr-10002
             input format: org.apache.hadoop.mapred.SequenceFileInputFormat
@@ -329,9 +310,9 @@ STAGE PLANS:
           File Output Operator
             compressed: false
             GlobalTableId: 0
-            directory: file:/tmp/amarsri/hive_2011-07-29_02-37-59_202_2481097602976410482/-ext-10001
+#### A masked pattern was here ####
             NumFilesPerFileSink: 1
-            Stats Publishing Key Prefix: file:/tmp/amarsri/hive_2011-07-29_02-37-59_202_2481097602976410482/-ext-10001/
+#### A masked pattern was here ####
             table:
                 input format: org.apache.hadoop.mapred.TextInputFormat
                 output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
@@ -360,7 +341,7 @@ PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
 PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
 PREHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
 PREHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
-PREHOOK: Output: file:/tmp/amarsri/hive_2011-07-29_02-37-59_324_7495148744772475664/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: SELECT s.key, s.value
 FROM srcpart TABLESAMPLE (BUCKET 1 OUT OF 1 ON key) s
 JOIN srcpart TABLESAMPLE (BUCKET 1 OUT OF 10 ON key) t
@@ -372,7 +353,7 @@ POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
 POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
 POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
 POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
-POSTHOOK: Output: file:/tmp/amarsri/hive_2011-07-29_02-37-59_324_7495148744772475664/-mr-10000
+#### A masked pattern was here ####
 0	val_0
 0	val_0
 0	val_0

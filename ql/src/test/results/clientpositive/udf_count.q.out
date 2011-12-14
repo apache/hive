@@ -74,11 +74,11 @@ STAGE PLANS:
 PREHOOK: query: SELECT count(key) FROM src
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/tmp/sdong/hive_2011-02-10_17-32-33_387_2210016768638890442/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: SELECT count(key) FROM src
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: file:/tmp/sdong/hive_2011-02-10_17-32-33_387_2210016768638890442/-mr-10000
+#### A masked pattern was here ####
 500
 PREHOOK: query: EXPLAIN SELECT count(DISTINCT key) FROM src
 PREHOOK: type: QUERY
@@ -148,11 +148,11 @@ STAGE PLANS:
 PREHOOK: query: SELECT count(DISTINCT key) FROM src
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/tmp/sdong/hive_2011-02-10_17-32-36_903_4900424623031909011/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: SELECT count(DISTINCT key) FROM src
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: file:/tmp/sdong/hive_2011-02-10_17-32-36_903_4900424623031909011/-mr-10000
+#### A masked pattern was here ####
 309
 PREHOOK: query: EXPLAIN SELECT count(DISTINCT key, value) FROM src
 PREHOOK: type: QUERY
@@ -228,11 +228,11 @@ STAGE PLANS:
 PREHOOK: query: SELECT count(DISTINCT key, value) FROM src
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/tmp/sdong/hive_2011-02-10_17-32-40_320_7589391114592755640/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: SELECT count(DISTINCT key, value) FROM src
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: file:/tmp/sdong/hive_2011-02-10_17-32-40_320_7589391114592755640/-mr-10000
+#### A masked pattern was here ####
 309
 PREHOOK: query: EXPLAIN SELECT count(*) FROM src
 PREHOOK: type: QUERY
@@ -292,11 +292,11 @@ STAGE PLANS:
 PREHOOK: query: SELECT count(*) FROM src
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/tmp/sdong/hive_2011-02-10_17-32-43_751_8070894092190222667/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: SELECT count(*) FROM src
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: file:/tmp/sdong/hive_2011-02-10_17-32-43_751_8070894092190222667/-mr-10000
+#### A masked pattern was here ####
 500
 PREHOOK: query: EXPLAIN SELECT count(1) FROM src
 PREHOOK: type: QUERY
@@ -356,27 +356,27 @@ STAGE PLANS:
 PREHOOK: query: SELECT count(1) FROM src
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/tmp/sdong/hive_2011-02-10_17-32-47_181_575076640530335724/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: SELECT count(1) FROM src
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: file:/tmp/sdong/hive_2011-02-10_17-32-47_181_575076640530335724/-mr-10000
+#### A masked pattern was here ####
 500
 PREHOOK: query: select count(1) from src where false
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/tmp/sdong/hive_2011-02-10_17-32-50_564_3434263079981833640/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: select count(1) from src where false
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: file:/tmp/sdong/hive_2011-02-10_17-32-50_564_3434263079981833640/-mr-10000
+#### A masked pattern was here ####
 0
 PREHOOK: query: select count(*) from src where false
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/tmp/sdong/hive_2011-02-10_17-32-53_964_8582140156519159478/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: select count(*) from src where false
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: file:/tmp/sdong/hive_2011-02-10_17-32-53_964_8582140156519159478/-mr-10000
+#### A masked pattern was here ####
 0

@@ -157,7 +157,7 @@ STAGE PLANS:
   Stage: Stage-3
     Map Reduce
       Alias -> Map Operator Tree:
-        hdfs://localhost.localdomain:48956/home/krishnak/hive-howl/hive-git-apache/build/ql/scratchdir/hive_2011-03-21_05-51-27_066_7206620542416882466/-mr-10003 
+#### A masked pattern was here ####
             Reduce Output Operator
               sort order: 
               tag: -1
@@ -268,11 +268,11 @@ STAGE PLANS:
 PREHOOK: query: SELECT COUNT(1) FROM T2
 PREHOOK: type: QUERY
 PREHOOK: Input: default@t2
-PREHOOK: Output: hdfs://localhost.localdomain:48956/home/krishnak/hive-howl/hive-git-apache/build/ql/scratchdir/hive_2011-03-21_05-53-59_669_30214837486178245/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: SELECT COUNT(1) FROM T2
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@t2
-POSTHOOK: Output: hdfs://localhost.localdomain:48956/home/krishnak/hive-howl/hive-git-apache/build/ql/scratchdir/hive_2011-03-21_05-53-59_669_30214837486178245/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: Lineage: t2.name SIMPLE [(t1)t1.FieldSchema(name:name, type:string, comment:null), ]
 5000000
 PREHOOK: query: CREATE TABLE T3(name STRING) STORED AS TEXTFILE
@@ -354,10 +354,10 @@ STAGE PLANS:
 PREHOOK: query: SELECT COUNT(1) FROM T3
 PREHOOK: type: QUERY
 PREHOOK: Input: default@t3
-PREHOOK: Output: hdfs://localhost.localdomain:48956/home/krishnak/hive-howl/hive-git-apache/build/ql/scratchdir/hive_2011-03-21_05-54-45_062_3900492877877354624/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: SELECT COUNT(1) FROM T3
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@t3
-POSTHOOK: Output: hdfs://localhost.localdomain:48956/home/krishnak/hive-howl/hive-git-apache/build/ql/scratchdir/hive_2011-03-21_05-54-45_062_3900492877877354624/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: Lineage: t2.name SIMPLE [(t1)t1.FieldSchema(name:name, type:string, comment:null), ]
 1000

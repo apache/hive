@@ -76,7 +76,7 @@ PREHOOK: query: SELECT example_add(1, 2),
 FROM src LIMIT 1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/tmp/sdong/hive_2011-02-16_20-11-05_268_6785095449295080966/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: SELECT example_add(1, 2),
        example_add(1, 2, 3),
        example_add(1, 2, 3, 4),
@@ -87,7 +87,7 @@ POSTHOOK: query: SELECT example_add(1, 2),
 FROM src LIMIT 1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: file:/tmp/sdong/hive_2011-02-16_20-11-05_268_6785095449295080966/-mr-10000
+#### A masked pattern was here ####
 3	6	10	3.3000000000000003	6.6	11.0	10.4
 PREHOOK: query: DROP TEMPORARY FUNCTION example_add
 PREHOOK: type: DROPFUNCTION

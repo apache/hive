@@ -2,7 +2,7 @@ PREHOOK: query: -- Test to ensure that a script with a bad error code still fail
 SELECT TRANSFORM(*) USING 'false' AS a, b, c FROM (SELECT * FROM src LIMIT 1) tmp
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/tmp/salbiz/hive_2011-08-02_17-12-28_813_6316382116761729323/-mr-10000
+#### A masked pattern was here ####
 Execution failed with exit status: 2
 Obtaining error information
 
@@ -12,5 +12,5 @@ Task ID:
 
 Logs:
 
-/data/users/salbiz/apache-hive/build/ql/tmp//hive.log
+#### A masked pattern was here ####
 FAILED: Execution Error, return code 2 from org.apache.hadoop.hive.ql.exec.MapRedTask

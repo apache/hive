@@ -54,10 +54,10 @@ PREHOOK: query: SELECT named_struct("foo", 1, "bar", 2),
        named_struct("foo", 1, "bar", 2).foo FROM src LIMIT 1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/tmp/charleschen/hive_2011-08-17_22-16-07_735_3705561327372616732/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: SELECT named_struct("foo", 1, "bar", 2),
        named_struct("foo", 1, "bar", 2).foo FROM src LIMIT 1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: file:/tmp/charleschen/hive_2011-08-17_22-16-07_735_3705561327372616732/-mr-10000
+#### A masked pattern was here ####
 {"foo":1,"bar":2}	1

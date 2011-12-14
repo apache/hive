@@ -16,9 +16,9 @@ POSTHOOK: Output: default@fetchtask_ioexception
 PREHOOK: query: SELECT * FROM fetchtask_ioexception
 PREHOOK: type: QUERY
 PREHOOK: Input: default@fetchtask_ioexception
-PREHOOK: Output: file:/tmp/krishnak/hive_2011-03-21_06-14-48_854_4131739323077251446/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: SELECT * FROM fetchtask_ioexception
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@fetchtask_ioexception
-POSTHOOK: Output: file:/tmp/krishnak/hive_2011-03-21_06-14-48_854_4131739323077251446/-mr-10000
+#### A masked pattern was here ####
 Failed with exception java.io.IOException:java.io.EOFException

@@ -47,7 +47,7 @@ POSTHOOK: type: DESCTABLE
 key	int	
 value	string	
 	 	 
-Detailed Table Information	Table(tableName:base64_test, dbName:default, owner:sdong, createTime:1297915773, lastAccessTime:0, retention:0, sd:StorageDescriptor(cols:[FieldSchema(name:key, type:int, comment:null), FieldSchema(name:value, type:string, comment:null)], location:pfile:/data/users/sdong/www/open-source-hive3/build/contrib/test/data/warehouse/base64_test, inputFormat:org.apache.hadoop.hive.contrib.fileformat.base64.Base64TextInputFormat, outputFormat:org.apache.hadoop.hive.contrib.fileformat.base64.Base64TextOutputFormat, compressed:false, numBuckets:-1, serdeInfo:SerDeInfo(name:null, serializationLib:org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe, parameters:{serialization.format=1}), bucketCols:[], sortCols:[], parameters:{}), partitionKeys:[], parameters:{transient_lastDdlTime=1297915773}, viewOriginalText:null, viewExpandedText:null, tableType:MANAGED_TABLE)	
+#### A masked pattern was here ####
 PREHOOK: query: FROM src
 INSERT OVERWRITE TABLE base64_test
 SELECT key, value WHERE key < 10
@@ -65,11 +65,11 @@ POSTHOOK: Lineage: base64_test.value SIMPLE [(src)src.FieldSchema(name:value, ty
 PREHOOK: query: SELECT * FROM base64_test
 PREHOOK: type: QUERY
 PREHOOK: Input: default@base64_test
-PREHOOK: Output: file:/tmp/sdong/hive_2011-02-16_20-09-38_726_602466301525641770/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: SELECT * FROM base64_test
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@base64_test
-POSTHOOK: Output: file:/tmp/sdong/hive_2011-02-16_20-09-38_726_602466301525641770/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: Lineage: base64_test.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: base64_test.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 0	val_0
@@ -107,11 +107,11 @@ POSTHOOK: Lineage: base64_test.value SIMPLE [(src)src.FieldSchema(name:value, ty
 PREHOOK: query: SELECT * FROM base64_test
 PREHOOK: type: QUERY
 PREHOOK: Input: default@base64_test
-PREHOOK: Output: file:/tmp/sdong/hive_2011-02-16_20-09-43_547_1861182168371175958/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: SELECT * FROM base64_test
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@base64_test
-POSTHOOK: Output: file:/tmp/sdong/hive_2011-02-16_20-09-43_547_1861182168371175958/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: Lineage: base64_test.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: base64_test.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: base64_test.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]

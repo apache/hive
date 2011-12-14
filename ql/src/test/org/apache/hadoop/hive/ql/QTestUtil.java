@@ -21,11 +21,14 @@ package org.apache.hadoop.hive.ql;
 import static org.apache.hadoop.hive.metastore.MetaStoreUtils.DEFAULT_DATABASE_NAME;
 
 import java.io.BufferedInputStream;
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
 import java.io.DataInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
+import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.PrintStream;
 import java.io.Serializable;
@@ -233,7 +236,7 @@ public class QTestUtil {
     // Use the current directory if it is not specified
     String dataDir = conf.get("test.data.files");
     if (dataDir == null) {
-    	dataDir = new File(".").getAbsolutePath() + "/data/files";
+      dataDir = new File(".").getAbsolutePath() + "/data/files";
     }
 
     testFiles = dataDir.replace('\\', '/')
@@ -765,20 +768,23 @@ public class QTestUtil {
         Utilities.serializeTasks(plan, ofs);
       }
 
-      String[] cmdArray = new String[6];
-      cmdArray[0] = "diff";
-      cmdArray[1] = "-b";
-      cmdArray[2] = "-I";
-      cmdArray[3] = "\\(\\(<java version=\".*\" class=\"java.beans.XMLDecoder\">\\)"
-          + "\\|\\(<string>.*/tmp/.*</string>\\)"
-          + "\\|\\(<string>file:.*</string>\\)"
-          + "\\|\\(<string>pfile:.*</string>\\)"
-          + "\\|\\(<string>[0-9]\\{10\\}</string>\\)"
-          + "\\|\\(<string>/.*/warehouse/.*</string>\\)\\)";
-      cmdArray[4] = outf.getPath();
-      cmdArray[5] = planFile;
-      System.out.println(cmdArray[0] + " " + cmdArray[1] + " " + cmdArray[2]
-          + "\'" + cmdArray[3] + "\'" + " " + cmdArray[4] + " " + cmdArray[5]);
+      String[] patterns = new String[] {
+          "<java version=\".*\" class=\"java.beans.XMLDecoder\">",
+          "<string>.*/tmp/.*</string>",
+          "<string>file:.*</string>",
+          "<string>pfile:.*</string>",
+          "<string>[0-9]{10}</string>",
+          "<string>/.*/warehouse/.*</string>"
+      };
+      maskPatterns(patterns, outf.getPath());
+
+      String[] cmdArray = new String[] {
+          "diff",
+          "-b",
+          outf.getPath(),
+          planFile
+      };
+      System.out.println(org.apache.commons.lang.StringUtils.join(cmdArray, ' '));
 
       Process executor = Runtime.getRuntime().exec(cmdArray);
 
@@ -805,86 +811,6 @@ public class QTestUtil {
     }
 
   }
-
-
-  /* This seems unused. Comment out first in case it is used somewhere.
-  public int checkResults(String tname) throws Exception {
-    Path warehousePath = new Path(FileSystem.get(conf).getUri().getPath());
-    warehousePath = new Path(warehousePath, (new URI(testWarehouse)).getPath());
-
-    Path localPath = new Path(FileSystem.getLocal(conf).getUri().getPath());
-    localPath = new Path(localPath, logDir);
-    localPath = new Path(localPath, "warehouse_local_copy");
-    System.out.println("warehousePath = " + warehousePath.toString()
-        + " localPath = " + localPath.toString());
-
-    if (FileSystem.getLocal(conf).exists(localPath)) {
-      FileSystem.getLocal(conf).delete(localPath, true);
-    }
-
-    copyDirectoryToLocal(warehousePath, localPath);
-    normalizeNames(new File(localPath.toUri().getPath()));
-
-    String[] cmdArray;
-    if (overWrite == false) {
-      cmdArray = new String[6];
-      cmdArray[0] = "diff";
-      cmdArray[1] = "-r";
-      cmdArray[2] = "--exclude=tmp";
-      cmdArray[3] = "--exclude=.svn";
-      cmdArray[4] = localPath.toUri().getPath();
-      cmdArray[5] = (new File(outDir, tname)).getPath() + "/warehouse";
-      System.out.println(cmdArray[0] + " " + cmdArray[1] + " " + cmdArray[2]
-          + " " + cmdArray[3] + " " + cmdArray[4] + " " + cmdArray[5]);
-    } else {
-      System.out.println("overwritting");
-      // Remove any existing output
-      String[] cmdArray1 = new String[5];
-      cmdArray1[0] = "rm";
-      cmdArray1[1] = "-rf";
-      cmdArray1[2] = (new File(outDir, tname)).getPath();
-      System.out
-          .println(cmdArray1[0] + " " + cmdArray1[1] + " " + cmdArray1[2]);
-
-      Process executor = Runtime.getRuntime().exec(cmdArray1);
-
-      StreamPrinter outPrinter = new StreamPrinter(
-          executor.getInputStream(), null, SessionState.getConsole().getChildOutStream());
-      StreamPrinter errPrinter = new StreamPrinter(
-          executor.getErrorStream(), null, SessionState.getConsole().getChildErrStream());
-
-      outPrinter.start();
-      errPrinter.start();
-      int exitVal = executor.waitFor();
-      if (exitVal != 0) {
-        return exitVal;
-      }
-
-      // Capture code
-      cmdArray = new String[5];
-      cmdArray[0] = "cp";
-      cmdArray[1] = "-r";
-      cmdArray[2] = localPath.toUri().getPath();
-      cmdArray[3] = (new File(outDir, tname)).getPath();
-      System.out.println(cmdArray[0] + " " + cmdArray[1] + " " + cmdArray[2]
-          + " " + cmdArray[3]);
-    }
-
-    Process executor = Runtime.getRuntime().exec(cmdArray);
-
-    StreamPrinter outPrinter = new StreamPrinter(
-        executor.getInputStream(), null, SessionState.getConsole().getChildOutStream());
-    StreamPrinter errPrinter = new StreamPrinter(
-        executor.getErrorStream(), null, SessionState.getConsole().getChildErrStream());
-
-    outPrinter.start();
-    errPrinter.start();
-
-    int exitVal = executor.waitFor();
-
-    return exitVal;
-  }
-  */
 
   /**
    * Given the current configurations (e.g., hadoop version and execution mode), return
@@ -921,42 +847,91 @@ public class QTestUtil {
    return ret;
   }
 
+  private void maskPatterns(String[] patterns, String fname) throws Exception {
+    String maskPattern = "#### A masked pattern was here ####";
+
+    String line;
+    BufferedReader in;
+    BufferedWriter out;
+
+    in = new BufferedReader(new FileReader(fname));
+    out = new BufferedWriter(new FileWriter(fname + ".orig"));
+    while (null != (line = in.readLine())) {
+      out.write(line);
+      out.write('\n');
+    }
+    in.close();
+    out.close();
+
+    in = new BufferedReader(new FileReader(fname + ".orig"));
+    out = new BufferedWriter(new FileWriter(fname));
+
+    boolean lastWasMasked = false;
+    while (null != (line = in.readLine())) {
+      for (String pattern : patterns) {
+        line = line.replaceAll(pattern, maskPattern);
+      }
+
+      if (line.equals(maskPattern)) {
+        // We're folding multiple masked lines into one.
+        if (!lastWasMasked) {
+          out.write(line);
+          out.write("\n");
+          lastWasMasked = true;
+        }
+      } else {
+        out.write(line);
+        out.write("\n");
+        lastWasMasked = false;
+      }
+    }
+
+    in.close();
+    out.close();
+  }
+
   public int checkCliDriverResults(String tname) throws Exception {
     String[] cmdArray;
+    String[] patterns;
     assert(qMap.containsKey(tname));
 
     String outFileName = outPath(outDir, tname + ".out");
 
+    patterns = new String[] {
+        ".*file:.*",
+        ".*pfile:.*",
+        ".*hdfs:.*",
+        ".*/tmp/.*",
+        ".*invalidscheme:.*",
+        ".*lastUpdateTime.*",
+        ".*lastAccessTime.*",
+        ".*[Oo]wner.*",
+        ".*CreateTime.*",
+        ".*LastAccessTime.*",
+        ".*Location.*",
+        ".*LOCATION '.*",
+        ".*transient_lastDdlTime.*",
+        ".*last_modified_.*",
+        ".*java.lang.RuntimeException.*",
+        ".*at org.*",
+        ".*at sun.*",
+        ".*at java.*",
+        ".*at junit.*",
+        ".*Caused by:.*",
+        ".*LOCK_QUERYID:.*",
+        ".*LOCK_TIME:.*",
+        ".*grantTime.*",
+        ".*[.][.][.] [0-9]* more.*",
+        ".*job_[0-9]*_[0-9]*.*",
+        ".*USING 'java -cp.*"
+    };
+    maskPatterns(patterns, (new File(logDir, tname + ".out")).getPath());
+
     cmdArray = new String[] {
         "diff", "-a",
-        "-I", "file:",
-        "-I", "pfile:",
-        "-I", "hdfs:",
-        "-I", "/tmp/",
-        "-I", "invalidscheme:",
-        "-I", "lastUpdateTime",
-        "-I", "lastAccessTime",
-        "-I", "[Oo]wner",
-        "-I", "CreateTime",
-        "-I", "LastAccessTime",
-        "-I", "Location",
-        "-I", "LOCATION '",
-        "-I", "transient_lastDdlTime",
-        "-I", "last_modified_",
-        "-I", "java.lang.RuntimeException",
-        "-I", "at org",
-        "-I", "at sun",
-        "-I", "at java",
-        "-I", "at junit",
-        "-I", "Caused by:",
-        "-I", "LOCK_QUERYID:",
-        "-I", "LOCK_TIME:",
-        "-I", "grantTime",
-        "-I", "[.][.][.] [0-9]* more",
-        "-I", "job_[0-9]*_[0-9]*",
-        "-I", "USING 'java -cp",
         (new File(logDir, tname + ".out")).getPath(),
-        outFileName };
+        outFileName
+    };
 
     System.out.println(org.apache.commons.lang.StringUtils.join(cmdArray, ' '));
 

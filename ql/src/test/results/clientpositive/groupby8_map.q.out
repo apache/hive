@@ -85,7 +85,7 @@ STAGE PLANS:
   Stage: Stage-3
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/tmp/sdong/hive_2011-02-10_01-53-24_863_5379541438728534643/-mr-10004 
+#### A masked pattern was here ####
             Reduce Output Operator
               key expressions:
                     expr: _col0
@@ -147,7 +147,7 @@ STAGE PLANS:
   Stage: Stage-5
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/tmp/sdong/hive_2011-02-10_01-53-24_863_5379541438728534643/-mr-10005 
+#### A masked pattern was here ####
             Reduce Output Operator
               key expressions:
                     expr: _col0
@@ -228,11 +228,11 @@ POSTHOOK: Lineage: dest2.value EXPRESSION [(src)src.FieldSchema(name:value, type
 PREHOOK: query: SELECT DEST1.* FROM DEST1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@dest1
-PREHOOK: Output: file:/tmp/sdong/hive_2011-02-10_01-53-36_982_7368636819874952810/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: SELECT DEST1.* FROM DEST1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@dest1
-POSTHOOK: Output: file:/tmp/sdong/hive_2011-02-10_01-53-36_982_7368636819874952810/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: Lineage: dest1.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: dest1.value EXPRESSION [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: dest2.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
@@ -549,11 +549,11 @@ POSTHOOK: Lineage: dest2.value EXPRESSION [(src)src.FieldSchema(name:value, type
 PREHOOK: query: SELECT DEST2.* FROM DEST2
 PREHOOK: type: QUERY
 PREHOOK: Input: default@dest2
-PREHOOK: Output: file:/tmp/sdong/hive_2011-02-10_01-53-37_269_2021808970365502985/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: SELECT DEST2.* FROM DEST2
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@dest2
-POSTHOOK: Output: file:/tmp/sdong/hive_2011-02-10_01-53-37_269_2021808970365502985/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: Lineage: dest1.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: dest1.value EXPRESSION [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: dest2.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]

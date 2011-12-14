@@ -78,7 +78,7 @@ STAGE PLANS:
   Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/tmp/njain/hive_2011-12-07_18-07-18_649_6188665420662165573/-mr-10002 
+#### A masked pattern was here ####
           Union
             Select Operator
               expressions:
@@ -95,7 +95,7 @@ STAGE PLANS:
                     output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                     serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                     name: default.tmptable
-        file:/tmp/njain/hive_2011-12-07_18-07-18_649_6188665420662165573/-mr-10004 
+#### A masked pattern was here ####
           Union
             Select Operator
               expressions:
@@ -120,7 +120,7 @@ STAGE PLANS:
     Move Operator
       files:
           hdfs directory: true
-          destination: pfile:/data/users/njain/hive_commit2/build/ql/scratchdir/hive_2011-12-07_18-07-18_649_6188665420662165573/-ext-10000
+#### A masked pattern was here ####
 
   Stage: Stage-0
     Move Operator
@@ -138,7 +138,7 @@ STAGE PLANS:
   Stage: Stage-4
     Map Reduce
       Alias -> Map Operator Tree:
-        pfile:/data/users/njain/hive_commit2/build/ql/scratchdir/hive_2011-12-07_18-07-18_649_6188665420662165573/-ext-10003 
+#### A masked pattern was here ####
             File Output Operator
               compressed: false
               GlobalTableId: 0
@@ -190,11 +190,11 @@ POSTHOOK: Lineage: tmptable.value EXPRESSION [(src)s1.null, (src1)s2.FieldSchema
 PREHOOK: query: select * from tmptable x sort by x.key, x.value
 PREHOOK: type: QUERY
 PREHOOK: Input: default@tmptable
-PREHOOK: Output: file:/tmp/njain/hive_2011-12-07_18-07-29_549_8546727158614468431/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: select * from tmptable x sort by x.key, x.value
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@tmptable
-POSTHOOK: Output: file:/tmp/njain/hive_2011-12-07_18-07-29_549_8546727158614468431/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: Lineage: tmptable.key EXPRESSION [(src1)s2.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: tmptable.value EXPRESSION [(src)s1.null, (src1)s2.FieldSchema(name:value, type:string, comment:default), ]
 	

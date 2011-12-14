@@ -28,19 +28,19 @@ POSTHOOK: Output: default@tbl_protectmode3@p=p2
 PREHOOK: query: select * from tbl_protectmode3 where p='p1'
 PREHOOK: type: QUERY
 PREHOOK: Input: default@tbl_protectmode3@p=p1
-PREHOOK: Output: file:/tmp/njain/hive_2010-11-16_18-47-37_899_8567164411727057325/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: select * from tbl_protectmode3 where p='p1'
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@tbl_protectmode3@p=p1
-POSTHOOK: Output: file:/tmp/njain/hive_2010-11-16_18-47-37_899_8567164411727057325/-mr-10000
+#### A masked pattern was here ####
 PREHOOK: query: select * from tbl_protectmode3 where p='p2'
 PREHOOK: type: QUERY
 PREHOOK: Input: default@tbl_protectmode3@p=p2
-PREHOOK: Output: file:/tmp/njain/hive_2010-11-16_18-47-38_124_6078196023007251883/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: select * from tbl_protectmode3 where p='p2'
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@tbl_protectmode3@p=p2
-POSTHOOK: Output: file:/tmp/njain/hive_2010-11-16_18-47-38_124_6078196023007251883/-mr-10000
+#### A masked pattern was here ####
 PREHOOK: query: alter table tbl_protectmode3 partition (p='p1') enable offline
 PREHOOK: type: ALTERPARTITION_PROTECTMODE
 PREHOOK: Input: default@tbl_protectmode3
@@ -53,9 +53,9 @@ POSTHOOK: Output: default@tbl_protectmode3@p=p1
 PREHOOK: query: select * from tbl_protectmode3 where p='p2'
 PREHOOK: type: QUERY
 PREHOOK: Input: default@tbl_protectmode3@p=p2
-PREHOOK: Output: file:/tmp/njain/hive_2010-11-16_18-47-38_569_2255610848316200687/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: select * from tbl_protectmode3 where p='p2'
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@tbl_protectmode3@p=p2
-POSTHOOK: Output: file:/tmp/njain/hive_2010-11-16_18-47-38_569_2255610848316200687/-mr-10000
+#### A masked pattern was here ####
 FAILED: Error in semantic analysis: Query against an offline table or partition Table tbl_protectmode3 Partition p=p1

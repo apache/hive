@@ -19,11 +19,11 @@ STAGE PLANS:
 PREHOOK: query: SELECT x.* FROM SRC x LIMIT 20
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/tmp/sdong/hive_2011-02-10_15-59-52_485_4477794000884666763/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: SELECT x.* FROM SRC x LIMIT 20
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: file:/tmp/sdong/hive_2011-02-10_15-59-52_485_4477794000884666763/-mr-10000
+#### A masked pattern was here ####
 238	val_238
 86	val_86
 311	val_311

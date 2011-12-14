@@ -85,7 +85,7 @@ STAGE PLANS:
   Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/var/folders/67/67R3POPtF90VG63KSmCbcU++F0U/-Tmp-/krishnak/hive_2011-03-20_23-48-40_303_1958473630760739622/-mr-10002 
+#### A masked pattern was here ####
             Reduce Output Operator
               sort order: 
               tag: -1
@@ -133,11 +133,11 @@ POSTHOOK: Lineage: t2.value SIMPLE [(t1)t1.FieldSchema(name:value, type:string, 
 PREHOOK: query: SELECT * FROM T2 SORT BY key, value
 PREHOOK: type: QUERY
 PREHOOK: Input: default@t2
-PREHOOK: Output: file:/var/folders/67/67R3POPtF90VG63KSmCbcU++F0U/-Tmp-/krishnak/hive_2011-03-20_23-49-03_854_6142415275552021554/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: SELECT * FROM T2 SORT BY key, value
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@t2
-POSTHOOK: Output: file:/var/folders/67/67R3POPtF90VG63KSmCbcU++F0U/-Tmp-/krishnak/hive_2011-03-20_23-49-03_854_6142415275552021554/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: Lineage: t2.key SIMPLE [(t1)t1.FieldSchema(name:key, type:string, comment:null), ]
 POSTHOOK: Lineage: t2.value SIMPLE [(t1)t1.FieldSchema(name:value, type:string, comment:null), ]
 0	val_0

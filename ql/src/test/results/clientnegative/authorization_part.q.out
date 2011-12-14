@@ -68,7 +68,7 @@ table	authorization_part_fail
 principalName	hive_test_group1	
 principalType	GROUP	
 privilege	Select	
-grantTime	1298431059	
+#### A masked pattern was here ####
 grantor	hive_test_user	
 PREHOOK: query: insert overwrite table authorization_part_fail partition (ds='2010') select key, value from src_auth
 PREHOOK: type: QUERY
@@ -94,7 +94,7 @@ columnName	key
 principalName	hive_test_group1	
 principalType	GROUP	
 privilege	Select	
-grantTime	1298431068	
+#### A masked pattern was here ####
 grantor	hive_test_user	
 PREHOOK: query: show grant group hive_test_group1 on table authorization_part_fail partition (ds='2010')
 PREHOOK: type: SHOW_GRANT
@@ -109,16 +109,16 @@ partition	ds=2010
 principalName	hive_test_group1	
 principalType	GROUP	
 privilege	Select	
-grantTime	1298431068	
+#### A masked pattern was here ####
 grantor	hive_test_user	
 PREHOOK: query: select key, value from authorization_part_fail where ds='2010' order by key limit 20
 PREHOOK: type: QUERY
 PREHOOK: Input: default@authorization_part_fail@ds=2010
-PREHOOK: Output: file:/var/folders/6g/6grtCwPMEf4sqHUPpy6xQG9ByHg/-Tmp-/heyongqiang/hive_2011-02-22_19-17-49_290_3714806944623689015/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: select key, value from authorization_part_fail where ds='2010' order by key limit 20
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@authorization_part_fail@ds=2010
-POSTHOOK: Output: file:/var/folders/6g/6grtCwPMEf4sqHUPpy6xQG9ByHg/-Tmp-/heyongqiang/hive_2011-02-22_19-17-49_290_3714806944623689015/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: Lineage: authorization_part_fail PARTITION(ds=2010).key EXPRESSION [(src_auth)src_auth.FieldSchema(name:key, type:string, comment:null), ]
 POSTHOOK: Lineage: authorization_part_fail PARTITION(ds=2010).value SIMPLE [(src_auth)src_auth.FieldSchema(name:value, type:string, comment:null), ]
 0	val_0
@@ -169,7 +169,7 @@ columnName	key
 principalName	hive_test_group1	
 principalType	GROUP	
 privilege	Select	
-grantTime	1298431084	
+#### A masked pattern was here ####
 grantor	hive_test_user	
 PREHOOK: query: show grant group hive_test_group1 on table authorization_part_fail partition (ds='2011')
 PREHOOK: type: SHOW_GRANT
@@ -186,16 +186,16 @@ partition	ds=2011
 principalName	hive_test_group1	
 principalType	GROUP	
 privilege	Select	
-grantTime	1298431084	
+#### A masked pattern was here ####
 grantor	hive_test_user	
 PREHOOK: query: select key, value from authorization_part_fail where ds='2011' order by key limit 20
 PREHOOK: type: QUERY
 PREHOOK: Input: default@authorization_part_fail@ds=2011
-PREHOOK: Output: file:/var/folders/6g/6grtCwPMEf4sqHUPpy6xQG9ByHg/-Tmp-/heyongqiang/hive_2011-02-22_19-18-05_062_5324729077581832101/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: select key, value from authorization_part_fail where ds='2011' order by key limit 20
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@authorization_part_fail@ds=2011
-POSTHOOK: Output: file:/var/folders/6g/6grtCwPMEf4sqHUPpy6xQG9ByHg/-Tmp-/heyongqiang/hive_2011-02-22_19-18-05_062_5324729077581832101/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: Lineage: authorization_part_fail PARTITION(ds=2010).key EXPRESSION [(src_auth)src_auth.FieldSchema(name:key, type:string, comment:null), ]
 POSTHOOK: Lineage: authorization_part_fail PARTITION(ds=2010).value SIMPLE [(src_auth)src_auth.FieldSchema(name:value, type:string, comment:null), ]
 POSTHOOK: Lineage: authorization_part_fail PARTITION(ds=2011).key EXPRESSION [(src_auth)src_auth.FieldSchema(name:key, type:string, comment:null), ]
@@ -224,12 +224,12 @@ PREHOOK: query: select key,value, ds from authorization_part_fail where ds>='201
 PREHOOK: type: QUERY
 PREHOOK: Input: default@authorization_part_fail@ds=2010
 PREHOOK: Input: default@authorization_part_fail@ds=2011
-PREHOOK: Output: file:/var/folders/6g/6grtCwPMEf4sqHUPpy6xQG9ByHg/-Tmp-/heyongqiang/hive_2011-02-22_19-18-12_026_4943385475572886900/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: select key,value, ds from authorization_part_fail where ds>='2010' order by key, ds limit 20
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@authorization_part_fail@ds=2010
 POSTHOOK: Input: default@authorization_part_fail@ds=2011
-POSTHOOK: Output: file:/var/folders/6g/6grtCwPMEf4sqHUPpy6xQG9ByHg/-Tmp-/heyongqiang/hive_2011-02-22_19-18-12_026_4943385475572886900/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: Lineage: authorization_part_fail PARTITION(ds=2010).key EXPRESSION [(src_auth)src_auth.FieldSchema(name:key, type:string, comment:null), ]
 POSTHOOK: Lineage: authorization_part_fail PARTITION(ds=2010).value SIMPLE [(src_auth)src_auth.FieldSchema(name:value, type:string, comment:null), ]
 POSTHOOK: Lineage: authorization_part_fail PARTITION(ds=2011).key EXPRESSION [(src_auth)src_auth.FieldSchema(name:key, type:string, comment:null), ]

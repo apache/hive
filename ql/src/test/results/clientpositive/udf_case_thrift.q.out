@@ -88,7 +88,7 @@ PREHOOK: query: SELECT CASE src_thrift.lint[0]
 FROM src_thrift LIMIT 3
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src_thrift
-PREHOOK: Output: file:/tmp/sdong/hive_2011-02-10_17-31-15_079_64523828140828624/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: SELECT CASE src_thrift.lint[0]
         WHEN 0 THEN src_thrift.lint[0] + 1
         WHEN 1 THEN src_thrift.lint[0] + 2
@@ -107,7 +107,7 @@ POSTHOOK: query: SELECT CASE src_thrift.lint[0]
 FROM src_thrift LIMIT 3
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src_thrift
-POSTHOOK: Output: file:/tmp/sdong/hive_2011-02-10_17-31-15_079_64523828140828624/-mr-10000
+#### A masked pattern was here ####
 1	zero	0
 3	10 is ten	NULL
 100	default	NULL

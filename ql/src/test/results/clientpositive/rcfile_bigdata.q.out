@@ -36,11 +36,11 @@ value	string
 PREHOOK: query: select count(columnTable_Bigdata.key) from columnTable_Bigdata
 PREHOOK: type: QUERY
 PREHOOK: Input: default@columntable_bigdata
-PREHOOK: Output: file:/tmp/sohanjain/hive_2011-08-04_13-18-32_224_7432660751810992229/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: select count(columnTable_Bigdata.key) from columnTable_Bigdata
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@columntable_bigdata
-POSTHOOK: Output: file:/tmp/sohanjain/hive_2011-08-04_13-18-32_224_7432660751810992229/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: Lineage: columntable_bigdata.key SCRIPT [(src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: columntable_bigdata.value SCRIPT [(src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:value, type:string, comment:default), ]
 5005500

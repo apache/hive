@@ -53,14 +53,14 @@ PREHOOK: Input: default@exim_employee@emp_country=in/emp_state=ka
 PREHOOK: Input: default@exim_employee@emp_country=in/emp_state=tn
 PREHOOK: Input: default@exim_employee@emp_country=us/emp_state=ka
 PREHOOK: Input: default@exim_employee@emp_country=us/emp_state=tn
-PREHOOK: Output: pfile:/Users/krishnak/Projects/hdp/sources/hive-git-apache/build/ql/test/data/exports/exim_employee
+#### A masked pattern was here ####
 POSTHOOK: query: export table exim_employee to 'ql/test/data/exports/exim_employee'
 POSTHOOK: type: EXPORT
 POSTHOOK: Input: default@exim_employee@emp_country=in/emp_state=ka
 POSTHOOK: Input: default@exim_employee@emp_country=in/emp_state=tn
 POSTHOOK: Input: default@exim_employee@emp_country=us/emp_state=ka
 POSTHOOK: Input: default@exim_employee@emp_country=us/emp_state=tn
-POSTHOOK: Output: pfile:/Users/krishnak/Projects/hdp/sources/hive-git-apache/build/ql/test/data/exports/exim_employee
+#### A masked pattern was here ####
 PREHOOK: query: drop table exim_employee
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@exim_employee
@@ -95,14 +95,13 @@ emp_id	int	employee id
 emp_country	string	two char iso code
 emp_state	string	free text
 	 	 
-Detailed Table Information	Table(tableName:exim_employee, dbName:importer, owner:krishnak, createTime:1300687576, lastAccessTime:0, retention:0, sd:StorageDescriptor(cols:[FieldSchema(name:emp_id, type:int, comment:employee id), FieldSchema(name:emp_country, type:string, comment:two char iso code), FieldSchema(name:emp_state, type:string, comment:free text)], location:pfile:/Users/krishnak/Projects/hdp/sources/hive-git-apache/build/ql/test/data/tablestore/exim_employee, inputFormat:org.apache.hadoop.mapred.TextInputFormat, outputFormat:org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat, compressed:false, numBuckets:-1, serdeInfo:SerDeInfo(name:null, serializationLib:org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe, parameters:{serialization.format=1}), bucketCols:[], sortCols:[], parameters:{}), partitionKeys:[FieldSchema(name:emp_country, type:string, comment:two char iso code), FieldSchema(name:emp_state, type:string, comment:free text)], parameters:{transient_lastDdlTime=1300687576, comment=employee table, creator=krishna}, viewOriginalText:null, viewExpandedText:null, tableType:MANAGED_TABLE)	
+#### A masked pattern was here ####
 PREHOOK: query: show table extended like exim_employee
 PREHOOK: type: SHOW_TABLESTATUS
 POSTHOOK: query: show table extended like exim_employee
 POSTHOOK: type: SHOW_TABLESTATUS
 tableName:exim_employee
-owner:krishnak
-location:pfile:/Users/krishnak/Projects/hdp/sources/hive-git-apache/build/ql/test/data/tablestore/exim_employee
+#### A masked pattern was here ####
 inputformat:org.apache.hadoop.mapred.TextInputFormat
 outputformat:org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
 columns:struct columns { i32 emp_id}
@@ -112,16 +111,14 @@ totalNumberFiles:1
 totalFileSize:11
 maxFileSize:11
 minFileSize:11
-lastAccessTime:0
-lastUpdateTime:1300687576000
+#### A masked pattern was here ####
 
 PREHOOK: query: show table extended like exim_employee partition (emp_country="us", emp_state="tn")
 PREHOOK: type: SHOW_TABLESTATUS
 POSTHOOK: query: show table extended like exim_employee partition (emp_country="us", emp_state="tn")
 POSTHOOK: type: SHOW_TABLESTATUS
 tableName:exim_employee
-owner:krishnak
-location:pfile:/Users/krishnak/Projects/hdp/sources/hive-git-apache/build/ql/test/data/tablestore/exim_employee
+#### A masked pattern was here ####
 inputformat:org.apache.hadoop.mapred.TextInputFormat
 outputformat:org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
 columns:struct columns { i32 emp_id}
@@ -131,17 +128,16 @@ totalNumberFiles:1
 totalFileSize:11
 maxFileSize:11
 minFileSize:11
-lastAccessTime:0
-lastUpdateTime:1300687576000
+#### A masked pattern was here ####
 
 PREHOOK: query: select * from exim_employee
 PREHOOK: type: QUERY
 PREHOOK: Input: importer@exim_employee@emp_country=us/emp_state=tn
-PREHOOK: Output: file:/var/folders/67/67R3POPtF90VG63KSmCbcU++F0U/-Tmp-/krishnak/hive_2011-03-20_23-06-18_296_2547895768154607388/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: select * from exim_employee
 POSTHOOK: type: QUERY
 POSTHOOK: Input: importer@exim_employee@emp_country=us/emp_state=tn
-POSTHOOK: Output: file:/var/folders/67/67R3POPtF90VG63KSmCbcU++F0U/-Tmp-/krishnak/hive_2011-03-20_23-06-18_296_2547895768154607388/-mr-10000
+#### A masked pattern was here ####
 1	us	tn
 2	us	tn
 3	us	tn
@@ -151,11 +147,11 @@ POSTHOOK: Output: file:/var/folders/67/67R3POPtF90VG63KSmCbcU++F0U/-Tmp-/krishna
 PREHOOK: query: select * from exim_employee
 PREHOOK: type: QUERY
 PREHOOK: Input: importer@exim_employee@emp_country=us/emp_state=tn
-PREHOOK: Output: file:/var/folders/67/67R3POPtF90VG63KSmCbcU++F0U/-Tmp-/krishnak/hive_2011-03-20_23-06-18_734_6806561011489840847/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: select * from exim_employee
 POSTHOOK: type: QUERY
 POSTHOOK: Input: importer@exim_employee@emp_country=us/emp_state=tn
-POSTHOOK: Output: file:/var/folders/67/67R3POPtF90VG63KSmCbcU++F0U/-Tmp-/krishnak/hive_2011-03-20_23-06-18_734_6806561011489840847/-mr-10000
+#### A masked pattern was here ####
 PREHOOK: query: drop table exim_employee
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: importer@exim_employee

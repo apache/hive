@@ -149,11 +149,11 @@ POSTHOOK: Lineage: dest1.value SCRIPT [(src)src.FieldSchema(name:key, type:strin
 PREHOOK: query: SELECT * FROM dest1 SORT BY key, value
 PREHOOK: type: QUERY
 PREHOOK: Input: default@dest1
-PREHOOK: Output: file:/tmp/sdong/hive_2011-02-10_15-55-32_693_8757115489547146865/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: SELECT * FROM dest1 SORT BY key, value
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@dest1
-POSTHOOK: Output: file:/tmp/sdong/hive_2011-02-10_15-55-32_693_8757115489547146865/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: Lineage: dest1.key SCRIPT [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: dest1.value SCRIPT [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 1	105_105

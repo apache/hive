@@ -125,7 +125,7 @@ STAGE PLANS:
   Stage: Stage-3
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/var/folders/6g/6grtCwPMEf4sqHUPpy6xQG9ByHg/-Tmp-/heyongqiang/hive_2011-04-07_01-29-33_521_1049482282230510027/-mr-10003 
+#### A masked pattern was here ####
             Reduce Output Operator
               sort order: 
               tag: -1
@@ -310,7 +310,7 @@ ON (x.key = Y.key)
 select sum(hash(Y.key,Y.value))
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/var/folders/6g/6grtCwPMEf4sqHUPpy6xQG9ByHg/-Tmp-/heyongqiang/hive_2011-04-07_01-29-35_206_4517835727241747847/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: FROM 
 (SELECT src.* FROM src sort by key) x
 JOIN 
@@ -319,7 +319,7 @@ ON (x.key = Y.key)
 select sum(hash(Y.key,Y.value))
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: file:/var/folders/6g/6grtCwPMEf4sqHUPpy6xQG9ByHg/-Tmp-/heyongqiang/hive_2011-04-07_01-29-35_206_4517835727241747847/-mr-10000
+#### A masked pattern was here ####
 103231310608
 PREHOOK: query: explain
 FROM 
@@ -446,7 +446,7 @@ STAGE PLANS:
   Stage: Stage-3
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/var/folders/6g/6grtCwPMEf4sqHUPpy6xQG9ByHg/-Tmp-/heyongqiang/hive_2011-04-07_01-30-12_697_8776019509777494227/-mr-10003 
+#### A masked pattern was here ####
             Reduce Output Operator
               sort order: 
               tag: -1
@@ -575,7 +575,7 @@ ON (x.key = Y.key)
 select sum(hash(Y.key,Y.value))
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/var/folders/6g/6grtCwPMEf4sqHUPpy6xQG9ByHg/-Tmp-/heyongqiang/hive_2011-04-07_01-30-13_659_8930056926219050163/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: FROM 
 (SELECT src.* FROM src sort by key) x
 LEFT OUTER JOIN 
@@ -584,7 +584,7 @@ ON (x.key = Y.key)
 select sum(hash(Y.key,Y.value))
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: file:/var/folders/6g/6grtCwPMEf4sqHUPpy6xQG9ByHg/-Tmp-/heyongqiang/hive_2011-04-07_01-30-13_659_8930056926219050163/-mr-10000
+#### A masked pattern was here ####
 103231310608
 PREHOOK: query: explain
 FROM 
@@ -711,7 +711,7 @@ STAGE PLANS:
   Stage: Stage-3
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/var/folders/6g/6grtCwPMEf4sqHUPpy6xQG9ByHg/-Tmp-/heyongqiang/hive_2011-04-07_01-30-45_367_2576785772484562232/-mr-10003 
+#### A masked pattern was here ####
             Reduce Output Operator
               sort order: 
               tag: -1
@@ -840,7 +840,7 @@ ON (x.key = Y.key)
 select sum(hash(Y.key,Y.value))
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/var/folders/6g/6grtCwPMEf4sqHUPpy6xQG9ByHg/-Tmp-/heyongqiang/hive_2011-04-07_01-30-45_713_4388632692386585223/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: FROM 
 (SELECT src.* FROM src sort by key) x
 RIGHT OUTER JOIN 
@@ -849,7 +849,7 @@ ON (x.key = Y.key)
 select sum(hash(Y.key,Y.value))
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: file:/var/folders/6g/6grtCwPMEf4sqHUPpy6xQG9ByHg/-Tmp-/heyongqiang/hive_2011-04-07_01-30-45_713_4388632692386585223/-mr-10000
+#### A masked pattern was here ####
 103231310608
 PREHOOK: query: explain
 FROM 
@@ -1007,7 +1007,7 @@ STAGE PLANS:
   Stage: Stage-3
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/var/folders/6g/6grtCwPMEf4sqHUPpy6xQG9ByHg/-Tmp-/heyongqiang/hive_2011-04-07_01-31-13_566_5103248435836603181/-mr-10003 
+#### A masked pattern was here ####
             Reduce Output Operator
               sort order: 
               tag: -1
@@ -1336,7 +1336,7 @@ ON (x.key = Z.key)
 select sum(hash(Y.key,Y.value))
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/var/folders/6g/6grtCwPMEf4sqHUPpy6xQG9ByHg/-Tmp-/heyongqiang/hive_2011-04-07_01-31-14_078_677078805297192158/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: FROM
 (SELECT src.* FROM src sort by key) x
 JOIN
@@ -1348,7 +1348,7 @@ ON (x.key = Z.key)
 select sum(hash(Y.key,Y.value))
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: file:/var/folders/6g/6grtCwPMEf4sqHUPpy6xQG9ByHg/-Tmp-/heyongqiang/hive_2011-04-07_01-31-14_078_677078805297192158/-mr-10000
+#### A masked pattern was here ####
 348019368476
 PREHOOK: query: explain
 FROM 
@@ -1504,7 +1504,7 @@ STAGE PLANS:
   Stage: Stage-3
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/var/folders/6g/6grtCwPMEf4sqHUPpy6xQG9ByHg/-Tmp-/heyongqiang/hive_2011-04-07_01-31-51_136_1396644593331730058/-mr-10003 
+#### A masked pattern was here ####
             Reduce Output Operator
               sort order: 
               tag: -1
@@ -1757,7 +1757,7 @@ ON (x.key = Z.key)
 select sum(hash(Y.key,Y.value))
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/var/folders/6g/6grtCwPMEf4sqHUPpy6xQG9ByHg/-Tmp-/heyongqiang/hive_2011-04-07_01-31-51_734_4658432184476577096/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: FROM
 (SELECT src.* FROM src sort by key) x
 JOIN
@@ -1769,7 +1769,7 @@ ON (x.key = Z.key)
 select sum(hash(Y.key,Y.value))
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: file:/var/folders/6g/6grtCwPMEf4sqHUPpy6xQG9ByHg/-Tmp-/heyongqiang/hive_2011-04-07_01-31-51_734_4658432184476577096/-mr-10000
+#### A masked pattern was here ####
 348019368476
 PREHOOK: query: explain
 FROM 
@@ -1923,7 +1923,7 @@ STAGE PLANS:
   Stage: Stage-3
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/var/folders/6g/6grtCwPMEf4sqHUPpy6xQG9ByHg/-Tmp-/heyongqiang/hive_2011-04-07_01-32-27_283_8537497135418357852/-mr-10003 
+#### A masked pattern was here ####
             Reduce Output Operator
               sort order: 
               tag: -1
@@ -2100,7 +2100,7 @@ ON (x.key = Z.key)
 select sum(hash(Y.key,Y.value))
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/var/folders/6g/6grtCwPMEf4sqHUPpy6xQG9ByHg/-Tmp-/heyongqiang/hive_2011-04-07_01-32-27_678_1160688634274021101/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: FROM
 (SELECT src.* FROM src sort by key) x
 LEFT OUTER JOIN
@@ -2112,7 +2112,7 @@ ON (x.key = Z.key)
 select sum(hash(Y.key,Y.value))
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: file:/var/folders/6g/6grtCwPMEf4sqHUPpy6xQG9ByHg/-Tmp-/heyongqiang/hive_2011-04-07_01-32-27_678_1160688634274021101/-mr-10000
+#### A masked pattern was here ####
 348019368476
 PREHOOK: query: explain
 FROM 
@@ -2266,7 +2266,7 @@ STAGE PLANS:
   Stage: Stage-3
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/var/folders/6g/6grtCwPMEf4sqHUPpy6xQG9ByHg/-Tmp-/heyongqiang/hive_2011-04-07_01-33-03_110_2221229728249467440/-mr-10003 
+#### A masked pattern was here ####
             Reduce Output Operator
               sort order: 
               tag: -1
@@ -2443,7 +2443,7 @@ ON (x.key = Z.key)
 select sum(hash(Y.key,Y.value))
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/var/folders/6g/6grtCwPMEf4sqHUPpy6xQG9ByHg/-Tmp-/heyongqiang/hive_2011-04-07_01-33-03_471_7630997145926057936/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: FROM
 (SELECT src.* FROM src sort by key) x
 LEFT OUTER JOIN
@@ -2455,7 +2455,7 @@ ON (x.key = Z.key)
 select sum(hash(Y.key,Y.value))
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: file:/var/folders/6g/6grtCwPMEf4sqHUPpy6xQG9ByHg/-Tmp-/heyongqiang/hive_2011-04-07_01-33-03_471_7630997145926057936/-mr-10000
+#### A masked pattern was here ####
 348019368476
 PREHOOK: query: explain
 FROM 
@@ -2609,7 +2609,7 @@ STAGE PLANS:
   Stage: Stage-3
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/var/folders/6g/6grtCwPMEf4sqHUPpy6xQG9ByHg/-Tmp-/heyongqiang/hive_2011-04-07_01-33-42_607_62391823355353921/-mr-10003 
+#### A masked pattern was here ####
             Reduce Output Operator
               sort order: 
               tag: -1
@@ -2786,7 +2786,7 @@ ON (x.key = Z.key)
 select sum(hash(Y.key,Y.value))
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/var/folders/6g/6grtCwPMEf4sqHUPpy6xQG9ByHg/-Tmp-/heyongqiang/hive_2011-04-07_01-33-42_972_7012061714979161777/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: FROM
 (SELECT src.* FROM src sort by key) x
 RIGHT OUTER JOIN
@@ -2798,5 +2798,5 @@ ON (x.key = Z.key)
 select sum(hash(Y.key,Y.value))
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: file:/var/folders/6g/6grtCwPMEf4sqHUPpy6xQG9ByHg/-Tmp-/heyongqiang/hive_2011-04-07_01-33-42_972_7012061714979161777/-mr-10000
+#### A masked pattern was here ####
 348019368476

@@ -6,6 +6,6 @@ PREHOOK: query: -- duplicate column names are illegal
 CREATE VIEW xxx5(x,x) AS
 SELECT key,value FROM src
 PREHOOK: type: CREATEVIEW
-PREHOOK: Output: file:/Users/jsichi/open/hive-trunk/build/ql/tmp/602921516/10000
+#### A masked pattern was here ####
 FAILED: Error in metadata: org.apache.hadoop.hive.ql.metadata.HiveException: Duplicate column name x in the table definition.
 FAILED: Execution Error, return code 1 from org.apache.hadoop.hive.ql.exec.DDLTask

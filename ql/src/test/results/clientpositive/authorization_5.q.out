@@ -25,14 +25,14 @@ database	test_db
 principalName	hive_test_user	
 principalType	USER	
 privilege	Drop	
-grantTime	1295394398	
+#### A masked pattern was here ####
 grantor	hive_test_user	
 
 database	test_db	
 principalName	hive_test_user	
 principalType	USER	
 privilege	Select	
-grantTime	1295394398	
+#### A masked pattern was here ####
 grantor	hive_test_user	
 PREHOOK: query: CREATE ROLE db_test_role
 PREHOOK: type: CREATEROLE
@@ -65,14 +65,14 @@ database	test_db
 principalName	db_test_role	
 principalType	ROLE	
 privilege	Drop	
-grantTime	1295394399	
+#### A masked pattern was here ####
 grantor	hive_test_user	
 
 database	test_db	
 principalName	db_test_role	
 principalType	ROLE	
 privilege	Select	
-grantTime	1295394399	
+#### A masked pattern was here ####
 grantor	hive_test_user	
 PREHOOK: query: DROP DATABASE IF EXISTS test_db
 PREHOOK: type: DROPDATABASE

@@ -16,11 +16,11 @@ POSTHOOK: Lineage: test_src.value SIMPLE [(src)src.FieldSchema(name:value, type:
 PREHOOK: query: SELECT key, value FROM test_src order by key
 PREHOOK: type: QUERY
 PREHOOK: Input: default@test_src
-PREHOOK: Output: file:/tmp/rvadali/hive_2011-09-07_12-16-33_003_3670696210674777032/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: SELECT key, value FROM test_src order by key
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@test_src
-POSTHOOK: Output: file:/tmp/rvadali/hive_2011-09-07_12-16-33_003_3670696210674777032/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: Lineage: test_src.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: test_src.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 0	val_0

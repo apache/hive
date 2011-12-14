@@ -12,11 +12,11 @@ POSTHOOK: Output: default@myinput1
 PREHOOK: query: SELECT * FROM myinput1 a JOIN myinput1 b
 PREHOOK: type: QUERY
 PREHOOK: Input: default@myinput1
-PREHOOK: Output: file:/tmp/krishnak/hive_2011-03-21_03-53-31_683_8641177538651570201/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: SELECT * FROM myinput1 a JOIN myinput1 b
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@myinput1
-POSTHOOK: Output: file:/tmp/krishnak/hive_2011-03-21_03-53-31_683_8641177538651570201/-mr-10000
+#### A masked pattern was here ####
 NULL	35	NULL	35
 NULL	35	48	NULL
 NULL	35	100	100
@@ -29,11 +29,11 @@ NULL	35	100	100
 PREHOOK: query: SELECT * FROM myinput1 a LEFT OUTER JOIN myinput1 b
 PREHOOK: type: QUERY
 PREHOOK: Input: default@myinput1
-PREHOOK: Output: file:/tmp/krishnak/hive_2011-03-21_03-53-34_705_7891360827662899707/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: SELECT * FROM myinput1 a LEFT OUTER JOIN myinput1 b
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@myinput1
-POSTHOOK: Output: file:/tmp/krishnak/hive_2011-03-21_03-53-34_705_7891360827662899707/-mr-10000
+#### A masked pattern was here ####
 NULL	35	NULL	35
 NULL	35	48	NULL
 NULL	35	100	100
@@ -46,11 +46,11 @@ NULL	35	100	100
 PREHOOK: query: SELECT * FROM myinput1 a RIGHT OUTER JOIN myinput1 b
 PREHOOK: type: QUERY
 PREHOOK: Input: default@myinput1
-PREHOOK: Output: file:/tmp/krishnak/hive_2011-03-21_03-53-37_744_4114021800417008700/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: SELECT * FROM myinput1 a RIGHT OUTER JOIN myinput1 b
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@myinput1
-POSTHOOK: Output: file:/tmp/krishnak/hive_2011-03-21_03-53-37_744_4114021800417008700/-mr-10000
+#### A masked pattern was here ####
 NULL	35	NULL	35
 NULL	35	48	NULL
 NULL	35	100	100
@@ -63,137 +63,137 @@ NULL	35	100	100
 PREHOOK: query: SELECT * FROM myinput1 a JOIN myinput1 b ON a.key = b.value
 PREHOOK: type: QUERY
 PREHOOK: Input: default@myinput1
-PREHOOK: Output: file:/tmp/krishnak/hive_2011-03-21_03-53-40_759_3815040582770495358/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: SELECT * FROM myinput1 a JOIN myinput1 b ON a.key = b.value
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@myinput1
-POSTHOOK: Output: file:/tmp/krishnak/hive_2011-03-21_03-53-40_759_3815040582770495358/-mr-10000
+#### A masked pattern was here ####
 100	100	100	100
 PREHOOK: query: SELECT * FROM myinput1 a JOIN myinput1 b ON a.key = b.key
 PREHOOK: type: QUERY
 PREHOOK: Input: default@myinput1
-PREHOOK: Output: file:/tmp/krishnak/hive_2011-03-21_03-53-43_808_2759732574228684621/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: SELECT * FROM myinput1 a JOIN myinput1 b ON a.key = b.key
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@myinput1
-POSTHOOK: Output: file:/tmp/krishnak/hive_2011-03-21_03-53-43_808_2759732574228684621/-mr-10000
+#### A masked pattern was here ####
 48	NULL	48	NULL
 100	100	100	100
 PREHOOK: query: SELECT * FROM myinput1 a JOIN myinput1 b ON a.value = b.value
 PREHOOK: type: QUERY
 PREHOOK: Input: default@myinput1
-PREHOOK: Output: file:/tmp/krishnak/hive_2011-03-21_03-53-46_947_1207295790379918107/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: SELECT * FROM myinput1 a JOIN myinput1 b ON a.value = b.value
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@myinput1
-POSTHOOK: Output: file:/tmp/krishnak/hive_2011-03-21_03-53-46_947_1207295790379918107/-mr-10000
+#### A masked pattern was here ####
 NULL	35	NULL	35
 100	100	100	100
 PREHOOK: query: SELECT * FROM myinput1 a JOIN myinput1 b ON a.value = b.value and a.key=b.key
 PREHOOK: type: QUERY
 PREHOOK: Input: default@myinput1
-PREHOOK: Output: file:/tmp/krishnak/hive_2011-03-21_03-53-49_979_72536747155082974/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: SELECT * FROM myinput1 a JOIN myinput1 b ON a.value = b.value and a.key=b.key
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@myinput1
-POSTHOOK: Output: file:/tmp/krishnak/hive_2011-03-21_03-53-49_979_72536747155082974/-mr-10000
+#### A masked pattern was here ####
 100	100	100	100
 PREHOOK: query: SELECT * FROM myinput1 a LEFT OUTER JOIN myinput1 b ON a.key = b.value
 PREHOOK: type: QUERY
 PREHOOK: Input: default@myinput1
-PREHOOK: Output: file:/tmp/krishnak/hive_2011-03-21_03-53-53_028_5270841162233231903/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: SELECT * FROM myinput1 a LEFT OUTER JOIN myinput1 b ON a.key = b.value
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@myinput1
-POSTHOOK: Output: file:/tmp/krishnak/hive_2011-03-21_03-53-53_028_5270841162233231903/-mr-10000
+#### A masked pattern was here ####
 NULL	35	NULL	NULL
 48	NULL	NULL	NULL
 100	100	100	100
 PREHOOK: query: SELECT * FROM myinput1 a LEFT OUTER JOIN myinput1 b ON a.value = b.value
 PREHOOK: type: QUERY
 PREHOOK: Input: default@myinput1
-PREHOOK: Output: file:/tmp/krishnak/hive_2011-03-21_03-53-56_033_2563212770228159974/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: SELECT * FROM myinput1 a LEFT OUTER JOIN myinput1 b ON a.value = b.value
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@myinput1
-POSTHOOK: Output: file:/tmp/krishnak/hive_2011-03-21_03-53-56_033_2563212770228159974/-mr-10000
+#### A masked pattern was here ####
 48	NULL	NULL	NULL
 NULL	35	NULL	35
 100	100	100	100
 PREHOOK: query: SELECT * FROM myinput1 a LEFT OUTER JOIN myinput1 b ON a.key = b.key
 PREHOOK: type: QUERY
 PREHOOK: Input: default@myinput1
-PREHOOK: Output: file:/tmp/krishnak/hive_2011-03-21_03-53-59_098_2956450952074441661/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: SELECT * FROM myinput1 a LEFT OUTER JOIN myinput1 b ON a.key = b.key
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@myinput1
-POSTHOOK: Output: file:/tmp/krishnak/hive_2011-03-21_03-53-59_098_2956450952074441661/-mr-10000
+#### A masked pattern was here ####
 NULL	35	NULL	NULL
 48	NULL	48	NULL
 100	100	100	100
 PREHOOK: query: SELECT * FROM myinput1 a LEFT OUTER JOIN myinput1 b ON a.key = b.key and a.value=b.value
 PREHOOK: type: QUERY
 PREHOOK: Input: default@myinput1
-PREHOOK: Output: file:/tmp/krishnak/hive_2011-03-21_03-54-02_499_2634558695451930427/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: SELECT * FROM myinput1 a LEFT OUTER JOIN myinput1 b ON a.key = b.key and a.value=b.value
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@myinput1
-POSTHOOK: Output: file:/tmp/krishnak/hive_2011-03-21_03-54-02_499_2634558695451930427/-mr-10000
+#### A masked pattern was here ####
 NULL	35	NULL	NULL
 48	NULL	NULL	NULL
 100	100	100	100
 PREHOOK: query: SELECT * FROM myinput1 a RIGHT OUTER JOIN myinput1 b ON a.key = b.value
 PREHOOK: type: QUERY
 PREHOOK: Input: default@myinput1
-PREHOOK: Output: file:/tmp/krishnak/hive_2011-03-21_03-54-05_524_2948137722448172501/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: SELECT * FROM myinput1 a RIGHT OUTER JOIN myinput1 b ON a.key = b.value
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@myinput1
-POSTHOOK: Output: file:/tmp/krishnak/hive_2011-03-21_03-54-05_524_2948137722448172501/-mr-10000
+#### A masked pattern was here ####
 NULL	NULL	48	NULL
 NULL	NULL	NULL	35
 100	100	100	100
 PREHOOK: query: SELECT * FROM myinput1 a RIGHT OUTER JOIN myinput1 b ON a.key = b.key
 PREHOOK: type: QUERY
 PREHOOK: Input: default@myinput1
-PREHOOK: Output: file:/tmp/krishnak/hive_2011-03-21_03-54-08_565_8758755781275848937/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: SELECT * FROM myinput1 a RIGHT OUTER JOIN myinput1 b ON a.key = b.key
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@myinput1
-POSTHOOK: Output: file:/tmp/krishnak/hive_2011-03-21_03-54-08_565_8758755781275848937/-mr-10000
+#### A masked pattern was here ####
 NULL	NULL	NULL	35
 48	NULL	48	NULL
 100	100	100	100
 PREHOOK: query: SELECT * FROM myinput1 a RIGHT OUTER JOIN myinput1 b ON a.value = b.value
 PREHOOK: type: QUERY
 PREHOOK: Input: default@myinput1
-PREHOOK: Output: file:/tmp/krishnak/hive_2011-03-21_03-54-11_597_4163684755001064006/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: SELECT * FROM myinput1 a RIGHT OUTER JOIN myinput1 b ON a.value = b.value
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@myinput1
-POSTHOOK: Output: file:/tmp/krishnak/hive_2011-03-21_03-54-11_597_4163684755001064006/-mr-10000
+#### A masked pattern was here ####
 NULL	NULL	48	NULL
 NULL	35	NULL	35
 100	100	100	100
 PREHOOK: query: SELECT * FROM myinput1 a RIGHT OUTER JOIN myinput1 b ON a.key=b.key and a.value = b.value
 PREHOOK: type: QUERY
 PREHOOK: Input: default@myinput1
-PREHOOK: Output: file:/tmp/krishnak/hive_2011-03-21_03-54-14_644_1473757744203304399/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: SELECT * FROM myinput1 a RIGHT OUTER JOIN myinput1 b ON a.key=b.key and a.value = b.value
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@myinput1
-POSTHOOK: Output: file:/tmp/krishnak/hive_2011-03-21_03-54-14_644_1473757744203304399/-mr-10000
+#### A masked pattern was here ####
 NULL	NULL	NULL	35
 NULL	NULL	48	NULL
 100	100	100	100
 PREHOOK: query: SELECT * FROM myinput1 a FULL OUTER JOIN myinput1 b ON a.key = b.value
 PREHOOK: type: QUERY
 PREHOOK: Input: default@myinput1
-PREHOOK: Output: file:/tmp/krishnak/hive_2011-03-21_03-54-17_701_3233060431500842705/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: SELECT * FROM myinput1 a FULL OUTER JOIN myinput1 b ON a.key = b.value
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@myinput1
-POSTHOOK: Output: file:/tmp/krishnak/hive_2011-03-21_03-54-17_701_3233060431500842705/-mr-10000
+#### A masked pattern was here ####
 NULL	35	NULL	NULL
 NULL	NULL	48	NULL
 NULL	NULL	NULL	35
@@ -202,11 +202,11 @@ NULL	NULL	NULL	35
 PREHOOK: query: SELECT * FROM myinput1 a FULL OUTER JOIN myinput1 b ON a.key = b.key
 PREHOOK: type: QUERY
 PREHOOK: Input: default@myinput1
-PREHOOK: Output: file:/tmp/krishnak/hive_2011-03-21_03-54-20_731_3400521495107335830/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: SELECT * FROM myinput1 a FULL OUTER JOIN myinput1 b ON a.key = b.key
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@myinput1
-POSTHOOK: Output: file:/tmp/krishnak/hive_2011-03-21_03-54-20_731_3400521495107335830/-mr-10000
+#### A masked pattern was here ####
 NULL	35	NULL	NULL
 NULL	NULL	NULL	35
 48	NULL	48	NULL
@@ -214,11 +214,11 @@ NULL	NULL	NULL	35
 PREHOOK: query: SELECT * FROM myinput1 a FULL OUTER JOIN myinput1 b ON a.value = b.value
 PREHOOK: type: QUERY
 PREHOOK: Input: default@myinput1
-PREHOOK: Output: file:/tmp/krishnak/hive_2011-03-21_03-54-23_772_8205102532037513591/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: SELECT * FROM myinput1 a FULL OUTER JOIN myinput1 b ON a.value = b.value
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@myinput1
-POSTHOOK: Output: file:/tmp/krishnak/hive_2011-03-21_03-54-23_772_8205102532037513591/-mr-10000
+#### A masked pattern was here ####
 48	NULL	NULL	NULL
 NULL	NULL	48	NULL
 NULL	35	NULL	35
@@ -226,11 +226,11 @@ NULL	35	NULL	35
 PREHOOK: query: SELECT * FROM myinput1 a FULL OUTER JOIN myinput1 b ON a.value = b.value and a.key=b.key
 PREHOOK: type: QUERY
 PREHOOK: Input: default@myinput1
-PREHOOK: Output: file:/tmp/krishnak/hive_2011-03-21_03-54-26_795_2591262681463484422/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: SELECT * FROM myinput1 a FULL OUTER JOIN myinput1 b ON a.value = b.value and a.key=b.key
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@myinput1
-POSTHOOK: Output: file:/tmp/krishnak/hive_2011-03-21_03-54-26_795_2591262681463484422/-mr-10000
+#### A masked pattern was here ####
 48	NULL	NULL	NULL
 NULL	NULL	48	NULL
 NULL	35	NULL	NULL
@@ -239,44 +239,44 @@ NULL	NULL	NULL	35
 PREHOOK: query: SELECT * from myinput1 a LEFT OUTER JOIN myinput1 b ON (a.value=b.value) RIGHT OUTER JOIN myinput1 c ON (b.value=c.value)
 PREHOOK: type: QUERY
 PREHOOK: Input: default@myinput1
-PREHOOK: Output: file:/tmp/krishnak/hive_2011-03-21_03-54-29_952_3907129954364673344/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: SELECT * from myinput1 a LEFT OUTER JOIN myinput1 b ON (a.value=b.value) RIGHT OUTER JOIN myinput1 c ON (b.value=c.value)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@myinput1
-POSTHOOK: Output: file:/tmp/krishnak/hive_2011-03-21_03-54-29_952_3907129954364673344/-mr-10000
+#### A masked pattern was here ####
 NULL	NULL	NULL	NULL	48	NULL
 NULL	35	NULL	35	NULL	35
 100	100	100	100	100	100
 PREHOOK: query: SELECT * from myinput1 a RIGHT OUTER JOIN myinput1 b ON (a.value=b.value) LEFT OUTER JOIN myinput1 c ON (b.value=c.value)
 PREHOOK: type: QUERY
 PREHOOK: Input: default@myinput1
-PREHOOK: Output: file:/tmp/krishnak/hive_2011-03-21_03-54-33_142_6823602675610897415/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: SELECT * from myinput1 a RIGHT OUTER JOIN myinput1 b ON (a.value=b.value) LEFT OUTER JOIN myinput1 c ON (b.value=c.value)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@myinput1
-POSTHOOK: Output: file:/tmp/krishnak/hive_2011-03-21_03-54-33_142_6823602675610897415/-mr-10000
+#### A masked pattern was here ####
 NULL	NULL	48	NULL	NULL	NULL
 NULL	35	NULL	35	NULL	35
 100	100	100	100	100	100
 PREHOOK: query: SELECT * FROM myinput1 a LEFT OUTER JOIN myinput1 b RIGHT OUTER JOIN myinput1 c ON a.value = b.value and b.value = c.value
 PREHOOK: type: QUERY
 PREHOOK: Input: default@myinput1
-PREHOOK: Output: file:/tmp/krishnak/hive_2011-03-21_03-54-36_316_8421887369237695484/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: SELECT * FROM myinput1 a LEFT OUTER JOIN myinput1 b RIGHT OUTER JOIN myinput1 c ON a.value = b.value and b.value = c.value
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@myinput1
-POSTHOOK: Output: file:/tmp/krishnak/hive_2011-03-21_03-54-36_316_8421887369237695484/-mr-10000
+#### A masked pattern was here ####
 NULL	NULL	NULL	NULL	48	NULL
 NULL	35	NULL	35	NULL	35
 100	100	100	100	100	100
 PREHOOK: query: SELECT /*+ MAPJOIN(a) */ * FROM myinput1 a JOIN myinput1 b
 PREHOOK: type: QUERY
 PREHOOK: Input: default@myinput1
-PREHOOK: Output: file:/tmp/krishnak/hive_2011-03-21_03-54-42_314_7832502288070481455/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: SELECT /*+ MAPJOIN(a) */ * FROM myinput1 a JOIN myinput1 b
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@myinput1
-POSTHOOK: Output: file:/tmp/krishnak/hive_2011-03-21_03-54-42_314_7832502288070481455/-mr-10000
+#### A masked pattern was here ####
 NULL	35	NULL	35
 48	NULL	NULL	35
 100	100	NULL	35
@@ -289,133 +289,133 @@ NULL	35	100	100
 PREHOOK: query: SELECT /*+ MAPJOIN(a) */ * FROM myinput1 a JOIN myinput1 b ON a.key = b.value
 PREHOOK: type: QUERY
 PREHOOK: Input: default@myinput1
-PREHOOK: Output: file:/tmp/krishnak/hive_2011-03-21_03-54-46_762_6120606337889646190/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: SELECT /*+ MAPJOIN(a) */ * FROM myinput1 a JOIN myinput1 b ON a.key = b.value
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@myinput1
-POSTHOOK: Output: file:/tmp/krishnak/hive_2011-03-21_03-54-46_762_6120606337889646190/-mr-10000
+#### A masked pattern was here ####
 100	100	100	100
 PREHOOK: query: SELECT /*+ MAPJOIN(a) */ * FROM myinput1 a JOIN myinput1 b ON a.key = b.key
 PREHOOK: type: QUERY
 PREHOOK: Input: default@myinput1
-PREHOOK: Output: file:/tmp/krishnak/hive_2011-03-21_03-54-51_044_4003336790967485394/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: SELECT /*+ MAPJOIN(a) */ * FROM myinput1 a JOIN myinput1 b ON a.key = b.key
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@myinput1
-POSTHOOK: Output: file:/tmp/krishnak/hive_2011-03-21_03-54-51_044_4003336790967485394/-mr-10000
+#### A masked pattern was here ####
 48	NULL	48	NULL
 100	100	100	100
 PREHOOK: query: SELECT /*+ MAPJOIN(a) */ * FROM myinput1 a JOIN myinput1 b ON a.value = b.value
 PREHOOK: type: QUERY
 PREHOOK: Input: default@myinput1
-PREHOOK: Output: file:/tmp/krishnak/hive_2011-03-21_03-54-55_518_3112283007132020008/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: SELECT /*+ MAPJOIN(a) */ * FROM myinput1 a JOIN myinput1 b ON a.value = b.value
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@myinput1
-POSTHOOK: Output: file:/tmp/krishnak/hive_2011-03-21_03-54-55_518_3112283007132020008/-mr-10000
+#### A masked pattern was here ####
 NULL	35	NULL	35
 100	100	100	100
 PREHOOK: query: SELECT /*+ MAPJOIN(b) */ * FROM myinput1 a JOIN myinput1 b ON a.key = b.value
 PREHOOK: type: QUERY
 PREHOOK: Input: default@myinput1
-PREHOOK: Output: file:/tmp/krishnak/hive_2011-03-21_03-54-59_949_5790066510806491529/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: SELECT /*+ MAPJOIN(b) */ * FROM myinput1 a JOIN myinput1 b ON a.key = b.value
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@myinput1
-POSTHOOK: Output: file:/tmp/krishnak/hive_2011-03-21_03-54-59_949_5790066510806491529/-mr-10000
+#### A masked pattern was here ####
 100	100	100	100
 PREHOOK: query: SELECT /*+ MAPJOIN(b) */ * FROM myinput1 a JOIN myinput1 b ON a.key = b.key
 PREHOOK: type: QUERY
 PREHOOK: Input: default@myinput1
-PREHOOK: Output: file:/tmp/krishnak/hive_2011-03-21_03-55-04_795_2786006750968345680/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: SELECT /*+ MAPJOIN(b) */ * FROM myinput1 a JOIN myinput1 b ON a.key = b.key
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@myinput1
-POSTHOOK: Output: file:/tmp/krishnak/hive_2011-03-21_03-55-04_795_2786006750968345680/-mr-10000
+#### A masked pattern was here ####
 48	NULL	48	NULL
 100	100	100	100
 PREHOOK: query: SELECT /*+ MAPJOIN(b) */ * FROM myinput1 a JOIN myinput1 b ON a.value = b.value
 PREHOOK: type: QUERY
 PREHOOK: Input: default@myinput1
-PREHOOK: Output: file:/tmp/krishnak/hive_2011-03-21_03-55-09_243_7699519116048493679/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: SELECT /*+ MAPJOIN(b) */ * FROM myinput1 a JOIN myinput1 b ON a.value = b.value
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@myinput1
-POSTHOOK: Output: file:/tmp/krishnak/hive_2011-03-21_03-55-09_243_7699519116048493679/-mr-10000
+#### A masked pattern was here ####
 NULL	35	NULL	35
 100	100	100	100
 PREHOOK: query: SELECT /*+ MAPJOIN(b) */ * FROM myinput1 a JOIN myinput1 b ON a.value = b.value and a.key = b.key
 PREHOOK: type: QUERY
 PREHOOK: Input: default@myinput1
-PREHOOK: Output: file:/tmp/krishnak/hive_2011-03-21_03-55-13_641_5006098680854899312/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: SELECT /*+ MAPJOIN(b) */ * FROM myinput1 a JOIN myinput1 b ON a.value = b.value and a.key = b.key
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@myinput1
-POSTHOOK: Output: file:/tmp/krishnak/hive_2011-03-21_03-55-13_641_5006098680854899312/-mr-10000
+#### A masked pattern was here ####
 100	100	100	100
 PREHOOK: query: SELECT /*+ MAPJOIN(b) */ * FROM myinput1 a LEFT OUTER JOIN myinput1 b ON a.key = b.value
 PREHOOK: type: QUERY
 PREHOOK: Input: default@myinput1
-PREHOOK: Output: file:/tmp/krishnak/hive_2011-03-21_03-55-18_040_7373396463499323566/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: SELECT /*+ MAPJOIN(b) */ * FROM myinput1 a LEFT OUTER JOIN myinput1 b ON a.key = b.value
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@myinput1
-POSTHOOK: Output: file:/tmp/krishnak/hive_2011-03-21_03-55-18_040_7373396463499323566/-mr-10000
+#### A masked pattern was here ####
 NULL	35	NULL	NULL
 48	NULL	NULL	NULL
 100	100	100	100
 PREHOOK: query: SELECT /*+ MAPJOIN(b) */ * FROM myinput1 a LEFT OUTER JOIN myinput1 b ON a.key = b.key
 PREHOOK: type: QUERY
 PREHOOK: Input: default@myinput1
-PREHOOK: Output: file:/tmp/krishnak/hive_2011-03-21_03-55-22_447_6328039718202844843/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: SELECT /*+ MAPJOIN(b) */ * FROM myinput1 a LEFT OUTER JOIN myinput1 b ON a.key = b.key
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@myinput1
-POSTHOOK: Output: file:/tmp/krishnak/hive_2011-03-21_03-55-22_447_6328039718202844843/-mr-10000
+#### A masked pattern was here ####
 NULL	35	NULL	NULL
 48	NULL	48	NULL
 100	100	100	100
 PREHOOK: query: SELECT /*+ MAPJOIN(b) */ * FROM myinput1 a LEFT OUTER JOIN myinput1 b ON a.value = b.value
 PREHOOK: type: QUERY
 PREHOOK: Input: default@myinput1
-PREHOOK: Output: file:/tmp/krishnak/hive_2011-03-21_03-55-26_837_6878002404083813297/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: SELECT /*+ MAPJOIN(b) */ * FROM myinput1 a LEFT OUTER JOIN myinput1 b ON a.value = b.value
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@myinput1
-POSTHOOK: Output: file:/tmp/krishnak/hive_2011-03-21_03-55-26_837_6878002404083813297/-mr-10000
+#### A masked pattern was here ####
 NULL	35	NULL	35
 48	NULL	NULL	NULL
 100	100	100	100
 PREHOOK: query: SELECT /*+ MAPJOIN(a) */ * FROM myinput1 a RIGHT OUTER JOIN myinput1 b ON a.key = b.value
 PREHOOK: type: QUERY
 PREHOOK: Input: default@myinput1
-PREHOOK: Output: file:/tmp/krishnak/hive_2011-03-21_03-55-31_327_4809407974402234126/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: SELECT /*+ MAPJOIN(a) */ * FROM myinput1 a RIGHT OUTER JOIN myinput1 b ON a.key = b.value
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@myinput1
-POSTHOOK: Output: file:/tmp/krishnak/hive_2011-03-21_03-55-31_327_4809407974402234126/-mr-10000
+#### A masked pattern was here ####
 NULL	NULL	NULL	35
 NULL	NULL	48	NULL
 100	100	100	100
 PREHOOK: query: SELECT /*+ MAPJOIN(a) */ * FROM myinput1 a RIGHT OUTER JOIN myinput1 b ON a.key = b.key
 PREHOOK: type: QUERY
 PREHOOK: Input: default@myinput1
-PREHOOK: Output: file:/tmp/krishnak/hive_2011-03-21_03-55-35_742_1654943644282955382/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: SELECT /*+ MAPJOIN(a) */ * FROM myinput1 a RIGHT OUTER JOIN myinput1 b ON a.key = b.key
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@myinput1
-POSTHOOK: Output: file:/tmp/krishnak/hive_2011-03-21_03-55-35_742_1654943644282955382/-mr-10000
+#### A masked pattern was here ####
 NULL	NULL	NULL	35
 48	NULL	48	NULL
 100	100	100	100
 PREHOOK: query: SELECT /*+ MAPJOIN(a) */ * FROM myinput1 a RIGHT OUTER JOIN myinput1 b ON a.value = b.value
 PREHOOK: type: QUERY
 PREHOOK: Input: default@myinput1
-PREHOOK: Output: file:/tmp/krishnak/hive_2011-03-21_03-55-40_216_7170971377841192858/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: SELECT /*+ MAPJOIN(a) */ * FROM myinput1 a RIGHT OUTER JOIN myinput1 b ON a.value = b.value
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@myinput1
-POSTHOOK: Output: file:/tmp/krishnak/hive_2011-03-21_03-55-40_216_7170971377841192858/-mr-10000
+#### A masked pattern was here ####
 NULL	35	NULL	35
 NULL	NULL	48	NULL
 100	100	100	100
@@ -456,11 +456,11 @@ POSTHOOK: Output: default@smb_input2
 PREHOOK: query: SELECT /*+ MAPJOIN(a) */ * FROM smb_input1 a JOIN smb_input1 b ON a.key = b.key ORDER BY a.key
 PREHOOK: type: QUERY
 PREHOOK: Input: default@smb_input1
-PREHOOK: Output: file:/tmp/krishnak/hive_2011-03-21_03-55-45_071_1721369920851863145/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: SELECT /*+ MAPJOIN(a) */ * FROM smb_input1 a JOIN smb_input1 b ON a.key = b.key ORDER BY a.key
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@smb_input1
-POSTHOOK: Output: file:/tmp/krishnak/hive_2011-03-21_03-55-45_071_1721369920851863145/-mr-10000
+#### A masked pattern was here ####
 48	NULL	48	NULL
 100	100	100	100
 148	NULL	148	NULL
@@ -468,21 +468,21 @@ POSTHOOK: Output: file:/tmp/krishnak/hive_2011-03-21_03-55-45_071_17213699208518
 PREHOOK: query: SELECT /*+ MAPJOIN(a) */ * FROM smb_input1 a JOIN smb_input1 b ON a.key = b.key AND a.value = b.value ORDER BY a.key
 PREHOOK: type: QUERY
 PREHOOK: Input: default@smb_input1
-PREHOOK: Output: file:/tmp/krishnak/hive_2011-03-21_03-55-52_288_5442108787449062892/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: SELECT /*+ MAPJOIN(a) */ * FROM smb_input1 a JOIN smb_input1 b ON a.key = b.key AND a.value = b.value ORDER BY a.key
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@smb_input1
-POSTHOOK: Output: file:/tmp/krishnak/hive_2011-03-21_03-55-52_288_5442108787449062892/-mr-10000
+#### A masked pattern was here ####
 100	100	100	100
 200	200	200	200
 PREHOOK: query: SELECT /*+ MAPJOIN(a) */ * FROM smb_input1 a RIGHT OUTER JOIN smb_input1 b ON a.key = b.key ORDER BY b.key, b.value
 PREHOOK: type: QUERY
 PREHOOK: Input: default@smb_input1
-PREHOOK: Output: file:/tmp/krishnak/hive_2011-03-21_03-55-59_488_9220251315068456695/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: SELECT /*+ MAPJOIN(a) */ * FROM smb_input1 a RIGHT OUTER JOIN smb_input1 b ON a.key = b.key ORDER BY b.key, b.value
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@smb_input1
-POSTHOOK: Output: file:/tmp/krishnak/hive_2011-03-21_03-55-59_488_9220251315068456695/-mr-10000
+#### A masked pattern was here ####
 NULL	NULL	NULL	35
 NULL	NULL	NULL	135
 48	NULL	48	NULL
@@ -492,11 +492,11 @@ NULL	NULL	NULL	135
 PREHOOK: query: SELECT /*+ MAPJOIN(b) */ * FROM smb_input1 a JOIN smb_input1 b ON a.key = b.key ORDER BY a.key
 PREHOOK: type: QUERY
 PREHOOK: Input: default@smb_input1
-PREHOOK: Output: file:/tmp/krishnak/hive_2011-03-21_03-56-06_798_1515908496616104358/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: SELECT /*+ MAPJOIN(b) */ * FROM smb_input1 a JOIN smb_input1 b ON a.key = b.key ORDER BY a.key
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@smb_input1
-POSTHOOK: Output: file:/tmp/krishnak/hive_2011-03-21_03-56-06_798_1515908496616104358/-mr-10000
+#### A masked pattern was here ####
 48	NULL	48	NULL
 100	100	100	100
 148	NULL	148	NULL
@@ -504,11 +504,11 @@ POSTHOOK: Output: file:/tmp/krishnak/hive_2011-03-21_03-56-06_798_15159084966161
 PREHOOK: query: SELECT /*+ MAPJOIN(b) */ * FROM smb_input1 a LEFT OUTER JOIN smb_input1 b ON a.key = b.key ORDER BY a.key, a.value
 PREHOOK: type: QUERY
 PREHOOK: Input: default@smb_input1
-PREHOOK: Output: file:/tmp/krishnak/hive_2011-03-21_03-56-13_978_37675414267460205/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: SELECT /*+ MAPJOIN(b) */ * FROM smb_input1 a LEFT OUTER JOIN smb_input1 b ON a.key = b.key ORDER BY a.key, a.value
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@smb_input1
-POSTHOOK: Output: file:/tmp/krishnak/hive_2011-03-21_03-56-13_978_37675414267460205/-mr-10000
+#### A masked pattern was here ####
 NULL	35	NULL	NULL
 NULL	135	NULL	NULL
 48	NULL	48	NULL
@@ -519,36 +519,36 @@ PREHOOK: query: SELECT /*+ MAPJOIN(a) */ * FROM smb_input1 a JOIN smb_input2 b O
 PREHOOK: type: QUERY
 PREHOOK: Input: default@smb_input1
 PREHOOK: Input: default@smb_input2
-PREHOOK: Output: file:/tmp/krishnak/hive_2011-03-21_03-56-21_231_8292843591044391733/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: SELECT /*+ MAPJOIN(a) */ * FROM smb_input1 a JOIN smb_input2 b ON a.key = b.value ORDER BY a.key
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@smb_input1
 POSTHOOK: Input: default@smb_input2
-POSTHOOK: Output: file:/tmp/krishnak/hive_2011-03-21_03-56-21_231_8292843591044391733/-mr-10000
+#### A masked pattern was here ####
 100	100	100	100
 200	200	200	200
 PREHOOK: query: SELECT /*+ MAPJOIN(b) */ * FROM smb_input1 a JOIN smb_input2 b ON a.key = b.value ORDER BY a.key
 PREHOOK: type: QUERY
 PREHOOK: Input: default@smb_input1
 PREHOOK: Input: default@smb_input2
-PREHOOK: Output: file:/tmp/krishnak/hive_2011-03-21_03-56-28_835_6286309168082618901/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: SELECT /*+ MAPJOIN(b) */ * FROM smb_input1 a JOIN smb_input2 b ON a.key = b.value ORDER BY a.key
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@smb_input1
 POSTHOOK: Input: default@smb_input2
-POSTHOOK: Output: file:/tmp/krishnak/hive_2011-03-21_03-56-28_835_6286309168082618901/-mr-10000
+#### A masked pattern was here ####
 100	100	100	100
 200	200	200	200
 PREHOOK: query: SELECT /*+ MAPJOIN(b) */ * FROM smb_input1 a LEFT OUTER JOIN smb_input2 b ON a.key = b.value ORDER BY a.key, a.value
 PREHOOK: type: QUERY
 PREHOOK: Input: default@smb_input1
 PREHOOK: Input: default@smb_input2
-PREHOOK: Output: file:/tmp/krishnak/hive_2011-03-21_03-56-36_026_7352279404756888950/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: SELECT /*+ MAPJOIN(b) */ * FROM smb_input1 a LEFT OUTER JOIN smb_input2 b ON a.key = b.value ORDER BY a.key, a.value
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@smb_input1
 POSTHOOK: Input: default@smb_input2
-POSTHOOK: Output: file:/tmp/krishnak/hive_2011-03-21_03-56-36_026_7352279404756888950/-mr-10000
+#### A masked pattern was here ####
 NULL	35	NULL	NULL
 NULL	135	NULL	NULL
 48	NULL	NULL	NULL
@@ -559,12 +559,12 @@ PREHOOK: query: SELECT /*+ MAPJOIN(a) */ * FROM smb_input1 a RIGHT OUTER JOIN sm
 PREHOOK: type: QUERY
 PREHOOK: Input: default@smb_input1
 PREHOOK: Input: default@smb_input2
-PREHOOK: Output: file:/tmp/krishnak/hive_2011-03-21_03-56-43_251_628261964080538715/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: SELECT /*+ MAPJOIN(a) */ * FROM smb_input1 a RIGHT OUTER JOIN smb_input2 b ON a.key = b.value ORDER BY b.key, b.value
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@smb_input1
 POSTHOOK: Input: default@smb_input2
-POSTHOOK: Output: file:/tmp/krishnak/hive_2011-03-21_03-56-43_251_628261964080538715/-mr-10000
+#### A masked pattern was here ####
 NULL	NULL	NULL	35
 NULL	NULL	NULL	135
 NULL	NULL	48	NULL
@@ -574,11 +574,11 @@ NULL	NULL	148	NULL
 PREHOOK: query: SELECT /*+ MAPJOIN(a) */ * FROM smb_input2 a JOIN smb_input2 b ON a.value = b.value ORDER BY a.value
 PREHOOK: type: QUERY
 PREHOOK: Input: default@smb_input2
-PREHOOK: Output: file:/tmp/krishnak/hive_2011-03-21_03-56-50_368_3840876669646785753/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: SELECT /*+ MAPJOIN(a) */ * FROM smb_input2 a JOIN smb_input2 b ON a.value = b.value ORDER BY a.value
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@smb_input2
-POSTHOOK: Output: file:/tmp/krishnak/hive_2011-03-21_03-56-50_368_3840876669646785753/-mr-10000
+#### A masked pattern was here ####
 NULL	35	NULL	35
 100	100	100	100
 NULL	135	NULL	135
@@ -586,11 +586,11 @@ NULL	135	NULL	135
 PREHOOK: query: SELECT /*+ MAPJOIN(a) */ * FROM smb_input2 a RIGHT OUTER JOIN smb_input2 b ON a.value = b.value ORDER BY b.key, b.value
 PREHOOK: type: QUERY
 PREHOOK: Input: default@smb_input2
-PREHOOK: Output: file:/tmp/krishnak/hive_2011-03-21_03-56-57_464_1575904257589847287/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: SELECT /*+ MAPJOIN(a) */ * FROM smb_input2 a RIGHT OUTER JOIN smb_input2 b ON a.value = b.value ORDER BY b.key, b.value
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@smb_input2
-POSTHOOK: Output: file:/tmp/krishnak/hive_2011-03-21_03-56-57_464_1575904257589847287/-mr-10000
+#### A masked pattern was here ####
 NULL	35	NULL	35
 NULL	135	NULL	135
 NULL	NULL	48	NULL
@@ -600,11 +600,11 @@ NULL	NULL	148	NULL
 PREHOOK: query: SELECT /*+ MAPJOIN(b) */ * FROM smb_input2 a JOIN smb_input2 b ON a.value = b.value ORDER BY a.value
 PREHOOK: type: QUERY
 PREHOOK: Input: default@smb_input2
-PREHOOK: Output: file:/tmp/krishnak/hive_2011-03-21_03-57-04_710_6771480365280106011/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: SELECT /*+ MAPJOIN(b) */ * FROM smb_input2 a JOIN smb_input2 b ON a.value = b.value ORDER BY a.value
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@smb_input2
-POSTHOOK: Output: file:/tmp/krishnak/hive_2011-03-21_03-57-04_710_6771480365280106011/-mr-10000
+#### A masked pattern was here ####
 NULL	35	NULL	35
 100	100	100	100
 NULL	135	NULL	135
@@ -612,11 +612,11 @@ NULL	135	NULL	135
 PREHOOK: query: SELECT /*+ MAPJOIN(b) */ * FROM smb_input2 a LEFT OUTER JOIN smb_input2 b ON a.value = b.value ORDER BY a.key, a.value
 PREHOOK: type: QUERY
 PREHOOK: Input: default@smb_input2
-PREHOOK: Output: file:/tmp/krishnak/hive_2011-03-21_03-57-11_842_9028034862567967736/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: SELECT /*+ MAPJOIN(b) */ * FROM smb_input2 a LEFT OUTER JOIN smb_input2 b ON a.value = b.value ORDER BY a.key, a.value
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@smb_input2
-POSTHOOK: Output: file:/tmp/krishnak/hive_2011-03-21_03-57-11_842_9028034862567967736/-mr-10000
+#### A masked pattern was here ####
 NULL	35	NULL	35
 NULL	135	NULL	135
 48	NULL	NULL	NULL

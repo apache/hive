@@ -7,14 +7,14 @@ PARTITIONED ON (value)
 AS 
 SELECT * FROM src
 PREHOOK: type: CREATEVIEW
-PREHOOK: Output: file:/tmp/salbiz/hive_2011-08-01_16-12-55_273_3019518550411272365/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: CREATE VIEW xxx4 
 PARTITIONED ON (value)
 AS 
 SELECT * FROM src
 POSTHOOK: type: CREATEVIEW
 POSTHOOK: Output: default@xxx4
-POSTHOOK: Output: file:/tmp/salbiz/hive_2011-08-01_16-12-55_273_3019518550411272365/-mr-10000
+#### A masked pattern was here ####
 PREHOOK: query: -- should fail:  need to use ALTER VIEW, not ALTER TABLE
 ALTER TABLE xxx4 ADD PARTITION (value='val_86')
 PREHOOK: type: ALTERTABLE_ADDPARTS

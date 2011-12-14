@@ -23,11 +23,11 @@ POSTHOOK: Output: default@exim_employee@emp_country=in/emp_state=tn
 PREHOOK: query: export table exim_employee to 'ql/test/data/exports/exim_employee'
 PREHOOK: type: EXPORT
 PREHOOK: Input: default@exim_employee@emp_country=in/emp_state=tn
-PREHOOK: Output: pfile:/home/krishnak/hive-howl/hive-git-apache/build/ql/test/data/exports/exim_employee
+#### A masked pattern was here ####
 POSTHOOK: query: export table exim_employee to 'ql/test/data/exports/exim_employee'
 POSTHOOK: type: EXPORT
 POSTHOOK: Input: default@exim_employee@emp_country=in/emp_state=tn
-POSTHOOK: Output: pfile:/home/krishnak/hive-howl/hive-git-apache/build/ql/test/data/exports/exim_employee
+#### A masked pattern was here ####
 PREHOOK: query: drop table exim_employee
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@exim_employee

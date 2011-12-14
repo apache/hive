@@ -20,11 +20,11 @@ POSTHOOK: Lineage: insert_compressed.value SIMPLE [(src)src.FieldSchema(name:val
 PREHOOK: query: select count(*) from insert_compressed
 PREHOOK: type: QUERY
 PREHOOK: Input: default@insert_compressed
-PREHOOK: Output: file:/tmp/franklin/hive_2011-07-20_17-04-35_230_3783253000190717636/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: select count(*) from insert_compressed
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@insert_compressed
-POSTHOOK: Output: file:/tmp/franklin/hive_2011-07-20_17-04-35_230_3783253000190717636/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: Lineage: insert_compressed.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: insert_compressed.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 500
@@ -43,11 +43,11 @@ POSTHOOK: Lineage: insert_compressed.value SIMPLE [(src)src.FieldSchema(name:val
 PREHOOK: query: select count(*) from insert_compressed
 PREHOOK: type: QUERY
 PREHOOK: Input: default@insert_compressed
-PREHOOK: Output: file:/tmp/franklin/hive_2011-07-20_17-04-42_862_5790583242339882207/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: select count(*) from insert_compressed
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@insert_compressed
-POSTHOOK: Output: file:/tmp/franklin/hive_2011-07-20_17-04-42_862_5790583242339882207/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: Lineage: insert_compressed.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: insert_compressed.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: insert_compressed.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
@@ -70,11 +70,11 @@ POSTHOOK: Lineage: insert_compressed.value SIMPLE [(src)src.FieldSchema(name:val
 PREHOOK: query: select count(*) from insert_compressed
 PREHOOK: type: QUERY
 PREHOOK: Input: default@insert_compressed
-PREHOOK: Output: file:/tmp/franklin/hive_2011-07-20_17-04-50_417_6428429184794119745/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: select count(*) from insert_compressed
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@insert_compressed
-POSTHOOK: Output: file:/tmp/franklin/hive_2011-07-20_17-04-50_417_6428429184794119745/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: Lineage: insert_compressed.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: insert_compressed.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: insert_compressed.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]

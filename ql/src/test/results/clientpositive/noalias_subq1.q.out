@@ -49,11 +49,11 @@ STAGE PLANS:
 PREHOOK: query: SELECT c1 FROM (select value as c1, key as c2 from src) x where c2 < 100
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/tmp/sdong/hive_2011-02-10_16-46-28_863_4956389940091549074/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: SELECT c1 FROM (select value as c1, key as c2 from src) x where c2 < 100
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: file:/tmp/sdong/hive_2011-02-10_16-46-28_863_4956389940091549074/-mr-10000
+#### A masked pattern was here ####
 val_86
 val_27
 val_98

@@ -54,7 +54,7 @@ table	authorization_part
 principalName	hive_test_user	
 principalType	USER	
 privilege	Create	
-grantTime	1298925581	
+#### A masked pattern was here ####
 grantor	hive_test_user	
 
 database	default	
@@ -62,7 +62,7 @@ table	authorization_part
 principalName	hive_test_user	
 principalType	USER	
 privilege	Update	
-grantTime	1298925581	
+#### A masked pattern was here ####
 grantor	hive_test_user	
 
 database	default	
@@ -70,7 +70,7 @@ table	authorization_part
 principalName	hive_test_user	
 principalType	USER	
 privilege	Drop	
-grantTime	1298925582	
+#### A masked pattern was here ####
 grantor	hive_test_user	
 PREHOOK: query: grant select(key) on table authorization_part to user hive_test_user
 PREHOOK: type: GRANT_PRIVILEGE
@@ -116,7 +116,7 @@ columnName	key
 principalName	hive_test_user	
 principalType	USER	
 privilege	Select	
-grantTime	1298925591	
+#### A masked pattern was here ####
 grantor	hive_test_user	
 PREHOOK: query: show grant user hive_test_user on table authorization_part(key) partition (ds='2011')
 PREHOOK: type: SHOW_GRANT
@@ -134,7 +134,7 @@ columnName	key
 principalName	hive_test_user	
 principalType	USER	
 privilege	Select	
-grantTime	1298925599	
+#### A masked pattern was here ####
 grantor	hive_test_user	
 PREHOOK: query: show grant user hive_test_user on table authorization_part(key)
 PREHOOK: type: SHOW_GRANT
@@ -151,18 +151,18 @@ columnName	key
 principalName	hive_test_user	
 principalType	USER	
 privilege	Select	
-grantTime	1298925582	
+#### A masked pattern was here ####
 grantor	hive_test_user	
 PREHOOK: query: select key from authorization_part where ds>='2010' order by key limit 20
 PREHOOK: type: QUERY
 PREHOOK: Input: default@authorization_part@ds=2010
 PREHOOK: Input: default@authorization_part@ds=2011
-PREHOOK: Output: file:/var/folders/6g/6grtCwPMEf4sqHUPpy6xQG9ByHg/-Tmp-/heyongqiang/hive_2011-02-28_12-39-59_917_5170188776234665136/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: select key from authorization_part where ds>='2010' order by key limit 20
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@authorization_part@ds=2010
 POSTHOOK: Input: default@authorization_part@ds=2011
-POSTHOOK: Output: file:/var/folders/6g/6grtCwPMEf4sqHUPpy6xQG9ByHg/-Tmp-/heyongqiang/hive_2011-02-28_12-39-59_917_5170188776234665136/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: Lineage: authorization_part PARTITION(ds=2010).key EXPRESSION [(src_auth_tmp)src_auth_tmp.FieldSchema(name:key, type:string, comment:null), ]
 POSTHOOK: Lineage: authorization_part PARTITION(ds=2010).value SIMPLE [(src_auth_tmp)src_auth_tmp.FieldSchema(name:value, type:string, comment:null), ]
 POSTHOOK: Lineage: authorization_part PARTITION(ds=2011).key EXPRESSION [(src_auth_tmp)src_auth_tmp.FieldSchema(name:key, type:string, comment:null), ]
@@ -254,7 +254,7 @@ table	authorization_part
 principalName	hive_test_user	
 principalType	USER	
 privilege	Create	
-grantTime	1298925607	
+#### A masked pattern was here ####
 grantor	hive_test_user	
 
 database	default	
@@ -262,7 +262,7 @@ table	authorization_part
 principalName	hive_test_user	
 principalType	USER	
 privilege	Update	
-grantTime	1298925607	
+#### A masked pattern was here ####
 grantor	hive_test_user	
 PREHOOK: query: grant select(key) on table authorization_part to user hive_test_user
 PREHOOK: type: GRANT_PRIVILEGE
@@ -347,18 +347,18 @@ columnName	key
 principalName	hive_test_user	
 principalType	USER	
 privilege	Select	
-grantTime	1298925608	
+#### A masked pattern was here ####
 grantor	hive_test_user	
 PREHOOK: query: select key from authorization_part where ds>='2010' order by key limit 20
 PREHOOK: type: QUERY
 PREHOOK: Input: default@authorization_part@ds=2010
 PREHOOK: Input: default@authorization_part@ds=2011
-PREHOOK: Output: file:/var/folders/6g/6grtCwPMEf4sqHUPpy6xQG9ByHg/-Tmp-/heyongqiang/hive_2011-02-28_12-40-25_797_5158592039495944945/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: select key from authorization_part where ds>='2010' order by key limit 20
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@authorization_part@ds=2010
 POSTHOOK: Input: default@authorization_part@ds=2011
-POSTHOOK: Output: file:/var/folders/6g/6grtCwPMEf4sqHUPpy6xQG9ByHg/-Tmp-/heyongqiang/hive_2011-02-28_12-40-25_797_5158592039495944945/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: Lineage: authorization_part PARTITION(ds=2010).key EXPRESSION [(src_auth_tmp)src_auth_tmp.FieldSchema(name:key, type:string, comment:null), ]
 POSTHOOK: Lineage: authorization_part PARTITION(ds=2010).value SIMPLE [(src_auth_tmp)src_auth_tmp.FieldSchema(name:value, type:string, comment:null), ]
 POSTHOOK: Lineage: authorization_part PARTITION(ds=2010).key EXPRESSION [(src_auth_tmp)src_auth_tmp.FieldSchema(name:key, type:string, comment:null), ]

@@ -1,20 +1,20 @@
 PREHOOK: query: select ewah_bitmap_and(array(13,2,4,8589934592,4096,0), array(13,2,4,8589934592,4096,0)) from src limit 1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/tmp/mwang/hive_2011-04-25_13-55-37_521_2361768713695885204/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: select ewah_bitmap_and(array(13,2,4,8589934592,4096,0), array(13,2,4,8589934592,4096,0)) from src limit 1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: file:/tmp/mwang/hive_2011-04-25_13-55-37_521_2361768713695885204/-mr-10000
+#### A masked pattern was here ####
 [13,2,4,8589934592,4096,0]
 PREHOOK: query: select ewah_bitmap_and(array(13,2,4,8589934592,4096,0), array(8,2,4,8589934592,128,0)) from src limit 1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/tmp/mwang/hive_2011-04-25_13-55-41_155_4144834788434053923/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: select ewah_bitmap_and(array(13,2,4,8589934592,4096,0), array(8,2,4,8589934592,128,0)) from src limit 1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: file:/tmp/mwang/hive_2011-04-25_13-55-41_155_4144834788434053923/-mr-10000
+#### A masked pattern was here ####
 [13,1,4,2,0]
 PREHOOK: query: drop table bitmap_test
 PREHOOK: type: DROPTABLE
@@ -40,11 +40,11 @@ POSTHOOK: Lineage: bitmap_test.b EXPRESSION []
 PREHOOK: query: select ewah_bitmap_and(a,b) from bitmap_test
 PREHOOK: type: QUERY
 PREHOOK: Input: default@bitmap_test
-PREHOOK: Output: file:/tmp/mwang/hive_2011-04-25_13-55-56_130_3048969228702680151/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: select ewah_bitmap_and(a,b) from bitmap_test
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@bitmap_test
-POSTHOOK: Output: file:/tmp/mwang/hive_2011-04-25_13-55-56_130_3048969228702680151/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: Lineage: bitmap_test.a EXPRESSION []
 POSTHOOK: Lineage: bitmap_test.b EXPRESSION []
 [13,1,4,2,0]

@@ -14,72 +14,72 @@ Example:
 PREHOOK: query: SELECT xpath_int ('<a>this is not a number</a>', 'a') FROM src LIMIT 1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/Users/patrick/Documents/workspace/hive-trunk/build/ql/scratchdir/hive_2010-03-11_06-45-51_875_437569805026140503/10000
+#### A masked pattern was here ####
 POSTHOOK: query: SELECT xpath_int ('<a>this is not a number</a>', 'a') FROM src LIMIT 1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: file:/Users/patrick/Documents/workspace/hive-trunk/build/ql/scratchdir/hive_2010-03-11_06-45-51_875_437569805026140503/10000
+#### A masked pattern was here ####
 0
 PREHOOK: query: SELECT xpath_int ('<a>this 2 is not a number</a>', 'a') FROM src LIMIT 1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/Users/patrick/Documents/workspace/hive-trunk/build/ql/scratchdir/hive_2010-03-11_06-45-57_094_9168946979271622158/10000
+#### A masked pattern was here ####
 POSTHOOK: query: SELECT xpath_int ('<a>this 2 is not a number</a>', 'a') FROM src LIMIT 1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: file:/Users/patrick/Documents/workspace/hive-trunk/build/ql/scratchdir/hive_2010-03-11_06-45-57_094_9168946979271622158/10000
+#### A masked pattern was here ####
 0
 PREHOOK: query: SELECT xpath_int ('<a><b>2000000000</b><c>40000000000</c></a>', 'a/b * a/c') FROM src LIMIT 1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/Users/patrick/Documents/workspace/hive-trunk/build/ql/scratchdir/hive_2010-03-11_06-46-01_568_5764046814540785002/10000
+#### A masked pattern was here ####
 POSTHOOK: query: SELECT xpath_int ('<a><b>2000000000</b><c>40000000000</c></a>', 'a/b * a/c') FROM src LIMIT 1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: file:/Users/patrick/Documents/workspace/hive-trunk/build/ql/scratchdir/hive_2010-03-11_06-46-01_568_5764046814540785002/10000
+#### A masked pattern was here ####
 2147483647
 PREHOOK: query: SELECT xpath_int ('<a>try a boolean</a>', 'a = 10') FROM src LIMIT 1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/Users/patrick/Documents/workspace/hive-trunk/build/ql/scratchdir/hive_2010-03-11_06-46-06_220_6973728860376107951/10000
+#### A masked pattern was here ####
 POSTHOOK: query: SELECT xpath_int ('<a>try a boolean</a>', 'a = 10') FROM src LIMIT 1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: file:/Users/patrick/Documents/workspace/hive-trunk/build/ql/scratchdir/hive_2010-03-11_06-46-06_220_6973728860376107951/10000
+#### A masked pattern was here ####
 0
 PREHOOK: query: SELECT xpath_int ('<a><b class="odd">1</b><b class="even">2</b><b class="odd">4</b><c>8</c></a>', 'a/b') FROM src LIMIT 1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/Users/patrick/Documents/workspace/hive-trunk/build/ql/scratchdir/hive_2010-03-11_06-46-10_880_7033077055949838171/10000
+#### A masked pattern was here ####
 POSTHOOK: query: SELECT xpath_int ('<a><b class="odd">1</b><b class="even">2</b><b class="odd">4</b><c>8</c></a>', 'a/b') FROM src LIMIT 1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: file:/Users/patrick/Documents/workspace/hive-trunk/build/ql/scratchdir/hive_2010-03-11_06-46-10_880_7033077055949838171/10000
+#### A masked pattern was here ####
 1
 PREHOOK: query: SELECT xpath_int ('<a><b class="odd">1</b><b class="even">2</b><b class="odd">4</b><c>8</c></a>', 'sum(a/*)') FROM src LIMIT 1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/Users/patrick/Documents/workspace/hive-trunk/build/ql/scratchdir/hive_2010-03-11_06-46-15_676_4494502415099433177/10000
+#### A masked pattern was here ####
 POSTHOOK: query: SELECT xpath_int ('<a><b class="odd">1</b><b class="even">2</b><b class="odd">4</b><c>8</c></a>', 'sum(a/*)') FROM src LIMIT 1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: file:/Users/patrick/Documents/workspace/hive-trunk/build/ql/scratchdir/hive_2010-03-11_06-46-15_676_4494502415099433177/10000
+#### A masked pattern was here ####
 15
 PREHOOK: query: SELECT xpath_int ('<a><b class="odd">1</b><b class="even">2</b><b class="odd">4</b><c>8</c></a>', 'sum(a/b)') FROM src LIMIT 1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/Users/patrick/Documents/workspace/hive-trunk/build/ql/scratchdir/hive_2010-03-11_06-46-22_229_1539908466202895730/10000
+#### A masked pattern was here ####
 POSTHOOK: query: SELECT xpath_int ('<a><b class="odd">1</b><b class="even">2</b><b class="odd">4</b><c>8</c></a>', 'sum(a/b)') FROM src LIMIT 1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: file:/Users/patrick/Documents/workspace/hive-trunk/build/ql/scratchdir/hive_2010-03-11_06-46-22_229_1539908466202895730/10000
+#### A masked pattern was here ####
 7
 PREHOOK: query: SELECT xpath_int ('<a><b class="odd">1</b><b class="even">2</b><b class="odd">4</b><c>8</c></a>', 'sum(a/b[@class="odd"])') FROM src LIMIT 1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/Users/patrick/Documents/workspace/hive-trunk/build/ql/scratchdir/hive_2010-03-11_06-46-28_425_5182303734060221915/10000
+#### A masked pattern was here ####
 POSTHOOK: query: SELECT xpath_int ('<a><b class="odd">1</b><b class="even">2</b><b class="odd">4</b><c>8</c></a>', 'sum(a/b[@class="odd"])') FROM src LIMIT 1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: file:/Users/patrick/Documents/workspace/hive-trunk/build/ql/scratchdir/hive_2010-03-11_06-46-28_425_5182303734060221915/10000
+#### A masked pattern was here ####
 5

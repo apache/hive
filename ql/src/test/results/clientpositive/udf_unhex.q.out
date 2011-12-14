@@ -36,7 +36,7 @@ SELECT
 FROM src limit 1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/Users/carl/Projects/hd9/hive-trunk/build/ql/tmp/1211131149/10000
+#### A masked pattern was here ####
 POSTHOOK: query: -- Good inputs
 
 SELECT
@@ -48,7 +48,7 @@ SELECT
 FROM src limit 1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: file:/Users/carl/Projects/hd9/hive-trunk/build/ql/tmp/1211131149/10000
+#### A masked pattern was here ####
 MySQL	1267	a	-4	
 PREHOOK: query: -- Bad inputs
 SELECT
@@ -58,7 +58,7 @@ SELECT
 FROM src limit 1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/Users/carl/Projects/hd9/hive-trunk/build/ql/tmp/1374300168/10000
+#### A masked pattern was here ####
 POSTHOOK: query: -- Bad inputs
 SELECT
   unhex('MySQL'),
@@ -67,5 +67,5 @@ SELECT
 FROM src limit 1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: file:/Users/carl/Projects/hd9/hive-trunk/build/ql/tmp/1374300168/10000
+#### A masked pattern was here ####
 NULL	NULL	NULL

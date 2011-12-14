@@ -12,198 +12,198 @@ POSTHOOK: Output: default@myinput1
 PREHOOK: query: SELECT sum(hash(a.key,a.value,b.key,b.value)) FROM myinput1 a JOIN myinput1 b
 PREHOOK: type: QUERY
 PREHOOK: Input: default@myinput1
-PREHOOK: Output: file:/var/folders/67/67R3POPtF90VG63KSmCbcU++F0U/-Tmp-/krishnak/hive_2011-03-20_22-07-01_851_7082567203668819492/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: SELECT sum(hash(a.key,a.value,b.key,b.value)) FROM myinput1 a JOIN myinput1 b
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@myinput1
-POSTHOOK: Output: file:/var/folders/67/67R3POPtF90VG63KSmCbcU++F0U/-Tmp-/krishnak/hive_2011-03-20_22-07-01_851_7082567203668819492/-mr-10000
+#### A masked pattern was here ####
 13630578
 PREHOOK: query: SELECT sum(hash(a.key,a.value,b.key,b.value)) FROM myinput1 a LEFT OUTER JOIN myinput1 b
 PREHOOK: type: QUERY
 PREHOOK: Input: default@myinput1
-PREHOOK: Output: file:/var/folders/67/67R3POPtF90VG63KSmCbcU++F0U/-Tmp-/krishnak/hive_2011-03-20_22-07-21_111_5411241559769120068/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: SELECT sum(hash(a.key,a.value,b.key,b.value)) FROM myinput1 a LEFT OUTER JOIN myinput1 b
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@myinput1
-POSTHOOK: Output: file:/var/folders/67/67R3POPtF90VG63KSmCbcU++F0U/-Tmp-/krishnak/hive_2011-03-20_22-07-21_111_5411241559769120068/-mr-10000
+#### A masked pattern was here ####
 13630578
 PREHOOK: query: SELECT sum(hash(a.key,a.value,b.key,b.value)) FROM myinput1 a RIGHT OUTER JOIN myinput1 b
 PREHOOK: type: QUERY
 PREHOOK: Input: default@myinput1
-PREHOOK: Output: file:/var/folders/67/67R3POPtF90VG63KSmCbcU++F0U/-Tmp-/krishnak/hive_2011-03-20_22-07-47_275_7275344927699111568/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: SELECT sum(hash(a.key,a.value,b.key,b.value)) FROM myinput1 a RIGHT OUTER JOIN myinput1 b
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@myinput1
-POSTHOOK: Output: file:/var/folders/67/67R3POPtF90VG63KSmCbcU++F0U/-Tmp-/krishnak/hive_2011-03-20_22-07-47_275_7275344927699111568/-mr-10000
+#### A masked pattern was here ####
 13630578
 PREHOOK: query: SELECT sum(hash(a.key,a.value,b.key,b.value)) FROM myinput1 a JOIN myinput1 b ON a.key = b.value
 PREHOOK: type: QUERY
 PREHOOK: Input: default@myinput1
-PREHOOK: Output: file:/var/folders/67/67R3POPtF90VG63KSmCbcU++F0U/-Tmp-/krishnak/hive_2011-03-20_22-08-10_909_3227344547923921228/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: SELECT sum(hash(a.key,a.value,b.key,b.value)) FROM myinput1 a JOIN myinput1 b ON a.key = b.value
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@myinput1
-POSTHOOK: Output: file:/var/folders/67/67R3POPtF90VG63KSmCbcU++F0U/-Tmp-/krishnak/hive_2011-03-20_22-08-10_909_3227344547923921228/-mr-10000
+#### A masked pattern was here ####
 3078400
 PREHOOK: query: SELECT sum(hash(a.key,a.value,b.key,b.value)) FROM myinput1 a JOIN myinput1 b ON a.key = b.key
 PREHOOK: type: QUERY
 PREHOOK: Input: default@myinput1
-PREHOOK: Output: file:/var/folders/67/67R3POPtF90VG63KSmCbcU++F0U/-Tmp-/krishnak/hive_2011-03-20_22-08-34_872_3617520772240164804/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: SELECT sum(hash(a.key,a.value,b.key,b.value)) FROM myinput1 a JOIN myinput1 b ON a.key = b.key
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@myinput1
-POSTHOOK: Output: file:/var/folders/67/67R3POPtF90VG63KSmCbcU++F0U/-Tmp-/krishnak/hive_2011-03-20_22-08-34_872_3617520772240164804/-mr-10000
+#### A masked pattern was here ####
 4509856
 PREHOOK: query: SELECT sum(hash(a.key,a.value,b.key,b.value)) FROM myinput1 a JOIN myinput1 b ON a.value = b.value
 PREHOOK: type: QUERY
 PREHOOK: Input: default@myinput1
-PREHOOK: Output: file:/var/folders/67/67R3POPtF90VG63KSmCbcU++F0U/-Tmp-/krishnak/hive_2011-03-20_22-09-03_145_7033968100754366551/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: SELECT sum(hash(a.key,a.value,b.key,b.value)) FROM myinput1 a JOIN myinput1 b ON a.value = b.value
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@myinput1
-POSTHOOK: Output: file:/var/folders/67/67R3POPtF90VG63KSmCbcU++F0U/-Tmp-/krishnak/hive_2011-03-20_22-09-03_145_7033968100754366551/-mr-10000
+#### A masked pattern was here ####
 3112070
 PREHOOK: query: SELECT sum(hash(a.key,a.value,b.key,b.value)) FROM myinput1 a JOIN myinput1 b ON a.value = b.value and a.key=b.key
 PREHOOK: type: QUERY
 PREHOOK: Input: default@myinput1
-PREHOOK: Output: file:/var/folders/67/67R3POPtF90VG63KSmCbcU++F0U/-Tmp-/krishnak/hive_2011-03-20_22-09-27_628_3074815019668358857/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: SELECT sum(hash(a.key,a.value,b.key,b.value)) FROM myinput1 a JOIN myinput1 b ON a.value = b.value and a.key=b.key
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@myinput1
-POSTHOOK: Output: file:/var/folders/67/67R3POPtF90VG63KSmCbcU++F0U/-Tmp-/krishnak/hive_2011-03-20_22-09-27_628_3074815019668358857/-mr-10000
+#### A masked pattern was here ####
 3078400
 PREHOOK: query: SELECT sum(hash(a.key,a.value,b.key,b.value)) FROM myinput1 a LEFT OUTER JOIN myinput1 b ON a.key = b.value
 PREHOOK: type: QUERY
 PREHOOK: Input: default@myinput1
-PREHOOK: Output: file:/var/folders/67/67R3POPtF90VG63KSmCbcU++F0U/-Tmp-/krishnak/hive_2011-03-20_22-09-53_823_5728508667772781350/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: SELECT sum(hash(a.key,a.value,b.key,b.value)) FROM myinput1 a LEFT OUTER JOIN myinput1 b ON a.key = b.value
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@myinput1
-POSTHOOK: Output: file:/var/folders/67/67R3POPtF90VG63KSmCbcU++F0U/-Tmp-/krishnak/hive_2011-03-20_22-09-53_823_5728508667772781350/-mr-10000
+#### A masked pattern was here ####
 4542003
 PREHOOK: query: SELECT sum(hash(a.key,a.value,b.key,b.value)) FROM myinput1 a LEFT OUTER JOIN myinput1 b ON a.value = b.value
 PREHOOK: type: QUERY
 PREHOOK: Input: default@myinput1
-PREHOOK: Output: file:/var/folders/67/67R3POPtF90VG63KSmCbcU++F0U/-Tmp-/krishnak/hive_2011-03-20_22-10-19_775_7915491781451339345/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: SELECT sum(hash(a.key,a.value,b.key,b.value)) FROM myinput1 a LEFT OUTER JOIN myinput1 b ON a.value = b.value
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@myinput1
-POSTHOOK: Output: file:/var/folders/67/67R3POPtF90VG63KSmCbcU++F0U/-Tmp-/krishnak/hive_2011-03-20_22-10-19_775_7915491781451339345/-mr-10000
+#### A masked pattern was here ####
 4542038
 PREHOOK: query: SELECT sum(hash(a.key,a.value,b.key,b.value)) FROM myinput1 a LEFT OUTER JOIN myinput1 b ON a.key = b.key
 PREHOOK: type: QUERY
 PREHOOK: Input: default@myinput1
-PREHOOK: Output: file:/var/folders/67/67R3POPtF90VG63KSmCbcU++F0U/-Tmp-/krishnak/hive_2011-03-20_22-10-47_541_8808024107270850552/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: SELECT sum(hash(a.key,a.value,b.key,b.value)) FROM myinput1 a LEFT OUTER JOIN myinput1 b ON a.key = b.key
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@myinput1
-POSTHOOK: Output: file:/var/folders/67/67R3POPtF90VG63KSmCbcU++F0U/-Tmp-/krishnak/hive_2011-03-20_22-10-47_541_8808024107270850552/-mr-10000
+#### A masked pattern was here ####
 4543491
 PREHOOK: query: SELECT sum(hash(a.key,a.value,b.key,b.value)) FROM myinput1 a LEFT OUTER JOIN myinput1 b ON a.key = b.key and a.value=b.value
 PREHOOK: type: QUERY
 PREHOOK: Input: default@myinput1
-PREHOOK: Output: file:/var/folders/67/67R3POPtF90VG63KSmCbcU++F0U/-Tmp-/krishnak/hive_2011-03-20_22-11-11_368_1746073498914919375/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: SELECT sum(hash(a.key,a.value,b.key,b.value)) FROM myinput1 a LEFT OUTER JOIN myinput1 b ON a.key = b.key and a.value=b.value
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@myinput1
-POSTHOOK: Output: file:/var/folders/67/67R3POPtF90VG63KSmCbcU++F0U/-Tmp-/krishnak/hive_2011-03-20_22-11-11_368_1746073498914919375/-mr-10000
+#### A masked pattern was here ####
 4542003
 PREHOOK: query: SELECT sum(hash(a.key,a.value,b.key,b.value)) FROM myinput1 a RIGHT OUTER JOIN myinput1 b ON a.key = b.value
 PREHOOK: type: QUERY
 PREHOOK: Input: default@myinput1
-PREHOOK: Output: file:/var/folders/67/67R3POPtF90VG63KSmCbcU++F0U/-Tmp-/krishnak/hive_2011-03-20_22-11-39_087_7473462017142022272/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: SELECT sum(hash(a.key,a.value,b.key,b.value)) FROM myinput1 a RIGHT OUTER JOIN myinput1 b ON a.key = b.value
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@myinput1
-POSTHOOK: Output: file:/var/folders/67/67R3POPtF90VG63KSmCbcU++F0U/-Tmp-/krishnak/hive_2011-03-20_22-11-39_087_7473462017142022272/-mr-10000
+#### A masked pattern was here ####
 3079923
 PREHOOK: query: SELECT sum(hash(a.key,a.value,b.key,b.value)) FROM myinput1 a RIGHT OUTER JOIN myinput1 b ON a.key = b.key
 PREHOOK: type: QUERY
 PREHOOK: Input: default@myinput1
-PREHOOK: Output: file:/var/folders/67/67R3POPtF90VG63KSmCbcU++F0U/-Tmp-/krishnak/hive_2011-03-20_22-12-05_148_477406129143645464/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: SELECT sum(hash(a.key,a.value,b.key,b.value)) FROM myinput1 a RIGHT OUTER JOIN myinput1 b ON a.key = b.key
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@myinput1
-POSTHOOK: Output: file:/var/folders/67/67R3POPtF90VG63KSmCbcU++F0U/-Tmp-/krishnak/hive_2011-03-20_22-12-05_148_477406129143645464/-mr-10000
+#### A masked pattern was here ####
 4509891
 PREHOOK: query: SELECT sum(hash(a.key,a.value,b.key,b.value)) FROM myinput1 a RIGHT OUTER JOIN myinput1 b ON a.value = b.value
 PREHOOK: type: QUERY
 PREHOOK: Input: default@myinput1
-PREHOOK: Output: file:/var/folders/67/67R3POPtF90VG63KSmCbcU++F0U/-Tmp-/krishnak/hive_2011-03-20_22-12-32_683_2157132275098105119/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: SELECT sum(hash(a.key,a.value,b.key,b.value)) FROM myinput1 a RIGHT OUTER JOIN myinput1 b ON a.value = b.value
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@myinput1
-POSTHOOK: Output: file:/var/folders/67/67R3POPtF90VG63KSmCbcU++F0U/-Tmp-/krishnak/hive_2011-03-20_22-12-32_683_2157132275098105119/-mr-10000
+#### A masked pattern was here ####
 3113558
 PREHOOK: query: SELECT sum(hash(a.key,a.value,b.key,b.value)) FROM myinput1 a RIGHT OUTER JOIN myinput1 b ON a.key=b.key and a.value = b.value
 PREHOOK: type: QUERY
 PREHOOK: Input: default@myinput1
-PREHOOK: Output: file:/var/folders/67/67R3POPtF90VG63KSmCbcU++F0U/-Tmp-/krishnak/hive_2011-03-20_22-13-02_678_8171913422832379699/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: SELECT sum(hash(a.key,a.value,b.key,b.value)) FROM myinput1 a RIGHT OUTER JOIN myinput1 b ON a.key=b.key and a.value = b.value
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@myinput1
-POSTHOOK: Output: file:/var/folders/67/67R3POPtF90VG63KSmCbcU++F0U/-Tmp-/krishnak/hive_2011-03-20_22-13-02_678_8171913422832379699/-mr-10000
+#### A masked pattern was here ####
 3079923
 PREHOOK: query: SELECT sum(hash(a.key,a.value,b.key,b.value)) FROM myinput1 a FULL OUTER JOIN myinput1 b ON a.key = b.value
 PREHOOK: type: QUERY
 PREHOOK: Input: default@myinput1
-PREHOOK: Output: file:/var/folders/67/67R3POPtF90VG63KSmCbcU++F0U/-Tmp-/krishnak/hive_2011-03-20_22-13-34_225_6938406449328774862/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: SELECT sum(hash(a.key,a.value,b.key,b.value)) FROM myinput1 a FULL OUTER JOIN myinput1 b ON a.key = b.value
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@myinput1
-POSTHOOK: Output: file:/var/folders/67/67R3POPtF90VG63KSmCbcU++F0U/-Tmp-/krishnak/hive_2011-03-20_22-13-34_225_6938406449328774862/-mr-10000
+#### A masked pattern was here ####
 4543526
 PREHOOK: query: SELECT sum(hash(a.key,a.value,b.key,b.value)) FROM myinput1 a FULL OUTER JOIN myinput1 b ON a.key = b.key
 PREHOOK: type: QUERY
 PREHOOK: Input: default@myinput1
-PREHOOK: Output: file:/var/folders/67/67R3POPtF90VG63KSmCbcU++F0U/-Tmp-/krishnak/hive_2011-03-20_22-13-57_968_8817780174135372579/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: SELECT sum(hash(a.key,a.value,b.key,b.value)) FROM myinput1 a FULL OUTER JOIN myinput1 b ON a.key = b.key
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@myinput1
-POSTHOOK: Output: file:/var/folders/67/67R3POPtF90VG63KSmCbcU++F0U/-Tmp-/krishnak/hive_2011-03-20_22-13-57_968_8817780174135372579/-mr-10000
+#### A masked pattern was here ####
 4543526
 PREHOOK: query: SELECT sum(hash(a.key,a.value,b.key,b.value)) FROM myinput1 a FULL OUTER JOIN myinput1 b ON a.value = b.value
 PREHOOK: type: QUERY
 PREHOOK: Input: default@myinput1
-PREHOOK: Output: file:/var/folders/67/67R3POPtF90VG63KSmCbcU++F0U/-Tmp-/krishnak/hive_2011-03-20_22-14-18_146_6362327733801140739/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: SELECT sum(hash(a.key,a.value,b.key,b.value)) FROM myinput1 a FULL OUTER JOIN myinput1 b ON a.value = b.value
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@myinput1
-POSTHOOK: Output: file:/var/folders/67/67R3POPtF90VG63KSmCbcU++F0U/-Tmp-/krishnak/hive_2011-03-20_22-14-18_146_6362327733801140739/-mr-10000
+#### A masked pattern was here ####
 4543526
 PREHOOK: query: SELECT sum(hash(a.key,a.value,b.key,b.value)) FROM myinput1 a FULL OUTER JOIN myinput1 b ON a.value = b.value and a.key=b.key
 PREHOOK: type: QUERY
 PREHOOK: Input: default@myinput1
-PREHOOK: Output: file:/var/folders/67/67R3POPtF90VG63KSmCbcU++F0U/-Tmp-/krishnak/hive_2011-03-20_22-14-39_847_6806889542524913797/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: SELECT sum(hash(a.key,a.value,b.key,b.value)) FROM myinput1 a FULL OUTER JOIN myinput1 b ON a.value = b.value and a.key=b.key
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@myinput1
-POSTHOOK: Output: file:/var/folders/67/67R3POPtF90VG63KSmCbcU++F0U/-Tmp-/krishnak/hive_2011-03-20_22-14-39_847_6806889542524913797/-mr-10000
+#### A masked pattern was here ####
 4543526
 PREHOOK: query: SELECT sum(hash(a.key,a.value,b.key,b.value)) from myinput1 a LEFT OUTER JOIN myinput1 b ON (a.value=b.value) RIGHT OUTER JOIN myinput1 c ON (b.value=c.value)
 PREHOOK: type: QUERY
 PREHOOK: Input: default@myinput1
-PREHOOK: Output: file:/var/folders/67/67R3POPtF90VG63KSmCbcU++F0U/-Tmp-/krishnak/hive_2011-03-20_22-15-00_268_6911778605293508625/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: SELECT sum(hash(a.key,a.value,b.key,b.value)) from myinput1 a LEFT OUTER JOIN myinput1 b ON (a.value=b.value) RIGHT OUTER JOIN myinput1 c ON (b.value=c.value)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@myinput1
-POSTHOOK: Output: file:/var/folders/67/67R3POPtF90VG63KSmCbcU++F0U/-Tmp-/krishnak/hive_2011-03-20_22-15-00_268_6911778605293508625/-mr-10000
+#### A masked pattern was here ####
 3112070
 PREHOOK: query: SELECT sum(hash(a.key,a.value,b.key,b.value)) from myinput1 a RIGHT OUTER JOIN myinput1 b ON (a.value=b.value) LEFT OUTER JOIN myinput1 c ON (b.value=c.value)
 PREHOOK: type: QUERY
 PREHOOK: Input: default@myinput1
-PREHOOK: Output: file:/var/folders/67/67R3POPtF90VG63KSmCbcU++F0U/-Tmp-/krishnak/hive_2011-03-20_22-15-28_615_4230032186292712118/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: SELECT sum(hash(a.key,a.value,b.key,b.value)) from myinput1 a RIGHT OUTER JOIN myinput1 b ON (a.value=b.value) LEFT OUTER JOIN myinput1 c ON (b.value=c.value)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@myinput1
-POSTHOOK: Output: file:/var/folders/67/67R3POPtF90VG63KSmCbcU++F0U/-Tmp-/krishnak/hive_2011-03-20_22-15-28_615_4230032186292712118/-mr-10000
+#### A masked pattern was here ####
 3113558
 PREHOOK: query: SELECT sum(hash(a.key,a.value,b.key,b.value)) FROM myinput1 a LEFT OUTER JOIN myinput1 b RIGHT OUTER JOIN myinput1 c ON a.value = b.value and b.value = c.value
 PREHOOK: type: QUERY
 PREHOOK: Input: default@myinput1
-PREHOOK: Output: file:/var/folders/67/67R3POPtF90VG63KSmCbcU++F0U/-Tmp-/krishnak/hive_2011-03-20_22-15-57_777_4849204673611787129/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: SELECT sum(hash(a.key,a.value,b.key,b.value)) FROM myinput1 a LEFT OUTER JOIN myinput1 b RIGHT OUTER JOIN myinput1 c ON a.value = b.value and b.value = c.value
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@myinput1
-POSTHOOK: Output: file:/var/folders/67/67R3POPtF90VG63KSmCbcU++F0U/-Tmp-/krishnak/hive_2011-03-20_22-15-57_777_4849204673611787129/-mr-10000
+#### A masked pattern was here ####
 3112070

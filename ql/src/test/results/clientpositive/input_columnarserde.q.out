@@ -109,11 +109,11 @@ POSTHOOK: Lineage: input_columnarserde.e SIMPLE [(src_thrift)src_thrift.FieldSch
 PREHOOK: query: SELECT input_columnarserde.* FROM input_columnarserde DISTRIBUTE BY 1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@input_columnarserde
-PREHOOK: Output: file:/tmp/sdong/hive_2011-02-10_15-58-49_493_9028664169065372629/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: SELECT input_columnarserde.* FROM input_columnarserde DISTRIBUTE BY 1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@input_columnarserde
-POSTHOOK: Output: file:/tmp/sdong/hive_2011-02-10_15-58-49_493_9028664169065372629/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: Lineage: input_columnarserde.a SIMPLE [(src_thrift)src_thrift.FieldSchema(name:lint, type:array<int>, comment:from deserializer), ]
 POSTHOOK: Lineage: input_columnarserde.b SIMPLE [(src_thrift)src_thrift.FieldSchema(name:lstring, type:array<string>, comment:from deserializer), ]
 POSTHOOK: Lineage: input_columnarserde.c SIMPLE [(src_thrift)src_thrift.FieldSchema(name:mstringstring, type:map<string,string>, comment:from deserializer), ]
@@ -133,11 +133,11 @@ null	null	null	0	NULL
 PREHOOK: query: SELECT input_columnarserde.a[0], input_columnarserde.b[0], input_columnarserde.c['key2'], input_columnarserde.d, input_columnarserde.e FROM input_columnarserde DISTRIBUTE BY 1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@input_columnarserde
-PREHOOK: Output: file:/tmp/sdong/hive_2011-02-10_15-58-52_892_2207510405536304247/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: SELECT input_columnarserde.a[0], input_columnarserde.b[0], input_columnarserde.c['key2'], input_columnarserde.d, input_columnarserde.e FROM input_columnarserde DISTRIBUTE BY 1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@input_columnarserde
-POSTHOOK: Output: file:/tmp/sdong/hive_2011-02-10_15-58-52_892_2207510405536304247/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: Lineage: input_columnarserde.a SIMPLE [(src_thrift)src_thrift.FieldSchema(name:lint, type:array<int>, comment:from deserializer), ]
 POSTHOOK: Lineage: input_columnarserde.b SIMPLE [(src_thrift)src_thrift.FieldSchema(name:lstring, type:array<string>, comment:from deserializer), ]
 POSTHOOK: Lineage: input_columnarserde.c SIMPLE [(src_thrift)src_thrift.FieldSchema(name:mstringstring, type:map<string,string>, comment:from deserializer), ]

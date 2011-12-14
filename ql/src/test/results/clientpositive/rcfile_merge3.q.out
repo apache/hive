@@ -95,7 +95,7 @@ STAGE PLANS:
     Move Operator
       files:
           hdfs directory: true
-          destination: pfile:/data/users/franklin/hive-block-merge/build/ql/scratchdir/hive_2011-06-10_11-35-56_180_2101176296464995430/-ext-10000
+#### A masked pattern was here ####
 
   Stage: Stage-0
     Move Operator
@@ -139,7 +139,7 @@ PREHOOK: query: SELECT SUM(HASH(c)) FROM (
 PREHOOK: type: QUERY
 PREHOOK: Input: default@rcfile_merge3a@ds=1
 PREHOOK: Input: default@rcfile_merge3a@ds=2
-PREHOOK: Output: file:/tmp/franklin/hive_2011-06-10_11-36-00_682_3122909838685909929/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: SELECT SUM(HASH(c)) FROM (
     SELECT TRANSFORM(key, value) USING 'tr \t _' AS (c)
     FROM rcfile_merge3a
@@ -147,7 +147,7 @@ POSTHOOK: query: SELECT SUM(HASH(c)) FROM (
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@rcfile_merge3a@ds=1
 POSTHOOK: Input: default@rcfile_merge3a@ds=2
-POSTHOOK: Output: file:/tmp/franklin/hive_2011-06-10_11-36-00_682_3122909838685909929/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: Lineage: rcfile_merge3a PARTITION(ds=1).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: rcfile_merge3a PARTITION(ds=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: rcfile_merge3a PARTITION(ds=2).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
@@ -161,14 +161,14 @@ PREHOOK: query: SELECT SUM(HASH(c)) FROM (
 ) t
 PREHOOK: type: QUERY
 PREHOOK: Input: default@rcfile_merge3b
-PREHOOK: Output: file:/tmp/franklin/hive_2011-06-10_11-36-04_156_4816517057321682165/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: SELECT SUM(HASH(c)) FROM (
     SELECT TRANSFORM(key, value) USING 'tr \t _' AS (c)
     FROM rcfile_merge3b
 ) t
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@rcfile_merge3b
-POSTHOOK: Output: file:/tmp/franklin/hive_2011-06-10_11-36-04_156_4816517057321682165/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: Lineage: rcfile_merge3a PARTITION(ds=1).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: rcfile_merge3a PARTITION(ds=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: rcfile_merge3a PARTITION(ds=2).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
