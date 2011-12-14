@@ -132,7 +132,7 @@ STAGE PLANS:
   Stage: Stage-6
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/tmp/njain/hive_2011-12-07_17-55-14_715_2499487755302424085/-mr-10002 
+#### A masked pattern was here ####
           Union
             Map Join Operator
               condition map:
@@ -158,7 +158,7 @@ STAGE PLANS:
                     table:
                         input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                         output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
-        file:/tmp/njain/hive_2011-12-07_17-55-14_715_2499487755302424085/-mr-10004 
+#### A masked pattern was here ####
           Union
             Map Join Operator
               condition map:
@@ -190,7 +190,7 @@ STAGE PLANS:
   Stage: Stage-3
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/tmp/njain/hive_2011-12-07_17-55-14_715_2499487755302424085/-mr-10003 
+#### A masked pattern was here ####
             Reduce Output Operator
               sort order: 
               tag: -1
@@ -219,14 +219,14 @@ STAGE PLANS:
   Stage: Stage-10
     Map Reduce Local Work
       Alias -> Map Local Tables:
-        file:/tmp/njain/hive_2011-12-07_17-55-14_715_2499487755302424085/-mr-10002 
+#### A masked pattern was here ####
           Fetch Operator
             limit: -1
-        file:/tmp/njain/hive_2011-12-07_17-55-14_715_2499487755302424085/-mr-10004 
+#### A masked pattern was here ####
           Fetch Operator
             limit: -1
       Alias -> Map Local Operator Tree:
-        file:/tmp/njain/hive_2011-12-07_17-55-14_715_2499487755302424085/-mr-10002 
+#### A masked pattern was here ####
           Union
             HashTable Sink Operator
               condition expressions:
@@ -237,7 +237,7 @@ STAGE PLANS:
                 0 [Column[_col0]]
                 1 [Column[_col0]]
               Position of Big Table: 1
-        file:/tmp/njain/hive_2011-12-07_17-55-14_715_2499487755302424085/-mr-10004 
+#### A masked pattern was here ####
           Union
             HashTable Sink Operator
               condition expressions:
@@ -294,7 +294,7 @@ STAGE PLANS:
   Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/tmp/njain/hive_2011-12-07_17-55-14_715_2499487755302424085/-mr-10002 
+#### A masked pattern was here ####
           Union
             Reduce Output Operator
               key expressions:
@@ -305,7 +305,7 @@ STAGE PLANS:
                     expr: _col0
                     type: string
               tag: 0
-        file:/tmp/njain/hive_2011-12-07_17-55-14_715_2499487755302424085/-mr-10004 
+#### A masked pattern was here ####
           Union
             Reduce Output Operator
               key expressions:
@@ -396,7 +396,7 @@ JOIN
 ON src_12.key = src3.k AND src3.k < 200
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/tmp/njain/hive_2011-12-07_17-55-16_087_2232818405314135078/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: SELECT count(1)
 FROM
 (
@@ -409,5 +409,5 @@ JOIN
 ON src_12.key = src3.k AND src3.k < 200
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: file:/tmp/njain/hive_2011-12-07_17-55-16_087_2232818405314135078/-mr-10000
+#### A masked pattern was here ####
 548

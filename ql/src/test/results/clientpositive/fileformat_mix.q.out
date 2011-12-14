@@ -46,12 +46,12 @@ PREHOOK: query: select count(1) from fileformat_mix_test
 PREHOOK: type: QUERY
 PREHOOK: Input: default@fileformat_mix_test@ds=1
 PREHOOK: Input: default@fileformat_mix_test@ds=2
-PREHOOK: Output: file:/tmp/njain/hive_2010-08-16_23-43-49_631_586030129103591565/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: select count(1) from fileformat_mix_test
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@fileformat_mix_test@ds=1
 POSTHOOK: Input: default@fileformat_mix_test@ds=2
-POSTHOOK: Output: file:/tmp/njain/hive_2010-08-16_23-43-49_631_586030129103591565/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: Lineage: fileformat_mix_test PARTITION(ds=1).src EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: fileformat_mix_test PARTITION(ds=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 500
@@ -59,12 +59,12 @@ PREHOOK: query: select src from fileformat_mix_test
 PREHOOK: type: QUERY
 PREHOOK: Input: default@fileformat_mix_test@ds=1
 PREHOOK: Input: default@fileformat_mix_test@ds=2
-PREHOOK: Output: file:/tmp/njain/hive_2010-08-16_23-43-54_961_7634672861039236238/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: select src from fileformat_mix_test
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@fileformat_mix_test@ds=1
 POSTHOOK: Input: default@fileformat_mix_test@ds=2
-POSTHOOK: Output: file:/tmp/njain/hive_2010-08-16_23-43-54_961_7634672861039236238/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: Lineage: fileformat_mix_test PARTITION(ds=1).src EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: fileformat_mix_test PARTITION(ds=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 238

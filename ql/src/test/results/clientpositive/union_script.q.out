@@ -2,12 +2,12 @@ PREHOOK: query: select * from (
   select transform(key) using 'cat' as cola from src)s order by cola
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/230425942/10000
+#### A masked pattern was here ####
 POSTHOOK: query: select * from (
   select transform(key) using 'cat' as cola from src)s order by cola
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/230425942/10000
+#### A masked pattern was here ####
 0
 0
 0
@@ -514,14 +514,14 @@ PREHOOK: query: select * from (
   select transform(key) using 'cat' as cola from src) s order by cola
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/1673034806/10000
+#### A masked pattern was here ####
 POSTHOOK: query: select * from (
   select transform(key) using 'cat' as cola from src
   union all
   select transform(key) using 'cat' as cola from src) s order by cola
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/1673034806/10000
+#### A masked pattern was here ####
 0
 0
 0

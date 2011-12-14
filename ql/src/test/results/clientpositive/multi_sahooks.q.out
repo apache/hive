@@ -15,7 +15,7 @@ POSTHOOK: query: desc extended tbl_sahook
 POSTHOOK: type: DESCTABLE
 c	string	
 	 	 
-Detailed Table Information	Table(tableName:tbl_sahook, dbName:default, owner:sdong, createTime:1296268373, lastAccessTime:0, retention:0, sd:StorageDescriptor(cols:[FieldSchema(name:c, type:string, comment:null)], location:pfile:/data/users/sdong/www/open-source-hive1/build/ql/test/data/warehouse/tbl_sahook, inputFormat:org.apache.hadoop.mapred.TextInputFormat, outputFormat:org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat, compressed:false, numBuckets:-1, serdeInfo:SerDeInfo(name:null, serializationLib:org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe, parameters:{serialization.format=1}), bucketCols:[], sortCols:[], parameters:{}), partitionKeys:[], parameters:{createdBy=org.apache.hadoop.hive.ql.metadata.DummyCreateTableHook, Message=Hive rocks!! Count: 0, transient_lastDdlTime=1296268373}, viewOriginalText:null, viewExpandedText:null, tableType:MANAGED_TABLE)	
+#### A masked pattern was here ####
 PREHOOK: query: drop table tbl_sahook
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@tbl_sahook
@@ -41,7 +41,7 @@ POSTHOOK: query: desc extended tbl_sahooks
 POSTHOOK: type: DESCTABLE
 c	string	
 	 	 
-Detailed Table Information	Table(tableName:tbl_sahooks, dbName:default, owner:sdong, createTime:1296268374, lastAccessTime:0, retention:0, sd:StorageDescriptor(cols:[FieldSchema(name:c, type:string, comment:null)], location:pfile:/data/users/sdong/www/open-source-hive1/build/ql/test/data/warehouse/tbl_sahooks, inputFormat:org.apache.hadoop.mapred.TextInputFormat, outputFormat:org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat, compressed:false, numBuckets:-1, serdeInfo:SerDeInfo(name:null, serializationLib:org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe, parameters:{serialization.format=1}), bucketCols:[], sortCols:[], parameters:{}), partitionKeys:[], parameters:{createdBy=org.apache.hadoop.hive.ql.metadata.DummyCreateTableHook, Message=Open Source rocks!!, transient_lastDdlTime=1296268374}, viewOriginalText:null, viewExpandedText:null, tableType:MANAGED_TABLE)	
+#### A masked pattern was here ####
 PREHOOK: query: drop table tbl_sahooks
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@tbl_sahooks
@@ -67,7 +67,7 @@ POSTHOOK: query: desc extended tbl_sahooks
 POSTHOOK: type: DESCTABLE
 c	string	
 	 	 
-Detailed Table Information	Table(tableName:tbl_sahooks, dbName:default, owner:sdong, createTime:1296268375, lastAccessTime:0, retention:0, sd:StorageDescriptor(cols:[FieldSchema(name:c, type:string, comment:null)], location:pfile:/data/users/sdong/www/open-source-hive1/build/ql/test/data/warehouse/tbl_sahooks, inputFormat:org.apache.hadoop.mapred.TextInputFormat, outputFormat:org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat, compressed:false, numBuckets:-1, serdeInfo:SerDeInfo(name:null, serializationLib:org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe, parameters:{serialization.format=1}), bucketCols:[], sortCols:[], parameters:{}), partitionKeys:[], parameters:{createdBy=org.apache.hadoop.hive.ql.metadata.DummyCreateTableHook, Message=Hive rocks!! Count: 0, transient_lastDdlTime=1296268375}, viewOriginalText:null, viewExpandedText:null, tableType:MANAGED_TABLE)	
+#### A masked pattern was here ####
 PREHOOK: query: drop table tbl_sahooks
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@tbl_sahooks
@@ -95,7 +95,7 @@ POSTHOOK: query: desc extended tbl_sahooks
 POSTHOOK: type: DESCTABLE
 c	string	
 	 	 
-Detailed Table Information	Table(tableName:tbl_sahooks, dbName:default, owner:sdong, createTime:1296268375, lastAccessTime:0, retention:0, sd:StorageDescriptor(cols:[FieldSchema(name:c, type:string, comment:null)], location:pfile:/data/users/sdong/www/open-source-hive1/build/ql/test/data/warehouse/tbl_sahooks, inputFormat:org.apache.hadoop.mapred.TextInputFormat, outputFormat:org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat, compressed:false, numBuckets:-1, serdeInfo:SerDeInfo(name:null, serializationLib:org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe, parameters:{serialization.format=1}), bucketCols:[], sortCols:[], parameters:{}), partitionKeys:[], parameters:{createdBy=org.apache.hadoop.hive.ql.metadata.DummyCreateTableHook, Message=Hive rocks!! Count: 1, transient_lastDdlTime=1296268375}, viewOriginalText:null, viewExpandedText:null, tableType:MANAGED_TABLE)	
+#### A masked pattern was here ####
 PREHOOK: query: drop table tbl_sahooks
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@tbl_sahooks

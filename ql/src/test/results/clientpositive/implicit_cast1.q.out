@@ -55,10 +55,10 @@ FROM implicit_test1
 WHERE implicit_test1.a <> 0
 PREHOOK: type: QUERY
 PREHOOK: Input: default@implicit_test1
-PREHOOK: Output: file:/tmp/sdong/hive_2011-02-10_01-55-43_628_3651404316559049098/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: SELECT implicit_test1.*
 FROM implicit_test1
 WHERE implicit_test1.a <> 0
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@implicit_test1
-POSTHOOK: Output: file:/tmp/sdong/hive_2011-02-10_01-55-43_628_3651404316559049098/-mr-10000
+#### A masked pattern was here ####

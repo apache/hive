@@ -78,13 +78,13 @@ PREHOOK: query: SELECT example_max_n(substr(value,5),10),
 FROM src
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/tmp/sdong/hive_2011-02-16_20-10-53_304_7534916231090274814/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: SELECT example_max_n(substr(value,5),10),
        example_max_n(IF(substr(value,5) > 250, NULL, substr(value,5)),10)
 FROM src
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: file:/tmp/sdong/hive_2011-02-16_20-10-53_304_7534916231090274814/-mr-10000
+#### A masked pattern was here ####
 [498.0,498.0,498.0,497.0,496.0,495.0,494.0,493.0,492.0,492.0]	[249.0,248.0,247.0,244.0,242.0,242.0,241.0,239.0,239.0,238.0]
 PREHOOK: query: DROP TEMPORARY FUNCTION example_max_n
 PREHOOK: type: DROPFUNCTION

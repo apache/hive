@@ -16,7 +16,7 @@ PREHOOK: query: SELECT
 FROM src LIMIT 1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/tmp/krishnak/hive_2011-03-21_05-32-16_431_1630675993955239365/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: SELECT
   field("x", "a", "b", "c", "d"),
   field(NULL, "a", "b", "c", "d"),
@@ -24,7 +24,7 @@ POSTHOOK: query: SELECT
 FROM src LIMIT 1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: file:/tmp/krishnak/hive_2011-03-21_05-32-16_431_1630675993955239365/-mr-10000
+#### A masked pattern was here ####
 0	0	0
 PREHOOK: query: SELECT
   field("a", "a", "b", "c", "d"),
@@ -35,7 +35,7 @@ PREHOOK: query: SELECT
 FROM src LIMIT 1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/tmp/krishnak/hive_2011-03-21_05-32-19_522_8239635445336730838/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: SELECT
   field("a", "a", "b", "c", "d"),
   field("b", "a", "b", "c", "d"),
@@ -45,7 +45,7 @@ POSTHOOK: query: SELECT
 FROM src LIMIT 1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: file:/tmp/krishnak/hive_2011-03-21_05-32-19_522_8239635445336730838/-mr-10000
+#### A masked pattern was here ####
 1	2	3	4	4
 PREHOOK: query: SELECT
   field(1, 1, 2, 3, 4),
@@ -56,7 +56,7 @@ PREHOOK: query: SELECT
 FROM src LIMIT 1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/tmp/krishnak/hive_2011-03-21_05-32-22_470_7020781626233826997/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: SELECT
   field(1, 1, 2, 3, 4),
   field(2, 1, 2, 3, 4),
@@ -66,7 +66,7 @@ POSTHOOK: query: SELECT
 FROM src LIMIT 1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: file:/tmp/krishnak/hive_2011-03-21_05-32-22_470_7020781626233826997/-mr-10000
+#### A masked pattern was here ####
 1	2	3	4	4
 PREHOOK: query: CREATE TABLE test_table(col1 STRING, col2 STRING) STORED AS TEXTFILE
 PREHOOK: type: CREATETABLE
@@ -93,7 +93,7 @@ PREHOOK: query: select col1,col2,
 from test_table where col1="86" or col1="66"
 PREHOOK: type: QUERY
 PREHOOK: Input: default@test_table
-PREHOOK: Output: file:/tmp/krishnak/hive_2011-03-21_05-32-25_536_3123360498424168428/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: select col1,col2,
   field("66",col1),
   field("66",col1, col2),
@@ -108,7 +108,7 @@ POSTHOOK: query: select col1,col2,
 from test_table where col1="86" or col1="66"
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@test_table
-POSTHOOK: Output: file:/tmp/krishnak/hive_2011-03-21_05-32-25_536_3123360498424168428/-mr-10000
+#### A masked pattern was here ####
 86	val_86	0	0	2	0	0	0	0	0	2	0
 66	val_66	1	1	0	0	0	1	0	0	2	2
 PREHOOK: query: CREATE TABLE test_table1(col1 int, col2 string) STORED AS TEXTFILE
@@ -133,7 +133,7 @@ PREHOOK: query: select col1,col2,
 from (select col1, col2, NULL as n from test_table1 where col1=86 or col1=66) t
 PREHOOK: type: QUERY
 PREHOOK: Input: default@test_table1
-PREHOOK: Output: file:/tmp/krishnak/hive_2011-03-21_05-32-28_737_3548755281830392909/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: select col1,col2,
   field(66,col1),
   field(66,col1, col2),
@@ -145,6 +145,6 @@ POSTHOOK: query: select col1,col2,
 from (select col1, col2, NULL as n from test_table1 where col1=86 or col1=66) t
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@test_table1
-POSTHOOK: Output: file:/tmp/krishnak/hive_2011-03-21_05-32-28_737_3548755281830392909/-mr-10000
+#### A masked pattern was here ####
 86	val_86	0	0	2	1	1	0	0
 66	val_66	1	1	0	0	0	0	0

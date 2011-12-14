@@ -25,12 +25,12 @@ PREHOOK: query: select count(1) from partition_test_partitioned  a join partitio
 where a.dt = '101' and b.dt = '101'
 PREHOOK: type: QUERY
 PREHOOK: Input: default@partition_test_partitioned@dt=101
-PREHOOK: Output: file:/tmp/njain/hive_2011-02-02_15-45-22_412_8167802428528151380/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: select count(1) from partition_test_partitioned  a join partition_test_partitioned  b on a.key = b.key
 where a.dt = '101' and b.dt = '101'
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@partition_test_partitioned@dt=101
-POSTHOOK: Output: file:/tmp/njain/hive_2011-02-02_15-45-22_412_8167802428528151380/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: Lineage: partition_test_partitioned PARTITION(dt=101).key SIMPLE [(src1)src1.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: partition_test_partitioned PARTITION(dt=101).value SIMPLE [(src1)src1.FieldSchema(name:value, type:string, comment:default), ]
 115
@@ -38,12 +38,12 @@ PREHOOK: query: select count(1) from partition_test_partitioned  a join partitio
 where a.dt = '101' and b.dt = '101' and a.key < 100
 PREHOOK: type: QUERY
 PREHOOK: Input: default@partition_test_partitioned@dt=101
-PREHOOK: Output: file:/tmp/njain/hive_2011-02-02_15-45-28_424_5032685511472669327/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: select count(1) from partition_test_partitioned  a join partition_test_partitioned  b on a.key = b.key
 where a.dt = '101' and b.dt = '101' and a.key < 100
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@partition_test_partitioned@dt=101
-POSTHOOK: Output: file:/tmp/njain/hive_2011-02-02_15-45-28_424_5032685511472669327/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: Lineage: partition_test_partitioned PARTITION(dt=101).key SIMPLE [(src1)src1.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: partition_test_partitioned PARTITION(dt=101).value SIMPLE [(src1)src1.FieldSchema(name:value, type:string, comment:default), ]
 2

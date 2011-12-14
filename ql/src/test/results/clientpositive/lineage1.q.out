@@ -102,7 +102,7 @@ STAGE PLANS:
   Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/tmp/njain/hive_2011-12-07_17-58-28_928_7172632558607469868/-mr-10002 
+#### A masked pattern was here ####
           Union
             Select Operator
               expressions:
@@ -126,7 +126,7 @@ STAGE PLANS:
                       output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                       serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                       name: default.dest_l1
-        file:/tmp/njain/hive_2011-12-07_17-58-28_928_7172632558607469868/-mr-10004 
+#### A masked pattern was here ####
           Union
             Select Operator
               expressions:
@@ -158,7 +158,7 @@ STAGE PLANS:
     Move Operator
       files:
           hdfs directory: true
-          destination: pfile:/data/users/njain/hive_commit2/build/ql/scratchdir/hive_2011-12-07_17-58-28_928_7172632558607469868/-ext-10000
+#### A masked pattern was here ####
 
   Stage: Stage-0
     Move Operator
@@ -176,7 +176,7 @@ STAGE PLANS:
   Stage: Stage-4
     Map Reduce
       Alias -> Map Operator Tree:
-        pfile:/data/users/njain/hive_commit2/build/ql/scratchdir/hive_2011-12-07_17-58-28_928_7172632558607469868/-ext-10003 
+#### A masked pattern was here ####
             File Output Operator
               compressed: false
               GlobalTableId: 0

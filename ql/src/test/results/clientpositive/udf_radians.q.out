@@ -39,20 +39,20 @@ STAGE PLANS:
 PREHOOK: query: select radians(57.2958) FROM src LIMIT 1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/tmp/sdong/hive_2011-02-10_17-39-44_078_9109783333773553444/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: select radians(57.2958) FROM src LIMIT 1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: file:/tmp/sdong/hive_2011-02-10_17-39-44_078_9109783333773553444/-mr-10000
+#### A masked pattern was here ####
 1.000000357564167
 PREHOOK: query: select radians(143.2394) FROM src LIMIT 1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/tmp/sdong/hive_2011-02-10_17-39-47_306_1941990909459019781/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: select radians(143.2394) FROM src LIMIT 1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: file:/tmp/sdong/hive_2011-02-10_17-39-47_306_1941990909459019781/-mr-10000
+#### A masked pattern was here ####
 2.4999991485811655
 PREHOOK: query: DESCRIBE FUNCTION radians
 PREHOOK: type: DESCFUNCTION
@@ -109,20 +109,20 @@ STAGE PLANS:
 PREHOOK: query: select radians(57.2958) FROM src LIMIT 1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/tmp/sdong/hive_2011-02-10_17-39-50_816_7653095422070360785/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: select radians(57.2958) FROM src LIMIT 1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: file:/tmp/sdong/hive_2011-02-10_17-39-50_816_7653095422070360785/-mr-10000
+#### A masked pattern was here ####
 1.000000357564167
 PREHOOK: query: select radians(143.2394) FROM src LIMIT 1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/tmp/sdong/hive_2011-02-10_17-39-54_090_7082105358146623132/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: select radians(143.2394) FROM src LIMIT 1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: file:/tmp/sdong/hive_2011-02-10_17-39-54_090_7082105358146623132/-mr-10000
+#### A masked pattern was here ####
 2.4999991485811655
 PREHOOK: query: DESCRIBE FUNCTION radians
 PREHOOK: type: DESCFUNCTION

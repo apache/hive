@@ -107,7 +107,7 @@ STAGE PLANS:
   Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/tmp/sdong/hive_2011-02-10_16-29-02_402_7594296411239609393/-mr-10002 
+#### A masked pattern was here ####
             Reduce Output Operator
               key expressions:
                     expr: _col0
@@ -443,24 +443,24 @@ PREHOOK: query: -- Verify that * selects columns from both tables
 SELECT * FROM src LATERAL VIEW explode(array(1,2,3)) myTable AS myCol SORT BY key ASC, myCol ASC LIMIT 1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/tmp/sdong/hive_2011-02-10_16-29-02_729_205682555561259435/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: -- Verify that * selects columns from both tables
 SELECT * FROM src LATERAL VIEW explode(array(1,2,3)) myTable AS myCol SORT BY key ASC, myCol ASC LIMIT 1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: file:/tmp/sdong/hive_2011-02-10_16-29-02_729_205682555561259435/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: Lineage: tmp_pyang_lv.inputs SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 0	val_0	1
 PREHOOK: query: -- TABLE.* should be supported
 SELECT myTable.* FROM src LATERAL VIEW explode(array(1,2,3)) myTable AS myCol LIMIT 3
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/tmp/sdong/hive_2011-02-10_16-29-09_295_2505782742476744902/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: -- TABLE.* should be supported
 SELECT myTable.* FROM src LATERAL VIEW explode(array(1,2,3)) myTable AS myCol LIMIT 3
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: file:/tmp/sdong/hive_2011-02-10_16-29-09_295_2505782742476744902/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: Lineage: tmp_pyang_lv.inputs SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 1
 2
@@ -469,12 +469,12 @@ PREHOOK: query: -- Multiple lateral views should result in a Cartesian product
 SELECT myTable.myCol, myTable2.myCol2 FROM src LATERAL VIEW explode(array(1,2,3)) myTable AS myCol LATERAL VIEW explode(array('a', 'b', 'c')) myTable2 AS myCol2 LIMIT 9
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/tmp/sdong/hive_2011-02-10_16-29-12_619_6077823979519528691/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: -- Multiple lateral views should result in a Cartesian product
 SELECT myTable.myCol, myTable2.myCol2 FROM src LATERAL VIEW explode(array(1,2,3)) myTable AS myCol LATERAL VIEW explode(array('a', 'b', 'c')) myTable2 AS myCol2 LIMIT 9
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: file:/tmp/sdong/hive_2011-02-10_16-29-12_619_6077823979519528691/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: Lineage: tmp_pyang_lv.inputs SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 1	a
 1	b
@@ -489,12 +489,12 @@ PREHOOK: query: -- Should be able to reference tables generated earlier
 SELECT myTable2.* FROM src LATERAL VIEW explode(array(array(1,2,3))) myTable AS myCol LATERAL VIEW explode(myTable.myCol) myTable2 AS myCol2 LIMIT 3
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/tmp/sdong/hive_2011-02-10_16-29-16_064_2217988687106915683/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: -- Should be able to reference tables generated earlier
 SELECT myTable2.* FROM src LATERAL VIEW explode(array(array(1,2,3))) myTable AS myCol LATERAL VIEW explode(myTable.myCol) myTable2 AS myCol2 LIMIT 3
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: file:/tmp/sdong/hive_2011-02-10_16-29-16_064_2217988687106915683/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: Lineage: tmp_pyang_lv.inputs SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 1
 2
@@ -567,11 +567,11 @@ STAGE PLANS:
 PREHOOK: query: SELECT myCol from tmp_PYANG_lv LATERAL VIEW explode(array(1,2,3)) myTab as myCol limit 3
 PREHOOK: type: QUERY
 PREHOOK: Input: default@tmp_pyang_lv
-PREHOOK: Output: file:/tmp/sdong/hive_2011-02-10_16-29-19_576_2283639595696470136/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: SELECT myCol from tmp_PYANG_lv LATERAL VIEW explode(array(1,2,3)) myTab as myCol limit 3
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@tmp_pyang_lv
-POSTHOOK: Output: file:/tmp/sdong/hive_2011-02-10_16-29-19_576_2283639595696470136/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: Lineage: tmp_pyang_lv.inputs SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 1
 2
@@ -596,11 +596,11 @@ POSTHOOK: Lineage: tmp_pyang_src_rcfile.value EXPRESSION [(src)src.FieldSchema(n
 PREHOOK: query: SELECT key,value from tmp_pyang_src_rcfile LATERAL VIEW explode(value) myTable AS myCol
 PREHOOK: type: QUERY
 PREHOOK: Input: default@tmp_pyang_src_rcfile
-PREHOOK: Output: file:/tmp/sdong/hive_2011-02-10_16-29-30_471_5303128627208314686/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: SELECT key,value from tmp_pyang_src_rcfile LATERAL VIEW explode(value) myTable AS myCol
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@tmp_pyang_src_rcfile
-POSTHOOK: Output: file:/tmp/sdong/hive_2011-02-10_16-29-30_471_5303128627208314686/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: Lineage: tmp_pyang_lv.inputs SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: tmp_pyang_src_rcfile.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: tmp_pyang_src_rcfile.value EXPRESSION [(src)src.FieldSchema(name:value, type:string, comment:default), ]
@@ -627,11 +627,11 @@ POSTHOOK: Lineage: tmp_pyang_src_rcfile.value EXPRESSION [(src)src.FieldSchema(n
 PREHOOK: query: SELECT myCol from tmp_pyang_src_rcfile LATERAL VIEW explode(value) myTable AS myCol
 PREHOOK: type: QUERY
 PREHOOK: Input: default@tmp_pyang_src_rcfile
-PREHOOK: Output: file:/tmp/sdong/hive_2011-02-10_16-29-33_783_1146265769626074137/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: SELECT myCol from tmp_pyang_src_rcfile LATERAL VIEW explode(value) myTable AS myCol
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@tmp_pyang_src_rcfile
-POSTHOOK: Output: file:/tmp/sdong/hive_2011-02-10_16-29-33_783_1146265769626074137/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: Lineage: tmp_pyang_lv.inputs SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: tmp_pyang_src_rcfile.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: tmp_pyang_src_rcfile.value EXPRESSION [(src)src.FieldSchema(name:value, type:string, comment:default), ]
@@ -658,11 +658,11 @@ val_119
 PREHOOK: query: SELECT * from tmp_pyang_src_rcfile LATERAL VIEW explode(value) myTable AS myCol
 PREHOOK: type: QUERY
 PREHOOK: Input: default@tmp_pyang_src_rcfile
-PREHOOK: Output: file:/tmp/sdong/hive_2011-02-10_16-29-37_103_4143805227896340217/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: SELECT * from tmp_pyang_src_rcfile LATERAL VIEW explode(value) myTable AS myCol
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@tmp_pyang_src_rcfile
-POSTHOOK: Output: file:/tmp/sdong/hive_2011-02-10_16-29-37_103_4143805227896340217/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: Lineage: tmp_pyang_lv.inputs SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: tmp_pyang_src_rcfile.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: tmp_pyang_src_rcfile.value EXPRESSION [(src)src.FieldSchema(name:value, type:string, comment:default), ]
@@ -692,14 +692,14 @@ SELECT * from tmp_pyang_src_rcfile LATERAL VIEW explode(value) myTable AS myCol
 )subq
 PREHOOK: type: QUERY
 PREHOOK: Input: default@tmp_pyang_src_rcfile
-PREHOOK: Output: file:/tmp/sdong/hive_2011-02-10_16-29-40_427_6742023612535673657/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: SELECT subq.key,subq.value 
 FROM (
 SELECT * from tmp_pyang_src_rcfile LATERAL VIEW explode(value) myTable AS myCol
 )subq
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@tmp_pyang_src_rcfile
-POSTHOOK: Output: file:/tmp/sdong/hive_2011-02-10_16-29-40_427_6742023612535673657/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: Lineage: tmp_pyang_lv.inputs SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: tmp_pyang_src_rcfile.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: tmp_pyang_src_rcfile.value EXPRESSION [(src)src.FieldSchema(name:value, type:string, comment:default), ]
@@ -729,14 +729,14 @@ SELECT * from tmp_pyang_src_rcfile LATERAL VIEW explode(value) myTable AS myCol
 )subq
 PREHOOK: type: QUERY
 PREHOOK: Input: default@tmp_pyang_src_rcfile
-PREHOOK: Output: file:/tmp/sdong/hive_2011-02-10_16-29-43_749_1238874552855937545/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: SELECT subq.myCol
 FROM (
 SELECT * from tmp_pyang_src_rcfile LATERAL VIEW explode(value) myTable AS myCol
 )subq
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@tmp_pyang_src_rcfile
-POSTHOOK: Output: file:/tmp/sdong/hive_2011-02-10_16-29-43_749_1238874552855937545/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: Lineage: tmp_pyang_lv.inputs SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: tmp_pyang_src_rcfile.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: tmp_pyang_src_rcfile.value EXPRESSION [(src)src.FieldSchema(name:value, type:string, comment:default), ]
@@ -766,14 +766,14 @@ SELECT key, value from tmp_pyang_src_rcfile LATERAL VIEW explode(value) myTable 
 )subq
 PREHOOK: type: QUERY
 PREHOOK: Input: default@tmp_pyang_src_rcfile
-PREHOOK: Output: file:/tmp/sdong/hive_2011-02-10_16-29-47_067_9022053012103959759/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: SELECT subq.key 
 FROM (
 SELECT key, value from tmp_pyang_src_rcfile LATERAL VIEW explode(value) myTable AS myCol
 )subq
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@tmp_pyang_src_rcfile
-POSTHOOK: Output: file:/tmp/sdong/hive_2011-02-10_16-29-47_067_9022053012103959759/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: Lineage: tmp_pyang_lv.inputs SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: tmp_pyang_src_rcfile.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: tmp_pyang_src_rcfile.value EXPRESSION [(src)src.FieldSchema(name:value, type:string, comment:default), ]
@@ -916,12 +916,12 @@ PREHOOK: query: SELECT value, myCol from (SELECT key, array(value[0]) AS value F
 LATERAL VIEW explode(value) myTable AS myCol
 PREHOOK: type: QUERY
 PREHOOK: Input: default@tmp_pyang_src_rcfile
-PREHOOK: Output: file:/tmp/sdong/hive_2011-02-10_16-29-50_517_5895557777710351720/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: SELECT value, myCol from (SELECT key, array(value[0]) AS value FROM tmp_pyang_src_rcfile GROUP BY value[0], key) a
 LATERAL VIEW explode(value) myTable AS myCol
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@tmp_pyang_src_rcfile
-POSTHOOK: Output: file:/tmp/sdong/hive_2011-02-10_16-29-50_517_5895557777710351720/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: Lineage: tmp_pyang_lv.inputs SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: tmp_pyang_src_rcfile.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: tmp_pyang_src_rcfile.value EXPRESSION [(src)src.FieldSchema(name:value, type:string, comment:default), ]

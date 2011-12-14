@@ -88,7 +88,7 @@ STAGE PLANS:
   Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/tmp/njain/hive_2011-12-07_18-06-27_327_8112398566049944010/-mr-10002 
+#### A masked pattern was here ####
           Union
             Select Operator
               expressions:
@@ -101,7 +101,7 @@ STAGE PLANS:
                 table:
                     input format: org.apache.hadoop.mapred.TextInputFormat
                     output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-        file:/tmp/njain/hive_2011-12-07_18-06-27_327_8112398566049944010/-mr-10003 
+#### A masked pattern was here ####
           Union
             Select Operator
               expressions:
@@ -114,7 +114,7 @@ STAGE PLANS:
                 table:
                     input format: org.apache.hadoop.mapred.TextInputFormat
                     output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-        file:/tmp/njain/hive_2011-12-07_18-06-27_327_8112398566049944010/-mr-10005 
+#### A masked pattern was here ####
           Union
             Select Operator
               expressions:
@@ -127,7 +127,7 @@ STAGE PLANS:
                 table:
                     input format: org.apache.hadoop.mapred.TextInputFormat
                     output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-        file:/tmp/njain/hive_2011-12-07_18-06-27_327_8112398566049944010/-mr-10007 
+#### A masked pattern was here ####
           Union
             Select Operator
               expressions:
@@ -218,7 +218,7 @@ STAGE PLANS:
   Stage: Stage-5
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/tmp/njain/hive_2011-12-07_18-06-27_327_8112398566049944010/-mr-10004 
+#### A masked pattern was here ####
             Reduce Output Operator
               key expressions:
                     expr: _col0
@@ -280,7 +280,7 @@ STAGE PLANS:
   Stage: Stage-7
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/tmp/njain/hive_2011-12-07_18-06-27_327_8112398566049944010/-mr-10006 
+#### A masked pattern was here ####
             Reduce Output Operator
               key expressions:
                     expr: _col0
@@ -356,11 +356,11 @@ POSTHOOK: Lineage: union_out.id EXPRESSION []
 PREHOOK: query: select * from union_out cluster by id
 PREHOOK: type: QUERY
 PREHOOK: Input: default@union_out
-PREHOOK: Output: file:/tmp/njain/hive_2011-12-07_18-06-50_528_7611594880529632821/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: select * from union_out cluster by id
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@union_out
-POSTHOOK: Output: file:/tmp/njain/hive_2011-12-07_18-06-50_528_7611594880529632821/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: Lineage: union_out.id EXPRESSION []
 1
 2

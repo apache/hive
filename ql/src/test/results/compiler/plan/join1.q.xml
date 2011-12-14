@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?> 
-<java version="1.6.0_22" class="java.beans.XMLDecoder"> 
+#### A masked pattern was here #### 
  <object id="MapRedTask0" class="org.apache.hadoop.hive.ql.exec.MapRedTask"> 
   <void property="childTasks"> 
    <object class="java.util.ArrayList"> 
@@ -22,7 +22,7 @@
           <void property="work"> 
            <object class="org.apache.hadoop.hive.ql.plan.StatsWork"> 
             <void property="aggKey"> 
-             <string>pfile:/data/users/charleschen/hive-trunk/build/ql/scratchdir/hive_2011-08-04_17-13-31_618_4947074952405203802/-ext-10000/</string> 
+             #### A masked pattern was here #### 
             </void> 
            </object> 
           </void> 
@@ -58,7 +58,7 @@
            <boolean>true</boolean> 
           </void> 
           <void property="sourceDir"> 
-           <string>pfile:/data/users/charleschen/hive-trunk/build/ql/scratchdir/hive_2011-08-04_17-13-31_618_4947074952405203802/-ext-10000</string> 
+           #### A masked pattern was here #### 
           </void> 
           <void property="table"> 
            <object id="TableDesc0" class="org.apache.hadoop.hive.ql.plan.TableDesc"> 
@@ -111,11 +111,11 @@
               </void> 
               <void method="put"> 
                <string>location</string> 
-               <string>pfile:/data/users/charleschen/hive-trunk/build/ql/test/data/warehouse/dest1</string> 
+               #### A masked pattern was here #### 
               </void> 
               <void method="put"> 
                <string>transient_lastDdlTime</string> 
-               <string>1312503211</string> 
+               #### A masked pattern was here #### 
               </void> 
              </object> 
             </void> 
@@ -125,7 +125,7 @@
            </object> 
           </void> 
           <void property="tmpDir"> 
-           <string>pfile:/data/users/charleschen/hive-trunk/build/ql/scratchdir/hive_2011-08-04_17-13-31_618_4947074952405203802/-ext-10001</string> 
+           #### A masked pattern was here #### 
           </void> 
          </object> 
         </void> 
@@ -196,11 +196,11 @@
          </void> 
          <void method="put"> 
           <string>location</string> 
-          <string>pfile:/data/users/charleschen/hive-trunk/build/ql/test/data/warehouse/src</string> 
+          #### A masked pattern was here #### 
          </void> 
          <void method="put"> 
           <string>transient_lastDdlTime</string> 
-          <string>1312503209</string> 
+          #### A masked pattern was here #### 
          </void> 
         </object> 
        </void> 
@@ -258,11 +258,11 @@
            </void> 
            <void method="put"> 
             <string>location</string> 
-            <string>pfile:/data/users/charleschen/hive-trunk/build/ql/test/data/warehouse/src</string> 
+            #### A masked pattern was here #### 
            </void> 
            <void method="put"> 
             <string>transient_lastDdlTime</string> 
-            <string>1312503209</string> 
+            #### A masked pattern was here #### 
            </void> 
           </object> 
          </void> 
@@ -328,11 +328,11 @@
          </void> 
          <void method="put"> 
           <string>location</string> 
-          <string>pfile:/data/users/charleschen/hive-trunk/build/ql/test/data/warehouse/src</string> 
+          #### A masked pattern was here #### 
          </void> 
          <void method="put"> 
           <string>transient_lastDdlTime</string> 
-          <string>1312503209</string> 
+          #### A masked pattern was here #### 
          </void> 
         </object> 
        </void> 
@@ -390,11 +390,11 @@
            </void> 
            <void method="put"> 
             <string>location</string> 
-            <string>pfile:/data/users/charleschen/hive-trunk/build/ql/test/data/warehouse/src</string> 
+            #### A masked pattern was here #### 
            </void> 
            <void method="put"> 
             <string>transient_lastDdlTime</string> 
-            <string>1312503209</string> 
+            #### A masked pattern was here #### 
            </void> 
           </object> 
          </void> 
@@ -1040,7 +1040,7 @@
     <void property="pathToAliases"> 
      <object class="java.util.LinkedHashMap"> 
       <void method="put"> 
-       <string>pfile:/data/users/charleschen/hive-trunk/build/ql/test/data/warehouse/src</string> 
+       #### A masked pattern was here #### 
        <object class="java.util.ArrayList"> 
         <void method="add"> 
          <string>src2</string> 
@@ -1055,7 +1055,7 @@
     <void property="pathToPartitionInfo"> 
      <object class="java.util.LinkedHashMap"> 
       <void method="put"> 
-       <string>pfile:/data/users/charleschen/hive-trunk/build/ql/test/data/warehouse/src</string> 
+       #### A masked pattern was here #### 
        <object class="org.apache.hadoop.hive.ql.plan.PartitionDesc"> 
         <void property="baseFileName"> 
          <string>src</string> 
@@ -1112,11 +1112,11 @@
           </void> 
           <void method="put"> 
            <string>location</string> 
-           <string>pfile:/data/users/charleschen/hive-trunk/build/ql/test/data/warehouse/src</string> 
+           #### A masked pattern was here #### 
           </void> 
           <void method="put"> 
            <string>transient_lastDdlTime</string> 
-           <string>1312503209</string> 
+           #### A masked pattern was here #### 
           </void> 
          </object> 
         </void> 
@@ -1174,11 +1174,11 @@
             </void> 
             <void method="put"> 
              <string>location</string> 
-             <string>pfile:/data/users/charleschen/hive-trunk/build/ql/test/data/warehouse/src</string> 
+             #### A masked pattern was here #### 
             </void> 
             <void method="put"> 
              <string>transient_lastDdlTime</string> 
-             <string>1312503209</string> 
+             #### A masked pattern was here #### 
             </void> 
            </object> 
           </void> 
@@ -1207,7 +1207,7 @@
                  <int>1</int> 
                 </void> 
                 <void property="dirName"> 
-                 <string>pfile:/data/users/charleschen/hive-trunk/build/ql/scratchdir/hive_2011-08-04_17-13-31_618_4947074952405203802/-ext-10000</string> 
+                 #### A masked pattern was here #### 
                 </void> 
                 <void property="gatherStats"> 
                  <boolean>true</boolean> 
@@ -1216,7 +1216,7 @@
                  <int>1</int> 
                 </void> 
                 <void property="statsAggPrefix"> 
-                 <string>pfile:/data/users/charleschen/hive-trunk/build/ql/scratchdir/hive_2011-08-04_17-13-31_618_4947074952405203802/-ext-10000/</string> 
+                 #### A masked pattern was here #### 
                 </void> 
                 <void property="tableInfo"> 
                  <object idref="TableDesc0"/> 

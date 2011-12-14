@@ -143,7 +143,7 @@ STAGE PLANS:
     Move Operator
       files:
           hdfs directory: true
-          destination: pfile:/home/krishnak/hive-howl/hive-git-apache/build/ql/scratchdir/hive_2011-03-21_04-08-57_744_5652858185751684707/-ext-10000
+#### A masked pattern was here ####
 
   Stage: Stage-0
     Move Operator
@@ -164,7 +164,7 @@ STAGE PLANS:
   Stage: Stage-3
     Map Reduce
       Alias -> Map Operator Tree:
-        pfile:/home/krishnak/hive-howl/hive-git-apache/build/ql/scratchdir/hive_2011-03-21_04-08-57_744_5652858185751684707/-ext-10002 
+#### A masked pattern was here ####
             File Output Operator
               compressed: false
               GlobalTableId: 0
@@ -206,14 +206,14 @@ PREHOOK: Input: default@merge_dynamic_part@ds=2008-04-08/hr=11
 PREHOOK: Input: default@merge_dynamic_part@ds=2008-04-08/hr=12
 PREHOOK: Input: default@merge_dynamic_part@ds=2008-04-09/hr=11
 PREHOOK: Input: default@merge_dynamic_part@ds=2008-04-09/hr=12
-PREHOOK: Output: file:/tmp/krishnak/hive_2011-03-21_04-09-06_498_2526338891417606549/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: select ds, hr, count(1) from merge_dynamic_part where ds>='2008-04-08' group by ds, hr order by ds, hr
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@merge_dynamic_part@ds=2008-04-08/hr=11
 POSTHOOK: Input: default@merge_dynamic_part@ds=2008-04-08/hr=12
 POSTHOOK: Input: default@merge_dynamic_part@ds=2008-04-09/hr=11
 POSTHOOK: Input: default@merge_dynamic_part@ds=2008-04-09/hr=12
-POSTHOOK: Output: file:/tmp/krishnak/hive_2011-03-21_04-09-06_498_2526338891417606549/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: Lineage: merge_dynamic_part PARTITION(ds=2008-04-08,hr=11).key SIMPLE [(srcpart_merge_dp)srcpart_merge_dp.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: merge_dynamic_part PARTITION(ds=2008-04-08,hr=11).value SIMPLE [(srcpart_merge_dp)srcpart_merge_dp.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: merge_dynamic_part PARTITION(ds=2008-04-08,hr=12).key SIMPLE [(srcpart_merge_dp)srcpart_merge_dp.FieldSchema(name:key, type:string, comment:default), ]
@@ -239,8 +239,7 @@ POSTHOOK: Lineage: merge_dynamic_part PARTITION(ds=2008-04-09,hr=11).value SIMPL
 POSTHOOK: Lineage: merge_dynamic_part PARTITION(ds=2008-04-09,hr=12).key SIMPLE [(srcpart_merge_dp)srcpart_merge_dp.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: merge_dynamic_part PARTITION(ds=2008-04-09,hr=12).value SIMPLE [(srcpart_merge_dp)srcpart_merge_dp.FieldSchema(name:value, type:string, comment:default), ]
 tableName:merge_dynamic_part
-owner:null
-location:pfile:/home/krishnak/hive-howl/hive-git-apache/build/ql/test/data/warehouse/merge_dynamic_part
+#### A masked pattern was here ####
 inputformat:org.apache.hadoop.mapred.TextInputFormat
 outputformat:org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
 columns:struct columns { string key, string value}
@@ -250,6 +249,5 @@ totalNumberFiles:6
 totalFileSize:34830
 maxFileSize:5812
 minFileSize:5791
-lastAccessTime:0
-lastUpdateTime:1300705746000
+#### A masked pattern was here ####
 

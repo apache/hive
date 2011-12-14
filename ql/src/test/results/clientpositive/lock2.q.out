@@ -106,8 +106,7 @@ POSTHOOK: Lineage: tstsrc.value SIMPLE [(src)src.FieldSchema(name:value, type:st
 POSTHOOK: Lineage: tstsrcpart PARTITION(ds=2008-04-08,hr=11).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: tstsrcpart PARTITION(ds=2008-04-08,hr=11).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
 default@tstsrcpart@ds=2008-04-08/hr=11	EXCLUSIVE
-LOCK_QUERYID:jiayan_20110907111919_b1ed9c04-a24b-432e-be72-4953089559b9	 
-LOCK_TIME:1315419586383	 
+#### A masked pattern was here ####
 LOCK_MODE:EXPLICIT	 
 LOCK_QUERYSTRING:LOCK TABLE tstsrcpart PARTITION(ds='2008-04-08', hr='11') EXCLUSIVE	 
 PREHOOK: query: UNLOCK TABLE tstsrc

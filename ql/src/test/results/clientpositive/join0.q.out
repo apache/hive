@@ -100,7 +100,7 @@ STAGE PLANS:
   Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/var/folders/bZ/bZe+iKfoFTuPoShRd6dy6-tOU9Y/-Tmp-/njain/hive_2011-11-03_16-13-27_794_5039563178190087904/-mr-10002 
+#### A masked pattern was here ####
             Reduce Output Operator
               key expressions:
                     expr: _col0
@@ -152,7 +152,7 @@ SELECT src1.key as k1, src1.value as v1,
   (SELECT * FROM src WHERE src.key < 10) src2
   SORT BY k1, v1, k2, v2
 POSTHOOK: type: QUERY
-{"STAGE PLANS":{"Stage-2":{"Map Reduce":{"Reduce Operator Tree:":{"OP_11":{"FS_12":{"File Output Operator":{"GlobalTableId:":"0","compressed:":"false","table:":{"input format:":"org.apache.hadoop.mapred.TextInputFormat","output format:":"org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat"}}}}},"Alias -> Map Operator Tree:":{"file:/var/folders/bZ/bZe+iKfoFTuPoShRd6dy6-tOU9Y/-Tmp-/njain/hive_2011-11-03_16-13-28_171_2888498791907064539/-mr-10002":{"TS_16":{"RS_10":{"Reduce Output Operator":{"Map-reduce partition columns:":"","sort order:":"++++","tag:":"-1","value expressions:":"{\"type:\":\"string\",\"expr:\":\"_col0\"}, {\"type:\":\"string\",\"expr:\":\"_col1\"}, {\"type:\":\"string\",\"expr:\":\"_col2\"}, {\"type:\":\"string\",\"expr:\":\"_col3\"}","key expressions:":"{\"type:\":\"string\",\"expr:\":\"_col0\"}, {\"type:\":\"string\",\"expr:\":\"_col1\"}, {\"type:\":\"string\",\"expr:\":\"_col2\"}, {\"type:\":\"string\",\"expr:\":\"_col3\"}"}}}}},"Percentage Sample:":{}}},"Stage-1":{"Map Reduce":{"Reduce Operator Tree:":{"JOIN_8":{"SEL_9":{"FS_15":{"File Output Operator":{"GlobalTableId:":"0","compressed:":"false","table:":{"input format:":"org.apache.hadoop.mapred.SequenceFileInputFormat","output format:":"org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat"}}}}}},"Alias -> Map Operator Tree:":{"src2:src":{"TS_0":{"FIL_13":{"SEL_2":{"RS_7":{"Reduce Output Operator":{"Map-reduce partition columns:":"","sort order:":"","tag:":"1","value expressions:":"{\"type:\":\"string\",\"expr:\":\"_col0\"}, {\"type:\":\"string\",\"expr:\":\"_col1\"}","key expressions:":""}}}}}},"src1:src":{"TS_3":{"FIL_14":{"SEL_5":{"RS_6":{"Reduce Output Operator":{"Map-reduce partition columns:":"","sort order:":"","tag:":"0","value expressions:":"{\"type:\":\"string\",\"expr:\":\"_col0\"}, {\"type:\":\"string\",\"expr:\":\"_col1\"}","key expressions:":""}}}}}}},"Percentage Sample:":{}}},"Stage-0":{"Fetch Operator":{"limit:":"-1"}}},"STAGE DEPENDENCIES":{"Stage-2":{"DEPENDENT STAGES":"Stage-1"},"Stage-1":{"ROOT STAGE":"TRUE"},"Stage-0":{"ROOT STAGE":"TRUE"}},"ABSTRACT SYNTAX TREE":"(TOK_QUERY (TOK_FROM (TOK_JOIN (TOK_SUBQUERY (TOK_QUERY (TOK_FROM (TOK_TABREF (TOK_TABNAME src))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR TOK_ALLCOLREF)) (TOK_WHERE (< (. (TOK_TABLE_OR_COL src) key) 10)))) src1) (TOK_SUBQUERY (TOK_QUERY (TOK_FROM (TOK_TABREF (TOK_TABNAME src))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR TOK_ALLCOLREF)) (TOK_WHERE (< (. (TOK_TABLE_OR_COL src) key) 10)))) src2))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (. (TOK_TABLE_OR_COL src1) key) k1) (TOK_SELEXPR (. (TOK_TABLE_OR_COL src1) value) v1) (TOK_SELEXPR (. (TOK_TABLE_OR_COL src2) key) k2) (TOK_SELEXPR (. (TOK_TABLE_OR_COL src2) value) v2)) (TOK_SORTBY (TOK_TABSORTCOLNAMEASC (TOK_TABLE_OR_COL k1)) (TOK_TABSORTCOLNAMEASC (TOK_TABLE_OR_COL v1)) (TOK_TABSORTCOLNAMEASC (TOK_TABLE_OR_COL k2)) (TOK_TABSORTCOLNAMEASC (TOK_TABLE_OR_COL v2)))))"}
+#### A masked pattern was here ####
 PREHOOK: query: SELECT src1.key as k1, src1.value as v1, 
        src2.key as k2, src2.value as v2 FROM 
   (SELECT * FROM src WHERE src.key < 10) src1 
@@ -161,7 +161,7 @@ PREHOOK: query: SELECT src1.key as k1, src1.value as v1,
   SORT BY k1, v1, k2, v2
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/var/folders/bZ/bZe+iKfoFTuPoShRd6dy6-tOU9Y/-Tmp-/njain/hive_2011-11-03_16-13-28_323_1828259293437597011/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: SELECT src1.key as k1, src1.value as v1, 
        src2.key as k2, src2.value as v2 FROM 
   (SELECT * FROM src WHERE src.key < 10) src1 
@@ -170,7 +170,7 @@ POSTHOOK: query: SELECT src1.key as k1, src1.value as v1,
   SORT BY k1, v1, k2, v2
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: file:/var/folders/bZ/bZe+iKfoFTuPoShRd6dy6-tOU9Y/-Tmp-/njain/hive_2011-11-03_16-13-28_323_1828259293437597011/-mr-10000
+#### A masked pattern was here ####
 0	val_0	0	val_0
 0	val_0	0	val_0
 0	val_0	0	val_0

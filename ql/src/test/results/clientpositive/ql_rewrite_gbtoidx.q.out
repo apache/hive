@@ -150,14 +150,14 @@ group by l_shipdate
 order by l_shipdate
 PREHOOK: type: QUERY
 PREHOOK: Input: default@lineitem
-PREHOOK: Output: file:/tmp/njain/hive_2011-12-07_18-00-52_012_8071976135987072046/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: select l_shipdate, count(l_shipdate)
 from lineitem
 group by l_shipdate
 order by l_shipdate
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@lineitem
-POSTHOOK: Output: file:/tmp/njain/hive_2011-12-07_18-00-52_012_8071976135987072046/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: Lineage: default__lineitem_lineitem_lshipdate_idx__._bucketname SIMPLE [(lineitem)lineitem.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
 POSTHOOK: Lineage: default__lineitem_lineitem_lshipdate_idx__._count_of_l_shipdate EXPRESSION [(lineitem)lineitem.FieldSchema(name:l_shipdate, type:string, comment:null), ]
 POSTHOOK: Lineage: default__lineitem_lineitem_lshipdate_idx__._offsets EXPRESSION [(lineitem)lineitem.FieldSchema(name:BLOCK__OFFSET__INSIDE__FILE, type:bigint, comment:), ]
@@ -346,14 +346,14 @@ group by l_shipdate
 order by l_shipdate
 PREHOOK: type: QUERY
 PREHOOK: Input: default@default__lineitem_lineitem_lshipdate_idx__
-PREHOOK: Output: file:/tmp/njain/hive_2011-12-07_18-00-58_386_5252653541132989710/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: select l_shipdate, count(l_shipdate)
 from lineitem
 group by l_shipdate
 order by l_shipdate
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@default__lineitem_lineitem_lshipdate_idx__
-POSTHOOK: Output: file:/tmp/njain/hive_2011-12-07_18-00-58_386_5252653541132989710/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: Lineage: default__lineitem_lineitem_lshipdate_idx__._bucketname SIMPLE [(lineitem)lineitem.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
 POSTHOOK: Lineage: default__lineitem_lineitem_lshipdate_idx__._count_of_l_shipdate EXPRESSION [(lineitem)lineitem.FieldSchema(name:l_shipdate, type:string, comment:null), ]
 POSTHOOK: Lineage: default__lineitem_lineitem_lshipdate_idx__._offsets EXPRESSION [(lineitem)lineitem.FieldSchema(name:BLOCK__OFFSET__INSIDE__FILE, type:bigint, comment:), ]
@@ -549,7 +549,7 @@ STAGE PLANS:
   Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/tmp/njain/hive_2011-12-07_18-01-05_039_3668243048784602339/-mr-10002 
+#### A masked pattern was here ####
             Reduce Output Operator
               key expressions:
                     expr: _col0
@@ -587,7 +587,7 @@ group by year(l_shipdate), month(l_shipdate)
 order by year, month
 PREHOOK: type: QUERY
 PREHOOK: Input: default@lineitem
-PREHOOK: Output: file:/tmp/njain/hive_2011-12-07_18-01-05_145_7846787341043525292/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: select year(l_shipdate) as year,
         month(l_shipdate) as month,
         count(l_shipdate) as monthly_shipments
@@ -596,7 +596,7 @@ group by year(l_shipdate), month(l_shipdate)
 order by year, month
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@lineitem
-POSTHOOK: Output: file:/tmp/njain/hive_2011-12-07_18-01-05_145_7846787341043525292/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: Lineage: default__lineitem_lineitem_lshipdate_idx__._bucketname SIMPLE [(lineitem)lineitem.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
 POSTHOOK: Lineage: default__lineitem_lineitem_lshipdate_idx__._count_of_l_shipdate EXPRESSION [(lineitem)lineitem.FieldSchema(name:l_shipdate, type:string, comment:null), ]
 POSTHOOK: Lineage: default__lineitem_lineitem_lshipdate_idx__._offsets EXPRESSION [(lineitem)lineitem.FieldSchema(name:BLOCK__OFFSET__INSIDE__FILE, type:bigint, comment:), ]
@@ -742,7 +742,7 @@ STAGE PLANS:
   Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/tmp/njain/hive_2011-12-07_18-01-11_386_3243920698852999950/-mr-10002 
+#### A masked pattern was here ####
             Reduce Output Operator
               key expressions:
                     expr: _col0
@@ -780,7 +780,7 @@ group by year(l_shipdate), month(l_shipdate)
 order by year, month
 PREHOOK: type: QUERY
 PREHOOK: Input: default@default__lineitem_lineitem_lshipdate_idx__
-PREHOOK: Output: file:/tmp/njain/hive_2011-12-07_18-01-11_523_7411731261235643286/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: select year(l_shipdate) as year,
         month(l_shipdate) as month,
         count(l_shipdate) as monthly_shipments
@@ -789,7 +789,7 @@ group by year(l_shipdate), month(l_shipdate)
 order by year, month
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@default__lineitem_lineitem_lshipdate_idx__
-POSTHOOK: Output: file:/tmp/njain/hive_2011-12-07_18-01-11_523_7411731261235643286/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: Lineage: default__lineitem_lineitem_lshipdate_idx__._bucketname SIMPLE [(lineitem)lineitem.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
 POSTHOOK: Lineage: default__lineitem_lineitem_lshipdate_idx__._count_of_l_shipdate EXPRESSION [(lineitem)lineitem.FieldSchema(name:l_shipdate, type:string, comment:null), ]
 POSTHOOK: Lineage: default__lineitem_lineitem_lshipdate_idx__._offsets EXPRESSION [(lineitem)lineitem.FieldSchema(name:BLOCK__OFFSET__INSIDE__FILE, type:bigint, comment:), ]
@@ -1181,7 +1181,7 @@ STAGE PLANS:
   Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/tmp/njain/hive_2011-12-07_18-01-18_107_7914726636641975616/-mr-10002 
+#### A masked pattern was here ####
           Union
             Select Operator
               expressions:
@@ -1196,7 +1196,7 @@ STAGE PLANS:
                 table:
                     input format: org.apache.hadoop.mapred.TextInputFormat
                     output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-        file:/tmp/njain/hive_2011-12-07_18-01-18_107_7914726636641975616/-mr-10003 
+#### A masked pattern was here ####
           Union
             Select Operator
               expressions:
@@ -3775,7 +3775,7 @@ STAGE PLANS:
   Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/tmp/njain/hive_2011-12-07_18-02-11_412_1990342123241011719/-mr-10002 
+#### A masked pattern was here ####
             Reduce Output Operator
               key expressions:
                     expr: _col0
@@ -3804,11 +3804,11 @@ STAGE PLANS:
 PREHOOK: query: select key, count(key) from tbl group by key order by key
 PREHOOK: type: QUERY
 PREHOOK: Input: default@tbl
-PREHOOK: Output: file:/tmp/njain/hive_2011-12-07_18-02-11_492_2440459618491904996/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: select key, count(key) from tbl group by key order by key
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@tbl
-POSTHOOK: Output: file:/tmp/njain/hive_2011-12-07_18-02-11_492_2440459618491904996/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: Lineage: default__lineitem_lineitem_lshipdate_idx__._bucketname SIMPLE [(lineitem)lineitem.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
 POSTHOOK: Lineage: default__lineitem_lineitem_lshipdate_idx__._count_of_l_shipdate EXPRESSION [(lineitem)lineitem.FieldSchema(name:l_shipdate, type:string, comment:null), ]
 POSTHOOK: Lineage: default__lineitem_lineitem_lshipdate_idx__._offsets EXPRESSION [(lineitem)lineitem.FieldSchema(name:BLOCK__OFFSET__INSIDE__FILE, type:bigint, comment:), ]
@@ -3961,7 +3961,7 @@ STAGE PLANS:
   Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/tmp/njain/hive_2011-12-07_18-02-17_666_9208222129968129531/-mr-10002 
+#### A masked pattern was here ####
             Reduce Output Operator
               key expressions:
                     expr: _col0
@@ -3990,11 +3990,11 @@ STAGE PLANS:
 PREHOOK: query: select key, count(key) from tbl group by key order by key
 PREHOOK: type: QUERY
 PREHOOK: Input: default@default__tbl_tbl_key_idx__
-PREHOOK: Output: file:/tmp/njain/hive_2011-12-07_18-02-17_798_1950624779635034326/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: select key, count(key) from tbl group by key order by key
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@default__tbl_tbl_key_idx__
-POSTHOOK: Output: file:/tmp/njain/hive_2011-12-07_18-02-17_798_1950624779635034326/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: Lineage: default__lineitem_lineitem_lshipdate_idx__._bucketname SIMPLE [(lineitem)lineitem.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
 POSTHOOK: Lineage: default__lineitem_lineitem_lshipdate_idx__._count_of_l_shipdate EXPRESSION [(lineitem)lineitem.FieldSchema(name:l_shipdate, type:string, comment:null), ]
 POSTHOOK: Lineage: default__lineitem_lineitem_lshipdate_idx__._offsets EXPRESSION [(lineitem)lineitem.FieldSchema(name:BLOCK__OFFSET__INSIDE__FILE, type:bigint, comment:), ]

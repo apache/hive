@@ -10,7 +10,7 @@ POSTHOOK: type: DESCTABLE
 key	string	
 value	string	
 	 	 
-Detailed Table Information	Table(tableName:nzhang_part5, dbName:default, owner:sdong, createTime:1297384331, lastAccessTime:0, retention:0, sd:StorageDescriptor(cols:[FieldSchema(name:key, type:string, comment:null), FieldSchema(name:value, type:string, comment:null)], location:pfile:/data/users/sdong/www/open-source-hive1/build/ql/test/data/warehouse/nzhang_part5, inputFormat:org.apache.hadoop.mapred.TextInputFormat, outputFormat:org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat, compressed:false, numBuckets:-1, serdeInfo:SerDeInfo(name:null, serializationLib:org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe, parameters:{serialization.format=1}), bucketCols:[], sortCols:[], parameters:{}), partitionKeys:[FieldSchema(name:value, type:string, comment:null)], parameters:{transient_lastDdlTime=1297384331}, viewOriginalText:null, viewExpandedText:null, tableType:MANAGED_TABLE)	
+#### A masked pattern was here ####
 PREHOOK: query: explain
 insert overwrite table nzhang_part5 partition (value) select key, value from src
 PREHOOK: type: QUERY
@@ -1314,11 +1314,11 @@ value=val_98
 PREHOOK: query: select * from nzhang_part5 where value='val_0'
 PREHOOK: type: QUERY
 PREHOOK: Input: default@nzhang_part5@value=val_0
-PREHOOK: Output: file:/tmp/sdong/hive_2011-02-10_16-35-11_431_5500143430655375157/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: select * from nzhang_part5 where value='val_0'
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@nzhang_part5@value=val_0
-POSTHOOK: Output: file:/tmp/sdong/hive_2011-02-10_16-35-11_431_5500143430655375157/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: Lineage: nzhang_part5 PARTITION(value=val_0).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: nzhang_part5 PARTITION(value=val_100).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: nzhang_part5 PARTITION(value=val_103).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
@@ -1634,11 +1634,11 @@ POSTHOOK: Lineage: nzhang_part5 PARTITION(value=val_9).key SIMPLE [(src)src.Fiel
 PREHOOK: query: select * from nzhang_part5 where value='val_2'
 PREHOOK: type: QUERY
 PREHOOK: Input: default@nzhang_part5@value=val_2
-PREHOOK: Output: file:/tmp/sdong/hive_2011-02-10_16-35-12_047_1167208090212232675/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: select * from nzhang_part5 where value='val_2'
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@nzhang_part5@value=val_2
-POSTHOOK: Output: file:/tmp/sdong/hive_2011-02-10_16-35-12_047_1167208090212232675/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: Lineage: nzhang_part5 PARTITION(value=val_0).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: nzhang_part5 PARTITION(value=val_100).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: nzhang_part5 PARTITION(value=val_103).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]

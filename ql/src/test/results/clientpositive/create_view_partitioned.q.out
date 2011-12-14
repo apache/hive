@@ -19,7 +19,7 @@ SELECT key, value
 FROM src
 WHERE key=86
 PREHOOK: type: CREATEVIEW
-PREHOOK: Output: file:/tmp/salbiz/hive_2011-08-01_13-20-47_043_6776108679163894004/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: -- test partitioned view definition
 -- (underlying table is not actually partitioned)
 CREATE VIEW vp1
@@ -30,7 +30,7 @@ FROM src
 WHERE key=86
 POSTHOOK: type: CREATEVIEW
 POSTHOOK: Output: default@vp1
-POSTHOOK: Output: file:/tmp/salbiz/hive_2011-08-01_13-20-47_043_6776108679163894004/-mr-10000
+#### A masked pattern was here ####
 PREHOOK: query: DESCRIBE EXTENDED vp1
 PREHOOK: type: DESCTABLE
 POSTHOOK: query: DESCRIBE EXTENDED vp1
@@ -38,7 +38,7 @@ POSTHOOK: type: DESCTABLE
 key	string	
 value	string	
 	 	 
-Detailed Table Information	Table(tableName:vp1, dbName:default, owner:salbiz, createTime:1312230047, lastAccessTime:0, retention:0, sd:StorageDescriptor(cols:[FieldSchema(name:key, type:string, comment:null), FieldSchema(name:value, type:string, comment:null)], location:null, inputFormat:org.apache.hadoop.mapred.SequenceFileInputFormat, outputFormat:org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat, compressed:false, numBuckets:-1, serdeInfo:SerDeInfo(name:null, serializationLib:null, parameters:{}), bucketCols:[], sortCols:[], parameters:{}), partitionKeys:[FieldSchema(name:value, type:string, comment:null)], parameters:{transient_lastDdlTime=1312230047}, viewOriginalText:SELECT key, value	 
+#### A masked pattern was here ####
 FROM src	 	 
 WHERE key=86, viewExpandedText:SELECT `src`.`key`, `src`.`value`	 	 
 FROM `src`	 	 
@@ -58,14 +58,12 @@ value               	string              	None
 	 	 
 # Detailed Table Information	 	 
 Database:           	default             	 
-Owner:              	salbiz              	 
-CreateTime:         	Mon Aug 01 13:20:47 PDT 2011	 
-LastAccessTime:     	UNKNOWN             	 
+#### A masked pattern was here ####
 Protect Mode:       	None                	 
 Retention:          	0                   	 
 Table Type:         	VIRTUAL_VIEW        	 
 Table Parameters:	 	 
-	transient_lastDdlTime	1312230047          
+#### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
 SerDe Library:      	null                	 
@@ -86,29 +84,29 @@ WHERE `src`.`key`=86
 PREHOOK: query: SELECT * FROM vp1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/tmp/salbiz/hive_2011-08-01_13-20-47_275_6455230636774618368/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: SELECT * FROM vp1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: file:/tmp/salbiz/hive_2011-08-01_13-20-47_275_6455230636774618368/-mr-10000
+#### A masked pattern was here ####
 86	val_86
 PREHOOK: query: SELECT key FROM vp1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/tmp/salbiz/hive_2011-08-01_13-20-50_160_5990941147297889722/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: SELECT key FROM vp1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: file:/tmp/salbiz/hive_2011-08-01_13-20-50_160_5990941147297889722/-mr-10000
+#### A masked pattern was here ####
 86
 PREHOOK: query: SELECT value FROM vp1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/tmp/salbiz/hive_2011-08-01_13-20-53_015_3606687068113847171/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: SELECT value FROM vp1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: file:/tmp/salbiz/hive_2011-08-01_13-20-53_015_3606687068113847171/-mr-10000
+#### A masked pattern was here ####
 val_86
 PREHOOK: query: ALTER VIEW vp1
 ADD PARTITION (value='val_86') PARTITION (value='val_xyz')
@@ -152,7 +150,7 @@ PREHOOK: type: SHOW_TABLESTATUS
 POSTHOOK: query: SHOW TABLE EXTENDED LIKE vp1
 POSTHOOK: type: SHOW_TABLESTATUS
 tableName:vp1
-owner:salbiz
+#### A masked pattern was here ####
 location:null
 inputformat:org.apache.hadoop.mapred.SequenceFileInputFormat
 outputformat:org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -165,7 +163,7 @@ PREHOOK: type: SHOW_TABLESTATUS
 POSTHOOK: query: SHOW TABLE EXTENDED LIKE vp1 PARTITION(value='val_86')
 POSTHOOK: type: SHOW_TABLESTATUS
 tableName:vp1
-owner:salbiz
+#### A masked pattern was here ####
 location:null
 inputformat:org.apache.hadoop.mapred.SequenceFileInputFormat
 outputformat:org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -205,7 +203,7 @@ PREHOOK: query: -- Even though no partition predicate is specified in the next q
 SELECT * FROM vp1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/tmp/salbiz/hive_2011-08-01_13-20-56_950_8837426272844736658/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: -- Even though no partition predicate is specified in the next query,
 -- the WHERE clause inside of the view should satisfy strict mode.
 -- In other words, strict only applies to underlying tables
@@ -213,7 +211,7 @@ POSTHOOK: query: -- Even though no partition predicate is specified in the next 
 SELECT * FROM vp1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: file:/tmp/salbiz/hive_2011-08-01_13-20-56_950_8837426272844736658/-mr-10000
+#### A masked pattern was here ####
 86	val_86
 PREHOOK: query: -- test a partitioned view on top of an underlying partitioned table,
 -- but with only a suffix of the partitioning columns
@@ -221,7 +219,7 @@ CREATE VIEW vp2
 PARTITIONED ON (hr)
 AS SELECT * FROM srcpart WHERE key < 10
 PREHOOK: type: CREATEVIEW
-PREHOOK: Output: file:/tmp/salbiz/hive_2011-08-01_13-20-59_803_7746731020346622943/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: -- test a partitioned view on top of an underlying partitioned table,
 -- but with only a suffix of the partitioning columns
 CREATE VIEW vp2
@@ -229,7 +227,7 @@ PARTITIONED ON (hr)
 AS SELECT * FROM srcpart WHERE key < 10
 POSTHOOK: type: CREATEVIEW
 POSTHOOK: Output: default@vp2
-POSTHOOK: Output: file:/tmp/salbiz/hive_2011-08-01_13-20-59_803_7746731020346622943/-mr-10000
+#### A masked pattern was here ####
 PREHOOK: query: DESCRIBE FORMATTED vp2
 PREHOOK: type: DESCTABLE
 POSTHOOK: query: DESCRIBE FORMATTED vp2
@@ -247,14 +245,12 @@ hr                  	string              	None
 	 	 
 # Detailed Table Information	 	 
 Database:           	default             	 
-Owner:              	salbiz              	 
-CreateTime:         	Mon Aug 01 13:20:59 PDT 2011	 
-LastAccessTime:     	UNKNOWN             	 
+#### A masked pattern was here ####
 Protect Mode:       	None                	 
 Retention:          	0                   	 
 Table Type:         	VIRTUAL_VIEW        	 
 Table Parameters:	 	 
-	transient_lastDdlTime	1312230059          
+#### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
 SerDe Library:      	null                	 
@@ -288,12 +284,12 @@ PREHOOK: query: SELECT key FROM vp2 WHERE hr='12' ORDER BY key
 PREHOOK: type: QUERY
 PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
 PREHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
-PREHOOK: Output: file:/tmp/salbiz/hive_2011-08-01_13-21-00_238_6603731309838545679/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: SELECT key FROM vp2 WHERE hr='12' ORDER BY key
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
 POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
-POSTHOOK: Output: file:/tmp/salbiz/hive_2011-08-01_13-21-00_238_6603731309838545679/-mr-10000
+#### A masked pattern was here ####
 0
 0
 0
@@ -323,7 +319,7 @@ SELECT key, value
 FROM src
 WHERE key=86
 PREHOOK: type: CREATEVIEW
-PREHOOK: Output: file:/tmp/salbiz/hive_2011-08-01_13-21-03_359_4244173375300491792/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: -- test a partitioned view where the PARTITIONED ON clause references
 -- an imposed column name
 CREATE VIEW vp3(k,v)
@@ -334,7 +330,7 @@ FROM src
 WHERE key=86
 POSTHOOK: type: CREATEVIEW
 POSTHOOK: Output: default@vp3
-POSTHOOK: Output: file:/tmp/salbiz/hive_2011-08-01_13-21-03_359_4244173375300491792/-mr-10000
+#### A masked pattern was here ####
 PREHOOK: query: DESCRIBE FORMATTED vp3
 PREHOOK: type: DESCTABLE
 POSTHOOK: query: DESCRIBE FORMATTED vp3
@@ -350,14 +346,12 @@ v                   	string              	None
 	 	 
 # Detailed Table Information	 	 
 Database:           	default             	 
-Owner:              	salbiz              	 
-CreateTime:         	Mon Aug 01 13:21:03 PDT 2011	 
-LastAccessTime:     	UNKNOWN             	 
+#### A masked pattern was here ####
 Protect Mode:       	None                	 
 Retention:          	0                   	 
 Table Type:         	VIRTUAL_VIEW        	 
 Table Parameters:	 	 
-	transient_lastDdlTime	1312230063          
+#### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
 SerDe Library:      	null                	 

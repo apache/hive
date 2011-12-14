@@ -54,11 +54,11 @@ STAGE PLANS:
 PREHOOK: query: FROM src1 SELECT find_in_set(src1.key,concat(src1.key,',',src1.value))
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src1
-PREHOOK: Output: file:/tmp/sdong/hive_2011-02-10_17-33-55_315_646992624808133634/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: FROM src1 SELECT find_in_set(src1.key,concat(src1.key,',',src1.value))
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src1
-POSTHOOK: Output: file:/tmp/sdong/hive_2011-02-10_17-33-55_315_646992624808133634/-mr-10000
+#### A masked pattern was here ####
 1
 1
 1
@@ -87,127 +87,127 @@ POSTHOOK: Output: file:/tmp/sdong/hive_2011-02-10_17-33-55_315_64699262480813363
 PREHOOK: query: SELECT find_in_set('ab','ab,abc,abcde') FROM src1 LIMIT 1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src1
-PREHOOK: Output: file:/tmp/sdong/hive_2011-02-10_17-33-58_557_1099694714647120556/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: SELECT find_in_set('ab','ab,abc,abcde') FROM src1 LIMIT 1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src1
-POSTHOOK: Output: file:/tmp/sdong/hive_2011-02-10_17-33-58_557_1099694714647120556/-mr-10000
+#### A masked pattern was here ####
 1
 PREHOOK: query: SELECT find_in_set('ab','abc,ab,bbb') FROM src1 LIMIT 1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src1
-PREHOOK: Output: file:/tmp/sdong/hive_2011-02-10_17-34-01_784_5100662308115228334/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: SELECT find_in_set('ab','abc,ab,bbb') FROM src1 LIMIT 1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src1
-POSTHOOK: Output: file:/tmp/sdong/hive_2011-02-10_17-34-01_784_5100662308115228334/-mr-10000
+#### A masked pattern was here ####
 2
 PREHOOK: query: SELECT find_in_set('ab','def,abc,ab') FROM src1 LIMIT 1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src1
-PREHOOK: Output: file:/tmp/sdong/hive_2011-02-10_17-34-05_088_2766630277132411005/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: SELECT find_in_set('ab','def,abc,ab') FROM src1 LIMIT 1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src1
-POSTHOOK: Output: file:/tmp/sdong/hive_2011-02-10_17-34-05_088_2766630277132411005/-mr-10000
+#### A masked pattern was here ####
 3
 PREHOOK: query: SELECT find_in_set('ab','abc,abd,abf') FROM src1 LIMIT 1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src1
-PREHOOK: Output: file:/tmp/sdong/hive_2011-02-10_17-34-08_355_7484586857404284998/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: SELECT find_in_set('ab','abc,abd,abf') FROM src1 LIMIT 1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src1
-POSTHOOK: Output: file:/tmp/sdong/hive_2011-02-10_17-34-08_355_7484586857404284998/-mr-10000
+#### A masked pattern was here ####
 0
 PREHOOK: query: SELECT find_in_set(null,'a,b,c') FROM src1 LIMIT 1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src1
-PREHOOK: Output: file:/tmp/sdong/hive_2011-02-10_17-34-11_587_8034874388616793686/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: SELECT find_in_set(null,'a,b,c') FROM src1 LIMIT 1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src1
-POSTHOOK: Output: file:/tmp/sdong/hive_2011-02-10_17-34-11_587_8034874388616793686/-mr-10000
+#### A masked pattern was here ####
 NULL
 PREHOOK: query: SELECT find_in_set('a',null) FROM src1 LIMIT 1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src1
-PREHOOK: Output: file:/tmp/sdong/hive_2011-02-10_17-34-14_812_4060097783920133679/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: SELECT find_in_set('a',null) FROM src1 LIMIT 1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src1
-POSTHOOK: Output: file:/tmp/sdong/hive_2011-02-10_17-34-14_812_4060097783920133679/-mr-10000
+#### A masked pattern was here ####
 NULL
 PREHOOK: query: SELECT find_in_set('', '') FROM src1 LIMIT 1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src1
-PREHOOK: Output: file:/tmp/sdong/hive_2011-02-10_17-34-18_075_7011831240496627705/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: SELECT find_in_set('', '') FROM src1 LIMIT 1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src1
-POSTHOOK: Output: file:/tmp/sdong/hive_2011-02-10_17-34-18_075_7011831240496627705/-mr-10000
+#### A masked pattern was here ####
 1
 PREHOOK: query: SELECT find_in_set('',',') FROM src1 LIMIT 1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src1
-PREHOOK: Output: file:/tmp/sdong/hive_2011-02-10_17-34-21_298_8289961390425950955/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: SELECT find_in_set('',',') FROM src1 LIMIT 1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src1
-POSTHOOK: Output: file:/tmp/sdong/hive_2011-02-10_17-34-21_298_8289961390425950955/-mr-10000
+#### A masked pattern was here ####
 1
 PREHOOK: query: SELECT find_in_set('','a,,b') FROM src1 LIMIT 1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src1
-PREHOOK: Output: file:/tmp/sdong/hive_2011-02-10_17-34-24_530_1884706057617469025/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: SELECT find_in_set('','a,,b') FROM src1 LIMIT 1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src1
-POSTHOOK: Output: file:/tmp/sdong/hive_2011-02-10_17-34-24_530_1884706057617469025/-mr-10000
+#### A masked pattern was here ####
 2
 PREHOOK: query: SELECT find_in_set('','a,b,') FROM src1 LIMIT 1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src1
-PREHOOK: Output: file:/tmp/sdong/hive_2011-02-10_17-34-27_748_373181277276761998/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: SELECT find_in_set('','a,b,') FROM src1 LIMIT 1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src1
-POSTHOOK: Output: file:/tmp/sdong/hive_2011-02-10_17-34-27_748_373181277276761998/-mr-10000
+#### A masked pattern was here ####
 3
 PREHOOK: query: SELECT find_in_set(',','a,b,d,') FROM src1 LIMIT 1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src1
-PREHOOK: Output: file:/tmp/sdong/hive_2011-02-10_17-34-31_013_4678805621418440320/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: SELECT find_in_set(',','a,b,d,') FROM src1 LIMIT 1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src1
-POSTHOOK: Output: file:/tmp/sdong/hive_2011-02-10_17-34-31_013_4678805621418440320/-mr-10000
+#### A masked pattern was here ####
 0
 PREHOOK: query: SELECT find_in_set('a','') FROM src1 LIMIT 1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src1
-PREHOOK: Output: file:/tmp/sdong/hive_2011-02-10_17-34-34_234_38101353986877599/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: SELECT find_in_set('a','') FROM src1 LIMIT 1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src1
-POSTHOOK: Output: file:/tmp/sdong/hive_2011-02-10_17-34-34_234_38101353986877599/-mr-10000
+#### A masked pattern was here ####
 0
 PREHOOK: query: SELECT find_in_set('a,','a,b,c,d') FROM src1 LIMIT 1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src1
-PREHOOK: Output: file:/tmp/sdong/hive_2011-02-10_17-34-37_474_556241634135286352/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: SELECT find_in_set('a,','a,b,c,d') FROM src1 LIMIT 1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src1
-POSTHOOK: Output: file:/tmp/sdong/hive_2011-02-10_17-34-37_474_556241634135286352/-mr-10000
+#### A masked pattern was here ####
 0
 PREHOOK: query: SELECT * FROM src1 WHERE NOT find_in_set(key,'311,128,345,2,956')=0
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src1
-PREHOOK: Output: file:/tmp/sdong/hive_2011-02-10_17-34-40_694_6717091611918281285/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: SELECT * FROM src1 WHERE NOT find_in_set(key,'311,128,345,2,956')=0
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src1
-POSTHOOK: Output: file:/tmp/sdong/hive_2011-02-10_17-34-40_694_6717091611918281285/-mr-10000
+#### A masked pattern was here ####
 311	val_311
 128	

@@ -126,7 +126,7 @@ STAGE PLANS:
   Stage: Stage-4
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/var/folders/C4/C40caRNsEM4C4yVangruonVUe7Y/-Tmp-/jonchang/hive_2011-09-07_12-57-23_371_8795371005069948458/-mr-10004 
+#### A masked pattern was here ####
             Reduce Output Operator
               key expressions:
                     expr: _col0
@@ -200,11 +200,11 @@ POSTHOOK: Lineage: dest2.value EXPRESSION [(src)src.null, ]
 PREHOOK: query: SELECT DEST1.* FROM DEST1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@dest1
-PREHOOK: Output: file:/var/folders/C4/C40caRNsEM4C4yVangruonVUe7Y/-Tmp-/jonchang/hive_2011-09-07_12-57-49_014_7204811364544227299/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: SELECT DEST1.* FROM DEST1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@dest1
-POSTHOOK: Output: file:/var/folders/C4/C40caRNsEM4C4yVangruonVUe7Y/-Tmp-/jonchang/hive_2011-09-07_12-57-49_014_7204811364544227299/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: Lineage: dest1.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: dest1.value EXPRESSION [(src)src.null, ]
 POSTHOOK: Lineage: dest2.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:value, type:string, comment:default), ]
@@ -521,11 +521,11 @@ POSTHOOK: Lineage: dest2.value EXPRESSION [(src)src.null, ]
 PREHOOK: query: SELECT DEST2.* FROM DEST2
 PREHOOK: type: QUERY
 PREHOOK: Input: default@dest2
-PREHOOK: Output: file:/var/folders/C4/C40caRNsEM4C4yVangruonVUe7Y/-Tmp-/jonchang/hive_2011-09-07_12-57-49_292_3086379109295758449/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: SELECT DEST2.* FROM DEST2
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@dest2
-POSTHOOK: Output: file:/var/folders/C4/C40caRNsEM4C4yVangruonVUe7Y/-Tmp-/jonchang/hive_2011-09-07_12-57-49_292_3086379109295758449/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: Lineage: dest1.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: dest1.value EXPRESSION [(src)src.null, ]
 POSTHOOK: Lineage: dest2.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:value, type:string, comment:default), ]

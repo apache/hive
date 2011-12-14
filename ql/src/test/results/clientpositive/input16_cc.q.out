@@ -22,11 +22,11 @@ POSTHOOK: Output: default@input16_cc
 PREHOOK: query: SELECT INPUT16_CC.VALUE, INPUT16_CC.KEY FROM INPUT16_CC
 PREHOOK: type: QUERY
 PREHOOK: Input: default@input16_cc
-PREHOOK: Output: hdfs://localhost.localdomain:48956/home/krishnak/hive-howl/hive-git-apache/build/ql/scratchdir/hive_2011-03-21_05-59-14_261_2591774849958533018/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: SELECT INPUT16_CC.VALUE, INPUT16_CC.KEY FROM INPUT16_CC
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@input16_cc
-POSTHOOK: Output: hdfs://localhost.localdomain:48956/home/krishnak/hive-howl/hive-git-apache/build/ql/scratchdir/hive_2011-03-21_05-59-14_261_2591774849958533018/-mr-10000
+#### A masked pattern was here ####
 val_238	238
 val_86	86
 val_311	311

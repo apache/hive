@@ -98,13 +98,13 @@ STAGE PLANS:
     Move Operator
       files:
           hdfs directory: true
-          destination: pfile:/data/users/rsurowka/JAVA_HIVE/apache-hive/build/ql/scratchdir/hive_2011-11-07_20-01-24_286_8837675491396277390/-ext-10001
+#### A masked pattern was here ####
 
   Stage: Stage-0
     Move Operator
       files:
           hdfs directory: true
-          destination: pfile:/data/users/rsurowka/JAVA_HIVE/apache-hive/build/ql/test/data/warehouse/rcfile_createas1b
+#### A masked pattern was here ####
 
   Stage: Stage-6
       Create Table Operator:
@@ -151,7 +151,7 @@ PREHOOK: query: SELECT SUM(HASH(c)) FROM (
 PREHOOK: type: QUERY
 PREHOOK: Input: default@rcfile_createas1a@ds=1
 PREHOOK: Input: default@rcfile_createas1a@ds=2
-PREHOOK: Output: file:/tmp/rsurowka/hive_2011-11-07_20-01-30_867_1202931125008629355/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: SELECT SUM(HASH(c)) FROM (
     SELECT TRANSFORM(key, value) USING 'tr \t _' AS (c)
     FROM rcfile_createas1a
@@ -159,7 +159,7 @@ POSTHOOK: query: SELECT SUM(HASH(c)) FROM (
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@rcfile_createas1a@ds=1
 POSTHOOK: Input: default@rcfile_createas1a@ds=2
-POSTHOOK: Output: file:/tmp/rsurowka/hive_2011-11-07_20-01-30_867_1202931125008629355/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: Lineage: rcfile_createas1a PARTITION(ds=1).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: rcfile_createas1a PARTITION(ds=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: rcfile_createas1a PARTITION(ds=2).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
@@ -171,14 +171,14 @@ PREHOOK: query: SELECT SUM(HASH(c)) FROM (
 ) t
 PREHOOK: type: QUERY
 PREHOOK: Input: default@rcfile_createas1b
-PREHOOK: Output: file:/tmp/rsurowka/hive_2011-11-07_20-01-34_389_8689351756025259102/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: SELECT SUM(HASH(c)) FROM (
     SELECT TRANSFORM(key, value) USING 'tr \t _' AS (c)
     FROM rcfile_createas1b
 ) t
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@rcfile_createas1b
-POSTHOOK: Output: file:/tmp/rsurowka/hive_2011-11-07_20-01-34_389_8689351756025259102/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: Lineage: rcfile_createas1a PARTITION(ds=1).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: rcfile_createas1a PARTITION(ds=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: rcfile_createas1a PARTITION(ds=2).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]

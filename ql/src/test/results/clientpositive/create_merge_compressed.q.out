@@ -45,8 +45,7 @@ POSTHOOK: Lineage: tgt_rc_merge_test.key SIMPLE [(src_rc_merge_test)src_rc_merge
 POSTHOOK: Lineage: tgt_rc_merge_test.value SIMPLE [(src_rc_merge_test)src_rc_merge_test.FieldSchema(name:value, type:string, comment:null), ]
 POSTHOOK: Lineage: tgt_rc_merge_test.value SIMPLE [(src_rc_merge_test)src_rc_merge_test.FieldSchema(name:value, type:string, comment:null), ]
 tableName:tgt_rc_merge_test
-owner:krishnak
-location:pfile:/Users/krishnak/Projects/hdp/sources/hive-git-apache/build/ql/test/data/warehouse/tgt_rc_merge_test
+#### A masked pattern was here ####
 inputformat:org.apache.hadoop.hive.ql.io.RCFileInputFormat
 outputformat:org.apache.hadoop.hive.ql.io.RCFileOutputFormat
 columns:struct columns { i32 key, string value}
@@ -56,17 +55,16 @@ totalNumberFiles:2
 totalFileSize:532
 maxFileSize:266
 minFileSize:266
-lastAccessTime:0
-lastUpdateTime:1314766542000
+#### A masked pattern was here ####
 
 PREHOOK: query: select count(1) from tgt_rc_merge_test
 PREHOOK: type: QUERY
 PREHOOK: Input: default@tgt_rc_merge_test
-PREHOOK: Output: file:/var/folders/67/67R3POPtF90VG63KSmCbcU++F0U/-Tmp-/krishnak/hive_2011-08-30_21-55-44_261_3643692219591280612/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: select count(1) from tgt_rc_merge_test
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@tgt_rc_merge_test
-POSTHOOK: Output: file:/var/folders/67/67R3POPtF90VG63KSmCbcU++F0U/-Tmp-/krishnak/hive_2011-08-30_21-55-44_261_3643692219591280612/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: Lineage: tgt_rc_merge_test.key SIMPLE [(src_rc_merge_test)src_rc_merge_test.FieldSchema(name:key, type:int, comment:null), ]
 POSTHOOK: Lineage: tgt_rc_merge_test.key SIMPLE [(src_rc_merge_test)src_rc_merge_test.FieldSchema(name:key, type:int, comment:null), ]
 POSTHOOK: Lineage: tgt_rc_merge_test.value SIMPLE [(src_rc_merge_test)src_rc_merge_test.FieldSchema(name:value, type:string, comment:null), ]
@@ -75,11 +73,11 @@ POSTHOOK: Lineage: tgt_rc_merge_test.value SIMPLE [(src_rc_merge_test)src_rc_mer
 PREHOOK: query: select sum(hash(key)), sum(hash(value)) from tgt_rc_merge_test
 PREHOOK: type: QUERY
 PREHOOK: Input: default@tgt_rc_merge_test
-PREHOOK: Output: file:/var/folders/67/67R3POPtF90VG63KSmCbcU++F0U/-Tmp-/krishnak/hive_2011-08-30_21-56-06_300_2950525310351863426/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: select sum(hash(key)), sum(hash(value)) from tgt_rc_merge_test
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@tgt_rc_merge_test
-POSTHOOK: Output: file:/var/folders/67/67R3POPtF90VG63KSmCbcU++F0U/-Tmp-/krishnak/hive_2011-08-30_21-56-06_300_2950525310351863426/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: Lineage: tgt_rc_merge_test.key SIMPLE [(src_rc_merge_test)src_rc_merge_test.FieldSchema(name:key, type:int, comment:null), ]
 POSTHOOK: Lineage: tgt_rc_merge_test.key SIMPLE [(src_rc_merge_test)src_rc_merge_test.FieldSchema(name:key, type:int, comment:null), ]
 POSTHOOK: Lineage: tgt_rc_merge_test.value SIMPLE [(src_rc_merge_test)src_rc_merge_test.FieldSchema(name:value, type:string, comment:null), ]
@@ -106,8 +104,7 @@ POSTHOOK: Lineage: tgt_rc_merge_test.key SIMPLE [(src_rc_merge_test)src_rc_merge
 POSTHOOK: Lineage: tgt_rc_merge_test.value SIMPLE [(src_rc_merge_test)src_rc_merge_test.FieldSchema(name:value, type:string, comment:null), ]
 POSTHOOK: Lineage: tgt_rc_merge_test.value SIMPLE [(src_rc_merge_test)src_rc_merge_test.FieldSchema(name:value, type:string, comment:null), ]
 tableName:tgt_rc_merge_test
-owner:krishnak
-location:pfile:/Users/krishnak/Projects/hdp/sources/hive-git-apache/build/ql/test/data/warehouse/tgt_rc_merge_test
+#### A masked pattern was here ####
 inputformat:org.apache.hadoop.hive.ql.io.RCFileInputFormat
 outputformat:org.apache.hadoop.hive.ql.io.RCFileOutputFormat
 columns:struct columns { i32 key, string value}
@@ -117,17 +114,16 @@ totalNumberFiles:1
 totalFileSize:338
 maxFileSize:338
 minFileSize:338
-lastAccessTime:0
-lastUpdateTime:1314766576000
+#### A masked pattern was here ####
 
 PREHOOK: query: select count(1) from tgt_rc_merge_test
 PREHOOK: type: QUERY
 PREHOOK: Input: default@tgt_rc_merge_test
-PREHOOK: Output: file:/var/folders/67/67R3POPtF90VG63KSmCbcU++F0U/-Tmp-/krishnak/hive_2011-08-30_21-56-18_639_4261902784336213762/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: select count(1) from tgt_rc_merge_test
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@tgt_rc_merge_test
-POSTHOOK: Output: file:/var/folders/67/67R3POPtF90VG63KSmCbcU++F0U/-Tmp-/krishnak/hive_2011-08-30_21-56-18_639_4261902784336213762/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: Lineage: tgt_rc_merge_test.key SIMPLE [(src_rc_merge_test)src_rc_merge_test.FieldSchema(name:key, type:int, comment:null), ]
 POSTHOOK: Lineage: tgt_rc_merge_test.key SIMPLE [(src_rc_merge_test)src_rc_merge_test.FieldSchema(name:key, type:int, comment:null), ]
 POSTHOOK: Lineage: tgt_rc_merge_test.value SIMPLE [(src_rc_merge_test)src_rc_merge_test.FieldSchema(name:value, type:string, comment:null), ]
@@ -136,11 +132,11 @@ POSTHOOK: Lineage: tgt_rc_merge_test.value SIMPLE [(src_rc_merge_test)src_rc_mer
 PREHOOK: query: select sum(hash(key)), sum(hash(value)) from tgt_rc_merge_test
 PREHOOK: type: QUERY
 PREHOOK: Input: default@tgt_rc_merge_test
-PREHOOK: Output: file:/var/folders/67/67R3POPtF90VG63KSmCbcU++F0U/-Tmp-/krishnak/hive_2011-08-30_21-56-28_955_7239249873259452326/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: select sum(hash(key)), sum(hash(value)) from tgt_rc_merge_test
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@tgt_rc_merge_test
-POSTHOOK: Output: file:/var/folders/67/67R3POPtF90VG63KSmCbcU++F0U/-Tmp-/krishnak/hive_2011-08-30_21-56-28_955_7239249873259452326/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: Lineage: tgt_rc_merge_test.key SIMPLE [(src_rc_merge_test)src_rc_merge_test.FieldSchema(name:key, type:int, comment:null), ]
 POSTHOOK: Lineage: tgt_rc_merge_test.key SIMPLE [(src_rc_merge_test)src_rc_merge_test.FieldSchema(name:key, type:int, comment:null), ]
 POSTHOOK: Lineage: tgt_rc_merge_test.value SIMPLE [(src_rc_merge_test)src_rc_merge_test.FieldSchema(name:value, type:string, comment:null), ]

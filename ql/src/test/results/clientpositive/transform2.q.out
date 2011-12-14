@@ -2,10 +2,10 @@ PREHOOK: query: -- Transform with a function that has many parameters
 SELECT TRANSFORM(substr(key, 1, 2)) USING 'cat' FROM src LIMIT 1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/data/users/pyang/task/trunk/VENDOR.hive/trunk/build/ql/tmp/366195841/10000
+#### A masked pattern was here ####
 POSTHOOK: query: -- Transform with a function that has many parameters
 SELECT TRANSFORM(substr(key, 1, 2)) USING 'cat' FROM src LIMIT 1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: file:/data/users/pyang/task/trunk/VENDOR.hive/trunk/build/ql/tmp/366195841/10000
+#### A masked pattern was here ####
 23	NULL

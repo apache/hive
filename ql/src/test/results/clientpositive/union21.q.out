@@ -263,7 +263,7 @@ GROUP BY key
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
 PREHOOK: Input: default@src_thrift
-PREHOOK: Output: file:/tmp/sdong/hive_2011-02-10_17-51-18_694_8712718300903038391/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: SELECT key, count(1)
 FROM (
   SELECT '1' as key from src
@@ -280,7 +280,7 @@ GROUP BY key
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 POSTHOOK: Input: default@src_thrift
-POSTHOOK: Output: file:/tmp/sdong/hive_2011-02-10_17-51-18_694_8712718300903038391/-mr-10000
+#### A masked pattern was here ####
 NULL	2
 0	7
 001	2

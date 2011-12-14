@@ -40,7 +40,7 @@ table	authorization_fail_4
 principalName	hive_test_user	
 principalType	USER	
 privilege	Alter	
-grantTime	1298430477	
+#### A masked pattern was here ####
 grantor	hive_test_user	
 
 database	default	
@@ -48,7 +48,7 @@ table	authorization_fail_4
 principalName	hive_test_user	
 principalType	USER	
 privilege	Create	
-grantTime	1298430477	
+#### A masked pattern was here ####
 grantor	hive_test_user	
 PREHOOK: query: show grant user hive_test_user on table authorization_fail_4 partition (ds='2010')
 PREHOOK: type: SHOW_GRANT
@@ -61,7 +61,7 @@ partition	ds=2010
 principalName	hive_test_user	
 principalType	USER	
 privilege	Alter	
-grantTime	1298430477	
+#### A masked pattern was here ####
 grantor	hive_test_user	
 
 database	default	
@@ -70,6 +70,6 @@ partition	ds=2010
 principalName	hive_test_user	
 principalType	USER	
 privilege	Create	
-grantTime	1298430477	
+#### A masked pattern was here ####
 grantor	hive_test_user	
 Authorization failed:No privilege 'Select' found for inputs { database:default, table:authorization_fail_4, partitionName:ds=2010, columnName:key}. Use show grant to get more details.

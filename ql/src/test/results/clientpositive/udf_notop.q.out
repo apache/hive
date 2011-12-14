@@ -10,7 +10,7 @@ PREHOOK: query: SELECT 1 NOT IN (1, 2, 3),
        1 IN (1, 2) AND "abc" NOT LIKE "bc%" FROM src LIMIT 1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/tmp/ehassold/hive_2011-06-02_14-36-13_085_5783843972339431665/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: SELECT 1 NOT IN (1, 2, 3),
        4 NOT IN (1, 2, 3),
        1 = 2 NOT IN (true, false),
@@ -23,5 +23,5 @@ POSTHOOK: query: SELECT 1 NOT IN (1, 2, 3),
        1 IN (1, 2) AND "abc" NOT LIKE "bc%" FROM src LIMIT 1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: file:/tmp/ehassold/hive_2011-06-02_14-36-13_085_5783843972339431665/-mr-10000
+#### A masked pattern was here ####
 false	true	false	false	true	false	true	false	true	true

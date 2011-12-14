@@ -16,7 +16,7 @@ value	string
 ds	string	
 hr	string	
 	 	 
-Detailed Table Information	Table(tableName:nzhang_part_bucket, dbName:default, owner:sdong, createTime:1297384288, lastAccessTime:0, retention:0, sd:StorageDescriptor(cols:[FieldSchema(name:key, type:string, comment:null), FieldSchema(name:value, type:string, comment:null), FieldSchema(name:ds, type:string, comment:null), FieldSchema(name:hr, type:string, comment:null)], location:pfile:/data/users/sdong/www/open-source-hive1/build/ql/test/data/warehouse/nzhang_part_bucket, inputFormat:org.apache.hadoop.mapred.TextInputFormat, outputFormat:org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat, compressed:false, numBuckets:10, serdeInfo:SerDeInfo(name:null, serializationLib:org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe, parameters:{serialization.format=1}), bucketCols:[key], sortCols:[], parameters:{}), partitionKeys:[FieldSchema(name:ds, type:string, comment:null), FieldSchema(name:hr, type:string, comment:null)], parameters:{transient_lastDdlTime=1297384288}, viewOriginalText:null, viewExpandedText:null, tableType:MANAGED_TABLE)	
+#### A masked pattern was here ####
 PREHOOK: query: explain
 insert overwrite table nzhang_part_bucket partition (ds='2010-03-23', hr) select key, value, hr from srcpart where ds is not null and hr is not null
 PREHOOK: type: QUERY
@@ -120,11 +120,11 @@ ds=2010-03-23/hr=12
 PREHOOK: query: select * from nzhang_part_bucket where ds='2010-03-23' and hr='11' order by key
 PREHOOK: type: QUERY
 PREHOOK: Input: default@nzhang_part_bucket@ds=2010-03-23/hr=11
-PREHOOK: Output: file:/tmp/sdong/hive_2011-02-10_16-31-38_613_3238897957832572559/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: select * from nzhang_part_bucket where ds='2010-03-23' and hr='11' order by key
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@nzhang_part_bucket@ds=2010-03-23/hr=11
-POSTHOOK: Output: file:/tmp/sdong/hive_2011-02-10_16-31-38_613_3238897957832572559/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: Lineage: nzhang_part_bucket PARTITION(ds=2010-03-23,hr=11).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: nzhang_part_bucket PARTITION(ds=2010-03-23,hr=11).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: nzhang_part_bucket PARTITION(ds=2010-03-23,hr=12).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
@@ -1132,11 +1132,11 @@ POSTHOOK: Lineage: nzhang_part_bucket PARTITION(ds=2010-03-23,hr=12).value SIMPL
 PREHOOK: query: select * from nzhang_part_bucket where ds='2010-03-23' and hr='12' order by key
 PREHOOK: type: QUERY
 PREHOOK: Input: default@nzhang_part_bucket@ds=2010-03-23/hr=12
-PREHOOK: Output: file:/tmp/sdong/hive_2011-02-10_16-31-42_338_6426136864834026755/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: select * from nzhang_part_bucket where ds='2010-03-23' and hr='12' order by key
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@nzhang_part_bucket@ds=2010-03-23/hr=12
-POSTHOOK: Output: file:/tmp/sdong/hive_2011-02-10_16-31-42_338_6426136864834026755/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: Lineage: nzhang_part_bucket PARTITION(ds=2010-03-23,hr=11).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: nzhang_part_bucket PARTITION(ds=2010-03-23,hr=11).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: nzhang_part_bucket PARTITION(ds=2010-03-23,hr=12).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]

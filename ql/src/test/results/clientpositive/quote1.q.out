@@ -63,7 +63,7 @@ STAGE PLANS:
     Move Operator
       files:
           hdfs directory: true
-          destination: pfile:/data/users/sdong/www/open-source-hive1/build/ql/scratchdir/hive_2011-02-10_16-59-02_375_4348447710999272878/-ext-10000
+#### A masked pattern was here ####
 
   Stage: Stage-0
     Move Operator
@@ -83,7 +83,7 @@ STAGE PLANS:
   Stage: Stage-3
     Map Reduce
       Alias -> Map Operator Tree:
-        pfile:/data/users/sdong/www/open-source-hive1/build/ql/scratchdir/hive_2011-02-10_16-59-02_375_4348447710999272878/-ext-10002 
+#### A masked pattern was here ####
             File Output Operator
               compressed: false
               GlobalTableId: 0
@@ -154,11 +154,11 @@ POSTHOOK: Lineage: dest1 PARTITION(table=2008-04-08).type SIMPLE [(src)src.Field
 PREHOOK: query: SELECT `int`.`location`, `int`.`type`, `int`.`table` FROM dest1 `int` WHERE `int`.`table` = '2008-04-08'
 PREHOOK: type: QUERY
 PREHOOK: Input: default@dest1@table=2008-04-08
-PREHOOK: Output: file:/tmp/sdong/hive_2011-02-10_16-59-08_109_3313575503175887049/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: SELECT `int`.`location`, `int`.`type`, `int`.`table` FROM dest1 `int` WHERE `int`.`table` = '2008-04-08'
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@dest1@table=2008-04-08
-POSTHOOK: Output: file:/tmp/sdong/hive_2011-02-10_16-59-08_109_3313575503175887049/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: Lineage: dest1 PARTITION(table=2008-04-08).location EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: dest1 PARTITION(table=2008-04-08).type SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 238	val_238	2008-04-08

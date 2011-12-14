@@ -21,20 +21,20 @@ POSTHOOK: type: CREATEFUNCTION
 PREHOOK: query: select * from src where value = test_udf_get_java_string("val_66")
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/tmp/sdong/hive_2010-11-15_23-08-48_976_920151581457241016/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: select * from src where value = test_udf_get_java_string("val_66")
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: file:/tmp/sdong/hive_2010-11-15_23-08-48_976_920151581457241016/-mr-10000
+#### A masked pattern was here ####
 66	val_66
 PREHOOK: query: select * from (select * from src where value = 'val_66' or value = 'val_8') t where value <> test_udf_get_java_string("val_8")
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/tmp/sdong/hive_2010-11-15_23-08-51_812_2875394296817708788/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: select * from (select * from src where value = 'val_66' or value = 'val_8') t where value <> test_udf_get_java_string("val_8")
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: file:/tmp/sdong/hive_2010-11-15_23-08-51_812_2875394296817708788/-mr-10000
+#### A masked pattern was here ####
 66	val_66
 PREHOOK: query: DROP TEMPORARY FUNCTION test_udf_get_java_boolean
 PREHOOK: type: DROPFUNCTION

@@ -93,13 +93,13 @@ FROM (SELECT b.key as k, count(1) as c FROM src b GROUP BY b.key) a
 WHERE a.k >= 90
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/tmp/sdong/hive_2011-02-10_17-24-06_203_2627613690822348533/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: SELECT a.k, a.c
 FROM (SELECT b.key as k, count(1) as c FROM src b GROUP BY b.key) a
 WHERE a.k >= 90
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: file:/tmp/sdong/hive_2011-02-10_17-24-06_203_2627613690822348533/-mr-10000
+#### A masked pattern was here ####
 100	2
 103	2
 104	2

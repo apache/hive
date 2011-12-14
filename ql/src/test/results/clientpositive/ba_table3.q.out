@@ -24,11 +24,11 @@ POSTHOOK: Lineage: ba_test.ba_val EXPRESSION [(src)src.FieldSchema(name:value, t
 PREHOOK: query: select ba_test.ba_key, count(ba_test.ba_val) from ba_test group by ba_test.ba_key order by ba_key limit 5
 PREHOOK: type: QUERY
 PREHOOK: Input: default@ba_test
-PREHOOK: Output: file:/tmp/ashutosh/hive_2011-09-30_10-14-55_668_450609422871908961/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: select ba_test.ba_key, count(ba_test.ba_val) from ba_test group by ba_test.ba_key order by ba_key limit 5
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@ba_test
-POSTHOOK: Output: file:/tmp/ashutosh/hive_2011-09-30_10-14-55_668_450609422871908961/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: Lineage: ba_test.ba_key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: ba_test.ba_val EXPRESSION [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 0	3

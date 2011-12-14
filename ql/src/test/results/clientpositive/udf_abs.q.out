@@ -78,7 +78,7 @@ PREHOOK: query: SELECT
 FROM src LIMIT 1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/tmp/sdong/hive_2011-02-10_17-29-52_151_715923862412024109/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: SELECT
   abs(0),
   abs(-1),
@@ -88,7 +88,7 @@ POSTHOOK: query: SELECT
 FROM src LIMIT 1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: file:/tmp/sdong/hive_2011-02-10_17-29-52_151_715923862412024109/-mr-10000
+#### A masked pattern was here ####
 0	1	123	9223372036854775807	9223372036854775807
 PREHOOK: query: EXPLAIN SELECT
   abs(0.0),
@@ -145,7 +145,7 @@ PREHOOK: query: SELECT
 FROM src LIMIT 1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/tmp/sdong/hive_2011-02-10_17-29-55_573_7334704443549400495/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: SELECT
   abs(0.0),
   abs(-3.14159265),
@@ -153,5 +153,5 @@ POSTHOOK: query: SELECT
 FROM src LIMIT 1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: file:/tmp/sdong/hive_2011-02-10_17-29-55_573_7334704443549400495/-mr-10000
+#### A masked pattern was here ####
 0.0	3.14159265	3.14159265

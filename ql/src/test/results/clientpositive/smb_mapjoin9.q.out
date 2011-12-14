@@ -116,7 +116,7 @@ STAGE PLANS:
     Move Operator
       files:
           hdfs directory: true
-          destination: pfile:/data/users/rsurowka/JAVA_HIVE/apache-hive/build/ql/test/data/warehouse/smb_mapjoin9_results
+#### A masked pattern was here ####
 
   Stage: Stage-4
       Create Table Operator:

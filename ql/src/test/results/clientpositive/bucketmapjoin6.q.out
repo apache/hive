@@ -63,11 +63,11 @@ POSTHOOK: Lineage: tmp3.c SIMPLE [(tmp2)l.FieldSchema(name:b, type:string, comme
 PREHOOK: query: select * from tmp3 order by a, b, c
 PREHOOK: type: QUERY
 PREHOOK: Input: default@tmp3
-PREHOOK: Output: hdfs://localhost.localdomain:47035/data/users/jsichi/open/hive-trunk/build/ql/scratchdir/hive_2010-08-26_17-18-51_917_5942757771764717347/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: select * from tmp3 order by a, b, c
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@tmp3
-POSTHOOK: Output: hdfs://localhost.localdomain:47035/data/users/jsichi/open/hive-trunk/build/ql/scratchdir/hive_2010-08-26_17-18-51_917_5942757771764717347/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: Lineage: tmp1.a SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: tmp1.b SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: tmp2.a SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]

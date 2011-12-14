@@ -94,12 +94,9 @@ STAGE PLANS:
                           type: bigint
       Needs Tagging: false
       Path -> Alias:
-        pfile:/data/users/sdong/www/open-source-hive-fix/build/ql/test/data/warehouse/srcpartbucket/ds=2008-04-08/hr=11/000000_0 [srcpartbucket]
-        pfile:/data/users/sdong/www/open-source-hive-fix/build/ql/test/data/warehouse/srcpartbucket/ds=2008-04-08/hr=12/000000_0 [srcpartbucket]
-        pfile:/data/users/sdong/www/open-source-hive-fix/build/ql/test/data/warehouse/srcpartbucket/ds=2008-04-09/hr=11/000000_0 [srcpartbucket]
-        pfile:/data/users/sdong/www/open-source-hive-fix/build/ql/test/data/warehouse/srcpartbucket/ds=2008-04-09/hr=12/000000_0 [srcpartbucket]
+#### A masked pattern was here ####
       Path -> Partition:
-        pfile:/data/users/sdong/www/open-source-hive-fix/build/ql/test/data/warehouse/srcpartbucket/ds=2008-04-08/hr=11/000000_0 
+#### A masked pattern was here ####
           Partition
             base file name: 000000_0
             input format: org.apache.hadoop.hive.ql.io.RCFileInputFormat
@@ -112,9 +109,7 @@ STAGE PLANS:
               bucket_field_name key
               columns key,value
               columns.types string:string
-              file.inputformat org.apache.hadoop.hive.ql.io.RCFileInputFormat
-              file.outputformat org.apache.hadoop.hive.ql.io.RCFileOutputFormat
-              location pfile:/data/users/sdong/www/open-source-hive-fix/build/ql/test/data/warehouse/srcpartbucket/ds=2008-04-08/hr=11
+#### A masked pattern was here ####
               name default.srcpartbucket
               numFiles 4
               numPartitions 4
@@ -125,7 +120,7 @@ STAGE PLANS:
               serialization.format 1
               serialization.lib org.apache.hadoop.hive.serde2.columnar.ColumnarSerDe
               totalSize 687
-              transient_lastDdlTime 1316196024
+#### A masked pattern was here ####
             serde: org.apache.hadoop.hive.serde2.columnar.ColumnarSerDe
           
               input format: org.apache.hadoop.hive.ql.io.RCFileInputFormat
@@ -135,9 +130,7 @@ STAGE PLANS:
                 bucket_field_name key
                 columns key,value
                 columns.types string:string
-                file.inputformat org.apache.hadoop.hive.ql.io.RCFileInputFormat
-                file.outputformat org.apache.hadoop.hive.ql.io.RCFileOutputFormat
-                location pfile:/data/users/sdong/www/open-source-hive-fix/build/ql/test/data/warehouse/srcpartbucket
+#### A masked pattern was here ####
                 name default.srcpartbucket
                 numFiles 16
                 numPartitions 4
@@ -148,11 +141,11 @@ STAGE PLANS:
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.serde2.columnar.ColumnarSerDe
                 totalSize 2748
-                transient_lastDdlTime 1316196025
+#### A masked pattern was here ####
               serde: org.apache.hadoop.hive.serde2.columnar.ColumnarSerDe
               name: default.srcpartbucket
             name: default.srcpartbucket
-        pfile:/data/users/sdong/www/open-source-hive-fix/build/ql/test/data/warehouse/srcpartbucket/ds=2008-04-08/hr=12/000000_0 
+#### A masked pattern was here ####
           Partition
             base file name: 000000_0
             input format: org.apache.hadoop.hive.ql.io.RCFileInputFormat
@@ -165,9 +158,7 @@ STAGE PLANS:
               bucket_field_name key
               columns key,value
               columns.types string:string
-              file.inputformat org.apache.hadoop.hive.ql.io.RCFileInputFormat
-              file.outputformat org.apache.hadoop.hive.ql.io.RCFileOutputFormat
-              location pfile:/data/users/sdong/www/open-source-hive-fix/build/ql/test/data/warehouse/srcpartbucket/ds=2008-04-08/hr=12
+#### A masked pattern was here ####
               name default.srcpartbucket
               numFiles 4
               numPartitions 4
@@ -178,7 +169,7 @@ STAGE PLANS:
               serialization.format 1
               serialization.lib org.apache.hadoop.hive.serde2.columnar.ColumnarSerDe
               totalSize 687
-              transient_lastDdlTime 1316196025
+#### A masked pattern was here ####
             serde: org.apache.hadoop.hive.serde2.columnar.ColumnarSerDe
           
               input format: org.apache.hadoop.hive.ql.io.RCFileInputFormat
@@ -188,9 +179,7 @@ STAGE PLANS:
                 bucket_field_name key
                 columns key,value
                 columns.types string:string
-                file.inputformat org.apache.hadoop.hive.ql.io.RCFileInputFormat
-                file.outputformat org.apache.hadoop.hive.ql.io.RCFileOutputFormat
-                location pfile:/data/users/sdong/www/open-source-hive-fix/build/ql/test/data/warehouse/srcpartbucket
+#### A masked pattern was here ####
                 name default.srcpartbucket
                 numFiles 16
                 numPartitions 4
@@ -201,11 +190,11 @@ STAGE PLANS:
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.serde2.columnar.ColumnarSerDe
                 totalSize 2748
-                transient_lastDdlTime 1316196025
+#### A masked pattern was here ####
               serde: org.apache.hadoop.hive.serde2.columnar.ColumnarSerDe
               name: default.srcpartbucket
             name: default.srcpartbucket
-        pfile:/data/users/sdong/www/open-source-hive-fix/build/ql/test/data/warehouse/srcpartbucket/ds=2008-04-09/hr=11/000000_0 
+#### A masked pattern was here ####
           Partition
             base file name: 000000_0
             input format: org.apache.hadoop.hive.ql.io.RCFileInputFormat
@@ -218,9 +207,7 @@ STAGE PLANS:
               bucket_field_name key
               columns key,value
               columns.types string:string
-              file.inputformat org.apache.hadoop.hive.ql.io.RCFileInputFormat
-              file.outputformat org.apache.hadoop.hive.ql.io.RCFileOutputFormat
-              location pfile:/data/users/sdong/www/open-source-hive-fix/build/ql/test/data/warehouse/srcpartbucket/ds=2008-04-09/hr=11
+#### A masked pattern was here ####
               name default.srcpartbucket
               numFiles 4
               numPartitions 4
@@ -231,7 +218,7 @@ STAGE PLANS:
               serialization.format 1
               serialization.lib org.apache.hadoop.hive.serde2.columnar.ColumnarSerDe
               totalSize 687
-              transient_lastDdlTime 1316196025
+#### A masked pattern was here ####
             serde: org.apache.hadoop.hive.serde2.columnar.ColumnarSerDe
           
               input format: org.apache.hadoop.hive.ql.io.RCFileInputFormat
@@ -241,9 +228,7 @@ STAGE PLANS:
                 bucket_field_name key
                 columns key,value
                 columns.types string:string
-                file.inputformat org.apache.hadoop.hive.ql.io.RCFileInputFormat
-                file.outputformat org.apache.hadoop.hive.ql.io.RCFileOutputFormat
-                location pfile:/data/users/sdong/www/open-source-hive-fix/build/ql/test/data/warehouse/srcpartbucket
+#### A masked pattern was here ####
                 name default.srcpartbucket
                 numFiles 16
                 numPartitions 4
@@ -254,11 +239,11 @@ STAGE PLANS:
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.serde2.columnar.ColumnarSerDe
                 totalSize 2748
-                transient_lastDdlTime 1316196025
+#### A masked pattern was here ####
               serde: org.apache.hadoop.hive.serde2.columnar.ColumnarSerDe
               name: default.srcpartbucket
             name: default.srcpartbucket
-        pfile:/data/users/sdong/www/open-source-hive-fix/build/ql/test/data/warehouse/srcpartbucket/ds=2008-04-09/hr=12/000000_0 
+#### A masked pattern was here ####
           Partition
             base file name: 000000_0
             input format: org.apache.hadoop.hive.ql.io.RCFileInputFormat
@@ -271,9 +256,7 @@ STAGE PLANS:
               bucket_field_name key
               columns key,value
               columns.types string:string
-              file.inputformat org.apache.hadoop.hive.ql.io.RCFileInputFormat
-              file.outputformat org.apache.hadoop.hive.ql.io.RCFileOutputFormat
-              location pfile:/data/users/sdong/www/open-source-hive-fix/build/ql/test/data/warehouse/srcpartbucket/ds=2008-04-09/hr=12
+#### A masked pattern was here ####
               name default.srcpartbucket
               numFiles 4
               numPartitions 4
@@ -284,7 +267,7 @@ STAGE PLANS:
               serialization.format 1
               serialization.lib org.apache.hadoop.hive.serde2.columnar.ColumnarSerDe
               totalSize 687
-              transient_lastDdlTime 1316196025
+#### A masked pattern was here ####
             serde: org.apache.hadoop.hive.serde2.columnar.ColumnarSerDe
           
               input format: org.apache.hadoop.hive.ql.io.RCFileInputFormat
@@ -294,9 +277,7 @@ STAGE PLANS:
                 bucket_field_name key
                 columns key,value
                 columns.types string:string
-                file.inputformat org.apache.hadoop.hive.ql.io.RCFileInputFormat
-                file.outputformat org.apache.hadoop.hive.ql.io.RCFileOutputFormat
-                location pfile:/data/users/sdong/www/open-source-hive-fix/build/ql/test/data/warehouse/srcpartbucket
+#### A masked pattern was here ####
                 name default.srcpartbucket
                 numFiles 16
                 numPartitions 4
@@ -307,7 +288,7 @@ STAGE PLANS:
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.serde2.columnar.ColumnarSerDe
                 totalSize 2748
-                transient_lastDdlTime 1316196025
+#### A masked pattern was here ####
               serde: org.apache.hadoop.hive.serde2.columnar.ColumnarSerDe
               name: default.srcpartbucket
             name: default.srcpartbucket
@@ -331,9 +312,9 @@ STAGE PLANS:
             File Output Operator
               compressed: false
               GlobalTableId: 0
-              directory: file:/tmp/sdong/hive_2011-09-16_11-00-25_849_8706667665193550586/-ext-10001
+#### A masked pattern was here ####
               NumFilesPerFileSink: 1
-              Stats Publishing Key Prefix: file:/tmp/sdong/hive_2011-09-16_11-00-25_849_8706667665193550586/-ext-10001/
+#### A masked pattern was here ####
               table:
                   input format: org.apache.hadoop.mapred.TextInputFormat
                   output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
@@ -357,14 +338,14 @@ PREHOOK: Input: default@srcpartbucket@ds=2008-04-08/hr=11
 PREHOOK: Input: default@srcpartbucket@ds=2008-04-08/hr=12
 PREHOOK: Input: default@srcpartbucket@ds=2008-04-09/hr=11
 PREHOOK: Input: default@srcpartbucket@ds=2008-04-09/hr=12
-PREHOOK: Output: file:/tmp/sdong/hive_2011-09-16_11-00-26_803_7212610976402183066/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: select ds, count(1) from srcpartbucket tablesample (bucket 1 out of 4 on key) where ds is not null group by ds
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@srcpartbucket@ds=2008-04-08/hr=11
 POSTHOOK: Input: default@srcpartbucket@ds=2008-04-08/hr=12
 POSTHOOK: Input: default@srcpartbucket@ds=2008-04-09/hr=11
 POSTHOOK: Input: default@srcpartbucket@ds=2008-04-09/hr=12
-POSTHOOK: Output: file:/tmp/sdong/hive_2011-09-16_11-00-26_803_7212610976402183066/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: Lineage: srcpartbucket PARTITION(ds=2008-04-08,hr=11).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: srcpartbucket PARTITION(ds=2008-04-08,hr=11).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: srcpartbucket PARTITION(ds=2008-04-08,hr=12).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
@@ -381,14 +362,14 @@ PREHOOK: Input: default@srcpartbucket@ds=2008-04-08/hr=11
 PREHOOK: Input: default@srcpartbucket@ds=2008-04-08/hr=12
 PREHOOK: Input: default@srcpartbucket@ds=2008-04-09/hr=11
 PREHOOK: Input: default@srcpartbucket@ds=2008-04-09/hr=12
-PREHOOK: Output: file:/tmp/sdong/hive_2011-09-16_11-00-31_692_1045422554806912507/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: select ds, count(1) from srcpartbucket tablesample (bucket 1 out of 2 on key) where ds is not null group by ds
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@srcpartbucket@ds=2008-04-08/hr=11
 POSTHOOK: Input: default@srcpartbucket@ds=2008-04-08/hr=12
 POSTHOOK: Input: default@srcpartbucket@ds=2008-04-09/hr=11
 POSTHOOK: Input: default@srcpartbucket@ds=2008-04-09/hr=12
-POSTHOOK: Output: file:/tmp/sdong/hive_2011-09-16_11-00-31_692_1045422554806912507/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: Lineage: srcpartbucket PARTITION(ds=2008-04-08,hr=11).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: srcpartbucket PARTITION(ds=2008-04-08,hr=11).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: srcpartbucket PARTITION(ds=2008-04-08,hr=12).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
@@ -405,14 +386,14 @@ PREHOOK: Input: default@srcpartbucket@ds=2008-04-08/hr=11
 PREHOOK: Input: default@srcpartbucket@ds=2008-04-08/hr=12
 PREHOOK: Input: default@srcpartbucket@ds=2008-04-09/hr=11
 PREHOOK: Input: default@srcpartbucket@ds=2008-04-09/hr=12
-PREHOOK: Output: file:/tmp/sdong/hive_2011-09-16_11-00-37_905_6308293676974717835/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: select * from srcpartbucket where ds is not null
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@srcpartbucket@ds=2008-04-08/hr=11
 POSTHOOK: Input: default@srcpartbucket@ds=2008-04-08/hr=12
 POSTHOOK: Input: default@srcpartbucket@ds=2008-04-09/hr=11
 POSTHOOK: Input: default@srcpartbucket@ds=2008-04-09/hr=12
-POSTHOOK: Output: file:/tmp/sdong/hive_2011-09-16_11-00-37_905_6308293676974717835/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: Lineage: srcpartbucket PARTITION(ds=2008-04-08,hr=11).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: srcpartbucket PARTITION(ds=2008-04-08,hr=11).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: srcpartbucket PARTITION(ds=2008-04-08,hr=12).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]

@@ -24,12 +24,12 @@ PREHOOK: query: SELECT * FROM joinone JOIN joinTwo ON(joinone.key2=joinTwo.key2)
 PREHOOK: type: QUERY
 PREHOOK: Input: default@joinone
 PREHOOK: Input: default@jointwo
-PREHOOK: Output: file:/var/folders/67/67R3POPtF90VG63KSmCbcU++F0U/-Tmp-/krishnak/hive_2011-03-21_00-25-58_179_9014420791983887840/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: SELECT * FROM joinone JOIN joinTwo ON(joinone.key2=joinTwo.key2)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@joinone
 POSTHOOK: Input: default@jointwo
-POSTHOOK: Output: file:/var/folders/67/67R3POPtF90VG63KSmCbcU++F0U/-Tmp-/krishnak/hive_2011-03-21_00-25-58_179_9014420791983887840/-mr-10000
+#### A masked pattern was here ####
 5	10005	66	5	10005	66
 20	10020	66	20	10020	66
 25	10025	88	25	10025	66

@@ -50,11 +50,11 @@ STAGE PLANS:
 PREHOOK: query: SELECT transform(*) USING 'cat' AS (col array<bigint>) FROM transform1_t1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@transform1_t1
-PREHOOK: Output: file:/tmp/sdong/hive_2011-02-10_17-24-39_548_6109843800988394862/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: SELECT transform(*) USING 'cat' AS (col array<bigint>) FROM transform1_t1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@transform1_t1
-POSTHOOK: Output: file:/tmp/sdong/hive_2011-02-10_17-24-39_548_6109843800988394862/-mr-10000
+#### A masked pattern was here ####
 PREHOOK: query: create table transform1_t2(col array<int>)
 PREHOOK: type: CREATETABLE
 POSTHOOK: query: create table transform1_t2(col array<int>)
@@ -117,10 +117,10 @@ STAGE PLANS:
 PREHOOK: query: SELECT transform('0\0021\0022') USING 'cat' AS (col array<int>) FROM transform1_t2
 PREHOOK: type: QUERY
 PREHOOK: Input: default@transform1_t2
-PREHOOK: Output: file:/tmp/sdong/hive_2011-02-10_17-24-47_525_7519260004755044683/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: SELECT transform('0\0021\0022') USING 'cat' AS (col array<int>) FROM transform1_t2
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@transform1_t2
-POSTHOOK: Output: file:/tmp/sdong/hive_2011-02-10_17-24-47_525_7519260004755044683/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: Lineage: transform1_t2.col EXPRESSION []
 [0,1,2]

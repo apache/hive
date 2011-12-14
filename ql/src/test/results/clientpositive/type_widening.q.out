@@ -39,11 +39,11 @@ STAGE PLANS:
 PREHOOK: query: SELECT COALESCE(0, 9223372036854775807) FROM src LIMIT 1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/var/folders/5V/5V4Zq77qGD4aSK9m8V3frVsFdRU/-Tmp-/salbiz/hive_2011-06-15_19-30-42_929_4856362252207242381/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: SELECT COALESCE(0, 9223372036854775807) FROM src LIMIT 1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: file:/var/folders/5V/5V4Zq77qGD4aSK9m8V3frVsFdRU/-Tmp-/salbiz/hive_2011-06-15_19-30-42_929_4856362252207242381/-mr-10000
+#### A masked pattern was here ####
 0
 PREHOOK: query: EXPLAIN SELECT * FROM (SELECT 0 AS numcol FROM src UNION ALL SELECT 9223372036854775807 AS numcol FROM src) a ORDER BY numcol
 PREHOOK: type: QUERY
@@ -123,11 +123,11 @@ STAGE PLANS:
 PREHOOK: query: SELECT * FROM (SELECT 0 AS numcol FROM src UNION ALL SELECT 9223372036854775807 AS numcol FROM src) a ORDER BY numcol
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/var/folders/5V/5V4Zq77qGD4aSK9m8V3frVsFdRU/-Tmp-/salbiz/hive_2011-06-15_19-30-48_975_2277800061813146644/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: SELECT * FROM (SELECT 0 AS numcol FROM src UNION ALL SELECT 9223372036854775807 AS numcol FROM src) a ORDER BY numcol
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: file:/var/folders/5V/5V4Zq77qGD4aSK9m8V3frVsFdRU/-Tmp-/salbiz/hive_2011-06-15_19-30-48_975_2277800061813146644/-mr-10000
+#### A masked pattern was here ####
 0
 0
 0

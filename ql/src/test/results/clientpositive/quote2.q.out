@@ -111,7 +111,7 @@ FROM src
 LIMIT 1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/tmp/sdong/hive_2011-02-10_16-59-11_745_3782997771167807046/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: SELECT
     'abc',        "abc",
     'abc\'',      "abc\"",
@@ -127,5 +127,5 @@ FROM src
 LIMIT 1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: file:/tmp/sdong/hive_2011-02-10_16-59-11_745_3782997771167807046/-mr-10000
+#### A masked pattern was here ####
 abc	abc	abc'	abc"	abc\	abc\	abc\'	abc\"	abc\\	abc\\	abc\\'	abc\\"	abc\\\	abc\\\	abc""""\	abc''''\	awk '{print NR"\t"$0}'	tab	tab	tab	tab

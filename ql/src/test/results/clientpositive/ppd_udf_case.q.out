@@ -128,7 +128,7 @@ STAGE PLANS:
   Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/tmp/charleschen/hive_2011-08-04_15-38-40_124_3085325060954835780/-mr-10002 
+#### A masked pattern was here ####
             Reduce Output Operator
               key expressions:
                     expr: _col0
@@ -194,7 +194,7 @@ ORDER BY a.key, a.value, a.ds, a.hr, b.key, b.value, b.ds, b.hr
 PREHOOK: type: QUERY
 PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
 PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
-PREHOOK: Output: file:/tmp/charleschen/hive_2011-08-04_15-38-40_241_9100931972676880091/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: SELECT *
 FROM srcpart a JOIN srcpart b
 ON a.key = b.key
@@ -209,7 +209,7 @@ ORDER BY a.key, a.value, a.ds, a.hr, b.key, b.value, b.ds, b.hr
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
 POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
-POSTHOOK: Output: file:/tmp/charleschen/hive_2011-08-04_15-38-40_241_9100931972676880091/-mr-10000
+#### A masked pattern was here ####
 27	val_27	2008-04-08	11	27	val_27	2008-04-08	11
 27	val_27	2008-04-08	11	27	val_27	2008-04-08	12
 27	val_27	2008-04-08	12	27	val_27	2008-04-08	11
@@ -340,7 +340,7 @@ STAGE PLANS:
   Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/tmp/charleschen/hive_2011-08-04_15-38-46_616_4592989379602081302/-mr-10002 
+#### A masked pattern was here ####
             Reduce Output Operator
               key expressions:
                     expr: _col0
@@ -406,7 +406,7 @@ ORDER BY a.key, a.value, a.ds, a.hr, b.key, b.value, b.ds, b.hr
 PREHOOK: type: QUERY
 PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
 PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
-PREHOOK: Output: file:/tmp/charleschen/hive_2011-08-04_15-38-46_730_8355573912192239451/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: SELECT *
 FROM srcpart a JOIN srcpart b
 ON a.key = b.key
@@ -421,7 +421,7 @@ ORDER BY a.key, a.value, a.ds, a.hr, b.key, b.value, b.ds, b.hr
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
 POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
-POSTHOOK: Output: file:/tmp/charleschen/hive_2011-08-04_15-38-46_730_8355573912192239451/-mr-10000
+#### A masked pattern was here ####
 27	val_27	2008-04-08	11	27	val_27	2008-04-08	11
 27	val_27	2008-04-08	11	27	val_27	2008-04-08	12
 27	val_27	2008-04-08	12	27	val_27	2008-04-08	11

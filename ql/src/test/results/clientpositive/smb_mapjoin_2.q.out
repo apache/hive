@@ -101,12 +101,12 @@ PREHOOK: query: select /*+mapjoin(a)*/ * from smb_bucket_1 a join smb_bucket_3 b
 PREHOOK: type: QUERY
 PREHOOK: Input: default@smb_bucket_1
 PREHOOK: Input: default@smb_bucket_3
-PREHOOK: Output: file:/tmp/krishnak/hive_2011-03-21_05-15-57_393_4239075894773018260/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: select /*+mapjoin(a)*/ * from smb_bucket_1 a join smb_bucket_3 b on a.key = b.key
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@smb_bucket_1
 POSTHOOK: Input: default@smb_bucket_3
-POSTHOOK: Output: file:/tmp/krishnak/hive_2011-03-21_05-15-57_393_4239075894773018260/-mr-10000
+#### A masked pattern was here ####
 4	val_4	4	val_4
 10	val_10	10	val_10
 PREHOOK: query: explain
@@ -179,12 +179,12 @@ PREHOOK: query: select /*+mapjoin(a)*/ * from smb_bucket_1 a left outer join smb
 PREHOOK: type: QUERY
 PREHOOK: Input: default@smb_bucket_1
 PREHOOK: Input: default@smb_bucket_3
-PREHOOK: Output: file:/tmp/krishnak/hive_2011-03-21_05-16-00_559_4057990081443714428/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: select /*+mapjoin(a)*/ * from smb_bucket_1 a left outer join smb_bucket_3 b on a.key = b.key
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@smb_bucket_1
 POSTHOOK: Input: default@smb_bucket_3
-POSTHOOK: Output: file:/tmp/krishnak/hive_2011-03-21_05-16-00_559_4057990081443714428/-mr-10000
+#### A masked pattern was here ####
 1	val_1	NULL	NULL
 3	val_3	NULL	NULL
 4	val_4	4	val_4
@@ -260,12 +260,12 @@ PREHOOK: query: select /*+mapjoin(a)*/ * from smb_bucket_1 a right outer join sm
 PREHOOK: type: QUERY
 PREHOOK: Input: default@smb_bucket_1
 PREHOOK: Input: default@smb_bucket_3
-PREHOOK: Output: file:/tmp/krishnak/hive_2011-03-21_05-16-03_769_3709056736491815260/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: select /*+mapjoin(a)*/ * from smb_bucket_1 a right outer join smb_bucket_3 b on a.key = b.key
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@smb_bucket_1
 POSTHOOK: Input: default@smb_bucket_3
-POSTHOOK: Output: file:/tmp/krishnak/hive_2011-03-21_05-16-03_769_3709056736491815260/-mr-10000
+#### A masked pattern was here ####
 4	val_4	4	val_4
 10	val_10	10	val_10
 NULL	NULL	17	val_17
@@ -342,12 +342,12 @@ PREHOOK: query: select /*+mapjoin(a)*/ * from smb_bucket_1 a full outer join smb
 PREHOOK: type: QUERY
 PREHOOK: Input: default@smb_bucket_1
 PREHOOK: Input: default@smb_bucket_3
-PREHOOK: Output: file:/tmp/krishnak/hive_2011-03-21_05-16-06_943_8685968771579677784/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: select /*+mapjoin(a)*/ * from smb_bucket_1 a full outer join smb_bucket_3 b on a.key = b.key
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@smb_bucket_1
 POSTHOOK: Input: default@smb_bucket_3
-POSTHOOK: Output: file:/tmp/krishnak/hive_2011-03-21_05-16-06_943_8685968771579677784/-mr-10000
+#### A masked pattern was here ####
 1	val_1	NULL	NULL
 3	val_3	NULL	NULL
 4	val_4	4	val_4
@@ -427,12 +427,12 @@ PREHOOK: query: select /*+mapjoin(b)*/ * from smb_bucket_1 a join smb_bucket_3 b
 PREHOOK: type: QUERY
 PREHOOK: Input: default@smb_bucket_1
 PREHOOK: Input: default@smb_bucket_3
-PREHOOK: Output: file:/tmp/krishnak/hive_2011-03-21_05-16-10_068_4663023198853363068/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: select /*+mapjoin(b)*/ * from smb_bucket_1 a join smb_bucket_3 b on a.key = b.key
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@smb_bucket_1
 POSTHOOK: Input: default@smb_bucket_3
-POSTHOOK: Output: file:/tmp/krishnak/hive_2011-03-21_05-16-10_068_4663023198853363068/-mr-10000
+#### A masked pattern was here ####
 4	val_4	4	val_4
 10	val_10	10	val_10
 PREHOOK: query: explain
@@ -505,12 +505,12 @@ PREHOOK: query: select /*+mapjoin(b)*/ * from smb_bucket_1 a left outer join smb
 PREHOOK: type: QUERY
 PREHOOK: Input: default@smb_bucket_1
 PREHOOK: Input: default@smb_bucket_3
-PREHOOK: Output: file:/tmp/krishnak/hive_2011-03-21_05-16-13_276_8777108353771376866/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: select /*+mapjoin(b)*/ * from smb_bucket_1 a left outer join smb_bucket_3 b on a.key = b.key
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@smb_bucket_1
 POSTHOOK: Input: default@smb_bucket_3
-POSTHOOK: Output: file:/tmp/krishnak/hive_2011-03-21_05-16-13_276_8777108353771376866/-mr-10000
+#### A masked pattern was here ####
 1	val_1	NULL	NULL
 3	val_3	NULL	NULL
 4	val_4	4	val_4
@@ -586,12 +586,12 @@ PREHOOK: query: select /*+mapjoin(b)*/ * from smb_bucket_1 a right outer join sm
 PREHOOK: type: QUERY
 PREHOOK: Input: default@smb_bucket_1
 PREHOOK: Input: default@smb_bucket_3
-PREHOOK: Output: file:/tmp/krishnak/hive_2011-03-21_05-16-16_442_2551181209955269847/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: select /*+mapjoin(b)*/ * from smb_bucket_1 a right outer join smb_bucket_3 b on a.key = b.key
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@smb_bucket_1
 POSTHOOK: Input: default@smb_bucket_3
-POSTHOOK: Output: file:/tmp/krishnak/hive_2011-03-21_05-16-16_442_2551181209955269847/-mr-10000
+#### A masked pattern was here ####
 4	val_4	4	val_4
 10	val_10	10	val_10
 NULL	NULL	17	val_17
@@ -668,12 +668,12 @@ PREHOOK: query: select /*+mapjoin(b)*/ * from smb_bucket_1 a full outer join smb
 PREHOOK: type: QUERY
 PREHOOK: Input: default@smb_bucket_1
 PREHOOK: Input: default@smb_bucket_3
-PREHOOK: Output: file:/tmp/krishnak/hive_2011-03-21_05-16-19_577_5693475629434947669/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: select /*+mapjoin(b)*/ * from smb_bucket_1 a full outer join smb_bucket_3 b on a.key = b.key
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@smb_bucket_1
 POSTHOOK: Input: default@smb_bucket_3
-POSTHOOK: Output: file:/tmp/krishnak/hive_2011-03-21_05-16-19_577_5693475629434947669/-mr-10000
+#### A masked pattern was here ####
 1	val_1	NULL	NULL
 3	val_3	NULL	NULL
 4	val_4	4	val_4

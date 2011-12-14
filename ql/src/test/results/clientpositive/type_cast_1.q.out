@@ -39,9 +39,9 @@ STAGE PLANS:
 PREHOOK: query: SELECT IF(false, 1, cast(2 as smallint)) + 3 FROM src LIMIT 1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/tmp/sdong/hive_2011-02-10_17-25-03_849_3455910732029126286/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: SELECT IF(false, 1, cast(2 as smallint)) + 3 FROM src LIMIT 1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: file:/tmp/sdong/hive_2011-02-10_17-25-03_849_3455910732029126286/-mr-10000
+#### A masked pattern was here ####
 5

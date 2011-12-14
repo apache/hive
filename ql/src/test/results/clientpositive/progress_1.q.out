@@ -12,9 +12,9 @@ POSTHOOK: Output: default@progress_1
 PREHOOK: query: select count(1) from PROGRESS_1 t1 join PROGRESS_1 t2 on t1.key=t2.key
 PREHOOK: type: QUERY
 PREHOOK: Input: default@progress_1
-PREHOOK: Output: file:/tmp/krishnak/hive_2011-03-21_05-04-07_140_4147639400535973079/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: select count(1) from PROGRESS_1 t1 join PROGRESS_1 t2 on t1.key=t2.key
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@progress_1
-POSTHOOK: Output: file:/tmp/krishnak/hive_2011-03-21_05-04-07_140_4147639400535973079/-mr-10000
+#### A masked pattern was here ####
 5000

@@ -47,12 +47,12 @@ PREHOOK: query: select dt, count(1) from partition_test_partitioned where dt is 
 PREHOOK: type: QUERY
 PREHOOK: Input: default@partition_test_partitioned@dt=101
 PREHOOK: Input: default@partition_test_partitioned@dt=102
-PREHOOK: Output: file:/tmp/njain/hive_2011-02-02_15-20-57_358_902155619985638012/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: select dt, count(1) from partition_test_partitioned where dt is not null group by dt
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@partition_test_partitioned@dt=101
 POSTHOOK: Input: default@partition_test_partitioned@dt=102
-POSTHOOK: Output: file:/tmp/njain/hive_2011-02-02_15-20-57_358_902155619985638012/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: Lineage: partition_test_partitioned PARTITION(dt=101).key SIMPLE [(src1)src1.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: partition_test_partitioned PARTITION(dt=101).value SIMPLE [(src1)src1.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: partition_test_partitioned PARTITION(dt=102).key SIMPLE [(src1)src1.FieldSchema(name:key, type:string, comment:default), ]
@@ -78,13 +78,13 @@ PREHOOK: type: QUERY
 PREHOOK: Input: default@partition_test_partitioned@dt=101
 PREHOOK: Input: default@partition_test_partitioned@dt=102
 PREHOOK: Input: default@partition_test_partitioned@dt=103
-PREHOOK: Output: file:/tmp/njain/hive_2011-02-02_15-21-05_958_2383252255379009164/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: select dt, count(1) from partition_test_partitioned where dt is not null group by dt
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@partition_test_partitioned@dt=101
 POSTHOOK: Input: default@partition_test_partitioned@dt=102
 POSTHOOK: Input: default@partition_test_partitioned@dt=103
-POSTHOOK: Output: file:/tmp/njain/hive_2011-02-02_15-21-05_958_2383252255379009164/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: Lineage: partition_test_partitioned PARTITION(dt=101).key SIMPLE [(src1)src1.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: partition_test_partitioned PARTITION(dt=101).value SIMPLE [(src1)src1.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: partition_test_partitioned PARTITION(dt=102).key SIMPLE [(src1)src1.FieldSchema(name:key, type:string, comment:default), ]

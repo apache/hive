@@ -72,13 +72,13 @@ FROM src
 WHERE key <> '302'
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/tmp/sdong/hive_2011-02-10_17-38-49_076_8731314818424049528/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: SELECT key, value
 FROM src
 WHERE key <> '302'
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: file:/tmp/sdong/hive_2011-02-10_17-38-49_076_8731314818424049528/-mr-10000
+#### A masked pattern was here ####
 238	val_238
 86	val_86
 311	val_311
@@ -630,13 +630,13 @@ FROM src
 WHERE key != '302'
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/tmp/sdong/hive_2011-02-10_17-38-52_445_8025674449421147677/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: SELECT key, value
 FROM src
 WHERE key != '302'
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: file:/tmp/sdong/hive_2011-02-10_17-38-52_445_8025674449421147677/-mr-10000
+#### A masked pattern was here ####
 238	val_238
 86	val_86
 311	val_311

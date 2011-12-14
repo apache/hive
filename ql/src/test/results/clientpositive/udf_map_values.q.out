@@ -20,21 +20,21 @@ PREHOOK: query: -- Evaluate function against STRING valued values
 SELECT map_values(map(1, "a", 2, "b", 3, "c")) FROM src LIMIT 1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/var/folders/b7/b7UUwNZdF1KKHtM+5la6f++++TI/-Tmp-/carl/hive_2011-08-04_23-19-10_440_3825624243726375363/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: -- Evaluate function against STRING valued values
 SELECT map_values(map(1, "a", 2, "b", 3, "c")) FROM src LIMIT 1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: file:/var/folders/b7/b7UUwNZdF1KKHtM+5la6f++++TI/-Tmp-/carl/hive_2011-08-04_23-19-10_440_3825624243726375363/-mr-10000
+#### A masked pattern was here ####
 ["a","b","c"]
 PREHOOK: query: -- Evaluate function against INT valued keys
 SELECT map_values(map("a", 1, "b", 2, "c", 3)) FROM src LIMIT 1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/var/folders/b7/b7UUwNZdF1KKHtM+5la6f++++TI/-Tmp-/carl/hive_2011-08-04_23-19-17_803_4547220042289617300/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: -- Evaluate function against INT valued keys
 SELECT map_values(map("a", 1, "b", 2, "c", 3)) FROM src LIMIT 1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: file:/var/folders/b7/b7UUwNZdF1KKHtM+5la6f++++TI/-Tmp-/carl/hive_2011-08-04_23-19-17_803_4547220042289617300/-mr-10000
+#### A masked pattern was here ####
 [2,1,3]

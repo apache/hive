@@ -9,11 +9,11 @@ PREHOOK: query: -- tbl_created_by_init is supposed to have been created for us
 select * from tbl_created_by_init
 PREHOOK: type: QUERY
 PREHOOK: Input: default@tbl_created_by_init
-PREHOOK: Output: file:/tmp/jssarma/hive_2010-07-21_11-26-27_744_1100043554292552055/10000
+#### A masked pattern was here ####
 POSTHOOK: query: -- tbl_created_by_init is supposed to have been created for us
 -- automatically by test_init_file.sql
 
 select * from tbl_created_by_init
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@tbl_created_by_init
-POSTHOOK: Output: file:/tmp/jssarma/hive_2010-07-21_11-26-27_744_1100043554292552055/10000
+#### A masked pattern was here ####

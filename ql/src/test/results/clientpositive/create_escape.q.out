@@ -20,7 +20,7 @@ POSTHOOK: type: DESCTABLE
 a	string	
 b	string	
 	 	 
-Detailed Table Information	Table(tableName:table1, dbName:default, owner:thiruvel, createTime:1286800085, lastAccessTime:0, retention:0, sd:StorageDescriptor(cols:[FieldSchema(name:a, type:string, comment:null), FieldSchema(name:b, type:string, comment:null)], location:pfile:/home/thiruvel/projects/hive/hive.unsecure/build/ql/test/data/warehouse/table1, inputFormat:org.apache.hadoop.mapred.TextInputFormat, outputFormat:org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat, compressed:false, numBuckets:-1, serdeInfo:SerDeInfo(name:null, serializationLib:org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe, parameters:{escape.delim=\, serialization.format=	, field.delim=
+#### A masked pattern was here ####
 PREHOOK: query: INSERT OVERWRITE TABLE table1 SELECT key, '\\\t\\' FROM src WHERE key = 86
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
@@ -34,11 +34,11 @@ POSTHOOK: Lineage: table1.b SIMPLE []
 PREHOOK: query: SELECT * FROM table1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@table1
-PREHOOK: Output: file:/tmp/thiruvel/hive_2010-10-11_05-28-09_174_3118900658292640763/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: SELECT * FROM table1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@table1
-POSTHOOK: Output: file:/tmp/thiruvel/hive_2010-10-11_05-28-09_174_3118900658292640763/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: Lineage: table1.a SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: table1.b SIMPLE []
 86	\	\

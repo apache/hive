@@ -77,7 +77,7 @@ WHERE  src_thrift.lint IS NOT NULL
        AND NOT (src_thrift.mstringstring IS NULL) LIMIT 1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src_thrift
-PREHOOK: Output: file:/tmp/sdong/hive_2011-02-10_17-41-44_692_9023699071223383411/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: FROM src_thrift
 SELECT size(src_thrift.lint), 
        size(src_thrift.lintstring), 
@@ -87,5 +87,5 @@ WHERE  src_thrift.lint IS NOT NULL
        AND NOT (src_thrift.mstringstring IS NULL) LIMIT 1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src_thrift
-POSTHOOK: Output: file:/tmp/sdong/hive_2011-02-10_17-41-44_692_9023699071223383411/-mr-10000
+#### A masked pattern was here ####
 3	1	1	-1

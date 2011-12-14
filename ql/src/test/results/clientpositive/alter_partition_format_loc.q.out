@@ -10,7 +10,7 @@ POSTHOOK: type: DESCTABLE
 key	int	
 value	string	
 	 	 
-Detailed Table Information	Table(tableName:alter_partition_format_test, dbName:default, owner:sohanjain, createTime:1312480952, lastAccessTime:0, retention:0, sd:StorageDescriptor(cols:[FieldSchema(name:key, type:int, comment:null), FieldSchema(name:value, type:string, comment:null)], location:pfile:/data/users/sohanjain/test_builds/hive_2338/apache-hive/build/ql/test/data/warehouse/alter_partition_format_test, inputFormat:org.apache.hadoop.mapred.TextInputFormat, outputFormat:org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat, compressed:false, numBuckets:-1, serdeInfo:SerDeInfo(name:null, serializationLib:org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe, parameters:{serialization.format=1}), bucketCols:[], sortCols:[], parameters:{}), partitionKeys:[], parameters:{transient_lastDdlTime=1312480952}, viewOriginalText:null, viewExpandedText:null, tableType:MANAGED_TABLE)	
+#### A masked pattern was here ####
 PREHOOK: query: alter table alter_partition_format_test set fileformat rcfile
 PREHOOK: type: ALTERTABLE_FILEFORMAT
 PREHOOK: Input: default@alter_partition_format_test
@@ -26,12 +26,11 @@ POSTHOOK: type: DESCTABLE
 key	int	
 value	string	
 	 	 
-Detailed Table Information	Table(tableName:alter_partition_format_test, dbName:default, owner:sohanjain, createTime:1312480952, lastAccessTime:0, retention:0, sd:StorageDescriptor(cols:[FieldSchema(name:key, type:int, comment:null), FieldSchema(name:value, type:string, comment:null)], location:pfile:/data/users/sohanjain/test_builds/hive_2338/apache-hive/build/ql/test/data/warehouse/alter_partition_format_test, inputFormat:org.apache.hadoop.hive.ql.io.RCFileInputFormat, outputFormat:org.apache.hadoop.hive.ql.io.RCFileOutputFormat, compressed:false, numBuckets:-1, serdeInfo:SerDeInfo(name:null, serializationLib:org.apache.hadoop.hive.serde2.columnar.ColumnarSerDe, parameters:{serialization.format=1}), bucketCols:[], sortCols:[], parameters:{}), partitionKeys:[], parameters:{last_modified_by=sohanjain, last_modified_time=1312480952, transient_lastDdlTime=1312480952}, viewOriginalText:null, viewExpandedText:null, tableType:MANAGED_TABLE)	
-PREHOOK: query: alter table alter_partition_format_test set location "file:/test/test/"
+#### A masked pattern was here ####
 PREHOOK: type: ALTERTABLE_LOCATION
 PREHOOK: Input: default@alter_partition_format_test
 PREHOOK: Output: default@alter_partition_format_test
-POSTHOOK: query: alter table alter_partition_format_test set location "file:/test/test/"
+#### A masked pattern was here ####
 POSTHOOK: type: ALTERTABLE_LOCATION
 POSTHOOK: Input: default@alter_partition_format_test
 POSTHOOK: Output: default@alter_partition_format_test
@@ -42,7 +41,7 @@ POSTHOOK: type: DESCTABLE
 key	int	
 value	string	
 	 	 
-Detailed Table Information	Table(tableName:alter_partition_format_test, dbName:default, owner:sohanjain, createTime:1312480952, lastAccessTime:0, retention:0, sd:StorageDescriptor(cols:[FieldSchema(name:key, type:int, comment:null), FieldSchema(name:value, type:string, comment:null)], location:file:/test/test/, inputFormat:org.apache.hadoop.hive.ql.io.RCFileInputFormat, outputFormat:org.apache.hadoop.hive.ql.io.RCFileOutputFormat, compressed:false, numBuckets:-1, serdeInfo:SerDeInfo(name:null, serializationLib:org.apache.hadoop.hive.serde2.columnar.ColumnarSerDe, parameters:{serialization.format=1}), bucketCols:[], sortCols:[], parameters:{}), partitionKeys:[], parameters:{last_modified_by=sohanjain, last_modified_time=1312480952, transient_lastDdlTime=1312480952}, viewOriginalText:null, viewExpandedText:null, tableType:MANAGED_TABLE)	
+#### A masked pattern was here ####
 PREHOOK: query: drop table alter_partition_format_test
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@alter_partition_format_test
@@ -73,7 +72,7 @@ key	int
 value	string	
 ds	string	
 	 	 
-Detailed Partition Information	Partition(values:[2010], dbName:default, tableName:alter_partition_format_test, createTime:1312480953, lastAccessTime:0, sd:StorageDescriptor(cols:[FieldSchema(name:key, type:int, comment:null), FieldSchema(name:value, type:string, comment:null)], location:pfile:/data/users/sohanjain/test_builds/hive_2338/apache-hive/build/ql/test/data/warehouse/alter_partition_format_test/ds=2010, inputFormat:org.apache.hadoop.mapred.TextInputFormat, outputFormat:org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat, compressed:false, numBuckets:-1, serdeInfo:SerDeInfo(name:null, serializationLib:org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe, parameters:{serialization.format=1}), bucketCols:[], sortCols:[], parameters:{}), parameters:{transient_lastDdlTime=1312480953})	
+#### A masked pattern was here ####
 PREHOOK: query: alter table alter_partition_format_test partition(ds='2010') set fileformat rcfile
 PREHOOK: type: ALTERPARTITION_FILEFORMAT
 PREHOOK: Input: default@alter_partition_format_test
@@ -91,12 +90,11 @@ key	int
 value	string	
 ds	string	
 	 	 
-Detailed Partition Information	Partition(values:[2010], dbName:default, tableName:alter_partition_format_test, createTime:1312480953, lastAccessTime:0, sd:StorageDescriptor(cols:[FieldSchema(name:key, type:int, comment:null), FieldSchema(name:value, type:string, comment:null)], location:pfile:/data/users/sohanjain/test_builds/hive_2338/apache-hive/build/ql/test/data/warehouse/alter_partition_format_test/ds=2010, inputFormat:org.apache.hadoop.hive.ql.io.RCFileInputFormat, outputFormat:org.apache.hadoop.hive.ql.io.RCFileOutputFormat, compressed:false, numBuckets:-1, serdeInfo:SerDeInfo(name:null, serializationLib:org.apache.hadoop.hive.serde2.columnar.ColumnarSerDe, parameters:{serialization.format=1}), bucketCols:[], sortCols:[], parameters:{}), parameters:{last_modified_by=sohanjain, last_modified_time=1312480953, transient_lastDdlTime=1312480953})	
-PREHOOK: query: alter table alter_partition_format_test partition(ds='2010') set location "file:/test/test/ds=2010"
+#### A masked pattern was here ####
 PREHOOK: type: ALTERPARTITION_LOCATION
 PREHOOK: Input: default@alter_partition_format_test
 PREHOOK: Output: default@alter_partition_format_test@ds=2010
-POSTHOOK: query: alter table alter_partition_format_test partition(ds='2010') set location "file:/test/test/ds=2010"
+#### A masked pattern was here ####
 POSTHOOK: type: ALTERPARTITION_LOCATION
 POSTHOOK: Input: default@alter_partition_format_test
 POSTHOOK: Input: default@alter_partition_format_test@ds=2010
@@ -109,7 +107,7 @@ key	int
 value	string	
 ds	string	
 	 	 
-Detailed Partition Information	Partition(values:[2010], dbName:default, tableName:alter_partition_format_test, createTime:1312480953, lastAccessTime:0, sd:StorageDescriptor(cols:[FieldSchema(name:key, type:int, comment:null), FieldSchema(name:value, type:string, comment:null)], location:file:/test/test/ds=2010, inputFormat:org.apache.hadoop.hive.ql.io.RCFileInputFormat, outputFormat:org.apache.hadoop.hive.ql.io.RCFileOutputFormat, compressed:false, numBuckets:-1, serdeInfo:SerDeInfo(name:null, serializationLib:org.apache.hadoop.hive.serde2.columnar.ColumnarSerDe, parameters:{serialization.format=1}), bucketCols:[], sortCols:[], parameters:{}), parameters:{last_modified_by=sohanjain, last_modified_time=1312480953, transient_lastDdlTime=1312480953})	
+#### A masked pattern was here ####
 PREHOOK: query: desc extended alter_partition_format_test
 PREHOOK: type: DESCTABLE
 POSTHOOK: query: desc extended alter_partition_format_test
@@ -118,7 +116,7 @@ key	int
 value	string	
 ds	string	
 	 	 
-Detailed Table Information	Table(tableName:alter_partition_format_test, dbName:default, owner:sohanjain, createTime:1312480953, lastAccessTime:0, retention:0, sd:StorageDescriptor(cols:[FieldSchema(name:key, type:int, comment:null), FieldSchema(name:value, type:string, comment:null), FieldSchema(name:ds, type:string, comment:null)], location:pfile:/data/users/sohanjain/test_builds/hive_2338/apache-hive/build/ql/test/data/warehouse/alter_partition_format_test, inputFormat:org.apache.hadoop.mapred.TextInputFormat, outputFormat:org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat, compressed:false, numBuckets:-1, serdeInfo:SerDeInfo(name:null, serializationLib:org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe, parameters:{serialization.format=1}), bucketCols:[], sortCols:[], parameters:{}), partitionKeys:[FieldSchema(name:ds, type:string, comment:null)], parameters:{transient_lastDdlTime=1312480953}, viewOriginalText:null, viewExpandedText:null, tableType:MANAGED_TABLE)	
+#### A masked pattern was here ####
 PREHOOK: query: alter table alter_partition_format_test set fileformat rcfile
 PREHOOK: type: ALTERTABLE_FILEFORMAT
 PREHOOK: Input: default@alter_partition_format_test
@@ -135,12 +133,11 @@ key	int
 value	string	
 ds	string	
 	 	 
-Detailed Table Information	Table(tableName:alter_partition_format_test, dbName:default, owner:sohanjain, createTime:1312480953, lastAccessTime:0, retention:0, sd:StorageDescriptor(cols:[FieldSchema(name:key, type:int, comment:null), FieldSchema(name:value, type:string, comment:null), FieldSchema(name:ds, type:string, comment:null)], location:pfile:/data/users/sohanjain/test_builds/hive_2338/apache-hive/build/ql/test/data/warehouse/alter_partition_format_test, inputFormat:org.apache.hadoop.hive.ql.io.RCFileInputFormat, outputFormat:org.apache.hadoop.hive.ql.io.RCFileOutputFormat, compressed:false, numBuckets:-1, serdeInfo:SerDeInfo(name:null, serializationLib:org.apache.hadoop.hive.serde2.columnar.ColumnarSerDe, parameters:{serialization.format=1}), bucketCols:[], sortCols:[], parameters:{}), partitionKeys:[FieldSchema(name:ds, type:string, comment:null)], parameters:{last_modified_by=sohanjain, last_modified_time=1312480953, transient_lastDdlTime=1312480953}, viewOriginalText:null, viewExpandedText:null, tableType:MANAGED_TABLE)	
-PREHOOK: query: alter table alter_partition_format_test set location "file:/test/test/"
+#### A masked pattern was here ####
 PREHOOK: type: ALTERTABLE_LOCATION
 PREHOOK: Input: default@alter_partition_format_test
 PREHOOK: Output: default@alter_partition_format_test
-POSTHOOK: query: alter table alter_partition_format_test set location "file:/test/test/"
+#### A masked pattern was here ####
 POSTHOOK: type: ALTERTABLE_LOCATION
 POSTHOOK: Input: default@alter_partition_format_test
 POSTHOOK: Output: default@alter_partition_format_test
@@ -152,7 +149,7 @@ key	int
 value	string	
 ds	string	
 	 	 
-Detailed Table Information	Table(tableName:alter_partition_format_test, dbName:default, owner:sohanjain, createTime:1312480953, lastAccessTime:0, retention:0, sd:StorageDescriptor(cols:[FieldSchema(name:key, type:int, comment:null), FieldSchema(name:value, type:string, comment:null), FieldSchema(name:ds, type:string, comment:null)], location:file:/test/test/, inputFormat:org.apache.hadoop.hive.ql.io.RCFileInputFormat, outputFormat:org.apache.hadoop.hive.ql.io.RCFileOutputFormat, compressed:false, numBuckets:-1, serdeInfo:SerDeInfo(name:null, serializationLib:org.apache.hadoop.hive.serde2.columnar.ColumnarSerDe, parameters:{serialization.format=1}), bucketCols:[], sortCols:[], parameters:{}), partitionKeys:[FieldSchema(name:ds, type:string, comment:null)], parameters:{last_modified_by=sohanjain, last_modified_time=1312480954, transient_lastDdlTime=1312480954}, viewOriginalText:null, viewExpandedText:null, tableType:MANAGED_TABLE)	
+#### A masked pattern was here ####
 PREHOOK: query: drop table alter_partition_format_test
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@alter_partition_format_test

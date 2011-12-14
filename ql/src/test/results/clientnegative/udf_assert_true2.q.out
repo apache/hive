@@ -63,7 +63,7 @@ STAGE PLANS:
 PREHOOK: query: SELECT 1 + ASSERT_TRUE(x < 2) FROM src LATERAL VIEW EXPLODE(ARRAY(1, 2)) a AS x LIMIT 2
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/var/folders/71/h_j6fpg10r33hvx1lcxlgttcw61_4s/T/jonchang/hive_2011-11-09_22-43-58_159_7985036840632043879/-mr-10000
+#### A masked pattern was here ####
 Execution failed with exit status: 2
 Obtaining error information
 
@@ -73,5 +73,5 @@ Task ID:
 
 Logs:
 
-/Users/jonchang/hive/build/ql/tmp//hive.log
+#### A masked pattern was here ####
 FAILED: Execution Error, return code 2 from org.apache.hadoop.hive.ql.exec.MapRedTask

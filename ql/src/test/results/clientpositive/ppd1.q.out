@@ -46,11 +46,11 @@ STAGE PLANS:
 PREHOOK: query: SELECT src.key as c3 from src where src.key > '2'
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/var/folders/uc/ucuNeMAVGQGzy3459D8z2+++Z0Q/-Tmp-/amarsri/hive_2011-03-22_01-46-31_378_5424397768218246092/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: SELECT src.key as c3 from src where src.key > '2'
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: file:/var/folders/uc/ucuNeMAVGQGzy3459D8z2+++Z0Q/-Tmp-/amarsri/hive_2011-03-22_01-46-31_378_5424397768218246092/-mr-10000
+#### A masked pattern was here ####
 238
 86
 311
@@ -476,11 +476,11 @@ STAGE PLANS:
 PREHOOK: query: SELECT src.key as c3 from src where src.key > '2'
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/var/folders/uc/ucuNeMAVGQGzy3459D8z2+++Z0Q/-Tmp-/amarsri/hive_2011-03-22_01-46-40_411_5342026921630284187/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: SELECT src.key as c3 from src where src.key > '2'
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: file:/var/folders/uc/ucuNeMAVGQGzy3459D8z2+++Z0Q/-Tmp-/amarsri/hive_2011-03-22_01-46-40_411_5342026921630284187/-mr-10000
+#### A masked pattern was here ####
 238
 86
 311

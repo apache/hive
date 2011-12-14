@@ -97,7 +97,7 @@ STAGE PLANS:
     Move Operator
       files:
           hdfs directory: true
-          destination: pfile:/Users/salbiz/dev/hive/build/ql/scratchdir/hive_2011-08-19_12-59-47_331_8135948838308755075/-ext-10000
+#### A masked pattern was here ####
 
   Stage: Stage-0
     Move Operator
@@ -204,7 +204,7 @@ STAGE PLANS:
   Stage: Stage-6
     Map Reduce
       Alias -> Map Operator Tree:
-        pfile:/Users/salbiz/dev/hive/build/ql/scratchdir/hive_2011-08-19_12-59-47_331_8135948838308755075/-ext-10002 
+#### A masked pattern was here ####
             File Output Operator
               compressed: false
               GlobalTableId: 0
@@ -294,13 +294,13 @@ STAGE PLANS:
     Move Operator
       files:
           hdfs directory: true
-          destination: file:/Users/salbiz/dev/hive/build/ql/scratchdir/hive_2011-08-19_13-00-03_428_2545956864627892502/-ext-10000
+#### A masked pattern was here ####
 
   Stage: Stage-2
     Move Operator
       files:
           hdfs directory: true
-          destination: file:/var/folders/5V/5V4Zq77qGD4aSK9m8V3frVsFdRU/-Tmp-/salbiz/hive_2011-08-19_13-00-03_256_7857629799023395566/-mr-10002
+#### A masked pattern was here ####
 
   Stage: Stage-1
     Map Reduce
@@ -332,7 +332,7 @@ STAGE PLANS:
   Stage: Stage-4
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/Users/salbiz/dev/hive/build/ql/scratchdir/hive_2011-08-19_13-00-03_428_2545956864627892502/-ext-10001 
+#### A masked pattern was here ####
             File Output Operator
               compressed: false
               GlobalTableId: 0
@@ -349,12 +349,12 @@ PREHOOK: query: SELECT * FROM temp WHERE key  = 86
 PREHOOK: type: QUERY
 PREHOOK: Input: default@default__temp_temp_index__
 PREHOOK: Input: default@temp
-PREHOOK: Output: file:/var/folders/5V/5V4Zq77qGD4aSK9m8V3frVsFdRU/-Tmp-/salbiz/hive_2011-08-19_13-00-03_545_519763470928530010/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: SELECT * FROM temp WHERE key  = 86
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@default__temp_temp_index__
 POSTHOOK: Input: default@temp
-POSTHOOK: Output: file:/var/folders/5V/5V4Zq77qGD4aSK9m8V3frVsFdRU/-Tmp-/salbiz/hive_2011-08-19_13-00-03_545_519763470928530010/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: Lineage: default__temp_temp_index__._bucketname SIMPLE [(temp)temp.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
 POSTHOOK: Lineage: default__temp_temp_index__._bucketname SIMPLE [(temp)temp.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
 POSTHOOK: Lineage: default__temp_temp_index__._offsets EXPRESSION [(temp)temp.FieldSchema(name:BLOCK__OFFSET__INSIDE__FILE, type:bigint, comment:), ]

@@ -71,13 +71,13 @@ PREHOOK: query: SELECT subq.key, subq.value FROM
 where subq.key < 10
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/tmp/sdong/hive_2011-02-10_16-50-05_619_6966698934296538491/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: SELECT subq.key, subq.value FROM 
 (SELECT x.* FROM SRC x ORDER BY key limit 10) subq
 where subq.key < 10
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: file:/tmp/sdong/hive_2011-02-10_16-50-05_619_6966698934296538491/-mr-10000
+#### A masked pattern was here ####
 0	val_0
 0	val_0
 0	val_0

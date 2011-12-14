@@ -68,7 +68,7 @@ PREHOOK: query: SELECT
 FROM src LIMIT 1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/tmp/sdong/hive_2011-02-10_17-37-40_883_8397950012459934370/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: SELECT
   lpad('hi', 1, '?'),
   lpad('hi', 5, '.'),
@@ -76,5 +76,5 @@ POSTHOOK: query: SELECT
 FROM src LIMIT 1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: file:/tmp/sdong/hive_2011-02-10_17-37-40_883_8397950012459934370/-mr-10000
+#### A masked pattern was here ####
 h	...hi	1231hi

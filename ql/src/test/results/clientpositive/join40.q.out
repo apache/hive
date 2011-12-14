@@ -96,12 +96,12 @@ PREHOOK: query: SELECT x.key, x.value, y.key, y.value
 FROM src x left outer JOIN (select * from src where key <= 100) y ON (x.key = y.key)
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/tmp/sdong/hive_2011-02-10_16-07-26_728_575634996407286755/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: SELECT x.key, x.value, y.key, y.value
 FROM src x left outer JOIN (select * from src where key <= 100) y ON (x.key = y.key)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: file:/tmp/sdong/hive_2011-02-10_16-07-26_728_575634996407286755/-mr-10000
+#### A masked pattern was here ####
 0	val_0	0	val_0
 0	val_0	0	val_0
 0	val_0	0	val_0
@@ -747,12 +747,12 @@ PREHOOK: query: select src1.key, src2.value
 FROM src src1 JOIN src src2 ON (src1.key = src2.key)
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/tmp/sdong/hive_2011-02-10_16-07-34_633_2787732427056663675/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: select src1.key, src2.value 
 FROM src src1 JOIN src src2 ON (src1.key = src2.key)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: file:/tmp/sdong/hive_2011-02-10_16-07-34_633_2787732427056663675/-mr-10000
+#### A masked pattern was here ####
 0	val_0
 0	val_0
 0	val_0
@@ -1896,7 +1896,7 @@ STAGE PLANS:
   Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/tmp/sdong/hive_2011-02-10_16-07-44_112_2093169853711368630/-mr-10002 
+#### A masked pattern was here ####
             Reduce Output Operator
               key expressions:
                     expr: _col0
@@ -1944,12 +1944,12 @@ PREHOOK: query: SELECT * FROM src src1 JOIN src src2 ON (src1.key = src2.key AND
 SORT BY src1.key, src1.value, src2.key, src2.value, src3.key, src3.value
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/tmp/sdong/hive_2011-02-10_16-07-44_222_3133440987037406315/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: SELECT * FROM src src1 JOIN src src2 ON (src1.key = src2.key AND src1.key < 10) RIGHT OUTER JOIN src src3 ON (src1.key = src3.key AND src3.key < 20)
 SORT BY src1.key, src1.value, src2.key, src2.value, src3.key, src3.value
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: file:/tmp/sdong/hive_2011-02-10_16-07-44_222_3133440987037406315/-mr-10000
+#### A masked pattern was here ####
 NULL	NULL	NULL	NULL	10	val_10
 NULL	NULL	NULL	NULL	100	val_100
 NULL	NULL	NULL	NULL	100	val_100
@@ -2617,7 +2617,7 @@ STAGE PLANS:
   Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/tmp/sdong/hive_2011-02-10_16-07-57_010_3886291302348783990/-mr-10002 
+#### A masked pattern was here ####
             Reduce Output Operator
               key expressions:
                     expr: _col0
@@ -2665,12 +2665,12 @@ PREHOOK: query: SELECT * FROM src src1 JOIN src src2 ON (src1.key = src2.key AND
 SORT BY src1.key, src1.value, src2.key, src2.value, src3.key, src3.value
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/tmp/sdong/hive_2011-02-10_16-07-57_122_4715415954395441060/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: SELECT * FROM src src1 JOIN src src2 ON (src1.key = src2.key AND src1.key < 10 AND src2.key < 15) RIGHT OUTER JOIN src src3 ON (src1.key = src3.key AND src3.key < 20)
 SORT BY src1.key, src1.value, src2.key, src2.value, src3.key, src3.value
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: file:/tmp/sdong/hive_2011-02-10_16-07-57_122_4715415954395441060/-mr-10000
+#### A masked pattern was here ####
 NULL	NULL	NULL	NULL	10	val_10
 NULL	NULL	NULL	NULL	100	val_100
 NULL	NULL	NULL	NULL	100	val_100
@@ -3325,12 +3325,12 @@ PREHOOK: query: SELECT /*+ MAPJOIN(y) */ x.key, x.value, y.key, y.value
 FROM src x left outer JOIN (select * from src where key <= 100) y ON (x.key = y.key)
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/tmp/sdong/hive_2011-02-10_16-08-07_427_2952592821866056396/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: SELECT /*+ MAPJOIN(y) */ x.key, x.value, y.key, y.value
 FROM src x left outer JOIN (select * from src where key <= 100) y ON (x.key = y.key)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: file:/tmp/sdong/hive_2011-02-10_16-08-07_427_2952592821866056396/-mr-10000
+#### A masked pattern was here ####
 238	val_238	NULL	NULL
 86	val_86	86	val_86
 311	val_311	NULL	NULL
@@ -3964,7 +3964,7 @@ STAGE PLANS:
   Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/tmp/sdong/hive_2011-02-10_16-08-12_669_6044200484375125842/-mr-10002 
+#### A masked pattern was here ####
             Reduce Output Operator
               sort order: 
               tag: -1
@@ -3998,9 +3998,9 @@ STAGE PLANS:
 PREHOOK: query: SELECT COUNT(1) FROM SRC A JOIN SRC B ON (A.KEY=B.KEY)
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/tmp/sdong/hive_2011-02-10_16-08-12_772_2673146484429886185/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: SELECT COUNT(1) FROM SRC A JOIN SRC B ON (A.KEY=B.KEY)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: file:/tmp/sdong/hive_2011-02-10_16-08-12_772_2673146484429886185/-mr-10000
+#### A masked pattern was here ####
 1028

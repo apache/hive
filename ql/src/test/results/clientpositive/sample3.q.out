@@ -47,12 +47,12 @@ PREHOOK: query: SELECT s.key
 FROM srcbucket TABLESAMPLE (BUCKET 1 OUT OF 5 on key) s SORT BY key
 PREHOOK: type: QUERY
 PREHOOK: Input: default@srcbucket
-PREHOOK: Output: file:/tmp/sdong/hive_2011-04-19_19-54-10_335_2811911774445865646/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: SELECT s.key
 FROM srcbucket TABLESAMPLE (BUCKET 1 OUT OF 5 on key) s SORT BY key
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@srcbucket
-POSTHOOK: Output: file:/tmp/sdong/hive_2011-04-19_19-54-10_335_2811911774445865646/-mr-10000
+#### A masked pattern was here ####
 0
 0
 0

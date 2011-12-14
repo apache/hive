@@ -18,19 +18,19 @@ POSTHOOK: Output: default@tbl1
 PREHOOK: query: select * from tbl1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@tbl1
-PREHOOK: Output: file:/tmp/njain/hive_2010-11-16_17-06-29_627_398913064602942534/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: select * from tbl1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@tbl1
-POSTHOOK: Output: file:/tmp/njain/hive_2010-11-16_17-06-29_627_398913064602942534/-mr-10000
+#### A masked pattern was here ####
 PREHOOK: query: select col from tbl1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@tbl1
-PREHOOK: Output: file:/tmp/njain/hive_2010-11-16_17-06-29_813_6047101750993899225/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: select col from tbl1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@tbl1
-POSTHOOK: Output: file:/tmp/njain/hive_2010-11-16_17-06-29_813_6047101750993899225/-mr-10000
+#### A masked pattern was here ####
 PREHOOK: query: alter table tbl1 enable offline
 PREHOOK: type: ALTERTABLE_PROTECTMODE
 PREHOOK: Input: default@tbl1
@@ -45,7 +45,7 @@ POSTHOOK: query: desc extended tbl1
 POSTHOOK: type: DESCTABLE
 col	string	
 	 	 
-Detailed Table Information	Table(tableName:tbl1, dbName:default, owner:njain, createTime:1289955989, lastAccessTime:0, retention:0, sd:StorageDescriptor(cols:[FieldSchema(name:col, type:string, comment:null)], location:pfile:/data/users/njain/hive3/hive3/build/ql/test/data/warehouse/tbl1, inputFormat:org.apache.hadoop.mapred.TextInputFormat, outputFormat:org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat, compressed:false, numBuckets:-1, serdeInfo:SerDeInfo(name:null, serializationLib:org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe, parameters:{serialization.format=1}), bucketCols:[], sortCols:[], parameters:{}), partitionKeys:[], parameters:{last_modified_by=njain, last_modified_time=1289955993, PROTECT_MODE=OFFLINE, transient_lastDdlTime=1289955993}, viewOriginalText:null, viewExpandedText:null, tableType:MANAGED_TABLE)	
+#### A masked pattern was here ####
 PREHOOK: query: alter table tbl1 disable offline
 PREHOOK: type: ALTERTABLE_PROTECTMODE
 PREHOOK: Input: default@tbl1
@@ -60,23 +60,23 @@ POSTHOOK: query: desc extended tbl1
 POSTHOOK: type: DESCTABLE
 col	string	
 	 	 
-Detailed Table Information	Table(tableName:tbl1, dbName:default, owner:njain, createTime:1289955989, lastAccessTime:0, retention:0, sd:StorageDescriptor(cols:[FieldSchema(name:col, type:string, comment:null)], location:pfile:/data/users/njain/hive3/hive3/build/ql/test/data/warehouse/tbl1, inputFormat:org.apache.hadoop.mapred.TextInputFormat, outputFormat:org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat, compressed:false, numBuckets:-1, serdeInfo:SerDeInfo(name:null, serializationLib:org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe, parameters:{serialization.format=1}), bucketCols:[], sortCols:[], parameters:{}), partitionKeys:[], parameters:{last_modified_by=njain, last_modified_time=1289955993, transient_lastDdlTime=1289955993}, viewOriginalText:null, viewExpandedText:null, tableType:MANAGED_TABLE)	
+#### A masked pattern was here ####
 PREHOOK: query: select * from tbl1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@tbl1
-PREHOOK: Output: file:/tmp/njain/hive_2010-11-16_17-06-33_574_4661189514345730872/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: select * from tbl1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@tbl1
-POSTHOOK: Output: file:/tmp/njain/hive_2010-11-16_17-06-33_574_4661189514345730872/-mr-10000
+#### A masked pattern was here ####
 PREHOOK: query: select col from tbl1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@tbl1
-PREHOOK: Output: file:/tmp/njain/hive_2010-11-16_17-06-33_747_3056399763928184018/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: select col from tbl1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@tbl1
-POSTHOOK: Output: file:/tmp/njain/hive_2010-11-16_17-06-33_747_3056399763928184018/-mr-10000
+#### A masked pattern was here ####
 PREHOOK: query: create table tbl2  (col string) partitioned by (p string)
 PREHOOK: type: CREATETABLE
 POSTHOOK: query: create table tbl2  (col string) partitioned by (p string)
@@ -112,19 +112,19 @@ POSTHOOK: Input: default@tbl2
 PREHOOK: query: select * from tbl2 where p='p1'
 PREHOOK: type: QUERY
 PREHOOK: Input: default@tbl2@p=p1
-PREHOOK: Output: file:/tmp/njain/hive_2010-11-16_17-06-37_741_250559157559967424/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: select * from tbl2 where p='p1'
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@tbl2@p=p1
-POSTHOOK: Output: file:/tmp/njain/hive_2010-11-16_17-06-37_741_250559157559967424/-mr-10000
+#### A masked pattern was here ####
 PREHOOK: query: select * from tbl2 where p='p2'
 PREHOOK: type: QUERY
 PREHOOK: Input: default@tbl2@p=p2
-PREHOOK: Output: file:/tmp/njain/hive_2010-11-16_17-06-37_947_5906017896103195386/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: select * from tbl2 where p='p2'
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@tbl2@p=p2
-POSTHOOK: Output: file:/tmp/njain/hive_2010-11-16_17-06-37_947_5906017896103195386/-mr-10000
+#### A masked pattern was here ####
 PREHOOK: query: alter table tbl2 partition (p='p1') enable offline
 PREHOOK: type: ALTERPARTITION_PROTECTMODE
 PREHOOK: Input: default@tbl2
@@ -141,7 +141,7 @@ POSTHOOK: type: DESCTABLE
 col	string	
 p	string	
 	 	 
-Detailed Partition Information	Partition(values:[p1], dbName:default, tableName:tbl2, createTime:1289955997, lastAccessTime:0, sd:StorageDescriptor(cols:[FieldSchema(name:col, type:string, comment:null)], location:pfile:/data/users/njain/hive3/hive3/build/ql/test/data/warehouse/tbl2/p=p1, inputFormat:org.apache.hadoop.mapred.TextInputFormat, outputFormat:org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat, compressed:false, numBuckets:-1, serdeInfo:SerDeInfo(name:null, serializationLib:org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe, parameters:{serialization.format=1}), bucketCols:[], sortCols:[], parameters:{}), parameters:{last_modified_by=njain, last_modified_time=1289955999, PROTECT_MODE=OFFLINE, transient_lastDdlTime=1289955999})	
+#### A masked pattern was here ####
 PREHOOK: query: alter table tbl2 enable offline
 PREHOOK: type: ALTERTABLE_PROTECTMODE
 PREHOOK: Input: default@tbl2
@@ -157,7 +157,7 @@ POSTHOOK: type: DESCTABLE
 col	string	
 p	string	
 	 	 
-Detailed Table Information	Table(tableName:tbl2, dbName:default, owner:njain, createTime:1289955997, lastAccessTime:0, retention:0, sd:StorageDescriptor(cols:[FieldSchema(name:col, type:string, comment:null), FieldSchema(name:p, type:string, comment:null)], location:pfile:/data/users/njain/hive3/hive3/build/ql/test/data/warehouse/tbl2, inputFormat:org.apache.hadoop.mapred.TextInputFormat, outputFormat:org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat, compressed:false, numBuckets:-1, serdeInfo:SerDeInfo(name:null, serializationLib:org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe, parameters:{serialization.format=1}), bucketCols:[], sortCols:[], parameters:{}), partitionKeys:[FieldSchema(name:p, type:string, comment:null)], parameters:{last_modified_by=njain, last_modified_time=1289955999, PROTECT_MODE=OFFLINE, transient_lastDdlTime=1289955999}, viewOriginalText:null, viewExpandedText:null, tableType:MANAGED_TABLE)	
+#### A masked pattern was here ####
 PREHOOK: query: alter table tbl2 enable no_drop
 PREHOOK: type: ALTERTABLE_PROTECTMODE
 PREHOOK: Input: default@tbl2
@@ -173,7 +173,7 @@ POSTHOOK: type: DESCTABLE
 col	string	
 p	string	
 	 	 
-Detailed Table Information	Table(tableName:tbl2, dbName:default, owner:njain, createTime:1289955997, lastAccessTime:0, retention:0, sd:StorageDescriptor(cols:[FieldSchema(name:col, type:string, comment:null), FieldSchema(name:p, type:string, comment:null)], location:pfile:/data/users/njain/hive3/hive3/build/ql/test/data/warehouse/tbl2, inputFormat:org.apache.hadoop.mapred.TextInputFormat, outputFormat:org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat, compressed:false, numBuckets:-1, serdeInfo:SerDeInfo(name:null, serializationLib:org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe, parameters:{serialization.format=1}), bucketCols:[], sortCols:[], parameters:{}), partitionKeys:[FieldSchema(name:p, type:string, comment:null)], parameters:{last_modified_by=njain, last_modified_time=1289955999, PROTECT_MODE=OFFLINE,NO_DROP, transient_lastDdlTime=1289955999}, viewOriginalText:null, viewExpandedText:null, tableType:MANAGED_TABLE)	
+#### A masked pattern was here ####
 PREHOOK: query: alter table tbl2 drop partition (p='p3')
 PREHOOK: type: ALTERTABLE_DROPPARTS
 PREHOOK: Input: default@tbl2
@@ -197,7 +197,7 @@ POSTHOOK: type: DESCTABLE
 col	string	
 p	string	
 	 	 
-Detailed Table Information	Table(tableName:tbl2, dbName:default, owner:njain, createTime:1289955997, lastAccessTime:0, retention:0, sd:StorageDescriptor(cols:[FieldSchema(name:col, type:string, comment:null), FieldSchema(name:p, type:string, comment:null)], location:pfile:/data/users/njain/hive3/hive3/build/ql/test/data/warehouse/tbl2, inputFormat:org.apache.hadoop.mapred.TextInputFormat, outputFormat:org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat, compressed:false, numBuckets:-1, serdeInfo:SerDeInfo(name:null, serializationLib:org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe, parameters:{serialization.format=1}), bucketCols:[], sortCols:[], parameters:{}), partitionKeys:[FieldSchema(name:p, type:string, comment:null)], parameters:{last_modified_by=njain, last_modified_time=1289956000, PROTECT_MODE=NO_DROP, transient_lastDdlTime=1289956000}, viewOriginalText:null, viewExpandedText:null, tableType:MANAGED_TABLE)	
+#### A masked pattern was here ####
 PREHOOK: query: alter table tbl2 disable no_drop
 PREHOOK: type: ALTERTABLE_PROTECTMODE
 PREHOOK: Input: default@tbl2
@@ -213,23 +213,23 @@ POSTHOOK: type: DESCTABLE
 col	string	
 p	string	
 	 	 
-Detailed Table Information	Table(tableName:tbl2, dbName:default, owner:njain, createTime:1289955997, lastAccessTime:0, retention:0, sd:StorageDescriptor(cols:[FieldSchema(name:col, type:string, comment:null), FieldSchema(name:p, type:string, comment:null)], location:pfile:/data/users/njain/hive3/hive3/build/ql/test/data/warehouse/tbl2, inputFormat:org.apache.hadoop.mapred.TextInputFormat, outputFormat:org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat, compressed:false, numBuckets:-1, serdeInfo:SerDeInfo(name:null, serializationLib:org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe, parameters:{serialization.format=1}), bucketCols:[], sortCols:[], parameters:{}), partitionKeys:[FieldSchema(name:p, type:string, comment:null)], parameters:{last_modified_by=njain, last_modified_time=1289956000, transient_lastDdlTime=1289956000}, viewOriginalText:null, viewExpandedText:null, tableType:MANAGED_TABLE)	
+#### A masked pattern was here ####
 PREHOOK: query: select * from tbl2 where p='p2'
 PREHOOK: type: QUERY
 PREHOOK: Input: default@tbl2@p=p2
-PREHOOK: Output: file:/tmp/njain/hive_2010-11-16_17-06-40_474_6780554733606394299/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: select * from tbl2 where p='p2'
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@tbl2@p=p2
-POSTHOOK: Output: file:/tmp/njain/hive_2010-11-16_17-06-40_474_6780554733606394299/-mr-10000
+#### A masked pattern was here ####
 PREHOOK: query: select col from tbl2 where p='p2'
 PREHOOK: type: QUERY
 PREHOOK: Input: default@tbl2@p=p2
-PREHOOK: Output: file:/tmp/njain/hive_2010-11-16_17-06-40_697_3925214840318924806/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: select col from tbl2 where p='p2'
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@tbl2@p=p2
-POSTHOOK: Output: file:/tmp/njain/hive_2010-11-16_17-06-40_697_3925214840318924806/-mr-10000
+#### A masked pattern was here ####
 PREHOOK: query: alter table tbl2 partition (p='p1') disable offline
 PREHOOK: type: ALTERPARTITION_PROTECTMODE
 PREHOOK: Input: default@tbl2
@@ -246,23 +246,23 @@ POSTHOOK: type: DESCTABLE
 col	string	
 p	string	
 	 	 
-Detailed Partition Information	Partition(values:[p1], dbName:default, tableName:tbl2, createTime:1289955997, lastAccessTime:0, sd:StorageDescriptor(cols:[FieldSchema(name:col, type:string, comment:null)], location:pfile:/data/users/njain/hive3/hive3/build/ql/test/data/warehouse/tbl2/p=p1, inputFormat:org.apache.hadoop.mapred.TextInputFormat, outputFormat:org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat, compressed:false, numBuckets:-1, serdeInfo:SerDeInfo(name:null, serializationLib:org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe, parameters:{serialization.format=1}), bucketCols:[], sortCols:[], parameters:{}), parameters:{last_modified_by=njain, last_modified_time=1289956004, transient_lastDdlTime=1289956004})	
+#### A masked pattern was here ####
 PREHOOK: query: select * from tbl2 where p='p1'
 PREHOOK: type: QUERY
 PREHOOK: Input: default@tbl2@p=p1
-PREHOOK: Output: file:/tmp/njain/hive_2010-11-16_17-06-44_370_4746714320711761920/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: select * from tbl2 where p='p1'
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@tbl2@p=p1
-POSTHOOK: Output: file:/tmp/njain/hive_2010-11-16_17-06-44_370_4746714320711761920/-mr-10000
+#### A masked pattern was here ####
 PREHOOK: query: select col from tbl2 where p='p1'
 PREHOOK: type: QUERY
 PREHOOK: Input: default@tbl2@p=p1
-PREHOOK: Output: file:/tmp/njain/hive_2010-11-16_17-06-44_681_3312901000594329647/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: select col from tbl2 where p='p1'
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@tbl2@p=p1
-POSTHOOK: Output: file:/tmp/njain/hive_2010-11-16_17-06-44_681_3312901000594329647/-mr-10000
+#### A masked pattern was here ####
 PREHOOK: query: insert overwrite table tbl1 select col from tbl2 where p='p1'
 PREHOOK: type: QUERY
 PREHOOK: Input: default@tbl2@p=p1

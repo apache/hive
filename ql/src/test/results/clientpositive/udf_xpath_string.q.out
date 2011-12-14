@@ -20,72 +20,72 @@ Example:
 PREHOOK: query: SELECT xpath_string ('<a><b>bb</b><c>cc</c></a>', 'a') FROM src LIMIT 1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/Users/patrick/Documents/workspace/hive-trunk/build/ql/tmp/940874235/10000
+#### A masked pattern was here ####
 POSTHOOK: query: SELECT xpath_string ('<a><b>bb</b><c>cc</c></a>', 'a') FROM src LIMIT 1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: file:/Users/patrick/Documents/workspace/hive-trunk/build/ql/tmp/940874235/10000
+#### A masked pattern was here ####
 bbcc
 PREHOOK: query: SELECT xpath_string ('<a><b>bb</b><c>cc</c></a>', 'a/b') FROM src LIMIT 1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/Users/patrick/Documents/workspace/hive-trunk/build/ql/tmp/1447930808/10000
+#### A masked pattern was here ####
 POSTHOOK: query: SELECT xpath_string ('<a><b>bb</b><c>cc</c></a>', 'a/b') FROM src LIMIT 1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: file:/Users/patrick/Documents/workspace/hive-trunk/build/ql/tmp/1447930808/10000
+#### A masked pattern was here ####
 bb
 PREHOOK: query: SELECT xpath_string ('<a><b>bb</b><c>cc</c></a>', 'a/c') FROM src LIMIT 1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/Users/patrick/Documents/workspace/hive-trunk/build/ql/tmp/1556430756/10000
+#### A masked pattern was here ####
 POSTHOOK: query: SELECT xpath_string ('<a><b>bb</b><c>cc</c></a>', 'a/c') FROM src LIMIT 1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: file:/Users/patrick/Documents/workspace/hive-trunk/build/ql/tmp/1556430756/10000
+#### A masked pattern was here ####
 cc
 PREHOOK: query: SELECT xpath_string ('<a><b>bb</b><c>cc</c></a>', 'a/d') FROM src LIMIT 1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/Users/patrick/Documents/workspace/hive-trunk/build/ql/tmp/1353144403/10000
+#### A masked pattern was here ####
 POSTHOOK: query: SELECT xpath_string ('<a><b>bb</b><c>cc</c></a>', 'a/d') FROM src LIMIT 1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: file:/Users/patrick/Documents/workspace/hive-trunk/build/ql/tmp/1353144403/10000
+#### A masked pattern was here ####
 
 PREHOOK: query: SELECT xpath_string ('<a><b>b1</b><b>b2</b></a>', '//b') FROM src LIMIT 1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/Users/patrick/Documents/workspace/hive-trunk/build/ql/tmp/1184684106/10000
+#### A masked pattern was here ####
 POSTHOOK: query: SELECT xpath_string ('<a><b>b1</b><b>b2</b></a>', '//b') FROM src LIMIT 1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: file:/Users/patrick/Documents/workspace/hive-trunk/build/ql/tmp/1184684106/10000
+#### A masked pattern was here ####
 b1
 PREHOOK: query: SELECT xpath_string ('<a><b>b1</b><b>b2</b></a>', 'a/b[1]') FROM src LIMIT 1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/Users/patrick/Documents/workspace/hive-trunk/build/ql/tmp/184679872/10000
+#### A masked pattern was here ####
 POSTHOOK: query: SELECT xpath_string ('<a><b>b1</b><b>b2</b></a>', 'a/b[1]') FROM src LIMIT 1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: file:/Users/patrick/Documents/workspace/hive-trunk/build/ql/tmp/184679872/10000
+#### A masked pattern was here ####
 b1
 PREHOOK: query: SELECT xpath_string ('<a><b>b1</b><b>b2</b></a>', 'a/b[2]') FROM src LIMIT 1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/Users/patrick/Documents/workspace/hive-trunk/build/ql/tmp/1295801804/10000
+#### A masked pattern was here ####
 POSTHOOK: query: SELECT xpath_string ('<a><b>b1</b><b>b2</b></a>', 'a/b[2]') FROM src LIMIT 1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: file:/Users/patrick/Documents/workspace/hive-trunk/build/ql/tmp/1295801804/10000
+#### A masked pattern was here ####
 b2
 PREHOOK: query: SELECT xpath_string ('<a><b>b1</b><b id="b_2">b2</b></a>', 'a/b[@id="b_2"]') FROM src LIMIT 1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/Users/patrick/Documents/workspace/hive-trunk/build/ql/tmp/885790551/10000
+#### A masked pattern was here ####
 POSTHOOK: query: SELECT xpath_string ('<a><b>b1</b><b id="b_2">b2</b></a>', 'a/b[@id="b_2"]') FROM src LIMIT 1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: file:/Users/patrick/Documents/workspace/hive-trunk/build/ql/tmp/885790551/10000
+#### A masked pattern was here ####
 b2

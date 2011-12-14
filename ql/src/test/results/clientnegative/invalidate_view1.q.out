@@ -19,18 +19,18 @@ POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: default@xxx10
 PREHOOK: query: CREATE VIEW xxx9 AS SELECT * FROM xxx10
 PREHOOK: type: CREATEVIEW
-PREHOOK: Output: file:/var/folders/5V/5V4Zq77qGD4aSK9m8V3frVsFdRU/-Tmp-/salbiz/hive_2011-05-11_12-10-09_986_3605866348000607411/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: CREATE VIEW xxx9 AS SELECT * FROM xxx10
 POSTHOOK: type: CREATEVIEW
 POSTHOOK: Output: default@xxx9
-POSTHOOK: Output: file:/var/folders/5V/5V4Zq77qGD4aSK9m8V3frVsFdRU/-Tmp-/salbiz/hive_2011-05-11_12-10-09_986_3605866348000607411/-mr-10000
+#### A masked pattern was here ####
 PREHOOK: query: CREATE VIEW xxx8 AS SELECT * FROM xxx9 xxx
 PREHOOK: type: CREATEVIEW
-PREHOOK: Output: file:/var/folders/5V/5V4Zq77qGD4aSK9m8V3frVsFdRU/-Tmp-/salbiz/hive_2011-05-11_12-10-10_017_1075686745843891926/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: CREATE VIEW xxx8 AS SELECT * FROM xxx9 xxx
 POSTHOOK: type: CREATEVIEW
 POSTHOOK: Output: default@xxx8
-POSTHOOK: Output: file:/var/folders/5V/5V4Zq77qGD4aSK9m8V3frVsFdRU/-Tmp-/salbiz/hive_2011-05-11_12-10-10_017_1075686745843891926/-mr-10000
+#### A masked pattern was here ####
 PREHOOK: query: ALTER TABLE xxx10 REPLACE COLUMNS (key int)
 PREHOOK: type: ALTERTABLE_REPLACECOLS
 PREHOOK: Input: default@xxx10

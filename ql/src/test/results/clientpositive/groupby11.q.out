@@ -93,7 +93,7 @@ STAGE PLANS:
   Stage: Stage-3
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/tmp/sdong/hive_2011-02-10_01-48-51_216_1924019361478340470/-mr-10004 
+#### A masked pattern was here ####
             Reduce Output Operator
               key expressions:
                     expr: _col0
@@ -164,7 +164,7 @@ STAGE PLANS:
   Stage: Stage-5
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/tmp/sdong/hive_2011-02-10_01-48-51_216_1924019361478340470/-mr-10005 
+#### A masked pattern was here ####
             Reduce Output Operator
               key expressions:
                     expr: _col0
@@ -260,11 +260,11 @@ POSTHOOK: Lineage: dest2 PARTITION(ds=111).val2 EXPRESSION [(src)src.FieldSchema
 PREHOOK: query: SELECT * from dest1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@dest1@ds=111
-PREHOOK: Output: file:/tmp/sdong/hive_2011-02-10_01-49-03_962_7856593142838469136/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: SELECT * from dest1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@dest1@ds=111
-POSTHOOK: Output: file:/tmp/sdong/hive_2011-02-10_01-49-03_962_7856593142838469136/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: Lineage: dest1 PARTITION(ds=111).key SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: dest1 PARTITION(ds=111).val1 EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: dest1 PARTITION(ds=111).val2 EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
@@ -583,11 +583,11 @@ val_98	2	1	111
 PREHOOK: query: SELECT * from dest2
 PREHOOK: type: QUERY
 PREHOOK: Input: default@dest2@ds=111
-PREHOOK: Output: file:/tmp/sdong/hive_2011-02-10_01-49-04_260_42343472207447617/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: SELECT * from dest2
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@dest2@ds=111
-POSTHOOK: Output: file:/tmp/sdong/hive_2011-02-10_01-49-04_260_42343472207447617/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: Lineage: dest1 PARTITION(ds=111).key SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: dest1 PARTITION(ds=111).val1 EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: dest1 PARTITION(ds=111).val2 EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]

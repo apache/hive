@@ -65,7 +65,7 @@ STAGE PLANS:
   Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/tmp/njain/hive_2011-12-07_18-07-08_546_7153871456146014378/-mr-10002 
+#### A masked pattern was here ####
           Union
             Select Operator
               expressions:
@@ -93,7 +93,7 @@ STAGE PLANS:
                   value expressions:
                         expr: _col1
                         type: bigint
-        file:/tmp/njain/hive_2011-12-07_18-07-08_546_7153871456146014378/-mr-10003 
+#### A masked pattern was here ####
           Union
             Select Operator
               expressions:
@@ -195,12 +195,12 @@ PREHOOK: query: select unionsrc.key, count(1) FROM (select 'tst1' as key, count(
                                     select 'tst2' as key, count(1) as value from src s2) unionsrc group by unionsrc.key
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/tmp/njain/hive_2011-12-07_18-07-08_654_7430436781326432428/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: select unionsrc.key, count(1) FROM (select 'tst1' as key, count(1) as value from src s1
                                   UNION  ALL  
                                     select 'tst2' as key, count(1) as value from src s2) unionsrc group by unionsrc.key
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: file:/tmp/njain/hive_2011-12-07_18-07-08_654_7430436781326432428/-mr-10000
+#### A masked pattern was here ####
 tst1	1
 tst2	1

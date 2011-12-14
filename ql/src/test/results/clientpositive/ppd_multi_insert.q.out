@@ -251,11 +251,11 @@ POSTHOOK: Lineage: mi3 PARTITION(ds=2008-04-08,hr=12).key EXPRESSION [(src)a.Fie
 PREHOOK: query: SELECT mi1.* FROM mi1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@mi1
-PREHOOK: Output: file:/tmp/sdong/hive_2011-02-10_16-57-13_377_6694062256944958178/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: SELECT mi1.* FROM mi1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@mi1
-POSTHOOK: Output: file:/tmp/sdong/hive_2011-02-10_16-57-13_377_6694062256944958178/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: Lineage: mi1.key EXPRESSION [(src)a.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: mi1.value SIMPLE [(src)a.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: mi2.key EXPRESSION [(src)a.FieldSchema(name:key, type:string, comment:default), ]
@@ -412,11 +412,11 @@ POSTHOOK: Lineage: mi3 PARTITION(ds=2008-04-08,hr=12).key EXPRESSION [(src)a.Fie
 PREHOOK: query: SELECT mi2.* FROM mi2
 PREHOOK: type: QUERY
 PREHOOK: Input: default@mi2
-PREHOOK: Output: file:/tmp/sdong/hive_2011-02-10_16-57-13_655_8369587899383200383/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: SELECT mi2.* FROM mi2
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@mi2
-POSTHOOK: Output: file:/tmp/sdong/hive_2011-02-10_16-57-13_655_8369587899383200383/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: Lineage: mi1.key EXPRESSION [(src)a.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: mi1.value SIMPLE [(src)a.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: mi2.key EXPRESSION [(src)a.FieldSchema(name:key, type:string, comment:default), ]
@@ -636,11 +636,11 @@ POSTHOOK: Lineage: mi3 PARTITION(ds=2008-04-08,hr=12).key EXPRESSION [(src)a.Fie
 PREHOOK: query: SELECT mi3.* FROM mi3
 PREHOOK: type: QUERY
 PREHOOK: Input: default@mi3@ds=2008-04-08/hr=12
-PREHOOK: Output: file:/tmp/sdong/hive_2011-02-10_16-57-13_918_2681356088476144937/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: SELECT mi3.* FROM mi3
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@mi3@ds=2008-04-08/hr=12
-POSTHOOK: Output: file:/tmp/sdong/hive_2011-02-10_16-57-13_918_2681356088476144937/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: Lineage: mi1.key EXPRESSION [(src)a.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: mi1.value SIMPLE [(src)a.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: mi2.key EXPRESSION [(src)a.FieldSchema(name:key, type:string, comment:default), ]
@@ -1563,11 +1563,11 @@ POSTHOOK: Lineage: mi3 PARTITION(ds=2008-04-08,hr=12).key EXPRESSION [(src)a.Fie
 PREHOOK: query: SELECT mi1.* FROM mi1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@mi1
-PREHOOK: Output: file:/var/folders/uc/ucuNeMAVGQGzy3459D8z2+++Z0Q/-Tmp-/amarsri/hive_2011-03-22_02-28-03_345_2699966828518452446/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: SELECT mi1.* FROM mi1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@mi1
-POSTHOOK: Output: file:/var/folders/uc/ucuNeMAVGQGzy3459D8z2+++Z0Q/-Tmp-/amarsri/hive_2011-03-22_02-28-03_345_2699966828518452446/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: Lineage: mi1.key EXPRESSION [(src)a.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: mi1.key EXPRESSION [(src)a.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: mi1.value SIMPLE [(src)a.FieldSchema(name:value, type:string, comment:default), ]
@@ -1729,11 +1729,11 @@ POSTHOOK: Lineage: mi3 PARTITION(ds=2008-04-08,hr=12).key EXPRESSION [(src)a.Fie
 PREHOOK: query: SELECT mi2.* FROM mi2
 PREHOOK: type: QUERY
 PREHOOK: Input: default@mi2
-PREHOOK: Output: file:/var/folders/uc/ucuNeMAVGQGzy3459D8z2+++Z0Q/-Tmp-/amarsri/hive_2011-03-22_02-28-03_677_3645923501369564199/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: SELECT mi2.* FROM mi2
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@mi2
-POSTHOOK: Output: file:/var/folders/uc/ucuNeMAVGQGzy3459D8z2+++Z0Q/-Tmp-/amarsri/hive_2011-03-22_02-28-03_677_3645923501369564199/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: Lineage: mi1.key EXPRESSION [(src)a.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: mi1.key EXPRESSION [(src)a.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: mi1.value SIMPLE [(src)a.FieldSchema(name:value, type:string, comment:default), ]
@@ -1958,11 +1958,11 @@ POSTHOOK: Lineage: mi3 PARTITION(ds=2008-04-08,hr=12).key EXPRESSION [(src)a.Fie
 PREHOOK: query: SELECT mi3.* FROM mi3
 PREHOOK: type: QUERY
 PREHOOK: Input: default@mi3@ds=2008-04-08/hr=12
-PREHOOK: Output: file:/var/folders/uc/ucuNeMAVGQGzy3459D8z2+++Z0Q/-Tmp-/amarsri/hive_2011-03-22_02-28-04_004_5001774654114388405/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: SELECT mi3.* FROM mi3
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@mi3@ds=2008-04-08/hr=12
-POSTHOOK: Output: file:/var/folders/uc/ucuNeMAVGQGzy3459D8z2+++Z0Q/-Tmp-/amarsri/hive_2011-03-22_02-28-04_004_5001774654114388405/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: Lineage: mi1.key EXPRESSION [(src)a.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: mi1.key EXPRESSION [(src)a.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: mi1.value SIMPLE [(src)a.FieldSchema(name:value, type:string, comment:default), ]

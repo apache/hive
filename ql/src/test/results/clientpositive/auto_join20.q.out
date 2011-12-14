@@ -133,7 +133,7 @@ STAGE PLANS:
   Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/tmp/heyongqiang/hive_2011-04-06_21-30-16_341_8865053765003839433/-mr-10002 
+#### A masked pattern was here ####
             Reduce Output Operator
               key expressions:
                     expr: _col0
@@ -196,7 +196,7 @@ STAGE PLANS:
   Stage: Stage-3
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/tmp/heyongqiang/hive_2011-04-06_21-30-16_341_8865053765003839433/-mr-10003 
+#### A masked pattern was here ####
             Reduce Output Operator
               sort order: 
               tag: -1
@@ -330,7 +330,7 @@ SORT BY k1,v1,k2,v2,k3,v3
 )a
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/tmp/heyongqiang/hive_2011-04-06_21-30-16_684_6297144842875374998/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: select sum(hash(a.k1,a.v1,a.k2,a.v2,a.k3,a.v3))
 from (
 SELECT src1.key as k1, src1.value as v1, src2.key as k2, src2.value as v2 , src3.key as k3, src3.value as v3 
@@ -339,7 +339,7 @@ SORT BY k1,v1,k2,v2,k3,v3
 )a
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: file:/tmp/heyongqiang/hive_2011-04-06_21-30-16_684_6297144842875374998/-mr-10000
+#### A masked pattern was here ####
 56157587016
 PREHOOK: query: explain
 select sum(hash(a.k1,a.v1,a.k2,a.v2,a.k3,a.v3))
@@ -480,7 +480,7 @@ STAGE PLANS:
   Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/tmp/heyongqiang/hive_2011-04-06_21-30-27_004_4367867622488357822/-mr-10002 
+#### A masked pattern was here ####
             Reduce Output Operator
               key expressions:
                     expr: _col0
@@ -543,7 +543,7 @@ STAGE PLANS:
   Stage: Stage-3
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/tmp/heyongqiang/hive_2011-04-06_21-30-27_004_4367867622488357822/-mr-10003 
+#### A masked pattern was here ####
             Reduce Output Operator
               sort order: 
               tag: -1
@@ -681,7 +681,7 @@ SORT BY k1,v1,k2,v2,k3,v3
 )a
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/tmp/heyongqiang/hive_2011-04-06_21-30-27_352_4005625870377401724/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: select sum(hash(a.k1,a.v1,a.k2,a.v2,a.k3,a.v3))
 from (
 SELECT src1.key as k1, src1.value as v1, src2.key as k2, src2.value as v2 , src3.key as k3, src3.value as v3  
@@ -690,5 +690,5 @@ SORT BY k1,v1,k2,v2,k3,v3
 )a
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: file:/tmp/heyongqiang/hive_2011-04-06_21-30-27_352_4005625870377401724/-mr-10000
+#### A masked pattern was here ####
 56157587016

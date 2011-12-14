@@ -33,8 +33,8 @@ POSTHOOK: Input: default@part_test
 POSTHOOK: Output: default@part_test@ds=2
 PREHOOK: query: SELECT count(1) FROM part_test WHERE ds='3'
 PREHOOK: type: QUERY
-PREHOOK: Output: file:/tmp/njain/hive_2010-08-16_23-43-20_804_4303139756059433128/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: SELECT count(1) FROM part_test WHERE ds='3'
 POSTHOOK: type: QUERY
-POSTHOOK: Output: file:/tmp/njain/hive_2010-08-16_23-43-20_804_4303139756059433128/-mr-10000
+#### A masked pattern was here ####
 0

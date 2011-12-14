@@ -85,9 +85,9 @@ STAGE PLANS:
                       type: string
       Needs Tagging: true
       Path -> Alias:
-        pfile:/home/amarsri/workspace/hive/build/ql/test/data/warehouse/filter_join_breaktask/ds=2008-04-08 [f, m]
+#### A masked pattern was here ####
       Path -> Partition:
-        pfile:/home/amarsri/workspace/hive/build/ql/test/data/warehouse/filter_join_breaktask/ds=2008-04-08 
+#### A masked pattern was here ####
           Partition
             base file name: ds=2008-04-08
             input format: org.apache.hadoop.mapred.TextInputFormat
@@ -98,9 +98,7 @@ STAGE PLANS:
               bucket_count -1
               columns key,value
               columns.types int:string
-              file.inputformat org.apache.hadoop.mapred.TextInputFormat
-              file.outputformat org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-              location pfile:/home/amarsri/workspace/hive/build/ql/test/data/warehouse/filter_join_breaktask/ds=2008-04-08
+#### A masked pattern was here ####
               name default.filter_join_breaktask
               numFiles 1
               numPartitions 1
@@ -111,7 +109,7 @@ STAGE PLANS:
               serialization.format 1
               serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               totalSize 236
-              transient_lastDdlTime 1311927721
+#### A masked pattern was here ####
             serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
           
               input format: org.apache.hadoop.mapred.TextInputFormat
@@ -120,9 +118,7 @@ STAGE PLANS:
                 bucket_count -1
                 columns key,value
                 columns.types int:string
-                file.inputformat org.apache.hadoop.mapred.TextInputFormat
-                file.outputformat org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                location pfile:/home/amarsri/workspace/hive/build/ql/test/data/warehouse/filter_join_breaktask
+#### A masked pattern was here ####
                 name default.filter_join_breaktask
                 numFiles 1
                 numPartitions 1
@@ -133,7 +129,7 @@ STAGE PLANS:
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                 totalSize 236
-                transient_lastDdlTime 1311927721
+#### A masked pattern was here ####
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: default.filter_join_breaktask
             name: default.filter_join_breaktask
@@ -149,7 +145,7 @@ STAGE PLANS:
           File Output Operator
             compressed: false
             GlobalTableId: 0
-            directory: file:/tmp/amarsri/hive_2011-07-29_01-22-01_246_748904726780254946/-mr-10002
+#### A masked pattern was here ####
             NumFilesPerFileSink: 1
             table:
                 input format: org.apache.hadoop.mapred.SequenceFileInputFormat
@@ -196,10 +192,9 @@ STAGE PLANS:
                     type: string
       Needs Tagging: true
       Path -> Alias:
-        file:/tmp/amarsri/hive_2011-07-29_01-22-01_246_748904726780254946/-mr-10002 [$INTNAME]
-        pfile:/home/amarsri/workspace/hive/build/ql/test/data/warehouse/filter_join_breaktask/ds=2008-04-08 [g]
+#### A masked pattern was here ####
       Path -> Partition:
-        file:/tmp/amarsri/hive_2011-07-29_01-22-01_246_748904726780254946/-mr-10002 
+#### A masked pattern was here ####
           Partition
             base file name: -mr-10002
             input format: org.apache.hadoop.mapred.SequenceFileInputFormat
@@ -215,7 +210,7 @@ STAGE PLANS:
                 columns _col0,_col6,_col7
                 columns.types int,string,string
                 escape.delim \
-        pfile:/home/amarsri/workspace/hive/build/ql/test/data/warehouse/filter_join_breaktask/ds=2008-04-08 
+#### A masked pattern was here ####
           Partition
             base file name: ds=2008-04-08
             input format: org.apache.hadoop.mapred.TextInputFormat
@@ -226,9 +221,7 @@ STAGE PLANS:
               bucket_count -1
               columns key,value
               columns.types int:string
-              file.inputformat org.apache.hadoop.mapred.TextInputFormat
-              file.outputformat org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-              location pfile:/home/amarsri/workspace/hive/build/ql/test/data/warehouse/filter_join_breaktask/ds=2008-04-08
+#### A masked pattern was here ####
               name default.filter_join_breaktask
               numFiles 1
               numPartitions 1
@@ -239,7 +232,7 @@ STAGE PLANS:
               serialization.format 1
               serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               totalSize 236
-              transient_lastDdlTime 1311927721
+#### A masked pattern was here ####
             serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
           
               input format: org.apache.hadoop.mapred.TextInputFormat
@@ -248,9 +241,7 @@ STAGE PLANS:
                 bucket_count -1
                 columns key,value
                 columns.types int:string
-                file.inputformat org.apache.hadoop.mapred.TextInputFormat
-                file.outputformat org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                location pfile:/home/amarsri/workspace/hive/build/ql/test/data/warehouse/filter_join_breaktask
+#### A masked pattern was here ####
                 name default.filter_join_breaktask
                 numFiles 1
                 numPartitions 1
@@ -261,7 +252,7 @@ STAGE PLANS:
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                 totalSize 236
-                transient_lastDdlTime 1311927721
+#### A masked pattern was here ####
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: default.filter_join_breaktask
             name: default.filter_join_breaktask
@@ -284,9 +275,9 @@ STAGE PLANS:
             File Output Operator
               compressed: false
               GlobalTableId: 0
-              directory: file:/tmp/amarsri/hive_2011-07-29_01-22-01_246_748904726780254946/-ext-10001
+#### A masked pattern was here ####
               NumFilesPerFileSink: 1
-              Stats Publishing Key Prefix: file:/tmp/amarsri/hive_2011-07-29_01-22-01_246_748904726780254946/-ext-10001/
+#### A masked pattern was here ####
               table:
                   input format: org.apache.hadoop.mapred.TextInputFormat
                   output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
@@ -309,13 +300,13 @@ FROM filter_join_breaktask f JOIN filter_join_breaktask m ON( f.key = m.key AND 
 JOIN filter_join_breaktask g ON(g.value = m.value AND g.ds='2008-04-08' AND m.ds='2008-04-08' AND m.value is not null AND m.value !='')
 PREHOOK: type: QUERY
 PREHOOK: Input: default@filter_join_breaktask@ds=2008-04-08
-PREHOOK: Output: file:/tmp/amarsri/hive_2011-07-29_01-22-01_372_3915857844458948119/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: SELECT f.key, g.value 
 FROM filter_join_breaktask f JOIN filter_join_breaktask m ON( f.key = m.key AND f.ds='2008-04-08' AND m.ds='2008-04-08' AND f.key is not null) 
 JOIN filter_join_breaktask g ON(g.value = m.value AND g.ds='2008-04-08' AND m.ds='2008-04-08' AND m.value is not null AND m.value !='')
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@filter_join_breaktask@ds=2008-04-08
-POSTHOOK: Output: file:/tmp/amarsri/hive_2011-07-29_01-22-01_372_3915857844458948119/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: Lineage: filter_join_breaktask PARTITION(ds=2008-04-08).key EXPRESSION [(src1)src1.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: filter_join_breaktask PARTITION(ds=2008-04-08).value SIMPLE [(src1)src1.FieldSchema(name:value, type:string, comment:default), ]
 146	val_146

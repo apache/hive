@@ -68,7 +68,7 @@ STAGE PLANS:
   Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
-        hdfs://localhost.localdomain:38821/data/users/sdong/www/open-source-hive3/build/ql/scratchdir/hive_2011-02-16_23-17-19_978_68252757964749625/-mr-10002 
+#### A masked pattern was here ####
             Reduce Output Operator
               key expressions:
                     expr: _col0
@@ -151,11 +151,11 @@ POSTHOOK: Lineage: dest_g2.key EXPRESSION [(src)src.FieldSchema(name:key, type:s
 PREHOOK: query: SELECT dest_g2.* FROM dest_g2
 PREHOOK: type: QUERY
 PREHOOK: Input: default@dest_g2
-PREHOOK: Output: hdfs://localhost.localdomain:38821/data/users/sdong/www/open-source-hive3/build/ql/scratchdir/hive_2011-02-16_23-18-03_755_1947298915463685990/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: SELECT dest_g2.* FROM dest_g2
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@dest_g2
-POSTHOOK: Output: hdfs://localhost.localdomain:38821/data/users/sdong/www/open-source-hive3/build/ql/scratchdir/hive_2011-02-16_23-18-03_755_1947298915463685990/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: Lineage: dest_g2.c1 EXPRESSION [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: dest_g2.c2 EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: dest_g2.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]

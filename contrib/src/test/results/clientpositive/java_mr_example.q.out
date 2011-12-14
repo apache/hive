@@ -1,27 +1,27 @@
 PREHOOK: query: FROM (
   FROM src
    MAP value, key
- USING 'java -cp ../build/contrib/hive_contrib.jar org.apache.hadoop.hive.contrib.mr.example.IdentityMapper'
+#### A masked pattern was here ####
     AS k, v
  CLUSTER BY k) map_output
   REDUCE k, v
-   USING 'java -cp ../build/contrib/hive_contrib.jar org.apache.hadoop.hive.contrib.mr.example.WordCountReduce'
+#### A masked pattern was here ####
    AS k, v
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/opt/h3/hive-trunk/build/ql/tmp/1438670936/10000
+#### A masked pattern was here ####
 POSTHOOK: query: FROM (
   FROM src
    MAP value, key
- USING 'java -cp ../build/contrib/hive_contrib.jar org.apache.hadoop.hive.contrib.mr.example.IdentityMapper'
+#### A masked pattern was here ####
     AS k, v
  CLUSTER BY k) map_output
   REDUCE k, v
-   USING 'java -cp ../build/contrib/hive_contrib.jar org.apache.hadoop.hive.contrib.mr.example.WordCountReduce'
+#### A masked pattern was here ####
    AS k, v
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: file:/opt/h3/hive-trunk/build/ql/tmp/1438670936/10000
+#### A masked pattern was here ####
 val_0	0
 val_10	10
 val_100	200

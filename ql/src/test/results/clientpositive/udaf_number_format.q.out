@@ -89,7 +89,7 @@ PREHOOK: query: SELECT
 FROM src
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/tmp/sdong/hive_2011-02-10_17-27-30_006_1043019389932466151/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: SELECT
   sum('a'),
   avg('a'),
@@ -98,5 +98,5 @@ POSTHOOK: query: SELECT
 FROM src
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: file:/tmp/sdong/hive_2011-02-10_17-27-30_006_1043019389932466151/-mr-10000
+#### A masked pattern was here ####
 0.0	NULL	NULL	NULL

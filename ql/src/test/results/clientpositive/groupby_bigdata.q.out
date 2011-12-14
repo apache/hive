@@ -2,10 +2,10 @@ PREHOOK: query: select count(distinct subq.key) from
 (FROM src MAP src.key USING 'python dumpdata_script.py' AS key WHERE src.key = 10) subq
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/tmp/jssarma/hive_2010-10-04_17-16-17_108_6441093232864440768/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: select count(distinct subq.key) from
 (FROM src MAP src.key USING 'python dumpdata_script.py' AS key WHERE src.key = 10) subq
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: file:/tmp/jssarma/hive_2010-10-04_17-16-17_108_6441093232864440768/-mr-10000
+#### A masked pattern was here ####
 1000022

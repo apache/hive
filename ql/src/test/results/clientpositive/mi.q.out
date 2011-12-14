@@ -59,10 +59,11 @@ ds=2008-04-08/hr=12
 PREHOOK: query: select * from nzhang_t1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@nzhang_t1@ds=2008-04-08/hr=11
-PREHOOK: Output: file:/tmp/njain/hive_2010-11-10_21-44-41_192_2058167652893187841/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: select * from nzhang_t1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@nzhang_t1@ds=2008-04-08/hr=11
+#### A masked pattern was here ####
 POSTHOOK: Lineage: nzhang_t1 PARTITION(ds=2008-04-08,hr=11).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: nzhang_t1 PARTITION(ds=2008-04-08,hr=11).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: nzhang_t2 PARTITION(ds=2008-04-08,hr=12).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
@@ -570,10 +571,11 @@ POSTHOOK: Lineage: nzhang_t2 PARTITION(ds=2008-04-08,hr=12).value SIMPLE [(srcpa
 PREHOOK: query: select * from nzhang_t2
 PREHOOK: type: QUERY
 PREHOOK: Input: default@nzhang_t2@ds=2008-04-08/hr=12
-PREHOOK: Output: file:/tmp/njain/hive_2010-11-10_21-44-41_677_3321618811039862289/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: select * from nzhang_t2
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@nzhang_t2@ds=2008-04-08/hr=12
+#### A masked pattern was here ####
 POSTHOOK: Lineage: nzhang_t1 PARTITION(ds=2008-04-08,hr=11).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: nzhang_t1 PARTITION(ds=2008-04-08,hr=11).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: nzhang_t2 PARTITION(ds=2008-04-08,hr=12).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]

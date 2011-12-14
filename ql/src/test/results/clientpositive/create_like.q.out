@@ -14,15 +14,13 @@ b                   	string              	None
 	 	 
 # Detailed Table Information	 	 
 Database:           	default             	 
-Owner:              	natty
-CreateTime:         	Mon Jul 18 21:36:36 PDT 2011
-LastAccessTime:     	UNKNOWN             	 
+#### A masked pattern was here ####
 Protect Mode:       	None                	 
 Retention:          	0                   	 
-Location:           	pfile:/home/natty/apache/hive/build/ql/test/data/warehouse/table1
+#### A masked pattern was here ####
 Table Type:         	MANAGED_TABLE       	 
 Table Parameters:	 	 
-	transient_lastDdlTime	1311050196
+#### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
 SerDe Library:      	org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe	 
@@ -50,15 +48,13 @@ b                   	string              	None
 	 	 
 # Detailed Table Information	 	 
 Database:           	default             	 
-Owner:              	natty
-CreateTime:         	Mon Jul 18 21:36:36 PDT 2011
-LastAccessTime:     	UNKNOWN             	 
+#### A masked pattern was here ####
 Protect Mode:       	None                	 
 Retention:          	0                   	 
-Location:           	pfile:/home/natty/apache/hive/build/ql/test/data/warehouse/table2
+#### A masked pattern was here ####
 Table Type:         	MANAGED_TABLE       	 
 Table Parameters:	 	 
-	transient_lastDdlTime	1311050196
+#### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
 SerDe Library:      	org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe	 
@@ -94,16 +90,14 @@ b                   	string              	None
 	 	 
 # Detailed Table Information	 	 
 Database:           	default             	 
-Owner:              	natty
-CreateTime:         	Mon Jul 18 21:36:37 PDT 2011
-LastAccessTime:     	UNKNOWN             	 
+#### A masked pattern was here ####
 Protect Mode:       	None                	 
 Retention:          	0                   	 
-Location:           	pfile:/home/natty/apache/hive/build/ql/test/data/warehouse/table3
+#### A masked pattern was here ####
 Table Type:         	EXTERNAL_TABLE      	 
 Table Parameters:	 	 
 	EXTERNAL            	TRUE                
-	transient_lastDdlTime	1311050197
+#### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
 SerDe Library:      	org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe	 
@@ -140,11 +134,11 @@ POSTHOOK: Lineage: table2.b SIMPLE [(src)src.FieldSchema(name:value, type:string
 PREHOOK: query: SELECT * FROM table1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@table1
-PREHOOK: Output: file:/tmp/natty/hive_2011-07-18_21-36-57_232_3888885319138532825/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: SELECT * FROM table1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@table1
-POSTHOOK: Output: file:/tmp/natty/hive_2011-07-18_21-36-57_232_3888885319138532825/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: Lineage: table1.a SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: table1.b SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: table2.a SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
@@ -153,29 +147,29 @@ POSTHOOK: Lineage: table2.b SIMPLE [(src)src.FieldSchema(name:value, type:string
 PREHOOK: query: SELECT * FROM table2
 PREHOOK: type: QUERY
 PREHOOK: Input: default@table2
-PREHOOK: Output: file:/tmp/natty/hive_2011-07-18_21-36-57_724_8379773793855049431/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: SELECT * FROM table2
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@table2
-POSTHOOK: Output: file:/tmp/natty/hive_2011-07-18_21-36-57_724_8379773793855049431/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: Lineage: table1.a SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: table1.b SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: table2.a SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: table2.b SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 100	val_100
 100	val_100
-PREHOOK: query: CREATE EXTERNAL TABLE table4 (a INT) LOCATION '/home/natty/apache/hive/data/files/ext_test'
+#### A masked pattern was here ####
 PREHOOK: type: CREATETABLE
-POSTHOOK: query: CREATE EXTERNAL TABLE table4 (a INT) LOCATION '/home/natty/apache/hive/data/files/ext_test'
+#### A masked pattern was here ####
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: default@table4
 POSTHOOK: Lineage: table1.a SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: table1.b SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: table2.a SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: table2.b SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-PREHOOK: query: CREATE EXTERNAL TABLE table5 LIKE table4 LOCATION '/home/natty/apache/hive/data/files/ext_test'
+#### A masked pattern was here ####
 PREHOOK: type: CREATETABLE
-POSTHOOK: query: CREATE EXTERNAL TABLE table5 LIKE table4 LOCATION '/home/natty/apache/hive/data/files/ext_test'
+#### A masked pattern was here ####
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: default@table5
 POSTHOOK: Lineage: table1.a SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
@@ -185,11 +179,11 @@ POSTHOOK: Lineage: table2.b SIMPLE [(src)src.FieldSchema(name:value, type:string
 PREHOOK: query: SELECT * FROM table4
 PREHOOK: type: QUERY
 PREHOOK: Input: default@table4
-PREHOOK: Output: file:/tmp/natty/hive_2011-07-18_21-36-58_220_5774951150754164269/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: SELECT * FROM table4
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@table4
-POSTHOOK: Output: file:/tmp/natty/hive_2011-07-18_21-36-58_220_5774951150754164269/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: Lineage: table1.a SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: table1.b SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: table2.a SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
@@ -203,11 +197,11 @@ POSTHOOK: Lineage: table2.b SIMPLE [(src)src.FieldSchema(name:value, type:string
 PREHOOK: query: SELECT * FROM table5
 PREHOOK: type: QUERY
 PREHOOK: Input: default@table5
-PREHOOK: Output: file:/tmp/natty/hive_2011-07-18_21-36-58_497_977305450352332337/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: SELECT * FROM table5
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@table5
-POSTHOOK: Output: file:/tmp/natty/hive_2011-07-18_21-36-58_497_977305450352332337/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: Lineage: table1.a SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: table1.b SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: table2.a SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
@@ -233,11 +227,11 @@ POSTHOOK: Lineage: table2.b SIMPLE [(src)src.FieldSchema(name:value, type:string
 PREHOOK: query: SELECT * FROM table4
 PREHOOK: type: QUERY
 PREHOOK: Input: default@table4
-PREHOOK: Output: file:/tmp/natty/hive_2011-07-18_21-37-01_834_8386395890966387972/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: SELECT * FROM table4
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@table4
-POSTHOOK: Output: file:/tmp/natty/hive_2011-07-18_21-37-01_834_8386395890966387972/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: Lineage: table1.a SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: table1.b SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: table2.a SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
@@ -260,9 +254,9 @@ POSTHOOK: Lineage: table1.a SIMPLE [(src)src.FieldSchema(name:key, type:string, 
 POSTHOOK: Lineage: table1.b SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: table2.a SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: table2.b SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-PREHOOK: query: CREATE EXTERNAL TABLE table4 (a INT) LOCATION '/home/natty/apache/hive/data/files/ext_test'
+#### A masked pattern was here ####
 PREHOOK: type: CREATETABLE
-POSTHOOK: query: CREATE EXTERNAL TABLE table4 (a INT) LOCATION '/home/natty/apache/hive/data/files/ext_test'
+#### A masked pattern was here ####
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: default@table4
 POSTHOOK: Lineage: table1.a SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
@@ -272,11 +266,11 @@ POSTHOOK: Lineage: table2.b SIMPLE [(src)src.FieldSchema(name:value, type:string
 PREHOOK: query: SELECT * FROM table4
 PREHOOK: type: QUERY
 PREHOOK: Input: default@table4
-PREHOOK: Output: file:/tmp/natty/hive_2011-07-18_21-37-02_667_3267843075880450853/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: SELECT * FROM table4
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@table4
-POSTHOOK: Output: file:/tmp/natty/hive_2011-07-18_21-37-02_667_3267843075880450853/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: Lineage: table1.a SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: table1.b SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: table2.a SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]

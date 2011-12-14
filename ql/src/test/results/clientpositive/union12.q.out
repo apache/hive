@@ -81,7 +81,7 @@ STAGE PLANS:
   Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/tmp/njain/hive_2011-12-07_18-03-10_228_8410433153782064994/-mr-10002 
+#### A masked pattern was here ####
           Union
             Select Operator
               expressions:
@@ -105,7 +105,7 @@ STAGE PLANS:
                       output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                       serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                       name: default.tmptable
-        file:/tmp/njain/hive_2011-12-07_18-03-10_228_8410433153782064994/-mr-10004 
+#### A masked pattern was here ####
           Union
             Select Operator
               expressions:
@@ -129,7 +129,7 @@ STAGE PLANS:
                       output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                       serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                       name: default.tmptable
-        file:/tmp/njain/hive_2011-12-07_18-03-10_228_8410433153782064994/-mr-10005 
+#### A masked pattern was here ####
           Union
             Select Operator
               expressions:
@@ -161,7 +161,7 @@ STAGE PLANS:
     Move Operator
       files:
           hdfs directory: true
-          destination: pfile:/data/users/njain/hive_commit2/build/ql/scratchdir/hive_2011-12-07_18-03-10_228_8410433153782064994/-ext-10000
+#### A masked pattern was here ####
 
   Stage: Stage-0
     Move Operator
@@ -179,7 +179,7 @@ STAGE PLANS:
   Stage: Stage-4
     Map Reduce
       Alias -> Map Operator Tree:
-        pfile:/data/users/njain/hive_commit2/build/ql/scratchdir/hive_2011-12-07_18-03-10_228_8410433153782064994/-ext-10003 
+#### A masked pattern was here ####
             File Output Operator
               compressed: false
               GlobalTableId: 0
@@ -297,11 +297,11 @@ POSTHOOK: Lineage: tmptable.value EXPRESSION [(src)s1.null, (src1)s2.null, (srcb
 PREHOOK: query: select * from tmptable x sort by x.key
 PREHOOK: type: QUERY
 PREHOOK: Input: default@tmptable
-PREHOOK: Output: file:/tmp/njain/hive_2011-12-07_18-03-24_504_2428324100622025728/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: select * from tmptable x sort by x.key
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@tmptable
-POSTHOOK: Output: file:/tmp/njain/hive_2011-12-07_18-03-24_504_2428324100622025728/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: Lineage: tmptable.key EXPRESSION []
 POSTHOOK: Lineage: tmptable.value EXPRESSION [(src)s1.null, (src1)s2.null, (srcbucket)s3.null, ]
 tst1	500

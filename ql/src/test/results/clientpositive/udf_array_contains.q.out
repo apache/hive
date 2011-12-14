@@ -15,23 +15,23 @@ PREHOOK: query: -- evalutes function for array of primitives
 SELECT array_contains(array(1, 2, 3), 1) FROM src LIMIT 1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/Users/arvind/Cloudera/src/hive/build/ql/scratchdir/hive_2010-03-02_20-08-55_272_2665604689529775979/10000
+#### A masked pattern was here ####
 POSTHOOK: query: -- evalutes function for array of primitives
 SELECT array_contains(array(1, 2, 3), 1) FROM src LIMIT 1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: file:/Users/arvind/Cloudera/src/hive/build/ql/scratchdir/hive_2010-03-02_20-08-55_272_2665604689529775979/10000
+#### A masked pattern was here ####
 true
 PREHOOK: query: -- evaluates function for nested arrays
 SELECT array_contains(array(array(1,2), array(2,3), array(3,4)), array(1,2))
 FROM src LIMIT 1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/Users/arvind/Cloudera/src/hive/build/ql/scratchdir/hive_2010-03-02_20-08-59_607_7406750007328575030/10000
+#### A masked pattern was here ####
 POSTHOOK: query: -- evaluates function for nested arrays
 SELECT array_contains(array(array(1,2), array(2,3), array(3,4)), array(1,2))
 FROM src LIMIT 1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: file:/Users/arvind/Cloudera/src/hive/build/ql/scratchdir/hive_2010-03-02_20-08-59_607_7406750007328575030/10000
+#### A masked pattern was here ####
 true

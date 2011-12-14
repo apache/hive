@@ -12,11 +12,11 @@ POSTHOOK: Output: default@tmp_insert_test
 PREHOOK: query: select * from tmp_insert_test
 PREHOOK: type: QUERY
 PREHOOK: Input: default@tmp_insert_test
-PREHOOK: Output: file:/var/folders/67/67R3POPtF90VG63KSmCbcU++F0U/-Tmp-/krishnak/hive_2011-03-20_23-49-27_277_7619329117198290329/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: select * from tmp_insert_test
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@tmp_insert_test
-POSTHOOK: Output: file:/var/folders/67/67R3POPtF90VG63KSmCbcU++F0U/-Tmp-/krishnak/hive_2011-03-20_23-49-27_277_7619329117198290329/-mr-10000
+#### A masked pattern was here ####
 238	val_238
 86	val_86
 311	val_311
@@ -533,12 +533,12 @@ PREHOOK: query: select * from tmp_insert_test_p where ds= '2009-08-01'
 order by key, value
 PREHOOK: type: QUERY
 PREHOOK: Input: default@tmp_insert_test_p@ds=2009-08-01
-PREHOOK: Output: file:/var/folders/67/67R3POPtF90VG63KSmCbcU++F0U/-Tmp-/krishnak/hive_2011-03-20_23-49-30_108_6866622344091834267/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: select * from tmp_insert_test_p where ds= '2009-08-01'
 order by key, value
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@tmp_insert_test_p@ds=2009-08-01
-POSTHOOK: Output: file:/var/folders/67/67R3POPtF90VG63KSmCbcU++F0U/-Tmp-/krishnak/hive_2011-03-20_23-49-30_108_6866622344091834267/-mr-10000
+#### A masked pattern was here ####
 0	val_0	2009-08-01
 0	val_0	2009-08-01
 0	val_0	2009-08-01
@@ -1049,12 +1049,12 @@ PREHOOK: query: select * from tmp_insert_test_p where ds= '2009-08-01'
 order by key, value
 PREHOOK: type: QUERY
 PREHOOK: Input: default@tmp_insert_test_p@ds=2009-08-01
-PREHOOK: Output: file:/var/folders/67/67R3POPtF90VG63KSmCbcU++F0U/-Tmp-/krishnak/hive_2011-03-20_23-49-44_480_1402449362864681773/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: select * from tmp_insert_test_p where ds= '2009-08-01'
 order by key, value
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@tmp_insert_test_p@ds=2009-08-01
-POSTHOOK: Output: file:/var/folders/67/67R3POPtF90VG63KSmCbcU++F0U/-Tmp-/krishnak/hive_2011-03-20_23-49-44_480_1402449362864681773/-mr-10000
+#### A masked pattern was here ####
 0	val_0	2009-08-01
 0	val_0	2009-08-01
 0	val_0	2009-08-01

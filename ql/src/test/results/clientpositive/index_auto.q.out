@@ -4,14 +4,14 @@ PREHOOK: query: -- try the query without indexing, with manual indexing, and wit
 SELECT key, value FROM src WHERE key > 80 AND key < 100 ORDER BY key
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/tmp/salbiz/hive_2011-08-01_13-37-00_120_1845343812793757087/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: -- try the query without indexing, with manual indexing, and with automatic indexing
 
 -- without indexing
 SELECT key, value FROM src WHERE key > 80 AND key < 100 ORDER BY key
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: file:/tmp/salbiz/hive_2011-08-01_13-37-00_120_1845343812793757087/-mr-10000
+#### A masked pattern was here ####
 82	val_82
 83	val_83
 83	val_83
@@ -47,15 +47,15 @@ POSTHOOK: Lineage: default__src_src_index__._bucketname SIMPLE [(src)src.FieldSc
 POSTHOOK: Lineage: default__src_src_index__._offsets EXPRESSION [(src)src.FieldSchema(name:BLOCK__OFFSET__INSIDE__FILE, type:bigint, comment:), ]
 POSTHOOK: Lineage: default__src_src_index__.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 PREHOOK: query: -- manual indexing
-INSERT OVERWRITE DIRECTORY "/tmp/index_where" SELECT `_bucketname` ,  `_offsets` FROM default__src_src_index__ WHERE key > 80 AND key < 100
+#### A masked pattern was here ####
 PREHOOK: type: QUERY
 PREHOOK: Input: default@default__src_src_index__
-PREHOOK: Output: /tmp/index_where
+#### A masked pattern was here ####
 POSTHOOK: query: -- manual indexing
-INSERT OVERWRITE DIRECTORY "/tmp/index_where" SELECT `_bucketname` ,  `_offsets` FROM default__src_src_index__ WHERE key > 80 AND key < 100
+#### A masked pattern was here ####
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@default__src_src_index__
-POSTHOOK: Output: /tmp/index_where
+#### A masked pattern was here ####
 POSTHOOK: Lineage: default__src_src_index__._bucketname SIMPLE [(src)src.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
 POSTHOOK: Lineage: default__src_src_index__._offsets EXPRESSION [(src)src.FieldSchema(name:BLOCK__OFFSET__INSIDE__FILE, type:bigint, comment:), ]
 POSTHOOK: Lineage: default__src_src_index__.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
@@ -119,11 +119,11 @@ STAGE PLANS:
 PREHOOK: query: SELECT key, value FROM src WHERE key > 80 AND key < 100 ORDER BY key
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/tmp/salbiz/hive_2011-08-01_13-37-10_468_944814349250189106/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: SELECT key, value FROM src WHERE key > 80 AND key < 100 ORDER BY key
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: file:/tmp/salbiz/hive_2011-08-01_13-37-10_468_944814349250189106/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: Lineage: default__src_src_index__._bucketname SIMPLE [(src)src.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
 POSTHOOK: Lineage: default__src_src_index__._offsets EXPRESSION [(src)src.FieldSchema(name:BLOCK__OFFSET__INSIDE__FILE, type:bigint, comment:), ]
 POSTHOOK: Lineage: default__src_src_index__.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
@@ -202,13 +202,13 @@ STAGE PLANS:
     Move Operator
       files:
           hdfs directory: true
-          destination: file:/data/users/salbiz/apache-hive/build/ql/scratchdir/hive_2011-08-01_13-37-13_653_5881274831276521153/-ext-10000
+#### A masked pattern was here ####
 
   Stage: Stage-2
     Move Operator
       files:
           hdfs directory: true
-          destination: file:/tmp/salbiz/hive_2011-08-01_13-37-13_483_7682220259922771428/-mr-10002
+#### A masked pattern was here ####
 
   Stage: Stage-1
     Map Reduce
@@ -253,7 +253,7 @@ STAGE PLANS:
   Stage: Stage-4
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/data/users/salbiz/apache-hive/build/ql/scratchdir/hive_2011-08-01_13-37-13_653_5881274831276521153/-ext-10001 
+#### A masked pattern was here ####
             File Output Operator
               compressed: false
               GlobalTableId: 0
@@ -270,12 +270,12 @@ PREHOOK: query: SELECT key, value FROM src WHERE key > 80 AND key < 100 ORDER BY
 PREHOOK: type: QUERY
 PREHOOK: Input: default@default__src_src_index__
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/tmp/salbiz/hive_2011-08-01_13-37-13_735_2387366913526120875/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: SELECT key, value FROM src WHERE key > 80 AND key < 100 ORDER BY key
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@default__src_src_index__
 POSTHOOK: Input: default@src
-POSTHOOK: Output: file:/tmp/salbiz/hive_2011-08-01_13-37-13_735_2387366913526120875/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: Lineage: default__src_src_index__._bucketname SIMPLE [(src)src.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
 POSTHOOK: Lineage: default__src_src_index__._offsets EXPRESSION [(src)src.FieldSchema(name:BLOCK__OFFSET__INSIDE__FILE, type:bigint, comment:), ]
 POSTHOOK: Lineage: default__src_src_index__.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]

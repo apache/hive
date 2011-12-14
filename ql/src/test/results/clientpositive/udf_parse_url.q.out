@@ -114,7 +114,7 @@ parse_url('http://facebook.com/path1/p.php?k1=v1&k2=v2#Ref1', 'AUTHORITY')
   FROM src WHERE key = 86
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/tmp/sdong/hive_2011-02-10_17-38-56_591_3335436134061688371/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: SELECT parse_url('http://facebook.com/path1/p.php?k1=v1&k2=v2#Ref1', 'HOST'), 
 parse_url('http://facebook.com/path1/p.php?k1=v1&k2=v2#Ref1', 'PATH'), 
 parse_url('http://facebook.com/path1/p.php?k1=v1&k2=v2#Ref1', 'QUERY') ,
@@ -129,5 +129,5 @@ parse_url('http://facebook.com/path1/p.php?k1=v1&k2=v2#Ref1', 'AUTHORITY')
   FROM src WHERE key = 86
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: file:/tmp/sdong/hive_2011-02-10_17-38-56_591_3335436134061688371/-mr-10000
+#### A masked pattern was here ####
 facebook.com	/path1/p.php	k1=v1&k2=v2	Ref1	v2	v1	NULL	/path1/p.php?k1=v1&k2=v2	http	NULL	facebook.com

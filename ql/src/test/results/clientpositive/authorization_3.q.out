@@ -27,7 +27,7 @@ table	src_autho_test
 principalName	hive_test_user	
 principalType	USER	
 privilege	Drop	
-grantTime	1298421632	
+#### A masked pattern was here ####
 grantor	hive_test_user	
 
 database	default	
@@ -35,7 +35,7 @@ table	src_autho_test
 principalName	hive_test_user	
 principalType	USER	
 privilege	Select	
-grantTime	1298421632	
+#### A masked pattern was here ####
 grantor	hive_test_user	
 PREHOOK: query: revoke select on table src_autho_test from user hive_test_user
 PREHOOK: type: REVOKE_PRIVILEGE
@@ -65,7 +65,7 @@ table	src_autho_test
 principalName	hive_test_user	
 principalType	USER	
 privilege	Drop	
-grantTime	1298421633	
+#### A masked pattern was here ####
 grantor	hive_test_user	
 
 database	default	
@@ -73,7 +73,7 @@ table	src_autho_test
 principalName	hive_test_user	
 principalType	USER	
 privilege	Select	
-grantTime	1298421633	
+#### A masked pattern was here ####
 grantor	hive_test_user	
 PREHOOK: query: revoke drop,select on table src_autho_test from user hive_test_user
 PREHOOK: type: REVOKE_PRIVILEGE
@@ -97,7 +97,7 @@ table	src_autho_test
 principalName	hive_test_user	
 principalType	USER	
 privilege	Drop	
-grantTime	1298421633	
+#### A masked pattern was here ####
 grantor	hive_test_user	
 PREHOOK: query: revoke drop,select(key), select(value) on table src_autho_test from user hive_test_user
 PREHOOK: type: REVOKE_PRIVILEGE

@@ -11,9 +11,9 @@ a >= b - Returns TRUE if a is not smaller than b
 PREHOOK: query: SELECT true>=false, false>=true, false>=false, true>=true FROM src LIMIT 1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/tmp/sdong/hive_2010-09-29_14-46-47_233_3050706776311320694/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: SELECT true>=false, false>=true, false>=false, true>=true FROM src LIMIT 1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: file:/tmp/sdong/hive_2010-09-29_14-46-47_233_3050706776311320694/-mr-10000
+#### A masked pattern was here ####
 true	false	true	true

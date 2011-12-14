@@ -90,7 +90,7 @@ PREHOOK: query: FROM (
 SELECT tmap.tkey, tmap.tvalue WHERE tmap.tkey < 100
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/var/folders/uc/ucuNeMAVGQGzy3459D8z2+++Z0Q/-Tmp-/amarsri/hive_2011-03-22_02-50-56_212_3129782761910965240/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: FROM (
   FROM src
   SELECT TRANSFORM(src.key, src.value)
@@ -100,7 +100,7 @@ POSTHOOK: query: FROM (
 SELECT tmap.tkey, tmap.tvalue WHERE tmap.tkey < 100
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: file:/var/folders/uc/ucuNeMAVGQGzy3459D8z2+++Z0Q/-Tmp-/amarsri/hive_2011-03-22_02-50-56_212_3129782761910965240/-mr-10000
+#### A masked pattern was here ####
 0	val_0
 0	val_0
 0	val_0
@@ -277,7 +277,7 @@ PREHOOK: query: FROM (
 SELECT tmap.tkey, tmap.tvalue WHERE tmap.tkey < 100
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/var/folders/uc/ucuNeMAVGQGzy3459D8z2+++Z0Q/-Tmp-/amarsri/hive_2011-03-22_02-51-05_287_665431322083364408/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: FROM (
   FROM src
   SELECT TRANSFORM(src.key, src.value)
@@ -287,7 +287,7 @@ POSTHOOK: query: FROM (
 SELECT tmap.tkey, tmap.tvalue WHERE tmap.tkey < 100
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: file:/var/folders/uc/ucuNeMAVGQGzy3459D8z2+++Z0Q/-Tmp-/amarsri/hive_2011-03-22_02-51-05_287_665431322083364408/-mr-10000
+#### A masked pattern was here ####
 0	val_0
 0	val_0
 0	val_0

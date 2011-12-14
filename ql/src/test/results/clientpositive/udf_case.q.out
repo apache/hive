@@ -134,7 +134,7 @@ PREHOOK: query: SELECT CASE 1
 FROM src LIMIT 1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/var/folders/7P/7PeC14kXFIWq0PIYyexGbmKuXUk/-Tmp-/jsichi/hive_2011-02-22_22-51-38_651_2224865717899515186/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: SELECT CASE 1
         WHEN 1 THEN 2
         WHEN 3 THEN 4
@@ -163,7 +163,7 @@ POSTHOOK: query: SELECT CASE 1
 FROM src LIMIT 1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: file:/var/folders/7P/7PeC14kXFIWq0PIYyexGbmKuXUk/-Tmp-/jsichi/hive_2011-02-22_22-51-38_651_2224865717899515186/-mr-10000
+#### A masked pattern was here ####
 2	5	15	NULL	20	24
 PREHOOK: query: -- verify that short-circuiting is working correctly for CASE
 -- we should never get to the ELSE branch, which would raise an exception
@@ -172,7 +172,7 @@ ELSE reflect('java.lang.String', 'bogus', 1) END
 FROM src LIMIT 1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/var/folders/7P/7PeC14kXFIWq0PIYyexGbmKuXUk/-Tmp-/jsichi/hive_2011-02-22_22-51-44_358_6447239253045741230/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: -- verify that short-circuiting is working correctly for CASE
 -- we should never get to the ELSE branch, which would raise an exception
 SELECT CASE 1 WHEN 1 THEN 'yo'
@@ -180,5 +180,5 @@ ELSE reflect('java.lang.String', 'bogus', 1) END
 FROM src LIMIT 1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: file:/var/folders/7P/7PeC14kXFIWq0PIYyexGbmKuXUk/-Tmp-/jsichi/hive_2011-02-22_22-51-44_358_6447239253045741230/-mr-10000
+#### A masked pattern was here ####
 yo

@@ -6,7 +6,7 @@ PREHOOK: query: DESCRIBE DATABASE EXTENDED db1
 PREHOOK: type: DESCDATABASE
 POSTHOOK: query: DESCRIBE DATABASE EXTENDED db1
 POSTHOOK: type: DESCDATABASE
-db1		pfile:/Users/carl/Work/repos/hive3/build/ql/test/data/warehouse/db1.db
+#### A masked pattern was here ####
 PREHOOK: query: USE db1
 PREHOOK: type: SWITCHDATABASE
 POSTHOOK: query: USE db1
@@ -27,15 +27,13 @@ value               	int                 	None
 	 	 
 # Detailed Table Information	 	 
 Database:           	db1                 	 
-Owner:              	carl
-CreateTime:         	Tue Jul 19 16:34:59 PDT 2011
-LastAccessTime:     	UNKNOWN             	 
+#### A masked pattern was here ####
 Protect Mode:       	None                	 
 Retention:          	0                   	 
-Location:           	pfile:/Users/carl/Work/repos/hive3/build/ql/test/data/warehouse/db1.db/table_db1
+#### A masked pattern was here ####
 Table Type:         	MANAGED_TABLE       	 
 Table Parameters:	 	 
-	transient_lastDdlTime	1311118499
+#### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
 SerDe Library:      	org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe	 
@@ -54,17 +52,17 @@ POSTHOOK: type: SHOWTABLES
 table_db1
 PREHOOK: query: CREATE DATABASE db2
 COMMENT 'database 2'
-LOCATION 'pfile:///Users/carl/Work/repos/hive3/build/ql/test/data/warehouse/db2'
+#### A masked pattern was here ####
 PREHOOK: type: CREATEDATABASE
 POSTHOOK: query: CREATE DATABASE db2
 COMMENT 'database 2'
-LOCATION 'pfile:///Users/carl/Work/repos/hive3/build/ql/test/data/warehouse/db2'
+#### A masked pattern was here ####
 POSTHOOK: type: CREATEDATABASE
 PREHOOK: query: DESCRIBE DATABASE EXTENDED db2
 PREHOOK: type: DESCDATABASE
 POSTHOOK: query: DESCRIBE DATABASE EXTENDED db2
 POSTHOOK: type: DESCDATABASE
-db2	database 2	pfile:/Users/carl/Work/repos/hive3/build/ql/test/data/warehouse/db2
+#### A masked pattern was here ####
 PREHOOK: query: USE db2
 PREHOOK: type: SWITCHDATABASE
 POSTHOOK: query: USE db2
@@ -85,15 +83,13 @@ value               	int                 	None
 	 	 
 # Detailed Table Information	 	 
 Database:           	db2                 	 
-Owner:              	carl
-CreateTime:         	Tue Jul 19 16:35:00 PDT 2011
-LastAccessTime:     	UNKNOWN             	 
+#### A masked pattern was here ####
 Protect Mode:       	None                	 
 Retention:          	0                   	 
-Location:           	pfile:/Users/carl/Work/repos/hive3/build/ql/test/data/warehouse/db2/table_db2
+#### A masked pattern was here ####
 Table Type:         	MANAGED_TABLE       	 
 Table Parameters:	 	 
-	transient_lastDdlTime	1311118500
+#### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
 SerDe Library:      	org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe	 

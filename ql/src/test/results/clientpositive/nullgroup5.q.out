@@ -115,7 +115,7 @@ PREHOOK: query: select u.* from
 )u
 PREHOOK: type: QUERY
 PREHOOK: Input: default@tstparttbl2@ds=2009-04-09
-PREHOOK: Output: file:/tmp/krishnak/hive_2011-03-21_04-13-45_700_8244819505603052007/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: select u.* from
 (
   select key, value from tstparttbl x where x.ds='2009-04-05'
@@ -124,7 +124,7 @@ POSTHOOK: query: select u.* from
 )u
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@tstparttbl2@ds=2009-04-09
-POSTHOOK: Output: file:/tmp/krishnak/hive_2011-03-21_04-13-45_700_8244819505603052007/-mr-10000
+#### A masked pattern was here ####
 238	val_238
 86	val_86
 311	val_311

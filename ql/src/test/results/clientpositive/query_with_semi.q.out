@@ -2,32 +2,32 @@ PREHOOK: query: from src
 select transform('aa;') using '/bin/cat' as a  limit 1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/1274221340/10000
+#### A masked pattern was here ####
 POSTHOOK: query: from src
 select transform('aa;') using '/bin/cat' as a  limit 1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/1274221340/10000
+#### A masked pattern was here ####
 aa;
 PREHOOK: query: from src
 select transform('bb') using '/bin/cat' as b limit 1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/851654826/10000
+#### A masked pattern was here ####
 POSTHOOK: query: from src
 select transform('bb') using '/bin/cat' as b limit 1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/851654826/10000
+#### A masked pattern was here ####
 bb
 PREHOOK: query: from src
 select transform('cc') using '/bin/cat' as c limit 1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/345035754/10000
+#### A masked pattern was here ####
 POSTHOOK: query: from src
 select transform('cc') using '/bin/cat' as c limit 1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/345035754/10000
+#### A masked pattern was here ####
 cc

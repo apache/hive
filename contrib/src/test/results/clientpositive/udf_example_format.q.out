@@ -61,7 +61,7 @@ PREHOOK: query: SELECT example_format("abc"),
 FROM src LIMIT 1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/tmp/sdong/hive_2011-02-16_20-11-12_896_5022706540111282468/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: SELECT example_format("abc"),
        example_format("%1$s", 1.1),
        example_format("%1$s %2$e", 1.1, 1.2),
@@ -69,7 +69,7 @@ POSTHOOK: query: SELECT example_format("abc"),
 FROM src LIMIT 1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: file:/tmp/sdong/hive_2011-02-16_20-11-12_896_5022706540111282468/-mr-10000
+#### A masked pattern was here ####
 abc	1.1	1.1 1.200000e+00	a 12 10
 PREHOOK: query: DROP TEMPORARY FUNCTION example_format
 PREHOOK: type: DROPFUNCTION

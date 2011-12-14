@@ -21,156 +21,156 @@ POSTHOOK: type: CREATEFUNCTION
 PREHOOK: query: select 1 from src where test_udf_get_java_boolean("false") and True limit 1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/tmp/sdong/hive_2010-11-15_22-41-57_461_9179682304696724129/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: select 1 from src where test_udf_get_java_boolean("false") and True limit 1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: file:/tmp/sdong/hive_2010-11-15_22-41-57_461_9179682304696724129/-mr-10000
+#### A masked pattern was here ####
 PREHOOK: query: select 1 from src where test_udf_get_java_boolean("true") and True limit 1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/tmp/sdong/hive_2010-11-15_22-42-00_287_9146964130139785682/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: select 1 from src where test_udf_get_java_boolean("true") and True limit 1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: file:/tmp/sdong/hive_2010-11-15_22-42-00_287_9146964130139785682/-mr-10000
+#### A masked pattern was here ####
 1
 PREHOOK: query: select 1 from src where True and test_udf_get_java_boolean("false") limit 1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/tmp/sdong/hive_2010-11-15_22-42-03_753_4024266451997121051/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: select 1 from src where True and test_udf_get_java_boolean("false") limit 1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: file:/tmp/sdong/hive_2010-11-15_22-42-03_753_4024266451997121051/-mr-10000
+#### A masked pattern was here ####
 PREHOOK: query: select 1 from src where False and test_udf_get_java_boolean("false") limit 1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/tmp/sdong/hive_2010-11-15_22-42-06_306_2987205972955927857/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: select 1 from src where False and test_udf_get_java_boolean("false") limit 1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: file:/tmp/sdong/hive_2010-11-15_22-42-06_306_2987205972955927857/-mr-10000
+#### A masked pattern was here ####
 PREHOOK: query: select 1 from src where test_udf_get_java_boolean("true") and test_udf_get_java_boolean("true") limit 1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/tmp/sdong/hive_2010-11-15_22-42-08_843_7591463527783169702/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: select 1 from src where test_udf_get_java_boolean("true") and test_udf_get_java_boolean("true") limit 1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: file:/tmp/sdong/hive_2010-11-15_22-42-08_843_7591463527783169702/-mr-10000
+#### A masked pattern was here ####
 1
 PREHOOK: query: select 1 from src where test_udf_get_java_boolean("true") and test_udf_get_java_boolean("false") limit 1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/tmp/sdong/hive_2010-11-15_22-42-11_377_3836369573695228865/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: select 1 from src where test_udf_get_java_boolean("true") and test_udf_get_java_boolean("false") limit 1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: file:/tmp/sdong/hive_2010-11-15_22-42-11_377_3836369573695228865/-mr-10000
+#### A masked pattern was here ####
 PREHOOK: query: select 1 from src where test_udf_get_java_boolean("false") and test_udf_get_java_boolean("true") limit 1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/tmp/sdong/hive_2010-11-15_22-42-13_909_6479690639258331233/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: select 1 from src where test_udf_get_java_boolean("false") and test_udf_get_java_boolean("true") limit 1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: file:/tmp/sdong/hive_2010-11-15_22-42-13_909_6479690639258331233/-mr-10000
+#### A masked pattern was here ####
 PREHOOK: query: select 1 from src where test_udf_get_java_boolean("false") and test_udf_get_java_boolean("false") limit 1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/tmp/sdong/hive_2010-11-15_22-42-16_423_8142664197664600929/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: select 1 from src where test_udf_get_java_boolean("false") and test_udf_get_java_boolean("false") limit 1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: file:/tmp/sdong/hive_2010-11-15_22-42-16_423_8142664197664600929/-mr-10000
+#### A masked pattern was here ####
 PREHOOK: query: select 1 from src where test_udf_get_java_boolean("false") or True limit 1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/tmp/sdong/hive_2010-11-15_22-42-18_941_8663995139474543010/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: select 1 from src where test_udf_get_java_boolean("false") or True limit 1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: file:/tmp/sdong/hive_2010-11-15_22-42-18_941_8663995139474543010/-mr-10000
+#### A masked pattern was here ####
 1
 PREHOOK: query: select 1 from src where test_udf_get_java_boolean("true") or True limit 1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/tmp/sdong/hive_2010-11-15_22-42-21_457_3004117207132300144/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: select 1 from src where test_udf_get_java_boolean("true") or True limit 1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: file:/tmp/sdong/hive_2010-11-15_22-42-21_457_3004117207132300144/-mr-10000
+#### A masked pattern was here ####
 1
 PREHOOK: query: select 1 from src where True or test_udf_get_java_boolean("false") limit 1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/tmp/sdong/hive_2010-11-15_22-42-23_963_4873201464515999264/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: select 1 from src where True or test_udf_get_java_boolean("false") limit 1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: file:/tmp/sdong/hive_2010-11-15_22-42-23_963_4873201464515999264/-mr-10000
+#### A masked pattern was here ####
 1
 PREHOOK: query: select 1 from src where False or test_udf_get_java_boolean("false") limit 1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/tmp/sdong/hive_2010-11-15_22-42-26_429_8040501046222406495/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: select 1 from src where False or test_udf_get_java_boolean("false") limit 1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: file:/tmp/sdong/hive_2010-11-15_22-42-26_429_8040501046222406495/-mr-10000
+#### A masked pattern was here ####
 PREHOOK: query: select 1 from src where test_udf_get_java_boolean("true") or test_udf_get_java_boolean("true") limit 1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/tmp/sdong/hive_2010-11-15_22-42-28_928_2147856539710781117/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: select 1 from src where test_udf_get_java_boolean("true") or test_udf_get_java_boolean("true") limit 1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: file:/tmp/sdong/hive_2010-11-15_22-42-28_928_2147856539710781117/-mr-10000
+#### A masked pattern was here ####
 1
 PREHOOK: query: select 1 from src where test_udf_get_java_boolean("true") or test_udf_get_java_boolean("false") limit 1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/tmp/sdong/hive_2010-11-15_22-42-31_512_1998172108754414675/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: select 1 from src where test_udf_get_java_boolean("true") or test_udf_get_java_boolean("false") limit 1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: file:/tmp/sdong/hive_2010-11-15_22-42-31_512_1998172108754414675/-mr-10000
+#### A masked pattern was here ####
 1
 PREHOOK: query: select 1 from src where test_udf_get_java_boolean("false") or test_udf_get_java_boolean("true") limit 1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/tmp/sdong/hive_2010-11-15_22-42-33_970_7950315414198379248/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: select 1 from src where test_udf_get_java_boolean("false") or test_udf_get_java_boolean("true") limit 1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: file:/tmp/sdong/hive_2010-11-15_22-42-33_970_7950315414198379248/-mr-10000
+#### A masked pattern was here ####
 1
 PREHOOK: query: select 1 from src where test_udf_get_java_boolean("false") or test_udf_get_java_boolean("false") limit 1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/tmp/sdong/hive_2010-11-15_22-42-36_476_5015264323628296344/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: select 1 from src where test_udf_get_java_boolean("false") or test_udf_get_java_boolean("false") limit 1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: file:/tmp/sdong/hive_2010-11-15_22-42-36_476_5015264323628296344/-mr-10000
+#### A masked pattern was here ####
 PREHOOK: query: select 1 from src where not(test_udf_get_java_boolean("false")) limit 1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/tmp/sdong/hive_2010-11-15_22-42-38_982_5489941401382088698/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: select 1 from src where not(test_udf_get_java_boolean("false")) limit 1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: file:/tmp/sdong/hive_2010-11-15_22-42-38_982_5489941401382088698/-mr-10000
+#### A masked pattern was here ####
 1
 PREHOOK: query: select 1 from src where not(test_udf_get_java_boolean("true")) limit 1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/tmp/sdong/hive_2010-11-15_22-42-41_489_2148422377161206207/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: select 1 from src where not(test_udf_get_java_boolean("true")) limit 1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: file:/tmp/sdong/hive_2010-11-15_22-42-41_489_2148422377161206207/-mr-10000
+#### A masked pattern was here ####
 PREHOOK: query: DROP TEMPORARY FUNCTION test_udf_get_java_boolean
 PREHOOK: type: DROPFUNCTION
 POSTHOOK: query: DROP TEMPORARY FUNCTION test_udf_get_java_boolean

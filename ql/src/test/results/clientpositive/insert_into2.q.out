@@ -106,11 +106,11 @@ POSTHOOK: Lineage: insert_into2 PARTITION(ds=1).value SIMPLE [(src)src.FieldSche
 PREHOOK: query: SELECT COUNT(*) FROM insert_into2 WHERE ds='1'
 PREHOOK: type: QUERY
 PREHOOK: Input: default@insert_into2@ds=1
-PREHOOK: Output: file:/tmp/franklin/hive_2011-06-29_17-25-41_579_4002687946034153811/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: SELECT COUNT(*) FROM insert_into2 WHERE ds='1'
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@insert_into2@ds=1
-POSTHOOK: Output: file:/tmp/franklin/hive_2011-06-29_17-25-41_579_4002687946034153811/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: Lineage: insert_into2 PARTITION(ds=1).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: insert_into2 PARTITION(ds=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: insert_into2 PARTITION(ds=1).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
@@ -121,13 +121,13 @@ PREHOOK: query: SELECT SUM(HASH(c)) FROM (
 ) t
 PREHOOK: type: QUERY
 PREHOOK: Input: default@insert_into2@ds=1
-PREHOOK: Output: file:/tmp/franklin/hive_2011-06-29_17-25-44_973_8871014363773289125/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: SELECT SUM(HASH(c)) FROM (
     SELECT TRANSFORM(*) USING 'tr \t _' AS (c) FROM insert_into2
 ) t
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@insert_into2@ds=1
-POSTHOOK: Output: file:/tmp/franklin/hive_2011-06-29_17-25-44_973_8871014363773289125/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: Lineage: insert_into2 PARTITION(ds=1).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: insert_into2 PARTITION(ds=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: insert_into2 PARTITION(ds=1).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
@@ -231,14 +231,14 @@ PREHOOK: query: SELECT SUM(HASH(c)) FROM (
 PREHOOK: type: QUERY
 PREHOOK: Input: default@insert_into2@ds=1
 PREHOOK: Input: default@insert_into2@ds=2
-PREHOOK: Output: file:/tmp/franklin/hive_2011-06-29_17-25-52_723_6070767717090713868/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: SELECT SUM(HASH(c)) FROM (
     SELECT TRANSFORM(*) USING 'tr \t _' AS (c) FROM insert_into2
 ) t
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@insert_into2@ds=1
 POSTHOOK: Input: default@insert_into2@ds=2
-POSTHOOK: Output: file:/tmp/franklin/hive_2011-06-29_17-25-52_723_6070767717090713868/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: Lineage: insert_into2 PARTITION(ds=1).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: insert_into2 PARTITION(ds=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: insert_into2 PARTITION(ds=1).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
@@ -348,14 +348,14 @@ PREHOOK: query: SELECT SUM(HASH(c)) FROM (
 PREHOOK: type: QUERY
 PREHOOK: Input: default@insert_into2@ds=1
 PREHOOK: Input: default@insert_into2@ds=2
-PREHOOK: Output: file:/tmp/franklin/hive_2011-06-29_17-26-00_659_7308277712841037547/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: SELECT SUM(HASH(c)) FROM (
     SELECT TRANSFORM(*) USING 'tr \t _' AS (c) FROM insert_into2
 ) t
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@insert_into2@ds=1
 POSTHOOK: Input: default@insert_into2@ds=2
-POSTHOOK: Output: file:/tmp/franklin/hive_2011-06-29_17-26-00_659_7308277712841037547/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: Lineage: insert_into2 PARTITION(ds=1).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: insert_into2 PARTITION(ds=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: insert_into2 PARTITION(ds=1).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]

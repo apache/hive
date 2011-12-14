@@ -44,7 +44,7 @@ POSTHOOK: type: DESCTABLE
 col1	string	
 dt	string	
 	 	 
-Detailed Partition Information	Partition(values:[a], dbName:default, tableName:alter5, createTime:1304626469, lastAccessTime:0, sd:StorageDescriptor(cols:[FieldSchema(name:col1, type:string, comment:null)], location:pfile:/home/phunt/dev/hive/build/ql/test/data/warehouse/alter5/parta, inputFormat:org.apache.hadoop.mapred.TextInputFormat, outputFormat:org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat, compressed:false, numBuckets:-1, serdeInfo:SerDeInfo(name:null, serializationLib:org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe, parameters:{serialization.format=1}), bucketCols:[], sortCols:[], parameters:{}), parameters:{transient_lastDdlTime=1304626469})	
+#### A masked pattern was here ####
 PREHOOK: query: insert overwrite table alter5 partition (dt='a') select col1 from alter5_src
 PREHOOK: type: QUERY
 PREHOOK: Input: default@alter5_src
@@ -57,11 +57,11 @@ POSTHOOK: Lineage: alter5 PARTITION(dt=a).col1 SIMPLE [(alter5_src)alter5_src.Fi
 PREHOOK: query: select * from alter5 where dt='a'
 PREHOOK: type: QUERY
 PREHOOK: Input: default@alter5@dt=a
-PREHOOK: Output: file:/tmp/phunt/hive_2011-05-05_13-14-37_578_1796477555405644183/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: select * from alter5 where dt='a'
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@alter5@dt=a
-POSTHOOK: Output: file:/tmp/phunt/hive_2011-05-05_13-14-37_578_1796477555405644183/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: Lineage: alter5 PARTITION(dt=a).col1 SIMPLE [(alter5_src)alter5_src.FieldSchema(name:col1, type:string, comment:null), ]
 1	a
 2	a
@@ -77,7 +77,7 @@ POSTHOOK: Lineage: alter5 PARTITION(dt=a).col1 SIMPLE [(alter5_src)alter5_src.Fi
 col1	string	
 dt	string	
 	 	 
-Detailed Partition Information	Partition(values:[a], dbName:default, tableName:alter5, createTime:1304626469, lastAccessTime:0, sd:StorageDescriptor(cols:[FieldSchema(name:col1, type:string, comment:null)], location:pfile:/home/phunt/dev/hive/build/ql/test/data/warehouse/alter5/parta, inputFormat:org.apache.hadoop.mapred.TextInputFormat, outputFormat:org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat, compressed:false, numBuckets:-1, serdeInfo:SerDeInfo(name:null, serializationLib:org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe, parameters:{serialization.format=1}), bucketCols:[], sortCols:[], parameters:{}), parameters:{numFiles=1, transient_lastDdlTime=1304626476, numRows=6, totalSize=12})	
+#### A masked pattern was here ####
 PREHOOK: query: -- Cleanup
 DROP TABLE alter5_src
 PREHOOK: type: DROPTABLE
@@ -165,7 +165,7 @@ POSTHOOK: Lineage: alter5 PARTITION(dt=a).col1 SIMPLE [(alter5_src)alter5_src.Fi
 col1	string	
 dt	string	
 	 	 
-Detailed Partition Information	Partition(values:[a], dbName:alter5_db, tableName:alter5, createTime:1304626483, lastAccessTime:0, sd:StorageDescriptor(cols:[FieldSchema(name:col1, type:string, comment:null)], location:pfile:/home/phunt/dev/hive/build/ql/test/data/warehouse/alter5_db.db/alter5/parta, inputFormat:org.apache.hadoop.mapred.TextInputFormat, outputFormat:org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat, compressed:false, numBuckets:-1, serdeInfo:SerDeInfo(name:null, serializationLib:org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe, parameters:{serialization.format=1}), bucketCols:[], sortCols:[], parameters:{}), parameters:{transient_lastDdlTime=1304626483})	
+#### A masked pattern was here ####
 PREHOOK: query: insert overwrite table alter5 partition (dt='a') select col1 from alter5_src
 PREHOOK: type: QUERY
 PREHOOK: Input: alter5_db@alter5_src
@@ -179,11 +179,11 @@ POSTHOOK: Lineage: alter5 PARTITION(dt=a).col1 SIMPLE [(alter5_src)alter5_src.Fi
 PREHOOK: query: select * from alter5 where dt='a'
 PREHOOK: type: QUERY
 PREHOOK: Input: alter5_db@alter5@dt=a
-PREHOOK: Output: file:/tmp/phunt/hive_2011-05-05_13-14-49_883_4190579771388965111/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: select * from alter5 where dt='a'
 POSTHOOK: type: QUERY
 POSTHOOK: Input: alter5_db@alter5@dt=a
-POSTHOOK: Output: file:/tmp/phunt/hive_2011-05-05_13-14-49_883_4190579771388965111/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: Lineage: alter5 PARTITION(dt=a).col1 SIMPLE [(alter5_src)alter5_src.FieldSchema(name:col1, type:string, comment:null), ]
 POSTHOOK: Lineage: alter5 PARTITION(dt=a).col1 SIMPLE [(alter5_src)alter5_src.FieldSchema(name:col1, type:string, comment:null), ]
 1	a
@@ -201,4 +201,4 @@ POSTHOOK: Lineage: alter5 PARTITION(dt=a).col1 SIMPLE [(alter5_src)alter5_src.Fi
 col1	string	
 dt	string	
 	 	 
-Detailed Partition Information	Partition(values:[a], dbName:alter5_db, tableName:alter5, createTime:1304626483, lastAccessTime:0, sd:StorageDescriptor(cols:[FieldSchema(name:col1, type:string, comment:null)], location:pfile:/home/phunt/dev/hive/build/ql/test/data/warehouse/alter5_db.db/alter5/parta, inputFormat:org.apache.hadoop.mapred.TextInputFormat, outputFormat:org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat, compressed:false, numBuckets:-1, serdeInfo:SerDeInfo(name:null, serializationLib:org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe, parameters:{serialization.format=1}), bucketCols:[], sortCols:[], parameters:{}), parameters:{numFiles=1, transient_lastDdlTime=1304626489, numRows=6, totalSize=12})	
+#### A masked pattern was here ####

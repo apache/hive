@@ -25,22 +25,22 @@ POSTHOOK: Lineage: ppr_test PARTITION(ds=2).key SIMPLE []
 PREHOOK: query: select * from ppr_test where ds = '2'
 PREHOOK: type: QUERY
 PREHOOK: Input: default@ppr_test@ds=2
-PREHOOK: Output: file:/tmp/nzhang/hive_2011-03-16_14-37-54_191_4798709120900823624/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: select * from ppr_test where ds = '2'
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@ppr_test@ds=2
-POSTHOOK: Output: file:/tmp/nzhang/hive_2011-03-16_14-37-54_191_4798709120900823624/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: Lineage: ppr_test PARTITION(ds=22).key SIMPLE []
 POSTHOOK: Lineage: ppr_test PARTITION(ds=2).key SIMPLE []
 2	2
 PREHOOK: query: select * from ppr_test where ds = '22'
 PREHOOK: type: QUERY
 PREHOOK: Input: default@ppr_test@ds=22
-PREHOOK: Output: file:/tmp/nzhang/hive_2011-03-16_14-37-54_756_2735541929297276723/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: select * from ppr_test where ds = '22'
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@ppr_test@ds=22
-POSTHOOK: Output: file:/tmp/nzhang/hive_2011-03-16_14-37-54_756_2735541929297276723/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: Lineage: ppr_test PARTITION(ds=22).key SIMPLE []
 POSTHOOK: Lineage: ppr_test PARTITION(ds=2).key SIMPLE []
 22	22
@@ -77,11 +77,11 @@ POSTHOOK: Lineage: ppr_test2 PARTITION(ds=2,s=1).key SIMPLE []
 PREHOOK: query: select * from ppr_test2 where s = '1'
 PREHOOK: type: QUERY
 PREHOOK: Input: default@ppr_test2@ds=2/s=1
-PREHOOK: Output: file:/tmp/nzhang/hive_2011-03-16_14-38-03_996_5327659435572703549/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: select * from ppr_test2 where s = '1'
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@ppr_test2@ds=2/s=1
-POSTHOOK: Output: file:/tmp/nzhang/hive_2011-03-16_14-38-03_996_5327659435572703549/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: Lineage: ppr_test PARTITION(ds=22).key SIMPLE []
 POSTHOOK: Lineage: ppr_test PARTITION(ds=2).key SIMPLE []
 POSTHOOK: Lineage: ppr_test2 PARTITION(ds=1,s=2).key SIMPLE []
@@ -90,11 +90,11 @@ POSTHOOK: Lineage: ppr_test2 PARTITION(ds=2,s=1).key SIMPLE []
 PREHOOK: query: select * from ppr_test2 where ds = '1'
 PREHOOK: type: QUERY
 PREHOOK: Input: default@ppr_test2@ds=1/s=2
-PREHOOK: Output: file:/tmp/nzhang/hive_2011-03-16_14-38-04_281_8196775271555582839/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: select * from ppr_test2 where ds = '1'
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@ppr_test2@ds=1/s=2
-POSTHOOK: Output: file:/tmp/nzhang/hive_2011-03-16_14-38-04_281_8196775271555582839/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: Lineage: ppr_test PARTITION(ds=22).key SIMPLE []
 POSTHOOK: Lineage: ppr_test PARTITION(ds=2).key SIMPLE []
 POSTHOOK: Lineage: ppr_test2 PARTITION(ds=1,s=2).key SIMPLE []
@@ -154,11 +154,11 @@ POSTHOOK: Lineage: ppr_test3 PARTITION(col=1,ol=2,l=3).key SIMPLE []
 PREHOOK: query: select * from ppr_test3 where l = '1'
 PREHOOK: type: QUERY
 PREHOOK: Input: default@ppr_test3@col=1/ol=2/l=1
-PREHOOK: Output: file:/tmp/nzhang/hive_2011-03-16_14-38-17_246_6425170733915100693/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: select * from ppr_test3 where l = '1'
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@ppr_test3@col=1/ol=2/l=1
-POSTHOOK: Output: file:/tmp/nzhang/hive_2011-03-16_14-38-17_246_6425170733915100693/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: Lineage: ppr_test PARTITION(ds=22).key SIMPLE []
 POSTHOOK: Lineage: ppr_test PARTITION(ds=2).key SIMPLE []
 POSTHOOK: Lineage: ppr_test2 PARTITION(ds=1,s=2).key SIMPLE []
@@ -170,11 +170,11 @@ POSTHOOK: Lineage: ppr_test3 PARTITION(col=1,ol=2,l=3).key SIMPLE []
 PREHOOK: query: select * from ppr_test3 where l = '2'
 PREHOOK: type: QUERY
 PREHOOK: Input: default@ppr_test3@col=1/ol=1/l=2
-PREHOOK: Output: file:/tmp/nzhang/hive_2011-03-16_14-38-17_523_447214062612676127/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: select * from ppr_test3 where l = '2'
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@ppr_test3@col=1/ol=1/l=2
-POSTHOOK: Output: file:/tmp/nzhang/hive_2011-03-16_14-38-17_523_447214062612676127/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: Lineage: ppr_test PARTITION(ds=22).key SIMPLE []
 POSTHOOK: Lineage: ppr_test PARTITION(ds=2).key SIMPLE []
 POSTHOOK: Lineage: ppr_test2 PARTITION(ds=1,s=2).key SIMPLE []
@@ -186,11 +186,11 @@ POSTHOOK: Lineage: ppr_test3 PARTITION(col=1,ol=2,l=3).key SIMPLE []
 PREHOOK: query: select * from ppr_test3 where ol = '1'
 PREHOOK: type: QUERY
 PREHOOK: Input: default@ppr_test3@col=1/ol=1/l=2
-PREHOOK: Output: file:/tmp/nzhang/hive_2011-03-16_14-38-17_813_6088158785291097781/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: select * from ppr_test3 where ol = '1'
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@ppr_test3@col=1/ol=1/l=2
-POSTHOOK: Output: file:/tmp/nzhang/hive_2011-03-16_14-38-17_813_6088158785291097781/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: Lineage: ppr_test PARTITION(ds=22).key SIMPLE []
 POSTHOOK: Lineage: ppr_test PARTITION(ds=2).key SIMPLE []
 POSTHOOK: Lineage: ppr_test2 PARTITION(ds=1,s=2).key SIMPLE []
@@ -203,12 +203,12 @@ PREHOOK: query: select * from ppr_test3 where ol = '2'
 PREHOOK: type: QUERY
 PREHOOK: Input: default@ppr_test3@col=1/ol=2/l=1
 PREHOOK: Input: default@ppr_test3@col=1/ol=2/l=3
-PREHOOK: Output: file:/tmp/nzhang/hive_2011-03-16_14-38-18_142_6933403927924739851/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: select * from ppr_test3 where ol = '2'
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@ppr_test3@col=1/ol=2/l=1
 POSTHOOK: Input: default@ppr_test3@col=1/ol=2/l=3
-POSTHOOK: Output: file:/tmp/nzhang/hive_2011-03-16_14-38-18_142_6933403927924739851/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: Lineage: ppr_test PARTITION(ds=22).key SIMPLE []
 POSTHOOK: Lineage: ppr_test PARTITION(ds=2).key SIMPLE []
 POSTHOOK: Lineage: ppr_test2 PARTITION(ds=1,s=2).key SIMPLE []
@@ -223,13 +223,13 @@ PREHOOK: type: QUERY
 PREHOOK: Input: default@ppr_test3@col=1/ol=1/l=2
 PREHOOK: Input: default@ppr_test3@col=1/ol=2/l=1
 PREHOOK: Input: default@ppr_test3@col=1/ol=2/l=3
-PREHOOK: Output: file:/tmp/nzhang/hive_2011-03-16_14-38-18_602_2485861984482150436/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: select * from ppr_test3 where col = '1'
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@ppr_test3@col=1/ol=1/l=2
 POSTHOOK: Input: default@ppr_test3@col=1/ol=2/l=1
 POSTHOOK: Input: default@ppr_test3@col=1/ol=2/l=3
-POSTHOOK: Output: file:/tmp/nzhang/hive_2011-03-16_14-38-18_602_2485861984482150436/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: Lineage: ppr_test PARTITION(ds=22).key SIMPLE []
 POSTHOOK: Lineage: ppr_test PARTITION(ds=2).key SIMPLE []
 POSTHOOK: Lineage: ppr_test2 PARTITION(ds=1,s=2).key SIMPLE []
@@ -243,11 +243,11 @@ POSTHOOK: Lineage: ppr_test3 PARTITION(col=1,ol=2,l=3).key SIMPLE []
 PREHOOK: query: select * from ppr_test3 where ol = '2' and l = '1'
 PREHOOK: type: QUERY
 PREHOOK: Input: default@ppr_test3@col=1/ol=2/l=1
-PREHOOK: Output: file:/tmp/nzhang/hive_2011-03-16_14-38-19_214_5779339277041051549/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: select * from ppr_test3 where ol = '2' and l = '1'
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@ppr_test3@col=1/ol=2/l=1
-POSTHOOK: Output: file:/tmp/nzhang/hive_2011-03-16_14-38-19_214_5779339277041051549/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: Lineage: ppr_test PARTITION(ds=22).key SIMPLE []
 POSTHOOK: Lineage: ppr_test PARTITION(ds=2).key SIMPLE []
 POSTHOOK: Lineage: ppr_test2 PARTITION(ds=1,s=2).key SIMPLE []
@@ -259,11 +259,11 @@ POSTHOOK: Lineage: ppr_test3 PARTITION(col=1,ol=2,l=3).key SIMPLE []
 PREHOOK: query: select * from ppr_test3 where col='1' and ol = '2' and l = '1'
 PREHOOK: type: QUERY
 PREHOOK: Input: default@ppr_test3@col=1/ol=2/l=1
-PREHOOK: Output: file:/tmp/nzhang/hive_2011-03-16_14-38-19_526_2052468333243542612/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: select * from ppr_test3 where col='1' and ol = '2' and l = '1'
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@ppr_test3@col=1/ol=2/l=1
-POSTHOOK: Output: file:/tmp/nzhang/hive_2011-03-16_14-38-19_526_2052468333243542612/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: Lineage: ppr_test PARTITION(ds=22).key SIMPLE []
 POSTHOOK: Lineage: ppr_test PARTITION(ds=2).key SIMPLE []
 POSTHOOK: Lineage: ppr_test2 PARTITION(ds=1,s=2).key SIMPLE []

@@ -75,14 +75,14 @@ FROM (SELECT INPUT4.*, INPUT4.KEY as KEY2
 ORDER BY KEY2 LIMIT 10
 PREHOOK: type: QUERY
 PREHOOK: Input: default@input4
-PREHOOK: Output: file:/var/folders/67/67R3POPtF90VG63KSmCbcU++F0U/-Tmp-/krishnak/hive_2011-03-20_23-43-16_916_7673840999947062888/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: SELECT a.KEY2
 FROM (SELECT INPUT4.*, INPUT4.KEY as KEY2
       FROM INPUT4) a
 ORDER BY KEY2 LIMIT 10
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@input4
-POSTHOOK: Output: file:/var/folders/67/67R3POPtF90VG63KSmCbcU++F0U/-Tmp-/krishnak/hive_2011-03-20_23-43-16_916_7673840999947062888/-mr-10000
+#### A masked pattern was here ####
 0
 0
 0

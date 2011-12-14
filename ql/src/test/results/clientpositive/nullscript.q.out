@@ -60,11 +60,11 @@ STAGE PLANS:
 PREHOOK: query: select transform(key) using '/bin/cat' as key1 from nullscript
 PREHOOK: type: QUERY
 PREHOOK: Input: default@nullscript
-PREHOOK: Output: file:/tmp/krishnak/hive_2011-03-21_04-13-58_476_8682161178533749649/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: select transform(key) using '/bin/cat' as key1 from nullscript
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@nullscript
-POSTHOOK: Output: file:/tmp/krishnak/hive_2011-03-21_04-13-58_476_8682161178533749649/-mr-10000
+#### A masked pattern was here ####
 238
 86
 311

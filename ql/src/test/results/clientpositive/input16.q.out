@@ -18,11 +18,11 @@ POSTHOOK: Output: default@input16
 PREHOOK: query: SELECT INPUT16.VALUE, INPUT16.KEY FROM INPUT16
 PREHOOK: type: QUERY
 PREHOOK: Input: default@input16
-PREHOOK: Output: file:/var/folders/67/67R3POPtF90VG63KSmCbcU++F0U/-Tmp-/krishnak/hive_2011-03-20_23-41-31_315_1869868779617811264/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: SELECT INPUT16.VALUE, INPUT16.KEY FROM INPUT16
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@input16
-POSTHOOK: Output: file:/var/folders/67/67R3POPtF90VG63KSmCbcU++F0U/-Tmp-/krishnak/hive_2011-03-20_23-41-31_315_1869868779617811264/-mr-10000
+#### A masked pattern was here ####
 val_238	238
 val_86	86
 val_311	311

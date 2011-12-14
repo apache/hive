@@ -84,7 +84,7 @@ STAGE PLANS:
     Move Operator
       files:
           hdfs directory: true
-          destination: pfile:/data/users/franklin/hive-block-merge/build/ql/scratchdir/hive_2011-06-09_15-28-54_753_2667401366646166118/-ext-10000
+#### A masked pattern was here ####
 
   Stage: Stage-0
     Move Operator
@@ -105,7 +105,7 @@ STAGE PLANS:
   Stage: Stage-3
     Map Reduce
       Alias -> Map Operator Tree:
-        pfile:/data/users/franklin/hive-block-merge/build/ql/scratchdir/hive_2011-06-09_15-28-54_753_2667401366646166118/-ext-10002 
+#### A masked pattern was here ####
             File Output Operator
               compressed: false
               GlobalTableId: 0
@@ -684,7 +684,7 @@ STAGE PLANS:
     Move Operator
       files:
           hdfs directory: true
-          destination: pfile:/data/users/franklin/hive-block-merge/build/ql/scratchdir/hive_2011-06-09_15-29-44_330_1943388998865490671/-ext-10000
+#### A masked pattern was here ####
 
   Stage: Stage-0
     Move Operator
@@ -1317,7 +1317,7 @@ PREHOOK: Input: default@rcfile_merge1@ds=1/part=96
 PREHOOK: Input: default@rcfile_merge1@ds=1/part=97
 PREHOOK: Input: default@rcfile_merge1@ds=1/part=98
 PREHOOK: Input: default@rcfile_merge1@ds=1/part=99
-PREHOOK: Output: file:/tmp/franklin/hive_2011-06-09_15-30-30_023_3526296190457786443/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: -- Verify
 SELECT SUM(HASH(c)) FROM (
     SELECT TRANSFORM(*) USING 'tr \t _' AS (c)
@@ -1423,7 +1423,7 @@ POSTHOOK: Input: default@rcfile_merge1@ds=1/part=96
 POSTHOOK: Input: default@rcfile_merge1@ds=1/part=97
 POSTHOOK: Input: default@rcfile_merge1@ds=1/part=98
 POSTHOOK: Input: default@rcfile_merge1@ds=1/part=99
-POSTHOOK: Output: file:/tmp/franklin/hive_2011-06-09_15-30-30_023_3526296190457786443/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: Lineage: rcfile_merge1 PARTITION(ds=1,part=0).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: rcfile_merge1 PARTITION(ds=1,part=0).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: rcfile_merge1 PARTITION(ds=1,part=10).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
@@ -1925,7 +1925,7 @@ PREHOOK: Input: default@rcfile_merge1b@ds=1/part=96
 PREHOOK: Input: default@rcfile_merge1b@ds=1/part=97
 PREHOOK: Input: default@rcfile_merge1b@ds=1/part=98
 PREHOOK: Input: default@rcfile_merge1b@ds=1/part=99
-PREHOOK: Output: file:/tmp/franklin/hive_2011-06-09_15-30-56_636_8234288185986710243/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: SELECT SUM(HASH(c)) FROM (
     SELECT TRANSFORM(*) USING 'tr \t _' AS (c)
     FROM rcfile_merge1b WHERE ds='1'
@@ -2030,7 +2030,7 @@ POSTHOOK: Input: default@rcfile_merge1b@ds=1/part=96
 POSTHOOK: Input: default@rcfile_merge1b@ds=1/part=97
 POSTHOOK: Input: default@rcfile_merge1b@ds=1/part=98
 POSTHOOK: Input: default@rcfile_merge1b@ds=1/part=99
-POSTHOOK: Output: file:/tmp/franklin/hive_2011-06-09_15-30-56_636_8234288185986710243/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: Lineage: rcfile_merge1 PARTITION(ds=1,part=0).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: rcfile_merge1 PARTITION(ds=1,part=0).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: rcfile_merge1 PARTITION(ds=1,part=10).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]

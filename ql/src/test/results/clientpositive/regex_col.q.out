@@ -284,7 +284,7 @@ STAGE PLANS:
   Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/tmp/sdong/hive_2011-02-10_17-01-27_356_3093621423795045358/-mr-10002 
+#### A masked pattern was here ####
             Reduce Output Operator
               key expressions:
                     expr: _col0
@@ -320,7 +320,7 @@ PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
 PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
 PREHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
 PREHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
-PREHOOK: Output: file:/tmp/sdong/hive_2011-02-10_17-01-27_548_6653931489088427144/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: SELECT b.`..` FROM srcpart a JOIN srcpart b
 ON a.key = b.key AND a.hr = b.hr AND a.ds = b.ds AND a.key = 103
 ORDER BY ds, hr
@@ -329,7 +329,7 @@ POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
 POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
 POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
 POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
-POSTHOOK: Output: file:/tmp/sdong/hive_2011-02-10_17-01-27_548_6653931489088427144/-mr-10000
+#### A masked pattern was here ####
 2008-04-08	11
 2008-04-08	11
 2008-04-08	11
@@ -522,14 +522,14 @@ PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
 PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
 PREHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
 PREHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
-PREHOOK: Output: file:/tmp/sdong/hive_2011-02-10_17-01-35_406_5771693391982309464/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: SELECT `(ds|hr)?+.+` FROM srcpart ORDER BY key, value LIMIT 10
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
 POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
 POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
 POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
-POSTHOOK: Output: file:/tmp/sdong/hive_2011-02-10_17-01-35_406_5771693391982309464/-mr-10000
+#### A masked pattern was here ####
 0	val_0
 0	val_0
 0	val_0

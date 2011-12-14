@@ -41,13 +41,13 @@ order by key, value, newcol
 PREHOOK: type: QUERY
 PREHOOK: Input: default@partition_vs_table@ds=100
 PREHOOK: Input: default@partition_vs_table@ds=101
-PREHOOK: Output: file:/tmp/njain/hive_2011-02-03_11-07-06_731_7368058619549828473/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: select key, value, newcol from partition_vs_table
 order by key, value, newcol
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@partition_vs_table@ds=100
 POSTHOOK: Input: default@partition_vs_table@ds=101
-POSTHOOK: Output: file:/tmp/njain/hive_2011-02-03_11-07-06_731_7368058619549828473/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: Lineage: partition_vs_table PARTITION(ds=100).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: partition_vs_table PARTITION(ds=100).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: partition_vs_table PARTITION(ds=101).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]

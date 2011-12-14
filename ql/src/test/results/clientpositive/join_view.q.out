@@ -20,13 +20,13 @@ PREHOOK: query: -- test join views: see HIVE-1989
 
 create view v as select invites.bar, invites2.foo, invites2.ds from invites join invites2 on invites.ds=invites2.ds
 PREHOOK: type: CREATEVIEW
-PREHOOK: Output: file:/var/folders/nt/ng21tg0n1jl4547lw0k8lg6hq_nw87/T/charleschen/hive_2011-09-01_22-51-19_156_3637363787057278672/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: -- test join views: see HIVE-1989
 
 create view v as select invites.bar, invites2.foo, invites2.ds from invites join invites2 on invites.ds=invites2.ds
 POSTHOOK: type: CREATEVIEW
 POSTHOOK: Output: default@v
-POSTHOOK: Output: file:/var/folders/nt/ng21tg0n1jl4547lw0k8lg6hq_nw87/T/charleschen/hive_2011-09-01_22-51-19_156_3637363787057278672/-mr-10000
+#### A masked pattern was here ####
 PREHOOK: query: explain select * from v where ds='2011-09-01'
 PREHOOK: type: QUERY
 POSTHOOK: query: explain select * from v where ds='2011-09-01'

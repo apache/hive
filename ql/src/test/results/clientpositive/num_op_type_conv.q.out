@@ -56,12 +56,12 @@ PREHOOK: query: SELECT null + 7, 1.0 - null, null + null,
        9 % "3" FROM src LIMIT 1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/tmp/sdong/hive_2011-02-10_16-48-55_797_7464570094193374274/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: SELECT null + 7, 1.0 - null, null + null,
        CAST(21 AS BIGINT) % CAST(5 AS TINYINT),
        CAST(21 AS BIGINT) % CAST(21 AS BIGINT),
        9 % "3" FROM src LIMIT 1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: file:/tmp/sdong/hive_2011-02-10_16-48-55_797_7464570094193374274/-mr-10000
+#### A masked pattern was here ####
 NULL	NULL	NULL	1	0	0.0

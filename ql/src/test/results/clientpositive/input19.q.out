@@ -12,9 +12,9 @@ POSTHOOK: Output: default@apachelog
 PREHOOK: query: SELECT a.* FROM apachelog a
 PREHOOK: type: QUERY
 PREHOOK: Input: default@apachelog
-PREHOOK: Output: file:/var/folders/67/67R3POPtF90VG63KSmCbcU++F0U/-Tmp-/krishnak/hive_2011-03-20_23-42-06_848_5717128968359988362/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: SELECT a.* FROM apachelog a
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@apachelog
-POSTHOOK: Output: file:/var/folders/67/67R3POPtF90VG63KSmCbcU++F0U/-Tmp-/krishnak/hive_2011-03-20_23-42-06_848_5717128968359988362/-mr-10000
+#### A masked pattern was here ####
 127.0.0.1	NULL	frank	10/Oct/2000:13:55:36 -0700	GET /apache_pb.gif HTTP/1.0	200	2326

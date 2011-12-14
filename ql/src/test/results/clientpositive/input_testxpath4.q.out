@@ -56,7 +56,7 @@ WHERE src_thrift.mstringstring['key_9'] IS NOT NULL
       OR lintstring IS NOT NULL
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src_thrift
-PREHOOK: Output: file:/tmp/sdong/hive_2011-02-10_16-01-00_810_1828416109534074477/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: FROM src_thrift
 SELECT src_thrift.mstringstring['key_9'], lintstring.myint
 WHERE src_thrift.mstringstring['key_9'] IS NOT NULL
@@ -64,7 +64,7 @@ WHERE src_thrift.mstringstring['key_9'] IS NOT NULL
       OR lintstring IS NOT NULL
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src_thrift
-POSTHOOK: Output: file:/tmp/sdong/hive_2011-02-10_16-01-00_810_1828416109534074477/-mr-10000
+#### A masked pattern was here ####
 NULL	[0]
 NULL	[1]
 NULL	[4]
@@ -133,7 +133,7 @@ WHERE src_thrift.mstringstring['key_9'] IS NOT NULL
       OR lintstring IS NOT NULL
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src_thrift
-PREHOOK: Output: file:/tmp/sdong/hive_2011-02-10_16-01-04_306_7791720421361758230/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: FROM src_thrift
 SELECT src_thrift.mstringstring['key_9'], lintstring.myint
 WHERE src_thrift.mstringstring['key_9'] IS NOT NULL
@@ -141,7 +141,7 @@ WHERE src_thrift.mstringstring['key_9'] IS NOT NULL
       OR lintstring IS NOT NULL
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src_thrift
-POSTHOOK: Output: file:/tmp/sdong/hive_2011-02-10_16-01-04_306_7791720421361758230/-mr-10000
+#### A masked pattern was here ####
 NULL	[0]
 NULL	[1]
 NULL	[4]

@@ -20,7 +20,7 @@ value	string	default
 ds	string	
 hr	string	
 	 	 
-Detailed Table Information	Table(tableName:nzhang_part3, dbName:default, owner:null, createTime:1297384306, lastAccessTime:0, retention:0, sd:StorageDescriptor(cols:[FieldSchema(name:key, type:string, comment:default), FieldSchema(name:value, type:string, comment:default), FieldSchema(name:ds, type:string, comment:null), FieldSchema(name:hr, type:string, comment:null)], location:pfile:/data/users/sdong/www/open-source-hive1/build/ql/test/data/warehouse/nzhang_part3, inputFormat:org.apache.hadoop.mapred.TextInputFormat, outputFormat:org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat, compressed:false, numBuckets:-1, serdeInfo:SerDeInfo(name:null, serializationLib:org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe, parameters:{serialization.format=1}), bucketCols:[], sortCols:[], parameters:{}), partitionKeys:[FieldSchema(name:ds, type:string, comment:null), FieldSchema(name:hr, type:string, comment:null)], parameters:{transient_lastDdlTime=1297384306}, viewOriginalText:null, viewExpandedText:null, tableType:MANAGED_TABLE)	
+#### A masked pattern was here ####
 PREHOOK: query: explain
 insert overwrite table nzhang_part3 partition (ds, hr) select key, value, ds, hr from srcpart where ds is not null and hr is not null
 PREHOOK: type: QUERY
@@ -110,14 +110,14 @@ PREHOOK: Input: default@nzhang_part3@ds=2008-04-08/hr=11
 PREHOOK: Input: default@nzhang_part3@ds=2008-04-08/hr=12
 PREHOOK: Input: default@nzhang_part3@ds=2008-04-09/hr=11
 PREHOOK: Input: default@nzhang_part3@ds=2008-04-09/hr=12
-PREHOOK: Output: file:/tmp/sdong/hive_2011-02-10_16-31-53_877_4565533446520799398/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: select * from nzhang_part3 where ds is not null and hr is not null
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@nzhang_part3@ds=2008-04-08/hr=11
 POSTHOOK: Input: default@nzhang_part3@ds=2008-04-08/hr=12
 POSTHOOK: Input: default@nzhang_part3@ds=2008-04-09/hr=11
 POSTHOOK: Input: default@nzhang_part3@ds=2008-04-09/hr=12
-POSTHOOK: Output: file:/tmp/sdong/hive_2011-02-10_16-31-53_877_4565533446520799398/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: Lineage: nzhang_part3 PARTITION(ds=2008-04-08,hr=11).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: nzhang_part3 PARTITION(ds=2008-04-08,hr=11).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: nzhang_part3 PARTITION(ds=2008-04-08,hr=12).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]

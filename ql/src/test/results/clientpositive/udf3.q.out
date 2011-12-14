@@ -116,11 +116,11 @@ POSTHOOK: Lineage: dest1.c5 EXPRESSION [(src)src.null, ]
 PREHOOK: query: SELECT dest1.* FROM dest1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@dest1
-PREHOOK: Output: file:/tmp/sdong/hive_2011-02-10_17-28-32_500_777234016491414542/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: SELECT dest1.* FROM dest1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@dest1
-POSTHOOK: Output: file:/tmp/sdong/hive_2011-02-10_17-28-32_500_777234016491414542/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: Lineage: dest1.c1 EXPRESSION [(src)src.null, ]
 POSTHOOK: Lineage: dest1.c2 EXPRESSION [(src)src.null, ]
 POSTHOOK: Lineage: dest1.c3 EXPRESSION [(src)src.null, ]

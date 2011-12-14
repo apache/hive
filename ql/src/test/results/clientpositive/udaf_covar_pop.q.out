@@ -37,38 +37,38 @@ where neither x nor y is null.
 PREHOOK: query: SELECT covar_pop(b, c) FROM covar_tab WHERE a < 1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@covar_tab
-PREHOOK: Output: file:/tmp/krishnak/hive_2011-03-21_05-25-58_968_4806438013320076077/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: SELECT covar_pop(b, c) FROM covar_tab WHERE a < 1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@covar_tab
-POSTHOOK: Output: file:/tmp/krishnak/hive_2011-03-21_05-25-58_968_4806438013320076077/-mr-10000
+#### A masked pattern was here ####
 NULL
 PREHOOK: query: SELECT covar_pop(b, c) FROM covar_tab WHERE a < 3
 PREHOOK: type: QUERY
 PREHOOK: Input: default@covar_tab
-PREHOOK: Output: file:/tmp/krishnak/hive_2011-03-21_05-26-02_070_2692729689314573082/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: SELECT covar_pop(b, c) FROM covar_tab WHERE a < 3
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@covar_tab
-POSTHOOK: Output: file:/tmp/krishnak/hive_2011-03-21_05-26-02_070_2692729689314573082/-mr-10000
+#### A masked pattern was here ####
 NULL
 PREHOOK: query: SELECT covar_pop(b, c) FROM covar_tab WHERE a = 3
 PREHOOK: type: QUERY
 PREHOOK: Input: default@covar_tab
-PREHOOK: Output: file:/tmp/krishnak/hive_2011-03-21_05-26-05_164_5674819400682657915/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: SELECT covar_pop(b, c) FROM covar_tab WHERE a = 3
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@covar_tab
-POSTHOOK: Output: file:/tmp/krishnak/hive_2011-03-21_05-26-05_164_5674819400682657915/-mr-10000
+#### A masked pattern was here ####
 0.0
 PREHOOK: query: SELECT a, covar_pop(b, c) FROM covar_tab GROUP BY a ORDER BY a
 PREHOOK: type: QUERY
 PREHOOK: Input: default@covar_tab
-PREHOOK: Output: file:/tmp/krishnak/hive_2011-03-21_05-26-08_179_5503395149806188837/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: SELECT a, covar_pop(b, c) FROM covar_tab GROUP BY a ORDER BY a
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@covar_tab
-POSTHOOK: Output: file:/tmp/krishnak/hive_2011-03-21_05-26-08_179_5503395149806188837/-mr-10000
+#### A masked pattern was here ####
 1	NULL
 2	NULL
 3	0.0
@@ -78,11 +78,11 @@ POSTHOOK: Output: file:/tmp/krishnak/hive_2011-03-21_05-26-08_179_55033951498061
 PREHOOK: query: SELECT covar_pop(b, c) FROM covar_tab
 PREHOOK: type: QUERY
 PREHOOK: Input: default@covar_tab
-PREHOOK: Output: file:/tmp/krishnak/hive_2011-03-21_05-26-13_878_767643551906327366/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: SELECT covar_pop(b, c) FROM covar_tab
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@covar_tab
-POSTHOOK: Output: file:/tmp/krishnak/hive_2011-03-21_05-26-13_878_767643551906327366/-mr-10000
+#### A masked pattern was here ####
 3.624999999999999
 PREHOOK: query: DROP TABLE covar_tab
 PREHOOK: type: DROPTABLE

@@ -18,11 +18,11 @@ POSTHOOK: Lineage: combine1_1.value SIMPLE [(src)src.FieldSchema(name:value, typ
 PREHOOK: query: select key, value from combine1_1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@combine1_1
-PREHOOK: Output: file:/tmp/jssarma/hive_2010-07-21_11-17-52_177_5648847098652116494/10000
+#### A masked pattern was here ####
 POSTHOOK: query: select key, value from combine1_1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@combine1_1
-POSTHOOK: Output: file:/tmp/jssarma/hive_2010-07-21_11-17-52_177_5648847098652116494/10000
+#### A masked pattern was here ####
 POSTHOOK: Lineage: combine1_1.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: combine1_1.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 238	val_238

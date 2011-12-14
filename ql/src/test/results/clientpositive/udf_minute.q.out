@@ -65,10 +65,10 @@ PREHOOK: query: SELECT minute('2009-08-07 13:14:15'), minute('13:14:15'), minute
 FROM src WHERE key = 86
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/tmp/sdong/hive_2011-02-10_17-38-23_869_5383802616701222398/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: SELECT minute('2009-08-07 13:14:15'), minute('13:14:15'), minute('2009-08-07')
 FROM src WHERE key = 86
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: file:/tmp/sdong/hive_2011-02-10_17-38-23_869_5383802616701222398/-mr-10000
+#### A masked pattern was here ####
 14	14	NULL

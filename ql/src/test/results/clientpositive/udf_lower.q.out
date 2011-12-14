@@ -58,9 +58,9 @@ STAGE PLANS:
 PREHOOK: query: SELECT lower('AbC 123'), upper('AbC 123') FROM src WHERE key = 86
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/tmp/sdong/hive_2011-02-10_17-37-37_129_8573889506738679509/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: SELECT lower('AbC 123'), upper('AbC 123') FROM src WHERE key = 86
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: file:/tmp/sdong/hive_2011-02-10_17-37-37_129_8573889506738679509/-mr-10000
+#### A masked pattern was here ####
 abc 123	ABC 123

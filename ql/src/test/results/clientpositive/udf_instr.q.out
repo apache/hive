@@ -115,7 +115,7 @@ PREHOOK: query: SELECT instr('abcd', 'abc'),
 FROM src LIMIT 1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/tmp/sdong/hive_2011-02-10_17-35-58_320_7040848731228995339/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: SELECT instr('abcd', 'abc'),
        instr('abcabc', 'ccc'),
        instr(123, '23'),
@@ -132,5 +132,5 @@ POSTHOOK: query: SELECT instr('abcd', 'abc'),
 FROM src LIMIT 1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: file:/tmp/sdong/hive_2011-02-10_17-35-58_320_7040848731228995339/-mr-10000
+#### A masked pattern was here ####
 1	0	2	2	0	0	2	3	4	2	3	NULL	NULL

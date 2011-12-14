@@ -83,11 +83,11 @@ STAGE PLANS:
 PREHOOK: query: SELECT * FROM symlink_text_input_format order by key, value
 PREHOOK: type: QUERY
 PREHOOK: Input: default@symlink_text_input_format
-PREHOOK: Output: file:/tmp/sdong/hive_2011-02-10_17-24-10_305_4117602077727755730/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: SELECT * FROM symlink_text_input_format order by key, value
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@symlink_text_input_format
-POSTHOOK: Output: file:/tmp/sdong/hive_2011-02-10_17-24-10_305_4117602077727755730/-mr-10000
+#### A masked pattern was here ####
 1	11
 2	12
 2	12
@@ -153,11 +153,11 @@ STAGE PLANS:
 PREHOOK: query: SELECT value FROM symlink_text_input_format order by value
 PREHOOK: type: QUERY
 PREHOOK: Input: default@symlink_text_input_format
-PREHOOK: Output: file:/tmp/sdong/hive_2011-02-10_17-24-13_733_1088047071909969175/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: SELECT value FROM symlink_text_input_format order by value
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@symlink_text_input_format
-POSTHOOK: Output: file:/tmp/sdong/hive_2011-02-10_17-24-13_733_1088047071909969175/-mr-10000
+#### A masked pattern was here ####
 11
 12
 12
@@ -232,9 +232,9 @@ STAGE PLANS:
 PREHOOK: query: SELECT count(1) FROM symlink_text_input_format
 PREHOOK: type: QUERY
 PREHOOK: Input: default@symlink_text_input_format
-PREHOOK: Output: file:/tmp/sdong/hive_2011-02-10_17-24-17_064_8014152935662500610/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: SELECT count(1) FROM symlink_text_input_format
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@symlink_text_input_format
-POSTHOOK: Output: file:/tmp/sdong/hive_2011-02-10_17-24-17_064_8014152935662500610/-mr-10000
+#### A masked pattern was here ####
 16

@@ -30,12 +30,12 @@ PREHOOK: query: -- query should not return any values
 SELECT * FROM default__temp_temp_index__ WHERE key = 86
 PREHOOK: type: QUERY
 PREHOOK: Input: default@default__temp_temp_index__
-PREHOOK: Output: file:/var/folders/5V/5V4Zq77qGD4aSK9m8V3frVsFdRU/-Tmp-/salbiz/hive_2011-08-05_12-02-36_415_5588033903434501946/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: -- query should not return any values
 SELECT * FROM default__temp_temp_index__ WHERE key = 86
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@default__temp_temp_index__
-POSTHOOK: Output: file:/var/folders/5V/5V4Zq77qGD4aSK9m8V3frVsFdRU/-Tmp-/salbiz/hive_2011-08-05_12-02-36_415_5588033903434501946/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: Lineage: default__temp_temp_index__._bucketname SIMPLE [(temp)temp.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
 POSTHOOK: Lineage: default__temp_temp_index__._offsets EXPRESSION [(temp)temp.FieldSchema(name:BLOCK__OFFSET__INSIDE__FILE, type:bigint, comment:), ]
 POSTHOOK: Lineage: default__temp_temp_index__.key SIMPLE [(temp)temp.FieldSchema(name:key, type:string, comment:null), ]
@@ -89,11 +89,11 @@ STAGE PLANS:
 PREHOOK: query: SELECT * FROM temp WHERE key  = 86
 PREHOOK: type: QUERY
 PREHOOK: Input: default@temp
-PREHOOK: Output: file:/var/folders/5V/5V4Zq77qGD4aSK9m8V3frVsFdRU/-Tmp-/salbiz/hive_2011-08-05_12-02-42_594_420605994856244839/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: SELECT * FROM temp WHERE key  = 86
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@temp
-POSTHOOK: Output: file:/var/folders/5V/5V4Zq77qGD4aSK9m8V3frVsFdRU/-Tmp-/salbiz/hive_2011-08-05_12-02-42_594_420605994856244839/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: Lineage: default__temp_temp_index__._bucketname SIMPLE [(temp)temp.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
 POSTHOOK: Lineage: default__temp_temp_index__._offsets EXPRESSION [(temp)temp.FieldSchema(name:BLOCK__OFFSET__INSIDE__FILE, type:bigint, comment:), ]
 POSTHOOK: Lineage: default__temp_temp_index__.key SIMPLE [(temp)temp.FieldSchema(name:key, type:string, comment:null), ]

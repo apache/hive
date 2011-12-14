@@ -43,12 +43,12 @@ PREHOOK: query: FROM src_thrift
 SELECT src_thrift.mstringstring['key_9'], src_thrift.lintstring.myint
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src_thrift
-PREHOOK: Output: file:/tmp/sdong/hive_2011-02-10_16-00-57_326_2264158676212177633/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: FROM src_thrift
 SELECT src_thrift.mstringstring['key_9'], src_thrift.lintstring.myint
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src_thrift
-POSTHOOK: Output: file:/tmp/sdong/hive_2011-02-10_16-00-57_326_2264158676212177633/-mr-10000
+#### A masked pattern was here ####
 NULL	[0]
 NULL	[1]
 NULL	[4]

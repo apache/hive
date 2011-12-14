@@ -78,11 +78,11 @@ STAGE PLANS:
 PREHOOK: query: SELECT count(value) AS c FROM src GROUP BY key HAVING c > 3
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/tmp/sdong/hive_2011-02-10_01-55-25_061_1887192452567405688/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: SELECT count(value) AS c FROM src GROUP BY key HAVING c > 3
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: file:/tmp/sdong/hive_2011-02-10_01-55-25_061_1887192452567405688/-mr-10000
+#### A masked pattern was here ####
 4
 4
 5
@@ -175,11 +175,11 @@ STAGE PLANS:
 PREHOOK: query: SELECT key, max(value) AS c FROM src GROUP BY key HAVING key != 302
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/tmp/sdong/hive_2011-02-10_01-55-28_939_197667381386821930/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: SELECT key, max(value) AS c FROM src GROUP BY key HAVING key != 302
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: file:/tmp/sdong/hive_2011-02-10_01-55-28_939_197667381386821930/-mr-10000
+#### A masked pattern was here ####
 0	val_0
 10	val_10
 100	val_100
@@ -568,11 +568,11 @@ STAGE PLANS:
 PREHOOK: query: SELECT key FROM src GROUP BY key HAVING max(value) > "val_255"
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/tmp/sdong/hive_2011-02-10_01-55-32_510_2871147486749455087/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: SELECT key FROM src GROUP BY key HAVING max(value) > "val_255"
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: file:/tmp/sdong/hive_2011-02-10_01-55-32_510_2871147486749455087/-mr-10000
+#### A masked pattern was here ####
 256
 257
 258
@@ -856,11 +856,11 @@ STAGE PLANS:
 PREHOOK: query: SELECT key FROM src where key > 300 GROUP BY key HAVING max(value) > "val_255"
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/tmp/sdong/hive_2011-02-10_01-55-36_115_3214302557613052494/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: SELECT key FROM src where key > 300 GROUP BY key HAVING max(value) > "val_255"
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: file:/tmp/sdong/hive_2011-02-10_01-55-36_115_3214302557613052494/-mr-10000
+#### A masked pattern was here ####
 302
 305
 306
@@ -1068,11 +1068,11 @@ STAGE PLANS:
 PREHOOK: query: SELECT key, max(value) FROM src GROUP BY key HAVING max(value) > "val_255"
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/tmp/sdong/hive_2011-02-10_01-55-39_727_9028145327249190888/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: SELECT key, max(value) FROM src GROUP BY key HAVING max(value) > "val_255"
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: file:/tmp/sdong/hive_2011-02-10_01-55-39_727_9028145327249190888/-mr-10000
+#### A masked pattern was here ####
 256	val_256
 257	val_257
 258	val_258

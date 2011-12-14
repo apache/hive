@@ -57,12 +57,12 @@ PREHOOK: query: SELECT example_arraysum(lint), example_mapconcat(mstringstring),
 FROM src_thrift
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src_thrift
-PREHOOK: Output: file:/tmp/sdong/hive_2011-02-16_20-11-09_082_4884854120866347184/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: SELECT example_arraysum(lint), example_mapconcat(mstringstring), example_structprint(lintstring[0])
 FROM src_thrift
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src_thrift
-POSTHOOK: Output: file:/tmp/sdong/hive_2011-02-16_20-11-09_082_4884854120866347184/-mr-10000
+#### A masked pattern was here ####
 0.0	(key_0:value_0)	(0:0)(1:0)(2:0)
 6.0	(key_1:value_1)	(0:1)(1:1)(2:1)
 12.0	(key_2:value_2)	(0:4)(1:8)(2:2)

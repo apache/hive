@@ -85,14 +85,14 @@ PREHOOK: query: SELECT concat_ws(dest1.c1, dest1.c2, dest1.c3),
        concat_ws('**', dest1.c1, NULL, dest1.c3) FROM dest1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@dest1
-PREHOOK: Output: file:/tmp/sdong/hive_2011-02-10_17-31-54_820_4315125671475097032/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: SELECT concat_ws(dest1.c1, dest1.c2, dest1.c3),
        concat_ws(',', dest1.c1, dest1.c2, dest1.c3),
        concat_ws(NULL, dest1.c1, dest1.c2, dest1.c3),
        concat_ws('**', dest1.c1, NULL, dest1.c3) FROM dest1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@dest1
-POSTHOOK: Output: file:/tmp/sdong/hive_2011-02-10_17-31-54_820_4315125671475097032/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: Lineage: dest1.c1 SIMPLE []
 POSTHOOK: Lineage: dest1.c2 SIMPLE []
 POSTHOOK: Lineage: dest1.c3 SIMPLE []

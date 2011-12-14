@@ -92,13 +92,13 @@ PREHOOK: query: SELECT SUM(HASH(c)) FROM (
 ) t
 PREHOOK: type: QUERY
 PREHOOK: Input: default@insert_into5a
-PREHOOK: Output: file:/tmp/franklin/hive_2011-06-06_17-44-17_923_6176118754536072048/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: SELECT SUM(HASH(c)) FROM (
     SELECT TRANSFORM(*) USING 'tr \t _' AS (c) FROM insert_into5a
 ) t
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@insert_into5a
-POSTHOOK: Output: file:/tmp/franklin/hive_2011-06-06_17-44-17_923_6176118754536072048/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: Lineage: insert_into5a.key SIMPLE []
 POSTHOOK: Lineage: insert_into5a.value SIMPLE []
 481928560
@@ -149,7 +149,7 @@ STAGE PLANS:
     Move Operator
       files:
           hdfs directory: true
-          destination: pfile:/data/users/franklin/hive-insert-into/build/ql/scratchdir/hive_2011-06-06_17-44-21_154_3370686062288658221/-ext-10000
+#### A masked pattern was here ####
 
   Stage: Stage-0
     Move Operator
@@ -167,7 +167,7 @@ STAGE PLANS:
   Stage: Stage-3
     Map Reduce
       Alias -> Map Operator Tree:
-        pfile:/data/users/franklin/hive-insert-into/build/ql/scratchdir/hive_2011-06-06_17-44-21_154_3370686062288658221/-ext-10002 
+#### A masked pattern was here ####
             File Output Operator
               compressed: false
               GlobalTableId: 0
@@ -195,13 +195,13 @@ PREHOOK: query: SELECT SUM(HASH(c)) FROM (
 ) t
 PREHOOK: type: QUERY
 PREHOOK: Input: default@insert_into5a
-PREHOOK: Output: file:/tmp/franklin/hive_2011-06-06_17-44-25_647_5025300298938986801/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: SELECT SUM(HASH(c)) FROM (
     SELECT TRANSFORM(*) USING 'tr \t _' AS (c) FROM insert_into5a
 ) t
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@insert_into5a
-POSTHOOK: Output: file:/tmp/franklin/hive_2011-06-06_17-44-25_647_5025300298938986801/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: Lineage: insert_into5a.key SIMPLE []
 POSTHOOK: Lineage: insert_into5a.key SIMPLE [(insert_into5a)insert_into5a.FieldSchema(name:key, type:int, comment:null), ]
 POSTHOOK: Lineage: insert_into5a.value SIMPLE []
@@ -258,7 +258,7 @@ STAGE PLANS:
     Move Operator
       files:
           hdfs directory: true
-          destination: pfile:/data/users/franklin/hive-insert-into/build/ql/scratchdir/hive_2011-06-06_17-44-29_142_2886364868937075209/-ext-10000
+#### A masked pattern was here ####
 
   Stage: Stage-0
     Move Operator
@@ -278,7 +278,7 @@ STAGE PLANS:
   Stage: Stage-3
     Map Reduce
       Alias -> Map Operator Tree:
-        pfile:/data/users/franklin/hive-insert-into/build/ql/scratchdir/hive_2011-06-06_17-44-29_142_2886364868937075209/-ext-10002 
+#### A masked pattern was here ####
             File Output Operator
               compressed: false
               GlobalTableId: 0
@@ -308,13 +308,13 @@ PREHOOK: query: SELECT SUM(HASH(c)) FROM (
 ) t
 PREHOOK: type: QUERY
 PREHOOK: Input: default@insert_into5b@ds=1
-PREHOOK: Output: file:/tmp/franklin/hive_2011-06-06_17-44-34_795_7519132910183003017/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: SELECT SUM(HASH(c)) FROM (
     SELECT TRANSFORM(*) USING 'tr \t _' AS (c) FROM insert_into5b
 ) t
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@insert_into5b@ds=1
-POSTHOOK: Output: file:/tmp/franklin/hive_2011-06-06_17-44-34_795_7519132910183003017/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: Lineage: insert_into5a.key SIMPLE []
 POSTHOOK: Lineage: insert_into5a.key SIMPLE [(insert_into5a)insert_into5a.FieldSchema(name:key, type:int, comment:null), ]
 POSTHOOK: Lineage: insert_into5a.value SIMPLE []
@@ -375,7 +375,7 @@ STAGE PLANS:
     Move Operator
       files:
           hdfs directory: true
-          destination: pfile:/data/users/franklin/hive-insert-into/build/ql/scratchdir/hive_2011-06-06_17-44-38_473_3874374994199534320/-ext-10000
+#### A masked pattern was here ####
 
   Stage: Stage-0
     Move Operator
@@ -395,7 +395,7 @@ STAGE PLANS:
   Stage: Stage-3
     Map Reduce
       Alias -> Map Operator Tree:
-        pfile:/data/users/franklin/hive-insert-into/build/ql/scratchdir/hive_2011-06-06_17-44-38_473_3874374994199534320/-ext-10002 
+#### A masked pattern was here ####
             File Output Operator
               compressed: false
               GlobalTableId: 0
@@ -429,13 +429,13 @@ PREHOOK: query: SELECT SUM(HASH(c)) FROM (
 ) t
 PREHOOK: type: QUERY
 PREHOOK: Input: default@insert_into5b@ds=1
-PREHOOK: Output: file:/tmp/franklin/hive_2011-06-06_17-44-43_118_6250546739034036776/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: SELECT SUM(HASH(c)) FROM (
     SELECT TRANSFORM(*) USING 'tr \t _' AS (c) FROM insert_into5b
 ) t
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@insert_into5b@ds=1
-POSTHOOK: Output: file:/tmp/franklin/hive_2011-06-06_17-44-43_118_6250546739034036776/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: Lineage: insert_into5a.key SIMPLE []
 POSTHOOK: Lineage: insert_into5a.key SIMPLE [(insert_into5a)insert_into5a.FieldSchema(name:key, type:int, comment:null), ]
 POSTHOOK: Lineage: insert_into5a.value SIMPLE []

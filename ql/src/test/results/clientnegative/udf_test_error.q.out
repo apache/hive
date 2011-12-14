@@ -5,7 +5,7 @@ POSTHOOK: type: CREATEFUNCTION
 PREHOOK: query: SELECT test_error(key < 125 OR key > 130) FROM src
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/tmp/salbiz/hive_2011-08-02_17-12-52_827_5964651401121748786/-mr-10000
+#### A masked pattern was here ####
 Execution failed with exit status: 2
 Obtaining error information
 
@@ -15,5 +15,5 @@ Task ID:
 
 Logs:
 
-/data/users/salbiz/apache-hive/build/ql/tmp//hive.log
+#### A masked pattern was here ####
 FAILED: Execution Error, return code 2 from org.apache.hadoop.hive.ql.exec.MapRedTask

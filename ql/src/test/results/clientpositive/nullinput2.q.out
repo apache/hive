@@ -5,14 +5,14 @@ POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: default@nulltbl
 PREHOOK: query: select key from nulltbl where ds='101'
 PREHOOK: type: QUERY
-PREHOOK: Output: file:/tmp/jssarma/hive_2010-07-21_11-44-45_538_2037787558373086452/10000
+#### A masked pattern was here ####
 POSTHOOK: query: select key from nulltbl where ds='101'
 POSTHOOK: type: QUERY
-POSTHOOK: Output: file:/tmp/jssarma/hive_2010-07-21_11-44-45_538_2037787558373086452/10000
+#### A masked pattern was here ####
 PREHOOK: query: select count(1) from nulltbl where ds='101'
 PREHOOK: type: QUERY
-PREHOOK: Output: file:/tmp/jssarma/hive_2010-07-21_11-44-48_052_5788292989741758557/10000
+#### A masked pattern was here ####
 POSTHOOK: query: select count(1) from nulltbl where ds='101'
 POSTHOOK: type: QUERY
-POSTHOOK: Output: file:/tmp/jssarma/hive_2010-07-21_11-44-48_052_5788292989741758557/10000
+#### A masked pattern was here ####
 0

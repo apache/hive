@@ -24,12 +24,12 @@ PREHOOK: query: SELECT * FROM join_1to1_1 a join join_1to1_2 b on a.key1 = b.key
 PREHOOK: type: QUERY
 PREHOOK: Input: default@join_1to1_1
 PREHOOK: Input: default@join_1to1_2
-PREHOOK: Output: file:/var/folders/67/67R3POPtF90VG63KSmCbcU++F0U/-Tmp-/krishnak/hive_2011-03-21_00-20-29_153_819287332537414913/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: SELECT * FROM join_1to1_1 a join join_1to1_2 b on a.key1 = b.key1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@join_1to1_1
 POSTHOOK: Input: default@join_1to1_2
-POSTHOOK: Output: file:/var/folders/67/67R3POPtF90VG63KSmCbcU++F0U/-Tmp-/krishnak/hive_2011-03-21_00-20-29_153_819287332537414913/-mr-10000
+#### A masked pattern was here ####
 5	10005	66	5	10005	66
 20	10020	66	20	10020	66
 25	10025	88	25	10025	66
@@ -64,12 +64,12 @@ PREHOOK: query: SELECT * FROM join_1to1_1 a full outer join join_1to1_2 b on a.k
 PREHOOK: type: QUERY
 PREHOOK: Input: default@join_1to1_1
 PREHOOK: Input: default@join_1to1_2
-PREHOOK: Output: file:/var/folders/67/67R3POPtF90VG63KSmCbcU++F0U/-Tmp-/krishnak/hive_2011-03-21_00-20-37_205_3853401411582824516/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: SELECT * FROM join_1to1_1 a full outer join join_1to1_2 b on a.key1 = b.key1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@join_1to1_1
 POSTHOOK: Input: default@join_1to1_2
-POSTHOOK: Output: file:/var/folders/67/67R3POPtF90VG63KSmCbcU++F0U/-Tmp-/krishnak/hive_2011-03-21_00-20-37_205_3853401411582824516/-mr-10000
+#### A masked pattern was here ####
 NULL	NULL	66	NULL	NULL	NULL
 NULL	10050	66	NULL	NULL	NULL
 NULL	NULL	NULL	NULL	NULL	66
@@ -110,12 +110,12 @@ PREHOOK: query: SELECT * FROM join_1to1_1 a full outer join join_1to1_2 b on a.k
 PREHOOK: type: QUERY
 PREHOOK: Input: default@join_1to1_1
 PREHOOK: Input: default@join_1to1_2
-PREHOOK: Output: file:/var/folders/67/67R3POPtF90VG63KSmCbcU++F0U/-Tmp-/krishnak/hive_2011-03-21_00-20-45_133_5000785547018037129/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: SELECT * FROM join_1to1_1 a full outer join join_1to1_2 b on a.key1 = b.key1 and a.value = 66 and b.value = 66
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@join_1to1_1
 POSTHOOK: Input: default@join_1to1_2
-POSTHOOK: Output: file:/var/folders/67/67R3POPtF90VG63KSmCbcU++F0U/-Tmp-/krishnak/hive_2011-03-21_00-20-45_133_5000785547018037129/-mr-10000
+#### A masked pattern was here ####
 NULL	10050	66	NULL	NULL	NULL
 NULL	NULL	66	NULL	NULL	NULL
 NULL	NULL	NULL	NULL	NULL	66
@@ -141,12 +141,12 @@ PREHOOK: query: SELECT * FROM join_1to1_1 a full outer join join_1to1_2 b on a.k
 PREHOOK: type: QUERY
 PREHOOK: Input: default@join_1to1_1
 PREHOOK: Input: default@join_1to1_2
-PREHOOK: Output: file:/var/folders/67/67R3POPtF90VG63KSmCbcU++F0U/-Tmp-/krishnak/hive_2011-03-21_00-20-57_477_8268626202456442766/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: SELECT * FROM join_1to1_1 a full outer join join_1to1_2 b on a.key1 = b.key1 and a.key2 = b.key2
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@join_1to1_1
 POSTHOOK: Input: default@join_1to1_2
-POSTHOOK: Output: file:/var/folders/67/67R3POPtF90VG63KSmCbcU++F0U/-Tmp-/krishnak/hive_2011-03-21_00-20-57_477_8268626202456442766/-mr-10000
+#### A masked pattern was here ####
 NULL	NULL	66	NULL	NULL	NULL
 NULL	NULL	NULL	NULL	NULL	66
 NULL	10050	66	NULL	NULL	NULL
@@ -187,12 +187,12 @@ PREHOOK: query: SELECT * FROM join_1to1_1 a full outer join join_1to1_2 b on a.k
 PREHOOK: type: QUERY
 PREHOOK: Input: default@join_1to1_1
 PREHOOK: Input: default@join_1to1_2
-PREHOOK: Output: file:/var/folders/67/67R3POPtF90VG63KSmCbcU++F0U/-Tmp-/krishnak/hive_2011-03-21_00-21-07_530_5883037614503394382/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: SELECT * FROM join_1to1_1 a full outer join join_1to1_2 b on a.key1 = b.key1 and a.key2 = b.key2 and a.value = 66 and b.value = 66
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@join_1to1_1
 POSTHOOK: Input: default@join_1to1_2
-POSTHOOK: Output: file:/var/folders/67/67R3POPtF90VG63KSmCbcU++F0U/-Tmp-/krishnak/hive_2011-03-21_00-21-07_530_5883037614503394382/-mr-10000
+#### A masked pattern was here ####
 NULL	NULL	66	NULL	NULL	NULL
 NULL	NULL	NULL	NULL	NULL	66
 NULL	10050	66	NULL	NULL	NULL
@@ -218,12 +218,12 @@ PREHOOK: query: SELECT * FROM join_1to1_1 a join join_1to1_2 b on a.key1 = b.key
 PREHOOK: type: QUERY
 PREHOOK: Input: default@join_1to1_1
 PREHOOK: Input: default@join_1to1_2
-PREHOOK: Output: file:/var/folders/67/67R3POPtF90VG63KSmCbcU++F0U/-Tmp-/krishnak/hive_2011-03-21_00-21-18_282_7317084573894626898/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: SELECT * FROM join_1to1_1 a join join_1to1_2 b on a.key1 = b.key1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@join_1to1_1
 POSTHOOK: Input: default@join_1to1_2
-POSTHOOK: Output: file:/var/folders/67/67R3POPtF90VG63KSmCbcU++F0U/-Tmp-/krishnak/hive_2011-03-21_00-21-18_282_7317084573894626898/-mr-10000
+#### A masked pattern was here ####
 5	10005	66	5	10005	66
 20	10020	66	20	10020	66
 25	10025	88	25	10025	66
@@ -258,12 +258,12 @@ PREHOOK: query: SELECT * FROM join_1to1_1 a full outer join join_1to1_2 b on a.k
 PREHOOK: type: QUERY
 PREHOOK: Input: default@join_1to1_1
 PREHOOK: Input: default@join_1to1_2
-PREHOOK: Output: file:/var/folders/67/67R3POPtF90VG63KSmCbcU++F0U/-Tmp-/krishnak/hive_2011-03-21_00-21-28_780_2696570463196136436/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: SELECT * FROM join_1to1_1 a full outer join join_1to1_2 b on a.key1 = b.key1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@join_1to1_1
 POSTHOOK: Input: default@join_1to1_2
-POSTHOOK: Output: file:/var/folders/67/67R3POPtF90VG63KSmCbcU++F0U/-Tmp-/krishnak/hive_2011-03-21_00-21-28_780_2696570463196136436/-mr-10000
+#### A masked pattern was here ####
 NULL	NULL	66	NULL	NULL	NULL
 NULL	10050	66	NULL	NULL	NULL
 NULL	NULL	NULL	NULL	NULL	66
@@ -304,12 +304,12 @@ PREHOOK: query: SELECT * FROM join_1to1_1 a full outer join join_1to1_2 b on a.k
 PREHOOK: type: QUERY
 PREHOOK: Input: default@join_1to1_1
 PREHOOK: Input: default@join_1to1_2
-PREHOOK: Output: file:/var/folders/67/67R3POPtF90VG63KSmCbcU++F0U/-Tmp-/krishnak/hive_2011-03-21_00-21-42_434_1480667017077026029/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: SELECT * FROM join_1to1_1 a full outer join join_1to1_2 b on a.key1 = b.key1 and a.value = 66 and b.value = 66
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@join_1to1_1
 POSTHOOK: Input: default@join_1to1_2
-POSTHOOK: Output: file:/var/folders/67/67R3POPtF90VG63KSmCbcU++F0U/-Tmp-/krishnak/hive_2011-03-21_00-21-42_434_1480667017077026029/-mr-10000
+#### A masked pattern was here ####
 NULL	10050	66	NULL	NULL	NULL
 NULL	NULL	66	NULL	NULL	NULL
 NULL	NULL	NULL	NULL	NULL	66
@@ -335,12 +335,12 @@ PREHOOK: query: SELECT * FROM join_1to1_1 a full outer join join_1to1_2 b on a.k
 PREHOOK: type: QUERY
 PREHOOK: Input: default@join_1to1_1
 PREHOOK: Input: default@join_1to1_2
-PREHOOK: Output: file:/var/folders/67/67R3POPtF90VG63KSmCbcU++F0U/-Tmp-/krishnak/hive_2011-03-21_00-21-51_288_5512301142456705063/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: SELECT * FROM join_1to1_1 a full outer join join_1to1_2 b on a.key1 = b.key1 and a.key2 = b.key2
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@join_1to1_1
 POSTHOOK: Input: default@join_1to1_2
-POSTHOOK: Output: file:/var/folders/67/67R3POPtF90VG63KSmCbcU++F0U/-Tmp-/krishnak/hive_2011-03-21_00-21-51_288_5512301142456705063/-mr-10000
+#### A masked pattern was here ####
 NULL	NULL	66	NULL	NULL	NULL
 NULL	NULL	NULL	NULL	NULL	66
 NULL	10050	66	NULL	NULL	NULL
@@ -381,12 +381,12 @@ PREHOOK: query: SELECT * FROM join_1to1_1 a full outer join join_1to1_2 b on a.k
 PREHOOK: type: QUERY
 PREHOOK: Input: default@join_1to1_1
 PREHOOK: Input: default@join_1to1_2
-PREHOOK: Output: file:/var/folders/67/67R3POPtF90VG63KSmCbcU++F0U/-Tmp-/krishnak/hive_2011-03-21_00-22-02_120_8975661308229780900/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: SELECT * FROM join_1to1_1 a full outer join join_1to1_2 b on a.key1 = b.key1 and a.key2 = b.key2 and a.value = 66 and b.value = 66
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@join_1to1_1
 POSTHOOK: Input: default@join_1to1_2
-POSTHOOK: Output: file:/var/folders/67/67R3POPtF90VG63KSmCbcU++F0U/-Tmp-/krishnak/hive_2011-03-21_00-22-02_120_8975661308229780900/-mr-10000
+#### A masked pattern was here ####
 NULL	NULL	66	NULL	NULL	NULL
 NULL	NULL	NULL	NULL	NULL	66
 NULL	10050	66	NULL	NULL	NULL
@@ -412,12 +412,12 @@ PREHOOK: query: SELECT * FROM join_1to1_1 a join join_1to1_2 b on a.key1 = b.key
 PREHOOK: type: QUERY
 PREHOOK: Input: default@join_1to1_1
 PREHOOK: Input: default@join_1to1_2
-PREHOOK: Output: file:/var/folders/67/67R3POPtF90VG63KSmCbcU++F0U/-Tmp-/krishnak/hive_2011-03-21_00-22-12_482_4462251488601235627/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: SELECT * FROM join_1to1_1 a join join_1to1_2 b on a.key1 = b.key1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@join_1to1_1
 POSTHOOK: Input: default@join_1to1_2
-POSTHOOK: Output: file:/var/folders/67/67R3POPtF90VG63KSmCbcU++F0U/-Tmp-/krishnak/hive_2011-03-21_00-22-12_482_4462251488601235627/-mr-10000
+#### A masked pattern was here ####
 5	10005	66	5	10005	66
 20	10020	66	20	10020	66
 25	10025	88	25	10025	66
@@ -452,12 +452,12 @@ PREHOOK: query: SELECT * FROM join_1to1_1 a full outer join join_1to1_2 b on a.k
 PREHOOK: type: QUERY
 PREHOOK: Input: default@join_1to1_1
 PREHOOK: Input: default@join_1to1_2
-PREHOOK: Output: file:/var/folders/67/67R3POPtF90VG63KSmCbcU++F0U/-Tmp-/krishnak/hive_2011-03-21_00-22-23_225_2252852873807958052/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: SELECT * FROM join_1to1_1 a full outer join join_1to1_2 b on a.key1 = b.key1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@join_1to1_1
 POSTHOOK: Input: default@join_1to1_2
-POSTHOOK: Output: file:/var/folders/67/67R3POPtF90VG63KSmCbcU++F0U/-Tmp-/krishnak/hive_2011-03-21_00-22-23_225_2252852873807958052/-mr-10000
+#### A masked pattern was here ####
 NULL	NULL	66	NULL	NULL	NULL
 NULL	10050	66	NULL	NULL	NULL
 NULL	NULL	NULL	NULL	NULL	66
@@ -498,12 +498,12 @@ PREHOOK: query: SELECT * FROM join_1to1_1 a full outer join join_1to1_2 b on a.k
 PREHOOK: type: QUERY
 PREHOOK: Input: default@join_1to1_1
 PREHOOK: Input: default@join_1to1_2
-PREHOOK: Output: file:/var/folders/67/67R3POPtF90VG63KSmCbcU++F0U/-Tmp-/krishnak/hive_2011-03-21_00-22-36_933_7497927262929255928/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: SELECT * FROM join_1to1_1 a full outer join join_1to1_2 b on a.key1 = b.key1 and a.value = 66 and b.value = 66
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@join_1to1_1
 POSTHOOK: Input: default@join_1to1_2
-POSTHOOK: Output: file:/var/folders/67/67R3POPtF90VG63KSmCbcU++F0U/-Tmp-/krishnak/hive_2011-03-21_00-22-36_933_7497927262929255928/-mr-10000
+#### A masked pattern was here ####
 NULL	10050	66	NULL	NULL	NULL
 NULL	NULL	66	NULL	NULL	NULL
 NULL	NULL	NULL	NULL	NULL	66
@@ -529,12 +529,12 @@ PREHOOK: query: SELECT * FROM join_1to1_1 a full outer join join_1to1_2 b on a.k
 PREHOOK: type: QUERY
 PREHOOK: Input: default@join_1to1_1
 PREHOOK: Input: default@join_1to1_2
-PREHOOK: Output: file:/var/folders/67/67R3POPtF90VG63KSmCbcU++F0U/-Tmp-/krishnak/hive_2011-03-21_00-22-46_887_6402928547373416872/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: SELECT * FROM join_1to1_1 a full outer join join_1to1_2 b on a.key1 = b.key1 and a.key2 = b.key2
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@join_1to1_1
 POSTHOOK: Input: default@join_1to1_2
-POSTHOOK: Output: file:/var/folders/67/67R3POPtF90VG63KSmCbcU++F0U/-Tmp-/krishnak/hive_2011-03-21_00-22-46_887_6402928547373416872/-mr-10000
+#### A masked pattern was here ####
 NULL	NULL	66	NULL	NULL	NULL
 NULL	NULL	NULL	NULL	NULL	66
 NULL	10050	66	NULL	NULL	NULL
@@ -575,12 +575,12 @@ PREHOOK: query: SELECT * FROM join_1to1_1 a full outer join join_1to1_2 b on a.k
 PREHOOK: type: QUERY
 PREHOOK: Input: default@join_1to1_1
 PREHOOK: Input: default@join_1to1_2
-PREHOOK: Output: file:/var/folders/67/67R3POPtF90VG63KSmCbcU++F0U/-Tmp-/krishnak/hive_2011-03-21_00-22-57_346_2072799218057878640/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: SELECT * FROM join_1to1_1 a full outer join join_1to1_2 b on a.key1 = b.key1 and a.key2 = b.key2 and a.value = 66 and b.value = 66
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@join_1to1_1
 POSTHOOK: Input: default@join_1to1_2
-POSTHOOK: Output: file:/var/folders/67/67R3POPtF90VG63KSmCbcU++F0U/-Tmp-/krishnak/hive_2011-03-21_00-22-57_346_2072799218057878640/-mr-10000
+#### A masked pattern was here ####
 NULL	NULL	66	NULL	NULL	NULL
 NULL	NULL	NULL	NULL	NULL	66
 NULL	10050	66	NULL	NULL	NULL
@@ -606,12 +606,12 @@ PREHOOK: query: SELECT * FROM join_1to1_1 a join join_1to1_2 b on a.key1 = b.key
 PREHOOK: type: QUERY
 PREHOOK: Input: default@join_1to1_1
 PREHOOK: Input: default@join_1to1_2
-PREHOOK: Output: file:/var/folders/67/67R3POPtF90VG63KSmCbcU++F0U/-Tmp-/krishnak/hive_2011-03-21_00-23-08_081_7330385664639520823/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: SELECT * FROM join_1to1_1 a join join_1to1_2 b on a.key1 = b.key1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@join_1to1_1
 POSTHOOK: Input: default@join_1to1_2
-POSTHOOK: Output: file:/var/folders/67/67R3POPtF90VG63KSmCbcU++F0U/-Tmp-/krishnak/hive_2011-03-21_00-23-08_081_7330385664639520823/-mr-10000
+#### A masked pattern was here ####
 5	10005	66	5	10005	66
 20	10020	66	20	10020	66
 25	10025	88	25	10025	66
@@ -646,12 +646,12 @@ PREHOOK: query: SELECT * FROM join_1to1_1 a full outer join join_1to1_2 b on a.k
 PREHOOK: type: QUERY
 PREHOOK: Input: default@join_1to1_1
 PREHOOK: Input: default@join_1to1_2
-PREHOOK: Output: file:/var/folders/67/67R3POPtF90VG63KSmCbcU++F0U/-Tmp-/krishnak/hive_2011-03-21_00-23-20_605_1212073981863777868/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: SELECT * FROM join_1to1_1 a full outer join join_1to1_2 b on a.key1 = b.key1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@join_1to1_1
 POSTHOOK: Input: default@join_1to1_2
-POSTHOOK: Output: file:/var/folders/67/67R3POPtF90VG63KSmCbcU++F0U/-Tmp-/krishnak/hive_2011-03-21_00-23-20_605_1212073981863777868/-mr-10000
+#### A masked pattern was here ####
 NULL	NULL	66	NULL	NULL	NULL
 NULL	10050	66	NULL	NULL	NULL
 NULL	NULL	NULL	NULL	NULL	66
@@ -692,12 +692,12 @@ PREHOOK: query: SELECT * FROM join_1to1_1 a full outer join join_1to1_2 b on a.k
 PREHOOK: type: QUERY
 PREHOOK: Input: default@join_1to1_1
 PREHOOK: Input: default@join_1to1_2
-PREHOOK: Output: file:/var/folders/67/67R3POPtF90VG63KSmCbcU++F0U/-Tmp-/krishnak/hive_2011-03-21_00-23-32_030_1376413216376519019/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: SELECT * FROM join_1to1_1 a full outer join join_1to1_2 b on a.key1 = b.key1 and a.value = 66 and b.value = 66
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@join_1to1_1
 POSTHOOK: Input: default@join_1to1_2
-POSTHOOK: Output: file:/var/folders/67/67R3POPtF90VG63KSmCbcU++F0U/-Tmp-/krishnak/hive_2011-03-21_00-23-32_030_1376413216376519019/-mr-10000
+#### A masked pattern was here ####
 NULL	NULL	66	NULL	NULL	NULL
 NULL	10050	66	NULL	NULL	NULL
 NULL	NULL	NULL	NULL	NULL	66
@@ -749,12 +749,12 @@ PREHOOK: query: SELECT * FROM join_1to1_1 a full outer join join_1to1_2 b on a.k
 PREHOOK: type: QUERY
 PREHOOK: Input: default@join_1to1_1
 PREHOOK: Input: default@join_1to1_2
-PREHOOK: Output: file:/var/folders/67/67R3POPtF90VG63KSmCbcU++F0U/-Tmp-/krishnak/hive_2011-03-21_00-23-41_827_8885174767015375192/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: SELECT * FROM join_1to1_1 a full outer join join_1to1_2 b on a.key1 = b.key1 and a.key2 = b.key2
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@join_1to1_1
 POSTHOOK: Input: default@join_1to1_2
-POSTHOOK: Output: file:/var/folders/67/67R3POPtF90VG63KSmCbcU++F0U/-Tmp-/krishnak/hive_2011-03-21_00-23-41_827_8885174767015375192/-mr-10000
+#### A masked pattern was here ####
 NULL	NULL	66	NULL	NULL	NULL
 NULL	NULL	NULL	NULL	NULL	66
 NULL	10050	66	NULL	NULL	NULL
@@ -795,12 +795,12 @@ PREHOOK: query: SELECT * FROM join_1to1_1 a full outer join join_1to1_2 b on a.k
 PREHOOK: type: QUERY
 PREHOOK: Input: default@join_1to1_1
 PREHOOK: Input: default@join_1to1_2
-PREHOOK: Output: file:/var/folders/67/67R3POPtF90VG63KSmCbcU++F0U/-Tmp-/krishnak/hive_2011-03-21_00-23-51_892_5107339076100535083/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: SELECT * FROM join_1to1_1 a full outer join join_1to1_2 b on a.key1 = b.key1 and a.key2 = b.key2 and a.value = 66 and b.value = 66
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@join_1to1_1
 POSTHOOK: Input: default@join_1to1_2
-POSTHOOK: Output: file:/var/folders/67/67R3POPtF90VG63KSmCbcU++F0U/-Tmp-/krishnak/hive_2011-03-21_00-23-51_892_5107339076100535083/-mr-10000
+#### A masked pattern was here ####
 NULL	NULL	66	NULL	NULL	NULL
 NULL	NULL	NULL	NULL	NULL	66
 NULL	10050	66	NULL	NULL	NULL
@@ -852,12 +852,12 @@ PREHOOK: query: SELECT * FROM join_1to1_1 a join join_1to1_2 b on a.key1 = b.key
 PREHOOK: type: QUERY
 PREHOOK: Input: default@join_1to1_1
 PREHOOK: Input: default@join_1to1_2
-PREHOOK: Output: file:/var/folders/67/67R3POPtF90VG63KSmCbcU++F0U/-Tmp-/krishnak/hive_2011-03-21_00-24-05_457_7734550160785374741/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: SELECT * FROM join_1to1_1 a join join_1to1_2 b on a.key1 = b.key1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@join_1to1_1
 POSTHOOK: Input: default@join_1to1_2
-POSTHOOK: Output: file:/var/folders/67/67R3POPtF90VG63KSmCbcU++F0U/-Tmp-/krishnak/hive_2011-03-21_00-24-05_457_7734550160785374741/-mr-10000
+#### A masked pattern was here ####
 5	10005	66	5	10005	66
 20	10020	66	20	10020	66
 25	10025	88	25	10025	66
@@ -892,12 +892,12 @@ PREHOOK: query: SELECT * FROM join_1to1_1 a full outer join join_1to1_2 b on a.k
 PREHOOK: type: QUERY
 PREHOOK: Input: default@join_1to1_1
 PREHOOK: Input: default@join_1to1_2
-PREHOOK: Output: file:/var/folders/67/67R3POPtF90VG63KSmCbcU++F0U/-Tmp-/krishnak/hive_2011-03-21_00-24-15_398_6526838758701035060/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: SELECT * FROM join_1to1_1 a full outer join join_1to1_2 b on a.key1 = b.key1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@join_1to1_1
 POSTHOOK: Input: default@join_1to1_2
-POSTHOOK: Output: file:/var/folders/67/67R3POPtF90VG63KSmCbcU++F0U/-Tmp-/krishnak/hive_2011-03-21_00-24-15_398_6526838758701035060/-mr-10000
+#### A masked pattern was here ####
 NULL	NULL	66	NULL	NULL	NULL
 NULL	10050	66	NULL	NULL	NULL
 NULL	NULL	NULL	NULL	NULL	66
@@ -938,12 +938,12 @@ PREHOOK: query: SELECT * FROM join_1to1_1 a full outer join join_1to1_2 b on a.k
 PREHOOK: type: QUERY
 PREHOOK: Input: default@join_1to1_1
 PREHOOK: Input: default@join_1to1_2
-PREHOOK: Output: file:/var/folders/67/67R3POPtF90VG63KSmCbcU++F0U/-Tmp-/krishnak/hive_2011-03-21_00-24-25_841_5052384962414662963/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: SELECT * FROM join_1to1_1 a full outer join join_1to1_2 b on a.key1 = b.key1 and a.value = 66 and b.value = 66
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@join_1to1_1
 POSTHOOK: Input: default@join_1to1_2
-POSTHOOK: Output: file:/var/folders/67/67R3POPtF90VG63KSmCbcU++F0U/-Tmp-/krishnak/hive_2011-03-21_00-24-25_841_5052384962414662963/-mr-10000
+#### A masked pattern was here ####
 NULL	NULL	66	NULL	NULL	NULL
 NULL	10050	66	NULL	NULL	NULL
 NULL	NULL	NULL	NULL	NULL	66
@@ -995,12 +995,12 @@ PREHOOK: query: SELECT * FROM join_1to1_1 a full outer join join_1to1_2 b on a.k
 PREHOOK: type: QUERY
 PREHOOK: Input: default@join_1to1_1
 PREHOOK: Input: default@join_1to1_2
-PREHOOK: Output: file:/var/folders/67/67R3POPtF90VG63KSmCbcU++F0U/-Tmp-/krishnak/hive_2011-03-21_00-24-36_374_5468030835311850505/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: SELECT * FROM join_1to1_1 a full outer join join_1to1_2 b on a.key1 = b.key1 and a.key2 = b.key2
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@join_1to1_1
 POSTHOOK: Input: default@join_1to1_2
-POSTHOOK: Output: file:/var/folders/67/67R3POPtF90VG63KSmCbcU++F0U/-Tmp-/krishnak/hive_2011-03-21_00-24-36_374_5468030835311850505/-mr-10000
+#### A masked pattern was here ####
 NULL	NULL	66	NULL	NULL	NULL
 NULL	NULL	NULL	NULL	NULL	66
 NULL	10050	66	NULL	NULL	NULL
@@ -1041,12 +1041,12 @@ PREHOOK: query: SELECT * FROM join_1to1_1 a full outer join join_1to1_2 b on a.k
 PREHOOK: type: QUERY
 PREHOOK: Input: default@join_1to1_1
 PREHOOK: Input: default@join_1to1_2
-PREHOOK: Output: file:/var/folders/67/67R3POPtF90VG63KSmCbcU++F0U/-Tmp-/krishnak/hive_2011-03-21_00-24-49_065_6955091567995311011/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: SELECT * FROM join_1to1_1 a full outer join join_1to1_2 b on a.key1 = b.key1 and a.key2 = b.key2 and a.value = 66 and b.value = 66
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@join_1to1_1
 POSTHOOK: Input: default@join_1to1_2
-POSTHOOK: Output: file:/var/folders/67/67R3POPtF90VG63KSmCbcU++F0U/-Tmp-/krishnak/hive_2011-03-21_00-24-49_065_6955091567995311011/-mr-10000
+#### A masked pattern was here ####
 NULL	NULL	66	NULL	NULL	NULL
 NULL	NULL	NULL	NULL	NULL	66
 NULL	10050	66	NULL	NULL	NULL
@@ -1098,12 +1098,12 @@ PREHOOK: query: SELECT * FROM join_1to1_1 a join join_1to1_2 b on a.key1 = b.key
 PREHOOK: type: QUERY
 PREHOOK: Input: default@join_1to1_1
 PREHOOK: Input: default@join_1to1_2
-PREHOOK: Output: file:/var/folders/67/67R3POPtF90VG63KSmCbcU++F0U/-Tmp-/krishnak/hive_2011-03-21_00-24-59_560_3592561556746118709/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: SELECT * FROM join_1to1_1 a join join_1to1_2 b on a.key1 = b.key1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@join_1to1_1
 POSTHOOK: Input: default@join_1to1_2
-POSTHOOK: Output: file:/var/folders/67/67R3POPtF90VG63KSmCbcU++F0U/-Tmp-/krishnak/hive_2011-03-21_00-24-59_560_3592561556746118709/-mr-10000
+#### A masked pattern was here ####
 5	10005	66	5	10005	66
 20	10020	66	20	10020	66
 25	10025	88	25	10025	66
@@ -1138,12 +1138,12 @@ PREHOOK: query: SELECT * FROM join_1to1_1 a full outer join join_1to1_2 b on a.k
 PREHOOK: type: QUERY
 PREHOOK: Input: default@join_1to1_1
 PREHOOK: Input: default@join_1to1_2
-PREHOOK: Output: file:/var/folders/67/67R3POPtF90VG63KSmCbcU++F0U/-Tmp-/krishnak/hive_2011-03-21_00-25-10_152_5451154587710613858/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: SELECT * FROM join_1to1_1 a full outer join join_1to1_2 b on a.key1 = b.key1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@join_1to1_1
 POSTHOOK: Input: default@join_1to1_2
-POSTHOOK: Output: file:/var/folders/67/67R3POPtF90VG63KSmCbcU++F0U/-Tmp-/krishnak/hive_2011-03-21_00-25-10_152_5451154587710613858/-mr-10000
+#### A masked pattern was here ####
 NULL	NULL	66	NULL	NULL	NULL
 NULL	10050	66	NULL	NULL	NULL
 NULL	NULL	NULL	NULL	NULL	66
@@ -1184,12 +1184,12 @@ PREHOOK: query: SELECT * FROM join_1to1_1 a full outer join join_1to1_2 b on a.k
 PREHOOK: type: QUERY
 PREHOOK: Input: default@join_1to1_1
 PREHOOK: Input: default@join_1to1_2
-PREHOOK: Output: file:/var/folders/67/67R3POPtF90VG63KSmCbcU++F0U/-Tmp-/krishnak/hive_2011-03-21_00-25-19_903_3097300389666559778/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: SELECT * FROM join_1to1_1 a full outer join join_1to1_2 b on a.key1 = b.key1 and a.value = 66 and b.value = 66
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@join_1to1_1
 POSTHOOK: Input: default@join_1to1_2
-POSTHOOK: Output: file:/var/folders/67/67R3POPtF90VG63KSmCbcU++F0U/-Tmp-/krishnak/hive_2011-03-21_00-25-19_903_3097300389666559778/-mr-10000
+#### A masked pattern was here ####
 NULL	NULL	66	NULL	NULL	NULL
 NULL	10050	66	NULL	NULL	NULL
 NULL	NULL	NULL	NULL	NULL	66
@@ -1241,12 +1241,12 @@ PREHOOK: query: SELECT * FROM join_1to1_1 a full outer join join_1to1_2 b on a.k
 PREHOOK: type: QUERY
 PREHOOK: Input: default@join_1to1_1
 PREHOOK: Input: default@join_1to1_2
-PREHOOK: Output: file:/var/folders/67/67R3POPtF90VG63KSmCbcU++F0U/-Tmp-/krishnak/hive_2011-03-21_00-25-32_785_5133007163551739713/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: SELECT * FROM join_1to1_1 a full outer join join_1to1_2 b on a.key1 = b.key1 and a.key2 = b.key2
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@join_1to1_1
 POSTHOOK: Input: default@join_1to1_2
-POSTHOOK: Output: file:/var/folders/67/67R3POPtF90VG63KSmCbcU++F0U/-Tmp-/krishnak/hive_2011-03-21_00-25-32_785_5133007163551739713/-mr-10000
+#### A masked pattern was here ####
 NULL	NULL	66	NULL	NULL	NULL
 NULL	NULL	NULL	NULL	NULL	66
 NULL	10050	66	NULL	NULL	NULL
@@ -1287,12 +1287,12 @@ PREHOOK: query: SELECT * FROM join_1to1_1 a full outer join join_1to1_2 b on a.k
 PREHOOK: type: QUERY
 PREHOOK: Input: default@join_1to1_1
 PREHOOK: Input: default@join_1to1_2
-PREHOOK: Output: file:/var/folders/67/67R3POPtF90VG63KSmCbcU++F0U/-Tmp-/krishnak/hive_2011-03-21_00-25-43_923_6388278859724005632/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: SELECT * FROM join_1to1_1 a full outer join join_1to1_2 b on a.key1 = b.key1 and a.key2 = b.key2 and a.value = 66 and b.value = 66
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@join_1to1_1
 POSTHOOK: Input: default@join_1to1_2
-POSTHOOK: Output: file:/var/folders/67/67R3POPtF90VG63KSmCbcU++F0U/-Tmp-/krishnak/hive_2011-03-21_00-25-43_923_6388278859724005632/-mr-10000
+#### A masked pattern was here ####
 NULL	NULL	66	NULL	NULL	NULL
 NULL	NULL	NULL	NULL	NULL	66
 NULL	10050	66	NULL	NULL	NULL

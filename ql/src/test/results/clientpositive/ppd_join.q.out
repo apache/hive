@@ -136,7 +136,7 @@ ON src1.c1 = src2.c3 AND src1.c1 < '400'
 WHERE src1.c1 > '20' and (src1.c2 < 'val_50' or src1.c1 > '2') and (src2.c3 > '50' or src1.c1 < '50') and (src2.c3 <> '4')
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/tmp/charleschen/hive_2011-09-02_01-42-48_824_3632303142451515406/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: SELECT src1.c1, src2.c4 
 FROM
 (SELECT src.key as c1, src.value as c2 from src where src.key > '1' ) src1
@@ -146,7 +146,7 @@ ON src1.c1 = src2.c3 AND src1.c1 < '400'
 WHERE src1.c1 > '20' and (src1.c2 < 'val_50' or src1.c1 > '2') and (src2.c3 > '50' or src1.c1 < '50') and (src2.c3 <> '4')
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: file:/tmp/charleschen/hive_2011-09-02_01-42-48_824_3632303142451515406/-mr-10000
+#### A masked pattern was here ####
 200	val_200
 200	val_200
 200	val_200
@@ -691,7 +691,7 @@ ON src1.c1 = src2.c3 AND src1.c1 < '400'
 WHERE src1.c1 > '20' and (src1.c2 < 'val_50' or src1.c1 > '2') and (src2.c3 > '50' or src1.c1 < '50') and (src2.c3 <> '4')
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/tmp/charleschen/hive_2011-09-02_01-42-51_952_8897790092802296390/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: SELECT src1.c1, src2.c4 
 FROM
 (SELECT src.key as c1, src.value as c2 from src where src.key > '1' ) src1
@@ -701,7 +701,7 @@ ON src1.c1 = src2.c3 AND src1.c1 < '400'
 WHERE src1.c1 > '20' and (src1.c2 < 'val_50' or src1.c1 > '2') and (src2.c3 > '50' or src1.c1 < '50') and (src2.c3 <> '4')
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: file:/tmp/charleschen/hive_2011-09-02_01-42-51_952_8897790092802296390/-mr-10000
+#### A masked pattern was here ####
 200	val_200
 200	val_200
 200	val_200

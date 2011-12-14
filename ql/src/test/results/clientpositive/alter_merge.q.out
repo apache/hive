@@ -26,8 +26,7 @@ PREHOOK: type: SHOW_TABLESTATUS
 POSTHOOK: query: show table extended like `src_rc_merge_test`
 POSTHOOK: type: SHOW_TABLESTATUS
 tableName:src_rc_merge_test
-owner:krishnak
-location:pfile:/Users/krishnak/Projects/hdp/sources/hive-git-apache/build/ql/test/data/warehouse/src_rc_merge_test
+#### A masked pattern was here ####
 inputformat:org.apache.hadoop.hive.ql.io.RCFileInputFormat
 outputformat:org.apache.hadoop.hive.ql.io.RCFileOutputFormat
 columns:struct columns { i32 key, string value}
@@ -37,26 +36,25 @@ totalNumberFiles:3
 totalFileSize:636
 maxFileSize:222
 minFileSize:206
-lastAccessTime:0
-lastUpdateTime:1300680902000
+#### A masked pattern was here ####
 
 PREHOOK: query: select count(1) from src_rc_merge_test
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src_rc_merge_test
-PREHOOK: Output: file:/var/folders/67/67R3POPtF90VG63KSmCbcU++F0U/-Tmp-/krishnak/hive_2011-03-20_21-15-02_678_8520633473198390721/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: select count(1) from src_rc_merge_test
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src_rc_merge_test
-POSTHOOK: Output: file:/var/folders/67/67R3POPtF90VG63KSmCbcU++F0U/-Tmp-/krishnak/hive_2011-03-20_21-15-02_678_8520633473198390721/-mr-10000
+#### A masked pattern was here ####
 15
 PREHOOK: query: select sum(hash(key)), sum(hash(value)) from src_rc_merge_test
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src_rc_merge_test
-PREHOOK: Output: file:/var/folders/67/67R3POPtF90VG63KSmCbcU++F0U/-Tmp-/krishnak/hive_2011-03-20_21-15-10_671_3103325352622055634/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: select sum(hash(key)), sum(hash(value)) from src_rc_merge_test
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src_rc_merge_test
-POSTHOOK: Output: file:/var/folders/67/67R3POPtF90VG63KSmCbcU++F0U/-Tmp-/krishnak/hive_2011-03-20_21-15-10_671_3103325352622055634/-mr-10000
+#### A masked pattern was here ####
 214	-7678496319
 PREHOOK: query: alter table src_rc_merge_test concatenate
 PREHOOK: type: ALTER_TABLE_MERGE
@@ -71,8 +69,7 @@ PREHOOK: type: SHOW_TABLESTATUS
 POSTHOOK: query: show table extended like `src_rc_merge_test`
 POSTHOOK: type: SHOW_TABLESTATUS
 tableName:src_rc_merge_test
-owner:krishnak
-location:pfile:/Users/krishnak/Projects/hdp/sources/hive-git-apache/build/ql/test/data/warehouse/src_rc_merge_test
+#### A masked pattern was here ####
 inputformat:org.apache.hadoop.hive.ql.io.RCFileInputFormat
 outputformat:org.apache.hadoop.hive.ql.io.RCFileOutputFormat
 columns:struct columns { i32 key, string value}
@@ -82,26 +79,25 @@ totalNumberFiles:1
 totalFileSize:334
 maxFileSize:334
 minFileSize:334
-lastAccessTime:0
-lastUpdateTime:1300680922000
+#### A masked pattern was here ####
 
 PREHOOK: query: select count(1) from src_rc_merge_test
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src_rc_merge_test
-PREHOOK: Output: file:/var/folders/67/67R3POPtF90VG63KSmCbcU++F0U/-Tmp-/krishnak/hive_2011-03-20_21-15-23_887_8242125214309556968/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: select count(1) from src_rc_merge_test
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src_rc_merge_test
-POSTHOOK: Output: file:/var/folders/67/67R3POPtF90VG63KSmCbcU++F0U/-Tmp-/krishnak/hive_2011-03-20_21-15-23_887_8242125214309556968/-mr-10000
+#### A masked pattern was here ####
 15
 PREHOOK: query: select sum(hash(key)), sum(hash(value)) from src_rc_merge_test
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src_rc_merge_test
-PREHOOK: Output: file:/var/folders/67/67R3POPtF90VG63KSmCbcU++F0U/-Tmp-/krishnak/hive_2011-03-20_21-15-31_244_4854539946976169821/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: select sum(hash(key)), sum(hash(value)) from src_rc_merge_test
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src_rc_merge_test
-POSTHOOK: Output: file:/var/folders/67/67R3POPtF90VG63KSmCbcU++F0U/-Tmp-/krishnak/hive_2011-03-20_21-15-31_244_4854539946976169821/-mr-10000
+#### A masked pattern was here ####
 214	-7678496319
 PREHOOK: query: create table src_rc_merge_test_part(key int, value string) partitioned by (ds string) stored as rcfile
 PREHOOK: type: CREATETABLE
@@ -138,8 +134,7 @@ PREHOOK: type: SHOW_TABLESTATUS
 POSTHOOK: query: show table extended like `src_rc_merge_test_part` partition (ds='2011')
 POSTHOOK: type: SHOW_TABLESTATUS
 tableName:src_rc_merge_test_part
-owner:krishnak
-location:pfile:/Users/krishnak/Projects/hdp/sources/hive-git-apache/build/ql/test/data/warehouse/src_rc_merge_test_part/ds=2011
+#### A masked pattern was here ####
 inputformat:org.apache.hadoop.hive.ql.io.RCFileInputFormat
 outputformat:org.apache.hadoop.hive.ql.io.RCFileOutputFormat
 columns:struct columns { i32 key, string value}
@@ -149,26 +144,25 @@ totalNumberFiles:3
 totalFileSize:636
 maxFileSize:222
 minFileSize:206
-lastAccessTime:0
-lastUpdateTime:1300680946000
+#### A masked pattern was here ####
 
 PREHOOK: query: select count(1) from src_rc_merge_test_part
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src_rc_merge_test_part@ds=2011
-PREHOOK: Output: file:/var/folders/67/67R3POPtF90VG63KSmCbcU++F0U/-Tmp-/krishnak/hive_2011-03-20_21-15-47_140_6546800621174301781/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: select count(1) from src_rc_merge_test_part
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src_rc_merge_test_part@ds=2011
-POSTHOOK: Output: file:/var/folders/67/67R3POPtF90VG63KSmCbcU++F0U/-Tmp-/krishnak/hive_2011-03-20_21-15-47_140_6546800621174301781/-mr-10000
+#### A masked pattern was here ####
 15
 PREHOOK: query: select sum(hash(key)), sum(hash(value)) from src_rc_merge_test_part
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src_rc_merge_test_part@ds=2011
-PREHOOK: Output: file:/var/folders/67/67R3POPtF90VG63KSmCbcU++F0U/-Tmp-/krishnak/hive_2011-03-20_21-15-58_930_7643638670315828175/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: select sum(hash(key)), sum(hash(value)) from src_rc_merge_test_part
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src_rc_merge_test_part@ds=2011
-POSTHOOK: Output: file:/var/folders/67/67R3POPtF90VG63KSmCbcU++F0U/-Tmp-/krishnak/hive_2011-03-20_21-15-58_930_7643638670315828175/-mr-10000
+#### A masked pattern was here ####
 214	-7678496319
 PREHOOK: query: alter table src_rc_merge_test_part partition (ds='2011') concatenate
 PREHOOK: type: ALTER_PARTITION_MERGE
@@ -183,8 +177,7 @@ PREHOOK: type: SHOW_TABLESTATUS
 POSTHOOK: query: show table extended like `src_rc_merge_test_part` partition (ds='2011')
 POSTHOOK: type: SHOW_TABLESTATUS
 tableName:src_rc_merge_test_part
-owner:krishnak
-location:pfile:/Users/krishnak/Projects/hdp/sources/hive-git-apache/build/ql/test/data/warehouse/src_rc_merge_test_part/ds=2011
+#### A masked pattern was here ####
 inputformat:org.apache.hadoop.hive.ql.io.RCFileInputFormat
 outputformat:org.apache.hadoop.hive.ql.io.RCFileOutputFormat
 columns:struct columns { i32 key, string value}
@@ -194,26 +187,25 @@ totalNumberFiles:1
 totalFileSize:334
 maxFileSize:334
 minFileSize:334
-lastAccessTime:0
-lastUpdateTime:1300680970000
+#### A masked pattern was here ####
 
 PREHOOK: query: select count(1) from src_rc_merge_test_part
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src_rc_merge_test_part@ds=2011
-PREHOOK: Output: file:/var/folders/67/67R3POPtF90VG63KSmCbcU++F0U/-Tmp-/krishnak/hive_2011-03-20_21-16-11_200_6628817362773769157/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: select count(1) from src_rc_merge_test_part
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src_rc_merge_test_part@ds=2011
-POSTHOOK: Output: file:/var/folders/67/67R3POPtF90VG63KSmCbcU++F0U/-Tmp-/krishnak/hive_2011-03-20_21-16-11_200_6628817362773769157/-mr-10000
+#### A masked pattern was here ####
 15
 PREHOOK: query: select sum(hash(key)), sum(hash(value)) from src_rc_merge_test_part
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src_rc_merge_test_part@ds=2011
-PREHOOK: Output: file:/var/folders/67/67R3POPtF90VG63KSmCbcU++F0U/-Tmp-/krishnak/hive_2011-03-20_21-16-17_532_734781450927092021/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: select sum(hash(key)), sum(hash(value)) from src_rc_merge_test_part
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src_rc_merge_test_part@ds=2011
-POSTHOOK: Output: file:/var/folders/67/67R3POPtF90VG63KSmCbcU++F0U/-Tmp-/krishnak/hive_2011-03-20_21-16-17_532_734781450927092021/-mr-10000
+#### A masked pattern was here ####
 214	-7678496319
 PREHOOK: query: drop table src_rc_merge_test
 PREHOOK: type: DROPTABLE

@@ -18,15 +18,13 @@ value               	string              	None
 	 	 
 # Detailed Table Information	 	 
 Database:           	default             	 
-Owner:              	franklin            	 
-CreateTime:         	Wed Aug 03 12:12:20 PDT 2011	 
-LastAccessTime:     	UNKNOWN             	 
+#### A masked pattern was here ####
 Protect Mode:       	None                	 
 Retention:          	0                   	 
-Location:           	pfile:/data/users/franklin/hive-stats/build/ql/test/data/warehouse/stats16	 
+#### A masked pattern was here ####
 Table Type:         	MANAGED_TABLE       	 
 Table Parameters:	 	 
-	transient_lastDdlTime	1312398740          
+#### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
 SerDe Library:      	org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe	 
@@ -71,12 +69,10 @@ value               	string              	None
 	 	 
 # Detailed Table Information	 	 
 Database:           	default             	 
-Owner:              	franklin            	 
-CreateTime:         	Wed Aug 03 12:12:20 PDT 2011	 
-LastAccessTime:     	UNKNOWN             	 
+#### A masked pattern was here ####
 Protect Mode:       	None                	 
 Retention:          	0                   	 
-Location:           	pfile:/data/users/franklin/hive-stats/build/ql/test/data/warehouse/stats16	 
+#### A masked pattern was here ####
 Table Type:         	MANAGED_TABLE       	 
 Table Parameters:	 	 
 	numFiles            	1                   
@@ -84,7 +80,7 @@ Table Parameters:
 	numRows             	500                 
 	rawDataSize         	5312                
 	totalSize           	5812                
-	transient_lastDdlTime	1312398749          
+#### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
 SerDe Library:      	org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe	 

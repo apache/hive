@@ -28,11 +28,11 @@ POSTHOOK: Lineage: dest1.value SCRIPT [(src)src.FieldSchema(name:key, type:strin
 PREHOOK: query: SELECT dest1.* FROM dest1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@dest1
-PREHOOK: Output: hdfs://localhost.localdomain:39190/data/users/njain/hive_commit1/build/ql/scratchdir/hive_2011-02-03_10-52-59_555_6132352806731305883/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: SELECT dest1.* FROM dest1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@dest1
-POSTHOOK: Output: hdfs://localhost.localdomain:39190/data/users/njain/hive_commit1/build/ql/scratchdir/hive_2011-02-03_10-52-59_555_6132352806731305883/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: Lineage: dest1.key SCRIPT [(src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: dest1.value SCRIPT [(src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:value, type:string, comment:default), ]
 10	val_10

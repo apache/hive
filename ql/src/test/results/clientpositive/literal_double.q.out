@@ -53,9 +53,9 @@ STAGE PLANS:
 PREHOOK: query: SELECT 3.14, -3.14, 3.14e8, 3.14e-8, -3.14e8, -3.14e-8, 3.14e+8, 3.14E8, 3.14E-8 FROM src LIMIT 1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/var/folders/71/h_j6fpg10r33hvx1lcxlgttcw61_4s/T/jonchang/hive_2011-10-31_11-47-48_679_6800913201570347877/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: SELECT 3.14, -3.14, 3.14e8, 3.14e-8, -3.14e8, -3.14e-8, 3.14e+8, 3.14E8, 3.14E-8 FROM src LIMIT 1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: file:/var/folders/71/h_j6fpg10r33hvx1lcxlgttcw61_4s/T/jonchang/hive_2011-10-31_11-47-48_679_6800913201570347877/-mr-10000
+#### A masked pattern was here ####
 3.14	-3.14	3.14E8	3.14E-8	-3.14E8	-3.14E-8	3.14E8	3.14E8	3.14E-8

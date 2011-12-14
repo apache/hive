@@ -15,21 +15,21 @@ PREHOOK: query: SELECT cos(null)
 FROM src LIMIT 1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/Users/carl/Projects/hd9/hive-trunk/build/ql/tmp/2017515612/10000
+#### A masked pattern was here ####
 POSTHOOK: query: SELECT cos(null)
 FROM src LIMIT 1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: file:/Users/carl/Projects/hd9/hive-trunk/build/ql/tmp/2017515612/10000
+#### A masked pattern was here ####
 NULL
 PREHOOK: query: SELECT cos(0.98), cos(1.57), cos(-0.5)
 FROM src LIMIT 1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/Users/carl/Projects/hd9/hive-trunk/build/ql/tmp/1873387849/10000
+#### A masked pattern was here ####
 POSTHOOK: query: SELECT cos(0.98), cos(1.57), cos(-0.5)
 FROM src LIMIT 1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: file:/Users/carl/Projects/hd9/hive-trunk/build/ql/tmp/1873387849/10000
+#### A masked pattern was here ####
 0.5570225467662173	7.963267107332633E-4	0.8775825618903728

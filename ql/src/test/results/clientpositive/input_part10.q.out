@@ -106,15 +106,15 @@ b	string
 ds	string	
 ts	string	
 	 	 
-Detailed Partition Information	Partition(values:[2008 04 08, 10:11:12=455], dbName:default, tableName:part_special, createTime:1297382403, lastAccessTime:0, sd:StorageDescriptor(cols:[FieldSchema(name:a, type:string, comment:null), FieldSchema(name:b, type:string, comment:null)], location:pfile:/data/users/sdong/www/open-source-hive1/build/ql/test/data/warehouse/part_special/ds=2008 04 08/ts=10%3A11%3A12%3D455, inputFormat:org.apache.hadoop.mapred.TextInputFormat, outputFormat:org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat, compressed:false, numBuckets:-1, serdeInfo:SerDeInfo(name:null, serializationLib:org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe, parameters:{serialization.format=1}), bucketCols:[], sortCols:[], parameters:{}), parameters:{numFiles=1, transient_lastDdlTime=1297382404, numRows=1, totalSize=4})	
+#### A masked pattern was here ####
 PREHOOK: query: SELECT * FROM part_special WHERE ds='2008 04 08' AND ts = '10:11:12=455'
 PREHOOK: type: QUERY
 PREHOOK: Input: default@part_special@ds=2008 04 08/ts=10%3A11%3A12%3D455
-PREHOOK: Output: file:/tmp/sdong/hive_2011-02-10_16-00-04_321_6686913417417877215/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: SELECT * FROM part_special WHERE ds='2008 04 08' AND ts = '10:11:12=455'
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@part_special@ds=2008 04 08/ts=10%3A11%3A12%3D455
-POSTHOOK: Output: file:/tmp/sdong/hive_2011-02-10_16-00-04_321_6686913417417877215/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: Lineage: part_special PARTITION(ds=2008 04 08,ts=10:11:12=455).a SIMPLE []
 POSTHOOK: Lineage: part_special PARTITION(ds=2008 04 08,ts=10:11:12=455).b SIMPLE []
 1	2	2008 04 08	10:11:12=455

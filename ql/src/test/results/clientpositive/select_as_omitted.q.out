@@ -73,7 +73,7 @@ PREHOOK: query: SELECT a, b FROM (
 ORDER BY a LIMIT 1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/tmp/sdong/hive_2011-02-10_17-04-31_466_7549947364806084065/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: SELECT a, b FROM (
   SELECT key a, value b
   FROM src
@@ -81,5 +81,5 @@ POSTHOOK: query: SELECT a, b FROM (
 ORDER BY a LIMIT 1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: file:/tmp/sdong/hive_2011-02-10_17-04-31_466_7549947364806084065/-mr-10000
+#### A masked pattern was here ####
 0	val_0

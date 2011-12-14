@@ -105,7 +105,7 @@ PREHOOK: query: SELECT elt(2, 'abc', 'defg'),
 FROM src LIMIT 1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/tmp/sdong/hive_2011-02-10_17-33-14_630_8074107803106807260/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: SELECT elt(2, 'abc', 'defg'),
        elt(3, 'aa', 'bb', 'cc', 'dd', 'ee', 'ff', 'gg'),
        elt('1', 'abc', 'defg'),
@@ -120,5 +120,5 @@ POSTHOOK: query: SELECT elt(2, 'abc', 'defg'),
 FROM src LIMIT 1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: file:/tmp/sdong/hive_2011-02-10_17-33-14_630_8074107803106807260/-mr-10000
+#### A masked pattern was here ####
 defg	cc	abc	2	12345	123456789012	1.25	16.0	NULL	NULL	NULL

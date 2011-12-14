@@ -58,10 +58,10 @@ PREHOOK: query: SELECT struct(1), struct(1, "a"), struct(1, "b", 1.5).col1, stru
 FROM src LIMIT 1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/tmp/sdong/hive_2011-02-10_17-42-02_911_4204596174028083779/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: SELECT struct(1), struct(1, "a"), struct(1, "b", 1.5).col1, struct(1, struct("a", 1.5)).col2.col1
 FROM src LIMIT 1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: file:/tmp/sdong/hive_2011-02-10_17-42-02_911_4204596174028083779/-mr-10000
+#### A masked pattern was here ####
 {"col1":1}	{"col1":1,"col2":"a"}	1	a

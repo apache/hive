@@ -50,7 +50,7 @@ STAGE PLANS:
   Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/tmp/sdong/hive_2011-02-10_15-57-49_662_8624774470586471481/-mr-10002 
+#### A masked pattern was here ####
             Reduce Output Operator
               key expressions:
                     expr: _col0
@@ -80,11 +80,11 @@ STAGE PLANS:
 PREHOOK: query: select * from src sort by key limit 10
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/tmp/sdong/hive_2011-02-10_15-57-49_754_6913553304641154292/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: select * from src sort by key limit 10
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: file:/tmp/sdong/hive_2011-02-10_15-57-49_754_6913553304641154292/-mr-10000
+#### A masked pattern was here ####
 0	val_0
 0	val_0
 0	val_0

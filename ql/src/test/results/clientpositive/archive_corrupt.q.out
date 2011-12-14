@@ -75,7 +75,7 @@ value	string	default
 ds	string	
 hr	string	
 	 	 
-Detailed Partition Information	Partition(values:[2008-04-08, 11], dbName:default, tableName:tstsrcpart, createTime:1312317091, lastAccessTime:0, sd:StorageDescriptor(cols:[FieldSchema(name:key, type:string, comment:default), FieldSchema(name:value, type:string, comment:default)], location:pfile:/data/users/marcin/hive/build/ql/test/data/warehouse/tstsrcpart/ds=2008-04-08/hr=11, inputFormat:org.apache.hadoop.mapred.TextInputFormat, outputFormat:org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat, compressed:false, numBuckets:-1, serdeInfo:SerDeInfo(name:null, serializationLib:org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe, parameters:{serialization.format=1}), bucketCols:[], sortCols:[], parameters:{}), parameters:{transient_lastDdlTime=1312317091})	
+#### A masked pattern was here ####
 PREHOOK: query: alter table tstsrcpart archive partition (ds='2008-04-08', hr='11')
 PREHOOK: type: ALTERTABLE_ARCHIVE
 PREHOOK: Input: default@tstsrcpart
@@ -105,7 +105,7 @@ value	string	default
 ds	string	
 hr	string	
 	 	 
-Detailed Partition Information	Partition(values:[2008-04-08, 11], dbName:default, tableName:tstsrcpart, createTime:1312317091, lastAccessTime:0, sd:StorageDescriptor(cols:[FieldSchema(name:key, type:string, comment:default), FieldSchema(name:value, type:string, comment:default)], location:har://pfile/data/users/marcin/hive/build/ql/test/data/warehouse/tstsrcpart/ds=2008-04-08/hr=11/data.har/data/users/marcin/hive/build/ql/test/data/warehouse/tstsrcpart/ds=2008-04-08/hr=11/, inputFormat:org.apache.hadoop.mapred.TextInputFormat, outputFormat:org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat, compressed:false, numBuckets:-1, serdeInfo:SerDeInfo(name:null, serializationLib:org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe, parameters:{serialization.format=1}), bucketCols:[], sortCols:[], parameters:{}), parameters:{archiving_offset=2, transient_lastDdlTime=1312317109, is_archived=true, original_location=pfile:/data/users/marcin/hive/build/ql/test/data/warehouse/tstsrcpart/ds=2008-04-08/hr=11})	
+#### A masked pattern was here ####
 PREHOOK: query: alter table tstsrcpart unarchive partition (ds='2008-04-08', hr='11')
 PREHOOK: type: ALTERTABLE_UNARCHIVE
 PREHOOK: Input: default@tstsrcpart

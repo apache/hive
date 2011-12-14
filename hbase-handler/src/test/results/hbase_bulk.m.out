@@ -12,7 +12,7 @@ create table hbsort(key string, val string, val2 string)
 stored as
 INPUTFORMAT 'org.apache.hadoop.mapred.TextInputFormat'
 OUTPUTFORMAT 'org.apache.hadoop.hive.hbase.HiveHFileOutputFormat'
-TBLPROPERTIES ('hfile.family.path' = '/tmp/hbsort/cf')
+#### A masked pattern was here ####
 PREHOOK: type: CREATETABLE
 POSTHOOK: query: -- this is a dummy table used for controlling how the HFiles are
 -- created
@@ -20,7 +20,7 @@ create table hbsort(key string, val string, val2 string)
 stored as
 INPUTFORMAT 'org.apache.hadoop.mapred.TextInputFormat'
 OUTPUTFORMAT 'org.apache.hadoop.hive.hbase.HiveHFileOutputFormat'
-TBLPROPERTIES ('hfile.family.path' = '/tmp/hbsort/cf')
+#### A masked pattern was here ####
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: default@hbsort
 PREHOOK: query: -- this is a dummy table used for controlling how the input file
@@ -48,7 +48,7 @@ POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: default@hbpartition
 PREHOOK: query: -- this should produce one file, but we do not
 -- know what it will be called, so we will copy it to a well known
--- filename /tmp/hbpartition.lst
+#### A masked pattern was here ####
 insert overwrite table hbpartition
 select distinct value
 from src
@@ -58,7 +58,7 @@ PREHOOK: Input: default@src
 PREHOOK: Output: default@hbpartition
 POSTHOOK: query: -- this should produce one file, but we do not
 -- know what it will be called, so we will copy it to a well known
--- filename /tmp/hbpartition.lst
+#### A masked pattern was here ####
 insert overwrite table hbpartition
 select distinct value
 from src
@@ -67,8 +67,7 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 POSTHOOK: Output: default@hbpartition
 POSTHOOK: Lineage: hbpartition.part_break SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-           1            1                139 hdfs://localhost.localdomain:37780/build/ql/test/data/warehouse/hbpartition
-PREHOOK: query: -- this should produce three files in /tmp/hbsort/cf
+#### A masked pattern was here ####
 -- include some trailing blanks and nulls to make sure we handle them correctly
 insert overwrite table hbsort
 select distinct value,
@@ -80,7 +79,7 @@ cluster by value
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
 PREHOOK: Output: default@hbsort
-POSTHOOK: query: -- this should produce three files in /tmp/hbsort/cf
+#### A masked pattern was here ####
 -- include some trailing blanks and nulls to make sure we handle them correctly
 insert overwrite table hbsort
 select distinct value,
@@ -96,20 +95,20 @@ POSTHOOK: Lineage: hbpartition.part_break SIMPLE [(src)src.FieldSchema(name:valu
 POSTHOOK: Lineage: hbsort.key SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: hbsort.val EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: hbsort.val2 EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-           1            3              23380 hdfs://localhost.localdomain:37780/tmp/hbsort/cf
+#### A masked pattern was here ####
 PREHOOK: query: -- To get the files out to your local filesystem for loading into
--- HBase, run mkdir -p /tmp/blah/cf, then uncomment and
+#### A masked pattern was here ####
 -- semicolon-terminate the line below before running this test:
--- dfs -copyToLocal /tmp/hbsort/cf/* /tmp/blah/cf
+#### A masked pattern was here ####
 
 drop table hbsort
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@hbsort
 PREHOOK: Output: default@hbsort
 POSTHOOK: query: -- To get the files out to your local filesystem for loading into
--- HBase, run mkdir -p /tmp/blah/cf, then uncomment and
+#### A masked pattern was here ####
 -- semicolon-terminate the line below before running this test:
--- dfs -copyToLocal /tmp/hbsort/cf/* /tmp/blah/cf
+#### A masked pattern was here ####
 
 drop table hbsort
 POSTHOOK: type: DROPTABLE

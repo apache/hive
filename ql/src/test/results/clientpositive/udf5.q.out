@@ -67,11 +67,11 @@ STAGE PLANS:
 PREHOOK: query: SELECT from_unixtime(1226446340), to_date(from_unixtime(1226446340)), day('2008-11-01'), month('2008-11-01'), year('2008-11-01'), day('2008-11-01 15:32:20'), month('2008-11-01 15:32:20'), year('2008-11-01 15:32:20') FROM dest1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@dest1
-PREHOOK: Output: file:/tmp/sdong/hive_2011-02-10_17-28-46_328_8485702647424685538/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: SELECT from_unixtime(1226446340), to_date(from_unixtime(1226446340)), day('2008-11-01'), month('2008-11-01'), year('2008-11-01'), day('2008-11-01 15:32:20'), month('2008-11-01 15:32:20'), year('2008-11-01 15:32:20') FROM dest1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@dest1
-POSTHOOK: Output: file:/tmp/sdong/hive_2011-02-10_17-28-46_328_8485702647424685538/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: Lineage: dest1.c1 SIMPLE []
 2008-11-11 15:32:20	2008-11-11	1	11	2008	1	11	2008
 PREHOOK: query: EXPLAIN
@@ -117,10 +117,10 @@ STAGE PLANS:
 PREHOOK: query: SELECT from_unixtime(unix_timestamp('2010-01-13 11:57:40', 'yyyy-MM-dd HH:mm:ss'), 'MM/dd/yy HH:mm:ss'), from_unixtime(unix_timestamp('2010-01-13 11:57:40')) from dest1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@dest1
-PREHOOK: Output: file:/tmp/sdong/hive_2011-02-10_17-28-49_797_825160708761917842/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: SELECT from_unixtime(unix_timestamp('2010-01-13 11:57:40', 'yyyy-MM-dd HH:mm:ss'), 'MM/dd/yy HH:mm:ss'), from_unixtime(unix_timestamp('2010-01-13 11:57:40')) from dest1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@dest1
-POSTHOOK: Output: file:/tmp/sdong/hive_2011-02-10_17-28-49_797_825160708761917842/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: Lineage: dest1.c1 SIMPLE []
 01/13/10 11:57:40	2010-01-13 11:57:40

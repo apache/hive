@@ -157,7 +157,7 @@ STAGE PLANS:
                 File Output Operator
                   compressed: false
                   GlobalTableId: 0
-                  directory: file:/tmp/charleschen/hive_2011-08-04_16-37-43_403_2940585090717921602/-mr-10002
+#### A masked pattern was here ####
                   NumFilesPerFileSink: 1
                   table:
                       input format: org.apache.hadoop.mapred.SequenceFileInputFormat
@@ -173,9 +173,9 @@ STAGE PLANS:
         Map Reduce Local Work
       Needs Tagging: false
       Path -> Alias:
-        pfile:/data/users/charleschen/hive-trunk/build/ql/test/data/warehouse/dst_union22/ds=1 [null-subquery2:subq-subquery2:a]
+#### A masked pattern was here ####
       Path -> Partition:
-        pfile:/data/users/charleschen/hive-trunk/build/ql/test/data/warehouse/dst_union22/ds=1 
+#### A masked pattern was here ####
           Partition
             base file name: ds=1
             input format: org.apache.hadoop.mapred.TextInputFormat
@@ -186,9 +186,7 @@ STAGE PLANS:
               bucket_count -1
               columns k1,k2,k3,k4
               columns.types string:string:string:string
-              file.inputformat org.apache.hadoop.mapred.TextInputFormat
-              file.outputformat org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-              location pfile:/data/users/charleschen/hive-trunk/build/ql/test/data/warehouse/dst_union22/ds=1
+#### A masked pattern was here ####
               name default.dst_union22
               numFiles 1
               numPartitions 1
@@ -199,7 +197,7 @@ STAGE PLANS:
               serialization.format 1
               serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               totalSize 11624
-              transient_lastDdlTime 1312501059
+#### A masked pattern was here ####
             serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
           
               input format: org.apache.hadoop.mapred.TextInputFormat
@@ -208,9 +206,7 @@ STAGE PLANS:
                 bucket_count -1
                 columns k1,k2,k3,k4
                 columns.types string:string:string:string
-                file.inputformat org.apache.hadoop.mapred.TextInputFormat
-                file.outputformat org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                location pfile:/data/users/charleschen/hive-trunk/build/ql/test/data/warehouse/dst_union22
+#### A masked pattern was here ####
                 name default.dst_union22
                 numFiles 1
                 numPartitions 1
@@ -221,7 +217,7 @@ STAGE PLANS:
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                 totalSize 11624
-                transient_lastDdlTime 1312501059
+#### A masked pattern was here ####
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: default.dst_union22
             name: default.dst_union22
@@ -229,7 +225,7 @@ STAGE PLANS:
   Stage: Stage-3
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/tmp/charleschen/hive_2011-08-04_16-37-43_403_2940585090717921602/-mr-10002 
+#### A masked pattern was here ####
           Select Operator
             expressions:
                   expr: _col0
@@ -267,10 +263,10 @@ STAGE PLANS:
                   File Output Operator
                     compressed: false
                     GlobalTableId: 1
-                    directory: pfile:/data/users/charleschen/hive-trunk/build/ql/scratchdir/hive_2011-08-04_16-37-43_403_2940585090717921602/-ext-10000
+#### A masked pattern was here ####
                     NumFilesPerFileSink: 1
                     Static Partition Specification: ds=2/
-                    Stats Publishing Key Prefix: pfile:/data/users/charleschen/hive-trunk/build/ql/scratchdir/hive_2011-08-04_16-37-43_403_2940585090717921602/-ext-10000/
+#### A masked pattern was here ####
                     table:
                         input format: org.apache.hadoop.mapred.TextInputFormat
                         output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
@@ -278,9 +274,7 @@ STAGE PLANS:
                           bucket_count -1
                           columns k1,k2,k3,k4
                           columns.types string:string:string:string
-                          file.inputformat org.apache.hadoop.mapred.TextInputFormat
-                          file.outputformat org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                          location pfile:/data/users/charleschen/hive-trunk/build/ql/test/data/warehouse/dst_union22
+#### A masked pattern was here ####
                           name default.dst_union22
                           numFiles 1
                           numPartitions 1
@@ -291,7 +285,7 @@ STAGE PLANS:
                           serialization.format 1
                           serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                           totalSize 11624
-                          transient_lastDdlTime 1312501059
+#### A masked pattern was here ####
                         serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                         name: default.dst_union22
                     TotalFiles: 1
@@ -332,10 +326,10 @@ STAGE PLANS:
                     File Output Operator
                       compressed: false
                       GlobalTableId: 1
-                      directory: pfile:/data/users/charleschen/hive-trunk/build/ql/scratchdir/hive_2011-08-04_16-37-43_403_2940585090717921602/-ext-10000
+#### A masked pattern was here ####
                       NumFilesPerFileSink: 1
                       Static Partition Specification: ds=2/
-                      Stats Publishing Key Prefix: pfile:/data/users/charleschen/hive-trunk/build/ql/scratchdir/hive_2011-08-04_16-37-43_403_2940585090717921602/-ext-10000/
+#### A masked pattern was here ####
                       table:
                           input format: org.apache.hadoop.mapred.TextInputFormat
                           output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
@@ -343,9 +337,7 @@ STAGE PLANS:
                             bucket_count -1
                             columns k1,k2,k3,k4
                             columns.types string:string:string:string
-                            file.inputformat org.apache.hadoop.mapred.TextInputFormat
-                            file.outputformat org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                            location pfile:/data/users/charleschen/hive-trunk/build/ql/test/data/warehouse/dst_union22
+#### A masked pattern was here ####
                             name default.dst_union22
                             numFiles 1
                             numPartitions 1
@@ -356,7 +348,7 @@ STAGE PLANS:
                             serialization.format 1
                             serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                             totalSize 11624
-                            transient_lastDdlTime 1312501059
+#### A masked pattern was here ####
                           serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                           name: default.dst_union22
                       TotalFiles: 1
@@ -364,10 +356,9 @@ STAGE PLANS:
                       MultiFileSpray: false
       Needs Tagging: false
       Path -> Alias:
-        file:/tmp/charleschen/hive_2011-08-04_16-37-43_403_2940585090717921602/-mr-10002 [file:/tmp/charleschen/hive_2011-08-04_16-37-43_403_2940585090717921602/-mr-10002]
-        pfile:/data/users/charleschen/hive-trunk/build/ql/test/data/warehouse/dst_union22_delta/ds=1 [null-subquery1:subq-subquery1:dst_union22_delta]
+#### A masked pattern was here ####
       Path -> Partition:
-        file:/tmp/charleschen/hive_2011-08-04_16-37-43_403_2940585090717921602/-mr-10002 
+#### A masked pattern was here ####
           Partition
             base file name: -mr-10002
             input format: org.apache.hadoop.mapred.SequenceFileInputFormat
@@ -383,7 +374,7 @@ STAGE PLANS:
                 columns _col0,_col1,_col10,_col11
                 columns.types string,string,string,string
                 escape.delim \
-        pfile:/data/users/charleschen/hive-trunk/build/ql/test/data/warehouse/dst_union22_delta/ds=1 
+#### A masked pattern was here ####
           Partition
             base file name: ds=1
             input format: org.apache.hadoop.mapred.TextInputFormat
@@ -394,9 +385,7 @@ STAGE PLANS:
               bucket_count -1
               columns k0,k1,k2,k3,k4,k5
               columns.types string:string:string:string:string:string
-              file.inputformat org.apache.hadoop.mapred.TextInputFormat
-              file.outputformat org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-              location pfile:/data/users/charleschen/hive-trunk/build/ql/test/data/warehouse/dst_union22_delta/ds=1
+#### A masked pattern was here ####
               name default.dst_union22_delta
               numFiles 1
               numPartitions 1
@@ -407,7 +396,7 @@ STAGE PLANS:
               serialization.format 1
               serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               totalSize 17436
-              transient_lastDdlTime 1312501063
+#### A masked pattern was here ####
             serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
           
               input format: org.apache.hadoop.mapred.TextInputFormat
@@ -416,9 +405,7 @@ STAGE PLANS:
                 bucket_count -1
                 columns k0,k1,k2,k3,k4,k5
                 columns.types string:string:string:string:string:string
-                file.inputformat org.apache.hadoop.mapred.TextInputFormat
-                file.outputformat org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                location pfile:/data/users/charleschen/hive-trunk/build/ql/test/data/warehouse/dst_union22_delta
+#### A masked pattern was here ####
                 name default.dst_union22_delta
                 numFiles 1
                 numPartitions 1
@@ -429,7 +416,7 @@ STAGE PLANS:
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                 totalSize 17436
-                transient_lastDdlTime 1312501063
+#### A masked pattern was here ####
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: default.dst_union22_delta
             name: default.dst_union22_delta
@@ -440,7 +427,7 @@ STAGE PLANS:
           partition:
             ds 2
           replace: true
-          source: pfile:/data/users/charleschen/hive-trunk/build/ql/scratchdir/hive_2011-08-04_16-37-43_403_2940585090717921602/-ext-10000
+#### A masked pattern was here ####
           table:
               input format: org.apache.hadoop.mapred.TextInputFormat
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
@@ -448,9 +435,7 @@ STAGE PLANS:
                 bucket_count -1
                 columns k1,k2,k3,k4
                 columns.types string:string:string:string
-                file.inputformat org.apache.hadoop.mapred.TextInputFormat
-                file.outputformat org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                location pfile:/data/users/charleschen/hive-trunk/build/ql/test/data/warehouse/dst_union22
+#### A masked pattern was here ####
                 name default.dst_union22
                 numFiles 1
                 numPartitions 1
@@ -461,14 +446,14 @@ STAGE PLANS:
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                 totalSize 11624
-                transient_lastDdlTime 1312501059
+#### A masked pattern was here ####
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: default.dst_union22
-          tmp directory: pfile:/data/users/charleschen/hive-trunk/build/ql/scratchdir/hive_2011-08-04_16-37-43_403_2940585090717921602/-ext-10001
+#### A masked pattern was here ####
 
   Stage: Stage-4
     Stats-Aggr Operator
-      Stats Aggregation Key Prefix: pfile:/data/users/charleschen/hive-trunk/build/ql/scratchdir/hive_2011-08-04_16-37-43_403_2940585090717921602/-ext-10000/
+#### A masked pattern was here ####
 
 
 PREHOOK: query: insert overwrite table dst_union22 partition (ds='2')
@@ -518,11 +503,11 @@ POSTHOOK: Lineage: dst_union22_delta PARTITION(ds=1).k5 SIMPLE [(src)src.FieldSc
 PREHOOK: query: select * from dst_union22 where ds = '2' order by k1, k2, k3, k4
 PREHOOK: type: QUERY
 PREHOOK: Input: default@dst_union22@ds=2
-PREHOOK: Output: file:/tmp/charleschen/hive_2011-08-04_16-37-52_911_2656054527092967946/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: select * from dst_union22 where ds = '2' order by k1, k2, k3, k4
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@dst_union22@ds=2
-POSTHOOK: Output: file:/tmp/charleschen/hive_2011-08-04_16-37-52_911_2656054527092967946/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: Lineage: dst_union22 PARTITION(ds=1).k1 SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: dst_union22 PARTITION(ds=1).k2 SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: dst_union22 PARTITION(ds=1).k3 SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]

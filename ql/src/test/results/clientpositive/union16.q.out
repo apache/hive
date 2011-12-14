@@ -729,7 +729,7 @@ PREHOOK: query: SELECT count(1) FROM (
   SELECT key, value FROM src) src
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/tmp/sdong/hive_2011-02-10_17-49-48_597_6413773901953203488/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: SELECT count(1) FROM (
   SELECT key, value FROM src UNION ALL
   SELECT key, value FROM src UNION ALL
@@ -762,5 +762,5 @@ POSTHOOK: query: SELECT count(1) FROM (
   SELECT key, value FROM src) src
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: file:/tmp/sdong/hive_2011-02-10_17-49-48_597_6413773901953203488/-mr-10000
+#### A masked pattern was here ####
 12500

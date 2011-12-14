@@ -71,7 +71,7 @@ PREHOOK: query: SELECT
 FROM src LIMIT 1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/tmp/sdong/hive_2011-02-10_17-41-56_938_2429074303435429802/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: SELECT 
   split('a b c', ' '),
   split('oneAtwoBthreeC', '[ABC]'),
@@ -80,5 +80,5 @@ POSTHOOK: query: SELECT
 FROM src LIMIT 1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: file:/tmp/sdong/hive_2011-02-10_17-41-56_938_2429074303435429802/-mr-10000
+#### A masked pattern was here ####
 ["a","b","c"]	["one","two","three"]	[]	["5","4","1","2"]

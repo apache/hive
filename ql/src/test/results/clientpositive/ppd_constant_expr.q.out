@@ -63,7 +63,7 @@ STAGE PLANS:
     Move Operator
       files:
           hdfs directory: true
-          destination: pfile:/data/users/sdong/www/open-source-hive1/build/ql/scratchdir/hive_2011-02-10_16-56-32_813_7879215788860974065/-ext-10000
+#### A masked pattern was here ####
 
   Stage: Stage-0
     Move Operator
@@ -81,7 +81,7 @@ STAGE PLANS:
   Stage: Stage-3
     Map Reduce
       Alias -> Map Operator Tree:
-        pfile:/data/users/sdong/www/open-source-hive1/build/ql/scratchdir/hive_2011-02-10_16-56-32_813_7879215788860974065/-ext-10002 
+#### A masked pattern was here ####
             File Output Operator
               compressed: false
               GlobalTableId: 0
@@ -108,11 +108,11 @@ POSTHOOK: Lineage: ppd_constant_expr.c3 EXPRESSION []
 PREHOOK: query: SELECT ppd_constant_expr.* FROM ppd_constant_expr
 PREHOOK: type: QUERY
 PREHOOK: Input: default@ppd_constant_expr
-PREHOOK: Output: file:/tmp/sdong/hive_2011-02-10_16-56-37_539_4877038009687877928/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: SELECT ppd_constant_expr.* FROM ppd_constant_expr
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@ppd_constant_expr
-POSTHOOK: Output: file:/var/folders/uc/ucuNeMAVGQGzy3459D8z2+++Z0Q/-Tmp-/amarsri/hive_2011-03-22_03-08-49_562_6227549501988296305/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: Lineage: ppd_constant_expr.c1 EXPRESSION []
 POSTHOOK: Lineage: ppd_constant_expr.c2 EXPRESSION [(src1)src1.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: ppd_constant_expr.c3 EXPRESSION []
@@ -204,7 +204,7 @@ STAGE PLANS:
     Move Operator
       files:
           hdfs directory: true
-          destination: pfile:/Users/amarsri/Documents/workspace/hive/build/ql/scratchdir/hive_2011-03-22_03-08-50_015_6932944037979128451/-ext-10000
+#### A masked pattern was here ####
 
   Stage: Stage-0
     Move Operator
@@ -222,7 +222,7 @@ STAGE PLANS:
   Stage: Stage-3
     Map Reduce
       Alias -> Map Operator Tree:
-        pfile:/Users/amarsri/Documents/workspace/hive/build/ql/scratchdir/hive_2011-03-22_03-08-50_015_6932944037979128451/-ext-10002 
+#### A masked pattern was here ####
             File Output Operator
               compressed: false
               GlobalTableId: 0
@@ -252,11 +252,11 @@ POSTHOOK: Lineage: ppd_constant_expr.c3 EXPRESSION []
 PREHOOK: query: SELECT ppd_constant_expr.* FROM ppd_constant_expr
 PREHOOK: type: QUERY
 PREHOOK: Input: default@ppd_constant_expr
-PREHOOK: Output: file:/var/folders/uc/ucuNeMAVGQGzy3459D8z2+++Z0Q/-Tmp-/amarsri/hive_2011-03-22_03-08-58_708_3073565512234424163/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: SELECT ppd_constant_expr.* FROM ppd_constant_expr
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@ppd_constant_expr
-POSTHOOK: Output: file:/var/folders/uc/ucuNeMAVGQGzy3459D8z2+++Z0Q/-Tmp-/amarsri/hive_2011-03-22_03-08-58_708_3073565512234424163/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: Lineage: ppd_constant_expr.c1 EXPRESSION []
 POSTHOOK: Lineage: ppd_constant_expr.c1 EXPRESSION []
 POSTHOOK: Lineage: ppd_constant_expr.c2 EXPRESSION [(src1)src1.FieldSchema(name:key, type:string, comment:default), ]

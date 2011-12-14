@@ -6,11 +6,11 @@ POSTHOOK: Output: default@t1
 PREHOOK: query: select Q1.key_int1, sum(Q1.key_int1) from (select * from t1 cluster by key_int1) Q1 group by Q1.key_int1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@t1
-PREHOOK: Output: file:/tmp/navis/hive_2011-11-27_23-31-58_414_7329222711647021730/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: select Q1.key_int1, sum(Q1.key_int1) from (select * from t1 cluster by key_int1) Q1 group by Q1.key_int1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@t1
-POSTHOOK: Output: file:/tmp/navis/hive_2011-11-27_23-31-58_414_7329222711647021730/-mr-10000
+#### A masked pattern was here ####
 PREHOOK: query: drop table t1
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@t1

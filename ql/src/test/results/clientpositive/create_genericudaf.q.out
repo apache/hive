@@ -97,14 +97,14 @@ PREHOOK: query: SELECT
 FROM src
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/tmp/sdong/hive_2011-02-10_01-42-11_872_6287765171357205642/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: SELECT
     test_avg(1),
     test_avg(substr(value,5))
 FROM src
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: file:/tmp/sdong/hive_2011-02-10_01-42-11_872_6287765171357205642/-mr-10000
+#### A masked pattern was here ####
 1.0	260.182
 PREHOOK: query: DROP TEMPORARY FUNCTIOn test_avg
 PREHOOK: type: DROPFUNCTION

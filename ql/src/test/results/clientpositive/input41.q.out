@@ -25,11 +25,11 @@ POSTHOOK: Lineage: dest_sp.cnt EXPRESSION [(src)src.null, (srcpart)srcpart.null,
 PREHOOK: query: select * from dest_sp x order by x.cnt limit 2
 PREHOOK: type: QUERY
 PREHOOK: Input: default@dest_sp
-PREHOOK: Output: file:/tmp/jssarma/hive_2010-07-21_11-28-55_506_7975559281496695000/10000
+#### A masked pattern was here ####
 POSTHOOK: query: select * from dest_sp x order by x.cnt limit 2
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@dest_sp
-POSTHOOK: Output: file:/tmp/jssarma/hive_2010-07-21_11-28-55_506_7975559281496695000/10000
+#### A masked pattern was here ####
 POSTHOOK: Lineage: dest_sp.cnt EXPRESSION [(src)src.null, (srcpart)srcpart.null, ]
 0
 500

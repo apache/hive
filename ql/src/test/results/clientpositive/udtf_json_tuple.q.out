@@ -170,11 +170,11 @@ STAGE PLANS:
 PREHOOK: query: select a.key, b.* from json_t a lateral view json_tuple(a.jstring, 'f1', 'f2', 'f3', 'f4', 'f5') b as f1, f2, f3, f4, f5 order by a.key
 PREHOOK: type: QUERY
 PREHOOK: Input: default@json_t
-PREHOOK: Output: file:/tmp/sdong/hive_2011-02-10_17-47-24_496_2791241113341415015/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: select a.key, b.* from json_t a lateral view json_tuple(a.jstring, 'f1', 'f2', 'f3', 'f4', 'f5') b as f1, f2, f3, f4, f5 order by a.key
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@json_t
-POSTHOOK: Output: file:/tmp/sdong/hive_2011-02-10_17-47-24_496_2791241113341415015/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: Lineage: json_t.jstring EXPRESSION []
 POSTHOOK: Lineage: json_t.key EXPRESSION []
 1	value1	value2	3	NULL	5.23
@@ -260,11 +260,11 @@ STAGE PLANS:
 PREHOOK: query: select json_tuple(a.jstring, 'f1', 'f2', 'f3', 'f4', 'f5') as (f1, f2, f3, f4, f5) from json_t a order by f1, f2, f3
 PREHOOK: type: QUERY
 PREHOOK: Input: default@json_t
-PREHOOK: Output: file:/tmp/sdong/hive_2011-02-10_17-47-28_044_4791381019924625594/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: select json_tuple(a.jstring, 'f1', 'f2', 'f3', 'f4', 'f5') as (f1, f2, f3, f4, f5) from json_t a order by f1, f2, f3
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@json_t
-POSTHOOK: Output: file:/tmp/sdong/hive_2011-02-10_17-47-28_044_4791381019924625594/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: Lineage: json_t.jstring EXPRESSION []
 POSTHOOK: Lineage: json_t.key EXPRESSION []
 NULL	NULL	NULL	NULL	NULL
@@ -380,11 +380,11 @@ STAGE PLANS:
 PREHOOK: query: select a.key, b.f2, b.f5 from json_t a lateral view json_tuple(a.jstring, 'f1', 'f2', 'f3', 'f4', 'f5') b as f1, f2, f3, f4, f5 order by a.key
 PREHOOK: type: QUERY
 PREHOOK: Input: default@json_t
-PREHOOK: Output: file:/tmp/sdong/hive_2011-02-10_17-47-31_578_1964403945393812277/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: select a.key, b.f2, b.f5 from json_t a lateral view json_tuple(a.jstring, 'f1', 'f2', 'f3', 'f4', 'f5') b as f1, f2, f3, f4, f5 order by a.key
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@json_t
-POSTHOOK: Output: file:/tmp/sdong/hive_2011-02-10_17-47-31_578_1964403945393812277/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: Lineage: json_t.jstring EXPRESSION []
 POSTHOOK: Lineage: json_t.key EXPRESSION []
 1	value2	5.23
@@ -527,7 +527,7 @@ STAGE PLANS:
   Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/tmp/sdong/hive_2011-02-10_17-47-34_990_2986759858895218326/-mr-10002 
+#### A masked pattern was here ####
             Reduce Output Operator
               key expressions:
                     expr: _col0
@@ -556,11 +556,11 @@ STAGE PLANS:
 PREHOOK: query: select f2, count(*) from json_t a lateral view json_tuple(a.jstring, 'f1', 'f2', 'f3', 'f4', 'f5') b as f1, f2, f3, f4, f5 where f1 is not null group by f2 order by f2
 PREHOOK: type: QUERY
 PREHOOK: Input: default@json_t
-PREHOOK: Output: file:/tmp/sdong/hive_2011-02-10_17-47-35_084_4201412638254844477/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: select f2, count(*) from json_t a lateral view json_tuple(a.jstring, 'f1', 'f2', 'f3', 'f4', 'f5') b as f1, f2, f3, f4, f5 where f1 is not null group by f2 order by f2
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@json_t
-POSTHOOK: Output: file:/tmp/sdong/hive_2011-02-10_17-47-35_084_4201412638254844477/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: Lineage: json_t.jstring EXPRESSION []
 POSTHOOK: Lineage: json_t.key EXPRESSION []
 NULL	1

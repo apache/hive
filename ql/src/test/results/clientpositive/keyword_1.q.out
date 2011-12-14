@@ -54,7 +54,7 @@ table	test_user
 principalName	hive_test	
 principalType	USER	
 privilege	Select	
-grantTime	1298925820	
+#### A masked pattern was here ####
 grantor	hive_test_user	
 PREHOOK: query: drop table test_user
 PREHOOK: type: DROPTABLE
@@ -120,7 +120,7 @@ table	test_user
 principalName	hive_test	
 principalType	USER	
 privilege	Select	
-grantTime	1298925821	
+#### A masked pattern was here ####
 grantor	hive_test_user	
 PREHOOK: query: drop table test_user
 PREHOOK: type: DROPTABLE

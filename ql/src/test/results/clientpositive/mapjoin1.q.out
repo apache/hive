@@ -7,7 +7,7 @@ PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
 PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
 PREHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
 PREHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
-PREHOOK: Output: file:/tmp/liyintang/hive_2010-10-17_18-28-45_483_4882005137956924467/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: SELECT  /*+ MAPJOIN(b) */ sum(a.key) as sum_a
 	FROM srcpart a
 	JOIN src b ON a.key = b.key where a.ds is not null
@@ -17,5 +17,5 @@ POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
 POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
 POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
 POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
-POSTHOOK: Output: file:/tmp/liyintang/hive_2010-10-17_18-28-45_483_4882005137956924467/-mr-10000
+#### A masked pattern was here ####
 1114788.0

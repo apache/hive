@@ -22,7 +22,7 @@ Task ID:
 
 Logs:
 
-/data/users/salbiz/apache-hive/build/ql/tmp//hive.log
+#### A masked pattern was here ####
 FAILED: Execution Error, return code 2 from org.apache.hadoop.hive.ql.exec.MapredLocalTask
 ATTEMPT: Execute BackupTask: org.apache.hadoop.hive.ql.exec.MapRedTask
 POSTHOOK: query: FROM srcpart src1 JOIN src src2 ON (src1.key = src2.key)
@@ -40,11 +40,11 @@ POSTHOOK: Lineage: dest1.value SIMPLE [(src)src2.FieldSchema(name:value, type:st
 PREHOOK: query: SELECT sum(hash(dest1.key,dest1.value)) FROM dest1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@dest1
-PREHOOK: Output: file:/tmp/salbiz/hive_2011-08-03_11-26-47_118_1954071308745703162/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: SELECT sum(hash(dest1.key,dest1.value)) FROM dest1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@dest1
-POSTHOOK: Output: file:/tmp/salbiz/hive_2011-08-03_11-26-47_118_1954071308745703162/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: Lineage: dest1.key EXPRESSION [(srcpart)src1.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: dest1.value SIMPLE [(src)src2.FieldSchema(name:value, type:string, comment:default), ]
 407444119660
@@ -69,7 +69,7 @@ Task ID:
 
 Logs:
 
-/data/users/salbiz/apache-hive/build/ql/tmp//hive.log
+#### A masked pattern was here ####
 FAILED: Execution Error, return code 2 from org.apache.hadoop.hive.ql.exec.MapredLocalTask
 ATTEMPT: Execute BackupTask: org.apache.hadoop.hive.ql.exec.MapRedTask
 Execution failed with exit status: 2
@@ -81,7 +81,7 @@ Task ID:
 
 Logs:
 
-/data/users/salbiz/apache-hive/build/ql/tmp//hive.log
+#### A masked pattern was here ####
 FAILED: Execution Error, return code 2 from org.apache.hadoop.hive.ql.exec.MapredLocalTask
 ATTEMPT: Execute BackupTask: org.apache.hadoop.hive.ql.exec.MapRedTask
 POSTHOOK: query: FROM src src1 JOIN src src2 ON (src1.key = src2.key) JOIN src src3 ON (src1.key + src2.key = src3.key)
@@ -96,11 +96,11 @@ POSTHOOK: Lineage: dest_j2.value SIMPLE [(src)src3.FieldSchema(name:value, type:
 PREHOOK: query: SELECT sum(hash(dest_j2.key,dest_j2.value)) FROM dest_j2
 PREHOOK: type: QUERY
 PREHOOK: Input: default@dest_j2
-PREHOOK: Output: file:/tmp/salbiz/hive_2011-08-03_11-27-02_282_7965605157514278016/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: SELECT sum(hash(dest_j2.key,dest_j2.value)) FROM dest_j2
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@dest_j2
-POSTHOOK: Output: file:/tmp/salbiz/hive_2011-08-03_11-27-02_282_7965605157514278016/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: Lineage: dest1.key EXPRESSION [(srcpart)src1.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: dest1.value SIMPLE [(src)src2.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: dest_j2.key EXPRESSION [(src)src1.FieldSchema(name:key, type:string, comment:default), ]
@@ -129,7 +129,7 @@ Task ID:
 
 Logs:
 
-/data/users/salbiz/apache-hive/build/ql/tmp//hive.log
+#### A masked pattern was here ####
 FAILED: Execution Error, return code 2 from org.apache.hadoop.hive.ql.exec.MapredLocalTask
 ATTEMPT: Execute BackupTask: org.apache.hadoop.hive.ql.exec.MapRedTask
 POSTHOOK: query: FROM src src1 JOIN src src2 ON (src1.key = src2.key)
@@ -146,11 +146,11 @@ POSTHOOK: Lineage: dest_j2.value SIMPLE [(src)src3.FieldSchema(name:value, type:
 PREHOOK: query: SELECT sum(hash(dest_j1.key,dest_j1.value)) FROM dest_j1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@dest_j1
-PREHOOK: Output: file:/tmp/salbiz/hive_2011-08-03_11-27-11_787_504951263993420939/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: SELECT sum(hash(dest_j1.key,dest_j1.value)) FROM dest_j1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@dest_j1
-POSTHOOK: Output: file:/tmp/salbiz/hive_2011-08-03_11-27-11_787_504951263993420939/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: Lineage: dest1.key EXPRESSION [(srcpart)src1.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: dest1.value SIMPLE [(src)src2.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: dest_j1.key EXPRESSION [(src)src1.FieldSchema(name:key, type:string, comment:default), ]

@@ -48,12 +48,12 @@ PREHOOK: query: SELECT /*+ MAPJOIN(six) */ six.*, two.k1 from src_six_columns si
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src_six_columns
 PREHOOK: Input: default@src_two_columns
-PREHOOK: Output: file:/tmp/jsichi/hive_2010-08-26_15-36-20_108_4263364980066320954/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: SELECT /*+ MAPJOIN(six) */ six.*, two.k1 from src_six_columns six join src_two_columns two on (six.k3=two.k1)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src_six_columns
 POSTHOOK: Input: default@src_two_columns
-POSTHOOK: Output: file:/tmp/jsichi/hive_2010-08-26_15-36-20_108_4263364980066320954/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: Lineage: src_six_columns.k1 SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: src_six_columns.k2 SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: src_six_columns.k3 SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
@@ -66,12 +66,12 @@ PREHOOK: query: SELECT /*+ MAPJOIN(two) */ two.*, six.k3 from src_six_columns si
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src_six_columns
 PREHOOK: Input: default@src_two_columns
-PREHOOK: Output: file:/tmp/jsichi/hive_2010-08-26_15-36-23_213_3720062508928690752/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: SELECT /*+ MAPJOIN(two) */ two.*, six.k3 from src_six_columns six join src_two_columns two on (six.k3=two.k1)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src_six_columns
 POSTHOOK: Input: default@src_two_columns
-POSTHOOK: Output: file:/tmp/jsichi/hive_2010-08-26_15-36-23_213_3720062508928690752/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: Lineage: src_six_columns.k1 SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: src_six_columns.k2 SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: src_six_columns.k3 SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]

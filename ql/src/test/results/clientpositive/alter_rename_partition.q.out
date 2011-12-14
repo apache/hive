@@ -48,11 +48,11 @@ POSTHOOK: Lineage: alter_rename_partition PARTITION(pcol1=old_part1:,pcol2=old_p
 PREHOOK: query: select * from alter_rename_partition where pcol1='old_part1:' and pcol2='old_part2:'
 PREHOOK: type: QUERY
 PREHOOK: Input: default@alter_rename_partition@pcol1=old_part1%3A/pcol2=old_part2%3A
-PREHOOK: Output: file:/tmp/weiyan/hive_2011-08-31_19-12-37_355_2637910598610864510/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: select * from alter_rename_partition where pcol1='old_part1:' and pcol2='old_part2:'
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@alter_rename_partition@pcol1=old_part1%3A/pcol2=old_part2%3A
-POSTHOOK: Output: file:/tmp/weiyan/hive_2011-08-31_19-12-37_355_2637910598610864510/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: Lineage: alter_rename_partition PARTITION(pcol1=old_part1:,pcol2=old_part2:).col1 SIMPLE [(alter_rename_partition_src)alter_rename_partition_src.FieldSchema(name:col1, type:string, comment:null), ]
 1	old_part1:	old_part2:
 2	old_part1:	old_part2:
@@ -79,19 +79,19 @@ POSTHOOK: Lineage: alter_rename_partition PARTITION(pcol1=old_part1:,pcol2=old_p
 pcol1=new_part1%3A/pcol2=new_part2%3A
 PREHOOK: query: select * from alter_rename_partition where pcol1='old_part1:' and pcol2='old_part2:'
 PREHOOK: type: QUERY
-PREHOOK: Output: file:/tmp/weiyan/hive_2011-08-31_19-12-38_182_2669936000084272225/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: select * from alter_rename_partition where pcol1='old_part1:' and pcol2='old_part2:'
 POSTHOOK: type: QUERY
-POSTHOOK: Output: file:/tmp/weiyan/hive_2011-08-31_19-12-38_182_2669936000084272225/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: Lineage: alter_rename_partition PARTITION(pcol1=old_part1:,pcol2=old_part2:).col1 SIMPLE [(alter_rename_partition_src)alter_rename_partition_src.FieldSchema(name:col1, type:string, comment:null), ]
 PREHOOK: query: select * from alter_rename_partition where pcol1='new_part1:' and pcol2='new_part2:'
 PREHOOK: type: QUERY
 PREHOOK: Input: default@alter_rename_partition@pcol1=new_part1%3A/pcol2=new_part2%3A
-PREHOOK: Output: file:/tmp/weiyan/hive_2011-08-31_19-12-38_238_7418880406333524317/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: select * from alter_rename_partition where pcol1='new_part1:' and pcol2='new_part2:'
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@alter_rename_partition@pcol1=new_part1%3A/pcol2=new_part2%3A
-POSTHOOK: Output: file:/tmp/weiyan/hive_2011-08-31_19-12-38_238_7418880406333524317/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: Lineage: alter_rename_partition PARTITION(pcol1=old_part1:,pcol2=old_part2:).col1 SIMPLE [(alter_rename_partition_src)alter_rename_partition_src.FieldSchema(name:col1, type:string, comment:null), ]
 1	new_part1:	new_part2:
 2	new_part1:	new_part2:
@@ -183,11 +183,11 @@ POSTHOOK: Lineage: alter_rename_partition PARTITION(pcol1=old_part1:,pcol2=old_p
 PREHOOK: query: SELECT * FROM alter_rename_partition WHERE pcol1='old_part1:' AND pcol2='old_part2:'
 PREHOOK: type: QUERY
 PREHOOK: Input: alter_rename_partition_db@alter_rename_partition@pcol1=old_part1%3A/pcol2=old_part2%3A
-PREHOOK: Output: file:/tmp/weiyan/hive_2011-08-31_19-12-44_652_1943699924506676382/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: SELECT * FROM alter_rename_partition WHERE pcol1='old_part1:' AND pcol2='old_part2:'
 POSTHOOK: type: QUERY
 POSTHOOK: Input: alter_rename_partition_db@alter_rename_partition@pcol1=old_part1%3A/pcol2=old_part2%3A
-POSTHOOK: Output: file:/tmp/weiyan/hive_2011-08-31_19-12-44_652_1943699924506676382/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: Lineage: alter_rename_partition PARTITION(pcol1=old_part1:,pcol2=old_part2:).col1 SIMPLE [(alter_rename_partition_src)alter_rename_partition_src.FieldSchema(name:col1, type:string, comment:null), ]
 POSTHOOK: Lineage: alter_rename_partition PARTITION(pcol1=old_part1:,pcol2=old_part2:).col1 SIMPLE [(alter_rename_partition_src)alter_rename_partition_src.FieldSchema(name:col1, type:string, comment:null), ]
 1	old_part1:	old_part2:
@@ -217,20 +217,20 @@ POSTHOOK: Lineage: alter_rename_partition PARTITION(pcol1=old_part1:,pcol2=old_p
 pcol1=new_part1%3A/pcol2=new_part2%3A
 PREHOOK: query: SELECT * FROM alter_rename_partition WHERE pcol1='old_part1:' and pcol2='old_part2:'
 PREHOOK: type: QUERY
-PREHOOK: Output: file:/tmp/weiyan/hive_2011-08-31_19-12-45_358_4731213338640541471/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: SELECT * FROM alter_rename_partition WHERE pcol1='old_part1:' and pcol2='old_part2:'
 POSTHOOK: type: QUERY
-POSTHOOK: Output: file:/tmp/weiyan/hive_2011-08-31_19-12-45_358_4731213338640541471/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: Lineage: alter_rename_partition PARTITION(pcol1=old_part1:,pcol2=old_part2:).col1 SIMPLE [(alter_rename_partition_src)alter_rename_partition_src.FieldSchema(name:col1, type:string, comment:null), ]
 POSTHOOK: Lineage: alter_rename_partition PARTITION(pcol1=old_part1:,pcol2=old_part2:).col1 SIMPLE [(alter_rename_partition_src)alter_rename_partition_src.FieldSchema(name:col1, type:string, comment:null), ]
 PREHOOK: query: SELECT * FROM alter_rename_partition WHERE pcol1='new_part1:' and pcol2='new_part2:'
 PREHOOK: type: QUERY
 PREHOOK: Input: alter_rename_partition_db@alter_rename_partition@pcol1=new_part1%3A/pcol2=new_part2%3A
-PREHOOK: Output: file:/tmp/weiyan/hive_2011-08-31_19-12-45_423_4488965959309624920/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: SELECT * FROM alter_rename_partition WHERE pcol1='new_part1:' and pcol2='new_part2:'
 POSTHOOK: type: QUERY
 POSTHOOK: Input: alter_rename_partition_db@alter_rename_partition@pcol1=new_part1%3A/pcol2=new_part2%3A
-POSTHOOK: Output: file:/tmp/weiyan/hive_2011-08-31_19-12-45_423_4488965959309624920/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: Lineage: alter_rename_partition PARTITION(pcol1=old_part1:,pcol2=old_part2:).col1 SIMPLE [(alter_rename_partition_src)alter_rename_partition_src.FieldSchema(name:col1, type:string, comment:null), ]
 POSTHOOK: Lineage: alter_rename_partition PARTITION(pcol1=old_part1:,pcol2=old_part2:).col1 SIMPLE [(alter_rename_partition_src)alter_rename_partition_src.FieldSchema(name:col1, type:string, comment:null), ]
 1	new_part1:	new_part2:

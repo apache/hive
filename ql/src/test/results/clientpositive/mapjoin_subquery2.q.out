@@ -58,7 +58,7 @@ PREHOOK: type: QUERY
 PREHOOK: Input: default@x
 PREHOOK: Input: default@y
 PREHOOK: Input: default@z
-PREHOOK: Output: file:/tmp/tianzhao/hive_2011-10-24_06-01-49_774_6691053797137524902/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: SELECT subq.key1, subq.value1, subq.key2, subq.value2, z.id, z.name
 FROM
 (SELECT x.id as key1, x.name as value1, y.id as key2, y.name as value2 
@@ -68,7 +68,7 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@x
 POSTHOOK: Input: default@y
 POSTHOOK: Input: default@z
-POSTHOOK: Output: file:/tmp/tianzhao/hive_2011-10-24_06-01-49_774_6691053797137524902/-mr-10000
+#### A masked pattern was here ####
 2	Joe	2	Tie	2	Tie
 2	Hank	2	Tie	2	Tie
 PREHOOK: query: EXPLAIN
@@ -234,7 +234,7 @@ PREHOOK: type: QUERY
 PREHOOK: Input: default@x
 PREHOOK: Input: default@y
 PREHOOK: Input: default@z
-PREHOOK: Output: file:/tmp/tianzhao/hive_2011-10-24_06-01-55_615_1052117020867998139/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: SELECT /*+ MAPJOIN(z) */ subq.key1, subq.value1, subq.key2, subq.value2, z.id, z.name
 FROM
 (SELECT /*+ MAPJOIN(x) */ x.id as key1, x.name as value1, y.id as key2, y.name as value2 
@@ -244,7 +244,7 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@x
 POSTHOOK: Input: default@y
 POSTHOOK: Input: default@z
-POSTHOOK: Output: file:/tmp/tianzhao/hive_2011-10-24_06-01-55_615_1052117020867998139/-mr-10000
+#### A masked pattern was here ####
 2	Joe	2	Tie	2	Tie
 2	Hank	2	Tie	2	Tie
 PREHOOK: query: drop table x

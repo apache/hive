@@ -54,7 +54,7 @@ table	authorization_part
 principalName	hive_test_user	
 principalType	USER	
 privilege	Create	
-grantTime	Wed Aug 31 19:13:54 PDT 2011	
+#### A masked pattern was here ####
 grantor	hive_test_user	
 
 database	default	
@@ -62,7 +62,7 @@ table	authorization_part
 principalName	hive_test_user	
 principalType	USER	
 privilege	Update	
-grantTime	Wed Aug 31 19:13:54 PDT 2011	
+#### A masked pattern was here ####
 grantor	hive_test_user	
 
 database	default	
@@ -70,7 +70,7 @@ table	authorization_part
 principalName	hive_test_user	
 principalType	USER	
 privilege	Drop	
-grantTime	Wed Aug 31 19:13:54 PDT 2011	
+#### A masked pattern was here ####
 grantor	hive_test_user	
 PREHOOK: query: grant select(key) on table authorization_part to user hive_test_user
 PREHOOK: type: GRANT_PRIVILEGE
@@ -102,7 +102,7 @@ columnName	key
 principalName	hive_test_user	
 principalType	USER	
 privilege	Select	
-grantTime	Wed Aug 31 19:14:01 PDT 2011	
+#### A masked pattern was here ####
 grantor	hive_test_user	
 PREHOOK: query: alter table authorization_part partition (ds='2010') rename to partition (ds='2010_tmp')
 PREHOOK: type: ALTERTABLE_RENAMEPART
@@ -130,7 +130,7 @@ columnName	key
 principalName	hive_test_user	
 principalType	USER	
 privilege	Select	
-grantTime	Wed Aug 31 19:14:01 PDT 2011	
+#### A masked pattern was here ####
 grantor	hive_test_user	
 PREHOOK: query: drop table authorization_part
 PREHOOK: type: DROPTABLE

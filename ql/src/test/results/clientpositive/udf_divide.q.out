@@ -14,9 +14,9 @@ Example:
 PREHOOK: query: SELECT 3 / 2 FROM SRC LIMIT 1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/Users/carl/Projects/hd8/hive-trunk/build/ql/tmp/1123393035/10000
+#### A masked pattern was here ####
 POSTHOOK: query: SELECT 3 / 2 FROM SRC LIMIT 1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: file:/Users/carl/Projects/hd8/hive-trunk/build/ql/tmp/1123393035/10000
+#### A masked pattern was here ####
 1.5

@@ -7,16 +7,16 @@ PARTITIONED ON (value)
 AS 
 SELECT * FROM src
 PREHOOK: type: CREATEVIEW
-PREHOOK: Output: file:/tmp/salbiz/hive_2011-08-01_16-12-55_917_1648946579211365076/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: CREATE VIEW xxx5
 PARTITIONED ON (value)
 AS 
 SELECT * FROM src
 POSTHOOK: type: CREATEVIEW
 POSTHOOK: Output: default@xxx5
-POSTHOOK: Output: file:/tmp/salbiz/hive_2011-08-01_16-12-55_917_1648946579211365076/-mr-10000
+#### A masked pattern was here ####
 PREHOOK: query: -- should fail:  LOCATION clause is illegal
-ALTER VIEW xxx5 ADD PARTITION (value='val_86') LOCATION '/foo/bar/baz'
+#### A masked pattern was here ####
 PREHOOK: type: ALTERTABLE_ADDPARTS
 PREHOOK: Input: default@src
 PREHOOK: Input: default@xxx5

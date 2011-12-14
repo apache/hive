@@ -12,11 +12,11 @@ POSTHOOK: Output: default@exim_department
 PREHOOK: query: export table exim_department to 'ql/test/data/exports/exim_department'
 PREHOOK: type: EXPORT
 PREHOOK: Input: default@exim_department
-PREHOOK: Output: pfile:/Users/krishnak/Projects/hdp/sources/hive-git-apache/build/ql/test/data/exports/exim_department
+#### A masked pattern was here ####
 POSTHOOK: query: export table exim_department to 'ql/test/data/exports/exim_department'
 POSTHOOK: type: EXPORT
 POSTHOOK: Input: default@exim_department
-POSTHOOK: Output: pfile:/Users/krishnak/Projects/hdp/sources/hive-git-apache/build/ql/test/data/exports/exim_department
+#### A masked pattern was here ####
 PREHOOK: query: drop table exim_department
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@exim_department
@@ -59,11 +59,11 @@ POSTHOOK: Output: importer@exim_department
 PREHOOK: query: select * from exim_department
 PREHOOK: type: QUERY
 PREHOOK: Input: importer@exim_department
-PREHOOK: Output: file:/var/folders/67/67R3POPtF90VG63KSmCbcU++F0U/-Tmp-/krishnak/hive_2011-03-20_23-06-25_010_1054828341958963947/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: select * from exim_department
 POSTHOOK: type: QUERY
 POSTHOOK: Input: importer@exim_department
-POSTHOOK: Output: file:/var/folders/67/67R3POPtF90VG63KSmCbcU++F0U/-Tmp-/krishnak/hive_2011-03-20_23-06-25_010_1054828341958963947/-mr-10000
+#### A masked pattern was here ####
 1
 2
 3

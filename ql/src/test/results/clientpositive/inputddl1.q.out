@@ -31,8 +31,8 @@ POSTHOOK: Output: default@INPUTDDL1
 PREHOOK: query: SELECT INPUTDDL1.* from INPUTDDL1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@inputddl1
-PREHOOK: Output: file:/tmp/sdong/hive_2011-02-10_16-01-07_911_8364896664990642164/-mr-10000
+#### A masked pattern was here ####
 POSTHOOK: query: SELECT INPUTDDL1.* from INPUTDDL1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@inputddl1
-POSTHOOK: Output: file:/tmp/sdong/hive_2011-02-10_16-01-07_911_8364896664990642164/-mr-10000
+#### A masked pattern was here ####
