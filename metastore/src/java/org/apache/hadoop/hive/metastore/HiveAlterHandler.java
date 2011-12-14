@@ -28,6 +28,8 @@ import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.hive.metastore.api.AlreadyExistsException;
+import org.apache.hadoop.hive.metastore.api.Constants;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.InvalidObjectException;
 import org.apache.hadoop.hive.metastore.api.InvalidOperationException;
@@ -41,7 +43,7 @@ import org.apache.hadoop.hive.metastore.api.Table;
  */
 public class HiveAlterHandler implements AlterHandler {
 
-  private Configuration hiveConf;
+  protected Configuration hiveConf;
   private static final Log LOG = LogFactory.getLog(HiveAlterHandler.class
       .getName());
 
@@ -222,6 +224,147 @@ public class HiveAlterHandler implements AlterHandler {
     if (!success) {
       throw new MetaException("Committing the alter table transaction was not successful.");
     }
+  }
+
+  public Partition alterPartition(final RawStore msdb, Warehouse wh, final String dbname,
+      final String name, final List<String> part_vals, final Partition new_part)
+      throws InvalidOperationException, InvalidObjectException, AlreadyExistsException,
+      MetaException {
+    boolean success = false;
+
+    Path srcPath = null;
+    Path destPath = null;
+    FileSystem srcFs = null;
+    FileSystem destFs = null;
+    Table tbl = null;
+    Partition oldPart = null;
+    String oldPartLoc = null;
+    String newPartLoc = null;
+    // Set DDL time to now if not specified
+    if (new_part.getParameters() == null ||
+        new_part.getParameters().get(Constants.DDL_TIME) == null ||
+        Integer.parseInt(new_part.getParameters().get(Constants.DDL_TIME)) == 0) {
+      new_part.putToParameters(Constants.DDL_TIME, Long.toString(System
+          .currentTimeMillis() / 1000));
+    }
+    //alter partition
+    if (part_vals == null || part_vals.size() == 0) {
+      try {
+        oldPart = msdb.getPartition(dbname, name, new_part.getValues());
+        msdb.alterPartition(dbname, name, new_part.getValues(), new_part);
+      } catch (InvalidObjectException e) {
+        throw new InvalidOperationException("alter is not possible");
+      } catch (NoSuchObjectException e){
+        //old partition does not exist
+        throw new InvalidOperationException("alter is not possible");
+      }
+      return oldPart;
+    }
+    //rename partition
+    try {
+      msdb.openTransaction();
+      try {
+        oldPart = msdb.getPartition(dbname, name, part_vals);
+      } catch (NoSuchObjectException e) {
+        // this means there is no existing partition
+        throw new InvalidObjectException(
+            "Unable to rename partition because old partition does not exist");
+      }
+      Partition check_part = null;
+      try {
+        check_part = msdb.getPartition(dbname, name, new_part.getValues());
+      } catch(NoSuchObjectException e) {
+        // this means there is no existing partition
+        check_part = null;
+      }
+      if (check_part != null) {
+        throw new AlreadyExistsException("Partition already exists:" + dbname + "." + name + "." +
+            new_part.getValues());
+      }
+      tbl = msdb.getTable(dbname, name);
+      if (tbl == null) {
+        throw new InvalidObjectException(
+            "Unable to rename partition because table or database do not exist");
+      }
+      try {
+        destPath = new Path(wh.getTablePath(msdb.getDatabase(dbname), name),
+            Warehouse.makePartName(tbl.getPartitionKeys(), new_part.getValues()));
+      } catch (NoSuchObjectException e) {
+        LOG.debug(e);
+        throw new InvalidOperationException(
+            "Unable to change partition or table. Database " + dbname + " does not exist"
+                + " Check metastore logs for detailed stack." + e.getMessage());
+      }
+      if (destPath != null) {
+        newPartLoc = destPath.toString();
+        oldPartLoc = oldPart.getSd().getLocation();
+
+        srcPath = new Path(oldPartLoc);
+
+        LOG.info("srcPath:" + oldPartLoc);
+        LOG.info("descPath:" + newPartLoc);
+        srcFs = wh.getFs(srcPath);
+        destFs = wh.getFs(destPath);
+        // check that src and dest are on the same file system
+        if (srcFs != destFs) {
+          throw new InvalidOperationException("table new location " + destPath
+              + " is on a different file system than the old location "
+              + srcPath + ". This operation is not supported");
+        }
+        try {
+          srcFs.exists(srcPath); // check that src exists and also checks
+          if (newPartLoc.compareTo(oldPartLoc) != 0 && destFs.exists(destPath)) {
+            throw new InvalidOperationException("New location for this table "
+                + tbl.getDbName() + "." + tbl.getTableName()
+                + " already exists : " + destPath);
+          }
+        } catch (IOException e) {
+          Warehouse.closeFs(srcFs);
+          Warehouse.closeFs(destFs);
+          throw new InvalidOperationException("Unable to access new location "
+              + destPath + " for partition " + tbl.getDbName() + "."
+              + tbl.getTableName() + " " + new_part.getValues());
+        }
+        new_part.getSd().setLocation(newPartLoc);
+        msdb.alterPartition(dbname, name, part_vals, new_part);
+      }
+
+      success = msdb.commitTransaction();
+    } finally {
+      if (!success) {
+        msdb.rollbackTransaction();
+      }
+      if (success && newPartLoc.compareTo(oldPartLoc) != 0) {
+        //rename the data directory
+        try{
+          if (srcFs.exists(srcPath)) {
+            //if destPath's parent path doesn't exist, we should mkdir it
+            Path destParentPath = destPath.getParent();
+            if (!wh.mkdirs(destParentPath)) {
+                throw new IOException("Unable to create path " + destParentPath);
+            }
+            srcFs.rename(srcPath, destPath);
+            LOG.info("rename done!");
+          }
+        } catch (IOException e) {
+          boolean revertMetaDataTransaction = false;
+          try {
+            msdb.openTransaction();
+            msdb.alterPartition(dbname, name, new_part.getValues(), oldPart);
+            revertMetaDataTransaction = msdb.commitTransaction();
+          } catch (Exception e1) {
+            LOG.error("Reverting metadata opeation failed During HDFS operation failed", e1);
+            if (!revertMetaDataTransaction) {
+              msdb.rollbackTransaction();
+            }
+          }
+          throw new InvalidOperationException("Unable to access old location "
+              + srcPath + " for partition " + tbl.getDbName() + "."
+              + tbl.getTableName() + " " + part_vals);
+        }
+      }
+    }
+    return oldPart;
   }
 
   private boolean checkPartialPartKeysEqual(List<FieldSchema> oldPartKeys,

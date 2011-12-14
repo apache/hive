@@ -17,9 +17,14 @@
  */
 package org.apache.hadoop.hive.metastore;
 
+import java.util.List;
+
 import org.apache.hadoop.conf.Configurable;
+import org.apache.hadoop.hive.metastore.api.AlreadyExistsException;
+import org.apache.hadoop.hive.metastore.api.InvalidObjectException;
 import org.apache.hadoop.hive.metastore.api.InvalidOperationException;
 import org.apache.hadoop.hive.metastore.api.MetaException;
+import org.apache.hadoop.hive.metastore.api.Partition;
 import org.apache.hadoop.hive.metastore.api.Table;
 
 /**
@@ -29,7 +34,7 @@ public interface AlterHandler extends Configurable {
 
   /**
    * handles alter table
-   * 
+   *
    * @param msdb
    *          object to get metadata
    * @param wh
@@ -48,5 +53,30 @@ public interface AlterHandler extends Configurable {
    */
   public abstract void alterTable(RawStore msdb, Warehouse wh, String dbname,
       String name, Table newTable) throws InvalidOperationException,
+      MetaException;
+
+  /**
+   * handles alter partition
+   *
+   * @param msdb
+   *          object to get metadata
+   * @param wh
+   * @param dbname
+   *          database of the partition being altered
+   * @param name
+   *          table of the partition being altered
+   * @param part_vals
+   *          original values of the partition being altered
+   * @param new_part
+   *          new partition object
+   * @return
+   * @throws InvalidOperationException
+   * @throws InvalidObjectException
+   * @throws AlreadyExistsException
+   * @throws MetaException
+   */
+  public abstract Partition alterPartition(final RawStore msdb, Warehouse wh, final String dbname,
+      final String name, final List<String> part_vals, final Partition new_part)
+      throws InvalidOperationException, InvalidObjectException, AlreadyExistsException,
       MetaException;
 }
