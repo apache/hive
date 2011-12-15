@@ -22,6 +22,7 @@ PREHOOK: query: CREATE INDEX srcpart_index_proj ON TABLE srcpart(key) as 'BITMAP
 PREHOOK: type: CREATEINDEX
 POSTHOOK: query: CREATE INDEX srcpart_index_proj ON TABLE srcpart(key) as 'BITMAP' WITH DEFERRED REBUILD
 POSTHOOK: type: CREATEINDEX
+POSTHOOK: Output: default@default__srcpart_srcpart_index_proj__
 PREHOOK: query: ALTER INDEX srcpart_index_proj ON srcpart REBUILD
 PREHOOK: type: ALTERINDEX_REBUILD
 PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
@@ -168,6 +169,7 @@ PREHOOK: query: CREATE INDEX srcpart_index_proj ON TABLE srcpart(key) as 'BITMAP
 PREHOOK: type: CREATEINDEX
 POSTHOOK: query: CREATE INDEX srcpart_index_proj ON TABLE srcpart(key) as 'BITMAP' WITH DEFERRED REBUILD
 POSTHOOK: type: CREATEINDEX
+POSTHOOK: Output: default@default__srcpart_srcpart_index_proj__
 POSTHOOK: Lineage: default__srcpart_srcpart_index_proj__ PARTITION(ds=2008-04-09,hr=12)._bitmaps EXPRESSION [(srcpart)srcpart.FieldSchema(name:ROW__OFFSET__INSIDE__BLOCK, type:bigint, comment:), ]
 POSTHOOK: Lineage: default__srcpart_srcpart_index_proj__ PARTITION(ds=2008-04-09,hr=12)._bucketname SIMPLE [(srcpart)srcpart.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
 POSTHOOK: Lineage: default__srcpart_srcpart_index_proj__ PARTITION(ds=2008-04-09,hr=12)._offset SIMPLE [(srcpart)srcpart.FieldSchema(name:BLOCK__OFFSET__INSIDE__FILE, type:bigint, comment:), ]

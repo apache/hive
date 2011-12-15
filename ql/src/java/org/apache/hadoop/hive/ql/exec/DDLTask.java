@@ -89,6 +89,7 @@ import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.HiveMetaStoreChecker;
 import org.apache.hadoop.hive.ql.metadata.HiveStorageHandler;
+import org.apache.hadoop.hive.ql.metadata.HiveUtils;
 import org.apache.hadoop.hive.ql.metadata.InvalidTableException;
 import org.apache.hadoop.hive.ql.metadata.MetaDataFormatUtils;
 import org.apache.hadoop.hive.ql.metadata.Partition;
@@ -827,6 +828,14 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
         crtIndex.getSerdeProps(), crtIndex.getCollItemDelim(), crtIndex.getFieldDelim(), crtIndex.getFieldEscape(),
         crtIndex.getLineDelim(), crtIndex.getMapKeyDelim(), crtIndex.getIndexComment()
         );
+    if (HiveUtils.getIndexHandler(conf, crtIndex.getIndexTypeHandlerClass()).usesIndexTable()) {
+        String indexTableName =
+            crtIndex.getIndexTableName() != null ? crtIndex.getIndexTableName() :
+            MetaStoreUtils.getIndexTableName(db.getCurrentDatabase(),
+            crtIndex.getTableName(), crtIndex.getIndexName());
+        Table indexTable = db.getTable(indexTableName);
+        work.getOutputs().add(new WriteEntity(indexTable));
+    }
     return 0;
   }
 
@@ -1203,7 +1212,7 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
       for(Partition p: partitions){
         if(partitionInCustomLocation(tbl, p)) {
           String message = String.format("ARCHIVE cannot run for partition " +
-          		        "groups with custom locations like %s", p.getLocation());
+                      "groups with custom locations like %s", p.getLocation());
           throw new HiveException(message);
         }
       }
@@ -3319,9 +3328,9 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
       for (HiveConf.ConfVars var: HiveConf.dbVars) {
         String newValue = dbParams.get(var.varname);
         if (newValue != null) {
-         	LOG.info("Changing " + var.varname +
-         	    " from " + conf.getVar(var) + " to " + newValue);
-         	conf.setVar(var, newValue);
+          LOG.info("Changing " + var.varname +
+              " from " + conf.getVar(var) + " to " + newValue);
+          conf.setVar(var, newValue);
         }
       }
     }

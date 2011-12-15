@@ -180,6 +180,7 @@ PREHOOK: query: CREATE INDEX src_index ON TABLE src(key) as 'BITMAP' WITH DEFERR
 PREHOOK: type: CREATEINDEX
 POSTHOOK: query: CREATE INDEX src_index ON TABLE src(key) as 'BITMAP' WITH DEFERRED REBUILD
 POSTHOOK: type: CREATEINDEX
+POSTHOOK: Output: default@default__src_src_index__
 PREHOOK: query: ALTER INDEX src_index ON src REBUILD
 PREHOOK: type: ALTERINDEX_REBUILD
 PREHOOK: Input: default@src
@@ -196,6 +197,7 @@ PREHOOK: query: CREATE INDEX srcpart_index ON TABLE srcpart(key) as 'BITMAP' WIT
 PREHOOK: type: CREATEINDEX
 POSTHOOK: query: CREATE INDEX srcpart_index ON TABLE srcpart(key) as 'BITMAP' WITH DEFERRED REBUILD
 POSTHOOK: type: CREATEINDEX
+POSTHOOK: Output: default@default__srcpart_srcpart_index__
 POSTHOOK: Lineage: default__src_src_index__._bitmaps EXPRESSION [(src)src.FieldSchema(name:ROW__OFFSET__INSIDE__BLOCK, type:bigint, comment:), ]
 POSTHOOK: Lineage: default__src_src_index__._bucketname SIMPLE [(src)src.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
 POSTHOOK: Lineage: default__src_src_index__._offset SIMPLE [(src)src.FieldSchema(name:BLOCK__OFFSET__INSIDE__FILE, type:bigint, comment:), ]

@@ -15,6 +15,7 @@ PREHOOK: type: CREATEINDEX
 POSTHOOK: query: -- Build an index on temp.
 CREATE INDEX temp_index ON TABLE temp(key) as 'COMPACT' WITH DEFERRED REBUILD
 POSTHOOK: type: CREATEINDEX
+POSTHOOK: Output: default@default__temp_temp_index__
 PREHOOK: query: ALTER INDEX temp_index ON temp REBUILD
 PREHOOK: type: ALTERINDEX_REBUILD
 PREHOOK: Input: default@temp

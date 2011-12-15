@@ -6,6 +6,7 @@ PREHOOK: query: create index src_index_8 on table src(key) as 'compact' WITH DEF
 PREHOOK: type: CREATEINDEX
 POSTHOOK: query: create index src_index_8 on table src(key) as 'compact' WITH DEFERRED REBUILD IDXPROPERTIES ("prop1"="val1", "prop2"="val2")
 POSTHOOK: type: CREATEINDEX
+POSTHOOK: Output: default@default__src_src_index_8__
 PREHOOK: query: desc extended default__src_src_index_8__
 PREHOOK: type: DESCTABLE
 POSTHOOK: query: desc extended default__src_src_index_8__

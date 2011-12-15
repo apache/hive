@@ -51,6 +51,7 @@ PREHOOK: query: CREATE INDEX lineitem_lshipdate_idx ON TABLE lineitem(l_shipdate
 PREHOOK: type: CREATEINDEX
 POSTHOOK: query: CREATE INDEX lineitem_lshipdate_idx ON TABLE lineitem(l_shipdate) AS 'org.apache.hadoop.hive.ql.index.AggregateIndexHandler' WITH DEFERRED REBUILD IDXPROPERTIES("AGGREGATES"="count(l_shipdate)")
 POSTHOOK: type: CREATEINDEX
+POSTHOOK: Output: default@default__lineitem_lineitem_lshipdate_idx__
 PREHOOK: query: ALTER INDEX lineitem_lshipdate_idx ON lineitem REBUILD
 PREHOOK: type: ALTERINDEX_REBUILD
 PREHOOK: Input: default@lineitem
@@ -1250,6 +1251,7 @@ PREHOOK: query: CREATE INDEX tbl_key_idx ON TABLE tbl(key) AS 'org.apache.hadoop
 PREHOOK: type: CREATEINDEX
 POSTHOOK: query: CREATE INDEX tbl_key_idx ON TABLE tbl(key) AS 'org.apache.hadoop.hive.ql.index.AggregateIndexHandler' WITH DEFERRED REBUILD IDXPROPERTIES("AGGREGATES"="count(key)")
 POSTHOOK: type: CREATEINDEX
+POSTHOOK: Output: default@default__tbl_tbl_key_idx__
 POSTHOOK: Lineage: default__lineitem_lineitem_lshipdate_idx__._bucketname SIMPLE [(lineitem)lineitem.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
 POSTHOOK: Lineage: default__lineitem_lineitem_lshipdate_idx__._count_of_l_shipdate EXPRESSION [(lineitem)lineitem.FieldSchema(name:l_shipdate, type:string, comment:null), ]
 POSTHOOK: Lineage: default__lineitem_lineitem_lshipdate_idx__._offsets EXPRESSION [(lineitem)lineitem.FieldSchema(name:BLOCK__OFFSET__INSIDE__FILE, type:bigint, comment:), ]
@@ -3076,6 +3078,7 @@ PREHOOK: query: CREATE INDEX tbl_part_index ON TABLE tblpart(key) AS 'org.apache
 PREHOOK: type: CREATEINDEX
 POSTHOOK: query: CREATE INDEX tbl_part_index ON TABLE tblpart(key) AS 'org.apache.hadoop.hive.ql.index.AggregateIndexHandler' WITH DEFERRED REBUILD IDXPROPERTIES("AGGREGATES"="count(key)")
 POSTHOOK: type: CREATEINDEX
+POSTHOOK: Output: default@default__tblpart_tbl_part_index__
 POSTHOOK: Lineage: default__lineitem_lineitem_lshipdate_idx__._bucketname SIMPLE [(lineitem)lineitem.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
 POSTHOOK: Lineage: default__lineitem_lineitem_lshipdate_idx__._count_of_l_shipdate EXPRESSION [(lineitem)lineitem.FieldSchema(name:l_shipdate, type:string, comment:null), ]
 POSTHOOK: Lineage: default__lineitem_lineitem_lshipdate_idx__._offsets EXPRESSION [(lineitem)lineitem.FieldSchema(name:BLOCK__OFFSET__INSIDE__FILE, type:bigint, comment:), ]
@@ -3591,6 +3594,7 @@ PREHOOK: query: CREATE INDEX tbl_key_idx ON TABLE tbl(key) AS 'org.apache.hadoop
 PREHOOK: type: CREATEINDEX
 POSTHOOK: query: CREATE INDEX tbl_key_idx ON TABLE tbl(key) AS 'org.apache.hadoop.hive.ql.index.AggregateIndexHandler' WITH DEFERRED REBUILD IDXPROPERTIES("AGGREGATES"="count(key)")
 POSTHOOK: type: CREATEINDEX
+POSTHOOK: Output: default@default__tbl_tbl_key_idx__
 POSTHOOK: Lineage: default__lineitem_lineitem_lshipdate_idx__._bucketname SIMPLE [(lineitem)lineitem.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
 POSTHOOK: Lineage: default__lineitem_lineitem_lshipdate_idx__._count_of_l_shipdate EXPRESSION [(lineitem)lineitem.FieldSchema(name:l_shipdate, type:string, comment:null), ]
 POSTHOOK: Lineage: default__lineitem_lineitem_lshipdate_idx__._offsets EXPRESSION [(lineitem)lineitem.FieldSchema(name:BLOCK__OFFSET__INSIDE__FILE, type:bigint, comment:), ]
