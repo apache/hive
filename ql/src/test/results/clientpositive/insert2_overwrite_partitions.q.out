@@ -1,0 +1,311 @@
+PREHOOK: query: CREATE DATABASE db1
+PREHOOK: type: CREATEDATABASE
+POSTHOOK: query: CREATE DATABASE db1
+POSTHOOK: type: CREATEDATABASE
+PREHOOK: query: CREATE DATABASE db2
+PREHOOK: type: CREATEDATABASE
+POSTHOOK: query: CREATE DATABASE db2
+POSTHOOK: type: CREATEDATABASE
+PREHOOK: query: CREATE TABLE db1.sourceTable (one string,two string) PARTITIONED BY (ds string)
+PREHOOK: type: CREATETABLE
+POSTHOOK: query: CREATE TABLE db1.sourceTable (one string,two string) PARTITIONED BY (ds string)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: db1@sourceTable
+PREHOOK: query: load data local inpath '../data/files/kv1.txt' INTO TABLE db1.sourceTable partition(ds='2011-11-11')
+PREHOOK: type: LOAD
+PREHOOK: Output: db1@sourcetable
+POSTHOOK: query: load data local inpath '../data/files/kv1.txt' INTO TABLE db1.sourceTable partition(ds='2011-11-11')
+POSTHOOK: type: LOAD
+POSTHOOK: Output: db1@sourcetable
+POSTHOOK: Output: db1@sourcetable@ds=2011-11-11
+PREHOOK: query: load data local inpath '../data/files/kv3.txt' INTO TABLE db1.sourceTable partition(ds='2011-11-11')
+PREHOOK: type: LOAD
+PREHOOK: Output: db1@sourcetable@ds=2011-11-11
+POSTHOOK: query: load data local inpath '../data/files/kv3.txt' INTO TABLE db1.sourceTable partition(ds='2011-11-11')
+POSTHOOK: type: LOAD
+POSTHOOK: Output: db1@sourcetable@ds=2011-11-11
+PREHOOK: query: CREATE TABLE db2.destinTable (one string,two string) PARTITIONED BY (ds string)
+PREHOOK: type: CREATETABLE
+POSTHOOK: query: CREATE TABLE db2.destinTable (one string,two string) PARTITIONED BY (ds string)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: db2@destinTable
+PREHOOK: query: EXPLAIN INSERT OVERWRITE TABLE db2.destinTable PARTITION (ds='2011-11-11')
+SELECT one,two FROM db1.sourceTable WHERE ds='2011-11-11' order by one limit 5
+PREHOOK: type: QUERY
+POSTHOOK: query: EXPLAIN INSERT OVERWRITE TABLE db2.destinTable PARTITION (ds='2011-11-11')
+SELECT one,two FROM db1.sourceTable WHERE ds='2011-11-11' order by one limit 5
+POSTHOOK: type: QUERY
+ABSTRACT SYNTAX TREE:
+  (TOK_QUERY (TOK_FROM (TOK_TABREF (TOK_TABNAME db1 sourceTable))) (TOK_INSERT (TOK_DESTINATION (TOK_TAB (TOK_TABNAME db2 destinTable) (TOK_PARTSPEC (TOK_PARTVAL ds '2011-11-11')))) (TOK_SELECT (TOK_SELEXPR (TOK_TABLE_OR_COL one)) (TOK_SELEXPR (TOK_TABLE_OR_COL two))) (TOK_WHERE (= (TOK_TABLE_OR_COL ds) '2011-11-11')) (TOK_ORDERBY (TOK_TABSORTCOLNAMEASC (TOK_TABLE_OR_COL one))) (TOK_LIMIT 5)))
+
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-2 depends on stages: Stage-1
+  Stage-0 depends on stages: Stage-2
+  Stage-3 depends on stages: Stage-0
+
+STAGE PLANS:
+  Stage: Stage-1
+    Map Reduce
+      Alias -> Map Operator Tree:
+        db1.sourcetable 
+          TableScan
+            alias: db1.sourcetable
+            Select Operator
+              expressions:
+                    expr: one
+                    type: string
+                    expr: two
+                    type: string
+              outputColumnNames: _col0, _col1
+              Reduce Output Operator
+                key expressions:
+                      expr: _col0
+                      type: string
+                sort order: +
+                tag: -1
+                value expressions:
+                      expr: _col0
+                      type: string
+                      expr: _col1
+                      type: string
+      Reduce Operator Tree:
+        Extract
+          Limit
+            File Output Operator
+              compressed: false
+              GlobalTableId: 0
+              table:
+                  input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+
+  Stage: Stage-2
+    Map Reduce
+      Alias -> Map Operator Tree:
+#### A masked pattern was here ####
+            Reduce Output Operator
+              key expressions:
+                    expr: _col0
+                    type: string
+              sort order: +
+              tag: -1
+              value expressions:
+                    expr: _col0
+                    type: string
+                    expr: _col1
+                    type: string
+      Reduce Operator Tree:
+        Extract
+          Limit
+            File Output Operator
+              compressed: false
+              GlobalTableId: 1
+              table:
+                  input format: org.apache.hadoop.mapred.TextInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                  name: db2.destintable
+
+  Stage: Stage-0
+    Move Operator
+      tables:
+          partition:
+            ds 2011-11-11
+          replace: true
+          table:
+              input format: org.apache.hadoop.mapred.TextInputFormat
+              output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+              serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+              name: db2.destintable
+
+  Stage: Stage-3
+    Stats-Aggr Operator
+
+
+PREHOOK: query: INSERT OVERWRITE TABLE db2.destinTable PARTITION (ds='2011-11-11')
+SELECT one,two FROM db1.sourceTable WHERE ds='2011-11-11' order by one limit 5
+PREHOOK: type: QUERY
+PREHOOK: Input: db1@sourcetable@ds=2011-11-11
+PREHOOK: Output: db2@destintable@ds=2011-11-11
+POSTHOOK: query: INSERT OVERWRITE TABLE db2.destinTable PARTITION (ds='2011-11-11')
+SELECT one,two FROM db1.sourceTable WHERE ds='2011-11-11' order by one limit 5
+POSTHOOK: type: QUERY
+POSTHOOK: Input: db1@sourcetable@ds=2011-11-11
+POSTHOOK: Output: db2@destintable@ds=2011-11-11
+POSTHOOK: Lineage: destintable PARTITION(ds=2011-11-11).one SIMPLE [(sourcetable)db1.sourcetable.FieldSchema(name:one, type:string, comment:null), ]
+POSTHOOK: Lineage: destintable PARTITION(ds=2011-11-11).two SIMPLE [(sourcetable)db1.sourcetable.FieldSchema(name:two, type:string, comment:null), ]
+PREHOOK: query: select one,two from db2.destinTable
+PREHOOK: type: QUERY
+PREHOOK: Input: db2@destintable@ds=2011-11-11
+#### A masked pattern was here ####
+POSTHOOK: query: select one,two from db2.destinTable
+POSTHOOK: type: QUERY
+POSTHOOK: Input: db2@destintable@ds=2011-11-11
+#### A masked pattern was here ####
+POSTHOOK: Lineage: destintable PARTITION(ds=2011-11-11).one SIMPLE [(sourcetable)db1.sourcetable.FieldSchema(name:one, type:string, comment:null), ]
+POSTHOOK: Lineage: destintable PARTITION(ds=2011-11-11).two SIMPLE [(sourcetable)db1.sourcetable.FieldSchema(name:two, type:string, comment:null), ]
+	
+	
+	val_27
+	val_165
+	val_409
+PREHOOK: query: EXPLAIN INSERT OVERWRITE TABLE db2.destinTable PARTITION (ds='2011-11-11')
+SELECT one,two FROM db1.sourceTable WHERE ds='2011-11-11' order by one limit 5
+PREHOOK: type: QUERY
+POSTHOOK: query: EXPLAIN INSERT OVERWRITE TABLE db2.destinTable PARTITION (ds='2011-11-11')
+SELECT one,two FROM db1.sourceTable WHERE ds='2011-11-11' order by one limit 5
+POSTHOOK: type: QUERY
+POSTHOOK: Lineage: destintable PARTITION(ds=2011-11-11).one SIMPLE [(sourcetable)db1.sourcetable.FieldSchema(name:one, type:string, comment:null), ]
+POSTHOOK: Lineage: destintable PARTITION(ds=2011-11-11).two SIMPLE [(sourcetable)db1.sourcetable.FieldSchema(name:two, type:string, comment:null), ]
+ABSTRACT SYNTAX TREE:
+  (TOK_QUERY (TOK_FROM (TOK_TABREF (TOK_TABNAME db1 sourceTable))) (TOK_INSERT (TOK_DESTINATION (TOK_TAB (TOK_TABNAME db2 destinTable) (TOK_PARTSPEC (TOK_PARTVAL ds '2011-11-11')))) (TOK_SELECT (TOK_SELEXPR (TOK_TABLE_OR_COL one)) (TOK_SELEXPR (TOK_TABLE_OR_COL two))) (TOK_WHERE (= (TOK_TABLE_OR_COL ds) '2011-11-11')) (TOK_ORDERBY (TOK_TABSORTCOLNAMEASC (TOK_TABLE_OR_COL one))) (TOK_LIMIT 5)))
+
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-2 depends on stages: Stage-1
+  Stage-0 depends on stages: Stage-2
+  Stage-3 depends on stages: Stage-0
+
+STAGE PLANS:
+  Stage: Stage-1
+    Map Reduce
+      Alias -> Map Operator Tree:
+        db1.sourcetable 
+          TableScan
+            alias: db1.sourcetable
+            Select Operator
+              expressions:
+                    expr: one
+                    type: string
+                    expr: two
+                    type: string
+              outputColumnNames: _col0, _col1
+              Reduce Output Operator
+                key expressions:
+                      expr: _col0
+                      type: string
+                sort order: +
+                tag: -1
+                value expressions:
+                      expr: _col0
+                      type: string
+                      expr: _col1
+                      type: string
+      Reduce Operator Tree:
+        Extract
+          Limit
+            File Output Operator
+              compressed: false
+              GlobalTableId: 0
+              table:
+                  input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+
+  Stage: Stage-2
+    Map Reduce
+      Alias -> Map Operator Tree:
+#### A masked pattern was here ####
+            Reduce Output Operator
+              key expressions:
+                    expr: _col0
+                    type: string
+              sort order: +
+              tag: -1
+              value expressions:
+                    expr: _col0
+                    type: string
+                    expr: _col1
+                    type: string
+      Reduce Operator Tree:
+        Extract
+          Limit
+            File Output Operator
+              compressed: false
+              GlobalTableId: 1
+              table:
+                  input format: org.apache.hadoop.mapred.TextInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                  name: db2.destintable
+
+  Stage: Stage-0
+    Move Operator
+      tables:
+          partition:
+            ds 2011-11-11
+          replace: true
+          table:
+              input format: org.apache.hadoop.mapred.TextInputFormat
+              output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+              serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+              name: db2.destintable
+
+  Stage: Stage-3
+    Stats-Aggr Operator
+
+
+PREHOOK: query: INSERT OVERWRITE TABLE db2.destinTable PARTITION (ds='2011-11-11')
+SELECT one,two FROM db1.sourceTable WHERE ds='2011-11-11' order by one limit 5
+PREHOOK: type: QUERY
+PREHOOK: Input: db1@sourcetable@ds=2011-11-11
+PREHOOK: Output: db2@destintable@ds=2011-11-11
+POSTHOOK: query: INSERT OVERWRITE TABLE db2.destinTable PARTITION (ds='2011-11-11')
+SELECT one,two FROM db1.sourceTable WHERE ds='2011-11-11' order by one limit 5
+POSTHOOK: type: QUERY
+POSTHOOK: Input: db1@sourcetable@ds=2011-11-11
+POSTHOOK: Output: db2@destintable@ds=2011-11-11
+POSTHOOK: Lineage: destintable PARTITION(ds=2011-11-11).one SIMPLE [(sourcetable)db1.sourcetable.FieldSchema(name:one, type:string, comment:null), ]
+POSTHOOK: Lineage: destintable PARTITION(ds=2011-11-11).two SIMPLE [(sourcetable)db1.sourcetable.FieldSchema(name:two, type:string, comment:null), ]
+POSTHOOK: Lineage: destintable PARTITION(ds=2011-11-11).one SIMPLE [(sourcetable)db1.sourcetable.FieldSchema(name:one, type:string, comment:null), ]
+POSTHOOK: Lineage: destintable PARTITION(ds=2011-11-11).two SIMPLE [(sourcetable)db1.sourcetable.FieldSchema(name:two, type:string, comment:null), ]
+PREHOOK: query: select one,two from db2.destinTable
+PREHOOK: type: QUERY
+PREHOOK: Input: db2@destintable@ds=2011-11-11
+#### A masked pattern was here ####
+POSTHOOK: query: select one,two from db2.destinTable
+POSTHOOK: type: QUERY
+POSTHOOK: Input: db2@destintable@ds=2011-11-11
+#### A masked pattern was here ####
+POSTHOOK: Lineage: destintable PARTITION(ds=2011-11-11).one SIMPLE [(sourcetable)db1.sourcetable.FieldSchema(name:one, type:string, comment:null), ]
+POSTHOOK: Lineage: destintable PARTITION(ds=2011-11-11).two SIMPLE [(sourcetable)db1.sourcetable.FieldSchema(name:two, type:string, comment:null), ]
+POSTHOOK: Lineage: destintable PARTITION(ds=2011-11-11).one SIMPLE [(sourcetable)db1.sourcetable.FieldSchema(name:one, type:string, comment:null), ]
+POSTHOOK: Lineage: destintable PARTITION(ds=2011-11-11).two SIMPLE [(sourcetable)db1.sourcetable.FieldSchema(name:two, type:string, comment:null), ]
+	
+	
+	val_27
+	val_165
+	val_409
+PREHOOK: query: drop table db2.destinTable
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: drop table db2.destinTable
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: db2@destintable
+POSTHOOK: Lineage: destintable PARTITION(ds=2011-11-11).one SIMPLE [(sourcetable)db1.sourcetable.FieldSchema(name:one, type:string, comment:null), ]
+POSTHOOK: Lineage: destintable PARTITION(ds=2011-11-11).two SIMPLE [(sourcetable)db1.sourcetable.FieldSchema(name:two, type:string, comment:null), ]
+POSTHOOK: Lineage: destintable PARTITION(ds=2011-11-11).one SIMPLE [(sourcetable)db1.sourcetable.FieldSchema(name:one, type:string, comment:null), ]
+POSTHOOK: Lineage: destintable PARTITION(ds=2011-11-11).two SIMPLE [(sourcetable)db1.sourcetable.FieldSchema(name:two, type:string, comment:null), ]
+PREHOOK: query: drop table db1.sourceTable
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: drop table db1.sourceTable
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: db1@sourcetable
+POSTHOOK: Lineage: destintable PARTITION(ds=2011-11-11).one SIMPLE [(sourcetable)db1.sourcetable.FieldSchema(name:one, type:string, comment:null), ]
+POSTHOOK: Lineage: destintable PARTITION(ds=2011-11-11).two SIMPLE [(sourcetable)db1.sourcetable.FieldSchema(name:two, type:string, comment:null), ]
+POSTHOOK: Lineage: destintable PARTITION(ds=2011-11-11).one SIMPLE [(sourcetable)db1.sourcetable.FieldSchema(name:one, type:string, comment:null), ]
+POSTHOOK: Lineage: destintable PARTITION(ds=2011-11-11).two SIMPLE [(sourcetable)db1.sourcetable.FieldSchema(name:two, type:string, comment:null), ]
+PREHOOK: query: DROP DATABASE db1
+PREHOOK: type: DROPDATABASE
+POSTHOOK: query: DROP DATABASE db1
+POSTHOOK: type: DROPDATABASE
+POSTHOOK: Lineage: destintable PARTITION(ds=2011-11-11).one SIMPLE [(sourcetable)db1.sourcetable.FieldSchema(name:one, type:string, comment:null), ]
+POSTHOOK: Lineage: destintable PARTITION(ds=2011-11-11).two SIMPLE [(sourcetable)db1.sourcetable.FieldSchema(name:two, type:string, comment:null), ]
+POSTHOOK: Lineage: destintable PARTITION(ds=2011-11-11).one SIMPLE [(sourcetable)db1.sourcetable.FieldSchema(name:one, type:string, comment:null), ]
+POSTHOOK: Lineage: destintable PARTITION(ds=2011-11-11).two SIMPLE [(sourcetable)db1.sourcetable.FieldSchema(name:two, type:string, comment:null), ]
+PREHOOK: query: DROP DATABASE db2
+PREHOOK: type: DROPDATABASE
+POSTHOOK: query: DROP DATABASE db2
+POSTHOOK: type: DROPDATABASE
+POSTHOOK: Lineage: destintable PARTITION(ds=2011-11-11).one SIMPLE [(sourcetable)db1.sourcetable.FieldSchema(name:one, type:string, comment:null), ]
+POSTHOOK: Lineage: destintable PARTITION(ds=2011-11-11).two SIMPLE [(sourcetable)db1.sourcetable.FieldSchema(name:two, type:string, comment:null), ]
+POSTHOOK: Lineage: destintable PARTITION(ds=2011-11-11).one SIMPLE [(sourcetable)db1.sourcetable.FieldSchema(name:one, type:string, comment:null), ]
+POSTHOOK: Lineage: destintable PARTITION(ds=2011-11-11).two SIMPLE [(sourcetable)db1.sourcetable.FieldSchema(name:two, type:string, comment:null), ]
