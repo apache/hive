@@ -20,7 +20,7 @@ create table sih_src2 as select key, value from sih_src order by key, value;
 
 set hive.exec.post.hooks = org.apache.hadoop.hive.ql.hooks.VerifyIsLocalModeHook ;
 set mapred.job.tracker=does.notexist.com:666;
-set hive.exec.mode.local.auto.tasks.max=1;
+set hive.exec.mode.local.auto.input.files.max=1;
 
 -- sample split, running locally limited by num tasks
 select count(1) from sih_src tablesample(1 percent);
@@ -31,7 +31,7 @@ set mapred.job.tracker=does.notexist.com:666;
 select count(1) from sih_src tablesample(1 percent)a join sih_src2 tablesample(1 percent)b on a.key = b.key;
 
 set hive.exec.mode.local.auto.inputbytes.max=1000;
-set hive.exec.mode.local.auto.tasks.max=4;
+set hive.exec.mode.local.auto.input.files.max=4;
 set mapred.job.tracker=does.notexist.com:666;
 
 -- sample split, running locally limited by max bytes

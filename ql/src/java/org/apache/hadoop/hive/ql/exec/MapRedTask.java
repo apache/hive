@@ -513,7 +513,7 @@ public class MapRedTask extends ExecDriver implements Serializable {
                                               long inputFileCount) {
 
     long maxBytes = conf.getLongVar(HiveConf.ConfVars.LOCALMODEMAXBYTES);
-    long maxTasks = conf.getIntVar(HiveConf.ConfVars.LOCALMODEMAXTASKS);
+    long maxInputFiles = conf.getIntVar(HiveConf.ConfVars.LOCALMODEMAXINPUTFILES);
 
     // check for max input size
     if (inputLength > maxBytes) {
@@ -525,10 +525,10 @@ public class MapRedTask extends ExecDriver implements Serializable {
     // in the absence of an easy way to get the number of splits - do this
     // based on the total number of files (pessimistically assumming that
     // splits are equal to number of files in worst case)
-    if (inputFileCount > maxTasks) {
+    if (inputFileCount > maxInputFiles) {
       return "Number of Input Files (= " + inputFileCount +
         ") is larger than " +
-        HiveConf.ConfVars.LOCALMODEMAXTASKS.varname + "(= " + maxTasks + ")";
+        HiveConf.ConfVars.LOCALMODEMAXINPUTFILES.varname + "(= " + maxInputFiles + ")";
     }
 
     // since local mode only runs with 1 reducers - make sure that the
