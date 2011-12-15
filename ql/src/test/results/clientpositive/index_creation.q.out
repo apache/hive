@@ -38,6 +38,7 @@ PREHOOK: query: create index src_index_2 on table src(key) as 'compact' WITH DEF
 PREHOOK: type: CREATEINDEX
 POSTHOOK: query: create index src_index_2 on table src(key) as 'compact' WITH DEFERRED REBUILD
 POSTHOOK: type: CREATEINDEX
+POSTHOOK: Output: default@default__src_src_index_2__
 PREHOOK: query: desc extended default__src_src_index_2__
 PREHOOK: type: DESCTABLE
 POSTHOOK: query: desc extended default__src_src_index_2__
@@ -51,6 +52,7 @@ PREHOOK: query: create index src_index_3 on table src(key) as 'compact' WITH DEF
 PREHOOK: type: CREATEINDEX
 POSTHOOK: query: create index src_index_3 on table src(key) as 'compact' WITH DEFERRED REBUILD in table src_idx_src_index_3
 POSTHOOK: type: CREATEINDEX
+POSTHOOK: Output: default@src_idx_src_index_3
 PREHOOK: query: desc extended src_idx_src_index_3
 PREHOOK: type: DESCTABLE
 POSTHOOK: query: desc extended src_idx_src_index_3
@@ -64,6 +66,7 @@ PREHOOK: query: create index src_index_4 on table src(key) as 'compact' WITH DEF
 PREHOOK: type: CREATEINDEX
 POSTHOOK: query: create index src_index_4 on table src(key) as 'compact' WITH DEFERRED REBUILD ROW FORMAT DELIMITED FIELDS TERMINATED BY '\t' STORED AS TEXTFILE
 POSTHOOK: type: CREATEINDEX
+POSTHOOK: Output: default@default__src_src_index_4__
 PREHOOK: query: desc extended default__src_src_index_4__
 PREHOOK: type: DESCTABLE
 POSTHOOK: query: desc extended default__src_src_index_4__
@@ -77,6 +80,7 @@ PREHOOK: query: create index src_index_5 on table src(key) as 'compact' WITH DEF
 PREHOOK: type: CREATEINDEX
 POSTHOOK: query: create index src_index_5 on table src(key) as 'compact' WITH DEFERRED REBUILD ROW FORMAT DELIMITED FIELDS TERMINATED BY '\t' ESCAPED BY '\\'
 POSTHOOK: type: CREATEINDEX
+POSTHOOK: Output: default@default__src_src_index_5__
 PREHOOK: query: desc extended default__src_src_index_5__
 PREHOOK: type: DESCTABLE
 POSTHOOK: query: desc extended default__src_src_index_5__
@@ -90,6 +94,7 @@ PREHOOK: query: create index src_index_6 on table src(key) as 'compact' WITH DEF
 PREHOOK: type: CREATEINDEX
 POSTHOOK: query: create index src_index_6 on table src(key) as 'compact' WITH DEFERRED REBUILD STORED AS RCFILE
 POSTHOOK: type: CREATEINDEX
+POSTHOOK: Output: default@default__src_src_index_6__
 PREHOOK: query: desc extended default__src_src_index_6__
 PREHOOK: type: DESCTABLE
 POSTHOOK: query: desc extended default__src_src_index_6__
@@ -103,6 +108,7 @@ PREHOOK: query: create index src_index_7 on table src(key) as 'compact' WITH DEF
 PREHOOK: type: CREATEINDEX
 POSTHOOK: query: create index src_index_7 on table src(key) as 'compact' WITH DEFERRED REBUILD in table src_idx_src_index_7 STORED AS RCFILE
 POSTHOOK: type: CREATEINDEX
+POSTHOOK: Output: default@src_idx_src_index_7
 PREHOOK: query: desc extended src_idx_src_index_7
 PREHOOK: type: DESCTABLE
 POSTHOOK: query: desc extended src_idx_src_index_7
@@ -116,6 +122,7 @@ PREHOOK: query: create index src_index_8 on table src(key) as 'compact' WITH DEF
 PREHOOK: type: CREATEINDEX
 POSTHOOK: query: create index src_index_8 on table src(key) as 'compact' WITH DEFERRED REBUILD IDXPROPERTIES ("prop1"="val1", "prop2"="val2")
 POSTHOOK: type: CREATEINDEX
+POSTHOOK: Output: default@default__src_src_index_8__
 PREHOOK: query: desc extended default__src_src_index_8__
 PREHOOK: type: DESCTABLE
 POSTHOOK: query: desc extended default__src_src_index_8__
@@ -129,6 +136,7 @@ PREHOOK: query: create index src_index_9 on table src(key) as 'compact' WITH DEF
 PREHOOK: type: CREATEINDEX
 POSTHOOK: query: create index src_index_9 on table src(key) as 'compact' WITH DEFERRED REBUILD TBLPROPERTIES ("prop1"="val1", "prop2"="val2")
 POSTHOOK: type: CREATEINDEX
+POSTHOOK: Output: default@default__src_src_index_9__
 PREHOOK: query: desc extended default__src_src_index_9__
 PREHOOK: type: DESCTABLE
 POSTHOOK: query: desc extended default__src_src_index_9__
@@ -147,6 +155,7 @@ PREHOOK: query: create index x on table `_t`(`_j`) as 'compact' WITH DEFERRED RE
 PREHOOK: type: CREATEINDEX
 POSTHOOK: query: create index x on table `_t`(`_j`) as 'compact' WITH DEFERRED REBUILD
 POSTHOOK: type: CREATEINDEX
+POSTHOOK: Output: default@default___t_x__
 PREHOOK: query: alter index x on `_t` rebuild
 PREHOOK: type: ALTERINDEX_REBUILD
 PREHOOK: Input: default@_t
@@ -164,6 +173,7 @@ PREHOOK: type: CREATEINDEX
 POSTHOOK: query: create index x2 on table `_t`(`_i`,`_j`) as 'compact' WITH DEFERRED
 REBUILD
 POSTHOOK: type: CREATEINDEX
+POSTHOOK: Output: default@default___t_x2__
 POSTHOOK: Lineage: default___t_x__._bucketname SIMPLE [(_t)_t.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
 POSTHOOK: Lineage: default___t_x__._j SIMPLE [(_t)_t.FieldSchema(name:_j, type:int, comment:null), ]
 POSTHOOK: Lineage: default___t_x__._offsets EXPRESSION [(_t)_t.FieldSchema(name:BLOCK__OFFSET__INSIDE__FILE, type:bigint, comment:), ]

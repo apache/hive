@@ -87,7 +87,9 @@ public class DDLWork implements Serializable {
     this.outputs = outputs;
   }
 
-  public DDLWork(CreateIndexDesc createIndex) {
+  public DDLWork(HashSet<ReadEntity> inputs, HashSet<WriteEntity> outputs,
+      CreateIndexDesc createIndex) {
+    this(inputs, outputs);
     this.createIndexDesc = createIndex;
   }
 

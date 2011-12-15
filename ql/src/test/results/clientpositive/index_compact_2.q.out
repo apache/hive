@@ -59,6 +59,7 @@ PREHOOK: query: CREATE INDEX srcpart_rc_index ON TABLE srcpart_rc(key) as 'COMPA
 PREHOOK: type: CREATEINDEX
 POSTHOOK: query: CREATE INDEX srcpart_rc_index ON TABLE srcpart_rc(key) as 'COMPACT' WITH DEFERRED REBUILD
 POSTHOOK: type: CREATEINDEX
+POSTHOOK: Output: default@default__srcpart_rc_srcpart_rc_index__
 POSTHOOK: Lineage: srcpart_rc PARTITION(ds=2008-04-08,hr=11).key EXPRESSION [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: srcpart_rc PARTITION(ds=2008-04-08,hr=11).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: srcpart_rc PARTITION(ds=2008-04-08,hr=12).key EXPRESSION [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
@@ -268,6 +269,7 @@ PREHOOK: query: CREATE INDEX srcpart_rc_index ON TABLE srcpart_rc(key) as 'COMPA
 PREHOOK: type: CREATEINDEX
 POSTHOOK: query: CREATE INDEX srcpart_rc_index ON TABLE srcpart_rc(key) as 'COMPACT' WITH DEFERRED REBUILD
 POSTHOOK: type: CREATEINDEX
+POSTHOOK: Output: default@default__srcpart_rc_srcpart_rc_index__
 POSTHOOK: Lineage: default__srcpart_rc_srcpart_rc_index__ PARTITION(ds=2008-04-09,hr=12)._bucketname SIMPLE [(srcpart_rc)srcpart_rc.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
 POSTHOOK: Lineage: default__srcpart_rc_srcpart_rc_index__ PARTITION(ds=2008-04-09,hr=12)._offsets EXPRESSION [(srcpart_rc)srcpart_rc.FieldSchema(name:BLOCK__OFFSET__INSIDE__FILE, type:bigint, comment:), ]
 POSTHOOK: Lineage: default__srcpart_rc_srcpart_rc_index__ PARTITION(ds=2008-04-09,hr=12).key SIMPLE [(srcpart_rc)srcpart_rc.FieldSchema(name:key, type:int, comment:null), ]

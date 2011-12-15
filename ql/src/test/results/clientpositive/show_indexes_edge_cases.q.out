@@ -20,18 +20,22 @@ PREHOOK: query: CREATE INDEX idx_1 ON TABLE show_idx_full(KEY) AS "COMPACT" WITH
 PREHOOK: type: CREATEINDEX
 POSTHOOK: query: CREATE INDEX idx_1 ON TABLE show_idx_full(KEY) AS "COMPACT" WITH DEFERRED REBUILD
 POSTHOOK: type: CREATEINDEX
+POSTHOOK: Output: default@default__show_idx_full_idx_1__
 PREHOOK: query: CREATE INDEX idx_2 ON TABLE show_idx_full(VALUE1) AS "COMPACT" WITH DEFERRED REBUILD
 PREHOOK: type: CREATEINDEX
 POSTHOOK: query: CREATE INDEX idx_2 ON TABLE show_idx_full(VALUE1) AS "COMPACT" WITH DEFERRED REBUILD
 POSTHOOK: type: CREATEINDEX
+POSTHOOK: Output: default@default__show_idx_full_idx_2__
 PREHOOK: query: CREATE INDEX idx_comment ON TABLE show_idx_full(VALUE2) AS "COMPACT" WITH DEFERRED REBUILD COMMENT "index comment"
 PREHOOK: type: CREATEINDEX
 POSTHOOK: query: CREATE INDEX idx_comment ON TABLE show_idx_full(VALUE2) AS "COMPACT" WITH DEFERRED REBUILD COMMENT "index comment"
 POSTHOOK: type: CREATEINDEX
+POSTHOOK: Output: default@default__show_idx_full_idx_comment__
 PREHOOK: query: CREATE INDEX idx_compound ON TABLE show_idx_full(KEY, VALUE1) AS "COMPACT" WITH DEFERRED REBUILD
 PREHOOK: type: CREATEINDEX
 POSTHOOK: query: CREATE INDEX idx_compound ON TABLE show_idx_full(KEY, VALUE1) AS "COMPACT" WITH DEFERRED REBUILD
 POSTHOOK: type: CREATEINDEX
+POSTHOOK: Output: default@default__show_idx_full_idx_compound__
 PREHOOK: query: ALTER INDEX idx_1 ON show_idx_full REBUILD
 PREHOOK: type: ALTERINDEX_REBUILD
 PREHOOK: Input: default@show_idx_full

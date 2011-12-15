@@ -6,6 +6,7 @@ POSTHOOK: query: -- test cases where the index should not be used automatically
 
 CREATE INDEX src_index ON TABLE src(key) as 'COMPACT' WITH DEFERRED REBUILD
 POSTHOOK: type: CREATEINDEX
+POSTHOOK: Output: default@default__src_src_index__
 PREHOOK: query: ALTER INDEX src_index ON src REBUILD
 PREHOOK: type: ALTERINDEX_REBUILD
 PREHOOK: Input: default@src
@@ -319,6 +320,7 @@ PREHOOK: query: CREATE INDEX src_val_index ON TABLE src(value) as 'COMPACT' WITH
 PREHOOK: type: CREATEINDEX
 POSTHOOK: query: CREATE INDEX src_val_index ON TABLE src(value) as 'COMPACT' WITH DEFERRED REBUILD
 POSTHOOK: type: CREATEINDEX
+POSTHOOK: Output: default@default__src_src_val_index__
 POSTHOOK: Lineage: default__src_src_index__._bucketname SIMPLE [(src)src.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
 POSTHOOK: Lineage: default__src_src_index__._offsets EXPRESSION [(src)src.FieldSchema(name:BLOCK__OFFSET__INSIDE__FILE, type:bigint, comment:), ]
 POSTHOOK: Lineage: default__src_src_index__.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
@@ -448,6 +450,7 @@ PREHOOK: type: CREATEINDEX
 POSTHOOK: query: -- required partitions have not been built yet
 CREATE INDEX src_part_index ON TABLE srcpart(key) as 'COMPACT' WITH DEFERRED REBUILD
 POSTHOOK: type: CREATEINDEX
+POSTHOOK: Output: default@default__srcpart_src_part_index__
 POSTHOOK: Lineage: default__src_src_index__._bucketname SIMPLE [(src)src.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
 POSTHOOK: Lineage: default__src_src_index__._offsets EXPRESSION [(src)src.FieldSchema(name:BLOCK__OFFSET__INSIDE__FILE, type:bigint, comment:), ]
 POSTHOOK: Lineage: default__src_src_index__.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]

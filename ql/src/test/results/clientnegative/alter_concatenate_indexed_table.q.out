@@ -60,6 +60,7 @@ PREHOOK: query: create index src_rc_concatenate_test_index on table src_rc_conca
 PREHOOK: type: CREATEINDEX
 POSTHOOK: query: create index src_rc_concatenate_test_index on table src_rc_concatenate_test(key) as 'compact' WITH DEFERRED REBUILD IDXPROPERTIES ("prop1"="val1", "prop2"="val2")
 POSTHOOK: type: CREATEINDEX
+POSTHOOK: Output: default@default__src_rc_concatenate_test_src_rc_concatenate_test_index__
 PREHOOK: query: show indexes on src_rc_concatenate_test
 PREHOOK: type: SHOWINDEXES
 POSTHOOK: query: show indexes on src_rc_concatenate_test

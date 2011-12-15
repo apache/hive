@@ -788,7 +788,8 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
         shared.serde, shared.serdeProps, rowFormatParams.collItemDelim,
         rowFormatParams.fieldDelim, rowFormatParams.fieldEscape,
         rowFormatParams.lineDelim, rowFormatParams.mapKeyDelim, indexComment);
-    Task<?> createIndex = TaskFactory.get(new DDLWork(crtIndexDesc), conf);
+    Task<?> createIndex =
+        TaskFactory.get(new DDLWork(getInputs(), getOutputs(), crtIndexDesc), conf);
     rootTasks.add(createIndex);
   }
 
@@ -2094,7 +2095,7 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
    * throwIfNonExistent is true, otherwise ignore it.
    */
   private void addTablePartsOutputs(String tblName, List<Map<String, String>> partSpecs,
-				    boolean throwIfNonExistent, boolean allowMany, ASTNode ast)
+            boolean throwIfNonExistent, boolean allowMany, ASTNode ast)
     throws SemanticException {
     Table tab;
     try {

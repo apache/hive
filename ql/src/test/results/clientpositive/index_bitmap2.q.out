@@ -34,10 +34,12 @@ PREHOOK: query: CREATE INDEX src1_index ON TABLE src(key) as 'BITMAP' WITH DEFER
 PREHOOK: type: CREATEINDEX
 POSTHOOK: query: CREATE INDEX src1_index ON TABLE src(key) as 'BITMAP' WITH DEFERRED REBUILD
 POSTHOOK: type: CREATEINDEX
+POSTHOOK: Output: default@default__src_src1_index__
 PREHOOK: query: CREATE INDEX src2_index ON TABLE src(value) as 'BITMAP' WITH DEFERRED REBUILD
 PREHOOK: type: CREATEINDEX
 POSTHOOK: query: CREATE INDEX src2_index ON TABLE src(value) as 'BITMAP' WITH DEFERRED REBUILD
 POSTHOOK: type: CREATEINDEX
+POSTHOOK: Output: default@default__src_src2_index__
 PREHOOK: query: ALTER INDEX src1_index ON src REBUILD
 PREHOOK: type: ALTERINDEX_REBUILD
 PREHOOK: Input: default@src
