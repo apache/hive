@@ -187,4 +187,29 @@ public class TestHiveHistory extends TestCase {
     }
   }
 
+  public void testQueryloglocParentDirNotExist() throws Exception {
+    String parentTmpDir = tmpdir + "/HIVE2654";
+    Path parentDirPath = new Path(parentTmpDir);
+    try {
+      fs.delete(parentDirPath, true);
+    } catch (Exception e) {
+    }
+    try {
+      String actualDir = parentTmpDir + "/test";
+      HiveConf conf = new HiveConf(SessionState.class);
+      conf.set(HiveConf.ConfVars.HIVEHISTORYFILELOC.toString(), actualDir);
+      SessionState ss = new CliSessionState(conf);
+      HiveHistory hiveHistory = new HiveHistory(ss);
+      Path actualPath = new Path(actualDir);
+      if (!fs.exists(actualPath)) {
+        fail("Query location path is not exist :" + actualPath.toString());
+      }
+    } finally {
+      try {
+        fs.delete(parentDirPath, true);
+      } catch (Exception e) {
+      }
+    }
+  }
+
 }
