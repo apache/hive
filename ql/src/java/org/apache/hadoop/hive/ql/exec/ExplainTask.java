@@ -18,21 +18,25 @@
 
 package org.apache.hadoop.hive.ql.exec;
 
+import static org.apache.hadoop.hive.serde.Constants.STRING_TYPE_NAME;
+
 import java.io.OutputStream;
 import java.io.PrintStream;
 import java.io.Serializable;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 import java.util.TreeMap;
-import java.util.Map.Entry;
 
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.ql.Context;
 import org.apache.hadoop.hive.ql.DriverContext;
 import org.apache.hadoop.hive.ql.plan.Explain;
@@ -50,7 +54,7 @@ import java.lang.reflect.InvocationTargetException;
  **/
 public class ExplainTask extends Task<ExplainWork> implements Serializable {
   private static final long serialVersionUID = 1L;
-
+  public static final String EXPL_COLUMN_NAME = "Explain";
   public ExplainTask() {
     super();
   }
@@ -647,4 +651,14 @@ public class ExplainTask extends Task<ExplainWork> implements Serializable {
     throw new RuntimeException("Unexpected call");
   }
 
+  public List<FieldSchema> getResultSchema() {
+    FieldSchema tmpFieldSchema = new FieldSchema();
+    List<FieldSchema> colList = new ArrayList<FieldSchema>();
+
+    tmpFieldSchema.setName(EXPL_COLUMN_NAME);
+    tmpFieldSchema.setType(STRING_TYPE_NAME);
+
+    colList.add(tmpFieldSchema);
+    return colList;
+  }
 }
