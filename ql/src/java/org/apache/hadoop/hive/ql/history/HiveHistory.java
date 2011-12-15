@@ -234,7 +234,7 @@ public class HiveHistory {
       // Create directory
       File f = new File(conf_file_loc);
       if (!f.exists()) {
-        if (!f.mkdir()) {
+        if (!f.mkdirs()) {
           console.printError("Unable to create log directory " + conf_file_loc);
           return;
         }
