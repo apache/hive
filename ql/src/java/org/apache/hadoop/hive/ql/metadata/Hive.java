@@ -1460,7 +1460,11 @@ public class Hive {
             throw new HiveException("new partition path should not be null or empty.");
           }
           tpart.getSd().setLocation(partPath);
-          alterPartition(tbl.getTableName(), new Partition(tbl, tpart));
+          String fullName = tbl.getTableName();
+          if (!org.apache.commons.lang.StringUtils.isEmpty(tbl.getDbName())) {
+            fullName = tbl.getDbName() + "." + tbl.getTableName();
+          }
+          alterPartition(fullName, new Partition(tbl, tpart));
         }
       }
       if (tpart == null) {
