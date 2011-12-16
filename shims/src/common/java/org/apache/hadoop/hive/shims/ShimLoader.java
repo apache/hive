@@ -117,6 +117,9 @@ public abstract class ShimLoader {
       throw new RuntimeException("Illegal Hadoop Version: " + vers +
           " (expected A.B.* format)");
     }
+    if (Integer.parseInt(parts[0]) > 0){
+      return "0.20S";
+    }
     String majorVersion = parts[0] + "." + parts[1];
 
     // If we are running a security release, we won't have UnixUserGroupInformation
