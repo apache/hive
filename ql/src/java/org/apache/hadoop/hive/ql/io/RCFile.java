@@ -158,6 +158,11 @@ public class RCFile {
   public static final String TOLERATE_CORRUPTIONS_CONF_STR =
     "hive.io.rcfile.tolerate.corruptions";
 
+  // HACK: We actually need BlockMissingException, but that is not available
+  // in all hadoop versions.
+  public static final String BLOCK_MISSING_MESSAGE =
+    "Could not obtain block";
+
   /*
    * these header and Sync are kept from SequenceFile, for compatible of
    * SequenceFile's format.
@@ -1549,18 +1554,18 @@ public class RCFile {
       try {
         ret = nextKeyBuffer();
         this.currentValueBuffer();
-      } catch (EOFException eof) {
-        LOG.warn("Ignoring EOFException in file " + file +
-                 " after offset " + currentOffset, eof);
-        ret = -1;
-      } catch (ChecksumException ce) {
-        LOG.warn("Ignoring ChecksumException in file " + file +
-                 " after offset " + currentOffset, ce);
-        ret = -1;
       } catch (IOException ioe) {
-        // We have an IOException other than EOF or ChecksumException
-        // This is likely a read-error, not corruption, re-throw.
-        throw ioe;
+        // A BlockMissingException indicates a temporary error,
+        // not a corruption. Re-throw this exception.
+        String msg = ioe.getMessage();
+        if (msg != null && msg.startsWith(BLOCK_MISSING_MESSAGE)) {
+          LOG.warn("Re-throwing block-missing exception" + ioe);
+          throw ioe;
+        }
+        // We have an IOException other than a BlockMissingException.
+        LOG.warn("Ignoring IOException in file " + file +
+                 " after offset " + currentOffset, ioe);
+        ret = -1;
       } catch (Throwable t) {
         // We got an exception that is not IOException
         // (typically OOM, IndexOutOfBounds, InternalError).
