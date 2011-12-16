@@ -143,6 +143,9 @@ else
     CLASSPATH=${CLASSPATH}:${AUX_CLASSPATH}
 fi
 
+# supress the HADOOP_HOME warnings in 1.x.x
+export HADOOP_HOME_WARN_SUPPRESS=true 
+
 # pass classpath to hadoop
 export HADOOP_CLASSPATH="${HADOOP_CLASSPATH}:${CLASSPATH}"
 
@@ -184,7 +187,7 @@ else
     exit 5
 fi
 
-if [ "$hadoop_minor_ver$hadoop_patch_ver" -lt "201" ]; then
+if [ "$hadoop_major_ver" -lt "1" -a  "$hadoop_minor_ver$hadoop_patch_ver" -lt "201" ]; then
     echo "Hive requires Hadoop 0.20.x (x >= 1)."
     echo "'hadoop version' returned:"
     echo `$HADOOP version`
