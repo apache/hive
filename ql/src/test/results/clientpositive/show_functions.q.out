@@ -28,10 +28,7 @@ asin
 assert_true
 atan
 avg
-bigint
 bin
-binary
-boolean
 case
 ceil
 ceiling
@@ -54,7 +51,6 @@ day
 dayofmonth
 degrees
 div
-double
 e
 elt
 ewah_bitmap
@@ -65,7 +61,6 @@ exp
 explode
 field
 find_in_set
-float
 floor
 from_unixtime
 from_utc_timestamp
@@ -79,7 +74,6 @@ in
 in_file
 index
 instr
-int
 isnotnull
 isnull
 json_tuple
@@ -132,7 +126,6 @@ sentences
 sign
 sin
 size
-smallint
 space
 split
 sqrt
@@ -142,14 +135,11 @@ stddev
 stddev_pop
 stddev_samp
 str_to_map
-string
 struct
 substr
 substring
 sum
 tan
-timestamp
-tinyint
 to_date
 to_utc_timestamp
 trim
@@ -201,7 +191,6 @@ POSTHOOK: type: SHOWFUNCTIONS
 assert_true
 case
 coalesce
-double
 e
 explode
 from_unixtime

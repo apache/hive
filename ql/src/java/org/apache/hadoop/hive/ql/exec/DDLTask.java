@@ -2032,6 +2032,8 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
       FileSystem fs = resFile.getFileSystem(conf);
       outStream = fs.create(resFile);
       SortedSet<String> sortedFuncs = new TreeSet<String>(funcs);
+      // To remove the primitive types
+      sortedFuncs.removeAll(Constants.PrimitiveTypes);
       Iterator<String> iterFuncs = sortedFuncs.iterator();
 
       while (iterFuncs.hasNext()) {
