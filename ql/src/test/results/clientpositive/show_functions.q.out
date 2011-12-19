@@ -28,6 +28,7 @@ asin
 assert_true
 atan
 avg
+between
 bin
 case
 ceil
