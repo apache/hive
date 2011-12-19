@@ -1,0 +1,58 @@
+<?xml version="1.0"?>
+<?xml-stylesheet type="text/xsl"?>
+<rdf:RDF xml:lang="en"
+         xmlns="http://usefulinc.com/ns/doap#" 
+         xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" 
+         xmlns:asfext="http://projects.apache.org/ns/asfext#"
+         xmlns:foaf="http://xmlns.com/foaf/0.1/">
+<!--
+    Licensed to the Apache Software Foundation (ASF) under one or more
+    contributor license agreements.  See the NOTICE file distributed with
+    this work for additional information regarding copyright ownership.
+    The ASF licenses this file to You under the Apache License, Version 2.0
+    (the "License"); you may not use this file except in compliance with
+    the License.  You may obtain a copy of the License at
+   
+         http://www.apache.org/licenses/LICENSE-2.0
+   
+    Unless required by applicable law or agreed to in writing, software
+    distributed under the License is distributed on an "AS IS" BASIS,
+    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+    See the License for the specific language governing permissions and
+    limitations under the License.
+-->
+  <Project rdf:about="http://hive.apache.org">
+    <created>2011-11-09</created>
+    <license rdf:resource="http://usefulinc.com/doap/licenses/asl20" />
+    <name>Apache Hive</name>
+    <homepage rdf:resource="http://hive.apache.org" />
+    <asfext:pmc rdf:resource="http://hive.apache.org" />
+    <shortdesc>The Apache Hive (TM) data warehouse software facilitates querying and managing large datasets residing in distributed storage.</shortdesc>
+    <description>The Apache Hive (TM) data warehouse software facilitates querying and managing large datasets residing in distributed storage. Built on top of Apache Hadoop (TM), it provides
+
+* tools to enable easy data extract/transform/load (ETL)
+* a mechanism to impose structure on a variety of data formats
+* access to files stored either directly in Apache HDFS (TM) or in other data storage systems such as Apache HBase (TM)
+* query execution via MapReduce
+
+Hive defines a simple SQL-like query language, called HiveQL, that enables users familiar with SQL to query the data. At the same time, this language also allows programmers who are familiar with the MapReduce framework to be able to plug in their custom mappers and reducers to perform more sophisticated analysis that may not be supported by the built-in capabilities of the language. HiveQL can also be extended with custom scalar functions (UDF's), aggregations (UDAF's), and table functions (UDTF's).
+</description>
+    <bug-database rdf:resource="https://issues.apache.org/jira/browse/HIVE" />
+    <mailing-list rdf:resource="http://hive.apache.org/mailing_lists.html" />
+    <download-page rdf:resource="http://hive.apache.org/releases.html" />
+    <programming-language>Java</programming-language>
+    <category rdf:resource="http://www.apache.org/category/database" />
+    <repository>
+      <SVNRepository>
+        <location rdf:resource="http://svn.apache.org/repos/asf/hive/"/>
+        <browse rdf:resource="http://svn.apache.org/viewcvs.cgi/hive/"/>
+      </SVNRepository>
+    </repository>
+    <maintainer>
+      <foaf:Person>
+        <foaf:name>John Sichi</foaf:name>
+          <foaf:mbox rdf:resource="mailto:jvs@apache.org"/>
+      </foaf:Person>
+    </maintainer>
+  </Project>
+</rdf:RDF>
