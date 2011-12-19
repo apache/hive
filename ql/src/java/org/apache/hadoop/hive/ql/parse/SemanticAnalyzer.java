@@ -170,6 +170,7 @@ import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
 import org.apache.hadoop.mapred.InputFormat;
+import org.antlr.runtime.tree.Tree;
 
 /**
  * Implementation of the semantic analyzer.
@@ -696,9 +697,10 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
    * @throws SemanticException
    */
   @SuppressWarnings({"fallthrough", "nls"})
-  public void doPhase1(ASTNode ast, QB qb, Phase1Ctx ctx_1)
+  public boolean doPhase1(ASTNode ast, QB qb, Phase1Ctx ctx_1)
       throws SemanticException {
 
+    boolean phase1Result = true;
     QBParseInfo qbp = qb.getParseInfo();
     boolean skipRecursion = false;
 
@@ -864,6 +866,48 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
                                         ErrorMsg.UNION_NOTIN_SUBQ.getMsg()));
         }
 
+      case HiveParser.TOK_INSERT:
+        ASTNode destination = (ASTNode) ast.getChild(0);
+        Tree tab = destination.getChild(0);
+        // Proceed if AST contains partition & If Not Exists
+        if (destination.getChildCount() == 2 &&
+            tab.getChildCount() == 2 &&
+            destination.getChild(1).getType() == HiveParser.TOK_IFNOTEXISTS) {
+          String tableName = tab.getChild(0).getChild(0).getText();
+          Tree partitions = tab.getChild(1);
+          int childCount = partitions.getChildCount();
+          HashMap<String, String> partition = new HashMap<String, String>();
+          for (int i = 0; i < childCount; i++) {
+            String partitionName = partitions.getChild(i).getChild(0).getText();
+            Tree pvalue = partitions.getChild(i).getChild(1);
+            if (pvalue == null) {
+              break;
+            }
+            String partitionVal = stripQuotes(pvalue.getText());
+            partition.put(partitionName, partitionVal);
+          }
+          // if it is a dynamic partition throw the exception
+          if (childCount == partition.size()) {
+            try {
+              Table table = db.getTable(tableName);
+              Partition parMetaData = db.getPartition(table, partition, false);
+              // Check partition exists if it exists skip the overwrite
+              if (parMetaData != null) {
+                phase1Result = false;
+                skipRecursion = true;
+                LOG.info("Partition already exists so insert into overwrite " +
+                    "skipped for partition : " + parMetaData.toString());
+                break;
+              }
+            } catch (HiveException e) {
+              LOG.info("Error while getting metadata : ", e);
+            }
+          } else {
+            throw new SemanticException(ErrorMsg.INSERT_INTO_DYNAMICPARTITION_IFNOTEXISTS
+                  .getMsg(partition.toString()));
+          }
+        }
+
       default:
         skipRecursion = false;
         break;
@@ -873,12 +917,12 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     if (!skipRecursion) {
       // Iterate over the rest of the children
       int child_count = ast.getChildCount();
-      for (int child_pos = 0; child_pos < child_count; ++child_pos) {
-
+      for (int child_pos = 0; child_pos < child_count && phase1Result; ++child_pos) {
         // Recurse
-        doPhase1((ASTNode) ast.getChild(child_pos), qb, ctx_1);
+        phase1Result = phase1Result && doPhase1((ASTNode) ast.getChild(child_pos), qb, ctx_1);
       }
     }
+    return phase1Result;
   }
 
   private void getMetaData(QBExpr qbexpr) throws SemanticException {
@@ -7268,7 +7312,10 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     }
 
     // continue analyzing from the child ASTNode.
-    doPhase1(child, qb, initPhase1Ctx());
+    if (!doPhase1(child, qb, initPhase1Ctx())) {
+      // if phase1Result false return
+      return;
+    }
 
     LOG.info("Completed phase 1 of Semantic Analysis");
 
