@@ -1,0 +1,327 @@
+PREHOOK: query: CREATE TABLE sourceTable (one string,two string) PARTITIONED BY (ds string,hr string)
+PREHOOK: type: CREATETABLE
+POSTHOOK: query: CREATE TABLE sourceTable (one string,two string) PARTITIONED BY (ds string,hr string)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: default@sourceTable
+PREHOOK: query: load data local inpath '../data/files/kv1.txt' INTO TABLE sourceTable partition(ds='2011-11-11', hr='11')
+PREHOOK: type: LOAD
+PREHOOK: Output: default@sourcetable
+POSTHOOK: query: load data local inpath '../data/files/kv1.txt' INTO TABLE sourceTable partition(ds='2011-11-11', hr='11')
+POSTHOOK: type: LOAD
+POSTHOOK: Output: default@sourcetable
+POSTHOOK: Output: default@sourcetable@ds=2011-11-11/hr=11
+PREHOOK: query: load data local inpath '../data/files/kv3.txt' INTO TABLE sourceTable partition(ds='2011-11-11', hr='12')
+PREHOOK: type: LOAD
+PREHOOK: Output: default@sourcetable
+POSTHOOK: query: load data local inpath '../data/files/kv3.txt' INTO TABLE sourceTable partition(ds='2011-11-11', hr='12')
+POSTHOOK: type: LOAD
+POSTHOOK: Output: default@sourcetable
+POSTHOOK: Output: default@sourcetable@ds=2011-11-11/hr=12
+PREHOOK: query: CREATE TABLE destinTable (one string,two string) PARTITIONED BY (ds string,hr string)
+PREHOOK: type: CREATETABLE
+POSTHOOK: query: CREATE TABLE destinTable (one string,two string) PARTITIONED BY (ds string,hr string)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: default@destinTable
+PREHOOK: query: EXPLAIN INSERT OVERWRITE TABLE destinTable PARTITION (ds='2011-11-11', hr='11') if not exists
+SELECT one,two FROM sourceTable WHERE ds='2011-11-11' AND hr='11' order by one limit 5
+PREHOOK: type: QUERY
+POSTHOOK: query: EXPLAIN INSERT OVERWRITE TABLE destinTable PARTITION (ds='2011-11-11', hr='11') if not exists
+SELECT one,two FROM sourceTable WHERE ds='2011-11-11' AND hr='11' order by one limit 5
+POSTHOOK: type: QUERY
+ABSTRACT SYNTAX TREE:
+  (TOK_QUERY (TOK_FROM (TOK_TABREF (TOK_TABNAME sourceTable))) (TOK_INSERT (TOK_DESTINATION (TOK_TAB (TOK_TABNAME destinTable) (TOK_PARTSPEC (TOK_PARTVAL ds '2011-11-11') (TOK_PARTVAL hr '11'))) TOK_IFNOTEXISTS) (TOK_SELECT (TOK_SELEXPR (TOK_TABLE_OR_COL one)) (TOK_SELEXPR (TOK_TABLE_OR_COL two))) (TOK_WHERE (AND (= (TOK_TABLE_OR_COL ds) '2011-11-11') (= (TOK_TABLE_OR_COL hr) '11'))) (TOK_ORDERBY (TOK_TABSORTCOLNAMEASC (TOK_TABLE_OR_COL one))) (TOK_LIMIT 5)))
+
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-2 depends on stages: Stage-1
+  Stage-0 depends on stages: Stage-2
+  Stage-3 depends on stages: Stage-0
+
+STAGE PLANS:
+  Stage: Stage-1
+    Map Reduce
+      Alias -> Map Operator Tree:
+        sourcetable 
+          TableScan
+            alias: sourcetable
+            Select Operator
+              expressions:
+                    expr: one
+                    type: string
+                    expr: two
+                    type: string
+              outputColumnNames: _col0, _col1
+              Reduce Output Operator
+                key expressions:
+                      expr: _col0
+                      type: string
+                sort order: +
+                tag: -1
+                value expressions:
+                      expr: _col0
+                      type: string
+                      expr: _col1
+                      type: string
+      Reduce Operator Tree:
+        Extract
+          Limit
+            File Output Operator
+              compressed: false
+              GlobalTableId: 0
+              table:
+                  input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+
+  Stage: Stage-2
+    Map Reduce
+      Alias -> Map Operator Tree:
+#### A masked pattern was here ####
+            Reduce Output Operator
+              key expressions:
+                    expr: _col0
+                    type: string
+              sort order: +
+              tag: -1
+              value expressions:
+                    expr: _col0
+                    type: string
+                    expr: _col1
+                    type: string
+      Reduce Operator Tree:
+        Extract
+          Limit
+            File Output Operator
+              compressed: false
+              GlobalTableId: 1
+              table:
+                  input format: org.apache.hadoop.mapred.TextInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                  name: default.destintable
+
+  Stage: Stage-0
+    Move Operator
+      tables:
+          partition:
+            ds 2011-11-11
+            hr 11
+          replace: true
+          table:
+              input format: org.apache.hadoop.mapred.TextInputFormat
+              output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+              serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+              name: default.destintable
+
+  Stage: Stage-3
+    Stats-Aggr Operator
+
+
+PREHOOK: query: INSERT OVERWRITE TABLE destinTable PARTITION (ds='2011-11-11', hr='11') if not exists
+SELECT one,two FROM sourceTable WHERE ds='2011-11-11' AND hr='11' order by one limit 5
+PREHOOK: type: QUERY
+PREHOOK: Input: default@sourcetable@ds=2011-11-11/hr=11
+PREHOOK: Output: default@destintable@ds=2011-11-11/hr=11
+POSTHOOK: query: INSERT OVERWRITE TABLE destinTable PARTITION (ds='2011-11-11', hr='11') if not exists
+SELECT one,two FROM sourceTable WHERE ds='2011-11-11' AND hr='11' order by one limit 5
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@sourcetable@ds=2011-11-11/hr=11
+POSTHOOK: Output: default@destintable@ds=2011-11-11/hr=11
+POSTHOOK: Lineage: destintable PARTITION(ds=2011-11-11,hr=11).one SIMPLE [(sourcetable)sourcetable.FieldSchema(name:one, type:string, comment:null), ]
+POSTHOOK: Lineage: destintable PARTITION(ds=2011-11-11,hr=11).two SIMPLE [(sourcetable)sourcetable.FieldSchema(name:two, type:string, comment:null), ]
+PREHOOK: query: select one,two from destinTable
+PREHOOK: type: QUERY
+PREHOOK: Input: default@destintable@ds=2011-11-11/hr=11
+#### A masked pattern was here ####
+POSTHOOK: query: select one,two from destinTable
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@destintable@ds=2011-11-11/hr=11
+#### A masked pattern was here ####
+POSTHOOK: Lineage: destintable PARTITION(ds=2011-11-11,hr=11).one SIMPLE [(sourcetable)sourcetable.FieldSchema(name:one, type:string, comment:null), ]
+POSTHOOK: Lineage: destintable PARTITION(ds=2011-11-11,hr=11).two SIMPLE [(sourcetable)sourcetable.FieldSchema(name:two, type:string, comment:null), ]
+0	val_0
+0	val_0
+0	val_0
+10	val_10
+100	val_100
+PREHOOK: query: EXPLAIN INSERT OVERWRITE TABLE destinTable PARTITION (ds='2011-11-11', hr='11') if not exists
+SELECT one,two FROM sourceTable WHERE ds='2011-11-11' AND hr='12' order by one limit 5
+PREHOOK: type: QUERY
+POSTHOOK: query: EXPLAIN INSERT OVERWRITE TABLE destinTable PARTITION (ds='2011-11-11', hr='11') if not exists
+SELECT one,two FROM sourceTable WHERE ds='2011-11-11' AND hr='12' order by one limit 5
+POSTHOOK: type: QUERY
+POSTHOOK: Lineage: destintable PARTITION(ds=2011-11-11,hr=11).one SIMPLE [(sourcetable)sourcetable.FieldSchema(name:one, type:string, comment:null), ]
+POSTHOOK: Lineage: destintable PARTITION(ds=2011-11-11,hr=11).two SIMPLE [(sourcetable)sourcetable.FieldSchema(name:two, type:string, comment:null), ]
+ABSTRACT SYNTAX TREE:
+  (TOK_QUERY (TOK_FROM (TOK_TABREF (TOK_TABNAME sourceTable))) (TOK_INSERT (TOK_DESTINATION (TOK_TAB (TOK_TABNAME destinTable) (TOK_PARTSPEC (TOK_PARTVAL ds '2011-11-11') (TOK_PARTVAL hr '11'))) TOK_IFNOTEXISTS) (TOK_SELECT (TOK_SELEXPR (TOK_TABLE_OR_COL one)) (TOK_SELEXPR (TOK_TABLE_OR_COL two))) (TOK_WHERE (AND (= (TOK_TABLE_OR_COL ds) '2011-11-11') (= (TOK_TABLE_OR_COL hr) '12'))) (TOK_ORDERBY (TOK_TABSORTCOLNAMEASC (TOK_TABLE_OR_COL one))) (TOK_LIMIT 5)))
+
+STAGE DEPENDENCIES:
+
+STAGE PLANS:
+STAGE PLANS:
+PREHOOK: query: INSERT OVERWRITE TABLE destinTable PARTITION (ds='2011-11-11', hr='11') if not exists
+SELECT one,two FROM sourceTable WHERE ds='2011-11-11' AND hr='12' order by one limit 5
+PREHOOK: type: QUERY
+POSTHOOK: query: INSERT OVERWRITE TABLE destinTable PARTITION (ds='2011-11-11', hr='11') if not exists
+SELECT one,two FROM sourceTable WHERE ds='2011-11-11' AND hr='12' order by one limit 5
+POSTHOOK: type: QUERY
+POSTHOOK: Lineage: destintable PARTITION(ds=2011-11-11,hr=11).one SIMPLE [(sourcetable)sourcetable.FieldSchema(name:one, type:string, comment:null), ]
+POSTHOOK: Lineage: destintable PARTITION(ds=2011-11-11,hr=11).two SIMPLE [(sourcetable)sourcetable.FieldSchema(name:two, type:string, comment:null), ]
+PREHOOK: query: select one,two from destinTable
+PREHOOK: type: QUERY
+PREHOOK: Input: default@destintable@ds=2011-11-11/hr=11
+#### A masked pattern was here ####
+POSTHOOK: query: select one,two from destinTable
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@destintable@ds=2011-11-11/hr=11
+#### A masked pattern was here ####
+POSTHOOK: Lineage: destintable PARTITION(ds=2011-11-11,hr=11).one SIMPLE [(sourcetable)sourcetable.FieldSchema(name:one, type:string, comment:null), ]
+POSTHOOK: Lineage: destintable PARTITION(ds=2011-11-11,hr=11).two SIMPLE [(sourcetable)sourcetable.FieldSchema(name:two, type:string, comment:null), ]
+0	val_0
+0	val_0
+0	val_0
+10	val_10
+100	val_100
+PREHOOK: query: drop table destinTable
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@destintable
+PREHOOK: Output: default@destintable
+POSTHOOK: query: drop table destinTable
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@destintable
+POSTHOOK: Output: default@destintable
+POSTHOOK: Lineage: destintable PARTITION(ds=2011-11-11,hr=11).one SIMPLE [(sourcetable)sourcetable.FieldSchema(name:one, type:string, comment:null), ]
+POSTHOOK: Lineage: destintable PARTITION(ds=2011-11-11,hr=11).two SIMPLE [(sourcetable)sourcetable.FieldSchema(name:two, type:string, comment:null), ]
+PREHOOK: query: CREATE TABLE destinTable (one string,two string)
+PREHOOK: type: CREATETABLE
+POSTHOOK: query: CREATE TABLE destinTable (one string,two string)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: default@destinTable
+POSTHOOK: Lineage: destintable PARTITION(ds=2011-11-11,hr=11).one SIMPLE [(sourcetable)sourcetable.FieldSchema(name:one, type:string, comment:null), ]
+POSTHOOK: Lineage: destintable PARTITION(ds=2011-11-11,hr=11).two SIMPLE [(sourcetable)sourcetable.FieldSchema(name:two, type:string, comment:null), ]
+PREHOOK: query: EXPLAIN INSERT OVERWRITE TABLE destinTable SELECT one,two FROM sourceTable WHERE ds='2011-11-11' AND hr='11' order by one limit 5
+PREHOOK: type: QUERY
+POSTHOOK: query: EXPLAIN INSERT OVERWRITE TABLE destinTable SELECT one,two FROM sourceTable WHERE ds='2011-11-11' AND hr='11' order by one limit 5
+POSTHOOK: type: QUERY
+POSTHOOK: Lineage: destintable PARTITION(ds=2011-11-11,hr=11).one SIMPLE [(sourcetable)sourcetable.FieldSchema(name:one, type:string, comment:null), ]
+POSTHOOK: Lineage: destintable PARTITION(ds=2011-11-11,hr=11).two SIMPLE [(sourcetable)sourcetable.FieldSchema(name:two, type:string, comment:null), ]
+ABSTRACT SYNTAX TREE:
+  (TOK_QUERY (TOK_FROM (TOK_TABREF (TOK_TABNAME sourceTable))) (TOK_INSERT (TOK_DESTINATION (TOK_TAB (TOK_TABNAME destinTable))) (TOK_SELECT (TOK_SELEXPR (TOK_TABLE_OR_COL one)) (TOK_SELEXPR (TOK_TABLE_OR_COL two))) (TOK_WHERE (AND (= (TOK_TABLE_OR_COL ds) '2011-11-11') (= (TOK_TABLE_OR_COL hr) '11'))) (TOK_ORDERBY (TOK_TABSORTCOLNAMEASC (TOK_TABLE_OR_COL one))) (TOK_LIMIT 5)))
+
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-2 depends on stages: Stage-1
+  Stage-0 depends on stages: Stage-2
+  Stage-3 depends on stages: Stage-0
+
+STAGE PLANS:
+  Stage: Stage-1
+    Map Reduce
+      Alias -> Map Operator Tree:
+        sourcetable 
+          TableScan
+            alias: sourcetable
+            Select Operator
+              expressions:
+                    expr: one
+                    type: string
+                    expr: two
+                    type: string
+              outputColumnNames: _col0, _col1
+              Reduce Output Operator
+                key expressions:
+                      expr: _col0
+                      type: string
+                sort order: +
+                tag: -1
+                value expressions:
+                      expr: _col0
+                      type: string
+                      expr: _col1
+                      type: string
+      Reduce Operator Tree:
+        Extract
+          Limit
+            File Output Operator
+              compressed: false
+              GlobalTableId: 0
+              table:
+                  input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+
+  Stage: Stage-2
+    Map Reduce
+      Alias -> Map Operator Tree:
+#### A masked pattern was here ####
+            Reduce Output Operator
+              key expressions:
+                    expr: _col0
+                    type: string
+              sort order: +
+              tag: -1
+              value expressions:
+                    expr: _col0
+                    type: string
+                    expr: _col1
+                    type: string
+      Reduce Operator Tree:
+        Extract
+          Limit
+            File Output Operator
+              compressed: false
+              GlobalTableId: 1
+              table:
+                  input format: org.apache.hadoop.mapred.TextInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                  name: default.destintable
+
+  Stage: Stage-0
+    Move Operator
+      tables:
+          replace: true
+          table:
+              input format: org.apache.hadoop.mapred.TextInputFormat
+              output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+              serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+              name: default.destintable
+
+  Stage: Stage-3
+    Stats-Aggr Operator
+
+
+PREHOOK: query: INSERT OVERWRITE TABLE destinTable SELECT one,two FROM sourceTable WHERE ds='2011-11-11' AND hr='11' order by one limit 5
+PREHOOK: type: QUERY
+PREHOOK: Input: default@sourcetable@ds=2011-11-11/hr=11
+PREHOOK: Output: default@destintable
+POSTHOOK: query: INSERT OVERWRITE TABLE destinTable SELECT one,two FROM sourceTable WHERE ds='2011-11-11' AND hr='11' order by one limit 5
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@sourcetable@ds=2011-11-11/hr=11
+POSTHOOK: Output: default@destintable
+POSTHOOK: Lineage: destintable.one SIMPLE [(sourcetable)sourcetable.FieldSchema(name:one, type:string, comment:null), ]
+POSTHOOK: Lineage: destintable.two SIMPLE [(sourcetable)sourcetable.FieldSchema(name:two, type:string, comment:null), ]
+POSTHOOK: Lineage: destintable PARTITION(ds=2011-11-11,hr=11).one SIMPLE [(sourcetable)sourcetable.FieldSchema(name:one, type:string, comment:null), ]
+POSTHOOK: Lineage: destintable PARTITION(ds=2011-11-11,hr=11).two SIMPLE [(sourcetable)sourcetable.FieldSchema(name:two, type:string, comment:null), ]
+PREHOOK: query: drop table destinTable
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@destintable
+PREHOOK: Output: default@destintable
+POSTHOOK: query: drop table destinTable
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@destintable
+POSTHOOK: Output: default@destintable
+POSTHOOK: Lineage: destintable.one SIMPLE [(sourcetable)sourcetable.FieldSchema(name:one, type:string, comment:null), ]
+POSTHOOK: Lineage: destintable.two SIMPLE [(sourcetable)sourcetable.FieldSchema(name:two, type:string, comment:null), ]
+POSTHOOK: Lineage: destintable PARTITION(ds=2011-11-11,hr=11).one SIMPLE [(sourcetable)sourcetable.FieldSchema(name:one, type:string, comment:null), ]
+POSTHOOK: Lineage: destintable PARTITION(ds=2011-11-11,hr=11).two SIMPLE [(sourcetable)sourcetable.FieldSchema(name:two, type:string, comment:null), ]
+PREHOOK: query: drop table sourceTable
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@sourcetable
+PREHOOK: Output: default@sourcetable
+POSTHOOK: query: drop table sourceTable
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@sourcetable
+POSTHOOK: Output: default@sourcetable
+POSTHOOK: Lineage: destintable.one SIMPLE [(sourcetable)sourcetable.FieldSchema(name:one, type:string, comment:null), ]
+POSTHOOK: Lineage: destintable.two SIMPLE [(sourcetable)sourcetable.FieldSchema(name:two, type:string, comment:null), ]
+POSTHOOK: Lineage: destintable PARTITION(ds=2011-11-11,hr=11).one SIMPLE [(sourcetable)sourcetable.FieldSchema(name:one, type:string, comment:null), ]
+POSTHOOK: Lineage: destintable PARTITION(ds=2011-11-11,hr=11).two SIMPLE [(sourcetable)sourcetable.FieldSchema(name:two, type:string, comment:null), ]

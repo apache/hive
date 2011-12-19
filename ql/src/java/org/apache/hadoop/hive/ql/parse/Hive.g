@@ -1427,7 +1427,7 @@ insertClause
 @init { msgs.push("insert clause"); }
 @after { msgs.pop(); }
    :
-     KW_INSERT KW_OVERWRITE destination -> ^(TOK_DESTINATION destination)
+     KW_INSERT KW_OVERWRITE destination ifNotExists? -> ^(TOK_DESTINATION destination ifNotExists?)
    | KW_INSERT KW_INTO KW_TABLE tableOrPartition
        -> ^(TOK_INSERT_INTO ^(tableOrPartition))
    ;
