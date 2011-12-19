@@ -152,6 +152,7 @@ import org.apache.hadoop.hive.ql.udf.generic.GenericUDF;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFArray;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFArrayContains;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFAssertTrue;
+import org.apache.hadoop.hive.ql.udf.generic.GenericUDFBetween;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFBridge;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFCase;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFCoalesce;
@@ -362,6 +363,7 @@ public final class FunctionRegistry {
     registerGenericUDF(">=", GenericUDFOPEqualOrGreaterThan.class);
     registerGenericUDF("not", GenericUDFOPNot.class);
     registerGenericUDF("!", GenericUDFOPNot.class);
+    registerGenericUDF("between", GenericUDFBetween.class);
 
     registerGenericUDF("ewah_bitmap_and", GenericUDFEWAHBitmapAnd.class);
     registerGenericUDF("ewah_bitmap_or", GenericUDFEWAHBitmapOr.class);
