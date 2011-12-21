@@ -23,6 +23,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.hive.common.JavaUtils;
 import org.apache.hadoop.hive.serde2.objectinspector.ListObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.MapObjectInspector;
@@ -61,9 +63,12 @@ public final class SerDeUtils {
   private static ConcurrentHashMap<String, Class<?>> serdes =
     new ConcurrentHashMap<String, Class<?>>();
 
+  public static final Log LOG = LogFactory.getLog(SerDeUtils.class.getName());
+
   public static void registerSerDe(String name, Class<?> serde) {
     if (serdes.containsKey(name)) {
-      throw new RuntimeException("double registering serde " + name);
+      LOG.warn("double registering serde " + name);
+      return;
     }
     serdes.put(name, serde);
   }

@@ -407,8 +407,7 @@ public final class Utilities {
 
     ByteArrayInputStream bais = new ByteArrayInputStream(bytes);
 
-    XMLDecoder decoder = new XMLDecoder(bais, null, null,
-                                       addResourceFilesToClassPath(conf));
+    XMLDecoder decoder = new XMLDecoder(bais, null, null);
     try {
       ExprNodeDesc expr = (ExprNodeDesc) decoder.readObject();
       return expr;
@@ -481,8 +480,7 @@ public final class Utilities {
   public static QueryPlan deserializeQueryPlan(InputStream in, Configuration conf) {
     XMLDecoder d = null;
     try {
-      d = new XMLDecoder(in, null, null,
-                         addResourceFilesToClassPath(conf));
+      d = new XMLDecoder(in, null, null);
       QueryPlan ret = (QueryPlan) d.readObject();
       return (ret);
     } finally {
@@ -515,8 +513,7 @@ public final class Utilities {
   public static MapredWork deserializeMapRedWork(InputStream in, Configuration conf) {
     XMLDecoder d = null;
     try {
-      d = new XMLDecoder(in, null, null,
-                         addResourceFilesToClassPath(conf));
+      d = new XMLDecoder(in, null, null);
       MapredWork ret = (MapredWork) d.readObject();
       return (ret);
     } finally {
@@ -548,8 +545,7 @@ public final class Utilities {
   public static MapredLocalWork deserializeMapRedLocalWork(InputStream in, Configuration conf) {
     XMLDecoder d = null;
     try {
-      d = new XMLDecoder(in, null, null,
-                         addResourceFilesToClassPath(conf));
+      d = new XMLDecoder(in, null, null);
       MapredLocalWork ret = (MapredLocalWork) d.readObject();
       return (ret);
     } finally {
@@ -1789,7 +1785,7 @@ public final class Utilities {
                 throw new IOException(e);
               }
             } while (!executorDone);
-	  }
+    }
           executor.shutdown();
         }
         HiveInterruptUtils.checkInterrupted();
@@ -1951,7 +1947,7 @@ public final class Utilities {
   public static String generatePath(String baseURI, String dumpFilePrefix,
       Byte tag, String bigBucketFileName) {
     String path = new String(baseURI + Path.SEPARATOR + "MapJoin-" + dumpFilePrefix + tag +
-    	"-" + bigBucketFileName + suffix);
+      "-" + bigBucketFileName + suffix);
     return path;
   }
 
@@ -2132,15 +2128,15 @@ public final class Utilities {
         result = cmd.run(stmt);
         return result;
       } catch (SQLTransientException e) {
-      	LOG.warn("Failure and retry #" + failures +  " with exception " + e.getMessage());
+        LOG.warn("Failure and retry #" + failures +  " with exception " + e.getMessage());
         if (failures >= maxRetries) {
           throw e;
         }
         long waitTime = getRandomWaitTime(baseWindow, failures, r);
-      	try {
-      	  Thread.sleep(waitTime);
-      	} catch (InterruptedException iex) {
-     	  }
+        try {
+          Thread.sleep(waitTime);
+        } catch (InterruptedException iex) {
+         }
       } catch (SQLException e) {
         // throw other types of SQLExceptions (SQLNonTransientException / SQLRecoverableException)
         throw e;
@@ -2232,14 +2228,14 @@ public final class Utilities {
 
   /**
    * Introducing a random factor to the wait time before another retry.
-	 * The wait time is dependent on # of failures and a random factor.
-	 * At the first time of getting an exception , the wait time
-	 * is a random number between 0..baseWindow msec. If the first retry
-	 * still fails, we will wait baseWindow msec grace period before the 2nd retry.
-	 * Also at the second retry, the waiting window is expanded to 2*baseWindow msec
-	 * alleviating the request rate from the server. Similarly the 3rd retry
-	 * will wait 2*baseWindow msec. grace period before retry and the waiting window is
-	 * expanded to 3*baseWindow msec and so on.
+   * The wait time is dependent on # of failures and a random factor.
+   * At the first time of getting an exception , the wait time
+   * is a random number between 0..baseWindow msec. If the first retry
+   * still fails, we will wait baseWindow msec grace period before the 2nd retry.
+   * Also at the second retry, the waiting window is expanded to 2*baseWindow msec
+   * alleviating the request rate from the server. Similarly the 3rd retry
+   * will wait 2*baseWindow msec. grace period before retry and the waiting window is
+   * expanded to 3*baseWindow msec and so on.
    * @param baseWindow the base waiting window.
    * @param failures number of failures so far.
    * @param r a random generator.
@@ -2248,7 +2244,7 @@ public final class Utilities {
   public static long getRandomWaitTime(int baseWindow, int failures, Random r) {
     return (long) (
           baseWindow * failures +     // grace period for the last round of attempt
-      	  baseWindow * (failures + 1) * r.nextDouble()); // expanding time window for each failure
+          baseWindow * (failures + 1) * r.nextDouble()); // expanding time window for each failure
   }
 
   /**
