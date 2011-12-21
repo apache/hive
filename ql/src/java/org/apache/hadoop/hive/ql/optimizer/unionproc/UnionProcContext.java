@@ -87,6 +87,18 @@ public class UnionProcContext implements NodeProcessorCtx {
     public void setNumInputs(int numInputs) {
       this.numInputs = numInputs;
     }
+
+    public boolean allMapOnlySubQ() {
+      if (mapOnlySubq != null) {
+        for (boolean mapOnly : mapOnlySubq) {
+          if (!mapOnly) {
+            return false;
+          }
+        }
+      }
+      return true;
+    }
+
   }
 
   // the subqueries are map-only jobs

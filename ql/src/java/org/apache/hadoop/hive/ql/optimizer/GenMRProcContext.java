@@ -102,11 +102,13 @@ public class GenMRProcContext implements NodeProcessorCtx {
     Task<? extends Serializable> uTask;
     List<String> taskTmpDir;
     List<TableDesc> tt_desc;
+    List<Operator<? extends Serializable>> listTopOperators;
 
     public GenMRUnionCtx() {
       uTask = null;
       taskTmpDir = new ArrayList<String>();
       tt_desc = new ArrayList<TableDesc>();
+      listTopOperators = new ArrayList<Operator<? extends Serializable>>();
     }
 
     public Task<? extends Serializable> getUTask() {
@@ -131,6 +133,19 @@ public class GenMRProcContext implements NodeProcessorCtx {
 
     public List<TableDesc> getTTDesc() {
       return tt_desc;
+    }
+
+    public List<Operator<? extends Serializable>> getListTopOperators() {
+      return listTopOperators;
+    }
+
+    public void setListTopOperators(
+        List<Operator<? extends Serializable>> listTopOperators) {
+      this.listTopOperators = listTopOperators;
+    }
+
+    public void addListTopOperators(Operator<? extends Serializable> topOperator) {
+      listTopOperators.add(topOperator);
     }
   }
 

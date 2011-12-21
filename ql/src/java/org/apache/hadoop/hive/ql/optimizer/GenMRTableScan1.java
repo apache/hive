@@ -87,7 +87,9 @@ public class GenMRTableScan1 implements NodeProcessor {
           statsWork.setAggKey(op.getConf().getStatsAggPrefix());
           Task<StatsWork> statsTask = TaskFactory.get(statsWork, parseCtx.getConf());
           currTask.addDependentTask(statsTask);
-          ctx.getRootTasks().add(currTask);
+          if (!ctx.getRootTasks().contains(currTask)) {
+            ctx.getRootTasks().add(currTask);
+          }
           currWork.setGatheringStats(true);
           // NOTE: here we should use the new partition predicate pushdown API to get a list of pruned list,
           // and pass it to setTaskPlan as the last parameter

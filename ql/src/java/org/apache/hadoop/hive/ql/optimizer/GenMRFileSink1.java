@@ -639,12 +639,15 @@ public class GenMRFileSink1 implements NodeProcessor {
     if (currTopOp != null) {
       Task<? extends Serializable> mapTask = opTaskMap.get(null);
       if (mapTask == null) {
-        assert (!seenOps.contains(currTopOp));
-        seenOps.add(currTopOp);
-        GenMapRedUtils.setTaskPlan(currAliasId, currTopOp,
-            (MapredWork) currTask.getWork(), false, ctx);
+        if (!seenOps.contains(currTopOp)) {
+          seenOps.add(currTopOp);
+          GenMapRedUtils.setTaskPlan(currAliasId, currTopOp,
+              (MapredWork) currTask.getWork(), false, ctx);
+        }
         opTaskMap.put(null, currTask);
-        rootTasks.add(currTask);
+        if (!rootTasks.contains(currTask)) {
+          rootTasks.add(currTask);
+        }
       } else {
         if (!seenOps.contains(currTopOp)) {
           seenOps.add(currTopOp);
