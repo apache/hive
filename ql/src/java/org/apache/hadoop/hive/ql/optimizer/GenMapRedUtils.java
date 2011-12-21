@@ -217,7 +217,9 @@ public final class GenMapRedUtils {
       opTaskMap.put(op, currTask);
 
       List<Task<? extends Serializable>> rootTasks = opProcCtx.getRootTasks();
-      rootTasks.add(currTask);
+      if (!rootTasks.contains(currTask)) {
+        rootTasks.add(currTask);
+      }
 
       assert currTopOp != null;
       List<Operator<? extends Serializable>> seenOps = opProcCtx.getSeenOps();
@@ -313,38 +315,100 @@ public final class GenMapRedUtils {
     initUnionPlan(opProcCtx, currTask, false);
   }
 
+  private static void setUnionPlan(GenMRProcContext opProcCtx,
+      boolean local, MapredWork plan, GenMRUnionCtx uCtx,
+      boolean mergeTask) throws SemanticException {
+    Operator<? extends Serializable> currTopOp = opProcCtx.getCurrTopOp();
+
+    if (currTopOp != null) {
+      List<Operator<? extends Serializable>> seenOps = opProcCtx.getSeenOps();
+      String currAliasId = opProcCtx.getCurrAliasId();
+      if (!seenOps.contains(currTopOp) || mergeTask) {
+        seenOps.add(currTopOp);
+        setTaskPlan(currAliasId, currTopOp, plan, local, opProcCtx);
+      }
+      currTopOp = null;
+      opProcCtx.setCurrTopOp(currTopOp);
+    } else {
+      List<String> taskTmpDirLst = uCtx.getTaskTmpDir();
+      if ((taskTmpDirLst != null) && !(taskTmpDirLst.isEmpty())) {
+        List<TableDesc> tt_descLst = uCtx.getTTDesc();
+        assert !taskTmpDirLst.isEmpty() && !tt_descLst.isEmpty();
+        assert taskTmpDirLst.size() == tt_descLst.size();
+        int size = taskTmpDirLst.size();
+        assert local == false;
+
+        List<Operator<? extends Serializable>> topOperators =
+            uCtx.getListTopOperators();
+
+        for (int pos = 0; pos < size; pos++) {
+          String taskTmpDir = taskTmpDirLst.get(pos);
+          TableDesc tt_desc = tt_descLst.get(pos);
+          if (plan.getPathToAliases().get(taskTmpDir) == null) {
+            plan.getPathToAliases().put(taskTmpDir,
+                new ArrayList<String>());
+            plan.getPathToAliases().get(taskTmpDir).add(taskTmpDir);
+            plan.getPathToPartitionInfo().put(taskTmpDir,
+                new PartitionDesc(tt_desc, null));
+            plan.getAliasToWork().put(taskTmpDir, topOperators.get(pos));
+          }
+        }
+      }
+    }
+  }
+
   /*
    * It is a idempotent function to add various intermediate files as the source
    * for the union. The plan has already been created.
    */
   public static void initUnionPlan(GenMRProcContext opProcCtx,
-      Task<? extends Serializable> currTask, boolean local) {
+      Task<? extends Serializable> currTask, boolean local)
+      throws SemanticException {
     MapredWork plan = (MapredWork) currTask.getWork();
     UnionOperator currUnionOp = opProcCtx.getCurrUnionOp();
     assert currUnionOp != null;
     GenMRUnionCtx uCtx = opProcCtx.getUnionTask(currUnionOp);
     assert uCtx != null;
-
-    List<String> taskTmpDirLst = uCtx.getTaskTmpDir();
-    List<TableDesc> tt_descLst = uCtx.getTTDesc();
-    assert !taskTmpDirLst.isEmpty() && !tt_descLst.isEmpty();
-    assert taskTmpDirLst.size() == tt_descLst.size();
-    int size = taskTmpDirLst.size();
-    assert local == false;
-
-    for (int pos = 0; pos < size; pos++) {
-      String taskTmpDir = taskTmpDirLst.get(pos);
-      TableDesc tt_desc = tt_descLst.get(pos);
-      if (plan.getPathToAliases().get(taskTmpDir) == null) {
-        plan.getPathToAliases().put(taskTmpDir, new ArrayList<String>());
-        plan.getPathToAliases().get(taskTmpDir).add(taskTmpDir);
-        plan.getPathToPartitionInfo().put(taskTmpDir,
-            new PartitionDesc(tt_desc, null));
-        plan.getAliasToWork().put(taskTmpDir, currUnionOp);
-      }
-    }
+    setUnionPlan(opProcCtx, local, plan, uCtx, false);
   }
 
+  /*
+   * join current union task to old task
+   */
+  public static void joinUnionPlan(GenMRProcContext opProcCtx,
+      Task<? extends Serializable> currentUnionTask,
+      Task<? extends Serializable> existingTask, boolean local)
+      throws SemanticException {
+    MapredWork plan = (MapredWork) existingTask.getWork();
+    UnionOperator currUnionOp = opProcCtx.getCurrUnionOp();
+    assert currUnionOp != null;
+    GenMRUnionCtx uCtx = opProcCtx.getUnionTask(currUnionOp);
+    assert uCtx != null;
+
+    setUnionPlan(opProcCtx, local, plan, uCtx, true);
+
+    List<Task<? extends Serializable>> parTasks = null;
+    if ((currentUnionTask != null) && (currentUnionTask.getParentTasks() != null)
+        && !currentUnionTask.getParentTasks().isEmpty()) {
+      parTasks = new ArrayList<Task<? extends Serializable>>();
+      parTasks.addAll(currentUnionTask.getParentTasks());
+      Object[] parTaskArr = parTasks.toArray();
+      for (Object parTask : parTaskArr) {
+        ((Task<? extends Serializable>) parTask)
+            .removeDependentTask(currentUnionTask);
+      }
+    }
+
+    if ((currentUnionTask != null) && (parTasks != null)) {
+      for (Task<? extends Serializable> parTask : parTasks) {
+        parTask.addDependentTask(existingTask);
+        if (opProcCtx.getRootTasks().contains(existingTask)) {
+          opProcCtx.getRootTasks().remove(existingTask);
+        }
+      }
+    }
+    opProcCtx.setCurrTask(existingTask);
+  }
 
   public static void joinPlan(Operator<? extends Serializable> op,
       Task<? extends Serializable> oldTask, Task<? extends Serializable> task,
@@ -447,16 +511,15 @@ public final class GenMapRedUtils {
         setupBucketMapJoinInfo(plan, oldMapJoin, createLocalWork);
       }
       opProcCtx.setCurrMapJoinOp(null);
+    }
 
-      if ((oldTask != null) && (parTasks != null)) {
-        for (Task<? extends Serializable> parTask : parTasks) {
-          parTask.addDependentTask(currTask);
-          if(opProcCtx.getRootTasks().contains(currTask)) {
-            opProcCtx.getRootTasks().remove(currTask);
-          }
+    if ((oldTask != null) && (parTasks != null)) {
+      for (Task<? extends Serializable> parTask : parTasks) {
+        parTask.addDependentTask(currTask);
+        if(opProcCtx.getRootTasks().contains(currTask)) {
+          opProcCtx.getRootTasks().remove(currTask);
         }
       }
-
     }
 
     opProcCtx.setCurrTask(currTask);
@@ -1084,4 +1147,5 @@ public final class GenMapRedUtils {
   private GenMapRedUtils() {
     // prevent instantiation
   }
+
 }

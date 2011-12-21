@@ -54,266 +54,11 @@ ABSTRACT SYNTAX TREE:
   (TOK_QUERY (TOK_FROM (TOK_SUBQUERY (TOK_UNION (TOK_UNION (TOK_UNION (TOK_QUERY (TOK_FROM (TOK_TABREF (TOK_TABNAME src2))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_TABLE_OR_COL key)) (TOK_SELEXPR (TOK_TABLE_OR_COL count))) (TOK_WHERE (< (TOK_TABLE_OR_COL key) 10)))) (TOK_QUERY (TOK_FROM (TOK_TABREF (TOK_TABNAME src3))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_TABLE_OR_COL key)) (TOK_SELEXPR (TOK_TABLE_OR_COL count))) (TOK_WHERE (< (TOK_TABLE_OR_COL key) 10))))) (TOK_QUERY (TOK_FROM (TOK_TABREF (TOK_TABNAME src4))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_TABLE_OR_COL key)) (TOK_SELEXPR (TOK_TABLE_OR_COL count))) (TOK_WHERE (< (TOK_TABLE_OR_COL key) 10))))) (TOK_QUERY (TOK_FROM (TOK_TABREF (TOK_TABNAME src5))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_TABLE_OR_COL key)) (TOK_SELEXPR (TOK_FUNCTION count 1) count)) (TOK_WHERE (< (TOK_TABLE_OR_COL key) 10)) (TOK_GROUPBY (TOK_TABLE_OR_COL key))))) s)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (. (TOK_TABLE_OR_COL s) key)) (TOK_SELEXPR (. (TOK_TABLE_OR_COL s) count))) (TOK_ORDERBY (TOK_TABSORTCOLNAMEASC (. (TOK_TABLE_OR_COL s) key)))))
 
 STAGE DEPENDENCIES:
-  Stage-1 is a root stage
-  Stage-2 depends on stages: Stage-1, Stage-3, Stage-4, Stage-5
   Stage-3 is a root stage
-  Stage-4 is a root stage
-  Stage-5 is a root stage
+  Stage-2 depends on stages: Stage-3
   Stage-0 is a root stage
 
 STAGE PLANS:
-  Stage: Stage-1
-    Map Reduce
-      Alias -> Map Operator Tree:
-        null-subquery1-subquery2:s-subquery1-subquery2:src4 
-          TableScan
-            alias: src4
-            GatherStats: false
-            Filter Operator
-              isSamplingPred: false
-              predicate:
-                  expr: (key < 10)
-                  type: boolean
-              Select Operator
-                expressions:
-                      expr: key
-                      type: string
-                      expr: count
-                      type: bigint
-                outputColumnNames: _col0, _col1
-                File Output Operator
-                  compressed: false
-                  GlobalTableId: 0
-#### A masked pattern was here ####
-                  NumFilesPerFileSink: 1
-                  table:
-                      input format: org.apache.hadoop.mapred.SequenceFileInputFormat
-                      output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
-                      properties:
-                        columns _col0,_col1
-                        columns.types string,bigint
-                        escape.delim \
-                  TotalFiles: 1
-                  GatherStats: false
-                  MultiFileSpray: false
-      Needs Tagging: false
-      Path -> Alias:
-#### A masked pattern was here ####
-      Path -> Partition:
-#### A masked pattern was here ####
-          Partition
-            base file name: src4
-            input format: org.apache.hadoop.mapred.TextInputFormat
-            output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-            properties:
-              bucket_count -1
-              columns key,count
-              columns.types string:bigint
-#### A masked pattern was here ####
-              name default.src4
-              numFiles 1
-              numPartitions 0
-              numRows 309
-              rawDataSize 1482
-              serialization.ddl struct src4 { string key, i64 count}
-              serialization.format 1
-              serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              totalSize 1791
-#### A masked pattern was here ####
-            serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-          
-              input format: org.apache.hadoop.mapred.TextInputFormat
-              output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-              properties:
-                bucket_count -1
-                columns key,count
-                columns.types string:bigint
-#### A masked pattern was here ####
-                name default.src4
-                numFiles 1
-                numPartitions 0
-                numRows 309
-                rawDataSize 1482
-                serialization.ddl struct src4 { string key, i64 count}
-                serialization.format 1
-                serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                totalSize 1791
-#### A masked pattern was here ####
-              serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              name: default.src4
-            name: default.src4
-
-  Stage: Stage-2
-    Map Reduce
-      Alias -> Map Operator Tree:
-#### A masked pattern was here ####
-          Union
-            Select Operator
-              expressions:
-                    expr: _col0
-                    type: string
-                    expr: _col1
-                    type: bigint
-              outputColumnNames: _col0, _col1
-              Reduce Output Operator
-                key expressions:
-                      expr: _col0
-                      type: string
-                sort order: +
-                tag: -1
-                value expressions:
-                      expr: _col0
-                      type: string
-                      expr: _col1
-                      type: bigint
-#### A masked pattern was here ####
-          Union
-            Select Operator
-              expressions:
-                    expr: _col0
-                    type: string
-                    expr: _col1
-                    type: bigint
-              outputColumnNames: _col0, _col1
-              Reduce Output Operator
-                key expressions:
-                      expr: _col0
-                      type: string
-                sort order: +
-                tag: -1
-                value expressions:
-                      expr: _col0
-                      type: string
-                      expr: _col1
-                      type: bigint
-#### A masked pattern was here ####
-          Union
-            Select Operator
-              expressions:
-                    expr: _col0
-                    type: string
-                    expr: _col1
-                    type: bigint
-              outputColumnNames: _col0, _col1
-              Reduce Output Operator
-                key expressions:
-                      expr: _col0
-                      type: string
-                sort order: +
-                tag: -1
-                value expressions:
-                      expr: _col0
-                      type: string
-                      expr: _col1
-                      type: bigint
-#### A masked pattern was here ####
-          Union
-            Select Operator
-              expressions:
-                    expr: _col0
-                    type: string
-                    expr: _col1
-                    type: bigint
-              outputColumnNames: _col0, _col1
-              Reduce Output Operator
-                key expressions:
-                      expr: _col0
-                      type: string
-                sort order: +
-                tag: -1
-                value expressions:
-                      expr: _col0
-                      type: string
-                      expr: _col1
-                      type: bigint
-      Needs Tagging: false
-      Path -> Alias:
-#### A masked pattern was here ####
-      Path -> Partition:
-#### A masked pattern was here ####
-          Partition
-            base file name: -mr-10002
-            input format: org.apache.hadoop.mapred.SequenceFileInputFormat
-            output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
-            properties:
-              columns _col0,_col1
-              columns.types string,bigint
-              escape.delim \
-          
-              input format: org.apache.hadoop.mapred.SequenceFileInputFormat
-              output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
-              properties:
-                columns _col0,_col1
-                columns.types string,bigint
-                escape.delim \
-#### A masked pattern was here ####
-          Partition
-            base file name: -mr-10003
-            input format: org.apache.hadoop.mapred.SequenceFileInputFormat
-            output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
-            properties:
-              columns _col0,_col1
-              columns.types string,bigint
-              escape.delim \
-          
-              input format: org.apache.hadoop.mapred.SequenceFileInputFormat
-              output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
-              properties:
-                columns _col0,_col1
-                columns.types string,bigint
-                escape.delim \
-#### A masked pattern was here ####
-          Partition
-            base file name: -mr-10004
-            input format: org.apache.hadoop.mapred.SequenceFileInputFormat
-            output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
-            properties:
-              columns _col0,_col1
-              columns.types string,bigint
-              escape.delim \
-          
-              input format: org.apache.hadoop.mapred.SequenceFileInputFormat
-              output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
-              properties:
-                columns _col0,_col1
-                columns.types string,bigint
-                escape.delim \
-#### A masked pattern was here ####
-          Partition
-            base file name: -mr-10005
-            input format: org.apache.hadoop.mapred.SequenceFileInputFormat
-            output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
-            properties:
-              columns _col0,_col1
-              columns.types string,bigint
-              escape.delim \
-          
-              input format: org.apache.hadoop.mapred.SequenceFileInputFormat
-              output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
-              properties:
-                columns _col0,_col1
-                columns.types string,bigint
-                escape.delim \
-      Reduce Operator Tree:
-        Extract
-          File Output Operator
-            compressed: false
-            GlobalTableId: 0
-#### A masked pattern was here ####
-            NumFilesPerFileSink: 1
-#### A masked pattern was here ####
-            table:
-                input format: org.apache.hadoop.mapred.TextInputFormat
-                output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                properties:
-                  columns _col0,_col1
-                  columns.types string:bigint
-                  escape.delim \
-                  serialization.format 1
-            TotalFiles: 1
-            GatherStats: false
-            MultiFileSpray: false
-
   Stage: Stage-3
     Map Reduce
       Alias -> Map Operator Tree:
@@ -431,90 +176,31 @@ STAGE PLANS:
               GatherStats: false
               MultiFileSpray: false
 
-  Stage: Stage-4
+  Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
-        null-subquery1-subquery1-subquery2:s-subquery1-subquery1-subquery2:src3 
+#### A masked pattern was here ####
           TableScan
-            alias: src3
             GatherStats: false
-            Filter Operator
-              isSamplingPred: false
-              predicate:
-                  expr: (key < 10)
-                  type: boolean
+            Union
               Select Operator
                 expressions:
-                      expr: key
+                      expr: _col0
                       type: string
-                      expr: count
+                      expr: _col1
                       type: bigint
                 outputColumnNames: _col0, _col1
-                File Output Operator
-                  compressed: false
-                  GlobalTableId: 0
-#### A masked pattern was here ####
-                  NumFilesPerFileSink: 1
-                  table:
-                      input format: org.apache.hadoop.mapred.SequenceFileInputFormat
-                      output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
-                      properties:
-                        columns _col0,_col1
-                        columns.types string,bigint
-                        escape.delim \
-                  TotalFiles: 1
-                  GatherStats: false
-                  MultiFileSpray: false
-      Needs Tagging: false
-      Path -> Alias:
-#### A masked pattern was here ####
-      Path -> Partition:
-#### A masked pattern was here ####
-          Partition
-            base file name: src3
-            input format: org.apache.hadoop.mapred.TextInputFormat
-            output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-            properties:
-              bucket_count -1
-              columns key,count
-              columns.types string:bigint
-#### A masked pattern was here ####
-              name default.src3
-              numFiles 1
-              numPartitions 0
-              numRows 309
-              rawDataSize 1482
-              serialization.ddl struct src3 { string key, i64 count}
-              serialization.format 1
-              serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              totalSize 1791
-#### A masked pattern was here ####
-            serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-          
-              input format: org.apache.hadoop.mapred.TextInputFormat
-              output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-              properties:
-                bucket_count -1
-                columns key,count
-                columns.types string:bigint
-#### A masked pattern was here ####
-                name default.src3
-                numFiles 1
-                numPartitions 0
-                numRows 309
-                rawDataSize 1482
-                serialization.ddl struct src3 { string key, i64 count}
-                serialization.format 1
-                serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                totalSize 1791
-#### A masked pattern was here ####
-              serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              name: default.src3
-            name: default.src3
-
-  Stage: Stage-5
-    Map Reduce
-      Alias -> Map Operator Tree:
+                Reduce Output Operator
+                  key expressions:
+                        expr: _col0
+                        type: string
+                  sort order: +
+                  tag: -1
+                  value expressions:
+                        expr: _col0
+                        type: string
+                        expr: _col1
+                        type: bigint
         null-subquery1-subquery1-subquery1:s-subquery1-subquery1-subquery1:src2 
           TableScan
             alias: src2
@@ -531,25 +217,115 @@ STAGE PLANS:
                       expr: count
                       type: bigint
                 outputColumnNames: _col0, _col1
-                File Output Operator
-                  compressed: false
-                  GlobalTableId: 0
-#### A masked pattern was here ####
-                  NumFilesPerFileSink: 1
-                  table:
-                      input format: org.apache.hadoop.mapred.SequenceFileInputFormat
-                      output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
-                      properties:
-                        columns _col0,_col1
-                        columns.types string,bigint
-                        escape.delim \
-                  TotalFiles: 1
-                  GatherStats: false
-                  MultiFileSpray: false
+                Union
+                  Select Operator
+                    expressions:
+                          expr: _col0
+                          type: string
+                          expr: _col1
+                          type: bigint
+                    outputColumnNames: _col0, _col1
+                    Reduce Output Operator
+                      key expressions:
+                            expr: _col0
+                            type: string
+                      sort order: +
+                      tag: -1
+                      value expressions:
+                            expr: _col0
+                            type: string
+                            expr: _col1
+                            type: bigint
+        null-subquery1-subquery1-subquery2:s-subquery1-subquery1-subquery2:src3 
+          TableScan
+            alias: src3
+            GatherStats: false
+            Filter Operator
+              isSamplingPred: false
+              predicate:
+                  expr: (key < 10)
+                  type: boolean
+              Select Operator
+                expressions:
+                      expr: key
+                      type: string
+                      expr: count
+                      type: bigint
+                outputColumnNames: _col0, _col1
+                Union
+                  Select Operator
+                    expressions:
+                          expr: _col0
+                          type: string
+                          expr: _col1
+                          type: bigint
+                    outputColumnNames: _col0, _col1
+                    Reduce Output Operator
+                      key expressions:
+                            expr: _col0
+                            type: string
+                      sort order: +
+                      tag: -1
+                      value expressions:
+                            expr: _col0
+                            type: string
+                            expr: _col1
+                            type: bigint
+        null-subquery1-subquery2:s-subquery1-subquery2:src4 
+          TableScan
+            alias: src4
+            GatherStats: false
+            Filter Operator
+              isSamplingPred: false
+              predicate:
+                  expr: (key < 10)
+                  type: boolean
+              Select Operator
+                expressions:
+                      expr: key
+                      type: string
+                      expr: count
+                      type: bigint
+                outputColumnNames: _col0, _col1
+                Union
+                  Select Operator
+                    expressions:
+                          expr: _col0
+                          type: string
+                          expr: _col1
+                          type: bigint
+                    outputColumnNames: _col0, _col1
+                    Reduce Output Operator
+                      key expressions:
+                            expr: _col0
+                            type: string
+                      sort order: +
+                      tag: -1
+                      value expressions:
+                            expr: _col0
+                            type: string
+                            expr: _col1
+                            type: bigint
       Needs Tagging: false
       Path -> Alias:
 #### A masked pattern was here ####
       Path -> Partition:
+#### A masked pattern was here ####
+          Partition
+            base file name: -mr-10002
+            input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+            output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+            properties:
+              columns _col0,_col1
+              columns.types string,bigint
+              escape.delim \
+          
+              input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+              output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+              properties:
+                columns _col0,_col1
+                columns.types string,bigint
+                escape.delim \
 #### A masked pattern was here ####
           Partition
             base file name: src2
@@ -592,6 +368,109 @@ STAGE PLANS:
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: default.src2
             name: default.src2
+#### A masked pattern was here ####
+          Partition
+            base file name: src3
+            input format: org.apache.hadoop.mapred.TextInputFormat
+            output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+            properties:
+              bucket_count -1
+              columns key,count
+              columns.types string:bigint
+#### A masked pattern was here ####
+              name default.src3
+              numFiles 1
+              numPartitions 0
+              numRows 309
+              rawDataSize 1482
+              serialization.ddl struct src3 { string key, i64 count}
+              serialization.format 1
+              serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+              totalSize 1791
+#### A masked pattern was here ####
+            serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+          
+              input format: org.apache.hadoop.mapred.TextInputFormat
+              output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+              properties:
+                bucket_count -1
+                columns key,count
+                columns.types string:bigint
+#### A masked pattern was here ####
+                name default.src3
+                numFiles 1
+                numPartitions 0
+                numRows 309
+                rawDataSize 1482
+                serialization.ddl struct src3 { string key, i64 count}
+                serialization.format 1
+                serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                totalSize 1791
+#### A masked pattern was here ####
+              serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+              name: default.src3
+            name: default.src3
+#### A masked pattern was here ####
+          Partition
+            base file name: src4
+            input format: org.apache.hadoop.mapred.TextInputFormat
+            output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+            properties:
+              bucket_count -1
+              columns key,count
+              columns.types string:bigint
+#### A masked pattern was here ####
+              name default.src4
+              numFiles 1
+              numPartitions 0
+              numRows 309
+              rawDataSize 1482
+              serialization.ddl struct src4 { string key, i64 count}
+              serialization.format 1
+              serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+              totalSize 1791
+#### A masked pattern was here ####
+            serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+          
+              input format: org.apache.hadoop.mapred.TextInputFormat
+              output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+              properties:
+                bucket_count -1
+                columns key,count
+                columns.types string:bigint
+#### A masked pattern was here ####
+                name default.src4
+                numFiles 1
+                numPartitions 0
+                numRows 309
+                rawDataSize 1482
+                serialization.ddl struct src4 { string key, i64 count}
+                serialization.format 1
+                serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                totalSize 1791
+#### A masked pattern was here ####
+              serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+              name: default.src4
+            name: default.src4
+      Reduce Operator Tree:
+        Extract
+          File Output Operator
+            compressed: false
+            GlobalTableId: 0
+#### A masked pattern was here ####
+            NumFilesPerFileSink: 1
+#### A masked pattern was here ####
+            table:
+                input format: org.apache.hadoop.mapred.TextInputFormat
+                output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                properties:
+                  columns _col0,_col1
+                  columns.types string:bigint
+                  escape.delim \
+                  serialization.format 1
+            TotalFiles: 1
+            GatherStats: false
+            MultiFileSpray: false
 
   Stage: Stage-0
     Fetch Operator
@@ -643,8 +522,8 @@ POSTHOOK: Input: default@src5
 4	1
 4	1
 5	3
-5	3
 5	1
+5	3
 5	3
 8	1
 8	1
@@ -679,9 +558,7 @@ ABSTRACT SYNTAX TREE:
 
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
-  Stage-2 depends on stages: Stage-1, Stage-4, Stage-5
-  Stage-4 is a root stage
-  Stage-5 is a root stage
+  Stage-2 depends on stages: Stage-1
   Stage-0 is a root stage
 
 STAGE PLANS:
@@ -854,65 +731,97 @@ STAGE PLANS:
     Map Reduce
       Alias -> Map Operator Tree:
 #### A masked pattern was here ####
-          Union
-            Select Operator
-              expressions:
-                    expr: _col0
-                    type: string
-                    expr: _col1
-                    type: bigint
-              outputColumnNames: _col0, _col1
-              Reduce Output Operator
-                key expressions:
-                      expr: _col0
-                      type: string
-                sort order: +
-                tag: -1
-                value expressions:
+          TableScan
+            GatherStats: false
+            Union
+              Select Operator
+                expressions:
                       expr: _col0
                       type: string
                       expr: _col1
                       type: bigint
-#### A masked pattern was here ####
-          Union
-            Select Operator
-              expressions:
-                    expr: _col0
-                    type: string
-                    expr: _col1
-                    type: bigint
-              outputColumnNames: _col0, _col1
-              Reduce Output Operator
-                key expressions:
-                      expr: _col0
+                outputColumnNames: _col0, _col1
+                Reduce Output Operator
+                  key expressions:
+                        expr: _col0
+                        type: string
+                  sort order: +
+                  tag: -1
+                  value expressions:
+                        expr: _col0
+                        type: string
+                        expr: _col1
+                        type: bigint
+        null-subquery1-subquery1:s-subquery1-subquery1:src2 
+          TableScan
+            alias: src2
+            GatherStats: false
+            Filter Operator
+              isSamplingPred: false
+              predicate:
+                  expr: (key < 10)
+                  type: boolean
+              Select Operator
+                expressions:
+                      expr: key
                       type: string
-                sort order: +
-                tag: -1
-                value expressions:
-                      expr: _col0
-                      type: string
-                      expr: _col1
+                      expr: count
                       type: bigint
-#### A masked pattern was here ####
-          Union
-            Select Operator
-              expressions:
-                    expr: _col0
-                    type: string
-                    expr: _col1
-                    type: bigint
-              outputColumnNames: _col0, _col1
-              Reduce Output Operator
-                key expressions:
-                      expr: _col0
+                outputColumnNames: _col0, _col1
+                Union
+                  Select Operator
+                    expressions:
+                          expr: _col0
+                          type: string
+                          expr: _col1
+                          type: bigint
+                    outputColumnNames: _col0, _col1
+                    Reduce Output Operator
+                      key expressions:
+                            expr: _col0
+                            type: string
+                      sort order: +
+                      tag: -1
+                      value expressions:
+                            expr: _col0
+                            type: string
+                            expr: _col1
+                            type: bigint
+        null-subquery1-subquery2:s-subquery1-subquery2:src3 
+          TableScan
+            alias: src3
+            GatherStats: false
+            Filter Operator
+              isSamplingPred: false
+              predicate:
+                  expr: (key < 10)
+                  type: boolean
+              Select Operator
+                expressions:
+                      expr: key
                       type: string
-                sort order: +
-                tag: -1
-                value expressions:
-                      expr: _col0
-                      type: string
-                      expr: _col1
+                      expr: count
                       type: bigint
+                outputColumnNames: _col0, _col1
+                Union
+                  Select Operator
+                    expressions:
+                          expr: _col0
+                          type: string
+                          expr: _col1
+                          type: bigint
+                    outputColumnNames: _col0, _col1
+                    Reduce Output Operator
+                      key expressions:
+                            expr: _col0
+                            type: string
+                      sort order: +
+                      tag: -1
+                      value expressions:
+                            expr: _col0
+                            type: string
+                            expr: _col1
+                            type: bigint
       Needs Tagging: false
       Path -> Alias:
 #### A masked pattern was here ####
@@ -933,96 +842,6 @@ STAGE PLANS:
                 columns _col0,_col1
                 columns.types string,bigint
                 escape.delim \
-#### A masked pattern was here ####
-          Partition
-            base file name: -mr-10003
-            input format: org.apache.hadoop.mapred.SequenceFileInputFormat
-            output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
-            properties:
-              columns _col0,_col1
-              columns.types string,bigint
-              escape.delim \
-          
-              input format: org.apache.hadoop.mapred.SequenceFileInputFormat
-              output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
-              properties:
-                columns _col0,_col1
-                columns.types string,bigint
-                escape.delim \
-#### A masked pattern was here ####
-          Partition
-            base file name: -mr-10004
-            input format: org.apache.hadoop.mapred.SequenceFileInputFormat
-            output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
-            properties:
-              columns _col0,_col1
-              columns.types string,bigint
-              escape.delim \
-          
-              input format: org.apache.hadoop.mapred.SequenceFileInputFormat
-              output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
-              properties:
-                columns _col0,_col1
-                columns.types string,bigint
-                escape.delim \
-      Reduce Operator Tree:
-        Extract
-          File Output Operator
-            compressed: false
-            GlobalTableId: 0
-#### A masked pattern was here ####
-            NumFilesPerFileSink: 1
-#### A masked pattern was here ####
-            table:
-                input format: org.apache.hadoop.mapred.TextInputFormat
-                output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                properties:
-                  columns _col0,_col1
-                  columns.types string:bigint
-                  escape.delim \
-                  serialization.format 1
-            TotalFiles: 1
-            GatherStats: false
-            MultiFileSpray: false
-
-  Stage: Stage-4
-    Map Reduce
-      Alias -> Map Operator Tree:
-        null-subquery1-subquery1:s-subquery1-subquery1:src2 
-          TableScan
-            alias: src2
-            GatherStats: false
-            Filter Operator
-              isSamplingPred: false
-              predicate:
-                  expr: (key < 10)
-                  type: boolean
-              Select Operator
-                expressions:
-                      expr: key
-                      type: string
-                      expr: count
-                      type: bigint
-                outputColumnNames: _col0, _col1
-                File Output Operator
-                  compressed: false
-                  GlobalTableId: 0
-#### A masked pattern was here ####
-                  NumFilesPerFileSink: 1
-                  table:
-                      input format: org.apache.hadoop.mapred.SequenceFileInputFormat
-                      output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
-                      properties:
-                        columns _col0,_col1
-                        columns.types string,bigint
-                        escape.delim \
-                  TotalFiles: 1
-                  GatherStats: false
-                  MultiFileSpray: false
-      Needs Tagging: false
-      Path -> Alias:
-#### A masked pattern was here ####
-      Path -> Partition:
 #### A masked pattern was here ####
           Partition
             base file name: src2
@@ -1065,45 +884,6 @@ STAGE PLANS:
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: default.src2
             name: default.src2
-
-  Stage: Stage-5
-    Map Reduce
-      Alias -> Map Operator Tree:
-        null-subquery1-subquery2:s-subquery1-subquery2:src3 
-          TableScan
-            alias: src3
-            GatherStats: false
-            Filter Operator
-              isSamplingPred: false
-              predicate:
-                  expr: (key < 10)
-                  type: boolean
-              Select Operator
-                expressions:
-                      expr: key
-                      type: string
-                      expr: count
-                      type: bigint
-                outputColumnNames: _col0, _col1
-                File Output Operator
-                  compressed: false
-                  GlobalTableId: 0
-#### A masked pattern was here ####
-                  NumFilesPerFileSink: 1
-                  table:
-                      input format: org.apache.hadoop.mapred.SequenceFileInputFormat
-                      output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
-                      properties:
-                        columns _col0,_col1
-                        columns.types string,bigint
-                        escape.delim \
-                  TotalFiles: 1
-                  GatherStats: false
-                  MultiFileSpray: false
-      Needs Tagging: false
-      Path -> Alias:
-#### A masked pattern was here ####
-      Path -> Partition:
 #### A masked pattern was here ####
           Partition
             base file name: src3
@@ -1146,6 +926,25 @@ STAGE PLANS:
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: default.src3
             name: default.src3
+      Reduce Operator Tree:
+        Extract
+          File Output Operator
+            compressed: false
+            GlobalTableId: 0
+#### A masked pattern was here ####
+            NumFilesPerFileSink: 1
+#### A masked pattern was here ####
+            table:
+                input format: org.apache.hadoop.mapred.TextInputFormat
+                output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                properties:
+                  columns _col0,_col1
+                  columns.types string:bigint
+                  escape.delim \
+                  serialization.format 1
+            TotalFiles: 1
+            GatherStats: false
+            MultiFileSpray: false
 
   Stage: Stage-0
     Fetch Operator
@@ -1224,9 +1023,7 @@ ABSTRACT SYNTAX TREE:
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-2 depends on stages: Stage-1
-  Stage-3 depends on stages: Stage-2, Stage-5, Stage-6
-  Stage-5 is a root stage
-  Stage-6 is a root stage
+  Stage-3 depends on stages: Stage-2
   Stage-0 is a root stage
 
 STAGE PLANS:
@@ -1472,65 +1269,97 @@ STAGE PLANS:
     Map Reduce
       Alias -> Map Operator Tree:
 #### A masked pattern was here ####
-          Union
-            Select Operator
-              expressions:
-                    expr: _col0
-                    type: string
-                    expr: _col1
-                    type: bigint
-              outputColumnNames: _col0, _col1
-              Reduce Output Operator
-                key expressions:
-                      expr: _col0
-                      type: string
-                sort order: +
-                tag: -1
-                value expressions:
+          TableScan
+            GatherStats: false
+            Union
+              Select Operator
+                expressions:
                       expr: _col0
                       type: string
                       expr: _col1
                       type: bigint
-#### A masked pattern was here ####
-          Union
-            Select Operator
-              expressions:
-                    expr: _col0
-                    type: string
-                    expr: _col1
-                    type: bigint
-              outputColumnNames: _col0, _col1
-              Reduce Output Operator
-                key expressions:
-                      expr: _col0
+                outputColumnNames: _col0, _col1
+                Reduce Output Operator
+                  key expressions:
+                        expr: _col0
+                        type: string
+                  sort order: +
+                  tag: -1
+                  value expressions:
+                        expr: _col0
+                        type: string
+                        expr: _col1
+                        type: bigint
+        null-subquery1-subquery1:s-subquery1-subquery1:src2 
+          TableScan
+            alias: src2
+            GatherStats: false
+            Filter Operator
+              isSamplingPred: false
+              predicate:
+                  expr: (key < 10)
+                  type: boolean
+              Select Operator
+                expressions:
+                      expr: key
                       type: string
-                sort order: +
-                tag: -1
-                value expressions:
-                      expr: _col0
-                      type: string
-                      expr: _col1
+                      expr: count
                       type: bigint
-#### A masked pattern was here ####
-          Union
-            Select Operator
-              expressions:
-                    expr: _col0
-                    type: string
-                    expr: _col1
-                    type: bigint
-              outputColumnNames: _col0, _col1
-              Reduce Output Operator
-                key expressions:
-                      expr: _col0
+                outputColumnNames: _col0, _col1
+                Union
+                  Select Operator
+                    expressions:
+                          expr: _col0
+                          type: string
+                          expr: _col1
+                          type: bigint
+                    outputColumnNames: _col0, _col1
+                    Reduce Output Operator
+                      key expressions:
+                            expr: _col0
+                            type: string
+                      sort order: +
+                      tag: -1
+                      value expressions:
+                            expr: _col0
+                            type: string
+                            expr: _col1
+                            type: bigint
+        null-subquery1-subquery2:s-subquery1-subquery2:src3 
+          TableScan
+            alias: src3
+            GatherStats: false
+            Filter Operator
+              isSamplingPred: false
+              predicate:
+                  expr: (key < 10)
+                  type: boolean
+              Select Operator
+                expressions:
+                      expr: key
                       type: string
-                sort order: +
-                tag: -1
-                value expressions:
-                      expr: _col0
-                      type: string
-                      expr: _col1
+                      expr: count
                       type: bigint
+                outputColumnNames: _col0, _col1
+                Union
+                  Select Operator
+                    expressions:
+                          expr: _col0
+                          type: string
+                          expr: _col1
+                          type: bigint
+                    outputColumnNames: _col0, _col1
+                    Reduce Output Operator
+                      key expressions:
+                            expr: _col0
+                            type: string
+                      sort order: +
+                      tag: -1
+                      value expressions:
+                            expr: _col0
+                            type: string
+                            expr: _col1
+                            type: bigint
       Needs Tagging: false
       Path -> Alias:
 #### A masked pattern was here ####
@@ -1551,96 +1380,6 @@ STAGE PLANS:
                 columns _col0,_col1
                 columns.types string,bigint
                 escape.delim \
-#### A masked pattern was here ####
-          Partition
-            base file name: -mr-10004
-            input format: org.apache.hadoop.mapred.SequenceFileInputFormat
-            output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
-            properties:
-              columns _col0,_col1
-              columns.types string,bigint
-              escape.delim \
-          
-              input format: org.apache.hadoop.mapred.SequenceFileInputFormat
-              output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
-              properties:
-                columns _col0,_col1
-                columns.types string,bigint
-                escape.delim \
-#### A masked pattern was here ####
-          Partition
-            base file name: -mr-10005
-            input format: org.apache.hadoop.mapred.SequenceFileInputFormat
-            output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
-            properties:
-              columns _col0,_col1
-              columns.types string,bigint
-              escape.delim \
-          
-              input format: org.apache.hadoop.mapred.SequenceFileInputFormat
-              output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
-              properties:
-                columns _col0,_col1
-                columns.types string,bigint
-                escape.delim \
-      Reduce Operator Tree:
-        Extract
-          File Output Operator
-            compressed: false
-            GlobalTableId: 0
-#### A masked pattern was here ####
-            NumFilesPerFileSink: 1
-#### A masked pattern was here ####
-            table:
-                input format: org.apache.hadoop.mapred.TextInputFormat
-                output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                properties:
-                  columns _col0,_col1
-                  columns.types string:bigint
-                  escape.delim \
-                  serialization.format 1
-            TotalFiles: 1
-            GatherStats: false
-            MultiFileSpray: false
-
-  Stage: Stage-5
-    Map Reduce
-      Alias -> Map Operator Tree:
-        null-subquery1-subquery1:s-subquery1-subquery1:src2 
-          TableScan
-            alias: src2
-            GatherStats: false
-            Filter Operator
-              isSamplingPred: false
-              predicate:
-                  expr: (key < 10)
-                  type: boolean
-              Select Operator
-                expressions:
-                      expr: key
-                      type: string
-                      expr: count
-                      type: bigint
-                outputColumnNames: _col0, _col1
-                File Output Operator
-                  compressed: false
-                  GlobalTableId: 0
-#### A masked pattern was here ####
-                  NumFilesPerFileSink: 1
-                  table:
-                      input format: org.apache.hadoop.mapred.SequenceFileInputFormat
-                      output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
-                      properties:
-                        columns _col0,_col1
-                        columns.types string,bigint
-                        escape.delim \
-                  TotalFiles: 1
-                  GatherStats: false
-                  MultiFileSpray: false
-      Needs Tagging: false
-      Path -> Alias:
-#### A masked pattern was here ####
-      Path -> Partition:
 #### A masked pattern was here ####
           Partition
             base file name: src2
@@ -1683,45 +1422,6 @@ STAGE PLANS:
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: default.src2
             name: default.src2
-
-  Stage: Stage-6
-    Map Reduce
-      Alias -> Map Operator Tree:
-        null-subquery1-subquery2:s-subquery1-subquery2:src3 
-          TableScan
-            alias: src3
-            GatherStats: false
-            Filter Operator
-              isSamplingPred: false
-              predicate:
-                  expr: (key < 10)
-                  type: boolean
-              Select Operator
-                expressions:
-                      expr: key
-                      type: string
-                      expr: count
-                      type: bigint
-                outputColumnNames: _col0, _col1
-                File Output Operator
-                  compressed: false
-                  GlobalTableId: 0
-#### A masked pattern was here ####
-                  NumFilesPerFileSink: 1
-                  table:
-                      input format: org.apache.hadoop.mapred.SequenceFileInputFormat
-                      output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
-                      properties:
-                        columns _col0,_col1
-                        columns.types string,bigint
-                        escape.delim \
-                  TotalFiles: 1
-                  GatherStats: false
-                  MultiFileSpray: false
-      Needs Tagging: false
-      Path -> Alias:
-#### A masked pattern was here ####
-      Path -> Partition:
 #### A masked pattern was here ####
           Partition
             base file name: src3
@@ -1764,6 +1464,25 @@ STAGE PLANS:
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: default.src3
             name: default.src3
+      Reduce Operator Tree:
+        Extract
+          File Output Operator
+            compressed: false
+            GlobalTableId: 0
+#### A masked pattern was here ####
+            NumFilesPerFileSink: 1
+#### A masked pattern was here ####
+            table:
+                input format: org.apache.hadoop.mapred.TextInputFormat
+                output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                properties:
+                  columns _col0,_col1
+                  columns.types string:bigint
+                  escape.delim \
+                  serialization.format 1
+            TotalFiles: 1
+            GatherStats: false
+            MultiFileSpray: false
 
   Stage: Stage-0
     Fetch Operator
@@ -1807,8 +1526,8 @@ POSTHOOK: Input: default@src5
 4	1
 4	1
 4	1
-5	3
 5	1
+5	3
 5	3
 8	1
 8	1

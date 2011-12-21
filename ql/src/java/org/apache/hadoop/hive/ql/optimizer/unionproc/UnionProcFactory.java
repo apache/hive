@@ -68,7 +68,6 @@ public final class UnionProcFactory {
       if (uCtx == null) {
         uCtx = new UnionParseContext(union.getConf().getNumInputs());
       }
-
       ctx.setMapOnlySubq(false);
       uCtx.setMapOnlySubq(pos, false);
       uCtx.setRootTask(pos, false);
