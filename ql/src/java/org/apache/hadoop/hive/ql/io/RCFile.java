@@ -340,6 +340,9 @@ public class RCFile {
         decompressBuffer.reset();
         DataInputStream valueIn = new DataInputStream(deflatFilter);
         deflatFilter.resetState();
+        if (deflatFilter instanceof SchemaAwareCompressionInputStream) {
+          ((SchemaAwareCompressionInputStream)deflatFilter).setColumnIndex(colIndex);
+        }
         decompressBuffer.reset(compressedData.getData(),
             keyBuffer.eachColumnValueLen[colIndex]);
 
@@ -591,6 +594,8 @@ public class RCFile {
 
     KeyBuffer key = null;
     ValueBuffer value = null;
+    private final int[] plainTotalColumnLength;
+    private final int[] comprTotalColumnLength;
 
     /*
      * used for buffering appends before flush them out
@@ -749,6 +754,9 @@ public class RCFile {
       finalizeFileHeader();
       key = new KeyBuffer(columnNumber);
       value = new ValueBuffer(key);
+
+      plainTotalColumnLength = new int[columnNumber];
+      comprTotalColumnLength = new int[columnNumber];
     }
 
     /** Write the initial part of file header. */
@@ -797,6 +805,9 @@ public class RCFile {
           compressionBuffer[i] = new NonSyncDataOutputBuffer();
           deflateFilter[i] = codec.createOutputStream(compressionBuffer[i],
               compressor);
+          if (deflateFilter[i] instanceof SchemaAwareCompressionOutputStream) {
+            ((SchemaAwareCompressionOutputStream)deflateFilter[i]).setColumnIndex(i);
+          }
           deflateOut[i] = new DataOutputStream(new BufferedOutputStream(
               deflateFilter[i]));
         }
@@ -901,12 +912,16 @@ public class RCFile {
           value.setColumnValueBuffer(compressionBuffer[columnIndex],
               columnIndex);
           valueLength += colLen;
+          plainTotalColumnLength[columnIndex] += columnValuePlainLength[columnIndex];
+          comprTotalColumnLength[columnIndex] += colLen;
         } else {
           int colLen = columnValuePlainLength[columnIndex];
           key.setColumnLenInfo(colLen, currentBuf.valLenBuffer, colLen,
               columnIndex);
           value.setColumnValueBuffer(columnValue, columnIndex);
           valueLength += colLen;
+          plainTotalColumnLength[columnIndex] += colLen;
+          comprTotalColumnLength[columnIndex] += colLen;
         }
         columnValuePlainLength[columnIndex] = 0;
       }
@@ -1000,6 +1015,10 @@ public class RCFile {
         out.flush();
         out.close();
         out = null;
+      }
+      for (int i = 0; i < columnNumber; i++) {
+        LOG.info("Column#" + i + " : Plain Total Column Value Length: " + plainTotalColumnLength[i]
+              + ",  Compr Total Column Value Length: " + comprTotalColumnLength[i]);
       }
     }
   }
