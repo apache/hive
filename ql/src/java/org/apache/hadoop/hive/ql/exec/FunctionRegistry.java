@@ -426,6 +426,7 @@ public final class FunctionRegistry {
 
     // Generic UDFs
     registerGenericUDF("reflect", GenericUDFReflect.class);
+    registerGenericUDF("java_method", GenericUDFReflect.class);
 
     registerGenericUDF("array", GenericUDFArray.class);
     registerGenericUDF("assert_true", GenericUDFAssertTrue.class);

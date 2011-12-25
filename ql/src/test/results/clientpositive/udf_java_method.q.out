@@ -1,38 +1,42 @@
-PREHOOK: query: DESCRIBE FUNCTION reflect
+PREHOOK: query: DESCRIBE FUNCTION java_method
 PREHOOK: type: DESCFUNCTION
-POSTHOOK: query: DESCRIBE FUNCTION reflect
+POSTHOOK: query: DESCRIBE FUNCTION java_method
 POSTHOOK: type: DESCFUNCTION
-reflect(class,method[,arg1[,arg2..]]) calls method with reflection
-PREHOOK: query: DESCRIBE FUNCTION EXTENDED reflect
+java_method(class,method[,arg1[,arg2..]]) calls method with reflection
+PREHOOK: query: DESCRIBE FUNCTION EXTENDED java_method
 PREHOOK: type: DESCFUNCTION
-POSTHOOK: query: DESCRIBE FUNCTION EXTENDED reflect
+POSTHOOK: query: DESCRIBE FUNCTION EXTENDED java_method
 POSTHOOK: type: DESCFUNCTION
-reflect(class,method[,arg1[,arg2..]]) calls method with reflection
-Synonyms: java_method
+java_method(class,method[,arg1[,arg2..]]) calls method with reflection
+Synonyms: reflect
 Use this UDF to call Java methods by matching the argument signature
 
-PREHOOK: query: EXPLAIN EXTENDED
-SELECT reflect("java.lang.String", "valueOf", 1),
-       reflect("java.lang.String", "isEmpty"),
-       reflect("java.lang.Math", "max", 2, 3),
-       reflect("java.lang.Math", "min", 2, 3),
-       reflect("java.lang.Math", "round", 2.5),
-       reflect("java.lang.Math", "exp", 1.0),
-       reflect("java.lang.Math", "floor", 1.9)
+PREHOOK: query: -- java_method() is a synonym for reflect()
+
+EXPLAIN EXTENDED
+SELECT java_method("java.lang.String", "valueOf", 1),
+       java_method("java.lang.String", "isEmpty"),
+       java_method("java.lang.Math", "max", 2, 3),
+       java_method("java.lang.Math", "min", 2, 3),
+       java_method("java.lang.Math", "round", 2.5),
+       java_method("java.lang.Math", "exp", 1.0),
+       java_method("java.lang.Math", "floor", 1.9)
 FROM src LIMIT 1
 PREHOOK: type: QUERY
-POSTHOOK: query: EXPLAIN EXTENDED
-SELECT reflect("java.lang.String", "valueOf", 1),
-       reflect("java.lang.String", "isEmpty"),
-       reflect("java.lang.Math", "max", 2, 3),
-       reflect("java.lang.Math", "min", 2, 3),
-       reflect("java.lang.Math", "round", 2.5),
-       reflect("java.lang.Math", "exp", 1.0),
-       reflect("java.lang.Math", "floor", 1.9)
+POSTHOOK: query: -- java_method() is a synonym for reflect()
+
+EXPLAIN EXTENDED
+SELECT java_method("java.lang.String", "valueOf", 1),
+       java_method("java.lang.String", "isEmpty"),
+       java_method("java.lang.Math", "max", 2, 3),
+       java_method("java.lang.Math", "min", 2, 3),
+       java_method("java.lang.Math", "round", 2.5),
+       java_method("java.lang.Math", "exp", 1.0),
+       java_method("java.lang.Math", "floor", 1.9)
 FROM src LIMIT 1
 POSTHOOK: type: QUERY
 ABSTRACT SYNTAX TREE:
-  (TOK_QUERY (TOK_FROM (TOK_TABREF (TOK_TABNAME src))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_FUNCTION reflect "java.lang.String" "valueOf" 1)) (TOK_SELEXPR (TOK_FUNCTION reflect "java.lang.String" "isEmpty")) (TOK_SELEXPR (TOK_FUNCTION reflect "java.lang.Math" "max" 2 3)) (TOK_SELEXPR (TOK_FUNCTION reflect "java.lang.Math" "min" 2 3)) (TOK_SELEXPR (TOK_FUNCTION reflect "java.lang.Math" "round" 2.5)) (TOK_SELEXPR (TOK_FUNCTION reflect "java.lang.Math" "exp" 1.0)) (TOK_SELEXPR (TOK_FUNCTION reflect "java.lang.Math" "floor" 1.9))) (TOK_LIMIT 1)))
+  (TOK_QUERY (TOK_FROM (TOK_TABREF (TOK_TABNAME src))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_FUNCTION java_method "java.lang.String" "valueOf" 1)) (TOK_SELEXPR (TOK_FUNCTION java_method "java.lang.String" "isEmpty")) (TOK_SELEXPR (TOK_FUNCTION java_method "java.lang.Math" "max" 2 3)) (TOK_SELEXPR (TOK_FUNCTION java_method "java.lang.Math" "min" 2 3)) (TOK_SELEXPR (TOK_FUNCTION java_method "java.lang.Math" "round" 2.5)) (TOK_SELEXPR (TOK_FUNCTION java_method "java.lang.Math" "exp" 1.0)) (TOK_SELEXPR (TOK_FUNCTION java_method "java.lang.Math" "floor" 1.9))) (TOK_LIMIT 1)))
 
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -123,24 +127,24 @@ STAGE PLANS:
       limit: 1
 
 
-PREHOOK: query: SELECT reflect("java.lang.String", "valueOf", 1),
-       reflect("java.lang.String", "isEmpty"),
-       reflect("java.lang.Math", "max", 2, 3),
-       reflect("java.lang.Math", "min", 2, 3),
-       reflect("java.lang.Math", "round", 2.5),
-       reflect("java.lang.Math", "exp", 1.0),
-       reflect("java.lang.Math", "floor", 1.9)
+PREHOOK: query: SELECT java_method("java.lang.String", "valueOf", 1),
+       java_method("java.lang.String", "isEmpty"),
+       java_method("java.lang.Math", "max", 2, 3),
+       java_method("java.lang.Math", "min", 2, 3),
+       java_method("java.lang.Math", "round", 2.5),
+       java_method("java.lang.Math", "exp", 1.0),
+       java_method("java.lang.Math", "floor", 1.9)
 FROM src LIMIT 1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT reflect("java.lang.String", "valueOf", 1),
-       reflect("java.lang.String", "isEmpty"),
-       reflect("java.lang.Math", "max", 2, 3),
-       reflect("java.lang.Math", "min", 2, 3),
-       reflect("java.lang.Math", "round", 2.5),
-       reflect("java.lang.Math", "exp", 1.0),
-       reflect("java.lang.Math", "floor", 1.9)
+POSTHOOK: query: SELECT java_method("java.lang.String", "valueOf", 1),
+       java_method("java.lang.String", "isEmpty"),
+       java_method("java.lang.Math", "max", 2, 3),
+       java_method("java.lang.Math", "min", 2, 3),
+       java_method("java.lang.Math", "round", 2.5),
+       java_method("java.lang.Math", "exp", 1.0),
+       java_method("java.lang.Math", "floor", 1.9)
 FROM src LIMIT 1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
