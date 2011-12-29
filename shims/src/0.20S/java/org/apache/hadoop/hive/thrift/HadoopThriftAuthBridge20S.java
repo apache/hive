@@ -39,6 +39,7 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.hive.thrift.client.TUGIAssumingTransport;
 import org.apache.hadoop.security.SaslRpcServer;
 import org.apache.hadoop.security.SaslRpcServer.AuthMethod;
 import org.apache.hadoop.security.SecurityUtil;
@@ -189,131 +190,7 @@ import org.apache.thrift.transport.TTransportFactory;
         return new String(Base64.encodeBase64(password)).toCharArray();
        }
      }
-    /**
-      * The Thrift SASL transports call Sasl.createSaslServer and Sasl.createSaslClient
-      * inside open(). So, we need to assume the correct UGI when the transport is opened
-      * so that the SASL mechanisms have access to the right principal. This transport
-      * wraps the Sasl transports to set up the right UGI context for open().
-      *
-      * This is used on the client side, where the API explicitly opens a transport to
-      * the server.
-      */
-     private static class TUGIAssumingTransport extends TFilterTransport {
-       private final UserGroupInformation ugi;
-
-       public TUGIAssumingTransport(TTransport wrapped, UserGroupInformation ugi) {
-         super(wrapped);
-         this.ugi = ugi;
        }
-
-       @Override
-       public void open() throws TTransportException {
-         try {
-           ugi.doAs(new PrivilegedExceptionAction<Void>() {
-             public Void run() {
-               try {
-                 wrapped.open();
-               } catch (TTransportException tte) {
-                 // Wrap the transport exception in an RTE, since UGI.doAs() then goes
-                 // and unwraps this for us out of the doAs block. We then unwrap one
-                 // more time in our catch clause to get back the TTE. (ugh)
-                 throw new RuntimeException(tte);
-               }
-               return null;
-             }
-           });
-         } catch (IOException ioe) {
-           assert false : "Never thrown!";
-           throw new RuntimeException("Received an ioe we never threw!", ioe);
-         } catch (InterruptedException ie) {
-           assert false : "We never expect to see an InterruptedException thrown in this block";
-           throw new RuntimeException("Received an ie we never threw!", ie);
-         } catch (RuntimeException rte) {
-           if (rte.getCause() instanceof TTransportException) {
-             throw (TTransportException)rte.getCause();
-           } else {
-             throw rte;
-           }
-         }
-       }
-     }
-    /**
-      * Transport that simply wraps another transport.
-      * This is the equivalent of FilterInputStream for Thrift transports.
-      */
-     private static class TFilterTransport extends TTransport {
-       protected final TTransport wrapped;
-
-       public TFilterTransport(TTransport wrapped) {
-         this.wrapped = wrapped;
-       }
-
-       @Override
-       public void open() throws TTransportException {
-         wrapped.open();
-       }
-
-       @Override
-       public boolean isOpen() {
-         return wrapped.isOpen();
-       }
-
-       @Override
-       public boolean peek() {
-         return wrapped.peek();
-       }
-
-       @Override
-       public void close() {
-         wrapped.close();
-       }
-
-       @Override
-       public int read(byte[] buf, int off, int len) throws TTransportException {
-         return wrapped.read(buf, off, len);
-       }
-
-       @Override
-       public int readAll(byte[] buf, int off, int len) throws TTransportException {
-         return wrapped.readAll(buf, off, len);
-       }
-
-       @Override
-       public void write(byte[] buf) throws TTransportException {
-         wrapped.write(buf);
-       }
-
-       @Override
-       public void write(byte[] buf, int off, int len) throws TTransportException {
-         wrapped.write(buf, off, len);
-       }
-
-       @Override
-       public void flush() throws TTransportException {
-         wrapped.flush();
-       }
-
-       @Override
-       public byte[] getBuffer() {
-         return wrapped.getBuffer();
-       }
-
-       @Override
-       public int getBufferPosition() {
-         return wrapped.getBufferPosition();
-       }
-
-       @Override
-       public int getBytesRemainingInBuffer() {
-         return wrapped.getBytesRemainingInBuffer();
-       }
-
-       @Override
-       public void consumeBuffer(int len) {
-         wrapped.consumeBuffer(len);
-       }
-     }
-   }
 
    public static class Server extends HadoopThriftAuthBridge.Server {
      final UserGroupInformation realUgi;
