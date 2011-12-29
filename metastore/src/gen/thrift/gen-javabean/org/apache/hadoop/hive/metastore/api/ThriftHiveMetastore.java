@@ -147,6 +147,8 @@ public class ThriftHiveMetastore {
 
     public boolean revoke_privileges(PrivilegeBag privileges) throws MetaException, org.apache.thrift.TException;
 
+    public List<String> set_ugi(String user_name, List<String> group_names) throws MetaException, org.apache.thrift.TException;
+
     public String get_delegation_token(String token_owner, String renewer_kerberos_principal_name) throws MetaException, org.apache.thrift.TException;
 
     public long renew_delegation_token(String token_str_form) throws MetaException, org.apache.thrift.TException;
@@ -276,6 +278,8 @@ public class ThriftHiveMetastore {
     public void grant_privileges(PrivilegeBag privileges, org.apache.thrift.async.AsyncMethodCallback<AsyncClient.grant_privileges_call> resultHandler) throws org.apache.thrift.TException;
 
     public void revoke_privileges(PrivilegeBag privileges, org.apache.thrift.async.AsyncMethodCallback<AsyncClient.revoke_privileges_call> resultHandler) throws org.apache.thrift.TException;
+
+    public void set_ugi(String user_name, List<String> group_names, org.apache.thrift.async.AsyncMethodCallback<AsyncClient.set_ugi_call> resultHandler) throws org.apache.thrift.TException;
 
     public void get_delegation_token(String token_owner, String renewer_kerberos_principal_name, org.apache.thrift.async.AsyncMethodCallback<AsyncClient.get_delegation_token_call> resultHandler) throws org.apache.thrift.TException;
 
@@ -2104,6 +2108,33 @@ public class ThriftHiveMetastore {
         throw result.o1;
       }
       throw new org.apache.thrift.TApplicationException(org.apache.thrift.TApplicationException.MISSING_RESULT, "revoke_privileges failed: unknown result");
+    }
+
+    public List<String> set_ugi(String user_name, List<String> group_names) throws MetaException, org.apache.thrift.TException
+    {
+      send_set_ugi(user_name, group_names);
+      return recv_set_ugi();
+    }
+
+    public void send_set_ugi(String user_name, List<String> group_names) throws org.apache.thrift.TException
+    {
+      set_ugi_args args = new set_ugi_args();
+      args.setUser_name(user_name);
+      args.setGroup_names(group_names);
+      sendBase("set_ugi", args);
+    }
+
+    public List<String> recv_set_ugi() throws MetaException, org.apache.thrift.TException
+    {
+      set_ugi_result result = new set_ugi_result();
+      receiveBase(result, "set_ugi");
+      if (result.isSetSuccess()) {
+        return result.success;
+      }
+      if (result.o1 != null) {
+        throw result.o1;
+      }
+      throw new org.apache.thrift.TApplicationException(org.apache.thrift.TApplicationException.MISSING_RESULT, "set_ugi failed: unknown result");
     }
 
     public String get_delegation_token(String token_owner, String renewer_kerberos_principal_name) throws MetaException, org.apache.thrift.TException
@@ -4393,6 +4424,41 @@ public class ThriftHiveMetastore {
       }
     }
 
+    public void set_ugi(String user_name, List<String> group_names, org.apache.thrift.async.AsyncMethodCallback<set_ugi_call> resultHandler) throws org.apache.thrift.TException {
+      checkReady();
+      set_ugi_call method_call = new set_ugi_call(user_name, group_names, resultHandler, this, ___protocolFactory, ___transport);
+      this.___currentMethod = method_call;
+      ___manager.call(method_call);
+    }
+
+    public static class set_ugi_call extends org.apache.thrift.async.TAsyncMethodCall {
+      private String user_name;
+      private List<String> group_names;
+      public set_ugi_call(String user_name, List<String> group_names, org.apache.thrift.async.AsyncMethodCallback<set_ugi_call> resultHandler, org.apache.thrift.async.TAsyncClient client, org.apache.thrift.protocol.TProtocolFactory protocolFactory, org.apache.thrift.transport.TNonblockingTransport transport) throws org.apache.thrift.TException {
+        super(client, protocolFactory, transport, resultHandler, false);
+        this.user_name = user_name;
+        this.group_names = group_names;
+      }
+
+      public void write_args(org.apache.thrift.protocol.TProtocol prot) throws org.apache.thrift.TException {
+        prot.writeMessageBegin(new org.apache.thrift.protocol.TMessage("set_ugi", org.apache.thrift.protocol.TMessageType.CALL, 0));
+        set_ugi_args args = new set_ugi_args();
+        args.setUser_name(user_name);
+        args.setGroup_names(group_names);
+        args.write(prot);
+        prot.writeMessageEnd();
+      }
+
+      public List<String> getResult() throws MetaException, org.apache.thrift.TException {
+        if (getState() != org.apache.thrift.async.TAsyncMethodCall.State.RESPONSE_READ) {
+          throw new IllegalStateException("Method call not finished!");
+        }
+        org.apache.thrift.transport.TMemoryInputTransport memoryTransport = new org.apache.thrift.transport.TMemoryInputTransport(getFrameBuffer().array());
+        org.apache.thrift.protocol.TProtocol prot = client.getProtocolFactory().getProtocol(memoryTransport);
+        return (new Client(prot)).recv_set_ugi();
+      }
+    }
+
     public void get_delegation_token(String token_owner, String renewer_kerberos_principal_name, org.apache.thrift.async.AsyncMethodCallback<get_delegation_token_call> resultHandler) throws org.apache.thrift.TException {
       checkReady();
       get_delegation_token_call method_call = new get_delegation_token_call(token_owner, renewer_kerberos_principal_name, resultHandler, this, ___protocolFactory, ___transport);
@@ -4565,6 +4631,7 @@ public class ThriftHiveMetastore {
       processMap.put("list_privileges", new list_privileges());
       processMap.put("grant_privileges", new grant_privileges());
       processMap.put("revoke_privileges", new revoke_privileges());
+      processMap.put("set_ugi", new set_ugi());
       processMap.put("get_delegation_token", new get_delegation_token());
       processMap.put("renew_delegation_token", new renew_delegation_token());
       processMap.put("cancel_delegation_token", new cancel_delegation_token());
@@ -5897,6 +5964,26 @@ public class ThriftHiveMetastore {
         try {
           result.success = iface.revoke_privileges(args.privileges);
           result.setSuccessIsSet(true);
+        } catch (MetaException o1) {
+          result.o1 = o1;
+        }
+        return result;
+      }
+    }
+
+    private static class set_ugi<I extends Iface> extends org.apache.thrift.ProcessFunction<I, set_ugi_args> {
+      public set_ugi() {
+        super("set_ugi");
+      }
+
+      protected set_ugi_args getEmptyArgsInstance() {
+        return new set_ugi_args();
+      }
+
+      protected set_ugi_result getResult(I iface, set_ugi_args args) throws org.apache.thrift.TException {
+        set_ugi_result result = new set_ugi_result();
+        try {
+          result.success = iface.set_ugi(args.user_name, args.group_names);
         } catch (MetaException o1) {
           result.o1 = o1;
         }
@@ -9012,7 +9099,7 @@ public class ThriftHiveMetastore {
         if (lastComparison != 0) {
           return lastComparison;
         }
-      }
+        }
       lastComparison = Boolean.valueOf(isSetO1()).compareTo(typedOther.isSetO1());
       if (lastComparison != 0) {
         return lastComparison;
@@ -60528,6 +60615,843 @@ public class ThriftHiveMetastore {
 
       sb.append("success:");
       sb.append(this.success);
+      first = false;
+      if (!first) sb.append(", ");
+      sb.append("o1:");
+      if (this.o1 == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.o1);
+      }
+      first = false;
+      sb.append(")");
+      return sb.toString();
+    }
+
+    public void validate() throws org.apache.thrift.TException {
+      // check for required fields
+    }
+
+    private void writeObject(java.io.ObjectOutputStream out) throws java.io.IOException {
+      try {
+        write(new org.apache.thrift.protocol.TCompactProtocol(new org.apache.thrift.transport.TIOStreamTransport(out)));
+      } catch (org.apache.thrift.TException te) {
+        throw new java.io.IOException(te);
+      }
+    }
+
+    private void readObject(java.io.ObjectInputStream in) throws java.io.IOException, ClassNotFoundException {
+      try {
+        read(new org.apache.thrift.protocol.TCompactProtocol(new org.apache.thrift.transport.TIOStreamTransport(in)));
+      } catch (org.apache.thrift.TException te) {
+        throw new java.io.IOException(te);
+      }
+    }
+
+  }
+
+  public static class set_ugi_args implements org.apache.thrift.TBase<set_ugi_args, set_ugi_args._Fields>, java.io.Serializable, Cloneable   {
+    private static final org.apache.thrift.protocol.TStruct STRUCT_DESC = new org.apache.thrift.protocol.TStruct("set_ugi_args");
+
+    private static final org.apache.thrift.protocol.TField USER_NAME_FIELD_DESC = new org.apache.thrift.protocol.TField("user_name", org.apache.thrift.protocol.TType.STRING, (short)1);
+    private static final org.apache.thrift.protocol.TField GROUP_NAMES_FIELD_DESC = new org.apache.thrift.protocol.TField("group_names", org.apache.thrift.protocol.TType.LIST, (short)2);
+
+    private String user_name; // required
+    private List<String> group_names; // required
+
+    /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
+    public enum _Fields implements org.apache.thrift.TFieldIdEnum {
+      USER_NAME((short)1, "user_name"),
+      GROUP_NAMES((short)2, "group_names");
+
+      private static final Map<String, _Fields> byName = new HashMap<String, _Fields>();
+
+      static {
+        for (_Fields field : EnumSet.allOf(_Fields.class)) {
+          byName.put(field.getFieldName(), field);
+        }
+      }
+
+      /**
+       * Find the _Fields constant that matches fieldId, or null if its not found.
+       */
+      public static _Fields findByThriftId(int fieldId) {
+        switch(fieldId) {
+          case 1: // USER_NAME
+            return USER_NAME;
+          case 2: // GROUP_NAMES
+            return GROUP_NAMES;
+          default:
+            return null;
+        }
+      }
+
+      /**
+       * Find the _Fields constant that matches fieldId, throwing an exception
+       * if it is not found.
+       */
+      public static _Fields findByThriftIdOrThrow(int fieldId) {
+        _Fields fields = findByThriftId(fieldId);
+        if (fields == null) throw new IllegalArgumentException("Field " + fieldId + " doesn't exist!");
+        return fields;
+      }
+
+      /**
+       * Find the _Fields constant that matches name, or null if its not found.
+       */
+      public static _Fields findByName(String name) {
+        return byName.get(name);
+      }
+
+      private final short _thriftId;
+      private final String _fieldName;
+
+      _Fields(short thriftId, String fieldName) {
+        _thriftId = thriftId;
+        _fieldName = fieldName;
+      }
+
+      public short getThriftFieldId() {
+        return _thriftId;
+      }
+
+      public String getFieldName() {
+        return _fieldName;
+      }
+    }
+
+    // isset id assignments
+
+    public static final Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
+    static {
+      Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
+      tmpMap.put(_Fields.USER_NAME, new org.apache.thrift.meta_data.FieldMetaData("user_name", org.apache.thrift.TFieldRequirementType.DEFAULT, 
+          new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
+      tmpMap.put(_Fields.GROUP_NAMES, new org.apache.thrift.meta_data.FieldMetaData("group_names", org.apache.thrift.TFieldRequirementType.DEFAULT, 
+          new org.apache.thrift.meta_data.ListMetaData(org.apache.thrift.protocol.TType.LIST, 
+              new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING))));
+      metaDataMap = Collections.unmodifiableMap(tmpMap);
+      org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(set_ugi_args.class, metaDataMap);
+    }
+
+    public set_ugi_args() {
+    }
+
+    public set_ugi_args(
+      String user_name,
+      List<String> group_names)
+    {
+      this();
+      this.user_name = user_name;
+      this.group_names = group_names;
+    }
+
+    /**
+     * Performs a deep copy on <i>other</i>.
+     */
+    public set_ugi_args(set_ugi_args other) {
+      if (other.isSetUser_name()) {
+        this.user_name = other.user_name;
+      }
+      if (other.isSetGroup_names()) {
+        List<String> __this__group_names = new ArrayList<String>();
+        for (String other_element : other.group_names) {
+          __this__group_names.add(other_element);
+        }
+        this.group_names = __this__group_names;
+      }
+    }
+
+    public set_ugi_args deepCopy() {
+      return new set_ugi_args(this);
+    }
+
+    @Override
+    public void clear() {
+      this.user_name = null;
+      this.group_names = null;
+    }
+
+    public String getUser_name() {
+      return this.user_name;
+    }
+
+    public void setUser_name(String user_name) {
+      this.user_name = user_name;
+    }
+
+    public void unsetUser_name() {
+      this.user_name = null;
+    }
+
+    /** Returns true if field user_name is set (has been assigned a value) and false otherwise */
+    public boolean isSetUser_name() {
+      return this.user_name != null;
+    }
+
+    public void setUser_nameIsSet(boolean value) {
+      if (!value) {
+        this.user_name = null;
+      }
+    }
+
+    public int getGroup_namesSize() {
+      return (this.group_names == null) ? 0 : this.group_names.size();
+    }
+
+    public java.util.Iterator<String> getGroup_namesIterator() {
+      return (this.group_names == null) ? null : this.group_names.iterator();
+    }
+
+    public void addToGroup_names(String elem) {
+      if (this.group_names == null) {
+        this.group_names = new ArrayList<String>();
+      }
+      this.group_names.add(elem);
+    }
+
+    public List<String> getGroup_names() {
+      return this.group_names;
+    }
+
+    public void setGroup_names(List<String> group_names) {
+      this.group_names = group_names;
+    }
+
+    public void unsetGroup_names() {
+      this.group_names = null;
+    }
+
+    /** Returns true if field group_names is set (has been assigned a value) and false otherwise */
+    public boolean isSetGroup_names() {
+      return this.group_names != null;
+    }
+
+    public void setGroup_namesIsSet(boolean value) {
+      if (!value) {
+        this.group_names = null;
+      }
+    }
+
+    public void setFieldValue(_Fields field, Object value) {
+      switch (field) {
+      case USER_NAME:
+        if (value == null) {
+          unsetUser_name();
+        } else {
+          setUser_name((String)value);
+        }
+        break;
+
+      case GROUP_NAMES:
+        if (value == null) {
+          unsetGroup_names();
+        } else {
+          setGroup_names((List<String>)value);
+        }
+        break;
+
+      }
+    }
+
+    public Object getFieldValue(_Fields field) {
+      switch (field) {
+      case USER_NAME:
+        return getUser_name();
+
+      case GROUP_NAMES:
+        return getGroup_names();
+
+      }
+      throw new IllegalStateException();
+    }
+
+    /** Returns true if field corresponding to fieldID is set (has been assigned a value) and false otherwise */
+    public boolean isSet(_Fields field) {
+      if (field == null) {
+        throw new IllegalArgumentException();
+      }
+
+      switch (field) {
+      case USER_NAME:
+        return isSetUser_name();
+      case GROUP_NAMES:
+        return isSetGroup_names();
+      }
+      throw new IllegalStateException();
+    }
+
+    @Override
+    public boolean equals(Object that) {
+      if (that == null)
+        return false;
+      if (that instanceof set_ugi_args)
+        return this.equals((set_ugi_args)that);
+      return false;
+    }
+
+    public boolean equals(set_ugi_args that) {
+      if (that == null)
+        return false;
+
+      boolean this_present_user_name = true && this.isSetUser_name();
+      boolean that_present_user_name = true && that.isSetUser_name();
+      if (this_present_user_name || that_present_user_name) {
+        if (!(this_present_user_name && that_present_user_name))
+          return false;
+        if (!this.user_name.equals(that.user_name))
+          return false;
+      }
+
+      boolean this_present_group_names = true && this.isSetGroup_names();
+      boolean that_present_group_names = true && that.isSetGroup_names();
+      if (this_present_group_names || that_present_group_names) {
+        if (!(this_present_group_names && that_present_group_names))
+          return false;
+        if (!this.group_names.equals(that.group_names))
+          return false;
+      }
+
+      return true;
+    }
+
+    @Override
+    public int hashCode() {
+      return 0;
+    }
+
+    public int compareTo(set_ugi_args other) {
+      if (!getClass().equals(other.getClass())) {
+        return getClass().getName().compareTo(other.getClass().getName());
+      }
+
+      int lastComparison = 0;
+      set_ugi_args typedOther = (set_ugi_args)other;
+
+      lastComparison = Boolean.valueOf(isSetUser_name()).compareTo(typedOther.isSetUser_name());
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+      if (isSetUser_name()) {
+        lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.user_name, typedOther.user_name);
+        if (lastComparison != 0) {
+          return lastComparison;
+        }
+      }
+      lastComparison = Boolean.valueOf(isSetGroup_names()).compareTo(typedOther.isSetGroup_names());
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+      if (isSetGroup_names()) {
+        lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.group_names, typedOther.group_names);
+        if (lastComparison != 0) {
+          return lastComparison;
+        }
+      }
+      return 0;
+    }
+
+    public _Fields fieldForId(int fieldId) {
+      return _Fields.findByThriftId(fieldId);
+    }
+
+    public void read(org.apache.thrift.protocol.TProtocol iprot) throws org.apache.thrift.TException {
+      org.apache.thrift.protocol.TField field;
+      iprot.readStructBegin();
+      while (true)
+      {
+        field = iprot.readFieldBegin();
+        if (field.type == org.apache.thrift.protocol.TType.STOP) { 
+          break;
+        }
+        switch (field.id) {
+          case 1: // USER_NAME
+            if (field.type == org.apache.thrift.protocol.TType.STRING) {
+              this.user_name = iprot.readString();
+            } else { 
+              org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
+            }
+            break;
+          case 2: // GROUP_NAMES
+            if (field.type == org.apache.thrift.protocol.TType.LIST) {
+              {
+                org.apache.thrift.protocol.TList _list266 = iprot.readListBegin();
+                this.group_names = new ArrayList<String>(_list266.size);
+                for (int _i267 = 0; _i267 < _list266.size; ++_i267)
+                {
+                  String _elem268; // required
+                  _elem268 = iprot.readString();
+                  this.group_names.add(_elem268);
+                }
+                iprot.readListEnd();
+              }
+            } else { 
+              org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
+            }
+            break;
+          default:
+            org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
+        }
+        iprot.readFieldEnd();
+      }
+      iprot.readStructEnd();
+      validate();
+    }
+
+    public void write(org.apache.thrift.protocol.TProtocol oprot) throws org.apache.thrift.TException {
+      validate();
+
+      oprot.writeStructBegin(STRUCT_DESC);
+      if (this.user_name != null) {
+        oprot.writeFieldBegin(USER_NAME_FIELD_DESC);
+        oprot.writeString(this.user_name);
+        oprot.writeFieldEnd();
+      }
+      if (this.group_names != null) {
+        oprot.writeFieldBegin(GROUP_NAMES_FIELD_DESC);
+        {
+          oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRING, this.group_names.size()));
+          for (String _iter269 : this.group_names)
+          {
+            oprot.writeString(_iter269);
+          }
+          oprot.writeListEnd();
+        }
+        oprot.writeFieldEnd();
+      }
+      oprot.writeFieldStop();
+      oprot.writeStructEnd();
+    }
+
+    @Override
+    public String toString() {
+      StringBuilder sb = new StringBuilder("set_ugi_args(");
+      boolean first = true;
+
+      sb.append("user_name:");
+      if (this.user_name == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.user_name);
+      }
+      first = false;
+      if (!first) sb.append(", ");
+      sb.append("group_names:");
+      if (this.group_names == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.group_names);
+      }
+      first = false;
+      sb.append(")");
+      return sb.toString();
+    }
+
+    public void validate() throws org.apache.thrift.TException {
+      // check for required fields
+    }
+
+    private void writeObject(java.io.ObjectOutputStream out) throws java.io.IOException {
+      try {
+        write(new org.apache.thrift.protocol.TCompactProtocol(new org.apache.thrift.transport.TIOStreamTransport(out)));
+      } catch (org.apache.thrift.TException te) {
+        throw new java.io.IOException(te);
+      }
+    }
+
+    private void readObject(java.io.ObjectInputStream in) throws java.io.IOException, ClassNotFoundException {
+      try {
+        read(new org.apache.thrift.protocol.TCompactProtocol(new org.apache.thrift.transport.TIOStreamTransport(in)));
+      } catch (org.apache.thrift.TException te) {
+        throw new java.io.IOException(te);
+      }
+    }
+
+  }
+
+  public static class set_ugi_result implements org.apache.thrift.TBase<set_ugi_result, set_ugi_result._Fields>, java.io.Serializable, Cloneable   {
+    private static final org.apache.thrift.protocol.TStruct STRUCT_DESC = new org.apache.thrift.protocol.TStruct("set_ugi_result");
+
+    private static final org.apache.thrift.protocol.TField SUCCESS_FIELD_DESC = new org.apache.thrift.protocol.TField("success", org.apache.thrift.protocol.TType.LIST, (short)0);
+    private static final org.apache.thrift.protocol.TField O1_FIELD_DESC = new org.apache.thrift.protocol.TField("o1", org.apache.thrift.protocol.TType.STRUCT, (short)1);
+
+    private List<String> success; // required
+    private MetaException o1; // required
+
+    /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
+    public enum _Fields implements org.apache.thrift.TFieldIdEnum {
+      SUCCESS((short)0, "success"),
+      O1((short)1, "o1");
+
+      private static final Map<String, _Fields> byName = new HashMap<String, _Fields>();
+
+      static {
+        for (_Fields field : EnumSet.allOf(_Fields.class)) {
+          byName.put(field.getFieldName(), field);
+        }
+      }
+
+      /**
+       * Find the _Fields constant that matches fieldId, or null if its not found.
+       */
+      public static _Fields findByThriftId(int fieldId) {
+        switch(fieldId) {
+          case 0: // SUCCESS
+            return SUCCESS;
+          case 1: // O1
+            return O1;
+          default:
+            return null;
+        }
+      }
+
+      /**
+       * Find the _Fields constant that matches fieldId, throwing an exception
+       * if it is not found.
+       */
+      public static _Fields findByThriftIdOrThrow(int fieldId) {
+        _Fields fields = findByThriftId(fieldId);
+        if (fields == null) throw new IllegalArgumentException("Field " + fieldId + " doesn't exist!");
+        return fields;
+      }
+
+      /**
+       * Find the _Fields constant that matches name, or null if its not found.
+       */
+      public static _Fields findByName(String name) {
+        return byName.get(name);
+      }
+
+      private final short _thriftId;
+      private final String _fieldName;
+
+      _Fields(short thriftId, String fieldName) {
+        _thriftId = thriftId;
+        _fieldName = fieldName;
+      }
+
+      public short getThriftFieldId() {
+        return _thriftId;
+      }
+
+      public String getFieldName() {
+        return _fieldName;
+      }
+    }
+
+    // isset id assignments
+
+    public static final Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
+    static {
+      Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
+      tmpMap.put(_Fields.SUCCESS, new org.apache.thrift.meta_data.FieldMetaData("success", org.apache.thrift.TFieldRequirementType.DEFAULT, 
+          new org.apache.thrift.meta_data.ListMetaData(org.apache.thrift.protocol.TType.LIST, 
+              new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING))));
+      tmpMap.put(_Fields.O1, new org.apache.thrift.meta_data.FieldMetaData("o1", org.apache.thrift.TFieldRequirementType.DEFAULT, 
+          new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRUCT)));
+      metaDataMap = Collections.unmodifiableMap(tmpMap);
+      org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(set_ugi_result.class, metaDataMap);
+    }
+
+    public set_ugi_result() {
+    }
+
+    public set_ugi_result(
+      List<String> success,
+      MetaException o1)
+    {
+      this();
+      this.success = success;
+      this.o1 = o1;
+    }
+
+    /**
+     * Performs a deep copy on <i>other</i>.
+     */
+    public set_ugi_result(set_ugi_result other) {
+      if (other.isSetSuccess()) {
+        List<String> __this__success = new ArrayList<String>();
+        for (String other_element : other.success) {
+          __this__success.add(other_element);
+        }
+        this.success = __this__success;
+      }
+      if (other.isSetO1()) {
+        this.o1 = new MetaException(other.o1);
+      }
+    }
+
+    public set_ugi_result deepCopy() {
+      return new set_ugi_result(this);
+    }
+
+    @Override
+    public void clear() {
+      this.success = null;
+      this.o1 = null;
+    }
+
+    public int getSuccessSize() {
+      return (this.success == null) ? 0 : this.success.size();
+    }
+
+    public java.util.Iterator<String> getSuccessIterator() {
+      return (this.success == null) ? null : this.success.iterator();
+    }
+
+    public void addToSuccess(String elem) {
+      if (this.success == null) {
+        this.success = new ArrayList<String>();
+      }
+      this.success.add(elem);
+    }
+
+    public List<String> getSuccess() {
+      return this.success;
+    }
+
+    public void setSuccess(List<String> success) {
+      this.success = success;
+    }
+
+    public void unsetSuccess() {
+      this.success = null;
+    }
+
+    /** Returns true if field success is set (has been assigned a value) and false otherwise */
+    public boolean isSetSuccess() {
+      return this.success != null;
+    }
+
+    public void setSuccessIsSet(boolean value) {
+      if (!value) {
+        this.success = null;
+      }
+    }
+
+    public MetaException getO1() {
+      return this.o1;
+    }
+
+    public void setO1(MetaException o1) {
+      this.o1 = o1;
+    }
+
+    public void unsetO1() {
+      this.o1 = null;
+    }
+
+    /** Returns true if field o1 is set (has been assigned a value) and false otherwise */
+    public boolean isSetO1() {
+      return this.o1 != null;
+    }
+
+    public void setO1IsSet(boolean value) {
+      if (!value) {
+        this.o1 = null;
+      }
+    }
+
+    public void setFieldValue(_Fields field, Object value) {
+      switch (field) {
+      case SUCCESS:
+        if (value == null) {
+          unsetSuccess();
+        } else {
+          setSuccess((List<String>)value);
+        }
+        break;
+
+      case O1:
+        if (value == null) {
+          unsetO1();
+        } else {
+          setO1((MetaException)value);
+        }
+        break;
+
+      }
+    }
+
+    public Object getFieldValue(_Fields field) {
+      switch (field) {
+      case SUCCESS:
+        return getSuccess();
+
+      case O1:
+        return getO1();
+
+      }
+      throw new IllegalStateException();
+    }
+
+    /** Returns true if field corresponding to fieldID is set (has been assigned a value) and false otherwise */
+    public boolean isSet(_Fields field) {
+      if (field == null) {
+        throw new IllegalArgumentException();
+      }
+
+      switch (field) {
+      case SUCCESS:
+        return isSetSuccess();
+      case O1:
+        return isSetO1();
+      }
+      throw new IllegalStateException();
+    }
+
+    @Override
+    public boolean equals(Object that) {
+      if (that == null)
+        return false;
+      if (that instanceof set_ugi_result)
+        return this.equals((set_ugi_result)that);
+      return false;
+    }
+
+    public boolean equals(set_ugi_result that) {
+      if (that == null)
+        return false;
+
+      boolean this_present_success = true && this.isSetSuccess();
+      boolean that_present_success = true && that.isSetSuccess();
+      if (this_present_success || that_present_success) {
+        if (!(this_present_success && that_present_success))
+          return false;
+        if (!this.success.equals(that.success))
+          return false;
+      }
+
+      boolean this_present_o1 = true && this.isSetO1();
+      boolean that_present_o1 = true && that.isSetO1();
+      if (this_present_o1 || that_present_o1) {
+        if (!(this_present_o1 && that_present_o1))
+          return false;
+        if (!this.o1.equals(that.o1))
+          return false;
+      }
+
+      return true;
+    }
+
+    @Override
+    public int hashCode() {
+      return 0;
+    }
+
+    public int compareTo(set_ugi_result other) {
+      if (!getClass().equals(other.getClass())) {
+        return getClass().getName().compareTo(other.getClass().getName());
+      }
+
+      int lastComparison = 0;
+      set_ugi_result typedOther = (set_ugi_result)other;
+
+      lastComparison = Boolean.valueOf(isSetSuccess()).compareTo(typedOther.isSetSuccess());
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+      if (isSetSuccess()) {
+        lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.success, typedOther.success);
+        if (lastComparison != 0) {
+          return lastComparison;
+        }
+      }
+      lastComparison = Boolean.valueOf(isSetO1()).compareTo(typedOther.isSetO1());
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+      if (isSetO1()) {
+        lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.o1, typedOther.o1);
+        if (lastComparison != 0) {
+          return lastComparison;
+        }
+      }
+      return 0;
+    }
+
+    public _Fields fieldForId(int fieldId) {
+      return _Fields.findByThriftId(fieldId);
+    }
+
+    public void read(org.apache.thrift.protocol.TProtocol iprot) throws org.apache.thrift.TException {
+      org.apache.thrift.protocol.TField field;
+      iprot.readStructBegin();
+      while (true)
+      {
+        field = iprot.readFieldBegin();
+        if (field.type == org.apache.thrift.protocol.TType.STOP) { 
+          break;
+        }
+        switch (field.id) {
+          case 0: // SUCCESS
+            if (field.type == org.apache.thrift.protocol.TType.LIST) {
+              {
+                org.apache.thrift.protocol.TList _list270 = iprot.readListBegin();
+                this.success = new ArrayList<String>(_list270.size);
+                for (int _i271 = 0; _i271 < _list270.size; ++_i271)
+                {
+                  String _elem272; // required
+                  _elem272 = iprot.readString();
+                  this.success.add(_elem272);
+                }
+                iprot.readListEnd();
+              }
+            } else { 
+              org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
+            }
+            break;
+          case 1: // O1
+            if (field.type == org.apache.thrift.protocol.TType.STRUCT) {
+              this.o1 = new MetaException();
+              this.o1.read(iprot);
+            } else { 
+              org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
+            }
+            break;
+          default:
+            org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
+        }
+        iprot.readFieldEnd();
+      }
+      iprot.readStructEnd();
+      validate();
+    }
+
+    public void write(org.apache.thrift.protocol.TProtocol oprot) throws org.apache.thrift.TException {
+      oprot.writeStructBegin(STRUCT_DESC);
+
+      if (this.isSetSuccess()) {
+        oprot.writeFieldBegin(SUCCESS_FIELD_DESC);
+        {
+          oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRING, this.success.size()));
+          for (String _iter273 : this.success)
+          {
+            oprot.writeString(_iter273);
+          }
+          oprot.writeListEnd();
+        }
+        oprot.writeFieldEnd();
+      } else if (this.isSetO1()) {
+        oprot.writeFieldBegin(O1_FIELD_DESC);
+        this.o1.write(oprot);
+        oprot.writeFieldEnd();
+      }
+      oprot.writeFieldStop();
+      oprot.writeStructEnd();
+    }
+
+    @Override
+    public String toString() {
+      StringBuilder sb = new StringBuilder("set_ugi_result(");
+      boolean first = true;
+
+      sb.append("success:");
+      if (this.success == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.success);
+      }
       first = false;
       if (!first) sb.append(", ");
       sb.append("o1:");

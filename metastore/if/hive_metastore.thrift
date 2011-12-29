@@ -435,6 +435,10 @@ service ThriftHiveMetastore extends fb303.FacebookService
   bool grant_privileges(1:PrivilegeBag privileges) throws(1:MetaException o1)
   bool revoke_privileges(1:PrivilegeBag privileges) throws(1:MetaException o1)
   
+  // this is used by metastore client to send UGI information to metastore server immediately
+  // after setting up a connection. 
+  list<string> set_ugi(1:string user_name, 2:list<string> group_names) throws (1:MetaException o1)
+
   //Authentication (delegation token) interfaces
   
   // get metastore server delegation token for use from the map/reduce tasks to authenticate

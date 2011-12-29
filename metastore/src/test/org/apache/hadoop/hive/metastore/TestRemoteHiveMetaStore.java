@@ -23,7 +23,7 @@ import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 
 
 public class TestRemoteHiveMetaStore extends TestHiveMetaStore {
-  private static final String METASTORE_PORT = "29083";
+  protected static final String METASTORE_PORT = "29083";
   private static boolean isServerStarted = false;
 
   public TestRemoteHiveMetaStore() {
@@ -62,14 +62,14 @@ public class TestRemoteHiveMetaStore extends TestHiveMetaStore {
     // Wait a little bit for the metastore to start. Should probably have
     // a better way of detecting if the metastore has started?
     Thread.sleep(5000);
-
-    // hive.metastore.local should be defined in HiveConf
-    hiveConf.setBoolVar(ConfVars.METASTORE_MODE, false);
-    hiveConf.setVar(HiveConf.ConfVars.METASTOREURIS, "thrift://localhost:" + METASTORE_PORT);
-    hiveConf.setIntVar(HiveConf.ConfVars.METASTORETHRIFTRETRIES, 3);
-    hiveConf.setIntVar(ConfVars.METASTORE_CLIENT_CONNECT_RETRY_DELAY, 60);
-
-    client = new HiveMetaStoreClient(hiveConf);
+    // This is default case with setugi off for both client and server
+    createClient(false);
   }
 
+  protected void createClient(boolean setugi) throws Exception {
+    hiveConf.setBoolVar(ConfVars.METASTORE_MODE, false);
+    hiveConf.setVar(HiveConf.ConfVars.METASTOREURIS, "thrift://localhost:" + METASTORE_PORT);
+    hiveConf.setBoolVar(ConfVars.METASTORE_EXECUTE_SET_UGI,setugi);
+    client = new HiveMetaStoreClient(hiveConf);
+  }
 }

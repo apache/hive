@@ -21,9 +21,12 @@ import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
 import java.lang.reflect.Constructor;
+import java.security.PrivilegedActionException;
+import java.security.PrivilegedExceptionAction;
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.security.auth.Subject;
 import javax.security.auth.login.LoginException;
 
 import org.apache.hadoop.conf.Configuration;
@@ -32,7 +35,6 @@ import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.fs.PathFilter;
 import org.apache.hadoop.hdfs.MiniDFSCluster;
-import org.apache.hadoop.hive.io.HiveIOExceptionHandlerChain;
 import org.apache.hadoop.hive.io.HiveIOExceptionHandlerUtil;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapred.ClusterStatus;
@@ -54,6 +56,7 @@ import org.apache.hadoop.mapred.lib.CombineFileSplit;
 import org.apache.hadoop.mapred.lib.NullOutputFormat;
 import org.apache.hadoop.mapreduce.Job;
 import org.apache.hadoop.mapreduce.TaskAttemptID;
+import org.apache.hadoop.security.SecurityUtil;
 import org.apache.hadoop.security.UnixUserGroupInformation;
 import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.hadoop.tools.HadoopArchives;
@@ -507,6 +510,21 @@ public class Hadoop20Shims implements HadoopShims {
   @Override
   public String getTokenStrForm(String tokenSignature) throws IOException {
     throw new UnsupportedOperationException("Tokens are not supported in current hadoop version");
+  }
+
+  @Override
+  public void doAs(UserGroupInformation ugi, PrivilegedExceptionAction<Void> pvea) throws
+    IOException, InterruptedException {
+    try {
+      Subject.doAs(SecurityUtil.getSubject(ugi),pvea);
+    } catch (PrivilegedActionException e) {
+      throw new IOException(e);
+    }
+  }
+
+  @Override
+  public UserGroupInformation createRemoteUser(String userName, List<String> groupNames) {
+    return new UnixUserGroupInformation(userName, groupNames.toArray(new String[0]));
   }
 
   @Override
