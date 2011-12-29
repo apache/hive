@@ -106,7 +106,7 @@ public class MapRedStats {
     }
 
     if (cpuMSec > 0) {
-      sb.append(" Accumulative CPU: " + (cpuMSec / 1000D) + " sec  ");
+      sb.append(" Cumulative CPU: " + (cpuMSec / 1000D) + " sec  ");
     }
 
     if (counters != null) {
@@ -125,7 +125,7 @@ public class MapRedStats {
       }
     }
 
-    sb.append(" " + (success ? "SUCESS" : "FAIL"));
+    sb.append(" " + (success ? "SUCCESS" : "FAIL"));
 
     return sb.toString();
   }
