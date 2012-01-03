@@ -16,7 +16,7 @@ INSERT OVERWRITE TABLE DEST2 SELECT SRC.key, COUNT(DISTINCT SUBSTR(SRC.value,5))
 SELECT DEST1.* FROM DEST1;
 SELECT DEST2.* FROM DEST2;
 
-set hive.multigroupby.singlemr=true;
+set hive.multigroupby.singlereducer=false;
 
 EXPLAIN
 FROM SRC

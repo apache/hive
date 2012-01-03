@@ -1,5 +1,3 @@
-set hive.multigroupby.singlemr=true;
-
 CREATE TABLE TBL(C1 INT, C2 INT, C3 INT, C4 INT);
 
 CREATE TABLE DEST1(d1 INT, d2 INT) STORED AS TEXTFILE;

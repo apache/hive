@@ -22,9 +22,9 @@ import java.io.Serializable;
 import java.util.List;
 
 import org.apache.hadoop.hive.ql.lib.Node;
+import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
-import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 
 /**
  * ExprNodeDesc.
@@ -90,4 +90,31 @@ public abstract class ExprNodeDesc implements Serializable, Node {
     return this.getClass().getName();
   }
 
+  // This wraps an instance of an ExprNodeDesc, and makes equals work like isSame, see comment on
+  // isSame
+  public static class ExprNodeDescEqualityWrapper {
+    private ExprNodeDesc exprNodeDesc;
+
+    public ExprNodeDescEqualityWrapper(ExprNodeDesc exprNodeDesc) {
+      this.exprNodeDesc = exprNodeDesc;
+    }
+
+    public ExprNodeDesc getExprNodeDesc() {
+      return exprNodeDesc;
+    }
+
+    public void setExprNodeDesc(ExprNodeDesc exprNodeDesc) {
+      this.exprNodeDesc = exprNodeDesc;
+    }
+
+    @Override
+    public boolean equals(Object other) {
+
+      if (other == null || !(other instanceof ExprNodeDescEqualityWrapper)) {
+        return false;
+      }
+
+      return this.exprNodeDesc.isSame(((ExprNodeDescEqualityWrapper)other).getExprNodeDesc());
+    }
+  }
 }
