@@ -1,4 +1,5 @@
 set hive.map.aggr=false;
+set hive.multigroupby.singlereducer=false;
 set hive.groupby.skewindata=true;
 
 CREATE TABLE dest1(key INT, val1 INT, val2 INT);
@@ -19,7 +20,7 @@ INSERT OVERWRITE TABLE dest2 SELECT INPUT.key, sum(substr(INPUT.value,5)), sum(d
 SELECT * from dest1;
 SELECT * from dest2;
 
-set hive.multigroupby.singlemr=true;
+set hive.multigroupby.singlereducer=true;
 
 EXPLAIN
 FROM INPUT 

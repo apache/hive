@@ -1,5 +1,4 @@
-set hive.map.aggr=false;
-set hive.multigroupby.singlereducer=false;
+set hive.map.aggr=true;
 set hive.groupby.skewindata=false;
 set mapred.reduce.tasks=31;
 
