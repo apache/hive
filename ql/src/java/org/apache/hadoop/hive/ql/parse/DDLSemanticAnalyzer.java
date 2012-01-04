@@ -1166,12 +1166,12 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
           bucketCols = part.getBucketCols();
           inputFormatClass = part.getInputFormatClass();
           isArchived = ArchiveUtils.isArchived(part);
-          tblPartLoc = part.getDataLocation().toString();
+          tblPartLoc = part.getPartitionPath().toString();
         }
       } else {
         inputFormatClass = tblObj.getInputFormatClass();
         bucketCols = tblObj.getBucketCols();
-        tblPartLoc = tblObj.getDataLocation().toString();
+        tblPartLoc = tblObj.getPath().toString();
       }
 
       // throw a HiveException for non-rcfile.
