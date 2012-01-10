@@ -79,7 +79,7 @@ public abstract class ShimLoader {
   }
 
   public static synchronized HadoopThriftAuthBridge getHadoopThriftAuthBridge() {
-      if (getHadoopShims().isSecureShimImpl()) {
+        if ("0.20S".equals(getMajorVersion())) {
           return createShim("org.apache.hadoop.hive.thrift.HadoopThriftAuthBridge20S",
                             HadoopThriftAuthBridge.class);
         } else {
@@ -87,6 +87,7 @@ public abstract class ShimLoader {
         }
       }
 
+  @SuppressWarnings("unchecked")
   private static <T> T loadShims(Map<String, String> classMap, Class<T> xface) {
     String vers = getMajorVersion();
     String className = classMap.get(vers);
@@ -95,7 +96,7 @@ public abstract class ShimLoader {
 
     private static <T> T createShim(String className, Class<T> xface) {
     try {
-      Class<?> clazz = Class.forName(className);
+      Class clazz = Class.forName(className);
       return xface.cast(clazz.newInstance());
     } catch (Exception e) {
       throw new RuntimeException("Could not load shims in class " +
