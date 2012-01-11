@@ -4087,7 +4087,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
                     partSpec);
             outputs.add(new WriteEntity(p, false));
           } catch (HiveException e) {
-            throw new SemanticException(e.getMessage());
+            throw new SemanticException(e.getMessage(), e);
           }
         }
       }
@@ -4277,7 +4277,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
             .getFieldObjectInspector()), "", false));
       }
     } catch (Exception e) {
-      throw new SemanticException(e.getMessage());
+      throw new SemanticException(e.getMessage(), e);
     }
 
     RowSchema fsRS = new RowSchema(vecCol);
