@@ -120,6 +120,7 @@ import org.apache.hadoop.hive.ql.plan.PartitionDesc;
 import org.apache.hadoop.hive.ql.plan.PlanUtils;
 import org.apache.hadoop.hive.ql.plan.PlanUtils.ExpressionTypes;
 import org.apache.hadoop.hive.ql.plan.TableDesc;
+import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.ql.stats.StatsFactory;
 import org.apache.hadoop.hive.ql.stats.StatsPublisher;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDF;
@@ -144,7 +145,6 @@ import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.mapred.SequenceFileInputFormat;
 import org.apache.hadoop.mapred.SequenceFileOutputFormat;
 import org.apache.hadoop.util.ReflectionUtils;
-import org.apache.hadoop.hive.ql.session.SessionState;
 
 /**
  * Utilities.
@@ -1501,18 +1501,6 @@ public final class Utilities {
     return new URLClassLoader(curPath.toArray(new URL[0]), loader);
   }
 
-  public static ClassLoader addResourceFilesToClassPath(Configuration conf) {
-    try {
-      String addedJars = getResourceFiles(conf, SessionState.ResourceType.JAR);
-      if (!StringUtils.isNotBlank(addedJars)) {
-        return conf.getClassLoader();
-      }
-      return addToClassPath(conf.getClassLoader(), StringUtils.split(addedJars, ','));
-    } catch (Exception e) {
-      throw new RuntimeException("Error in adding jars to conf ", e);
-    }
-  }
-
   /**
    * remove elements from the classpath.
    *
@@ -1536,6 +1524,7 @@ public final class Utilities {
 
     loader = new URLClassLoader(newPath.toArray(new URL[0]));
     curThread.setContextClassLoader(loader);
+    SessionState.get().getConf().setClassLoader(loader);
   }
 
   public static String formatBinaryString(byte[] array, int start, int length) {
