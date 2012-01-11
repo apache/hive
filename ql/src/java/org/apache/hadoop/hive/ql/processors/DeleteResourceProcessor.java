@@ -21,7 +21,6 @@ package org.apache.hadoop.hive.ql.processors;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.parse.VariableSubstitution;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.ql.session.SessionState.LogHelper;
@@ -59,9 +58,6 @@ public class DeleteResourceProcessor implements CommandProcessor {
     } else {
       ss.delete_resource(t);
     }
-
-    Thread.currentThread().setContextClassLoader(
-        Utilities.addResourceFilesToClassPath(ss.getConf()));
 
     return new CommandProcessorResponse(0);
   }

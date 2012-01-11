@@ -418,8 +418,9 @@ public class SessionState {
     LogHelper console = getConsole();
     try {
       ClassLoader loader = Thread.currentThread().getContextClassLoader();
-      Thread.currentThread().setContextClassLoader(
-          Utilities.addToClassPath(loader, StringUtils.split(newJar, ",")));
+      ClassLoader newLoader = Utilities.addToClassPath(loader, StringUtils.split(newJar, ","));
+      Thread.currentThread().setContextClassLoader(newLoader);
+      SessionState.get().getConf().setClassLoader(newLoader);
       console.printInfo("Added " + newJar + " to class path");
       return true;
     } catch (Exception e) {
