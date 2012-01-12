@@ -41,6 +41,7 @@ import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.fs.permission.FsAction;
+import org.apache.hadoop.fs.permission.FsPermission;
 import org.apache.hadoop.hive.common.FileUtils;
 import org.apache.hadoop.hive.common.JavaUtils;
 import org.apache.hadoop.hive.conf.HiveConf;
@@ -171,6 +172,9 @@ public class Warehouse {
     try {
       fs = getFs(f);
       LOG.debug("Creating directory if it doesn't exist: " + f);
+      short umaskVal = (short) conf.getInt(HiveConf.ConfVars.HIVE_FILES_UMASK_VALUE.name(), 0002);
+      FsPermission fsPermission = new FsPermission(umaskVal);
+      FsPermission.setUMask(conf, fsPermission);
       return (fs.mkdirs(f) || fs.getFileStatus(f).isDir());
     } catch (IOException e) {
       closeFs(fs);
