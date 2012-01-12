@@ -29,7 +29,7 @@ import org.apache.hadoop.io.compress.*;
  */
 public abstract class SchemaAwareCompressionInputStream extends CompressionInputStream {
 
-  protected SchemaAwareCompressionInputStream(InputStream in) {
+  protected SchemaAwareCompressionInputStream(InputStream in) throws java.io.IOException {
     super(in);
   }
 
