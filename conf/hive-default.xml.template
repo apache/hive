@@ -1197,4 +1197,10 @@
   "insert directory '/HIVEFT25686/chinna/' from table"</description>
 </property>
 
+<property>
+  <name>hive.files.umask.vlaue</name>
+  <value>0002</value>
+  <description>The dfs.umask value for the hive created folders</description>
+</property>
+
 </configuration>

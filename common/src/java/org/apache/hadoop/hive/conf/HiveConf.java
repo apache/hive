@@ -556,6 +556,7 @@ public class HiveConf extends Configuration {
     // Whether to delete the scratchdir while startup
     HIVE_START_CLEANUP_SCRATCHDIR("hive.start.cleanup.scratchdir", false),
     HIVE_INSERT_INTO_MULTILEVEL_DIRS("hive.insert.into.multilevel.dirs", false),
+    HIVE_FILES_UMASK_VALUE("hive.files.umask.vlaue", 0002),
     ;
 
     public final String varname;
