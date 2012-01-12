@@ -1,0 +1,1 @@
+FAILED: Error in semantic analysis: Line 2:14 Argument type mismatch '100': Argument 1 of function PRINTF must be "string", but "int" was found.
