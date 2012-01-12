@@ -111,6 +111,7 @@ pmod
 positive
 pow
 power
+printf
 radians
 rand
 reflect
