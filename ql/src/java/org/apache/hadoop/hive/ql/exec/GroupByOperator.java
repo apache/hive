@@ -912,12 +912,12 @@ public class GroupByOperator extends Operator<GroupByDesc> implements
       }
       hashAggregations.clear();
       hashAggregations = null;
-      LOG.warn("Hash Table completed flushed");
+      LOG.info("Hash Table completed flushed");
       return;
     }
 
     int oldSize = hashAggregations.size();
-    LOG.warn("Hash Tbl flush: #hash table = " + oldSize);
+    LOG.info("Hash Tbl flush: #hash table = " + oldSize);
     Iterator<Map.Entry<KeyWrapper, AggregationBuffer[]>> iter = hashAggregations
         .entrySet().iterator();
     int numDel = 0;
@@ -927,7 +927,7 @@ public class GroupByOperator extends Operator<GroupByDesc> implements
       iter.remove();
       numDel++;
       if (numDel * 10 >= oldSize) {
-        LOG.warn("Hash Table flushed: new size = " + hashAggregations.size());
+        LOG.info("Hash Table flushed: new size = " + hashAggregations.size());
         return;
       }
     }
@@ -995,7 +995,7 @@ public class GroupByOperator extends Operator<GroupByDesc> implements
           forward(new Object[0], aggregations);
         } else {
           if (hashAggregations != null) {
-            LOG.warn("Begin Hash Table flush at close: size = "
+            LOG.info("Begin Hash Table flush at close: size = "
                 + hashAggregations.size());
             Iterator iter = hashAggregations.entrySet().iterator();
             while (iter.hasNext()) {

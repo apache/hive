@@ -125,7 +125,8 @@ public class JDBCStatsPublisher implements StatsPublisher {
     }
 
     if (!JDBCStatsUtils.isValidStatisticSet(stats.keySet())) {
-      LOG.warn("Warning. Invalid statistic.");
+      LOG.warn("Invalid statistic:" + stats.keySet().toString() + ", supported "
+          + " stats: " + JDBCStatsUtils.getSupportedStatistics());
       return false;
     }
     LOG.info("Stats publishing for key " + fileID);

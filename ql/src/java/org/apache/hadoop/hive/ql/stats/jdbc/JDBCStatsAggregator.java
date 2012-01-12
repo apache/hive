@@ -115,7 +115,7 @@ public class JDBCStatsAggregator implements StatsAggregator {
   public String aggregateStats(String fileID, String statType) {
 
     if (!JDBCStatsUtils.isValidStatistic(statType)) {
-      LOG.warn("Warning. Invalid statistic: " + statType + ", supported stats: " +
+      LOG.warn("Invalid statistic: " + statType + ", supported stats: " +
           JDBCStatsUtils.getSupportedStatistics());
       return null;
     }

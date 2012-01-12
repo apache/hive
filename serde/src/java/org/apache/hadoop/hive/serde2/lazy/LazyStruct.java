@@ -164,7 +164,7 @@ public class LazyStruct extends LazyNonPrimitive<LazySimpleStructObjectInspector
     // Missing fields?
     if (!missingFieldWarned && fieldId < fields.length) {
       missingFieldWarned = true;
-      LOG.warn("Missing fields! Expected " + fields.length + " fields but "
+      LOG.info("Missing fields! Expected " + fields.length + " fields but "
           + "only got " + fieldId + "! Ignoring similar problems.");
     }
 
