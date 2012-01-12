@@ -119,6 +119,7 @@ public class HiveConf extends Configuration {
       HiveConf.ConfVars.METASTORE_EVENT_EXPIRY_DURATION,
       HiveConf.ConfVars.METASTORE_RAW_STORE_IMPL,
       HiveConf.ConfVars.METASTORE_END_FUNCTION_LISTENERS,
+      HiveConf.ConfVars.METASTORE_PART_INHERIT_TBL_PROPS,
       };
 
   /**
@@ -296,6 +297,7 @@ public class HiveConf extends Configuration {
     METASTORE_NON_TRANSACTIONAL_READ("javax.jdo.option.NonTransactionalRead", true),
     METASTORE_CONNECTION_USER_NAME("javax.jdo.option.ConnectionUserName", "APP"),
     METASTORE_END_FUNCTION_LISTENERS("hive.metastore.end.function.listeners", ""),
+    METASTORE_PART_INHERIT_TBL_PROPS("hive.metastore.partition.inherit.table.properties",""),
 
     // CLI
     CLIIGNOREERRORS("hive.cli.errors.ignore", false),
