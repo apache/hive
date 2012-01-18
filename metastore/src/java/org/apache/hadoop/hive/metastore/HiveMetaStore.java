@@ -26,17 +26,14 @@ import static org.apache.hadoop.hive.metastore.MetaStoreUtils.validateName;
 import java.io.IOException;
 import java.util.AbstractMap;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.Formatter;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Properties;
-import java.util.Set;
 import java.util.Timer;
 import java.util.regex.Pattern;
 
@@ -1564,23 +1561,6 @@ public class HiveMetaStore extends ThriftHiveMetastore {
         if (part.getParameters() == null ||
             part.getParameters().get(Constants.DDL_TIME) == null) {
           part.putToParameters(Constants.DDL_TIME, Long.toString(time));
-        }
-
-
-        Map<String,String> tblParams = tbl.getParameters();
-        String inheritProps =  hiveConf.getVar(ConfVars.METASTORE_PART_INHERIT_TBL_PROPS).trim();
-        // Default value is empty string in which case no properties will be inherited.
-        // * implies all properties needs to be inherited
-        Set<String> inheritKeys = new HashSet<String>(Arrays.asList(inheritProps.split(",")));
-        if(inheritKeys.contains("*")){
-          inheritKeys =  tblParams.keySet();
-        }
-
-        for (String key : inheritKeys) {
-          String paramVal = tblParams.get(key);
-          if(null != paramVal){ // add the property only if it exists in table properties
-            part.putToParameters(key, paramVal);
-          }
         }
 
         success = ms.addPartition(part);
