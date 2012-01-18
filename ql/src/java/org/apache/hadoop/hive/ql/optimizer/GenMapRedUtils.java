@@ -388,6 +388,13 @@ public final class GenMapRedUtils {
     setUnionPlan(opProcCtx, local, plan, uCtx, true);
 
     List<Task<? extends Serializable>> parTasks = null;
+    if (opProcCtx.getRootTasks().contains(currentUnionTask)) {
+      opProcCtx.getRootTasks().remove(currentUnionTask);
+      if (!opProcCtx.getRootTasks().contains(existingTask)) {
+        opProcCtx.getRootTasks().add(existingTask);
+      }
+    }
+
     if ((currentUnionTask != null) && (currentUnionTask.getParentTasks() != null)
         && !currentUnionTask.getParentTasks().isEmpty()) {
       parTasks = new ArrayList<Task<? extends Serializable>>();

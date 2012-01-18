@@ -1,0 +1,41 @@
+PREHOOK: query: create table jackson_sev_same as select * from src
+PREHOOK: type: CREATETABLE_AS_SELECT
+PREHOOK: Input: default@src
+POSTHOOK: query: create table jackson_sev_same as select * from src
+POSTHOOK: type: CREATETABLE_AS_SELECT
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@jackson_sev_same
+PREHOOK: query: create table dim_pho as select * from src
+PREHOOK: type: CREATETABLE_AS_SELECT
+PREHOOK: Input: default@src
+POSTHOOK: query: create table dim_pho as select * from src
+POSTHOOK: type: CREATETABLE_AS_SELECT
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@dim_pho
+PREHOOK: query: create table jackson_sev_add as select * from src
+PREHOOK: type: CREATETABLE_AS_SELECT
+PREHOOK: Input: default@src
+POSTHOOK: query: create table jackson_sev_add as select * from src
+POSTHOOK: type: CREATETABLE_AS_SELECT
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@jackson_sev_add
+PREHOOK: query: select b.* from jackson_sev_same a join (select * from dim_pho union all select * from jackson_sev_add)b on a.key=b.key and b.key=97
+PREHOOK: type: QUERY
+PREHOOK: Input: default@dim_pho
+PREHOOK: Input: default@jackson_sev_add
+PREHOOK: Input: default@jackson_sev_same
+#### A masked pattern was here ####
+POSTHOOK: query: select b.* from jackson_sev_same a join (select * from dim_pho union all select * from jackson_sev_add)b on a.key=b.key and b.key=97
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@dim_pho
+POSTHOOK: Input: default@jackson_sev_add
+POSTHOOK: Input: default@jackson_sev_same
+#### A masked pattern was here ####
+97	val_97
+97	val_97
+97	val_97
+97	val_97
+97	val_97
+97	val_97
+97	val_97
+97	val_97
