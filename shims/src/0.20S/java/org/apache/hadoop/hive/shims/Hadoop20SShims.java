@@ -21,6 +21,7 @@ import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
 import java.lang.reflect.Constructor;
+import java.security.PrivilegedExceptionAction;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -30,14 +31,9 @@ import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.fs.PathFilter;
 import org.apache.hadoop.hdfs.MiniDFSCluster;
-import org.apache.hadoop.hive.io.HiveIOExceptionHandlerChain;
 import org.apache.hadoop.hive.io.HiveIOExceptionHandlerUtil;
-import org.apache.hadoop.hive.shims.Hadoop20Shims;
-import org.apache.hadoop.hive.shims.HadoopShims;
-import org.apache.hadoop.hive.shims.Hadoop20Shims.InputSplitShim;
 import org.apache.hadoop.hive.thrift.DelegationTokenSelector;
 import org.apache.hadoop.io.Text;
-import org.apache.hadoop.io.WritableComparable;
 import org.apache.hadoop.mapred.ClusterStatus;
 import org.apache.hadoop.mapred.FileInputFormat;
 import org.apache.hadoop.mapred.InputFormat;
@@ -516,6 +512,16 @@ public class Hadoop20SShims implements HadoopShims {
     return token != null ? token.encodeToUrlString() : null;
   }
   
+  @Override
+  public void doAs(UserGroupInformation ugi, PrivilegedExceptionAction<Void> pvea) throws IOException, InterruptedException {
+    ugi.doAs(pvea);
+  }
+
+  @Override
+  public UserGroupInformation createRemoteUser(String userName, List<String> groupNames) {
+    return UserGroupInformation.createRemoteUser(userName);
+  }
+
   @Override
   public JobTrackerState getJobTrackerState(ClusterStatus clusterStatus) throws Exception {
     JobTrackerState state;

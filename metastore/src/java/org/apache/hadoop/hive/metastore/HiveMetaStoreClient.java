@@ -28,9 +28,12 @@ import java.lang.reflect.Proxy;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+
+import javax.security.auth.login.LoginException;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -60,8 +63,10 @@ import org.apache.hadoop.hive.metastore.api.Type;
 import org.apache.hadoop.hive.metastore.api.UnknownDBException;
 import org.apache.hadoop.hive.metastore.api.UnknownPartitionException;
 import org.apache.hadoop.hive.metastore.api.UnknownTableException;
+import org.apache.hadoop.hive.shims.HadoopShims;
 import org.apache.hadoop.hive.shims.ShimLoader;
 import org.apache.hadoop.hive.thrift.HadoopThriftAuthBridge;
+import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.thrift.TException;
 import org.apache.thrift.protocol.TBinaryProtocol;
 import org.apache.thrift.protocol.TProtocol;
@@ -219,7 +224,8 @@ public class HiveMetaStoreClient implements IMetaStoreClient {
       ((TSocket)transport).setTimeout(1000 * conf.getIntVar(ConfVars.METASTORE_CLIENT_SOCKET_TIMEOUT));
 
       // Wrap thrift connection with SASL if enabled.
-      boolean useSasl = conf.getBoolVar(HiveConf.ConfVars.METASTORE_USE_THRIFT_SASL);
+      HadoopShims shim = ShimLoader.getHadoopShims();
+      boolean useSasl = conf.getBoolVar(ConfVars.METASTORE_USE_THRIFT_SASL);
       if (useSasl) {
         try {
           HadoopThriftAuthBridge.Client authBridge =
@@ -232,7 +238,7 @@ public class HiveMetaStoreClient implements IMetaStoreClient {
           // submission.
           String tokenSig = conf.get("hive.metastore.token.signature");
           // tokenSig could be null
-          tokenStrForm = ShimLoader.getHadoopShims().getTokenStrForm(tokenSig);
+          tokenStrForm = shim.getTokenStrForm(tokenSig);
 
           if(tokenStrForm != null) {
             // authenticate using delegation tokens via the "DIGEST" mechanism
@@ -264,6 +270,21 @@ public class HiveMetaStoreClient implements IMetaStoreClient {
           LOG.warn("Failed to connect to the MetaStore Server...");
         }
       }
+     if (!useSasl && conf.getBoolVar(ConfVars.METASTORE_EXECUTE_SET_UGI)){
+       // Call set_ugi, only in unsecure mode.
+       try {
+         UserGroupInformation ugi = shim.getUGIForConf(conf);
+         client.set_ugi(ugi.getUserName(), Arrays.asList(ugi.getGroupNames()));
+       } catch (LoginException e) {
+         LOG.warn("Failed to do login. set_ugi() is not successful, Continuing without it.", e);
+       } catch (IOException e) {
+         LOG.warn("Failed to find ugi of client set_ugi() is not successful, " +
+            "Continuing without it.", e);
+       } catch (TException e) {
+         LOG.warn("set_ugi() not successful, Likely cause: new client talking to old server. " +
+         		"Continuing without it.", e);
+    }
+     }
     }
     if (!isConnected) {
       throw new MetaException("Could not connect to the MetaStore server!");
