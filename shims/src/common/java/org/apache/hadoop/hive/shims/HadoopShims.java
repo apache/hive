@@ -20,6 +20,8 @@ package org.apache.hadoop.hive.shims;
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
+import java.security.PrivilegedExceptionAction;
+import java.util.List;
 
 import javax.security.auth.login.LoginException;
 
@@ -163,6 +165,24 @@ public interface HadoopShims {
    */
   public UserGroupInformation getUGIForConf(Configuration conf) throws LoginException, IOException;
 
+  /**
+   * Used by metastore server to perform requested rpc in client context.
+   * @param ugi
+   * @param pvea
+   * @throws IOException
+   * @throws InterruptedException
+   */
+  public void doAs(UserGroupInformation ugi, PrivilegedExceptionAction<Void> pvea) throws
+    IOException, InterruptedException;
+
+  /**
+   * Used by metastore server to creates UGI object for a remote user.
+   * @param userName remote User Name
+   * @param groupNames group names associated with remote user name
+   * @return UGI created for the remote user.
+   */
+
+  public UserGroupInformation createRemoteUser(String userName, List<String> groupNames);
   /**
    * Get the short name corresponding to the subject in the passed UGI
    *

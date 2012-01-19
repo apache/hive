@@ -232,6 +232,12 @@
 </property>
 
 <property>
+  <name>hive.metastore.execute.setugi</name>
+  <value>false</value>
+  <description>In unsecure mode, setting this property to true will cause the metastore to execute DFS operations using the client's reported user and group permissions. Note that this property must be set on both the client and server sides. Further note that its best effort. If client sets its to true and server sets it to false, client setting will be ignored.</description>
+</property>
+
+<property>
   <name>hive.metastore.event.listeners</name>
   <value></value>
   <description>list of comma seperated listeners for metastore events.</description>

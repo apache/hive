@@ -104,6 +104,7 @@ import org.apache.hadoop.hive.serde2.SerDeException;
 import org.apache.hadoop.hive.serde2.SerDeUtils;
 import org.apache.hadoop.hive.shims.ShimLoader;
 import org.apache.hadoop.hive.thrift.HadoopThriftAuthBridge;
+import org.apache.hadoop.hive.thrift.TUGIContainingTransport;
 import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.hadoop.util.ReflectionUtils;
 import org.apache.hadoop.util.StringUtils;
@@ -3581,6 +3582,13 @@ public class HiveMetaStore extends ThriftHiveMetastore {
 
       return ret;
     }
+
+    @Override
+    public List<String> set_ugi(String username, List<String> groupNames) throws MetaException,
+      TException {
+      Collections.addAll(groupNames, username);
+      return groupNames;
+  }
   }
 
 
@@ -3742,19 +3750,28 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       TProcessor processor;
       TTransportFactory transFactory;
       if (useSasl) {
+        // we are in secure mode.
          saslServer = bridge.createServer(
            conf.getVar(HiveConf.ConfVars.METASTORE_KERBEROS_KEYTAB_FILE),
            conf.getVar(HiveConf.ConfVars.METASTORE_KERBEROS_PRINCIPAL));
-
         // start delegation token manager
         saslServer.startDelegationTokenSecretManager(conf);
         transFactory = saslServer.createTransportFactory();
-        processor = saslServer.wrapProcessor(new ThriftHiveMetastore.Processor(
+        processor = saslServer.wrapProcessor(new ThriftHiveMetastore.Processor<HMSHandler>(
             new HMSHandler("new db based metaserver", conf)));
+        LOG.info("Starting DB backed MetaStore Server in Secure Mode");
       } else {
-        processor = new ThriftHiveMetastore.Processor(
-            new HMSHandler("new db based metaserver", conf));
+        // we are in unsecure mode.
+        HMSHandler handler = new HMSHandler("new db based metaserver", conf);
+        if (conf.getBoolVar(ConfVars.METASTORE_EXECUTE_SET_UGI)){
+          transFactory = new TUGIContainingTransport.Factory();
+          processor = new TUGIBasedProcessor<HMSHandler>(handler);
+          LOG.info("Starting DB backed MetaStore Server with SetUGI enabled");
+        } else{
         transFactory = new TTransportFactory();
+          processor  = new ThriftHiveMetastore.Processor<HMSHandler>(handler);
+          LOG.info("Starting DB backed MetaStore Server");
+      }
       }
 
       TThreadPoolServer.Args args = new TThreadPoolServer.Args(serverTransport)

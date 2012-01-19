@@ -322,6 +322,11 @@ class ThriftHiveMetastoreHandler : virtual public ThriftHiveMetastoreIf {
     printf("revoke_privileges\n");
   }
 
+  void set_ugi(std::vector<std::string> & _return, const std::string& user_name, const std::vector<std::string> & group_names) {
+    // Your implementation goes here
+    printf("set_ugi\n");
+  }
+
   void get_delegation_token(std::string& _return, const std::string& token_owner, const std::string& renewer_kerberos_principal_name) {
     // Your implementation goes here
     printf("get_delegation_token\n");

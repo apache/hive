@@ -43,6 +43,8 @@
                 transitive="false"/>
     <dependency org="commons-logging" name="commons-logging-api" rev="${commons-logging-api.version}"
                 transitive="false"/>
+    <dependency org="com.google.guava" name="guava" rev="${guava.version}"
+                transitive="false"/>
     <conflict manager="all" />
   </dependencies>
 </ivy-module>

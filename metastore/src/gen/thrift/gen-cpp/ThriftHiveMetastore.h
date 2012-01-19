@@ -75,6 +75,7 @@ class ThriftHiveMetastoreIf : virtual public facebook::fb303::FacebookServiceIf 
   virtual void list_privileges(std::vector<HiveObjectPrivilege> & _return, const std::string& principal_name, const PrincipalType::type principal_type, const HiveObjectRef& hiveObject) = 0;
   virtual bool grant_privileges(const PrivilegeBag& privileges) = 0;
   virtual bool revoke_privileges(const PrivilegeBag& privileges) = 0;
+  virtual void set_ugi(std::vector<std::string> & _return, const std::string& user_name, const std::vector<std::string> & group_names) = 0;
   virtual void get_delegation_token(std::string& _return, const std::string& token_owner, const std::string& renewer_kerberos_principal_name) = 0;
   virtual int64_t renew_delegation_token(const std::string& token_str_form) = 0;
   virtual void cancel_delegation_token(const std::string& token_str_form) = 0;
@@ -275,6 +276,9 @@ class ThriftHiveMetastoreNull : virtual public ThriftHiveMetastoreIf , virtual p
   bool revoke_privileges(const PrivilegeBag& /* privileges */) {
     bool _return = false;
     return _return;
+  }
+  void set_ugi(std::vector<std::string> & /* _return */, const std::string& /* user_name */, const std::vector<std::string> & /* group_names */) {
+    return;
   }
   void get_delegation_token(std::string& /* _return */, const std::string& /* token_owner */, const std::string& /* renewer_kerberos_principal_name */) {
     return;
@@ -8677,6 +8681,133 @@ class ThriftHiveMetastore_revoke_privileges_presult {
 
 };
 
+typedef struct _ThriftHiveMetastore_set_ugi_args__isset {
+  _ThriftHiveMetastore_set_ugi_args__isset() : user_name(false), group_names(false) {}
+  bool user_name;
+  bool group_names;
+} _ThriftHiveMetastore_set_ugi_args__isset;
+
+class ThriftHiveMetastore_set_ugi_args {
+ public:
+
+  ThriftHiveMetastore_set_ugi_args() : user_name("") {
+  }
+
+  virtual ~ThriftHiveMetastore_set_ugi_args() throw() {}
+
+  std::string user_name;
+  std::vector<std::string>  group_names;
+
+  _ThriftHiveMetastore_set_ugi_args__isset __isset;
+
+  void __set_user_name(const std::string& val) {
+    user_name = val;
+  }
+
+  void __set_group_names(const std::vector<std::string> & val) {
+    group_names = val;
+  }
+
+  bool operator == (const ThriftHiveMetastore_set_ugi_args & rhs) const
+  {
+    if (!(user_name == rhs.user_name))
+      return false;
+    if (!(group_names == rhs.group_names))
+      return false;
+    return true;
+  }
+  bool operator != (const ThriftHiveMetastore_set_ugi_args &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const ThriftHiveMetastore_set_ugi_args & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+
+class ThriftHiveMetastore_set_ugi_pargs {
+ public:
+
+
+  virtual ~ThriftHiveMetastore_set_ugi_pargs() throw() {}
+
+  const std::string* user_name;
+  const std::vector<std::string> * group_names;
+
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+typedef struct _ThriftHiveMetastore_set_ugi_result__isset {
+  _ThriftHiveMetastore_set_ugi_result__isset() : success(false), o1(false) {}
+  bool success;
+  bool o1;
+} _ThriftHiveMetastore_set_ugi_result__isset;
+
+class ThriftHiveMetastore_set_ugi_result {
+ public:
+
+  ThriftHiveMetastore_set_ugi_result() {
+  }
+
+  virtual ~ThriftHiveMetastore_set_ugi_result() throw() {}
+
+  std::vector<std::string>  success;
+  MetaException o1;
+
+  _ThriftHiveMetastore_set_ugi_result__isset __isset;
+
+  void __set_success(const std::vector<std::string> & val) {
+    success = val;
+  }
+
+  void __set_o1(const MetaException& val) {
+    o1 = val;
+  }
+
+  bool operator == (const ThriftHiveMetastore_set_ugi_result & rhs) const
+  {
+    if (!(success == rhs.success))
+      return false;
+    if (!(o1 == rhs.o1))
+      return false;
+    return true;
+  }
+  bool operator != (const ThriftHiveMetastore_set_ugi_result &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const ThriftHiveMetastore_set_ugi_result & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+typedef struct _ThriftHiveMetastore_set_ugi_presult__isset {
+  _ThriftHiveMetastore_set_ugi_presult__isset() : success(false), o1(false) {}
+  bool success;
+  bool o1;
+} _ThriftHiveMetastore_set_ugi_presult__isset;
+
+class ThriftHiveMetastore_set_ugi_presult {
+ public:
+
+
+  virtual ~ThriftHiveMetastore_set_ugi_presult() throw() {}
+
+  std::vector<std::string> * success;
+  MetaException o1;
+
+  _ThriftHiveMetastore_set_ugi_presult__isset __isset;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+
+};
+
 typedef struct _ThriftHiveMetastore_get_delegation_token_args__isset {
   _ThriftHiveMetastore_get_delegation_token_args__isset() : token_owner(false), renewer_kerberos_principal_name(false) {}
   bool token_owner;
@@ -9222,6 +9353,9 @@ class ThriftHiveMetastoreClient : virtual public ThriftHiveMetastoreIf, public f
   bool revoke_privileges(const PrivilegeBag& privileges);
   void send_revoke_privileges(const PrivilegeBag& privileges);
   bool recv_revoke_privileges();
+  void set_ugi(std::vector<std::string> & _return, const std::string& user_name, const std::vector<std::string> & group_names);
+  void send_set_ugi(const std::string& user_name, const std::vector<std::string> & group_names);
+  void recv_set_ugi(std::vector<std::string> & _return);
   void get_delegation_token(std::string& _return, const std::string& token_owner, const std::string& renewer_kerberos_principal_name);
   void send_get_delegation_token(const std::string& token_owner, const std::string& renewer_kerberos_principal_name);
   void recv_get_delegation_token(std::string& _return);
@@ -9299,6 +9433,7 @@ class ThriftHiveMetastoreProcessor : virtual public ::apache::thrift::TProcessor
   void process_list_privileges(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
   void process_grant_privileges(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
   void process_revoke_privileges(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
+  void process_set_ugi(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
   void process_get_delegation_token(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
   void process_renew_delegation_token(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
   void process_cancel_delegation_token(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
@@ -9366,6 +9501,7 @@ class ThriftHiveMetastoreProcessor : virtual public ::apache::thrift::TProcessor
     processMap_["list_privileges"] = &ThriftHiveMetastoreProcessor::process_list_privileges;
     processMap_["grant_privileges"] = &ThriftHiveMetastoreProcessor::process_grant_privileges;
     processMap_["revoke_privileges"] = &ThriftHiveMetastoreProcessor::process_revoke_privileges;
+    processMap_["set_ugi"] = &ThriftHiveMetastoreProcessor::process_set_ugi;
     processMap_["get_delegation_token"] = &ThriftHiveMetastoreProcessor::process_get_delegation_token;
     processMap_["renew_delegation_token"] = &ThriftHiveMetastoreProcessor::process_renew_delegation_token;
     processMap_["cancel_delegation_token"] = &ThriftHiveMetastoreProcessor::process_cancel_delegation_token;
@@ -10045,6 +10181,18 @@ class ThriftHiveMetastoreMultiface : virtual public ThriftHiveMetastoreIf, publi
         return ifaces_[i]->revoke_privileges(privileges);
       } else {
         ifaces_[i]->revoke_privileges(privileges);
+      }
+    }
+  }
+
+  void set_ugi(std::vector<std::string> & _return, const std::string& user_name, const std::vector<std::string> & group_names) {
+    size_t sz = ifaces_.size();
+    for (size_t i = 0; i < sz; ++i) {
+      if (i == sz - 1) {
+        ifaces_[i]->set_ugi(_return, user_name, group_names);
+        return;
+      } else {
+        ifaces_[i]->set_ugi(_return, user_name, group_names);
       }
     }
   }
