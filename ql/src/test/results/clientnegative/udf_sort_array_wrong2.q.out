@@ -1,0 +1,1 @@
+FAILED: Error in semantic analysis: Line 2:18 Argument type mismatch '"Invalid"': Argument 1 of function SORT_ARRAY must be array<PRIMITIVE>, but string was found.
