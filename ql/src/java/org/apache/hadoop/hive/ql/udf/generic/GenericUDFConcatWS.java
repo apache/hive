@@ -24,24 +24,28 @@ import org.apache.hadoop.hive.ql.exec.UDFArgumentLengthException;
 import org.apache.hadoop.hive.ql.exec.UDFArgumentTypeException;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.serde.Constants;
+import org.apache.hadoop.hive.serde2.objectinspector.ListObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
+import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector.Category;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorFactory;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.StringObjectInspector;
 import org.apache.hadoop.io.Text;
 
 /**
  * Generic UDF for string function
- * <code>CONCAT_WS(sep,str1,str2,str3,...)</code>. This mimics the function from
+ * <code>CONCAT_WS(sep, [string | array(string)]+)<code>.
+ * This mimics the function from
  * MySQL http://dev.mysql.com/doc/refman/5.0/en/string-functions.html#
  * function_concat-ws
- * 
+ *
  * @see org.apache.hadoop.hive.ql.udf.generic.GenericUDF
  */
-@Description(name = "concat_ws", value = "_FUNC_(separator, str1, str2, ...) - "
+@Description(name = "concat_ws",
+    value = "_FUNC_(separator, [string | array(string)]+) - "
     + "returns the concatenation of the strings separated by the separator.",
     extended = "Example:\n"
-    + "  > SELECT _FUNC_('ce', 'fa', 'book') FROM src LIMIT 1;\n"
-    + "  'facebook'")
+    + "  > SELECT _FUNC_('.', 'www', array('facebook', 'com')) FROM src LIMIT 1;\n"
+    + "  'www.facebook.com'")
 public class GenericUDFConcatWS extends GenericUDF {
   private ObjectInspector[] argumentOIs;
 
@@ -49,15 +53,28 @@ public class GenericUDFConcatWS extends GenericUDF {
   public ObjectInspector initialize(ObjectInspector[] arguments) throws UDFArgumentException {
     if (arguments.length < 2) {
       throw new UDFArgumentLengthException(
-          "The function CONCAT_WS(separator,str1,str2,str3,...) needs at least two arguments.");
+          "The function CONCAT_WS(separator,[string | array(string)]+) "
+            + "needs at least two arguments.");
     }
 
+    // check if argument is a string or an array of strings
     for (int i = 0; i < arguments.length; i++) {
-      if (arguments[i].getTypeName() != Constants.STRING_TYPE_NAME
-          && arguments[i].getTypeName() != Constants.VOID_TYPE_NAME) {
-        throw new UDFArgumentTypeException(i, "Argument " + (i + 1)
+      switch(arguments[i].getCategory()) {
+        case LIST:
+          if (((ListObjectInspector)arguments[i]).getListElementObjectInspector()
+            .getTypeName().equals(Constants.STRING_TYPE_NAME)
+            || ((ListObjectInspector)arguments[i]).getListElementObjectInspector()
+            .getTypeName().equals(Constants.VOID_TYPE_NAME))
+          break;
+        case PRIMITIVE:
+          if (arguments[i].getTypeName().equals(Constants.STRING_TYPE_NAME)
+            || arguments[i].getTypeName().equals(Constants.VOID_TYPE_NAME))
+          break;
+        default:
+          throw new UDFArgumentTypeException(i, "Argument " + (i + 1)
             + " of function CONCAT_WS must be \"" + Constants.STRING_TYPE_NAME
-            + "\", but \"" + arguments[i].getTypeName() + "\" was found.");
+            + " or " + Constants.LIST_TYPE_NAME + "<" + Constants.STRING_TYPE_NAME
+            + ">\", but \"" + arguments[i].getTypeName() + "\" was found.");
       }
     }
 
@@ -84,8 +101,22 @@ public class GenericUDFConcatWS extends GenericUDF {
         } else {
           sb.append(separator);
         }
-        sb.append(((StringObjectInspector) argumentOIs[i])
+        if (argumentOIs[i].getCategory().equals(Category.LIST)) {
+          Object strArray = arguments[i].get();
+          ListObjectInspector strArrayOI = (ListObjectInspector) argumentOIs[i];
+          boolean strArrayFirst = true;
+          for (int j = 0; j < strArrayOI.getListLength(strArray); j++) {
+            if (strArrayFirst) {
+              strArrayFirst = false;
+            } else {
+              sb.append(separator);
+            }
+            sb.append(strArrayOI.getListElement(strArray, j));
+          }
+        } else {
+          sb.append(((StringObjectInspector) argumentOIs[i])
             .getPrimitiveJavaObject(arguments[i].get()));
+        }
       }
     }
 
