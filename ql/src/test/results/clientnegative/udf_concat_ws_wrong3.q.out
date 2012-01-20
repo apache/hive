@@ -1,0 +1,1 @@
+FAILED: Error in semantic analysis: Line 2:17 Argument type mismatch '1234': Argument 1 of function CONCAT_WS must be "string or array<string>", but "int" was found.

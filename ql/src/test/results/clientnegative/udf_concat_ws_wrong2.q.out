@@ -1,0 +1,1 @@
+FAILED: Error in semantic analysis: Line 2:23 Argument type mismatch '50': Argument 2 of function CONCAT_WS must be "string or array<string>", but "array<int>" was found.
