@@ -277,7 +277,7 @@ public interface RawStore extends Configurable {
    */
   public abstract List<String> listPartitionNamesPs(String db_name, String tbl_name,
       List<String> part_vals, short max_parts)
-      throws MetaException;
+      throws MetaException, NoSuchObjectException;
 
   /**
    * Lists partitions that match a given partial specification and sets their auth privileges.
@@ -302,7 +302,7 @@ public interface RawStore extends Configurable {
    */
   public abstract List<Partition> listPartitionsPsWithAuth(String db_name, String tbl_name,
       List<String> part_vals, short max_parts, String userName, List<String> groupNames)
-      throws MetaException, InvalidObjectException;
+      throws MetaException, InvalidObjectException, NoSuchObjectException;
 
  public abstract long cleanupEvents();
 }

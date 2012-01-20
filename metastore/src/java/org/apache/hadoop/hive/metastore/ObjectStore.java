@@ -316,7 +316,7 @@ public class ObjectStore implements RawStore, Configurable {
     if (openTrasactionCalls <= 0) {
       throw new RuntimeException("commitTransaction was called but openTransactionCalls = "
           + openTrasactionCalls + ". This probably indicates that there are unbalanced " +
-          		"calls to openTransaction/commitTransaction");
+              "calls to openTransaction/commitTransaction");
     }
     if (!currentTransaction.isActive()) {
       throw new RuntimeException(
@@ -1394,6 +1394,7 @@ public class ObjectStore implements RawStore, Configurable {
    * @param max_parts the maximum number of partitions to return
    * @param resultsCol the metadata column of the data to return, e.g. partitionName, etc.
    *        if resultsCol is empty or null, a collection of MPartition objects is returned
+   * @throws NoSuchObjectException
    * @results A Collection of partition-related items from the db that match the partial spec
    *          for a table.  The type of each item in the collection corresponds to the column
    *          you want results for.  E.g., if resultsCol is partitionName, the Collection
@@ -1401,10 +1402,14 @@ public class ObjectStore implements RawStore, Configurable {
    */
   private Collection getPartitionPsQueryResults(String dbName, String tableName,
       List<String> part_vals, short max_parts, String resultsCol)
-      throws MetaException {
+      throws MetaException, NoSuchObjectException {
     dbName = dbName.toLowerCase().trim();
     tableName = tableName.toLowerCase().trim();
     Table table = getTable(dbName, tableName);
+
+    if (table == null) {
+      throw new NoSuchObjectException(dbName + "." + tableName + " table not found");
+    }
 
     List<FieldSchema> partCols = table.getPartitionKeys();
     int numPartKeys = partCols.size();
@@ -1446,7 +1451,7 @@ public class ObjectStore implements RawStore, Configurable {
   @Override
   public List<Partition> listPartitionsPsWithAuth(String db_name, String tbl_name,
       List<String> part_vals, short max_parts, String userName, List<String> groupNames)
-      throws MetaException, InvalidObjectException {
+      throws MetaException, InvalidObjectException, NoSuchObjectException {
     List<Partition> partitions = new ArrayList<Partition>();
     boolean success = false;
     try {
@@ -1479,7 +1484,7 @@ public class ObjectStore implements RawStore, Configurable {
 
   @Override
   public List<String> listPartitionNamesPs(String dbName, String tableName,
-      List<String> part_vals, short max_parts) throws MetaException {
+      List<String> part_vals, short max_parts) throws MetaException, NoSuchObjectException {
     List<String> partitionNames = new ArrayList<String>();
     boolean success = false;
     try {
@@ -3656,11 +3661,11 @@ public class ObjectStore implements RawStore, Configurable {
       openTransaction();
       LOG.debug("Executing listPrincipalTableColumnGrants");
       String queryStr = "principalName == t1 && principalType == t2 && " +
-      		"table.tableName == t3 && table.database.name == t4 &&  columnName == t5 ";
+          "table.tableName == t3 && table.database.name == t4 &&  columnName == t5 ";
       Query query = pm.newQuery(MTableColumnPrivilege.class, queryStr);
       query
           .declareParameters("java.lang.String t1, java.lang.String t2, java.lang.String t3, " +
-          		"java.lang.String t4, java.lang.String t5");
+              "java.lang.String t4, java.lang.String t5");
       mSecurityColList = (List<MTableColumnPrivilege>) query.executeWithArray(
           principalName, principalType.toString(), tableName, dbName, columnName);
       LOG.debug("Done executing query for listPrincipalTableColumnGrants");
@@ -3696,7 +3701,7 @@ public class ObjectStore implements RawStore, Configurable {
               "&& partition.table.database.name == t4 && partition.partitionName == t5 && columnName == t6");
       query
           .declareParameters("java.lang.String t1, java.lang.String t2, java.lang.String t3, " +
-          		"java.lang.String t4, java.lang.String t5, java.lang.String t6");
+              "java.lang.String t4, java.lang.String t5, java.lang.String t6");
 
       mSecurityColList = (List<MPartitionColumnPrivilege>) query
           .executeWithArray(principalName, principalType.toString(), tableName,
