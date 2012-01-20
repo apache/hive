@@ -2309,7 +2309,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
     @Override
     public List<Partition> get_partitions_ps(final String db_name,
         final String tbl_name, final List<String> part_vals,
-        final short max_parts) throws MetaException, TException {
+        final short max_parts) throws MetaException, TException, NoSuchObjectException {
       startPartitionFunction("get_partitions_ps", db_name, tbl_name, part_vals);
 
       List<Partition> ret = null;
@@ -2328,7 +2328,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
     public List<Partition> get_partitions_ps_with_auth(final String db_name,
         final String tbl_name, final List<String> part_vals,
         final short max_parts, final String userName,
-        final List<String> groupNames) throws MetaException, TException {
+        final List<String> groupNames) throws MetaException, TException, NoSuchObjectException {
       startPartitionFunction("get_partitions_ps_with_auth", db_name, tbl_name,
           part_vals);
       List<Partition> ret = null;
@@ -2344,6 +2344,8 @@ public class HiveMetaStore extends ThriftHiveMetastore {
         throw e;
       } catch (InvalidObjectException e) {
          throw new MetaException(e.getMessage());
+      } catch (NoSuchObjectException e) {
+        throw e;
       } catch (Exception e) {
         assert(e instanceof RuntimeException);
         throw (RuntimeException)e;
@@ -2356,7 +2358,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
     @Override
     public List<String> get_partition_names_ps(final String db_name,
         final String tbl_name, final List<String> part_vals, final short max_parts)
-        throws MetaException, TException {
+        throws MetaException, TException, NoSuchObjectException {
       startPartitionFunction("get_partitions_names_ps", db_name, tbl_name, part_vals);
       List<String> ret = null;
       try {
@@ -2367,6 +2369,8 @@ public class HiveMetaStore extends ThriftHiveMetastore {
           }
         });
       } catch (MetaException e) {
+        throw e;
+      } catch (NoSuchObjectException e) {
         throw e;
       } catch (Exception e) {
         assert(e instanceof RuntimeException);

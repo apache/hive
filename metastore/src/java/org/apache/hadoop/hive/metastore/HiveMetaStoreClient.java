@@ -809,7 +809,8 @@ public class HiveMetaStoreClient implements IMetaStoreClient {
 
   @Override
   public List<String> listPartitionNames(String db_name, String tbl_name,
-      List<String> part_vals, short max_parts) throws MetaException, TException {
+      List<String> part_vals, short max_parts)
+      throws MetaException, TException, NoSuchObjectException {
     return client.get_partition_names_ps(db_name, tbl_name, part_vals, max_parts);
   }
 

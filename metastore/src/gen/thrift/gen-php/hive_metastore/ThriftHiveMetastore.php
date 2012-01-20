@@ -2001,6 +2001,9 @@ class ThriftHiveMetastoreClient extends FacebookServiceClient implements ThriftH
     if ($result->o1 !== null) {
       throw $result->o1;
     }
+    if ($result->o2 !== null) {
+      throw $result->o2;
+    }
     throw new Exception("get_partitions_ps failed: unknown result");
   }
 
@@ -2119,6 +2122,9 @@ class ThriftHiveMetastoreClient extends FacebookServiceClient implements ThriftH
     }
     if ($result->o1 !== null) {
       throw $result->o1;
+    }
+    if ($result->o2 !== null) {
+      throw $result->o2;
     }
     throw new Exception("get_partition_names_ps failed: unknown result");
   }
@@ -11389,6 +11395,7 @@ class ThriftHiveMetastore_get_partitions_ps_result {
 
   public $success = null;
   public $o1 = null;
+  public $o2 = null;
 
   public function __construct($vals=null) {
     if (!isset(self::$_TSPEC)) {
@@ -11407,6 +11414,11 @@ class ThriftHiveMetastore_get_partitions_ps_result {
           'type' => TType::STRUCT,
           'class' => 'MetaException',
           ),
+        2 => array(
+          'var' => 'o2',
+          'type' => TType::STRUCT,
+          'class' => 'NoSuchObjectException',
+          ),
         );
     }
     if (is_array($vals)) {
@@ -11415,6 +11427,9 @@ class ThriftHiveMetastore_get_partitions_ps_result {
       }
       if (isset($vals['o1'])) {
         $this->o1 = $vals['o1'];
+      }
+      if (isset($vals['o2'])) {
+        $this->o2 = $vals['o2'];
       }
     }
   }
@@ -11464,6 +11479,14 @@ class ThriftHiveMetastore_get_partitions_ps_result {
             $xfer += $input->skip($ftype);
           }
           break;
+        case 2:
+          if ($ftype == TType::STRUCT) {
+            $this->o2 = new NoSuchObjectException();
+            $xfer += $this->o2->read($input);
+          } else {
+            $xfer += $input->skip($ftype);
+          }
+          break;
         default:
           $xfer += $input->skip($ftype);
           break;
@@ -11497,6 +11520,11 @@ class ThriftHiveMetastore_get_partitions_ps_result {
     if ($this->o1 !== null) {
       $xfer += $output->writeFieldBegin('o1', TType::STRUCT, 1);
       $xfer += $this->o1->write($output);
+      $xfer += $output->writeFieldEnd();
+    }
+    if ($this->o2 !== null) {
+      $xfer += $output->writeFieldBegin('o2', TType::STRUCT, 2);
+      $xfer += $this->o2->write($output);
       $xfer += $output->writeFieldEnd();
     }
     $xfer += $output->writeFieldStop();
@@ -12037,6 +12065,7 @@ class ThriftHiveMetastore_get_partition_names_ps_result {
 
   public $success = null;
   public $o1 = null;
+  public $o2 = null;
 
   public function __construct($vals=null) {
     if (!isset(self::$_TSPEC)) {
@@ -12054,6 +12083,11 @@ class ThriftHiveMetastore_get_partition_names_ps_result {
           'type' => TType::STRUCT,
           'class' => 'MetaException',
           ),
+        2 => array(
+          'var' => 'o2',
+          'type' => TType::STRUCT,
+          'class' => 'NoSuchObjectException',
+          ),
         );
     }
     if (is_array($vals)) {
@@ -12062,6 +12096,9 @@ class ThriftHiveMetastore_get_partition_names_ps_result {
       }
       if (isset($vals['o1'])) {
         $this->o1 = $vals['o1'];
+      }
+      if (isset($vals['o2'])) {
+        $this->o2 = $vals['o2'];
       }
     }
   }
@@ -12110,6 +12147,14 @@ class ThriftHiveMetastore_get_partition_names_ps_result {
             $xfer += $input->skip($ftype);
           }
           break;
+        case 2:
+          if ($ftype == TType::STRUCT) {
+            $this->o2 = new NoSuchObjectException();
+            $xfer += $this->o2->read($input);
+          } else {
+            $xfer += $input->skip($ftype);
+          }
+          break;
         default:
           $xfer += $input->skip($ftype);
           break;
@@ -12143,6 +12188,11 @@ class ThriftHiveMetastore_get_partition_names_ps_result {
     if ($this->o1 !== null) {
       $xfer += $output->writeFieldBegin('o1', TType::STRUCT, 1);
       $xfer += $this->o1->write($output);
+      $xfer += $output->writeFieldEnd();
+    }
+    if ($this->o2 !== null) {
+      $xfer += $output->writeFieldBegin('o2', TType::STRUCT, 2);
+      $xfer += $this->o2->write($output);
       $xfer += $output->writeFieldEnd();
     }
     $xfer += $output->writeFieldStop();
