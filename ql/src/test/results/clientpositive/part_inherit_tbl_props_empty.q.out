@@ -1,0 +1,45 @@
+PREHOOK: query: create table mytbl (c1 tinyint) partitioned by (c2 string) tblproperties ('a'='myval','b'='yourval','c'='noval')
+PREHOOK: type: CREATETABLE
+POSTHOOK: query: create table mytbl (c1 tinyint) partitioned by (c2 string) tblproperties ('a'='myval','b'='yourval','c'='noval')
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: default@mytbl
+PREHOOK: query: alter table mytbl add partition (c2 = 'v1')
+PREHOOK: type: ALTERTABLE_ADDPARTS
+PREHOOK: Input: default@mytbl
+POSTHOOK: query: alter table mytbl add partition (c2 = 'v1')
+POSTHOOK: type: ALTERTABLE_ADDPARTS
+POSTHOOK: Input: default@mytbl
+POSTHOOK: Output: default@mytbl@c2=v1
+PREHOOK: query: describe formatted mytbl partition (c2='v1')
+PREHOOK: type: DESCTABLE
+POSTHOOK: query: describe formatted mytbl partition (c2='v1')
+POSTHOOK: type: DESCTABLE
+# col_name            	data_type           	comment             
+	 	 
+c1                  	tinyint             	None                
+	 	 
+# Partition Information	 	 
+# col_name            	data_type           	comment             
+	 	 
+c2                  	string              	None                
+	 	 
+# Detailed Partition Information	 	 
+Partition Value:    	[v1]                	 
+Database:           	default             	 
+Table:              	mytbl               	 
+#### A masked pattern was here ####
+Protect Mode:       	None                	 
+#### A masked pattern was here ####
+Partition Parameters:	 	 
+#### A masked pattern was here ####
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe	 
+InputFormat:        	org.apache.hadoop.mapred.TextInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	-1                  	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
+Storage Desc Params:	 	 
+	serialization.format	1                   
