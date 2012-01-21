@@ -244,6 +244,12 @@
 </property>
 
 <property>
+  <name>hive.metastore.partition.inherit.table.properties</name>
+  <value></value>
+  <description>list of comma seperated keys occurring in table properties which will get inherited to newly created partitions. * implies all the keys will get inherited.</description>
+</property>
+
+<property>
   <name>hive.metastore.end.function.listeners</name>
   <value></value>
   <description>list of comma separated listeners for the end of metastore functions.</description>

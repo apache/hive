@@ -360,7 +360,7 @@ public class QTestUtil {
         db.dropDatabase(dbName);
       }
     }
-    db.setCurrentDatabase(DEFAULT_DATABASE_NAME);
+    Hive.get().setCurrentDatabase(DEFAULT_DATABASE_NAME);
 
     List<String> roleNames = db.getAllRoleNames();
       for (String roleName : roleNames) {
