@@ -67,14 +67,14 @@ public class IndexMetadataChangeTask extends Task<IndexMetadataChangeWork>{
           return 1;
         }
 
-        Path url = new Path(part.getDataLocation().toString());
+        Path url = new Path(part.getPartitionPath().toString());
         FileSystem fs = url.getFileSystem(conf);
         FileStatus fstat = fs.getFileStatus(url);
 
         part.getParameters().put(HiveIndex.INDEX_TABLE_CREATETIME, Long.toString(fstat.getModificationTime()));
         db.alterPartition(tbl.getTableName(), part);
       } else {
-        Path url = new Path(tbl.getDataLocation().toString());
+        Path url = new Path(tbl.getPath().toString());
         FileSystem fs = url.getFileSystem(conf);
         FileStatus fstat = fs.getFileStatus(url);
         tbl.getParameters().put(HiveIndex.INDEX_TABLE_CREATETIME, Long.toString(fstat.getModificationTime()));
