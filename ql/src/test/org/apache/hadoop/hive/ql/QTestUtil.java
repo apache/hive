@@ -905,6 +905,7 @@ public class QTestUtil {
         ".*invalidscheme:.*",
         ".*lastUpdateTime.*",
         ".*lastAccessTime.*",
+        ".*lastModifiedTime.*",
         ".*[Oo]wner.*",
         ".*CreateTime.*",
         ".*LastAccessTime.*",

@@ -85,6 +85,10 @@ public final class IndexUtils {
       queryPartitions = queryPartitionList.getUnknownPartns();
     }
 
+    if(queryPartitions == null) {
+      return null;
+    }
+
     for (Partition part : queryPartitions) {
       List<Table> sourceIndexTables = getIndexTables(hive, part, indexes);
       if (!containsPartition(hive, part, indexes)) {
