@@ -67,9 +67,9 @@ import org.apache.hadoop.hive.shims.HadoopShims;
 import org.apache.hadoop.hive.shims.ShimLoader;
 import org.apache.hadoop.hive.thrift.HadoopThriftAuthBridge;
 import org.apache.hadoop.security.UserGroupInformation;
+import org.apache.hadoop.util.StringUtils;
 import org.apache.thrift.TException;
 import org.apache.thrift.protocol.TBinaryProtocol;
-import org.apache.thrift.protocol.TProtocol;
 import org.apache.thrift.transport.TSocket;
 import org.apache.thrift.transport.TTransport;
 import org.apache.thrift.transport.TTransportException;
@@ -194,8 +194,7 @@ public class HiveMetaStoreClient implements IMetaStoreClient {
       try {
         openStore(store);
       } catch (MetaException e) {
-        LOG.warn(e.getStackTrace());
-        LOG.warn("Unable to connect to metastore with URI " + store);
+        LOG.error("Unable to connect to metastore with URI " + store, e);
       }
       if (isConnected) {
         break;
@@ -209,60 +208,61 @@ public class HiveMetaStoreClient implements IMetaStoreClient {
   }
 
   private void openStore(URI store) throws MetaException {
+
     isConnected = false;
+    TTransportException tte = null;
+    HadoopShims shim = ShimLoader.getHadoopShims();
+    boolean useSasl = conf.getBoolVar(ConfVars.METASTORE_USE_THRIFT_SASL);
+    transport = new TSocket(store.getHost(), store.getPort());
+    ((TSocket)transport).setTimeout(1000 * conf.getIntVar(ConfVars.
+        METASTORE_CLIENT_SOCKET_TIMEOUT));
+
+    if (useSasl) {
+      // Wrap thrift connection with SASL for secure connection.
+      try {
+        HadoopThriftAuthBridge.Client authBridge =
+          ShimLoader.getHadoopThriftAuthBridge().createClient();
+
+        // check if we should use delegation tokens to authenticate
+        // the call below gets hold of the tokens if they are set up by hadoop
+        // this should happen on the map/reduce tasks if the client added the
+        // tokens into hadoop's credential store in the front end during job
+        // submission.
+        String tokenSig = conf.get("hive.metastore.token.signature");
+        // tokenSig could be null
+        tokenStrForm = shim.getTokenStrForm(tokenSig);
+
+        if(tokenStrForm != null) {
+          // authenticate using delegation tokens via the "DIGEST" mechanism
+          transport = authBridge.createClientTransport(null, store.getHost(),
+              "DIGEST", tokenStrForm, transport);
+        } else {
+          String principalConfig = conf.getVar(HiveConf.ConfVars.METASTORE_KERBEROS_PRINCIPAL);
+          transport = authBridge.createClientTransport(
+              principalConfig, store.getHost(), "KERBEROS", null,
+              transport);
+        }
+      } catch (IOException ioe) {
+        LOG.error("Couldn't create client transport", ioe);
+        throw new MetaException(ioe.toString());
+      }
+    }
+
+    client = new ThriftHiveMetastore.Client(new TBinaryProtocol(transport));
 
     for (int attempt = 0; !isConnected && attempt < retries; ++attempt) {
       if (attempt > 0 && retryDelaySeconds > 0) {
         try {
           LOG.info("Waiting " + retryDelaySeconds + " seconds before next connection attempt.");
           Thread.sleep(retryDelaySeconds * 1000);
-        } catch (InterruptedException ignore) {
-        }
+        } catch (InterruptedException ignore) {}
       }
 
-      transport = new TSocket(store.getHost(), store.getPort());
-      ((TSocket)transport).setTimeout(1000 * conf.getIntVar(ConfVars.METASTORE_CLIENT_SOCKET_TIMEOUT));
-
-      // Wrap thrift connection with SASL if enabled.
-      HadoopShims shim = ShimLoader.getHadoopShims();
-      boolean useSasl = conf.getBoolVar(ConfVars.METASTORE_USE_THRIFT_SASL);
-      if (useSasl) {
-        try {
-          HadoopThriftAuthBridge.Client authBridge =
-          ShimLoader.getHadoopThriftAuthBridge().createClient();
-
-          // check if we should use delegation tokens to authenticate
-          // the call below gets hold of the tokens if they are set up by hadoop
-          // this should happen on the map/reduce tasks if the client added the
-          // tokens into hadoop's credential store in the front end during job
-          // submission.
-          String tokenSig = conf.get("hive.metastore.token.signature");
-          // tokenSig could be null
-          tokenStrForm = shim.getTokenStrForm(tokenSig);
-
-          if(tokenStrForm != null) {
-            // authenticate using delegation tokens via the "DIGEST" mechanism
-            transport = authBridge.createClientTransport(null, store.getHost(),
-                "DIGEST", tokenStrForm, transport);
-          } else {
-            String principalConfig = conf.getVar(HiveConf.ConfVars.METASTORE_KERBEROS_PRINCIPAL);
-            transport = authBridge.createClientTransport(
-                principalConfig, store.getHost(), "KERBEROS", null,
-                transport);
-          }
-        } catch (IOException ioe) {
-          LOG.error("Couldn't create client transport", ioe);
-          throw new MetaException(ioe.toString());
-        }
-     }
-
-     TProtocol protocol = new TBinaryProtocol(transport);
-     client = new ThriftHiveMetastore.Client(protocol);
-
-     try {
+      try {
         transport.open();
         isConnected = true;
       } catch (TTransportException e) {
+        tte = e;
         if (LOG.isDebugEnabled()) {
           LOG.warn("Failed to connect to the MetaStore Server...", e);
         } else {
@@ -270,24 +270,27 @@ public class HiveMetaStoreClient implements IMetaStoreClient {
           LOG.warn("Failed to connect to the MetaStore Server...");
         }
       }
-     if (!useSasl && conf.getBoolVar(ConfVars.METASTORE_EXECUTE_SET_UGI)){
-       // Call set_ugi, only in unsecure mode.
-       try {
-         UserGroupInformation ugi = shim.getUGIForConf(conf);
-         client.set_ugi(ugi.getUserName(), Arrays.asList(ugi.getGroupNames()));
-       } catch (LoginException e) {
-         LOG.warn("Failed to do login. set_ugi() is not successful, Continuing without it.", e);
-       } catch (IOException e) {
-         LOG.warn("Failed to find ugi of client set_ugi() is not successful, " +
-            "Continuing without it.", e);
-       } catch (TException e) {
-         LOG.warn("set_ugi() not successful, Likely cause: new client talking to old server. " +
-         		"Continuing without it.", e);
     }
-     }
-    }
+
     if (!isConnected) {
-      throw new MetaException("Could not connect to the MetaStore server!");
+      throw new MetaException("Could not connect to the MetaStore server! Caused by: " +
+          StringUtils.stringifyException(tte));
+    }
+
+    if (!useSasl && conf.getBoolVar(ConfVars.METASTORE_EXECUTE_SET_UGI)){
+      // Call set_ugi, only in unsecure mode.
+      try {
+        UserGroupInformation ugi = shim.getUGIForConf(conf);
+        client.set_ugi(ugi.getUserName(), Arrays.asList(ugi.getGroupNames()));
+      } catch (LoginException e) {
+        LOG.warn("Failed to do login. set_ugi() is not successful, Continuing without it.", e);
+      } catch (IOException e) {
+        LOG.warn("Failed to find ugi of client set_ugi() is not successful, " +
+            "Continuing without it.", e);
+      } catch (TException e) {
+        LOG.warn("set_ugi() not successful, Likely cause: new client talking to old server. " +
+            "Continuing without it.", e);
+      }
     }
   }
 
@@ -305,10 +308,7 @@ public class HiveMetaStoreClient implements IMetaStoreClient {
         client.shutdown();
       }
     } catch (TException e) {
-      // TODO:pc cleanup the exceptions
-      LOG.error("Unable to shutdown local metastore client");
-      LOG.error(e.getStackTrace());
-      // throw new RuntimeException(e.getMessage());
+      LOG.error("Unable to shutdown local metastore client", e);
     }
   }
 
