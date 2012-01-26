@@ -3081,7 +3081,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     // them
     for (String destination : dests) {
 
-      getReduceValuesForReduceSinkNoMapAgg(parseInfo, dest, reduceSinkInputRowResolver,
+      getReduceValuesForReduceSinkNoMapAgg(parseInfo, destination, reduceSinkInputRowResolver,
           reduceSinkOutputRowResolver, outputValueColumnNames, reduceValues);
 
       // Need to pass all of the columns used in the where clauses as reduce values
