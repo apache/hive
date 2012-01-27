@@ -10,6 +10,6 @@ FROM src
 INSERT OVERWRITE TABLE columnTable SELECT src.key, src.value LIMIT 10;
 describe columnTable;
 
-SELECT columnTable.* FROM columnTable;
+SELECT columnTable.* FROM columnTable ORDER BY key ASC, value ASC;
 
 

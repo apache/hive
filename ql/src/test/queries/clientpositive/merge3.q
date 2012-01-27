@@ -20,7 +20,7 @@ select key, value from merge_src;
 create table merge_src2 as 
 select key, value from merge_src;
 
-select * from merge_src2;
+select * from merge_src2 ORDER BY key ASC, value ASC;
 describe formatted merge_src2;
 
 create table merge_src_part2 like merge_src_part;
@@ -37,7 +37,7 @@ where ds is not null;
 
 show partitions merge_src_part2;
 
-select * from merge_src_part2 where ds is not null;
+select * from merge_src_part2 where ds is not null ORDER BY key ASC, value ASC;
 
 drop table merge_src_part2;
 
@@ -54,4 +54,4 @@ select key, value, ds;
 
 show partitions merge_src_part2;
 
-select * from merge_src_part2 where ds is not null;
+select * from merge_src_part2 where ds is not null ORDER BY key ASC, value ASC;
