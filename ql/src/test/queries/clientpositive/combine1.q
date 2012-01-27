@@ -13,5 +13,5 @@ insert overwrite table combine1_1
 select * from src;
 
 
-select key, value from combine1_1;
+select key, value from combine1_1 ORDER BY key ASC, value ASC;
 

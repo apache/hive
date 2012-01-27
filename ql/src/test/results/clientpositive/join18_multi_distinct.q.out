@@ -10,7 +10,7 @@ PREHOOK: query: EXPLAIN
   count(distinct(src2.key)) AS value2
   FROM src1 src2 group by src2.key
  ) b 
- ON (a.key = b.key)
+ ON (a.key = b.key) ORDER BY a.key ASC, a.value ASC, b.key ASC, b.value1 ASC, b.value2 ASC
 PREHOOK: type: QUERY
 POSTHOOK: query: EXPLAIN
  SELECT a.key, a.value, b.key, b.value1,  b.value2
@@ -24,15 +24,16 @@ POSTHOOK: query: EXPLAIN
   count(distinct(src2.key)) AS value2
   FROM src1 src2 group by src2.key
  ) b 
- ON (a.key = b.key)
+ ON (a.key = b.key) ORDER BY a.key ASC, a.value ASC, b.key ASC, b.value1 ASC, b.value2 ASC
 POSTHOOK: type: QUERY
 ABSTRACT SYNTAX TREE:
-  (TOK_QUERY (TOK_FROM (TOK_FULLOUTERJOIN (TOK_SUBQUERY (TOK_QUERY (TOK_FROM (TOK_TABREF (TOK_TABNAME src) src1)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (. (TOK_TABLE_OR_COL src1) key) key) (TOK_SELEXPR (TOK_FUNCTION count (. (TOK_TABLE_OR_COL src1) value)) value)) (TOK_GROUPBY (. (TOK_TABLE_OR_COL src1) key)))) a) (TOK_SUBQUERY (TOK_QUERY (TOK_FROM (TOK_TABREF (TOK_TABNAME src1) src2)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (. (TOK_TABLE_OR_COL src2) key) key) (TOK_SELEXPR (TOK_FUNCTIONDI count (. (TOK_TABLE_OR_COL src2) value)) value1) (TOK_SELEXPR (TOK_FUNCTIONDI count (. (TOK_TABLE_OR_COL src2) key)) value2)) (TOK_GROUPBY (. (TOK_TABLE_OR_COL src2) key)))) b) (= (. (TOK_TABLE_OR_COL a) key) (. (TOK_TABLE_OR_COL b) key)))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (. (TOK_TABLE_OR_COL a) key)) (TOK_SELEXPR (. (TOK_TABLE_OR_COL a) value)) (TOK_SELEXPR (. (TOK_TABLE_OR_COL b) key)) (TOK_SELEXPR (. (TOK_TABLE_OR_COL b) value1)) (TOK_SELEXPR (. (TOK_TABLE_OR_COL b) value2)))))
+  (TOK_QUERY (TOK_FROM (TOK_FULLOUTERJOIN (TOK_SUBQUERY (TOK_QUERY (TOK_FROM (TOK_TABREF (TOK_TABNAME src) src1)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (. (TOK_TABLE_OR_COL src1) key) key) (TOK_SELEXPR (TOK_FUNCTION count (. (TOK_TABLE_OR_COL src1) value)) value)) (TOK_GROUPBY (. (TOK_TABLE_OR_COL src1) key)))) a) (TOK_SUBQUERY (TOK_QUERY (TOK_FROM (TOK_TABREF (TOK_TABNAME src1) src2)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (. (TOK_TABLE_OR_COL src2) key) key) (TOK_SELEXPR (TOK_FUNCTIONDI count (. (TOK_TABLE_OR_COL src2) value)) value1) (TOK_SELEXPR (TOK_FUNCTIONDI count (. (TOK_TABLE_OR_COL src2) key)) value2)) (TOK_GROUPBY (. (TOK_TABLE_OR_COL src2) key)))) b) (= (. (TOK_TABLE_OR_COL a) key) (. (TOK_TABLE_OR_COL b) key)))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (. (TOK_TABLE_OR_COL a) key)) (TOK_SELEXPR (. (TOK_TABLE_OR_COL a) value)) (TOK_SELEXPR (. (TOK_TABLE_OR_COL b) key)) (TOK_SELEXPR (. (TOK_TABLE_OR_COL b) value1)) (TOK_SELEXPR (. (TOK_TABLE_OR_COL b) value2))) (TOK_ORDERBY (TOK_TABSORTCOLNAMEASC (. (TOK_TABLE_OR_COL a) key)) (TOK_TABSORTCOLNAMEASC (. (TOK_TABLE_OR_COL a) value)) (TOK_TABSORTCOLNAMEASC (. (TOK_TABLE_OR_COL b) key)) (TOK_TABSORTCOLNAMEASC (. (TOK_TABLE_OR_COL b) value1)) (TOK_TABSORTCOLNAMEASC (. (TOK_TABLE_OR_COL b) value2)))))
 
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
-  Stage-2 depends on stages: Stage-1, Stage-3
-  Stage-3 is a root stage
+  Stage-2 depends on stages: Stage-1, Stage-4
+  Stage-3 depends on stages: Stage-2
+  Stage-4 is a root stage
   Stage-0 is a root stage
 
 STAGE PLANS:
@@ -165,10 +166,48 @@ STAGE PLANS:
               compressed: false
               GlobalTableId: 0
               table:
-                  input format: org.apache.hadoop.mapred.TextInputFormat
-                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                  input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
 
   Stage: Stage-3
+    Map Reduce
+      Alias -> Map Operator Tree:
+#### A masked pattern was here ####
+            Reduce Output Operator
+              key expressions:
+                    expr: _col0
+                    type: string
+                    expr: _col1
+                    type: bigint
+                    expr: _col2
+                    type: string
+                    expr: _col3
+                    type: bigint
+                    expr: _col4
+                    type: bigint
+              sort order: +++++
+              tag: -1
+              value expressions:
+                    expr: _col0
+                    type: string
+                    expr: _col1
+                    type: bigint
+                    expr: _col2
+                    type: string
+                    expr: _col3
+                    type: bigint
+                    expr: _col4
+                    type: bigint
+      Reduce Operator Tree:
+        Extract
+          File Output Operator
+            compressed: false
+            GlobalTableId: 0
+            table:
+                input format: org.apache.hadoop.mapred.TextInputFormat
+                output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+
+  Stage: Stage-4
     Map Reduce
       Alias -> Map Operator Tree:
         a:src1 
@@ -242,7 +281,7 @@ PREHOOK: query: SELECT a.key, a.value, b.key, b.value1,  b.value2
   count(distinct(src2.key)) AS value2
   FROM src1 src2 group by src2.key
  ) b 
- ON (a.key = b.key)
+ ON (a.key = b.key) ORDER BY a.key ASC, a.value ASC, b.key ASC, b.value1 ASC, b.value2 ASC
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
 PREHOOK: Input: default@src1
@@ -258,7 +297,7 @@ POSTHOOK: query: SELECT a.key, a.value, b.key, b.value1,  b.value2
   count(distinct(src2.key)) AS value2
   FROM src1 src2 group by src2.key
  ) b 
- ON (a.key = b.key)
+ ON (a.key = b.key) ORDER BY a.key ASC, a.value ASC, b.key ASC, b.value1 ASC, b.value2 ASC
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 POSTHOOK: Input: default@src1
@@ -267,6 +306,24 @@ NULL	NULL		1	0
 NULL	NULL		1	0
 NULL	NULL		1	0
 NULL	NULL		1	1
+NULL	NULL	val_146	1	0
+NULL	NULL	val_150	1	0
+NULL	NULL	val_165	1	0
+NULL	NULL	val_193	1	0
+NULL	NULL	val_213	1	0
+NULL	NULL	val_238	1	0
+NULL	NULL	val_255	1	0
+NULL	NULL	val_265	1	0
+NULL	NULL	val_27	1	0
+NULL	NULL	val_273	1	0
+NULL	NULL	val_278	1	0
+NULL	NULL	val_311	1	0
+NULL	NULL	val_401	1	0
+NULL	NULL	val_406	1	0
+NULL	NULL	val_409	1	0
+NULL	NULL	val_484	1	0
+NULL	NULL	val_66	1	0
+NULL	NULL	val_98	1	0
 0	3	NULL	NULL	NULL
 10	1	NULL	NULL	NULL
 100	2	NULL	NULL	NULL
@@ -576,21 +633,3 @@ NULL	NULL		1	1
 96	1	NULL	NULL	NULL
 97	2	NULL	NULL	NULL
 98	2	98	0	1
-NULL	NULL	val_146	1	0
-NULL	NULL	val_150	1	0
-NULL	NULL	val_165	1	0
-NULL	NULL	val_193	1	0
-NULL	NULL	val_213	1	0
-NULL	NULL	val_238	1	0
-NULL	NULL	val_255	1	0
-NULL	NULL	val_265	1	0
-NULL	NULL	val_27	1	0
-NULL	NULL	val_273	1	0
-NULL	NULL	val_278	1	0
-NULL	NULL	val_311	1	0
-NULL	NULL	val_401	1	0
-NULL	NULL	val_406	1	0
-NULL	NULL	val_409	1	0
-NULL	NULL	val_484	1	0
-NULL	NULL	val_66	1	0
-NULL	NULL	val_98	1	0

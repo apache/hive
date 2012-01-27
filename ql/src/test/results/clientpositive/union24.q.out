@@ -36,7 +36,7 @@ select s.key, s.count from (
   union all
   select key, count(1) as count from src5 where key < 10 group by key
 )s
-order by s.key
+order by s.key ASC, s.count ASC
 PREHOOK: type: QUERY
 POSTHOOK: query: explain extended
 select s.key, s.count from (
@@ -48,10 +48,10 @@ select s.key, s.count from (
   union all
   select key, count(1) as count from src5 where key < 10 group by key
 )s
-order by s.key
+order by s.key ASC, s.count ASC
 POSTHOOK: type: QUERY
 ABSTRACT SYNTAX TREE:
-  (TOK_QUERY (TOK_FROM (TOK_SUBQUERY (TOK_UNION (TOK_UNION (TOK_UNION (TOK_QUERY (TOK_FROM (TOK_TABREF (TOK_TABNAME src2))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_TABLE_OR_COL key)) (TOK_SELEXPR (TOK_TABLE_OR_COL count))) (TOK_WHERE (< (TOK_TABLE_OR_COL key) 10)))) (TOK_QUERY (TOK_FROM (TOK_TABREF (TOK_TABNAME src3))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_TABLE_OR_COL key)) (TOK_SELEXPR (TOK_TABLE_OR_COL count))) (TOK_WHERE (< (TOK_TABLE_OR_COL key) 10))))) (TOK_QUERY (TOK_FROM (TOK_TABREF (TOK_TABNAME src4))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_TABLE_OR_COL key)) (TOK_SELEXPR (TOK_TABLE_OR_COL count))) (TOK_WHERE (< (TOK_TABLE_OR_COL key) 10))))) (TOK_QUERY (TOK_FROM (TOK_TABREF (TOK_TABNAME src5))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_TABLE_OR_COL key)) (TOK_SELEXPR (TOK_FUNCTION count 1) count)) (TOK_WHERE (< (TOK_TABLE_OR_COL key) 10)) (TOK_GROUPBY (TOK_TABLE_OR_COL key))))) s)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (. (TOK_TABLE_OR_COL s) key)) (TOK_SELEXPR (. (TOK_TABLE_OR_COL s) count))) (TOK_ORDERBY (TOK_TABSORTCOLNAMEASC (. (TOK_TABLE_OR_COL s) key)))))
+  (TOK_QUERY (TOK_FROM (TOK_SUBQUERY (TOK_UNION (TOK_UNION (TOK_UNION (TOK_QUERY (TOK_FROM (TOK_TABREF (TOK_TABNAME src2))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_TABLE_OR_COL key)) (TOK_SELEXPR (TOK_TABLE_OR_COL count))) (TOK_WHERE (< (TOK_TABLE_OR_COL key) 10)))) (TOK_QUERY (TOK_FROM (TOK_TABREF (TOK_TABNAME src3))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_TABLE_OR_COL key)) (TOK_SELEXPR (TOK_TABLE_OR_COL count))) (TOK_WHERE (< (TOK_TABLE_OR_COL key) 10))))) (TOK_QUERY (TOK_FROM (TOK_TABREF (TOK_TABNAME src4))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_TABLE_OR_COL key)) (TOK_SELEXPR (TOK_TABLE_OR_COL count))) (TOK_WHERE (< (TOK_TABLE_OR_COL key) 10))))) (TOK_QUERY (TOK_FROM (TOK_TABREF (TOK_TABNAME src5))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_TABLE_OR_COL key)) (TOK_SELEXPR (TOK_FUNCTION count 1) count)) (TOK_WHERE (< (TOK_TABLE_OR_COL key) 10)) (TOK_GROUPBY (TOK_TABLE_OR_COL key))))) s)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (. (TOK_TABLE_OR_COL s) key)) (TOK_SELEXPR (. (TOK_TABLE_OR_COL s) count))) (TOK_ORDERBY (TOK_TABSORTCOLNAMEASC (. (TOK_TABLE_OR_COL s) key)) (TOK_TABSORTCOLNAMEASC (. (TOK_TABLE_OR_COL s) count)))))
 
 STAGE DEPENDENCIES:
   Stage-3 is a root stage
@@ -194,7 +194,9 @@ STAGE PLANS:
                   key expressions:
                         expr: _col0
                         type: string
-                  sort order: +
+                        expr: _col1
+                        type: bigint
+                  sort order: ++
                   tag: -1
                   value expressions:
                         expr: _col0
@@ -229,7 +231,9 @@ STAGE PLANS:
                       key expressions:
                             expr: _col0
                             type: string
-                      sort order: +
+                            expr: _col1
+                            type: bigint
+                      sort order: ++
                       tag: -1
                       value expressions:
                             expr: _col0
@@ -264,7 +268,9 @@ STAGE PLANS:
                       key expressions:
                             expr: _col0
                             type: string
-                      sort order: +
+                            expr: _col1
+                            type: bigint
+                      sort order: ++
                       tag: -1
                       value expressions:
                             expr: _col0
@@ -299,7 +305,9 @@ STAGE PLANS:
                       key expressions:
                             expr: _col0
                             type: string
-                      sort order: +
+                            expr: _col1
+                            type: bigint
+                      sort order: ++
                       tag: -1
                       value expressions:
                             expr: _col0
@@ -486,7 +494,7 @@ PREHOOK: query: select s.key, s.count from (
   union all
   select key, count(1) as count from src5 where key < 10 group by key
 )s
-order by s.key
+order by s.key ASC, s.count ASC
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src2
 PREHOOK: Input: default@src3
@@ -502,17 +510,17 @@ POSTHOOK: query: select s.key, s.count from (
   union all
   select key, count(1) as count from src5 where key < 10 group by key
 )s
-order by s.key
+order by s.key ASC, s.count ASC
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src2
 POSTHOOK: Input: default@src3
 POSTHOOK: Input: default@src4
 POSTHOOK: Input: default@src5
 #### A masked pattern was here ####
-0	3
 0	1
 0	3
 0	3
+0	3
 2	1
 2	1
 2	1
@@ -521,8 +529,8 @@ POSTHOOK: Input: default@src5
 4	1
 4	1
 4	1
-5	3
 5	1
+5	3
 5	3
 5	3
 8	1
@@ -541,7 +549,7 @@ select s.key, s.count from (
   union all
   select a.key as key, b.count as count from src4 a join src5 b on a.key=b.key where a.key < 10
 )s
-order by s.key
+order by s.key ASC, s.count ASC
 PREHOOK: type: QUERY
 POSTHOOK: query: explain extended
 select s.key, s.count from (
@@ -551,10 +559,10 @@ select s.key, s.count from (
   union all
   select a.key as key, b.count as count from src4 a join src5 b on a.key=b.key where a.key < 10
 )s
-order by s.key
+order by s.key ASC, s.count ASC
 POSTHOOK: type: QUERY
 ABSTRACT SYNTAX TREE:
-  (TOK_QUERY (TOK_FROM (TOK_SUBQUERY (TOK_UNION (TOK_UNION (TOK_QUERY (TOK_FROM (TOK_TABREF (TOK_TABNAME src2))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_TABLE_OR_COL key)) (TOK_SELEXPR (TOK_TABLE_OR_COL count))) (TOK_WHERE (< (TOK_TABLE_OR_COL key) 10)))) (TOK_QUERY (TOK_FROM (TOK_TABREF (TOK_TABNAME src3))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_TABLE_OR_COL key)) (TOK_SELEXPR (TOK_TABLE_OR_COL count))) (TOK_WHERE (< (TOK_TABLE_OR_COL key) 10))))) (TOK_QUERY (TOK_FROM (TOK_JOIN (TOK_TABREF (TOK_TABNAME src4) a) (TOK_TABREF (TOK_TABNAME src5) b) (= (. (TOK_TABLE_OR_COL a) key) (. (TOK_TABLE_OR_COL b) key)))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (. (TOK_TABLE_OR_COL a) key) key) (TOK_SELEXPR (. (TOK_TABLE_OR_COL b) count) count)) (TOK_WHERE (< (. (TOK_TABLE_OR_COL a) key) 10))))) s)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (. (TOK_TABLE_OR_COL s) key)) (TOK_SELEXPR (. (TOK_TABLE_OR_COL s) count))) (TOK_ORDERBY (TOK_TABSORTCOLNAMEASC (. (TOK_TABLE_OR_COL s) key)))))
+  (TOK_QUERY (TOK_FROM (TOK_SUBQUERY (TOK_UNION (TOK_UNION (TOK_QUERY (TOK_FROM (TOK_TABREF (TOK_TABNAME src2))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_TABLE_OR_COL key)) (TOK_SELEXPR (TOK_TABLE_OR_COL count))) (TOK_WHERE (< (TOK_TABLE_OR_COL key) 10)))) (TOK_QUERY (TOK_FROM (TOK_TABREF (TOK_TABNAME src3))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_TABLE_OR_COL key)) (TOK_SELEXPR (TOK_TABLE_OR_COL count))) (TOK_WHERE (< (TOK_TABLE_OR_COL key) 10))))) (TOK_QUERY (TOK_FROM (TOK_JOIN (TOK_TABREF (TOK_TABNAME src4) a) (TOK_TABREF (TOK_TABNAME src5) b) (= (. (TOK_TABLE_OR_COL a) key) (. (TOK_TABLE_OR_COL b) key)))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (. (TOK_TABLE_OR_COL a) key) key) (TOK_SELEXPR (. (TOK_TABLE_OR_COL b) count) count)) (TOK_WHERE (< (. (TOK_TABLE_OR_COL a) key) 10))))) s)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (. (TOK_TABLE_OR_COL s) key)) (TOK_SELEXPR (. (TOK_TABLE_OR_COL s) count))) (TOK_ORDERBY (TOK_TABSORTCOLNAMEASC (. (TOK_TABLE_OR_COL s) key)) (TOK_TABSORTCOLNAMEASC (. (TOK_TABLE_OR_COL s) count)))))
 
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -745,7 +753,9 @@ STAGE PLANS:
                   key expressions:
                         expr: _col0
                         type: string
-                  sort order: +
+                        expr: _col1
+                        type: bigint
+                  sort order: ++
                   tag: -1
                   value expressions:
                         expr: _col0
@@ -780,7 +790,9 @@ STAGE PLANS:
                       key expressions:
                             expr: _col0
                             type: string
-                      sort order: +
+                            expr: _col1
+                            type: bigint
+                      sort order: ++
                       tag: -1
                       value expressions:
                             expr: _col0
@@ -815,7 +827,9 @@ STAGE PLANS:
                       key expressions:
                             expr: _col0
                             type: string
-                      sort order: +
+                            expr: _col1
+                            type: bigint
+                      sort order: ++
                       tag: -1
                       value expressions:
                             expr: _col0
@@ -958,7 +972,7 @@ PREHOOK: query: select s.key, s.count from (
   union all
   select a.key as key, b.count as count from src4 a join src5 b on a.key=b.key where a.key < 10
 )s
-order by s.key
+order by s.key ASC, s.count ASC
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src2
 PREHOOK: Input: default@src3
@@ -972,7 +986,7 @@ POSTHOOK: query: select s.key, s.count from (
   union all
   select a.key as key, b.count as count from src4 a join src5 b on a.key=b.key where a.key < 10
 )s
-order by s.key
+order by s.key ASC, s.count ASC
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src2
 POSTHOOK: Input: default@src3
@@ -1005,7 +1019,7 @@ select s.key, s.count from (
   union all
   select a.key as key, count(1) as count from src4 a join src5 b on a.key=b.key where a.key < 10 group by a.key
 )s
-order by s.key
+order by s.key ASC, s.count ASC
 PREHOOK: type: QUERY
 POSTHOOK: query: explain extended
 select s.key, s.count from (
@@ -1015,10 +1029,10 @@ select s.key, s.count from (
   union all
   select a.key as key, count(1) as count from src4 a join src5 b on a.key=b.key where a.key < 10 group by a.key
 )s
-order by s.key
+order by s.key ASC, s.count ASC
 POSTHOOK: type: QUERY
 ABSTRACT SYNTAX TREE:
-  (TOK_QUERY (TOK_FROM (TOK_SUBQUERY (TOK_UNION (TOK_UNION (TOK_QUERY (TOK_FROM (TOK_TABREF (TOK_TABNAME src2))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_TABLE_OR_COL key)) (TOK_SELEXPR (TOK_TABLE_OR_COL count))) (TOK_WHERE (< (TOK_TABLE_OR_COL key) 10)))) (TOK_QUERY (TOK_FROM (TOK_TABREF (TOK_TABNAME src3))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_TABLE_OR_COL key)) (TOK_SELEXPR (TOK_TABLE_OR_COL count))) (TOK_WHERE (< (TOK_TABLE_OR_COL key) 10))))) (TOK_QUERY (TOK_FROM (TOK_JOIN (TOK_TABREF (TOK_TABNAME src4) a) (TOK_TABREF (TOK_TABNAME src5) b) (= (. (TOK_TABLE_OR_COL a) key) (. (TOK_TABLE_OR_COL b) key)))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (. (TOK_TABLE_OR_COL a) key) key) (TOK_SELEXPR (TOK_FUNCTION count 1) count)) (TOK_WHERE (< (. (TOK_TABLE_OR_COL a) key) 10)) (TOK_GROUPBY (. (TOK_TABLE_OR_COL a) key))))) s)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (. (TOK_TABLE_OR_COL s) key)) (TOK_SELEXPR (. (TOK_TABLE_OR_COL s) count))) (TOK_ORDERBY (TOK_TABSORTCOLNAMEASC (. (TOK_TABLE_OR_COL s) key)))))
+  (TOK_QUERY (TOK_FROM (TOK_SUBQUERY (TOK_UNION (TOK_UNION (TOK_QUERY (TOK_FROM (TOK_TABREF (TOK_TABNAME src2))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_TABLE_OR_COL key)) (TOK_SELEXPR (TOK_TABLE_OR_COL count))) (TOK_WHERE (< (TOK_TABLE_OR_COL key) 10)))) (TOK_QUERY (TOK_FROM (TOK_TABREF (TOK_TABNAME src3))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_TABLE_OR_COL key)) (TOK_SELEXPR (TOK_TABLE_OR_COL count))) (TOK_WHERE (< (TOK_TABLE_OR_COL key) 10))))) (TOK_QUERY (TOK_FROM (TOK_JOIN (TOK_TABREF (TOK_TABNAME src4) a) (TOK_TABREF (TOK_TABNAME src5) b) (= (. (TOK_TABLE_OR_COL a) key) (. (TOK_TABLE_OR_COL b) key)))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (. (TOK_TABLE_OR_COL a) key) key) (TOK_SELEXPR (TOK_FUNCTION count 1) count)) (TOK_WHERE (< (. (TOK_TABLE_OR_COL a) key) 10)) (TOK_GROUPBY (. (TOK_TABLE_OR_COL a) key))))) s)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (. (TOK_TABLE_OR_COL s) key)) (TOK_SELEXPR (. (TOK_TABLE_OR_COL s) count))) (TOK_ORDERBY (TOK_TABSORTCOLNAMEASC (. (TOK_TABLE_OR_COL s) key)) (TOK_TABSORTCOLNAMEASC (. (TOK_TABLE_OR_COL s) count)))))
 
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -1283,7 +1297,9 @@ STAGE PLANS:
                   key expressions:
                         expr: _col0
                         type: string
-                  sort order: +
+                        expr: _col1
+                        type: bigint
+                  sort order: ++
                   tag: -1
                   value expressions:
                         expr: _col0
@@ -1318,7 +1334,9 @@ STAGE PLANS:
                       key expressions:
                             expr: _col0
                             type: string
-                      sort order: +
+                            expr: _col1
+                            type: bigint
+                      sort order: ++
                       tag: -1
                       value expressions:
                             expr: _col0
@@ -1353,7 +1371,9 @@ STAGE PLANS:
                       key expressions:
                             expr: _col0
                             type: string
-                      sort order: +
+                            expr: _col1
+                            type: bigint
+                      sort order: ++
                       tag: -1
                       value expressions:
                             expr: _col0
@@ -1496,7 +1516,7 @@ PREHOOK: query: select s.key, s.count from (
   union all
   select a.key as key, count(1) as count from src4 a join src5 b on a.key=b.key where a.key < 10 group by a.key
 )s
-order by s.key
+order by s.key ASC, s.count ASC
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src2
 PREHOOK: Input: default@src3
@@ -1510,7 +1530,7 @@ POSTHOOK: query: select s.key, s.count from (
   union all
   select a.key as key, count(1) as count from src4 a join src5 b on a.key=b.key where a.key < 10 group by a.key
 )s
-order by s.key
+order by s.key ASC, s.count ASC
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src2
 POSTHOOK: Input: default@src3

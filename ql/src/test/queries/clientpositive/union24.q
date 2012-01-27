@@ -18,7 +18,7 @@ select s.key, s.count from (
   union all
   select key, count(1) as count from src5 where key < 10 group by key
 )s
-order by s.key;
+order by s.key ASC, s.count ASC;
 
 select s.key, s.count from (
   select key, count from src2  where key < 10
@@ -29,7 +29,7 @@ select s.key, s.count from (
   union all
   select key, count(1) as count from src5 where key < 10 group by key
 )s
-order by s.key;
+order by s.key ASC, s.count ASC;
 
 explain extended
 select s.key, s.count from (
@@ -39,7 +39,7 @@ select s.key, s.count from (
   union all
   select a.key as key, b.count as count from src4 a join src5 b on a.key=b.key where a.key < 10
 )s
-order by s.key;
+order by s.key ASC, s.count ASC;
 
 select s.key, s.count from (
   select key, count from src2  where key < 10
@@ -48,7 +48,7 @@ select s.key, s.count from (
   union all
   select a.key as key, b.count as count from src4 a join src5 b on a.key=b.key where a.key < 10
 )s
-order by s.key;
+order by s.key ASC, s.count ASC;
 
 explain extended
 select s.key, s.count from (
@@ -58,7 +58,7 @@ select s.key, s.count from (
   union all
   select a.key as key, count(1) as count from src4 a join src5 b on a.key=b.key where a.key < 10 group by a.key
 )s
-order by s.key;
+order by s.key ASC, s.count ASC;
 
 select s.key, s.count from (
   select key, count from src2  where key < 10
@@ -67,4 +67,4 @@ select s.key, s.count from (
   union all
   select a.key as key, count(1) as count from src4 a join src5 b on a.key=b.key where a.key < 10 group by a.key
 )s
-order by s.key;
+order by s.key ASC, s.count ASC;

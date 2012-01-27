@@ -96,11 +96,11 @@ POSTHOOK: Lineage: columnarserde_create_shortcut.b SIMPLE [(src_thrift)src_thrif
 POSTHOOK: Lineage: columnarserde_create_shortcut.c SIMPLE [(src_thrift)src_thrift.FieldSchema(name:mstringstring, type:map<string,string>, comment:from deserializer), ]
 POSTHOOK: Lineage: columnarserde_create_shortcut.d SIMPLE [(src_thrift)src_thrift.FieldSchema(name:aint, type:int, comment:from deserializer), ]
 POSTHOOK: Lineage: columnarserde_create_shortcut.e SIMPLE [(src_thrift)src_thrift.FieldSchema(name:astring, type:string, comment:from deserializer), ]
-PREHOOK: query: SELECT columnarserde_create_shortcut.* FROM columnarserde_create_shortcut DISTRIBUTE BY 1
+PREHOOK: query: SELECT columnarserde_create_shortcut.* FROM columnarserde_create_shortcut CLUSTER BY 1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@columnarserde_create_shortcut
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT columnarserde_create_shortcut.* FROM columnarserde_create_shortcut DISTRIBUTE BY 1
+POSTHOOK: query: SELECT columnarserde_create_shortcut.* FROM columnarserde_create_shortcut CLUSTER BY 1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@columnarserde_create_shortcut
 #### A masked pattern was here ####
@@ -120,11 +120,11 @@ POSTHOOK: Lineage: columnarserde_create_shortcut.e SIMPLE [(src_thrift)src_thrif
 [8,16,24]	["80","800","8000"]	{"key_8":"value_8"}	1638581578	record_8
 [9,18,27]	["90","900","9000"]	{"key_9":"value_9"}	336964413	record_9
 null	null	null	0	NULL
-PREHOOK: query: SELECT columnarserde_create_shortcut.a[0], columnarserde_create_shortcut.b[0], columnarserde_create_shortcut.c['key2'], columnarserde_create_shortcut.d, columnarserde_create_shortcut.e FROM columnarserde_create_shortcut DISTRIBUTE BY 1
+PREHOOK: query: SELECT columnarserde_create_shortcut.a[0], columnarserde_create_shortcut.b[0], columnarserde_create_shortcut.c['key2'], columnarserde_create_shortcut.d, columnarserde_create_shortcut.e FROM columnarserde_create_shortcut CLUSTER BY 1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@columnarserde_create_shortcut
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT columnarserde_create_shortcut.a[0], columnarserde_create_shortcut.b[0], columnarserde_create_shortcut.c['key2'], columnarserde_create_shortcut.d, columnarserde_create_shortcut.e FROM columnarserde_create_shortcut DISTRIBUTE BY 1
+POSTHOOK: query: SELECT columnarserde_create_shortcut.a[0], columnarserde_create_shortcut.b[0], columnarserde_create_shortcut.c['key2'], columnarserde_create_shortcut.d, columnarserde_create_shortcut.e FROM columnarserde_create_shortcut CLUSTER BY 1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@columnarserde_create_shortcut
 #### A masked pattern was here ####
@@ -184,11 +184,11 @@ POSTHOOK: Lineage: columnshortcuttable.key SIMPLE [(src)src.FieldSchema(name:key
 POSTHOOK: Lineage: columnshortcuttable.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 key	string	
 value	string	
-PREHOOK: query: SELECT columnShortcutTable.* FROM columnShortcutTable
+PREHOOK: query: SELECT columnShortcutTable.* FROM columnShortcutTable ORDER BY key ASC, value ASC
 PREHOOK: type: QUERY
 PREHOOK: Input: default@columnshortcuttable
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT columnShortcutTable.* FROM columnShortcutTable
+POSTHOOK: query: SELECT columnShortcutTable.* FROM columnShortcutTable ORDER BY key ASC, value ASC
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@columnshortcuttable
 #### A masked pattern was here ####
@@ -199,16 +199,16 @@ POSTHOOK: Lineage: columnarserde_create_shortcut.d SIMPLE [(src_thrift)src_thrif
 POSTHOOK: Lineage: columnarserde_create_shortcut.e SIMPLE [(src_thrift)src_thrift.FieldSchema(name:astring, type:string, comment:from deserializer), ]
 POSTHOOK: Lineage: columnshortcuttable.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: columnshortcuttable.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-238	val_238
-86	val_86
-311	val_311
-27	val_27
 165	val_165
-409	val_409
+238	val_238
 255	val_255
+27	val_27
 278	val_278
-98	val_98
+311	val_311
+409	val_409
 484	val_484
+86	val_86
+98	val_98
 PREHOOK: query: ALTER TABLE columnShortcutTable ADD COLUMNS (c string)
 PREHOOK: type: ALTERTABLE_ADDCOLS
 PREHOOK: Input: default@columnshortcuttable
@@ -224,11 +224,11 @@ POSTHOOK: Lineage: columnarserde_create_shortcut.d SIMPLE [(src_thrift)src_thrif
 POSTHOOK: Lineage: columnarserde_create_shortcut.e SIMPLE [(src_thrift)src_thrift.FieldSchema(name:astring, type:string, comment:from deserializer), ]
 POSTHOOK: Lineage: columnshortcuttable.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: columnshortcuttable.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-PREHOOK: query: SELECT columnShortcutTable.* FROM columnShortcutTable
+PREHOOK: query: SELECT columnShortcutTable.* FROM columnShortcutTable ORDER BY key ASC, value ASC
 PREHOOK: type: QUERY
 PREHOOK: Input: default@columnshortcuttable
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT columnShortcutTable.* FROM columnShortcutTable
+POSTHOOK: query: SELECT columnShortcutTable.* FROM columnShortcutTable ORDER BY key ASC, value ASC
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@columnshortcuttable
 #### A masked pattern was here ####
@@ -239,16 +239,16 @@ POSTHOOK: Lineage: columnarserde_create_shortcut.d SIMPLE [(src_thrift)src_thrif
 POSTHOOK: Lineage: columnarserde_create_shortcut.e SIMPLE [(src_thrift)src_thrift.FieldSchema(name:astring, type:string, comment:from deserializer), ]
 POSTHOOK: Lineage: columnshortcuttable.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: columnshortcuttable.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-238	val_238	NULL
-86	val_86	NULL
-311	val_311	NULL
-27	val_27	NULL
 165	val_165	NULL
-409	val_409	NULL
+238	val_238	NULL
 255	val_255	NULL
+27	val_27	NULL
 278	val_278	NULL
-98	val_98	NULL
+311	val_311	NULL
+409	val_409	NULL
 484	val_484	NULL
+86	val_86	NULL
+98	val_98	NULL
 PREHOOK: query: ALTER TABLE columnShortcutTable REPLACE COLUMNS (key int)
 PREHOOK: type: ALTERTABLE_REPLACECOLS
 PREHOOK: Input: default@columnshortcuttable
@@ -264,11 +264,11 @@ POSTHOOK: Lineage: columnarserde_create_shortcut.d SIMPLE [(src_thrift)src_thrif
 POSTHOOK: Lineage: columnarserde_create_shortcut.e SIMPLE [(src_thrift)src_thrift.FieldSchema(name:astring, type:string, comment:from deserializer), ]
 POSTHOOK: Lineage: columnshortcuttable.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: columnshortcuttable.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-PREHOOK: query: SELECT columnShortcutTable.* FROM columnShortcutTable
+PREHOOK: query: SELECT columnShortcutTable.* FROM columnShortcutTable ORDER BY key ASC
 PREHOOK: type: QUERY
 PREHOOK: Input: default@columnshortcuttable
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT columnShortcutTable.* FROM columnShortcutTable
+POSTHOOK: query: SELECT columnShortcutTable.* FROM columnShortcutTable ORDER BY key ASC
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@columnshortcuttable
 #### A masked pattern was here ####
@@ -279,13 +279,13 @@ POSTHOOK: Lineage: columnarserde_create_shortcut.d SIMPLE [(src_thrift)src_thrif
 POSTHOOK: Lineage: columnarserde_create_shortcut.e SIMPLE [(src_thrift)src_thrift.FieldSchema(name:astring, type:string, comment:from deserializer), ]
 POSTHOOK: Lineage: columnshortcuttable.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: columnshortcuttable.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-238
-86
-311
 27
+86
+98
 165
-409
+238
 255
 278
-98
+311
+409
 484

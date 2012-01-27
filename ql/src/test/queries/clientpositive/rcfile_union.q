@@ -10,5 +10,5 @@ INSERT OVERWRITE TABLE rcfile_unionTable SELECT src.key, src.value LIMIT 10;
 SELECT * FROM (
 SELECT b AS cola FROM rcfile_unionTable
 UNION ALL
-SELECT c AS cola FROM rcfile_unionTable) s;
+SELECT c AS cola FROM rcfile_unionTable) s ORDER BY cola ASC;
 

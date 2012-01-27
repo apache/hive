@@ -33,23 +33,23 @@ POSTHOOK: Lineage: columntable.key SIMPLE [(src)src.FieldSchema(name:key, type:s
 POSTHOOK: Lineage: columntable.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 key	string	
 value	string	
-PREHOOK: query: SELECT columnTable.* FROM columnTable
+PREHOOK: query: SELECT columnTable.* FROM columnTable ORDER BY key ASC, value ASC
 PREHOOK: type: QUERY
 PREHOOK: Input: default@columntable
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT columnTable.* FROM columnTable
+POSTHOOK: query: SELECT columnTable.* FROM columnTable ORDER BY key ASC, value ASC
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@columntable
 #### A masked pattern was here ####
 POSTHOOK: Lineage: columntable.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: columntable.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-238	val_238
-86	val_86
-311	val_311
-27	val_27
 165	val_165
-409	val_409
+238	val_238
 255	val_255
+27	val_27
 278	val_278
-98	val_98
+311	val_311
+409	val_409
 484	val_484
+86	val_86
+98	val_98

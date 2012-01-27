@@ -133,11 +133,11 @@ POSTHOOK: Input: default@src
 POSTHOOK: Output: default@dest1
 POSTHOOK: Lineage: dest1.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: dest1.value EXPRESSION [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-PREHOOK: query: SELECT dest1.* FROM dest1
+PREHOOK: query: SELECT dest1.* FROM dest1 ORDER BY dest1.key ASC , dest1.value ASC
 PREHOOK: type: QUERY
 PREHOOK: Input: default@dest1
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT dest1.* FROM dest1
+POSTHOOK: query: SELECT dest1.* FROM dest1 ORDER BY dest1.key ASC , dest1.value ASC
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@dest1
 #### A masked pattern was here ####
