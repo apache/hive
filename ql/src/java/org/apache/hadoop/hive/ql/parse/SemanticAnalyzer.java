@@ -6991,6 +6991,14 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         if (fetch.getTblDesc() != null) {
           PlanUtils.configureTableJobPropertiesForStorageHandler(
             fetch.getTblDesc());
+        } else if ( (fetch.getPartDesc() != null) && (!fetch.getPartDesc().isEmpty())){
+            PartitionDesc pd0 = fetch.getPartDesc().get(0);
+            TableDesc td = pd0.getTableDesc();
+            if ((td != null)&&(td.getProperties() != null) 
+                && td.getProperties().containsKey(
+                    org.apache.hadoop.hive.metastore.api.Constants.META_TABLE_STORAGE)){
+              PlanUtils.configureTableJobPropertiesForStorageHandler(td);
+            }
         }
         fetchTask = (FetchTask) TaskFactory.get(fetch, conf);
         setFetchTask(fetchTask);
