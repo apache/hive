@@ -36,6 +36,7 @@ public class UnionProcContext implements NodeProcessorCtx {
    */
   public static class UnionParseContext {
     private final transient boolean[] mapOnlySubq;
+    private final transient boolean[] mapOnlySubqSet;
     private final transient boolean[] rootTask;
     private final transient boolean[] mapJoinSubq;
 
@@ -47,6 +48,7 @@ public class UnionProcContext implements NodeProcessorCtx {
       mapOnlySubq = new boolean[numInputs];
       rootTask = new boolean[numInputs];
       mapJoinSubq = new boolean[numInputs];
+      mapOnlySubqSet = new boolean[numInputs];
     }
 
     public boolean getMapOnlySubq(int pos) {
@@ -55,6 +57,7 @@ public class UnionProcContext implements NodeProcessorCtx {
 
     public void setMapOnlySubq(int pos, boolean mapOnlySubq) {
       this.mapOnlySubq[pos] = mapOnlySubq;
+      this.mapOnlySubqSet[pos] = true;
     }
 
     public boolean getMapJoinSubq(int pos) {
@@ -92,6 +95,17 @@ public class UnionProcContext implements NodeProcessorCtx {
       if (mapOnlySubq != null) {
         for (boolean mapOnly : mapOnlySubq) {
           if (!mapOnly) {
+            return false;
+          }
+        }
+      }
+      return true;
+    }
+
+    public boolean allMapOnlySubQSet() {
+      if (mapOnlySubqSet != null) {
+        for (boolean mapOnlySet : mapOnlySubqSet) {
+          if (!mapOnlySet) {
             return false;
           }
         }
