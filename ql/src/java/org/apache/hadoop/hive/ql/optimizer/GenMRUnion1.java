@@ -20,7 +20,6 @@ package org.apache.hadoop.hive.ql.optimizer;
 
 import java.io.Serializable;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Stack;
@@ -68,12 +67,17 @@ public class GenMRUnion1 implements NodeProcessor {
    */
   private Object processMapOnlyUnion(UnionOperator union, Stack<Node> stack,
       GenMRProcContext ctx, UnionProcContext uCtx) throws SemanticException {
+
     // merge currTask from multiple topOps
     GenMRUnionCtx uCtxTask = ctx.getUnionTask(union);
     if (uCtxTask != null) {
       // get task associated with this union
       Task<? extends Serializable> uTask = ctx.getUnionTask(union).getUTask();
       if (uTask != null) {
+        if (ctx.getCurrTask() != null && ctx.getCurrTask() != uTask) {
+          // if ctx.getCurrTask() is in rootTasks, should be removed
+          ctx.getRootTasks().remove(ctx.getCurrTask());
+        }
         ctx.setCurrTask(uTask);
       }
     }
@@ -276,8 +280,8 @@ public class GenMRUnion1 implements NodeProcessor {
     }
 
     // Copy into the current union task plan if
-    if (uPrsCtx.getMapOnlySubq(pos) && uPrsCtx.getRootTask(pos)
-        && !uPrsCtx.getMapJoinSubq(pos)) {
+    if (uPrsCtx.getMapOnlySubq(pos)
+        && !uPrsCtx.getMapJoinSubq(pos) && uPrsCtx.getRootTask(pos)) {
       processSubQueryUnionMerge(ctx, uCtxTask, union, stack);
     }
     // If it a map-reduce job, create a temporary file
@@ -296,6 +300,7 @@ public class GenMRUnion1 implements NodeProcessor {
       //the currAliasId and CurrTopOp is not valid any more
       ctx.setCurrAliasId(null);
       ctx.setCurrTopOp(null);
+      ctx.getOpTaskMap().put(null, uTask);
     }
 
     ctx.setCurrTask(uTask);

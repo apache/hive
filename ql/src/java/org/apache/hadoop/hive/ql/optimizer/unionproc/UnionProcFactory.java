@@ -142,8 +142,30 @@ public final class UnionProcFactory {
       if (uCtx == null) {
         uCtx = new UnionParseContext(union.getConf().getNumInputs());
       }
+      int start = stack.size() - 2;
+      UnionOperator parentUnionOperator = null;
+      while (start >= 0) {
+        Operator<? extends Serializable> parent =
+            (Operator<? extends Serializable>) stack.get(start);
+        if (parent instanceof UnionOperator) {
+          parentUnionOperator = (UnionOperator) parent;
+          break;
+        }
+        start--;
+      }
 
-      uCtx.setMapOnlySubq(pos, true);
+      // default to false
+      boolean mapOnly = false;
+      if (parentUnionOperator != null) {
+        UnionParseContext parentUCtx =
+            ctx.getUnionParseContext(parentUnionOperator);
+        if (parentUCtx != null && parentUCtx.allMapOnlySubQSet()) {
+          mapOnly = parentUCtx.allMapOnlySubQ();
+        }
+      }
+
+      uCtx.setMapOnlySubq(pos, mapOnly);
+
       uCtx.setRootTask(pos, false);
       ctx.setUnionParseContext(union, uCtx);
       return null;
