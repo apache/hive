@@ -78,7 +78,7 @@ public class HWIServer {
     String hivehome = System.getenv().get("HIVE_HOME");
     File hwiWARFile = new File(hivehome, hwiWAR);
     if (!hwiWARFile.exists()) {
-      l4j.fatal("HWI WAR file not found at " + hwiWAR);
+      l4j.fatal("HWI WAR file not found at " + hwiWARFile.toString());
       System.exit(1);
     }
 
