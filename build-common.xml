@@ -63,6 +63,7 @@
   <property name="test.silent" value="true"/>
   <property name="hadoopVersion" value="${hadoop.version.ant-internal}"/>
   <property name="test.serialize.qplan" value="false"/>
+  <property name="test.print.classpath" value="false"/>
 
   <path id="test.classpath">
     <pathelement location="${test.build.classes}" />
@@ -354,8 +355,13 @@
   <target name="test"
   	depends="test-conditions,gen-test,compile-test,test-jar,test-init">
     <echo message="Project: ${ant.project.name}"/>
-    <!--<property name="testcp" refid="test.classpath"/>-->
-    <!--<echo message="test.classpath: ${testcp}"/>-->
+    <if>
+      <equals arg1="${test.print.classpath}" arg2="true" />
+      <then>        
+        <property name="testcp" refid="test.classpath"/>
+        <echo message="Test Classpath: ${testcp}"/>
+      </then>
+    </if>
     <junit showoutput="${test.output}" printsummary="yes" haltonfailure="no"
            fork="yes" maxmemory="512m" dir="${basedir}" timeout="${test.timeout}"
            errorProperty="tests.failed" failureProperty="tests.failed" filtertrace="off">
