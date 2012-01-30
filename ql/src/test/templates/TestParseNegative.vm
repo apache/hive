@@ -77,6 +77,7 @@ public class $className extends TestCase {
   #set ($eidx = $fname.indexOf('.'))
   #set ($tname = $fname.substring(0, $eidx))
   public void testParseNegative_$tname() throws Exception {
+    long startTime = System.currentTimeMillis();
     try {
       System.out.println("Begin query: " + "$fname");
 
@@ -102,11 +103,13 @@ public class $className extends TestCase {
     catch (Throwable e) {
       System.out.println("Exception: " + e.getMessage());
       e.printStackTrace();
+      System.out.println("Failed query: " + "$fname");
       System.out.flush();
       fail("Unexpected exception" + debugHint);
     }
 
-    System.out.println("Done query: " + "$fname");
+    long elapsedTime = System.currentTimeMillis() - startTime;
+    System.out.println("Done query: " + "$fname" + " elapsedTime=" + elapsedTime/1000 + "s");
     assertTrue("Test passed", true);
   }
 
