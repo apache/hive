@@ -18,7 +18,7 @@ STAGE PLANS:
             alias: a
             Filter Operator
               predicate:
-                  expr: (((key > 10) and (key > 20)) and (value < 200))
+                  expr: (((key > 10.0) and (key > 20.0)) and (value < 200.0))
                   type: boolean
               Select Operator
                 expressions:
@@ -48,7 +48,7 @@ STAGE PLANS:
             alias: tab
             Filter Operator
               predicate:
-                  expr: (value < 200)
+                  expr: (value < 200.0)
                   type: boolean
               Reduce Output Operator
                 key expressions:

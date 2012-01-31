@@ -19,15 +19,15 @@ insert overwrite table ppr_test partition(ds = '12%4') select * from (select '12
 insert overwrite table ppr_test partition(ds = '12*4') select * from (select '12*4' from src limit 1 union all select 'abcd' from src limit 1) s;
 
 
-select * from ppr_test where ds = '1234';
-select * from ppr_test where ds = '1224';
-select * from ppr_test where ds = '1214';
-select * from ppr_test where ds = '12.4';
-select * from ppr_test where ds = '12+4';
-select * from ppr_test where ds = '12:4';
-select * from ppr_test where ds = '12%4';
-select * from ppr_test where ds = '12*4';
-select * from ppr_test where ds = '12.*4';
+select * from ppr_test where ds = '1234' order by key;
+select * from ppr_test where ds = '1224' order by key;
+select * from ppr_test where ds = '1214' order by key;
+select * from ppr_test where ds = '12.4' order by key;
+select * from ppr_test where ds = '12+4' order by key;
+select * from ppr_test where ds = '12:4' order by key;
+select * from ppr_test where ds = '12%4' order by key;
+select * from ppr_test where ds = '12*4' order by key;
+select * from ppr_test where ds = '12.*4' order by key;
 
 select * from ppr_test where ds = '1234' and key = '1234';
 select * from ppr_test where ds = '1224' and key = '1224';

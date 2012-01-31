@@ -79,7 +79,7 @@ STAGE PLANS:
         Forward
           Filter Operator
             predicate:
-                expr: (KEY._col0 >= 5)
+                expr: (KEY._col0 >= 5.0)
                 type: boolean
             Group By Operator
               aggregations:
@@ -129,7 +129,7 @@ STAGE PLANS:
                         name: default.dest_g2
           Filter Operator
             predicate:
-                expr: (KEY._col0 < 5)
+                expr: (KEY._col0 < 5.0)
                 type: boolean
             Group By Operator
               aggregations:
@@ -480,7 +480,7 @@ STAGE PLANS:
         Forward
           Filter Operator
             predicate:
-                expr: (KEY._col0 >= 5)
+                expr: (KEY._col0 >= 5.0)
                 type: boolean
             Group By Operator
               aggregations:
@@ -530,7 +530,7 @@ STAGE PLANS:
                         name: default.dest_g2
           Filter Operator
             predicate:
-                expr: (KEY._col0 < 5)
+                expr: (KEY._col0 < 5.0)
                 type: boolean
             Group By Operator
               aggregations:
@@ -723,7 +723,7 @@ STAGE PLANS:
                       output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
           Filter Operator
             predicate:
-                expr: (KEY._col0 >= 5)
+                expr: (KEY._col0 >= 5.0)
                 type: boolean
             Group By Operator
               aggregations:

@@ -214,7 +214,7 @@ STAGE PLANS:
             alias: a
             Filter Operator
               predicate:
-                  expr: (key = 103)
+                  expr: (key = 103.0)
                   type: boolean
               Reduce Output Operator
                 key expressions:

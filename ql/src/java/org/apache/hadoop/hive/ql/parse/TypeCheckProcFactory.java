@@ -21,9 +21,11 @@ package org.apache.hadoop.hive.ql.parse;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.Stack;
 
 import org.apache.commons.lang.StringUtils;
@@ -51,6 +53,8 @@ import org.apache.hadoop.hive.ql.plan.ExprNodeFieldDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeNullDesc;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDF;
+import org.apache.hadoop.hive.ql.udf.generic.GenericUDFBaseCompare;
+import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPEqual;
 import org.apache.hadoop.hive.serde.Constants;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector.Category;
@@ -678,6 +682,79 @@ public final class TypeCheckProcFactory {
           if (FunctionRegistry.isStateful(fi.getGenericUDF())) {
             throw new SemanticException(
               ErrorMsg.UDF_STATEFUL_INVALID_LOCATION.getMsg());
+          }
+        }
+
+        // Try to infer the type of the constant only if there are two
+        // nodes, one of them is column and the other is numeric const
+        if (fi.getGenericUDF() instanceof GenericUDFBaseCompare
+            && children.size() == 2
+            && ((children.get(0) instanceof ExprNodeConstantDesc
+                && children.get(1) instanceof ExprNodeColumnDesc)
+                || (children.get(0) instanceof ExprNodeColumnDesc
+                    && children.get(1) instanceof ExprNodeConstantDesc))) {
+          int constIdx =
+              children.get(0) instanceof ExprNodeConstantDesc ? 0 : 1;
+
+          Set<String> inferTypes = new HashSet<String>(Arrays.asList(
+              Constants.TINYINT_TYPE_NAME.toLowerCase(),
+              Constants.SMALLINT_TYPE_NAME.toLowerCase(),
+              Constants.INT_TYPE_NAME.toLowerCase(),
+              Constants.BIGINT_TYPE_NAME.toLowerCase(),
+              Constants.FLOAT_TYPE_NAME.toLowerCase(),
+              Constants.DOUBLE_TYPE_NAME.toLowerCase(),
+              Constants.STRING_TYPE_NAME.toLowerCase()
+              ));
+
+          String constType = children.get(constIdx).getTypeString().toLowerCase();
+          String columnType = children.get(1 - constIdx).getTypeString().toLowerCase();
+
+          if (inferTypes.contains(constType) && inferTypes.contains(columnType)
+              && !columnType.equalsIgnoreCase(constType)) {
+            String constValue =
+                ((ExprNodeConstantDesc) children.get(constIdx)).getValue().toString();
+            boolean triedDouble = false;
+
+            Number value = null;
+            try {
+              if (columnType.equalsIgnoreCase(Constants.TINYINT_TYPE_NAME)) {
+                value = new Byte(constValue);
+              } else if (columnType.equalsIgnoreCase(Constants.SMALLINT_TYPE_NAME)) {
+                value = new Short(constValue);
+              } else if (columnType.equalsIgnoreCase(Constants.INT_TYPE_NAME)) {
+                value = new Integer(constValue);
+              } else if (columnType.equalsIgnoreCase(Constants.BIGINT_TYPE_NAME)) {
+                value = new Long(constValue);
+              } else if (columnType.equalsIgnoreCase(Constants.FLOAT_TYPE_NAME)) {
+                value = new Float(constValue);
+              } else if (columnType.equalsIgnoreCase(Constants.DOUBLE_TYPE_NAME)
+                  || (columnType.equalsIgnoreCase(Constants.STRING_TYPE_NAME)
+                     && !constType.equalsIgnoreCase(Constants.BIGINT_TYPE_NAME))) {
+                // no smart inference for queries like "str_col = bigint_const"
+                triedDouble = true;
+                value = new Double(constValue);
+              }
+            } catch (NumberFormatException nfe) {
+              // this exception suggests the precise type inference did not succeed
+              // we'll try again to convert it to double
+              // however, if we already tried this, or the column is NUMBER type and
+              // the operator is EQUAL, return false due to the type mismatch
+              if (triedDouble ||
+                  (fi.getGenericUDF() instanceof GenericUDFOPEqual
+                  && !columnType.equals(Constants.STRING_TYPE_NAME))) {
+                return new ExprNodeConstantDesc(false);
+              }
+
+              try {
+                value = new Double(constValue);
+              } catch (NumberFormatException ex) {
+                return new ExprNodeConstantDesc(false);
+              }
+            }
+
+            if (value != null) {
+              children.set(constIdx, new ExprNodeConstantDesc(value));
+            }
           }
         }
 

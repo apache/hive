@@ -1184,7 +1184,7 @@ STAGE PLANS:
             Filter Operator
               isSamplingPred: false
               predicate:
-                  expr: (key < 200)
+                  expr: (key < 200.0)
                   type: boolean
               Select Operator
                 expressions:

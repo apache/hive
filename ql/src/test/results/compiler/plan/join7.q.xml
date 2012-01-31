@@ -772,12 +772,12 @@
                         <void property="typeInfo"> 
                          <object id="PrimitiveTypeInfo1" class="org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo"> 
                           <void property="typeName"> 
-                           <string>int</string> 
+                           <string>double</string> 
                           </void> 
                          </object> 
                         </void> 
                         <void property="value"> 
-                         <int>10</int> 
+                         <double>10.0</double> 
                         </void> 
                        </object> 
                       </void> 
@@ -818,7 +818,7 @@
                          <object idref="PrimitiveTypeInfo1"/> 
                         </void> 
                         <void property="value"> 
-                         <int>20</int> 
+                         <double>20.0</double> 
                         </void> 
                        </object> 
                       </void> 
@@ -1358,7 +1358,7 @@
                          <object idref="PrimitiveTypeInfo1"/> 
                         </void> 
                         <void property="value"> 
-                         <int>15</int> 
+                         <double>15.0</double> 
                         </void> 
                        </object> 
                       </void> 
@@ -1395,7 +1395,7 @@
                          <object idref="PrimitiveTypeInfo1"/> 
                         </void> 
                         <void property="value"> 
-                         <int>25</int> 
+                         <double>25.0</double> 
                         </void> 
                        </object> 
                       </void> 
@@ -1931,7 +1931,7 @@
                          <object idref="PrimitiveTypeInfo1"/> 
                         </void> 
                         <void property="value"> 
-                         <int>20</int> 
+                         <double>20.0</double> 
                         </void> 
                        </object> 
                       </void> 
@@ -1968,7 +1968,7 @@
                          <object idref="PrimitiveTypeInfo1"/> 
                         </void> 
                         <void property="value"> 
-                         <int>25</int> 
+                         <double>25.0</double> 
                         </void> 
                        </object> 
                       </void> 

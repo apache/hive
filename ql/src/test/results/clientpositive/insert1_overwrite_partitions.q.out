@@ -23,13 +23,13 @@ POSTHOOK: query: CREATE TABLE destinTable (one string,two string) PARTITIONED BY
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: default@destinTable
 PREHOOK: query: EXPLAIN INSERT OVERWRITE TABLE destinTable PARTITION (ds='2011-11-11', hr='11') if not exists
-SELECT one,two FROM sourceTable WHERE ds='2011-11-11' AND hr='11' order by one limit 5
+SELECT one,two FROM sourceTable WHERE ds='2011-11-11' AND hr='11' order by one desc, two desc limit 5
 PREHOOK: type: QUERY
 POSTHOOK: query: EXPLAIN INSERT OVERWRITE TABLE destinTable PARTITION (ds='2011-11-11', hr='11') if not exists
-SELECT one,two FROM sourceTable WHERE ds='2011-11-11' AND hr='11' order by one limit 5
+SELECT one,two FROM sourceTable WHERE ds='2011-11-11' AND hr='11' order by one desc, two desc limit 5
 POSTHOOK: type: QUERY
 ABSTRACT SYNTAX TREE:
-  (TOK_QUERY (TOK_FROM (TOK_TABREF (TOK_TABNAME sourceTable))) (TOK_INSERT (TOK_DESTINATION (TOK_TAB (TOK_TABNAME destinTable) (TOK_PARTSPEC (TOK_PARTVAL ds '2011-11-11') (TOK_PARTVAL hr '11'))) TOK_IFNOTEXISTS) (TOK_SELECT (TOK_SELEXPR (TOK_TABLE_OR_COL one)) (TOK_SELEXPR (TOK_TABLE_OR_COL two))) (TOK_WHERE (AND (= (TOK_TABLE_OR_COL ds) '2011-11-11') (= (TOK_TABLE_OR_COL hr) '11'))) (TOK_ORDERBY (TOK_TABSORTCOLNAMEASC (TOK_TABLE_OR_COL one))) (TOK_LIMIT 5)))
+  (TOK_QUERY (TOK_FROM (TOK_TABREF (TOK_TABNAME sourceTable))) (TOK_INSERT (TOK_DESTINATION (TOK_TAB (TOK_TABNAME destinTable) (TOK_PARTSPEC (TOK_PARTVAL ds '2011-11-11') (TOK_PARTVAL hr '11'))) TOK_IFNOTEXISTS) (TOK_SELECT (TOK_SELEXPR (TOK_TABLE_OR_COL one)) (TOK_SELEXPR (TOK_TABLE_OR_COL two))) (TOK_WHERE (AND (= (TOK_TABLE_OR_COL ds) '2011-11-11') (= (TOK_TABLE_OR_COL hr) '11'))) (TOK_ORDERBY (TOK_TABSORTCOLNAMEDESC (TOK_TABLE_OR_COL one)) (TOK_TABSORTCOLNAMEDESC (TOK_TABLE_OR_COL two))) (TOK_LIMIT 5)))
 
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -55,7 +55,9 @@ STAGE PLANS:
                 key expressions:
                       expr: _col0
                       type: string
-                sort order: +
+                      expr: _col1
+                      type: string
+                sort order: --
                 tag: -1
                 value expressions:
                       expr: _col0
@@ -80,7 +82,9 @@ STAGE PLANS:
               key expressions:
                     expr: _col0
                     type: string
-              sort order: +
+                    expr: _col1
+                    type: string
+              sort order: --
               tag: -1
               value expressions:
                     expr: _col0
@@ -117,70 +121,70 @@ STAGE PLANS:
 
 
 PREHOOK: query: INSERT OVERWRITE TABLE destinTable PARTITION (ds='2011-11-11', hr='11') if not exists
-SELECT one,two FROM sourceTable WHERE ds='2011-11-11' AND hr='11' order by one limit 5
+SELECT one,two FROM sourceTable WHERE ds='2011-11-11' AND hr='11' order by one desc, two desc limit 5
 PREHOOK: type: QUERY
 PREHOOK: Input: default@sourcetable@ds=2011-11-11/hr=11
 PREHOOK: Output: default@destintable@ds=2011-11-11/hr=11
 POSTHOOK: query: INSERT OVERWRITE TABLE destinTable PARTITION (ds='2011-11-11', hr='11') if not exists
-SELECT one,two FROM sourceTable WHERE ds='2011-11-11' AND hr='11' order by one limit 5
+SELECT one,two FROM sourceTable WHERE ds='2011-11-11' AND hr='11' order by one desc, two desc limit 5
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@sourcetable@ds=2011-11-11/hr=11
 POSTHOOK: Output: default@destintable@ds=2011-11-11/hr=11
 POSTHOOK: Lineage: destintable PARTITION(ds=2011-11-11,hr=11).one SIMPLE [(sourcetable)sourcetable.FieldSchema(name:one, type:string, comment:null), ]
 POSTHOOK: Lineage: destintable PARTITION(ds=2011-11-11,hr=11).two SIMPLE [(sourcetable)sourcetable.FieldSchema(name:two, type:string, comment:null), ]
-PREHOOK: query: select one,two from destinTable
+PREHOOK: query: select one,two from destinTable order by one desc, two desc
 PREHOOK: type: QUERY
 PREHOOK: Input: default@destintable@ds=2011-11-11/hr=11
 #### A masked pattern was here ####
-POSTHOOK: query: select one,two from destinTable
+POSTHOOK: query: select one,two from destinTable order by one desc, two desc
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@destintable@ds=2011-11-11/hr=11
 #### A masked pattern was here ####
 POSTHOOK: Lineage: destintable PARTITION(ds=2011-11-11,hr=11).one SIMPLE [(sourcetable)sourcetable.FieldSchema(name:one, type:string, comment:null), ]
 POSTHOOK: Lineage: destintable PARTITION(ds=2011-11-11,hr=11).two SIMPLE [(sourcetable)sourcetable.FieldSchema(name:two, type:string, comment:null), ]
-0	val_0
-0	val_0
-0	val_0
-10	val_10
-100	val_100
+98	val_98
+98	val_98
+97	val_97
+97	val_97
+96	val_96
 PREHOOK: query: EXPLAIN INSERT OVERWRITE TABLE destinTable PARTITION (ds='2011-11-11', hr='11') if not exists
-SELECT one,two FROM sourceTable WHERE ds='2011-11-11' AND hr='12' order by one limit 5
+SELECT one,two FROM sourceTable WHERE ds='2011-11-11' AND hr='12' order by one desc, two desc limit 5
 PREHOOK: type: QUERY
 POSTHOOK: query: EXPLAIN INSERT OVERWRITE TABLE destinTable PARTITION (ds='2011-11-11', hr='11') if not exists
-SELECT one,two FROM sourceTable WHERE ds='2011-11-11' AND hr='12' order by one limit 5
+SELECT one,two FROM sourceTable WHERE ds='2011-11-11' AND hr='12' order by one desc, two desc limit 5
 POSTHOOK: type: QUERY
 POSTHOOK: Lineage: destintable PARTITION(ds=2011-11-11,hr=11).one SIMPLE [(sourcetable)sourcetable.FieldSchema(name:one, type:string, comment:null), ]
 POSTHOOK: Lineage: destintable PARTITION(ds=2011-11-11,hr=11).two SIMPLE [(sourcetable)sourcetable.FieldSchema(name:two, type:string, comment:null), ]
 ABSTRACT SYNTAX TREE:
-  (TOK_QUERY (TOK_FROM (TOK_TABREF (TOK_TABNAME sourceTable))) (TOK_INSERT (TOK_DESTINATION (TOK_TAB (TOK_TABNAME destinTable) (TOK_PARTSPEC (TOK_PARTVAL ds '2011-11-11') (TOK_PARTVAL hr '11'))) TOK_IFNOTEXISTS) (TOK_SELECT (TOK_SELEXPR (TOK_TABLE_OR_COL one)) (TOK_SELEXPR (TOK_TABLE_OR_COL two))) (TOK_WHERE (AND (= (TOK_TABLE_OR_COL ds) '2011-11-11') (= (TOK_TABLE_OR_COL hr) '12'))) (TOK_ORDERBY (TOK_TABSORTCOLNAMEASC (TOK_TABLE_OR_COL one))) (TOK_LIMIT 5)))
+  (TOK_QUERY (TOK_FROM (TOK_TABREF (TOK_TABNAME sourceTable))) (TOK_INSERT (TOK_DESTINATION (TOK_TAB (TOK_TABNAME destinTable) (TOK_PARTSPEC (TOK_PARTVAL ds '2011-11-11') (TOK_PARTVAL hr '11'))) TOK_IFNOTEXISTS) (TOK_SELECT (TOK_SELEXPR (TOK_TABLE_OR_COL one)) (TOK_SELEXPR (TOK_TABLE_OR_COL two))) (TOK_WHERE (AND (= (TOK_TABLE_OR_COL ds) '2011-11-11') (= (TOK_TABLE_OR_COL hr) '12'))) (TOK_ORDERBY (TOK_TABSORTCOLNAMEDESC (TOK_TABLE_OR_COL one)) (TOK_TABSORTCOLNAMEDESC (TOK_TABLE_OR_COL two))) (TOK_LIMIT 5)))
 
 STAGE DEPENDENCIES:
 
 STAGE PLANS:
 STAGE PLANS:
 PREHOOK: query: INSERT OVERWRITE TABLE destinTable PARTITION (ds='2011-11-11', hr='11') if not exists
-SELECT one,two FROM sourceTable WHERE ds='2011-11-11' AND hr='12' order by one limit 5
+SELECT one,two FROM sourceTable WHERE ds='2011-11-11' AND hr='12' order by one desc, two desc limit 5
 PREHOOK: type: QUERY
 POSTHOOK: query: INSERT OVERWRITE TABLE destinTable PARTITION (ds='2011-11-11', hr='11') if not exists
-SELECT one,two FROM sourceTable WHERE ds='2011-11-11' AND hr='12' order by one limit 5
+SELECT one,two FROM sourceTable WHERE ds='2011-11-11' AND hr='12' order by one desc, two desc limit 5
 POSTHOOK: type: QUERY
 POSTHOOK: Lineage: destintable PARTITION(ds=2011-11-11,hr=11).one SIMPLE [(sourcetable)sourcetable.FieldSchema(name:one, type:string, comment:null), ]
 POSTHOOK: Lineage: destintable PARTITION(ds=2011-11-11,hr=11).two SIMPLE [(sourcetable)sourcetable.FieldSchema(name:two, type:string, comment:null), ]
-PREHOOK: query: select one,two from destinTable
+PREHOOK: query: select one,two from destinTable order by one desc, two desc
 PREHOOK: type: QUERY
 PREHOOK: Input: default@destintable@ds=2011-11-11/hr=11
 #### A masked pattern was here ####
-POSTHOOK: query: select one,two from destinTable
+POSTHOOK: query: select one,two from destinTable order by one desc, two desc
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@destintable@ds=2011-11-11/hr=11
 #### A masked pattern was here ####
 POSTHOOK: Lineage: destintable PARTITION(ds=2011-11-11,hr=11).one SIMPLE [(sourcetable)sourcetable.FieldSchema(name:one, type:string, comment:null), ]
 POSTHOOK: Lineage: destintable PARTITION(ds=2011-11-11,hr=11).two SIMPLE [(sourcetable)sourcetable.FieldSchema(name:two, type:string, comment:null), ]
-0	val_0
-0	val_0
-0	val_0
-10	val_10
-100	val_100
+98	val_98
+98	val_98
+97	val_97
+97	val_97
+96	val_96
 PREHOOK: query: drop table destinTable
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@destintable
@@ -198,14 +202,14 @@ POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: default@destinTable
 POSTHOOK: Lineage: destintable PARTITION(ds=2011-11-11,hr=11).one SIMPLE [(sourcetable)sourcetable.FieldSchema(name:one, type:string, comment:null), ]
 POSTHOOK: Lineage: destintable PARTITION(ds=2011-11-11,hr=11).two SIMPLE [(sourcetable)sourcetable.FieldSchema(name:two, type:string, comment:null), ]
-PREHOOK: query: EXPLAIN INSERT OVERWRITE TABLE destinTable SELECT one,two FROM sourceTable WHERE ds='2011-11-11' AND hr='11' order by one limit 5
+PREHOOK: query: EXPLAIN INSERT OVERWRITE TABLE destinTable SELECT one,two FROM sourceTable WHERE ds='2011-11-11' AND hr='11' order by one desc, two desc limit 5
 PREHOOK: type: QUERY
-POSTHOOK: query: EXPLAIN INSERT OVERWRITE TABLE destinTable SELECT one,two FROM sourceTable WHERE ds='2011-11-11' AND hr='11' order by one limit 5
+POSTHOOK: query: EXPLAIN INSERT OVERWRITE TABLE destinTable SELECT one,two FROM sourceTable WHERE ds='2011-11-11' AND hr='11' order by one desc, two desc limit 5
 POSTHOOK: type: QUERY
 POSTHOOK: Lineage: destintable PARTITION(ds=2011-11-11,hr=11).one SIMPLE [(sourcetable)sourcetable.FieldSchema(name:one, type:string, comment:null), ]
 POSTHOOK: Lineage: destintable PARTITION(ds=2011-11-11,hr=11).two SIMPLE [(sourcetable)sourcetable.FieldSchema(name:two, type:string, comment:null), ]
 ABSTRACT SYNTAX TREE:
-  (TOK_QUERY (TOK_FROM (TOK_TABREF (TOK_TABNAME sourceTable))) (TOK_INSERT (TOK_DESTINATION (TOK_TAB (TOK_TABNAME destinTable))) (TOK_SELECT (TOK_SELEXPR (TOK_TABLE_OR_COL one)) (TOK_SELEXPR (TOK_TABLE_OR_COL two))) (TOK_WHERE (AND (= (TOK_TABLE_OR_COL ds) '2011-11-11') (= (TOK_TABLE_OR_COL hr) '11'))) (TOK_ORDERBY (TOK_TABSORTCOLNAMEASC (TOK_TABLE_OR_COL one))) (TOK_LIMIT 5)))
+  (TOK_QUERY (TOK_FROM (TOK_TABREF (TOK_TABNAME sourceTable))) (TOK_INSERT (TOK_DESTINATION (TOK_TAB (TOK_TABNAME destinTable))) (TOK_SELECT (TOK_SELEXPR (TOK_TABLE_OR_COL one)) (TOK_SELEXPR (TOK_TABLE_OR_COL two))) (TOK_WHERE (AND (= (TOK_TABLE_OR_COL ds) '2011-11-11') (= (TOK_TABLE_OR_COL hr) '11'))) (TOK_ORDERBY (TOK_TABSORTCOLNAMEDESC (TOK_TABLE_OR_COL one)) (TOK_TABSORTCOLNAMEDESC (TOK_TABLE_OR_COL two))) (TOK_LIMIT 5)))
 
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -231,7 +235,9 @@ STAGE PLANS:
                 key expressions:
                       expr: _col0
                       type: string
-                sort order: +
+                      expr: _col1
+                      type: string
+                sort order: --
                 tag: -1
                 value expressions:
                       expr: _col0
@@ -256,7 +262,9 @@ STAGE PLANS:
               key expressions:
                     expr: _col0
                     type: string
-              sort order: +
+                    expr: _col1
+                    type: string
+              sort order: --
               tag: -1
               value expressions:
                     expr: _col0
@@ -289,11 +297,11 @@ STAGE PLANS:
     Stats-Aggr Operator
 
 
-PREHOOK: query: INSERT OVERWRITE TABLE destinTable SELECT one,two FROM sourceTable WHERE ds='2011-11-11' AND hr='11' order by one limit 5
+PREHOOK: query: INSERT OVERWRITE TABLE destinTable SELECT one,two FROM sourceTable WHERE ds='2011-11-11' AND hr='11' order by one desc, two desc limit 5
 PREHOOK: type: QUERY
 PREHOOK: Input: default@sourcetable@ds=2011-11-11/hr=11
 PREHOOK: Output: default@destintable
-POSTHOOK: query: INSERT OVERWRITE TABLE destinTable SELECT one,two FROM sourceTable WHERE ds='2011-11-11' AND hr='11' order by one limit 5
+POSTHOOK: query: INSERT OVERWRITE TABLE destinTable SELECT one,two FROM sourceTable WHERE ds='2011-11-11' AND hr='11' order by one desc, two desc limit 5
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@sourcetable@ds=2011-11-11/hr=11
 POSTHOOK: Output: default@destintable

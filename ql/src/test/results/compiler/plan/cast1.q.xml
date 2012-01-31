@@ -894,10 +894,10 @@
                   <void method="add"> 
                    <object class="org.apache.hadoop.hive.ql.plan.ExprNodeConstantDesc"> 
                     <void property="typeInfo"> 
-                     <object idref="PrimitiveTypeInfo0"/> 
+                     <object idref="PrimitiveTypeInfo1"/> 
                     </void> 
                     <void property="value"> 
-                     <int>86</int> 
+                     <double>86.0</double> 
                     </void> 
                    </object> 
                   </void> 

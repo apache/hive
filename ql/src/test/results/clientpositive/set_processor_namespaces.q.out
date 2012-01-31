@@ -23,7 +23,7 @@ STAGE PLANS:
             alias: src
             Filter Operator
               predicate:
-                  expr: (key = 5)
+                  expr: (key = 5.0)
                   type: boolean
               Select Operator
                 expressions:

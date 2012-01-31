@@ -24,11 +24,11 @@ STAGE PLANS:
             alias: src
             Filter Operator
               predicate:
-                  expr: (key = 100)
+                  expr: (key = 100.0)
                   type: boolean
               Filter Operator
                 predicate:
-                    expr: (key = 100)
+                    expr: (key = 100.0)
                     type: boolean
                 Select Operator
                   expressions:
@@ -90,11 +90,11 @@ STAGE PLANS:
             alias: src
             Filter Operator
               predicate:
-                  expr: (key = 100)
+                  expr: (key = 100.0)
                   type: boolean
               Filter Operator
                 predicate:
-                    expr: (key = 100)
+                    expr: (key = 100.0)
                     type: boolean
                 Select Operator
                   expressions:
@@ -164,11 +164,11 @@ STAGE PLANS:
             alias: src
             Filter Operator
               predicate:
-                  expr: (key = 100)
+                  expr: (key = 100.0)
                   type: boolean
               Filter Operator
                 predicate:
-                    expr: (key = 100)
+                    expr: (key = 100.0)
                     type: boolean
                 Select Operator
                   expressions:
@@ -181,7 +181,7 @@ STAGE PLANS:
                   outputColumnNames: _col0, _col2, _col3
                   Filter Operator
                     predicate:
-                        expr: (_col3 <= 3)
+                        expr: (_col3 <= 3.0)
                         type: boolean
                     Select Operator
                       expressions:
@@ -230,11 +230,11 @@ STAGE PLANS:
             alias: src
             Filter Operator
               predicate:
-                  expr: (key = 100)
+                  expr: (key = 100.0)
                   type: boolean
               Filter Operator
                 predicate:
-                    expr: (key = 100)
+                    expr: (key = 100.0)
                     type: boolean
                 Select Operator
                   expressions:
@@ -247,7 +247,7 @@ STAGE PLANS:
                   outputColumnNames: _col0, _col2, _col3
                   Filter Operator
                     predicate:
-                        expr: (_col3 <= 200)
+                        expr: (_col3 <= 200.0)
                         type: boolean
                     Select Operator
                       expressions:
@@ -296,7 +296,7 @@ STAGE PLANS:
             alias: src
             Filter Operator
               predicate:
-                  expr: (key = 100)
+                  expr: (key = 100.0)
                   type: boolean
               Select Operator
                 expressions:
@@ -358,7 +358,7 @@ STAGE PLANS:
             alias: src
             Filter Operator
               predicate:
-                  expr: (key = 100)
+                  expr: (key = 100.0)
                   type: boolean
               Select Operator
                 expressions:
@@ -424,7 +424,7 @@ STAGE PLANS:
             alias: src
             Filter Operator
               predicate:
-                  expr: (key = 100)
+                  expr: (key = 100.0)
                   type: boolean
               Select Operator
                 expressions:
@@ -437,7 +437,7 @@ STAGE PLANS:
                 outputColumnNames: _col0, _col2, _col3
                 Filter Operator
                   predicate:
-                      expr: (_col3 <= 3)
+                      expr: (_col3 <= 3.0)
                       type: boolean
                   Select Operator
                     expressions:
@@ -486,7 +486,7 @@ STAGE PLANS:
             alias: src
             Filter Operator
               predicate:
-                  expr: (key = 100)
+                  expr: (key = 100.0)
                   type: boolean
               Select Operator
                 expressions:
@@ -499,7 +499,7 @@ STAGE PLANS:
                 outputColumnNames: _col0, _col2, _col3
                 Filter Operator
                   predicate:
-                      expr: (_col3 <= 200)
+                      expr: (_col3 <= 200.0)
                       type: boolean
                   Select Operator
                     expressions:
