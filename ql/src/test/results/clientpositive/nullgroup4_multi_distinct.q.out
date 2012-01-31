@@ -20,7 +20,7 @@ STAGE PLANS:
             alias: x
             Filter Operator
               predicate:
-                  expr: (key = 9999)
+                  expr: (key = 9999.0)
                   type: boolean
               Select Operator
                 expressions:
@@ -116,7 +116,7 @@ STAGE PLANS:
             alias: x
             Filter Operator
               predicate:
-                  expr: (key = 9999)
+                  expr: (key = 9999.0)
                   type: boolean
               Select Operator
                 expressions:

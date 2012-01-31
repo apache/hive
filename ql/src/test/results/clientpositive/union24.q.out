@@ -69,7 +69,7 @@ STAGE PLANS:
             Filter Operator
               isSamplingPred: false
               predicate:
-                  expr: (key < 10)
+                  expr: (key < 10.0)
                   type: boolean
               Select Operator
                 expressions:
@@ -210,7 +210,7 @@ STAGE PLANS:
             Filter Operator
               isSamplingPred: false
               predicate:
-                  expr: (key < 10)
+                  expr: (key < 10.0)
                   type: boolean
               Select Operator
                 expressions:
@@ -247,7 +247,7 @@ STAGE PLANS:
             Filter Operator
               isSamplingPred: false
               predicate:
-                  expr: (key < 10)
+                  expr: (key < 10.0)
                   type: boolean
               Select Operator
                 expressions:
@@ -284,7 +284,7 @@ STAGE PLANS:
             Filter Operator
               isSamplingPred: false
               predicate:
-                  expr: (key < 10)
+                  expr: (key < 10.0)
                   type: boolean
               Select Operator
                 expressions:
@@ -580,7 +580,7 @@ STAGE PLANS:
             Filter Operator
               isSamplingPred: false
               predicate:
-                  expr: (key < 10)
+                  expr: (key < 10.0)
                   type: boolean
               Reduce Output Operator
                 key expressions:
@@ -601,7 +601,7 @@ STAGE PLANS:
             Filter Operator
               isSamplingPred: false
               predicate:
-                  expr: (key < 10)
+                  expr: (key < 10.0)
                   type: boolean
               Reduce Output Operator
                 key expressions:
@@ -769,7 +769,7 @@ STAGE PLANS:
             Filter Operator
               isSamplingPred: false
               predicate:
-                  expr: (key < 10)
+                  expr: (key < 10.0)
                   type: boolean
               Select Operator
                 expressions:
@@ -806,7 +806,7 @@ STAGE PLANS:
             Filter Operator
               isSamplingPred: false
               predicate:
-                  expr: (key < 10)
+                  expr: (key < 10.0)
                   type: boolean
               Select Operator
                 expressions:
@@ -1051,7 +1051,7 @@ STAGE PLANS:
             Filter Operator
               isSamplingPred: false
               predicate:
-                  expr: (key < 10)
+                  expr: (key < 10.0)
                   type: boolean
               Reduce Output Operator
                 key expressions:
@@ -1072,7 +1072,7 @@ STAGE PLANS:
             Filter Operator
               isSamplingPred: false
               predicate:
-                  expr: (key < 10)
+                  expr: (key < 10.0)
                   type: boolean
               Reduce Output Operator
                 key expressions:
@@ -1313,7 +1313,7 @@ STAGE PLANS:
             Filter Operator
               isSamplingPred: false
               predicate:
-                  expr: (key < 10)
+                  expr: (key < 10.0)
                   type: boolean
               Select Operator
                 expressions:
@@ -1350,7 +1350,7 @@ STAGE PLANS:
             Filter Operator
               isSamplingPred: false
               predicate:
-                  expr: (key < 10)
+                  expr: (key < 10.0)
                   type: boolean
               Select Operator
                 expressions:

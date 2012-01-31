@@ -104,7 +104,7 @@ STAGE PLANS:
             Filter Operator
               isSamplingPred: false
               predicate:
-                  expr: ((k0 > 50) and (k1 > 20))
+                  expr: ((k0 > 50.0) and (k1 > 20.0))
                   type: boolean
               Select Operator
                 expressions:
@@ -138,7 +138,7 @@ STAGE PLANS:
             Filter Operator
               isSamplingPred: false
               predicate:
-                  expr: (k1 > 20)
+                  expr: (k1 > 20.0)
                   type: boolean
               Map Join Operator
                 condition map:
@@ -341,7 +341,7 @@ STAGE PLANS:
             Filter Operator
               isSamplingPred: false
               predicate:
-                  expr: (k0 <= 50)
+                  expr: (k0 <= 50.0)
                   type: boolean
               Select Operator
                 expressions:

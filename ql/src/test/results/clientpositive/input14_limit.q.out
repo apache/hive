@@ -96,7 +96,7 @@ STAGE PLANS:
           Limit
             Filter Operator
               predicate:
-                  expr: (_col0 < 100)
+                  expr: (_col0 < 100.0)
                   type: boolean
               Select Operator
                 expressions:

@@ -515,7 +515,7 @@ STAGE PLANS:
             alias: b
             Filter Operator
               predicate:
-                  expr: (key < '15')
+                  expr: (key < 15)
                   type: boolean
               Select Operator
                 expressions:

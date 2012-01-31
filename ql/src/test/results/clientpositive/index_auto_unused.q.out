@@ -42,11 +42,11 @@ STAGE PLANS:
           TableScan
             alias: src
             filterExpr:
-                expr: ((key > 80) and (key < 100))
+                expr: ((key > 80.0) and (key < 100.0))
                 type: boolean
             Filter Operator
               predicate:
-                  expr: ((key > 80) and (key < 100))
+                  expr: ((key > 80.0) and (key < 100.0))
                   type: boolean
               Select Operator
                 expressions:
@@ -134,11 +134,11 @@ STAGE PLANS:
           TableScan
             alias: src
             filterExpr:
-                expr: ((key > 80) and (key < 100))
+                expr: ((key > 80.0) and (key < 100.0))
                 type: boolean
             Filter Operator
               predicate:
-                  expr: ((key > 80) and (key < 100))
+                  expr: ((key > 80.0) and (key < 100.0))
                   type: boolean
               Select Operator
                 expressions:
@@ -226,11 +226,11 @@ STAGE PLANS:
           TableScan
             alias: src
             filterExpr:
-                expr: ((key < 10) or (key > 480))
+                expr: ((key < 10.0) or (key > 480.0))
                 type: boolean
             Filter Operator
               predicate:
-                  expr: ((key < 10) or (key > 480))
+                  expr: ((key < 10.0) or (key > 480.0))
                   type: boolean
               Select Operator
                 expressions:
@@ -363,11 +363,11 @@ STAGE PLANS:
           TableScan
             alias: src
             filterExpr:
-                expr: ((key > 80) and (key < 100))
+                expr: ((key > 80.0) and (key < 100.0))
                 type: boolean
             Filter Operator
               predicate:
-                  expr: ((key > 80) and (key < 100))
+                  expr: ((key > 80.0) and (key < 100.0))
                   type: boolean
               Select Operator
                 expressions:
@@ -502,11 +502,11 @@ STAGE PLANS:
           TableScan
             alias: srcpart
             filterExpr:
-                expr: (((ds = '2008-04-09') and (hr = 12)) and (key < 10))
+                expr: (((ds = '2008-04-09') and (hr = 12.0)) and (key < 10.0))
                 type: boolean
             Filter Operator
               predicate:
-                  expr: (key < 10)
+                  expr: (key < 10.0)
                   type: boolean
               Select Operator
                 expressions:

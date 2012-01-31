@@ -11,20 +11,20 @@ load data local inpath '../data/files/kv3.txt' INTO TABLE db1.sourceTable partit
 CREATE TABLE db2.destinTable (one string,two string) PARTITIONED BY (ds string);
 
 EXPLAIN INSERT OVERWRITE TABLE db2.destinTable PARTITION (ds='2011-11-11')
-SELECT one,two FROM db1.sourceTable WHERE ds='2011-11-11' order by one limit 5;
+SELECT one,two FROM db1.sourceTable WHERE ds='2011-11-11' order by one desc, two desc limit 5;
 
 INSERT OVERWRITE TABLE db2.destinTable PARTITION (ds='2011-11-11')
-SELECT one,two FROM db1.sourceTable WHERE ds='2011-11-11' order by one limit 5;
+SELECT one,two FROM db1.sourceTable WHERE ds='2011-11-11' order by one desc, two desc limit 5;
 
-select one,two from db2.destinTable;
+select one,two from db2.destinTable order by one desc, two desc;
 
 EXPLAIN INSERT OVERWRITE TABLE db2.destinTable PARTITION (ds='2011-11-11')
-SELECT one,two FROM db1.sourceTable WHERE ds='2011-11-11' order by one limit 5;
+SELECT one,two FROM db1.sourceTable WHERE ds='2011-11-11' order by one desc, two desc limit 5;
 
 INSERT OVERWRITE TABLE db2.destinTable PARTITION (ds='2011-11-11')
-SELECT one,two FROM db1.sourceTable WHERE ds='2011-11-11' order by one limit 5;
+SELECT one,two FROM db1.sourceTable WHERE ds='2011-11-11' order by one desc, two desc limit 5;
 
-select one,two from db2.destinTable;
+select one,two from db2.destinTable order by one desc, two desc;
 
 drop table db2.destinTable;
 
