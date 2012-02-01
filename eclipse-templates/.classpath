@@ -15,6 +15,7 @@
   <classpathentry kind="lib" path="build/ivy/lib/default/commons-logging-@commons-logging.version@.jar"/>
   <classpathentry kind="lib" path="build/ivy/lib/default/commons-logging-api-@commons-logging-api.version@.jar"/>
   <classpathentry kind="lib" path="build/ivy/lib/default/derby-@derby.version@.jar"/>
+  <classpathentry kind="lib" path="build/ivy/lib/default/guava-@guava.version@.jar"/>
   <classpathentry kind="lib" path="build/ivy/lib/default/hbase-@hbase.version@.jar"/>
   <classpathentry kind="lib" path="build/ivy/lib/default/hbase-@hbase-test.version@-tests.jar"/>
   <classpathentry kind="lib" path="build/ivy/lib/default/libfb303-@libfb303.version@.jar"/>
@@ -37,6 +38,7 @@
   <classpathentry kind="lib" path="build/ivy/lib/default/slf4j-log4j12-@slf4j-log4j12.version@.jar"/>
   <classpathentry kind="lib" path="lib/javaewah-@javaewah.version@.jar"/>
   <classpathentry kind="lib" path="build/ivy/lib/default/mockito-all-@mockito-all.version@.jar"/>
+  <classpathentry kind="lib" path="build/builtins/hive-builtins-@HIVE_VERSION@.jar"/>
   <classpathentry kind="src" path="build/contrib/test/src"/>
   <classpathentry kind="src" path="build/metastore/gen/antlr/gen-java"/>
   <classpathentry kind="src" path="build/ql/test/src"/>
