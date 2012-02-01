@@ -18,6 +18,9 @@
 
 package org.apache.hadoop.hive.metastore;
 
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -48,6 +51,7 @@ import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
 import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.metastore.api.Type;
 import org.apache.hadoop.hive.metastore.api.UnknownDBException;
+import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.serde.Constants;
 import org.apache.hadoop.util.StringUtils;
 import org.apache.thrift.TException;
@@ -1934,5 +1938,105 @@ public abstract class TestHiveMetaStore extends TestCase {
       tbl = client.getTable(dbName, tableName);
     }
     return tbl;
+  }
+
+  /**
+   * Verify that if another  client, either a metastore Thrift server or  a Hive CLI instance
+   * renames a table recently created by this instance, and hence potentially in its cache, the
+   * current instance still sees the change.
+   * @throws Exception
+   */
+  public void testConcurrentMetastores() throws Exception {
+    String dbName = "concurrentdb";
+    String tblName = "concurrenttbl";
+    String renameTblName = "rename_concurrenttbl";
+
+    try {
+      client.dropTable(dbName, tblName);
+      silentDropDatabase(dbName);
+
+      Database db = new Database();
+      db.setName(dbName);
+      client.createDatabase(db);
+
+      ArrayList<FieldSchema> cols = new ArrayList<FieldSchema>(2);
+      cols.add(new FieldSchema("c1", Constants.STRING_TYPE_NAME, ""));
+      cols.add(new FieldSchema("c2", Constants.INT_TYPE_NAME, ""));
+
+      Table tbl = new Table();
+      tbl.setDbName(dbName);
+      tbl.setTableName(tblName);
+      StorageDescriptor sd = new StorageDescriptor();
+      tbl.setSd(sd);
+      sd.setCols(cols);
+      sd.setCompressed(false);
+      sd.setNumBuckets(1);
+      sd.setParameters(new HashMap<String, String>());
+      sd.getParameters().put("test_param_1", "Use this for comments etc");
+      sd.setBucketCols(new ArrayList<String>(2));
+      sd.getBucketCols().add("name");
+      sd.setSerdeInfo(new SerDeInfo());
+      sd.getSerdeInfo().setName(tbl.getTableName());
+      sd.getSerdeInfo().setParameters(new HashMap<String, String>());
+      sd.getSerdeInfo().getParameters().put(
+          org.apache.hadoop.hive.serde.Constants.SERIALIZATION_FORMAT, "1");
+
+      client.createTable(tbl);
+
+      // get the table from the client, verify the name is correct
+      Table tbl2 = client.getTable(dbName, tblName);
+
+      assertEquals("Client returned table with different name.", tbl2.getTableName(), tblName);
+
+      // Simulate renaming via another metastore Thrift server or another Hive CLI instance
+      updateTableNameInDB(tblName, renameTblName);
+
+      // get the table from the client again, verify the name has been updated
+      Table tbl3 = client.getTable(dbName, renameTblName);
+
+      assertEquals("Client returned table with different name after rename.",
+          tbl3.getTableName(), renameTblName);
+
+    } catch (Exception e) {
+      System.err.println(StringUtils.stringifyException(e));
+      System.err.println("testConcurrentMetastores() failed.");
+      throw e;
+    } finally {
+      silentDropDatabase(dbName);
+    }
+  }
+
+  /**
+   * This method simulates another Hive metastore renaming a table, by accessing the db and
+   * updating the name.
+   *
+   * Unfortunately, derby cannot be run in two different JVMs simultaneously, but the only way
+   * to rename without having it put in this client's cache is to run a metastore in a separate JVM,
+   * so this simulation is required.
+   * @param oldTableName
+   * @param newTableName
+   * @throws SQLException
+   */
+  private void updateTableNameInDB(String oldTableName, String newTableName) throws SQLException {
+    String connectionStr = HiveConf.getVar(hiveConf, HiveConf.ConfVars.METASTORECONNECTURLKEY);
+    int interval= HiveConf.getIntVar(hiveConf, HiveConf.ConfVars.METASTOREINTERVAL);
+    int attempts = HiveConf.getIntVar(hiveConf, HiveConf.ConfVars.METASTOREATTEMPTS);
+
+
+    Utilities.SQLCommand<Void> execUpdate = new Utilities.SQLCommand<Void>() {
+      @Override
+      public Void run(PreparedStatement stmt) throws SQLException {
+        stmt.executeUpdate();
+        return null;
+      }
+    };
+
+    Connection conn = Utilities.connectWithRetry(connectionStr, interval, attempts);
+
+    PreparedStatement updateStmt = Utilities.prepareWithRetry(conn,
+        "UPDATE TBLS SET tbl_name = '" + newTableName + "' WHERE tbl_name = '" + oldTableName + "'",
+        interval, attempts);
+
+    Utilities.executeWithRetry(execUpdate, updateStmt, interval, attempts);
   }
 }
