@@ -26,13 +26,10 @@ import java.util.Stack;
 import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.exec.ReduceSinkOperator;
 import org.apache.hadoop.hive.ql.exec.Task;
-import org.apache.hadoop.hive.ql.exec.UnionOperator;
 import org.apache.hadoop.hive.ql.lib.Node;
 import org.apache.hadoop.hive.ql.lib.NodeProcessor;
 import org.apache.hadoop.hive.ql.lib.NodeProcessorCtx;
 import org.apache.hadoop.hive.ql.optimizer.GenMRProcContext.GenMapRedCtx;
-import org.apache.hadoop.hive.ql.optimizer.unionproc.UnionProcContext;
-import org.apache.hadoop.hive.ql.parse.ParseContext;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.plan.MapredWork;
 
@@ -63,16 +60,14 @@ public class GenMRRedSink3 implements NodeProcessor {
     Map<Operator<? extends Serializable>, GenMapRedCtx> mapCurrCtx = ctx
         .getMapCurrCtx();
     GenMapRedCtx mapredCtx = mapCurrCtx.get(ctx.getCurrUnionOp());
+
     Task<? extends Serializable> unionTask = null;
     if(mapredCtx != null) {
       unionTask = mapredCtx.getCurrTask();
     } else {
-      Operator<? extends Serializable> topOp = ctx.getCurrTopOp();
-      if(topOp == null) {
-        return null;
-      }
       unionTask = ctx.getCurrTask();
     }
+
 
     MapredWork plan = (MapredWork) unionTask.getWork();
     HashMap<Operator<? extends Serializable>, Task<? extends Serializable>> opTaskMap = ctx
@@ -85,7 +80,7 @@ public class GenMRRedSink3 implements NodeProcessor {
     if (reducerTask == null) {
       // When the reducer is encountered for the first time
       if (plan.getReducer() == null) {
-        GenMapRedUtils.initUnionPlan(op, ctx);
+        GenMapRedUtils.initUnionPlan(op, ctx, unionTask);
         // When union is followed by a multi-table insert
       } else {
         GenMapRedUtils.splitPlan(op, ctx);
@@ -94,7 +89,7 @@ public class GenMRRedSink3 implements NodeProcessor {
       // The union is already initialized. However, the union is walked from
       // another input
       // initUnionPlan is idempotent
-      GenMapRedUtils.initUnionPlan(op, ctx);
+      GenMapRedUtils.initUnionPlan(op, ctx, unionTask);
     } else {
       GenMapRedUtils.joinUnionPlan(ctx, unionTask, reducerTask, false);
       ctx.setCurrTask(reducerTask);
