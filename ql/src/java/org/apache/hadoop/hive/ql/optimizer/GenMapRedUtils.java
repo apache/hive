@@ -293,16 +293,15 @@ public final class GenMapRedUtils {
    *          processing context
    */
   public static void initUnionPlan(ReduceSinkOperator op,
-      GenMRProcContext opProcCtx) throws SemanticException {
+      GenMRProcContext opProcCtx,
+      Task<? extends Serializable> unionTask) throws SemanticException {
     Operator<? extends Serializable> reducer = op.getChildOperators().get(0);
-    Map<Operator<? extends Serializable>, GenMapRedCtx> mapCurrCtx = opProcCtx.getMapCurrCtx();
-    GenMapRedCtx mapredCtx = mapCurrCtx.get(op.getParentOperators().get(0));
-    Task<? extends Serializable> currTask = mapredCtx.getCurrTask();
-    MapredWork plan = (MapredWork) currTask.getWork();
+
+    MapredWork plan = (MapredWork) unionTask.getWork();
     HashMap<Operator<? extends Serializable>, Task<? extends Serializable>> opTaskMap =
       opProcCtx.getOpTaskMap();
 
-    opTaskMap.put(reducer, currTask);
+    opTaskMap.put(reducer, unionTask);
     plan.setReducer(reducer);
     ReduceSinkDesc desc = op.getConf();
 
@@ -312,7 +311,7 @@ public final class GenMapRedUtils {
       plan.setNeedsTagging(true);
     }
 
-    initUnionPlan(opProcCtx, currTask, false);
+    initUnionPlan(opProcCtx, unionTask, false);
   }
 
   private static void setUnionPlan(GenMRProcContext opProcCtx,
@@ -366,10 +365,13 @@ public final class GenMapRedUtils {
       throws SemanticException {
     MapredWork plan = (MapredWork) currTask.getWork();
     UnionOperator currUnionOp = opProcCtx.getCurrUnionOp();
-    assert currUnionOp != null;
-    GenMRUnionCtx uCtx = opProcCtx.getUnionTask(currUnionOp);
-    assert uCtx != null;
-    setUnionPlan(opProcCtx, local, plan, uCtx, false);
+    // In case of lateral views followed by a join, the same tree
+    // can be traversed more than one
+    if (currUnionOp != null) {
+      GenMRUnionCtx uCtx = opProcCtx.getUnionTask(currUnionOp);
+      assert uCtx != null;
+      setUnionPlan(opProcCtx, local, plan, uCtx, false);
+    }
   }
 
   /*
