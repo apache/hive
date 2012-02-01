@@ -233,6 +233,10 @@
     </fail>
   </target>
 
+  <target name="ivy-clean-cache" depends="ivy-init-antlib"
+          description="Clean the Ivy cache">
+    <ivy:cleancache />
+  </target>
 
   <target name="init" depends="ivy-init-antlib,deploy-ant-tasks">
     <echo message="Project: ${ant.project.name}"/>
@@ -372,6 +376,9 @@
       <fileset dir="${build.dir.hive}" excludes="ivy/**/ivy*.jar"/>
     </delete>
   </target>
+
+  <target name="very-clean" unless="offline" depends="ivy-clean-cache,clean"
+          description="Clean build artifacts and flush Ivy cache" />
 
   <!-- ====================================================== -->
   <!-- Generate some of the test data.                        -->
