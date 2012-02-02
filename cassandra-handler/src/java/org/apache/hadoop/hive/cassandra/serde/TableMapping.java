@@ -37,7 +37,7 @@ public abstract class TableMapping {
   TableMapping(String colFamily, List<String> columnNames, SerDeParameters serdeParams) {
     this.cassandraColumnFamily = colFamily;
     this.cassandraColumnNames = columnNames;
-    this.iKey = cassandraColumnNames.indexOf(StandardColumnSerDe.CASSANDRA_KEY_COLUMN);
+    this.iKey = cassandraColumnNames.indexOf(AbstractColumnSerDe.CASSANDRA_KEY_COLUMN);
 
     separators = serdeParams.getSeparators();
     escaped = serdeParams.isEscaped();

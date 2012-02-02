@@ -18,6 +18,7 @@ import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector.Category;
 import org.apache.hadoop.hive.serde2.typeinfo.MapTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
+import org.apache.hadoop.io.BytesWritable;
 
 public class CassandraColumnSerDe extends AbstractColumnSerDe {
   public static final String CASSANDRA_VALIDATOR_TYPE = "cassandra.cf.validatorType"; // validator type
@@ -39,7 +40,13 @@ public class CassandraColumnSerDe extends AbstractColumnSerDe {
       throws SerDeException {
     cassandraColumnFamily = getCassandraColumnFamily(tbl);
     cassandraColumnNames = parseOrCreateColumnMapping(tbl);
-    iKey = cassandraColumnNames.indexOf(StandardColumnSerDe.CASSANDRA_KEY_COLUMN);
+
+    cassandraColumnNamesBytes = new ArrayList<BytesWritable>();
+    for (String columnName : cassandraColumnNames) {
+      cassandraColumnNamesBytes.add(new BytesWritable(columnName.getBytes()));
+    }
+
+    iKey = cassandraColumnNames.indexOf(AbstractColumnSerDe.CASSANDRA_KEY_COLUMN);
 
     serdeParams = LazySimpleSerDe.initSerdeParams(job, tbl, serdeName);
 

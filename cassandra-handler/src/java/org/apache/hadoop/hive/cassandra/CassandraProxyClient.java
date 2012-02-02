@@ -38,7 +38,6 @@ public class CassandraProxyClient implements java.lang.reflect.InvocationHandler
    */
   private final String host;
   private final int port;
-  private final boolean framed;
 
   /**
    * The last successfully connected server.
@@ -89,7 +88,6 @@ public class CassandraProxyClient implements java.lang.reflect.InvocationHandler
       throws CassandraException {
     this.host = host;
     this.port = port;
-    this.framed = framed;
     this.lastUsedHost = host;
     this.lastPoolCheck = 0;
 
@@ -134,7 +132,7 @@ public class CassandraProxyClient implements java.lang.reflect.InvocationHandler
    */
   private CassandraClientHolder createConnection(String host) throws CassandraException {
     TSocket socket = new TSocket(host, port);
-    TTransport trans = framed ? new TFramedTransport(socket) : socket;
+    TTransport trans = new TFramedTransport(socket);
 
     CassandraClientHolder ch = new CassandraClientHolder(trans);
 
@@ -382,7 +380,7 @@ public class CassandraProxyClient implements java.lang.reflect.InvocationHandler
     private List<String> getAllServers(List<TokenRange> input) {
       HashMap<String, Integer> map = new HashMap<String, Integer>(input.size());
       for (TokenRange thisRange : input) {
-        List<String> servers = thisRange.endpoints;
+        List<String> servers = thisRange.rpc_endpoints;
         for (String newServer : servers) {
           map.put(newServer, new Integer(1));
         }

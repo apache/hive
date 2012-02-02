@@ -10,7 +10,6 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.hive.cassandra.input.HiveCassandraStandardRowResult;
 import org.apache.hadoop.hive.cassandra.input.LazyCassandraRow;
 import org.apache.hadoop.hive.cassandra.output.CassandraPut;
 import org.apache.hadoop.hive.serde.Constants;
@@ -19,14 +18,16 @@ import org.apache.hadoop.hive.serde2.SerDeException;
 import org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe.SerDeParameters;
 import org.apache.hadoop.hive.serde2.lazy.objectinspector.LazySimpleStructObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
+import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector.Category;
 import org.apache.hadoop.hive.serde2.objectinspector.StructField;
 import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
-import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector.Category;
 import org.apache.hadoop.hive.serde2.typeinfo.StructTypeInfo;
+import org.apache.hadoop.io.BytesWritable;
+import org.apache.hadoop.io.SortedMapWritable;
 import org.apache.hadoop.io.Writable;
 
 public abstract class AbstractColumnSerDe implements SerDe {
-  public static final Log LOG = LogFactory.getLog(StandardColumnSerDe.class.getName());
+  public static final Log LOG = LogFactory.getLog(AbstractColumnSerDe.class.getName());
 
   public static final String CASSANDRA_KEYSPACE_NAME = "cassandra.ks.name"; // keyspace
   public static final String CASSANDRA_KEYSPACE_REPFACTOR = "cassandra.ks.repfactor"; //keyspace replication factor
@@ -75,7 +76,7 @@ public abstract class AbstractColumnSerDe implements SerDe {
   protected SerDeParameters serdeParams;
   protected LazyCassandraRow cachedCassandraRow;
   protected String cassandraColumnFamily;
-  protected List<byte[]> cassandraColumnNamesBytes;
+  protected List<BytesWritable> cassandraColumnNamesBytes;
 
   @Override
   public void initialize(Configuration conf, Properties tbl) throws SerDeException {
@@ -110,12 +111,12 @@ public abstract class AbstractColumnSerDe implements SerDe {
    */
   @Override
   public Object deserialize(Writable w) throws SerDeException {
-    if (!(w instanceof HiveCassandraStandardRowResult)) {
-      throw new SerDeException(getClass().getName() + ": expects Cassandra Row Result");
+    if (!(w instanceof SortedMapWritable)) {
+      throw new SerDeException(getClass().getName() + ": expects SortedMapWritable not "+w.getClass().getName());
     }
 
-    HiveCassandraStandardRowResult crr = (HiveCassandraStandardRowResult) w;
-    cachedCassandraRow.init(crr, cassandraColumnNames, cassandraColumnNamesBytes);
+    SortedMapWritable columnMap = (SortedMapWritable) w;
+    cachedCassandraRow.init(columnMap, cassandraColumnNames, cassandraColumnNamesBytes);
     return cachedCassandraRow;
   }
 

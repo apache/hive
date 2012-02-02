@@ -8,8 +8,8 @@ import org.apache.cassandra.thrift.NotFoundException;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.cassandra.input.HiveCassandraStandardColumnInputFormat;
 import org.apache.hadoop.hive.cassandra.output.HiveCassandraOutputFormat;
+import org.apache.hadoop.hive.cassandra.serde.AbstractColumnSerDe;
 import org.apache.hadoop.hive.cassandra.serde.CassandraColumnSerDe;
-import org.apache.hadoop.hive.cassandra.serde.StandardColumnSerDe;
 import org.apache.hadoop.hive.metastore.HiveMetaHook;
 import org.apache.hadoop.hive.metastore.MetaStoreUtils;
 import org.apache.hadoop.hive.metastore.api.Constants;
@@ -34,68 +34,68 @@ public class CassandraStorageHandler
     String tableName = tableProperties.getProperty(Constants.META_TABLE_NAME);
     String dbName = tableProperties.getProperty(Constants.META_TABLE_DB);
 
-    String keyspace = tableProperties.getProperty(StandardColumnSerDe.CASSANDRA_KEYSPACE_NAME);
-    String columnFamily = tableProperties.getProperty(StandardColumnSerDe.CASSANDRA_CF_NAME);
+    String keyspace = tableProperties.getProperty(AbstractColumnSerDe.CASSANDRA_KEYSPACE_NAME);
+    String columnFamily = tableProperties.getProperty(AbstractColumnSerDe.CASSANDRA_CF_NAME);
 
     //Identify Keyspace
     if (keyspace == null) {
         keyspace = dbName;
     }
 
-    jobProperties.put(StandardColumnSerDe.CASSANDRA_KEYSPACE_NAME, keyspace);
+    jobProperties.put(AbstractColumnSerDe.CASSANDRA_KEYSPACE_NAME, keyspace);
 
     //Identify ColumnFamily
     if (columnFamily == null) {
         columnFamily = tableName;
     }
 
-    jobProperties.put(StandardColumnSerDe.CASSANDRA_CF_NAME, columnFamily);
+    jobProperties.put(AbstractColumnSerDe.CASSANDRA_CF_NAME, columnFamily);
 
     //If no column mapping has been configured, we should create the default column mapping.
-    String columnInfo = tableProperties.getProperty(StandardColumnSerDe.CASSANDRA_COL_MAPPING);
+    String columnInfo = tableProperties.getProperty(AbstractColumnSerDe.CASSANDRA_COL_MAPPING);
     if(columnInfo == null) {
-      columnInfo = StandardColumnSerDe.createColumnMappingString(
+      columnInfo = AbstractColumnSerDe.createColumnMappingString(
         tableProperties.getProperty(org.apache.hadoop.hive.serde.Constants.LIST_COLUMNS));
     }
 
-    jobProperties.put(StandardColumnSerDe.CASSANDRA_COL_MAPPING, columnInfo);
+    jobProperties.put(AbstractColumnSerDe.CASSANDRA_COL_MAPPING, columnInfo);
 
-    jobProperties.put(StandardColumnSerDe.CASSANDRA_HOST,
-      tableProperties.getProperty(StandardColumnSerDe.CASSANDRA_HOST, StandardColumnSerDe.DEFAULT_CASSANDRA_HOST));
+    jobProperties.put(AbstractColumnSerDe.CASSANDRA_HOST,
+      tableProperties.getProperty(AbstractColumnSerDe.CASSANDRA_HOST, AbstractColumnSerDe.DEFAULT_CASSANDRA_HOST));
 
-    jobProperties.put(StandardColumnSerDe.CASSANDRA_PORT,
-      tableProperties.getProperty(StandardColumnSerDe.CASSANDRA_PORT, StandardColumnSerDe.DEFAULT_CASSANDRA_PORT));
+    jobProperties.put(AbstractColumnSerDe.CASSANDRA_PORT,
+      tableProperties.getProperty(AbstractColumnSerDe.CASSANDRA_PORT, AbstractColumnSerDe.DEFAULT_CASSANDRA_PORT));
 
-    jobProperties.put(StandardColumnSerDe.CASSANDRA_PARTITIONER,
-      tableProperties.getProperty(StandardColumnSerDe.CASSANDRA_PARTITIONER,
+    jobProperties.put(AbstractColumnSerDe.CASSANDRA_PARTITIONER,
+      tableProperties.getProperty(AbstractColumnSerDe.CASSANDRA_PARTITIONER,
         "org.apache.cassandra.dht.RandomPartitioner"));
 
-    jobProperties.put(StandardColumnSerDe.CASSANDRA_THRIFT_MODE,
-      tableProperties.getProperty(StandardColumnSerDe.CASSANDRA_THRIFT_MODE, "framed"));
+    jobProperties.put(AbstractColumnSerDe.CASSANDRA_THRIFT_MODE,
+      tableProperties.getProperty(AbstractColumnSerDe.CASSANDRA_THRIFT_MODE, "framed"));
 
-    jobProperties.put(StandardColumnSerDe.CASSANDRA_CONSISTENCY_LEVEL,
-      tableProperties.getProperty(StandardColumnSerDe.CASSANDRA_CONSISTENCY_LEVEL,
-        StandardColumnSerDe.DEFAULT_CONSISTENCY_LEVEL));
+    jobProperties.put(AbstractColumnSerDe.CASSANDRA_CONSISTENCY_LEVEL,
+      tableProperties.getProperty(AbstractColumnSerDe.CASSANDRA_CONSISTENCY_LEVEL,
+          AbstractColumnSerDe.DEFAULT_CONSISTENCY_LEVEL));
 
-    jobProperties.put(StandardColumnSerDe.CASSANDRA_RANGE_BATCH_SIZE,
-      tableProperties.getProperty(StandardColumnSerDe.CASSANDRA_RANGE_BATCH_SIZE,
-        Integer.toString(StandardColumnSerDe.DEFAULT_RANGE_BATCH_SIZE)));
+    jobProperties.put(AbstractColumnSerDe.CASSANDRA_RANGE_BATCH_SIZE,
+      tableProperties.getProperty(AbstractColumnSerDe.CASSANDRA_RANGE_BATCH_SIZE,
+        Integer.toString(AbstractColumnSerDe.DEFAULT_RANGE_BATCH_SIZE)));
 
-    jobProperties.put(StandardColumnSerDe.CASSANDRA_SLICE_PREDICATE_SIZE,
-      tableProperties.getProperty(StandardColumnSerDe.CASSANDRA_SLICE_PREDICATE_SIZE,
-        Integer.toString(StandardColumnSerDe.DEFAULT_SLICE_PREDICATE_SIZE)));
+    jobProperties.put(AbstractColumnSerDe.CASSANDRA_SLICE_PREDICATE_SIZE,
+      tableProperties.getProperty(AbstractColumnSerDe.CASSANDRA_SLICE_PREDICATE_SIZE,
+        Integer.toString(AbstractColumnSerDe.DEFAULT_SLICE_PREDICATE_SIZE)));
 
-    jobProperties.put(StandardColumnSerDe.CASSANDRA_SPLIT_SIZE,
-      tableProperties.getProperty(StandardColumnSerDe.CASSANDRA_SPLIT_SIZE,
-          Integer.toString(StandardColumnSerDe.DEFAULT_SPLIT_SIZE)));
+    jobProperties.put(AbstractColumnSerDe.CASSANDRA_SPLIT_SIZE,
+      tableProperties.getProperty(AbstractColumnSerDe.CASSANDRA_SPLIT_SIZE,
+          Integer.toString(AbstractColumnSerDe.DEFAULT_SPLIT_SIZE)));
 
 
-    jobProperties.put(StandardColumnSerDe.CASSANDRA_BATCH_MUTATION_SIZE,
-        tableProperties.getProperty(StandardColumnSerDe.CASSANDRA_BATCH_MUTATION_SIZE,
-            Integer.toString(StandardColumnSerDe.DEFAULT_BATCH_MUTATION_SIZE)));
+    jobProperties.put(AbstractColumnSerDe.CASSANDRA_BATCH_MUTATION_SIZE,
+        tableProperties.getProperty(AbstractColumnSerDe.CASSANDRA_BATCH_MUTATION_SIZE,
+            Integer.toString(AbstractColumnSerDe.DEFAULT_BATCH_MUTATION_SIZE)));
 
-    jobProperties.put(StandardColumnSerDe.CASSANDRA_CF_COUNTERS,
-            tableProperties.getProperty(StandardColumnSerDe.CASSANDRA_CF_COUNTERS, "false"));
+    jobProperties.put(AbstractColumnSerDe.CASSANDRA_CF_COUNTERS,
+            tableProperties.getProperty(AbstractColumnSerDe.CASSANDRA_CF_COUNTERS, "false"));
   }
 
   @Override

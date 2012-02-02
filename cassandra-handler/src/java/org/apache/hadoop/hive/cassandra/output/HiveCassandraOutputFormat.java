@@ -9,7 +9,7 @@ import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.cassandra.CassandraException;
 import org.apache.hadoop.hive.cassandra.CassandraProxyClient;
-import org.apache.hadoop.hive.cassandra.serde.StandardColumnSerDe;
+import org.apache.hadoop.hive.cassandra.serde.AbstractColumnSerDe;
 import org.apache.hadoop.hive.ql.exec.FileSinkOperator.RecordWriter;
 import org.apache.hadoop.hive.ql.io.HiveOutputFormat;
 import org.apache.hadoop.io.Text;
@@ -29,9 +29,9 @@ public class HiveCassandraOutputFormat implements HiveOutputFormat<Text, Cassand
       Class<? extends Writable> valueClass, boolean isCompressed, Properties tableProperties,
       Progressable progress) throws IOException {
 
-    final String cassandraKeySpace = jc.get(StandardColumnSerDe.CASSANDRA_KEYSPACE_NAME);
-    final String cassandraHost = jc.get(StandardColumnSerDe.CASSANDRA_HOST);
-    final int cassandraPort = Integer.parseInt(jc.get(StandardColumnSerDe.CASSANDRA_PORT));
+    final String cassandraKeySpace = jc.get(AbstractColumnSerDe.CASSANDRA_KEYSPACE_NAME);
+    final String cassandraHost = jc.get(AbstractColumnSerDe.CASSANDRA_HOST);
+    final int cassandraPort = Integer.parseInt(jc.get(AbstractColumnSerDe.CASSANDRA_PORT));
 
     final CassandraProxyClient client;
     try {

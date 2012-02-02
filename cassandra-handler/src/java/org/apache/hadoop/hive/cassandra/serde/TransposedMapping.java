@@ -82,13 +82,13 @@ public class TransposedMapping extends TableMapping {
     int subColumnName = -1;
     for (int i = 0; i < cassandraColumnNames.size(); i++) {
       String str = cassandraColumnNames.get(i);
-      if (str.equals(StandardColumnSerDe.CASSANDRA_KEY_COLUMN)) {
+      if (str.equals(AbstractColumnSerDe.CASSANDRA_KEY_COLUMN)) {
         key = i;
-      } else if  (str.equals(StandardColumnSerDe.CASSANDRA_COLUMN_COLUMN)) {
+      } else if  (str.equals(AbstractColumnSerDe.CASSANDRA_COLUMN_COLUMN)) {
         columnName = i;
-      } else if (str.equals(StandardColumnSerDe.CASSANDRA_VALUE_COLUMN)) {
+      } else if (str.equals(AbstractColumnSerDe.CASSANDRA_VALUE_COLUMN)) {
         columnValue = i;
-      } else if (str.equals(StandardColumnSerDe.CASSANDRA_SUBCOLUMN_COLUMN)) {
+      } else if (str.equals(AbstractColumnSerDe.CASSANDRA_SUBCOLUMN_COLUMN)) {
         subColumnName = i;
       } else {
         throw new SerDeException("An expected mapping appears in the column mapping " + str);

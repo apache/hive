@@ -4,8 +4,9 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.hive.cassandra.serde.CassandraLazyFactory;
-import org.apache.hadoop.hive.cassandra.serde.StandardColumnSerDe;
 import org.apache.hadoop.hive.serde2.lazy.ByteArrayRef;
 import org.apache.hadoop.hive.serde2.lazy.LazyObject;
 import org.apache.hadoop.hive.serde2.lazy.LazyStruct;
@@ -14,21 +15,30 @@ import org.apache.hadoop.hive.serde2.lazy.objectinspector.LazySimpleStructObject
 import org.apache.hadoop.hive.serde2.objectinspector.StructField;
 import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
 import org.apache.hadoop.io.BytesWritable;
-import org.apache.hadoop.io.Writable;
+import org.apache.hadoop.io.SortedMapWritable;
 
 public class LazyCassandraRow extends LazyStruct {
+  static final Log LOG = LogFactory.getLog(LazyCassandraRow.class);
+
   private List<String> cassandraColumns;
-  private HiveCassandraStandardRowResult rowResult;
+  private List<BytesWritable> cassandraColumnsBB;
+  private SortedMapWritable columnMap;
   private ArrayList<Object> cachedList;
 
   public LazyCassandraRow(LazySimpleStructObjectInspector oi) {
     super(oi);
   }
 
-  public void init(HiveCassandraStandardRowResult crr, List<String> cassandraColumns,
-      List<byte[]> cassandraColumnsBytes) {
-    this.rowResult = crr;
+  public void init(SortedMapWritable columnMap, List<String> cassandraColumns, List<BytesWritable> cassandraColumnsBB) {
+    this.columnMap = columnMap;
     this.cassandraColumns = cassandraColumns;
+    this.cassandraColumnsBB = cassandraColumnsBB;
+
+    // these should always be equal
+    if (cassandraColumns.size() != cassandraColumnsBB.size()) {
+      throw new IllegalStateException();
+    }
+
     setParsed(false);
   }
 
@@ -69,23 +79,23 @@ public class LazyCassandraRow extends LazyStruct {
       getFieldInited()[fieldID] = true;
       ByteArrayRef ref = null;
       String columnName = cassandraColumns.get(fieldID);
+      BytesWritable columnNameBB = cassandraColumnsBB.get(fieldID);
 
       LazyObject obj = getFields()[fieldID];
-      if (columnName.equals(StandardColumnSerDe.CASSANDRA_KEY_COLUMN)) {
-        // user is asking for key column
-        ref = new ByteArrayRef();
-        ref.setData(rowResult.getKey().getBytes());
-      } else if (columnName.endsWith(":")) {
+      if (columnName.endsWith(":")) {
         // user wants all columns as a map
         // TODO this into a LazyCassandraCellMap
         return null;
       } else {
         // user wants the value of a single column
-        Writable res = rowResult.getValue().get(new BytesWritable(columnName.getBytes()));
-        HiveIColumn hiveIColumn = (HiveIColumn) res;
-        if (hiveIColumn != null) {
+
+        BytesWritable columnValue = (BytesWritable) columnMap.get(columnNameBB);
+
+        LOG.info("Looking for "+columnName+" value "+columnValue);
+
+        if (columnValue != null) {
           ref = new ByteArrayRef();
-          ref.setData(hiveIColumn.value().array());
+          ref.setData(columnValue.getBytes());
         } else {
           return null;
         }
