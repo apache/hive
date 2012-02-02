@@ -15,21 +15,21 @@ import org.apache.hadoop.hive.serde2.lazy.objectinspector.LazySimpleStructObject
 import org.apache.hadoop.hive.serde2.objectinspector.StructField;
 import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
 import org.apache.hadoop.io.BytesWritable;
-import org.apache.hadoop.io.SortedMapWritable;
+import org.apache.hadoop.io.MapWritable;
 
 public class LazyCassandraRow extends LazyStruct {
   static final Log LOG = LogFactory.getLog(LazyCassandraRow.class);
 
   private List<String> cassandraColumns;
   private List<BytesWritable> cassandraColumnsBB;
-  private SortedMapWritable columnMap;
+  private MapWritable columnMap;
   private ArrayList<Object> cachedList;
 
   public LazyCassandraRow(LazySimpleStructObjectInspector oi) {
     super(oi);
   }
 
-  public void init(SortedMapWritable columnMap, List<String> cassandraColumns, List<BytesWritable> cassandraColumnsBB) {
+  public void init(MapWritable columnMap, List<String> cassandraColumns, List<BytesWritable> cassandraColumnsBB) {
     this.columnMap = columnMap;
     this.cassandraColumns = cassandraColumns;
     this.cassandraColumnsBB = cassandraColumnsBB;

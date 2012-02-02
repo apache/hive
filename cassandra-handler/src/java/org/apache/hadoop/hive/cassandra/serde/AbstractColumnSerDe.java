@@ -23,7 +23,7 @@ import org.apache.hadoop.hive.serde2.objectinspector.StructField;
 import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
 import org.apache.hadoop.hive.serde2.typeinfo.StructTypeInfo;
 import org.apache.hadoop.io.BytesWritable;
-import org.apache.hadoop.io.SortedMapWritable;
+import org.apache.hadoop.io.MapWritable;
 import org.apache.hadoop.io.Writable;
 
 public abstract class AbstractColumnSerDe implements SerDe {
@@ -111,11 +111,11 @@ public abstract class AbstractColumnSerDe implements SerDe {
    */
   @Override
   public Object deserialize(Writable w) throws SerDeException {
-    if (!(w instanceof SortedMapWritable)) {
-      throw new SerDeException(getClass().getName() + ": expects SortedMapWritable not "+w.getClass().getName());
+    if (!(w instanceof MapWritable)) {
+      throw new SerDeException(getClass().getName() + ": expects MapWritable not "+w.getClass().getName());
     }
 
-    SortedMapWritable columnMap = (SortedMapWritable) w;
+    MapWritable columnMap = (MapWritable) w;
     cachedCassandraRow.init(columnMap, cassandraColumnNames, cassandraColumnNamesBytes);
     return cachedCassandraRow;
   }
