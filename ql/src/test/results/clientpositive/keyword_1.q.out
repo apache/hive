@@ -5,8 +5,10 @@ POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: default@test_user
 PREHOOK: query: grant select on table test_user to user hive_test
 PREHOOK: type: GRANT_PRIVILEGE
+PREHOOK: Output: default@test_user
 POSTHOOK: query: grant select on table test_user to user hive_test
 POSTHOOK: type: GRANT_PRIVILEGE
+POSTHOOK: Output: default@test_user
 PREHOOK: query: explain select user from test_user
 PREHOOK: type: QUERY
 POSTHOOK: query: explain select user from test_user
@@ -52,7 +54,7 @@ table	test_user
 principalName	hive_test	
 principalType	USER	
 privilege	Select	
-grantTime	1297384137	
+grantTime	1298925820	
 grantor	hive_test_user	
 PREHOOK: query: drop table test_user
 PREHOOK: type: DROPTABLE
@@ -69,8 +71,10 @@ POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: default@test_user
 PREHOOK: query: grant select on table test_user to user hive_test
 PREHOOK: type: GRANT_PRIVILEGE
+PREHOOK: Output: default@test_user
 POSTHOOK: query: grant select on table test_user to user hive_test
 POSTHOOK: type: GRANT_PRIVILEGE
+POSTHOOK: Output: default@test_user
 PREHOOK: query: explain select role from test_user
 PREHOOK: type: QUERY
 POSTHOOK: query: explain select role from test_user
@@ -116,7 +120,7 @@ table	test_user
 principalName	hive_test	
 principalType	USER	
 privilege	Select	
-grantTime	1297384137	
+grantTime	1298925821	
 grantor	hive_test_user	
 PREHOOK: query: drop table test_user
 PREHOOK: type: DROPTABLE

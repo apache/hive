@@ -36,4 +36,8 @@ public interface StructField {
    */
   ObjectInspector getFieldObjectInspector();
 
+  /**
+   * Get the comment for the field. May be null if no comment provided.
+   */
+  String getFieldComment();
 }

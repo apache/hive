@@ -99,6 +99,7 @@ public class HiveHistory {
     TASK_HADOOP_ID,
     TASK_HADOOP_PROGRESS,
     TASK_COUNTERS,
+    TASK_NUM_MAPPERS,
     TASK_NUM_REDUCERS,
     ROWS_INSERTED
   };
@@ -298,7 +299,7 @@ public class HiveHistory {
   }
 
   /**
-   * Called at the start of job Driver.run().
+   * Called at the start of job Driver.execute().
    */
   public void startQuery(String cmd, String id) {
     SessionState ss = SessionState.get();
@@ -424,6 +425,7 @@ public class HiveHistory {
       return;
     }
     log(RecordTypes.QueryEnd, ji.hm);
+    queryInfoMap.remove(queryId);
   }
 
   /**
@@ -464,6 +466,7 @@ public class HiveHistory {
       return;
     }
     log(RecordTypes.TaskEnd, ti.hm);
+    taskInfoMap.remove(id);
   }
 
   /**

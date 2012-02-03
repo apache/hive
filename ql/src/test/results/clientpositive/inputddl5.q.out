@@ -9,6 +9,7 @@ POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: default@INPUTDDL5
 PREHOOK: query: LOAD DATA LOCAL INPATH '../data/files/kv4.txt' INTO TABLE INPUTDDL5
 PREHOOK: type: LOAD
+PREHOOK: Output: default@inputddl5
 POSTHOOK: query: LOAD DATA LOCAL INPATH '../data/files/kv4.txt' INTO TABLE INPUTDDL5
 POSTHOOK: type: LOAD
 POSTHOOK: Output: default@inputddl5
@@ -20,18 +21,18 @@ name	string
 PREHOOK: query: SELECT INPUTDDL5.name from INPUTDDL5
 PREHOOK: type: QUERY
 PREHOOK: Input: default@inputddl5
-PREHOOK: Output: file:/tmp/thiruvel/hive_2010-10-11_05-10-24_142_4717365799469321057/-mr-10000
+PREHOOK: Output: file:/var/folders/67/67R3POPtF90VG63KSmCbcU++F0U/-Tmp-/krishnak/hive_2011-03-20_23-58-30_728_894285207860816152/-mr-10000
 POSTHOOK: query: SELECT INPUTDDL5.name from INPUTDDL5
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@inputddl5
-POSTHOOK: Output: file:/tmp/thiruvel/hive_2010-10-11_05-10-24_142_4717365799469321057/-mr-10000
+POSTHOOK: Output: file:/var/folders/67/67R3POPtF90VG63KSmCbcU++F0U/-Tmp-/krishnak/hive_2011-03-20_23-58-30_728_894285207860816152/-mr-10000
 邵铮
 PREHOOK: query: SELECT count(1) FROM INPUTDDL5 WHERE INPUTDDL5.name = _UTF-8 0xE982B5E993AE
 PREHOOK: type: QUERY
 PREHOOK: Input: default@inputddl5
-PREHOOK: Output: file:/tmp/thiruvel/hive_2010-10-11_05-10-26_576_1899173500377396904/-mr-10000
+PREHOOK: Output: file:/var/folders/67/67R3POPtF90VG63KSmCbcU++F0U/-Tmp-/krishnak/hive_2011-03-20_23-58-36_495_4298522533051256735/-mr-10000
 POSTHOOK: query: SELECT count(1) FROM INPUTDDL5 WHERE INPUTDDL5.name = _UTF-8 0xE982B5E993AE
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@inputddl5
-POSTHOOK: Output: file:/tmp/thiruvel/hive_2010-10-11_05-10-26_576_1899173500377396904/-mr-10000
+POSTHOOK: Output: file:/var/folders/67/67R3POPtF90VG63KSmCbcU++F0U/-Tmp-/krishnak/hive_2011-03-20_23-58-36_495_4298522533051256735/-mr-10000
 1

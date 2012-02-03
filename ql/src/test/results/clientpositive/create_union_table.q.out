@@ -33,6 +33,7 @@ POSTHOOK: Output: default@abc
 PREHOOK: query: load data local inpath '../data/files/union_input.txt'
 overwrite into table abc
 PREHOOK: type: LOAD
+PREHOOK: Output: default@abc
 POSTHOOK: query: load data local inpath '../data/files/union_input.txt'
 overwrite into table abc
 POSTHOOK: type: LOAD
@@ -40,11 +41,11 @@ POSTHOOK: Output: default@abc
 PREHOOK: query: SELECT * FROM abc
 PREHOOK: type: QUERY
 PREHOOK: Input: default@abc
-PREHOOK: Output: file:/tmp/sdong/hive_2011-02-10_01-42-58_078_5395878302131383145/-mr-10000
+PREHOOK: Output: file:/var/folders/67/67R3POPtF90VG63KSmCbcU++F0U/-Tmp-/krishnak/hive_2011-03-20_22-51-08_865_3659808777493422003/-mr-10000
 POSTHOOK: query: SELECT * FROM abc
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@abc
-POSTHOOK: Output: file:/tmp/sdong/hive_2011-02-10_01-42-58_078_5395878302131383145/-mr-10000
+POSTHOOK: Output: file:/var/folders/67/67R3POPtF90VG63KSmCbcU++F0U/-Tmp-/krishnak/hive_2011-03-20_22-51-08_865_3659808777493422003/-mr-10000
 {0:1}	{"a":1,"b":"one","c":"one"}
 {1:2.0}	{"a":2,"b":"two","c":"two"}
 {2:["three","four"]}	{"a":3,"b":"three","c":"four"}

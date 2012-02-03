@@ -1,0 +1,172 @@
+PREHOOK: query: create table src_rc_merge_test(key int, value string) stored as rcfile
+PREHOOK: type: CREATETABLE
+POSTHOOK: query: create table src_rc_merge_test(key int, value string) stored as rcfile
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: default@src_rc_merge_test
+PREHOOK: query: load data local inpath '../data/files/smbbucket_1.rc' into table src_rc_merge_test
+PREHOOK: type: LOAD
+PREHOOK: Output: default@src_rc_merge_test
+POSTHOOK: query: load data local inpath '../data/files/smbbucket_1.rc' into table src_rc_merge_test
+POSTHOOK: type: LOAD
+POSTHOOK: Output: default@src_rc_merge_test
+PREHOOK: query: create table tgt_rc_merge_test(key int, value string) stored as rcfile
+PREHOOK: type: CREATETABLE
+POSTHOOK: query: create table tgt_rc_merge_test(key int, value string) stored as rcfile
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: default@tgt_rc_merge_test
+PREHOOK: query: insert into table tgt_rc_merge_test select * from src_rc_merge_test
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src_rc_merge_test
+PREHOOK: Output: default@tgt_rc_merge_test
+POSTHOOK: query: insert into table tgt_rc_merge_test select * from src_rc_merge_test
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src_rc_merge_test
+POSTHOOK: Output: default@tgt_rc_merge_test
+POSTHOOK: Lineage: tgt_rc_merge_test.key SIMPLE [(src_rc_merge_test)src_rc_merge_test.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: tgt_rc_merge_test.value SIMPLE [(src_rc_merge_test)src_rc_merge_test.FieldSchema(name:value, type:string, comment:null), ]
+PREHOOK: query: insert into table tgt_rc_merge_test select * from src_rc_merge_test
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src_rc_merge_test
+PREHOOK: Output: default@tgt_rc_merge_test
+POSTHOOK: query: insert into table tgt_rc_merge_test select * from src_rc_merge_test
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src_rc_merge_test
+POSTHOOK: Output: default@tgt_rc_merge_test
+POSTHOOK: Lineage: tgt_rc_merge_test.key SIMPLE [(src_rc_merge_test)src_rc_merge_test.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: tgt_rc_merge_test.key SIMPLE [(src_rc_merge_test)src_rc_merge_test.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: tgt_rc_merge_test.value SIMPLE [(src_rc_merge_test)src_rc_merge_test.FieldSchema(name:value, type:string, comment:null), ]
+POSTHOOK: Lineage: tgt_rc_merge_test.value SIMPLE [(src_rc_merge_test)src_rc_merge_test.FieldSchema(name:value, type:string, comment:null), ]
+PREHOOK: query: show table extended like `tgt_rc_merge_test`
+PREHOOK: type: SHOW_TABLESTATUS
+POSTHOOK: query: show table extended like `tgt_rc_merge_test`
+POSTHOOK: type: SHOW_TABLESTATUS
+POSTHOOK: Lineage: tgt_rc_merge_test.key SIMPLE [(src_rc_merge_test)src_rc_merge_test.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: tgt_rc_merge_test.key SIMPLE [(src_rc_merge_test)src_rc_merge_test.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: tgt_rc_merge_test.value SIMPLE [(src_rc_merge_test)src_rc_merge_test.FieldSchema(name:value, type:string, comment:null), ]
+POSTHOOK: Lineage: tgt_rc_merge_test.value SIMPLE [(src_rc_merge_test)src_rc_merge_test.FieldSchema(name:value, type:string, comment:null), ]
+tableName:tgt_rc_merge_test
+owner:krishnak
+location:pfile:/Users/krishnak/Projects/hdp/sources/hive-git-apache/build/ql/test/data/warehouse/tgt_rc_merge_test
+inputformat:org.apache.hadoop.hive.ql.io.RCFileInputFormat
+outputformat:org.apache.hadoop.hive.ql.io.RCFileOutputFormat
+columns:struct columns { i32 key, string value}
+partitioned:false
+partitionColumns:
+totalNumberFiles:2
+totalFileSize:532
+maxFileSize:266
+minFileSize:266
+lastAccessTime:0
+lastUpdateTime:1314766542000
+
+PREHOOK: query: select count(1) from tgt_rc_merge_test
+PREHOOK: type: QUERY
+PREHOOK: Input: default@tgt_rc_merge_test
+PREHOOK: Output: file:/var/folders/67/67R3POPtF90VG63KSmCbcU++F0U/-Tmp-/krishnak/hive_2011-08-30_21-55-44_261_3643692219591280612/-mr-10000
+POSTHOOK: query: select count(1) from tgt_rc_merge_test
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tgt_rc_merge_test
+POSTHOOK: Output: file:/var/folders/67/67R3POPtF90VG63KSmCbcU++F0U/-Tmp-/krishnak/hive_2011-08-30_21-55-44_261_3643692219591280612/-mr-10000
+POSTHOOK: Lineage: tgt_rc_merge_test.key SIMPLE [(src_rc_merge_test)src_rc_merge_test.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: tgt_rc_merge_test.key SIMPLE [(src_rc_merge_test)src_rc_merge_test.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: tgt_rc_merge_test.value SIMPLE [(src_rc_merge_test)src_rc_merge_test.FieldSchema(name:value, type:string, comment:null), ]
+POSTHOOK: Lineage: tgt_rc_merge_test.value SIMPLE [(src_rc_merge_test)src_rc_merge_test.FieldSchema(name:value, type:string, comment:null), ]
+10
+PREHOOK: query: select sum(hash(key)), sum(hash(value)) from tgt_rc_merge_test
+PREHOOK: type: QUERY
+PREHOOK: Input: default@tgt_rc_merge_test
+PREHOOK: Output: file:/var/folders/67/67R3POPtF90VG63KSmCbcU++F0U/-Tmp-/krishnak/hive_2011-08-30_21-56-06_300_2950525310351863426/-mr-10000
+POSTHOOK: query: select sum(hash(key)), sum(hash(value)) from tgt_rc_merge_test
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tgt_rc_merge_test
+POSTHOOK: Output: file:/var/folders/67/67R3POPtF90VG63KSmCbcU++F0U/-Tmp-/krishnak/hive_2011-08-30_21-56-06_300_2950525310351863426/-mr-10000
+POSTHOOK: Lineage: tgt_rc_merge_test.key SIMPLE [(src_rc_merge_test)src_rc_merge_test.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: tgt_rc_merge_test.key SIMPLE [(src_rc_merge_test)src_rc_merge_test.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: tgt_rc_merge_test.value SIMPLE [(src_rc_merge_test)src_rc_merge_test.FieldSchema(name:value, type:string, comment:null), ]
+POSTHOOK: Lineage: tgt_rc_merge_test.value SIMPLE [(src_rc_merge_test)src_rc_merge_test.FieldSchema(name:value, type:string, comment:null), ]
+46	-751895388
+PREHOOK: query: alter table tgt_rc_merge_test concatenate
+PREHOOK: type: ALTER_TABLE_MERGE
+PREHOOK: Input: default@tgt_rc_merge_test
+PREHOOK: Output: default@tgt_rc_merge_test
+POSTHOOK: query: alter table tgt_rc_merge_test concatenate
+POSTHOOK: type: ALTER_TABLE_MERGE
+POSTHOOK: Input: default@tgt_rc_merge_test
+POSTHOOK: Output: default@tgt_rc_merge_test
+POSTHOOK: Lineage: tgt_rc_merge_test.key SIMPLE [(src_rc_merge_test)src_rc_merge_test.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: tgt_rc_merge_test.key SIMPLE [(src_rc_merge_test)src_rc_merge_test.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: tgt_rc_merge_test.value SIMPLE [(src_rc_merge_test)src_rc_merge_test.FieldSchema(name:value, type:string, comment:null), ]
+POSTHOOK: Lineage: tgt_rc_merge_test.value SIMPLE [(src_rc_merge_test)src_rc_merge_test.FieldSchema(name:value, type:string, comment:null), ]
+PREHOOK: query: show table extended like `tgt_rc_merge_test`
+PREHOOK: type: SHOW_TABLESTATUS
+POSTHOOK: query: show table extended like `tgt_rc_merge_test`
+POSTHOOK: type: SHOW_TABLESTATUS
+POSTHOOK: Lineage: tgt_rc_merge_test.key SIMPLE [(src_rc_merge_test)src_rc_merge_test.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: tgt_rc_merge_test.key SIMPLE [(src_rc_merge_test)src_rc_merge_test.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: tgt_rc_merge_test.value SIMPLE [(src_rc_merge_test)src_rc_merge_test.FieldSchema(name:value, type:string, comment:null), ]
+POSTHOOK: Lineage: tgt_rc_merge_test.value SIMPLE [(src_rc_merge_test)src_rc_merge_test.FieldSchema(name:value, type:string, comment:null), ]
+tableName:tgt_rc_merge_test
+owner:krishnak
+location:pfile:/Users/krishnak/Projects/hdp/sources/hive-git-apache/build/ql/test/data/warehouse/tgt_rc_merge_test
+inputformat:org.apache.hadoop.hive.ql.io.RCFileInputFormat
+outputformat:org.apache.hadoop.hive.ql.io.RCFileOutputFormat
+columns:struct columns { i32 key, string value}
+partitioned:false
+partitionColumns:
+totalNumberFiles:1
+totalFileSize:338
+maxFileSize:338
+minFileSize:338
+lastAccessTime:0
+lastUpdateTime:1314766576000
+
+PREHOOK: query: select count(1) from tgt_rc_merge_test
+PREHOOK: type: QUERY
+PREHOOK: Input: default@tgt_rc_merge_test
+PREHOOK: Output: file:/var/folders/67/67R3POPtF90VG63KSmCbcU++F0U/-Tmp-/krishnak/hive_2011-08-30_21-56-18_639_4261902784336213762/-mr-10000
+POSTHOOK: query: select count(1) from tgt_rc_merge_test
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tgt_rc_merge_test
+POSTHOOK: Output: file:/var/folders/67/67R3POPtF90VG63KSmCbcU++F0U/-Tmp-/krishnak/hive_2011-08-30_21-56-18_639_4261902784336213762/-mr-10000
+POSTHOOK: Lineage: tgt_rc_merge_test.key SIMPLE [(src_rc_merge_test)src_rc_merge_test.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: tgt_rc_merge_test.key SIMPLE [(src_rc_merge_test)src_rc_merge_test.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: tgt_rc_merge_test.value SIMPLE [(src_rc_merge_test)src_rc_merge_test.FieldSchema(name:value, type:string, comment:null), ]
+POSTHOOK: Lineage: tgt_rc_merge_test.value SIMPLE [(src_rc_merge_test)src_rc_merge_test.FieldSchema(name:value, type:string, comment:null), ]
+10
+PREHOOK: query: select sum(hash(key)), sum(hash(value)) from tgt_rc_merge_test
+PREHOOK: type: QUERY
+PREHOOK: Input: default@tgt_rc_merge_test
+PREHOOK: Output: file:/var/folders/67/67R3POPtF90VG63KSmCbcU++F0U/-Tmp-/krishnak/hive_2011-08-30_21-56-28_955_7239249873259452326/-mr-10000
+POSTHOOK: query: select sum(hash(key)), sum(hash(value)) from tgt_rc_merge_test
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tgt_rc_merge_test
+POSTHOOK: Output: file:/var/folders/67/67R3POPtF90VG63KSmCbcU++F0U/-Tmp-/krishnak/hive_2011-08-30_21-56-28_955_7239249873259452326/-mr-10000
+POSTHOOK: Lineage: tgt_rc_merge_test.key SIMPLE [(src_rc_merge_test)src_rc_merge_test.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: tgt_rc_merge_test.key SIMPLE [(src_rc_merge_test)src_rc_merge_test.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: tgt_rc_merge_test.value SIMPLE [(src_rc_merge_test)src_rc_merge_test.FieldSchema(name:value, type:string, comment:null), ]
+POSTHOOK: Lineage: tgt_rc_merge_test.value SIMPLE [(src_rc_merge_test)src_rc_merge_test.FieldSchema(name:value, type:string, comment:null), ]
+46	-751895388
+PREHOOK: query: drop table src_rc_merge_test
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@src_rc_merge_test
+PREHOOK: Output: default@src_rc_merge_test
+POSTHOOK: query: drop table src_rc_merge_test
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@src_rc_merge_test
+POSTHOOK: Output: default@src_rc_merge_test
+POSTHOOK: Lineage: tgt_rc_merge_test.key SIMPLE [(src_rc_merge_test)src_rc_merge_test.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: tgt_rc_merge_test.key SIMPLE [(src_rc_merge_test)src_rc_merge_test.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: tgt_rc_merge_test.value SIMPLE [(src_rc_merge_test)src_rc_merge_test.FieldSchema(name:value, type:string, comment:null), ]
+POSTHOOK: Lineage: tgt_rc_merge_test.value SIMPLE [(src_rc_merge_test)src_rc_merge_test.FieldSchema(name:value, type:string, comment:null), ]
+PREHOOK: query: drop table tgt_rc_merge_test
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@tgt_rc_merge_test
+PREHOOK: Output: default@tgt_rc_merge_test
+POSTHOOK: query: drop table tgt_rc_merge_test
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@tgt_rc_merge_test
+POSTHOOK: Output: default@tgt_rc_merge_test
+POSTHOOK: Lineage: tgt_rc_merge_test.key SIMPLE [(src_rc_merge_test)src_rc_merge_test.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: tgt_rc_merge_test.key SIMPLE [(src_rc_merge_test)src_rc_merge_test.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: tgt_rc_merge_test.value SIMPLE [(src_rc_merge_test)src_rc_merge_test.FieldSchema(name:value, type:string, comment:null), ]
+POSTHOOK: Lineage: tgt_rc_merge_test.value SIMPLE [(src_rc_merge_test)src_rc_merge_test.FieldSchema(name:value, type:string, comment:null), ]

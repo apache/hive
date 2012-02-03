@@ -23,6 +23,7 @@ import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -36,6 +37,7 @@ import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.Order;
 import org.apache.hadoop.hive.ql.Context;
+import org.apache.hadoop.hive.ql.QueryProperties;
 import org.apache.hadoop.hive.ql.exec.FetchTask;
 import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.exec.Utilities;
@@ -71,6 +73,7 @@ public abstract class BaseSemanticAnalyzer {
 
   protected Context ctx;
   protected HashMap<String, String> idToTableNameMap;
+  protected QueryProperties queryProperties;
 
   public static int HIVE_COLUMN_ORDER_ASC = 1;
   public static int HIVE_COLUMN_ORDER_DESC = 0;
@@ -136,8 +139,8 @@ public abstract class BaseSemanticAnalyzer {
               .getText());
           if (!lineDelim.equals("\n")
               && !lineDelim.equals("10")) {
-            throw new SemanticException(
-                ErrorMsg.LINES_TERMINATED_BY_NON_NEWLINE.getMsg());
+            throw new SemanticException(SemanticAnalyzer.generateErrorMessage(rowChild,
+                ErrorMsg.LINES_TERMINATED_BY_NON_NEWLINE.getMsg()));
           }
           break;
         default:
@@ -173,7 +176,9 @@ public abstract class BaseSemanticAnalyzer {
       case HiveParser.TOK_TBLRCFILE:
         inputFormat = RCFILE_INPUT;
         outputFormat = RCFILE_OUTPUT;
-        shared.serde = COLUMNAR_SERDE;
+        if (shared.serde == null) {
+          shared.serde = COLUMNAR_SERDE;
+        }
         storageFormat = true;
         break;
       case HiveParser.TOK_TABLEFILEFORMAT:
@@ -295,7 +300,7 @@ public abstract class BaseSemanticAnalyzer {
           if (val > 127) {
             val = val - 256;
           }
-          bArray[j++] = new Integer(val).byteValue();
+          bArray[j++] = (byte)val;
         }
 
         String res = new String(bArray, charSetName);
@@ -555,17 +560,18 @@ public abstract class BaseSemanticAnalyzer {
     if (children <= 0) {
       throw new SemanticException("empty struct not allowed.");
     }
+    StringBuilder buffer = new StringBuilder(typeStr);
     for (int i = 0; i < children; i++) {
       ASTNode child = (ASTNode) typeNode.getChild(i);
-      typeStr += unescapeIdentifier(child.getChild(0).getText()) + ":";
-      typeStr += getTypeStringFromAST((ASTNode) child.getChild(1));
+      buffer.append(unescapeIdentifier(child.getChild(0).getText())).append(":");
+      buffer.append(getTypeStringFromAST((ASTNode) child.getChild(1)));
       if (i < children - 1) {
-        typeStr += ",";
+        buffer.append(",");
       }
     }
 
-    typeStr += ">";
-    return typeStr;
+    buffer.append(">");
+    return buffer.toString();
   }
 
   private static String getUnionTypeStringFromAST(ASTNode typeNode)
@@ -576,13 +582,15 @@ public abstract class BaseSemanticAnalyzer {
     if (children <= 0) {
       throw new SemanticException("empty union not allowed.");
     }
+    StringBuilder buffer = new StringBuilder(typeStr);
     for (int i = 0; i < children; i++) {
-      typeStr += getTypeStringFromAST((ASTNode) typeNode.getChild(i));
+      buffer.append(getTypeStringFromAST((ASTNode) typeNode.getChild(i)));
       if (i < children - 1) {
-        typeStr += ",";
+        buffer.append(",");
       }
     }
-    typeStr += ">";
+    buffer.append(">");
+    typeStr = buffer.toString();
     return typeStr;
   }
 
@@ -602,8 +610,17 @@ public abstract class BaseSemanticAnalyzer {
 
     public tableSpec(Hive db, HiveConf conf, ASTNode ast)
         throws SemanticException {
+      this(db, conf, ast, true, false);
+    }
 
-      assert (ast.getToken().getType() == HiveParser.TOK_TAB || ast.getToken().getType() == HiveParser.TOK_TABTYPE);
+    public tableSpec(Hive db, HiveConf conf, ASTNode ast,
+        boolean allowDynamicPartitionsSpec, boolean allowPartialPartitionsSpec)
+        throws SemanticException {
+
+      assert (ast.getToken().getType() == HiveParser.TOK_TAB
+          || ast.getToken().getType() == HiveParser.TOK_TABLE_PARTITION
+          || ast.getToken().getType() == HiveParser.TOK_TABTYPE
+          || ast.getToken().getType() == HiveParser.TOK_CREATETABLE);
       int childIndex = 0;
       numDynParts = 0;
 
@@ -615,8 +632,9 @@ public abstract class BaseSemanticAnalyzer {
           tableName = conf.getVar(HiveConf.ConfVars.HIVETESTMODEPREFIX)
               + tableName;
         }
-
-        tableHandle = db.getTable(tableName);
+        if (ast.getToken().getType() != HiveParser.TOK_CREATETABLE) {
+          tableHandle = db.getTable(tableName);
+        }
       } catch (InvalidTableException ite) {
         throw new SemanticException(ErrorMsg.INVALID_TABLE.getMsg(ast
             .getChild(0)), ite);
@@ -626,7 +644,7 @@ public abstract class BaseSemanticAnalyzer {
       }
 
       // get partition metadata if partition specified
-      if (ast.getChildCount() == 2) {
+      if (ast.getChildCount() == 2 && ast.getToken().getType() != HiveParser.TOK_CREATETABLE) {
         childIndex = 1;
         ASTNode partspec = (ASTNode) ast.getChild(1);
         partitions = new ArrayList<Partition>();
@@ -637,7 +655,12 @@ public abstract class BaseSemanticAnalyzer {
           String val = null;
           String colName = unescapeIdentifier(partspec_val.getChild(0).getText().toLowerCase());
           if (partspec_val.getChildCount() < 2) { // DP in the form of T partition (ds, hr)
-            ++numDynParts;
+            if (allowDynamicPartitionsSpec) {
+              ++numDynParts;
+            } else {
+              throw new SemanticException(ErrorMsg.INVALID_PARTITION
+                                                       .getMsg(" - Dynamic partitions not allowed"));
+            }
           } else { // in the form of T partition (ds="2010-03-03")
             val = stripQuotes(partspec_val.getChild(1).getText());
           }
@@ -655,33 +678,50 @@ public abstract class BaseSemanticAnalyzer {
               conf.getVar(HiveConf.ConfVars.DYNAMICPARTITIONINGMODE).equalsIgnoreCase("strict")) {
             throw new SemanticException(ErrorMsg.DYNAMIC_PARTITION_STRICT_MODE.getMsg());
           }
-        	for (FieldSchema fs: parts) {
-        	  if (partSpec.get(fs.getName().toLowerCase()) == null) {
-        	    if (numStaPart > 0) { // found a DP, but there exists ST as subpartition
-        	      throw new SemanticException(
-        	          ErrorMsg.PARTITION_DYN_STA_ORDER.getMsg(ast.getChild(childIndex)));
-        	    }
-        	    break;
-          	} else {
-          	  --numStaPart;
-          	}
-        	}
+
+          // check the partitions in partSpec be the same as defined in table schema
+          if (partSpec.keySet().size() != parts.size()) {
+            ErrorPartSpec(partSpec, parts);
+          }
+          Iterator<String> itrPsKeys = partSpec.keySet().iterator();
+          for (FieldSchema fs: parts) {
+            if (!itrPsKeys.next().toLowerCase().equals(fs.getName().toLowerCase())) {
+              ErrorPartSpec(partSpec, parts);
+            }
+          }
+
+          // check if static partition appear after dynamic partitions
+          for (FieldSchema fs: parts) {
+            if (partSpec.get(fs.getName().toLowerCase()) == null) {
+              if (numStaPart > 0) { // found a DP, but there exists ST as subpartition
+                throw new SemanticException(
+                    ErrorMsg.PARTITION_DYN_STA_ORDER.getMsg(ast.getChild(childIndex)));
+              }
+              break;
+            } else {
+              --numStaPart;
+            }
+          }
           partHandle = null;
           specType = SpecType.DYNAMIC_PARTITION;
         } else {
           try {
-            // this doesn't create partition.
-            partHandle = db.getPartition(tableHandle, partSpec, false);
-            if (partHandle == null) {
-              // if partSpec doesn't exists in DB, return a delegate one
-              // and the actual partition is created in MoveTask
-              partHandle = new Partition(tableHandle, partSpec, null);
+            if (allowPartialPartitionsSpec) {
+              partitions = db.getPartitions(tableHandle, partSpec);
             } else {
-              partitions.add(partHandle);
+              // this doesn't create partition.
+              partHandle = db.getPartition(tableHandle, partSpec, false);
+              if (partHandle == null) {
+                // if partSpec doesn't exists in DB, return a delegate one
+                // and the actual partition is created in MoveTask
+                partHandle = new Partition(tableHandle, partSpec, null);
+              } else {
+                partitions.add(partHandle);
+              }
             }
           } catch (HiveException e) {
             throw new SemanticException(
-                ErrorMsg.INVALID_PARTITION.getMsg(ast.getChild(childIndex)));
+                ErrorMsg.INVALID_PARTITION.getMsg(ast.getChild(childIndex)), e);
           }
           specType = SpecType.STATIC_PARTITION;
         }
@@ -706,6 +746,7 @@ public abstract class BaseSemanticAnalyzer {
         return tableHandle.toString();
       }
     }
+
   }
 
   /**
@@ -736,8 +777,79 @@ public abstract class BaseSemanticAnalyzer {
     }
     return partSpec;
   }
+  
+  /**
+   * Checks if given specification is proper specification for prefix of
+   * partition cols, for table partitioned by ds, hr, min valid ones are
+   * (ds='2008-04-08'), (ds='2008-04-08', hr='12'), (ds='2008-04-08', hr='12', min='30')
+   * invalid one is for example (ds='2008-04-08', min='30')
+   * @param spec specification key-value map
+   * @return true if the specification is prefix; never returns false, but throws
+   * @throws HiveException
+   */
+  final public boolean isValidPrefixSpec(Table tTable, Map<String, String> spec)
+ throws HiveException {
+
+    // TODO - types need to be checked.
+    List<FieldSchema> partCols = tTable.getPartitionKeys();
+    if (partCols == null || (partCols.size() == 0)) {
+      if (spec != null) {
+        throw new HiveException(
+            "table is not partitioned but partition spec exists: "
+                + spec);
+      } else {
+        return true;
+      }
+    }
+
+    if (spec == null) {
+      throw new HiveException("partition spec is not specified");
+    }
+    
+    Iterator<String> itrPsKeys = spec.keySet().iterator();
+    for (FieldSchema fs: partCols) {
+      if(!itrPsKeys.hasNext()) {
+        break;
+      }
+      if (!itrPsKeys.next().toLowerCase().equals(
+              fs.getName().toLowerCase())) {
+        ErrorPartSpec(spec, partCols);
+      }
+    }
+    
+    if(itrPsKeys.hasNext()) {
+      ErrorPartSpec(spec, partCols);
+    }
+
+    return true;
+  }
+  
+  private static void ErrorPartSpec(Map<String, String> partSpec,
+      List<FieldSchema> parts) throws SemanticException {
+    StringBuilder sb =
+        new StringBuilder(
+            "Partition columns in the table schema are: (");
+    for (FieldSchema fs : parts) {
+      sb.append(fs.getName()).append(", ");
+    }
+    sb.setLength(sb.length() - 2); // remove the last ", "
+    sb.append("), while the partitions specified in the query are: (");
+
+    Iterator<String> itrPsKeys = partSpec.keySet().iterator();
+    while (itrPsKeys.hasNext()) {
+      sb.append(itrPsKeys.next()).append(", ");
+    }
+    sb.setLength(sb.length() - 2); // remove the last ", "
+    sb.append(").");
+    throw new SemanticException(ErrorMsg.PARTSPEC_DIFFER_FROM_SCHEMA
+        .getMsg(sb.toString()));
+  }
 
   public Hive getDb() {
     return db;
+  }
+
+  public QueryProperties getQueryProperties() {
+    return queryProperties;
   }
 }

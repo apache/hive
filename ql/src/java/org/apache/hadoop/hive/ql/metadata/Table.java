@@ -38,6 +38,7 @@ import org.apache.hadoop.hive.metastore.MetaStoreUtils;
 import org.apache.hadoop.hive.metastore.ProtectMode;
 import org.apache.hadoop.hive.metastore.TableType;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
+import org.apache.hadoop.hive.metastore.api.Index;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.Order;
 import org.apache.hadoop.hive.metastore.api.SerDeInfo;
@@ -163,7 +164,7 @@ public class Table implements Serializable {
           "at least one column must be specified for the table");
     }
     if (!isView()) {
-      if (null == getDeserializer()) {
+      if (null == getDeserializerFromMetaStore()) {
         throw new HiveException("must specify a non-null serDe");
       }
       if (null == getInputFormatClass()) {
@@ -249,15 +250,19 @@ public class Table implements Serializable {
 
   final public Deserializer getDeserializer() {
     if (deserializer == null) {
-      try {
-        deserializer = MetaStoreUtils.getDeserializer(Hive.get().getConf(), tTable);
-      } catch (MetaException e) {
-        throw new RuntimeException(e);
-      } catch (HiveException e) {
-        throw new RuntimeException(e);
-      }
+      deserializer = getDeserializerFromMetaStore();
     }
     return deserializer;
+  }
+
+  private Deserializer getDeserializerFromMetaStore() {
+    try {
+      return MetaStoreUtils.getDeserializer(Hive.get().getConf(), tTable);
+    } catch (MetaException e) {
+      throw new RuntimeException(e);
+    } catch (HiveException e) {
+      throw new RuntimeException(e);
+    }
   }
 
   public HiveStorageHandler getStorageHandler() {
@@ -339,8 +344,9 @@ public class Table implements Serializable {
 
     if ((spec == null) || (spec.size() != partCols.size())) {
       throw new HiveException(
-          "table is partitioned but partition spec is not specified or tab: "
-              + spec);
+          "table is partitioned but partition spec is not specified or"
+          + " does not fully match table partitioning: "
+          + spec);
     }
 
     for (FieldSchema field : partCols) {
@@ -709,6 +715,13 @@ public class Table implements Serializable {
   }
 
   /**
+   * @return whether this table is actually an index table
+   */
+  public boolean isIndexTable() {
+    return TableType.INDEX_TABLE.equals(getTableType());
+  }
+
+  /**
    * Creates a partition name -> value spec map object
    *
    * @param tp
@@ -787,7 +800,7 @@ public class Table implements Serializable {
    */
   public boolean canDrop() {
     ProtectMode mode = getProtectMode();
-    return (!mode.noDrop && !mode.offline && !mode.readOnly);
+    return (!mode.noDrop && !mode.offline && !mode.readOnly && !mode.noDropCascade);
   }
 
   /**
@@ -804,5 +817,14 @@ public class Table implements Serializable {
    */
   public String getCompleteName() {
     return getDbName() + "@" + getTableName();
+  }
+
+  /**
+   * @return List containing Indexes names if there are indexes on this table
+   * @throws HiveException
+   **/
+  public List<Index> getAllIndexes(short max) throws HiveException {
+    Hive hive = Hive.get();
+    return hive.getIndexes(getTTable().getDbName(), getTTable().getTableName(), max);
   }
 };

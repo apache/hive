@@ -1,1 +1,1 @@
-SELECT COALESCE(1, 2.0) FROM src LIMIT 1;
+SELECT COALESCE(array('a', 'b'), '2.0') FROM src LIMIT 1; 

@@ -5,17 +5,18 @@ POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: default@myinput1
 PREHOOK: query: LOAD DATA LOCAL INPATH '../data/files/in1.txt' INTO TABLE myinput1
 PREHOOK: type: LOAD
+PREHOOK: Output: default@myinput1
 POSTHOOK: query: LOAD DATA LOCAL INPATH '../data/files/in1.txt' INTO TABLE myinput1
 POSTHOOK: type: LOAD
 POSTHOOK: Output: default@myinput1
 PREHOOK: query: SELECT * FROM myinput1 a JOIN myinput1 b
 PREHOOK: type: QUERY
 PREHOOK: Input: default@myinput1
-PREHOOK: Output: file:/tmp/nzhang/hive_2010-08-29_16-27-22_535_8073264088889427871/-mr-10000
+PREHOOK: Output: file:/tmp/krishnak/hive_2011-03-21_03-53-31_683_8641177538651570201/-mr-10000
 POSTHOOK: query: SELECT * FROM myinput1 a JOIN myinput1 b
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@myinput1
-POSTHOOK: Output: file:/tmp/nzhang/hive_2010-08-29_16-27-22_535_8073264088889427871/-mr-10000
+POSTHOOK: Output: file:/tmp/krishnak/hive_2011-03-21_03-53-31_683_8641177538651570201/-mr-10000
 NULL	35	NULL	35
 NULL	35	48	NULL
 NULL	35	100	100
@@ -28,11 +29,11 @@ NULL	35	100	100
 PREHOOK: query: SELECT * FROM myinput1 a LEFT OUTER JOIN myinput1 b
 PREHOOK: type: QUERY
 PREHOOK: Input: default@myinput1
-PREHOOK: Output: file:/tmp/nzhang/hive_2010-08-29_16-27-26_889_4246797839557923754/-mr-10000
+PREHOOK: Output: file:/tmp/krishnak/hive_2011-03-21_03-53-34_705_7891360827662899707/-mr-10000
 POSTHOOK: query: SELECT * FROM myinput1 a LEFT OUTER JOIN myinput1 b
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@myinput1
-POSTHOOK: Output: file:/tmp/nzhang/hive_2010-08-29_16-27-26_889_4246797839557923754/-mr-10000
+POSTHOOK: Output: file:/tmp/krishnak/hive_2011-03-21_03-53-34_705_7891360827662899707/-mr-10000
 NULL	35	NULL	35
 NULL	35	48	NULL
 NULL	35	100	100
@@ -45,11 +46,11 @@ NULL	35	100	100
 PREHOOK: query: SELECT * FROM myinput1 a RIGHT OUTER JOIN myinput1 b
 PREHOOK: type: QUERY
 PREHOOK: Input: default@myinput1
-PREHOOK: Output: file:/tmp/nzhang/hive_2010-08-29_16-27-30_436_157078520197026948/-mr-10000
+PREHOOK: Output: file:/tmp/krishnak/hive_2011-03-21_03-53-37_744_4114021800417008700/-mr-10000
 POSTHOOK: query: SELECT * FROM myinput1 a RIGHT OUTER JOIN myinput1 b
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@myinput1
-POSTHOOK: Output: file:/tmp/nzhang/hive_2010-08-29_16-27-30_436_157078520197026948/-mr-10000
+POSTHOOK: Output: file:/tmp/krishnak/hive_2011-03-21_03-53-37_744_4114021800417008700/-mr-10000
 NULL	35	NULL	35
 NULL	35	48	NULL
 NULL	35	100	100
@@ -62,137 +63,137 @@ NULL	35	100	100
 PREHOOK: query: SELECT * FROM myinput1 a JOIN myinput1 b ON a.key = b.value
 PREHOOK: type: QUERY
 PREHOOK: Input: default@myinput1
-PREHOOK: Output: file:/tmp/nzhang/hive_2010-08-29_16-27-33_972_6078811505372285517/-mr-10000
+PREHOOK: Output: file:/tmp/krishnak/hive_2011-03-21_03-53-40_759_3815040582770495358/-mr-10000
 POSTHOOK: query: SELECT * FROM myinput1 a JOIN myinput1 b ON a.key = b.value
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@myinput1
-POSTHOOK: Output: file:/tmp/nzhang/hive_2010-08-29_16-27-33_972_6078811505372285517/-mr-10000
+POSTHOOK: Output: file:/tmp/krishnak/hive_2011-03-21_03-53-40_759_3815040582770495358/-mr-10000
 100	100	100	100
 PREHOOK: query: SELECT * FROM myinput1 a JOIN myinput1 b ON a.key = b.key
 PREHOOK: type: QUERY
 PREHOOK: Input: default@myinput1
-PREHOOK: Output: file:/tmp/nzhang/hive_2010-08-29_16-27-37_561_497632501219383377/-mr-10000
+PREHOOK: Output: file:/tmp/krishnak/hive_2011-03-21_03-53-43_808_2759732574228684621/-mr-10000
 POSTHOOK: query: SELECT * FROM myinput1 a JOIN myinput1 b ON a.key = b.key
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@myinput1
-POSTHOOK: Output: file:/tmp/nzhang/hive_2010-08-29_16-27-37_561_497632501219383377/-mr-10000
+POSTHOOK: Output: file:/tmp/krishnak/hive_2011-03-21_03-53-43_808_2759732574228684621/-mr-10000
 48	NULL	48	NULL
 100	100	100	100
 PREHOOK: query: SELECT * FROM myinput1 a JOIN myinput1 b ON a.value = b.value
 PREHOOK: type: QUERY
 PREHOOK: Input: default@myinput1
-PREHOOK: Output: file:/tmp/nzhang/hive_2010-08-29_16-27-41_083_8066892089237294571/-mr-10000
+PREHOOK: Output: file:/tmp/krishnak/hive_2011-03-21_03-53-46_947_1207295790379918107/-mr-10000
 POSTHOOK: query: SELECT * FROM myinput1 a JOIN myinput1 b ON a.value = b.value
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@myinput1
-POSTHOOK: Output: file:/tmp/nzhang/hive_2010-08-29_16-27-41_083_8066892089237294571/-mr-10000
+POSTHOOK: Output: file:/tmp/krishnak/hive_2011-03-21_03-53-46_947_1207295790379918107/-mr-10000
 NULL	35	NULL	35
 100	100	100	100
 PREHOOK: query: SELECT * FROM myinput1 a JOIN myinput1 b ON a.value = b.value and a.key=b.key
 PREHOOK: type: QUERY
 PREHOOK: Input: default@myinput1
-PREHOOK: Output: file:/tmp/nzhang/hive_2010-08-29_16-27-44_655_3214205823270476582/-mr-10000
+PREHOOK: Output: file:/tmp/krishnak/hive_2011-03-21_03-53-49_979_72536747155082974/-mr-10000
 POSTHOOK: query: SELECT * FROM myinput1 a JOIN myinput1 b ON a.value = b.value and a.key=b.key
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@myinput1
-POSTHOOK: Output: file:/tmp/nzhang/hive_2010-08-29_16-27-44_655_3214205823270476582/-mr-10000
+POSTHOOK: Output: file:/tmp/krishnak/hive_2011-03-21_03-53-49_979_72536747155082974/-mr-10000
 100	100	100	100
 PREHOOK: query: SELECT * FROM myinput1 a LEFT OUTER JOIN myinput1 b ON a.key = b.value
 PREHOOK: type: QUERY
 PREHOOK: Input: default@myinput1
-PREHOOK: Output: file:/tmp/nzhang/hive_2010-08-29_16-27-48_171_863322174478730636/-mr-10000
+PREHOOK: Output: file:/tmp/krishnak/hive_2011-03-21_03-53-53_028_5270841162233231903/-mr-10000
 POSTHOOK: query: SELECT * FROM myinput1 a LEFT OUTER JOIN myinput1 b ON a.key = b.value
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@myinput1
-POSTHOOK: Output: file:/tmp/nzhang/hive_2010-08-29_16-27-48_171_863322174478730636/-mr-10000
+POSTHOOK: Output: file:/tmp/krishnak/hive_2011-03-21_03-53-53_028_5270841162233231903/-mr-10000
 NULL	35	NULL	NULL
 48	NULL	NULL	NULL
 100	100	100	100
 PREHOOK: query: SELECT * FROM myinput1 a LEFT OUTER JOIN myinput1 b ON a.value = b.value
 PREHOOK: type: QUERY
 PREHOOK: Input: default@myinput1
-PREHOOK: Output: file:/tmp/nzhang/hive_2010-08-29_16-27-51_792_2849772301298277259/-mr-10000
+PREHOOK: Output: file:/tmp/krishnak/hive_2011-03-21_03-53-56_033_2563212770228159974/-mr-10000
 POSTHOOK: query: SELECT * FROM myinput1 a LEFT OUTER JOIN myinput1 b ON a.value = b.value
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@myinput1
-POSTHOOK: Output: file:/tmp/nzhang/hive_2010-08-29_16-27-51_792_2849772301298277259/-mr-10000
+POSTHOOK: Output: file:/tmp/krishnak/hive_2011-03-21_03-53-56_033_2563212770228159974/-mr-10000
 48	NULL	NULL	NULL
 NULL	35	NULL	35
 100	100	100	100
 PREHOOK: query: SELECT * FROM myinput1 a LEFT OUTER JOIN myinput1 b ON a.key = b.key
 PREHOOK: type: QUERY
 PREHOOK: Input: default@myinput1
-PREHOOK: Output: file:/tmp/nzhang/hive_2010-08-29_16-27-55_386_333827668636912972/-mr-10000
+PREHOOK: Output: file:/tmp/krishnak/hive_2011-03-21_03-53-59_098_2956450952074441661/-mr-10000
 POSTHOOK: query: SELECT * FROM myinput1 a LEFT OUTER JOIN myinput1 b ON a.key = b.key
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@myinput1
-POSTHOOK: Output: file:/tmp/nzhang/hive_2010-08-29_16-27-55_386_333827668636912972/-mr-10000
+POSTHOOK: Output: file:/tmp/krishnak/hive_2011-03-21_03-53-59_098_2956450952074441661/-mr-10000
 NULL	35	NULL	NULL
 48	NULL	48	NULL
 100	100	100	100
 PREHOOK: query: SELECT * FROM myinput1 a LEFT OUTER JOIN myinput1 b ON a.key = b.key and a.value=b.value
 PREHOOK: type: QUERY
 PREHOOK: Input: default@myinput1
-PREHOOK: Output: file:/tmp/nzhang/hive_2010-08-29_16-27-58_896_6043355475749326900/-mr-10000
+PREHOOK: Output: file:/tmp/krishnak/hive_2011-03-21_03-54-02_499_2634558695451930427/-mr-10000
 POSTHOOK: query: SELECT * FROM myinput1 a LEFT OUTER JOIN myinput1 b ON a.key = b.key and a.value=b.value
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@myinput1
-POSTHOOK: Output: file:/tmp/nzhang/hive_2010-08-29_16-27-58_896_6043355475749326900/-mr-10000
+POSTHOOK: Output: file:/tmp/krishnak/hive_2011-03-21_03-54-02_499_2634558695451930427/-mr-10000
 NULL	35	NULL	NULL
 48	NULL	NULL	NULL
 100	100	100	100
 PREHOOK: query: SELECT * FROM myinput1 a RIGHT OUTER JOIN myinput1 b ON a.key = b.value
 PREHOOK: type: QUERY
 PREHOOK: Input: default@myinput1
-PREHOOK: Output: file:/tmp/nzhang/hive_2010-08-29_16-28-02_475_1366270534108751682/-mr-10000
+PREHOOK: Output: file:/tmp/krishnak/hive_2011-03-21_03-54-05_524_2948137722448172501/-mr-10000
 POSTHOOK: query: SELECT * FROM myinput1 a RIGHT OUTER JOIN myinput1 b ON a.key = b.value
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@myinput1
-POSTHOOK: Output: file:/tmp/nzhang/hive_2010-08-29_16-28-02_475_1366270534108751682/-mr-10000
+POSTHOOK: Output: file:/tmp/krishnak/hive_2011-03-21_03-54-05_524_2948137722448172501/-mr-10000
 NULL	NULL	48	NULL
 NULL	NULL	NULL	35
 100	100	100	100
 PREHOOK: query: SELECT * FROM myinput1 a RIGHT OUTER JOIN myinput1 b ON a.key = b.key
 PREHOOK: type: QUERY
 PREHOOK: Input: default@myinput1
-PREHOOK: Output: file:/tmp/nzhang/hive_2010-08-29_16-28-06_864_5243343995122788810/-mr-10000
+PREHOOK: Output: file:/tmp/krishnak/hive_2011-03-21_03-54-08_565_8758755781275848937/-mr-10000
 POSTHOOK: query: SELECT * FROM myinput1 a RIGHT OUTER JOIN myinput1 b ON a.key = b.key
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@myinput1
-POSTHOOK: Output: file:/tmp/nzhang/hive_2010-08-29_16-28-06_864_5243343995122788810/-mr-10000
+POSTHOOK: Output: file:/tmp/krishnak/hive_2011-03-21_03-54-08_565_8758755781275848937/-mr-10000
 NULL	NULL	NULL	35
 48	NULL	48	NULL
 100	100	100	100
 PREHOOK: query: SELECT * FROM myinput1 a RIGHT OUTER JOIN myinput1 b ON a.value = b.value
 PREHOOK: type: QUERY
 PREHOOK: Input: default@myinput1
-PREHOOK: Output: file:/tmp/nzhang/hive_2010-08-29_16-28-10_414_2691173054810545836/-mr-10000
+PREHOOK: Output: file:/tmp/krishnak/hive_2011-03-21_03-54-11_597_4163684755001064006/-mr-10000
 POSTHOOK: query: SELECT * FROM myinput1 a RIGHT OUTER JOIN myinput1 b ON a.value = b.value
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@myinput1
-POSTHOOK: Output: file:/tmp/nzhang/hive_2010-08-29_16-28-10_414_2691173054810545836/-mr-10000
+POSTHOOK: Output: file:/tmp/krishnak/hive_2011-03-21_03-54-11_597_4163684755001064006/-mr-10000
 NULL	NULL	48	NULL
 NULL	35	NULL	35
 100	100	100	100
 PREHOOK: query: SELECT * FROM myinput1 a RIGHT OUTER JOIN myinput1 b ON a.key=b.key and a.value = b.value
 PREHOOK: type: QUERY
 PREHOOK: Input: default@myinput1
-PREHOOK: Output: file:/tmp/nzhang/hive_2010-08-29_16-28-13_956_8430748742336062400/-mr-10000
+PREHOOK: Output: file:/tmp/krishnak/hive_2011-03-21_03-54-14_644_1473757744203304399/-mr-10000
 POSTHOOK: query: SELECT * FROM myinput1 a RIGHT OUTER JOIN myinput1 b ON a.key=b.key and a.value = b.value
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@myinput1
-POSTHOOK: Output: file:/tmp/nzhang/hive_2010-08-29_16-28-13_956_8430748742336062400/-mr-10000
+POSTHOOK: Output: file:/tmp/krishnak/hive_2011-03-21_03-54-14_644_1473757744203304399/-mr-10000
 NULL	NULL	NULL	35
 NULL	NULL	48	NULL
 100	100	100	100
 PREHOOK: query: SELECT * FROM myinput1 a FULL OUTER JOIN myinput1 b ON a.key = b.value
 PREHOOK: type: QUERY
 PREHOOK: Input: default@myinput1
-PREHOOK: Output: file:/tmp/nzhang/hive_2010-08-29_16-28-17_480_135891347200559854/-mr-10000
+PREHOOK: Output: file:/tmp/krishnak/hive_2011-03-21_03-54-17_701_3233060431500842705/-mr-10000
 POSTHOOK: query: SELECT * FROM myinput1 a FULL OUTER JOIN myinput1 b ON a.key = b.value
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@myinput1
-POSTHOOK: Output: file:/tmp/nzhang/hive_2010-08-29_16-28-17_480_135891347200559854/-mr-10000
+POSTHOOK: Output: file:/tmp/krishnak/hive_2011-03-21_03-54-17_701_3233060431500842705/-mr-10000
 NULL	35	NULL	NULL
 NULL	NULL	48	NULL
 NULL	NULL	NULL	35
@@ -201,11 +202,11 @@ NULL	NULL	NULL	35
 PREHOOK: query: SELECT * FROM myinput1 a FULL OUTER JOIN myinput1 b ON a.key = b.key
 PREHOOK: type: QUERY
 PREHOOK: Input: default@myinput1
-PREHOOK: Output: file:/tmp/nzhang/hive_2010-08-29_16-28-20_996_3512244152666892381/-mr-10000
+PREHOOK: Output: file:/tmp/krishnak/hive_2011-03-21_03-54-20_731_3400521495107335830/-mr-10000
 POSTHOOK: query: SELECT * FROM myinput1 a FULL OUTER JOIN myinput1 b ON a.key = b.key
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@myinput1
-POSTHOOK: Output: file:/tmp/nzhang/hive_2010-08-29_16-28-20_996_3512244152666892381/-mr-10000
+POSTHOOK: Output: file:/tmp/krishnak/hive_2011-03-21_03-54-20_731_3400521495107335830/-mr-10000
 NULL	35	NULL	NULL
 NULL	NULL	NULL	35
 48	NULL	48	NULL
@@ -213,11 +214,11 @@ NULL	NULL	NULL	35
 PREHOOK: query: SELECT * FROM myinput1 a FULL OUTER JOIN myinput1 b ON a.value = b.value
 PREHOOK: type: QUERY
 PREHOOK: Input: default@myinput1
-PREHOOK: Output: file:/tmp/nzhang/hive_2010-08-29_16-28-24_640_7381291129580865248/-mr-10000
+PREHOOK: Output: file:/tmp/krishnak/hive_2011-03-21_03-54-23_772_8205102532037513591/-mr-10000
 POSTHOOK: query: SELECT * FROM myinput1 a FULL OUTER JOIN myinput1 b ON a.value = b.value
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@myinput1
-POSTHOOK: Output: file:/tmp/nzhang/hive_2010-08-29_16-28-24_640_7381291129580865248/-mr-10000
+POSTHOOK: Output: file:/tmp/krishnak/hive_2011-03-21_03-54-23_772_8205102532037513591/-mr-10000
 48	NULL	NULL	NULL
 NULL	NULL	48	NULL
 NULL	35	NULL	35
@@ -225,11 +226,11 @@ NULL	35	NULL	35
 PREHOOK: query: SELECT * FROM myinput1 a FULL OUTER JOIN myinput1 b ON a.value = b.value and a.key=b.key
 PREHOOK: type: QUERY
 PREHOOK: Input: default@myinput1
-PREHOOK: Output: file:/tmp/nzhang/hive_2010-08-29_16-28-28_172_1718451868105334804/-mr-10000
+PREHOOK: Output: file:/tmp/krishnak/hive_2011-03-21_03-54-26_795_2591262681463484422/-mr-10000
 POSTHOOK: query: SELECT * FROM myinput1 a FULL OUTER JOIN myinput1 b ON a.value = b.value and a.key=b.key
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@myinput1
-POSTHOOK: Output: file:/tmp/nzhang/hive_2010-08-29_16-28-28_172_1718451868105334804/-mr-10000
+POSTHOOK: Output: file:/tmp/krishnak/hive_2011-03-21_03-54-26_795_2591262681463484422/-mr-10000
 48	NULL	NULL	NULL
 NULL	NULL	48	NULL
 NULL	35	NULL	NULL
@@ -238,44 +239,44 @@ NULL	NULL	NULL	35
 PREHOOK: query: SELECT * from myinput1 a LEFT OUTER JOIN myinput1 b ON (a.value=b.value) RIGHT OUTER JOIN myinput1 c ON (b.value=c.value)
 PREHOOK: type: QUERY
 PREHOOK: Input: default@myinput1
-PREHOOK: Output: file:/tmp/nzhang/hive_2010-08-29_16-28-31_700_3503779632403787473/-mr-10000
+PREHOOK: Output: file:/tmp/krishnak/hive_2011-03-21_03-54-29_952_3907129954364673344/-mr-10000
 POSTHOOK: query: SELECT * from myinput1 a LEFT OUTER JOIN myinput1 b ON (a.value=b.value) RIGHT OUTER JOIN myinput1 c ON (b.value=c.value)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@myinput1
-POSTHOOK: Output: file:/tmp/nzhang/hive_2010-08-29_16-28-31_700_3503779632403787473/-mr-10000
+POSTHOOK: Output: file:/tmp/krishnak/hive_2011-03-21_03-54-29_952_3907129954364673344/-mr-10000
 NULL	NULL	NULL	NULL	48	NULL
 NULL	35	NULL	35	NULL	35
 100	100	100	100	100	100
 PREHOOK: query: SELECT * from myinput1 a RIGHT OUTER JOIN myinput1 b ON (a.value=b.value) LEFT OUTER JOIN myinput1 c ON (b.value=c.value)
 PREHOOK: type: QUERY
 PREHOOK: Input: default@myinput1
-PREHOOK: Output: file:/tmp/nzhang/hive_2010-08-29_16-28-35_312_6190534905328416380/-mr-10000
+PREHOOK: Output: file:/tmp/krishnak/hive_2011-03-21_03-54-33_142_6823602675610897415/-mr-10000
 POSTHOOK: query: SELECT * from myinput1 a RIGHT OUTER JOIN myinput1 b ON (a.value=b.value) LEFT OUTER JOIN myinput1 c ON (b.value=c.value)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@myinput1
-POSTHOOK: Output: file:/tmp/nzhang/hive_2010-08-29_16-28-35_312_6190534905328416380/-mr-10000
+POSTHOOK: Output: file:/tmp/krishnak/hive_2011-03-21_03-54-33_142_6823602675610897415/-mr-10000
 NULL	NULL	48	NULL	NULL	NULL
 NULL	35	NULL	35	NULL	35
 100	100	100	100	100	100
 PREHOOK: query: SELECT * FROM myinput1 a LEFT OUTER JOIN myinput1 b RIGHT OUTER JOIN myinput1 c ON a.value = b.value and b.value = c.value
 PREHOOK: type: QUERY
 PREHOOK: Input: default@myinput1
-PREHOOK: Output: file:/tmp/nzhang/hive_2010-08-29_16-28-38_886_8530066796638547806/-mr-10000
+PREHOOK: Output: file:/tmp/krishnak/hive_2011-03-21_03-54-36_316_8421887369237695484/-mr-10000
 POSTHOOK: query: SELECT * FROM myinput1 a LEFT OUTER JOIN myinput1 b RIGHT OUTER JOIN myinput1 c ON a.value = b.value and b.value = c.value
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@myinput1
-POSTHOOK: Output: file:/tmp/nzhang/hive_2010-08-29_16-28-38_886_8530066796638547806/-mr-10000
+POSTHOOK: Output: file:/tmp/krishnak/hive_2011-03-21_03-54-36_316_8421887369237695484/-mr-10000
 NULL	NULL	NULL	NULL	48	NULL
 NULL	35	NULL	35	NULL	35
 100	100	100	100	100	100
 PREHOOK: query: SELECT /*+ MAPJOIN(a) */ * FROM myinput1 a JOIN myinput1 b
 PREHOOK: type: QUERY
 PREHOOK: Input: default@myinput1
-PREHOOK: Output: file:/tmp/nzhang/hive_2010-08-29_16-28-47_812_6508197270477915402/-mr-10000
+PREHOOK: Output: file:/tmp/krishnak/hive_2011-03-21_03-54-42_314_7832502288070481455/-mr-10000
 POSTHOOK: query: SELECT /*+ MAPJOIN(a) */ * FROM myinput1 a JOIN myinput1 b
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@myinput1
-POSTHOOK: Output: file:/tmp/nzhang/hive_2010-08-29_16-28-47_812_6508197270477915402/-mr-10000
+POSTHOOK: Output: file:/tmp/krishnak/hive_2011-03-21_03-54-42_314_7832502288070481455/-mr-10000
 NULL	35	NULL	35
 48	NULL	NULL	35
 100	100	NULL	35
@@ -288,133 +289,133 @@ NULL	35	100	100
 PREHOOK: query: SELECT /*+ MAPJOIN(a) */ * FROM myinput1 a JOIN myinput1 b ON a.key = b.value
 PREHOOK: type: QUERY
 PREHOOK: Input: default@myinput1
-PREHOOK: Output: file:/tmp/nzhang/hive_2010-08-29_16-28-51_330_2832545339261911534/-mr-10000
+PREHOOK: Output: file:/tmp/krishnak/hive_2011-03-21_03-54-46_762_6120606337889646190/-mr-10000
 POSTHOOK: query: SELECT /*+ MAPJOIN(a) */ * FROM myinput1 a JOIN myinput1 b ON a.key = b.value
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@myinput1
-POSTHOOK: Output: file:/tmp/nzhang/hive_2010-08-29_16-28-51_330_2832545339261911534/-mr-10000
+POSTHOOK: Output: file:/tmp/krishnak/hive_2011-03-21_03-54-46_762_6120606337889646190/-mr-10000
 100	100	100	100
 PREHOOK: query: SELECT /*+ MAPJOIN(a) */ * FROM myinput1 a JOIN myinput1 b ON a.key = b.key
 PREHOOK: type: QUERY
 PREHOOK: Input: default@myinput1
-PREHOOK: Output: file:/tmp/nzhang/hive_2010-08-29_16-28-54_758_2244256441772004173/-mr-10000
+PREHOOK: Output: file:/tmp/krishnak/hive_2011-03-21_03-54-51_044_4003336790967485394/-mr-10000
 POSTHOOK: query: SELECT /*+ MAPJOIN(a) */ * FROM myinput1 a JOIN myinput1 b ON a.key = b.key
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@myinput1
-POSTHOOK: Output: file:/tmp/nzhang/hive_2010-08-29_16-28-54_758_2244256441772004173/-mr-10000
+POSTHOOK: Output: file:/tmp/krishnak/hive_2011-03-21_03-54-51_044_4003336790967485394/-mr-10000
 48	NULL	48	NULL
 100	100	100	100
 PREHOOK: query: SELECT /*+ MAPJOIN(a) */ * FROM myinput1 a JOIN myinput1 b ON a.value = b.value
 PREHOOK: type: QUERY
 PREHOOK: Input: default@myinput1
-PREHOOK: Output: file:/tmp/nzhang/hive_2010-08-29_16-28-58_177_7572486486402807416/-mr-10000
+PREHOOK: Output: file:/tmp/krishnak/hive_2011-03-21_03-54-55_518_3112283007132020008/-mr-10000
 POSTHOOK: query: SELECT /*+ MAPJOIN(a) */ * FROM myinput1 a JOIN myinput1 b ON a.value = b.value
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@myinput1
-POSTHOOK: Output: file:/tmp/nzhang/hive_2010-08-29_16-28-58_177_7572486486402807416/-mr-10000
+POSTHOOK: Output: file:/tmp/krishnak/hive_2011-03-21_03-54-55_518_3112283007132020008/-mr-10000
 NULL	35	NULL	35
 100	100	100	100
 PREHOOK: query: SELECT /*+ MAPJOIN(b) */ * FROM myinput1 a JOIN myinput1 b ON a.key = b.value
 PREHOOK: type: QUERY
 PREHOOK: Input: default@myinput1
-PREHOOK: Output: file:/tmp/nzhang/hive_2010-08-29_16-29-02_130_1384187536279456093/-mr-10000
+PREHOOK: Output: file:/tmp/krishnak/hive_2011-03-21_03-54-59_949_5790066510806491529/-mr-10000
 POSTHOOK: query: SELECT /*+ MAPJOIN(b) */ * FROM myinput1 a JOIN myinput1 b ON a.key = b.value
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@myinput1
-POSTHOOK: Output: file:/tmp/nzhang/hive_2010-08-29_16-29-02_130_1384187536279456093/-mr-10000
+POSTHOOK: Output: file:/tmp/krishnak/hive_2011-03-21_03-54-59_949_5790066510806491529/-mr-10000
 100	100	100	100
 PREHOOK: query: SELECT /*+ MAPJOIN(b) */ * FROM myinput1 a JOIN myinput1 b ON a.key = b.key
 PREHOOK: type: QUERY
 PREHOOK: Input: default@myinput1
-PREHOOK: Output: file:/tmp/nzhang/hive_2010-08-29_16-29-05_558_4610273982807326371/-mr-10000
+PREHOOK: Output: file:/tmp/krishnak/hive_2011-03-21_03-55-04_795_2786006750968345680/-mr-10000
 POSTHOOK: query: SELECT /*+ MAPJOIN(b) */ * FROM myinput1 a JOIN myinput1 b ON a.key = b.key
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@myinput1
-POSTHOOK: Output: file:/tmp/nzhang/hive_2010-08-29_16-29-05_558_4610273982807326371/-mr-10000
+POSTHOOK: Output: file:/tmp/krishnak/hive_2011-03-21_03-55-04_795_2786006750968345680/-mr-10000
 48	NULL	48	NULL
 100	100	100	100
 PREHOOK: query: SELECT /*+ MAPJOIN(b) */ * FROM myinput1 a JOIN myinput1 b ON a.value = b.value
 PREHOOK: type: QUERY
 PREHOOK: Input: default@myinput1
-PREHOOK: Output: file:/tmp/nzhang/hive_2010-08-29_16-29-08_991_4366320957165807412/-mr-10000
+PREHOOK: Output: file:/tmp/krishnak/hive_2011-03-21_03-55-09_243_7699519116048493679/-mr-10000
 POSTHOOK: query: SELECT /*+ MAPJOIN(b) */ * FROM myinput1 a JOIN myinput1 b ON a.value = b.value
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@myinput1
-POSTHOOK: Output: file:/tmp/nzhang/hive_2010-08-29_16-29-08_991_4366320957165807412/-mr-10000
+POSTHOOK: Output: file:/tmp/krishnak/hive_2011-03-21_03-55-09_243_7699519116048493679/-mr-10000
 NULL	35	NULL	35
 100	100	100	100
 PREHOOK: query: SELECT /*+ MAPJOIN(b) */ * FROM myinput1 a JOIN myinput1 b ON a.value = b.value and a.key = b.key
 PREHOOK: type: QUERY
 PREHOOK: Input: default@myinput1
-PREHOOK: Output: file:/tmp/nzhang/hive_2010-08-29_16-29-12_351_1633343831722880478/-mr-10000
+PREHOOK: Output: file:/tmp/krishnak/hive_2011-03-21_03-55-13_641_5006098680854899312/-mr-10000
 POSTHOOK: query: SELECT /*+ MAPJOIN(b) */ * FROM myinput1 a JOIN myinput1 b ON a.value = b.value and a.key = b.key
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@myinput1
-POSTHOOK: Output: file:/tmp/nzhang/hive_2010-08-29_16-29-12_351_1633343831722880478/-mr-10000
+POSTHOOK: Output: file:/tmp/krishnak/hive_2011-03-21_03-55-13_641_5006098680854899312/-mr-10000
 100	100	100	100
 PREHOOK: query: SELECT /*+ MAPJOIN(b) */ * FROM myinput1 a LEFT OUTER JOIN myinput1 b ON a.key = b.value
 PREHOOK: type: QUERY
 PREHOOK: Input: default@myinput1
-PREHOOK: Output: file:/tmp/nzhang/hive_2010-08-29_16-29-15_780_1179652081730531852/-mr-10000
+PREHOOK: Output: file:/tmp/krishnak/hive_2011-03-21_03-55-18_040_7373396463499323566/-mr-10000
 POSTHOOK: query: SELECT /*+ MAPJOIN(b) */ * FROM myinput1 a LEFT OUTER JOIN myinput1 b ON a.key = b.value
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@myinput1
-POSTHOOK: Output: file:/tmp/nzhang/hive_2010-08-29_16-29-15_780_1179652081730531852/-mr-10000
+POSTHOOK: Output: file:/tmp/krishnak/hive_2011-03-21_03-55-18_040_7373396463499323566/-mr-10000
 NULL	35	NULL	NULL
 48	NULL	NULL	NULL
 100	100	100	100
 PREHOOK: query: SELECT /*+ MAPJOIN(b) */ * FROM myinput1 a LEFT OUTER JOIN myinput1 b ON a.key = b.key
 PREHOOK: type: QUERY
 PREHOOK: Input: default@myinput1
-PREHOOK: Output: file:/tmp/nzhang/hive_2010-08-29_16-29-19_186_7823271037015988832/-mr-10000
+PREHOOK: Output: file:/tmp/krishnak/hive_2011-03-21_03-55-22_447_6328039718202844843/-mr-10000
 POSTHOOK: query: SELECT /*+ MAPJOIN(b) */ * FROM myinput1 a LEFT OUTER JOIN myinput1 b ON a.key = b.key
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@myinput1
-POSTHOOK: Output: file:/tmp/nzhang/hive_2010-08-29_16-29-19_186_7823271037015988832/-mr-10000
+POSTHOOK: Output: file:/tmp/krishnak/hive_2011-03-21_03-55-22_447_6328039718202844843/-mr-10000
 NULL	35	NULL	NULL
 48	NULL	48	NULL
 100	100	100	100
 PREHOOK: query: SELECT /*+ MAPJOIN(b) */ * FROM myinput1 a LEFT OUTER JOIN myinput1 b ON a.value = b.value
 PREHOOK: type: QUERY
 PREHOOK: Input: default@myinput1
-PREHOOK: Output: file:/tmp/nzhang/hive_2010-08-29_16-29-22_613_5913002273484499666/-mr-10000
+PREHOOK: Output: file:/tmp/krishnak/hive_2011-03-21_03-55-26_837_6878002404083813297/-mr-10000
 POSTHOOK: query: SELECT /*+ MAPJOIN(b) */ * FROM myinput1 a LEFT OUTER JOIN myinput1 b ON a.value = b.value
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@myinput1
-POSTHOOK: Output: file:/tmp/nzhang/hive_2010-08-29_16-29-22_613_5913002273484499666/-mr-10000
+POSTHOOK: Output: file:/tmp/krishnak/hive_2011-03-21_03-55-26_837_6878002404083813297/-mr-10000
 NULL	35	NULL	35
 48	NULL	NULL	NULL
 100	100	100	100
 PREHOOK: query: SELECT /*+ MAPJOIN(a) */ * FROM myinput1 a RIGHT OUTER JOIN myinput1 b ON a.key = b.value
 PREHOOK: type: QUERY
 PREHOOK: Input: default@myinput1
-PREHOOK: Output: file:/tmp/nzhang/hive_2010-08-29_16-29-26_203_334990855583508304/-mr-10000
+PREHOOK: Output: file:/tmp/krishnak/hive_2011-03-21_03-55-31_327_4809407974402234126/-mr-10000
 POSTHOOK: query: SELECT /*+ MAPJOIN(a) */ * FROM myinput1 a RIGHT OUTER JOIN myinput1 b ON a.key = b.value
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@myinput1
-POSTHOOK: Output: file:/tmp/nzhang/hive_2010-08-29_16-29-26_203_334990855583508304/-mr-10000
+POSTHOOK: Output: file:/tmp/krishnak/hive_2011-03-21_03-55-31_327_4809407974402234126/-mr-10000
 NULL	NULL	NULL	35
 NULL	NULL	48	NULL
 100	100	100	100
 PREHOOK: query: SELECT /*+ MAPJOIN(a) */ * FROM myinput1 a RIGHT OUTER JOIN myinput1 b ON a.key = b.key
 PREHOOK: type: QUERY
 PREHOOK: Input: default@myinput1
-PREHOOK: Output: file:/tmp/nzhang/hive_2010-08-29_16-29-29_598_4382277438561479194/-mr-10000
+PREHOOK: Output: file:/tmp/krishnak/hive_2011-03-21_03-55-35_742_1654943644282955382/-mr-10000
 POSTHOOK: query: SELECT /*+ MAPJOIN(a) */ * FROM myinput1 a RIGHT OUTER JOIN myinput1 b ON a.key = b.key
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@myinput1
-POSTHOOK: Output: file:/tmp/nzhang/hive_2010-08-29_16-29-29_598_4382277438561479194/-mr-10000
+POSTHOOK: Output: file:/tmp/krishnak/hive_2011-03-21_03-55-35_742_1654943644282955382/-mr-10000
 NULL	NULL	NULL	35
 48	NULL	48	NULL
 100	100	100	100
 PREHOOK: query: SELECT /*+ MAPJOIN(a) */ * FROM myinput1 a RIGHT OUTER JOIN myinput1 b ON a.value = b.value
 PREHOOK: type: QUERY
 PREHOOK: Input: default@myinput1
-PREHOOK: Output: file:/tmp/nzhang/hive_2010-08-29_16-29-33_010_2455356814384895336/-mr-10000
+PREHOOK: Output: file:/tmp/krishnak/hive_2011-03-21_03-55-40_216_7170971377841192858/-mr-10000
 POSTHOOK: query: SELECT /*+ MAPJOIN(a) */ * FROM myinput1 a RIGHT OUTER JOIN myinput1 b ON a.value = b.value
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@myinput1
-POSTHOOK: Output: file:/tmp/nzhang/hive_2010-08-29_16-29-33_010_2455356814384895336/-mr-10000
+POSTHOOK: Output: file:/tmp/krishnak/hive_2011-03-21_03-55-40_216_7170971377841192858/-mr-10000
 NULL	35	NULL	35
 NULL	NULL	48	NULL
 100	100	100	100
@@ -430,32 +431,36 @@ POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: default@smb_input2
 PREHOOK: query: LOAD DATA LOCAL INPATH '../data/files/in1.txt' into table smb_input1
 PREHOOK: type: LOAD
+PREHOOK: Output: default@smb_input1
 POSTHOOK: query: LOAD DATA LOCAL INPATH '../data/files/in1.txt' into table smb_input1
 POSTHOOK: type: LOAD
 POSTHOOK: Output: default@smb_input1
 PREHOOK: query: LOAD DATA LOCAL INPATH '../data/files/in2.txt' into table smb_input1
 PREHOOK: type: LOAD
+PREHOOK: Output: default@smb_input1
 POSTHOOK: query: LOAD DATA LOCAL INPATH '../data/files/in2.txt' into table smb_input1
 POSTHOOK: type: LOAD
 POSTHOOK: Output: default@smb_input1
 PREHOOK: query: LOAD DATA LOCAL INPATH '../data/files/in1.txt' into table smb_input2
 PREHOOK: type: LOAD
+PREHOOK: Output: default@smb_input2
 POSTHOOK: query: LOAD DATA LOCAL INPATH '../data/files/in1.txt' into table smb_input2
 POSTHOOK: type: LOAD
 POSTHOOK: Output: default@smb_input2
 PREHOOK: query: LOAD DATA LOCAL INPATH '../data/files/in2.txt' into table smb_input2
 PREHOOK: type: LOAD
+PREHOOK: Output: default@smb_input2
 POSTHOOK: query: LOAD DATA LOCAL INPATH '../data/files/in2.txt' into table smb_input2
 POSTHOOK: type: LOAD
 POSTHOOK: Output: default@smb_input2
 PREHOOK: query: SELECT /*+ MAPJOIN(a) */ * FROM smb_input1 a JOIN smb_input1 b ON a.key = b.key ORDER BY a.key
 PREHOOK: type: QUERY
 PREHOOK: Input: default@smb_input1
-PREHOOK: Output: file:/tmp/nzhang/hive_2010-08-29_16-29-39_195_8895566066078293696/-mr-10000
+PREHOOK: Output: file:/tmp/krishnak/hive_2011-03-21_03-55-45_071_1721369920851863145/-mr-10000
 POSTHOOK: query: SELECT /*+ MAPJOIN(a) */ * FROM smb_input1 a JOIN smb_input1 b ON a.key = b.key ORDER BY a.key
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@smb_input1
-POSTHOOK: Output: file:/tmp/nzhang/hive_2010-08-29_16-29-39_195_8895566066078293696/-mr-10000
+POSTHOOK: Output: file:/tmp/krishnak/hive_2011-03-21_03-55-45_071_1721369920851863145/-mr-10000
 48	NULL	48	NULL
 100	100	100	100
 148	NULL	148	NULL
@@ -463,21 +468,21 @@ POSTHOOK: Output: file:/tmp/nzhang/hive_2010-08-29_16-29-39_195_8895566066078293
 PREHOOK: query: SELECT /*+ MAPJOIN(a) */ * FROM smb_input1 a JOIN smb_input1 b ON a.key = b.key AND a.value = b.value ORDER BY a.key
 PREHOOK: type: QUERY
 PREHOOK: Input: default@smb_input1
-PREHOOK: Output: file:/tmp/nzhang/hive_2010-08-29_16-29-46_816_7231555469143665608/-mr-10000
+PREHOOK: Output: file:/tmp/krishnak/hive_2011-03-21_03-55-52_288_5442108787449062892/-mr-10000
 POSTHOOK: query: SELECT /*+ MAPJOIN(a) */ * FROM smb_input1 a JOIN smb_input1 b ON a.key = b.key AND a.value = b.value ORDER BY a.key
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@smb_input1
-POSTHOOK: Output: file:/tmp/nzhang/hive_2010-08-29_16-29-46_816_7231555469143665608/-mr-10000
+POSTHOOK: Output: file:/tmp/krishnak/hive_2011-03-21_03-55-52_288_5442108787449062892/-mr-10000
 100	100	100	100
 200	200	200	200
 PREHOOK: query: SELECT /*+ MAPJOIN(a) */ * FROM smb_input1 a RIGHT OUTER JOIN smb_input1 b ON a.key = b.key ORDER BY b.key, b.value
 PREHOOK: type: QUERY
 PREHOOK: Input: default@smb_input1
-PREHOOK: Output: file:/tmp/nzhang/hive_2010-08-29_16-29-54_504_4324821698930231349/-mr-10000
+PREHOOK: Output: file:/tmp/krishnak/hive_2011-03-21_03-55-59_488_9220251315068456695/-mr-10000
 POSTHOOK: query: SELECT /*+ MAPJOIN(a) */ * FROM smb_input1 a RIGHT OUTER JOIN smb_input1 b ON a.key = b.key ORDER BY b.key, b.value
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@smb_input1
-POSTHOOK: Output: file:/tmp/nzhang/hive_2010-08-29_16-29-54_504_4324821698930231349/-mr-10000
+POSTHOOK: Output: file:/tmp/krishnak/hive_2011-03-21_03-55-59_488_9220251315068456695/-mr-10000
 NULL	NULL	NULL	35
 NULL	NULL	NULL	135
 48	NULL	48	NULL
@@ -487,11 +492,11 @@ NULL	NULL	NULL	135
 PREHOOK: query: SELECT /*+ MAPJOIN(b) */ * FROM smb_input1 a JOIN smb_input1 b ON a.key = b.key ORDER BY a.key
 PREHOOK: type: QUERY
 PREHOOK: Input: default@smb_input1
-PREHOOK: Output: file:/tmp/nzhang/hive_2010-08-29_16-30-02_368_1839049061521470220/-mr-10000
+PREHOOK: Output: file:/tmp/krishnak/hive_2011-03-21_03-56-06_798_1515908496616104358/-mr-10000
 POSTHOOK: query: SELECT /*+ MAPJOIN(b) */ * FROM smb_input1 a JOIN smb_input1 b ON a.key = b.key ORDER BY a.key
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@smb_input1
-POSTHOOK: Output: file:/tmp/nzhang/hive_2010-08-29_16-30-02_368_1839049061521470220/-mr-10000
+POSTHOOK: Output: file:/tmp/krishnak/hive_2011-03-21_03-56-06_798_1515908496616104358/-mr-10000
 48	NULL	48	NULL
 100	100	100	100
 148	NULL	148	NULL
@@ -499,11 +504,11 @@ POSTHOOK: Output: file:/tmp/nzhang/hive_2010-08-29_16-30-02_368_1839049061521470
 PREHOOK: query: SELECT /*+ MAPJOIN(b) */ * FROM smb_input1 a LEFT OUTER JOIN smb_input1 b ON a.key = b.key ORDER BY a.key, a.value
 PREHOOK: type: QUERY
 PREHOOK: Input: default@smb_input1
-PREHOOK: Output: file:/tmp/nzhang/hive_2010-08-29_16-30-10_076_3970718835678290711/-mr-10000
+PREHOOK: Output: file:/tmp/krishnak/hive_2011-03-21_03-56-13_978_37675414267460205/-mr-10000
 POSTHOOK: query: SELECT /*+ MAPJOIN(b) */ * FROM smb_input1 a LEFT OUTER JOIN smb_input1 b ON a.key = b.key ORDER BY a.key, a.value
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@smb_input1
-POSTHOOK: Output: file:/tmp/nzhang/hive_2010-08-29_16-30-10_076_3970718835678290711/-mr-10000
+POSTHOOK: Output: file:/tmp/krishnak/hive_2011-03-21_03-56-13_978_37675414267460205/-mr-10000
 NULL	35	NULL	NULL
 NULL	135	NULL	NULL
 48	NULL	48	NULL
@@ -514,36 +519,36 @@ PREHOOK: query: SELECT /*+ MAPJOIN(a) */ * FROM smb_input1 a JOIN smb_input2 b O
 PREHOOK: type: QUERY
 PREHOOK: Input: default@smb_input1
 PREHOOK: Input: default@smb_input2
-PREHOOK: Output: file:/tmp/nzhang/hive_2010-08-29_16-30-17_825_914465619004988427/-mr-10000
+PREHOOK: Output: file:/tmp/krishnak/hive_2011-03-21_03-56-21_231_8292843591044391733/-mr-10000
 POSTHOOK: query: SELECT /*+ MAPJOIN(a) */ * FROM smb_input1 a JOIN smb_input2 b ON a.key = b.value ORDER BY a.key
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@smb_input1
 POSTHOOK: Input: default@smb_input2
-POSTHOOK: Output: file:/tmp/nzhang/hive_2010-08-29_16-30-17_825_914465619004988427/-mr-10000
+POSTHOOK: Output: file:/tmp/krishnak/hive_2011-03-21_03-56-21_231_8292843591044391733/-mr-10000
 100	100	100	100
 200	200	200	200
 PREHOOK: query: SELECT /*+ MAPJOIN(b) */ * FROM smb_input1 a JOIN smb_input2 b ON a.key = b.value ORDER BY a.key
 PREHOOK: type: QUERY
 PREHOOK: Input: default@smb_input1
 PREHOOK: Input: default@smb_input2
-PREHOOK: Output: file:/tmp/nzhang/hive_2010-08-29_16-30-25_811_7512212373308779661/-mr-10000
+PREHOOK: Output: file:/tmp/krishnak/hive_2011-03-21_03-56-28_835_6286309168082618901/-mr-10000
 POSTHOOK: query: SELECT /*+ MAPJOIN(b) */ * FROM smb_input1 a JOIN smb_input2 b ON a.key = b.value ORDER BY a.key
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@smb_input1
 POSTHOOK: Input: default@smb_input2
-POSTHOOK: Output: file:/tmp/nzhang/hive_2010-08-29_16-30-25_811_7512212373308779661/-mr-10000
+POSTHOOK: Output: file:/tmp/krishnak/hive_2011-03-21_03-56-28_835_6286309168082618901/-mr-10000
 100	100	100	100
 200	200	200	200
 PREHOOK: query: SELECT /*+ MAPJOIN(b) */ * FROM smb_input1 a LEFT OUTER JOIN smb_input2 b ON a.key = b.value ORDER BY a.key, a.value
 PREHOOK: type: QUERY
 PREHOOK: Input: default@smb_input1
 PREHOOK: Input: default@smb_input2
-PREHOOK: Output: file:/tmp/nzhang/hive_2010-08-29_16-30-33_410_8137948244480366704/-mr-10000
+PREHOOK: Output: file:/tmp/krishnak/hive_2011-03-21_03-56-36_026_7352279404756888950/-mr-10000
 POSTHOOK: query: SELECT /*+ MAPJOIN(b) */ * FROM smb_input1 a LEFT OUTER JOIN smb_input2 b ON a.key = b.value ORDER BY a.key, a.value
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@smb_input1
 POSTHOOK: Input: default@smb_input2
-POSTHOOK: Output: file:/tmp/nzhang/hive_2010-08-29_16-30-33_410_8137948244480366704/-mr-10000
+POSTHOOK: Output: file:/tmp/krishnak/hive_2011-03-21_03-56-36_026_7352279404756888950/-mr-10000
 NULL	35	NULL	NULL
 NULL	135	NULL	NULL
 48	NULL	NULL	NULL
@@ -554,12 +559,12 @@ PREHOOK: query: SELECT /*+ MAPJOIN(a) */ * FROM smb_input1 a RIGHT OUTER JOIN sm
 PREHOOK: type: QUERY
 PREHOOK: Input: default@smb_input1
 PREHOOK: Input: default@smb_input2
-PREHOOK: Output: file:/tmp/nzhang/hive_2010-08-29_16-30-40_554_3285088614611175630/-mr-10000
+PREHOOK: Output: file:/tmp/krishnak/hive_2011-03-21_03-56-43_251_628261964080538715/-mr-10000
 POSTHOOK: query: SELECT /*+ MAPJOIN(a) */ * FROM smb_input1 a RIGHT OUTER JOIN smb_input2 b ON a.key = b.value ORDER BY b.key, b.value
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@smb_input1
 POSTHOOK: Input: default@smb_input2
-POSTHOOK: Output: file:/tmp/nzhang/hive_2010-08-29_16-30-40_554_3285088614611175630/-mr-10000
+POSTHOOK: Output: file:/tmp/krishnak/hive_2011-03-21_03-56-43_251_628261964080538715/-mr-10000
 NULL	NULL	NULL	35
 NULL	NULL	NULL	135
 NULL	NULL	48	NULL
@@ -569,11 +574,11 @@ NULL	NULL	148	NULL
 PREHOOK: query: SELECT /*+ MAPJOIN(a) */ * FROM smb_input2 a JOIN smb_input2 b ON a.value = b.value ORDER BY a.value
 PREHOOK: type: QUERY
 PREHOOK: Input: default@smb_input2
-PREHOOK: Output: file:/tmp/nzhang/hive_2010-08-29_16-30-48_155_3764817030319568845/-mr-10000
+PREHOOK: Output: file:/tmp/krishnak/hive_2011-03-21_03-56-50_368_3840876669646785753/-mr-10000
 POSTHOOK: query: SELECT /*+ MAPJOIN(a) */ * FROM smb_input2 a JOIN smb_input2 b ON a.value = b.value ORDER BY a.value
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@smb_input2
-POSTHOOK: Output: file:/tmp/nzhang/hive_2010-08-29_16-30-48_155_3764817030319568845/-mr-10000
+POSTHOOK: Output: file:/tmp/krishnak/hive_2011-03-21_03-56-50_368_3840876669646785753/-mr-10000
 NULL	35	NULL	35
 100	100	100	100
 NULL	135	NULL	135
@@ -581,11 +586,11 @@ NULL	135	NULL	135
 PREHOOK: query: SELECT /*+ MAPJOIN(a) */ * FROM smb_input2 a RIGHT OUTER JOIN smb_input2 b ON a.value = b.value ORDER BY b.key, b.value
 PREHOOK: type: QUERY
 PREHOOK: Input: default@smb_input2
-PREHOOK: Output: file:/tmp/nzhang/hive_2010-08-29_16-30-56_487_1093223316634190271/-mr-10000
+PREHOOK: Output: file:/tmp/krishnak/hive_2011-03-21_03-56-57_464_1575904257589847287/-mr-10000
 POSTHOOK: query: SELECT /*+ MAPJOIN(a) */ * FROM smb_input2 a RIGHT OUTER JOIN smb_input2 b ON a.value = b.value ORDER BY b.key, b.value
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@smb_input2
-POSTHOOK: Output: file:/tmp/nzhang/hive_2010-08-29_16-30-56_487_1093223316634190271/-mr-10000
+POSTHOOK: Output: file:/tmp/krishnak/hive_2011-03-21_03-56-57_464_1575904257589847287/-mr-10000
 NULL	35	NULL	35
 NULL	135	NULL	135
 NULL	NULL	48	NULL
@@ -595,11 +600,11 @@ NULL	NULL	148	NULL
 PREHOOK: query: SELECT /*+ MAPJOIN(b) */ * FROM smb_input2 a JOIN smb_input2 b ON a.value = b.value ORDER BY a.value
 PREHOOK: type: QUERY
 PREHOOK: Input: default@smb_input2
-PREHOOK: Output: file:/tmp/nzhang/hive_2010-08-29_16-31-04_392_6603229190544503424/-mr-10000
+PREHOOK: Output: file:/tmp/krishnak/hive_2011-03-21_03-57-04_710_6771480365280106011/-mr-10000
 POSTHOOK: query: SELECT /*+ MAPJOIN(b) */ * FROM smb_input2 a JOIN smb_input2 b ON a.value = b.value ORDER BY a.value
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@smb_input2
-POSTHOOK: Output: file:/tmp/nzhang/hive_2010-08-29_16-31-04_392_6603229190544503424/-mr-10000
+POSTHOOK: Output: file:/tmp/krishnak/hive_2011-03-21_03-57-04_710_6771480365280106011/-mr-10000
 NULL	35	NULL	35
 100	100	100	100
 NULL	135	NULL	135
@@ -607,11 +612,11 @@ NULL	135	NULL	135
 PREHOOK: query: SELECT /*+ MAPJOIN(b) */ * FROM smb_input2 a LEFT OUTER JOIN smb_input2 b ON a.value = b.value ORDER BY a.key, a.value
 PREHOOK: type: QUERY
 PREHOOK: Input: default@smb_input2
-PREHOOK: Output: file:/tmp/nzhang/hive_2010-08-29_16-31-13_052_6762449085395942377/-mr-10000
+PREHOOK: Output: file:/tmp/krishnak/hive_2011-03-21_03-57-11_842_9028034862567967736/-mr-10000
 POSTHOOK: query: SELECT /*+ MAPJOIN(b) */ * FROM smb_input2 a LEFT OUTER JOIN smb_input2 b ON a.value = b.value ORDER BY a.key, a.value
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@smb_input2
-POSTHOOK: Output: file:/tmp/nzhang/hive_2010-08-29_16-31-13_052_6762449085395942377/-mr-10000
+POSTHOOK: Output: file:/tmp/krishnak/hive_2011-03-21_03-57-11_842_9028034862567967736/-mr-10000
 NULL	35	NULL	35
 NULL	135	NULL	135
 48	NULL	NULL	NULL

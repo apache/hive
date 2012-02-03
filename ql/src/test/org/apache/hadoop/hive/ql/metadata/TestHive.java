@@ -155,9 +155,8 @@ public class TestHive extends TestCase {
             .getOwner(), ft.getOwner());
         assertEquals("Table retention didn't match for table: " + tableName,
             tbl.getRetention(), ft.getRetention());
-        String dbPath = wh.getDefaultDatabasePath(DEFAULT_DATABASE_NAME).toString();
         assertEquals("Data location is not set correctly",
-            wh.getDefaultTablePath(DEFAULT_DATABASE_NAME, tableName).toString(),
+            wh.getTablePath(hm.getDatabase(DEFAULT_DATABASE_NAME), tableName).toString(),
             ft.getDataLocation().toString());
         // now that URI is set correctly, set the original table's uri and then
         // compare the two tables
@@ -229,9 +228,8 @@ public class TestHive extends TestCase {
             .getOwner(), ft.getOwner());
         assertEquals("Table retention didn't match for table: " + tableName,
             tbl.getRetention(), ft.getRetention());
-        String dbPath = wh.getDefaultDatabasePath(DEFAULT_DATABASE_NAME).toString();
         assertEquals("Data location is not set correctly",
-            wh.getDefaultTablePath(DEFAULT_DATABASE_NAME, tableName).toString(),
+            wh.getTablePath(hm.getDatabase(DEFAULT_DATABASE_NAME), tableName).toString(),
             ft.getDataLocation().toString());
         // now that URI is set correctly, set the original table's uri and then
         // compare the two tables
@@ -373,5 +371,15 @@ public class TestHive extends TestCase {
       System.err.println("testPartition() failed");
       throw e;
     }
+  }
+
+  public void testHiveRefreshDatabase() throws Throwable{
+    String testDatabaseName = "test_database";
+    Database testDatabase = new Database();
+    testDatabase.setName(testDatabaseName);
+    hm.createDatabase(testDatabase, true);
+    hm.setCurrentDatabase(testDatabaseName);
+    hm = Hive.get(hiveConf, true); //refresh Hive instance
+    assertEquals(testDatabaseName, hm.getCurrentDatabase());
   }
 }

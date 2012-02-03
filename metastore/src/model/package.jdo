@@ -191,17 +191,17 @@
       </field>
     </class>
 
-    <class name="MStorageDescriptor" identity-type="datastore" table="SDS" detachable="true">
+    <class name="MColumnDescriptor" identity-type="datastore" table="CDS" detachable="true">
       <datastore-identity>
-        <column name="SD_ID"/>
+        <column name="CD_ID"/>
       </datastore-identity>
-      <field name="cols" table="COLUMNS" >
+      <field name="cols" table="COLUMNS_V2" >
         <collection element-type="MFieldSchema"/>
         <join>
           <primary-key name="COLUMNS_PK">
             <column name="COLUMN_NAME"/>
           </primary-key>
-          <column name="SD_ID"/>
+          <column name="CD_ID"/>
         </join>
         <element>
           <embedded>
@@ -213,6 +213,15 @@
             </field>
           </embedded>
         </element>
+      </field>
+	</class>
+
+    <class name="MStorageDescriptor" identity-type="datastore" table="SDS" detachable="true">
+      <datastore-identity>
+        <column name="SD_ID"/>
+      </datastore-identity>
+      <field name="cd">
+      	<column name="CD_ID"/>
       </field>
       <field name="location">
         <column name="LOCATION" length="4000" jdbc-type="VARCHAR"/>
@@ -665,5 +674,32 @@
       </field>
     </class>
 
+    <class name="MPartitionEvent"  table="PARTITION_EVENTS" identity-type="datastore" detachable="true">  
+       
+      <index name="PartitionEventIndex" unique="false">
+        <column name="PARTITION_NAME"/>
+      </index>
+      
+      <datastore-identity>
+        <column name="PART_NAME_ID"/>
+      </datastore-identity>
+      
+      <field name="dbName">  
+        <column name="DB_NAME" length="128" jdbc-type="VARCHAR"/>
+      </field>
+      <field name="tblName">
+        <column name="TBL_NAME" length="128" jdbc-type="VARCHAR"/>
+      </field>
+       <field name="partName">
+        <column name="PARTITION_NAME" length="767" jdbc-type="VARCHAR"/>
+      </field>
+      <field name="eventType">
+        <column name="EVENT_TYPE"  jdbc-type="integer"/>
+      </field>
+     <field name="eventTime">
+        <column name="EVENT_TIME"  jdbc-type="BIGINT"/>
+      </field>
+
+    </class>
   </package>
 </jdo>

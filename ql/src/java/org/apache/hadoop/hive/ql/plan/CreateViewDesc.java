@@ -38,22 +38,28 @@ public class CreateViewDesc extends DDLDesc implements Serializable {
   private String expandedText;
   private List<FieldSchema> schema;
   private Map<String, String> tblProps;
+  private List<String> partColNames;
+  private List<FieldSchema> partCols;
   private String comment;
   private boolean ifNotExists;
+  private boolean orReplace;
 
   /**
    * For serialization only.
    */
   public CreateViewDesc() {
   }
-  
+
   public CreateViewDesc(String viewName, List<FieldSchema> schema,
-      String comment, Map<String, String> tblProps, boolean ifNotExists) {
+      String comment, Map<String, String> tblProps,
+      List<String> partColNames, boolean ifNotExists, boolean orReplace) {
     this.viewName = viewName;
     this.schema = schema;
     this.comment = comment;
     this.tblProps = tblProps;
+    this.partColNames = partColNames;
     this.ifNotExists = ifNotExists;
+    this.orReplace = orReplace;
   }
 
   @Explain(displayName = "name")
@@ -96,6 +102,27 @@ public class CreateViewDesc extends DDLDesc implements Serializable {
     this.schema = schema;
   }
 
+  @Explain(displayName = "partition columns")
+  public List<String> getPartColsString() {
+    return Utilities.getFieldSchemaString(partCols);
+  }
+
+  public List<FieldSchema> getPartCols() {
+    return partCols;
+  }
+
+  public void setPartCols(List<FieldSchema> partCols) {
+    this.partCols = partCols;
+  }
+
+  public List<String> getPartColNames() {
+    return partColNames;
+  }
+
+  public void setPartColNames(List<String> partColNames) {
+    this.partColNames = partColNames;
+  }
+
   @Explain(displayName = "comment")
   public String getComment() {
     return comment;
@@ -121,5 +148,14 @@ public class CreateViewDesc extends DDLDesc implements Serializable {
 
   public void setIfNotExists(boolean ifNotExists) {
     this.ifNotExists = ifNotExists;
+  }
+
+  @Explain(displayName = "or replace")
+  public boolean getOrReplace() {
+    return orReplace;
+  }
+
+  public void setOrReplace(boolean orReplace) {
+    this.orReplace = orReplace;
   }
 }

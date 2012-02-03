@@ -40,4 +40,11 @@ public abstract class ExprNodeEvaluator {
    */
   public abstract Object evaluate(Object row) throws HiveException;
 
+  /**
+   * Return whether this node (and all children nodes) are deterministic.
+   */
+  public boolean isDeterministic() {
+    return true;
+  }
+  
 }

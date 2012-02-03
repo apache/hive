@@ -1,0 +1,233 @@
+PREHOOK: query: create table src_rc_merge_test(key int, value string) stored as rcfile
+PREHOOK: type: CREATETABLE
+POSTHOOK: query: create table src_rc_merge_test(key int, value string) stored as rcfile
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: default@src_rc_merge_test
+PREHOOK: query: load data local inpath '../data/files/smbbucket_1.rc' into table src_rc_merge_test
+PREHOOK: type: LOAD
+PREHOOK: Output: default@src_rc_merge_test
+POSTHOOK: query: load data local inpath '../data/files/smbbucket_1.rc' into table src_rc_merge_test
+POSTHOOK: type: LOAD
+POSTHOOK: Output: default@src_rc_merge_test
+PREHOOK: query: load data local inpath '../data/files/smbbucket_2.rc' into table src_rc_merge_test
+PREHOOK: type: LOAD
+PREHOOK: Output: default@src_rc_merge_test
+POSTHOOK: query: load data local inpath '../data/files/smbbucket_2.rc' into table src_rc_merge_test
+POSTHOOK: type: LOAD
+POSTHOOK: Output: default@src_rc_merge_test
+PREHOOK: query: load data local inpath '../data/files/smbbucket_3.rc' into table src_rc_merge_test
+PREHOOK: type: LOAD
+PREHOOK: Output: default@src_rc_merge_test
+POSTHOOK: query: load data local inpath '../data/files/smbbucket_3.rc' into table src_rc_merge_test
+POSTHOOK: type: LOAD
+POSTHOOK: Output: default@src_rc_merge_test
+PREHOOK: query: show table extended like `src_rc_merge_test`
+PREHOOK: type: SHOW_TABLESTATUS
+POSTHOOK: query: show table extended like `src_rc_merge_test`
+POSTHOOK: type: SHOW_TABLESTATUS
+tableName:src_rc_merge_test
+owner:krishnak
+location:pfile:/Users/krishnak/Projects/hdp/sources/hive-git-apache/build/ql/test/data/warehouse/src_rc_merge_test
+inputformat:org.apache.hadoop.hive.ql.io.RCFileInputFormat
+outputformat:org.apache.hadoop.hive.ql.io.RCFileOutputFormat
+columns:struct columns { i32 key, string value}
+partitioned:false
+partitionColumns:
+totalNumberFiles:3
+totalFileSize:636
+maxFileSize:222
+minFileSize:206
+lastAccessTime:0
+lastUpdateTime:1300680902000
+
+PREHOOK: query: select count(1) from src_rc_merge_test
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src_rc_merge_test
+PREHOOK: Output: file:/var/folders/67/67R3POPtF90VG63KSmCbcU++F0U/-Tmp-/krishnak/hive_2011-03-20_21-15-02_678_8520633473198390721/-mr-10000
+POSTHOOK: query: select count(1) from src_rc_merge_test
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src_rc_merge_test
+POSTHOOK: Output: file:/var/folders/67/67R3POPtF90VG63KSmCbcU++F0U/-Tmp-/krishnak/hive_2011-03-20_21-15-02_678_8520633473198390721/-mr-10000
+15
+PREHOOK: query: select sum(hash(key)), sum(hash(value)) from src_rc_merge_test
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src_rc_merge_test
+PREHOOK: Output: file:/var/folders/67/67R3POPtF90VG63KSmCbcU++F0U/-Tmp-/krishnak/hive_2011-03-20_21-15-10_671_3103325352622055634/-mr-10000
+POSTHOOK: query: select sum(hash(key)), sum(hash(value)) from src_rc_merge_test
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src_rc_merge_test
+POSTHOOK: Output: file:/var/folders/67/67R3POPtF90VG63KSmCbcU++F0U/-Tmp-/krishnak/hive_2011-03-20_21-15-10_671_3103325352622055634/-mr-10000
+214	-7678496319
+PREHOOK: query: alter table src_rc_merge_test concatenate
+PREHOOK: type: ALTER_TABLE_MERGE
+PREHOOK: Input: default@src_rc_merge_test
+PREHOOK: Output: default@src_rc_merge_test
+POSTHOOK: query: alter table src_rc_merge_test concatenate
+POSTHOOK: type: ALTER_TABLE_MERGE
+POSTHOOK: Input: default@src_rc_merge_test
+POSTHOOK: Output: default@src_rc_merge_test
+PREHOOK: query: show table extended like `src_rc_merge_test`
+PREHOOK: type: SHOW_TABLESTATUS
+POSTHOOK: query: show table extended like `src_rc_merge_test`
+POSTHOOK: type: SHOW_TABLESTATUS
+tableName:src_rc_merge_test
+owner:krishnak
+location:pfile:/Users/krishnak/Projects/hdp/sources/hive-git-apache/build/ql/test/data/warehouse/src_rc_merge_test
+inputformat:org.apache.hadoop.hive.ql.io.RCFileInputFormat
+outputformat:org.apache.hadoop.hive.ql.io.RCFileOutputFormat
+columns:struct columns { i32 key, string value}
+partitioned:false
+partitionColumns:
+totalNumberFiles:1
+totalFileSize:334
+maxFileSize:334
+minFileSize:334
+lastAccessTime:0
+lastUpdateTime:1300680922000
+
+PREHOOK: query: select count(1) from src_rc_merge_test
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src_rc_merge_test
+PREHOOK: Output: file:/var/folders/67/67R3POPtF90VG63KSmCbcU++F0U/-Tmp-/krishnak/hive_2011-03-20_21-15-23_887_8242125214309556968/-mr-10000
+POSTHOOK: query: select count(1) from src_rc_merge_test
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src_rc_merge_test
+POSTHOOK: Output: file:/var/folders/67/67R3POPtF90VG63KSmCbcU++F0U/-Tmp-/krishnak/hive_2011-03-20_21-15-23_887_8242125214309556968/-mr-10000
+15
+PREHOOK: query: select sum(hash(key)), sum(hash(value)) from src_rc_merge_test
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src_rc_merge_test
+PREHOOK: Output: file:/var/folders/67/67R3POPtF90VG63KSmCbcU++F0U/-Tmp-/krishnak/hive_2011-03-20_21-15-31_244_4854539946976169821/-mr-10000
+POSTHOOK: query: select sum(hash(key)), sum(hash(value)) from src_rc_merge_test
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src_rc_merge_test
+POSTHOOK: Output: file:/var/folders/67/67R3POPtF90VG63KSmCbcU++F0U/-Tmp-/krishnak/hive_2011-03-20_21-15-31_244_4854539946976169821/-mr-10000
+214	-7678496319
+PREHOOK: query: create table src_rc_merge_test_part(key int, value string) partitioned by (ds string) stored as rcfile
+PREHOOK: type: CREATETABLE
+POSTHOOK: query: create table src_rc_merge_test_part(key int, value string) partitioned by (ds string) stored as rcfile
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: default@src_rc_merge_test_part
+PREHOOK: query: alter table src_rc_merge_test_part add partition (ds='2011')
+PREHOOK: type: ALTERTABLE_ADDPARTS
+PREHOOK: Input: default@src_rc_merge_test_part
+POSTHOOK: query: alter table src_rc_merge_test_part add partition (ds='2011')
+POSTHOOK: type: ALTERTABLE_ADDPARTS
+POSTHOOK: Input: default@src_rc_merge_test_part
+POSTHOOK: Output: default@src_rc_merge_test_part@ds=2011
+PREHOOK: query: load data local inpath '../data/files/smbbucket_1.rc' into table src_rc_merge_test_part partition (ds='2011')
+PREHOOK: type: LOAD
+PREHOOK: Output: default@src_rc_merge_test_part@ds=2011
+POSTHOOK: query: load data local inpath '../data/files/smbbucket_1.rc' into table src_rc_merge_test_part partition (ds='2011')
+POSTHOOK: type: LOAD
+POSTHOOK: Output: default@src_rc_merge_test_part@ds=2011
+PREHOOK: query: load data local inpath '../data/files/smbbucket_2.rc' into table src_rc_merge_test_part partition (ds='2011')
+PREHOOK: type: LOAD
+PREHOOK: Output: default@src_rc_merge_test_part@ds=2011
+POSTHOOK: query: load data local inpath '../data/files/smbbucket_2.rc' into table src_rc_merge_test_part partition (ds='2011')
+POSTHOOK: type: LOAD
+POSTHOOK: Output: default@src_rc_merge_test_part@ds=2011
+PREHOOK: query: load data local inpath '../data/files/smbbucket_3.rc' into table src_rc_merge_test_part partition (ds='2011')
+PREHOOK: type: LOAD
+PREHOOK: Output: default@src_rc_merge_test_part@ds=2011
+POSTHOOK: query: load data local inpath '../data/files/smbbucket_3.rc' into table src_rc_merge_test_part partition (ds='2011')
+POSTHOOK: type: LOAD
+POSTHOOK: Output: default@src_rc_merge_test_part@ds=2011
+PREHOOK: query: show table extended like `src_rc_merge_test_part` partition (ds='2011')
+PREHOOK: type: SHOW_TABLESTATUS
+POSTHOOK: query: show table extended like `src_rc_merge_test_part` partition (ds='2011')
+POSTHOOK: type: SHOW_TABLESTATUS
+tableName:src_rc_merge_test_part
+owner:krishnak
+location:pfile:/Users/krishnak/Projects/hdp/sources/hive-git-apache/build/ql/test/data/warehouse/src_rc_merge_test_part/ds=2011
+inputformat:org.apache.hadoop.hive.ql.io.RCFileInputFormat
+outputformat:org.apache.hadoop.hive.ql.io.RCFileOutputFormat
+columns:struct columns { i32 key, string value}
+partitioned:true
+partitionColumns:struct partition_columns { string ds}
+totalNumberFiles:3
+totalFileSize:636
+maxFileSize:222
+minFileSize:206
+lastAccessTime:0
+lastUpdateTime:1300680946000
+
+PREHOOK: query: select count(1) from src_rc_merge_test_part
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src_rc_merge_test_part@ds=2011
+PREHOOK: Output: file:/var/folders/67/67R3POPtF90VG63KSmCbcU++F0U/-Tmp-/krishnak/hive_2011-03-20_21-15-47_140_6546800621174301781/-mr-10000
+POSTHOOK: query: select count(1) from src_rc_merge_test_part
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src_rc_merge_test_part@ds=2011
+POSTHOOK: Output: file:/var/folders/67/67R3POPtF90VG63KSmCbcU++F0U/-Tmp-/krishnak/hive_2011-03-20_21-15-47_140_6546800621174301781/-mr-10000
+15
+PREHOOK: query: select sum(hash(key)), sum(hash(value)) from src_rc_merge_test_part
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src_rc_merge_test_part@ds=2011
+PREHOOK: Output: file:/var/folders/67/67R3POPtF90VG63KSmCbcU++F0U/-Tmp-/krishnak/hive_2011-03-20_21-15-58_930_7643638670315828175/-mr-10000
+POSTHOOK: query: select sum(hash(key)), sum(hash(value)) from src_rc_merge_test_part
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src_rc_merge_test_part@ds=2011
+POSTHOOK: Output: file:/var/folders/67/67R3POPtF90VG63KSmCbcU++F0U/-Tmp-/krishnak/hive_2011-03-20_21-15-58_930_7643638670315828175/-mr-10000
+214	-7678496319
+PREHOOK: query: alter table src_rc_merge_test_part partition (ds='2011') concatenate
+PREHOOK: type: ALTER_PARTITION_MERGE
+PREHOOK: Input: default@src_rc_merge_test_part
+PREHOOK: Output: default@src_rc_merge_test_part@ds=2011
+POSTHOOK: query: alter table src_rc_merge_test_part partition (ds='2011') concatenate
+POSTHOOK: type: ALTER_PARTITION_MERGE
+POSTHOOK: Input: default@src_rc_merge_test_part
+POSTHOOK: Output: default@src_rc_merge_test_part@ds=2011
+PREHOOK: query: show table extended like `src_rc_merge_test_part` partition (ds='2011')
+PREHOOK: type: SHOW_TABLESTATUS
+POSTHOOK: query: show table extended like `src_rc_merge_test_part` partition (ds='2011')
+POSTHOOK: type: SHOW_TABLESTATUS
+tableName:src_rc_merge_test_part
+owner:krishnak
+location:pfile:/Users/krishnak/Projects/hdp/sources/hive-git-apache/build/ql/test/data/warehouse/src_rc_merge_test_part/ds=2011
+inputformat:org.apache.hadoop.hive.ql.io.RCFileInputFormat
+outputformat:org.apache.hadoop.hive.ql.io.RCFileOutputFormat
+columns:struct columns { i32 key, string value}
+partitioned:true
+partitionColumns:struct partition_columns { string ds}
+totalNumberFiles:1
+totalFileSize:334
+maxFileSize:334
+minFileSize:334
+lastAccessTime:0
+lastUpdateTime:1300680970000
+
+PREHOOK: query: select count(1) from src_rc_merge_test_part
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src_rc_merge_test_part@ds=2011
+PREHOOK: Output: file:/var/folders/67/67R3POPtF90VG63KSmCbcU++F0U/-Tmp-/krishnak/hive_2011-03-20_21-16-11_200_6628817362773769157/-mr-10000
+POSTHOOK: query: select count(1) from src_rc_merge_test_part
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src_rc_merge_test_part@ds=2011
+POSTHOOK: Output: file:/var/folders/67/67R3POPtF90VG63KSmCbcU++F0U/-Tmp-/krishnak/hive_2011-03-20_21-16-11_200_6628817362773769157/-mr-10000
+15
+PREHOOK: query: select sum(hash(key)), sum(hash(value)) from src_rc_merge_test_part
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src_rc_merge_test_part@ds=2011
+PREHOOK: Output: file:/var/folders/67/67R3POPtF90VG63KSmCbcU++F0U/-Tmp-/krishnak/hive_2011-03-20_21-16-17_532_734781450927092021/-mr-10000
+POSTHOOK: query: select sum(hash(key)), sum(hash(value)) from src_rc_merge_test_part
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src_rc_merge_test_part@ds=2011
+POSTHOOK: Output: file:/var/folders/67/67R3POPtF90VG63KSmCbcU++F0U/-Tmp-/krishnak/hive_2011-03-20_21-16-17_532_734781450927092021/-mr-10000
+214	-7678496319
+PREHOOK: query: drop table src_rc_merge_test
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@src_rc_merge_test
+PREHOOK: Output: default@src_rc_merge_test
+POSTHOOK: query: drop table src_rc_merge_test
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@src_rc_merge_test
+POSTHOOK: Output: default@src_rc_merge_test
+PREHOOK: query: drop table src_rc_merge_test_part
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@src_rc_merge_test_part
+PREHOOK: Output: default@src_rc_merge_test_part
+POSTHOOK: query: drop table src_rc_merge_test_part
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@src_rc_merge_test_part
+POSTHOOK: Output: default@src_rc_merge_test_part

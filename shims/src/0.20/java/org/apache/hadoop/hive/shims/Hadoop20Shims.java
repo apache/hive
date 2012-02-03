@@ -21,8 +21,12 @@ import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
 import java.lang.reflect.Constructor;
+import java.security.PrivilegedActionException;
+import java.security.PrivilegedExceptionAction;
 import java.util.ArrayList;
 import java.util.List;
+
+import javax.security.auth.Subject;
 import javax.security.auth.login.LoginException;
 
 import org.apache.hadoop.conf.Configuration;
@@ -31,8 +35,9 @@ import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.fs.PathFilter;
 import org.apache.hadoop.hdfs.MiniDFSCluster;
+import org.apache.hadoop.hive.io.HiveIOExceptionHandlerUtil;
 import org.apache.hadoop.io.Text;
-import org.apache.hadoop.io.WritableComparable;
+import org.apache.hadoop.mapred.ClusterStatus;
 import org.apache.hadoop.mapred.FileInputFormat;
 import org.apache.hadoop.mapred.InputFormat;
 import org.apache.hadoop.mapred.InputSplit;
@@ -49,9 +54,13 @@ import org.apache.hadoop.mapred.TaskID;
 import org.apache.hadoop.mapred.lib.CombineFileInputFormat;
 import org.apache.hadoop.mapred.lib.CombineFileSplit;
 import org.apache.hadoop.mapred.lib.NullOutputFormat;
-import org.apache.hadoop.security.UserGroupInformation;
+import org.apache.hadoop.mapreduce.Job;
+import org.apache.hadoop.mapreduce.TaskAttemptID;
+import org.apache.hadoop.security.SecurityUtil;
 import org.apache.hadoop.security.UnixUserGroupInformation;
+import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.hadoop.tools.HadoopArchives;
+import org.apache.hadoop.util.Progressable;
 import org.apache.hadoop.util.ToolRunner;
 
 /**
@@ -139,41 +148,48 @@ public class Hadoop20Shims implements HadoopShims {
   }
 
   public static class InputSplitShim extends CombineFileSplit implements HadoopShims.InputSplitShim {
+    long shrinkedLength;
+    boolean _isShrinked;
     public InputSplitShim() {
       super();
+      _isShrinked = false;
     }
 
     public InputSplitShim(CombineFileSplit old) throws IOException {
       super(old);
-    }
-  }
-
-  public static class CombineHiveKey implements WritableComparable {
-    Object key;
-
-    public CombineHiveKey(Object key) {
-      this.key = key;
+      _isShrinked = false;
     }
 
-    public Object getKey() {
-      return key;
+    @Override
+    public void shrinkSplit(long length) {
+      _isShrinked = true;
+      shrinkedLength = length;
     }
 
-    public void setKey(Object key) {
-      this.key = key;
+    public boolean isShrinked() {
+      return _isShrinked;
     }
 
-    public void write(DataOutput out) throws IOException {
-      throw new IOException("Method not supported");
+    public long getShrinkedLength() {
+      return shrinkedLength;
     }
 
+    @Override
     public void readFields(DataInput in) throws IOException {
-      throw new IOException("Method not supported");
+      super.readFields(in);
+      _isShrinked = in.readBoolean();
+      if (_isShrinked) {
+        shrinkedLength = in.readLong();
+      }
     }
 
-    public int compareTo(Object w) {
-      assert false;
-      return 0;
+    @Override
+    public void write(DataOutput out) throws IOException {
+      super.write(out);
+      out.writeBoolean(_isShrinked);
+      if (_isShrinked) {
+        out.writeLong(shrinkedLength);
+      }
     }
   }
 
@@ -200,10 +216,14 @@ public class Hadoop20Shims implements HadoopShims {
     protected int idx;
     protected long progress;
     protected RecordReader<K, V> curReader;
+    protected boolean isShrinked;
+    protected long shrinkedLength;
 
     public boolean next(K key, V value) throws IOException {
 
-      while ((curReader == null) || !curReader.next((K)((CombineHiveKey)key).getKey(), value)) {
+      while ((curReader == null)
+          || !doNextWithExceptionHandler((K) ((CombineHiveKey) key).getKey(),
+              value)) {
         if (!initNextRecordReader(key)) {
           return false;
         }
@@ -257,6 +277,14 @@ public class Hadoop20Shims implements HadoopShims {
       this.curReader = null;
       this.progress = 0;
 
+      isShrinked = false;
+
+      assert (split instanceof InputSplitShim);
+      if (((InputSplitShim) split).isShrinked()) {
+        isShrinked = true;
+        shrinkedLength = ((InputSplitShim) split).getShrinkedLength();
+      }
+
       try {
         rrConstructor = rrClass.getDeclaredConstructor(constructorSignature);
         rrConstructor.setAccessible(true);
@@ -265,6 +293,21 @@ public class Hadoop20Shims implements HadoopShims {
             " does not have valid constructor", e);
       }
       initNextRecordReader(null);
+    }
+
+    /**
+     * do next and handle exception inside it.
+     * @param key
+     * @param value
+     * @return
+     * @throws IOException
+     */
+    private boolean doNextWithExceptionHandler(K key, V value) throws IOException {
+      try {
+        return curReader.next(key, value);
+      } catch (Exception e) {
+        return HiveIOExceptionHandlerUtil.handleRecordReaderNextException(e, jc);
+      }
     }
 
     /**
@@ -280,8 +323,8 @@ public class Hadoop20Shims implements HadoopShims {
         }
       }
 
-      // if all chunks have been processed, nothing more to do.
-      if (idx == split.getNumPaths()) {
+      // if all chunks have been processed or reached the length, nothing more to do.
+      if (idx == split.getNumPaths() || (isShrinked && progress > shrinkedLength)) {
         return false;
       }
 
@@ -301,7 +344,7 @@ public class Hadoop20Shims implements HadoopShims {
         jc.setLong("map.input.start", split.getOffset(idx));
         jc.setLong("map.input.length", split.getLength(idx));
       } catch (Exception e) {
-        throw new RuntimeException(e);
+        curReader=HiveIOExceptionHandlerUtil.handleRecordReaderCreationException(e, jc);
       }
       idx++;
       return true;
@@ -438,6 +481,10 @@ public class Hadoop20Shims implements HadoopShims {
     // option to bypass job setup and cleanup was introduced in hadoop-21 (MAPREDUCE-463)
     // but can be backported. So we disable setup/cleanup in all versions >= 0.19
     conf.setBoolean("mapred.committer.job.setup.cleanup.needed", false);
+
+    // option to bypass task cleanup task was introduced in hadoop-23 (MAPREDUCE-2206)
+    // but can be backported. So we disable setup/cleanup in all versions >= 0.19
+    conf.setBoolean("mapreduce.job.committer.task.cleanup.needed", false);
   }
 
   @Override
@@ -449,14 +496,63 @@ public class Hadoop20Shims implements HadoopShims {
     }
     return ugi;
   }
-  
+
   @Override
   public boolean isSecureShimImpl() {
     return false;
   }
 
   @Override
+  public String getShortUserName(UserGroupInformation ugi) {
+    return ugi.getUserName();
+  }
+
+  @Override
   public String getTokenStrForm(String tokenSignature) throws IOException {
     throw new UnsupportedOperationException("Tokens are not supported in current hadoop version");
+  }
+
+  @Override
+  public void doAs(UserGroupInformation ugi, PrivilegedExceptionAction<Void> pvea) throws
+    IOException, InterruptedException {
+    try {
+      Subject.doAs(SecurityUtil.getSubject(ugi),pvea);
+    } catch (PrivilegedActionException e) {
+      throw new IOException(e);
+    }
+  }
+
+  @Override
+  public UserGroupInformation createRemoteUser(String userName, List<String> groupNames) {
+    return new UnixUserGroupInformation(userName, groupNames.toArray(new String[0]));
+  }
+
+  @Override
+  public JobTrackerState getJobTrackerState(ClusterStatus clusterStatus) throws Exception {
+    JobTrackerState state;
+    switch (clusterStatus.getJobTrackerState()) {
+    case INITIALIZING:
+      return JobTrackerState.INITIALIZING;
+    case RUNNING:
+      return JobTrackerState.RUNNING;
+    default:
+      String errorMsg = "Unrecognized JobTracker state: " + clusterStatus.getJobTrackerState();
+      throw new Exception(errorMsg);
+    }
+  }
+
+  @Override
+  public org.apache.hadoop.mapreduce.TaskAttemptContext newTaskAttemptContext(Configuration conf, final Progressable progressable) {
+    return new org.apache.hadoop.mapreduce.TaskAttemptContext(conf, new TaskAttemptID()) {
+      @Override
+      public void progress() {
+        progressable.progress();
+      }
+    };
+  }
+
+  @Override
+  public org.apache.hadoop.mapreduce.JobContext newJobContext(Job job) {
+    return new org.apache.hadoop.mapreduce.JobContext(job.getConfiguration(), job.getJobID());
   }
 }

@@ -17,8 +17,12 @@
  */
 package org.apache.hadoop.hive.ql.io;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
+import java.io.Serializable;
+import java.net.URL;
+import java.net.URLClassLoader;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -30,6 +34,22 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.ContentSummary;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.metastore.HiveMetaStore;
+import org.apache.hadoop.hive.ql.CommandNeedRetryException;
+import org.apache.hadoop.hive.ql.Context;
+import org.apache.hadoop.hive.ql.Driver;
+import org.apache.hadoop.hive.ql.QueryPlan;
+import org.apache.hadoop.hive.ql.exec.ExecDriver;
+import org.apache.hadoop.hive.ql.exec.MapRedTask;
+import org.apache.hadoop.hive.ql.exec.Task;
+import org.apache.hadoop.hive.ql.exec.Utilities;
+import org.apache.hadoop.hive.ql.metadata.Hive;
+import org.apache.hadoop.hive.ql.parse.ParseDriver;
+import org.apache.hadoop.hive.ql.parse.SemanticAnalyzer;
+import org.apache.hadoop.hive.ql.parse.SemanticException;
+import org.apache.hadoop.hive.ql.plan.MapredWork;
+import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapred.FileInputFormat;
@@ -37,6 +57,8 @@ import org.apache.hadoop.mapred.InputSplit;
 import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.mapred.RecordReader;
 import org.apache.hadoop.mapred.Reporter;
+import org.apache.hadoop.mapred.TextInputFormat;
+import org.apache.hadoop.util.ReflectionUtils;
 
 /**
  * Unittest for SymlinkTextInputFormat.
@@ -61,8 +83,9 @@ public class TestSymlinkTextInputFormat extends TestCase {
     conf = new Configuration();
     job = new JobConf(conf);
     fileSystem = FileSystem.getLocal(conf);
-    testDir = new Path(System.getProperty("test.data.dir", ".") +
-                       "/TestSymlinkTextInputFormat");
+    testDir = new Path(System.getProperty("test.data.dir", System.getProperty(
+        "user.dir", new File(".").getAbsolutePath()))
+        + "/TestSymlinkTextInputFormat");
     reporter = Reporter.NULL;
     fileSystem.delete(testDir, true);
 
@@ -74,6 +97,101 @@ public class TestSymlinkTextInputFormat extends TestCase {
   @Override
   protected void tearDown() throws IOException {
     fileSystem.delete(testDir, true);
+  }
+
+  /**
+   * Test combine symlink text input file. Two input dir, and each contails one
+   * file, and then create one symlink file containing these 2 files. Normally
+   * without combine, it will return at least 2 splits
+   */
+  public void testCombine() throws Exception {
+    JobConf newJob = new JobConf(job);
+    FileSystem fs = dataDir1.getFileSystem(newJob);
+    int symbolLinkedFileSize = 0;
+    
+    Path dir1_file1 = new Path(dataDir1, "combinefile1_1");
+    writeTextFile(dir1_file1,
+                  "dir1_file1_line1\n" +
+                  "dir1_file1_line2\n");
+    
+    symbolLinkedFileSize += fs.getFileStatus(dir1_file1).getLen();
+    
+    Path dir2_file1 = new Path(dataDir2, "combinefile2_1");
+    writeTextFile(dir2_file1,
+                  "dir2_file1_line1\n" +
+                  "dir2_file1_line2\n");
+    
+    symbolLinkedFileSize += fs.getFileStatus(dir2_file1).getLen();
+    
+    // A symlink file, contains first file from first dir and second file from
+    // second dir.
+    writeSymlinkFile(
+        new Path(symlinkDir, "symlink_file"),
+        new Path(dataDir1, "combinefile1_1"),
+        new Path(dataDir2, "combinefile2_1"));
+    
+    
+    HiveConf hiveConf = new HiveConf(TestSymlinkTextInputFormat.class);
+    
+    HiveConf.setBoolVar(hiveConf, HiveConf.ConfVars.HIVE_REWORK_MAPREDWORK, true);
+    HiveConf.setBoolVar(hiveConf, HiveConf.ConfVars.HIVE_SUPPORT_CONCURRENCY, false);
+    Driver drv = new Driver(hiveConf);
+    drv.init();
+    String tblName = "text_symlink_text";
+
+    String createSymlinkTableCmd = "create table " + tblName + " (key int) stored as " +
+    		" inputformat 'org.apache.hadoop.hive.ql.io.SymlinkTextInputFormat' " +
+    		" outputformat 'org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat'";
+    
+    SessionState.start(hiveConf);
+    
+    boolean tblCreated = false;
+    try {
+      int ecode = 0;
+      ecode = drv.run(createSymlinkTableCmd).getResponseCode();
+      if (ecode != 0) {
+        throw new Exception("Create table command: " + createSymlinkTableCmd
+            + " failed with exit code= " + ecode);
+      }
+
+      String loadFileCommand = "LOAD DATA LOCAL INPATH '" + 
+        new Path(symlinkDir, "symlink_file").toString() + "' INTO TABLE " + tblName;
+      
+      ecode = drv.run(loadFileCommand).getResponseCode();
+      if (ecode != 0) {
+        throw new Exception("Load data command: " + loadFileCommand
+            + " failed with exit code= " + ecode);
+      }
+      
+      String cmd = "select key from " + tblName;
+      drv.compile(cmd);
+
+      //create scratch dir
+      String emptyScratchDirStr;
+      Path emptyScratchDir;
+      Context ctx = new Context(newJob);
+      emptyScratchDirStr = ctx.getMRTmpFileURI();
+      emptyScratchDir = new Path(emptyScratchDirStr);
+      FileSystem fileSys = emptyScratchDir.getFileSystem(newJob);
+      fileSys.mkdirs(emptyScratchDir);
+      
+      QueryPlan plan = drv.getPlan();
+      MapRedTask selectTask = (MapRedTask)plan.getRootTasks().get(0);
+      
+      ExecDriver.addInputPaths(newJob, selectTask.getWork(), emptyScratchDir.toString(), ctx);
+      Utilities.setMapRedWork(newJob, selectTask.getWork(), ctx.getMRTmpFileURI());
+      
+      CombineHiveInputFormat combineInputFormat = ReflectionUtils.newInstance(
+          CombineHiveInputFormat.class, newJob);
+      InputSplit[] retSplits = combineInputFormat.getSplits(newJob, 1);
+      assertEquals(1, retSplits.length);
+    } catch (Exception e) {
+      e.printStackTrace();
+    } finally {
+      if (tblCreated) {
+        drv.run("drop table text_symlink_text;").getResponseCode();
+      }
+    }
   }
 
   /**

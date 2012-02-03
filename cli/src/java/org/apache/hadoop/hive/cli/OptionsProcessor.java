@@ -18,7 +18,9 @@
 
 package org.apache.hadoop.hive.cli;
 
+import java.util.HashMap;
 import java.util.Arrays;
+import java.util.Map;
 import java.util.Properties;
 
 import org.apache.commons.cli.GnuParser;
@@ -38,7 +40,7 @@ public class OptionsProcessor {
   protected static final Log l4j = LogFactory.getLog(OptionsProcessor.class.getName());
   private final Options options = new Options();
   private org.apache.commons.cli.CommandLine commandLine;
-
+  Map<String, String> hiveVariables = new HashMap<String, String>();
 
   @SuppressWarnings("static-access")
   public OptionsProcessor() {
@@ -73,14 +75,47 @@ public class OptionsProcessor {
         .withDescription("Use value for given property")
         .create());
 
+    // -h hostname/ippaddress
+    options.addOption(OptionBuilder
+        .hasArg()
+        .withArgName("hostname")
+        .withDescription("connecting to Hive Server on remote host")
+        .create('h'));
+
+    // -p port
+    options.addOption(OptionBuilder
+        .hasArg()
+        .withArgName("port")
+        .withDescription("connecting to Hive Server on port number")
+        .create('p'));
+
+    // Substitution option -d, --define
+    options.addOption(OptionBuilder
+        .withValueSeparator()
+        .hasArgs(2)
+        .withArgName("key=value")
+        .withLongOpt("define")
+        .withDescription("Variable subsitution to apply to hive commands. e.g. -d A=B or --define A=B")
+        .create('d'));
+
+    // Substitution option --hivevar
+    options.addOption(OptionBuilder
+        .withValueSeparator()
+        .hasArgs(2)
+        .withArgName("key=value")
+        .withLongOpt("hivevar")
+        .withDescription("Variable subsitution to apply to hive commands. e.g. --hivevar A=B")
+        .create());
+
     // [-S|--silent]
     options.addOption(new Option("S", "silent", false, "Silent mode in interactive shell"));
 
     // [-v|--verbose]
     options.addOption(new Option("v", "verbose", false, "Verbose mode (echo executed SQL to the console)"));
 
-    // [-h|--help]
-    options.addOption(new Option("h", "help", false, "Print help information"));
+    // [-H|--help]
+    options.addOption(new Option("H", "help", false, "Print help information"));
+
   }
 
   public boolean process_stage1(String[] argv) {
@@ -89,6 +124,16 @@ public class OptionsProcessor {
       Properties confProps = commandLine.getOptionProperties("hiveconf");
       for (String propKey : confProps.stringPropertyNames()) {
         System.setProperty(propKey, confProps.getProperty(propKey));
+      }
+
+      Properties hiveVars = commandLine.getOptionProperties("define");
+      for (String propKey : hiveVars.stringPropertyNames()) {
+        hiveVariables.put(propKey, hiveVars.getProperty(propKey));
+      }
+
+      Properties hiveVars2 = commandLine.getOptionProperties("hivevar");
+      for (String propKey : hiveVars2.stringPropertyNames()) {
+        hiveVariables.put(propKey, hiveVars2.getProperty(propKey));
       }
     } catch (ParseException e) {
       System.err.println(e.getMessage());
@@ -101,7 +146,7 @@ public class OptionsProcessor {
   public boolean process_stage2(CliSessionState ss) {
     ss.getConf();
 
-    if (commandLine.hasOption('h')) {
+    if (commandLine.hasOption('H')) {
       printUsage();
       return false;
     }
@@ -113,6 +158,10 @@ public class OptionsProcessor {
     ss.fileName = commandLine.getOptionValue('f');
 
     ss.setIsVerbose(commandLine.hasOption('v'));
+
+    ss.host = (String) commandLine.getOptionValue('h');
+
+    ss.port = Integer.parseInt((String) commandLine.getOptionValue('p', "10000"));
 
     String[] initFiles = commandLine.getOptionValues('i');
     if (null != initFiles) {
@@ -137,5 +186,9 @@ public class OptionsProcessor {
 
   private void printUsage() {
     new HelpFormatter().printHelp("hive", options);
+  }
+
+  public Map<String, String> getHiveVariables() {
+    return hiveVariables;
   }
 }

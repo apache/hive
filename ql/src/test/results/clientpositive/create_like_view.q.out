@@ -1,0 +1,330 @@
+PREHOOK: query: DROP TABLE IF EXISTS table1
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: DROP TABLE IF EXISTS table1
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: DROP TABLE IF EXISTS table2
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: DROP TABLE IF EXISTS table2
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: DROP TABLE IF EXISTS table3
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: DROP TABLE IF EXISTS table3
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: DROP VIEW IF EXISTS view1
+PREHOOK: type: DROPVIEW
+POSTHOOK: query: DROP VIEW IF EXISTS view1
+POSTHOOK: type: DROPVIEW
+PREHOOK: query: CREATE TABLE table1 (a STRING, b STRING) STORED AS TEXTFILE
+PREHOOK: type: CREATETABLE
+POSTHOOK: query: CREATE TABLE table1 (a STRING, b STRING) STORED AS TEXTFILE
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: default@table1
+PREHOOK: query: DESCRIBE table1
+PREHOOK: type: DESCTABLE
+POSTHOOK: query: DESCRIBE table1
+POSTHOOK: type: DESCTABLE
+a	string	
+b	string	
+PREHOOK: query: DESCRIBE FORMATTED table1
+PREHOOK: type: DESCTABLE
+POSTHOOK: query: DESCRIBE FORMATTED table1
+POSTHOOK: type: DESCTABLE
+# col_name            	data_type           	comment             
+	 	 
+a                   	string              	None                
+b                   	string              	None                
+	 	 
+# Detailed Table Information	 	 
+Database:           	default             	 
+Owner:              	charleschen         	 
+CreateTime:         	Sat Jul 16 15:42:16 PDT 2011	 
+LastAccessTime:     	UNKNOWN             	 
+Protect Mode:       	None                	 
+Retention:          	0                   	 
+Location:           	pfile:/Users/charleschen/hive-trunk2/build/ql/test/data/warehouse/table1	 
+Table Type:         	MANAGED_TABLE       	 
+Table Parameters:	 	 
+	transient_lastDdlTime	1310856136          
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe	 
+InputFormat:        	org.apache.hadoop.mapred.TextInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	-1                  	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
+Storage Desc Params:	 	 
+	serialization.format	1                   
+PREHOOK: query: CREATE VIEW view1 AS SELECT * FROM table1
+PREHOOK: type: CREATEVIEW
+PREHOOK: Output: file:/var/folders/fe/fefl-ow3ElaEd1ns0G7jB0uewEQ/-Tmp-/charleschen/hive_2011-07-16_15-42-17_015_678488215389625233/-mr-10000
+POSTHOOK: query: CREATE VIEW view1 AS SELECT * FROM table1
+POSTHOOK: type: CREATEVIEW
+POSTHOOK: Output: default@view1
+POSTHOOK: Output: file:/var/folders/fe/fefl-ow3ElaEd1ns0G7jB0uewEQ/-Tmp-/charleschen/hive_2011-07-16_15-42-17_015_678488215389625233/-mr-10000
+PREHOOK: query: CREATE TABLE table2 LIKE view1
+PREHOOK: type: CREATETABLE
+POSTHOOK: query: CREATE TABLE table2 LIKE view1
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: default@table2
+PREHOOK: query: DESCRIBE table2
+PREHOOK: type: DESCTABLE
+POSTHOOK: query: DESCRIBE table2
+POSTHOOK: type: DESCTABLE
+a	string	
+b	string	
+PREHOOK: query: DESCRIBE FORMATTED table2
+PREHOOK: type: DESCTABLE
+POSTHOOK: query: DESCRIBE FORMATTED table2
+POSTHOOK: type: DESCTABLE
+# col_name            	data_type           	comment             
+	 	 
+a                   	string              	None                
+b                   	string              	None                
+	 	 
+# Detailed Table Information	 	 
+Database:           	default             	 
+Owner:              	charleschen         	 
+CreateTime:         	Sat Jul 16 15:42:17 PDT 2011	 
+LastAccessTime:     	UNKNOWN             	 
+Protect Mode:       	None                	 
+Retention:          	0                   	 
+Location:           	pfile:/Users/charleschen/hive-trunk2/build/ql/test/data/warehouse/table2	 
+Table Type:         	MANAGED_TABLE       	 
+Table Parameters:	 	 
+	transient_lastDdlTime	1310856137          
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe	 
+InputFormat:        	org.apache.hadoop.mapred.TextInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	-1                  	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
+Storage Desc Params:	 	 
+	serialization.format	1                   
+PREHOOK: query: CREATE TABLE IF NOT EXISTS table2 LIKE view1
+PREHOOK: type: CREATETABLE
+POSTHOOK: query: CREATE TABLE IF NOT EXISTS table2 LIKE view1
+POSTHOOK: type: CREATETABLE
+PREHOOK: query: CREATE EXTERNAL TABLE IF NOT EXISTS table2 LIKE view1
+PREHOOK: type: CREATETABLE
+POSTHOOK: query: CREATE EXTERNAL TABLE IF NOT EXISTS table2 LIKE view1
+POSTHOOK: type: CREATETABLE
+PREHOOK: query: CREATE EXTERNAL TABLE IF NOT EXISTS table3 LIKE view1
+PREHOOK: type: CREATETABLE
+POSTHOOK: query: CREATE EXTERNAL TABLE IF NOT EXISTS table3 LIKE view1
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: default@table3
+PREHOOK: query: DESCRIBE table3
+PREHOOK: type: DESCTABLE
+POSTHOOK: query: DESCRIBE table3
+POSTHOOK: type: DESCTABLE
+a	string	
+b	string	
+PREHOOK: query: DESCRIBE FORMATTED table3
+PREHOOK: type: DESCTABLE
+POSTHOOK: query: DESCRIBE FORMATTED table3
+POSTHOOK: type: DESCTABLE
+# col_name            	data_type           	comment             
+	 	 
+a                   	string              	None                
+b                   	string              	None                
+	 	 
+# Detailed Table Information	 	 
+Database:           	default             	 
+Owner:              	charleschen         	 
+CreateTime:         	Sat Jul 16 15:42:17 PDT 2011	 
+LastAccessTime:     	UNKNOWN             	 
+Protect Mode:       	None                	 
+Retention:          	0                   	 
+Location:           	pfile:/Users/charleschen/hive-trunk2/build/ql/test/data/warehouse/table3	 
+Table Type:         	EXTERNAL_TABLE      	 
+Table Parameters:	 	 
+	EXTERNAL            	TRUE                
+	transient_lastDdlTime	1310856137          
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe	 
+InputFormat:        	org.apache.hadoop.mapred.TextInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	-1                  	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
+Storage Desc Params:	 	 
+	serialization.format	1                   
+PREHOOK: query: INSERT OVERWRITE TABLE table1 SELECT key, value FROM src WHERE key = 86
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@table1
+POSTHOOK: query: INSERT OVERWRITE TABLE table1 SELECT key, value FROM src WHERE key = 86
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@table1
+POSTHOOK: Lineage: table1.a SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: table1.b SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: INSERT OVERWRITE TABLE table2 SELECT key, value FROM src WHERE key = 100
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@table2
+POSTHOOK: query: INSERT OVERWRITE TABLE table2 SELECT key, value FROM src WHERE key = 100
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@table2
+POSTHOOK: Lineage: table1.a SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: table1.b SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: table2.a SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: table2.b SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: SELECT * FROM table1 order by a, b
+PREHOOK: type: QUERY
+PREHOOK: Input: default@table1
+PREHOOK: Output: file:/var/folders/fe/fefl-ow3ElaEd1ns0G7jB0uewEQ/-Tmp-/charleschen/hive_2011-07-16_15-42-29_194_1551180376215487165/-mr-10000
+POSTHOOK: query: SELECT * FROM table1 order by a, b
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@table1
+POSTHOOK: Output: file:/var/folders/fe/fefl-ow3ElaEd1ns0G7jB0uewEQ/-Tmp-/charleschen/hive_2011-07-16_15-42-29_194_1551180376215487165/-mr-10000
+POSTHOOK: Lineage: table1.a SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: table1.b SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: table2.a SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: table2.b SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+86	val_86
+PREHOOK: query: SELECT * FROM table2 order by a, b
+PREHOOK: type: QUERY
+PREHOOK: Input: default@table2
+PREHOOK: Output: file:/var/folders/fe/fefl-ow3ElaEd1ns0G7jB0uewEQ/-Tmp-/charleschen/hive_2011-07-16_15-42-33_431_277070075655620984/-mr-10000
+POSTHOOK: query: SELECT * FROM table2 order by a, b
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@table2
+POSTHOOK: Output: file:/var/folders/fe/fefl-ow3ElaEd1ns0G7jB0uewEQ/-Tmp-/charleschen/hive_2011-07-16_15-42-33_431_277070075655620984/-mr-10000
+POSTHOOK: Lineage: table1.a SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: table1.b SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: table2.a SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: table2.b SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+100	val_100
+100	val_100
+PREHOOK: query: DROP TABLE table1
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@table1
+PREHOOK: Output: default@table1
+POSTHOOK: query: DROP TABLE table1
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@table1
+POSTHOOK: Output: default@table1
+POSTHOOK: Lineage: table1.a SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: table1.b SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: table2.a SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: table2.b SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: DROP TABLE table2
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@table2
+PREHOOK: Output: default@table2
+POSTHOOK: query: DROP TABLE table2
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@table2
+POSTHOOK: Output: default@table2
+POSTHOOK: Lineage: table1.a SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: table1.b SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: table2.a SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: table2.b SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: DROP VIEW view1
+PREHOOK: type: DROPVIEW
+PREHOOK: Input: default@view1
+PREHOOK: Output: default@view1
+POSTHOOK: query: DROP VIEW view1
+POSTHOOK: type: DROPVIEW
+POSTHOOK: Input: default@view1
+POSTHOOK: Output: default@view1
+POSTHOOK: Lineage: table1.a SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: table1.b SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: table2.a SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: table2.b SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: -- check partitions
+create view view1 partitioned on (ds, hr) as select * from srcpart
+PREHOOK: type: CREATEVIEW
+PREHOOK: Output: file:/var/folders/fe/fefl-ow3ElaEd1ns0G7jB0uewEQ/-Tmp-/charleschen/hive_2011-07-16_15-42-38_417_1642626087699140210/-mr-10000
+POSTHOOK: query: -- check partitions
+create view view1 partitioned on (ds, hr) as select * from srcpart
+POSTHOOK: type: CREATEVIEW
+POSTHOOK: Output: default@view1
+POSTHOOK: Output: file:/var/folders/fe/fefl-ow3ElaEd1ns0G7jB0uewEQ/-Tmp-/charleschen/hive_2011-07-16_15-42-38_417_1642626087699140210/-mr-10000
+POSTHOOK: Lineage: table1.a SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: table1.b SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: table2.a SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: table2.b SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: create table table1 like view1
+PREHOOK: type: CREATETABLE
+POSTHOOK: query: create table table1 like view1
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: default@table1
+POSTHOOK: Lineage: table1.a SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: table1.b SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: table2.a SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: table2.b SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: describe formatted table1
+PREHOOK: type: DESCTABLE
+POSTHOOK: query: describe formatted table1
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Lineage: table1.a SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: table1.b SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: table2.a SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: table2.b SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+# col_name            	data_type           	comment             
+	 	 
+key                 	string              	None                
+value               	string              	None                
+	 	 
+# Partition Information	 	 
+# col_name            	data_type           	comment             
+	 	 
+ds                  	string              	None                
+hr                  	string              	None                
+	 	 
+# Detailed Table Information	 	 
+Database:           	default             	 
+Owner:              	charleschen         	 
+CreateTime:         	Sat Jul 16 15:42:38 PDT 2011	 
+LastAccessTime:     	UNKNOWN             	 
+Protect Mode:       	None                	 
+Retention:          	0                   	 
+Location:           	pfile:/Users/charleschen/hive-trunk2/build/ql/test/data/warehouse/table1	 
+Table Type:         	MANAGED_TABLE       	 
+Table Parameters:	 	 
+	transient_lastDdlTime	1310856158          
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe	 
+InputFormat:        	org.apache.hadoop.mapred.TextInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	-1                  	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
+Storage Desc Params:	 	 
+	serialization.format	1                   
+PREHOOK: query: DROP TABLE table1
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@table1
+PREHOOK: Output: default@table1
+POSTHOOK: query: DROP TABLE table1
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@table1
+POSTHOOK: Output: default@table1
+POSTHOOK: Lineage: table1.a SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: table1.b SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: table2.a SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: table2.b SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: DROP VIEW view1
+PREHOOK: type: DROPVIEW
+PREHOOK: Input: default@view1
+PREHOOK: Output: default@view1
+POSTHOOK: query: DROP VIEW view1
+POSTHOOK: type: DROPVIEW
+POSTHOOK: Input: default@view1
+POSTHOOK: Output: default@view1
+POSTHOOK: Lineage: table1.a SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: table1.b SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: table2.a SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: table2.b SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]

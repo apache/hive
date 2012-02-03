@@ -25,6 +25,7 @@ import org.apache.hadoop.hive.serde2.io.ShortWritable;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorConverters.Converter;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorFactory;
 import org.apache.hadoop.io.BooleanWritable;
+import org.apache.hadoop.io.BytesWritable;
 import org.apache.hadoop.io.FloatWritable;
 import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.LongWritable;
@@ -109,7 +110,26 @@ public class TestObjectInspectorConverters extends TestCase {
           .convert(Integer.valueOf(0)));
       assertEquals("TextConverter", new Text("1"), textConverter
           .convert(Integer.valueOf(1)));
+      textConverter = ObjectInspectorConverters.getConverter(
+          PrimitiveObjectInspectorFactory.writableBinaryObjectInspector,
+          PrimitiveObjectInspectorFactory.writableStringObjectInspector);
+      assertEquals("TextConverter", new Text("hive"), textConverter
+          .convert(new BytesWritable(new byte[]
+              {(byte)'h', (byte)'i',(byte)'v',(byte)'e'})));
 
+      // Binary
+      Converter baConverter = ObjectInspectorConverters.getConverter(
+          PrimitiveObjectInspectorFactory.javaStringObjectInspector,
+          PrimitiveObjectInspectorFactory.writableBinaryObjectInspector);
+      assertEquals("BAConverter", new BytesWritable(new byte[]
+          {(byte)'h', (byte)'i',(byte)'v',(byte)'e'}),
+          baConverter.convert("hive"));
+      baConverter = ObjectInspectorConverters.getConverter(
+          PrimitiveObjectInspectorFactory.writableStringObjectInspector,
+          PrimitiveObjectInspectorFactory.writableBinaryObjectInspector);
+      assertEquals("BAConverter", new BytesWritable(new byte[]
+          {(byte)'h', (byte)'i',(byte)'v',(byte)'e'}),
+          baConverter.convert(new Text("hive")));
     } catch (Throwable e) {
       e.printStackTrace();
       throw e;

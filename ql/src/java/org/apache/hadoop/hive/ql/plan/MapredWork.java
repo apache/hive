@@ -21,17 +21,18 @@ package org.apache.hadoop.hive.ql.plan;
 import java.io.ByteArrayOutputStream;
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.parse.OpParseContext;
 import org.apache.hadoop.hive.ql.parse.QBJoinTree;
-import org.apache.hadoop.hive.conf.HiveConf;
-import org.apache.hadoop.hive.ql.metadata.Hive;
-import org.apache.hadoop.hive.ql.metadata.HiveException;
+import org.apache.hadoop.hive.ql.parse.SplitSample;
 
 /**
  * MapredWork.
@@ -52,6 +53,8 @@ public class MapredWork implements Serializable {
 
   private LinkedHashMap<String, PartitionDesc> aliasToPartnInfo;
 
+  private HashMap<String, SplitSample> nameToSplitSample;
+
   // map<->reduce interface
   // schema of the map-reduce 'key' object - this is homogeneous
   private TableDesc keyDesc;
@@ -63,13 +66,17 @@ public class MapredWork implements Serializable {
 
   private Integer numReduceTasks;
   private Integer numMapTasks;
+  private Long maxSplitSize;
   private Long minSplitSize;
+  private Long minSplitSizePerNode;
+  private Long minSplitSizePerRack;
 
   private boolean needsTagging;
   private boolean hadoopSupportsSplittable;
 
   private MapredLocalWork mapLocalWork;
   private String inputformat;
+  private String indexIntermediateFile;
   private boolean gatheringStats;
 
   private String tmpHDFSFileURI;
@@ -79,6 +86,9 @@ public class MapredWork implements Serializable {
   private QBJoinTree joinTree;
 
   private boolean mapperCannotSpanPartns;
+
+  // used to indicate the input is sorted, and so a BinarySearchRecordReader shoudl be used
+  private boolean inputFormatSorted = false;
 
   public MapredWork() {
     aliasToPartnInfo = new LinkedHashMap<String, PartitionDesc>();
@@ -104,6 +114,10 @@ public class MapredWork implements Serializable {
     this.mapLocalWork = mapLocalWork;
     aliasToPartnInfo = new LinkedHashMap<String, PartitionDesc>();
     this.hadoopSupportsSplittable = hadoopSupportsSplittable;
+    maxSplitSize = null;
+    minSplitSize = null;
+    minSplitSizePerNode = null;
+    minSplitSizePerRack = null;
   }
 
   public String getCommand() {
@@ -197,6 +211,15 @@ public class MapredWork implements Serializable {
     return reducer;
   }
 
+  @Explain(displayName = "Percentage Sample")
+  public HashMap<String, SplitSample> getNameToSplitSample() {
+    return nameToSplitSample;
+  }
+
+  public void setNameToSplitSample(HashMap<String, SplitSample> nameToSplitSample) {
+    this.nameToSplitSample = nameToSplitSample;
+  }
+
   public void setReducer(final Operator<?> reducer) {
     this.reducer = reducer;
   }
@@ -279,6 +302,9 @@ public class MapredWork implements Serializable {
    * operator - but could be useful for debugging as well.
    */
   private void setAliases() {
+    if(aliasToWork == null) {
+      return;
+    }
     for (String oneAlias : aliasToWork.keySet()) {
       aliasToWork.get(oneAlias).setAlias(oneAlias);
     }
@@ -320,6 +346,14 @@ public class MapredWork implements Serializable {
     this.hadoopSupportsSplittable = hadoopSupportsSplittable;
   }
 
+  public Long getMaxSplitSize() {
+    return maxSplitSize;
+  }
+
+  public void setMaxSplitSize(Long maxSplitSize) {
+    this.maxSplitSize = maxSplitSize;
+  }
+
   public Long getMinSplitSize() {
     return minSplitSize;
   }
@@ -328,12 +362,40 @@ public class MapredWork implements Serializable {
     this.minSplitSize = minSplitSize;
   }
 
+  public Long getMinSplitSizePerNode() {
+    return minSplitSizePerNode;
+  }
+
+  public void setMinSplitSizePerNode(Long minSplitSizePerNode) {
+    this.minSplitSizePerNode = minSplitSizePerNode;
+  }
+
+  public Long getMinSplitSizePerRack() {
+    return minSplitSizePerRack;
+  }
+
+  public void setMinSplitSizePerRack(Long minSplitSizePerRack) {
+    this.minSplitSizePerRack = minSplitSizePerRack;
+  }
+
   public String getInputformat() {
     return inputformat;
   }
 
   public void setInputformat(String inputformat) {
     this.inputformat = inputformat;
+  }
+
+  public String getIndexIntermediateFile() {
+    return indexIntermediateFile;
+  }
+
+  public void addIndexIntermediateFile(String fileName) {
+    if (this.indexIntermediateFile == null) {
+      this.indexIntermediateFile = fileName;
+    } else {
+      this.indexIntermediateFile += "," + fileName;
+    }
   }
 
   public void setGatheringStats(boolean gatherStats) {
@@ -376,6 +438,20 @@ public class MapredWork implements Serializable {
   public void setOpParseCtxMap(
       LinkedHashMap<Operator<? extends Serializable>, OpParseContext> opParseCtxMap) {
     this.opParseCtxMap = opParseCtxMap;
+  }
+
+  public boolean isInputFormatSorted() {
+    return inputFormatSorted;
+  }
+
+  public void setInputFormatSorted(boolean inputFormatSorted) {
+    this.inputFormatSorted = inputFormatSorted;
+  }
+
+  public void resolveDynamicPartitionMerge(HiveConf conf, Path path,
+      TableDesc tblDesc, ArrayList<String> aliases, PartitionDesc partDesc) {
+    pathToAliases.put(path.toString(), aliases);
+    pathToPartitionInfo.put(path.toString(), partDesc);
   }
 
 }

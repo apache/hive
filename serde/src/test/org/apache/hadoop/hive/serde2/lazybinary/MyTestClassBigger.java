@@ -21,6 +21,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.apache.hadoop.hive.serde2.binarysortable.MyTestInnerStruct;
+import org.apache.hadoop.hive.serde2.lazy.ByteArrayRef;
 
 /**
  * MyTestClassBigger.
@@ -36,6 +37,7 @@ public class MyTestClassBigger {
   String myString;
   MyTestInnerStruct myStruct;
   List<Integer> myList;
+  ByteArrayRef myBA;
   Map<String, List<MyTestInnerStruct>> myMap;
 
   public MyTestClassBigger() {
@@ -43,7 +45,7 @@ public class MyTestClassBigger {
 
   public MyTestClassBigger(Byte b, Short s, Integer i, Long l, Float f,
       Double d, String st, MyTestInnerStruct is, List<Integer> li,
-      Map<String, List<MyTestInnerStruct>> mp) {
+      ByteArrayRef ba, Map<String, List<MyTestInnerStruct>> mp) {
     myByte = b;
     myShort = s;
     myInt = i;
@@ -53,6 +55,7 @@ public class MyTestClassBigger {
     myString = st;
     myStruct = is;
     myList = li;
+    myBA = ba;
     myMap = mp;
   }
 }

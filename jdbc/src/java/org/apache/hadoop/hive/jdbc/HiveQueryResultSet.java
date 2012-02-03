@@ -21,6 +21,7 @@ package org.apache.hadoop.hive.jdbc;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Properties;
 
@@ -30,14 +31,15 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.Schema;
 import org.apache.hadoop.hive.serde.Constants;
-import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils;
 import org.apache.hadoop.hive.serde2.SerDe;
 import org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
+import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils;
+import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils.ObjectInspectorCopyOption;
 import org.apache.hadoop.hive.serde2.objectinspector.StructField;
 import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
-import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils.ObjectInspectorCopyOption;
 import org.apache.hadoop.hive.service.HiveInterface;
+import org.apache.hadoop.hive.service.HiveServerException;
 import org.apache.hadoop.io.BytesWritable;
 
 /**
@@ -53,6 +55,10 @@ public class HiveQueryResultSet extends HiveBaseResultSet {
 
   private int maxRows = 0;
   private int rowsFetched = 0;
+  private int fetchSize = 50;
+
+  private List<String> fetchedRows;
+  private Iterator<String> fetchedRowsItr;
 
   public HiveQueryResultSet(HiveInterface client, int maxRows) throws SQLException {
     this.client = client;
@@ -95,18 +101,18 @@ public class HiveQueryResultSet extends HiveBaseResultSet {
       serde = new LazySimpleSerDe();
       Properties props = new Properties();
       if (names.length() > 0) {
-        LOG.info("Column names: " + names);
+        LOG.debug("Column names: " + names);
         props.setProperty(Constants.LIST_COLUMNS, names);
       }
       if (types.length() > 0) {
-        LOG.info("Column types: " + types);
+        LOG.debug("Column types: " + types);
         props.setProperty(Constants.LIST_COLUMN_TYPES, types);
       }
       serde.initialize(new Configuration(), props);
 
     } catch (Exception ex) {
       ex.printStackTrace();
-      throw new SQLException("Could not create ResultSet: " + ex.getMessage());
+      throw new SQLException("Could not create ResultSet: " + ex.getMessage(), ex);
     }
   }
 
@@ -127,38 +133,61 @@ public class HiveQueryResultSet extends HiveBaseResultSet {
       return false;
     }
 
-    String rowStr = "";
     try {
-      rowStr = (String) client.fetchOne();
+      if (fetchedRows == null || !fetchedRowsItr.hasNext()) {
+        fetchedRows = client.fetchN(fetchSize);
+        fetchedRowsItr = fetchedRows.iterator();
+      }
+
+      String rowStr = "";
+      if (fetchedRowsItr.hasNext()) {
+        rowStr = fetchedRowsItr.next();
+      } else {
+        return false;
+      }
+
       rowsFetched++;
       if (LOG.isDebugEnabled()) {
         LOG.debug("Fetched row string: " + rowStr);
       }
 
-      if (!"".equals(rowStr)) {
-        StructObjectInspector soi = (StructObjectInspector) serde.getObjectInspector();
-        List<? extends StructField> fieldRefs = soi.getAllStructFieldRefs();
-        Object data = serde.deserialize(new BytesWritable(rowStr.getBytes()));
+      StructObjectInspector soi = (StructObjectInspector) serde.getObjectInspector();
+      List<? extends StructField> fieldRefs = soi.getAllStructFieldRefs();
+      Object data = serde.deserialize(new BytesWritable(rowStr.getBytes()));
 
-        assert row.size() == fieldRefs.size() : row.size() + ", " + fieldRefs.size();
-        for (int i = 0; i < fieldRefs.size(); i++) {
-          StructField fieldRef = fieldRefs.get(i);
-          ObjectInspector oi = fieldRef.getFieldObjectInspector();
-          Object obj = soi.getStructFieldData(data, fieldRef);
-          row.set(i, convertLazyToJava(obj, oi));
-        }
-
-        if (LOG.isDebugEnabled()) {
-          LOG.debug("Deserialized row: " + row);
-        }
+      assert row.size() == fieldRefs.size() : row.size() + ", " + fieldRefs.size();
+      for (int i = 0; i < fieldRefs.size(); i++) {
+        StructField fieldRef = fieldRefs.get(i);
+        ObjectInspector oi = fieldRef.getFieldObjectInspector();
+        Object obj = soi.getStructFieldData(data, fieldRef);
+        row.set(i, convertLazyToJava(obj, oi));
       }
 
+      if (LOG.isDebugEnabled()) {
+        LOG.debug("Deserialized row: " + row);
+      }
+    } catch (HiveServerException e) {
+      if (e.getErrorCode() == 0) { // error code == 0 means reached the EOF
+        return false;
+      } else {
+        throw new SQLException("Error retrieving next row", e);
+      }
     } catch (Exception ex) {
       ex.printStackTrace();
-      throw new SQLException("Error retrieving next row");
+      throw new SQLException("Error retrieving next row", ex);
     }
     // NOTE: fetchOne dosn't throw new SQLException("Method not supported").
-    return !"".equals(rowStr);
+    return true;
+  }
+
+  @Override
+  public void setFetchSize(int rows) throws SQLException {
+    fetchSize = rows;
+  }
+
+  @Override
+  public int getFetchSize() throws SQLException {
+    return fetchSize;
   }
 
   /**

@@ -20,6 +20,8 @@ package org.apache.hadoop.hive.shims;
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
+import java.security.PrivilegedExceptionAction;
+import java.util.List;
 
 import javax.security.auth.login.LoginException;
 
@@ -31,6 +33,7 @@ import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.fs.PathFilter;
 import org.apache.hadoop.io.Text;
+import org.apache.hadoop.mapred.ClusterStatus;
 import org.apache.hadoop.mapred.InputFormat;
 import org.apache.hadoop.mapred.InputSplit;
 import org.apache.hadoop.mapred.JobConf;
@@ -38,7 +41,11 @@ import org.apache.hadoop.mapred.RecordReader;
 import org.apache.hadoop.mapred.Reporter;
 import org.apache.hadoop.mapred.RunningJob;
 import org.apache.hadoop.mapred.TaskCompletionEvent;
+import org.apache.hadoop.mapreduce.Job;
+import org.apache.hadoop.mapreduce.JobContext;
+import org.apache.hadoop.mapreduce.TaskAttemptContext;
 import org.apache.hadoop.security.UserGroupInformation;
+import org.apache.hadoop.util.Progressable;
 
 /**
  * In order to be compatible with multiple versions of Hadoop, all parts
@@ -159,6 +166,33 @@ public interface HadoopShims {
   public UserGroupInformation getUGIForConf(Configuration conf) throws LoginException, IOException;
 
   /**
+   * Used by metastore server to perform requested rpc in client context.
+   * @param ugi
+   * @param pvea
+   * @throws IOException
+   * @throws InterruptedException
+   */
+  public void doAs(UserGroupInformation ugi, PrivilegedExceptionAction<Void> pvea) throws
+    IOException, InterruptedException;
+
+  /**
+   * Used by metastore server to creates UGI object for a remote user.
+   * @param userName remote User Name
+   * @param groupNames group names associated with remote user name
+   * @return UGI created for the remote user.
+   */
+
+  public UserGroupInformation createRemoteUser(String userName, List<String> groupNames);
+  /**
+   * Get the short name corresponding to the subject in the passed UGI
+   *
+   * In secure versions of Hadoop, this returns the short name (after
+   * undergoing the translation in the kerberos name rule mapping).
+   * In unsecure versions of Hadoop, this returns the name of the subject
+   */
+  public String getShortUserName(UserGroupInformation ugi);
+
+  /**
    * Return true if the Shim is based on Hadoop Security APIs.
    */
   public boolean isSecureShimImpl();
@@ -179,6 +213,22 @@ public interface HadoopShims {
    * @throws IOException
    */
   String getTokenStrForm(String tokenSignature) throws IOException;
+
+
+  /**
+   * Convert the ClusterStatus to its Thrift equivalent: JobTrackerState.
+   * See MAPREDUCE-2455 for why this is a part of the shim.
+   * @param clusterStatus
+   * @return the matching JobTrackerState
+   * @throws Exception if no equivalent JobTrackerState exists
+   */
+  enum JobTrackerState { INITIALIZING, RUNNING };
+
+  public JobTrackerState getJobTrackerState(ClusterStatus clusterStatus) throws Exception;
+
+  public TaskAttemptContext newTaskAttemptContext(Configuration conf, final Progressable progressable);
+
+  public JobContext newJobContext(Job job);
 
   /**
    * InputSplitShim.
@@ -212,6 +262,8 @@ public interface HadoopShims {
 
     /** Returns all the Paths where this input-split resides. */
     String[] getLocations() throws IOException;
+
+    void shrinkSplit(long length);
 
     String toString();
 

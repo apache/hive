@@ -18,7 +18,10 @@
 
 package org.apache.hadoop.hive.ql.optimizer;
 
+import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -26,6 +29,8 @@ import java.util.Stack;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.apache.hadoop.fs.FileStatus;
+import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.ql.exec.FilterOperator;
 import org.apache.hadoop.hive.ql.exec.TableScanOperator;
@@ -38,6 +43,7 @@ import org.apache.hadoop.hive.ql.lib.NodeProcessor;
 import org.apache.hadoop.hive.ql.lib.NodeProcessorCtx;
 import org.apache.hadoop.hive.ql.lib.Rule;
 import org.apache.hadoop.hive.ql.lib.RuleRegExp;
+import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.metadata.Partition;
 import org.apache.hadoop.hive.ql.parse.ParseContext;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
@@ -46,7 +52,7 @@ import org.apache.hadoop.hive.ql.plan.FilterDesc.sampleDesc;
 
 /**
  * The transformation step that does sample pruning.
- * 
+ *
  */
 public class SamplePruner implements Transform {
 
@@ -85,7 +91,7 @@ public class SamplePruner implements Transform {
 
   /*
    * (non-Javadoc)
-   * 
+   *
    * @see
    * org.apache.hadoop.hive.ql.optimizer.Transform#transform(org.apache.hadoop
    * .hive.ql.parse.ParseContext)
@@ -98,7 +104,7 @@ public class SamplePruner implements Transform {
         .getOpToSamplePruner());
 
     Map<Rule, NodeProcessor> opRules = new LinkedHashMap<Rule, NodeProcessor>();
-    opRules.put(new RuleRegExp("R1", "(TS%FIL%FIL%)"), getFilterProc());
+    opRules.put(new RuleRegExp("R1", "(TS%FIL%FIL%|TS%FIL%)"), getFilterProc());
 
     // The dispatcher fires the processor corresponding to the closest matching
     // rule and passes the context along
@@ -130,7 +136,9 @@ public class SamplePruner implements Transform {
         return null;
       }
 
-      assert stack.size() == 3;
+      assert (stack.size() == 3 && stack.get(1) instanceof FilterOperator) ||
+          stack.size() == 2;
+
       TableScanOperator tsOp = (TableScanOperator) stack.get(0);
       ((SamplePrunerCtx) procCtx).getOpToSamplePruner().put(tsOp, sampleDescr);
       return null;
@@ -162,7 +170,7 @@ public class SamplePruner implements Transform {
   /**
    * Prunes to get all the files in the partition that satisfy the TABLESAMPLE
    * clause.
-   * 
+   *
    * @param part
    *          The partition to prune
    * @return Path[]
@@ -209,6 +217,122 @@ public class SamplePruner implements Transform {
     LOG.warn(fullScanMsg + ", using full table scan");
     Path[] ret = part.getPath();
     return ret;
+  }
+
+  /**
+   * Class used for return value of addPath()
+   *
+   */
+  public static class AddPathReturnStatus {
+    public AddPathReturnStatus(boolean hasFile, boolean allFile, long sizeLeft) {
+      this.hasFile = hasFile;
+      this.allFile = allFile;
+      this.sizeLeft = sizeLeft;
+    }
+    // whether the sub-directory has any file
+    public boolean hasFile;
+    // whether all files are not sufficient to reach sizeLeft
+    public boolean allFile;
+    // remaining size needed after putting files in the return path list
+    public long sizeLeft;
+  }
+
+
+  /**
+   * Try to recursively add files in sub-directories into retPathList until
+   * reaching the sizeLeft.
+   * @param fs
+   * @param pathPattern
+   * @param sizeLeft
+   * @param fileLimit
+   * @param retPathList
+   * @return status of the recursive call
+   * @throws IOException
+   */
+  public static AddPathReturnStatus addPath(FileSystem fs, String pathPattern, long sizeLeft, int fileLimit,
+      Collection<Path> retPathList)
+      throws IOException {
+    LOG.info("Path pattern = " + pathPattern);
+    FileStatus srcs[] = fs.globStatus(new Path(pathPattern));
+    Arrays.sort(srcs);
+
+    boolean hasFile = false, allFile = true;
+
+    for (FileStatus src : srcs) {
+      if (sizeLeft <= 0) {
+        allFile = false;
+        break;
+      }
+      if (src.isDir()) {
+        LOG.info("Got directory: " + src.getPath());
+        AddPathReturnStatus ret = addPath(fs, src.getPath().toString() + "/*", sizeLeft,
+            fileLimit, retPathList);
+        if (ret == null) {
+          // not qualify this optimization
+          return null;
+        }
+        sizeLeft = ret.sizeLeft;
+        hasFile |= ret.hasFile;
+        allFile &= ret.allFile;
+      } else {
+        LOG.info("Got file: " + src.getPath());
+        hasFile = true;
+        retPathList.add(src.getPath());
+        sizeLeft -= src.getLen();
+        if (retPathList.size() >= fileLimit && sizeLeft > 0) {
+          return null;
+        }
+      }
+    }
+    return new AddPathReturnStatus(hasFile, allFile, sizeLeft);
+  }
+
+  public enum LimitPruneRetStatus {
+    // no files in the partition
+    NoFile,
+    // sum size of all files in the partition is smaller than size required
+    NeedAllFiles,
+    // a susbset of files for the partition are sufficient for the optimization
+    NeedSomeFiles,
+    // the partition doesn't qualify the global limit optimization for some reason
+    NotQualify
+  }
+
+
+  /**
+   * Try to generate a list of subset of files in the partition to reach a size
+   * limit with number of files less than fileLimit
+   * @param part
+   * @param sizeLimit
+   * @param fileLimit
+   * @param retPathList list of Paths returned
+   * @return the result of the attempt
+   * @throws SemanticException
+   */
+  public static LimitPruneRetStatus limitPrune(Partition part, long sizeLimit, int fileLimit,
+      Collection<Path> retPathList)
+      throws SemanticException {
+
+    try {
+      FileSystem fs = FileSystem.get(part.getPartitionPath().toUri(), Hive.get()
+          .getConf());
+      String pathPattern = part.getPartitionPath().toString() + "/*";
+      AddPathReturnStatus ret = addPath(fs, pathPattern, sizeLimit, fileLimit, retPathList);
+      if (ret == null) {
+        return LimitPruneRetStatus.NotQualify;
+      } else if (!ret.hasFile){
+        return LimitPruneRetStatus.NoFile;
+      } else if (ret.sizeLeft > 0) {
+        return LimitPruneRetStatus.NotQualify;
+      } else if (ret.allFile) {
+        return LimitPruneRetStatus.NeedAllFiles;
+      } else {
+        return LimitPruneRetStatus.NeedSomeFiles;
+      }
+    } catch (Exception e) {
+      throw new RuntimeException("Cannot get path", e);
+    }
+
   }
 
 }

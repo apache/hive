@@ -24,6 +24,7 @@ import java.net.URL;
 import java.util.regex.Pattern;
 
 import org.apache.commons.logging.Log;
+import org.apache.hadoop.io.IOUtils;
 import org.apache.hadoop.mapred.JobConf;
 
 /**
@@ -43,7 +44,7 @@ public final class Throttle {
   /**
    * Fetch http://tracker.om:/gc.jsp?threshold=period.
    */
-  static void checkJobTracker(JobConf conf, Log LOG) {
+  public static void checkJobTracker(JobConf conf, Log LOG) {
 
     try {
       byte[] buffer = new byte[1024];
@@ -62,9 +63,15 @@ public final class Throttle {
         // read in the first 1K characters from the URL
         URL url = new URL(tracker);
         LOG.debug("Throttle: URL " + tracker);
-        InputStream in = url.openStream();
-        in.read(buffer);
-        in.close();
+        InputStream in = null;
+        try {
+          in = url.openStream();
+          in.read(buffer);
+          in.close();
+          in = null;
+        } finally {
+          IOUtils.closeStream(in);
+        }
         String fetchString = new String(buffer);
 
         // fetch the xml tag <dogc>xxx</dogc>

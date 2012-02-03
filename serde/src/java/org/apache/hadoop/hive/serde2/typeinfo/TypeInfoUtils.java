@@ -566,6 +566,9 @@ public final class TypeInfoUtils {
     // (ObjectInspector)oi;
     // return typeInfoBasedObjectInspector.getTypeInfo();
     // }
+    if (oi == null) {
+      return null;
+    }
 
     // Recursively going into ObjectInspector structure
     TypeInfo result = null;

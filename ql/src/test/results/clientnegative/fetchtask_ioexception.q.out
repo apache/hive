@@ -9,15 +9,16 @@ POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: default@fetchtask_ioexception
 PREHOOK: query: LOAD DATA LOCAL INPATH '../data/files/kv1_broken.seq' OVERWRITE INTO TABLE fetchtask_ioexception
 PREHOOK: type: LOAD
+PREHOOK: Output: default@fetchtask_ioexception
 POSTHOOK: query: LOAD DATA LOCAL INPATH '../data/files/kv1_broken.seq' OVERWRITE INTO TABLE fetchtask_ioexception
 POSTHOOK: type: LOAD
 POSTHOOK: Output: default@fetchtask_ioexception
 PREHOOK: query: SELECT * FROM fetchtask_ioexception
 PREHOOK: type: QUERY
 PREHOOK: Input: default@fetchtask_ioexception
-PREHOOK: Output: file:/data/users/njain/hive5/hive5/.ptest_3/build/ql/tmp/1739034966/10000
+PREHOOK: Output: file:/tmp/krishnak/hive_2011-03-21_06-14-48_854_4131739323077251446/-mr-10000
 POSTHOOK: query: SELECT * FROM fetchtask_ioexception
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@fetchtask_ioexception
-POSTHOOK: Output: file:/data/users/njain/hive5/hive5/.ptest_3/build/ql/tmp/1739034966/10000
+POSTHOOK: Output: file:/tmp/krishnak/hive_2011-03-21_06-14-48_854_4131739323077251446/-mr-10000
 Failed with exception java.io.IOException:java.io.EOFException

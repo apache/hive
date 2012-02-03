@@ -127,7 +127,7 @@ public final class MapJoinFactory {
       GenMRProcContext opProcCtx = (GenMRProcContext) procCtx;
 
       ParseContext parseCtx = opProcCtx.getParseCtx();
-      MapredWork cplan = GenMapRedUtils.getMapRedWork(parseCtx.getConf());
+      MapredWork cplan = GenMapRedUtils.getMapRedWork(parseCtx);
       Task<? extends Serializable> redTask = TaskFactory.get(cplan, parseCtx
           .getConf());
       Task<? extends Serializable> currTask = opProcCtx.getCurrTask();
@@ -211,7 +211,7 @@ public final class MapJoinFactory {
         ctx.setMapJoinCtx(mapJoin, mjCtx);
       }
 
-      MapredWork mjPlan = GenMapRedUtils.getMapRedWork(parseCtx.getConf());
+      MapredWork mjPlan = GenMapRedUtils.getMapRedWork(parseCtx);
       Task<? extends Serializable> mjTask = TaskFactory.get(mjPlan, parseCtx
           .getConf());
 

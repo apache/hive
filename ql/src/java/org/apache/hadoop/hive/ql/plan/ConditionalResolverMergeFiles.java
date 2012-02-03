@@ -26,6 +26,8 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
@@ -117,7 +119,7 @@ public class ConditionalResolverMergeFiles implements ConditionalResolver,
     long trgtSize = conf.getLongVar(HiveConf.ConfVars.HIVEMERGEMAPFILESSIZE);
     long avgConditionSize = conf
         .getLongVar(HiveConf.ConfVars.HIVEMERGEMAPFILESAVGSIZE);
-    trgtSize = trgtSize > avgConditionSize ? trgtSize : avgConditionSize;
+    trgtSize = Math.max(trgtSize, avgConditionSize);
 
     Task<? extends Serializable> mvTask = ctx.getListTasks().get(0);
     Task<? extends Serializable> mrTask = ctx.getListTasks().get(1);
@@ -163,13 +165,13 @@ public class ConditionalResolverMergeFiles implements ConditionalResolver,
             if (len >= 0) {
               doMerge = true;
               totalSz += len;
-              work.getPathToAliases().put(status[i].getPath().toString(), aliases);
-              // get the full partition spec from the path and update the PartitionDesc
               Map<String, String> fullPartSpec = new LinkedHashMap<String, String>(
                   dpCtx.getPartSpec());
               Warehouse.makeSpecFromName(fullPartSpec, status[i].getPath());
               PartitionDesc pDesc = new PartitionDesc(tblDesc, (LinkedHashMap) fullPartSpec);
-              work.getPathToPartitionInfo().put(status[i].getPath().toString(), pDesc);
+
+              work.resolveDynamicPartitionMerge(conf, status[i].getPath(), tblDesc,
+                  aliases, pDesc);
             } else {
               toMove.add(status[i].getPath().toString());
             }
@@ -255,8 +257,12 @@ public class ConditionalResolverMergeFiles implements ConditionalResolver,
       reducers = Math.min(maxReducers, reducers);
       work.setNumReduceTasks(reducers);
     }
+    work.setMaxSplitSize(targetSize);
     work.setMinSplitSize(targetSize);
+    work.setMinSplitSizePerNode(targetSize);
+    work.setMinSplitSizePerRack(targetSize);
   }
+
   /**
    * Whether to merge files inside directory given the threshold of the average file size.
    *

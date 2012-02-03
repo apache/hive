@@ -20,10 +20,8 @@ package org.apache.hadoop.hive.ql.exec;
 
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.plan.ExprNodeConstantDesc;
+import org.apache.hadoop.hive.serde2.objectinspector.ConstantObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
-import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector.PrimitiveCategory;
-import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorFactory;
-import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
 
 /**
  * ExprNodeConstantEvaluator.
@@ -32,19 +30,11 @@ import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
 public class ExprNodeConstantEvaluator extends ExprNodeEvaluator {
 
   protected ExprNodeConstantDesc expr;
-  transient ObjectInspector writableObjectInspector;
-  transient Object writableValue;
+  transient ConstantObjectInspector writableObjectInspector;
 
   public ExprNodeConstantEvaluator(ExprNodeConstantDesc expr) {
     this.expr = expr;
-    PrimitiveCategory pc = ((PrimitiveTypeInfo) expr.getTypeInfo())
-        .getPrimitiveCategory();
-    writableObjectInspector = PrimitiveObjectInspectorFactory
-        .getPrimitiveWritableObjectInspector(pc);
-    // Convert from Java to Writable
-    writableValue = PrimitiveObjectInspectorFactory
-        .getPrimitiveJavaObjectInspector(pc).getPrimitiveWritableObject(
-        expr.getValue());
+    writableObjectInspector = expr.getWritableObjectInspector();
   }
 
   @Override
@@ -54,7 +44,7 @@ public class ExprNodeConstantEvaluator extends ExprNodeEvaluator {
 
   @Override
   public Object evaluate(Object row) throws HiveException {
-    return writableValue;
+    return writableObjectInspector.getWritableConstantValue();
   }
 
 }

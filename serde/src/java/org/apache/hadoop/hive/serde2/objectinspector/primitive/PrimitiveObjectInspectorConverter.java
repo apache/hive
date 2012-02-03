@@ -18,11 +18,14 @@
 
 package org.apache.hadoop.hive.serde2.objectinspector.primitive;
 
+import java.sql.Timestamp;
+
 import org.apache.hadoop.hive.serde2.ByteStream;
+import org.apache.hadoop.hive.serde2.lazy.ByteArrayRef;
 import org.apache.hadoop.hive.serde2.lazy.LazyInteger;
 import org.apache.hadoop.hive.serde2.lazy.LazyLong;
-import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorConverters.Converter;
+import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector;
 import org.apache.hadoop.io.Text;
 
 /**
@@ -234,13 +237,57 @@ public class PrimitiveObjectInspectorConverter {
     }
   }
 
+  public static class TimestampConverter implements Converter {
+    PrimitiveObjectInspector inputOI;
+    SettableTimestampObjectInspector outputOI;
+    Object r;
+
+    public TimestampConverter(PrimitiveObjectInspector inputOI,
+        SettableTimestampObjectInspector outputOI) {
+      this.inputOI = inputOI;
+      this.outputOI = outputOI;
+      r = outputOI.create(new Timestamp(0));
+    }
+
+    public Object convert(Object input) {
+      if (input == null) {
+        return null;
+      }
+      return outputOI.set(r, PrimitiveObjectInspectorUtils.getTimestamp(input,
+          inputOI));
+    }
+  }
+
+  public static class BinaryConverter implements Converter{
+
+    PrimitiveObjectInspector inputOI;
+    SettableBinaryObjectInspector outputOI;
+    Object r;
+
+    public BinaryConverter(PrimitiveObjectInspector inputOI,
+        SettableBinaryObjectInspector outputOI) {
+      this.inputOI = inputOI;
+      this.outputOI = outputOI;
+      ByteArrayRef ba = new ByteArrayRef();
+      ba.setData(new byte[]{});
+      r = outputOI.create(ba);
+    }
+
+    @Override
+    public Object convert(Object input) {
+      return outputOI.set(r, PrimitiveObjectInspectorUtils.getBinary(input,
+          inputOI));
+    }
+
+  }
+
   /**
    * A helper class to convert any primitive to Text.
    */
   public static class TextConverter implements Converter {
-    private PrimitiveObjectInspector inputOI;
-    private Text t = new Text();
-    private ByteStream.Output out = new ByteStream.Output();
+    private final PrimitiveObjectInspector inputOI;
+    private final Text t = new Text();
+    private final ByteStream.Output out = new ByteStream.Output();
 
     private static byte[] trueBytes = {'T', 'R', 'U', 'E'};
     private static byte[] falseBytes = {'F', 'A', 'L', 'S', 'E'};
@@ -290,6 +337,13 @@ public class PrimitiveObjectInspectorConverter {
         return t;
       case STRING:
         t.set(((StringObjectInspector) inputOI).getPrimitiveJavaObject(input));
+        return t;
+      case TIMESTAMP:
+        t.set(((TimestampObjectInspector) inputOI)
+            .getPrimitiveWritableObject(input).toString());
+        return t;
+      case BINARY:
+        t.set(((BinaryObjectInspector) inputOI).getPrimitiveWritableObject(input).getBytes());
         return t;
       default:
         throw new RuntimeException("Hive 2 Internal error: type = " + inputOI.getTypeName());

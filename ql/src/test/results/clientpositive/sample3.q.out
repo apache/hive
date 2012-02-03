@@ -9,7 +9,7 @@ SELECT s.key
 FROM srcbucket TABLESAMPLE (BUCKET 1 OUT OF 5 on key) s
 POSTHOOK: type: QUERY
 ABSTRACT SYNTAX TREE:
-  (TOK_QUERY (TOK_FROM (TOK_TABREF (TOK_TABNAME srcbucket) (TOK_TABLESAMPLE 1 5 (TOK_TABLE_OR_COL key)) s)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (. (TOK_TABLE_OR_COL s) key)))))
+  (TOK_QUERY (TOK_FROM (TOK_TABREF (TOK_TABNAME srcbucket) (TOK_TABLEBUCKETSAMPLE 1 5 (TOK_TABLE_OR_COL key)) s)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (. (TOK_TABLE_OR_COL s) key)))))
 
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -26,21 +26,17 @@ STAGE PLANS:
               predicate:
                   expr: (((hash(key) & 2147483647) % 5) = 0)
                   type: boolean
-              Filter Operator
-                predicate:
-                    expr: (((hash(key) & 2147483647) % 5) = 0)
-                    type: boolean
-                Select Operator
-                  expressions:
-                        expr: key
-                        type: int
-                  outputColumnNames: _col0
-                  File Output Operator
-                    compressed: false
-                    GlobalTableId: 0
-                    table:
-                        input format: org.apache.hadoop.mapred.TextInputFormat
-                        output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+              Select Operator
+                expressions:
+                      expr: key
+                      type: int
+                outputColumnNames: _col0
+                File Output Operator
+                  compressed: false
+                  GlobalTableId: 0
+                  table:
+                      input format: org.apache.hadoop.mapred.TextInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
 
   Stage: Stage-0
     Fetch Operator
@@ -51,12 +47,12 @@ PREHOOK: query: SELECT s.key
 FROM srcbucket TABLESAMPLE (BUCKET 1 OUT OF 5 on key) s SORT BY key
 PREHOOK: type: QUERY
 PREHOOK: Input: default@srcbucket
-PREHOOK: Output: file:/tmp/sdong/hive_2011-02-10_17-02-51_396_8990543454737922238/-mr-10000
+PREHOOK: Output: file:/tmp/sdong/hive_2011-04-19_19-54-10_335_2811911774445865646/-mr-10000
 POSTHOOK: query: SELECT s.key
 FROM srcbucket TABLESAMPLE (BUCKET 1 OUT OF 5 on key) s SORT BY key
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@srcbucket
-POSTHOOK: Output: file:/tmp/sdong/hive_2011-02-10_17-02-51_396_8990543454737922238/-mr-10000
+POSTHOOK: Output: file:/tmp/sdong/hive_2011-04-19_19-54-10_335_2811911774445865646/-mr-10000
 0
 0
 0

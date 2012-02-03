@@ -79,7 +79,7 @@ STAGE PLANS:
   Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/tmp/sdong/hive_2011-02-16_20-11-16_760_3970553477134855753/-mr-10002 
+        file:/var/folders/7P/7PeC14kXFIWq0PIYyexGbmKuXUk/-Tmp-/jsichi/hive_2011-02-22_22-26-27_614_6714509994567553903/-mr-10002 
             Reduce Output Operator
               key expressions:
                     expr: _col1
@@ -110,13 +110,13 @@ from (select key from src order by key) x
 order by r
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/tmp/sdong/hive_2011-02-16_20-11-16_840_7492426874452808984/-mr-10000
+PREHOOK: Output: file:/var/folders/7P/7PeC14kXFIWq0PIYyexGbmKuXUk/-Tmp-/jsichi/hive_2011-02-22_22-26-27_973_4395636849347592535/-mr-10000
 POSTHOOK: query: select key, row_sequence() as r
 from (select key from src order by key) x
 order by r
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: file:/tmp/sdong/hive_2011-02-16_20-11-16_840_7492426874452808984/-mr-10000
+POSTHOOK: Output: file:/var/folders/7P/7PeC14kXFIWq0PIYyexGbmKuXUk/-Tmp-/jsichi/hive_2011-02-22_22-26-27_973_4395636849347592535/-mr-10000
 0	1
 0	2
 0	3
@@ -617,6 +617,42 @@ POSTHOOK: Output: file:/tmp/sdong/hive_2011-02-16_20-11-16_840_74924268744528089
 97	498
 98	499
 98	500
+PREHOOK: query: -- make sure stateful functions do not get short-circuited away
+-- a true result for key=105 would indicate undesired short-circuiting
+select key, (key = 105) and (row_sequence() = 1)
+from (select key from src order by key) x
+order by key limit 20
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: file:/var/folders/7P/7PeC14kXFIWq0PIYyexGbmKuXUk/-Tmp-/jsichi/hive_2011-02-22_22-26-43_815_3305291736093408641/-mr-10000
+POSTHOOK: query: -- make sure stateful functions do not get short-circuited away
+-- a true result for key=105 would indicate undesired short-circuiting
+select key, (key = 105) and (row_sequence() = 1)
+from (select key from src order by key) x
+order by key limit 20
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: file:/var/folders/7P/7PeC14kXFIWq0PIYyexGbmKuXUk/-Tmp-/jsichi/hive_2011-02-22_22-26-43_815_3305291736093408641/-mr-10000
+0	false
+0	false
+0	false
+10	false
+100	false
+100	false
+103	false
+103	false
+104	false
+104	false
+105	false
+11	false
+111	false
+113	false
+113	false
+114	false
+116	false
+118	false
+118	false
+119	false
 PREHOOK: query: drop temporary function row_sequence
 PREHOOK: type: DROPFUNCTION
 POSTHOOK: query: drop temporary function row_sequence

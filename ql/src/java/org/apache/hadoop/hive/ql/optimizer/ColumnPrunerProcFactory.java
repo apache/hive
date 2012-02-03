@@ -183,6 +183,12 @@ public final class ColumnPrunerProcFactory {
       TableScanDesc desc = scanOp.getConf();
       List<VirtualColumn> virtualCols = desc.getVirtualCols();
       List<VirtualColumn> newVirtualCols = new ArrayList<VirtualColumn>();
+
+      // add virtual columns for ANALYZE TABLE
+      if(scanOp.getConf().isGatherStats()) {
+        cols.add(VirtualColumn.RAWDATASIZE.getName());
+      }
+
       for (int i = 0; i < cols.size(); i++) {
         String[] tabCol = inputRR.reverseLookup(cols.get(i));
         if(tabCol == null) {
@@ -502,6 +508,8 @@ public final class ColumnPrunerProcFactory {
       String[] nm = parResover.reverseLookup(outputCol);
       ColumnInfo colInfo = oldRR.get(nm[0], nm[1]);
       if (colInfo != null) {
+        String internalName=colInfo.getInternalName();
+        newMap.put(internalName, oldMap.get(internalName));
         newRR.put(nm[0], nm[1], colInfo);
       }
     }
@@ -650,7 +658,7 @@ public final class ColumnPrunerProcFactory {
       List<TableDesc> valueTableDescs = new ArrayList<TableDesc>();
       for (int pos = 0; pos < op.getParentOperators().size(); pos++) {
         List<ExprNodeDesc> valueCols = conf.getExprs()
-            .get(new Byte((byte) pos));
+            .get(Byte.valueOf((byte) pos));
         StringBuilder keyOrder = new StringBuilder();
         for (int i = 0; i < valueCols.size(); i++) {
           keyOrder.append("+");

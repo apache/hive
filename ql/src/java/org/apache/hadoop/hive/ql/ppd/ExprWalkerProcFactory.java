@@ -24,6 +24,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Stack;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.exec.FunctionRegistry;
 import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.lib.DefaultGraphWalker;
@@ -49,6 +52,9 @@ import org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc;
  */
 public final class ExprWalkerProcFactory {
 
+  private static final Log LOG = LogFactory
+      .getLog(ExprWalkerProcFactory.class.getName());
+
   /**
    * ColumnExprProcessor.
    *
@@ -67,6 +73,7 @@ public final class ExprWalkerProcFactory {
       Operator<? extends Serializable> op = ctx.getOp();
       String[] colAlias = toRR.reverseLookup(colref.getColumn());
 
+      boolean isCandidate = true;
       if (op.getColumnExprMap() != null) {
         // replace the output expression with the input expression so that
         // parent op can understand this expression
@@ -76,9 +83,13 @@ public final class ExprWalkerProcFactory {
           // group by
           ctx.setIsCandidate(colref, false);
           return false;
+        } else {
+          if (exp instanceof ExprNodeGenericFuncDesc) {
+            isCandidate = false;
+          }
         }
         ctx.addConvertedNode(colref, exp);
-        ctx.setIsCandidate(exp, true);
+        ctx.setIsCandidate(exp, isCandidate);
         ctx.addAlias(exp, colAlias[0]);
       } else {
         if (colAlias == null) {
@@ -86,8 +97,8 @@ public final class ExprWalkerProcFactory {
         }
         ctx.addAlias(colref, colAlias[0]);
       }
-      ctx.setIsCandidate(colref, true);
-      return true;
+      ctx.setIsCandidate(colref, isCandidate);
+      return isCandidate;
     }
 
   }
@@ -228,7 +239,7 @@ public final class ExprWalkerProcFactory {
 
   /**
    * Extracts pushdown predicates from the given list of predicate expression.
-   * 
+   *
    * @param opContext
    *          operator context used for resolving column references
    * @param op
@@ -266,15 +277,18 @@ public final class ExprWalkerProcFactory {
     List<Node> startNodes = new ArrayList<Node>();
     List<ExprNodeDesc> clonedPreds = new ArrayList<ExprNodeDesc>();
     for (ExprNodeDesc node : preds) {
-      clonedPreds.add(node.clone());
+      ExprNodeDesc clone = node.clone();
+      clonedPreds.add(clone);
+      exprContext.getNewToOldExprMap().put(clone, node);
     }
     startNodes.addAll(clonedPreds);
 
     egw.startWalking(startNodes, null);
 
+    HiveConf conf = opContext.getParseContext().getConf();
     // check the root expression for final candidates
     for (ExprNodeDesc pred : clonedPreds) {
-      extractFinalCandidates(pred, exprContext);
+      extractFinalCandidates(pred, exprContext, conf);
     }
     return exprContext;
   }
@@ -284,18 +298,33 @@ public final class ExprWalkerProcFactory {
    * candidates.
    */
   private static void extractFinalCandidates(ExprNodeDesc expr,
-      ExprWalkerInfo ctx) {
-    if (ctx.isCandidate(expr)) {
-      ctx.addFinalCandidate(expr);
-      return;
-    }
-
+      ExprWalkerInfo ctx, HiveConf conf) {
+    // We decompose an AND expression into its parts before checking if the
+    // entire expression is a candidate because each part may be a candidate
+    // for replicating transitively over an equijoin condition.
     if (FunctionRegistry.isOpAnd(expr)) {
       // If the operator is AND, we need to determine if any of the children are
       // final candidates.
-      for (Node ch : expr.getChildren()) {
-        extractFinalCandidates((ExprNodeDesc) ch, ctx);
+
+      // For the children, we populate the NewToOldExprMap to keep track of
+      // the original condition before rewriting it for this operator
+      assert ctx.getNewToOldExprMap().containsKey(expr);
+      for (int i = 0; i < expr.getChildren().size(); i++) {
+        ctx.getNewToOldExprMap().put(
+            (ExprNodeDesc) expr.getChildren().get(i),
+            ctx.getNewToOldExprMap().get(expr).getChildren().get(i));
+        extractFinalCandidates((ExprNodeDesc) expr.getChildren().get(i),
+            ctx, conf);
       }
+      return;
+    }
+
+    if (ctx.isCandidate(expr)) {
+      ctx.addFinalCandidate(expr);
+      return;
+    } else if (!FunctionRegistry.isOpAnd(expr) &&
+        HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVEPPDREMOVEDUPLICATEFILTERS)) {
+      ctx.addNonFinalCandidate(expr);
     }
   }
 

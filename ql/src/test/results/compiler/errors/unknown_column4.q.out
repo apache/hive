@@ -1,2 +1,2 @@
 Semantic Exception: 
-Line 2:83 Invalid table alias or column reference dummysrc
+Line 2:83 Invalid table alias or column reference 'dummysrc': (possible column names are: key, value)

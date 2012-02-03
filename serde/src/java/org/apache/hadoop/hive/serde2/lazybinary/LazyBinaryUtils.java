@@ -24,6 +24,7 @@ import java.util.List;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.hive.serde2.ByteStream.Output;
+import org.apache.hadoop.hive.serde2.io.TimestampWritable;
 import org.apache.hadoop.hive.serde2.lazybinary.objectinspector.LazyBinaryObjectInspectorFactory;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector.Category;
@@ -133,6 +134,8 @@ public final class LazyBinaryUtils {
    * bytes are used to store the size. So the offset is 4 and the size is
    * computed by concating the first four bytes together. The first four bytes
    * are defined with respect to the offset in the bytes arrays.
+   * For timestamp, if the first bit is 0, the record length is 4, otherwise
+   * a VInt begins at the 5th byte and its length is added to 4.
    *
    * @param objectInspector
    *          object inspector of the field
@@ -185,6 +188,20 @@ public final class LazyBinaryUtils {
         LazyBinaryUtils.readVInt(bytes, offset, vInt);
         recordInfo.elementOffset = vInt.length;
         recordInfo.elementSize = vInt.value;
+        break;
+
+      case BINARY:
+        // using vint instead of 4 bytes
+        LazyBinaryUtils.readVInt(bytes, offset, vInt);
+        recordInfo.elementOffset = vInt.length;
+        recordInfo.elementSize = vInt.value;
+        break;
+      case TIMESTAMP:
+        recordInfo.elementOffset = 0;
+        recordInfo.elementSize = 4;
+        if(TimestampWritable.hasDecimal(bytes[offset])) {
+          recordInfo.elementSize += (byte) WritableUtils.decodeVIntSize(bytes[offset+4]);
+        }
         break;
       default: {
         throw new RuntimeException("Unrecognized primitive type: "
@@ -302,10 +319,14 @@ public final class LazyBinaryUtils {
    * @param l
    *          the long
    */
-  public static void writeVLong(Output byteStream, long l) {
+  public static int writeVLongToByteArray(byte[] bytes, long l) {
+    return LazyBinaryUtils.writeVLongToByteArray(bytes, 0, l);
+  }
+
+  public static int writeVLongToByteArray(byte[] bytes, int offset, long l) {
     if (l >= -112 && l <= 127) {
-      byteStream.write((byte) l);
-      return;
+      bytes[offset] = (byte) l;
+      return 1;
     }
 
     int len = -112;
@@ -320,15 +341,23 @@ public final class LazyBinaryUtils {
       len--;
     }
 
-    byteStream.write((byte) len);
+    bytes[offset] = (byte) len;
 
     len = (len < -120) ? -(len + 120) : -(len + 112);
 
     for (int idx = len; idx != 0; idx--) {
       int shiftbits = (idx - 1) * 8;
       long mask = 0xFFL << shiftbits;
-      byteStream.write((byte) ((l & mask) >> shiftbits));
+      bytes[offset+1-(idx - len)] = (byte) ((l & mask) >> shiftbits);
     }
+    return 1 + len;
+  }
+
+  private static byte[] vLongBytes = new byte[9];
+
+  public static void writeVLong(Output byteStream, long l) {
+    int len = LazyBinaryUtils.writeVLongToByteArray(vLongBytes, l);
+    byteStream.write(vLongBytes, 0, len);
   }
 
   static HashMap<TypeInfo, ObjectInspector> cachedLazyBinaryObjectInspector = new HashMap<TypeInfo, ObjectInspector>();

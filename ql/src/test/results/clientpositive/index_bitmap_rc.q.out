@@ -1,0 +1,858 @@
+PREHOOK: query: CREATE TABLE srcpart_rc (key int, value string) PARTITIONED BY (ds string, hr int) STORED AS RCFILE
+PREHOOK: type: CREATETABLE
+POSTHOOK: query: CREATE TABLE srcpart_rc (key int, value string) PARTITIONED BY (ds string, hr int) STORED AS RCFILE
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: default@srcpart_rc
+PREHOOK: query: INSERT OVERWRITE TABLE srcpart_rc PARTITION (ds='2008-04-08', hr=11) SELECT key, value FROM srcpart WHERE ds = '2008-04-08' AND hr = 11
+PREHOOK: type: QUERY
+PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
+PREHOOK: Output: default@srcpart_rc@ds=2008-04-08/hr=11
+POSTHOOK: query: INSERT OVERWRITE TABLE srcpart_rc PARTITION (ds='2008-04-08', hr=11) SELECT key, value FROM srcpart WHERE ds = '2008-04-08' AND hr = 11
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
+POSTHOOK: Output: default@srcpart_rc@ds=2008-04-08/hr=11
+POSTHOOK: Lineage: srcpart_rc PARTITION(ds=2008-04-08,hr=11).key EXPRESSION [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: srcpart_rc PARTITION(ds=2008-04-08,hr=11).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: INSERT OVERWRITE TABLE srcpart_rc PARTITION (ds='2008-04-08', hr=12) SELECT key, value FROM srcpart WHERE ds = '2008-04-08' AND hr = 12
+PREHOOK: type: QUERY
+PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
+PREHOOK: Output: default@srcpart_rc@ds=2008-04-08/hr=12
+POSTHOOK: query: INSERT OVERWRITE TABLE srcpart_rc PARTITION (ds='2008-04-08', hr=12) SELECT key, value FROM srcpart WHERE ds = '2008-04-08' AND hr = 12
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
+POSTHOOK: Output: default@srcpart_rc@ds=2008-04-08/hr=12
+POSTHOOK: Lineage: srcpart_rc PARTITION(ds=2008-04-08,hr=11).key EXPRESSION [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: srcpart_rc PARTITION(ds=2008-04-08,hr=11).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: srcpart_rc PARTITION(ds=2008-04-08,hr=12).key EXPRESSION [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: srcpart_rc PARTITION(ds=2008-04-08,hr=12).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: INSERT OVERWRITE TABLE srcpart_rc PARTITION (ds='2008-04-09', hr=11) SELECT key, value FROM srcpart WHERE ds = '2008-04-09' AND hr = 11
+PREHOOK: type: QUERY
+PREHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
+PREHOOK: Output: default@srcpart_rc@ds=2008-04-09/hr=11
+POSTHOOK: query: INSERT OVERWRITE TABLE srcpart_rc PARTITION (ds='2008-04-09', hr=11) SELECT key, value FROM srcpart WHERE ds = '2008-04-09' AND hr = 11
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
+POSTHOOK: Output: default@srcpart_rc@ds=2008-04-09/hr=11
+POSTHOOK: Lineage: srcpart_rc PARTITION(ds=2008-04-08,hr=11).key EXPRESSION [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: srcpart_rc PARTITION(ds=2008-04-08,hr=11).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: srcpart_rc PARTITION(ds=2008-04-08,hr=12).key EXPRESSION [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: srcpart_rc PARTITION(ds=2008-04-08,hr=12).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: srcpart_rc PARTITION(ds=2008-04-09,hr=11).key EXPRESSION [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: srcpart_rc PARTITION(ds=2008-04-09,hr=11).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: INSERT OVERWRITE TABLE srcpart_rc PARTITION (ds='2008-04-09', hr=12) SELECT key, value FROM srcpart WHERE ds = '2008-04-09' AND hr = 12
+PREHOOK: type: QUERY
+PREHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
+PREHOOK: Output: default@srcpart_rc@ds=2008-04-09/hr=12
+POSTHOOK: query: INSERT OVERWRITE TABLE srcpart_rc PARTITION (ds='2008-04-09', hr=12) SELECT key, value FROM srcpart WHERE ds = '2008-04-09' AND hr = 12
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
+POSTHOOK: Output: default@srcpart_rc@ds=2008-04-09/hr=12
+POSTHOOK: Lineage: srcpart_rc PARTITION(ds=2008-04-08,hr=11).key EXPRESSION [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: srcpart_rc PARTITION(ds=2008-04-08,hr=11).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: srcpart_rc PARTITION(ds=2008-04-08,hr=12).key EXPRESSION [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: srcpart_rc PARTITION(ds=2008-04-08,hr=12).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: srcpart_rc PARTITION(ds=2008-04-09,hr=11).key EXPRESSION [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: srcpart_rc PARTITION(ds=2008-04-09,hr=11).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: srcpart_rc PARTITION(ds=2008-04-09,hr=12).key EXPRESSION [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: srcpart_rc PARTITION(ds=2008-04-09,hr=12).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: EXPLAIN
+CREATE INDEX srcpart_rc_index ON TABLE srcpart_rc(key) as 'BITMAP' WITH DEFERRED REBUILD
+PREHOOK: type: CREATEINDEX
+POSTHOOK: query: EXPLAIN
+CREATE INDEX srcpart_rc_index ON TABLE srcpart_rc(key) as 'BITMAP' WITH DEFERRED REBUILD
+POSTHOOK: type: CREATEINDEX
+POSTHOOK: Lineage: srcpart_rc PARTITION(ds=2008-04-08,hr=11).key EXPRESSION [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: srcpart_rc PARTITION(ds=2008-04-08,hr=11).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: srcpart_rc PARTITION(ds=2008-04-08,hr=12).key EXPRESSION [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: srcpart_rc PARTITION(ds=2008-04-08,hr=12).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: srcpart_rc PARTITION(ds=2008-04-09,hr=11).key EXPRESSION [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: srcpart_rc PARTITION(ds=2008-04-09,hr=11).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: srcpart_rc PARTITION(ds=2008-04-09,hr=12).key EXPRESSION [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: srcpart_rc PARTITION(ds=2008-04-09,hr=12).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
+ABSTRACT SYNTAX TREE:
+  (TOK_CREATEINDEX srcpart_rc_index 'BITMAP' (TOK_TABNAME srcpart_rc) (TOK_TABCOLNAME key) TOK_DEFERRED_REBUILDINDEX)
+
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+
+
+PREHOOK: query: CREATE INDEX srcpart_rc_index ON TABLE srcpart_rc(key) as 'BITMAP' WITH DEFERRED REBUILD
+PREHOOK: type: CREATEINDEX
+POSTHOOK: query: CREATE INDEX srcpart_rc_index ON TABLE srcpart_rc(key) as 'BITMAP' WITH DEFERRED REBUILD
+POSTHOOK: type: CREATEINDEX
+POSTHOOK: Lineage: srcpart_rc PARTITION(ds=2008-04-08,hr=11).key EXPRESSION [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: srcpart_rc PARTITION(ds=2008-04-08,hr=11).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: srcpart_rc PARTITION(ds=2008-04-08,hr=12).key EXPRESSION [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: srcpart_rc PARTITION(ds=2008-04-08,hr=12).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: srcpart_rc PARTITION(ds=2008-04-09,hr=11).key EXPRESSION [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: srcpart_rc PARTITION(ds=2008-04-09,hr=11).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: srcpart_rc PARTITION(ds=2008-04-09,hr=12).key EXPRESSION [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: srcpart_rc PARTITION(ds=2008-04-09,hr=12).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: ALTER INDEX srcpart_rc_index ON srcpart_rc REBUILD
+PREHOOK: type: ALTERINDEX_REBUILD
+PREHOOK: Input: default@srcpart_rc@ds=2008-04-08/hr=11
+PREHOOK: Input: default@srcpart_rc@ds=2008-04-08/hr=12
+PREHOOK: Input: default@srcpart_rc@ds=2008-04-09/hr=11
+PREHOOK: Input: default@srcpart_rc@ds=2008-04-09/hr=12
+PREHOOK: Output: default@default__srcpart_rc_srcpart_rc_index__@ds=2008-04-08/hr=11
+PREHOOK: Output: default@default__srcpart_rc_srcpart_rc_index__@ds=2008-04-08/hr=12
+PREHOOK: Output: default@default__srcpart_rc_srcpart_rc_index__@ds=2008-04-09/hr=11
+PREHOOK: Output: default@default__srcpart_rc_srcpart_rc_index__@ds=2008-04-09/hr=12
+POSTHOOK: query: ALTER INDEX srcpart_rc_index ON srcpart_rc REBUILD
+POSTHOOK: type: ALTERINDEX_REBUILD
+POSTHOOK: Input: default@srcpart_rc@ds=2008-04-08/hr=11
+POSTHOOK: Input: default@srcpart_rc@ds=2008-04-08/hr=12
+POSTHOOK: Input: default@srcpart_rc@ds=2008-04-09/hr=11
+POSTHOOK: Input: default@srcpart_rc@ds=2008-04-09/hr=12
+POSTHOOK: Output: default@default__srcpart_rc_srcpart_rc_index__@ds=2008-04-08/hr=11
+POSTHOOK: Output: default@default__srcpart_rc_srcpart_rc_index__@ds=2008-04-08/hr=12
+POSTHOOK: Output: default@default__srcpart_rc_srcpart_rc_index__@ds=2008-04-09/hr=11
+POSTHOOK: Output: default@default__srcpart_rc_srcpart_rc_index__@ds=2008-04-09/hr=12
+POSTHOOK: Lineage: default__srcpart_rc_srcpart_rc_index__ PARTITION(ds=2008-04-09,hr=12)._bitmaps EXPRESSION [(srcpart_rc)srcpart_rc.FieldSchema(name:ROW__OFFSET__INSIDE__BLOCK, type:bigint, comment:), ]
+POSTHOOK: Lineage: default__srcpart_rc_srcpart_rc_index__ PARTITION(ds=2008-04-09,hr=12)._bucketname SIMPLE [(srcpart_rc)srcpart_rc.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
+POSTHOOK: Lineage: default__srcpart_rc_srcpart_rc_index__ PARTITION(ds=2008-04-09,hr=12)._offset SIMPLE [(srcpart_rc)srcpart_rc.FieldSchema(name:BLOCK__OFFSET__INSIDE__FILE, type:bigint, comment:), ]
+POSTHOOK: Lineage: default__srcpart_rc_srcpart_rc_index__ PARTITION(ds=2008-04-09,hr=12).key SIMPLE [(srcpart_rc)srcpart_rc.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: srcpart_rc PARTITION(ds=2008-04-08,hr=11).key EXPRESSION [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: srcpart_rc PARTITION(ds=2008-04-08,hr=11).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: srcpart_rc PARTITION(ds=2008-04-08,hr=12).key EXPRESSION [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: srcpart_rc PARTITION(ds=2008-04-08,hr=12).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: srcpart_rc PARTITION(ds=2008-04-09,hr=11).key EXPRESSION [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: srcpart_rc PARTITION(ds=2008-04-09,hr=11).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: srcpart_rc PARTITION(ds=2008-04-09,hr=12).key EXPRESSION [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: srcpart_rc PARTITION(ds=2008-04-09,hr=12).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: SELECT x.* FROM default__srcpart_rc_srcpart_rc_index__ x WHERE x.ds = '2008-04-08' and x.hr = 11 ORDER BY key
+PREHOOK: type: QUERY
+PREHOOK: Input: default@default__srcpart_rc_srcpart_rc_index__@ds=2008-04-08/hr=11
+PREHOOK: Output: file:/tmp/sohanjain/hive_2011-08-04_12-05-19_755_2197924734149048/-mr-10000
+POSTHOOK: query: SELECT x.* FROM default__srcpart_rc_srcpart_rc_index__ x WHERE x.ds = '2008-04-08' and x.hr = 11 ORDER BY key
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@default__srcpart_rc_srcpart_rc_index__@ds=2008-04-08/hr=11
+POSTHOOK: Output: file:/tmp/sohanjain/hive_2011-08-04_12-05-19_755_2197924734149048/-mr-10000
+POSTHOOK: Lineage: default__srcpart_rc_srcpart_rc_index__ PARTITION(ds=2008-04-09,hr=12)._bitmaps EXPRESSION [(srcpart_rc)srcpart_rc.FieldSchema(name:ROW__OFFSET__INSIDE__BLOCK, type:bigint, comment:), ]
+POSTHOOK: Lineage: default__srcpart_rc_srcpart_rc_index__ PARTITION(ds=2008-04-09,hr=12)._bucketname SIMPLE [(srcpart_rc)srcpart_rc.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
+POSTHOOK: Lineage: default__srcpart_rc_srcpart_rc_index__ PARTITION(ds=2008-04-09,hr=12)._offset SIMPLE [(srcpart_rc)srcpart_rc.FieldSchema(name:BLOCK__OFFSET__INSIDE__FILE, type:bigint, comment:), ]
+POSTHOOK: Lineage: default__srcpart_rc_srcpart_rc_index__ PARTITION(ds=2008-04-09,hr=12).key SIMPLE [(srcpart_rc)srcpart_rc.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: srcpart_rc PARTITION(ds=2008-04-08,hr=11).key EXPRESSION [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: srcpart_rc PARTITION(ds=2008-04-08,hr=11).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: srcpart_rc PARTITION(ds=2008-04-08,hr=12).key EXPRESSION [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: srcpart_rc PARTITION(ds=2008-04-08,hr=12).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: srcpart_rc PARTITION(ds=2008-04-09,hr=11).key EXPRESSION [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: srcpart_rc PARTITION(ds=2008-04-09,hr=11).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: srcpart_rc PARTITION(ds=2008-04-09,hr=12).key EXPRESSION [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: srcpart_rc PARTITION(ds=2008-04-09,hr=12).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
+0	pfile:/data/users/sohanjain/test_builds/hive_2338/apache-hive/build/ql/test/data/warehouse/srcpart_rc/ds=2008-04-08/hr=11/000000_0	151	[227,4,5,25769803778,262144,2251799813685248,17179869184,0]	2008-04-08	11
+2	pfile:/data/users/sohanjain/test_builds/hive_2338/apache-hive/build/ql/test/data/warehouse/srcpart_rc/ds=2008-04-08/hr=11/000000_0	151	[346,2,4,8589934602,33554432,0]	2008-04-08	11
+4	pfile:/data/users/sohanjain/test_builds/hive_2338/apache-hive/build/ql/test/data/warehouse/srcpart_rc/ds=2008-04-08/hr=11/000000_0	151	[105,2,4,8589934594,1099511627776,0]	2008-04-08	11
+5	pfile:/data/users/sohanjain/test_builds/hive_2338/apache-hive/build/ql/test/data/warehouse/srcpart_rc/ds=2008-04-08/hr=11/000000_0	151	[392,4,5,25769803784,128,8192,128,0]	2008-04-08	11
+8	pfile:/data/users/sohanjain/test_builds/hive_2338/apache-hive/build/ql/test/data/warehouse/srcpart_rc/ds=2008-04-08/hr=11/000000_0	151	[165,2,4,8589934596,68719476736,0]	2008-04-08	11
+9	pfile:/data/users/sohanjain/test_builds/hive_2338/apache-hive/build/ql/test/data/warehouse/srcpart_rc/ds=2008-04-08/hr=11/000000_0	151	[465,2,4,8589934606,65536,0]	2008-04-08	11
+10	pfile:/data/users/sohanjain/test_builds/hive_2338/apache-hive/build/ql/test/data/warehouse/srcpart_rc/ds=2008-04-08/hr=11/000000_0	151	[246,2,4,8589934598,9007199254740992,0]	2008-04-08	11
+11	pfile:/data/users/sohanjain/test_builds/hive_2338/apache-hive/build/ql/test/data/warehouse/srcpart_rc/ds=2008-04-08/hr=11/000000_0	151	[274,2,4,8589934600,131072,0]	2008-04-08	11
+12	pfile:/data/users/sohanjain/test_builds/hive_2338/apache-hive/build/ql/test/data/warehouse/srcpart_rc/ds=2008-04-08/hr=11/000000_0	151	[377,4,5,8589934596,524288,8589934596,72057594037927936,2]	2008-04-08	11
+15	pfile:/data/users/sohanjain/test_builds/hive_2338/apache-hive/build/ql/test/data/warehouse/srcpart_rc/ds=2008-04-08/hr=11/000000_0	151	[239,4,5,8589934592,8589934592,8589934596,70368744177664,2]	2008-04-08	11
+17	pfile:/data/users/sohanjain/test_builds/hive_2338/apache-hive/build/ql/test/data/warehouse/srcpart_rc/ds=2008-04-08/hr=11/000000_0	151	[78,2,4,8589934594,8192,0]	2008-04-08	11
+18	pfile:/data/users/sohanjain/test_builds/hive_2338/apache-hive/build/ql/test/data/warehouse/srcpart_rc/ds=2008-04-08/hr=11/000000_0	151	[475,2,4,8589934606,67110912,0]	2008-04-08	11
+19	pfile:/data/users/sohanjain/test_builds/hive_2338/apache-hive/build/ql/test/data/warehouse/srcpart_rc/ds=2008-04-08/hr=11/000000_0	151	[244,2,4,8589934598,2251799813685248,0]	2008-04-08	11
+20	pfile:/data/users/sohanjain/test_builds/hive_2338/apache-hive/build/ql/test/data/warehouse/srcpart_rc/ds=2008-04-08/hr=11/000000_0	151	[96,2,4,8589934594,2147483648,0]	2008-04-08	11
+24	pfile:/data/users/sohanjain/test_builds/hive_2338/apache-hive/build/ql/test/data/warehouse/srcpart_rc/ds=2008-04-08/hr=11/000000_0	151	[397,4,5,8589934596,2199023255552,8589934598,4096,2]	2008-04-08	11
+26	pfile:/data/users/sohanjain/test_builds/hive_2338/apache-hive/build/ql/test/data/warehouse/srcpart_rc/ds=2008-04-08/hr=11/000000_0	151	[455,4,5,8589934596,-9223372036854775808,8589934600,64,2]	2008-04-08	11
+27	pfile:/data/users/sohanjain/test_builds/hive_2338/apache-hive/build/ql/test/data/warehouse/srcpart_rc/ds=2008-04-08/hr=11/000000_0	151	[4,2,4,8589934592,8,0]	2008-04-08	11
+28	pfile:/data/users/sohanjain/test_builds/hive_2338/apache-hive/build/ql/test/data/warehouse/srcpart_rc/ds=2008-04-08/hr=11/000000_0	151	[484,2,4,8589934606,34359738368,0]	2008-04-08	11
+30	pfile:/data/users/sohanjain/test_builds/hive_2338/apache-hive/build/ql/test/data/warehouse/srcpart_rc/ds=2008-04-08/hr=11/000000_0	151	[302,2,4,8589934600,35184372088832,0]	2008-04-08	11
+33	pfile:/data/users/sohanjain/test_builds/hive_2338/apache-hive/build/ql/test/data/warehouse/srcpart_rc/ds=2008-04-08/hr=11/000000_0	151	[311,2,4,8589934600,18014398509481984,0]	2008-04-08	11
+34	pfile:/data/users/sohanjain/test_builds/hive_2338/apache-hive/build/ql/test/data/warehouse/srcpart_rc/ds=2008-04-08/hr=11/000000_0	151	[276,2,4,8589934600,524288,0]	2008-04-08	11
+35	pfile:/data/users/sohanjain/test_builds/hive_2338/apache-hive/build/ql/test/data/warehouse/srcpart_rc/ds=2008-04-08/hr=11/000000_0	151	[347,5,6,8589934594,4398046511104,17179869188,16384,67108864,2]	2008-04-08	11
+37	pfile:/data/users/sohanjain/test_builds/hive_2338/apache-hive/build/ql/test/data/warehouse/srcpart_rc/ds=2008-04-08/hr=11/000000_0	151	[485,4,5,8589934592,268435456,8589934604,68719476736,2]	2008-04-08	11
+41	pfile:/data/users/sohanjain/test_builds/hive_2338/apache-hive/build/ql/test/data/warehouse/srcpart_rc/ds=2008-04-08/hr=11/000000_0	151	[293,2,4,8589934600,68719476736,0]	2008-04-08	11
+42	pfile:/data/users/sohanjain/test_builds/hive_2338/apache-hive/build/ql/test/data/warehouse/srcpart_rc/ds=2008-04-08/hr=11/000000_0	151	[285,4,5,8589934596,70368744177664,8589934594,268435456,2]	2008-04-08	11
+43	pfile:/data/users/sohanjain/test_builds/hive_2338/apache-hive/build/ql/test/data/warehouse/srcpart_rc/ds=2008-04-08/hr=11/000000_0	151	[201,2,4,8589934598,256,0]	2008-04-08	11
+44	pfile:/data/users/sohanjain/test_builds/hive_2338/apache-hive/build/ql/test/data/warehouse/srcpart_rc/ds=2008-04-08/hr=11/000000_0	151	[352,2,4,8589934602,2147483648,0]	2008-04-08	11
+47	pfile:/data/users/sohanjain/test_builds/hive_2338/apache-hive/build/ql/test/data/warehouse/srcpart_rc/ds=2008-04-08/hr=11/000000_0	151	[103,2,4,8589934594,274877906944,0]	2008-04-08	11
+51	pfile:/data/users/sohanjain/test_builds/hive_2338/apache-hive/build/ql/test/data/warehouse/srcpart_rc/ds=2008-04-08/hr=11/000000_0	151	[199,4,5,8589934594,2305843009213693952,8589934594,64,2]	2008-04-08	11
+53	pfile:/data/users/sohanjain/test_builds/hive_2338/apache-hive/build/ql/test/data/warehouse/srcpart_rc/ds=2008-04-08/hr=11/000000_0	151	[362,2,4,8589934602,2199023255552,0]	2008-04-08	11
+54	pfile:/data/users/sohanjain/test_builds/hive_2338/apache-hive/build/ql/test/data/warehouse/srcpart_rc/ds=2008-04-08/hr=11/000000_0	151	[124,2,4,8589934594,576460752303423488,0]	2008-04-08	11
+57	pfile:/data/users/sohanjain/test_builds/hive_2338/apache-hive/build/ql/test/data/warehouse/srcpart_rc/ds=2008-04-08/hr=11/000000_0	151	[88,2,4,8589934594,8388608,0]	2008-04-08	11
+58	pfile:/data/users/sohanjain/test_builds/hive_2338/apache-hive/build/ql/test/data/warehouse/srcpart_rc/ds=2008-04-08/hr=11/000000_0	151	[270,4,5,8589934596,34359738368,8589934594,8192,2]	2008-04-08	11
+64	pfile:/data/users/sohanjain/test_builds/hive_2338/apache-hive/build/ql/test/data/warehouse/srcpart_rc/ds=2008-04-08/hr=11/000000_0	151	[304,2,4,8589934600,140737488355328,0]	2008-04-08	11
+65	pfile:/data/users/sohanjain/test_builds/hive_2338/apache-hive/build/ql/test/data/warehouse/srcpart_rc/ds=2008-04-08/hr=11/000000_0	151	[137,2,4,8589934596,256,0]	2008-04-08	11
+66	pfile:/data/users/sohanjain/test_builds/hive_2338/apache-hive/build/ql/test/data/warehouse/srcpart_rc/ds=2008-04-08/hr=11/000000_0	151	[18,2,4,8589934592,131072,0]	2008-04-08	11
+67	pfile:/data/users/sohanjain/test_builds/hive_2338/apache-hive/build/ql/test/data/warehouse/srcpart_rc/ds=2008-04-08/hr=11/000000_0	151	[457,4,5,8589934596,4194304,8589934600,256,2]	2008-04-08	11
+69	pfile:/data/users/sohanjain/test_builds/hive_2338/apache-hive/build/ql/test/data/warehouse/srcpart_rc/ds=2008-04-08/hr=11/000000_0	151	[309,2,4,8589934600,4503599627370496,0]	2008-04-08	11
+70	pfile:/data/users/sohanjain/test_builds/hive_2338/apache-hive/build/ql/test/data/warehouse/srcpart_rc/ds=2008-04-08/hr=11/000000_0	151	[401,3,4,17179869194,128,65792,0]	2008-04-08	11
+72	pfile:/data/users/sohanjain/test_builds/hive_2338/apache-hive/build/ql/test/data/warehouse/srcpart_rc/ds=2008-04-08/hr=11/000000_0	151	[241,4,5,8589934594,549755813888,8589934594,281474976710656,2]	2008-04-08	11
+74	pfile:/data/users/sohanjain/test_builds/hive_2338/apache-hive/build/ql/test/data/warehouse/srcpart_rc/ds=2008-04-08/hr=11/000000_0	151	[307,2,4,8589934600,1125899906842624,0]	2008-04-08	11
+76	pfile:/data/users/sohanjain/test_builds/hive_2338/apache-hive/build/ql/test/data/warehouse/srcpart_rc/ds=2008-04-08/hr=11/000000_0	151	[306,2,4,8589934600,562984313159680,0]	2008-04-08	11
+77	pfile:/data/users/sohanjain/test_builds/hive_2338/apache-hive/build/ql/test/data/warehouse/srcpart_rc/ds=2008-04-08/hr=11/000000_0	151	[226,2,4,8589934598,8589934592,0]	2008-04-08	11
+78	pfile:/data/users/sohanjain/test_builds/hive_2338/apache-hive/build/ql/test/data/warehouse/srcpart_rc/ds=2008-04-08/hr=11/000000_0	151	[291,2,4,8589934600,17179869184,0]	2008-04-08	11
+80	pfile:/data/users/sohanjain/test_builds/hive_2338/apache-hive/build/ql/test/data/warehouse/srcpart_rc/ds=2008-04-08/hr=11/000000_0	151	[351,2,4,8589934602,1073741824,0]	2008-04-08	11
+82	pfile:/data/users/sohanjain/test_builds/hive_2338/apache-hive/build/ql/test/data/warehouse/srcpart_rc/ds=2008-04-08/hr=11/000000_0	151	[35,2,4,8589934592,17179869184,0]	2008-04-08	11
+83	pfile:/data/users/sohanjain/test_builds/hive_2338/apache-hive/build/ql/test/data/warehouse/srcpart_rc/ds=2008-04-08/hr=11/000000_0	151	[437,4,5,8589934596,32768,8589934598,4503599627370496,2]	2008-04-08	11
+84	pfile:/data/users/sohanjain/test_builds/hive_2338/apache-hive/build/ql/test/data/warehouse/srcpart_rc/ds=2008-04-08/hr=11/000000_0	151	[483,4,5,8589934596,4294967296,8589934600,17179869184,2]	2008-04-08	11
+85	pfile:/data/users/sohanjain/test_builds/hive_2338/apache-hive/build/ql/test/data/warehouse/srcpart_rc/ds=2008-04-08/hr=11/000000_0	151	[225,2,4,8589934598,4294967296,0]	2008-04-08	11
+86	pfile:/data/users/sohanjain/test_builds/hive_2338/apache-hive/build/ql/test/data/warehouse/srcpart_rc/ds=2008-04-08/hr=11/000000_0	151	[2,2,4,8589934592,2,0]	2008-04-08	11
+87	pfile:/data/users/sohanjain/test_builds/hive_2338/apache-hive/build/ql/test/data/warehouse/srcpart_rc/ds=2008-04-08/hr=11/000000_0	151	[229,2,4,8589934598,68719476736,0]	2008-04-08	11
+90	pfile:/data/users/sohanjain/test_builds/hive_2338/apache-hive/build/ql/test/data/warehouse/srcpart_rc/ds=2008-04-08/hr=11/000000_0	151	[495,6,7,8589934598,562949953421312,8589934594,2251799813685248,8589934594,70368744177664,4]	2008-04-08	11
+92	pfile:/data/users/sohanjain/test_builds/hive_2338/apache-hive/build/ql/test/data/warehouse/srcpart_rc/ds=2008-04-08/hr=11/000000_0	151	[101,2,4,8589934594,68719476736,0]	2008-04-08	11
+95	pfile:/data/users/sohanjain/test_builds/hive_2338/apache-hive/build/ql/test/data/warehouse/srcpart_rc/ds=2008-04-08/hr=11/000000_0	151	[273,3,4,17179869190,16384,65536,0]	2008-04-08	11
+96	pfile:/data/users/sohanjain/test_builds/hive_2338/apache-hive/build/ql/test/data/warehouse/srcpart_rc/ds=2008-04-08/hr=11/000000_0	151	[191,2,4,8589934596,4611686018427387904,0]	2008-04-08	11
+97	pfile:/data/users/sohanjain/test_builds/hive_2338/apache-hive/build/ql/test/data/warehouse/srcpart_rc/ds=2008-04-08/hr=11/000000_0	151	[500,2,4,8589934606,2251801961168896,0]	2008-04-08	11
+98	pfile:/data/users/sohanjain/test_builds/hive_2338/apache-hive/build/ql/test/data/warehouse/srcpart_rc/ds=2008-04-08/hr=11/000000_0	151	[212,4,5,8589934592,256,8589934596,524288,2]	2008-04-08	11
+100	pfile:/data/users/sohanjain/test_builds/hive_2338/apache-hive/build/ql/test/data/warehouse/srcpart_rc/ds=2008-04-08/hr=11/000000_0	151	[463,4,5,8589934596,144115188075855872,8589934600,16384,2]	2008-04-08	11
+103	pfile:/data/users/sohanjain/test_builds/hive_2338/apache-hive/build/ql/test/data/warehouse/srcpart_rc/ds=2008-04-08/hr=11/000000_0	151	[313,4,5,8589934594,-9223372036854775808,8589934596,72057594037927936,2]	2008-04-08	11
+104	pfile:/data/users/sohanjain/test_builds/hive_2338/apache-hive/build/ql/test/data/warehouse/srcpart_rc/ds=2008-04-08/hr=11/000000_0	151	[400,3,4,17179869194,34359738368,32768,0]	2008-04-08	11
+105	pfile:/data/users/sohanjain/test_builds/hive_2338/apache-hive/build/ql/test/data/warehouse/srcpart_rc/ds=2008-04-08/hr=11/000000_0	151	[363,2,4,8589934602,4398046511104,0]	2008-04-08	11
+111	pfile:/data/users/sohanjain/test_builds/hive_2338/apache-hive/build/ql/test/data/warehouse/srcpart_rc/ds=2008-04-08/hr=11/000000_0	151	[102,2,4,8589934594,137438953472,0]	2008-04-08	11
+113	pfile:/data/users/sohanjain/test_builds/hive_2338/apache-hive/build/ql/test/data/warehouse/srcpart_rc/ds=2008-04-08/hr=11/000000_0	151	[315,4,5,8589934594,16384,8589934596,288230376151711744,2]	2008-04-08	11
+114	pfile:/data/users/sohanjain/test_builds/hive_2338/apache-hive/build/ql/test/data/warehouse/srcpart_rc/ds=2008-04-08/hr=11/000000_0	151	[370,2,4,8589934602,562949953421312,0]	2008-04-08	11
+116	pfile:/data/users/sohanjain/test_builds/hive_2338/apache-hive/build/ql/test/data/warehouse/srcpart_rc/ds=2008-04-08/hr=11/000000_0	151	[324,2,4,8589934602,8,0]	2008-04-08	11
+118	pfile:/data/users/sohanjain/test_builds/hive_2338/apache-hive/build/ql/test/data/warehouse/srcpart_rc/ds=2008-04-08/hr=11/000000_0	151	[240,2,4,8589934598,141287244169216,0]	2008-04-08	11
+119	pfile:/data/users/sohanjain/test_builds/hive_2338/apache-hive/build/ql/test/data/warehouse/srcpart_rc/ds=2008-04-08/hr=11/000000_0	151	[404,6,7,8589934596,562949953421312,8589934594,2147483648,8589934594,524288,4]	2008-04-08	11
+120	pfile:/data/users/sohanjain/test_builds/hive_2338/apache-hive/build/ql/test/data/warehouse/srcpart_rc/ds=2008-04-08/hr=11/000000_0	151	[417,4,5,8589934598,16,8589934596,4294967296,2]	2008-04-08	11
+125	pfile:/data/users/sohanjain/test_builds/hive_2338/apache-hive/build/ql/test/data/warehouse/srcpart_rc/ds=2008-04-08/hr=11/000000_0	151	[386,4,5,8589934594,2251799813685248,8589934600,2,2]	2008-04-08	11
+126	pfile:/data/users/sohanjain/test_builds/hive_2338/apache-hive/build/ql/test/data/warehouse/srcpart_rc/ds=2008-04-08/hr=11/000000_0	151	[494,2,4,8589934606,35184372088832,0]	2008-04-08	11
+128	pfile:/data/users/sohanjain/test_builds/hive_2338/apache-hive/build/ql/test/data/warehouse/srcpart_rc/ds=2008-04-08/hr=11/000000_0	151	[337,5,6,17179869184,262144,1048576,8589934598,65536,3]	2008-04-08	11
+129	pfile:/data/users/sohanjain/test_builds/hive_2338/apache-hive/build/ql/test/data/warehouse/srcpart_rc/ds=2008-04-08/hr=11/000000_0	151	[176,3,4,17179869186,536870912,140737488355328,0]	2008-04-08	11
+131	pfile:/data/users/sohanjain/test_builds/hive_2338/apache-hive/build/ql/test/data/warehouse/srcpart_rc/ds=2008-04-08/hr=11/000000_0	151	[198,2,4,8589934598,32,0]	2008-04-08	11
+133	pfile:/data/users/sohanjain/test_builds/hive_2338/apache-hive/build/ql/test/data/warehouse/srcpart_rc/ds=2008-04-08/hr=11/000000_0	151	[445,2,4,8589934604,1152921504606846976,0]	2008-04-08	11
+134	pfile:/data/users/sohanjain/test_builds/hive_2338/apache-hive/build/ql/test/data/warehouse/srcpart_rc/ds=2008-04-08/hr=11/000000_0	151	[456,4,5,8589934598,1099511627776,8589934598,128,2]	2008-04-08	11
+136	pfile:/data/users/sohanjain/test_builds/hive_2338/apache-hive/build/ql/test/data/warehouse/srcpart_rc/ds=2008-04-08/hr=11/000000_0	151	[438,2,4,8589934604,9007199254740992,0]	2008-04-08	11
+137	pfile:/data/users/sohanjain/test_builds/hive_2338/apache-hive/build/ql/test/data/warehouse/srcpart_rc/ds=2008-04-08/hr=11/000000_0	151	[220,3,4,17179869188,8192,134217728,0]	2008-04-08	11
+138	pfile:/data/users/sohanjain/test_builds/hive_2338/apache-hive/build/ql/test/data/warehouse/srcpart_rc/ds=2008-04-08/hr=11/000000_0	151	[300,5,6,34359738370,4611686018427387904,1073741824,8796093022208,8796093022208,0]	2008-04-08	11
+143	pfile:/data/users/sohanjain/test_builds/hive_2338/apache-hive/build/ql/test/data/warehouse/srcpart_rc/ds=2008-04-08/hr=11/000000_0	151	[279,2,4,8589934600,4194304,0]	2008-04-08	11
+145	pfile:/data/users/sohanjain/test_builds/hive_2338/apache-hive/build/ql/test/data/warehouse/srcpart_rc/ds=2008-04-08/hr=11/000000_0	151	[27,2,4,8589934592,67108864,0]	2008-04-08	11
+146	pfile:/data/users/sohanjain/test_builds/hive_2338/apache-hive/build/ql/test/data/warehouse/srcpart_rc/ds=2008-04-08/hr=11/000000_0	151	[468,4,5,8589934592,1048576,8589934604,524288,2]	2008-04-08	11
+149	pfile:/data/users/sohanjain/test_builds/hive_2338/apache-hive/build/ql/test/data/warehouse/srcpart_rc/ds=2008-04-08/hr=11/000000_0	151	[296,4,5,8589934594,67108864,8589934596,549755813888,2]	2008-04-08	11
+150	pfile:/data/users/sohanjain/test_builds/hive_2338/apache-hive/build/ql/test/data/warehouse/srcpart_rc/ds=2008-04-08/hr=11/000000_0	151	[14,2,4,8589934592,8192,0]	2008-04-08	11
+152	pfile:/data/users/sohanjain/test_builds/hive_2338/apache-hive/build/ql/test/data/warehouse/srcpart_rc/ds=2008-04-08/hr=11/000000_0	151	[487,4,5,8589934592,16777216,8589934604,274877906944,2]	2008-04-08	11
+153	pfile:/data/users/sohanjain/test_builds/hive_2338/apache-hive/build/ql/test/data/warehouse/srcpart_rc/ds=2008-04-08/hr=11/000000_0	151	[44,2,4,8589934592,8796093022208,0]	2008-04-08	11
+155	pfile:/data/users/sohanjain/test_builds/hive_2338/apache-hive/build/ql/test/data/warehouse/srcpart_rc/ds=2008-04-08/hr=11/000000_0	151	[80,2,4,8589934594,32768,0]	2008-04-08	11
+156	pfile:/data/users/sohanjain/test_builds/hive_2338/apache-hive/build/ql/test/data/warehouse/srcpart_rc/ds=2008-04-08/hr=11/000000_0	151	[203,2,4,8589934598,1024,0]	2008-04-08	11
+157	pfile:/data/users/sohanjain/test_builds/hive_2338/apache-hive/build/ql/test/data/warehouse/srcpart_rc/ds=2008-04-08/hr=11/000000_0	151	[98,2,4,8589934594,8589934592,0]	2008-04-08	11
+158	pfile:/data/users/sohanjain/test_builds/hive_2338/apache-hive/build/ql/test/data/warehouse/srcpart_rc/ds=2008-04-08/hr=11/000000_0	151	[177,2,4,8589934596,281474976710656,0]	2008-04-08	11
+160	pfile:/data/users/sohanjain/test_builds/hive_2338/apache-hive/build/ql/test/data/warehouse/srcpart_rc/ds=2008-04-08/hr=11/000000_0	151	[283,2,4,8589934600,67108864,0]	2008-04-08	11
+162	pfile:/data/users/sohanjain/test_builds/hive_2338/apache-hive/build/ql/test/data/warehouse/srcpart_rc/ds=2008-04-08/hr=11/000000_0	151	[65,2,4,8589934594,1,0]	2008-04-08	11
+163	pfile:/data/users/sohanjain/test_builds/hive_2338/apache-hive/build/ql/test/data/warehouse/srcpart_rc/ds=2008-04-08/hr=11/000000_0	151	[402,2,4,8589934604,131072,0]	2008-04-08	11
+164	pfile:/data/users/sohanjain/test_builds/hive_2338/apache-hive/build/ql/test/data/warehouse/srcpart_rc/ds=2008-04-08/hr=11/000000_0	151	[388,3,4,17179869194,1152921504606846976,8,0]	2008-04-08	11
+165	pfile:/data/users/sohanjain/test_builds/hive_2338/apache-hive/build/ql/test/data/warehouse/srcpart_rc/ds=2008-04-08/hr=11/000000_0	151	[193,4,5,8589934592,16,8589934596,1,2]	2008-04-08	11
+166	pfile:/data/users/sohanjain/test_builds/hive_2338/apache-hive/build/ql/test/data/warehouse/srcpart_rc/ds=2008-04-08/hr=11/000000_0	151	[37,2,4,8589934592,68719476736,0]	2008-04-08	11
+167	pfile:/data/users/sohanjain/test_builds/hive_2338/apache-hive/build/ql/test/data/warehouse/srcpart_rc/ds=2008-04-08/hr=11/000000_0	151	[474,6,7,8589934594,1024,8589934596,4611686018427387904,8589934596,33554432,4]	2008-04-08	11
+168	pfile:/data/users/sohanjain/test_builds/hive_2338/apache-hive/build/ql/test/data/warehouse/srcpart_rc/ds=2008-04-08/hr=11/000000_0	151	[275,2,4,8589934600,262144,0]	2008-04-08	11
+169	pfile:/data/users/sohanjain/test_builds/hive_2338/apache-hive/build/ql/test/data/warehouse/srcpart_rc/ds=2008-04-08/hr=11/000000_0	151	[496,7,8,8589934594,281474976710656,8589934594,1073741824,17179869188,17179869184,140737488355328,4]	2008-04-08	11
+170	pfile:/data/users/sohanjain/test_builds/hive_2338/apache-hive/build/ql/test/data/warehouse/srcpart_rc/ds=2008-04-08/hr=11/000000_0	151	[95,2,4,8589934594,1073741824,0]	2008-04-08	11
+172	pfile:/data/users/sohanjain/test_builds/hive_2338/apache-hive/build/ql/test/data/warehouse/srcpart_rc/ds=2008-04-08/hr=11/000000_0	151	[440,4,5,8589934596,35184372088832,8589934598,36028797018963968,2]	2008-04-08	11
+174	pfile:/data/users/sohanjain/test_builds/hive_2338/apache-hive/build/ql/test/data/warehouse/srcpart_rc/ds=2008-04-08/hr=11/000000_0	151	[59,2,4,8589934592,290482175965396992,0]	2008-04-08	11
+175	pfile:/data/users/sohanjain/test_builds/hive_2338/apache-hive/build/ql/test/data/warehouse/srcpart_rc/ds=2008-04-08/hr=11/000000_0	151	[446,3,4,17179869194,274877906944,2305843009213693952,0]	2008-04-08	11
+176	pfile:/data/users/sohanjain/test_builds/hive_2338/apache-hive/build/ql/test/data/warehouse/srcpart_rc/ds=2008-04-08/hr=11/000000_0	151	[134,3,4,17179869186,288230376151711744,32,0]	2008-04-08	11
+177	pfile:/data/users/sohanjain/test_builds/hive_2338/apache-hive/build/ql/test/data/warehouse/srcpart_rc/ds=2008-04-08/hr=11/000000_0	151	[262,2,4,8589934600,32,0]	2008-04-08	11
+178	pfile:/data/users/sohanjain/test_builds/hive_2338/apache-hive/build/ql/test/data/warehouse/srcpart_rc/ds=2008-04-08/hr=11/000000_0	151	[426,2,4,8589934604,2199023255552,0]	2008-04-08	11
+179	pfile:/data/users/sohanjain/test_builds/hive_2338/apache-hive/build/ql/test/data/warehouse/srcpart_rc/ds=2008-04-08/hr=11/000000_0	151	[231,3,4,17179869188,17592186044416,274877906944,0]	2008-04-08	11
+180	pfile:/data/users/sohanjain/test_builds/hive_2338/apache-hive/build/ql/test/data/warehouse/srcpart_rc/ds=2008-04-08/hr=11/000000_0	151	[146,2,4,8589934596,131072,0]	2008-04-08	11
+181	pfile:/data/users/sohanjain/test_builds/hive_2338/apache-hive/build/ql/test/data/warehouse/srcpart_rc/ds=2008-04-08/hr=11/000000_0	151	[150,2,4,8589934596,2097152,0]	2008-04-08	11
+183	pfile:/data/users/sohanjain/test_builds/hive_2338/apache-hive/build/ql/test/data/warehouse/srcpart_rc/ds=2008-04-08/hr=11/000000_0	151	[477,2,4,8589934606,268435456,0]	2008-04-08	11
+186	pfile:/data/users/sohanjain/test_builds/hive_2338/apache-hive/build/ql/test/data/warehouse/srcpart_rc/ds=2008-04-08/hr=11/000000_0	151	[471,2,4,8589934606,4194304,0]	2008-04-08	11
+187	pfile:/data/users/sohanjain/test_builds/hive_2338/apache-hive/build/ql/test/data/warehouse/srcpart_rc/ds=2008-04-08/hr=11/000000_0	151	[390,6,7,8589934594,144115188075855872,8589934594,4194304,8589934596,32,4]	2008-04-08	11
+189	pfile:/data/users/sohanjain/test_builds/hive_2338/apache-hive/build/ql/test/data/warehouse/srcpart_rc/ds=2008-04-08/hr=11/000000_0	151	[447,2,4,8589934604,4611686018427387904,0]	2008-04-08	11
+190	pfile:/data/users/sohanjain/test_builds/hive_2338/apache-hive/build/ql/test/data/warehouse/srcpart_rc/ds=2008-04-08/hr=11/000000_0	151	[367,2,4,8589934602,70368744177664,0]	2008-04-08	11
+191	pfile:/data/users/sohanjain/test_builds/hive_2338/apache-hive/build/ql/test/data/warehouse/srcpart_rc/ds=2008-04-08/hr=11/000000_0	151	[333,4,5,8589934596,1152921504606846976,8589934596,4096,2]	2008-04-08	11
+192	pfile:/data/users/sohanjain/test_builds/hive_2338/apache-hive/build/ql/test/data/warehouse/srcpart_rc/ds=2008-04-08/hr=11/000000_0	151	[120,2,4,8589934594,36028797018963968,0]	2008-04-08	11
+193	pfile:/data/users/sohanjain/test_builds/hive_2338/apache-hive/build/ql/test/data/warehouse/srcpart_rc/ds=2008-04-08/hr=11/000000_0	151	[353,4,5,8589934592,17592186046464,8589934600,4294967296,2]	2008-04-08	11
+194	pfile:/data/users/sohanjain/test_builds/hive_2338/apache-hive/build/ql/test/data/warehouse/srcpart_rc/ds=2008-04-08/hr=11/000000_0	151	[490,2,4,8589934606,2199023255552,0]	2008-04-08	11
+195	pfile:/data/users/sohanjain/test_builds/hive_2338/apache-hive/build/ql/test/data/warehouse/srcpart_rc/ds=2008-04-08/hr=11/000000_0	151	[284,4,5,8589934594,2048,8589934596,134217728,2]	2008-04-08	11
+196	pfile:/data/users/sohanjain/test_builds/hive_2338/apache-hive/build/ql/test/data/warehouse/srcpart_rc/ds=2008-04-08/hr=11/000000_0	151	[208,2,4,8589934598,32768,0]	2008-04-08	11
+197	pfile:/data/users/sohanjain/test_builds/hive_2338/apache-hive/build/ql/test/data/warehouse/srcpart_rc/ds=2008-04-08/hr=11/000000_0	151	[214,3,4,17179869188,9007199254740992,2097152,0]	2008-04-08	11
+199	pfile:/data/users/sohanjain/test_builds/hive_2338/apache-hive/build/ql/test/data/warehouse/srcpart_rc/ds=2008-04-08/hr=11/000000_0	151	[415,6,7,8589934592,36028797018963968,8589934594,576460752303423488,8589934598,1073741824,4]	2008-04-08	11
+200	pfile:/data/users/sohanjain/test_builds/hive_2338/apache-hive/build/ql/test/data/warehouse/srcpart_rc/ds=2008-04-08/hr=11/000000_0	151	[499,3,4,17179869196,2097152,1125899906842624,0]	2008-04-08	11
+201	pfile:/data/users/sohanjain/test_builds/hive_2338/apache-hive/build/ql/test/data/warehouse/srcpart_rc/ds=2008-04-08/hr=11/000000_0	151	[379,2,4,8589934602,288230376151711744,0]	2008-04-08	11
+202	pfile:/data/users/sohanjain/test_builds/hive_2338/apache-hive/build/ql/test/data/warehouse/srcpart_rc/ds=2008-04-08/hr=11/000000_0	151	[340,2,4,8589934602,524288,0]	2008-04-08	11
+203	pfile:/data/users/sohanjain/test_builds/hive_2338/apache-hive/build/ql/test/data/warehouse/srcpart_rc/ds=2008-04-08/hr=11/000000_0	151	[373,4,5,8589934594,65536,8589934598,4503599627370496,2]	2008-04-08	11
+205	pfile:/data/users/sohanjain/test_builds/hive_2338/apache-hive/build/ql/test/data/warehouse/srcpart_rc/ds=2008-04-08/hr=11/000000_0	151	[196,4,5,8589934594,33554432,8589934594,8,2]	2008-04-08	11
+207	pfile:/data/users/sohanjain/test_builds/hive_2338/apache-hive/build/ql/test/data/warehouse/srcpart_rc/ds=2008-04-08/hr=11/000000_0	151	[433,4,5,8589934592,18014398509481984,8589934602,281474976710656,2]	2008-04-08	11
+208	pfile:/data/users/sohanjain/test_builds/hive_2338/apache-hive/build/ql/test/data/warehouse/srcpart_rc/ds=2008-04-08/hr=11/000000_0	151	[168,4,5,25769803776,144115188075855872,35184372088832,549755813888,0]	2008-04-08	11
+209	pfile:/data/users/sohanjain/test_builds/hive_2338/apache-hive/build/ql/test/data/warehouse/srcpart_rc/ds=2008-04-08/hr=11/000000_0	151	[303,4,5,8589934592,4294967296,8589934598,70368744177664,2]	2008-04-08	11
+213	pfile:/data/users/sohanjain/test_builds/hive_2338/apache-hive/build/ql/test/data/warehouse/srcpart_rc/ds=2008-04-08/hr=11/000000_0	151	[130,4,5,8589934592,524288,8589934594,2,2]	2008-04-08	11
+214	pfile:/data/users/sohanjain/test_builds/hive_2338/apache-hive/build/ql/test/data/warehouse/srcpart_rc/ds=2008-04-08/hr=11/000000_0	151	[441,2,4,8589934604,72057594037927936,0]	2008-04-08	11
+216	pfile:/data/users/sohanjain/test_builds/hive_2338/apache-hive/build/ql/test/data/warehouse/srcpart_rc/ds=2008-04-08/hr=11/000000_0	151	[316,4,5,8589934596,4,8589934594,576460752303423488,2]	2008-04-08	11
+217	pfile:/data/users/sohanjain/test_builds/hive_2338/apache-hive/build/ql/test/data/warehouse/srcpart_rc/ds=2008-04-08/hr=11/000000_0	151	[380,4,5,8589934596,2147483648,8589934596,576460752303423488,2]	2008-04-08	11
+218	pfile:/data/users/sohanjain/test_builds/hive_2338/apache-hive/build/ql/test/data/warehouse/srcpart_rc/ds=2008-04-08/hr=11/000000_0	151	[298,2,4,8589934600,2199023255552,0]	2008-04-08	11
+219	pfile:/data/users/sohanjain/test_builds/hive_2338/apache-hive/build/ql/test/data/warehouse/srcpart_rc/ds=2008-04-08/hr=11/000000_0	151	[321,4,5,8589934592,2199023255552,8589934600,1,2]	2008-04-08	11
+221	pfile:/data/users/sohanjain/test_builds/hive_2338/apache-hive/build/ql/test/data/warehouse/srcpart_rc/ds=2008-04-08/hr=11/000000_0	151	[136,3,4,17179869186,34359738368,128,0]	2008-04-08	11
+222	pfile:/data/users/sohanjain/test_builds/hive_2338/apache-hive/build/ql/test/data/warehouse/srcpart_rc/ds=2008-04-08/hr=11/000000_0	151	[493,2,4,8589934606,17592186044416,0]	2008-04-08	11
+223	pfile:/data/users/sohanjain/test_builds/hive_2338/apache-hive/build/ql/test/data/warehouse/srcpart_rc/ds=2008-04-08/hr=11/000000_0	151	[325,3,4,17179869192,137438953472,16,0]	2008-04-08	11
+224	pfile:/data/users/sohanjain/test_builds/hive_2338/apache-hive/build/ql/test/data/warehouse/srcpart_rc/ds=2008-04-08/hr=11/000000_0	151	[250,4,5,8589934592,32768,8589934596,144115188075855872,2]	2008-04-08	11
+226	pfile:/data/users/sohanjain/test_builds/hive_2338/apache-hive/build/ql/test/data/warehouse/srcpart_rc/ds=2008-04-08/hr=11/000000_0	151	[263,2,4,8589934600,64,0]	2008-04-08	11
+228	pfile:/data/users/sohanjain/test_builds/hive_2338/apache-hive/build/ql/test/data/warehouse/srcpart_rc/ds=2008-04-08/hr=11/000000_0	151	[299,2,4,8589934600,4398046511104,0]	2008-04-08	11
+229	pfile:/data/users/sohanjain/test_builds/hive_2338/apache-hive/build/ql/test/data/warehouse/srcpart_rc/ds=2008-04-08/hr=11/000000_0	151	[342,3,4,17179869192,1048576,2097152,0]	2008-04-08	11
+230	pfile:/data/users/sohanjain/test_builds/hive_2338/apache-hive/build/ql/test/data/warehouse/srcpart_rc/ds=2008-04-08/hr=11/000000_0	151	[424,6,7,25769803780,274878955520,4,9007199254740992,8589934594,549755813888,4]	2008-04-08	11
+233	pfile:/data/users/sohanjain/test_builds/hive_2338/apache-hive/build/ql/test/data/warehouse/srcpart_rc/ds=2008-04-08/hr=11/000000_0	151	[443,4,5,8589934600,2097152,8589934594,288230376151711744,2]	2008-04-08	11
+235	pfile:/data/users/sohanjain/test_builds/hive_2338/apache-hive/build/ql/test/data/warehouse/srcpart_rc/ds=2008-04-08/hr=11/000000_0	151	[350,2,4,8589934602,536870912,0]	2008-04-08	11
+237	pfile:/data/users/sohanjain/test_builds/hive_2338/apache-hive/build/ql/test/data/warehouse/srcpart_rc/ds=2008-04-08/hr=11/000000_0	151	[408,4,5,8589934592,562949953421312,8589934602,8388608,2]	2008-04-08	11
+238	pfile:/data/users/sohanjain/test_builds/hive_2338/apache-hive/build/ql/test/data/warehouse/srcpart_rc/ds=2008-04-08/hr=11/000000_0	151	[237,4,5,8589934592,1,8589934596,17592186044416,2]	2008-04-08	11
+239	pfile:/data/users/sohanjain/test_builds/hive_2338/apache-hive/build/ql/test/data/warehouse/srcpart_rc/ds=2008-04-08/hr=11/000000_0	151	[322,4,5,8589934596,1,8589934596,2,2]	2008-04-08	11
+241	pfile:/data/users/sohanjain/test_builds/hive_2338/apache-hive/build/ql/test/data/warehouse/srcpart_rc/ds=2008-04-08/hr=11/000000_0	151	[143,2,4,8589934596,16384,0]	2008-04-08	11
+242	pfile:/data/users/sohanjain/test_builds/hive_2338/apache-hive/build/ql/test/data/warehouse/srcpart_rc/ds=2008-04-08/hr=11/000000_0	151	[260,3,4,17179869190,2305843009213693952,8,0]	2008-04-08	11
+244	pfile:/data/users/sohanjain/test_builds/hive_2338/apache-hive/build/ql/test/data/warehouse/srcpart_rc/ds=2008-04-08/hr=11/000000_0	151	[335,2,4,8589934602,16384,0]	2008-04-08	11
+247	pfile:/data/users/sohanjain/test_builds/hive_2338/apache-hive/build/ql/test/data/warehouse/srcpart_rc/ds=2008-04-08/hr=11/000000_0	151	[62,2,4,8589934592,2305843009213693952,0]	2008-04-08	11
+248	pfile:/data/users/sohanjain/test_builds/hive_2338/apache-hive/build/ql/test/data/warehouse/srcpart_rc/ds=2008-04-08/hr=11/000000_0	151	[411,2,4,8589934604,67108864,0]	2008-04-08	11
+249	pfile:/data/users/sohanjain/test_builds/hive_2338/apache-hive/build/ql/test/data/warehouse/srcpart_rc/ds=2008-04-08/hr=11/000000_0	151	[434,2,4,8589934604,562949953421312,0]	2008-04-08	11
+252	pfile:/data/users/sohanjain/test_builds/hive_2338/apache-hive/build/ql/test/data/warehouse/srcpart_rc/ds=2008-04-08/hr=11/000000_0	151	[40,2,4,8589934592,549755813888,0]	2008-04-08	11
+255	pfile:/data/users/sohanjain/test_builds/hive_2338/apache-hive/build/ql/test/data/warehouse/srcpart_rc/ds=2008-04-08/hr=11/000000_0	151	[399,4,5,8589934592,64,8589934602,16384,2]	2008-04-08	11
+256	pfile:/data/users/sohanjain/test_builds/hive_2338/apache-hive/build/ql/test/data/warehouse/srcpart_rc/ds=2008-04-08/hr=11/000000_0	151	[454,4,5,8589934602,32,8589934594,32,2]	2008-04-08	11
+257	pfile:/data/users/sohanjain/test_builds/hive_2338/apache-hive/build/ql/test/data/warehouse/srcpart_rc/ds=2008-04-08/hr=11/000000_0	151	[364,2,4,8589934602,8796093022208,0]	2008-04-08	11
+258	pfile:/data/users/sohanjain/test_builds/hive_2338/apache-hive/build/ql/test/data/warehouse/srcpart_rc/ds=2008-04-08/hr=11/000000_0	151	[371,2,4,8589934602,1125899906842624,0]	2008-04-08	11
+260	pfile:/data/users/sohanjain/test_builds/hive_2338/apache-hive/build/ql/test/data/warehouse/srcpart_rc/ds=2008-04-08/hr=11/000000_0	151	[152,2,4,8589934596,8388608,0]	2008-04-08	11
+262	pfile:/data/users/sohanjain/test_builds/hive_2338/apache-hive/build/ql/test/data/warehouse/srcpart_rc/ds=2008-04-08/hr=11/000000_0	151	[374,2,4,8589934602,9007199254740992,0]	2008-04-08	11
+263	pfile:/data/users/sohanjain/test_builds/hive_2338/apache-hive/build/ql/test/data/warehouse/srcpart_rc/ds=2008-04-08/hr=11/000000_0	151	[327,2,4,8589934602,64,0]	2008-04-08	11
+265	pfile:/data/users/sohanjain/test_builds/hive_2338/apache-hive/build/ql/test/data/warehouse/srcpart_rc/ds=2008-04-08/hr=11/000000_0	151	[435,4,5,8589934592,1024,8589934602,1125899906842624,2]	2008-04-08	11
+266	pfile:/data/users/sohanjain/test_builds/hive_2338/apache-hive/build/ql/test/data/warehouse/srcpart_rc/ds=2008-04-08/hr=11/000000_0	151	[70,2,4,8589934594,32,0]	2008-04-08	11
+272	pfile:/data/users/sohanjain/test_builds/hive_2338/apache-hive/build/ql/test/data/warehouse/srcpart_rc/ds=2008-04-08/hr=11/000000_0	151	[257,4,5,8589934596,536870912,8589934594,1,2]	2008-04-08	11
+273	pfile:/data/users/sohanjain/test_builds/hive_2338/apache-hive/build/ql/test/data/warehouse/srcpart_rc/ds=2008-04-08/hr=11/000000_0	151	[476,6,7,8589934592,16384,8589934596,36028797018963968,8589934598,134217728,4]	2008-04-08	11
+274	pfile:/data/users/sohanjain/test_builds/hive_2338/apache-hive/build/ql/test/data/warehouse/srcpart_rc/ds=2008-04-08/hr=11/000000_0	151	[320,2,4,8589934600,-9223372036854775808,0]	2008-04-08	11
+275	pfile:/data/users/sohanjain/test_builds/hive_2338/apache-hive/build/ql/test/data/warehouse/srcpart_rc/ds=2008-04-08/hr=11/000000_0	151	[141,2,4,8589934596,4096,0]	2008-04-08	11
+277	pfile:/data/users/sohanjain/test_builds/hive_2338/apache-hive/build/ql/test/data/warehouse/srcpart_rc/ds=2008-04-08/hr=11/000000_0	151	[423,7,8,17179869184,2147483648,17592186044416,8589934594,18014398509481984,8589934596,274877906944,5]	2008-04-08	11
+278	pfile:/data/users/sohanjain/test_builds/hive_2338/apache-hive/build/ql/test/data/warehouse/srcpart_rc/ds=2008-04-08/hr=11/000000_0	151	[133,4,5,8589934592,128,8589934594,16,2]	2008-04-08	11
+280	pfile:/data/users/sohanjain/test_builds/hive_2338/apache-hive/build/ql/test/data/warehouse/srcpart_rc/ds=2008-04-08/hr=11/000000_0	151	[345,4,5,8589934594,2199023255552,8589934598,16777216,2]	2008-04-08	11
+281	pfile:/data/users/sohanjain/test_builds/hive_2338/apache-hive/build/ql/test/data/warehouse/srcpart_rc/ds=2008-04-08/hr=11/000000_0	151	[478,4,5,8589934592,1073741824,8589934604,536870912,2]	2008-04-08	11
+282	pfile:/data/users/sohanjain/test_builds/hive_2338/apache-hive/build/ql/test/data/warehouse/srcpart_rc/ds=2008-04-08/hr=11/000000_0	151	[235,2,4,8589934598,4398047559680,0]	2008-04-08	11
+283	pfile:/data/users/sohanjain/test_builds/hive_2338/apache-hive/build/ql/test/data/warehouse/srcpart_rc/ds=2008-04-08/hr=11/000000_0	151	[348,2,4,8589934602,134217728,0]	2008-04-08	11
+284	pfile:/data/users/sohanjain/test_builds/hive_2338/apache-hive/build/ql/test/data/warehouse/srcpart_rc/ds=2008-04-08/hr=11/000000_0	151	[147,2,4,8589934596,262144,0]	2008-04-08	11
+285	pfile:/data/users/sohanjain/test_builds/hive_2338/apache-hive/build/ql/test/data/warehouse/srcpart_rc/ds=2008-04-08/hr=11/000000_0	151	[472,2,4,8589934606,8388608,0]	2008-04-08	11
+286	pfile:/data/users/sohanjain/test_builds/hive_2338/apache-hive/build/ql/test/data/warehouse/srcpart_rc/ds=2008-04-08/hr=11/000000_0	151	[121,2,4,8589934594,72057594037927936,0]	2008-04-08	11
+287	pfile:/data/users/sohanjain/test_builds/hive_2338/apache-hive/build/ql/test/data/warehouse/srcpart_rc/ds=2008-04-08/hr=11/000000_0	151	[43,2,4,8589934592,4398046511104,0]	2008-04-08	11
+288	pfile:/data/users/sohanjain/test_builds/hive_2338/apache-hive/build/ql/test/data/warehouse/srcpart_rc/ds=2008-04-08/hr=11/000000_0	151	[332,4,5,8589934598,65536,8589934594,2048,2]	2008-04-08	11
+289	pfile:/data/users/sohanjain/test_builds/hive_2338/apache-hive/build/ql/test/data/warehouse/srcpart_rc/ds=2008-04-08/hr=11/000000_0	151	[135,2,4,8589934596,64,0]	2008-04-08	11
+291	pfile:/data/users/sohanjain/test_builds/hive_2338/apache-hive/build/ql/test/data/warehouse/srcpart_rc/ds=2008-04-08/hr=11/000000_0	151	[396,2,4,8589934604,2048,0]	2008-04-08	11
+292	pfile:/data/users/sohanjain/test_builds/hive_2338/apache-hive/build/ql/test/data/warehouse/srcpart_rc/ds=2008-04-08/hr=11/000000_0	151	[41,2,4,8589934592,1099511627776,0]	2008-04-08	11
+296	pfile:/data/users/sohanjain/test_builds/hive_2338/apache-hive/build/ql/test/data/warehouse/srcpart_rc/ds=2008-04-08/hr=11/000000_0	151	[314,2,4,8589934600,144115188075855872,0]	2008-04-08	11
+298	pfile:/data/users/sohanjain/test_builds/hive_2338/apache-hive/build/ql/test/data/warehouse/srcpart_rc/ds=2008-04-08/hr=11/000000_0	151	[464,5,6,8589934596,288230376151711744,17179869190,1,32768,2]	2008-04-08	11
+302	pfile:/data/users/sohanjain/test_builds/hive_2338/apache-hive/build/ql/test/data/warehouse/srcpart_rc/ds=2008-04-08/hr=11/000000_0	151	[89,2,4,8589934594,16777216,0]	2008-04-08	11
+305	pfile:/data/users/sohanjain/test_builds/hive_2338/apache-hive/build/ql/test/data/warehouse/srcpart_rc/ds=2008-04-08/hr=11/000000_0	151	[413,2,4,8589934604,268435456,0]	2008-04-08	11
+306	pfile:/data/users/sohanjain/test_builds/hive_2338/apache-hive/build/ql/test/data/warehouse/srcpart_rc/ds=2008-04-08/hr=11/000000_0	151	[249,2,4,8589934598,72057594037927936,0]	2008-04-08	11
+307	pfile:/data/users/sohanjain/test_builds/hive_2338/apache-hive/build/ql/test/data/warehouse/srcpart_rc/ds=2008-04-08/hr=11/000000_0	151	[489,4,5,8589934598,1125899906842624,8589934598,1099511627776,2]	2008-04-08	11
+308	pfile:/data/users/sohanjain/test_builds/hive_2338/apache-hive/build/ql/test/data/warehouse/srcpart_rc/ds=2008-04-08/hr=11/000000_0	151	[206,2,4,8589934598,8192,0]	2008-04-08	11
+309	pfile:/data/users/sohanjain/test_builds/hive_2338/apache-hive/build/ql/test/data/warehouse/srcpart_rc/ds=2008-04-08/hr=11/000000_0	151	[251,4,5,8589934594,8,8589934594,288230376151711744,2]	2008-04-08	11
+310	pfile:/data/users/sohanjain/test_builds/hive_2338/apache-hive/build/ql/test/data/warehouse/srcpart_rc/ds=2008-04-08/hr=11/000000_0	151	[428,2,4,8589934604,8796093022208,0]	2008-04-08	11
+311	pfile:/data/users/sohanjain/test_builds/hive_2338/apache-hive/build/ql/test/data/warehouse/srcpart_rc/ds=2008-04-08/hr=11/000000_0	151	[140,4,5,25769803776,4,2097152,2048,0]	2008-04-08	11
+315	pfile:/data/users/sohanjain/test_builds/hive_2338/apache-hive/build/ql/test/data/warehouse/srcpart_rc/ds=2008-04-08/hr=11/000000_0	151	[482,2,4,8589934606,8589934592,0]	2008-04-08	11
+316	pfile:/data/users/sohanjain/test_builds/hive_2338/apache-hive/build/ql/test/data/warehouse/srcpart_rc/ds=2008-04-08/hr=11/000000_0	151	[341,6,7,8589934594,4194304,8589934594,536870912,8589934594,1048576,4]	2008-04-08	11
+317	pfile:/data/users/sohanjain/test_builds/hive_2338/apache-hive/build/ql/test/data/warehouse/srcpart_rc/ds=2008-04-08/hr=11/000000_0	151	[429,4,5,8589934600,2048,8589934594,17592186044416,2]	2008-04-08	11
+318	pfile:/data/users/sohanjain/test_builds/hive_2338/apache-hive/build/ql/test/data/warehouse/srcpart_rc/ds=2008-04-08/hr=11/000000_0	151	[217,3,4,17179869188,512,25165824,0]	2008-04-08	11
+321	pfile:/data/users/sohanjain/test_builds/hive_2338/apache-hive/build/ql/test/data/warehouse/srcpart_rc/ds=2008-04-08/hr=11/000000_0	151	[354,3,4,17179869192,536870912,8589934592,0]	2008-04-08	11
+322	pfile:/data/users/sohanjain/test_builds/hive_2338/apache-hive/build/ql/test/data/warehouse/srcpart_rc/ds=2008-04-08/hr=11/000000_0	151	[281,4,5,8589934596,4503599627370496,8589934594,16777216,2]	2008-04-08	11
+323	pfile:/data/users/sohanjain/test_builds/hive_2338/apache-hive/build/ql/test/data/warehouse/srcpart_rc/ds=2008-04-08/hr=11/000000_0	151	[421,2,4,8589934604,68719476736,0]	2008-04-08	11
+325	pfile:/data/users/sohanjain/test_builds/hive_2338/apache-hive/build/ql/test/data/warehouse/srcpart_rc/ds=2008-04-08/hr=11/000000_0	151	[422,4,5,8589934594,512,8589934600,137438953472,2]	2008-04-08	11
+327	pfile:/data/users/sohanjain/test_builds/hive_2338/apache-hive/build/ql/test/data/warehouse/srcpart_rc/ds=2008-04-08/hr=11/000000_0	151	[253,4,5,8589934592,536870912,8589934596,1152921504606846978,2]	2008-04-08	11
+331	pfile:/data/users/sohanjain/test_builds/hive_2338/apache-hive/build/ql/test/data/warehouse/srcpart_rc/ds=2008-04-08/hr=11/000000_0	151	[349,3,4,17179869192,2,268435456,0]	2008-04-08	11
+332	pfile:/data/users/sohanjain/test_builds/hive_2338/apache-hive/build/ql/test/data/warehouse/srcpart_rc/ds=2008-04-08/hr=11/000000_0	151	[139,2,4,8589934596,1024,0]	2008-04-08	11
+333	pfile:/data/users/sohanjain/test_builds/hive_2338/apache-hive/build/ql/test/data/warehouse/srcpart_rc/ds=2008-04-08/hr=11/000000_0	151	[430,4,5,8589934596,65536,8589934598,35184372088832,2]	2008-04-08	11
+335	pfile:/data/users/sohanjain/test_builds/hive_2338/apache-hive/build/ql/test/data/warehouse/srcpart_rc/ds=2008-04-08/hr=11/000000_0	151	[355,2,4,8589934602,17179869184,0]	2008-04-08	11
+336	pfile:/data/users/sohanjain/test_builds/hive_2338/apache-hive/build/ql/test/data/warehouse/srcpart_rc/ds=2008-04-08/hr=11/000000_0	151	[272,2,4,8589934600,32768,0]	2008-04-08	11
+338	pfile:/data/users/sohanjain/test_builds/hive_2338/apache-hive/build/ql/test/data/warehouse/srcpart_rc/ds=2008-04-08/hr=11/000000_0	151	[46,2,4,8589934592,35184372088832,0]	2008-04-08	11
+339	pfile:/data/users/sohanjain/test_builds/hive_2338/apache-hive/build/ql/test/data/warehouse/srcpart_rc/ds=2008-04-08/hr=11/000000_0	151	[82,2,4,8589934594,131072,0]	2008-04-08	11
+341	pfile:/data/users/sohanjain/test_builds/hive_2338/apache-hive/build/ql/test/data/warehouse/srcpart_rc/ds=2008-04-08/hr=11/000000_0	151	[466,2,4,8589934606,131072,0]	2008-04-08	11
+342	pfile:/data/users/sohanjain/test_builds/hive_2338/apache-hive/build/ql/test/data/warehouse/srcpart_rc/ds=2008-04-08/hr=11/000000_0	151	[308,4,5,8589934594,128,8589934596,2251799813685248,2]	2008-04-08	11
+344	pfile:/data/users/sohanjain/test_builds/hive_2338/apache-hive/build/ql/test/data/warehouse/srcpart_rc/ds=2008-04-08/hr=11/000000_0	151	[479,4,5,8589934600,2305843009213693952,8589934596,1073741824,2]	2008-04-08	11
+345	pfile:/data/users/sohanjain/test_builds/hive_2338/apache-hive/build/ql/test/data/warehouse/srcpart_rc/ds=2008-04-08/hr=11/000000_0	151	[93,2,4,8589934594,268435456,0]	2008-04-08	11
+348	pfile:/data/users/sohanjain/test_builds/hive_2338/apache-hive/build/ql/test/data/warehouse/srcpart_rc/ds=2008-04-08/hr=11/000000_0	151	[488,6,7,8589934596,1108101562368,8589934596,18014398509481984,8589934594,549772591104,4]	2008-04-08	11
+351	pfile:/data/users/sohanjain/test_builds/hive_2338/apache-hive/build/ql/test/data/warehouse/srcpart_rc/ds=2008-04-08/hr=11/000000_0	151	[398,2,4,8589934604,8192,0]	2008-04-08	11
+353	pfile:/data/users/sohanjain/test_builds/hive_2338/apache-hive/build/ql/test/data/warehouse/srcpart_rc/ds=2008-04-08/hr=11/000000_0	151	[439,4,5,8589934596,134217728,8589934598,18014398509481984,2]	2008-04-08	11
+356	pfile:/data/users/sohanjain/test_builds/hive_2338/apache-hive/build/ql/test/data/warehouse/srcpart_rc/ds=2008-04-08/hr=11/000000_0	151	[111,2,4,8589934594,70368744177664,0]	2008-04-08	11
+360	pfile:/data/users/sohanjain/test_builds/hive_2338/apache-hive/build/ql/test/data/warehouse/srcpart_rc/ds=2008-04-08/hr=11/000000_0	151	[410,2,4,8589934604,33554432,0]	2008-04-08	11
+362	pfile:/data/users/sohanjain/test_builds/hive_2338/apache-hive/build/ql/test/data/warehouse/srcpart_rc/ds=2008-04-08/hr=11/000000_0	151	[470,2,4,8589934606,2097152,0]	2008-04-08	11
+364	pfile:/data/users/sohanjain/test_builds/hive_2338/apache-hive/build/ql/test/data/warehouse/srcpart_rc/ds=2008-04-08/hr=11/000000_0	151	[230,2,4,8589934598,137438953472,0]	2008-04-08	11
+365	pfile:/data/users/sohanjain/test_builds/hive_2338/apache-hive/build/ql/test/data/warehouse/srcpart_rc/ds=2008-04-08/hr=11/000000_0	151	[69,2,4,8589934594,16,0]	2008-04-08	11
+366	pfile:/data/users/sohanjain/test_builds/hive_2338/apache-hive/build/ql/test/data/warehouse/srcpart_rc/ds=2008-04-08/hr=11/000000_0	151	[358,2,4,8589934602,137438953472,0]	2008-04-08	11
+367	pfile:/data/users/sohanjain/test_builds/hive_2338/apache-hive/build/ql/test/data/warehouse/srcpart_rc/ds=2008-04-08/hr=11/000000_0	151	[317,4,5,8589934594,256,8589934596,1152921504606846976,2]	2008-04-08	11
+368	pfile:/data/users/sohanjain/test_builds/hive_2338/apache-hive/build/ql/test/data/warehouse/srcpart_rc/ds=2008-04-08/hr=11/000000_0	151	[312,2,4,8589934600,36028797018963968,0]	2008-04-08	11
+369	pfile:/data/users/sohanjain/test_builds/hive_2338/apache-hive/build/ql/test/data/warehouse/srcpart_rc/ds=2008-04-08/hr=11/000000_0	151	[255,4,5,8589934592,65536,8589934596,4611686018695823360,2]	2008-04-08	11
+373	pfile:/data/users/sohanjain/test_builds/hive_2338/apache-hive/build/ql/test/data/warehouse/srcpart_rc/ds=2008-04-08/hr=11/000000_0	151	[157,2,4,8589934596,268435456,0]	2008-04-08	11
+374	pfile:/data/users/sohanjain/test_builds/hive_2338/apache-hive/build/ql/test/data/warehouse/srcpart_rc/ds=2008-04-08/hr=11/000000_0	151	[24,2,4,8589934592,8388608,0]	2008-04-08	11
+375	pfile:/data/users/sohanjain/test_builds/hive_2338/apache-hive/build/ql/test/data/warehouse/srcpart_rc/ds=2008-04-08/hr=11/000000_0	151	[449,2,4,8589934606,1,0]	2008-04-08	11
+377	pfile:/data/users/sohanjain/test_builds/hive_2338/apache-hive/build/ql/test/data/warehouse/srcpart_rc/ds=2008-04-08/hr=11/000000_0	151	[66,2,4,8589934594,2,0]	2008-04-08	11
+378	pfile:/data/users/sohanjain/test_builds/hive_2338/apache-hive/build/ql/test/data/warehouse/srcpart_rc/ds=2008-04-08/hr=11/000000_0	151	[99,2,4,8589934594,17179869184,0]	2008-04-08	11
+379	pfile:/data/users/sohanjain/test_builds/hive_2338/apache-hive/build/ql/test/data/warehouse/srcpart_rc/ds=2008-04-08/hr=11/000000_0	151	[459,2,4,8589934606,1024,0]	2008-04-08	11
+382	pfile:/data/users/sohanjain/test_builds/hive_2338/apache-hive/build/ql/test/data/warehouse/srcpart_rc/ds=2008-04-08/hr=11/000000_0	151	[391,4,5,8589934594,562949953421312,8589934600,64,2]	2008-04-08	11
+384	pfile:/data/users/sohanjain/test_builds/hive_2338/apache-hive/build/ql/test/data/warehouse/srcpart_rc/ds=2008-04-08/hr=11/000000_0	151	[458,4,5,8589934596,33554432,8589934600,528,2]	2008-04-08	11
+386	pfile:/data/users/sohanjain/test_builds/hive_2338/apache-hive/build/ql/test/data/warehouse/srcpart_rc/ds=2008-04-08/hr=11/000000_0	151	[117,2,4,8589934594,4503599627370496,0]	2008-04-08	11
+389	pfile:/data/users/sohanjain/test_builds/hive_2338/apache-hive/build/ql/test/data/warehouse/srcpart_rc/ds=2008-04-08/hr=11/000000_0	151	[252,2,4,8589934598,576460752303423488,0]	2008-04-08	11
+392	pfile:/data/users/sohanjain/test_builds/hive_2338/apache-hive/build/ql/test/data/warehouse/srcpart_rc/ds=2008-04-08/hr=11/000000_0	151	[256,2,4,8589934598,-9223372036854775808,0]	2008-04-08	11
+393	pfile:/data/users/sohanjain/test_builds/hive_2338/apache-hive/build/ql/test/data/warehouse/srcpart_rc/ds=2008-04-08/hr=11/000000_0	151	[184,2,4,8589934596,36028797018963968,0]	2008-04-08	11
+394	pfile:/data/users/sohanjain/test_builds/hive_2338/apache-hive/build/ql/test/data/warehouse/srcpart_rc/ds=2008-04-08/hr=11/000000_0	151	[49,2,4,8589934592,281474976710656,0]	2008-04-08	11
+395	pfile:/data/users/sohanjain/test_builds/hive_2338/apache-hive/build/ql/test/data/warehouse/srcpart_rc/ds=2008-04-08/hr=11/000000_0	151	[269,3,4,17179869190,2199023255552,4096,0]	2008-04-08	11
+396	pfile:/data/users/sohanjain/test_builds/hive_2338/apache-hive/build/ql/test/data/warehouse/srcpart_rc/ds=2008-04-08/hr=11/000000_0	151	[378,5,6,8589934592,1152921504606846976,17179869190,1024,144115188075855872,2]	2008-04-08	11
+397	pfile:/data/users/sohanjain/test_builds/hive_2338/apache-hive/build/ql/test/data/warehouse/srcpart_rc/ds=2008-04-08/hr=11/000000_0	151	[394,4,5,8589934594,4,8589934600,512,2]	2008-04-08	11
+399	pfile:/data/users/sohanjain/test_builds/hive_2338/apache-hive/build/ql/test/data/warehouse/srcpart_rc/ds=2008-04-08/hr=11/000000_0	151	[112,3,4,17179869184,576460752303423488,140737488355328,0]	2008-04-08	11
+400	pfile:/data/users/sohanjain/test_builds/hive_2338/apache-hive/build/ql/test/data/warehouse/srcpart_rc/ds=2008-04-08/hr=11/000000_0	151	[498,2,4,8589934606,562949953421312,0]	2008-04-08	11
+401	pfile:/data/users/sohanjain/test_builds/hive_2338/apache-hive/build/ql/test/data/warehouse/srcpart_rc/ds=2008-04-08/hr=11/000000_0	151	[450,7,8,8589934592,4096,17179869190,4,281474976711680,8589934594,2,5]	2008-04-08	11
+402	pfile:/data/users/sohanjain/test_builds/hive_2338/apache-hive/build/ql/test/data/warehouse/srcpart_rc/ds=2008-04-08/hr=11/000000_0	151	[266,2,4,8589934600,512,0]	2008-04-08	11
+403	pfile:/data/users/sohanjain/test_builds/hive_2338/apache-hive/build/ql/test/data/warehouse/srcpart_rc/ds=2008-04-08/hr=11/000000_0	151	[497,6,7,8589934592,34359738368,8589934600,549755813888,8589934594,281474976710656,4]	2008-04-08	11
+404	pfile:/data/users/sohanjain/test_builds/hive_2338/apache-hive/build/ql/test/data/warehouse/srcpart_rc/ds=2008-04-08/hr=11/000000_0	151	[200,3,4,17179869188,16777216,128,0]	2008-04-08	11
+406	pfile:/data/users/sohanjain/test_builds/hive_2338/apache-hive/build/ql/test/data/warehouse/srcpart_rc/ds=2008-04-08/hr=11/000000_0	151	[444,5,6,8589934592,2097152,17179869192,158329674399744,576460752303423488,2]	2008-04-08	11
+407	pfile:/data/users/sohanjain/test_builds/hive_2338/apache-hive/build/ql/test/data/warehouse/srcpart_rc/ds=2008-04-08/hr=11/000000_0	151	[452,2,4,8589934606,8,0]	2008-04-08	11
+409	pfile:/data/users/sohanjain/test_builds/hive_2338/apache-hive/build/ql/test/data/warehouse/srcpart_rc/ds=2008-04-08/hr=11/000000_0	151	[366,6,7,8589934592,32,8589934596,33554432,8589934594,35184372088832,4]	2008-04-08	11
+411	pfile:/data/users/sohanjain/test_builds/hive_2338/apache-hive/build/ql/test/data/warehouse/srcpart_rc/ds=2008-04-08/hr=11/000000_0	151	[166,2,4,8589934596,137438953472,0]	2008-04-08	11
+413	pfile:/data/users/sohanjain/test_builds/hive_2338/apache-hive/build/ql/test/data/warehouse/srcpart_rc/ds=2008-04-08/hr=11/000000_0	151	[224,4,5,8589934592,4503599627370496,8589934596,2147483648,2]	2008-04-08	11
+414	pfile:/data/users/sohanjain/test_builds/hive_2338/apache-hive/build/ql/test/data/warehouse/srcpart_rc/ds=2008-04-08/hr=11/000000_0	151	[491,3,4,17179869196,1048576,4398046511104,0]	2008-04-08	11
+417	pfile:/data/users/sohanjain/test_builds/hive_2338/apache-hive/build/ql/test/data/warehouse/srcpart_rc/ds=2008-04-08/hr=11/000000_0	151	[414,4,5,8589934592,4611686155866341376,8589934602,536870912,2]	2008-04-08	11
+418	pfile:/data/users/sohanjain/test_builds/hive_2338/apache-hive/build/ql/test/data/warehouse/srcpart_rc/ds=2008-04-08/hr=11/000000_0	151	[190,2,4,8589934596,2305843009213693952,0]	2008-04-08	11
+419	pfile:/data/users/sohanjain/test_builds/hive_2338/apache-hive/build/ql/test/data/warehouse/srcpart_rc/ds=2008-04-08/hr=11/000000_0	151	[238,2,4,8589934598,35184372088832,0]	2008-04-08	11
+421	pfile:/data/users/sohanjain/test_builds/hive_2338/apache-hive/build/ql/test/data/warehouse/srcpart_rc/ds=2008-04-08/hr=11/000000_0	151	[451,2,4,8589934606,4,0]	2008-04-08	11
+424	pfile:/data/users/sohanjain/test_builds/hive_2338/apache-hive/build/ql/test/data/warehouse/srcpart_rc/ds=2008-04-08/hr=11/000000_0	151	[389,3,4,17179869194,36028797018963968,16,0]	2008-04-08	11
+427	pfile:/data/users/sohanjain/test_builds/hive_2338/apache-hive/build/ql/test/data/warehouse/srcpart_rc/ds=2008-04-08/hr=11/000000_0	151	[108,2,4,8589934594,8796093022208,0]	2008-04-08	11
+429	pfile:/data/users/sohanjain/test_builds/hive_2338/apache-hive/build/ql/test/data/warehouse/srcpart_rc/ds=2008-04-08/hr=11/000000_0	151	[418,4,5,8589934592,4194304,8589934602,8589934592,2]	2008-04-08	11
+430	pfile:/data/users/sohanjain/test_builds/hive_2338/apache-hive/build/ql/test/data/warehouse/srcpart_rc/ds=2008-04-08/hr=11/000000_0	151	[287,6,7,8589934592,274877906944,8589934594,8,8589934594,1073741824,4]	2008-04-08	11
+431	pfile:/data/users/sohanjain/test_builds/hive_2338/apache-hive/build/ql/test/data/warehouse/srcpart_rc/ds=2008-04-08/hr=11/000000_0	151	[387,5,6,8589934596,8796093022208,17179869188,2305843009213693952,4,2]	2008-04-08	11
+432	pfile:/data/users/sohanjain/test_builds/hive_2338/apache-hive/build/ql/test/data/warehouse/srcpart_rc/ds=2008-04-08/hr=11/000000_0	151	[339,2,4,8589934602,262144,0]	2008-04-08	11
+435	pfile:/data/users/sohanjain/test_builds/hive_2338/apache-hive/build/ql/test/data/warehouse/srcpart_rc/ds=2008-04-08/hr=11/000000_0	151	[245,2,4,8589934598,4503599627370496,0]	2008-04-08	11
+436	pfile:/data/users/sohanjain/test_builds/hive_2338/apache-hive/build/ql/test/data/warehouse/srcpart_rc/ds=2008-04-08/hr=11/000000_0	151	[202,2,4,8589934598,512,0]	2008-04-08	11
+437	pfile:/data/users/sohanjain/test_builds/hive_2338/apache-hive/build/ql/test/data/warehouse/srcpart_rc/ds=2008-04-08/hr=11/000000_0	151	[118,2,4,8589934594,9007199254740992,0]	2008-04-08	11
+438	pfile:/data/users/sohanjain/test_builds/hive_2338/apache-hive/build/ql/test/data/warehouse/srcpart_rc/ds=2008-04-08/hr=11/000000_0	151	[403,5,6,8589934594,134217728,17179869190,32768,262144,2]	2008-04-08	11
+439	pfile:/data/users/sohanjain/test_builds/hive_2338/apache-hive/build/ql/test/data/warehouse/srcpart_rc/ds=2008-04-08/hr=11/000000_0	151	[409,4,5,8589934594,64,8589934600,16777216,2]	2008-04-08	11
+443	pfile:/data/users/sohanjain/test_builds/hive_2338/apache-hive/build/ql/test/data/warehouse/srcpart_rc/ds=2008-04-08/hr=11/000000_0	151	[420,2,4,8589934604,34359738368,0]	2008-04-08	11
+444	pfile:/data/users/sohanjain/test_builds/hive_2338/apache-hive/build/ql/test/data/warehouse/srcpart_rc/ds=2008-04-08/hr=11/000000_0	151	[416,2,4,8589934604,2147483648,0]	2008-04-08	11
+446	pfile:/data/users/sohanjain/test_builds/hive_2338/apache-hive/build/ql/test/data/warehouse/srcpart_rc/ds=2008-04-08/hr=11/000000_0	151	[47,2,4,8589934592,70368744177664,0]	2008-04-08	11
+448	pfile:/data/users/sohanjain/test_builds/hive_2338/apache-hive/build/ql/test/data/warehouse/srcpart_rc/ds=2008-04-08/hr=11/000000_0	151	[486,2,4,8589934606,137438953472,0]	2008-04-08	11
+449	pfile:/data/users/sohanjain/test_builds/hive_2338/apache-hive/build/ql/test/data/warehouse/srcpart_rc/ds=2008-04-08/hr=11/000000_0	151	[297,2,4,8589934600,1099511627776,0]	2008-04-08	11
+452	pfile:/data/users/sohanjain/test_builds/hive_2338/apache-hive/build/ql/test/data/warehouse/srcpart_rc/ds=2008-04-08/hr=11/000000_0	151	[261,2,4,8589934600,16,0]	2008-04-08	11
+453	pfile:/data/users/sohanjain/test_builds/hive_2338/apache-hive/build/ql/test/data/warehouse/srcpart_rc/ds=2008-04-08/hr=11/000000_0	151	[301,2,4,8589934600,17592186044416,0]	2008-04-08	11
+454	pfile:/data/users/sohanjain/test_builds/hive_2338/apache-hive/build/ql/test/data/warehouse/srcpart_rc/ds=2008-04-08/hr=11/000000_0	151	[448,5,6,8589934596,72057594037927936,17179869188,4611686018427387904,-9223372036854775808,2]	2008-04-08	11
+455	pfile:/data/users/sohanjain/test_builds/hive_2338/apache-hive/build/ql/test/data/warehouse/srcpart_rc/ds=2008-04-08/hr=11/000000_0	151	[84,2,4,8589934594,524288,0]	2008-04-08	11
+457	pfile:/data/users/sohanjain/test_builds/hive_2338/apache-hive/build/ql/test/data/warehouse/srcpart_rc/ds=2008-04-08/hr=11/000000_0	151	[211,2,4,8589934598,262144,0]	2008-04-08	11
+458	pfile:/data/users/sohanjain/test_builds/hive_2338/apache-hive/build/ql/test/data/warehouse/srcpart_rc/ds=2008-04-08/hr=11/000000_0	151	[469,4,5,8589934600,8589934592,8589934596,1048576,2]	2008-04-08	11
+459	pfile:/data/users/sohanjain/test_builds/hive_2338/apache-hive/build/ql/test/data/warehouse/srcpart_rc/ds=2008-04-08/hr=11/000000_0	151	[125,3,4,17179869184,140737488355328,1152921504606846976,0]	2008-04-08	11
+460	pfile:/data/users/sohanjain/test_builds/hive_2338/apache-hive/build/ql/test/data/warehouse/srcpart_rc/ds=2008-04-08/hr=11/000000_0	151	[432,2,4,8589934604,140737488355328,0]	2008-04-08	11
+462	pfile:/data/users/sohanjain/test_builds/hive_2338/apache-hive/build/ql/test/data/warehouse/srcpart_rc/ds=2008-04-08/hr=11/000000_0	151	[461,3,4,17179869196,144115188075855872,4096,0]	2008-04-08	11
+463	pfile:/data/users/sohanjain/test_builds/hive_2338/apache-hive/build/ql/test/data/warehouse/srcpart_rc/ds=2008-04-08/hr=11/000000_0	151	[344,4,5,8589934596,4398046511104,8589934596,8388608,2]	2008-04-08	11
+466	pfile:/data/users/sohanjain/test_builds/hive_2338/apache-hive/build/ql/test/data/warehouse/srcpart_rc/ds=2008-04-08/hr=11/000000_0	151	[357,6,7,8589934592,72057594037927936,8589934594,17179869184,8589934596,68719476736,4]	2008-04-08	11
+467	pfile:/data/users/sohanjain/test_builds/hive_2338/apache-hive/build/ql/test/data/warehouse/srcpart_rc/ds=2008-04-08/hr=11/000000_0	151	[338,2,4,8589934602,131072,0]	2008-04-08	11
+468	pfile:/data/users/sohanjain/test_builds/hive_2338/apache-hive/build/ql/test/data/warehouse/srcpart_rc/ds=2008-04-08/hr=11/000000_0	151	[427,6,7,25769803780,18014398509481984,4096,281474976710656,8589934594,4398046511104,4]	2008-04-08	11
+469	pfile:/data/users/sohanjain/test_builds/hive_2338/apache-hive/build/ql/test/data/warehouse/srcpart_rc/ds=2008-04-08/hr=11/000000_0	151	[481,9,10,17179869184,33554432,18014398509481984,8589934594,2048,8589934594,4194304,8589934594,4294967296,7]	2008-04-08	11
+470	pfile:/data/users/sohanjain/test_builds/hive_2338/apache-hive/build/ql/test/data/warehouse/srcpart_rc/ds=2008-04-08/hr=11/000000_0	151	[219,2,4,8589934598,67108864,0]	2008-04-08	11
+472	pfile:/data/users/sohanjain/test_builds/hive_2338/apache-hive/build/ql/test/data/warehouse/srcpart_rc/ds=2008-04-08/hr=11/000000_0	151	[280,2,4,8589934600,8388608,0]	2008-04-08	11
+475	pfile:/data/users/sohanjain/test_builds/hive_2338/apache-hive/build/ql/test/data/warehouse/srcpart_rc/ds=2008-04-08/hr=11/000000_0	151	[77,2,4,8589934594,4096,0]	2008-04-08	11
+477	pfile:/data/users/sohanjain/test_builds/hive_2338/apache-hive/build/ql/test/data/warehouse/srcpart_rc/ds=2008-04-08/hr=11/000000_0	151	[492,2,4,8589934606,8796093022208,0]	2008-04-08	11
+478	pfile:/data/users/sohanjain/test_builds/hive_2338/apache-hive/build/ql/test/data/warehouse/srcpart_rc/ds=2008-04-08/hr=11/000000_0	151	[425,3,4,17179869194,-9223372036854775808,1099511627776,0]	2008-04-08	11
+479	pfile:/data/users/sohanjain/test_builds/hive_2338/apache-hive/build/ql/test/data/warehouse/srcpart_rc/ds=2008-04-08/hr=11/000000_0	151	[412,2,4,8589934604,134217728,0]	2008-04-08	11
+480	pfile:/data/users/sohanjain/test_builds/hive_2338/apache-hive/build/ql/test/data/warehouse/srcpart_rc/ds=2008-04-08/hr=11/000000_0	151	[436,3,4,17179869194,512,2251799813686272,0]	2008-04-08	11
+481	pfile:/data/users/sohanjain/test_builds/hive_2338/apache-hive/build/ql/test/data/warehouse/srcpart_rc/ds=2008-04-08/hr=11/000000_0	151	[210,2,4,8589934598,131072,0]	2008-04-08	11
+482	pfile:/data/users/sohanjain/test_builds/hive_2338/apache-hive/build/ql/test/data/warehouse/srcpart_rc/ds=2008-04-08/hr=11/000000_0	151	[51,2,4,8589934592,1125899906842624,0]	2008-04-08	11
+483	pfile:/data/users/sohanjain/test_builds/hive_2338/apache-hive/build/ql/test/data/warehouse/srcpart_rc/ds=2008-04-08/hr=11/000000_0	151	[361,2,4,8589934602,1099511627776,0]	2008-04-08	11
+484	pfile:/data/users/sohanjain/test_builds/hive_2338/apache-hive/build/ql/test/data/warehouse/srcpart_rc/ds=2008-04-08/hr=11/000000_0	151	[10,2,4,8589934592,512,0]	2008-04-08	11
+485	pfile:/data/users/sohanjain/test_builds/hive_2338/apache-hive/build/ql/test/data/warehouse/srcpart_rc/ds=2008-04-08/hr=11/000000_0	151	[323,2,4,8589934602,4,0]	2008-04-08	11
+487	pfile:/data/users/sohanjain/test_builds/hive_2338/apache-hive/build/ql/test/data/warehouse/srcpart_rc/ds=2008-04-08/hr=11/000000_0	151	[329,2,4,8589934602,256,0]	2008-04-08	11
+489	pfile:/data/users/sohanjain/test_builds/hive_2338/apache-hive/build/ql/test/data/warehouse/srcpart_rc/ds=2008-04-08/hr=11/000000_0	151	[289,6,7,25769803776,-9223372036854775808,4294967296,67108864,8589934594,4294967296,4]	2008-04-08	11
+490	pfile:/data/users/sohanjain/test_builds/hive_2338/apache-hive/build/ql/test/data/warehouse/srcpart_rc/ds=2008-04-08/hr=11/000000_0	151	[228,2,4,8589934598,34359738368,0]	2008-04-08	11
+491	pfile:/data/users/sohanjain/test_builds/hive_2338/apache-hive/build/ql/test/data/warehouse/srcpart_rc/ds=2008-04-08/hr=11/000000_0	151	[407,2,4,8589934604,4194304,0]	2008-04-08	11
+492	pfile:/data/users/sohanjain/test_builds/hive_2338/apache-hive/build/ql/test/data/warehouse/srcpart_rc/ds=2008-04-08/hr=11/000000_0	151	[462,4,5,8589934600,274877906944,8589934596,8192,2]	2008-04-08	11
+493	pfile:/data/users/sohanjain/test_builds/hive_2338/apache-hive/build/ql/test/data/warehouse/srcpart_rc/ds=2008-04-08/hr=11/000000_0	151	[431,2,4,8589934604,70368744177664,0]	2008-04-08	11
+494	pfile:/data/users/sohanjain/test_builds/hive_2338/apache-hive/build/ql/test/data/warehouse/srcpart_rc/ds=2008-04-08/hr=11/000000_0	151	[54,2,4,8589934592,9007199254740992,0]	2008-04-08	11
+495	pfile:/data/users/sohanjain/test_builds/hive_2338/apache-hive/build/ql/test/data/warehouse/srcpart_rc/ds=2008-04-08/hr=11/000000_0	151	[28,2,4,8589934592,134217728,0]	2008-04-08	11
+496	pfile:/data/users/sohanjain/test_builds/hive_2338/apache-hive/build/ql/test/data/warehouse/srcpart_rc/ds=2008-04-08/hr=11/000000_0	151	[179,2,4,8589934596,1125899906842624,0]	2008-04-08	11
+497	pfile:/data/users/sohanjain/test_builds/hive_2338/apache-hive/build/ql/test/data/warehouse/srcpart_rc/ds=2008-04-08/hr=11/000000_0	151	[265,2,4,8589934600,256,0]	2008-04-08	11
+498	pfile:/data/users/sohanjain/test_builds/hive_2338/apache-hive/build/ql/test/data/warehouse/srcpart_rc/ds=2008-04-08/hr=11/000000_0	151	[467,6,7,8589934594,1125899906842624,8589934596,33554432,8589934596,262144,4]	2008-04-08	11
+PREHOOK: query: INSERT OVERWRITE DIRECTORY "/tmp/index_test_index_result" SELECT `_bucketname`,
+COLLECT_SET(`_offset`) as `_offsets` FROM default__srcpart_rc_srcpart_rc_index__
+x WHERE NOT EWAH_BITMAP_EMPTY(`_bitmaps`) AND x.key=100 AND x.ds = '2008-04-08' GROUP BY `_bucketname`
+PREHOOK: type: QUERY
+PREHOOK: Input: default@default__srcpart_rc_srcpart_rc_index__@ds=2008-04-08/hr=11
+PREHOOK: Input: default@default__srcpart_rc_srcpart_rc_index__@ds=2008-04-08/hr=12
+PREHOOK: Output: /tmp/index_test_index_result
+POSTHOOK: query: INSERT OVERWRITE DIRECTORY "/tmp/index_test_index_result" SELECT `_bucketname`,
+COLLECT_SET(`_offset`) as `_offsets` FROM default__srcpart_rc_srcpart_rc_index__
+x WHERE NOT EWAH_BITMAP_EMPTY(`_bitmaps`) AND x.key=100 AND x.ds = '2008-04-08' GROUP BY `_bucketname`
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@default__srcpart_rc_srcpart_rc_index__@ds=2008-04-08/hr=11
+POSTHOOK: Input: default@default__srcpart_rc_srcpart_rc_index__@ds=2008-04-08/hr=12
+POSTHOOK: Output: /tmp/index_test_index_result
+POSTHOOK: Lineage: default__srcpart_rc_srcpart_rc_index__ PARTITION(ds=2008-04-09,hr=12)._bitmaps EXPRESSION [(srcpart_rc)srcpart_rc.FieldSchema(name:ROW__OFFSET__INSIDE__BLOCK, type:bigint, comment:), ]
+POSTHOOK: Lineage: default__srcpart_rc_srcpart_rc_index__ PARTITION(ds=2008-04-09,hr=12)._bucketname SIMPLE [(srcpart_rc)srcpart_rc.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
+POSTHOOK: Lineage: default__srcpart_rc_srcpart_rc_index__ PARTITION(ds=2008-04-09,hr=12)._offset SIMPLE [(srcpart_rc)srcpart_rc.FieldSchema(name:BLOCK__OFFSET__INSIDE__FILE, type:bigint, comment:), ]
+POSTHOOK: Lineage: default__srcpart_rc_srcpart_rc_index__ PARTITION(ds=2008-04-09,hr=12).key SIMPLE [(srcpart_rc)srcpart_rc.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: srcpart_rc PARTITION(ds=2008-04-08,hr=11).key EXPRESSION [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: srcpart_rc PARTITION(ds=2008-04-08,hr=11).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: srcpart_rc PARTITION(ds=2008-04-08,hr=12).key EXPRESSION [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: srcpart_rc PARTITION(ds=2008-04-08,hr=12).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: srcpart_rc PARTITION(ds=2008-04-09,hr=11).key EXPRESSION [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: srcpart_rc PARTITION(ds=2008-04-09,hr=11).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: srcpart_rc PARTITION(ds=2008-04-09,hr=12).key EXPRESSION [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: srcpart_rc PARTITION(ds=2008-04-09,hr=12).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: SELECT key, value FROM srcpart_rc WHERE key=100 AND ds = '2008-04-08' ORDER BY key
+PREHOOK: type: QUERY
+PREHOOK: Input: default@srcpart_rc@ds=2008-04-08/hr=11
+PREHOOK: Input: default@srcpart_rc@ds=2008-04-08/hr=12
+PREHOOK: Output: file:/tmp/sohanjain/hive_2011-08-04_12-05-26_182_1464963145678523774/-mr-10000
+POSTHOOK: query: SELECT key, value FROM srcpart_rc WHERE key=100 AND ds = '2008-04-08' ORDER BY key
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@srcpart_rc@ds=2008-04-08/hr=11
+POSTHOOK: Input: default@srcpart_rc@ds=2008-04-08/hr=12
+POSTHOOK: Output: file:/tmp/sohanjain/hive_2011-08-04_12-05-26_182_1464963145678523774/-mr-10000
+POSTHOOK: Lineage: default__srcpart_rc_srcpart_rc_index__ PARTITION(ds=2008-04-09,hr=12)._bitmaps EXPRESSION [(srcpart_rc)srcpart_rc.FieldSchema(name:ROW__OFFSET__INSIDE__BLOCK, type:bigint, comment:), ]
+POSTHOOK: Lineage: default__srcpart_rc_srcpart_rc_index__ PARTITION(ds=2008-04-09,hr=12)._bucketname SIMPLE [(srcpart_rc)srcpart_rc.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
+POSTHOOK: Lineage: default__srcpart_rc_srcpart_rc_index__ PARTITION(ds=2008-04-09,hr=12)._offset SIMPLE [(srcpart_rc)srcpart_rc.FieldSchema(name:BLOCK__OFFSET__INSIDE__FILE, type:bigint, comment:), ]
+POSTHOOK: Lineage: default__srcpart_rc_srcpart_rc_index__ PARTITION(ds=2008-04-09,hr=12).key SIMPLE [(srcpart_rc)srcpart_rc.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: srcpart_rc PARTITION(ds=2008-04-08,hr=11).key EXPRESSION [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: srcpart_rc PARTITION(ds=2008-04-08,hr=11).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: srcpart_rc PARTITION(ds=2008-04-08,hr=12).key EXPRESSION [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: srcpart_rc PARTITION(ds=2008-04-08,hr=12).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: srcpart_rc PARTITION(ds=2008-04-09,hr=11).key EXPRESSION [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: srcpart_rc PARTITION(ds=2008-04-09,hr=11).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: srcpart_rc PARTITION(ds=2008-04-09,hr=12).key EXPRESSION [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: srcpart_rc PARTITION(ds=2008-04-09,hr=12).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
+100	val_100
+100	val_100
+100	val_100
+100	val_100
+PREHOOK: query: INSERT OVERWRITE DIRECTORY "/tmp/index_test_index_result" SELECT `_bucketname` ,
+COLLECT_SET(`_offset`) as `_offsets` FROM default__srcpart_rc_srcpart_rc_index__
+x WHERE NOT EWAH_BITMAP_EMPTY(`_bitmaps`) AND x.key=100 AND x.ds = '2008-04-08' and x.hr = 11 GROUP BY `_bucketname`
+PREHOOK: type: QUERY
+PREHOOK: Input: default@default__srcpart_rc_srcpart_rc_index__@ds=2008-04-08/hr=11
+PREHOOK: Output: /tmp/index_test_index_result
+POSTHOOK: query: INSERT OVERWRITE DIRECTORY "/tmp/index_test_index_result" SELECT `_bucketname` ,
+COLLECT_SET(`_offset`) as `_offsets` FROM default__srcpart_rc_srcpart_rc_index__
+x WHERE NOT EWAH_BITMAP_EMPTY(`_bitmaps`) AND x.key=100 AND x.ds = '2008-04-08' and x.hr = 11 GROUP BY `_bucketname`
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@default__srcpart_rc_srcpart_rc_index__@ds=2008-04-08/hr=11
+POSTHOOK: Output: /tmp/index_test_index_result
+POSTHOOK: Lineage: default__srcpart_rc_srcpart_rc_index__ PARTITION(ds=2008-04-09,hr=12)._bitmaps EXPRESSION [(srcpart_rc)srcpart_rc.FieldSchema(name:ROW__OFFSET__INSIDE__BLOCK, type:bigint, comment:), ]
+POSTHOOK: Lineage: default__srcpart_rc_srcpart_rc_index__ PARTITION(ds=2008-04-09,hr=12)._bucketname SIMPLE [(srcpart_rc)srcpart_rc.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
+POSTHOOK: Lineage: default__srcpart_rc_srcpart_rc_index__ PARTITION(ds=2008-04-09,hr=12)._offset SIMPLE [(srcpart_rc)srcpart_rc.FieldSchema(name:BLOCK__OFFSET__INSIDE__FILE, type:bigint, comment:), ]
+POSTHOOK: Lineage: default__srcpart_rc_srcpart_rc_index__ PARTITION(ds=2008-04-09,hr=12).key SIMPLE [(srcpart_rc)srcpart_rc.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: srcpart_rc PARTITION(ds=2008-04-08,hr=11).key EXPRESSION [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: srcpart_rc PARTITION(ds=2008-04-08,hr=11).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: srcpart_rc PARTITION(ds=2008-04-08,hr=12).key EXPRESSION [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: srcpart_rc PARTITION(ds=2008-04-08,hr=12).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: srcpart_rc PARTITION(ds=2008-04-09,hr=11).key EXPRESSION [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: srcpart_rc PARTITION(ds=2008-04-09,hr=11).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: srcpart_rc PARTITION(ds=2008-04-09,hr=12).key EXPRESSION [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: srcpart_rc PARTITION(ds=2008-04-09,hr=12).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: SELECT key, value FROM srcpart_rc WHERE key=100 AND ds = '2008-04-08' and hr = 11 ORDER BY key
+PREHOOK: type: QUERY
+PREHOOK: Input: default@srcpart_rc@ds=2008-04-08/hr=11
+PREHOOK: Output: file:/tmp/sohanjain/hive_2011-08-04_12-05-32_482_2352869304578260986/-mr-10000
+POSTHOOK: query: SELECT key, value FROM srcpart_rc WHERE key=100 AND ds = '2008-04-08' and hr = 11 ORDER BY key
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@srcpart_rc@ds=2008-04-08/hr=11
+POSTHOOK: Output: file:/tmp/sohanjain/hive_2011-08-04_12-05-32_482_2352869304578260986/-mr-10000
+POSTHOOK: Lineage: default__srcpart_rc_srcpart_rc_index__ PARTITION(ds=2008-04-09,hr=12)._bitmaps EXPRESSION [(srcpart_rc)srcpart_rc.FieldSchema(name:ROW__OFFSET__INSIDE__BLOCK, type:bigint, comment:), ]
+POSTHOOK: Lineage: default__srcpart_rc_srcpart_rc_index__ PARTITION(ds=2008-04-09,hr=12)._bucketname SIMPLE [(srcpart_rc)srcpart_rc.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
+POSTHOOK: Lineage: default__srcpart_rc_srcpart_rc_index__ PARTITION(ds=2008-04-09,hr=12)._offset SIMPLE [(srcpart_rc)srcpart_rc.FieldSchema(name:BLOCK__OFFSET__INSIDE__FILE, type:bigint, comment:), ]
+POSTHOOK: Lineage: default__srcpart_rc_srcpart_rc_index__ PARTITION(ds=2008-04-09,hr=12).key SIMPLE [(srcpart_rc)srcpart_rc.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: srcpart_rc PARTITION(ds=2008-04-08,hr=11).key EXPRESSION [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: srcpart_rc PARTITION(ds=2008-04-08,hr=11).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: srcpart_rc PARTITION(ds=2008-04-08,hr=12).key EXPRESSION [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: srcpart_rc PARTITION(ds=2008-04-08,hr=12).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: srcpart_rc PARTITION(ds=2008-04-09,hr=11).key EXPRESSION [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: srcpart_rc PARTITION(ds=2008-04-09,hr=11).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: srcpart_rc PARTITION(ds=2008-04-09,hr=12).key EXPRESSION [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: srcpart_rc PARTITION(ds=2008-04-09,hr=12).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
+100	val_100
+100	val_100
+PREHOOK: query: SELECT key, value FROM srcpart_rc WHERE key=100 AND ds = '2008-04-08' and hr = 11 ORDER BY key
+PREHOOK: type: QUERY
+PREHOOK: Input: default@srcpart_rc@ds=2008-04-08/hr=11
+PREHOOK: Output: file:/tmp/sohanjain/hive_2011-08-04_12-05-35_525_9199321745365904535/-mr-10000
+POSTHOOK: query: SELECT key, value FROM srcpart_rc WHERE key=100 AND ds = '2008-04-08' and hr = 11 ORDER BY key
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@srcpart_rc@ds=2008-04-08/hr=11
+POSTHOOK: Output: file:/tmp/sohanjain/hive_2011-08-04_12-05-35_525_9199321745365904535/-mr-10000
+POSTHOOK: Lineage: default__srcpart_rc_srcpart_rc_index__ PARTITION(ds=2008-04-09,hr=12)._bitmaps EXPRESSION [(srcpart_rc)srcpart_rc.FieldSchema(name:ROW__OFFSET__INSIDE__BLOCK, type:bigint, comment:), ]
+POSTHOOK: Lineage: default__srcpart_rc_srcpart_rc_index__ PARTITION(ds=2008-04-09,hr=12)._bucketname SIMPLE [(srcpart_rc)srcpart_rc.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
+POSTHOOK: Lineage: default__srcpart_rc_srcpart_rc_index__ PARTITION(ds=2008-04-09,hr=12)._offset SIMPLE [(srcpart_rc)srcpart_rc.FieldSchema(name:BLOCK__OFFSET__INSIDE__FILE, type:bigint, comment:), ]
+POSTHOOK: Lineage: default__srcpart_rc_srcpart_rc_index__ PARTITION(ds=2008-04-09,hr=12).key SIMPLE [(srcpart_rc)srcpart_rc.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: srcpart_rc PARTITION(ds=2008-04-08,hr=11).key EXPRESSION [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: srcpart_rc PARTITION(ds=2008-04-08,hr=11).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: srcpart_rc PARTITION(ds=2008-04-08,hr=12).key EXPRESSION [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: srcpart_rc PARTITION(ds=2008-04-08,hr=12).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: srcpart_rc PARTITION(ds=2008-04-09,hr=11).key EXPRESSION [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: srcpart_rc PARTITION(ds=2008-04-09,hr=11).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: srcpart_rc PARTITION(ds=2008-04-09,hr=12).key EXPRESSION [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: srcpart_rc PARTITION(ds=2008-04-09,hr=12).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
+100	val_100
+100	val_100
+PREHOOK: query: DROP INDEX srcpart_rc_index on srcpart_rc
+PREHOOK: type: DROPINDEX
+POSTHOOK: query: DROP INDEX srcpart_rc_index on srcpart_rc
+POSTHOOK: type: DROPINDEX
+POSTHOOK: Lineage: default__srcpart_rc_srcpart_rc_index__ PARTITION(ds=2008-04-09,hr=12)._bitmaps EXPRESSION [(srcpart_rc)srcpart_rc.FieldSchema(name:ROW__OFFSET__INSIDE__BLOCK, type:bigint, comment:), ]
+POSTHOOK: Lineage: default__srcpart_rc_srcpart_rc_index__ PARTITION(ds=2008-04-09,hr=12)._bucketname SIMPLE [(srcpart_rc)srcpart_rc.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
+POSTHOOK: Lineage: default__srcpart_rc_srcpart_rc_index__ PARTITION(ds=2008-04-09,hr=12)._offset SIMPLE [(srcpart_rc)srcpart_rc.FieldSchema(name:BLOCK__OFFSET__INSIDE__FILE, type:bigint, comment:), ]
+POSTHOOK: Lineage: default__srcpart_rc_srcpart_rc_index__ PARTITION(ds=2008-04-09,hr=12).key SIMPLE [(srcpart_rc)srcpart_rc.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: srcpart_rc PARTITION(ds=2008-04-08,hr=11).key EXPRESSION [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: srcpart_rc PARTITION(ds=2008-04-08,hr=11).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: srcpart_rc PARTITION(ds=2008-04-08,hr=12).key EXPRESSION [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: srcpart_rc PARTITION(ds=2008-04-08,hr=12).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: srcpart_rc PARTITION(ds=2008-04-09,hr=11).key EXPRESSION [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: srcpart_rc PARTITION(ds=2008-04-09,hr=11).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: srcpart_rc PARTITION(ds=2008-04-09,hr=12).key EXPRESSION [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: srcpart_rc PARTITION(ds=2008-04-09,hr=12).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: EXPLAIN
+CREATE INDEX srcpart_rc_index ON TABLE srcpart_rc(key) as 'BITMAP' WITH DEFERRED REBUILD
+PREHOOK: type: CREATEINDEX
+POSTHOOK: query: EXPLAIN
+CREATE INDEX srcpart_rc_index ON TABLE srcpart_rc(key) as 'BITMAP' WITH DEFERRED REBUILD
+POSTHOOK: type: CREATEINDEX
+POSTHOOK: Lineage: default__srcpart_rc_srcpart_rc_index__ PARTITION(ds=2008-04-09,hr=12)._bitmaps EXPRESSION [(srcpart_rc)srcpart_rc.FieldSchema(name:ROW__OFFSET__INSIDE__BLOCK, type:bigint, comment:), ]
+POSTHOOK: Lineage: default__srcpart_rc_srcpart_rc_index__ PARTITION(ds=2008-04-09,hr=12)._bucketname SIMPLE [(srcpart_rc)srcpart_rc.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
+POSTHOOK: Lineage: default__srcpart_rc_srcpart_rc_index__ PARTITION(ds=2008-04-09,hr=12)._offset SIMPLE [(srcpart_rc)srcpart_rc.FieldSchema(name:BLOCK__OFFSET__INSIDE__FILE, type:bigint, comment:), ]
+POSTHOOK: Lineage: default__srcpart_rc_srcpart_rc_index__ PARTITION(ds=2008-04-09,hr=12).key SIMPLE [(srcpart_rc)srcpart_rc.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: srcpart_rc PARTITION(ds=2008-04-08,hr=11).key EXPRESSION [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: srcpart_rc PARTITION(ds=2008-04-08,hr=11).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: srcpart_rc PARTITION(ds=2008-04-08,hr=12).key EXPRESSION [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: srcpart_rc PARTITION(ds=2008-04-08,hr=12).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: srcpart_rc PARTITION(ds=2008-04-09,hr=11).key EXPRESSION [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: srcpart_rc PARTITION(ds=2008-04-09,hr=11).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: srcpart_rc PARTITION(ds=2008-04-09,hr=12).key EXPRESSION [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: srcpart_rc PARTITION(ds=2008-04-09,hr=12).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
+ABSTRACT SYNTAX TREE:
+  (TOK_CREATEINDEX srcpart_rc_index 'BITMAP' (TOK_TABNAME srcpart_rc) (TOK_TABCOLNAME key) TOK_DEFERRED_REBUILDINDEX)
+
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+
+
+PREHOOK: query: CREATE INDEX srcpart_rc_index ON TABLE srcpart_rc(key) as 'BITMAP' WITH DEFERRED REBUILD
+PREHOOK: type: CREATEINDEX
+POSTHOOK: query: CREATE INDEX srcpart_rc_index ON TABLE srcpart_rc(key) as 'BITMAP' WITH DEFERRED REBUILD
+POSTHOOK: type: CREATEINDEX
+POSTHOOK: Lineage: default__srcpart_rc_srcpart_rc_index__ PARTITION(ds=2008-04-09,hr=12)._bitmaps EXPRESSION [(srcpart_rc)srcpart_rc.FieldSchema(name:ROW__OFFSET__INSIDE__BLOCK, type:bigint, comment:), ]
+POSTHOOK: Lineage: default__srcpart_rc_srcpart_rc_index__ PARTITION(ds=2008-04-09,hr=12)._bucketname SIMPLE [(srcpart_rc)srcpart_rc.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
+POSTHOOK: Lineage: default__srcpart_rc_srcpart_rc_index__ PARTITION(ds=2008-04-09,hr=12)._offset SIMPLE [(srcpart_rc)srcpart_rc.FieldSchema(name:BLOCK__OFFSET__INSIDE__FILE, type:bigint, comment:), ]
+POSTHOOK: Lineage: default__srcpart_rc_srcpart_rc_index__ PARTITION(ds=2008-04-09,hr=12).key SIMPLE [(srcpart_rc)srcpart_rc.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: srcpart_rc PARTITION(ds=2008-04-08,hr=11).key EXPRESSION [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: srcpart_rc PARTITION(ds=2008-04-08,hr=11).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: srcpart_rc PARTITION(ds=2008-04-08,hr=12).key EXPRESSION [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: srcpart_rc PARTITION(ds=2008-04-08,hr=12).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: srcpart_rc PARTITION(ds=2008-04-09,hr=11).key EXPRESSION [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: srcpart_rc PARTITION(ds=2008-04-09,hr=11).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: srcpart_rc PARTITION(ds=2008-04-09,hr=12).key EXPRESSION [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: srcpart_rc PARTITION(ds=2008-04-09,hr=12).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: ALTER  INDEX srcpart_rc_index ON srcpart_rc REBUILD
+PREHOOK: type: ALTERINDEX_REBUILD
+PREHOOK: Input: default@srcpart_rc@ds=2008-04-08/hr=11
+PREHOOK: Input: default@srcpart_rc@ds=2008-04-08/hr=12
+PREHOOK: Input: default@srcpart_rc@ds=2008-04-09/hr=11
+PREHOOK: Input: default@srcpart_rc@ds=2008-04-09/hr=12
+PREHOOK: Output: default@default__srcpart_rc_srcpart_rc_index__@ds=2008-04-08/hr=11
+PREHOOK: Output: default@default__srcpart_rc_srcpart_rc_index__@ds=2008-04-08/hr=12
+PREHOOK: Output: default@default__srcpart_rc_srcpart_rc_index__@ds=2008-04-09/hr=11
+PREHOOK: Output: default@default__srcpart_rc_srcpart_rc_index__@ds=2008-04-09/hr=12
+POSTHOOK: query: ALTER  INDEX srcpart_rc_index ON srcpart_rc REBUILD
+POSTHOOK: type: ALTERINDEX_REBUILD
+POSTHOOK: Input: default@srcpart_rc@ds=2008-04-08/hr=11
+POSTHOOK: Input: default@srcpart_rc@ds=2008-04-08/hr=12
+POSTHOOK: Input: default@srcpart_rc@ds=2008-04-09/hr=11
+POSTHOOK: Input: default@srcpart_rc@ds=2008-04-09/hr=12
+POSTHOOK: Output: default@default__srcpart_rc_srcpart_rc_index__@ds=2008-04-08/hr=11
+POSTHOOK: Output: default@default__srcpart_rc_srcpart_rc_index__@ds=2008-04-08/hr=12
+POSTHOOK: Output: default@default__srcpart_rc_srcpart_rc_index__@ds=2008-04-09/hr=11
+POSTHOOK: Output: default@default__srcpart_rc_srcpart_rc_index__@ds=2008-04-09/hr=12
+POSTHOOK: Lineage: default__srcpart_rc_srcpart_rc_index__ PARTITION(ds=2008-04-09,hr=12)._bitmaps EXPRESSION [(srcpart_rc)srcpart_rc.FieldSchema(name:ROW__OFFSET__INSIDE__BLOCK, type:bigint, comment:), ]
+POSTHOOK: Lineage: default__srcpart_rc_srcpart_rc_index__ PARTITION(ds=2008-04-09,hr=12)._bucketname SIMPLE [(srcpart_rc)srcpart_rc.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
+POSTHOOK: Lineage: default__srcpart_rc_srcpart_rc_index__ PARTITION(ds=2008-04-09,hr=12)._offset SIMPLE [(srcpart_rc)srcpart_rc.FieldSchema(name:BLOCK__OFFSET__INSIDE__FILE, type:bigint, comment:), ]
+POSTHOOK: Lineage: default__srcpart_rc_srcpart_rc_index__ PARTITION(ds=2008-04-09,hr=12).key SIMPLE [(srcpart_rc)srcpart_rc.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: default__srcpart_rc_srcpart_rc_index__ PARTITION(ds=2008-04-09,hr=12)._bitmaps EXPRESSION [(srcpart_rc)srcpart_rc.FieldSchema(name:ROW__OFFSET__INSIDE__BLOCK, type:bigint, comment:), ]
+POSTHOOK: Lineage: default__srcpart_rc_srcpart_rc_index__ PARTITION(ds=2008-04-09,hr=12)._bucketname SIMPLE [(srcpart_rc)srcpart_rc.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
+POSTHOOK: Lineage: default__srcpart_rc_srcpart_rc_index__ PARTITION(ds=2008-04-09,hr=12)._offset SIMPLE [(srcpart_rc)srcpart_rc.FieldSchema(name:BLOCK__OFFSET__INSIDE__FILE, type:bigint, comment:), ]
+POSTHOOK: Lineage: default__srcpart_rc_srcpart_rc_index__ PARTITION(ds=2008-04-09,hr=12).key SIMPLE [(srcpart_rc)srcpart_rc.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: srcpart_rc PARTITION(ds=2008-04-08,hr=11).key EXPRESSION [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: srcpart_rc PARTITION(ds=2008-04-08,hr=11).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: srcpart_rc PARTITION(ds=2008-04-08,hr=12).key EXPRESSION [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: srcpart_rc PARTITION(ds=2008-04-08,hr=12).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: srcpart_rc PARTITION(ds=2008-04-09,hr=11).key EXPRESSION [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: srcpart_rc PARTITION(ds=2008-04-09,hr=11).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: srcpart_rc PARTITION(ds=2008-04-09,hr=12).key EXPRESSION [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: srcpart_rc PARTITION(ds=2008-04-09,hr=12).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: SELECT x.* FROM default__srcpart_rc_srcpart_rc_index__ x WHERE x.key = 100
+PREHOOK: type: QUERY
+PREHOOK: Input: default@default__srcpart_rc_srcpart_rc_index__@ds=2008-04-08/hr=11
+PREHOOK: Input: default@default__srcpart_rc_srcpart_rc_index__@ds=2008-04-08/hr=12
+PREHOOK: Input: default@default__srcpart_rc_srcpart_rc_index__@ds=2008-04-09/hr=11
+PREHOOK: Input: default@default__srcpart_rc_srcpart_rc_index__@ds=2008-04-09/hr=12
+PREHOOK: Output: file:/tmp/sohanjain/hive_2011-08-04_12-05-58_178_8018394434822675898/-mr-10000
+POSTHOOK: query: SELECT x.* FROM default__srcpart_rc_srcpart_rc_index__ x WHERE x.key = 100
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@default__srcpart_rc_srcpart_rc_index__@ds=2008-04-08/hr=11
+POSTHOOK: Input: default@default__srcpart_rc_srcpart_rc_index__@ds=2008-04-08/hr=12
+POSTHOOK: Input: default@default__srcpart_rc_srcpart_rc_index__@ds=2008-04-09/hr=11
+POSTHOOK: Input: default@default__srcpart_rc_srcpart_rc_index__@ds=2008-04-09/hr=12
+POSTHOOK: Output: file:/tmp/sohanjain/hive_2011-08-04_12-05-58_178_8018394434822675898/-mr-10000
+POSTHOOK: Lineage: default__srcpart_rc_srcpart_rc_index__ PARTITION(ds=2008-04-09,hr=12)._bitmaps EXPRESSION [(srcpart_rc)srcpart_rc.FieldSchema(name:ROW__OFFSET__INSIDE__BLOCK, type:bigint, comment:), ]
+POSTHOOK: Lineage: default__srcpart_rc_srcpart_rc_index__ PARTITION(ds=2008-04-09,hr=12)._bucketname SIMPLE [(srcpart_rc)srcpart_rc.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
+POSTHOOK: Lineage: default__srcpart_rc_srcpart_rc_index__ PARTITION(ds=2008-04-09,hr=12)._offset SIMPLE [(srcpart_rc)srcpart_rc.FieldSchema(name:BLOCK__OFFSET__INSIDE__FILE, type:bigint, comment:), ]
+POSTHOOK: Lineage: default__srcpart_rc_srcpart_rc_index__ PARTITION(ds=2008-04-09,hr=12).key SIMPLE [(srcpart_rc)srcpart_rc.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: default__srcpart_rc_srcpart_rc_index__ PARTITION(ds=2008-04-09,hr=12)._bitmaps EXPRESSION [(srcpart_rc)srcpart_rc.FieldSchema(name:ROW__OFFSET__INSIDE__BLOCK, type:bigint, comment:), ]
+POSTHOOK: Lineage: default__srcpart_rc_srcpart_rc_index__ PARTITION(ds=2008-04-09,hr=12)._bucketname SIMPLE [(srcpart_rc)srcpart_rc.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
+POSTHOOK: Lineage: default__srcpart_rc_srcpart_rc_index__ PARTITION(ds=2008-04-09,hr=12)._offset SIMPLE [(srcpart_rc)srcpart_rc.FieldSchema(name:BLOCK__OFFSET__INSIDE__FILE, type:bigint, comment:), ]
+POSTHOOK: Lineage: default__srcpart_rc_srcpart_rc_index__ PARTITION(ds=2008-04-09,hr=12).key SIMPLE [(srcpart_rc)srcpart_rc.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: srcpart_rc PARTITION(ds=2008-04-08,hr=11).key EXPRESSION [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: srcpart_rc PARTITION(ds=2008-04-08,hr=11).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: srcpart_rc PARTITION(ds=2008-04-08,hr=12).key EXPRESSION [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: srcpart_rc PARTITION(ds=2008-04-08,hr=12).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: srcpart_rc PARTITION(ds=2008-04-09,hr=11).key EXPRESSION [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: srcpart_rc PARTITION(ds=2008-04-09,hr=11).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: srcpart_rc PARTITION(ds=2008-04-09,hr=12).key EXPRESSION [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: srcpart_rc PARTITION(ds=2008-04-09,hr=12).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
+100	pfile:/data/users/sohanjain/test_builds/hive_2338/apache-hive/build/ql/test/data/warehouse/srcpart_rc/ds=2008-04-08/hr=11/000000_0	151	[463,4,5,8589934596,144115188075855872,8589934600,16384,2]	2008-04-08	11
+100	pfile:/data/users/sohanjain/test_builds/hive_2338/apache-hive/build/ql/test/data/warehouse/srcpart_rc/ds=2008-04-09/hr=11/000000_0	151	[463,4,5,8589934596,144115188075855872,8589934600,16384,2]	2008-04-09	11
+100	pfile:/data/users/sohanjain/test_builds/hive_2338/apache-hive/build/ql/test/data/warehouse/srcpart_rc/ds=2008-04-09/hr=12/000000_0	151	[463,4,5,8589934596,144115188075855872,8589934600,16384,2]	2008-04-09	12
+100	pfile:/data/users/sohanjain/test_builds/hive_2338/apache-hive/build/ql/test/data/warehouse/srcpart_rc/ds=2008-04-08/hr=12/000000_0	151	[463,4,5,8589934596,144115188075855872,8589934600,16384,2]	2008-04-08	12
+PREHOOK: query: INSERT OVERWRITE DIRECTORY "/tmp/index_result" SELECT `_bucketname` ,
+COLLECT_SET(`_offset`) as `_offsets` FROM default__srcpart_rc_srcpart_rc_index__
+WHERE NOT EWAH_BITMAP_EMPTY(`_bitmaps`) AND key=100 GROUP BY `_bucketname`
+PREHOOK: type: QUERY
+PREHOOK: Input: default@default__srcpart_rc_srcpart_rc_index__@ds=2008-04-08/hr=11
+PREHOOK: Input: default@default__srcpart_rc_srcpart_rc_index__@ds=2008-04-08/hr=12
+PREHOOK: Input: default@default__srcpart_rc_srcpart_rc_index__@ds=2008-04-09/hr=11
+PREHOOK: Input: default@default__srcpart_rc_srcpart_rc_index__@ds=2008-04-09/hr=12
+PREHOOK: Output: /tmp/index_result
+POSTHOOK: query: INSERT OVERWRITE DIRECTORY "/tmp/index_result" SELECT `_bucketname` ,
+COLLECT_SET(`_offset`) as `_offsets` FROM default__srcpart_rc_srcpart_rc_index__
+WHERE NOT EWAH_BITMAP_EMPTY(`_bitmaps`) AND key=100 GROUP BY `_bucketname`
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@default__srcpart_rc_srcpart_rc_index__@ds=2008-04-08/hr=11
+POSTHOOK: Input: default@default__srcpart_rc_srcpart_rc_index__@ds=2008-04-08/hr=12
+POSTHOOK: Input: default@default__srcpart_rc_srcpart_rc_index__@ds=2008-04-09/hr=11
+POSTHOOK: Input: default@default__srcpart_rc_srcpart_rc_index__@ds=2008-04-09/hr=12
+POSTHOOK: Output: /tmp/index_result
+POSTHOOK: Lineage: default__srcpart_rc_srcpart_rc_index__ PARTITION(ds=2008-04-09,hr=12)._bitmaps EXPRESSION [(srcpart_rc)srcpart_rc.FieldSchema(name:ROW__OFFSET__INSIDE__BLOCK, type:bigint, comment:), ]
+POSTHOOK: Lineage: default__srcpart_rc_srcpart_rc_index__ PARTITION(ds=2008-04-09,hr=12)._bucketname SIMPLE [(srcpart_rc)srcpart_rc.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
+POSTHOOK: Lineage: default__srcpart_rc_srcpart_rc_index__ PARTITION(ds=2008-04-09,hr=12)._offset SIMPLE [(srcpart_rc)srcpart_rc.FieldSchema(name:BLOCK__OFFSET__INSIDE__FILE, type:bigint, comment:), ]
+POSTHOOK: Lineage: default__srcpart_rc_srcpart_rc_index__ PARTITION(ds=2008-04-09,hr=12).key SIMPLE [(srcpart_rc)srcpart_rc.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: default__srcpart_rc_srcpart_rc_index__ PARTITION(ds=2008-04-09,hr=12)._bitmaps EXPRESSION [(srcpart_rc)srcpart_rc.FieldSchema(name:ROW__OFFSET__INSIDE__BLOCK, type:bigint, comment:), ]
+POSTHOOK: Lineage: default__srcpart_rc_srcpart_rc_index__ PARTITION(ds=2008-04-09,hr=12)._bucketname SIMPLE [(srcpart_rc)srcpart_rc.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
+POSTHOOK: Lineage: default__srcpart_rc_srcpart_rc_index__ PARTITION(ds=2008-04-09,hr=12)._offset SIMPLE [(srcpart_rc)srcpart_rc.FieldSchema(name:BLOCK__OFFSET__INSIDE__FILE, type:bigint, comment:), ]
+POSTHOOK: Lineage: default__srcpart_rc_srcpart_rc_index__ PARTITION(ds=2008-04-09,hr=12).key SIMPLE [(srcpart_rc)srcpart_rc.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: srcpart_rc PARTITION(ds=2008-04-08,hr=11).key EXPRESSION [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: srcpart_rc PARTITION(ds=2008-04-08,hr=11).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: srcpart_rc PARTITION(ds=2008-04-08,hr=12).key EXPRESSION [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: srcpart_rc PARTITION(ds=2008-04-08,hr=12).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: srcpart_rc PARTITION(ds=2008-04-09,hr=11).key EXPRESSION [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: srcpart_rc PARTITION(ds=2008-04-09,hr=11).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: srcpart_rc PARTITION(ds=2008-04-09,hr=12).key EXPRESSION [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: srcpart_rc PARTITION(ds=2008-04-09,hr=12).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: SELECT key, value FROM srcpart_rc WHERE key=100 ORDER BY key
+PREHOOK: type: QUERY
+PREHOOK: Input: default@srcpart_rc@ds=2008-04-08/hr=11
+PREHOOK: Input: default@srcpart_rc@ds=2008-04-08/hr=12
+PREHOOK: Input: default@srcpart_rc@ds=2008-04-09/hr=11
+PREHOOK: Input: default@srcpart_rc@ds=2008-04-09/hr=12
+PREHOOK: Output: file:/tmp/sohanjain/hive_2011-08-04_12-06-06_229_7833124594921009208/-mr-10000
+POSTHOOK: query: SELECT key, value FROM srcpart_rc WHERE key=100 ORDER BY key
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@srcpart_rc@ds=2008-04-08/hr=11
+POSTHOOK: Input: default@srcpart_rc@ds=2008-04-08/hr=12
+POSTHOOK: Input: default@srcpart_rc@ds=2008-04-09/hr=11
+POSTHOOK: Input: default@srcpart_rc@ds=2008-04-09/hr=12
+POSTHOOK: Output: file:/tmp/sohanjain/hive_2011-08-04_12-06-06_229_7833124594921009208/-mr-10000
+POSTHOOK: Lineage: default__srcpart_rc_srcpart_rc_index__ PARTITION(ds=2008-04-09,hr=12)._bitmaps EXPRESSION [(srcpart_rc)srcpart_rc.FieldSchema(name:ROW__OFFSET__INSIDE__BLOCK, type:bigint, comment:), ]
+POSTHOOK: Lineage: default__srcpart_rc_srcpart_rc_index__ PARTITION(ds=2008-04-09,hr=12)._bucketname SIMPLE [(srcpart_rc)srcpart_rc.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
+POSTHOOK: Lineage: default__srcpart_rc_srcpart_rc_index__ PARTITION(ds=2008-04-09,hr=12)._offset SIMPLE [(srcpart_rc)srcpart_rc.FieldSchema(name:BLOCK__OFFSET__INSIDE__FILE, type:bigint, comment:), ]
+POSTHOOK: Lineage: default__srcpart_rc_srcpart_rc_index__ PARTITION(ds=2008-04-09,hr=12).key SIMPLE [(srcpart_rc)srcpart_rc.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: default__srcpart_rc_srcpart_rc_index__ PARTITION(ds=2008-04-09,hr=12)._bitmaps EXPRESSION [(srcpart_rc)srcpart_rc.FieldSchema(name:ROW__OFFSET__INSIDE__BLOCK, type:bigint, comment:), ]
+POSTHOOK: Lineage: default__srcpart_rc_srcpart_rc_index__ PARTITION(ds=2008-04-09,hr=12)._bucketname SIMPLE [(srcpart_rc)srcpart_rc.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
+POSTHOOK: Lineage: default__srcpart_rc_srcpart_rc_index__ PARTITION(ds=2008-04-09,hr=12)._offset SIMPLE [(srcpart_rc)srcpart_rc.FieldSchema(name:BLOCK__OFFSET__INSIDE__FILE, type:bigint, comment:), ]
+POSTHOOK: Lineage: default__srcpart_rc_srcpart_rc_index__ PARTITION(ds=2008-04-09,hr=12).key SIMPLE [(srcpart_rc)srcpart_rc.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: srcpart_rc PARTITION(ds=2008-04-08,hr=11).key EXPRESSION [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: srcpart_rc PARTITION(ds=2008-04-08,hr=11).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: srcpart_rc PARTITION(ds=2008-04-08,hr=12).key EXPRESSION [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: srcpart_rc PARTITION(ds=2008-04-08,hr=12).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: srcpart_rc PARTITION(ds=2008-04-09,hr=11).key EXPRESSION [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: srcpart_rc PARTITION(ds=2008-04-09,hr=11).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: srcpart_rc PARTITION(ds=2008-04-09,hr=12).key EXPRESSION [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: srcpart_rc PARTITION(ds=2008-04-09,hr=12).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
+100	val_100
+100	val_100
+100	val_100
+100	val_100
+100	val_100
+100	val_100
+100	val_100
+100	val_100
+PREHOOK: query: SELECT key, value FROM srcpart_rc WHERE key=100 ORDER BY key
+PREHOOK: type: QUERY
+PREHOOK: Input: default@srcpart_rc@ds=2008-04-08/hr=11
+PREHOOK: Input: default@srcpart_rc@ds=2008-04-08/hr=12
+PREHOOK: Input: default@srcpart_rc@ds=2008-04-09/hr=11
+PREHOOK: Input: default@srcpart_rc@ds=2008-04-09/hr=12
+PREHOOK: Output: file:/tmp/sohanjain/hive_2011-08-04_12-06-09_532_1904786083066685615/-mr-10000
+POSTHOOK: query: SELECT key, value FROM srcpart_rc WHERE key=100 ORDER BY key
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@srcpart_rc@ds=2008-04-08/hr=11
+POSTHOOK: Input: default@srcpart_rc@ds=2008-04-08/hr=12
+POSTHOOK: Input: default@srcpart_rc@ds=2008-04-09/hr=11
+POSTHOOK: Input: default@srcpart_rc@ds=2008-04-09/hr=12
+POSTHOOK: Output: file:/tmp/sohanjain/hive_2011-08-04_12-06-09_532_1904786083066685615/-mr-10000
+POSTHOOK: Lineage: default__srcpart_rc_srcpart_rc_index__ PARTITION(ds=2008-04-09,hr=12)._bitmaps EXPRESSION [(srcpart_rc)srcpart_rc.FieldSchema(name:ROW__OFFSET__INSIDE__BLOCK, type:bigint, comment:), ]
+POSTHOOK: Lineage: default__srcpart_rc_srcpart_rc_index__ PARTITION(ds=2008-04-09,hr=12)._bucketname SIMPLE [(srcpart_rc)srcpart_rc.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
+POSTHOOK: Lineage: default__srcpart_rc_srcpart_rc_index__ PARTITION(ds=2008-04-09,hr=12)._offset SIMPLE [(srcpart_rc)srcpart_rc.FieldSchema(name:BLOCK__OFFSET__INSIDE__FILE, type:bigint, comment:), ]
+POSTHOOK: Lineage: default__srcpart_rc_srcpart_rc_index__ PARTITION(ds=2008-04-09,hr=12).key SIMPLE [(srcpart_rc)srcpart_rc.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: default__srcpart_rc_srcpart_rc_index__ PARTITION(ds=2008-04-09,hr=12)._bitmaps EXPRESSION [(srcpart_rc)srcpart_rc.FieldSchema(name:ROW__OFFSET__INSIDE__BLOCK, type:bigint, comment:), ]
+POSTHOOK: Lineage: default__srcpart_rc_srcpart_rc_index__ PARTITION(ds=2008-04-09,hr=12)._bucketname SIMPLE [(srcpart_rc)srcpart_rc.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
+POSTHOOK: Lineage: default__srcpart_rc_srcpart_rc_index__ PARTITION(ds=2008-04-09,hr=12)._offset SIMPLE [(srcpart_rc)srcpart_rc.FieldSchema(name:BLOCK__OFFSET__INSIDE__FILE, type:bigint, comment:), ]
+POSTHOOK: Lineage: default__srcpart_rc_srcpart_rc_index__ PARTITION(ds=2008-04-09,hr=12).key SIMPLE [(srcpart_rc)srcpart_rc.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: srcpart_rc PARTITION(ds=2008-04-08,hr=11).key EXPRESSION [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: srcpart_rc PARTITION(ds=2008-04-08,hr=11).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: srcpart_rc PARTITION(ds=2008-04-08,hr=12).key EXPRESSION [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: srcpart_rc PARTITION(ds=2008-04-08,hr=12).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: srcpart_rc PARTITION(ds=2008-04-09,hr=11).key EXPRESSION [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: srcpart_rc PARTITION(ds=2008-04-09,hr=11).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: srcpart_rc PARTITION(ds=2008-04-09,hr=12).key EXPRESSION [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: srcpart_rc PARTITION(ds=2008-04-09,hr=12).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
+100	val_100
+100	val_100
+100	val_100
+100	val_100
+100	val_100
+100	val_100
+100	val_100
+100	val_100
+PREHOOK: query: DROP INDEX srcpart_rc_index on srcpart_rc
+PREHOOK: type: DROPINDEX
+POSTHOOK: query: DROP INDEX srcpart_rc_index on srcpart_rc
+POSTHOOK: type: DROPINDEX
+POSTHOOK: Lineage: default__srcpart_rc_srcpart_rc_index__ PARTITION(ds=2008-04-09,hr=12)._bitmaps EXPRESSION [(srcpart_rc)srcpart_rc.FieldSchema(name:ROW__OFFSET__INSIDE__BLOCK, type:bigint, comment:), ]
+POSTHOOK: Lineage: default__srcpart_rc_srcpart_rc_index__ PARTITION(ds=2008-04-09,hr=12)._bucketname SIMPLE [(srcpart_rc)srcpart_rc.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
+POSTHOOK: Lineage: default__srcpart_rc_srcpart_rc_index__ PARTITION(ds=2008-04-09,hr=12)._offset SIMPLE [(srcpart_rc)srcpart_rc.FieldSchema(name:BLOCK__OFFSET__INSIDE__FILE, type:bigint, comment:), ]
+POSTHOOK: Lineage: default__srcpart_rc_srcpart_rc_index__ PARTITION(ds=2008-04-09,hr=12).key SIMPLE [(srcpart_rc)srcpart_rc.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: default__srcpart_rc_srcpart_rc_index__ PARTITION(ds=2008-04-09,hr=12)._bitmaps EXPRESSION [(srcpart_rc)srcpart_rc.FieldSchema(name:ROW__OFFSET__INSIDE__BLOCK, type:bigint, comment:), ]
+POSTHOOK: Lineage: default__srcpart_rc_srcpart_rc_index__ PARTITION(ds=2008-04-09,hr=12)._bucketname SIMPLE [(srcpart_rc)srcpart_rc.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
+POSTHOOK: Lineage: default__srcpart_rc_srcpart_rc_index__ PARTITION(ds=2008-04-09,hr=12)._offset SIMPLE [(srcpart_rc)srcpart_rc.FieldSchema(name:BLOCK__OFFSET__INSIDE__FILE, type:bigint, comment:), ]
+POSTHOOK: Lineage: default__srcpart_rc_srcpart_rc_index__ PARTITION(ds=2008-04-09,hr=12).key SIMPLE [(srcpart_rc)srcpart_rc.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: srcpart_rc PARTITION(ds=2008-04-08,hr=11).key EXPRESSION [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: srcpart_rc PARTITION(ds=2008-04-08,hr=11).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: srcpart_rc PARTITION(ds=2008-04-08,hr=12).key EXPRESSION [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: srcpart_rc PARTITION(ds=2008-04-08,hr=12).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: srcpart_rc PARTITION(ds=2008-04-09,hr=11).key EXPRESSION [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: srcpart_rc PARTITION(ds=2008-04-09,hr=11).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: srcpart_rc PARTITION(ds=2008-04-09,hr=12).key EXPRESSION [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: srcpart_rc PARTITION(ds=2008-04-09,hr=12).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: DROP TABLE srcpart_rc
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@srcpart_rc
+PREHOOK: Output: default@srcpart_rc
+POSTHOOK: query: DROP TABLE srcpart_rc
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@srcpart_rc
+POSTHOOK: Output: default@srcpart_rc
+POSTHOOK: Lineage: default__srcpart_rc_srcpart_rc_index__ PARTITION(ds=2008-04-09,hr=12)._bitmaps EXPRESSION [(srcpart_rc)srcpart_rc.FieldSchema(name:ROW__OFFSET__INSIDE__BLOCK, type:bigint, comment:), ]
+POSTHOOK: Lineage: default__srcpart_rc_srcpart_rc_index__ PARTITION(ds=2008-04-09,hr=12)._bucketname SIMPLE [(srcpart_rc)srcpart_rc.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
+POSTHOOK: Lineage: default__srcpart_rc_srcpart_rc_index__ PARTITION(ds=2008-04-09,hr=12)._offset SIMPLE [(srcpart_rc)srcpart_rc.FieldSchema(name:BLOCK__OFFSET__INSIDE__FILE, type:bigint, comment:), ]
+POSTHOOK: Lineage: default__srcpart_rc_srcpart_rc_index__ PARTITION(ds=2008-04-09,hr=12).key SIMPLE [(srcpart_rc)srcpart_rc.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: default__srcpart_rc_srcpart_rc_index__ PARTITION(ds=2008-04-09,hr=12)._bitmaps EXPRESSION [(srcpart_rc)srcpart_rc.FieldSchema(name:ROW__OFFSET__INSIDE__BLOCK, type:bigint, comment:), ]
+POSTHOOK: Lineage: default__srcpart_rc_srcpart_rc_index__ PARTITION(ds=2008-04-09,hr=12)._bucketname SIMPLE [(srcpart_rc)srcpart_rc.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
+POSTHOOK: Lineage: default__srcpart_rc_srcpart_rc_index__ PARTITION(ds=2008-04-09,hr=12)._offset SIMPLE [(srcpart_rc)srcpart_rc.FieldSchema(name:BLOCK__OFFSET__INSIDE__FILE, type:bigint, comment:), ]
+POSTHOOK: Lineage: default__srcpart_rc_srcpart_rc_index__ PARTITION(ds=2008-04-09,hr=12).key SIMPLE [(srcpart_rc)srcpart_rc.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: srcpart_rc PARTITION(ds=2008-04-08,hr=11).key EXPRESSION [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: srcpart_rc PARTITION(ds=2008-04-08,hr=11).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: srcpart_rc PARTITION(ds=2008-04-08,hr=12).key EXPRESSION [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: srcpart_rc PARTITION(ds=2008-04-08,hr=12).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: srcpart_rc PARTITION(ds=2008-04-09,hr=11).key EXPRESSION [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: srcpart_rc PARTITION(ds=2008-04-09,hr=11).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: srcpart_rc PARTITION(ds=2008-04-09,hr=12).key EXPRESSION [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: srcpart_rc PARTITION(ds=2008-04-09,hr=12).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]

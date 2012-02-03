@@ -81,7 +81,7 @@ STAGE PLANS:
   Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/tmp/sdong/hive_2011-02-10_17-49-01_067_6496196090074691511/-mr-10002 
+        file:/tmp/njain/hive_2011-12-07_18-03-10_228_8410433153782064994/-mr-10002 
           Union
             Select Operator
               expressions:
@@ -105,7 +105,7 @@ STAGE PLANS:
                       output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                       serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                       name: default.tmptable
-        file:/tmp/sdong/hive_2011-02-10_17-49-01_067_6496196090074691511/-mr-10004 
+        file:/tmp/njain/hive_2011-12-07_18-03-10_228_8410433153782064994/-mr-10004 
           Union
             Select Operator
               expressions:
@@ -129,7 +129,7 @@ STAGE PLANS:
                       output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                       serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                       name: default.tmptable
-        file:/tmp/sdong/hive_2011-02-10_17-49-01_067_6496196090074691511/-mr-10005 
+        file:/tmp/njain/hive_2011-12-07_18-03-10_228_8410433153782064994/-mr-10005 
           Union
             Select Operator
               expressions:
@@ -161,7 +161,7 @@ STAGE PLANS:
     Move Operator
       files:
           hdfs directory: true
-          destination: pfile:/data/users/sdong/www/open-source-hive1/build/ql/scratchdir/hive_2011-02-10_17-49-01_067_6496196090074691511/-ext-10000
+          destination: pfile:/data/users/njain/hive_commit2/build/ql/scratchdir/hive_2011-12-07_18-03-10_228_8410433153782064994/-ext-10000
 
   Stage: Stage-0
     Move Operator
@@ -179,7 +179,7 @@ STAGE PLANS:
   Stage: Stage-4
     Map Reduce
       Alias -> Map Operator Tree:
-        pfile:/data/users/sdong/www/open-source-hive1/build/ql/scratchdir/hive_2011-02-10_17-49-01_067_6496196090074691511/-ext-10003 
+        pfile:/data/users/njain/hive_commit2/build/ql/scratchdir/hive_2011-12-07_18-03-10_228_8410433153782064994/-ext-10003 
             File Output Operator
               compressed: false
               GlobalTableId: 0
@@ -297,11 +297,11 @@ POSTHOOK: Lineage: tmptable.value EXPRESSION [(src)s1.null, (src1)s2.null, (srcb
 PREHOOK: query: select * from tmptable x sort by x.key
 PREHOOK: type: QUERY
 PREHOOK: Input: default@tmptable
-PREHOOK: Output: file:/tmp/sdong/hive_2011-02-10_17-49-16_037_8936104568515340621/-mr-10000
+PREHOOK: Output: file:/tmp/njain/hive_2011-12-07_18-03-24_504_2428324100622025728/-mr-10000
 POSTHOOK: query: select * from tmptable x sort by x.key
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@tmptable
-POSTHOOK: Output: file:/tmp/sdong/hive_2011-02-10_17-49-16_037_8936104568515340621/-mr-10000
+POSTHOOK: Output: file:/tmp/njain/hive_2011-12-07_18-03-24_504_2428324100622025728/-mr-10000
 POSTHOOK: Lineage: tmptable.key EXPRESSION []
 POSTHOOK: Lineage: tmptable.value EXPRESSION [(src)s1.null, (src1)s2.null, (srcbucket)s3.null, ]
 tst1	500

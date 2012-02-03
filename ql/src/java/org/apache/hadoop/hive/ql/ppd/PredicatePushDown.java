@@ -17,13 +17,10 @@
  */
 package org.apache.hadoop.hive.ql.ppd;
 
-import java.io.Serializable;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
-import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.lib.DefaultGraphWalker;
 import org.apache.hadoop.hive.ql.lib.DefaultRuleDispatcher;
 import org.apache.hadoop.hive.ql.lib.Dispatcher;
@@ -33,7 +30,6 @@ import org.apache.hadoop.hive.ql.lib.NodeProcessor;
 import org.apache.hadoop.hive.ql.lib.Rule;
 import org.apache.hadoop.hive.ql.lib.RuleRegExp;
 import org.apache.hadoop.hive.ql.optimizer.Transform;
-import org.apache.hadoop.hive.ql.parse.OpParseContext;
 import org.apache.hadoop.hive.ql.parse.ParseContext;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 
@@ -73,12 +69,10 @@ import org.apache.hadoop.hive.ql.parse.SemanticException;
 public class PredicatePushDown implements Transform {
 
   private ParseContext pGraphContext;
-  private HashMap<Operator<? extends Serializable>, OpParseContext> opToParseCtxMap;
 
   @Override
   public ParseContext transform(ParseContext pctx) throws SemanticException {
     pGraphContext = pctx;
-    opToParseCtxMap = pGraphContext.getOpParseCtx();
 
     // create a the context for walking operators
     OpWalkerInfo opWalkerInfo = new OpWalkerInfo(pGraphContext);

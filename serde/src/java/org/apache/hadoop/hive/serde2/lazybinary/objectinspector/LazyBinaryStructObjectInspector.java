@@ -37,6 +37,12 @@ public class LazyBinaryStructObjectInspector extends
     super(structFieldNames, structFieldObjectInspectors);
   }
 
+  protected LazyBinaryStructObjectInspector(List<String> structFieldNames,
+      List<ObjectInspector> structFieldObjectInspectors,
+      List<String> structFieldComments) {
+    super(structFieldNames, structFieldObjectInspectors, structFieldComments);
+  }
+
   protected LazyBinaryStructObjectInspector(List<StructField> fields) {
     super(fields);
   }

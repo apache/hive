@@ -35,17 +35,21 @@ public class ExplainWork implements Serializable {
   private ArrayList<Task<? extends Serializable>> rootTasks;
   private String astStringTree;
   boolean extended;
+  boolean formatted;
 
   public ExplainWork() {
   }
 
   public ExplainWork(String resFile,
-      List<Task<? extends Serializable>> rootTasks, String astStringTree,
-      boolean extended) {
+      List<Task<? extends Serializable>> rootTasks, 
+      String astStringTree,
+      boolean extended,
+      boolean formatted) {
     this.resFile = resFile;
     this.rootTasks = new ArrayList<Task<? extends Serializable>>(rootTasks);
     this.astStringTree = astStringTree;
     this.extended = extended;
+    this.formatted = formatted;
   }
 
   public String getResFile() {
@@ -78,5 +82,13 @@ public class ExplainWork implements Serializable {
 
   public void setExtended(boolean extended) {
     this.extended = extended;
+  }
+  
+  public boolean isFormatted() {
+    return formatted;
+  }
+
+  public void setFormatted(boolean formatted) {
+    this.formatted = formatted;
   }
 }

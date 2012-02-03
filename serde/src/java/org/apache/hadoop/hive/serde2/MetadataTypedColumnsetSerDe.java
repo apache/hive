@@ -139,7 +139,7 @@ public class MetadataTypedColumnsetSerDe implements SerDe {
 
   /**
    * Split the row into columns.
-   * 
+   *
    * @param limit
    *          up to limit columns will be produced (the last column takes all
    *          the rest), -1 for unlimited.
@@ -172,7 +172,7 @@ public class MetadataTypedColumnsetSerDe implements SerDe {
     if (field instanceof BytesWritable) {
       BytesWritable b = (BytesWritable) field;
       try {
-        row = Text.decode(b.get(), 0, b.getSize());
+        row = Text.decode(b.getBytes(), 0, b.getLength());
       } catch (CharacterCodingException e) {
         throw new SerDeException(e);
       }
@@ -230,6 +230,11 @@ public class MetadataTypedColumnsetSerDe implements SerDe {
     }
     serializeCache.set(sb.toString());
     return serializeCache;
+  }
+
+  public SerDeStats getSerDeStats() {
+    // no support for statistics
+    return null;
   }
 
 }

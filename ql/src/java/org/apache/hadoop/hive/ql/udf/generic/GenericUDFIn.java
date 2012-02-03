@@ -18,13 +18,20 @@
 
 package org.apache.hadoop.hive.ql.udf.generic;
 
+import java.util.HashSet;
+import java.util.Set;
+
 import org.apache.hadoop.hive.ql.exec.Description;
 import org.apache.hadoop.hive.ql.exec.UDFArgumentException;
 import org.apache.hadoop.hive.ql.exec.UDFArgumentLengthException;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFUtils.ReturnObjectInspectorResolver;
+import org.apache.hadoop.hive.serde2.objectinspector.ConstantObjectInspector;
+import org.apache.hadoop.hive.serde2.objectinspector.ListObjectInspector;
+import org.apache.hadoop.hive.serde2.objectinspector.MapObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils;
+import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorFactory;
 import org.apache.hadoop.io.BooleanWritable;
 
@@ -50,9 +57,12 @@ import org.apache.hadoop.io.BooleanWritable;
 public class GenericUDFIn extends GenericUDF {
 
   private ObjectInspector[] argumentOIs;
+  private Set<Object> constantInSet;
+  private boolean isInSetConstant = true; //are variables from IN(...) constant
+
   BooleanWritable bw = new BooleanWritable();
 
-  ReturnObjectInspectorResolver conversionHelper = null;
+  ReturnObjectInspectorResolver conversionHelper;
   ObjectInspector compareOI;
 
   @Override
@@ -89,7 +99,35 @@ public class GenericUDFIn extends GenericUDF {
     }
     compareOI = conversionHelper.get();
 
+    checkIfInSetConstant();
+
     return PrimitiveObjectInspectorFactory.writableBooleanObjectInspector;
+  }
+
+  private void checkIfInSetConstant(){
+    for (int i = 1; i < argumentOIs.length; ++i){
+      if (!(argumentOIs[i] instanceof ConstantObjectInspector)){
+        isInSetConstant = false;
+        return;
+      }
+    }
+  }
+
+  // we start at index 1, since at 0 is the variable from table column
+  // (and those from IN(...) follow it)
+  private void prepareInSet(DeferredObject[] arguments) throws HiveException {
+    constantInSet = new HashSet<Object>();
+    if (compareOI.getCategory().equals(ObjectInspector.Category.PRIMITIVE)) {
+      for (int i = 1; i < arguments.length; ++i) {
+        constantInSet.add(((PrimitiveObjectInspector) compareOI)
+            .getPrimitiveJavaObject(conversionHelper
+                .convertIfNecessary(arguments[i].get(), argumentOIs[i])));
+      }
+    } else {
+      for (int i = 1; i < arguments.length; ++i) {
+        constantInSet.add(((ConstantObjectInspector) argumentOIs[i]).getWritableConstantValue());
+      }
+    }
   }
 
   @Override
@@ -100,20 +138,59 @@ public class GenericUDFIn extends GenericUDF {
       return null;
     }
 
-    for (int i=1; i<arguments.length; i++) {
-      if(ObjectInspectorUtils.compare(
-          conversionHelper.convertIfNecessary(
-              arguments[0].get(), argumentOIs[0]), compareOI,
-          conversionHelper.convertIfNecessary(
-              arguments[i].get(), argumentOIs[i]), compareOI) == 0) {
-        bw.set(true);
-        return bw;
+    if (isInSetConstant) {
+      if (constantInSet == null) {
+        prepareInSet(arguments);
       }
-    }
-    // Nothing matched. See comment at top.
-    for (int i=1; i<arguments.length; i++) {
-      if(arguments[i].get() == null) {
+      switch (compareOI.getCategory()) {
+      case PRIMITIVE: {
+        if (constantInSet.contains(((PrimitiveObjectInspector) compareOI)
+            .getPrimitiveJavaObject(conversionHelper.convertIfNecessary(arguments[0].get(),
+                argumentOIs[0])))) {
+          bw.set(true);
+          return bw;
+        }
+        break;
+      }
+      case LIST: {
+        if (constantInSet.contains(((ListObjectInspector) compareOI).getList(conversionHelper
+            .convertIfNecessary(arguments[0].get(), argumentOIs[0])))) {
+          bw.set(true);
+          return bw;
+        }
+        break;
+      }
+      case MAP: {
+        if (constantInSet.contains(((MapObjectInspector) compareOI).getMap(conversionHelper
+            .convertIfNecessary(arguments[0].get(), argumentOIs[0])))) {
+          bw.set(true);
+          return bw;
+        }
+        break;
+      }
+      default:
+        throw new RuntimeException("Compare of unsupported constant type: "
+            + compareOI.getCategory());
+      }
+      if (constantInSet.contains(null)) {
         return null;
+      }
+    } else {
+      for (int i = 1; i < arguments.length; i++) {
+        if (ObjectInspectorUtils.compare(
+            conversionHelper.convertIfNecessary(
+                arguments[0].get(), argumentOIs[0]), compareOI,
+            conversionHelper.convertIfNecessary(
+                arguments[i].get(), argumentOIs[i]), compareOI) == 0) {
+          bw.set(true);
+          return bw;
+        }
+      }
+      // Nothing matched. See comment at top.
+      for (int i = 1; i < arguments.length; i++) {
+        if (arguments[i].get() == null) {
+          return null;
+        }
       }
     }
     return bw;

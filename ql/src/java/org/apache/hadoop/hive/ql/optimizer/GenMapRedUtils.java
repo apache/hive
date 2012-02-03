@@ -474,7 +474,7 @@ public final class GenMapRedUtils {
   throws SemanticException {
     // Generate a new task
     ParseContext parseCtx = opProcCtx.getParseCtx();
-    MapredWork cplan = getMapRedWork(parseCtx.getConf());
+    MapredWork cplan = getMapRedWork(parseCtx);
     Task<? extends Serializable> redTask = TaskFactory.get(cplan, parseCtx
         .getConf());
     Operator<? extends Serializable> reducer = op.getChildOperators().get(0);
@@ -544,6 +544,8 @@ public final class GenMapRedUtils {
 
     PrunedPartitionList partsList = pList;
 
+    plan.setNameToSplitSample(parseCtx.getNameToSplitSample());
+
     if (partsList == null) {
       try {
         partsList = parseCtx.getOpToPartList().get((TableScanOperator)topOp);
@@ -587,6 +589,33 @@ public final class GenMapRedUtils {
 
     plan.getAliasToPartnInfo().put(alias_id, aliasPartnDesc);
 
+    long sizeNeeded = Integer.MAX_VALUE;
+    int fileLimit = -1;
+    if (parseCtx.getGlobalLimitCtx().isEnable()) {
+      long sizePerRow = HiveConf.getLongVar(parseCtx.getConf(), HiveConf.ConfVars.HIVELIMITMAXROWSIZE);
+      sizeNeeded = parseCtx.getGlobalLimitCtx().getGlobalLimit() * sizePerRow;
+      // for the optimization that reduce number of input file, we limit number
+      // of files allowed. If more than specific number of files have to be
+      // selected, we skip this optimization. Since having too many files as
+      // inputs can cause unpredictable latency. It's not necessarily to be
+      // cheaper.
+      fileLimit =
+        HiveConf.getIntVar(parseCtx.getConf(), HiveConf.ConfVars.HIVELIMITOPTLIMITFILE);
+
+      if (sizePerRow <= 0 || fileLimit <= 0) {
+        LOG.info("Skip optimization to reduce input size of 'limit'");
+        parseCtx.getGlobalLimitCtx().disableOpt();
+      } else if (parts.isEmpty()) {
+        LOG.info("Empty input: skip limit optimiztion");
+      } else {
+        LOG.info("Try to reduce input size for 'limit' " +
+            "sizeNeeded: " + sizeNeeded +
+            "  file limit : " + fileLimit);
+      }
+    }
+    boolean isFirstPart = true;
+    boolean emptyInput = true;
+    boolean singlePartition = (parts.size() == 1);
     for (Partition part : parts) {
       if (part.getTable().isPartitioned()) {
         inputs.add(new ReadEntity(part));
@@ -596,13 +625,54 @@ public final class GenMapRedUtils {
 
       // Later the properties have to come from the partition as opposed
       // to from the table in order to support versioning.
-      Path[] paths;
+      Path[] paths = null;
       sampleDesc sampleDescr = parseCtx.getOpToSamplePruner().get(topOp);
 
       if (sampleDescr != null) {
         paths = SamplePruner.prune(part, sampleDescr);
+        parseCtx.getGlobalLimitCtx().disableOpt();
       } else {
-        paths = part.getPath();
+        // Now we only try the first partition, if the first partition doesn't
+        // contain enough size, we change to normal mode.
+        if (parseCtx.getGlobalLimitCtx().isEnable()) {
+          if (isFirstPart) {
+            long sizeLeft = sizeNeeded;
+            ArrayList<Path> retPathList = new ArrayList<Path>();
+            SamplePruner.LimitPruneRetStatus status = SamplePruner.limitPrune(part, sizeLeft,
+                fileLimit, retPathList);
+            if (status.equals(SamplePruner.LimitPruneRetStatus.NoFile)) {
+              continue;
+            } else if (status.equals(SamplePruner.LimitPruneRetStatus.NotQualify)) {
+              LOG.info("Use full input -- first " + fileLimit + " files are more than "
+                  + sizeNeeded
+                  + " bytes");
+
+              parseCtx.getGlobalLimitCtx().disableOpt();
+
+            } else {
+              emptyInput = false;
+              paths = new Path[retPathList.size()];
+              int index = 0;
+              for (Path path : retPathList) {
+                paths[index++] = path;
+              }
+              if (status.equals(SamplePruner.LimitPruneRetStatus.NeedAllFiles) && singlePartition) {
+                // if all files are needed to meet the size limit, we disable
+                // optimization. It usually happens for empty table/partition or
+                // table/partition with only one file. By disabling this
+                // optimization, we can avoid retrying the query if there is
+                // not sufficient rows.
+                parseCtx.getGlobalLimitCtx().disableOpt();
+              }
+            }
+            isFirstPart = false;
+          } else {
+            paths = new Path[0];
+          }
+        }
+        if (!parseCtx.getGlobalLimitCtx().isEnable()) {
+          paths = part.getPath();
+        }
       }
 
       // is it a partitioned table ?
@@ -610,6 +680,8 @@ public final class GenMapRedUtils {
         assert ((tblDir == null) && (tblDesc == null));
 
         tblDir = paths[0];
+        tblDesc = Utilities.getTableDesc(part.getTable());
+      } else if (tblDesc == null) {
         tblDesc = Utilities.getTableDesc(part.getTable());
       }
 
@@ -624,12 +696,15 @@ public final class GenMapRedUtils {
 
         partDir.add(p);
         try {
-          partDesc.add(Utilities.getPartitionDesc(part));
+          partDesc.add(Utilities.getPartitionDescFromTableDesc(tblDesc, part));
         } catch (HiveException e) {
           LOG.error(org.apache.hadoop.util.StringUtils.stringifyException(e));
           throw new SemanticException(e.getMessage(), e);
         }
       }
+    }
+    if (emptyInput) {
+      parseCtx.getGlobalLimitCtx().disableOpt();
     }
 
     Iterator<Path> iterPath = partDir.iterator();
@@ -763,9 +838,21 @@ public final class GenMapRedUtils {
    *
    * @return the new plan
    */
-  public static MapredWork getMapRedWork(HiveConf conf) {
+  public static MapredWork getMapRedWork(ParseContext parseCtx) {
+    MapredWork work = getMapRedWorkFromConf(parseCtx.getConf());
+    work.setNameToSplitSample(parseCtx.getNameToSplitSample());
+    return work;
+  }
+
+  /**
+   * create a new plan and return. The pan won't contain the name to split
+   * sample information in parse context.
+   *
+   * @return the new plan
+   */
+  public static MapredWork getMapRedWorkFromConf(HiveConf conf) {
     MapredWork work = new MapredWork();
-    // This code has been only added for testing
+
     boolean mapperCannotSpanPartns =
       conf.getBoolVar(
         HiveConf.ConfVars.HIVE_MAPPER_CANNOT_SPAN_MULTIPLE_PARTITIONS);
@@ -947,7 +1034,7 @@ public final class GenMapRedUtils {
     // union is encountered for the first time
     if (uCtxTask == null) {
       uCtxTask = new GenMRUnionCtx();
-      uPlan = GenMapRedUtils.getMapRedWork(parseCtx.getConf());
+      uPlan = GenMapRedUtils.getMapRedWork(parseCtx);
       uTask = TaskFactory.get(uPlan, parseCtx.getConf());
       uCtxTask.setUTask(uTask);
       ctx.setUnionTask(union, uCtxTask);

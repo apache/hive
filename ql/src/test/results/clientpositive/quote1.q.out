@@ -33,32 +33,28 @@ STAGE PLANS:
               predicate:
                   expr: ((key >= 200) and (key < 300))
                   type: boolean
-              Filter Operator
-                predicate:
-                    expr: ((key >= 200) and (key < 300))
-                    type: boolean
+              Select Operator
+                expressions:
+                      expr: key
+                      type: string
+                      expr: value
+                      type: string
+                outputColumnNames: _col0, _col1
                 Select Operator
                   expressions:
-                        expr: key
-                        type: string
-                        expr: value
+                        expr: UDFToInteger(_col0)
+                        type: int
+                        expr: _col1
                         type: string
                   outputColumnNames: _col0, _col1
-                  Select Operator
-                    expressions:
-                          expr: UDFToInteger(_col0)
-                          type: int
-                          expr: _col1
-                          type: string
-                    outputColumnNames: _col0, _col1
-                    File Output Operator
-                      compressed: false
-                      GlobalTableId: 1
-                      table:
-                          input format: org.apache.hadoop.mapred.TextInputFormat
-                          output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                          serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                          name: default.dest1
+                  File Output Operator
+                    compressed: false
+                    GlobalTableId: 1
+                    table:
+                        input format: org.apache.hadoop.mapred.TextInputFormat
+                        output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                        serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                        name: default.dest1
 
   Stage: Stage-5
     Conditional Operator
@@ -122,25 +118,21 @@ STAGE PLANS:
               predicate:
                   expr: (table = '2008-04-08')
                   type: boolean
-              Filter Operator
-                predicate:
-                    expr: (table = '2008-04-08')
-                    type: boolean
-                Select Operator
-                  expressions:
-                        expr: location
-                        type: int
-                        expr: type
-                        type: string
-                        expr: table
-                        type: string
-                  outputColumnNames: _col0, _col1, _col2
-                  File Output Operator
-                    compressed: false
-                    GlobalTableId: 0
-                    table:
-                        input format: org.apache.hadoop.mapred.TextInputFormat
-                        output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+              Select Operator
+                expressions:
+                      expr: location
+                      type: int
+                      expr: type
+                      type: string
+                      expr: table
+                      type: string
+                outputColumnNames: _col0, _col1, _col2
+                File Output Operator
+                  compressed: false
+                  GlobalTableId: 0
+                  table:
+                      input format: org.apache.hadoop.mapred.TextInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
 
   Stage: Stage-0
     Fetch Operator

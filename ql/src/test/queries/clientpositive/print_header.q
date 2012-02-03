@@ -11,3 +11,4 @@ SELECT src1.key as k1, src1.value as v1,
 
 SELECT src.key, sum(substr(src.value,5)) FROM src GROUP BY src.key LIMIT 10;
 
+use default;

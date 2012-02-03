@@ -22,12 +22,15 @@ import java.util.List;
 import java.util.Set;
 
 import org.apache.hadoop.conf.Configurable;
+import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.metastore.api.Index;
 import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.hooks.ReadEntity;
 import org.apache.hadoop.hive.ql.hooks.WriteEntity;
-import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.Partition;
+import org.apache.hadoop.hive.ql.parse.ParseContext;
+import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
 
 /**
  * HiveIndexHandler defines a pluggable interface for adding new index handlers
@@ -114,4 +117,28 @@ public interface HiveIndexHandler extends Configurable {
       Set<ReadEntity> inputs, Set<WriteEntity> outputs)
       throws HiveException;
 
+  /**
+   * Generate the list of tasks required to run an index optimized sub-query for the
+   * given predicate, using the given indexes. If multiple indexes are
+   * provided, it is up to the handler whether to use none, one, some or all of
+   * them. The supplied predicate may reference any of the columns from any of
+   * the indexes. If the handler decides to use more than one index, it is
+   * responsible for generating tasks to combine their search results 
+   * (e.g. performing a JOIN on the result).
+   * @param indexes
+   * @param predicate
+   * @param parseContext
+   * @param queryContext contains results, such as query tasks and input configuration
+   */
+  void generateIndexQuery(List<Index> indexes, ExprNodeDesc predicate,
+    ParseContext pctx, HiveIndexQueryContext queryContext);
+
+  /**
+   * Check the size of an input query to make sure it fits within the bounds
+   *
+   * @param inputSize size (in bytes) of the query in question
+   * @param conf
+   * @return true if query is within the bounds
+   */
+  boolean checkQuerySize(long inputSize, HiveConf conf);
 }

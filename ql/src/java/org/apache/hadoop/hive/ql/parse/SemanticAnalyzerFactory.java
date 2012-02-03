@@ -31,11 +31,13 @@ import org.apache.hadoop.hive.ql.session.SessionState;
 public final class SemanticAnalyzerFactory {
 
   static HashMap<Integer, HiveOperation> commandType = new HashMap<Integer, HiveOperation>();
-  static HashMap<Integer, HiveOperation[]> tablePartitionCommandType = new HashMap<Integer, HiveOperation[]>(); 
+  static HashMap<Integer, HiveOperation[]> tablePartitionCommandType = new HashMap<Integer, HiveOperation[]>();
 
   static {
     commandType.put(HiveParser.TOK_EXPLAIN, HiveOperation.EXPLAIN);
     commandType.put(HiveParser.TOK_LOAD, HiveOperation.LOAD);
+    commandType.put(HiveParser.TOK_EXPORT, HiveOperation.EXPORT);
+    commandType.put(HiveParser.TOK_IMPORT, HiveOperation.IMPORT);
     commandType.put(HiveParser.TOK_CREATEDATABASE, HiveOperation.CREATEDATABASE);
     commandType.put(HiveParser.TOK_DROPDATABASE, HiveOperation.DROPDATABASE);
     commandType.put(HiveParser.TOK_SWITCHDATABASE, HiveOperation.SWITCHDATABASE);
@@ -54,8 +56,6 @@ public final class SemanticAnalyzerFactory {
     commandType.put(HiveParser.TOK_ALTERTABLE_ARCHIVE, HiveOperation.ALTERTABLE_ARCHIVE);
     commandType.put(HiveParser.TOK_ALTERTABLE_UNARCHIVE, HiveOperation.ALTERTABLE_UNARCHIVE);
     commandType.put(HiveParser.TOK_ALTERTABLE_PROPERTIES, HiveOperation.ALTERTABLE_PROPERTIES);
-    commandType.put(HiveParser.TOK_ALTERTABLE_SERIALIZER, HiveOperation.ALTERTABLE_SERIALIZER);
-    commandType.put(HiveParser.TOK_ALTERTABLE_SERDEPROPERTIES, HiveOperation.ALTERTABLE_SERDEPROPERTIES);
     commandType.put(HiveParser.TOK_ALTERTABLE_CLUSTER_SORT, HiveOperation.ALTERTABLE_CLUSTER_SORT);
     commandType.put(HiveParser.TOK_SHOWDATABASES, HiveOperation.SHOWDATABASES);
     commandType.put(HiveParser.TOK_SHOWTABLES, HiveOperation.SHOWTABLES);
@@ -73,6 +73,8 @@ public final class SemanticAnalyzerFactory {
     commandType.put(HiveParser.TOK_ALTERINDEX_REBUILD, HiveOperation.ALTERINDEX_REBUILD);
     commandType.put(HiveParser.TOK_ALTERINDEX_PROPERTIES, HiveOperation.ALTERINDEX_PROPS);
     commandType.put(HiveParser.TOK_ALTERVIEW_PROPERTIES, HiveOperation.ALTERVIEW_PROPERTIES);
+    commandType.put(HiveParser.TOK_ALTERVIEW_ADDPARTS, HiveOperation.ALTERTABLE_ADDPARTS);
+    commandType.put(HiveParser.TOK_ALTERVIEW_DROPPARTS, HiveOperation.ALTERTABLE_DROPPARTS);
     commandType.put(HiveParser.TOK_QUERY, HiveOperation.QUERY);
     commandType.put(HiveParser.TOK_LOCKTABLE, HiveOperation.LOCKTABLE);
     commandType.put(HiveParser.TOK_UNLOCKTABLE, HiveOperation.UNLOCKTABLE);
@@ -99,6 +101,17 @@ public final class SemanticAnalyzerFactory {
     tablePartitionCommandType.put(HiveParser.TOK_ALTERTABLE_LOCATION,
         new HiveOperation[] { HiveOperation.ALTERTABLE_LOCATION,
             HiveOperation.ALTERPARTITION_LOCATION });
+    tablePartitionCommandType.put(HiveParser.TOK_ALTERTABLE_ALTERPARTS_MERGEFILES,
+        new HiveOperation[] {HiveOperation.ALTERTABLE_MERGEFILES,
+            HiveOperation.ALTERPARTITION_MERGEFILES });
+    tablePartitionCommandType.put(HiveParser.TOK_ALTERTABLE_SERIALIZER,
+        new HiveOperation[] {HiveOperation.ALTERTABLE_SERIALIZER,
+            HiveOperation.ALTERPARTITION_SERIALIZER });
+    tablePartitionCommandType.put(HiveParser.TOK_ALTERTABLE_SERDEPROPERTIES,
+        new HiveOperation[] {HiveOperation.ALTERTABLE_SERDEPROPERTIES,
+            HiveOperation.ALTERPARTITION_SERDEPROPERTIES });
+    tablePartitionCommandType.put(HiveParser.TOK_ALTERTABLE_RENAMEPART,
+        new HiveOperation[] {null, HiveOperation.ALTERTABLE_RENAMEPART});
   }
 
   public static BaseSemanticAnalyzer get(HiveConf conf, ASTNode tree)
@@ -113,6 +126,10 @@ public final class SemanticAnalyzerFactory {
         return new ExplainSemanticAnalyzer(conf);
       case HiveParser.TOK_LOAD:
         return new LoadSemanticAnalyzer(conf);
+      case HiveParser.TOK_EXPORT:
+        return new ExportSemanticAnalyzer(conf);
+      case HiveParser.TOK_IMPORT:
+        return new ImportSemanticAnalyzer(conf);
       case HiveParser.TOK_CREATEDATABASE:
       case HiveParser.TOK_DROPDATABASE:
       case HiveParser.TOK_SWITCHDATABASE:
@@ -134,6 +151,9 @@ public final class SemanticAnalyzerFactory {
       case HiveParser.TOK_ALTERINDEX_REBUILD:
       case HiveParser.TOK_ALTERINDEX_PROPERTIES:
       case HiveParser.TOK_ALTERVIEW_PROPERTIES:
+      case HiveParser.TOK_ALTERVIEW_ADDPARTS:
+      case HiveParser.TOK_ALTERVIEW_DROPPARTS:
+      case HiveParser.TOK_ALTERVIEW_RENAME:
       case HiveParser.TOK_SHOWDATABASES:
       case HiveParser.TOK_SHOWTABLES:
       case HiveParser.TOK_SHOW_TABLESTATUS:

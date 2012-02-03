@@ -5,8 +5,10 @@ POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: default@authorization_fail_4
 PREHOOK: query: grant Alter on table authorization_fail_4 to user hive_test_user
 PREHOOK: type: GRANT_PRIVILEGE
+PREHOOK: Output: default@authorization_fail_4
 POSTHOOK: query: grant Alter on table authorization_fail_4 to user hive_test_user
 POSTHOOK: type: GRANT_PRIVILEGE
+POSTHOOK: Output: default@authorization_fail_4
 PREHOOK: query: ALTER TABLE authorization_fail_4 SET TBLPROPERTIES ("PARTITION_LEVEL_PRIVILEGE"="TRUE")
 PREHOOK: type: ALTERTABLE_PROPERTIES
 PREHOOK: Input: default@authorization_fail_4
@@ -17,8 +19,10 @@ POSTHOOK: Input: default@authorization_fail_4
 POSTHOOK: Output: default@authorization_fail_4
 PREHOOK: query: grant Create on table authorization_fail_4 to user hive_test_user
 PREHOOK: type: GRANT_PRIVILEGE
+PREHOOK: Output: default@authorization_fail_4
 POSTHOOK: query: grant Create on table authorization_fail_4 to user hive_test_user
 POSTHOOK: type: GRANT_PRIVILEGE
+POSTHOOK: Output: default@authorization_fail_4
 PREHOOK: query: alter table authorization_fail_4 add partition (ds='2010')
 PREHOOK: type: ALTERTABLE_ADDPARTS
 PREHOOK: Input: default@authorization_fail_4
@@ -36,7 +40,7 @@ table	authorization_fail_4
 principalName	hive_test_user	
 principalType	USER	
 privilege	Alter	
-grantTime	1296259809	
+grantTime	1298430477	
 grantor	hive_test_user	
 
 database	default	
@@ -44,7 +48,7 @@ table	authorization_fail_4
 principalName	hive_test_user	
 principalType	USER	
 privilege	Create	
-grantTime	1296259810	
+grantTime	1298430477	
 grantor	hive_test_user	
 PREHOOK: query: show grant user hive_test_user on table authorization_fail_4 partition (ds='2010')
 PREHOOK: type: SHOW_GRANT
@@ -57,7 +61,7 @@ partition	ds=2010
 principalName	hive_test_user	
 principalType	USER	
 privilege	Alter	
-grantTime	1296259810	
+grantTime	1298430477	
 grantor	hive_test_user	
 
 database	default	
@@ -66,6 +70,6 @@ partition	ds=2010
 principalName	hive_test_user	
 principalType	USER	
 privilege	Create	
-grantTime	1296259810	
+grantTime	1298430477	
 grantor	hive_test_user	
 Authorization failed:No privilege 'Select' found for inputs { database:default, table:authorization_fail_4, partitionName:ds=2010, columnName:key}. Use show grant to get more details.

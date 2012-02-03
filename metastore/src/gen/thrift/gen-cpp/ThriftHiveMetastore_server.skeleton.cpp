@@ -32,7 +32,7 @@ class ThriftHiveMetastoreHandler : virtual public ThriftHiveMetastoreIf {
     printf("get_database\n");
   }
 
-  void drop_database(const std::string& name, const bool deleteData) {
+  void drop_database(const std::string& name, const bool deleteData, const bool cascade) {
     // Your implementation goes here
     printf("drop_database\n");
   }
@@ -107,6 +107,16 @@ class ThriftHiveMetastoreHandler : virtual public ThriftHiveMetastoreIf {
     printf("get_table\n");
   }
 
+  void get_table_objects_by_name(std::vector<Table> & _return, const std::string& dbname, const std::vector<std::string> & tbl_names) {
+    // Your implementation goes here
+    printf("get_table_objects_by_name\n");
+  }
+
+  void get_table_names_by_filter(std::vector<std::string> & _return, const std::string& dbname, const std::string& filter, const int16_t max_tables) {
+    // Your implementation goes here
+    printf("get_table_names_by_filter\n");
+  }
+
   void alter_table(const std::string& dbname, const std::string& tbl_name, const Table& new_tbl) {
     // Your implementation goes here
     printf("alter_table\n");
@@ -115,6 +125,11 @@ class ThriftHiveMetastoreHandler : virtual public ThriftHiveMetastoreIf {
   void add_partition(Partition& _return, const Partition& new_part) {
     // Your implementation goes here
     printf("add_partition\n");
+  }
+
+  int32_t add_partitions(const std::vector<Partition> & new_parts) {
+    // Your implementation goes here
+    printf("add_partitions\n");
   }
 
   void append_partition(Partition& _return, const std::string& db_name, const std::string& tbl_name, const std::vector<std::string> & part_vals) {
@@ -187,9 +202,19 @@ class ThriftHiveMetastoreHandler : virtual public ThriftHiveMetastoreIf {
     printf("get_partitions_by_filter\n");
   }
 
+  void get_partitions_by_names(std::vector<Partition> & _return, const std::string& db_name, const std::string& tbl_name, const std::vector<std::string> & names) {
+    // Your implementation goes here
+    printf("get_partitions_by_names\n");
+  }
+
   void alter_partition(const std::string& db_name, const std::string& tbl_name, const Partition& new_part) {
     // Your implementation goes here
     printf("alter_partition\n");
+  }
+
+  void rename_partition(const std::string& db_name, const std::string& tbl_name, const std::vector<std::string> & part_vals, const Partition& new_part) {
+    // Your implementation goes here
+    printf("rename_partition\n");
   }
 
   void get_config_value(std::string& _return, const std::string& name, const std::string& defaultValue) {
@@ -205,6 +230,16 @@ class ThriftHiveMetastoreHandler : virtual public ThriftHiveMetastoreIf {
   void partition_name_to_spec(std::map<std::string, std::string> & _return, const std::string& part_name) {
     // Your implementation goes here
     printf("partition_name_to_spec\n");
+  }
+
+  void markPartitionForEvent(const std::string& db_name, const std::string& tbl_name, const std::map<std::string, std::string> & part_vals, const PartitionEventType::type eventType) {
+    // Your implementation goes here
+    printf("markPartitionForEvent\n");
+  }
+
+  bool isPartitionMarkedForEvent(const std::string& db_name, const std::string& tbl_name, const std::map<std::string, std::string> & part_vals, const PartitionEventType::type eventType) {
+    // Your implementation goes here
+    printf("isPartitionMarkedForEvent\n");
   }
 
   void add_index(Index& _return, const Index& new_index, const Table& index_table) {
@@ -287,14 +322,14 @@ class ThriftHiveMetastoreHandler : virtual public ThriftHiveMetastoreIf {
     printf("revoke_privileges\n");
   }
 
-  void get_delegation_token(std::string& _return, const std::string& renewer_kerberos_principal_name) {
+  void set_ugi(std::vector<std::string> & _return, const std::string& user_name, const std::vector<std::string> & group_names) {
     // Your implementation goes here
-    printf("get_delegation_token\n");
+    printf("set_ugi\n");
   }
 
-  void get_delegation_token_with_signature(std::string& _return, const std::string& renewer_kerberos_principal_name, const std::string& token_signature) {
+  void get_delegation_token(std::string& _return, const std::string& token_owner, const std::string& renewer_kerberos_principal_name) {
     // Your implementation goes here
-    printf("get_delegation_token_with_signature\n");
+    printf("get_delegation_token\n");
   }
 
   int64_t renew_delegation_token(const std::string& token_str_form) {

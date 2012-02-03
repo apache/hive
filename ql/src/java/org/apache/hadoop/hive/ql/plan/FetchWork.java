@@ -39,6 +39,7 @@ public class FetchWork implements Serializable {
   private ArrayList<PartitionDesc> partDesc;
 
   private int limit;
+  private int leastNumRows;
 
   /**
    * Serialization Null Format for the serde used to fetch data.
@@ -189,6 +190,14 @@ public class FetchWork implements Serializable {
     this.limit = limit;
   }
 
+  public int getLeastNumRows() {
+    return leastNumRows;
+  }
+
+  public void setLeastNumRows(int leastNumRows) {
+    this.leastNumRows = leastNumRows;
+  }
+
   @Override
   public String toString() {
     if (tblDir != null) {
@@ -199,7 +208,7 @@ public class FetchWork implements Serializable {
       return "null fetchwork";
     }
 
-    String ret = new String("partition = ");
+    String ret = "partition = ";
     for (String part : partDir) {
       ret = ret.concat(part);
     }

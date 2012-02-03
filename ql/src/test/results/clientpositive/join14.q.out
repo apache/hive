@@ -30,29 +30,6 @@ STAGE PLANS:
               predicate:
                   expr: (key > 100)
                   type: boolean
-              Filter Operator
-                predicate:
-                    expr: (key > 100)
-                    type: boolean
-                Reduce Output Operator
-                  key expressions:
-                        expr: key
-                        type: string
-                  sort order: +
-                  Map-reduce partition columns:
-                        expr: key
-                        type: string
-                  tag: 0
-                  value expressions:
-                        expr: key
-                        type: string
-        srcpart 
-          TableScan
-            alias: srcpart
-            Filter Operator
-              predicate:
-                  expr: (ds = '2008-04-08')
-                  type: boolean
               Reduce Output Operator
                 key expressions:
                       expr: key
@@ -61,10 +38,25 @@ STAGE PLANS:
                 Map-reduce partition columns:
                       expr: key
                       type: string
-                tag: 1
+                tag: 0
                 value expressions:
-                      expr: value
+                      expr: key
                       type: string
+        srcpart 
+          TableScan
+            alias: srcpart
+            Reduce Output Operator
+              key expressions:
+                    expr: key
+                    type: string
+              sort order: +
+              Map-reduce partition columns:
+                    expr: key
+                    type: string
+              tag: 1
+              value expressions:
+                    expr: value
+                    type: string
       Reduce Operator Tree:
         Join Operator
           condition map:

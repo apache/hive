@@ -22,6 +22,7 @@ import org.apache.hadoop.hive.ql.exec.UDF;
 import org.apache.hadoop.hive.serde2.io.ByteWritable;
 import org.apache.hadoop.hive.serde2.io.DoubleWritable;
 import org.apache.hadoop.hive.serde2.io.ShortWritable;
+import org.apache.hadoop.hive.serde2.io.TimestampWritable;
 import org.apache.hadoop.hive.serde2.lazy.LazyLong;
 import org.apache.hadoop.io.BooleanWritable;
 import org.apache.hadoop.io.FloatWritable;
@@ -42,7 +43,7 @@ public class UDFToLong extends UDF {
 
   /**
    * Convert from void to a long. This is called for CAST(... AS BIGINT)
-   * 
+   *
    * @param i
    *          The void value to convert
    * @return LongWritable
@@ -53,7 +54,7 @@ public class UDFToLong extends UDF {
 
   /**
    * Convert from boolean to a long. This is called for CAST(... AS BIGINT)
-   * 
+   *
    * @param i
    *          The boolean value to convert
    * @return LongWritable
@@ -69,7 +70,7 @@ public class UDFToLong extends UDF {
 
   /**
    * Convert from byte to a long. This is called for CAST(... AS BIGINT)
-   * 
+   *
    * @param i
    *          The byte value to convert
    * @return LongWritable
@@ -85,7 +86,7 @@ public class UDFToLong extends UDF {
 
   /**
    * Convert from short to a long. This is called for CAST(... AS BIGINT)
-   * 
+   *
    * @param i
    *          The short value to convert
    * @return LongWritable
@@ -101,7 +102,7 @@ public class UDFToLong extends UDF {
 
   /**
    * Convert from integer to a long. This is called for CAST(... AS BIGINT)
-   * 
+   *
    * @param i
    *          The integer value to convert
    * @return LongWritable
@@ -117,7 +118,7 @@ public class UDFToLong extends UDF {
 
   /**
    * Convert from long to a long. This is called for CAST(... AS BIGINT)
-   * 
+   *
    * @param i
    *          The long value to convert
    * @return LongWritable
@@ -128,7 +129,7 @@ public class UDFToLong extends UDF {
 
   /**
    * Convert from float to a long. This is called for CAST(... AS BIGINT)
-   * 
+   *
    * @param i
    *          The float value to convert
    * @return LongWritable
@@ -144,7 +145,7 @@ public class UDFToLong extends UDF {
 
   /**
    * Convert from double to a long. This is called for CAST(... AS BIGINT)
-   * 
+   *
    * @param i
    *          The double value to convert
    * @return LongWritable
@@ -160,7 +161,7 @@ public class UDFToLong extends UDF {
 
   /**
    * Convert from string to a long. This is called for CAST(... AS BIGINT)
-   * 
+   *
    * @param i
    *          The string value to convert
    * @return LongWritable
@@ -179,6 +180,15 @@ public class UDFToLong extends UDF {
         // But we decided to return NULL instead, which is more conservative.
         return null;
       }
+    }
+  }
+
+  public LongWritable evaluate(TimestampWritable i) {
+    if (i == null) {
+      return null;
+    } else {
+      longWritable.set(i.getSeconds());
+      return longWritable;
     }
   }
 

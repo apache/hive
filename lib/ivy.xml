@@ -1,6 +1,0 @@
-<ivy-module version="2.0" xmlns:e="http://ant.apache.org/ivy/extra">
-    <info organisation="org.apache.hive" module="hive-deps" revision="${version}"/>
-    <publications>
-      <artifact name="hive-deps" type="jar" ext="jar" classifier="e:derby"/>
-    </publications>
-</ivy-module>

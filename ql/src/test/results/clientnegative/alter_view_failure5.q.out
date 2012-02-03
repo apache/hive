@@ -1,0 +1,18 @@
+PREHOOK: query: DROP VIEW xxx6
+PREHOOK: type: DROPVIEW
+POSTHOOK: query: DROP VIEW xxx6
+POSTHOOK: type: DROPVIEW
+PREHOOK: query: CREATE VIEW xxx6
+PARTITIONED ON (value)
+AS 
+SELECT * FROM src
+PREHOOK: type: CREATEVIEW
+PREHOOK: Output: file:/var/folders/7P/7PeC14kXFIWq0PIYyexGbmKuXUk/-Tmp-/jsichi/hive_2011-02-10_16-32-17_470_5386519951595960232/-mr-10000
+POSTHOOK: query: CREATE VIEW xxx6
+PARTITIONED ON (value)
+AS 
+SELECT * FROM src
+POSTHOOK: type: CREATEVIEW
+POSTHOOK: Output: default@xxx6
+POSTHOOK: Output: file:/var/folders/7P/7PeC14kXFIWq0PIYyexGbmKuXUk/-Tmp-/jsichi/hive_2011-02-10_16-32-17_470_5386519951595960232/-mr-10000
+FAILED: Error in semantic analysis: value not found in table's partition spec: {v=val_86}

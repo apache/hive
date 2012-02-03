@@ -22,6 +22,7 @@ import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.service.HiveClient;
 import org.apache.hadoop.hive.service.HiveInterface;
 import org.apache.hadoop.hive.service.HiveServer;
+import org.apache.thrift.TException;
 import org.apache.thrift.protocol.TBinaryProtocol;
 import org.apache.thrift.protocol.TProtocol;
 import org.apache.thrift.transport.TSocket;
@@ -75,7 +76,7 @@ public class HiveConnection implements java.sql.Connection {
         client = new HiveServer.HiveServerHandler();
       } catch (MetaException e) {
         throw new SQLException("Error accessing Hive metastore: "
-            + e.getMessage(), "08S01");
+            + e.getMessage(), "08S01",e);
       }
     } else {
       // parse uri
@@ -94,7 +95,7 @@ public class HiveConnection implements java.sql.Connection {
       try {
         transport.open();
       } catch (TTransportException e) {
-        throw new SQLException("Could not establish connecton to "
+        throw new SQLException("Could not establish connection to "
             + uri + ": " + e.getMessage(), "08S01");
       }
     }
@@ -126,12 +127,17 @@ public class HiveConnection implements java.sql.Connection {
    */
 
   public void close() throws SQLException {
-    try {
-      if (transport != null) {
-        transport.close();
+    if (!isClosed) {
+      try {
+        client.clean();
+      } catch (TException e) {
+        throw new SQLException("Error while cleaning up the server resources", e);
+      } finally {
+        isClosed = true;
+        if (transport != null) {
+          transport.close();
+        }
       }
-    } finally {
-      isClosed = true;
     }
   }
 

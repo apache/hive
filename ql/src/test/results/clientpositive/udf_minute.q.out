@@ -40,25 +40,21 @@ STAGE PLANS:
               predicate:
                   expr: (key = 86)
                   type: boolean
-              Filter Operator
-                predicate:
-                    expr: (key = 86)
-                    type: boolean
-                Select Operator
-                  expressions:
-                        expr: minute('2009-08-07 13:14:15')
-                        type: int
-                        expr: minute('13:14:15')
-                        type: int
-                        expr: minute('2009-08-07')
-                        type: int
-                  outputColumnNames: _col0, _col1, _col2
-                  File Output Operator
-                    compressed: false
-                    GlobalTableId: 0
-                    table:
-                        input format: org.apache.hadoop.mapred.TextInputFormat
-                        output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+              Select Operator
+                expressions:
+                      expr: minute('2009-08-07 13:14:15')
+                      type: int
+                      expr: minute('13:14:15')
+                      type: int
+                      expr: minute('2009-08-07')
+                      type: int
+                outputColumnNames: _col0, _col1, _col2
+                File Output Operator
+                  compressed: false
+                  GlobalTableId: 0
+                  table:
+                      input format: org.apache.hadoop.mapred.TextInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
 
   Stage: Stage-0
     Fetch Operator

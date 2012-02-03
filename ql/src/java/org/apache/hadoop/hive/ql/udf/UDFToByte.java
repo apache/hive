@@ -22,6 +22,7 @@ import org.apache.hadoop.hive.ql.exec.UDF;
 import org.apache.hadoop.hive.serde2.io.ByteWritable;
 import org.apache.hadoop.hive.serde2.io.DoubleWritable;
 import org.apache.hadoop.hive.serde2.io.ShortWritable;
+import org.apache.hadoop.hive.serde2.io.TimestampWritable;
 import org.apache.hadoop.hive.serde2.lazy.LazyByte;
 import org.apache.hadoop.io.BooleanWritable;
 import org.apache.hadoop.io.FloatWritable;
@@ -42,7 +43,7 @@ public class UDFToByte extends UDF {
 
   /**
    * Convert from void to a byte. This is called for CAST(... AS TINYINT)
-   * 
+   *
    * @param i
    *          The void value to convert
    * @return Byte
@@ -53,7 +54,7 @@ public class UDFToByte extends UDF {
 
   /**
    * Convert from boolean to a byte. This is called for CAST(... AS TINYINT)
-   * 
+   *
    * @param i
    *          The boolean value to convert
    * @return Byte
@@ -69,7 +70,7 @@ public class UDFToByte extends UDF {
 
   /**
    * Convert from short to a byte. This is called for CAST(... AS TINYINT)
-   * 
+   *
    * @param i
    *          The short value to convert
    * @return Byte
@@ -85,7 +86,7 @@ public class UDFToByte extends UDF {
 
   /**
    * Convert from integer to a byte. This is called for CAST(... AS TINYINT)
-   * 
+   *
    * @param i
    *          The integer value to convert
    * @return Byte
@@ -101,7 +102,7 @@ public class UDFToByte extends UDF {
 
   /**
    * Convert from long to a byte. This is called for CAST(... AS TINYINT)
-   * 
+   *
    * @param i
    *          The long value to convert
    * @return Byte
@@ -117,7 +118,7 @@ public class UDFToByte extends UDF {
 
   /**
    * Convert from float to a byte. This is called for CAST(... AS TINYINT)
-   * 
+   *
    * @param i
    *          The float value to convert
    * @return Byte
@@ -133,7 +134,7 @@ public class UDFToByte extends UDF {
 
   /**
    * Convert from double to a byte. This is called for CAST(... AS TINYINT)
-   * 
+   *
    * @param i
    *          The double value to convert
    * @return Byte
@@ -149,7 +150,7 @@ public class UDFToByte extends UDF {
 
   /**
    * Convert from string to a byte. This is called for CAST(... AS TINYINT)
-   * 
+   *
    * @param i
    *          The string value to convert
    * @return Byte
@@ -168,6 +169,15 @@ public class UDFToByte extends UDF {
         // But we decided to return NULL instead, which is more conservative.
         return null;
       }
+    }
+  }
+
+  public ByteWritable evaluate(TimestampWritable i) {
+    if (i == null) {
+      return null;
+    } else {
+      byteWritable.set((byte)i.getSeconds());
+      return byteWritable;
     }
   }
 

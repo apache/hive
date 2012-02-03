@@ -13,8 +13,10 @@ POSTHOOK: query: grant role hive_test_role_fail to user hive_test_user
 POSTHOOK: type: GRANT_ROLE
 PREHOOK: query: grant select on table authorization_fail to role hive_test_role_fail
 PREHOOK: type: GRANT_PRIVILEGE
+PREHOOK: Output: default@authorization_fail
 POSTHOOK: query: grant select on table authorization_fail to role hive_test_role_fail
 POSTHOOK: type: GRANT_PRIVILEGE
+POSTHOOK: Output: default@authorization_fail
 PREHOOK: query: show role grant user hive_test_user
 PREHOOK: type: SHOW_ROLE_GRANT
 POSTHOOK: query: show role grant user hive_test_user
@@ -31,7 +33,7 @@ table	authorization_fail
 principalName	hive_test_role_fail	
 principalType	ROLE	
 privilege	Select	
-grantTime	1296259812	
+grantTime	1298430480	
 grantor	hive_test_user	
 PREHOOK: query: drop role hive_test_role_fail
 PREHOOK: type: DROPROLE

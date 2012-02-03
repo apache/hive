@@ -63,65 +63,53 @@ STAGE PLANS:
             alias: a
             Filter Operator
               predicate:
-                  expr: ((key > 10) and (key > 20))
+                  expr: (((key > 10) and (key > 20)) and (value < 200))
                   type: boolean
-              Filter Operator
-                predicate:
-                    expr: (key > 10)
-                    type: boolean
-                Select Operator
-                  expressions:
-                        expr: key
-                        type: string
-                        expr: value
-                        type: string
-                  outputColumnNames: _col0, _col1
-                  Filter Operator
-                    predicate:
-                        expr: (_col0 > 20)
-                        type: boolean
-                    Map Join Operator
-                      condition map:
-                           Inner Join 0 to 1
-                      condition expressions:
-                        0 {_col0}
-                        1 {value}
-                      handleSkewJoin: false
-                      keys:
-                        0 [Column[_col0], Column[_col1]]
-                        1 [Column[key], Column[value]]
-                      outputColumnNames: _col0, _col3
-                      Position of Big Table: 0
-                      Filter Operator
-                        predicate:
-                            expr: (_col3 < 200)
-                            type: boolean
-                        Select Operator
-                          expressions:
-                                expr: _col0
-                                type: string
-                                expr: _col3
-                                type: string
-                          outputColumnNames: _col0, _col3
-                          Group By Operator
-                            aggregations:
-                                  expr: sum(hash(_col0,_col3))
-                            bucketGroup: false
-                            mode: hash
-                            outputColumnNames: _col0
-                            File Output Operator
-                              compressed: false
-                              GlobalTableId: 0
-                              table:
-                                  input format: org.apache.hadoop.mapred.SequenceFileInputFormat
-                                  output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+              Select Operator
+                expressions:
+                      expr: key
+                      type: string
+                      expr: value
+                      type: string
+                outputColumnNames: _col0, _col1
+                Map Join Operator
+                  condition map:
+                       Inner Join 0 to 1
+                  condition expressions:
+                    0 {_col0}
+                    1 {value}
+                  handleSkewJoin: false
+                  keys:
+                    0 [Column[_col0], Column[_col1]]
+                    1 [Column[key], Column[value]]
+                  outputColumnNames: _col0, _col3
+                  Position of Big Table: 0
+                  Select Operator
+                    expressions:
+                          expr: _col0
+                          type: string
+                          expr: _col3
+                          type: string
+                    outputColumnNames: _col0, _col3
+                    Group By Operator
+                      aggregations:
+                            expr: sum(hash(_col0,_col3))
+                      bucketGroup: false
+                      mode: hash
+                      outputColumnNames: _col0
+                      File Output Operator
+                        compressed: false
+                        GlobalTableId: 0
+                        table:
+                            input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                            output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
       Local Work:
         Map Reduce Local Work
 
   Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/tmp/sdong/hive_2011-02-10_01-14-34_877_5596761155901891451/-mr-10002 
+        file:/tmp/charleschen/hive_2011-08-04_13-40-09_960_3421937651195483585/-mr-10002 
             Reduce Output Operator
               sort order: 
               tag: -1
@@ -159,32 +147,24 @@ STAGE PLANS:
             alias: a
             Filter Operator
               predicate:
-                  expr: ((key > 10) and (key > 20))
+                  expr: (((key > 10) and (key > 20)) and (value < 200))
                   type: boolean
-              Filter Operator
-                predicate:
-                    expr: (key > 10)
-                    type: boolean
-                Select Operator
-                  expressions:
-                        expr: key
-                        type: string
-                        expr: value
-                        type: string
-                  outputColumnNames: _col0, _col1
-                  Filter Operator
-                    predicate:
-                        expr: (_col0 > 20)
-                        type: boolean
-                    HashTable Sink Operator
-                      condition expressions:
-                        0 {_col0}
-                        1 {value}
-                      handleSkewJoin: false
-                      keys:
-                        0 [Column[_col0], Column[_col1]]
-                        1 [Column[key], Column[value]]
-                      Position of Big Table: 1
+              Select Operator
+                expressions:
+                      expr: key
+                      type: string
+                      expr: value
+                      type: string
+                outputColumnNames: _col0, _col1
+                HashTable Sink Operator
+                  condition expressions:
+                    0 {_col0}
+                    1 {value}
+                  handleSkewJoin: false
+                  keys:
+                    0 [Column[_col0], Column[_col1]]
+                    1 [Column[key], Column[value]]
+                  Position of Big Table: 1
 
   Stage: Stage-5
     Map Reduce
@@ -208,29 +188,25 @@ STAGE PLANS:
                   1 [Column[key], Column[value]]
                 outputColumnNames: _col0, _col3
                 Position of Big Table: 1
-                Filter Operator
-                  predicate:
-                      expr: (_col3 < 200)
-                      type: boolean
-                  Select Operator
-                    expressions:
-                          expr: _col0
-                          type: string
-                          expr: _col3
-                          type: string
-                    outputColumnNames: _col0, _col3
-                    Group By Operator
-                      aggregations:
-                            expr: sum(hash(_col0,_col3))
-                      bucketGroup: false
-                      mode: hash
-                      outputColumnNames: _col0
-                      File Output Operator
-                        compressed: false
-                        GlobalTableId: 0
-                        table:
-                            input format: org.apache.hadoop.mapred.SequenceFileInputFormat
-                            output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                Select Operator
+                  expressions:
+                        expr: _col0
+                        type: string
+                        expr: _col3
+                        type: string
+                  outputColumnNames: _col0, _col3
+                  Group By Operator
+                    aggregations:
+                          expr: sum(hash(_col0,_col3))
+                    bucketGroup: false
+                    mode: hash
+                    outputColumnNames: _col0
+                    File Output Operator
+                      compressed: false
+                      GlobalTableId: 0
+                      table:
+                          input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                          output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
       Local Work:
         Map Reduce Local Work
 
@@ -242,39 +218,31 @@ STAGE PLANS:
             alias: a
             Filter Operator
               predicate:
-                  expr: ((key > 10) and (key > 20))
+                  expr: (((key > 10) and (key > 20)) and (value < 200))
                   type: boolean
-              Filter Operator
-                predicate:
-                    expr: (key > 10)
-                    type: boolean
-                Select Operator
-                  expressions:
-                        expr: key
+              Select Operator
+                expressions:
+                      expr: key
+                      type: string
+                      expr: value
+                      type: string
+                outputColumnNames: _col0, _col1
+                Reduce Output Operator
+                  key expressions:
+                        expr: _col0
                         type: string
-                        expr: value
+                        expr: _col1
                         type: string
-                  outputColumnNames: _col0, _col1
-                  Filter Operator
-                    predicate:
-                        expr: (_col0 > 20)
-                        type: boolean
-                    Reduce Output Operator
-                      key expressions:
-                            expr: _col0
-                            type: string
-                            expr: _col1
-                            type: string
-                      sort order: ++
-                      Map-reduce partition columns:
-                            expr: _col0
-                            type: string
-                            expr: _col1
-                            type: string
-                      tag: 0
-                      value expressions:
-                            expr: _col0
-                            type: string
+                  sort order: ++
+                  Map-reduce partition columns:
+                        expr: _col0
+                        type: string
+                        expr: _col1
+                        type: string
+                  tag: 0
+                  value expressions:
+                        expr: _col0
+                        type: string
         tab 
           TableScan
             alias: tab
@@ -307,29 +275,25 @@ STAGE PLANS:
             1 {VALUE._col1}
           handleSkewJoin: false
           outputColumnNames: _col0, _col3
-          Filter Operator
-            predicate:
-                expr: (_col3 < 200)
-                type: boolean
-            Select Operator
-              expressions:
-                    expr: _col0
-                    type: string
-                    expr: _col3
-                    type: string
-              outputColumnNames: _col0, _col3
-              Group By Operator
-                aggregations:
-                      expr: sum(hash(_col0,_col3))
-                bucketGroup: false
-                mode: hash
-                outputColumnNames: _col0
-                File Output Operator
-                  compressed: false
-                  GlobalTableId: 0
-                  table:
-                      input format: org.apache.hadoop.mapred.SequenceFileInputFormat
-                      output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+          Select Operator
+            expressions:
+                  expr: _col0
+                  type: string
+                  expr: _col3
+                  type: string
+            outputColumnNames: _col0, _col3
+            Group By Operator
+              aggregations:
+                    expr: sum(hash(_col0,_col3))
+              bucketGroup: false
+              mode: hash
+              outputColumnNames: _col0
+              File Output Operator
+                compressed: false
+                GlobalTableId: 0
+                table:
+                    input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                    output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
 
   Stage: Stage-0
     Fetch Operator
@@ -344,7 +308,7 @@ ON (subq.key = tab.key and subq.key > 20 and subq.value = tab.value)
 where tab.value < 200
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/tmp/sdong/hive_2011-02-10_01-14-35_133_7289459318323276940/-mr-10000
+PREHOOK: Output: file:/tmp/charleschen/hive_2011-08-04_13-40-10_383_7393462303376577042/-mr-10000
 POSTHOOK: query: SELECT sum(hash(subq.key, tab.value)) 
 FROM 
 (select a.key, a.value from src a where a.key > 10 ) subq 
@@ -353,5 +317,5 @@ ON (subq.key = tab.key and subq.key > 20 and subq.value = tab.value)
 where tab.value < 200
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: file:/tmp/sdong/hive_2011-02-10_01-14-35_133_7289459318323276940/-mr-10000
+POSTHOOK: Output: file:/tmp/charleschen/hive_2011-08-04_13-40-10_383_7393462303376577042/-mr-10000
 NULL

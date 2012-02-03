@@ -95,7 +95,9 @@ public class Partition implements Serializable {
   public Partition(Table tbl) throws HiveException {
     org.apache.hadoop.hive.metastore.api.Partition tPart =
         new org.apache.hadoop.hive.metastore.api.Partition();
-    tPart.setSd(tbl.getTTable().getSd()); // TODO: get a copy
+    if (!tbl.isView()) {
+      tPart.setSd(tbl.getTTable().getSd()); // TODO: get a copy
+    }
     initialize(tbl, tPart);
   }
 
@@ -134,6 +136,11 @@ public class Partition implements Serializable {
     tpart.setTableName(tbl.getTableName());
     tpart.setValues(pvals);
 
+    if (tbl.isView()) {
+      initialize(tbl, tpart);
+      return;
+    }
+
     StorageDescriptor sd = new StorageDescriptor();
     try {
       // replace with THRIFT-138
@@ -144,7 +151,7 @@ public class Partition implements Serializable {
       sd.read(prot);
     } catch (TException e) {
       LOG.error("Could not create a copy of StorageDescription");
-      throw new HiveException("Could not create a copy of StorageDescription");
+      throw new HiveException("Could not create a copy of StorageDescription",e);
     }
 
     tpart.setSd(sd);
@@ -172,15 +179,29 @@ public class Partition implements Serializable {
 
     this.table = table;
     this.tPartition = tPartition;
-    String partName = "";
 
+    if (table.isView()) {
+      return;
+    }
+
+    String partName = "";
     if (table.isPartitioned()) {
       try {
         partName = Warehouse.makePartName(table.getPartCols(), tPartition.getValues());
         if (tPartition.getSd().getLocation() == null) {
-          // set default if location is not set
-          Path partPath = new Path(table.getDataLocation().toString(), partName);
-          tPartition.getSd().setLocation(partPath.toString());
+          // set default if location is not set and this is a physical
+          // table partition (not a view partition)
+          if (table.getDataLocation() != null) {
+            Path partPath = new Path(
+              table.getDataLocation().toString(), partName);
+            tPartition.getSd().setLocation(partPath.toString());
+          }
+        }
+        // set default if columns are not set
+        if (tPartition.getSd().getCols() == null) {
+          if (table.getCols() != null) {
+            tPartition.getSd().setCols(table.getCols());
+          }
         }
       } catch (MetaException e) {
         throw new HiveException("Invalid partition for table " + table.getTableName(),
@@ -237,8 +258,27 @@ public class Partition implements Serializable {
     return deserializer;
   }
 
+  final public Deserializer getDeserializer(Properties props) {
+    if (deserializer == null) {
+      try {
+        deserializer = MetaStoreUtils.getDeserializer(Hive.get().getConf(), props);
+      } catch (HiveException e) {
+        throw new RuntimeException(e);
+      } catch (MetaException e) {
+        throw new RuntimeException(e);
+      }
+    }
+    return deserializer;
+  }
+
   public Properties getSchema() {
     return MetaStoreUtils.getSchema(tPartition, table.getTTable());
+  }
+
+  public Properties getSchemaFromTableSchema(Properties tblSchema) {
+    return MetaStoreUtils.getPartSchemaFromTableSchema(tPartition.getSd(), table.getTTable().getSd(),
+        tPartition.getParameters(), table.getDbName(), table.getTableName(), table.getPartitionKeys(),
+        tblSchema);
   }
 
   /**
@@ -466,11 +506,37 @@ public class Partition implements Serializable {
   }
 
   public String getLocation() {
-    return tPartition.getSd().getLocation();
+    if (tPartition.getSd() == null) {
+      return null;
+    } else {
+      return tPartition.getSd().getLocation();
+    }
   }
 
   public void setLocation(String location) {
     tPartition.getSd().setLocation(location);
+  }
+
+  /**
+   * Set Partition's values
+   *
+   * @param partSpec
+   *          Partition specifications.
+   * @throws HiveException
+   *           Thrown if we could not create the partition.
+   */
+  public void setValues(Map<String, String> partSpec)
+      throws HiveException {
+    List<String> pvals = new ArrayList<String>();
+    for (FieldSchema field : table.getPartCols()) {
+      String val = partSpec.get(field.getName());
+      if (val == null) {
+        throw new HiveException(
+            "partition spec is invalid. field.getName() does not exist in input.");
+      }
+      pvals.add(val);
+    }
+    tPartition.setValues(pvals);
   }
 
   /**
@@ -518,7 +584,8 @@ public class Partition implements Serializable {
    */
   public boolean canDrop() {
     ProtectMode mode = getProtectMode();
-    return (!mode.noDrop && !mode.offline && !mode.readOnly);
+    ProtectMode parentMode = table.getProtectMode();
+    return (!mode.noDrop && !mode.offline && !mode.readOnly && !parentMode.noDropCascade);
   }
 
   /**

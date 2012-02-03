@@ -1,0 +1,15 @@
+PREHOOK: query: -- Verify that a stateful UDF cannot be used outside of the SELECT list
+
+drop temporary function row_sequence
+PREHOOK: type: DROPFUNCTION
+POSTHOOK: query: -- Verify that a stateful UDF cannot be used outside of the SELECT list
+
+drop temporary function row_sequence
+POSTHOOK: type: DROPFUNCTION
+PREHOOK: query: create temporary function row_sequence as 
+'org.apache.hadoop.hive.contrib.udf.UDFRowSequence'
+PREHOOK: type: CREATEFUNCTION
+POSTHOOK: query: create temporary function row_sequence as 
+'org.apache.hadoop.hive.contrib.udf.UDFRowSequence'
+POSTHOOK: type: CREATEFUNCTION
+FAILED: Error in semantic analysis: Stateful UDF's can only be invoked in the SELECT list

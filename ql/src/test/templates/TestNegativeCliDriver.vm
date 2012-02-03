@@ -19,7 +19,12 @@ public class $className extends TestCase {
 
   static {
     try {
-      qt = new QTestUtil("$resultsDir.getCanonicalPath()", "$logDir.getCanonicalPath()", false, "0.20");
+      boolean miniMR = false;
+      String hadoopVer;
+      if ("$clusterMode".equals("miniMR"))
+        miniMR = true;
+      hadoopVer = "$hadoopVersion";
+      qt = new QTestUtil("$resultsDir.getCanonicalPath()", "$logDir.getCanonicalPath()", miniMR, hadoopVer);
       // do a one time initialization
       qt.cleanUp();
       qt.createSources();

@@ -17,6 +17,7 @@
  */
 package org.apache.hadoop.hive.ql.udf.generic;
 
+import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 
 /**
@@ -45,7 +46,14 @@ public interface GenericUDAFParameterInfo {
    *
    * @return the parameter type list passed into the UDAF.
    */
+  @Deprecated
   TypeInfo[] getParameters();
+
+  /**
+   *
+   * @return getParameters() with types returned as ObjectInspectors.
+   */
+  ObjectInspector[] getParameterObjectInspectors();
 
   /**
    * Returns <tt>true</tt> if the UDAF invocation was qualified with

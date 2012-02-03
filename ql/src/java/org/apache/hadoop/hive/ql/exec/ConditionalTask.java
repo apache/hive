@@ -84,7 +84,7 @@ public class ConditionalTask extends Task<ConditionalWork> implements Serializab
     for (Task<? extends Serializable> tsk : getListTasks()) {
       if (!resTasks.contains(tsk)) {
         driverContext.getRunnable().remove(tsk);
-        console.printInfo(ExecDriver.getJobEndMsg("" + Utilities.randGen.nextInt())
+        console.printInfo(HadoopJobExecHelper.getJobEndMsg("" + Utilities.randGen.nextInt())
             + ", job is filtered out (removed at runtime).");
         if (tsk.isMapRedTask()) {
           driverContext.incCurJobNo(1);

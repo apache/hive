@@ -24,7 +24,6 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -45,7 +44,6 @@ import org.apache.hadoop.hive.ql.exec.ReduceSinkOperator;
 import org.apache.hadoop.hive.ql.exec.RowSchema;
 import org.apache.hadoop.hive.ql.exec.ScriptOperator;
 import org.apache.hadoop.hive.ql.exec.SelectOperator;
-import org.apache.hadoop.hive.ql.exec.TableScanOperator;
 import org.apache.hadoop.hive.ql.exec.UnionOperator;
 import org.apache.hadoop.hive.ql.lib.DefaultRuleDispatcher;
 import org.apache.hadoop.hive.ql.lib.Dispatcher;
@@ -129,16 +127,11 @@ public class MapJoinProcessor implements Transform {
         .entrySet()) {
       String alias = entry.getKey();
       Operator<? extends Serializable> op = entry.getValue();
-      // get table scan op
-      if (!(op instanceof TableScanOperator)) {
-        throw new SemanticException("top op is not table scan");
-      }
-      TableScanOperator tableScanOp = (TableScanOperator) op;
 
       // if the table scan is for big table; then skip it
       // tracing down the operator tree from the table scan operator
-      Operator<? extends Serializable> parentOp = tableScanOp;
-      Operator<? extends Serializable> childOp = tableScanOp.getChildOperators().get(0);
+      Operator<? extends Serializable> parentOp = op;
+      Operator<? extends Serializable> childOp = op.getChildOperators().get(0);
       while ((childOp != null) && (!childOp.equals(mapJoinOp))) {
         parentOp = childOp;
         assert parentOp.getChildOperators().size() == 1;
@@ -155,7 +148,7 @@ public class MapJoinProcessor implements Transform {
         continue;
       }
       // set alias to work and put into smallTableAliasList
-      newLocalWork.getAliasToWork().put(alias, tableScanOp);
+      newLocalWork.getAliasToWork().put(alias, op);
       smallTableAliasList.add(alias);
       // get input path and remove this alias from pathToAlias
       // because this file will be fetched by fetch operator
@@ -358,7 +351,7 @@ public class MapJoinProcessor implements Transform {
         }
       }
 
-      valueExprMap.put(new Byte((byte) pos), values);
+      valueExprMap.put(Byte.valueOf((byte) pos), values);
     }
 
     Map<Byte, List<ExprNodeDesc>> filterMap = desc.getFilters();
@@ -397,7 +390,7 @@ public class MapJoinProcessor implements Transform {
       newPar[pos++] = o;
     }
 
-    List<ExprNodeDesc> keyCols = keyExprMap.get(new Byte((byte) 0));
+    List<ExprNodeDesc> keyCols = keyExprMap.get(Byte.valueOf((byte) 0));
     StringBuilder keyOrder = new StringBuilder();
     for (int i = 0; i < keyCols.size(); i++) {
       keyOrder.append("+");
@@ -410,14 +403,14 @@ public class MapJoinProcessor implements Transform {
     List<TableDesc> valueFiltedTableDescs = new ArrayList<TableDesc>();
 
     for (pos = 0; pos < newParentOps.size(); pos++) {
-      List<ExprNodeDesc> valueCols = valueExprMap.get(new Byte((byte) pos));
+      List<ExprNodeDesc> valueCols = valueExprMap.get(Byte.valueOf((byte) pos));
       int length = valueCols.size();
       List<ExprNodeDesc> valueFilteredCols = new ArrayList<ExprNodeDesc>(length);
       // deep copy expr node desc
       for (int i = 0; i < length; i++) {
         valueFilteredCols.add(valueCols.get(i).clone());
       }
-      List<ExprNodeDesc> valueFilters = filterMap.get(new Byte((byte) pos));
+      List<ExprNodeDesc> valueFilters = filterMap.get(Byte.valueOf((byte) pos));
 
       if (valueFilters != null && valueFilters.size() != 0 && pos != mapJoinPos) {
         ExprNodeColumnDesc isFilterDesc = new ExprNodeColumnDesc(TypeInfoFactory
@@ -439,9 +432,18 @@ public class MapJoinProcessor implements Transform {
       valueTableDescs.add(valueTableDesc);
       valueFiltedTableDescs.add(valueFilteredTableDesc);
     }
+    String dumpFilePrefix = "";
+    if( joinTree.getMapAliases() != null ) {
+      for(String mapAlias : joinTree.getMapAliases()) {
+        dumpFilePrefix = dumpFilePrefix + mapAlias;
+      }
+      dumpFilePrefix = dumpFilePrefix+"-"+PlanUtils.getCountForMapJoinDumpFilePrefix();
+    } else {
+      dumpFilePrefix = "mapfile"+PlanUtils.getCountForMapJoinDumpFilePrefix();
+    }
     MapJoinDesc mapJoinDescriptor = new MapJoinDesc(keyExprMap, keyTableDesc, valueExprMap,
         valueTableDescs, valueFiltedTableDescs, outputColumnNames, mapJoinPos, joinCondns,
-        filterMap, op.getConf().getNoOuterJoin());
+        filterMap, op.getConf().getNoOuterJoin(), dumpFilePrefix);
     mapJoinDescriptor.setTagOrder(tagOrder);
 
     MapJoinOperator mapJoinOp = (MapJoinOperator) OperatorFactory.getAndMakeChild(
@@ -485,27 +487,86 @@ public class MapJoinProcessor implements Transform {
     return mapJoinOp;
   }
 
-  public static HashSet<Integer> getSmallTableOnlySet(JoinCondDesc[] condns) {
-    HashSet<Integer> smallTableOnlySet = new HashSet<Integer>();
+  /**
+   * Get a list of big table candidates. Only the tables in the returned set can
+   * be used as big table in the join operation.
+   *
+   * The logic here is to scan the join condition array from left to right. If
+   * see a inner join, and the bigTableCandidates is empty or the outer join
+   * that we last saw is a right outer join, add both side of this inner join to
+   * big table candidates only if they are not in bad position. If see a left
+   * outer join, set lastSeenRightOuterJoin to false, and the bigTableCandidates
+   * is empty, add the left side to it, and if the bigTableCandidates is not
+   * empty, do nothing (which means the bigTableCandidates is from left side).
+   * If see a right outer join, set lastSeenRightOuterJoin to true, clear the
+   * bigTableCandidates, and add right side to the bigTableCandidates, it means
+   * the right side of a right outer join always win. If see a full outer join,
+   * return null immediately (no one can be the big table, can not do a
+   * mapjoin).
+   *
+   *
+   * @param condns
+   * @return
+   */
+  public static HashSet<Integer> getBigTableCandidates(JoinCondDesc[] condns) {
+    HashSet<Integer> bigTableCandidates = new HashSet<Integer>();
 
+    boolean seenOuterJoin = false;
+    Set<Integer> seenPostitions = new HashSet<Integer>();
+    Set<Integer> leftPosListOfLastRightOuterJoin = new HashSet<Integer>();
+
+    // is the outer join that we saw most recently is a right outer join?
+    boolean lastSeenRightOuterJoin = false;
     for (JoinCondDesc condn : condns) {
       int joinType = condn.getType();
+      seenPostitions.add(condn.getLeft());
+      seenPostitions.add(condn.getRight());
+
       if (joinType == JoinDesc.FULL_OUTER_JOIN) {
+        // setting these 2 parameters here just in case that if the code got
+        // changed in future, these 2 are not missing.
+        seenOuterJoin = true;
+        lastSeenRightOuterJoin = false;
         return null;
-      } else if (joinType == JoinDesc.LEFT_OUTER_JOIN || joinType == JoinDesc.LEFT_SEMI_JOIN) {
-        smallTableOnlySet.add(condn.getRight());
+      } else if (joinType == JoinDesc.LEFT_OUTER_JOIN
+          || joinType == JoinDesc.LEFT_SEMI_JOIN) {
+        seenOuterJoin = true;
+        if(bigTableCandidates.size() == 0) {
+          bigTableCandidates.add(condn.getLeft());
+        }
+
+        lastSeenRightOuterJoin = false;
       } else if (joinType == JoinDesc.RIGHT_OUTER_JOIN) {
-        smallTableOnlySet.add(condn.getLeft());
+        seenOuterJoin = true;
+        lastSeenRightOuterJoin = true;
+        // add all except the right side to the bad positions
+        leftPosListOfLastRightOuterJoin.clear();
+        leftPosListOfLastRightOuterJoin.addAll(seenPostitions);
+        leftPosListOfLastRightOuterJoin.remove(condn.getRight());
+
+        bigTableCandidates.clear();
+        bigTableCandidates.add(condn.getRight());
+      } else if (joinType == JoinDesc.INNER_JOIN) {
+        if (!seenOuterJoin || lastSeenRightOuterJoin) {
+          // is the left was at the left side of a right outer join?
+          if (!leftPosListOfLastRightOuterJoin.contains(condn.getLeft())) {
+            bigTableCandidates.add(condn.getLeft());
+          }
+          // is the right was at the left side of a right outer join?
+          if (!leftPosListOfLastRightOuterJoin.contains(condn.getRight())) {
+            bigTableCandidates.add(condn.getRight());
+          }
+        }
       }
     }
 
-    return smallTableOnlySet;
+    return bigTableCandidates;
   }
 
   public static void checkMapJoin(int mapJoinPos, JoinCondDesc[] condns) throws SemanticException {
-    HashSet<Integer> smallTableOnlySet = MapJoinProcessor.getSmallTableOnlySet(condns);
+    HashSet<Integer> bigTableCandidates = MapJoinProcessor.getBigTableCandidates(condns);
 
-    if (smallTableOnlySet == null || smallTableOnlySet.contains(mapJoinPos)) {
+    if (bigTableCandidates == null || !bigTableCandidates.contains(mapJoinPos)) {
       throw new SemanticException(ErrorMsg.NO_OUTER_MAPJOIN.getMsg());
     }
     return;
@@ -644,10 +705,10 @@ public class MapJoinProcessor implements Transform {
     // the operator stack.
     // The dispatcher generates the plan from the operator tree
     Map<Rule, NodeProcessor> opRules = new LinkedHashMap<Rule, NodeProcessor>();
-    opRules.put(new RuleRegExp(new String("R0"), "MAPJOIN%"), getCurrentMapJoin());
-    opRules.put(new RuleRegExp(new String("R1"), "MAPJOIN%.*FS%"), getMapJoinFS());
-    opRules.put(new RuleRegExp(new String("R2"), "MAPJOIN%.*RS%"), getMapJoinDefault());
-    opRules.put(new RuleRegExp(new String("R4"), "MAPJOIN%.*UNION%"), getMapJoinDefault());
+    opRules.put(new RuleRegExp("R0", "MAPJOIN%"), getCurrentMapJoin());
+    opRules.put(new RuleRegExp("R1", "MAPJOIN%.*FS%"), getMapJoinFS());
+    opRules.put(new RuleRegExp("R2", "MAPJOIN%.*RS%"), getMapJoinDefault());
+    opRules.put(new RuleRegExp("R4", "MAPJOIN%.*UNION%"), getMapJoinDefault());
 
     // The dispatcher fires the processor corresponding to the closest matching
     // rule and passes the context along
@@ -774,30 +835,6 @@ public class MapJoinProcessor implements Transform {
     }
 
     ctx.setListRejectedMapJoins(listRejectedMapJoins);
-  }
-
-  private static int findGrandparentBranch(Operator<? extends Serializable> currOp,
-      Operator<? extends Serializable> grandParent) {
-    int pos = -1;
-    for (int i = 0; i < currOp.getParentOperators().size(); i++) {
-      List<Operator<? extends Serializable>> parentOpList = new LinkedList<Operator<? extends Serializable>>();
-      parentOpList.add(currOp.getParentOperators().get(i));
-      boolean found = false;
-      while (!parentOpList.isEmpty()) {
-        Operator<? extends Serializable> p = parentOpList.remove(0);
-        if (p == grandParent) {
-          found = true;
-          break;
-        } else if (p.getParentOperators() != null) {
-          parentOpList.addAll(p.getParentOperators());
-        }
-      }
-      if (found) {
-        pos = i;
-        break;
-      }
-    }
-    return pos;
   }
 
   /**

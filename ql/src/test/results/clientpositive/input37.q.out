@@ -5,6 +5,7 @@ POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: default@documents
 PREHOOK: query: LOAD DATA LOCAL INPATH '../data/files/docurl.txt' INTO TABLE documents
 PREHOOK: type: LOAD
+PREHOOK: Output: default@documents
 POSTHOOK: query: LOAD DATA LOCAL INPATH '../data/files/docurl.txt' INTO TABLE documents
 POSTHOOK: type: LOAD
 POSTHOOK: Output: default@documents
@@ -18,7 +19,7 @@ FROM
 group by url
 PREHOOK: type: QUERY
 PREHOOK: Input: default@documents
-PREHOOK: Output: file:/tmp/jssarma/hive_2010-07-21_11-28-09_514_9061274612297235392/10000
+PREHOOK: Output: file:/var/folders/67/67R3POPtF90VG63KSmCbcU++F0U/-Tmp-/krishnak/hive_2011-03-20_23-47-16_580_6937205098312645875/-mr-10000
 POSTHOOK: query: select url, count(1) 
 FROM
 (
@@ -29,6 +30,6 @@ FROM
 group by url
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@documents
-POSTHOOK: Output: file:/tmp/jssarma/hive_2010-07-21_11-28-09_514_9061274612297235392/10000
+POSTHOOK: Output: file:/var/folders/67/67R3POPtF90VG63KSmCbcU++F0U/-Tmp-/krishnak/hive_2011-03-20_23-47-16_580_6937205098312645875/-mr-10000
 1uauniajqtunlsvadmxhlxvngxpqjuzbpzvdiwmzphmbaicduzkgxgtdeiunduosu.html	4
 4uzsbtwvdypfitqfqdjosynqp.html	4

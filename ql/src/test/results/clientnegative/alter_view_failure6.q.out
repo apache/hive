@@ -1,0 +1,19 @@
+PREHOOK: query: DROP VIEW xxx7
+PREHOOK: type: DROPVIEW
+POSTHOOK: query: DROP VIEW xxx7
+POSTHOOK: type: DROPVIEW
+PREHOOK: query: CREATE VIEW xxx7
+PARTITIONED ON (key)
+AS 
+SELECT hr,key FROM srcpart
+PREHOOK: type: CREATEVIEW
+PREHOOK: Output: file:/var/folders/5V/5V4Zq77qGD4aSK9m8V3frVsFdRU/-Tmp-/salbiz/hive_2011-05-05_20-49-19_135_259619293580272140/-mr-10000
+POSTHOOK: query: CREATE VIEW xxx7
+PARTITIONED ON (key)
+AS 
+SELECT hr,key FROM srcpart
+POSTHOOK: type: CREATEVIEW
+POSTHOOK: Output: default@xxx7
+POSTHOOK: Output: file:/var/folders/5V/5V4Zq77qGD4aSK9m8V3frVsFdRU/-Tmp-/salbiz/hive_2011-05-05_20-49-19_135_259619293580272140/-mr-10000
+FAILED: Error in semantic analysis: No partition predicate found for Alias "xxx7:srcpart" Table "srcpart"
+FAILED: Error in semantic analysis: The query does not reference any valid partition. To run this query, set hive.mapred.mode=nonstrict

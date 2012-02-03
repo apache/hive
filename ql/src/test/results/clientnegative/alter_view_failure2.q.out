@@ -1,0 +1,24 @@
+PREHOOK: query: DROP VIEW xxx4
+PREHOOK: type: DROPVIEW
+POSTHOOK: query: DROP VIEW xxx4
+POSTHOOK: type: DROPVIEW
+PREHOOK: query: CREATE VIEW xxx4 
+PARTITIONED ON (value)
+AS 
+SELECT * FROM src
+PREHOOK: type: CREATEVIEW
+PREHOOK: Output: file:/tmp/salbiz/hive_2011-08-01_16-12-55_273_3019518550411272365/-mr-10000
+POSTHOOK: query: CREATE VIEW xxx4 
+PARTITIONED ON (value)
+AS 
+SELECT * FROM src
+POSTHOOK: type: CREATEVIEW
+POSTHOOK: Output: default@xxx4
+POSTHOOK: Output: file:/tmp/salbiz/hive_2011-08-01_16-12-55_273_3019518550411272365/-mr-10000
+PREHOOK: query: -- should fail:  need to use ALTER VIEW, not ALTER TABLE
+ALTER TABLE xxx4 ADD PARTITION (value='val_86')
+PREHOOK: type: ALTERTABLE_ADDPARTS
+PREHOOK: Input: default@src
+PREHOOK: Input: default@xxx4
+FAILED: Error in metadata: Cannot alter a view with ALTER TABLE
+FAILED: Execution Error, return code 1 from org.apache.hadoop.hive.ql.exec.DDLTask

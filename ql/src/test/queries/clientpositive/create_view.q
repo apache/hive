@@ -203,6 +203,14 @@ SELECT * FROM view16
 ORDER BY value
 LIMIT 10;
 
+-- HIVE-2133:  DROP TABLE IF EXISTS should ignore a matching view name
+DROP TABLE IF EXISTS view16;
+DESCRIBE view16;
+
+-- Likewise, DROP VIEW IF EXISTS should ignore a matching table name
+DROP VIEW IF EXISTS table1;
+DESCRIBE table1;
+
 -- this should work since currently we don't track view->table
 -- dependencies for implementing RESTRICT
 

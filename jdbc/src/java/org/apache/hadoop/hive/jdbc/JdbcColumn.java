@@ -19,6 +19,7 @@
 package org.apache.hadoop.hive.jdbc;
 
 import java.sql.SQLException;
+import java.sql.Types;
 
 /**
  * Column metadata.
@@ -58,27 +59,84 @@ public class JdbcColumn {
   }
 
   public Integer getSqlType() throws SQLException {
-    return HiveResultSetMetaData.hiveTypeToSqlType(type);
+    return Utils.hiveTypeToSqlType(type);
   }
 
-  public Integer getColumnSize() {
-    if (type.equalsIgnoreCase("string")) {
-      return Integer.MAX_VALUE;
-    } else if (type.equalsIgnoreCase("tinyint")) {
-      return 3;
-    } else if (type.equalsIgnoreCase("smallint")) {
-      return 5;
-    } else if (type.equalsIgnoreCase("int")) {
-      return 10;
-    } else if (type.equalsIgnoreCase("bigint")) {
-      return 19;
-    } else if (type.equalsIgnoreCase("float")) {
-      return 12;
-    } else if (type.equalsIgnoreCase("double")) {
-      return 22;
-    } else { // anything else including boolean is null
-      return null;
+  static int columnDisplaySize(int columnType) throws SQLException {
+    // according to hiveTypeToSqlType possible options are:
+    switch(columnType) {
+    case Types.BOOLEAN:
+      return columnPrecision(columnType);
+    case Types.VARCHAR:
+      return Integer.MAX_VALUE; // hive has no max limit for strings
+    case Types.TINYINT:
+    case Types.SMALLINT:
+    case Types.INTEGER:
+    case Types.BIGINT:
+      return columnPrecision(columnType) + 1; // allow +/-
+
+    // see http://download.oracle.com/javase/6/docs/api/constant-values.html#java.lang.Float.MAX_EXPONENT
+    case Types.FLOAT:
+      return 24; // e.g. -(17#).e-###
+    // see http://download.oracle.com/javase/6/docs/api/constant-values.html#java.lang.Double.MAX_EXPONENT
+    case Types.DOUBLE:
+      return 25; // e.g. -(17#).e-####
+    default:
+      throw new SQLException("Invalid column type: " + columnType);
     }
+  }
+
+  static int columnPrecision(int columnType) throws SQLException {
+    // according to hiveTypeToSqlType possible options are:
+    switch(columnType) {
+    case Types.BOOLEAN:
+      return 1;
+    case Types.VARCHAR:
+      return Integer.MAX_VALUE; // hive has no max limit for strings
+    case Types.TINYINT:
+      return 3;
+    case Types.SMALLINT:
+      return 5;
+    case Types.INTEGER:
+      return 10;
+    case Types.BIGINT:
+      return 19;
+    case Types.FLOAT:
+      return 7;
+    case Types.DOUBLE:
+      return 15;
+    default:
+      throw new SQLException("Invalid column type: " + columnType);
+    }
+  }
+
+  static int columnScale(int columnType) throws SQLException {
+    // according to hiveTypeToSqlType possible options are:
+    switch(columnType) {
+    case Types.BOOLEAN:
+    case Types.VARCHAR:
+    case Types.TINYINT:
+    case Types.SMALLINT:
+    case Types.INTEGER:
+    case Types.BIGINT:
+      return 0;
+    case Types.FLOAT:
+      return 7;
+    case Types.DOUBLE:
+      return 15;
+    default:
+      throw new SQLException("Invalid column type: " + columnType);
+    }
+  }
+
+  public Integer getColumnSize() throws SQLException {
+    int precision = columnPrecision(Utils.hiveTypeToSqlType(type));
+
+    return precision == 0 ? null : precision;
+  }
+
+  public Integer getDecimalDigits() throws SQLException {
+    return columnScale(Utils.hiveTypeToSqlType(type));
   }
 
   public Integer getNumPrecRadix() {
@@ -95,20 +153,6 @@ public class JdbcColumn {
     } else if (type.equalsIgnoreCase("double")) {
       return 2;
     } else { // anything else including boolean and string is null
-      return null;
-    }
-  }
-
-  public Integer getDecimalDigits() {
-    if (type.equalsIgnoreCase("tinyint")) {
-      return 0;
-    } else if (type.equalsIgnoreCase("smallint")) {
-      return 0;
-    } else if (type.equalsIgnoreCase("int")) {
-      return 0;
-    } else if (type.equalsIgnoreCase("bigint")) {
-      return 0;
-    } else { // anything else including float and double is null
       return null;
     }
   }

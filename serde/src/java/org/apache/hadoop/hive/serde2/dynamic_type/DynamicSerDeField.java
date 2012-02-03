@@ -28,8 +28,8 @@ public class DynamicSerDeField extends DynamicSerDeSimpleNode {
   // [this.fieldid :] Requiredness() FieldType() this.name FieldValue()
   // [CommaOrSemicolon()]
 
-  private final int FD_REQUIREDNESS = 0;
-  private final int FD_FIELD_TYPE = 1;
+  private static final int FD_REQUIREDNESS = 0;
+  private static final int FD_FIELD_TYPE = 1;
 
   public boolean isSkippable() {
     return ((DynamicSerDeFieldRequiredness) jjtGetChild(FD_REQUIREDNESS))

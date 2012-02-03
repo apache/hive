@@ -25,12 +25,14 @@ import java.util.Map;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.JavaStringObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorConverter;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.SettableBooleanObjectInspector;
+import org.apache.hadoop.hive.serde2.objectinspector.primitive.SettableBinaryObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.SettableByteObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.SettableDoubleObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.SettableFloatObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.SettableIntObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.SettableLongObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.SettableShortObjectInspector;
+import org.apache.hadoop.hive.serde2.objectinspector.primitive.SettableTimestampObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.WritableStringObjectInspector;
 
 /**
@@ -107,6 +109,15 @@ public final class ObjectInspectorConverters {
           return new PrimitiveObjectInspectorConverter.StringConverter(
               (PrimitiveObjectInspector) inputOI);
         }
+      case TIMESTAMP:
+        return new PrimitiveObjectInspectorConverter.TimestampConverter(
+            (PrimitiveObjectInspector) inputOI,
+            (SettableTimestampObjectInspector) outputOI);
+      case BINARY:
+        return new PrimitiveObjectInspectorConverter.BinaryConverter(
+            (PrimitiveObjectInspector)inputOI,
+            (SettableBinaryObjectInspector)outputOI);
+
       default:
         throw new RuntimeException("Hive internal error: conversion of "
             + inputOI.getTypeName() + " to " + outputOI.getTypeName()

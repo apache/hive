@@ -41,7 +41,7 @@ import org.apache.hadoop.hive.ql.parse.SemanticException;
  * the sub-query involves a map-reduce job, a FS is introduced on top of the
  * UNION. This can be later optimized to clone all the operators above the
  * UNION.
- * 
+ *
  * The parse Context is not changed.
  */
 public class UnionProcessor implements Transform {
@@ -55,7 +55,7 @@ public class UnionProcessor implements Transform {
   /**
    * Transform the query tree. For each union, store the fact whether both the
    * sub-queries are map-only
-   * 
+   *
    * @param pCtx
    *          the current parse context
    */
@@ -63,13 +63,13 @@ public class UnionProcessor implements Transform {
     // create a walker which walks the tree in a DFS manner while maintaining
     // the operator stack.
     Map<Rule, NodeProcessor> opRules = new LinkedHashMap<Rule, NodeProcessor>();
-    opRules.put(new RuleRegExp(new String("R1"), "RS%.*UNION%"),
+    opRules.put(new RuleRegExp("R1", "RS%.*UNION%"),
         UnionProcFactory.getMapRedUnion());
-    opRules.put(new RuleRegExp(new String("R2"), "UNION%.*UNION%"),
+    opRules.put(new RuleRegExp("R2", "UNION%.*UNION%"),
         UnionProcFactory.getUnknownUnion());
-    opRules.put(new RuleRegExp(new String("R3"), "TS%.*UNION%"),
+    opRules.put(new RuleRegExp("R3", "TS%.*UNION%"),
         UnionProcFactory.getMapUnion());
-    opRules.put(new RuleRegExp(new String("R3"), "MAPJOIN%.*UNION%"),
+    opRules.put(new RuleRegExp("R3", "MAPJOIN%.*UNION%"),
         UnionProcFactory.getMapJoinUnion());
 
     // The dispatcher fires the processor for the matching rule and passes the

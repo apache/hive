@@ -32,6 +32,8 @@ import org.apache.hadoop.hive.service.HiveServerException;
  */
 public class HiveStatement implements java.sql.Statement {
   private HiveInterface client;
+  private int fetchSize = 50;
+
   /**
    * We need to keep a reference to the result set to support the following:
    * <code>
@@ -55,11 +57,6 @@ public class HiveStatement implements java.sql.Statement {
    * Keep state so we can fail certain calls made after close().
    */
   private boolean isClosed = false;
-  
-  /**
-   * keep the current ResultRet update count
-   */
-  private final int updateCount=0;
 
   /**
    *
@@ -194,6 +191,7 @@ public class HiveStatement implements java.sql.Statement {
       throw new SQLException(ex.toString(), "08S01");
     }
     resultSet = new HiveQueryResultSet(client, maxRows);
+    resultSet.setFetchSize(fetchSize);
     return resultSet;
   }
 
@@ -209,7 +207,7 @@ public class HiveStatement implements java.sql.Statement {
     } catch (Exception ex) {
       throw new SQLException(ex.toString());
     }
-    return updateCount;
+    throw new SQLException("Method not supported");
   }
 
   /*
@@ -269,7 +267,7 @@ public class HiveStatement implements java.sql.Statement {
    */
 
   public int getFetchSize() throws SQLException {
-    throw new SQLException("Method not supported");
+    return fetchSize;
   }
 
   /*
@@ -379,7 +377,7 @@ public class HiveStatement implements java.sql.Statement {
    */
 
   public int getUpdateCount() throws SQLException {
-    return updateCount;
+    return 0;
   }
 
   /*
@@ -449,7 +447,7 @@ public class HiveStatement implements java.sql.Statement {
    */
 
   public void setFetchSize(int rows) throws SQLException {
-    throw new SQLException("Method not supported");
+    fetchSize = rows;
   }
 
   /*

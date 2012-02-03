@@ -574,10 +574,17 @@ public class ScriptOperator extends Operator<ScriptDesc> implements
           if (in != null) {
             in.close();
           }
-          proc.close();
         } catch (Exception e) {
           LOG.warn(name + ": error in closing ..");
           LOG.warn(StringUtils.stringifyException(e));
+        }
+        try
+        {
+          if (null != proc) {
+            proc.close();
+          }
+        }catch (Exception e) {
+          LOG.warn(": error in closing .."+StringUtils.stringifyException(e));
         }
       }
     }

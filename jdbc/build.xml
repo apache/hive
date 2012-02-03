@@ -37,26 +37,34 @@
     <fileset dir="${test.src.data.dir}" includes="files/*.jar"/>
     <fileset dir="${hive.root}" includes="testlibs/*.jar"/>
     <pathelement location="${build.dir.hive}/ql/test/classes"/>
+    <fileset dir="${hadoop.root}">
+      <include name="lib/**/*.jar" />
+      <exclude name="lib/**/excluded/" />
+      <!-- below is for 0.23 onwards -->
+      <include name="share/hadoop/common/lib/*.jar" />
+      <exclude name="share/hadoop/common/lib/hadoop-mapreduce-*.jar" />
+      <exclude name="share/hadoop/common/lib/hadoop-yarn-*.jar" />
+    </fileset>
     <path refid="classpath"/>
   </path>
 
-  <target name="core-compile" depends="init">
+  <target name="compile" depends="init,ivy-retrieve">
+    <echo message="Project: ${ant.project.name}"/>
     <javac
-     encoding="${build.encoding}"
-     srcdir="${src.dir}/java"
-     includes="**/*.java"
-     destdir="${build.classes}"
-     debug="${javac.debug}"
-     deprecation="${javac.deprecation}"
-     >
+        encoding="${build.encoding}"
+        srcdir="${src.dir}/java"
+        includes="**/*.java"
+        destdir="${build.classes}"
+        debug="${javac.debug}"
+        deprecation="${javac.deprecation}"
+        includeantruntime="false"
+        >
       <classpath refid="classpath"/>
     </javac>
   </target>
- 
-  <target name="compile" depends="core-compile">
-  </target>
 
   <target name="clean">
-      <delete dir="${build.classes}/../"/>
+    <echo message="Project: ${ant.project.name}"/>
+    <delete dir="${build.classes}/../"/>
   </target>
 </project>

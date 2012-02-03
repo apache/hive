@@ -22,23 +22,19 @@ STAGE PLANS:
               predicate:
                   expr: (key > 9999)
                   type: boolean
-              Filter Operator
-                predicate:
-                    expr: (key > 9999)
-                    type: boolean
-                Select Operator
-                  Group By Operator
-                    aggregations:
-                          expr: count(1)
-                    bucketGroup: false
-                    mode: hash
-                    outputColumnNames: _col0
-                    Reduce Output Operator
-                      sort order: 
-                      tag: -1
-                      value expressions:
-                            expr: _col0
-                            type: bigint
+              Select Operator
+                Group By Operator
+                  aggregations:
+                        expr: count(1)
+                  bucketGroup: false
+                  mode: hash
+                  outputColumnNames: _col0
+                  Reduce Output Operator
+                    sort order: 
+                    tag: -1
+                    value expressions:
+                          expr: _col0
+                          type: bigint
       Reduce Operator Tree:
         Group By Operator
           aggregations:
@@ -96,23 +92,19 @@ STAGE PLANS:
               predicate:
                   expr: (key > 9999)
                   type: boolean
-              Filter Operator
-                predicate:
-                    expr: (key > 9999)
-                    type: boolean
-                Select Operator
-                  Group By Operator
-                    aggregations:
-                          expr: count(1)
-                    bucketGroup: false
-                    mode: hash
-                    outputColumnNames: _col0
-                    Reduce Output Operator
-                      sort order: 
-                      tag: -1
-                      value expressions:
-                            expr: _col0
-                            type: bigint
+              Select Operator
+                Group By Operator
+                  aggregations:
+                        expr: count(1)
+                  bucketGroup: false
+                  mode: hash
+                  outputColumnNames: _col0
+                  Reduce Output Operator
+                    sort order: 
+                    tag: -1
+                    value expressions:
+                          expr: _col0
+                          type: bigint
       Reduce Operator Tree:
         Group By Operator
           aggregations:
@@ -171,20 +163,16 @@ STAGE PLANS:
               predicate:
                   expr: (key > 9999)
                   type: boolean
-              Filter Operator
-                predicate:
-                    expr: (key > 9999)
-                    type: boolean
-                Select Operator
-                  Reduce Output Operator
-                    sort order: 
-                    Map-reduce partition columns:
-                          expr: rand()
-                          type: double
-                    tag: -1
-                    value expressions:
-                          expr: 1
-                          type: int
+              Select Operator
+                Reduce Output Operator
+                  sort order: 
+                  Map-reduce partition columns:
+                        expr: rand()
+                        type: double
+                  tag: -1
+                  value expressions:
+                        expr: 1
+                        type: int
       Reduce Operator Tree:
         Group By Operator
           aggregations:
@@ -266,17 +254,13 @@ STAGE PLANS:
               predicate:
                   expr: (key > 9999)
                   type: boolean
-              Filter Operator
-                predicate:
-                    expr: (key > 9999)
-                    type: boolean
-                Select Operator
-                  Reduce Output Operator
-                    sort order: 
-                    tag: -1
-                    value expressions:
-                          expr: 1
-                          type: int
+              Select Operator
+                Reduce Output Operator
+                  sort order: 
+                  tag: -1
+                  value expressions:
+                        expr: 1
+                        type: int
       Reduce Operator Tree:
         Group By Operator
           aggregations:

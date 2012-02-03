@@ -22,8 +22,8 @@ import java.io.File;
 import java.io.IOException;
 import java.io.Serializable;
 import java.util.ArrayList;
-import java.util.List;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
@@ -32,15 +32,15 @@ import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
-import org.apache.hadoop.hive.ql.exec.FileSinkOperator.RecordWriter;
 import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.exec.Utilities;
+import org.apache.hadoop.hive.ql.exec.FileSinkOperator.RecordWriter;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.plan.FileSinkDesc;
 import org.apache.hadoop.hive.ql.plan.PartitionDesc;
 import org.apache.hadoop.hive.ql.plan.TableDesc;
-import org.apache.hadoop.io.SequenceFile.CompressionType;
 import org.apache.hadoop.io.Writable;
+import org.apache.hadoop.io.SequenceFile.CompressionType;
 import org.apache.hadoop.io.compress.CompressionCodec;
 import org.apache.hadoop.mapred.FileOutputFormat;
 import org.apache.hadoop.mapred.InputFormat;
@@ -107,7 +107,9 @@ public final class HiveFileFormatUtils {
    *          parent dir of the expected final output path
    * @param jc
    *          job configuration
+   * @deprecated
    */
+  @Deprecated
   public static Path getOutputFormatFinalPath(Path parent, String taskId, JobConf jc,
       HiveOutputFormat<?, ?> hiveOutputFormat, boolean isCompressed,
       Path defaultFinalPath) throws IOException {
@@ -262,6 +264,7 @@ public final class HiveFileFormatUtils {
       boolean ignoreSchema) throws IOException {
 
     PartitionDesc part = doGetPartitionDescFromPath(pathToPartitionInfo, dir);
+
     if (part == null
         && (ignoreSchema || (dir.toUri().getScheme() == null || dir.toUri().getScheme().trim()
             .equals("")))) {
@@ -281,7 +284,6 @@ public final class HiveFileFormatUtils {
       }
       part = doGetPartitionDescFromPath(newPathToPartitionInfo, dir);
     }
-
     if (part != null) {
       return part;
     } else {
@@ -384,18 +386,32 @@ public final class HiveFileFormatUtils {
    * @param aliasToWork    The operator tree to be invoked for a given alias
    * @param dir            The path to look for
    **/
-  public static List<Operator<? extends Serializable>> doGetAliasesFromPath(
+  public static List<Operator<? extends Serializable>> doGetWorksFromPath(
     Map<String, ArrayList<String>> pathToAliases,
     Map<String, Operator<? extends Serializable>> aliasToWork, Path dir) {
-
-    String path = getMatchingPath(pathToAliases, dir);
     List<Operator<? extends Serializable>> opList =
       new ArrayList<Operator<? extends Serializable>>();
-    List<String> aliases = pathToAliases.get(path);
+
+    List<String> aliases = doGetAliasesFromPath(pathToAliases, dir);
     for (String alias : aliases) {
       opList.add(aliasToWork.get(alias));
     }
     return opList;
+  }
+
+  /**
+   * Get the list of aliases from the opeerator tree that are needed for the path
+   * @param pathToAliases  mapping from path to aliases
+   * @param dir            The path to look for
+   **/
+  public static List<String> doGetAliasesFromPath(
+    Map<String, ArrayList<String>> pathToAliases,
+    Path dir) {
+    if (pathToAliases == null) {
+      return new ArrayList<String>();
+    }
+    String path = getMatchingPath(pathToAliases, dir);
+    return pathToAliases.get(path);
   }
 
   private HiveFileFormatUtils() {

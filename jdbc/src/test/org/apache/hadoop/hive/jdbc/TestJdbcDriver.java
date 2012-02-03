@@ -18,6 +18,8 @@
 
 package org.apache.hadoop.hive.jdbc;
 
+import static org.apache.hadoop.hive.ql.processors.SetProcessor.SET_COLUMN_NAME;
+
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
 import java.sql.DriverManager;
@@ -44,15 +46,17 @@ import org.apache.hadoop.hive.conf.HiveConf;
  *
  */
 public class TestJdbcDriver extends TestCase {
-  private static String driverName = "org.apache.hadoop.hive.jdbc.HiveDriver";
-  private static String tableName = "testHiveJdbcDriverTable";
-  private static String tableComment = "Simple table";
-  private static String viewName = "testHiveJdbcDriverView";
-  private static String viewComment = "Simple view";
-  private static String partitionedTableName = "testHiveJdbcDriverPartitionedTable";
-  private static String partitionedTableComment = "Partitioned table";
-  private static String dataTypeTableName = "testDataTypeTable";
-  private static String dataTypeTableComment = "Table with many column data types";
+  private static final String driverName = "org.apache.hadoop.hive.jdbc.HiveDriver";
+  private static final String tableName = "testHiveJdbcDriver_Table";
+  private static final String tableComment = "Simple table";
+  private static final String viewName = "testHiveJdbcDriverView";
+  private static final String viewComment = "Simple view";
+  private static final String partitionedTableName = "testHiveJdbcDriverPartitionedTable";
+  private static final String partitionedColumnName = "partcolabc";
+  private static final String partitionedColumnValue = "20090619";
+  private static final String partitionedTableComment = "Partitioned table";
+  private static final String dataTypeTableName = "testDataTypeTable";
+  private static final String dataTypeTableComment = "Table with many column data types";
   private final HiveConf conf;
   private final Path dataFilePath;
   private final Path dataTypeDataFilePath;
@@ -97,7 +101,8 @@ public class TestJdbcDriver extends TestCase {
 
     // create table
     ResultSet res = stmt.executeQuery("create table " + tableName
-        + " (key int comment 'the key', value string) comment '"+tableComment+"'");
+        + " (under_col int comment 'the under column', value string) comment '"
+        + tableComment + "'");
     assertFalse(res.next());
 
     // load data
@@ -115,14 +120,15 @@ public class TestJdbcDriver extends TestCase {
     }
 
     res = stmt.executeQuery("create table " + partitionedTableName
-        + " (key int, value string) comment '"+partitionedTableComment
-            +"' partitioned by (dt STRING)");
+        + " (under_col int, value string) comment '"+partitionedTableComment
+            +"' partitioned by (" + partitionedColumnName + " STRING)");
     assertFalse(res.next());
 
     // load data
     res = stmt.executeQuery("load data local inpath '"
         + dataFilePath.toString() + "' into table " + partitionedTableName
-        + " PARTITION (dt='20090619')");
+        + " PARTITION (" + partitionedColumnName + "="
+        + partitionedColumnValue + ")");
     assertFalse(res.next());
 
     // drop table. ignore error.
@@ -302,19 +308,23 @@ public class TestJdbcDriver extends TestCase {
   }
 
   public final void testSelectAll() throws Exception {
-    doTestSelectAll(tableName, -1); // tests not setting maxRows (return all)
-    doTestSelectAll(tableName, 0); // tests setting maxRows to 0 (return all)
+    doTestSelectAll(tableName, -1, -1); // tests not setting maxRows (return all)
+    doTestSelectAll(tableName, 0, -1); // tests setting maxRows to 0 (return all)
   }
 
   public final void testSelectAllPartioned() throws Exception {
-    doTestSelectAll(partitionedTableName, -1); // tests not setting maxRows
+    doTestSelectAll(partitionedTableName, -1, -1); // tests not setting maxRows
     // (return all)
-    doTestSelectAll(partitionedTableName, 0); // tests setting maxRows to 0
+    doTestSelectAll(partitionedTableName, 0, -1); // tests setting maxRows to 0
     // (return all)
   }
 
   public final void testSelectAllMaxRows() throws Exception {
-    doTestSelectAll(tableName, 100);
+    doTestSelectAll(tableName, 100, -1);
+  }
+
+  public final void testSelectAllFetchSize() throws Exception {
+    doTestSelectAll(tableName, 100, 20);
   }
 
   public void testDataTypes() throws Exception {
@@ -326,7 +336,8 @@ public class TestJdbcDriver extends TestCase {
 
     // row 1
     assertTrue(res.next());
-    for (int i = 1; i <= meta.getColumnCount(); i++) {
+    // skip the last (partitioning) column since it is always non-null
+    for (int i = 1; i < meta.getColumnCount(); i++) {
       assertNull(res.getObject(i));
     }
 
@@ -376,10 +387,16 @@ public class TestJdbcDriver extends TestCase {
     assertFalse(res.next());
   }
 
-  private void doTestSelectAll(String tableName, int maxRows) throws Exception {
+  private void doTestSelectAll(String tableName, int maxRows, int fetchSize) throws Exception {
+    boolean isPartitionTable = tableName.equals(partitionedTableName);
+
     Statement stmt = con.createStatement();
     if (maxRows >= 0) {
       stmt.setMaxRows(maxRows);
+    }
+    if (fetchSize > 0) {
+      stmt.setFetchSize(fetchSize);
+      assertEquals(fetchSize, stmt.getFetchSize());
     }
 
     // JDBC says that 0 means return all, which is the default
@@ -401,15 +418,21 @@ public class TestJdbcDriver extends TestCase {
     int i = 0;
 
     ResultSetMetaData meta = res.getMetaData();
-    assertEquals("Unexpected column count", 2, meta.getColumnCount());
+    int expectedColCount = isPartitionTable ? 3 : 2;
+    assertEquals(
+      "Unexpected column count", expectedColCount, meta.getColumnCount());
 
     boolean moreRow = res.next();
     while (moreRow) {
       try {
         i++;
-        assertEquals(res.getInt(1), res.getInt("key"));
-        assertEquals(res.getString(1), res.getString("key"));
+        assertEquals(res.getInt(1), res.getInt("under_col"));
+        assertEquals(res.getString(1), res.getString("under_col"));
         assertEquals(res.getString(2), res.getString("value"));
+        if (isPartitionTable) {
+          assertEquals(res.getString(3), partitionedColumnValue);
+          assertEquals(res.getString(3), res.getString(partitionedColumnName));
+        }
         assertFalse("Last result value was not null", res.wasNull());
         assertNull("No warnings should be found on ResultSet", res
             .getWarnings());
@@ -460,11 +483,11 @@ public class TestJdbcDriver extends TestCase {
     doTestErrorCase("SELECT * FROM some_table_that_does_not_exist",
         "Table not found", "42000", parseErrorCode);
     doTestErrorCase("drop table some_table_that_does_not_exist",
-        "Table not found", "4200", parseErrorCode);
+        "Table not found", "42000", parseErrorCode);
     doTestErrorCase("SELECT invalid_column FROM " + tableName,
         "Invalid table alias or column reference", invalidSyntaxSQLState,
         parseErrorCode);
-    doTestErrorCase("SELECT invalid_function(key) FROM " + tableName,
+    doTestErrorCase("SELECT invalid_function(under_col) FROM " + tableName,
         "Invalid function", invalidSyntaxSQLState, parseErrorCode);
 
     // TODO: execute errors like this currently don't return good messages (i.e.
@@ -519,14 +542,17 @@ public class TestJdbcDriver extends TestCase {
 
   public void testMetaDataGetTables() throws SQLException {
     Map<String, Object[]> tests = new HashMap<String, Object[]>();
-    tests.put("test%jdbc%", new Object[]{"testhivejdbcdriverpartitionedtable"
-            , "testhivejdbcdrivertable"
+    tests.put("test%jdbc%", new Object[]{"testhivejdbcdriver_table"
+            , "testhivejdbcdriverpartitionedtable"
             , "testhivejdbcdriverview"});
-    tests.put("%jdbcdrivertable", new Object[]{"testhivejdbcdrivertable"});
-    tests.put("testhivejdbcdrivertable", new Object[]{"testhivejdbcdrivertable"});
-    tests.put("test_ivejdbcdri_ertable", new Object[]{"testhivejdbcdrivertable"});
-    tests.put("%jdbc%", new Object[]{"testhivejdbcdriverpartitionedtable"
-            , "testhivejdbcdrivertable"
+    tests.put("%jdbcdriver\\_table", new Object[]{"testhivejdbcdriver_table"});
+    tests.put("testhivejdbcdriver\\_table", new Object[]{"testhivejdbcdriver_table"});
+    tests.put("test_ivejdbcdri_er\\_table", new Object[]{"testhivejdbcdriver_table"});
+    tests.put("test_ivejdbcdri_er_table", new Object[]{"testhivejdbcdriver_table"});
+    tests.put("test_ivejdbcdri_er%table", new Object[]{
+        "testhivejdbcdriver_table", "testhivejdbcdriverpartitionedtable" });
+    tests.put("%jdbc%", new Object[]{ "testhivejdbcdriver_table"
+            , "testhivejdbcdriverpartitionedtable"
             , "testhivejdbcdriverview"});
     tests.put("", new Object[]{});
 
@@ -577,7 +603,17 @@ public class TestJdbcDriver extends TestCase {
       cnt++;
     }
     rs.close();
-    assertEquals("Incorrect schema count", 1, cnt);
+    assertEquals("Incorrect catalog count", 1, cnt);
+  }
+
+  public void testMetaDataGetSchemas() throws SQLException {
+    ResultSet rs = (ResultSet)con.getMetaData().getSchemas();
+    int cnt = 0;
+    while (rs.next()) {
+      cnt++;
+    }
+    rs.close();
+    assertEquals("Incorrect schema count", 0, cnt);
   }
 
   public void testMetaDataGetTableTypes() throws SQLException {
@@ -601,23 +637,31 @@ public class TestJdbcDriver extends TestCase {
 
   public void testMetaDataGetColumns() throws SQLException {
     Map<String[], Integer> tests = new HashMap<String[], Integer>();
-    tests.put(new String[]{"testhivejdbcdrivertable", null}, 2);
-    tests.put(new String[]{"testhivejdbc%", null}, 6);
-    tests.put(new String[]{"%jdbcdrivertable", null}, 2);
-    tests.put(new String[]{"%jdbcdrivertable%", "key"}, 1);
-    tests.put(new String[]{"%jdbcdrivertable%", "ke_"}, 1);
-    tests.put(new String[]{"%jdbcdrivertable%", "ke%"}, 1);
+    tests.put(new String[]{"testhivejdbcdriver\\_table", null}, 2);
+    tests.put(new String[]{"testhivejdbc%", null}, 7);
+    tests.put(new String[]{"%jdbcdriver\\_table", null}, 2);
+    tests.put(new String[]{"%jdbcdriver\\_table%", "under\\_col"}, 1);
+    tests.put(new String[]{"%jdbcdriver\\_table%", "under\\_co_"}, 1);
+    tests.put(new String[]{"%jdbcdriver\\_table%", "under_col"}, 1);
+    tests.put(new String[]{"%jdbcdriver\\_table%", "und%"}, 1);
+    tests.put(new String[]{"%jdbcdriver\\_table%", "%"}, 2);
+    tests.put(new String[]{"%jdbcdriver\\_table%", "_%"}, 2);
 
     for (String[] checkPattern: tests.keySet()) {
-      ResultSet rs = (ResultSet)con.getMetaData().getColumns(null, null
-              , checkPattern[0], checkPattern[1]);
+      ResultSet rs = con.getMetaData().getColumns(null, null, checkPattern[0],
+          checkPattern[1]);
+
+      // validate the metadata for the getColumns result set
+      ResultSetMetaData rsmd = rs.getMetaData();
+      assertEquals("TABLE_CAT", rsmd.getColumnName(1));
+
       int cnt = 0;
       while (rs.next()) {
         String columnname = rs.getString("COLUMN_NAME");
         int ordinalPos = rs.getInt("ORDINAL_POSITION");
         switch(cnt) {
           case 0:
-            assertEquals("Wrong column name found", "key", columnname);
+            assertEquals("Wrong column name found", "under_col", columnname);
             assertEquals("Wrong ordinal position found", ordinalPos, 1);
             break;
           case 1:
@@ -632,6 +676,24 @@ public class TestJdbcDriver extends TestCase {
       rs.close();
       assertEquals("Found less columns then we test for.", tests.get(checkPattern).intValue(), cnt);
     }
+  }
+
+  /**
+   * Validate the Metadata for the result set of a metadata getColumns call.
+   */
+  public void testMetaDataGetColumnsMetaData() throws SQLException {
+    ResultSet rs = (ResultSet)con.getMetaData().getColumns(null, null
+            , "testhivejdbcdriver\\_table", null);
+
+    ResultSetMetaData rsmd = rs.getMetaData();
+
+    assertEquals("TABLE_CAT", rsmd.getColumnName(1));
+    assertEquals(Types.VARCHAR, rsmd.getColumnType(1));
+    assertEquals(Integer.MAX_VALUE, rsmd.getColumnDisplaySize(1));
+
+    assertEquals("ORDINAL_POSITION", rsmd.getColumnName(17));
+    assertEquals(Types.INTEGER, rsmd.getColumnType(17));
+    assertEquals(11, rsmd.getColumnDisplaySize(17));
   }
 
   public void testConversionsBaseResultSet() throws SQLException {
@@ -681,8 +743,8 @@ public class TestJdbcDriver extends TestCase {
     ResultSet res = stmt.executeQuery("describe " + tableName);
 
     res.next();
-    assertEquals("Column name 'key' not found", "key", res.getString(1));
-    assertEquals("Column type 'int' for column key not found", "int", res
+    assertEquals("Column name 'under_col' not found", "under_col", res.getString(1));
+    assertEquals("Column type 'under_col' for column under_col not found", "int", res
         .getString(2));
     res.next();
     assertEquals("Column name 'value' not found", "value", res.getString(1));
@@ -697,7 +759,7 @@ public class TestJdbcDriver extends TestCase {
     DatabaseMetaData meta = con.getMetaData();
 
     assertEquals("Hive", meta.getDatabaseProductName());
-    assertEquals("0", meta.getDatabaseProductVersion());
+    assertEquals("1", meta.getDatabaseProductVersion());
     assertEquals(DatabaseMetaData.sqlStateSQL99, meta.getSQLStateType());
     assertNull(meta.getProcedures(null, null, null));
     assertFalse(meta.supportsCatalogsInTableDefinitions());
@@ -710,82 +772,215 @@ public class TestJdbcDriver extends TestCase {
 
   public void testResultSetMetaData() throws SQLException {
     Statement stmt = con.createStatement();
+
     ResultSet res = stmt.executeQuery(
         "select c1, c2, c3, c4, c5 as a, c6, c7, c8, c9, c10, c11, c12, " +
         "c1*2, sentences(null, null, null) as b from " + dataTypeTableName + " limit 1");
     ResultSetMetaData meta = res.getMetaData();
 
+    ResultSet colRS = con.getMetaData().getColumns(null, null,
+        dataTypeTableName.toLowerCase(), null);
+
     assertEquals(14, meta.getColumnCount());
 
+    assertTrue(colRS.next());
+
     assertEquals("c1", meta.getColumnName(1));
-    assertEquals("c2", meta.getColumnName(2));
-    assertEquals("c3", meta.getColumnName(3));
-    assertEquals("c4", meta.getColumnName(4));
-    assertEquals("a", meta.getColumnName(5));
-    assertEquals("c6", meta.getColumnName(6));
-    assertEquals("c7", meta.getColumnName(7));
-    assertEquals("c8", meta.getColumnName(8));
-    assertEquals("c9", meta.getColumnName(9));
-    assertEquals("c10", meta.getColumnName(10));
-    assertEquals("c11", meta.getColumnName(11));
-    assertEquals("c12", meta.getColumnName(12));
-    assertEquals("_c12", meta.getColumnName(13));
-    assertEquals("b", meta.getColumnName(14));
-
     assertEquals(Types.INTEGER, meta.getColumnType(1));
-    assertEquals(Types.BOOLEAN, meta.getColumnType(2));
-    assertEquals(Types.DOUBLE, meta.getColumnType(3));
-    assertEquals(Types.VARCHAR, meta.getColumnType(4));
-    assertEquals(Types.VARCHAR, meta.getColumnType(5));
-    assertEquals(Types.VARCHAR, meta.getColumnType(6));
-    assertEquals(Types.VARCHAR, meta.getColumnType(7));
-    assertEquals(Types.VARCHAR, meta.getColumnType(8));
-    assertEquals(Types.TINYINT, meta.getColumnType(9));
-    assertEquals(Types.SMALLINT, meta.getColumnType(10));
-    assertEquals(Types.FLOAT, meta.getColumnType(11));
-    assertEquals(Types.BIGINT, meta.getColumnType(12));
-    assertEquals(Types.INTEGER, meta.getColumnType(13));
-    assertEquals(Types.VARCHAR, meta.getColumnType(14));
-
     assertEquals("int", meta.getColumnTypeName(1));
-    assertEquals("boolean", meta.getColumnTypeName(2));
-    assertEquals("double", meta.getColumnTypeName(3));
-    assertEquals("string", meta.getColumnTypeName(4));
-    assertEquals("string", meta.getColumnTypeName(5));
-    assertEquals("string", meta.getColumnTypeName(6));
-    assertEquals("string", meta.getColumnTypeName(7));
-    assertEquals("string", meta.getColumnTypeName(8));
-    assertEquals("tinyint", meta.getColumnTypeName(9));
-    assertEquals("smallint", meta.getColumnTypeName(10));
-    assertEquals("float", meta.getColumnTypeName(11));
-    assertEquals("bigint", meta.getColumnTypeName(12));
-    assertEquals("int", meta.getColumnTypeName(13));
-    assertEquals("string", meta.getColumnTypeName(14));
+    assertEquals(11, meta.getColumnDisplaySize(1));
+    assertEquals(10, meta.getPrecision(1));
+    assertEquals(0, meta.getScale(1));
 
-    assertEquals(16, meta.getColumnDisplaySize(1));
-    assertEquals(8, meta.getColumnDisplaySize(2));
-    assertEquals(16, meta.getColumnDisplaySize(3));
-    assertEquals(32, meta.getColumnDisplaySize(4));
-    assertEquals(32, meta.getColumnDisplaySize(5));
-    assertEquals(32, meta.getColumnDisplaySize(6));
-    assertEquals(32, meta.getColumnDisplaySize(7));
-    assertEquals(32, meta.getColumnDisplaySize(8));
-    assertEquals(2, meta.getColumnDisplaySize(9));
-    assertEquals(32, meta.getColumnDisplaySize(10));
-    assertEquals(32, meta.getColumnDisplaySize(11));
-    assertEquals(32, meta.getColumnDisplaySize(12));
-    assertEquals(16, meta.getColumnDisplaySize(13));
-    assertEquals(32, meta.getColumnDisplaySize(14));
+    assertEquals("c1", colRS.getString("COLUMN_NAME"));
+    assertEquals(Types.INTEGER, colRS.getInt("DATA_TYPE"));
+    assertEquals("int", colRS.getString("TYPE_NAME").toLowerCase());
+    assertEquals(meta.getPrecision(1), colRS.getInt("COLUMN_SIZE"));
+    assertEquals(meta.getScale(1), colRS.getInt("DECIMAL_DIGITS"));
+
+    assertTrue(colRS.next());
+
+    assertEquals("c2", meta.getColumnName(2));
+    assertEquals("boolean", meta.getColumnTypeName(2));
+    assertEquals(Types.BOOLEAN, meta.getColumnType(2));
+    assertEquals(1, meta.getColumnDisplaySize(2));
+    assertEquals(1, meta.getPrecision(2));
+    assertEquals(0, meta.getScale(2));
+
+    assertEquals("c2", colRS.getString("COLUMN_NAME"));
+    assertEquals(Types.BOOLEAN, colRS.getInt("DATA_TYPE"));
+    assertEquals("boolean", colRS.getString("TYPE_NAME").toLowerCase());
+    assertEquals(meta.getPrecision(2), colRS.getInt("COLUMN_SIZE"));
+    assertEquals(meta.getScale(2), colRS.getInt("DECIMAL_DIGITS"));
+
+    assertTrue(colRS.next());
+
+    assertEquals("c3", meta.getColumnName(3));
+    assertEquals(Types.DOUBLE, meta.getColumnType(3));
+    assertEquals("double", meta.getColumnTypeName(3));
+    assertEquals(25, meta.getColumnDisplaySize(3));
+    assertEquals(15, meta.getPrecision(3));
+    assertEquals(15, meta.getScale(3));
+
+    assertEquals("c3", colRS.getString("COLUMN_NAME"));
+    assertEquals(Types.DOUBLE, colRS.getInt("DATA_TYPE"));
+    assertEquals("double", colRS.getString("TYPE_NAME").toLowerCase());
+    assertEquals(meta.getPrecision(3), colRS.getInt("COLUMN_SIZE"));
+    assertEquals(meta.getScale(3), colRS.getInt("DECIMAL_DIGITS"));
+
+    assertTrue(colRS.next());
+
+    assertEquals("c4", meta.getColumnName(4));
+    assertEquals(Types.VARCHAR, meta.getColumnType(4));
+    assertEquals("string", meta.getColumnTypeName(4));
+    assertEquals(Integer.MAX_VALUE, meta.getColumnDisplaySize(4));
+    assertEquals(Integer.MAX_VALUE, meta.getPrecision(4));
+    assertEquals(0, meta.getScale(4));
+
+    assertEquals("c4", colRS.getString("COLUMN_NAME"));
+    assertEquals(Types.VARCHAR, colRS.getInt("DATA_TYPE"));
+    assertEquals("string", colRS.getString("TYPE_NAME").toLowerCase());
+    assertEquals(meta.getPrecision(4), colRS.getInt("COLUMN_SIZE"));
+    assertEquals(meta.getScale(4), colRS.getInt("DECIMAL_DIGITS"));
+
+    assertTrue(colRS.next());
+
+    assertEquals("a", meta.getColumnName(5));
+    assertEquals(Types.VARCHAR, meta.getColumnType(5));
+    assertEquals("string", meta.getColumnTypeName(5));
+    assertEquals(Integer.MAX_VALUE, meta.getColumnDisplaySize(5));
+    assertEquals(Integer.MAX_VALUE, meta.getPrecision(5));
+    assertEquals(0, meta.getScale(5));
+
+    assertEquals("c5", colRS.getString("COLUMN_NAME"));
+    assertEquals(Types.VARCHAR, colRS.getInt("DATA_TYPE"));
+    assertEquals("array<int>", colRS.getString("TYPE_NAME").toLowerCase());
+    assertEquals(meta.getPrecision(5), colRS.getInt("COLUMN_SIZE"));
+    assertEquals(meta.getScale(5), colRS.getInt("DECIMAL_DIGITS"));
+
+    assertTrue(colRS.next());
+
+    assertEquals("c6", meta.getColumnName(6));
+    assertEquals(Types.VARCHAR, meta.getColumnType(6));
+    assertEquals("string", meta.getColumnTypeName(6));
+    assertEquals(Integer.MAX_VALUE, meta.getColumnDisplaySize(6));
+    assertEquals(Integer.MAX_VALUE, meta.getPrecision(6));
+    assertEquals(0, meta.getScale(6));
+
+    assertEquals("c6", colRS.getString("COLUMN_NAME"));
+    assertEquals(Types.VARCHAR, colRS.getInt("DATA_TYPE"));
+    assertEquals("map<int,string>", colRS.getString("TYPE_NAME").toLowerCase());
+    assertEquals(meta.getPrecision(6), colRS.getInt("COLUMN_SIZE"));
+    assertEquals(meta.getScale(6), colRS.getInt("DECIMAL_DIGITS"));
+
+    assertTrue(colRS.next());
+
+    assertEquals("c7", meta.getColumnName(7));
+    assertEquals(Types.VARCHAR, meta.getColumnType(7));
+    assertEquals("string", meta.getColumnTypeName(7));
+    assertEquals(Integer.MAX_VALUE, meta.getColumnDisplaySize(7));
+    assertEquals(Integer.MAX_VALUE, meta.getPrecision(7));
+    assertEquals(0, meta.getScale(7));
+
+    assertEquals("c7", colRS.getString("COLUMN_NAME"));
+    assertEquals(Types.VARCHAR, colRS.getInt("DATA_TYPE"));
+    assertEquals("map<string,string>", colRS.getString("TYPE_NAME").toLowerCase());
+    assertEquals(meta.getPrecision(7), colRS.getInt("COLUMN_SIZE"));
+    assertEquals(meta.getScale(7), colRS.getInt("DECIMAL_DIGITS"));
+
+    assertTrue(colRS.next());
+
+    assertEquals("c8", meta.getColumnName(8));
+    assertEquals(Types.VARCHAR, meta.getColumnType(8));
+    assertEquals("string", meta.getColumnTypeName(8));
+    assertEquals(Integer.MAX_VALUE, meta.getColumnDisplaySize(8));
+    assertEquals(Integer.MAX_VALUE, meta.getPrecision(8));
+    assertEquals(0, meta.getScale(8));
+
+    assertEquals("c8", colRS.getString("COLUMN_NAME"));
+    assertEquals(Types.VARCHAR, colRS.getInt("DATA_TYPE"));
+    assertEquals("struct<r:string,s:int,t:double>", colRS.getString("TYPE_NAME").toLowerCase());
+    assertEquals(meta.getPrecision(8), colRS.getInt("COLUMN_SIZE"));
+    assertEquals(meta.getScale(8), colRS.getInt("DECIMAL_DIGITS"));
+
+    assertTrue(colRS.next());
+
+    assertEquals("c9", meta.getColumnName(9));
+    assertEquals(Types.TINYINT, meta.getColumnType(9));
+    assertEquals("tinyint", meta.getColumnTypeName(9));
+    assertEquals(4, meta.getColumnDisplaySize(9));
+    assertEquals(3, meta.getPrecision(9));
+    assertEquals(0, meta.getScale(9));
+
+    assertEquals("c9", colRS.getString("COLUMN_NAME"));
+    assertEquals(Types.TINYINT, colRS.getInt("DATA_TYPE"));
+    assertEquals("tinyint", colRS.getString("TYPE_NAME").toLowerCase());
+    assertEquals(meta.getPrecision(9), colRS.getInt("COLUMN_SIZE"));
+    assertEquals(meta.getScale(9), colRS.getInt("DECIMAL_DIGITS"));
+
+    assertTrue(colRS.next());
+
+    assertEquals("c10", meta.getColumnName(10));
+    assertEquals(Types.SMALLINT, meta.getColumnType(10));
+    assertEquals("smallint", meta.getColumnTypeName(10));
+    assertEquals(6, meta.getColumnDisplaySize(10));
+    assertEquals(5, meta.getPrecision(10));
+    assertEquals(0, meta.getScale(10));
+
+    assertEquals("c10", colRS.getString("COLUMN_NAME"));
+    assertEquals(Types.SMALLINT, colRS.getInt("DATA_TYPE"));
+    assertEquals("smallint", colRS.getString("TYPE_NAME").toLowerCase());
+    assertEquals(meta.getPrecision(10), colRS.getInt("COLUMN_SIZE"));
+    assertEquals(meta.getScale(10), colRS.getInt("DECIMAL_DIGITS"));
+
+    assertTrue(colRS.next());
+
+    assertEquals("c11", meta.getColumnName(11));
+    assertEquals(Types.FLOAT, meta.getColumnType(11));
+    assertEquals("float", meta.getColumnTypeName(11));
+    assertEquals(24, meta.getColumnDisplaySize(11));
+    assertEquals(7, meta.getPrecision(11));
+    assertEquals(7, meta.getScale(11));
+
+    assertEquals("c11", colRS.getString("COLUMN_NAME"));
+    assertEquals(Types.FLOAT, colRS.getInt("DATA_TYPE"));
+    assertEquals("float", colRS.getString("TYPE_NAME").toLowerCase());
+    assertEquals(meta.getPrecision(11), colRS.getInt("COLUMN_SIZE"));
+    assertEquals(meta.getScale(11), colRS.getInt("DECIMAL_DIGITS"));
+
+    assertTrue(colRS.next());
+
+    assertEquals("c12", meta.getColumnName(12));
+    assertEquals(Types.BIGINT, meta.getColumnType(12));
+    assertEquals("bigint", meta.getColumnTypeName(12));
+    assertEquals(20, meta.getColumnDisplaySize(12));
+    assertEquals(19, meta.getPrecision(12));
+    assertEquals(0, meta.getScale(12));
+
+    assertEquals("c12", colRS.getString("COLUMN_NAME"));
+    assertEquals(Types.BIGINT, colRS.getInt("DATA_TYPE"));
+    assertEquals("bigint", colRS.getString("TYPE_NAME").toLowerCase());
+    assertEquals(meta.getPrecision(12), colRS.getInt("COLUMN_SIZE"));
+    assertEquals(meta.getScale(12), colRS.getInt("DECIMAL_DIGITS"));
+
+    assertEquals("_c12", meta.getColumnName(13));
+    assertEquals(Types.INTEGER, meta.getColumnType(13));
+    assertEquals("int", meta.getColumnTypeName(13));
+    assertEquals(11, meta.getColumnDisplaySize(13));
+    assertEquals(10, meta.getPrecision(13));
+    assertEquals(0, meta.getScale(13));
+
+    assertEquals("b", meta.getColumnName(14));
+    assertEquals(Types.VARCHAR, meta.getColumnType(14));
+    assertEquals("string", meta.getColumnTypeName(14));
+    assertEquals(Integer.MAX_VALUE, meta.getColumnDisplaySize(14));
+    assertEquals(Integer.MAX_VALUE, meta.getPrecision(14));
+    assertEquals(0, meta.getScale(14));
 
     for (int i = 1; i <= meta.getColumnCount(); i++) {
       assertFalse(meta.isAutoIncrement(i));
       assertFalse(meta.isCurrency(i));
       assertEquals(ResultSetMetaData.columnNullable, meta.isNullable(i));
-
-      int expectedPrecision = i == 3 ? -1 : 0;
-      int expectedScale = i == 3 ? -1 : 0;
-      assertEquals(expectedPrecision, meta.getPrecision(i));
-      assertEquals(expectedScale, meta.getScale(i));
     }
   }
 
@@ -816,5 +1011,27 @@ public class TestJdbcDriver extends TestCase {
     assertEquals("Invalid DriverPropertyInfo required", false, dpi.required);
   }
 
+
+  /**
+   * validate schema generated by "set" command
+   * @throws SQLException
+   */
+public void testSetCommand() throws SQLException {
+  // execute set command
+  String sql = "set -v";
+  Statement stmt = con.createStatement();
+  ResultSet res = stmt.executeQuery(sql);
+
+  // Validate resultset columns
+  ResultSetMetaData md = res.getMetaData() ;
+  assertEquals(1, md.getColumnCount());
+  assertEquals(SET_COLUMN_NAME, md.getColumnLabel(1));
+
+  //check if there is data in the resultset
+  assertTrue("Nothing returned by set -v", res.next());
+
+  res.close();
+  stmt.close();
+  }
 
 }

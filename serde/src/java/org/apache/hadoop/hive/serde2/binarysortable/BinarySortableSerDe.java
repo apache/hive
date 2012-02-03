@@ -32,17 +32,20 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.serde.Constants;
 import org.apache.hadoop.hive.serde2.SerDe;
 import org.apache.hadoop.hive.serde2.SerDeException;
+import org.apache.hadoop.hive.serde2.SerDeStats;
 import org.apache.hadoop.hive.serde2.io.ByteWritable;
 import org.apache.hadoop.hive.serde2.io.DoubleWritable;
 import org.apache.hadoop.hive.serde2.io.ShortWritable;
+import org.apache.hadoop.hive.serde2.io.TimestampWritable;
 import org.apache.hadoop.hive.serde2.objectinspector.ListObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.MapObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector;
+import org.apache.hadoop.hive.serde2.objectinspector.StandardUnionObjectInspector.StandardUnion;
 import org.apache.hadoop.hive.serde2.objectinspector.StructField;
 import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.UnionObjectInspector;
-import org.apache.hadoop.hive.serde2.objectinspector.StandardUnionObjectInspector.StandardUnion;
+import org.apache.hadoop.hive.serde2.objectinspector.primitive.BinaryObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.BooleanObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.ByteObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.DoubleObjectInspector;
@@ -51,6 +54,7 @@ import org.apache.hadoop.hive.serde2.objectinspector.primitive.IntObjectInspecto
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.LongObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.ShortObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.StringObjectInspector;
+import org.apache.hadoop.hive.serde2.objectinspector.primitive.TimestampObjectInspector;
 import org.apache.hadoop.hive.serde2.typeinfo.ListTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.MapTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
@@ -70,7 +74,7 @@ import org.apache.hadoop.io.Writable;
 /**
  * BinarySortableSerDe can be used to write data in a way that the data can be
  * compared byte-by-byte with the same order.
- * 
+ *
  * The data format: NULL: a single byte \0 NON-NULL Primitives: ALWAYS prepend a
  * single byte \1, and then: Boolean: FALSE = \1, TRUE = \2 Byte: flip the
  * sign-bit to make sure negative comes before positive Short: flip the sign-bit
@@ -82,13 +86,13 @@ import org.apache.hadoop.io.Writable;
  * ALWAYS prepend a single byte \1, and then: Struct: one field by one field.
  * List: \1 followed by each element, and \0 to terminate Map: \1 followed by
  * each key and then each value, and \0 to terminate
- * 
+ *
  * This SerDe takes an additional parameter SERIALIZATION_SORT_ORDER which is a
  * string containing only "+" and "-". The length of the string should equal to
  * the number of fields in the top-level struct for serialization. "+" means the
  * field should be sorted ascendingly, and "-" means descendingly. The sub
  * fields in the same top-level field will have the same sort order.
- * 
+ *
  */
 public class BinarySortableSerDe implements SerDe {
 
@@ -158,7 +162,7 @@ public class BinarySortableSerDe implements SerDe {
   @Override
   public Object deserialize(Writable blob) throws SerDeException {
     BytesWritable data = (BytesWritable) blob;
-    inputByteBuffer.reset(data.get(), 0, data.getSize());
+    inputByteBuffer.reset(data.getBytes(), 0, data.getLength());
 
     try {
       for (int i = 0; i < columnNames.size(); i++) {
@@ -309,6 +313,64 @@ public class BinarySortableSerDe implements SerDe {
         }
         return r;
       }
+
+      case BINARY: {
+        BytesWritable bw = new BytesWritable() ;
+        // Get the actual length first
+        int start = buffer.tell();
+        int length = 0;
+        do {
+          byte b = buffer.read(invert);
+          if (b == 0) {
+            // end of string
+            break;
+          }
+          if (b == 1) {
+            // the last char is an escape char. read the actual char
+            buffer.read(invert);
+          }
+          length++;
+        } while (true);
+
+        if (length == buffer.tell() - start) {
+          // No escaping happened, so we are already done.
+          bw.set(buffer.getData(), start, length);
+        } else {
+          // Escaping happened, we need to copy byte-by-byte.
+          // 1. Set the length first.
+          bw.set(buffer.getData(), start, length);
+          // 2. Reset the pointer.
+          buffer.seek(start);
+          // 3. Copy the data.
+          byte[] rdata = bw.getBytes();
+          for (int i = 0; i < length; i++) {
+            byte b = buffer.read(invert);
+            if (b == 1) {
+              // The last char is an escape char, read the actual char.
+              // The serialization format escape \0 to \1, and \1 to \2,
+              // to make sure the string is null-terminated.
+              b = (byte) (buffer.read(invert) - 1);
+            }
+            rdata[i] = b;
+          }
+          // 4. Read the null terminator.
+          byte b = buffer.read(invert);
+          assert (b == 0);
+        }
+        return bw;
+      }
+
+      case TIMESTAMP:
+        TimestampWritable t = (reuse == null ? new TimestampWritable() :
+            (TimestampWritable) reuse);
+        byte[] bytes = new byte[8];
+
+        for (int i = 0; i < bytes.length; i++) {
+          bytes[i] = buffer.read(invert);
+        }
+        t.setBinarySortable(bytes, 0);
+        return t;
+
       default: {
         throw new RuntimeException("Unrecognized type: "
             + ptype.getPrimitiveCategory());
@@ -525,17 +587,25 @@ public class BinarySortableSerDe implements SerDe {
       case STRING: {
         StringObjectInspector soi = (StringObjectInspector) poi;
         Text t = soi.getPrimitiveWritableObject(o);
-        byte[] data = t.getBytes();
-        int length = t.getLength();
-        for (int i = 0; i < length; i++) {
-          if (data[i] == 0 || data[i] == 1) {
-            buffer.write((byte) 1, invert);
-            buffer.write((byte) (data[i] + 1), invert);
-          } else {
-            buffer.write(data[i], invert);
+        serializeBytes(buffer, t.getBytes(), t.getLength(), invert);
+        return;
           }
+
+      case BINARY: {
+        BinaryObjectInspector baoi = (BinaryObjectInspector) poi;
+        BytesWritable ba = baoi.getPrimitiveWritableObject(o);
+        byte[] toSer = new byte[ba.getLength()];
+        System.arraycopy(ba.getBytes(), 0, toSer, 0, ba.getLength());
+        serializeBytes(buffer, toSer, ba.getLength(), invert);
+        return;
+      }
+      case TIMESTAMP: {
+        TimestampObjectInspector toi = (TimestampObjectInspector) poi;
+        TimestampWritable t = toi.getPrimitiveWritableObject(o);
+        byte[] data = t.getBinarySortable();
+        for (int i = 0; i < data.length; i++) {
+          buffer.write(data[i], invert);
         }
-        buffer.write((byte) 0, invert);
         return;
       }
       default: {
@@ -597,5 +667,21 @@ public class BinarySortableSerDe implements SerDe {
     }
     }
 
+  }
+
+  private static void serializeBytes(OutputByteBuffer buffer, byte[] data, int length, boolean invert){
+    for (int i = 0; i < length; i++) {
+      if (data[i] == 0 || data[i] == 1) {
+        buffer.write((byte) 1, invert);
+        buffer.write((byte) (data[i] + 1), invert);
+      } else {
+        buffer.write(data[i], invert);
+      }
+    }
+    buffer.write((byte) 0, invert);
+  }
+  public SerDeStats getSerDeStats() {
+    // no support for statistics
+    return null;
   }
 }

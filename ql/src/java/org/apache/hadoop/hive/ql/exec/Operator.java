@@ -32,9 +32,9 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.ql.lib.Node;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
-import org.apache.hadoop.hive.ql.plan.api.OperatorType;
 import org.apache.hadoop.hive.ql.plan.Explain;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
+import org.apache.hadoop.hive.ql.plan.api.OperatorType;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorFactory;
 import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
@@ -675,6 +675,24 @@ public abstract class Operator<T extends Serializable> implements Serializable,
     }
   }
 
+  public void removeParent(Operator<? extends Serializable> parent) {
+    int parentIndex = parentOperators.indexOf(parent);
+    assert parentIndex != -1;
+    if (parentOperators.size() == 1) {
+      parentOperators = null;
+    } else {
+      parentOperators.remove(parentIndex);
+    }
+
+    int childIndex = parent.getChildOperators().indexOf(this);
+    assert childIndex != -1;
+    if (parent.getChildOperators().size() == 1) {
+      parent.setChildOperators(null);
+    } else {
+      parent.getChildOperators().remove(childIndex);
+    }
+  }
+
   /**
    * Replace one parent with another at the same position. Chilren of the new
    * parent are not updated
@@ -796,7 +814,7 @@ public abstract class Operator<T extends Serializable> implements Serializable,
    * @return the name of the operator
    */
   public String getName() {
-    return new String("OP");
+    return "OP";
   }
 
   /**
@@ -955,10 +973,70 @@ public abstract class Operator<T extends Serializable> implements Serializable,
     C361, C362, C363, C364, C365, C366, C367, C368, C369, C370,
     C371, C372, C373, C374, C375, C376, C377, C378, C379, C380,
     C381, C382, C383, C384, C385, C386, C387, C388, C389, C390,
-    C391, C392, C393, C394, C395, C396, C397, C398, C399, C400
+    C391, C392, C393, C394, C395, C396, C397, C398, C399, C400,
+    C401, C402, C403, C404, C405, C406, C407, C408, C409, C410,
+    C411, C412, C413, C414, C415, C416, C417, C418, C419, C420,
+    C421, C422, C423, C424, C425, C426, C427, C428, C429, C430,
+    C431, C432, C433, C434, C435, C436, C437, C438, C439, C440,
+    C441, C442, C443, C444, C445, C446, C447, C448, C449, C450,
+    C451, C452, C453, C454, C455, C456, C457, C458, C459, C460,
+    C461, C462, C463, C464, C465, C466, C467, C468, C469, C470,
+    C471, C472, C473, C474, C475, C476, C477, C478, C479, C480,
+    C481, C482, C483, C484, C485, C486, C487, C488, C489, C490,
+    C491, C492, C493, C494, C495, C496, C497, C498, C499, C500,
+    C501, C502, C503, C504, C505, C506, C507, C508, C509, C510,
+    C511, C512, C513, C514, C515, C516, C517, C518, C519, C520,
+    C521, C522, C523, C524, C525, C526, C527, C528, C529, C530,
+    C531, C532, C533, C534, C535, C536, C537, C538, C539, C540,
+    C541, C542, C543, C544, C545, C546, C547, C548, C549, C550,
+    C551, C552, C553, C554, C555, C556, C557, C558, C559, C560,
+    C561, C562, C563, C564, C565, C566, C567, C568, C569, C570,
+    C571, C572, C573, C574, C575, C576, C577, C578, C579, C580,
+    C581, C582, C583, C584, C585, C586, C587, C588, C589, C590,
+    C591, C592, C593, C594, C595, C596, C597, C598, C599, C600,
+    C601, C602, C603, C604, C605, C606, C607, C608, C609, C610,
+    C611, C612, C613, C614, C615, C616, C617, C618, C619, C620,
+    C621, C622, C623, C624, C625, C626, C627, C628, C629, C630,
+    C631, C632, C633, C634, C635, C636, C637, C638, C639, C640,
+    C641, C642, C643, C644, C645, C646, C647, C648, C649, C650,
+    C651, C652, C653, C654, C655, C656, C657, C658, C659, C660,
+    C661, C662, C663, C664, C665, C666, C667, C668, C669, C670,
+    C671, C672, C673, C674, C675, C676, C677, C678, C679, C680,
+    C681, C682, C683, C684, C685, C686, C687, C688, C689, C690,
+    C691, C692, C693, C694, C695, C696, C697, C698, C699, C700,
+    C701, C702, C703, C704, C705, C706, C707, C708, C709, C710,
+    C711, C712, C713, C714, C715, C716, C717, C718, C719, C720,
+    C721, C722, C723, C724, C725, C726, C727, C728, C729, C730,
+    C731, C732, C733, C734, C735, C736, C737, C738, C739, C740,
+    C741, C742, C743, C744, C745, C746, C747, C748, C749, C750,
+    C751, C752, C753, C754, C755, C756, C757, C758, C759, C760,
+    C761, C762, C763, C764, C765, C766, C767, C768, C769, C770,
+    C771, C772, C773, C774, C775, C776, C777, C778, C779, C780,
+    C781, C782, C783, C784, C785, C786, C787, C788, C789, C790,
+    C791, C792, C793, C794, C795, C796, C797, C798, C799, C800,
+    C801, C802, C803, C804, C805, C806, C807, C808, C809, C810,
+    C811, C812, C813, C814, C815, C816, C817, C818, C819, C820,
+    C821, C822, C823, C824, C825, C826, C827, C828, C829, C830,
+    C831, C832, C833, C834, C835, C836, C837, C838, C839, C840,
+    C841, C842, C843, C844, C845, C846, C847, C848, C849, C850,
+    C851, C852, C853, C854, C855, C856, C857, C858, C859, C860,
+    C861, C862, C863, C864, C865, C866, C867, C868, C869, C870,
+    C871, C872, C873, C874, C875, C876, C877, C878, C879, C880,
+    C881, C882, C883, C884, C885, C886, C887, C888, C889, C890,
+    C891, C892, C893, C894, C895, C896, C897, C898, C899, C900,
+    C901, C902, C903, C904, C905, C906, C907, C908, C909, C910,
+    C911, C912, C913, C914, C915, C916, C917, C918, C919, C920,
+    C921, C922, C923, C924, C925, C926, C927, C928, C929, C930,
+    C931, C932, C933, C934, C935, C936, C937, C938, C939, C940,
+    C941, C942, C943, C944, C945, C946, C947, C948, C949, C950,
+    C951, C952, C953, C954, C955, C956, C957, C958, C959, C960,
+    C961, C962, C963, C964, C965, C966, C967, C968, C969, C970,
+    C971, C972, C973, C974, C975, C976, C977, C978, C979, C980,
+    C981, C982, C983, C984, C985, C986, C987, C988, C989, C990,
+    C991, C992, C993, C994, C995, C996, C997, C998, C999, C1000
   };
 
-  private static int totalNumCntrs = 400;
+  private static int totalNumCntrs = 1000;
 
   /**
    * populated at runtime from hadoop counters at run time in the client.

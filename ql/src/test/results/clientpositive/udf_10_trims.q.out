@@ -37,23 +37,19 @@ STAGE PLANS:
               predicate:
                   expr: (key = 86)
                   type: boolean
-              Filter Operator
-                predicate:
-                    expr: (key = 86)
-                    type: boolean
-                Select Operator
-                  expressions:
-                        expr: trim(trim(trim(trim(trim(trim(trim(trim(trim(trim('  abc  '))))))))))
-                        type: string
-                  outputColumnNames: _col0
-                  File Output Operator
-                    compressed: false
-                    GlobalTableId: 1
-                    table:
-                        input format: org.apache.hadoop.mapred.TextInputFormat
-                        output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                        serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                        name: default.dest1
+              Select Operator
+                expressions:
+                      expr: trim(trim(trim(trim(trim(trim(trim(trim(trim(trim('  abc  '))))))))))
+                      type: string
+                outputColumnNames: _col0
+                File Output Operator
+                  compressed: false
+                  GlobalTableId: 1
+                  table:
+                      input format: org.apache.hadoop.mapred.TextInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                      name: default.dest1
 
   Stage: Stage-5
     Conditional Operator

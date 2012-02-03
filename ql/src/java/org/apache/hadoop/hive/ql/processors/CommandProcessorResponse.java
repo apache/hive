@@ -18,6 +18,8 @@
 
 package org.apache.hadoop.hive.ql.processors;
 
+import org.apache.hadoop.hive.metastore.api.Schema;
+
 /**
  * Encapsulates the basic response info returned by classes the implement the
  * <code>CommandProcessor</code> interfaace. Typically <code>errorMessage</code>
@@ -28,18 +30,25 @@ public class CommandProcessorResponse {
   private int responseCode;
   private String errorMessage;
   private String SQLState;
+  private Schema resSchema;
 
   public CommandProcessorResponse(int responseCode) {
     this(responseCode, null, null);
   }
 
   public CommandProcessorResponse(int responseCode, String errorMessage, String SQLState) {
+    this(responseCode, errorMessage, SQLState, null);
+  }
+
+  public CommandProcessorResponse(int responseCode, String errorMessage, String SQLState, Schema schema) {
     this.responseCode = responseCode;
     this.errorMessage = errorMessage;
     this.SQLState = SQLState;
+    this.resSchema = schema;
   }
 
   public int getResponseCode() { return responseCode; }
   public String getErrorMessage() { return errorMessage; }
   public String getSQLState() { return SQLState; }
+  public Schema getSchema() { return resSchema; }
 }

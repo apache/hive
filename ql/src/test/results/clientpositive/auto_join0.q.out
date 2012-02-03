@@ -52,26 +52,22 @@ STAGE PLANS:
               predicate:
                   expr: (key < 10)
                   type: boolean
-              Filter Operator
-                predicate:
-                    expr: (key < 10)
-                    type: boolean
-                Select Operator
-                  expressions:
-                        expr: key
-                        type: string
-                        expr: value
-                        type: string
-                  outputColumnNames: _col0, _col1
-                  HashTable Sink Operator
-                    condition expressions:
-                      0 {_col0} {_col1}
-                      1 {_col0} {_col1}
-                    handleSkewJoin: false
-                    keys:
-                      0 []
-                      1 []
-                    Position of Big Table: 0
+              Select Operator
+                expressions:
+                      expr: key
+                      type: string
+                      expr: value
+                      type: string
+                outputColumnNames: _col0, _col1
+                HashTable Sink Operator
+                  condition expressions:
+                    0 {_col0} {_col1}
+                    1 {_col0} {_col1}
+                  handleSkewJoin: false
+                  keys:
+                    0 []
+                    1 []
+                  Position of Big Table: 0
 
   Stage: Stage-5
     Map Reduce
@@ -83,46 +79,42 @@ STAGE PLANS:
               predicate:
                   expr: (key < 10)
                   type: boolean
-              Filter Operator
-                predicate:
-                    expr: (key < 10)
-                    type: boolean
-                Select Operator
-                  expressions:
-                        expr: key
-                        type: string
-                        expr: value
-                        type: string
-                  outputColumnNames: _col0, _col1
-                  Map Join Operator
-                    condition map:
-                         Inner Join 0 to 1
-                    condition expressions:
-                      0 {_col0} {_col1}
-                      1 {_col0} {_col1}
-                    handleSkewJoin: false
-                    keys:
-                      0 []
-                      1 []
+              Select Operator
+                expressions:
+                      expr: key
+                      type: string
+                      expr: value
+                      type: string
+                outputColumnNames: _col0, _col1
+                Map Join Operator
+                  condition map:
+                       Inner Join 0 to 1
+                  condition expressions:
+                    0 {_col0} {_col1}
+                    1 {_col0} {_col1}
+                  handleSkewJoin: false
+                  keys:
+                    0 []
+                    1 []
+                  outputColumnNames: _col0, _col1, _col2, _col3
+                  Position of Big Table: 0
+                  Select Operator
+                    expressions:
+                          expr: _col0
+                          type: string
+                          expr: _col1
+                          type: string
+                          expr: _col2
+                          type: string
+                          expr: _col3
+                          type: string
                     outputColumnNames: _col0, _col1, _col2, _col3
-                    Position of Big Table: 0
-                    Select Operator
-                      expressions:
-                            expr: _col0
-                            type: string
-                            expr: _col1
-                            type: string
-                            expr: _col2
-                            type: string
-                            expr: _col3
-                            type: string
-                      outputColumnNames: _col0, _col1, _col2, _col3
-                      File Output Operator
-                        compressed: false
-                        GlobalTableId: 0
-                        table:
-                            input format: org.apache.hadoop.mapred.SequenceFileInputFormat
-                            output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                    File Output Operator
+                      compressed: false
+                      GlobalTableId: 0
+                      table:
+                          input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                          output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
       Local Work:
         Map Reduce Local Work
 
@@ -220,26 +212,22 @@ STAGE PLANS:
               predicate:
                   expr: (key < 10)
                   type: boolean
-              Filter Operator
-                predicate:
-                    expr: (key < 10)
-                    type: boolean
-                Select Operator
-                  expressions:
-                        expr: key
-                        type: string
-                        expr: value
-                        type: string
-                  outputColumnNames: _col0, _col1
-                  HashTable Sink Operator
-                    condition expressions:
-                      0 {_col0} {_col1}
-                      1 {_col0} {_col1}
-                    handleSkewJoin: false
-                    keys:
-                      0 []
-                      1 []
-                    Position of Big Table: 1
+              Select Operator
+                expressions:
+                      expr: key
+                      type: string
+                      expr: value
+                      type: string
+                outputColumnNames: _col0, _col1
+                HashTable Sink Operator
+                  condition expressions:
+                    0 {_col0} {_col1}
+                    1 {_col0} {_col1}
+                  handleSkewJoin: false
+                  keys:
+                    0 []
+                    1 []
+                  Position of Big Table: 1
 
   Stage: Stage-6
     Map Reduce
@@ -251,46 +239,42 @@ STAGE PLANS:
               predicate:
                   expr: (key < 10)
                   type: boolean
-              Filter Operator
-                predicate:
-                    expr: (key < 10)
-                    type: boolean
-                Select Operator
-                  expressions:
-                        expr: key
-                        type: string
-                        expr: value
-                        type: string
-                  outputColumnNames: _col0, _col1
-                  Map Join Operator
-                    condition map:
-                         Inner Join 0 to 1
-                    condition expressions:
-                      0 {_col0} {_col1}
-                      1 {_col0} {_col1}
-                    handleSkewJoin: false
-                    keys:
-                      0 []
-                      1 []
+              Select Operator
+                expressions:
+                      expr: key
+                      type: string
+                      expr: value
+                      type: string
+                outputColumnNames: _col0, _col1
+                Map Join Operator
+                  condition map:
+                       Inner Join 0 to 1
+                  condition expressions:
+                    0 {_col0} {_col1}
+                    1 {_col0} {_col1}
+                  handleSkewJoin: false
+                  keys:
+                    0 []
+                    1 []
+                  outputColumnNames: _col0, _col1, _col2, _col3
+                  Position of Big Table: 1
+                  Select Operator
+                    expressions:
+                          expr: _col0
+                          type: string
+                          expr: _col1
+                          type: string
+                          expr: _col2
+                          type: string
+                          expr: _col3
+                          type: string
                     outputColumnNames: _col0, _col1, _col2, _col3
-                    Position of Big Table: 1
-                    Select Operator
-                      expressions:
-                            expr: _col0
-                            type: string
-                            expr: _col1
-                            type: string
-                            expr: _col2
-                            type: string
-                            expr: _col3
-                            type: string
-                      outputColumnNames: _col0, _col1, _col2, _col3
-                      File Output Operator
-                        compressed: false
-                        GlobalTableId: 0
-                        table:
-                            input format: org.apache.hadoop.mapred.SequenceFileInputFormat
-                            output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                    File Output Operator
+                      compressed: false
+                      GlobalTableId: 0
+                      table:
+                          input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                          output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
       Local Work:
         Map Reduce Local Work
 
@@ -304,25 +288,21 @@ STAGE PLANS:
               predicate:
                   expr: (key < 10)
                   type: boolean
-              Filter Operator
-                predicate:
-                    expr: (key < 10)
-                    type: boolean
-                Select Operator
-                  expressions:
-                        expr: key
+              Select Operator
+                expressions:
+                      expr: key
+                      type: string
+                      expr: value
+                      type: string
+                outputColumnNames: _col0, _col1
+                Reduce Output Operator
+                  sort order: 
+                  tag: 0
+                  value expressions:
+                        expr: _col0
                         type: string
-                        expr: value
+                        expr: _col1
                         type: string
-                  outputColumnNames: _col0, _col1
-                  Reduce Output Operator
-                    sort order: 
-                    tag: 0
-                    value expressions:
-                          expr: _col0
-                          type: string
-                          expr: _col1
-                          type: string
         a:src2:src 
           TableScan
             alias: src
@@ -330,25 +310,21 @@ STAGE PLANS:
               predicate:
                   expr: (key < 10)
                   type: boolean
-              Filter Operator
-                predicate:
-                    expr: (key < 10)
-                    type: boolean
-                Select Operator
-                  expressions:
-                        expr: key
+              Select Operator
+                expressions:
+                      expr: key
+                      type: string
+                      expr: value
+                      type: string
+                outputColumnNames: _col0, _col1
+                Reduce Output Operator
+                  sort order: 
+                  tag: 1
+                  value expressions:
+                        expr: _col0
                         type: string
-                        expr: value
+                        expr: _col1
                         type: string
-                  outputColumnNames: _col0, _col1
-                  Reduce Output Operator
-                    sort order: 
-                    tag: 1
-                    value expressions:
-                          expr: _col0
-                          type: string
-                          expr: _col1
-                          type: string
       Reduce Operator Tree:
         Join Operator
           condition map:

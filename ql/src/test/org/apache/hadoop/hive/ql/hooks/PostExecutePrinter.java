@@ -27,6 +27,7 @@ import java.util.Set;
 
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.Partition;
+import org.apache.hadoop.hive.ql.hooks.HookContext.HookType;
 import org.apache.hadoop.hive.ql.hooks.LineageInfo.BaseColumnInfo;
 import org.apache.hadoop.hive.ql.hooks.LineageInfo.Dependency;
 import org.apache.hadoop.hive.ql.hooks.LineageInfo.DependencyKey;
@@ -95,6 +96,7 @@ public class PostExecutePrinter implements ExecuteWithHookContext {
 
   @Override
   public void run(HookContext hookContext) throws Exception {
+    assert(hookContext.getHookType() == HookType.POST_EXEC_HOOK);
     SessionState ss = SessionState.get();
     Set<ReadEntity> inputs = hookContext.getInputs();
     Set<WriteEntity> outputs = hookContext.getOutputs();

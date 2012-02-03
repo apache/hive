@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?> 
-<java version="1.6.0_07" class="java.beans.XMLDecoder"> 
+<java version="1.6.0_13" class="java.beans.XMLDecoder"> 
  <object class="org.apache.hadoop.hive.ql.exec.MapRedTask"> 
   <void property="id"> 
    <string>Stage-3</string> 
@@ -62,11 +62,11 @@
          </void> 
          <void method="put"> 
           <string>location</string> 
-          <string>pfile:/data/users/sdong/www/open-source-hive3/build/ql/test/data/warehouse/src</string> 
+          <string>pfile:/home/opensrc/13thsep/workspace/build/ql/test/data/warehouse/src</string> 
          </void> 
          <void method="put"> 
           <string>transient_lastDdlTime</string> 
-          <string>1297928289</string> 
+          <string>1315938680</string> 
          </void> 
         </object> 
        </void> 
@@ -124,11 +124,11 @@
            </void> 
            <void method="put"> 
             <string>location</string> 
-            <string>pfile:/data/users/sdong/www/open-source-hive3/build/ql/test/data/warehouse/src</string> 
+            <string>pfile:/home/opensrc/13thsep/workspace/build/ql/test/data/warehouse/src</string> 
            </void> 
            <void method="put"> 
             <string>transient_lastDdlTime</string> 
-            <string>1297928289</string> 
+            <string>1315938680</string> 
            </void> 
           </object> 
          </void> 
@@ -279,21 +279,21 @@
                     <void property="counterNames"> 
                      <object class="java.util.ArrayList"> 
                       <void method="add"> 
-                       <string>CNTR_NAME_RS_3_NUM_INPUT_ROWS</string> 
+                       <string>CNTR_NAME_RS_95_NUM_INPUT_ROWS</string> 
                       </void> 
                       <void method="add"> 
-                       <string>CNTR_NAME_RS_3_NUM_OUTPUT_ROWS</string> 
+                       <string>CNTR_NAME_RS_95_NUM_OUTPUT_ROWS</string> 
                       </void> 
                       <void method="add"> 
-                       <string>CNTR_NAME_RS_3_TIME_TAKEN</string> 
+                       <string>CNTR_NAME_RS_95_TIME_TAKEN</string> 
                       </void> 
                       <void method="add"> 
-                       <string>CNTR_NAME_RS_3_FATAL_ERROR</string> 
+                       <string>CNTR_NAME_RS_95_FATAL_ERROR</string> 
                       </void> 
                      </object> 
                     </void> 
                     <void property="operatorId"> 
-                     <string>RS_3</string> 
+                     <string>RS_95</string> 
                     </void> 
                     <void property="parentOperators"> 
                      <object class="java.util.ArrayList"> 
@@ -375,6 +375,9 @@
                       <void property="udfClass"> 
                        <class>org.apache.hadoop.hive.ql.udf.UDFSubstr</class> 
                       </void> 
+                      <void property="udfClassName"> 
+                       <string>org.apache.hadoop.hive.ql.udf.UDFSubstr</string> 
+                      </void> 
                       <void property="udfName"> 
                        <string>substr</string> 
                       </void> 
@@ -422,21 +425,21 @@
                 <void property="counterNames"> 
                  <object class="java.util.ArrayList"> 
                   <void method="add"> 
-                   <string>CNTR_NAME_GBY_2_NUM_INPUT_ROWS</string> 
+                   <string>CNTR_NAME_GBY_94_NUM_INPUT_ROWS</string> 
                   </void> 
                   <void method="add"> 
-                   <string>CNTR_NAME_GBY_2_NUM_OUTPUT_ROWS</string> 
+                   <string>CNTR_NAME_GBY_94_NUM_OUTPUT_ROWS</string> 
                   </void> 
                   <void method="add"> 
-                   <string>CNTR_NAME_GBY_2_TIME_TAKEN</string> 
+                   <string>CNTR_NAME_GBY_94_TIME_TAKEN</string> 
                   </void> 
                   <void method="add"> 
-                   <string>CNTR_NAME_GBY_2_FATAL_ERROR</string> 
+                   <string>CNTR_NAME_GBY_94_FATAL_ERROR</string> 
                   </void> 
                  </object> 
                 </void> 
                 <void property="operatorId"> 
-                 <string>GBY_2</string> 
+                 <string>GBY_94</string> 
                 </void> 
                 <void property="parentOperators"> 
                  <object class="java.util.ArrayList"> 
@@ -465,6 +468,76 @@
                    </object> 
                   </void> 
                  </object> 
+                </void> 
+               </object> 
+              </void> 
+             </object> 
+            </void> 
+            <void property="columnExprMap"> 
+             <object class="java.util.HashMap"> 
+              <void method="put"> 
+               <string>BLOCK__OFFSET__INSIDE__FILE</string> 
+               <object class="org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc"> 
+                <void property="column"> 
+                 <string>BLOCK__OFFSET__INSIDE__FILE</string> 
+                </void> 
+                <void property="isPartitionColOrVirtualCol"> 
+                 <boolean>true</boolean> 
+                </void> 
+                <void property="tabAlias"> 
+                 <string>src</string> 
+                </void> 
+                <void property="typeInfo"> 
+                 <object id="PrimitiveTypeInfo2" class="org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo"> 
+                  <void property="typeName"> 
+                   <string>bigint</string> 
+                  </void> 
+                 </object> 
+                </void> 
+               </object> 
+              </void> 
+              <void method="put"> 
+               <string>INPUT__FILE__NAME</string> 
+               <object class="org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc"> 
+                <void property="column"> 
+                 <string>INPUT__FILE__NAME</string> 
+                </void> 
+                <void property="isPartitionColOrVirtualCol"> 
+                 <boolean>true</boolean> 
+                </void> 
+                <void property="tabAlias"> 
+                 <string>src</string> 
+                </void> 
+                <void property="typeInfo"> 
+                 <object idref="PrimitiveTypeInfo0"/> 
+                </void> 
+               </object> 
+              </void> 
+              <void method="put"> 
+               <string>value</string> 
+               <object class="org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc"> 
+                <void property="column"> 
+                 <string>value</string> 
+                </void> 
+                <void property="tabAlias"> 
+                 <string>src</string> 
+                </void> 
+                <void property="typeInfo"> 
+                 <object idref="PrimitiveTypeInfo0"/> 
+                </void> 
+               </object> 
+              </void> 
+              <void method="put"> 
+               <string>key</string> 
+               <object class="org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc"> 
+                <void property="column"> 
+                 <string>key</string> 
+                </void> 
+                <void property="tabAlias"> 
+                 <string>src</string> 
+                </void> 
+                <void property="typeInfo"> 
+                 <object idref="PrimitiveTypeInfo0"/> 
                 </void> 
                </object> 
               </void> 
@@ -504,21 +577,21 @@
             <void property="counterNames"> 
              <object class="java.util.ArrayList"> 
               <void method="add"> 
-               <string>CNTR_NAME_SEL_1_NUM_INPUT_ROWS</string> 
+               <string>CNTR_NAME_SEL_93_NUM_INPUT_ROWS</string> 
               </void> 
               <void method="add"> 
-               <string>CNTR_NAME_SEL_1_NUM_OUTPUT_ROWS</string> 
+               <string>CNTR_NAME_SEL_93_NUM_OUTPUT_ROWS</string> 
               </void> 
               <void method="add"> 
-               <string>CNTR_NAME_SEL_1_TIME_TAKEN</string> 
+               <string>CNTR_NAME_SEL_93_TIME_TAKEN</string> 
               </void> 
               <void method="add"> 
-               <string>CNTR_NAME_SEL_1_FATAL_ERROR</string> 
+               <string>CNTR_NAME_SEL_93_FATAL_ERROR</string> 
               </void> 
              </object> 
             </void> 
             <void property="operatorId"> 
-             <string>SEL_1</string> 
+             <string>SEL_93</string> 
             </void> 
             <void property="parentOperators"> 
              <object class="java.util.ArrayList"> 
@@ -565,16 +638,16 @@
         <void property="counterNames"> 
          <object class="java.util.ArrayList"> 
           <void method="add"> 
-           <string>CNTR_NAME_TS_0_NUM_INPUT_ROWS</string> 
+           <string>CNTR_NAME_TS_92_NUM_INPUT_ROWS</string> 
           </void> 
           <void method="add"> 
-           <string>CNTR_NAME_TS_0_NUM_OUTPUT_ROWS</string> 
+           <string>CNTR_NAME_TS_92_NUM_OUTPUT_ROWS</string> 
           </void> 
           <void method="add"> 
-           <string>CNTR_NAME_TS_0_TIME_TAKEN</string> 
+           <string>CNTR_NAME_TS_92_TIME_TAKEN</string> 
           </void> 
           <void method="add"> 
-           <string>CNTR_NAME_TS_0_FATAL_ERROR</string> 
+           <string>CNTR_NAME_TS_92_FATAL_ERROR</string> 
           </void> 
          </object> 
         </void> 
@@ -586,7 +659,7 @@
          </object> 
         </void> 
         <void property="operatorId"> 
-         <string>TS_0</string> 
+         <string>TS_92</string> 
         </void> 
         <void property="schema"> 
          <object class="org.apache.hadoop.hive.ql.exec.RowSchema"> 
@@ -620,11 +693,7 @@
                <string>src</string> 
               </void> 
               <void property="type"> 
-               <object class="org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo"> 
-                <void property="typeName"> 
-                 <string>bigint</string> 
-                </void> 
-               </object> 
+               <object idref="PrimitiveTypeInfo2"/> 
               </void> 
              </object> 
             </void> 
@@ -655,13 +724,16 @@
     <void property="keyDesc"> 
      <object idref="TableDesc0"/> 
     </void> 
+    <void property="nameToSplitSample"> 
+     <object class="java.util.HashMap"/> 
+    </void> 
     <void property="numReduceTasks"> 
      <int>-1</int> 
     </void> 
     <void property="pathToAliases"> 
      <object class="java.util.LinkedHashMap"> 
       <void method="put"> 
-       <string>pfile:/data/users/sdong/www/open-source-hive3/build/ql/test/data/warehouse/src</string> 
+       <string>pfile:/home/opensrc/13thsep/workspace/build/ql/test/data/warehouse/src</string> 
        <object class="java.util.ArrayList"> 
         <void method="add"> 
          <string>src</string> 
@@ -673,7 +745,7 @@
     <void property="pathToPartitionInfo"> 
      <object class="java.util.LinkedHashMap"> 
       <void method="put"> 
-       <string>pfile:/data/users/sdong/www/open-source-hive3/build/ql/test/data/warehouse/src</string> 
+       <string>pfile:/home/opensrc/13thsep/workspace/build/ql/test/data/warehouse/src</string> 
        <object class="org.apache.hadoop.hive.ql.plan.PartitionDesc"> 
         <void property="baseFileName"> 
          <string>src</string> 
@@ -730,11 +802,11 @@
           </void> 
           <void method="put"> 
            <string>location</string> 
-           <string>pfile:/data/users/sdong/www/open-source-hive3/build/ql/test/data/warehouse/src</string> 
+           <string>pfile:/home/opensrc/13thsep/workspace/build/ql/test/data/warehouse/src</string> 
           </void> 
           <void method="put"> 
            <string>transient_lastDdlTime</string> 
-           <string>1297928289</string> 
+           <string>1315938680</string> 
           </void> 
          </object> 
         </void> 
@@ -792,11 +864,11 @@
             </void> 
             <void method="put"> 
              <string>location</string> 
-             <string>pfile:/data/users/sdong/www/open-source-hive3/build/ql/test/data/warehouse/src</string> 
+             <string>pfile:/home/opensrc/13thsep/workspace/build/ql/test/data/warehouse/src</string> 
             </void> 
             <void method="put"> 
              <string>transient_lastDdlTime</string> 
-             <string>1297928289</string> 
+             <string>1315938680</string> 
             </void> 
            </object> 
           </void> 
@@ -822,13 +894,13 @@
               <void property="conf"> 
                <object class="org.apache.hadoop.hive.ql.plan.FileSinkDesc"> 
                 <void property="dirName"> 
-                 <string>file:/tmp/sdong/hive_2011-02-16_23-38-11_634_7102155851411199309/-ext-10001</string> 
+                 <string>file:/tmp/root/hive_2011-09-13_11-31-22_488_2263335404927456470/-ext-10001</string> 
                 </void> 
                 <void property="numFiles"> 
                  <int>1</int> 
                 </void> 
                 <void property="statsAggPrefix"> 
-                 <string>file:/tmp/sdong/hive_2011-02-16_23-38-11_634_7102155851411199309/-ext-10001/</string> 
+                 <string>file:/tmp/root/hive_2011-09-13_11-31-22_488_2263335404927456470/-ext-10001/</string> 
                 </void> 
                 <void property="tableInfo"> 
                  <object class="org.apache.hadoop.hive.ql.plan.TableDesc"> 
@@ -855,6 +927,10 @@
                      <string>columns.types</string> 
                      <string>string</string> 
                     </void> 
+                    <void method="put"> 
+                     <string>escape.delim</string> 
+                     <string>\</string> 
+                    </void> 
                    </object> 
                   </void> 
                  </object> 
@@ -867,21 +943,21 @@
               <void property="counterNames"> 
                <object class="java.util.ArrayList"> 
                 <void method="add"> 
-                 <string>CNTR_NAME_FS_6_NUM_INPUT_ROWS</string> 
+                 <string>CNTR_NAME_FS_98_NUM_INPUT_ROWS</string> 
                 </void> 
                 <void method="add"> 
-                 <string>CNTR_NAME_FS_6_NUM_OUTPUT_ROWS</string> 
+                 <string>CNTR_NAME_FS_98_NUM_OUTPUT_ROWS</string> 
                 </void> 
                 <void method="add"> 
-                 <string>CNTR_NAME_FS_6_TIME_TAKEN</string> 
+                 <string>CNTR_NAME_FS_98_TIME_TAKEN</string> 
                 </void> 
                 <void method="add"> 
-                 <string>CNTR_NAME_FS_6_FATAL_ERROR</string> 
+                 <string>CNTR_NAME_FS_98_FATAL_ERROR</string> 
                 </void> 
                </object> 
               </void> 
               <void property="operatorId"> 
-               <string>FS_6</string> 
+               <string>FS_98</string> 
               </void> 
               <void property="parentOperators"> 
                <object class="java.util.ArrayList"> 
@@ -954,21 +1030,21 @@
           <void property="counterNames"> 
            <object class="java.util.ArrayList"> 
             <void method="add"> 
-             <string>CNTR_NAME_SEL_5_NUM_INPUT_ROWS</string> 
+             <string>CNTR_NAME_SEL_97_NUM_INPUT_ROWS</string> 
             </void> 
             <void method="add"> 
-             <string>CNTR_NAME_SEL_5_NUM_OUTPUT_ROWS</string> 
+             <string>CNTR_NAME_SEL_97_NUM_OUTPUT_ROWS</string> 
             </void> 
             <void method="add"> 
-             <string>CNTR_NAME_SEL_5_TIME_TAKEN</string> 
+             <string>CNTR_NAME_SEL_97_TIME_TAKEN</string> 
             </void> 
             <void method="add"> 
-             <string>CNTR_NAME_SEL_5_FATAL_ERROR</string> 
+             <string>CNTR_NAME_SEL_97_FATAL_ERROR</string> 
             </void> 
            </object> 
           </void> 
           <void property="operatorId"> 
-           <string>SEL_5</string> 
+           <string>SEL_97</string> 
           </void> 
           <void property="parentOperators"> 
            <object class="java.util.ArrayList"> 
@@ -1052,21 +1128,21 @@
       <void property="counterNames"> 
        <object class="java.util.ArrayList"> 
         <void method="add"> 
-         <string>CNTR_NAME_GBY_4_NUM_INPUT_ROWS</string> 
+         <string>CNTR_NAME_GBY_96_NUM_INPUT_ROWS</string> 
         </void> 
         <void method="add"> 
-         <string>CNTR_NAME_GBY_4_NUM_OUTPUT_ROWS</string> 
+         <string>CNTR_NAME_GBY_96_NUM_OUTPUT_ROWS</string> 
         </void> 
         <void method="add"> 
-         <string>CNTR_NAME_GBY_4_TIME_TAKEN</string> 
+         <string>CNTR_NAME_GBY_96_TIME_TAKEN</string> 
         </void> 
         <void method="add"> 
-         <string>CNTR_NAME_GBY_4_FATAL_ERROR</string> 
+         <string>CNTR_NAME_GBY_96_FATAL_ERROR</string> 
         </void> 
        </object> 
       </void> 
       <void property="operatorId"> 
-       <string>GBY_4</string> 
+       <string>GBY_96</string> 
       </void> 
       <void property="parentOperators"> 
        <object class="java.util.ArrayList"> 

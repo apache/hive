@@ -26,6 +26,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Stack;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.hive.ql.exec.ColumnInfo;
@@ -128,11 +129,15 @@ public final class TypeCheckProcFactory {
 
     opRules.put(new RuleRegExp("R1", HiveParser.TOK_NULL + "%"),
         getNullExprProcessor());
-    opRules.put(new RuleRegExp("R2", HiveParser.Number + "%"),
+    opRules.put(new RuleRegExp("R2", HiveParser.Number + "%|" +
+        HiveParser.TinyintLiteral + "%|" +
+        HiveParser.SmallintLiteral + "%|" +
+        HiveParser.BigintLiteral + "%"),
         getNumExprProcessor());
     opRules
         .put(new RuleRegExp("R3", HiveParser.Identifier + "%|"
-        + HiveParser.StringLiteral + "%|" + HiveParser.TOK_CHARSETLITERAL
+        + HiveParser.StringLiteral + "%|" + HiveParser.TOK_CHARSETLITERAL + "%|"
+        + HiveParser.TOK_STRINGLITERALSEQUENCE + "%|"
         + "%|" + HiveParser.KW_IF + "%|" + HiveParser.KW_CASE + "%|"
         + HiveParser.KW_WHEN + "%|" + HiveParser.KW_IN + "%|"
         + HiveParser.KW_ARRAY + "%|" + HiveParser.KW_MAP + "%|"
@@ -216,9 +221,23 @@ public final class TypeCheckProcFactory {
       // try to parse the expression in that order to ensure that the
       // most specific type is used for conversion.
       try {
-        v = Double.valueOf(expr.getText());
-        v = Long.valueOf(expr.getText());
-        v = Integer.valueOf(expr.getText());
+        if (expr.getText().endsWith("L")) {
+          // Literal bigint.
+          v = Long.valueOf(expr.getText().substring(
+                0, expr.getText().length() - 1));
+        } else if (expr.getText().endsWith("S")) {
+          // Literal smallint.
+          v = Short.valueOf(expr.getText().substring(
+                0, expr.getText().length() - 1));
+        } else if (expr.getText().endsWith("Y")) {
+          // Literal tinyint.
+          v = Byte.valueOf(expr.getText().substring(
+                0, expr.getText().length() - 1));
+        } else {
+          v = Double.valueOf(expr.getText());
+          v = Long.valueOf(expr.getText());
+          v = Integer.valueOf(expr.getText());
+        }
       } catch (NumberFormatException e) {
         // do nothing here, we will throw an exception in the following block
       }
@@ -265,6 +284,14 @@ public final class TypeCheckProcFactory {
       switch (expr.getToken().getType()) {
       case HiveParser.StringLiteral:
         str = BaseSemanticAnalyzer.unescapeSQLString(expr.getText());
+        break;
+      case HiveParser.TOK_STRINGLITERALSEQUENCE:
+        StringBuilder sb = new StringBuilder();
+        for (Node n : expr.getChildren()) {
+          sb.append(
+              BaseSemanticAnalyzer.unescapeSQLString(((ASTNode)n).getText()));
+        }
+        str = sb.toString();
         break;
       case HiveParser.TOK_CHARSETLITERAL:
         str = BaseSemanticAnalyzer.charSetString(expr.getChild(0).getText(),
@@ -384,11 +411,22 @@ public final class TypeCheckProcFactory {
         if (colInfo == null) {
           // It's not a column or a table alias.
           if (input.getIsExprResolver()) {
-            ctx.setError(ErrorMsg.NON_KEY_EXPR_IN_GROUPBY.getMsg(expr), expr);
+            ASTNode exprNode = expr;
+            if (!stack.empty()) {
+              ASTNode tmp = (ASTNode) stack.pop();
+              if (!stack.empty()) {
+                exprNode = (ASTNode) stack.peek();
+              }
+              stack.push(tmp);
+            }
+            ctx.setError(ErrorMsg.NON_KEY_EXPR_IN_GROUPBY.getMsg(exprNode), expr);
             return null;
           } else {
-            ctx.setError(ErrorMsg.INVALID_TABLE_OR_COLUMN.getMsg(expr
-                .getChild(0)), expr);
+            List<String> possibleColumnNames = input.getNonHiddenColumnNames(-1);
+            String reason = String.format("(possible column names are: %s)",
+                StringUtils.join(possibleColumnNames, ", "));
+            ctx.setError(ErrorMsg.INVALID_TABLE_OR_COLUMN.getMsg(expr.getChild(0), reason),
+                expr);
             LOG.debug(ErrorMsg.INVALID_TABLE_OR_COLUMN.toString() + ":"
                 + input.toString());
             return null;
@@ -446,6 +484,10 @@ public final class TypeCheckProcFactory {
           Constants.DOUBLE_TYPE_NAME);
       conversionFunctionTextHashMap.put(HiveParser.TOK_STRING,
           Constants.STRING_TYPE_NAME);
+      conversionFunctionTextHashMap.put(HiveParser.TOK_BINARY,
+          Constants.BINARY_TYPE_NAME);
+      conversionFunctionTextHashMap.put(HiveParser.TOK_TIMESTAMP,
+          Constants.TIMESTAMP_TYPE_NAME);
     }
 
     public static boolean isRedundantConversionFunction(ASTNode expr,
@@ -580,8 +622,9 @@ public final class TypeCheckProcFactory {
           if (!(children.get(1) instanceof ExprNodeConstantDesc)
               || !(((ExprNodeConstantDesc) children.get(1)).getTypeInfo()
               .equals(TypeInfoFactory.intTypeInfo))) {
-            throw new SemanticException(ErrorMsg.INVALID_ARRAYINDEX_CONSTANT
-                .getMsg(expr));
+            throw new SemanticException(SemanticAnalyzer.generateErrorMessage(
+                  expr,
+                  ErrorMsg.INVALID_ARRAYINDEX_CONSTANT.getMsg()));
           }
 
           // Calculate TypeInfo
@@ -591,8 +634,9 @@ public final class TypeCheckProcFactory {
         } else if (myt.getCategory() == Category.MAP) {
           // Only allow constant map key for now
           if (!(children.get(1) instanceof ExprNodeConstantDesc)) {
-            throw new SemanticException(ErrorMsg.INVALID_MAPINDEX_CONSTANT
-                .getMsg(expr));
+            throw new SemanticException(SemanticAnalyzer.generateErrorMessage(
+                  expr,
+                  ErrorMsg.INVALID_MAPINDEX_CONSTANT.getMsg()));
           }
           if (!(((ExprNodeConstantDesc) children.get(1)).getTypeInfo()
               .equals(((MapTypeInfo) myt).getMapKeyTypeInfo()))) {
@@ -629,6 +673,12 @@ public final class TypeCheckProcFactory {
         // supported
         if (fi.getGenericUDTF() != null) {
           throw new SemanticException(ErrorMsg.UDTF_INVALID_LOCATION.getMsg());
+        }
+        if (!ctx.getAllowStatefulFunctions() && (fi.getGenericUDF() != null)) {
+          if (FunctionRegistry.isStateful(fi.getGenericUDF())) {
+            throw new SemanticException(
+              ErrorMsg.UDF_STATEFUL_INVALID_LOCATION.getMsg());
+          }
         }
 
         desc = ExprNodeGenericFuncDesc.newInstance(fi.getGenericUDF(), children);

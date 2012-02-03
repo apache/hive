@@ -21,6 +21,7 @@ package org.apache.hadoop.hive.ql.exec;
 import java.io.IOException;
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -28,6 +29,7 @@ import java.util.List;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.ql.CommandNeedRetryException;
 import org.apache.hadoop.hive.ql.Context;
 import org.apache.hadoop.hive.ql.DriverContext;
 import org.apache.hadoop.hive.ql.QueryPlan;
@@ -52,17 +54,19 @@ public abstract class Task<T extends Serializable> implements Serializable, Node
   protected transient boolean queued;
   protected transient HiveConf conf;
   protected transient Hive db;
-  protected transient Log LOG;
   protected transient LogHelper console;
   protected transient QueryPlan queryPlan;
   protected transient TaskHandle taskHandle;
   protected transient HashMap<String, Long> taskCounters;
   protected transient DriverContext driverContext;
   protected transient boolean clonedConf = false;
+  protected transient String jobID;
   protected Task<? extends Serializable> backupTask;
   protected List<Task<? extends Serializable>> backupChildrenTasks = new ArrayList<Task<? extends Serializable>>();
+  protected static transient Log LOG = LogFactory.getLog(Task.class);
   protected int taskTag;
   private boolean isLocalMode =false;
+  private boolean retryCmdWhenFail = false;
 
   public static final int NO_TAG = 0;
   public static final int COMMON_JOIN = 1;
@@ -89,7 +93,6 @@ public abstract class Task<T extends Serializable> implements Serializable, Node
     started = false;
     initialized = false;
     queued = false;
-    LOG = LogFactory.getLog(this.getClass().getName());
     this.taskCounters = new HashMap<String, Long>();
     taskTag = Task.NO_TAG;
   }
@@ -146,7 +149,7 @@ public abstract class Task<T extends Serializable> implements Serializable, Node
   protected abstract int execute(DriverContext driverContext);
 
   // dummy method - FetchTask overwrites this
-  public boolean fetch(ArrayList<String> res) throws IOException {
+  public boolean fetch(ArrayList<String> res) throws IOException, CommandNeedRetryException {
     assert false;
     return false;
   }
@@ -191,8 +194,10 @@ public abstract class Task<T extends Serializable> implements Serializable, Node
   public Task<? extends Serializable> getAndInitBackupTask() {
     if (backupTask != null) {
       // first set back the backup task with its children task.
-      for (Task<? extends Serializable> backupChild : backupChildrenTasks) {
-        backupChild.getParentTasks().add(backupTask);
+      if( backupChildrenTasks!= null) {
+        for (Task<? extends Serializable> backupChild : backupChildrenTasks) {
+          backupChild.getParentTasks().add(backupTask);
+        }
       }
 
       // recursively remove task from its children tasks if this task doesn't have any parent task
@@ -344,10 +349,18 @@ public abstract class Task<T extends Serializable> implements Serializable, Node
     return false;
   }
 
+  public Collection<Operator<? extends Serializable>> getTopOperators() {
+    return new LinkedList<Operator<? extends Serializable>>();
+  }
+  
   public boolean hasReduce() {
     return false;
   }
 
+  public Operator<? extends Serializable> getReducer() {
+    return null;
+  }
+  
   public HashMap<String, Long> getCounters() {
     return taskCounters;
   }
@@ -469,5 +482,29 @@ public abstract class Task<T extends Serializable> implements Serializable, Node
 
   public void setLocalMode(boolean isLocalMode) {
     this.isLocalMode = isLocalMode;
+  }
+
+  public boolean requireLock() {
+    return false;
+  }
+
+  public boolean ifRetryCmdWhenFail() {
+    return retryCmdWhenFail;
+  }
+
+  public void setRetryCmdWhenFail(boolean retryCmdWhenFail) {
+    this.retryCmdWhenFail = retryCmdWhenFail;
+  }
+
+  public QueryPlan getQueryPlan() {
+    return queryPlan;
+  }
+
+  public void setQueryPlan(QueryPlan queryPlan) {
+    this.queryPlan = queryPlan;
+  }
+
+  public String getJobID() {
+    return jobID;
   }
 }

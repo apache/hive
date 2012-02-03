@@ -42,14 +42,24 @@ public final class LazyBinaryObjectInspectorFactory {
   public static LazyBinaryStructObjectInspector getLazyBinaryStructObjectInspector(
       List<String> structFieldNames,
       List<ObjectInspector> structFieldObjectInspectors) {
-    ArrayList<Object> signature = new ArrayList<Object>();
+    return getLazyBinaryStructObjectInspector(structFieldNames,
+                                              structFieldObjectInspectors, null);
+  }
+
+  public static LazyBinaryStructObjectInspector getLazyBinaryStructObjectInspector(
+      List<String> structFieldNames,
+      List<ObjectInspector> structFieldObjectInspectors, List<String> structFieldComments) {
+    ArrayList<Object> signature = new ArrayList<Object>(3);
     signature.add(structFieldNames);
     signature.add(structFieldObjectInspectors);
+    if(structFieldComments != null) {
+      signature.add(structFieldComments);
+    }
     LazyBinaryStructObjectInspector result = cachedLazyBinaryStructObjectInspector
         .get(signature);
     if (result == null) {
       result = new LazyBinaryStructObjectInspector(structFieldNames,
-          structFieldObjectInspectors);
+          structFieldObjectInspectors, structFieldComments);
       cachedLazyBinaryStructObjectInspector.put(signature, result);
     }
     return result;

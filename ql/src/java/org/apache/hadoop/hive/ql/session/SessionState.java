@@ -29,6 +29,7 @@ import java.util.GregorianCalendar;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import org.apache.commons.lang.StringUtils;
@@ -38,6 +39,8 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.ql.MapRedStats;
+import org.apache.hadoop.hive.ql.exec.FunctionRegistry;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.history.HiveHistory;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
@@ -46,8 +49,6 @@ import org.apache.hadoop.hive.ql.plan.HiveOperation;
 import org.apache.hadoop.hive.ql.security.HiveAuthenticationProvider;
 import org.apache.hadoop.hive.ql.security.authorization.HiveAuthorizationProvider;
 import org.apache.hadoop.hive.ql.util.DosToUnix;
-import org.apache.log4j.LogManager;
-import org.apache.log4j.PropertyConfigurator;
 
 /**
  * SessionState encapsulates common data associated with a session.
@@ -77,6 +78,7 @@ public class SessionState {
    * HiveHistory Object
    */
   protected HiveHistory hiveHist;
+
   /**
    * Streams to read/write from.
    */
@@ -93,16 +95,26 @@ public class SessionState {
   public PrintStream childErr;
 
   /**
+   * Temporary file name used to store results of non-Hive commands (e.g., set, dfs)
+   * and HiveServer.fetch*() function will read results from this file
+   */
+  protected File tmpOutputFile;
+
+  /**
    * type of the command.
    */
   private HiveOperation commandType;
-  
+
   private HiveAuthorizationProvider authorizer;
-  
+
   private HiveAuthenticationProvider authenticator;
-  
+
   private CreateTableAutomaticGrant createTableGrants;
-  
+
+  private List<MapRedStats> lastMapRedStatsList;
+
+  private Map<String, String> hiveVariables;
+
   /**
    * Lineage state.
    */
@@ -123,6 +135,14 @@ public class SessionState {
 
   public void setConf(HiveConf conf) {
     this.conf = conf;
+  }
+
+  public File getTmpOutputFile() {
+    return tmpOutputFile;
+  }
+
+  public void setTmpOutputFile(File f) {
+    tmpOutputFile = f;
   }
 
   public boolean getIsSilent() {
@@ -156,6 +176,19 @@ public class SessionState {
     this.conf = conf;
     isSilent = conf.getBoolVar(HiveConf.ConfVars.HIVESESSIONSILENT);
     ls = new LineageState();
+
+    // Register the Hive builtins jar and all of its functions
+    try {
+      Class<?> pluginClass = Utilities.getBuiltinUtilsClass();
+      URL jarLocation = pluginClass.getProtectionDomain().getCodeSource()
+        .getLocation();
+      add_builtin_resource(
+        ResourceType.JAR, jarLocation.toString());
+      FunctionRegistry.registerFunctionsFromPluginJar(
+        jarLocation, pluginClass.getClassLoader());
+    } catch (Exception ex) {
+      throw new RuntimeException("Failed to load Hive builtin functions", ex);
+    }
   }
 
   public void setCmd(String cmdString) {
@@ -170,6 +203,17 @@ public class SessionState {
     return (conf.getVar(HiveConf.ConfVars.HIVEQUERYID));
   }
 
+  public Map<String, String> getHiveVariables() {
+    if (hiveVariables == null) {
+      hiveVariables = new HashMap<String, String>();
+    }
+    return hiveVariables;
+  }
+
+  public void setHiveVariables(Map<String, String> hiveVariables) {
+    this.hiveVariables = hiveVariables;
+  }
+
   public String getSessionId() {
     return (conf.getVar(HiveConf.ConfVars.HIVESESSIONID));
   }
@@ -182,29 +226,22 @@ public class SessionState {
 
   /**
    * start a new session and set it to current session.
-   * @throws HiveException 
    */
-  public static SessionState start(HiveConf conf) throws HiveException {
+  public static SessionState start(HiveConf conf) {
     SessionState ss = new SessionState(conf);
-    ss.getConf().setVar(HiveConf.ConfVars.HIVESESSIONID, makeSessionId());
-    ss.hiveHist = new HiveHistory(ss);
-    ss.authenticator = HiveUtils.getAuthenticator(conf);
-    ss.authorizer = HiveUtils.getAuthorizeProviderManager(
-        conf, ss.authenticator);
-    ss.createTableGrants = CreateTableAutomaticGrant.create(conf);
-    tss.set(ss);
-    return (ss);
+    return start(ss);
   }
 
   /**
    * set current session to existing session object if a thread is running
    * multiple sessions - it must call this method with the new session object
    * when switching from one session to another.
-   * @throws HiveException 
+   * @throws HiveException
    */
   public static SessionState start(SessionState startSs) {
 
     tss.set(startSs);
+
     if (StringUtils.isEmpty(startSs.getConf().getVar(
         HiveConf.ConfVars.HIVESESSIONID))) {
       startSs.getConf()
@@ -214,7 +251,21 @@ public class SessionState {
     if (startSs.hiveHist == null) {
       startSs.hiveHist = new HiveHistory(startSs);
     }
-    
+
+    if (startSs.getTmpOutputFile() == null) {
+      // per-session temp file containing results to be sent from HiveServer to HiveClient
+      File tmpDir = new File(
+          HiveConf.getVar(startSs.getConf(), HiveConf.ConfVars.HIVEHISTORYFILELOC));
+      String sessionID = startSs.getConf().getVar(HiveConf.ConfVars.HIVESESSIONID);
+      try {
+        File tmpFile = File.createTempFile(sessionID, ".pipeout", tmpDir);
+        tmpFile.deleteOnExit();
+        startSs.setTmpOutputFile(tmpFile);
+      } catch (IOException e) {
+        throw new RuntimeException(e);
+      }
+    }
+
     try {
       startSs.authenticator = HiveUtils.getAuthenticator(startSs
           .getConf());
@@ -225,7 +276,7 @@ public class SessionState {
     } catch (HiveException e) {
       throw new RuntimeException(e);
     }
-    
+
     return startSs;
   }
 
@@ -254,20 +305,6 @@ public class SessionState {
         + String.format("%1$4d%2$02d%3$02d%4$02d%5$02d", gc.get(Calendar.YEAR),
         gc.get(Calendar.MONTH) + 1, gc.get(Calendar.DAY_OF_MONTH), gc
         .get(Calendar.HOUR_OF_DAY), gc.get(Calendar.MINUTE));
-  }
-
-  public static final String HIVE_L4J = "hive-log4j.properties";
-  public static final String HIVE_EXEC_L4J = "hive-exec-log4j.properties";
-
-  public static void initHiveLog4j() {
-    // allow hive log4j to override any normal initialized one
-    URL hive_l4j = SessionState.class.getClassLoader().getResource(HIVE_L4J);
-    if (hive_l4j == null) {
-      System.out.println(HIVE_L4J + " not found");
-    } else {
-      LogManager.resetConfiguration();
-      PropertyConfigurator.configure(hive_l4j);
-    }
   }
 
   /**
@@ -487,12 +524,12 @@ public class SessionState {
     return null;
   }
 
-  private final HashMap<ResourceType, HashSet<String>> resource_map =
-    new HashMap<ResourceType, HashSet<String>>();
+  private final HashMap<ResourceType, Set<String>> resource_map =
+    new HashMap<ResourceType, Set<String>>();
 
-  public void add_resource(ResourceType t, String value) {
+  public String add_resource(ResourceType t, String value) {
     // By default don't convert to unix
-    add_resource(t, value, false);
+    return add_resource(t, value, false);
   }
 
   public String add_resource(ResourceType t, String value, boolean convertToUnix) {
@@ -503,21 +540,32 @@ public class SessionState {
       return null;
     }
 
-    if (resource_map.get(t) == null) {
-      resource_map.put(t, new HashSet<String>());
-    }
+    Set<String> resourceMap = getResourceMap(t);
 
     String fnlVal = value;
     if (t.hook != null) {
-      fnlVal = t.hook.preHook(resource_map.get(t), value);
+      fnlVal = t.hook.preHook(resourceMap, value);
       if (fnlVal == null) {
         return fnlVal;
       }
     }
     getConsole().printInfo("Added resource: " + fnlVal);
-    resource_map.get(t).add(fnlVal);
+    resourceMap.add(fnlVal);
 
     return fnlVal;
+  }
+
+  public void add_builtin_resource(ResourceType t, String value) {
+    getResourceMap(t).add(value);
+  }
+
+  private Set<String> getResourceMap(ResourceType t) {
+    Set<String> result = resource_map.get(t);
+    if (result == null) {
+      result = new HashSet<String>();
+      resource_map.put(t, result);
+    }
+    return result;
   }
 
   /**
@@ -604,7 +652,7 @@ public class SessionState {
     }
     return commandType.getOperationName();
   }
-  
+
   public HiveOperation getHiveOperation() {
     return commandType;
   }
@@ -612,7 +660,7 @@ public class SessionState {
   public void setCommandType(HiveOperation commandType) {
     this.commandType = commandType;
   }
-  
+
   public HiveAuthorizationProvider getAuthorizer() {
     return authorizer;
   }
@@ -628,12 +676,20 @@ public class SessionState {
   public void setAuthenticator(HiveAuthenticationProvider authenticator) {
     this.authenticator = authenticator;
   }
-  
+
   public CreateTableAutomaticGrant getCreateTableGrants() {
     return createTableGrants;
   }
 
   public void setCreateTableGrants(CreateTableAutomaticGrant createTableGrants) {
     this.createTableGrants = createTableGrants;
+  }
+
+  public List<MapRedStats> getLastMapRedStatsList() {
+    return lastMapRedStatsList;
+  }
+
+  public void setLastMapRedStatsList(List<MapRedStats> lastMapRedStatsList) {
+    this.lastMapRedStatsList = lastMapRedStatsList;
   }
 }

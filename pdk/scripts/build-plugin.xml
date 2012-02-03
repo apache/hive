@@ -1,0 +1,139 @@
+<?xml version="1.0"?>
+
+<!--
+   Licensed to the Apache Software Foundation (ASF) under one or more
+   contributor license agreements.  See the NOTICE file distributed with
+   this work for additional information regarding copyright ownership.
+   The ASF licenses this file to You under the Apache License, Version 2.0
+   (the "License"); you may not use this file except in compliance with
+   the License.  You may obtain a copy of the License at
+
+       http://www.apache.org/licenses/LICENSE-2.0
+
+   Unless required by applicable law or agreed to in writing, software
+   distributed under the License is distributed on an "AS IS" BASIS,
+   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+   See the License for the specific language governing permissions and
+   limitations under the License.
+-->
+
+<project name="hive-plugin-import" default="intended-for-import-only">
+  <dirname property="pdk.script.dir" file="${ant.file.hive-plugin-import}"/>
+  <property name="plugin.dir" location="${basedir}"/>
+  <property name="src.dir" location="${plugin.dir}/src"/>
+  <property name="build.dir" location="${plugin.dir}/build"/>
+  <property name="build.classes" location="${build.dir}/classes"/>
+  <property name="build.metadata" location="${build.dir}/metadata"/>
+  <property name="install.dir" location="${pdk.script.dir}/../.."/>
+  <property name="function.sql.prefix" value=""/>
+  <property name="plugin.jar.basename" 
+            value="${plugin.libname}-${plugin.version}.jar"/>
+
+  <property environment="env"/>
+  <property name="hadoop.home" value="${env.HADOOP_HOME}"/>
+
+  <path id="plugin.classpath">
+    <fileset dir="${install.dir}" includes="lib/hive-exec-*.jar"/>
+    <fileset dir="${install.dir}" includes="lib/hive-pdk-*.jar"/>
+    <fileset dir="${install.dir}" includes="lib/commons-lang-*.jar"/>
+    <fileset dir="${install.dir}" includes="lib/commons-logging-*.jar"/>
+    <fileset dir="${hadoop.home}" includes="hadoop-*-core.jar"/>
+    <pathelement location="${build.classes}"/>
+  </path>
+
+  <path id="plugin.test.classpath">
+    <pathelement path="${install.dir}/conf"/>
+    <fileset dir="${install.dir}" includes="lib/*.jar"/>
+    <fileset dir="${hadoop.home}" includes="hadoop-*-core.jar"/>
+    <fileset dir="${build.dir}" includes="${plugin.jar.basename}"/>
+  </path>
+
+  <target name="compile">
+    <mkdir dir="${build.classes}"/>
+    <javac
+       srcdir="${src.dir}"
+       includes="**/*.java"
+       includeantruntime="false"
+       destdir="${build.classes}">
+      <classpath refid="plugin.classpath"/>
+    </javac>
+  </target>
+
+  <target name="jar" depends="extract-functions">
+    <jar
+      jarfile="${build.dir}/${plugin.jar.basename}"
+      basedir="${build.classes}">
+      <metainf dir="${build.metadata}">
+        <include name="class-info.xml"/>
+        <include name="class-registration.sql"/>
+      </metainf>
+      <manifest>
+        <attribute name="Implementation-Title" value="${plugin.title}"/>
+        <attribute name="Implementation-Version" value="${plugin.version}"/>
+        <attribute name="Implementation-Vendor" value="${plugin.vendor}"/>
+      </manifest>
+    </jar>
+  </target>
+
+  <target name="get-class-list">
+    <path id="class.file.list">
+      <fileset dir="${build.classes}">
+        <include name="**/*.class"/>
+      </fileset>
+    </path>
+    <pathconvert property="class.list"
+                 pathsep=" "
+                 dirsep="."
+                 refid="class.file.list">
+      <map from="${build.classes}/" to=""/>
+      <mapper>
+        <chainedmapper>
+          <globmapper from="*.class" to="*"/>
+        </chainedmapper>
+      </mapper>
+    </pathconvert>
+  </target>
+
+  <target name="extract-functions" depends="compile, get-class-list">
+    <mkdir dir="${build.metadata}"/>
+    <java classname="org.apache.hive.pdk.FunctionExtractor" 
+          classpathref="plugin.classpath" fork="true"
+          output="${build.metadata}/class-info.xml">
+       <arg line="${class.list}" />
+    </java>
+    <xslt style="${pdk.script.dir}/class-registration.xsl"
+      force="true"
+      in="${build.metadata}/class-info.xml"
+      out="${build.metadata}/class-registration.sql">
+      <param name="functionPrefix" expression="${function.sql.prefix}"/>
+    </xslt>
+    <echo file="${build.metadata}/add-jar.sql"
+          message="ADD JAR ${plugin.jar.basename};" />
+  </target>
+
+  <target name="clean">
+    <delete quiet="true" dir="${build.dir}"/>
+  </target>
+
+  <target name="package" depends="jar"/>
+
+  <target name="test" depends="package" unless="testcase">
+    <junit fork="true" printsummary="on" haltonfailure="true"
+           dir="${build.dir}">
+      <classpath refid="plugin.test.classpath"/>
+      <sysproperty key="hive.plugin.root.dir" value="${plugin.dir}"/>
+      <sysproperty key="hive.plugin.class.list" value="${class.list}"/>
+      <sysproperty key="hive.metastore.warehouse.dir" value="${build.dir}/warehouse"/>
+      <env key="HADOOP_HOME" value="${hadoop.home}"/>
+      <env key="HIVE_CONF_DIR" value="${install.dir}/conf"/>
+      <env key="HIVE_HOME" value="${install.dir}"/>
+      <env key="HIVE_PLUGIN_ROOT_DIR" value="${plugin.dir}"/>
+      <formatter type="plain"/>
+      <test name="org.apache.hive.pdk.PluginTest" todir="${build.dir}/"/>
+      <assertions>
+        <enable />
+      </assertions>
+    </junit>
+  </target>
+
+</project>

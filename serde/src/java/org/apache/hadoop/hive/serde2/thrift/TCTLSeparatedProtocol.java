@@ -219,10 +219,17 @@ public class TCTLSeparatedProtocol extends TProtocol implements
       this.trans = trans;
       this.separator = separator;
       buf = new byte[buffer_length];
+    }
+
+    private void initialize() {
       // do not fill tokenizer until user requests since filling it could read
       // in data
       // not meant for this instantiation.
-      fillTokenizer();
+      try {
+        fillTokenizer();
+      } catch (Exception e) {
+        LOG.warn("Unable to initialize tokenizer", e);
+      }
     }
 
     private boolean fillTokenizer() {
@@ -244,9 +251,8 @@ public class TCTLSeparatedProtocol extends TProtocol implements
           tokenizer = new StringTokenizer("", separator, true);
           return false;
         }
-        e.printStackTrace();
         tokenizer = null;
-        return false;
+        throw new RuntimeException(e);
       }
       return true;
     }
@@ -364,6 +370,7 @@ public class TCTLSeparatedProtocol extends TProtocol implements
     nullText = new Text(nullString);
     transportTokenizer = new SimpleTransportTokenizer(innerTransport,
         rowSeparator, bufferSize);
+    transportTokenizer.initialize();
   }
 
   /**

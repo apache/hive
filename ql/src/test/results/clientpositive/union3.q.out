@@ -88,7 +88,7 @@ STAGE PLANS:
   Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/tmp/sdong/hive_2011-02-10_17-51-51_326_4169637411351606098/-mr-10002 
+        file:/tmp/njain/hive_2011-12-07_18-06-27_327_8112398566049944010/-mr-10002 
           Union
             Select Operator
               expressions:
@@ -101,7 +101,7 @@ STAGE PLANS:
                 table:
                     input format: org.apache.hadoop.mapred.TextInputFormat
                     output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-        file:/tmp/sdong/hive_2011-02-10_17-51-51_326_4169637411351606098/-mr-10003 
+        file:/tmp/njain/hive_2011-12-07_18-06-27_327_8112398566049944010/-mr-10003 
           Union
             Select Operator
               expressions:
@@ -114,7 +114,7 @@ STAGE PLANS:
                 table:
                     input format: org.apache.hadoop.mapred.TextInputFormat
                     output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-        file:/tmp/sdong/hive_2011-02-10_17-51-51_326_4169637411351606098/-mr-10005 
+        file:/tmp/njain/hive_2011-12-07_18-06-27_327_8112398566049944010/-mr-10005 
           Union
             Select Operator
               expressions:
@@ -127,7 +127,7 @@ STAGE PLANS:
                 table:
                     input format: org.apache.hadoop.mapred.TextInputFormat
                     output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-        file:/tmp/sdong/hive_2011-02-10_17-51-51_326_4169637411351606098/-mr-10007 
+        file:/tmp/njain/hive_2011-12-07_18-06-27_327_8112398566049944010/-mr-10007 
           Union
             Select Operator
               expressions:
@@ -218,7 +218,7 @@ STAGE PLANS:
   Stage: Stage-5
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/tmp/sdong/hive_2011-02-10_17-51-51_326_4169637411351606098/-mr-10004 
+        file:/tmp/njain/hive_2011-12-07_18-06-27_327_8112398566049944010/-mr-10004 
             Reduce Output Operator
               key expressions:
                     expr: _col0
@@ -280,7 +280,7 @@ STAGE PLANS:
   Stage: Stage-7
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/tmp/sdong/hive_2011-02-10_17-51-51_326_4169637411351606098/-mr-10006 
+        file:/tmp/njain/hive_2011-12-07_18-06-27_327_8112398566049944010/-mr-10006 
             Reduce Output Operator
               key expressions:
                     expr: _col0
@@ -356,11 +356,11 @@ POSTHOOK: Lineage: union_out.id EXPRESSION []
 PREHOOK: query: select * from union_out cluster by id
 PREHOOK: type: QUERY
 PREHOOK: Input: default@union_out
-PREHOOK: Output: file:/tmp/sdong/hive_2011-02-10_17-52-15_670_1956987222899492132/-mr-10000
+PREHOOK: Output: file:/tmp/njain/hive_2011-12-07_18-06-50_528_7611594880529632821/-mr-10000
 POSTHOOK: query: select * from union_out cluster by id
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@union_out
-POSTHOOK: Output: file:/tmp/sdong/hive_2011-02-10_17-52-15_670_1956987222899492132/-mr-10000
+POSTHOOK: Output: file:/tmp/njain/hive_2011-12-07_18-06-50_528_7611594880529632821/-mr-10000
 POSTHOOK: Lineage: union_out.id EXPRESSION []
 1
 2

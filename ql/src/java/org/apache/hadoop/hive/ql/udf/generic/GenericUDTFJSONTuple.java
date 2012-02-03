@@ -19,6 +19,8 @@
 package org.apache.hadoop.hive.ql.udf.generic;
 
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
+import java.util.Map;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -54,6 +56,28 @@ public class GenericUDTFJSONTuple extends GenericUDTF {
   ObjectInspector[] inputOIs; // input ObjectInspectors
   boolean pathParsed = false;
   boolean seenErrors = false;
+
+  //An LRU cache using a linked hash map
+  static class HashCache<K, V> extends LinkedHashMap<K, V> {
+
+    private static final int CACHE_SIZE = 16;
+    private static final int INIT_SIZE = 32;
+    private static final float LOAD_FACTOR = 0.6f;
+
+    HashCache() {
+      super(INIT_SIZE, LOAD_FACTOR);
+    }
+
+    private static final long serialVersionUID = 1;
+
+    @Override
+    protected boolean removeEldestEntry(Map.Entry<K, V> eldest) {
+      return size() > CACHE_SIZE;
+    }
+
+  }
+
+  static Map<String, JSONObject> jsonObjectCache = new HashCache<String, JSONObject>();
 
   @Override
   public void close() throws HiveException {
@@ -124,7 +148,11 @@ public class GenericUDTFJSONTuple extends GenericUDTF {
       return;
     }
     try {
-      JSONObject jsonObj = new JSONObject(jsonStr);
+      JSONObject jsonObj = jsonObjectCache.get(jsonStr);
+      if (jsonObj == null) {
+        jsonObj = new JSONObject(jsonStr);
+        jsonObjectCache.put(jsonStr, jsonObj);
+      }
 
       for (int i = 0; i < numCols; ++i) {
         if (jsonObj.isNull(paths[i])) {

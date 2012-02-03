@@ -22,7 +22,6 @@ import java.io.IOException;
 import java.net.InetSocketAddress;
 
 import org.apache.hadoop.mapred.JobConf;
-import org.apache.hadoop.mapred.JobTracker;
 import org.apache.hadoop.net.NetUtils;
 
 /**
@@ -38,7 +37,12 @@ public final class JobTrackerURLResolver {
     InetSocketAddress infoSocAddr = NetUtils.createSocketAddr(infoAddr);
     int infoPort = infoSocAddr.getPort();
 
-    String tracker = "http://" + JobTracker.getAddress(conf).getHostName()
+    String jobTrackerStr =
+      conf.get("mapred.job.tracker", "localhost:8012");
+    InetSocketAddress jobTrackerSocAddr =
+      NetUtils.createSocketAddr(jobTrackerStr);
+
+    String tracker = "http://" + jobTrackerSocAddr.getHostName()
         + ":" + infoPort;
 
     return tracker;

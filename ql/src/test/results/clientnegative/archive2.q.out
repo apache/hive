@@ -29,5 +29,5 @@ PREHOOK: query: ALTER TABLE tstsrcpart UNARCHIVE PARTITION (ds='2008-04-08', hr=
 PREHOOK: type: ALTERTABLE_UNARCHIVE
 PREHOOK: Input: default@tstsrcpart
 PREHOOK: Output: default@tstsrcpart@ds=2008-04-08/hr=12
-FAILED: Error in metadata: Specified partition is not archived
+FAILED: Error in metadata: Partition ds=2008-04-08/hr=12 is not archived.
 FAILED: Execution Error, return code 1 from org.apache.hadoop.hive.ql.exec.DDLTask

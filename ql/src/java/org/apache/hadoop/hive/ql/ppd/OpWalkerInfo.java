@@ -18,9 +18,12 @@
 package org.apache.hadoop.hive.ql.ppd;
 
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
+import org.apache.hadoop.hive.ql.exec.FilterOperator;
 import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.lib.Node;
 import org.apache.hadoop.hive.ql.lib.NodeProcessorCtx;
@@ -39,11 +42,13 @@ public class OpWalkerInfo implements NodeProcessorCtx {
   private final HashMap<Operator<? extends Serializable>, ExprWalkerInfo> opToPushdownPredMap;
   private final Map<Operator<? extends Serializable>, OpParseContext> opToParseCtxMap;
   private final ParseContext pGraphContext;
+  private final List<FilterOperator> candidateFilterOps;
 
   public OpWalkerInfo(ParseContext pGraphContext) {
     this.pGraphContext = pGraphContext;
     opToParseCtxMap = pGraphContext.getOpParseCtx();
     opToPushdownPredMap = new HashMap<Operator<? extends Serializable>, ExprWalkerInfo>();
+    candidateFilterOps = new ArrayList<FilterOperator>();
   }
 
   public ExprWalkerInfo getPrunedPreds(Operator<? extends Serializable> op) {
@@ -67,4 +72,13 @@ public class OpWalkerInfo implements NodeProcessorCtx {
   public ParseContext getParseContext() {
     return pGraphContext;
   }
+
+  public List<FilterOperator> getCandidateFilterOps() {
+    return candidateFilterOps;
+  }
+
+  public void addCandidateFilterOp(FilterOperator fop) {
+    candidateFilterOps.add(fop);
+  }
+
 }

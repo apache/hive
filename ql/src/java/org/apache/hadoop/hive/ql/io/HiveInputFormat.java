@@ -33,6 +33,7 @@ import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.conf.Configurable;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.hive.io.HiveIOExceptionHandlerUtil;
 import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.exec.TableScanOperator;
 import org.apache.hadoop.hive.ql.exec.Utilities;
@@ -144,7 +145,7 @@ public class HiveInputFormat<K extends WritableComparable, V extends Writable>
       } catch (Exception e) {
         throw new IOException(
             "Cannot create an instance of InputSplit class = "
-            + inputSplitClassName + ":" + e.getMessage());
+            + inputSplitClassName + ":" + e.getMessage(), e);
       }
       inputSplit.readFields(in);
       inputFormatClassName = in.readUTF();
@@ -212,7 +213,7 @@ public class HiveInputFormat<K extends WritableComparable, V extends Writable>
       inputFormatClassName = hsplit.inputFormatClassName();
       inputFormatClass = job.getClassByName(inputFormatClassName);
     } catch (Exception e) {
-      throw new IOException("cannot find class " + inputFormatClassName);
+      throw new IOException("cannot find class " + inputFormatClassName, e);
     }
 
     // clone a jobConf for setting needed columns for reading
@@ -234,10 +235,15 @@ public class HiveInputFormat<K extends WritableComparable, V extends Writable>
 
     InputFormat inputFormat = getInputFormatFromCache(inputFormatClass,
         cloneJobConf);
-    RecordReader innerReader = inputFormat.getRecordReader(inputSplit,
+    RecordReader innerReader = null;
+    try {
+      innerReader = inputFormat.getRecordReader(inputSplit,
         cloneJobConf, reporter);
-
-    HiveRecordReader<K,V> rr = new HiveRecordReader(innerReader);
+    } catch (Exception e) {
+      innerReader = HiveIOExceptionHandlerUtil
+          .handleRecordReaderCreationException(e, cloneJobConf);
+    }
+    HiveRecordReader<K,V> rr = new HiveRecordReader(innerReader, job);
     rr.initIOContext(hsplit, job, inputFormatClass, innerReader);
     return rr;
   }
@@ -373,6 +379,10 @@ public class HiveInputFormat<K extends WritableComparable, V extends Writable>
       String splitPath, String splitPathWithNoSchema, boolean nonNative) {
     if (this.mrwork == null) {
       init(job);
+    }
+
+    if(this.mrwork.getPathToAliases() == null) {
+      return;
     }
 
     ArrayList<String> aliases = new ArrayList<String>();

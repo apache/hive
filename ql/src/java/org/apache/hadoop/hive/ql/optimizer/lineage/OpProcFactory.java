@@ -147,7 +147,7 @@ public class OpProcFactory {
         fieldSchemaMap.put(col.getName(), col);
       }
 
-      Iterator<VirtualColumn> vcs = VirtualColumn.registry.values().iterator();
+      Iterator<VirtualColumn> vcs = VirtualColumn.getRegistry(pctx.getConf()).iterator();
       while (vcs.hasNext()) {
         VirtualColumn vc = vcs.next();
         fieldSchemaMap.put(vc.getName(), new FieldSchema(vc.getName(),

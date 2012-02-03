@@ -25,11 +25,11 @@ metastore() {
   JAR=${HIVE_LIB}/hive-service-*.jar
 
   # hadoop 20 or newer - skip the aux_jars option and hiveconf
-  exec $HADOOP jar $JAR $CLASS $METASTORE_PORT "$@"
+
+  exec $HADOOP jar $JAR $CLASS "$@"
 }
 
 metastore_help() {
-  echo "usage METASTORE_PORT=xxxx ./hive --service metastore"
-  echo "  METASTORE_PORT : Specify the metastore server port"
+  metastore -h
 }
 

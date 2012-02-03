@@ -22,6 +22,7 @@ import org.apache.hadoop.hive.ql.exec.UDF;
 import org.apache.hadoop.hive.serde2.io.ByteWritable;
 import org.apache.hadoop.hive.serde2.io.DoubleWritable;
 import org.apache.hadoop.hive.serde2.io.ShortWritable;
+import org.apache.hadoop.hive.serde2.io.TimestampWritable;
 import org.apache.hadoop.io.BooleanWritable;
 import org.apache.hadoop.io.FloatWritable;
 import org.apache.hadoop.io.IntWritable;
@@ -41,7 +42,7 @@ public class UDFToBoolean extends UDF {
 
   /**
    * Convert a void to boolean. This is called for CAST(... AS BOOLEAN)
-   * 
+   *
    * @param i
    *          The value of a void type
    * @return BooleanWritable
@@ -52,7 +53,7 @@ public class UDFToBoolean extends UDF {
 
   /**
    * Convert from a byte to boolean. This is called for CAST(... AS BOOLEAN)
-   * 
+   *
    * @param i
    *          The byte value to convert
    * @return BooleanWritable
@@ -68,7 +69,7 @@ public class UDFToBoolean extends UDF {
 
   /**
    * Convert from a short to boolean. This is called for CAST(... AS BOOLEAN)
-   * 
+   *
    * @param i
    *          The short value to convert
    * @return BooleanWritable
@@ -84,7 +85,7 @@ public class UDFToBoolean extends UDF {
 
   /**
    * Convert from a integer to boolean. This is called for CAST(... AS BOOLEAN)
-   * 
+   *
    * @param i
    *          The integer value to convert
    * @return BooleanWritable
@@ -100,7 +101,7 @@ public class UDFToBoolean extends UDF {
 
   /**
    * Convert from a long to boolean. This is called for CAST(... AS BOOLEAN)
-   * 
+   *
    * @param i
    *          The long value to convert
    * @return BooleanWritable
@@ -116,7 +117,7 @@ public class UDFToBoolean extends UDF {
 
   /**
    * Convert from a float to boolean. This is called for CAST(... AS BOOLEAN)
-   * 
+   *
    * @param i
    *          The float value to convert
    * @return BooleanWritable
@@ -132,7 +133,7 @@ public class UDFToBoolean extends UDF {
 
   /**
    * Convert from a double to boolean. This is called for CAST(... AS BOOLEAN)
-   * 
+   *
    * @param i
    *          The double value to convert
    * @return BooleanWritable
@@ -148,7 +149,7 @@ public class UDFToBoolean extends UDF {
 
   /**
    * Convert from a string to boolean. This is called for CAST(... AS BOOLEAN)
-   * 
+   *
    * @param i
    *          The string value to convert
    * @return BooleanWritable
@@ -158,6 +159,15 @@ public class UDFToBoolean extends UDF {
       return null;
     } else {
       booleanWritable.set(i.getLength() != 0);
+      return booleanWritable;
+    }
+  }
+
+  public BooleanWritable evaluate(TimestampWritable i) {
+    if (i == null) {
+      return null;
+    } else {
+      booleanWritable.set(i.getSeconds() != 0 || i.getNanos() != 0);
       return booleanWritable;
     }
   }

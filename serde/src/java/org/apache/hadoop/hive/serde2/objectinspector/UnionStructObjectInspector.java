@@ -55,6 +55,10 @@ public class UnionStructObjectInspector extends StructObjectInspector {
     public ObjectInspector getFieldObjectInspector() {
       return structField.getFieldObjectInspector();
     }
+
+    public String getFieldComment() {
+      return structField.getFieldComment();
+    }
   }
 
   List<StructObjectInspector> unionObjectInspectors;

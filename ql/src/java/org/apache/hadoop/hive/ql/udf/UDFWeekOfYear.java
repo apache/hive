@@ -25,6 +25,7 @@ import java.util.Date;
 
 import org.apache.hadoop.hive.ql.exec.Description;
 import org.apache.hadoop.hive.ql.exec.UDF;
+import org.apache.hadoop.hive.serde2.io.TimestampWritable;
 import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.Text;
 
@@ -32,9 +33,9 @@ import org.apache.hadoop.io.Text;
  * UDFWeekOfYear.
  *
  */
-@Description(name = "yearweek", 
+@Description(name = "yearweek",
     value = "_FUNC_(date) - Returns the week of the year of the given date. A week "
-    + "is considered to start on a Monday and week 1 is the first week with >3 days.", 
+    + "is considered to start on a Monday and week 1 is the first week with >3 days.",
     extended = "Examples:\n"
     + "  > SELECT _FUNC_('2008-02-20') FROM src LIMIT 1;\n"
     + "  8\n"
@@ -52,7 +53,7 @@ public class UDFWeekOfYear extends UDF {
 
   /**
    * Get the week of the year from a date string.
-   * 
+   *
    * @param dateString
    *          the dateString in the format of "yyyy-MM-dd HH:mm:ss" or
    *          "yyyy-MM-dd".
@@ -71,6 +72,16 @@ public class UDFWeekOfYear extends UDF {
     } catch (ParseException e) {
       return null;
     }
+  }
+
+  public IntWritable evaluate(TimestampWritable t) {
+    if (t == null) {
+      return null;
+    }
+
+    calendar.setTime(t.getTimestamp());
+    result.set(calendar.get(Calendar.WEEK_OF_YEAR));
+    return result;
   }
 
 }

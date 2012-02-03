@@ -66,6 +66,7 @@ public class GenericUDAFCovarianceSample extends GenericUDAFCovariance {
     case LONG:
     case FLOAT:
     case DOUBLE:
+    case TIMESTAMP:
       switch (((PrimitiveTypeInfo) parameters[1]).getPrimitiveCategory()) {
       case BYTE:
       case SHORT:
@@ -73,6 +74,7 @@ public class GenericUDAFCovarianceSample extends GenericUDAFCovariance {
       case LONG:
       case FLOAT:
       case DOUBLE:
+      case TIMESTAMP:
         return new GenericUDAFCovarianceSampleEvaluator();
       case STRING:
       case BOOLEAN:

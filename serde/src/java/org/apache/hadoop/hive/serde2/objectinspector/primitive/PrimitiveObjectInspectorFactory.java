@@ -20,15 +20,25 @@ package org.apache.hadoop.hive.serde2.objectinspector.primitive;
 
 import java.util.HashMap;
 
+import org.apache.hadoop.hive.serde2.objectinspector.ConstantObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector.PrimitiveCategory;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorUtils.PrimitiveTypeEntry;
 import org.apache.hadoop.io.Writable;
+import org.apache.hadoop.io.BooleanWritable;
+import org.apache.hadoop.hive.serde2.io.ByteWritable;
+import org.apache.hadoop.hive.serde2.io.ShortWritable;
+import org.apache.hadoop.io.IntWritable;
+import org.apache.hadoop.io.LongWritable;
+import org.apache.hadoop.io.FloatWritable;
+import org.apache.hadoop.hive.serde2.io.DoubleWritable;
+import org.apache.hadoop.hive.serde2.io.TimestampWritable;
+import org.apache.hadoop.io.Text;
 
 /**
  * PrimitiveObjectInspectorFactory is the primary way to create new
  * PrimitiveObjectInspector instances.
- * 
+ *
  * The reason of having caches here is that ObjectInspector is because
  * ObjectInspectors do not have an internal state - so ObjectInspectors with the
  * same construction parameters should result in exactly the same
@@ -54,6 +64,10 @@ public final class PrimitiveObjectInspectorFactory {
       new JavaStringObjectInspector();
   public static final JavaVoidObjectInspector javaVoidObjectInspector =
       new JavaVoidObjectInspector();
+  public static final JavaTimestampObjectInspector javaTimestampObjectInspector =
+      new JavaTimestampObjectInspector();
+  public static final JavaBinaryObjectInspector javaByteArrayObjectInspector =
+      new JavaBinaryObjectInspector();
 
   public static final WritableBooleanObjectInspector writableBooleanObjectInspector =
       new WritableBooleanObjectInspector();
@@ -73,6 +87,10 @@ public final class PrimitiveObjectInspectorFactory {
       new WritableStringObjectInspector();
   public static final WritableVoidObjectInspector writableVoidObjectInspector =
       new WritableVoidObjectInspector();
+  public static final WritableTimestampObjectInspector writableTimestampObjectInspector =
+      new WritableTimestampObjectInspector();
+  public static final WritableBinaryObjectInspector writableBinaryObjectInspector =
+      new WritableBinaryObjectInspector();
 
   private static HashMap<PrimitiveCategory, AbstractPrimitiveWritableObjectInspector> cachedPrimitiveWritableInspectorCache =
       new HashMap<PrimitiveCategory, AbstractPrimitiveWritableObjectInspector>();
@@ -95,6 +113,10 @@ public final class PrimitiveObjectInspectorFactory {
         writableStringObjectInspector);
     cachedPrimitiveWritableInspectorCache.put(PrimitiveCategory.VOID,
         writableVoidObjectInspector);
+    cachedPrimitiveWritableInspectorCache.put(PrimitiveCategory.TIMESTAMP,
+        writableTimestampObjectInspector);
+    cachedPrimitiveWritableInspectorCache.put(PrimitiveCategory.BINARY,
+        writableBinaryObjectInspector);
   }
 
   private static HashMap<PrimitiveCategory, AbstractPrimitiveJavaObjectInspector> cachedPrimitiveJavaInspectorCache =
@@ -118,11 +140,15 @@ public final class PrimitiveObjectInspectorFactory {
         javaStringObjectInspector);
     cachedPrimitiveJavaInspectorCache.put(PrimitiveCategory.VOID,
         javaVoidObjectInspector);
+    cachedPrimitiveJavaInspectorCache.put(PrimitiveCategory.TIMESTAMP,
+        javaTimestampObjectInspector);
+    cachedPrimitiveJavaInspectorCache.put(PrimitiveCategory.BINARY,
+        javaByteArrayObjectInspector);
   }
 
   /**
    * Returns the PrimitiveWritableObjectInspector for the PrimitiveCategory.
-   * 
+   *
    * @param primitiveCategory
    */
   public static AbstractPrimitiveWritableObjectInspector getPrimitiveWritableObjectInspector(
@@ -137,8 +163,44 @@ public final class PrimitiveObjectInspectorFactory {
   }
 
   /**
+   * Returns a PrimitiveWritableObjectInspector which implements ConstantObjectInspector
+   * for the PrimitiveCategory.
+   *
+   * @param primitiveCategory
+   * @param value
+   */
+  public static ConstantObjectInspector getPrimitiveWritableConstantObjectInspector(
+      PrimitiveCategory primitiveCategory, Object value) {
+    switch (primitiveCategory) {
+    case BOOLEAN:
+      return new WritableConstantBooleanObjectInspector((BooleanWritable)value);
+    case BYTE:
+      return new WritableConstantByteObjectInspector((ByteWritable)value);
+    case SHORT:
+      return new WritableConstantShortObjectInspector((ShortWritable)value);
+    case INT:
+      return new WritableConstantIntObjectInspector((IntWritable)value);
+    case LONG:
+      return new WritableConstantLongObjectInspector((LongWritable)value);
+    case FLOAT:
+      return new WritableConstantFloatObjectInspector((FloatWritable)value);
+    case DOUBLE:
+      return new WritableConstantDoubleObjectInspector((DoubleWritable)value);
+    case STRING:
+      return new WritableConstantStringObjectInspector((Text)value);
+    case TIMESTAMP:
+      return new WritableConstantTimestampObjectInspector((TimestampWritable)value);
+    case VOID:
+      return new WritableVoidObjectInspector();
+    default:
+      throw new RuntimeException("Internal error: Cannot find "
+        + "ConstantObjectInspector for " + primitiveCategory);
+    }
+  }
+
+  /**
    * Returns the PrimitiveJavaObjectInspector for the PrimitiveCategory.
-   * 
+   *
    * @param primitiveCategory
    */
   public static AbstractPrimitiveJavaObjectInspector getPrimitiveJavaObjectInspector(
@@ -155,7 +217,7 @@ public final class PrimitiveObjectInspectorFactory {
   /**
    * Returns an ObjectInspector for a primitive Class. The Class can be a Hive
    * Writable class, or a Java Primitive Class.
-   * 
+   *
    * A runtimeException will be thrown if the class is not recognized as a
    * primitive type by Hive.
    */

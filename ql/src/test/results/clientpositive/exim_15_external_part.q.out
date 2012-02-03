@@ -1,0 +1,208 @@
+PREHOOK: query: create table exim_employee ( emp_id int comment "employee id") 	
+	comment "employee table"
+	partitioned by (emp_country string comment "two char iso code", emp_state string comment "free text")
+	stored as textfile	
+	tblproperties("creator"="krishna")
+PREHOOK: type: CREATETABLE
+POSTHOOK: query: create table exim_employee ( emp_id int comment "employee id") 	
+	comment "employee table"
+	partitioned by (emp_country string comment "two char iso code", emp_state string comment "free text")
+	stored as textfile	
+	tblproperties("creator"="krishna")
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: default@exim_employee
+PREHOOK: query: load data local inpath "../data/files/test.dat" 
+	into table exim_employee partition (emp_country="in", emp_state="tn")
+PREHOOK: type: LOAD
+PREHOOK: Output: default@exim_employee
+POSTHOOK: query: load data local inpath "../data/files/test.dat" 
+	into table exim_employee partition (emp_country="in", emp_state="tn")
+POSTHOOK: type: LOAD
+POSTHOOK: Output: default@exim_employee
+POSTHOOK: Output: default@exim_employee@emp_country=in/emp_state=tn
+PREHOOK: query: load data local inpath "../data/files/test.dat" 
+	into table exim_employee partition (emp_country="in", emp_state="ka")
+PREHOOK: type: LOAD
+PREHOOK: Output: default@exim_employee
+POSTHOOK: query: load data local inpath "../data/files/test.dat" 
+	into table exim_employee partition (emp_country="in", emp_state="ka")
+POSTHOOK: type: LOAD
+POSTHOOK: Output: default@exim_employee
+POSTHOOK: Output: default@exim_employee@emp_country=in/emp_state=ka
+PREHOOK: query: load data local inpath "../data/files/test.dat" 
+	into table exim_employee partition (emp_country="us", emp_state="tn")
+PREHOOK: type: LOAD
+PREHOOK: Output: default@exim_employee
+POSTHOOK: query: load data local inpath "../data/files/test.dat" 
+	into table exim_employee partition (emp_country="us", emp_state="tn")
+POSTHOOK: type: LOAD
+POSTHOOK: Output: default@exim_employee
+POSTHOOK: Output: default@exim_employee@emp_country=us/emp_state=tn
+PREHOOK: query: load data local inpath "../data/files/test.dat" 
+	into table exim_employee partition (emp_country="us", emp_state="ka")
+PREHOOK: type: LOAD
+PREHOOK: Output: default@exim_employee
+POSTHOOK: query: load data local inpath "../data/files/test.dat" 
+	into table exim_employee partition (emp_country="us", emp_state="ka")
+POSTHOOK: type: LOAD
+POSTHOOK: Output: default@exim_employee
+POSTHOOK: Output: default@exim_employee@emp_country=us/emp_state=ka
+PREHOOK: query: export table exim_employee to 'ql/test/data/exports/exim_employee'
+PREHOOK: type: EXPORT
+PREHOOK: Input: default@exim_employee@emp_country=in/emp_state=ka
+PREHOOK: Input: default@exim_employee@emp_country=in/emp_state=tn
+PREHOOK: Input: default@exim_employee@emp_country=us/emp_state=ka
+PREHOOK: Input: default@exim_employee@emp_country=us/emp_state=tn
+PREHOOK: Output: pfile:/Users/krishnak/Projects/hdp/sources/hive-git-apache/build/ql/test/data/exports/exim_employee
+POSTHOOK: query: export table exim_employee to 'ql/test/data/exports/exim_employee'
+POSTHOOK: type: EXPORT
+POSTHOOK: Input: default@exim_employee@emp_country=in/emp_state=ka
+POSTHOOK: Input: default@exim_employee@emp_country=in/emp_state=tn
+POSTHOOK: Input: default@exim_employee@emp_country=us/emp_state=ka
+POSTHOOK: Input: default@exim_employee@emp_country=us/emp_state=tn
+POSTHOOK: Output: pfile:/Users/krishnak/Projects/hdp/sources/hive-git-apache/build/ql/test/data/exports/exim_employee
+PREHOOK: query: drop table exim_employee
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@exim_employee
+PREHOOK: Output: default@exim_employee
+POSTHOOK: query: drop table exim_employee
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@exim_employee
+POSTHOOK: Output: default@exim_employee
+PREHOOK: query: create database importer
+PREHOOK: type: CREATEDATABASE
+POSTHOOK: query: create database importer
+POSTHOOK: type: CREATEDATABASE
+PREHOOK: query: use importer
+PREHOOK: type: SWITCHDATABASE
+POSTHOOK: query: use importer
+POSTHOOK: type: SWITCHDATABASE
+PREHOOK: query: create external table exim_employee ( emp_id int comment "employee id") 	
+	comment "employee table"
+	partitioned by (emp_country string comment "two char iso code", emp_state string comment "free text")
+	stored as textfile	
+	location 'ql/test/data/tablestore/exim_employee'
+	tblproperties("creator"="krishna")
+PREHOOK: type: CREATETABLE
+POSTHOOK: query: create external table exim_employee ( emp_id int comment "employee id") 	
+	comment "employee table"
+	partitioned by (emp_country string comment "two char iso code", emp_state string comment "free text")
+	stored as textfile	
+	location 'ql/test/data/tablestore/exim_employee'
+	tblproperties("creator"="krishna")
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: importer@exim_employee
+PREHOOK: query: load data local inpath "../data/files/test.dat" 
+	into table exim_employee partition (emp_country="in", emp_state="tn")
+PREHOOK: type: LOAD
+PREHOOK: Output: importer@exim_employee
+POSTHOOK: query: load data local inpath "../data/files/test.dat" 
+	into table exim_employee partition (emp_country="in", emp_state="tn")
+POSTHOOK: type: LOAD
+POSTHOOK: Output: importer@exim_employee
+POSTHOOK: Output: importer@exim_employee@emp_country=in/emp_state=tn
+PREHOOK: query: load data local inpath "../data/files/test.dat" 
+	into table exim_employee partition (emp_country="in", emp_state="ka")
+PREHOOK: type: LOAD
+PREHOOK: Output: importer@exim_employee
+POSTHOOK: query: load data local inpath "../data/files/test.dat" 
+	into table exim_employee partition (emp_country="in", emp_state="ka")
+POSTHOOK: type: LOAD
+POSTHOOK: Output: importer@exim_employee
+POSTHOOK: Output: importer@exim_employee@emp_country=in/emp_state=ka
+PREHOOK: query: import external table exim_employee partition (emp_country="us", emp_state="tn") 
+	from 'ql/test/data/exports/exim_employee'
+PREHOOK: type: IMPORT
+PREHOOK: Output: importer@exim_employee
+POSTHOOK: query: import external table exim_employee partition (emp_country="us", emp_state="tn") 
+	from 'ql/test/data/exports/exim_employee'
+POSTHOOK: type: IMPORT
+POSTHOOK: Output: importer@exim_employee
+POSTHOOK: Output: importer@exim_employee@emp_country=us/emp_state=tn
+PREHOOK: query: describe extended exim_employee
+PREHOOK: type: DESCTABLE
+POSTHOOK: query: describe extended exim_employee
+POSTHOOK: type: DESCTABLE
+emp_id	int	employee id
+emp_country	string	two char iso code
+emp_state	string	free text
+	 	 
+Detailed Table Information	Table(tableName:exim_employee, dbName:importer, owner:krishnak, createTime:1300687519, lastAccessTime:0, retention:0, sd:StorageDescriptor(cols:[FieldSchema(name:emp_id, type:int, comment:employee id), FieldSchema(name:emp_country, type:string, comment:two char iso code), FieldSchema(name:emp_state, type:string, comment:free text)], location:pfile:/Users/krishnak/Projects/hdp/sources/hive-git-apache/build/ql/test/data/tablestore/exim_employee, inputFormat:org.apache.hadoop.mapred.TextInputFormat, outputFormat:org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat, compressed:false, numBuckets:-1, serdeInfo:SerDeInfo(name:null, serializationLib:org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe, parameters:{serialization.format=1}), bucketCols:[], sortCols:[], parameters:{}), partitionKeys:[FieldSchema(name:emp_country, type:string, comment:two char iso code), FieldSchema(name:emp_state, type:string, comment:free text)], parameters:{EXTERNAL=TRUE, transient_lastDdlTime=1300687519, comment=employee table, creator=krishna}, viewOriginalText:null, viewExpandedText:null, tableType:EXTERNAL_TABLE)	
+PREHOOK: query: select * from exim_employee
+PREHOOK: type: QUERY
+PREHOOK: Input: importer@exim_employee@emp_country=in/emp_state=ka
+PREHOOK: Input: importer@exim_employee@emp_country=in/emp_state=tn
+PREHOOK: Input: importer@exim_employee@emp_country=us/emp_state=tn
+PREHOOK: Output: file:/var/folders/67/67R3POPtF90VG63KSmCbcU++F0U/-Tmp-/krishnak/hive_2011-03-20_23-05-21_814_44116951106898433/-mr-10000
+POSTHOOK: query: select * from exim_employee
+POSTHOOK: type: QUERY
+POSTHOOK: Input: importer@exim_employee@emp_country=in/emp_state=ka
+POSTHOOK: Input: importer@exim_employee@emp_country=in/emp_state=tn
+POSTHOOK: Input: importer@exim_employee@emp_country=us/emp_state=tn
+POSTHOOK: Output: file:/var/folders/67/67R3POPtF90VG63KSmCbcU++F0U/-Tmp-/krishnak/hive_2011-03-20_23-05-21_814_44116951106898433/-mr-10000
+1	in	ka
+2	in	ka
+3	in	ka
+4	in	ka
+5	in	ka
+6	in	ka
+1	in	tn
+2	in	tn
+3	in	tn
+4	in	tn
+5	in	tn
+6	in	tn
+1	us	tn
+2	us	tn
+3	us	tn
+4	us	tn
+5	us	tn
+6	us	tn
+PREHOOK: query: select * from exim_employee
+PREHOOK: type: QUERY
+PREHOOK: Input: importer@exim_employee@emp_country=in/emp_state=ka
+PREHOOK: Input: importer@exim_employee@emp_country=in/emp_state=tn
+PREHOOK: Input: importer@exim_employee@emp_country=us/emp_state=tn
+PREHOOK: Output: file:/var/folders/67/67R3POPtF90VG63KSmCbcU++F0U/-Tmp-/krishnak/hive_2011-03-20_23-05-22_840_34152298807300339/-mr-10000
+POSTHOOK: query: select * from exim_employee
+POSTHOOK: type: QUERY
+POSTHOOK: Input: importer@exim_employee@emp_country=in/emp_state=ka
+POSTHOOK: Input: importer@exim_employee@emp_country=in/emp_state=tn
+POSTHOOK: Input: importer@exim_employee@emp_country=us/emp_state=tn
+POSTHOOK: Output: file:/var/folders/67/67R3POPtF90VG63KSmCbcU++F0U/-Tmp-/krishnak/hive_2011-03-20_23-05-22_840_34152298807300339/-mr-10000
+1	in	ka
+2	in	ka
+3	in	ka
+4	in	ka
+5	in	ka
+6	in	ka
+1	in	tn
+2	in	tn
+3	in	tn
+4	in	tn
+5	in	tn
+6	in	tn
+PREHOOK: query: select * from exim_employee
+PREHOOK: type: QUERY
+PREHOOK: Input: importer@exim_employee@emp_country=in/emp_state=ka
+PREHOOK: Input: importer@exim_employee@emp_country=in/emp_state=tn
+PREHOOK: Input: importer@exim_employee@emp_country=us/emp_state=tn
+PREHOOK: Output: file:/var/folders/67/67R3POPtF90VG63KSmCbcU++F0U/-Tmp-/krishnak/hive_2011-03-20_23-05-23_605_5011311401480577512/-mr-10000
+POSTHOOK: query: select * from exim_employee
+POSTHOOK: type: QUERY
+POSTHOOK: Input: importer@exim_employee@emp_country=in/emp_state=ka
+POSTHOOK: Input: importer@exim_employee@emp_country=in/emp_state=tn
+POSTHOOK: Input: importer@exim_employee@emp_country=us/emp_state=tn
+POSTHOOK: Output: file:/var/folders/67/67R3POPtF90VG63KSmCbcU++F0U/-Tmp-/krishnak/hive_2011-03-20_23-05-23_605_5011311401480577512/-mr-10000
+PREHOOK: query: drop table exim_employee
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: importer@exim_employee
+PREHOOK: Output: importer@exim_employee
+POSTHOOK: query: drop table exim_employee
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: importer@exim_employee
+POSTHOOK: Output: importer@exim_employee
+PREHOOK: query: drop database importer
+PREHOOK: type: DROPDATABASE
+POSTHOOK: query: drop database importer
+POSTHOOK: type: DROPDATABASE

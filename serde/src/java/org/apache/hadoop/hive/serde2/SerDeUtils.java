@@ -19,9 +19,9 @@
 package org.apache.hadoop.hive.serde2;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 import org.apache.hadoop.hive.common.JavaUtils;
 import org.apache.hadoop.hive.serde2.objectinspector.ListObjectInspector;
@@ -31,6 +31,7 @@ import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.StructField;
 import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.UnionObjectInspector;
+import org.apache.hadoop.hive.serde2.objectinspector.primitive.BinaryObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.BooleanObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.ByteObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.DoubleObjectInspector;
@@ -39,6 +40,9 @@ import org.apache.hadoop.hive.serde2.objectinspector.primitive.IntObjectInspecto
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.LongObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.ShortObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.StringObjectInspector;
+import org.apache.hadoop.hive.serde2.objectinspector.primitive.TimestampObjectInspector;
+import org.apache.hadoop.io.BytesWritable;
+import org.apache.hadoop.io.Text;
 
 /**
  * SerDeUtils.
@@ -54,7 +58,8 @@ public final class SerDeUtils {
   public static final String LBRACE = "{";
   public static final String RBRACE = "}";
 
-  private static HashMap<String, Class<?>> serdes = new HashMap<String, Class<?>>();
+  private static ConcurrentHashMap<String, Class<?>> serdes =
+    new ConcurrentHashMap<String, Class<?>>();
 
   public static void registerSerDe(String name, Class<?> serde) {
     if (serdes.containsKey(name)) {
@@ -93,6 +98,7 @@ public final class SerDeUtils {
     nativeSerDeNames.add("org.apache.hadoop.hive.serde.thrift.columnsetSerDe");
     nativeSerDeNames
         .add(org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe.class.getName());
+    nativeSerDeNames.add(org.apache.hadoop.hive.serde2.columnar.ColumnarSerDe.class.getName());
   }
 
   public static boolean shouldGetColsFromSerDe(String serde) {
@@ -251,6 +257,20 @@ public final class SerDeUtils {
           sb.append(escapeString(((StringObjectInspector) poi)
               .getPrimitiveJavaObject(o)));
           sb.append('"');
+          break;
+        }
+        case TIMESTAMP: {
+          sb.append('"');
+          sb.append(((TimestampObjectInspector) poi)
+              .getPrimitiveWritableObject(o));
+          sb.append('"');
+          break;
+        }
+        case BINARY: {
+          BytesWritable bw = ((BinaryObjectInspector) oi).getPrimitiveWritableObject(o);
+          Text txt = new Text();
+          txt.set(bw.getBytes(), 0, bw.getLength());
+          sb.append(txt.toString());
           break;
         }
         default:

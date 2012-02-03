@@ -76,7 +76,7 @@ public class SimpleCharStream {
         maxNextCharInd = (bufpos -= tokenBegin);
       }
     } catch (Throwable t) {
-      throw new Error(t.getMessage());
+      throw new Error("Error in ExpandBuff",t);
     }
 
     bufsize += 2048;

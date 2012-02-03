@@ -1,0 +1,7 @@
+PREHOOK: query: -- Tests exception in ScriptOperator.close() by passing to the operator a small amount of data
+SELECT TRANSFORM(*) USING 'true' AS a, b, c FROM (SELECT * FROM src LIMIT 1) tmp
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: hdfs://localhost.localdomain:36146/data/users/salbiz/apache-hive/build/ql/scratchdir/hive_2011-08-10_11-22-50_431_7753055018861847257/-mr-10000
+Ended Job = job_20110810112236124_0001 with errors
+FAILED: Execution Error, return code 2 from org.apache.hadoop.hive.ql.exec.MapRedTask

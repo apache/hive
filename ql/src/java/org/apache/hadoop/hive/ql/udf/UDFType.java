@@ -32,4 +32,6 @@ import java.lang.annotation.Target;
 @Inherited
 public @interface UDFType {
   boolean deterministic() default true;
+  boolean stateful() default false;
+  boolean distinctLike() default false;
 }

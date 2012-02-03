@@ -27,7 +27,7 @@ import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectIn
 
 /**
  * TypeInfoFactory can be used to create the TypeInfo object for any types.
- * 
+ *
  * TypeInfo objects are all read-only so we can reuse them easily.
  * TypeInfoFactory has internal cache to make sure we don't create 2 TypeInfo
  * objects that represents the same type.
@@ -62,6 +62,8 @@ public final class TypeInfoFactory {
   public static final TypeInfo doubleTypeInfo = getPrimitiveTypeInfo(Constants.DOUBLE_TYPE_NAME);
   public static final TypeInfo byteTypeInfo = getPrimitiveTypeInfo(Constants.TINYINT_TYPE_NAME);
   public static final TypeInfo shortTypeInfo = getPrimitiveTypeInfo(Constants.SMALLINT_TYPE_NAME);
+  public static final TypeInfo timestampTypeInfo = getPrimitiveTypeInfo(Constants.TIMESTAMP_TYPE_NAME);
+  public static final TypeInfo binaryTypeInfo = getPrimitiveTypeInfo(Constants.BINARY_TYPE_NAME);
 
   public static final TypeInfo unknownTypeInfo = getPrimitiveTypeInfo("unknown");
 

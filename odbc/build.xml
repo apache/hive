@@ -41,12 +41,14 @@
   </path>
 
   <target name="check-word-size">
+    <echo message="Project: ${ant.project.name}"/>
     <condition property="word.size" value="64" else="32">
       <contains string="${os.arch}" substring="64"/>
     </condition>
   </target>
 
   <target name="compile-cpp" depends="init,check-word-size">
+    <echo message="Project: ${ant.project.name}"/>
     <exec dir="." executable="${make.cmd}" failonerror="true">
       <env key="WORD_SIZE" value="${word.size}"/>
       <env key="THRIFT_HOME" value="${thrift.home}"/>
@@ -60,6 +62,7 @@
   </target>
 
   <target name="clean">
+    <echo message="Project: ${ant.project.name}"/>
     <delete dir="${build.dir.hive}/odbc/include"/>
     <exec dir="." executable="${make.cmd}" failonerror="true">
       <arg line="clean"/>
@@ -69,6 +72,7 @@
   </target>
 
   <target name="install" depends="check-word-size">
+    <echo message="Project: ${ant.project.name}"/>
     <exec dir="." executable="${make.cmd}" failonerror="true">
       <arg line="install"/>
       <env key="WORD_SIZE" value="${word.size}"/>
@@ -79,6 +83,7 @@
   </target>
 
   <target name="uninstall">
+    <echo message="Project: ${ant.project.name}"/>
     <exec dir="." executable="${make.cmd}" failonerror="true">
       <arg line="uninstall"/>
       <env key="HIVE_ROOT" value="${hive.root}"/>
@@ -88,6 +93,7 @@
 
   <!-- Only run tests if thrift.home is defined so that we don't break other tests -->
   <target name="test" depends="check-word-size,check-thrift-home" if="thrift.home.defined">
+    <echo message="Project: ${ant.project.name}"/>
     <exec dir="." executable="${make.cmd}" failonerror="true">
       <arg line="test"/>
       <env key="WORD_SIZE" value="${word.size}"/>

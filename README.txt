@@ -1,14 +1,27 @@
-Apache Hive @VERSION@
-=================
+Apache Hive (TM) @VERSION@
+======================
 
-Hive is a data warehouse system for Hadoop that facilitates
-easy data summarization, ad-hoc querying and analysis of large
-datasets stored in Hadoop compatible file systems. Hive provides a
-mechanism to put structure on this data and query the data using a
-SQL-like language called HiveQL. At the same time this language also
-allows traditional map/reduce programmers to plug in their custom
-mappers and reducers when it is inconvenient or inefficient to express
-this logic in HiveQL.
+The Apache Hive (TM) data warehouse software facilitates querying and
+managing large datasets residing in distributed storage. Built on top
+of Apache Hadoop (TM), it provides:
+
+* Tools to enable easy data extract/transform/load (ETL)
+
+* A mechanism to impose structure on a variety of data formats
+
+* Access to files stored either directly in Apache HDFS (TM) or in other
+  data storage systems such as Apache HBase (TM)
+
+* Query execution via MapReduce
+
+Hive defines a simple SQL-like query language, called QL, that enables
+users familiar with SQL to query the data. At the same time, this
+language also allows programmers who are familiar with the MapReduce
+framework to be able to plug in their custom mappers and reducers to
+perform more sophisticated analysis that may not be supported by the
+built-in capabilities of the language. QL can also be extended with
+custom scalar functions (UDF's), aggregations (UDAF's), and table
+functions (UDTF's).
 
 Please note that Hadoop is a batch processing system and Hadoop jobs
 tend to have high latency and incur substantial overheads in job
@@ -43,13 +56,13 @@ Getting Started
 ===============
 
 - Installation Instructions and a quick tutorial:
-  http://wiki.apache.org/hadoop/Hive/GettingStarted
+  https://cwiki.apache.org/confluence/display/Hive/GettingStarted
 
 - A longer tutorial that covers more features of HiveQL:
-  http://wiki.apache.org/hadoop/Hive/Tutorial
+  https://cwiki.apache.org/confluence/display/Hive/Tutorial
 
 - The HiveQL Language Manual:
-  http://wiki.apache.org/hadoop/Hive/LanguageManual
+  https://cwiki.apache.org/confluence/display/Hive/LanguageManual
 
 
 Requirements
@@ -64,20 +77,26 @@ Upgrading from older versions of Hive
 =====================================
 
 - Hive @VERSION@ includes changes to the MetaStore schema. If
-  you are upgrading from an earlier minor version of Hive it is
-  imperative that you upgrade the MetaStore schema by
-  running the appropriate schema upgrade scripts located in
-  the scripts/metastore/upgrade directory.
+  you are upgrading from an earlier version of Hive it is imperative
+  that you upgrade the MetaStore schema by running the appropriate
+  schema upgrade scripts located in the scripts/metastore/upgrade
+  directory.
 
   We have provided upgrade scripts for Derby and MySQL databases. If
   you are using a different database for your MetaStore you will need
   to provide your own upgrade script.
 
-- Hive @VERSION@ includes new configuration properties. If you
-  are upgrading from an earlier minor version of Hive it is imperative
-  that you replace all of the old copies of the hive-default.xml
-  configuration file with the new version located in the conf/
-  directory.
+- Please be aware that the Hive 0.8.0 MetaStore upgrade scripts remove
+  support for partition-level column information from the MetaStore
+  schema. Since this information was not previously exposed by Hive
+  the only people potentially impacted by this change are those who
+  access the MetaStore directly via the Thrift API. If you fall into
+  the latter category please consult HIVE-2246 for more information.
+
+- Hive 0.8.0 ignores the hive-default.xml file, though we continue
+  to provide it for reference purposes. Any changes that you
+  previously made to hive-default.xml must now be moved to the
+  hive-site.xml file.
 
 
 Useful mailing lists
@@ -88,8 +107,8 @@ Useful mailing lists
    to this mailing list.
 
 2. dev@hive.apache.org - For discussions about code, design and features.
-   Send an empty email to dev-subscribe@hive.apache.org in order to subscribe
-   to this mailing list.
+   Send an empty email to dev-subscribe@hive.apache.org in order to
+   subscribe to this mailing list.
 
 3. commits@hive.apache.org - In order to monitor commits to the source
    repository. Send an empty email to commits-subscribe@hive.apache.org

@@ -17,11 +17,6 @@
    limitations under the License.
 -->
 
-
-<!--
-Before you can run these subtargets directly, you need
-to call at top-level: ant deploy-contrib compile-core-test
--->
 <project name="serde" default="jar">
     
   <property name="src.dir"  location="${basedir}/src"/> 
@@ -29,7 +24,7 @@ to call at top-level: ant deploy-contrib compile-core-test
 
 
   <target name="dynamic-serde" depends="init" if="javacc.home">
-
+    <echo message="Project: ${ant.project.name}"/>
     <jjtree buildnodefiles="true"
       target="${src.dir}/java/org/apache/hadoop/hive/serde2/dynamic_type/thrift_grammar.jjt"
       outputdirectory="${src.dir}/java/org/apache/hadoop/hive/serde2/dynamic_type"
@@ -42,20 +37,22 @@ to call at top-level: ant deploy-contrib compile-core-test
     />
   </target>
 
-  <target name="compile" depends="init,dynamic-serde,ivy-retrieve">
-    <echo message="Compiling: ${name}"/>
+  <target name="compile" depends="init,ivy-retrieve,dynamic-serde">
+    <echo message="Project: ${ant.project.name}"/>
     <javac
      encoding="${build.encoding}"
      srcdir="${src.dir}/java/:${src.dir}/gen/thrift/gen-javabean/:${src.dir}/gen/protobuf/gen-java/"
      destdir="${build.classes}"
      debug="${javac.debug}"
-     deprecation="${javac.deprecation}">
+     deprecation="${javac.deprecation}"
+     includeantruntime="false">
       <compilerarg line="${javac.args} ${javac.args.warnings}" />
       <classpath refid="classpath"/>
     </javac>
   </target>
 
   <target name="thriftif" depends="check-thrift-home">
+    <echo message="Project: ${ant.project.name}"/>
     <fail unless="thrift.home">You must set the 'thrift.home' property!</fail>
     <echo>Executing ${thrift.home}/bin/thrift to build java serde Constants... </echo>
     <exec executable="${thrift.home}/bin/thrift"  failonerror="true" dir=".">
@@ -72,6 +69,7 @@ to call at top-level: ant deploy-contrib compile-core-test
   </target>
 
   <target name="gen-testdata" depends="compile-test,test-jar">
+    <echo message="Project: ${ant.project.name}"/>
     <echo>Generating data/files/complex.seq... </echo>
     <java
      dir="${hive.root}"

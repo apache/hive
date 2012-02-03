@@ -25,10 +25,12 @@ array
 array_contains
 ascii
 asin
+assert_true
 atan
 avg
 bigint
 bin
+binary
 boolean
 case
 ceil
@@ -55,6 +57,10 @@ div
 double
 e
 elt
+ewah_bitmap
+ewah_bitmap_and
+ewah_bitmap_empty
+ewah_bitmap_or
 exp
 explode
 field
@@ -62,6 +68,7 @@ find_in_set
 float
 floor
 from_unixtime
+from_utc_timestamp
 get_json_object
 hash
 hex
@@ -69,6 +76,7 @@ histogram_numeric
 hour
 if
 in
+in_file
 index
 instr
 int
@@ -87,10 +95,13 @@ lower
 lpad
 ltrim
 map
+map_keys
+map_values
 max
 min
 minute
 month
+named_struct
 negative
 ngrams
 not
@@ -125,6 +136,7 @@ smallint
 space
 split
 sqrt
+stack
 std
 stddev
 stddev_pop
@@ -136,11 +148,14 @@ substr
 substring
 sum
 tan
+timestamp
 tinyint
 to_date
+to_utc_timestamp
 trim
 ucase
 unhex
+union_map
 unix_timestamp
 upper
 var_pop
@@ -183,12 +198,14 @@ PREHOOK: query: SHOW FUNCTIONS '.*e$'
 PREHOOK: type: SHOWFUNCTIONS
 POSTHOOK: query: SHOW FUNCTIONS '.*e$'
 POSTHOOK: type: SHOWFUNCTIONS
+assert_true
 case
 coalesce
 double
 e
 explode
 from_unixtime
+in_file
 json_tuple
 lcase
 like

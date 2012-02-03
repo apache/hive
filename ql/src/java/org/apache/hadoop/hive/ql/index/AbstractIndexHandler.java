@@ -20,8 +20,12 @@ package org.apache.hadoop.hive.ql.index;
 
 import java.util.List;
 
+import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
+import org.apache.hadoop.hive.metastore.api.Index;
 import org.apache.hadoop.hive.ql.metadata.HiveUtils;
+import org.apache.hadoop.hive.ql.parse.ParseContext;
+import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
 
 /**
  * Abstract base class for index handlers.  This is provided as insulation
@@ -42,4 +46,13 @@ public abstract class AbstractIndexHandler implements HiveIndexHandler {
     return sb.toString();
   }
 
+  public void generateIndexQuery(Index index, ExprNodeDesc predicate,
+    ParseContext pctx, HiveIndexQueryContext queryContext) {
+    queryContext.setQueryTasks(null);
+    return;
+  }
+
+  public boolean checkQuerySize(long inputSize, HiveConf conf) {
+    return false;
+  }
 }

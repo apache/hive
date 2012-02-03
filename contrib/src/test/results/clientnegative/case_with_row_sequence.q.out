@@ -1,0 +1,28 @@
+PREHOOK: query: drop temporary function row_sequence
+PREHOOK: type: DROPFUNCTION
+POSTHOOK: query: drop temporary function row_sequence
+POSTHOOK: type: DROPFUNCTION
+PREHOOK: query: create temporary function row_sequence as 
+'org.apache.hadoop.hive.contrib.udf.UDFRowSequence'
+PREHOOK: type: CREATEFUNCTION
+POSTHOOK: query: create temporary function row_sequence as 
+'org.apache.hadoop.hive.contrib.udf.UDFRowSequence'
+POSTHOOK: type: CREATEFUNCTION
+PREHOOK: query: -- make sure a stateful function inside of CASE throws an exception
+-- since the short-circuiting requirements are contradictory
+SELECT CASE WHEN 3 > 2 THEN 10 WHEN row_sequence() > 5 THEN 20 ELSE 30 END
+FROM src LIMIT 1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: file:/tmp/salbiz/hive_2011-08-05_12-14-46_686_3062563290565430667/-mr-10000
+Execution failed with exit status: 2
+Obtaining error information
+
+Task failed!
+Task ID:
+  Stage-1
+
+Logs:
+
+/data/users/salbiz/apache-hive/build/ql/tmp//hive.log
+FAILED: Execution Error, return code 2 from org.apache.hadoop.hive.ql.exec.MapRedTask

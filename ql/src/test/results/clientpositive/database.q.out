@@ -138,7 +138,7 @@ DESCRIBE EXTENDED test_table
 POSTHOOK: type: DESCTABLE
 col1	string	
 	 	 
-Detailed Table Information	Table(tableName:test_table, dbName:test_db, owner:sdong, createTime:1297298647, lastAccessTime:0, retention:0, sd:StorageDescriptor(cols:[FieldSchema(name:col1, type:string, comment:null)], location:pfile:/data/users/sdong/www/open-source-hive1/build/ql/test/data/warehouse/test_db.db/test_table, inputFormat:org.apache.hadoop.mapred.TextInputFormat, outputFormat:org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat, compressed:false, numBuckets:-1, serdeInfo:SerDeInfo(name:null, serializationLib:org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe, parameters:{serialization.format=1}), bucketCols:[], sortCols:[], parameters:{}), partitionKeys:[], parameters:{transient_lastDdlTime=1297298647}, viewOriginalText:null, viewExpandedText:null, tableType:MANAGED_TABLE)	
+Detailed Table Information	Table(tableName:test_table, dbName:test_db, owner:rsurowka, createTime:1320966647, lastAccessTime:0, retention:0, sd:StorageDescriptor(cols:[FieldSchema(name:col1, type:string, comment:null)], location:pfile:/data/users/rsurowka/JAVA_HIVE/apache-hive/build/ql/test/data/warehouse/test_db.db/test_table, inputFormat:org.apache.hadoop.mapred.TextInputFormat, outputFormat:org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat, compressed:false, numBuckets:-1, serdeInfo:SerDeInfo(name:null, serializationLib:org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe, parameters:{serialization.format=1}), bucketCols:[], sortCols:[], parameters:{}), partitionKeys:[], parameters:{transient_lastDdlTime=1320966647}, viewOriginalText:null, viewExpandedText:null, tableType:MANAGED_TABLE)	
 PREHOOK: query: -- CREATE LIKE in non-default DB
 CREATE TABLE test_table_like LIKE test_table
 PREHOOK: type: CREATETABLE
@@ -158,11 +158,12 @@ POSTHOOK: query: DESCRIBE EXTENDED test_table_like
 POSTHOOK: type: DESCTABLE
 col1	string	
 	 	 
-Detailed Table Information	Table(tableName:test_table_like, dbName:test_db, owner:sdong, createTime:1297298647, lastAccessTime:0, retention:0, sd:StorageDescriptor(cols:[FieldSchema(name:col1, type:string, comment:null)], location:pfile:/data/users/sdong/www/open-source-hive1/build/ql/test/data/warehouse/test_db.db/test_table_like, inputFormat:org.apache.hadoop.mapred.TextInputFormat, outputFormat:org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat, compressed:false, numBuckets:-1, serdeInfo:SerDeInfo(name:null, serializationLib:org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe, parameters:{serialization.format=1}), bucketCols:[], sortCols:[], parameters:{}), partitionKeys:[], parameters:{transient_lastDdlTime=1297298647}, viewOriginalText:null, viewExpandedText:null, tableType:MANAGED_TABLE)	
+Detailed Table Information	Table(tableName:test_table_like, dbName:test_db, owner:rsurowka, createTime:1320966647, lastAccessTime:0, retention:0, sd:StorageDescriptor(cols:[FieldSchema(name:col1, type:string, comment:null)], location:pfile:/data/users/rsurowka/JAVA_HIVE/apache-hive/build/ql/test/data/warehouse/test_db.db/test_table_like, inputFormat:org.apache.hadoop.mapred.TextInputFormat, outputFormat:org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat, compressed:false, numBuckets:-1, serdeInfo:SerDeInfo(name:null, serializationLib:org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe, parameters:{serialization.format=1}), bucketCols:[], sortCols:[], parameters:{}), partitionKeys:[], parameters:{transient_lastDdlTime=1320966647}, viewOriginalText:null, viewExpandedText:null, tableType:MANAGED_TABLE)	
 PREHOOK: query: -- LOAD and SELECT
 LOAD DATA LOCAL INPATH '../data/files/test.dat'
 OVERWRITE INTO TABLE test_table
 PREHOOK: type: LOAD
+PREHOOK: Output: test_db@test_table
 POSTHOOK: query: -- LOAD and SELECT
 LOAD DATA LOCAL INPATH '../data/files/test.dat'
 OVERWRITE INTO TABLE test_table
@@ -171,11 +172,11 @@ POSTHOOK: Output: test_db@test_table
 PREHOOK: query: SELECT * FROM test_table
 PREHOOK: type: QUERY
 PREHOOK: Input: test_db@test_table
-PREHOOK: Output: file:/tmp/sdong/hive_2011-02-09_16-44-07_907_2220290854576269936/-mr-10000
+PREHOOK: Output: file:/tmp/rsurowka/hive_2011-11-10_15-10-48_151_6573920810604836961/-mr-10000
 POSTHOOK: query: SELECT * FROM test_table
 POSTHOOK: type: QUERY
 POSTHOOK: Input: test_db@test_table
-POSTHOOK: Output: file:/tmp/sdong/hive_2011-02-09_16-44-07_907_2220290854576269936/-mr-10000
+POSTHOOK: Output: file:/tmp/rsurowka/hive_2011-11-10_15-10-48_151_6573920810604836961/-mr-10000
 1
 2
 3
@@ -211,11 +212,11 @@ test_table_like
 PREHOOK: query: SELECT * FROM test_table
 PREHOOK: type: QUERY
 PREHOOK: Input: test_db@test_table
-PREHOOK: Output: file:/tmp/sdong/hive_2011-02-09_16-44-09_675_3749588003523508410/-mr-10000
+PREHOOK: Output: file:/tmp/rsurowka/hive_2011-11-10_15-10-49_633_3443054131161689989/-mr-10000
 POSTHOOK: query: SELECT * FROM test_table
 POSTHOOK: type: QUERY
 POSTHOOK: Input: test_db@test_table
-POSTHOOK: Output: file:/tmp/sdong/hive_2011-02-09_16-44-09_675_3749588003523508410/-mr-10000
+POSTHOOK: Output: file:/tmp/rsurowka/hive_2011-11-10_15-10-49_633_3443054131161689989/-mr-10000
 PREHOOK: query: -- CREATE table that already exists in DEFAULT
 USE test_db
 PREHOOK: type: SWITCHDATABASE
@@ -237,11 +238,11 @@ test_table_like
 PREHOOK: query: SELECT * FROM src LIMIT 10
 PREHOOK: type: QUERY
 PREHOOK: Input: test_db@src
-PREHOOK: Output: file:/tmp/sdong/hive_2011-02-09_16-44-09_940_1455309242143303234/-mr-10000
+PREHOOK: Output: file:/tmp/rsurowka/hive_2011-11-10_15-10-49_913_7850323324454709675/-mr-10000
 POSTHOOK: query: SELECT * FROM src LIMIT 10
 POSTHOOK: type: QUERY
 POSTHOOK: Input: test_db@src
-POSTHOOK: Output: file:/tmp/sdong/hive_2011-02-09_16-44-09_940_1455309242143303234/-mr-10000
+POSTHOOK: Output: file:/tmp/rsurowka/hive_2011-11-10_15-10-49_913_7850323324454709675/-mr-10000
 PREHOOK: query: USE default
 PREHOOK: type: SWITCHDATABASE
 POSTHOOK: query: USE default
@@ -249,11 +250,11 @@ POSTHOOK: type: SWITCHDATABASE
 PREHOOK: query: SELECT * FROM src LIMIT 10
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/tmp/sdong/hive_2011-02-09_16-44-10_069_2353230500727487936/-mr-10000
+PREHOOK: Output: file:/tmp/rsurowka/hive_2011-11-10_15-10-50_034_1858621799404782207/-mr-10000
 POSTHOOK: query: SELECT * FROM src LIMIT 10
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: file:/tmp/sdong/hive_2011-02-09_16-44-10_069_2353230500727487936/-mr-10000
+POSTHOOK: Output: file:/tmp/rsurowka/hive_2011-11-10_15-10-50_034_1858621799404782207/-mr-10000
 238	val_238
 86	val_86
 311	val_311
@@ -311,6 +312,168 @@ PREHOOK: type: SHOWDATABASES
 POSTHOOK: query: SHOW DATABASES
 POSTHOOK: type: SHOWDATABASES
 default
+PREHOOK: query: -- DROP EMPTY DATABASE CASCADE
+CREATE DATABASE to_drop_db1
+PREHOOK: type: CREATEDATABASE
+POSTHOOK: query: -- DROP EMPTY DATABASE CASCADE
+CREATE DATABASE to_drop_db1
+POSTHOOK: type: CREATEDATABASE
+PREHOOK: query: SHOW DATABASES
+PREHOOK: type: SHOWDATABASES
+POSTHOOK: query: SHOW DATABASES
+POSTHOOK: type: SHOWDATABASES
+default
+to_drop_db1
+PREHOOK: query: USE default
+PREHOOK: type: SWITCHDATABASE
+POSTHOOK: query: USE default
+POSTHOOK: type: SWITCHDATABASE
+PREHOOK: query: DROP DATABASE to_drop_db1 CASCADE
+PREHOOK: type: DROPDATABASE
+POSTHOOK: query: DROP DATABASE to_drop_db1 CASCADE
+POSTHOOK: type: DROPDATABASE
+PREHOOK: query: SHOW DATABASES
+PREHOOK: type: SHOWDATABASES
+POSTHOOK: query: SHOW DATABASES
+POSTHOOK: type: SHOWDATABASES
+default
+PREHOOK: query: -- DROP NON-EMPTY DATABASE CASCADE
+CREATE DATABASE to_drop_db2
+PREHOOK: type: CREATEDATABASE
+POSTHOOK: query: -- DROP NON-EMPTY DATABASE CASCADE
+CREATE DATABASE to_drop_db2
+POSTHOOK: type: CREATEDATABASE
+PREHOOK: query: SHOW DATABASES
+PREHOOK: type: SHOWDATABASES
+POSTHOOK: query: SHOW DATABASES
+POSTHOOK: type: SHOWDATABASES
+default
+to_drop_db2
+PREHOOK: query: USE to_drop_db2
+PREHOOK: type: SWITCHDATABASE
+POSTHOOK: query: USE to_drop_db2
+POSTHOOK: type: SWITCHDATABASE
+PREHOOK: query: CREATE TABLE temp_tbl (c STRING)
+PREHOOK: type: CREATETABLE
+POSTHOOK: query: CREATE TABLE temp_tbl (c STRING)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: to_drop_db2@temp_tbl
+PREHOOK: query: CREATE TABLE temp_tbl2 LIKE temp_tbl
+PREHOOK: type: CREATETABLE
+POSTHOOK: query: CREATE TABLE temp_tbl2 LIKE temp_tbl
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: to_drop_db2@temp_tbl2
+PREHOOK: query: INSERT OVERWRITE TABLE temp_tbl2 SELECT COUNT(*) FROM temp_tbl
+PREHOOK: type: QUERY
+PREHOOK: Input: to_drop_db2@temp_tbl
+PREHOOK: Output: to_drop_db2@temp_tbl2
+POSTHOOK: query: INSERT OVERWRITE TABLE temp_tbl2 SELECT COUNT(*) FROM temp_tbl
+POSTHOOK: type: QUERY
+POSTHOOK: Input: to_drop_db2@temp_tbl
+POSTHOOK: Output: to_drop_db2@temp_tbl2
+POSTHOOK: Lineage: temp_tbl2.c EXPRESSION [(temp_tbl)temp_tbl.null, ]
+PREHOOK: query: USE default
+PREHOOK: type: SWITCHDATABASE
+POSTHOOK: query: USE default
+POSTHOOK: type: SWITCHDATABASE
+POSTHOOK: Lineage: temp_tbl2.c EXPRESSION [(temp_tbl)temp_tbl.null, ]
+PREHOOK: query: DROP DATABASE to_drop_db2 CASCADE
+PREHOOK: type: DROPDATABASE
+POSTHOOK: query: DROP DATABASE to_drop_db2 CASCADE
+POSTHOOK: type: DROPDATABASE
+POSTHOOK: Lineage: temp_tbl2.c EXPRESSION [(temp_tbl)temp_tbl.null, ]
+PREHOOK: query: SHOW DATABASES
+PREHOOK: type: SHOWDATABASES
+POSTHOOK: query: SHOW DATABASES
+POSTHOOK: type: SHOWDATABASES
+POSTHOOK: Lineage: temp_tbl2.c EXPRESSION [(temp_tbl)temp_tbl.null, ]
+default
+PREHOOK: query: -- DROP NON-EMPTY DATABASE CASCADE IF EXISTS
+CREATE DATABASE to_drop_db3
+PREHOOK: type: CREATEDATABASE
+POSTHOOK: query: -- DROP NON-EMPTY DATABASE CASCADE IF EXISTS
+CREATE DATABASE to_drop_db3
+POSTHOOK: type: CREATEDATABASE
+POSTHOOK: Lineage: temp_tbl2.c EXPRESSION [(temp_tbl)temp_tbl.null, ]
+PREHOOK: query: SHOW DATABASES
+PREHOOK: type: SHOWDATABASES
+POSTHOOK: query: SHOW DATABASES
+POSTHOOK: type: SHOWDATABASES
+POSTHOOK: Lineage: temp_tbl2.c EXPRESSION [(temp_tbl)temp_tbl.null, ]
+default
+to_drop_db3
+PREHOOK: query: USE to_drop_db3
+PREHOOK: type: SWITCHDATABASE
+POSTHOOK: query: USE to_drop_db3
+POSTHOOK: type: SWITCHDATABASE
+POSTHOOK: Lineage: temp_tbl2.c EXPRESSION [(temp_tbl)temp_tbl.null, ]
+PREHOOK: query: CREATE TABLE temp_tbl (c STRING)
+PREHOOK: type: CREATETABLE
+POSTHOOK: query: CREATE TABLE temp_tbl (c STRING)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: to_drop_db3@temp_tbl
+POSTHOOK: Lineage: temp_tbl2.c EXPRESSION [(temp_tbl)temp_tbl.null, ]
+PREHOOK: query: USE default
+PREHOOK: type: SWITCHDATABASE
+POSTHOOK: query: USE default
+POSTHOOK: type: SWITCHDATABASE
+POSTHOOK: Lineage: temp_tbl2.c EXPRESSION [(temp_tbl)temp_tbl.null, ]
+PREHOOK: query: DROP DATABASE IF EXISTS to_drop_db3 CASCADE
+PREHOOK: type: DROPDATABASE
+POSTHOOK: query: DROP DATABASE IF EXISTS to_drop_db3 CASCADE
+POSTHOOK: type: DROPDATABASE
+POSTHOOK: Lineage: temp_tbl2.c EXPRESSION [(temp_tbl)temp_tbl.null, ]
+PREHOOK: query: SHOW DATABASES
+PREHOOK: type: SHOWDATABASES
+POSTHOOK: query: SHOW DATABASES
+POSTHOOK: type: SHOWDATABASES
+POSTHOOK: Lineage: temp_tbl2.c EXPRESSION [(temp_tbl)temp_tbl.null, ]
+default
+PREHOOK: query: -- DROP NON-EXISTING DATABASE CASCADE IF EXISTS
+DROP DATABASE IF EXISTS non_exists_db3 CASCADE
+PREHOOK: type: DROPDATABASE
+POSTHOOK: query: -- DROP NON-EXISTING DATABASE CASCADE IF EXISTS
+DROP DATABASE IF EXISTS non_exists_db3 CASCADE
+POSTHOOK: type: DROPDATABASE
+POSTHOOK: Lineage: temp_tbl2.c EXPRESSION [(temp_tbl)temp_tbl.null, ]
+PREHOOK: query: SHOW DATABASES
+PREHOOK: type: SHOWDATABASES
+POSTHOOK: query: SHOW DATABASES
+POSTHOOK: type: SHOWDATABASES
+POSTHOOK: Lineage: temp_tbl2.c EXPRESSION [(temp_tbl)temp_tbl.null, ]
+default
+PREHOOK: query: -- DROP NON-EXISTING DATABASE RESTRICT IF EXISTS
+DROP DATABASE IF EXISTS non_exists_db3 RESTRICT
+PREHOOK: type: DROPDATABASE
+POSTHOOK: query: -- DROP NON-EXISTING DATABASE RESTRICT IF EXISTS
+DROP DATABASE IF EXISTS non_exists_db3 RESTRICT
+POSTHOOK: type: DROPDATABASE
+POSTHOOK: Lineage: temp_tbl2.c EXPRESSION [(temp_tbl)temp_tbl.null, ]
+PREHOOK: query: -- DROP EMPTY DATABASE RESTRICT
+CREATE DATABASE to_drop_db4
+PREHOOK: type: CREATEDATABASE
+POSTHOOK: query: -- DROP EMPTY DATABASE RESTRICT
+CREATE DATABASE to_drop_db4
+POSTHOOK: type: CREATEDATABASE
+POSTHOOK: Lineage: temp_tbl2.c EXPRESSION [(temp_tbl)temp_tbl.null, ]
+PREHOOK: query: SHOW DATABASES
+PREHOOK: type: SHOWDATABASES
+POSTHOOK: query: SHOW DATABASES
+POSTHOOK: type: SHOWDATABASES
+POSTHOOK: Lineage: temp_tbl2.c EXPRESSION [(temp_tbl)temp_tbl.null, ]
+default
+to_drop_db4
+PREHOOK: query: DROP DATABASE to_drop_db4 RESTRICT
+PREHOOK: type: DROPDATABASE
+POSTHOOK: query: DROP DATABASE to_drop_db4 RESTRICT
+POSTHOOK: type: DROPDATABASE
+POSTHOOK: Lineage: temp_tbl2.c EXPRESSION [(temp_tbl)temp_tbl.null, ]
+PREHOOK: query: SHOW DATABASES
+PREHOOK: type: SHOWDATABASES
+POSTHOOK: query: SHOW DATABASES
+POSTHOOK: type: SHOWDATABASES
+POSTHOOK: Lineage: temp_tbl2.c EXPRESSION [(temp_tbl)temp_tbl.null, ]
+default
 PREHOOK: query: --
 -- Canonical Name Tests
 --
@@ -323,10 +486,12 @@ POSTHOOK: query: --
 
 CREATE DATABASE db1
 POSTHOOK: type: CREATEDATABASE
+POSTHOOK: Lineage: temp_tbl2.c EXPRESSION [(temp_tbl)temp_tbl.null, ]
 PREHOOK: query: CREATE DATABASE db2
 PREHOOK: type: CREATEDATABASE
 POSTHOOK: query: CREATE DATABASE db2
 POSTHOOK: type: CREATEDATABASE
+POSTHOOK: Lineage: temp_tbl2.c EXPRESSION [(temp_tbl)temp_tbl.null, ]
 PREHOOK: query: -- CREATE foreign table
 CREATE TABLE db1.src(key STRING, value STRING)
 STORED AS TEXTFILE
@@ -336,25 +501,29 @@ CREATE TABLE db1.src(key STRING, value STRING)
 STORED AS TEXTFILE
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: db1@src
+POSTHOOK: Lineage: temp_tbl2.c EXPRESSION [(temp_tbl)temp_tbl.null, ]
 PREHOOK: query: -- LOAD into foreign table
 LOAD DATA LOCAL INPATH '../data/files/kv1.txt'
 OVERWRITE INTO TABLE db1.src
 PREHOOK: type: LOAD
+PREHOOK: Output: db1@src
 POSTHOOK: query: -- LOAD into foreign table
 LOAD DATA LOCAL INPATH '../data/files/kv1.txt'
 OVERWRITE INTO TABLE db1.src
 POSTHOOK: type: LOAD
 POSTHOOK: Output: db1@src
+POSTHOOK: Lineage: temp_tbl2.c EXPRESSION [(temp_tbl)temp_tbl.null, ]
 PREHOOK: query: -- SELECT from foreign table
 SELECT * FROM db1.src
 PREHOOK: type: QUERY
 PREHOOK: Input: db1@src
-PREHOOK: Output: file:/tmp/sdong/hive_2011-02-09_16-44-11_275_6905084904466384529/-mr-10000
+PREHOOK: Output: file:/tmp/rsurowka/hive_2011-11-10_15-10-58_951_6480997097390226151/-mr-10000
 POSTHOOK: query: -- SELECT from foreign table
 SELECT * FROM db1.src
 POSTHOOK: type: QUERY
 POSTHOOK: Input: db1@src
-POSTHOOK: Output: file:/tmp/sdong/hive_2011-02-09_16-44-11_275_6905084904466384529/-mr-10000
+POSTHOOK: Output: file:/tmp/rsurowka/hive_2011-11-10_15-10-58_951_6480997097390226151/-mr-10000
+POSTHOOK: Lineage: temp_tbl2.c EXPRESSION [(temp_tbl)temp_tbl.null, ]
 238	val_238
 86	val_86
 311	val_311
@@ -866,29 +1035,34 @@ PARTITIONED BY (ds STRING, hr STRING)
 STORED AS TEXTFILE
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: db1@srcpart
+POSTHOOK: Lineage: temp_tbl2.c EXPRESSION [(temp_tbl)temp_tbl.null, ]
 PREHOOK: query: -- LOAD data into Partitioned foreign table
 LOAD DATA LOCAL INPATH '../data/files/kv1.txt'
 OVERWRITE INTO TABLE db1.srcpart
 PARTITION (ds='2008-04-08', hr='11')
 PREHOOK: type: LOAD
+PREHOOK: Output: db1@srcpart
 POSTHOOK: query: -- LOAD data into Partitioned foreign table
 LOAD DATA LOCAL INPATH '../data/files/kv1.txt'
 OVERWRITE INTO TABLE db1.srcpart
 PARTITION (ds='2008-04-08', hr='11')
 POSTHOOK: type: LOAD
+POSTHOOK: Output: db1@srcpart
 POSTHOOK: Output: db1@srcpart@ds=2008-04-08/hr=11
+POSTHOOK: Lineage: temp_tbl2.c EXPRESSION [(temp_tbl)temp_tbl.null, ]
 PREHOOK: query: -- SELECT from Partitioned foreign table
 SELECT key, value FROM db1.srcpart
 WHERE key < 100 AND ds='2008-04-08' AND hr='11'
 PREHOOK: type: QUERY
 PREHOOK: Input: db1@srcpart@ds=2008-04-08/hr=11
-PREHOOK: Output: file:/tmp/sdong/hive_2011-02-09_16-44-12_003_1615672453765172185/-mr-10000
+PREHOOK: Output: file:/tmp/rsurowka/hive_2011-11-10_15-10-59_733_7103239820411445554/-mr-10000
 POSTHOOK: query: -- SELECT from Partitioned foreign table
 SELECT key, value FROM db1.srcpart
 WHERE key < 100 AND ds='2008-04-08' AND hr='11'
 POSTHOOK: type: QUERY
 POSTHOOK: Input: db1@srcpart@ds=2008-04-08/hr=11
-POSTHOOK: Output: file:/tmp/sdong/hive_2011-02-09_16-44-12_003_1615672453765172185/-mr-10000
+POSTHOOK: Output: file:/tmp/rsurowka/hive_2011-11-10_15-10-59_733_7103239820411445554/-mr-10000
+POSTHOOK: Lineage: temp_tbl2.c EXPRESSION [(temp_tbl)temp_tbl.null, ]
 86	val_86
 27	val_27
 98	val_98
@@ -979,18 +1153,20 @@ PREHOOK: type: SWITCHDATABASE
 POSTHOOK: query: -- SELECT JOINed product of two foreign tables
 USE db2
 POSTHOOK: type: SWITCHDATABASE
+POSTHOOK: Lineage: temp_tbl2.c EXPRESSION [(temp_tbl)temp_tbl.null, ]
 PREHOOK: query: SELECT a.* FROM db1.src a JOIN default.src1 b
 ON (a.key = b.key)
 PREHOOK: type: QUERY
 PREHOOK: Input: db1@src
 PREHOOK: Input: default@src1
-PREHOOK: Output: file:/tmp/sdong/hive_2011-02-09_16-44-15_698_7511939016053492082/-mr-10000
+PREHOOK: Output: file:/tmp/rsurowka/hive_2011-11-10_15-11-03_018_7380318179263286895/-mr-10000
 POSTHOOK: query: SELECT a.* FROM db1.src a JOIN default.src1 b
 ON (a.key = b.key)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: db1@src
 POSTHOOK: Input: default@src1
-POSTHOOK: Output: file:/tmp/sdong/hive_2011-02-09_16-44-15_698_7511939016053492082/-mr-10000
+POSTHOOK: Output: file:/tmp/rsurowka/hive_2011-11-10_15-11-03_018_7380318179263286895/-mr-10000
+POSTHOOK: Lineage: temp_tbl2.c EXPRESSION [(temp_tbl)temp_tbl.null, ]
 128	val_128
 128	val_128
 128	val_128
@@ -1039,6 +1215,7 @@ SELECT value FROM default.src WHERE key = 66
 POSTHOOK: type: CREATETABLE_AS_SELECT
 POSTHOOK: Input: default@src
 POSTHOOK: Output: db2@conflict_name
+POSTHOOK: Lineage: temp_tbl2.c EXPRESSION [(temp_tbl)temp_tbl.null, ]
 PREHOOK: query: -- CREATE foreign table
 CREATE TABLE db1.conflict_name AS
 SELECT value FROM db1.src WHERE key = 8
@@ -1050,6 +1227,7 @@ SELECT value FROM db1.src WHERE key = 8
 POSTHOOK: type: CREATETABLE_AS_SELECT
 POSTHOOK: Input: db1@src
 POSTHOOK: Output: db1@conflict_name
+POSTHOOK: Lineage: temp_tbl2.c EXPRESSION [(temp_tbl)temp_tbl.null, ]
 PREHOOK: query: -- query tables with the same names in different DBs
 SELECT * FROM (
   SELECT value FROM db1.conflict_name
@@ -1059,7 +1237,7 @@ UNION ALL
 PREHOOK: type: QUERY
 PREHOOK: Input: db1@conflict_name
 PREHOOK: Input: db2@conflict_name
-PREHOOK: Output: file:/tmp/sdong/hive_2011-02-09_16-44-26_087_6460717989691096433/-mr-10000
+PREHOOK: Output: file:/tmp/rsurowka/hive_2011-11-10_15-11-15_158_3564242393930132257/-mr-10000
 POSTHOOK: query: -- query tables with the same names in different DBs
 SELECT * FROM (
   SELECT value FROM db1.conflict_name
@@ -1069,13 +1247,15 @@ UNION ALL
 POSTHOOK: type: QUERY
 POSTHOOK: Input: db1@conflict_name
 POSTHOOK: Input: db2@conflict_name
-POSTHOOK: Output: file:/tmp/sdong/hive_2011-02-09_16-44-26_087_6460717989691096433/-mr-10000
+POSTHOOK: Output: file:/tmp/rsurowka/hive_2011-11-10_15-11-15_158_3564242393930132257/-mr-10000
+POSTHOOK: Lineage: temp_tbl2.c EXPRESSION [(temp_tbl)temp_tbl.null, ]
 val_66
 val_8
 PREHOOK: query: USE default
 PREHOOK: type: SWITCHDATABASE
 POSTHOOK: query: USE default
 POSTHOOK: type: SWITCHDATABASE
+POSTHOOK: Lineage: temp_tbl2.c EXPRESSION [(temp_tbl)temp_tbl.null, ]
 PREHOOK: query: SELECT * FROM (
   SELECT value FROM db1.conflict_name
 UNION ALL
@@ -1084,7 +1264,7 @@ UNION ALL
 PREHOOK: type: QUERY
 PREHOOK: Input: db1@conflict_name
 PREHOOK: Input: db2@conflict_name
-PREHOOK: Output: file:/tmp/sdong/hive_2011-02-09_16-44-29_569_4760700604948844000/-mr-10000
+PREHOOK: Output: file:/tmp/rsurowka/hive_2011-11-10_15-11-18_535_2030398088007841837/-mr-10000
 POSTHOOK: query: SELECT * FROM (
   SELECT value FROM db1.conflict_name
 UNION ALL
@@ -1093,7 +1273,8 @@ UNION ALL
 POSTHOOK: type: QUERY
 POSTHOOK: Input: db1@conflict_name
 POSTHOOK: Input: db2@conflict_name
-POSTHOOK: Output: file:/tmp/sdong/hive_2011-02-09_16-44-29_569_4760700604948844000/-mr-10000
+POSTHOOK: Output: file:/tmp/rsurowka/hive_2011-11-10_15-11-18_535_2030398088007841837/-mr-10000
+POSTHOOK: Lineage: temp_tbl2.c EXPRESSION [(temp_tbl)temp_tbl.null, ]
 val_66
 val_8
 PREHOOK: query: -- TABLESAMPLES
@@ -1105,6 +1286,7 @@ CREATE TABLE bucketized_src (key INT, value STRING)
 CLUSTERED BY (key) SORTED BY (key) INTO 1 BUCKETS
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: default@bucketized_src
+POSTHOOK: Lineage: temp_tbl2.c EXPRESSION [(temp_tbl)temp_tbl.null, ]
 PREHOOK: query: INSERT OVERWRITE TABLE bucketized_src
 SELECT key, value FROM src WHERE key=66
 PREHOOK: type: QUERY
@@ -1117,16 +1299,18 @@ POSTHOOK: Input: default@src
 POSTHOOK: Output: default@bucketized_src
 POSTHOOK: Lineage: bucketized_src.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: bucketized_src.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: temp_tbl2.c EXPRESSION [(temp_tbl)temp_tbl.null, ]
 PREHOOK: query: SELECT key FROM bucketized_src TABLESAMPLE(BUCKET 1 out of 1)
 PREHOOK: type: QUERY
 PREHOOK: Input: default@bucketized_src
-PREHOOK: Output: file:/tmp/sdong/hive_2011-02-09_16-44-38_988_112069995278861989/-mr-10000
+PREHOOK: Output: file:/tmp/rsurowka/hive_2011-11-10_15-11-26_290_4021691896613116755/-mr-10000
 POSTHOOK: query: SELECT key FROM bucketized_src TABLESAMPLE(BUCKET 1 out of 1)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@bucketized_src
-POSTHOOK: Output: file:/tmp/sdong/hive_2011-02-09_16-44-38_988_112069995278861989/-mr-10000
+POSTHOOK: Output: file:/tmp/rsurowka/hive_2011-11-10_15-11-26_290_4021691896613116755/-mr-10000
 POSTHOOK: Lineage: bucketized_src.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: bucketized_src.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: temp_tbl2.c EXPRESSION [(temp_tbl)temp_tbl.null, ]
 66
 PREHOOK: query: -- CREATE TABLE LIKE
 CREATE TABLE db2.src1 LIKE default.src
@@ -1137,56 +1321,62 @@ POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: db2@src1
 POSTHOOK: Lineage: bucketized_src.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: bucketized_src.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: temp_tbl2.c EXPRESSION [(temp_tbl)temp_tbl.null, ]
 PREHOOK: query: USE db2
 PREHOOK: type: SWITCHDATABASE
 POSTHOOK: query: USE db2
 POSTHOOK: type: SWITCHDATABASE
 POSTHOOK: Lineage: bucketized_src.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: bucketized_src.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: temp_tbl2.c EXPRESSION [(temp_tbl)temp_tbl.null, ]
 PREHOOK: query: DESC EXTENDED src1
 PREHOOK: type: DESCTABLE
 POSTHOOK: query: DESC EXTENDED src1
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Lineage: bucketized_src.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: bucketized_src.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: temp_tbl2.c EXPRESSION [(temp_tbl)temp_tbl.null, ]
 key	string	default
 value	string	default
 	 	 
-Detailed Table Information	Table(tableName:src1, dbName:db2, owner:null, createTime:1297298682, lastAccessTime:0, retention:0, sd:StorageDescriptor(cols:[FieldSchema(name:key, type:string, comment:default), FieldSchema(name:value, type:string, comment:default)], location:pfile:/data/users/sdong/www/open-source-hive1/build/ql/test/data/warehouse/db2.db/src1, inputFormat:org.apache.hadoop.mapred.TextInputFormat, outputFormat:org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat, compressed:false, numBuckets:-1, serdeInfo:SerDeInfo(name:null, serializationLib:org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe, parameters:{serialization.format=1}), bucketCols:[], sortCols:[], parameters:{}), partitionKeys:[], parameters:{transient_lastDdlTime=1297298682}, viewOriginalText:null, viewExpandedText:null, tableType:MANAGED_TABLE)	
+Detailed Table Information	Table(tableName:src1, dbName:db2, owner:rsurowka, createTime:1320966689, lastAccessTime:0, retention:0, sd:StorageDescriptor(cols:[FieldSchema(name:key, type:string, comment:default), FieldSchema(name:value, type:string, comment:default)], location:pfile:/data/users/rsurowka/JAVA_HIVE/apache-hive/build/ql/test/data/warehouse/db2.db/src1, inputFormat:org.apache.hadoop.mapred.TextInputFormat, outputFormat:org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat, compressed:false, numBuckets:-1, serdeInfo:SerDeInfo(name:null, serializationLib:org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe, parameters:{serialization.format=1}), bucketCols:[], sortCols:[], parameters:{}), partitionKeys:[], parameters:{transient_lastDdlTime=1320966689}, viewOriginalText:null, viewExpandedText:null, tableType:MANAGED_TABLE)	
 PREHOOK: query: -- character escaping
 SELECT key FROM `default`.src ORDER BY key LIMIT 1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/tmp/sdong/hive_2011-02-09_16-44-42_440_145101011848594604/-mr-10000
+PREHOOK: Output: file:/tmp/rsurowka/hive_2011-11-10_15-11-29_546_4593274281731483892/-mr-10000
 POSTHOOK: query: -- character escaping
 SELECT key FROM `default`.src ORDER BY key LIMIT 1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: file:/tmp/sdong/hive_2011-02-09_16-44-42_440_145101011848594604/-mr-10000
+POSTHOOK: Output: file:/tmp/rsurowka/hive_2011-11-10_15-11-29_546_4593274281731483892/-mr-10000
 POSTHOOK: Lineage: bucketized_src.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: bucketized_src.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: temp_tbl2.c EXPRESSION [(temp_tbl)temp_tbl.null, ]
 0
 PREHOOK: query: SELECT key FROM `default`.`src` ORDER BY key LIMIT 1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/tmp/sdong/hive_2011-02-09_16-44-45_701_6560463601447490145/-mr-10000
+PREHOOK: Output: file:/tmp/rsurowka/hive_2011-11-10_15-11-32_633_3376602064902818343/-mr-10000
 POSTHOOK: query: SELECT key FROM `default`.`src` ORDER BY key LIMIT 1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: file:/tmp/sdong/hive_2011-02-09_16-44-45_701_6560463601447490145/-mr-10000
+POSTHOOK: Output: file:/tmp/rsurowka/hive_2011-11-10_15-11-32_633_3376602064902818343/-mr-10000
 POSTHOOK: Lineage: bucketized_src.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: bucketized_src.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: temp_tbl2.c EXPRESSION [(temp_tbl)temp_tbl.null, ]
 0
 PREHOOK: query: SELECT key FROM default.`src` ORDER BY key LIMIT 1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/tmp/sdong/hive_2011-02-09_16-44-49_089_4523523986113613592/-mr-10000
+PREHOOK: Output: file:/tmp/rsurowka/hive_2011-11-10_15-11-35_757_6085919975459669346/-mr-10000
 POSTHOOK: query: SELECT key FROM default.`src` ORDER BY key LIMIT 1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: file:/tmp/sdong/hive_2011-02-09_16-44-49_089_4523523986113613592/-mr-10000
+POSTHOOK: Output: file:/tmp/rsurowka/hive_2011-11-10_15-11-35_757_6085919975459669346/-mr-10000
 POSTHOOK: Lineage: bucketized_src.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: bucketized_src.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: temp_tbl2.c EXPRESSION [(temp_tbl)temp_tbl.null, ]
 0
 PREHOOK: query: USE default
 PREHOOK: type: SWITCHDATABASE
@@ -1194,3 +1384,4 @@ POSTHOOK: query: USE default
 POSTHOOK: type: SWITCHDATABASE
 POSTHOOK: Lineage: bucketized_src.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: bucketized_src.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: temp_tbl2.c EXPRESSION [(temp_tbl)temp_tbl.null, ]

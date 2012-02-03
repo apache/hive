@@ -20,6 +20,8 @@ package org.apache.hadoop.hive.ql.exec;
 
 import java.io.Serializable;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.FileUtil;
@@ -37,6 +39,8 @@ import org.apache.hadoop.util.StringUtils;
 public class CopyTask extends Task<CopyWork> implements Serializable {
 
   private static final long serialVersionUID = 1L;
+
+  private static transient final Log LOG = LogFactory.getLog(CopyTask.class);
 
   public CopyTask() {
     super();
@@ -59,8 +63,12 @@ public class CopyTask extends Task<CopyWork> implements Serializable {
       FileStatus[] srcs = LoadSemanticAnalyzer.matchFilesOrDir(srcFs, fromPath);
 
       if (srcs == null || srcs.length == 0) {
-        console.printError("No files matching path: " + fromPath.toString());
-        return 3;
+        if (work.isErrorOnSrcEmpty()) {
+          console.printError("No files matching path: " + fromPath.toString());
+          return 3;
+        } else {
+          return 0;
+        }
       }
 
       if (!dstFs.mkdirs(toPath)) {

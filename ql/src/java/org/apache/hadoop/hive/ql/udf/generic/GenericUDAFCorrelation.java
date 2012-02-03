@@ -101,6 +101,7 @@ public class GenericUDAFCorrelation extends AbstractGenericUDAFResolver {
     case LONG:
     case FLOAT:
     case DOUBLE:
+    case TIMESTAMP:
       switch (((PrimitiveTypeInfo) parameters[1]).getPrimitiveCategory()) {
       case BYTE:
       case SHORT:
@@ -108,6 +109,7 @@ public class GenericUDAFCorrelation extends AbstractGenericUDAFResolver {
       case LONG:
       case FLOAT:
       case DOUBLE:
+      case TIMESTAMP:
         return new GenericUDAFCorrelationEvaluator();
       case STRING:
       case BOOLEAN:

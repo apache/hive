@@ -54,6 +54,7 @@ import org.apache.hadoop.hive.serde2.SerDeException;
 import org.apache.hadoop.hive.serde2.lazy.LazyUtils;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector;
+import org.apache.hadoop.hive.shims.ShimLoader;
 import org.apache.hadoop.io.Writable;
 import org.apache.hadoop.mapred.InputFormat;
 import org.apache.hadoop.mapred.InputSplit;
@@ -155,14 +156,8 @@ public class HiveHBaseTableInputFormat extends TableInputFormatBase
     setScan(scan);
 
     Job job = new Job(jobConf);
-    TaskAttemptContext tac =
-      new TaskAttemptContext(job.getConfiguration(), new TaskAttemptID()) {
-
-        @Override
-        public void progress() {
-          reporter.progress();
-        }
-      };
+    TaskAttemptContext tac = ShimLoader.getHadoopShims().newTaskAttemptContext(
+        job.getConfiguration(), reporter);
 
     final org.apache.hadoop.mapreduce.RecordReader<ImmutableBytesWritable, Result>
     recordReader = createRecordReader(tableSplit, tac);
@@ -354,7 +349,7 @@ public class HiveHBaseTableInputFormat extends TableInputFormatBase
 
     return analyzer;
   }
-  
+
   @Override
   public InputSplit[] getSplits(JobConf jobConf, int numSplits) throws IOException {
 
@@ -405,7 +400,7 @@ public class HiveHBaseTableInputFormat extends TableInputFormatBase
 
     setScan(scan);
     Job job = new Job(jobConf);
-    JobContext jobContext = new JobContext(job.getConfiguration(), job.getJobID());
+    JobContext jobContext = ShimLoader.getHadoopShims().newJobContext(job);
     Path [] tablePaths = FileInputFormat.getInputPaths(jobContext);
 
     List<org.apache.hadoop.mapreduce.InputSplit> splits =

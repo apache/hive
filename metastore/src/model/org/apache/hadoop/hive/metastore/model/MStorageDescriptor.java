@@ -22,7 +22,7 @@ import java.util.List;
 import java.util.Map;
 
 public class MStorageDescriptor {
-  private List<MFieldSchema> cols;
+  private MColumnDescriptor cd;
   private String location;
   private String inputFormat;
   private String outputFormat;
@@ -32,12 +32,12 @@ public class MStorageDescriptor {
   private List<String> bucketCols;
   private List<MOrder> sortCols;
   private Map<String, String> parameters;
-  
+
   public MStorageDescriptor() {}
 
-  
+
   /**
-   * @param cols
+   * @param cd
    * @param location
    * @param inputFormat
    * @param outputFormat
@@ -48,10 +48,10 @@ public class MStorageDescriptor {
    * @param sortOrder
    * @param parameters
    */
-  public MStorageDescriptor(List<MFieldSchema> cols, String location, String inputFormat,
+  public MStorageDescriptor(MColumnDescriptor cd, String location, String inputFormat,
       String outputFormat, boolean isCompressed, int numBuckets, MSerDeInfo serDeInfo,
       List<String> bucketCols, List<MOrder> sortOrder, Map<String, String> parameters) {
-    this.cols = cols;
+    this.cd = cd;
     this.location = location;
     this.inputFormat = inputFormat;
     this.outputFormat = outputFormat;
@@ -163,17 +163,17 @@ public class MStorageDescriptor {
   }
 
   /**
-   * @return the cols
+   * @return the column descriptor
    */
-  public List<MFieldSchema> getCols() {
-    return cols;
+  public MColumnDescriptor getCD() {
+    return cd;
   }
 
   /**
-   * @param cols the cols to set
+   * @param cd the Column Descriptor to set
    */
-  public void setCols(List<MFieldSchema> cols) {
-    this.cols = cols;
+  public void setCD(MColumnDescriptor cd) {
+    this.cd = cd;
   }
 
   /**

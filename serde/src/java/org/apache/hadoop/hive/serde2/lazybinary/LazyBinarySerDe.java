@@ -29,17 +29,20 @@ import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.serde.Constants;
 import org.apache.hadoop.hive.serde2.ByteStream;
+import org.apache.hadoop.hive.serde2.ByteStream.Output;
 import org.apache.hadoop.hive.serde2.SerDe;
 import org.apache.hadoop.hive.serde2.SerDeException;
-import org.apache.hadoop.hive.serde2.ByteStream.Output;
+import org.apache.hadoop.hive.serde2.SerDeStats;
+import org.apache.hadoop.hive.serde2.io.TimestampWritable;
 import org.apache.hadoop.hive.serde2.lazy.ByteArrayRef;
 import org.apache.hadoop.hive.serde2.objectinspector.ListObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.MapObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
+import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector.Category;
 import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.StructField;
 import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
-import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector.Category;
+import org.apache.hadoop.hive.serde2.objectinspector.primitive.BinaryObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.BooleanObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.ByteObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.DoubleObjectInspector;
@@ -48,6 +51,7 @@ import org.apache.hadoop.hive.serde2.objectinspector.primitive.IntObjectInspecto
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.LongObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.ShortObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.StringObjectInspector;
+import org.apache.hadoop.hive.serde2.objectinspector.primitive.TimestampObjectInspector;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
@@ -77,6 +81,11 @@ public class LazyBinarySerDe implements SerDe {
 
   // The object for storing row data
   LazyBinaryStruct cachedLazyBinaryStruct;
+
+  private int serializedSize;
+  private SerDeStats stats;
+  private boolean lastOperationSerialize;
+  private boolean lastOperationDeserialize;
 
   /**
    * Initialize the SerDe with configuration and table information.
@@ -109,6 +118,12 @@ public class LazyBinarySerDe implements SerDe {
     // output debug info
     LOG.debug("LazyBinarySerDe initialized with: columnNames=" + columnNames
         + " columnTypes=" + columnTypes);
+
+    serializedSize = 0;
+    stats = new SerDeStats();
+    lastOperationSerialize = false;
+    lastOperationDeserialize = false;
+
   }
 
   /**
@@ -140,12 +155,12 @@ public class LazyBinarySerDe implements SerDe {
     }
     if (field instanceof BytesWritable) {
       BytesWritable b = (BytesWritable) field;
-      if (b.getSize() == 0) {
+      if (b.getLength() == 0) {
         return null;
       }
       // For backward-compatibility with hadoop 0.17
-      byteArrayRef.setData(b.get());
-      cachedLazyBinaryStruct.init(byteArrayRef, 0, b.getSize());
+      byteArrayRef.setData(b.getBytes());
+      cachedLazyBinaryStruct.init(byteArrayRef, 0, b.getLength());
     } else if (field instanceof Text) {
       Text t = (Text) field;
       if (t.getLength() == 0) {
@@ -157,6 +172,8 @@ public class LazyBinarySerDe implements SerDe {
       throw new SerDeException(getClass().toString()
           + ": expects either BytesWritable or Text object!");
     }
+    lastOperationSerialize = false;
+    lastOperationDeserialize = true;
     return cachedLazyBinaryStruct;
   }
 
@@ -165,6 +182,7 @@ public class LazyBinarySerDe implements SerDe {
    */
   BytesWritable serializeBytesWritable = new BytesWritable();
   ByteStream.Output serializeByteStream = new ByteStream.Output();
+  boolean nullMapKey = false;
 
   /**
    * Serialize an object to a byte buffer in a binary compact way.
@@ -181,32 +199,38 @@ public class LazyBinarySerDe implements SerDe {
 
     serializeByteStream.reset();
     // serialize the row as a struct
-    serializeStruct(serializeByteStream, obj,
-        (StructObjectInspector) objInspector);
+    nullMapKey = serializeStruct(serializeByteStream, obj,
+        (StructObjectInspector) objInspector, nullMapKey);
     // return the serialized bytes
     serializeBytesWritable.set(serializeByteStream.getData(), 0,
         serializeByteStream.getCount());
+
+    serializedSize = serializeByteStream.getCount();
+    lastOperationSerialize = true;
+    lastOperationDeserialize = false;
     return serializeBytesWritable;
   }
-
-  boolean nullMapKey = false;
 
   /**
    * Serialize a struct object without writing the byte size. This function is
    * shared by both row serialization and struct serialization.
-   * 
+   *
    * @param byteStream
    *          the byte stream storing the serialization data
    * @param obj
    *          the struct object to serialize
    * @param objInspector
    *          the struct object inspector
+   * @param warnedOnceNullMapKey a boolean indicating whether a warning
+   *          has been issued once already when encountering null map keys
+   * @return a boolean indicating whether a warning for null map keys has been issued
+   *          once already
    */
-  private void serializeStruct(Output byteStream, Object obj,
-      StructObjectInspector soi) {
+  private static boolean serializeStruct(Output byteStream, Object obj,
+      StructObjectInspector soi, boolean warnedOnceNullMapKey) {
     // do nothing for null struct
     if (null == obj) {
-      return;
+      return warnedOnceNullMapKey;
     }
     /*
      * Interleave serializing one null byte and 8 struct fields in each round,
@@ -216,6 +240,7 @@ public class LazyBinarySerDe implements SerDe {
     int size = fields.size();
     int lasti = 0;
     byte nullByte = 0;
+
     for (int i = 0; i < size; i++) {
       // set bit to 1 if a field is not null
       if (null != soi.getStructFieldData(obj, fields.get(i))) {
@@ -225,34 +250,41 @@ public class LazyBinarySerDe implements SerDe {
       // if this is the last element and serialize the
       // corresponding 8 struct fields at the same time
       if (7 == i % 8 || i == size - 1) {
-        serializeByteStream.write(nullByte);
+        byteStream.write(nullByte);
         for (int j = lasti; j <= i; j++) {
-          serialize(serializeByteStream, soi.getStructFieldData(obj, fields
-              .get(j)), fields.get(j).getFieldObjectInspector());
+          warnedOnceNullMapKey = serialize(byteStream, soi.getStructFieldData(obj, fields
+              .get(j)), fields.get(j).getFieldObjectInspector(), false, warnedOnceNullMapKey);
         }
         lasti = i + 1;
         nullByte = 0;
       }
     }
+    return warnedOnceNullMapKey;
   }
 
   /**
    * A recursive function that serialize an object to a byte buffer based on its
    * object inspector.
-   * 
+   *
    * @param byteStream
    *          the byte stream storing the serialization data
    * @param obj
    *          the object to serialize
    * @param objInspector
    *          the object inspector
+   * @param skipLengthPrefix a boolean indicating whether length prefix is
+   *          needed for list/map/struct
+   * @param warnedOnceNullMapKey a boolean indicating whether a warning
+   *          has been issued once already when encountering null map keys
+   * @return a boolean indicating whether a warning for null map keys has been issued
+   *          once already
    */
-  private void serialize(Output byteStream, Object obj,
-      ObjectInspector objInspector) {
+  public static boolean serialize(Output byteStream, Object obj,
+      ObjectInspector objInspector, boolean skipLengthPrefix, boolean warnedOnceNullMapKey) {
 
     // do nothing for null object
     if (null == obj) {
-      return;
+      return warnedOnceNullMapKey;
     }
 
     switch (objInspector.getCategory()) {
@@ -260,37 +292,37 @@ public class LazyBinarySerDe implements SerDe {
       PrimitiveObjectInspector poi = (PrimitiveObjectInspector) objInspector;
       switch (poi.getPrimitiveCategory()) {
       case VOID: {
-        return;
+        return warnedOnceNullMapKey;
       }
       case BOOLEAN: {
         boolean v = ((BooleanObjectInspector) poi).get(obj);
         byteStream.write((byte) (v ? 1 : 0));
-        return;
+        return warnedOnceNullMapKey;
       }
       case BYTE: {
         ByteObjectInspector boi = (ByteObjectInspector) poi;
         byte v = boi.get(obj);
         byteStream.write(v);
-        return;
+        return warnedOnceNullMapKey;
       }
       case SHORT: {
         ShortObjectInspector spoi = (ShortObjectInspector) poi;
         short v = spoi.get(obj);
         byteStream.write((byte) (v >> 8));
         byteStream.write((byte) (v));
-        return;
+        return warnedOnceNullMapKey;
       }
       case INT: {
         IntObjectInspector ioi = (IntObjectInspector) poi;
         int v = ioi.get(obj);
         LazyBinaryUtils.writeVInt(byteStream, v);
-        return;
+        return warnedOnceNullMapKey;
       }
       case LONG: {
         LongObjectInspector loi = (LongObjectInspector) poi;
         long v = loi.get(obj);
         LazyBinaryUtils.writeVLong(byteStream, v);
-        return;
+        return warnedOnceNullMapKey;
       }
       case FLOAT: {
         FloatObjectInspector foi = (FloatObjectInspector) poi;
@@ -299,7 +331,7 @@ public class LazyBinarySerDe implements SerDe {
         byteStream.write((byte) (v >> 16));
         byteStream.write((byte) (v >> 8));
         byteStream.write((byte) (v));
-        return;
+        return warnedOnceNullMapKey;
       }
       case DOUBLE: {
         DoubleObjectInspector doi = (DoubleObjectInspector) poi;
@@ -312,18 +344,43 @@ public class LazyBinarySerDe implements SerDe {
         byteStream.write((byte) (v >> 16));
         byteStream.write((byte) (v >> 8));
         byteStream.write((byte) (v));
-        return;
+        return warnedOnceNullMapKey;
       }
       case STRING: {
         StringObjectInspector soi = (StringObjectInspector) poi;
         Text t = soi.getPrimitiveWritableObject(obj);
         /* write byte size of the string which is a vint */
         int length = t.getLength();
-        LazyBinaryUtils.writeVInt(byteStream, length);
+        if (!skipLengthPrefix) {
+          LazyBinaryUtils.writeVInt(byteStream, length);
+        }
         /* write string itself */
         byte[] data = t.getBytes();
         byteStream.write(data, 0, length);
-        return;
+        return warnedOnceNullMapKey;
+      }
+
+      case BINARY: {
+        BinaryObjectInspector baoi = (BinaryObjectInspector) poi;
+        BytesWritable bw = baoi.getPrimitiveWritableObject(obj);
+        int length = bw.getLength();
+        if(!skipLengthPrefix){
+          LazyBinaryUtils.writeVInt(byteStream, length);
+        } else {
+          if (length == 0){
+            throw new RuntimeException("LazyBinaryColumnarSerde cannot serialize a non-null " +
+            		"zero length binary field. Consider using either LazyBinarySerde or ColumnarSerde.");
+          }
+        }
+        byteStream.write(bw.getBytes(),0,length);
+        return warnedOnceNullMapKey;
+      }
+
+      case TIMESTAMP: {
+        TimestampObjectInspector toi = (TimestampObjectInspector) poi;
+        TimestampWritable t = toi.getPrimitiveWritableObject(obj);
+        t.writeToByteStream(byteStream);
+        return warnedOnceNullMapKey;
       }
       default: {
         throw new RuntimeException("Unrecognized type: "
@@ -335,15 +392,18 @@ public class LazyBinarySerDe implements SerDe {
       ListObjectInspector loi = (ListObjectInspector) objInspector;
       ObjectInspector eoi = loi.getListElementObjectInspector();
 
-      // 1/ reserve spaces for the byte size of the list
-      // which is a integer and takes four bytes
-      int byteSizeStart = byteStream.getCount();
-      byteStream.write((byte) 0);
-      byteStream.write((byte) 0);
-      byteStream.write((byte) 0);
-      byteStream.write((byte) 0);
-      int listStart = byteStream.getCount();
-
+      int byteSizeStart = 0;
+      int listStart = 0;
+      if (!skipLengthPrefix) {
+        // 1/ reserve spaces for the byte size of the list
+        // which is a integer and takes four bytes
+        byteSizeStart = byteStream.getCount();
+        byteStream.write((byte) 0);
+        byteStream.write((byte) 0);
+        byteStream.write((byte) 0);
+        byteStream.write((byte) 0);
+        listStart = byteStream.getCount();
+      }
       // 2/ write the size of the list as a VInt
       int size = loi.getListLength(obj);
       LazyBinaryUtils.writeVInt(byteStream, size);
@@ -365,19 +425,21 @@ public class LazyBinarySerDe implements SerDe {
 
       // 4/ write element by element from the list
       for (int eid = 0; eid < size; eid++) {
-        serialize(byteStream, loi.getListElement(obj, eid), eoi);
+        warnedOnceNullMapKey = serialize(byteStream, loi.getListElement(obj, eid), eoi,
+            false, warnedOnceNullMapKey);
       }
 
-      // 5/ update the list byte size
-      int listEnd = byteStream.getCount();
-      int listSize = listEnd - listStart;
-      byte[] bytes = byteStream.getData();
-      bytes[byteSizeStart] = (byte) (listSize >> 24);
-      bytes[byteSizeStart + 1] = (byte) (listSize >> 16);
-      bytes[byteSizeStart + 2] = (byte) (listSize >> 8);
-      bytes[byteSizeStart + 3] = (byte) (listSize);
-
-      return;
+      if (!skipLengthPrefix) {
+        // 5/ update the list byte size
+        int listEnd = byteStream.getCount();
+        int listSize = listEnd - listStart;
+        byte[] bytes = byteStream.getData();
+        bytes[byteSizeStart] = (byte) (listSize >> 24);
+        bytes[byteSizeStart + 1] = (byte) (listSize >> 16);
+        bytes[byteSizeStart + 2] = (byte) (listSize >> 8);
+        bytes[byteSizeStart + 3] = (byte) (listSize);
+      }
+      return warnedOnceNullMapKey;
     }
     case MAP: {
       MapObjectInspector moi = (MapObjectInspector) objInspector;
@@ -385,14 +447,18 @@ public class LazyBinarySerDe implements SerDe {
       ObjectInspector voi = moi.getMapValueObjectInspector();
       Map<?, ?> map = moi.getMap(obj);
 
-      // 1/ reserve spaces for the byte size of the map
-      // which is a integer and takes four bytes
-      int byteSizeStart = byteStream.getCount();
-      byteStream.write((byte) 0);
-      byteStream.write((byte) 0);
-      byteStream.write((byte) 0);
-      byteStream.write((byte) 0);
-      int mapStart = byteStream.getCount();
+      int byteSizeStart = 0;
+      int mapStart = 0;
+      if (!skipLengthPrefix) {
+        // 1/ reserve spaces for the byte size of the map
+        // which is a integer and takes four bytes
+        byteSizeStart = byteStream.getCount();
+        byteStream.write((byte) 0);
+        byteStream.write((byte) 0);
+        byteStream.write((byte) 0);
+        byteStream.write((byte) 0);
+        mapStart = byteStream.getCount();
+      }
 
       // 2/ write the size of the map which is a VInt
       int size = map.size();
@@ -405,8 +471,8 @@ public class LazyBinarySerDe implements SerDe {
         // set the bit to 1 if a key is not null
         if (null != entry.getKey()) {
           nullByte |= 1 << (b % 8);
-        } else if (!nullMapKey) {
-          nullMapKey = true;
+        } else if (!warnedOnceNullMapKey) {
+          warnedOnceNullMapKey = true;
           LOG.warn("Null map key encountered! Ignoring similar problems.");
         }
         b++;
@@ -425,49 +491,72 @@ public class LazyBinarySerDe implements SerDe {
 
       // 4/ write key-value pairs one by one
       for (Map.Entry<?, ?> entry : map.entrySet()) {
-        serialize(byteStream, entry.getKey(), koi);
-        serialize(byteStream, entry.getValue(), voi);
+        warnedOnceNullMapKey = serialize(byteStream, entry.getKey(), koi, false, warnedOnceNullMapKey);
+        warnedOnceNullMapKey = serialize(byteStream, entry.getValue(), voi, false, warnedOnceNullMapKey);
       }
 
-      // 5/ update the byte size of the map
-      int mapEnd = byteStream.getCount();
-      int mapSize = mapEnd - mapStart;
-      byte[] bytes = byteStream.getData();
-      bytes[byteSizeStart] = (byte) (mapSize >> 24);
-      bytes[byteSizeStart + 1] = (byte) (mapSize >> 16);
-      bytes[byteSizeStart + 2] = (byte) (mapSize >> 8);
-      bytes[byteSizeStart + 3] = (byte) (mapSize);
-
-      return;
+      if (!skipLengthPrefix) {
+        // 5/ update the byte size of the map
+        int mapEnd = byteStream.getCount();
+        int mapSize = mapEnd - mapStart;
+        byte[] bytes = byteStream.getData();
+        bytes[byteSizeStart] = (byte) (mapSize >> 24);
+        bytes[byteSizeStart + 1] = (byte) (mapSize >> 16);
+        bytes[byteSizeStart + 2] = (byte) (mapSize >> 8);
+        bytes[byteSizeStart + 3] = (byte) (mapSize);
+      }
+      return warnedOnceNullMapKey;
     }
     case STRUCT: {
-      // 1/ reserve spaces for the byte size of the struct
-      // which is a integer and takes four bytes
-      int byteSizeStart = byteStream.getCount();
-      byteStream.write((byte) 0);
-      byteStream.write((byte) 0);
-      byteStream.write((byte) 0);
-      byteStream.write((byte) 0);
-      int structStart = byteStream.getCount();
-
+      int byteSizeStart = 0;
+      int structStart = 0;
+      if (!skipLengthPrefix) {
+        // 1/ reserve spaces for the byte size of the struct
+        // which is a integer and takes four bytes
+        byteSizeStart = byteStream.getCount();
+        byteStream.write((byte) 0);
+        byteStream.write((byte) 0);
+        byteStream.write((byte) 0);
+        byteStream.write((byte) 0);
+        structStart = byteStream.getCount();
+      }
       // 2/ serialize the struct
-      serializeStruct(byteStream, obj, (StructObjectInspector) objInspector);
+      warnedOnceNullMapKey = serializeStruct(byteStream, obj, (StructObjectInspector) objInspector,
+          warnedOnceNullMapKey);
 
-      // 3/ update the byte size of the struct
-      int structEnd = byteStream.getCount();
-      int structSize = structEnd - structStart;
-      byte[] bytes = byteStream.getData();
-      bytes[byteSizeStart] = (byte) (structSize >> 24);
-      bytes[byteSizeStart + 1] = (byte) (structSize >> 16);
-      bytes[byteSizeStart + 2] = (byte) (structSize >> 8);
-      bytes[byteSizeStart + 3] = (byte) (structSize);
-
-      return;
+      if (!skipLengthPrefix) {
+        // 3/ update the byte size of the struct
+        int structEnd = byteStream.getCount();
+        int structSize = structEnd - structStart;
+        byte[] bytes = byteStream.getData();
+        bytes[byteSizeStart] = (byte) (structSize >> 24);
+        bytes[byteSizeStart + 1] = (byte) (structSize >> 16);
+        bytes[byteSizeStart + 2] = (byte) (structSize >> 8);
+        bytes[byteSizeStart + 3] = (byte) (structSize);
+      }
+      return warnedOnceNullMapKey;
     }
     default: {
       throw new RuntimeException("Unrecognized type: "
           + objInspector.getCategory());
     }
     }
+  }
+
+  /**
+   * Returns the statistics after (de)serialization)
+   */
+
+  public SerDeStats getSerDeStats() {
+    // must be different
+    assert (lastOperationSerialize != lastOperationDeserialize);
+
+    if (lastOperationSerialize) {
+      stats.setRawDataSize(serializedSize);
+    } else {
+      stats.setRawDataSize(cachedLazyBinaryStruct.getRawDataSerializedSize());
+    }
+    return stats;
+
   }
 }

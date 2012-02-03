@@ -48,6 +48,11 @@ public class TypeCheckCtx implements NodeProcessorCtx {
   private ASTNode errorSrcNode;
 
   /**
+   * Whether to allow stateful UDF invocations.
+   */
+  private boolean allowStatefulFunctions;
+
+  /**
    * Constructor.
    *
    * @param inputRR
@@ -56,6 +61,7 @@ public class TypeCheckCtx implements NodeProcessorCtx {
   public TypeCheckCtx(RowResolver inputRR) {
     setInputRR(inputRR);
     error = null;
+    allowStatefulFunctions = false;
   }
 
   /**
@@ -86,6 +92,20 @@ public class TypeCheckCtx implements NodeProcessorCtx {
    */
   public UnparseTranslator getUnparseTranslator() {
     return unparseTranslator;
+  }
+
+  /**
+   * @param allowStatefulFunctions whether to allow stateful UDF invocations
+   */
+  public void setAllowStatefulFunctions(boolean allowStatefulFunctions) {
+    this.allowStatefulFunctions = allowStatefulFunctions;
+  }
+
+  /**
+   * @return whether to allow stateful UDF invocations
+   */
+  public boolean getAllowStatefulFunctions() {
+    return allowStatefulFunctions;
   }
 
   /**

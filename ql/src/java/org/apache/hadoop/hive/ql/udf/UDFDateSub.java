@@ -25,6 +25,7 @@ import java.util.Date;
 
 import org.apache.hadoop.hive.ql.exec.Description;
 import org.apache.hadoop.hive.ql.exec.UDF;
+import org.apache.hadoop.hive.serde2.io.TimestampWritable;
 import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.Text;
 
@@ -52,11 +53,11 @@ public class UDFDateSub extends UDF {
   /**
    * Subtract a number of days to the date. The time part of the string will be
    * ignored.
-   * 
+   *
    * NOTE: This is a subset of what MySQL offers as:
    * http://dev.mysql.com/doc/refman
    * /5.1/en/date-and-time-functions.html#function_date-sub
-   * 
+   *
    * @param dateString1
    *          the date string in the format of "yyyy-MM-dd HH:mm:ss" or
    *          "yyyy-MM-dd".
@@ -79,6 +80,17 @@ public class UDFDateSub extends UDF {
     } catch (ParseException e) {
       return null;
     }
+  }
+
+  public Text evaluate(TimestampWritable t, IntWritable days) {
+    if (t == null || days == null) {
+      return null;
+    }
+    calendar.setTime(t.getTimestamp());
+    calendar.add(Calendar.DAY_OF_MONTH, -days.get());
+    Date newDate = calendar.getTime();
+    result.set(formatter.format(newDate));
+    return result;
   }
 
 }

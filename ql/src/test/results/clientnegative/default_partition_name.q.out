@@ -1,0 +1,6 @@
+PREHOOK: query: create table default_partition_name (key int, value string) partitioned by (ds string)
+PREHOOK: type: CREATETABLE
+POSTHOOK: query: create table default_partition_name (key int, value string) partitioned by (ds string)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: default@default_partition_name
+FAILED: Error in semantic analysis: Partition value contains a reserved substring (User value: __HIVE_DEFAULT_PARTITION__ Reserved substring: __HIVE_DEFAULT_PARTITION__)

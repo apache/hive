@@ -94,7 +94,7 @@ public class ConditionalResolverSkewJoin implements ConditionalResolver, Seriali
         Path dirPath = new Path(path);
         FileSystem inpFs = dirPath.getFileSystem(conf);
         FileStatus[] fstatus = inpFs.listStatus(dirPath);
-        if (fstatus.length > 0) {
+        if (fstatus != null && fstatus.length > 0) {
           Task <? extends Serializable> task = entry.getValue();
           List<Task <? extends Serializable>> parentOps = task.getParentTasks();
           if(parentOps!=null){

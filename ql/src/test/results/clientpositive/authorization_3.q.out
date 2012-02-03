@@ -7,12 +7,16 @@ POSTHOOK: Input: default@src
 POSTHOOK: Output: default@src_autho_test
 PREHOOK: query: grant drop on table src_autho_test to user hive_test_user
 PREHOOK: type: GRANT_PRIVILEGE
+PREHOOK: Output: default@src_autho_test
 POSTHOOK: query: grant drop on table src_autho_test to user hive_test_user
 POSTHOOK: type: GRANT_PRIVILEGE
+POSTHOOK: Output: default@src_autho_test
 PREHOOK: query: grant select on table src_autho_test to user hive_test_user
 PREHOOK: type: GRANT_PRIVILEGE
+PREHOOK: Output: default@src_autho_test
 POSTHOOK: query: grant select on table src_autho_test to user hive_test_user
 POSTHOOK: type: GRANT_PRIVILEGE
+POSTHOOK: Output: default@src_autho_test
 PREHOOK: query: show grant user hive_test_user on table src_autho_test
 PREHOOK: type: SHOW_GRANT
 POSTHOOK: query: show grant user hive_test_user on table src_autho_test
@@ -23,7 +27,7 @@ table	src_autho_test
 principalName	hive_test_user	
 principalType	USER	
 privilege	Drop	
-grantTime	1296259321	
+grantTime	1298421632	
 grantor	hive_test_user	
 
 database	default	
@@ -31,20 +35,26 @@ table	src_autho_test
 principalName	hive_test_user	
 principalType	USER	
 privilege	Select	
-grantTime	1296259321	
+grantTime	1298421632	
 grantor	hive_test_user	
 PREHOOK: query: revoke select on table src_autho_test from user hive_test_user
 PREHOOK: type: REVOKE_PRIVILEGE
+PREHOOK: Output: default@src_autho_test
 POSTHOOK: query: revoke select on table src_autho_test from user hive_test_user
 POSTHOOK: type: REVOKE_PRIVILEGE
+POSTHOOK: Output: default@src_autho_test
 PREHOOK: query: revoke drop on table src_autho_test from user hive_test_user
 PREHOOK: type: REVOKE_PRIVILEGE
+PREHOOK: Output: default@src_autho_test
 POSTHOOK: query: revoke drop on table src_autho_test from user hive_test_user
 POSTHOOK: type: REVOKE_PRIVILEGE
+POSTHOOK: Output: default@src_autho_test
 PREHOOK: query: grant drop,select on table src_autho_test to user hive_test_user
 PREHOOK: type: GRANT_PRIVILEGE
+PREHOOK: Output: default@src_autho_test
 POSTHOOK: query: grant drop,select on table src_autho_test to user hive_test_user
 POSTHOOK: type: GRANT_PRIVILEGE
+POSTHOOK: Output: default@src_autho_test
 PREHOOK: query: show grant user hive_test_user on table src_autho_test
 PREHOOK: type: SHOW_GRANT
 POSTHOOK: query: show grant user hive_test_user on table src_autho_test
@@ -55,7 +65,7 @@ table	src_autho_test
 principalName	hive_test_user	
 principalType	USER	
 privilege	Drop	
-grantTime	1296259321	
+grantTime	1298421633	
 grantor	hive_test_user	
 
 database	default	
@@ -63,21 +73,35 @@ table	src_autho_test
 principalName	hive_test_user	
 principalType	USER	
 privilege	Select	
-grantTime	1296259321	
+grantTime	1298421633	
 grantor	hive_test_user	
 PREHOOK: query: revoke drop,select on table src_autho_test from user hive_test_user
 PREHOOK: type: REVOKE_PRIVILEGE
+PREHOOK: Output: default@src_autho_test
 POSTHOOK: query: revoke drop,select on table src_autho_test from user hive_test_user
 POSTHOOK: type: REVOKE_PRIVILEGE
-PREHOOK: query: grant drop,select(key), select(value) on table src to user hive_test_user
+POSTHOOK: Output: default@src_autho_test
+PREHOOK: query: grant drop,select(key), select(value) on table src_autho_test to user hive_test_user
 PREHOOK: type: GRANT_PRIVILEGE
-POSTHOOK: query: grant drop,select(key), select(value) on table src to user hive_test_user
+PREHOOK: Output: default@src_autho_test
+POSTHOOK: query: grant drop,select(key), select(value) on table src_autho_test to user hive_test_user
 POSTHOOK: type: GRANT_PRIVILEGE
+POSTHOOK: Output: default@src_autho_test
 PREHOOK: query: show grant user hive_test_user on table src_autho_test
 PREHOOK: type: SHOW_GRANT
 POSTHOOK: query: show grant user hive_test_user on table src_autho_test
 POSTHOOK: type: SHOW_GRANT
-PREHOOK: query: revoke drop,select(key), select(value) on table src from user hive_test_user
+
+database	default	
+table	src_autho_test	
+principalName	hive_test_user	
+principalType	USER	
+privilege	Drop	
+grantTime	1298421633	
+grantor	hive_test_user	
+PREHOOK: query: revoke drop,select(key), select(value) on table src_autho_test from user hive_test_user
 PREHOOK: type: REVOKE_PRIVILEGE
-POSTHOOK: query: revoke drop,select(key), select(value) on table src from user hive_test_user
+PREHOOK: Output: default@src_autho_test
+POSTHOOK: query: revoke drop,select(key), select(value) on table src_autho_test from user hive_test_user
 POSTHOOK: type: REVOKE_PRIVILEGE
+POSTHOOK: Output: default@src_autho_test

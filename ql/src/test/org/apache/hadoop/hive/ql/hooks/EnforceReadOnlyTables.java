@@ -45,7 +45,9 @@ public class EnforceReadOnlyTables implements ExecuteWithHookContext {
   public void run(SessionState sess, Set<ReadEntity> inputs,
       Set<WriteEntity> outputs, UserGroupInformation ugi)
     throws Exception {
-
+    if (sess.getConf().getBoolean("hive.test.init.phase", false) == true) {
+      return;
+    }
     for (WriteEntity w: outputs) {
       if ((w.getTyp() == WriteEntity.Type.TABLE) ||
           (w.getTyp() == WriteEntity.Type.PARTITION)) {

@@ -35,5 +35,5 @@ PREHOOK: query: ALTER TABLE srcpart_archived ARCHIVE PARTITION (ds='2008-04-08',
 PREHOOK: type: ALTERTABLE_ARCHIVE
 PREHOOK: Input: default@srcpart_archived
 PREHOOK: Output: default@srcpart_archived@ds=2008-04-08/hr=12
-FAILED: Error in metadata: Specified partition is already archived
+FAILED: Error in metadata: Partition(s) already archived
 FAILED: Execution Error, return code 1 from org.apache.hadoop.hive.ql.exec.DDLTask

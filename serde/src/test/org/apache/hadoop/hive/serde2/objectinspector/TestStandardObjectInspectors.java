@@ -27,6 +27,7 @@ import org.apache.hadoop.hive.serde2.SerDeUtils;
 import org.apache.hadoop.hive.serde2.io.ByteWritable;
 import org.apache.hadoop.hive.serde2.io.DoubleWritable;
 import org.apache.hadoop.hive.serde2.io.ShortWritable;
+import org.apache.hadoop.hive.serde2.lazy.ByteArrayRef;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector.Category;
 import org.apache.hadoop.hive.serde2.objectinspector.StandardUnionObjectInspector.StandardUnion;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorFactory;
@@ -35,6 +36,7 @@ import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
 import org.apache.hadoop.hive.serde2.typeinfo.UnionTypeInfo;
 import org.apache.hadoop.io.BooleanWritable;
+import org.apache.hadoop.io.BytesWritable;
 import org.apache.hadoop.io.FloatWritable;
 import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.LongWritable;
@@ -87,6 +89,7 @@ public class TestStandardObjectInspectors extends TestCase {
       doTestStandardPrimitiveObjectInspector(FloatWritable.class, Float.class);
       doTestStandardPrimitiveObjectInspector(DoubleWritable.class, Double.class);
       doTestStandardPrimitiveObjectInspector(Text.class, String.class);
+      doTestStandardPrimitiveObjectInspector(BytesWritable.class, ByteArrayRef.class);
     } catch (Throwable e) {
       e.printStackTrace();
       throw e;
@@ -138,6 +141,9 @@ public class TestStandardObjectInspectors extends TestCase {
       doTestJavaPrimitiveObjectInspector(DoubleWritable.class, Double.class,
           (double) 1);
       doTestJavaPrimitiveObjectInspector(Text.class, String.class, "a");
+      ByteArrayRef ba = new ByteArrayRef();
+      ba.setData(new byte[]{'3'});
+      doTestJavaPrimitiveObjectInspector(BytesWritable.class, ByteArrayRef.class, ba);
 
     } catch (Throwable e) {
       e.printStackTrace();
@@ -263,80 +269,105 @@ public class TestStandardObjectInspectors extends TestCase {
   @SuppressWarnings("unchecked")
   public void testStandardStructObjectInspector() throws Throwable {
     try {
-      ArrayList<String> fieldNames = new ArrayList<String>();
-      fieldNames.add("firstInteger");
-      fieldNames.add("secondString");
-      fieldNames.add("thirdBoolean");
-      ArrayList<ObjectInspector> fieldObjectInspectors = new ArrayList<ObjectInspector>();
-      fieldObjectInspectors
-          .add(PrimitiveObjectInspectorFactory.javaIntObjectInspector);
-      fieldObjectInspectors
-          .add(PrimitiveObjectInspectorFactory.javaStringObjectInspector);
-      fieldObjectInspectors
-          .add(PrimitiveObjectInspectorFactory.javaBooleanObjectInspector);
-
-      StandardStructObjectInspector soi1 = ObjectInspectorFactory
-          .getStandardStructObjectInspector(fieldNames, fieldObjectInspectors);
-      StandardStructObjectInspector soi2 = ObjectInspectorFactory
-          .getStandardStructObjectInspector((ArrayList<String>) fieldNames
-          .clone(), (ArrayList<ObjectInspector>) fieldObjectInspectors
-          .clone());
-      assertEquals(soi1, soi2);
-
-      // metadata
-      assertEquals(Category.STRUCT, soi1.getCategory());
-      List<? extends StructField> fields = soi1.getAllStructFieldRefs();
-      assertEquals(3, fields.size());
-      for (int i = 0; i < 3; i++) {
-        assertEquals(fieldNames.get(i).toLowerCase(), fields.get(i)
-            .getFieldName());
-        assertEquals(fieldObjectInspectors.get(i), fields.get(i)
-            .getFieldObjectInspector());
-      }
-      assertEquals(fields.get(1), soi1.getStructFieldRef("secondString"));
-      StringBuilder structTypeName = new StringBuilder();
-      structTypeName.append("struct<");
-      for (int i = 0; i < fields.size(); i++) {
-        if (i > 0) {
-          structTypeName.append(",");
-        }
-        structTypeName.append(fields.get(i).getFieldName());
-        structTypeName.append(":");
-        structTypeName.append(fields.get(i).getFieldObjectInspector()
-            .getTypeName());
-      }
-      structTypeName.append(">");
-      assertEquals(structTypeName.toString(), soi1.getTypeName());
-
-      // null
-      assertNull(soi1.getStructFieldData(null, fields.get(0)));
-      assertNull(soi1.getStructFieldData(null, fields.get(1)));
-      assertNull(soi1.getStructFieldData(null, fields.get(2)));
-      assertNull(soi1.getStructFieldsDataAsList(null));
-
-      // HashStruct
-      ArrayList<Object> struct = new ArrayList<Object>(3);
-      struct.add(1);
-      struct.add("two");
-      struct.add(true);
-
-      assertEquals(1, soi1.getStructFieldData(struct, fields.get(0)));
-      assertEquals("two", soi1.getStructFieldData(struct, fields.get(1)));
-      assertEquals(true, soi1.getStructFieldData(struct, fields.get(2)));
-
-      // Settable
-      Object struct3 = soi1.create();
-      System.out.println(struct3);
-      soi1.setStructFieldData(struct3, fields.get(0), 1);
-      soi1.setStructFieldData(struct3, fields.get(1), "two");
-      soi1.setStructFieldData(struct3, fields.get(2), true);
-      assertEquals(struct, struct3);
-
+      // Test StandardObjectInspector both with field comments and without
+      doStandardObjectInspectorTest(true);
+      doStandardObjectInspectorTest(false);
     } catch (Throwable e) {
       e.printStackTrace();
       throw e;
     }
 
+  }
+
+  private void doStandardObjectInspectorTest(boolean testComments) {
+    ArrayList<String> fieldNames = new ArrayList<String>();
+    fieldNames.add("firstInteger");
+    fieldNames.add("secondString");
+    fieldNames.add("thirdBoolean");
+    ArrayList<ObjectInspector> fieldObjectInspectors = new ArrayList<ObjectInspector>();
+    fieldObjectInspectors
+        .add(PrimitiveObjectInspectorFactory.javaIntObjectInspector);
+    fieldObjectInspectors
+        .add(PrimitiveObjectInspectorFactory.javaStringObjectInspector);
+    fieldObjectInspectors
+        .add(PrimitiveObjectInspectorFactory.javaBooleanObjectInspector);
+    ArrayList<String> fieldComments = new ArrayList<String>(3);
+    if(testComments) {
+      fieldComments.add("firstInteger comment");
+      fieldComments.add("secondString comment");
+      fieldComments.add("thirdBoolean comment");
+    } else { // should have null for non-specified comments
+      for(int i = 0; i < 3; i++) {
+        fieldComments.add(null);
+    }
+    }
+
+    StandardStructObjectInspector soi1 = testComments ?
+        ObjectInspectorFactory
+        .getStandardStructObjectInspector(fieldNames, fieldObjectInspectors,
+            fieldComments)
+      : ObjectInspectorFactory
+        .getStandardStructObjectInspector(fieldNames, fieldObjectInspectors);
+    StandardStructObjectInspector soi2 = testComments ?
+        ObjectInspectorFactory
+        .getStandardStructObjectInspector((ArrayList<String>) fieldNames
+        .clone(), (ArrayList<ObjectInspector>) fieldObjectInspectors
+        .clone(), (ArrayList<String>)fieldComments.clone())
+        : ObjectInspectorFactory
+        .getStandardStructObjectInspector((ArrayList<String>) fieldNames
+        .clone(), (ArrayList<ObjectInspector>) fieldObjectInspectors
+        .clone());
+    assertEquals(soi1, soi2);
+
+    // metadata
+    assertEquals(Category.STRUCT, soi1.getCategory());
+    List<? extends StructField> fields = soi1.getAllStructFieldRefs();
+    assertEquals(3, fields.size());
+    for (int i = 0; i < 3; i++) {
+      assertEquals(fieldNames.get(i).toLowerCase(), fields.get(i)
+          .getFieldName());
+      assertEquals(fieldObjectInspectors.get(i), fields.get(i)
+          .getFieldObjectInspector());
+      assertEquals(fieldComments.get(i), fields.get(i).getFieldComment());
+    }
+    assertEquals(fields.get(1), soi1.getStructFieldRef("secondString"));
+    StringBuilder structTypeName = new StringBuilder();
+    structTypeName.append("struct<");
+    for (int i = 0; i < fields.size(); i++) {
+      if (i > 0) {
+        structTypeName.append(",");
+      }
+      structTypeName.append(fields.get(i).getFieldName());
+      structTypeName.append(":");
+      structTypeName.append(fields.get(i).getFieldObjectInspector()
+          .getTypeName());
+    }
+    structTypeName.append(">");
+    assertEquals(structTypeName.toString(), soi1.getTypeName());
+
+    // null
+    assertNull(soi1.getStructFieldData(null, fields.get(0)));
+    assertNull(soi1.getStructFieldData(null, fields.get(1)));
+    assertNull(soi1.getStructFieldData(null, fields.get(2)));
+    assertNull(soi1.getStructFieldsDataAsList(null));
+
+    // HashStruct
+    ArrayList<Object> struct = new ArrayList<Object>(3);
+    struct.add(1);
+    struct.add("two");
+    struct.add(true);
+
+    assertEquals(1, soi1.getStructFieldData(struct, fields.get(0)));
+    assertEquals("two", soi1.getStructFieldData(struct, fields.get(1)));
+    assertEquals(true, soi1.getStructFieldData(struct, fields.get(2)));
+
+    // Settable
+    Object struct3 = soi1.create();
+    System.out.println(struct3);
+    soi1.setStructFieldData(struct3, fields.get(0), 1);
+    soi1.setStructFieldData(struct3, fields.get(1), "two");
+    soi1.setStructFieldData(struct3, fields.get(2), true);
+    assertEquals(struct, struct3);
   }
 
   @SuppressWarnings("unchecked")
@@ -486,7 +517,7 @@ public class TestStandardObjectInspectors extends TestCase {
       Throwable th = null;
       try {
         ObjectInspectorUtils.compare(union, uoi1,
-            new StandardUnion((byte) 4, map.clone()), uoi2);
+            new StandardUnion((byte) 4, map.clone()), uoi2, null);
       } catch (Throwable t) {
         th = t;
       }

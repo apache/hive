@@ -28,6 +28,7 @@ import java.io.Serializable;
 public class LimitDesc implements Serializable {
   private static final long serialVersionUID = 1L;
   private int limit;
+  private int leastRows = -1;
 
   public LimitDesc() {
   }
@@ -42,6 +43,14 @@ public class LimitDesc implements Serializable {
 
   public void setLimit(final int limit) {
     this.limit = limit;
+  }
+
+  public int getLeastRows() {
+    return leastRows;
+  }
+
+  public void setLeastRows(int leastRows) {
+    this.leastRows = leastRows;
   }
 
 }

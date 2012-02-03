@@ -19,6 +19,7 @@
 package org.apache.hadoop.hive.metastore;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
@@ -30,6 +31,7 @@ import junit.framework.TestCase;
 
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.fs.permission.FsPermission;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.api.AlreadyExistsException;
 import org.apache.hadoop.hive.metastore.api.ConfigValSecurityException;
@@ -45,6 +47,7 @@ import org.apache.hadoop.hive.metastore.api.SerDeInfo;
 import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
 import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.metastore.api.Type;
+import org.apache.hadoop.hive.metastore.api.UnknownDBException;
 import org.apache.hadoop.hive.serde.Constants;
 import org.apache.hadoop.util.StringUtils;
 import org.apache.thrift.TException;
@@ -114,20 +117,10 @@ public abstract class TestHiveMetaStore extends TestCase {
       String dbName = "compdb";
       String tblName = "comptbl";
       String typeName = "Person";
-      List<String> vals = new ArrayList<String>(2);
-      vals.add("2008-07-01 14:13:12");
-      vals.add("14");
-      List <String> vals2 = new ArrayList<String>(2);
-      vals2.add("2008-07-01 14:13:12");
-      vals2.add("15");
-      List <String> vals3 = new ArrayList<String>(2);
-      vals3 = new ArrayList<String>(2);
-      vals3.add("2008-07-02 14:13:12");
-      vals3.add("15");
-      List <String> vals4 = new ArrayList<String>(2);
-      vals4 = new ArrayList<String>(2);
-      vals4.add("2008-07-03 14:13:12");
-      vals4.add("151");
+      List<String> vals = makeVals("2008-07-01 14:13:12", "14");
+      List<String> vals2 = makeVals("2008-07-01 14:13:12", "15");
+      List<String> vals3 = makeVals("2008-07-02 14:13:12", "15");
+      List<String> vals4 = makeVals("2008-07-03 14:13:12", "151");
 
       client.dropTable(dbName, tblName);
       silentDropDatabase(dbName);
@@ -180,43 +173,12 @@ public abstract class TestHiveMetaStore extends TestCase {
         tbl = client.getTable(dbName, tblName);
       }
 
-      Partition part = new Partition();
-      part.setDbName(dbName);
-      part.setTableName(tblName);
-      part.setValues(vals);
-      part.setParameters(new HashMap<String, String>());
-      part.setSd(tbl.getSd());
-      part.getSd().setSerdeInfo(tbl.getSd().getSerdeInfo());
-      part.getSd().setLocation(tbl.getSd().getLocation() + "/part1");
+      Partition part = makePartitionObject(dbName, tblName, vals, tbl, "/part1");
+      Partition part2 = makePartitionObject(dbName, tblName, vals2, tbl, "/part2");
+      Partition part3 = makePartitionObject(dbName, tblName, vals3, tbl, "/part3");
+      Partition part4 = makePartitionObject(dbName, tblName, vals4, tbl, "/part4");
 
-      Partition part2 = new Partition();
-      part2.setDbName(dbName);
-      part2.setTableName(tblName);
-      part2.setValues(vals2);
-      part2.setParameters(new HashMap<String, String>());
-      part2.setSd(tbl.getSd());
-      part2.getSd().setSerdeInfo(tbl.getSd().getSerdeInfo());
-      part2.getSd().setLocation(tbl.getSd().getLocation() + "/part2");
-
-      Partition part3 = new Partition();
-      part3.setDbName(dbName);
-      part3.setTableName(tblName);
-      part3.setValues(vals3);
-      part3.setParameters(new HashMap<String, String>());
-      part3.setSd(tbl.getSd());
-      part3.getSd().setSerdeInfo(tbl.getSd().getSerdeInfo());
-      part3.getSd().setLocation(tbl.getSd().getLocation() + "/part3");
-
-      Partition part4 = new Partition();
-      part4.setDbName(dbName);
-      part4.setTableName(tblName);
-      part4.setValues(vals4);
-      part4.setParameters(new HashMap<String, String>());
-      part4.setSd(tbl.getSd());
-      part4.getSd().setSerdeInfo(tbl.getSd().getSerdeInfo());
-      part4.getSd().setLocation(tbl.getSd().getLocation() + "/part4");
-
-      // check if the partition exists (it shouldn;t)
+      // check if the partition exists (it shouldn't)
       boolean exceptionThrown = false;
       try {
         Partition p = client.getPartition(dbName, tblName, vals);
@@ -235,6 +197,8 @@ public abstract class TestHiveMetaStore extends TestCase {
       Partition retp4 = client.add_partition(part4);
       assertNotNull("Unable to create partition " + part4, retp4);
 
+
+
       Partition part_get = client.getPartition(dbName, tblName, part.getValues());
       if(isThriftClient) {
         // since we are using thrift, 'part' will not have the create time and
@@ -250,6 +214,7 @@ public abstract class TestHiveMetaStore extends TestCase {
       String partName = "ds=2008-07-01 14%3A13%3A12/hr=14";
       String part2Name = "ds=2008-07-01 14%3A13%3A12/hr=15";
       String part3Name ="ds=2008-07-02 14%3A13%3A12/hr=15";
+      String part4Name ="ds=2008-07-03 14%3A13%3A12/hr=151";
 
       part_get = client.getPartition(dbName, tblName, partName);
       assertTrue("Partitions are not the same", part.equals(part_get));
@@ -272,6 +237,14 @@ public abstract class TestHiveMetaStore extends TestCase {
       List<String> partialNames = client.listPartitionNames(dbName, tblName, partialVals,
           (short) -1);
       assertTrue("Should have returned 2 partition names", partialNames.size() == 2);
+      assertTrue("Not all part names returned", partialNames.containsAll(partNames));
+
+      partNames.add(part3Name);
+      partNames.add(part4Name);
+      partialVals.clear();
+      partialVals.add("");
+      partialNames = client.listPartitionNames(dbName, tblName, partialVals, (short) -1);
+      assertTrue("Should have returned 4 partition names", partialNames.size() == 4);
       assertTrue("Not all part names returned", partialNames.containsAll(partNames));
 
       // Test partition listing with a partial spec - hr is specified but ds is not
@@ -305,7 +278,7 @@ public abstract class TestHiveMetaStore extends TestCase {
       }
       assertTrue("Bad partition spec should have thrown an exception", exceptionThrown);
 
-      Path partPath = new Path(part2.getSd().getLocation());
+      Path partPath = new Path(part.getSd().getLocation());
       FileSystem fs = FileSystem.get(partPath.toUri(), hiveConf);
 
 
@@ -329,6 +302,71 @@ public abstract class TestHiveMetaStore extends TestCase {
       // tested
       retp = client.add_partition(part);
       assertNotNull("Unable to create partition " + part, retp);
+
+      // test add_partitions
+
+      List<String> mvals1 = makeVals("2008-07-04 14:13:12", "14641");
+      List<String> mvals2 = makeVals("2008-07-04 14:13:12", "14642");
+      List<String> mvals3 = makeVals("2008-07-04 14:13:12", "14643");
+      List<String> mvals4 = makeVals("2008-07-04 14:13:12", "14643"); // equal to 3
+      List<String> mvals5 = makeVals("2008-07-04 14:13:12", "14645");
+
+      Exception savedException;
+
+      // add_partitions(empty list) : ok, normal operation
+      client.add_partitions(new ArrayList<Partition>());
+
+      // add_partitions(1,2,3) : ok, normal operation
+      Partition mpart1 = makePartitionObject(dbName, tblName, mvals1, tbl, "/mpart1");
+      Partition mpart2 = makePartitionObject(dbName, tblName, mvals2, tbl, "/mpart2");
+      Partition mpart3 = makePartitionObject(dbName, tblName, mvals3, tbl, "/mpart3");
+      client.add_partitions(Arrays.asList(mpart1,mpart2,mpart3));
+
+      if(isThriftClient) {
+        // do DDL time munging if thrift mode
+        adjust(client, mpart1, dbName, tblName);
+        adjust(client, mpart2, dbName, tblName);
+        adjust(client, mpart3, dbName, tblName);
+      }
+      verifyPartitionsPublished(client, dbName, tblName,
+          Arrays.asList(mvals1.get(0)),
+          Arrays.asList(mpart1,mpart2,mpart3));
+
+      Partition mpart4 = makePartitionObject(dbName, tblName, mvals4, tbl, "/mpart4");
+      Partition mpart5 = makePartitionObject(dbName, tblName, mvals5, tbl, "/mpart5");
+
+      // create dir for /mpart5
+      Path mp5Path = new Path(mpart5.getSd().getLocation());
+      warehouse.mkdirs(mp5Path);
+      assertTrue(fs.exists(mp5Path));
+
+      // add_partitions(5,4) : err = duplicate keyvals on mpart4
+      savedException = null;
+      try {
+        client.add_partitions(Arrays.asList(mpart5,mpart4));
+      } catch (Exception e) {
+        savedException = e;
+      } finally {
+        assertNotNull(savedException);
+      }
+
+      // check that /mpart4 does not exist, but /mpart5 still does.
+      assertTrue(fs.exists(mp5Path));
+      assertFalse(fs.exists(new Path(mpart4.getSd().getLocation())));
+
+      // add_partitions(5) : ok
+      client.add_partitions(Arrays.asList(mpart5));
+
+      if(isThriftClient) {
+        // do DDL time munging if thrift mode
+        adjust(client, mpart5, dbName, tblName);
+      }
+
+      verifyPartitionsPublished(client, dbName, tblName,
+          Arrays.asList(mvals1.get(0)),
+          Arrays.asList(mpart1,mpart2,mpart3,mpart5));
+
+      //// end add_partitions tests
 
       client.dropTable(dbName, tblName);
 
@@ -355,6 +393,41 @@ public abstract class TestHiveMetaStore extends TestCase {
       System.err.println("testPartition() failed.");
       throw e;
     }
+  }
+
+  private static void verifyPartitionsPublished(HiveMetaStoreClient client,
+      String dbName, String tblName, List<String> partialSpec,
+      List<Partition> expectedPartitions)
+          throws NoSuchObjectException, MetaException, TException {
+    // Test partition listing with a partial spec
+
+    List<Partition> mpartial = client.listPartitions(dbName, tblName, partialSpec,
+        (short) -1);
+    assertEquals("Should have returned "+expectedPartitions.size()+
+        " partitions, returned " + mpartial.size(),
+        expectedPartitions.size(), mpartial.size());
+    assertTrue("Not all parts returned", mpartial.containsAll(expectedPartitions));
+  }
+
+  private static List<String> makeVals(String ds, String id) {
+    List <String> vals4 = new ArrayList<String>(2);
+    vals4 = new ArrayList<String>(2);
+    vals4.add(ds);
+    vals4.add(id);
+    return vals4;
+  }
+
+  private static Partition makePartitionObject(String dbName, String tblName,
+      List<String> ptnVals, Table tbl, String ptnLocationSuffix) {
+    Partition part4 = new Partition();
+    part4.setDbName(dbName);
+    part4.setTableName(tblName);
+    part4.setValues(ptnVals);
+    part4.setParameters(new HashMap<String, String>());
+    part4.setSd(tbl.getSd().deepCopy());
+    part4.getSd().setSerdeInfo(tbl.getSd().getSerdeInfo().deepCopy());
+    part4.getSd().setLocation(tbl.getSd().getLocation() + ptnLocationSuffix);
+    return part4;
   }
 
   public void testAlterPartition() throws Throwable {
@@ -448,6 +521,136 @@ public abstract class TestHiveMetaStore extends TestCase {
     }
   }
 
+  public void testRenamePartition() throws Throwable {
+
+    try {
+      String dbName = "compdb1";
+      String tblName = "comptbl1";
+      List<String> vals = new ArrayList<String>(2);
+      vals.add("2011-07-11");
+      vals.add("8");
+      String part_path = "/ds=2011-07-11/hr=8";
+      List<String> tmp_vals = new ArrayList<String>(2);
+      tmp_vals.add("tmp_2011-07-11");
+      tmp_vals.add("-8");
+      String part2_path = "/ds=tmp_2011-07-11/hr=-8";
+
+      client.dropTable(dbName, tblName);
+      silentDropDatabase(dbName);
+      Database db = new Database();
+      db.setName(dbName);
+      db.setDescription("Rename Partition Test database");
+      client.createDatabase(db);
+
+      ArrayList<FieldSchema> cols = new ArrayList<FieldSchema>(2);
+      cols.add(new FieldSchema("name", Constants.STRING_TYPE_NAME, ""));
+      cols.add(new FieldSchema("income", Constants.INT_TYPE_NAME, ""));
+
+      Table tbl = new Table();
+      tbl.setDbName(dbName);
+      tbl.setTableName(tblName);
+      StorageDescriptor sd = new StorageDescriptor();
+      tbl.setSd(sd);
+      sd.setCols(cols);
+      sd.setCompressed(false);
+      sd.setNumBuckets(1);
+      sd.setParameters(new HashMap<String, String>());
+      sd.getParameters().put("test_param_1", "Use this for comments etc");
+      sd.setBucketCols(new ArrayList<String>(2));
+      sd.getBucketCols().add("name");
+      sd.setSerdeInfo(new SerDeInfo());
+      sd.getSerdeInfo().setName(tbl.getTableName());
+      sd.getSerdeInfo().setParameters(new HashMap<String, String>());
+      sd.getSerdeInfo().getParameters()
+          .put(Constants.SERIALIZATION_FORMAT, "1");
+      sd.setSortCols(new ArrayList<Order>());
+
+      tbl.setPartitionKeys(new ArrayList<FieldSchema>(2));
+      tbl.getPartitionKeys().add(
+          new FieldSchema("ds", Constants.STRING_TYPE_NAME, ""));
+      tbl.getPartitionKeys().add(
+          new FieldSchema("hr", Constants.INT_TYPE_NAME, ""));
+
+      client.createTable(tbl);
+
+      if (isThriftClient) {
+        // the createTable() above does not update the location in the 'tbl'
+        // object when the client is a thrift client and the code below relies
+        // on the location being present in the 'tbl' object - so get the table
+        // from the metastore
+        tbl = client.getTable(dbName, tblName);
+      }
+
+      Partition part = new Partition();
+      part.setDbName(dbName);
+      part.setTableName(tblName);
+      part.setValues(vals);
+      part.setParameters(new HashMap<String, String>());
+      part.setSd(tbl.getSd().deepCopy());
+      part.getSd().setSerdeInfo(tbl.getSd().getSerdeInfo());
+      part.getSd().setLocation(tbl.getSd().getLocation() + "/part1");
+      part.getParameters().put("retention", "10");
+      part.getSd().setNumBuckets(12);
+      part.getSd().getSerdeInfo().getParameters().put("abc", "1");
+
+      client.add_partition(part);
+
+      part.setValues(tmp_vals);
+      client.renamePartition(dbName, tblName, vals, part);
+
+      boolean exceptionThrown = false;
+      try {
+        Partition p = client.getPartition(dbName, tblName, vals);
+      } catch(Exception e) {
+        assertEquals("partition should not have existed",
+            NoSuchObjectException.class, e.getClass());
+        exceptionThrown = true;
+      }
+      assertTrue("Expected NoSuchObjectException", exceptionThrown);
+
+      Partition part3 = client.getPartition(dbName, tblName, tmp_vals);
+      assertEquals("couldn't rename partition", part3.getParameters().get(
+          "retention"), "10");
+      assertEquals("couldn't rename partition", part3.getSd().getSerdeInfo()
+          .getParameters().get("abc"), "1");
+      assertEquals("couldn't rename partition", part3.getSd().getNumBuckets(),
+          12);
+      assertEquals("new partition sd matches", part3.getSd().getLocation(),
+          tbl.getSd().getLocation() + part2_path);
+
+      part.setValues(vals);
+      client.renamePartition(dbName, tblName, tmp_vals, part);
+
+      exceptionThrown = false;
+      try {
+        Partition p = client.getPartition(dbName, tblName, tmp_vals);
+      } catch(Exception e) {
+        assertEquals("partition should not have existed",
+            NoSuchObjectException.class, e.getClass());
+        exceptionThrown = true;
+      }
+      assertTrue("Expected NoSuchObjectException", exceptionThrown);
+
+      part3 = client.getPartition(dbName, tblName, vals);
+      assertEquals("couldn't rename partition", part3.getParameters().get(
+          "retention"), "10");
+      assertEquals("couldn't rename partition", part3.getSd().getSerdeInfo()
+          .getParameters().get("abc"), "1");
+      assertEquals("couldn't rename partition", part3.getSd().getNumBuckets(),
+          12);
+      assertEquals("new partition sd matches", part3.getSd().getLocation(),
+          tbl.getSd().getLocation() + part_path);
+
+      client.dropTable(dbName, tblName);
+
+      client.dropDatabase(dbName);
+    } catch (Exception e) {
+      System.err.println(StringUtils.stringifyException(e));
+      System.err.println("testRenamePartition() failed.");
+      throw e;
+    }
+  }
+
   public void testDatabase() throws Throwable {
     try {
       // clear up any existing databases
@@ -463,7 +666,7 @@ public abstract class TestHiveMetaStore extends TestCase {
       assertEquals("name of returned db is different from that of inserted db",
           TEST_DB1_NAME, db.getName());
       assertEquals("location of the returned db is different from that of inserted db",
-          warehouse.getDefaultDatabasePath(TEST_DB1_NAME).toString(), db.getLocationUri());
+          warehouse.getDatabasePath(db).toString(), db.getLocationUri());
 
       Database db2 = new Database();
       db2.setName(TEST_DB2_NAME);
@@ -474,7 +677,7 @@ public abstract class TestHiveMetaStore extends TestCase {
       assertEquals("name of returned db is different from that of inserted db",
           TEST_DB2_NAME, db2.getName());
       assertEquals("location of the returned db is different from that of inserted db",
-          warehouse.getDefaultDatabasePath(TEST_DB2_NAME).toString(), db2.getLocationUri());
+          warehouse.getDatabasePath(db2).toString(), db2.getLocationUri());
 
       List<String> dbs = client.getDatabases(".*");
 
@@ -491,6 +694,96 @@ public abstract class TestHiveMetaStore extends TestCase {
       throw e;
     }
   }
+
+  public void testDatabaseLocation() throws Throwable {
+    try {
+      // clear up any existing databases
+      silentDropDatabase(TEST_DB1_NAME);
+
+      Database db = new Database();
+      db.setName(TEST_DB1_NAME);
+      String dbLocation =
+          HiveConf.getVar(hiveConf, HiveConf.ConfVars.METASTOREWAREHOUSE) + "/_testDB_create_";
+      db.setLocationUri(dbLocation);
+      client.createDatabase(db);
+
+      db = client.getDatabase(TEST_DB1_NAME);
+
+      assertEquals("name of returned db is different from that of inserted db",
+          TEST_DB1_NAME, db.getName());
+      assertEquals("location of the returned db is different from that of inserted db",
+          warehouse.getDnsPath(new Path(dbLocation)).toString(), db.getLocationUri());
+
+      client.dropDatabase(TEST_DB1_NAME);
+      silentDropDatabase(TEST_DB1_NAME);
+
+      db = new Database();
+      db.setName(TEST_DB1_NAME);
+      dbLocation =
+          HiveConf.getVar(hiveConf, HiveConf.ConfVars.METASTOREWAREHOUSE) + "/test/_testDB_create_";
+      FileSystem fs = FileSystem.get(new Path(dbLocation).toUri(), hiveConf);
+      fs.mkdirs(
+          new Path(HiveConf.getVar(hiveConf, HiveConf.ConfVars.METASTOREWAREHOUSE) + "/test"),
+          new FsPermission((short) 0));
+      db.setLocationUri(dbLocation);
+
+      boolean createFailed = false;
+      try {
+        client.createDatabase(db);
+      } catch (MetaException cantCreateDB) {
+        createFailed = true;
+      }
+      assertTrue("Database creation succeeded even with permission problem", createFailed);
+
+      boolean objectNotExist = false;
+      try {
+        client.getDatabase(TEST_DB1_NAME);
+      } catch (NoSuchObjectException e) {
+        objectNotExist = true;
+      }
+      assertTrue("Database " + TEST_DB1_NAME + " exists ", objectNotExist);
+
+      // Cleanup
+      fs.setPermission(
+          new Path(HiveConf.getVar(hiveConf, HiveConf.ConfVars.METASTOREWAREHOUSE) + "/test"),
+          new FsPermission((short) 755));
+      fs.delete(new Path(HiveConf.getVar(hiveConf, HiveConf.ConfVars.METASTOREWAREHOUSE) + "/test"), true);
+
+
+      db = new Database();
+      db.setName(TEST_DB1_NAME);
+      dbLocation =
+          HiveConf.getVar(hiveConf, HiveConf.ConfVars.METASTOREWAREHOUSE) + "/_testDB_file_";
+      fs = FileSystem.get(new Path(dbLocation).toUri(), hiveConf);
+      fs.createNewFile(new Path(dbLocation));
+      fs.deleteOnExit(new Path(dbLocation));
+      db.setLocationUri(dbLocation);
+
+      createFailed = false;
+      try {
+        client.createDatabase(db);
+      } catch (MetaException cantCreateDB) {
+        System.err.println(cantCreateDB.getMessage());
+        createFailed = true;
+      }
+      assertTrue("Database creation succeeded even location exists and is a file", createFailed);
+
+      objectNotExist = false;
+      try {
+        client.getDatabase(TEST_DB1_NAME);
+      } catch (NoSuchObjectException e) {
+        objectNotExist = true;
+      }
+      assertTrue("Database " + TEST_DB1_NAME + " exists when location is specified and is a file",
+          objectNotExist);
+
+    } catch (Throwable e) {
+      System.err.println(StringUtils.stringifyException(e));
+      System.err.println("testDatabaseLocation() failed.");
+      throw e;
+    }
+  }
+
 
   public void testSimpleTypeApi() throws Exception {
     try {
@@ -716,6 +1009,59 @@ public abstract class TestHiveMetaStore extends TestCase {
           (tbl2.getPartitionKeys() == null)
               || (tbl2.getPartitionKeys().size() == 0));
 
+      //test get_table_objects_by_name functionality
+      ArrayList<String> tableNames = new ArrayList<String>();
+      tableNames.add(tblName2);
+      tableNames.add(tblName);
+      tableNames.add(tblName2);
+      List<Table> foundTables = client.getTableObjectsByName(dbName, tableNames);
+
+      assertEquals(foundTables.size(), 2);
+      for (Table t: foundTables) {
+        if (t.getTableName().equals(tblName2)) {
+          assertEquals(t.getSd().getLocation(), tbl2.getSd().getLocation());
+        } else {
+          assertEquals(t.getTableName(), tblName);
+          assertEquals(t.getSd().getLocation(), tbl.getSd().getLocation());
+        }
+        assertEquals(t.getSd().getCols().size(), typ1.getFields().size());
+        assertEquals(t.getSd().isCompressed(), false);
+        assertEquals(foundTables.get(0).getSd().getNumBuckets(), 1);
+        assertNotNull(t.getSd().getSerdeInfo());
+        assertEquals(t.getDbName(), dbName);
+      }
+
+      tableNames.add(1, "table_that_doesnt_exist");
+      foundTables = client.getTableObjectsByName(dbName, tableNames);
+      assertEquals(foundTables.size(), 2);
+
+      InvalidOperationException ioe = null;
+      try {
+        foundTables = client.getTableObjectsByName(dbName, null);
+      } catch (InvalidOperationException e) {
+        ioe = e;
+      }
+      assertNotNull(ioe);
+      assertTrue("Table not found", ioe.getMessage().contains("null tables"));
+
+      UnknownDBException udbe = null;
+      try {
+        foundTables = client.getTableObjectsByName("db_that_doesnt_exist", tableNames);
+      } catch (UnknownDBException e) {
+        udbe = e;
+      }
+      assertNotNull(udbe);
+      assertTrue("DB not found", udbe.getMessage().contains("not find database db_that_doesnt_exist"));
+
+      udbe = null;
+      try {
+        foundTables = client.getTableObjectsByName("", tableNames);
+      } catch (UnknownDBException e) {
+        udbe = e;
+      }
+      assertNotNull(udbe);
+      assertTrue("DB not found", udbe.getMessage().contains("is null or empty"));
+
       FileSystem fs = FileSystem.get((new Path(tbl.getSd().getLocation())).toUri(), hiveConf);
       client.dropTable(dbName, tblName);
       assertFalse(fs.exists(new Path(tbl.getSd().getLocation())));
@@ -803,6 +1149,39 @@ public abstract class TestHiveMetaStore extends TestCase {
         assertTrue("Able to rename table with invalid name: " + invTblName,
             false);
       }
+
+      //try an invalid alter table with partition key name
+      Table tbl_pk = client.getTable(tbl.getDbName(), tbl.getTableName());
+      List<FieldSchema> partitionKeys = tbl_pk.getPartitionKeys();
+      for (FieldSchema fs : partitionKeys) {
+        fs.setName("invalid_to_change_name");
+        fs.setComment("can_change_comment");
+      }
+      tbl_pk.setPartitionKeys(partitionKeys);
+      try {
+        client.alter_table(dbName, tblName, tbl_pk);
+      } catch (InvalidOperationException ex) {
+        failed = true;
+      }
+      assertTrue("Should not have succeeded in altering partition key name", failed);
+
+      //try a valid alter table partition key comment
+      failed = false;
+      tbl_pk = client.getTable(tbl.getDbName(), tbl.getTableName());
+      partitionKeys = tbl_pk.getPartitionKeys();
+      for (FieldSchema fs : partitionKeys) {
+        fs.setComment("can_change_comment");
+      }
+      tbl_pk.setPartitionKeys(partitionKeys);
+      try {
+        client.alter_table(dbName, tblName, tbl_pk);
+      } catch (InvalidOperationException ex) {
+        failed = true;
+      }
+      assertFalse("Should not have failed alter table partition comment", failed);
+      Table newT = client.getTable(tbl.getDbName(), tbl.getTableName());
+      assertEquals(partitionKeys, newT.getPartitionKeys());
+
       // try a valid alter table
       tbl2.setTableName(tblName + "_renamed");
       tbl2.getSd().setCols(cols);
@@ -932,6 +1311,60 @@ public abstract class TestHiveMetaStore extends TestCase {
       client.dropDatabase(dbName);
     }
   }
+
+  public void testTableDatabase() throws Exception {
+    String dbName = "testDb";
+    String tblName_1 = "testTbl_1";
+    String tblName_2 = "testTbl_2";
+
+    try {
+      silentDropDatabase(dbName);
+
+      Database db = new Database();
+      db.setName(dbName);
+      String dbLocation =
+          HiveConf.getVar(hiveConf, HiveConf.ConfVars.METASTOREWAREHOUSE) + "_testDB_table_create_";
+      db.setLocationUri(dbLocation);
+      client.createDatabase(db);
+      db = client.getDatabase(dbName);
+
+      Table tbl = new Table();
+      tbl.setDbName(dbName);
+      tbl.setTableName(tblName_1);
+
+      ArrayList<FieldSchema> cols = new ArrayList<FieldSchema>(2);
+      cols.add(new FieldSchema("name", Constants.STRING_TYPE_NAME, ""));
+      cols.add(new FieldSchema("income", Constants.INT_TYPE_NAME, ""));
+
+      StorageDescriptor sd = new StorageDescriptor();
+      sd.setSerdeInfo(new SerDeInfo());
+      sd.getSerdeInfo().setName(tbl.getTableName());
+      sd.getSerdeInfo().setParameters(new HashMap<String, String>());
+      sd.setParameters(new HashMap<String, String>());
+      sd.getSerdeInfo().getParameters().put(
+          org.apache.hadoop.hive.serde.Constants.SERIALIZATION_FORMAT, "9");
+      sd.getSerdeInfo().setSerializationLib(
+          org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe.class.getName());
+
+      tbl.setSd(sd);
+      tbl.getSd().setCols(cols);
+      client.createTable(tbl);
+      tbl = client.getTable(dbName, tblName_1);
+
+      Path path = new Path(tbl.getSd().getLocation());
+      System.err.println("Table's location " + path + ", Database's location " + db.getLocationUri());
+      assertEquals("Table location is not a subset of the database location",
+          path.getParent().toString(), db.getLocationUri());
+
+    } catch (Exception e) {
+      System.err.println(StringUtils.stringifyException(e));
+      System.err.println("testTableDatabase() failed.");
+      throw e;
+    } finally {
+      silentDropDatabase(dbName);
+    }
+  }
+
 
   public void testGetConfigValue() {
 
@@ -1319,5 +1752,187 @@ public abstract class TestHiveMetaStore extends TestCase {
       HiveMetaStoreClient.newSynchronizedClient(client);
     List<String> databases = synchronizedClient.getAllDatabases();
     assertEquals(1, databases.size());
+  }
+
+  public void testTableFilter() throws Exception {
+    try {
+      String dbName = "testTableFilter";
+      String owner1 = "testOwner1";
+      String owner2 = "testOwner2";
+      int lastAccessTime1 = 90;
+      int lastAccessTime2 = 30;
+      String tableName1 = "table1";
+      String tableName2 = "table2";
+      String tableName3 = "table3";
+
+      client.dropTable(dbName, tableName1);
+      client.dropTable(dbName, tableName2);
+      client.dropTable(dbName, tableName3);
+      silentDropDatabase(dbName);
+      Database db = new Database();
+      db.setName(dbName);
+      db.setDescription("Alter Partition Test database");
+      client.createDatabase(db);
+
+      Table table1 = createTableForTestFilter(dbName,tableName1, owner1, lastAccessTime1, true);
+      Table table2 = createTableForTestFilter(dbName,tableName2, owner2, lastAccessTime2, true);
+      Table table3 = createTableForTestFilter(dbName,tableName3, owner1, lastAccessTime2, false);
+
+      List<String> tableNames;
+      String filter;
+      //test owner
+      //owner like ".*Owner.*" and owner like "test.*"
+      filter = org.apache.hadoop.hive.metastore.api.Constants.HIVE_FILTER_FIELD_OWNER +
+          " like \".*Owner.*\" and " +
+          org.apache.hadoop.hive.metastore.api.Constants.HIVE_FILTER_FIELD_OWNER +
+          " like  \"test.*\"";
+      tableNames = client.listTableNamesByFilter(dbName, filter, (short)-1);
+      assertEquals(tableNames.size(), 3);
+      assert(tableNames.contains(table1.getTableName()));
+      assert(tableNames.contains(table2.getTableName()));
+      assert(tableNames.contains(table3.getTableName()));
+
+      //owner = "testOwner1"
+      filter = org.apache.hadoop.hive.metastore.api.Constants.HIVE_FILTER_FIELD_OWNER +
+          " = \"testOwner1\"";
+
+      tableNames = client.listTableNamesByFilter(dbName, filter, (short)-1);
+      assertEquals(2, tableNames.size());
+      assert(tableNames.contains(table1.getTableName()));
+      assert(tableNames.contains(table3.getTableName()));
+
+      //lastAccessTime < 90
+      filter = org.apache.hadoop.hive.metastore.api.Constants.HIVE_FILTER_FIELD_LAST_ACCESS +
+          " < 90";
+
+      tableNames = client.listTableNamesByFilter(dbName, filter, (short)-1);
+      assertEquals(2, tableNames.size());
+      assert(tableNames.contains(table2.getTableName()));
+      assert(tableNames.contains(table3.getTableName()));
+
+      //lastAccessTime > 90
+      filter = org.apache.hadoop.hive.metastore.api.Constants.HIVE_FILTER_FIELD_LAST_ACCESS +
+      " > 90";
+
+      tableNames = client.listTableNamesByFilter(dbName, filter, (short)-1);
+      assertEquals(0, tableNames.size());
+
+      //test params
+      //test_param_2 = "50"
+      filter = org.apache.hadoop.hive.metastore.api.Constants.HIVE_FILTER_FIELD_PARAMS +
+          "test_param_2 = \"50\"";
+
+      tableNames = client.listTableNamesByFilter(dbName, filter, (short)-1);
+      assertEquals(2, tableNames.size());
+      assert(tableNames.contains(table1.getTableName()));
+      assert(tableNames.contains(table2.getTableName()));
+
+      //test_param_2 = "75"
+      filter = org.apache.hadoop.hive.metastore.api.Constants.HIVE_FILTER_FIELD_PARAMS +
+          "test_param_2 = \"75\"";
+
+      tableNames = client.listTableNamesByFilter(dbName, filter, (short)-1);
+      assertEquals(0, tableNames.size());
+
+      //key_dne = "50"
+      filter = org.apache.hadoop.hive.metastore.api.Constants.HIVE_FILTER_FIELD_PARAMS +
+          "key_dne = \"50\"";
+
+      tableNames = client.listTableNamesByFilter(dbName, filter, (short)-1);
+      assertEquals(0, tableNames.size());
+
+      //test_param_1 != "yellow"
+      filter = org.apache.hadoop.hive.metastore.api.Constants.HIVE_FILTER_FIELD_PARAMS +
+          "test_param_1 <> \"yellow\"";
+
+      tableNames = client.listTableNamesByFilter(dbName, filter, (short) 2);
+      assertEquals(2, tableNames.size());
+
+      //owner = "testOwner1" and (lastAccessTime = 30 or test_param_1 = "hi")
+      filter = org.apache.hadoop.hive.metastore.api.Constants.HIVE_FILTER_FIELD_OWNER +
+        " = \"testOwner1\" and (" +
+        org.apache.hadoop.hive.metastore.api.Constants.HIVE_FILTER_FIELD_LAST_ACCESS +
+        " = 30 or " +
+        org.apache.hadoop.hive.metastore.api.Constants.HIVE_FILTER_FIELD_PARAMS +
+        "test_param_1 = \"hi\")";
+      tableNames = client.listTableNamesByFilter(dbName, filter, (short)-1);
+
+      assertEquals(2, tableNames.size());
+      assert(tableNames.contains(table1.getTableName()));
+      assert(tableNames.contains(table3.getTableName()));
+
+      //Negative tests
+      Exception me = null;
+      try {
+        filter = "badKey = \"testOwner1\"";
+        tableNames = client.listTableNamesByFilter(dbName, filter, (short) -1);
+      } catch(MetaException e) {
+        me = e;
+      }
+      assertNotNull(me);
+      assertTrue("Bad filter key test", me.getMessage().contains(
+            "Invalid key name in filter"));
+
+      client.dropTable(dbName, tableName1);
+      client.dropTable(dbName, tableName2);
+      client.dropTable(dbName, tableName3);
+      client.dropDatabase(dbName);
+    } catch (Exception e) {
+      System.err.println(StringUtils.stringifyException(e));
+      System.err.println("testTableFilter() failed.");
+      throw e;
+    }
+  }
+
+  private Table createTableForTestFilter(String dbName, String tableName, String owner, int lastAccessTime, boolean hasSecondParam) throws Exception {
+    client.dropTable(dbName, tableName);
+
+    ArrayList<FieldSchema> cols = new ArrayList<FieldSchema>(2);
+    cols.add(new FieldSchema("name", Constants.STRING_TYPE_NAME, ""));
+    cols.add(new FieldSchema("income", Constants.INT_TYPE_NAME, ""));
+
+    Table tbl = new Table();
+    tbl.setDbName(dbName);
+    tbl.setTableName(tableName);
+    tbl.setParameters(new HashMap<String, String>());
+    tbl.getParameters().put("test_param_1", "hi");
+    if (hasSecondParam) {
+      tbl.getParameters().put("test_param_2", "50");
+    }
+    StorageDescriptor sd = new StorageDescriptor();
+    tbl.setSd(sd);
+    sd.setCols(cols);
+    sd.setCompressed(false);
+    sd.setNumBuckets(1);
+    sd.setParameters(new HashMap<String, String>());
+    sd.getParameters().put("sd_param_1", "Use this for comments etc");
+    sd.setBucketCols(new ArrayList<String>(2));
+    sd.getBucketCols().add("name");
+    sd.setSerdeInfo(new SerDeInfo());
+    sd.getSerdeInfo().setName(tbl.getTableName());
+    sd.getSerdeInfo().setParameters(new HashMap<String, String>());
+    sd.getSerdeInfo().getParameters()
+        .put(Constants.SERIALIZATION_FORMAT, "1");
+    sd.setSortCols(new ArrayList<Order>());
+
+    tbl.setOwner(owner);
+    tbl.setLastAccessTime(lastAccessTime);
+
+    tbl.setPartitionKeys(new ArrayList<FieldSchema>(2));
+    tbl.getPartitionKeys().add(
+        new FieldSchema("ds", Constants.STRING_TYPE_NAME, ""));
+    tbl.getPartitionKeys().add(
+        new FieldSchema("hr", Constants.INT_TYPE_NAME, ""));
+
+    client.createTable(tbl);
+
+    if (isThriftClient) {
+      // the createTable() above does not update the location in the 'tbl'
+      // object when the client is a thrift client and the code below relies
+      // on the location being present in the 'tbl' object - so get the table
+      // from the metastore
+      tbl = client.getTable(dbName, tableName);
+    }
+    return tbl;
   }
 }

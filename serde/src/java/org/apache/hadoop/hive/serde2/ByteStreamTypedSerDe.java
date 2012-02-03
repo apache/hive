@@ -42,7 +42,7 @@ public abstract class ByteStreamTypedSerDe extends TypedSerDe {
   public Object deserialize(Writable field) throws SerDeException {
     Object retObj = super.deserialize(field);
     BytesWritable b = (BytesWritable) field;
-    bis.reset(b.get(), b.getSize());
+    bis.reset(b.getBytes(), b.getLength());
     return (retObj);
   }
 

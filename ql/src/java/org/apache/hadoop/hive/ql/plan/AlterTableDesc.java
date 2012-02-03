@@ -42,11 +42,12 @@ public class AlterTableDesc extends DDLDesc implements Serializable {
   public static enum AlterTableTypes {
     RENAME, ADDCOLS, REPLACECOLS, ADDPROPS, ADDSERDE, ADDSERDEPROPS,
     ADDFILEFORMAT, ADDCLUSTERSORTCOLUMN, RENAMECOLUMN, ADDPARTITION,
-    TOUCH, ARCHIVE, UNARCHIVE, ALTERPROTECTMODE, ALTERPARTITIONPROTECTMODE, ALTERLOCATION,
+    TOUCH, ARCHIVE, UNARCHIVE, ALTERPROTECTMODE, ALTERPARTITIONPROTECTMODE,
+    ALTERLOCATION, DROPPARTITION, RENAMEPARTITION
   };
 
   public static enum ProtectModeType {
-    NO_DROP, OFFLINE, READ_ONLY
+    NO_DROP, OFFLINE, READ_ONLY, NO_DROP_CASCADE
   };
 
 
@@ -107,10 +108,11 @@ public class AlterTableDesc extends DDLDesc implements Serializable {
    * @param newName
    *          new name of the table
    */
-  public AlterTableDesc(String oldName, String newName) {
+  public AlterTableDesc(String oldName, String newName, boolean expectView) {
     op = AlterTableTypes.RENAME;
     this.oldName = oldName;
     this.newName = newName;
+    this.expectView = expectView;
   }
 
   /**
@@ -151,7 +153,7 @@ public class AlterTableDesc extends DDLDesc implements Serializable {
    *          new table input format
    * @param outputFormat
    *          new table output format
-   * @param partSpec 
+   * @param partSpec
    */
   public AlterTableDesc(String name, String inputFormat, String outputFormat,
       String serdeName, String storageHandler, HashMap<String, String> partSpec) {

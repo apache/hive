@@ -21,9 +21,11 @@ package org.apache.hadoop.hive.ql.plan;
 import org.apache.hadoop.hive.ql.security.authorization.Privilege;
 
 public enum HiveOperation {
-  
+
   EXPLAIN("EXPLAIN", null, null),
   LOAD("LOAD", null, new Privilege[]{Privilege.ALTER_DATA}),
+  EXPORT("EXPORT", new Privilege[]{Privilege.SELECT}, null),
+  IMPORT("IMPORT", null, new Privilege[]{Privilege.ALTER_METADATA, Privilege.ALTER_DATA}),
   CREATEDATABASE("CREATEDATABASE", null, null),
   DROPDATABASE("DROPDATABASE", null, null),
   SWITCHDATABASE("SWITCHDATABASE", null, null),
@@ -34,6 +36,7 @@ public enum HiveOperation {
   ALTERTABLE_ADDCOLS("ALTERTABLE_ADDCOLS", new Privilege[]{Privilege.ALTER_METADATA}, null),
   ALTERTABLE_REPLACECOLS("ALTERTABLE_REPLACECOLS", new Privilege[]{Privilege.ALTER_METADATA}, null),
   ALTERTABLE_RENAMECOL("ALTERTABLE_RENAMECOL", new Privilege[]{Privilege.ALTER_METADATA}, null),
+  ALTERTABLE_RENAMEPART("ALTERTABLE_RENAMEPART", new Privilege[]{Privilege.DROP}, new Privilege[]{Privilege.CREATE}),
   ALTERTABLE_RENAME("ALTERTABLE_RENAME", new Privilege[]{Privilege.ALTER_METADATA}, null),
   ALTERTABLE_DROPPARTS("ALTERTABLE_DROPPARTS", new Privilege[]{Privilege.DROP}, null),
   ALTERTABLE_ADDPARTS("ALTERTABLE_ADDPARTS", new Privilege[]{Privilege.CREATE}, null),
@@ -42,7 +45,9 @@ public enum HiveOperation {
   ALTERTABLE_UNARCHIVE("ALTERTABLE_UNARCHIVE", new Privilege[]{Privilege.ALTER_DATA}, null),
   ALTERTABLE_PROPERTIES("ALTERTABLE_PROPERTIES", new Privilege[]{Privilege.ALTER_METADATA}, null),
   ALTERTABLE_SERIALIZER("ALTERTABLE_SERIALIZER", new Privilege[]{Privilege.ALTER_METADATA}, null),
+  ALTERPARTITION_SERIALIZER("ALTERPARTITION_SERIALIZER", new Privilege[]{Privilege.ALTER_METADATA}, null),
   ALTERTABLE_SERDEPROPERTIES("ALTERTABLE_SERDEPROPERTIES", new Privilege[]{Privilege.ALTER_METADATA}, null),
+  ALTERPARTITION_SERDEPROPERTIES("ALTERPARTITION_SERDEPROPERTIES", new Privilege[]{Privilege.ALTER_METADATA}, null),
   ALTERTABLE_CLUSTER_SORT("ALTERTABLE_CLUSTER_SORT", new Privilege[]{Privilege.ALTER_METADATA}, null),
   SHOWDATABASES("SHOWDATABASES", new Privilege[]{Privilege.SHOW_DATABASE}, null),
   SHOWTABLES("SHOWTABLES", null, null),
@@ -77,18 +82,20 @@ public enum HiveOperation {
   ALTERPARTITION_LOCATION("ALTERPARTITION_LOCATION", new Privilege[]{Privilege.ALTER_DATA}, null),
   CREATETABLE("CREATETABLE", null, new Privilege[]{Privilege.CREATE}),
   CREATETABLE_AS_SELECT("CREATETABLE_AS_SELECT", new Privilege[]{Privilege.SELECT}, new Privilege[]{Privilege.CREATE}),
-  QUERY("QUERY", new Privilege[]{Privilege.SELECT}, new Privilege[]{Privilege.ALTER_DATA, Privilege.CREATE}), 
-  ALTERINDEX_PROPS("ALTERINDEX_PROPS",null, null), 
-  ALTERDATABASE("ALTERDATABASE", null, null), 
+  QUERY("QUERY", new Privilege[]{Privilege.SELECT}, new Privilege[]{Privilege.ALTER_DATA, Privilege.CREATE}),
+  ALTERINDEX_PROPS("ALTERINDEX_PROPS",null, null),
+  ALTERDATABASE("ALTERDATABASE", null, null),
   DESCDATABASE("DESCDATABASE", null, null),
+  ALTERTABLE_MERGEFILES("ALTER_TABLE_MERGE", new Privilege[] { Privilege.SELECT }, new Privilege[] { Privilege.ALTER_DATA }),
+  ALTERPARTITION_MERGEFILES("ALTER_PARTITION_MERGE", new Privilege[] { Privilege.SELECT }, new Privilege[] { Privilege.ALTER_DATA }),
   ;
 
   private String operationName;
-  
+
   private Privilege[] inputRequiredPrivileges;
-  
+
   private Privilege[] outputRequiredPrivileges;
-  
+
   public Privilege[] getInputRequiredPrivileges() {
     return inputRequiredPrivileges;
   }
@@ -107,9 +114,9 @@ public enum HiveOperation {
     this.inputRequiredPrivileges = inputRequiredPrivileges;
     this.outputRequiredPrivileges = outputRequiredPrivileges;
   }
-  
+
   public static class PrivilegeAgreement {
-    
+
     private Privilege[] inputUserLevelRequiredPriv;
     private Privilege[] inputDBLevelRequiredPriv;
     private Privilege[] inputTableLevelRequiredPriv;
@@ -118,7 +125,7 @@ public enum HiveOperation {
     private Privilege[] outputDBLevelRequiredPriv;
     private Privilege[] outputTableLevelRequiredPriv;
     private Privilege[] outputColumnLevelRequiredPriv;
-    
+
     public PrivilegeAgreement putUserLevelRequiredPriv(
         Privilege[] inputUserLevelRequiredPriv,
         Privilege[] outputUserLevelRequiredPriv) {
@@ -134,7 +141,7 @@ public enum HiveOperation {
       this.outputDBLevelRequiredPriv = outputDBLevelRequiredPriv;
       return this;
     }
-    
+
     public PrivilegeAgreement putTableLevelRequiredPriv(
         Privilege[] inputTableLevelRequiredPriv,
         Privilege[] outputTableLevelRequiredPriv) {

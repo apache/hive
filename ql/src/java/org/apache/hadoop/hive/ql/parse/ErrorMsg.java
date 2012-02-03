@@ -105,19 +105,20 @@ public enum ErrorMsg {
   BUCKETED_NUMBERATOR_BIGGER_DENOMINATOR("Numberator should not be bigger than "
       + "denaminator in sample clause for table"),
   NEED_PARTITION_ERROR("Need to specify partition columns because the destination "
-      + "table is partitioned."),
+      + "table is partitioned"),
   CTAS_CTLT_COEXISTENCE("Create table command does not allow LIKE and AS-SELECT in "
       + "the same command"),
   LINES_TERMINATED_BY_NON_NEWLINE("LINES TERMINATED BY only supports newline '\\n' right now"),
   CTAS_COLLST_COEXISTENCE("CREATE TABLE AS SELECT command cannot specify the list of columns "
-      + "for the target table."),
+      + "for the target table"),
   CTLT_COLLST_COEXISTENCE("CREATE TABLE LIKE command cannot specify the list of columns for "
-      + "the target table."),
-  INVALID_SELECT_SCHEMA("Cannot derive schema from the select-clause."),
+      + "the target table"),
+  INVALID_SELECT_SCHEMA("Cannot derive schema from the select-clause"),
   CTAS_PARCOL_COEXISTENCE("CREATE-TABLE-AS-SELECT does not support partitioning in the target "
-      + "table."),
-  CTAS_MULTI_LOADFILE("CREATE-TABLE-AS-SELECT results in multiple file load."),
-  CTAS_EXTTBL_COEXISTENCE("CREATE-TABLE-AS-SELECT cannot create external table."),
+      + "table"),
+  CTAS_MULTI_LOADFILE("CREATE-TABLE-AS-SELECT results in multiple file load"),
+  CTAS_EXTTBL_COEXISTENCE("CREATE-TABLE-AS-SELECT cannot create external table"),
+  DATABASE_NOT_EXISTS("Database does not exist:"),
   TABLE_ALREADY_EXISTS("Table already exists:", "42S02"),
   COLUMN_ALIAS_ALREADY_EXISTS("Column alias already exists:", "42S02"),
   UDTF_MULTIPLE_EXPR("Only a single expression in the SELECT clause is supported with UDTF's"),
@@ -131,6 +132,7 @@ public enum ErrorMsg {
   UDTF_LATERAL_VIEW("UDTF's cannot be in a select expression when there is a lateral view"),
   UDTF_ALIAS_MISMATCH("The number of aliases supplied in the AS clause does not match the "
       + "number of columns output by the UDTF"),
+  UDF_STATEFUL_INVALID_LOCATION("Stateful UDF's can only be invoked in the SELECT list"),
   LATERAL_VIEW_WITH_JOIN("JOIN with a LATERAL VIEW is not supported"),
   LATERAL_VIEW_INVALID_CHILD("LATERAL VIEW AST with invalid child"),
   OUTPUT_SPECIFIED_MULTIPLE_TIMES("The same output cannot be present multiple times: "),
@@ -138,17 +140,20 @@ public enum ErrorMsg {
   VIEW_COL_MISMATCH("The number of columns produced by the SELECT clause does not match the "
       + "number of column names specified by CREATE VIEW"),
   DML_AGAINST_VIEW("A view cannot be used as target table for LOAD or INSERT"),
+  ANALYZE_VIEW("ANALYZE is not supported for views"),
+  VIEW_PARTITION_TOTAL("At least one non-partitioning column must be present in view"),
+  VIEW_PARTITION_MISMATCH("Rightmost columns in view output do not match PARTITIONED ON clause"),
   PARTITION_DYN_STA_ORDER("Dynamic partition cannot be the parent of a static partition"),
   DYNAMIC_PARTITION_DISABLED("Dynamic partition is disabled. Either enable it by setting "
       + "hive.exec.dynamic.partition=true or specify partition column values"),
   DYNAMIC_PARTITION_STRICT_MODE("Dynamic partition strict mode requires at least one "
       + "static partition column. To turn this off set hive.exec.dynamic.partition.mode=nonstrict"),
-  DYNAMIC_PARTITION_MERGE("Dynamic partition does not support merging mapfiles/mapredfiles yet."
-      + "Please set hive.merge.mapfiles and hive.merge.mapredfiles to false or use static "
-      +	"partitions"),
+  DYNAMIC_PARTITION_MERGE("Dynamic partition does not support merging using non-CombineHiveInputFormat"
+      + "Please check your hive.input.format setting and make sure your Hadoop version support "
+      + "CombineFileInputFormat"),
   NONEXISTPARTCOL("Non-Partition column appears in the partition specification: "),
-  UNSUPPORTED_TYPE("DATE, DATETIME, and TIMESTAMP types aren't supported yet. Please use "
-      + "STRING instead."),
+  UNSUPPORTED_TYPE("DATE and DATETIME types aren't supported yet. Please use "
+      + "TIMESTAMP instead"),
   CREATE_NON_NATIVE_AS("CREATE TABLE AS SELECT cannot be used for a non-native table"),
   LOAD_INTO_NON_NATIVE("A non-native table cannot be used as target for LOAD"),
   LOCKMGR_NOT_SPECIFIED("Lock manager not specified correctly, set hive.lock.manager"),
@@ -156,9 +161,9 @@ public enum ErrorMsg {
   LOCK_CANNOT_BE_ACQUIRED("Locks on the underlying objects cannot be acquired. retry after some time"),
   ZOOKEEPER_CLIENT_COULD_NOT_BE_INITIALIZED("Check hive.zookeeper.quorum and hive.zookeeper.client.port"),
   OVERWRITE_ARCHIVED_PART("Cannot overwrite an archived partition. " +
-      "Unarchive before running this command."),
+      "Unarchive before running this command"),
   ARCHIVE_METHODS_DISABLED("Archiving methods are currently disabled. " +
-      "Please see the Hive wiki for more information about enabling archiving."),
+      "Please see the Hive wiki for more information about enabling archiving"),
   ARCHIVE_ON_MULI_PARTS("ARCHIVE can only be run on a single partition"),
   UNARCHIVE_ON_MULI_PARTS("ARCHIVE can only be run on a single partition"),
   ARCHIVE_ON_TABLE("ARCHIVE can only be run on partitions"),
@@ -169,6 +174,22 @@ public enum ErrorMsg {
   OUTERJOIN_USES_FILTERS("The query results could be wrong. " +
   		"Turn on hive.outerjoin.supports.filters"),
   NEED_PARTITION_SPECIFICATION("Table is partitioned and partition specification is needed"),
+  INVALID_METADATA("The metadata file could not be parsed "),
+  NEED_TABLE_SPECIFICATION("Table name could be determined; It should be specified "),
+  PARTITION_EXISTS("Partition already exists"),
+  TABLE_DATA_EXISTS("Table exists and contains data files"),
+  INCOMPATIBLE_SCHEMA("The existing table is not compatible with the import spec. "),
+  EXIM_FOR_NON_NATIVE("Export/Import cannot be done for a non-native table. "),
+  INSERT_INTO_BUCKETIZED_TABLE("Bucketized tables do not support INSERT INTO:"),
+  NO_COMPARE_BIGINT_STRING("In strict mode, comparing bigints and strings is not allowed, "
+      + "it may result in a loss of precision. "
+      + "If you really want to perform the operation, set hive.mapred.mode=nonstrict"),
+  NO_COMPARE_BIGINT_DOUBLE("In strict mode, comparing bigints and doubles is not allowed, "
+      + "it may result in a loss of precision. "
+      + "If you really want to perform the operation, set hive.mapred.mode=nonstrict"),
+  PARTSPEC_DIFFER_FROM_SCHEMA("Partition columns in partition specification are not the same as "
+      + "that defined in the table schema. The names and orders have to be exactly the same."),
+  PARTITION_COLUMN_NON_PRIMITIVE("Partition column must be of primitive type."),
       ;
 
   private String mesg;
@@ -279,11 +300,10 @@ public enum ErrorMsg {
 
   // Dirty hack as this will throw away spaces and other things - find a better
   // way!
-  private String getText(ASTNode tree) {
+  public static String getText(ASTNode tree) {
     if (tree.getChildCount() == 0) {
       return tree.getText();
     }
-
     return getText((ASTNode) tree.getChild(tree.getChildCount() - 1));
   }
 
@@ -292,8 +312,9 @@ public enum ErrorMsg {
     renderPosition(sb, tree);
     sb.append(" ");
     sb.append(mesg);
-    sb.append(" ");
+    sb.append(" '");
     sb.append(getText(tree));
+    sb.append("'");
     renderOrigin(sb, tree.getOrigin());
     return sb.toString();
   }

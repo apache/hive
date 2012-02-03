@@ -22,6 +22,7 @@ import org.apache.hadoop.hive.ql.exec.UDF;
 import org.apache.hadoop.hive.serde2.io.ByteWritable;
 import org.apache.hadoop.hive.serde2.io.DoubleWritable;
 import org.apache.hadoop.hive.serde2.io.ShortWritable;
+import org.apache.hadoop.hive.serde2.io.TimestampWritable;
 import org.apache.hadoop.hive.serde2.lazy.LazyInteger;
 import org.apache.hadoop.io.BooleanWritable;
 import org.apache.hadoop.io.FloatWritable;
@@ -42,7 +43,7 @@ public class UDFToInteger extends UDF {
 
   /**
    * Convert from void to an integer. This is called for CAST(... AS INT)
-   * 
+   *
    * @param i
    *          The void value to convert
    * @return Integer
@@ -53,7 +54,7 @@ public class UDFToInteger extends UDF {
 
   /**
    * Convert from boolean to an integer. This is called for CAST(... AS INT)
-   * 
+   *
    * @param i
    *          The boolean value to convert
    * @return IntWritable
@@ -69,7 +70,7 @@ public class UDFToInteger extends UDF {
 
   /**
    * Convert from byte to an integer. This is called for CAST(... AS INT)
-   * 
+   *
    * @param i
    *          The byte value to convert
    * @return IntWritable
@@ -85,7 +86,7 @@ public class UDFToInteger extends UDF {
 
   /**
    * Convert from short to an integer. This is called for CAST(... AS INT)
-   * 
+   *
    * @param i
    *          The short value to convert
    * @return IntWritable
@@ -101,7 +102,7 @@ public class UDFToInteger extends UDF {
 
   /**
    * Convert from long to an integer. This is called for CAST(... AS INT)
-   * 
+   *
    * @param i
    *          The long value to convert
    * @return IntWritable
@@ -117,7 +118,7 @@ public class UDFToInteger extends UDF {
 
   /**
    * Convert from float to an integer. This is called for CAST(... AS INT)
-   * 
+   *
    * @param i
    *          The float value to convert
    * @return IntWritable
@@ -133,7 +134,7 @@ public class UDFToInteger extends UDF {
 
   /**
    * Convert from double to an integer. This is called for CAST(... AS INT)
-   * 
+   *
    * @param i
    *          The double value to convert
    * @return IntWritable
@@ -149,7 +150,7 @@ public class UDFToInteger extends UDF {
 
   /**
    * Convert from string to an integer. This is called for CAST(... AS INT)
-   * 
+   *
    * @param i
    *          The string value to convert
    * @return IntWritable
@@ -168,6 +169,22 @@ public class UDFToInteger extends UDF {
         // But we decided to return NULL instead, which is more conservative.
         return null;
       }
+    }
+  }
+
+  /**
+   * Convert from Timestamp to an integer. This is called for CAST(... AS INT)
+   *
+   * @param i
+   *          The Timestamp value to convert
+   * @return IntWritable
+   */
+  public IntWritable evaluate(TimestampWritable i) {
+    if (i == null) {
+      return null;
+    } else {
+      intWritable.set(i.getSeconds());
+      return intWritable;
     }
   }
 

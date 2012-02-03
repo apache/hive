@@ -517,33 +517,29 @@ STAGE PLANS:
               predicate:
                   expr: (key < '15')
                   type: boolean
-              Filter Operator
-                predicate:
-                    expr: (key < '15')
-                    type: boolean
-                Select Operator
-                  expressions:
+              Select Operator
+                expressions:
+                      expr: key
+                      type: int
+                outputColumnNames: key
+                Group By Operator
+                  bucketGroup: false
+                  keys:
                         expr: key
                         type: int
-                  outputColumnNames: key
-                  Group By Operator
-                    bucketGroup: false
-                    keys:
-                          expr: key
+                        expr: key
+                        type: int
+                  mode: hash
+                  outputColumnNames: _col0, _col1
+                  Reduce Output Operator
+                    key expressions:
+                          expr: _col1
                           type: int
-                          expr: key
+                    sort order: +
+                    Map-reduce partition columns:
+                          expr: _col1
                           type: int
-                    mode: hash
-                    outputColumnNames: _col0, _col1
-                    Reduce Output Operator
-                      key expressions:
-                            expr: _col1
-                            type: int
-                      sort order: +
-                      Map-reduce partition columns:
-                            expr: _col1
-                            type: int
-                      tag: 1
+                    tag: 1
       Reduce Operator Tree:
         Join Operator
           condition map:
@@ -653,35 +649,31 @@ STAGE PLANS:
               predicate:
                   expr: (value < 'val_10')
                   type: boolean
-              Filter Operator
-                predicate:
-                    expr: (value < 'val_10')
-                    type: boolean
-                Select Operator
-                  expressions:
+              Select Operator
+                expressions:
+                      expr: key
+                      type: int
+                      expr: value
+                      type: string
+                outputColumnNames: key, value
+                Group By Operator
+                  bucketGroup: false
+                  keys:
                         expr: key
                         type: int
                         expr: value
                         type: string
-                  outputColumnNames: key, value
-                  Group By Operator
-                    bucketGroup: false
-                    keys:
-                          expr: key
+                  mode: hash
+                  outputColumnNames: _col0, _col1
+                  Reduce Output Operator
+                    key expressions:
+                          expr: _col0
                           type: int
-                          expr: value
-                          type: string
-                    mode: hash
-                    outputColumnNames: _col0, _col1
-                    Reduce Output Operator
-                      key expressions:
-                            expr: _col0
-                            type: int
-                      sort order: +
-                      Map-reduce partition columns:
-                            expr: _col0
-                            type: int
-                      tag: 1
+                    sort order: +
+                    Map-reduce partition columns:
+                          expr: _col0
+                          type: int
+                    tag: 1
       Reduce Operator Tree:
         Join Operator
           condition map:
@@ -787,36 +779,32 @@ STAGE PLANS:
               predicate:
                   expr: (key > 5)
                   type: boolean
-              Filter Operator
-                predicate:
-                    expr: (key > 5)
-                    type: boolean
+              Select Operator
+                expressions:
+                      expr: key
+                      type: int
+                outputColumnNames: _col0
                 Select Operator
                   expressions:
-                        expr: key
+                        expr: _col0
                         type: int
                   outputColumnNames: _col0
-                  Select Operator
-                    expressions:
+                  Group By Operator
+                    bucketGroup: false
+                    keys:
                           expr: _col0
                           type: int
+                    mode: hash
                     outputColumnNames: _col0
-                    Group By Operator
-                      bucketGroup: false
-                      keys:
+                    Reduce Output Operator
+                      key expressions:
                             expr: _col0
                             type: int
-                      mode: hash
-                      outputColumnNames: _col0
-                      Reduce Output Operator
-                        key expressions:
-                              expr: _col0
-                              type: int
-                        sort order: +
-                        Map-reduce partition columns:
-                              expr: _col0
-                              type: int
-                        tag: 1
+                      sort order: +
+                      Map-reduce partition columns:
+                            expr: _col0
+                            type: int
+                      tag: 1
       Reduce Operator Tree:
         Join Operator
           condition map:
@@ -916,46 +904,38 @@ STAGE PLANS:
               predicate:
                   expr: ((key > 5) and (value <= 'val_20'))
                   type: boolean
-              Filter Operator
-                predicate:
-                    expr: (key > 5)
-                    type: boolean
+              Select Operator
+                expressions:
+                      expr: key
+                      type: int
+                      expr: value
+                      type: string
+                outputColumnNames: _col0, _col1
                 Select Operator
                   expressions:
-                        expr: key
+                        expr: _col0
                         type: int
-                        expr: value
+                        expr: _col1
                         type: string
                   outputColumnNames: _col0, _col1
-                  Filter Operator
-                    predicate:
-                        expr: (_col1 <= 'val_20')
-                        type: boolean
-                    Select Operator
-                      expressions:
+                  Group By Operator
+                    bucketGroup: false
+                    keys:
+                          expr: _col0
+                          type: int
+                          expr: _col1
+                          type: string
+                    mode: hash
+                    outputColumnNames: _col0, _col1
+                    Reduce Output Operator
+                      key expressions:
                             expr: _col0
                             type: int
-                            expr: _col1
-                            type: string
-                      outputColumnNames: _col0, _col1
-                      Group By Operator
-                        bucketGroup: false
-                        keys:
-                              expr: _col0
-                              type: int
-                              expr: _col1
-                              type: string
-                        mode: hash
-                        outputColumnNames: _col0, _col1
-                        Reduce Output Operator
-                          key expressions:
-                                expr: _col0
-                                type: int
-                          sort order: +
-                          Map-reduce partition columns:
-                                expr: _col0
-                                type: int
-                          tag: 1
+                      sort order: +
+                      Map-reduce partition columns:
+                            expr: _col0
+                            type: int
+                      tag: 1
       Reduce Operator Tree:
         Join Operator
           condition map:
@@ -1054,36 +1034,32 @@ STAGE PLANS:
               predicate:
                   expr: (key > 2)
                   type: boolean
-              Filter Operator
-                predicate:
-                    expr: (key > 2)
-                    type: boolean
+              Select Operator
+                expressions:
+                      expr: key
+                      type: int
+                outputColumnNames: _col0
                 Select Operator
                   expressions:
-                        expr: key
+                        expr: _col0
                         type: int
                   outputColumnNames: _col0
-                  Select Operator
-                    expressions:
+                  Group By Operator
+                    bucketGroup: false
+                    keys:
                           expr: _col0
                           type: int
+                    mode: hash
                     outputColumnNames: _col0
-                    Group By Operator
-                      bucketGroup: false
-                      keys:
+                    Reduce Output Operator
+                      key expressions:
                             expr: _col0
                             type: int
-                      mode: hash
-                      outputColumnNames: _col0
-                      Reduce Output Operator
-                        key expressions:
-                              expr: _col0
-                              type: int
-                        sort order: +
-                        Map-reduce partition columns:
-                              expr: _col0
-                              type: int
-                        tag: 1
+                      sort order: +
+                      Map-reduce partition columns:
+                            expr: _col0
+                            type: int
+                      tag: 1
       Reduce Operator Tree:
         Join Operator
           condition map:

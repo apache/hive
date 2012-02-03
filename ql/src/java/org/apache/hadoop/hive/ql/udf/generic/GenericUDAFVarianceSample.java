@@ -55,6 +55,7 @@ public class GenericUDAFVarianceSample extends GenericUDAFVariance {
     case FLOAT:
     case DOUBLE:
     case STRING:
+    case TIMESTAMP:
       return new GenericUDAFVarianceSampleEvaluator();
     case BOOLEAN:
     default:

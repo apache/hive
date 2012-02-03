@@ -1,2 +1,2 @@
 Semantic Exception: 
-Line 2:64 Invalid column reference dummykey
+Line 2:64 Invalid column reference 'dummykey'

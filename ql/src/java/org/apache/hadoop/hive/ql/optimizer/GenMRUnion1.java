@@ -28,7 +28,6 @@ import java.util.Stack;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.Context;
 import org.apache.hadoop.hive.ql.exec.AbstractMapJoinOperator;
-import org.apache.hadoop.hive.ql.exec.MapJoinOperator;
 import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.exec.OperatorFactory;
 import org.apache.hadoop.hive.ql.exec.Task;
@@ -132,13 +131,12 @@ public class GenMRUnion1 implements NodeProcessor {
     // union is encountered for the first time
     if (uCtxTask == null) {
       uCtxTask = new GenMRUnionCtx();
-      uPlan = GenMapRedUtils.getMapRedWork(parseCtx.getConf());
+      uPlan = GenMapRedUtils.getMapRedWork(parseCtx);
       uTask = TaskFactory.get(uPlan, parseCtx.getConf());
       uCtxTask.setUTask(uTask);
       ctx.setUnionTask(union, uCtxTask);
     } else {
       uTask = uCtxTask.getUTask();
-      uPlan = (MapredWork) uTask.getWork();
     }
 
     // If there is a mapjoin at position 'pos'

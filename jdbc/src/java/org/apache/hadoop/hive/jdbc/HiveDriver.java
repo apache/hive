@@ -106,8 +106,8 @@ public class HiveDriver implements Driver {
 
   /**
    * Package scoped access to the Driver's Major Version 
-   * @return The Major version number of the driver. -1 if it cannot be determined from
-   * the manifest.mf file.
+   * @return The Major version number of the driver. -1 if it cannot be determined from the
+   * manifest.mf file.
    */
   static int getMajorDriverVersion() {
     int version = -1;

@@ -1,0 +1,412 @@
+PREHOOK: query: DROP VIEW vp1
+PREHOOK: type: DROPVIEW
+POSTHOOK: query: DROP VIEW vp1
+POSTHOOK: type: DROPVIEW
+PREHOOK: query: DROP VIEW vp2
+PREHOOK: type: DROPVIEW
+POSTHOOK: query: DROP VIEW vp2
+POSTHOOK: type: DROPVIEW
+PREHOOK: query: DROP VIEW vp3
+PREHOOK: type: DROPVIEW
+POSTHOOK: query: DROP VIEW vp3
+POSTHOOK: type: DROPVIEW
+PREHOOK: query: -- test partitioned view definition
+-- (underlying table is not actually partitioned)
+CREATE VIEW vp1
+PARTITIONED ON (value)
+AS
+SELECT key, value
+FROM src
+WHERE key=86
+PREHOOK: type: CREATEVIEW
+PREHOOK: Output: file:/tmp/salbiz/hive_2011-08-01_13-20-47_043_6776108679163894004/-mr-10000
+POSTHOOK: query: -- test partitioned view definition
+-- (underlying table is not actually partitioned)
+CREATE VIEW vp1
+PARTITIONED ON (value)
+AS
+SELECT key, value
+FROM src
+WHERE key=86
+POSTHOOK: type: CREATEVIEW
+POSTHOOK: Output: default@vp1
+POSTHOOK: Output: file:/tmp/salbiz/hive_2011-08-01_13-20-47_043_6776108679163894004/-mr-10000
+PREHOOK: query: DESCRIBE EXTENDED vp1
+PREHOOK: type: DESCTABLE
+POSTHOOK: query: DESCRIBE EXTENDED vp1
+POSTHOOK: type: DESCTABLE
+key	string	
+value	string	
+	 	 
+Detailed Table Information	Table(tableName:vp1, dbName:default, owner:salbiz, createTime:1312230047, lastAccessTime:0, retention:0, sd:StorageDescriptor(cols:[FieldSchema(name:key, type:string, comment:null), FieldSchema(name:value, type:string, comment:null)], location:null, inputFormat:org.apache.hadoop.mapred.SequenceFileInputFormat, outputFormat:org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat, compressed:false, numBuckets:-1, serdeInfo:SerDeInfo(name:null, serializationLib:null, parameters:{}), bucketCols:[], sortCols:[], parameters:{}), partitionKeys:[FieldSchema(name:value, type:string, comment:null)], parameters:{transient_lastDdlTime=1312230047}, viewOriginalText:SELECT key, value	 
+FROM src	 	 
+WHERE key=86, viewExpandedText:SELECT `src`.`key`, `src`.`value`	 	 
+FROM `src`	 	 
+WHERE `src`.`key`=86, tableType:VIRTUAL_VIEW)		 
+PREHOOK: query: DESCRIBE FORMATTED vp1
+PREHOOK: type: DESCTABLE
+POSTHOOK: query: DESCRIBE FORMATTED vp1
+POSTHOOK: type: DESCTABLE
+# col_name            	data_type           	comment             
+	 	 
+key                 	string              	None                
+	 	 
+# Partition Information	 	 
+# col_name            	data_type           	comment             
+	 	 
+value               	string              	None                
+	 	 
+# Detailed Table Information	 	 
+Database:           	default             	 
+Owner:              	salbiz              	 
+CreateTime:         	Mon Aug 01 13:20:47 PDT 2011	 
+LastAccessTime:     	UNKNOWN             	 
+Protect Mode:       	None                	 
+Retention:          	0                   	 
+Table Type:         	VIRTUAL_VIEW        	 
+Table Parameters:	 	 
+	transient_lastDdlTime	1312230047          
+	 	 
+# Storage Information	 	 
+SerDe Library:      	null                	 
+InputFormat:        	org.apache.hadoop.mapred.SequenceFileInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	-1                  	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
+	 	 
+# View Information	 	 
+View Original Text: 	SELECT key, value	 
+FROM src	 	 
+WHERE key=86	 	 
+View Expanded Text: 	SELECT `src`.`key`, `src`.`value`	 
+FROM `src`	 	 
+WHERE `src`.`key`=86	 	 
+PREHOOK: query: SELECT * FROM vp1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: file:/tmp/salbiz/hive_2011-08-01_13-20-47_275_6455230636774618368/-mr-10000
+POSTHOOK: query: SELECT * FROM vp1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: file:/tmp/salbiz/hive_2011-08-01_13-20-47_275_6455230636774618368/-mr-10000
+86	val_86
+PREHOOK: query: SELECT key FROM vp1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: file:/tmp/salbiz/hive_2011-08-01_13-20-50_160_5990941147297889722/-mr-10000
+POSTHOOK: query: SELECT key FROM vp1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: file:/tmp/salbiz/hive_2011-08-01_13-20-50_160_5990941147297889722/-mr-10000
+86
+PREHOOK: query: SELECT value FROM vp1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: file:/tmp/salbiz/hive_2011-08-01_13-20-53_015_3606687068113847171/-mr-10000
+POSTHOOK: query: SELECT value FROM vp1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: file:/tmp/salbiz/hive_2011-08-01_13-20-53_015_3606687068113847171/-mr-10000
+val_86
+PREHOOK: query: ALTER VIEW vp1
+ADD PARTITION (value='val_86') PARTITION (value='val_xyz')
+PREHOOK: type: ALTERTABLE_ADDPARTS
+PREHOOK: Input: default@src
+PREHOOK: Input: default@vp1
+POSTHOOK: query: ALTER VIEW vp1
+ADD PARTITION (value='val_86') PARTITION (value='val_xyz')
+POSTHOOK: type: ALTERTABLE_ADDPARTS
+POSTHOOK: Input: default@src
+POSTHOOK: Input: default@vp1
+POSTHOOK: Output: default@vp1@value=val_86
+POSTHOOK: Output: default@vp1@value=val_xyz
+PREHOOK: query: -- should work since we use IF NOT EXISTS
+ALTER VIEW vp1
+ADD IF NOT EXISTS PARTITION (value='val_xyz')
+PREHOOK: type: ALTERTABLE_ADDPARTS
+PREHOOK: Input: default@src
+PREHOOK: Input: default@vp1
+PREHOOK: Output: default@vp1@value=val_xyz
+POSTHOOK: query: -- should work since we use IF NOT EXISTS
+ALTER VIEW vp1
+ADD IF NOT EXISTS PARTITION (value='val_xyz')
+POSTHOOK: type: ALTERTABLE_ADDPARTS
+POSTHOOK: Input: default@src
+POSTHOOK: Input: default@vp1
+POSTHOOK: Output: default@vp1@value=val_xyz
+PREHOOK: query: SHOW PARTITIONS vp1
+PREHOOK: type: SHOWPARTITIONS
+POSTHOOK: query: SHOW PARTITIONS vp1
+POSTHOOK: type: SHOWPARTITIONS
+value=val_86
+value=val_xyz
+PREHOOK: query: SHOW PARTITIONS vp1 PARTITION(value='val_86')
+PREHOOK: type: SHOWPARTITIONS
+POSTHOOK: query: SHOW PARTITIONS vp1 PARTITION(value='val_86')
+POSTHOOK: type: SHOWPARTITIONS
+value=val_86
+PREHOOK: query: SHOW TABLE EXTENDED LIKE vp1
+PREHOOK: type: SHOW_TABLESTATUS
+POSTHOOK: query: SHOW TABLE EXTENDED LIKE vp1
+POSTHOOK: type: SHOW_TABLESTATUS
+tableName:vp1
+owner:salbiz
+location:null
+inputformat:org.apache.hadoop.mapred.SequenceFileInputFormat
+outputformat:org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+columns:struct columns { string key}
+partitioned:true
+partitionColumns:struct partition_columns { string value}
+
+PREHOOK: query: SHOW TABLE EXTENDED LIKE vp1 PARTITION(value='val_86')
+PREHOOK: type: SHOW_TABLESTATUS
+POSTHOOK: query: SHOW TABLE EXTENDED LIKE vp1 PARTITION(value='val_86')
+POSTHOOK: type: SHOW_TABLESTATUS
+tableName:vp1
+owner:salbiz
+location:null
+inputformat:org.apache.hadoop.mapred.SequenceFileInputFormat
+outputformat:org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+columns:struct columns { string key}
+partitioned:true
+partitionColumns:struct partition_columns { string value}
+
+PREHOOK: query: ALTER VIEW vp1
+DROP PARTITION (value='val_xyz')
+PREHOOK: type: ALTERTABLE_DROPPARTS
+PREHOOK: Input: default@vp1
+PREHOOK: Output: default@vp1@value=val_xyz
+POSTHOOK: query: ALTER VIEW vp1
+DROP PARTITION (value='val_xyz')
+POSTHOOK: type: ALTERTABLE_DROPPARTS
+POSTHOOK: Input: default@vp1
+POSTHOOK: Output: default@vp1@value=val_xyz
+PREHOOK: query: -- should work since we use IF EXISTS
+ALTER VIEW vp1
+DROP IF EXISTS PARTITION (value='val_xyz')
+PREHOOK: type: ALTERTABLE_DROPPARTS
+PREHOOK: Input: default@vp1
+POSTHOOK: query: -- should work since we use IF EXISTS
+ALTER VIEW vp1
+DROP IF EXISTS PARTITION (value='val_xyz')
+POSTHOOK: type: ALTERTABLE_DROPPARTS
+POSTHOOK: Input: default@vp1
+PREHOOK: query: SHOW PARTITIONS vp1
+PREHOOK: type: SHOWPARTITIONS
+POSTHOOK: query: SHOW PARTITIONS vp1
+POSTHOOK: type: SHOWPARTITIONS
+value=val_86
+PREHOOK: query: -- Even though no partition predicate is specified in the next query,
+-- the WHERE clause inside of the view should satisfy strict mode.
+-- In other words, strict only applies to underlying tables
+-- (regardless of whether or not the view is partitioned).
+SELECT * FROM vp1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: file:/tmp/salbiz/hive_2011-08-01_13-20-56_950_8837426272844736658/-mr-10000
+POSTHOOK: query: -- Even though no partition predicate is specified in the next query,
+-- the WHERE clause inside of the view should satisfy strict mode.
+-- In other words, strict only applies to underlying tables
+-- (regardless of whether or not the view is partitioned).
+SELECT * FROM vp1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: file:/tmp/salbiz/hive_2011-08-01_13-20-56_950_8837426272844736658/-mr-10000
+86	val_86
+PREHOOK: query: -- test a partitioned view on top of an underlying partitioned table,
+-- but with only a suffix of the partitioning columns
+CREATE VIEW vp2
+PARTITIONED ON (hr)
+AS SELECT * FROM srcpart WHERE key < 10
+PREHOOK: type: CREATEVIEW
+PREHOOK: Output: file:/tmp/salbiz/hive_2011-08-01_13-20-59_803_7746731020346622943/-mr-10000
+POSTHOOK: query: -- test a partitioned view on top of an underlying partitioned table,
+-- but with only a suffix of the partitioning columns
+CREATE VIEW vp2
+PARTITIONED ON (hr)
+AS SELECT * FROM srcpart WHERE key < 10
+POSTHOOK: type: CREATEVIEW
+POSTHOOK: Output: default@vp2
+POSTHOOK: Output: file:/tmp/salbiz/hive_2011-08-01_13-20-59_803_7746731020346622943/-mr-10000
+PREHOOK: query: DESCRIBE FORMATTED vp2
+PREHOOK: type: DESCTABLE
+POSTHOOK: query: DESCRIBE FORMATTED vp2
+POSTHOOK: type: DESCTABLE
+# col_name            	data_type           	comment             
+	 	 
+key                 	string              	None                
+value               	string              	None                
+ds                  	string              	None                
+	 	 
+# Partition Information	 	 
+# col_name            	data_type           	comment             
+	 	 
+hr                  	string              	None                
+	 	 
+# Detailed Table Information	 	 
+Database:           	default             	 
+Owner:              	salbiz              	 
+CreateTime:         	Mon Aug 01 13:20:59 PDT 2011	 
+LastAccessTime:     	UNKNOWN             	 
+Protect Mode:       	None                	 
+Retention:          	0                   	 
+Table Type:         	VIRTUAL_VIEW        	 
+Table Parameters:	 	 
+	transient_lastDdlTime	1312230059          
+	 	 
+# Storage Information	 	 
+SerDe Library:      	null                	 
+InputFormat:        	org.apache.hadoop.mapred.SequenceFileInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	-1                  	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
+	 	 
+# View Information	 	 
+View Original Text: 	SELECT * FROM srcpart WHERE key < 10	 
+View Expanded Text: 	SELECT `srcpart`.`key`, `srcpart`.`value`, `srcpart`.`ds`, `srcpart`.`hr` FROM `srcpart` WHERE `srcpart`.`key` < 10	 
+PREHOOK: query: ALTER VIEW vp2 ADD PARTITION (hr='11') PARTITION (hr='12')
+PREHOOK: type: ALTERTABLE_ADDPARTS
+PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
+PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
+PREHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
+PREHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
+PREHOOK: Input: default@vp2
+POSTHOOK: query: ALTER VIEW vp2 ADD PARTITION (hr='11') PARTITION (hr='12')
+POSTHOOK: type: ALTERTABLE_ADDPARTS
+POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
+POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
+POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
+POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
+POSTHOOK: Input: default@vp2
+POSTHOOK: Output: default@vp2@hr=11
+POSTHOOK: Output: default@vp2@hr=12
+PREHOOK: query: SELECT key FROM vp2 WHERE hr='12' ORDER BY key
+PREHOOK: type: QUERY
+PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
+PREHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
+PREHOOK: Output: file:/tmp/salbiz/hive_2011-08-01_13-21-00_238_6603731309838545679/-mr-10000
+POSTHOOK: query: SELECT key FROM vp2 WHERE hr='12' ORDER BY key
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
+POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
+POSTHOOK: Output: file:/tmp/salbiz/hive_2011-08-01_13-21-00_238_6603731309838545679/-mr-10000
+0
+0
+0
+0
+0
+0
+2
+2
+4
+4
+5
+5
+5
+5
+5
+5
+8
+8
+9
+9
+PREHOOK: query: -- test a partitioned view where the PARTITIONED ON clause references
+-- an imposed column name
+CREATE VIEW vp3(k,v)
+PARTITIONED ON (v)
+AS
+SELECT key, value
+FROM src
+WHERE key=86
+PREHOOK: type: CREATEVIEW
+PREHOOK: Output: file:/tmp/salbiz/hive_2011-08-01_13-21-03_359_4244173375300491792/-mr-10000
+POSTHOOK: query: -- test a partitioned view where the PARTITIONED ON clause references
+-- an imposed column name
+CREATE VIEW vp3(k,v)
+PARTITIONED ON (v)
+AS
+SELECT key, value
+FROM src
+WHERE key=86
+POSTHOOK: type: CREATEVIEW
+POSTHOOK: Output: default@vp3
+POSTHOOK: Output: file:/tmp/salbiz/hive_2011-08-01_13-21-03_359_4244173375300491792/-mr-10000
+PREHOOK: query: DESCRIBE FORMATTED vp3
+PREHOOK: type: DESCTABLE
+POSTHOOK: query: DESCRIBE FORMATTED vp3
+POSTHOOK: type: DESCTABLE
+# col_name            	data_type           	comment             
+	 	 
+k                   	string              	None                
+	 	 
+# Partition Information	 	 
+# col_name            	data_type           	comment             
+	 	 
+v                   	string              	None                
+	 	 
+# Detailed Table Information	 	 
+Database:           	default             	 
+Owner:              	salbiz              	 
+CreateTime:         	Mon Aug 01 13:21:03 PDT 2011	 
+LastAccessTime:     	UNKNOWN             	 
+Protect Mode:       	None                	 
+Retention:          	0                   	 
+Table Type:         	VIRTUAL_VIEW        	 
+Table Parameters:	 	 
+	transient_lastDdlTime	1312230063          
+	 	 
+# Storage Information	 	 
+SerDe Library:      	null                	 
+InputFormat:        	org.apache.hadoop.mapred.SequenceFileInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	-1                  	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
+	 	 
+# View Information	 	 
+View Original Text: 	SELECT key, value	 
+FROM src	 	 
+WHERE key=86	 	 
+View Expanded Text: 	SELECT `key` AS `k`, `value` AS `v` FROM (SELECT `src`.`key`, `src`.`value`	 
+FROM `src`	 	 
+WHERE `src`.`key`=86) `vp3`	 	 
+PREHOOK: query: ALTER VIEW vp3
+ADD PARTITION (v='val_86')
+PREHOOK: type: ALTERTABLE_ADDPARTS
+PREHOOK: Input: default@src
+PREHOOK: Input: default@vp3
+POSTHOOK: query: ALTER VIEW vp3
+ADD PARTITION (v='val_86')
+POSTHOOK: type: ALTERTABLE_ADDPARTS
+POSTHOOK: Input: default@src
+POSTHOOK: Input: default@vp3
+POSTHOOK: Output: default@vp3@v=val_86
+PREHOOK: query: DROP VIEW vp1
+PREHOOK: type: DROPVIEW
+PREHOOK: Input: default@vp1
+PREHOOK: Output: default@vp1
+POSTHOOK: query: DROP VIEW vp1
+POSTHOOK: type: DROPVIEW
+POSTHOOK: Input: default@vp1
+POSTHOOK: Output: default@vp1
+PREHOOK: query: DROP VIEW vp2
+PREHOOK: type: DROPVIEW
+PREHOOK: Input: default@vp2
+PREHOOK: Output: default@vp2
+POSTHOOK: query: DROP VIEW vp2
+POSTHOOK: type: DROPVIEW
+POSTHOOK: Input: default@vp2
+POSTHOOK: Output: default@vp2
+PREHOOK: query: DROP VIEW vp3
+PREHOOK: type: DROPVIEW
+PREHOOK: Input: default@vp3
+PREHOOK: Output: default@vp3
+POSTHOOK: query: DROP VIEW vp3
+POSTHOOK: type: DROPVIEW
+POSTHOOK: Input: default@vp3
+POSTHOOK: Output: default@vp3

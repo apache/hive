@@ -34,6 +34,7 @@ import org.apache.hadoop.hive.ql.io.NonSyncDataOutputBuffer;
 import org.apache.hadoop.hive.serde.Constants;
 import org.apache.hadoop.hive.serde2.SerDe;
 import org.apache.hadoop.hive.serde2.SerDeException;
+import org.apache.hadoop.hive.serde2.SerDeStats;
 import org.apache.hadoop.hive.serde2.SerDeUtils;
 import org.apache.hadoop.hive.serde2.io.ByteWritable;
 import org.apache.hadoop.hive.serde2.io.DoubleWritable;
@@ -164,7 +165,7 @@ public class TypedBytesSerDe implements SerDe {
   public Object deserialize(Writable blob) throws SerDeException {
 
     BytesWritable data = (BytesWritable) blob;
-    inBarrStr.reset(data.get(), 0, data.getSize());
+    inBarrStr.reset(data.getBytes(), 0, data.getLength());
 
     try {
 
@@ -379,5 +380,10 @@ public class TypedBytesSerDe implements SerDe {
       throw new RuntimeException("Unrecognized type: " + oi.getCategory());
     }
     }
+  }
+
+  public SerDeStats getSerDeStats() {
+    // no support for statistics
+    return null;
   }
 }

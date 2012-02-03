@@ -15,36 +15,52 @@
    limitations under the License.
 -->
 <ivy-module version="2.0" xmlns:m="http://ant.apache.org/ivy/maven">
-    <info organisation="${hive.ivy.org}" module="hive-exec" revision="${version}">
-      <license name="The Apache Software License, Version 2.0" url="http://www.apache.org/licenses/LICENSE-2.0.txt" />
-      <description homepage="http://hive.apache.org">
-        Hive is a data warehouse infrastructure built on top of Hadoop see
-        http://wiki.apache.org/hadoop/Hive
-      </description>
-    </info>
-    <dependencies>
-        <dependency org="hadoop" name="core" rev="${hadoop.version.ant-internal}">
-          <artifact name="hadoop" type="source" ext="tar.gz"/>
-        </dependency>
-        <dependency org="org.slf4j" name="slf4j-api" rev="${slf4j-api.version}"/>
-        <dependency org="org.slf4j" name="slf4j-log4j12" rev="${slf4j-log4j12.version}"/>
-        <dependency org="org.apache.hbase" name="hbase" rev="${hbase.version}"
-                    transitive="false">
-          <artifact name="hbase" type="jar"/>
-          <artifact name="hbase" type="test-jar" ext="jar"
-                    m:classifier="tests"/>
-        </dependency>
-        <dependency org="org.apache.cassandra" name="cassandra-all" rev="${cassandra.version}" >
-	  <exclude module="commons-cli"/>
-          <exclude module="antlr" />
-	</dependency>  
-        <dependency org="org.apache.cassandra" name="cassandra-thrift" rev="${cassandra.version}">
-	</dependency>
-        <dependency org="org.apache.zookeeper" name="zookeeper"
-                    rev="${zookeeper.version}" transitive="false">
-          <include type="jar"/>
-        </dependency>
-        <dependency org="com.google.guava" name="guava" rev="${guava.version}"
-                    transitive="false"/>
-    </dependencies>
+  <info organisation="${hive.ivy.org}" module="hive-exec" revision="${version}">
+    <license name="The Apache Software License, Version 2.0" url="http://www.apache.org/licenses/LICENSE-2.0.txt" />
+    <description homepage="http://hive.apache.org">
+      The Apache Hive (TM) data warehouse software facilitates querying and managing large datasets residing in distributed storage.
+      https://cwiki.apache.org/confluence/display/Hive/Home
+    </description>
+  </info>
+  <configurations>
+    <include file="${ivy.conf.dir}/common-configurations.xml"/>
+  </configurations>
+  <dependencies>
+    <dependency org="org.apache.hadoop" name="hadoop-core" rev="${hadoop.version.ant-internal}">
+      <artifact name="hadoop" type="source" ext="tar.gz"/>
+    </dependency>
+    <dependency org="org.apache.cassandra" name="cassandra-all" rev="${version}"
+                conf="runtime" transitive="false"/>
+    <dependency org="org.apache.hive" name="hive-common" rev="${version}"
+                conf="runtime" transitive="false"/>
+    <dependency org="org.apache.hive" name="hive-metastore" rev="${version}"
+                conf="runtime" transitive="false"/>
+    <dependency org="org.apache.hive" name="hive-serde" rev="${version}"
+                conf="runtime" transitive="false"/>
+    <dependency org="org.apache.hive" name="hive-shims" rev="${version}"
+                conf="runtime" transitive="false"/>
+    <dependency org="org.antlr" name="antlr" rev="${antlr.version}"
+                transitive="false"/>
+    <dependency org="org.antlr" name="antlr-runtime" rev="${antlr-runtime.version}"/>
+    <dependency org="org.slf4j" name="slf4j-api" rev="${slf4j-api.version}"/>
+    <dependency org="org.slf4j" name="slf4j-log4j12" rev="${slf4j-log4j12.version}"
+                transitive="false"/>
+    <dependency org="org.apache.zookeeper" name="zookeeper"
+                rev="${zookeeper.version}" transitive="false">
+      <include type="jar"/>
+    </dependency>
+    <dependency org="com.google.guava" name="guava" rev="${guava.version}"
+                transitive="false"/>
+    <dependency org="org.apache.thrift" name="libthrift" rev="${libthrift.version}"
+                transitive="false"/>
+    <dependency org="log4j" name="log4j" rev="${log4j.version}" transitive="false"/>
+    <dependency org="org.json" name="json" rev="${json.version}"/>
+    <dependency org="commons-collections" name="commons-collections" rev="${commons-collections.version}"/>
+    <dependency org="commons-lang" name="commons-lang" rev="${commons-lang.version}"/>
+    <dependency org="commons-logging" name="commons-logging" rev="${commons-logging.version}"
+                transitive="false"/>
+    <dependency org="commons-logging" name="commons-logging-api" rev="${commons-logging-api.version}"
+                transitive="false"/>
+    <dependency org="org.apache.derby" name="derby" rev="${derby.version}"/>
+  </dependencies>
 </ivy-module>

@@ -23,11 +23,11 @@ import java.util.Stack;
 
 import org.antlr.runtime.ANTLRStringStream;
 import org.antlr.runtime.CharStream;
+import org.apache.hadoop.hive.common.FileUtils;
 import org.apache.hadoop.hive.metastore.Warehouse;
+import org.apache.hadoop.hive.metastore.api.Constants;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.Table;
-import org.apache.hadoop.hive.serde.Constants;
-import org.apache.hadoop.hive.common.FileUtils;
 
 /**
  * The Class representing the filter as a  binary tree. The tree has TreeNode's
@@ -103,7 +103,20 @@ public class ExpressionTree {
       this.rhs = rhs;
     }
 
-    public String generateJDOFilter(Table table, Map<String, String> params)
+    /**
+     * Generates a JDO filter statement
+     * @param table
+     *        The table on which the filter is applied.  If table is not null,
+     *        then this method generates a JDO statement to get all partitions
+     *        of the table that match the filter.
+     *        If table is null, then this method generates a JDO statement to get all
+     *        tables that match the filter.
+     * @param params
+     *        A map of parameter key to values for the filter statement.
+     * @return a JDO filter statement
+     * @throws MetaException
+     */
+    public String generateJDOFilter(Table table, Map<String, Object> params)
     throws MetaException {
       StringBuilder filterBuffer = new StringBuilder();
 
@@ -125,7 +138,6 @@ public class ExpressionTree {
 
       return filterBuffer.toString();
     }
-
   }
 
   /**
@@ -134,12 +146,83 @@ public class ExpressionTree {
   public static class LeafNode extends TreeNode {
     public String keyName;
     public Operator operator;
-    public String value;
+    public Object value;
     public boolean isReverseOrder = false;
     private static final String PARAM_PREFIX = "hive_filter_param_";
 
     @Override
-    public String generateJDOFilter(Table table, Map<String, String> params)
+    public String generateJDOFilter(Table table,
+        Map<String, Object> params)
+        throws MetaException {
+      if (table != null) {
+        return generateJDOFilterOverPartitions(table, params);
+      } else {
+        return generateJDOFilterOverTables(params);
+      }
+    }
+
+    private String generateJDOFilterOverTables(Map<String, Object> params)
+        throws MetaException {
+      if (keyName.equals(Constants.HIVE_FILTER_FIELD_OWNER)) {
+        keyName = "this.owner";
+      } else if (keyName.equals(Constants.HIVE_FILTER_FIELD_LAST_ACCESS)) {
+        //lastAccessTime expects an integer, so we cannot use the "like operator"
+        if (operator == Operator.LIKE) {
+          throw new MetaException("Like is not supported for HIVE_FILTER_FIELD_LAST_ACCESS");
+        }
+        keyName = "this.lastAccessTime";
+      } else if (keyName.startsWith(Constants.HIVE_FILTER_FIELD_PARAMS)) {
+        //can only support "=" and "<>" for now, because our JDO lib is buggy when
+        // using objects from map.get()
+        if (!(operator == Operator.EQUALS || operator == Operator.NOTEQUALS)) {
+          throw new MetaException("Only = and <> are supported " +
+          		"opreators for HIVE_FILTER_FIELD_PARAMS");
+        }
+        String paramKeyName = keyName.substring(Constants.HIVE_FILTER_FIELD_PARAMS.length());
+        keyName = "this.parameters.get(\"" + paramKeyName + "\")";
+        //value is persisted as a string in the db, so make sure it's a string here
+        // in case we get an integer.
+        value = value.toString();
+      } else {
+        throw new MetaException("Invalid key name in filter.  " +
+        		"Use constants from org.apache.hadoop.hive.metastore.api");
+      }
+      return generateJDOFilterGeneral(params);
+    }
+
+    /**
+     * Generates a general filter.  Given a map of <key, value>,
+     * generates a statement of the form:
+     * key1 operator value2 (&& | || ) key2 operator value2 ...
+     *
+     * Currently supported types for value are String and Integer.
+     * The LIKE operator for Integers is unsupported.
+     */
+    private String generateJDOFilterGeneral(Map<String, Object> params)
+        throws MetaException {
+      String paramName = PARAM_PREFIX + params.size();
+      params.put(paramName, value);
+      String filter;
+
+      if (isReverseOrder) {
+        if (operator == Operator.LIKE) {
+          throw new MetaException(
+              "Value should be on the RHS for LIKE operator : " +
+              "Key <" + keyName + ">");
+        } else {
+          filter = paramName + " " + operator.getJdoOp() + " " + keyName;
+        }
+      } else {
+        if (operator == Operator.LIKE) {
+          filter = " " + keyName + "." + operator.getJdoOp() + "(" + paramName + ") ";
+        } else {
+          filter = " " + keyName + " " + operator.getJdoOp() + " " + paramName;
+        }
+      }
+      return filter;
+    }
+
+    private String generateJDOFilterOverPartitions(Table table, Map<String, Object> params)
     throws MetaException {
 
       int partitionColumnCount = table.getPartitionKeys().size();
@@ -159,14 +242,22 @@ public class ExpressionTree {
             "> is not a partitioning key for the table");
       }
 
+      //Can only support partitions whose types are string
       if( ! table.getPartitionKeys().get(partitionColumnIndex).
-          getType().equals(Constants.STRING_TYPE_NAME) ) {
+          getType().equals(org.apache.hadoop.hive.serde.Constants.STRING_TYPE_NAME) ) {
         throw new MetaException
         ("Filtering is supported only on partition keys of type string");
       }
 
+      String valueParam = null;
+      try {
+        valueParam = (String) value;
+      } catch (ClassCastException e) {
+        throw new MetaException("Filtering is supported only on partition keys of type string");
+      }
+
       String paramName = PARAM_PREFIX + params.size();
-      params.put(paramName, value);
+      params.put(paramName, valueParam);
       String filter;
 
       String keyEqual = FileUtils.escapePathName(keyName) + "=";
@@ -187,9 +278,8 @@ public class ExpressionTree {
           throw new MetaException(
               "Value should be on the RHS for LIKE operator : " +
               "Key <" + keyName + ">");
-        }
-        else if (operator == Operator.EQUALS) {
-          filter = makeFilterForEquals(keyName, value, paramName, params,
+        } else if (operator == Operator.EQUALS) {
+          filter = makeFilterForEquals(keyName, valueParam, paramName, params,
               partitionColumnIndex, partitionColumnCount);
         } else {
           filter = paramName +
@@ -201,7 +291,7 @@ public class ExpressionTree {
           filter = " " + valString + "."
               + operator.getJdoOp() + "(" + paramName + ") ";
         } else if (operator == Operator.EQUALS) {
-          filter = makeFilterForEquals(keyName, value, paramName, params,
+          filter = makeFilterForEquals(keyName, valueParam, paramName, params,
               partitionColumnIndex, partitionColumnCount);
         } else {
           filter = " " + valString + " "
@@ -231,7 +321,7 @@ public class ExpressionTree {
    * @throws MetaException
    */
   private static String makeFilterForEquals(String keyName, String value,
-      String paramName, Map<String, String> params, int keyPos, int keyCount)
+      String paramName, Map<String, Object> params, int keyPos, int keyCount)
       throws MetaException {
     Map<String, String> partKeyToVal = new HashMap<String, String>();
     partKeyToVal.put(keyName, value);
@@ -239,19 +329,30 @@ public class ExpressionTree {
     // makePartName with one key will return a substring of the name made
     // with both all the keys.
     String escapedNameFragment = Warehouse.makePartName(partKeyToVal, false);
-
+    StringBuilder fltr = new StringBuilder();
     if (keyCount == 1) {
       // Case where this is no other partition columns
       params.put(paramName, escapedNameFragment);
+      fltr.append("partitionName == ").append(paramName);
     } else if (keyPos + 1 == keyCount) {
       // Case where the partition column is at the end of the name. There will
       // be a leading '/' but no trailing '/'
-      params.put(paramName, ".*/" + escapedNameFragment);
+      params.put(paramName, "/" + escapedNameFragment);
+      fltr.append("partitionName.endsWith(").append(paramName).append(')');
+    } else if (keyPos == 0) {
+      // Case where the parttion column is at the beginning of the name. There will
+      // be a trailing '/' but no leading '/'
+      params.put(paramName, escapedNameFragment + "/");
+      fltr.append("partitionName.startsWith(").append(paramName).append(')');
     } else {
-      params.put(paramName, ".*" + escapedNameFragment + "/.*");
+      // Case where the partition column is in the middle of the name. There will
+      // be a leading '/' and an trailing '/'
+      params.put(paramName, "/" + escapedNameFragment + "/");
+      fltr.append("partitionName.indexOf(").append(paramName).append(") >= 0");
     }
-    return "partitionName.matches(" + paramName + ")";
+    return fltr.toString();
   }
+
   /**
    * The root node for the tree.
    */
@@ -297,7 +398,7 @@ public class ExpressionTree {
    * @throws MetaException
    */
   public String generateJDOFilter(Table table,
-        Map<String, String> params) throws MetaException {
+        Map<String, Object> params) throws MetaException {
     if( root == null ) {
       return "";
     }

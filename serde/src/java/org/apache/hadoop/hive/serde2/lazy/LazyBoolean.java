@@ -64,6 +64,7 @@ public class LazyBoolean extends
       isNull = false;
     } else {
       isNull = true;
+      logExceptionMessage(bytes, start, length, "BOOLEAN");
     }
   }
 

@@ -69,6 +69,8 @@ public final class PlanUtils {
 
   protected static final Log LOG = LogFactory.getLog("org.apache.hadoop.hive.ql.plan.PlanUtils");
 
+  private static long countForMapJoinDumpFilePrefix = 0;
+
   /**
    * ExpressionTypes.
    *
@@ -76,6 +78,10 @@ public final class PlanUtils {
   public static enum ExpressionTypes {
     FIELD, JEXL
   };
+
+  public static long getCountForMapJoinDumpFilePrefix() {
+    return countForMapJoinDumpFilePrefix++;
+  }
 
   @SuppressWarnings("nls")
   public static MapredWork getMapRedWork() {
@@ -209,8 +215,10 @@ public final class PlanUtils {
 
   public static TableDesc getDefaultQueryOutputTableDesc(String cols, String colTypes,
       String fileFormat) {
-    return getTableDesc(LazySimpleSerDe.class, "" + Utilities.ctrlaCode, cols, colTypes,
+    TableDesc tblDesc = getTableDesc(LazySimpleSerDe.class, "" + Utilities.ctrlaCode, cols, colTypes,
         false, false, fileFormat);
+    tblDesc.getProperties().setProperty(Constants.ESCAPE_CHAR, "\\");
+    return tblDesc;
   }
 
  /**
@@ -259,6 +267,11 @@ public final class PlanUtils {
 
       if (crtTblDesc.getLineDelim() != null) {
         properties.setProperty(Constants.LINE_DELIM, crtTblDesc.getLineDelim());
+      }
+
+      if (crtTblDesc.getTableName() != null && crtTblDesc.getDatabaseName() != null) {
+        properties.setProperty(org.apache.hadoop.hive.metastore.api.Constants.META_TABLE_NAME,
+            crtTblDesc.getDatabaseName() + "." + crtTblDesc.getTableName());
       }
 
       // replace the default input & output file format with those found in

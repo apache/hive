@@ -28,6 +28,8 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.LocalFileSystem;
@@ -35,8 +37,8 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.Context;
 import org.apache.hadoop.hive.ql.DriverContext;
-import org.apache.hadoop.hive.ql.hooks.LineageInfo.DataContainer;
 import org.apache.hadoop.hive.ql.hooks.WriteEntity;
+import org.apache.hadoop.hive.ql.hooks.LineageInfo.DataContainer;
 import org.apache.hadoop.hive.ql.io.HiveFileFormatUtils;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.Partition;
@@ -56,6 +58,7 @@ import org.apache.hadoop.util.StringUtils;
 public class MoveTask extends Task<MoveWork> implements Serializable {
 
   private static final long serialVersionUID = 1L;
+  private static transient final Log LOG = LogFactory.getLog(MoveTask.class);
 
   public MoveTask() {
     super();
@@ -74,7 +77,21 @@ public class MoveTask extends Task<MoveWork> implements Serializable {
       fs.delete(targetPath, true);
       // if source exists, rename. Otherwise, create a empty directory
       if (fs.exists(sourcePath)) {
+        Path deletePath = null;
+        // If it multiple level of folder are there fs.rename is failing so first
+        // create the targetpath.getParent() if it not exist
+        if (HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVE_INSERT_INTO_MULTILEVEL_DIRS)) {
+        deletePath = createTargetPath(targetPath, fs);
+        }
         if (!fs.rename(sourcePath, targetPath)) {
+          try {
+            if (deletePath != null) {
+              fs.delete(deletePath, true);
+            }
+          } catch (IOException e) {
+            LOG.info("Unable to delete the path created for facilitating rename"
+                + deletePath);
+          }
           throw new HiveException("Unable to rename: " + sourcePath
               + " to: " + targetPath);
         }
@@ -107,6 +124,26 @@ public class MoveTask extends Task<MoveWork> implements Serializable {
             + targetPath);
       }
     }
+  }
+
+  private Path createTargetPath(Path targetPath, FileSystem fs) throws IOException {
+    Path deletePath = null;
+    Path mkDirPath = targetPath.getParent();
+    if (mkDirPath != null & !fs.exists(mkDirPath)) {
+      Path actualPath = mkDirPath;
+      // targetPath path is /x/y/z/1/2/3 here /x/y/z is present in the file system
+      // create the structure till /x/y/z/1/2 to work rename for multilevel directory
+      // and if rename fails delete the path /x/y/z/1
+      // If targetPath have multilevel directories like /x/y/z/1/2/3 , /x/y/z/1/2/4
+      // the renaming of the directories are not atomic the execution will happen one
+      // by one
+      while (actualPath != null && !fs.exists(actualPath)) {
+        deletePath = actualPath;
+        actualPath = actualPath.getParent();
+      }
+      fs.mkdirs(mkDirPath);
+    }
+    return deletePath;
   }
 
   @Override
@@ -265,7 +302,7 @@ public class MoveTask extends Task<MoveWork> implements Serializable {
             dc = null; // reset data container to prevent it being added again.
           } else { // static partitions
             db.loadPartition(new Path(tbd.getSourceDir()), tbd.getTable().getTableName(),
-                tbd.getPartitionSpec(), tbd.getReplace(), tbd.getHoldDDLTime());
+                tbd.getPartitionSpec(), tbd.getReplace(), tbd.getHoldDDLTime(), tbd.getInheritTableSpecs());
           	Partition partn = db.getPartition(table, tbd.getPartitionSpec(), false);
           	dc = new DataContainer(table.getTTable(), partn.getTPartition());
           	// add this partition to post-execution hook

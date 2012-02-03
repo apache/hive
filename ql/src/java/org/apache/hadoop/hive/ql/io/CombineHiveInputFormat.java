@@ -20,14 +20,14 @@ package org.apache.hadoop.hive.ql.io;
 
 import java.io.DataInput;
 import java.io.DataOutput;
-import java.io.File;
 import java.io.IOException;
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.HashMap;
 import java.util.Map;
 import java.util.Queue;
 import java.util.Set;
@@ -38,7 +38,9 @@ import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.fs.PathFilter;
+import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.exec.Utilities;
+import org.apache.hadoop.hive.ql.parse.SplitSample;
 import org.apache.hadoop.hive.ql.plan.PartitionDesc;
 import org.apache.hadoop.hive.ql.plan.TableDesc;
 import org.apache.hadoop.hive.shims.HadoopShims.CombineFileInputFormatShim;
@@ -47,13 +49,14 @@ import org.apache.hadoop.hive.shims.ShimLoader;
 import org.apache.hadoop.io.Writable;
 import org.apache.hadoop.io.WritableComparable;
 import org.apache.hadoop.io.compress.CompressionCodecFactory;
+import org.apache.hadoop.mapred.FileInputFormat;
 import org.apache.hadoop.mapred.InputFormat;
 import org.apache.hadoop.mapred.InputSplit;
 import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.mapred.RecordReader;
 import org.apache.hadoop.mapred.Reporter;
 import org.apache.hadoop.mapred.TextInputFormat;
-import org.apache.hadoop.hive.ql.exec.Operator;
+
 
 /**
  * CombineHiveInputFormat is a parameterized InputFormat which looks at the path
@@ -211,13 +214,18 @@ public class CombineHiveInputFormat<K extends WritableComparable, V extends Writ
 
       out.writeUTF(inputFormatClassName);
     }
+
+    @Override
+    public void shrinkSplit(long length) {
+      inputSplitShim.shrinkSplit(length);
+    }
   }
 
   // Splits are not shared across different partitions with different input formats.
   // For example, 2 partitions (1 sequencefile and 1 rcfile) will have 2 different splits
   private static class CombinePathInputFormat {
-    private List<Operator<? extends Serializable>> opList;
-    private String inputFormatClassName;
+    private final List<Operator<? extends Serializable>> opList;
+    private final String inputFormatClassName;
 
     public CombinePathInputFormat(List<Operator<? extends Serializable>> opList,
                                   String inputFormatClassName) {
@@ -225,6 +233,7 @@ public class CombineHiveInputFormat<K extends WritableComparable, V extends Writ
       this.inputFormatClassName = inputFormatClassName;
     }
 
+    @Override
     public boolean equals(Object o) {
       if (o instanceof CombinePathInputFormat) {
         CombinePathInputFormat mObj = (CombinePathInputFormat)o;
@@ -248,7 +257,6 @@ public class CombineHiveInputFormat<K extends WritableComparable, V extends Writ
    */
   @Override
   public InputSplit[] getSplits(JobConf job, int numSplits) throws IOException {
-
     init(job);
     Map<String, ArrayList<String>> pathToAliases = mrwork.getPathToAliases();
     Map<String, Operator<? extends Serializable>> aliasToWork =
@@ -268,6 +276,9 @@ public class CombineHiveInputFormat<K extends WritableComparable, V extends Writ
     // combine splits only from same tables and same partitions. Do not combine splits from multiple
     // tables or multiple partitions.
     Path[] paths = combine.getInputPathsShim(job);
+
+    List<Path> inpDirs = new ArrayList<Path>();
+    List<Path> inpFiles = new ArrayList<Path>();
     Map<CombinePathInputFormat, CombineFilter> poolMap =
       new HashMap<CombinePathInputFormat, CombineFilter>();
     Set<Path> poolSet = new HashSet<Path>();
@@ -328,33 +339,29 @@ public class CombineHiveInputFormat<K extends WritableComparable, V extends Writ
 
       Path filterPath = path;
 
-      // In the case of tablesample, the input paths are pointing to files rather than directories.
-      // We need to get the parent directory as the filtering path so that all files in the same
-      // parent directory will be grouped into one pool but not files from different parent
-      // directories. This guarantees that a split will combine all files in the same partition
-      // but won't cross multiple partitions if the user has asked so.
-      if (mrwork.isMapperCannotSpanPartns() &&
-          !path.getFileSystem(job).getFileStatus(path).isDir()) { // path is not directory
-        filterPath = path.getParent();
-      }
-
       // Does a pool exist for this path already
       CombineFilter f = null;
       List<Operator<? extends Serializable>> opList = null;
       boolean done = false;
 
       if (!mrwork.isMapperCannotSpanPartns()) {
-        opList = HiveFileFormatUtils.doGetAliasesFromPath(
+        opList = HiveFileFormatUtils.doGetWorksFromPath(
                    pathToAliases, aliasToWork, filterPath);
         f = poolMap.get(new CombinePathInputFormat(opList, inputFormatClassName));
-      }
-      else {
-        if (poolSet.contains(filterPath)) {
-          LOG.info("CombineHiveInputSplit: pool is already created for " + path +
-                   "; using filter path " + filterPath);
-          done = true;
+      } else {
+        // In the case of tablesample, the input paths are pointing to files rather than directories.
+        // We need to get the parent directory as the filtering path so that all files in the same
+        // parent directory will be grouped into one pool but not files from different parent
+        // directories. This guarantees that a split will combine all files in the same partition
+        // but won't cross multiple partitions if the user has asked so.
+        if (!path.getFileSystem(job).getFileStatus(path).isDir()) { // path is not directory
+          filterPath = path.getParent();
+          inpFiles.add(path);
+          poolSet.add(filterPath);
+        } else {
+          inpDirs.add(path);
         }
-        poolSet.add(filterPath);
+        done = true;
       }
 
       if (!done) {
@@ -374,7 +381,28 @@ public class CombineHiveInputFormat<K extends WritableComparable, V extends Writ
       }
     }
 
-    InputSplitShim[] iss = combine.getSplits(job, 1);
+    // Processing directories
+    List<InputSplitShim> iss = new ArrayList<InputSplitShim>();
+    if (!mrwork.isMapperCannotSpanPartns()) {
+      iss = Arrays.asList(combine.getSplits(job, 1));
+    } else {
+      for (Path path : inpDirs) {
+        processPaths(job, combine, iss, path);
+      }
+
+      if (inpFiles.size() > 0) {
+        // Processing files
+        for (Path filterPath : poolSet) {
+          combine.createPool(job, new CombineFilter(filterPath));
+        }
+        processPaths(job, combine, iss, inpFiles.toArray(new Path[0]));
+      }
+    }
+
+    if (mrwork.getNameToSplitSample() != null && !mrwork.getNameToSplitSample().isEmpty()) {
+      iss = sampleSplits(iss);
+    }
+
     for (InputSplitShim is : iss) {
       CombineHiveInputSplit csplit = new CombineHiveInputSplit(job, is);
       result.add(csplit);
@@ -382,6 +410,94 @@ public class CombineHiveInputFormat<K extends WritableComparable, V extends Writ
 
     LOG.info("number of splits " + result.size());
     return result.toArray(new CombineHiveInputSplit[result.size()]);
+  }
+
+    private void processPaths(JobConf job, CombineFileInputFormatShim combine,
+      List<InputSplitShim> iss, Path... path) throws IOException {
+    JobConf currJob = new JobConf(job);
+    FileInputFormat.setInputPaths(currJob, path);
+    iss.addAll(Arrays.asList(combine.getSplits(currJob, 1)));
+  }
+
+  /**
+   * This function is used to sample inputs for clauses like "TABLESAMPLE(1 PERCENT)"
+   *
+   * First, splits are grouped by alias they are for. If one split serves more than one
+   * alias or not for any sampled alias, we just directly add it to returned list.
+   * Then we find a list of exclusive splits for every alias to be sampled.
+   * For each alias, we start from position of seedNumber%totalNumber, and keep add
+   * splits until the total size hits percentage.
+   * @param splits
+   * @return the sampled splits
+   */
+  private List<InputSplitShim> sampleSplits(List<InputSplitShim> splits) {
+    HashMap<String, SplitSample> nameToSamples = mrwork.getNameToSplitSample();
+    List<InputSplitShim> retLists = new ArrayList<InputSplitShim>();
+    Map<String, ArrayList<InputSplitShim>> aliasToSplitList = new HashMap<String, ArrayList<InputSplitShim>>();
+    Map<String, ArrayList<String>> pathToAliases = mrwork.getPathToAliases();
+
+    // Populate list of exclusive splits for every sampled alias
+    //
+    for (InputSplitShim split : splits) {
+      String alias = null;
+      for (Path path : split.getPaths()) {
+        List<String> l = HiveFileFormatUtils.doGetAliasesFromPath(
+            pathToAliases, path);
+        // a path for a split unqualified the split from being sampled if:
+        // 1. it serves more than one alias
+        // 2. the alias it serves is not sampled
+        // 3. it serves different alias than another path for the same split
+        if (l.size() != 1 || !nameToSamples.containsKey(l.get(0)) ||
+            (alias != null && l.get(0) != alias)) {
+          alias = null;
+          break;
+        }
+        alias = l.get(0);
+      }
+
+      if (alias != null) {
+        // split exclusively serves alias, which needs to be sampled
+        // add it to the split list of the alias.
+        if (!aliasToSplitList.containsKey(alias)) {
+          aliasToSplitList.put(alias, new ArrayList<InputSplitShim>());
+        }
+        aliasToSplitList.get(alias).add(split);
+      } else {
+        // The split doesn't exclusively serve one alias
+        retLists.add(split);
+      }
+    }
+
+    // for every sampled alias, we figure out splits to be sampled and add
+    // them to return list
+    //
+    for (Map.Entry<String, ArrayList<InputSplitShim>> entry: aliasToSplitList.entrySet()) {
+      ArrayList<InputSplitShim> splitList = entry.getValue();
+      long totalSize = 0;
+      for (InputSplitShim split : splitList) {
+        totalSize += split.getLength();
+      }
+
+      long targetSize = (long) (totalSize * nameToSamples.get(entry.getKey()).getPercent() / 100D);
+      int startIndex = nameToSamples.get(entry.getKey()).getSeedNum() % splitList.size();
+      long size = 0;
+      for (int i = 0; i < splitList.size(); i++) {
+        InputSplitShim split = splitList.get((startIndex + i) % splitList.size());
+        retLists.add(split);
+        long splitgLength = split.getLength();
+        if (size + splitgLength >= targetSize) {
+          LOG.info("Sample alias " + entry.getValue() + " using " + (i + 1) + "splits");
+          if (size + splitgLength > targetSize) {
+            split.shrinkSplit(targetSize - size);
+          }
+          break;
+        }
+        size += splitgLength;
+      }
+
+    }
+
+    return retLists;
   }
 
   /**
@@ -417,7 +533,7 @@ public class CombineHiveInputFormat<K extends WritableComparable, V extends Writ
   }
 
   static class CombineFilter implements PathFilter {
-    private List<String> pStrings = new ArrayList<String>();
+    private final Set<String> pStrings = new HashSet<String>();
 
     // store a path prefix in this TestFilter
     // PRECONDITION: p should always be a directory
@@ -429,19 +545,22 @@ public class CombineHiveInputFormat<K extends WritableComparable, V extends Writ
     }
 
     public void addPath(Path p) {
-      String pString = p.toUri().getPath().toString() + File.separator;;
+      String pString = p.toUri().getPath().toString();
       pStrings.add(pString);
     }
 
     // returns true if the specified path matches the prefix stored
     // in this TestFilter.
     public boolean accept(Path path) {
-      for (String pString : pStrings) {
-        if (path.toString().indexOf(pString) == 0) {
-          return true;
+      boolean find = false;
+      while (path != null && !find) {
+        if(pStrings.contains(path.toString())) {
+          find = true;
+          break;
         }
+        path = path.getParent();
       }
-      return false;
+      return find;
     }
 
     @Override

@@ -46,10 +46,14 @@ public class ExplainSemanticAnalyzer extends BaseSemanticAnalyzer {
     BaseSemanticAnalyzer sem = SemanticAnalyzerFactory.get(conf, (ASTNode) ast
         .getChild(0));
     sem.analyze((ASTNode) ast.getChild(0), ctx);
-
+    sem.validate();
+    
     boolean extended = false;
-    if (ast.getChildCount() > 1) {
-      extended = true;
+    boolean formatted = false;
+    if (ast.getChildCount() == 2) {
+      int explainOptions = ast.getChild(1).getType();
+      formatted = (explainOptions == HiveParser.KW_FORMATTED);
+      extended = (explainOptions == HiveParser.KW_EXTENDED);	
     }
 
     ctx.setResFile(new Path(ctx.getLocalTmpFileURI()));
@@ -64,7 +68,12 @@ public class ExplainSemanticAnalyzer extends BaseSemanticAnalyzer {
       tasks.add(fetchTask);
     }
 
-    rootTasks.add(TaskFactory.get(new ExplainWork(ctx.getResFile().toString(),
-        tasks, ((ASTNode) ast.getChild(0)).toStringTree(), extended), conf));
+    rootTasks.add(
+      TaskFactory.get(new ExplainWork(ctx.getResFile().toString(),
+        tasks, 
+        ((ASTNode) ast.getChild(0)).toStringTree(), 
+        extended,
+        formatted), 
+      conf));
   }
 }

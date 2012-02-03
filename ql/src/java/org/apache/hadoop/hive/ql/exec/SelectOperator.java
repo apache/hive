@@ -89,7 +89,7 @@ public class SelectOperator extends Operator<SelectDesc> implements
    */
   @Override
   public String getName() {
-    return new String("SEL");
+    return "SEL";
   }
 
   @Override

@@ -46,8 +46,9 @@ import org.apache.hadoop.hive.serde2.SerDeException;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorFactory;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils;
-import org.apache.hadoop.hive.serde2.objectinspector.StandardStructObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils.ObjectInspectorCopyOption;
+import org.apache.hadoop.hive.serde2.objectinspector.StandardStructObjectInspector;
+import org.apache.hadoop.hive.serde2.objectinspector.StandardStructObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorFactory;
 import org.apache.hadoop.util.ReflectionUtils;
 
@@ -162,11 +163,10 @@ public class HashTableSinkOperator extends TerminalOperator<HashTableSinkDesc> i
 
   private static final transient String[] FATAL_ERR_MSG = {
       null, // counter value 0 means no error
-      "Mapside join size exceeds hive.mapjoin.maxsize. "
-          + "Please increase that or remove the mapjoin hint."};
+      "Mapside join exceeds available memory. "
+          + "Please try removing the mapjoin hint."};
   private final int metadataKeyTag = -1;
   transient int[] metadataValueTag;
-  transient int maxMapJoinSize;
 
 
   public HashTableSinkOperator() {
@@ -181,8 +181,6 @@ public class HashTableSinkOperator extends TerminalOperator<HashTableSinkDesc> i
   protected void initializeOp(Configuration hconf) throws HiveException {
     boolean isSilent = HiveConf.getBoolVar(hconf, HiveConf.ConfVars.HIVESESSIONSILENT);
     console = new LogHelper(LOG, isSilent);
-    maxMapJoinSize = HiveConf.getIntVar(hconf, HiveConf.ConfVars.HIVEMAXMAPJOINSIZE);
-
     numMapRowsRead = 0;
     firstRow = true;
 
@@ -406,7 +404,7 @@ public class HashTableSinkOperator extends TerminalOperator<HashTableSinkDesc> i
             bigBucketFileName = "-";
           }
           // get the tmp URI path; it will be a hdfs path if not local mode
-          String tmpURIPath = Utilities.generatePath(tmpURI, tag, bigBucketFileName);
+          String tmpURIPath = Utilities.generatePath(tmpURI, conf.getDumpFilePrefix(), tag, bigBucketFileName);
           hashTable.isAbort(rowNumber, console);
           console.printInfo(Utilities.now() + "\tDump the hashtable into file: " + tmpURIPath);
           // get the hashtable file and path

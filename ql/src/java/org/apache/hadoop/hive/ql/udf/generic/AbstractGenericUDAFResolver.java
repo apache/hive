@@ -46,4 +46,11 @@ public abstract class AbstractGenericUDAFResolver
 
     return getEvaluator(info.getParameters());
   }
+
+  @Override
+  public GenericUDAFEvaluator getEvaluator(TypeInfo[] info) 
+    throws SemanticException {
+    throw new SemanticException(
+          "This UDAF does not support the deprecated getEvaluator() method.");
+  }
 }

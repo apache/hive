@@ -20,13 +20,6 @@
 <project name="service" default="jar">
   <property name="src.dir" value="${basedir}/src"/>
 
-  <!--
-    Override properties defined in ../build-common.xml.
-  -->
-  <property name="test.junit.output.format" value="plain"/>
-  <property name="test.output" value="false"/>
-  <property name="test.junit.output.usefile" value="false"/>
-
   <import file="../build-common.xml"/>
 
   <path id="test.classpath">
@@ -38,9 +31,16 @@
     <fileset dir="${hive.root}" includes="testlibs/*.jar"/>
     <pathelement location="${build.dir.hive}/ql/test/classes"/>
     <path refid="classpath"/>
+    <fileset dir="${hadoop.root}">
+      <!-- below is for 0.23 onwards -->
+      <include name="share/hadoop/common/lib/*.jar" />
+      <exclude name="share/hadoop/common/lib/hadoop-mapreduce-*.jar" />
+      <exclude name="share/hadoop/common/lib/hadoop-yarn-*.jar" />
+    </fileset>
   </path>
 
   <target name="thriftif" depends="check-thrift-home">
+    <echo message="Project: ${ant.project.name}"/>
     <fail unless="thrift.home">You must set the 'thrift.home' property!</fail>
     <echo>Executing ${thrift.home}/bin/thrift on ${ant.project.name}/if/hive_service.thrift</echo>
     <exec executable="${thrift.home}/bin/thrift"  failonerror="true" dir=".">
@@ -48,7 +48,8 @@
     </exec>
   </target>
 
-  <target name="core-compile" depends="init">
+  <target name="compile" depends="init,ivy-retrieve">
+    <echo message="Project: ${ant.project.name}"/>
     <javac
      encoding="${build.encoding}"
      srcdir="${src.dir}/java:${src.dir}/gen/thrift/gen-javabean"
@@ -56,15 +57,13 @@
      destdir="${build.classes}"
      debug="${javac.debug}"
      deprecation="${javac.deprecation}"
-     >
+     includeantruntime="false">
       <classpath refid="classpath"/>
     </javac>
   </target>
  
-  <target name="compile" depends="core-compile">
-  </target>
-
   <target name="clean">
-      <delete dir="${build.classes}/../"/>
+    <echo message="Project: ${ant.project.name}"/>
+    <delete dir="${build.classes}/../"/>
   </target>
 </project>

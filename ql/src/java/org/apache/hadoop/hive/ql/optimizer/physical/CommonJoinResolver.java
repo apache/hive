@@ -27,6 +27,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Stack;
 
+import org.apache.hadoop.fs.ContentSummary;
+import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.ql.Context;
 import org.apache.hadoop.hive.ql.exec.ConditionalTask;
 import org.apache.hadoop.hive.ql.exec.JoinOperator;
 import org.apache.hadoop.hive.ql.exec.MapRedTask;
@@ -81,7 +84,8 @@ public class CommonJoinResolver implements PhysicalPlanResolver {
       physicalContext = context;
     }
 
-    private ConditionalTask processCurrentTask(MapRedTask currTask, ConditionalTask conditionalTask)
+    private ConditionalTask processCurrentTask(MapRedTask currTask,
+        ConditionalTask conditionalTask, Context context)
         throws SemanticException {
 
       // whether it contains common join op; if contains, return this common join op
@@ -98,7 +102,6 @@ public class CommonJoinResolver implements PhysicalPlanResolver {
 
       // create alias to task mapping and alias to input file mapping for resolver
       HashMap<String, Task<? extends Serializable>> aliasToTask = new HashMap<String, Task<? extends Serializable>>();
-      HashMap<String, String> aliasToPath = new HashMap<String, String>();
       HashMap<String, ArrayList<String>> pathToAliases = currTask.getWork().getPathToAliases();
 
       // get parseCtx for this Join Operator
@@ -109,11 +112,39 @@ public class CommonJoinResolver implements PhysicalPlanResolver {
       JoinDesc joinDesc = joinOp.getConf();
       Byte[] order = joinDesc.getTagOrder();
       int numAliases = order.length;
+      
+      long aliasTotalKnownInputSize = 0;
+      HashMap<String, Long> aliasToSize = new HashMap<String, Long>();
       try {
-        HashSet<Integer> smallTableOnlySet = MapJoinProcessor.getSmallTableOnlySet(joinDesc
-            .getConds());
+        // go over all the input paths, and calculate a known total size, known
+        // size for each input alias.
+        Utilities.getInputSummary(context, currWork, null).getLength();
+        
+        // set alias to size mapping, this can be used to determine if one table
+        // is choosen as big table, what's the total size of left tables, which
+        // are going to be small tables.
+        for (Map.Entry<String, ArrayList<String>> entry : pathToAliases.entrySet()) {
+          String path = entry.getKey();
+          List<String> aliasList = entry.getValue();
+          ContentSummary cs = context.getCS(path);
+          if (cs != null) {
+            long size = cs.getLength();
+            for (String alias : aliasList) {
+              aliasTotalKnownInputSize += size;
+              Long es = aliasToSize.get(alias);
+              if(es == null) {
+                es = new Long(0);
+              }
+              es += size;
+              aliasToSize.put(alias, es);
+            }
+          }
+        }
+        
+        HashSet<Integer> bigTableCandidates = MapJoinProcessor.getBigTableCandidates(joinDesc.getConds());
+        
         // no table could be the big table; there is no need to convert
-        if (smallTableOnlySet == null) {
+        if (bigTableCandidates == null) {
           return null;
         }
         currWork.setOpParseCtxMap(parseCtx.getOpParseCtx());
@@ -122,15 +153,14 @@ public class CommonJoinResolver implements PhysicalPlanResolver {
         String xml = currWork.toXML();
         String bigTableAlias = null;
 
-        if(smallTableOnlySet.size() == numAliases) {
-          return null;
-        }
-
+        long ThresholdOfSmallTblSizeSum = HiveConf.getLongVar(context.getConf(),
+            HiveConf.ConfVars.HIVESMALLTABLESFILESIZE);
         for (int i = 0; i < numAliases; i++) {
           // this table cannot be big table
-          if (smallTableOnlySet.contains(i)) {
+          if (!bigTableCandidates.contains(i)) {
             continue;
           }
+          
           // create map join task and set big table as i
           // deep copy a new mapred work from xml
           InputStream in = new ByteArrayInputStream(xml.getBytes("UTF-8"));
@@ -143,6 +173,16 @@ public class CommonJoinResolver implements PhysicalPlanResolver {
           // optimize this newWork and assume big table position is i
           bigTableAlias = MapJoinProcessor.genMapJoinOpAndLocalWork(newWork, newJoinOp, i);
 
+          Long aliasKnownSize = aliasToSize.get(bigTableAlias);
+          if (aliasKnownSize != null && aliasKnownSize.longValue() > 0) {
+            long smallTblTotalKnownSize = aliasTotalKnownInputSize
+                - aliasKnownSize.longValue();
+            if(smallTblTotalKnownSize > ThresholdOfSmallTblSizeSum) {
+              //this table is not good to be a big table.
+              continue;
+            }
+          }
+          
           // add into conditional task
           listWorks.add(newWork);
           listTasks.add(newTask);
@@ -154,15 +194,6 @@ public class CommonJoinResolver implements PhysicalPlanResolver {
 
           // put the mapping alias to task
           aliasToTask.put(bigTableAlias, newTask);
-
-          // set alias to path
-          for (Map.Entry<String, ArrayList<String>> entry : pathToAliases.entrySet()) {
-            String path = entry.getKey();
-            ArrayList<String> aliasList = entry.getValue();
-            if (aliasList.contains(bigTableAlias)) {
-              aliasToPath.put(bigTableAlias, path);
-            }
-          }
         }
       } catch (Exception e) {
         e.printStackTrace();
@@ -184,9 +215,12 @@ public class CommonJoinResolver implements PhysicalPlanResolver {
       // set resolver and resolver context
       cndTsk.setResolver(new ConditionalResolverCommonJoin());
       ConditionalResolverCommonJoinCtx resolverCtx = new ConditionalResolverCommonJoinCtx();
-      resolverCtx.setAliasToPath(aliasToPath);
+      resolverCtx.setPathToAliases(pathToAliases);
+      resolverCtx.setAliasToKnownSize(aliasToSize);
       resolverCtx.setAliasToTask(aliasToTask);
       resolverCtx.setCommonJoinTask(currTask);
+      resolverCtx.setLocalTmpDir(context.getLocalScratchDir(false));
+      resolverCtx.setHdfsTmpDir(context.getMRScratchDir());
       cndTsk.setResolverCtx(resolverCtx);
 
       //replace the current task with the new generated conditional task
@@ -194,7 +228,9 @@ public class CommonJoinResolver implements PhysicalPlanResolver {
       return cndTsk;
     }
 
-    private void replaceTaskWithConditionalTask(Task<? extends Serializable> currTask, ConditionalTask cndTsk, PhysicalContext physicalContext) {
+    private void replaceTaskWithConditionalTask(
+        Task<? extends Serializable> currTask, ConditionalTask cndTsk,
+        PhysicalContext physicalContext) {
       // add this task into task tree
       // set all parent tasks
       List<Task<? extends Serializable>> parentTasks = currTask.getParentTasks();
@@ -243,12 +279,12 @@ public class CommonJoinResolver implements PhysicalPlanResolver {
           for (Task<? extends Serializable> tsk : taskList) {
             if (tsk.isMapRedTask()) {
               ConditionalTask cndTask = this.processCurrentTask((MapRedTask) tsk,
-                  ((ConditionalTask) currTask));
+                  ((ConditionalTask) currTask), physicalContext.getContext());
               walkerCtx.addToDispatchList(cndTask);
             }
           }
         } else {
-          ConditionalTask cndTask = this.processCurrentTask((MapRedTask) currTask, null);
+          ConditionalTask cndTask = this.processCurrentTask((MapRedTask) currTask, null, physicalContext.getContext());
           walkerCtx.addToDispatchList(cndTask);
         }
       }

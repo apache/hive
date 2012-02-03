@@ -5,8 +5,10 @@ POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: default@tstparttbl
 PREHOOK: query: LOAD DATA LOCAL INPATH '../data/files/kv1.txt' INTO TABLE tstparttbl PARTITION (ds='2009-04-09')
 PREHOOK: type: LOAD
+PREHOOK: Output: default@tstparttbl
 POSTHOOK: query: LOAD DATA LOCAL INPATH '../data/files/kv1.txt' INTO TABLE tstparttbl PARTITION (ds='2009-04-09')
 POSTHOOK: type: LOAD
+POSTHOOK: Output: default@tstparttbl
 POSTHOOK: Output: default@tstparttbl@ds=2009-04-09
 PREHOOK: query: CREATE TABLE tstparttbl2(KEY STRING, VALUE STRING) PARTITIONED BY(ds string) STORED AS TEXTFILE
 PREHOOK: type: CREATETABLE
@@ -15,8 +17,10 @@ POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: default@tstparttbl2
 PREHOOK: query: LOAD DATA LOCAL INPATH '../data/files/kv1.txt' INTO TABLE tstparttbl2 PARTITION (ds='2009-04-09')
 PREHOOK: type: LOAD
+PREHOOK: Output: default@tstparttbl2
 POSTHOOK: query: LOAD DATA LOCAL INPATH '../data/files/kv1.txt' INTO TABLE tstparttbl2 PARTITION (ds='2009-04-09')
 POSTHOOK: type: LOAD
+POSTHOOK: Output: default@tstparttbl2
 POSTHOOK: Output: default@tstparttbl2@ds=2009-04-09
 PREHOOK: query: explain
 select u.* from
@@ -52,38 +56,6 @@ STAGE PLANS:
               predicate:
                   expr: (ds = '2009-04-05')
                   type: boolean
-              Filter Operator
-                predicate:
-                    expr: (ds = '2009-04-05')
-                    type: boolean
-                Select Operator
-                  expressions:
-                        expr: key
-                        type: string
-                        expr: value
-                        type: string
-                  outputColumnNames: _col0, _col1
-                  Union
-                    Select Operator
-                      expressions:
-                            expr: _col0
-                            type: string
-                            expr: _col1
-                            type: string
-                      outputColumnNames: _col0, _col1
-                      File Output Operator
-                        compressed: false
-                        GlobalTableId: 0
-                        table:
-                            input format: org.apache.hadoop.mapred.TextInputFormat
-                            output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-        null-subquery2:u-subquery2:y 
-          TableScan
-            alias: y
-            Filter Operator
-              predicate:
-                  expr: (ds = '2009-04-09')
-                  type: boolean
               Select Operator
                 expressions:
                       expr: key
@@ -105,6 +77,30 @@ STAGE PLANS:
                       table:
                           input format: org.apache.hadoop.mapred.TextInputFormat
                           output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+        null-subquery2:u-subquery2:y 
+          TableScan
+            alias: y
+            Select Operator
+              expressions:
+                    expr: key
+                    type: string
+                    expr: value
+                    type: string
+              outputColumnNames: _col0, _col1
+              Union
+                Select Operator
+                  expressions:
+                        expr: _col0
+                        type: string
+                        expr: _col1
+                        type: string
+                  outputColumnNames: _col0, _col1
+                  File Output Operator
+                    compressed: false
+                    GlobalTableId: 0
+                    table:
+                        input format: org.apache.hadoop.mapred.TextInputFormat
+                        output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
 
   Stage: Stage-0
     Fetch Operator
@@ -119,7 +115,7 @@ PREHOOK: query: select u.* from
 )u
 PREHOOK: type: QUERY
 PREHOOK: Input: default@tstparttbl2@ds=2009-04-09
-PREHOOK: Output: file:/tmp/sdong/hive_2011-02-10_16-48-36_250_1184620312876504250/-mr-10000
+PREHOOK: Output: file:/tmp/krishnak/hive_2011-03-21_04-13-45_700_8244819505603052007/-mr-10000
 POSTHOOK: query: select u.* from
 (
   select key, value from tstparttbl x where x.ds='2009-04-05'
@@ -128,7 +124,7 @@ POSTHOOK: query: select u.* from
 )u
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@tstparttbl2@ds=2009-04-09
-POSTHOOK: Output: file:/tmp/sdong/hive_2011-02-10_16-48-36_250_1184620312876504250/-mr-10000
+POSTHOOK: Output: file:/tmp/krishnak/hive_2011-03-21_04-13-45_700_8244819505603052007/-mr-10000
 238	val_238
 86	val_86
 311	val_311

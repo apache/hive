@@ -43,6 +43,11 @@ import java.io.UnsupportedEncodingException;
 import java.net.URI;
 import java.net.URL;
 import java.net.URLClassLoader;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.PreparedStatement;
+import java.sql.SQLException;
+import java.sql.SQLTransientException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -59,6 +64,12 @@ import java.util.Properties;
 import java.util.Random;
 import java.util.Set;
 import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
+import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -74,37 +85,57 @@ import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.fs.PathFilter;
+import org.apache.hadoop.hive.common.HiveInterruptCallback;
+import org.apache.hadoop.hive.common.HiveInterruptUtils;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.Warehouse;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.Order;
 import org.apache.hadoop.hive.ql.Context;
 import org.apache.hadoop.hive.ql.QueryPlan;
+import org.apache.hadoop.hive.ql.exec.FileSinkOperator.RecordWriter;
 import org.apache.hadoop.hive.ql.io.ContentSummaryInputFormat;
+import org.apache.hadoop.hive.ql.io.HiveFileFormatUtils;
+import org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat;
 import org.apache.hadoop.hive.ql.io.HiveInputFormat;
+import org.apache.hadoop.hive.ql.io.HiveOutputFormat;
 import org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat;
 import org.apache.hadoop.hive.ql.io.RCFile;
+import org.apache.hadoop.hive.ql.io.ReworkMapredInputFormat;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.Partition;
 import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.parse.ErrorMsg;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.plan.DynamicPartitionCtx;
+import org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc;
+import org.apache.hadoop.hive.ql.plan.ExprNodeConstantDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
+import org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc;
+import org.apache.hadoop.hive.ql.plan.FileSinkDesc;
 import org.apache.hadoop.hive.ql.plan.GroupByDesc;
 import org.apache.hadoop.hive.ql.plan.MapredLocalWork;
 import org.apache.hadoop.hive.ql.plan.MapredWork;
 import org.apache.hadoop.hive.ql.plan.PartitionDesc;
 import org.apache.hadoop.hive.ql.plan.PlanUtils;
-import org.apache.hadoop.hive.ql.plan.TableDesc;
 import org.apache.hadoop.hive.ql.plan.PlanUtils.ExpressionTypes;
+import org.apache.hadoop.hive.ql.plan.TableDesc;
 import org.apache.hadoop.hive.ql.stats.StatsFactory;
 import org.apache.hadoop.hive.ql.stats.StatsPublisher;
+import org.apache.hadoop.hive.ql.udf.generic.GenericUDF;
+import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPAnd;
+import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPEqual;
+import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPOr;
 import org.apache.hadoop.hive.serde.Constants;
+import org.apache.hadoop.hive.serde2.SerDeException;
+import org.apache.hadoop.hive.serde2.Serializer;
 import org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe;
+import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.hadoop.hive.shims.ShimLoader;
+import org.apache.hadoop.io.IOUtils;
 import org.apache.hadoop.io.SequenceFile;
 import org.apache.hadoop.io.SequenceFile.CompressionType;
+import org.apache.hadoop.io.Writable;
 import org.apache.hadoop.io.compress.CompressionCodec;
 import org.apache.hadoop.io.compress.DefaultCodec;
 import org.apache.hadoop.mapred.FileOutputFormat;
@@ -386,14 +417,20 @@ public final class Utilities {
    * Serialize a single Task.
    */
   public static void serializeTasks(Task<? extends Serializable> t, OutputStream out) {
-    XMLEncoder e = new XMLEncoder(out);
-    // workaround for java 1.5
-    e.setPersistenceDelegate(ExpressionTypes.class, new EnumDelegate());
-    e.setPersistenceDelegate(GroupByDesc.Mode.class, new EnumDelegate());
-    e.setPersistenceDelegate(Operator.ProgressCounter.class, new EnumDelegate());
+    XMLEncoder e = null;
+    try {
+      e = new XMLEncoder(out);
+      // workaround for java 1.5
+      e.setPersistenceDelegate(ExpressionTypes.class, new EnumDelegate());
+      e.setPersistenceDelegate(GroupByDesc.Mode.class, new EnumDelegate());
+      e.setPersistenceDelegate(Operator.ProgressCounter.class, new EnumDelegate());
 
-    e.writeObject(t);
-    e.close();
+      e.writeObject(t);
+    } finally {
+      if (null != e) {
+        e.close();
+      }
+    }
   }
 
   public static class CollectionPersistenceDelegate extends DefaultPersistenceDelegate {
@@ -438,10 +475,16 @@ public final class Utilities {
    * Deserialize the whole query plan.
    */
   public static QueryPlan deserializeQueryPlan(InputStream in, Configuration conf) {
-    XMLDecoder d = new XMLDecoder(in, null, null, conf.getClassLoader());
-    QueryPlan ret = (QueryPlan) d.readObject();
-    d.close();
-    return (ret);
+    XMLDecoder d = null;
+    try {
+      d = new XMLDecoder(in, null, null, conf.getClassLoader());
+      QueryPlan ret = (QueryPlan) d.readObject();
+      return (ret);
+    } finally {
+      if (null != d) {
+        d.close();
+      }
+    }
   }
 
   /**
@@ -449,19 +492,32 @@ public final class Utilities {
    * output since it closes the output stream. DO USE mapredWork.toXML() instead.
    */
   public static void serializeMapRedWork(MapredWork w, OutputStream out) {
-    XMLEncoder e = new XMLEncoder(out);
-    // workaround for java 1.5
-    e.setPersistenceDelegate(ExpressionTypes.class, new EnumDelegate());
-    e.setPersistenceDelegate(GroupByDesc.Mode.class, new EnumDelegate());
-    e.writeObject(w);
-    e.close();
+    XMLEncoder e = null;
+    try {
+      e = new XMLEncoder(out);
+      // workaround for java 1.5
+      e.setPersistenceDelegate(ExpressionTypes.class, new EnumDelegate());
+      e.setPersistenceDelegate(GroupByDesc.Mode.class, new EnumDelegate());
+      e.writeObject(w);
+    } finally {
+      if (null != e) {
+        e.close();
+      }
+    }
+
   }
 
   public static MapredWork deserializeMapRedWork(InputStream in, Configuration conf) {
-    XMLDecoder d = new XMLDecoder(in, null, null, conf.getClassLoader());
-    MapredWork ret = (MapredWork) d.readObject();
-    d.close();
-    return (ret);
+    XMLDecoder d = null;
+    try {
+      d = new XMLDecoder(in, null, null, conf.getClassLoader());
+      MapredWork ret = (MapredWork) d.readObject();
+      return (ret);
+    } finally {
+      if (null != d) {
+        d.close();
+      }
+    }
   }
 
   /**
@@ -469,19 +525,31 @@ public final class Utilities {
    * output since it closes the output stream. DO USE mapredWork.toXML() instead.
    */
   public static void serializeMapRedLocalWork(MapredLocalWork w, OutputStream out) {
-    XMLEncoder e = new XMLEncoder(out);
-    // workaround for java 1.5
-    e.setPersistenceDelegate(ExpressionTypes.class, new EnumDelegate());
-    e.setPersistenceDelegate(GroupByDesc.Mode.class, new EnumDelegate());
-    e.writeObject(w);
-    e.close();
+    XMLEncoder e = null;
+    try {
+      e = new XMLEncoder(out);
+      // workaround for java 1.5
+      e.setPersistenceDelegate(ExpressionTypes.class, new EnumDelegate());
+      e.setPersistenceDelegate(GroupByDesc.Mode.class, new EnumDelegate());
+      e.writeObject(w);
+    } finally {
+      if (null != e) {
+        e.close();
+      }
+    }
   }
 
   public static MapredLocalWork deserializeMapRedLocalWork(InputStream in, Configuration conf) {
-    XMLDecoder d = new XMLDecoder(in, null, null, conf.getClassLoader());
-    MapredLocalWork ret = (MapredLocalWork) d.readObject();
-    d.close();
-    return (ret);
+    XMLDecoder d = null;
+    try {
+      d = new XMLDecoder(in, null, null, conf.getClassLoader());
+      MapredLocalWork ret = (MapredLocalWork) d.readObject();
+      return (ret);
+    } finally {
+      if (null != d) {
+        d.close();
+      }
+    }
   }
 
   /**
@@ -591,9 +659,10 @@ public final class Utilities {
 
     @Override
     public void run() {
+      BufferedReader br = null;
       try {
         InputStreamReader isr = new InputStreamReader(is);
-        BufferedReader br = new BufferedReader(isr);
+        br = new BufferedReader(isr);
         String line = null;
         if (type != null) {
           while ((line = br.readLine()) != null) {
@@ -604,8 +673,12 @@ public final class Utilities {
             os.println(line);
           }
         }
+        br.close();
+        br=null;
       } catch (IOException ioe) {
         ioe.printStackTrace();
+      }finally{
+        IOUtils.closeStream(br);
       }
     }
   }
@@ -619,18 +692,23 @@ public final class Utilities {
   public static TableDesc getTableDesc(String cols, String colTypes) {
     return (new TableDesc(LazySimpleSerDe.class, SequenceFileInputFormat.class,
         HiveSequenceFileOutputFormat.class, Utilities.makeProperties(
-            org.apache.hadoop.hive.serde.Constants.SERIALIZATION_FORMAT, "" + Utilities.ctrlaCode,
-            org.apache.hadoop.hive.serde.Constants.LIST_COLUMNS, cols,
-            org.apache.hadoop.hive.serde.Constants.LIST_COLUMN_TYPES, colTypes)));
+        org.apache.hadoop.hive.serde.Constants.SERIALIZATION_FORMAT, "" + Utilities.ctrlaCode,
+        org.apache.hadoop.hive.serde.Constants.LIST_COLUMNS, cols,
+        org.apache.hadoop.hive.serde.Constants.LIST_COLUMN_TYPES, colTypes)));
   }
 
   public static PartitionDesc getPartitionDesc(Partition part) throws HiveException {
     return (new PartitionDesc(part));
   }
 
+  public static PartitionDesc getPartitionDescFromTableDesc(TableDesc tblDesc, Partition part)
+      throws HiveException {
+    return new PartitionDesc(part, tblDesc);
+  }
+
   public static void addMapWork(MapredWork mr, Table tbl, String alias, Operator<?> work) {
     mr.addMapWork(tbl.getDataLocation().getPath(), alias, work, new PartitionDesc(
-        getTableDesc(tbl), null));
+        getTableDesc(tbl), (LinkedHashMap<String, String>) null));
   }
 
   private static String getOpTreeSkel_helper(Operator<?> op, String indent) {
@@ -799,16 +877,43 @@ public final class Utilities {
    * @param isCompressed
    *          Whether the output file is compressed or not
    * @return the required file extension (example: .gz)
+   * @deprecated Use {@link #getFileExtension(JobConf, boolean, HiveOutputFormat)}
    */
+  @Deprecated
   public static String getFileExtension(JobConf jc, boolean isCompressed) {
-    if (!isCompressed) {
-      return "";
-    } else {
+    return getFileExtension(jc, isCompressed, new HiveIgnoreKeyTextOutputFormat());
+  }
+
+  /**
+   * Based on compression option, output format, and configured output codec -
+   * get extension for output file. Text files require an extension, whereas
+   * others, like sequence files, do not.
+   * <p>
+   * The property <code>hive.output.file.extension</code> is used to determine
+   * the extension - if set, it will override other logic for choosing an
+   * extension.
+   *
+   * @param jc
+   *          Job Configuration
+   * @param isCompressed
+   *          Whether the output file is compressed or not
+   * @param hiveOutputFormat
+   *          The output format, used to detect if the format is text
+   * @return the required file extension (example: .gz)
+   */
+  public static String getFileExtension(JobConf jc, boolean isCompressed,
+      HiveOutputFormat<?, ?> hiveOutputFormat) {
+    String extension = HiveConf.getVar(jc, HiveConf.ConfVars.OUTPUT_FILE_EXTENSION);
+    if (!StringUtils.isEmpty(extension)) {
+      return extension;
+    }
+    if ((hiveOutputFormat instanceof HiveIgnoreKeyTextOutputFormat) && isCompressed) {
       Class<? extends CompressionCodec> codecClass = FileOutputFormat.getOutputCompressorClass(jc,
           DefaultCodec.class);
       CompressionCodec codec = (CompressionCodec) ReflectionUtils.newInstance(codecClass, jc);
       return codec.getDefaultExtension();
     }
+    return "";
   }
 
   /**
@@ -935,6 +1040,18 @@ public final class Utilities {
   }
 
   private static final String tmpPrefix = "_tmp.";
+  private static final String taskTmpPrefix = "_task_tmp.";
+
+  public static Path toTaskTempPath(Path orig) {
+    if (orig.getName().indexOf(taskTmpPrefix) == 0) {
+      return orig;
+    }
+    return new Path(orig.getParent(), taskTmpPrefix + orig.getName());
+  }
+
+  public static Path toTaskTempPath(String orig) {
+    return toTaskTempPath(new Path(orig));
+  }
 
   public static Path toTempPath(Path orig) {
     if (orig.getName().indexOf(tmpPrefix) == 0) {
@@ -1020,9 +1137,10 @@ public final class Utilities {
   /**
    * The first group will contain the task id. The second group is the optional extension. The file
    * name looks like: "0_0" or "0_0.gz". There may be a leading prefix (tmp_). Since getTaskId() can
-   * return an integer only - this should match a pure integer as well
+   * return an integer only - this should match a pure integer as well. {1,3} is used to limit
+   * matching for attempts #'s 0-999.
    */
-  private static Pattern fileNameTaskIdRegex = Pattern.compile("^.*?([0-9]+)(_[0-9])?(\\..*)?$");
+  private static Pattern fileNameTaskIdRegex = Pattern.compile("^.*?([0-9]+)(_[0-9]{1,3})?(\\..*)?$");
 
   /**
    * Get the task id from the filename. It is assumed that the filename is derived from the output
@@ -1126,6 +1244,91 @@ public final class Utilities {
     }
     Path pathPattern = new Path(path, sb.toString());
     return fs.globStatus(pathPattern);
+  }
+
+  public static void mvFileToFinalPath(String specPath, Configuration hconf,
+      boolean success, Log log, DynamicPartitionCtx dpCtx, FileSinkDesc conf) throws IOException,
+      HiveException {
+
+    FileSystem fs = (new Path(specPath)).getFileSystem(hconf);
+    Path tmpPath = Utilities.toTempPath(specPath);
+    Path taskTmpPath = Utilities.toTaskTempPath(specPath);
+    Path intermediatePath = new Path(tmpPath.getParent(), tmpPath.getName()
+        + ".intermediate");
+    Path finalPath = new Path(specPath);
+    if (success) {
+      if (fs.exists(tmpPath)) {
+        // Step1: rename tmp output folder to intermediate path. After this
+        // point, updates from speculative tasks still writing to tmpPath
+        // will not appear in finalPath.
+        log.info("Moving tmp dir: " + tmpPath + " to: " + intermediatePath);
+        Utilities.rename(fs, tmpPath, intermediatePath);
+        // Step2: remove any tmp file or double-committed output files
+        ArrayList<String> emptyBuckets =
+            Utilities.removeTempOrDuplicateFiles(fs, intermediatePath, dpCtx);
+        // create empty buckets if necessary
+        if (emptyBuckets.size() > 0) {
+          createEmptyBuckets(hconf, emptyBuckets, conf);
+        }
+
+        // Step3: move to the file destination
+        log.info("Moving tmp dir: " + intermediatePath + " to: " + finalPath);
+        Utilities.renameOrMoveFiles(fs, intermediatePath, finalPath);
+      }
+    } else {
+      fs.delete(tmpPath, true);
+    }
+    fs.delete(taskTmpPath, true);
+  }
+
+  /**
+   * Check the existence of buckets according to bucket specification. Create empty buckets if
+   * needed.
+   *
+   * @param specPath
+   *          The final path where the dynamic partitions should be in.
+   * @param conf
+   *          FileSinkDesc.
+   * @param dpCtx
+   *          dynamic partition context.
+   * @throws HiveException
+   * @throws IOException
+   */
+  private static void createEmptyBuckets(Configuration hconf, ArrayList<String> paths,
+      FileSinkDesc conf)
+      throws HiveException, IOException {
+
+    JobConf jc;
+    if (hconf instanceof JobConf) {
+      jc = new JobConf(hconf);
+    } else {
+      // test code path
+      jc = new JobConf(hconf, ExecDriver.class);
+    }
+    HiveOutputFormat<?, ?> hiveOutputFormat = null;
+    Class<? extends Writable> outputClass = null;
+    boolean isCompressed = conf.getCompressed();
+    TableDesc tableInfo = conf.getTableInfo();
+    try {
+      Serializer serializer = (Serializer) tableInfo.getDeserializerClass().newInstance();
+      serializer.initialize(null, tableInfo.getProperties());
+      outputClass = serializer.getSerializedClass();
+      hiveOutputFormat = conf.getTableInfo().getOutputFileFormatClass().newInstance();
+    } catch (SerDeException e) {
+      throw new HiveException(e);
+    } catch (InstantiationException e) {
+      throw new HiveException(e);
+    } catch (IllegalAccessException e) {
+      throw new HiveException(e);
+    }
+
+    for (String p : paths) {
+      Path path = new Path(p);
+      RecordWriter writer = HiveFileFormatUtils.getRecordWriter(
+          jc, hiveOutputFormat, outputClass, isCompressed, tableInfo.getProperties(), path);
+      writer.close(false);
+      LOG.info("created empty bucket for enforcing bucketing at " + path);
+    }
   }
 
   /**
@@ -1413,6 +1616,8 @@ public final class Utilities {
     }
   }
 
+  public static Object getInputSummaryLock = new Object();
+
   /**
    * Calculate the total size of input files.
    *
@@ -1430,9 +1635,13 @@ public final class Utilities {
 
     long[] summary = {0, 0, 0};
 
-    // For each input path, calculate the total size.
-    for (String path : work.getPathToAliases().keySet()) {
-      try {
+    List<String> pathNeedProcess = new ArrayList<String>();
+
+    // Since multiple threads could call this method concurrently, locking
+    // this method will avoid number of threads out of control.
+    synchronized (getInputSummaryLock) {
+      // For each input path, calculate the total size.
+      for (String path : work.getPathToAliases().keySet()) {
         Path p = new Path(path);
 
         if (filter != null && !filter.accept(p)) {
@@ -1441,34 +1650,142 @@ public final class Utilities {
 
         ContentSummary cs = ctx.getCS(path);
         if (cs == null) {
-          JobConf jobConf = new JobConf(ctx.getConf());
-          PartitionDesc partDesc = work.getPathToPartitionInfo().get(
-              p.toString());
-          Class<? extends InputFormat> inputFormatCls = partDesc
-              .getInputFileFormatClass();
-          InputFormat inputFormatObj = HiveInputFormat.getInputFormatFromCache(
-              inputFormatCls, jobConf);
-          if(inputFormatObj instanceof ContentSummaryInputFormat) {
-            cs = ((ContentSummaryInputFormat) inputFormatObj).getContentSummary(p, jobConf);
-          } else {
-            FileSystem fs = p.getFileSystem(ctx.getConf());
-            cs = fs.getContentSummary(p);
+          if (path == null) {
+            continue;
           }
-          ctx.addCS(path, cs);
-        }
-
-        summary[0] += cs.getLength();
-        summary[1] += cs.getFileCount();
-        summary[2] += cs.getDirectoryCount();
-
-      } catch (IOException e) {
-        LOG.info("Cannot get size of " + path + ". Safely ignored.");
-        if (path != null) {
-          ctx.addCS(path, new ContentSummary(0, 0, 0));
+          pathNeedProcess.add(path);
+        } else {
+          summary[0] += cs.getLength();
+          summary[1] += cs.getFileCount();
+          summary[2] += cs.getDirectoryCount();
         }
       }
+
+      // Process the case when name node call is needed
+      final Map<String, ContentSummary> resultMap = new ConcurrentHashMap<String, ContentSummary>();
+      ArrayList<Future<?>> results = new ArrayList<Future<?>>();
+      final ThreadPoolExecutor executor;
+      int maxThreads = ctx.getConf().getInt("mapred.dfsclient.parallelism.max", 0);
+      if (pathNeedProcess.size() > 1 && maxThreads > 1) {
+        int numExecutors = Math.min(pathNeedProcess.size(), maxThreads);
+        LOG.info("Using " + numExecutors + " threads for getContentSummary");
+        executor = new ThreadPoolExecutor(numExecutors, numExecutors, 60, TimeUnit.SECONDS,
+            new LinkedBlockingQueue<Runnable>());
+      } else {
+        executor = null;
+      }
+
+      HiveInterruptCallback interrup = HiveInterruptUtils.add(new HiveInterruptCallback() {
+        @Override
+        public void interrupt() {
+          if (executor != null) {
+            executor.shutdownNow();
+          }
+        }
+      });
+      try {
+        Configuration conf = ctx.getConf();
+        JobConf jobConf = new JobConf(conf);
+        for (String path : pathNeedProcess) {
+          final Path p = new Path(path);
+          final String pathStr = path;
+          // All threads share the same Configuration and JobConf based on the
+          // assumption that they are thread safe if only read operations are
+          // executed. It is not stated in Hadoop's javadoc, the sourcce codes
+          // clearly showed that they made efforts for it and we believe it is
+          // thread safe. Will revisit this piece of codes if we find the assumption
+          // is not correct.
+          final Configuration myConf = conf;
+          final JobConf myJobConf = jobConf;
+          final PartitionDesc partDesc = work.getPathToPartitionInfo().get(
+              p.toString());
+          Runnable r = new Runnable() {
+            public void run() {
+              try {
+                ContentSummary resultCs;
+
+                Class<? extends InputFormat> inputFormatCls = partDesc
+                    .getInputFileFormatClass();
+                InputFormat inputFormatObj = HiveInputFormat.getInputFormatFromCache(
+                    inputFormatCls, myJobConf);
+                if (inputFormatObj instanceof ContentSummaryInputFormat) {
+                  resultCs = ((ContentSummaryInputFormat) inputFormatObj).getContentSummary(p,
+                      myJobConf);
+                } else {
+                  FileSystem fs = p.getFileSystem(myConf);
+                  resultCs = fs.getContentSummary(p);
+                }
+                resultMap.put(pathStr, resultCs);
+              } catch (IOException e) {
+                // We safely ignore this exception for summary data.
+                // We don't update the cache to protect it from polluting other
+                // usages. The worst case is that IOException will always be
+                // retried for another getInputSummary(), which is fine as
+                // IOException is not considered as a common case.
+                LOG.info("Cannot get size of " + pathStr + ". Safely ignored.");
+              }
+            }
+          };
+
+          if (executor == null) {
+            r.run();
+          } else {
+            Future<?> result = executor.submit(r);
+            results.add(result);
+          }
+        }
+
+        if (executor != null) {
+          for (Future<?> result : results) {
+            boolean executorDone = false;
+            do {
+              try {
+                result.get();
+                executorDone = true;
+              } catch (InterruptedException e) {
+                LOG.info("Interrupted when waiting threads: ", e);
+                Thread.currentThread().interrupt();
+                break;
+              } catch (ExecutionException e) {
+                throw new IOException(e);
+              }
+            } while (!executorDone);
+	  }
+          executor.shutdown();
+        }
+        HiveInterruptUtils.checkInterrupted();
+        for (Map.Entry<String, ContentSummary> entry : resultMap.entrySet()) {
+          ContentSummary cs = entry.getValue();
+
+          summary[0] += cs.getLength();
+          summary[1] += cs.getFileCount();
+          summary[2] += cs.getDirectoryCount();
+
+          ctx.addCS(entry.getKey(), cs);
+          LOG.info("Cache Content Summary for " + entry.getKey() + " length: " + cs.getLength()
+              + " file count: "
+              + cs.getFileCount() + " directory count: " + cs.getDirectoryCount());
+        }
+
+        return new ContentSummary(summary[0], summary[1], summary[2]);
+      } finally {
+        HiveInterruptUtils.remove(interrup);
+      }
     }
-    return new ContentSummary(summary[0], summary[1], summary[2]);
+  }
+
+  public static boolean isEmptyPath(JobConf job, String dirPath, Context ctx)
+      throws Exception {
+    ContentSummary cs = ctx.getCS(dirPath);
+    if (cs != null) {
+      LOG.info("Content Summary " + dirPath + "length: " + cs.getLength() + " num files: "
+          + cs.getFileCount() + " num directories: " + cs.getDirectoryCount());
+      return (cs.getLength() == 0 && cs.getFileCount() == 0 && cs.getDirectoryCount() <= 1);
+    } else {
+      LOG.info("Content Summary not cached for " + dirPath);
+    }
+    Path p = new Path(dirPath);
+    return isEmptyPath(job, p);
   }
 
   public static boolean isEmptyPath(JobConf job, Path dirPath) throws Exception {
@@ -1592,9 +1909,10 @@ public final class Utilities {
 
   public static String suffix = ".hashtable";
 
-  public static String generatePath(String baseURI, Byte tag, String bigBucketFileName) {
-    String path = new String(baseURI + Path.SEPARATOR + "MapJoin-" + tag + "-" + bigBucketFileName
-        + suffix);
+  public static String generatePath(String baseURI, String dumpFilePrefix,
+      Byte tag, String bigBucketFileName) {
+    String path = new String(baseURI + Path.SEPARATOR + "MapJoin-" + dumpFilePrefix + tag +
+    	"-" + bigBucketFileName + suffix);
     return path;
   }
 
@@ -1609,17 +1927,17 @@ public final class Utilities {
   }
 
   public static String generateTarURI(String baseURI, String filename) {
-    String tmpFileURI = new String(baseURI + Path.SEPARATOR + filename+".tar.gz");
+    String tmpFileURI = new String(baseURI + Path.SEPARATOR + filename + ".tar.gz");
     return tmpFileURI;
   }
 
   public static String generateTarURI(Path baseURI, String filename) {
-    String tmpFileURI = new String(baseURI + Path.SEPARATOR + filename+".tar.gz");
+    String tmpFileURI = new String(baseURI + Path.SEPARATOR + filename + ".tar.gz");
     return tmpFileURI;
   }
 
   public static String generateTarFileName(String name) {
-    String tmpFileURI = new String(name+".tar.gz");
+    String tmpFileURI = new String(name + ".tar.gz");
     return tmpFileURI;
   }
 
@@ -1635,7 +1953,330 @@ public final class Utilities {
   }
 
   public static double showTime(long time) {
-    double result = (double) time / (double)1000;
+    double result = (double) time / (double) 1000;
     return result;
+  }
+
+  /**
+   * Check if a function can be pushed down to JDO.
+   * Now only {=, AND, OR} are supported.
+   * @param func a generic function.
+   * @return true if this function can be pushed down to JDO filter.
+   */
+  private static boolean supportedJDOFuncs(GenericUDF func) {
+    return func instanceof GenericUDFOPEqual ||
+           func instanceof GenericUDFOPAnd ||
+           func instanceof GenericUDFOPOr;
+  }
+
+  /**
+   * Check if the partition pruning expression can be pushed down to JDO filtering.
+   * The partition expression contains only partition columns.
+   * The criteria that an expression can be pushed down are that:
+   *  1) the expression only contains function specified in supportedJDOFuncs().
+   *     Now only {=, AND, OR} can be pushed down.
+   *  2) the partition column type and the constant type have to be String. This is
+   *     restriction by the current JDO filtering implementation.
+   * @param tab The table that contains the partition columns.
+   * @param expr the partition pruning expression
+   * @return true if the partition pruning expression can be pushed down to JDO filtering.
+   */
+  public static boolean checkJDOPushDown(Table tab, ExprNodeDesc expr) {
+    if (expr instanceof ExprNodeConstantDesc) {
+      // JDO filter now only support String typed literal -- see Filter.g and ExpressionTree.java
+      Object value = ((ExprNodeConstantDesc)expr).getValue();
+      return (value instanceof String);
+    } else if (expr instanceof ExprNodeColumnDesc) {
+      // JDO filter now only support String typed literal -- see Filter.g and ExpressionTree.java
+      TypeInfo type = expr.getTypeInfo();
+      if (type.getTypeName().equals(Constants.STRING_TYPE_NAME)) {
+        String colName = ((ExprNodeColumnDesc)expr).getColumn();
+        for (FieldSchema fs: tab.getPartCols()) {
+          if (fs.getName().equals(colName)) {
+            return fs.getType().equals(Constants.STRING_TYPE_NAME);
+          }
+        }
+        assert(false); // cannot find the partition column!
+     } else {
+       return false;
+     }
+    } else if (expr instanceof ExprNodeGenericFuncDesc) {
+      ExprNodeGenericFuncDesc funcDesc = (ExprNodeGenericFuncDesc) expr;
+      GenericUDF func = funcDesc.getGenericUDF();
+      if (!supportedJDOFuncs(func)) {
+        return false;
+      }
+      List<ExprNodeDesc> children = funcDesc.getChildExprs();
+      for (ExprNodeDesc child: children) {
+        if (!checkJDOPushDown(tab, child)) {
+          return false;
+        }
+      }
+      return true;
+    }
+    return false;
+  }
+
+  /**
+   * The check here is kind of not clean. It first use a for loop to go through
+   * all input formats, and choose the ones that extend ReworkMapredInputFormat
+   * to a set. And finally go through the ReworkMapredInputFormat set, and call
+   * rework for each one.
+   *
+   * Technically all these can be avoided if all Hive's input formats can share
+   * a same interface. As in today's hive and Hadoop, it is not possible because
+   * a lot of Hive's input formats are in Hadoop's code. And most of Hadoop's
+   * input formats just extend InputFormat interface.
+   *
+   * @param task
+   * @param reworkMapredWork
+   * @param conf
+   * @throws SemanticException
+   */
+  public static void reworkMapRedWork(Task<? extends Serializable> task,
+      boolean reworkMapredWork, HiveConf conf) throws SemanticException {
+    if (reworkMapredWork && (task instanceof MapRedTask)) {
+      try {
+        MapredWork mapredWork = ((MapRedTask) task).getWork();
+        Set<Class<? extends InputFormat>> reworkInputFormats = new HashSet<Class<? extends InputFormat>>();
+        for (PartitionDesc part : mapredWork.getPathToPartitionInfo().values()) {
+          Class<? extends InputFormat> inputFormatCls = part
+              .getInputFileFormatClass();
+          if (ReworkMapredInputFormat.class.isAssignableFrom(inputFormatCls)) {
+            reworkInputFormats.add(inputFormatCls);
+          }
+        }
+
+        if (reworkInputFormats.size() > 0) {
+          for (Class<? extends InputFormat> inputFormatCls : reworkInputFormats) {
+            ReworkMapredInputFormat inst = (ReworkMapredInputFormat) ReflectionUtils
+                .newInstance(inputFormatCls, null);
+            inst.rework(conf, mapredWork);
+          }
+        }
+      } catch (IOException e) {
+        throw new SemanticException(e);
+      }
+    }
+  }
+
+  public static class SQLCommand<T> {
+    public T run(PreparedStatement stmt) throws SQLException {
+      return null;
+    }
+  }
+
+  /**
+   * Retry SQL execution with random backoff (same as the one implemented in HDFS-767).
+   * This function only retries when the SQL query throws a SQLTransientException (which
+   * might be able to succeed with a simple retry). It doesn't retry when the exception
+   * is a SQLRecoverableException or SQLNonTransientException. For SQLRecoverableException
+   * the caller needs to reconnect to the database and restart the whole transaction.
+   *
+   * @param query the prepared statement of SQL.
+   * @param type either SQLCommandType.QUERY or SQLCommandType.UPDATE
+   * @param baseWindow  The base time window (in milliseconds) before the next retry.
+   * see {@getRandomWaitTime} for details.
+   * @param maxRetries the maximum # of retries when getting a SQLTransientException.
+   * @throws SQLException throws SQLRecoverableException or SQLNonTransientException the
+   * first time it is caught, or SQLTransientException when the maxRetries has reached.
+   */
+  public static <T> T executeWithRetry(SQLCommand<T> cmd, PreparedStatement stmt,
+      int baseWindow, int maxRetries)  throws SQLException {
+
+    Random r = new Random();
+    T result = null;
+
+    // retry with # of maxRetries before throwing exception
+    for (int failures = 0; ; failures++) {
+      try {
+        result = cmd.run(stmt);
+        return result;
+      } catch (SQLTransientException e) {
+      	LOG.warn("Failure and retry #" + failures +  " with exception " + e.getMessage());
+        if (failures >= maxRetries) {
+          throw e;
+        }
+        long waitTime = getRandomWaitTime(baseWindow, failures, r);
+      	try {
+      	  Thread.sleep(waitTime);
+      	} catch (InterruptedException iex) {
+     	  }
+      } catch (SQLException e) {
+        // throw other types of SQLExceptions (SQLNonTransientException / SQLRecoverableException)
+        throw e;
+      }
+    }
+  }
+
+  /**
+   * Retry connecting to a database with random backoff (same as the one implemented in HDFS-767).
+   * This function only retries when the SQL query throws a SQLTransientException (which
+   * might be able to succeed with a simple retry). It doesn't retry when the exception
+   * is a SQLRecoverableException or SQLNonTransientException. For SQLRecoverableException
+   * the caller needs to reconnect to the database and restart the whole transaction.
+   *
+   * @param connectionString the JDBC connection string.
+   * @param baseWindow  The base time window (in milliseconds) before the next retry.
+   * see {@getRandomWaitTime} for details.
+   * @param maxRetries the maximum # of retries when getting a SQLTransientException.
+   * @throws SQLException throws SQLRecoverableException or SQLNonTransientException the
+   * first time it is caught, or SQLTransientException when the maxRetries has reached.
+   */
+  public static Connection connectWithRetry(String connectionString,
+      int waitWindow, int maxRetries) throws SQLException {
+
+    Random r = new Random();
+
+    // retry with # of maxRetries before throwing exception
+    for (int failures = 0; ; failures++) {
+      try {
+        Connection conn = DriverManager.getConnection(connectionString);
+        return conn;
+      } catch (SQLTransientException e) {
+        if (failures >= maxRetries) {
+          LOG.error("Error during JDBC connection. " + e);
+          throw e;
+        }
+        long waitTime = Utilities.getRandomWaitTime(waitWindow, failures, r);
+        try {
+          Thread.sleep(waitTime);
+        } catch (InterruptedException e1) {
+        }
+      } catch (SQLException e) {
+        // just throw other types (SQLNonTransientException / SQLRecoverableException)
+        throw e;
+      }
+    }
+  }
+
+  /**
+   * Retry preparing a SQL statement with random backoff (same as the one implemented in HDFS-767).
+   * This function only retries when the SQL query throws a SQLTransientException (which
+   * might be able to succeed with a simple retry). It doesn't retry when the exception
+   * is a SQLRecoverableException or SQLNonTransientException. For SQLRecoverableException
+   * the caller needs to reconnect to the database and restart the whole transaction.
+   *
+   * @param conn a JDBC connection.
+   * @param stmt the SQL statement to be prepared.
+   * @param baseWindow  The base time window (in milliseconds) before the next retry.
+   * see {@getRandomWaitTime} for details.
+   * @param maxRetries the maximum # of retries when getting a SQLTransientException.
+   * @throws SQLException throws SQLRecoverableException or SQLNonTransientException the
+   * first time it is caught, or SQLTransientException when the maxRetries has reached.
+   */
+  public static PreparedStatement prepareWithRetry(Connection conn, String stmt,
+      int waitWindow, int maxRetries) throws SQLException {
+
+    Random r = new Random();
+
+    // retry with # of maxRetries before throwing exception
+    for (int failures = 0; ; failures++) {
+      try {
+        return conn.prepareStatement(stmt);
+      } catch (SQLTransientException e) {
+        if (failures >= maxRetries) {
+          LOG.error("Error preparing JDBC Statement " + stmt + " :" + e);
+          throw e;
+        }
+        long waitTime = Utilities.getRandomWaitTime(waitWindow, failures, r);
+        try {
+          Thread.sleep(waitTime);
+        } catch (InterruptedException e1) {
+        }
+      } catch (SQLException e) {
+        // just throw other types (SQLNonTransientException / SQLRecoverableException)
+        throw e;
+      }
+    }
+  }
+
+  /**
+   * Introducing a random factor to the wait time before another retry.
+	 * The wait time is dependent on # of failures and a random factor.
+	 * At the first time of getting an exception , the wait time
+	 * is a random number between 0..baseWindow msec. If the first retry
+	 * still fails, we will wait baseWindow msec grace period before the 2nd retry.
+	 * Also at the second retry, the waiting window is expanded to 2*baseWindow msec
+	 * alleviating the request rate from the server. Similarly the 3rd retry
+	 * will wait 2*baseWindow msec. grace period before retry and the waiting window is
+	 * expanded to 3*baseWindow msec and so on.
+   * @param baseWindow the base waiting window.
+   * @param failures number of failures so far.
+   * @param r a random generator.
+   * @return number of milliseconds for the next wait time.
+   */
+  public static long getRandomWaitTime(int baseWindow, int failures, Random r) {
+    return (long) (
+          baseWindow * failures +     // grace period for the last round of attempt
+      	  baseWindow * (failures + 1) * r.nextDouble()); // expanding time window for each failure
+  }
+
+  /**
+   * Escape the '_', '%', as well as the escape characters inside the string key.
+   * @param key the string that will be used for the SQL LIKE operator.
+   * @param escape the escape character
+   * @return a string with escaped '_' and '%'.
+   */
+  public static final char sqlEscapeChar = '\\';
+  public static String escapeSqlLike(String key) {
+    StringBuffer sb = new StringBuffer(key.length());
+    for (char c: key.toCharArray()) {
+      switch(c) {
+      case '_':
+      case '%':
+      case sqlEscapeChar:
+        sb.append(sqlEscapeChar);
+        // fall through
+      default:
+        sb.append(c);
+        break;
+      }
+    }
+    return sb.toString();
+  }
+
+  /**
+   * Format number of milliseconds to strings
+   *
+   * @param msec milliseconds
+   * @return a formatted string like "x days y hours z minutes a seconds b msec"
+   */
+  public static String formatMsecToStr(long msec) {
+    long day = -1, hour = -1, minute = -1, second = -1;
+    long ms = msec % 1000;
+    long timeLeft = msec / 1000;
+    if (timeLeft > 0) {
+      second = timeLeft % 60;
+      timeLeft /= 60;
+      if (timeLeft > 0) {
+        minute = timeLeft % 60;
+        timeLeft /= 60;
+        if (timeLeft > 0) {
+          hour = timeLeft % 24;
+          day = timeLeft / 24;
+        }
+      }
+    }
+    StringBuilder sb = new StringBuilder();
+    if (day != -1) {
+      sb.append(day + " days ");
+    }
+    if (hour != -1) {
+      sb.append(hour + " hours ");
+    }
+    if (minute != -1) {
+      sb.append(minute + " minutes ");
+    }
+    if (second != -1) {
+      sb.append(second + " seconds ");
+    }
+    sb.append(ms + " msec");
+
+    return sb.toString();
+  }
+
+  public static Class getBuiltinUtilsClass() throws ClassNotFoundException {
+    return Class.forName("org.apache.hive.builtins.BuiltinUtils");
   }
 }

@@ -47,30 +47,26 @@ STAGE PLANS:
         null-subquery1:subq-subquery1:x 
           TableScan
             alias: x
-            Filter Operator
-              predicate:
-                  expr: (d = '2009-01-01')
-                  type: boolean
-              Select Operator
-                expressions:
-                      expr: a
-                      type: int
-                      expr: b
-                      type: int
-                      expr: d
-                      type: string
-                outputColumnNames: _col0, _col1, _col2
-                Limit
-                  Reduce Output Operator
-                    sort order: 
-                    tag: -1
-                    value expressions:
-                          expr: _col0
-                          type: int
-                          expr: _col1
-                          type: int
-                          expr: _col2
-                          type: string
+            Select Operator
+              expressions:
+                    expr: a
+                    type: int
+                    expr: b
+                    type: int
+                    expr: d
+                    type: string
+              outputColumnNames: _col0, _col1, _col2
+              Limit
+                Reduce Output Operator
+                  sort order: 
+                  tag: -1
+                  value expressions:
+                        expr: _col0
+                        type: int
+                        expr: _col1
+                        type: int
+                        expr: _col2
+                        type: string
       Reduce Operator Tree:
         Extract
           Limit
@@ -84,7 +80,7 @@ STAGE PLANS:
   Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/tmp/sdong/hive_2011-02-10_15-54-37_001_5938833549199170061/-mr-10002 
+        file:/tmp/njain/hive_2011-12-07_17-57-51_725_5932902027949948969/-mr-10002 
           Union
             Select Operator
               expressions:
@@ -101,7 +97,7 @@ STAGE PLANS:
                 table:
                     input format: org.apache.hadoop.mapred.TextInputFormat
                     output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-        file:/tmp/sdong/hive_2011-02-10_15-54-37_001_5938833549199170061/-mr-10003 
+        file:/tmp/njain/hive_2011-12-07_17-57-51_725_5932902027949948969/-mr-10003 
           Union
             Select Operator
               expressions:
@@ -125,30 +121,26 @@ STAGE PLANS:
         null-subquery2:subq-subquery2:x 
           TableScan
             alias: x
-            Filter Operator
-              predicate:
-                  expr: (d = '2009-02-02')
-                  type: boolean
-              Select Operator
-                expressions:
-                      expr: a
-                      type: int
-                      expr: b
-                      type: int
-                      expr: d
-                      type: string
-                outputColumnNames: _col0, _col1, _col2
-                Limit
-                  Reduce Output Operator
-                    sort order: 
-                    tag: -1
-                    value expressions:
-                          expr: _col0
-                          type: int
-                          expr: _col1
-                          type: int
-                          expr: _col2
-                          type: string
+            Select Operator
+              expressions:
+                    expr: a
+                    type: int
+                    expr: b
+                    type: int
+                    expr: d
+                    type: string
+              outputColumnNames: _col0, _col1, _col2
+              Limit
+                Reduce Output Operator
+                  sort order: 
+                  tag: -1
+                  value expressions:
+                        expr: _col0
+                        type: int
+                        expr: _col1
+                        type: int
+                        expr: _col2
+                        type: string
       Reduce Operator Tree:
         Extract
           Limit
@@ -172,7 +164,7 @@ PREHOOK: query: select * from (
 PREHOOK: type: QUERY
 PREHOOK: Input: default@tst@d=2009-01-01
 PREHOOK: Input: default@tst@d=2009-02-02
-PREHOOK: Output: file:/tmp/sdong/hive_2011-02-10_15-54-37_160_4822481153966993661/-mr-10000
+PREHOOK: Output: file:/tmp/njain/hive_2011-12-07_17-57-51_941_2422734399279293092/-mr-10000
 POSTHOOK: query: select * from (
   select * from tst x where x.d='2009-01-01' limit 10
     union all
@@ -181,4 +173,4 @@ POSTHOOK: query: select * from (
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@tst@d=2009-01-01
 POSTHOOK: Input: default@tst@d=2009-02-02
-POSTHOOK: Output: file:/tmp/sdong/hive_2011-02-10_15-54-37_160_4822481153966993661/-mr-10000
+POSTHOOK: Output: file:/tmp/njain/hive_2011-12-07_17-57-51_941_2422734399279293092/-mr-10000

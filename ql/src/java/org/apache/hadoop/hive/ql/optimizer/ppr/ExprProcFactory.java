@@ -104,6 +104,16 @@ public final class ExprProcFactory {
         // values) should derive from a common base class UDFNullAsUnknown, so
         // instead of listing the classes
         // here we would test whether a class is derived from that base class.
+        // If All childs are null, set unknown to true
+        boolean isAllNull = true;
+        for (Object child : nodeOutputs) {
+          ExprNodeDesc child_nd = (ExprNodeDesc) child;
+          if (!(child_nd instanceof ExprNodeConstantDesc
+              && ((ExprNodeConstantDesc) child_nd).getValue() == null)) {
+            isAllNull = false;
+          }
+        }
+        unknown = isAllNull;
       } else if (!FunctionRegistry.isDeterministic(fd.getGenericUDF())) {
         // If it's a non-deterministic UDF, set unknown to true
         unknown = true;

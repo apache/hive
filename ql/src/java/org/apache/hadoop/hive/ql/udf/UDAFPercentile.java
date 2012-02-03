@@ -234,12 +234,17 @@ public class UDAFPercentile extends UDAF {
 
     public boolean iterate(LongWritable o, List<DoubleWritable> percentiles) {
       if (state.percentiles == null) {
-        for (int i = 0; i < percentiles.size(); i++) {
-          if (percentiles.get(i).get() < 0.0 || percentiles.get(i).get() > 1.0) {
-            throw new RuntimeException("Percentile value must be wihin the range of 0 to 1.");
+        if(percentiles != null) {
+          for (int i = 0; i < percentiles.size(); i++) {
+            if (percentiles.get(i).get() < 0.0 || percentiles.get(i).get() > 1.0) {
+              throw new RuntimeException("Percentile value must be wihin the range of 0 to 1.");
+            }
           }
+          state.percentiles = new ArrayList<DoubleWritable>(percentiles);
         }
-        state.percentiles = new ArrayList<DoubleWritable>(percentiles);
+        else {
+          state.percentiles = new ArrayList<DoubleWritable>();
+        }
       }
       if (o != null) {
         increment(state, o, 1);

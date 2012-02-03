@@ -1,2 +1,2 @@
 Semantic Exception: 
-Line 2:36 [] not valid on non-collection types 0: string
+Line 2:36 [] not valid on non-collection types '0': string

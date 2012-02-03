@@ -70,3 +70,6 @@ FROM src
 GROUP BY CAST(key AS INT) DIV 10;
 
 select percentile(cast(key as bigint), 0.5) from src where false;
+
+-- test where percentile list is empty
+select percentile(cast(key as bigint), array()) from src where false;

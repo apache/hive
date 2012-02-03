@@ -70,7 +70,7 @@ STAGE PLANS:
   Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/tmp/sdong/hive_2011-02-10_17-48-46_923_5249929033089415360/-mr-10002 
+        file:/tmp/njain/hive_2011-12-07_18-02-56_729_1436248963824606248/-mr-10002 
           Union
             Select Operator
               expressions:
@@ -98,7 +98,7 @@ STAGE PLANS:
                   value expressions:
                         expr: _col1
                         type: bigint
-        file:/tmp/sdong/hive_2011-02-10_17-48-46_923_5249929033089415360/-mr-10003 
+        file:/tmp/njain/hive_2011-12-07_18-02-56_729_1436248963824606248/-mr-10003 
           Union
             Select Operator
               expressions:
@@ -126,7 +126,7 @@ STAGE PLANS:
                   value expressions:
                         expr: _col1
                         type: bigint
-        file:/tmp/sdong/hive_2011-02-10_17-48-46_923_5249929033089415360/-mr-10004 
+        file:/tmp/njain/hive_2011-12-07_18-02-56_729_1436248963824606248/-mr-10004 
           Union
             Select Operator
               expressions:
@@ -270,7 +270,7 @@ PREHOOK: query: select unionsrc.key, count(1) FROM (select 'tst1' as key, count(
                                             select 'tst3' as key, count(1) as value from src s3) unionsrc group by unionsrc.key
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/tmp/sdong/hive_2011-02-10_17-48-47_047_1532933495557970153/-mr-10000
+PREHOOK: Output: file:/tmp/njain/hive_2011-12-07_18-02-56_855_5081522479982578048/-mr-10000
 POSTHOOK: query: select unionsrc.key, count(1) FROM (select 'tst1' as key, count(1) as value from src s1
                                         UNION  ALL  
                                             select 'tst2' as key, count(1) as value from src s2
@@ -278,7 +278,7 @@ POSTHOOK: query: select unionsrc.key, count(1) FROM (select 'tst1' as key, count
                                             select 'tst3' as key, count(1) as value from src s3) unionsrc group by unionsrc.key
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: file:/tmp/sdong/hive_2011-02-10_17-48-47_047_1532933495557970153/-mr-10000
+POSTHOOK: Output: file:/tmp/njain/hive_2011-12-07_18-02-56_855_5081522479982578048/-mr-10000
 tst1	1
 tst2	1
 tst3	1

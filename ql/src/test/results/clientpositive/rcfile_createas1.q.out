@@ -1,0 +1,210 @@
+PREHOOK: query: DROP TABLE rcfile_createas1a
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: DROP TABLE rcfile_createas1a
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: DROP TABLE rcfile_createas1b
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: DROP TABLE rcfile_createas1b
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: CREATE TABLE rcfile_createas1a (key INT, value STRING)
+    PARTITIONED BY (ds string)
+PREHOOK: type: CREATETABLE
+POSTHOOK: query: CREATE TABLE rcfile_createas1a (key INT, value STRING)
+    PARTITIONED BY (ds string)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: default@rcfile_createas1a
+PREHOOK: query: INSERT OVERWRITE TABLE rcfile_createas1a PARTITION (ds='1')
+    SELECT * FROM src
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@rcfile_createas1a@ds=1
+POSTHOOK: query: INSERT OVERWRITE TABLE rcfile_createas1a PARTITION (ds='1')
+    SELECT * FROM src
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@rcfile_createas1a@ds=1
+POSTHOOK: Lineage: rcfile_createas1a PARTITION(ds=1).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: rcfile_createas1a PARTITION(ds=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: INSERT OVERWRITE TABLE rcfile_createas1a PARTITION (ds='2')
+    SELECT * FROM src
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@rcfile_createas1a@ds=2
+POSTHOOK: query: INSERT OVERWRITE TABLE rcfile_createas1a PARTITION (ds='2')
+    SELECT * FROM src
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@rcfile_createas1a@ds=2
+POSTHOOK: Lineage: rcfile_createas1a PARTITION(ds=1).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: rcfile_createas1a PARTITION(ds=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: rcfile_createas1a PARTITION(ds=2).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: rcfile_createas1a PARTITION(ds=2).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: EXPLAIN
+    CREATE TABLE rcfile_createas1b
+    STORED AS RCFILE AS 
+        SELECT key, value, PMOD(HASH(key), 50) as part
+        FROM rcfile_createas1a
+PREHOOK: type: CREATETABLE_AS_SELECT
+POSTHOOK: query: EXPLAIN
+    CREATE TABLE rcfile_createas1b
+    STORED AS RCFILE AS 
+        SELECT key, value, PMOD(HASH(key), 50) as part
+        FROM rcfile_createas1a
+POSTHOOK: type: CREATETABLE_AS_SELECT
+POSTHOOK: Lineage: rcfile_createas1a PARTITION(ds=1).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: rcfile_createas1a PARTITION(ds=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: rcfile_createas1a PARTITION(ds=2).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: rcfile_createas1a PARTITION(ds=2).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+ABSTRACT SYNTAX TREE:
+  (TOK_CREATETABLE (TOK_TABNAME rcfile_createas1b) TOK_LIKETABLE TOK_TBLRCFILE (TOK_QUERY (TOK_FROM (TOK_TABREF (TOK_TABNAME rcfile_createas1a))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_TABLE_OR_COL key)) (TOK_SELEXPR (TOK_TABLE_OR_COL value)) (TOK_SELEXPR (TOK_FUNCTION PMOD (TOK_FUNCTION HASH (TOK_TABLE_OR_COL key)) 50) part)))))
+
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-5 depends on stages: Stage-1 , consists of Stage-4, Stage-3
+  Stage-4
+  Stage-0 depends on stages: Stage-4, Stage-3
+  Stage-6 depends on stages: Stage-0
+  Stage-2 depends on stages: Stage-6
+  Stage-3
+
+STAGE PLANS:
+  Stage: Stage-1
+    Map Reduce
+      Alias -> Map Operator Tree:
+        rcfile_createas1a 
+          TableScan
+            alias: rcfile_createas1a
+            Select Operator
+              expressions:
+                    expr: key
+                    type: int
+                    expr: value
+                    type: string
+                    expr: pmod(hash(key), 50)
+                    type: int
+              outputColumnNames: _col0, _col1, _col2
+              File Output Operator
+                compressed: false
+                GlobalTableId: 1
+                table:
+                    input format: org.apache.hadoop.hive.ql.io.RCFileInputFormat
+                    output format: org.apache.hadoop.hive.ql.io.RCFileOutputFormat
+                    name: default.rcfile_createas1b
+
+  Stage: Stage-5
+    Conditional Operator
+
+  Stage: Stage-4
+    Move Operator
+      files:
+          hdfs directory: true
+          destination: pfile:/data/users/rsurowka/JAVA_HIVE/apache-hive/build/ql/scratchdir/hive_2011-11-07_20-01-24_286_8837675491396277390/-ext-10001
+
+  Stage: Stage-0
+    Move Operator
+      files:
+          hdfs directory: true
+          destination: pfile:/data/users/rsurowka/JAVA_HIVE/apache-hive/build/ql/test/data/warehouse/rcfile_createas1b
+
+  Stage: Stage-6
+      Create Table Operator:
+        Create Table
+          columns: key int, value string, part int
+          if not exists: false
+          input format: org.apache.hadoop.hive.ql.io.RCFileInputFormat
+          # buckets: -1
+          output format: org.apache.hadoop.hive.ql.io.RCFileOutputFormat
+          serde name: org.apache.hadoop.hive.serde2.columnar.ColumnarSerDe
+          name: rcfile_createas1b
+          isExternal: false
+
+  Stage: Stage-2
+    Stats-Aggr Operator
+
+  Stage: Stage-3
+    Block level merge
+
+
+PREHOOK: query: CREATE TABLE rcfile_createas1b
+    STORED AS RCFILE AS 
+        SELECT key, value, PMOD(HASH(key), 50) as part
+        FROM rcfile_createas1a
+PREHOOK: type: CREATETABLE_AS_SELECT
+PREHOOK: Input: default@rcfile_createas1a@ds=1
+PREHOOK: Input: default@rcfile_createas1a@ds=2
+POSTHOOK: query: CREATE TABLE rcfile_createas1b
+    STORED AS RCFILE AS 
+        SELECT key, value, PMOD(HASH(key), 50) as part
+        FROM rcfile_createas1a
+POSTHOOK: type: CREATETABLE_AS_SELECT
+POSTHOOK: Input: default@rcfile_createas1a@ds=1
+POSTHOOK: Input: default@rcfile_createas1a@ds=2
+POSTHOOK: Output: default@rcfile_createas1b
+POSTHOOK: Lineage: rcfile_createas1a PARTITION(ds=1).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: rcfile_createas1a PARTITION(ds=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: rcfile_createas1a PARTITION(ds=2).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: rcfile_createas1a PARTITION(ds=2).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: SELECT SUM(HASH(c)) FROM (
+    SELECT TRANSFORM(key, value) USING 'tr \t _' AS (c)
+    FROM rcfile_createas1a
+) t
+PREHOOK: type: QUERY
+PREHOOK: Input: default@rcfile_createas1a@ds=1
+PREHOOK: Input: default@rcfile_createas1a@ds=2
+PREHOOK: Output: file:/tmp/rsurowka/hive_2011-11-07_20-01-30_867_1202931125008629355/-mr-10000
+POSTHOOK: query: SELECT SUM(HASH(c)) FROM (
+    SELECT TRANSFORM(key, value) USING 'tr \t _' AS (c)
+    FROM rcfile_createas1a
+) t
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@rcfile_createas1a@ds=1
+POSTHOOK: Input: default@rcfile_createas1a@ds=2
+POSTHOOK: Output: file:/tmp/rsurowka/hive_2011-11-07_20-01-30_867_1202931125008629355/-mr-10000
+POSTHOOK: Lineage: rcfile_createas1a PARTITION(ds=1).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: rcfile_createas1a PARTITION(ds=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: rcfile_createas1a PARTITION(ds=2).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: rcfile_createas1a PARTITION(ds=2).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+14412220296
+PREHOOK: query: SELECT SUM(HASH(c)) FROM (
+    SELECT TRANSFORM(key, value) USING 'tr \t _' AS (c)
+    FROM rcfile_createas1b
+) t
+PREHOOK: type: QUERY
+PREHOOK: Input: default@rcfile_createas1b
+PREHOOK: Output: file:/tmp/rsurowka/hive_2011-11-07_20-01-34_389_8689351756025259102/-mr-10000
+POSTHOOK: query: SELECT SUM(HASH(c)) FROM (
+    SELECT TRANSFORM(key, value) USING 'tr \t _' AS (c)
+    FROM rcfile_createas1b
+) t
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@rcfile_createas1b
+POSTHOOK: Output: file:/tmp/rsurowka/hive_2011-11-07_20-01-34_389_8689351756025259102/-mr-10000
+POSTHOOK: Lineage: rcfile_createas1a PARTITION(ds=1).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: rcfile_createas1a PARTITION(ds=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: rcfile_createas1a PARTITION(ds=2).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: rcfile_createas1a PARTITION(ds=2).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+14412220296
+PREHOOK: query: DROP TABLE rcfile_createas1a
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@rcfile_createas1a
+PREHOOK: Output: default@rcfile_createas1a
+POSTHOOK: query: DROP TABLE rcfile_createas1a
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@rcfile_createas1a
+POSTHOOK: Output: default@rcfile_createas1a
+POSTHOOK: Lineage: rcfile_createas1a PARTITION(ds=1).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: rcfile_createas1a PARTITION(ds=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: rcfile_createas1a PARTITION(ds=2).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: rcfile_createas1a PARTITION(ds=2).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: DROP TABLE rcfile_createas1b
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@rcfile_createas1b
+PREHOOK: Output: default@rcfile_createas1b
+POSTHOOK: query: DROP TABLE rcfile_createas1b
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@rcfile_createas1b
+POSTHOOK: Output: default@rcfile_createas1b
+POSTHOOK: Lineage: rcfile_createas1a PARTITION(ds=1).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: rcfile_createas1a PARTITION(ds=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: rcfile_createas1a PARTITION(ds=2).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: rcfile_createas1a PARTITION(ds=2).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]

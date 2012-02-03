@@ -1,0 +1,1389 @@
+PREHOOK: query: EXPLAIN
+CREATE INDEX src1_index ON TABLE src(key) as 'BITMAP' WITH DEFERRED REBUILD
+PREHOOK: type: CREATEINDEX
+POSTHOOK: query: EXPLAIN
+CREATE INDEX src1_index ON TABLE src(key) as 'BITMAP' WITH DEFERRED REBUILD
+POSTHOOK: type: CREATEINDEX
+ABSTRACT SYNTAX TREE:
+  (TOK_CREATEINDEX src1_index 'BITMAP' (TOK_TABNAME src) (TOK_TABCOLNAME key) TOK_DEFERRED_REBUILDINDEX)
+
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+
+
+PREHOOK: query: EXPLAIN
+CREATE INDEX src2_index ON TABLE src(value) as 'BITMAP' WITH DEFERRED REBUILD
+PREHOOK: type: CREATEINDEX
+POSTHOOK: query: EXPLAIN
+CREATE INDEX src2_index ON TABLE src(value) as 'BITMAP' WITH DEFERRED REBUILD
+POSTHOOK: type: CREATEINDEX
+ABSTRACT SYNTAX TREE:
+  (TOK_CREATEINDEX src2_index 'BITMAP' (TOK_TABNAME src) (TOK_TABCOLNAME value) TOK_DEFERRED_REBUILDINDEX)
+
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+
+
+PREHOOK: query: CREATE INDEX src1_index ON TABLE src(key) as 'BITMAP' WITH DEFERRED REBUILD
+PREHOOK: type: CREATEINDEX
+POSTHOOK: query: CREATE INDEX src1_index ON TABLE src(key) as 'BITMAP' WITH DEFERRED REBUILD
+POSTHOOK: type: CREATEINDEX
+PREHOOK: query: CREATE INDEX src2_index ON TABLE src(value) as 'BITMAP' WITH DEFERRED REBUILD
+PREHOOK: type: CREATEINDEX
+POSTHOOK: query: CREATE INDEX src2_index ON TABLE src(value) as 'BITMAP' WITH DEFERRED REBUILD
+POSTHOOK: type: CREATEINDEX
+PREHOOK: query: ALTER INDEX src1_index ON src REBUILD
+PREHOOK: type: ALTERINDEX_REBUILD
+PREHOOK: Input: default@src
+PREHOOK: Output: default@default__src_src1_index__
+POSTHOOK: query: ALTER INDEX src1_index ON src REBUILD
+POSTHOOK: type: ALTERINDEX_REBUILD
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@default__src_src1_index__
+POSTHOOK: Lineage: default__src_src1_index__._bitmaps EXPRESSION [(src)src.FieldSchema(name:ROW__OFFSET__INSIDE__BLOCK, type:bigint, comment:), ]
+POSTHOOK: Lineage: default__src_src1_index__._bucketname SIMPLE [(src)src.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
+POSTHOOK: Lineage: default__src_src1_index__._offset SIMPLE [(src)src.FieldSchema(name:BLOCK__OFFSET__INSIDE__FILE, type:bigint, comment:), ]
+POSTHOOK: Lineage: default__src_src1_index__.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+PREHOOK: query: ALTER INDEX src2_index ON src REBUILD
+PREHOOK: type: ALTERINDEX_REBUILD
+PREHOOK: Input: default@src
+PREHOOK: Output: default@default__src_src2_index__
+POSTHOOK: query: ALTER INDEX src2_index ON src REBUILD
+POSTHOOK: type: ALTERINDEX_REBUILD
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@default__src_src2_index__
+POSTHOOK: Lineage: default__src_src1_index__._bitmaps EXPRESSION [(src)src.FieldSchema(name:ROW__OFFSET__INSIDE__BLOCK, type:bigint, comment:), ]
+POSTHOOK: Lineage: default__src_src1_index__._bucketname SIMPLE [(src)src.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
+POSTHOOK: Lineage: default__src_src1_index__._offset SIMPLE [(src)src.FieldSchema(name:BLOCK__OFFSET__INSIDE__FILE, type:bigint, comment:), ]
+POSTHOOK: Lineage: default__src_src1_index__.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: default__src_src2_index__._bitmaps EXPRESSION [(src)src.FieldSchema(name:ROW__OFFSET__INSIDE__BLOCK, type:bigint, comment:), ]
+POSTHOOK: Lineage: default__src_src2_index__._bucketname SIMPLE [(src)src.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
+POSTHOOK: Lineage: default__src_src2_index__._offset SIMPLE [(src)src.FieldSchema(name:BLOCK__OFFSET__INSIDE__FILE, type:bigint, comment:), ]
+POSTHOOK: Lineage: default__src_src2_index__.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: SELECT * FROM default__src_src1_index__ ORDER BY key
+PREHOOK: type: QUERY
+PREHOOK: Input: default@default__src_src1_index__
+PREHOOK: Output: file:/tmp/salbiz/hive_2011-08-01_13-40-50_602_8891280180086929788/-mr-10000
+POSTHOOK: query: SELECT * FROM default__src_src1_index__ ORDER BY key
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@default__src_src1_index__
+POSTHOOK: Output: file:/tmp/salbiz/hive_2011-08-01_13-40-50_602_8891280180086929788/-mr-10000
+POSTHOOK: Lineage: default__src_src1_index__._bitmaps EXPRESSION [(src)src.FieldSchema(name:ROW__OFFSET__INSIDE__BLOCK, type:bigint, comment:), ]
+POSTHOOK: Lineage: default__src_src1_index__._bucketname SIMPLE [(src)src.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
+POSTHOOK: Lineage: default__src_src1_index__._offset SIMPLE [(src)src.FieldSchema(name:BLOCK__OFFSET__INSIDE__FILE, type:bigint, comment:), ]
+POSTHOOK: Lineage: default__src_src1_index__.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: default__src_src2_index__._bitmaps EXPRESSION [(src)src.FieldSchema(name:ROW__OFFSET__INSIDE__BLOCK, type:bigint, comment:), ]
+POSTHOOK: Lineage: default__src_src2_index__._bucketname SIMPLE [(src)src.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
+POSTHOOK: Lineage: default__src_src2_index__._offset SIMPLE [(src)src.FieldSchema(name:BLOCK__OFFSET__INSIDE__FILE, type:bigint, comment:), ]
+POSTHOOK: Lineage: default__src_src2_index__.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+0	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	968	[1,2,4,8589934592,1,0]
+0	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	2088	[1,2,4,8589934592,1,0]
+0	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	2632	[1,2,4,8589934592,1,0]
+10	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	2846	[1,2,4,8589934592,1,0]
+100	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	5374	[1,2,4,8589934592,1,0]
+100	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	2156	[1,2,4,8589934592,1,0]
+103	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	1484	[1,2,4,8589934592,1,0]
+103	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	3614	[1,2,4,8589934592,1,0]
+104	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	4628	[1,2,4,8589934592,1,0]
+104	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	4114	[1,2,4,8589934592,1,0]
+105	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	4196	[1,2,4,8589934592,1,0]
+11	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	3170	[1,2,4,8589934592,1,0]
+111	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	1186	[1,2,4,8589934592,1,0]
+113	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	3638	[1,2,4,8589934592,1,0]
+113	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	920	[1,2,4,8589934592,1,0]
+114	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	4280	[1,2,4,8589934592,1,0]
+116	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	3746	[1,2,4,8589934592,1,0]
+118	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	2686	[1,2,4,8589934592,1,0]
+118	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	2780	[1,2,4,8589934592,1,0]
+119	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	4674	[1,2,4,8589934592,1,0]
+119	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	3332	[1,2,4,8589934592,1,0]
+119	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	2064	[1,2,4,8589934592,1,0]
+12	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	1720	[1,2,4,8589934592,1,0]
+12	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	4362	[1,2,4,8589934592,1,0]
+120	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	2284	[1,2,4,8589934592,1,0]
+120	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	4830	[1,2,4,8589934592,1,0]
+125	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	1344	[1,2,4,8589934592,1,0]
+125	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	4468	[1,2,4,8589934592,1,0]
+126	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	5732	[1,2,4,8589934592,1,0]
+128	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	208	[1,2,4,8589934592,1,0]
+128	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	988	[1,2,4,8589934592,1,0]
+128	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	3896	[1,2,4,8589934592,1,0]
+129	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	1094	[1,2,4,8589934592,1,0]
+129	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	2040	[1,2,4,8589934592,1,0]
+131	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	2296	[1,2,4,8589934592,1,0]
+133	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	5164	[1,2,4,8589934592,1,0]
+134	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	5294	[1,2,4,8589934592,1,0]
+134	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	2698	[1,2,4,8589934592,1,0]
+136	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	5080	[1,2,4,8589934592,1,0]
+137	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	1650	[1,2,4,8589934592,1,0]
+137	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	2552	[1,2,4,8589934592,1,0]
+138	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	1848	[1,2,4,8589934592,1,0]
+138	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	1472	[1,2,4,8589934592,1,0]
+138	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	3470	[1,2,4,8589934592,1,0]
+138	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	2734	[1,2,4,8589934592,1,0]
+143	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	3226	[1,2,4,8589934592,1,0]
+145	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	304	[1,2,4,8589934592,1,0]
+146	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	5430	[1,2,4,8589934592,1,0]
+146	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	232	[1,2,4,8589934592,1,0]
+149	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	3422	[1,2,4,8589934592,1,0]
+149	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	1058	[1,2,4,8589934592,1,0]
+15	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	2770	[1,2,4,8589934592,1,0]
+15	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	386	[1,2,4,8589934592,1,0]
+150	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	150	[1,2,4,8589934592,1,0]
+152	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	280	[1,2,4,8589934592,1,0]
+152	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	5648	[1,2,4,8589934592,1,0]
+153	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	502	[1,2,4,8589934592,1,0]
+155	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	932	[1,2,4,8589934592,1,0]
+156	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	2352	[1,2,4,8589934592,1,0]
+157	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	1140	[1,2,4,8589934592,1,0]
+158	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	2052	[1,2,4,8589934592,1,0]
+160	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	3274	[1,2,4,8589934592,1,0]
+162	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	754	[1,2,4,8589934592,1,0]
+163	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	4650	[1,2,4,8589934592,1,0]
+164	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	4492	[1,2,4,8589934592,1,0]
+164	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	4408	[1,2,4,8589934592,1,0]
+165	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	44	[1,2,4,8589934592,1,0]
+165	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	2236	[1,2,4,8589934592,1,0]
+166	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	418	[1,2,4,8589934592,1,0]
+167	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	5502	[1,2,4,8589934592,1,0]
+167	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	3686	[1,2,4,8589934592,1,0]
+167	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	874	[1,2,4,8589934592,1,0]
+168	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	3180	[1,2,4,8589934592,1,0]
+169	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	5754	[1,2,4,8589934592,1,0]
+169	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	2588	[1,2,4,8589934592,1,0]
+169	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	4854	[1,2,4,8589934592,1,0]
+169	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	1308	[1,2,4,8589934592,1,0]
+17	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	910	[1,2,4,8589934592,1,0]
+170	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	1106	[1,2,4,8589934592,1,0]
+172	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	2018	[1,2,4,8589934592,1,0]
+172	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	5104	[1,2,4,8589934592,1,0]
+174	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	598	[1,2,4,8589934592,1,0]
+174	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	682	[1,2,4,8589934592,1,0]
+175	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	4150	[1,2,4,8589934592,1,0]
+175	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	5176	[1,2,4,8589934592,1,0]
+176	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	1428	[1,2,4,8589934592,1,0]
+176	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	1556	[1,2,4,8589934592,1,0]
+177	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	3036	[1,2,4,8589934592,1,0]
+178	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	4938	[1,2,4,8589934592,1,0]
+179	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	2006	[1,2,4,8589934592,1,0]
+179	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	2674	[1,2,4,8589934592,1,0]
+18	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	5514	[1,2,4,8589934592,1,0]
+18	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	5340	[1,2,4,8589934592,1,0]
+180	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	1696	[1,2,4,8589934592,1,0]
+181	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	1742	[1,2,4,8589934592,1,0]
+183	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	5536	[1,2,4,8589934592,1,0]
+186	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	5466	[1,2,4,8589934592,1,0]
+187	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	2492	[1,2,4,8589934592,1,0]
+187	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	1416	[1,2,4,8589934592,1,0]
+187	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	4516	[1,2,4,8589934592,1,0]
+189	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	5188	[1,2,4,8589934592,1,0]
+19	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	2824	[1,2,4,8589934592,1,0]
+190	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	4244	[1,2,4,8589934592,1,0]
+191	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	2192	[1,2,4,8589934592,1,0]
+191	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	3852	[1,2,4,8589934592,1,0]
+192	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	1392	[1,2,4,8589934592,1,0]
+193	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	126	[1,2,4,8589934592,1,0]
+193	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	514	[1,2,4,8589934592,1,0]
+193	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	4078	[1,2,4,8589934592,1,0]
+194	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	5684	[1,2,4,8589934592,1,0]
+195	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	886	[1,2,4,8589934592,1,0]
+195	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	3286	[1,2,4,8589934592,1,0]
+196	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	2410	[1,2,4,8589934592,1,0]
+197	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	2108	[1,2,4,8589934592,1,0]
+197	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	2480	[1,2,4,8589934592,1,0]
+199	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	4806	[1,2,4,8589934592,1,0]
+199	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	646	[1,2,4,8589934592,1,0]
+199	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	2180	[1,2,4,8589934592,1,0]
+2	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	4004	[1,2,4,8589934592,1,0]
+20	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	1118	[1,2,4,8589934592,1,0]
+200	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	4698	[1,2,4,8589934592,1,0]
+200	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	5790	[1,2,4,8589934592,1,0]
+201	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	4384	[1,2,4,8589934592,1,0]
+202	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	3932	[1,2,4,8589934592,1,0]
+203	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	4314	[1,2,4,8589934592,1,0]
+203	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	944	[1,2,4,8589934592,1,0]
+205	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	2272	[1,2,4,8589934592,1,0]
+205	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	1046	[1,2,4,8589934592,1,0]
+207	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	634	[1,2,4,8589934592,1,0]
+207	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	5022	[1,2,4,8589934592,1,0]
+208	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	1948	[1,2,4,8589934592,1,0]
+208	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	1272	[1,2,4,8589934592,1,0]
+208	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	670	[1,2,4,8589934592,1,0]
+209	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	374	[1,2,4,8589934592,1,0]
+209	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	3504	[1,2,4,8589934592,1,0]
+213	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	220	[1,2,4,8589934592,1,0]
+213	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	1508	[1,2,4,8589934592,1,0]
+214	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	5116	[1,2,4,8589934592,1,0]
+216	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	1520	[1,2,4,8589934592,1,0]
+216	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	3650	[1,2,4,8589934592,1,0]
+217	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	1860	[1,2,4,8589934592,1,0]
+217	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	4396	[1,2,4,8589934592,1,0]
+218	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	3446	[1,2,4,8589934592,1,0]
+219	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	3710	[1,2,4,8589934592,1,0]
+219	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	478	[1,2,4,8589934592,1,0]
+221	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	1164	[1,2,4,8589934592,1,0]
+221	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	1580	[1,2,4,8589934592,1,0]
+222	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	5720	[1,2,4,8589934592,1,0]
+223	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	3758	[1,2,4,8589934592,1,0]
+223	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	3398	[1,2,4,8589934592,1,0]
+224	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	2892	[1,2,4,8589934592,1,0]
+224	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	174	[1,2,4,8589934592,1,0]
+226	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	3048	[1,2,4,8589934592,1,0]
+228	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	3458	[1,2,4,8589934592,1,0]
+229	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	3956	[1,2,4,8589934592,1,0]
+229	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	3202	[1,2,4,8589934592,1,0]
+230	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	1936	[1,2,4,8589934592,1,0]
+230	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	4914	[1,2,4,8589934592,1,0]
+230	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	1730	[1,2,4,8589934592,1,0]
+230	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	2260	[1,2,4,8589934592,1,0]
+230	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	3580	[1,2,4,8589934592,1,0]
+233	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	5140	[1,2,4,8589934592,1,0]
+233	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	3214	[1,2,4,8589934592,1,0]
+235	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	4046	[1,2,4,8589934592,1,0]
+237	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	4722	[1,2,4,8589934592,1,0]
+237	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	574	[1,2,4,8589934592,1,0]
+238	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	2746	[1,2,4,8589934592,1,0]
+238	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	0	[1,2,4,8589934592,1,0]
+239	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	1496	[1,2,4,8589934592,1,0]
+239	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	3722	[1,2,4,8589934592,1,0]
+24	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	1972	[1,2,4,8589934592,1,0]
+24	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	4594	[1,2,4,8589934592,1,0]
+241	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	1662	[1,2,4,8589934592,1,0]
+242	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	3012	[1,2,4,8589934592,1,0]
+242	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	2940	[1,2,4,8589934592,1,0]
+244	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	3872	[1,2,4,8589934592,1,0]
+247	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	718	[1,2,4,8589934592,1,0]
+248	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	4758	[1,2,4,8589934592,1,0]
+249	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	5034	[1,2,4,8589934592,1,0]
+252	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	454	[1,2,4,8589934592,1,0]
+255	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	4616	[1,2,4,8589934592,1,0]
+255	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	68	[1,2,4,8589934592,1,0]
+256	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	3770	[1,2,4,8589934592,1,0]
+256	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	5272	[1,2,4,8589934592,1,0]
+257	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	4208	[1,2,4,8589934592,1,0]
+258	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	4292	[1,2,4,8589934592,1,0]
+26	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	5284	[1,2,4,8589934592,1,0]
+26	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	2226	[1,2,4,8589934592,1,0]
+260	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	1764	[1,2,4,8589934592,1,0]
+262	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	4326	[1,2,4,8589934592,1,0]
+263	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	3782	[1,2,4,8589934592,1,0]
+265	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	114	[1,2,4,8589934592,1,0]
+265	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	5046	[1,2,4,8589934592,1,0]
+266	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	814	[1,2,4,8589934592,1,0]
+27	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	34	[1,2,4,8589934592,1,0]
+272	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	1836	[1,2,4,8589934592,1,0]
+272	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	2976	[1,2,4,8589934592,1,0]
+273	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	2868	[1,2,4,8589934592,1,0]
+273	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	5524	[1,2,4,8589934592,1,0]
+273	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	162	[1,2,4,8589934592,1,0]
+274	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	3698	[1,2,4,8589934592,1,0]
+275	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	1638	[1,2,4,8589934592,1,0]
+277	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	4902	[1,2,4,8589934592,1,0]
+277	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	362	[1,2,4,8589934592,1,0]
+277	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	1260	[1,2,4,8589934592,1,0]
+277	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	2856	[1,2,4,8589934592,1,0]
+278	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	80	[1,2,4,8589934592,1,0]
+278	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	1544	[1,2,4,8589934592,1,0]
+28	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	5616	[1,2,4,8589934592,1,0]
+280	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	1226	[1,2,4,8589934592,1,0]
+280	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	3992	[1,2,4,8589934592,1,0]
+281	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	5548	[1,2,4,8589934592,1,0]
+281	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	350	[1,2,4,8589934592,1,0]
+282	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	2722	[1,2,4,8589934592,1,0]
+282	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	2468	[1,2,4,8589934592,1,0]
+283	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	4022	[1,2,4,8589934592,1,0]
+284	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	1708	[1,2,4,8589934592,1,0]
+285	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	5478	[1,2,4,8589934592,1,0]
+286	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	1404	[1,2,4,8589934592,1,0]
+287	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	490	[1,2,4,8589934592,1,0]
+288	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	2422	[1,2,4,8589934592,1,0]
+288	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	3840	[1,2,4,8589934592,1,0]
+289	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	1568	[1,2,4,8589934592,1,0]
+291	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	4582	[1,2,4,8589934592,1,0]
+292	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	466	[1,2,4,8589934592,1,0]
+296	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	3626	[1,2,4,8589934592,1,0]
+298	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	2168	[1,2,4,8589934592,1,0]
+298	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	4456	[1,2,4,8589934592,1,0]
+298	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	5386	[1,2,4,8589934592,1,0]
+30	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	3494	[1,2,4,8589934592,1,0]
+302	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	1034	[1,2,4,8589934592,1,0]
+305	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	4782	[1,2,4,8589934592,1,0]
+306	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	2880	[1,2,4,8589934592,1,0]
+307	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	5672	[1,2,4,8589934592,1,0]
+307	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	2812	[1,2,4,8589934592,1,0]
+308	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	2388	[1,2,4,8589934592,1,0]
+309	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	2904	[1,2,4,8589934592,1,0]
+309	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	790	[1,2,4,8589934592,1,0]
+310	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	4962	[1,2,4,8589934592,1,0]
+311	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	1626	[1,2,4,8589934592,1,0]
+311	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	22	[1,2,4,8589934592,1,0]
+311	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	1000	[1,2,4,8589934592,1,0]
+315	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	5594	[1,2,4,8589934592,1,0]
+316	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	3944	[1,2,4,8589934592,1,0]
+316	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	1012	[1,2,4,8589934592,1,0]
+316	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	2576	[1,2,4,8589934592,1,0]
+317	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	3104	[1,2,4,8589934592,1,0]
+317	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	4974	[1,2,4,8589934592,1,0]
+318	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	2504	[1,2,4,8589934592,1,0]
+318	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	2516	[1,2,4,8589934592,1,0]
+318	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	1602	[1,2,4,8589934592,1,0]
+321	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	3308	[1,2,4,8589934592,1,0]
+321	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	4090	[1,2,4,8589934592,1,0]
+322	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	3250	[1,2,4,8589934592,1,0]
+322	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	2096	[1,2,4,8589934592,1,0]
+323	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	4878	[1,2,4,8589934592,1,0]
+325	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	862	[1,2,4,8589934592,1,0]
+325	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	4890	[1,2,4,8589934592,1,0]
+327	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	2928	[1,2,4,8589934592,1,0]
+327	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	338	[1,2,4,8589934592,1,0]
+327	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	2248	[1,2,4,8589934592,1,0]
+33	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	3592	[1,2,4,8589934592,1,0]
+331	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	4034	[1,2,4,8589934592,1,0]
+331	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	2988	[1,2,4,8589934592,1,0]
+332	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	1614	[1,2,4,8589934592,1,0]
+333	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	4986	[1,2,4,8589934592,1,0]
+333	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	1684	[1,2,4,8589934592,1,0]
+335	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	4102	[1,2,4,8589934592,1,0]
+336	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	3148	[1,2,4,8589934592,1,0]
+338	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	526	[1,2,4,8589934592,1,0]
+339	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	956	[1,2,4,8589934592,1,0]
+34	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	3192	[1,2,4,8589934592,1,0]
+341	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	5406	[1,2,4,8589934592,1,0]
+342	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	838	[1,2,4,8589934592,1,0]
+342	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	3558	[1,2,4,8589934592,1,0]
+344	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	5560	[1,2,4,8589934592,1,0]
+344	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	3674	[1,2,4,8589934592,1,0]
+345	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	1082	[1,2,4,8589934592,1,0]
+348	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	4338	[1,2,4,8589934592,1,0]
+348	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	1882	[1,2,4,8589934592,1,0]
+348	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	1960	[1,2,4,8589934592,1,0]
+348	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	5660	[1,2,4,8589934592,1,0]
+348	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	5490	[1,2,4,8589934592,1,0]
+35	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	1238	[1,2,4,8589934592,1,0]
+35	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	3138	[1,2,4,8589934592,1,0]
+35	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	4012	[1,2,4,8589934592,1,0]
+351	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	4604	[1,2,4,8589934592,1,0]
+353	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	1812	[1,2,4,8589934592,1,0]
+353	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	5092	[1,2,4,8589934592,1,0]
+356	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	1284	[1,2,4,8589934592,1,0]
+360	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	4746	[1,2,4,8589934592,1,0]
+362	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	5454	[1,2,4,8589934592,1,0]
+364	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	2662	[1,2,4,8589934592,1,0]
+365	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	802	[1,2,4,8589934592,1,0]
+366	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	4138	[1,2,4,8589934592,1,0]
+367	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	850	[1,2,4,8589934592,1,0]
+367	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	3662	[1,2,4,8589934592,1,0]
+368	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	3602	[1,2,4,8589934592,1,0]
+369	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	2564	[1,2,4,8589934592,1,0]
+369	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	2952	[1,2,4,8589934592,1,0]
+369	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	186	[1,2,4,8589934592,1,0]
+37	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	5626	[1,2,4,8589934592,1,0]
+37	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	328	[1,2,4,8589934592,1,0]
+373	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	1824	[1,2,4,8589934592,1,0]
+374	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	268	[1,2,4,8589934592,1,0]
+375	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	5212	[1,2,4,8589934592,1,0]
+377	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	766	[1,2,4,8589934592,1,0]
+378	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	1152	[1,2,4,8589934592,1,0]
+379	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	5328	[1,2,4,8589934592,1,0]
+382	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	4528	[1,2,4,8589934592,1,0]
+382	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	1320	[1,2,4,8589934592,1,0]
+384	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	5260	[1,2,4,8589934592,1,0]
+384	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	5316	[1,2,4,8589934592,1,0]
+384	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	1788	[1,2,4,8589934592,1,0]
+386	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	1356	[1,2,4,8589934592,1,0]
+389	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	2916	[1,2,4,8589934592,1,0]
+392	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	2964	[1,2,4,8589934592,1,0]
+393	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	2132	[1,2,4,8589934592,1,0]
+394	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	562	[1,2,4,8589934592,1,0]
+395	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	3116	[1,2,4,8589934592,1,0]
+395	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	2710	[1,2,4,8589934592,1,0]
+396	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	706	[1,2,4,8589934592,1,0]
+396	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	3092	[1,2,4,8589934592,1,0]
+396	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	4372	[1,2,4,8589934592,1,0]
+397	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	4558	[1,2,4,8589934592,1,0]
+397	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	778	[1,2,4,8589934592,1,0]
+399	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	694	[1,2,4,8589934592,1,0]
+399	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	1296	[1,2,4,8589934592,1,0]
+4	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	1218	[1,2,4,8589934592,1,0]
+400	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	5778	[1,2,4,8589934592,1,0]
+401	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	3828	[1,2,4,8589934592,1,0]
+401	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	4268	[1,2,4,8589934592,1,0]
+401	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	5224	[1,2,4,8589934592,1,0]
+401	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	138	[1,2,4,8589934592,1,0]
+401	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	3000	[1,2,4,8589934592,1,0]
+402	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	3080	[1,2,4,8589934592,1,0]
+403	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	5766	[1,2,4,8589934592,1,0]
+403	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	4162	[1,2,4,8589934592,1,0]
+403	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	406	[1,2,4,8589934592,1,0]
+404	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	2318	[1,2,4,8589934592,1,0]
+404	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	1776	[1,2,4,8589934592,1,0]
+406	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	244	[1,2,4,8589934592,1,0]
+406	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	5152	[1,2,4,8589934592,1,0]
+406	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	4220	[1,2,4,8589934592,1,0]
+406	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	4256	[1,2,4,8589934592,1,0]
+407	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	5248	[1,2,4,8589934592,1,0]
+409	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	4232	[1,2,4,8589934592,1,0]
+409	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	56	[1,2,4,8589934592,1,0]
+409	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	2528	[1,2,4,8589934592,1,0]
+41	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	3388	[1,2,4,8589934592,1,0]
+411	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	1924	[1,2,4,8589934592,1,0]
+413	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	610	[1,2,4,8589934592,1,0]
+413	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	2600	[1,2,4,8589934592,1,0]
+414	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	4686	[1,2,4,8589934592,1,0]
+414	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	5696	[1,2,4,8589934592,1,0]
+417	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	730	[1,2,4,8589934592,1,0]
+417	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	4794	[1,2,4,8589934592,1,0]
+417	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	430	[1,2,4,8589934592,1,0]
+418	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	2204	[1,2,4,8589934592,1,0]
+419	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	2758	[1,2,4,8589934592,1,0]
+42	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	3298	[1,2,4,8589934592,1,0]
+42	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	2030	[1,2,4,8589934592,1,0]
+421	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	5236	[1,2,4,8589934592,1,0]
+424	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	4504	[1,2,4,8589934592,1,0]
+424	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	4350	[1,2,4,8589934592,1,0]
+427	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	1248	[1,2,4,8589934592,1,0]
+429	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	256	[1,2,4,8589934592,1,0]
+429	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	4842	[1,2,4,8589934592,1,0]
+43	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	2330	[1,2,4,8589934592,1,0]
+430	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	442	[1,2,4,8589934592,1,0]
+430	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	3320	[1,2,4,8589934592,1,0]
+430	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	1532	[1,2,4,8589934592,1,0]
+431	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	1994	[1,2,4,8589934592,1,0]
+431	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	4420	[1,2,4,8589934592,1,0]
+431	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	4480	[1,2,4,8589934592,1,0]
+432	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	3920	[1,2,4,8589934592,1,0]
+435	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	2834	[1,2,4,8589934592,1,0]
+436	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	2340	[1,2,4,8589934592,1,0]
+437	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	1368	[1,2,4,8589934592,1,0]
+438	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	4662	[1,2,4,8589934592,1,0]
+438	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	1070	[1,2,4,8589934592,1,0]
+438	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	3884	[1,2,4,8589934592,1,0]
+439	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	4734	[1,2,4,8589934592,1,0]
+439	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	826	[1,2,4,8589934592,1,0]
+44	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	4068	[1,2,4,8589934592,1,0]
+443	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	4866	[1,2,4,8589934592,1,0]
+444	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	4818	[1,2,4,8589934592,1,0]
+446	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	538	[1,2,4,8589934592,1,0]
+448	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	5636	[1,2,4,8589934592,1,0]
+449	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	3434	[1,2,4,8589934592,1,0]
+452	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	3024	[1,2,4,8589934592,1,0]
+453	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	3482	[1,2,4,8589934592,1,0]
+454	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	4432	[1,2,4,8589934592,1,0]
+454	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	2144	[1,2,4,8589934592,1,0]
+454	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	5200	[1,2,4,8589934592,1,0]
+455	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	976	[1,2,4,8589934592,1,0]
+457	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	2446	[1,2,4,8589934592,1,0]
+458	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	3356	[1,2,4,8589934592,1,0]
+458	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	5442	[1,2,4,8589934592,1,0]
+459	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	550	[1,2,4,8589934592,1,0]
+459	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	1450	[1,2,4,8589934592,1,0]
+460	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	5010	[1,2,4,8589934592,1,0]
+462	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	5128	[1,2,4,8589934592,1,0]
+462	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	5350	[1,2,4,8589934592,1,0]
+463	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	1982	[1,2,4,8589934592,1,0]
+463	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	3980	[1,2,4,8589934592,1,0]
+466	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	4126	[1,2,4,8589934592,1,0]
+466	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	658	[1,2,4,8589934592,1,0]
+466	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	1894	[1,2,4,8589934592,1,0]
+467	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	3908	[1,2,4,8589934592,1,0]
+468	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	4950	[1,2,4,8589934592,1,0]
+468	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	2120	[1,2,4,8589934592,1,0]
+468	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	2376	[1,2,4,8589934592,1,0]
+468	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	3526	[1,2,4,8589934592,1,0]
+469	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	292	[1,2,4,8589934592,1,0]
+469	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	1380	[1,2,4,8589934592,1,0]
+469	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	3968	[1,2,4,8589934592,1,0]
+469	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	5582	[1,2,4,8589934592,1,0]
+469	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	2364	[1,2,4,8589934592,1,0]
+47	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	1198	[1,2,4,8589934592,1,0]
+470	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	2540	[1,2,4,8589934592,1,0]
+472	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	3238	[1,2,4,8589934592,1,0]
+475	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	898	[1,2,4,8589934592,1,0]
+477	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	5708	[1,2,4,8589934592,1,0]
+478	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	4444	[1,2,4,8589934592,1,0]
+478	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	4926	[1,2,4,8589934592,1,0]
+479	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	4770	[1,2,4,8589934592,1,0]
+480	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	3816	[1,2,4,8589934592,1,0]
+480	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	5058	[1,2,4,8589934592,1,0]
+480	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	4570	[1,2,4,8589934592,1,0]
+481	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	2434	[1,2,4,8589934592,1,0]
+482	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	586	[1,2,4,8589934592,1,0]
+483	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	4174	[1,2,4,8589934592,1,0]
+484	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	102	[1,2,4,8589934592,1,0]
+485	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	3734	[1,2,4,8589934592,1,0]
+487	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	3804	[1,2,4,8589934592,1,0]
+489	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	1128	[1,2,4,8589934592,1,0]
+489	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	742	[1,2,4,8589934592,1,0]
+489	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	1800	[1,2,4,8589934592,1,0]
+489	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	3344	[1,2,4,8589934592,1,0]
+490	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	2640	[1,2,4,8589934592,1,0]
+491	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	4710	[1,2,4,8589934592,1,0]
+492	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	3410	[1,2,4,8589934592,1,0]
+492	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	5362	[1,2,4,8589934592,1,0]
+493	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	4998	[1,2,4,8589934592,1,0]
+494	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	622	[1,2,4,8589934592,1,0]
+495	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	316	[1,2,4,8589934592,1,0]
+496	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	2076	[1,2,4,8589934592,1,0]
+497	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	3068	[1,2,4,8589934592,1,0]
+498	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	3262	[1,2,4,8589934592,1,0]
+498	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	1332	[1,2,4,8589934592,1,0]
+498	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	5418	[1,2,4,8589934592,1,0]
+5	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	3864	[1,2,4,8589934592,1,0]
+5	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	3060	[1,2,4,8589934592,1,0]
+5	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	4540	[1,2,4,8589934592,1,0]
+51	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	1462	[1,2,4,8589934592,1,0]
+51	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	2308	[1,2,4,8589934592,1,0]
+53	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	4186	[1,2,4,8589934592,1,0]
+54	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	1440	[1,2,4,8589934592,1,0]
+57	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	1024	[1,2,4,8589934592,1,0]
+58	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	1906	[1,2,4,8589934592,1,0]
+58	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	3128	[1,2,4,8589934592,1,0]
+64	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	3516	[1,2,4,8589934592,1,0]
+65	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	1592	[1,2,4,8589934592,1,0]
+66	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	198	[1,2,4,8589934592,1,0]
+67	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	5306	[1,2,4,8589934592,1,0]
+67	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	1754	[1,2,4,8589934592,1,0]
+69	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	3570	[1,2,4,8589934592,1,0]
+70	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	3794	[1,2,4,8589934592,1,0]
+70	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	4640	[1,2,4,8589934592,1,0]
+70	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	4548	[1,2,4,8589934592,1,0]
+72	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	1208	[1,2,4,8589934592,1,0]
+72	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	2792	[1,2,4,8589934592,1,0]
+74	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	3548	[1,2,4,8589934592,1,0]
+76	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	3538	[1,2,4,8589934592,1,0]
+76	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	3378	[1,2,4,8589934592,1,0]
+77	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	2622	[1,2,4,8589934592,1,0]
+78	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	3368	[1,2,4,8589934592,1,0]
+8	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	1916	[1,2,4,8589934592,1,0]
+80	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	4058	[1,2,4,8589934592,1,0]
+82	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	396	[1,2,4,8589934592,1,0]
+83	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	5070	[1,2,4,8589934592,1,0]
+83	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	1674	[1,2,4,8589934592,1,0]
+84	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	5606	[1,2,4,8589934592,1,0]
+84	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	1872	[1,2,4,8589934592,1,0]
+85	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	2612	[1,2,4,8589934592,1,0]
+86	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	12	[1,2,4,8589934592,1,0]
+87	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	2652	[1,2,4,8589934592,1,0]
+9	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	5398	[1,2,4,8589934592,1,0]
+90	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	2802	[1,2,4,8589934592,1,0]
+90	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	5744	[1,2,4,8589934592,1,0]
+90	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	4304	[1,2,4,8589934592,1,0]
+92	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	1176	[1,2,4,8589934592,1,0]
+95	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	3160	[1,2,4,8589934592,1,0]
+95	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	2400	[1,2,4,8589934592,1,0]
+96	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	2216	[1,2,4,8589934592,1,0]
+97	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	5572	[1,2,4,8589934592,1,0]
+97	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	5802	[1,2,4,8589934592,1,0]
+98	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	92	[1,2,4,8589934592,1,0]
+98	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	2458	[1,2,4,8589934592,1,0]
+PREHOOK: query: SELECT * FROM default__src_src2_index__ ORDER BY value
+PREHOOK: type: QUERY
+PREHOOK: Input: default@default__src_src2_index__
+PREHOOK: Output: file:/tmp/salbiz/hive_2011-08-01_13-40-53_471_4332059402152047025/-mr-10000
+POSTHOOK: query: SELECT * FROM default__src_src2_index__ ORDER BY value
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@default__src_src2_index__
+POSTHOOK: Output: file:/tmp/salbiz/hive_2011-08-01_13-40-53_471_4332059402152047025/-mr-10000
+POSTHOOK: Lineage: default__src_src1_index__._bitmaps EXPRESSION [(src)src.FieldSchema(name:ROW__OFFSET__INSIDE__BLOCK, type:bigint, comment:), ]
+POSTHOOK: Lineage: default__src_src1_index__._bucketname SIMPLE [(src)src.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
+POSTHOOK: Lineage: default__src_src1_index__._offset SIMPLE [(src)src.FieldSchema(name:BLOCK__OFFSET__INSIDE__FILE, type:bigint, comment:), ]
+POSTHOOK: Lineage: default__src_src1_index__.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: default__src_src2_index__._bitmaps EXPRESSION [(src)src.FieldSchema(name:ROW__OFFSET__INSIDE__BLOCK, type:bigint, comment:), ]
+POSTHOOK: Lineage: default__src_src2_index__._bucketname SIMPLE [(src)src.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
+POSTHOOK: Lineage: default__src_src2_index__._offset SIMPLE [(src)src.FieldSchema(name:BLOCK__OFFSET__INSIDE__FILE, type:bigint, comment:), ]
+POSTHOOK: Lineage: default__src_src2_index__.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+val_0	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	968	[1,2,4,8589934592,1,0]
+val_0	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	2088	[1,2,4,8589934592,1,0]
+val_0	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	2632	[1,2,4,8589934592,1,0]
+val_10	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	2846	[1,2,4,8589934592,1,0]
+val_100	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	5374	[1,2,4,8589934592,1,0]
+val_100	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	2156	[1,2,4,8589934592,1,0]
+val_103	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	1484	[1,2,4,8589934592,1,0]
+val_103	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	3614	[1,2,4,8589934592,1,0]
+val_104	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	4628	[1,2,4,8589934592,1,0]
+val_104	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	4114	[1,2,4,8589934592,1,0]
+val_105	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	4196	[1,2,4,8589934592,1,0]
+val_11	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	3170	[1,2,4,8589934592,1,0]
+val_111	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	1186	[1,2,4,8589934592,1,0]
+val_113	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	3638	[1,2,4,8589934592,1,0]
+val_113	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	920	[1,2,4,8589934592,1,0]
+val_114	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	4280	[1,2,4,8589934592,1,0]
+val_116	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	3746	[1,2,4,8589934592,1,0]
+val_118	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	2686	[1,2,4,8589934592,1,0]
+val_118	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	2780	[1,2,4,8589934592,1,0]
+val_119	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	4674	[1,2,4,8589934592,1,0]
+val_119	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	3332	[1,2,4,8589934592,1,0]
+val_119	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	2064	[1,2,4,8589934592,1,0]
+val_12	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	1720	[1,2,4,8589934592,1,0]
+val_12	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	4362	[1,2,4,8589934592,1,0]
+val_120	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	2284	[1,2,4,8589934592,1,0]
+val_120	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	4830	[1,2,4,8589934592,1,0]
+val_125	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	1344	[1,2,4,8589934592,1,0]
+val_125	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	4468	[1,2,4,8589934592,1,0]
+val_126	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	5732	[1,2,4,8589934592,1,0]
+val_128	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	208	[1,2,4,8589934592,1,0]
+val_128	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	988	[1,2,4,8589934592,1,0]
+val_128	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	3896	[1,2,4,8589934592,1,0]
+val_129	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	1094	[1,2,4,8589934592,1,0]
+val_129	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	2040	[1,2,4,8589934592,1,0]
+val_131	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	2296	[1,2,4,8589934592,1,0]
+val_133	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	5164	[1,2,4,8589934592,1,0]
+val_134	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	5294	[1,2,4,8589934592,1,0]
+val_134	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	2698	[1,2,4,8589934592,1,0]
+val_136	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	5080	[1,2,4,8589934592,1,0]
+val_137	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	1650	[1,2,4,8589934592,1,0]
+val_137	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	2552	[1,2,4,8589934592,1,0]
+val_138	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	1848	[1,2,4,8589934592,1,0]
+val_138	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	1472	[1,2,4,8589934592,1,0]
+val_138	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	3470	[1,2,4,8589934592,1,0]
+val_138	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	2734	[1,2,4,8589934592,1,0]
+val_143	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	3226	[1,2,4,8589934592,1,0]
+val_145	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	304	[1,2,4,8589934592,1,0]
+val_146	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	5430	[1,2,4,8589934592,1,0]
+val_146	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	232	[1,2,4,8589934592,1,0]
+val_149	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	3422	[1,2,4,8589934592,1,0]
+val_149	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	1058	[1,2,4,8589934592,1,0]
+val_15	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	2770	[1,2,4,8589934592,1,0]
+val_15	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	386	[1,2,4,8589934592,1,0]
+val_150	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	150	[1,2,4,8589934592,1,0]
+val_152	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	280	[1,2,4,8589934592,1,0]
+val_152	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	5648	[1,2,4,8589934592,1,0]
+val_153	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	502	[1,2,4,8589934592,1,0]
+val_155	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	932	[1,2,4,8589934592,1,0]
+val_156	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	2352	[1,2,4,8589934592,1,0]
+val_157	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	1140	[1,2,4,8589934592,1,0]
+val_158	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	2052	[1,2,4,8589934592,1,0]
+val_160	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	3274	[1,2,4,8589934592,1,0]
+val_162	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	754	[1,2,4,8589934592,1,0]
+val_163	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	4650	[1,2,4,8589934592,1,0]
+val_164	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	4492	[1,2,4,8589934592,1,0]
+val_164	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	4408	[1,2,4,8589934592,1,0]
+val_165	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	44	[1,2,4,8589934592,1,0]
+val_165	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	2236	[1,2,4,8589934592,1,0]
+val_166	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	418	[1,2,4,8589934592,1,0]
+val_167	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	5502	[1,2,4,8589934592,1,0]
+val_167	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	3686	[1,2,4,8589934592,1,0]
+val_167	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	874	[1,2,4,8589934592,1,0]
+val_168	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	3180	[1,2,4,8589934592,1,0]
+val_169	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	5754	[1,2,4,8589934592,1,0]
+val_169	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	2588	[1,2,4,8589934592,1,0]
+val_169	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	4854	[1,2,4,8589934592,1,0]
+val_169	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	1308	[1,2,4,8589934592,1,0]
+val_17	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	910	[1,2,4,8589934592,1,0]
+val_170	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	1106	[1,2,4,8589934592,1,0]
+val_172	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	2018	[1,2,4,8589934592,1,0]
+val_172	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	5104	[1,2,4,8589934592,1,0]
+val_174	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	598	[1,2,4,8589934592,1,0]
+val_174	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	682	[1,2,4,8589934592,1,0]
+val_175	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	4150	[1,2,4,8589934592,1,0]
+val_175	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	5176	[1,2,4,8589934592,1,0]
+val_176	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	1428	[1,2,4,8589934592,1,0]
+val_176	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	1556	[1,2,4,8589934592,1,0]
+val_177	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	3036	[1,2,4,8589934592,1,0]
+val_178	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	4938	[1,2,4,8589934592,1,0]
+val_179	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	2006	[1,2,4,8589934592,1,0]
+val_179	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	2674	[1,2,4,8589934592,1,0]
+val_18	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	5514	[1,2,4,8589934592,1,0]
+val_18	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	5340	[1,2,4,8589934592,1,0]
+val_180	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	1696	[1,2,4,8589934592,1,0]
+val_181	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	1742	[1,2,4,8589934592,1,0]
+val_183	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	5536	[1,2,4,8589934592,1,0]
+val_186	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	5466	[1,2,4,8589934592,1,0]
+val_187	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	2492	[1,2,4,8589934592,1,0]
+val_187	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	1416	[1,2,4,8589934592,1,0]
+val_187	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	4516	[1,2,4,8589934592,1,0]
+val_189	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	5188	[1,2,4,8589934592,1,0]
+val_19	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	2824	[1,2,4,8589934592,1,0]
+val_190	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	4244	[1,2,4,8589934592,1,0]
+val_191	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	2192	[1,2,4,8589934592,1,0]
+val_191	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	3852	[1,2,4,8589934592,1,0]
+val_192	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	1392	[1,2,4,8589934592,1,0]
+val_193	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	126	[1,2,4,8589934592,1,0]
+val_193	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	514	[1,2,4,8589934592,1,0]
+val_193	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	4078	[1,2,4,8589934592,1,0]
+val_194	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	5684	[1,2,4,8589934592,1,0]
+val_195	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	886	[1,2,4,8589934592,1,0]
+val_195	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	3286	[1,2,4,8589934592,1,0]
+val_196	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	2410	[1,2,4,8589934592,1,0]
+val_197	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	2108	[1,2,4,8589934592,1,0]
+val_197	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	2480	[1,2,4,8589934592,1,0]
+val_199	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	4806	[1,2,4,8589934592,1,0]
+val_199	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	646	[1,2,4,8589934592,1,0]
+val_199	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	2180	[1,2,4,8589934592,1,0]
+val_2	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	4004	[1,2,4,8589934592,1,0]
+val_20	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	1118	[1,2,4,8589934592,1,0]
+val_200	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	4698	[1,2,4,8589934592,1,0]
+val_200	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	5790	[1,2,4,8589934592,1,0]
+val_201	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	4384	[1,2,4,8589934592,1,0]
+val_202	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	3932	[1,2,4,8589934592,1,0]
+val_203	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	4314	[1,2,4,8589934592,1,0]
+val_203	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	944	[1,2,4,8589934592,1,0]
+val_205	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	2272	[1,2,4,8589934592,1,0]
+val_205	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	1046	[1,2,4,8589934592,1,0]
+val_207	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	634	[1,2,4,8589934592,1,0]
+val_207	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	5022	[1,2,4,8589934592,1,0]
+val_208	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	1948	[1,2,4,8589934592,1,0]
+val_208	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	1272	[1,2,4,8589934592,1,0]
+val_208	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	670	[1,2,4,8589934592,1,0]
+val_209	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	374	[1,2,4,8589934592,1,0]
+val_209	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	3504	[1,2,4,8589934592,1,0]
+val_213	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	220	[1,2,4,8589934592,1,0]
+val_213	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	1508	[1,2,4,8589934592,1,0]
+val_214	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	5116	[1,2,4,8589934592,1,0]
+val_216	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	1520	[1,2,4,8589934592,1,0]
+val_216	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	3650	[1,2,4,8589934592,1,0]
+val_217	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	1860	[1,2,4,8589934592,1,0]
+val_217	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	4396	[1,2,4,8589934592,1,0]
+val_218	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	3446	[1,2,4,8589934592,1,0]
+val_219	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	3710	[1,2,4,8589934592,1,0]
+val_219	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	478	[1,2,4,8589934592,1,0]
+val_221	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	1164	[1,2,4,8589934592,1,0]
+val_221	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	1580	[1,2,4,8589934592,1,0]
+val_222	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	5720	[1,2,4,8589934592,1,0]
+val_223	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	3758	[1,2,4,8589934592,1,0]
+val_223	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	3398	[1,2,4,8589934592,1,0]
+val_224	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	2892	[1,2,4,8589934592,1,0]
+val_224	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	174	[1,2,4,8589934592,1,0]
+val_226	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	3048	[1,2,4,8589934592,1,0]
+val_228	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	3458	[1,2,4,8589934592,1,0]
+val_229	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	3956	[1,2,4,8589934592,1,0]
+val_229	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	3202	[1,2,4,8589934592,1,0]
+val_230	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	1936	[1,2,4,8589934592,1,0]
+val_230	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	4914	[1,2,4,8589934592,1,0]
+val_230	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	1730	[1,2,4,8589934592,1,0]
+val_230	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	2260	[1,2,4,8589934592,1,0]
+val_230	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	3580	[1,2,4,8589934592,1,0]
+val_233	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	5140	[1,2,4,8589934592,1,0]
+val_233	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	3214	[1,2,4,8589934592,1,0]
+val_235	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	4046	[1,2,4,8589934592,1,0]
+val_237	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	4722	[1,2,4,8589934592,1,0]
+val_237	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	574	[1,2,4,8589934592,1,0]
+val_238	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	2746	[1,2,4,8589934592,1,0]
+val_238	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	0	[1,2,4,8589934592,1,0]
+val_239	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	1496	[1,2,4,8589934592,1,0]
+val_239	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	3722	[1,2,4,8589934592,1,0]
+val_24	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	1972	[1,2,4,8589934592,1,0]
+val_24	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	4594	[1,2,4,8589934592,1,0]
+val_241	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	1662	[1,2,4,8589934592,1,0]
+val_242	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	3012	[1,2,4,8589934592,1,0]
+val_242	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	2940	[1,2,4,8589934592,1,0]
+val_244	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	3872	[1,2,4,8589934592,1,0]
+val_247	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	718	[1,2,4,8589934592,1,0]
+val_248	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	4758	[1,2,4,8589934592,1,0]
+val_249	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	5034	[1,2,4,8589934592,1,0]
+val_252	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	454	[1,2,4,8589934592,1,0]
+val_255	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	4616	[1,2,4,8589934592,1,0]
+val_255	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	68	[1,2,4,8589934592,1,0]
+val_256	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	3770	[1,2,4,8589934592,1,0]
+val_256	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	5272	[1,2,4,8589934592,1,0]
+val_257	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	4208	[1,2,4,8589934592,1,0]
+val_258	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	4292	[1,2,4,8589934592,1,0]
+val_26	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	5284	[1,2,4,8589934592,1,0]
+val_26	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	2226	[1,2,4,8589934592,1,0]
+val_260	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	1764	[1,2,4,8589934592,1,0]
+val_262	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	4326	[1,2,4,8589934592,1,0]
+val_263	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	3782	[1,2,4,8589934592,1,0]
+val_265	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	114	[1,2,4,8589934592,1,0]
+val_265	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	5046	[1,2,4,8589934592,1,0]
+val_266	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	814	[1,2,4,8589934592,1,0]
+val_27	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	34	[1,2,4,8589934592,1,0]
+val_272	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	1836	[1,2,4,8589934592,1,0]
+val_272	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	2976	[1,2,4,8589934592,1,0]
+val_273	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	2868	[1,2,4,8589934592,1,0]
+val_273	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	5524	[1,2,4,8589934592,1,0]
+val_273	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	162	[1,2,4,8589934592,1,0]
+val_274	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	3698	[1,2,4,8589934592,1,0]
+val_275	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	1638	[1,2,4,8589934592,1,0]
+val_277	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	4902	[1,2,4,8589934592,1,0]
+val_277	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	362	[1,2,4,8589934592,1,0]
+val_277	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	1260	[1,2,4,8589934592,1,0]
+val_277	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	2856	[1,2,4,8589934592,1,0]
+val_278	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	80	[1,2,4,8589934592,1,0]
+val_278	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	1544	[1,2,4,8589934592,1,0]
+val_28	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	5616	[1,2,4,8589934592,1,0]
+val_280	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	1226	[1,2,4,8589934592,1,0]
+val_280	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	3992	[1,2,4,8589934592,1,0]
+val_281	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	5548	[1,2,4,8589934592,1,0]
+val_281	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	350	[1,2,4,8589934592,1,0]
+val_282	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	2722	[1,2,4,8589934592,1,0]
+val_282	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	2468	[1,2,4,8589934592,1,0]
+val_283	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	4022	[1,2,4,8589934592,1,0]
+val_284	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	1708	[1,2,4,8589934592,1,0]
+val_285	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	5478	[1,2,4,8589934592,1,0]
+val_286	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	1404	[1,2,4,8589934592,1,0]
+val_287	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	490	[1,2,4,8589934592,1,0]
+val_288	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	2422	[1,2,4,8589934592,1,0]
+val_288	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	3840	[1,2,4,8589934592,1,0]
+val_289	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	1568	[1,2,4,8589934592,1,0]
+val_291	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	4582	[1,2,4,8589934592,1,0]
+val_292	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	466	[1,2,4,8589934592,1,0]
+val_296	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	3626	[1,2,4,8589934592,1,0]
+val_298	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	2168	[1,2,4,8589934592,1,0]
+val_298	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	4456	[1,2,4,8589934592,1,0]
+val_298	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	5386	[1,2,4,8589934592,1,0]
+val_30	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	3494	[1,2,4,8589934592,1,0]
+val_302	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	1034	[1,2,4,8589934592,1,0]
+val_305	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	4782	[1,2,4,8589934592,1,0]
+val_306	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	2880	[1,2,4,8589934592,1,0]
+val_307	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	5672	[1,2,4,8589934592,1,0]
+val_307	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	2812	[1,2,4,8589934592,1,0]
+val_308	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	2388	[1,2,4,8589934592,1,0]
+val_309	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	2904	[1,2,4,8589934592,1,0]
+val_309	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	790	[1,2,4,8589934592,1,0]
+val_310	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	4962	[1,2,4,8589934592,1,0]
+val_311	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	1626	[1,2,4,8589934592,1,0]
+val_311	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	22	[1,2,4,8589934592,1,0]
+val_311	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	1000	[1,2,4,8589934592,1,0]
+val_315	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	5594	[1,2,4,8589934592,1,0]
+val_316	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	3944	[1,2,4,8589934592,1,0]
+val_316	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	1012	[1,2,4,8589934592,1,0]
+val_316	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	2576	[1,2,4,8589934592,1,0]
+val_317	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	3104	[1,2,4,8589934592,1,0]
+val_317	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	4974	[1,2,4,8589934592,1,0]
+val_318	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	2504	[1,2,4,8589934592,1,0]
+val_318	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	2516	[1,2,4,8589934592,1,0]
+val_318	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	1602	[1,2,4,8589934592,1,0]
+val_321	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	3308	[1,2,4,8589934592,1,0]
+val_321	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	4090	[1,2,4,8589934592,1,0]
+val_322	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	3250	[1,2,4,8589934592,1,0]
+val_322	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	2096	[1,2,4,8589934592,1,0]
+val_323	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	4878	[1,2,4,8589934592,1,0]
+val_325	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	862	[1,2,4,8589934592,1,0]
+val_325	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	4890	[1,2,4,8589934592,1,0]
+val_327	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	2928	[1,2,4,8589934592,1,0]
+val_327	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	338	[1,2,4,8589934592,1,0]
+val_327	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	2248	[1,2,4,8589934592,1,0]
+val_33	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	3592	[1,2,4,8589934592,1,0]
+val_331	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	4034	[1,2,4,8589934592,1,0]
+val_331	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	2988	[1,2,4,8589934592,1,0]
+val_332	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	1614	[1,2,4,8589934592,1,0]
+val_333	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	4986	[1,2,4,8589934592,1,0]
+val_333	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	1684	[1,2,4,8589934592,1,0]
+val_335	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	4102	[1,2,4,8589934592,1,0]
+val_336	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	3148	[1,2,4,8589934592,1,0]
+val_338	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	526	[1,2,4,8589934592,1,0]
+val_339	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	956	[1,2,4,8589934592,1,0]
+val_34	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	3192	[1,2,4,8589934592,1,0]
+val_341	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	5406	[1,2,4,8589934592,1,0]
+val_342	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	838	[1,2,4,8589934592,1,0]
+val_342	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	3558	[1,2,4,8589934592,1,0]
+val_344	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	5560	[1,2,4,8589934592,1,0]
+val_344	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	3674	[1,2,4,8589934592,1,0]
+val_345	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	1082	[1,2,4,8589934592,1,0]
+val_348	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	4338	[1,2,4,8589934592,1,0]
+val_348	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	1882	[1,2,4,8589934592,1,0]
+val_348	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	1960	[1,2,4,8589934592,1,0]
+val_348	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	5660	[1,2,4,8589934592,1,0]
+val_348	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	5490	[1,2,4,8589934592,1,0]
+val_35	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	1238	[1,2,4,8589934592,1,0]
+val_35	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	3138	[1,2,4,8589934592,1,0]
+val_35	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	4012	[1,2,4,8589934592,1,0]
+val_351	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	4604	[1,2,4,8589934592,1,0]
+val_353	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	1812	[1,2,4,8589934592,1,0]
+val_353	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	5092	[1,2,4,8589934592,1,0]
+val_356	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	1284	[1,2,4,8589934592,1,0]
+val_360	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	4746	[1,2,4,8589934592,1,0]
+val_362	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	5454	[1,2,4,8589934592,1,0]
+val_364	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	2662	[1,2,4,8589934592,1,0]
+val_365	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	802	[1,2,4,8589934592,1,0]
+val_366	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	4138	[1,2,4,8589934592,1,0]
+val_367	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	850	[1,2,4,8589934592,1,0]
+val_367	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	3662	[1,2,4,8589934592,1,0]
+val_368	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	3602	[1,2,4,8589934592,1,0]
+val_369	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	2564	[1,2,4,8589934592,1,0]
+val_369	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	2952	[1,2,4,8589934592,1,0]
+val_369	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	186	[1,2,4,8589934592,1,0]
+val_37	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	5626	[1,2,4,8589934592,1,0]
+val_37	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	328	[1,2,4,8589934592,1,0]
+val_373	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	1824	[1,2,4,8589934592,1,0]
+val_374	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	268	[1,2,4,8589934592,1,0]
+val_375	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	5212	[1,2,4,8589934592,1,0]
+val_377	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	766	[1,2,4,8589934592,1,0]
+val_378	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	1152	[1,2,4,8589934592,1,0]
+val_379	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	5328	[1,2,4,8589934592,1,0]
+val_382	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	4528	[1,2,4,8589934592,1,0]
+val_382	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	1320	[1,2,4,8589934592,1,0]
+val_384	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	5260	[1,2,4,8589934592,1,0]
+val_384	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	5316	[1,2,4,8589934592,1,0]
+val_384	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	1788	[1,2,4,8589934592,1,0]
+val_386	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	1356	[1,2,4,8589934592,1,0]
+val_389	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	2916	[1,2,4,8589934592,1,0]
+val_392	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	2964	[1,2,4,8589934592,1,0]
+val_393	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	2132	[1,2,4,8589934592,1,0]
+val_394	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	562	[1,2,4,8589934592,1,0]
+val_395	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	3116	[1,2,4,8589934592,1,0]
+val_395	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	2710	[1,2,4,8589934592,1,0]
+val_396	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	706	[1,2,4,8589934592,1,0]
+val_396	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	3092	[1,2,4,8589934592,1,0]
+val_396	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	4372	[1,2,4,8589934592,1,0]
+val_397	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	4558	[1,2,4,8589934592,1,0]
+val_397	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	778	[1,2,4,8589934592,1,0]
+val_399	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	694	[1,2,4,8589934592,1,0]
+val_399	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	1296	[1,2,4,8589934592,1,0]
+val_4	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	1218	[1,2,4,8589934592,1,0]
+val_400	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	5778	[1,2,4,8589934592,1,0]
+val_401	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	3828	[1,2,4,8589934592,1,0]
+val_401	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	4268	[1,2,4,8589934592,1,0]
+val_401	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	5224	[1,2,4,8589934592,1,0]
+val_401	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	138	[1,2,4,8589934592,1,0]
+val_401	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	3000	[1,2,4,8589934592,1,0]
+val_402	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	3080	[1,2,4,8589934592,1,0]
+val_403	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	5766	[1,2,4,8589934592,1,0]
+val_403	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	4162	[1,2,4,8589934592,1,0]
+val_403	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	406	[1,2,4,8589934592,1,0]
+val_404	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	2318	[1,2,4,8589934592,1,0]
+val_404	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	1776	[1,2,4,8589934592,1,0]
+val_406	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	244	[1,2,4,8589934592,1,0]
+val_406	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	5152	[1,2,4,8589934592,1,0]
+val_406	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	4220	[1,2,4,8589934592,1,0]
+val_406	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	4256	[1,2,4,8589934592,1,0]
+val_407	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	5248	[1,2,4,8589934592,1,0]
+val_409	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	4232	[1,2,4,8589934592,1,0]
+val_409	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	56	[1,2,4,8589934592,1,0]
+val_409	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	2528	[1,2,4,8589934592,1,0]
+val_41	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	3388	[1,2,4,8589934592,1,0]
+val_411	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	1924	[1,2,4,8589934592,1,0]
+val_413	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	610	[1,2,4,8589934592,1,0]
+val_413	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	2600	[1,2,4,8589934592,1,0]
+val_414	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	4686	[1,2,4,8589934592,1,0]
+val_414	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	5696	[1,2,4,8589934592,1,0]
+val_417	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	730	[1,2,4,8589934592,1,0]
+val_417	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	4794	[1,2,4,8589934592,1,0]
+val_417	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	430	[1,2,4,8589934592,1,0]
+val_418	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	2204	[1,2,4,8589934592,1,0]
+val_419	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	2758	[1,2,4,8589934592,1,0]
+val_42	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	3298	[1,2,4,8589934592,1,0]
+val_42	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	2030	[1,2,4,8589934592,1,0]
+val_421	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	5236	[1,2,4,8589934592,1,0]
+val_424	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	4504	[1,2,4,8589934592,1,0]
+val_424	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	4350	[1,2,4,8589934592,1,0]
+val_427	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	1248	[1,2,4,8589934592,1,0]
+val_429	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	256	[1,2,4,8589934592,1,0]
+val_429	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	4842	[1,2,4,8589934592,1,0]
+val_43	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	2330	[1,2,4,8589934592,1,0]
+val_430	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	442	[1,2,4,8589934592,1,0]
+val_430	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	3320	[1,2,4,8589934592,1,0]
+val_430	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	1532	[1,2,4,8589934592,1,0]
+val_431	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	1994	[1,2,4,8589934592,1,0]
+val_431	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	4420	[1,2,4,8589934592,1,0]
+val_431	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	4480	[1,2,4,8589934592,1,0]
+val_432	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	3920	[1,2,4,8589934592,1,0]
+val_435	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	2834	[1,2,4,8589934592,1,0]
+val_436	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	2340	[1,2,4,8589934592,1,0]
+val_437	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	1368	[1,2,4,8589934592,1,0]
+val_438	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	4662	[1,2,4,8589934592,1,0]
+val_438	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	1070	[1,2,4,8589934592,1,0]
+val_438	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	3884	[1,2,4,8589934592,1,0]
+val_439	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	4734	[1,2,4,8589934592,1,0]
+val_439	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	826	[1,2,4,8589934592,1,0]
+val_44	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	4068	[1,2,4,8589934592,1,0]
+val_443	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	4866	[1,2,4,8589934592,1,0]
+val_444	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	4818	[1,2,4,8589934592,1,0]
+val_446	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	538	[1,2,4,8589934592,1,0]
+val_448	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	5636	[1,2,4,8589934592,1,0]
+val_449	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	3434	[1,2,4,8589934592,1,0]
+val_452	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	3024	[1,2,4,8589934592,1,0]
+val_453	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	3482	[1,2,4,8589934592,1,0]
+val_454	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	4432	[1,2,4,8589934592,1,0]
+val_454	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	2144	[1,2,4,8589934592,1,0]
+val_454	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	5200	[1,2,4,8589934592,1,0]
+val_455	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	976	[1,2,4,8589934592,1,0]
+val_457	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	2446	[1,2,4,8589934592,1,0]
+val_458	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	3356	[1,2,4,8589934592,1,0]
+val_458	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	5442	[1,2,4,8589934592,1,0]
+val_459	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	550	[1,2,4,8589934592,1,0]
+val_459	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	1450	[1,2,4,8589934592,1,0]
+val_460	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	5010	[1,2,4,8589934592,1,0]
+val_462	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	5128	[1,2,4,8589934592,1,0]
+val_462	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	5350	[1,2,4,8589934592,1,0]
+val_463	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	1982	[1,2,4,8589934592,1,0]
+val_463	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	3980	[1,2,4,8589934592,1,0]
+val_466	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	4126	[1,2,4,8589934592,1,0]
+val_466	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	658	[1,2,4,8589934592,1,0]
+val_466	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	1894	[1,2,4,8589934592,1,0]
+val_467	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	3908	[1,2,4,8589934592,1,0]
+val_468	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	4950	[1,2,4,8589934592,1,0]
+val_468	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	2120	[1,2,4,8589934592,1,0]
+val_468	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	2376	[1,2,4,8589934592,1,0]
+val_468	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	3526	[1,2,4,8589934592,1,0]
+val_469	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	292	[1,2,4,8589934592,1,0]
+val_469	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	1380	[1,2,4,8589934592,1,0]
+val_469	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	3968	[1,2,4,8589934592,1,0]
+val_469	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	5582	[1,2,4,8589934592,1,0]
+val_469	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	2364	[1,2,4,8589934592,1,0]
+val_47	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	1198	[1,2,4,8589934592,1,0]
+val_470	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	2540	[1,2,4,8589934592,1,0]
+val_472	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	3238	[1,2,4,8589934592,1,0]
+val_475	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	898	[1,2,4,8589934592,1,0]
+val_477	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	5708	[1,2,4,8589934592,1,0]
+val_478	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	4444	[1,2,4,8589934592,1,0]
+val_478	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	4926	[1,2,4,8589934592,1,0]
+val_479	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	4770	[1,2,4,8589934592,1,0]
+val_480	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	3816	[1,2,4,8589934592,1,0]
+val_480	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	5058	[1,2,4,8589934592,1,0]
+val_480	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	4570	[1,2,4,8589934592,1,0]
+val_481	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	2434	[1,2,4,8589934592,1,0]
+val_482	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	586	[1,2,4,8589934592,1,0]
+val_483	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	4174	[1,2,4,8589934592,1,0]
+val_484	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	102	[1,2,4,8589934592,1,0]
+val_485	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	3734	[1,2,4,8589934592,1,0]
+val_487	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	3804	[1,2,4,8589934592,1,0]
+val_489	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	1128	[1,2,4,8589934592,1,0]
+val_489	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	742	[1,2,4,8589934592,1,0]
+val_489	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	1800	[1,2,4,8589934592,1,0]
+val_489	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	3344	[1,2,4,8589934592,1,0]
+val_490	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	2640	[1,2,4,8589934592,1,0]
+val_491	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	4710	[1,2,4,8589934592,1,0]
+val_492	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	3410	[1,2,4,8589934592,1,0]
+val_492	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	5362	[1,2,4,8589934592,1,0]
+val_493	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	4998	[1,2,4,8589934592,1,0]
+val_494	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	622	[1,2,4,8589934592,1,0]
+val_495	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	316	[1,2,4,8589934592,1,0]
+val_496	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	2076	[1,2,4,8589934592,1,0]
+val_497	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	3068	[1,2,4,8589934592,1,0]
+val_498	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	3262	[1,2,4,8589934592,1,0]
+val_498	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	1332	[1,2,4,8589934592,1,0]
+val_498	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	5418	[1,2,4,8589934592,1,0]
+val_5	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	3864	[1,2,4,8589934592,1,0]
+val_5	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	3060	[1,2,4,8589934592,1,0]
+val_5	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	4540	[1,2,4,8589934592,1,0]
+val_51	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	1462	[1,2,4,8589934592,1,0]
+val_51	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	2308	[1,2,4,8589934592,1,0]
+val_53	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	4186	[1,2,4,8589934592,1,0]
+val_54	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	1440	[1,2,4,8589934592,1,0]
+val_57	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	1024	[1,2,4,8589934592,1,0]
+val_58	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	1906	[1,2,4,8589934592,1,0]
+val_58	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	3128	[1,2,4,8589934592,1,0]
+val_64	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	3516	[1,2,4,8589934592,1,0]
+val_65	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	1592	[1,2,4,8589934592,1,0]
+val_66	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	198	[1,2,4,8589934592,1,0]
+val_67	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	5306	[1,2,4,8589934592,1,0]
+val_67	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	1754	[1,2,4,8589934592,1,0]
+val_69	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	3570	[1,2,4,8589934592,1,0]
+val_70	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	3794	[1,2,4,8589934592,1,0]
+val_70	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	4640	[1,2,4,8589934592,1,0]
+val_70	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	4548	[1,2,4,8589934592,1,0]
+val_72	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	1208	[1,2,4,8589934592,1,0]
+val_72	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	2792	[1,2,4,8589934592,1,0]
+val_74	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	3548	[1,2,4,8589934592,1,0]
+val_76	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	3538	[1,2,4,8589934592,1,0]
+val_76	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	3378	[1,2,4,8589934592,1,0]
+val_77	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	2622	[1,2,4,8589934592,1,0]
+val_78	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	3368	[1,2,4,8589934592,1,0]
+val_8	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	1916	[1,2,4,8589934592,1,0]
+val_80	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	4058	[1,2,4,8589934592,1,0]
+val_82	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	396	[1,2,4,8589934592,1,0]
+val_83	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	5070	[1,2,4,8589934592,1,0]
+val_83	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	1674	[1,2,4,8589934592,1,0]
+val_84	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	5606	[1,2,4,8589934592,1,0]
+val_84	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	1872	[1,2,4,8589934592,1,0]
+val_85	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	2612	[1,2,4,8589934592,1,0]
+val_86	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	12	[1,2,4,8589934592,1,0]
+val_87	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	2652	[1,2,4,8589934592,1,0]
+val_9	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	5398	[1,2,4,8589934592,1,0]
+val_90	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	2802	[1,2,4,8589934592,1,0]
+val_90	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	5744	[1,2,4,8589934592,1,0]
+val_90	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	4304	[1,2,4,8589934592,1,0]
+val_92	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	1176	[1,2,4,8589934592,1,0]
+val_95	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	3160	[1,2,4,8589934592,1,0]
+val_95	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	2400	[1,2,4,8589934592,1,0]
+val_96	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	2216	[1,2,4,8589934592,1,0]
+val_97	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	5572	[1,2,4,8589934592,1,0]
+val_97	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	5802	[1,2,4,8589934592,1,0]
+val_98	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	92	[1,2,4,8589934592,1,0]
+val_98	pfile:/data/users/salbiz/apache-hive/build/ql/test/data/warehouse/src/kv1.txt	2458	[1,2,4,8589934592,1,0]
+PREHOOK: query: EXPLAIN
+SELECT a.bucketname AS `_bucketname`, COLLECT_SET(a.offset) as `_offsets`
+FROM (SELECT `_bucketname` AS bucketname, `_offset` AS offset, `_bitmaps` AS bitmaps FROM default__src_src1_index__
+        WHERE key = 0) a
+  JOIN 
+     (SELECT `_bucketname` AS bucketname, `_offset` AS offset, `_bitmaps` AS bitmaps FROM default__src_src2_index__
+        WHERE value = "val_0") b
+  ON
+    a.bucketname = b.bucketname AND a.offset = b.offset WHERE NOT
+EWAH_BITMAP_EMPTY(EWAH_BITMAP_AND(a.bitmaps, b.bitmaps)) GROUP BY a.bucketname
+PREHOOK: type: QUERY
+POSTHOOK: query: EXPLAIN
+SELECT a.bucketname AS `_bucketname`, COLLECT_SET(a.offset) as `_offsets`
+FROM (SELECT `_bucketname` AS bucketname, `_offset` AS offset, `_bitmaps` AS bitmaps FROM default__src_src1_index__
+        WHERE key = 0) a
+  JOIN 
+     (SELECT `_bucketname` AS bucketname, `_offset` AS offset, `_bitmaps` AS bitmaps FROM default__src_src2_index__
+        WHERE value = "val_0") b
+  ON
+    a.bucketname = b.bucketname AND a.offset = b.offset WHERE NOT
+EWAH_BITMAP_EMPTY(EWAH_BITMAP_AND(a.bitmaps, b.bitmaps)) GROUP BY a.bucketname
+POSTHOOK: type: QUERY
+POSTHOOK: Lineage: default__src_src1_index__._bitmaps EXPRESSION [(src)src.FieldSchema(name:ROW__OFFSET__INSIDE__BLOCK, type:bigint, comment:), ]
+POSTHOOK: Lineage: default__src_src1_index__._bucketname SIMPLE [(src)src.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
+POSTHOOK: Lineage: default__src_src1_index__._offset SIMPLE [(src)src.FieldSchema(name:BLOCK__OFFSET__INSIDE__FILE, type:bigint, comment:), ]
+POSTHOOK: Lineage: default__src_src1_index__.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: default__src_src2_index__._bitmaps EXPRESSION [(src)src.FieldSchema(name:ROW__OFFSET__INSIDE__BLOCK, type:bigint, comment:), ]
+POSTHOOK: Lineage: default__src_src2_index__._bucketname SIMPLE [(src)src.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
+POSTHOOK: Lineage: default__src_src2_index__._offset SIMPLE [(src)src.FieldSchema(name:BLOCK__OFFSET__INSIDE__FILE, type:bigint, comment:), ]
+POSTHOOK: Lineage: default__src_src2_index__.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+ABSTRACT SYNTAX TREE:
+  (TOK_QUERY (TOK_FROM (TOK_JOIN (TOK_SUBQUERY (TOK_QUERY (TOK_FROM (TOK_TABREF (TOK_TABNAME default__src_src1_index__))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_TABLE_OR_COL `_bucketname`) bucketname) (TOK_SELEXPR (TOK_TABLE_OR_COL `_offset`) offset) (TOK_SELEXPR (TOK_TABLE_OR_COL `_bitmaps`) bitmaps)) (TOK_WHERE (= (TOK_TABLE_OR_COL key) 0)))) a) (TOK_SUBQUERY (TOK_QUERY (TOK_FROM (TOK_TABREF (TOK_TABNAME default__src_src2_index__))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_TABLE_OR_COL `_bucketname`) bucketname) (TOK_SELEXPR (TOK_TABLE_OR_COL `_offset`) offset) (TOK_SELEXPR (TOK_TABLE_OR_COL `_bitmaps`) bitmaps)) (TOK_WHERE (= (TOK_TABLE_OR_COL value) "val_0")))) b) (AND (= (. (TOK_TABLE_OR_COL a) bucketname) (. (TOK_TABLE_OR_COL b) bucketname)) (= (. (TOK_TABLE_OR_COL a) offset) (. (TOK_TABLE_OR_COL b) offset))))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (. (TOK_TABLE_OR_COL a) bucketname) `_bucketname`) (TOK_SELEXPR (TOK_FUNCTION COLLECT_SET (. (TOK_TABLE_OR_COL a) offset)) `_offsets`)) (TOK_WHERE (NOT (TOK_FUNCTION EWAH_BITMAP_EMPTY (TOK_FUNCTION EWAH_BITMAP_AND (. (TOK_TABLE_OR_COL a) bitmaps) (. (TOK_TABLE_OR_COL b) bitmaps))))) (TOK_GROUPBY (. (TOK_TABLE_OR_COL a) bucketname))))
+
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-2 depends on stages: Stage-1
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-1
+    Map Reduce
+      Alias -> Map Operator Tree:
+        a:default__src_src1_index__ 
+          TableScan
+            alias: default__src_src1_index__
+            Filter Operator
+              predicate:
+                  expr: (key = 0)
+                  type: boolean
+              Select Operator
+                expressions:
+                      expr: _bucketname
+                      type: string
+                      expr: _offset
+                      type: bigint
+                      expr: _bitmaps
+                      type: array<bigint>
+                outputColumnNames: _col0, _col1, _col2
+                Reduce Output Operator
+                  key expressions:
+                        expr: _col0
+                        type: string
+                        expr: _col1
+                        type: bigint
+                  sort order: ++
+                  Map-reduce partition columns:
+                        expr: _col0
+                        type: string
+                        expr: _col1
+                        type: bigint
+                  tag: 0
+                  value expressions:
+                        expr: _col0
+                        type: string
+                        expr: _col1
+                        type: bigint
+                        expr: _col2
+                        type: array<bigint>
+        b:default__src_src2_index__ 
+          TableScan
+            alias: default__src_src2_index__
+            Filter Operator
+              predicate:
+                  expr: (value = 'val_0')
+                  type: boolean
+              Select Operator
+                expressions:
+                      expr: _bucketname
+                      type: string
+                      expr: _offset
+                      type: bigint
+                      expr: _bitmaps
+                      type: array<bigint>
+                outputColumnNames: _col0, _col1, _col2
+                Reduce Output Operator
+                  key expressions:
+                        expr: _col0
+                        type: string
+                        expr: _col1
+                        type: bigint
+                  sort order: ++
+                  Map-reduce partition columns:
+                        expr: _col0
+                        type: string
+                        expr: _col1
+                        type: bigint
+                  tag: 1
+                  value expressions:
+                        expr: _col2
+                        type: array<bigint>
+      Reduce Operator Tree:
+        Join Operator
+          condition map:
+               Inner Join 0 to 1
+          condition expressions:
+            0 {VALUE._col0} {VALUE._col1} {VALUE._col2}
+            1 {VALUE._col2}
+          handleSkewJoin: false
+          outputColumnNames: _col0, _col1, _col2, _col5
+          Filter Operator
+            predicate:
+                expr: (not EWAH_BITMAP_EMPTY(EWAH_BITMAP_AND(_col2,_col5)))
+                type: boolean
+            Select Operator
+              expressions:
+                    expr: _col0
+                    type: string
+                    expr: _col1
+                    type: bigint
+              outputColumnNames: _col0, _col1
+              Group By Operator
+                aggregations:
+                      expr: collect_set(_col1)
+                bucketGroup: false
+                keys:
+                      expr: _col0
+                      type: string
+                mode: hash
+                outputColumnNames: _col0, _col1
+                File Output Operator
+                  compressed: false
+                  GlobalTableId: 0
+                  table:
+                      input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+
+  Stage: Stage-2
+    Map Reduce
+      Alias -> Map Operator Tree:
+        file:/tmp/salbiz/hive_2011-08-01_13-40-56_392_5481668198203344057/-mr-10002 
+            Reduce Output Operator
+              key expressions:
+                    expr: _col0
+                    type: string
+              sort order: +
+              Map-reduce partition columns:
+                    expr: _col0
+                    type: string
+              tag: -1
+              value expressions:
+                    expr: _col1
+                    type: array<bigint>
+      Reduce Operator Tree:
+        Group By Operator
+          aggregations:
+                expr: collect_set(VALUE._col0)
+          bucketGroup: false
+          keys:
+                expr: KEY._col0
+                type: string
+          mode: mergepartial
+          outputColumnNames: _col0, _col1
+          Select Operator
+            expressions:
+                  expr: _col0
+                  type: string
+                  expr: _col1
+                  type: array<bigint>
+            outputColumnNames: _col0, _col1
+            File Output Operator
+              compressed: false
+              GlobalTableId: 0
+              table:
+                  input format: org.apache.hadoop.mapred.TextInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+
+
+PREHOOK: query: INSERT OVERWRITE DIRECTORY "/tmp/index_result" 
+SELECT a.bucketname AS `_bucketname`, COLLECT_SET(a.offset) as `_offsets`
+FROM (SELECT `_bucketname` AS bucketname, `_offset` AS offset, `_bitmaps` AS bitmaps FROM default__src_src1_index__
+        WHERE key = 0) a
+  JOIN 
+     (SELECT `_bucketname` AS bucketname, `_offset` AS offset, `_bitmaps` AS bitmaps FROM default__src_src2_index__
+        WHERE value = "val_0") b
+  ON
+    a.bucketname = b.bucketname AND a.offset = b.offset WHERE NOT
+EWAH_BITMAP_EMPTY(EWAH_BITMAP_AND(a.bitmaps, b.bitmaps)) GROUP BY a.bucketname
+PREHOOK: type: QUERY
+PREHOOK: Input: default@default__src_src1_index__
+PREHOOK: Input: default@default__src_src2_index__
+PREHOOK: Output: /tmp/index_result
+POSTHOOK: query: INSERT OVERWRITE DIRECTORY "/tmp/index_result" 
+SELECT a.bucketname AS `_bucketname`, COLLECT_SET(a.offset) as `_offsets`
+FROM (SELECT `_bucketname` AS bucketname, `_offset` AS offset, `_bitmaps` AS bitmaps FROM default__src_src1_index__
+        WHERE key = 0) a
+  JOIN 
+     (SELECT `_bucketname` AS bucketname, `_offset` AS offset, `_bitmaps` AS bitmaps FROM default__src_src2_index__
+        WHERE value = "val_0") b
+  ON
+    a.bucketname = b.bucketname AND a.offset = b.offset WHERE NOT
+EWAH_BITMAP_EMPTY(EWAH_BITMAP_AND(a.bitmaps, b.bitmaps)) GROUP BY a.bucketname
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@default__src_src1_index__
+POSTHOOK: Input: default@default__src_src2_index__
+POSTHOOK: Output: /tmp/index_result
+POSTHOOK: Lineage: default__src_src1_index__._bitmaps EXPRESSION [(src)src.FieldSchema(name:ROW__OFFSET__INSIDE__BLOCK, type:bigint, comment:), ]
+POSTHOOK: Lineage: default__src_src1_index__._bucketname SIMPLE [(src)src.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
+POSTHOOK: Lineage: default__src_src1_index__._offset SIMPLE [(src)src.FieldSchema(name:BLOCK__OFFSET__INSIDE__FILE, type:bigint, comment:), ]
+POSTHOOK: Lineage: default__src_src1_index__.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: default__src_src2_index__._bitmaps EXPRESSION [(src)src.FieldSchema(name:ROW__OFFSET__INSIDE__BLOCK, type:bigint, comment:), ]
+POSTHOOK: Lineage: default__src_src2_index__._bucketname SIMPLE [(src)src.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
+POSTHOOK: Lineage: default__src_src2_index__._offset SIMPLE [(src)src.FieldSchema(name:BLOCK__OFFSET__INSIDE__FILE, type:bigint, comment:), ]
+POSTHOOK: Lineage: default__src_src2_index__.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: SELECT key, value FROM src WHERE key=0 AND value = "val_0" ORDER BY key
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: file:/tmp/salbiz/hive_2011-08-01_13-41-02_730_686880037476479179/-mr-10000
+POSTHOOK: query: SELECT key, value FROM src WHERE key=0 AND value = "val_0" ORDER BY key
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: file:/tmp/salbiz/hive_2011-08-01_13-41-02_730_686880037476479179/-mr-10000
+POSTHOOK: Lineage: default__src_src1_index__._bitmaps EXPRESSION [(src)src.FieldSchema(name:ROW__OFFSET__INSIDE__BLOCK, type:bigint, comment:), ]
+POSTHOOK: Lineage: default__src_src1_index__._bucketname SIMPLE [(src)src.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
+POSTHOOK: Lineage: default__src_src1_index__._offset SIMPLE [(src)src.FieldSchema(name:BLOCK__OFFSET__INSIDE__FILE, type:bigint, comment:), ]
+POSTHOOK: Lineage: default__src_src1_index__.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: default__src_src2_index__._bitmaps EXPRESSION [(src)src.FieldSchema(name:ROW__OFFSET__INSIDE__BLOCK, type:bigint, comment:), ]
+POSTHOOK: Lineage: default__src_src2_index__._bucketname SIMPLE [(src)src.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
+POSTHOOK: Lineage: default__src_src2_index__._offset SIMPLE [(src)src.FieldSchema(name:BLOCK__OFFSET__INSIDE__FILE, type:bigint, comment:), ]
+POSTHOOK: Lineage: default__src_src2_index__.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+0	val_0
+0	val_0
+0	val_0
+PREHOOK: query: SELECT key, value FROM src WHERE key=0 AND value = "val_0" ORDER BY key
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: file:/tmp/salbiz/hive_2011-08-01_13-41-05_593_8287537410237795945/-mr-10000
+POSTHOOK: query: SELECT key, value FROM src WHERE key=0 AND value = "val_0" ORDER BY key
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: file:/tmp/salbiz/hive_2011-08-01_13-41-05_593_8287537410237795945/-mr-10000
+POSTHOOK: Lineage: default__src_src1_index__._bitmaps EXPRESSION [(src)src.FieldSchema(name:ROW__OFFSET__INSIDE__BLOCK, type:bigint, comment:), ]
+POSTHOOK: Lineage: default__src_src1_index__._bucketname SIMPLE [(src)src.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
+POSTHOOK: Lineage: default__src_src1_index__._offset SIMPLE [(src)src.FieldSchema(name:BLOCK__OFFSET__INSIDE__FILE, type:bigint, comment:), ]
+POSTHOOK: Lineage: default__src_src1_index__.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: default__src_src2_index__._bitmaps EXPRESSION [(src)src.FieldSchema(name:ROW__OFFSET__INSIDE__BLOCK, type:bigint, comment:), ]
+POSTHOOK: Lineage: default__src_src2_index__._bucketname SIMPLE [(src)src.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
+POSTHOOK: Lineage: default__src_src2_index__._offset SIMPLE [(src)src.FieldSchema(name:BLOCK__OFFSET__INSIDE__FILE, type:bigint, comment:), ]
+POSTHOOK: Lineage: default__src_src2_index__.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+0	val_0
+0	val_0
+0	val_0
+PREHOOK: query: DROP INDEX src1_index ON src
+PREHOOK: type: DROPINDEX
+POSTHOOK: query: DROP INDEX src1_index ON src
+POSTHOOK: type: DROPINDEX
+POSTHOOK: Lineage: default__src_src1_index__._bitmaps EXPRESSION [(src)src.FieldSchema(name:ROW__OFFSET__INSIDE__BLOCK, type:bigint, comment:), ]
+POSTHOOK: Lineage: default__src_src1_index__._bucketname SIMPLE [(src)src.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
+POSTHOOK: Lineage: default__src_src1_index__._offset SIMPLE [(src)src.FieldSchema(name:BLOCK__OFFSET__INSIDE__FILE, type:bigint, comment:), ]
+POSTHOOK: Lineage: default__src_src1_index__.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: default__src_src2_index__._bitmaps EXPRESSION [(src)src.FieldSchema(name:ROW__OFFSET__INSIDE__BLOCK, type:bigint, comment:), ]
+POSTHOOK: Lineage: default__src_src2_index__._bucketname SIMPLE [(src)src.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
+POSTHOOK: Lineage: default__src_src2_index__._offset SIMPLE [(src)src.FieldSchema(name:BLOCK__OFFSET__INSIDE__FILE, type:bigint, comment:), ]
+POSTHOOK: Lineage: default__src_src2_index__.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: DROP INDEX src2_index ON src
+PREHOOK: type: DROPINDEX
+POSTHOOK: query: DROP INDEX src2_index ON src
+POSTHOOK: type: DROPINDEX
+POSTHOOK: Lineage: default__src_src1_index__._bitmaps EXPRESSION [(src)src.FieldSchema(name:ROW__OFFSET__INSIDE__BLOCK, type:bigint, comment:), ]
+POSTHOOK: Lineage: default__src_src1_index__._bucketname SIMPLE [(src)src.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
+POSTHOOK: Lineage: default__src_src1_index__._offset SIMPLE [(src)src.FieldSchema(name:BLOCK__OFFSET__INSIDE__FILE, type:bigint, comment:), ]
+POSTHOOK: Lineage: default__src_src1_index__.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: default__src_src2_index__._bitmaps EXPRESSION [(src)src.FieldSchema(name:ROW__OFFSET__INSIDE__BLOCK, type:bigint, comment:), ]
+POSTHOOK: Lineage: default__src_src2_index__._bucketname SIMPLE [(src)src.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
+POSTHOOK: Lineage: default__src_src2_index__._offset SIMPLE [(src)src.FieldSchema(name:BLOCK__OFFSET__INSIDE__FILE, type:bigint, comment:), ]
+POSTHOOK: Lineage: default__src_src2_index__.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]

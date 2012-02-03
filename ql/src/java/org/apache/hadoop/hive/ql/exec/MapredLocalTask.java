@@ -26,6 +26,7 @@ import java.lang.management.MemoryMXBean;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
@@ -63,12 +64,14 @@ import org.apache.hadoop.util.ReflectionUtils;
 public class MapredLocalTask extends Task<MapredLocalWork> implements Serializable {
 
   private Map<String, FetchOperator> fetchOperators;
+  protected HadoopJobExecHelper jobExecHelper;
   private JobConf job;
-  public static final Log l4j = LogFactory.getLog("MapredLocalTask");
+  public static transient final Log l4j = LogFactory.getLog(MapredLocalTask.class);
   static final String HADOOP_MEM_KEY = "HADOOP_HEAPSIZE";
   static final String HADOOP_OPTS_KEY = "HADOOP_OPTS";
   static final String[] HIVE_SYS_PROP = {"build.dir", "build.dir.hive"};
   public static MemoryMXBean memoryMXBean;
+  private static final Log LOG = LogFactory.getLog(MapredLocalTask.class);
 
   // not sure we need this exec context; but all the operators in the work
   // will pass this context throught
@@ -81,7 +84,6 @@ public class MapredLocalTask extends Task<MapredLocalWork> implements Serializab
   public MapredLocalTask(MapredLocalWork plan, JobConf job, boolean isSilent) throws HiveException {
     setWork(plan);
     this.job = job;
-    LOG = LogFactory.getLog(this.getClass().getName());
     console = new LogHelper(LOG, isSilent);
   }
 
@@ -89,6 +91,8 @@ public class MapredLocalTask extends Task<MapredLocalWork> implements Serializab
   public void initialize(HiveConf conf, QueryPlan queryPlan, DriverContext driverContext) {
     super.initialize(conf, queryPlan, driverContext);
     job = new JobConf(conf, ExecDriver.class);
+    //we don't use the HadoopJobExecHooks for local tasks
+    this.jobExecHelper = new HadoopJobExecHelper(job, console, this, null);
   }
 
   public static String now() {
@@ -97,7 +101,10 @@ public class MapredLocalTask extends Task<MapredLocalWork> implements Serializab
     return sdf.format(cal.getTime());
   }
 
-
+  @Override
+  public boolean requireLock() {
+    return true;
+  }
 
   @Override
   public int execute(DriverContext driverContext) {
@@ -193,6 +200,11 @@ public class MapredLocalTask extends Task<MapredLocalWork> implements Serializab
       } else {
         variables.put(HADOOP_OPTS_KEY, hadoopOpts);
       }
+
+      if(variables.containsKey(MapRedTask.HIVE_DEBUG_RECURSIVE)) {
+        MapRedTask.configureDebugVariablesForChildJVM(variables);
+      }
+
       env = new String[variables.size()];
       int pos = 0;
       for (Map.Entry<String, String> entry : variables.entrySet()) {
@@ -210,7 +222,7 @@ public class MapredLocalTask extends Task<MapredLocalWork> implements Serializab
       outPrinter.start();
       errPrinter.start();
 
-      int exitVal = executor.waitFor();
+      int exitVal = jobExecHelper.progressLocal(executor, getId());
 
       if (exitVal != 0) {
         LOG.error("Execution failed with exit status: " + exitVal);
@@ -396,7 +408,9 @@ public class MapredLocalTask extends Task<MapredLocalWork> implements Serializab
     if (bigBucketFileName == null || bigBucketFileName.length() == 0) {
       bigBucketFileName = "-";
     }
-    String tmpURIPath = Utilities.generatePath(tmpURI, tag, bigBucketFileName);
+    HashTableSinkOperator htso = (HashTableSinkOperator)childOp;
+    String tmpURIPath = Utilities.generatePath(tmpURI, htso.getConf().getDumpFilePrefix(),
+        tag, bigBucketFileName);
     console.printInfo(Utilities.now() + "\tDump the hashtable into file: " + tmpURIPath);
     Path path = new Path(tmpURIPath);
     FileSystem fs = path.getFileSystem(job);
@@ -443,6 +457,11 @@ public class MapredLocalTask extends Task<MapredLocalWork> implements Serializab
   @Override
   public boolean isMapRedLocalTask() {
     return true;
+  }
+
+  @Override
+  public Collection<Operator<? extends Serializable>> getTopOperators() {
+    return getWork().getAliasToWork().values();
   }
 
   @Override

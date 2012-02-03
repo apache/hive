@@ -174,9 +174,9 @@ public class HivePreparedStatement implements PreparedStatement {
       }
       client.execute(sql);
     } catch (HiveServerException e) {
-      throw new SQLException(e.getMessage(), e.getSQLState(), e.getErrorCode());
+      throw new SQLException(e.getMessage(), e.getSQLState(), e.getErrorCode(), e);
     } catch (Exception ex) {
-      throw new SQLException(ex.toString(), "08S01");
+      throw new SQLException(ex.toString(), "08S01", ex);
     }
     resultSet = new HiveQueryResultSet(client, maxRows);
     return resultSet;
@@ -518,7 +518,7 @@ public class HivePreparedStatement implements PreparedStatement {
    */
 
   public void setDouble(int parameterIndex, double x) throws SQLException {
-	  this.parameters.put(parameterIndex,""+x);
+    this.parameters.put(parameterIndex,""+x);
   }
 
   /*
@@ -528,7 +528,7 @@ public class HivePreparedStatement implements PreparedStatement {
    */
 
   public void setFloat(int parameterIndex, float x) throws SQLException {
-	  this.parameters.put(parameterIndex,""+x);
+    this.parameters.put(parameterIndex,""+x);
   }
 
   /*
@@ -538,7 +538,7 @@ public class HivePreparedStatement implements PreparedStatement {
    */
 
   public void setInt(int parameterIndex, int x) throws SQLException {
-	  this.parameters.put(parameterIndex,""+x);
+    this.parameters.put(parameterIndex,""+x);
   }
 
   /*
@@ -548,7 +548,7 @@ public class HivePreparedStatement implements PreparedStatement {
    */
 
   public void setLong(int parameterIndex, long x) throws SQLException {
-	  this.parameters.put(parameterIndex,""+x);
+    this.parameters.put(parameterIndex,""+x);
   }
 
   /*
@@ -716,7 +716,7 @@ public class HivePreparedStatement implements PreparedStatement {
    */
 
   public void setShort(int parameterIndex, short x) throws SQLException {
-	  this.parameters.put(parameterIndex,""+x);
+    this.parameters.put(parameterIndex,""+x);
   }
 
   /*
@@ -726,8 +726,8 @@ public class HivePreparedStatement implements PreparedStatement {
    */
 
   public void setString(int parameterIndex, String x) throws SQLException {
-	   x=x.replace("'", "\\'");
-	   this.parameters.put(parameterIndex,"'"+x+"'");
+     x=x.replace("'", "\\'");
+     this.parameters.put(parameterIndex,"'"+x+"'");
   }
 
   /*

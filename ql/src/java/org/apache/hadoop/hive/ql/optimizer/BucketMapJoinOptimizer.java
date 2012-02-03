@@ -27,9 +27,9 @@ import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 import java.util.Stack;
-import java.util.Map.Entry;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -143,6 +143,7 @@ public class BucketMapJoinOptimizer implements Transform {
     @Override
     public Object process(Node nd, Stack<Node> stack, NodeProcessorCtx procCtx,
         Object... nodeOutputs) throws SemanticException {
+
       MapJoinOperator mapJoinOp = (MapJoinOperator) nd;
       BucketMapjoinOptProcCtx context = (BucketMapjoinOptProcCtx) procCtx;
 
@@ -256,12 +257,12 @@ public class BucketMapJoinOptimizer implements Transform {
             Iterator<Partition> iter = prunedParts.getConfirmedPartns()
                 .iterator();
             if (iter.hasNext()) {
-              part = iter.next();              
+              part = iter.next();
             }
             if (part == null) {
               iter = prunedParts.getUnknownPartns().iterator();
               if (iter.hasNext()) {
-                part = iter.next();              
+                part = iter.next();
               }
             }
             assert part != null;
@@ -396,9 +397,10 @@ public class BucketMapJoinOptimizer implements Transform {
           }
         } else {
           int jump = smallTblBucketNum / bigTblBucketNum;
+          List<String> bucketNames = aliasToBucketFileNamesMapping.get(alias);
           for (int i = index; i < aliasToBucketFileNamesMapping.get(alias).size(); i = i + jump) {
             if(i <= aliasToBucketFileNamesMapping.get(alias).size()) {
-              resultFileNames.add(aliasToBucketFileNamesMapping.get(alias).get(i));
+              resultFileNames.add(bucketNames.get(i));
             }
           }
         }
@@ -466,16 +468,11 @@ public class BucketMapJoinOptimizer implements Transform {
         }
       }
 
-      // to see if the join columns from a table is exactly this same as its
-      // bucket columns
-      if (joinCols.size() == 0 || joinCols.size() != bucketColumns.size()) {
+      // Check if the join columns contains all bucket columns.
+      // If a table is bucketized on column B, but the join key is A and B,
+      // it is easy to see joining on different buckets yield empty results.
+      if (joinCols.size() == 0 || !joinCols.containsAll(bucketColumns)) {
         return false;
-      }
-
-      for (String col : joinCols) {
-        if (!bucketColumns.contains(col)) {
-          return false;
-        }
       }
 
       return true;

@@ -30,11 +30,17 @@ public class DropDatabaseDesc extends DDLDesc implements Serializable {
 
   String databaseName;
   boolean ifExists;
+  boolean cascade;
 
   public DropDatabaseDesc(String databaseName, boolean ifExists) {
+    this(databaseName, ifExists, false);
+  }
+
+  public DropDatabaseDesc(String databaseName, boolean ifExists, boolean cascade) {
     super();
     this.databaseName = databaseName;
     this.ifExists = ifExists;
+    this.cascade = cascade;
   }
 
   @Explain(displayName = "database")
@@ -53,5 +59,13 @@ public class DropDatabaseDesc extends DDLDesc implements Serializable {
 
   public void setIfExists(boolean ifExists) {
     this.ifExists = ifExists;
+  }
+
+  public boolean isCasdade() {
+    return cascade;
+  }
+
+  public void setIsCascade(boolean cascade) {
+    this.cascade = cascade;
   }
 }

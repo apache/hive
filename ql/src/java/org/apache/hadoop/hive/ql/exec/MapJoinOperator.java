@@ -57,13 +57,13 @@ public class MapJoinOperator extends AbstractMapJoinOperator<MapJoinDesc> implem
 
   private static final transient String[] FATAL_ERR_MSG = {
       null, // counter value 0 means no error
-      "Mapside join size exceeds hive.mapjoin.maxsize. "
-          + "Please increase that or remove the mapjoin hint."};
+      "Mapside join exceeds available memory. "
+          + "Please try removing the mapjoin hint."};
 
   protected transient Map<Byte, MapJoinRowContainer<ArrayList<Object>>> rowContainerMap;
   transient int metadataKeyTag;
   transient int[] metadataValueTag;
-  transient int maxMapJoinSize;
+  transient boolean hashTblInitedOnce;
   private int bigTableAlias;
 
   public MapJoinOperator() {
@@ -77,8 +77,6 @@ public class MapJoinOperator extends AbstractMapJoinOperator<MapJoinDesc> implem
   protected void initializeOp(Configuration hconf) throws HiveException {
 
     super.initializeOp(hconf);
-
-    maxMapJoinSize = HiveConf.getIntVar(hconf, HiveConf.ConfVars.HIVEMAXMAPJOINSIZE);
 
     metadataValueTag = new int[numAliases];
     for (int pos = 0; pos < numAliases; pos++) {
@@ -103,7 +101,7 @@ public class MapJoinOperator extends AbstractMapJoinOperator<MapJoinDesc> implem
       rowContainerMap.put(Byte.valueOf((byte) pos), rowContainer);
     }
 
-
+    hashTblInitedOnce = false;
   }
 
   @Override
@@ -144,10 +142,17 @@ public class MapJoinOperator extends AbstractMapJoinOperator<MapJoinDesc> implem
   }
 
   private void loadHashTable() throws HiveException {
+
+    if (!this.getExecContext().getLocalWork().getInputFileChangeSensitive()) {
+      if (hashTblInitedOnce) {
+        return;
+      } else {
+        hashTblInitedOnce = true;
+      }
+    }
+
     boolean localMode = HiveConf.getVar(hconf, HiveConf.ConfVars.HADOOPJT).equals("local");
     String baseDir = null;
-    HashMapWrapper<AbstractMapJoinKey, MapJoinObjectValue> hashtable;
-    Byte pos;
 
     String currentInputFile = HiveConf.getVar(hconf, HiveConf.ConfVars.HADOOPMAPFILENAME);
     LOG.info("******* Load from HashTable File: input : " + currentInputFile);
@@ -181,9 +186,9 @@ public class MapJoinOperator extends AbstractMapJoinOperator<MapJoinDesc> implem
       }
       for (Map.Entry<Byte, HashMapWrapper<AbstractMapJoinKey, MapJoinObjectValue>> entry : mapJoinTables
           .entrySet()) {
-        pos = entry.getKey();
-        hashtable = entry.getValue();
-        String filePath = Utilities.generatePath(baseDir, pos, currentFileName);
+        Byte pos = entry.getKey();
+        HashMapWrapper<AbstractMapJoinKey, MapJoinObjectValue> hashtable = entry.getValue();
+        String filePath = Utilities.generatePath(baseDir, conf.getDumpFilePrefix(), pos, currentFileName);
         Path path = new Path(filePath);
         LOG.info("\tLoad back 1 hashtable file from tmp file uri:" + path.toString());
         hashtable.initilizePersistentHash(path.toUri().getPath());
@@ -293,7 +298,7 @@ public class MapJoinOperator extends AbstractMapJoinOperator<MapJoinDesc> implem
   public void closeOp(boolean abort) throws HiveException {
 
     if (mapJoinTables != null) {
-      for (HashMapWrapper hashTable : mapJoinTables.values()) {
+      for (HashMapWrapper<?, ?> hashTable : mapJoinTables.values()) {
         hashTable.close();
       }
     }

@@ -56,7 +56,10 @@ POSTHOOK: type: SHOWLOCKS
 POSTHOOK: Lineage: tstsrc.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: tstsrc.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 default@tstsrc	SHARED
-LOCK_QUERYID:njain_20101206231818_eec284bc-9a38-4ba5-b59e-7bc770db8bd2 LOCK_TIME:1291706323232 LOCK_MODE:EXPLICIT 	 
+LOCK_QUERYID:jiayan_20110907105858_10aedc77-c380-4192-871e-83b17567adab	 
+LOCK_TIME:1315418321759	 
+LOCK_MODE:EXPLICIT	 
+LOCK_QUERYSTRING:LOCK TABLE tstsrc shared	 
 PREHOOK: query: UNLOCK TABLE tstsrc
 PREHOOK: type: UNLOCKTABLE
 POSTHOOK: query: UNLOCK TABLE tstsrc
@@ -101,7 +104,10 @@ POSTHOOK: type: SHOWLOCKS
 POSTHOOK: Lineage: tstsrc.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: tstsrc.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 default@tstsrc	SHARED
-LOCK_QUERYID:njain_20101206231818_8eee6b8f-abba-41f5-8e70-e6c216d488cc LOCK_TIME:1291706324145 LOCK_MODE:EXPLICIT 	 
+LOCK_QUERYID:jiayan_20110907105858_752a7b55-7426-4970-8e3a-af74dc557b70	 
+LOCK_TIME:1315418322548	 
+LOCK_MODE:EXPLICIT	 
+LOCK_QUERYSTRING:lock TABLE tstsrc SHARED	 
 PREHOOK: query: SHOW LOCKS tstsrc
 PREHOOK: type: SHOWLOCKS
 POSTHOOK: query: SHOW LOCKS tstsrc
@@ -130,9 +136,15 @@ POSTHOOK: type: SHOWLOCKS
 POSTHOOK: Lineage: tstsrc.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: tstsrc.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 default@tstsrc	SHARED
-LOCK_QUERYID:njain_20101206231818_d29191d9-ed78-4e6d-80df-2fc47d70adef LOCK_TIME:1291706324583 LOCK_MODE:EXPLICIT 	 
+LOCK_QUERYID:jiayan_20110907105858_752a7b55-7426-4970-8e3a-af74dc557b70	 
+LOCK_TIME:1315418322548	 
+LOCK_MODE:EXPLICIT	 
+LOCK_QUERYSTRING:lock TABLE tstsrc SHARED	 
 default@tstsrc	SHARED
-LOCK_QUERYID:njain_20101206231818_8eee6b8f-abba-41f5-8e70-e6c216d488cc LOCK_TIME:1291706324145 LOCK_MODE:EXPLICIT 	 
+LOCK_QUERYID:jiayan_20110907105858_fa544f90-07cc-4176-813c-ed9a91bc56ac	 
+LOCK_TIME:1315418322895	 
+LOCK_MODE:EXPLICIT	 
+LOCK_QUERYSTRING:LOCK TABLE tstsrc SHARED	 
 PREHOOK: query: SHOW LOCKS tstsrc
 PREHOOK: type: SHOWLOCKS
 POSTHOOK: query: SHOW LOCKS tstsrc

@@ -1,1 +1,1 @@
-FAILED: Error in semantic analysis: Line 1:14 Expression not in GROUP BY key value
+FAILED: Error in semantic analysis: Line 1:7 Expression not in GROUP BY key 'value'

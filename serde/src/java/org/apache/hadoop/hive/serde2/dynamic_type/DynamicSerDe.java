@@ -31,6 +31,7 @@ import org.apache.hadoop.hive.serde.Constants;
 import org.apache.hadoop.hive.serde2.ByteStream;
 import org.apache.hadoop.hive.serde2.SerDe;
 import org.apache.hadoop.hive.serde2.SerDeException;
+import org.apache.hadoop.hive.serde2.SerDeStats;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorFactory;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorFactory;
@@ -151,7 +152,7 @@ public class DynamicSerDe implements SerDe, Serializable {
         bis_.reset(b.getBytes(), b.getLength());
       } else {
         BytesWritable b = (BytesWritable) field;
-        bis_.reset(b.get(), b.getSize());
+        bis_.reset(b.getBytes(), b.getLength());
       }
       deserializeReuse = bt.deserialize(deserializeReuse, iprot_);
       return deserializeReuse;
@@ -215,5 +216,11 @@ public class DynamicSerDe implements SerDe, Serializable {
     }
     ret.set(bos_.getData(), 0, bos_.getCount());
     return ret;
+  }
+
+
+  public SerDeStats getSerDeStats() {
+    // no support for statistics
+    return null;
   }
 }

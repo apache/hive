@@ -25,6 +25,7 @@ import java.util.Date;
 
 import org.apache.hadoop.hive.ql.exec.Description;
 import org.apache.hadoop.hive.ql.exec.UDF;
+import org.apache.hadoop.hive.serde2.io.TimestampWritable;
 import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.Text;
 
@@ -47,7 +48,7 @@ public class UDFMonth extends UDF {
 
   /**
    * Get the month from a date string.
-   * 
+   *
    * @param dateString
    *          the dateString in the format of "yyyy-MM-dd HH:mm:ss" or
    *          "yyyy-MM-dd".
@@ -66,6 +67,16 @@ public class UDFMonth extends UDF {
     } catch (ParseException e) {
       return null;
     }
+  }
+
+  public IntWritable evaluate(TimestampWritable t) {
+    if (t == null) {
+      return null;
+    }
+
+    calendar.setTime(t.getTimestamp());
+    result.set(1 + calendar.get(Calendar.MONTH));
+    return result;
   }
 
 }

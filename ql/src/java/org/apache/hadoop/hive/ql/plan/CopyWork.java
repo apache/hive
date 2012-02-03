@@ -29,13 +29,19 @@ public class CopyWork implements Serializable {
   private static final long serialVersionUID = 1L;
   private String fromPath;
   private String toPath;
+  private boolean errorOnSrcEmpty;
 
   public CopyWork() {
   }
 
   public CopyWork(final String fromPath, final String toPath) {
+    this(fromPath, toPath, true);
+  }
+
+  public CopyWork(final String fromPath, final String toPath, boolean errorOnSrcEmpty) {
     this.fromPath = fromPath;
     this.toPath = toPath;
+    this.setErrorOnSrcEmpty(errorOnSrcEmpty);
   }
 
   @Explain(displayName = "source")
@@ -54,5 +60,13 @@ public class CopyWork implements Serializable {
 
   public void setToPath(final String toPath) {
     this.toPath = toPath;
+  }
+
+  public void setErrorOnSrcEmpty(boolean errorOnSrcEmpty) {
+    this.errorOnSrcEmpty = errorOnSrcEmpty;
+  }
+
+  public boolean isErrorOnSrcEmpty() {
+    return errorOnSrcEmpty;
   }
 }

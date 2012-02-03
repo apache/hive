@@ -7,4 +7,14 @@ PREHOOK: query: insert overwrite table nzhang_part partition(value) select key, 
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
 PREHOOK: Output: default@nzhang_part
+Execution failed with exit status: 2
+Obtaining error information
+
+Task failed!
+Task ID:
+  Stage-1
+
+Logs:
+
+/data/users/salbiz/apache-hive/build/ql/tmp//hive.log
 FAILED: Execution Error, return code 2 from org.apache.hadoop.hive.ql.exec.MapRedTask

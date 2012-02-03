@@ -1,0 +1,96 @@
+PREHOOK: query: create table exim_department ( dep_id int comment "department id") 	
+	stored as textfile	
+	tblproperties("creator"="krishna")
+PREHOOK: type: CREATETABLE
+POSTHOOK: query: create table exim_department ( dep_id int comment "department id") 	
+	stored as textfile	
+	tblproperties("creator"="krishna")
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: default@exim_department
+PREHOOK: query: load data local inpath "../data/files/test.dat" into table exim_department
+PREHOOK: type: LOAD
+PREHOOK: Output: default@exim_department
+POSTHOOK: query: load data local inpath "../data/files/test.dat" into table exim_department
+POSTHOOK: type: LOAD
+POSTHOOK: Output: default@exim_department
+PREHOOK: query: export table exim_department to 'ql/test/data/exports/exim_department'
+PREHOOK: type: EXPORT
+PREHOOK: Input: default@exim_department
+PREHOOK: Output: pfile:/Users/krishnak/Projects/hdp/sources/hive-git-apache/build/ql/test/data/exports/exim_department
+POSTHOOK: query: export table exim_department to 'ql/test/data/exports/exim_department'
+POSTHOOK: type: EXPORT
+POSTHOOK: Input: default@exim_department
+POSTHOOK: Output: pfile:/Users/krishnak/Projects/hdp/sources/hive-git-apache/build/ql/test/data/exports/exim_department
+PREHOOK: query: drop table exim_department
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@exim_department
+PREHOOK: Output: default@exim_department
+POSTHOOK: query: drop table exim_department
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@exim_department
+POSTHOOK: Output: default@exim_department
+PREHOOK: query: create database importer
+PREHOOK: type: CREATEDATABASE
+POSTHOOK: query: create database importer
+POSTHOOK: type: CREATEDATABASE
+PREHOOK: query: use importer
+PREHOOK: type: SWITCHDATABASE
+POSTHOOK: query: use importer
+POSTHOOK: type: SWITCHDATABASE
+PREHOOK: query: import from 'ql/test/data/exports/exim_department'
+PREHOOK: type: IMPORT
+POSTHOOK: query: import from 'ql/test/data/exports/exim_department'
+POSTHOOK: type: IMPORT
+POSTHOOK: Output: importer@exim_department
+PREHOOK: query: describe extended exim_department
+PREHOOK: type: DESCTABLE
+POSTHOOK: query: describe extended exim_department
+POSTHOOK: type: DESCTABLE
+dep_id	int	department id
+	 	 
+Detailed Table Information	Table(tableName:exim_department, dbName:importer, owner:krishnak, createTime:1300687409, lastAccessTime:0, retention:0, sd:StorageDescriptor(cols:[FieldSchema(name:dep_id, type:int, comment:department id)], location:pfile:/Users/krishnak/Projects/hdp/sources/hive-git-apache/build/ql/test/data/warehouse/importer.db/exim_department, inputFormat:org.apache.hadoop.mapred.TextInputFormat, outputFormat:org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat, compressed:false, numBuckets:-1, serdeInfo:SerDeInfo(name:null, serializationLib:org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe, parameters:{serialization.format=1}), bucketCols:[], sortCols:[], parameters:{}), partitionKeys:[], parameters:{transient_lastDdlTime=1300687410, creator=krishna}, viewOriginalText:null, viewExpandedText:null, tableType:MANAGED_TABLE)	
+PREHOOK: query: show table extended like exim_department
+PREHOOK: type: SHOW_TABLESTATUS
+POSTHOOK: query: show table extended like exim_department
+POSTHOOK: type: SHOW_TABLESTATUS
+tableName:exim_department
+owner:krishnak
+location:pfile:/Users/krishnak/Projects/hdp/sources/hive-git-apache/build/ql/test/data/warehouse/importer.db/exim_department
+inputformat:org.apache.hadoop.mapred.TextInputFormat
+outputformat:org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+columns:struct columns { i32 dep_id}
+partitioned:false
+partitionColumns:
+totalNumberFiles:1
+totalFileSize:11
+maxFileSize:11
+minFileSize:11
+lastAccessTime:0
+lastUpdateTime:1300687410000
+
+PREHOOK: query: select * from exim_department
+PREHOOK: type: QUERY
+PREHOOK: Input: importer@exim_department
+PREHOOK: Output: file:/var/folders/67/67R3POPtF90VG63KSmCbcU++F0U/-Tmp-/krishnak/hive_2011-03-20_23-03-30_983_8368371879698936007/-mr-10000
+POSTHOOK: query: select * from exim_department
+POSTHOOK: type: QUERY
+POSTHOOK: Input: importer@exim_department
+POSTHOOK: Output: file:/var/folders/67/67R3POPtF90VG63KSmCbcU++F0U/-Tmp-/krishnak/hive_2011-03-20_23-03-30_983_8368371879698936007/-mr-10000
+1
+2
+3
+4
+5
+6
+PREHOOK: query: drop table exim_department
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: importer@exim_department
+PREHOOK: Output: importer@exim_department
+POSTHOOK: query: drop table exim_department
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: importer@exim_department
+POSTHOOK: Output: importer@exim_department
+PREHOOK: query: drop database importer
+PREHOOK: type: DROPDATABASE
+POSTHOOK: query: drop database importer
+POSTHOOK: type: DROPDATABASE

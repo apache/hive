@@ -26,9 +26,8 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.commons.lang.StringUtils;
-
 import org.antlr.runtime.tree.Tree;
+import org.apache.commons.lang.StringUtils;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
@@ -37,6 +36,7 @@ import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.exec.TaskFactory;
 import org.apache.hadoop.hive.ql.exec.Utilities;
+import org.apache.hadoop.hive.ql.hooks.WriteEntity;
 import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.Partition;
@@ -101,7 +101,7 @@ public class LoadSemanticAnalyzer extends BaseSemanticAnalyzer {
     }
 
     // if scheme is specified but not authority then use the default authority
-    if (StringUtils.isEmpty(fromAuthority)) {
+    if (fromScheme.equals("hdfs") && StringUtils.isEmpty(fromAuthority)) {
       URI defaultURI = FileSystem.get(conf).getUri();
       fromAuthority = defaultURI.getAuthority();
     }
@@ -112,6 +112,11 @@ public class LoadSemanticAnalyzer extends BaseSemanticAnalyzer {
 
   private void applyConstraints(URI fromURI, URI toURI, Tree ast,
       boolean isLocal) throws SemanticException {
+    if (!fromURI.getScheme().equals("file")
+        && !fromURI.getScheme().equals("hdfs")) {
+      throw new SemanticException(ErrorMsg.INVALID_PATH.getMsg(ast,
+          "only \"file\" or \"hdfs\" file systems accepted"));
+    }
 
     // local mode implies that scheme should be "file"
     // we can change this going forward
@@ -142,7 +147,17 @@ public class LoadSemanticAnalyzer extends BaseSemanticAnalyzer {
       throw new SemanticException(ErrorMsg.INVALID_PATH.getMsg(ast), e);
     }
 
-
+    // only in 'local' mode do we copy stuff from one place to another.
+    // reject different scheme/authority in other cases.
+    if (!isLocal
+        && (!StringUtils.equals(fromURI.getScheme(), toURI.getScheme()) || !StringUtils
+        .equals(fromURI.getAuthority(), toURI.getAuthority()))) {
+      String reason = "Move from: " + fromURI.toString() + " to: "
+          + toURI.toString() + " is not valid. "
+          + "Please check that values for params \"default.fs.name\" and "
+          + "\"hive.metastore.warehouse.dir\" do not conflict.";
+      throw new SemanticException(ErrorMsg.ILLEGAL_PATH.getMsg(ast, reason));
+    }
   }
 
   @Override
@@ -196,7 +211,7 @@ public class LoadSemanticAnalyzer extends BaseSemanticAnalyzer {
         : ts.tableHandle.getDataLocation();
 
     List<FieldSchema> parts = ts.tableHandle.getPartitionKeys();
-    if (isOverWrite && (parts != null && parts.size() > 0)
+    if ((parts != null && parts.size() > 0)
         && (ts.partSpec == null || ts.partSpec.size() == 0)) {
       throw new SemanticException(ErrorMsg.NEED_PARTITION_ERROR.getMsg());
     }
@@ -220,11 +235,12 @@ public class LoadSemanticAnalyzer extends BaseSemanticAnalyzer {
     }
 
     // create final load/move work
-
+    
     String loadTmpPath = ctx.getExternalTmpFileURI(toURI);
     Map<String, String> partSpec = ts.getPartSpec();
     if (partSpec == null) {
       partSpec = new LinkedHashMap<String, String>();
+      outputs.add(new WriteEntity(ts.tableHandle));
     } else {
       try{
         Partition part = Hive.get().getPartition(ts.tableHandle, partSpec, false);
@@ -233,6 +249,9 @@ public class LoadSemanticAnalyzer extends BaseSemanticAnalyzer {
             throw new SemanticException(ErrorMsg.OFFLINE_TABLE_OR_PARTITION.
                 getMsg(ts.tableName + ":" + part.getName()));
           }
+          outputs.add(new WriteEntity(part));
+        } else {
+          outputs.add(new WriteEntity(ts.tableHandle));
         }
       } catch(HiveException e) {
         throw new SemanticException(e);
@@ -252,5 +271,21 @@ public class LoadSemanticAnalyzer extends BaseSemanticAnalyzer {
     }
 
     rootTasks.add(rTask);
+    if (HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVEINDEXAUTOUPDATE)) {
+      IndexUpdater indexUpdater = new IndexUpdater(loadTableWork, getInputs(), conf);
+      try {
+        List<Task<? extends Serializable>> indexUpdateTasks = indexUpdater.generateUpdateTasks();
+        for (Task<? extends Serializable> updateTask : indexUpdateTasks) {
+          //LOAD DATA will either have a copy & move or just a move, we always want the update to be dependent on the move
+          if (rTask.getChildren() == null || rTask.getChildren().size() == 0) {
+            rTask.addDependentTask(updateTask);
+          } else {
+            ((Task<? extends Serializable>)rTask.getChildren().get(0)).addDependentTask(updateTask);
+          }
+        }
+      } catch (HiveException e) {
+        console.printInfo("WARNING: could not auto-update stale indexes, indexes are not out of sync");
+      }
+    }
   }
 }

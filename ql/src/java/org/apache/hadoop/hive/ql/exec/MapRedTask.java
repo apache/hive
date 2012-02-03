@@ -55,10 +55,18 @@ public class MapRedTask extends ExecDriver implements Serializable {
 
   static final String HADOOP_MEM_KEY = "HADOOP_HEAPSIZE";
   static final String HADOOP_OPTS_KEY = "HADOOP_OPTS";
+  static final String HADOOP_CLIENT_OPTS = "HADOOP_CLIENT_OPTS";
+  static final String HIVE_DEBUG_RECURSIVE = "HIVE_DEBUG_RECURSIVE";
+  static final String HIVE_MAIN_CLIENT_DEBUG_OPTS = "HIVE_MAIN_CLIENT_DEBUG_OPTS";
+  static final String HIVE_CHILD_CLIENT_DEBUG_OPTS = "HIVE_CHILD_CLIENT_DEBUG_OPTS";
   static final String[] HIVE_SYS_PROP = {"build.dir", "build.dir.hive"};
 
   private transient ContentSummary inputSummary = null;
   private transient boolean runningViaChild = false;
+
+  private transient boolean inputSizeEstimated = false;
+  private transient long totalInputFileSize;
+  private transient long totalInputNumFiles;
 
   public MapRedTask() {
     super();
@@ -91,16 +99,21 @@ public class MapRedTask extends ExecDriver implements Serializable {
           inputSummary = Utilities.getInputSummary(driverContext.getCtx(), work, null);
         }
 
+        // set the values of totalInputFileSize and totalInputNumFiles, estimating them
+        // if percentage block sampling is being used
+        estimateInputSize();
+
         // at this point the number of reducers is precisely defined in the plan
         int numReducers = work.getNumReduceTasks();
 
         if (LOG.isDebugEnabled()) {
           LOG.debug("Task: " + getId() + ", Summary: " +
-                    inputSummary.getLength() + "," + inputSummary.getFileCount() + ","
+                    totalInputFileSize + "," + totalInputNumFiles + ","
                     + numReducers);
         }
 
-        String reason = MapRedTask.isEligibleForLocalMode(conf, inputSummary, numReducers);
+        String reason = MapRedTask.isEligibleForLocalMode(conf, numReducers,
+            totalInputFileSize, totalInputNumFiles);
         if (reason == null) {
           // clone configuration before modifying it on per-task basis
           cloneConf();
@@ -125,6 +138,9 @@ public class MapRedTask extends ExecDriver implements Serializable {
 
       // we need to edit the configuration to setup cmdline. clone it first
       cloneConf();
+
+      // propagate input format if necessary
+      super.setInputAttributes(conf);
 
       // enable assertion
       String hadoopExec = conf.getVar(HiveConf.ConfVars.HADOOPBIN);
@@ -204,7 +220,6 @@ public class MapRedTask extends ExecDriver implements Serializable {
           sb.append(" -D" + element + "=" + p.getProperty(element));
         }
       }
-      //sb.append(" -Xdebug -Xrunjdwp:transport=dt_socket,address=8000,server=y,suspend=y");
       hadoopOpts = sb.toString();
       // Inherit the environment variables
       String[] env;
@@ -236,6 +251,11 @@ public class MapRedTask extends ExecDriver implements Serializable {
       } else {
         variables.put(HADOOP_OPTS_KEY, hadoopOpts);
       }
+
+      if(variables.containsKey(HIVE_DEBUG_RECURSIVE)) {
+        configureDebugVariablesForChildJVM(variables);
+      }
+
       env = new String[variables.size()];
       int pos = 0;
       for (Map.Entry<String, String> entry : variables.entrySet()) {
@@ -256,7 +276,7 @@ public class MapRedTask extends ExecDriver implements Serializable {
       outPrinter.start();
       errPrinter.start();
 
-      int exitVal = executor.waitFor();
+      int exitVal = jobExecHelper.progressLocal(executor, getId());
 
       if (exitVal != 0) {
         LOG.error("Execution failed with exit status: " + exitVal);
@@ -281,6 +301,48 @@ public class MapRedTask extends ExecDriver implements Serializable {
         LOG.error("Exception: " + e.getMessage());
       }
     }
+  }
+
+  static void configureDebugVariablesForChildJVM(Map<String, String> environmentVariables) {
+    // this method contains various asserts to warn if environment variables are in a buggy state
+    assert environmentVariables.containsKey(HADOOP_CLIENT_OPTS)
+        && environmentVariables.get(HADOOP_CLIENT_OPTS) != null : HADOOP_CLIENT_OPTS
+        + " environment variable must be set when JVM in debug mode";
+
+    String hadoopClientOpts = environmentVariables.get(HADOOP_CLIENT_OPTS);
+
+    assert environmentVariables.containsKey(HIVE_MAIN_CLIENT_DEBUG_OPTS)
+        && environmentVariables.get(HIVE_MAIN_CLIENT_DEBUG_OPTS) != null : HIVE_MAIN_CLIENT_DEBUG_OPTS
+        + " environment variable must be set when JVM in debug mode";
+
+    assert hadoopClientOpts.contains(environmentVariables.get(HIVE_MAIN_CLIENT_DEBUG_OPTS)) : HADOOP_CLIENT_OPTS
+        + " environment variable must contain debugging parameters, when JVM in debugging mode";
+
+    assert "y".equals(environmentVariables.get(HIVE_DEBUG_RECURSIVE))
+        || "n".equals(environmentVariables.get(HIVE_DEBUG_RECURSIVE)) : HIVE_DEBUG_RECURSIVE
+        + " environment variable must be set to \"y\" or \"n\" when debugging";
+
+    if (environmentVariables.get(HIVE_DEBUG_RECURSIVE).equals("y")) {
+      // swap debug options in HADOOP_CLIENT_OPTS to those that the child JVM should have
+      assert environmentVariables.containsKey(HIVE_CHILD_CLIENT_DEBUG_OPTS)
+          && environmentVariables.get(HIVE_MAIN_CLIENT_DEBUG_OPTS) != null : HIVE_CHILD_CLIENT_DEBUG_OPTS
+          + " environment variable must be set when JVM in debug mode";
+      String newHadoopClientOpts = hadoopClientOpts.replace(
+          environmentVariables.get(HIVE_MAIN_CLIENT_DEBUG_OPTS),
+          environmentVariables.get(HIVE_CHILD_CLIENT_DEBUG_OPTS));
+      environmentVariables.put(HADOOP_CLIENT_OPTS, newHadoopClientOpts);
+    } else {
+      // remove from HADOOP_CLIENT_OPTS any debug related options
+      String newHadoopClientOpts = hadoopClientOpts.replace(
+          environmentVariables.get(HIVE_MAIN_CLIENT_DEBUG_OPTS), "").trim();
+      if (newHadoopClientOpts.isEmpty()) {
+        environmentVariables.remove(HADOOP_CLIENT_OPTS);
+      } else {
+        environmentVariables.put(HADOOP_CLIENT_OPTS, newHadoopClientOpts);
+      }
+    }
+    // child JVM won't need to change debug parameters when creating it's own children
+    environmentVariables.remove(HIVE_DEBUG_RECURSIVE);
   }
 
   @Override
@@ -364,10 +426,16 @@ public class MapRedTask extends ExecDriver implements Serializable {
       inputSummary =  Utilities.getInputSummary(driverContext.getCtx(), work, null);
     }
 
-    long totalInputFileSize = inputSummary.getLength();
+    // if all inputs are sampled, we should shrink the size of reducers accordingly.
+    estimateInputSize();
 
-    LOG.info("BytesPerReducer=" + bytesPerReducer + " maxReducers="
+    if (totalInputFileSize != inputSummary.getLength()) {
+      LOG.info("BytesPerReducer=" + bytesPerReducer + " maxReducers="
+          + maxReducers + " estimated totalInputFileSize=" + totalInputFileSize);
+    } else {
+      LOG.info("BytesPerReducer=" + bytesPerReducer + " maxReducers="
         + maxReducers + " totalInputFileSize=" + totalInputFileSize);
+    }
 
     int reducers = (int) ((totalInputFileSize + bytesPerReducer - 1) / bytesPerReducer);
     reducers = Math.max(1, reducers);
@@ -376,23 +444,80 @@ public class MapRedTask extends ExecDriver implements Serializable {
   }
 
   /**
+   * Sets the values of totalInputFileSize and totalInputNumFiles.  If percentage
+   * block sampling is used, these values are estimates based on the highest
+   * percentage being used for sampling multiplied by the value obtained from the
+   * input summary.  Otherwise, these values are set to the exact value obtained
+   * from the input summary.
+   *
+   * Once the function completes, inputSizeEstimated is set so that the logic is
+   * never run more than once.
+   */
+  private void estimateInputSize() {
+    if (inputSizeEstimated) {
+      // If we've already run this function, return
+      return;
+    }
+
+    // Initialize the values to be those taken from the input summary
+    totalInputFileSize = inputSummary.getLength();
+    totalInputNumFiles = inputSummary.getFileCount();
+
+    if (work.getNameToSplitSample() == null || work.getNameToSplitSample().isEmpty()) {
+      // If percentage block sampling wasn't used, we don't need to do any estimation
+      inputSizeEstimated = true;
+      return;
+    }
+
+    // if all inputs are sampled, we should shrink the size of the input accordingly
+    double highestSamplePercentage = 0;
+    boolean allSample = false;
+    for (String alias : work.getAliasToWork().keySet()) {
+      if (work.getNameToSplitSample().containsKey(alias)) {
+        allSample = true;
+        double rate = work.getNameToSplitSample().get(alias).getPercent();
+        if (rate > highestSamplePercentage) {
+          highestSamplePercentage = rate;
+        }
+      } else {
+        allSample = false;
+        break;
+      }
+    }
+    if (allSample) {
+      // This is a little bit dangerous if inputs turns out not to be able to be sampled.
+      // In that case, we significantly underestimate the input.
+      // It's the same as estimateNumberOfReducers(). It's just our best
+      // guess and there is no guarantee.
+      totalInputFileSize = Math.min((long) (totalInputFileSize * highestSamplePercentage / 100D)
+          , totalInputFileSize);
+      totalInputNumFiles = Math.min((long) (totalInputNumFiles * highestSamplePercentage / 100D)
+          , totalInputNumFiles);
+    }
+
+    inputSizeEstimated = true;
+  }
+
+  /**
    * Find out if a job can be run in local mode based on it's characteristics
    *
    * @param conf Hive Configuration
-   * @param inputSummary summary about the input files for this job
    * @param numReducers total number of reducers for this job
+   * @param inputLength the size of the input
+   * @param inputFileCount the number of files of input
    * @return String null if job is eligible for local mode, reason otherwise
    */
   public static String isEligibleForLocalMode(HiveConf conf,
-                                              ContentSummary inputSummary,
-                                              int numReducers) {
+                                              int numReducers,
+                                              long inputLength,
+                                              long inputFileCount) {
 
     long maxBytes = conf.getLongVar(HiveConf.ConfVars.LOCALMODEMAXBYTES);
     long maxTasks = conf.getIntVar(HiveConf.ConfVars.LOCALMODEMAXTASKS);
 
     // check for max input size
-    if (inputSummary.getLength() > maxBytes) {
-      return "Input Size (= " + inputSummary.getLength() + ") is larger than " +
+    if (inputLength > maxBytes) {
+      return "Input Size (= " + inputLength + ") is larger than " +
         HiveConf.ConfVars.LOCALMODEMAXBYTES.varname + " (= " + maxBytes + ")";
     }
 
@@ -400,8 +525,8 @@ public class MapRedTask extends ExecDriver implements Serializable {
     // in the absence of an easy way to get the number of splits - do this
     // based on the total number of files (pessimistically assumming that
     // splits are equal to number of files in worst case)
-    if (inputSummary.getFileCount() > maxTasks) {
-      return "Number of Input Files (= " + inputSummary.getFileCount() +
+    if (inputFileCount > maxTasks) {
+      return "Number of Input Files (= " + inputFileCount +
         ") is larger than " +
         HiveConf.ConfVars.LOCALMODEMAXTASKS.varname + "(= " + maxTasks + ")";
     }
@@ -413,5 +538,10 @@ public class MapRedTask extends ExecDriver implements Serializable {
     }
 
     return null;
+  }
+
+  @Override
+  public Operator<? extends Serializable> getReducer() {
+    return getWork().getReducer();
   }
 }

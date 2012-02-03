@@ -19,6 +19,7 @@ package org.apache.hadoop.hive.metastore;
 
 import java.io.IOException;
 import java.net.URI;
+import java.util.Iterator;
 import java.util.List;
 
 import org.apache.commons.lang.StringUtils;
@@ -27,9 +28,11 @@ import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.InvalidObjectException;
 import org.apache.hadoop.hive.metastore.api.InvalidOperationException;
 import org.apache.hadoop.hive.metastore.api.MetaException;
+import org.apache.hadoop.hive.metastore.api.NoSuchObjectException;
 import org.apache.hadoop.hive.metastore.api.Partition;
 import org.apache.hadoop.hive.metastore.api.Table;
 
@@ -96,25 +99,32 @@ public class HiveAlterHandler implements AlterHandler {
             + newt.getTableName() + " doesn't exist");
       }
 
-      // check that partition keys have not changed
-      if (oldt.getPartitionKeys().size() != newt.getPartitionKeys().size()
-          || !oldt.getPartitionKeys().containsAll(newt.getPartitionKeys())) {
-        throw new InvalidOperationException(
-            "partition keys can not be changed.");
+      //check that partition keys have not changed, except for virtual views
+      //however, allow the partition comments to change
+      boolean partKeysPartiallyEqual = checkPartialPartKeysEqual(oldt.getPartitionKeys(),
+          newt.getPartitionKeys());
+
+      if(!oldt.getTableType().equals(TableType.VIRTUAL_VIEW.toString())){
+        if (oldt.getPartitionKeys().size() != newt.getPartitionKeys().size()
+            || !partKeysPartiallyEqual) {
+          throw new InvalidOperationException(
+              "partition keys can not be changed.");
+        }
       }
 
-      // if this alter is a rename, and user didn't change the
-      // default location (or new location is empty), and table is
-      // not an external table, that means user is asking metastore
-      // to move data to new location corresponding to the new name
+      // if this alter is a rename, the table is not a virtual view, the user
+      // didn't change the default location (or new location is empty), and
+      // table is not an external table, that means useris asking metastore to
+      // move data to the new location corresponding to the new name
       if (rename
+          && !oldt.getTableType().equals(TableType.VIRTUAL_VIEW.toString())
           && (oldt.getSd().getLocation().compareTo(newt.getSd().getLocation()) == 0
             || StringUtils.isEmpty(newt.getSd().getLocation()))
           && !MetaStoreUtils.isExternalTable(oldt)) {
         // that means user is asking metastore to move data to new location
         // corresponding to the new name
         // get new location
-        newTblLoc = wh.getDefaultTablePath(newt.getDbName(), newt.getTableName()).toString();
+        newTblLoc = wh.getTablePath(msdb.getDatabase(newt.getDbName()), newt.getTableName()).toString();
         newt.getSd().setLocation(newTblLoc);
         oldTblLoc = oldt.getSd().getLocation();
         moveData = true;
@@ -162,7 +172,7 @@ public class HiveAlterHandler implements AlterHandler {
                                       oldUri.getAuthority(),
                                       newPath);
             part.getSd().setLocation(newPartLocPath.toString());
-            msdb.alterPartition(dbname, name, part);
+            msdb.alterPartition(dbname, name, part.getValues(), part);
           }
         }
       }
@@ -174,6 +184,11 @@ public class HiveAlterHandler implements AlterHandler {
       LOG.debug(e);
       throw new InvalidOperationException(
           "Unable to change partition or table."
+              + " Check metastore logs for detailed stack." + e.getMessage());
+    } catch (NoSuchObjectException e) {
+      LOG.debug(e);
+      throw new InvalidOperationException(
+          "Unable to change partition or table. Database " + dbname + " does not exist"
               + " Check metastore logs for detailed stack." + e.getMessage());
     } finally {
       if (!success) {
@@ -204,6 +219,33 @@ public class HiveAlterHandler implements AlterHandler {
         }
       }
     }
+    if (!success) {
+      throw new MetaException("Committing the alter table transaction was not successful.");
+    }
+  }
 
+  private boolean checkPartialPartKeysEqual(List<FieldSchema> oldPartKeys,
+      List<FieldSchema> newPartKeys) {
+    //return true if both are null, or false if one is null and the other isn't
+    if (newPartKeys == null || oldPartKeys == null) {
+      return oldPartKeys == newPartKeys;
+    }
+    if (oldPartKeys.size() != newPartKeys.size()) {
+      return false;
+    }
+    Iterator<FieldSchema> oldPartKeysIter = oldPartKeys.iterator();
+    Iterator<FieldSchema> newPartKeysIter = newPartKeys.iterator();
+    FieldSchema oldFs;
+    FieldSchema newFs;
+    while (oldPartKeysIter.hasNext()) {
+      oldFs = oldPartKeysIter.next();
+      newFs = newPartKeysIter.next();
+      if (!oldFs.getName().equals(newFs.getName()) ||
+          !oldFs.getType().equals(newFs.getType())) {
+        return false;
+      }
+    }
+
+    return true;
   }
 }

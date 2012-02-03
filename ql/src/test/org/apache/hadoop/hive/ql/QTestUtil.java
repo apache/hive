@@ -42,6 +42,8 @@ import java.util.TreeMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
@@ -50,6 +52,7 @@ import org.apache.hadoop.hive.cli.CliDriver;
 import org.apache.hadoop.hive.cli.CliSessionState;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.MetaStoreUtils;
+import org.apache.hadoop.hive.metastore.api.Index;
 import org.apache.hadoop.hive.ql.exec.FunctionRegistry;
 import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.exec.Utilities;
@@ -82,11 +85,9 @@ import org.apache.zookeeper.ZooKeeper;
  */
 public class QTestUtil {
 
+  private static final Log LOG = LogFactory.getLog("QTestUtil");
+
   private String testWarehouse;
-  private final String tmpdir= System.getProperty("test.tmp.dir") ;
-  private final Path tmppath = new Path(tmpdir);
-
-
   private final String testFiles;
   protected final String outDir;
   protected final String logDir;
@@ -229,7 +230,13 @@ public class QTestUtil {
 
     initConf();
 
-    testFiles = conf.get("test.data.files").replace('\\', '/')
+    // Use the current directory if it is not specified
+    String dataDir = conf.get("test.data.files");
+    if (dataDir == null) {
+    	dataDir = new File(".").getAbsolutePath() + "/data/files";
+    }
+
+    testFiles = dataDir.replace('\\', '/')
         .replace("c:", "");
 
     String ow = System.getProperty("test.output.overwrite");
@@ -246,7 +253,7 @@ public class QTestUtil {
 
   public void shutdown() throws Exception {
     cleanUp();
-
+    setup.tearDown();
     if (dfs != null) {
       dfs.shutdown();
       dfs = null;
@@ -329,14 +336,28 @@ public class QTestUtil {
       db.setCurrentDatabase(dbName);
       for (String tblName : db.getAllTables()) {
         if (!DEFAULT_DATABASE_NAME.equals(dbName) || !srcTables.contains(tblName)) {
+          Table tblObj = db.getTable(tblName);
+          // dropping index table can not be dropped directly. Dropping the base
+          // table will automatically drop all its index table
+          if(tblObj.isIndexTable()) {
+            continue;
+          }
           db.dropTable(dbName, tblName);
+        } else {
+          // this table is defined in srcTables, drop all indexes on it
+         List<Index> indexes = db.getIndexes(dbName, tblName, (short)-1);
+          if (indexes != null && indexes.size() > 0) {
+            for (Index index : indexes) {
+              db.dropIndex(dbName, tblName, index.getIndexName(), true);
+            }
+          }
         }
       }
       if (!DEFAULT_DATABASE_NAME.equals(dbName)) {
         db.dropDatabase(dbName);
       }
     }
-    db.setCurrentDatabase(DEFAULT_DATABASE_NAME);
+    Hive.get().setCurrentDatabase(DEFAULT_DATABASE_NAME);
 
     List<String> roleNames = db.getAllRoleNames();
       for (String roleName : roleNames) {
@@ -368,7 +389,6 @@ public class QTestUtil {
 
     FunctionRegistry.unregisterTemporaryUDF("test_udaf");
     FunctionRegistry.unregisterTemporaryUDF("test_error");
-    setup.tearDown();
   }
 
   private void runLoadCmd(String loadCmd) throws Exception {
@@ -396,6 +416,7 @@ public class QTestUtil {
   public void createSources() throws Exception {
 
     startSessionState();
+    conf.setBoolean("hive.test.init.phase", true);
 
     // Create a bunch of tables with columns key and value
     LinkedList<String> cols = new LinkedList<String>();
@@ -490,7 +511,7 @@ public class QTestUtil {
     fpath = new Path(testFiles, "json.txt");
     runLoadCmd("LOAD DATA LOCAL INPATH '" + fpath.toString()
         + "' INTO TABLE src_json");
-
+    conf.setBoolean("hive.test.init.phase", false);
   }
 
   public void init() throws Exception {
@@ -606,7 +627,13 @@ public class QTestUtil {
   }
 
   public int execute(String tname) {
-    return drv.run(qMap.get(tname)).getResponseCode();
+    try {
+      return drv.run(qMap.get(tname)).getResponseCode();
+    } catch (CommandNeedRetryException e) {
+      // TODO Auto-generated catch block
+      e.printStackTrace();
+      return -1;
+    }
   }
 
   public int executeClient(String tname) {
@@ -913,6 +940,7 @@ public class QTestUtil {
         "-I", "CreateTime",
         "-I", "LastAccessTime",
         "-I", "Location",
+        "-I", "LOCATION '",
         "-I", "transient_lastDdlTime",
         "-I", "last_modified_",
         "-I", "java.lang.RuntimeException",
@@ -922,8 +950,10 @@ public class QTestUtil {
         "-I", "at junit",
         "-I", "Caused by:",
         "-I", "LOCK_QUERYID:",
+        "-I", "LOCK_TIME:",
         "-I", "grantTime",
         "-I", "[.][.][.] [0-9]* more",
+        "-I", "job_[0-9]*_[0-9]*",
         "-I", "USING 'java -cp",
         (new File(logDir, tname + ".out")).getPath(),
         outFileName };
@@ -973,7 +1003,8 @@ public class QTestUtil {
     while ((ast.getToken() == null) && (ast.getChildCount() > 0)) {
       ast = (ASTNode) ast.getChild(0);
     }
-
+    sem.getOutputs().clear();
+    sem.getInputs().clear();
     sem.analyze(ast, ctx);
     ctx.clear();
     return sem.getRootTasks();

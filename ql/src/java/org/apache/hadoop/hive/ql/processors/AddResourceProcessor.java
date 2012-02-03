@@ -51,7 +51,11 @@ public class AddResourceProcessor implements CommandProcessor {
       return new CommandProcessorResponse(1);
     }
     for (int i = 1; i < tokens.length; i++) {
-      ss.add_resource(t, tokens[i]);
+      String resourceFile = ss.add_resource(t, tokens[i]);
+      if(resourceFile == null){
+        String errMsg = tokens[i]+" does not exist.";
+        return new CommandProcessorResponse(1,errMsg,null);
+      }
     }
     return new CommandProcessorResponse(0);
   }

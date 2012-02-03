@@ -18,16 +18,19 @@
 
 package org.apache.hadoop.hive.ql.udf.generic;
 
+import org.apache.hadoop.hive.ql.exec.FunctionRegistry;
 import org.apache.hadoop.hive.ql.exec.UDFArgumentException;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.udf.UDFType;
+import org.apache.hadoop.hive.serde2.objectinspector.ConstantObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
+import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils;
 
 /**
  * A Generic User-defined function (GenericUDF) for the use with Hive.
- * 
+ *
  * New GenericUDF classes need to inherit from this GenericUDF class.
- * 
+ *
  * The GenericUDF are superior to normal UDFs in the following ways: 1. It can
  * accept arguments of complex types, and return complex types. 2. It can accept
  * variable length of arguments. 3. It can accept an infinite number of function
@@ -47,6 +50,23 @@ public abstract class GenericUDF {
   };
 
   /**
+   * A basic dummy implementation of DeferredObject which just stores a Java
+   * Object reference.
+   */
+  public static class DeferredJavaObject implements DeferredObject {
+    private Object value;
+
+    public DeferredJavaObject(Object value) {
+      this.value = value;
+    }
+
+    @Override
+    public Object get() throws HiveException {
+      return value;
+    }
+  }
+
+  /**
    * The constructor.
    */
   public GenericUDF() {
@@ -55,7 +75,7 @@ public abstract class GenericUDF {
   /**
    * Initialize this GenericUDF. This will be called once and only once per
    * GenericUDF instance.
-   * 
+   *
    * @param arguments
    *          The ObjectInspector for the arguments
    * @throws UDFArgumentException
@@ -66,8 +86,69 @@ public abstract class GenericUDF {
       throws UDFArgumentException;
 
   /**
+   * Initialize this GenericUDF.  Additionally, if the arguments are constant
+   * and the function is eligible to be folded, then the constant value
+   * returned by this UDF will be computed and stored in the
+   * ConstantObjectInspector returned.  Otherwise, the function behaves exactly
+   * like initialize().
+   */
+  public ObjectInspector initializeAndFoldConstants(ObjectInspector[] arguments)
+      throws UDFArgumentException {
+
+    ObjectInspector oi = initialize(arguments);
+
+    // If the UDF depends on any external resources, we can't fold because the
+    // resources may not be available at compile time.
+    if (getRequiredFiles() != null ||
+        getRequiredJars() != null) {
+      return oi;
+    }
+
+    boolean allConstant = true;
+    for (int ii = 0; ii < arguments.length; ++ii) {
+      if (!ObjectInspectorUtils.isConstantObjectInspector(arguments[ii])) {
+        allConstant = false;
+        break;
+      }
+    }
+
+    if (allConstant &&
+        !ObjectInspectorUtils.isConstantObjectInspector(oi) &&
+        FunctionRegistry.isDeterministic(this) &&
+        !FunctionRegistry.isStateful(this) &&
+        ObjectInspectorUtils.supportsConstantObjectInspector(oi)) {
+      DeferredObject[] argumentValues =
+        new DeferredJavaObject[arguments.length];
+      for (int ii = 0; ii < arguments.length; ++ii) {
+        argumentValues[ii] = new DeferredJavaObject(
+            ((ConstantObjectInspector)arguments[ii]).getWritableConstantValue());
+      }
+      try {
+        Object constantValue = evaluate(argumentValues);
+        oi = ObjectInspectorUtils.getConstantObjectInspector(oi, constantValue);
+      } catch (HiveException e) {
+        throw new UDFArgumentException(e);
+      }
+    }
+    return oi;
+  }
+
+  /**
+   * The following two functions can be overridden to automatically include
+   * additional resources required by this UDF.  The return types should be
+   * arrays of paths.
+   */
+  public String[] getRequiredJars() {
+    return null;
+  }
+
+  public String[] getRequiredFiles() {
+    return null;
+  }
+
+  /**
    * Evaluate the GenericUDF with the arguments.
-   * 
+   *
    * @param arguments
    *          The arguments as DeferedObject, use DeferedObject.get() to get the
    *          actual argument Object. The Objects can be inspected by the

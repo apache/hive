@@ -30,7 +30,6 @@ import org.apache.hadoop.mapred.FileSplit;
 import org.apache.hadoop.mapred.InputFormat;
 import org.apache.hadoop.mapred.InputSplit;
 import org.apache.hadoop.mapred.JobConf;
-import org.apache.hadoop.mapred.RecordReader;
 import org.apache.hadoop.mapred.Reporter;
 
 /**
@@ -42,12 +41,10 @@ import org.apache.hadoop.mapred.Reporter;
 public class CombineHiveRecordReader<K extends WritableComparable, V extends Writable>
     extends HiveContextAwareRecordReader<K, V> {
 
-  private final RecordReader recordReader;
-
   public CombineHiveRecordReader(InputSplit split, Configuration conf,
       Reporter reporter, Integer partition) throws IOException {
-    JobConf job = (JobConf) conf;
-    CombineHiveInputSplit hsplit = new CombineHiveInputSplit(job,
+    super((JobConf)conf);
+    CombineHiveInputSplit hsplit = new CombineHiveInputSplit(jobConf,
         (InputSplitShim) split);
     String inputFormatClassName = hsplit.inputFormatClassName();
     Class inputFormatClass = null;
@@ -58,15 +55,16 @@ public class CombineHiveRecordReader<K extends WritableComparable, V extends Wri
           + inputFormatClassName);
     }
     InputFormat inputFormat = HiveInputFormat.getInputFormatFromCache(
-        inputFormatClass, job);
+        inputFormatClass, jobConf);
 
     // create a split for the given partition
     FileSplit fsplit = new FileSplit(hsplit.getPaths()[partition], hsplit
         .getStartOffsets()[partition], hsplit.getLengths()[partition], hsplit
         .getLocations());
 
-    this.recordReader = inputFormat.getRecordReader(fsplit, job, reporter);
-    this.initIOContext(fsplit, job, inputFormatClass, this.recordReader);
+    this.setRecordReader(inputFormat.getRecordReader(fsplit, jobConf, reporter));
+
+    this.initIOContext(fsplit, jobConf, inputFormatClass, this.recordReader);
   }
 
   @Override
@@ -86,7 +84,12 @@ public class CombineHiveRecordReader<K extends WritableComparable, V extends Wri
     return recordReader.getPos();
   }
 
+  @Override
   public float getProgress() throws IOException {
+    if (isSorted) {
+      return super.getProgress();
+    }
+
     return recordReader.getProgress();
   }
 
@@ -95,6 +98,6 @@ public class CombineHiveRecordReader<K extends WritableComparable, V extends Wri
     if (ExecMapper.getDone()) {
       return false;
     }
-    return recordReader.next(key, value);
+    return super.doNext(key, value);
   }
 }

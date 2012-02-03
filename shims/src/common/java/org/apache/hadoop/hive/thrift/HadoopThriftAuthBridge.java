@@ -19,6 +19,7 @@
  package org.apache.hadoop.hive.thrift;
 
  import java.io.IOException;
+import java.net.InetAddress;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.thrift.TProcessor;
@@ -66,10 +67,11 @@ import org.apache.thrift.transport.TTransportFactory;
    public static abstract class Server {
      public abstract TTransportFactory createTransportFactory() throws TTransportException;
      public abstract TProcessor wrapProcessor(TProcessor processor);
+     public abstract InetAddress getRemoteAddress();
      public abstract void startDelegationTokenSecretManager(Configuration conf) throws IOException;
-     public abstract String getDelegationToken(String renewer) throws IOException;
+     public abstract String getDelegationToken(String owner, String renewer) 
+     throws IOException, InterruptedException;
      public abstract long renewDelegationToken(String tokenStrForm) throws IOException;
-     public abstract String getDelegationToken(String renewer, String token_signature) throws IOException;
      public abstract void cancelDelegationToken(String tokenStrForm) throws IOException;
    }
  }

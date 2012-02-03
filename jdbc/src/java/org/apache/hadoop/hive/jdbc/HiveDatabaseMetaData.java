@@ -18,13 +18,6 @@
 
 package org.apache.hadoop.hive.jdbc;
 
-import org.apache.hadoop.hive.metastore.TableType;
-import org.apache.hadoop.hive.metastore.api.FieldSchema;
-import org.apache.hadoop.hive.metastore.api.Table;
-import org.apache.hadoop.hive.service.HiveInterface;
-
-import java.io.IOException;
-import java.net.URL;
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
 import java.sql.ResultSet;
@@ -36,7 +29,12 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 import java.util.jar.Attributes;
-import java.util.jar.Manifest;
+
+import org.apache.hadoop.hive.metastore.TableType;
+import org.apache.hadoop.hive.metastore.api.FieldSchema;
+import org.apache.hadoop.hive.metastore.api.Table;
+import org.apache.hadoop.hive.service.HiveInterface;
+import org.apache.thrift.TException;
 
 /**
  * HiveDatabaseMetaData.
@@ -46,6 +44,8 @@ public class HiveDatabaseMetaData implements java.sql.DatabaseMetaData {
 
   private final HiveInterface client;
   private static final String CATALOG_SEPARATOR = ".";
+
+  private static final char SEARCH_STRING_ESCAPE = '\\';
 
   //  The maximum column length = MFieldSchema.FNAME in metastore/src/model/package.jdo
   private static final int maxColumnNameLength = 128;
@@ -106,7 +106,7 @@ public class HiveDatabaseMetaData implements java.sql.DatabaseMetaData {
   public ResultSet getCatalogs() throws SQLException {
     try {
       // TODO a client call to get the schema's after HIVE-675 is implemented
-      final List<String> catalogs = new ArrayList();
+      final List<String> catalogs = new ArrayList<String>();
       catalogs.add("default");
       return new HiveMetaDataResultSet<String>(Arrays.asList("TABLE_CAT")
               , Arrays.asList("STRING")
@@ -139,11 +139,44 @@ public class HiveDatabaseMetaData implements java.sql.DatabaseMetaData {
     throw new SQLException("Method not supported");
   }
 
+  /**
+   * Convert a pattern containing JDBC catalog search wildcards into
+   * Java regex patterns.
+   *
+   * @param pattern input which may contain '%' or '_' wildcard characters, or
+   * these characters escaped using {@link #getSearchStringEscape()}.
+   * @return replace %/_ with regex search characters, also handle escaped
+   * characters.
+   */
   private String convertPattern(final String pattern) {
     if (pattern==null) {
       return ".*";
     } else {
-      return pattern.replace("%", ".*").replace("_", ".");
+      StringBuilder result = new StringBuilder(pattern.length());
+
+      boolean escaped = false;
+      for (int i = 0, len = pattern.length(); i < len; i++) {
+        char c = pattern.charAt(i);
+        if (escaped) {
+          if (c != SEARCH_STRING_ESCAPE) {
+            escaped = false;
+          }
+          result.append(c);
+        } else {
+          if (c == SEARCH_STRING_ESCAPE) {
+            escaped = true;
+            continue;
+          } else if (c == '%') {
+            result.append(".*");
+          } else if (c == '_') {
+            result.append('.');
+          } else {
+            result.append(c);
+          }
+        }
+      }
+
+      return result.toString();
     }
   }
 
@@ -162,7 +195,7 @@ public class HiveDatabaseMetaData implements java.sql.DatabaseMetaData {
       List<String> tables = client.get_tables(catalog, "*");
       for (String table: tables) {
         if (table.matches(regtableNamePattern)) {
-          List<FieldSchema> fields = client.get_fields(catalog, table);
+          List<FieldSchema> fields = client.get_schema(catalog, table);
           int ordinalPos = 1;
           for (FieldSchema field: fields) {
             if (field.getName().matches(regcolumnNamePattern)) {
@@ -182,10 +215,10 @@ public class HiveDatabaseMetaData implements java.sql.DatabaseMetaData {
                       , "SQL_DATETIME_SUB", "CHAR_OCTET_LENGTH", "ORDINAL_POSITION"
                       , "IS_NULLABLE", "SCOPE_CATLOG", "SCOPE_SCHEMA", "SCOPE_TABLE"
                       , "SOURCE_DATA_TYPE")
-              , Arrays.asList("STRING", "STRING", "STRING", "STRING", "I32", "STRING"
-                , "I32", "I32", "I32", "I32", "I32", "STRING"
-                , "STRING", "I32", "I32", "I32", "I32"
-                , "STRING", "STRING", "STRING", "STRING", "I32")
+              , Arrays.asList("STRING", "STRING", "STRING", "STRING", "INT", "STRING"
+                , "INT", "INT", "INT", "INT", "INT", "STRING"
+                , "STRING", "INT", "INT", "INT", "INT"
+                , "STRING", "STRING", "STRING", "STRING", "INT")
               , columns) {
 
         private int cnt = 0;
@@ -273,7 +306,11 @@ public class HiveDatabaseMetaData implements java.sql.DatabaseMetaData {
   }
 
   public String getDatabaseProductVersion() throws SQLException {
-    return "0";
+    try {
+      return client.getVersion();
+    } catch (TException e) {
+      throw new SQLException(e);
+    }
   }
 
   public int getDefaultTransactionIsolation() throws SQLException {
@@ -483,7 +520,7 @@ public class HiveDatabaseMetaData implements java.sql.DatabaseMetaData {
   }
 
   public String getSearchStringEscape() throws SQLException {
-    throw new SQLException("Method not supported");
+    return String.valueOf(SEARCH_STRING_ESCAPE);
   }
 
   public String getStringFunctions() throws SQLException {
@@ -534,7 +571,7 @@ public class HiveDatabaseMetaData implements java.sql.DatabaseMetaData {
   public ResultSet getTables(String catalog, String schemaPattern,
                              String tableNamePattern, String[] types) throws SQLException {
     final List<String> tablesstr;
-    final List<JdbcTable> resultTables = new ArrayList();
+    final List<JdbcTable> resultTables = new ArrayList<JdbcTable>();
     final String resultCatalog;
     if (catalog==null) { // On jdbc the default catalog is null but on hive it's "default"
       resultCatalog = "default";
@@ -647,7 +684,7 @@ public class HiveDatabaseMetaData implements java.sql.DatabaseMetaData {
     return new HiveMetaDataResultSet(
             Arrays.asList("TYPE_CAT", "TYPE_SCHEM", "TYPE_NAME", "CLASS_NAME", "DATA_TYPE"
                     , "REMARKS", "BASE_TYPE")
-            , Arrays.asList("STRING", "STRING", "STRING", "STRING", "I32", "STRING", "I32")
+            , Arrays.asList("STRING", "STRING", "STRING", "STRING", "INT", "STRING", "INT")
             , null) {
 
       public boolean next() throws SQLException {

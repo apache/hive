@@ -64,12 +64,18 @@ public class RCFileInputFormat<K extends LongWritable, V extends BytesRefArrayWr
       return false;
     }
     for (int fileId = 0; fileId < files.size(); fileId++) {
+      RCFile.Reader reader = null;
       try {
-        RCFile.Reader reader = new RCFile.Reader(fs, files.get(fileId)
+        reader = new RCFile.Reader(fs, files.get(fileId)
             .getPath(), conf);
         reader.close();
+        reader = null;
       } catch (IOException e) {
         return false;
+      } finally {
+        if (null != reader) {
+          reader.close();
+        }
       }
     }
     return true;

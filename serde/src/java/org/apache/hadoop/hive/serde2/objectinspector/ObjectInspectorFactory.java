@@ -30,7 +30,6 @@ import java.util.Map;
 
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorFactory;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorUtils;
-import org.apache.hadoop.io.Text;
 
 /**
  * ObjectInspectorFactory is the primary way to create new ObjectInspector
@@ -205,6 +204,12 @@ public final class ObjectInspectorFactory {
     return result;
   }
 
+  public static StandardConstantListObjectInspector getStandardConstantListObjectInspector(
+      ObjectInspector listElementObjectInspector, List<?> constantValue) {
+    return new StandardConstantListObjectInspector(listElementObjectInspector, constantValue);
+  }
+
+
   static HashMap<List<ObjectInspector>, StandardMapObjectInspector> cachedStandardMapObjectInspector = new HashMap<List<ObjectInspector>, StandardMapObjectInspector>();
 
   public static StandardMapObjectInspector getStandardMapObjectInspector(
@@ -221,6 +226,14 @@ public final class ObjectInspectorFactory {
       cachedStandardMapObjectInspector.put(signature, result);
     }
     return result;
+  }
+
+  public static StandardConstantMapObjectInspector getStandardConstantMapObjectInspector(
+      ObjectInspector mapKeyObjectInspector,
+      ObjectInspector mapValueObjectInspector,
+      Map<?, ?> constantValue) {
+    return new StandardConstantMapObjectInspector(mapKeyObjectInspector,
+          mapValueObjectInspector, constantValue);
   }
 
   static HashMap<List<ObjectInspector>, StandardUnionObjectInspector>
@@ -243,14 +256,22 @@ public final class ObjectInspectorFactory {
   public static StandardStructObjectInspector getStandardStructObjectInspector(
       List<String> structFieldNames,
       List<ObjectInspector> structFieldObjectInspectors) {
-    ArrayList<List<?>> signature = new ArrayList<List<?>>();
+    return getStandardStructObjectInspector(structFieldNames, structFieldObjectInspectors, null);
+  }
+
+  public static StandardStructObjectInspector getStandardStructObjectInspector(
+      List<String> structFieldNames,
+      List<ObjectInspector> structFieldObjectInspectors,
+      List<String> structComments) {
+    ArrayList<List<?>> signature = new ArrayList<List<?>>(3);
     signature.add(structFieldNames);
     signature.add(structFieldObjectInspectors);
-    StandardStructObjectInspector result = cachedStandardStructObjectInspector
-        .get(signature);
-    if (result == null) {
-      result = new StandardStructObjectInspector(structFieldNames,
-          structFieldObjectInspectors);
+    if(structComments != null) {
+      signature.add(structComments);
+    }
+    StandardStructObjectInspector result = cachedStandardStructObjectInspector.get(signature);
+    if(result == null) {
+      result = new StandardStructObjectInspector(structFieldNames, structFieldObjectInspectors, structComments);
       cachedStandardStructObjectInspector.put(signature, result);
     }
     return result;
@@ -273,16 +294,24 @@ public final class ObjectInspectorFactory {
 
   public static ColumnarStructObjectInspector getColumnarStructObjectInspector(
       List<String> structFieldNames,
-      List<ObjectInspector> structFieldObjectInspectors, Text nullSequence) {
-    ArrayList<Object> signature = new ArrayList<Object>();
+      List<ObjectInspector> structFieldObjectInspectors) {
+    return getColumnarStructObjectInspector(structFieldNames, structFieldObjectInspectors, null);
+  }
+
+  public static ColumnarStructObjectInspector getColumnarStructObjectInspector(
+      List<String> structFieldNames,
+      List<ObjectInspector> structFieldObjectInspectors, List<String> structFieldComments) {
+    ArrayList<Object> signature = new ArrayList<Object>(3);
     signature.add(structFieldNames);
     signature.add(structFieldObjectInspectors);
-    signature.add(nullSequence.toString());
+    if(structFieldComments != null) {
+      signature.add(structFieldComments);
+    }
     ColumnarStructObjectInspector result = cachedColumnarStructObjectInspector
         .get(signature);
     if (result == null) {
       result = new ColumnarStructObjectInspector(structFieldNames,
-          structFieldObjectInspectors, nullSequence);
+          structFieldObjectInspectors, structFieldComments);
       cachedColumnarStructObjectInspector.put(signature, result);
     }
     return result;

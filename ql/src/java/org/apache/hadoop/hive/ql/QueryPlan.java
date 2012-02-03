@@ -88,6 +88,8 @@ public class QueryPlan implements Serializable {
   private HashSet<String> done;
   private HashSet<String> started;
 
+  private QueryProperties queryProperties;
+
   public QueryPlan() {
   }
 
@@ -110,6 +112,7 @@ public class QueryPlan implements Serializable {
     counters = new HashMap<String, HashMap<String, Long>>();
     done = new HashSet<String>();
     started = new HashSet<String>();
+    queryProperties = sem.getQueryProperties();
   }
 
   public String getQueryStr() {
@@ -736,5 +739,9 @@ public class QueryPlan implements Serializable {
    */
   public void setLineageInfo(LineageInfo linfo) {
     this.linfo = linfo;
+  }
+
+  public QueryProperties getQueryProperties() {
+    return queryProperties;
   }
 }

@@ -18,6 +18,11 @@
 
 package org.apache.hadoop.hive.ql.plan;
 
+import java.util.ArrayList;
+
+import org.apache.hadoop.hive.ql.udf.UDFType;
+import org.apache.hadoop.hive.ql.udf.generic.GenericUDAFEvaluator;
+
 /**
  * GroupByDesc.
  *
@@ -174,5 +179,23 @@ public class GroupByDesc implements java.io.Serializable {
 
   public void setBucketGroup(boolean dataSorted) {
     bucketGroup = dataSorted;
+  }
+  
+  /**
+   * Checks if this grouping is like distinct, which means that all non-distinct grouping
+   * columns behave like they were distinct - for example min and max operators.
+   */
+  public boolean isDistinctLike() {
+    ArrayList<AggregationDesc> aggregators = getAggregators();
+    for(AggregationDesc ad: aggregators){
+      if(!ad.getDistinct()) {
+        GenericUDAFEvaluator udafEval = ad.getGenericUDAFEvaluator();
+        UDFType annot = udafEval.getClass().getAnnotation(UDFType.class);
+        if(annot == null || !annot.distinctLike()) {
+          return false;
+        }
+      }
+    }
+    return true;
   }
 }

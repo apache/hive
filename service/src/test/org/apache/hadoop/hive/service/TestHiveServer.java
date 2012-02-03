@@ -23,7 +23,9 @@ import java.util.Properties;
 import junit.framework.TestCase;
 
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.hive.common.ServerUtils;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.Schema;
@@ -50,12 +52,14 @@ public class TestHiveServer extends TestCase {
   private final HiveConf conf;
   private boolean standAloneServer = false;
   private TTransport transport;
+  private final String invalidPath;
 
   public TestHiveServer(String name) {
     super(name);
     conf = new HiveConf(TestHiveServer.class);
     String dataFileDir = conf.get("test.data.files").replace('\\', '/')
         .replace("c:", "");
+    invalidPath = dataFileDir+"/invalidpath/";
     dataFilePath = new Path(dataFileDir, "kv1.txt");
     // See data/conf/hive-site.xml
     String paramStr = System.getProperty("test.service.standalone.server");
@@ -86,6 +90,11 @@ public class TestHiveServer extends TestCase {
   protected void tearDown() throws Exception {
     super.tearDown();
     if (standAloneServer) {
+      try {
+        client.clean();
+      } catch (Exception e) {
+        e.printStackTrace();
+      }
       transport.close();
     }
   }
@@ -162,7 +171,12 @@ public class TestHiveServer extends TestCase {
     assertEquals(thriftschema.getFieldSchemasSize(), 0);
     assertEquals(thriftschema.getPropertiesSize(), 0);
 
-    assertEquals(client.fetchOne(), "");
+    try {
+      String ret = client.fetchOne();
+      assertTrue(false);
+    } catch (HiveServerException e) {
+      assertEquals(e.getErrorCode(), 0);
+    }
     assertEquals(client.fetchN(10).size(), 0);
     assertEquals(client.fetchAll().size(), 0);
 
@@ -181,7 +195,12 @@ public class TestHiveServer extends TestCase {
     assertEquals(thriftschema.getFieldSchemasSize(), 0);
     assertEquals(thriftschema.getPropertiesSize(), 0);
 
-    assertEquals(client.fetchOne(), "");
+    try {
+      String ret = client.fetchOne();
+      assertTrue(false);
+    } catch (HiveServerException e) {
+      assertEquals(e.getErrorCode(), 0);
+    }
     assertEquals(client.fetchN(10).size(), 0);
     assertEquals(client.fetchAll().size(), 0);
 
@@ -243,12 +262,17 @@ public class TestHiveServer extends TestCase {
       // fetchOne test
       client.execute("select key, value from " + tableName);
       for (int i = 0; i < 500; i++) {
-        String str = client.fetchOne();
-        if (str.equals("")) {
+        try {
+          String str = client.fetchOne();
+        } catch (HiveServerException e) {
           assertTrue(false);
         }
       }
-      assertEquals(client.fetchOne(), "");
+      try {
+        client.fetchOne();
+      } catch (HiveServerException e) {
+        assertEquals(e.getErrorCode(), 0);
+      }
 
       // fetchN test
       client.execute("select key, value from " + tableName);
@@ -330,6 +354,71 @@ public class TestHiveServer extends TestCase {
     ds = new DynamicSerDe();
     ds.initialize(new Configuration(), dsp);
     o = ds.deserialize(new BytesWritable(row.getBytes()));
+  }
+
+  public void testAddJarShouldFailIfJarNotExist() throws Exception {
+    boolean queryExecutionFailed = false;
+    try {
+      client.execute("add jar " + invalidPath + "sample.jar");
+    } catch (Exception e) {
+      queryExecutionFailed = true;
+    }
+    if (!queryExecutionFailed) {
+      fail("It should throw exception since jar does not exist");
+    }
+  }
+
+  public void testAddFileShouldFailIfFileNotExist() throws Exception {
+    boolean queryExecutionFailed = false;
+    try {
+      client.execute("add file " + invalidPath + "sample.txt");
+    } catch (Exception e) {
+      queryExecutionFailed = true;
+    }
+    if (!queryExecutionFailed) {
+      fail("It should throw exception since file does not exist");
+    }
+  }
+
+  public void testAddArchiveShouldFailIfFileNotExist() throws Exception {
+    boolean queryExecutionFailed = false;
+    try {
+      client.execute("add archive " + invalidPath + "sample.zip");
+    } catch (Exception e) {
+      queryExecutionFailed = true;
+    }
+    if (!queryExecutionFailed) {
+      fail("It should trow exception since archive does not exist");
+    }
+  }
+
+  public void testScratchDirShouldNotClearWhileStartup() throws Exception {
+    FileSystem fs = FileSystem.get(conf);
+    Path scratchDirPath = new Path(HiveConf.getVar(conf,
+        HiveConf.ConfVars.SCRATCHDIR));
+    boolean fileExists = fs.exists(scratchDirPath);
+    if (!fileExists) {
+      fileExists = fs.mkdirs(scratchDirPath);
+    }
+    ServerUtils.cleanUpScratchDir(conf);
+    assertTrue("Scratch dir is not available after startup", fs.exists(scratchDirPath));
+  }
+
+  public void testScratchDirShouldClearWhileStartup() throws Exception {
+    FileSystem fs = FileSystem.get(conf);
+    Path scratchDirPath = new Path(HiveConf.getVar(conf,
+        HiveConf.ConfVars.SCRATCHDIR));
+    boolean fileExists = fs.exists(scratchDirPath);
+    if (!fileExists) {
+      fileExists = fs.mkdirs(scratchDirPath);
+    }
+    try {
+      conf.setBoolVar(HiveConf.ConfVars.HIVE_START_CLEANUP_SCRATCHDIR, true);
+      ServerUtils.cleanUpScratchDir(conf);
+    } finally {
+      conf.setBoolVar(HiveConf.ConfVars.HIVE_START_CLEANUP_SCRATCHDIR, false);
+    }
+    assertFalse("Scratch dir is available after startup", fs.exists(scratchDirPath));
   }
 
 }

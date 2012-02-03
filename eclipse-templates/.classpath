@@ -1,46 +1,49 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <classpath>
-  <classpathentry exported="true" kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
-  <classpathentry exported="true" kind="lib" path="build/hadoopcore/hadoop-@HADOOPVER@/hadoop-@HADOOPVER@-core.jar"/>
-  <classpathentry exported="true" kind="lib" path="build/hadoopcore/hadoop-@HADOOPVER@/hadoop-@HADOOPVER@-test.jar"/>
-  <classpathentry exported="true" kind="lib" path="build/hadoopcore/hadoop-@HADOOPVER@/hadoop-@HADOOPVER@-tools.jar"/>
-  <classpathentry exported="true" kind="lib" path="build/hadoopcore/hadoop-@HADOOPVER@/lib/@SERVLETAPIJAR@"/>
-  <classpathentry exported="true" kind="lib" path="build/hadoopcore/hadoop-@HADOOPVER@/lib/@JETTYJAR@"/>
-  <classpathentry exported="true" kind="lib" path="build/hadoopcore/hadoop-@HADOOPVER@/lib/@JETTYUTILJAR@"/>
-  <classpathentry exported="true" kind="lib" path="cli/lib/jline-@jline.version@.jar"/>
-  <classpathentry exported="true" kind="lib" path="lib/json.jar"/>
-  <classpathentry exported="true" kind="lib" path="lib/asm-@asm.version@.jar"/>
-  <classpathentry exported="true" kind="lib" path="lib/commons-codec-@commons-codec.version@.jar"/>
-  <classpathentry exported="true" kind="lib" path="lib/commons-lang-@commons-lang.version@.jar"/>
-  <classpathentry exported="true" kind="lib" path="lib/commons-logging-@commons-logging.version@.jar"/>
-  <classpathentry exported="true" kind="lib" path="lib/commons-logging-api-@commons-logging-api.version@.jar"/>
-  <classpathentry exported="true" kind="lib" path="lib/derby.jar"/>
-  <classpathentry exported="true" kind="lib" path="build/dist/lib/hbase-@hbase.version@.jar"/>
-  <classpathentry exported="true" kind="lib" path="build/dist/lib/hbase-@hbase-test.version@-tests.jar"/>
-  <classpathentry exported="true" kind="lib" path="lib/thrift-fb303-@thrift-fb303.version@.jar"/>
-  <classpathentry exported="true" kind="lib" path="lib/thrift-@thrift.version@.jar"/>
-  <classpathentry exported="true" kind="lib" path="build/dist/lib/zookeeper-@zookeeper.version@.jar"/>
-  <classpathentry exported="true" kind="lib" path="lib/log4j-@log4j.version@.jar"/>
-  <classpathentry exported="true" kind="lib" path="ql/lib/antlr-@antlr.version@.jar"/>
-  <classpathentry exported="true" kind="lib" path="ql/lib/antlr-runtime-@antlr-runtime.version@.jar"/>
-  <classpathentry exported="true" kind="lib" path="testlibs/junit-@junit.version@.jar"/>
-  <classpathentry kind="lib" path="build/dist/lib/jdo2-api-@jdo-api.version@.jar"/>
-  <classpathentry kind="lib" path="build/dist/lib/datanucleus-core-@datanucleus-core.version@.jar"/>
-  <classpathentry kind="lib" path="build/dist/lib/datanucleus-enhancer-@datanucleus-enhancer.version@.jar"/>
-  <classpathentry kind="lib" path="build/dist/lib/datanucleus-rdbms-@datanucleus-rdbms.version@.jar"/>
-  <classpathentry kind="lib" path="build/dist/lib/commons-cli-@commons-cli.version@.jar"/>
-  <classpathentry kind="lib" path="build/dist/lib/commons-collections-@commons-collections.version@.jar"/>
-  <classpathentry kind="lib" path="build/dist/lib/commons-dbcp-@commons-dbcp.version@.jar"/>
-  <classpathentry kind="lib" path="build/dist/lib/datanucleus-connectionpool-@datanucleus-connectionpool.version@.jar"/>
-  <classpathentry kind="lib" path="build/dist/lib/commons-pool-@commons-pool.version@.jar"/>
-  <classpathentry kind="lib" path="build/dist/lib/slf4j-api-@slf4j-api.version@.jar"/>
-  <classpathentry kind="lib" path="build/dist/lib/slf4j-log4j12-@slf4j-log4j12.version@.jar"/>
+  <classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
+  <classpathentry kind="lib" path="build/hadoopcore/hadoop-@HADOOPVER@/hadoop-@HADOOPVER@-core.jar"/>
+  <classpathentry kind="lib" path="build/hadoopcore/hadoop-@HADOOPVER@/hadoop-@HADOOPVER@-test.jar"/>
+  <classpathentry kind="lib" path="build/hadoopcore/hadoop-@HADOOPVER@/hadoop-@HADOOPVER@-tools.jar"/>
+  <classpathentry kind="lib" path="build/hadoopcore/hadoop-@HADOOPVER@/lib/@SERVLETAPIJAR@"/>
+  <classpathentry kind="lib" path="build/hadoopcore/hadoop-@HADOOPVER@/lib/@JETTYJAR@"/>
+  <classpathentry kind="lib" path="build/hadoopcore/hadoop-@HADOOPVER@/lib/@JETTYUTILJAR@"/>
+  <classpathentry kind="lib" path="build/ivy/lib/default/jline-@jline.version@.jar"/>
+  <classpathentry kind="lib" path="build/ivy/lib/default/json-@json.version@.jar"/>
+  <classpathentry kind="lib" path="build/ivy/lib/default/asm-@asm.version@.jar"/>
+  <classpathentry kind="lib" path="build/hadoopcore/hadoop-@HADOOPVER@/lib/commons-codec-@commons-codec.version@.jar"/>
+  <classpathentry kind="lib" path="build/ivy/lib/default/commons-lang-@commons-lang.version@.jar"/>
+  <classpathentry kind="lib" path="build/ivy/lib/default/commons-logging-@commons-logging.version@.jar"/>
+  <classpathentry kind="lib" path="build/ivy/lib/default/commons-logging-api-@commons-logging-api.version@.jar"/>
+  <classpathentry kind="lib" path="build/ivy/lib/default/derby-@derby.version@.jar"/>
+  <classpathentry kind="lib" path="build/ivy/lib/default/hbase-@hbase.version@.jar"/>
+  <classpathentry kind="lib" path="build/ivy/lib/default/hbase-@hbase-test.version@-tests.jar"/>
+  <classpathentry kind="lib" path="build/ivy/lib/default/libfb303-@libfb303.version@.jar"/>
+  <classpathentry kind="lib" path="build/hadoopcore/libthrift-@libthrift.version@.jar"/>
+  <classpathentry kind="lib" path="build/ivy/lib/default/zookeeper-@zookeeper.version@.jar"/>
+  <classpathentry kind="lib" path="build/ivy/lib/default/log4j-@log4j.version@.jar"/>
+  <classpathentry kind="lib" path="build/ivy/lib/default/antlr-@antlr.version@.jar"/>
+  <classpathentry kind="lib" path="build/ivy/lib/default/antlr-runtime-@antlr-runtime.version@.jar"/>
+  <classpathentry kind="lib" path="testlibs/junit-@junit.version@.jar"/>
+  <classpathentry kind="lib" path="build/ivy/lib/default/jdo2-api-@jdo-api.version@.jar"/>
+  <classpathentry kind="lib" path="build/ivy/lib/default/datanucleus-core-@datanucleus-core.version@.jar"/>
+  <classpathentry kind="lib" path="build/ivy/lib/default/datanucleus-enhancer-@datanucleus-enhancer.version@.jar"/>
+  <classpathentry kind="lib" path="build/ivy/lib/default/datanucleus-rdbms-@datanucleus-rdbms.version@.jar"/>
+  <classpathentry kind="lib" path="build/ivy/lib/default/commons-cli-@commons-cli.version@.jar"/>
+  <classpathentry kind="lib" path="build/ivy/lib/default/commons-collections-@commons-collections.version@.jar"/>
+  <classpathentry kind="lib" path="build/ivy/lib/default/commons-dbcp-@commons-dbcp.version@.jar"/>
+  <classpathentry kind="lib" path="build/ivy/lib/default/datanucleus-connectionpool-@datanucleus-connectionpool.version@.jar"/>
+  <classpathentry kind="lib" path="build/ivy/lib/default/commons-pool-@commons-pool.version@.jar"/>
+  <classpathentry kind="lib" path="build/ivy/lib/default/slf4j-api-@slf4j-api.version@.jar"/>
+  <classpathentry kind="lib" path="build/ivy/lib/default/slf4j-log4j12-@slf4j-log4j12.version@.jar"/>
+  <classpathentry kind="lib" path="lib/javaewah-@javaewah.version@.jar"/>
+  <classpathentry kind="lib" path="build/ivy/lib/default/mockito-all-@mockito-all.version@.jar"/>
   <classpathentry kind="src" path="build/contrib/test/src"/>
   <classpathentry kind="src" path="build/metastore/gen/antlr/gen-java"/>
   <classpathentry kind="src" path="build/ql/test/src"/>
   <classpathentry kind="src" path="build/ql/gen/antlr/gen-java"/>
   <classpathentry kind="src" path="cli/src/java"/>
   <classpathentry kind="src" path="common/src/java"/>
+  <classpathentry kind="src" path="common/src/test"/>
   <classpathentry kind="src" path="contrib/src/java"/>
   <classpathentry kind="src" path="contrib/src/test"/>
   <classpathentry kind="src" path="metastore/src/gen/thrift/gen-javabean"/>
@@ -63,5 +66,11 @@
   <classpathentry kind="src" path="shims/src/common/java"/>
   <classpathentry kind="src" path="hwi/src/java"/>
   <classpathentry kind="src" path="hwi/src/test"/>
+  <classpathentry kind="src" path="hbase-handler/src/java"/>
+  <classpathentry excluding="queries/|results/|templates/" kind="src" path="hbase-handler/src/test"/>
+  <classpathentry kind="src" path="pdk/src/java"/>
+  <classpathentry kind="src" path="pdk/test-plugin/src"/>
+  <classpathentry kind="src" path="builtins/src"/>
+  <classpathentry kind="src" path="cli/src/test"/>
   <classpathentry kind="output" path="build/eclipse-classes"/>
 </classpath>

@@ -23,12 +23,11 @@ import java.util.List;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.apache.hadoop.hive.serde2.columnar.ColumnarStruct;
-import org.apache.hadoop.io.Text;
+import org.apache.hadoop.hive.serde2.columnar.ColumnarStructBase;
 
 /**
  * ColumnarStructObjectInspector works on struct data that is stored in
- * ColumnarStruct.
+ * ColumnarStructBase.
  *
  * The names of the struct fields and the internal structure of the struct
  * fields are specified in the ctor of the ColumnarStructObjectInspector.
@@ -45,12 +44,19 @@ class ColumnarStructObjectInspector extends StructObjectInspector {
     protected int fieldID;
     protected String fieldName;
     protected ObjectInspector fieldObjectInspector;
+    protected String fieldComment;
 
     public MyField(int fieldID, String fieldName,
         ObjectInspector fieldObjectInspector) {
       this.fieldID = fieldID;
       this.fieldName = fieldName.toLowerCase();
       this.fieldObjectInspector = fieldObjectInspector;
+    }
+
+    public MyField(int fieldID, String fieldName,
+        ObjectInspector fieldObjectInspector, String fieldComment) {
+      this(fieldID, fieldName, fieldObjectInspector);
+      this.fieldComment = fieldComment;
     }
 
     public int getFieldID() {
@@ -65,6 +71,9 @@ class ColumnarStructObjectInspector extends StructObjectInspector {
       return fieldObjectInspector;
     }
 
+    public String getFieldComment() {
+      return fieldComment;
+    }
     @Override
     public String toString() {
       return "" + fieldID + ":" + fieldName;
@@ -78,41 +87,44 @@ class ColumnarStructObjectInspector extends StructObjectInspector {
     return ObjectInspectorUtils.getStandardStructTypeName(this);
   }
 
-  Text nullSequence;
-
   /**
    * Call ObjectInspectorFactory.getLazySimpleStructObjectInspector instead.
    */
   public ColumnarStructObjectInspector(List<String> structFieldNames,
-      List<ObjectInspector> structFieldObjectInspectors, Text nullSequence) {
-    init(structFieldNames, structFieldObjectInspectors, nullSequence);
+      List<ObjectInspector> structFieldObjectInspectors) {
+    init(structFieldNames, structFieldObjectInspectors, null);
+  }
+
+  public ColumnarStructObjectInspector(List<String> structFieldNames,
+      List<ObjectInspector> structFieldObjectInspectors,
+      List<String> structFieldComments) {
+    init(structFieldNames, structFieldObjectInspectors, structFieldComments);
   }
 
   protected void init(List<String> structFieldNames,
-      List<ObjectInspector> structFieldObjectInspectors, Text nullSequence) {
+      List<ObjectInspector> structFieldObjectInspectors,
+      List<String> structFieldComments) {
     assert (structFieldNames.size() == structFieldObjectInspectors.size());
-
-    this.nullSequence = nullSequence;
+    assert (structFieldComments == null ||
+           (structFieldNames.size() == structFieldComments.size()));
 
     fields = new ArrayList<MyField>(structFieldNames.size());
     for (int i = 0; i < structFieldNames.size(); i++) {
       fields.add(new MyField(i, structFieldNames.get(i),
-          structFieldObjectInspectors.get(i)));
+          structFieldObjectInspectors.get(i),
+          structFieldComments == null ? null : structFieldComments.get(i)));
     }
   }
 
-  protected ColumnarStructObjectInspector(List<StructField> fields,
-      Text nullSequence) {
-    init(fields, nullSequence);
+  protected ColumnarStructObjectInspector(List<StructField> fields) {
+    init(fields);
   }
 
-  protected void init(List<StructField> fields, Text nullSequence) {
-    this.nullSequence = nullSequence;
-
+  protected void init(List<StructField> fields) {
     this.fields = new ArrayList<MyField>(fields.size());
     for (int i = 0; i < fields.size(); i++) {
       this.fields.add(new MyField(i, fields.get(i).getFieldName(), fields
-          .get(i).getFieldObjectInspector()));
+          .get(i).getFieldObjectInspector(), fields.get(i).getFieldComment()));
     }
   }
 
@@ -138,7 +150,7 @@ class ColumnarStructObjectInspector extends StructObjectInspector {
     if (data == null) {
       return null;
     }
-    ColumnarStruct struct = (ColumnarStruct) data;
+    ColumnarStructBase struct = (ColumnarStructBase) data;
     MyField f = (MyField) fieldRef;
 
     int fieldID = f.getFieldID();
@@ -152,7 +164,7 @@ class ColumnarStructObjectInspector extends StructObjectInspector {
     if (data == null) {
       return null;
     }
-    ColumnarStruct struct = (ColumnarStruct) data;
+    ColumnarStructBase struct = (ColumnarStructBase) data;
     return struct.getFieldsAsList();
   }
 }

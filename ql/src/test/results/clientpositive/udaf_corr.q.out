@@ -14,6 +14,7 @@ POSTHOOK: Output: default@covar_tab
 PREHOOK: query: LOAD DATA LOCAL INPATH '../data/files/covar_tab.txt' OVERWRITE
 INTO TABLE covar_tab
 PREHOOK: type: LOAD
+PREHOOK: Output: default@covar_tab
 POSTHOOK: query: LOAD DATA LOCAL INPATH '../data/files/covar_tab.txt' OVERWRITE
 INTO TABLE covar_tab
 POSTHOOK: type: LOAD
@@ -40,38 +41,38 @@ and STDDEV_POP is the population standard deviation.
 PREHOOK: query: SELECT corr(b, c) FROM covar_tab WHERE a < 1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@covar_tab
-PREHOOK: Output: file:/tmp/nhuyn/hive_2010-08-18_14-44-58_681_3541590287509550544/-mr-10000
+PREHOOK: Output: file:/tmp/krishnak/hive_2011-03-21_05-25-40_474_1464411412371229362/-mr-10000
 POSTHOOK: query: SELECT corr(b, c) FROM covar_tab WHERE a < 1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@covar_tab
-POSTHOOK: Output: file:/tmp/nhuyn/hive_2010-08-18_14-44-58_681_3541590287509550544/-mr-10000
+POSTHOOK: Output: file:/tmp/krishnak/hive_2011-03-21_05-25-40_474_1464411412371229362/-mr-10000
 NULL
 PREHOOK: query: SELECT corr(b, c) FROM covar_tab WHERE a < 3
 PREHOOK: type: QUERY
 PREHOOK: Input: default@covar_tab
-PREHOOK: Output: file:/tmp/nhuyn/hive_2010-08-18_14-45-03_289_9041510910213817151/-mr-10000
+PREHOOK: Output: file:/tmp/krishnak/hive_2011-03-21_05-25-43_568_218125804315734633/-mr-10000
 POSTHOOK: query: SELECT corr(b, c) FROM covar_tab WHERE a < 3
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@covar_tab
-POSTHOOK: Output: file:/tmp/nhuyn/hive_2010-08-18_14-45-03_289_9041510910213817151/-mr-10000
+POSTHOOK: Output: file:/tmp/krishnak/hive_2011-03-21_05-25-43_568_218125804315734633/-mr-10000
 NULL
 PREHOOK: query: SELECT corr(b, c) FROM covar_tab WHERE a = 3
 PREHOOK: type: QUERY
 PREHOOK: Input: default@covar_tab
-PREHOOK: Output: file:/tmp/nhuyn/hive_2010-08-18_14-45-06_480_8481295633393615585/-mr-10000
+PREHOOK: Output: file:/tmp/krishnak/hive_2011-03-21_05-25-46_666_315265665655580607/-mr-10000
 POSTHOOK: query: SELECT corr(b, c) FROM covar_tab WHERE a = 3
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@covar_tab
-POSTHOOK: Output: file:/tmp/nhuyn/hive_2010-08-18_14-45-06_480_8481295633393615585/-mr-10000
+POSTHOOK: Output: file:/tmp/krishnak/hive_2011-03-21_05-25-46_666_315265665655580607/-mr-10000
 NULL
 PREHOOK: query: SELECT a, corr(b, c) FROM covar_tab GROUP BY a ORDER BY a
 PREHOOK: type: QUERY
 PREHOOK: Input: default@covar_tab
-PREHOOK: Output: file:/tmp/nhuyn/hive_2010-08-18_14-45-09_655_4572224946166536614/-mr-10000
+PREHOOK: Output: file:/tmp/krishnak/hive_2011-03-21_05-25-49_755_5099432257211714656/-mr-10000
 POSTHOOK: query: SELECT a, corr(b, c) FROM covar_tab GROUP BY a ORDER BY a
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@covar_tab
-POSTHOOK: Output: file:/tmp/nhuyn/hive_2010-08-18_14-45-09_655_4572224946166536614/-mr-10000
+POSTHOOK: Output: file:/tmp/krishnak/hive_2011-03-21_05-25-49_755_5099432257211714656/-mr-10000
 1	NULL
 2	NULL
 3	NULL
@@ -81,11 +82,11 @@ POSTHOOK: Output: file:/tmp/nhuyn/hive_2010-08-18_14-45-09_655_45722249461665366
 PREHOOK: query: SELECT corr(b, c) FROM covar_tab
 PREHOOK: type: QUERY
 PREHOOK: Input: default@covar_tab
-PREHOOK: Output: file:/tmp/nhuyn/hive_2010-08-18_14-45-20_421_6697314491903913524/-mr-10000
+PREHOOK: Output: file:/tmp/krishnak/hive_2011-03-21_05-25-55_446_716792391654480974/-mr-10000
 POSTHOOK: query: SELECT corr(b, c) FROM covar_tab
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@covar_tab
-POSTHOOK: Output: file:/tmp/nhuyn/hive_2010-08-18_14-45-20_421_6697314491903913524/-mr-10000
+POSTHOOK: Output: file:/tmp/krishnak/hive_2011-03-21_05-25-55_446_716792391654480974/-mr-10000
 0.6633880657639323
 PREHOOK: query: DROP TABLE covar_tab
 PREHOOK: type: DROPTABLE

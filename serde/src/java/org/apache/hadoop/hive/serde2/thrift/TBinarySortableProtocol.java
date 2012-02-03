@@ -41,7 +41,7 @@ import org.apache.thrift.transport.TTransport;
 
 /**
  * An implementation of the Thrift Protocol for binary sortable records.
- * 
+ *
  * The data format: NULL: a single byte \0 NON-NULL Primitives: ALWAYS prepend a
  * single byte \1, and then: Boolean: FALSE = \1, TRUE = \2 Byte: flip the
  * sign-bit to make sure negative comes before positive Short: flip the sign-bit
@@ -55,16 +55,16 @@ import org.apache.thrift.transport.TTransport;
  * as Int (see above), then one key by one value, and then the next pair and so
  * on. Binary: size stored as Int (see above), then the binary data in its
  * original form
- * 
+ *
  * Note that the relative order of list/map/binary will be based on the size
  * first (and elements one by one if the sizes are equal).
- * 
+ *
  * This protocol takes an additional parameter SERIALIZATION_SORT_ORDER which is
  * a string containing only "+" and "-". The length of the string should equal
  * to the number of fields in the top-level struct for serialization. "+" means
  * the field should be sorted ascendingly, and "-" means descendingly. The sub
  * fields in the same top-level field will have the same sort order.
- * 
+ *
  * This is not thrift compliant in that it doesn't write out field ids so things
  * cannot actually be versioned.
  */
@@ -340,7 +340,7 @@ public class TBinarySortableProtocol extends TProtocol implements
     try {
       dat = str.getBytes("UTF-8");
     } catch (UnsupportedEncodingException uex) {
-      throw new TException("JVM DOES NOT SUPPORT UTF-8: " + uex.getMessage());
+      throw new TException("JVM DOES NOT SUPPORT UTF-8: ",uex);
     }
     writeTextBytes(dat, 0, dat.length);
   }
@@ -635,7 +635,7 @@ public class TBinarySortableProtocol extends TProtocol implements
       String r = new String(stringBytes, 0, i, "UTF-8");
       return r;
     } catch (UnsupportedEncodingException uex) {
-      throw new TException("JVM DOES NOT SUPPORT UTF-8: " + uex.getMessage());
+      throw new TException("JVM DOES NOT SUPPORT UTF-8: ",uex);
     }
   }
 

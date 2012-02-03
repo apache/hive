@@ -291,7 +291,7 @@ public class JoinUtil {
   public static SerDe getSpillSerDe(byte alias,
       Map<Byte, TableDesc> spillTableDesc,JoinDesc conf,
       boolean noOuterJoin) {
-    TableDesc desc = getSpillTableDesc(alias,spillTableDesc,conf, noOuterJoin);
+    TableDesc desc = getSpillTableDesc(alias, spillTableDesc, conf, noOuterJoin);
     if (desc == null) {
       return null;
     }
@@ -355,10 +355,11 @@ public class JoinUtil {
       JoinDesc conf,boolean noOuterJoin) throws HiveException {
 
     TableDesc tblDesc = JoinUtil.getSpillTableDesc(alias,spillTableDesc,conf, noOuterJoin);
-    SerDe serde = JoinUtil.getSpillSerDe(alias,spillTableDesc,conf,noOuterJoin);
+    SerDe serde = JoinUtil.getSpillSerDe(alias, spillTableDesc, conf,
+        noOuterJoin);
 
     if (serde == null) {
-      containerSize = 1;
+      containerSize = -1;
     }
 
     RowContainer rc = new RowContainer(containerSize, hconf);

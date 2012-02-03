@@ -21,8 +21,16 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.nio.ByteBuffer;
 import java.nio.charset.CharacterCodingException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Properties;
 
+import org.apache.commons.codec.binary.Base64;
+import org.apache.hadoop.hive.serde.Constants;
+import org.apache.hadoop.hive.serde2.SerDeException;
+import org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe.SerDeParameters;
 import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector;
+import org.apache.hadoop.hive.serde2.objectinspector.primitive.BinaryObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.BooleanObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.ByteObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.DoubleObjectInspector;
@@ -31,6 +39,9 @@ import org.apache.hadoop.hive.serde2.objectinspector.primitive.IntObjectInspecto
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.LongObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.ShortObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.StringObjectInspector;
+import org.apache.hadoop.hive.serde2.objectinspector.primitive.TimestampObjectInspector;
+import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
+import org.apache.hadoop.io.BytesWritable;
 import org.apache.hadoop.io.Text;
 
 /**
@@ -41,7 +52,7 @@ public final class LazyUtils {
 
   /**
    * Returns the digit represented by character b.
-   * 
+   *
    * @param b
    *          The ascii code of the character
    * @param radix
@@ -95,7 +106,7 @@ public final class LazyUtils {
 
   /**
    * Convert a UTF-8 byte array to String.
-   * 
+   *
    * @param bytes
    *          The byte[] containing the UTF-8 String.
    * @param start
@@ -117,7 +128,7 @@ public final class LazyUtils {
 
   /**
    * Write the bytes with special characters escaped.
-   * 
+   *
    * @param escaped
    *          Whether the data should be written out in an escaped way.
    * @param escapeChar
@@ -151,7 +162,7 @@ public final class LazyUtils {
   /**
    * Write out the text representation of a Primitive Object to a UTF8 byte
    * stream.
-   * 
+   *
    * @param out
    *          The UTF8 byte OutputStream
    * @param o
@@ -208,6 +219,20 @@ public final class LazyUtils {
           needsEscape);
       break;
     }
+
+    case BINARY: {
+      BytesWritable bw = ((BinaryObjectInspector) oi).getPrimitiveWritableObject(o);
+      byte[] toEncode = new byte[bw.getLength()];
+      System.arraycopy(bw.getBytes(), 0,toEncode, 0, bw.getLength());
+      byte[] toWrite = Base64.encodeBase64(toEncode);
+      out.write(toWrite, 0, toWrite.length);
+      break;
+    }
+    case TIMESTAMP: {
+      LazyTimestamp.writeUTF8(out,
+          ((TimestampObjectInspector) oi).getPrimitiveWritableObject(o));
+      break;
+    }
     default: {
       throw new RuntimeException("Hive internal error.");
     }
@@ -220,6 +245,43 @@ public final class LazyUtils {
       hash = (31 * hash) + data[i];
     }
     return hash;
+  }
+
+  public static void extractColumnInfo(Properties tbl, SerDeParameters serdeParams,
+      String serdeName) throws SerDeException {
+    // Read the configuration parameters
+    String columnNameProperty = tbl.getProperty(Constants.LIST_COLUMNS);
+    // NOTE: if "columns.types" is missing, all columns will be of String type
+    String columnTypeProperty = tbl.getProperty(Constants.LIST_COLUMN_TYPES);
+
+    // Parse the configuration parameters
+
+    if (columnNameProperty != null && columnNameProperty.length() > 0) {
+      serdeParams.columnNames = Arrays.asList(columnNameProperty.split(","));
+    } else {
+      serdeParams.columnNames = new ArrayList<String>();
+    }
+    if (columnTypeProperty == null) {
+      // Default type: all string
+      StringBuilder sb = new StringBuilder();
+      for (int i = 0; i < serdeParams.columnNames.size(); i++) {
+        if (i > 0) {
+          sb.append(":");
+        }
+        sb.append(Constants.STRING_TYPE_NAME);
+      }
+      columnTypeProperty = sb.toString();
+    }
+
+    serdeParams.columnTypes = TypeInfoUtils
+        .getTypeInfosFromTypeString(columnTypeProperty);
+
+    if (serdeParams.columnNames.size() != serdeParams.columnTypes.size()) {
+      throw new SerDeException(serdeName + ": columns has "
+          + serdeParams.columnNames.size()
+          + " elements while columns.types has "
+          + serdeParams.columnTypes.size() + " elements!");
+    }
   }
 
   private LazyUtils() {
