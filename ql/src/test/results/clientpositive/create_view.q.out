@@ -111,29 +111,35 @@ POSTHOOK: Output: default@view3
 PREHOOK: query: SELECT * from view1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
+PREHOOK: Input: default@view1
 #### A masked pattern was here ####
 POSTHOOK: query: SELECT * from view1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
+POSTHOOK: Input: default@view1
 #### A masked pattern was here ####
 val_86
 PREHOOK: query: SELECT * from view2 where key=18
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
+PREHOOK: Input: default@view2
 #### A masked pattern was here ####
 POSTHOOK: query: SELECT * from view2 where key=18
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
+POSTHOOK: Input: default@view2
 #### A masked pattern was here ####
 18	val_18
 18	val_18
 PREHOOK: query: SELECT * from view3
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
+PREHOOK: Input: default@view3
 #### A masked pattern was here ####
 POSTHOOK: query: SELECT * from view3
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
+POSTHOOK: Input: default@view3
 #### A masked pattern was here ####
 VAL_86
 PREHOOK: query: -- test EXPLAIN output for CREATE VIEW
@@ -459,10 +465,12 @@ POSTHOOK: Lineage: table1.key EXPRESSION [(src)src.FieldSchema(name:key, type:st
 PREHOOK: query: SELECT * FROM view4
 PREHOOK: type: QUERY
 PREHOOK: Input: default@table1
+PREHOOK: Input: default@view4
 #### A masked pattern was here ####
 POSTHOOK: query: SELECT * FROM view4
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@table1
+POSTHOOK: Input: default@view4
 #### A masked pattern was here ####
 POSTHOOK: Lineage: table1.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 86
@@ -494,10 +502,12 @@ POSTHOOK: Lineage: table1.key EXPRESSION [(src)src.FieldSchema(name:key, type:st
 PREHOOK: query: SELECT * FROM view4
 PREHOOK: type: QUERY
 PREHOOK: Input: default@table1
+PREHOOK: Input: default@view4
 #### A masked pattern was here ####
 POSTHOOK: query: SELECT * FROM view4
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@table1
+POSTHOOK: Input: default@view4
 #### A masked pattern was here ####
 POSTHOOK: Lineage: table1.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 86
@@ -517,20 +527,26 @@ key	int
 PREHOOK: query: CREATE VIEW view5 AS SELECT v1.key as key1, v2.key as key2
 FROM view4 v1 join view4 v2
 PREHOOK: type: CREATEVIEW
+PREHOOK: Input: default@view4
 #### A masked pattern was here ####
 POSTHOOK: query: CREATE VIEW view5 AS SELECT v1.key as key1, v2.key as key2
 FROM view4 v1 join view4 v2
 POSTHOOK: type: CREATEVIEW
+POSTHOOK: Input: default@view4
 POSTHOOK: Output: default@view5
 #### A masked pattern was here ####
 POSTHOOK: Lineage: table1.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 PREHOOK: query: SELECT * FROM view5
 PREHOOK: type: QUERY
 PREHOOK: Input: default@table1
+PREHOOK: Input: default@view4
+PREHOOK: Input: default@view5
 #### A masked pattern was here ####
 POSTHOOK: query: SELECT * FROM view5
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@table1
+POSTHOOK: Input: default@view4
+POSTHOOK: Input: default@view5
 #### A masked pattern was here ####
 POSTHOOK: Lineage: table1.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 86	86
@@ -582,10 +598,12 @@ POSTHOOK: Lineage: table1.key EXPRESSION [(src)src.FieldSchema(name:key, type:st
 PREHOOK: query: SELECT * FROM view7
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
+PREHOOK: Input: default@view7
 #### A masked pattern was here ####
 POSTHOOK: query: SELECT * FROM view7
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
+POSTHOOK: Input: default@view7
 #### A masked pattern was here ####
 POSTHOOK: Lineage: table1.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 82	val_82
@@ -604,6 +622,7 @@ PREHOOK: query: -- top-level ORDER BY should override the one inside the view
 SELECT * FROM view7 ORDER BY key DESC, value
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
+PREHOOK: Input: default@view7
 #### A masked pattern was here ####
 POSTHOOK: query: -- top-level ORDER BY should override the one inside the view
 -- (however, the inside ORDER BY should still influence the evaluation
@@ -611,6 +630,7 @@ POSTHOOK: query: -- top-level ORDER BY should override the one inside the view
 SELECT * FROM view7 ORDER BY key DESC, value
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
+POSTHOOK: Input: default@view7
 #### A masked pattern was here ####
 POSTHOOK: Lineage: table1.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 90	val_90
@@ -627,11 +647,13 @@ PREHOOK: query: -- top-level LIMIT should override if lower
 SELECT * FROM view7 LIMIT 5
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
+PREHOOK: Input: default@view7
 #### A masked pattern was here ####
 POSTHOOK: query: -- top-level LIMIT should override if lower
 SELECT * FROM view7 LIMIT 5
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
+POSTHOOK: Input: default@view7
 #### A masked pattern was here ####
 POSTHOOK: Lineage: table1.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 82	val_82
@@ -643,11 +665,13 @@ PREHOOK: query: -- but not if higher
 SELECT * FROM view7 LIMIT 20
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
+PREHOOK: Input: default@view7
 #### A masked pattern was here ####
 POSTHOOK: query: -- but not if higher
 SELECT * FROM view7 LIMIT 20
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
+POSTHOOK: Input: default@view7
 #### A masked pattern was here ####
 POSTHOOK: Lineage: table1.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 82	val_82
@@ -726,10 +750,12 @@ FROM `table1`) `view8`
 PREHOOK: query: SELECT * FROM view8
 PREHOOK: type: QUERY
 PREHOOK: Input: default@table1
+PREHOOK: Input: default@view8
 #### A masked pattern was here ####
 POSTHOOK: query: SELECT * FROM view8
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@table1
+POSTHOOK: Input: default@view8
 #### A masked pattern was here ####
 POSTHOOK: Lineage: table1.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 bbc
@@ -799,10 +825,12 @@ FROM `src`) `view9`
 PREHOOK: query: SELECT * FROM view9
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
+PREHOOK: Input: default@view9
 #### A masked pattern was here ####
 POSTHOOK: query: SELECT * FROM view9
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
+POSTHOOK: Input: default@view9
 #### A masked pattern was here ####
 POSTHOOK: Lineage: table1.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 7
@@ -861,10 +889,12 @@ View Expanded Text: 	SELECT `slurp`.`key`, `slurp`.`value` FROM (SELECT `src`.`k
 PREHOOK: query: SELECT * FROM view10
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
+PREHOOK: Input: default@view10
 #### A masked pattern was here ####
 POSTHOOK: query: SELECT * FROM view10
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
+POSTHOOK: Input: default@view10
 #### A masked pattern was here ####
 POSTHOOK: Lineage: table1.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 86	val_86
@@ -934,10 +964,12 @@ FROM `table1`
 PREHOOK: query: SELECT * FROM view11
 PREHOOK: type: QUERY
 PREHOOK: Input: default@table1
+PREHOOK: Input: default@view11
 #### A masked pattern was here ####
 POSTHOOK: query: SELECT * FROM view11
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@table1
+POSTHOOK: Input: default@view11
 #### A masked pattern was here ####
 POSTHOOK: Lineage: table1.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 1
@@ -1001,11 +1033,13 @@ PREHOOK: query: SELECT * FROM view12
 ORDER BY key ASC, myCol ASC LIMIT 1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
+PREHOOK: Input: default@view12
 #### A masked pattern was here ####
 POSTHOOK: query: SELECT * FROM view12
 ORDER BY key ASC, myCol ASC LIMIT 1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
+POSTHOOK: Input: default@view12
 #### A masked pattern was here ####
 POSTHOOK: Lineage: table1.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 0	val_0	1
@@ -1014,12 +1048,14 @@ SELECT * FROM view2 LATERAL VIEW explode(array(1,2,3)) myTable AS myCol
 ORDER BY key ASC, myCol ASC LIMIT 1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
+PREHOOK: Input: default@view2
 #### A masked pattern was here ####
 POSTHOOK: query: -- test usage of LATERAL with a view as the LHS
 SELECT * FROM view2 LATERAL VIEW explode(array(1,2,3)) myTable AS myCol
 ORDER BY key ASC, myCol ASC LIMIT 1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
+POSTHOOK: Input: default@view2
 #### A masked pattern was here ####
 POSTHOOK: Lineage: table1.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 0	val_0	1
@@ -1083,11 +1119,13 @@ PREHOOK: query: SELECT * FROM view13
 ORDER BY key LIMIT 12
 PREHOOK: type: QUERY
 PREHOOK: Input: default@srcbucket
+PREHOOK: Input: default@view13
 #### A masked pattern was here ####
 POSTHOOK: query: SELECT * FROM view13
 ORDER BY key LIMIT 12
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@srcbucket
+POSTHOOK: Input: default@view13
 #### A masked pattern was here ####
 POSTHOOK: Lineage: table1.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 0
@@ -1216,11 +1254,13 @@ PREHOOK: query: SELECT * FROM view14
 ORDER BY k1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
+PREHOOK: Input: default@view14
 #### A masked pattern was here ####
 POSTHOOK: query: SELECT * FROM view14
 ORDER BY k1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
+POSTHOOK: Input: default@view14
 #### A masked pattern was here ####
 POSTHOOK: Lineage: table1.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 0	val_0	0	val_0
@@ -1315,12 +1355,14 @@ ORDER BY value_count DESC, key
 LIMIT 10
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
+PREHOOK: Input: default@view15
 #### A masked pattern was here ####
 POSTHOOK: query: SELECT * FROM view15
 ORDER BY value_count DESC, key
 LIMIT 10
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
+POSTHOOK: Input: default@view15
 #### A masked pattern was here ####
 POSTHOOK: Lineage: table1.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 230	5
@@ -1394,12 +1436,14 @@ ORDER BY value
 LIMIT 10
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
+PREHOOK: Input: default@view16
 #### A masked pattern was here ####
 POSTHOOK: query: SELECT * FROM view16
 ORDER BY value
 LIMIT 10
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
+POSTHOOK: Input: default@view16
 #### A masked pattern was here ####
 POSTHOOK: Lineage: table1.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 val_0

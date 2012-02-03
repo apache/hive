@@ -488,11 +488,13 @@ POSTHOOK: Output: default@big_view
 PREHOOK: query: SELECT a FROM big_view
 LIMIT 1
 PREHOOK: type: QUERY
+PREHOOK: Input: default@big_view
 PREHOOK: Input: default@src
 #### A masked pattern was here ####
 POSTHOOK: query: SELECT a FROM big_view
 LIMIT 1
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@big_view
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####
 aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa

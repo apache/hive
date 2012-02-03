@@ -71,10 +71,12 @@ POSTHOOK: Output: default@v@ds=2008-04-08/hr=12
 PREHOOK: query: select * from v where value='val_409' and ds='2008-04-08' and hr='11'
 PREHOOK: type: QUERY
 PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
+PREHOOK: Input: default@v
 #### A masked pattern was here ####
 POSTHOOK: query: select * from v where value='val_409' and ds='2008-04-08' and hr='11'
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
+POSTHOOK: Input: default@v
 #### A masked pattern was here ####
 409	val_409	2008-04-08	11
 409	val_409	2008-04-08	11
@@ -133,10 +135,12 @@ POSTHOOK: Output: default@v
 PREHOOK: query: select * from v where value='val_409' and ds='2008-04-08' and hr='11'
 PREHOOK: type: QUERY
 PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
+PREHOOK: Input: default@v
 #### A masked pattern was here ####
 POSTHOOK: query: select * from v where value='val_409' and ds='2008-04-08' and hr='11'
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
+POSTHOOK: Input: default@v
 #### A masked pattern was here ####
 val_409	2008-04-08	11
 val_409	2008-04-08	11
@@ -194,10 +198,12 @@ POSTHOOK: Output: default@v
 PREHOOK: query: select * from v where value='val_409' and ds='2008-04-08' and hr='11'
 PREHOOK: type: QUERY
 PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
+PREHOOK: Input: default@v
 #### A masked pattern was here ####
 POSTHOOK: query: select * from v where value='val_409' and ds='2008-04-08' and hr='11'
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
+POSTHOOK: Input: default@v
 #### A masked pattern was here ####
 409	val_409	2008-04-08	11
 409	val_409	2008-04-08	11
