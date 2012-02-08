@@ -18,14 +18,20 @@
 
 package org.apache.hadoop.hive.ql.parse;
 
+import java.util.Set;
+
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.ql.hooks.ReadEntity;
+import org.apache.hadoop.hive.ql.hooks.WriteEntity;
 import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 
 public class HiveSemanticAnalyzerHookContextImpl implements HiveSemanticAnalyzerHookContext {
 
   Configuration conf;
+  Set<ReadEntity> inputs = null;
+  Set<WriteEntity> outputs = null;
 
   @Override
   public Hive getHive() throws HiveException {
@@ -43,4 +49,19 @@ public class HiveSemanticAnalyzerHookContextImpl implements HiveSemanticAnalyzer
     this.conf = conf;
   }
 
+  @Override
+  public void update(BaseSemanticAnalyzer sem) {
+    this.inputs = sem.getInputs();
+    this.outputs = sem.getOutputs();
+  }
+
+  @Override
+  public Set<ReadEntity> getInputs() {
+    return inputs;
+  }
+
+  @Override
+  public Set<WriteEntity> getOutputs() {
+    return outputs;
+  }
 }

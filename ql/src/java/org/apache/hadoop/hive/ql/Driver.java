@@ -76,7 +76,6 @@ import org.apache.hadoop.hive.ql.metadata.AuthorizationException;
 import org.apache.hadoop.hive.ql.metadata.DummyPartition;
 import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
-import org.apache.hadoop.hive.ql.metadata.HiveUtils;
 import org.apache.hadoop.hive.ql.metadata.Partition;
 import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.optimizer.ppr.PartitionPruner;
@@ -418,7 +417,9 @@ public class Driver implements CommandProcessor {
       tree = ParseUtils.findRootNonNullToken(tree);
 
       BaseSemanticAnalyzer sem = SemanticAnalyzerFactory.get(conf, tree);
-      List<AbstractSemanticAnalyzerHook> saHooks = getSemanticAnalyzerHooks();
+      List<AbstractSemanticAnalyzerHook> saHooks =
+          getHooks(HiveConf.ConfVars.SEMANTIC_ANALYZER_HOOK,
+                   AbstractSemanticAnalyzerHook.class);
 
       // Do semantic analysis and plan generation
       if (saHooks != null) {
@@ -428,6 +429,7 @@ public class Driver implements CommandProcessor {
           tree = hook.preAnalyze(hookCtx, tree);
         }
         sem.analyze(tree, ctx);
+        hookCtx.update(sem);
         for (AbstractSemanticAnalyzerHook hook : saHooks) {
           hook.postAnalyze(hookCtx, sem.getRootTasks());
         }
@@ -941,100 +943,57 @@ public class Driver implements CommandProcessor {
     return new CommandProcessorResponse(ret);
   }
 
-  private List<AbstractSemanticAnalyzerHook> getSemanticAnalyzerHooks() throws Exception {
-    ArrayList<AbstractSemanticAnalyzerHook> saHooks = new ArrayList<AbstractSemanticAnalyzerHook>();
-    String pestr = conf.getVar(HiveConf.ConfVars.SEMANTIC_ANALYZER_HOOK);
-    if(pestr == null) {
-      return saHooks;
-    }
-    pestr = pestr.trim();
-    if (pestr.equals("")) {
-      return saHooks;
-    }
-
-    String[] peClasses = pestr.split(",");
-
-    for (String peClass : peClasses) {
-      try {
-        AbstractSemanticAnalyzerHook hook = HiveUtils.getSemanticAnalyzerHook(conf, peClass);
-        saHooks.add(hook);
-      } catch (HiveException e) {
-        console.printError("Pre Exec Hook Class not found:" + e.getMessage());
-        throw e;
-      }
-    }
-
-    return saHooks;
+  /**
+   * Returns a set of hooks specified in a configuration variable.
+   *
+   * See getHooks(HiveConf.ConfVars hookConfVar, Class<T> clazz)
+   * @param hookConfVar
+   * @return
+   * @throws Exception
+   */
+  private List<Hook> getHooks(HiveConf.ConfVars hookConfVar) throws Exception {
+    return getHooks(hookConfVar, Hook.class);
   }
 
+  /**
+   * Returns the hooks specified in a configuration variable.  The hooks are returned in a list in
+   * the order they were specified in the configuration variable.
+   *
+   * @param hookConfVar The configuration variable specifying a comma separated list of the hook
+   *                    class names.
+   * @param clazz       The super type of the hooks.
+   * @return            A list of the hooks cast as the type specified in clazz, in the order
+   *                    they are listed in the value of hookConfVar
+   * @throws Exception
+   */
+  private <T extends Hook> List<T> getHooks(HiveConf.ConfVars hookConfVar, Class<T> clazz)
+      throws Exception {
 
-  private List<Hook> getPreExecHooks() throws Exception {
-    List<Hook> pehooks = new ArrayList<Hook>();
-    String pestr = conf.getVar(HiveConf.ConfVars.PREEXECHOOKS);
-    pestr = pestr.trim();
-    if (pestr.equals("")) {
-      return pehooks;
+    List<T> hooks = new ArrayList<T>();
+    String csHooks = conf.getVar(hookConfVar);
+    if (csHooks == null) {
+      return hooks;
     }
 
-    String[] peClasses = pestr.split(",");
+    csHooks = csHooks.trim();
+    if (csHooks.equals("")) {
+      return hooks;
+    }
 
-    for (String peClass : peClasses) {
+    String[] hookClasses = csHooks.split(",");
+
+    for (String hookClass : hookClasses) {
       try {
-        pehooks.add((Hook) Class.forName(peClass.trim(), true, JavaUtils.getClassLoader())
-            .newInstance());
+        T hook =
+            (T) Class.forName(hookClass.trim(), true, JavaUtils.getClassLoader()).newInstance();
+        hooks.add(hook);
       } catch (ClassNotFoundException e) {
-        console.printError("Pre Exec Hook Class not found:" + e.getMessage());
+        console.printError(hookConfVar.varname + " Class not found:" + e.getMessage());
         throw e;
       }
     }
 
-    return pehooks;
-  }
-
-  private List<Hook> getPostExecHooks() throws Exception {
-    List<Hook> pehooks = new ArrayList<Hook>();
-    String pestr = conf.getVar(HiveConf.ConfVars.POSTEXECHOOKS);
-    pestr = pestr.trim();
-    if (pestr.equals("")) {
-      return pehooks;
-    }
-
-    String[] peClasses = pestr.split(",");
-
-    for (String peClass : peClasses) {
-      try {
-        pehooks.add((Hook) Class.forName(peClass.trim(), true, JavaUtils.getClassLoader())
-            .newInstance());
-      } catch (ClassNotFoundException e) {
-        console.printError("Post Exec Hook Class not found:" + e.getMessage());
-        throw e;
-      }
-    }
-
-    return pehooks;
-  }
-
-  private List<Hook> getOnFailureHooks() throws Exception {
-    List<Hook> ofhooks = new ArrayList<Hook>();
-    String ofstr = conf.getVar(HiveConf.ConfVars.ONFAILUREHOOKS);
-    ofstr = ofstr.trim();
-    if (ofstr.equals("")) {
-      return ofhooks;
-    }
-
-    String[] ofClasses = ofstr.split(",");
-
-    for (String ofClass : ofClasses) {
-      try {
-        ofhooks.add((Hook) Class.forName(ofClass.trim(), true, JavaUtils.getClassLoader())
-            .newInstance());
-      } catch (ClassNotFoundException e) {
-        console.printError("On Failure Hook Class not found:" + e.getMessage());
-        throw e;
-      }
-    }
-
-    return ofhooks;
+    return hooks;
   }
 
   public int execute() throws CommandNeedRetryException {
@@ -1066,7 +1025,7 @@ public class Driver implements CommandProcessor {
       HookContext hookContext = new HookContext(plan, conf, ctx.getPathToCS());
       hookContext.setHookType(HookContext.HookType.PRE_EXEC_HOOK);
 
-      for (Hook peh : getPreExecHooks()) {
+      for (Hook peh : getHooks(HiveConf.ConfVars.PREEXECHOOKS)) {
         if (peh instanceof ExecuteWithHookContext) {
           perfLogger.PerfLogBegin(LOG, PerfLogger.PRE_HOOK + peh.getClass().getName());
 
@@ -1158,7 +1117,7 @@ public class Driver implements CommandProcessor {
           } else {
             hookContext.setHookType(HookContext.HookType.ON_FAILURE_HOOK);
             // Get all the failure execution hooks and execute them.
-            for (Hook ofh : getOnFailureHooks()) {
+            for (Hook ofh : getHooks(HiveConf.ConfVars.ONFAILUREHOOKS)) {
               perfLogger.PerfLogBegin(LOG, PerfLogger.FAILURE_HOOK + ofh.getClass().getName());
 
               ((ExecuteWithHookContext) ofh).run(hookContext);
@@ -1216,7 +1175,7 @@ public class Driver implements CommandProcessor {
 
       hookContext.setHookType(HookContext.HookType.POST_EXEC_HOOK);
       // Get all the post execution hooks and execute them.
-      for (Hook peh : getPostExecHooks()) {
+      for (Hook peh : getHooks(HiveConf.ConfVars.POSTEXECHOOKS)) {
         if (peh instanceof ExecuteWithHookContext) {
           perfLogger.PerfLogBegin(LOG, PerfLogger.POST_HOOK + peh.getClass().getName());
 

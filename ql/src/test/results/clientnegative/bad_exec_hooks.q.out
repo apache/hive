@@ -1,4 +1,4 @@
-Pre Exec Hook Class not found:"org.this.is.a.bad.class"
+hive.exec.pre.hooks Class not found:"org.this.is.a.bad.class"
 FAILED: Hive Internal Error: java.lang.ClassNotFoundException("org.this.is.a.bad.class")
 java.lang.ClassNotFoundException: "org.this.is.a.bad.class"
 #### A masked pattern was here ####
