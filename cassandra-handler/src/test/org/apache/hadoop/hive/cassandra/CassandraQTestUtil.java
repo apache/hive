@@ -3,7 +3,7 @@ package org.apache.hadoop.hive.cassandra;
 import org.apache.hadoop.hive.ql.QTestUtil;
 
 /**
- * HBaseQTestUtil initializes HBase-specific test fixtures.
+ * CassandraQTestUtil initializes Cassandra-specific test fixtures.
  */
 public class CassandraQTestUtil extends QTestUtil {
   public CassandraQTestUtil(
@@ -11,7 +11,7 @@ public class CassandraQTestUtil extends QTestUtil {
     throws Exception {
 
     super(outDir, logDir, miniMr, null);
-    setup.preTest(conf);
+    setup.preTest(conf, logDir);
     super.init();
   }
 

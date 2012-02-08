@@ -107,8 +107,7 @@ public class CassandraProxyClient implements java.lang.reflect.InvocationHandler
    */
   public Cassandra.Iface getProxyConnection() {
       return (Cassandra.Iface) java.lang.reflect.Proxy.newProxyInstance(Cassandra.Client.class
-              .getClassLoader(),
-                    Cassandra.Client.class.getInterfaces(), this);
+              .getClassLoader(),Cassandra.Client.class.getInterfaces(), this);
   }
 
   /**

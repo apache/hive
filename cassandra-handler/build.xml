@@ -18,22 +18,28 @@
 -->
 
 
-<project name="cassandra-handler" default="jar">
+<project xmlns:ivy="antlib:org.apache.ivy.ant" name="cassandra-handler" default="jar">
 
   <property name="src.dir"  location="${basedir}/src/java"/>
   <property name="cassandra-handler.test.query.dir" location="${basedir}/src/test/queries"/>
   <property name="ql.test.template.dir" location="${basedir}/../ql/src/test/templates"/>
   <property name="ql.cassandra.test.template.dir" location="${basedir}/src/test/templates"/>
   <property name="cassandra.resource.dir" location="conf" />
-  <property name="cassandra-handler.test.results.dir" location="${build.dir.hive}/cassandra-handler/test/logs/cassandra-handler"/>
+  <property name="cassandra-handler.test.results.dir" location="${basedir}/src/test/results"/>
+
+  
+  <property name="build.ivy.lib.dir" location="${basedir}/../build/ivy/cassandralib"/>
+  <property name="build.ivy.lib.dir2" location="${basedir}/../build/ivy/lib"/>
+
 
   <import file="../build-common.xml"/>
   
   <path id="test.classpath">
     <fileset dir="${hive.root}" includes="testlibs/*.jar"/>
-
+    <pathelement location="${build.dir.hive}/builtins/hive-builtins-${version}.jar" />
     <pathelement location="${build.dir.hive}/ql/test/classes" />
-    <pathelement location="${test.build.classes}" />
+    <pathelement location="${build.classes}" /> 
+    <pathelement location="${test.build.classes}" /> 
     <pathelement location="" />
     <pathelement location="${hadoop.conf.dir}"/>
     <pathelement location="${test.src.data.dir}/conf"/>
@@ -49,8 +55,10 @@
     <pathelement location="${common.jar}"/>
     <pathelement location="${basedir}/conf"/><!--put yaml on cp -->
     <fileset dir="${hive.root}" includes="testlibs/*.jar"/>
-    <fileset dir="${hadoop.root}/lib" includes="*.jar"/>
+    <fileset dir="${hadoop.root}/lib" includes="*.jar" excludes="*thrift*.jar"/>
     <fileset dir="${hadoop.root}/lib/jsp-2.1" includes="*.jar"/>
+    <fileset dir="${build.ivy.lib.dir2}/default" includes="*.jar" excludes="*thrift*.jar"/>
+
     <path refid="classpath"/>
   </path>
 
@@ -63,40 +71,37 @@
   </target>
 
   <target name="gen-test" depends="test-conditions, test-init" >
-    <taskdef name="qtestgen" classname="org.apache.hadoop.hive.ant.QTestGenTask"
-             classpath="${build.dir.hive}/anttasks/hive-anttasks-${version}.jar:${hive.root}/lib/velocity-1.5.jar:${hive.root}/lib/commons-collections-3.2.1.jar:${hive.root}/lib/commons-lang-2.4.jar">
-    </taskdef>
-    
-    <mkdir dir="${test.build.src}/org/apache/hadoop/hive/cli"/>
+
+ <mkdir dir="${test.build.src}/org/apache/hadoop/hive/cli"/>
     <mkdir dir="${test.log.dir}/cassandra-handler"/>
     <mkdir dir="${cassandra-handler.test.results.dir}"/>
 
-    <qtestgen outputDirectory="${test.build.src}/org/apache/hadoop/hive/cli" 
+    <ivy:cachepath organisation="org.apache.cassandra" module="cassandra-all" revision="${cassandra.version}" inline="true" pathid="cassandra-all.classpath"/>
+    <ivy:cachepath organisation="org.apache.cassandra" module="cassandra-thrift" revision="${cassandra.version}" inline="true" pathid="cassandra-thrift.classpath"/>
+    <property name="cassandra-all-jars" refid="cassandra-all.classpath"/>
+    <property name="cassandra-thrift-jars" refid="cassandra-thrift.classpath"/>
+    <echo message="${cassandra-all-jars}:${cassandra-thrift-jars}:${test.build.classes}/:${basedir}/conf/:${build.classes}/:${hive.root}/lib/" file="${test.log.dir}/cassandra-handler/cassandra-artifacts.txt" append="false"/>
+
+    <taskdef name="qtestgen" classname="org.apache.hadoop.hive.ant.QTestGenTask"
+             classpath="${build.dir.hive}/anttasks/hive-anttasks-${version}.jar:${build.ivy.lib.dir2}/default/velocity-${velocity.version}.jar:${build.ivy.lib.dir2}/default/commons-collections-${commons-collections.version}.jar:${build.ivy.lib.dir2}/default/commons-lang-${commons-lang.version}.jar">
+    </taskdef>
+   
+    <qtestgen outputDirectory="${test.build.src}/org/apache/hadoop/hive/cli"
               templatePath="${ql.cassandra.test.template.dir}" template="TestCassandraCliDriver.vm" 
               queryDirectory="${cassandra-handler.test.query.dir}" 
               queryFile="${qfile}"
-	      clusterMode="${clustermode}"              
+	            clusterMode="${clustermode}"              
               resultsDirectory="${cassandra-handler.test.results.dir}" className="TestCassandraCliDriver"
               logFile="${test.log.dir}/testcassandraclidrivergen.log"
-              logDirectory="${test.log.dir}/cassandra-handler"/>
+              logDirectory="${test.log.dir}/cassandra-handler"/>  
   	<qtestgen outputDirectory="${test.build.src}/org/apache/hadoop/hive/cli"
   	              templatePath="${ql.cassandra.test.template.dir}" template="TestNegativeCassandraCliDriver.vm"
   	              queryDirectory="${cassandra-handler.test.query.dir}/negative"
   	              queryFile="${qfile}"
-  	        clusterMode="${clustermode}"
+  	              clusterMode="${clustermode}"
   	              resultsDirectory="${cassandra-handler.test.results.dir}" className="TestNegativeCassandraCliDriver"
   	              logFile="${test.log.dir}/testcassandraclidrivergen.log"
-  	              logDirectory="${test.log.dir}/negative"/>
-  <!--
-    <qtestgen outputDirectory="${test.build.src}/org/apache/hadoop/hive/cli" 
-              templatePath="${ql.cassandra.test.template.dir}" template="TestCassandraCliDriver.vm" 
-              queryDirectory="${cassandra-handler.test.query.dir}" 
-              queryFile="cassandra_bulk.m"
-              
-              resultsDirectory="${cassandra-handler.test.results.dir}" className="TestCassandraMinimrCliDriver"
-              logFile="${test.log.dir}/testcassandraminimrclidrivergen.log"
-              logDirectory="${test.log.dir}/cassandra-handler"/>
-    -->
+  	              logDirectory="${test.log.dir}/cassandra-handler"/>      
   </target>
 
 </project>

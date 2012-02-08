@@ -14,6 +14,9 @@ public class CassandraThriftClassLoader extends URLClassLoader {
   public Class<?> loadClass(String className) throws ClassNotFoundException {
     Class<?> c = null;
 
+
+    System.err.println("LOADING CLASS: "+className);
+
     if (className.contains("thrift") || className.contains("cassandra")) {
       c = super.loadClass(className);
     } else {

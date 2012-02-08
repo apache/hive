@@ -21,9 +21,7 @@
                 transitive="false"/>
     <dependency org="log4j" name="log4j" rev="${log4j.version}"
                 transitive="false"/>
-    <dependency org="org.apache.cassandra" name="cassandra-all" rev="${cassandra.version}"
-                transitive="false"/>
-    <dependency org="org.apache.cassandra" name="cassandra-thrift" rev="${cassandra.version}"
-                transitive="false"/>
+    <dependency org="org.apache.cassandra" name="cassandra-all" rev="${cassandra.version}"/>
+    <dependency org="org.apache.cassandra" name="cassandra-thrift" rev="${cassandra.version}"/>
   </dependencies>
 </ivy-module>

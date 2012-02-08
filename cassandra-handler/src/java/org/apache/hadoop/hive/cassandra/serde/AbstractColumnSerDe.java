@@ -15,6 +15,7 @@ import org.apache.hadoop.hive.cassandra.output.CassandraPut;
 import org.apache.hadoop.hive.serde.Constants;
 import org.apache.hadoop.hive.serde2.SerDe;
 import org.apache.hadoop.hive.serde2.SerDeException;
+import org.apache.hadoop.hive.serde2.SerDeStats;
 import org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe.SerDeParameters;
 import org.apache.hadoop.hive.serde2.lazy.objectinspector.LazySimpleStructObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
@@ -27,6 +28,7 @@ import org.apache.hadoop.io.MapWritable;
 import org.apache.hadoop.io.Writable;
 
 public abstract class AbstractColumnSerDe implements SerDe {
+
   public static final Log LOG = LogFactory.getLog(AbstractColumnSerDe.class.getName());
 
   public static final String CASSANDRA_KEYSPACE_NAME = "cassandra.ks.name"; // keyspace
@@ -409,4 +411,11 @@ public abstract class AbstractColumnSerDe implements SerDe {
   protected class ColumnData {
 
   }
+
+  @Override
+  public SerDeStats getSerDeStats() {
+    // TODO Auto-generated method stub
+    return null;
+  }
+
 }
