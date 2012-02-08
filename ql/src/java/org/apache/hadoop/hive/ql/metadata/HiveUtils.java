@@ -23,18 +23,17 @@ import java.util.List;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.common.JavaUtils;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.ql.index.HiveIndexHandler;
-import org.apache.hadoop.hive.ql.parse.AbstractSemanticAnalyzerHook;
 import org.apache.hadoop.hive.ql.security.HadoopDefaultAuthenticator;
 import org.apache.hadoop.hive.ql.security.HiveAuthenticationProvider;
 import org.apache.hadoop.hive.ql.security.authorization.DefaultHiveAuthorizationProvider;
 import org.apache.hadoop.hive.ql.security.authorization.HiveAuthorizationProvider;
 import org.apache.hadoop.util.ReflectionUtils;
-import org.apache.hadoop.hive.metastore.api.FieldSchema;
 
 /**
  * General collection of helper functions.
- * 
+ *
  */
 public final class HiveUtils {
 
@@ -136,7 +135,7 @@ public final class HiveUtils {
 
   public static HiveStorageHandler getStorageHandler(
     Configuration conf, String className) throws HiveException {
-    
+
     if (className == null) {
       return null;
     }
@@ -175,7 +174,7 @@ public final class HiveUtils {
           + e.getMessage(), e);
     }
   }
-  
+
   @SuppressWarnings("unchecked")
   public static HiveAuthorizationProvider getAuthorizeProviderManager(
       Configuration conf, HiveAuthenticationProvider authenticator) throws HiveException {
@@ -227,34 +226,18 @@ public final class HiveUtils {
     return ret;
   }
 
-  public static AbstractSemanticAnalyzerHook getSemanticAnalyzerHook(
-      HiveConf conf, String hookName) throws HiveException{
-    try {
-      Class<? extends AbstractSemanticAnalyzerHook> hookClass =
-        (Class<? extends AbstractSemanticAnalyzerHook>)
-        Class.forName(hookName, true, JavaUtils.getClassLoader());
-      return (AbstractSemanticAnalyzerHook) ReflectionUtils.newInstance(
-          hookClass, conf);
-    } catch (ClassNotFoundException e) {
-      throw new HiveException("Error in loading semantic analyzer hook: "+
-          hookName +e.getMessage(),e);
-    }
-
-  }
-
-
-    /**
-     * Convert FieldSchemas to columnNames with backticks around them.
-     */
-    public static String getUnparsedColumnNamesFromFieldSchema(
-        List<FieldSchema> fieldSchemas) {
-      StringBuilder sb = new StringBuilder();
-      for (int i = 0; i < fieldSchemas.size(); i++) {
-        if (i > 0) {
-          sb.append(",");
-        }
-        sb.append(HiveUtils.unparseIdentifier(fieldSchemas.get(i).getName()));
+  /**
+   * Convert FieldSchemas to columnNames with backticks around them.
+   */
+  public static String getUnparsedColumnNamesFromFieldSchema(
+      List<FieldSchema> fieldSchemas) {
+    StringBuilder sb = new StringBuilder();
+    for (int i = 0; i < fieldSchemas.size(); i++) {
+      if (i > 0) {
+        sb.append(",");
       }
-      return sb.toString();
+      sb.append(HiveUtils.unparseIdentifier(fieldSchemas.get(i).getName()));
     }
+    return sb.toString();
+  }
 }

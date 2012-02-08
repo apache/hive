@@ -22,6 +22,7 @@ import java.io.Serializable;
 import java.util.List;
 
 import org.apache.hadoop.hive.ql.exec.Task;
+import org.apache.hadoop.hive.ql.hooks.Hook;
 
 /**
  * HiveSemanticAnalyzerHook allows Hive to be extended with custom
@@ -35,7 +36,7 @@ import org.apache.hadoop.hive.ql.exec.Task;
  * Note that the lifetime of an instantiated hook object is scoped to
  * the analysis of a single statement; hook instances are never reused.
  */
-public interface HiveSemanticAnalyzerHook {
+public interface HiveSemanticAnalyzerHook extends Hook {
   /**
    * Invoked before Hive performs its own semantic analysis on
    * a statement.  The implementation may inspect the statement AST and

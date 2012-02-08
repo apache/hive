@@ -18,7 +18,11 @@
 
 package org.apache.hadoop.hive.ql.parse;
 
+import java.util.Set;
+
 import org.apache.hadoop.conf.Configurable;
+import org.apache.hadoop.hive.ql.hooks.ReadEntity;
+import org.apache.hadoop.hive.ql.hooks.WriteEntity;
 import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 
@@ -32,4 +36,21 @@ public interface HiveSemanticAnalyzerHookContext extends Configurable{
    * purposes such as getting configuration information or making metastore calls
    */
   public Hive getHive() throws HiveException;
+
+
+  /**
+   * This should be called after the semantic analyzer completes.
+   * @param sem
+   */
+  public void update(BaseSemanticAnalyzer sem);
+
+
+  /**
+   * The following methods will only be available to hooks executing postAnalyze.  If called in a
+   * preAnalyze method, they should return null.
+   * @return
+   */
+  public Set<ReadEntity> getInputs();
+
+  public Set<WriteEntity> getOutputs();
 }
