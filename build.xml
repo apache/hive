@@ -55,6 +55,7 @@
   <property name="checkstyle.conf.dir" location="${hive.root}/checkstyle"/>
   <property name="checkstyle.build.dir" location="${build.dir.hive}/checkstyle"/>
   <property name="md5sum.format" value="{0}  {1}"/>
+  <property name="settings.file" value="${user.home}/.m2/settings.xml"/>
 
   <!-- Ignore Postgres upgrade scripts unless 'include.postgres' is true -->
   <condition property="metastore.excludes"
@@ -996,11 +997,11 @@
       </then>
       <else>
         <artifact:deploy
-            file="${mvn.jar.dir}/hive-${hive.project}-${version}.jar">
+            file="${mvn.jar.dir}/hive-${hive.project}-${version}.jar" settingsFile="${settings.file}">
           <pom refid="hive.project.pom" />
           <remoteRepository
-              id="apache.snapshots.https"
-              url="https://repository.apache.org/content/repositories/snapshots" />
+              id="datastax-snapshots"
+              url="http://mvn.riptano.com/content/repositories/snapshots" />
         </artifact:deploy>
       </else>
     </if>
