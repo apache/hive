@@ -65,4 +65,4 @@ select key from gl_src_part1 where p='12' ORDER BY key ASC limit 1000;
 drop table gl_src1;
 drop table gl_src2;
 drop table gl_src_part1;
-drop table gl_tgt
+drop table gl_tgt;
