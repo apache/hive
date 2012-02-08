@@ -504,8 +504,9 @@ import org.apache.thrift.transport.TTransportFactory;
              throw new TException(e.getMessage());
            }
          }
-         Socket socket = ((TSocket)(saslTrans.getUnderlyingTransport())).getSocket();
-         remoteAddress.set(socket.getInetAddress());
+         
+         //Socket socket = ((TSocket)(saslTrans.getUnderlyingTransport())).getSocket();
+         //remoteAddress.set(socket.getInetAddress());
          try {
            UserGroupInformation clientUgi = UserGroupInformation.createProxyUser(
               endUser, UserGroupInformation.getLoginUser());

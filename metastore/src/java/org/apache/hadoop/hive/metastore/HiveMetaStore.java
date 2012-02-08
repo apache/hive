@@ -55,6 +55,8 @@ import org.apache.hadoop.hive.common.cli.CommonCliOptions;
 import org.apache.hadoop.hive.common.metrics.Metrics;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
+import org.apache.hadoop.hive.metastore.HiveMetaStore.HMSHandler;
+import org.apache.hadoop.hive.metastore.HiveMetaStore.HiveMetastoreCli;
 import org.apache.hadoop.hive.metastore.api.AlreadyExistsException;
 import org.apache.hadoop.hive.metastore.api.ConfigValSecurityException;
 import org.apache.hadoop.hive.metastore.api.Constants;
@@ -3768,7 +3770,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       TServerTransport serverTransport = tcpKeepAlive ?
           new TServerSocketKeepAlive(port) : new TServerSocket(port);
 
-      TProcessor processor;
+      TProcessor processor = null;
       TTransportFactory transFactory;
       if (useSasl) {
         // we are in secure mode.
@@ -3778,19 +3780,19 @@ public class HiveMetaStore extends ThriftHiveMetastore {
         // start delegation token manager
         saslServer.startDelegationTokenSecretManager(conf);
         transFactory = saslServer.createTransportFactory();
-        processor = saslServer.wrapProcessor(new ThriftHiveMetastore.Processor<HMSHandler>(
-            new HMSHandler("new db based metaserver", conf)));
+        //processor = saslServer.wrapProcessor(new ThriftHiveMetastore.Processor<HMSHandler>(
+        //    new HMSHandler("new db based metaserver", conf)));
         LOG.info("Starting DB backed MetaStore Server in Secure Mode");
       } else {
         // we are in unsecure mode.
         HMSHandler handler = new HMSHandler("new db based metaserver", conf);
         if (conf.getBoolVar(ConfVars.METASTORE_EXECUTE_SET_UGI)){
           transFactory = new TUGIContainingTransport.Factory();
-          processor = new TUGIBasedProcessor<HMSHandler>(handler);
+         // processor = new TUGIBasedProcessor<HMSHandler>(handler);
           LOG.info("Starting DB backed MetaStore Server with SetUGI enabled");
         } else{
         transFactory = new TTransportFactory();
-          processor  = new ThriftHiveMetastore.Processor<HMSHandler>(handler);
+          //processor  = new ThriftHiveMetastore.Processor<HMSHandler>(handler);
           LOG.info("Starting DB backed MetaStore Server");
       }
       }

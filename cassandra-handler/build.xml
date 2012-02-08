@@ -16,8 +16,6 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 -->
-
-
 <project xmlns:ivy="antlib:org.apache.ivy.ant" name="cassandra-handler" default="jar">
 
   <property name="src.dir"  location="${basedir}/src/java"/>
@@ -27,18 +25,12 @@
   <property name="cassandra.resource.dir" location="conf" />
   <property name="cassandra-handler.test.results.dir" location="${basedir}/src/test/results"/>
 
-  
-  <property name="build.ivy.lib.dir" location="${basedir}/../build/ivy/cassandralib"/>
-  <property name="build.ivy.lib.dir2" location="${basedir}/../build/ivy/lib"/>
-
-
   <import file="../build-common.xml"/>
   
   <path id="test.classpath">
     <fileset dir="${hive.root}" includes="testlibs/*.jar"/>
     <pathelement location="${build.dir.hive}/builtins/hive-builtins-${version}.jar" />
     <pathelement location="${build.dir.hive}/ql/test/classes" />
-    <pathelement location="${build.classes}" /> 
     <pathelement location="${test.build.classes}" /> 
     <pathelement location="" />
     <pathelement location="${hadoop.conf.dir}"/>
@@ -55,9 +47,9 @@
     <pathelement location="${common.jar}"/>
     <pathelement location="${basedir}/conf"/><!--put yaml on cp -->
     <fileset dir="${hive.root}" includes="testlibs/*.jar"/>
-    <fileset dir="${hadoop.root}/lib" includes="*.jar" excludes="*thrift*.jar"/>
+    <fileset dir="${hadoop.root}/lib" includes="*.jar"/>
     <fileset dir="${hadoop.root}/lib/jsp-2.1" includes="*.jar"/>
-    <fileset dir="${build.ivy.lib.dir2}/default" includes="*.jar" excludes="*thrift*.jar"/>
+    <fileset dir="${build.ivy.lib.dir}/default" includes="*.jar"/>
 
     <path refid="classpath"/>
   </path>
@@ -83,7 +75,7 @@
     <echo message="${cassandra-all-jars}:${cassandra-thrift-jars}:${test.build.classes}/:${basedir}/conf/:${build.classes}/:${hive.root}/lib/" file="${test.log.dir}/cassandra-handler/cassandra-artifacts.txt" append="false"/>
 
     <taskdef name="qtestgen" classname="org.apache.hadoop.hive.ant.QTestGenTask"
-             classpath="${build.dir.hive}/anttasks/hive-anttasks-${version}.jar:${build.ivy.lib.dir2}/default/velocity-${velocity.version}.jar:${build.ivy.lib.dir2}/default/commons-collections-${commons-collections.version}.jar:${build.ivy.lib.dir2}/default/commons-lang-${commons-lang.version}.jar">
+             classpath="${build.dir.hive}/anttasks/hive-anttasks-${version}.jar:${build.ivy.lib.dir}/default/velocity-${velocity.version}.jar:${build.ivy.lib.dir}/default/commons-collections-${commons-collections.version}.jar:${build.ivy.lib.dir}/default/commons-lang-${commons-lang.version}.jar">
     </taskdef>
    
     <qtestgen outputDirectory="${test.build.src}/org/apache/hadoop/hive/cli"

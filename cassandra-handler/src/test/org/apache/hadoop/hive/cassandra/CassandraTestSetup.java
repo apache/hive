@@ -1,17 +1,18 @@
 package org.apache.hadoop.hive.cassandra;
 
-import java.net.URL;
-
 import junit.extensions.TestSetup;
 import junit.framework.Test;
 
 import org.apache.cassandra.contrib.utils.service.CassandraServiceDataCleaner;
 import org.apache.cassandra.contrib.utils.service.CassandraServiceFactory;
-import org.apache.cassandra.contrib.utils.service.CassandraThriftClassLoader;
+import org.apache.cassandra.hadoop.ColumnFamilyInputFormat;
+import org.apache.cassandra.thrift.Cassandra;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.hive.cassandra.serde.AbstractColumnSerDe;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.mapred.JobConf;
 
 public class CassandraTestSetup extends TestSetup {
 
@@ -32,20 +33,20 @@ public class CassandraTestSetup extends TestSetup {
       cassandra = csf.getEmbeddedCassandraService();
     }
 
-    String auxJars = conf.getAuxJars();
-    for (URL url : csf.urls) {
-      String u = url.toExternalForm();
-      if (u.endsWith(".jar")) {
-        if(auxJars == null || auxJars.isEmpty()) {
-          auxJars = u;
-        } else {
-          auxJars += ","+u;
-        }
-      }
-    }
 
+    String auxJars = conf.getAuxJars();
+    auxJars = ((auxJars == null) ? "" : (auxJars + ",")) + "file://"
+        + new JobConf(conf, Cassandra.Client.class).getJar();
+    auxJars += ",file://" + new JobConf(conf, ColumnFamilyInputFormat.class).getJar();
+    auxJars += ",file://" + new JobConf(conf, AbstractColumnSerDe.class).getJar();
+    auxJars += ",file://" + new JobConf(conf, org.apache.thrift.transport.TSocket.class).getJar();
+    auxJars += ",file://"
+        + new JobConf(conf, com.google.common.collect.AbstractIterator.class).getJar();
+    auxJars += ",file://" + new JobConf(conf, org.apache.commons.lang.ArrayUtils.class).getJar();
+    auxJars += ",file://"
+        + new JobConf(conf, org.apache.thrift.meta_data.FieldValueMetaData.class).getJar();
+    auxJars += ",file://" + new JobConf(conf, org.cliffc.high_scale_lib.NonBlockingHashMap.class).getJar();
     conf.setAuxJars(auxJars);
-    conf.setClassLoader(new CassandraThriftClassLoader(csf.urls));
   }
 
   @Override

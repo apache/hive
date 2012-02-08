@@ -161,7 +161,7 @@
     <pathelement location="${hadoop.mapreduce.jar}"/>
     <pathelement location="${hadoop.mapreduce.tools.jar}"/>
     <pathelement location="${build.dir.hive}/classes"/>
-    <fileset dir="${build.dir.hive}" includes="*/*.jar" excludes="*/*cassandra*.jar"/>
+    <fileset dir="${build.dir.hive}" includes="*/*.jar"/>
     <fileset dir="${hive.root}/lib" includes="*.jar"/>
     <fileset dir="${build.ivy.lib.dir}/default" includes="*.jar" excludes="*hadoop*.jar"
              erroronmissingdir="false"/>
