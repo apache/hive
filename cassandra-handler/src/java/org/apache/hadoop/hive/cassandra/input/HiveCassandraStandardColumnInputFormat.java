@@ -5,6 +5,10 @@ import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.cassandra.config.ConfigurationException;
+import org.apache.cassandra.db.marshal.AbstractType;
+import org.apache.cassandra.db.marshal.BytesType;
+import org.apache.cassandra.db.marshal.TypeParser;
 import org.apache.cassandra.hadoop.ColumnFamilyInputFormat;
 import org.apache.cassandra.hadoop.ColumnFamilyRecordReader;
 import org.apache.cassandra.hadoop.ColumnFamilySplit;
@@ -67,11 +71,21 @@ implements org.apache.hadoop.mapred.InputFormat<BytesWritable, MapWritable> {
     SlicePredicate predicate = new SlicePredicate();
 
     if (isTransposed || readColIDs.size() == columns.size() || readColIDs.size() == 0) {
-      // We are reading all columns
       SliceRange range = new SliceRange();
-      range.setStart(new byte[0]);
-      range.setFinish(new byte[0]);
-      range.setReversed(false);
+      AbstractType comparator = BytesType.instance;
+
+      String comparatorType = jobConf.get(AbstractColumnSerDe.CASSANDRA_SLICE_PREDICATE_RANGE_COMPARATOR);
+      if (!comparatorType.equals("")) {
+        try {
+          comparator = TypeParser.parse(comparatorType);
+        } catch (ConfigurationException ex) {
+          throw new IOException("Comparator class not found.");
+        }
+      }
+
+      range.setStart(comparator.fromString(jobConf.get(AbstractColumnSerDe.CASSANDRA_SLICE_PREDICATE_RANGE_START)));
+      range.setFinish(comparator.fromString(jobConf.get(AbstractColumnSerDe.CASSANDRA_SLICE_PREDICATE_RANGE_FINISH)));
+      range.setReversed(jobConf.get(AbstractColumnSerDe.CASSANDRA_SLICE_PREDICATE_RANGE_REVERSED).equals("true"));
       range.setCount(cassandraSplit.getSlicePredicateSize());
       predicate.setSlice_range(range);
     } else {

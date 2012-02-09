@@ -89,10 +89,24 @@ public class CassandraStorageHandler
       tableProperties.getProperty(AbstractColumnSerDe.CASSANDRA_SPLIT_SIZE,
           Integer.toString(AbstractColumnSerDe.DEFAULT_SPLIT_SIZE)));
 
-
     jobProperties.put(AbstractColumnSerDe.CASSANDRA_BATCH_MUTATION_SIZE,
         tableProperties.getProperty(AbstractColumnSerDe.CASSANDRA_BATCH_MUTATION_SIZE,
             Integer.toString(AbstractColumnSerDe.DEFAULT_BATCH_MUTATION_SIZE)));
+
+    jobProperties.put(AbstractColumnSerDe.CASSANDRA_SLICE_PREDICATE_RANGE_FINISH,
+        tableProperties.getProperty(AbstractColumnSerDe.CASSANDRA_SLICE_PREDICATE_RANGE_FINISH, ""));
+
+    jobProperties.put(AbstractColumnSerDe.CASSANDRA_SLICE_PREDICATE_RANGE_COMPARATOR,
+        tableProperties.getProperty(AbstractColumnSerDe.CASSANDRA_SLICE_PREDICATE_RANGE_COMPARATOR, ""));
+
+    jobProperties.put(AbstractColumnSerDe.CASSANDRA_SLICE_PREDICATE_RANGE_REVERSED,
+        tableProperties.getProperty(AbstractColumnSerDe.CASSANDRA_SLICE_PREDICATE_RANGE_REVERSED, "false"));
+
+    jobProperties.put(AbstractColumnSerDe.CASSANDRA_SLICE_PREDICATE_RANGE_COUNT,
+        tableProperties.getProperty(AbstractColumnSerDe.CASSANDRA_SLICE_PREDICATE_RANGE_COUNT, "false"));
+
+    jobProperties.put(AbstractColumnSerDe.CASSANDRA_SLICE_PREDICATE_COLUMN_NAMES,
+        tableProperties.getProperty(AbstractColumnSerDe.CASSANDRA_SLICE_PREDICATE_COLUMN_NAMES, ""));
 
     jobProperties.put(AbstractColumnSerDe.CASSANDRA_CF_COUNTERS,
             tableProperties.getProperty(AbstractColumnSerDe.CASSANDRA_CF_COUNTERS, "false"));
