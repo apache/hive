@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.cassandra.db.marshal.AbstractType;
+import org.apache.hadoop.hive.serde2.lazy.CassandraLazyBinary;
 import org.apache.hadoop.hive.serde2.lazy.CassandraLazyInteger;
 import org.apache.hadoop.hive.serde2.lazy.CassandraLazyLong;
 import org.apache.hadoop.hive.serde2.lazy.CassandraLazyValidator;
@@ -18,6 +19,7 @@ import org.apache.hadoop.hive.serde2.lazy.LazyString;
 import org.apache.hadoop.hive.serde2.lazy.objectinspector.CassandraLazyObjectInspectorFactory;
 import org.apache.hadoop.hive.serde2.lazy.objectinspector.CassandraValidatorObjectInspector;
 import org.apache.hadoop.hive.serde2.lazy.objectinspector.LazyObjectInspectorFactory;
+import org.apache.hadoop.hive.serde2.lazy.objectinspector.primitive.LazyBinaryObjectInspector;
 import org.apache.hadoop.hive.serde2.lazy.objectinspector.primitive.LazyBooleanObjectInspector;
 import org.apache.hadoop.hive.serde2.lazy.objectinspector.primitive.LazyByteObjectInspector;
 import org.apache.hadoop.hive.serde2.lazy.objectinspector.primitive.LazyDoubleObjectInspector;
@@ -64,6 +66,8 @@ public class CassandraLazyFactory {
         return new LazyDouble((LazyDoubleObjectInspector) oi);
       case STRING:
         return new LazyString((LazyStringObjectInspector) oi);
+      case BINARY:
+        return new CassandraLazyBinary((LazyBinaryObjectInspector) oi);
       default:
         throw new RuntimeException("Internal error: no LazyObject for " + p);
     }
