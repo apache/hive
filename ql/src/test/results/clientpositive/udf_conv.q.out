@@ -188,3 +188,22 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####
 5	NULL	NULL	NULL
+PREHOOK: query: -- Make sure that state is properly reset.
+
+SELECT conv(key, 10, 16),
+       conv(key, 16, 10)
+FROM src LIMIT 3
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
+POSTHOOK: query: -- Make sure that state is properly reset.
+
+SELECT conv(key, 10, 16),
+       conv(key, 16, 10)
+FROM src LIMIT 3
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
+EE	568
+56	134
+137	785

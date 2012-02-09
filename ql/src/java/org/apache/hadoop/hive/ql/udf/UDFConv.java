@@ -45,7 +45,7 @@ public class UDFConv extends UDF {
    * Divide x by m as if x is an unsigned 64-bit integer. Examples:
    * unsignedLongDiv(-1, 2) == Long.MAX_VALUE unsignedLongDiv(6, 3) == 2
    * unsignedLongDiv(0, 5) == 0
-   * 
+   *
    * @param x
    *          is treated as unsigned
    * @param m
@@ -66,7 +66,7 @@ public class UDFConv extends UDF {
 
   /**
    * Decode val into value[].
-   * 
+   *
    * @param val
    *          is treated as an unsigned 64-bit integer
    * @param radix
@@ -84,17 +84,19 @@ public class UDFConv extends UDF {
   /**
    * Convert value[] into a long. On overflow, return -1 (as mySQL does). If a
    * negative digit is found, ignore the suffix starting there.
-   * 
+   *
    * @param radix
    *          must be between MIN_RADIX and MAX_RADIX
+   * @param fromPos
+   *          is the first element that should be conisdered
    * @return the result should be treated as an unsigned 64-bit integer.
    */
-  private long encode(int radix) {
+  private long encode(int radix, int fromPos) {
     long val = 0;
     long bound = unsignedLongDiv(-1 - radix, radix); // Possible overflow once
     // val
     // exceeds this value
-    for (int i = 0; i < value.length && value[i] >= 0; i++) {
+    for (int i = fromPos; i < value.length && value[i] >= 0; i++) {
       if (val >= bound) {
         // Check for overflow
         if (unsignedLongDiv(-1 - value[i], radix) < val) {
@@ -108,7 +110,7 @@ public class UDFConv extends UDF {
 
   /**
    * Convert the bytes in value[] to the corresponding chars.
-   * 
+   *
    * @param radix
    *          must be between MIN_RADIX and MAX_RADIX
    * @param fromPos
@@ -124,7 +126,7 @@ public class UDFConv extends UDF {
   /**
    * Convert the chars in value[] to the corresponding integers. Convert invalid
    * characters to -1.
-   * 
+   *
    * @param radix
    *          must be between MIN_RADIX and MAX_RADIX
    * @param fromPos
@@ -139,7 +141,7 @@ public class UDFConv extends UDF {
   /**
    * Convert numbers between different number bases. If toBase>0 the result is
    * unsigned, otherwise it is signed.
-   * 
+   *
    */
   public Text evaluate(Text n, IntWritable fromBase, IntWritable toBase) {
     if (n == null || fromBase == null || toBase == null) {
@@ -168,7 +170,7 @@ public class UDFConv extends UDF {
     char2byte(fromBs, value.length - n.getLength() + first);
 
     // Do the conversion by going through a 64 bit integer
-    long val = encode(fromBs);
+    long val = encode(fromBs, value.length - n.getLength() + first);
     if (negative && toBs > 0) {
       if (val < 0) {
         val = -1;

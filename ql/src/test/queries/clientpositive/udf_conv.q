@@ -67,3 +67,9 @@ SELECT
   conv(515, 5, 100),
   conv('10', -2, 2)
 FROM src LIMIT 1;
+
+-- Make sure that state is properly reset.
+
+SELECT conv(key, 10, 16),
+       conv(key, 16, 10)
+FROM src LIMIT 3;
