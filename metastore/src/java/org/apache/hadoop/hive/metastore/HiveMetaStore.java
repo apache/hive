@@ -1522,10 +1522,12 @@ public class HiveMetaStore extends ThriftHiveMetastore {
               "Unable to add partition because table or database do not exist");
         }
 
-        String partLocationStr = null;
-        if (part.getSd() != null) {
-          partLocationStr = part.getSd().getLocation();
+        if (tbl.getTableType().equals(TableType.VIRTUAL_VIEW.toString()) && part.getSd() == null) {
+          part.setSd(tbl.getSd().deepCopy());
         }
+
+        String partLocationStr = part.getSd().getLocation();
+
         if (partLocationStr == null || partLocationStr.isEmpty()) {
           // set default location if not specified and this is
           // a physical table partition (not a view)
