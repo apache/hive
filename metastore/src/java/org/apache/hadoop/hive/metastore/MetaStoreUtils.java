@@ -991,4 +991,28 @@ public class MetaStoreUtils {
 
     return listeners;
   }
+
+  /**
+   * Temporary check that if the primary region name was set in the storage descriptor, it is
+   * equal to the default region name.  If the primary region name was not set it sets it to the
+   * default region name.
+   * @param sd
+   * @param conf
+   * @throws MetaException
+   */
+  public static void checkOrSetPrimaryRegionName(StorageDescriptor sd, Configuration conf)
+      throws MetaException {
+
+    String defaultRegionName =
+        HiveConf.getVar(conf, HiveConf.ConfVars.HIVE_DEFAULT_REGION_NAME);
+
+    if (sd.getPrimaryRegionName() != null &&
+        !sd.getPrimaryRegionName().equals(defaultRegionName)) {
+
+      throw new MetaException("Only default region can be used");
+    } else {
+      // either the primary region name was null or already equal to defaultRegionName
+      sd.setPrimaryRegionName(defaultRegionName);
+    }
+  }
 }

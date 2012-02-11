@@ -1230,6 +1230,78 @@ class Order:
   def __ne__(self, other):
     return not (self == other)
 
+class RegionStorageDescriptor:
+  """
+  Attributes:
+   - regionName
+   - location
+  """
+
+  thrift_spec = (
+    None, # 0
+    (1, TType.STRING, 'regionName', None, None, ), # 1
+    (2, TType.STRING, 'location', None, None, ), # 2
+  )
+
+  def __init__(self, regionName=None, location=None,):
+    self.regionName = regionName
+    self.location = location
+
+  def read(self, iprot):
+    if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
+      fastbinary.decode_binary(self, iprot.trans, (self.__class__, self.thrift_spec))
+      return
+    iprot.readStructBegin()
+    while True:
+      (fname, ftype, fid) = iprot.readFieldBegin()
+      if ftype == TType.STOP:
+        break
+      if fid == 1:
+        if ftype == TType.STRING:
+          self.regionName = iprot.readString();
+        else:
+          iprot.skip(ftype)
+      elif fid == 2:
+        if ftype == TType.STRING:
+          self.location = iprot.readString();
+        else:
+          iprot.skip(ftype)
+      else:
+        iprot.skip(ftype)
+      iprot.readFieldEnd()
+    iprot.readStructEnd()
+
+  def write(self, oprot):
+    if oprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and self.thrift_spec is not None and fastbinary is not None:
+      oprot.trans.write(fastbinary.encode_binary(self, (self.__class__, self.thrift_spec)))
+      return
+    oprot.writeStructBegin('RegionStorageDescriptor')
+    if self.regionName is not None:
+      oprot.writeFieldBegin('regionName', TType.STRING, 1)
+      oprot.writeString(self.regionName)
+      oprot.writeFieldEnd()
+    if self.location is not None:
+      oprot.writeFieldBegin('location', TType.STRING, 2)
+      oprot.writeString(self.location)
+      oprot.writeFieldEnd()
+    oprot.writeFieldStop()
+    oprot.writeStructEnd()
+
+  def validate(self):
+    return
+
+
+  def __repr__(self):
+    L = ['%s=%r' % (key, value)
+      for key, value in self.__dict__.iteritems()]
+    return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
+
+  def __eq__(self, other):
+    return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
+
+  def __ne__(self, other):
+    return not (self == other)
+
 class StorageDescriptor:
   """
   Attributes:
@@ -1243,6 +1315,8 @@ class StorageDescriptor:
    - bucketCols
    - sortCols
    - parameters
+   - primaryRegionName
+   - secondaryRegions
   """
 
   thrift_spec = (
@@ -1257,9 +1331,11 @@ class StorageDescriptor:
     (8, TType.LIST, 'bucketCols', (TType.STRING,None), None, ), # 8
     (9, TType.LIST, 'sortCols', (TType.STRUCT,(Order, Order.thrift_spec)), None, ), # 9
     (10, TType.MAP, 'parameters', (TType.STRING,None,TType.STRING,None), None, ), # 10
+    (11, TType.STRING, 'primaryRegionName', None, None, ), # 11
+    (12, TType.LIST, 'secondaryRegions', (TType.STRUCT,(RegionStorageDescriptor, RegionStorageDescriptor.thrift_spec)), None, ), # 12
   )
 
-  def __init__(self, cols=None, location=None, inputFormat=None, outputFormat=None, compressed=None, numBuckets=None, serdeInfo=None, bucketCols=None, sortCols=None, parameters=None,):
+  def __init__(self, cols=None, location=None, inputFormat=None, outputFormat=None, compressed=None, numBuckets=None, serdeInfo=None, bucketCols=None, sortCols=None, parameters=None, primaryRegionName=None, secondaryRegions=None,):
     self.cols = cols
     self.location = location
     self.inputFormat = inputFormat
@@ -1270,6 +1346,8 @@ class StorageDescriptor:
     self.bucketCols = bucketCols
     self.sortCols = sortCols
     self.parameters = parameters
+    self.primaryRegionName = primaryRegionName
+    self.secondaryRegions = secondaryRegions
 
   def read(self, iprot):
     if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
@@ -1354,6 +1432,22 @@ class StorageDescriptor:
           iprot.readMapEnd()
         else:
           iprot.skip(ftype)
+      elif fid == 11:
+        if ftype == TType.STRING:
+          self.primaryRegionName = iprot.readString();
+        else:
+          iprot.skip(ftype)
+      elif fid == 12:
+        if ftype == TType.LIST:
+          self.secondaryRegions = []
+          (_etype115, _size112) = iprot.readListBegin()
+          for _i116 in xrange(_size112):
+            _elem117 = RegionStorageDescriptor()
+            _elem117.read(iprot)
+            self.secondaryRegions.append(_elem117)
+          iprot.readListEnd()
+        else:
+          iprot.skip(ftype)
       else:
         iprot.skip(ftype)
       iprot.readFieldEnd()
@@ -1367,8 +1461,8 @@ class StorageDescriptor:
     if self.cols is not None:
       oprot.writeFieldBegin('cols', TType.LIST, 1)
       oprot.writeListBegin(TType.STRUCT, len(self.cols))
-      for iter112 in self.cols:
-        iter112.write(oprot)
+      for iter118 in self.cols:
+        iter118.write(oprot)
       oprot.writeListEnd()
       oprot.writeFieldEnd()
     if self.location is not None:
@@ -1398,24 +1492,35 @@ class StorageDescriptor:
     if self.bucketCols is not None:
       oprot.writeFieldBegin('bucketCols', TType.LIST, 8)
       oprot.writeListBegin(TType.STRING, len(self.bucketCols))
-      for iter113 in self.bucketCols:
-        oprot.writeString(iter113)
+      for iter119 in self.bucketCols:
+        oprot.writeString(iter119)
       oprot.writeListEnd()
       oprot.writeFieldEnd()
     if self.sortCols is not None:
       oprot.writeFieldBegin('sortCols', TType.LIST, 9)
       oprot.writeListBegin(TType.STRUCT, len(self.sortCols))
-      for iter114 in self.sortCols:
-        iter114.write(oprot)
+      for iter120 in self.sortCols:
+        iter120.write(oprot)
       oprot.writeListEnd()
       oprot.writeFieldEnd()
     if self.parameters is not None:
       oprot.writeFieldBegin('parameters', TType.MAP, 10)
       oprot.writeMapBegin(TType.STRING, TType.STRING, len(self.parameters))
-      for kiter115,viter116 in self.parameters.items():
-        oprot.writeString(kiter115)
-        oprot.writeString(viter116)
+      for kiter121,viter122 in self.parameters.items():
+        oprot.writeString(kiter121)
+        oprot.writeString(viter122)
       oprot.writeMapEnd()
+      oprot.writeFieldEnd()
+    if self.primaryRegionName is not None:
+      oprot.writeFieldBegin('primaryRegionName', TType.STRING, 11)
+      oprot.writeString(self.primaryRegionName)
+      oprot.writeFieldEnd()
+    if self.secondaryRegions is not None:
+      oprot.writeFieldBegin('secondaryRegions', TType.LIST, 12)
+      oprot.writeListBegin(TType.STRUCT, len(self.secondaryRegions))
+      for iter123 in self.secondaryRegions:
+        iter123.write(oprot)
+      oprot.writeListEnd()
       oprot.writeFieldEnd()
     oprot.writeFieldStop()
     oprot.writeStructEnd()
@@ -1533,22 +1638,22 @@ class Table:
       elif fid == 8:
         if ftype == TType.LIST:
           self.partitionKeys = []
-          (_etype120, _size117) = iprot.readListBegin()
-          for _i121 in xrange(_size117):
-            _elem122 = FieldSchema()
-            _elem122.read(iprot)
-            self.partitionKeys.append(_elem122)
+          (_etype127, _size124) = iprot.readListBegin()
+          for _i128 in xrange(_size124):
+            _elem129 = FieldSchema()
+            _elem129.read(iprot)
+            self.partitionKeys.append(_elem129)
           iprot.readListEnd()
         else:
           iprot.skip(ftype)
       elif fid == 9:
         if ftype == TType.MAP:
           self.parameters = {}
-          (_ktype124, _vtype125, _size123 ) = iprot.readMapBegin() 
-          for _i127 in xrange(_size123):
-            _key128 = iprot.readString();
-            _val129 = iprot.readString();
-            self.parameters[_key128] = _val129
+          (_ktype131, _vtype132, _size130 ) = iprot.readMapBegin() 
+          for _i134 in xrange(_size130):
+            _key135 = iprot.readString();
+            _val136 = iprot.readString();
+            self.parameters[_key135] = _val136
           iprot.readMapEnd()
         else:
           iprot.skip(ftype)
@@ -1614,16 +1719,16 @@ class Table:
     if self.partitionKeys is not None:
       oprot.writeFieldBegin('partitionKeys', TType.LIST, 8)
       oprot.writeListBegin(TType.STRUCT, len(self.partitionKeys))
-      for iter130 in self.partitionKeys:
-        iter130.write(oprot)
+      for iter137 in self.partitionKeys:
+        iter137.write(oprot)
       oprot.writeListEnd()
       oprot.writeFieldEnd()
     if self.parameters is not None:
       oprot.writeFieldBegin('parameters', TType.MAP, 9)
       oprot.writeMapBegin(TType.STRING, TType.STRING, len(self.parameters))
-      for kiter131,viter132 in self.parameters.items():
-        oprot.writeString(kiter131)
-        oprot.writeString(viter132)
+      for kiter138,viter139 in self.parameters.items():
+        oprot.writeString(kiter138)
+        oprot.writeString(viter139)
       oprot.writeMapEnd()
       oprot.writeFieldEnd()
     if self.viewOriginalText is not None:
@@ -1707,10 +1812,10 @@ class Partition:
       if fid == 1:
         if ftype == TType.LIST:
           self.values = []
-          (_etype136, _size133) = iprot.readListBegin()
-          for _i137 in xrange(_size133):
-            _elem138 = iprot.readString();
-            self.values.append(_elem138)
+          (_etype143, _size140) = iprot.readListBegin()
+          for _i144 in xrange(_size140):
+            _elem145 = iprot.readString();
+            self.values.append(_elem145)
           iprot.readListEnd()
         else:
           iprot.skip(ftype)
@@ -1743,11 +1848,11 @@ class Partition:
       elif fid == 7:
         if ftype == TType.MAP:
           self.parameters = {}
-          (_ktype140, _vtype141, _size139 ) = iprot.readMapBegin() 
-          for _i143 in xrange(_size139):
-            _key144 = iprot.readString();
-            _val145 = iprot.readString();
-            self.parameters[_key144] = _val145
+          (_ktype147, _vtype148, _size146 ) = iprot.readMapBegin() 
+          for _i150 in xrange(_size146):
+            _key151 = iprot.readString();
+            _val152 = iprot.readString();
+            self.parameters[_key151] = _val152
           iprot.readMapEnd()
         else:
           iprot.skip(ftype)
@@ -1770,8 +1875,8 @@ class Partition:
     if self.values is not None:
       oprot.writeFieldBegin('values', TType.LIST, 1)
       oprot.writeListBegin(TType.STRING, len(self.values))
-      for iter146 in self.values:
-        oprot.writeString(iter146)
+      for iter153 in self.values:
+        oprot.writeString(iter153)
       oprot.writeListEnd()
       oprot.writeFieldEnd()
     if self.dbName is not None:
@@ -1797,9 +1902,9 @@ class Partition:
     if self.parameters is not None:
       oprot.writeFieldBegin('parameters', TType.MAP, 7)
       oprot.writeMapBegin(TType.STRING, TType.STRING, len(self.parameters))
-      for kiter147,viter148 in self.parameters.items():
-        oprot.writeString(kiter147)
-        oprot.writeString(viter148)
+      for kiter154,viter155 in self.parameters.items():
+        oprot.writeString(kiter154)
+        oprot.writeString(viter155)
       oprot.writeMapEnd()
       oprot.writeFieldEnd()
     if self.privileges is not None:
@@ -1918,11 +2023,11 @@ class Index:
       elif fid == 9:
         if ftype == TType.MAP:
           self.parameters = {}
-          (_ktype150, _vtype151, _size149 ) = iprot.readMapBegin() 
-          for _i153 in xrange(_size149):
-            _key154 = iprot.readString();
-            _val155 = iprot.readString();
-            self.parameters[_key154] = _val155
+          (_ktype157, _vtype158, _size156 ) = iprot.readMapBegin() 
+          for _i160 in xrange(_size156):
+            _key161 = iprot.readString();
+            _val162 = iprot.readString();
+            self.parameters[_key161] = _val162
           iprot.readMapEnd()
         else:
           iprot.skip(ftype)
@@ -1976,9 +2081,9 @@ class Index:
     if self.parameters is not None:
       oprot.writeFieldBegin('parameters', TType.MAP, 9)
       oprot.writeMapBegin(TType.STRING, TType.STRING, len(self.parameters))
-      for kiter156,viter157 in self.parameters.items():
-        oprot.writeString(kiter156)
-        oprot.writeString(viter157)
+      for kiter163,viter164 in self.parameters.items():
+        oprot.writeString(kiter163)
+        oprot.writeString(viter164)
       oprot.writeMapEnd()
       oprot.writeFieldEnd()
     if self.deferredRebuild is not None:
@@ -2032,22 +2137,22 @@ class Schema:
       if fid == 1:
         if ftype == TType.LIST:
           self.fieldSchemas = []
-          (_etype161, _size158) = iprot.readListBegin()
-          for _i162 in xrange(_size158):
-            _elem163 = FieldSchema()
-            _elem163.read(iprot)
-            self.fieldSchemas.append(_elem163)
+          (_etype168, _size165) = iprot.readListBegin()
+          for _i169 in xrange(_size165):
+            _elem170 = FieldSchema()
+            _elem170.read(iprot)
+            self.fieldSchemas.append(_elem170)
           iprot.readListEnd()
         else:
           iprot.skip(ftype)
       elif fid == 2:
         if ftype == TType.MAP:
           self.properties = {}
-          (_ktype165, _vtype166, _size164 ) = iprot.readMapBegin() 
-          for _i168 in xrange(_size164):
-            _key169 = iprot.readString();
-            _val170 = iprot.readString();
-            self.properties[_key169] = _val170
+          (_ktype172, _vtype173, _size171 ) = iprot.readMapBegin() 
+          for _i175 in xrange(_size171):
+            _key176 = iprot.readString();
+            _val177 = iprot.readString();
+            self.properties[_key176] = _val177
           iprot.readMapEnd()
         else:
           iprot.skip(ftype)
@@ -2064,16 +2169,16 @@ class Schema:
     if self.fieldSchemas is not None:
       oprot.writeFieldBegin('fieldSchemas', TType.LIST, 1)
       oprot.writeListBegin(TType.STRUCT, len(self.fieldSchemas))
-      for iter171 in self.fieldSchemas:
-        iter171.write(oprot)
+      for iter178 in self.fieldSchemas:
+        iter178.write(oprot)
       oprot.writeListEnd()
       oprot.writeFieldEnd()
     if self.properties is not None:
       oprot.writeFieldBegin('properties', TType.MAP, 2)
       oprot.writeMapBegin(TType.STRING, TType.STRING, len(self.properties))
-      for kiter172,viter173 in self.properties.items():
-        oprot.writeString(kiter172)
-        oprot.writeString(viter173)
+      for kiter179,viter180 in self.properties.items():
+        oprot.writeString(kiter179)
+        oprot.writeString(viter180)
       oprot.writeMapEnd()
       oprot.writeFieldEnd()
     oprot.writeFieldStop()

@@ -949,15 +949,15 @@ public class Index implements org.apache.thrift.TBase<Index, Index._Fields>, jav
         case 9: // PARAMETERS
           if (field.type == org.apache.thrift.protocol.TType.MAP) {
             {
-              org.apache.thrift.protocol.TMap _map84 = iprot.readMapBegin();
-              this.parameters = new HashMap<String,String>(2*_map84.size);
-              for (int _i85 = 0; _i85 < _map84.size; ++_i85)
+              org.apache.thrift.protocol.TMap _map88 = iprot.readMapBegin();
+              this.parameters = new HashMap<String,String>(2*_map88.size);
+              for (int _i89 = 0; _i89 < _map88.size; ++_i89)
               {
-                String _key86; // required
-                String _val87; // required
-                _key86 = iprot.readString();
-                _val87 = iprot.readString();
-                this.parameters.put(_key86, _val87);
+                String _key90; // required
+                String _val91; // required
+                _key90 = iprot.readString();
+                _val91 = iprot.readString();
+                this.parameters.put(_key90, _val91);
               }
               iprot.readMapEnd();
             }
@@ -1026,10 +1026,10 @@ public class Index implements org.apache.thrift.TBase<Index, Index._Fields>, jav
       oprot.writeFieldBegin(PARAMETERS_FIELD_DESC);
       {
         oprot.writeMapBegin(new org.apache.thrift.protocol.TMap(org.apache.thrift.protocol.TType.STRING, org.apache.thrift.protocol.TType.STRING, this.parameters.size()));
-        for (Map.Entry<String, String> _iter88 : this.parameters.entrySet())
+        for (Map.Entry<String, String> _iter92 : this.parameters.entrySet())
         {
-          oprot.writeString(_iter88.getKey());
-          oprot.writeString(_iter88.getValue());
+          oprot.writeString(_iter92.getKey());
+          oprot.writeString(_iter92.getValue());
         }
         oprot.writeMapEnd();
       }

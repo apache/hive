@@ -6134,7 +6134,7 @@ public class ThriftHiveMetastore {
     public static final Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
     static {
       Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
-      tmpMap.put(_Fields.DATABASE, new org.apache.thrift.meta_data.FieldMetaData("database", org.apache.thrift.TFieldRequirementType.DEFAULT,
+      tmpMap.put(_Fields.DATABASE, new org.apache.thrift.meta_data.FieldMetaData("database", org.apache.thrift.TFieldRequirementType.DEFAULT, 
           new org.apache.thrift.meta_data.StructMetaData(org.apache.thrift.protocol.TType.STRUCT, Database.class)));
       metaDataMap = Collections.unmodifiableMap(tmpMap);
       org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(create_database_args.class, metaDataMap);
@@ -6287,7 +6287,7 @@ public class ThriftHiveMetastore {
       while (true)
       {
         field = iprot.readFieldBegin();
-        if (field.type == org.apache.thrift.protocol.TType.STOP) {
+        if (field.type == org.apache.thrift.protocol.TType.STOP) { 
           break;
         }
         switch (field.id) {
@@ -6295,7 +6295,7 @@ public class ThriftHiveMetastore {
             if (field.type == org.apache.thrift.protocol.TType.STRUCT) {
               this.database = new Database();
               this.database.read(iprot);
-            } else {
+            } else { 
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
             }
             break;
@@ -6439,11 +6439,11 @@ public class ThriftHiveMetastore {
     public static final Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
     static {
       Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
-      tmpMap.put(_Fields.O1, new org.apache.thrift.meta_data.FieldMetaData("o1", org.apache.thrift.TFieldRequirementType.DEFAULT,
+      tmpMap.put(_Fields.O1, new org.apache.thrift.meta_data.FieldMetaData("o1", org.apache.thrift.TFieldRequirementType.DEFAULT, 
           new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRUCT)));
-      tmpMap.put(_Fields.O2, new org.apache.thrift.meta_data.FieldMetaData("o2", org.apache.thrift.TFieldRequirementType.DEFAULT,
+      tmpMap.put(_Fields.O2, new org.apache.thrift.meta_data.FieldMetaData("o2", org.apache.thrift.TFieldRequirementType.DEFAULT, 
           new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRUCT)));
-      tmpMap.put(_Fields.O3, new org.apache.thrift.meta_data.FieldMetaData("o3", org.apache.thrift.TFieldRequirementType.DEFAULT,
+      tmpMap.put(_Fields.O3, new org.apache.thrift.meta_data.FieldMetaData("o3", org.apache.thrift.TFieldRequirementType.DEFAULT, 
           new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRUCT)));
       metaDataMap = Collections.unmodifiableMap(tmpMap);
       org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(create_database_result.class, metaDataMap);
@@ -6718,7 +6718,7 @@ public class ThriftHiveMetastore {
       while (true)
       {
         field = iprot.readFieldBegin();
-        if (field.type == org.apache.thrift.protocol.TType.STOP) {
+        if (field.type == org.apache.thrift.protocol.TType.STOP) { 
           break;
         }
         switch (field.id) {
@@ -6726,7 +6726,7 @@ public class ThriftHiveMetastore {
             if (field.type == org.apache.thrift.protocol.TType.STRUCT) {
               this.o1 = new AlreadyExistsException();
               this.o1.read(iprot);
-            } else {
+            } else { 
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
             }
             break;
@@ -6734,7 +6734,7 @@ public class ThriftHiveMetastore {
             if (field.type == org.apache.thrift.protocol.TType.STRUCT) {
               this.o2 = new InvalidObjectException();
               this.o2.read(iprot);
-            } else {
+            } else { 
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
             }
             break;
@@ -6742,7 +6742,7 @@ public class ThriftHiveMetastore {
             if (field.type == org.apache.thrift.protocol.TType.STRUCT) {
               this.o3 = new MetaException();
               this.o3.read(iprot);
-            } else {
+            } else { 
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
             }
             break;
@@ -6899,7 +6899,7 @@ public class ThriftHiveMetastore {
     public static final Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
     static {
       Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
-      tmpMap.put(_Fields.NAME, new org.apache.thrift.meta_data.FieldMetaData("name", org.apache.thrift.TFieldRequirementType.DEFAULT,
+      tmpMap.put(_Fields.NAME, new org.apache.thrift.meta_data.FieldMetaData("name", org.apache.thrift.TFieldRequirementType.DEFAULT, 
           new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
       metaDataMap = Collections.unmodifiableMap(tmpMap);
       org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(get_database_args.class, metaDataMap);
@@ -7052,14 +7052,14 @@ public class ThriftHiveMetastore {
       while (true)
       {
         field = iprot.readFieldBegin();
-        if (field.type == org.apache.thrift.protocol.TType.STOP) {
+        if (field.type == org.apache.thrift.protocol.TType.STOP) { 
           break;
         }
         switch (field.id) {
           case 1: // NAME
             if (field.type == org.apache.thrift.protocol.TType.STRING) {
               this.name = iprot.readString();
-            } else {
+            } else { 
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
             }
             break;
@@ -7203,11 +7203,11 @@ public class ThriftHiveMetastore {
     public static final Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
     static {
       Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
-      tmpMap.put(_Fields.SUCCESS, new org.apache.thrift.meta_data.FieldMetaData("success", org.apache.thrift.TFieldRequirementType.DEFAULT,
+      tmpMap.put(_Fields.SUCCESS, new org.apache.thrift.meta_data.FieldMetaData("success", org.apache.thrift.TFieldRequirementType.DEFAULT, 
           new org.apache.thrift.meta_data.StructMetaData(org.apache.thrift.protocol.TType.STRUCT, Database.class)));
-      tmpMap.put(_Fields.O1, new org.apache.thrift.meta_data.FieldMetaData("o1", org.apache.thrift.TFieldRequirementType.DEFAULT,
+      tmpMap.put(_Fields.O1, new org.apache.thrift.meta_data.FieldMetaData("o1", org.apache.thrift.TFieldRequirementType.DEFAULT, 
           new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRUCT)));
-      tmpMap.put(_Fields.O2, new org.apache.thrift.meta_data.FieldMetaData("o2", org.apache.thrift.TFieldRequirementType.DEFAULT,
+      tmpMap.put(_Fields.O2, new org.apache.thrift.meta_data.FieldMetaData("o2", org.apache.thrift.TFieldRequirementType.DEFAULT, 
           new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRUCT)));
       metaDataMap = Collections.unmodifiableMap(tmpMap);
       org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(get_database_result.class, metaDataMap);
@@ -7482,7 +7482,7 @@ public class ThriftHiveMetastore {
       while (true)
       {
         field = iprot.readFieldBegin();
-        if (field.type == org.apache.thrift.protocol.TType.STOP) {
+        if (field.type == org.apache.thrift.protocol.TType.STOP) { 
           break;
         }
         switch (field.id) {
@@ -7490,7 +7490,7 @@ public class ThriftHiveMetastore {
             if (field.type == org.apache.thrift.protocol.TType.STRUCT) {
               this.success = new Database();
               this.success.read(iprot);
-            } else {
+            } else { 
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
             }
             break;
@@ -7498,7 +7498,7 @@ public class ThriftHiveMetastore {
             if (field.type == org.apache.thrift.protocol.TType.STRUCT) {
               this.o1 = new NoSuchObjectException();
               this.o1.read(iprot);
-            } else {
+            } else { 
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
             }
             break;
@@ -7506,7 +7506,7 @@ public class ThriftHiveMetastore {
             if (field.type == org.apache.thrift.protocol.TType.STRUCT) {
               this.o2 = new MetaException();
               this.o2.read(iprot);
-            } else {
+            } else { 
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
             }
             break;
@@ -7676,11 +7676,11 @@ public class ThriftHiveMetastore {
     public static final Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
     static {
       Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
-      tmpMap.put(_Fields.NAME, new org.apache.thrift.meta_data.FieldMetaData("name", org.apache.thrift.TFieldRequirementType.DEFAULT,
+      tmpMap.put(_Fields.NAME, new org.apache.thrift.meta_data.FieldMetaData("name", org.apache.thrift.TFieldRequirementType.DEFAULT, 
           new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
-      tmpMap.put(_Fields.DELETE_DATA, new org.apache.thrift.meta_data.FieldMetaData("deleteData", org.apache.thrift.TFieldRequirementType.DEFAULT,
+      tmpMap.put(_Fields.DELETE_DATA, new org.apache.thrift.meta_data.FieldMetaData("deleteData", org.apache.thrift.TFieldRequirementType.DEFAULT, 
           new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.BOOL)));
-      tmpMap.put(_Fields.CASCADE, new org.apache.thrift.meta_data.FieldMetaData("cascade", org.apache.thrift.TFieldRequirementType.DEFAULT,
+      tmpMap.put(_Fields.CASCADE, new org.apache.thrift.meta_data.FieldMetaData("cascade", org.apache.thrift.TFieldRequirementType.DEFAULT, 
           new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.BOOL)));
       metaDataMap = Collections.unmodifiableMap(tmpMap);
       org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(drop_database_args.class, metaDataMap);
@@ -7955,14 +7955,14 @@ public class ThriftHiveMetastore {
       while (true)
       {
         field = iprot.readFieldBegin();
-        if (field.type == org.apache.thrift.protocol.TType.STOP) {
+        if (field.type == org.apache.thrift.protocol.TType.STOP) { 
           break;
         }
         switch (field.id) {
           case 1: // NAME
             if (field.type == org.apache.thrift.protocol.TType.STRING) {
               this.name = iprot.readString();
-            } else {
+            } else { 
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
             }
             break;
@@ -7970,7 +7970,7 @@ public class ThriftHiveMetastore {
             if (field.type == org.apache.thrift.protocol.TType.BOOL) {
               this.deleteData = iprot.readBool();
               setDeleteDataIsSet(true);
-            } else {
+            } else { 
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
             }
             break;
@@ -7978,7 +7978,7 @@ public class ThriftHiveMetastore {
             if (field.type == org.apache.thrift.protocol.TType.BOOL) {
               this.cascade = iprot.readBool();
               setCascadeIsSet(true);
-            } else {
+            } else { 
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
             }
             break;
@@ -8138,11 +8138,11 @@ public class ThriftHiveMetastore {
     public static final Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
     static {
       Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
-      tmpMap.put(_Fields.O1, new org.apache.thrift.meta_data.FieldMetaData("o1", org.apache.thrift.TFieldRequirementType.DEFAULT,
+      tmpMap.put(_Fields.O1, new org.apache.thrift.meta_data.FieldMetaData("o1", org.apache.thrift.TFieldRequirementType.DEFAULT, 
           new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRUCT)));
-      tmpMap.put(_Fields.O2, new org.apache.thrift.meta_data.FieldMetaData("o2", org.apache.thrift.TFieldRequirementType.DEFAULT,
+      tmpMap.put(_Fields.O2, new org.apache.thrift.meta_data.FieldMetaData("o2", org.apache.thrift.TFieldRequirementType.DEFAULT, 
           new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRUCT)));
-      tmpMap.put(_Fields.O3, new org.apache.thrift.meta_data.FieldMetaData("o3", org.apache.thrift.TFieldRequirementType.DEFAULT,
+      tmpMap.put(_Fields.O3, new org.apache.thrift.meta_data.FieldMetaData("o3", org.apache.thrift.TFieldRequirementType.DEFAULT, 
           new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRUCT)));
       metaDataMap = Collections.unmodifiableMap(tmpMap);
       org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(drop_database_result.class, metaDataMap);
@@ -8417,7 +8417,7 @@ public class ThriftHiveMetastore {
       while (true)
       {
         field = iprot.readFieldBegin();
-        if (field.type == org.apache.thrift.protocol.TType.STOP) {
+        if (field.type == org.apache.thrift.protocol.TType.STOP) { 
           break;
         }
         switch (field.id) {
@@ -8425,7 +8425,7 @@ public class ThriftHiveMetastore {
             if (field.type == org.apache.thrift.protocol.TType.STRUCT) {
               this.o1 = new NoSuchObjectException();
               this.o1.read(iprot);
-            } else {
+            } else { 
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
             }
             break;
@@ -8433,7 +8433,7 @@ public class ThriftHiveMetastore {
             if (field.type == org.apache.thrift.protocol.TType.STRUCT) {
               this.o2 = new InvalidOperationException();
               this.o2.read(iprot);
-            } else {
+            } else { 
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
             }
             break;
@@ -8441,7 +8441,7 @@ public class ThriftHiveMetastore {
             if (field.type == org.apache.thrift.protocol.TType.STRUCT) {
               this.o3 = new MetaException();
               this.o3.read(iprot);
-            } else {
+            } else { 
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
             }
             break;
@@ -8598,7 +8598,7 @@ public class ThriftHiveMetastore {
     public static final Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
     static {
       Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
-      tmpMap.put(_Fields.PATTERN, new org.apache.thrift.meta_data.FieldMetaData("pattern", org.apache.thrift.TFieldRequirementType.DEFAULT,
+      tmpMap.put(_Fields.PATTERN, new org.apache.thrift.meta_data.FieldMetaData("pattern", org.apache.thrift.TFieldRequirementType.DEFAULT, 
           new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
       metaDataMap = Collections.unmodifiableMap(tmpMap);
       org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(get_databases_args.class, metaDataMap);
@@ -8751,14 +8751,14 @@ public class ThriftHiveMetastore {
       while (true)
       {
         field = iprot.readFieldBegin();
-        if (field.type == org.apache.thrift.protocol.TType.STOP) {
+        if (field.type == org.apache.thrift.protocol.TType.STOP) { 
           break;
         }
         switch (field.id) {
           case 1: // PATTERN
             if (field.type == org.apache.thrift.protocol.TType.STRING) {
               this.pattern = iprot.readString();
-            } else {
+            } else { 
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
             }
             break;
@@ -8897,10 +8897,10 @@ public class ThriftHiveMetastore {
     public static final Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
     static {
       Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
-      tmpMap.put(_Fields.SUCCESS, new org.apache.thrift.meta_data.FieldMetaData("success", org.apache.thrift.TFieldRequirementType.DEFAULT,
-          new org.apache.thrift.meta_data.ListMetaData(org.apache.thrift.protocol.TType.LIST,
+      tmpMap.put(_Fields.SUCCESS, new org.apache.thrift.meta_data.FieldMetaData("success", org.apache.thrift.TFieldRequirementType.DEFAULT, 
+          new org.apache.thrift.meta_data.ListMetaData(org.apache.thrift.protocol.TType.LIST, 
               new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING))));
-      tmpMap.put(_Fields.O1, new org.apache.thrift.meta_data.FieldMetaData("o1", org.apache.thrift.TFieldRequirementType.DEFAULT,
+      tmpMap.put(_Fields.O1, new org.apache.thrift.meta_data.FieldMetaData("o1", org.apache.thrift.TFieldRequirementType.DEFAULT, 
           new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRUCT)));
       metaDataMap = Collections.unmodifiableMap(tmpMap);
       org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(get_databases_result.class, metaDataMap);
@@ -9109,7 +9109,7 @@ public class ThriftHiveMetastore {
         if (lastComparison != 0) {
           return lastComparison;
         }
-        }
+      }
       lastComparison = Boolean.valueOf(isSetO1()).compareTo(typedOther.isSetO1());
       if (lastComparison != 0) {
         return lastComparison;
@@ -9133,24 +9133,24 @@ public class ThriftHiveMetastore {
       while (true)
       {
         field = iprot.readFieldBegin();
-        if (field.type == org.apache.thrift.protocol.TType.STOP) {
+        if (field.type == org.apache.thrift.protocol.TType.STOP) { 
           break;
         }
         switch (field.id) {
           case 0: // SUCCESS
             if (field.type == org.apache.thrift.protocol.TType.LIST) {
               {
-                org.apache.thrift.protocol.TList _list98 = iprot.readListBegin();
-                this.success = new ArrayList<String>(_list98.size);
-                for (int _i99 = 0; _i99 < _list98.size; ++_i99)
+                org.apache.thrift.protocol.TList _list102 = iprot.readListBegin();
+                this.success = new ArrayList<String>(_list102.size);
+                for (int _i103 = 0; _i103 < _list102.size; ++_i103)
                 {
-                  String _elem100; // required
-                  _elem100 = iprot.readString();
-                  this.success.add(_elem100);
+                  String _elem104; // required
+                  _elem104 = iprot.readString();
+                  this.success.add(_elem104);
                 }
                 iprot.readListEnd();
               }
-            } else {
+            } else { 
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
             }
             break;
@@ -9158,7 +9158,7 @@ public class ThriftHiveMetastore {
             if (field.type == org.apache.thrift.protocol.TType.STRUCT) {
               this.o1 = new MetaException();
               this.o1.read(iprot);
-            } else {
+            } else { 
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
             }
             break;
@@ -9178,9 +9178,9 @@ public class ThriftHiveMetastore {
         oprot.writeFieldBegin(SUCCESS_FIELD_DESC);
         {
           oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRING, this.success.size()));
-          for (String _iter101 : this.success)
+          for (String _iter105 : this.success)
           {
-            oprot.writeString(_iter101);
+            oprot.writeString(_iter105);
           }
           oprot.writeListEnd();
         }
@@ -9388,7 +9388,7 @@ public class ThriftHiveMetastore {
       while (true)
       {
         field = iprot.readFieldBegin();
-        if (field.type == org.apache.thrift.protocol.TType.STOP) {
+        if (field.type == org.apache.thrift.protocol.TType.STOP) { 
           break;
         }
         switch (field.id) {
@@ -9515,10 +9515,10 @@ public class ThriftHiveMetastore {
     public static final Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
     static {
       Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
-      tmpMap.put(_Fields.SUCCESS, new org.apache.thrift.meta_data.FieldMetaData("success", org.apache.thrift.TFieldRequirementType.DEFAULT,
-          new org.apache.thrift.meta_data.ListMetaData(org.apache.thrift.protocol.TType.LIST,
+      tmpMap.put(_Fields.SUCCESS, new org.apache.thrift.meta_data.FieldMetaData("success", org.apache.thrift.TFieldRequirementType.DEFAULT, 
+          new org.apache.thrift.meta_data.ListMetaData(org.apache.thrift.protocol.TType.LIST, 
               new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING))));
-      tmpMap.put(_Fields.O1, new org.apache.thrift.meta_data.FieldMetaData("o1", org.apache.thrift.TFieldRequirementType.DEFAULT,
+      tmpMap.put(_Fields.O1, new org.apache.thrift.meta_data.FieldMetaData("o1", org.apache.thrift.TFieldRequirementType.DEFAULT, 
           new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRUCT)));
       metaDataMap = Collections.unmodifiableMap(tmpMap);
       org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(get_all_databases_result.class, metaDataMap);
@@ -9751,24 +9751,24 @@ public class ThriftHiveMetastore {
       while (true)
       {
         field = iprot.readFieldBegin();
-        if (field.type == org.apache.thrift.protocol.TType.STOP) {
+        if (field.type == org.apache.thrift.protocol.TType.STOP) { 
           break;
         }
         switch (field.id) {
           case 0: // SUCCESS
             if (field.type == org.apache.thrift.protocol.TType.LIST) {
               {
-                org.apache.thrift.protocol.TList _list102 = iprot.readListBegin();
-                this.success = new ArrayList<String>(_list102.size);
-                for (int _i103 = 0; _i103 < _list102.size; ++_i103)
+                org.apache.thrift.protocol.TList _list106 = iprot.readListBegin();
+                this.success = new ArrayList<String>(_list106.size);
+                for (int _i107 = 0; _i107 < _list106.size; ++_i107)
                 {
-                  String _elem104; // required
-                  _elem104 = iprot.readString();
-                  this.success.add(_elem104);
+                  String _elem108; // required
+                  _elem108 = iprot.readString();
+                  this.success.add(_elem108);
                 }
                 iprot.readListEnd();
               }
-            } else {
+            } else { 
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
             }
             break;
@@ -9776,7 +9776,7 @@ public class ThriftHiveMetastore {
             if (field.type == org.apache.thrift.protocol.TType.STRUCT) {
               this.o1 = new MetaException();
               this.o1.read(iprot);
-            } else {
+            } else { 
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
             }
             break;
@@ -9796,9 +9796,9 @@ public class ThriftHiveMetastore {
         oprot.writeFieldBegin(SUCCESS_FIELD_DESC);
         {
           oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRING, this.success.size()));
-          for (String _iter105 : this.success)
+          for (String _iter109 : this.success)
           {
-            oprot.writeString(_iter105);
+            oprot.writeString(_iter109);
           }
           oprot.writeListEnd();
         }
@@ -9933,9 +9933,9 @@ public class ThriftHiveMetastore {
     public static final Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
     static {
       Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
-      tmpMap.put(_Fields.DBNAME, new org.apache.thrift.meta_data.FieldMetaData("dbname", org.apache.thrift.TFieldRequirementType.DEFAULT,
+      tmpMap.put(_Fields.DBNAME, new org.apache.thrift.meta_data.FieldMetaData("dbname", org.apache.thrift.TFieldRequirementType.DEFAULT, 
           new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
-      tmpMap.put(_Fields.DB, new org.apache.thrift.meta_data.FieldMetaData("db", org.apache.thrift.TFieldRequirementType.DEFAULT,
+      tmpMap.put(_Fields.DB, new org.apache.thrift.meta_data.FieldMetaData("db", org.apache.thrift.TFieldRequirementType.DEFAULT, 
           new org.apache.thrift.meta_data.StructMetaData(org.apache.thrift.protocol.TType.STRUCT, Database.class)));
       metaDataMap = Collections.unmodifiableMap(tmpMap);
       org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(alter_database_args.class, metaDataMap);
@@ -10149,14 +10149,14 @@ public class ThriftHiveMetastore {
       while (true)
       {
         field = iprot.readFieldBegin();
-        if (field.type == org.apache.thrift.protocol.TType.STOP) {
+        if (field.type == org.apache.thrift.protocol.TType.STOP) { 
           break;
         }
         switch (field.id) {
           case 1: // DBNAME
             if (field.type == org.apache.thrift.protocol.TType.STRING) {
               this.dbname = iprot.readString();
-            } else {
+            } else { 
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
             }
             break;
@@ -10164,7 +10164,7 @@ public class ThriftHiveMetastore {
             if (field.type == org.apache.thrift.protocol.TType.STRUCT) {
               this.db = new Database();
               this.db.read(iprot);
-            } else {
+            } else { 
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
             }
             break;
@@ -10316,9 +10316,9 @@ public class ThriftHiveMetastore {
     public static final Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
     static {
       Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
-      tmpMap.put(_Fields.O1, new org.apache.thrift.meta_data.FieldMetaData("o1", org.apache.thrift.TFieldRequirementType.DEFAULT,
+      tmpMap.put(_Fields.O1, new org.apache.thrift.meta_data.FieldMetaData("o1", org.apache.thrift.TFieldRequirementType.DEFAULT, 
           new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRUCT)));
-      tmpMap.put(_Fields.O2, new org.apache.thrift.meta_data.FieldMetaData("o2", org.apache.thrift.TFieldRequirementType.DEFAULT,
+      tmpMap.put(_Fields.O2, new org.apache.thrift.meta_data.FieldMetaData("o2", org.apache.thrift.TFieldRequirementType.DEFAULT, 
           new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRUCT)));
       metaDataMap = Collections.unmodifiableMap(tmpMap);
       org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(alter_database_result.class, metaDataMap);
@@ -10532,7 +10532,7 @@ public class ThriftHiveMetastore {
       while (true)
       {
         field = iprot.readFieldBegin();
-        if (field.type == org.apache.thrift.protocol.TType.STOP) {
+        if (field.type == org.apache.thrift.protocol.TType.STOP) { 
           break;
         }
         switch (field.id) {
@@ -10540,7 +10540,7 @@ public class ThriftHiveMetastore {
             if (field.type == org.apache.thrift.protocol.TType.STRUCT) {
               this.o1 = new MetaException();
               this.o1.read(iprot);
-            } else {
+            } else { 
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
             }
             break;
@@ -10548,7 +10548,7 @@ public class ThriftHiveMetastore {
             if (field.type == org.apache.thrift.protocol.TType.STRUCT) {
               this.o2 = new NoSuchObjectException();
               this.o2.read(iprot);
-            } else {
+            } else { 
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
             }
             break;
@@ -10693,7 +10693,7 @@ public class ThriftHiveMetastore {
     public static final Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
     static {
       Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
-      tmpMap.put(_Fields.NAME, new org.apache.thrift.meta_data.FieldMetaData("name", org.apache.thrift.TFieldRequirementType.DEFAULT,
+      tmpMap.put(_Fields.NAME, new org.apache.thrift.meta_data.FieldMetaData("name", org.apache.thrift.TFieldRequirementType.DEFAULT, 
           new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
       metaDataMap = Collections.unmodifiableMap(tmpMap);
       org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(get_type_args.class, metaDataMap);
@@ -10846,14 +10846,14 @@ public class ThriftHiveMetastore {
       while (true)
       {
         field = iprot.readFieldBegin();
-        if (field.type == org.apache.thrift.protocol.TType.STOP) {
+        if (field.type == org.apache.thrift.protocol.TType.STOP) { 
           break;
         }
         switch (field.id) {
           case 1: // NAME
             if (field.type == org.apache.thrift.protocol.TType.STRING) {
               this.name = iprot.readString();
-            } else {
+            } else { 
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
             }
             break;
@@ -10997,11 +10997,11 @@ public class ThriftHiveMetastore {
     public static final Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
     static {
       Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
-      tmpMap.put(_Fields.SUCCESS, new org.apache.thrift.meta_data.FieldMetaData("success", org.apache.thrift.TFieldRequirementType.DEFAULT,
+      tmpMap.put(_Fields.SUCCESS, new org.apache.thrift.meta_data.FieldMetaData("success", org.apache.thrift.TFieldRequirementType.DEFAULT, 
           new org.apache.thrift.meta_data.StructMetaData(org.apache.thrift.protocol.TType.STRUCT, Type.class)));
-      tmpMap.put(_Fields.O1, new org.apache.thrift.meta_data.FieldMetaData("o1", org.apache.thrift.TFieldRequirementType.DEFAULT,
+      tmpMap.put(_Fields.O1, new org.apache.thrift.meta_data.FieldMetaData("o1", org.apache.thrift.TFieldRequirementType.DEFAULT, 
           new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRUCT)));
-      tmpMap.put(_Fields.O2, new org.apache.thrift.meta_data.FieldMetaData("o2", org.apache.thrift.TFieldRequirementType.DEFAULT,
+      tmpMap.put(_Fields.O2, new org.apache.thrift.meta_data.FieldMetaData("o2", org.apache.thrift.TFieldRequirementType.DEFAULT, 
           new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRUCT)));
       metaDataMap = Collections.unmodifiableMap(tmpMap);
       org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(get_type_result.class, metaDataMap);
@@ -11276,7 +11276,7 @@ public class ThriftHiveMetastore {
       while (true)
       {
         field = iprot.readFieldBegin();
-        if (field.type == org.apache.thrift.protocol.TType.STOP) {
+        if (field.type == org.apache.thrift.protocol.TType.STOP) { 
           break;
         }
         switch (field.id) {
@@ -11284,7 +11284,7 @@ public class ThriftHiveMetastore {
             if (field.type == org.apache.thrift.protocol.TType.STRUCT) {
               this.success = new Type();
               this.success.read(iprot);
-            } else {
+            } else { 
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
             }
             break;
@@ -11292,7 +11292,7 @@ public class ThriftHiveMetastore {
             if (field.type == org.apache.thrift.protocol.TType.STRUCT) {
               this.o1 = new MetaException();
               this.o1.read(iprot);
-            } else {
+            } else { 
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
             }
             break;
@@ -11300,7 +11300,7 @@ public class ThriftHiveMetastore {
             if (field.type == org.apache.thrift.protocol.TType.STRUCT) {
               this.o2 = new NoSuchObjectException();
               this.o2.read(iprot);
-            } else {
+            } else { 
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
             }
             break;
@@ -11457,7 +11457,7 @@ public class ThriftHiveMetastore {
     public static final Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
     static {
       Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
-      tmpMap.put(_Fields.TYPE, new org.apache.thrift.meta_data.FieldMetaData("type", org.apache.thrift.TFieldRequirementType.DEFAULT,
+      tmpMap.put(_Fields.TYPE, new org.apache.thrift.meta_data.FieldMetaData("type", org.apache.thrift.TFieldRequirementType.DEFAULT, 
           new org.apache.thrift.meta_data.StructMetaData(org.apache.thrift.protocol.TType.STRUCT, Type.class)));
       metaDataMap = Collections.unmodifiableMap(tmpMap);
       org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(create_type_args.class, metaDataMap);
@@ -11610,7 +11610,7 @@ public class ThriftHiveMetastore {
       while (true)
       {
         field = iprot.readFieldBegin();
-        if (field.type == org.apache.thrift.protocol.TType.STOP) {
+        if (field.type == org.apache.thrift.protocol.TType.STOP) { 
           break;
         }
         switch (field.id) {
@@ -11618,7 +11618,7 @@ public class ThriftHiveMetastore {
             if (field.type == org.apache.thrift.protocol.TType.STRUCT) {
               this.type = new Type();
               this.type.read(iprot);
-            } else {
+            } else { 
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
             }
             break;
@@ -11769,13 +11769,13 @@ public class ThriftHiveMetastore {
     public static final Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
     static {
       Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
-      tmpMap.put(_Fields.SUCCESS, new org.apache.thrift.meta_data.FieldMetaData("success", org.apache.thrift.TFieldRequirementType.DEFAULT,
+      tmpMap.put(_Fields.SUCCESS, new org.apache.thrift.meta_data.FieldMetaData("success", org.apache.thrift.TFieldRequirementType.DEFAULT, 
           new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.BOOL)));
-      tmpMap.put(_Fields.O1, new org.apache.thrift.meta_data.FieldMetaData("o1", org.apache.thrift.TFieldRequirementType.DEFAULT,
+      tmpMap.put(_Fields.O1, new org.apache.thrift.meta_data.FieldMetaData("o1", org.apache.thrift.TFieldRequirementType.DEFAULT, 
           new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRUCT)));
-      tmpMap.put(_Fields.O2, new org.apache.thrift.meta_data.FieldMetaData("o2", org.apache.thrift.TFieldRequirementType.DEFAULT,
+      tmpMap.put(_Fields.O2, new org.apache.thrift.meta_data.FieldMetaData("o2", org.apache.thrift.TFieldRequirementType.DEFAULT, 
           new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRUCT)));
-      tmpMap.put(_Fields.O3, new org.apache.thrift.meta_data.FieldMetaData("o3", org.apache.thrift.TFieldRequirementType.DEFAULT,
+      tmpMap.put(_Fields.O3, new org.apache.thrift.meta_data.FieldMetaData("o3", org.apache.thrift.TFieldRequirementType.DEFAULT, 
           new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRUCT)));
       metaDataMap = Collections.unmodifiableMap(tmpMap);
       org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(create_type_result.class, metaDataMap);
@@ -12112,7 +12112,7 @@ public class ThriftHiveMetastore {
       while (true)
       {
         field = iprot.readFieldBegin();
-        if (field.type == org.apache.thrift.protocol.TType.STOP) {
+        if (field.type == org.apache.thrift.protocol.TType.STOP) { 
           break;
         }
         switch (field.id) {
@@ -12120,7 +12120,7 @@ public class ThriftHiveMetastore {
             if (field.type == org.apache.thrift.protocol.TType.BOOL) {
               this.success = iprot.readBool();
               setSuccessIsSet(true);
-            } else {
+            } else { 
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
             }
             break;
@@ -12128,7 +12128,7 @@ public class ThriftHiveMetastore {
             if (field.type == org.apache.thrift.protocol.TType.STRUCT) {
               this.o1 = new AlreadyExistsException();
               this.o1.read(iprot);
-            } else {
+            } else { 
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
             }
             break;
@@ -12136,7 +12136,7 @@ public class ThriftHiveMetastore {
             if (field.type == org.apache.thrift.protocol.TType.STRUCT) {
               this.o2 = new InvalidObjectException();
               this.o2.read(iprot);
-            } else {
+            } else { 
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
             }
             break;
@@ -12144,7 +12144,7 @@ public class ThriftHiveMetastore {
             if (field.type == org.apache.thrift.protocol.TType.STRUCT) {
               this.o3 = new MetaException();
               this.o3.read(iprot);
-            } else {
+            } else { 
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
             }
             break;
@@ -12309,7 +12309,7 @@ public class ThriftHiveMetastore {
     public static final Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
     static {
       Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
-      tmpMap.put(_Fields.TYPE, new org.apache.thrift.meta_data.FieldMetaData("type", org.apache.thrift.TFieldRequirementType.DEFAULT,
+      tmpMap.put(_Fields.TYPE, new org.apache.thrift.meta_data.FieldMetaData("type", org.apache.thrift.TFieldRequirementType.DEFAULT, 
           new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
       metaDataMap = Collections.unmodifiableMap(tmpMap);
       org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(drop_type_args.class, metaDataMap);
@@ -12462,14 +12462,14 @@ public class ThriftHiveMetastore {
       while (true)
       {
         field = iprot.readFieldBegin();
-        if (field.type == org.apache.thrift.protocol.TType.STOP) {
+        if (field.type == org.apache.thrift.protocol.TType.STOP) { 
           break;
         }
         switch (field.id) {
           case 1: // TYPE
             if (field.type == org.apache.thrift.protocol.TType.STRING) {
               this.type = iprot.readString();
-            } else {
+            } else { 
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
             }
             break;
@@ -12615,11 +12615,11 @@ public class ThriftHiveMetastore {
     public static final Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
     static {
       Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
-      tmpMap.put(_Fields.SUCCESS, new org.apache.thrift.meta_data.FieldMetaData("success", org.apache.thrift.TFieldRequirementType.DEFAULT,
+      tmpMap.put(_Fields.SUCCESS, new org.apache.thrift.meta_data.FieldMetaData("success", org.apache.thrift.TFieldRequirementType.DEFAULT, 
           new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.BOOL)));
-      tmpMap.put(_Fields.O1, new org.apache.thrift.meta_data.FieldMetaData("o1", org.apache.thrift.TFieldRequirementType.DEFAULT,
+      tmpMap.put(_Fields.O1, new org.apache.thrift.meta_data.FieldMetaData("o1", org.apache.thrift.TFieldRequirementType.DEFAULT, 
           new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRUCT)));
-      tmpMap.put(_Fields.O2, new org.apache.thrift.meta_data.FieldMetaData("o2", org.apache.thrift.TFieldRequirementType.DEFAULT,
+      tmpMap.put(_Fields.O2, new org.apache.thrift.meta_data.FieldMetaData("o2", org.apache.thrift.TFieldRequirementType.DEFAULT, 
           new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRUCT)));
       metaDataMap = Collections.unmodifiableMap(tmpMap);
       org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(drop_type_result.class, metaDataMap);
@@ -12895,7 +12895,7 @@ public class ThriftHiveMetastore {
       while (true)
       {
         field = iprot.readFieldBegin();
-        if (field.type == org.apache.thrift.protocol.TType.STOP) {
+        if (field.type == org.apache.thrift.protocol.TType.STOP) { 
           break;
         }
         switch (field.id) {
@@ -12903,7 +12903,7 @@ public class ThriftHiveMetastore {
             if (field.type == org.apache.thrift.protocol.TType.BOOL) {
               this.success = iprot.readBool();
               setSuccessIsSet(true);
-            } else {
+            } else { 
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
             }
             break;
@@ -12911,7 +12911,7 @@ public class ThriftHiveMetastore {
             if (field.type == org.apache.thrift.protocol.TType.STRUCT) {
               this.o1 = new MetaException();
               this.o1.read(iprot);
-            } else {
+            } else { 
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
             }
             break;
@@ -12919,7 +12919,7 @@ public class ThriftHiveMetastore {
             if (field.type == org.apache.thrift.protocol.TType.STRUCT) {
               this.o2 = new NoSuchObjectException();
               this.o2.read(iprot);
-            } else {
+            } else { 
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
             }
             break;
@@ -13072,7 +13072,7 @@ public class ThriftHiveMetastore {
     public static final Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
     static {
       Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
-      tmpMap.put(_Fields.NAME, new org.apache.thrift.meta_data.FieldMetaData("name", org.apache.thrift.TFieldRequirementType.DEFAULT,
+      tmpMap.put(_Fields.NAME, new org.apache.thrift.meta_data.FieldMetaData("name", org.apache.thrift.TFieldRequirementType.DEFAULT, 
           new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
       metaDataMap = Collections.unmodifiableMap(tmpMap);
       org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(get_type_all_args.class, metaDataMap);
@@ -13225,14 +13225,14 @@ public class ThriftHiveMetastore {
       while (true)
       {
         field = iprot.readFieldBegin();
-        if (field.type == org.apache.thrift.protocol.TType.STOP) {
+        if (field.type == org.apache.thrift.protocol.TType.STOP) { 
           break;
         }
         switch (field.id) {
           case 1: // NAME
             if (field.type == org.apache.thrift.protocol.TType.STRING) {
               this.name = iprot.readString();
-            } else {
+            } else { 
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
             }
             break;
@@ -13371,11 +13371,11 @@ public class ThriftHiveMetastore {
     public static final Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
     static {
       Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
-      tmpMap.put(_Fields.SUCCESS, new org.apache.thrift.meta_data.FieldMetaData("success", org.apache.thrift.TFieldRequirementType.DEFAULT,
-          new org.apache.thrift.meta_data.MapMetaData(org.apache.thrift.protocol.TType.MAP,
-              new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING),
+      tmpMap.put(_Fields.SUCCESS, new org.apache.thrift.meta_data.FieldMetaData("success", org.apache.thrift.TFieldRequirementType.DEFAULT, 
+          new org.apache.thrift.meta_data.MapMetaData(org.apache.thrift.protocol.TType.MAP, 
+              new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING), 
               new org.apache.thrift.meta_data.StructMetaData(org.apache.thrift.protocol.TType.STRUCT, Type.class))));
-      tmpMap.put(_Fields.O2, new org.apache.thrift.meta_data.FieldMetaData("o2", org.apache.thrift.TFieldRequirementType.DEFAULT,
+      tmpMap.put(_Fields.O2, new org.apache.thrift.meta_data.FieldMetaData("o2", org.apache.thrift.TFieldRequirementType.DEFAULT, 
           new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRUCT)));
       metaDataMap = Collections.unmodifiableMap(tmpMap);
       org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(get_type_all_result.class, metaDataMap);
@@ -13612,27 +13612,27 @@ public class ThriftHiveMetastore {
       while (true)
       {
         field = iprot.readFieldBegin();
-        if (field.type == org.apache.thrift.protocol.TType.STOP) {
+        if (field.type == org.apache.thrift.protocol.TType.STOP) { 
           break;
         }
         switch (field.id) {
           case 0: // SUCCESS
             if (field.type == org.apache.thrift.protocol.TType.MAP) {
               {
-                org.apache.thrift.protocol.TMap _map106 = iprot.readMapBegin();
-                this.success = new HashMap<String,Type>(2*_map106.size);
-                for (int _i107 = 0; _i107 < _map106.size; ++_i107)
+                org.apache.thrift.protocol.TMap _map110 = iprot.readMapBegin();
+                this.success = new HashMap<String,Type>(2*_map110.size);
+                for (int _i111 = 0; _i111 < _map110.size; ++_i111)
                 {
-                  String _key108; // required
-                  Type _val109; // required
-                  _key108 = iprot.readString();
-                  _val109 = new Type();
-                  _val109.read(iprot);
-                  this.success.put(_key108, _val109);
+                  String _key112; // required
+                  Type _val113; // required
+                  _key112 = iprot.readString();
+                  _val113 = new Type();
+                  _val113.read(iprot);
+                  this.success.put(_key112, _val113);
                 }
                 iprot.readMapEnd();
               }
-            } else {
+            } else { 
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
             }
             break;
@@ -13640,7 +13640,7 @@ public class ThriftHiveMetastore {
             if (field.type == org.apache.thrift.protocol.TType.STRUCT) {
               this.o2 = new MetaException();
               this.o2.read(iprot);
-            } else {
+            } else { 
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
             }
             break;
@@ -13660,10 +13660,10 @@ public class ThriftHiveMetastore {
         oprot.writeFieldBegin(SUCCESS_FIELD_DESC);
         {
           oprot.writeMapBegin(new org.apache.thrift.protocol.TMap(org.apache.thrift.protocol.TType.STRING, org.apache.thrift.protocol.TType.STRUCT, this.success.size()));
-          for (Map.Entry<String, Type> _iter110 : this.success.entrySet())
+          for (Map.Entry<String, Type> _iter114 : this.success.entrySet())
           {
-            oprot.writeString(_iter110.getKey());
-            _iter110.getValue().write(oprot);
+            oprot.writeString(_iter114.getKey());
+            _iter114.getValue().write(oprot);
           }
           oprot.writeMapEnd();
         }
@@ -13798,9 +13798,9 @@ public class ThriftHiveMetastore {
     public static final Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
     static {
       Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
-      tmpMap.put(_Fields.DB_NAME, new org.apache.thrift.meta_data.FieldMetaData("db_name", org.apache.thrift.TFieldRequirementType.DEFAULT,
+      tmpMap.put(_Fields.DB_NAME, new org.apache.thrift.meta_data.FieldMetaData("db_name", org.apache.thrift.TFieldRequirementType.DEFAULT, 
           new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
-      tmpMap.put(_Fields.TABLE_NAME, new org.apache.thrift.meta_data.FieldMetaData("table_name", org.apache.thrift.TFieldRequirementType.DEFAULT,
+      tmpMap.put(_Fields.TABLE_NAME, new org.apache.thrift.meta_data.FieldMetaData("table_name", org.apache.thrift.TFieldRequirementType.DEFAULT, 
           new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
       metaDataMap = Collections.unmodifiableMap(tmpMap);
       org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(get_fields_args.class, metaDataMap);
@@ -14014,21 +14014,21 @@ public class ThriftHiveMetastore {
       while (true)
       {
         field = iprot.readFieldBegin();
-        if (field.type == org.apache.thrift.protocol.TType.STOP) {
+        if (field.type == org.apache.thrift.protocol.TType.STOP) { 
           break;
         }
         switch (field.id) {
           case 1: // DB_NAME
             if (field.type == org.apache.thrift.protocol.TType.STRING) {
               this.db_name = iprot.readString();
-            } else {
+            } else { 
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
             }
             break;
           case 2: // TABLE_NAME
             if (field.type == org.apache.thrift.protocol.TType.STRING) {
               this.table_name = iprot.readString();
-            } else {
+            } else { 
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
             }
             break;
@@ -14190,14 +14190,14 @@ public class ThriftHiveMetastore {
     public static final Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
     static {
       Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
-      tmpMap.put(_Fields.SUCCESS, new org.apache.thrift.meta_data.FieldMetaData("success", org.apache.thrift.TFieldRequirementType.DEFAULT,
-          new org.apache.thrift.meta_data.ListMetaData(org.apache.thrift.protocol.TType.LIST,
+      tmpMap.put(_Fields.SUCCESS, new org.apache.thrift.meta_data.FieldMetaData("success", org.apache.thrift.TFieldRequirementType.DEFAULT, 
+          new org.apache.thrift.meta_data.ListMetaData(org.apache.thrift.protocol.TType.LIST, 
               new org.apache.thrift.meta_data.StructMetaData(org.apache.thrift.protocol.TType.STRUCT, FieldSchema.class))));
-      tmpMap.put(_Fields.O1, new org.apache.thrift.meta_data.FieldMetaData("o1", org.apache.thrift.TFieldRequirementType.DEFAULT,
+      tmpMap.put(_Fields.O1, new org.apache.thrift.meta_data.FieldMetaData("o1", org.apache.thrift.TFieldRequirementType.DEFAULT, 
           new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRUCT)));
-      tmpMap.put(_Fields.O2, new org.apache.thrift.meta_data.FieldMetaData("o2", org.apache.thrift.TFieldRequirementType.DEFAULT,
+      tmpMap.put(_Fields.O2, new org.apache.thrift.meta_data.FieldMetaData("o2", org.apache.thrift.TFieldRequirementType.DEFAULT, 
           new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRUCT)));
-      tmpMap.put(_Fields.O3, new org.apache.thrift.meta_data.FieldMetaData("o3", org.apache.thrift.TFieldRequirementType.DEFAULT,
+      tmpMap.put(_Fields.O3, new org.apache.thrift.meta_data.FieldMetaData("o3", org.apache.thrift.TFieldRequirementType.DEFAULT, 
           new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRUCT)));
       metaDataMap = Collections.unmodifiableMap(tmpMap);
       org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(get_fields_result.class, metaDataMap);
@@ -14552,25 +14552,25 @@ public class ThriftHiveMetastore {
       while (true)
       {
         field = iprot.readFieldBegin();
-        if (field.type == org.apache.thrift.protocol.TType.STOP) {
+        if (field.type == org.apache.thrift.protocol.TType.STOP) { 
           break;
         }
         switch (field.id) {
           case 0: // SUCCESS
             if (field.type == org.apache.thrift.protocol.TType.LIST) {
               {
-                org.apache.thrift.protocol.TList _list111 = iprot.readListBegin();
-                this.success = new ArrayList<FieldSchema>(_list111.size);
-                for (int _i112 = 0; _i112 < _list111.size; ++_i112)
+                org.apache.thrift.protocol.TList _list115 = iprot.readListBegin();
+                this.success = new ArrayList<FieldSchema>(_list115.size);
+                for (int _i116 = 0; _i116 < _list115.size; ++_i116)
                 {
-                  FieldSchema _elem113; // required
-                  _elem113 = new FieldSchema();
-                  _elem113.read(iprot);
-                  this.success.add(_elem113);
+                  FieldSchema _elem117; // required
+                  _elem117 = new FieldSchema();
+                  _elem117.read(iprot);
+                  this.success.add(_elem117);
                 }
                 iprot.readListEnd();
               }
-            } else {
+            } else { 
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
             }
             break;
@@ -14578,7 +14578,7 @@ public class ThriftHiveMetastore {
             if (field.type == org.apache.thrift.protocol.TType.STRUCT) {
               this.o1 = new MetaException();
               this.o1.read(iprot);
-            } else {
+            } else { 
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
             }
             break;
@@ -14586,7 +14586,7 @@ public class ThriftHiveMetastore {
             if (field.type == org.apache.thrift.protocol.TType.STRUCT) {
               this.o2 = new UnknownTableException();
               this.o2.read(iprot);
-            } else {
+            } else { 
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
             }
             break;
@@ -14594,7 +14594,7 @@ public class ThriftHiveMetastore {
             if (field.type == org.apache.thrift.protocol.TType.STRUCT) {
               this.o3 = new UnknownDBException();
               this.o3.read(iprot);
-            } else {
+            } else { 
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
             }
             break;
@@ -14614,9 +14614,9 @@ public class ThriftHiveMetastore {
         oprot.writeFieldBegin(SUCCESS_FIELD_DESC);
         {
           oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, this.success.size()));
-          for (FieldSchema _iter114 : this.success)
+          for (FieldSchema _iter118 : this.success)
           {
-            _iter114.write(oprot);
+            _iter118.write(oprot);
           }
           oprot.writeListEnd();
         }
@@ -14775,9 +14775,9 @@ public class ThriftHiveMetastore {
     public static final Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
     static {
       Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
-      tmpMap.put(_Fields.DB_NAME, new org.apache.thrift.meta_data.FieldMetaData("db_name", org.apache.thrift.TFieldRequirementType.DEFAULT,
+      tmpMap.put(_Fields.DB_NAME, new org.apache.thrift.meta_data.FieldMetaData("db_name", org.apache.thrift.TFieldRequirementType.DEFAULT, 
           new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
-      tmpMap.put(_Fields.TABLE_NAME, new org.apache.thrift.meta_data.FieldMetaData("table_name", org.apache.thrift.TFieldRequirementType.DEFAULT,
+      tmpMap.put(_Fields.TABLE_NAME, new org.apache.thrift.meta_data.FieldMetaData("table_name", org.apache.thrift.TFieldRequirementType.DEFAULT, 
           new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
       metaDataMap = Collections.unmodifiableMap(tmpMap);
       org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(get_schema_args.class, metaDataMap);
@@ -14991,21 +14991,21 @@ public class ThriftHiveMetastore {
       while (true)
       {
         field = iprot.readFieldBegin();
-        if (field.type == org.apache.thrift.protocol.TType.STOP) {
+        if (field.type == org.apache.thrift.protocol.TType.STOP) { 
           break;
         }
         switch (field.id) {
           case 1: // DB_NAME
             if (field.type == org.apache.thrift.protocol.TType.STRING) {
               this.db_name = iprot.readString();
-            } else {
+            } else { 
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
             }
             break;
           case 2: // TABLE_NAME
             if (field.type == org.apache.thrift.protocol.TType.STRING) {
               this.table_name = iprot.readString();
-            } else {
+            } else { 
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
             }
             break;
@@ -15167,14 +15167,14 @@ public class ThriftHiveMetastore {
     public static final Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
     static {
       Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
-      tmpMap.put(_Fields.SUCCESS, new org.apache.thrift.meta_data.FieldMetaData("success", org.apache.thrift.TFieldRequirementType.DEFAULT,
-          new org.apache.thrift.meta_data.ListMetaData(org.apache.thrift.protocol.TType.LIST,
+      tmpMap.put(_Fields.SUCCESS, new org.apache.thrift.meta_data.FieldMetaData("success", org.apache.thrift.TFieldRequirementType.DEFAULT, 
+          new org.apache.thrift.meta_data.ListMetaData(org.apache.thrift.protocol.TType.LIST, 
               new org.apache.thrift.meta_data.StructMetaData(org.apache.thrift.protocol.TType.STRUCT, FieldSchema.class))));
-      tmpMap.put(_Fields.O1, new org.apache.thrift.meta_data.FieldMetaData("o1", org.apache.thrift.TFieldRequirementType.DEFAULT,
+      tmpMap.put(_Fields.O1, new org.apache.thrift.meta_data.FieldMetaData("o1", org.apache.thrift.TFieldRequirementType.DEFAULT, 
           new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRUCT)));
-      tmpMap.put(_Fields.O2, new org.apache.thrift.meta_data.FieldMetaData("o2", org.apache.thrift.TFieldRequirementType.DEFAULT,
+      tmpMap.put(_Fields.O2, new org.apache.thrift.meta_data.FieldMetaData("o2", org.apache.thrift.TFieldRequirementType.DEFAULT, 
           new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRUCT)));
-      tmpMap.put(_Fields.O3, new org.apache.thrift.meta_data.FieldMetaData("o3", org.apache.thrift.TFieldRequirementType.DEFAULT,
+      tmpMap.put(_Fields.O3, new org.apache.thrift.meta_data.FieldMetaData("o3", org.apache.thrift.TFieldRequirementType.DEFAULT, 
           new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRUCT)));
       metaDataMap = Collections.unmodifiableMap(tmpMap);
       org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(get_schema_result.class, metaDataMap);
@@ -15529,25 +15529,25 @@ public class ThriftHiveMetastore {
       while (true)
       {
         field = iprot.readFieldBegin();
-        if (field.type == org.apache.thrift.protocol.TType.STOP) {
+        if (field.type == org.apache.thrift.protocol.TType.STOP) { 
           break;
         }
         switch (field.id) {
           case 0: // SUCCESS
             if (field.type == org.apache.thrift.protocol.TType.LIST) {
               {
-                org.apache.thrift.protocol.TList _list115 = iprot.readListBegin();
-                this.success = new ArrayList<FieldSchema>(_list115.size);
-                for (int _i116 = 0; _i116 < _list115.size; ++_i116)
+                org.apache.thrift.protocol.TList _list119 = iprot.readListBegin();
+                this.success = new ArrayList<FieldSchema>(_list119.size);
+                for (int _i120 = 0; _i120 < _list119.size; ++_i120)
                 {
-                  FieldSchema _elem117; // required
-                  _elem117 = new FieldSchema();
-                  _elem117.read(iprot);
-                  this.success.add(_elem117);
+                  FieldSchema _elem121; // required
+                  _elem121 = new FieldSchema();
+                  _elem121.read(iprot);
+                  this.success.add(_elem121);
                 }
                 iprot.readListEnd();
               }
-            } else {
+            } else { 
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
             }
             break;
@@ -15555,7 +15555,7 @@ public class ThriftHiveMetastore {
             if (field.type == org.apache.thrift.protocol.TType.STRUCT) {
               this.o1 = new MetaException();
               this.o1.read(iprot);
-            } else {
+            } else { 
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
             }
             break;
@@ -15563,7 +15563,7 @@ public class ThriftHiveMetastore {
             if (field.type == org.apache.thrift.protocol.TType.STRUCT) {
               this.o2 = new UnknownTableException();
               this.o2.read(iprot);
-            } else {
+            } else { 
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
             }
             break;
@@ -15571,7 +15571,7 @@ public class ThriftHiveMetastore {
             if (field.type == org.apache.thrift.protocol.TType.STRUCT) {
               this.o3 = new UnknownDBException();
               this.o3.read(iprot);
-            } else {
+            } else { 
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
             }
             break;
@@ -15591,9 +15591,9 @@ public class ThriftHiveMetastore {
         oprot.writeFieldBegin(SUCCESS_FIELD_DESC);
         {
           oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, this.success.size()));
-          for (FieldSchema _iter118 : this.success)
+          for (FieldSchema _iter122 : this.success)
           {
-            _iter118.write(oprot);
+            _iter122.write(oprot);
           }
           oprot.writeListEnd();
         }
@@ -15747,7 +15747,7 @@ public class ThriftHiveMetastore {
     public static final Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
     static {
       Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
-      tmpMap.put(_Fields.TBL, new org.apache.thrift.meta_data.FieldMetaData("tbl", org.apache.thrift.TFieldRequirementType.DEFAULT,
+      tmpMap.put(_Fields.TBL, new org.apache.thrift.meta_data.FieldMetaData("tbl", org.apache.thrift.TFieldRequirementType.DEFAULT, 
           new org.apache.thrift.meta_data.StructMetaData(org.apache.thrift.protocol.TType.STRUCT, Table.class)));
       metaDataMap = Collections.unmodifiableMap(tmpMap);
       org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(create_table_args.class, metaDataMap);
@@ -15900,7 +15900,7 @@ public class ThriftHiveMetastore {
       while (true)
       {
         field = iprot.readFieldBegin();
-        if (field.type == org.apache.thrift.protocol.TType.STOP) {
+        if (field.type == org.apache.thrift.protocol.TType.STOP) { 
           break;
         }
         switch (field.id) {
@@ -15908,7 +15908,7 @@ public class ThriftHiveMetastore {
             if (field.type == org.apache.thrift.protocol.TType.STRUCT) {
               this.tbl = new Table();
               this.tbl.read(iprot);
-            } else {
+            } else { 
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
             }
             break;
@@ -16057,13 +16057,13 @@ public class ThriftHiveMetastore {
     public static final Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
     static {
       Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
-      tmpMap.put(_Fields.O1, new org.apache.thrift.meta_data.FieldMetaData("o1", org.apache.thrift.TFieldRequirementType.DEFAULT,
+      tmpMap.put(_Fields.O1, new org.apache.thrift.meta_data.FieldMetaData("o1", org.apache.thrift.TFieldRequirementType.DEFAULT, 
           new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRUCT)));
-      tmpMap.put(_Fields.O2, new org.apache.thrift.meta_data.FieldMetaData("o2", org.apache.thrift.TFieldRequirementType.DEFAULT,
+      tmpMap.put(_Fields.O2, new org.apache.thrift.meta_data.FieldMetaData("o2", org.apache.thrift.TFieldRequirementType.DEFAULT, 
           new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRUCT)));
-      tmpMap.put(_Fields.O3, new org.apache.thrift.meta_data.FieldMetaData("o3", org.apache.thrift.TFieldRequirementType.DEFAULT,
+      tmpMap.put(_Fields.O3, new org.apache.thrift.meta_data.FieldMetaData("o3", org.apache.thrift.TFieldRequirementType.DEFAULT, 
           new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRUCT)));
-      tmpMap.put(_Fields.O4, new org.apache.thrift.meta_data.FieldMetaData("o4", org.apache.thrift.TFieldRequirementType.DEFAULT,
+      tmpMap.put(_Fields.O4, new org.apache.thrift.meta_data.FieldMetaData("o4", org.apache.thrift.TFieldRequirementType.DEFAULT, 
           new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRUCT)));
       metaDataMap = Collections.unmodifiableMap(tmpMap);
       org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(create_table_result.class, metaDataMap);
@@ -16399,7 +16399,7 @@ public class ThriftHiveMetastore {
       while (true)
       {
         field = iprot.readFieldBegin();
-        if (field.type == org.apache.thrift.protocol.TType.STOP) {
+        if (field.type == org.apache.thrift.protocol.TType.STOP) { 
           break;
         }
         switch (field.id) {
@@ -16407,7 +16407,7 @@ public class ThriftHiveMetastore {
             if (field.type == org.apache.thrift.protocol.TType.STRUCT) {
               this.o1 = new AlreadyExistsException();
               this.o1.read(iprot);
-            } else {
+            } else { 
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
             }
             break;
@@ -16415,7 +16415,7 @@ public class ThriftHiveMetastore {
             if (field.type == org.apache.thrift.protocol.TType.STRUCT) {
               this.o2 = new InvalidObjectException();
               this.o2.read(iprot);
-            } else {
+            } else { 
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
             }
             break;
@@ -16423,7 +16423,7 @@ public class ThriftHiveMetastore {
             if (field.type == org.apache.thrift.protocol.TType.STRUCT) {
               this.o3 = new MetaException();
               this.o3.read(iprot);
-            } else {
+            } else { 
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
             }
             break;
@@ -16431,7 +16431,7 @@ public class ThriftHiveMetastore {
             if (field.type == org.apache.thrift.protocol.TType.STRUCT) {
               this.o4 = new NoSuchObjectException();
               this.o4.read(iprot);
-            } else {
+            } else { 
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
             }
             break;
@@ -16612,11 +16612,11 @@ public class ThriftHiveMetastore {
     public static final Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
     static {
       Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
-      tmpMap.put(_Fields.DBNAME, new org.apache.thrift.meta_data.FieldMetaData("dbname", org.apache.thrift.TFieldRequirementType.DEFAULT,
+      tmpMap.put(_Fields.DBNAME, new org.apache.thrift.meta_data.FieldMetaData("dbname", org.apache.thrift.TFieldRequirementType.DEFAULT, 
           new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
-      tmpMap.put(_Fields.NAME, new org.apache.thrift.meta_data.FieldMetaData("name", org.apache.thrift.TFieldRequirementType.DEFAULT,
+      tmpMap.put(_Fields.NAME, new org.apache.thrift.meta_data.FieldMetaData("name", org.apache.thrift.TFieldRequirementType.DEFAULT, 
           new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
-      tmpMap.put(_Fields.DELETE_DATA, new org.apache.thrift.meta_data.FieldMetaData("deleteData", org.apache.thrift.TFieldRequirementType.DEFAULT,
+      tmpMap.put(_Fields.DELETE_DATA, new org.apache.thrift.meta_data.FieldMetaData("deleteData", org.apache.thrift.TFieldRequirementType.DEFAULT, 
           new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.BOOL)));
       metaDataMap = Collections.unmodifiableMap(tmpMap);
       org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(drop_table_args.class, metaDataMap);
@@ -16892,21 +16892,21 @@ public class ThriftHiveMetastore {
       while (true)
       {
         field = iprot.readFieldBegin();
-        if (field.type == org.apache.thrift.protocol.TType.STOP) {
+        if (field.type == org.apache.thrift.protocol.TType.STOP) { 
           break;
         }
         switch (field.id) {
           case 1: // DBNAME
             if (field.type == org.apache.thrift.protocol.TType.STRING) {
               this.dbname = iprot.readString();
-            } else {
+            } else { 
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
             }
             break;
           case 2: // NAME
             if (field.type == org.apache.thrift.protocol.TType.STRING) {
               this.name = iprot.readString();
-            } else {
+            } else { 
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
             }
             break;
@@ -16914,7 +16914,7 @@ public class ThriftHiveMetastore {
             if (field.type == org.apache.thrift.protocol.TType.BOOL) {
               this.deleteData = iprot.readBool();
               setDeleteDataIsSet(true);
-            } else {
+            } else { 
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
             }
             break;
@@ -17075,9 +17075,9 @@ public class ThriftHiveMetastore {
     public static final Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
     static {
       Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
-      tmpMap.put(_Fields.O1, new org.apache.thrift.meta_data.FieldMetaData("o1", org.apache.thrift.TFieldRequirementType.DEFAULT,
+      tmpMap.put(_Fields.O1, new org.apache.thrift.meta_data.FieldMetaData("o1", org.apache.thrift.TFieldRequirementType.DEFAULT, 
           new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRUCT)));
-      tmpMap.put(_Fields.O3, new org.apache.thrift.meta_data.FieldMetaData("o3", org.apache.thrift.TFieldRequirementType.DEFAULT,
+      tmpMap.put(_Fields.O3, new org.apache.thrift.meta_data.FieldMetaData("o3", org.apache.thrift.TFieldRequirementType.DEFAULT, 
           new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRUCT)));
       metaDataMap = Collections.unmodifiableMap(tmpMap);
       org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(drop_table_result.class, metaDataMap);
@@ -17291,7 +17291,7 @@ public class ThriftHiveMetastore {
       while (true)
       {
         field = iprot.readFieldBegin();
-        if (field.type == org.apache.thrift.protocol.TType.STOP) {
+        if (field.type == org.apache.thrift.protocol.TType.STOP) { 
           break;
         }
         switch (field.id) {
@@ -17299,7 +17299,7 @@ public class ThriftHiveMetastore {
             if (field.type == org.apache.thrift.protocol.TType.STRUCT) {
               this.o1 = new NoSuchObjectException();
               this.o1.read(iprot);
-            } else {
+            } else { 
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
             }
             break;
@@ -17307,7 +17307,7 @@ public class ThriftHiveMetastore {
             if (field.type == org.apache.thrift.protocol.TType.STRUCT) {
               this.o3 = new MetaException();
               this.o3.read(iprot);
-            } else {
+            } else { 
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
             }
             break;
@@ -17457,9 +17457,9 @@ public class ThriftHiveMetastore {
     public static final Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
     static {
       Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
-      tmpMap.put(_Fields.DB_NAME, new org.apache.thrift.meta_data.FieldMetaData("db_name", org.apache.thrift.TFieldRequirementType.DEFAULT,
+      tmpMap.put(_Fields.DB_NAME, new org.apache.thrift.meta_data.FieldMetaData("db_name", org.apache.thrift.TFieldRequirementType.DEFAULT, 
           new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
-      tmpMap.put(_Fields.PATTERN, new org.apache.thrift.meta_data.FieldMetaData("pattern", org.apache.thrift.TFieldRequirementType.DEFAULT,
+      tmpMap.put(_Fields.PATTERN, new org.apache.thrift.meta_data.FieldMetaData("pattern", org.apache.thrift.TFieldRequirementType.DEFAULT, 
           new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
       metaDataMap = Collections.unmodifiableMap(tmpMap);
       org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(get_tables_args.class, metaDataMap);
@@ -17673,21 +17673,21 @@ public class ThriftHiveMetastore {
       while (true)
       {
         field = iprot.readFieldBegin();
-        if (field.type == org.apache.thrift.protocol.TType.STOP) {
+        if (field.type == org.apache.thrift.protocol.TType.STOP) { 
           break;
         }
         switch (field.id) {
           case 1: // DB_NAME
             if (field.type == org.apache.thrift.protocol.TType.STRING) {
               this.db_name = iprot.readString();
-            } else {
+            } else { 
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
             }
             break;
           case 2: // PATTERN
             if (field.type == org.apache.thrift.protocol.TType.STRING) {
               this.pattern = iprot.readString();
-            } else {
+            } else { 
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
             }
             break;
@@ -17839,10 +17839,10 @@ public class ThriftHiveMetastore {
     public static final Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
     static {
       Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
-      tmpMap.put(_Fields.SUCCESS, new org.apache.thrift.meta_data.FieldMetaData("success", org.apache.thrift.TFieldRequirementType.DEFAULT,
-          new org.apache.thrift.meta_data.ListMetaData(org.apache.thrift.protocol.TType.LIST,
+      tmpMap.put(_Fields.SUCCESS, new org.apache.thrift.meta_data.FieldMetaData("success", org.apache.thrift.TFieldRequirementType.DEFAULT, 
+          new org.apache.thrift.meta_data.ListMetaData(org.apache.thrift.protocol.TType.LIST, 
               new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING))));
-      tmpMap.put(_Fields.O1, new org.apache.thrift.meta_data.FieldMetaData("o1", org.apache.thrift.TFieldRequirementType.DEFAULT,
+      tmpMap.put(_Fields.O1, new org.apache.thrift.meta_data.FieldMetaData("o1", org.apache.thrift.TFieldRequirementType.DEFAULT, 
           new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRUCT)));
       metaDataMap = Collections.unmodifiableMap(tmpMap);
       org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(get_tables_result.class, metaDataMap);
@@ -18075,24 +18075,24 @@ public class ThriftHiveMetastore {
       while (true)
       {
         field = iprot.readFieldBegin();
-        if (field.type == org.apache.thrift.protocol.TType.STOP) {
+        if (field.type == org.apache.thrift.protocol.TType.STOP) { 
           break;
         }
         switch (field.id) {
           case 0: // SUCCESS
             if (field.type == org.apache.thrift.protocol.TType.LIST) {
               {
-                org.apache.thrift.protocol.TList _list119 = iprot.readListBegin();
-                this.success = new ArrayList<String>(_list119.size);
-                for (int _i120 = 0; _i120 < _list119.size; ++_i120)
+                org.apache.thrift.protocol.TList _list123 = iprot.readListBegin();
+                this.success = new ArrayList<String>(_list123.size);
+                for (int _i124 = 0; _i124 < _list123.size; ++_i124)
                 {
-                  String _elem121; // required
-                  _elem121 = iprot.readString();
-                  this.success.add(_elem121);
+                  String _elem125; // required
+                  _elem125 = iprot.readString();
+                  this.success.add(_elem125);
                 }
                 iprot.readListEnd();
               }
-            } else {
+            } else { 
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
             }
             break;
@@ -18100,7 +18100,7 @@ public class ThriftHiveMetastore {
             if (field.type == org.apache.thrift.protocol.TType.STRUCT) {
               this.o1 = new MetaException();
               this.o1.read(iprot);
-            } else {
+            } else { 
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
             }
             break;
@@ -18120,9 +18120,9 @@ public class ThriftHiveMetastore {
         oprot.writeFieldBegin(SUCCESS_FIELD_DESC);
         {
           oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRING, this.success.size()));
-          for (String _iter122 : this.success)
+          for (String _iter126 : this.success)
           {
-            oprot.writeString(_iter122);
+            oprot.writeString(_iter126);
           }
           oprot.writeListEnd();
         }
@@ -18252,7 +18252,7 @@ public class ThriftHiveMetastore {
     public static final Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
     static {
       Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
-      tmpMap.put(_Fields.DB_NAME, new org.apache.thrift.meta_data.FieldMetaData("db_name", org.apache.thrift.TFieldRequirementType.DEFAULT,
+      tmpMap.put(_Fields.DB_NAME, new org.apache.thrift.meta_data.FieldMetaData("db_name", org.apache.thrift.TFieldRequirementType.DEFAULT, 
           new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
       metaDataMap = Collections.unmodifiableMap(tmpMap);
       org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(get_all_tables_args.class, metaDataMap);
@@ -18405,14 +18405,14 @@ public class ThriftHiveMetastore {
       while (true)
       {
         field = iprot.readFieldBegin();
-        if (field.type == org.apache.thrift.protocol.TType.STOP) {
+        if (field.type == org.apache.thrift.protocol.TType.STOP) { 
           break;
         }
         switch (field.id) {
           case 1: // DB_NAME
             if (field.type == org.apache.thrift.protocol.TType.STRING) {
               this.db_name = iprot.readString();
-            } else {
+            } else { 
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
             }
             break;
@@ -18551,10 +18551,10 @@ public class ThriftHiveMetastore {
     public static final Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
     static {
       Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
-      tmpMap.put(_Fields.SUCCESS, new org.apache.thrift.meta_data.FieldMetaData("success", org.apache.thrift.TFieldRequirementType.DEFAULT,
-          new org.apache.thrift.meta_data.ListMetaData(org.apache.thrift.protocol.TType.LIST,
+      tmpMap.put(_Fields.SUCCESS, new org.apache.thrift.meta_data.FieldMetaData("success", org.apache.thrift.TFieldRequirementType.DEFAULT, 
+          new org.apache.thrift.meta_data.ListMetaData(org.apache.thrift.protocol.TType.LIST, 
               new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING))));
-      tmpMap.put(_Fields.O1, new org.apache.thrift.meta_data.FieldMetaData("o1", org.apache.thrift.TFieldRequirementType.DEFAULT,
+      tmpMap.put(_Fields.O1, new org.apache.thrift.meta_data.FieldMetaData("o1", org.apache.thrift.TFieldRequirementType.DEFAULT, 
           new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRUCT)));
       metaDataMap = Collections.unmodifiableMap(tmpMap);
       org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(get_all_tables_result.class, metaDataMap);
@@ -18787,24 +18787,24 @@ public class ThriftHiveMetastore {
       while (true)
       {
         field = iprot.readFieldBegin();
-        if (field.type == org.apache.thrift.protocol.TType.STOP) {
+        if (field.type == org.apache.thrift.protocol.TType.STOP) { 
           break;
         }
         switch (field.id) {
           case 0: // SUCCESS
             if (field.type == org.apache.thrift.protocol.TType.LIST) {
               {
-                org.apache.thrift.protocol.TList _list123 = iprot.readListBegin();
-                this.success = new ArrayList<String>(_list123.size);
-                for (int _i124 = 0; _i124 < _list123.size; ++_i124)
+                org.apache.thrift.protocol.TList _list127 = iprot.readListBegin();
+                this.success = new ArrayList<String>(_list127.size);
+                for (int _i128 = 0; _i128 < _list127.size; ++_i128)
                 {
-                  String _elem125; // required
-                  _elem125 = iprot.readString();
-                  this.success.add(_elem125);
+                  String _elem129; // required
+                  _elem129 = iprot.readString();
+                  this.success.add(_elem129);
                 }
                 iprot.readListEnd();
               }
-            } else {
+            } else { 
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
             }
             break;
@@ -18812,7 +18812,7 @@ public class ThriftHiveMetastore {
             if (field.type == org.apache.thrift.protocol.TType.STRUCT) {
               this.o1 = new MetaException();
               this.o1.read(iprot);
-            } else {
+            } else { 
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
             }
             break;
@@ -18832,9 +18832,9 @@ public class ThriftHiveMetastore {
         oprot.writeFieldBegin(SUCCESS_FIELD_DESC);
         {
           oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRING, this.success.size()));
-          for (String _iter126 : this.success)
+          for (String _iter130 : this.success)
           {
-            oprot.writeString(_iter126);
+            oprot.writeString(_iter130);
           }
           oprot.writeListEnd();
         }
@@ -18969,9 +18969,9 @@ public class ThriftHiveMetastore {
     public static final Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
     static {
       Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
-      tmpMap.put(_Fields.DBNAME, new org.apache.thrift.meta_data.FieldMetaData("dbname", org.apache.thrift.TFieldRequirementType.DEFAULT,
+      tmpMap.put(_Fields.DBNAME, new org.apache.thrift.meta_data.FieldMetaData("dbname", org.apache.thrift.TFieldRequirementType.DEFAULT, 
           new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
-      tmpMap.put(_Fields.TBL_NAME, new org.apache.thrift.meta_data.FieldMetaData("tbl_name", org.apache.thrift.TFieldRequirementType.DEFAULT,
+      tmpMap.put(_Fields.TBL_NAME, new org.apache.thrift.meta_data.FieldMetaData("tbl_name", org.apache.thrift.TFieldRequirementType.DEFAULT, 
           new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
       metaDataMap = Collections.unmodifiableMap(tmpMap);
       org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(get_table_args.class, metaDataMap);
@@ -19185,21 +19185,21 @@ public class ThriftHiveMetastore {
       while (true)
       {
         field = iprot.readFieldBegin();
-        if (field.type == org.apache.thrift.protocol.TType.STOP) {
+        if (field.type == org.apache.thrift.protocol.TType.STOP) { 
           break;
         }
         switch (field.id) {
           case 1: // DBNAME
             if (field.type == org.apache.thrift.protocol.TType.STRING) {
               this.dbname = iprot.readString();
-            } else {
+            } else { 
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
             }
             break;
           case 2: // TBL_NAME
             if (field.type == org.apache.thrift.protocol.TType.STRING) {
               this.tbl_name = iprot.readString();
-            } else {
+            } else { 
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
             }
             break;
@@ -19356,11 +19356,11 @@ public class ThriftHiveMetastore {
     public static final Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
     static {
       Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
-      tmpMap.put(_Fields.SUCCESS, new org.apache.thrift.meta_data.FieldMetaData("success", org.apache.thrift.TFieldRequirementType.DEFAULT,
+      tmpMap.put(_Fields.SUCCESS, new org.apache.thrift.meta_data.FieldMetaData("success", org.apache.thrift.TFieldRequirementType.DEFAULT, 
           new org.apache.thrift.meta_data.StructMetaData(org.apache.thrift.protocol.TType.STRUCT, Table.class)));
-      tmpMap.put(_Fields.O1, new org.apache.thrift.meta_data.FieldMetaData("o1", org.apache.thrift.TFieldRequirementType.DEFAULT,
+      tmpMap.put(_Fields.O1, new org.apache.thrift.meta_data.FieldMetaData("o1", org.apache.thrift.TFieldRequirementType.DEFAULT, 
           new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRUCT)));
-      tmpMap.put(_Fields.O2, new org.apache.thrift.meta_data.FieldMetaData("o2", org.apache.thrift.TFieldRequirementType.DEFAULT,
+      tmpMap.put(_Fields.O2, new org.apache.thrift.meta_data.FieldMetaData("o2", org.apache.thrift.TFieldRequirementType.DEFAULT, 
           new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRUCT)));
       metaDataMap = Collections.unmodifiableMap(tmpMap);
       org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(get_table_result.class, metaDataMap);
@@ -19635,7 +19635,7 @@ public class ThriftHiveMetastore {
       while (true)
       {
         field = iprot.readFieldBegin();
-        if (field.type == org.apache.thrift.protocol.TType.STOP) {
+        if (field.type == org.apache.thrift.protocol.TType.STOP) { 
           break;
         }
         switch (field.id) {
@@ -19643,7 +19643,7 @@ public class ThriftHiveMetastore {
             if (field.type == org.apache.thrift.protocol.TType.STRUCT) {
               this.success = new Table();
               this.success.read(iprot);
-            } else {
+            } else { 
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
             }
             break;
@@ -19651,7 +19651,7 @@ public class ThriftHiveMetastore {
             if (field.type == org.apache.thrift.protocol.TType.STRUCT) {
               this.o1 = new MetaException();
               this.o1.read(iprot);
-            } else {
+            } else { 
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
             }
             break;
@@ -19659,7 +19659,7 @@ public class ThriftHiveMetastore {
             if (field.type == org.apache.thrift.protocol.TType.STRUCT) {
               this.o2 = new NoSuchObjectException();
               this.o2.read(iprot);
-            } else {
+            } else { 
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
             }
             break;
@@ -19821,10 +19821,10 @@ public class ThriftHiveMetastore {
     public static final Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
     static {
       Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
-      tmpMap.put(_Fields.DBNAME, new org.apache.thrift.meta_data.FieldMetaData("dbname", org.apache.thrift.TFieldRequirementType.DEFAULT,
+      tmpMap.put(_Fields.DBNAME, new org.apache.thrift.meta_data.FieldMetaData("dbname", org.apache.thrift.TFieldRequirementType.DEFAULT, 
           new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
-      tmpMap.put(_Fields.TBL_NAMES, new org.apache.thrift.meta_data.FieldMetaData("tbl_names", org.apache.thrift.TFieldRequirementType.DEFAULT,
-          new org.apache.thrift.meta_data.ListMetaData(org.apache.thrift.protocol.TType.LIST,
+      tmpMap.put(_Fields.TBL_NAMES, new org.apache.thrift.meta_data.FieldMetaData("tbl_names", org.apache.thrift.TFieldRequirementType.DEFAULT, 
+          new org.apache.thrift.meta_data.ListMetaData(org.apache.thrift.protocol.TType.LIST, 
               new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING))));
       metaDataMap = Collections.unmodifiableMap(tmpMap);
       org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(get_table_objects_by_name_args.class, metaDataMap);
@@ -20057,31 +20057,31 @@ public class ThriftHiveMetastore {
       while (true)
       {
         field = iprot.readFieldBegin();
-        if (field.type == org.apache.thrift.protocol.TType.STOP) {
+        if (field.type == org.apache.thrift.protocol.TType.STOP) { 
           break;
         }
         switch (field.id) {
           case 1: // DBNAME
             if (field.type == org.apache.thrift.protocol.TType.STRING) {
               this.dbname = iprot.readString();
-            } else {
+            } else { 
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
             }
             break;
           case 2: // TBL_NAMES
             if (field.type == org.apache.thrift.protocol.TType.LIST) {
               {
-                org.apache.thrift.protocol.TList _list127 = iprot.readListBegin();
-                this.tbl_names = new ArrayList<String>(_list127.size);
-                for (int _i128 = 0; _i128 < _list127.size; ++_i128)
+                org.apache.thrift.protocol.TList _list131 = iprot.readListBegin();
+                this.tbl_names = new ArrayList<String>(_list131.size);
+                for (int _i132 = 0; _i132 < _list131.size; ++_i132)
                 {
-                  String _elem129; // required
-                  _elem129 = iprot.readString();
-                  this.tbl_names.add(_elem129);
+                  String _elem133; // required
+                  _elem133 = iprot.readString();
+                  this.tbl_names.add(_elem133);
                 }
                 iprot.readListEnd();
               }
-            } else {
+            } else { 
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
             }
             break;
@@ -20107,9 +20107,9 @@ public class ThriftHiveMetastore {
         oprot.writeFieldBegin(TBL_NAMES_FIELD_DESC);
         {
           oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRING, this.tbl_names.size()));
-          for (String _iter130 : this.tbl_names)
+          for (String _iter134 : this.tbl_names)
           {
-            oprot.writeString(_iter130);
+            oprot.writeString(_iter134);
           }
           oprot.writeListEnd();
         }
@@ -20250,14 +20250,14 @@ public class ThriftHiveMetastore {
     public static final Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
     static {
       Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
-      tmpMap.put(_Fields.SUCCESS, new org.apache.thrift.meta_data.FieldMetaData("success", org.apache.thrift.TFieldRequirementType.DEFAULT,
-          new org.apache.thrift.meta_data.ListMetaData(org.apache.thrift.protocol.TType.LIST,
+      tmpMap.put(_Fields.SUCCESS, new org.apache.thrift.meta_data.FieldMetaData("success", org.apache.thrift.TFieldRequirementType.DEFAULT, 
+          new org.apache.thrift.meta_data.ListMetaData(org.apache.thrift.protocol.TType.LIST, 
               new org.apache.thrift.meta_data.StructMetaData(org.apache.thrift.protocol.TType.STRUCT, Table.class))));
-      tmpMap.put(_Fields.O1, new org.apache.thrift.meta_data.FieldMetaData("o1", org.apache.thrift.TFieldRequirementType.DEFAULT,
+      tmpMap.put(_Fields.O1, new org.apache.thrift.meta_data.FieldMetaData("o1", org.apache.thrift.TFieldRequirementType.DEFAULT, 
           new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRUCT)));
-      tmpMap.put(_Fields.O2, new org.apache.thrift.meta_data.FieldMetaData("o2", org.apache.thrift.TFieldRequirementType.DEFAULT,
+      tmpMap.put(_Fields.O2, new org.apache.thrift.meta_data.FieldMetaData("o2", org.apache.thrift.TFieldRequirementType.DEFAULT, 
           new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRUCT)));
-      tmpMap.put(_Fields.O3, new org.apache.thrift.meta_data.FieldMetaData("o3", org.apache.thrift.TFieldRequirementType.DEFAULT,
+      tmpMap.put(_Fields.O3, new org.apache.thrift.meta_data.FieldMetaData("o3", org.apache.thrift.TFieldRequirementType.DEFAULT, 
           new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRUCT)));
       metaDataMap = Collections.unmodifiableMap(tmpMap);
       org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(get_table_objects_by_name_result.class, metaDataMap);
@@ -20612,25 +20612,25 @@ public class ThriftHiveMetastore {
       while (true)
       {
         field = iprot.readFieldBegin();
-        if (field.type == org.apache.thrift.protocol.TType.STOP) {
+        if (field.type == org.apache.thrift.protocol.TType.STOP) { 
           break;
         }
         switch (field.id) {
           case 0: // SUCCESS
             if (field.type == org.apache.thrift.protocol.TType.LIST) {
               {
-                org.apache.thrift.protocol.TList _list131 = iprot.readListBegin();
-                this.success = new ArrayList<Table>(_list131.size);
-                for (int _i132 = 0; _i132 < _list131.size; ++_i132)
+                org.apache.thrift.protocol.TList _list135 = iprot.readListBegin();
+                this.success = new ArrayList<Table>(_list135.size);
+                for (int _i136 = 0; _i136 < _list135.size; ++_i136)
                 {
-                  Table _elem133; // required
-                  _elem133 = new Table();
-                  _elem133.read(iprot);
-                  this.success.add(_elem133);
+                  Table _elem137; // required
+                  _elem137 = new Table();
+                  _elem137.read(iprot);
+                  this.success.add(_elem137);
                 }
                 iprot.readListEnd();
               }
-            } else {
+            } else { 
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
             }
             break;
@@ -20638,7 +20638,7 @@ public class ThriftHiveMetastore {
             if (field.type == org.apache.thrift.protocol.TType.STRUCT) {
               this.o1 = new MetaException();
               this.o1.read(iprot);
-            } else {
+            } else { 
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
             }
             break;
@@ -20646,7 +20646,7 @@ public class ThriftHiveMetastore {
             if (field.type == org.apache.thrift.protocol.TType.STRUCT) {
               this.o2 = new InvalidOperationException();
               this.o2.read(iprot);
-            } else {
+            } else { 
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
             }
             break;
@@ -20654,7 +20654,7 @@ public class ThriftHiveMetastore {
             if (field.type == org.apache.thrift.protocol.TType.STRUCT) {
               this.o3 = new UnknownDBException();
               this.o3.read(iprot);
-            } else {
+            } else { 
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
             }
             break;
@@ -20674,9 +20674,9 @@ public class ThriftHiveMetastore {
         oprot.writeFieldBegin(SUCCESS_FIELD_DESC);
         {
           oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, this.success.size()));
-          for (Table _iter134 : this.success)
+          for (Table _iter138 : this.success)
           {
-            _iter134.write(oprot);
+            _iter138.write(oprot);
           }
           oprot.writeListEnd();
         }
@@ -20842,11 +20842,11 @@ public class ThriftHiveMetastore {
     public static final Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
     static {
       Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
-      tmpMap.put(_Fields.DBNAME, new org.apache.thrift.meta_data.FieldMetaData("dbname", org.apache.thrift.TFieldRequirementType.DEFAULT,
+      tmpMap.put(_Fields.DBNAME, new org.apache.thrift.meta_data.FieldMetaData("dbname", org.apache.thrift.TFieldRequirementType.DEFAULT, 
           new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
-      tmpMap.put(_Fields.FILTER, new org.apache.thrift.meta_data.FieldMetaData("filter", org.apache.thrift.TFieldRequirementType.DEFAULT,
+      tmpMap.put(_Fields.FILTER, new org.apache.thrift.meta_data.FieldMetaData("filter", org.apache.thrift.TFieldRequirementType.DEFAULT, 
           new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
-      tmpMap.put(_Fields.MAX_TABLES, new org.apache.thrift.meta_data.FieldMetaData("max_tables", org.apache.thrift.TFieldRequirementType.DEFAULT,
+      tmpMap.put(_Fields.MAX_TABLES, new org.apache.thrift.meta_data.FieldMetaData("max_tables", org.apache.thrift.TFieldRequirementType.DEFAULT, 
           new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.I16)));
       metaDataMap = Collections.unmodifiableMap(tmpMap);
       org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(get_table_names_by_filter_args.class, metaDataMap);
@@ -21124,21 +21124,21 @@ public class ThriftHiveMetastore {
       while (true)
       {
         field = iprot.readFieldBegin();
-        if (field.type == org.apache.thrift.protocol.TType.STOP) {
+        if (field.type == org.apache.thrift.protocol.TType.STOP) { 
           break;
         }
         switch (field.id) {
           case 1: // DBNAME
             if (field.type == org.apache.thrift.protocol.TType.STRING) {
               this.dbname = iprot.readString();
-            } else {
+            } else { 
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
             }
             break;
           case 2: // FILTER
             if (field.type == org.apache.thrift.protocol.TType.STRING) {
               this.filter = iprot.readString();
-            } else {
+            } else { 
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
             }
             break;
@@ -21146,7 +21146,7 @@ public class ThriftHiveMetastore {
             if (field.type == org.apache.thrift.protocol.TType.I16) {
               this.max_tables = iprot.readI16();
               setMax_tablesIsSet(true);
-            } else {
+            } else { 
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
             }
             break;
@@ -21317,14 +21317,14 @@ public class ThriftHiveMetastore {
     public static final Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
     static {
       Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
-      tmpMap.put(_Fields.SUCCESS, new org.apache.thrift.meta_data.FieldMetaData("success", org.apache.thrift.TFieldRequirementType.DEFAULT,
-          new org.apache.thrift.meta_data.ListMetaData(org.apache.thrift.protocol.TType.LIST,
+      tmpMap.put(_Fields.SUCCESS, new org.apache.thrift.meta_data.FieldMetaData("success", org.apache.thrift.TFieldRequirementType.DEFAULT, 
+          new org.apache.thrift.meta_data.ListMetaData(org.apache.thrift.protocol.TType.LIST, 
               new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING))));
-      tmpMap.put(_Fields.O1, new org.apache.thrift.meta_data.FieldMetaData("o1", org.apache.thrift.TFieldRequirementType.DEFAULT,
+      tmpMap.put(_Fields.O1, new org.apache.thrift.meta_data.FieldMetaData("o1", org.apache.thrift.TFieldRequirementType.DEFAULT, 
           new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRUCT)));
-      tmpMap.put(_Fields.O2, new org.apache.thrift.meta_data.FieldMetaData("o2", org.apache.thrift.TFieldRequirementType.DEFAULT,
+      tmpMap.put(_Fields.O2, new org.apache.thrift.meta_data.FieldMetaData("o2", org.apache.thrift.TFieldRequirementType.DEFAULT, 
           new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRUCT)));
-      tmpMap.put(_Fields.O3, new org.apache.thrift.meta_data.FieldMetaData("o3", org.apache.thrift.TFieldRequirementType.DEFAULT,
+      tmpMap.put(_Fields.O3, new org.apache.thrift.meta_data.FieldMetaData("o3", org.apache.thrift.TFieldRequirementType.DEFAULT, 
           new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRUCT)));
       metaDataMap = Collections.unmodifiableMap(tmpMap);
       org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(get_table_names_by_filter_result.class, metaDataMap);
@@ -21679,24 +21679,24 @@ public class ThriftHiveMetastore {
       while (true)
       {
         field = iprot.readFieldBegin();
-        if (field.type == org.apache.thrift.protocol.TType.STOP) {
+        if (field.type == org.apache.thrift.protocol.TType.STOP) { 
           break;
         }
         switch (field.id) {
           case 0: // SUCCESS
             if (field.type == org.apache.thrift.protocol.TType.LIST) {
               {
-                org.apache.thrift.protocol.TList _list135 = iprot.readListBegin();
-                this.success = new ArrayList<String>(_list135.size);
-                for (int _i136 = 0; _i136 < _list135.size; ++_i136)
+                org.apache.thrift.protocol.TList _list139 = iprot.readListBegin();
+                this.success = new ArrayList<String>(_list139.size);
+                for (int _i140 = 0; _i140 < _list139.size; ++_i140)
                 {
-                  String _elem137; // required
-                  _elem137 = iprot.readString();
-                  this.success.add(_elem137);
+                  String _elem141; // required
+                  _elem141 = iprot.readString();
+                  this.success.add(_elem141);
                 }
                 iprot.readListEnd();
               }
-            } else {
+            } else { 
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
             }
             break;
@@ -21704,7 +21704,7 @@ public class ThriftHiveMetastore {
             if (field.type == org.apache.thrift.protocol.TType.STRUCT) {
               this.o1 = new MetaException();
               this.o1.read(iprot);
-            } else {
+            } else { 
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
             }
             break;
@@ -21712,7 +21712,7 @@ public class ThriftHiveMetastore {
             if (field.type == org.apache.thrift.protocol.TType.STRUCT) {
               this.o2 = new InvalidOperationException();
               this.o2.read(iprot);
-            } else {
+            } else { 
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
             }
             break;
@@ -21720,7 +21720,7 @@ public class ThriftHiveMetastore {
             if (field.type == org.apache.thrift.protocol.TType.STRUCT) {
               this.o3 = new UnknownDBException();
               this.o3.read(iprot);
-            } else {
+            } else { 
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
             }
             break;
@@ -21740,9 +21740,9 @@ public class ThriftHiveMetastore {
         oprot.writeFieldBegin(SUCCESS_FIELD_DESC);
         {
           oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRING, this.success.size()));
-          for (String _iter138 : this.success)
+          for (String _iter142 : this.success)
           {
-            oprot.writeString(_iter138);
+            oprot.writeString(_iter142);
           }
           oprot.writeListEnd();
         }
@@ -21906,11 +21906,11 @@ public class ThriftHiveMetastore {
     public static final Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
     static {
       Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
-      tmpMap.put(_Fields.DBNAME, new org.apache.thrift.meta_data.FieldMetaData("dbname", org.apache.thrift.TFieldRequirementType.DEFAULT,
+      tmpMap.put(_Fields.DBNAME, new org.apache.thrift.meta_data.FieldMetaData("dbname", org.apache.thrift.TFieldRequirementType.DEFAULT, 
           new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
-      tmpMap.put(_Fields.TBL_NAME, new org.apache.thrift.meta_data.FieldMetaData("tbl_name", org.apache.thrift.TFieldRequirementType.DEFAULT,
+      tmpMap.put(_Fields.TBL_NAME, new org.apache.thrift.meta_data.FieldMetaData("tbl_name", org.apache.thrift.TFieldRequirementType.DEFAULT, 
           new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
-      tmpMap.put(_Fields.NEW_TBL, new org.apache.thrift.meta_data.FieldMetaData("new_tbl", org.apache.thrift.TFieldRequirementType.DEFAULT,
+      tmpMap.put(_Fields.NEW_TBL, new org.apache.thrift.meta_data.FieldMetaData("new_tbl", org.apache.thrift.TFieldRequirementType.DEFAULT, 
           new org.apache.thrift.meta_data.StructMetaData(org.apache.thrift.protocol.TType.STRUCT, Table.class)));
       metaDataMap = Collections.unmodifiableMap(tmpMap);
       org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(alter_table_args.class, metaDataMap);
@@ -22185,21 +22185,21 @@ public class ThriftHiveMetastore {
       while (true)
       {
         field = iprot.readFieldBegin();
-        if (field.type == org.apache.thrift.protocol.TType.STOP) {
+        if (field.type == org.apache.thrift.protocol.TType.STOP) { 
           break;
         }
         switch (field.id) {
           case 1: // DBNAME
             if (field.type == org.apache.thrift.protocol.TType.STRING) {
               this.dbname = iprot.readString();
-            } else {
+            } else { 
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
             }
             break;
           case 2: // TBL_NAME
             if (field.type == org.apache.thrift.protocol.TType.STRING) {
               this.tbl_name = iprot.readString();
-            } else {
+            } else { 
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
             }
             break;
@@ -22207,7 +22207,7 @@ public class ThriftHiveMetastore {
             if (field.type == org.apache.thrift.protocol.TType.STRUCT) {
               this.new_tbl = new Table();
               this.new_tbl.read(iprot);
-            } else {
+            } else { 
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
             }
             break;
@@ -22372,9 +22372,9 @@ public class ThriftHiveMetastore {
     public static final Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
     static {
       Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
-      tmpMap.put(_Fields.O1, new org.apache.thrift.meta_data.FieldMetaData("o1", org.apache.thrift.TFieldRequirementType.DEFAULT,
+      tmpMap.put(_Fields.O1, new org.apache.thrift.meta_data.FieldMetaData("o1", org.apache.thrift.TFieldRequirementType.DEFAULT, 
           new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRUCT)));
-      tmpMap.put(_Fields.O2, new org.apache.thrift.meta_data.FieldMetaData("o2", org.apache.thrift.TFieldRequirementType.DEFAULT,
+      tmpMap.put(_Fields.O2, new org.apache.thrift.meta_data.FieldMetaData("o2", org.apache.thrift.TFieldRequirementType.DEFAULT, 
           new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRUCT)));
       metaDataMap = Collections.unmodifiableMap(tmpMap);
       org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(alter_table_result.class, metaDataMap);
@@ -22588,7 +22588,7 @@ public class ThriftHiveMetastore {
       while (true)
       {
         field = iprot.readFieldBegin();
-        if (field.type == org.apache.thrift.protocol.TType.STOP) {
+        if (field.type == org.apache.thrift.protocol.TType.STOP) { 
           break;
         }
         switch (field.id) {
@@ -22596,7 +22596,7 @@ public class ThriftHiveMetastore {
             if (field.type == org.apache.thrift.protocol.TType.STRUCT) {
               this.o1 = new InvalidOperationException();
               this.o1.read(iprot);
-            } else {
+            } else { 
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
             }
             break;
@@ -22604,7 +22604,7 @@ public class ThriftHiveMetastore {
             if (field.type == org.apache.thrift.protocol.TType.STRUCT) {
               this.o2 = new MetaException();
               this.o2.read(iprot);
-            } else {
+            } else { 
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
             }
             break;
@@ -22749,7 +22749,7 @@ public class ThriftHiveMetastore {
     public static final Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
     static {
       Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
-      tmpMap.put(_Fields.NEW_PART, new org.apache.thrift.meta_data.FieldMetaData("new_part", org.apache.thrift.TFieldRequirementType.DEFAULT,
+      tmpMap.put(_Fields.NEW_PART, new org.apache.thrift.meta_data.FieldMetaData("new_part", org.apache.thrift.TFieldRequirementType.DEFAULT, 
           new org.apache.thrift.meta_data.StructMetaData(org.apache.thrift.protocol.TType.STRUCT, Partition.class)));
       metaDataMap = Collections.unmodifiableMap(tmpMap);
       org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(add_partition_args.class, metaDataMap);
@@ -22902,7 +22902,7 @@ public class ThriftHiveMetastore {
       while (true)
       {
         field = iprot.readFieldBegin();
-        if (field.type == org.apache.thrift.protocol.TType.STOP) {
+        if (field.type == org.apache.thrift.protocol.TType.STOP) { 
           break;
         }
         switch (field.id) {
@@ -22910,7 +22910,7 @@ public class ThriftHiveMetastore {
             if (field.type == org.apache.thrift.protocol.TType.STRUCT) {
               this.new_part = new Partition();
               this.new_part.read(iprot);
-            } else {
+            } else { 
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
             }
             break;
@@ -23059,13 +23059,13 @@ public class ThriftHiveMetastore {
     public static final Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
     static {
       Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
-      tmpMap.put(_Fields.SUCCESS, new org.apache.thrift.meta_data.FieldMetaData("success", org.apache.thrift.TFieldRequirementType.DEFAULT,
+      tmpMap.put(_Fields.SUCCESS, new org.apache.thrift.meta_data.FieldMetaData("success", org.apache.thrift.TFieldRequirementType.DEFAULT, 
           new org.apache.thrift.meta_data.StructMetaData(org.apache.thrift.protocol.TType.STRUCT, Partition.class)));
-      tmpMap.put(_Fields.O1, new org.apache.thrift.meta_data.FieldMetaData("o1", org.apache.thrift.TFieldRequirementType.DEFAULT,
+      tmpMap.put(_Fields.O1, new org.apache.thrift.meta_data.FieldMetaData("o1", org.apache.thrift.TFieldRequirementType.DEFAULT, 
           new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRUCT)));
-      tmpMap.put(_Fields.O2, new org.apache.thrift.meta_data.FieldMetaData("o2", org.apache.thrift.TFieldRequirementType.DEFAULT,
+      tmpMap.put(_Fields.O2, new org.apache.thrift.meta_data.FieldMetaData("o2", org.apache.thrift.TFieldRequirementType.DEFAULT, 
           new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRUCT)));
-      tmpMap.put(_Fields.O3, new org.apache.thrift.meta_data.FieldMetaData("o3", org.apache.thrift.TFieldRequirementType.DEFAULT,
+      tmpMap.put(_Fields.O3, new org.apache.thrift.meta_data.FieldMetaData("o3", org.apache.thrift.TFieldRequirementType.DEFAULT, 
           new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRUCT)));
       metaDataMap = Collections.unmodifiableMap(tmpMap);
       org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(add_partition_result.class, metaDataMap);
@@ -23401,7 +23401,7 @@ public class ThriftHiveMetastore {
       while (true)
       {
         field = iprot.readFieldBegin();
-        if (field.type == org.apache.thrift.protocol.TType.STOP) {
+        if (field.type == org.apache.thrift.protocol.TType.STOP) { 
           break;
         }
         switch (field.id) {
@@ -23409,7 +23409,7 @@ public class ThriftHiveMetastore {
             if (field.type == org.apache.thrift.protocol.TType.STRUCT) {
               this.success = new Partition();
               this.success.read(iprot);
-            } else {
+            } else { 
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
             }
             break;
@@ -23417,7 +23417,7 @@ public class ThriftHiveMetastore {
             if (field.type == org.apache.thrift.protocol.TType.STRUCT) {
               this.o1 = new InvalidObjectException();
               this.o1.read(iprot);
-            } else {
+            } else { 
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
             }
             break;
@@ -23425,7 +23425,7 @@ public class ThriftHiveMetastore {
             if (field.type == org.apache.thrift.protocol.TType.STRUCT) {
               this.o2 = new AlreadyExistsException();
               this.o2.read(iprot);
-            } else {
+            } else { 
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
             }
             break;
@@ -23433,7 +23433,7 @@ public class ThriftHiveMetastore {
             if (field.type == org.apache.thrift.protocol.TType.STRUCT) {
               this.o3 = new MetaException();
               this.o3.read(iprot);
-            } else {
+            } else { 
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
             }
             break;
@@ -23602,8 +23602,8 @@ public class ThriftHiveMetastore {
     public static final Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
     static {
       Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
-      tmpMap.put(_Fields.NEW_PARTS, new org.apache.thrift.meta_data.FieldMetaData("new_parts", org.apache.thrift.TFieldRequirementType.DEFAULT,
-          new org.apache.thrift.meta_data.ListMetaData(org.apache.thrift.protocol.TType.LIST,
+      tmpMap.put(_Fields.NEW_PARTS, new org.apache.thrift.meta_data.FieldMetaData("new_parts", org.apache.thrift.TFieldRequirementType.DEFAULT, 
+          new org.apache.thrift.meta_data.ListMetaData(org.apache.thrift.protocol.TType.LIST, 
               new org.apache.thrift.meta_data.StructMetaData(org.apache.thrift.protocol.TType.STRUCT, Partition.class))));
       metaDataMap = Collections.unmodifiableMap(tmpMap);
       org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(add_partitions_args.class, metaDataMap);
@@ -23775,25 +23775,25 @@ public class ThriftHiveMetastore {
       while (true)
       {
         field = iprot.readFieldBegin();
-        if (field.type == org.apache.thrift.protocol.TType.STOP) {
+        if (field.type == org.apache.thrift.protocol.TType.STOP) { 
           break;
         }
         switch (field.id) {
           case 1: // NEW_PARTS
             if (field.type == org.apache.thrift.protocol.TType.LIST) {
               {
-                org.apache.thrift.protocol.TList _list139 = iprot.readListBegin();
-                this.new_parts = new ArrayList<Partition>(_list139.size);
-                for (int _i140 = 0; _i140 < _list139.size; ++_i140)
+                org.apache.thrift.protocol.TList _list143 = iprot.readListBegin();
+                this.new_parts = new ArrayList<Partition>(_list143.size);
+                for (int _i144 = 0; _i144 < _list143.size; ++_i144)
                 {
-                  Partition _elem141; // required
-                  _elem141 = new Partition();
-                  _elem141.read(iprot);
-                  this.new_parts.add(_elem141);
+                  Partition _elem145; // required
+                  _elem145 = new Partition();
+                  _elem145.read(iprot);
+                  this.new_parts.add(_elem145);
                 }
                 iprot.readListEnd();
               }
-            } else {
+            } else { 
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
             }
             break;
@@ -23814,9 +23814,9 @@ public class ThriftHiveMetastore {
         oprot.writeFieldBegin(NEW_PARTS_FIELD_DESC);
         {
           oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, this.new_parts.size()));
-          for (Partition _iter142 : this.new_parts)
+          for (Partition _iter146 : this.new_parts)
           {
-            _iter142.write(oprot);
+            _iter146.write(oprot);
           }
           oprot.writeListEnd();
         }
@@ -23951,13 +23951,13 @@ public class ThriftHiveMetastore {
     public static final Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
     static {
       Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
-      tmpMap.put(_Fields.SUCCESS, new org.apache.thrift.meta_data.FieldMetaData("success", org.apache.thrift.TFieldRequirementType.DEFAULT,
+      tmpMap.put(_Fields.SUCCESS, new org.apache.thrift.meta_data.FieldMetaData("success", org.apache.thrift.TFieldRequirementType.DEFAULT, 
           new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.I32)));
-      tmpMap.put(_Fields.O1, new org.apache.thrift.meta_data.FieldMetaData("o1", org.apache.thrift.TFieldRequirementType.DEFAULT,
+      tmpMap.put(_Fields.O1, new org.apache.thrift.meta_data.FieldMetaData("o1", org.apache.thrift.TFieldRequirementType.DEFAULT, 
           new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRUCT)));
-      tmpMap.put(_Fields.O2, new org.apache.thrift.meta_data.FieldMetaData("o2", org.apache.thrift.TFieldRequirementType.DEFAULT,
+      tmpMap.put(_Fields.O2, new org.apache.thrift.meta_data.FieldMetaData("o2", org.apache.thrift.TFieldRequirementType.DEFAULT, 
           new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRUCT)));
-      tmpMap.put(_Fields.O3, new org.apache.thrift.meta_data.FieldMetaData("o3", org.apache.thrift.TFieldRequirementType.DEFAULT,
+      tmpMap.put(_Fields.O3, new org.apache.thrift.meta_data.FieldMetaData("o3", org.apache.thrift.TFieldRequirementType.DEFAULT, 
           new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRUCT)));
       metaDataMap = Collections.unmodifiableMap(tmpMap);
       org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(add_partitions_result.class, metaDataMap);
@@ -24294,7 +24294,7 @@ public class ThriftHiveMetastore {
       while (true)
       {
         field = iprot.readFieldBegin();
-        if (field.type == org.apache.thrift.protocol.TType.STOP) {
+        if (field.type == org.apache.thrift.protocol.TType.STOP) { 
           break;
         }
         switch (field.id) {
@@ -24302,7 +24302,7 @@ public class ThriftHiveMetastore {
             if (field.type == org.apache.thrift.protocol.TType.I32) {
               this.success = iprot.readI32();
               setSuccessIsSet(true);
-            } else {
+            } else { 
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
             }
             break;
@@ -24310,7 +24310,7 @@ public class ThriftHiveMetastore {
             if (field.type == org.apache.thrift.protocol.TType.STRUCT) {
               this.o1 = new InvalidObjectException();
               this.o1.read(iprot);
-            } else {
+            } else { 
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
             }
             break;
@@ -24318,7 +24318,7 @@ public class ThriftHiveMetastore {
             if (field.type == org.apache.thrift.protocol.TType.STRUCT) {
               this.o2 = new AlreadyExistsException();
               this.o2.read(iprot);
-            } else {
+            } else { 
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
             }
             break;
@@ -24326,7 +24326,7 @@ public class ThriftHiveMetastore {
             if (field.type == org.apache.thrift.protocol.TType.STRUCT) {
               this.o3 = new MetaException();
               this.o3.read(iprot);
-            } else {
+            } else { 
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
             }
             break;
@@ -24501,12 +24501,12 @@ public class ThriftHiveMetastore {
     public static final Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
     static {
       Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
-      tmpMap.put(_Fields.DB_NAME, new org.apache.thrift.meta_data.FieldMetaData("db_name", org.apache.thrift.TFieldRequirementType.DEFAULT,
+      tmpMap.put(_Fields.DB_NAME, new org.apache.thrift.meta_data.FieldMetaData("db_name", org.apache.thrift.TFieldRequirementType.DEFAULT, 
           new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
-      tmpMap.put(_Fields.TBL_NAME, new org.apache.thrift.meta_data.FieldMetaData("tbl_name", org.apache.thrift.TFieldRequirementType.DEFAULT,
+      tmpMap.put(_Fields.TBL_NAME, new org.apache.thrift.meta_data.FieldMetaData("tbl_name", org.apache.thrift.TFieldRequirementType.DEFAULT, 
           new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
-      tmpMap.put(_Fields.PART_VALS, new org.apache.thrift.meta_data.FieldMetaData("part_vals", org.apache.thrift.TFieldRequirementType.DEFAULT,
-          new org.apache.thrift.meta_data.ListMetaData(org.apache.thrift.protocol.TType.LIST,
+      tmpMap.put(_Fields.PART_VALS, new org.apache.thrift.meta_data.FieldMetaData("part_vals", org.apache.thrift.TFieldRequirementType.DEFAULT, 
+          new org.apache.thrift.meta_data.ListMetaData(org.apache.thrift.protocol.TType.LIST, 
               new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING))));
       metaDataMap = Collections.unmodifiableMap(tmpMap);
       org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(append_partition_args.class, metaDataMap);
@@ -24800,38 +24800,38 @@ public class ThriftHiveMetastore {
       while (true)
       {
         field = iprot.readFieldBegin();
-        if (field.type == org.apache.thrift.protocol.TType.STOP) {
+        if (field.type == org.apache.thrift.protocol.TType.STOP) { 
           break;
         }
         switch (field.id) {
           case 1: // DB_NAME
             if (field.type == org.apache.thrift.protocol.TType.STRING) {
               this.db_name = iprot.readString();
-            } else {
+            } else { 
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
             }
             break;
           case 2: // TBL_NAME
             if (field.type == org.apache.thrift.protocol.TType.STRING) {
               this.tbl_name = iprot.readString();
-            } else {
+            } else { 
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
             }
             break;
           case 3: // PART_VALS
             if (field.type == org.apache.thrift.protocol.TType.LIST) {
               {
-                org.apache.thrift.protocol.TList _list143 = iprot.readListBegin();
-                this.part_vals = new ArrayList<String>(_list143.size);
-                for (int _i144 = 0; _i144 < _list143.size; ++_i144)
+                org.apache.thrift.protocol.TList _list147 = iprot.readListBegin();
+                this.part_vals = new ArrayList<String>(_list147.size);
+                for (int _i148 = 0; _i148 < _list147.size; ++_i148)
                 {
-                  String _elem145; // required
-                  _elem145 = iprot.readString();
-                  this.part_vals.add(_elem145);
+                  String _elem149; // required
+                  _elem149 = iprot.readString();
+                  this.part_vals.add(_elem149);
                 }
                 iprot.readListEnd();
               }
-            } else {
+            } else { 
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
             }
             break;
@@ -24862,9 +24862,9 @@ public class ThriftHiveMetastore {
         oprot.writeFieldBegin(PART_VALS_FIELD_DESC);
         {
           oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRING, this.part_vals.size()));
-          for (String _iter146 : this.part_vals)
+          for (String _iter150 : this.part_vals)
           {
-            oprot.writeString(_iter146);
+            oprot.writeString(_iter150);
           }
           oprot.writeListEnd();
         }
@@ -25013,13 +25013,13 @@ public class ThriftHiveMetastore {
     public static final Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
     static {
       Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
-      tmpMap.put(_Fields.SUCCESS, new org.apache.thrift.meta_data.FieldMetaData("success", org.apache.thrift.TFieldRequirementType.DEFAULT,
+      tmpMap.put(_Fields.SUCCESS, new org.apache.thrift.meta_data.FieldMetaData("success", org.apache.thrift.TFieldRequirementType.DEFAULT, 
           new org.apache.thrift.meta_data.StructMetaData(org.apache.thrift.protocol.TType.STRUCT, Partition.class)));
-      tmpMap.put(_Fields.O1, new org.apache.thrift.meta_data.FieldMetaData("o1", org.apache.thrift.TFieldRequirementType.DEFAULT,
+      tmpMap.put(_Fields.O1, new org.apache.thrift.meta_data.FieldMetaData("o1", org.apache.thrift.TFieldRequirementType.DEFAULT, 
           new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRUCT)));
-      tmpMap.put(_Fields.O2, new org.apache.thrift.meta_data.FieldMetaData("o2", org.apache.thrift.TFieldRequirementType.DEFAULT,
+      tmpMap.put(_Fields.O2, new org.apache.thrift.meta_data.FieldMetaData("o2", org.apache.thrift.TFieldRequirementType.DEFAULT, 
           new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRUCT)));
-      tmpMap.put(_Fields.O3, new org.apache.thrift.meta_data.FieldMetaData("o3", org.apache.thrift.TFieldRequirementType.DEFAULT,
+      tmpMap.put(_Fields.O3, new org.apache.thrift.meta_data.FieldMetaData("o3", org.apache.thrift.TFieldRequirementType.DEFAULT, 
           new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRUCT)));
       metaDataMap = Collections.unmodifiableMap(tmpMap);
       org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(append_partition_result.class, metaDataMap);
@@ -25355,7 +25355,7 @@ public class ThriftHiveMetastore {
       while (true)
       {
         field = iprot.readFieldBegin();
-        if (field.type == org.apache.thrift.protocol.TType.STOP) {
+        if (field.type == org.apache.thrift.protocol.TType.STOP) { 
           break;
         }
         switch (field.id) {
@@ -25363,7 +25363,7 @@ public class ThriftHiveMetastore {
             if (field.type == org.apache.thrift.protocol.TType.STRUCT) {
               this.success = new Partition();
               this.success.read(iprot);
-            } else {
+            } else { 
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
             }
             break;
@@ -25371,7 +25371,7 @@ public class ThriftHiveMetastore {
             if (field.type == org.apache.thrift.protocol.TType.STRUCT) {
               this.o1 = new InvalidObjectException();
               this.o1.read(iprot);
-            } else {
+            } else { 
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
             }
             break;
@@ -25379,7 +25379,7 @@ public class ThriftHiveMetastore {
             if (field.type == org.apache.thrift.protocol.TType.STRUCT) {
               this.o2 = new AlreadyExistsException();
               this.o2.read(iprot);
-            } else {
+            } else { 
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
             }
             break;
@@ -25387,7 +25387,7 @@ public class ThriftHiveMetastore {
             if (field.type == org.apache.thrift.protocol.TType.STRUCT) {
               this.o3 = new MetaException();
               this.o3.read(iprot);
-            } else {
+            } else { 
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
             }
             break;
@@ -25566,11 +25566,11 @@ public class ThriftHiveMetastore {
     public static final Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
     static {
       Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
-      tmpMap.put(_Fields.DB_NAME, new org.apache.thrift.meta_data.FieldMetaData("db_name", org.apache.thrift.TFieldRequirementType.DEFAULT,
+      tmpMap.put(_Fields.DB_NAME, new org.apache.thrift.meta_data.FieldMetaData("db_name", org.apache.thrift.TFieldRequirementType.DEFAULT, 
           new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
-      tmpMap.put(_Fields.TBL_NAME, new org.apache.thrift.meta_data.FieldMetaData("tbl_name", org.apache.thrift.TFieldRequirementType.DEFAULT,
+      tmpMap.put(_Fields.TBL_NAME, new org.apache.thrift.meta_data.FieldMetaData("tbl_name", org.apache.thrift.TFieldRequirementType.DEFAULT, 
           new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
-      tmpMap.put(_Fields.PART_NAME, new org.apache.thrift.meta_data.FieldMetaData("part_name", org.apache.thrift.TFieldRequirementType.DEFAULT,
+      tmpMap.put(_Fields.PART_NAME, new org.apache.thrift.meta_data.FieldMetaData("part_name", org.apache.thrift.TFieldRequirementType.DEFAULT, 
           new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
       metaDataMap = Collections.unmodifiableMap(tmpMap);
       org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(append_partition_by_name_args.class, metaDataMap);
@@ -25845,28 +25845,28 @@ public class ThriftHiveMetastore {
       while (true)
       {
         field = iprot.readFieldBegin();
-        if (field.type == org.apache.thrift.protocol.TType.STOP) {
+        if (field.type == org.apache.thrift.protocol.TType.STOP) { 
           break;
         }
         switch (field.id) {
           case 1: // DB_NAME
             if (field.type == org.apache.thrift.protocol.TType.STRING) {
               this.db_name = iprot.readString();
-            } else {
+            } else { 
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
             }
             break;
           case 2: // TBL_NAME
             if (field.type == org.apache.thrift.protocol.TType.STRING) {
               this.tbl_name = iprot.readString();
-            } else {
+            } else { 
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
             }
             break;
           case 3: // PART_NAME
             if (field.type == org.apache.thrift.protocol.TType.STRING) {
               this.part_name = iprot.readString();
-            } else {
+            } else { 
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
             }
             break;
@@ -26041,13 +26041,13 @@ public class ThriftHiveMetastore {
     public static final Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
     static {
       Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
-      tmpMap.put(_Fields.SUCCESS, new org.apache.thrift.meta_data.FieldMetaData("success", org.apache.thrift.TFieldRequirementType.DEFAULT,
+      tmpMap.put(_Fields.SUCCESS, new org.apache.thrift.meta_data.FieldMetaData("success", org.apache.thrift.TFieldRequirementType.DEFAULT, 
           new org.apache.thrift.meta_data.StructMetaData(org.apache.thrift.protocol.TType.STRUCT, Partition.class)));
-      tmpMap.put(_Fields.O1, new org.apache.thrift.meta_data.FieldMetaData("o1", org.apache.thrift.TFieldRequirementType.DEFAULT,
+      tmpMap.put(_Fields.O1, new org.apache.thrift.meta_data.FieldMetaData("o1", org.apache.thrift.TFieldRequirementType.DEFAULT, 
           new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRUCT)));
-      tmpMap.put(_Fields.O2, new org.apache.thrift.meta_data.FieldMetaData("o2", org.apache.thrift.TFieldRequirementType.DEFAULT,
+      tmpMap.put(_Fields.O2, new org.apache.thrift.meta_data.FieldMetaData("o2", org.apache.thrift.TFieldRequirementType.DEFAULT, 
           new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRUCT)));
-      tmpMap.put(_Fields.O3, new org.apache.thrift.meta_data.FieldMetaData("o3", org.apache.thrift.TFieldRequirementType.DEFAULT,
+      tmpMap.put(_Fields.O3, new org.apache.thrift.meta_data.FieldMetaData("o3", org.apache.thrift.TFieldRequirementType.DEFAULT, 
           new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRUCT)));
       metaDataMap = Collections.unmodifiableMap(tmpMap);
       org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(append_partition_by_name_result.class, metaDataMap);
@@ -26383,7 +26383,7 @@ public class ThriftHiveMetastore {
       while (true)
       {
         field = iprot.readFieldBegin();
-        if (field.type == org.apache.thrift.protocol.TType.STOP) {
+        if (field.type == org.apache.thrift.protocol.TType.STOP) { 
           break;
         }
         switch (field.id) {
@@ -26391,7 +26391,7 @@ public class ThriftHiveMetastore {
             if (field.type == org.apache.thrift.protocol.TType.STRUCT) {
               this.success = new Partition();
               this.success.read(iprot);
-            } else {
+            } else { 
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
             }
             break;
@@ -26399,7 +26399,7 @@ public class ThriftHiveMetastore {
             if (field.type == org.apache.thrift.protocol.TType.STRUCT) {
               this.o1 = new InvalidObjectException();
               this.o1.read(iprot);
-            } else {
+            } else { 
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
             }
             break;
@@ -26407,7 +26407,7 @@ public class ThriftHiveMetastore {
             if (field.type == org.apache.thrift.protocol.TType.STRUCT) {
               this.o2 = new AlreadyExistsException();
               this.o2.read(iprot);
-            } else {
+            } else { 
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
             }
             break;
@@ -26415,7 +26415,7 @@ public class ThriftHiveMetastore {
             if (field.type == org.apache.thrift.protocol.TType.STRUCT) {
               this.o3 = new MetaException();
               this.o3.read(iprot);
-            } else {
+            } else { 
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
             }
             break;
@@ -26601,14 +26601,14 @@ public class ThriftHiveMetastore {
     public static final Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
     static {
       Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
-      tmpMap.put(_Fields.DB_NAME, new org.apache.thrift.meta_data.FieldMetaData("db_name", org.apache.thrift.TFieldRequirementType.DEFAULT,
+      tmpMap.put(_Fields.DB_NAME, new org.apache.thrift.meta_data.FieldMetaData("db_name", org.apache.thrift.TFieldRequirementType.DEFAULT, 
           new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
-      tmpMap.put(_Fields.TBL_NAME, new org.apache.thrift.meta_data.FieldMetaData("tbl_name", org.apache.thrift.TFieldRequirementType.DEFAULT,
+      tmpMap.put(_Fields.TBL_NAME, new org.apache.thrift.meta_data.FieldMetaData("tbl_name", org.apache.thrift.TFieldRequirementType.DEFAULT, 
           new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
-      tmpMap.put(_Fields.PART_VALS, new org.apache.thrift.meta_data.FieldMetaData("part_vals", org.apache.thrift.TFieldRequirementType.DEFAULT,
-          new org.apache.thrift.meta_data.ListMetaData(org.apache.thrift.protocol.TType.LIST,
+      tmpMap.put(_Fields.PART_VALS, new org.apache.thrift.meta_data.FieldMetaData("part_vals", org.apache.thrift.TFieldRequirementType.DEFAULT, 
+          new org.apache.thrift.meta_data.ListMetaData(org.apache.thrift.protocol.TType.LIST, 
               new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING))));
-      tmpMap.put(_Fields.DELETE_DATA, new org.apache.thrift.meta_data.FieldMetaData("deleteData", org.apache.thrift.TFieldRequirementType.DEFAULT,
+      tmpMap.put(_Fields.DELETE_DATA, new org.apache.thrift.meta_data.FieldMetaData("deleteData", org.apache.thrift.TFieldRequirementType.DEFAULT, 
           new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.BOOL)));
       metaDataMap = Collections.unmodifiableMap(tmpMap);
       org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(drop_partition_args.class, metaDataMap);
@@ -26964,38 +26964,38 @@ public class ThriftHiveMetastore {
       while (true)
       {
         field = iprot.readFieldBegin();
-        if (field.type == org.apache.thrift.protocol.TType.STOP) {
+        if (field.type == org.apache.thrift.protocol.TType.STOP) { 
           break;
         }
         switch (field.id) {
           case 1: // DB_NAME
             if (field.type == org.apache.thrift.protocol.TType.STRING) {
               this.db_name = iprot.readString();
-            } else {
+            } else { 
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
             }
             break;
           case 2: // TBL_NAME
             if (field.type == org.apache.thrift.protocol.TType.STRING) {
               this.tbl_name = iprot.readString();
-            } else {
+            } else { 
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
             }
             break;
           case 3: // PART_VALS
             if (field.type == org.apache.thrift.protocol.TType.LIST) {
               {
-                org.apache.thrift.protocol.TList _list147 = iprot.readListBegin();
-                this.part_vals = new ArrayList<String>(_list147.size);
-                for (int _i148 = 0; _i148 < _list147.size; ++_i148)
+                org.apache.thrift.protocol.TList _list151 = iprot.readListBegin();
+                this.part_vals = new ArrayList<String>(_list151.size);
+                for (int _i152 = 0; _i152 < _list151.size; ++_i152)
                 {
-                  String _elem149; // required
-                  _elem149 = iprot.readString();
-                  this.part_vals.add(_elem149);
+                  String _elem153; // required
+                  _elem153 = iprot.readString();
+                  this.part_vals.add(_elem153);
                 }
                 iprot.readListEnd();
               }
-            } else {
+            } else { 
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
             }
             break;
@@ -27003,7 +27003,7 @@ public class ThriftHiveMetastore {
             if (field.type == org.apache.thrift.protocol.TType.BOOL) {
               this.deleteData = iprot.readBool();
               setDeleteDataIsSet(true);
-            } else {
+            } else { 
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
             }
             break;
@@ -27034,9 +27034,9 @@ public class ThriftHiveMetastore {
         oprot.writeFieldBegin(PART_VALS_FIELD_DESC);
         {
           oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRING, this.part_vals.size()));
-          for (String _iter150 : this.part_vals)
+          for (String _iter154 : this.part_vals)
           {
-            oprot.writeString(_iter150);
+            oprot.writeString(_iter154);
           }
           oprot.writeListEnd();
         }
@@ -27191,11 +27191,11 @@ public class ThriftHiveMetastore {
     public static final Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
     static {
       Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
-      tmpMap.put(_Fields.SUCCESS, new org.apache.thrift.meta_data.FieldMetaData("success", org.apache.thrift.TFieldRequirementType.DEFAULT,
+      tmpMap.put(_Fields.SUCCESS, new org.apache.thrift.meta_data.FieldMetaData("success", org.apache.thrift.TFieldRequirementType.DEFAULT, 
           new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.BOOL)));
-      tmpMap.put(_Fields.O1, new org.apache.thrift.meta_data.FieldMetaData("o1", org.apache.thrift.TFieldRequirementType.DEFAULT,
+      tmpMap.put(_Fields.O1, new org.apache.thrift.meta_data.FieldMetaData("o1", org.apache.thrift.TFieldRequirementType.DEFAULT, 
           new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRUCT)));
-      tmpMap.put(_Fields.O2, new org.apache.thrift.meta_data.FieldMetaData("o2", org.apache.thrift.TFieldRequirementType.DEFAULT,
+      tmpMap.put(_Fields.O2, new org.apache.thrift.meta_data.FieldMetaData("o2", org.apache.thrift.TFieldRequirementType.DEFAULT, 
           new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRUCT)));
       metaDataMap = Collections.unmodifiableMap(tmpMap);
       org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(drop_partition_result.class, metaDataMap);
@@ -27471,7 +27471,7 @@ public class ThriftHiveMetastore {
       while (true)
       {
         field = iprot.readFieldBegin();
-        if (field.type == org.apache.thrift.protocol.TType.STOP) {
+        if (field.type == org.apache.thrift.protocol.TType.STOP) { 
           break;
         }
         switch (field.id) {
@@ -27479,7 +27479,7 @@ public class ThriftHiveMetastore {
             if (field.type == org.apache.thrift.protocol.TType.BOOL) {
               this.success = iprot.readBool();
               setSuccessIsSet(true);
-            } else {
+            } else { 
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
             }
             break;
@@ -27487,7 +27487,7 @@ public class ThriftHiveMetastore {
             if (field.type == org.apache.thrift.protocol.TType.STRUCT) {
               this.o1 = new NoSuchObjectException();
               this.o1.read(iprot);
-            } else {
+            } else { 
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
             }
             break;
@@ -27495,7 +27495,7 @@ public class ThriftHiveMetastore {
             if (field.type == org.apache.thrift.protocol.TType.STRUCT) {
               this.o2 = new MetaException();
               this.o2.read(iprot);
-            } else {
+            } else { 
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
             }
             break;
@@ -27665,13 +27665,13 @@ public class ThriftHiveMetastore {
     public static final Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
     static {
       Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
-      tmpMap.put(_Fields.DB_NAME, new org.apache.thrift.meta_data.FieldMetaData("db_name", org.apache.thrift.TFieldRequirementType.DEFAULT,
+      tmpMap.put(_Fields.DB_NAME, new org.apache.thrift.meta_data.FieldMetaData("db_name", org.apache.thrift.TFieldRequirementType.DEFAULT, 
           new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
-      tmpMap.put(_Fields.TBL_NAME, new org.apache.thrift.meta_data.FieldMetaData("tbl_name", org.apache.thrift.TFieldRequirementType.DEFAULT,
+      tmpMap.put(_Fields.TBL_NAME, new org.apache.thrift.meta_data.FieldMetaData("tbl_name", org.apache.thrift.TFieldRequirementType.DEFAULT, 
           new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
-      tmpMap.put(_Fields.PART_NAME, new org.apache.thrift.meta_data.FieldMetaData("part_name", org.apache.thrift.TFieldRequirementType.DEFAULT,
+      tmpMap.put(_Fields.PART_NAME, new org.apache.thrift.meta_data.FieldMetaData("part_name", org.apache.thrift.TFieldRequirementType.DEFAULT, 
           new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
-      tmpMap.put(_Fields.DELETE_DATA, new org.apache.thrift.meta_data.FieldMetaData("deleteData", org.apache.thrift.TFieldRequirementType.DEFAULT,
+      tmpMap.put(_Fields.DELETE_DATA, new org.apache.thrift.meta_data.FieldMetaData("deleteData", org.apache.thrift.TFieldRequirementType.DEFAULT, 
           new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.BOOL)));
       metaDataMap = Collections.unmodifiableMap(tmpMap);
       org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(drop_partition_by_name_args.class, metaDataMap);
@@ -28008,28 +28008,28 @@ public class ThriftHiveMetastore {
       while (true)
       {
         field = iprot.readFieldBegin();
-        if (field.type == org.apache.thrift.protocol.TType.STOP) {
+        if (field.type == org.apache.thrift.protocol.TType.STOP) { 
           break;
         }
         switch (field.id) {
           case 1: // DB_NAME
             if (field.type == org.apache.thrift.protocol.TType.STRING) {
               this.db_name = iprot.readString();
-            } else {
+            } else { 
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
             }
             break;
           case 2: // TBL_NAME
             if (field.type == org.apache.thrift.protocol.TType.STRING) {
               this.tbl_name = iprot.readString();
-            } else {
+            } else { 
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
             }
             break;
           case 3: // PART_NAME
             if (field.type == org.apache.thrift.protocol.TType.STRING) {
               this.part_name = iprot.readString();
-            } else {
+            } else { 
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
             }
             break;
@@ -28037,7 +28037,7 @@ public class ThriftHiveMetastore {
             if (field.type == org.apache.thrift.protocol.TType.BOOL) {
               this.deleteData = iprot.readBool();
               setDeleteDataIsSet(true);
-            } else {
+            } else { 
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
             }
             break;
@@ -28218,11 +28218,11 @@ public class ThriftHiveMetastore {
     public static final Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
     static {
       Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
-      tmpMap.put(_Fields.SUCCESS, new org.apache.thrift.meta_data.FieldMetaData("success", org.apache.thrift.TFieldRequirementType.DEFAULT,
+      tmpMap.put(_Fields.SUCCESS, new org.apache.thrift.meta_data.FieldMetaData("success", org.apache.thrift.TFieldRequirementType.DEFAULT, 
           new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.BOOL)));
-      tmpMap.put(_Fields.O1, new org.apache.thrift.meta_data.FieldMetaData("o1", org.apache.thrift.TFieldRequirementType.DEFAULT,
+      tmpMap.put(_Fields.O1, new org.apache.thrift.meta_data.FieldMetaData("o1", org.apache.thrift.TFieldRequirementType.DEFAULT, 
           new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRUCT)));
-      tmpMap.put(_Fields.O2, new org.apache.thrift.meta_data.FieldMetaData("o2", org.apache.thrift.TFieldRequirementType.DEFAULT,
+      tmpMap.put(_Fields.O2, new org.apache.thrift.meta_data.FieldMetaData("o2", org.apache.thrift.TFieldRequirementType.DEFAULT, 
           new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRUCT)));
       metaDataMap = Collections.unmodifiableMap(tmpMap);
       org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(drop_partition_by_name_result.class, metaDataMap);
@@ -28498,7 +28498,7 @@ public class ThriftHiveMetastore {
       while (true)
       {
         field = iprot.readFieldBegin();
-        if (field.type == org.apache.thrift.protocol.TType.STOP) {
+        if (field.type == org.apache.thrift.protocol.TType.STOP) { 
           break;
         }
         switch (field.id) {
@@ -28506,7 +28506,7 @@ public class ThriftHiveMetastore {
             if (field.type == org.apache.thrift.protocol.TType.BOOL) {
               this.success = iprot.readBool();
               setSuccessIsSet(true);
-            } else {
+            } else { 
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
             }
             break;
@@ -28514,7 +28514,7 @@ public class ThriftHiveMetastore {
             if (field.type == org.apache.thrift.protocol.TType.STRUCT) {
               this.o1 = new NoSuchObjectException();
               this.o1.read(iprot);
-            } else {
+            } else { 
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
             }
             break;
@@ -28522,7 +28522,7 @@ public class ThriftHiveMetastore {
             if (field.type == org.apache.thrift.protocol.TType.STRUCT) {
               this.o2 = new MetaException();
               this.o2.read(iprot);
-            } else {
+            } else { 
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
             }
             break;
@@ -28685,12 +28685,12 @@ public class ThriftHiveMetastore {
     public static final Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
     static {
       Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
-      tmpMap.put(_Fields.DB_NAME, new org.apache.thrift.meta_data.FieldMetaData("db_name", org.apache.thrift.TFieldRequirementType.DEFAULT,
+      tmpMap.put(_Fields.DB_NAME, new org.apache.thrift.meta_data.FieldMetaData("db_name", org.apache.thrift.TFieldRequirementType.DEFAULT, 
           new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
-      tmpMap.put(_Fields.TBL_NAME, new org.apache.thrift.meta_data.FieldMetaData("tbl_name", org.apache.thrift.TFieldRequirementType.DEFAULT,
+      tmpMap.put(_Fields.TBL_NAME, new org.apache.thrift.meta_data.FieldMetaData("tbl_name", org.apache.thrift.TFieldRequirementType.DEFAULT, 
           new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
-      tmpMap.put(_Fields.PART_VALS, new org.apache.thrift.meta_data.FieldMetaData("part_vals", org.apache.thrift.TFieldRequirementType.DEFAULT,
-          new org.apache.thrift.meta_data.ListMetaData(org.apache.thrift.protocol.TType.LIST,
+      tmpMap.put(_Fields.PART_VALS, new org.apache.thrift.meta_data.FieldMetaData("part_vals", org.apache.thrift.TFieldRequirementType.DEFAULT, 
+          new org.apache.thrift.meta_data.ListMetaData(org.apache.thrift.protocol.TType.LIST, 
               new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING))));
       metaDataMap = Collections.unmodifiableMap(tmpMap);
       org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(get_partition_args.class, metaDataMap);
@@ -28984,38 +28984,38 @@ public class ThriftHiveMetastore {
       while (true)
       {
         field = iprot.readFieldBegin();
-        if (field.type == org.apache.thrift.protocol.TType.STOP) {
+        if (field.type == org.apache.thrift.protocol.TType.STOP) { 
           break;
         }
         switch (field.id) {
           case 1: // DB_NAME
             if (field.type == org.apache.thrift.protocol.TType.STRING) {
               this.db_name = iprot.readString();
-            } else {
+            } else { 
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
             }
             break;
           case 2: // TBL_NAME
             if (field.type == org.apache.thrift.protocol.TType.STRING) {
               this.tbl_name = iprot.readString();
-            } else {
+            } else { 
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
             }
             break;
           case 3: // PART_VALS
             if (field.type == org.apache.thrift.protocol.TType.LIST) {
               {
-                org.apache.thrift.protocol.TList _list151 = iprot.readListBegin();
-                this.part_vals = new ArrayList<String>(_list151.size);
-                for (int _i152 = 0; _i152 < _list151.size; ++_i152)
+                org.apache.thrift.protocol.TList _list155 = iprot.readListBegin();
+                this.part_vals = new ArrayList<String>(_list155.size);
+                for (int _i156 = 0; _i156 < _list155.size; ++_i156)
                 {
-                  String _elem153; // required
-                  _elem153 = iprot.readString();
-                  this.part_vals.add(_elem153);
+                  String _elem157; // required
+                  _elem157 = iprot.readString();
+                  this.part_vals.add(_elem157);
                 }
                 iprot.readListEnd();
               }
-            } else {
+            } else { 
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
             }
             break;
@@ -29046,9 +29046,9 @@ public class ThriftHiveMetastore {
         oprot.writeFieldBegin(PART_VALS_FIELD_DESC);
         {
           oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRING, this.part_vals.size()));
-          for (String _iter154 : this.part_vals)
+          for (String _iter158 : this.part_vals)
           {
-            oprot.writeString(_iter154);
+            oprot.writeString(_iter158);
           }
           oprot.writeListEnd();
         }
@@ -29192,11 +29192,11 @@ public class ThriftHiveMetastore {
     public static final Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
     static {
       Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
-      tmpMap.put(_Fields.SUCCESS, new org.apache.thrift.meta_data.FieldMetaData("success", org.apache.thrift.TFieldRequirementType.DEFAULT,
+      tmpMap.put(_Fields.SUCCESS, new org.apache.thrift.meta_data.FieldMetaData("success", org.apache.thrift.TFieldRequirementType.DEFAULT, 
           new org.apache.thrift.meta_data.StructMetaData(org.apache.thrift.protocol.TType.STRUCT, Partition.class)));
-      tmpMap.put(_Fields.O1, new org.apache.thrift.meta_data.FieldMetaData("o1", org.apache.thrift.TFieldRequirementType.DEFAULT,
+      tmpMap.put(_Fields.O1, new org.apache.thrift.meta_data.FieldMetaData("o1", org.apache.thrift.TFieldRequirementType.DEFAULT, 
           new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRUCT)));
-      tmpMap.put(_Fields.O2, new org.apache.thrift.meta_data.FieldMetaData("o2", org.apache.thrift.TFieldRequirementType.DEFAULT,
+      tmpMap.put(_Fields.O2, new org.apache.thrift.meta_data.FieldMetaData("o2", org.apache.thrift.TFieldRequirementType.DEFAULT, 
           new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRUCT)));
       metaDataMap = Collections.unmodifiableMap(tmpMap);
       org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(get_partition_result.class, metaDataMap);
@@ -29471,7 +29471,7 @@ public class ThriftHiveMetastore {
       while (true)
       {
         field = iprot.readFieldBegin();
-        if (field.type == org.apache.thrift.protocol.TType.STOP) {
+        if (field.type == org.apache.thrift.protocol.TType.STOP) { 
           break;
         }
         switch (field.id) {
@@ -29479,7 +29479,7 @@ public class ThriftHiveMetastore {
             if (field.type == org.apache.thrift.protocol.TType.STRUCT) {
               this.success = new Partition();
               this.success.read(iprot);
-            } else {
+            } else { 
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
             }
             break;
@@ -29487,7 +29487,7 @@ public class ThriftHiveMetastore {
             if (field.type == org.apache.thrift.protocol.TType.STRUCT) {
               this.o1 = new MetaException();
               this.o1.read(iprot);
-            } else {
+            } else { 
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
             }
             break;
@@ -29495,7 +29495,7 @@ public class ThriftHiveMetastore {
             if (field.type == org.apache.thrift.protocol.TType.STRUCT) {
               this.o2 = new NoSuchObjectException();
               this.o2.read(iprot);
-            } else {
+            } else { 
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
             }
             break;
@@ -29672,17 +29672,17 @@ public class ThriftHiveMetastore {
     public static final Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
     static {
       Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
-      tmpMap.put(_Fields.DB_NAME, new org.apache.thrift.meta_data.FieldMetaData("db_name", org.apache.thrift.TFieldRequirementType.DEFAULT,
+      tmpMap.put(_Fields.DB_NAME, new org.apache.thrift.meta_data.FieldMetaData("db_name", org.apache.thrift.TFieldRequirementType.DEFAULT, 
           new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
-      tmpMap.put(_Fields.TBL_NAME, new org.apache.thrift.meta_data.FieldMetaData("tbl_name", org.apache.thrift.TFieldRequirementType.DEFAULT,
+      tmpMap.put(_Fields.TBL_NAME, new org.apache.thrift.meta_data.FieldMetaData("tbl_name", org.apache.thrift.TFieldRequirementType.DEFAULT, 
           new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
-      tmpMap.put(_Fields.PART_VALS, new org.apache.thrift.meta_data.FieldMetaData("part_vals", org.apache.thrift.TFieldRequirementType.DEFAULT,
-          new org.apache.thrift.meta_data.ListMetaData(org.apache.thrift.protocol.TType.LIST,
+      tmpMap.put(_Fields.PART_VALS, new org.apache.thrift.meta_data.FieldMetaData("part_vals", org.apache.thrift.TFieldRequirementType.DEFAULT, 
+          new org.apache.thrift.meta_data.ListMetaData(org.apache.thrift.protocol.TType.LIST, 
               new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING))));
-      tmpMap.put(_Fields.USER_NAME, new org.apache.thrift.meta_data.FieldMetaData("user_name", org.apache.thrift.TFieldRequirementType.DEFAULT,
+      tmpMap.put(_Fields.USER_NAME, new org.apache.thrift.meta_data.FieldMetaData("user_name", org.apache.thrift.TFieldRequirementType.DEFAULT, 
           new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
-      tmpMap.put(_Fields.GROUP_NAMES, new org.apache.thrift.meta_data.FieldMetaData("group_names", org.apache.thrift.TFieldRequirementType.DEFAULT,
-          new org.apache.thrift.meta_data.ListMetaData(org.apache.thrift.protocol.TType.LIST,
+      tmpMap.put(_Fields.GROUP_NAMES, new org.apache.thrift.meta_data.FieldMetaData("group_names", org.apache.thrift.TFieldRequirementType.DEFAULT, 
+          new org.apache.thrift.meta_data.ListMetaData(org.apache.thrift.protocol.TType.LIST, 
               new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING))));
       metaDataMap = Collections.unmodifiableMap(tmpMap);
       org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(get_partition_with_auth_args.class, metaDataMap);
@@ -30117,62 +30117,62 @@ public class ThriftHiveMetastore {
       while (true)
       {
         field = iprot.readFieldBegin();
-        if (field.type == org.apache.thrift.protocol.TType.STOP) {
+        if (field.type == org.apache.thrift.protocol.TType.STOP) { 
           break;
         }
         switch (field.id) {
           case 1: // DB_NAME
             if (field.type == org.apache.thrift.protocol.TType.STRING) {
               this.db_name = iprot.readString();
-            } else {
+            } else { 
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
             }
             break;
           case 2: // TBL_NAME
             if (field.type == org.apache.thrift.protocol.TType.STRING) {
               this.tbl_name = iprot.readString();
-            } else {
+            } else { 
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
             }
             break;
           case 3: // PART_VALS
             if (field.type == org.apache.thrift.protocol.TType.LIST) {
               {
-                org.apache.thrift.protocol.TList _list155 = iprot.readListBegin();
-                this.part_vals = new ArrayList<String>(_list155.size);
-                for (int _i156 = 0; _i156 < _list155.size; ++_i156)
+                org.apache.thrift.protocol.TList _list159 = iprot.readListBegin();
+                this.part_vals = new ArrayList<String>(_list159.size);
+                for (int _i160 = 0; _i160 < _list159.size; ++_i160)
                 {
-                  String _elem157; // required
-                  _elem157 = iprot.readString();
-                  this.part_vals.add(_elem157);
+                  String _elem161; // required
+                  _elem161 = iprot.readString();
+                  this.part_vals.add(_elem161);
                 }
                 iprot.readListEnd();
               }
-            } else {
+            } else { 
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
             }
             break;
           case 4: // USER_NAME
             if (field.type == org.apache.thrift.protocol.TType.STRING) {
               this.user_name = iprot.readString();
-            } else {
+            } else { 
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
             }
             break;
           case 5: // GROUP_NAMES
             if (field.type == org.apache.thrift.protocol.TType.LIST) {
               {
-                org.apache.thrift.protocol.TList _list158 = iprot.readListBegin();
-                this.group_names = new ArrayList<String>(_list158.size);
-                for (int _i159 = 0; _i159 < _list158.size; ++_i159)
+                org.apache.thrift.protocol.TList _list162 = iprot.readListBegin();
+                this.group_names = new ArrayList<String>(_list162.size);
+                for (int _i163 = 0; _i163 < _list162.size; ++_i163)
                 {
-                  String _elem160; // required
-                  _elem160 = iprot.readString();
-                  this.group_names.add(_elem160);
+                  String _elem164; // required
+                  _elem164 = iprot.readString();
+                  this.group_names.add(_elem164);
                 }
                 iprot.readListEnd();
               }
-            } else {
+            } else { 
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
             }
             break;
@@ -30203,9 +30203,9 @@ public class ThriftHiveMetastore {
         oprot.writeFieldBegin(PART_VALS_FIELD_DESC);
         {
           oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRING, this.part_vals.size()));
-          for (String _iter161 : this.part_vals)
+          for (String _iter165 : this.part_vals)
           {
-            oprot.writeString(_iter161);
+            oprot.writeString(_iter165);
           }
           oprot.writeListEnd();
         }
@@ -30220,9 +30220,9 @@ public class ThriftHiveMetastore {
         oprot.writeFieldBegin(GROUP_NAMES_FIELD_DESC);
         {
           oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRING, this.group_names.size()));
-          for (String _iter162 : this.group_names)
+          for (String _iter166 : this.group_names)
           {
-            oprot.writeString(_iter162);
+            oprot.writeString(_iter166);
           }
           oprot.writeListEnd();
         }
@@ -30382,11 +30382,11 @@ public class ThriftHiveMetastore {
     public static final Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
     static {
       Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
-      tmpMap.put(_Fields.SUCCESS, new org.apache.thrift.meta_data.FieldMetaData("success", org.apache.thrift.TFieldRequirementType.DEFAULT,
+      tmpMap.put(_Fields.SUCCESS, new org.apache.thrift.meta_data.FieldMetaData("success", org.apache.thrift.TFieldRequirementType.DEFAULT, 
           new org.apache.thrift.meta_data.StructMetaData(org.apache.thrift.protocol.TType.STRUCT, Partition.class)));
-      tmpMap.put(_Fields.O1, new org.apache.thrift.meta_data.FieldMetaData("o1", org.apache.thrift.TFieldRequirementType.DEFAULT,
+      tmpMap.put(_Fields.O1, new org.apache.thrift.meta_data.FieldMetaData("o1", org.apache.thrift.TFieldRequirementType.DEFAULT, 
           new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRUCT)));
-      tmpMap.put(_Fields.O2, new org.apache.thrift.meta_data.FieldMetaData("o2", org.apache.thrift.TFieldRequirementType.DEFAULT,
+      tmpMap.put(_Fields.O2, new org.apache.thrift.meta_data.FieldMetaData("o2", org.apache.thrift.TFieldRequirementType.DEFAULT, 
           new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRUCT)));
       metaDataMap = Collections.unmodifiableMap(tmpMap);
       org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(get_partition_with_auth_result.class, metaDataMap);
@@ -30661,7 +30661,7 @@ public class ThriftHiveMetastore {
       while (true)
       {
         field = iprot.readFieldBegin();
-        if (field.type == org.apache.thrift.protocol.TType.STOP) {
+        if (field.type == org.apache.thrift.protocol.TType.STOP) { 
           break;
         }
         switch (field.id) {
@@ -30669,7 +30669,7 @@ public class ThriftHiveMetastore {
             if (field.type == org.apache.thrift.protocol.TType.STRUCT) {
               this.success = new Partition();
               this.success.read(iprot);
-            } else {
+            } else { 
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
             }
             break;
@@ -30677,7 +30677,7 @@ public class ThriftHiveMetastore {
             if (field.type == org.apache.thrift.protocol.TType.STRUCT) {
               this.o1 = new MetaException();
               this.o1.read(iprot);
-            } else {
+            } else { 
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
             }
             break;
@@ -30685,7 +30685,7 @@ public class ThriftHiveMetastore {
             if (field.type == org.apache.thrift.protocol.TType.STRUCT) {
               this.o2 = new NoSuchObjectException();
               this.o2.read(iprot);
-            } else {
+            } else { 
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
             }
             break;
@@ -30852,11 +30852,11 @@ public class ThriftHiveMetastore {
     public static final Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
     static {
       Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
-      tmpMap.put(_Fields.DB_NAME, new org.apache.thrift.meta_data.FieldMetaData("db_name", org.apache.thrift.TFieldRequirementType.DEFAULT,
+      tmpMap.put(_Fields.DB_NAME, new org.apache.thrift.meta_data.FieldMetaData("db_name", org.apache.thrift.TFieldRequirementType.DEFAULT, 
           new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
-      tmpMap.put(_Fields.TBL_NAME, new org.apache.thrift.meta_data.FieldMetaData("tbl_name", org.apache.thrift.TFieldRequirementType.DEFAULT,
+      tmpMap.put(_Fields.TBL_NAME, new org.apache.thrift.meta_data.FieldMetaData("tbl_name", org.apache.thrift.TFieldRequirementType.DEFAULT, 
           new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
-      tmpMap.put(_Fields.PART_NAME, new org.apache.thrift.meta_data.FieldMetaData("part_name", org.apache.thrift.TFieldRequirementType.DEFAULT,
+      tmpMap.put(_Fields.PART_NAME, new org.apache.thrift.meta_data.FieldMetaData("part_name", org.apache.thrift.TFieldRequirementType.DEFAULT, 
           new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
       metaDataMap = Collections.unmodifiableMap(tmpMap);
       org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(get_partition_by_name_args.class, metaDataMap);
@@ -31131,28 +31131,28 @@ public class ThriftHiveMetastore {
       while (true)
       {
         field = iprot.readFieldBegin();
-        if (field.type == org.apache.thrift.protocol.TType.STOP) {
+        if (field.type == org.apache.thrift.protocol.TType.STOP) { 
           break;
         }
         switch (field.id) {
           case 1: // DB_NAME
             if (field.type == org.apache.thrift.protocol.TType.STRING) {
               this.db_name = iprot.readString();
-            } else {
+            } else { 
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
             }
             break;
           case 2: // TBL_NAME
             if (field.type == org.apache.thrift.protocol.TType.STRING) {
               this.tbl_name = iprot.readString();
-            } else {
+            } else { 
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
             }
             break;
           case 3: // PART_NAME
             if (field.type == org.apache.thrift.protocol.TType.STRING) {
               this.part_name = iprot.readString();
-            } else {
+            } else { 
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
             }
             break;
@@ -31322,11 +31322,11 @@ public class ThriftHiveMetastore {
     public static final Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
     static {
       Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
-      tmpMap.put(_Fields.SUCCESS, new org.apache.thrift.meta_data.FieldMetaData("success", org.apache.thrift.TFieldRequirementType.DEFAULT,
+      tmpMap.put(_Fields.SUCCESS, new org.apache.thrift.meta_data.FieldMetaData("success", org.apache.thrift.TFieldRequirementType.DEFAULT, 
           new org.apache.thrift.meta_data.StructMetaData(org.apache.thrift.protocol.TType.STRUCT, Partition.class)));
-      tmpMap.put(_Fields.O1, new org.apache.thrift.meta_data.FieldMetaData("o1", org.apache.thrift.TFieldRequirementType.DEFAULT,
+      tmpMap.put(_Fields.O1, new org.apache.thrift.meta_data.FieldMetaData("o1", org.apache.thrift.TFieldRequirementType.DEFAULT, 
           new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRUCT)));
-      tmpMap.put(_Fields.O2, new org.apache.thrift.meta_data.FieldMetaData("o2", org.apache.thrift.TFieldRequirementType.DEFAULT,
+      tmpMap.put(_Fields.O2, new org.apache.thrift.meta_data.FieldMetaData("o2", org.apache.thrift.TFieldRequirementType.DEFAULT, 
           new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRUCT)));
       metaDataMap = Collections.unmodifiableMap(tmpMap);
       org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(get_partition_by_name_result.class, metaDataMap);
@@ -31601,7 +31601,7 @@ public class ThriftHiveMetastore {
       while (true)
       {
         field = iprot.readFieldBegin();
-        if (field.type == org.apache.thrift.protocol.TType.STOP) {
+        if (field.type == org.apache.thrift.protocol.TType.STOP) { 
           break;
         }
         switch (field.id) {
@@ -31609,7 +31609,7 @@ public class ThriftHiveMetastore {
             if (field.type == org.apache.thrift.protocol.TType.STRUCT) {
               this.success = new Partition();
               this.success.read(iprot);
-            } else {
+            } else { 
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
             }
             break;
@@ -31617,7 +31617,7 @@ public class ThriftHiveMetastore {
             if (field.type == org.apache.thrift.protocol.TType.STRUCT) {
               this.o1 = new MetaException();
               this.o1.read(iprot);
-            } else {
+            } else { 
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
             }
             break;
@@ -31625,7 +31625,7 @@ public class ThriftHiveMetastore {
             if (field.type == org.apache.thrift.protocol.TType.STRUCT) {
               this.o2 = new NoSuchObjectException();
               this.o2.read(iprot);
-            } else {
+            } else { 
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
             }
             break;
@@ -31794,11 +31794,11 @@ public class ThriftHiveMetastore {
     public static final Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
     static {
       Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
-      tmpMap.put(_Fields.DB_NAME, new org.apache.thrift.meta_data.FieldMetaData("db_name", org.apache.thrift.TFieldRequirementType.DEFAULT,
+      tmpMap.put(_Fields.DB_NAME, new org.apache.thrift.meta_data.FieldMetaData("db_name", org.apache.thrift.TFieldRequirementType.DEFAULT, 
           new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
-      tmpMap.put(_Fields.TBL_NAME, new org.apache.thrift.meta_data.FieldMetaData("tbl_name", org.apache.thrift.TFieldRequirementType.DEFAULT,
+      tmpMap.put(_Fields.TBL_NAME, new org.apache.thrift.meta_data.FieldMetaData("tbl_name", org.apache.thrift.TFieldRequirementType.DEFAULT, 
           new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
-      tmpMap.put(_Fields.MAX_PARTS, new org.apache.thrift.meta_data.FieldMetaData("max_parts", org.apache.thrift.TFieldRequirementType.DEFAULT,
+      tmpMap.put(_Fields.MAX_PARTS, new org.apache.thrift.meta_data.FieldMetaData("max_parts", org.apache.thrift.TFieldRequirementType.DEFAULT, 
           new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.I16)));
       metaDataMap = Collections.unmodifiableMap(tmpMap);
       org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(get_partitions_args.class, metaDataMap);
@@ -32076,21 +32076,21 @@ public class ThriftHiveMetastore {
       while (true)
       {
         field = iprot.readFieldBegin();
-        if (field.type == org.apache.thrift.protocol.TType.STOP) {
+        if (field.type == org.apache.thrift.protocol.TType.STOP) { 
           break;
         }
         switch (field.id) {
           case 1: // DB_NAME
             if (field.type == org.apache.thrift.protocol.TType.STRING) {
               this.db_name = iprot.readString();
-            } else {
+            } else { 
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
             }
             break;
           case 2: // TBL_NAME
             if (field.type == org.apache.thrift.protocol.TType.STRING) {
               this.tbl_name = iprot.readString();
-            } else {
+            } else { 
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
             }
             break;
@@ -32098,7 +32098,7 @@ public class ThriftHiveMetastore {
             if (field.type == org.apache.thrift.protocol.TType.I16) {
               this.max_parts = iprot.readI16();
               setMax_partsIsSet(true);
-            } else {
+            } else { 
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
             }
             break;
@@ -32264,12 +32264,12 @@ public class ThriftHiveMetastore {
     public static final Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
     static {
       Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
-      tmpMap.put(_Fields.SUCCESS, new org.apache.thrift.meta_data.FieldMetaData("success", org.apache.thrift.TFieldRequirementType.DEFAULT,
-          new org.apache.thrift.meta_data.ListMetaData(org.apache.thrift.protocol.TType.LIST,
+      tmpMap.put(_Fields.SUCCESS, new org.apache.thrift.meta_data.FieldMetaData("success", org.apache.thrift.TFieldRequirementType.DEFAULT, 
+          new org.apache.thrift.meta_data.ListMetaData(org.apache.thrift.protocol.TType.LIST, 
               new org.apache.thrift.meta_data.StructMetaData(org.apache.thrift.protocol.TType.STRUCT, Partition.class))));
-      tmpMap.put(_Fields.O1, new org.apache.thrift.meta_data.FieldMetaData("o1", org.apache.thrift.TFieldRequirementType.DEFAULT,
+      tmpMap.put(_Fields.O1, new org.apache.thrift.meta_data.FieldMetaData("o1", org.apache.thrift.TFieldRequirementType.DEFAULT, 
           new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRUCT)));
-      tmpMap.put(_Fields.O2, new org.apache.thrift.meta_data.FieldMetaData("o2", org.apache.thrift.TFieldRequirementType.DEFAULT,
+      tmpMap.put(_Fields.O2, new org.apache.thrift.meta_data.FieldMetaData("o2", org.apache.thrift.TFieldRequirementType.DEFAULT, 
           new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRUCT)));
       metaDataMap = Collections.unmodifiableMap(tmpMap);
       org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(get_partitions_result.class, metaDataMap);
@@ -32563,25 +32563,25 @@ public class ThriftHiveMetastore {
       while (true)
       {
         field = iprot.readFieldBegin();
-        if (field.type == org.apache.thrift.protocol.TType.STOP) {
+        if (field.type == org.apache.thrift.protocol.TType.STOP) { 
           break;
         }
         switch (field.id) {
           case 0: // SUCCESS
             if (field.type == org.apache.thrift.protocol.TType.LIST) {
               {
-                org.apache.thrift.protocol.TList _list163 = iprot.readListBegin();
-                this.success = new ArrayList<Partition>(_list163.size);
-                for (int _i164 = 0; _i164 < _list163.size; ++_i164)
+                org.apache.thrift.protocol.TList _list167 = iprot.readListBegin();
+                this.success = new ArrayList<Partition>(_list167.size);
+                for (int _i168 = 0; _i168 < _list167.size; ++_i168)
                 {
-                  Partition _elem165; // required
-                  _elem165 = new Partition();
-                  _elem165.read(iprot);
-                  this.success.add(_elem165);
+                  Partition _elem169; // required
+                  _elem169 = new Partition();
+                  _elem169.read(iprot);
+                  this.success.add(_elem169);
                 }
                 iprot.readListEnd();
               }
-            } else {
+            } else { 
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
             }
             break;
@@ -32589,7 +32589,7 @@ public class ThriftHiveMetastore {
             if (field.type == org.apache.thrift.protocol.TType.STRUCT) {
               this.o1 = new NoSuchObjectException();
               this.o1.read(iprot);
-            } else {
+            } else { 
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
             }
             break;
@@ -32597,7 +32597,7 @@ public class ThriftHiveMetastore {
             if (field.type == org.apache.thrift.protocol.TType.STRUCT) {
               this.o2 = new MetaException();
               this.o2.read(iprot);
-            } else {
+            } else { 
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
             }
             break;
@@ -32617,9 +32617,9 @@ public class ThriftHiveMetastore {
         oprot.writeFieldBegin(SUCCESS_FIELD_DESC);
         {
           oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, this.success.size()));
-          for (Partition _iter166 : this.success)
+          for (Partition _iter170 : this.success)
           {
-            _iter166.write(oprot);
+            _iter170.write(oprot);
           }
           oprot.writeListEnd();
         }
@@ -32783,16 +32783,16 @@ public class ThriftHiveMetastore {
     public static final Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
     static {
       Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
-      tmpMap.put(_Fields.DB_NAME, new org.apache.thrift.meta_data.FieldMetaData("db_name", org.apache.thrift.TFieldRequirementType.DEFAULT,
+      tmpMap.put(_Fields.DB_NAME, new org.apache.thrift.meta_data.FieldMetaData("db_name", org.apache.thrift.TFieldRequirementType.DEFAULT, 
           new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
-      tmpMap.put(_Fields.TBL_NAME, new org.apache.thrift.meta_data.FieldMetaData("tbl_name", org.apache.thrift.TFieldRequirementType.DEFAULT,
+      tmpMap.put(_Fields.TBL_NAME, new org.apache.thrift.meta_data.FieldMetaData("tbl_name", org.apache.thrift.TFieldRequirementType.DEFAULT, 
           new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
-      tmpMap.put(_Fields.MAX_PARTS, new org.apache.thrift.meta_data.FieldMetaData("max_parts", org.apache.thrift.TFieldRequirementType.DEFAULT,
+      tmpMap.put(_Fields.MAX_PARTS, new org.apache.thrift.meta_data.FieldMetaData("max_parts", org.apache.thrift.TFieldRequirementType.DEFAULT, 
           new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.I16)));
-      tmpMap.put(_Fields.USER_NAME, new org.apache.thrift.meta_data.FieldMetaData("user_name", org.apache.thrift.TFieldRequirementType.DEFAULT,
+      tmpMap.put(_Fields.USER_NAME, new org.apache.thrift.meta_data.FieldMetaData("user_name", org.apache.thrift.TFieldRequirementType.DEFAULT, 
           new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
-      tmpMap.put(_Fields.GROUP_NAMES, new org.apache.thrift.meta_data.FieldMetaData("group_names", org.apache.thrift.TFieldRequirementType.DEFAULT,
-          new org.apache.thrift.meta_data.ListMetaData(org.apache.thrift.protocol.TType.LIST,
+      tmpMap.put(_Fields.GROUP_NAMES, new org.apache.thrift.meta_data.FieldMetaData("group_names", org.apache.thrift.TFieldRequirementType.DEFAULT, 
+          new org.apache.thrift.meta_data.ListMetaData(org.apache.thrift.protocol.TType.LIST, 
               new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING))));
       metaDataMap = Collections.unmodifiableMap(tmpMap);
       org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(get_partitions_with_auth_args.class, metaDataMap);
@@ -33211,21 +33211,21 @@ public class ThriftHiveMetastore {
       while (true)
       {
         field = iprot.readFieldBegin();
-        if (field.type == org.apache.thrift.protocol.TType.STOP) {
+        if (field.type == org.apache.thrift.protocol.TType.STOP) { 
           break;
         }
         switch (field.id) {
           case 1: // DB_NAME
             if (field.type == org.apache.thrift.protocol.TType.STRING) {
               this.db_name = iprot.readString();
-            } else {
+            } else { 
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
             }
             break;
           case 2: // TBL_NAME
             if (field.type == org.apache.thrift.protocol.TType.STRING) {
               this.tbl_name = iprot.readString();
-            } else {
+            } else { 
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
             }
             break;
@@ -33233,31 +33233,31 @@ public class ThriftHiveMetastore {
             if (field.type == org.apache.thrift.protocol.TType.I16) {
               this.max_parts = iprot.readI16();
               setMax_partsIsSet(true);
-            } else {
+            } else { 
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
             }
             break;
           case 4: // USER_NAME
             if (field.type == org.apache.thrift.protocol.TType.STRING) {
               this.user_name = iprot.readString();
-            } else {
+            } else { 
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
             }
             break;
           case 5: // GROUP_NAMES
             if (field.type == org.apache.thrift.protocol.TType.LIST) {
               {
-                org.apache.thrift.protocol.TList _list167 = iprot.readListBegin();
-                this.group_names = new ArrayList<String>(_list167.size);
-                for (int _i168 = 0; _i168 < _list167.size; ++_i168)
+                org.apache.thrift.protocol.TList _list171 = iprot.readListBegin();
+                this.group_names = new ArrayList<String>(_list171.size);
+                for (int _i172 = 0; _i172 < _list171.size; ++_i172)
                 {
-                  String _elem169; // required
-                  _elem169 = iprot.readString();
-                  this.group_names.add(_elem169);
+                  String _elem173; // required
+                  _elem173 = iprot.readString();
+                  this.group_names.add(_elem173);
                 }
                 iprot.readListEnd();
               }
-            } else {
+            } else { 
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
             }
             break;
@@ -33296,9 +33296,9 @@ public class ThriftHiveMetastore {
         oprot.writeFieldBegin(GROUP_NAMES_FIELD_DESC);
         {
           oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRING, this.group_names.size()));
-          for (String _iter170 : this.group_names)
+          for (String _iter174 : this.group_names)
           {
-            oprot.writeString(_iter170);
+            oprot.writeString(_iter174);
           }
           oprot.writeListEnd();
         }
@@ -33456,12 +33456,12 @@ public class ThriftHiveMetastore {
     public static final Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
     static {
       Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
-      tmpMap.put(_Fields.SUCCESS, new org.apache.thrift.meta_data.FieldMetaData("success", org.apache.thrift.TFieldRequirementType.DEFAULT,
-          new org.apache.thrift.meta_data.ListMetaData(org.apache.thrift.protocol.TType.LIST,
+      tmpMap.put(_Fields.SUCCESS, new org.apache.thrift.meta_data.FieldMetaData("success", org.apache.thrift.TFieldRequirementType.DEFAULT, 
+          new org.apache.thrift.meta_data.ListMetaData(org.apache.thrift.protocol.TType.LIST, 
               new org.apache.thrift.meta_data.StructMetaData(org.apache.thrift.protocol.TType.STRUCT, Partition.class))));
-      tmpMap.put(_Fields.O1, new org.apache.thrift.meta_data.FieldMetaData("o1", org.apache.thrift.TFieldRequirementType.DEFAULT,
+      tmpMap.put(_Fields.O1, new org.apache.thrift.meta_data.FieldMetaData("o1", org.apache.thrift.TFieldRequirementType.DEFAULT, 
           new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRUCT)));
-      tmpMap.put(_Fields.O2, new org.apache.thrift.meta_data.FieldMetaData("o2", org.apache.thrift.TFieldRequirementType.DEFAULT,
+      tmpMap.put(_Fields.O2, new org.apache.thrift.meta_data.FieldMetaData("o2", org.apache.thrift.TFieldRequirementType.DEFAULT, 
           new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRUCT)));
       metaDataMap = Collections.unmodifiableMap(tmpMap);
       org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(get_partitions_with_auth_result.class, metaDataMap);
@@ -33755,25 +33755,25 @@ public class ThriftHiveMetastore {
       while (true)
       {
         field = iprot.readFieldBegin();
-        if (field.type == org.apache.thrift.protocol.TType.STOP) {
+        if (field.type == org.apache.thrift.protocol.TType.STOP) { 
           break;
         }
         switch (field.id) {
           case 0: // SUCCESS
             if (field.type == org.apache.thrift.protocol.TType.LIST) {
               {
-                org.apache.thrift.protocol.TList _list171 = iprot.readListBegin();
-                this.success = new ArrayList<Partition>(_list171.size);
-                for (int _i172 = 0; _i172 < _list171.size; ++_i172)
+                org.apache.thrift.protocol.TList _list175 = iprot.readListBegin();
+                this.success = new ArrayList<Partition>(_list175.size);
+                for (int _i176 = 0; _i176 < _list175.size; ++_i176)
                 {
-                  Partition _elem173; // required
-                  _elem173 = new Partition();
-                  _elem173.read(iprot);
-                  this.success.add(_elem173);
+                  Partition _elem177; // required
+                  _elem177 = new Partition();
+                  _elem177.read(iprot);
+                  this.success.add(_elem177);
                 }
                 iprot.readListEnd();
               }
-            } else {
+            } else { 
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
             }
             break;
@@ -33781,7 +33781,7 @@ public class ThriftHiveMetastore {
             if (field.type == org.apache.thrift.protocol.TType.STRUCT) {
               this.o1 = new NoSuchObjectException();
               this.o1.read(iprot);
-            } else {
+            } else { 
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
             }
             break;
@@ -33789,7 +33789,7 @@ public class ThriftHiveMetastore {
             if (field.type == org.apache.thrift.protocol.TType.STRUCT) {
               this.o2 = new MetaException();
               this.o2.read(iprot);
-            } else {
+            } else { 
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
             }
             break;
@@ -33809,9 +33809,9 @@ public class ThriftHiveMetastore {
         oprot.writeFieldBegin(SUCCESS_FIELD_DESC);
         {
           oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, this.success.size()));
-          for (Partition _iter174 : this.success)
+          for (Partition _iter178 : this.success)
           {
-            _iter174.write(oprot);
+            _iter178.write(oprot);
           }
           oprot.writeListEnd();
         }
@@ -33965,11 +33965,11 @@ public class ThriftHiveMetastore {
     public static final Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
     static {
       Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
-      tmpMap.put(_Fields.DB_NAME, new org.apache.thrift.meta_data.FieldMetaData("db_name", org.apache.thrift.TFieldRequirementType.DEFAULT,
+      tmpMap.put(_Fields.DB_NAME, new org.apache.thrift.meta_data.FieldMetaData("db_name", org.apache.thrift.TFieldRequirementType.DEFAULT, 
           new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
-      tmpMap.put(_Fields.TBL_NAME, new org.apache.thrift.meta_data.FieldMetaData("tbl_name", org.apache.thrift.TFieldRequirementType.DEFAULT,
+      tmpMap.put(_Fields.TBL_NAME, new org.apache.thrift.meta_data.FieldMetaData("tbl_name", org.apache.thrift.TFieldRequirementType.DEFAULT, 
           new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
-      tmpMap.put(_Fields.MAX_PARTS, new org.apache.thrift.meta_data.FieldMetaData("max_parts", org.apache.thrift.TFieldRequirementType.DEFAULT,
+      tmpMap.put(_Fields.MAX_PARTS, new org.apache.thrift.meta_data.FieldMetaData("max_parts", org.apache.thrift.TFieldRequirementType.DEFAULT, 
           new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.I16)));
       metaDataMap = Collections.unmodifiableMap(tmpMap);
       org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(get_partition_names_args.class, metaDataMap);
@@ -34247,21 +34247,21 @@ public class ThriftHiveMetastore {
       while (true)
       {
         field = iprot.readFieldBegin();
-        if (field.type == org.apache.thrift.protocol.TType.STOP) {
+        if (field.type == org.apache.thrift.protocol.TType.STOP) { 
           break;
         }
         switch (field.id) {
           case 1: // DB_NAME
             if (field.type == org.apache.thrift.protocol.TType.STRING) {
               this.db_name = iprot.readString();
-            } else {
+            } else { 
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
             }
             break;
           case 2: // TBL_NAME
             if (field.type == org.apache.thrift.protocol.TType.STRING) {
               this.tbl_name = iprot.readString();
-            } else {
+            } else { 
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
             }
             break;
@@ -34269,7 +34269,7 @@ public class ThriftHiveMetastore {
             if (field.type == org.apache.thrift.protocol.TType.I16) {
               this.max_parts = iprot.readI16();
               setMax_partsIsSet(true);
-            } else {
+            } else { 
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
             }
             break;
@@ -34430,10 +34430,10 @@ public class ThriftHiveMetastore {
     public static final Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
     static {
       Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
-      tmpMap.put(_Fields.SUCCESS, new org.apache.thrift.meta_data.FieldMetaData("success", org.apache.thrift.TFieldRequirementType.DEFAULT,
-          new org.apache.thrift.meta_data.ListMetaData(org.apache.thrift.protocol.TType.LIST,
+      tmpMap.put(_Fields.SUCCESS, new org.apache.thrift.meta_data.FieldMetaData("success", org.apache.thrift.TFieldRequirementType.DEFAULT, 
+          new org.apache.thrift.meta_data.ListMetaData(org.apache.thrift.protocol.TType.LIST, 
               new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING))));
-      tmpMap.put(_Fields.O2, new org.apache.thrift.meta_data.FieldMetaData("o2", org.apache.thrift.TFieldRequirementType.DEFAULT,
+      tmpMap.put(_Fields.O2, new org.apache.thrift.meta_data.FieldMetaData("o2", org.apache.thrift.TFieldRequirementType.DEFAULT, 
           new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRUCT)));
       metaDataMap = Collections.unmodifiableMap(tmpMap);
       org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(get_partition_names_result.class, metaDataMap);
@@ -34666,24 +34666,24 @@ public class ThriftHiveMetastore {
       while (true)
       {
         field = iprot.readFieldBegin();
-        if (field.type == org.apache.thrift.protocol.TType.STOP) {
+        if (field.type == org.apache.thrift.protocol.TType.STOP) { 
           break;
         }
         switch (field.id) {
           case 0: // SUCCESS
             if (field.type == org.apache.thrift.protocol.TType.LIST) {
               {
-                org.apache.thrift.protocol.TList _list175 = iprot.readListBegin();
-                this.success = new ArrayList<String>(_list175.size);
-                for (int _i176 = 0; _i176 < _list175.size; ++_i176)
+                org.apache.thrift.protocol.TList _list179 = iprot.readListBegin();
+                this.success = new ArrayList<String>(_list179.size);
+                for (int _i180 = 0; _i180 < _list179.size; ++_i180)
                 {
-                  String _elem177; // required
-                  _elem177 = iprot.readString();
-                  this.success.add(_elem177);
+                  String _elem181; // required
+                  _elem181 = iprot.readString();
+                  this.success.add(_elem181);
                 }
                 iprot.readListEnd();
               }
-            } else {
+            } else { 
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
             }
             break;
@@ -34691,7 +34691,7 @@ public class ThriftHiveMetastore {
             if (field.type == org.apache.thrift.protocol.TType.STRUCT) {
               this.o2 = new MetaException();
               this.o2.read(iprot);
-            } else {
+            } else { 
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
             }
             break;
@@ -34711,9 +34711,9 @@ public class ThriftHiveMetastore {
         oprot.writeFieldBegin(SUCCESS_FIELD_DESC);
         {
           oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRING, this.success.size()));
-          for (String _iter178 : this.success)
+          for (String _iter182 : this.success)
           {
-            oprot.writeString(_iter178);
+            oprot.writeString(_iter182);
           }
           oprot.writeListEnd();
         }
@@ -34860,14 +34860,14 @@ public class ThriftHiveMetastore {
     public static final Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
     static {
       Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
-      tmpMap.put(_Fields.DB_NAME, new org.apache.thrift.meta_data.FieldMetaData("db_name", org.apache.thrift.TFieldRequirementType.DEFAULT,
+      tmpMap.put(_Fields.DB_NAME, new org.apache.thrift.meta_data.FieldMetaData("db_name", org.apache.thrift.TFieldRequirementType.DEFAULT, 
           new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
-      tmpMap.put(_Fields.TBL_NAME, new org.apache.thrift.meta_data.FieldMetaData("tbl_name", org.apache.thrift.TFieldRequirementType.DEFAULT,
+      tmpMap.put(_Fields.TBL_NAME, new org.apache.thrift.meta_data.FieldMetaData("tbl_name", org.apache.thrift.TFieldRequirementType.DEFAULT, 
           new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
-      tmpMap.put(_Fields.PART_VALS, new org.apache.thrift.meta_data.FieldMetaData("part_vals", org.apache.thrift.TFieldRequirementType.DEFAULT,
-          new org.apache.thrift.meta_data.ListMetaData(org.apache.thrift.protocol.TType.LIST,
+      tmpMap.put(_Fields.PART_VALS, new org.apache.thrift.meta_data.FieldMetaData("part_vals", org.apache.thrift.TFieldRequirementType.DEFAULT, 
+          new org.apache.thrift.meta_data.ListMetaData(org.apache.thrift.protocol.TType.LIST, 
               new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING))));
-      tmpMap.put(_Fields.MAX_PARTS, new org.apache.thrift.meta_data.FieldMetaData("max_parts", org.apache.thrift.TFieldRequirementType.DEFAULT,
+      tmpMap.put(_Fields.MAX_PARTS, new org.apache.thrift.meta_data.FieldMetaData("max_parts", org.apache.thrift.TFieldRequirementType.DEFAULT, 
           new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.I16)));
       metaDataMap = Collections.unmodifiableMap(tmpMap);
       org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(get_partitions_ps_args.class, metaDataMap);
@@ -35225,38 +35225,38 @@ public class ThriftHiveMetastore {
       while (true)
       {
         field = iprot.readFieldBegin();
-        if (field.type == org.apache.thrift.protocol.TType.STOP) {
+        if (field.type == org.apache.thrift.protocol.TType.STOP) { 
           break;
         }
         switch (field.id) {
           case 1: // DB_NAME
             if (field.type == org.apache.thrift.protocol.TType.STRING) {
               this.db_name = iprot.readString();
-            } else {
+            } else { 
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
             }
             break;
           case 2: // TBL_NAME
             if (field.type == org.apache.thrift.protocol.TType.STRING) {
               this.tbl_name = iprot.readString();
-            } else {
+            } else { 
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
             }
             break;
           case 3: // PART_VALS
             if (field.type == org.apache.thrift.protocol.TType.LIST) {
               {
-                org.apache.thrift.protocol.TList _list179 = iprot.readListBegin();
-                this.part_vals = new ArrayList<String>(_list179.size);
-                for (int _i180 = 0; _i180 < _list179.size; ++_i180)
+                org.apache.thrift.protocol.TList _list183 = iprot.readListBegin();
+                this.part_vals = new ArrayList<String>(_list183.size);
+                for (int _i184 = 0; _i184 < _list183.size; ++_i184)
                 {
-                  String _elem181; // required
-                  _elem181 = iprot.readString();
-                  this.part_vals.add(_elem181);
+                  String _elem185; // required
+                  _elem185 = iprot.readString();
+                  this.part_vals.add(_elem185);
                 }
                 iprot.readListEnd();
               }
-            } else {
+            } else { 
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
             }
             break;
@@ -35264,7 +35264,7 @@ public class ThriftHiveMetastore {
             if (field.type == org.apache.thrift.protocol.TType.I16) {
               this.max_parts = iprot.readI16();
               setMax_partsIsSet(true);
-            } else {
+            } else { 
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
             }
             break;
@@ -35295,9 +35295,9 @@ public class ThriftHiveMetastore {
         oprot.writeFieldBegin(PART_VALS_FIELD_DESC);
         {
           oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRING, this.part_vals.size()));
-          for (String _iter182 : this.part_vals)
+          for (String _iter186 : this.part_vals)
           {
-            oprot.writeString(_iter182);
+            oprot.writeString(_iter186);
           }
           oprot.writeListEnd();
         }
@@ -35450,12 +35450,12 @@ public class ThriftHiveMetastore {
     public static final Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
     static {
       Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
-      tmpMap.put(_Fields.SUCCESS, new org.apache.thrift.meta_data.FieldMetaData("success", org.apache.thrift.TFieldRequirementType.DEFAULT,
-          new org.apache.thrift.meta_data.ListMetaData(org.apache.thrift.protocol.TType.LIST,
+      tmpMap.put(_Fields.SUCCESS, new org.apache.thrift.meta_data.FieldMetaData("success", org.apache.thrift.TFieldRequirementType.DEFAULT, 
+          new org.apache.thrift.meta_data.ListMetaData(org.apache.thrift.protocol.TType.LIST, 
               new org.apache.thrift.meta_data.StructMetaData(org.apache.thrift.protocol.TType.STRUCT, Partition.class))));
-      tmpMap.put(_Fields.O1, new org.apache.thrift.meta_data.FieldMetaData("o1", org.apache.thrift.TFieldRequirementType.DEFAULT,
+      tmpMap.put(_Fields.O1, new org.apache.thrift.meta_data.FieldMetaData("o1", org.apache.thrift.TFieldRequirementType.DEFAULT, 
           new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRUCT)));
-      tmpMap.put(_Fields.O2, new org.apache.thrift.meta_data.FieldMetaData("o2", org.apache.thrift.TFieldRequirementType.DEFAULT,
+      tmpMap.put(_Fields.O2, new org.apache.thrift.meta_data.FieldMetaData("o2", org.apache.thrift.TFieldRequirementType.DEFAULT, 
           new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRUCT)));
       metaDataMap = Collections.unmodifiableMap(tmpMap);
       org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(get_partitions_ps_result.class, metaDataMap);
@@ -35749,25 +35749,25 @@ public class ThriftHiveMetastore {
       while (true)
       {
         field = iprot.readFieldBegin();
-        if (field.type == org.apache.thrift.protocol.TType.STOP) {
+        if (field.type == org.apache.thrift.protocol.TType.STOP) { 
           break;
         }
         switch (field.id) {
           case 0: // SUCCESS
             if (field.type == org.apache.thrift.protocol.TType.LIST) {
               {
-                org.apache.thrift.protocol.TList _list183 = iprot.readListBegin();
-                this.success = new ArrayList<Partition>(_list183.size);
-                for (int _i184 = 0; _i184 < _list183.size; ++_i184)
+                org.apache.thrift.protocol.TList _list187 = iprot.readListBegin();
+                this.success = new ArrayList<Partition>(_list187.size);
+                for (int _i188 = 0; _i188 < _list187.size; ++_i188)
                 {
-                  Partition _elem185; // required
-                  _elem185 = new Partition();
-                  _elem185.read(iprot);
-                  this.success.add(_elem185);
+                  Partition _elem189; // required
+                  _elem189 = new Partition();
+                  _elem189.read(iprot);
+                  this.success.add(_elem189);
                 }
                 iprot.readListEnd();
               }
-            } else {
+            } else { 
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
             }
             break;
@@ -35775,7 +35775,7 @@ public class ThriftHiveMetastore {
             if (field.type == org.apache.thrift.protocol.TType.STRUCT) {
               this.o1 = new MetaException();
               this.o1.read(iprot);
-            } else {
+            } else { 
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
             }
             break;
@@ -35783,7 +35783,7 @@ public class ThriftHiveMetastore {
             if (field.type == org.apache.thrift.protocol.TType.STRUCT) {
               this.o2 = new NoSuchObjectException();
               this.o2.read(iprot);
-            } else {
+            } else { 
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
             }
             break;
@@ -35803,9 +35803,9 @@ public class ThriftHiveMetastore {
         oprot.writeFieldBegin(SUCCESS_FIELD_DESC);
         {
           oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, this.success.size()));
-          for (Partition _iter186 : this.success)
+          for (Partition _iter190 : this.success)
           {
-            _iter186.write(oprot);
+            _iter190.write(oprot);
           }
           oprot.writeListEnd();
         }
@@ -35974,19 +35974,19 @@ public class ThriftHiveMetastore {
     public static final Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
     static {
       Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
-      tmpMap.put(_Fields.DB_NAME, new org.apache.thrift.meta_data.FieldMetaData("db_name", org.apache.thrift.TFieldRequirementType.DEFAULT,
+      tmpMap.put(_Fields.DB_NAME, new org.apache.thrift.meta_data.FieldMetaData("db_name", org.apache.thrift.TFieldRequirementType.DEFAULT, 
           new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
-      tmpMap.put(_Fields.TBL_NAME, new org.apache.thrift.meta_data.FieldMetaData("tbl_name", org.apache.thrift.TFieldRequirementType.DEFAULT,
+      tmpMap.put(_Fields.TBL_NAME, new org.apache.thrift.meta_data.FieldMetaData("tbl_name", org.apache.thrift.TFieldRequirementType.DEFAULT, 
           new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
-      tmpMap.put(_Fields.PART_VALS, new org.apache.thrift.meta_data.FieldMetaData("part_vals", org.apache.thrift.TFieldRequirementType.DEFAULT,
-          new org.apache.thrift.meta_data.ListMetaData(org.apache.thrift.protocol.TType.LIST,
+      tmpMap.put(_Fields.PART_VALS, new org.apache.thrift.meta_data.FieldMetaData("part_vals", org.apache.thrift.TFieldRequirementType.DEFAULT, 
+          new org.apache.thrift.meta_data.ListMetaData(org.apache.thrift.protocol.TType.LIST, 
               new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING))));
-      tmpMap.put(_Fields.MAX_PARTS, new org.apache.thrift.meta_data.FieldMetaData("max_parts", org.apache.thrift.TFieldRequirementType.DEFAULT,
+      tmpMap.put(_Fields.MAX_PARTS, new org.apache.thrift.meta_data.FieldMetaData("max_parts", org.apache.thrift.TFieldRequirementType.DEFAULT, 
           new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.I16)));
-      tmpMap.put(_Fields.USER_NAME, new org.apache.thrift.meta_data.FieldMetaData("user_name", org.apache.thrift.TFieldRequirementType.DEFAULT,
+      tmpMap.put(_Fields.USER_NAME, new org.apache.thrift.meta_data.FieldMetaData("user_name", org.apache.thrift.TFieldRequirementType.DEFAULT, 
           new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
-      tmpMap.put(_Fields.GROUP_NAMES, new org.apache.thrift.meta_data.FieldMetaData("group_names", org.apache.thrift.TFieldRequirementType.DEFAULT,
-          new org.apache.thrift.meta_data.ListMetaData(org.apache.thrift.protocol.TType.LIST,
+      tmpMap.put(_Fields.GROUP_NAMES, new org.apache.thrift.meta_data.FieldMetaData("group_names", org.apache.thrift.TFieldRequirementType.DEFAULT, 
+          new org.apache.thrift.meta_data.ListMetaData(org.apache.thrift.protocol.TType.LIST, 
               new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING))));
       metaDataMap = Collections.unmodifiableMap(tmpMap);
       org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(get_partitions_ps_with_auth_args.class, metaDataMap);
@@ -36485,38 +36485,38 @@ public class ThriftHiveMetastore {
       while (true)
       {
         field = iprot.readFieldBegin();
-        if (field.type == org.apache.thrift.protocol.TType.STOP) {
+        if (field.type == org.apache.thrift.protocol.TType.STOP) { 
           break;
         }
         switch (field.id) {
           case 1: // DB_NAME
             if (field.type == org.apache.thrift.protocol.TType.STRING) {
               this.db_name = iprot.readString();
-            } else {
+            } else { 
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
             }
             break;
           case 2: // TBL_NAME
             if (field.type == org.apache.thrift.protocol.TType.STRING) {
               this.tbl_name = iprot.readString();
-            } else {
+            } else { 
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
             }
             break;
           case 3: // PART_VALS
             if (field.type == org.apache.thrift.protocol.TType.LIST) {
               {
-                org.apache.thrift.protocol.TList _list187 = iprot.readListBegin();
-                this.part_vals = new ArrayList<String>(_list187.size);
-                for (int _i188 = 0; _i188 < _list187.size; ++_i188)
+                org.apache.thrift.protocol.TList _list191 = iprot.readListBegin();
+                this.part_vals = new ArrayList<String>(_list191.size);
+                for (int _i192 = 0; _i192 < _list191.size; ++_i192)
                 {
-                  String _elem189; // required
-                  _elem189 = iprot.readString();
-                  this.part_vals.add(_elem189);
+                  String _elem193; // required
+                  _elem193 = iprot.readString();
+                  this.part_vals.add(_elem193);
                 }
                 iprot.readListEnd();
               }
-            } else {
+            } else { 
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
             }
             break;
@@ -36524,31 +36524,31 @@ public class ThriftHiveMetastore {
             if (field.type == org.apache.thrift.protocol.TType.I16) {
               this.max_parts = iprot.readI16();
               setMax_partsIsSet(true);
-            } else {
+            } else { 
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
             }
             break;
           case 5: // USER_NAME
             if (field.type == org.apache.thrift.protocol.TType.STRING) {
               this.user_name = iprot.readString();
-            } else {
+            } else { 
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
             }
             break;
           case 6: // GROUP_NAMES
             if (field.type == org.apache.thrift.protocol.TType.LIST) {
               {
-                org.apache.thrift.protocol.TList _list190 = iprot.readListBegin();
-                this.group_names = new ArrayList<String>(_list190.size);
-                for (int _i191 = 0; _i191 < _list190.size; ++_i191)
+                org.apache.thrift.protocol.TList _list194 = iprot.readListBegin();
+                this.group_names = new ArrayList<String>(_list194.size);
+                for (int _i195 = 0; _i195 < _list194.size; ++_i195)
                 {
-                  String _elem192; // required
-                  _elem192 = iprot.readString();
-                  this.group_names.add(_elem192);
+                  String _elem196; // required
+                  _elem196 = iprot.readString();
+                  this.group_names.add(_elem196);
                 }
                 iprot.readListEnd();
               }
-            } else {
+            } else { 
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
             }
             break;
@@ -36579,9 +36579,9 @@ public class ThriftHiveMetastore {
         oprot.writeFieldBegin(PART_VALS_FIELD_DESC);
         {
           oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRING, this.part_vals.size()));
-          for (String _iter193 : this.part_vals)
+          for (String _iter197 : this.part_vals)
           {
-            oprot.writeString(_iter193);
+            oprot.writeString(_iter197);
           }
           oprot.writeListEnd();
         }
@@ -36599,9 +36599,9 @@ public class ThriftHiveMetastore {
         oprot.writeFieldBegin(GROUP_NAMES_FIELD_DESC);
         {
           oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRING, this.group_names.size()));
-          for (String _iter194 : this.group_names)
+          for (String _iter198 : this.group_names)
           {
-            oprot.writeString(_iter194);
+            oprot.writeString(_iter198);
           }
           oprot.writeListEnd();
         }
@@ -36767,12 +36767,12 @@ public class ThriftHiveMetastore {
     public static final Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
     static {
       Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
-      tmpMap.put(_Fields.SUCCESS, new org.apache.thrift.meta_data.FieldMetaData("success", org.apache.thrift.TFieldRequirementType.DEFAULT,
-          new org.apache.thrift.meta_data.ListMetaData(org.apache.thrift.protocol.TType.LIST,
+      tmpMap.put(_Fields.SUCCESS, new org.apache.thrift.meta_data.FieldMetaData("success", org.apache.thrift.TFieldRequirementType.DEFAULT, 
+          new org.apache.thrift.meta_data.ListMetaData(org.apache.thrift.protocol.TType.LIST, 
               new org.apache.thrift.meta_data.StructMetaData(org.apache.thrift.protocol.TType.STRUCT, Partition.class))));
-      tmpMap.put(_Fields.O1, new org.apache.thrift.meta_data.FieldMetaData("o1", org.apache.thrift.TFieldRequirementType.DEFAULT,
+      tmpMap.put(_Fields.O1, new org.apache.thrift.meta_data.FieldMetaData("o1", org.apache.thrift.TFieldRequirementType.DEFAULT, 
           new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRUCT)));
-      tmpMap.put(_Fields.O2, new org.apache.thrift.meta_data.FieldMetaData("o2", org.apache.thrift.TFieldRequirementType.DEFAULT,
+      tmpMap.put(_Fields.O2, new org.apache.thrift.meta_data.FieldMetaData("o2", org.apache.thrift.TFieldRequirementType.DEFAULT, 
           new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRUCT)));
       metaDataMap = Collections.unmodifiableMap(tmpMap);
       org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(get_partitions_ps_with_auth_result.class, metaDataMap);
@@ -37066,25 +37066,25 @@ public class ThriftHiveMetastore {
       while (true)
       {
         field = iprot.readFieldBegin();
-        if (field.type == org.apache.thrift.protocol.TType.STOP) {
+        if (field.type == org.apache.thrift.protocol.TType.STOP) { 
           break;
         }
         switch (field.id) {
           case 0: // SUCCESS
             if (field.type == org.apache.thrift.protocol.TType.LIST) {
               {
-                org.apache.thrift.protocol.TList _list195 = iprot.readListBegin();
-                this.success = new ArrayList<Partition>(_list195.size);
-                for (int _i196 = 0; _i196 < _list195.size; ++_i196)
+                org.apache.thrift.protocol.TList _list199 = iprot.readListBegin();
+                this.success = new ArrayList<Partition>(_list199.size);
+                for (int _i200 = 0; _i200 < _list199.size; ++_i200)
                 {
-                  Partition _elem197; // required
-                  _elem197 = new Partition();
-                  _elem197.read(iprot);
-                  this.success.add(_elem197);
+                  Partition _elem201; // required
+                  _elem201 = new Partition();
+                  _elem201.read(iprot);
+                  this.success.add(_elem201);
                 }
                 iprot.readListEnd();
               }
-            } else {
+            } else { 
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
             }
             break;
@@ -37092,7 +37092,7 @@ public class ThriftHiveMetastore {
             if (field.type == org.apache.thrift.protocol.TType.STRUCT) {
               this.o1 = new NoSuchObjectException();
               this.o1.read(iprot);
-            } else {
+            } else { 
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
             }
             break;
@@ -37100,7 +37100,7 @@ public class ThriftHiveMetastore {
             if (field.type == org.apache.thrift.protocol.TType.STRUCT) {
               this.o2 = new MetaException();
               this.o2.read(iprot);
-            } else {
+            } else { 
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
             }
             break;
@@ -37120,9 +37120,9 @@ public class ThriftHiveMetastore {
         oprot.writeFieldBegin(SUCCESS_FIELD_DESC);
         {
           oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, this.success.size()));
-          for (Partition _iter198 : this.success)
+          for (Partition _iter202 : this.success)
           {
-            _iter198.write(oprot);
+            _iter202.write(oprot);
           }
           oprot.writeListEnd();
         }
@@ -37281,14 +37281,14 @@ public class ThriftHiveMetastore {
     public static final Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
     static {
       Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
-      tmpMap.put(_Fields.DB_NAME, new org.apache.thrift.meta_data.FieldMetaData("db_name", org.apache.thrift.TFieldRequirementType.DEFAULT,
+      tmpMap.put(_Fields.DB_NAME, new org.apache.thrift.meta_data.FieldMetaData("db_name", org.apache.thrift.TFieldRequirementType.DEFAULT, 
           new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
-      tmpMap.put(_Fields.TBL_NAME, new org.apache.thrift.meta_data.FieldMetaData("tbl_name", org.apache.thrift.TFieldRequirementType.DEFAULT,
+      tmpMap.put(_Fields.TBL_NAME, new org.apache.thrift.meta_data.FieldMetaData("tbl_name", org.apache.thrift.TFieldRequirementType.DEFAULT, 
           new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
-      tmpMap.put(_Fields.PART_VALS, new org.apache.thrift.meta_data.FieldMetaData("part_vals", org.apache.thrift.TFieldRequirementType.DEFAULT,
-          new org.apache.thrift.meta_data.ListMetaData(org.apache.thrift.protocol.TType.LIST,
+      tmpMap.put(_Fields.PART_VALS, new org.apache.thrift.meta_data.FieldMetaData("part_vals", org.apache.thrift.TFieldRequirementType.DEFAULT, 
+          new org.apache.thrift.meta_data.ListMetaData(org.apache.thrift.protocol.TType.LIST, 
               new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING))));
-      tmpMap.put(_Fields.MAX_PARTS, new org.apache.thrift.meta_data.FieldMetaData("max_parts", org.apache.thrift.TFieldRequirementType.DEFAULT,
+      tmpMap.put(_Fields.MAX_PARTS, new org.apache.thrift.meta_data.FieldMetaData("max_parts", org.apache.thrift.TFieldRequirementType.DEFAULT, 
           new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.I16)));
       metaDataMap = Collections.unmodifiableMap(tmpMap);
       org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(get_partition_names_ps_args.class, metaDataMap);
@@ -37646,38 +37646,38 @@ public class ThriftHiveMetastore {
       while (true)
       {
         field = iprot.readFieldBegin();
-        if (field.type == org.apache.thrift.protocol.TType.STOP) {
+        if (field.type == org.apache.thrift.protocol.TType.STOP) { 
           break;
         }
         switch (field.id) {
           case 1: // DB_NAME
             if (field.type == org.apache.thrift.protocol.TType.STRING) {
               this.db_name = iprot.readString();
-            } else {
+            } else { 
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
             }
             break;
           case 2: // TBL_NAME
             if (field.type == org.apache.thrift.protocol.TType.STRING) {
               this.tbl_name = iprot.readString();
-            } else {
+            } else { 
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
             }
             break;
           case 3: // PART_VALS
             if (field.type == org.apache.thrift.protocol.TType.LIST) {
               {
-                org.apache.thrift.protocol.TList _list199 = iprot.readListBegin();
-                this.part_vals = new ArrayList<String>(_list199.size);
-                for (int _i200 = 0; _i200 < _list199.size; ++_i200)
+                org.apache.thrift.protocol.TList _list203 = iprot.readListBegin();
+                this.part_vals = new ArrayList<String>(_list203.size);
+                for (int _i204 = 0; _i204 < _list203.size; ++_i204)
                 {
-                  String _elem201; // required
-                  _elem201 = iprot.readString();
-                  this.part_vals.add(_elem201);
+                  String _elem205; // required
+                  _elem205 = iprot.readString();
+                  this.part_vals.add(_elem205);
                 }
                 iprot.readListEnd();
               }
-            } else {
+            } else { 
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
             }
             break;
@@ -37685,7 +37685,7 @@ public class ThriftHiveMetastore {
             if (field.type == org.apache.thrift.protocol.TType.I16) {
               this.max_parts = iprot.readI16();
               setMax_partsIsSet(true);
-            } else {
+            } else { 
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
             }
             break;
@@ -37716,9 +37716,9 @@ public class ThriftHiveMetastore {
         oprot.writeFieldBegin(PART_VALS_FIELD_DESC);
         {
           oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRING, this.part_vals.size()));
-          for (String _iter202 : this.part_vals)
+          for (String _iter206 : this.part_vals)
           {
-            oprot.writeString(_iter202);
+            oprot.writeString(_iter206);
           }
           oprot.writeListEnd();
         }
@@ -37871,12 +37871,12 @@ public class ThriftHiveMetastore {
     public static final Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
     static {
       Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
-      tmpMap.put(_Fields.SUCCESS, new org.apache.thrift.meta_data.FieldMetaData("success", org.apache.thrift.TFieldRequirementType.DEFAULT,
-          new org.apache.thrift.meta_data.ListMetaData(org.apache.thrift.protocol.TType.LIST,
+      tmpMap.put(_Fields.SUCCESS, new org.apache.thrift.meta_data.FieldMetaData("success", org.apache.thrift.TFieldRequirementType.DEFAULT, 
+          new org.apache.thrift.meta_data.ListMetaData(org.apache.thrift.protocol.TType.LIST, 
               new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING))));
-      tmpMap.put(_Fields.O1, new org.apache.thrift.meta_data.FieldMetaData("o1", org.apache.thrift.TFieldRequirementType.DEFAULT,
+      tmpMap.put(_Fields.O1, new org.apache.thrift.meta_data.FieldMetaData("o1", org.apache.thrift.TFieldRequirementType.DEFAULT, 
           new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRUCT)));
-      tmpMap.put(_Fields.O2, new org.apache.thrift.meta_data.FieldMetaData("o2", org.apache.thrift.TFieldRequirementType.DEFAULT,
+      tmpMap.put(_Fields.O2, new org.apache.thrift.meta_data.FieldMetaData("o2", org.apache.thrift.TFieldRequirementType.DEFAULT, 
           new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRUCT)));
       metaDataMap = Collections.unmodifiableMap(tmpMap);
       org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(get_partition_names_ps_result.class, metaDataMap);
@@ -38170,24 +38170,24 @@ public class ThriftHiveMetastore {
       while (true)
       {
         field = iprot.readFieldBegin();
-        if (field.type == org.apache.thrift.protocol.TType.STOP) {
+        if (field.type == org.apache.thrift.protocol.TType.STOP) { 
           break;
         }
         switch (field.id) {
           case 0: // SUCCESS
             if (field.type == org.apache.thrift.protocol.TType.LIST) {
               {
-                org.apache.thrift.protocol.TList _list203 = iprot.readListBegin();
-                this.success = new ArrayList<String>(_list203.size);
-                for (int _i204 = 0; _i204 < _list203.size; ++_i204)
+                org.apache.thrift.protocol.TList _list207 = iprot.readListBegin();
+                this.success = new ArrayList<String>(_list207.size);
+                for (int _i208 = 0; _i208 < _list207.size; ++_i208)
                 {
-                  String _elem205; // required
-                  _elem205 = iprot.readString();
-                  this.success.add(_elem205);
+                  String _elem209; // required
+                  _elem209 = iprot.readString();
+                  this.success.add(_elem209);
                 }
                 iprot.readListEnd();
               }
-            } else {
+            } else { 
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
             }
             break;
@@ -38195,7 +38195,7 @@ public class ThriftHiveMetastore {
             if (field.type == org.apache.thrift.protocol.TType.STRUCT) {
               this.o1 = new MetaException();
               this.o1.read(iprot);
-            } else {
+            } else { 
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
             }
             break;
@@ -38203,7 +38203,7 @@ public class ThriftHiveMetastore {
             if (field.type == org.apache.thrift.protocol.TType.STRUCT) {
               this.o2 = new NoSuchObjectException();
               this.o2.read(iprot);
-            } else {
+            } else { 
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
             }
             break;
@@ -38223,9 +38223,9 @@ public class ThriftHiveMetastore {
         oprot.writeFieldBegin(SUCCESS_FIELD_DESC);
         {
           oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRING, this.success.size()));
-          for (String _iter206 : this.success)
+          for (String _iter210 : this.success)
           {
-            oprot.writeString(_iter206);
+            oprot.writeString(_iter210);
           }
           oprot.writeListEnd();
         }
@@ -38384,13 +38384,13 @@ public class ThriftHiveMetastore {
     public static final Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
     static {
       Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
-      tmpMap.put(_Fields.DB_NAME, new org.apache.thrift.meta_data.FieldMetaData("db_name", org.apache.thrift.TFieldRequirementType.DEFAULT,
+      tmpMap.put(_Fields.DB_NAME, new org.apache.thrift.meta_data.FieldMetaData("db_name", org.apache.thrift.TFieldRequirementType.DEFAULT, 
           new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
-      tmpMap.put(_Fields.TBL_NAME, new org.apache.thrift.meta_data.FieldMetaData("tbl_name", org.apache.thrift.TFieldRequirementType.DEFAULT,
+      tmpMap.put(_Fields.TBL_NAME, new org.apache.thrift.meta_data.FieldMetaData("tbl_name", org.apache.thrift.TFieldRequirementType.DEFAULT, 
           new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
-      tmpMap.put(_Fields.FILTER, new org.apache.thrift.meta_data.FieldMetaData("filter", org.apache.thrift.TFieldRequirementType.DEFAULT,
+      tmpMap.put(_Fields.FILTER, new org.apache.thrift.meta_data.FieldMetaData("filter", org.apache.thrift.TFieldRequirementType.DEFAULT, 
           new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
-      tmpMap.put(_Fields.MAX_PARTS, new org.apache.thrift.meta_data.FieldMetaData("max_parts", org.apache.thrift.TFieldRequirementType.DEFAULT,
+      tmpMap.put(_Fields.MAX_PARTS, new org.apache.thrift.meta_data.FieldMetaData("max_parts", org.apache.thrift.TFieldRequirementType.DEFAULT, 
           new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.I16)));
       metaDataMap = Collections.unmodifiableMap(tmpMap);
       org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(get_partitions_by_filter_args.class, metaDataMap);
@@ -38729,28 +38729,28 @@ public class ThriftHiveMetastore {
       while (true)
       {
         field = iprot.readFieldBegin();
-        if (field.type == org.apache.thrift.protocol.TType.STOP) {
+        if (field.type == org.apache.thrift.protocol.TType.STOP) { 
           break;
         }
         switch (field.id) {
           case 1: // DB_NAME
             if (field.type == org.apache.thrift.protocol.TType.STRING) {
               this.db_name = iprot.readString();
-            } else {
+            } else { 
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
             }
             break;
           case 2: // TBL_NAME
             if (field.type == org.apache.thrift.protocol.TType.STRING) {
               this.tbl_name = iprot.readString();
-            } else {
+            } else { 
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
             }
             break;
           case 3: // FILTER
             if (field.type == org.apache.thrift.protocol.TType.STRING) {
               this.filter = iprot.readString();
-            } else {
+            } else { 
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
             }
             break;
@@ -38758,7 +38758,7 @@ public class ThriftHiveMetastore {
             if (field.type == org.apache.thrift.protocol.TType.I16) {
               this.max_parts = iprot.readI16();
               setMax_partsIsSet(true);
-            } else {
+            } else { 
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
             }
             break;
@@ -38937,12 +38937,12 @@ public class ThriftHiveMetastore {
     public static final Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
     static {
       Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
-      tmpMap.put(_Fields.SUCCESS, new org.apache.thrift.meta_data.FieldMetaData("success", org.apache.thrift.TFieldRequirementType.DEFAULT,
-          new org.apache.thrift.meta_data.ListMetaData(org.apache.thrift.protocol.TType.LIST,
+      tmpMap.put(_Fields.SUCCESS, new org.apache.thrift.meta_data.FieldMetaData("success", org.apache.thrift.TFieldRequirementType.DEFAULT, 
+          new org.apache.thrift.meta_data.ListMetaData(org.apache.thrift.protocol.TType.LIST, 
               new org.apache.thrift.meta_data.StructMetaData(org.apache.thrift.protocol.TType.STRUCT, Partition.class))));
-      tmpMap.put(_Fields.O1, new org.apache.thrift.meta_data.FieldMetaData("o1", org.apache.thrift.TFieldRequirementType.DEFAULT,
+      tmpMap.put(_Fields.O1, new org.apache.thrift.meta_data.FieldMetaData("o1", org.apache.thrift.TFieldRequirementType.DEFAULT, 
           new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRUCT)));
-      tmpMap.put(_Fields.O2, new org.apache.thrift.meta_data.FieldMetaData("o2", org.apache.thrift.TFieldRequirementType.DEFAULT,
+      tmpMap.put(_Fields.O2, new org.apache.thrift.meta_data.FieldMetaData("o2", org.apache.thrift.TFieldRequirementType.DEFAULT, 
           new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRUCT)));
       metaDataMap = Collections.unmodifiableMap(tmpMap);
       org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(get_partitions_by_filter_result.class, metaDataMap);
@@ -39236,25 +39236,25 @@ public class ThriftHiveMetastore {
       while (true)
       {
         field = iprot.readFieldBegin();
-        if (field.type == org.apache.thrift.protocol.TType.STOP) {
+        if (field.type == org.apache.thrift.protocol.TType.STOP) { 
           break;
         }
         switch (field.id) {
           case 0: // SUCCESS
             if (field.type == org.apache.thrift.protocol.TType.LIST) {
               {
-                org.apache.thrift.protocol.TList _list207 = iprot.readListBegin();
-                this.success = new ArrayList<Partition>(_list207.size);
-                for (int _i208 = 0; _i208 < _list207.size; ++_i208)
+                org.apache.thrift.protocol.TList _list211 = iprot.readListBegin();
+                this.success = new ArrayList<Partition>(_list211.size);
+                for (int _i212 = 0; _i212 < _list211.size; ++_i212)
                 {
-                  Partition _elem209; // required
-                  _elem209 = new Partition();
-                  _elem209.read(iprot);
-                  this.success.add(_elem209);
+                  Partition _elem213; // required
+                  _elem213 = new Partition();
+                  _elem213.read(iprot);
+                  this.success.add(_elem213);
                 }
                 iprot.readListEnd();
               }
-            } else {
+            } else { 
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
             }
             break;
@@ -39262,7 +39262,7 @@ public class ThriftHiveMetastore {
             if (field.type == org.apache.thrift.protocol.TType.STRUCT) {
               this.o1 = new MetaException();
               this.o1.read(iprot);
-            } else {
+            } else { 
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
             }
             break;
@@ -39270,7 +39270,7 @@ public class ThriftHiveMetastore {
             if (field.type == org.apache.thrift.protocol.TType.STRUCT) {
               this.o2 = new NoSuchObjectException();
               this.o2.read(iprot);
-            } else {
+            } else { 
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
             }
             break;
@@ -39290,9 +39290,9 @@ public class ThriftHiveMetastore {
         oprot.writeFieldBegin(SUCCESS_FIELD_DESC);
         {
           oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, this.success.size()));
-          for (Partition _iter210 : this.success)
+          for (Partition _iter214 : this.success)
           {
-            _iter210.write(oprot);
+            _iter214.write(oprot);
           }
           oprot.writeListEnd();
         }
@@ -39444,12 +39444,12 @@ public class ThriftHiveMetastore {
     public static final Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
     static {
       Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
-      tmpMap.put(_Fields.DB_NAME, new org.apache.thrift.meta_data.FieldMetaData("db_name", org.apache.thrift.TFieldRequirementType.DEFAULT,
+      tmpMap.put(_Fields.DB_NAME, new org.apache.thrift.meta_data.FieldMetaData("db_name", org.apache.thrift.TFieldRequirementType.DEFAULT, 
           new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
-      tmpMap.put(_Fields.TBL_NAME, new org.apache.thrift.meta_data.FieldMetaData("tbl_name", org.apache.thrift.TFieldRequirementType.DEFAULT,
+      tmpMap.put(_Fields.TBL_NAME, new org.apache.thrift.meta_data.FieldMetaData("tbl_name", org.apache.thrift.TFieldRequirementType.DEFAULT, 
           new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
-      tmpMap.put(_Fields.NAMES, new org.apache.thrift.meta_data.FieldMetaData("names", org.apache.thrift.TFieldRequirementType.DEFAULT,
-          new org.apache.thrift.meta_data.ListMetaData(org.apache.thrift.protocol.TType.LIST,
+      tmpMap.put(_Fields.NAMES, new org.apache.thrift.meta_data.FieldMetaData("names", org.apache.thrift.TFieldRequirementType.DEFAULT, 
+          new org.apache.thrift.meta_data.ListMetaData(org.apache.thrift.protocol.TType.LIST, 
               new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING))));
       metaDataMap = Collections.unmodifiableMap(tmpMap);
       org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(get_partitions_by_names_args.class, metaDataMap);
@@ -39743,38 +39743,38 @@ public class ThriftHiveMetastore {
       while (true)
       {
         field = iprot.readFieldBegin();
-        if (field.type == org.apache.thrift.protocol.TType.STOP) {
+        if (field.type == org.apache.thrift.protocol.TType.STOP) { 
           break;
         }
         switch (field.id) {
           case 1: // DB_NAME
             if (field.type == org.apache.thrift.protocol.TType.STRING) {
               this.db_name = iprot.readString();
-            } else {
+            } else { 
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
             }
             break;
           case 2: // TBL_NAME
             if (field.type == org.apache.thrift.protocol.TType.STRING) {
               this.tbl_name = iprot.readString();
-            } else {
+            } else { 
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
             }
             break;
           case 3: // NAMES
             if (field.type == org.apache.thrift.protocol.TType.LIST) {
               {
-                org.apache.thrift.protocol.TList _list211 = iprot.readListBegin();
-                this.names = new ArrayList<String>(_list211.size);
-                for (int _i212 = 0; _i212 < _list211.size; ++_i212)
+                org.apache.thrift.protocol.TList _list215 = iprot.readListBegin();
+                this.names = new ArrayList<String>(_list215.size);
+                for (int _i216 = 0; _i216 < _list215.size; ++_i216)
                 {
-                  String _elem213; // required
-                  _elem213 = iprot.readString();
-                  this.names.add(_elem213);
+                  String _elem217; // required
+                  _elem217 = iprot.readString();
+                  this.names.add(_elem217);
                 }
                 iprot.readListEnd();
               }
-            } else {
+            } else { 
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
             }
             break;
@@ -39805,9 +39805,9 @@ public class ThriftHiveMetastore {
         oprot.writeFieldBegin(NAMES_FIELD_DESC);
         {
           oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRING, this.names.size()));
-          for (String _iter214 : this.names)
+          for (String _iter218 : this.names)
           {
-            oprot.writeString(_iter214);
+            oprot.writeString(_iter218);
           }
           oprot.writeListEnd();
         }
@@ -39951,12 +39951,12 @@ public class ThriftHiveMetastore {
     public static final Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
     static {
       Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
-      tmpMap.put(_Fields.SUCCESS, new org.apache.thrift.meta_data.FieldMetaData("success", org.apache.thrift.TFieldRequirementType.DEFAULT,
-          new org.apache.thrift.meta_data.ListMetaData(org.apache.thrift.protocol.TType.LIST,
+      tmpMap.put(_Fields.SUCCESS, new org.apache.thrift.meta_data.FieldMetaData("success", org.apache.thrift.TFieldRequirementType.DEFAULT, 
+          new org.apache.thrift.meta_data.ListMetaData(org.apache.thrift.protocol.TType.LIST, 
               new org.apache.thrift.meta_data.StructMetaData(org.apache.thrift.protocol.TType.STRUCT, Partition.class))));
-      tmpMap.put(_Fields.O1, new org.apache.thrift.meta_data.FieldMetaData("o1", org.apache.thrift.TFieldRequirementType.DEFAULT,
+      tmpMap.put(_Fields.O1, new org.apache.thrift.meta_data.FieldMetaData("o1", org.apache.thrift.TFieldRequirementType.DEFAULT, 
           new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRUCT)));
-      tmpMap.put(_Fields.O2, new org.apache.thrift.meta_data.FieldMetaData("o2", org.apache.thrift.TFieldRequirementType.DEFAULT,
+      tmpMap.put(_Fields.O2, new org.apache.thrift.meta_data.FieldMetaData("o2", org.apache.thrift.TFieldRequirementType.DEFAULT, 
           new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRUCT)));
       metaDataMap = Collections.unmodifiableMap(tmpMap);
       org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(get_partitions_by_names_result.class, metaDataMap);
@@ -40250,25 +40250,25 @@ public class ThriftHiveMetastore {
       while (true)
       {
         field = iprot.readFieldBegin();
-        if (field.type == org.apache.thrift.protocol.TType.STOP) {
+        if (field.type == org.apache.thrift.protocol.TType.STOP) { 
           break;
         }
         switch (field.id) {
           case 0: // SUCCESS
             if (field.type == org.apache.thrift.protocol.TType.LIST) {
               {
-                org.apache.thrift.protocol.TList _list215 = iprot.readListBegin();
-                this.success = new ArrayList<Partition>(_list215.size);
-                for (int _i216 = 0; _i216 < _list215.size; ++_i216)
+                org.apache.thrift.protocol.TList _list219 = iprot.readListBegin();
+                this.success = new ArrayList<Partition>(_list219.size);
+                for (int _i220 = 0; _i220 < _list219.size; ++_i220)
                 {
-                  Partition _elem217; // required
-                  _elem217 = new Partition();
-                  _elem217.read(iprot);
-                  this.success.add(_elem217);
+                  Partition _elem221; // required
+                  _elem221 = new Partition();
+                  _elem221.read(iprot);
+                  this.success.add(_elem221);
                 }
                 iprot.readListEnd();
               }
-            } else {
+            } else { 
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
             }
             break;
@@ -40276,7 +40276,7 @@ public class ThriftHiveMetastore {
             if (field.type == org.apache.thrift.protocol.TType.STRUCT) {
               this.o1 = new MetaException();
               this.o1.read(iprot);
-            } else {
+            } else { 
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
             }
             break;
@@ -40284,7 +40284,7 @@ public class ThriftHiveMetastore {
             if (field.type == org.apache.thrift.protocol.TType.STRUCT) {
               this.o2 = new NoSuchObjectException();
               this.o2.read(iprot);
-            } else {
+            } else { 
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
             }
             break;
@@ -40304,9 +40304,9 @@ public class ThriftHiveMetastore {
         oprot.writeFieldBegin(SUCCESS_FIELD_DESC);
         {
           oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, this.success.size()));
-          for (Partition _iter218 : this.success)
+          for (Partition _iter222 : this.success)
           {
-            _iter218.write(oprot);
+            _iter222.write(oprot);
           }
           oprot.writeListEnd();
         }
@@ -40458,11 +40458,11 @@ public class ThriftHiveMetastore {
     public static final Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
     static {
       Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
-      tmpMap.put(_Fields.DB_NAME, new org.apache.thrift.meta_data.FieldMetaData("db_name", org.apache.thrift.TFieldRequirementType.DEFAULT,
+      tmpMap.put(_Fields.DB_NAME, new org.apache.thrift.meta_data.FieldMetaData("db_name", org.apache.thrift.TFieldRequirementType.DEFAULT, 
           new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
-      tmpMap.put(_Fields.TBL_NAME, new org.apache.thrift.meta_data.FieldMetaData("tbl_name", org.apache.thrift.TFieldRequirementType.DEFAULT,
+      tmpMap.put(_Fields.TBL_NAME, new org.apache.thrift.meta_data.FieldMetaData("tbl_name", org.apache.thrift.TFieldRequirementType.DEFAULT, 
           new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
-      tmpMap.put(_Fields.NEW_PART, new org.apache.thrift.meta_data.FieldMetaData("new_part", org.apache.thrift.TFieldRequirementType.DEFAULT,
+      tmpMap.put(_Fields.NEW_PART, new org.apache.thrift.meta_data.FieldMetaData("new_part", org.apache.thrift.TFieldRequirementType.DEFAULT, 
           new org.apache.thrift.meta_data.StructMetaData(org.apache.thrift.protocol.TType.STRUCT, Partition.class)));
       metaDataMap = Collections.unmodifiableMap(tmpMap);
       org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(alter_partition_args.class, metaDataMap);
@@ -40737,21 +40737,21 @@ public class ThriftHiveMetastore {
       while (true)
       {
         field = iprot.readFieldBegin();
-        if (field.type == org.apache.thrift.protocol.TType.STOP) {
+        if (field.type == org.apache.thrift.protocol.TType.STOP) { 
           break;
         }
         switch (field.id) {
           case 1: // DB_NAME
             if (field.type == org.apache.thrift.protocol.TType.STRING) {
               this.db_name = iprot.readString();
-            } else {
+            } else { 
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
             }
             break;
           case 2: // TBL_NAME
             if (field.type == org.apache.thrift.protocol.TType.STRING) {
               this.tbl_name = iprot.readString();
-            } else {
+            } else { 
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
             }
             break;
@@ -40759,7 +40759,7 @@ public class ThriftHiveMetastore {
             if (field.type == org.apache.thrift.protocol.TType.STRUCT) {
               this.new_part = new Partition();
               this.new_part.read(iprot);
-            } else {
+            } else { 
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
             }
             break;
@@ -40924,9 +40924,9 @@ public class ThriftHiveMetastore {
     public static final Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
     static {
       Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
-      tmpMap.put(_Fields.O1, new org.apache.thrift.meta_data.FieldMetaData("o1", org.apache.thrift.TFieldRequirementType.DEFAULT,
+      tmpMap.put(_Fields.O1, new org.apache.thrift.meta_data.FieldMetaData("o1", org.apache.thrift.TFieldRequirementType.DEFAULT, 
           new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRUCT)));
-      tmpMap.put(_Fields.O2, new org.apache.thrift.meta_data.FieldMetaData("o2", org.apache.thrift.TFieldRequirementType.DEFAULT,
+      tmpMap.put(_Fields.O2, new org.apache.thrift.meta_data.FieldMetaData("o2", org.apache.thrift.TFieldRequirementType.DEFAULT, 
           new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRUCT)));
       metaDataMap = Collections.unmodifiableMap(tmpMap);
       org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(alter_partition_result.class, metaDataMap);
@@ -41140,7 +41140,7 @@ public class ThriftHiveMetastore {
       while (true)
       {
         field = iprot.readFieldBegin();
-        if (field.type == org.apache.thrift.protocol.TType.STOP) {
+        if (field.type == org.apache.thrift.protocol.TType.STOP) { 
           break;
         }
         switch (field.id) {
@@ -41148,7 +41148,7 @@ public class ThriftHiveMetastore {
             if (field.type == org.apache.thrift.protocol.TType.STRUCT) {
               this.o1 = new InvalidOperationException();
               this.o1.read(iprot);
-            } else {
+            } else { 
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
             }
             break;
@@ -41156,7 +41156,7 @@ public class ThriftHiveMetastore {
             if (field.type == org.apache.thrift.protocol.TType.STRUCT) {
               this.o2 = new MetaException();
               this.o2.read(iprot);
-            } else {
+            } else { 
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
             }
             break;
@@ -41316,14 +41316,14 @@ public class ThriftHiveMetastore {
     public static final Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
     static {
       Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
-      tmpMap.put(_Fields.DB_NAME, new org.apache.thrift.meta_data.FieldMetaData("db_name", org.apache.thrift.TFieldRequirementType.DEFAULT,
+      tmpMap.put(_Fields.DB_NAME, new org.apache.thrift.meta_data.FieldMetaData("db_name", org.apache.thrift.TFieldRequirementType.DEFAULT, 
           new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
-      tmpMap.put(_Fields.TBL_NAME, new org.apache.thrift.meta_data.FieldMetaData("tbl_name", org.apache.thrift.TFieldRequirementType.DEFAULT,
+      tmpMap.put(_Fields.TBL_NAME, new org.apache.thrift.meta_data.FieldMetaData("tbl_name", org.apache.thrift.TFieldRequirementType.DEFAULT, 
           new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
-      tmpMap.put(_Fields.PART_VALS, new org.apache.thrift.meta_data.FieldMetaData("part_vals", org.apache.thrift.TFieldRequirementType.DEFAULT,
-          new org.apache.thrift.meta_data.ListMetaData(org.apache.thrift.protocol.TType.LIST,
+      tmpMap.put(_Fields.PART_VALS, new org.apache.thrift.meta_data.FieldMetaData("part_vals", org.apache.thrift.TFieldRequirementType.DEFAULT, 
+          new org.apache.thrift.meta_data.ListMetaData(org.apache.thrift.protocol.TType.LIST, 
               new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING))));
-      tmpMap.put(_Fields.NEW_PART, new org.apache.thrift.meta_data.FieldMetaData("new_part", org.apache.thrift.TFieldRequirementType.DEFAULT,
+      tmpMap.put(_Fields.NEW_PART, new org.apache.thrift.meta_data.FieldMetaData("new_part", org.apache.thrift.TFieldRequirementType.DEFAULT, 
           new org.apache.thrift.meta_data.StructMetaData(org.apache.thrift.protocol.TType.STRUCT, Partition.class)));
       metaDataMap = Collections.unmodifiableMap(tmpMap);
       org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(rename_partition_args.class, metaDataMap);
@@ -41678,38 +41678,38 @@ public class ThriftHiveMetastore {
       while (true)
       {
         field = iprot.readFieldBegin();
-        if (field.type == org.apache.thrift.protocol.TType.STOP) {
+        if (field.type == org.apache.thrift.protocol.TType.STOP) { 
           break;
         }
         switch (field.id) {
           case 1: // DB_NAME
             if (field.type == org.apache.thrift.protocol.TType.STRING) {
               this.db_name = iprot.readString();
-            } else {
+            } else { 
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
             }
             break;
           case 2: // TBL_NAME
             if (field.type == org.apache.thrift.protocol.TType.STRING) {
               this.tbl_name = iprot.readString();
-            } else {
+            } else { 
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
             }
             break;
           case 3: // PART_VALS
             if (field.type == org.apache.thrift.protocol.TType.LIST) {
               {
-                org.apache.thrift.protocol.TList _list219 = iprot.readListBegin();
-                this.part_vals = new ArrayList<String>(_list219.size);
-                for (int _i220 = 0; _i220 < _list219.size; ++_i220)
+                org.apache.thrift.protocol.TList _list223 = iprot.readListBegin();
+                this.part_vals = new ArrayList<String>(_list223.size);
+                for (int _i224 = 0; _i224 < _list223.size; ++_i224)
                 {
-                  String _elem221; // required
-                  _elem221 = iprot.readString();
-                  this.part_vals.add(_elem221);
+                  String _elem225; // required
+                  _elem225 = iprot.readString();
+                  this.part_vals.add(_elem225);
                 }
                 iprot.readListEnd();
               }
-            } else {
+            } else { 
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
             }
             break;
@@ -41717,7 +41717,7 @@ public class ThriftHiveMetastore {
             if (field.type == org.apache.thrift.protocol.TType.STRUCT) {
               this.new_part = new Partition();
               this.new_part.read(iprot);
-            } else {
+            } else { 
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
             }
             break;
@@ -41748,9 +41748,9 @@ public class ThriftHiveMetastore {
         oprot.writeFieldBegin(PART_VALS_FIELD_DESC);
         {
           oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRING, this.part_vals.size()));
-          for (String _iter222 : this.part_vals)
+          for (String _iter226 : this.part_vals)
           {
-            oprot.writeString(_iter222);
+            oprot.writeString(_iter226);
           }
           oprot.writeListEnd();
         }
@@ -41902,9 +41902,9 @@ public class ThriftHiveMetastore {
     public static final Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
     static {
       Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
-      tmpMap.put(_Fields.O1, new org.apache.thrift.meta_data.FieldMetaData("o1", org.apache.thrift.TFieldRequirementType.DEFAULT,
+      tmpMap.put(_Fields.O1, new org.apache.thrift.meta_data.FieldMetaData("o1", org.apache.thrift.TFieldRequirementType.DEFAULT, 
           new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRUCT)));
-      tmpMap.put(_Fields.O2, new org.apache.thrift.meta_data.FieldMetaData("o2", org.apache.thrift.TFieldRequirementType.DEFAULT,
+      tmpMap.put(_Fields.O2, new org.apache.thrift.meta_data.FieldMetaData("o2", org.apache.thrift.TFieldRequirementType.DEFAULT, 
           new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRUCT)));
       metaDataMap = Collections.unmodifiableMap(tmpMap);
       org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(rename_partition_result.class, metaDataMap);
@@ -42118,7 +42118,7 @@ public class ThriftHiveMetastore {
       while (true)
       {
         field = iprot.readFieldBegin();
-        if (field.type == org.apache.thrift.protocol.TType.STOP) {
+        if (field.type == org.apache.thrift.protocol.TType.STOP) { 
           break;
         }
         switch (field.id) {
@@ -42126,7 +42126,7 @@ public class ThriftHiveMetastore {
             if (field.type == org.apache.thrift.protocol.TType.STRUCT) {
               this.o1 = new InvalidOperationException();
               this.o1.read(iprot);
-            } else {
+            } else { 
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
             }
             break;
@@ -42134,7 +42134,7 @@ public class ThriftHiveMetastore {
             if (field.type == org.apache.thrift.protocol.TType.STRUCT) {
               this.o2 = new MetaException();
               this.o2.read(iprot);
-            } else {
+            } else { 
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
             }
             break;
@@ -42284,9 +42284,9 @@ public class ThriftHiveMetastore {
     public static final Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
     static {
       Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
-      tmpMap.put(_Fields.NAME, new org.apache.thrift.meta_data.FieldMetaData("name", org.apache.thrift.TFieldRequirementType.DEFAULT,
+      tmpMap.put(_Fields.NAME, new org.apache.thrift.meta_data.FieldMetaData("name", org.apache.thrift.TFieldRequirementType.DEFAULT, 
           new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
-      tmpMap.put(_Fields.DEFAULT_VALUE, new org.apache.thrift.meta_data.FieldMetaData("defaultValue", org.apache.thrift.TFieldRequirementType.DEFAULT,
+      tmpMap.put(_Fields.DEFAULT_VALUE, new org.apache.thrift.meta_data.FieldMetaData("defaultValue", org.apache.thrift.TFieldRequirementType.DEFAULT, 
           new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
       metaDataMap = Collections.unmodifiableMap(tmpMap);
       org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(get_config_value_args.class, metaDataMap);
@@ -42500,21 +42500,21 @@ public class ThriftHiveMetastore {
       while (true)
       {
         field = iprot.readFieldBegin();
-        if (field.type == org.apache.thrift.protocol.TType.STOP) {
+        if (field.type == org.apache.thrift.protocol.TType.STOP) { 
           break;
         }
         switch (field.id) {
           case 1: // NAME
             if (field.type == org.apache.thrift.protocol.TType.STRING) {
               this.name = iprot.readString();
-            } else {
+            } else { 
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
             }
             break;
           case 2: // DEFAULT_VALUE
             if (field.type == org.apache.thrift.protocol.TType.STRING) {
               this.defaultValue = iprot.readString();
-            } else {
+            } else { 
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
             }
             break;
@@ -42666,9 +42666,9 @@ public class ThriftHiveMetastore {
     public static final Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
     static {
       Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
-      tmpMap.put(_Fields.SUCCESS, new org.apache.thrift.meta_data.FieldMetaData("success", org.apache.thrift.TFieldRequirementType.DEFAULT,
+      tmpMap.put(_Fields.SUCCESS, new org.apache.thrift.meta_data.FieldMetaData("success", org.apache.thrift.TFieldRequirementType.DEFAULT, 
           new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
-      tmpMap.put(_Fields.O1, new org.apache.thrift.meta_data.FieldMetaData("o1", org.apache.thrift.TFieldRequirementType.DEFAULT,
+      tmpMap.put(_Fields.O1, new org.apache.thrift.meta_data.FieldMetaData("o1", org.apache.thrift.TFieldRequirementType.DEFAULT, 
           new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRUCT)));
       metaDataMap = Collections.unmodifiableMap(tmpMap);
       org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(get_config_value_result.class, metaDataMap);
@@ -42882,14 +42882,14 @@ public class ThriftHiveMetastore {
       while (true)
       {
         field = iprot.readFieldBegin();
-        if (field.type == org.apache.thrift.protocol.TType.STOP) {
+        if (field.type == org.apache.thrift.protocol.TType.STOP) { 
           break;
         }
         switch (field.id) {
           case 0: // SUCCESS
             if (field.type == org.apache.thrift.protocol.TType.STRING) {
               this.success = iprot.readString();
-            } else {
+            } else { 
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
             }
             break;
@@ -42897,7 +42897,7 @@ public class ThriftHiveMetastore {
             if (field.type == org.apache.thrift.protocol.TType.STRUCT) {
               this.o1 = new ConfigValSecurityException();
               this.o1.read(iprot);
-            } else {
+            } else { 
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
             }
             break;
@@ -43042,7 +43042,7 @@ public class ThriftHiveMetastore {
     public static final Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
     static {
       Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
-      tmpMap.put(_Fields.PART_NAME, new org.apache.thrift.meta_data.FieldMetaData("part_name", org.apache.thrift.TFieldRequirementType.DEFAULT,
+      tmpMap.put(_Fields.PART_NAME, new org.apache.thrift.meta_data.FieldMetaData("part_name", org.apache.thrift.TFieldRequirementType.DEFAULT, 
           new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
       metaDataMap = Collections.unmodifiableMap(tmpMap);
       org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(partition_name_to_vals_args.class, metaDataMap);
@@ -43195,14 +43195,14 @@ public class ThriftHiveMetastore {
       while (true)
       {
         field = iprot.readFieldBegin();
-        if (field.type == org.apache.thrift.protocol.TType.STOP) {
+        if (field.type == org.apache.thrift.protocol.TType.STOP) { 
           break;
         }
         switch (field.id) {
           case 1: // PART_NAME
             if (field.type == org.apache.thrift.protocol.TType.STRING) {
               this.part_name = iprot.readString();
-            } else {
+            } else { 
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
             }
             break;
@@ -43341,10 +43341,10 @@ public class ThriftHiveMetastore {
     public static final Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
     static {
       Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
-      tmpMap.put(_Fields.SUCCESS, new org.apache.thrift.meta_data.FieldMetaData("success", org.apache.thrift.TFieldRequirementType.DEFAULT,
-          new org.apache.thrift.meta_data.ListMetaData(org.apache.thrift.protocol.TType.LIST,
+      tmpMap.put(_Fields.SUCCESS, new org.apache.thrift.meta_data.FieldMetaData("success", org.apache.thrift.TFieldRequirementType.DEFAULT, 
+          new org.apache.thrift.meta_data.ListMetaData(org.apache.thrift.protocol.TType.LIST, 
               new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING))));
-      tmpMap.put(_Fields.O1, new org.apache.thrift.meta_data.FieldMetaData("o1", org.apache.thrift.TFieldRequirementType.DEFAULT,
+      tmpMap.put(_Fields.O1, new org.apache.thrift.meta_data.FieldMetaData("o1", org.apache.thrift.TFieldRequirementType.DEFAULT, 
           new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRUCT)));
       metaDataMap = Collections.unmodifiableMap(tmpMap);
       org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(partition_name_to_vals_result.class, metaDataMap);
@@ -43577,24 +43577,24 @@ public class ThriftHiveMetastore {
       while (true)
       {
         field = iprot.readFieldBegin();
-        if (field.type == org.apache.thrift.protocol.TType.STOP) {
+        if (field.type == org.apache.thrift.protocol.TType.STOP) { 
           break;
         }
         switch (field.id) {
           case 0: // SUCCESS
             if (field.type == org.apache.thrift.protocol.TType.LIST) {
               {
-                org.apache.thrift.protocol.TList _list223 = iprot.readListBegin();
-                this.success = new ArrayList<String>(_list223.size);
-                for (int _i224 = 0; _i224 < _list223.size; ++_i224)
+                org.apache.thrift.protocol.TList _list227 = iprot.readListBegin();
+                this.success = new ArrayList<String>(_list227.size);
+                for (int _i228 = 0; _i228 < _list227.size; ++_i228)
                 {
-                  String _elem225; // required
-                  _elem225 = iprot.readString();
-                  this.success.add(_elem225);
+                  String _elem229; // required
+                  _elem229 = iprot.readString();
+                  this.success.add(_elem229);
                 }
                 iprot.readListEnd();
               }
-            } else {
+            } else { 
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
             }
             break;
@@ -43602,7 +43602,7 @@ public class ThriftHiveMetastore {
             if (field.type == org.apache.thrift.protocol.TType.STRUCT) {
               this.o1 = new MetaException();
               this.o1.read(iprot);
-            } else {
+            } else { 
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
             }
             break;
@@ -43622,9 +43622,9 @@ public class ThriftHiveMetastore {
         oprot.writeFieldBegin(SUCCESS_FIELD_DESC);
         {
           oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRING, this.success.size()));
-          for (String _iter226 : this.success)
+          for (String _iter230 : this.success)
           {
-            oprot.writeString(_iter226);
+            oprot.writeString(_iter230);
           }
           oprot.writeListEnd();
         }
@@ -43754,7 +43754,7 @@ public class ThriftHiveMetastore {
     public static final Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
     static {
       Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
-      tmpMap.put(_Fields.PART_NAME, new org.apache.thrift.meta_data.FieldMetaData("part_name", org.apache.thrift.TFieldRequirementType.DEFAULT,
+      tmpMap.put(_Fields.PART_NAME, new org.apache.thrift.meta_data.FieldMetaData("part_name", org.apache.thrift.TFieldRequirementType.DEFAULT, 
           new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
       metaDataMap = Collections.unmodifiableMap(tmpMap);
       org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(partition_name_to_spec_args.class, metaDataMap);
@@ -43907,14 +43907,14 @@ public class ThriftHiveMetastore {
       while (true)
       {
         field = iprot.readFieldBegin();
-        if (field.type == org.apache.thrift.protocol.TType.STOP) {
+        if (field.type == org.apache.thrift.protocol.TType.STOP) { 
           break;
         }
         switch (field.id) {
           case 1: // PART_NAME
             if (field.type == org.apache.thrift.protocol.TType.STRING) {
               this.part_name = iprot.readString();
-            } else {
+            } else { 
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
             }
             break;
@@ -44053,11 +44053,11 @@ public class ThriftHiveMetastore {
     public static final Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
     static {
       Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
-      tmpMap.put(_Fields.SUCCESS, new org.apache.thrift.meta_data.FieldMetaData("success", org.apache.thrift.TFieldRequirementType.DEFAULT,
-          new org.apache.thrift.meta_data.MapMetaData(org.apache.thrift.protocol.TType.MAP,
-              new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING),
+      tmpMap.put(_Fields.SUCCESS, new org.apache.thrift.meta_data.FieldMetaData("success", org.apache.thrift.TFieldRequirementType.DEFAULT, 
+          new org.apache.thrift.meta_data.MapMetaData(org.apache.thrift.protocol.TType.MAP, 
+              new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING), 
               new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING))));
-      tmpMap.put(_Fields.O1, new org.apache.thrift.meta_data.FieldMetaData("o1", org.apache.thrift.TFieldRequirementType.DEFAULT,
+      tmpMap.put(_Fields.O1, new org.apache.thrift.meta_data.FieldMetaData("o1", org.apache.thrift.TFieldRequirementType.DEFAULT, 
           new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRUCT)));
       metaDataMap = Collections.unmodifiableMap(tmpMap);
       org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(partition_name_to_spec_result.class, metaDataMap);
@@ -44294,26 +44294,26 @@ public class ThriftHiveMetastore {
       while (true)
       {
         field = iprot.readFieldBegin();
-        if (field.type == org.apache.thrift.protocol.TType.STOP) {
+        if (field.type == org.apache.thrift.protocol.TType.STOP) { 
           break;
         }
         switch (field.id) {
           case 0: // SUCCESS
             if (field.type == org.apache.thrift.protocol.TType.MAP) {
               {
-                org.apache.thrift.protocol.TMap _map227 = iprot.readMapBegin();
-                this.success = new HashMap<String,String>(2*_map227.size);
-                for (int _i228 = 0; _i228 < _map227.size; ++_i228)
+                org.apache.thrift.protocol.TMap _map231 = iprot.readMapBegin();
+                this.success = new HashMap<String,String>(2*_map231.size);
+                for (int _i232 = 0; _i232 < _map231.size; ++_i232)
                 {
-                  String _key229; // required
-                  String _val230; // required
-                  _key229 = iprot.readString();
-                  _val230 = iprot.readString();
-                  this.success.put(_key229, _val230);
+                  String _key233; // required
+                  String _val234; // required
+                  _key233 = iprot.readString();
+                  _val234 = iprot.readString();
+                  this.success.put(_key233, _val234);
                 }
                 iprot.readMapEnd();
               }
-            } else {
+            } else { 
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
             }
             break;
@@ -44321,7 +44321,7 @@ public class ThriftHiveMetastore {
             if (field.type == org.apache.thrift.protocol.TType.STRUCT) {
               this.o1 = new MetaException();
               this.o1.read(iprot);
-            } else {
+            } else { 
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
             }
             break;
@@ -44341,10 +44341,10 @@ public class ThriftHiveMetastore {
         oprot.writeFieldBegin(SUCCESS_FIELD_DESC);
         {
           oprot.writeMapBegin(new org.apache.thrift.protocol.TMap(org.apache.thrift.protocol.TType.STRING, org.apache.thrift.protocol.TType.STRING, this.success.size()));
-          for (Map.Entry<String, String> _iter231 : this.success.entrySet())
+          for (Map.Entry<String, String> _iter235 : this.success.entrySet())
           {
-            oprot.writeString(_iter231.getKey());
-            oprot.writeString(_iter231.getValue());
+            oprot.writeString(_iter235.getKey());
+            oprot.writeString(_iter235.getValue());
           }
           oprot.writeMapEnd();
         }
@@ -44423,7 +44423,7 @@ public class ThriftHiveMetastore {
       TBL_NAME((short)2, "tbl_name"),
       PART_VALS((short)3, "part_vals"),
       /**
-       *
+       * 
        * @see PartitionEventType
        */
       EVENT_TYPE((short)4, "eventType");
@@ -44493,15 +44493,15 @@ public class ThriftHiveMetastore {
     public static final Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
     static {
       Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
-      tmpMap.put(_Fields.DB_NAME, new org.apache.thrift.meta_data.FieldMetaData("db_name", org.apache.thrift.TFieldRequirementType.DEFAULT,
+      tmpMap.put(_Fields.DB_NAME, new org.apache.thrift.meta_data.FieldMetaData("db_name", org.apache.thrift.TFieldRequirementType.DEFAULT, 
           new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
-      tmpMap.put(_Fields.TBL_NAME, new org.apache.thrift.meta_data.FieldMetaData("tbl_name", org.apache.thrift.TFieldRequirementType.DEFAULT,
+      tmpMap.put(_Fields.TBL_NAME, new org.apache.thrift.meta_data.FieldMetaData("tbl_name", org.apache.thrift.TFieldRequirementType.DEFAULT, 
           new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
-      tmpMap.put(_Fields.PART_VALS, new org.apache.thrift.meta_data.FieldMetaData("part_vals", org.apache.thrift.TFieldRequirementType.DEFAULT,
-          new org.apache.thrift.meta_data.MapMetaData(org.apache.thrift.protocol.TType.MAP,
-              new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING),
+      tmpMap.put(_Fields.PART_VALS, new org.apache.thrift.meta_data.FieldMetaData("part_vals", org.apache.thrift.TFieldRequirementType.DEFAULT, 
+          new org.apache.thrift.meta_data.MapMetaData(org.apache.thrift.protocol.TType.MAP, 
+              new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING), 
               new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING))));
-      tmpMap.put(_Fields.EVENT_TYPE, new org.apache.thrift.meta_data.FieldMetaData("eventType", org.apache.thrift.TFieldRequirementType.DEFAULT,
+      tmpMap.put(_Fields.EVENT_TYPE, new org.apache.thrift.meta_data.FieldMetaData("eventType", org.apache.thrift.TFieldRequirementType.DEFAULT, 
           new org.apache.thrift.meta_data.EnumMetaData(org.apache.thrift.protocol.TType.ENUM, PartitionEventType.class)));
       metaDataMap = Collections.unmodifiableMap(tmpMap);
       org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(markPartitionForEvent_args.class, metaDataMap);
@@ -44646,7 +44646,7 @@ public class ThriftHiveMetastore {
     }
 
     /**
-     *
+     * 
      * @see PartitionEventType
      */
     public PartitionEventType getEventType() {
@@ -44654,7 +44654,7 @@ public class ThriftHiveMetastore {
     }
 
     /**
-     *
+     * 
      * @see PartitionEventType
      */
     public void setEventType(PartitionEventType eventType) {
@@ -44868,47 +44868,47 @@ public class ThriftHiveMetastore {
       while (true)
       {
         field = iprot.readFieldBegin();
-        if (field.type == org.apache.thrift.protocol.TType.STOP) {
+        if (field.type == org.apache.thrift.protocol.TType.STOP) { 
           break;
         }
         switch (field.id) {
           case 1: // DB_NAME
             if (field.type == org.apache.thrift.protocol.TType.STRING) {
               this.db_name = iprot.readString();
-            } else {
+            } else { 
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
             }
             break;
           case 2: // TBL_NAME
             if (field.type == org.apache.thrift.protocol.TType.STRING) {
               this.tbl_name = iprot.readString();
-            } else {
+            } else { 
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
             }
             break;
           case 3: // PART_VALS
             if (field.type == org.apache.thrift.protocol.TType.MAP) {
               {
-                org.apache.thrift.protocol.TMap _map232 = iprot.readMapBegin();
-                this.part_vals = new HashMap<String,String>(2*_map232.size);
-                for (int _i233 = 0; _i233 < _map232.size; ++_i233)
+                org.apache.thrift.protocol.TMap _map236 = iprot.readMapBegin();
+                this.part_vals = new HashMap<String,String>(2*_map236.size);
+                for (int _i237 = 0; _i237 < _map236.size; ++_i237)
                 {
-                  String _key234; // required
-                  String _val235; // required
-                  _key234 = iprot.readString();
-                  _val235 = iprot.readString();
-                  this.part_vals.put(_key234, _val235);
+                  String _key238; // required
+                  String _val239; // required
+                  _key238 = iprot.readString();
+                  _val239 = iprot.readString();
+                  this.part_vals.put(_key238, _val239);
                 }
                 iprot.readMapEnd();
               }
-            } else {
+            } else { 
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
             }
             break;
           case 4: // EVENT_TYPE
             if (field.type == org.apache.thrift.protocol.TType.I32) {
               this.eventType = PartitionEventType.findByValue(iprot.readI32());
-            } else {
+            } else { 
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
             }
             break;
@@ -44939,10 +44939,10 @@ public class ThriftHiveMetastore {
         oprot.writeFieldBegin(PART_VALS_FIELD_DESC);
         {
           oprot.writeMapBegin(new org.apache.thrift.protocol.TMap(org.apache.thrift.protocol.TType.STRING, org.apache.thrift.protocol.TType.STRING, this.part_vals.size()));
-          for (Map.Entry<String, String> _iter236 : this.part_vals.entrySet())
+          for (Map.Entry<String, String> _iter240 : this.part_vals.entrySet())
           {
-            oprot.writeString(_iter236.getKey());
-            oprot.writeString(_iter236.getValue());
+            oprot.writeString(_iter240.getKey());
+            oprot.writeString(_iter240.getValue());
           }
           oprot.writeMapEnd();
         }
@@ -45114,17 +45114,17 @@ public class ThriftHiveMetastore {
     public static final Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
     static {
       Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
-      tmpMap.put(_Fields.O1, new org.apache.thrift.meta_data.FieldMetaData("o1", org.apache.thrift.TFieldRequirementType.DEFAULT,
+      tmpMap.put(_Fields.O1, new org.apache.thrift.meta_data.FieldMetaData("o1", org.apache.thrift.TFieldRequirementType.DEFAULT, 
           new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRUCT)));
-      tmpMap.put(_Fields.O2, new org.apache.thrift.meta_data.FieldMetaData("o2", org.apache.thrift.TFieldRequirementType.DEFAULT,
+      tmpMap.put(_Fields.O2, new org.apache.thrift.meta_data.FieldMetaData("o2", org.apache.thrift.TFieldRequirementType.DEFAULT, 
           new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRUCT)));
-      tmpMap.put(_Fields.O3, new org.apache.thrift.meta_data.FieldMetaData("o3", org.apache.thrift.TFieldRequirementType.DEFAULT,
+      tmpMap.put(_Fields.O3, new org.apache.thrift.meta_data.FieldMetaData("o3", org.apache.thrift.TFieldRequirementType.DEFAULT, 
           new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRUCT)));
-      tmpMap.put(_Fields.O4, new org.apache.thrift.meta_data.FieldMetaData("o4", org.apache.thrift.TFieldRequirementType.DEFAULT,
+      tmpMap.put(_Fields.O4, new org.apache.thrift.meta_data.FieldMetaData("o4", org.apache.thrift.TFieldRequirementType.DEFAULT, 
           new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRUCT)));
-      tmpMap.put(_Fields.O5, new org.apache.thrift.meta_data.FieldMetaData("o5", org.apache.thrift.TFieldRequirementType.DEFAULT,
+      tmpMap.put(_Fields.O5, new org.apache.thrift.meta_data.FieldMetaData("o5", org.apache.thrift.TFieldRequirementType.DEFAULT, 
           new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRUCT)));
-      tmpMap.put(_Fields.O6, new org.apache.thrift.meta_data.FieldMetaData("o6", org.apache.thrift.TFieldRequirementType.DEFAULT,
+      tmpMap.put(_Fields.O6, new org.apache.thrift.meta_data.FieldMetaData("o6", org.apache.thrift.TFieldRequirementType.DEFAULT, 
           new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRUCT)));
       metaDataMap = Collections.unmodifiableMap(tmpMap);
       org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(markPartitionForEvent_result.class, metaDataMap);
@@ -45582,7 +45582,7 @@ public class ThriftHiveMetastore {
       while (true)
       {
         field = iprot.readFieldBegin();
-        if (field.type == org.apache.thrift.protocol.TType.STOP) {
+        if (field.type == org.apache.thrift.protocol.TType.STOP) { 
           break;
         }
         switch (field.id) {
@@ -45590,7 +45590,7 @@ public class ThriftHiveMetastore {
             if (field.type == org.apache.thrift.protocol.TType.STRUCT) {
               this.o1 = new MetaException();
               this.o1.read(iprot);
-            } else {
+            } else { 
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
             }
             break;
@@ -45598,7 +45598,7 @@ public class ThriftHiveMetastore {
             if (field.type == org.apache.thrift.protocol.TType.STRUCT) {
               this.o2 = new NoSuchObjectException();
               this.o2.read(iprot);
-            } else {
+            } else { 
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
             }
             break;
@@ -45606,7 +45606,7 @@ public class ThriftHiveMetastore {
             if (field.type == org.apache.thrift.protocol.TType.STRUCT) {
               this.o3 = new UnknownDBException();
               this.o3.read(iprot);
-            } else {
+            } else { 
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
             }
             break;
@@ -45614,7 +45614,7 @@ public class ThriftHiveMetastore {
             if (field.type == org.apache.thrift.protocol.TType.STRUCT) {
               this.o4 = new UnknownTableException();
               this.o4.read(iprot);
-            } else {
+            } else { 
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
             }
             break;
@@ -45622,7 +45622,7 @@ public class ThriftHiveMetastore {
             if (field.type == org.apache.thrift.protocol.TType.STRUCT) {
               this.o5 = new UnknownPartitionException();
               this.o5.read(iprot);
-            } else {
+            } else { 
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
             }
             break;
@@ -45630,7 +45630,7 @@ public class ThriftHiveMetastore {
             if (field.type == org.apache.thrift.protocol.TType.STRUCT) {
               this.o6 = new InvalidPartitionException();
               this.o6.read(iprot);
-            } else {
+            } else { 
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
             }
             break;
@@ -45772,7 +45772,7 @@ public class ThriftHiveMetastore {
       TBL_NAME((short)2, "tbl_name"),
       PART_VALS((short)3, "part_vals"),
       /**
-       *
+       * 
        * @see PartitionEventType
        */
       EVENT_TYPE((short)4, "eventType");
@@ -45842,15 +45842,15 @@ public class ThriftHiveMetastore {
     public static final Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
     static {
       Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
-      tmpMap.put(_Fields.DB_NAME, new org.apache.thrift.meta_data.FieldMetaData("db_name", org.apache.thrift.TFieldRequirementType.DEFAULT,
+      tmpMap.put(_Fields.DB_NAME, new org.apache.thrift.meta_data.FieldMetaData("db_name", org.apache.thrift.TFieldRequirementType.DEFAULT, 
           new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
-      tmpMap.put(_Fields.TBL_NAME, new org.apache.thrift.meta_data.FieldMetaData("tbl_name", org.apache.thrift.TFieldRequirementType.DEFAULT,
+      tmpMap.put(_Fields.TBL_NAME, new org.apache.thrift.meta_data.FieldMetaData("tbl_name", org.apache.thrift.TFieldRequirementType.DEFAULT, 
           new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
-      tmpMap.put(_Fields.PART_VALS, new org.apache.thrift.meta_data.FieldMetaData("part_vals", org.apache.thrift.TFieldRequirementType.DEFAULT,
-          new org.apache.thrift.meta_data.MapMetaData(org.apache.thrift.protocol.TType.MAP,
-              new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING),
+      tmpMap.put(_Fields.PART_VALS, new org.apache.thrift.meta_data.FieldMetaData("part_vals", org.apache.thrift.TFieldRequirementType.DEFAULT, 
+          new org.apache.thrift.meta_data.MapMetaData(org.apache.thrift.protocol.TType.MAP, 
+              new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING), 
               new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING))));
-      tmpMap.put(_Fields.EVENT_TYPE, new org.apache.thrift.meta_data.FieldMetaData("eventType", org.apache.thrift.TFieldRequirementType.DEFAULT,
+      tmpMap.put(_Fields.EVENT_TYPE, new org.apache.thrift.meta_data.FieldMetaData("eventType", org.apache.thrift.TFieldRequirementType.DEFAULT, 
           new org.apache.thrift.meta_data.EnumMetaData(org.apache.thrift.protocol.TType.ENUM, PartitionEventType.class)));
       metaDataMap = Collections.unmodifiableMap(tmpMap);
       org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(isPartitionMarkedForEvent_args.class, metaDataMap);
@@ -45995,7 +45995,7 @@ public class ThriftHiveMetastore {
     }
 
     /**
-     *
+     * 
      * @see PartitionEventType
      */
     public PartitionEventType getEventType() {
@@ -46003,7 +46003,7 @@ public class ThriftHiveMetastore {
     }
 
     /**
-     *
+     * 
      * @see PartitionEventType
      */
     public void setEventType(PartitionEventType eventType) {
@@ -46217,47 +46217,47 @@ public class ThriftHiveMetastore {
       while (true)
       {
         field = iprot.readFieldBegin();
-        if (field.type == org.apache.thrift.protocol.TType.STOP) {
+        if (field.type == org.apache.thrift.protocol.TType.STOP) { 
           break;
         }
         switch (field.id) {
           case 1: // DB_NAME
             if (field.type == org.apache.thrift.protocol.TType.STRING) {
               this.db_name = iprot.readString();
-            } else {
+            } else { 
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
             }
             break;
           case 2: // TBL_NAME
             if (field.type == org.apache.thrift.protocol.TType.STRING) {
               this.tbl_name = iprot.readString();
-            } else {
+            } else { 
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
             }
             break;
           case 3: // PART_VALS
             if (field.type == org.apache.thrift.protocol.TType.MAP) {
               {
-                org.apache.thrift.protocol.TMap _map237 = iprot.readMapBegin();
-                this.part_vals = new HashMap<String,String>(2*_map237.size);
-                for (int _i238 = 0; _i238 < _map237.size; ++_i238)
+                org.apache.thrift.protocol.TMap _map241 = iprot.readMapBegin();
+                this.part_vals = new HashMap<String,String>(2*_map241.size);
+                for (int _i242 = 0; _i242 < _map241.size; ++_i242)
                 {
-                  String _key239; // required
-                  String _val240; // required
-                  _key239 = iprot.readString();
-                  _val240 = iprot.readString();
-                  this.part_vals.put(_key239, _val240);
+                  String _key243; // required
+                  String _val244; // required
+                  _key243 = iprot.readString();
+                  _val244 = iprot.readString();
+                  this.part_vals.put(_key243, _val244);
                 }
                 iprot.readMapEnd();
               }
-            } else {
+            } else { 
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
             }
             break;
           case 4: // EVENT_TYPE
             if (field.type == org.apache.thrift.protocol.TType.I32) {
               this.eventType = PartitionEventType.findByValue(iprot.readI32());
-            } else {
+            } else { 
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
             }
             break;
@@ -46288,10 +46288,10 @@ public class ThriftHiveMetastore {
         oprot.writeFieldBegin(PART_VALS_FIELD_DESC);
         {
           oprot.writeMapBegin(new org.apache.thrift.protocol.TMap(org.apache.thrift.protocol.TType.STRING, org.apache.thrift.protocol.TType.STRING, this.part_vals.size()));
-          for (Map.Entry<String, String> _iter241 : this.part_vals.entrySet())
+          for (Map.Entry<String, String> _iter245 : this.part_vals.entrySet())
           {
-            oprot.writeString(_iter241.getKey());
-            oprot.writeString(_iter241.getValue());
+            oprot.writeString(_iter245.getKey());
+            oprot.writeString(_iter245.getValue());
           }
           oprot.writeMapEnd();
         }
@@ -46470,19 +46470,19 @@ public class ThriftHiveMetastore {
     public static final Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
     static {
       Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
-      tmpMap.put(_Fields.SUCCESS, new org.apache.thrift.meta_data.FieldMetaData("success", org.apache.thrift.TFieldRequirementType.DEFAULT,
+      tmpMap.put(_Fields.SUCCESS, new org.apache.thrift.meta_data.FieldMetaData("success", org.apache.thrift.TFieldRequirementType.DEFAULT, 
           new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.BOOL)));
-      tmpMap.put(_Fields.O1, new org.apache.thrift.meta_data.FieldMetaData("o1", org.apache.thrift.TFieldRequirementType.DEFAULT,
+      tmpMap.put(_Fields.O1, new org.apache.thrift.meta_data.FieldMetaData("o1", org.apache.thrift.TFieldRequirementType.DEFAULT, 
           new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRUCT)));
-      tmpMap.put(_Fields.O2, new org.apache.thrift.meta_data.FieldMetaData("o2", org.apache.thrift.TFieldRequirementType.DEFAULT,
+      tmpMap.put(_Fields.O2, new org.apache.thrift.meta_data.FieldMetaData("o2", org.apache.thrift.TFieldRequirementType.DEFAULT, 
           new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRUCT)));
-      tmpMap.put(_Fields.O3, new org.apache.thrift.meta_data.FieldMetaData("o3", org.apache.thrift.TFieldRequirementType.DEFAULT,
+      tmpMap.put(_Fields.O3, new org.apache.thrift.meta_data.FieldMetaData("o3", org.apache.thrift.TFieldRequirementType.DEFAULT, 
           new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRUCT)));
-      tmpMap.put(_Fields.O4, new org.apache.thrift.meta_data.FieldMetaData("o4", org.apache.thrift.TFieldRequirementType.DEFAULT,
+      tmpMap.put(_Fields.O4, new org.apache.thrift.meta_data.FieldMetaData("o4", org.apache.thrift.TFieldRequirementType.DEFAULT, 
           new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRUCT)));
-      tmpMap.put(_Fields.O5, new org.apache.thrift.meta_data.FieldMetaData("o5", org.apache.thrift.TFieldRequirementType.DEFAULT,
+      tmpMap.put(_Fields.O5, new org.apache.thrift.meta_data.FieldMetaData("o5", org.apache.thrift.TFieldRequirementType.DEFAULT, 
           new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRUCT)));
-      tmpMap.put(_Fields.O6, new org.apache.thrift.meta_data.FieldMetaData("o6", org.apache.thrift.TFieldRequirementType.DEFAULT,
+      tmpMap.put(_Fields.O6, new org.apache.thrift.meta_data.FieldMetaData("o6", org.apache.thrift.TFieldRequirementType.DEFAULT, 
           new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRUCT)));
       metaDataMap = Collections.unmodifiableMap(tmpMap);
       org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(isPartitionMarkedForEvent_result.class, metaDataMap);
@@ -47002,7 +47002,7 @@ public class ThriftHiveMetastore {
       while (true)
       {
         field = iprot.readFieldBegin();
-        if (field.type == org.apache.thrift.protocol.TType.STOP) {
+        if (field.type == org.apache.thrift.protocol.TType.STOP) { 
           break;
         }
         switch (field.id) {
@@ -47010,7 +47010,7 @@ public class ThriftHiveMetastore {
             if (field.type == org.apache.thrift.protocol.TType.BOOL) {
               this.success = iprot.readBool();
               setSuccessIsSet(true);
-            } else {
+            } else { 
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
             }
             break;
@@ -47018,7 +47018,7 @@ public class ThriftHiveMetastore {
             if (field.type == org.apache.thrift.protocol.TType.STRUCT) {
               this.o1 = new MetaException();
               this.o1.read(iprot);
-            } else {
+            } else { 
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
             }
             break;
@@ -47026,7 +47026,7 @@ public class ThriftHiveMetastore {
             if (field.type == org.apache.thrift.protocol.TType.STRUCT) {
               this.o2 = new NoSuchObjectException();
               this.o2.read(iprot);
-            } else {
+            } else { 
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
             }
             break;
@@ -47034,7 +47034,7 @@ public class ThriftHiveMetastore {
             if (field.type == org.apache.thrift.protocol.TType.STRUCT) {
               this.o3 = new UnknownDBException();
               this.o3.read(iprot);
-            } else {
+            } else { 
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
             }
             break;
@@ -47042,7 +47042,7 @@ public class ThriftHiveMetastore {
             if (field.type == org.apache.thrift.protocol.TType.STRUCT) {
               this.o4 = new UnknownTableException();
               this.o4.read(iprot);
-            } else {
+            } else { 
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
             }
             break;
@@ -47050,7 +47050,7 @@ public class ThriftHiveMetastore {
             if (field.type == org.apache.thrift.protocol.TType.STRUCT) {
               this.o5 = new UnknownPartitionException();
               this.o5.read(iprot);
-            } else {
+            } else { 
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
             }
             break;
@@ -47058,7 +47058,7 @@ public class ThriftHiveMetastore {
             if (field.type == org.apache.thrift.protocol.TType.STRUCT) {
               this.o6 = new InvalidPartitionException();
               this.o6.read(iprot);
-            } else {
+            } else { 
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
             }
             break;
@@ -47264,9 +47264,9 @@ public class ThriftHiveMetastore {
     public static final Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
     static {
       Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
-      tmpMap.put(_Fields.NEW_INDEX, new org.apache.thrift.meta_data.FieldMetaData("new_index", org.apache.thrift.TFieldRequirementType.DEFAULT,
+      tmpMap.put(_Fields.NEW_INDEX, new org.apache.thrift.meta_data.FieldMetaData("new_index", org.apache.thrift.TFieldRequirementType.DEFAULT, 
           new org.apache.thrift.meta_data.StructMetaData(org.apache.thrift.protocol.TType.STRUCT, Index.class)));
-      tmpMap.put(_Fields.INDEX_TABLE, new org.apache.thrift.meta_data.FieldMetaData("index_table", org.apache.thrift.TFieldRequirementType.DEFAULT,
+      tmpMap.put(_Fields.INDEX_TABLE, new org.apache.thrift.meta_data.FieldMetaData("index_table", org.apache.thrift.TFieldRequirementType.DEFAULT, 
           new org.apache.thrift.meta_data.StructMetaData(org.apache.thrift.protocol.TType.STRUCT, Table.class)));
       metaDataMap = Collections.unmodifiableMap(tmpMap);
       org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(add_index_args.class, metaDataMap);
@@ -47480,7 +47480,7 @@ public class ThriftHiveMetastore {
       while (true)
       {
         field = iprot.readFieldBegin();
-        if (field.type == org.apache.thrift.protocol.TType.STOP) {
+        if (field.type == org.apache.thrift.protocol.TType.STOP) { 
           break;
         }
         switch (field.id) {
@@ -47488,7 +47488,7 @@ public class ThriftHiveMetastore {
             if (field.type == org.apache.thrift.protocol.TType.STRUCT) {
               this.new_index = new Index();
               this.new_index.read(iprot);
-            } else {
+            } else { 
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
             }
             break;
@@ -47496,7 +47496,7 @@ public class ThriftHiveMetastore {
             if (field.type == org.apache.thrift.protocol.TType.STRUCT) {
               this.index_table = new Table();
               this.index_table.read(iprot);
-            } else {
+            } else { 
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
             }
             break;
@@ -47658,13 +47658,13 @@ public class ThriftHiveMetastore {
     public static final Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
     static {
       Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
-      tmpMap.put(_Fields.SUCCESS, new org.apache.thrift.meta_data.FieldMetaData("success", org.apache.thrift.TFieldRequirementType.DEFAULT,
+      tmpMap.put(_Fields.SUCCESS, new org.apache.thrift.meta_data.FieldMetaData("success", org.apache.thrift.TFieldRequirementType.DEFAULT, 
           new org.apache.thrift.meta_data.StructMetaData(org.apache.thrift.protocol.TType.STRUCT, Index.class)));
-      tmpMap.put(_Fields.O1, new org.apache.thrift.meta_data.FieldMetaData("o1", org.apache.thrift.TFieldRequirementType.DEFAULT,
+      tmpMap.put(_Fields.O1, new org.apache.thrift.meta_data.FieldMetaData("o1", org.apache.thrift.TFieldRequirementType.DEFAULT, 
           new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRUCT)));
-      tmpMap.put(_Fields.O2, new org.apache.thrift.meta_data.FieldMetaData("o2", org.apache.thrift.TFieldRequirementType.DEFAULT,
+      tmpMap.put(_Fields.O2, new org.apache.thrift.meta_data.FieldMetaData("o2", org.apache.thrift.TFieldRequirementType.DEFAULT, 
           new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRUCT)));
-      tmpMap.put(_Fields.O3, new org.apache.thrift.meta_data.FieldMetaData("o3", org.apache.thrift.TFieldRequirementType.DEFAULT,
+      tmpMap.put(_Fields.O3, new org.apache.thrift.meta_data.FieldMetaData("o3", org.apache.thrift.TFieldRequirementType.DEFAULT, 
           new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRUCT)));
       metaDataMap = Collections.unmodifiableMap(tmpMap);
       org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(add_index_result.class, metaDataMap);
@@ -48000,7 +48000,7 @@ public class ThriftHiveMetastore {
       while (true)
       {
         field = iprot.readFieldBegin();
-        if (field.type == org.apache.thrift.protocol.TType.STOP) {
+        if (field.type == org.apache.thrift.protocol.TType.STOP) { 
           break;
         }
         switch (field.id) {
@@ -48008,7 +48008,7 @@ public class ThriftHiveMetastore {
             if (field.type == org.apache.thrift.protocol.TType.STRUCT) {
               this.success = new Index();
               this.success.read(iprot);
-            } else {
+            } else { 
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
             }
             break;
@@ -48016,7 +48016,7 @@ public class ThriftHiveMetastore {
             if (field.type == org.apache.thrift.protocol.TType.STRUCT) {
               this.o1 = new InvalidObjectException();
               this.o1.read(iprot);
-            } else {
+            } else { 
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
             }
             break;
@@ -48024,7 +48024,7 @@ public class ThriftHiveMetastore {
             if (field.type == org.apache.thrift.protocol.TType.STRUCT) {
               this.o2 = new AlreadyExistsException();
               this.o2.read(iprot);
-            } else {
+            } else { 
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
             }
             break;
@@ -48032,7 +48032,7 @@ public class ThriftHiveMetastore {
             if (field.type == org.apache.thrift.protocol.TType.STRUCT) {
               this.o3 = new MetaException();
               this.o3.read(iprot);
-            } else {
+            } else { 
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
             }
             break;
@@ -48216,13 +48216,13 @@ public class ThriftHiveMetastore {
     public static final Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
     static {
       Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
-      tmpMap.put(_Fields.DBNAME, new org.apache.thrift.meta_data.FieldMetaData("dbname", org.apache.thrift.TFieldRequirementType.DEFAULT,
+      tmpMap.put(_Fields.DBNAME, new org.apache.thrift.meta_data.FieldMetaData("dbname", org.apache.thrift.TFieldRequirementType.DEFAULT, 
           new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
-      tmpMap.put(_Fields.BASE_TBL_NAME, new org.apache.thrift.meta_data.FieldMetaData("base_tbl_name", org.apache.thrift.TFieldRequirementType.DEFAULT,
+      tmpMap.put(_Fields.BASE_TBL_NAME, new org.apache.thrift.meta_data.FieldMetaData("base_tbl_name", org.apache.thrift.TFieldRequirementType.DEFAULT, 
           new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
-      tmpMap.put(_Fields.IDX_NAME, new org.apache.thrift.meta_data.FieldMetaData("idx_name", org.apache.thrift.TFieldRequirementType.DEFAULT,
+      tmpMap.put(_Fields.IDX_NAME, new org.apache.thrift.meta_data.FieldMetaData("idx_name", org.apache.thrift.TFieldRequirementType.DEFAULT, 
           new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
-      tmpMap.put(_Fields.NEW_IDX, new org.apache.thrift.meta_data.FieldMetaData("new_idx", org.apache.thrift.TFieldRequirementType.DEFAULT,
+      tmpMap.put(_Fields.NEW_IDX, new org.apache.thrift.meta_data.FieldMetaData("new_idx", org.apache.thrift.TFieldRequirementType.DEFAULT, 
           new org.apache.thrift.meta_data.StructMetaData(org.apache.thrift.protocol.TType.STRUCT, Index.class)));
       metaDataMap = Collections.unmodifiableMap(tmpMap);
       org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(alter_index_args.class, metaDataMap);
@@ -48558,28 +48558,28 @@ public class ThriftHiveMetastore {
       while (true)
       {
         field = iprot.readFieldBegin();
-        if (field.type == org.apache.thrift.protocol.TType.STOP) {
+        if (field.type == org.apache.thrift.protocol.TType.STOP) { 
           break;
         }
         switch (field.id) {
           case 1: // DBNAME
             if (field.type == org.apache.thrift.protocol.TType.STRING) {
               this.dbname = iprot.readString();
-            } else {
+            } else { 
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
             }
             break;
           case 2: // BASE_TBL_NAME
             if (field.type == org.apache.thrift.protocol.TType.STRING) {
               this.base_tbl_name = iprot.readString();
-            } else {
+            } else { 
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
             }
             break;
           case 3: // IDX_NAME
             if (field.type == org.apache.thrift.protocol.TType.STRING) {
               this.idx_name = iprot.readString();
-            } else {
+            } else { 
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
             }
             break;
@@ -48587,7 +48587,7 @@ public class ThriftHiveMetastore {
             if (field.type == org.apache.thrift.protocol.TType.STRUCT) {
               this.new_idx = new Index();
               this.new_idx.read(iprot);
-            } else {
+            } else { 
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
             }
             break;
@@ -48765,9 +48765,9 @@ public class ThriftHiveMetastore {
     public static final Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
     static {
       Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
-      tmpMap.put(_Fields.O1, new org.apache.thrift.meta_data.FieldMetaData("o1", org.apache.thrift.TFieldRequirementType.DEFAULT,
+      tmpMap.put(_Fields.O1, new org.apache.thrift.meta_data.FieldMetaData("o1", org.apache.thrift.TFieldRequirementType.DEFAULT, 
           new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRUCT)));
-      tmpMap.put(_Fields.O2, new org.apache.thrift.meta_data.FieldMetaData("o2", org.apache.thrift.TFieldRequirementType.DEFAULT,
+      tmpMap.put(_Fields.O2, new org.apache.thrift.meta_data.FieldMetaData("o2", org.apache.thrift.TFieldRequirementType.DEFAULT, 
           new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRUCT)));
       metaDataMap = Collections.unmodifiableMap(tmpMap);
       org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(alter_index_result.class, metaDataMap);
@@ -48981,7 +48981,7 @@ public class ThriftHiveMetastore {
       while (true)
       {
         field = iprot.readFieldBegin();
-        if (field.type == org.apache.thrift.protocol.TType.STOP) {
+        if (field.type == org.apache.thrift.protocol.TType.STOP) { 
           break;
         }
         switch (field.id) {
@@ -48989,7 +48989,7 @@ public class ThriftHiveMetastore {
             if (field.type == org.apache.thrift.protocol.TType.STRUCT) {
               this.o1 = new InvalidOperationException();
               this.o1.read(iprot);
-            } else {
+            } else { 
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
             }
             break;
@@ -48997,7 +48997,7 @@ public class ThriftHiveMetastore {
             if (field.type == org.apache.thrift.protocol.TType.STRUCT) {
               this.o2 = new MetaException();
               this.o2.read(iprot);
-            } else {
+            } else { 
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
             }
             break;
@@ -49159,13 +49159,13 @@ public class ThriftHiveMetastore {
     public static final Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
     static {
       Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
-      tmpMap.put(_Fields.DB_NAME, new org.apache.thrift.meta_data.FieldMetaData("db_name", org.apache.thrift.TFieldRequirementType.DEFAULT,
+      tmpMap.put(_Fields.DB_NAME, new org.apache.thrift.meta_data.FieldMetaData("db_name", org.apache.thrift.TFieldRequirementType.DEFAULT, 
           new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
-      tmpMap.put(_Fields.TBL_NAME, new org.apache.thrift.meta_data.FieldMetaData("tbl_name", org.apache.thrift.TFieldRequirementType.DEFAULT,
+      tmpMap.put(_Fields.TBL_NAME, new org.apache.thrift.meta_data.FieldMetaData("tbl_name", org.apache.thrift.TFieldRequirementType.DEFAULT, 
           new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
-      tmpMap.put(_Fields.INDEX_NAME, new org.apache.thrift.meta_data.FieldMetaData("index_name", org.apache.thrift.TFieldRequirementType.DEFAULT,
+      tmpMap.put(_Fields.INDEX_NAME, new org.apache.thrift.meta_data.FieldMetaData("index_name", org.apache.thrift.TFieldRequirementType.DEFAULT, 
           new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
-      tmpMap.put(_Fields.DELETE_DATA, new org.apache.thrift.meta_data.FieldMetaData("deleteData", org.apache.thrift.TFieldRequirementType.DEFAULT,
+      tmpMap.put(_Fields.DELETE_DATA, new org.apache.thrift.meta_data.FieldMetaData("deleteData", org.apache.thrift.TFieldRequirementType.DEFAULT, 
           new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.BOOL)));
       metaDataMap = Collections.unmodifiableMap(tmpMap);
       org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(drop_index_by_name_args.class, metaDataMap);
@@ -49502,28 +49502,28 @@ public class ThriftHiveMetastore {
       while (true)
       {
         field = iprot.readFieldBegin();
-        if (field.type == org.apache.thrift.protocol.TType.STOP) {
+        if (field.type == org.apache.thrift.protocol.TType.STOP) { 
           break;
         }
         switch (field.id) {
           case 1: // DB_NAME
             if (field.type == org.apache.thrift.protocol.TType.STRING) {
               this.db_name = iprot.readString();
-            } else {
+            } else { 
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
             }
             break;
           case 2: // TBL_NAME
             if (field.type == org.apache.thrift.protocol.TType.STRING) {
               this.tbl_name = iprot.readString();
-            } else {
+            } else { 
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
             }
             break;
           case 3: // INDEX_NAME
             if (field.type == org.apache.thrift.protocol.TType.STRING) {
               this.index_name = iprot.readString();
-            } else {
+            } else { 
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
             }
             break;
@@ -49531,7 +49531,7 @@ public class ThriftHiveMetastore {
             if (field.type == org.apache.thrift.protocol.TType.BOOL) {
               this.deleteData = iprot.readBool();
               setDeleteDataIsSet(true);
-            } else {
+            } else { 
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
             }
             break;
@@ -49712,11 +49712,11 @@ public class ThriftHiveMetastore {
     public static final Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
     static {
       Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
-      tmpMap.put(_Fields.SUCCESS, new org.apache.thrift.meta_data.FieldMetaData("success", org.apache.thrift.TFieldRequirementType.DEFAULT,
+      tmpMap.put(_Fields.SUCCESS, new org.apache.thrift.meta_data.FieldMetaData("success", org.apache.thrift.TFieldRequirementType.DEFAULT, 
           new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.BOOL)));
-      tmpMap.put(_Fields.O1, new org.apache.thrift.meta_data.FieldMetaData("o1", org.apache.thrift.TFieldRequirementType.DEFAULT,
+      tmpMap.put(_Fields.O1, new org.apache.thrift.meta_data.FieldMetaData("o1", org.apache.thrift.TFieldRequirementType.DEFAULT, 
           new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRUCT)));
-      tmpMap.put(_Fields.O2, new org.apache.thrift.meta_data.FieldMetaData("o2", org.apache.thrift.TFieldRequirementType.DEFAULT,
+      tmpMap.put(_Fields.O2, new org.apache.thrift.meta_data.FieldMetaData("o2", org.apache.thrift.TFieldRequirementType.DEFAULT, 
           new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRUCT)));
       metaDataMap = Collections.unmodifiableMap(tmpMap);
       org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(drop_index_by_name_result.class, metaDataMap);
@@ -49992,7 +49992,7 @@ public class ThriftHiveMetastore {
       while (true)
       {
         field = iprot.readFieldBegin();
-        if (field.type == org.apache.thrift.protocol.TType.STOP) {
+        if (field.type == org.apache.thrift.protocol.TType.STOP) { 
           break;
         }
         switch (field.id) {
@@ -50000,7 +50000,7 @@ public class ThriftHiveMetastore {
             if (field.type == org.apache.thrift.protocol.TType.BOOL) {
               this.success = iprot.readBool();
               setSuccessIsSet(true);
-            } else {
+            } else { 
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
             }
             break;
@@ -50008,7 +50008,7 @@ public class ThriftHiveMetastore {
             if (field.type == org.apache.thrift.protocol.TType.STRUCT) {
               this.o1 = new NoSuchObjectException();
               this.o1.read(iprot);
-            } else {
+            } else { 
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
             }
             break;
@@ -50016,7 +50016,7 @@ public class ThriftHiveMetastore {
             if (field.type == org.apache.thrift.protocol.TType.STRUCT) {
               this.o2 = new MetaException();
               this.o2.read(iprot);
-            } else {
+            } else { 
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
             }
             break;
@@ -50179,11 +50179,11 @@ public class ThriftHiveMetastore {
     public static final Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
     static {
       Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
-      tmpMap.put(_Fields.DB_NAME, new org.apache.thrift.meta_data.FieldMetaData("db_name", org.apache.thrift.TFieldRequirementType.DEFAULT,
+      tmpMap.put(_Fields.DB_NAME, new org.apache.thrift.meta_data.FieldMetaData("db_name", org.apache.thrift.TFieldRequirementType.DEFAULT, 
           new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
-      tmpMap.put(_Fields.TBL_NAME, new org.apache.thrift.meta_data.FieldMetaData("tbl_name", org.apache.thrift.TFieldRequirementType.DEFAULT,
+      tmpMap.put(_Fields.TBL_NAME, new org.apache.thrift.meta_data.FieldMetaData("tbl_name", org.apache.thrift.TFieldRequirementType.DEFAULT, 
           new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
-      tmpMap.put(_Fields.INDEX_NAME, new org.apache.thrift.meta_data.FieldMetaData("index_name", org.apache.thrift.TFieldRequirementType.DEFAULT,
+      tmpMap.put(_Fields.INDEX_NAME, new org.apache.thrift.meta_data.FieldMetaData("index_name", org.apache.thrift.TFieldRequirementType.DEFAULT, 
           new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
       metaDataMap = Collections.unmodifiableMap(tmpMap);
       org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(get_index_by_name_args.class, metaDataMap);
@@ -50458,28 +50458,28 @@ public class ThriftHiveMetastore {
       while (true)
       {
         field = iprot.readFieldBegin();
-        if (field.type == org.apache.thrift.protocol.TType.STOP) {
+        if (field.type == org.apache.thrift.protocol.TType.STOP) { 
           break;
         }
         switch (field.id) {
           case 1: // DB_NAME
             if (field.type == org.apache.thrift.protocol.TType.STRING) {
               this.db_name = iprot.readString();
-            } else {
+            } else { 
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
             }
             break;
           case 2: // TBL_NAME
             if (field.type == org.apache.thrift.protocol.TType.STRING) {
               this.tbl_name = iprot.readString();
-            } else {
+            } else { 
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
             }
             break;
           case 3: // INDEX_NAME
             if (field.type == org.apache.thrift.protocol.TType.STRING) {
               this.index_name = iprot.readString();
-            } else {
+            } else { 
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
             }
             break;
@@ -50649,11 +50649,11 @@ public class ThriftHiveMetastore {
     public static final Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
     static {
       Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
-      tmpMap.put(_Fields.SUCCESS, new org.apache.thrift.meta_data.FieldMetaData("success", org.apache.thrift.TFieldRequirementType.DEFAULT,
+      tmpMap.put(_Fields.SUCCESS, new org.apache.thrift.meta_data.FieldMetaData("success", org.apache.thrift.TFieldRequirementType.DEFAULT, 
           new org.apache.thrift.meta_data.StructMetaData(org.apache.thrift.protocol.TType.STRUCT, Index.class)));
-      tmpMap.put(_Fields.O1, new org.apache.thrift.meta_data.FieldMetaData("o1", org.apache.thrift.TFieldRequirementType.DEFAULT,
+      tmpMap.put(_Fields.O1, new org.apache.thrift.meta_data.FieldMetaData("o1", org.apache.thrift.TFieldRequirementType.DEFAULT, 
           new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRUCT)));
-      tmpMap.put(_Fields.O2, new org.apache.thrift.meta_data.FieldMetaData("o2", org.apache.thrift.TFieldRequirementType.DEFAULT,
+      tmpMap.put(_Fields.O2, new org.apache.thrift.meta_data.FieldMetaData("o2", org.apache.thrift.TFieldRequirementType.DEFAULT, 
           new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRUCT)));
       metaDataMap = Collections.unmodifiableMap(tmpMap);
       org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(get_index_by_name_result.class, metaDataMap);
@@ -50928,7 +50928,7 @@ public class ThriftHiveMetastore {
       while (true)
       {
         field = iprot.readFieldBegin();
-        if (field.type == org.apache.thrift.protocol.TType.STOP) {
+        if (field.type == org.apache.thrift.protocol.TType.STOP) { 
           break;
         }
         switch (field.id) {
@@ -50936,7 +50936,7 @@ public class ThriftHiveMetastore {
             if (field.type == org.apache.thrift.protocol.TType.STRUCT) {
               this.success = new Index();
               this.success.read(iprot);
-            } else {
+            } else { 
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
             }
             break;
@@ -50944,7 +50944,7 @@ public class ThriftHiveMetastore {
             if (field.type == org.apache.thrift.protocol.TType.STRUCT) {
               this.o1 = new MetaException();
               this.o1.read(iprot);
-            } else {
+            } else { 
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
             }
             break;
@@ -50952,7 +50952,7 @@ public class ThriftHiveMetastore {
             if (field.type == org.apache.thrift.protocol.TType.STRUCT) {
               this.o2 = new NoSuchObjectException();
               this.o2.read(iprot);
-            } else {
+            } else { 
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
             }
             break;
@@ -51121,11 +51121,11 @@ public class ThriftHiveMetastore {
     public static final Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
     static {
       Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
-      tmpMap.put(_Fields.DB_NAME, new org.apache.thrift.meta_data.FieldMetaData("db_name", org.apache.thrift.TFieldRequirementType.DEFAULT,
+      tmpMap.put(_Fields.DB_NAME, new org.apache.thrift.meta_data.FieldMetaData("db_name", org.apache.thrift.TFieldRequirementType.DEFAULT, 
           new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
-      tmpMap.put(_Fields.TBL_NAME, new org.apache.thrift.meta_data.FieldMetaData("tbl_name", org.apache.thrift.TFieldRequirementType.DEFAULT,
+      tmpMap.put(_Fields.TBL_NAME, new org.apache.thrift.meta_data.FieldMetaData("tbl_name", org.apache.thrift.TFieldRequirementType.DEFAULT, 
           new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
-      tmpMap.put(_Fields.MAX_INDEXES, new org.apache.thrift.meta_data.FieldMetaData("max_indexes", org.apache.thrift.TFieldRequirementType.DEFAULT,
+      tmpMap.put(_Fields.MAX_INDEXES, new org.apache.thrift.meta_data.FieldMetaData("max_indexes", org.apache.thrift.TFieldRequirementType.DEFAULT, 
           new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.I16)));
       metaDataMap = Collections.unmodifiableMap(tmpMap);
       org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(get_indexes_args.class, metaDataMap);
@@ -51403,21 +51403,21 @@ public class ThriftHiveMetastore {
       while (true)
       {
         field = iprot.readFieldBegin();
-        if (field.type == org.apache.thrift.protocol.TType.STOP) {
+        if (field.type == org.apache.thrift.protocol.TType.STOP) { 
           break;
         }
         switch (field.id) {
           case 1: // DB_NAME
             if (field.type == org.apache.thrift.protocol.TType.STRING) {
               this.db_name = iprot.readString();
-            } else {
+            } else { 
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
             }
             break;
           case 2: // TBL_NAME
             if (field.type == org.apache.thrift.protocol.TType.STRING) {
               this.tbl_name = iprot.readString();
-            } else {
+            } else { 
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
             }
             break;
@@ -51425,7 +51425,7 @@ public class ThriftHiveMetastore {
             if (field.type == org.apache.thrift.protocol.TType.I16) {
               this.max_indexes = iprot.readI16();
               setMax_indexesIsSet(true);
-            } else {
+            } else { 
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
             }
             break;
@@ -51591,12 +51591,12 @@ public class ThriftHiveMetastore {
     public static final Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
     static {
       Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
-      tmpMap.put(_Fields.SUCCESS, new org.apache.thrift.meta_data.FieldMetaData("success", org.apache.thrift.TFieldRequirementType.DEFAULT,
-          new org.apache.thrift.meta_data.ListMetaData(org.apache.thrift.protocol.TType.LIST,
+      tmpMap.put(_Fields.SUCCESS, new org.apache.thrift.meta_data.FieldMetaData("success", org.apache.thrift.TFieldRequirementType.DEFAULT, 
+          new org.apache.thrift.meta_data.ListMetaData(org.apache.thrift.protocol.TType.LIST, 
               new org.apache.thrift.meta_data.StructMetaData(org.apache.thrift.protocol.TType.STRUCT, Index.class))));
-      tmpMap.put(_Fields.O1, new org.apache.thrift.meta_data.FieldMetaData("o1", org.apache.thrift.TFieldRequirementType.DEFAULT,
+      tmpMap.put(_Fields.O1, new org.apache.thrift.meta_data.FieldMetaData("o1", org.apache.thrift.TFieldRequirementType.DEFAULT, 
           new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRUCT)));
-      tmpMap.put(_Fields.O2, new org.apache.thrift.meta_data.FieldMetaData("o2", org.apache.thrift.TFieldRequirementType.DEFAULT,
+      tmpMap.put(_Fields.O2, new org.apache.thrift.meta_data.FieldMetaData("o2", org.apache.thrift.TFieldRequirementType.DEFAULT, 
           new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRUCT)));
       metaDataMap = Collections.unmodifiableMap(tmpMap);
       org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(get_indexes_result.class, metaDataMap);
@@ -51890,25 +51890,25 @@ public class ThriftHiveMetastore {
       while (true)
       {
         field = iprot.readFieldBegin();
-        if (field.type == org.apache.thrift.protocol.TType.STOP) {
+        if (field.type == org.apache.thrift.protocol.TType.STOP) { 
           break;
         }
         switch (field.id) {
           case 0: // SUCCESS
             if (field.type == org.apache.thrift.protocol.TType.LIST) {
               {
-                org.apache.thrift.protocol.TList _list242 = iprot.readListBegin();
-                this.success = new ArrayList<Index>(_list242.size);
-                for (int _i243 = 0; _i243 < _list242.size; ++_i243)
+                org.apache.thrift.protocol.TList _list246 = iprot.readListBegin();
+                this.success = new ArrayList<Index>(_list246.size);
+                for (int _i247 = 0; _i247 < _list246.size; ++_i247)
                 {
-                  Index _elem244; // required
-                  _elem244 = new Index();
-                  _elem244.read(iprot);
-                  this.success.add(_elem244);
+                  Index _elem248; // required
+                  _elem248 = new Index();
+                  _elem248.read(iprot);
+                  this.success.add(_elem248);
                 }
                 iprot.readListEnd();
               }
-            } else {
+            } else { 
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
             }
             break;
@@ -51916,7 +51916,7 @@ public class ThriftHiveMetastore {
             if (field.type == org.apache.thrift.protocol.TType.STRUCT) {
               this.o1 = new NoSuchObjectException();
               this.o1.read(iprot);
-            } else {
+            } else { 
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
             }
             break;
@@ -51924,7 +51924,7 @@ public class ThriftHiveMetastore {
             if (field.type == org.apache.thrift.protocol.TType.STRUCT) {
               this.o2 = new MetaException();
               this.o2.read(iprot);
-            } else {
+            } else { 
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
             }
             break;
@@ -51944,9 +51944,9 @@ public class ThriftHiveMetastore {
         oprot.writeFieldBegin(SUCCESS_FIELD_DESC);
         {
           oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, this.success.size()));
-          for (Index _iter245 : this.success)
+          for (Index _iter249 : this.success)
           {
-            _iter245.write(oprot);
+            _iter249.write(oprot);
           }
           oprot.writeListEnd();
         }
@@ -52100,11 +52100,11 @@ public class ThriftHiveMetastore {
     public static final Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
     static {
       Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
-      tmpMap.put(_Fields.DB_NAME, new org.apache.thrift.meta_data.FieldMetaData("db_name", org.apache.thrift.TFieldRequirementType.DEFAULT,
+      tmpMap.put(_Fields.DB_NAME, new org.apache.thrift.meta_data.FieldMetaData("db_name", org.apache.thrift.TFieldRequirementType.DEFAULT, 
           new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
-      tmpMap.put(_Fields.TBL_NAME, new org.apache.thrift.meta_data.FieldMetaData("tbl_name", org.apache.thrift.TFieldRequirementType.DEFAULT,
+      tmpMap.put(_Fields.TBL_NAME, new org.apache.thrift.meta_data.FieldMetaData("tbl_name", org.apache.thrift.TFieldRequirementType.DEFAULT, 
           new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
-      tmpMap.put(_Fields.MAX_INDEXES, new org.apache.thrift.meta_data.FieldMetaData("max_indexes", org.apache.thrift.TFieldRequirementType.DEFAULT,
+      tmpMap.put(_Fields.MAX_INDEXES, new org.apache.thrift.meta_data.FieldMetaData("max_indexes", org.apache.thrift.TFieldRequirementType.DEFAULT, 
           new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.I16)));
       metaDataMap = Collections.unmodifiableMap(tmpMap);
       org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(get_index_names_args.class, metaDataMap);
@@ -52382,21 +52382,21 @@ public class ThriftHiveMetastore {
       while (true)
       {
         field = iprot.readFieldBegin();
-        if (field.type == org.apache.thrift.protocol.TType.STOP) {
+        if (field.type == org.apache.thrift.protocol.TType.STOP) { 
           break;
         }
         switch (field.id) {
           case 1: // DB_NAME
             if (field.type == org.apache.thrift.protocol.TType.STRING) {
               this.db_name = iprot.readString();
-            } else {
+            } else { 
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
             }
             break;
           case 2: // TBL_NAME
             if (field.type == org.apache.thrift.protocol.TType.STRING) {
               this.tbl_name = iprot.readString();
-            } else {
+            } else { 
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
             }
             break;
@@ -52404,7 +52404,7 @@ public class ThriftHiveMetastore {
             if (field.type == org.apache.thrift.protocol.TType.I16) {
               this.max_indexes = iprot.readI16();
               setMax_indexesIsSet(true);
-            } else {
+            } else { 
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
             }
             break;
@@ -52565,10 +52565,10 @@ public class ThriftHiveMetastore {
     public static final Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
     static {
       Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
-      tmpMap.put(_Fields.SUCCESS, new org.apache.thrift.meta_data.FieldMetaData("success", org.apache.thrift.TFieldRequirementType.DEFAULT,
-          new org.apache.thrift.meta_data.ListMetaData(org.apache.thrift.protocol.TType.LIST,
+      tmpMap.put(_Fields.SUCCESS, new org.apache.thrift.meta_data.FieldMetaData("success", org.apache.thrift.TFieldRequirementType.DEFAULT, 
+          new org.apache.thrift.meta_data.ListMetaData(org.apache.thrift.protocol.TType.LIST, 
               new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING))));
-      tmpMap.put(_Fields.O2, new org.apache.thrift.meta_data.FieldMetaData("o2", org.apache.thrift.TFieldRequirementType.DEFAULT,
+      tmpMap.put(_Fields.O2, new org.apache.thrift.meta_data.FieldMetaData("o2", org.apache.thrift.TFieldRequirementType.DEFAULT, 
           new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRUCT)));
       metaDataMap = Collections.unmodifiableMap(tmpMap);
       org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(get_index_names_result.class, metaDataMap);
@@ -52801,24 +52801,24 @@ public class ThriftHiveMetastore {
       while (true)
       {
         field = iprot.readFieldBegin();
-        if (field.type == org.apache.thrift.protocol.TType.STOP) {
+        if (field.type == org.apache.thrift.protocol.TType.STOP) { 
           break;
         }
         switch (field.id) {
           case 0: // SUCCESS
             if (field.type == org.apache.thrift.protocol.TType.LIST) {
               {
-                org.apache.thrift.protocol.TList _list246 = iprot.readListBegin();
-                this.success = new ArrayList<String>(_list246.size);
-                for (int _i247 = 0; _i247 < _list246.size; ++_i247)
+                org.apache.thrift.protocol.TList _list250 = iprot.readListBegin();
+                this.success = new ArrayList<String>(_list250.size);
+                for (int _i251 = 0; _i251 < _list250.size; ++_i251)
                 {
-                  String _elem248; // required
-                  _elem248 = iprot.readString();
-                  this.success.add(_elem248);
+                  String _elem252; // required
+                  _elem252 = iprot.readString();
+                  this.success.add(_elem252);
                 }
                 iprot.readListEnd();
               }
-            } else {
+            } else { 
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
             }
             break;
@@ -52826,7 +52826,7 @@ public class ThriftHiveMetastore {
             if (field.type == org.apache.thrift.protocol.TType.STRUCT) {
               this.o2 = new MetaException();
               this.o2.read(iprot);
-            } else {
+            } else { 
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
             }
             break;
@@ -52846,9 +52846,9 @@ public class ThriftHiveMetastore {
         oprot.writeFieldBegin(SUCCESS_FIELD_DESC);
         {
           oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRING, this.success.size()));
-          for (String _iter249 : this.success)
+          for (String _iter253 : this.success)
           {
-            oprot.writeString(_iter249);
+            oprot.writeString(_iter253);
           }
           oprot.writeListEnd();
         }
@@ -52978,7 +52978,7 @@ public class ThriftHiveMetastore {
     public static final Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
     static {
       Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
-      tmpMap.put(_Fields.ROLE, new org.apache.thrift.meta_data.FieldMetaData("role", org.apache.thrift.TFieldRequirementType.DEFAULT,
+      tmpMap.put(_Fields.ROLE, new org.apache.thrift.meta_data.FieldMetaData("role", org.apache.thrift.TFieldRequirementType.DEFAULT, 
           new org.apache.thrift.meta_data.StructMetaData(org.apache.thrift.protocol.TType.STRUCT, Role.class)));
       metaDataMap = Collections.unmodifiableMap(tmpMap);
       org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(create_role_args.class, metaDataMap);
@@ -53131,7 +53131,7 @@ public class ThriftHiveMetastore {
       while (true)
       {
         field = iprot.readFieldBegin();
-        if (field.type == org.apache.thrift.protocol.TType.STOP) {
+        if (field.type == org.apache.thrift.protocol.TType.STOP) { 
           break;
         }
         switch (field.id) {
@@ -53139,7 +53139,7 @@ public class ThriftHiveMetastore {
             if (field.type == org.apache.thrift.protocol.TType.STRUCT) {
               this.role = new Role();
               this.role.read(iprot);
-            } else {
+            } else { 
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
             }
             break;
@@ -53280,9 +53280,9 @@ public class ThriftHiveMetastore {
     public static final Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
     static {
       Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
-      tmpMap.put(_Fields.SUCCESS, new org.apache.thrift.meta_data.FieldMetaData("success", org.apache.thrift.TFieldRequirementType.DEFAULT,
+      tmpMap.put(_Fields.SUCCESS, new org.apache.thrift.meta_data.FieldMetaData("success", org.apache.thrift.TFieldRequirementType.DEFAULT, 
           new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.BOOL)));
-      tmpMap.put(_Fields.O1, new org.apache.thrift.meta_data.FieldMetaData("o1", org.apache.thrift.TFieldRequirementType.DEFAULT,
+      tmpMap.put(_Fields.O1, new org.apache.thrift.meta_data.FieldMetaData("o1", org.apache.thrift.TFieldRequirementType.DEFAULT, 
           new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRUCT)));
       metaDataMap = Collections.unmodifiableMap(tmpMap);
       org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(create_role_result.class, metaDataMap);
@@ -53497,7 +53497,7 @@ public class ThriftHiveMetastore {
       while (true)
       {
         field = iprot.readFieldBegin();
-        if (field.type == org.apache.thrift.protocol.TType.STOP) {
+        if (field.type == org.apache.thrift.protocol.TType.STOP) { 
           break;
         }
         switch (field.id) {
@@ -53505,7 +53505,7 @@ public class ThriftHiveMetastore {
             if (field.type == org.apache.thrift.protocol.TType.BOOL) {
               this.success = iprot.readBool();
               setSuccessIsSet(true);
-            } else {
+            } else { 
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
             }
             break;
@@ -53513,7 +53513,7 @@ public class ThriftHiveMetastore {
             if (field.type == org.apache.thrift.protocol.TType.STRUCT) {
               this.o1 = new MetaException();
               this.o1.read(iprot);
-            } else {
+            } else { 
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
             }
             break;
@@ -53654,7 +53654,7 @@ public class ThriftHiveMetastore {
     public static final Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
     static {
       Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
-      tmpMap.put(_Fields.ROLE_NAME, new org.apache.thrift.meta_data.FieldMetaData("role_name", org.apache.thrift.TFieldRequirementType.DEFAULT,
+      tmpMap.put(_Fields.ROLE_NAME, new org.apache.thrift.meta_data.FieldMetaData("role_name", org.apache.thrift.TFieldRequirementType.DEFAULT, 
           new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
       metaDataMap = Collections.unmodifiableMap(tmpMap);
       org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(drop_role_args.class, metaDataMap);
@@ -53807,14 +53807,14 @@ public class ThriftHiveMetastore {
       while (true)
       {
         field = iprot.readFieldBegin();
-        if (field.type == org.apache.thrift.protocol.TType.STOP) {
+        if (field.type == org.apache.thrift.protocol.TType.STOP) { 
           break;
         }
         switch (field.id) {
           case 1: // ROLE_NAME
             if (field.type == org.apache.thrift.protocol.TType.STRING) {
               this.role_name = iprot.readString();
-            } else {
+            } else { 
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
             }
             break;
@@ -53955,9 +53955,9 @@ public class ThriftHiveMetastore {
     public static final Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
     static {
       Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
-      tmpMap.put(_Fields.SUCCESS, new org.apache.thrift.meta_data.FieldMetaData("success", org.apache.thrift.TFieldRequirementType.DEFAULT,
+      tmpMap.put(_Fields.SUCCESS, new org.apache.thrift.meta_data.FieldMetaData("success", org.apache.thrift.TFieldRequirementType.DEFAULT, 
           new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.BOOL)));
-      tmpMap.put(_Fields.O1, new org.apache.thrift.meta_data.FieldMetaData("o1", org.apache.thrift.TFieldRequirementType.DEFAULT,
+      tmpMap.put(_Fields.O1, new org.apache.thrift.meta_data.FieldMetaData("o1", org.apache.thrift.TFieldRequirementType.DEFAULT, 
           new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRUCT)));
       metaDataMap = Collections.unmodifiableMap(tmpMap);
       org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(drop_role_result.class, metaDataMap);
@@ -54172,7 +54172,7 @@ public class ThriftHiveMetastore {
       while (true)
       {
         field = iprot.readFieldBegin();
-        if (field.type == org.apache.thrift.protocol.TType.STOP) {
+        if (field.type == org.apache.thrift.protocol.TType.STOP) { 
           break;
         }
         switch (field.id) {
@@ -54180,7 +54180,7 @@ public class ThriftHiveMetastore {
             if (field.type == org.apache.thrift.protocol.TType.BOOL) {
               this.success = iprot.readBool();
               setSuccessIsSet(true);
-            } else {
+            } else { 
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
             }
             break;
@@ -54188,7 +54188,7 @@ public class ThriftHiveMetastore {
             if (field.type == org.apache.thrift.protocol.TType.STRUCT) {
               this.o1 = new MetaException();
               this.o1.read(iprot);
-            } else {
+            } else { 
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
             }
             break;
@@ -54407,7 +54407,7 @@ public class ThriftHiveMetastore {
       while (true)
       {
         field = iprot.readFieldBegin();
-        if (field.type == org.apache.thrift.protocol.TType.STOP) {
+        if (field.type == org.apache.thrift.protocol.TType.STOP) { 
           break;
         }
         switch (field.id) {
@@ -54534,10 +54534,10 @@ public class ThriftHiveMetastore {
     public static final Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
     static {
       Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
-      tmpMap.put(_Fields.SUCCESS, new org.apache.thrift.meta_data.FieldMetaData("success", org.apache.thrift.TFieldRequirementType.DEFAULT,
-          new org.apache.thrift.meta_data.ListMetaData(org.apache.thrift.protocol.TType.LIST,
+      tmpMap.put(_Fields.SUCCESS, new org.apache.thrift.meta_data.FieldMetaData("success", org.apache.thrift.TFieldRequirementType.DEFAULT, 
+          new org.apache.thrift.meta_data.ListMetaData(org.apache.thrift.protocol.TType.LIST, 
               new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING))));
-      tmpMap.put(_Fields.O1, new org.apache.thrift.meta_data.FieldMetaData("o1", org.apache.thrift.TFieldRequirementType.DEFAULT,
+      tmpMap.put(_Fields.O1, new org.apache.thrift.meta_data.FieldMetaData("o1", org.apache.thrift.TFieldRequirementType.DEFAULT, 
           new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRUCT)));
       metaDataMap = Collections.unmodifiableMap(tmpMap);
       org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(get_role_names_result.class, metaDataMap);
@@ -54770,24 +54770,24 @@ public class ThriftHiveMetastore {
       while (true)
       {
         field = iprot.readFieldBegin();
-        if (field.type == org.apache.thrift.protocol.TType.STOP) {
+        if (field.type == org.apache.thrift.protocol.TType.STOP) { 
           break;
         }
         switch (field.id) {
           case 0: // SUCCESS
             if (field.type == org.apache.thrift.protocol.TType.LIST) {
               {
-                org.apache.thrift.protocol.TList _list250 = iprot.readListBegin();
-                this.success = new ArrayList<String>(_list250.size);
-                for (int _i251 = 0; _i251 < _list250.size; ++_i251)
+                org.apache.thrift.protocol.TList _list254 = iprot.readListBegin();
+                this.success = new ArrayList<String>(_list254.size);
+                for (int _i255 = 0; _i255 < _list254.size; ++_i255)
                 {
-                  String _elem252; // required
-                  _elem252 = iprot.readString();
-                  this.success.add(_elem252);
+                  String _elem256; // required
+                  _elem256 = iprot.readString();
+                  this.success.add(_elem256);
                 }
                 iprot.readListEnd();
               }
-            } else {
+            } else { 
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
             }
             break;
@@ -54795,7 +54795,7 @@ public class ThriftHiveMetastore {
             if (field.type == org.apache.thrift.protocol.TType.STRUCT) {
               this.o1 = new MetaException();
               this.o1.read(iprot);
-            } else {
+            } else { 
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
             }
             break;
@@ -54815,9 +54815,9 @@ public class ThriftHiveMetastore {
         oprot.writeFieldBegin(SUCCESS_FIELD_DESC);
         {
           oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRING, this.success.size()));
-          for (String _iter253 : this.success)
+          for (String _iter257 : this.success)
           {
-            oprot.writeString(_iter253);
+            oprot.writeString(_iter257);
           }
           oprot.writeListEnd();
         }
@@ -54899,13 +54899,13 @@ public class ThriftHiveMetastore {
       ROLE_NAME((short)1, "role_name"),
       PRINCIPAL_NAME((short)2, "principal_name"),
       /**
-       *
+       * 
        * @see PrincipalType
        */
       PRINCIPAL_TYPE((short)3, "principal_type"),
       GRANTOR((short)4, "grantor"),
       /**
-       *
+       * 
        * @see PrincipalType
        */
       GRANTOR_TYPE((short)5, "grantorType"),
@@ -54982,17 +54982,17 @@ public class ThriftHiveMetastore {
     public static final Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
     static {
       Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
-      tmpMap.put(_Fields.ROLE_NAME, new org.apache.thrift.meta_data.FieldMetaData("role_name", org.apache.thrift.TFieldRequirementType.DEFAULT,
+      tmpMap.put(_Fields.ROLE_NAME, new org.apache.thrift.meta_data.FieldMetaData("role_name", org.apache.thrift.TFieldRequirementType.DEFAULT, 
           new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
-      tmpMap.put(_Fields.PRINCIPAL_NAME, new org.apache.thrift.meta_data.FieldMetaData("principal_name", org.apache.thrift.TFieldRequirementType.DEFAULT,
+      tmpMap.put(_Fields.PRINCIPAL_NAME, new org.apache.thrift.meta_data.FieldMetaData("principal_name", org.apache.thrift.TFieldRequirementType.DEFAULT, 
           new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
-      tmpMap.put(_Fields.PRINCIPAL_TYPE, new org.apache.thrift.meta_data.FieldMetaData("principal_type", org.apache.thrift.TFieldRequirementType.DEFAULT,
+      tmpMap.put(_Fields.PRINCIPAL_TYPE, new org.apache.thrift.meta_data.FieldMetaData("principal_type", org.apache.thrift.TFieldRequirementType.DEFAULT, 
           new org.apache.thrift.meta_data.EnumMetaData(org.apache.thrift.protocol.TType.ENUM, PrincipalType.class)));
-      tmpMap.put(_Fields.GRANTOR, new org.apache.thrift.meta_data.FieldMetaData("grantor", org.apache.thrift.TFieldRequirementType.DEFAULT,
+      tmpMap.put(_Fields.GRANTOR, new org.apache.thrift.meta_data.FieldMetaData("grantor", org.apache.thrift.TFieldRequirementType.DEFAULT, 
           new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
-      tmpMap.put(_Fields.GRANTOR_TYPE, new org.apache.thrift.meta_data.FieldMetaData("grantorType", org.apache.thrift.TFieldRequirementType.DEFAULT,
+      tmpMap.put(_Fields.GRANTOR_TYPE, new org.apache.thrift.meta_data.FieldMetaData("grantorType", org.apache.thrift.TFieldRequirementType.DEFAULT, 
           new org.apache.thrift.meta_data.EnumMetaData(org.apache.thrift.protocol.TType.ENUM, PrincipalType.class)));
-      tmpMap.put(_Fields.GRANT_OPTION, new org.apache.thrift.meta_data.FieldMetaData("grant_option", org.apache.thrift.TFieldRequirementType.DEFAULT,
+      tmpMap.put(_Fields.GRANT_OPTION, new org.apache.thrift.meta_data.FieldMetaData("grant_option", org.apache.thrift.TFieldRequirementType.DEFAULT, 
           new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.BOOL)));
       metaDataMap = Collections.unmodifiableMap(tmpMap);
       org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(grant_role_args.class, metaDataMap);
@@ -55105,7 +55105,7 @@ public class ThriftHiveMetastore {
     }
 
     /**
-     *
+     * 
      * @see PrincipalType
      */
     public PrincipalType getPrincipal_type() {
@@ -55113,7 +55113,7 @@ public class ThriftHiveMetastore {
     }
 
     /**
-     *
+     * 
      * @see PrincipalType
      */
     public void setPrincipal_type(PrincipalType principal_type) {
@@ -55159,7 +55159,7 @@ public class ThriftHiveMetastore {
     }
 
     /**
-     *
+     * 
      * @see PrincipalType
      */
     public PrincipalType getGrantorType() {
@@ -55167,7 +55167,7 @@ public class ThriftHiveMetastore {
     }
 
     /**
-     *
+     * 
      * @see PrincipalType
      */
     public void setGrantorType(PrincipalType grantorType) {
@@ -55467,42 +55467,42 @@ public class ThriftHiveMetastore {
       while (true)
       {
         field = iprot.readFieldBegin();
-        if (field.type == org.apache.thrift.protocol.TType.STOP) {
+        if (field.type == org.apache.thrift.protocol.TType.STOP) { 
           break;
         }
         switch (field.id) {
           case 1: // ROLE_NAME
             if (field.type == org.apache.thrift.protocol.TType.STRING) {
               this.role_name = iprot.readString();
-            } else {
+            } else { 
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
             }
             break;
           case 2: // PRINCIPAL_NAME
             if (field.type == org.apache.thrift.protocol.TType.STRING) {
               this.principal_name = iprot.readString();
-            } else {
+            } else { 
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
             }
             break;
           case 3: // PRINCIPAL_TYPE
             if (field.type == org.apache.thrift.protocol.TType.I32) {
               this.principal_type = PrincipalType.findByValue(iprot.readI32());
-            } else {
+            } else { 
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
             }
             break;
           case 4: // GRANTOR
             if (field.type == org.apache.thrift.protocol.TType.STRING) {
               this.grantor = iprot.readString();
-            } else {
+            } else { 
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
             }
             break;
           case 5: // GRANTOR_TYPE
             if (field.type == org.apache.thrift.protocol.TType.I32) {
               this.grantorType = PrincipalType.findByValue(iprot.readI32());
-            } else {
+            } else { 
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
             }
             break;
@@ -55510,7 +55510,7 @@ public class ThriftHiveMetastore {
             if (field.type == org.apache.thrift.protocol.TType.BOOL) {
               this.grant_option = iprot.readBool();
               setGrant_optionIsSet(true);
-            } else {
+            } else { 
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
             }
             break;
@@ -55712,9 +55712,9 @@ public class ThriftHiveMetastore {
     public static final Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
     static {
       Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
-      tmpMap.put(_Fields.SUCCESS, new org.apache.thrift.meta_data.FieldMetaData("success", org.apache.thrift.TFieldRequirementType.DEFAULT,
+      tmpMap.put(_Fields.SUCCESS, new org.apache.thrift.meta_data.FieldMetaData("success", org.apache.thrift.TFieldRequirementType.DEFAULT, 
           new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.BOOL)));
-      tmpMap.put(_Fields.O1, new org.apache.thrift.meta_data.FieldMetaData("o1", org.apache.thrift.TFieldRequirementType.DEFAULT,
+      tmpMap.put(_Fields.O1, new org.apache.thrift.meta_data.FieldMetaData("o1", org.apache.thrift.TFieldRequirementType.DEFAULT, 
           new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRUCT)));
       metaDataMap = Collections.unmodifiableMap(tmpMap);
       org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(grant_role_result.class, metaDataMap);
@@ -55929,7 +55929,7 @@ public class ThriftHiveMetastore {
       while (true)
       {
         field = iprot.readFieldBegin();
-        if (field.type == org.apache.thrift.protocol.TType.STOP) {
+        if (field.type == org.apache.thrift.protocol.TType.STOP) { 
           break;
         }
         switch (field.id) {
@@ -55937,7 +55937,7 @@ public class ThriftHiveMetastore {
             if (field.type == org.apache.thrift.protocol.TType.BOOL) {
               this.success = iprot.readBool();
               setSuccessIsSet(true);
-            } else {
+            } else { 
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
             }
             break;
@@ -55945,7 +55945,7 @@ public class ThriftHiveMetastore {
             if (field.type == org.apache.thrift.protocol.TType.STRUCT) {
               this.o1 = new MetaException();
               this.o1.read(iprot);
-            } else {
+            } else { 
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
             }
             break;
@@ -56032,7 +56032,7 @@ public class ThriftHiveMetastore {
       ROLE_NAME((short)1, "role_name"),
       PRINCIPAL_NAME((short)2, "principal_name"),
       /**
-       *
+       * 
        * @see PrincipalType
        */
       PRINCIPAL_TYPE((short)3, "principal_type");
@@ -56100,11 +56100,11 @@ public class ThriftHiveMetastore {
     public static final Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
     static {
       Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
-      tmpMap.put(_Fields.ROLE_NAME, new org.apache.thrift.meta_data.FieldMetaData("role_name", org.apache.thrift.TFieldRequirementType.DEFAULT,
+      tmpMap.put(_Fields.ROLE_NAME, new org.apache.thrift.meta_data.FieldMetaData("role_name", org.apache.thrift.TFieldRequirementType.DEFAULT, 
           new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
-      tmpMap.put(_Fields.PRINCIPAL_NAME, new org.apache.thrift.meta_data.FieldMetaData("principal_name", org.apache.thrift.TFieldRequirementType.DEFAULT,
+      tmpMap.put(_Fields.PRINCIPAL_NAME, new org.apache.thrift.meta_data.FieldMetaData("principal_name", org.apache.thrift.TFieldRequirementType.DEFAULT, 
           new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
-      tmpMap.put(_Fields.PRINCIPAL_TYPE, new org.apache.thrift.meta_data.FieldMetaData("principal_type", org.apache.thrift.TFieldRequirementType.DEFAULT,
+      tmpMap.put(_Fields.PRINCIPAL_TYPE, new org.apache.thrift.meta_data.FieldMetaData("principal_type", org.apache.thrift.TFieldRequirementType.DEFAULT, 
           new org.apache.thrift.meta_data.EnumMetaData(org.apache.thrift.protocol.TType.ENUM, PrincipalType.class)));
       metaDataMap = Collections.unmodifiableMap(tmpMap);
       org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(revoke_role_args.class, metaDataMap);
@@ -56197,7 +56197,7 @@ public class ThriftHiveMetastore {
     }
 
     /**
-     *
+     * 
      * @see PrincipalType
      */
     public PrincipalType getPrincipal_type() {
@@ -56205,7 +56205,7 @@ public class ThriftHiveMetastore {
     }
 
     /**
-     *
+     * 
      * @see PrincipalType
      */
     public void setPrincipal_type(PrincipalType principal_type) {
@@ -56387,28 +56387,28 @@ public class ThriftHiveMetastore {
       while (true)
       {
         field = iprot.readFieldBegin();
-        if (field.type == org.apache.thrift.protocol.TType.STOP) {
+        if (field.type == org.apache.thrift.protocol.TType.STOP) { 
           break;
         }
         switch (field.id) {
           case 1: // ROLE_NAME
             if (field.type == org.apache.thrift.protocol.TType.STRING) {
               this.role_name = iprot.readString();
-            } else {
+            } else { 
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
             }
             break;
           case 2: // PRINCIPAL_NAME
             if (field.type == org.apache.thrift.protocol.TType.STRING) {
               this.principal_name = iprot.readString();
-            } else {
+            } else { 
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
             }
             break;
           case 3: // PRINCIPAL_TYPE
             if (field.type == org.apache.thrift.protocol.TType.I32) {
               this.principal_type = PrincipalType.findByValue(iprot.readI32());
-            } else {
+            } else { 
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
             }
             break;
@@ -56575,9 +56575,9 @@ public class ThriftHiveMetastore {
     public static final Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
     static {
       Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
-      tmpMap.put(_Fields.SUCCESS, new org.apache.thrift.meta_data.FieldMetaData("success", org.apache.thrift.TFieldRequirementType.DEFAULT,
+      tmpMap.put(_Fields.SUCCESS, new org.apache.thrift.meta_data.FieldMetaData("success", org.apache.thrift.TFieldRequirementType.DEFAULT, 
           new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.BOOL)));
-      tmpMap.put(_Fields.O1, new org.apache.thrift.meta_data.FieldMetaData("o1", org.apache.thrift.TFieldRequirementType.DEFAULT,
+      tmpMap.put(_Fields.O1, new org.apache.thrift.meta_data.FieldMetaData("o1", org.apache.thrift.TFieldRequirementType.DEFAULT, 
           new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRUCT)));
       metaDataMap = Collections.unmodifiableMap(tmpMap);
       org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(revoke_role_result.class, metaDataMap);
@@ -56792,7 +56792,7 @@ public class ThriftHiveMetastore {
       while (true)
       {
         field = iprot.readFieldBegin();
-        if (field.type == org.apache.thrift.protocol.TType.STOP) {
+        if (field.type == org.apache.thrift.protocol.TType.STOP) { 
           break;
         }
         switch (field.id) {
@@ -56800,7 +56800,7 @@ public class ThriftHiveMetastore {
             if (field.type == org.apache.thrift.protocol.TType.BOOL) {
               this.success = iprot.readBool();
               setSuccessIsSet(true);
-            } else {
+            } else { 
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
             }
             break;
@@ -56808,7 +56808,7 @@ public class ThriftHiveMetastore {
             if (field.type == org.apache.thrift.protocol.TType.STRUCT) {
               this.o1 = new MetaException();
               this.o1.read(iprot);
-            } else {
+            } else { 
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
             }
             break;
@@ -56892,7 +56892,7 @@ public class ThriftHiveMetastore {
     public enum _Fields implements org.apache.thrift.TFieldIdEnum {
       PRINCIPAL_NAME((short)1, "principal_name"),
       /**
-       *
+       * 
        * @see PrincipalType
        */
       PRINCIPAL_TYPE((short)2, "principal_type");
@@ -56958,9 +56958,9 @@ public class ThriftHiveMetastore {
     public static final Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
     static {
       Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
-      tmpMap.put(_Fields.PRINCIPAL_NAME, new org.apache.thrift.meta_data.FieldMetaData("principal_name", org.apache.thrift.TFieldRequirementType.DEFAULT,
+      tmpMap.put(_Fields.PRINCIPAL_NAME, new org.apache.thrift.meta_data.FieldMetaData("principal_name", org.apache.thrift.TFieldRequirementType.DEFAULT, 
           new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
-      tmpMap.put(_Fields.PRINCIPAL_TYPE, new org.apache.thrift.meta_data.FieldMetaData("principal_type", org.apache.thrift.TFieldRequirementType.DEFAULT,
+      tmpMap.put(_Fields.PRINCIPAL_TYPE, new org.apache.thrift.meta_data.FieldMetaData("principal_type", org.apache.thrift.TFieldRequirementType.DEFAULT, 
           new org.apache.thrift.meta_data.EnumMetaData(org.apache.thrift.protocol.TType.ENUM, PrincipalType.class)));
       metaDataMap = Collections.unmodifiableMap(tmpMap);
       org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(list_roles_args.class, metaDataMap);
@@ -57024,7 +57024,7 @@ public class ThriftHiveMetastore {
     }
 
     /**
-     *
+     * 
      * @see PrincipalType
      */
     public PrincipalType getPrincipal_type() {
@@ -57032,7 +57032,7 @@ public class ThriftHiveMetastore {
     }
 
     /**
-     *
+     * 
      * @see PrincipalType
      */
     public void setPrincipal_type(PrincipalType principal_type) {
@@ -57182,21 +57182,21 @@ public class ThriftHiveMetastore {
       while (true)
       {
         field = iprot.readFieldBegin();
-        if (field.type == org.apache.thrift.protocol.TType.STOP) {
+        if (field.type == org.apache.thrift.protocol.TType.STOP) { 
           break;
         }
         switch (field.id) {
           case 1: // PRINCIPAL_NAME
             if (field.type == org.apache.thrift.protocol.TType.STRING) {
               this.principal_name = iprot.readString();
-            } else {
+            } else { 
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
             }
             break;
           case 2: // PRINCIPAL_TYPE
             if (field.type == org.apache.thrift.protocol.TType.I32) {
               this.principal_type = PrincipalType.findByValue(iprot.readI32());
-            } else {
+            } else { 
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
             }
             break;
@@ -57348,10 +57348,10 @@ public class ThriftHiveMetastore {
     public static final Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
     static {
       Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
-      tmpMap.put(_Fields.SUCCESS, new org.apache.thrift.meta_data.FieldMetaData("success", org.apache.thrift.TFieldRequirementType.DEFAULT,
-          new org.apache.thrift.meta_data.ListMetaData(org.apache.thrift.protocol.TType.LIST,
+      tmpMap.put(_Fields.SUCCESS, new org.apache.thrift.meta_data.FieldMetaData("success", org.apache.thrift.TFieldRequirementType.DEFAULT, 
+          new org.apache.thrift.meta_data.ListMetaData(org.apache.thrift.protocol.TType.LIST, 
               new org.apache.thrift.meta_data.StructMetaData(org.apache.thrift.protocol.TType.STRUCT, Role.class))));
-      tmpMap.put(_Fields.O1, new org.apache.thrift.meta_data.FieldMetaData("o1", org.apache.thrift.TFieldRequirementType.DEFAULT,
+      tmpMap.put(_Fields.O1, new org.apache.thrift.meta_data.FieldMetaData("o1", org.apache.thrift.TFieldRequirementType.DEFAULT, 
           new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRUCT)));
       metaDataMap = Collections.unmodifiableMap(tmpMap);
       org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(list_roles_result.class, metaDataMap);
@@ -57584,25 +57584,25 @@ public class ThriftHiveMetastore {
       while (true)
       {
         field = iprot.readFieldBegin();
-        if (field.type == org.apache.thrift.protocol.TType.STOP) {
+        if (field.type == org.apache.thrift.protocol.TType.STOP) { 
           break;
         }
         switch (field.id) {
           case 0: // SUCCESS
             if (field.type == org.apache.thrift.protocol.TType.LIST) {
               {
-                org.apache.thrift.protocol.TList _list254 = iprot.readListBegin();
-                this.success = new ArrayList<Role>(_list254.size);
-                for (int _i255 = 0; _i255 < _list254.size; ++_i255)
+                org.apache.thrift.protocol.TList _list258 = iprot.readListBegin();
+                this.success = new ArrayList<Role>(_list258.size);
+                for (int _i259 = 0; _i259 < _list258.size; ++_i259)
                 {
-                  Role _elem256; // required
-                  _elem256 = new Role();
-                  _elem256.read(iprot);
-                  this.success.add(_elem256);
+                  Role _elem260; // required
+                  _elem260 = new Role();
+                  _elem260.read(iprot);
+                  this.success.add(_elem260);
                 }
                 iprot.readListEnd();
               }
-            } else {
+            } else { 
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
             }
             break;
@@ -57610,7 +57610,7 @@ public class ThriftHiveMetastore {
             if (field.type == org.apache.thrift.protocol.TType.STRUCT) {
               this.o1 = new MetaException();
               this.o1.read(iprot);
-            } else {
+            } else { 
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
             }
             break;
@@ -57630,9 +57630,9 @@ public class ThriftHiveMetastore {
         oprot.writeFieldBegin(SUCCESS_FIELD_DESC);
         {
           oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, this.success.size()));
-          for (Role _iter257 : this.success)
+          for (Role _iter261 : this.success)
           {
-            _iter257.write(oprot);
+            _iter261.write(oprot);
           }
           oprot.writeListEnd();
         }
@@ -57772,12 +57772,12 @@ public class ThriftHiveMetastore {
     public static final Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
     static {
       Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
-      tmpMap.put(_Fields.HIVE_OBJECT, new org.apache.thrift.meta_data.FieldMetaData("hiveObject", org.apache.thrift.TFieldRequirementType.DEFAULT,
+      tmpMap.put(_Fields.HIVE_OBJECT, new org.apache.thrift.meta_data.FieldMetaData("hiveObject", org.apache.thrift.TFieldRequirementType.DEFAULT, 
           new org.apache.thrift.meta_data.StructMetaData(org.apache.thrift.protocol.TType.STRUCT, HiveObjectRef.class)));
-      tmpMap.put(_Fields.USER_NAME, new org.apache.thrift.meta_data.FieldMetaData("user_name", org.apache.thrift.TFieldRequirementType.DEFAULT,
+      tmpMap.put(_Fields.USER_NAME, new org.apache.thrift.meta_data.FieldMetaData("user_name", org.apache.thrift.TFieldRequirementType.DEFAULT, 
           new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
-      tmpMap.put(_Fields.GROUP_NAMES, new org.apache.thrift.meta_data.FieldMetaData("group_names", org.apache.thrift.TFieldRequirementType.DEFAULT,
-          new org.apache.thrift.meta_data.ListMetaData(org.apache.thrift.protocol.TType.LIST,
+      tmpMap.put(_Fields.GROUP_NAMES, new org.apache.thrift.meta_data.FieldMetaData("group_names", org.apache.thrift.TFieldRequirementType.DEFAULT, 
+          new org.apache.thrift.meta_data.ListMetaData(org.apache.thrift.protocol.TType.LIST, 
               new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING))));
       metaDataMap = Collections.unmodifiableMap(tmpMap);
       org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(get_privilege_set_args.class, metaDataMap);
@@ -58071,7 +58071,7 @@ public class ThriftHiveMetastore {
       while (true)
       {
         field = iprot.readFieldBegin();
-        if (field.type == org.apache.thrift.protocol.TType.STOP) {
+        if (field.type == org.apache.thrift.protocol.TType.STOP) { 
           break;
         }
         switch (field.id) {
@@ -58079,31 +58079,31 @@ public class ThriftHiveMetastore {
             if (field.type == org.apache.thrift.protocol.TType.STRUCT) {
               this.hiveObject = new HiveObjectRef();
               this.hiveObject.read(iprot);
-            } else {
+            } else { 
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
             }
             break;
           case 2: // USER_NAME
             if (field.type == org.apache.thrift.protocol.TType.STRING) {
               this.user_name = iprot.readString();
-            } else {
+            } else { 
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
             }
             break;
           case 3: // GROUP_NAMES
             if (field.type == org.apache.thrift.protocol.TType.LIST) {
               {
-                org.apache.thrift.protocol.TList _list258 = iprot.readListBegin();
-                this.group_names = new ArrayList<String>(_list258.size);
-                for (int _i259 = 0; _i259 < _list258.size; ++_i259)
+                org.apache.thrift.protocol.TList _list262 = iprot.readListBegin();
+                this.group_names = new ArrayList<String>(_list262.size);
+                for (int _i263 = 0; _i263 < _list262.size; ++_i263)
                 {
-                  String _elem260; // required
-                  _elem260 = iprot.readString();
-                  this.group_names.add(_elem260);
+                  String _elem264; // required
+                  _elem264 = iprot.readString();
+                  this.group_names.add(_elem264);
                 }
                 iprot.readListEnd();
               }
-            } else {
+            } else { 
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
             }
             break;
@@ -58134,9 +58134,9 @@ public class ThriftHiveMetastore {
         oprot.writeFieldBegin(GROUP_NAMES_FIELD_DESC);
         {
           oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRING, this.group_names.size()));
-          for (String _iter261 : this.group_names)
+          for (String _iter265 : this.group_names)
           {
-            oprot.writeString(_iter261);
+            oprot.writeString(_iter265);
           }
           oprot.writeListEnd();
         }
@@ -58275,9 +58275,9 @@ public class ThriftHiveMetastore {
     public static final Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
     static {
       Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
-      tmpMap.put(_Fields.SUCCESS, new org.apache.thrift.meta_data.FieldMetaData("success", org.apache.thrift.TFieldRequirementType.DEFAULT,
+      tmpMap.put(_Fields.SUCCESS, new org.apache.thrift.meta_data.FieldMetaData("success", org.apache.thrift.TFieldRequirementType.DEFAULT, 
           new org.apache.thrift.meta_data.StructMetaData(org.apache.thrift.protocol.TType.STRUCT, PrincipalPrivilegeSet.class)));
-      tmpMap.put(_Fields.O1, new org.apache.thrift.meta_data.FieldMetaData("o1", org.apache.thrift.TFieldRequirementType.DEFAULT,
+      tmpMap.put(_Fields.O1, new org.apache.thrift.meta_data.FieldMetaData("o1", org.apache.thrift.TFieldRequirementType.DEFAULT, 
           new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRUCT)));
       metaDataMap = Collections.unmodifiableMap(tmpMap);
       org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(get_privilege_set_result.class, metaDataMap);
@@ -58491,7 +58491,7 @@ public class ThriftHiveMetastore {
       while (true)
       {
         field = iprot.readFieldBegin();
-        if (field.type == org.apache.thrift.protocol.TType.STOP) {
+        if (field.type == org.apache.thrift.protocol.TType.STOP) { 
           break;
         }
         switch (field.id) {
@@ -58499,7 +58499,7 @@ public class ThriftHiveMetastore {
             if (field.type == org.apache.thrift.protocol.TType.STRUCT) {
               this.success = new PrincipalPrivilegeSet();
               this.success.read(iprot);
-            } else {
+            } else { 
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
             }
             break;
@@ -58507,7 +58507,7 @@ public class ThriftHiveMetastore {
             if (field.type == org.apache.thrift.protocol.TType.STRUCT) {
               this.o1 = new MetaException();
               this.o1.read(iprot);
-            } else {
+            } else { 
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
             }
             break;
@@ -58597,7 +58597,7 @@ public class ThriftHiveMetastore {
     public enum _Fields implements org.apache.thrift.TFieldIdEnum {
       PRINCIPAL_NAME((short)1, "principal_name"),
       /**
-       *
+       * 
        * @see PrincipalType
        */
       PRINCIPAL_TYPE((short)2, "principal_type"),
@@ -58666,11 +58666,11 @@ public class ThriftHiveMetastore {
     public static final Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
     static {
       Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
-      tmpMap.put(_Fields.PRINCIPAL_NAME, new org.apache.thrift.meta_data.FieldMetaData("principal_name", org.apache.thrift.TFieldRequirementType.DEFAULT,
+      tmpMap.put(_Fields.PRINCIPAL_NAME, new org.apache.thrift.meta_data.FieldMetaData("principal_name", org.apache.thrift.TFieldRequirementType.DEFAULT, 
           new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
-      tmpMap.put(_Fields.PRINCIPAL_TYPE, new org.apache.thrift.meta_data.FieldMetaData("principal_type", org.apache.thrift.TFieldRequirementType.DEFAULT,
+      tmpMap.put(_Fields.PRINCIPAL_TYPE, new org.apache.thrift.meta_data.FieldMetaData("principal_type", org.apache.thrift.TFieldRequirementType.DEFAULT, 
           new org.apache.thrift.meta_data.EnumMetaData(org.apache.thrift.protocol.TType.ENUM, PrincipalType.class)));
-      tmpMap.put(_Fields.HIVE_OBJECT, new org.apache.thrift.meta_data.FieldMetaData("hiveObject", org.apache.thrift.TFieldRequirementType.DEFAULT,
+      tmpMap.put(_Fields.HIVE_OBJECT, new org.apache.thrift.meta_data.FieldMetaData("hiveObject", org.apache.thrift.TFieldRequirementType.DEFAULT, 
           new org.apache.thrift.meta_data.StructMetaData(org.apache.thrift.protocol.TType.STRUCT, HiveObjectRef.class)));
       metaDataMap = Collections.unmodifiableMap(tmpMap);
       org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(list_privileges_args.class, metaDataMap);
@@ -58740,7 +58740,7 @@ public class ThriftHiveMetastore {
     }
 
     /**
-     *
+     * 
      * @see PrincipalType
      */
     public PrincipalType getPrincipal_type() {
@@ -58748,7 +58748,7 @@ public class ThriftHiveMetastore {
     }
 
     /**
-     *
+     * 
      * @see PrincipalType
      */
     public void setPrincipal_type(PrincipalType principal_type) {
@@ -58953,21 +58953,21 @@ public class ThriftHiveMetastore {
       while (true)
       {
         field = iprot.readFieldBegin();
-        if (field.type == org.apache.thrift.protocol.TType.STOP) {
+        if (field.type == org.apache.thrift.protocol.TType.STOP) { 
           break;
         }
         switch (field.id) {
           case 1: // PRINCIPAL_NAME
             if (field.type == org.apache.thrift.protocol.TType.STRING) {
               this.principal_name = iprot.readString();
-            } else {
+            } else { 
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
             }
             break;
           case 2: // PRINCIPAL_TYPE
             if (field.type == org.apache.thrift.protocol.TType.I32) {
               this.principal_type = PrincipalType.findByValue(iprot.readI32());
-            } else {
+            } else { 
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
             }
             break;
@@ -58975,7 +58975,7 @@ public class ThriftHiveMetastore {
             if (field.type == org.apache.thrift.protocol.TType.STRUCT) {
               this.hiveObject = new HiveObjectRef();
               this.hiveObject.read(iprot);
-            } else {
+            } else { 
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
             }
             break;
@@ -59140,10 +59140,10 @@ public class ThriftHiveMetastore {
     public static final Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
     static {
       Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
-      tmpMap.put(_Fields.SUCCESS, new org.apache.thrift.meta_data.FieldMetaData("success", org.apache.thrift.TFieldRequirementType.DEFAULT,
-          new org.apache.thrift.meta_data.ListMetaData(org.apache.thrift.protocol.TType.LIST,
+      tmpMap.put(_Fields.SUCCESS, new org.apache.thrift.meta_data.FieldMetaData("success", org.apache.thrift.TFieldRequirementType.DEFAULT, 
+          new org.apache.thrift.meta_data.ListMetaData(org.apache.thrift.protocol.TType.LIST, 
               new org.apache.thrift.meta_data.StructMetaData(org.apache.thrift.protocol.TType.STRUCT, HiveObjectPrivilege.class))));
-      tmpMap.put(_Fields.O1, new org.apache.thrift.meta_data.FieldMetaData("o1", org.apache.thrift.TFieldRequirementType.DEFAULT,
+      tmpMap.put(_Fields.O1, new org.apache.thrift.meta_data.FieldMetaData("o1", org.apache.thrift.TFieldRequirementType.DEFAULT, 
           new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRUCT)));
       metaDataMap = Collections.unmodifiableMap(tmpMap);
       org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(list_privileges_result.class, metaDataMap);
@@ -59376,25 +59376,25 @@ public class ThriftHiveMetastore {
       while (true)
       {
         field = iprot.readFieldBegin();
-        if (field.type == org.apache.thrift.protocol.TType.STOP) {
+        if (field.type == org.apache.thrift.protocol.TType.STOP) { 
           break;
         }
         switch (field.id) {
           case 0: // SUCCESS
             if (field.type == org.apache.thrift.protocol.TType.LIST) {
               {
-                org.apache.thrift.protocol.TList _list262 = iprot.readListBegin();
-                this.success = new ArrayList<HiveObjectPrivilege>(_list262.size);
-                for (int _i263 = 0; _i263 < _list262.size; ++_i263)
+                org.apache.thrift.protocol.TList _list266 = iprot.readListBegin();
+                this.success = new ArrayList<HiveObjectPrivilege>(_list266.size);
+                for (int _i267 = 0; _i267 < _list266.size; ++_i267)
                 {
-                  HiveObjectPrivilege _elem264; // required
-                  _elem264 = new HiveObjectPrivilege();
-                  _elem264.read(iprot);
-                  this.success.add(_elem264);
+                  HiveObjectPrivilege _elem268; // required
+                  _elem268 = new HiveObjectPrivilege();
+                  _elem268.read(iprot);
+                  this.success.add(_elem268);
                 }
                 iprot.readListEnd();
               }
-            } else {
+            } else { 
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
             }
             break;
@@ -59402,7 +59402,7 @@ public class ThriftHiveMetastore {
             if (field.type == org.apache.thrift.protocol.TType.STRUCT) {
               this.o1 = new MetaException();
               this.o1.read(iprot);
-            } else {
+            } else { 
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
             }
             break;
@@ -59422,9 +59422,9 @@ public class ThriftHiveMetastore {
         oprot.writeFieldBegin(SUCCESS_FIELD_DESC);
         {
           oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, this.success.size()));
-          for (HiveObjectPrivilege _iter265 : this.success)
+          for (HiveObjectPrivilege _iter269 : this.success)
           {
-            _iter265.write(oprot);
+            _iter269.write(oprot);
           }
           oprot.writeListEnd();
         }
@@ -59554,7 +59554,7 @@ public class ThriftHiveMetastore {
     public static final Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
     static {
       Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
-      tmpMap.put(_Fields.PRIVILEGES, new org.apache.thrift.meta_data.FieldMetaData("privileges", org.apache.thrift.TFieldRequirementType.DEFAULT,
+      tmpMap.put(_Fields.PRIVILEGES, new org.apache.thrift.meta_data.FieldMetaData("privileges", org.apache.thrift.TFieldRequirementType.DEFAULT, 
           new org.apache.thrift.meta_data.StructMetaData(org.apache.thrift.protocol.TType.STRUCT, PrivilegeBag.class)));
       metaDataMap = Collections.unmodifiableMap(tmpMap);
       org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(grant_privileges_args.class, metaDataMap);
@@ -59707,7 +59707,7 @@ public class ThriftHiveMetastore {
       while (true)
       {
         field = iprot.readFieldBegin();
-        if (field.type == org.apache.thrift.protocol.TType.STOP) {
+        if (field.type == org.apache.thrift.protocol.TType.STOP) { 
           break;
         }
         switch (field.id) {
@@ -59715,7 +59715,7 @@ public class ThriftHiveMetastore {
             if (field.type == org.apache.thrift.protocol.TType.STRUCT) {
               this.privileges = new PrivilegeBag();
               this.privileges.read(iprot);
-            } else {
+            } else { 
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
             }
             break;
@@ -59856,9 +59856,9 @@ public class ThriftHiveMetastore {
     public static final Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
     static {
       Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
-      tmpMap.put(_Fields.SUCCESS, new org.apache.thrift.meta_data.FieldMetaData("success", org.apache.thrift.TFieldRequirementType.DEFAULT,
+      tmpMap.put(_Fields.SUCCESS, new org.apache.thrift.meta_data.FieldMetaData("success", org.apache.thrift.TFieldRequirementType.DEFAULT, 
           new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.BOOL)));
-      tmpMap.put(_Fields.O1, new org.apache.thrift.meta_data.FieldMetaData("o1", org.apache.thrift.TFieldRequirementType.DEFAULT,
+      tmpMap.put(_Fields.O1, new org.apache.thrift.meta_data.FieldMetaData("o1", org.apache.thrift.TFieldRequirementType.DEFAULT, 
           new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRUCT)));
       metaDataMap = Collections.unmodifiableMap(tmpMap);
       org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(grant_privileges_result.class, metaDataMap);
@@ -60073,7 +60073,7 @@ public class ThriftHiveMetastore {
       while (true)
       {
         field = iprot.readFieldBegin();
-        if (field.type == org.apache.thrift.protocol.TType.STOP) {
+        if (field.type == org.apache.thrift.protocol.TType.STOP) { 
           break;
         }
         switch (field.id) {
@@ -60081,7 +60081,7 @@ public class ThriftHiveMetastore {
             if (field.type == org.apache.thrift.protocol.TType.BOOL) {
               this.success = iprot.readBool();
               setSuccessIsSet(true);
-            } else {
+            } else { 
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
             }
             break;
@@ -60089,7 +60089,7 @@ public class ThriftHiveMetastore {
             if (field.type == org.apache.thrift.protocol.TType.STRUCT) {
               this.o1 = new MetaException();
               this.o1.read(iprot);
-            } else {
+            } else { 
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
             }
             break;
@@ -60230,7 +60230,7 @@ public class ThriftHiveMetastore {
     public static final Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
     static {
       Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
-      tmpMap.put(_Fields.PRIVILEGES, new org.apache.thrift.meta_data.FieldMetaData("privileges", org.apache.thrift.TFieldRequirementType.DEFAULT,
+      tmpMap.put(_Fields.PRIVILEGES, new org.apache.thrift.meta_data.FieldMetaData("privileges", org.apache.thrift.TFieldRequirementType.DEFAULT, 
           new org.apache.thrift.meta_data.StructMetaData(org.apache.thrift.protocol.TType.STRUCT, PrivilegeBag.class)));
       metaDataMap = Collections.unmodifiableMap(tmpMap);
       org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(revoke_privileges_args.class, metaDataMap);
@@ -60383,7 +60383,7 @@ public class ThriftHiveMetastore {
       while (true)
       {
         field = iprot.readFieldBegin();
-        if (field.type == org.apache.thrift.protocol.TType.STOP) {
+        if (field.type == org.apache.thrift.protocol.TType.STOP) { 
           break;
         }
         switch (field.id) {
@@ -60391,7 +60391,7 @@ public class ThriftHiveMetastore {
             if (field.type == org.apache.thrift.protocol.TType.STRUCT) {
               this.privileges = new PrivilegeBag();
               this.privileges.read(iprot);
-            } else {
+            } else { 
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
             }
             break;
@@ -60532,9 +60532,9 @@ public class ThriftHiveMetastore {
     public static final Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
     static {
       Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
-      tmpMap.put(_Fields.SUCCESS, new org.apache.thrift.meta_data.FieldMetaData("success", org.apache.thrift.TFieldRequirementType.DEFAULT,
+      tmpMap.put(_Fields.SUCCESS, new org.apache.thrift.meta_data.FieldMetaData("success", org.apache.thrift.TFieldRequirementType.DEFAULT, 
           new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.BOOL)));
-      tmpMap.put(_Fields.O1, new org.apache.thrift.meta_data.FieldMetaData("o1", org.apache.thrift.TFieldRequirementType.DEFAULT,
+      tmpMap.put(_Fields.O1, new org.apache.thrift.meta_data.FieldMetaData("o1", org.apache.thrift.TFieldRequirementType.DEFAULT, 
           new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRUCT)));
       metaDataMap = Collections.unmodifiableMap(tmpMap);
       org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(revoke_privileges_result.class, metaDataMap);
@@ -60749,7 +60749,7 @@ public class ThriftHiveMetastore {
       while (true)
       {
         field = iprot.readFieldBegin();
-        if (field.type == org.apache.thrift.protocol.TType.STOP) {
+        if (field.type == org.apache.thrift.protocol.TType.STOP) { 
           break;
         }
         switch (field.id) {
@@ -60757,7 +60757,7 @@ public class ThriftHiveMetastore {
             if (field.type == org.apache.thrift.protocol.TType.BOOL) {
               this.success = iprot.readBool();
               setSuccessIsSet(true);
-            } else {
+            } else { 
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
             }
             break;
@@ -60765,7 +60765,7 @@ public class ThriftHiveMetastore {
             if (field.type == org.apache.thrift.protocol.TType.STRUCT) {
               this.o1 = new MetaException();
               this.o1.read(iprot);
-            } else {
+            } else { 
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
             }
             break;
@@ -61161,13 +61161,13 @@ public class ThriftHiveMetastore {
           case 2: // GROUP_NAMES
             if (field.type == org.apache.thrift.protocol.TType.LIST) {
               {
-                org.apache.thrift.protocol.TList _list266 = iprot.readListBegin();
-                this.group_names = new ArrayList<String>(_list266.size);
-                for (int _i267 = 0; _i267 < _list266.size; ++_i267)
+                org.apache.thrift.protocol.TList _list270 = iprot.readListBegin();
+                this.group_names = new ArrayList<String>(_list270.size);
+                for (int _i271 = 0; _i271 < _list270.size; ++_i271)
                 {
-                  String _elem268; // required
-                  _elem268 = iprot.readString();
-                  this.group_names.add(_elem268);
+                  String _elem272; // required
+                  _elem272 = iprot.readString();
+                  this.group_names.add(_elem272);
                 }
                 iprot.readListEnd();
               }
@@ -61197,9 +61197,9 @@ public class ThriftHiveMetastore {
         oprot.writeFieldBegin(GROUP_NAMES_FIELD_DESC);
         {
           oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRING, this.group_names.size()));
-          for (String _iter269 : this.group_names)
+          for (String _iter273 : this.group_names)
           {
-            oprot.writeString(_iter269);
+            oprot.writeString(_iter273);
           }
           oprot.writeListEnd();
         }
@@ -61573,13 +61573,13 @@ public class ThriftHiveMetastore {
           case 0: // SUCCESS
             if (field.type == org.apache.thrift.protocol.TType.LIST) {
               {
-                org.apache.thrift.protocol.TList _list270 = iprot.readListBegin();
-                this.success = new ArrayList<String>(_list270.size);
-                for (int _i271 = 0; _i271 < _list270.size; ++_i271)
+                org.apache.thrift.protocol.TList _list274 = iprot.readListBegin();
+                this.success = new ArrayList<String>(_list274.size);
+                for (int _i275 = 0; _i275 < _list274.size; ++_i275)
                 {
-                  String _elem272; // required
-                  _elem272 = iprot.readString();
-                  this.success.add(_elem272);
+                  String _elem276; // required
+                  _elem276 = iprot.readString();
+                  this.success.add(_elem276);
                 }
                 iprot.readListEnd();
               }
@@ -61611,9 +61611,9 @@ public class ThriftHiveMetastore {
         oprot.writeFieldBegin(SUCCESS_FIELD_DESC);
         {
           oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRING, this.success.size()));
-          for (String _iter273 : this.success)
+          for (String _iter277 : this.success)
           {
-            oprot.writeString(_iter273);
+            oprot.writeString(_iter277);
           }
           oprot.writeListEnd();
         }
@@ -61748,9 +61748,9 @@ public class ThriftHiveMetastore {
     public static final Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
     static {
       Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
-      tmpMap.put(_Fields.TOKEN_OWNER, new org.apache.thrift.meta_data.FieldMetaData("token_owner", org.apache.thrift.TFieldRequirementType.DEFAULT,
+      tmpMap.put(_Fields.TOKEN_OWNER, new org.apache.thrift.meta_data.FieldMetaData("token_owner", org.apache.thrift.TFieldRequirementType.DEFAULT, 
           new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
-      tmpMap.put(_Fields.RENEWER_KERBEROS_PRINCIPAL_NAME, new org.apache.thrift.meta_data.FieldMetaData("renewer_kerberos_principal_name", org.apache.thrift.TFieldRequirementType.DEFAULT,
+      tmpMap.put(_Fields.RENEWER_KERBEROS_PRINCIPAL_NAME, new org.apache.thrift.meta_data.FieldMetaData("renewer_kerberos_principal_name", org.apache.thrift.TFieldRequirementType.DEFAULT, 
           new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
       metaDataMap = Collections.unmodifiableMap(tmpMap);
       org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(get_delegation_token_args.class, metaDataMap);
@@ -61964,21 +61964,21 @@ public class ThriftHiveMetastore {
       while (true)
       {
         field = iprot.readFieldBegin();
-        if (field.type == org.apache.thrift.protocol.TType.STOP) {
+        if (field.type == org.apache.thrift.protocol.TType.STOP) { 
           break;
         }
         switch (field.id) {
           case 1: // TOKEN_OWNER
             if (field.type == org.apache.thrift.protocol.TType.STRING) {
               this.token_owner = iprot.readString();
-            } else {
+            } else { 
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
             }
             break;
           case 2: // RENEWER_KERBEROS_PRINCIPAL_NAME
             if (field.type == org.apache.thrift.protocol.TType.STRING) {
               this.renewer_kerberos_principal_name = iprot.readString();
-            } else {
+            } else { 
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
             }
             break;
@@ -62130,9 +62130,9 @@ public class ThriftHiveMetastore {
     public static final Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
     static {
       Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
-      tmpMap.put(_Fields.SUCCESS, new org.apache.thrift.meta_data.FieldMetaData("success", org.apache.thrift.TFieldRequirementType.DEFAULT,
+      tmpMap.put(_Fields.SUCCESS, new org.apache.thrift.meta_data.FieldMetaData("success", org.apache.thrift.TFieldRequirementType.DEFAULT, 
           new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
-      tmpMap.put(_Fields.O1, new org.apache.thrift.meta_data.FieldMetaData("o1", org.apache.thrift.TFieldRequirementType.DEFAULT,
+      tmpMap.put(_Fields.O1, new org.apache.thrift.meta_data.FieldMetaData("o1", org.apache.thrift.TFieldRequirementType.DEFAULT, 
           new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRUCT)));
       metaDataMap = Collections.unmodifiableMap(tmpMap);
       org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(get_delegation_token_result.class, metaDataMap);
@@ -62346,14 +62346,14 @@ public class ThriftHiveMetastore {
       while (true)
       {
         field = iprot.readFieldBegin();
-        if (field.type == org.apache.thrift.protocol.TType.STOP) {
+        if (field.type == org.apache.thrift.protocol.TType.STOP) { 
           break;
         }
         switch (field.id) {
           case 0: // SUCCESS
             if (field.type == org.apache.thrift.protocol.TType.STRING) {
               this.success = iprot.readString();
-            } else {
+            } else { 
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
             }
             break;
@@ -62361,7 +62361,7 @@ public class ThriftHiveMetastore {
             if (field.type == org.apache.thrift.protocol.TType.STRUCT) {
               this.o1 = new MetaException();
               this.o1.read(iprot);
-            } else {
+            } else { 
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
             }
             break;
@@ -62506,7 +62506,7 @@ public class ThriftHiveMetastore {
     public static final Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
     static {
       Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
-      tmpMap.put(_Fields.TOKEN_STR_FORM, new org.apache.thrift.meta_data.FieldMetaData("token_str_form", org.apache.thrift.TFieldRequirementType.DEFAULT,
+      tmpMap.put(_Fields.TOKEN_STR_FORM, new org.apache.thrift.meta_data.FieldMetaData("token_str_form", org.apache.thrift.TFieldRequirementType.DEFAULT, 
           new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
       metaDataMap = Collections.unmodifiableMap(tmpMap);
       org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(renew_delegation_token_args.class, metaDataMap);
@@ -62659,14 +62659,14 @@ public class ThriftHiveMetastore {
       while (true)
       {
         field = iprot.readFieldBegin();
-        if (field.type == org.apache.thrift.protocol.TType.STOP) {
+        if (field.type == org.apache.thrift.protocol.TType.STOP) { 
           break;
         }
         switch (field.id) {
           case 1: // TOKEN_STR_FORM
             if (field.type == org.apache.thrift.protocol.TType.STRING) {
               this.token_str_form = iprot.readString();
-            } else {
+            } else { 
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
             }
             break;
@@ -62807,9 +62807,9 @@ public class ThriftHiveMetastore {
     public static final Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
     static {
       Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
-      tmpMap.put(_Fields.SUCCESS, new org.apache.thrift.meta_data.FieldMetaData("success", org.apache.thrift.TFieldRequirementType.DEFAULT,
+      tmpMap.put(_Fields.SUCCESS, new org.apache.thrift.meta_data.FieldMetaData("success", org.apache.thrift.TFieldRequirementType.DEFAULT, 
           new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.I64)));
-      tmpMap.put(_Fields.O1, new org.apache.thrift.meta_data.FieldMetaData("o1", org.apache.thrift.TFieldRequirementType.DEFAULT,
+      tmpMap.put(_Fields.O1, new org.apache.thrift.meta_data.FieldMetaData("o1", org.apache.thrift.TFieldRequirementType.DEFAULT, 
           new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRUCT)));
       metaDataMap = Collections.unmodifiableMap(tmpMap);
       org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(renew_delegation_token_result.class, metaDataMap);
@@ -63024,7 +63024,7 @@ public class ThriftHiveMetastore {
       while (true)
       {
         field = iprot.readFieldBegin();
-        if (field.type == org.apache.thrift.protocol.TType.STOP) {
+        if (field.type == org.apache.thrift.protocol.TType.STOP) { 
           break;
         }
         switch (field.id) {
@@ -63032,7 +63032,7 @@ public class ThriftHiveMetastore {
             if (field.type == org.apache.thrift.protocol.TType.I64) {
               this.success = iprot.readI64();
               setSuccessIsSet(true);
-            } else {
+            } else { 
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
             }
             break;
@@ -63040,7 +63040,7 @@ public class ThriftHiveMetastore {
             if (field.type == org.apache.thrift.protocol.TType.STRUCT) {
               this.o1 = new MetaException();
               this.o1.read(iprot);
-            } else {
+            } else { 
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
             }
             break;
@@ -63181,7 +63181,7 @@ public class ThriftHiveMetastore {
     public static final Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
     static {
       Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
-      tmpMap.put(_Fields.TOKEN_STR_FORM, new org.apache.thrift.meta_data.FieldMetaData("token_str_form", org.apache.thrift.TFieldRequirementType.DEFAULT,
+      tmpMap.put(_Fields.TOKEN_STR_FORM, new org.apache.thrift.meta_data.FieldMetaData("token_str_form", org.apache.thrift.TFieldRequirementType.DEFAULT, 
           new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
       metaDataMap = Collections.unmodifiableMap(tmpMap);
       org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(cancel_delegation_token_args.class, metaDataMap);
@@ -63334,14 +63334,14 @@ public class ThriftHiveMetastore {
       while (true)
       {
         field = iprot.readFieldBegin();
-        if (field.type == org.apache.thrift.protocol.TType.STOP) {
+        if (field.type == org.apache.thrift.protocol.TType.STOP) { 
           break;
         }
         switch (field.id) {
           case 1: // TOKEN_STR_FORM
             if (field.type == org.apache.thrift.protocol.TType.STRING) {
               this.token_str_form = iprot.readString();
-            } else {
+            } else { 
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
             }
             break;
@@ -63475,7 +63475,7 @@ public class ThriftHiveMetastore {
     public static final Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
     static {
       Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
-      tmpMap.put(_Fields.O1, new org.apache.thrift.meta_data.FieldMetaData("o1", org.apache.thrift.TFieldRequirementType.DEFAULT,
+      tmpMap.put(_Fields.O1, new org.apache.thrift.meta_data.FieldMetaData("o1", org.apache.thrift.TFieldRequirementType.DEFAULT, 
           new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRUCT)));
       metaDataMap = Collections.unmodifiableMap(tmpMap);
       org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(cancel_delegation_token_result.class, metaDataMap);
@@ -63628,7 +63628,7 @@ public class ThriftHiveMetastore {
       while (true)
       {
         field = iprot.readFieldBegin();
-        if (field.type == org.apache.thrift.protocol.TType.STOP) {
+        if (field.type == org.apache.thrift.protocol.TType.STOP) { 
           break;
         }
         switch (field.id) {
@@ -63636,7 +63636,7 @@ public class ThriftHiveMetastore {
             if (field.type == org.apache.thrift.protocol.TType.STRUCT) {
               this.o1 = new MetaException();
               this.o1.read(iprot);
-            } else {
+            } else { 
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
             }
             break;

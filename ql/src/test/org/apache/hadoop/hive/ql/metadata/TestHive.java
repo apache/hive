@@ -33,6 +33,7 @@ import org.apache.hadoop.hive.metastore.MetaStoreUtils;
 import org.apache.hadoop.hive.metastore.Warehouse;
 import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
+import org.apache.hadoop.hive.metastore.api.RegionStorageDescriptor;
 import org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat;
 import org.apache.hadoop.hive.serde.Constants;
 import org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe;
@@ -135,6 +136,9 @@ public class TestHive extends TestCase {
       tbl.setSerdeParam(Constants.FIELD_DELIM, "1");
       tbl.setSerializationLib(LazySimpleSerDe.class.getName());
 
+      tbl.getTTable().getSd().setPrimaryRegionName(HiveConf.ConfVars.HIVE_DEFAULT_REGION_NAME.defaultVal);
+      tbl.getTTable().getSd().setSecondaryRegions(new ArrayList<RegionStorageDescriptor>());
+
       // create table
       try {
         hm.createTable(tbl);
@@ -209,6 +213,11 @@ public class TestHive extends TestCase {
       tbl.setSerdeParam(Constants.SERIALIZATION_CLASS, Complex.class.getName());
       tbl.setSerdeParam(Constants.SERIALIZATION_FORMAT, TBinaryProtocol.class
           .getName());
+
+      tbl.getTTable().getSd().setPrimaryRegionName(HiveConf.ConfVars.HIVE_DEFAULT_REGION_NAME.defaultVal);
+      tbl.getTTable().getSd().setSecondaryRegions(new ArrayList<RegionStorageDescriptor>());
+
+
       try {
         hm.createTable(tbl);
       } catch (HiveException e) {

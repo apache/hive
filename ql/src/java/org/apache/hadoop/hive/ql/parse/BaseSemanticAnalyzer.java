@@ -239,6 +239,13 @@ public abstract class BaseSemanticAnalyzer {
   public abstract void analyzeInternal(ASTNode ast) throws SemanticException;
 
   public void analyze(ASTNode ast, Context ctx) throws SemanticException {
+    boolean useDefaultRegion =
+      HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVE_USE_INPUT_PRIMARY_REGION);
+
+    if (!useDefaultRegion) {
+      throw new SemanticException(ErrorMsg.USE_DEFAULT_REGION.getMsg());
+    }
+
     this.ctx = ctx;
     analyzeInternal(ast);
   }
@@ -777,7 +784,7 @@ public abstract class BaseSemanticAnalyzer {
     }
     return partSpec;
   }
-  
+
   /**
    * Checks if given specification is proper specification for prefix of
    * partition cols, for table partitioned by ds, hr, min valid ones are
@@ -805,7 +812,7 @@ public abstract class BaseSemanticAnalyzer {
     if (spec == null) {
       throw new HiveException("partition spec is not specified");
     }
-    
+
     Iterator<String> itrPsKeys = spec.keySet().iterator();
     for (FieldSchema fs: partCols) {
       if(!itrPsKeys.hasNext()) {
@@ -816,14 +823,14 @@ public abstract class BaseSemanticAnalyzer {
         ErrorPartSpec(spec, partCols);
       }
     }
-    
+
     if(itrPsKeys.hasNext()) {
       ErrorPartSpec(spec, partCols);
     }
 
     return true;
   }
-  
+
   private static void ErrorPartSpec(Map<String, String> partSpec,
       List<FieldSchema> parts) throws SemanticException {
     StringBuilder sb =

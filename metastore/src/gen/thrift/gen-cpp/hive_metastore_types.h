@@ -774,8 +774,57 @@ class Order {
 
 };
 
+typedef struct _RegionStorageDescriptor__isset {
+  _RegionStorageDescriptor__isset() : regionName(false), location(false) {}
+  bool regionName;
+  bool location;
+} _RegionStorageDescriptor__isset;
+
+class RegionStorageDescriptor {
+ public:
+
+  static const char* ascii_fingerprint; // = "07A9615F837F7D0A952B595DD3020972";
+  static const uint8_t binary_fingerprint[16]; // = {0x07,0xA9,0x61,0x5F,0x83,0x7F,0x7D,0x0A,0x95,0x2B,0x59,0x5D,0xD3,0x02,0x09,0x72};
+
+  RegionStorageDescriptor() : regionName(""), location("") {
+  }
+
+  virtual ~RegionStorageDescriptor() throw() {}
+
+  std::string regionName;
+  std::string location;
+
+  _RegionStorageDescriptor__isset __isset;
+
+  void __set_regionName(const std::string& val) {
+    regionName = val;
+  }
+
+  void __set_location(const std::string& val) {
+    location = val;
+  }
+
+  bool operator == (const RegionStorageDescriptor & rhs) const
+  {
+    if (!(regionName == rhs.regionName))
+      return false;
+    if (!(location == rhs.location))
+      return false;
+    return true;
+  }
+  bool operator != (const RegionStorageDescriptor &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const RegionStorageDescriptor & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
 typedef struct _StorageDescriptor__isset {
-  _StorageDescriptor__isset() : cols(false), location(false), inputFormat(false), outputFormat(false), compressed(false), numBuckets(false), serdeInfo(false), bucketCols(false), sortCols(false), parameters(false) {}
+  _StorageDescriptor__isset() : cols(false), location(false), inputFormat(false), outputFormat(false), compressed(false), numBuckets(false), serdeInfo(false), bucketCols(false), sortCols(false), parameters(false), primaryRegionName(false), secondaryRegions(false) {}
   bool cols;
   bool location;
   bool inputFormat;
@@ -786,15 +835,17 @@ typedef struct _StorageDescriptor__isset {
   bool bucketCols;
   bool sortCols;
   bool parameters;
+  bool primaryRegionName;
+  bool secondaryRegions;
 } _StorageDescriptor__isset;
 
 class StorageDescriptor {
  public:
 
-  static const char* ascii_fingerprint; // = "11E4CE18F895C13812C853DFDCD1293F";
-  static const uint8_t binary_fingerprint[16]; // = {0x11,0xE4,0xCE,0x18,0xF8,0x95,0xC1,0x38,0x12,0xC8,0x53,0xDF,0xDC,0xD1,0x29,0x3F};
+  static const char* ascii_fingerprint; // = "67BFF60B597E40E541193F85E811DC8D";
+  static const uint8_t binary_fingerprint[16]; // = {0x67,0xBF,0xF6,0x0B,0x59,0x7E,0x40,0xE5,0x41,0x19,0x3F,0x85,0xE8,0x11,0xDC,0x8D};
 
-  StorageDescriptor() : location(""), inputFormat(""), outputFormat(""), compressed(0), numBuckets(0) {
+  StorageDescriptor() : location(""), inputFormat(""), outputFormat(""), compressed(0), numBuckets(0), primaryRegionName("") {
   }
 
   virtual ~StorageDescriptor() throw() {}
@@ -809,6 +860,8 @@ class StorageDescriptor {
   std::vector<std::string>  bucketCols;
   std::vector<Order>  sortCols;
   std::map<std::string, std::string>  parameters;
+  std::string primaryRegionName;
+  std::vector<RegionStorageDescriptor>  secondaryRegions;
 
   _StorageDescriptor__isset __isset;
 
@@ -852,6 +905,14 @@ class StorageDescriptor {
     parameters = val;
   }
 
+  void __set_primaryRegionName(const std::string& val) {
+    primaryRegionName = val;
+  }
+
+  void __set_secondaryRegions(const std::vector<RegionStorageDescriptor> & val) {
+    secondaryRegions = val;
+  }
+
   bool operator == (const StorageDescriptor & rhs) const
   {
     if (!(cols == rhs.cols))
@@ -873,6 +934,10 @@ class StorageDescriptor {
     if (!(sortCols == rhs.sortCols))
       return false;
     if (!(parameters == rhs.parameters))
+      return false;
+    if (!(primaryRegionName == rhs.primaryRegionName))
+      return false;
+    if (!(secondaryRegions == rhs.secondaryRegions))
       return false;
     return true;
   }
@@ -907,8 +972,8 @@ typedef struct _Table__isset {
 class Table {
  public:
 
-  static const char* ascii_fingerprint; // = "26BE788C09746068A2616712C9262900";
-  static const uint8_t binary_fingerprint[16]; // = {0x26,0xBE,0x78,0x8C,0x09,0x74,0x60,0x68,0xA2,0x61,0x67,0x12,0xC9,0x26,0x29,0x00};
+  static const char* ascii_fingerprint; // = "6FF520A3FDB5F73BB03D09C027BC88E2";
+  static const uint8_t binary_fingerprint[16]; // = {0x6F,0xF5,0x20,0xA3,0xFD,0xB5,0xF7,0x3B,0xB0,0x3D,0x09,0xC0,0x27,0xBC,0x88,0xE2};
 
   Table() : tableName(""), dbName(""), owner(""), createTime(0), lastAccessTime(0), retention(0), viewOriginalText(""), viewExpandedText(""), tableType("") {
   }
@@ -1042,8 +1107,8 @@ typedef struct _Partition__isset {
 class Partition {
  public:
 
-  static const char* ascii_fingerprint; // = "F480E1D1B8AEBDDB37F8E180C0F07395";
-  static const uint8_t binary_fingerprint[16]; // = {0xF4,0x80,0xE1,0xD1,0xB8,0xAE,0xBD,0xDB,0x37,0xF8,0xE1,0x80,0xC0,0xF0,0x73,0x95};
+  static const char* ascii_fingerprint; // = "9DC9BCB205A70AFE078D9663673DA11B";
+  static const uint8_t binary_fingerprint[16]; // = {0x9D,0xC9,0xBC,0xB2,0x05,0xA7,0x0A,0xFE,0x07,0x8D,0x96,0x63,0x67,0x3D,0xA1,0x1B};
 
   Partition() : dbName(""), tableName(""), createTime(0), lastAccessTime(0) {
   }
@@ -1144,8 +1209,8 @@ typedef struct _Index__isset {
 class Index {
  public:
 
-  static const char* ascii_fingerprint; // = "5FEE4F7E28935B644F207D74459F6A29";
-  static const uint8_t binary_fingerprint[16]; // = {0x5F,0xEE,0x4F,0x7E,0x28,0x93,0x5B,0x64,0x4F,0x20,0x7D,0x74,0x45,0x9F,0x6A,0x29};
+  static const char* ascii_fingerprint; // = "23D1851E2E1791DEBCC4F08B8E0AA688";
+  static const uint8_t binary_fingerprint[16]; // = {0x23,0xD1,0x85,0x1E,0x2E,0x17,0x91,0xDE,0xBC,0xC4,0xF0,0x8B,0x8E,0x0A,0xA6,0x88};
 
   Index() : indexName(""), indexHandlerClass(""), dbName(""), origTableName(""), createTime(0), lastAccessTime(0), indexTableName(""), deferredRebuild(0) {
   }

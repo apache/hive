@@ -19,6 +19,7 @@ STAGE PLANS:
           input format: org.apache.hadoop.hive.ql.io.SymlinkTextInputFormat
           # buckets: -1
           output format: org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat
+          primaryRegionName: 
           name: symlink_text_input_format
           isExternal: false
 
