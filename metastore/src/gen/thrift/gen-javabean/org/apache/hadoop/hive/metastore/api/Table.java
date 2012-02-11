@@ -1165,14 +1165,14 @@ public class Table implements org.apache.thrift.TBase<Table, Table._Fields>, jav
         case 8: // PARTITION_KEYS
           if (field.type == org.apache.thrift.protocol.TType.LIST) {
             {
-              org.apache.thrift.protocol.TList _list66 = iprot.readListBegin();
-              this.partitionKeys = new ArrayList<FieldSchema>(_list66.size);
-              for (int _i67 = 0; _i67 < _list66.size; ++_i67)
+              org.apache.thrift.protocol.TList _list70 = iprot.readListBegin();
+              this.partitionKeys = new ArrayList<FieldSchema>(_list70.size);
+              for (int _i71 = 0; _i71 < _list70.size; ++_i71)
               {
-                FieldSchema _elem68; // required
-                _elem68 = new FieldSchema();
-                _elem68.read(iprot);
-                this.partitionKeys.add(_elem68);
+                FieldSchema _elem72; // required
+                _elem72 = new FieldSchema();
+                _elem72.read(iprot);
+                this.partitionKeys.add(_elem72);
               }
               iprot.readListEnd();
             }
@@ -1183,15 +1183,15 @@ public class Table implements org.apache.thrift.TBase<Table, Table._Fields>, jav
         case 9: // PARAMETERS
           if (field.type == org.apache.thrift.protocol.TType.MAP) {
             {
-              org.apache.thrift.protocol.TMap _map69 = iprot.readMapBegin();
-              this.parameters = new HashMap<String,String>(2*_map69.size);
-              for (int _i70 = 0; _i70 < _map69.size; ++_i70)
+              org.apache.thrift.protocol.TMap _map73 = iprot.readMapBegin();
+              this.parameters = new HashMap<String,String>(2*_map73.size);
+              for (int _i74 = 0; _i74 < _map73.size; ++_i74)
               {
-                String _key71; // required
-                String _val72; // required
-                _key71 = iprot.readString();
-                _val72 = iprot.readString();
-                this.parameters.put(_key71, _val72);
+                String _key75; // required
+                String _val76; // required
+                _key75 = iprot.readString();
+                _val76 = iprot.readString();
+                this.parameters.put(_key75, _val76);
               }
               iprot.readMapEnd();
             }
@@ -1274,9 +1274,9 @@ public class Table implements org.apache.thrift.TBase<Table, Table._Fields>, jav
       oprot.writeFieldBegin(PARTITION_KEYS_FIELD_DESC);
       {
         oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, this.partitionKeys.size()));
-        for (FieldSchema _iter73 : this.partitionKeys)
+        for (FieldSchema _iter77 : this.partitionKeys)
         {
-          _iter73.write(oprot);
+          _iter77.write(oprot);
         }
         oprot.writeListEnd();
       }
@@ -1286,10 +1286,10 @@ public class Table implements org.apache.thrift.TBase<Table, Table._Fields>, jav
       oprot.writeFieldBegin(PARAMETERS_FIELD_DESC);
       {
         oprot.writeMapBegin(new org.apache.thrift.protocol.TMap(org.apache.thrift.protocol.TType.STRING, org.apache.thrift.protocol.TType.STRING, this.parameters.size()));
-        for (Map.Entry<String, String> _iter74 : this.parameters.entrySet())
+        for (Map.Entry<String, String> _iter78 : this.parameters.entrySet())
         {
-          oprot.writeString(_iter74.getKey());
-          oprot.writeString(_iter74.getValue());
+          oprot.writeString(_iter78.getKey());
+          oprot.writeString(_iter78.getValue());
         }
         oprot.writeMapEnd();
       }

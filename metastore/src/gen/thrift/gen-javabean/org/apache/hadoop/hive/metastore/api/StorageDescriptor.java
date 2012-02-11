@@ -33,6 +33,8 @@ public class StorageDescriptor implements org.apache.thrift.TBase<StorageDescrip
   private static final org.apache.thrift.protocol.TField BUCKET_COLS_FIELD_DESC = new org.apache.thrift.protocol.TField("bucketCols", org.apache.thrift.protocol.TType.LIST, (short)8);
   private static final org.apache.thrift.protocol.TField SORT_COLS_FIELD_DESC = new org.apache.thrift.protocol.TField("sortCols", org.apache.thrift.protocol.TType.LIST, (short)9);
   private static final org.apache.thrift.protocol.TField PARAMETERS_FIELD_DESC = new org.apache.thrift.protocol.TField("parameters", org.apache.thrift.protocol.TType.MAP, (short)10);
+  private static final org.apache.thrift.protocol.TField PRIMARY_REGION_NAME_FIELD_DESC = new org.apache.thrift.protocol.TField("primaryRegionName", org.apache.thrift.protocol.TType.STRING, (short)11);
+  private static final org.apache.thrift.protocol.TField SECONDARY_REGIONS_FIELD_DESC = new org.apache.thrift.protocol.TField("secondaryRegions", org.apache.thrift.protocol.TType.LIST, (short)12);
 
   private List<FieldSchema> cols; // required
   private String location; // required
@@ -44,6 +46,8 @@ public class StorageDescriptor implements org.apache.thrift.TBase<StorageDescrip
   private List<String> bucketCols; // required
   private List<Order> sortCols; // required
   private Map<String,String> parameters; // required
+  private String primaryRegionName; // required
+  private List<RegionStorageDescriptor> secondaryRegions; // required
 
   /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
   public enum _Fields implements org.apache.thrift.TFieldIdEnum {
@@ -56,7 +60,9 @@ public class StorageDescriptor implements org.apache.thrift.TBase<StorageDescrip
     SERDE_INFO((short)7, "serdeInfo"),
     BUCKET_COLS((short)8, "bucketCols"),
     SORT_COLS((short)9, "sortCols"),
-    PARAMETERS((short)10, "parameters");
+    PARAMETERS((short)10, "parameters"),
+    PRIMARY_REGION_NAME((short)11, "primaryRegionName"),
+    SECONDARY_REGIONS((short)12, "secondaryRegions");
 
     private static final Map<String, _Fields> byName = new HashMap<String, _Fields>();
 
@@ -91,6 +97,10 @@ public class StorageDescriptor implements org.apache.thrift.TBase<StorageDescrip
           return SORT_COLS;
         case 10: // PARAMETERS
           return PARAMETERS;
+        case 11: // PRIMARY_REGION_NAME
+          return PRIMARY_REGION_NAME;
+        case 12: // SECONDARY_REGIONS
+          return SECONDARY_REGIONS;
         default:
           return null;
       }
@@ -163,6 +173,11 @@ public class StorageDescriptor implements org.apache.thrift.TBase<StorageDescrip
         new org.apache.thrift.meta_data.MapMetaData(org.apache.thrift.protocol.TType.MAP, 
             new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING), 
             new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING))));
+    tmpMap.put(_Fields.PRIMARY_REGION_NAME, new org.apache.thrift.meta_data.FieldMetaData("primaryRegionName", org.apache.thrift.TFieldRequirementType.DEFAULT, 
+        new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
+    tmpMap.put(_Fields.SECONDARY_REGIONS, new org.apache.thrift.meta_data.FieldMetaData("secondaryRegions", org.apache.thrift.TFieldRequirementType.DEFAULT, 
+        new org.apache.thrift.meta_data.ListMetaData(org.apache.thrift.protocol.TType.LIST, 
+            new org.apache.thrift.meta_data.StructMetaData(org.apache.thrift.protocol.TType.STRUCT, RegionStorageDescriptor.class))));
     metaDataMap = Collections.unmodifiableMap(tmpMap);
     org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(StorageDescriptor.class, metaDataMap);
   }
@@ -180,7 +195,9 @@ public class StorageDescriptor implements org.apache.thrift.TBase<StorageDescrip
     SerDeInfo serdeInfo,
     List<String> bucketCols,
     List<Order> sortCols,
-    Map<String,String> parameters)
+    Map<String,String> parameters,
+    String primaryRegionName,
+    List<RegionStorageDescriptor> secondaryRegions)
   {
     this();
     this.cols = cols;
@@ -195,6 +212,8 @@ public class StorageDescriptor implements org.apache.thrift.TBase<StorageDescrip
     this.bucketCols = bucketCols;
     this.sortCols = sortCols;
     this.parameters = parameters;
+    this.primaryRegionName = primaryRegionName;
+    this.secondaryRegions = secondaryRegions;
   }
 
   /**
@@ -253,6 +272,16 @@ public class StorageDescriptor implements org.apache.thrift.TBase<StorageDescrip
       }
       this.parameters = __this__parameters;
     }
+    if (other.isSetPrimaryRegionName()) {
+      this.primaryRegionName = other.primaryRegionName;
+    }
+    if (other.isSetSecondaryRegions()) {
+      List<RegionStorageDescriptor> __this__secondaryRegions = new ArrayList<RegionStorageDescriptor>();
+      for (RegionStorageDescriptor other_element : other.secondaryRegions) {
+        __this__secondaryRegions.add(new RegionStorageDescriptor(other_element));
+      }
+      this.secondaryRegions = __this__secondaryRegions;
+    }
   }
 
   public StorageDescriptor deepCopy() {
@@ -273,6 +302,8 @@ public class StorageDescriptor implements org.apache.thrift.TBase<StorageDescrip
     this.bucketCols = null;
     this.sortCols = null;
     this.parameters = null;
+    this.primaryRegionName = null;
+    this.secondaryRegions = null;
   }
 
   public int getColsSize() {
@@ -559,6 +590,67 @@ public class StorageDescriptor implements org.apache.thrift.TBase<StorageDescrip
     }
   }
 
+  public String getPrimaryRegionName() {
+    return this.primaryRegionName;
+  }
+
+  public void setPrimaryRegionName(String primaryRegionName) {
+    this.primaryRegionName = primaryRegionName;
+  }
+
+  public void unsetPrimaryRegionName() {
+    this.primaryRegionName = null;
+  }
+
+  /** Returns true if field primaryRegionName is set (has been assigned a value) and false otherwise */
+  public boolean isSetPrimaryRegionName() {
+    return this.primaryRegionName != null;
+  }
+
+  public void setPrimaryRegionNameIsSet(boolean value) {
+    if (!value) {
+      this.primaryRegionName = null;
+    }
+  }
+
+  public int getSecondaryRegionsSize() {
+    return (this.secondaryRegions == null) ? 0 : this.secondaryRegions.size();
+  }
+
+  public java.util.Iterator<RegionStorageDescriptor> getSecondaryRegionsIterator() {
+    return (this.secondaryRegions == null) ? null : this.secondaryRegions.iterator();
+  }
+
+  public void addToSecondaryRegions(RegionStorageDescriptor elem) {
+    if (this.secondaryRegions == null) {
+      this.secondaryRegions = new ArrayList<RegionStorageDescriptor>();
+    }
+    this.secondaryRegions.add(elem);
+  }
+
+  public List<RegionStorageDescriptor> getSecondaryRegions() {
+    return this.secondaryRegions;
+  }
+
+  public void setSecondaryRegions(List<RegionStorageDescriptor> secondaryRegions) {
+    this.secondaryRegions = secondaryRegions;
+  }
+
+  public void unsetSecondaryRegions() {
+    this.secondaryRegions = null;
+  }
+
+  /** Returns true if field secondaryRegions is set (has been assigned a value) and false otherwise */
+  public boolean isSetSecondaryRegions() {
+    return this.secondaryRegions != null;
+  }
+
+  public void setSecondaryRegionsIsSet(boolean value) {
+    if (!value) {
+      this.secondaryRegions = null;
+    }
+  }
+
   public void setFieldValue(_Fields field, Object value) {
     switch (field) {
     case COLS:
@@ -641,6 +733,22 @@ public class StorageDescriptor implements org.apache.thrift.TBase<StorageDescrip
       }
       break;
 
+    case PRIMARY_REGION_NAME:
+      if (value == null) {
+        unsetPrimaryRegionName();
+      } else {
+        setPrimaryRegionName((String)value);
+      }
+      break;
+
+    case SECONDARY_REGIONS:
+      if (value == null) {
+        unsetSecondaryRegions();
+      } else {
+        setSecondaryRegions((List<RegionStorageDescriptor>)value);
+      }
+      break;
+
     }
   }
 
@@ -676,6 +784,12 @@ public class StorageDescriptor implements org.apache.thrift.TBase<StorageDescrip
     case PARAMETERS:
       return getParameters();
 
+    case PRIMARY_REGION_NAME:
+      return getPrimaryRegionName();
+
+    case SECONDARY_REGIONS:
+      return getSecondaryRegions();
+
     }
     throw new IllegalStateException();
   }
@@ -707,6 +821,10 @@ public class StorageDescriptor implements org.apache.thrift.TBase<StorageDescrip
       return isSetSortCols();
     case PARAMETERS:
       return isSetParameters();
+    case PRIMARY_REGION_NAME:
+      return isSetPrimaryRegionName();
+    case SECONDARY_REGIONS:
+      return isSetSecondaryRegions();
     }
     throw new IllegalStateException();
   }
@@ -811,6 +929,24 @@ public class StorageDescriptor implements org.apache.thrift.TBase<StorageDescrip
       if (!(this_present_parameters && that_present_parameters))
         return false;
       if (!this.parameters.equals(that.parameters))
+        return false;
+    }
+
+    boolean this_present_primaryRegionName = true && this.isSetPrimaryRegionName();
+    boolean that_present_primaryRegionName = true && that.isSetPrimaryRegionName();
+    if (this_present_primaryRegionName || that_present_primaryRegionName) {
+      if (!(this_present_primaryRegionName && that_present_primaryRegionName))
+        return false;
+      if (!this.primaryRegionName.equals(that.primaryRegionName))
+        return false;
+    }
+
+    boolean this_present_secondaryRegions = true && this.isSetSecondaryRegions();
+    boolean that_present_secondaryRegions = true && that.isSetSecondaryRegions();
+    if (this_present_secondaryRegions || that_present_secondaryRegions) {
+      if (!(this_present_secondaryRegions && that_present_secondaryRegions))
+        return false;
+      if (!this.secondaryRegions.equals(that.secondaryRegions))
         return false;
     }
 
@@ -926,6 +1062,26 @@ public class StorageDescriptor implements org.apache.thrift.TBase<StorageDescrip
     }
     if (isSetParameters()) {
       lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.parameters, typedOther.parameters);
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+    }
+    lastComparison = Boolean.valueOf(isSetPrimaryRegionName()).compareTo(typedOther.isSetPrimaryRegionName());
+    if (lastComparison != 0) {
+      return lastComparison;
+    }
+    if (isSetPrimaryRegionName()) {
+      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.primaryRegionName, typedOther.primaryRegionName);
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+    }
+    lastComparison = Boolean.valueOf(isSetSecondaryRegions()).compareTo(typedOther.isSetSecondaryRegions());
+    if (lastComparison != 0) {
+      return lastComparison;
+    }
+    if (isSetSecondaryRegions()) {
+      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.secondaryRegions, typedOther.secondaryRegions);
       if (lastComparison != 0) {
         return lastComparison;
       }
@@ -1064,6 +1220,31 @@ public class StorageDescriptor implements org.apache.thrift.TBase<StorageDescrip
             org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
           }
           break;
+        case 11: // PRIMARY_REGION_NAME
+          if (field.type == org.apache.thrift.protocol.TType.STRING) {
+            this.primaryRegionName = iprot.readString();
+          } else { 
+            org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
+          }
+          break;
+        case 12: // SECONDARY_REGIONS
+          if (field.type == org.apache.thrift.protocol.TType.LIST) {
+            {
+              org.apache.thrift.protocol.TList _list62 = iprot.readListBegin();
+              this.secondaryRegions = new ArrayList<RegionStorageDescriptor>(_list62.size);
+              for (int _i63 = 0; _i63 < _list62.size; ++_i63)
+              {
+                RegionStorageDescriptor _elem64; // required
+                _elem64 = new RegionStorageDescriptor();
+                _elem64.read(iprot);
+                this.secondaryRegions.add(_elem64);
+              }
+              iprot.readListEnd();
+            }
+          } else { 
+            org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
+          }
+          break;
         default:
           org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
       }
@@ -1081,9 +1262,9 @@ public class StorageDescriptor implements org.apache.thrift.TBase<StorageDescrip
       oprot.writeFieldBegin(COLS_FIELD_DESC);
       {
         oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, this.cols.size()));
-        for (FieldSchema _iter62 : this.cols)
+        for (FieldSchema _iter65 : this.cols)
         {
-          _iter62.write(oprot);
+          _iter65.write(oprot);
         }
         oprot.writeListEnd();
       }
@@ -1119,9 +1300,9 @@ public class StorageDescriptor implements org.apache.thrift.TBase<StorageDescrip
       oprot.writeFieldBegin(BUCKET_COLS_FIELD_DESC);
       {
         oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRING, this.bucketCols.size()));
-        for (String _iter63 : this.bucketCols)
+        for (String _iter66 : this.bucketCols)
         {
-          oprot.writeString(_iter63);
+          oprot.writeString(_iter66);
         }
         oprot.writeListEnd();
       }
@@ -1131,9 +1312,9 @@ public class StorageDescriptor implements org.apache.thrift.TBase<StorageDescrip
       oprot.writeFieldBegin(SORT_COLS_FIELD_DESC);
       {
         oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, this.sortCols.size()));
-        for (Order _iter64 : this.sortCols)
+        for (Order _iter67 : this.sortCols)
         {
-          _iter64.write(oprot);
+          _iter67.write(oprot);
         }
         oprot.writeListEnd();
       }
@@ -1143,12 +1324,29 @@ public class StorageDescriptor implements org.apache.thrift.TBase<StorageDescrip
       oprot.writeFieldBegin(PARAMETERS_FIELD_DESC);
       {
         oprot.writeMapBegin(new org.apache.thrift.protocol.TMap(org.apache.thrift.protocol.TType.STRING, org.apache.thrift.protocol.TType.STRING, this.parameters.size()));
-        for (Map.Entry<String, String> _iter65 : this.parameters.entrySet())
+        for (Map.Entry<String, String> _iter68 : this.parameters.entrySet())
         {
-          oprot.writeString(_iter65.getKey());
-          oprot.writeString(_iter65.getValue());
+          oprot.writeString(_iter68.getKey());
+          oprot.writeString(_iter68.getValue());
         }
         oprot.writeMapEnd();
+      }
+      oprot.writeFieldEnd();
+    }
+    if (this.primaryRegionName != null) {
+      oprot.writeFieldBegin(PRIMARY_REGION_NAME_FIELD_DESC);
+      oprot.writeString(this.primaryRegionName);
+      oprot.writeFieldEnd();
+    }
+    if (this.secondaryRegions != null) {
+      oprot.writeFieldBegin(SECONDARY_REGIONS_FIELD_DESC);
+      {
+        oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, this.secondaryRegions.size()));
+        for (RegionStorageDescriptor _iter69 : this.secondaryRegions)
+        {
+          _iter69.write(oprot);
+        }
+        oprot.writeListEnd();
       }
       oprot.writeFieldEnd();
     }
@@ -1230,6 +1428,22 @@ public class StorageDescriptor implements org.apache.thrift.TBase<StorageDescrip
       sb.append("null");
     } else {
       sb.append(this.parameters);
+    }
+    first = false;
+    if (!first) sb.append(", ");
+    sb.append("primaryRegionName:");
+    if (this.primaryRegionName == null) {
+      sb.append("null");
+    } else {
+      sb.append(this.primaryRegionName);
+    }
+    first = false;
+    if (!first) sb.append(", ");
+    sb.append("secondaryRegions:");
+    if (this.secondaryRegions == null) {
+      sb.append("null");
+    } else {
+      sb.append(this.secondaryRegions);
     }
     first = false;
     sb.append(")");

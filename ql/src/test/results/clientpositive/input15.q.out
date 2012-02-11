@@ -20,6 +20,7 @@ STAGE PLANS:
           input format: org.apache.hadoop.mapred.TextInputFormat
           # buckets: -1
           output format: org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat
+          primaryRegionName: 
           name: TEST15
           isExternal: false
 

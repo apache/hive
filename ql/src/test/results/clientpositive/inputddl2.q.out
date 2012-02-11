@@ -20,6 +20,7 @@ STAGE PLANS:
           # buckets: -1
           output format: org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat
           partition columns: ds string, country string
+          primaryRegionName: 
           name: INPUTDDL2
           isExternal: false
 

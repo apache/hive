@@ -48,7 +48,7 @@ const string HIVE_FILTER_FIELD_PARAMS = "hive_filter_field_params__"
 const string HIVE_FILTER_FIELD_LAST_ACCESS = "hive_filter_field_last_access__"
 
 enum PartitionEventType {
-  LOAD_DONE = 1,  
+  LOAD_DONE = 1,
 }
 
 struct HiveObjectRef{
@@ -112,6 +112,12 @@ struct Order {
   2: i32    order // asc(1) or desc(0)
 }
 
+// This object holds locations for all secondary regions
+struct RegionStorageDescriptor {
+  1: string regionName,   // region name
+  2: string location      // location
+}
+
 // this object holds all the information about physical storage of the data belonging to a table
 struct StorageDescriptor {
   1: list<FieldSchema> cols,  // required (refer to types defined above)
@@ -123,7 +129,9 @@ struct StorageDescriptor {
   7: SerDeInfo    serdeInfo,  // serialization and deserialization information
   8: list<string> bucketCols, // reducer grouping columns and clustering columns and bucketing columns`
   9: list<Order>  sortCols,   // sort order of the data in each bucket
-  10: map<string, string> parameters // any user supplied key value hash
+  10: map<string, string> parameters, // any user supplied key value hash
+  11: string primaryRegionName,      // name of the primary region
+  12: list<RegionStorageDescriptor> secondaryRegions   // secondary regions
 }
 
 // table information
@@ -229,7 +237,7 @@ service ThriftHiveMetastore extends fb303.FacebookService
   list<string> get_databases(1:string pattern) throws(1:MetaException o1)
   list<string> get_all_databases() throws(1:MetaException o1)
   void alter_database(1:string dbname, 2:Database db) throws(1:MetaException o1, 2:NoSuchObjectException o2)
-  
+
   // returns the type with given name (make seperate calls for the dependent types if needed)
   Type get_type(1:string name)  throws(1:MetaException o1, 2:NoSuchObjectException o2)
   bool create_type(1:Type type) throws(1:AlreadyExistsException o1, 2:InvalidObjectException o2, 3:MetaException o3)
@@ -320,11 +328,11 @@ service ThriftHiveMetastore extends fb303.FacebookService
   bool drop_partition(1:string db_name, 2:string tbl_name, 3:list<string> part_vals, 4:bool deleteData)
                        throws(1:NoSuchObjectException o1, 2:MetaException o2)
   bool drop_partition_by_name(1:string db_name, 2:string tbl_name, 3:string part_name, 4:bool deleteData)
-                       throws(1:NoSuchObjectException o1, 2:MetaException o2) 
+                       throws(1:NoSuchObjectException o1, 2:MetaException o2)
   Partition get_partition(1:string db_name, 2:string tbl_name, 3:list<string> part_vals)
                        throws(1:MetaException o1, 2:NoSuchObjectException o2)
 
-  Partition get_partition_with_auth(1:string db_name, 2:string tbl_name, 3:list<string> part_vals, 
+  Partition get_partition_with_auth(1:string db_name, 2:string tbl_name, 3:list<string> part_vals,
       4: string user_name, 5: list<string> group_names) throws(1:MetaException o1, 2:NoSuchObjectException o2)
 
   Partition get_partition_by_name(1:string db_name 2:string tbl_name, 3:string part_name)
@@ -334,25 +342,25 @@ service ThriftHiveMetastore extends fb303.FacebookService
   // If max parts is given then it will return only that many.
   list<Partition> get_partitions(1:string db_name, 2:string tbl_name, 3:i16 max_parts=-1)
                        throws(1:NoSuchObjectException o1, 2:MetaException o2)
-  list<Partition> get_partitions_with_auth(1:string db_name, 2:string tbl_name, 3:i16 max_parts=-1, 
-     4: string user_name, 5: list<string> group_names) throws(1:NoSuchObjectException o1, 2:MetaException o2)                       
+  list<Partition> get_partitions_with_auth(1:string db_name, 2:string tbl_name, 3:i16 max_parts=-1,
+     4: string user_name, 5: list<string> group_names) throws(1:NoSuchObjectException o1, 2:MetaException o2)
 
   list<string> get_partition_names(1:string db_name, 2:string tbl_name, 3:i16 max_parts=-1)
                        throws(1:MetaException o2)
-                       
-  // get_partition*_ps methods allow filtering by a partial partition specification, 
-  // as needed for dynamic partitions. The values that are not restricted should 
-  // be empty strings. Nulls were considered (instead of "") but caused errors in 
+
+  // get_partition*_ps methods allow filtering by a partial partition specification,
+  // as needed for dynamic partitions. The values that are not restricted should
+  // be empty strings. Nulls were considered (instead of "") but caused errors in
   // generated Python code. The size of part_vals may be smaller than the
   // number of partition columns - the unspecified values are considered the same
   // as "".
-  list<Partition> get_partitions_ps(1:string db_name 2:string tbl_name 
+  list<Partition> get_partitions_ps(1:string db_name 2:string tbl_name
   	3:list<string> part_vals, 4:i16 max_parts=-1)
                        throws(1:MetaException o1, 2:NoSuchObjectException o2)
-  list<Partition> get_partitions_ps_with_auth(1:string db_name, 2:string tbl_name, 3:list<string> part_vals, 4:i16 max_parts=-1, 
-     5: string user_name, 6: list<string> group_names) throws(1:NoSuchObjectException o1, 2:MetaException o2)                       
-  
-  list<string> get_partition_names_ps(1:string db_name, 
+  list<Partition> get_partitions_ps_with_auth(1:string db_name, 2:string tbl_name, 3:list<string> part_vals, 4:i16 max_parts=-1,
+     5: string user_name, 6: list<string> group_names) throws(1:NoSuchObjectException o1, 2:MetaException o2)
+
+  list<string> get_partition_names_ps(1:string db_name,
   	2:string tbl_name, 3:list<string> part_vals, 4:i16 max_parts=-1)
   	                   throws(1:MetaException o1, 2:NoSuchObjectException o2)
 
@@ -383,7 +391,7 @@ service ThriftHiveMetastore extends fb303.FacebookService
   // thrown.
   string get_config_value(1:string name, 2:string defaultValue)
                           throws(1:ConfigValSecurityException o1)
-                          
+
   // converts a partition name into a partition values array
   list<string> partition_name_to_vals(1: string part_name)
                           throws(1: MetaException o1)
@@ -391,23 +399,23 @@ service ThriftHiveMetastore extends fb303.FacebookService
   // the partition cols to the values)
   map<string, string> partition_name_to_spec(1: string part_name)
                           throws(1: MetaException o1)
-  
+
   void markPartitionForEvent(1:string db_name, 2:string tbl_name, 3:map<string,string> part_vals,
-                  4:PartitionEventType eventType) throws (1: MetaException o1, 2: NoSuchObjectException o2, 
+                  4:PartitionEventType eventType) throws (1: MetaException o1, 2: NoSuchObjectException o2,
                   3: UnknownDBException o3, 4: UnknownTableException o4, 5: UnknownPartitionException o5,
-                  6: InvalidPartitionException o6) 
-  bool isPartitionMarkedForEvent(1:string db_name, 2:string tbl_name, 3:map<string,string> part_vals, 
+                  6: InvalidPartitionException o6)
+  bool isPartitionMarkedForEvent(1:string db_name, 2:string tbl_name, 3:map<string,string> part_vals,
                   4: PartitionEventType eventType) throws (1: MetaException o1, 2:NoSuchObjectException o2,
                   3: UnknownDBException o3, 4: UnknownTableException o4, 5: UnknownPartitionException o5,
-                  6: InvalidPartitionException o6) 
-                         
+                  6: InvalidPartitionException o6)
+
   //index
   Index add_index(1:Index new_index, 2: Table index_table)
                        throws(1:InvalidObjectException o1, 2:AlreadyExistsException o2, 3:MetaException o3)
   void alter_index(1:string dbname, 2:string base_tbl_name, 3:string idx_name, 4:Index new_idx)
                        throws (1:InvalidOperationException o1, 2:MetaException o2)
   bool drop_index_by_name(1:string db_name, 2:string tbl_name, 3:string index_name, 4:bool deleteData)
-                       throws(1:NoSuchObjectException o1, 2:MetaException o2) 
+                       throws(1:NoSuchObjectException o1, 2:MetaException o2)
   Index get_index_by_name(1:string db_name 2:string tbl_name, 3:string index_name)
                        throws(1:MetaException o1, 2:NoSuchObjectException o2)
 
@@ -417,30 +425,30 @@ service ThriftHiveMetastore extends fb303.FacebookService
                        throws(1:MetaException o2)
 
   //authorization privileges
-                       
+
   bool create_role(1:Role role) throws(1:MetaException o1)
   bool drop_role(1:string role_name) throws(1:MetaException o1)
   list<string> get_role_names() throws(1:MetaException o1)
-  bool grant_role(1:string role_name, 2:string principal_name, 3:PrincipalType principal_type, 
+  bool grant_role(1:string role_name, 2:string principal_name, 3:PrincipalType principal_type,
     4:string grantor, 5:PrincipalType grantorType, 6:bool grant_option) throws(1:MetaException o1)
-  bool revoke_role(1:string role_name, 2:string principal_name, 3:PrincipalType principal_type) 
+  bool revoke_role(1:string role_name, 2:string principal_name, 3:PrincipalType principal_type)
                         throws(1:MetaException o1)
   list<Role> list_roles(1:string principal_name, 2:PrincipalType principal_type) throws(1:MetaException o1)
 
-  PrincipalPrivilegeSet get_privilege_set(1:HiveObjectRef hiveObject, 2:string user_name, 
+  PrincipalPrivilegeSet get_privilege_set(1:HiveObjectRef hiveObject, 2:string user_name,
     3: list<string> group_names) throws(1:MetaException o1)
-  list<HiveObjectPrivilege> list_privileges(1:string principal_name, 2:PrincipalType principal_type, 
+  list<HiveObjectPrivilege> list_privileges(1:string principal_name, 2:PrincipalType principal_type,
     3: HiveObjectRef hiveObject) throws(1:MetaException o1)
-  
+
   bool grant_privileges(1:PrivilegeBag privileges) throws(1:MetaException o1)
   bool revoke_privileges(1:PrivilegeBag privileges) throws(1:MetaException o1)
-  
+
   // this is used by metastore client to send UGI information to metastore server immediately
-  // after setting up a connection. 
+  // after setting up a connection.
   list<string> set_ugi(1:string user_name, 2:list<string> group_names) throws (1:MetaException o1)
 
   //Authentication (delegation token) interfaces
-  
+
   // get metastore server delegation token for use from the map/reduce tasks to authenticate
   // to metastore server
   string get_delegation_token(1:string token_owner, 2:string renewer_kerberos_principal_name)

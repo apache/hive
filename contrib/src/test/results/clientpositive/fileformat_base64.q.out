@@ -27,6 +27,7 @@ STAGE PLANS:
           input format: org.apache.hadoop.hive.contrib.fileformat.base64.Base64TextInputFormat
           # buckets: -1
           output format: org.apache.hadoop.hive.contrib.fileformat.base64.Base64TextOutputFormat
+          primaryRegionName: 
           name: base64_test
           isExternal: false
 

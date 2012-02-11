@@ -1033,6 +1033,8 @@ public class HiveMetaStore extends ThriftHiveMetastore {
           tbl.getSd().setLocation(tblPath.toString());
         }
 
+        MetaStoreUtils.checkOrSetPrimaryRegionName(tbl.getSd(), hiveConf);
+
         if (tblPath != null) {
           if (!wh.isDir(tblPath)) {
             if (!wh.mkdirs(tblPath)) {
@@ -1354,6 +1356,8 @@ public class HiveMetaStore extends ThriftHiveMetastore {
             .makePartName(tbl.getPartitionKeys(), part_vals));
         part.getSd().setLocation(partLocation.toString());
 
+        MetaStoreUtils.checkOrSetPrimaryRegionName(part.getSd(), hiveConf);
+
         Partition old_part = null;
         try {
           old_part = ms.getPartition(part.getDbName(), part
@@ -1559,6 +1563,8 @@ public class HiveMetaStore extends ThriftHiveMetastore {
             madeDir = true;
           }
         }
+
+        MetaStoreUtils.checkOrSetPrimaryRegionName(part.getSd(), hiveConf);
 
         // set create time
         long time = System.currentTimeMillis() / 1000;

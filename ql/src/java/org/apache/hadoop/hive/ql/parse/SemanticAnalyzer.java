@@ -7944,6 +7944,8 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     RowFormatParams rowFormatParams = new RowFormatParams();
     StorageFormat storageFormat = new StorageFormat();
     AnalyzeCreateCommonVars shared = new AnalyzeCreateCommonVars();
+    String defaultRegionName =
+      HiveConf.getVar(conf, HiveConf.ConfVars.HIVE_DEFAULT_REGION_NAME);
 
     LOG.info("Creating table " + tableName + " position="
         + ast.getCharPositionInLine());
@@ -8082,7 +8084,9 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
           bucketCols, sortCols, numBuckets, rowFormatParams.fieldDelim, rowFormatParams.fieldEscape,
           rowFormatParams.collItemDelim, rowFormatParams.mapKeyDelim, rowFormatParams.lineDelim, comment,
           storageFormat.inputFormat, storageFormat.outputFormat, location, shared.serde,
-          storageFormat.storageHandler, shared.serdeProps, tblProps, ifNotExists);
+          storageFormat.storageHandler, shared.serdeProps,
+          tblProps, ifNotExists,
+          defaultRegionName);
 
       validateCreateTable(crtTblDesc);
       // outputs is empty, which means this create table happens in the current
@@ -8124,7 +8128,8 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
           bucketCols, sortCols, numBuckets, rowFormatParams.fieldDelim, rowFormatParams.fieldEscape,
           rowFormatParams.collItemDelim, rowFormatParams.mapKeyDelim, rowFormatParams.lineDelim, comment, storageFormat.inputFormat,
           storageFormat.outputFormat, location, shared.serde, storageFormat.storageHandler, shared.serdeProps,
-          tblProps, ifNotExists);
+          tblProps, ifNotExists,
+          defaultRegionName);
       qb.setTableDesc(crtTblDesc);
 
       SessionState.get().setCommandType(HiveOperation.CREATETABLE_AS_SELECT);

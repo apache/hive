@@ -46,6 +46,7 @@ import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.NoSuchObjectException;
 import org.apache.hadoop.hive.metastore.api.Order;
 import org.apache.hadoop.hive.metastore.api.Partition;
+import org.apache.hadoop.hive.metastore.api.RegionStorageDescriptor;
 import org.apache.hadoop.hive.metastore.api.SerDeInfo;
 import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
 import org.apache.hadoop.hive.metastore.api.Table;
@@ -431,6 +432,8 @@ public abstract class TestHiveMetaStore extends TestCase {
     part4.setSd(tbl.getSd().deepCopy());
     part4.getSd().setSerdeInfo(tbl.getSd().getSerdeInfo().deepCopy());
     part4.getSd().setLocation(tbl.getSd().getLocation() + ptnLocationSuffix);
+    part4.getSd().setPrimaryRegionName(HiveConf.ConfVars.HIVE_DEFAULT_REGION_NAME.defaultVal);
+    part4.getSd().setSecondaryRegions(new ArrayList<RegionStorageDescriptor>());
     return part4;
   }
 

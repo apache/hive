@@ -114,6 +114,8 @@ public class HiveAlterHandler implements AlterHandler {
         }
       }
 
+      MetaStoreUtils.checkOrSetPrimaryRegionName(newt.getSd(), hiveConf);
+
       // if this alter is a rename, the table is not a virtual view, the user
       // didn't change the default location (or new location is empty), and
       // table is not an external table, that means useris asking metastore to
@@ -157,6 +159,7 @@ public class HiveAlterHandler implements AlterHandler {
               + destPath + " for table " + newt.getDbName() + "."
               + newt.getTableName());
         }
+
         // also the location field in partition
         List<Partition> parts = msdb.getPartitions(dbname, name, 0);
         for (Partition part : parts) {
@@ -247,6 +250,9 @@ public class HiveAlterHandler implements AlterHandler {
       new_part.putToParameters(Constants.DDL_TIME, Long.toString(System
           .currentTimeMillis() / 1000));
     }
+
+    MetaStoreUtils.checkOrSetPrimaryRegionName(new_part.getSd(), hiveConf);
+
     //alter partition
     if (part_vals == null || part_vals.size() == 0) {
       try {
@@ -286,6 +292,7 @@ public class HiveAlterHandler implements AlterHandler {
         throw new InvalidObjectException(
             "Unable to rename partition because table or database do not exist");
       }
+
       try {
         destPath = new Path(wh.getTablePath(msdb.getDatabase(dbname), name),
             Warehouse.makePartName(tbl.getPartitionKeys(), new_part.getValues()));
