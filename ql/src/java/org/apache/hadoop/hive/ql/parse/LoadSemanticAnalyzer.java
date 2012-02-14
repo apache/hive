@@ -112,11 +112,6 @@ public class LoadSemanticAnalyzer extends BaseSemanticAnalyzer {
 
   private void applyConstraints(URI fromURI, URI toURI, Tree ast,
       boolean isLocal) throws SemanticException {
-    if (!fromURI.getScheme().equals("file")
-        && !fromURI.getScheme().equals("hdfs")) {
-      throw new SemanticException(ErrorMsg.INVALID_PATH.getMsg(ast,
-          "only \"file\" or \"hdfs\" file systems accepted"));
-    }
 
     // local mode implies that scheme should be "file"
     // we can change this going forward
@@ -235,7 +230,7 @@ public class LoadSemanticAnalyzer extends BaseSemanticAnalyzer {
     }
 
     // create final load/move work
-    
+
     String loadTmpPath = ctx.getExternalTmpFileURI(toURI);
     Map<String, String> partSpec = ts.getPartSpec();
     if (partSpec == null) {
