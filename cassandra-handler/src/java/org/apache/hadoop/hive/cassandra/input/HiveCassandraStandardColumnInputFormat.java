@@ -83,9 +83,13 @@ implements org.apache.hadoop.mapred.InputFormat<BytesWritable, MapWritable> {
         }
       }
 
-      range.setStart(comparator.fromString(jobConf.get(AbstractColumnSerDe.CASSANDRA_SLICE_PREDICATE_RANGE_START)));
-      range.setFinish(comparator.fromString(jobConf.get(AbstractColumnSerDe.CASSANDRA_SLICE_PREDICATE_RANGE_FINISH)));
-      range.setReversed(jobConf.get(AbstractColumnSerDe.CASSANDRA_SLICE_PREDICATE_RANGE_REVERSED).equals("true"));
+      String sliceStart = jobConf.get(AbstractColumnSerDe.CASSANDRA_SLICE_PREDICATE_RANGE_START);
+      String sliceEnd = jobConf.get(AbstractColumnSerDe.CASSANDRA_SLICE_PREDICATE_RANGE_FINISH);
+      String reversed = jobConf.get(AbstractColumnSerDe.CASSANDRA_SLICE_PREDICATE_RANGE_REVERSED);
+
+      range.setStart(comparator.fromString(sliceStart == null ? "" : sliceStart));
+      range.setFinish(comparator.fromString(sliceEnd == null ? "" : sliceEnd));
+      range.setReversed(reversed == null ? false : reversed.equals("true"));
       range.setCount(cassandraSplit.getSlicePredicateSize());
       predicate.setSlice_range(range);
     } else {
