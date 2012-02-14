@@ -75,7 +75,7 @@ implements org.apache.hadoop.mapred.InputFormat<BytesWritable, MapWritable> {
       AbstractType comparator = BytesType.instance;
 
       String comparatorType = jobConf.get(AbstractColumnSerDe.CASSANDRA_SLICE_PREDICATE_RANGE_COMPARATOR);
-      if (!comparatorType.equals("")) {
+      if (comparatorType != null && !comparatorType.equals("")) {
         try {
           comparator = TypeParser.parse(comparatorType);
         } catch (ConfigurationException ex) {
