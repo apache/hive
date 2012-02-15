@@ -1,8 +1,14 @@
-drop table ba_test;
+USE default;
 
--- this query tests all the udfs provided to work with binary works.
+-- this query tests all the udfs provided to work with binary types
 
-select length (cast(src.key as binary)) as len, concat(cast(src.key as binary), cast(src.value as binary)), substr(src.value, 5,1) as sub from src order by sub limit 10;
-
-drop table ba_test;
-
+SELECT
+  key,
+  value,
+  LENGTH(CAST(src.key AS BINARY)),
+  LENGTH(CAST(src.value AS BINARY)),
+  CONCAT(CAST(src.key AS BINARY), CAST(src.value AS BINARY)),
+  SUBSTR(CAST(src.value AS BINARY), 1, 4)
+FROM src
+ORDER BY value
+LIMIT 100;
