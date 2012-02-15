@@ -1,30 +1,134 @@
-PREHOOK: query: drop table ba_test
-PREHOOK: type: DROPTABLE
-POSTHOOK: query: drop table ba_test
-POSTHOOK: type: DROPTABLE
-PREHOOK: query: -- this query tests all the udfs provided to work with binary works.
+PREHOOK: query: USE default
+PREHOOK: type: SWITCHDATABASE
+POSTHOOK: query: USE default
+POSTHOOK: type: SWITCHDATABASE
+PREHOOK: query: -- this query tests all the udfs provided to work with binary types
 
-select length (cast(src.key as binary)) as len, concat(cast(src.key as binary), cast(src.value as binary)), substr(src.value, 5,1) as sub from src order by sub limit 10
+SELECT
+  key,
+  value,
+  LENGTH(CAST(src.key AS BINARY)),
+  LENGTH(CAST(src.value AS BINARY)),
+  CONCAT(CAST(src.key AS BINARY), CAST(src.value AS BINARY)),
+  SUBSTR(CAST(src.value AS BINARY), 1, 4)
+FROM src
+ORDER BY value
+LIMIT 100
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
 #### A masked pattern was here ####
-POSTHOOK: query: -- this query tests all the udfs provided to work with binary works.
+POSTHOOK: query: -- this query tests all the udfs provided to work with binary types
 
-select length (cast(src.key as binary)) as len, concat(cast(src.key as binary), cast(src.value as binary)), substr(src.value, 5,1) as sub from src order by sub limit 10
+SELECT
+  key,
+  value,
+  LENGTH(CAST(src.key AS BINARY)),
+  LENGTH(CAST(src.value AS BINARY)),
+  CONCAT(CAST(src.key AS BINARY), CAST(src.value AS BINARY)),
+  SUBSTR(CAST(src.value AS BINARY), 1, 4)
+FROM src
+ORDER BY value
+LIMIT 100
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####
-1	0val_0	0
-1	0val_0	0
-1	0val_0	0
-3	120val_120	1
-3	192val_192	1
-3	119val_119	1
-3	187val_187	1
-3	176val_176	1
-3	199val_199	1
-3	118val_118	1
-PREHOOK: query: drop table ba_test
-PREHOOK: type: DROPTABLE
-POSTHOOK: query: drop table ba_test
-POSTHOOK: type: DROPTABLE
+0	val_0	1	5	0val_0	al_0
+0	val_0	1	5	0val_0	al_0
+0	val_0	1	5	0val_0	al_0
+10	val_10	2	6	10val_10	al_1
+100	val_100	3	7	100val_100	al_1
+100	val_100	3	7	100val_100	al_1
+103	val_103	3	7	103val_103	al_1
+103	val_103	3	7	103val_103	al_1
+104	val_104	3	7	104val_104	al_1
+104	val_104	3	7	104val_104	al_1
+105	val_105	3	7	105val_105	al_1
+11	val_11	2	6	11val_11	al_1
+111	val_111	3	7	111val_111	al_1
+113	val_113	3	7	113val_113	al_1
+113	val_113	3	7	113val_113	al_1
+114	val_114	3	7	114val_114	al_1
+116	val_116	3	7	116val_116	al_1
+118	val_118	3	7	118val_118	al_1
+118	val_118	3	7	118val_118	al_1
+119	val_119	3	7	119val_119	al_1
+119	val_119	3	7	119val_119	al_1
+119	val_119	3	7	119val_119	al_1
+12	val_12	2	6	12val_12	al_1
+12	val_12	2	6	12val_12	al_1
+120	val_120	3	7	120val_120	al_1
+120	val_120	3	7	120val_120	al_1
+125	val_125	3	7	125val_125	al_1
+125	val_125	3	7	125val_125	al_1
+126	val_126	3	7	126val_126	al_1
+128	val_128	3	7	128val_128	al_1
+128	val_128	3	7	128val_128	al_1
+128	val_128	3	7	128val_128	al_1
+129	val_129	3	7	129val_129	al_1
+129	val_129	3	7	129val_129	al_1
+131	val_131	3	7	131val_131	al_1
+133	val_133	3	7	133val_133	al_1
+134	val_134	3	7	134val_134	al_1
+134	val_134	3	7	134val_134	al_1
+136	val_136	3	7	136val_136	al_1
+137	val_137	3	7	137val_137	al_1
+137	val_137	3	7	137val_137	al_1
+138	val_138	3	7	138val_138	al_1
+138	val_138	3	7	138val_138	al_1
+138	val_138	3	7	138val_138	al_1
+138	val_138	3	7	138val_138	al_1
+143	val_143	3	7	143val_143	al_1
+145	val_145	3	7	145val_145	al_1
+146	val_146	3	7	146val_146	al_1
+146	val_146	3	7	146val_146	al_1
+149	val_149	3	7	149val_149	al_1
+149	val_149	3	7	149val_149	al_1
+15	val_15	2	6	15val_15	al_1
+15	val_15	2	6	15val_15	al_1
+150	val_150	3	7	150val_150	al_1
+152	val_152	3	7	152val_152	al_1
+152	val_152	3	7	152val_152	al_1
+153	val_153	3	7	153val_153	al_1
+155	val_155	3	7	155val_155	al_1
+156	val_156	3	7	156val_156	al_1
+157	val_157	3	7	157val_157	al_1
+158	val_158	3	7	158val_158	al_1
+160	val_160	3	7	160val_160	al_1
+162	val_162	3	7	162val_162	al_1
+163	val_163	3	7	163val_163	al_1
+164	val_164	3	7	164val_164	al_1
+164	val_164	3	7	164val_164	al_1
+165	val_165	3	7	165val_165	al_1
+165	val_165	3	7	165val_165	al_1
+166	val_166	3	7	166val_166	al_1
+167	val_167	3	7	167val_167	al_1
+167	val_167	3	7	167val_167	al_1
+167	val_167	3	7	167val_167	al_1
+168	val_168	3	7	168val_168	al_1
+169	val_169	3	7	169val_169	al_1
+169	val_169	3	7	169val_169	al_1
+169	val_169	3	7	169val_169	al_1
+169	val_169	3	7	169val_169	al_1
+17	val_17	2	6	17val_17	al_1
+170	val_170	3	7	170val_170	al_1
+172	val_172	3	7	172val_172	al_1
+172	val_172	3	7	172val_172	al_1
+174	val_174	3	7	174val_174	al_1
+174	val_174	3	7	174val_174	al_1
+175	val_175	3	7	175val_175	al_1
+175	val_175	3	7	175val_175	al_1
+176	val_176	3	7	176val_176	al_1
+176	val_176	3	7	176val_176	al_1
+177	val_177	3	7	177val_177	al_1
+178	val_178	3	7	178val_178	al_1
+179	val_179	3	7	179val_179	al_1
+179	val_179	3	7	179val_179	al_1
+18	val_18	2	6	18val_18	al_1
+18	val_18	2	6	18val_18	al_1
+180	val_180	3	7	180val_180	al_1
+181	val_181	3	7	181val_181	al_1
+183	val_183	3	7	183val_183	al_1
+186	val_186	3	7	186val_186	al_1
+187	val_187	3	7	187val_187	al_1
+187	val_187	3	7	187val_187	al_1
+187	val_187	3	7	187val_187	al_1
