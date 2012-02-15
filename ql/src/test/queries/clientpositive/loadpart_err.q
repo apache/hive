@@ -2,7 +2,7 @@ set hive.cli.errors.ignore=true;
 
 ADD FILE ../data/scripts/error_script;
 
--- EXCLUDE_HADOOP_MAJOR_VERSIONS(0.17, 0.18, 0.19, 0.20)
+-- EXCLUDE_HADOOP_MAJOR_VERSIONS(0.17, 0.18, 0.19, 0.20, 0.23)
 -- (this test is flaky so it is currently disabled for all Hadoop versions)
 
 CREATE TABLE loadpart1(a STRING, b STRING) PARTITIONED BY (ds STRING);
