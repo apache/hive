@@ -41,6 +41,7 @@ public class HiveCassandraStandardSplit extends FileSplit implements InputSplit{
     columnMapping = in.readUTF();
     keyspace = in.readUTF();
     columnFamily = in.readUTF();
+    splitSize = in.readInt();
     rangeBatchSize = in.readInt();
     slicePredicateSize = in.readInt();
     partitioner = in.readUTF();
@@ -55,6 +56,7 @@ public class HiveCassandraStandardSplit extends FileSplit implements InputSplit{
     out.writeUTF(columnMapping);
     out.writeUTF(keyspace);
     out.writeUTF(columnFamily);
+    out.writeInt(splitSize);
     out.writeInt(rangeBatchSize);
     out.writeInt(slicePredicateSize);
     out.writeUTF(partitioner);
