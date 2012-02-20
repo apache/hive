@@ -252,15 +252,10 @@ public class ColumnFamilyWideRowRecordReader extends ColumnFamilyRecordReader {
       try {
         partitioner = FBUtilities.newPartitioner(client.describe_partitioner());
 
-        // Get the Keyspace metadata, then get the specific CF metadata
-        // in order to populate the sub/comparator.
-        KsDef ks_def = client.describe_keyspace(keyspace);
-        List<String> cfnames = new ArrayList<String>();
-        for (CfDef cfd : ks_def.cf_defs) {
-          cfnames.add(cfd.name);
+        CfDef cf_def = findCfDef(ks_def, cfName);
+        if (cf_def == null) {
+          throw new RuntimeException("ColumnFamily named " + cfName + " wasn't found in keyspace " + ks_def.name);
         }
-        int idx = cfnames.indexOf(cfName);
-        CfDef cf_def = ks_def.cf_defs.get(idx);
 
         comparator = TypeParser.parse(cf_def.comparator_type);
         subComparator = cf_def.subcomparator_type == null ? null : TypeParser
@@ -274,9 +269,19 @@ public class ColumnFamilyWideRowRecordReader extends ColumnFamilyRecordReader {
       }
     }
 
+    private static CfDef findCfDef(KsDef ks_def, String cfName)
+    {
+        for (CfDef cfDef : ks_def.cf_defs)
+        {
+            if (cfDef.name.equals(cfName)) {
+              return cfDef;
+            }
+        }
+
+       return null;
+    }
+
     private void maybeInit() {
-
-
       // check if we need another row
       if (rows != null && columnsRead < rowPageSize) {
         columnsRead = 0;
