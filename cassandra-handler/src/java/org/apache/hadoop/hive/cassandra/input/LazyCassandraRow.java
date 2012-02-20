@@ -91,8 +91,6 @@ public class LazyCassandraRow extends LazyStruct {
 
         BytesWritable columnValue = (BytesWritable) columnMap.get(columnNameBB);
 
-        LOG.info("Looking for "+columnName+" value "+columnValue);
-
         if (columnValue != null) {
           ref = new ByteArrayRef();
           ref.setData(columnValue.getBytes());
