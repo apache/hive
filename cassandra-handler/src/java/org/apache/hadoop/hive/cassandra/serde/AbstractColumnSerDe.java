@@ -51,6 +51,7 @@ public abstract class AbstractColumnSerDe implements SerDe {
   public static final String CASSANDRA_SLICE_PREDICATE_RANGE_COMPARATOR = "cassandra.slice.predicate.range.comparator";
   public static final String CASSANDRA_SLICE_PREDICATE_RANGE_REVERSED = "cassandra.slice.predicate.range.reversed";
   public static final String CASSANDRA_SLICE_PREDICATE_RANGE_COUNT = "cassandra.slice.predicate.range.count";
+  public static final String CASSANDRA_ENABLE_WIDEROW_ITERATOR = "cassandra.enable.widerow.iterator";
 
   public static final String CASSANDRA_SPECIAL_COLUMN_KEY = "row_key";
   public static final String CASSANDRA_SPECIAL_COLUMN_COL = "column_name";

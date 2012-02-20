@@ -110,7 +110,13 @@ implements org.apache.hadoop.mapred.InputFormat<BytesWritable, MapWritable> {
       // Set Split Size
       ConfigHelper.setInputSplitSize(tac.getConfiguration(), cassandraSplit.getSplitSize());
 
-      CassandraHiveRecordReader rr = new CassandraHiveRecordReader(new ColumnFamilyRecordReader(), isTransposed);
+      CassandraHiveRecordReader rr = null;
+
+      if(isTransposed && tac.getConfiguration().getBoolean(AbstractColumnSerDe.CASSANDRA_ENABLE_WIDEROW_ITERATOR, true)) {
+        rr = new CassandraHiveRecordReader(new ColumnFamilyWideRowRecordReader(), isTransposed);
+      } else {
+        rr = new CassandraHiveRecordReader(new ColumnFamilyRecordReader(), isTransposed);
+      }
       rr.initialize(cfSplit, tac);
 
       return rr;
