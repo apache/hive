@@ -252,6 +252,7 @@ public class ColumnFamilyWideRowRecordReader extends ColumnFamilyRecordReader {
       try {
         partitioner = FBUtilities.newPartitioner(client.describe_partitioner());
 
+        KsDef ks_def = client.describe_keyspace(keyspace);
         CfDef cf_def = findCfDef(ks_def, cfName);
         if (cf_def == null) {
           throw new RuntimeException("ColumnFamily named " + cfName + " wasn't found in keyspace " + ks_def.name);
@@ -269,7 +270,7 @@ public class ColumnFamilyWideRowRecordReader extends ColumnFamilyRecordReader {
       }
     }
 
-    private static CfDef findCfDef(KsDef ks_def, String cfName)
+    private CfDef findCfDef(KsDef ks_def, String cfName)
     {
         for (CfDef cfDef : ks_def.cf_defs)
         {
