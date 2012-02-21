@@ -24,6 +24,8 @@ import org.apache.hadoop.io.BytesWritable;
 import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.Text;
 
+import java.util.Arrays;
+
 /**
  * UDFSubstr.
  *
@@ -43,9 +45,12 @@ import org.apache.hadoop.io.Text;
     + "  > SELECT _FUNC_('Facebook', 5, 1) FROM src LIMIT 1;\n"
     + "  'b'")
 public class UDFSubstr extends UDF {
+
+  private final int[] index;
   private final Text r;
 
   public UDFSubstr() {
+    index = new int[2];
     r = new Text();
   }
 
@@ -60,29 +65,39 @@ public class UDFSubstr extends UDF {
       return r;
     }
 
-    String s = t.toString();
-    if ((Math.abs(pos.get()) > s.length())) {
+    int[] index = makeIndex(pos.get(), len.get(), t.getLength());
+    if (index == null) {
       return r;
+    }
+
+    String s = t.toString();
+    r.set(s.substring(index[0], index[1]));
+    return r;
+  }
+
+  private int[] makeIndex(int pos, int len, int inputLen) {
+    if ((Math.abs(pos) > inputLen)) {
+      return null;
     }
 
     int start, end;
 
-    if (pos.get() > 0) {
-      start = pos.get() - 1;
-    } else if (pos.get() < 0) {
-      start = s.length() + pos.get();
+    if (pos > 0) {
+      start = pos - 1;
+    } else if (pos < 0) {
+      start = inputLen + pos;
     } else {
       start = 0;
     }
 
-    if ((s.length() - start) < len.get()) {
-      end = s.length();
+    if ((inputLen - start) < len) {
+      end = inputLen;
     } else {
-      end = start + len.get();
+      end = start + len;
     }
-
-    r.set(s.substring(start, end));
-    return r;
+    index[0] = start;
+    index[1] = end;
+    return index;
   }
 
   private final IntWritable maxValue = new IntWritable(Integer.MAX_VALUE);
@@ -91,21 +106,22 @@ public class UDFSubstr extends UDF {
     return evaluate(s, pos, maxValue);
   }
 
-  public BytesWritable evaluate(BytesWritable bw, IntWritable pos, IntWritable len){
+  public BytesWritable evaluate(BytesWritable bw, IntWritable pos, IntWritable len) {
 
-    if ((null == bw) || (null == pos) || (null == len)) {
+    if ((bw == null) || (pos == null) || (len == null)) {
       return null;
-}
-
-    BytesWritable outgoing = new BytesWritable();
-
-    if ((len.get() <= 0) || (pos.get() < 0) || (pos.get() > bw.getLength())) {
-      return outgoing;
     }
 
-    byte[] underlying = bw.getBytes();
-    outgoing.set(underlying, pos.get(), len.get());
-    return outgoing;
+    if ((len.get() <= 0)) {
+      return new BytesWritable();
+    }
+
+    int[] index = makeIndex(pos.get(), len.get(), bw.getLength());
+    if (index == null) {
+      return new BytesWritable();
+    }
+
+    return new BytesWritable(Arrays.copyOfRange(bw.getBytes(), index[0], index[1]));
   }
 
   public BytesWritable evaluate(BytesWritable bw, IntWritable pos){

@@ -47,3 +47,21 @@ SELECT
   substring('ABC', 1, 2147483647), substring('ABC', 2, 2147483647),
   substring('A', 0), substring('A', 1), substring('A', -1)
 FROM src LIMIT 1;
+
+-- test for binary substr
+SELECT
+  substr(null, 1), substr(null, 1, 1),
+  substr(ABC, null), substr(ABC, null, 1),
+  substr(ABC, 1, null),
+  substr(ABC, 0, 1), substr(ABC, 0, 2), substr(ABC, 0, 3), substr(ABC, 0, 4),
+  substr(ABC, 1, 1), substr(ABC, 1, 2), substr(ABC, 1, 3), substr(ABC, 1, 4),
+  substr(ABC, 2, 1), substr(ABC, 2, 2), substr(ABC, 2, 3), substr(ABC, 2, 4),
+  substr(ABC, 3, 1), substr(ABC, 3, 2), substr(ABC, 3, 3), substr(ABC, 3, 4),
+  substr(ABC, 4, 1),
+  substr(ABC, -1, 1), substr(ABC, -1, 2), substr(ABC, -1, 3), substr(ABC, -1, 4),
+  substr(ABC, -2, 1), substr(ABC, -2, 2), substr(ABC, -2, 3), substr(ABC, -2, 4),
+  substr(ABC, -3, 1), substr(ABC, -3, 2), substr(ABC, -3, 3), substr(ABC, -3, 4),
+  substr(ABC, -4, 1)
+FROM (
+   select CAST(concat(substr(value, 1, 0), 'ABC') as BINARY) as ABC from src LIMIT 1
+) X;
