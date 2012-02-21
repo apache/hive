@@ -509,7 +509,17 @@ public final class OpProcFactory {
         // Reduce sink of group by operator
         ignoreAliases = true;
       }
-      mergeWithChildrenPred(nd, owi, null, aliases, ignoreAliases);
+      boolean hasUnpushedPredicates = mergeWithChildrenPred(nd, owi, null, aliases, ignoreAliases);
+      if (HiveConf.getBoolVar(owi.getParseContext().getConf(),
+          HiveConf.ConfVars.HIVEPPDREMOVEDUPLICATEFILTERS)) {
+        if (hasUnpushedPredicates) {
+          Operator<? extends Serializable> op = (Operator<? extends Serializable>) nd;
+          Operator<? extends Serializable> childOperator = op.getChildOperators().get(0);
+          if(childOperator.getParentOperators().size()==1) {
+            owi.getCandidateFilterOps().clear();
+          }
+        }
+      }
       return null;
     }
 
@@ -600,6 +610,8 @@ public final class OpProcFactory {
           }
           ewi.merge(extractPushdownPreds);
           logExpr(nd, extractPushdownPreds);
+        } else {
+          hasUnpushedPredicates = true;
         }
       }
       owi.putPrunedPreds((Operator<? extends Serializable>) nd, ewi);
