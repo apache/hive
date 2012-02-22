@@ -23,7 +23,6 @@ import java.util.TimerTask;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.hive.metastore.HiveMetaStore.HMSHandler;
-import org.apache.hadoop.hive.metastore.HiveMetaStore.HMSHandler.Command;
 import org.apache.hadoop.hive.metastore.RawStore;
 
 public class EventCleanerTask extends TimerTask{
@@ -40,12 +39,9 @@ public class EventCleanerTask extends TimerTask{
   public void run() {
 
     try {
-      long deleteCnt = handler.executeWithRetry(new Command<Long>(){
-        @Override
-        public Long run(RawStore ms) throws Exception {
-          return ms.cleanupEvents();
-        }
-      });
+      RawStore ms = handler.getMS();
+      long deleteCnt = ms.cleanupEvents();
+
       if (deleteCnt > 0L){
         LOG.info("Number of events deleted from event Table: "+deleteCnt);
       }
