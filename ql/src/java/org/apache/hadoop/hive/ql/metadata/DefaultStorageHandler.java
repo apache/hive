@@ -25,6 +25,8 @@ import org.apache.hadoop.hive.metastore.HiveMetaHook;
 import org.apache.hadoop.hive.ql.plan.TableDesc;
 import org.apache.hadoop.hive.serde2.SerDe;
 import org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe;
+import org.apache.hadoop.hive.ql.security.authorization.HiveAuthorizationProvider;
+import org.apache.hadoop.hive.ql.security.authorization.DefaultHiveAuthorizationProvider;
 import org.apache.hadoop.mapred.InputFormat;
 import org.apache.hadoop.mapred.OutputFormat;
 import org.apache.hadoop.mapred.SequenceFileInputFormat;
@@ -59,6 +61,11 @@ public class DefaultStorageHandler implements HiveStorageHandler {
   public HiveMetaHook getMetaHook() {
     // no hook by default
     return null;
+  }
+
+  public HiveAuthorizationProvider getAuthorizationProvider()
+         throws HiveException {
+     return new DefaultHiveAuthorizationProvider();
   }
 
   @Override

@@ -24,6 +24,7 @@ import org.apache.hadoop.conf.Configurable;
 import org.apache.hadoop.hive.metastore.HiveMetaHook;
 import org.apache.hadoop.hive.ql.plan.TableDesc;
 import org.apache.hadoop.hive.serde2.SerDe;
+import org.apache.hadoop.hive.ql.security.authorization.HiveAuthorizationProvider;
 import org.apache.hadoop.mapred.InputFormat;
 import org.apache.hadoop.mapred.OutputFormat;
 
@@ -66,6 +67,15 @@ public interface HiveStorageHandler extends Configurable {
    * storage handler does not need any metadata notifications
    */
   public HiveMetaHook getMetaHook();
+
+  /**
+   * Returns the implementation specific authorization provider
+   *
+   * @return authorization provider
+   * @throws HiveException
+   */
+  public HiveAuthorizationProvider getAuthorizationProvider()
+    throws HiveException;
 
   /**
    * Configures properties for a job based on the definition of the
