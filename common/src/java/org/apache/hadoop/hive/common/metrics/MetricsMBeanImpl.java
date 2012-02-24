@@ -42,7 +42,8 @@ public class MetricsMBeanImpl implements  MetricsMBean {
     boolean dirtyAttributeInfoCache = true;
 
     MBeanConstructorInfo[] ctors = null;
-    MBeanOperationInfo[] ops = null;
+    MBeanOperationInfo[] ops = {new MBeanOperationInfo("reset",
+        "Sets the values of all Attributes to 0", null, "void", MBeanOperationInfo.ACTION)};
     MBeanNotificationInfo[] notifs = null;
 
     @Override
@@ -88,10 +89,13 @@ public class MetricsMBeanImpl implements  MetricsMBean {
     }
 
     @Override
-    public Object invoke(String arg0, Object[] arg1, String[] arg2)
+    public Object invoke(String name, Object[] args, String[] signature)
             throws MBeanException, ReflectionException {
-        // no invocations.
-        return null;
+        if (name.equals("reset")) {
+          reset();
+          return null;
+        }
+        throw new ReflectionException(new NoSuchMethodException(name));
     }
 
     @Override
@@ -112,7 +116,7 @@ public class MetricsMBeanImpl implements  MetricsMBean {
                 setAttribute(attr);
                 attributesSet.add(attr);
             } catch (AttributeNotFoundException e) {
-                // ignore exception - we simply don't add this attribute 
+                // ignore exception - we simply don't add this attribute
                 // back in to the resultant set.
             } catch (InvalidAttributeValueException e) {
                 // ditto
@@ -152,4 +156,11 @@ public class MetricsMBeanImpl implements  MetricsMBean {
         }
     }
 
+    public void reset() {
+      synchronized(metricsMap) {
+        for (String key : metricsMap.keySet()) {
+          metricsMap.put(key, Long.valueOf(0));
+        }
+      }
+    }
 }
