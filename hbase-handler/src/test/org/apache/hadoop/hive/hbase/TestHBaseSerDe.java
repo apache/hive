@@ -115,6 +115,73 @@ public class TestHBaseSerDe extends TestCase {
     deserializeAndSerialize(serDe, r, p, expectedFieldsData);
   }
 
+  public void testHBaseSerDeWithTimestamp() throws SerDeException {
+    // Create the SerDe
+    HBaseSerDe serDe = new HBaseSerDe();
+    Configuration conf = new Configuration();
+    Properties tbl = createProperties();
+    long putTimestamp = 1;
+    tbl.setProperty(HBaseSerDe.HBASE_PUT_TIMESTAMP,
+            Long.toString(putTimestamp));
+    serDe.initialize(conf, tbl);
+
+
+    byte [] cfa = "cola".getBytes();
+    byte [] cfb = "colb".getBytes();
+    byte [] cfc = "colc".getBytes();
+
+    byte [] qualByte = "byte".getBytes();
+    byte [] qualShort = "short".getBytes();
+    byte [] qualInt = "int".getBytes();
+    byte [] qualLong = "long".getBytes();
+    byte [] qualFloat = "float".getBytes();
+    byte [] qualDouble = "double".getBytes();
+    byte [] qualString = "string".getBytes();
+    byte [] qualBool = "boolean".getBytes();
+
+    byte [] rowKey = Bytes.toBytes("test-row1");
+
+    // Data
+    List<KeyValue> kvs = new ArrayList<KeyValue>();
+
+    kvs.add(new KeyValue(rowKey, cfa, qualByte, Bytes.toBytes("123")));
+    kvs.add(new KeyValue(rowKey, cfb, qualShort, Bytes.toBytes("456")));
+    kvs.add(new KeyValue(rowKey, cfc, qualInt, Bytes.toBytes("789")));
+    kvs.add(new KeyValue(rowKey, cfa, qualLong, Bytes.toBytes("1000")));
+    kvs.add(new KeyValue(rowKey, cfb, qualFloat, Bytes.toBytes("-0.01")));
+    kvs.add(new KeyValue(rowKey, cfc, qualDouble, Bytes.toBytes("5.3")));
+    kvs.add(new KeyValue(rowKey, cfa, qualString, Bytes.toBytes("Hadoop, HBase, and Hive")));
+    kvs.add(new KeyValue(rowKey, cfb, qualBool, Bytes.toBytes("true")));
+    Collections.sort(kvs, KeyValue.COMPARATOR);
+
+    Result r = new Result(kvs);
+
+    Put p = new Put(rowKey,putTimestamp);
+
+    p.add(cfa, qualByte, Bytes.toBytes("123"));
+    p.add(cfb, qualShort, Bytes.toBytes("456"));
+    p.add(cfc, qualInt, Bytes.toBytes("789"));
+    p.add(cfa, qualLong, Bytes.toBytes("1000"));
+    p.add(cfb, qualFloat, Bytes.toBytes("-0.01"));
+    p.add(cfc, qualDouble, Bytes.toBytes("5.3"));
+    p.add(cfa, qualString, Bytes.toBytes("Hadoop, HBase, and Hive"));
+    p.add(cfb, qualBool, Bytes.toBytes("true"));
+
+    Object[] expectedFieldsData = {
+      new Text("test-row1"),
+      new ByteWritable((byte)123),
+      new ShortWritable((short)456),
+      new IntWritable(789),
+      new LongWritable(1000),
+      new FloatWritable(-0.01F),
+      new DoubleWritable(5.3),
+      new Text("Hadoop, HBase, and Hive"),
+      new BooleanWritable(true)
+    };
+
+    deserializeAndSerialize(serDe, r, p, expectedFieldsData);
+  }
+
   private void deserializeAndSerialize(
       HBaseSerDe serDe, Result r, Put p,
       Object[] expectedFieldsData) throws SerDeException {
