@@ -36,7 +36,7 @@
   <classpathentry kind="lib" path="build/ivy/lib/default/commons-pool-@commons-pool.version@.jar"/>
   <classpathentry kind="lib" path="build/ivy/lib/default/slf4j-api-@slf4j-api.version@.jar"/>
   <classpathentry kind="lib" path="build/ivy/lib/default/slf4j-log4j12-@slf4j-log4j12.version@.jar"/>
-  <classpathentry kind="lib" path="lib/javaewah-@javaewah.version@.jar"/>
+  <classpathentry kind="lib" path="build/ivy/lib/default/JavaEWAH-@javaewah.version@.jar"/>
   <classpathentry kind="lib" path="build/ivy/lib/default/mockito-all-@mockito-all.version@.jar"/>
   <classpathentry kind="lib" path="build/builtins/hive-builtins-@HIVE_VERSION@.jar"/>
   <classpathentry kind="src" path="build/contrib/test/src"/>

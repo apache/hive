@@ -367,7 +367,7 @@
            errorProperty="tests.failed" failureProperty="tests.failed" filtertrace="off">
      
       <env key="HADOOP_HOME" value="${hadoop.root}"/>
-      <env key="HADOOP_CLASSPATH" value="${test.src.data.dir}/conf:${build.dir.hive}/dist/lib/derby-${derby.version}.jar:${build.dir.hive}/dist/lib/javaewah-${javaewah.version}.jar:${hadoop.root}/modules/*"/> <!-- Modules needed for Hadoop 0.23 -->
+      <env key="HADOOP_CLASSPATH" value="${test.src.data.dir}/conf:${build.dir.hive}/dist/lib/derby-${derby.version}.jar:${build.dir.hive}/dist/lib/JavaEWAH-${javaewah.version}.jar:${hadoop.root}/modules/*"/> <!-- Modules needed for Hadoop 0.23 -->
       <env key="TZ" value="US/Pacific"/>
       <sysproperty key="test.output.overwrite" value="${overwrite}"/>
       <sysproperty key="test.service.standalone.server" value="${standalone}"/>

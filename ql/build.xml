@@ -220,7 +220,7 @@
           <exclude name="META-INF/MANIFEST.MF"/>
       </patternset>
     </unzip>
-    <unzip src="${hive.root}/lib/javaewah-${javaewah.version}.jar" dest="${build.dir.hive}/javaewah/classes">
+    <unzip src="${build.ivy.lib.dir}/default/JavaEWAH-${javaewah.version}.jar" dest="${build.dir.hive}/javaewah/classes">
       <patternset>
         <exclude name="meta-inf"/>
         <exclude name="meta-inf/manifest.mf"/>
