@@ -25,12 +25,12 @@ import java.io.DataOutputStream;
 import java.io.IOException;
 import java.lang.reflect.Method;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
 import org.apache.commons.codec.binary.Base64;
-import org.apache.hadoop.conf.Configurable;
 import org.apache.hadoop.io.Writable;
 import org.apache.hadoop.security.token.Token;
 import org.apache.hadoop.security.token.delegation.AbstractDelegationTokenSecretManager;
@@ -58,88 +58,16 @@ public class TokenStoreDelegationTokenSecretManager extends DelegationTokenSecre
   private static final Logger LOGGER =
       LoggerFactory.getLogger(TokenStoreDelegationTokenSecretManager.class.getName());
 
-  /**
-   * Exception for internal token store errors that typically cannot be handled by the caller.
-   */
-  public static class TokenStoreError extends RuntimeException {
-    private static final long serialVersionUID = -8693819817623074083L;
-
-    public TokenStoreError(Throwable cause) {
-      super(cause);
-    }
-
-    public TokenStoreError(String message, Throwable cause) {
-      super(message, cause);
-    }
-  }
-
-  /**
-   * Interface for pluggable token store that can be implemented as shared store with external
-   * storage (for example with ZooKeeper for HA).
-   * Internal, store specific errors are translated into {@link TokenStoreError}.
-   */
-  public static interface TokenStore extends Configurable {
-    /**
-     * Add new master key. The token store assigns and returns the sequence number.
-     * Caller needs to use the identifier to update the key (since it is embedded in the key).
-     *
-     * @param s
-     * @return sequence number for new key
-     */
-    int addMasterKey(String s) throws TokenStoreError;
-
-    void updateMasterKey(int keySeq, String s) throws TokenStoreError;
-
-    /**
-     * Remove key for given id.
-     * @param keySeq
-     * @return false if key no longer present, true otherwise.
-     */
-    boolean removeMasterKey(int keySeq);
-
-    String[] getMasterKeys() throws TokenStoreError;
-
-    /**
-     * Add token. If identifier is already present, token won't be added.
-     * @param tokenIdentifier
-     * @param token
-     * @return true if token was added, false for existing identifier
-     */
-    boolean addToken(DelegationTokenIdentifier tokenIdentifier,
-        DelegationTokenInformation token) throws TokenStoreError;
-
-    /**
-     * Get token. Returns null if the token does not exist.
-     * @param tokenIdentifier
-     * @return
-     */
-    DelegationTokenInformation getToken(DelegationTokenIdentifier tokenIdentifier)
-        throws TokenStoreError;
-
-    /**
-     * Remove token. Ignores token does not exist.
-     * @param tokenIdentifier
-     */
-    boolean removeToken(DelegationTokenIdentifier tokenIdentifier) throws TokenStoreError;
-
-    /**
-     * List of all token identifiers in the store. This is used to remove expired tokens
-     * and a potential scalability improvement would be to partition by master key id
-     * @return
-     */
-    List<DelegationTokenIdentifier> getAllDelegationTokenIdentifiers();
-
-  }
-
   final private long keyUpdateInterval;
   final private long tokenRemoverScanInterval;
   private Thread tokenRemoverThread;
 
-  final private TokenStore tokenStore;
+  final private DelegationTokenStore tokenStore;
 
   public TokenStoreDelegationTokenSecretManager(long delegationKeyUpdateInterval,
       long delegationTokenMaxLifetime, long delegationTokenRenewInterval,
-      long delegationTokenRemoverScanInterval, TokenStore sharedStore) {
+      long delegationTokenRemoverScanInterval,
+      DelegationTokenStore sharedStore) {
     super(delegationKeyUpdateInterval, delegationTokenMaxLifetime, delegationTokenRenewInterval,
         delegationTokenRemoverScanInterval);
     this.keyUpdateInterval = delegationKeyUpdateInterval;
@@ -162,7 +90,7 @@ public class TokenStoreDelegationTokenSecretManager extends DelegationTokenSecre
     // read keys from token store
     String[] allKeys = tokenStore.getMasterKeys();
     Map<Integer, DelegationKey> keys
-        = new java.util.HashMap<Integer, DelegationKey>(allKeys.length);
+        = new HashMap<Integer, DelegationKey>(allKeys.length);
     for (String keyStr : allKeys) {
       DelegationKey key = new DelegationKey();
       try {
@@ -180,8 +108,7 @@ public class TokenStoreDelegationTokenSecretManager extends DelegationTokenSecre
   }
 
   @Override
-  public byte[] retrievePassword(DelegationTokenIdentifier identifier)
-      throws org.apache.hadoop.security.token.SecretManager.InvalidToken {
+  public byte[] retrievePassword(DelegationTokenIdentifier identifier) throws InvalidToken {
       DelegationTokenInformation info = this.tokenStore.getToken(identifier);
       if (info == null) {
           throw new InvalidToken("token expired or does not exist: " + identifier);

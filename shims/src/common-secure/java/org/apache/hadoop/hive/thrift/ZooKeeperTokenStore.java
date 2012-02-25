@@ -19,33 +19,36 @@
 package org.apache.hadoop.hive.thrift;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.hive.thrift.TokenStoreDelegationTokenSecretManager.TokenStoreError;
 import org.apache.hadoop.security.token.delegation.AbstractDelegationTokenSecretManager.DelegationTokenInformation;
 import org.apache.hadoop.security.token.delegation.HiveDelegationTokenSupport;
 import org.apache.zookeeper.CreateMode;
 import org.apache.zookeeper.KeeperException;
 import org.apache.zookeeper.Watcher;
+import org.apache.zookeeper.ZooDefs;
 import org.apache.zookeeper.ZooDefs.Ids;
 import org.apache.zookeeper.ZooKeeper;
 import org.apache.zookeeper.ZooKeeper.States;
+import org.apache.zookeeper.data.ACL;
+import org.apache.zookeeper.data.Id;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
  * ZooKeeper token store implementation.
  */
-public class ZooKeeperTokenStore implements TokenStoreDelegationTokenSecretManager.TokenStore {
+public class ZooKeeperTokenStore implements DelegationTokenStore {
 
   private static final Logger LOGGER =
       LoggerFactory.getLogger(ZooKeeperTokenStore.class.getName());
 
-  private static final String ZK_SEQ_FORMAT = "%010d";
+  protected static final String ZK_SEQ_FORMAT = "%010d";
   private static final String NODE_KEYS = "/keys";
   private static final String NODE_TOKENS = "/tokens";
 
@@ -53,6 +56,8 @@ public class ZooKeeperTokenStore implements TokenStoreDelegationTokenSecretManag
   private volatile ZooKeeper zkSession;
   private String zkConnectString;
   private final int zkSessionTimeout = 3000;
+  private List<ACL> newNodeAcl = Ids.OPEN_ACL_UNSAFE;
+
 
   private class ZooKeeperWatcher implements Watcher {
     public void process(org.apache.zookeeper.WatchedEvent event) {
@@ -88,7 +93,7 @@ public class ZooKeeperTokenStore implements TokenStoreDelegationTokenSecretManag
             zkSession = new ZooKeeper(this.zkConnectString, this.zkSessionTimeout,
                 new ZooKeeperWatcher());
             } catch (IOException ex) {
-              throw new TokenStoreError("Token store error.", ex);
+              throw new TokenStoreException("Token store error.", ex);
             }
           }
         }
@@ -96,20 +101,90 @@ public class ZooKeeperTokenStore implements TokenStoreDelegationTokenSecretManag
     return zkSession;
   }
 
-  private static String ensurePath(ZooKeeper zk, String path) throws KeeperException,
+  /**
+   * Create a path if it does not already exist ("mkdir -p")
+   * @param zk ZooKeeper session
+   * @param path string with '/' separator
+   * @param acl list of ACL entries
+   * @return
+   * @throws KeeperException
+   * @throws InterruptedException
+   */
+  public static String ensurePath(ZooKeeper zk, String path, List<ACL> acl) throws KeeperException,
       InterruptedException {
     String[] pathComps = StringUtils.splitByWholeSeparator(path, "/");
     String currentPath = "";
     for (String pathComp : pathComps) {
       currentPath += "/" + pathComp;
       try {
-        String node = zk.create(currentPath, new byte[0], Ids.OPEN_ACL_UNSAFE,
+        String node = zk.create(currentPath, new byte[0], acl,
             CreateMode.PERSISTENT);
         LOGGER.info("Created path: " + node);
       } catch (KeeperException.NodeExistsException e) {
       }
     }
     return currentPath;
+  }
+
+  /**
+   * Parse ACL permission string, from ZooKeeperMain private method
+   * @param permString
+   * @return
+   */
+  public static int getPermFromString(String permString) {
+      int perm = 0;
+      for (int i = 0; i < permString.length(); i++) {
+          switch (permString.charAt(i)) {
+          case 'r':
+              perm |= ZooDefs.Perms.READ;
+              break;
+          case 'w':
+              perm |= ZooDefs.Perms.WRITE;
+              break;
+          case 'c':
+              perm |= ZooDefs.Perms.CREATE;
+              break;
+          case 'd':
+              perm |= ZooDefs.Perms.DELETE;
+              break;
+          case 'a':
+              perm |= ZooDefs.Perms.ADMIN;
+              break;
+          default:
+              LOGGER.error("Unknown perm type: " + permString.charAt(i));
+          }
+      }
+      return perm;
+  }
+
+  /**
+   * Parse comma separated list of ACL entries to secure generated nodes, e.g.
+   * <code>sasl:hive/host1@MY.DOMAIN:cdrwa,sasl:hive/host2@MY.DOMAIN:cdrwa</code>
+   * @param aclString
+   * @return ACL list
+   */
+  public static List<ACL> parseACLs(String aclString) {
+    String[] aclComps = StringUtils.splitByWholeSeparator(aclString, ",");
+    List<ACL> acl = new ArrayList<ACL>(aclComps.length);
+    for (String a : aclComps) {
+      if (StringUtils.isBlank(a)) {
+         continue;
+      }
+      a = a.trim();
+      // from ZooKeeperMain private method
+      int firstColon = a.indexOf(':');
+      int lastColon = a.lastIndexOf(':');
+      if (firstColon == -1 || lastColon == -1 || firstColon == lastColon) {
+         LOGGER.error(a + " does not have the form scheme:id:perm");
+         continue;
+      }
+      ACL newAcl = new ACL();
+      newAcl.setId(new Id(a.substring(0, firstColon), a.substring(
+          firstColon + 1, lastColon)));
+      newAcl.setPerms(getPermFromString(a.substring(lastColon + 1)));
+      acl.add(newAcl);
+    }
+    return acl;
   }
 
   private void init() {
@@ -127,21 +202,26 @@ public class ZooKeeperTokenStore implements TokenStoreDelegationTokenSecretManag
 
     ZooKeeper zk = getSession();
     try {
-        ensurePath(zk, rootNode + NODE_KEYS);
-        ensurePath(zk, rootNode + NODE_TOKENS);
+        ensurePath(zk, rootNode + NODE_KEYS, newNodeAcl);
+        ensurePath(zk, rootNode + NODE_TOKENS, newNodeAcl);
       } catch (Exception e) {
-        throw new TokenStoreError("Failed to validate token path.", e);
+        throw new TokenStoreException("Failed to validate token path.", e);
       }
   }
 
   @Override
   public void setConf(Configuration conf) {
-    if (conf != null) {
-      this.zkConnectString = conf.get(
-          HadoopThriftAuthBridge20S.Server.DELEGATION_TOKEN_STORE_ZK_CONNECT_STR, null);
-      this.rootNode = conf.get(
-          HadoopThriftAuthBridge20S.Server.DELEGATION_TOKEN_STORE_ZK_ROOT_NODE,
-          HadoopThriftAuthBridge20S.Server.DELEGATION_TOKEN_STORE_ZK_ROOT_NODE_DEFAULT);
+    if (conf == null) {
+       throw new IllegalArgumentException("conf is null");
+    }
+    this.zkConnectString = conf.get(
+      HadoopThriftAuthBridge20S.Server.DELEGATION_TOKEN_STORE_ZK_CONNECT_STR, null);
+    this.rootNode = conf.get(
+      HadoopThriftAuthBridge20S.Server.DELEGATION_TOKEN_STORE_ZK_ZNODE,
+      HadoopThriftAuthBridge20S.Server.DELEGATION_TOKEN_STORE_ZK_ZNODE_DEFAULT);
+    String csv = conf.get(HadoopThriftAuthBridge20S.Server.DELEGATION_TOKEN_STORE_ZK_ACL, null);
+    if (StringUtils.isNotBlank(csv)) {
+       this.newNodeAcl = parseACLs(csv);
     }
     init();
   }
@@ -176,14 +256,14 @@ public class ZooKeeperTokenStore implements TokenStoreDelegationTokenSecretManag
   public int addMasterKey(String s) {
     try {
       ZooKeeper zk = getSession();
-      String newNode = zk.create(rootNode + NODE_KEYS + "/", s.getBytes(), Ids.OPEN_ACL_UNSAFE,
+      String newNode = zk.create(rootNode + NODE_KEYS + "/", s.getBytes(), newNodeAcl,
           CreateMode.PERSISTENT_SEQUENTIAL);
       LOGGER.info("Added key {}", newNode);
       return getSeq(newNode);
     } catch (KeeperException ex) {
-      throw new TokenStoreError(ex);
+      throw new TokenStoreException(ex);
     } catch (InterruptedException ex) {
-      throw new TokenStoreError(ex);
+      throw new TokenStoreException(ex);
     }
   }
 
@@ -194,9 +274,9 @@ public class ZooKeeperTokenStore implements TokenStoreDelegationTokenSecretManag
       zk.setData(rootNode + NODE_KEYS + "/" + String.format(ZK_SEQ_FORMAT, keySeq), s.getBytes(),
           -1);
     } catch (KeeperException ex) {
-      throw new TokenStoreError(ex);
+      throw new TokenStoreException(ex);
     } catch (InterruptedException ex) {
-      throw new TokenStoreError(ex);
+      throw new TokenStoreException(ex);
     }
   }
 
@@ -209,9 +289,9 @@ public class ZooKeeperTokenStore implements TokenStoreDelegationTokenSecretManag
     } catch (KeeperException.NoNodeException ex) {
       return false;
     } catch (KeeperException ex) {
-      throw new TokenStoreError(ex);
+      throw new TokenStoreException(ex);
     } catch (InterruptedException ex) {
-      throw new TokenStoreError(ex);
+      throw new TokenStoreException(ex);
     }
   }
 
@@ -226,9 +306,9 @@ public class ZooKeeperTokenStore implements TokenStoreDelegationTokenSecretManag
       }
       return result;
     } catch (KeeperException ex) {
-      throw new TokenStoreError(ex);
+      throw new TokenStoreException(ex);
     } catch (InterruptedException ex) {
-      throw new TokenStoreError(ex);
+      throw new TokenStoreException(ex);
     }
   }
 
@@ -238,7 +318,7 @@ public class ZooKeeperTokenStore implements TokenStoreDelegationTokenSecretManag
       return rootNode + NODE_TOKENS + "/"
           + TokenStoreDelegationTokenSecretManager.encodeWritable(tokenIdentifier);
     } catch (IOException ex) {
-      throw new TokenStoreError("Failed to encode token identifier", ex);
+      throw new TokenStoreException("Failed to encode token identifier", ex);
     }
   }
 
@@ -249,15 +329,15 @@ public class ZooKeeperTokenStore implements TokenStoreDelegationTokenSecretManag
       ZooKeeper zk = getSession();
       byte[] tokenBytes = HiveDelegationTokenSupport.encodeDelegationTokenInformation(token);
       String newNode = zk.create(getTokenPath(tokenIdentifier),
-          tokenBytes, Ids.OPEN_ACL_UNSAFE, CreateMode.PERSISTENT);
+          tokenBytes, newNodeAcl, CreateMode.PERSISTENT);
       LOGGER.info("Added token: {}", newNode);
       return true;
     } catch (KeeperException.NodeExistsException ex) {
       return false;
     } catch (KeeperException ex) {
-      throw new TokenStoreError(ex);
+      throw new TokenStoreException(ex);
     } catch (InterruptedException ex) {
-      throw new TokenStoreError(ex);
+      throw new TokenStoreException(ex);
     }
   }
 
@@ -270,9 +350,9 @@ public class ZooKeeperTokenStore implements TokenStoreDelegationTokenSecretManag
     } catch (KeeperException.NoNodeException ex) {
       return false;
     } catch (KeeperException ex) {
-      throw new TokenStoreError(ex);
+      throw new TokenStoreException(ex);
     } catch (InterruptedException ex) {
-      throw new TokenStoreError(ex);
+      throw new TokenStoreException(ex);
     }
   }
 
@@ -284,14 +364,14 @@ public class ZooKeeperTokenStore implements TokenStoreDelegationTokenSecretManag
       try {
         return HiveDelegationTokenSupport.decodeDelegationTokenInformation(tokenBytes);
       } catch (Exception ex) {
-        throw new TokenStoreError("Failed to decode token", ex);
+        throw new TokenStoreException("Failed to decode token", ex);
       }
     } catch (KeeperException.NoNodeException ex) {
       return null;
     } catch (KeeperException ex) {
-      throw new TokenStoreError(ex);
+      throw new TokenStoreException(ex);
     } catch (InterruptedException ex) {
-      throw new TokenStoreError(ex);
+      throw new TokenStoreException(ex);
     }
   }
 
@@ -302,9 +382,9 @@ public class ZooKeeperTokenStore implements TokenStoreDelegationTokenSecretManag
     try  {
       nodes = getSession().getChildren(containerNode, false);
     } catch (KeeperException ex) {
-      throw new TokenStoreError(ex);
+      throw new TokenStoreException(ex);
     } catch (InterruptedException ex) {
-      throw new TokenStoreError(ex);
+      throw new TokenStoreException(ex);
     }
     List<DelegationTokenIdentifier> result = new java.util.ArrayList<DelegationTokenIdentifier>(
         nodes.size());
