@@ -39,7 +39,6 @@ import org.apache.hadoop.hive.metastore.HiveMetaStoreClient;
 import org.apache.hadoop.hive.metastore.MetaStoreUtils;
 import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.api.MetaException;
-import org.apache.hadoop.hive.thrift.TokenStoreDelegationTokenSecretManager.TokenStore;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.security.SaslRpcServer;
 import org.apache.hadoop.security.SaslRpcServer.AuthMethod;
@@ -82,11 +81,10 @@ public class TestHadoop20SAuthBridge extends TestCase {
 
         return new TUGIAssumingTransportFactory(transFactory, realUgi);
       }
-      static TokenStore TOKEN_STORE = new MemoryTokenStore();
-      //static TokenStore TOKEN_STORE = new ZooKeeperTokenStore("localhost:2181");
+      static DelegationTokenStore TOKEN_STORE = new MemoryTokenStore();
 
       @Override
-      protected TokenStore getTokenStore(Configuration conf) throws IOException {
+      protected DelegationTokenStore getTokenStore(Configuration conf) throws IOException {
         return TOKEN_STORE;
       }
     }

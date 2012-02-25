@@ -213,9 +213,11 @@ import org.apache.thrift.transport.TTransportFactory;
        "hive.cluster.delegation.token.store.class";
      public static final String DELEGATION_TOKEN_STORE_ZK_CONNECT_STR =
          "hive.cluster.delegation.token.store.zookeeper.connectString";
-     public static final String DELEGATION_TOKEN_STORE_ZK_ROOT_NODE =
-         "hive.cluster.delegation.token.store.zookeeper.rootNode";
-     public static final String DELEGATION_TOKEN_STORE_ZK_ROOT_NODE_DEFAULT =
+     public static final String DELEGATION_TOKEN_STORE_ZK_ZNODE =
+         "hive.cluster.delegation.token.store.zookeeper.znode";
+     public static final String DELEGATION_TOKEN_STORE_ZK_ACL =
+             "hive.cluster.delegation.token.store.zookeeper.acl";
+     public static final String DELEGATION_TOKEN_STORE_ZK_ZNODE_DEFAULT =
          "/hive/cluster/delegation";
 
      public Server() throws TTransportException {
@@ -291,16 +293,16 @@ import org.apache.thrift.transport.TTransportFactory;
       return new TUGIAssumingProcessor(processor, secretManager);
      }
 
-    protected TokenStoreDelegationTokenSecretManager.TokenStore getTokenStore(Configuration conf)
+    protected DelegationTokenStore getTokenStore(Configuration conf)
         throws IOException {
        String tokenStoreClassName = conf.get(DELEGATION_TOKEN_STORE_CLS, "");
        if (StringUtils.isBlank(tokenStoreClassName)) {
          return new MemoryTokenStore();
        }
        try {
-        Class<? extends TokenStoreDelegationTokenSecretManager.TokenStore> storeClass = Class
+        Class<? extends DelegationTokenStore> storeClass = Class
             .forName(tokenStoreClassName).asSubclass(
-                TokenStoreDelegationTokenSecretManager.TokenStore.class);
+                DelegationTokenStore.class);
         return ReflectionUtils.newInstance(storeClass, conf);
        } catch (ClassNotFoundException e) {
         throw new IOException("Error initializing delegation token store: " + tokenStoreClassName,

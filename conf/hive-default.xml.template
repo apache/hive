@@ -754,6 +754,30 @@
 </property>
 
 <property>
+  <name>hive.cluster.delegation.token.store.class</name>
+  <value>org.apache.hadoop.hive.thrift.MemoryTokenStore</value>
+  <description>The delegation token store implementation. Set to org.apache.hadoop.hive.thrift.ZooKeeperTokenStore for load-balanced cluster.</description>
+</property>
+
+<property>
+  <name>hive.cluster.delegation.token.store.zookeeper.connectString</name>
+  <value>localhost:2181</value>
+  <description>The ZooKeeper token store connect string.</description>
+</property>
+
+<property>
+  <name>hive.cluster.delegation.token.store.zookeeper.znode</name>
+  <value>/hive/cluster/delegation</value>
+  <description>The root path for token store data.</description>
+</property>
+
+<property>
+  <name>hive.cluster.delegation.token.store.zookeeper.acl</name>
+  <value>sasl:hive/host1@EXAMPLE.COM:cdrwa,sasl:hive/host2@EXAMPLE.COM:cdrwa</value>
+  <description>ACL for token store entries. List comma separated all server principals for the cluster.</description>
+</property>
+
+<property>
   <name>hive.metastore.cache.pinobjtypes</name>
   <value>Table,StorageDescriptor,SerDeInfo,Partition,Database,Type,FieldSchema,Order</value>
   <description>List of comma separated metastore object types that should be pinned in the cache</description>

@@ -263,6 +263,15 @@ public class HiveConf extends Configuration {
     METASTORE_KERBEROS_PRINCIPAL("hive.metastore.kerberos.principal",
         "hive-metastore/_HOST@EXAMPLE.COM"),
     METASTORE_USE_THRIFT_SASL("hive.metastore.sasl.enabled", false),
+    METASTORE_CLUSTER_DELEGATION_TOKEN_STORE_CLS(
+        "hive.cluster.delegation.token.store.class",
+        "org.apache.hadoop.hive.thrift.MemoryTokenStore"),
+    METASTORE_CLUSTER_DELEGATION_TOKEN_STORE_ZK_CONNECTSTR(
+        "hive.cluster.delegation.token.store.zookeeper.connectString", ""),
+    METASTORE_CLUSTER_DELEGATION_TOKEN_STORE_ZK_ZNODE(
+        "hive.cluster.delegation.token.store.zookeeper.znode", "/hive/cluster/delegation"),
+    METASTORE_CLUSTER_DELEGATION_TOKEN_STORE_ZK_ACL(
+        "hive.cluster.delegation.token.store.zookeeper.acl", ""),
     METASTORE_CACHE_PINOBJTYPES("hive.metastore.cache.pinobjtypes", "Table,StorageDescriptor,SerDeInfo,Partition,Database,Type,FieldSchema,Order"),
     METASTORE_CONNECTION_POOLING_TYPE("datanucleus.connectionPoolingType", "DBCP"),
     METASTORE_VALIDATE_TABLES("datanucleus.validateTables", false),

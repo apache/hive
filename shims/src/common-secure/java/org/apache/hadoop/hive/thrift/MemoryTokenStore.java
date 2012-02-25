@@ -18,7 +18,10 @@
 
 package org.apache.hadoop.hive.thrift;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.apache.hadoop.conf.Configuration;
@@ -27,29 +30,31 @@ import org.apache.hadoop.security.token.delegation.AbstractDelegationTokenSecret
 /**
  * Default in-memory token store implementation.
  */
-public class MemoryTokenStore implements TokenStoreDelegationTokenSecretManager.TokenStore {
+public class MemoryTokenStore implements DelegationTokenStore {
 
-  private final java.util.concurrent.ConcurrentHashMap<Integer, String> masterKeys
-      = new java.util.concurrent.ConcurrentHashMap<Integer, String>();
+  private final Map<Integer, String> masterKeys
+      = new ConcurrentHashMap<Integer, String>();
 
-  private final java.util.concurrent.ConcurrentHashMap<DelegationTokenIdentifier, DelegationTokenInformation> tokens
-      = new java.util.concurrent.ConcurrentHashMap<DelegationTokenIdentifier, DelegationTokenInformation>();
+  private final ConcurrentHashMap<DelegationTokenIdentifier, DelegationTokenInformation> tokens
+      = new ConcurrentHashMap<DelegationTokenIdentifier, DelegationTokenInformation>();
 
   private final AtomicInteger masterKeySeq = new AtomicInteger();
+  private Configuration conf;
 
   @Override
   public void setConf(Configuration conf) {
+    this.conf = conf;
   }
 
   @Override
   public Configuration getConf() {
-    return null;
+    return this.conf;
   }
 
   @Override
   public int addMasterKey(String s) {
     int keySeq = masterKeySeq.getAndIncrement();
-    masterKeys.putIfAbsent(keySeq, s);
+    masterKeys.put(keySeq, s);
     return keySeq;
   }
 
@@ -88,7 +93,7 @@ public class MemoryTokenStore implements TokenStoreDelegationTokenSecretManager.
 
   @Override
   public List<DelegationTokenIdentifier> getAllDelegationTokenIdentifiers() {
-    List<DelegationTokenIdentifier> result = new java.util.ArrayList<DelegationTokenIdentifier>(
+    List<DelegationTokenIdentifier> result = new ArrayList<DelegationTokenIdentifier>(
         tokens.size());
     for (DelegationTokenIdentifier id : tokens.keySet()) {
         result.add(id);
