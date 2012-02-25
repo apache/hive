@@ -63,6 +63,7 @@ public class HBaseSerDe implements SerDe {
   public static final String HBASE_COLUMNS_MAPPING = "hbase.columns.mapping";
   public static final String HBASE_TABLE_NAME = "hbase.table.name";
   public static final String HBASE_KEY_COL = ":key";
+  public static final String HBASE_PUT_TIMESTAMP = "hbase.put.timestamp";
   public static final Log LOG = LogFactory.getLog(HBaseSerDe.class);
 
   private ObjectInspector cachedObjectInspector;
@@ -76,6 +77,7 @@ public class HBaseSerDe implements SerDe {
   private LazyHBaseRow cachedHBaseRow;
   private final ByteStream.Output serializeStream = new ByteStream.Output();
   private int iKey;
+  private long putTimestamp;
 
   // used for serializing a field
   private byte [] separators;     // the separators array
@@ -253,6 +255,7 @@ public class HBaseSerDe implements SerDe {
     // Read configuration parameters
     hbaseColumnsMapping = tbl.getProperty(HBaseSerDe.HBASE_COLUMNS_MAPPING);
     String columnTypeProperty = tbl.getProperty(Constants.LIST_COLUMN_TYPES);
+    putTimestamp = Long.valueOf(tbl.getProperty(HBaseSerDe.HBASE_PUT_TIMESTAMP,"-1"));
 
     // Parse the HBase columns mapping and initialize the col family & qualifiers
     hbaseColumnFamilies = new ArrayList<String>();
@@ -383,7 +386,10 @@ public class HBaseSerDe implements SerDe {
         throw new SerDeException("HBase row key cannot be NULL");
       }
 
-      put = new Put(key);
+      if(putTimestamp >= 0)
+        put = new Put(key,putTimestamp);
+      else
+        put = new Put(key);
 
       // Serialize each field
       for (int i = 0; i < fields.size(); i++) {
