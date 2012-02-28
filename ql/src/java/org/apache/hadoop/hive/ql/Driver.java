@@ -442,7 +442,7 @@ public class Driver implements CommandProcessor {
       // validate the plan
       sem.validate();
 
-      plan = new QueryPlan(command, sem);
+      plan = new QueryPlan(command, sem, perfLogger.getStartTime(PerfLogger.DRIVER_RUN));
       // initialize FetchTask right here
       if (plan.getFetchTask() != null) {
         plan.getFetchTask().initialize(conf, plan, null);
@@ -886,7 +886,8 @@ public class Driver implements CommandProcessor {
     errorMessage = null;
     SQLState = null;
     // Reset the perf logger
-    PerfLogger.getPerfLogger(true);
+    PerfLogger perfLogger = PerfLogger.getPerfLogger(true);
+    perfLogger.PerfLogBegin(LOG, PerfLogger.DRIVER_RUN);
 
     int ret = compile(command);
     if (ret != 0) {
@@ -939,7 +940,9 @@ public class Driver implements CommandProcessor {
 
     //if needRequireLock is false, the release here will do nothing because there is no lock
     releaseLocks(ctx.getHiveLocks());
-    PerfLogger.getPerfLogger().close(LOG, plan);
+
+    perfLogger.PerfLogEnd(LOG, PerfLogger.DRIVER_RUN);
+    perfLogger.close(LOG, plan);
     return new CommandProcessorResponse(ret);
   }
 

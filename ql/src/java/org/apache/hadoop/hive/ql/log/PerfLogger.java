@@ -45,10 +45,12 @@ public class PerfLogger {
   public static final String PRE_HOOK = "PreHook.";
   public static final String POST_HOOK = "PostHook.";
   public static final String FAILURE_HOOK = "FailureHook.";
+  public static final String DRIVER_RUN = "Driver.run";
 
   protected static final ThreadLocal<PerfLogger> perfLogger = new ThreadLocal<PerfLogger>();
 
-  protected final Map<String, Long> perfKeyMaps = new HashMap<String, Long>();
+  protected final Map<String, Long> startTimes = new HashMap<String, Long>();
+  protected final Map<String, Long> endTimes = new HashMap<String, Long>();
 
   static final private Log LOG = LogFactory.getLog(PerfLogger.class.getName());
 
@@ -95,7 +97,7 @@ public class PerfLogger {
   public void PerfLogBegin(Log _log, String method) {
     long startTime = System.currentTimeMillis();
     _log.info("<PERFLOG method=" + method + ">");
-    perfKeyMaps.put(method, new Long(startTime));
+    startTimes.put(method, new Long(startTime));
   }
 
   /**
@@ -105,9 +107,12 @@ public class PerfLogger {
    * @return long duration  the difference between now and startTime, or -1 if startTime is null
    */
   public long PerfLogEnd(Log _log, String method) {
-    Long startTime = perfKeyMaps.get(method);
+    Long startTime = startTimes.get(method);
     long endTime = System.currentTimeMillis();
     long duration = -1;
+
+    endTimes.put(method, new Long(endTime));
+
     StringBuilder sb = new StringBuilder("</PERFLOG method=").append(method);
     if (startTime != null) {
       sb.append(" start=").append(startTime);
@@ -130,5 +135,13 @@ public class PerfLogger {
    */
   public void close(Log _log, QueryPlan queryPlan) {
 
+  }
+
+  public Long getStartTime(String method) {
+    return startTimes.get(method);
+  }
+
+  public Long getEndTime(String method) {
+    return endTimes.get(method);
   }
 }
