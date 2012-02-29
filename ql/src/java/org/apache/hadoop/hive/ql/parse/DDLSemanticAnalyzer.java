@@ -25,7 +25,6 @@ import static org.apache.hadoop.hive.ql.parse.HiveParser.TOK_IFNOTEXISTS;
 import static org.apache.hadoop.hive.ql.parse.HiveParser.TOK_SHOWDATABASES;
 
 import java.io.Serializable;
-import java.net.URI;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -33,9 +32,9 @@ import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Properties;
 import java.util.Set;
+import java.util.Map.Entry;
 
 import org.antlr.runtime.tree.CommonTree;
 import org.antlr.runtime.tree.Tree;
@@ -59,8 +58,8 @@ import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.hooks.ReadEntity;
 import org.apache.hadoop.hive.ql.hooks.WriteEntity;
 import org.apache.hadoop.hive.ql.index.HiveIndex;
-import org.apache.hadoop.hive.ql.index.HiveIndex.IndexType;
 import org.apache.hadoop.hive.ql.index.HiveIndexHandler;
+import org.apache.hadoop.hive.ql.index.HiveIndex.IndexType;
 import org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat;
 import org.apache.hadoop.hive.ql.io.RCFileInputFormat;
 import org.apache.hadoop.hive.ql.metadata.Hive;
@@ -71,9 +70,7 @@ import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.plan.AddPartitionDesc;
 import org.apache.hadoop.hive.ql.plan.AlterDatabaseDesc;
 import org.apache.hadoop.hive.ql.plan.AlterIndexDesc;
-import org.apache.hadoop.hive.ql.plan.AlterIndexDesc.AlterIndexTypes;
 import org.apache.hadoop.hive.ql.plan.AlterTableDesc;
-import org.apache.hadoop.hive.ql.plan.AlterTableDesc.AlterTableTypes;
 import org.apache.hadoop.hive.ql.plan.AlterTableSimpleDesc;
 import org.apache.hadoop.hive.ql.plan.CreateDatabaseDesc;
 import org.apache.hadoop.hive.ql.plan.CreateIndexDesc;
@@ -109,6 +106,8 @@ import org.apache.hadoop.hive.ql.plan.StatsWork;
 import org.apache.hadoop.hive.ql.plan.SwitchDatabaseDesc;
 import org.apache.hadoop.hive.ql.plan.TableDesc;
 import org.apache.hadoop.hive.ql.plan.UnlockTableDesc;
+import org.apache.hadoop.hive.ql.plan.AlterIndexDesc.AlterIndexTypes;
+import org.apache.hadoop.hive.ql.plan.AlterTableDesc.AlterTableTypes;
 import org.apache.hadoop.hive.ql.security.authorization.Privilege;
 import org.apache.hadoop.hive.ql.security.authorization.PrivilegeRegistry;
 import org.apache.hadoop.hive.ql.session.SessionState;
@@ -1133,7 +1132,8 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
         tableName, partSpec);
 
     List<String> inputDir = new ArrayList<String>();
-    String tblPartLoc = null;
+    Path oldTblPartLoc = null;
+    Path newTblPartLoc = null;
     Table tblObj = null;
 
     try {
@@ -1166,12 +1166,24 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
           bucketCols = part.getBucketCols();
           inputFormatClass = part.getInputFormatClass();
           isArchived = ArchiveUtils.isArchived(part);
-          tblPartLoc = part.getPartitionPath().toString();
+
+          Path tabPath = tblObj.getPath();
+          Path partPath = part.getPartitionPath();
+
+          // if the table is in a different dfs than the partition,
+          // replace the partition's dfs with the table's dfs.
+          newTblPartLoc = new Path(tabPath.toUri().getScheme(), tabPath.toUri()
+              .getAuthority(), partPath.toUri().getPath());
+
+          oldTblPartLoc = partPath;
         }
       } else {
         inputFormatClass = tblObj.getInputFormatClass();
         bucketCols = tblObj.getBucketCols();
-        tblPartLoc = tblObj.getPath().toString();
+
+        // input and output are the same
+        oldTblPartLoc = tblObj.getPath();
+        newTblPartLoc = tblObj.getPath();
       }
 
       // throw a HiveException for non-rcfile.
@@ -1192,8 +1204,7 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
             "Merge can not perform on archived partitions.");
       }
 
-      // input and output are the same
-      inputDir.add(tblPartLoc);
+      inputDir.add(oldTblPartLoc.toString());
 
       mergeDesc.setInputDir(inputDir);
 
@@ -1202,18 +1213,27 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
       ddlWork.setNeedLock(true);
       Task<? extends Serializable> mergeTask = TaskFactory.get(ddlWork, conf);
       TableDesc tblDesc = Utilities.getTableDesc(tblObj);
-      String queryTmpdir = ctx.getExternalTmpFileURI((new Path(tblPartLoc)).toUri());
+      String queryTmpdir = ctx.getExternalTmpFileURI(newTblPartLoc.toUri());
       mergeDesc.setOutputDir(queryTmpdir);
       LoadTableDesc ltd = new LoadTableDesc(queryTmpdir, queryTmpdir, tblDesc,
           partSpec == null ? new HashMap<String, String>() : partSpec);
       Task<MoveWork> moveTsk = TaskFactory.get(new MoveWork(null, null, ltd, null, false),
           conf);
       mergeTask.addDependentTask(moveTsk);
-      tableSpec tablepart = new tableSpec(this.db, conf, tablePartAST);
-      StatsWork statDesc = new StatsWork(tablepart);
-      statDesc.setNoStatsAggregator(true);
-      Task<? extends Serializable> statTask = TaskFactory.get(statDesc, conf);
-      moveTsk.addDependentTask(statTask);
+
+      if (conf.getBoolVar(HiveConf.ConfVars.HIVESTATSAUTOGATHER)) {
+        StatsWork statDesc;
+        if (oldTblPartLoc.equals(newTblPartLoc)) {
+          // If we're merging to the same location, we can avoid some metastore calls
+          tableSpec tablepart = new tableSpec(this.db, conf, tablePartAST);
+          statDesc = new StatsWork(tablepart);
+        } else {
+          statDesc = new StatsWork(ltd);
+        }
+        statDesc.setNoStatsAggregator(true);
+        Task<? extends Serializable> statTask = TaskFactory.get(statDesc, conf);
+        moveTsk.addDependentTask(statTask);
+      }
 
       rootTasks.add(mergeTask);
     } catch (Exception e) {
