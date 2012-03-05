@@ -50,22 +50,28 @@ public class RetryingRawStore implements InvocationHandler {
   private final HiveConf hiveConf;
   private final Configuration conf; // thread local conf from HMS
 
-  protected RetryingRawStore(HiveConf hiveConf, Configuration conf, RawStore base, int id)
-      throws MetaException {
-    this.base = base;
+  protected RetryingRawStore(HiveConf hiveConf, Configuration conf,
+      Class<? extends RawStore> rawStoreClass, int id) throws MetaException {
     this.conf = conf;
     this.hiveConf = hiveConf;
     this.id = id;
+
+    // This has to be called before initializing the instance of RawStore
     init();
+
+    this.base = (RawStore) ReflectionUtils.newInstance(rawStoreClass, conf);
   }
 
-  public static RawStore getProxy(HiveConf hiveConf, Configuration conf, RawStore base, int id)
-      throws MetaException {
+  public static RawStore getProxy(HiveConf hiveConf, Configuration conf, String rawStoreClassName,
+      int id) throws MetaException {
 
-    RetryingRawStore handler = new RetryingRawStore(hiveConf, conf, base, id);
+    Class<? extends RawStore> baseClass = (Class<? extends RawStore>) MetaStoreUtils.getClass(
+        rawStoreClassName);
+
+    RetryingRawStore handler = new RetryingRawStore(hiveConf, conf, baseClass, id);
 
     return (RawStore) Proxy.newProxyInstance(RetryingRawStore.class.getClassLoader()
-        , base.getClass().getInterfaces(), handler);
+        , baseClass.getInterfaces(), handler);
   }
 
   private void init() throws MetaException {
@@ -74,9 +80,9 @@ public class RetryingRawStore implements InvocationHandler {
     retryLimit = HiveConf.getIntVar(hiveConf,
         HiveConf.ConfVars.METASTOREATTEMPTS);
     // Using the hook on startup ensures that the hook always has priority
-    // over settings in *.xml. We can use hiveConf as only a single thread
-    // will be calling the constructor.
-    updateConnectionURL(hiveConf, null);
+    // over settings in *.xml.  The thread local conf needs to be used because at this point
+    // it has already been initialized using hiveConf.
+    updateConnectionURL(getConf(), null);
   }
 
   private void initMS() {
