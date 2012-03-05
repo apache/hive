@@ -1015,4 +1015,13 @@ public class MetaStoreUtils {
       sd.setPrimaryRegionName(defaultRegionName);
     }
   }
+
+  public static Class<?> getClass(String rawStoreClassName)
+      throws MetaException {
+    try {
+      return Class.forName(rawStoreClassName, true, JavaUtils.getClassLoader());
+    } catch (ClassNotFoundException e) {
+      throw new MetaException(rawStoreClassName + " class not found");
+    }
+  }
 }

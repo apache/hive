@@ -241,8 +241,8 @@ public class HiveMetaStore extends ThriftHiveMetastore {
           "hive.metastore.checkForDefaultDb", true);
       String alterHandlerName = hiveConf.get("hive.metastore.alter.impl",
           HiveAlterHandler.class.getName());
-      alterHandler = (AlterHandler) ReflectionUtils.newInstance(getClass(
-          alterHandlerName, AlterHandler.class), hiveConf);
+      alterHandler = (AlterHandler) ReflectionUtils.newInstance(MetaStoreUtils.getClass(
+          alterHandlerName), hiveConf);
       wh = new Warehouse(hiveConf);
 
       createDefaultDB();
@@ -310,10 +310,8 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       LOG.info(addPrefix("Opening raw store with implemenation class:"
           + rawStoreClassName));
       Configuration conf = getConf();
-      RawStore ms = (RawStore) ReflectionUtils.newInstance(getClass(rawStoreClassName,
-          RawStore.class), conf);
 
-      return RetryingRawStore.getProxy(hiveConf, conf, ms, threadLocalId.get());
+      return RetryingRawStore.getProxy(hiveConf, conf, rawStoreClassName, threadLocalId.get());
     }
 
     private void createDefaultDB_core(RawStore ms) throws MetaException, InvalidObjectException {
@@ -348,15 +346,6 @@ public class HiveMetaStore extends ThriftHiveMetastore {
         throw (RuntimeException) e;
       }
 
-    }
-
-    private Class<?> getClass(String rawStoreClassName, Class<?> class1)
-        throws MetaException {
-      try {
-        return Class.forName(rawStoreClassName, true, classLoader);
-      } catch (ClassNotFoundException e) {
-        throw new MetaException(rawStoreClassName + " class not found");
-      }
     }
 
     private void logInfo(String m) {
