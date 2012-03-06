@@ -177,6 +177,7 @@ public class ParseDriver {
 
     xlateMap.put("EQUAL", "=");
     xlateMap.put("NOTEQUAL", "<>");
+    xlateMap.put("EQUAL_NS", "<=>");
     xlateMap.put("LESSTHANOREQUALTO", "<=");
     xlateMap.put("LESSTHAN", "<");
     xlateMap.put("GREATERTHANOREQUALTO", ">=");

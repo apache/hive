@@ -1988,7 +1988,7 @@ precedenceEqualNegatableOperator
 
 precedenceEqualOperator
     :
-    precedenceEqualNegatableOperator | EQUAL | NOTEQUAL | LESSTHANOREQUALTO | LESSTHAN | GREATERTHANOREQUALTO | GREATERTHAN
+    precedenceEqualNegatableOperator | EQUAL | EQUAL_NS | NOTEQUAL | LESSTHANOREQUALTO | LESSTHAN | GREATERTHANOREQUALTO | GREATERTHAN
     ;
 
 precedenceEqualExpression
@@ -2092,6 +2092,7 @@ sysFuncNames
     | KW_STRUCT
     | KW_UNIONTYPE
     | EQUAL
+    | EQUAL_NS
     | NOTEQUAL
     | LESSTHANOREQUALTO
     | LESSTHAN
@@ -2361,6 +2362,7 @@ LCURLY : '{';
 RCURLY : '}';
 
 EQUAL : '=' | '==';
+EQUAL_NS : '<=>';
 NOTEQUAL : '<>' | '!=';
 LESSTHANOREQUALTO : '<=';
 LESSTHAN : '<';
