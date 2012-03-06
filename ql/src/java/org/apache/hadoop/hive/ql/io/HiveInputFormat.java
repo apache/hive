@@ -346,9 +346,9 @@ public class HiveInputFormat<K extends WritableComparable, V extends Writable>
       return;
     }
 
-    // construct column name list for reference by filter push down
+    // construct column name list and types for reference by filter push down
     Utilities.setColumnNameList(jobConf, tableScan);
-
+    Utilities.setColumnTypeList(jobConf, tableScan);
     // push down filters
     ExprNodeDesc filterExpr = scanDesc.getFilterExpr();
     if (filterExpr == null) {
