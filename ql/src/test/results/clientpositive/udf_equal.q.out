@@ -20,12 +20,31 @@ POSTHOOK: query: DESCRIBE FUNCTION EXTENDED ==
 POSTHOOK: type: DESCFUNCTION
 a == b - Returns TRUE if a equals b and false otherwise
 Synonyms: =
-PREHOOK: query: SELECT true=false, false=true, false=false, true=true FROM src LIMIT 1
+PREHOOK: query: SELECT true=false, false=true, false=false, true=true, NULL=NULL, true=NULL, NULL=true, false=NULL, NULL=false FROM src LIMIT 1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT true=false, false=true, false=false, true=true FROM src LIMIT 1
+POSTHOOK: query: SELECT true=false, false=true, false=false, true=true, NULL=NULL, true=NULL, NULL=true, false=NULL, NULL=false FROM src LIMIT 1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####
-false	false	true	true
+false	false	true	true	NULL	NULL	NULL	NULL	NULL
+PREHOOK: query: DESCRIBE FUNCTION <=>
+PREHOOK: type: DESCFUNCTION
+POSTHOOK: query: DESCRIBE FUNCTION <=>
+POSTHOOK: type: DESCFUNCTION
+a <=> b - Returns same result with EQUAL(=) operator for non-null operands, but returns TRUE if both are NULL, FALSE if one of the them is NULL
+PREHOOK: query: DESCRIBE FUNCTION EXTENDED <=>
+PREHOOK: type: DESCFUNCTION
+POSTHOOK: query: DESCRIBE FUNCTION EXTENDED <=>
+POSTHOOK: type: DESCFUNCTION
+a <=> b - Returns same result with EQUAL(=) operator for non-null operands, but returns TRUE if both are NULL, FALSE if one of the them is NULL
+PREHOOK: query: SELECT true<=>false, false<=>true, false<=>false, true<=>true, NULL<=>NULL, true<=>NULL, NULL<=>true, false<=>NULL, NULL<=>false FROM src LIMIT 1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT true<=>false, false<=>true, false<=>false, true<=>true, NULL<=>NULL, true<=>NULL, NULL<=>true, false<=>NULL, NULL<=>false FROM src LIMIT 1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
+false	false	true	true	true	false	false	false	false
