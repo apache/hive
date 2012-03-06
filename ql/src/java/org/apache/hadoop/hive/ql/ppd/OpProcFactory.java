@@ -782,6 +782,7 @@ public final class OpProcFactory {
       (HiveStoragePredicateHandler) storageHandler;
     JobConf jobConf = new JobConf(owi.getParseContext().getConf());
     Utilities.setColumnNameList(jobConf, tableScanOp);
+    Utilities.setColumnTypeList(jobConf, tableScanOp);
     Utilities.copyTableJobPropertiesToConf(
       Utilities.getTableDesc(tbl),
       jobConf);

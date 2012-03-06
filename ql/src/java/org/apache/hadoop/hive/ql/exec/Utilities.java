@@ -1916,6 +1916,22 @@ public final class Utilities {
     jobConf.set(Constants.LIST_COLUMNS, columnNamesString);
   }
 
+  public static void setColumnTypeList(JobConf jobConf, Operator op) {
+    RowSchema rowSchema = op.getSchema();
+    if (rowSchema == null) {
+      return;
+    }
+    StringBuilder columnTypes = new StringBuilder();
+    for (ColumnInfo colInfo : rowSchema.getSignature()) {
+      if (columnTypes.length() > 0) {
+        columnTypes.append(",");
+      }
+      columnTypes.append(colInfo.getType().getTypeName());
+    }
+    String columnTypesString = columnTypes.toString();
+    jobConf.set(Constants.LIST_COLUMN_TYPES, columnTypesString);
+  }
+
   public static void validatePartSpec(Table tbl, Map<String, String> partSpec)
       throws SemanticException {
 

@@ -20,20 +20,16 @@ package org.apache.hadoop.hive.hbase;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hbase.HBaseConfiguration;
+import org.apache.hadoop.hbase.HConstants;
 import org.apache.hadoop.hbase.client.HTable;
 import org.apache.hadoop.hbase.client.Result;
 import org.apache.hadoop.hbase.client.Scan;
-import org.apache.hadoop.hbase.filter.BinaryComparator;
-import org.apache.hadoop.hbase.filter.CompareFilter;
-import org.apache.hadoop.hbase.filter.RowFilter;
-import org.apache.hadoop.hbase.filter.WhileMatchFilter;
 import org.apache.hadoop.hbase.io.ImmutableBytesWritable;
 import org.apache.hadoop.hbase.mapreduce.TableInputFormatBase;
 import org.apache.hadoop.hbase.mapreduce.TableSplit;
@@ -44,7 +40,6 @@ import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.index.IndexPredicateAnalyzer;
 import org.apache.hadoop.hive.ql.index.IndexSearchCondition;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
-import org.apache.hadoop.hive.ql.metadata.HiveStoragePredicateHandler;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
 import org.apache.hadoop.hive.ql.plan.TableScanDesc;
 import org.apache.hadoop.hive.serde.Constants;
@@ -55,7 +50,6 @@ import org.apache.hadoop.hive.serde2.lazy.LazyUtils;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector;
 import org.apache.hadoop.hive.shims.ShimLoader;
-import org.apache.hadoop.io.Writable;
 import org.apache.hadoop.mapred.InputFormat;
 import org.apache.hadoop.mapred.InputSplit;
 import org.apache.hadoop.mapred.JobConf;
@@ -64,7 +58,6 @@ import org.apache.hadoop.mapred.Reporter;
 import org.apache.hadoop.mapreduce.Job;
 import org.apache.hadoop.mapreduce.JobContext;
 import org.apache.hadoop.mapreduce.TaskAttemptContext;
-import org.apache.hadoop.mapreduce.TaskAttemptID;
 import org.apache.hadoop.mapreduce.lib.input.FileInputFormat;
 
 /**
@@ -249,12 +242,9 @@ public class HiveHBaseTableInputFormat extends TableInputFormatBase
     ExprNodeDesc filterExpr =
       Utilities.deserializeExpression(filterExprSerialized, jobConf);
 
-    String columnNameProperty = jobConf.get(Constants.LIST_COLUMNS);
-    List<String> columnNames =
-      Arrays.asList(columnNameProperty.split(","));
-
-    IndexPredicateAnalyzer analyzer =
-      newIndexPredicateAnalyzer(columnNames.get(iKey));
+    String colName = jobConf.get(Constants.LIST_COLUMNS).split(",")[iKey];
+    String colType = jobConf.get(Constants.LIST_COLUMN_TYPES).split(",")[iKey];
+    IndexPredicateAnalyzer analyzer = newIndexPredicateAnalyzer(colName,colType);
 
     List<IndexSearchCondition> searchConditions =
       new ArrayList<IndexSearchCondition>();
@@ -279,7 +269,7 @@ public class HiveHBaseTableInputFormat extends TableInputFormatBase
     IndexSearchCondition sc = searchConditions.get(0);
     ExprNodeConstantEvaluator eval =
       new ExprNodeConstantEvaluator(sc.getConstantDesc());
-    byte [] startRow;
+    byte [] row;
     try {
       ObjectInspector objInspector = eval.initialize(null);
       Object writable = eval.evaluate(null);
@@ -291,18 +281,33 @@ public class HiveHBaseTableInputFormat extends TableInputFormatBase
         false,
         (byte) 0,
         null);
-      startRow = new byte[serializeStream.getCount()];
+      row = new byte[serializeStream.getCount()];
       System.arraycopy(
         serializeStream.getData(), 0,
-        startRow, 0, serializeStream.getCount());
+        row, 0, serializeStream.getCount());
     } catch (HiveException ex) {
       throw new IOException(ex);
     }
 
-    // stopRow is exclusive, so pad it with a trailing 0 byte to
-    // make it compare as the very next value after startRow
-    byte [] stopRow = new byte[startRow.length + 1];
-    System.arraycopy(startRow, 0, stopRow, 0, startRow.length);
+    byte [] startRow = HConstants.EMPTY_START_ROW, stopRow = HConstants.EMPTY_END_ROW;
+    String comparisonOp = sc.getComparisonOp();
+    if("org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPEqual".equals(comparisonOp)){
+      startRow = row;
+      stopRow = getNextBA(row);
+    } else if ("org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPLessThan".equals(comparisonOp)){
+      stopRow = row;
+    } else if ("org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPEqualOrGreaterThan"
+        .equals(comparisonOp)) {
+      startRow = row;
+    } else if ("org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPGreaterThan"
+        .equals(comparisonOp)){
+      startRow = getNextBA(row);
+    } else if ("org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPEqualOrLessThan"
+        .equals(comparisonOp)){
+      stopRow = getNextBA(row);
+    } else {
+      throw new IOException(comparisonOp + " is not a supported comparison operator");
+    }
 
     if (tableSplit != null) {
       tableSplit = new TableSplit(
@@ -313,18 +318,17 @@ public class HiveHBaseTableInputFormat extends TableInputFormatBase
     }
     scan.setStartRow(startRow);
     scan.setStopRow(stopRow);
-
-    // Add a WhileMatchFilter to make the scan terminate as soon
-    // as we see a non-matching key.  This is probably redundant
-    // since the stopRow above should already take care of it for us.
-    scan.setFilter(
-      new WhileMatchFilter(
-        new RowFilter(
-          CompareFilter.CompareOp.EQUAL,
-          new BinaryComparator(startRow))));
     return tableSplit;
   }
 
+  private byte[] getNextBA(byte[] current){
+    // startRow is inclusive while stopRow is exclusive,
+    //this util method returns very next bytearray which will occur after the current one
+    // by padding current one with a trailing 0 byte.
+    byte[] next = new byte[current.length + 1];
+    System.arraycopy(current, 0, next, 0, current.length);
+    return next;
+  }
   /**
    * Instantiates a new predicate analyzer suitable for
    * determining how to push a filter down into the HBase scan,
@@ -335,13 +339,18 @@ public class HiveHBaseTableInputFormat extends TableInputFormatBase
    * @return preconfigured predicate analyzer
    */
   static IndexPredicateAnalyzer newIndexPredicateAnalyzer(
-    String keyColumnName) {
+    String keyColumnName, String keyColType) {
 
     IndexPredicateAnalyzer analyzer = new IndexPredicateAnalyzer();
 
-    // for now, we only support equality comparisons
-    analyzer.addComparisonOp(
-      "org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPEqual");
+    analyzer.addComparisonOp("org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPEqual");
+    if(keyColType.equalsIgnoreCase("string")){
+      analyzer.addComparisonOp("org.apache.hadoop.hive.ql.udf.generic." +
+        "GenericUDFOPEqualOrGreaterThan");
+      analyzer.addComparisonOp("org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPEqualOrLessThan");
+      analyzer.addComparisonOp("org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPLessThan");
+      analyzer.addComparisonOp("org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPGreaterThan");
+    }
 
     // and only on the key column
     analyzer.clearAllowedColumnNames();
