@@ -101,7 +101,7 @@ public class LoadSemanticAnalyzer extends BaseSemanticAnalyzer {
     }
 
     // if scheme is specified but not authority then use the default authority
-    if (fromScheme.equals("hdfs") && StringUtils.isEmpty(fromAuthority)) {
+    if ((!fromScheme.equals("file")) && StringUtils.isEmpty(fromAuthority)) {
       URI defaultURI = FileSystem.get(conf).getUri();
       fromAuthority = defaultURI.getAuthority();
     }
@@ -112,11 +112,6 @@ public class LoadSemanticAnalyzer extends BaseSemanticAnalyzer {
 
   private void applyConstraints(URI fromURI, URI toURI, Tree ast,
       boolean isLocal) throws SemanticException {
-    if (!fromURI.getScheme().equals("file")
-        && !fromURI.getScheme().equals("hdfs")) {
-      throw new SemanticException(ErrorMsg.INVALID_PATH.getMsg(ast,
-          "only \"file\" or \"hdfs\" file systems accepted"));
-    }
 
     // local mode implies that scheme should be "file"
     // we can change this going forward
