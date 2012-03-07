@@ -40,8 +40,8 @@ public class MapJoinDoubleKeys extends AbstractMapJoinKey {
   }
 
   /**
-   * @param metadataTag
-   * @param obj
+   * @param obj1
+   * @param obj2
    */
   public MapJoinDoubleKeys(Object obj1, Object obj2) {
     this.obj1 = obj1;
@@ -148,7 +148,7 @@ public class MapJoinDoubleKeys extends AbstractMapJoinKey {
   }
 
   /**
-   * @param obj
+   * @param obj1
    *          the obj to set
    */
   public void setObj1(Object obj1) {
@@ -163,7 +163,7 @@ public class MapJoinDoubleKeys extends AbstractMapJoinKey {
   }
 
   /**
-   * @param obj
+   * @param obj2
    *          the obj to set
    */
   public void setObj2(Object obj2) {

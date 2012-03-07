@@ -34,7 +34,9 @@ import org.apache.commons.cli.ParseException;
  * all your own options or processing instructions), parse, and then use
  * the resulting information.
  * <p>
- * See {@link HiveServer} or {@link HiveMetaStore} for examples of use.
+ * See {@link org.apache.hadoop.hive.service.HiveServer} or
+ *     {@link org.apache.hadoop.hive.metastore.HiveMetaStore}
+ *     for examples of use.
  *
  */
 public class CommonCliOptions {
@@ -55,10 +57,11 @@ public class CommonCliOptions {
   /**
    * Create an instance with common options (help, verbose, etc...).
    *
+   * @param cliname the name of the command
    * @param includeHiveConf include "hiveconf" as an option if true
    */
   @SuppressWarnings("static-access")
-  public CommonCliOptions(String cliname, boolean includeHiveconf) {
+  public CommonCliOptions(String cliname, boolean includeHiveConf) {
     this.cliname = cliname;
 
     // [-v|--verbose]
@@ -67,7 +70,7 @@ public class CommonCliOptions {
     // [-h|--help]
     OPTIONS.addOption(new Option("h", "help", false, "Print help information"));
 
-    if (includeHiveconf) {
+    if (includeHiveConf) {
       OPTIONS.addOption(OptionBuilder
           .withValueSeparator()
           .hasArgs(2)

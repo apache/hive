@@ -317,7 +317,7 @@ public class JoinDesc implements Serializable {
   /**
    * set the mapping from tbl to dir for small keys.
    *
-   * @param bigKeysDirMap
+   * @param smallKeysDirMap
    */
   public void setSmallKeysDirMap(Map<Byte, Map<Byte, String>> smallKeysDirMap) {
     this.smallKeysDirMap = smallKeysDirMap;
@@ -348,7 +348,7 @@ public class JoinDesc implements Serializable {
   }
 
   /**
-   * @param skewKeysValuesTable
+   * @param skewKeysValuesTables
    *          set the table desc for storing skew keys and their corresponding
    *          value;
    */

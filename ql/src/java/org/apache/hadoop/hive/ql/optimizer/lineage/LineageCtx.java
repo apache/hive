@@ -100,7 +100,7 @@ public class LineageCtx implements NodeProcessorCtx {
      *
      * @param op The operator of the column whose dependency is being modified.
      * @param ci The column info of the associated column.
-     * @param dependency The new dependency.
+     * @param dep The new dependency.
      */
     public void mergeDependency(Operator<? extends Serializable> op,
         ColumnInfo ci, Dependency dep) {
@@ -173,7 +173,7 @@ public class LineageCtx implements NodeProcessorCtx {
    *
    * @param old_type The old dependency type.
    * @param curr_type The current operators dependency type.
-   * @return
+   * @return the dependency type
    */
   public static LineageInfo.DependencyType getNewDependencyType(
       LineageInfo.DependencyType old_type, LineageInfo.DependencyType curr_type) {

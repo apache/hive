@@ -59,7 +59,7 @@ public class NumericHistogram {
   private Random prng;
 
   /**
-   * Creates a new histogram object. Note that the allocate() or merge() 
+   * Creates a new histogram object. Note that the allocate() or merge()
    * method must be called before the histogram can be used.
    */
   public NumericHistogram() {
@@ -81,7 +81,7 @@ public class NumericHistogram {
     bins = null;
     nbins = nusedbins = 0;
   }
-  
+
   /**
    * Returns the number of bins currently being used by the histogram.
    */
@@ -91,7 +91,7 @@ public class NumericHistogram {
 
   /**
    * Returns true if this histogram object has been initialized by calling merge()
-   * or allocate(). 
+   * or allocate().
    */
   public boolean isReady() {
     return nbins != 0;
@@ -111,7 +111,7 @@ public class NumericHistogram {
    */
   public void allocate(int num_bins) {
     nbins = num_bins;
-    bins = new Coord[nbins+1]; 
+    bins = new Coord[nbins+1];
     for(int i = 0; i < nbins+1; i++) {
       bins[i] = new Coord();
     }
@@ -123,7 +123,7 @@ public class NumericHistogram {
    * it with the current histogram object.
    *
    * @param other A serialized histogram created by the serialize() method
-   * @see merge
+   * @see #merge
    */
   public void merge(List<DoubleWritable> other) {
     if(other == null) {
@@ -131,10 +131,10 @@ public class NumericHistogram {
     }
 
     if(nbins == 0 || nusedbins == 0)  {
-      // Our aggregation buffer has nothing in it, so just copy over 'other' 
+      // Our aggregation buffer has nothing in it, so just copy over 'other'
       // by deserializing the ArrayList of (x,y) pairs into an array of Coord objects
       nbins = (int) other.get(0).get();
-      nusedbins = (other.size()-1)/2; 
+      nusedbins = (other.size()-1)/2;
       bins = new Coord[nbins+1]; // +1 to hold a temporary bin for insert()
       for(int i = 1; i < other.size(); i+=2) {
         bins[(i-1)/2] = new Coord();
@@ -200,7 +200,7 @@ public class NumericHistogram {
     // Otherwise, we need to insert a new bin and trim the resulting histogram back to size.
     // A possible optimization here might be to set some threshold under which 'v' is just
     // assumed to be equal to the closest bin -- if fabs(v-bins[bin].x) < THRESHOLD, then
-    // just increment 'bin'. This is not done now because we don't want to make any 
+    // just increment 'bin'. This is not done now because we don't want to make any
     // assumptions about the range of numeric data being analyzed.
     if(bin < nusedbins && bins[bin].x == v) {
       bins[bin].y++;
@@ -255,7 +255,7 @@ public class NumericHistogram {
         bins[i].x = bins[i+1].x;
         bins[i].y = bins[i+1].y;
       }
-      nusedbins--;      
+      nusedbins--;
     }
   }
 
@@ -281,7 +281,7 @@ public class NumericHistogram {
         }
         csum -= bins[b].y;
         double r = bins[b-1].x + (q*sum - csum) * (bins[b].x-bins[b-1].x)/(bins[b].y);
-        return r;                     
+        return r;
       }
     }
     return -1; // for Xlint, code will never reach here
@@ -289,17 +289,17 @@ public class NumericHistogram {
 
   /**
    * In preparation for a Hive merge() call, serializes the current histogram object into an
-   * ArrayList of DoubleWritable objects. This list is deserialized and merged by the 
+   * ArrayList of DoubleWritable objects. This list is deserialized and merged by the
    * merge method.
    *
    * @return An ArrayList of Hadoop DoubleWritable objects that represents the current
    * histogram.
-   * @see merge(ArrayList<DoubleWritable>)
+   * @see #merge
    */
   public ArrayList<DoubleWritable> serialize() {
-    ArrayList<DoubleWritable> result = new ArrayList<DoubleWritable>();    
+    ArrayList<DoubleWritable> result = new ArrayList<DoubleWritable>();
 
-    // Return a single ArrayList where the first element is the number of bins bins, 
+    // Return a single ArrayList where the first element is the number of bins bins,
     // and subsequent elements represent bins (x,y) pairs.
     result.add(new DoubleWritable(nbins));
     if(bins != null) {

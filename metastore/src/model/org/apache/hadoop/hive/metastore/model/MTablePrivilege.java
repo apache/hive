@@ -19,23 +19,23 @@
 package org.apache.hadoop.hive.metastore.model;
 
 public class MTablePrivilege {
-  
+
   private String principalName;
-  
+
   private String principalType;
 
   private MTable table;
-  
+
   private String privilege;
-  
+
   private int createTime;
-  
+
   private String grantor;
-  
+
   private String grantorType;
 
   private boolean grantOption;
-  
+
   public MTablePrivilege() {
   }
 
@@ -75,7 +75,7 @@ public class MTablePrivilege {
   public void setPrivilege(String dbPrivilege) {
     this.privilege = dbPrivilege;
   }
-  
+
   /**
    * @return create time
    */
@@ -91,7 +91,7 @@ public class MTablePrivilege {
   }
 
   /**
-   * @return
+   * @return the grantor
    */
   public String getGrantor() {
     return grantor;
@@ -127,7 +127,7 @@ public class MTablePrivilege {
   public void setGrantOption(boolean grantOption) {
     this.grantOption = grantOption;
   }
-  
+
   public String getGrantorType() {
     return grantorType;
   }

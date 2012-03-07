@@ -333,7 +333,7 @@ public abstract class HiveContextAwareRecordReader<K, V> implements RecordReader
   /**
    * Returns true if the current comparison is in the list of stop comparisons, i.e. we've found
    * all records which won't be filtered
-   * @return
+   * @return true if the current comparison is found
    */
   public boolean foundAllTargets() {
     if (this.getIOContext().getComparison() == null ||

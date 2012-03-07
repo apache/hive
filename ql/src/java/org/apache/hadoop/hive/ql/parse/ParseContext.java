@@ -104,12 +104,14 @@ public class ParseContext {
   }
 
   /**
+   * @param conf
    * @param qb
    *          current QB
    * @param ast
    *          current parse tree
    * @param opToPartPruner
    *          map from table scan operator to partition pruner
+   * @param opToPartList
    * @param topOps
    *          list of operators for the top query
    * @param topSelOps
@@ -121,7 +123,6 @@ public class ParseContext {
    *          context needed join processing (map join specifically)
    * @param topToTable
    *          the top tables being processed
-   * @param fopToTable the table schemas that are being inserted into
    * @param loadTableWork
    *          list of destination tables being loaded
    * @param loadFileWork
@@ -129,13 +130,16 @@ public class ParseContext {
    * @param ctx
    *          parse context
    * @param idToTableNameMap
-   * @param destTableId
    * @param uCtx
+   * @param destTableId
    * @param listMapJoinOpsNoReducer
    *          list of map join operators with no reducer
+   * @param groupOpToInputTables
+   * @param prunedPartitions
    * @param opToSamplePruner
    *          operator to sample pruner map
-   * @param semanticInputs
+   * @param globalLimitCtx
+   * @param nameToSplitSample
    * @param rootTasks
    */
   public ParseContext(

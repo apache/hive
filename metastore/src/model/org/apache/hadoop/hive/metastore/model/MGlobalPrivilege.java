@@ -19,25 +19,25 @@
 package org.apache.hadoop.hive.metastore.model;
 
 /**
- * User global level privileges  
+ * User global level privileges
  */
 public class MGlobalPrivilege {
 
   //principal name, can be a user, group, or role
   private String principalName;
-  
+
   private String principalType;
-  
+
   private String privilege;
-  
+
   private int createTime;
-  
+
   private String grantor;
-  
+
   private String grantorType;
-  
+
   private boolean grantOption;
-  
+
   public MGlobalPrivilege() {
     super();
   }
@@ -63,12 +63,12 @@ public class MGlobalPrivilege {
   }
 
   /**
-   * @param dbPrivileges set of global privileges to user
+   * @param dbPrivilege set of global privileges to user
    */
   public void setPrivilege(String dbPrivilege) {
     this.privilege = dbPrivilege;
   }
-  
+
   public String getPrincipalName() {
     return principalName;
   }
@@ -92,7 +92,7 @@ public class MGlobalPrivilege {
   public void setGrantor(String grantor) {
     this.grantor = grantor;
   }
-  
+
   public boolean getGrantOption() {
     return grantOption;
   }
@@ -100,7 +100,7 @@ public class MGlobalPrivilege {
   public void setGrantOption(boolean grantOption) {
     this.grantOption = grantOption;
   }
-  
+
   public String getPrincipalType() {
     return principalType;
   }

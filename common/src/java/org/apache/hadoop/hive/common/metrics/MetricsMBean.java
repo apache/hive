@@ -43,7 +43,7 @@ public interface MetricsMBean extends DynamicMBean {
     /**
      *
      * @param name
-     * @return
+     * @return value associated with the key
      * @throws Exception
      */
     public abstract Object get(String name) throws IOException;

@@ -39,7 +39,6 @@ public class MapJoinSingleKey extends AbstractMapJoinKey {
   }
 
   /**
-   * @param metadataTag
    * @param obj
    */
   public MapJoinSingleKey(Object obj) {

@@ -248,7 +248,6 @@ public class Hive {
    * @param name
    * @param deleteData
    * @param ignoreUnknownDb if true, will ignore NoSuchObjectException
-   * @return
    * @throws HiveException
    * @throws NoSuchObjectException
    */
@@ -264,7 +263,6 @@ public class Hive {
    * @param ignoreUnknownDb if true, will ignore NoSuchObjectException
    * @param cascade           if true, delete all tables on the DB if exists. Othewise, the query
    *                        will fail if table still exists.
-   * @return
    * @throws HiveException
    * @throws NoSuchObjectException
    */
@@ -409,8 +407,8 @@ public class Hive {
    *
    * @param tblName
    *          name of the existing table
-   * @param newTbl
-   *          new name of the table. could be the old name
+   * @param newPart
+   *          new partition
    * @throws InvalidOperationException
    *           if the changes in metadata is not acceptable
    * @throws TException
@@ -458,7 +456,7 @@ public class Hive {
         throw new HiveException("Unable to rename partition to the same name: old and new partition cols don't match. ");
       }
       List<String> pvals = new ArrayList<String>();
-      
+
       for (FieldSchema field : tbl.getPartCols()) {
         String val = oldPartSpec.get(field.getName());
         if (val == null || val.length() == 0) {
@@ -763,16 +761,9 @@ public class Hive {
   }
 
   /**
-   * Drops table along with the data in it. If the table doesn't exist
-   * then it is a no-op
-   * @param dbName database where the table lives
-   * @param tableName table to drop
-   * @throws HiveException thrown if the drop fails
    * Drops table along with the data in it. If the table doesn't exist then it
    * is a no-op
    *
-   * @param dbName
-   *          database where the table lives
    * @param tableName
    *          table to drop
    * @throws HiveException
@@ -784,11 +775,6 @@ public class Hive {
   }
 
   /**
-   * Drops table along with the data in it. If the table doesn't exist
-   * then it is a no-op
-   * @param dbName database where the table lives
-   * @param tableName table to drop
-   * @throws HiveException thrown if the drop fails
    * Drops table along with the data in it. If the table doesn't exist then it
    * is a no-op
    *
@@ -806,6 +792,7 @@ public class Hive {
   /**
    * Drops the table.
    *
+   * @param dbName
    * @param tableName
    * @param deleteData
    *          deletes the underlying data along with metadata
@@ -834,7 +821,7 @@ public class Hive {
   /**
    * Returns metadata for the table named tableName
    * @param tableName the name of the table
-   * @return
+   * @return the table metadata
    * @throws HiveException if there's an internal error or if the
    * table doesn't exist
    */
@@ -847,7 +834,7 @@ public class Hive {
    * Returns metadata for the table named tableName
    * @param tableName the name of the table
    * @param throwException controls whether an exception is thrown or a returns a null
-   * @return
+   * @return the table metadata
    * @throws HiveException if there's an internal error or if the
    * table doesn't exist
    */
@@ -1052,15 +1039,9 @@ public class Hive {
   }
 
   /**
-   * @param userName
-   *          principal name
-   * @param isRole
-   *          is the given principal name a role
-   * @param isGroup
-   *          is the given principal name a group
    * @param privileges
    *          a bag of privileges
-   * @return
+   * @return true on success
    * @throws HiveException
    */
   public boolean revokePrivileges(PrivilegeBag privileges)
@@ -1118,8 +1099,6 @@ public class Hive {
    * @param holdDDLTime if true, force [re]create the partition
    * @param inheritTableSpecs if true, on [re]creating the partition, take the
    *          location/inputformat/outputformat/serde details from table spec
-   * @param tmpDirPath
-   *          The temporary directory.
    */
   public void loadPartition(Path loadPath, String tableName,
       Map<String, String> partSpec, boolean replace, boolean holdDDLTime,
@@ -1195,9 +1174,9 @@ public class Hive {
    * @param tableName
    * @param partSpec
    * @param replace
-   * @param tmpDirPath
-   * @param numSp: number of static partitions in the partition spec
-   * @return
+   * @param numDP number of dynamic partitions
+   * @param holdDDLTime
+   * @return a list of strings with the dynamic partition paths
    * @throws HiveException
    */
   public ArrayList<LinkedHashMap<String, String>> loadDynamicPartitions(Path loadPath,
@@ -1221,7 +1200,7 @@ public class Hive {
           validPartitions.add(s.getPath().getParent());
         }
       }
-      
+
       if (validPartitions.size() == 0) {
         LOG.warn("No partition is genereated by dynamic partitioning");
       }
@@ -1242,7 +1221,7 @@ public class Hive {
         Path partPath = iter.next();
         assert fs.getFileStatus(partPath).isDir():
           "partitions " + partPath + " is not a directory !";
-        
+
         // generate a full partition specification
         LinkedHashMap<String, String> fullPartSpec = new LinkedHashMap<String, String>(partSpec);
         Warehouse.makeSpecFromName(fullPartSpec, partPath);
@@ -1270,8 +1249,7 @@ public class Hive {
    *          name of table to be loaded.
    * @param replace
    *          if true - replace files in the table, otherwise add files to table
-   * @param tmpDirPath
-   *          The temporary directory.
+   * @param holdDDLTime
    */
   public void loadTable(Path loadPath, String tableName, boolean replace,
       boolean holdDDLTime) throws HiveException {
@@ -1321,7 +1299,7 @@ public class Hive {
    * @param partParams
    *          partition parameters
    * @param inputFormat the inputformat class
-   * @param outputformat the outputformat class
+   * @param outputFormat the outputformat class
    * @param numBuckets the number of buckets
    * @param cols the column schema
    * @param serializationLib the serde class
@@ -1641,7 +1619,7 @@ public class Hive {
 
     if (!tbl.isPartitioned()) {
       throw new HiveException("Partition spec should only be supplied for a " +
-      		"partitioned table");
+                "partitioned table");
     }
 
     List<String> names = getPartitionNames(tbl.getDbName(), tbl.getTableName(),
@@ -1733,7 +1711,7 @@ public class Hive {
 
   /**
    * Get the name of the current database
-   * @return
+   * @return the current database name
    */
   public String getCurrentDatabase() {
     if (null == currentDatabase) {
@@ -1833,7 +1811,7 @@ public class Hive {
    *          user name
    * @param group_names
    *          group names
-   * @return
+   * @return the privilege set
    * @throws HiveException
    */
   public PrincipalPrivilegeSet get_privilege_set(HiveObjectType objectType,
@@ -1858,7 +1836,7 @@ public class Hive {
    * @param tableName
    * @param partValues
    * @param columnName
-   * @return
+   * @return list of privileges
    * @throws HiveException
    */
   public List<HiveObjectPrivilege> showPrivilegeGrant(
@@ -2046,20 +2024,20 @@ public class Hive {
 
       // rename src directory to destf
       if (srcs.length == 1 && srcs[0].isDir()) {
-      	// rename can fail if the parent doesn't exist
-      	if (!fs.exists(destf.getParent())) {
-      	  fs.mkdirs(destf.getParent());
-      	}
-      	if (fs.exists(destf)) {
-      	  fs.delete(destf, true);
-      	}
+        // rename can fail if the parent doesn't exist
+        if (!fs.exists(destf.getParent())) {
+          fs.mkdirs(destf.getParent());
+        }
+        if (fs.exists(destf)) {
+          fs.delete(destf, true);
+        }
 
-      	boolean b = fs.rename(srcs[0].getPath(), destf);
-      	if (!b) {
-      	  throw new HiveException("Unable to move results from " + srcs[0].getPath()
-      	      + " to destination directory: " + destf);
-      	}
-      	LOG.debug("Renaming:" + srcf.toString() + " to " + destf.toString()  + ",Status:" + b);
+        boolean b = fs.rename(srcs[0].getPath(), destf);
+        if (!b) {
+          throw new HiveException("Unable to move results from " + srcs[0].getPath()
+              + " to destination directory: " + destf);
+        }
+        LOG.debug("Renaming:" + srcf.toString() + " to " + destf.toString()  + ",Status:" + b);
       } else { // srcf is a file or pattern containing wildcards
         if (!fs.exists(destf)) {
           fs.mkdirs(destf);

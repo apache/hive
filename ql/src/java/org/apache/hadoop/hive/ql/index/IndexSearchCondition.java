@@ -44,7 +44,7 @@ public class IndexSearchCondition
    *
    * @param constantDesc constant value to search for
    *
-   * @Param comparisonExpr the original comparison expression
+   * @param comparisonExpr the original comparison expression
    */
   public IndexSearchCondition(
     ExprNodeColumnDesc columnDesc,
@@ -61,7 +61,7 @@ public class IndexSearchCondition
   public void setColumnDesc(ExprNodeColumnDesc columnDesc) {
     this.columnDesc = columnDesc;
   }
-  
+
   public ExprNodeColumnDesc getColumnDesc() {
     return columnDesc;
   }
@@ -89,7 +89,7 @@ public class IndexSearchCondition
   public ExprNodeDesc getComparisonExpr() {
     return comparisonExpr;
   }
-  
+
   @Override
   public String toString() {
     return comparisonExpr.getExprString();

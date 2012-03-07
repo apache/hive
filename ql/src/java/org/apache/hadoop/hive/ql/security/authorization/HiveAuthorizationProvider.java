@@ -42,12 +42,11 @@ public interface HiveAuthorizationProvider extends Configurable{
 
   /**
    * Authorization user level privileges.
-   * 
+   *
    * @param readRequiredPriv
    *          a list of privileges needed for inputs.
    * @param writeRequiredPriv
    *          a list of privileges needed for outputs.
-   * @return
    * @throws HiveException
    * @throws AuthorizationException
    */
@@ -57,14 +56,13 @@ public interface HiveAuthorizationProvider extends Configurable{
 
   /**
    * Authorization privileges against a database object.
-   * 
+   *
    * @param db
    *          database
    * @param readRequiredPriv
    *          a list of privileges needed for inputs.
    * @param writeRequiredPriv
    *          a list of privileges needed for outputs.
-   * @return
    * @throws HiveException
    * @throws AuthorizationException
    */
@@ -74,14 +72,13 @@ public interface HiveAuthorizationProvider extends Configurable{
 
   /**
    * Authorization privileges against a hive table object.
-   * 
+   *
    * @param table
    *          table object
    * @param readRequiredPriv
    *          a list of privileges needed for inputs.
    * @param writeRequiredPriv
    *          a list of privileges needed for outputs.
-   * @return
    * @throws HiveException
    * @throws AuthorizationException
    */
@@ -91,14 +88,13 @@ public interface HiveAuthorizationProvider extends Configurable{
 
   /**
    * Authorization privileges against a hive partition object.
-   * 
+   *
    * @param part
    *          partition object
    * @param readRequiredPriv
    *          a list of privileges needed for inputs.
    * @param writeRequiredPriv
    *          a list of privileges needed for outputs.
-   * @return
    * @throws HiveException
    * @throws AuthorizationException
    */
@@ -110,7 +106,7 @@ public interface HiveAuthorizationProvider extends Configurable{
    * Authorization privileges against a list of columns. If the partition object
    * is not null, look at the column grants for the given partition. Otherwise
    * look at the table column grants.
-   * 
+   *
    * @param table
    *          table object
    * @param part
@@ -121,7 +117,6 @@ public interface HiveAuthorizationProvider extends Configurable{
    *          a list of privileges needed for inputs.
    * @param writeRequiredPriv
    *          a list of privileges needed for outputs.
-   * @return
    * @throws HiveException
    * @throws AuthorizationException
    */

@@ -93,8 +93,7 @@ public class ShowPartitionsDesc extends DDLDesc implements Serializable {
   }
 
   /**
-   * @param tabName
-   *          the table whose partitions have to be listed
+   * @param partSpec the partSpec to set.
    */
   public void setPartSpec(Map<String, String> partSpec) {
     this.partSpec = partSpec;

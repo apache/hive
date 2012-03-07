@@ -41,10 +41,10 @@ public class MsckDesc extends DDLWork implements Serializable {
    */
   public MsckDesc() {
   }
-  
+
   /**
    * Description of a msck command.
-   * 
+   *
    * @param tableName
    *          Table to check, can be null.
    * @param partSpecs
@@ -89,7 +89,7 @@ public class MsckDesc extends DDLWork implements Serializable {
   }
 
   /**
-   * @param partitionSpec
+   * @param partSpecs
    *          partitions to check.
    */
   public void setPartSpecs(ArrayList<LinkedHashMap<String, String>> partSpecs) {
@@ -119,7 +119,7 @@ public class MsckDesc extends DDLWork implements Serializable {
   }
 
   /**
-   * @param remove
+   * @param repairPartitions
    *          stale / add new partitions found during the check
    */
   public void setRepairPartitions(boolean repairPartitions) {

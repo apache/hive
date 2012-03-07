@@ -244,13 +244,15 @@ public class MapJoinProcessor implements Transform {
   /**
    * convert a regular join to a a map-side join.
    *
+   * @param opParseCtxMap
    * @param op
    *          join operator
-   * @param qbJoin
+   * @param joinTree
    *          qb join tree
    * @param mapJoinPos
    *          position of the source to be read as part of map-reduce framework. All other sources
    *          are cached in memory
+   * @param noCheckOuterJoin
    */
   public static MapJoinOperator convertMapJoin(
       LinkedHashMap<Operator<? extends Serializable>, OpParseContext> opParseCtxMap,
@@ -507,7 +509,7 @@ public class MapJoinProcessor implements Transform {
    *
    *
    * @param condns
-   * @return
+   * @return list of big table candidates
    */
   public static HashSet<Integer> getBigTableCandidates(JoinCondDesc[] condns) {
     HashSet<Integer> bigTableCandidates = new HashSet<Integer>();
@@ -929,7 +931,7 @@ public class MapJoinProcessor implements Transform {
 
     /**
      * @param listMapJoinsNoRed
-     * @param pGraphContext2
+     * @param pGraphContext
      */
     public MapJoinWalkerCtx(List<AbstractMapJoinOperator<? extends MapJoinDesc>> listMapJoinsNoRed,
         ParseContext pGraphContext) {

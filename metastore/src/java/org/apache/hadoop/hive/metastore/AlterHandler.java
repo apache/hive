@@ -69,7 +69,7 @@ public interface AlterHandler extends Configurable {
    *          original values of the partition being altered
    * @param new_part
    *          new partition object
-   * @return
+   * @return the altered partition
    * @throws InvalidOperationException
    * @throws InvalidObjectException
    * @throws AlreadyExistsException

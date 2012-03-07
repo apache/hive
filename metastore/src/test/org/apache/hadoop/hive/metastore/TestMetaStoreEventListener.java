@@ -47,7 +47,7 @@ import org.apache.hadoop.hive.ql.session.SessionState;
 
 /**
  * TestMetaStoreEventListener. Test case for
- * {@link org.apache.hadoop.hive.metastore.hadooorg.apache.hadoop.hive.metastore.MetaStoreEventListener}
+ * {@link org.apache.hadoop.hive.metastore.MetaStoreEventListener}
  */
 public class TestMetaStoreEventListener extends TestCase {
   private static final String msPort = "20001";

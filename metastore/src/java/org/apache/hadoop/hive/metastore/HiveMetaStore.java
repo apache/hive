@@ -290,7 +290,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
     /**
      * Get a cached RawStore.
      *
-     * @return
+     * @return the cached RawStore
      * @throws MetaException
      */
     @InterfaceAudience.LimitedPrivate({"HCATALOG"})
@@ -2873,7 +2873,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
    *
    * @param port
    * @param bridge
-   * @param hiveconf
+   * @param conf
    *          configuration overrides
    * @throws Throwable
    */

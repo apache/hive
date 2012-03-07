@@ -40,7 +40,7 @@ public interface HiveIndexHandler extends Configurable {
   /**
    * Determines whether this handler implements indexes by creating an index
    * table.
-   * 
+   *
    * @return true if index creation implies creation of an index table in Hive;
    *         false if the index representation is not stored in a Hive table
    */
@@ -49,13 +49,13 @@ public interface HiveIndexHandler extends Configurable {
   /**
    * Requests that the handler validate an index definition and fill in
    * additional information about its stored representation.
-   * 
+   *
    * @param baseTable
    *          the definition of the table being indexed
-   * 
+   *
    * @param index
    *          the definition of the index being created
-   * 
+   *
    * @param indexTable
    *          a partial definition of the index table to be used for storing the
    *          index representation, or null if usesIndexTable() returns false;
@@ -63,9 +63,9 @@ public interface HiveIndexHandler extends Configurable {
    *          information about input/output format) and/or the index table's
    *          definition (typically with additional columns containing the index
    *          representation, e.g. pointers into HDFS).
-   * 
-   * @throw HiveException if the index definition is invalid with respect to
-   *        either the base table or the supplied index table definition
+   *
+   * @throws HiveException if the index definition is invalid with respect to
+   *         either the base table or the supplied index table definition
    */
   void analyzeIndexDefinition(
       org.apache.hadoop.hive.metastore.api.Table baseTable,
@@ -76,38 +76,32 @@ public interface HiveIndexHandler extends Configurable {
   /**
    * Requests that the handler generate a plan for building the index; the plan
    * should read the base table and write out the index representation.
-   * 
-   * @param outputs
-   * @param inputs
-   * 
-   * @param baseTable
+   *
+   * @param baseTbl
    *          the definition of the table being indexed
-   * 
+   *
    * @param index
    *          the definition of the index
-   * 
-   * @param indexTblPartitions
-   *          list of index partitions
-   * 
+   *
    * @param baseTblPartitions
    *          list of base table partitions with each element mirrors to the
    *          corresponding one in indexTblPartitions
-   * 
-   * @param indexTable
+   *
+   * @param indexTbl
    *          the definition of the index table, or null if usesIndexTable()
    *          returns null
-   * 
+   *
    * @param inputs
-   *          inputs for hooks, supplemental outputs going 
+   *          inputs for hooks, supplemental outputs going
    *          along with the return value
-   * 
+   *
    * @param outputs
-   *          outputs for hooks, supplemental outputs going 
+   *          outputs for hooks, supplemental outputs going
    *          along with the return value
-   * 
+   *
    * @return list of tasks to be executed in parallel for building the index
-   * 
-   * @throw HiveException if plan generation fails
+   *
+   * @throws HiveException if plan generation fails
    */
   List<Task<?>> generateIndexBuildTaskList(
       org.apache.hadoop.hive.ql.metadata.Table baseTbl,
@@ -123,11 +117,11 @@ public interface HiveIndexHandler extends Configurable {
    * provided, it is up to the handler whether to use none, one, some or all of
    * them. The supplied predicate may reference any of the columns from any of
    * the indexes. If the handler decides to use more than one index, it is
-   * responsible for generating tasks to combine their search results 
+   * responsible for generating tasks to combine their search results
    * (e.g. performing a JOIN on the result).
    * @param indexes
    * @param predicate
-   * @param parseContext
+   * @param pctx
    * @param queryContext contains results, such as query tasks and input configuration
    */
   void generateIndexQuery(List<Index> indexes, ExprNodeDesc predicate,

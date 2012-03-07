@@ -350,7 +350,7 @@ public class LineageInfo implements Serializable {
     }
 
     /**
-     * @param basecols the baseCols to set
+     * @param baseCols the baseCols to set
      */
     public void setBaseCols(List<BaseColumnInfo> baseCols) {
       this.baseCols = baseCols;

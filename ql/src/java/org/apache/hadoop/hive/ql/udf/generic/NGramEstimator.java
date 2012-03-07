@@ -34,7 +34,7 @@ import org.apache.commons.logging.LogFactory;
  * A generic, re-usable n-gram estimation class that supports partial aggregations.
  * The algorithm is based on the heuristic from the following paper:
  * Yael Ben-Haim and Elad Tom-Tov, "A streaming parallel decision tree algorithm",
- * J. Machine Learning Research 11 (2010), pp. 849--872. 
+ * J. Machine Learning Research 11 (2010), pp. 849--872.
  *
  * In particular, it is guaranteed that frequencies will be under-counted. With large
  * data and a reasonable precision factor, this undercounting appears to be on the order
@@ -46,11 +46,11 @@ public class NGramEstimator {
   private int pf;
   private int n;
   private HashMap<ArrayList<String>, Double> ngrams;
-  
+
 
   /**
    * Creates a new n-gram estimator object. The 'n' for n-grams is computed dynamically
-   * when data is fed to the object. 
+   * when data is fed to the object.
    */
   public NGramEstimator() {
     k  = 0;
@@ -82,7 +82,7 @@ public class NGramEstimator {
   }
 
   /**
-   * Resets an n-gram estimator object to its initial state. 
+   * Resets an n-gram estimator object to its initial state.
    */
   public void reset() {
     ngrams.clear();
@@ -96,13 +96,13 @@ public class NGramEstimator {
     trim(true);
     if(ngrams.size() < 1) { // SQL standard - return null for zero elements
       return null;
-    } 
+    }
 
     // Sort the n-gram list by frequencies in descending order
     ArrayList<Object[]> result = new ArrayList<Object[]>();
     ArrayList<Map.Entry<ArrayList<String>, Double>> list = new ArrayList(ngrams.entrySet());
     Collections.sort(list, new Comparator<Map.Entry<ArrayList<String>, Double>>() {
-      public int compare(Map.Entry<ArrayList<String>, Double> o1, 
+      public int compare(Map.Entry<ArrayList<String>, Double> o1,
                          Map.Entry<ArrayList<String>, Double> o2) {
         return o2.getValue().compareTo(o1.getValue());
       }
@@ -123,7 +123,7 @@ public class NGramEstimator {
       result.add(curGram);
     }
 
-    return result;    
+    return result;
   }
 
   /**
@@ -155,14 +155,14 @@ public class NGramEstimator {
       n = ng.size();
     } else {
       if(n != ng.size()) {
-        throw new HiveException(getClass().getSimpleName() + ": mismatch in value for 'n'" 
+        throw new HiveException(getClass().getSimpleName() + ": mismatch in value for 'n'"
             + ", which usually is caused by a non-constant expression. Found '"+n+"' and '"
             + ng.size() + "'.");
       }
     }
 
     // Trim down the total number of n-grams if we've exceeded the maximum amount of memory allowed
-    // 
+    //
     // NOTE: Although 'k'*'pf' specifies the size of the estimation buffer, we don't want to keep
     //       performing N.log(N) trim operations each time the maximum hashmap size is exceeded.
     //       To handle this, we *actually* maintain an estimation buffer of size 2*'k'*'pf', and
@@ -174,13 +174,13 @@ public class NGramEstimator {
   }
 
   /**
-   * Trims an n-gram estimation down to either 'pf' * 'k' n-grams, or 'k' n-grams if 
+   * Trims an n-gram estimation down to either 'pf' * 'k' n-grams, or 'k' n-grams if
    * finalTrim is true.
    */
   private void trim(boolean finalTrim) throws HiveException {
     ArrayList<Map.Entry<ArrayList<String>,Double>> list = new ArrayList(ngrams.entrySet());
     Collections.sort(list, new Comparator<Map.Entry<ArrayList<String>,Double>>() {
-      public int compare(Map.Entry<ArrayList<String>,Double> o1, 
+      public int compare(Map.Entry<ArrayList<String>,Double> o1,
                          Map.Entry<ArrayList<String>,Double> o2) {
         return o1.getValue().compareTo(o2.getValue());
       }
@@ -195,7 +195,6 @@ public class NGramEstimator {
    * it with the current n-gram object.
    *
    * @param other A serialized n-gram object created by the serialize() method
-   * @see merge
    */
   public void merge(List<Text> other) throws HiveException {
     if(other == null) {
@@ -207,17 +206,17 @@ public class NGramEstimator {
     int otherN = Integer.parseInt(other.get(1).toString());
     int otherPF = Integer.parseInt(other.get(2).toString());
     if(k > 0 && k != otherK) {
-      throw new HiveException(getClass().getSimpleName() + ": mismatch in value for 'k'" 
+      throw new HiveException(getClass().getSimpleName() + ": mismatch in value for 'k'"
           + ", which usually is caused by a non-constant expression. Found '"+k+"' and '"
           + otherK + "'.");
     }
     if(n > 0 && otherN != n) {
-      throw new HiveException(getClass().getSimpleName() + ": mismatch in value for 'n'" 
+      throw new HiveException(getClass().getSimpleName() + ": mismatch in value for 'n'"
           + ", which usually is caused by a non-constant expression. Found '"+n+"' and '"
           + otherN + "'.");
     }
     if(pf > 0 && otherPF != pf) {
-      throw new HiveException(getClass().getSimpleName() + ": mismatch in value for 'pf'" 
+      throw new HiveException(getClass().getSimpleName() + ": mismatch in value for 'pf'"
           + ", which usually is caused by a non-constant expression. Found '"+pf+"' and '"
           + otherPF + "'.");
     }
@@ -240,7 +239,7 @@ public class NGramEstimator {
       } else {
         myval += val;
       }
-      ngrams.put(key, myval);      
+      ngrams.put(key, myval);
     }
 
     trim(false);
@@ -249,15 +248,15 @@ public class NGramEstimator {
 
   /**
    * In preparation for a Hive merge() call, serializes the current n-gram estimator object into an
-   * ArrayList of Text objects. This list is deserialized and merged by the 
+   * ArrayList of Text objects. This list is deserialized and merged by the
    * merge method.
    *
    * @return An ArrayList of Hadoop Text objects that represents the current
    * n-gram estimation.
-   * @see merge(ArrayList<Text>)
+   * @see #merge
    */
   public ArrayList<Text> serialize() throws HiveException {
-    ArrayList<Text> result = new ArrayList<Text>();    
+    ArrayList<Text> result = new ArrayList<Text>();
     result.add(new Text(Integer.toString(k)));
     result.add(new Text(Integer.toString(n)));
     result.add(new Text(Integer.toString(pf)));

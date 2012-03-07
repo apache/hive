@@ -526,8 +526,6 @@ public class Table implements Serializable {
    *
    * @param srcf
    *          Source directory
-   * @param tmpd
-   *          Temporary directory
    */
   protected void replaceFiles(Path srcf) throws HiveException {
     Path tableDest =  new Path(getDataLocation().getPath());

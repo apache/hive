@@ -314,7 +314,7 @@ public final class LazyBinaryUtils {
   /**
    * Write a zero-compressed encoded long to a byte array.
    *
-   * @param byteStream
+   * @param bytes
    *          the byte array/stream
    * @param l
    *          the long

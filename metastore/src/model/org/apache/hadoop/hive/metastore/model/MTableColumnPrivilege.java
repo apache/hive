@@ -20,36 +20,37 @@ package org.apache.hadoop.hive.metastore.model;
 
 public class MTableColumnPrivilege {
 
-  private String principalName; 
+  private String principalName;
 
   private String principalType;
 
   private MTable table;
-  
+
   private String columnName;
 
   private String privilege;
 
   private int createTime;
-  
+
   private String grantor;
-  
+
   private String grantorType;
-  
+
   private boolean grantOption;
 
   public MTableColumnPrivilege() {
   }
-  
+
   /**
    * @param principalName
-   * @param isRole
-   * @param isGroup
+   * @param principalType
    * @param table
    * @param columnName
    * @param privileges
    * @param createTime
    * @param grantor
+   * @param grantorType
+   * @param grantOption
    */
   public MTableColumnPrivilege(String principalName, String principalType,
       MTable table, String columnName, String privileges, int createTime,
@@ -65,7 +66,7 @@ public class MTableColumnPrivilege {
     this.grantorType = grantorType;
     this.grantOption = grantOption;
   }
-  
+
   /**
    * @return column name
    */
@@ -123,7 +124,7 @@ public class MTableColumnPrivilege {
   public void setTable(MTable table) {
     this.table = table;
   }
-  
+
   public String getGrantor() {
     return grantor;
   }
@@ -131,7 +132,7 @@ public class MTableColumnPrivilege {
   public void setGrantor(String grantor) {
     this.grantor = grantor;
   }
-  
+
   public String getGrantorType() {
     return grantorType;
   }
@@ -139,7 +140,7 @@ public class MTableColumnPrivilege {
   public void setGrantorType(String grantorType) {
     this.grantorType = grantorType;
   }
-  
+
   public boolean getGrantOption() {
     return grantOption;
   }
@@ -147,7 +148,7 @@ public class MTableColumnPrivilege {
   public void setGrantOption(boolean grantOption) {
     this.grantOption = grantOption;
   }
-  
+
   public String getPrincipalType() {
     return principalType;
   }

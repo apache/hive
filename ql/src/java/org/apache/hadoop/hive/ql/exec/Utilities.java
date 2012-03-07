@@ -1336,8 +1336,6 @@ public final class Utilities {
 
   /**
    * Remove all temporary files and duplicate (double-committed) files from a given directory.
-   *
-   * @return a list of path names corresponding to should-be-created empty buckets.
    */
   public static void removeTempOrDuplicateFiles(FileSystem fs, Path path) throws IOException {
     removeTempOrDuplicateFiles(fs, path, null);
@@ -1645,8 +1643,8 @@ public final class Utilities {
   /**
    * Calculate the total size of input files.
    *
-   * @param job
-   *          the hadoop job conf.
+   * @param ctx
+   *          the hadoop job context
    * @param work
    *          map reduce job plan
    * @param filter
@@ -2113,10 +2111,10 @@ public final class Utilities {
    * is a SQLRecoverableException or SQLNonTransientException. For SQLRecoverableException
    * the caller needs to reconnect to the database and restart the whole transaction.
    *
-   * @param query the prepared statement of SQL.
-   * @param type either SQLCommandType.QUERY or SQLCommandType.UPDATE
+   * @param cmd the SQL command
+   * @param stmt the prepared statement of SQL.
    * @param baseWindow  The base time window (in milliseconds) before the next retry.
-   * see {@getRandomWaitTime} for details.
+   * see {@link #getRandomWaitTime} for details.
    * @param maxRetries the maximum # of retries when getting a SQLTransientException.
    * @throws SQLException throws SQLRecoverableException or SQLNonTransientException the
    * first time it is caught, or SQLTransientException when the maxRetries has reached.
@@ -2157,8 +2155,8 @@ public final class Utilities {
    * the caller needs to reconnect to the database and restart the whole transaction.
    *
    * @param connectionString the JDBC connection string.
-   * @param baseWindow  The base time window (in milliseconds) before the next retry.
-   * see {@getRandomWaitTime} for details.
+   * @param waitWindow  The base time window (in milliseconds) before the next retry.
+   * see {@link #getRandomWaitTime} for details.
    * @param maxRetries the maximum # of retries when getting a SQLTransientException.
    * @throws SQLException throws SQLRecoverableException or SQLNonTransientException the
    * first time it is caught, or SQLTransientException when the maxRetries has reached.
@@ -2199,8 +2197,8 @@ public final class Utilities {
    *
    * @param conn a JDBC connection.
    * @param stmt the SQL statement to be prepared.
-   * @param baseWindow  The base time window (in milliseconds) before the next retry.
-   * see {@getRandomWaitTime} for details.
+   * @param waitWindow  The base time window (in milliseconds) before the next retry.
+   * see {@link #getRandomWaitTime} for details.
    * @param maxRetries the maximum # of retries when getting a SQLTransientException.
    * @throws SQLException throws SQLRecoverableException or SQLNonTransientException the
    * first time it is caught, or SQLTransientException when the maxRetries has reached.
@@ -2252,13 +2250,13 @@ public final class Utilities {
           baseWindow * (failures + 1) * r.nextDouble()); // expanding time window for each failure
   }
 
+  public static final char sqlEscapeChar = '\\';
+
   /**
    * Escape the '_', '%', as well as the escape characters inside the string key.
    * @param key the string that will be used for the SQL LIKE operator.
-   * @param escape the escape character
    * @return a string with escaped '_' and '%'.
    */
-  public static final char sqlEscapeChar = '\\';
   public static String escapeSqlLike(String key) {
     StringBuffer sb = new StringBuffer(key.length());
     for (char c: key.toCharArray()) {

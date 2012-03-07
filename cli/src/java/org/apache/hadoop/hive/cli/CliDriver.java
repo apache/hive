@@ -346,7 +346,7 @@ public class CliDriver {
    * @param allowInterupting
    *          When true the function will handle SIG_INT (Ctrl+C) by interrupting the processing and
    *          returning -1
-   * @return
+   * @return 0 if ok
    */
   public int processLine(String line, boolean allowInterupting) {
     SignalHandler oldSignal = null;

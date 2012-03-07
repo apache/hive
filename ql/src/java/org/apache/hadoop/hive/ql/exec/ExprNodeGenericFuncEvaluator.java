@@ -170,7 +170,7 @@ public class ExprNodeGenericFuncEvaluator extends ExprNodeEvaluator {
    * If the genericUDF is not a base comparison, or there is an error executing the comparison, it
    * returns null.
    * @param row
-   * @return
+   * @return the compare results
    * @throws HiveException
    */
   public Integer compare(Object row) throws HiveException {

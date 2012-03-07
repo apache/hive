@@ -53,7 +53,7 @@ public final class RewriteParseContextGenerator {
    * Parse the input {@link String} command and generate a ASTNode tree.
    * @param conf
    * @param command
-   * @return
+   * @return the parse context
    * @throws SemanticException
    */
   public static ParseContext generateOperatorTree(HiveConf conf,

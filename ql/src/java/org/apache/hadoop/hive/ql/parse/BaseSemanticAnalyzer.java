@@ -319,7 +319,8 @@ public abstract class BaseSemanticAnalyzer {
   }
 
   /**
-   * @param Get the name from a table node
+   * Get the name from a table node.
+   * @param tableNameNode the table node
    * @return if DB name is give, db.tab is returned. Otherwise, tab.
    */
   public static String getUnescapedName(ASTNode tableNameNode) {

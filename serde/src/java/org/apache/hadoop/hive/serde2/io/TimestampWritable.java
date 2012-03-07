@@ -354,7 +354,7 @@ public class TimestampWritable implements WritableComparable<TimestampWritable> 
    * Gets seconds stored as integer at bytes[offset]
    * @param bytes
    * @param offset
-   * @return
+   * @return the number of seconds
    */
   public static int getSeconds(byte[] bytes, int offset) {
     return NO_DECIMAL_MASK & bytesToInt(bytes, offset);
@@ -445,7 +445,7 @@ public class TimestampWritable implements WritableComparable<TimestampWritable> 
   /**
    * Interprets a float as a unix timestamp and returns a Timestamp object
    * @param f
-   * @return
+   * @return the equivalent Timestamp object
    */
   public static Timestamp floatToTimestamp(float f) {
     return doubleToTimestamp((double) f);

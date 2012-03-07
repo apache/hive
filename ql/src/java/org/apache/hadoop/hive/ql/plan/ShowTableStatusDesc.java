@@ -57,7 +57,7 @@ public class ShowTableStatusDesc extends DDLDesc implements Serializable {
    */
   public ShowTableStatusDesc() {
   }
-  
+
   /**
    * @param pattern
    *          names of tables to show
@@ -74,7 +74,7 @@ public class ShowTableStatusDesc extends DDLDesc implements Serializable {
    *          data base name
    * @param pattern
    *          names of tables to show
-   * @param part
+   * @param partSpec
    *          partition specification
    */
   public ShowTableStatusDesc(String resFile, String dbName, String pattern,

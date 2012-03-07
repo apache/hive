@@ -32,16 +32,16 @@ public interface HiveIOExceptionHandler {
 
   /**
    * process exceptions raised when creating a record reader.
-   * 
+   *
    * @param e
-   * @return
+   * @return RecordReader
    */
   public RecordReader<?, ?> handleRecordReaderCreationException(Exception e)
       throws IOException;
 
   /**
    * process exceptions thrown when calling rr's next
-   * 
+   *
    * @param e
    * @param result
    * @throws IOException

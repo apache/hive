@@ -47,7 +47,7 @@ import org.apache.hadoop.hive.ql.metadata.Table;
 @SuppressWarnings("nls")
 public final class ArchiveUtils {
   private static final Log LOG = LogFactory.getLog(ArchiveUtils.class.getName());
-  
+
   public static String ARCHIVING_LEVEL = "archiving_level";
 
   /**
@@ -91,7 +91,7 @@ public final class ArchiveUtils {
         prefixFields.add(fs);
         prefixValues.add(partSpec.get(fs.getName()));
       }
-      
+
       return new PartSpecInfo(prefixFields, prefixValues);
     }
 
@@ -229,7 +229,7 @@ public final class ArchiveUtils {
    * Determines whether a partition has been archived
    *
    * @param p
-   * @return
+   * @return is it archived?
    */
   public static boolean isArchived(Partition p) {
     Map<String, String> params = p.getParameters();
@@ -264,12 +264,12 @@ public final class ArchiveUtils {
    * argument, level, is used for the prefix length. For example, partition
    * (ds='2010-01-01', hr='00', min='00'), level 1 will reture 'ds=2010-01-01',
    * and level 2 will return 'ds=2010-01-01/hr=00'.
-   * 
+   *
    * @param p
    *          partition object
    * @param level
    *          level for prefix depth
-   * @return
+   * @return prefix of partition's string representation
    * @throws HiveException
    */
   public static String getPartialName(Partition p, int level) throws HiveException {
@@ -315,7 +315,7 @@ public final class ArchiveUtils {
   public static String conflictingArchiveNameOrNull(Hive db, Table tbl,
         LinkedHashMap<String, String> partSpec)
       throws HiveException {
-    
+
     List<FieldSchema> partKeys = tbl.getPartitionKeys();
     int partSpecLevel = 0;
     for (FieldSchema partKey : partKeys) {
@@ -324,7 +324,7 @@ public final class ArchiveUtils {
       }
       partSpecLevel++;
     }
-    
+
     if(partSpecLevel != partSpec.size()) {
       throw new HiveException("partspec " + partSpec
           + " is wrong for table " + tbl.getTableName());

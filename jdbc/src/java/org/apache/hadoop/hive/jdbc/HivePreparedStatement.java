@@ -96,7 +96,7 @@ public class HivePreparedStatement implements PreparedStatement {
 
   /*
    * (non-Javadoc)
-   * 
+   *
    * @see java.sql.PreparedStatement#addBatch()
    */
 
@@ -107,7 +107,7 @@ public class HivePreparedStatement implements PreparedStatement {
 
   /*
    * (non-Javadoc)
-   * 
+   *
    * @see java.sql.PreparedStatement#clearParameters()
    */
 
@@ -121,7 +121,7 @@ public class HivePreparedStatement implements PreparedStatement {
    *  @return boolean Returns true if a resultSet is created, false if not.
    *                  Note: If the result set is empty a true is returned.
    *
-   *  @throws
+   *  @throws SQLException
    */
 
   public boolean execute() throws SQLException {
@@ -133,7 +133,7 @@ public class HivePreparedStatement implements PreparedStatement {
    *  Invokes executeQuery(sql) using the sql provided to the constructor.
    *
    *  @return ResultSet
-   *  @throws
+   *  @throws SQLException
    */
 
   public ResultSet executeQuery() throws SQLException {
@@ -142,7 +142,7 @@ public class HivePreparedStatement implements PreparedStatement {
 
   /*
    * (non-Javadoc)
-   * 
+   *
    * @see java.sql.PreparedStatement#executeUpdate()
    */
 
@@ -241,7 +241,7 @@ public class HivePreparedStatement implements PreparedStatement {
 
   /*
    * (non-Javadoc)
-   * 
+   *
    * @see java.sql.PreparedStatement#getMetaData()
    */
 
@@ -252,7 +252,7 @@ public class HivePreparedStatement implements PreparedStatement {
 
   /*
    * (non-Javadoc)
-   * 
+   *
    * @see java.sql.PreparedStatement#getParameterMetaData()
    */
 
@@ -263,7 +263,7 @@ public class HivePreparedStatement implements PreparedStatement {
 
   /*
    * (non-Javadoc)
-   * 
+   *
    * @see java.sql.PreparedStatement#setArray(int, java.sql.Array)
    */
 
@@ -274,7 +274,7 @@ public class HivePreparedStatement implements PreparedStatement {
 
   /*
    * (non-Javadoc)
-   * 
+   *
    * @see java.sql.PreparedStatement#setAsciiStream(int, java.io.InputStream)
    */
 
@@ -285,7 +285,7 @@ public class HivePreparedStatement implements PreparedStatement {
 
   /*
    * (non-Javadoc)
-   * 
+   *
    * @see java.sql.PreparedStatement#setAsciiStream(int, java.io.InputStream,
    * int)
    */
@@ -297,7 +297,7 @@ public class HivePreparedStatement implements PreparedStatement {
 
   /*
    * (non-Javadoc)
-   * 
+   *
    * @see java.sql.PreparedStatement#setAsciiStream(int, java.io.InputStream,
    * long)
    */
@@ -309,7 +309,7 @@ public class HivePreparedStatement implements PreparedStatement {
 
   /*
    * (non-Javadoc)
-   * 
+   *
    * @see java.sql.PreparedStatement#setBigDecimal(int, java.math.BigDecimal)
    */
 
@@ -320,7 +320,7 @@ public class HivePreparedStatement implements PreparedStatement {
 
   /*
    * (non-Javadoc)
-   * 
+   *
    * @see java.sql.PreparedStatement#setBinaryStream(int, java.io.InputStream)
    */
 
@@ -331,7 +331,7 @@ public class HivePreparedStatement implements PreparedStatement {
 
   /*
    * (non-Javadoc)
-   * 
+   *
    * @see java.sql.PreparedStatement#setBinaryStream(int, java.io.InputStream,
    * int)
    */
@@ -343,7 +343,7 @@ public class HivePreparedStatement implements PreparedStatement {
 
   /*
    * (non-Javadoc)
-   * 
+   *
    * @see java.sql.PreparedStatement#setBinaryStream(int, java.io.InputStream,
    * long)
    */
@@ -355,7 +355,7 @@ public class HivePreparedStatement implements PreparedStatement {
 
   /*
    * (non-Javadoc)
-   * 
+   *
    * @see java.sql.PreparedStatement#setBlob(int, java.sql.Blob)
    */
 
@@ -366,7 +366,7 @@ public class HivePreparedStatement implements PreparedStatement {
 
   /*
    * (non-Javadoc)
-   * 
+   *
    * @see java.sql.PreparedStatement#setBlob(int, java.io.InputStream)
    */
 
@@ -377,7 +377,7 @@ public class HivePreparedStatement implements PreparedStatement {
 
   /*
    * (non-Javadoc)
-   * 
+   *
    * @see java.sql.PreparedStatement#setBlob(int, java.io.InputStream, long)
    */
 
@@ -389,7 +389,7 @@ public class HivePreparedStatement implements PreparedStatement {
 
   /*
    * (non-Javadoc)
-   * 
+   *
    * @see java.sql.PreparedStatement#setBoolean(int, boolean)
    */
 
@@ -399,7 +399,7 @@ public class HivePreparedStatement implements PreparedStatement {
 
   /*
    * (non-Javadoc)
-   * 
+   *
    * @see java.sql.PreparedStatement#setByte(int, byte)
    */
 
@@ -409,7 +409,7 @@ public class HivePreparedStatement implements PreparedStatement {
 
   /*
    * (non-Javadoc)
-   * 
+   *
    * @see java.sql.PreparedStatement#setBytes(int, byte[])
    */
 
@@ -420,7 +420,7 @@ public class HivePreparedStatement implements PreparedStatement {
 
   /*
    * (non-Javadoc)
-   * 
+   *
    * @see java.sql.PreparedStatement#setCharacterStream(int, java.io.Reader)
    */
 
@@ -431,7 +431,7 @@ public class HivePreparedStatement implements PreparedStatement {
 
   /*
    * (non-Javadoc)
-   * 
+   *
    * @see java.sql.PreparedStatement#setCharacterStream(int, java.io.Reader,
    * int)
    */
@@ -444,7 +444,7 @@ public class HivePreparedStatement implements PreparedStatement {
 
   /*
    * (non-Javadoc)
-   * 
+   *
    * @see java.sql.PreparedStatement#setCharacterStream(int, java.io.Reader,
    * long)
    */
@@ -457,7 +457,7 @@ public class HivePreparedStatement implements PreparedStatement {
 
   /*
    * (non-Javadoc)
-   * 
+   *
    * @see java.sql.PreparedStatement#setClob(int, java.sql.Clob)
    */
 
@@ -468,7 +468,7 @@ public class HivePreparedStatement implements PreparedStatement {
 
   /*
    * (non-Javadoc)
-   * 
+   *
    * @see java.sql.PreparedStatement#setClob(int, java.io.Reader)
    */
 
@@ -479,7 +479,7 @@ public class HivePreparedStatement implements PreparedStatement {
 
   /*
    * (non-Javadoc)
-   * 
+   *
    * @see java.sql.PreparedStatement#setClob(int, java.io.Reader, long)
    */
 
@@ -490,7 +490,7 @@ public class HivePreparedStatement implements PreparedStatement {
 
   /*
    * (non-Javadoc)
-   * 
+   *
    * @see java.sql.PreparedStatement#setDate(int, java.sql.Date)
    */
 
@@ -501,7 +501,7 @@ public class HivePreparedStatement implements PreparedStatement {
 
   /*
    * (non-Javadoc)
-   * 
+   *
    * @see java.sql.PreparedStatement#setDate(int, java.sql.Date,
    * java.util.Calendar)
    */
@@ -513,7 +513,7 @@ public class HivePreparedStatement implements PreparedStatement {
 
   /*
    * (non-Javadoc)
-   * 
+   *
    * @see java.sql.PreparedStatement#setDouble(int, double)
    */
 
@@ -523,7 +523,7 @@ public class HivePreparedStatement implements PreparedStatement {
 
   /*
    * (non-Javadoc)
-   * 
+   *
    * @see java.sql.PreparedStatement#setFloat(int, float)
    */
 
@@ -533,7 +533,7 @@ public class HivePreparedStatement implements PreparedStatement {
 
   /*
    * (non-Javadoc)
-   * 
+   *
    * @see java.sql.PreparedStatement#setInt(int, int)
    */
 
@@ -543,7 +543,7 @@ public class HivePreparedStatement implements PreparedStatement {
 
   /*
    * (non-Javadoc)
-   * 
+   *
    * @see java.sql.PreparedStatement#setLong(int, long)
    */
 
@@ -553,7 +553,7 @@ public class HivePreparedStatement implements PreparedStatement {
 
   /*
    * (non-Javadoc)
-   * 
+   *
    * @see java.sql.PreparedStatement#setNCharacterStream(int, java.io.Reader)
    */
 
@@ -564,7 +564,7 @@ public class HivePreparedStatement implements PreparedStatement {
 
   /*
    * (non-Javadoc)
-   * 
+   *
    * @see java.sql.PreparedStatement#setNCharacterStream(int, java.io.Reader,
    * long)
    */
@@ -577,7 +577,7 @@ public class HivePreparedStatement implements PreparedStatement {
 
   /*
    * (non-Javadoc)
-   * 
+   *
    * @see java.sql.PreparedStatement#setNClob(int, java.sql.NClob)
    */
 
@@ -588,7 +588,7 @@ public class HivePreparedStatement implements PreparedStatement {
 
   /*
    * (non-Javadoc)
-   * 
+   *
    * @see java.sql.PreparedStatement#setNClob(int, java.io.Reader)
    */
 
@@ -599,7 +599,7 @@ public class HivePreparedStatement implements PreparedStatement {
 
   /*
    * (non-Javadoc)
-   * 
+   *
    * @see java.sql.PreparedStatement#setNClob(int, java.io.Reader, long)
    */
 
@@ -610,7 +610,7 @@ public class HivePreparedStatement implements PreparedStatement {
 
   /*
    * (non-Javadoc)
-   * 
+   *
    * @see java.sql.PreparedStatement#setNString(int, java.lang.String)
    */
 
@@ -621,7 +621,7 @@ public class HivePreparedStatement implements PreparedStatement {
 
   /*
    * (non-Javadoc)
-   * 
+   *
    * @see java.sql.PreparedStatement#setNull(int, int)
    */
 
@@ -632,7 +632,7 @@ public class HivePreparedStatement implements PreparedStatement {
 
   /*
    * (non-Javadoc)
-   * 
+   *
    * @see java.sql.PreparedStatement#setNull(int, int, java.lang.String)
    */
 
@@ -643,7 +643,7 @@ public class HivePreparedStatement implements PreparedStatement {
 
   /*
    * (non-Javadoc)
-   * 
+   *
    * @see java.sql.PreparedStatement#setObject(int, java.lang.Object)
    */
 
@@ -654,7 +654,7 @@ public class HivePreparedStatement implements PreparedStatement {
 
   /*
    * (non-Javadoc)
-   * 
+   *
    * @see java.sql.PreparedStatement#setObject(int, java.lang.Object, int)
    */
 
@@ -666,7 +666,7 @@ public class HivePreparedStatement implements PreparedStatement {
 
   /*
    * (non-Javadoc)
-   * 
+   *
    * @see java.sql.PreparedStatement#setObject(int, java.lang.Object, int, int)
    */
 
@@ -678,7 +678,7 @@ public class HivePreparedStatement implements PreparedStatement {
 
   /*
    * (non-Javadoc)
-   * 
+   *
    * @see java.sql.PreparedStatement#setRef(int, java.sql.Ref)
    */
 
@@ -689,7 +689,7 @@ public class HivePreparedStatement implements PreparedStatement {
 
   /*
    * (non-Javadoc)
-   * 
+   *
    * @see java.sql.PreparedStatement#setRowId(int, java.sql.RowId)
    */
 
@@ -700,7 +700,7 @@ public class HivePreparedStatement implements PreparedStatement {
 
   /*
    * (non-Javadoc)
-   * 
+   *
    * @see java.sql.PreparedStatement#setSQLXML(int, java.sql.SQLXML)
    */
 
@@ -711,7 +711,7 @@ public class HivePreparedStatement implements PreparedStatement {
 
   /*
    * (non-Javadoc)
-   * 
+   *
    * @see java.sql.PreparedStatement#setShort(int, short)
    */
 
@@ -721,7 +721,7 @@ public class HivePreparedStatement implements PreparedStatement {
 
   /*
    * (non-Javadoc)
-   * 
+   *
    * @see java.sql.PreparedStatement#setString(int, java.lang.String)
    */
 
@@ -732,7 +732,7 @@ public class HivePreparedStatement implements PreparedStatement {
 
   /*
    * (non-Javadoc)
-   * 
+   *
    * @see java.sql.PreparedStatement#setTime(int, java.sql.Time)
    */
 
@@ -743,7 +743,7 @@ public class HivePreparedStatement implements PreparedStatement {
 
   /*
    * (non-Javadoc)
-   * 
+   *
    * @see java.sql.PreparedStatement#setTime(int, java.sql.Time,
    * java.util.Calendar)
    */
@@ -755,7 +755,7 @@ public class HivePreparedStatement implements PreparedStatement {
 
   /*
    * (non-Javadoc)
-   * 
+   *
    * @see java.sql.PreparedStatement#setTimestamp(int, java.sql.Timestamp)
    */
 
@@ -766,7 +766,7 @@ public class HivePreparedStatement implements PreparedStatement {
 
   /*
    * (non-Javadoc)
-   * 
+   *
    * @see java.sql.PreparedStatement#setTimestamp(int, java.sql.Timestamp,
    * java.util.Calendar)
    */
@@ -779,7 +779,7 @@ public class HivePreparedStatement implements PreparedStatement {
 
   /*
    * (non-Javadoc)
-   * 
+   *
    * @see java.sql.PreparedStatement#setURL(int, java.net.URL)
    */
 
@@ -790,7 +790,7 @@ public class HivePreparedStatement implements PreparedStatement {
 
   /*
    * (non-Javadoc)
-   * 
+   *
    * @see java.sql.PreparedStatement#setUnicodeStream(int, java.io.InputStream,
    * int)
    */
@@ -803,7 +803,7 @@ public class HivePreparedStatement implements PreparedStatement {
 
   /*
    * (non-Javadoc)
-   * 
+   *
    * @see java.sql.Statement#addBatch(java.lang.String)
    */
 
@@ -814,7 +814,7 @@ public class HivePreparedStatement implements PreparedStatement {
 
   /*
    * (non-Javadoc)
-   * 
+   *
    * @see java.sql.Statement#cancel()
    */
 
@@ -825,7 +825,7 @@ public class HivePreparedStatement implements PreparedStatement {
 
   /*
    * (non-Javadoc)
-   * 
+   *
    * @see java.sql.Statement#clearBatch()
    */
 
@@ -836,7 +836,7 @@ public class HivePreparedStatement implements PreparedStatement {
 
   /*
    * (non-Javadoc)
-   * 
+   *
    * @see java.sql.Statement#clearWarnings()
    */
 
@@ -847,7 +847,7 @@ public class HivePreparedStatement implements PreparedStatement {
   /**
    *  Closes the prepared statement.
    *
-   *  @throws
+   *  @throws SQLException
    */
 
   public void close() throws SQLException {
@@ -861,7 +861,7 @@ public class HivePreparedStatement implements PreparedStatement {
 
   /*
    * (non-Javadoc)
-   * 
+   *
    * @see java.sql.Statement#execute(java.lang.String)
    */
 
@@ -872,7 +872,7 @@ public class HivePreparedStatement implements PreparedStatement {
 
   /*
    * (non-Javadoc)
-   * 
+   *
    * @see java.sql.Statement#execute(java.lang.String, int)
    */
 
@@ -883,7 +883,7 @@ public class HivePreparedStatement implements PreparedStatement {
 
   /*
    * (non-Javadoc)
-   * 
+   *
    * @see java.sql.Statement#execute(java.lang.String, int[])
    */
 
@@ -894,7 +894,7 @@ public class HivePreparedStatement implements PreparedStatement {
 
   /*
    * (non-Javadoc)
-   * 
+   *
    * @see java.sql.Statement#execute(java.lang.String, java.lang.String[])
    */
 
@@ -905,7 +905,7 @@ public class HivePreparedStatement implements PreparedStatement {
 
   /*
    * (non-Javadoc)
-   * 
+   *
    * @see java.sql.Statement#executeBatch()
    */
 
@@ -916,7 +916,7 @@ public class HivePreparedStatement implements PreparedStatement {
 
   /*
    * (non-Javadoc)
-   * 
+   *
    * @see java.sql.Statement#executeQuery(java.lang.String)
    */
 
@@ -927,7 +927,7 @@ public class HivePreparedStatement implements PreparedStatement {
 
   /*
    * (non-Javadoc)
-   * 
+   *
    * @see java.sql.Statement#executeUpdate(java.lang.String)
    */
 
@@ -938,7 +938,7 @@ public class HivePreparedStatement implements PreparedStatement {
 
   /*
    * (non-Javadoc)
-   * 
+   *
    * @see java.sql.Statement#executeUpdate(java.lang.String, int)
    */
 
@@ -949,7 +949,7 @@ public class HivePreparedStatement implements PreparedStatement {
 
   /*
    * (non-Javadoc)
-   * 
+   *
    * @see java.sql.Statement#executeUpdate(java.lang.String, int[])
    */
 
@@ -960,7 +960,7 @@ public class HivePreparedStatement implements PreparedStatement {
 
   /*
    * (non-Javadoc)
-   * 
+   *
    * @see java.sql.Statement#executeUpdate(java.lang.String, java.lang.String[])
    */
 
@@ -971,7 +971,7 @@ public class HivePreparedStatement implements PreparedStatement {
 
   /*
    * (non-Javadoc)
-   * 
+   *
    * @see java.sql.Statement#getConnection()
    */
 
@@ -982,7 +982,7 @@ public class HivePreparedStatement implements PreparedStatement {
 
   /*
    * (non-Javadoc)
-   * 
+   *
    * @see java.sql.Statement#getFetchDirection()
    */
 
@@ -993,7 +993,7 @@ public class HivePreparedStatement implements PreparedStatement {
 
   /*
    * (non-Javadoc)
-   * 
+   *
    * @see java.sql.Statement#getFetchSize()
    */
 
@@ -1004,7 +1004,7 @@ public class HivePreparedStatement implements PreparedStatement {
 
   /*
    * (non-Javadoc)
-   * 
+   *
    * @see java.sql.Statement#getGeneratedKeys()
    */
 
@@ -1015,7 +1015,7 @@ public class HivePreparedStatement implements PreparedStatement {
 
   /*
    * (non-Javadoc)
-   * 
+   *
    * @see java.sql.Statement#getMaxFieldSize()
    */
 
@@ -1026,7 +1026,7 @@ public class HivePreparedStatement implements PreparedStatement {
 
   /*
    * (non-Javadoc)
-   * 
+   *
    * @see java.sql.Statement#getMaxRows()
    */
 
@@ -1036,7 +1036,7 @@ public class HivePreparedStatement implements PreparedStatement {
 
   /*
    * (non-Javadoc)
-   * 
+   *
    * @see java.sql.Statement#getMoreResults()
    */
 
@@ -1047,7 +1047,7 @@ public class HivePreparedStatement implements PreparedStatement {
 
   /*
    * (non-Javadoc)
-   * 
+   *
    * @see java.sql.Statement#getMoreResults(int)
    */
 
@@ -1058,7 +1058,7 @@ public class HivePreparedStatement implements PreparedStatement {
 
   /*
    * (non-Javadoc)
-   * 
+   *
    * @see java.sql.Statement#getQueryTimeout()
    */
 
@@ -1069,7 +1069,7 @@ public class HivePreparedStatement implements PreparedStatement {
 
   /*
    * (non-Javadoc)
-   * 
+   *
    * @see java.sql.Statement#getResultSet()
    */
 
@@ -1079,7 +1079,7 @@ public class HivePreparedStatement implements PreparedStatement {
 
   /*
    * (non-Javadoc)
-   * 
+   *
    * @see java.sql.Statement#getResultSetConcurrency()
    */
 
@@ -1090,7 +1090,7 @@ public class HivePreparedStatement implements PreparedStatement {
 
   /*
    * (non-Javadoc)
-   * 
+   *
    * @see java.sql.Statement#getResultSetHoldability()
    */
 
@@ -1101,7 +1101,7 @@ public class HivePreparedStatement implements PreparedStatement {
 
   /*
    * (non-Javadoc)
-   * 
+   *
    * @see java.sql.Statement#getResultSetType()
    */
 
@@ -1112,7 +1112,7 @@ public class HivePreparedStatement implements PreparedStatement {
 
   /*
    * (non-Javadoc)
-   * 
+   *
    * @see java.sql.Statement#getUpdateCount()
    */
 
@@ -1122,7 +1122,7 @@ public class HivePreparedStatement implements PreparedStatement {
 
   /*
    * (non-Javadoc)
-   * 
+   *
    * @see java.sql.Statement#getWarnings()
    */
 
@@ -1132,7 +1132,7 @@ public class HivePreparedStatement implements PreparedStatement {
 
   /*
    * (non-Javadoc)
-   * 
+   *
    * @see java.sql.Statement#isClosed()
    */
 
@@ -1142,7 +1142,7 @@ public class HivePreparedStatement implements PreparedStatement {
 
   /*
    * (non-Javadoc)
-   * 
+   *
    * @see java.sql.Statement#isPoolable()
    */
 
@@ -1153,7 +1153,7 @@ public class HivePreparedStatement implements PreparedStatement {
 
   /*
    * (non-Javadoc)
-   * 
+   *
    * @see java.sql.Statement#setCursorName(java.lang.String)
    */
 
@@ -1164,7 +1164,7 @@ public class HivePreparedStatement implements PreparedStatement {
 
   /*
    * (non-Javadoc)
-   * 
+   *
    * @see java.sql.Statement#setEscapeProcessing(boolean)
    */
 
@@ -1175,7 +1175,7 @@ public class HivePreparedStatement implements PreparedStatement {
 
   /*
    * (non-Javadoc)
-   * 
+   *
    * @see java.sql.Statement#setFetchDirection(int)
    */
 
@@ -1186,7 +1186,7 @@ public class HivePreparedStatement implements PreparedStatement {
 
   /*
    * (non-Javadoc)
-   * 
+   *
    * @see java.sql.Statement#setFetchSize(int)
    */
 
@@ -1197,7 +1197,7 @@ public class HivePreparedStatement implements PreparedStatement {
 
   /*
    * (non-Javadoc)
-   * 
+   *
    * @see java.sql.Statement#setMaxFieldSize(int)
    */
 
@@ -1208,7 +1208,7 @@ public class HivePreparedStatement implements PreparedStatement {
 
   /*
    * (non-Javadoc)
-   * 
+   *
    * @see java.sql.Statement#setMaxRows(int)
    */
 
@@ -1221,7 +1221,7 @@ public class HivePreparedStatement implements PreparedStatement {
 
   /*
    * (non-Javadoc)
-   * 
+   *
    * @see java.sql.Statement#setPoolable(boolean)
    */
 
@@ -1232,7 +1232,7 @@ public class HivePreparedStatement implements PreparedStatement {
 
   /*
    * (non-Javadoc)
-   * 
+   *
    * @see java.sql.Statement#setQueryTimeout(int)
    */
 
@@ -1243,7 +1243,7 @@ public class HivePreparedStatement implements PreparedStatement {
 
   /*
    * (non-Javadoc)
-   * 
+   *
    * @see java.sql.Wrapper#isWrapperFor(java.lang.Class)
    */
 
@@ -1254,7 +1254,7 @@ public class HivePreparedStatement implements PreparedStatement {
 
   /*
    * (non-Javadoc)
-   * 
+   *
    * @see java.sql.Wrapper#unwrap(java.lang.Class)
    */
 

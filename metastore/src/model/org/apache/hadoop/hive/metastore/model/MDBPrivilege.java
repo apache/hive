@@ -19,21 +19,21 @@
 package org.apache.hadoop.hive.metastore.model;
 
 public class MDBPrivilege {
-  
+
   private String principalName;
-  
+
   private String principalType;
-  
+
   private MDatabase database;
-  
+
   private int createTime;
-  
+
   private String privilege;
-  
+
   private String grantor;
-  
+
   private String grantorType;
-  
+
   private boolean grantOption;
 
   public MDBPrivilege() {
@@ -75,12 +75,12 @@ public class MDBPrivilege {
   }
 
   /**
-   * @param dbPrivileges a set of privileges this user/role/group has
+   * @param dbPrivilege a set of privileges this user/role/group has
    */
   public void setPrivilege(String dbPrivilege) {
     this.privilege = dbPrivilege;
   }
-  
+
   public MDatabase getDatabase() {
     return database;
   }
@@ -96,7 +96,7 @@ public class MDBPrivilege {
   public void setCreateTime(int createTime) {
     this.createTime = createTime;
   }
-  
+
   public String getGrantor() {
     return grantor;
   }
@@ -104,7 +104,7 @@ public class MDBPrivilege {
   public void setGrantor(String grantor) {
     this.grantor = grantor;
   }
-  
+
   public String getGrantorType() {
     return grantorType;
   }
@@ -120,7 +120,7 @@ public class MDBPrivilege {
   public void setGrantOption(boolean grantOption) {
     this.grantOption = grantOption;
   }
-  
+
   public String getPrincipalType() {
     return principalType;
   }

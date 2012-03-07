@@ -33,7 +33,7 @@ public interface JDOConnectionURLHook {
    * attempt.
    *
    * @param conf The configuration used to initialize this instance of the HMS
-   * @return
+   * @return the connection URL
    * @throws Exception
    */
   public String getJdoConnectionUrl(Configuration conf)

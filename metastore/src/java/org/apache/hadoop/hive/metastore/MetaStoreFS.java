@@ -30,10 +30,10 @@ public interface MetaStoreFS {
 
   /**
    * delete a directory
-   * 
+   *
    * @param f
    * @param recursive
-   * @return
+   * @return true on success
    * @throws MetaException
    */
   public boolean deleteDir(FileSystem fs, Path f, boolean recursive,

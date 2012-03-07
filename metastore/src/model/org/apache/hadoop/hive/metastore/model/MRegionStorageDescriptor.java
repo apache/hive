@@ -48,7 +48,7 @@ public class MRegionStorageDescriptor implements Serializable {
   }
 
   /**
-   * @param region
+   * @param regionName
    */
   public void setRegionName(String regionName) {
     this.regionName = regionName;

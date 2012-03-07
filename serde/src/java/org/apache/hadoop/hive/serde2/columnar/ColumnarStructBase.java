@@ -161,20 +161,18 @@ public abstract class ColumnarStructBase implements SerDeStatsStruct {
 
   /**
    * Get one field out of the struct.
-   * 
+   *
    * If the field is a primitive field, return the actual object. Otherwise
    * return the LazyObject. This is because PrimitiveObjectInspector does not
    * have control over the object used by the user - the user simply directly
    * use the Object instead of going through Object
    * PrimitiveObjectInspector.get(Object).
-   * 
+   *
    * NOTE: separator and nullSequence has to be the same each time this method
    * is called. These two parameters are used only once to parse each record.
-   * 
+   *
    * @param fieldID
    *          The field ID
-   * @param nullSequence
-   *          The sequence for null value
    * @return The field as a LazyObject
    */
   public Object getField(int fieldID) {
@@ -183,7 +181,7 @@ public abstract class ColumnarStructBase implements SerDeStatsStruct {
 
   /**
    * Check if the object is null and return the length of the stream
-   * 
+   *
    * @param objectInspector
    * @param cachedByteArrayRef
    *          the bytes of the object
@@ -191,7 +189,7 @@ public abstract class ColumnarStructBase implements SerDeStatsStruct {
    *          the start offset
    * @param length
    *          the length
-   * 
+   *
    * @return -1 for null, >=0 for length
    */
   protected abstract int getLength(ObjectInspector objectInspector,
@@ -199,7 +197,7 @@ public abstract class ColumnarStructBase implements SerDeStatsStruct {
 
   /**
    * create the lazy object for this field
-   * 
+   *
    * @param objectInspector
    *          the object inspector for the field
    * @return the lazy object for the field
@@ -220,9 +218,7 @@ public abstract class ColumnarStructBase implements SerDeStatsStruct {
 
   /**
    * Get the values of the fields as an ArrayList.
-   * 
-   * @param nullSequence
-   *          The sequence for the NULL value
+   *
    * @return The values of the fields as an ArrayList.
    */
   public ArrayList<Object> getFieldsAsList() {
