@@ -445,6 +445,7 @@ public class MapJoinProcessor implements Transform {
         valueTableDescs, valueFiltedTableDescs, outputColumnNames, mapJoinPos, joinCondns,
         filterMap, op.getConf().getNoOuterJoin(), dumpFilePrefix);
     mapJoinDescriptor.setTagOrder(tagOrder);
+    mapJoinDescriptor.setNullSafes(desc.getNullSafes());
 
     MapJoinOperator mapJoinOp = (MapJoinOperator) OperatorFactory.getAndMakeChild(
         mapJoinDescriptor, new RowSchema(outputRS.getColumnInfos()), newPar);

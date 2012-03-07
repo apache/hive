@@ -30,6 +30,7 @@ import org.apache.hadoop.hive.serde2.objectinspector.ListObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.MapObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector;
+import org.apache.hadoop.hive.serde2.objectinspector.StandardStructObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.StructField;
 import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.UnionObjectInspector;
@@ -371,6 +372,20 @@ public final class SerDeUtils {
     }
   }
 
+  /**
+   * return false though element is null if nullsafe flag is true for that
+   */
+  public static boolean hasAnyNullObject(List o, StandardStructObjectInspector loi,
+      boolean[] nullSafes) {
+    List<? extends StructField> fields = loi.getAllStructFieldRefs();
+    for (int i = 0; i < o.size();i++) {
+      if ((nullSafes == null || !nullSafes[i])
+          && hasAnyNullObject(o.get(i), fields.get(i).getFieldObjectInspector())) {
+        return true;
+      }
+    }
+    return false;
+  }
   /**
    * True if Object passed is representing null object.
    *

@@ -139,8 +139,8 @@ public abstract class AbstractMapJoinOperator <T extends MapJoinDesc> extends Co
   // returns true if there are elements in key list and any of them is null
   protected boolean hasAnyNulls(ArrayList<Object> key) {
     if (key != null && key.size() > 0) {
-      for (Object k : key) {
-        if (k == null) {
+      for (int i = 0; i < key.size(); i++) {
+        if (key.get(i) == null && (nullsafes == null || !nullsafes[i])) {
           return true;
         }
       }
@@ -151,8 +151,8 @@ public abstract class AbstractMapJoinOperator <T extends MapJoinDesc> extends Co
   // returns true if there are elements in key list and any of them is null
   protected boolean hasAnyNulls(Object[] key) {
     if (key != null && key.length> 0) {
-      for (Object k : key) {
-        if (k == null) {
+      for (int i = 0; i < key.length; i++) {
+        if (key[i] == null && (nullsafes == null || !nullsafes[i])) {
           return true;
         }
       }
@@ -162,7 +162,7 @@ public abstract class AbstractMapJoinOperator <T extends MapJoinDesc> extends Co
 
   // returns true if there are elements in key list and any of them is null
   protected boolean hasAnyNulls(AbstractMapJoinKey key) {
-    return key.hasAnyNulls();
+    return key.hasAnyNulls(nullsafes);
   }
 
 }

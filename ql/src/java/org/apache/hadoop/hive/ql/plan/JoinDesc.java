@@ -20,6 +20,7 @@ package org.apache.hadoop.hive.ql.plan;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -50,6 +51,9 @@ public class JoinDesc implements Serializable {
 
   // alias to filter mapping
   private Map<Byte, List<ExprNodeDesc>> filters;
+
+  // key index to nullsafe join flag
+  private boolean[] nullsafes;
 
   // used for create joinOutputObjectInspector
   protected List<String> outputColumnNames;
@@ -103,6 +107,7 @@ public class JoinDesc implements Serializable {
     this.bigKeysDirMap = clone.bigKeysDirMap;
     this.conds = clone.conds;
     this.exprs = clone.exprs;
+    this.nullsafes = clone.nullsafes;
     this.handleSkewJoin = clone.handleSkewJoin;
     this.keyTableDesc = clone.keyTableDesc;
     this.noOuterJoin = clone.noOuterJoin;
@@ -361,5 +366,25 @@ public class JoinDesc implements Serializable {
 
   public TableDesc getKeyTableDesc() {
     return keyTableDesc;
+  }
+
+  public boolean[] getNullSafes() {
+    return nullsafes;
+  }
+
+  public void setNullSafes(boolean[] nullSafes) {
+    this.nullsafes = nullSafes;
+  }
+
+  @Explain(displayName = "nullSafes")
+  public String getNullSafeString() {
+    if (nullsafes == null) {
+      return null;
+    }
+    boolean hasNS = false;
+    for (boolean ns : nullsafes) {
+      hasNS |= ns;
+    }
+    return hasNS ? Arrays.toString(nullsafes) : null;
   }
 }

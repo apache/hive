@@ -252,7 +252,7 @@ public class MapJoinOperator extends AbstractMapJoinOperator<MapJoinDesc> implem
           MapJoinRowContainer<ArrayList<Object>> rowContainer = rowContainerMap.get(pos);
 
           // there is no join-value or join-key has all null elements
-          if (o == null || key.hasAnyNulls()) {
+          if (o == null || key.hasAnyNulls(nullsafes)) {
             if (noOuterJoin) {
               storage.put(pos, emptyList);
             } else {

@@ -286,6 +286,7 @@ public final class GenMRSkewJoinProcessor {
           joinDescriptor.getFilters(), joinDescriptor.getNoOuterJoin(), dumpFilePrefix);
       mapJoinDescriptor.setTagOrder(tags);
       mapJoinDescriptor.setHandleSkewJoin(false);
+      mapJoinDescriptor.setNullSafes(joinDescriptor.getNullSafes());
 
       MapredLocalWork localPlan = new MapredLocalWork(
           new LinkedHashMap<String, Operator<? extends Serializable>>(),

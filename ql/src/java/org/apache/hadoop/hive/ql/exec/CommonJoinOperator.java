@@ -121,6 +121,8 @@ public abstract class CommonJoinOperator<T extends JoinDesc> extends
   protected transient Byte[] order; // order in which the results should
   // be output
   protected transient JoinCondDesc[] condn;
+  protected transient boolean[] nullsafes;
+
   public transient boolean noOuterJoin;
   protected transient Object[] dummyObj; // for outer joins, contains the
   // potential nulls for the concerned
@@ -240,6 +242,7 @@ public abstract class CommonJoinOperator<T extends JoinDesc> extends
 
     order = conf.getTagOrder();
     condn = conf.getConds();
+    nullsafes = conf.getNullSafes();
     noOuterJoin = conf.isNoOuterJoin();
 
     totalSz = JoinUtil.populateJoinKeyValue(joinValues, conf.getExprs(),

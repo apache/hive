@@ -1336,6 +1336,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       parseJoinCondition(joinTree, (ASTNode) joinCond.getChild(1), leftSrc);
       break;
 
+    case HiveParser.EQUAL_NS:
     case HiveParser.EQUAL:
       ASTNode leftCondn = (ASTNode) joinCond.getChild(0);
       ArrayList<String> leftCondAl1 = new ArrayList<String>();
@@ -1380,6 +1381,8 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
               leftSrc);
           populateAliases(rightCondAl1, rightCondAl2, rightCondn, joinTree,
               leftSrc);
+          boolean nullsafe = joinCond.getToken().getType() == HiveParser.EQUAL_NS;
+          joinTree.getNullSafes().add(nullsafe);
         }
       } else if (leftCondAl2.size() != 0) {
         if ((rightCondAl2.size() != 0)
@@ -1400,6 +1403,8 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
               leftSrc);
           populateAliases(rightCondAl1, rightCondAl2, rightCondn, joinTree,
               leftSrc);
+          boolean nullsafe = joinCond.getToken().getType() == HiveParser.EQUAL_NS;
+          joinTree.getNullSafes().add(nullsafe);
         }
       } else if (rightCondAl1.size() != 0) {
         if (type.equals(JoinType.LEFTOUTER)
@@ -4934,6 +4939,14 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         new RowSchema(outputRS.getColumnInfos()), rightOps);
     joinOp.setColumnExprMap(colExprMap);
     joinOp.setPosToAliasMap(posToAliasMap);
+
+    if (join.getNullSafes() != null) {
+      boolean[] nullsafes = new boolean[join.getNullSafes().size()];
+      for (int i = 0; i < nullsafes.length; i++) {
+        nullsafes[i] = join.getNullSafes().get(i);
+      }
+      desc.setNullSafes(nullsafes);
+    }
     return putOpInsertMap(joinOp, outputRS);
   }
 
@@ -5436,6 +5449,9 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     expressions.add(new ArrayList<ASTNode>());
     joinTree.setExpressions(expressions);
 
+    ArrayList<Boolean> nullsafes = new ArrayList<Boolean>();
+    joinTree.setNullSafes(nullsafes);
+
     ArrayList<ArrayList<ASTNode>> filters = new ArrayList<ArrayList<ASTNode>>();
     filters.add(new ArrayList<ASTNode>());
     filters.add(new ArrayList<ASTNode>());
@@ -5539,6 +5555,12 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     ArrayList<ArrayList<ASTNode>> expr = target.getExpressions();
     for (int i = 0; i < nodeRightAliases.length; i++) {
       expr.add(node.getExpressions().get(i + 1));
+    }
+
+    ArrayList<Boolean> nns = node.getNullSafes();
+    ArrayList<Boolean> tns = target.getNullSafes();
+    for (int i = 0; i < tns.size(); i++) {
+      tns.set(i, tns.get(i) & nns.get(i));   // any of condition contains non-NS, non-NS
     }
 
     ArrayList<ArrayList<ASTNode>> filters = target.getFilters();
