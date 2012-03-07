@@ -263,7 +263,7 @@ public class QBJoinTree implements Serializable{
    * Remeber the mapping of table alias to set of columns.
    *
    * @param alias
-   * @param columns
+   * @param column
    */
   public void addRHSSemijoinColumns(String alias, ASTNode column) {
     ArrayList<ASTNode> cols = rhsSemijoin.get(alias);

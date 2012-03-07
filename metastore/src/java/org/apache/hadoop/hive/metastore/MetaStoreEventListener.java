@@ -47,13 +47,13 @@ public abstract class MetaStoreEventListener implements Configurable {
   }
 
   /**
-   * @param create table event.
+   * @param tableEvent table event.
    * @throws MetaException
    */
   public abstract void onCreateTable (CreateTableEvent tableEvent) throws MetaException;
 
   /**
-   * @param drop table event.
+   * @param tableEvent table event.
    * @throws MetaException
    */
   public abstract void onDropTable (DropTableEvent tableEvent)  throws MetaException;
@@ -73,25 +73,25 @@ public abstract class MetaStoreEventListener implements Configurable {
   public abstract void onAddPartition (AddPartitionEvent partitionEvent)  throws MetaException;
 
   /**
-   * @param drop partition event
+   * @param partitionEvent partition event
    * @throws MetaException
    */
   public abstract void onDropPartition (DropPartitionEvent partitionEvent)  throws MetaException;
 
   /**
-   * @param alter partition event
+   * @param partitionEvent partition event
    * @throws MetaException
    */
   public abstract void onAlterPartition (AlterPartitionEvent partitionEvent)  throws MetaException;
 
   /**
-   * @param create database event
+   * @param dbEvent database event
    * @throws MetaException
    */
   public abstract void onCreateDatabase (CreateDatabaseEvent dbEvent) throws MetaException;
 
   /**
-   * @param drop database event
+   * @param dbEvent database event
    * @throws MetaException
    */
   public abstract void onDropDatabase (DropDatabaseEvent dbEvent) throws MetaException;

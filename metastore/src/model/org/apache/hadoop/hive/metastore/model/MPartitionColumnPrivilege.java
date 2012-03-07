@@ -21,7 +21,7 @@ package org.apache.hadoop.hive.metastore.model;
 
 public class MPartitionColumnPrivilege {
 
-  private String principalName; 
+  private String principalName;
 
   private String principalType;
 
@@ -32,25 +32,26 @@ public class MPartitionColumnPrivilege {
   private String privilege;
 
   private int createTime;
-  
+
   private String grantor;
-  
+
   private String grantorType;
-  
+
   private boolean grantOption;
 
   public MPartitionColumnPrivilege() {
   }
-  
+
   /**
    * @param principalName
-   * @param isRole
-   * @param isGroup
+   * @param principalType
    * @param partition
    * @param columnName
    * @param privileges
    * @param createTime
    * @param grantor
+   * @param grantorType
+   * @param grantOption
    */
   public MPartitionColumnPrivilege(String principalName, String principalType,
       MPartition partition, String columnName, String privileges, int createTime,
@@ -66,7 +67,7 @@ public class MPartitionColumnPrivilege {
     this.grantorType = grantorType;
     this.grantOption = grantOption;
   }
-  
+
   /**
    * @return column name
    */
@@ -132,7 +133,7 @@ public class MPartitionColumnPrivilege {
   public void setGrantor(String grantor) {
     this.grantor = grantor;
   }
-  
+
   public String getGrantorType() {
     return grantorType;
   }
@@ -140,7 +141,7 @@ public class MPartitionColumnPrivilege {
   public void setGrantorType(String grantorType) {
     this.grantorType = grantorType;
   }
-  
+
   public boolean getGrantOption() {
     return grantOption;
   }
@@ -148,7 +149,7 @@ public class MPartitionColumnPrivilege {
   public void setGrantOption(boolean grantOption) {
     this.grantOption = grantOption;
   }
-  
+
   public String getPrincipalType() {
     return principalType;
   }

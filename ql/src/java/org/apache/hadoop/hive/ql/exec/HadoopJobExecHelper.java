@@ -100,7 +100,7 @@ public class HadoopJobExecHelper {
    * this msg pattern is used to track when a job is successfully done.
    *
    * @param jobId
-   * @return
+   * @return the job end message
    */
   public static String getJobEndMsg(String jobId) {
     return "Ended Job = " + jobId;

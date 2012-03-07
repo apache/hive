@@ -48,7 +48,7 @@ public interface HiveSemanticAnalyzerHookContext extends Configurable{
   /**
    * The following methods will only be available to hooks executing postAnalyze.  If called in a
    * preAnalyze method, they should return null.
-   * @return
+   * @return the set of read entities
    */
   public Set<ReadEntity> getInputs();
 

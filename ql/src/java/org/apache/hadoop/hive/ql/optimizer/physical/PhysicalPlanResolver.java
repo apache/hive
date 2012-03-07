@@ -28,9 +28,9 @@ public interface PhysicalPlanResolver {
 
   /**
    * All physical plan resolvers have to implement this entry method.
-   * 
+   *
    * @param pctx
-   * @return
+   * @return the physical plan
    */
   PhysicalContext resolve(PhysicalContext pctx) throws SemanticException;
 

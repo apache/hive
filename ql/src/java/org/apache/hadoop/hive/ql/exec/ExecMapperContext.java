@@ -74,7 +74,7 @@ public class ExecMapperContext {
    * after the input file changed. This is first introduced to process bucket
    * map join.
    *
-   * @return
+   * @return is the input file changed?
    */
   public boolean inputFileChanged() {
     if (!inputFileChecked) {

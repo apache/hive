@@ -164,8 +164,10 @@ public class HiveMetaStoreClient implements IMetaStoreClient {
    * @throws InvalidOperationException
    * @throws MetaException
    * @throws TException
-   * @see org.apache.hadoop.hive.metastore.api.ThriftHiveMetastore.Iface#alter_table(java.lang.String,
-   *      java.lang.String, org.apache.hadoop.hive.metastore.api.Table)
+   * @see
+   *   org.apache.hadoop.hive.metastore.api.ThriftHiveMetastore.Iface#alter_table(
+   *   java.lang.String, java.lang.String,
+   *   org.apache.hadoop.hive.metastore.api.Table)
    */
   public void alter_table(String dbname, String tbl_name, Table new_tbl)
       throws InvalidOperationException, MetaException, TException {
@@ -333,7 +335,7 @@ public class HiveMetaStoreClient implements IMetaStoreClient {
    * @throws AlreadyExistsException
    * @throws MetaException
    * @throws TException
-   * @see org.apache.hadoop.hive.metastore.api.ThriftHiveMetastore.Iface#add_partitions(List<org.apache.hadoop.hive.metastore.api.Partition>)
+   * @see org.apache.hadoop.hive.metastore.api.ThriftHiveMetastore.Iface#add_partitions(List)
    */
   public int add_partitions(List<Partition> new_parts)
       throws InvalidObjectException, AlreadyExistsException, MetaException,
@@ -369,13 +371,11 @@ public class HiveMetaStoreClient implements IMetaStoreClient {
   /**
    * Create a new Database
    * @param db
-   * @return true or false
    * @throws AlreadyExistsException
    * @throws InvalidObjectException
    * @throws MetaException
    * @throws TException
-   * @see org.apache.hadoop.hive.metastore.api.ThriftHiveMetastore.Iface#create_database(java.lang.String,
-   *      java.lang.String)
+   * @see org.apache.hadoop.hive.metastore.api.ThriftHiveMetastore.Iface#create_database(Database)
    */
   public void createDatabase(Database db)
       throws AlreadyExistsException, InvalidObjectException, MetaException, TException {
@@ -425,12 +425,11 @@ public class HiveMetaStoreClient implements IMetaStoreClient {
 
   /**
    * @param name
-   * @return true or false
    * @throws NoSuchObjectException
    * @throws InvalidOperationException
    * @throws MetaException
    * @throws TException
-   * @see org.apache.hadoop.hive.metastore.api.ThriftHiveMetastore.Iface#drop_database(java.lang.String)
+   * @see org.apache.hadoop.hive.metastore.api.ThriftHiveMetastore.Iface#drop_database(java.lang.String, boolean, boolean)
    */
   public void dropDatabase(String name)
       throws NoSuchObjectException, InvalidOperationException, MetaException, TException {
@@ -842,7 +841,7 @@ public class HiveMetaStoreClient implements IMetaStoreClient {
   /**
    * create an index
    * @param index the index object
-   * @param index table which stores the index data
+   * @param indexTable which stores the index data
    * @throws InvalidObjectException
    * @throws MetaException
    * @throws NoSuchObjectException
@@ -873,7 +872,7 @@ public class HiveMetaStoreClient implements IMetaStoreClient {
    * @param dbName
    * @param tblName
    * @param indexName
-   * @return
+   * @return the index
    * @throws MetaException
    * @throws UnknownTableException
    * @throws NoSuchObjectException
@@ -887,10 +886,10 @@ public class HiveMetaStoreClient implements IMetaStoreClient {
 
   /**
    * list indexes of the give base table
-   * @param db_name
-   * @param tbl_name
+   * @param dbName
+   * @param tblName
    * @param max
-   * @return
+   * @return the list of indexes
    * @throws NoSuchObjectException
    * @throws MetaException
    * @throws TException
@@ -903,10 +902,10 @@ public class HiveMetaStoreClient implements IMetaStoreClient {
   /**
    * list all the index names of the give base table.
    *
-   * @param db_name
-   * @param tbl_name
+   * @param dbName
+   * @param tblName
    * @param max
-   * @return
+   * @return list of indexes
    * @throws MetaException
    * @throws TException
    */

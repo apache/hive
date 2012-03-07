@@ -215,6 +215,8 @@ public interface HadoopShims {
   String getTokenStrForm(String tokenSignature) throws IOException;
 
 
+  enum JobTrackerState { INITIALIZING, RUNNING };
+
   /**
    * Convert the ClusterStatus to its Thrift equivalent: JobTrackerState.
    * See MAPREDUCE-2455 for why this is a part of the shim.
@@ -222,8 +224,6 @@ public interface HadoopShims {
    * @return the matching JobTrackerState
    * @throws Exception if no equivalent JobTrackerState exists
    */
-  enum JobTrackerState { INITIALIZING, RUNNING };
-
   public JobTrackerState getJobTrackerState(ClusterStatus clusterStatus) throws Exception;
 
   public TaskAttemptContext newTaskAttemptContext(Configuration conf, final Progressable progressable);

@@ -35,7 +35,7 @@ import org.apache.hadoop.hive.metastore.events.ListenerEvent;
 import org.apache.hadoop.hive.metastore.events.LoadPartitionDoneEvent;
 
 /** A dummy implementation for
- * {@link org.apache.hadoop.hive.metastore.hadooorg.apache.hadoop.hive.metastore.MetaStoreEventListener}
+ * {@link org.apache.hadoop.hive.metastore.MetaStoreEventListener}
  * for testing purposes.
  */
 public class DummyListener extends MetaStoreEventListener{

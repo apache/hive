@@ -24,7 +24,7 @@ import java.util.Map;
  * Represents hive's index definition.
  */
 public class MIndex {
-  
+
   private String indexName;
   private MTable origTable;
   private int createTime;
@@ -36,15 +36,17 @@ public class MIndex {
   private boolean deferredRebuild;
 
   public MIndex() {}
-  
+
 /**
  * @param indexName
- * @param orignialTable
+ * @param baseTable
  * @param createTime
  * @param lastAccessTime
  * @param parameters
  * @param indexTable
  * @param sd
+ * @param indexHandlerClass
+ * @param deferredRebuild
  */
   public MIndex(String indexName, MTable baseTable, int createTime,
       int lastAccessTime, Map<String, String> parameters, MTable indexTable,
@@ -146,7 +148,7 @@ public class MIndex {
   public void setIndexTable(MTable indexTable) {
     this.indexTable = indexTable;
   }
-  
+
   /**
    * @return storage descriptor
    */
@@ -174,14 +176,14 @@ public class MIndex {
   public void setIndexHandlerClass(String indexHandlerClass) {
     this.indexHandlerClass = indexHandlerClass;
   }
-  
+
   /**
    * @return auto rebuild
    */
   public boolean isDeferredRebuild() {
     return deferredRebuild;
   }
-  
+
   /**
    * @return auto rebuild
    */
@@ -190,7 +192,7 @@ public class MIndex {
   }
 
   /**
-   * @param autoRebuild
+   * @param deferredRebuild
    */
   public void setDeferredRebuild(boolean deferredRebuild) {
     this.deferredRebuild = deferredRebuild;

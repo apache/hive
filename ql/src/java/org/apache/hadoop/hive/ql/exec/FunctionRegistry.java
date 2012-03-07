@@ -716,7 +716,9 @@ public final class FunctionRegistry {
    *
    * @param name
    *          the name of the UDAF
-   * @param argumentTypeInfos
+   * @param argumentOIs
+   * @param isDistinct
+   * @param isAllColumns
    * @return The UDAF evaluator
    */
   @SuppressWarnings("deprecation")

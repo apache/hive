@@ -97,7 +97,7 @@ public class DescTableDesc extends DDLDesc implements Serializable {
   }
 
   /**
-   * @param isFormatted
+   * @param isFormat
    *          the isFormat to set
    */
   public void setFormatted(boolean isFormat) {

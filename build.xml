@@ -687,7 +687,10 @@
         <fileset dir="${hadoop.root}/lib">
           <include name="**/*.jar" />
           <exclude name="**/excluded/" />
+	  <exclude name="**/commons-logging-*.jar" />
+	  <exclude name="**/commons-codec-*.jar" />
         </fileset>
+	<pathelement path="${hadoop.oldstyle-name.test.jar}"/>
         <path refid="classpath" />
         <pathelement path="${java.class.path}"/>
       </classpath>

@@ -44,9 +44,9 @@ public class DescDatabaseDesc extends DDLDesc implements Serializable {
   }
 
   /**
-   * @param partSpec
    * @param resFile
-   * @param tableName
+   * @param dbName
+   * @param isExt
    */
   public DescDatabaseDesc(Path resFile, String dbName, boolean isExt) {
     this.isExt = isExt;
@@ -82,8 +82,8 @@ public class DescDatabaseDesc extends DDLDesc implements Serializable {
   }
 
   /**
-   * @param tableName
-   *          the tableName to set
+   * @param db
+   *          the database name to set
    */
   public void setDatabaseName(String db) {
     this.dbName = db;

@@ -24,7 +24,7 @@ import org.apache.hadoop.mapred.RecordReader;
 
 public class HiveIOExceptionHandlerUtil {
 
-  private static ThreadLocal<HiveIOExceptionHandlerChain> handlerChainInstance = 
+  private static ThreadLocal<HiveIOExceptionHandlerChain> handlerChainInstance =
     new ThreadLocal<HiveIOExceptionHandlerChain>();
 
   private static HiveIOExceptionHandlerChain get(JobConf job) {
@@ -44,10 +44,10 @@ public class HiveIOExceptionHandlerUtil {
    * an exception raised when construction the record reader and one handler can
    * handle this exception, it should return an record reader, which is either a
    * dummy empty record reader or a specific record reader that do some magic.
-   * 
+   *
    * @param e
    * @param job
-   * @return
+   * @return RecordReader
    * @throws IOException
    */
   public static RecordReader handleRecordReaderCreationException(Exception e,
@@ -64,10 +64,10 @@ public class HiveIOExceptionHandlerUtil {
    * exception is handled by one handler, will just return true. Otherwise,
    * either re-throw this exception in one handler or at the end of the handler
    * chain.
-   * 
+   *
    * @param e
    * @param job
-   * @return
+   * @return true on success
    * @throws IOException
    */
   public static boolean handleRecordReaderNextException(Exception e, JobConf job)

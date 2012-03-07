@@ -283,7 +283,7 @@ public class Warehouse {
    * Makes a partition name from a specification
    * @param spec
    * @param addTrailingSeperator if true, adds a trailing separator e.g. 'ds=1/'
-   * @return
+   * @return partition name
    * @throws MetaException
    */
   public static String makePartName(Map<String, String> spec,

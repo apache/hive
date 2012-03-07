@@ -283,7 +283,7 @@ public class ExprWalkerInfo implements NodeProcessorCtx {
   /**
    * Returns list of non-final candidate predicate for each map.
    *
-   * @return
+   * @return list of non-final candidate predicates
    */
   public Map<String, List<ExprNodeDesc>> getNonFinalCandidates() {
     return nonFinalPreds;

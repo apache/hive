@@ -389,7 +389,6 @@ public class HiveDatabaseMetaData implements java.sql.DatabaseMetaData {
   /**
    *  Returns the value of maxColumnNameLength.
    *
-   *  @param int
    */
   public int getMaxColumnNameLength() throws SQLException {
     return maxColumnNameLength;
@@ -654,7 +653,7 @@ public class HiveDatabaseMetaData implements java.sql.DatabaseMetaData {
   /**
    * Translate hive table types into jdbc table types.
    * @param hivetabletype
-   * @return
+   * @return the type of the table
    */
   public static String toJdbcTableType(String hivetabletype) {
     if (hivetabletype==null) {

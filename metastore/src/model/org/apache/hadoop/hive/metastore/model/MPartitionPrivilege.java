@@ -19,23 +19,23 @@
 package org.apache.hadoop.hive.metastore.model;
 
 public class MPartitionPrivilege {
-  
+
   private String principalName;
-  
+
   private String principalType;
 
   private MPartition partition;
-  
+
   private String privilege;
-  
+
   private int createTime;
-  
+
   private String grantor;
-  
+
   private String grantorType;
 
   private boolean grantOption;
-  
+
   public MPartitionPrivilege() {
   }
 
@@ -75,7 +75,7 @@ public class MPartitionPrivilege {
   public void setPrivilege(String dbPrivilege) {
     this.privilege = dbPrivilege;
   }
-  
+
   /**
    * @return create time
    */
@@ -91,7 +91,7 @@ public class MPartitionPrivilege {
   }
 
   /**
-   * @return
+   * @return the grantor
    */
   public String getGrantor() {
     return grantor;
@@ -119,7 +119,7 @@ public class MPartitionPrivilege {
   public void setPartition(MPartition partition) {
     this.partition = partition;
   }
-  
+
   public boolean getGrantOption() {
     return grantOption;
   }
@@ -127,7 +127,7 @@ public class MPartitionPrivilege {
   public void setGrantOption(boolean grantOption) {
     this.grantOption = grantOption;
   }
-  
+
   public String getGrantorType() {
     return grantorType;
   }

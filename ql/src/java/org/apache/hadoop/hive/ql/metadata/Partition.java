@@ -290,7 +290,7 @@ public class Partition implements Serializable {
   }
 
   /**
-   * @param class1
+   * @param outputFormatClass
    */
   public void setOutputFormatClass(Class<? extends HiveOutputFormat> outputFormatClass) {
     this.outputFormatClass = outputFormatClass;

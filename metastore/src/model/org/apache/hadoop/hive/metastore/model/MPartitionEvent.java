@@ -64,7 +64,7 @@ public class MPartitionEvent {
   }
 
   /**
-   * @param eventTime the eventTime to set
+   * @param createTime the eventTime to set
    */
   public void setEventTime(long createTime) {
     this.eventTime = createTime;

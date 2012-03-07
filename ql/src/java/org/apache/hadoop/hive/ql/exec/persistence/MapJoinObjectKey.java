@@ -42,7 +42,6 @@ public class MapJoinObjectKey  extends AbstractMapJoinKey {
   }
 
   /**
-   * @param metadataTag
    * @param obj
    */
   public MapJoinObjectKey(Object[] obj) {

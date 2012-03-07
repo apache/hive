@@ -30,8 +30,8 @@ public class AuthorizationException extends RuntimeException {
   /**
    * Constructs an {@link AuthorizationException} with the specified detail
    * message.
-   * 
-   * @param s
+   *
+   * @param message
    *          the detail message.
    */
   public AuthorizationException(String message) {
@@ -40,7 +40,7 @@ public class AuthorizationException extends RuntimeException {
 
   /**
    * Constructs an {@link AuthorizationException} with the specified cause.
-   * 
+   *
    * @param cause
    *          the cause
    */

@@ -219,8 +219,9 @@ public class MetaStoreUtils {
    *
    * @param conf
    *          - hadoop config
-   * @param partition
+   * @param part
    *          the partition
+   * @param table the table
    * @return the Deserializer
    * @exception MetaException
    *              if any problems instantiating the Deserializer
@@ -487,7 +488,7 @@ public class MetaStoreUtils {
    * @param tableName table name
    * @param partitionKeys partition columns
    * @param tblSchema The table level schema from which this partition should be copied.
-   * @return
+   * @return the properties
    */
   public static Properties getPartSchemaFromTableSchema(
       org.apache.hadoop.hive.metastore.api.StorageDescriptor sd,
@@ -942,7 +943,7 @@ public class MetaStoreUtils {
    * Given a map of partition column names to values, this creates a filter
    * string that can be used to call the *byFilter methods
    * @param m
-   * @return
+   * @return the filter string
    */
   public static String makeFilterStringFromMap(Map<String, String> m) {
     StringBuilder filter = new StringBuilder();

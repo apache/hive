@@ -387,7 +387,7 @@ public class Driver implements CommandProcessor {
    * is useful for generating re-entrant QL queries.
    * @param command  The HiveQL query to compile
    * @param resetTaskIds Resets taskID counter if true.
-   * @return
+   * @return 0 for ok
    */
   public int compile(String command, boolean resetTaskIds) {
     PerfLogger perfLogger = PerfLogger.getPerfLogger();
@@ -1264,9 +1264,8 @@ public class Driver implements CommandProcessor {
    *          name of the task, if it is a map-reduce job
    * @param jobs
    *          number of map-reduce jobs
-   * @param curJobNo
-   *          the sequential number of the next map-reduce job
-   * @return the updated number of last the map-reduce job launched
+   * @param cxt
+   *          the driver context
    */
 
   public void launchTask(Task<? extends Serializable> tsk, String queryId, boolean noName,

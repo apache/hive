@@ -36,7 +36,8 @@ import org.apache.hadoop.io.LongWritable;
  * UDAF for calculating the percentile values.
  * There are several definitions of percentile, and we take the method recommended by
  * NIST.
- * @see http://en.wikipedia.org/wiki/Percentile#Alternative_methods
+ * @see <a href="http://en.wikipedia.org/wiki/Percentile#Alternative_methods">
+ *      Percentile references</a>
  */
 @Description(name = "percentile",
     value = "_FUNC_(expr, pc) - Returns the percentile(s) of expr at pc (range: [0,1])."

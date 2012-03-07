@@ -139,8 +139,6 @@ public interface RawStore extends Configurable {
    * Gets a list of tables based on a filter string and filter type.
    * @param dbName
    *          The name of the database from which you will retrieve the table names
-   * @param filterType
-   *          The type of filter
    * @param filter
    *          The filter string
    * @param max_tables

@@ -108,8 +108,9 @@ public class DDLWork implements Serializable {
   }
 
   /**
-   * @param dropDatabaseDesc
-   *          Drop Database descriptor
+   * @param inputs
+   * @param outputs
+   * @param descDatabaseDesc Database descriptor
    */
   public DDLWork(HashSet<ReadEntity> inputs, HashSet<WriteEntity> outputs,
       DescDatabaseDesc descDatabaseDesc) {
@@ -324,8 +325,9 @@ public class DDLWork implements Serializable {
   }
 
   /**
-   * @param touchDesc
-   *          information about the table/partitions that we want to touch
+   * @param inputs
+   * @param outputs
+   * @param simpleDesc
    */
   public DDLWork(HashSet<ReadEntity> inputs, HashSet<WriteEntity> outputs,
       AlterTableSimpleDesc simpleDesc) {
@@ -484,8 +486,8 @@ public class DDLWork implements Serializable {
   }
 
   /**
-   * @param alterTblDesc
-   *          the alterTblDesc to set
+   * @param alterIndexDesc
+   *          the alterIndexDesc to set
    */
   public void setAlterIndexDesc(AlterIndexDesc alterIndexDesc) {
     this.alterIndexDesc = alterIndexDesc;
@@ -872,9 +874,6 @@ public class DDLWork implements Serializable {
     this.revokeDesc = revokeDesc;
   }
 
-  /**
-   * @return
-   */
   public GrantRevokeRoleDDL getGrantRevokeRoleDDL() {
     return grantRevokeRoleDDL;
   }
