@@ -172,11 +172,11 @@ public class MapJoinDoubleKeys extends AbstractMapJoinKey {
 
 
   @Override
-  public boolean hasAnyNulls() {
-    if (obj1 == null) {
+  public boolean hasAnyNulls(boolean[] nullsafes) {
+    if (obj1 == null && (nullsafes == null || !nullsafes[0])) {
       return true;
     }
-    if (obj2 == null) {
+    if (obj2 == null && (nullsafes == null || !nullsafes[1])) {
       return true;
     }
     return false;

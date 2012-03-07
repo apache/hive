@@ -21,6 +21,7 @@ package org.apache.hadoop.hive.ql.exec;
 import java.io.IOException;
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.List;
 
 import org.apache.commons.logging.Log;
 import org.apache.hadoop.conf.Configuration;
@@ -31,6 +32,7 @@ import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.plan.JoinDesc;
 import org.apache.hadoop.hive.ql.plan.api.OperatorType;
 import org.apache.hadoop.hive.serde2.SerDeUtils;
+import org.apache.hadoop.hive.serde2.objectinspector.StandardStructObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.StructField;
 import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
 import org.apache.hadoop.io.LongWritable;
@@ -93,8 +95,7 @@ public class JoinOperator extends CommonJoinOperator<JoinDesc> implements
       StructObjectInspector soi = (StructObjectInspector) inputObjInspectors[tag];
       StructField sf = soi.getStructFieldRef(Utilities.ReduceField.KEY
           .toString());
-      Object keyObject = soi.getStructFieldData(row, sf);
-
+      List keyObject = (List) soi.getStructFieldData(row, sf);
       // Are we consuming too much memory
       if (alias == numAliases - 1 && !(handleSkewJoin && skewJoinKeyContext.currBigKeyTag >= 0)) {
         if (sz == joinEmitInterval) {
@@ -119,12 +120,14 @@ public class JoinOperator extends CommonJoinOperator<JoinDesc> implements
       }
 
       // Add the value to the vector
-      storage.get(alias).add(nr);
       // if join-key is null, process each row in different group.
-      if (SerDeUtils.hasAnyNullObject(keyObject, sf.getFieldObjectInspector())) {
+      StandardStructObjectInspector inspector =
+          (StandardStructObjectInspector) sf.getFieldObjectInspector();
+      if (SerDeUtils.hasAnyNullObject(keyObject, inspector, nullsafes)) {
         endGroup();
         startGroup();
       }
+      storage.get(alias).add(nr);
     } catch (Exception e) {
       e.printStackTrace();
       throw new HiveException(e);

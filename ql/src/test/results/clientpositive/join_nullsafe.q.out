@@ -1,0 +1,1590 @@
+PREHOOK: query: CREATE TABLE myinput1(key int, value int)
+PREHOOK: type: CREATETABLE
+POSTHOOK: query: CREATE TABLE myinput1(key int, value int)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: default@myinput1
+PREHOOK: query: LOAD DATA LOCAL INPATH '../data/files/in8.txt' INTO TABLE myinput1
+PREHOOK: type: LOAD
+PREHOOK: Output: default@myinput1
+POSTHOOK: query: LOAD DATA LOCAL INPATH '../data/files/in8.txt' INTO TABLE myinput1
+POSTHOOK: type: LOAD
+POSTHOOK: Output: default@myinput1
+PREHOOK: query: -- merging
+explain select * from myinput1 a join myinput1 b on a.key<=>b.value ORDER BY a.key, a.value, b.key, b.value
+PREHOOK: type: QUERY
+POSTHOOK: query: -- merging
+explain select * from myinput1 a join myinput1 b on a.key<=>b.value ORDER BY a.key, a.value, b.key, b.value
+POSTHOOK: type: QUERY
+ABSTRACT SYNTAX TREE:
+  (TOK_QUERY (TOK_FROM (TOK_JOIN (TOK_TABREF (TOK_TABNAME myinput1) a) (TOK_TABREF (TOK_TABNAME myinput1) b) (<=> (. (TOK_TABLE_OR_COL a) key) (. (TOK_TABLE_OR_COL b) value)))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR TOK_ALLCOLREF)) (TOK_ORDERBY (TOK_TABSORTCOLNAMEASC (. (TOK_TABLE_OR_COL a) key)) (TOK_TABSORTCOLNAMEASC (. (TOK_TABLE_OR_COL a) value)) (TOK_TABSORTCOLNAMEASC (. (TOK_TABLE_OR_COL b) key)) (TOK_TABSORTCOLNAMEASC (. (TOK_TABLE_OR_COL b) value)))))
+
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-2 depends on stages: Stage-1
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-1
+    Map Reduce
+      Alias -> Map Operator Tree:
+        a 
+          TableScan
+            alias: a
+            Reduce Output Operator
+              key expressions:
+                    expr: key
+                    type: int
+              sort order: +
+              Map-reduce partition columns:
+                    expr: key
+                    type: int
+              tag: 0
+              value expressions:
+                    expr: key
+                    type: int
+                    expr: value
+                    type: int
+        b 
+          TableScan
+            alias: b
+            Reduce Output Operator
+              key expressions:
+                    expr: value
+                    type: int
+              sort order: +
+              Map-reduce partition columns:
+                    expr: value
+                    type: int
+              tag: 1
+              value expressions:
+                    expr: key
+                    type: int
+                    expr: value
+                    type: int
+      Reduce Operator Tree:
+        Join Operator
+          condition map:
+               Inner Join 0 to 1
+          condition expressions:
+            0 {VALUE._col0} {VALUE._col1}
+            1 {VALUE._col0} {VALUE._col1}
+          handleSkewJoin: false
+          nullSafes: [true]
+          outputColumnNames: _col0, _col1, _col4, _col5
+          Select Operator
+            expressions:
+                  expr: _col0
+                  type: int
+                  expr: _col1
+                  type: int
+                  expr: _col4
+                  type: int
+                  expr: _col5
+                  type: int
+            outputColumnNames: _col0, _col1, _col2, _col3
+            File Output Operator
+              compressed: false
+              GlobalTableId: 0
+              table:
+                  input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+
+  Stage: Stage-2
+    Map Reduce
+      Alias -> Map Operator Tree:
+#### A masked pattern was here ####
+            Reduce Output Operator
+              key expressions:
+                    expr: _col0
+                    type: int
+                    expr: _col1
+                    type: int
+                    expr: _col2
+                    type: int
+                    expr: _col3
+                    type: int
+              sort order: ++++
+              tag: -1
+              value expressions:
+                    expr: _col0
+                    type: int
+                    expr: _col1
+                    type: int
+                    expr: _col2
+                    type: int
+                    expr: _col3
+                    type: int
+      Reduce Operator Tree:
+        Extract
+          File Output Operator
+            compressed: false
+            GlobalTableId: 0
+            table:
+                input format: org.apache.hadoop.mapred.TextInputFormat
+                output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+
+
+PREHOOK: query: select * from myinput1 a join myinput1 b on a.key<=>b.value ORDER BY a.key, a.value, b.key, b.value
+PREHOOK: type: QUERY
+PREHOOK: Input: default@myinput1
+#### A masked pattern was here ####
+POSTHOOK: query: select * from myinput1 a join myinput1 b on a.key<=>b.value ORDER BY a.key, a.value, b.key, b.value
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@myinput1
+#### A masked pattern was here ####
+NULL	NULL	NULL	NULL
+NULL	NULL	10	NULL
+NULL	NULL	48	NULL
+NULL	10	NULL	NULL
+NULL	10	10	NULL
+NULL	10	48	NULL
+NULL	35	NULL	NULL
+NULL	35	10	NULL
+NULL	35	48	NULL
+10	NULL	NULL	10
+100	100	100	100
+PREHOOK: query: explain select * from myinput1 a join myinput1 b on a.key<=>b.value join myinput1 c on a.key=c.key ORDER BY a.key, a.value, b.key, b.value, c.key, c.value
+PREHOOK: type: QUERY
+POSTHOOK: query: explain select * from myinput1 a join myinput1 b on a.key<=>b.value join myinput1 c on a.key=c.key ORDER BY a.key, a.value, b.key, b.value, c.key, c.value
+POSTHOOK: type: QUERY
+ABSTRACT SYNTAX TREE:
+  (TOK_QUERY (TOK_FROM (TOK_JOIN (TOK_JOIN (TOK_TABREF (TOK_TABNAME myinput1) a) (TOK_TABREF (TOK_TABNAME myinput1) b) (<=> (. (TOK_TABLE_OR_COL a) key) (. (TOK_TABLE_OR_COL b) value))) (TOK_TABREF (TOK_TABNAME myinput1) c) (= (. (TOK_TABLE_OR_COL a) key) (. (TOK_TABLE_OR_COL c) key)))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR TOK_ALLCOLREF)) (TOK_ORDERBY (TOK_TABSORTCOLNAMEASC (. (TOK_TABLE_OR_COL a) key)) (TOK_TABSORTCOLNAMEASC (. (TOK_TABLE_OR_COL a) value)) (TOK_TABSORTCOLNAMEASC (. (TOK_TABLE_OR_COL b) key)) (TOK_TABSORTCOLNAMEASC (. (TOK_TABLE_OR_COL b) value)) (TOK_TABSORTCOLNAMEASC (. (TOK_TABLE_OR_COL c) key)) (TOK_TABSORTCOLNAMEASC (. (TOK_TABLE_OR_COL c) value)))))
+
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-2 depends on stages: Stage-1
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-1
+    Map Reduce
+      Alias -> Map Operator Tree:
+        a 
+          TableScan
+            alias: a
+            Reduce Output Operator
+              key expressions:
+                    expr: key
+                    type: int
+              sort order: +
+              Map-reduce partition columns:
+                    expr: key
+                    type: int
+              tag: 0
+              value expressions:
+                    expr: key
+                    type: int
+                    expr: value
+                    type: int
+        b 
+          TableScan
+            alias: b
+            Reduce Output Operator
+              key expressions:
+                    expr: value
+                    type: int
+              sort order: +
+              Map-reduce partition columns:
+                    expr: value
+                    type: int
+              tag: 1
+              value expressions:
+                    expr: key
+                    type: int
+                    expr: value
+                    type: int
+        c 
+          TableScan
+            alias: c
+            Reduce Output Operator
+              key expressions:
+                    expr: key
+                    type: int
+              sort order: +
+              Map-reduce partition columns:
+                    expr: key
+                    type: int
+              tag: 2
+              value expressions:
+                    expr: key
+                    type: int
+                    expr: value
+                    type: int
+      Reduce Operator Tree:
+        Join Operator
+          condition map:
+               Inner Join 0 to 1
+               Inner Join 0 to 2
+          condition expressions:
+            0 {VALUE._col0} {VALUE._col1}
+            1 {VALUE._col0} {VALUE._col1}
+            2 {VALUE._col0} {VALUE._col1}
+          handleSkewJoin: false
+          outputColumnNames: _col0, _col1, _col4, _col5, _col8, _col9
+          Select Operator
+            expressions:
+                  expr: _col0
+                  type: int
+                  expr: _col1
+                  type: int
+                  expr: _col4
+                  type: int
+                  expr: _col5
+                  type: int
+                  expr: _col8
+                  type: int
+                  expr: _col9
+                  type: int
+            outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5
+            File Output Operator
+              compressed: false
+              GlobalTableId: 0
+              table:
+                  input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+
+  Stage: Stage-2
+    Map Reduce
+      Alias -> Map Operator Tree:
+#### A masked pattern was here ####
+            Reduce Output Operator
+              key expressions:
+                    expr: _col0
+                    type: int
+                    expr: _col1
+                    type: int
+                    expr: _col2
+                    type: int
+                    expr: _col3
+                    type: int
+                    expr: _col4
+                    type: int
+                    expr: _col5
+                    type: int
+              sort order: ++++++
+              tag: -1
+              value expressions:
+                    expr: _col0
+                    type: int
+                    expr: _col1
+                    type: int
+                    expr: _col2
+                    type: int
+                    expr: _col3
+                    type: int
+                    expr: _col4
+                    type: int
+                    expr: _col5
+                    type: int
+      Reduce Operator Tree:
+        Extract
+          File Output Operator
+            compressed: false
+            GlobalTableId: 0
+            table:
+                input format: org.apache.hadoop.mapred.TextInputFormat
+                output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+
+
+PREHOOK: query: select * from myinput1 a join myinput1 b on a.key<=>b.value join myinput1 c on a.key=c.key ORDER BY a.key, a.value, b.key, b.value, c.key, c.value
+PREHOOK: type: QUERY
+PREHOOK: Input: default@myinput1
+#### A masked pattern was here ####
+POSTHOOK: query: select * from myinput1 a join myinput1 b on a.key<=>b.value join myinput1 c on a.key=c.key ORDER BY a.key, a.value, b.key, b.value, c.key, c.value
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@myinput1
+#### A masked pattern was here ####
+10	NULL	NULL	10	10	NULL
+100	100	100	100	100	100
+PREHOOK: query: explain select * from myinput1 a join myinput1 b on a.key<=>b.value join myinput1 c on a.key<=>c.key ORDER BY a.key, a.value, b.key, b.value, c.key, c.value
+PREHOOK: type: QUERY
+POSTHOOK: query: explain select * from myinput1 a join myinput1 b on a.key<=>b.value join myinput1 c on a.key<=>c.key ORDER BY a.key, a.value, b.key, b.value, c.key, c.value
+POSTHOOK: type: QUERY
+ABSTRACT SYNTAX TREE:
+  (TOK_QUERY (TOK_FROM (TOK_JOIN (TOK_JOIN (TOK_TABREF (TOK_TABNAME myinput1) a) (TOK_TABREF (TOK_TABNAME myinput1) b) (<=> (. (TOK_TABLE_OR_COL a) key) (. (TOK_TABLE_OR_COL b) value))) (TOK_TABREF (TOK_TABNAME myinput1) c) (<=> (. (TOK_TABLE_OR_COL a) key) (. (TOK_TABLE_OR_COL c) key)))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR TOK_ALLCOLREF)) (TOK_ORDERBY (TOK_TABSORTCOLNAMEASC (. (TOK_TABLE_OR_COL a) key)) (TOK_TABSORTCOLNAMEASC (. (TOK_TABLE_OR_COL a) value)) (TOK_TABSORTCOLNAMEASC (. (TOK_TABLE_OR_COL b) key)) (TOK_TABSORTCOLNAMEASC (. (TOK_TABLE_OR_COL b) value)) (TOK_TABSORTCOLNAMEASC (. (TOK_TABLE_OR_COL c) key)) (TOK_TABSORTCOLNAMEASC (. (TOK_TABLE_OR_COL c) value)))))
+
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-2 depends on stages: Stage-1
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-1
+    Map Reduce
+      Alias -> Map Operator Tree:
+        a 
+          TableScan
+            alias: a
+            Reduce Output Operator
+              key expressions:
+                    expr: key
+                    type: int
+              sort order: +
+              Map-reduce partition columns:
+                    expr: key
+                    type: int
+              tag: 0
+              value expressions:
+                    expr: key
+                    type: int
+                    expr: value
+                    type: int
+        b 
+          TableScan
+            alias: b
+            Reduce Output Operator
+              key expressions:
+                    expr: value
+                    type: int
+              sort order: +
+              Map-reduce partition columns:
+                    expr: value
+                    type: int
+              tag: 1
+              value expressions:
+                    expr: key
+                    type: int
+                    expr: value
+                    type: int
+        c 
+          TableScan
+            alias: c
+            Reduce Output Operator
+              key expressions:
+                    expr: key
+                    type: int
+              sort order: +
+              Map-reduce partition columns:
+                    expr: key
+                    type: int
+              tag: 2
+              value expressions:
+                    expr: key
+                    type: int
+                    expr: value
+                    type: int
+      Reduce Operator Tree:
+        Join Operator
+          condition map:
+               Inner Join 0 to 1
+               Inner Join 0 to 2
+          condition expressions:
+            0 {VALUE._col0} {VALUE._col1}
+            1 {VALUE._col0} {VALUE._col1}
+            2 {VALUE._col0} {VALUE._col1}
+          handleSkewJoin: false
+          nullSafes: [true]
+          outputColumnNames: _col0, _col1, _col4, _col5, _col8, _col9
+          Select Operator
+            expressions:
+                  expr: _col0
+                  type: int
+                  expr: _col1
+                  type: int
+                  expr: _col4
+                  type: int
+                  expr: _col5
+                  type: int
+                  expr: _col8
+                  type: int
+                  expr: _col9
+                  type: int
+            outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5
+            File Output Operator
+              compressed: false
+              GlobalTableId: 0
+              table:
+                  input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+
+  Stage: Stage-2
+    Map Reduce
+      Alias -> Map Operator Tree:
+#### A masked pattern was here ####
+            Reduce Output Operator
+              key expressions:
+                    expr: _col0
+                    type: int
+                    expr: _col1
+                    type: int
+                    expr: _col2
+                    type: int
+                    expr: _col3
+                    type: int
+                    expr: _col4
+                    type: int
+                    expr: _col5
+                    type: int
+              sort order: ++++++
+              tag: -1
+              value expressions:
+                    expr: _col0
+                    type: int
+                    expr: _col1
+                    type: int
+                    expr: _col2
+                    type: int
+                    expr: _col3
+                    type: int
+                    expr: _col4
+                    type: int
+                    expr: _col5
+                    type: int
+      Reduce Operator Tree:
+        Extract
+          File Output Operator
+            compressed: false
+            GlobalTableId: 0
+            table:
+                input format: org.apache.hadoop.mapred.TextInputFormat
+                output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+
+
+PREHOOK: query: select * from myinput1 a join myinput1 b on a.key<=>b.value join myinput1 c on a.key<=>c.key ORDER BY a.key, a.value, b.key, b.value, c.key, c.value
+PREHOOK: type: QUERY
+PREHOOK: Input: default@myinput1
+#### A masked pattern was here ####
+POSTHOOK: query: select * from myinput1 a join myinput1 b on a.key<=>b.value join myinput1 c on a.key<=>c.key ORDER BY a.key, a.value, b.key, b.value, c.key, c.value
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@myinput1
+#### A masked pattern was here ####
+NULL	NULL	NULL	NULL	NULL	NULL
+NULL	NULL	NULL	NULL	NULL	10
+NULL	NULL	NULL	NULL	NULL	35
+NULL	NULL	10	NULL	NULL	NULL
+NULL	NULL	10	NULL	NULL	10
+NULL	NULL	10	NULL	NULL	35
+NULL	NULL	48	NULL	NULL	NULL
+NULL	NULL	48	NULL	NULL	10
+NULL	NULL	48	NULL	NULL	35
+NULL	10	NULL	NULL	NULL	NULL
+NULL	10	NULL	NULL	NULL	10
+NULL	10	NULL	NULL	NULL	35
+NULL	10	10	NULL	NULL	NULL
+NULL	10	10	NULL	NULL	10
+NULL	10	10	NULL	NULL	35
+NULL	10	48	NULL	NULL	NULL
+NULL	10	48	NULL	NULL	10
+NULL	10	48	NULL	NULL	35
+NULL	35	NULL	NULL	NULL	NULL
+NULL	35	NULL	NULL	NULL	10
+NULL	35	NULL	NULL	NULL	35
+NULL	35	10	NULL	NULL	NULL
+NULL	35	10	NULL	NULL	10
+NULL	35	10	NULL	NULL	35
+NULL	35	48	NULL	NULL	NULL
+NULL	35	48	NULL	NULL	10
+NULL	35	48	NULL	NULL	35
+10	NULL	NULL	10	10	NULL
+100	100	100	100	100	100
+PREHOOK: query: explain select * from myinput1 a join myinput1 b on a.key<=>b.value AND a.value=b.key join myinput1 c on a.key<=>c.key AND a.value=c.value ORDER BY a.key, a.value, b.key, b.value, c.key, c.value
+PREHOOK: type: QUERY
+POSTHOOK: query: explain select * from myinput1 a join myinput1 b on a.key<=>b.value AND a.value=b.key join myinput1 c on a.key<=>c.key AND a.value=c.value ORDER BY a.key, a.value, b.key, b.value, c.key, c.value
+POSTHOOK: type: QUERY
+ABSTRACT SYNTAX TREE:
+  (TOK_QUERY (TOK_FROM (TOK_JOIN (TOK_JOIN (TOK_TABREF (TOK_TABNAME myinput1) a) (TOK_TABREF (TOK_TABNAME myinput1) b) (AND (<=> (. (TOK_TABLE_OR_COL a) key) (. (TOK_TABLE_OR_COL b) value)) (= (. (TOK_TABLE_OR_COL a) value) (. (TOK_TABLE_OR_COL b) key)))) (TOK_TABREF (TOK_TABNAME myinput1) c) (AND (<=> (. (TOK_TABLE_OR_COL a) key) (. (TOK_TABLE_OR_COL c) key)) (= (. (TOK_TABLE_OR_COL a) value) (. (TOK_TABLE_OR_COL c) value))))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR TOK_ALLCOLREF)) (TOK_ORDERBY (TOK_TABSORTCOLNAMEASC (. (TOK_TABLE_OR_COL a) key)) (TOK_TABSORTCOLNAMEASC (. (TOK_TABLE_OR_COL a) value)) (TOK_TABSORTCOLNAMEASC (. (TOK_TABLE_OR_COL b) key)) (TOK_TABSORTCOLNAMEASC (. (TOK_TABLE_OR_COL b) value)) (TOK_TABSORTCOLNAMEASC (. (TOK_TABLE_OR_COL c) key)) (TOK_TABSORTCOLNAMEASC (. (TOK_TABLE_OR_COL c) value)))))
+
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-2 depends on stages: Stage-1
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-1
+    Map Reduce
+      Alias -> Map Operator Tree:
+        a 
+          TableScan
+            alias: a
+            Reduce Output Operator
+              key expressions:
+                    expr: key
+                    type: int
+                    expr: value
+                    type: int
+              sort order: ++
+              Map-reduce partition columns:
+                    expr: key
+                    type: int
+                    expr: value
+                    type: int
+              tag: 0
+              value expressions:
+                    expr: key
+                    type: int
+                    expr: value
+                    type: int
+        b 
+          TableScan
+            alias: b
+            Reduce Output Operator
+              key expressions:
+                    expr: value
+                    type: int
+                    expr: key
+                    type: int
+              sort order: ++
+              Map-reduce partition columns:
+                    expr: value
+                    type: int
+                    expr: key
+                    type: int
+              tag: 1
+              value expressions:
+                    expr: key
+                    type: int
+                    expr: value
+                    type: int
+        c 
+          TableScan
+            alias: c
+            Reduce Output Operator
+              key expressions:
+                    expr: key
+                    type: int
+                    expr: value
+                    type: int
+              sort order: ++
+              Map-reduce partition columns:
+                    expr: key
+                    type: int
+                    expr: value
+                    type: int
+              tag: 2
+              value expressions:
+                    expr: key
+                    type: int
+                    expr: value
+                    type: int
+      Reduce Operator Tree:
+        Join Operator
+          condition map:
+               Inner Join 0 to 1
+               Inner Join 0 to 2
+          condition expressions:
+            0 {VALUE._col0} {VALUE._col1}
+            1 {VALUE._col0} {VALUE._col1}
+            2 {VALUE._col0} {VALUE._col1}
+          handleSkewJoin: false
+          nullSafes: [true, false]
+          outputColumnNames: _col0, _col1, _col4, _col5, _col8, _col9
+          Select Operator
+            expressions:
+                  expr: _col0
+                  type: int
+                  expr: _col1
+                  type: int
+                  expr: _col4
+                  type: int
+                  expr: _col5
+                  type: int
+                  expr: _col8
+                  type: int
+                  expr: _col9
+                  type: int
+            outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5
+            File Output Operator
+              compressed: false
+              GlobalTableId: 0
+              table:
+                  input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+
+  Stage: Stage-2
+    Map Reduce
+      Alias -> Map Operator Tree:
+#### A masked pattern was here ####
+            Reduce Output Operator
+              key expressions:
+                    expr: _col0
+                    type: int
+                    expr: _col1
+                    type: int
+                    expr: _col2
+                    type: int
+                    expr: _col3
+                    type: int
+                    expr: _col4
+                    type: int
+                    expr: _col5
+                    type: int
+              sort order: ++++++
+              tag: -1
+              value expressions:
+                    expr: _col0
+                    type: int
+                    expr: _col1
+                    type: int
+                    expr: _col2
+                    type: int
+                    expr: _col3
+                    type: int
+                    expr: _col4
+                    type: int
+                    expr: _col5
+                    type: int
+      Reduce Operator Tree:
+        Extract
+          File Output Operator
+            compressed: false
+            GlobalTableId: 0
+            table:
+                input format: org.apache.hadoop.mapred.TextInputFormat
+                output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+
+
+PREHOOK: query: select * from myinput1 a join myinput1 b on a.key<=>b.value AND a.value=b.key join myinput1 c on a.key<=>c.key AND a.value=c.value ORDER BY a.key, a.value, b.key, b.value, c.key, c.value
+PREHOOK: type: QUERY
+PREHOOK: Input: default@myinput1
+#### A masked pattern was here ####
+POSTHOOK: query: select * from myinput1 a join myinput1 b on a.key<=>b.value AND a.value=b.key join myinput1 c on a.key<=>c.key AND a.value=c.value ORDER BY a.key, a.value, b.key, b.value, c.key, c.value
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@myinput1
+#### A masked pattern was here ####
+NULL	10	10	NULL	NULL	10
+100	100	100	100	100	100
+PREHOOK: query: explain select * from myinput1 a join myinput1 b on a.key<=>b.value AND a.value<=>b.key join myinput1 c on a.key<=>c.key AND a.value<=>c.value ORDER BY a.key, a.value, b.key, b.value, c.key, c.value
+PREHOOK: type: QUERY
+POSTHOOK: query: explain select * from myinput1 a join myinput1 b on a.key<=>b.value AND a.value<=>b.key join myinput1 c on a.key<=>c.key AND a.value<=>c.value ORDER BY a.key, a.value, b.key, b.value, c.key, c.value
+POSTHOOK: type: QUERY
+ABSTRACT SYNTAX TREE:
+  (TOK_QUERY (TOK_FROM (TOK_JOIN (TOK_JOIN (TOK_TABREF (TOK_TABNAME myinput1) a) (TOK_TABREF (TOK_TABNAME myinput1) b) (AND (<=> (. (TOK_TABLE_OR_COL a) key) (. (TOK_TABLE_OR_COL b) value)) (<=> (. (TOK_TABLE_OR_COL a) value) (. (TOK_TABLE_OR_COL b) key)))) (TOK_TABREF (TOK_TABNAME myinput1) c) (AND (<=> (. (TOK_TABLE_OR_COL a) key) (. (TOK_TABLE_OR_COL c) key)) (<=> (. (TOK_TABLE_OR_COL a) value) (. (TOK_TABLE_OR_COL c) value))))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR TOK_ALLCOLREF)) (TOK_ORDERBY (TOK_TABSORTCOLNAMEASC (. (TOK_TABLE_OR_COL a) key)) (TOK_TABSORTCOLNAMEASC (. (TOK_TABLE_OR_COL a) value)) (TOK_TABSORTCOLNAMEASC (. (TOK_TABLE_OR_COL b) key)) (TOK_TABSORTCOLNAMEASC (. (TOK_TABLE_OR_COL b) value)) (TOK_TABSORTCOLNAMEASC (. (TOK_TABLE_OR_COL c) key)) (TOK_TABSORTCOLNAMEASC (. (TOK_TABLE_OR_COL c) value)))))
+
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-2 depends on stages: Stage-1
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-1
+    Map Reduce
+      Alias -> Map Operator Tree:
+        a 
+          TableScan
+            alias: a
+            Reduce Output Operator
+              key expressions:
+                    expr: key
+                    type: int
+                    expr: value
+                    type: int
+              sort order: ++
+              Map-reduce partition columns:
+                    expr: key
+                    type: int
+                    expr: value
+                    type: int
+              tag: 0
+              value expressions:
+                    expr: key
+                    type: int
+                    expr: value
+                    type: int
+        b 
+          TableScan
+            alias: b
+            Reduce Output Operator
+              key expressions:
+                    expr: value
+                    type: int
+                    expr: key
+                    type: int
+              sort order: ++
+              Map-reduce partition columns:
+                    expr: value
+                    type: int
+                    expr: key
+                    type: int
+              tag: 1
+              value expressions:
+                    expr: key
+                    type: int
+                    expr: value
+                    type: int
+        c 
+          TableScan
+            alias: c
+            Reduce Output Operator
+              key expressions:
+                    expr: key
+                    type: int
+                    expr: value
+                    type: int
+              sort order: ++
+              Map-reduce partition columns:
+                    expr: key
+                    type: int
+                    expr: value
+                    type: int
+              tag: 2
+              value expressions:
+                    expr: key
+                    type: int
+                    expr: value
+                    type: int
+      Reduce Operator Tree:
+        Join Operator
+          condition map:
+               Inner Join 0 to 1
+               Inner Join 0 to 2
+          condition expressions:
+            0 {VALUE._col0} {VALUE._col1}
+            1 {VALUE._col0} {VALUE._col1}
+            2 {VALUE._col0} {VALUE._col1}
+          handleSkewJoin: false
+          nullSafes: [true, true]
+          outputColumnNames: _col0, _col1, _col4, _col5, _col8, _col9
+          Select Operator
+            expressions:
+                  expr: _col0
+                  type: int
+                  expr: _col1
+                  type: int
+                  expr: _col4
+                  type: int
+                  expr: _col5
+                  type: int
+                  expr: _col8
+                  type: int
+                  expr: _col9
+                  type: int
+            outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5
+            File Output Operator
+              compressed: false
+              GlobalTableId: 0
+              table:
+                  input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+
+  Stage: Stage-2
+    Map Reduce
+      Alias -> Map Operator Tree:
+#### A masked pattern was here ####
+            Reduce Output Operator
+              key expressions:
+                    expr: _col0
+                    type: int
+                    expr: _col1
+                    type: int
+                    expr: _col2
+                    type: int
+                    expr: _col3
+                    type: int
+                    expr: _col4
+                    type: int
+                    expr: _col5
+                    type: int
+              sort order: ++++++
+              tag: -1
+              value expressions:
+                    expr: _col0
+                    type: int
+                    expr: _col1
+                    type: int
+                    expr: _col2
+                    type: int
+                    expr: _col3
+                    type: int
+                    expr: _col4
+                    type: int
+                    expr: _col5
+                    type: int
+      Reduce Operator Tree:
+        Extract
+          File Output Operator
+            compressed: false
+            GlobalTableId: 0
+            table:
+                input format: org.apache.hadoop.mapred.TextInputFormat
+                output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+
+
+PREHOOK: query: select * from myinput1 a join myinput1 b on a.key<=>b.value AND a.value<=>b.key join myinput1 c on a.key<=>c.key AND a.value<=>c.value ORDER BY a.key, a.value, b.key, b.value, c.key, c.value
+PREHOOK: type: QUERY
+PREHOOK: Input: default@myinput1
+#### A masked pattern was here ####
+POSTHOOK: query: select * from myinput1 a join myinput1 b on a.key<=>b.value AND a.value<=>b.key join myinput1 c on a.key<=>c.key AND a.value<=>c.value ORDER BY a.key, a.value, b.key, b.value, c.key, c.value
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@myinput1
+#### A masked pattern was here ####
+NULL	NULL	NULL	NULL	NULL	NULL
+NULL	10	10	NULL	NULL	10
+10	NULL	NULL	10	10	NULL
+100	100	100	100	100	100
+PREHOOK: query: -- outer joins
+SELECT * FROM myinput1 a LEFT OUTER JOIN myinput1 b ON a.key<=>b.value ORDER BY a.key, a.value, b.key, b.value
+PREHOOK: type: QUERY
+PREHOOK: Input: default@myinput1
+#### A masked pattern was here ####
+POSTHOOK: query: -- outer joins
+SELECT * FROM myinput1 a LEFT OUTER JOIN myinput1 b ON a.key<=>b.value ORDER BY a.key, a.value, b.key, b.value
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@myinput1
+#### A masked pattern was here ####
+NULL	NULL	NULL	NULL
+NULL	NULL	10	NULL
+NULL	NULL	48	NULL
+NULL	10	NULL	NULL
+NULL	10	10	NULL
+NULL	10	48	NULL
+NULL	35	NULL	NULL
+NULL	35	10	NULL
+NULL	35	48	NULL
+10	NULL	NULL	10
+48	NULL	NULL	NULL
+100	100	100	100
+PREHOOK: query: SELECT * FROM myinput1 a RIGHT OUTER JOIN myinput1 b ON a.key<=>b.value ORDER BY a.key, a.value, b.key, b.value
+PREHOOK: type: QUERY
+PREHOOK: Input: default@myinput1
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT * FROM myinput1 a RIGHT OUTER JOIN myinput1 b ON a.key<=>b.value ORDER BY a.key, a.value, b.key, b.value
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@myinput1
+#### A masked pattern was here ####
+NULL	NULL	NULL	NULL
+NULL	NULL	NULL	35
+NULL	NULL	10	NULL
+NULL	NULL	48	NULL
+NULL	10	NULL	NULL
+NULL	10	10	NULL
+NULL	10	48	NULL
+NULL	35	NULL	NULL
+NULL	35	10	NULL
+NULL	35	48	NULL
+10	NULL	NULL	10
+100	100	100	100
+PREHOOK: query: SELECT * FROM myinput1 a FULL OUTER JOIN myinput1 b ON a.key<=>b.value ORDER BY a.key, a.value, b.key, b.value
+PREHOOK: type: QUERY
+PREHOOK: Input: default@myinput1
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT * FROM myinput1 a FULL OUTER JOIN myinput1 b ON a.key<=>b.value ORDER BY a.key, a.value, b.key, b.value
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@myinput1
+#### A masked pattern was here ####
+NULL	NULL	NULL	NULL
+NULL	NULL	NULL	35
+NULL	NULL	10	NULL
+NULL	NULL	48	NULL
+NULL	10	NULL	NULL
+NULL	10	10	NULL
+NULL	10	48	NULL
+NULL	35	NULL	NULL
+NULL	35	10	NULL
+NULL	35	48	NULL
+10	NULL	NULL	10
+48	NULL	NULL	NULL
+100	100	100	100
+PREHOOK: query: -- map joins
+SELECT /*+ MAPJOIN(a) */ * FROM myinput1 a JOIN myinput1 b ON a.key<=>b.value ORDER BY a.key, a.value, b.key, b.value
+PREHOOK: type: QUERY
+PREHOOK: Input: default@myinput1
+#### A masked pattern was here ####
+POSTHOOK: query: -- map joins
+SELECT /*+ MAPJOIN(a) */ * FROM myinput1 a JOIN myinput1 b ON a.key<=>b.value ORDER BY a.key, a.value, b.key, b.value
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@myinput1
+#### A masked pattern was here ####
+NULL	NULL	NULL	NULL
+NULL	NULL	10	NULL
+NULL	NULL	48	NULL
+NULL	10	NULL	NULL
+NULL	10	10	NULL
+NULL	10	48	NULL
+NULL	35	NULL	NULL
+NULL	35	10	NULL
+NULL	35	48	NULL
+10	NULL	NULL	10
+100	100	100	100
+PREHOOK: query: SELECT /*+ MAPJOIN(b) */ * FROM myinput1 a JOIN myinput1 b ON a.key<=>b.value ORDER BY a.key, a.value, b.key, b.value
+PREHOOK: type: QUERY
+PREHOOK: Input: default@myinput1
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT /*+ MAPJOIN(b) */ * FROM myinput1 a JOIN myinput1 b ON a.key<=>b.value ORDER BY a.key, a.value, b.key, b.value
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@myinput1
+#### A masked pattern was here ####
+NULL	NULL	NULL	NULL
+NULL	NULL	10	NULL
+NULL	NULL	48	NULL
+NULL	10	NULL	NULL
+NULL	10	10	NULL
+NULL	10	48	NULL
+NULL	35	NULL	NULL
+NULL	35	10	NULL
+NULL	35	48	NULL
+10	NULL	NULL	10
+100	100	100	100
+PREHOOK: query: -- smbs
+CREATE TABLE smb_input1(key int, value int) CLUSTERED BY (key) SORTED BY (key) INTO 2 BUCKETS
+PREHOOK: type: CREATETABLE
+POSTHOOK: query: -- smbs
+CREATE TABLE smb_input1(key int, value int) CLUSTERED BY (key) SORTED BY (key) INTO 2 BUCKETS
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: default@smb_input1
+PREHOOK: query: CREATE TABLE smb_input2(key int, value int) CLUSTERED BY (value) SORTED BY (value) INTO 2 BUCKETS
+PREHOOK: type: CREATETABLE
+POSTHOOK: query: CREATE TABLE smb_input2(key int, value int) CLUSTERED BY (value) SORTED BY (value) INTO 2 BUCKETS
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: default@smb_input2
+PREHOOK: query: LOAD DATA LOCAL INPATH '../data/files/in8.txt' into table smb_input1
+PREHOOK: type: LOAD
+PREHOOK: Output: default@smb_input1
+POSTHOOK: query: LOAD DATA LOCAL INPATH '../data/files/in8.txt' into table smb_input1
+POSTHOOK: type: LOAD
+POSTHOOK: Output: default@smb_input1
+PREHOOK: query: LOAD DATA LOCAL INPATH '../data/files/in9.txt' into table smb_input1
+PREHOOK: type: LOAD
+PREHOOK: Output: default@smb_input1
+POSTHOOK: query: LOAD DATA LOCAL INPATH '../data/files/in9.txt' into table smb_input1
+POSTHOOK: type: LOAD
+POSTHOOK: Output: default@smb_input1
+PREHOOK: query: LOAD DATA LOCAL INPATH '../data/files/in8.txt' into table smb_input2
+PREHOOK: type: LOAD
+PREHOOK: Output: default@smb_input2
+POSTHOOK: query: LOAD DATA LOCAL INPATH '../data/files/in8.txt' into table smb_input2
+POSTHOOK: type: LOAD
+POSTHOOK: Output: default@smb_input2
+PREHOOK: query: LOAD DATA LOCAL INPATH '../data/files/in9.txt' into table smb_input2
+PREHOOK: type: LOAD
+PREHOOK: Output: default@smb_input2
+POSTHOOK: query: LOAD DATA LOCAL INPATH '../data/files/in9.txt' into table smb_input2
+POSTHOOK: type: LOAD
+POSTHOOK: Output: default@smb_input2
+PREHOOK: query: SELECT /*+ MAPJOIN(a) */ * FROM smb_input1 a JOIN smb_input1 b ON a.key <=> b.key ORDER BY a.key, a.value, b.key, b.value
+PREHOOK: type: QUERY
+PREHOOK: Input: default@smb_input1
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT /*+ MAPJOIN(a) */ * FROM smb_input1 a JOIN smb_input1 b ON a.key <=> b.key ORDER BY a.key, a.value, b.key, b.value
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@smb_input1
+#### A masked pattern was here ####
+NULL	NULL	NULL	NULL
+NULL	NULL	NULL	NULL
+NULL	NULL	NULL	NULL
+NULL	NULL	NULL	NULL
+NULL	NULL	NULL	10
+NULL	NULL	NULL	10
+NULL	NULL	NULL	35
+NULL	NULL	NULL	35
+NULL	NULL	NULL	110
+NULL	NULL	NULL	110
+NULL	NULL	NULL	135
+NULL	NULL	NULL	135
+NULL	10	NULL	NULL
+NULL	10	NULL	NULL
+NULL	10	NULL	10
+NULL	10	NULL	35
+NULL	10	NULL	110
+NULL	10	NULL	135
+NULL	35	NULL	NULL
+NULL	35	NULL	NULL
+NULL	35	NULL	10
+NULL	35	NULL	35
+NULL	35	NULL	110
+NULL	35	NULL	135
+NULL	110	NULL	NULL
+NULL	110	NULL	NULL
+NULL	110	NULL	10
+NULL	110	NULL	35
+NULL	110	NULL	110
+NULL	110	NULL	135
+NULL	135	NULL	NULL
+NULL	135	NULL	NULL
+NULL	135	NULL	10
+NULL	135	NULL	35
+NULL	135	NULL	110
+NULL	135	NULL	135
+10	NULL	10	NULL
+48	NULL	48	NULL
+100	100	100	100
+110	NULL	110	NULL
+148	NULL	148	NULL
+200	200	200	200
+PREHOOK: query: SELECT /*+ MAPJOIN(a) */ * FROM smb_input1 a JOIN smb_input1 b ON a.key <=> b.key AND a.value <=> b.value ORDER BY a.key, a.value, b.key, b.value
+PREHOOK: type: QUERY
+PREHOOK: Input: default@smb_input1
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT /*+ MAPJOIN(a) */ * FROM smb_input1 a JOIN smb_input1 b ON a.key <=> b.key AND a.value <=> b.value ORDER BY a.key, a.value, b.key, b.value
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@smb_input1
+#### A masked pattern was here ####
+NULL	NULL	NULL	NULL
+NULL	NULL	NULL	NULL
+NULL	NULL	NULL	NULL
+NULL	NULL	NULL	NULL
+100	100	100	100
+200	200	200	200
+PREHOOK: query: SELECT /*+ MAPJOIN(a) */ * FROM smb_input1 a RIGHT OUTER JOIN smb_input1 b ON a.key <=> b.key ORDER BY a.key, a.value, b.key, b.value
+PREHOOK: type: QUERY
+PREHOOK: Input: default@smb_input1
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT /*+ MAPJOIN(a) */ * FROM smb_input1 a RIGHT OUTER JOIN smb_input1 b ON a.key <=> b.key ORDER BY a.key, a.value, b.key, b.value
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@smb_input1
+#### A masked pattern was here ####
+NULL	NULL	NULL	NULL
+NULL	NULL	NULL	NULL
+NULL	NULL	NULL	NULL
+NULL	NULL	NULL	NULL
+NULL	NULL	NULL	10
+NULL	NULL	NULL	10
+NULL	NULL	NULL	35
+NULL	NULL	NULL	35
+NULL	NULL	NULL	110
+NULL	NULL	NULL	110
+NULL	NULL	NULL	135
+NULL	NULL	NULL	135
+NULL	10	NULL	NULL
+NULL	10	NULL	NULL
+NULL	10	NULL	10
+NULL	10	NULL	35
+NULL	10	NULL	110
+NULL	10	NULL	135
+NULL	35	NULL	NULL
+NULL	35	NULL	NULL
+NULL	35	NULL	10
+NULL	35	NULL	35
+NULL	35	NULL	110
+NULL	35	NULL	135
+NULL	110	NULL	NULL
+NULL	110	NULL	NULL
+NULL	110	NULL	10
+NULL	110	NULL	35
+NULL	110	NULL	110
+NULL	110	NULL	135
+NULL	135	NULL	NULL
+NULL	135	NULL	NULL
+NULL	135	NULL	10
+NULL	135	NULL	35
+NULL	135	NULL	110
+NULL	135	NULL	135
+10	NULL	10	NULL
+48	NULL	48	NULL
+100	100	100	100
+110	NULL	110	NULL
+148	NULL	148	NULL
+200	200	200	200
+PREHOOK: query: SELECT /*+ MAPJOIN(b) */ * FROM smb_input1 a JOIN smb_input1 b ON a.key <=> b.key ORDER BY a.key, a.value, b.key, b.value
+PREHOOK: type: QUERY
+PREHOOK: Input: default@smb_input1
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT /*+ MAPJOIN(b) */ * FROM smb_input1 a JOIN smb_input1 b ON a.key <=> b.key ORDER BY a.key, a.value, b.key, b.value
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@smb_input1
+#### A masked pattern was here ####
+NULL	NULL	NULL	NULL
+NULL	NULL	NULL	NULL
+NULL	NULL	NULL	NULL
+NULL	NULL	NULL	NULL
+NULL	NULL	NULL	10
+NULL	NULL	NULL	10
+NULL	NULL	NULL	35
+NULL	NULL	NULL	35
+NULL	NULL	NULL	110
+NULL	NULL	NULL	110
+NULL	NULL	NULL	135
+NULL	NULL	NULL	135
+NULL	10	NULL	NULL
+NULL	10	NULL	NULL
+NULL	10	NULL	10
+NULL	10	NULL	35
+NULL	10	NULL	110
+NULL	10	NULL	135
+NULL	35	NULL	NULL
+NULL	35	NULL	NULL
+NULL	35	NULL	10
+NULL	35	NULL	35
+NULL	35	NULL	110
+NULL	35	NULL	135
+NULL	110	NULL	NULL
+NULL	110	NULL	NULL
+NULL	110	NULL	10
+NULL	110	NULL	35
+NULL	110	NULL	110
+NULL	110	NULL	135
+NULL	135	NULL	NULL
+NULL	135	NULL	NULL
+NULL	135	NULL	10
+NULL	135	NULL	35
+NULL	135	NULL	110
+NULL	135	NULL	135
+10	NULL	10	NULL
+48	NULL	48	NULL
+100	100	100	100
+110	NULL	110	NULL
+148	NULL	148	NULL
+200	200	200	200
+PREHOOK: query: SELECT /*+ MAPJOIN(b) */ * FROM smb_input1 a LEFT OUTER JOIN smb_input1 b ON a.key <=> b.key ORDER BY a.key, a.value, b.key, b.value
+PREHOOK: type: QUERY
+PREHOOK: Input: default@smb_input1
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT /*+ MAPJOIN(b) */ * FROM smb_input1 a LEFT OUTER JOIN smb_input1 b ON a.key <=> b.key ORDER BY a.key, a.value, b.key, b.value
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@smb_input1
+#### A masked pattern was here ####
+NULL	NULL	NULL	NULL
+NULL	NULL	NULL	NULL
+NULL	NULL	NULL	NULL
+NULL	NULL	NULL	NULL
+NULL	NULL	NULL	10
+NULL	NULL	NULL	10
+NULL	NULL	NULL	35
+NULL	NULL	NULL	35
+NULL	NULL	NULL	110
+NULL	NULL	NULL	110
+NULL	NULL	NULL	135
+NULL	NULL	NULL	135
+NULL	10	NULL	NULL
+NULL	10	NULL	NULL
+NULL	10	NULL	10
+NULL	10	NULL	35
+NULL	10	NULL	110
+NULL	10	NULL	135
+NULL	35	NULL	NULL
+NULL	35	NULL	NULL
+NULL	35	NULL	10
+NULL	35	NULL	35
+NULL	35	NULL	110
+NULL	35	NULL	135
+NULL	110	NULL	NULL
+NULL	110	NULL	NULL
+NULL	110	NULL	10
+NULL	110	NULL	35
+NULL	110	NULL	110
+NULL	110	NULL	135
+NULL	135	NULL	NULL
+NULL	135	NULL	NULL
+NULL	135	NULL	10
+NULL	135	NULL	35
+NULL	135	NULL	110
+NULL	135	NULL	135
+10	NULL	10	NULL
+48	NULL	48	NULL
+100	100	100	100
+110	NULL	110	NULL
+148	NULL	148	NULL
+200	200	200	200
+PREHOOK: query: SELECT /*+ MAPJOIN(a) */ * FROM smb_input1 a JOIN smb_input2 b ON a.key <=> b.value ORDER BY a.key, a.value, b.key, b.value
+PREHOOK: type: QUERY
+PREHOOK: Input: default@smb_input1
+PREHOOK: Input: default@smb_input2
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT /*+ MAPJOIN(a) */ * FROM smb_input1 a JOIN smb_input2 b ON a.key <=> b.value ORDER BY a.key, a.value, b.key, b.value
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@smb_input1
+POSTHOOK: Input: default@smb_input2
+#### A masked pattern was here ####
+NULL	NULL	NULL	NULL
+NULL	NULL	NULL	NULL
+NULL	NULL	NULL	NULL
+NULL	NULL	NULL	NULL
+NULL	NULL	10	NULL
+NULL	NULL	10	NULL
+NULL	NULL	48	NULL
+NULL	NULL	48	NULL
+NULL	NULL	110	NULL
+NULL	NULL	110	NULL
+NULL	NULL	148	NULL
+NULL	NULL	148	NULL
+NULL	10	NULL	NULL
+NULL	10	NULL	NULL
+NULL	10	10	NULL
+NULL	10	48	NULL
+NULL	10	110	NULL
+NULL	10	148	NULL
+NULL	35	NULL	NULL
+NULL	35	NULL	NULL
+NULL	35	10	NULL
+NULL	35	48	NULL
+NULL	35	110	NULL
+NULL	35	148	NULL
+NULL	110	NULL	NULL
+NULL	110	NULL	NULL
+NULL	110	10	NULL
+NULL	110	48	NULL
+NULL	110	110	NULL
+NULL	110	148	NULL
+NULL	135	NULL	NULL
+NULL	135	NULL	NULL
+NULL	135	10	NULL
+NULL	135	48	NULL
+NULL	135	110	NULL
+NULL	135	148	NULL
+10	NULL	NULL	10
+100	100	100	100
+110	NULL	NULL	110
+200	200	200	200
+PREHOOK: query: SELECT /*+ MAPJOIN(b) */ * FROM smb_input1 a JOIN smb_input2 b ON a.key <=> b.value ORDER BY a.key, a.value, b.key, b.value
+PREHOOK: type: QUERY
+PREHOOK: Input: default@smb_input1
+PREHOOK: Input: default@smb_input2
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT /*+ MAPJOIN(b) */ * FROM smb_input1 a JOIN smb_input2 b ON a.key <=> b.value ORDER BY a.key, a.value, b.key, b.value
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@smb_input1
+POSTHOOK: Input: default@smb_input2
+#### A masked pattern was here ####
+NULL	NULL	NULL	NULL
+NULL	NULL	NULL	NULL
+NULL	NULL	NULL	NULL
+NULL	NULL	NULL	NULL
+NULL	NULL	10	NULL
+NULL	NULL	10	NULL
+NULL	NULL	48	NULL
+NULL	NULL	48	NULL
+NULL	NULL	110	NULL
+NULL	NULL	110	NULL
+NULL	NULL	148	NULL
+NULL	NULL	148	NULL
+NULL	10	NULL	NULL
+NULL	10	NULL	NULL
+NULL	10	10	NULL
+NULL	10	48	NULL
+NULL	10	110	NULL
+NULL	10	148	NULL
+NULL	35	NULL	NULL
+NULL	35	NULL	NULL
+NULL	35	10	NULL
+NULL	35	48	NULL
+NULL	35	110	NULL
+NULL	35	148	NULL
+NULL	110	NULL	NULL
+NULL	110	NULL	NULL
+NULL	110	10	NULL
+NULL	110	48	NULL
+NULL	110	110	NULL
+NULL	110	148	NULL
+NULL	135	NULL	NULL
+NULL	135	NULL	NULL
+NULL	135	10	NULL
+NULL	135	48	NULL
+NULL	135	110	NULL
+NULL	135	148	NULL
+10	NULL	NULL	10
+100	100	100	100
+110	NULL	NULL	110
+200	200	200	200
+PREHOOK: query: SELECT /*+ MAPJOIN(b) */ * FROM smb_input1 a LEFT OUTER JOIN smb_input2 b ON a.key <=> b.value ORDER BY a.key, a.value, b.key, b.value
+PREHOOK: type: QUERY
+PREHOOK: Input: default@smb_input1
+PREHOOK: Input: default@smb_input2
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT /*+ MAPJOIN(b) */ * FROM smb_input1 a LEFT OUTER JOIN smb_input2 b ON a.key <=> b.value ORDER BY a.key, a.value, b.key, b.value
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@smb_input1
+POSTHOOK: Input: default@smb_input2
+#### A masked pattern was here ####
+NULL	NULL	NULL	NULL
+NULL	NULL	NULL	NULL
+NULL	NULL	NULL	NULL
+NULL	NULL	NULL	NULL
+NULL	NULL	10	NULL
+NULL	NULL	10	NULL
+NULL	NULL	48	NULL
+NULL	NULL	48	NULL
+NULL	NULL	110	NULL
+NULL	NULL	110	NULL
+NULL	NULL	148	NULL
+NULL	NULL	148	NULL
+NULL	10	NULL	NULL
+NULL	10	NULL	NULL
+NULL	10	10	NULL
+NULL	10	48	NULL
+NULL	10	110	NULL
+NULL	10	148	NULL
+NULL	35	NULL	NULL
+NULL	35	NULL	NULL
+NULL	35	10	NULL
+NULL	35	48	NULL
+NULL	35	110	NULL
+NULL	35	148	NULL
+NULL	110	NULL	NULL
+NULL	110	NULL	NULL
+NULL	110	10	NULL
+NULL	110	48	NULL
+NULL	110	110	NULL
+NULL	110	148	NULL
+NULL	135	NULL	NULL
+NULL	135	NULL	NULL
+NULL	135	10	NULL
+NULL	135	48	NULL
+NULL	135	110	NULL
+NULL	135	148	NULL
+10	NULL	NULL	10
+48	NULL	NULL	NULL
+100	100	100	100
+110	NULL	NULL	110
+148	NULL	NULL	NULL
+200	200	200	200
+PREHOOK: query: SELECT /*+ MAPJOIN(a) */ * FROM smb_input1 a RIGHT OUTER JOIN smb_input2 b ON a.key <=> b.value ORDER BY a.key, a.value, b.key, b.value
+PREHOOK: type: QUERY
+PREHOOK: Input: default@smb_input1
+PREHOOK: Input: default@smb_input2
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT /*+ MAPJOIN(a) */ * FROM smb_input1 a RIGHT OUTER JOIN smb_input2 b ON a.key <=> b.value ORDER BY a.key, a.value, b.key, b.value
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@smb_input1
+POSTHOOK: Input: default@smb_input2
+#### A masked pattern was here ####
+NULL	NULL	NULL	NULL
+NULL	NULL	NULL	NULL
+NULL	NULL	NULL	NULL
+NULL	NULL	NULL	NULL
+NULL	NULL	NULL	35
+NULL	NULL	NULL	135
+NULL	NULL	10	NULL
+NULL	NULL	10	NULL
+NULL	NULL	48	NULL
+NULL	NULL	48	NULL
+NULL	NULL	110	NULL
+NULL	NULL	110	NULL
+NULL	NULL	148	NULL
+NULL	NULL	148	NULL
+NULL	10	NULL	NULL
+NULL	10	NULL	NULL
+NULL	10	10	NULL
+NULL	10	48	NULL
+NULL	10	110	NULL
+NULL	10	148	NULL
+NULL	35	NULL	NULL
+NULL	35	NULL	NULL
+NULL	35	10	NULL
+NULL	35	48	NULL
+NULL	35	110	NULL
+NULL	35	148	NULL
+NULL	110	NULL	NULL
+NULL	110	NULL	NULL
+NULL	110	10	NULL
+NULL	110	48	NULL
+NULL	110	110	NULL
+NULL	110	148	NULL
+NULL	135	NULL	NULL
+NULL	135	NULL	NULL
+NULL	135	10	NULL
+NULL	135	48	NULL
+NULL	135	110	NULL
+NULL	135	148	NULL
+10	NULL	NULL	10
+100	100	100	100
+110	NULL	NULL	110
+200	200	200	200
+PREHOOK: query: SELECT /*+ MAPJOIN(a) */ * FROM smb_input2 a JOIN smb_input2 b ON a.value <=> b.value ORDER BY a.key, a.value, b.key, b.value
+PREHOOK: type: QUERY
+PREHOOK: Input: default@smb_input2
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT /*+ MAPJOIN(a) */ * FROM smb_input2 a JOIN smb_input2 b ON a.value <=> b.value ORDER BY a.key, a.value, b.key, b.value
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@smb_input2
+#### A masked pattern was here ####
+NULL	NULL	NULL	NULL
+NULL	NULL	NULL	NULL
+NULL	NULL	NULL	NULL
+NULL	NULL	NULL	NULL
+NULL	NULL	10	NULL
+NULL	NULL	10	NULL
+NULL	NULL	48	NULL
+NULL	NULL	48	NULL
+NULL	NULL	110	NULL
+NULL	NULL	110	NULL
+NULL	NULL	148	NULL
+NULL	NULL	148	NULL
+NULL	10	NULL	10
+NULL	35	NULL	35
+NULL	110	NULL	110
+NULL	135	NULL	135
+10	NULL	NULL	NULL
+10	NULL	NULL	NULL
+10	NULL	10	NULL
+10	NULL	48	NULL
+10	NULL	110	NULL
+10	NULL	148	NULL
+48	NULL	NULL	NULL
+48	NULL	NULL	NULL
+48	NULL	10	NULL
+48	NULL	48	NULL
+48	NULL	110	NULL
+48	NULL	148	NULL
+100	100	100	100
+110	NULL	NULL	NULL
+110	NULL	NULL	NULL
+110	NULL	10	NULL
+110	NULL	48	NULL
+110	NULL	110	NULL
+110	NULL	148	NULL
+148	NULL	NULL	NULL
+148	NULL	NULL	NULL
+148	NULL	10	NULL
+148	NULL	48	NULL
+148	NULL	110	NULL
+148	NULL	148	NULL
+200	200	200	200
+PREHOOK: query: SELECT /*+ MAPJOIN(a) */ * FROM smb_input2 a RIGHT OUTER JOIN smb_input2 b ON a.value <=> b.value ORDER BY a.key, a.value, b.key, b.value
+PREHOOK: type: QUERY
+PREHOOK: Input: default@smb_input2
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT /*+ MAPJOIN(a) */ * FROM smb_input2 a RIGHT OUTER JOIN smb_input2 b ON a.value <=> b.value ORDER BY a.key, a.value, b.key, b.value
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@smb_input2
+#### A masked pattern was here ####
+NULL	NULL	NULL	NULL
+NULL	NULL	NULL	NULL
+NULL	NULL	NULL	NULL
+NULL	NULL	NULL	NULL
+NULL	NULL	10	NULL
+NULL	NULL	10	NULL
+NULL	NULL	48	NULL
+NULL	NULL	48	NULL
+NULL	NULL	110	NULL
+NULL	NULL	110	NULL
+NULL	NULL	148	NULL
+NULL	NULL	148	NULL
+NULL	10	NULL	10
+NULL	35	NULL	35
+NULL	110	NULL	110
+NULL	135	NULL	135
+10	NULL	NULL	NULL
+10	NULL	NULL	NULL
+10	NULL	10	NULL
+10	NULL	48	NULL
+10	NULL	110	NULL
+10	NULL	148	NULL
+48	NULL	NULL	NULL
+48	NULL	NULL	NULL
+48	NULL	10	NULL
+48	NULL	48	NULL
+48	NULL	110	NULL
+48	NULL	148	NULL
+100	100	100	100
+110	NULL	NULL	NULL
+110	NULL	NULL	NULL
+110	NULL	10	NULL
+110	NULL	48	NULL
+110	NULL	110	NULL
+110	NULL	148	NULL
+148	NULL	NULL	NULL
+148	NULL	NULL	NULL
+148	NULL	10	NULL
+148	NULL	48	NULL
+148	NULL	110	NULL
+148	NULL	148	NULL
+200	200	200	200
+PREHOOK: query: SELECT /*+ MAPJOIN(b) */ * FROM smb_input2 a JOIN smb_input2 b ON a.value <=> b.value ORDER BY a.key, a.value, b.key, b.value
+PREHOOK: type: QUERY
+PREHOOK: Input: default@smb_input2
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT /*+ MAPJOIN(b) */ * FROM smb_input2 a JOIN smb_input2 b ON a.value <=> b.value ORDER BY a.key, a.value, b.key, b.value
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@smb_input2
+#### A masked pattern was here ####
+NULL	NULL	NULL	NULL
+NULL	NULL	NULL	NULL
+NULL	NULL	NULL	NULL
+NULL	NULL	NULL	NULL
+NULL	NULL	10	NULL
+NULL	NULL	10	NULL
+NULL	NULL	48	NULL
+NULL	NULL	48	NULL
+NULL	NULL	110	NULL
+NULL	NULL	110	NULL
+NULL	NULL	148	NULL
+NULL	NULL	148	NULL
+NULL	10	NULL	10
+NULL	35	NULL	35
+NULL	110	NULL	110
+NULL	135	NULL	135
+10	NULL	NULL	NULL
+10	NULL	NULL	NULL
+10	NULL	10	NULL
+10	NULL	48	NULL
+10	NULL	110	NULL
+10	NULL	148	NULL
+48	NULL	NULL	NULL
+48	NULL	NULL	NULL
+48	NULL	10	NULL
+48	NULL	48	NULL
+48	NULL	110	NULL
+48	NULL	148	NULL
+100	100	100	100
+110	NULL	NULL	NULL
+110	NULL	NULL	NULL
+110	NULL	10	NULL
+110	NULL	48	NULL
+110	NULL	110	NULL
+110	NULL	148	NULL
+148	NULL	NULL	NULL
+148	NULL	NULL	NULL
+148	NULL	10	NULL
+148	NULL	48	NULL
+148	NULL	110	NULL
+148	NULL	148	NULL
+200	200	200	200
+PREHOOK: query: SELECT /*+ MAPJOIN(b) */ * FROM smb_input2 a LEFT OUTER JOIN smb_input2 b ON a.value <=> b.value ORDER BY a.key, a.value, b.key, b.value
+PREHOOK: type: QUERY
+PREHOOK: Input: default@smb_input2
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT /*+ MAPJOIN(b) */ * FROM smb_input2 a LEFT OUTER JOIN smb_input2 b ON a.value <=> b.value ORDER BY a.key, a.value, b.key, b.value
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@smb_input2
+#### A masked pattern was here ####
+NULL	NULL	NULL	NULL
+NULL	NULL	NULL	NULL
+NULL	NULL	NULL	NULL
+NULL	NULL	NULL	NULL
+NULL	NULL	10	NULL
+NULL	NULL	10	NULL
+NULL	NULL	48	NULL
+NULL	NULL	48	NULL
+NULL	NULL	110	NULL
+NULL	NULL	110	NULL
+NULL	NULL	148	NULL
+NULL	NULL	148	NULL
+NULL	10	NULL	10
+NULL	35	NULL	35
+NULL	110	NULL	110
+NULL	135	NULL	135
+10	NULL	NULL	NULL
+10	NULL	NULL	NULL
+10	NULL	10	NULL
+10	NULL	48	NULL
+10	NULL	110	NULL
+10	NULL	148	NULL
+48	NULL	NULL	NULL
+48	NULL	NULL	NULL
+48	NULL	10	NULL
+48	NULL	48	NULL
+48	NULL	110	NULL
+48	NULL	148	NULL
+100	100	100	100
+110	NULL	NULL	NULL
+110	NULL	NULL	NULL
+110	NULL	10	NULL
+110	NULL	48	NULL
+110	NULL	110	NULL
+110	NULL	148	NULL
+148	NULL	NULL	NULL
+148	NULL	NULL	NULL
+148	NULL	10	NULL
+148	NULL	48	NULL
+148	NULL	110	NULL
+148	NULL	148	NULL
+200	200	200	200

@@ -3140,8 +3140,11 @@
            <object class="java.util.ArrayList"/> 
           </void> 
          </object> 
-        </void> 
-        <void property="outputColumnNames"> 
+        </void>
+        <void property="nullSafes">
+         <array class="boolean" length="1"/>
+        </void>
+        <void property="outputColumnNames">
          <object class="java.util.ArrayList"> 
           <void method="add"> 
            <string>_col0</string> 

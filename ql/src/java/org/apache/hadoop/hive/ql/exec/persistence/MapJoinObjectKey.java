@@ -148,10 +148,10 @@ public class MapJoinObjectKey  extends AbstractMapJoinKey {
   }
 
   @Override
-  public boolean hasAnyNulls(){
+  public boolean hasAnyNulls(boolean[] nullsafes){
     if (obj != null && obj.length> 0) {
-      for (Object k : obj) {
-        if (k == null) {
+      for (int i = 0; i < obj.length; i++) {
+        if (obj[i] == null && (nullsafes == null || !nullsafes[i])) {
           return true;
         }
       }

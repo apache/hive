@@ -47,6 +47,9 @@ public class QBJoinTree implements Serializable{
   // join conditions
   private ArrayList<ArrayList<ASTNode>> expressions;
 
+  // key index to nullsafe join flag
+  private ArrayList<Boolean> nullsafes;
+
   // filters
   private ArrayList<ArrayList<ASTNode>> filters;
 
@@ -293,5 +296,13 @@ public class QBJoinTree implements Serializable{
         value.addAll(e.getValue());
       }
     }
+  }
+
+  public ArrayList<Boolean> getNullSafes() {
+    return nullsafes;
+  }
+
+  public void setNullSafes(ArrayList<Boolean> nullSafes) {
+    this.nullsafes = nullSafes;
   }
 }

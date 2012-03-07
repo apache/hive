@@ -43,6 +43,6 @@ public abstract class AbstractMapJoinKey implements Externalizable {
 
   public abstract void writeExternal(ObjectOutput out) throws IOException;
 
-  public abstract boolean hasAnyNulls();
+  public abstract boolean hasAnyNulls(boolean[] nullsafes);
 
 }
