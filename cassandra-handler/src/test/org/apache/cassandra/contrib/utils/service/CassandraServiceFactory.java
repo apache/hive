@@ -38,8 +38,8 @@ public class CassandraServiceFactory {
   }
 
 
-  public Object getEmbeddedCassandraService() throws ClassNotFoundException, InstantiationException, IllegalAccessException
+  public CassandraEmbeddedTestSetup getEmbeddedCassandraService() throws ClassNotFoundException, InstantiationException, IllegalAccessException
   {
-    return Class.forName(CassandraEmbeddedTestSetup.class.getName(), true, urlClassLoader).newInstance();
+    return (CassandraEmbeddedTestSetup) Class.forName(CassandraEmbeddedTestSetup.class.getName(), true, urlClassLoader).newInstance();
   }
 }

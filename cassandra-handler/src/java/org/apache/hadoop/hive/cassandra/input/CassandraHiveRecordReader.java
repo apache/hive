@@ -112,63 +112,74 @@ public class CassandraHiveRecordReader extends RecordReader<BytesWritable, MapWr
     // In the case that we are transposing we create a fixed set of columns
     // per cassandra column
     if (isTransposed) {
-      if (columnIterator == null || !columnIterator.hasNext()) {
-        next = cfrr.nextKeyValue();
+      // This loop is exited almost every time with the break at the end,
+      // see DSP-465 note below
+      while (true) {
+        if (columnIterator == null || !columnIterator.hasNext()) {
+          next = cfrr.nextKeyValue();
+          if (next) {
+            columnIterator = cfrr.getCurrentValue().entrySet().iterator();
+            subColumnIterator = null;
+            currentEntry = null;
+          } else {
+            //More sub columns for super columns.
+            if (subColumnIterator != null && subColumnIterator.hasNext()) {
+              next = true;
+            }
+          }
+        } else {
+          next = true;
+        }
+
         if (next) {
-          columnIterator = cfrr.getCurrentValue().entrySet().iterator();
-          subColumnIterator = null;
-          currentEntry = null;
-        } else {
-          //More sub columns for super columns.
-          if (subColumnIterator != null && subColumnIterator.hasNext()) {
-            next = true;
-          }
-        }
-      } else {
-        next = true;
-      }
+          currentKey = convertByteBuffer(cfrr.getCurrentKey());
+          currentValue.clear();
+          Map.Entry<ByteBuffer, IColumn> entry = currentEntry;
 
-      if (next) {
-        currentKey = convertByteBuffer(cfrr.getCurrentKey());
-
-        currentValue.clear();
-        Map.Entry<ByteBuffer, IColumn> entry = currentEntry;
-        if (subColumnIterator == null || !subColumnIterator.hasNext()) {
-          entry = columnIterator.next();
-          currentEntry = entry;
-          subColumnIterator = null;
-        }
-
-        //is this a super column
-        boolean superColumn = entry.getValue() instanceof SuperColumn;
-
-        // rowKey
-        currentValue.put(keyColumn, currentKey);
-
-        // column name
-        currentValue.put(columnColumn, convertByteBuffer(currentEntry.getValue().name()));
-
-        // SubColumn?
-        if (superColumn) {
-          if (subColumnIterator == null) {
-            subColumnIterator = ((SuperColumn) entry.getValue()).getSubColumns().iterator();
+          if (subColumnIterator == null || !subColumnIterator.hasNext()) {
+            // DSP-465: detect range ghosts and skip this
+            if (columnIterator.hasNext()) {
+              entry = columnIterator.next();
+              currentEntry = entry;
+              subColumnIterator = null;
+            } else {
+              continue;
+            }
           }
 
-          IColumn subCol = subColumnIterator.next();
+          //is this a super column
+          boolean superColumn = entry.getValue() instanceof SuperColumn;
 
-          // sub-column name
-          currentValue.put(subColumnColumn, convertByteBuffer(subCol.name()));
+          // rowKey
+          currentValue.put(keyColumn, currentKey);
 
-          // value
-          currentValue.put(valueColumn, convertByteBuffer(subCol.value()));
+          // column name
+          currentValue.put(columnColumn, convertByteBuffer(currentEntry.getValue().name()));
 
-        } else {
-          // no supercol, just value
-          currentValue.put(valueColumn, convertByteBuffer(currentEntry.getValue().value()));
+          // SubColumn?
+          if (superColumn) {
+            if (subColumnIterator == null) {
+              subColumnIterator = ((SuperColumn) entry.getValue()).getSubColumns().iterator();
+            }
+
+            IColumn subCol = subColumnIterator.next();
+
+            // sub-column name
+            currentValue.put(subColumnColumn, convertByteBuffer(subCol.name()));
+
+            // value
+            currentValue.put(valueColumn, convertByteBuffer(subCol.value()));
+
+          } else {
+            // no supercol, just value
+            currentValue.put(valueColumn, convertByteBuffer(currentEntry.getValue().value()));
+          }
         }
+
+        break; //exit ghost row loop
       }
     } else { //untransposed
-      next = cfrr.nextKeyValue();
+        next = cfrr.nextKeyValue();
       if (next) {
         currentKey = convertByteBuffer(cfrr.getCurrentKey());
 

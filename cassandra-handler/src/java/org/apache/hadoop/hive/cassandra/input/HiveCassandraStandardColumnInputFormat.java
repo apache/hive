@@ -224,9 +224,14 @@ implements org.apache.hadoop.mapred.InputFormat<BytesWritable, MapWritable> {
 
   @Override
   public org.apache.hadoop.mapreduce.RecordReader<BytesWritable, MapWritable> createRecordReader(
-      org.apache.hadoop.mapreduce.InputSplit arg0, TaskAttemptContext arg1) throws IOException,
+      org.apache.hadoop.mapreduce.InputSplit arg0, TaskAttemptContext tac) throws IOException,
       InterruptedException {
-    return new CassandraHiveRecordReader(new ColumnFamilyRecordReader(), isTransposed);
+
+      if(isTransposed && tac.getConfiguration().getBoolean(AbstractColumnSerDe.CASSANDRA_ENABLE_WIDEROW_ITERATOR, true)) {
+        return new CassandraHiveRecordReader(new ColumnFamilyWideRowRecordReader(), isTransposed);
+      } else {
+        return new CassandraHiveRecordReader(new ColumnFamilyRecordReader(), isTransposed);
+      }
   }
 
 

@@ -345,6 +345,8 @@ public class ColumnFamilyWideRowRecordReader extends ColumnFamilyRecordReader {
           if (columnsRead == rowPageSize) {
             row.getColumns().remove(row.getColumnsSize() - 1);
           }
+        } else { //row with no columns
+
         }
 
       } catch (Exception e) {

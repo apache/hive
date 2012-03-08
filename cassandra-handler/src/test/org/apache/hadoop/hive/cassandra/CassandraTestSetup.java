@@ -3,7 +3,7 @@ package org.apache.hadoop.hive.cassandra;
 import junit.extensions.TestSetup;
 import junit.framework.Test;
 
-import org.apache.cassandra.contrib.utils.service.CassandraServiceDataCleaner;
+import org.apache.cassandra.contrib.utils.service.CassandraEmbeddedTestSetup;
 import org.apache.cassandra.contrib.utils.service.CassandraServiceFactory;
 import org.apache.cassandra.hadoop.ColumnFamilyInputFormat;
 import org.apache.cassandra.thrift.Cassandra;
@@ -17,7 +17,7 @@ import org.apache.hadoop.mapred.JobConf;
 public class CassandraTestSetup extends TestSetup {
 
   static final Log LOG = LogFactory.getLog(CassandraTestSetup.class);
-  private Object cassandra;
+  private CassandraEmbeddedTestSetup cassandra;
 
 
   public CassandraTestSetup(Test test) {
@@ -51,9 +51,11 @@ public class CassandraTestSetup extends TestSetup {
 
   @Override
   protected void tearDown() throws Exception {
-    // do we need this?
-    CassandraServiceDataCleaner cleaner = new CassandraServiceDataCleaner();
-    cleaner.prepare();
+    if (cassandra != null)
+    {
+      cassandra.stop();
+      cassandra = null;
+    }
   }
 
 }

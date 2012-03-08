@@ -8,7 +8,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.apache.cassandra.db.marshal.LexicalUUIDType;
-import org.apache.cassandra.service.EmbeddedCassandraService;
+import org.apache.cassandra.thrift.CassandraDaemon;
 import org.apache.cassandra.thrift.CfDef;
 import org.apache.cassandra.thrift.Column;
 import org.apache.cassandra.thrift.ColumnDef;
@@ -41,7 +41,7 @@ public class CassandraEmbeddedTestSetup {
   private final String COUNTER_LONG_STR = "counterColumnLong";
   private final ByteBuffer COUNTER_LONG_KEY = ByteBufferUtil.bytes(COUNTER_LONG_STR);
 
-  final EmbeddedCassandraService cassandra;
+  CassandraDaemon cassandra;
 
 
   public CassandraEmbeddedTestSetup() throws Exception
@@ -50,28 +50,29 @@ public class CassandraEmbeddedTestSetup {
     CassandraServiceDataCleaner cleaner = new CassandraServiceDataCleaner();
     cleaner.prepare();
 
+    if (cassandra == null) {
+      cassandra = new CassandraDaemon();
+      cassandra.init(null);
+      cassandra.start();
 
-    cassandra = new EmbeddedCassandraService();
-    cassandra.start();
+      // Make sure that this server is connectable.
+      CassandraProxyClient client = new CassandraProxyClient(
+          "127.0.0.1", 9170, true, true);
 
+      client.getProxyConnection().describe_cluster_name();
 
-    // Make sure that this server is connectable.
-    CassandraProxyClient client = new CassandraProxyClient(
-        "127.0.0.1", 9170, true, true);
+      //create schema for a column family and insert some data into it
+      createCFSchema(client);
+      addCFData(client);
 
-    client.getProxyConnection().describe_cluster_name();
+      //create schema for a super column family and insert some data into it
+      createSuperCFSchema(client);
+      addSuperCFData(client);
 
-    //create schema for a column family and insert some data into it
-    createCFSchema(client);
-    addCFData(client);
-
-    //create schema for a super column family and insert some data into it
-    createSuperCFSchema(client);
-    addSuperCFData(client);
-
-    // create for counter cf and add some data
-    createCounterCFSchema(client);
-    addCounterCFData(client);
+      // create for counter cf and add some data
+      createCounterCFSchema(client);
+      addCounterCFData(client);
+    }
   }
 
   /**
@@ -284,6 +285,18 @@ public class CassandraEmbeddedTestSetup {
       mutation.setColumn_or_supercolumn(thisCol);
 
       mutationList.add(mutation);
+  }
+
+
+  public void stop() throws Exception {
+      if (cassandra != null)
+      {
+        cassandra.stop(null);
+        cassandra = null;
+
+        CassandraServiceDataCleaner cleaner = new CassandraServiceDataCleaner();
+        cleaner.prepare();
+     }
   }
 
 }
