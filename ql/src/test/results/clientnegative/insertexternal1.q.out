@@ -1,0 +1,13 @@
+PREHOOK: query: create external table texternal(key string, val string) partitioned by (insertdate string)
+PREHOOK: type: CREATETABLE
+POSTHOOK: query: create external table texternal(key string, val string) partitioned by (insertdate string)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: default@texternal
+#### A masked pattern was here ####
+PREHOOK: type: ALTERTABLE_ADDPARTS
+PREHOOK: Input: default@texternal
+#### A masked pattern was here ####
+POSTHOOK: type: ALTERTABLE_ADDPARTS
+POSTHOOK: Input: default@texternal
+POSTHOOK: Output: default@texternal@insertdate=2008-01-01
+FAILED: Error in semantic analysis: Inserting into a external table is not allowed texternal

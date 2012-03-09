@@ -119,6 +119,7 @@ public enum ErrorMsg {
       + "table"),
   CTAS_MULTI_LOADFILE("CREATE-TABLE-AS-SELECT results in multiple file load"),
   CTAS_EXTTBL_COEXISTENCE("CREATE-TABLE-AS-SELECT cannot create external table"),
+  INSERT_EXTERNAL_TABLE("Inserting into a external table is not allowed"),
   DATABASE_NOT_EXISTS("Database does not exist:"),
   TABLE_ALREADY_EXISTS("Table already exists:", "42S02"),
   COLUMN_ALIAS_ALREADY_EXISTS("Column alias already exists:", "42S02"),
@@ -170,10 +171,10 @@ public enum ErrorMsg {
   ARCHIVE_ON_TABLE("ARCHIVE can only be run on partitions"),
   RESERVED_PART_VAL("Partition value contains a reserved substring"),
   HOLD_DDLTIME_ON_NONEXIST_PARTITIONS("HOLD_DDLTIME hint cannot be applied to dynamic " +
-  		"partitions or non-existent partitions"),
+                                      "partitions or non-existent partitions"),
   OFFLINE_TABLE_OR_PARTITION("Query against an offline table or partition"),
   OUTERJOIN_USES_FILTERS("The query results could be wrong. " +
-  		"Turn on hive.outerjoin.supports.filters"),
+                         "Turn on hive.outerjoin.supports.filters"),
   NEED_PARTITION_SPECIFICATION("Table is partitioned and partition specification is needed"),
   INVALID_METADATA("The metadata file could not be parsed "),
   NEED_TABLE_SPECIFICATION("Table name could be determined; It should be specified "),
