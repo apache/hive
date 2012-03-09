@@ -35,6 +35,7 @@ import org.apache.hadoop.hbase.MasterNotRunningException;
 import org.apache.hadoop.hbase.client.HBaseAdmin;
 import org.apache.hadoop.hbase.client.HTable;
 import org.apache.hadoop.hbase.util.Bytes;
+import org.apache.hadoop.hive.hbase.HBaseSerDe.ColumnMapping;
 import org.apache.hadoop.hive.metastore.HiveMetaHook;
 import org.apache.hadoop.hive.metastore.MetaStoreUtils;
 import org.apache.hadoop.hive.metastore.api.Constants;
@@ -63,7 +64,7 @@ public class HBaseStorageHandler extends DefaultStorageHandler
 
   final static public String DEFAULT_PREFIX = "default.";
 
-  private HBaseConfiguration hbaseConf;
+  private Configuration hbaseConf;
   private HBaseAdmin admin;
 
   private HBaseAdmin getHBaseAdmin() throws MetaException {
@@ -137,17 +138,9 @@ public class HBaseStorageHandler extends DefaultStorageHandler
       String tableName = getHBaseTableName(tbl);
       Map<String, String> serdeParam = tbl.getSd().getSerdeInfo().getParameters();
       String hbaseColumnsMapping = serdeParam.get(HBaseSerDe.HBASE_COLUMNS_MAPPING);
+      List<ColumnMapping> columnsMapping = null;
 
-      if (hbaseColumnsMapping == null) {
-        throw new MetaException("No hbase.columns.mapping defined in Serde.");
-      }
-
-      List<String> hbaseColumnFamilies = new ArrayList<String>();
-      List<String> hbaseColumnQualifiers = new ArrayList<String>();
-      List<byte []> hbaseColumnFamiliesBytes = new ArrayList<byte []>();
-      List<byte []> hbaseColumnQualifiersBytes = new ArrayList<byte []>();
-      int iKey = HBaseSerDe.parseColumnMapping(hbaseColumnsMapping, hbaseColumnFamilies,
-          hbaseColumnFamiliesBytes, hbaseColumnQualifiers, hbaseColumnQualifiersBytes);
+      columnsMapping = HBaseSerDe.parseColumnsMapping(hbaseColumnsMapping);
 
       HTableDescriptor tableDesc;
 
@@ -156,8 +149,13 @@ public class HBaseStorageHandler extends DefaultStorageHandler
         if (!isExternal) {
           // Create the column descriptors
           tableDesc = new HTableDescriptor(tableName);
-          Set<String> uniqueColumnFamilies = new HashSet<String>(hbaseColumnFamilies);
-          uniqueColumnFamilies.remove(hbaseColumnFamilies.get(iKey));
+          Set<String> uniqueColumnFamilies = new HashSet<String>();
+
+          for (ColumnMapping colMap : columnsMapping) {
+            if (!colMap.hbaseRowKey) {
+              uniqueColumnFamilies.add(colMap.familyName);
+            }
+          }
 
           for (String columnFamily : uniqueColumnFamilies) {
             tableDesc.addFamily(new HColumnDescriptor(Bytes.toBytes(columnFamily)));
@@ -179,13 +177,15 @@ public class HBaseStorageHandler extends DefaultStorageHandler
         // make sure the schema mapping is right
         tableDesc = getHBaseAdmin().getTableDescriptor(Bytes.toBytes(tableName));
 
-        for (int i = 0; i < hbaseColumnFamilies.size(); i++) {
-          if (i == iKey) {
+        for (int i = 0; i < columnsMapping.size(); i++) {
+          ColumnMapping colMap = columnsMapping.get(i);
+
+          if (colMap.hbaseRowKey) {
             continue;
           }
 
-          if (!tableDesc.hasFamily(hbaseColumnFamiliesBytes.get(i))) {
-            throw new MetaException("Column Family " + hbaseColumnFamilies.get(i)
+          if (!tableDesc.hasFamily(colMap.familyNameBytes)) {
+            throw new MetaException("Column Family " + colMap.familyName
                 + " is not defined in hbase table " + tableName);
           }
         }
@@ -231,7 +231,7 @@ public class HBaseStorageHandler extends DefaultStorageHandler
 
   @Override
   public void setConf(Configuration conf) {
-    hbaseConf = new HBaseConfiguration(conf);
+    hbaseConf = HBaseConfiguration.create(conf);
   }
 
   @Override

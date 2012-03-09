@@ -62,16 +62,14 @@ public class HBaseSerDe implements SerDe {
 
   public static final String HBASE_COLUMNS_MAPPING = "hbase.columns.mapping";
   public static final String HBASE_TABLE_NAME = "hbase.table.name";
+  public static final String HBASE_TABLE_DEFAULT_STORAGE_TYPE = "hbase.table.default.storage.type";
   public static final String HBASE_KEY_COL = ":key";
   public static final String HBASE_PUT_TIMESTAMP = "hbase.put.timestamp";
   public static final Log LOG = LogFactory.getLog(HBaseSerDe.class);
 
   private ObjectInspector cachedObjectInspector;
   private String hbaseColumnsMapping;
-  private List<String> hbaseColumnFamilies;
-  private List<byte []> hbaseColumnFamiliesBytes;
-  private List<String> hbaseColumnQualifiers;
-  private List<byte []> hbaseColumnQualifiersBytes;
+  private List<ColumnMapping> columnsMapping;
   private SerDeParameters serdeParams;
   private boolean useJSONSerialize;
   private LazyHBaseRow cachedHBaseRow;
@@ -110,8 +108,7 @@ public class HBaseSerDe implements SerDe {
   public void initialize(Configuration conf, Properties tbl)
       throws SerDeException {
 
-    initHBaseSerDeParameters(conf, tbl,
-        getClass().getName());
+    initHBaseSerDeParameters(conf, tbl, getClass().getName());
 
     cachedObjectInspector = LazyFactory.createLazyStructInspector(
         serdeParams.getColumnNames(),
@@ -136,116 +133,281 @@ public class HBaseSerDe implements SerDe {
   }
 
   /**
-   * Parses the HBase columns mapping to identify the column families, qualifiers
+   * Parses the HBase columns mapping specifier to identify the column families, qualifiers
    * and also caches the byte arrays corresponding to them. One of the Hive table
    * columns maps to the HBase row key, by default the first column.
    *
-   * @param columnMapping - the column mapping specification to be parsed
-   * @param colFamilies - the list of HBase column family names
-   * @param colFamiliesBytes - the corresponding byte array
-   * @param colQualifiers - the list of HBase column qualifier names
-   * @param colQualifiersBytes - the corresponding byte array
-   * @return the row key index in the column names list
+   * @param columnsMappingSpec string hbase.columns.mapping specified when creating table
+   * @return List<ColumnMapping> which contains the column mapping information by position
    * @throws SerDeException
    */
-  public static int parseColumnMapping(
-      String columnMapping,
-      List<String> colFamilies,
-      List<byte []> colFamiliesBytes,
-      List<String> colQualifiers,
-      List<byte []> colQualifiersBytes) throws SerDeException {
+  public static List<ColumnMapping> parseColumnsMapping(String columnsMappingSpec)
+      throws SerDeException {
 
-    int rowKeyIndex = -1;
-
-    if (colFamilies == null || colQualifiers == null) {
-      throw new SerDeException("Error: caller must pass in lists for the column families " +
-          "and qualifiers.");
-    }
-
-    colFamilies.clear();
-    colQualifiers.clear();
-
-    if (columnMapping == null) {
+    if (columnsMappingSpec == null) {
       throw new SerDeException("Error: hbase.columns.mapping missing for this HBase table.");
     }
 
-    if (columnMapping.equals("") || columnMapping.equals(HBASE_KEY_COL)) {
+    if (columnsMappingSpec.equals("") || columnsMappingSpec.equals(HBASE_KEY_COL)) {
       throw new SerDeException("Error: hbase.columns.mapping specifies only the HBase table"
           + " row key. A valid Hive-HBase table must specify at least one additional column.");
     }
 
-    String [] mapping = columnMapping.split(",");
+    int rowKeyIndex = -1;
+    List<ColumnMapping> columnsMapping = new ArrayList<ColumnMapping>();
+    String [] columnSpecs = columnsMappingSpec.split(",");
+    ColumnMapping columnMapping = null;
 
-    for (int i = 0; i < mapping.length; i++) {
-      String elem = mapping[i];
-      int idxFirst = elem.indexOf(":");
-      int idxLast = elem.lastIndexOf(":");
+    for (int i = 0; i < columnSpecs.length; i++) {
+      String mappingSpec = columnSpecs[i];
+      String [] mapInfo = mappingSpec.split("#");
+      String colInfo = mapInfo[0];
+
+      int idxFirst = colInfo.indexOf(":");
+      int idxLast = colInfo.lastIndexOf(":");
 
       if (idxFirst < 0 || !(idxFirst == idxLast)) {
         throw new SerDeException("Error: the HBase columns mapping contains a badly formed " +
             "column family, column qualifier specification.");
       }
 
-      if (elem.equals(HBASE_KEY_COL)) {
+      columnMapping = new ColumnMapping();
+
+      if (colInfo.equals(HBASE_KEY_COL)) {
         rowKeyIndex = i;
-        colFamilies.add(elem);
-        colQualifiers.add(null);
+        columnMapping.familyName = colInfo;
+        columnMapping.familyNameBytes = Bytes.toBytes(colInfo);
+        columnMapping.qualifierName = null;
+        columnMapping.qualifierNameBytes = null;
+        columnMapping.hbaseRowKey = true;
       } else {
-        String [] parts = elem.split(":");
+        String [] parts = colInfo.split(":");
         assert(parts.length > 0 && parts.length <= 2);
-        colFamilies.add(parts[0]);
+        columnMapping.familyName = parts[0];
+        columnMapping.familyNameBytes = Bytes.toBytes(parts[0]);
+        columnMapping.hbaseRowKey = false;
 
         if (parts.length == 2) {
-          colQualifiers.add(parts[1]);
+          columnMapping.qualifierName = parts[1];
+          columnMapping.qualifierNameBytes = Bytes.toBytes(parts[1]);
         } else {
-          colQualifiers.add(null);
+          columnMapping.qualifierName = null;
+          columnMapping.qualifierNameBytes = null;
         }
       }
+
+      columnMapping.mappingSpec = mappingSpec;
+
+      columnsMapping.add(columnMapping);
     }
 
     if (rowKeyIndex == -1) {
-      colFamilies.add(0, HBASE_KEY_COL);
-      colQualifiers.add(0, null);
-      rowKeyIndex = 0;
+      columnMapping = new ColumnMapping();
+      columnMapping.familyName = HBASE_KEY_COL;
+      columnMapping.familyNameBytes = Bytes.toBytes(HBASE_KEY_COL);
+      columnMapping.qualifierName = null;
+      columnMapping.qualifierNameBytes = null;
+      columnMapping.hbaseRowKey = true;
+      columnMapping.mappingSpec = HBASE_KEY_COL;
+      columnsMapping.add(0, columnMapping);
     }
 
-    if (colFamilies.size() != colQualifiers.size()) {
-      throw new SerDeException("Error in parsing the hbase columns mapping.");
-    }
-
-    // populate the corresponding byte [] if the client has passed in a non-null list
-    if (colFamiliesBytes != null) {
-      colFamiliesBytes.clear();
-
-      for (String fam : colFamilies) {
-        colFamiliesBytes.add(Bytes.toBytes(fam));
-      }
-    }
-
-    if (colQualifiersBytes != null) {
-      colQualifiersBytes.clear();
-
-      for (String qual : colQualifiers) {
-        if (qual == null) {
-          colQualifiersBytes.add(null);
-        } else {
-          colQualifiersBytes.add(Bytes.toBytes(qual));
-        }
-      }
-    }
-
-    if (colFamiliesBytes != null && colQualifiersBytes != null) {
-      if (colFamiliesBytes.size() != colQualifiersBytes.size()) {
-        throw new SerDeException("Error in caching the bytes for the hbase column families " +
-            "and qualifiers.");
-      }
-    }
-
-    return rowKeyIndex;
+    return columnsMapping;
   }
 
-  public static boolean isSpecialColumn(String hbaseColumnName) {
+  /*
+   * Utility method for parsing a string of the form '-,b,s,-,s:b,...' as a means of specifying
+   * whether to use a binary or an UTF string format to serialize and de-serialize primitive
+   * data types like boolean, byte, short, int, long, float, and double. This applies to
+   * regular columns and also to map column types which are associated with an HBase column
+   * family. For the map types, we apply the specification to the key or the value provided it
+   * is one of the above primitive types. The specifier is a colon separated value of the form
+   * -:s, or b:b where we have 's', 'b', or '-' on either side of the colon. 's' is for string
+   * format storage, 'b' is for native fixed width byte oriented storage, and '-' uses the
+   * table level default.
+   *
+   * @param hbaseTableDefaultStorageType - the specification associated with the table property
+   *        hbase.table.default.storage.type
+   * @throws SerDeException on parse error.
+   */
+
+  private void parseColumnStorageTypes(String hbaseTableDefaultStorageType)
+      throws SerDeException {
+
+    boolean tableBinaryStorage = false;
+
+    if (hbaseTableDefaultStorageType != null && !"".equals(hbaseTableDefaultStorageType)) {
+      if (hbaseTableDefaultStorageType.equals("binary")) {
+        tableBinaryStorage = true;
+      } else if (!hbaseTableDefaultStorageType.equals("string")) {
+        throw new SerDeException("Error: " + HBASE_TABLE_DEFAULT_STORAGE_TYPE +
+            " parameter must be specified as" +
+            " 'string' or 'binary'; '" + hbaseTableDefaultStorageType +
+            "' is not a valid specification for this table/serde property.");
+      }
+    }
+
+    // parse the string to determine column level storage type for primitive types
+    // 's' is for variable length string format storage
+    // 'b' is for fixed width binary storage of bytes
+    // '-' is for table storage type, which defaults to UTF8 string
+    // string data is always stored in the default escaped storage format; the data types
+    // byte, short, int, long, float, and double have a binary byte oriented storage option
+    List<TypeInfo> columnTypes = serdeParams.getColumnTypes();
+
+    for (int i = 0; i < columnsMapping.size(); i++) {
+
+      ColumnMapping colMap = columnsMapping.get(i);
+      TypeInfo colType = columnTypes.get(i);
+      String mappingSpec = colMap.mappingSpec;
+      String [] mapInfo = mappingSpec.split("#");
+      String [] storageInfo = null;
+
+      if (mapInfo.length == 2) {
+        storageInfo = mapInfo[1].split(":");
+      }
+
+      if (storageInfo == null) {
+
+        // use the table default storage specification
+        if (colType.getCategory() == Category.PRIMITIVE) {
+          if (!colType.getTypeName().equals(Constants.STRING_TYPE_NAME)) {
+            colMap.binaryStorage.add(tableBinaryStorage);
+          } else {
+            colMap.binaryStorage.add(false);
+          }
+        } else if (colType.getCategory() == Category.MAP) {
+          TypeInfo keyTypeInfo = ((MapTypeInfo) colType).getMapKeyTypeInfo();
+          TypeInfo valueTypeInfo = ((MapTypeInfo) colType).getMapValueTypeInfo();
+
+          if (keyTypeInfo.getCategory() == Category.PRIMITIVE &&
+              !keyTypeInfo.getTypeName().equals(Constants.STRING_TYPE_NAME)) {
+            colMap.binaryStorage.add(tableBinaryStorage);
+          } else {
+            colMap.binaryStorage.add(false);
+          }
+
+          if (valueTypeInfo.getCategory() == Category.PRIMITIVE &&
+              !valueTypeInfo.getTypeName().equals(Constants.STRING_TYPE_NAME)) {
+            colMap.binaryStorage.add(tableBinaryStorage);
+          } else {
+            colMap.binaryStorage.add(false);
+          }
+        } else {
+          colMap.binaryStorage.add(false);
+        }
+
+      } else if (storageInfo.length == 1) {
+        // we have a storage specification for a primitive column type
+        String storageOption = storageInfo[0];
+
+        if ((colType.getCategory() == Category.MAP) ||
+            !(storageOption.equals("-") || "string".startsWith(storageOption) ||
+                "binary".startsWith(storageOption))) {
+          throw new SerDeException("Error: A column storage specification is one of the following:"
+              + " '-', a prefix of 'string', or a prefix of 'binary'. "
+              + storageOption + " is not a valid storage option specification for "
+              + serdeParams.getColumnNames().get(i));
+        }
+
+        if (colType.getCategory() == Category.PRIMITIVE &&
+            !colType.getTypeName().equals(Constants.STRING_TYPE_NAME)) {
+
+          if ("-".equals(storageOption)) {
+            colMap.binaryStorage.add(tableBinaryStorage);
+          } else if ("binary".startsWith(storageOption)) {
+            colMap.binaryStorage.add(true);
+          } else {
+              colMap.binaryStorage.add(false);
+          }
+        } else {
+          colMap.binaryStorage.add(false);
+        }
+
+      } else if (storageInfo.length == 2) {
+        // we have a storage specification for a map column type
+
+        String keyStorage = storageInfo[0];
+        String valStorage = storageInfo[1];
+
+        if ((colType.getCategory() != Category.MAP) ||
+            !(keyStorage.equals("-") || "string".startsWith(keyStorage) ||
+                "binary".startsWith(keyStorage)) ||
+            !(valStorage.equals("-") || "string".startsWith(valStorage) ||
+                "binary".startsWith(valStorage))) {
+          throw new SerDeException("Error: To specify a valid column storage type for a Map"
+              + " column, use any two specifiers from '-', a prefix of 'string', "
+              + " and a prefix of 'binary' separated by a ':'."
+              + " Valid examples are '-:-', 's:b', etc. They specify the storage type for the"
+              + " key and value parts of the Map<?,?> respectively."
+              + " Invalid storage specification for column "
+              + serdeParams.getColumnNames().get(i)
+              + "; " + storageInfo[0] + ":" + storageInfo[1]);
+        }
+
+        TypeInfo keyTypeInfo = ((MapTypeInfo) colType).getMapKeyTypeInfo();
+        TypeInfo valueTypeInfo = ((MapTypeInfo) colType).getMapValueTypeInfo();
+
+        if (keyTypeInfo.getCategory() == Category.PRIMITIVE &&
+            !keyTypeInfo.getTypeName().equals(Constants.STRING_TYPE_NAME)) {
+
+          if (keyStorage.equals("-")) {
+            colMap.binaryStorage.add(tableBinaryStorage);
+          } else if ("binary".startsWith(keyStorage)) {
+            colMap.binaryStorage.add(true);
+          } else {
+            colMap.binaryStorage.add(false);
+          }
+        } else {
+          colMap.binaryStorage.add(false);
+        }
+
+        if (valueTypeInfo.getCategory() == Category.PRIMITIVE &&
+            !valueTypeInfo.getTypeName().equals(Constants.STRING_TYPE_NAME)) {
+          if (valStorage.equals("-")) {
+            colMap.binaryStorage.add(tableBinaryStorage);
+          } else if ("binary".startsWith(valStorage)) {
+            colMap.binaryStorage.add(true);
+          } else {
+            colMap.binaryStorage.add(false);
+          }
+        } else {
+          colMap.binaryStorage.add(false);
+        }
+
+        if (colMap.binaryStorage.size() != 2) {
+          throw new SerDeException("Error: In parsing the storage specification for column "
+              + serdeParams.getColumnNames().get(i));
+        }
+
+      } else {
+        // error in storage specification
+        throw new SerDeException("Error: " + HBASE_COLUMNS_MAPPING + " storage specification "
+            + mappingSpec + " is not valid for column: "
+            + serdeParams.getColumnNames().get(i));
+      }
+    }
+  }
+
+
+  public static boolean isRowKeyColumn(String hbaseColumnName) {
     return hbaseColumnName.equals(HBASE_KEY_COL);
+  }
+
+
+  static class ColumnMapping {
+
+    ColumnMapping() {
+      binaryStorage = new ArrayList<Boolean>(2);
+    }
+
+    String familyName;
+    String qualifierName;
+    byte [] familyNameBytes;
+    byte [] qualifierNameBytes;
+    List<Boolean> binaryStorage;
+    boolean hbaseRowKey;
+    String mappingSpec;
   }
 
   private void initHBaseSerDeParameters(
@@ -257,33 +419,27 @@ public class HBaseSerDe implements SerDe {
     String columnTypeProperty = tbl.getProperty(Constants.LIST_COLUMN_TYPES);
     putTimestamp = Long.valueOf(tbl.getProperty(HBaseSerDe.HBASE_PUT_TIMESTAMP,"-1"));
 
-    // Parse the HBase columns mapping and initialize the col family & qualifiers
-    hbaseColumnFamilies = new ArrayList<String>();
-    hbaseColumnFamiliesBytes = new ArrayList<byte []>();
-    hbaseColumnQualifiers = new ArrayList<String>();
-    hbaseColumnQualifiersBytes = new ArrayList<byte []>();
-    iKey = parseColumnMapping(hbaseColumnsMapping, hbaseColumnFamilies,
-        hbaseColumnFamiliesBytes, hbaseColumnQualifiers, hbaseColumnQualifiersBytes);
+    // Parse and initialize the HBase columns mapping
+    columnsMapping = parseColumnsMapping(hbaseColumnsMapping);
 
     // Build the type property string if not supplied
     if (columnTypeProperty == null) {
       StringBuilder sb = new StringBuilder();
 
-      for (int i = 0; i < hbaseColumnFamilies.size(); i++) {
+      for (int i = 0; i < columnsMapping.size(); i++) {
         if (sb.length() > 0) {
           sb.append(":");
         }
-        String colFamily = hbaseColumnFamilies.get(i);
-        String colQualifier = hbaseColumnQualifiers.get(i);
-        if (isSpecialColumn(colFamily)) {
-            // the row key column becomes a STRING
-            sb.append(Constants.STRING_TYPE_NAME);
-        } else if (colQualifier == null)  {
+
+        ColumnMapping colMap = columnsMapping.get(i);
+
+        if (colMap.hbaseRowKey) {
+          // the row key column becomes a STRING
+          sb.append(Constants.STRING_TYPE_NAME);
+        } else if (colMap.qualifierName == null)  {
           // a column family become a MAP
-          sb.append(
-            Constants.MAP_TYPE_NAME + "<"
-            + Constants.STRING_TYPE_NAME
-            + "," + Constants.STRING_TYPE_NAME + ">");
+          sb.append(Constants.MAP_TYPE_NAME + "<" + Constants.STRING_TYPE_NAME + ","
+              + Constants.STRING_TYPE_NAME + ">");
         } else {
           // an individual column becomes a STRING
           sb.append(Constants.STRING_TYPE_NAME);
@@ -294,11 +450,11 @@ public class HBaseSerDe implements SerDe {
 
     serdeParams = LazySimpleSerDe.initSerdeParams(job, tbl, serdeName);
 
-    if (hbaseColumnFamilies.size() != serdeParams.getColumnNames().size()) {
+    if (columnsMapping.size() != serdeParams.getColumnNames().size()) {
       throw new SerDeException(serdeName + ": columns has " +
         serdeParams.getColumnNames().size() +
         " elements while hbase.columns.mapping has " +
-        hbaseColumnFamilies.size() + " elements" +
+        columnsMapping.size() + " elements" +
         " (counting the key if implicit)");
     }
 
@@ -308,24 +464,29 @@ public class HBaseSerDe implements SerDe {
     needsEscape = serdeParams.getNeedsEscape();
 
     // check that the mapping schema is right;
-    // check that the "column-family:" is mapped to MAP<String,?>
-    for (int i = 0; i < hbaseColumnFamilies.size(); i++) {
-      String colFamily = hbaseColumnFamilies.get(i);
-      String colQualifier = hbaseColumnQualifiers.get(i);
-      if (colQualifier == null && !isSpecialColumn(colFamily)) {
+    // check that the "column-family:" is mapped to  Map<key,?>
+    // where key extends LazyPrimitive<?, ?> and thus has type Category.PRIMITIVE
+    for (int i = 0; i < columnsMapping.size(); i++) {
+      ColumnMapping colMap = columnsMapping.get(i);
+      if (colMap.qualifierName == null && !colMap.hbaseRowKey) {
         TypeInfo typeInfo = serdeParams.getColumnTypes().get(i);
         if ((typeInfo.getCategory() != Category.MAP) ||
-          (((MapTypeInfo) typeInfo).getMapKeyTypeInfo().getTypeName()
-            !=  Constants.STRING_TYPE_NAME)) {
+          (((MapTypeInfo) typeInfo).getMapKeyTypeInfo().getCategory()
+            !=  Category.PRIMITIVE)) {
 
           throw new SerDeException(
-            serdeName + ": hbase column family '"
-            + colFamily
-            + "' should be mapped to Map<String,?> but is mapped to "
+            serdeName + ": hbase column family '" + colMap.familyName
+            + "' should be mapped to Map<? extends LazyPrimitive<?, ?>,?>, that is "
+            + "the Key for the map should be of primitive type, but is mapped to "
             + typeInfo.getTypeName());
         }
       }
     }
+
+    // Precondition: make sure this is done after the rest of the SerDe initialization is done.
+    String hbaseTableStorageType = tbl.getProperty(HBaseSerDe.HBASE_TABLE_DEFAULT_STORAGE_TYPE);
+    parseColumnStorageTypes(hbaseTableStorageType);
+    setKeyColumnOffset();
   }
 
   /**
@@ -341,8 +502,7 @@ public class HBaseSerDe implements SerDe {
       throw new SerDeException(getClass().getName() + ": expects Result!");
     }
 
-    cachedHBaseRow.init((Result) result, hbaseColumnFamilies, hbaseColumnFamiliesBytes,
-        hbaseColumnQualifiers, hbaseColumnQualifiersBytes);
+    cachedHBaseRow.init((Result) result, columnsMapping);
 
     return cachedHBaseRow;
   }
@@ -413,9 +573,8 @@ public class HBaseSerDe implements SerDe {
     List<Object> list,
     List<? extends StructField> declaredFields) throws IOException {
 
-    // column name
-    String hbaseColumnFamily = hbaseColumnFamilies.get(i);
-    String hbaseColumnQualifier = hbaseColumnQualifiers.get(i);
+    // column mapping info
+    ColumnMapping colMap = columnsMapping.get(i);
 
     // Get the field objectInspector and the field object.
     ObjectInspector foi = fields.get(i).getFieldObjectInspector();
@@ -427,8 +586,8 @@ public class HBaseSerDe implements SerDe {
     }
 
     // If the field corresponds to a column family in HBase
-    if (hbaseColumnQualifier == null && !isSpecialColumn(hbaseColumnFamily)) {
-      MapObjectInspector moi = (MapObjectInspector)foi;
+    if (colMap.qualifierName == null && !colMap.hbaseRowKey) {
+      MapObjectInspector moi = (MapObjectInspector) foi;
       ObjectInspector koi = moi.getMapKeyObjectInspector();
       ObjectInspector voi = moi.getMapValueObjectInspector();
 
@@ -439,7 +598,12 @@ public class HBaseSerDe implements SerDe {
         for (Map.Entry<?, ?> entry: map.entrySet()) {
           // Get the Key
           serializeStream.reset();
-          serialize(entry.getKey(), koi, 3);
+
+          // Map keys are required to be primitive and may be serialized in binary format
+          boolean isNotNull = serialize(entry.getKey(), koi, 3, colMap.binaryStorage.get(0));
+          if (!isNotNull) {
+            continue;
+          }
 
           // Get the column-qualifier
           byte [] columnQualifierBytes = new byte[serializeStream.getCount()];
@@ -448,13 +612,16 @@ public class HBaseSerDe implements SerDe {
 
           // Get the Value
           serializeStream.reset();
-          boolean isNotNull = serialize(entry.getValue(), voi, 3);
+
+          // Map values may be serialized in binary format when they are primitive and binary
+          // serialization is the option selected
+          isNotNull = serialize(entry.getValue(), voi, 3, colMap.binaryStorage.get(1));
           if (!isNotNull) {
             continue;
           }
           byte [] value = new byte[serializeStream.getCount()];
           System.arraycopy(serializeStream.getData(), 0, value, 0, serializeStream.getCount());
-          put.add(hbaseColumnFamiliesBytes.get(i), columnQualifierBytes, value);
+          put.add(colMap.familyNameBytes, columnQualifierBytes, value);
         }
       }
     } else {
@@ -470,12 +637,15 @@ public class HBaseSerDe implements SerDe {
               declaredFields.get(i).getFieldObjectInspector().getCategory()
               .equals(Category.PRIMITIVE) || useJSONSerialize)) {
 
+        // we always serialize the String type using the escaped algorithm for LazyString
         isNotNull = serialize(
             SerDeUtils.getJSONString(f, foi),
             PrimitiveObjectInspectorFactory.javaStringObjectInspector,
-            1);
+            1, false);
       } else {
-        isNotNull = serialize(f, foi, 1);
+        // use the serialization option switch to write primitive values as either a variable
+        // length UTF8 string or a fixed width bytes if serializing in binary format
+        isNotNull = serialize(f, foi, 1, colMap.binaryStorage.get(0));
       }
       if (!isNotNull) {
         return null;
@@ -485,32 +655,49 @@ public class HBaseSerDe implements SerDe {
       if (i == iKey) {
         return key;
       }
-      put.add(hbaseColumnFamiliesBytes.get(i), hbaseColumnQualifiersBytes.get(i), key);
+      put.add(colMap.familyNameBytes, colMap.qualifierNameBytes, key);
     }
 
     return null;
   }
 
-  /**
+  /*
    * Serialize the row into a ByteStream.
    *
    * @param obj           The object for the current field.
    * @param objInspector  The ObjectInspector for the current Object.
    * @param level         The current level of separator.
-   * @throws IOException
-   * @return true, if serialize is a not-null object; otherwise false.
+   * @param writeBinary   Whether to write a primitive object as an UTF8 variable length string or
+   *                      as a fixed width byte array onto the byte stream.
+   * @throws IOException  On error in writing to the serialization stream.
+   * @return true         On serializing a non-null object, otherwise false.
    */
-  private boolean serialize(Object obj, ObjectInspector objInspector, int level)
-      throws IOException {
+  private boolean serialize(
+      Object obj,
+      ObjectInspector objInspector,
+      int level,
+      boolean writeBinary) throws IOException {
+
+    if (objInspector.getCategory() == Category.PRIMITIVE && writeBinary) {
+      LazyUtils.writePrimitive(serializeStream, obj, (PrimitiveObjectInspector) objInspector);
+      return true;
+    } else {
+      return serialize(obj, objInspector, level);
+    }
+  }
+
+  private boolean serialize(
+      Object obj,
+      ObjectInspector objInspector,
+      int level) throws IOException {
 
     switch (objInspector.getCategory()) {
       case PRIMITIVE: {
-        LazyUtils.writePrimitiveUTF8(
-          serializeStream, obj,
-          (PrimitiveObjectInspector) objInspector,
-          escaped, escapeChar, needsEscape);
+        LazyUtils.writePrimitiveUTF8(serializeStream, obj,
+            (PrimitiveObjectInspector) objInspector, escaped, escapeChar, needsEscape);
         return true;
       }
+
       case LIST: {
         char separator = (char) separators[level];
         ListObjectInspector loi = (ListObjectInspector)objInspector;
@@ -528,6 +715,7 @@ public class HBaseSerDe implements SerDe {
         }
         return true;
       }
+
       case MAP: {
         char separator = (char) separators[level];
         char keyValueSeparator = (char) separators[level+1];
@@ -553,6 +741,7 @@ public class HBaseSerDe implements SerDe {
         }
         return true;
       }
+
       case STRUCT: {
         char separator = (char)separators[level];
         StructObjectInspector soi = (StructObjectInspector)objInspector;
@@ -565,7 +754,9 @@ public class HBaseSerDe implements SerDe {
             if (i > 0) {
               serializeStream.write(separator);
             }
-            serialize(list.get(i), fields.get(i).getFieldObjectInspector(), level + 1);
+
+            serialize(list.get(i), fields.get(i).getFieldObjectInspector(),
+                level + 1);
           }
         }
         return true;
@@ -600,5 +791,24 @@ public class HBaseSerDe implements SerDe {
   public SerDeStats getSerDeStats() {
     // no support for statistics
     return null;
+  }
+
+  void setKeyColumnOffset() throws SerDeException {
+    iKey = getRowKeyColumnOffset(columnsMapping);
+  }
+
+  public static int getRowKeyColumnOffset(List<ColumnMapping> columnsMapping)
+      throws SerDeException {
+
+    for (int i = 0; i < columnsMapping.size(); i++) {
+      ColumnMapping colMap = columnsMapping.get(i);
+
+      if (colMap.hbaseRowKey && colMap.familyName.equals(HBASE_KEY_COL)) {
+        return i;
+      }
+    }
+
+    throw new SerDeException("HBaseSerDe Error: columns mapping list does not contain" +
+      " row key column.");
   }
 }

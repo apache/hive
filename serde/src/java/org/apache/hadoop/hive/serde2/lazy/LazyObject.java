@@ -21,17 +21,17 @@ import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 
 /**
  * LazyObject stores an object in a range of bytes in a byte[].
- * 
+ *
  * A LazyObject can represent any primitive object or hierarchical object like
  * array, map or struct.
  */
 public abstract class LazyObject<OI extends ObjectInspector> extends LazyObjectBase {
 
-  OI oi;
+  protected OI oi;
 
   /**
    * Create a LazyObject.
-   * 
+   *
    * @param oi
    *          Derived classes can access meta information about this Lazy Object
    *          (e.g, separator, nullSequence, escaper) from it.

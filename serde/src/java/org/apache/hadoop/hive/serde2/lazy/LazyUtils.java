@@ -15,8 +15,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package org.apache.hadoop.hive.serde2.lazy;
 
+import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.nio.ByteBuffer;
@@ -239,6 +241,69 @@ public final class LazyUtils {
     }
   }
 
+  /**
+   * Write out a binary representation of a PrimitiveObject to a byte stream.
+   *
+   * @param out ByteStream.Output, an unsynchronized version of ByteArrayOutputStream, used as a
+   *            backing buffer for the the DataOutputStream
+   * @param o the PrimitiveObject
+   * @param oi the PrimitiveObjectInspector
+   * @throws IOException on error during the write operation
+   */
+  public static void writePrimitive(
+      OutputStream out,
+      Object o,
+      PrimitiveObjectInspector oi) throws IOException {
+
+    DataOutputStream dos = new DataOutputStream(out);
+
+    try {
+      switch (oi.getPrimitiveCategory()) {
+      case BOOLEAN:
+        boolean b = ((BooleanObjectInspector) oi).get(o);
+        dos.writeBoolean(b);
+        break;
+
+      case BYTE:
+        byte bt = ((ByteObjectInspector) oi).get(o);
+        dos.writeByte(bt);
+        break;
+
+      case SHORT:
+        short s = ((ShortObjectInspector) oi).get(o);
+        dos.writeShort(s);
+        break;
+
+      case INT:
+        int i = ((IntObjectInspector) oi).get(o);
+        dos.writeInt(i);
+        break;
+
+      case LONG:
+        long l = ((LongObjectInspector) oi).get(o);
+        dos.writeLong(l);
+        break;
+
+      case FLOAT:
+        float f = ((FloatObjectInspector) oi).get(o);
+        dos.writeFloat(f);
+        break;
+
+      case DOUBLE:
+        double d = ((DoubleObjectInspector) oi).get(o);
+        dos.writeDouble(d);
+        break;
+
+      default:
+        throw new RuntimeException("Hive internal error.");
+      }
+    } finally {
+      // closing the underlying ByteStream should have no effect, the data should still be
+      // accessible
+      dos.close();
+    }
+  }
+
   public static int hashBytes(byte[] data, int start, int len) {
     int hash = 1;
     for (int i = start; i < len; i++) {
@@ -287,5 +352,4 @@ public final class LazyUtils {
   private LazyUtils() {
     // prevent instantiation
   }
-
 }
