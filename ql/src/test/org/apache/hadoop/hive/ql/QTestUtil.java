@@ -53,6 +53,7 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hbase.zookeeper.MiniZooKeeperCluster;
 import org.apache.hadoop.hive.cli.CliDriver;
 import org.apache.hadoop.hive.cli.CliSessionState;
+import org.apache.hadoop.hive.common.io.CachingPrintStream;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.MetaStoreUtils;
 import org.apache.hadoop.hive.metastore.api.Index;
@@ -586,7 +587,7 @@ public class QTestUtil {
     outf = new File(outf, qf.getName().concat(".out"));
     FileOutputStream fo = new FileOutputStream(outf);
     ss.out = new PrintStream(fo, true, "UTF-8");
-    ss.err = ss.out;
+    ss.err = new CachingPrintStream(fo, true, "UTF-8");
     ss.setIsSilent(true);
     SessionState oldSs = SessionState.get();
     if (oldSs != null && oldSs.out != null && oldSs.out != System.out) {

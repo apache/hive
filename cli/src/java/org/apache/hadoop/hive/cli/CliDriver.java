@@ -46,6 +46,7 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.common.HiveInterruptUtils;
 import org.apache.hadoop.hive.common.LogUtils;
 import org.apache.hadoop.hive.common.LogUtils.LogInitializationException;
+import org.apache.hadoop.hive.common.io.CachingPrintStream;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.ql.CommandNeedRetryException;
@@ -94,6 +95,8 @@ public class CliDriver {
 
   public int processCmd(String cmd) {
     CliSessionState ss = (CliSessionState) SessionState.get();
+    // Flush the print stream, so it doesn't include output from the last command
+    ss.err.flush();
     String cmd_trimmed = cmd.trim();
     String[] tokens = tokenizeCmd(cmd_trimmed);
     int ret = 0;
@@ -577,7 +580,8 @@ public class CliDriver {
     ss.in = System.in;
     try {
       ss.out = new PrintStream(System.out, true, "UTF-8");
-      ss.err = new PrintStream(System.err, true, "UTF-8");
+      ss.info = new PrintStream(System.err, true, "UTF-8");
+      ss.err = new CachingPrintStream(System.err, true, "UTF-8");
     } catch (UnsupportedEncodingException e) {
       return 3;
     }
