@@ -84,6 +84,7 @@ public class SessionState {
    */
   public InputStream in;
   public PrintStream out;
+  public PrintStream info;
   public PrintStream err;
   /**
    * Standard output from any child process(es).
@@ -339,6 +340,11 @@ public class SessionState {
       return ((ss != null) && (ss.out != null)) ? ss.out : System.out;
     }
 
+    public PrintStream getInfoStream() {
+      SessionState ss = SessionState.get();
+      return ((ss != null) && (ss.info != null)) ? ss.info : getErrStream();
+    }
+
     public PrintStream getErrStream() {
       SessionState ss = SessionState.get();
       return ((ss != null) && (ss.err != null)) ? ss.err : System.err;
@@ -366,7 +372,7 @@ public class SessionState {
 
     public void printInfo(String info, String detail) {
       if (!getIsSilent()) {
-        getErrStream().println(info);
+        getInfoStream().println(info);
       }
       LOG.info(info + StringUtils.defaultString(detail));
     }
