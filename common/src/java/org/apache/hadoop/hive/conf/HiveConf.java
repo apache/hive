@@ -572,6 +572,9 @@ public class HiveConf extends Configuration {
     HIVE_DEFAULT_REGION_NAME("hive.default.region.name", ""),
     HIVE_REGION_PROPERTIES("hive.region.properties", ""),
 
+    // whether insert into external tables is allowed
+    HIVE_INSERT_INTO_EXTERNAL_TABLES("hive.insert.into.external.tables", true),
+
     ;
 
     public final String varname;

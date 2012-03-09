@@ -172,6 +172,7 @@ import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
 import org.apache.hadoop.mapred.InputFormat;
+import org.apache.hadoop.hive.metastore.TableType;
 
 /**
  * Implementation of the semantic analyzer.
@@ -3980,6 +3981,13 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
 
       dest_tab = qbm.getDestTableForAlias(dest);
 
+      // Is the user trying to insert into a external tables
+      if ((!conf.getBoolVar(HiveConf.ConfVars.HIVE_INSERT_INTO_EXTERNAL_TABLES)) &&
+          (dest_tab.getTableType().equals(TableType.EXTERNAL_TABLE))) {
+          throw new SemanticException(
+            ErrorMsg.INSERT_EXTERNAL_TABLE.getMsg(dest_tab.getTableName()));
+      }
+
       Map<String, String> partSpec = qbm.getPartSpecForAlias(dest);
       dest_path = dest_tab.getPath();
 
@@ -4106,6 +4114,12 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
 
       dest_part = qbm.getDestPartitionForAlias(dest);
       dest_tab = dest_part.getTable();
+      if ((!conf.getBoolVar(HiveConf.ConfVars.HIVE_INSERT_INTO_EXTERNAL_TABLES)) &&
+          dest_tab.getTableType().equals(TableType.EXTERNAL_TABLE)) {
+          throw new SemanticException(
+            ErrorMsg.INSERT_EXTERNAL_TABLE.getMsg(dest_tab.getTableName()));
+      }
+
       Path tabPath = dest_tab.getPath();
       Path partPath = dest_part.getPartitionPath();
 
