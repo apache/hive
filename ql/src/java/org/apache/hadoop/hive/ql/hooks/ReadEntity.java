@@ -19,8 +19,6 @@
 package org.apache.hadoop.hive.ql.hooks;
 
 import java.io.Serializable;
-import java.net.URI;
-import java.util.Map;
 
 import org.apache.hadoop.hive.ql.metadata.Partition;
 import org.apache.hadoop.hive.ql.metadata.Table;
@@ -29,57 +27,13 @@ import org.apache.hadoop.hive.ql.metadata.Table;
  * This class encapsulates the information on the partition and tables that are
  * read by the query.
  */
-public class ReadEntity implements Serializable {
-
-  private static final long serialVersionUID = 1L;
-
-  /**
-   * The table.
-   */
-  private Table t;
-
-  /**
-   * The partition. This is null for a non partitioned table.
-   */
-  private Partition p;
-
-  /**
-   * This is derived from t and p, but we need to serialize this field to make sure
-   * ReadEntity.hashCode() does not need to recursively read into t and p.
-   */
-  private String name;
-
-  public String getName() {
-    if (name == null) {
-      name = computeName();
-    }
-    return name;
-  }
-
-  public void setName(String name) {
-    this.name = name;
-  }
-
-  public void setP(Partition p) {
-    this.p = p;
-  }
-
-  public void setT(Table t) {
-    this.t = t;
-  }
-
-  public Partition getP() {
-    return p;
-  }
-
-  public Table getT() {
-    return t;
-  }
+public class ReadEntity extends Entity implements Serializable {
 
   /**
    * For serialization only.
    */
   public ReadEntity() {
+    super();
   }
 
   /**
@@ -89,9 +43,7 @@ public class ReadEntity implements Serializable {
    *          The Table that the query reads from.
    */
   public ReadEntity(Table t) {
-    this.t = t;
-    p = null;
-    name = null;
+    super(t);
   }
 
   /**
@@ -101,86 +53,7 @@ public class ReadEntity implements Serializable {
    *          The partition that the query reads from.
    */
   public ReadEntity(Partition p) {
-    t = p.getTable();
-    this.p = p;
-    name = null;
-  }
-
-  private String computeName() {
-    StringBuilder sb = new StringBuilder();
-    if (p != null) {
-      sb.append(p.getTable().getDbName());
-      sb.append('@');
-      sb.append(p.getTable().getTableName());
-      sb.append('@');
-      sb.append(p.getName());
-    } else {
-      sb.append(t.getDbName());
-      sb.append('@');
-      sb.append(t.getTableName());
-    }
-    return sb.toString();
-  }
-
-  /**
-   * Enum that tells what time of a read entity this is.
-   */
-  public static enum Type {
-    TABLE, PARTITION
-  };
-
-  /**
-   * Get the type.
-   */
-  public Type getType() {
-    return p == null ? Type.TABLE : Type.PARTITION;
-  }
-
-  /**
-   * Get the parameter map of the Entity.
-   */
-  public Map<String, String> getParameters() {
-    if (p != null) {
-      return p.getParameters();
-    } else {
-      return t.getParameters();
-    }
-  }
-
-  /**
-   * Get the location of the entity.
-   */
-  public URI getLocation() {
-    if (p != null) {
-      return p.getDataLocation();
-    } else {
-      return t.getDataLocation();
-    }
-  }
-
-  /**
-   * Get partition entity.
-   */
-  public Partition getPartition() {
-    return p;
-  }
-
-  /**
-   * Get table entity.
-   */
-  public Table getTable() {
-    return t;
-  }
-
-  /**
-   * toString function.
-   */
-  @Override
-  public String toString() {
-    if (name == null) {
-      name = computeName();
-    }
-    return name;
+    super(p);
   }
 
   /**
@@ -198,13 +71,5 @@ public class ReadEntity implements Serializable {
     } else {
       return false;
     }
-  }
-
-  /**
-   * Hashcode function.
-   */
-  @Override
-  public int hashCode() {
-    return toString().hashCode();
   }
 }
