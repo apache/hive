@@ -49,8 +49,8 @@ public class HBaseStatsAggregator implements StatsAggregator {
   public boolean connect(Configuration hiveconf) {
 
     try {
-      HBaseConfiguration hbaseConf = new HBaseConfiguration(hiveconf);
-      htable = new HTable(hbaseConf, HBaseStatsSetupConstants.PART_STAT_TABLE_NAME);
+      htable = new HTable(HBaseConfiguration.create(hiveconf),
+        HBaseStatsSetupConstants.PART_STAT_TABLE_NAME);
 
       return true;
     } catch (IOException e) {

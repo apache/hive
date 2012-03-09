@@ -32,17 +32,17 @@ public abstract class LazyPrimitive<OI extends ObjectInspector, T extends Writab
     extends LazyObject<OI> {
 
   private static final Log LOG = LogFactory.getLog(LazyPrimitive.class);
-  LazyPrimitive(OI oi) {
+  protected LazyPrimitive(OI oi) {
     super(oi);
   }
 
-  LazyPrimitive(LazyPrimitive<OI, T> copy) {
+  protected LazyPrimitive(LazyPrimitive<OI, T> copy) {
     super(copy.oi);
     isNull = copy.isNull;
   }
 
-  T data;
-  boolean isNull = false;
+  protected T data;
+  protected boolean isNull = false;
 
   /**
    * Returns the primitive object represented by this LazyObject. This is useful

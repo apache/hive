@@ -78,7 +78,7 @@ public class HiveHBaseTableOutputFormat extends
     jc.set(TableOutputFormat.OUTPUT_TABLE, hbaseTableName);
     final boolean walEnabled = HiveConf.getBoolVar(
         jc, HiveConf.ConfVars.HIVE_HBASE_WAL_ENABLED);
-    final HTable table = new HTable(new HBaseConfiguration(jc), hbaseTableName);
+    final HTable table = new HTable(HBaseConfiguration.create(jc), hbaseTableName);
     table.setAutoFlush(false);
 
     return new RecordWriter() {

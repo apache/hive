@@ -19,6 +19,7 @@
 package org.apache.hadoop.hive.hbase;
 
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.NavigableMap;
 import java.util.Map.Entry;
@@ -41,6 +42,7 @@ public class LazyHBaseCellMap extends LazyMap {
 
   private Result result;
   private byte [] columnFamilyBytes;
+  private List<Boolean> binaryStorage;
 
   /**
    * Construct a LazyCellMap object with the ObjectInspector.
@@ -50,9 +52,14 @@ public class LazyHBaseCellMap extends LazyMap {
     super(oi);
   }
 
-  public void init(Result r, byte [] columnFamilyBytes) {
+  public void init(
+      Result r,
+      byte [] columnFamilyBytes,
+      List<Boolean> binaryStorage) {
+
     result = r;
     this.columnFamilyBytes = columnFamilyBytes;
+    this.binaryStorage = binaryStorage;
     setParsed(false);
   }
 
@@ -73,10 +80,13 @@ public class LazyHBaseCellMap extends LazyMap {
           continue;
         }
 
+        LazyMapObjectInspector lazyMoi = getInspector();
+
         // Keys are always primitive
         LazyPrimitive<? extends ObjectInspector, ? extends Writable> key =
           LazyFactory.createLazyPrimitiveClass(
-              (PrimitiveObjectInspector) getInspector().getMapKeyObjectInspector());
+              (PrimitiveObjectInspector) lazyMoi.getMapKeyObjectInspector(),
+              binaryStorage.get(0));
 
         ByteArrayRef keyRef = new ByteArrayRef();
         keyRef.setData(e.getKey());
@@ -84,8 +94,8 @@ public class LazyHBaseCellMap extends LazyMap {
 
         // Value
         LazyObject<?> value =
-          LazyFactory.createLazyObject(
-              getInspector().getMapValueObjectInspector());
+          LazyFactory.createLazyObject(lazyMoi.getMapValueObjectInspector(),
+              binaryStorage.get(1));
 
         ByteArrayRef valueRef = new ByteArrayRef();
         valueRef.setData(e.getValue());

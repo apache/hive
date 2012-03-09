@@ -1,0 +1,658 @@
+PREHOOK: query: DROP TABLE t_hbase
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: DROP TABLE t_hbase
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: CREATE TABLE t_hbase(key STRING,
+                     tinyint_col TINYINT,
+                     smallint_col SMALLINT,
+                     int_col INT,
+                     bigint_col BIGINT,
+                     float_col FLOAT,
+                     double_col DOUBLE,
+                     boolean_col BOOLEAN)
+STORED BY 'org.apache.hadoop.hive.hbase.HBaseStorageHandler'
+WITH SERDEPROPERTIES ("hbase.columns.mapping" = ":key#-,cf:binarybyte#-,cf:binaryshort#-,cf:binaryint#-,cf:binarylong#-,cf:binaryfloat#-,cf:binarydouble#-,cf:binaryboolean#-")
+TBLPROPERTIES ("hbase.table.name" = "t_hive",
+               "hbase.table.default.storage.type" = "binary")
+PREHOOK: type: CREATETABLE
+POSTHOOK: query: CREATE TABLE t_hbase(key STRING,
+                     tinyint_col TINYINT,
+                     smallint_col SMALLINT,
+                     int_col INT,
+                     bigint_col BIGINT,
+                     float_col FLOAT,
+                     double_col DOUBLE,
+                     boolean_col BOOLEAN)
+STORED BY 'org.apache.hadoop.hive.hbase.HBaseStorageHandler'
+WITH SERDEPROPERTIES ("hbase.columns.mapping" = ":key#-,cf:binarybyte#-,cf:binaryshort#-,cf:binaryint#-,cf:binarylong#-,cf:binaryfloat#-,cf:binarydouble#-,cf:binaryboolean#-")
+TBLPROPERTIES ("hbase.table.name" = "t_hive",
+               "hbase.table.default.storage.type" = "binary")
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: default@t_hbase
+PREHOOK: query: DESCRIBE FORMATTED t_hbase
+PREHOOK: type: DESCTABLE
+POSTHOOK: query: DESCRIBE FORMATTED t_hbase
+POSTHOOK: type: DESCTABLE
+# col_name            	data_type           	comment             
+	 	 
+key                 	string              	from deserializer   
+tinyint_col         	tinyint             	from deserializer   
+smallint_col        	smallint            	from deserializer   
+int_col             	int                 	from deserializer   
+bigint_col          	bigint              	from deserializer   
+float_col           	float               	from deserializer   
+double_col          	double              	from deserializer   
+boolean_col         	boolean             	from deserializer   
+	 	 
+# Detailed Table Information	 	 
+Database:           	default             	 
+#### A masked pattern was here ####
+Protect Mode:       	None                	 
+Retention:          	0                   	 
+#### A masked pattern was here ####
+Table Type:         	MANAGED_TABLE       	 
+Table Parameters:	 	 
+	hbase.table.default.storage.type	binary              
+	hbase.table.name    	t_hive              
+	storage_handler     	org.apache.hadoop.hive.hbase.HBaseStorageHandler
+#### A masked pattern was here ####
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.hbase.HBaseSerDe	 
+InputFormat:        	org.apache.hadoop.hive.hbase.HiveHBaseTableInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.hbase.HiveHBaseTableOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	-1                  	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
+Storage Desc Params:	 	 
+	hbase.columns.mapping	:key#-,cf:binarybyte#-,cf:binaryshort#-,cf:binaryint#-,cf:binarylong#-,cf:binaryfloat#-,cf:binarydouble#-,cf:binaryboolean#-
+	serialization.format	1                   
+PREHOOK: query: INSERT OVERWRITE TABLE t_hbase
+SELECT 'user1', 1, 1, 1, 1, 1.0, 1.0, true
+FROM src
+WHERE key=100 OR key=125 OR key=126
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@t_hbase
+POSTHOOK: query: INSERT OVERWRITE TABLE t_hbase
+SELECT 'user1', 1, 1, 1, 1, 1.0, 1.0, true
+FROM src
+WHERE key=100 OR key=125 OR key=126
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@t_hbase
+PREHOOK: query: INSERT OVERWRITE TABLE t_hbase
+SELECT 'user2', 127, 32767, 2147483647, 9223372036854775807, 211.31, 268746532.0571, false
+FROM src
+WHERE key=100 OR key=125 OR key=126
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@t_hbase
+POSTHOOK: query: INSERT OVERWRITE TABLE t_hbase
+SELECT 'user2', 127, 32767, 2147483647, 9223372036854775807, 211.31, 268746532.0571, false
+FROM src
+WHERE key=100 OR key=125 OR key=126
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@t_hbase
+PREHOOK: query: INSERT OVERWRITE TABLE t_hbase
+SELECT 'user3', -128, -32768, -2147483648, -9223372036854775808, -201.17, -2110789.37145, true
+FROM src
+WHERE key=100 OR key=125 OR key=126
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@t_hbase
+POSTHOOK: query: INSERT OVERWRITE TABLE t_hbase
+SELECT 'user3', -128, -32768, -2147483648, -9223372036854775808, -201.17, -2110789.37145, true
+FROM src
+WHERE key=100 OR key=125 OR key=126
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@t_hbase
+PREHOOK: query: SELECT * FROM t_hbase
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t_hbase
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT * FROM t_hbase
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t_hbase
+#### A masked pattern was here ####
+user1	1	1	1	1	1.0	1.0	true
+user2	127	32767	2147483647	9223372036854775807	211.31	2.687465320571E8	false
+user3	-128	-32768	-2147483648	-9223372036854775808	-201.17	-2110789.37145	true
+PREHOOK: query: SELECT tinyint_col,
+       smallint_col,
+       int_col,
+       bigint_col,
+       float_col,
+       double_col,
+       boolean_col
+FROM t_hbase
+WHERE key='user1' OR key='user2' OR key='user3'
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t_hbase
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT tinyint_col,
+       smallint_col,
+       int_col,
+       bigint_col,
+       float_col,
+       double_col,
+       boolean_col
+FROM t_hbase
+WHERE key='user1' OR key='user2' OR key='user3'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t_hbase
+#### A masked pattern was here ####
+1	1	1	1	1.0	1.0	true
+127	32767	2147483647	9223372036854775807	211.31	2.687465320571E8	false
+-128	-32768	-2147483648	-9223372036854775808	-201.17	-2110789.37145	true
+PREHOOK: query: SELECT sum(tinyint_col),
+       sum(smallint_col),
+       sum(int_col),
+       sum(bigint_col),
+       sum(float_col),
+       sum(double_col),
+       count(boolean_col)
+FROM t_hbase
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t_hbase
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT sum(tinyint_col),
+       sum(smallint_col),
+       sum(int_col),
+       sum(bigint_col),
+       sum(float_col),
+       sum(double_col),
+       count(boolean_col)
+FROM t_hbase
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t_hbase
+#### A masked pattern was here ####
+0	0	0	0	11.139999389648438	2.6663574368565E8	3
+PREHOOK: query: DROP TABLE t_hbase_1
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: DROP TABLE t_hbase_1
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: CREATE EXTERNAL TABLE t_hbase_1(key STRING,
+                                tinyint_col TINYINT,
+                                smallint_col SMALLINT,
+                                int_col INT,
+                                bigint_col BIGINT,
+                                float_col FLOAT,
+                                double_col DOUBLE,
+                                boolean_col BOOLEAN)
+STORED BY 'org.apache.hadoop.hive.hbase.HBaseStorageHandler'
+WITH SERDEPROPERTIES ("hbase.columns.mapping" = ":key#b,cf:binarybyte#b,cf:binaryshort#b,cf:binaryint#b,cf:binarylong#b,cf:binaryfloat#b,cf:binarydouble#b,cf:binaryboolean#b")
+TBLPROPERTIES ("hbase.table.name" = "t_hive")
+PREHOOK: type: CREATETABLE
+POSTHOOK: query: CREATE EXTERNAL TABLE t_hbase_1(key STRING,
+                                tinyint_col TINYINT,
+                                smallint_col SMALLINT,
+                                int_col INT,
+                                bigint_col BIGINT,
+                                float_col FLOAT,
+                                double_col DOUBLE,
+                                boolean_col BOOLEAN)
+STORED BY 'org.apache.hadoop.hive.hbase.HBaseStorageHandler'
+WITH SERDEPROPERTIES ("hbase.columns.mapping" = ":key#b,cf:binarybyte#b,cf:binaryshort#b,cf:binaryint#b,cf:binarylong#b,cf:binaryfloat#b,cf:binarydouble#b,cf:binaryboolean#b")
+TBLPROPERTIES ("hbase.table.name" = "t_hive")
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: default@t_hbase_1
+PREHOOK: query: DESCRIBE FORMATTED t_hbase_1
+PREHOOK: type: DESCTABLE
+POSTHOOK: query: DESCRIBE FORMATTED t_hbase_1
+POSTHOOK: type: DESCTABLE
+# col_name            	data_type           	comment             
+	 	 
+key                 	string              	from deserializer   
+tinyint_col         	tinyint             	from deserializer   
+smallint_col        	smallint            	from deserializer   
+int_col             	int                 	from deserializer   
+bigint_col          	bigint              	from deserializer   
+float_col           	float               	from deserializer   
+double_col          	double              	from deserializer   
+boolean_col         	boolean             	from deserializer   
+	 	 
+# Detailed Table Information	 	 
+Database:           	default             	 
+#### A masked pattern was here ####
+Protect Mode:       	None                	 
+Retention:          	0                   	 
+#### A masked pattern was here ####
+Table Type:         	EXTERNAL_TABLE      	 
+Table Parameters:	 	 
+	EXTERNAL            	TRUE                
+	hbase.table.name    	t_hive              
+	storage_handler     	org.apache.hadoop.hive.hbase.HBaseStorageHandler
+#### A masked pattern was here ####
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.hbase.HBaseSerDe	 
+InputFormat:        	org.apache.hadoop.hive.hbase.HiveHBaseTableInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.hbase.HiveHBaseTableOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	-1                  	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
+Storage Desc Params:	 	 
+	hbase.columns.mapping	:key#b,cf:binarybyte#b,cf:binaryshort#b,cf:binaryint#b,cf:binarylong#b,cf:binaryfloat#b,cf:binarydouble#b,cf:binaryboolean#b
+	serialization.format	1                   
+PREHOOK: query: SELECT * FROM t_hbase_1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t_hbase_1
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT * FROM t_hbase_1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t_hbase_1
+#### A masked pattern was here ####
+user1	1	1	1	1	1.0	1.0	true
+user2	127	32767	2147483647	9223372036854775807	211.31	2.687465320571E8	false
+user3	-128	-32768	-2147483648	-9223372036854775808	-201.17	-2110789.37145	true
+PREHOOK: query: SELECT tinyint_col,
+       smallint_col,
+       int_col,
+       bigint_col,
+       float_col,
+       double_col,
+       boolean_col
+FROM t_hbase_1
+WHERE key='user1' OR key='user2' OR key='user3'
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t_hbase_1
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT tinyint_col,
+       smallint_col,
+       int_col,
+       bigint_col,
+       float_col,
+       double_col,
+       boolean_col
+FROM t_hbase_1
+WHERE key='user1' OR key='user2' OR key='user3'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t_hbase_1
+#### A masked pattern was here ####
+1	1	1	1	1.0	1.0	true
+127	32767	2147483647	9223372036854775807	211.31	2.687465320571E8	false
+-128	-32768	-2147483648	-9223372036854775808	-201.17	-2110789.37145	true
+PREHOOK: query: SELECT sum(tinyint_col),
+       sum(smallint_col),
+       sum(int_col),
+       sum(bigint_col),
+       sum(float_col),
+       sum(double_col),
+       count(boolean_col)
+FROM t_hbase_1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t_hbase_1
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT sum(tinyint_col),
+       sum(smallint_col),
+       sum(int_col),
+       sum(bigint_col),
+       sum(float_col),
+       sum(double_col),
+       count(boolean_col)
+FROM t_hbase_1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t_hbase_1
+#### A masked pattern was here ####
+0	0	0	0	11.139999389648438	2.6663574368565E8	3
+PREHOOK: query: DROP TABLE t_hbase_1
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@t_hbase_1
+PREHOOK: Output: default@t_hbase_1
+POSTHOOK: query: DROP TABLE t_hbase_1
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@t_hbase_1
+POSTHOOK: Output: default@t_hbase_1
+PREHOOK: query: DROP TABLE t_hbase
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@t_hbase
+PREHOOK: Output: default@t_hbase
+POSTHOOK: query: DROP TABLE t_hbase
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@t_hbase
+POSTHOOK: Output: default@t_hbase
+PREHOOK: query: DROP TABLE t_hbase_2
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: DROP TABLE t_hbase_2
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: CREATE TABLE t_hbase_2(key STRING,
+                     tinyint_col TINYINT,
+                     smallint_col SMALLINT,
+                     int_col INT,
+                     bigint_col BIGINT,
+                     float_col FLOAT,
+                     double_col DOUBLE,
+                     boolean_col BOOLEAN)
+STORED BY 'org.apache.hadoop.hive.hbase.HBaseStorageHandler'
+WITH SERDEPROPERTIES ("hbase.columns.mapping" = ":key#-,cf:binarybyte#-,cf:binaryshort#-,cf:binaryint#-,cf:binarylong#-,cf:binaryfloat#-,cf:binarydouble#-,cf:binaryboolean#-")
+TBLPROPERTIES ("hbase.table.name" = "t_hive_2")
+PREHOOK: type: CREATETABLE
+POSTHOOK: query: CREATE TABLE t_hbase_2(key STRING,
+                     tinyint_col TINYINT,
+                     smallint_col SMALLINT,
+                     int_col INT,
+                     bigint_col BIGINT,
+                     float_col FLOAT,
+                     double_col DOUBLE,
+                     boolean_col BOOLEAN)
+STORED BY 'org.apache.hadoop.hive.hbase.HBaseStorageHandler'
+WITH SERDEPROPERTIES ("hbase.columns.mapping" = ":key#-,cf:binarybyte#-,cf:binaryshort#-,cf:binaryint#-,cf:binarylong#-,cf:binaryfloat#-,cf:binarydouble#-,cf:binaryboolean#-")
+TBLPROPERTIES ("hbase.table.name" = "t_hive_2")
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: default@t_hbase_2
+PREHOOK: query: INSERT OVERWRITE TABLE t_hbase_2
+SELECT 'user1', 1, 1, 1, 1, 1.0, 1.0, true
+FROM src
+WHERE key=100 OR key=125 OR key=126
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@t_hbase_2
+POSTHOOK: query: INSERT OVERWRITE TABLE t_hbase_2
+SELECT 'user1', 1, 1, 1, 1, 1.0, 1.0, true
+FROM src
+WHERE key=100 OR key=125 OR key=126
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@t_hbase_2
+PREHOOK: query: INSERT OVERWRITE TABLE t_hbase_2
+SELECT 'user2', 127, 32767, 2147483647, 9223372036854775807, 211.31, 268746532.0571, false
+FROM src
+WHERE key=100 OR key=125 OR key=126
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@t_hbase_2
+POSTHOOK: query: INSERT OVERWRITE TABLE t_hbase_2
+SELECT 'user2', 127, 32767, 2147483647, 9223372036854775807, 211.31, 268746532.0571, false
+FROM src
+WHERE key=100 OR key=125 OR key=126
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@t_hbase_2
+PREHOOK: query: INSERT OVERWRITE TABLE t_hbase_2
+SELECT 'user3', -128, -32768, -2147483648, -9223372036854775808, -201.17, -2110789.37145, true
+FROM src
+WHERE key=100 OR key=125 OR key=126
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@t_hbase_2
+POSTHOOK: query: INSERT OVERWRITE TABLE t_hbase_2
+SELECT 'user3', -128, -32768, -2147483648, -9223372036854775808, -201.17, -2110789.37145, true
+FROM src
+WHERE key=100 OR key=125 OR key=126
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@t_hbase_2
+PREHOOK: query: SELECT * FROM t_hbase_2
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t_hbase_2
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT * FROM t_hbase_2
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t_hbase_2
+#### A masked pattern was here ####
+user1	1	1	1	1	1.0	1.0	true
+user2	127	32767	2147483647	9223372036854775807	211.31	2.687465320571E8	false
+user3	-128	-32768	-2147483648	-9223372036854775808	-201.17	-2110789.37145	true
+PREHOOK: query: SELECT tinyint_col,
+       smallint_col,
+       int_col,
+       bigint_col,
+       float_col,
+       double_col,
+       boolean_col
+FROM t_hbase_2
+WHERE key='user1' OR key='user2' OR key='user3'
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t_hbase_2
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT tinyint_col,
+       smallint_col,
+       int_col,
+       bigint_col,
+       float_col,
+       double_col,
+       boolean_col
+FROM t_hbase_2
+WHERE key='user1' OR key='user2' OR key='user3'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t_hbase_2
+#### A masked pattern was here ####
+1	1	1	1	1.0	1.0	true
+127	32767	2147483647	9223372036854775807	211.31	2.687465320571E8	false
+-128	-32768	-2147483648	-9223372036854775808	-201.17	-2110789.37145	true
+PREHOOK: query: SELECT sum(tinyint_col),
+       sum(smallint_col),
+       sum(int_col),
+       sum(bigint_col),
+       sum(float_col),
+       sum(double_col),
+       count(boolean_col)
+FROM t_hbase_2
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t_hbase_2
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT sum(tinyint_col),
+       sum(smallint_col),
+       sum(int_col),
+       sum(bigint_col),
+       sum(float_col),
+       sum(double_col),
+       count(boolean_col)
+FROM t_hbase_2
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t_hbase_2
+#### A masked pattern was here ####
+0	0	0	0	11.139999389648438	2.6663574368565E8	3
+PREHOOK: query: DROP TABLE t_hbase_3
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: DROP TABLE t_hbase_3
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: CREATE EXTERNAL TABLE t_hbase_3(key STRING,
+                                tinyint_col TINYINT,
+                                smallint_col SMALLINT,
+                                int_col INT,
+                                bigint_col BIGINT,
+                                float_col FLOAT,
+                                double_col DOUBLE,
+                                boolean_col BOOLEAN)
+STORED BY 'org.apache.hadoop.hive.hbase.HBaseStorageHandler'
+WITH SERDEPROPERTIES ("hbase.columns.mapping" = ":key#b,cf:binarybyte#b,cf:binaryshort#b,cf:binaryint#b,cf:binarylong#b,cf:binaryfloat#b,cf:binarydouble#b,cf:binaryboolean#b")
+TBLPROPERTIES ("hbase.table.name" = "t_hive_2")
+PREHOOK: type: CREATETABLE
+POSTHOOK: query: CREATE EXTERNAL TABLE t_hbase_3(key STRING,
+                                tinyint_col TINYINT,
+                                smallint_col SMALLINT,
+                                int_col INT,
+                                bigint_col BIGINT,
+                                float_col FLOAT,
+                                double_col DOUBLE,
+                                boolean_col BOOLEAN)
+STORED BY 'org.apache.hadoop.hive.hbase.HBaseStorageHandler'
+WITH SERDEPROPERTIES ("hbase.columns.mapping" = ":key#b,cf:binarybyte#b,cf:binaryshort#b,cf:binaryint#b,cf:binarylong#b,cf:binaryfloat#b,cf:binarydouble#b,cf:binaryboolean#b")
+TBLPROPERTIES ("hbase.table.name" = "t_hive_2")
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: default@t_hbase_3
+PREHOOK: query: SELECT * FROM t_hbase_3
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t_hbase_3
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT * FROM t_hbase_3
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t_hbase_3
+#### A masked pattern was here ####
+user1	49	NULL	NULL	NULL	NULL	NULL	true
+user2	49	13106	842085431	4121411804481401392	1.0313938E-8	5.6030888442763564E-67	true
+user3	45	11571	758264116	3258690996568012594	1.0128829E-11	5.581687380553606E-91	true
+PREHOOK: query: SELECT tinyint_col,
+       smallint_col,
+       int_col,
+       bigint_col,
+       float_col,
+       double_col,
+       boolean_col
+FROM t_hbase_3
+WHERE key='user1' OR key='user2' OR key='user3'
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t_hbase_3
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT tinyint_col,
+       smallint_col,
+       int_col,
+       bigint_col,
+       float_col,
+       double_col,
+       boolean_col
+FROM t_hbase_3
+WHERE key='user1' OR key='user2' OR key='user3'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t_hbase_3
+#### A masked pattern was here ####
+49	NULL	NULL	NULL	NULL	NULL	true
+49	13106	842085431	4121411804481401392	1.0313938E-8	5.6030888442763564E-67	true
+45	11571	758264116	3258690996568012594	1.0128829E-11	5.581687380553606E-91	true
+PREHOOK: query: SELECT sum(tinyint_col),
+       sum(smallint_col),
+       sum(int_col),
+       sum(bigint_col),
+       sum(float_col),
+       sum(double_col),
+       count(boolean_col)
+FROM t_hbase_3
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t_hbase_3
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT sum(tinyint_col),
+       sum(smallint_col),
+       sum(int_col),
+       sum(bigint_col),
+       sum(float_col),
+       sum(double_col),
+       count(boolean_col)
+FROM t_hbase_3
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t_hbase_3
+#### A masked pattern was here ####
+143	24677	1600349547	7380102801049413986	1.0324066977186741E-8	5.6030888442763564E-67	3
+PREHOOK: query: DROP TABLE t_hbase_3
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@t_hbase_3
+PREHOOK: Output: default@t_hbase_3
+POSTHOOK: query: DROP TABLE t_hbase_3
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@t_hbase_3
+POSTHOOK: Output: default@t_hbase_3
+PREHOOK: query: DROP TABLE t_hbase_4
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: DROP TABLE t_hbase_4
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: CREATE EXTERNAL TABLE t_hbase_4(key STRING,
+                     tinyint_col TINYINT,
+                     smallint_col SMALLINT,
+                     int_col INT,
+                     bigint_col BIGINT,
+                     float_col FLOAT,
+                     double_col DOUBLE,
+                     boolean_col BOOLEAN)
+STORED BY 'org.apache.hadoop.hive.hbase.HBaseStorageHandler'
+WITH SERDEPROPERTIES ("hbase.columns.mapping" = ":key#-,cf:binarybyte#-,cf:binaryshort#-,cf:binaryint#-,cf:binarylong#-,cf:binaryfloat#-,cf:binarydouble#-,cf:binaryboolean#-")
+TBLPROPERTIES (
+"hbase.table.name" = "t_hive_2",
+"hbase.table.default.storage.type" = "binary")
+PREHOOK: type: CREATETABLE
+POSTHOOK: query: CREATE EXTERNAL TABLE t_hbase_4(key STRING,
+                     tinyint_col TINYINT,
+                     smallint_col SMALLINT,
+                     int_col INT,
+                     bigint_col BIGINT,
+                     float_col FLOAT,
+                     double_col DOUBLE,
+                     boolean_col BOOLEAN)
+STORED BY 'org.apache.hadoop.hive.hbase.HBaseStorageHandler'
+WITH SERDEPROPERTIES ("hbase.columns.mapping" = ":key#-,cf:binarybyte#-,cf:binaryshort#-,cf:binaryint#-,cf:binarylong#-,cf:binaryfloat#-,cf:binarydouble#-,cf:binaryboolean#-")
+TBLPROPERTIES (
+"hbase.table.name" = "t_hive_2",
+"hbase.table.default.storage.type" = "binary")
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: default@t_hbase_4
+PREHOOK: query: SELECT * FROM t_hbase_4
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t_hbase_4
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT * FROM t_hbase_4
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t_hbase_4
+#### A masked pattern was here ####
+user1	49	NULL	NULL	NULL	NULL	NULL	true
+user2	49	13106	842085431	4121411804481401392	1.0313938E-8	5.6030888442763564E-67	true
+user3	45	11571	758264116	3258690996568012594	1.0128829E-11	5.581687380553606E-91	true
+PREHOOK: query: SELECT tinyint_col,
+       smallint_col,
+       int_col,
+       bigint_col,
+       float_col,
+       double_col,
+       boolean_col
+FROM t_hbase_4
+WHERE key='user1' OR key='user2' OR key='user3'
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t_hbase_4
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT tinyint_col,
+       smallint_col,
+       int_col,
+       bigint_col,
+       float_col,
+       double_col,
+       boolean_col
+FROM t_hbase_4
+WHERE key='user1' OR key='user2' OR key='user3'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t_hbase_4
+#### A masked pattern was here ####
+49	NULL	NULL	NULL	NULL	NULL	true
+49	13106	842085431	4121411804481401392	1.0313938E-8	5.6030888442763564E-67	true
+45	11571	758264116	3258690996568012594	1.0128829E-11	5.581687380553606E-91	true
+PREHOOK: query: SELECT sum(tinyint_col),
+       sum(smallint_col),
+       sum(int_col),
+       sum(bigint_col),
+       sum(float_col),
+       sum(double_col),
+       count(boolean_col)
+FROM t_hbase_4
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t_hbase_4
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT sum(tinyint_col),
+       sum(smallint_col),
+       sum(int_col),
+       sum(bigint_col),
+       sum(float_col),
+       sum(double_col),
+       count(boolean_col)
+FROM t_hbase_4
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t_hbase_4
+#### A masked pattern was here ####
+143	24677	1600349547	7380102801049413986	1.0324066977186741E-8	5.6030888442763564E-67	3
+PREHOOK: query: DROP TABLE t_hbase_4
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@t_hbase_4
+PREHOOK: Output: default@t_hbase_4
+POSTHOOK: query: DROP TABLE t_hbase_4
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@t_hbase_4
+POSTHOOK: Output: default@t_hbase_4
+PREHOOK: query: DROP TABLE t_hbase_2
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@t_hbase_2
+PREHOOK: Output: default@t_hbase_2
+POSTHOOK: query: DROP TABLE t_hbase_2
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@t_hbase_2
+POSTHOOK: Output: default@t_hbase_2

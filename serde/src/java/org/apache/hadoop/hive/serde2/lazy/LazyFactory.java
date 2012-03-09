@@ -15,6 +15,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package org.apache.hadoop.hive.serde2.lazy;
 
 import java.util.ArrayList;
@@ -36,9 +37,17 @@ import org.apache.hadoop.hive.serde2.lazy.objectinspector.primitive.LazyPrimitiv
 import org.apache.hadoop.hive.serde2.lazy.objectinspector.primitive.LazyShortObjectInspector;
 import org.apache.hadoop.hive.serde2.lazy.objectinspector.primitive.LazyStringObjectInspector;
 import org.apache.hadoop.hive.serde2.lazy.objectinspector.primitive.LazyTimestampObjectInspector;
+import org.apache.hadoop.hive.serde2.lazydio.LazyDioBoolean;
+import org.apache.hadoop.hive.serde2.lazydio.LazyDioByte;
+import org.apache.hadoop.hive.serde2.lazydio.LazyDioDouble;
+import org.apache.hadoop.hive.serde2.lazydio.LazyDioFloat;
+import org.apache.hadoop.hive.serde2.lazydio.LazyDioInteger;
+import org.apache.hadoop.hive.serde2.lazydio.LazyDioLong;
+import org.apache.hadoop.hive.serde2.lazydio.LazyDioShort;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorFactory;
 import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector;
+import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector.Category;
 import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector.PrimitiveCategory;
 import org.apache.hadoop.hive.serde2.typeinfo.ListTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.MapTypeInfo;
@@ -47,6 +56,7 @@ import org.apache.hadoop.hive.serde2.typeinfo.StructTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.UnionTypeInfo;
 import org.apache.hadoop.io.Text;
+import org.apache.hadoop.io.Writable;
 
 /**
  * LazyFactory.
@@ -55,11 +65,32 @@ import org.apache.hadoop.io.Text;
 public final class LazyFactory {
 
   /**
+   * Create a lazy primitive object instance given a primitive object inspector based on it's
+   * type. It takes a boolean switch to decide whether to return a binary or standard variant
+   * of the lazy object.
+   *
+   * @param poi PrimitiveObjectInspector
+   * @param typeBinary a switch to return either a LazyPrimtive class or it's binary
+   *        companion
+   * @return LazyPrimitive<? extends ObjectInspector, ? extends Writable>
+   */
+  public static LazyPrimitive<? extends ObjectInspector, ? extends Writable>
+  createLazyPrimitiveClass(PrimitiveObjectInspector poi, boolean typeBinary) {
+    if (typeBinary) {
+      return createLazyPrimitiveBinaryClass(poi);
+    } else {
+      return createLazyPrimitiveClass(poi);
+    }
+  }
+
+  /**
    * Create a lazy primitive class given the type name.
    */
-  public static LazyPrimitive<?, ?> createLazyPrimitiveClass(
-      PrimitiveObjectInspector oi) {
+  public static LazyPrimitive<? extends ObjectInspector, ? extends Writable>
+  createLazyPrimitiveClass(PrimitiveObjectInspector oi) {
+
     PrimitiveCategory p = oi.getPrimitiveCategory();
+
     switch (p) {
     case BOOLEAN:
       return new LazyBoolean((LazyBooleanObjectInspector) oi);
@@ -86,10 +117,35 @@ public final class LazyFactory {
     }
   }
 
+  public static LazyPrimitive<? extends ObjectInspector, ? extends Writable>
+  createLazyPrimitiveBinaryClass(PrimitiveObjectInspector poi) {
+
+    PrimitiveCategory pc = poi.getPrimitiveCategory();
+
+    switch (pc) {
+    case BOOLEAN:
+      return new LazyDioBoolean((LazyBooleanObjectInspector) poi);
+    case BYTE:
+      return new LazyDioByte((LazyByteObjectInspector) poi);
+    case SHORT:
+      return new LazyDioShort((LazyShortObjectInspector) poi);
+    case INT:
+      return new LazyDioInteger((LazyIntObjectInspector) poi);
+    case LONG:
+      return new LazyDioLong((LazyLongObjectInspector) poi);
+    case FLOAT:
+      return new LazyDioFloat((LazyFloatObjectInspector) poi);
+    case DOUBLE:
+      return new LazyDioDouble((LazyDoubleObjectInspector) poi);
+    default:
+      throw new RuntimeException("Hive Internal Error: no LazyObject for " + poi);
+    }
+  }
+
   /**
    * Create a hierarchical LazyObject based on the given typeInfo.
    */
-  public static LazyObject createLazyObject(ObjectInspector oi) {
+  public static LazyObject<? extends ObjectInspector> createLazyObject(ObjectInspector oi) {
     ObjectInspector.Category c = oi.getCategory();
     switch (c) {
     case PRIMITIVE:
@@ -108,9 +164,28 @@ public final class LazyFactory {
   }
 
   /**
+   * Creates a LazyObject based on the LazyObjectInspector. Will create binary variants for
+   * primitive objects when the switch <code>typeBinary</code> is specified as true.
+   *
+   * @param oi ObjectInspector
+   * @param typeBinary Boolean value used as switch to return variants of LazyPrimitive
+   *                   objects which are initialized from a binary format for the data.
+   * @return LazyObject<? extends ObjectInspector>
+   */
+  public static LazyObject<? extends ObjectInspector>
+  createLazyObject(ObjectInspector oi, boolean typeBinary) {
+
+    if (oi.getCategory() == Category.PRIMITIVE) {
+      return createLazyPrimitiveClass((PrimitiveObjectInspector) oi, typeBinary);
+    } else {
+      return createLazyObject(oi);
+    }
+  }
+
+  /**
    * Create a hierarchical ObjectInspector for LazyObject with the given
    * typeInfo.
-   * 
+   *
    * @param typeInfo
    *          The type information for the LazyObject
    * @param separator
@@ -180,7 +255,7 @@ public final class LazyFactory {
   /**
    * Create a hierarchical ObjectInspector for LazyStruct with the given
    * columnNames and columnTypeInfos.
-   * 
+   *
    * @param lastColumnTakesRest
    *          whether the last column of the struct should take the rest of the
    *          row if there are extra fields.
@@ -205,7 +280,7 @@ public final class LazyFactory {
   /**
    * Create a hierarchical ObjectInspector for ColumnarStruct with the given
    * columnNames and columnTypeInfos.
-   * 
+   *
    * @see LazyFactory#createLazyObjectInspector(TypeInfo, byte[], int, Text,
    *      boolean, byte)
    */

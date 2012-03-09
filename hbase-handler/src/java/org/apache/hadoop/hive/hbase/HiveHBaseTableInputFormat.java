@@ -35,6 +35,7 @@ import org.apache.hadoop.hbase.mapreduce.TableInputFormatBase;
 import org.apache.hadoop.hbase.mapreduce.TableSplit;
 import org.apache.hadoop.hbase.util.Bytes;
 import org.apache.hadoop.hbase.util.Writables;
+import org.apache.hadoop.hive.hbase.HBaseSerDe.ColumnMapping;
 import org.apache.hadoop.hive.ql.exec.ExprNodeConstantEvaluator;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.index.IndexPredicateAnalyzer;
@@ -79,23 +80,18 @@ public class HiveHBaseTableInputFormat extends TableInputFormatBase
     HBaseSplit hbaseSplit = (HBaseSplit) split;
     TableSplit tableSplit = hbaseSplit.getSplit();
     String hbaseTableName = jobConf.get(HBaseSerDe.HBASE_TABLE_NAME);
-    setHTable(new HTable(new HBaseConfiguration(jobConf), Bytes.toBytes(hbaseTableName)));
+    setHTable(new HTable(HBaseConfiguration.create(jobConf), Bytes.toBytes(hbaseTableName)));
     String hbaseColumnsMapping = jobConf.get(HBaseSerDe.HBASE_COLUMNS_MAPPING);
-    List<String> hbaseColumnFamilies = new ArrayList<String>();
-    List<String> hbaseColumnQualifiers = new ArrayList<String>();
-    List<byte []> hbaseColumnFamiliesBytes = new ArrayList<byte []>();
-    List<byte []> hbaseColumnQualifiersBytes = new ArrayList<byte []>();
-
-    int iKey;
-    try {
-      iKey = HBaseSerDe.parseColumnMapping(hbaseColumnsMapping, hbaseColumnFamilies,
-          hbaseColumnFamiliesBytes, hbaseColumnQualifiers, hbaseColumnQualifiersBytes);
-    } catch (SerDeException se) {
-      throw new IOException(se);
-    }
     List<Integer> readColIDs = ColumnProjectionUtils.getReadColumnIDs(jobConf);
+    List<ColumnMapping> columnsMapping = null;
 
-    if (hbaseColumnFamilies.size() < readColIDs.size()) {
+    try {
+      columnsMapping = HBaseSerDe.parseColumnsMapping(hbaseColumnsMapping);
+    } catch (SerDeException e) {
+      throw new IOException(e);
+    }
+
+    if (columnsMapping.size() < readColIDs.size()) {
       throw new IOException("Cannot read more columns than the given table contains.");
     }
 
@@ -105,14 +101,15 @@ public class HiveHBaseTableInputFormat extends TableInputFormatBase
 
     if (!addAll) {
       for (int i : readColIDs) {
-        if (i == iKey) {
+        ColumnMapping colMap = columnsMapping.get(i);
+        if (colMap.hbaseRowKey) {
           continue;
         }
 
-        if (hbaseColumnQualifiers.get(i) == null) {
-          scan.addFamily(hbaseColumnFamiliesBytes.get(i));
+        if (colMap.qualifierName == null) {
+          scan.addFamily(colMap.familyNameBytes);
         } else {
-          scan.addColumn(hbaseColumnFamiliesBytes.get(i), hbaseColumnQualifiersBytes.get(i));
+          scan.addColumn(colMap.familyNameBytes, colMap.qualifierNameBytes);
         }
 
         empty = false;
@@ -125,15 +122,16 @@ public class HiveHBaseTableInputFormat extends TableInputFormatBase
     // to the HBase scan so that we can retrieve all of the row keys and return them as the Hive
     // tables column projection.
     if (empty) {
-      for (int i = 0; i < hbaseColumnFamilies.size(); i++) {
-        if (i == iKey) {
+      for (int i = 0; i < columnsMapping.size(); i++) {
+        ColumnMapping colMap = columnsMapping.get(i);
+        if (colMap.hbaseRowKey) {
           continue;
         }
 
-        if (hbaseColumnQualifiers.get(i) == null) {
-          scan.addFamily(hbaseColumnFamiliesBytes.get(i));
+        if (colMap.qualifierName == null) {
+          scan.addFamily(colMap.familyNameBytes);
         } else {
-          scan.addColumn(hbaseColumnFamiliesBytes.get(i), hbaseColumnQualifiersBytes.get(i));
+          scan.addColumn(colMap.familyNameBytes, colMap.qualifierNameBytes);
         }
 
         if (!addAll) {
@@ -144,10 +142,16 @@ public class HiveHBaseTableInputFormat extends TableInputFormatBase
 
     // If Hive's optimizer gave us a filter to process, convert it to the
     // HBase scan form now.
+    int iKey = -1;
+
+    try {
+      iKey = HBaseSerDe.getRowKeyColumnOffset(columnsMapping);
+    } catch (SerDeException e) {
+      throw new IOException(e);
+    }
+
     tableSplit = convertFilter(jobConf, scan, tableSplit, iKey);
-
     setScan(scan);
-
     Job job = new Job(jobConf);
     TaskAttemptContext tac = ShimLoader.getHadoopShims().newTaskAttemptContext(
         job.getConfiguration(), reporter);
@@ -363,27 +367,44 @@ public class HiveHBaseTableInputFormat extends TableInputFormatBase
   public InputSplit[] getSplits(JobConf jobConf, int numSplits) throws IOException {
 
     String hbaseTableName = jobConf.get(HBaseSerDe.HBASE_TABLE_NAME);
-    setHTable(new HTable(new HBaseConfiguration(jobConf), Bytes.toBytes(hbaseTableName)));
+    setHTable(new HTable(HBaseConfiguration.create(jobConf), Bytes.toBytes(hbaseTableName)));
     String hbaseColumnsMapping = jobConf.get(HBaseSerDe.HBASE_COLUMNS_MAPPING);
 
     if (hbaseColumnsMapping == null) {
       throw new IOException("hbase.columns.mapping required for HBase Table.");
     }
 
-    List<String> hbaseColumnFamilies = new ArrayList<String>();
-    List<String> hbaseColumnQualifiers = new ArrayList<String>();
-    List<byte []> hbaseColumnFamiliesBytes = new ArrayList<byte []>();
-    List<byte []> hbaseColumnQualifiersBytes = new ArrayList<byte []>();
+    List<ColumnMapping> columnsMapping = null;
+    try {
+      columnsMapping = HBaseSerDe.parseColumnsMapping(hbaseColumnsMapping);
+    } catch (SerDeException e) {
+      throw new IOException(e);
+    }
 
     int iKey;
+
     try {
-      iKey = HBaseSerDe.parseColumnMapping(hbaseColumnsMapping, hbaseColumnFamilies,
-          hbaseColumnFamiliesBytes, hbaseColumnQualifiers, hbaseColumnQualifiersBytes);
-    } catch (SerDeException se) {
-      throw new IOException(se);
+      iKey = HBaseSerDe.getRowKeyColumnOffset(columnsMapping);
+    } catch (SerDeException e) {
+      throw new IOException(e);
     }
 
     Scan scan = new Scan();
+
+    // REVIEW:  are we supposed to be applying the getReadColumnIDs
+    // same as in getRecordReader?
+    for (int i = 0; i <columnsMapping.size(); i++) {
+      ColumnMapping colMap = columnsMapping.get(i);
+      if (colMap.hbaseRowKey) {
+        continue;
+      }
+
+      if (colMap.qualifierName == null) {
+        scan.addFamily(colMap.familyNameBytes);
+      } else {
+        scan.addColumn(colMap.familyNameBytes, colMap.qualifierNameBytes);
+      }
+    }
 
     // Take filter pushdown into account while calculating splits; this
     // allows us to prune off regions immediately.  Note that although
@@ -392,20 +413,6 @@ public class HiveHBaseTableInputFormat extends TableInputFormatBase
     // definition into account and excludes regions which don't satisfy
     // the start/stop row conditions (HBASE-1829).
     convertFilter(jobConf, scan, null, iKey);
-
-    // REVIEW:  are we supposed to be applying the getReadColumnIDs
-    // same as in getRecordReader?
-    for (int i = 0; i < hbaseColumnFamilies.size(); i++) {
-      if (i == iKey) {
-        continue;
-      }
-
-      if (hbaseColumnQualifiers.get(i) == null) {
-        scan.addFamily(hbaseColumnFamiliesBytes.get(i));
-      } else {
-        scan.addColumn(hbaseColumnFamiliesBytes.get(i), hbaseColumnQualifiersBytes.get(i));
-      }
-    }
 
     setScan(scan);
     Job job = new Job(jobConf);

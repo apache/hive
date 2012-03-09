@@ -1,0 +1,118 @@
+PREHOOK: query: DROP TABLE t_ext_hbase_1
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: DROP TABLE t_ext_hbase_1
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: CREATE EXTERNAL TABLE t_ext_hbase_1
+(key STRING, c_bool BOOLEAN, c_byte TINYINT, c_short SMALLINT,
+ c_int INT, c_long BIGINT, c_string STRING, c_float FLOAT, c_double DOUBLE)
+STORED BY 'org.apache.hadoop.hive.hbase.HBaseStorageHandler'
+WITH SERDEPROPERTIES ("hbase.columns.mapping" = ":key,cf:cq-boolean,cf:cq-byte,cf:cq-short,cf:cq-int,cf:cq-long,cf:cq-string,cf:cq-float,cf:cq-double")
+TBLPROPERTIES ("hbase.table.name" = "HiveExternalTable")
+PREHOOK: type: CREATETABLE
+POSTHOOK: query: CREATE EXTERNAL TABLE t_ext_hbase_1
+(key STRING, c_bool BOOLEAN, c_byte TINYINT, c_short SMALLINT,
+ c_int INT, c_long BIGINT, c_string STRING, c_float FLOAT, c_double DOUBLE)
+STORED BY 'org.apache.hadoop.hive.hbase.HBaseStorageHandler'
+WITH SERDEPROPERTIES ("hbase.columns.mapping" = ":key,cf:cq-boolean,cf:cq-byte,cf:cq-short,cf:cq-int,cf:cq-long,cf:cq-string,cf:cq-float,cf:cq-double")
+TBLPROPERTIES ("hbase.table.name" = "HiveExternalTable")
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: default@t_ext_hbase_1
+PREHOOK: query: SELECT * FROM t_ext_hbase_1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t_ext_hbase_1
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT * FROM t_ext_hbase_1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t_ext_hbase_1
+#### A masked pattern was here ####
+key-1	NULL	NULL	NULL	NULL	NULL	Hadoop, HBase,	NULL	NULL
+key-2	NULL	NULL	NULL	NULL	NULL	Hive	NULL	NULL
+key-3	NULL	NULL	NULL	NULL	NULL	Test Strings	NULL	NULL
+PREHOOK: query: DROP TABLE t_ext_hbase_1
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@t_ext_hbase_1
+PREHOOK: Output: default@t_ext_hbase_1
+POSTHOOK: query: DROP TABLE t_ext_hbase_1
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@t_ext_hbase_1
+POSTHOOK: Output: default@t_ext_hbase_1
+PREHOOK: query: DROP TABLE t_ext_hbase_2
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: DROP TABLE t_ext_hbase_2
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: CREATE EXTERNAL TABLE t_ext_hbase_2
+(key STRING, c_bool BOOLEAN, c_byte TINYINT, c_short SMALLINT,
+ c_int INT, c_long BIGINT, c_string STRING, c_float FLOAT, c_double DOUBLE)
+STORED BY 'org.apache.hadoop.hive.hbase.HBaseStorageHandler'
+WITH SERDEPROPERTIES ("hbase.columns.mapping" = ":key#b,cf:cq-boolean#b,cf:cq-byte#b,cf:cq-short#b,cf:cq-int#b,cf:cq-long#b,cf:cq-string#b,cf:cq-float#b,cf:cq-double#b")
+TBLPROPERTIES ("hbase.table.name" = "HiveExternalTable")
+PREHOOK: type: CREATETABLE
+POSTHOOK: query: CREATE EXTERNAL TABLE t_ext_hbase_2
+(key STRING, c_bool BOOLEAN, c_byte TINYINT, c_short SMALLINT,
+ c_int INT, c_long BIGINT, c_string STRING, c_float FLOAT, c_double DOUBLE)
+STORED BY 'org.apache.hadoop.hive.hbase.HBaseStorageHandler'
+WITH SERDEPROPERTIES ("hbase.columns.mapping" = ":key#b,cf:cq-boolean#b,cf:cq-byte#b,cf:cq-short#b,cf:cq-int#b,cf:cq-long#b,cf:cq-string#b,cf:cq-float#b,cf:cq-double#b")
+TBLPROPERTIES ("hbase.table.name" = "HiveExternalTable")
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: default@t_ext_hbase_2
+PREHOOK: query: SELECT * FROM t_ext_hbase_2
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t_ext_hbase_2
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT * FROM t_ext_hbase_2
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t_ext_hbase_2
+#### A masked pattern was here ####
+key-1	true	-128	-32768	-2147483648	-9223372036854775808	Hadoop, HBase,	1.4E-45	4.9E-324
+key-2	false	-1	-1	-1	-1	Hive	-1.0	-1.0
+key-3	true	127	32767	2147483647	9223372036854775807	Test Strings	3.4028235E38	1.7976931348623157E308
+PREHOOK: query: DROP TABLE t_ext_hbase_2
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@t_ext_hbase_2
+PREHOOK: Output: default@t_ext_hbase_2
+POSTHOOK: query: DROP TABLE t_ext_hbase_2
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@t_ext_hbase_2
+POSTHOOK: Output: default@t_ext_hbase_2
+PREHOOK: query: DROP TABLE t_ext_hbase_3
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: DROP TABLE t_ext_hbase_3
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: CREATE EXTERNAL TABLE t_ext_hbase_3
+(key STRING, c_bool BOOLEAN, c_byte TINYINT, c_short SMALLINT,
+ c_int INT, c_long BIGINT, c_string STRING, c_float FLOAT, c_double DOUBLE)
+STORED BY 'org.apache.hadoop.hive.hbase.HBaseStorageHandler'
+WITH SERDEPROPERTIES ("hbase.columns.mapping" = ":key,cf:cq-boolean,cf:cq-byte,cf:cq-short,cf:cq-int,cf:cq-long,cf:cq-string,cf:cq-float,cf:cq-double")
+TBLPROPERTIES (
+"hbase.table.name" = "HiveExternalTable",
+"hbase.table.default.storage.type" = "binary")
+PREHOOK: type: CREATETABLE
+POSTHOOK: query: CREATE EXTERNAL TABLE t_ext_hbase_3
+(key STRING, c_bool BOOLEAN, c_byte TINYINT, c_short SMALLINT,
+ c_int INT, c_long BIGINT, c_string STRING, c_float FLOAT, c_double DOUBLE)
+STORED BY 'org.apache.hadoop.hive.hbase.HBaseStorageHandler'
+WITH SERDEPROPERTIES ("hbase.columns.mapping" = ":key,cf:cq-boolean,cf:cq-byte,cf:cq-short,cf:cq-int,cf:cq-long,cf:cq-string,cf:cq-float,cf:cq-double")
+TBLPROPERTIES (
+"hbase.table.name" = "HiveExternalTable",
+"hbase.table.default.storage.type" = "binary")
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: default@t_ext_hbase_3
+PREHOOK: query: SELECT * from t_ext_hbase_3
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t_ext_hbase_3
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT * from t_ext_hbase_3
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t_ext_hbase_3
+#### A masked pattern was here ####
+key-1	true	-128	-32768	-2147483648	-9223372036854775808	Hadoop, HBase,	1.4E-45	4.9E-324
+key-2	false	-1	-1	-1	-1	Hive	-1.0	-1.0
+key-3	true	127	32767	2147483647	9223372036854775807	Test Strings	3.4028235E38	1.7976931348623157E308
+PREHOOK: query: DROP table t_ext_hbase_3
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@t_ext_hbase_3
+PREHOOK: Output: default@t_ext_hbase_3
+POSTHOOK: query: DROP table t_ext_hbase_3
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@t_ext_hbase_3
+POSTHOOK: Output: default@t_ext_hbase_3
