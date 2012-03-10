@@ -386,9 +386,14 @@ public class QTestUtil {
     // delete any contents in the warehouse dir
     Path p = new Path(testWarehouse);
     FileSystem fs = p.getFileSystem(conf);
-    FileStatus [] ls = fs.listStatus(p);
-    for (int i=0; (ls != null) && (i<ls.length); i++) {
-      fs.delete(ls[i].getPath(), true);
+
+    try {
+      FileStatus [] ls = fs.listStatus(p);
+      for (int i=0; (ls != null) && (i<ls.length); i++) {
+        fs.delete(ls[i].getPath(), true);
+      }
+    } catch (FileNotFoundException e) {
+      // Best effort
     }
 
     FunctionRegistry.unregisterTemporaryUDF("test_udaf");
