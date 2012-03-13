@@ -99,3 +99,22 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####
 true	false	true	true	false	false	false	false	true	false	false	false	false	true
+PREHOOK: query: SELECT '1+2' LIKE '_+_', 
+       '1+2' LIKE '1+_',
+       '112' LIKE '1+_',
+       '|||' LIKE '|_|', 
+       '+++' LIKE '1+_' 
+FROM src LIMIT 1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT '1+2' LIKE '_+_', 
+       '1+2' LIKE '1+_',
+       '112' LIKE '1+_',
+       '|||' LIKE '|_|', 
+       '+++' LIKE '1+_' 
+FROM src LIMIT 1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
+true	true	false	true	false

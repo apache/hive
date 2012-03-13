@@ -75,10 +75,7 @@ public class UDFLike extends UDF {
       } else if (n == '%') {
         sb.append(".*");
       } else {
-        if ("\\[](){}.*^$".indexOf(n) != -1) {
-          sb.append('\\');
-        }
-        sb.append(n);
+        sb.append(Pattern.quote(Character.toString(n)));
       }
     }
     return sb.toString();
@@ -91,16 +88,16 @@ public class UDFLike extends UDF {
    * string in it for later pattern matching if it is a simple pattern.
    * <p>
    * Examples: <blockquote>
-   * 
+   *
    * <pre>
    * parseSimplePattern("%abc%") changes {@link #type} to PatternType.MIDDLE
    * and changes {@link #simplePattern} to "abc"
    * parseSimplePattern("%ab_c%") changes {@link #type} to PatternType.COMPLEX
    * and does not change {@link #simplePattern}
    * </pre>
-   * 
+   *
    * </blockquote>
-   * 
+   *
    * @param likePattern
    *          the input LIKE query pattern
    */
