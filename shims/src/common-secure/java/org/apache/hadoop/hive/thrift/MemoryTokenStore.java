@@ -18,6 +18,7 @@
 
 package org.apache.hadoop.hive.thrift;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -99,6 +100,11 @@ public class MemoryTokenStore implements DelegationTokenStore {
         result.add(id);
     }
     return result;
+  }
+
+  @Override
+  public void close() throws IOException {
+    //no-op
   }
 
 }

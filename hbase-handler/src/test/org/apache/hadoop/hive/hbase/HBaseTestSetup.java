@@ -31,10 +31,10 @@ import org.apache.hadoop.hbase.HBaseConfiguration;
 import org.apache.hadoop.hbase.HColumnDescriptor;
 import org.apache.hadoop.hbase.HConstants;
 import org.apache.hadoop.hbase.HTableDescriptor;
-import org.apache.hadoop.hbase.MiniHBaseCluster;
 import org.apache.hadoop.hbase.client.HBaseAdmin;
 import org.apache.hadoop.hbase.client.HConnectionManager;
 import org.apache.hadoop.hbase.client.HTable;
+import org.apache.hadoop.hbase.MiniHBaseCluster;
 import org.apache.hadoop.hbase.client.Put;
 import org.apache.hadoop.hbase.util.Bytes;
 import org.apache.hadoop.hbase.zookeeper.MiniZooKeeperCluster;
@@ -68,7 +68,7 @@ public class HBaseTestSetup extends TestSetup {
       setUpFixtures(conf);
     }
     conf.set("hbase.rootdir", hbaseRoot);
-    conf.set("hbase.master", hbaseCluster.getHMasterAddress().toString());
+    conf.set("hbase.master", hbaseCluster.getMaster().getServerName().getHostAndPort());
     conf.set("hbase.zookeeper.property.clientPort", Integer.toString(zooKeeperPort));
     String auxJars = conf.getAuxJars();
     auxJars = ((auxJars == null) ? "" : (auxJars + ",")) + "file://"
@@ -94,7 +94,7 @@ public class HBaseTestSetup extends TestSetup {
     hbaseConf.setInt("hbase.regionserver.port", findFreePort());
     hbaseConf.setInt("hbase.regionserver.info.port", -1);
     hbaseCluster = new MiniHBaseCluster(hbaseConf, NUM_REGIONSERVERS);
-    conf.set("hbase.master", hbaseCluster.getHMasterAddress().toString());
+    conf.set("hbase.master", hbaseCluster.getMaster().getServerName().getHostAndPort());
     // opening the META table ensures that cluster is running
     new HTable(hbaseConf, HConstants.META_TABLE_NAME);
     createHBaseTable(hbaseConf);
