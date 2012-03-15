@@ -49,7 +49,11 @@
       <artifact name="hbase" type="test-jar" ext="jar"
                 m:classifier="tests"/>
     </dependency>
+    <dependency org="com.github.stephenc.high-scale-lib" name="high-scale-lib" rev="1.1.1"
+                transitive="false"/>
     <dependency org="org.apache.zookeeper" name="zookeeper" rev="${zookeeper.version}"
                 transitive="false"/>
+    <dependency org="org.codehaus.jackson" name="jackson-jaxrs" rev="${jackson.version}"/>
+    <dependency org="org.codehaus.jackson" name="jackson-xc" rev="${jackson.version}"/>
   </dependencies>
 </ivy-module>

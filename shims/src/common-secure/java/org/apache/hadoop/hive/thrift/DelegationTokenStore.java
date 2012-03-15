@@ -17,6 +17,7 @@
  */
 package org.apache.hadoop.hive.thrift;
 
+import java.io.Closeable;
 import java.util.List;
 
 import org.apache.hadoop.conf.Configurable;
@@ -27,7 +28,7 @@ import org.apache.hadoop.security.token.delegation.AbstractDelegationTokenSecret
  * storage for load balancing and high availability (for example using ZooKeeper).
  * Internal, store specific errors are translated into {@link TokenStoreException}.
  */
-public interface DelegationTokenStore extends Configurable {
+public interface DelegationTokenStore extends Configurable, Closeable {
 
   /**
    * Exception for internal token store errors that typically cannot be handled by the caller.

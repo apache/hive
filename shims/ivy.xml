@@ -29,6 +29,7 @@
   <dependencies>
     <dependency org="org.apache.hadoop" name="hadoop-core" rev="${hadoop.version.ant-internal}">
       <artifact name="hadoop" type="source" ext="tar.gz"/>
+      <exclude org="org.codehaus.jackson" name="*"/>
     </dependency>
     <dependency org="org.apache.zookeeper" name="zookeeper"
                 rev="${zookeeper.version}" transitive="false">
@@ -41,7 +42,9 @@
     <dependency org="commons-logging" name="commons-logging-api" rev="${commons-logging-api.version}"
                 transitive="false"/>
     <dependency org="com.google.guava" name="guava" rev="${guava.version}"
-                transitive="false"/>
+      transitive="false"/>
+    <dependency org="org.codehaus.jackson" name="jackson-core-asl" rev="${jackson.version}"/>
+    <dependency org="org.codehaus.jackson" name="jackson-mapper-asl" rev="${jackson.version}"/>
     <conflict manager="all" />
   </dependencies>
 </ivy-module>

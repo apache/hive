@@ -58,7 +58,6 @@ public class ZooKeeperTokenStore implements DelegationTokenStore {
   private final int zkSessionTimeout = 3000;
   private List<ACL> newNodeAcl = Ids.OPEN_ACL_UNSAFE;
 
-
   private class ZooKeeperWatcher implements Watcher {
     public void process(org.apache.zookeeper.WatchedEvent event) {
       LOGGER.info(event.toString());
@@ -199,8 +198,8 @@ public class ZooKeeperTokenStore implements DelegationTokenStore {
         LOGGER.warn("Failed to close existing session.", ex);
       }
     }
-
     ZooKeeper zk = getSession();
+
     try {
         ensurePath(zk, rootNode + NODE_KEYS, newNodeAcl);
         ensurePath(zk, rootNode + NODE_TOKENS, newNodeAcl);
@@ -398,6 +397,17 @@ public class ZooKeeperTokenStore implements DelegationTokenStore {
       }
     }
     return result;
+  }
+
+  @Override
+  public void close() throws IOException {
+    if (this.zkSession != null) {
+      try {
+        this.zkSession.close();
+      } catch (InterruptedException ex) {
+        LOGGER.warn("Failed to close existing session.", ex);
+      }
+    }
   }
 
 }
