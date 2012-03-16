@@ -69,8 +69,8 @@ import org.apache.hadoop.hive.ql.lockmgr.HiveLockManagerCtx;
 import org.apache.hadoop.hive.ql.lockmgr.HiveLockMode;
 import org.apache.hadoop.hive.ql.lockmgr.HiveLockObj;
 import org.apache.hadoop.hive.ql.lockmgr.HiveLockObject;
-import org.apache.hadoop.hive.ql.lockmgr.HiveLockObject.HiveLockObjectData;
 import org.apache.hadoop.hive.ql.lockmgr.LockException;
+import org.apache.hadoop.hive.ql.lockmgr.HiveLockObject.HiveLockObjectData;
 import org.apache.hadoop.hive.ql.log.PerfLogger;
 import org.apache.hadoop.hive.ql.metadata.AuthorizationException;
 import org.apache.hadoop.hive.ql.metadata.DummyPartition;
@@ -885,6 +885,23 @@ public class Driver implements CommandProcessor {
   public CommandProcessorResponse run(String command) throws CommandNeedRetryException {
     errorMessage = null;
     SQLState = null;
+
+    HiveDriverRunHookContext hookContext = new HiveDriverRunHookContextImpl(conf);
+    // Get all the driver run hooks and pre-execute them.
+    List<HiveDriverRunHook> driverRunHooks;
+    try {
+      driverRunHooks = getHooks(HiveConf.ConfVars.HIVE_DRIVER_RUN_HOOKS, HiveDriverRunHook.class);
+      for (HiveDriverRunHook driverRunHook : driverRunHooks) {
+          driverRunHook.preDriverRun(hookContext);
+      }
+    } catch (Exception e) {
+      errorMessage = "FAILED: Hive Internal Error: " + Utilities.getNameMessage(e);
+      SQLState = ErrorMsg.findSQLState(e.getMessage());
+      console.printError(errorMessage + "\n"
+          + org.apache.hadoop.util.StringUtils.stringifyException(e));
+      return new CommandProcessorResponse(12, errorMessage, SQLState);
+    }
+
     // Reset the perf logger
     PerfLogger perfLogger = PerfLogger.getPerfLogger(true);
     perfLogger.PerfLogBegin(LOG, PerfLogger.DRIVER_RUN);
@@ -943,6 +960,20 @@ public class Driver implements CommandProcessor {
 
     perfLogger.PerfLogEnd(LOG, PerfLogger.DRIVER_RUN);
     perfLogger.close(LOG, plan);
+
+    // Take all the driver run hooks and post-execute them.
+    try {
+      for (HiveDriverRunHook driverRunHook : driverRunHooks) {
+          driverRunHook.postDriverRun(hookContext);
+      }
+    } catch (Exception e) {
+      errorMessage = "FAILED: Hive Internal Error: " + Utilities.getNameMessage(e);
+      SQLState = ErrorMsg.findSQLState(e.getMessage());
+      console.printError(errorMessage + "\n"
+          + org.apache.hadoop.util.StringUtils.stringifyException(e));
+      return new CommandProcessorResponse(12, errorMessage, SQLState);
+    }
+
     return new CommandProcessorResponse(ret);
   }
 

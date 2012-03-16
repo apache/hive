@@ -22,6 +22,8 @@ import java.util.List;
 
 import junit.framework.Assert;
 
+import org.apache.hadoop.hive.ql.HiveDriverRunHook;
+import org.apache.hadoop.hive.ql.HiveDriverRunHookContext;
 import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.hooks.HookContext.HookType;
 import org.apache.hadoop.hive.ql.parse.ASTNode;
@@ -47,6 +49,8 @@ public class VerifyHooksRunInOrder {
   private static boolean postHookRunFirstRan = false;
   private static boolean staticAnalysisPreHookFirstRan = false;
   private static boolean staticAnalysisPostHookFirstRan = false;
+  private static boolean driverRunPreHookFirstRan = false;
+  private static boolean driverRunPostHookFirstRan = false;
 
   public static class RunFirst implements ExecuteWithHookContext {
     public void run(HookContext hookContext) {
@@ -154,5 +158,71 @@ public class VerifyHooksRunInOrder {
       Assert.assertTrue("Post Analysis Hooks did not run in the order specified.",
                         staticAnalysisPostHookFirstRan);
     }
+  }
+
+  public static class RunFirstDriverRunHook implements HiveDriverRunHook {
+
+    @Override
+    public void preDriverRun(HiveDriverRunHookContext hookContext) throws Exception {
+      LogHelper console = SessionState.getConsole();
+
+      if (console == null) {
+        return;
+      }
+
+      // This is simply to verify that the hooks were in fact run
+      console.printError("Running RunFirst for Pre Driver Run Hook");
+
+      driverRunPreHookFirstRan = true;
+    }
+
+    @Override
+    public void postDriverRun(HiveDriverRunHookContext hookContext) throws Exception {
+      LogHelper console = SessionState.getConsole();
+
+      if (console == null) {
+        return;
+      }
+
+      // This is simply to verify that the hooks were in fact run
+      console.printError("Running RunFirst for Post Driver Run Hook");
+
+      driverRunPostHookFirstRan = true;
+    }
+
+  }
+
+  public static class RunSecondDriverRunHook implements HiveDriverRunHook {
+
+    @Override
+    public void preDriverRun(HiveDriverRunHookContext hookContext) throws Exception {
+      LogHelper console = SessionState.getConsole();
+
+      if (console == null) {
+        return;
+      }
+
+      // This is simply to verify that the hooks were in fact run
+      console.printError("Running RunSecond for Pre Driver Run Hook");
+
+      Assert.assertTrue("Driver Run Hooks did not run in the order specified.",
+          driverRunPreHookFirstRan);
+    }
+
+    @Override
+    public void postDriverRun(HiveDriverRunHookContext hookContext) throws Exception {
+      LogHelper console = SessionState.getConsole();
+
+      if (console == null) {
+        return;
+      }
+
+      // This is simply to verify that the hooks were in fact run
+      console.printError("Running RunSecond for Post Driver Run Hook");
+
+      Assert.assertTrue("Driver Run Hooks did not run in the order specified.",
+          driverRunPostHookFirstRan);
+    }
+
   }
 }
