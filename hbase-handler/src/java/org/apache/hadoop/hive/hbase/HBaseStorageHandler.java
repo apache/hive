@@ -264,6 +264,8 @@ public class HBaseStorageHandler extends DefaultStorageHandler
     jobProperties.put(
       HBaseSerDe.HBASE_COLUMNS_MAPPING,
       tableProperties.getProperty(HBaseSerDe.HBASE_COLUMNS_MAPPING));
+    jobProperties.put(HBaseSerDe.HBASE_TABLE_DEFAULT_STORAGE_TYPE,
+      tableProperties.getProperty(HBaseSerDe.HBASE_TABLE_DEFAULT_STORAGE_TYPE,"string"));
 
     String tableName =
       tableProperties.getProperty(HBaseSerDe.HBASE_TABLE_NAME);
@@ -289,11 +291,12 @@ public class HBaseStorageHandler extends DefaultStorageHandler
       Arrays.asList(columnNameProperty.split(","));
 
     HBaseSerDe hbaseSerde = (HBaseSerDe) deserializer;
-    String keyColName = columnNames.get(hbaseSerde.getKeyColumnOffset());
+    int keyColPos = hbaseSerde.getKeyColumnOffset();
     String keyColType = jobConf.get(org.apache.hadoop.hive.serde.Constants.LIST_COLUMN_TYPES).
-        split(",")[hbaseSerde.getKeyColumnOffset()];
+        split(",")[keyColPos];
     IndexPredicateAnalyzer analyzer =
-      HiveHBaseTableInputFormat.newIndexPredicateAnalyzer(keyColName, keyColType);
+      HiveHBaseTableInputFormat.newIndexPredicateAnalyzer(columnNames.get(keyColPos), keyColType,
+        hbaseSerde.getStorageFormatOfCol(keyColPos).get(0));
     List<IndexSearchCondition> searchConditions =
       new ArrayList<IndexSearchCondition>();
     ExprNodeDesc residualPredicate =
