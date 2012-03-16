@@ -1251,4 +1251,12 @@
   <description>The default filesystem and jobtracker for a region</description>
 </property>
 
+<property>
+  <name>hive.exec.driver.run.hooks</name>
+  <value></value>
+  <description>A comma separated list of hooks which implement HiveDriverRunHook and will be run at the
+  			   beginning and end of Driver.run, these will be run in the order specified
+  </description>
+</property>
+
 </configuration>
