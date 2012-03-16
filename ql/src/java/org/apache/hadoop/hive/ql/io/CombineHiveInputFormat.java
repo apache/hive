@@ -435,14 +435,16 @@ public class CombineHiveInputFormat<K extends WritableComparable, V extends Writ
     List<InputSplitShim> retLists = new ArrayList<InputSplitShim>();
     Map<String, ArrayList<InputSplitShim>> aliasToSplitList = new HashMap<String, ArrayList<InputSplitShim>>();
     Map<String, ArrayList<String>> pathToAliases = mrwork.getPathToAliases();
+    Map<String, ArrayList<String>> pathToAliasesNoScheme = removeScheme(pathToAliases);
 
     // Populate list of exclusive splits for every sampled alias
     //
     for (InputSplitShim split : splits) {
       String alias = null;
       for (Path path : split.getPaths()) {
+        boolean schemeless = path.toUri().getScheme() == null;
         List<String> l = HiveFileFormatUtils.doGetAliasesFromPath(
-            pathToAliases, path);
+            schemeless ? pathToAliasesNoScheme : pathToAliases, path);
         // a path for a split unqualified the split from being sampled if:
         // 1. it serves more than one alias
         // 2. the alias it serves is not sampled
@@ -498,6 +500,15 @@ public class CombineHiveInputFormat<K extends WritableComparable, V extends Writ
     }
 
     return retLists;
+  }
+
+  Map<String, ArrayList<String>> removeScheme(Map<String, ArrayList<String>> pathToAliases) {
+    Map<String, ArrayList<String>> result = new HashMap<String, ArrayList<String>>();
+    for (Map.Entry <String, ArrayList<String>> entry : pathToAliases.entrySet()) {
+      String newKey = new Path(entry.getKey()).toUri().getPath();
+      result.put(newKey, entry.getValue());
+    }
+    return result;
   }
 
   /**
