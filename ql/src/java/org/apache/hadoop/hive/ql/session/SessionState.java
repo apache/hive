@@ -116,6 +116,12 @@ public class SessionState {
 
   private Map<String, String> hiveVariables;
 
+  // This mapping collects all the configuration variables which have been set by the user
+  // explicitely, either via SET in the CLI, the hiveconf option, or a System property.
+  // It is a mapping from the variable name to its value.  Note that if a user repeatedly
+  // changes the value of a variable, the corresponding change will be made in this mapping.
+  private Map<String, String> overriddenConfigurations;
+
   /**
    * Lineage state.
    */
@@ -177,6 +183,8 @@ public class SessionState {
     this.conf = conf;
     isSilent = conf.getBoolVar(HiveConf.ConfVars.HIVESESSIONSILENT);
     ls = new LineageState();
+    overriddenConfigurations = new HashMap<String, String>();
+    overriddenConfigurations.putAll(HiveConf.getConfSystemProperties());
 
     // Register the Hive builtins jar and all of its functions
     try {
@@ -698,5 +706,16 @@ public class SessionState {
 
   public void setLastMapRedStatsList(List<MapRedStats> lastMapRedStatsList) {
     this.lastMapRedStatsList = lastMapRedStatsList;
+  }
+
+  public Map<String, String> getOverriddenConfigurations() {
+    if (overriddenConfigurations == null) {
+      overriddenConfigurations = new HashMap<String, String>();
+    }
+    return overriddenConfigurations;
+  }
+
+  public void setOverriddenConfigurations(Map<String, String> overriddenConfigurations) {
+    this.overriddenConfigurations = overriddenConfigurations;
   }
 }

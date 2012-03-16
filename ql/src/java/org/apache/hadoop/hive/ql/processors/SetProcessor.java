@@ -18,8 +18,8 @@
 
 package org.apache.hadoop.hive.ql.processors;
 
-import static org.apache.hadoop.hive.serde.Constants.STRING_TYPE_NAME;
 import static org.apache.hadoop.hive.serde.Constants.SERIALIZATION_NULL_FORMAT;
+import static org.apache.hadoop.hive.serde.Constants.STRING_TYPE_NAME;
 import static org.apache.hadoop.hive.serde2.MetadataTypedColumnsetSerDe.defaultNullString;
 
 import java.util.Map;
@@ -27,8 +27,8 @@ import java.util.Properties;
 import java.util.SortedMap;
 import java.util.TreeMap;
 
-import org.apache.hadoop.hive.metastore.api.Schema;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
+import org.apache.hadoop.hive.metastore.api.Schema;
 import org.apache.hadoop.hive.ql.parse.VariableSubstitution;
 import org.apache.hadoop.hive.ql.session.SessionState;
 
@@ -119,7 +119,9 @@ public class SetProcessor implements CommandProcessor {
       ss.getHiveVariables().put(propName, new VariableSubstitution().substitute(ss.getConf(),varvalue));
       return new CommandProcessorResponse(0);
     } else {
-      ss.getConf().set(varname, new VariableSubstitution().substitute(ss.getConf(),varvalue) );
+      String substitutedValue = new VariableSubstitution().substitute(ss.getConf(),varvalue);
+      ss.getConf().set(varname, substitutedValue );
+      ss.getOverriddenConfigurations().put(varname, substitutedValue);
       return new CommandProcessorResponse(0);
     }
   }
