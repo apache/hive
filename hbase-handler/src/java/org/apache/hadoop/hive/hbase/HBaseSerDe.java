@@ -788,6 +788,10 @@ public class HBaseSerDe implements SerDe {
     return iKey;
   }
 
+  List<Boolean> getStorageFormatOfCol(int colPos){
+    return columnsMapping.get(colPos).binaryStorage;
+  }
+
   public SerDeStats getSerDeStats() {
     // no support for statistics
     return null;
