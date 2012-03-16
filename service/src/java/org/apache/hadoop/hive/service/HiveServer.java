@@ -547,7 +547,7 @@ public class HiveServer extends ThriftHive {
     @Override
     public TProcessor getProcessor(TTransport trans) {
       try {
-        Iface handler = new HiveServerHandler(conf);
+        Iface handler = new HiveServerHandler(new HiveConf(conf));
         return new ThriftHive.Processor(handler);
       } catch (Exception e) {
         throw new RuntimeException(e);
