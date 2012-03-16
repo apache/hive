@@ -930,7 +930,8 @@ public class QTestUtil {
         ".*grantTime.*",
         ".*[.][.][.] [0-9]* more.*",
         ".*job_[0-9]*_[0-9]*.*",
-        ".*USING 'java -cp.*"
+        ".*USING 'java -cp.*",
+        "^Deleted.*",
     };
     maskPatterns(patterns, (new File(logDir, tname + ".out")).getPath());
 
