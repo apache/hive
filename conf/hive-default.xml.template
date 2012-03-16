@@ -791,7 +791,7 @@
 
 <property>
   <name>hive.exec.dynamic.partition</name>
-  <value>false</value>
+  <value>true</value>
   <description>Whether or not to allow dynamic partitions in DML/DDL.</description>
 </property>
 

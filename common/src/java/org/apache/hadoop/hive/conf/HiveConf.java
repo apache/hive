@@ -174,7 +174,7 @@ public class HiveConf extends Configuration {
     EXECPARALLETHREADNUMBER("hive.exec.parallel.thread.number", 8),
     HIVESPECULATIVEEXECREDUCERS("hive.mapred.reduce.tasks.speculative.execution", true),
     HIVECOUNTERSPULLINTERVAL("hive.exec.counters.pull.interval", 1000L),
-    DYNAMICPARTITIONING("hive.exec.dynamic.partition", false),
+    DYNAMICPARTITIONING("hive.exec.dynamic.partition", true),
     DYNAMICPARTITIONINGMODE("hive.exec.dynamic.partition.mode", "strict"),
     DYNAMICPARTITIONMAXPARTS("hive.exec.max.dynamic.partitions", 1000),
     DYNAMICPARTITIONMAXPARTSPERNODE("hive.exec.max.dynamic.partitions.pernode", 100),
