@@ -23,8 +23,10 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.PrintStream;
 import java.net.URL;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Properties;
 
 import javax.security.auth.login.LoginException;
@@ -865,13 +867,28 @@ public class HiveConf extends Configuration {
    * and the value is non-null and not an empty string.
    */
   private void applySystemProperties() {
+    Map<String, String> systemProperties = getConfSystemProperties();
+    for (Entry<String, String> systemProperty : systemProperties.entrySet()) {
+      this.set(systemProperty.getKey(), systemProperty.getValue());
+    }
+  }
+
+  /**
+   * This method returns a mapping from config variable name to its value for all config variables
+   * which have been set using System properties
+   */
+  public static Map<String, String> getConfSystemProperties() {
+    Map<String, String> systemProperties = new HashMap<String, String>();
+
     for (ConfVars oneVar : ConfVars.values()) {
       if (System.getProperty(oneVar.varname) != null) {
         if (System.getProperty(oneVar.varname).length() > 0) {
-          this.set(oneVar.varname, System.getProperty(oneVar.varname));
+          systemProperties.put(oneVar.varname, System.getProperty(oneVar.varname));
         }
       }
     }
+
+    return systemProperties;
   }
 
   /**
