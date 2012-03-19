@@ -658,8 +658,21 @@ public class CliDriver {
 
     String line;
     final String HISTORYFILE = ".hivehistory";
-    String historyFile = System.getProperty("user.home") + File.separator + HISTORYFILE;
-    reader.setHistory(new History(new File(historyFile)));
+    String historyDirectory = System.getProperty("user.home");
+    try {
+      if ((new File(historyDirectory)).exists()) {
+        String historyFile = historyDirectory + File.separator + HISTORYFILE;
+        reader.setHistory(new History(new File(historyFile)));
+      } else {
+        System.err.println("WARNING: Directory for Hive history file: " + historyDirectory +
+                           " does not exist.   History will not be available during this session.");
+      }
+    } catch (Exception e) {
+      System.err.println("WARNING: Encountered an error while trying to initialize Hive's " +
+                         "history file.  History will not be available during this session.");
+      System.err.println(e.getMessage());
+    }
+
     int ret = 0;
 
     String prefix = "";
