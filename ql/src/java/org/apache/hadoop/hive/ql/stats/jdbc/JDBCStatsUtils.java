@@ -72,6 +72,10 @@ public class JDBCStatsUtils {
     return JDBCStatsSetupConstants.PART_STAT_ID_COLUMN_NAME;
   }
 
+  public static String getTimestampColumnName() {
+    return JDBCStatsSetupConstants.PART_STAT_TIMESTAMP_COLUMN_NAME;
+  }
+
   public static String getStatTableName() {
     return JDBCStatsSetupConstants.PART_STAT_TABLE_NAME;
   }
@@ -104,7 +108,8 @@ public class JDBCStatsUtils {
    */
   public static String getCreate(String comment) {
     String create = "CREATE TABLE /* " + comment + " */ " + JDBCStatsUtils.getStatTableName() +
-          " (" + JDBCStatsUtils.getIdColumnName() + " VARCHAR(255) PRIMARY KEY ";
+          " (" + getTimestampColumnName() + " TIMESTAMP DEFAULT CURRENT_TIMESTAMP, " +
+          JDBCStatsUtils.getIdColumnName() + " VARCHAR(255) PRIMARY KEY ";
     for (int i = 0; i < supportedStats.size(); i++) {
       create += ", " + getStatColumnName(supportedStats.get(i)) + " BIGINT ";
     }
@@ -120,7 +125,7 @@ public class JDBCStatsUtils {
     for (int i = 0; i < supportedStats.size(); i++) {
       update += columnNameMapping.get(supportedStats.get(i)) + " = ? , ";
     }
-    update = update.substring(0, update.length() - 2);
+    update += getTimestampColumnName() + " = CURRENT_TIMESTAMP";
     update += " WHERE " + JDBCStatsUtils.getIdColumnName() + " = ? AND ? > ( SELECT TEMP."
         + getStatColumnName(getBasicStat()) + " FROM ( " +
         " SELECT " + getStatColumnName(getBasicStat()) + " FROM " + getStatTableName() + " WHERE "
@@ -132,12 +137,15 @@ public class JDBCStatsUtils {
    * Prepares INSERT statement for statistic publishing.
    */
   public static String getInsert(String comment) {
-    String insert = "INSERT INTO /* " + comment + " */ " + getStatTableName() + " VALUES (?, ";
+    String columns = JDBCStatsUtils.getIdColumnName();
+    String values = "?";
+
     for (int i = 0; i < supportedStats.size(); i++) {
-      insert += "? , ";
+      columns += ", " + getStatColumnName(supportedStats.get(i));
+      values += ", ?";
     }
-    insert = insert.substring(0, insert.length() - 3);
-    insert += ")";
+    String insert = "INSERT INTO /* " + comment + " */ " + getStatTableName() + "(" + columns +
+        ") VALUES (" + values + ")";
     return insert;
   }
 

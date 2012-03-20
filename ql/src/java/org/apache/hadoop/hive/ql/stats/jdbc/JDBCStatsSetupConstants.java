@@ -21,7 +21,12 @@ public final class JDBCStatsSetupConstants {
 
   public static final String PART_STAT_ID_COLUMN_NAME = "ID";
 
-  public static final String PART_STAT_TABLE_NAME = "PARTITION_STATS";
+  public static final String PART_STAT_TIMESTAMP_COLUMN_NAME = "TS";
+
+  // NOTE:
+  // For all table names past and future, Hive will not drop old versions of this table, it is up
+  // to the administrator
+  public static final String PART_STAT_TABLE_NAME = "PARTITION_STATS_V2";
 
   // supported statistics - column names
 
