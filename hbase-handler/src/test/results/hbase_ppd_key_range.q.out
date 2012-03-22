@@ -327,9 +327,12 @@ STAGE PLANS:
         hbase_pushdown 
           TableScan
             alias: hbase_pushdown
+            filterExpr:
+                expr: ((key < '80') and (key > '90'))
+                type: boolean
             Filter Operator
               predicate:
-                  expr: (((key < '80') and (key > '90')) and (value like '%90%'))
+                  expr: (value like '%90%')
                   type: boolean
               Select Operator
                 expressions:
@@ -478,11 +481,11 @@ STAGE PLANS:
       limit: -1
 
 
-PREHOOK: query: -- following will not be pushed into hbase
+PREHOOK: query: -- following will get pushed into hbase after HIVE-2819
 explain select * from hbase_pushdown where key > '281' 
 and key < '287'
 PREHOOK: type: QUERY
-POSTHOOK: query: -- following will not be pushed into hbase
+POSTHOOK: query: -- following will get pushed into hbase after HIVE-2819
 explain select * from hbase_pushdown where key > '281' 
 and key < '287'
 POSTHOOK: type: QUERY
@@ -500,6 +503,9 @@ STAGE PLANS:
         hbase_pushdown 
           TableScan
             alias: hbase_pushdown
+            filterExpr:
+                expr: ((key > '281') and (key < '287'))
+                type: boolean
             Filter Operator
               predicate:
                   expr: ((key > '281') and (key < '287'))

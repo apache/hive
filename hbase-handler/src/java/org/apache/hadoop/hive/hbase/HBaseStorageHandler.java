@@ -301,12 +301,22 @@ public class HBaseStorageHandler extends DefaultStorageHandler
       new ArrayList<IndexSearchCondition>();
     ExprNodeDesc residualPredicate =
       analyzer.analyzePredicate(predicate, searchConditions);
-    if (searchConditions.size() != 1) {
+    int scSize = searchConditions.size();
+    if (scSize < 1 || 2 < scSize) {
       // Either there was nothing which could be pushed down (size = 0),
-      // or more than one predicate (size > 1); in the latter case,
-      // we bail out for now since multiple lookups on the key are
-      // either contradictory or redundant.  We'll need to handle
-      // this better later when we support more interesting predicates.
+      // there were complex predicates which we don't support yet.
+      // Currently supported are one of the form:
+      // 1. key < 20                        (size = 1)
+      // 2. key = 20                        (size = 1)
+      // 3. key < 20 and key > 10           (size = 2)
+      return null;
+    }
+    if (scSize == 2 &&
+        (searchConditions.get(0).getComparisonOp()
+        .equals("org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPEqual") ||
+        searchConditions.get(1).getComparisonOp()
+        .equals("org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPEqual"))) {
+      // If one of the predicates is =, then any other predicate with it is illegal.
       return null;
     }
 
