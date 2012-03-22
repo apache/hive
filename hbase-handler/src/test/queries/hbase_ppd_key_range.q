@@ -53,7 +53,7 @@ where (case when key<'90' then 2 else 4 end) > 3;
 explain select * from hbase_pushdown
 where key<='80' or value like '%90%';
 
--- following will not be pushed into hbase
+-- following will get pushed into hbase after HIVE-2819
 explain select * from hbase_pushdown where key > '281' 
 and key < '287';
 

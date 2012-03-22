@@ -274,51 +274,50 @@ public class HiveHBaseTableInputFormat extends TableInputFormatBase
 
     // There should be exactly one predicate since we already
     // negotiated that also.
-    if (searchConditions.size() != 1) {
+    if (searchConditions.size() < 1 || searchConditions.size() > 2) {
       throw new RuntimeException(
-        "Exactly one search condition expected in push down");
+        "Either one or two search conditions expected in push down");
     }
 
     // Convert the search condition into a restriction on the HBase scan
-    IndexSearchCondition sc = searchConditions.get(0);
-    ExprNodeConstantEvaluator eval =
-      new ExprNodeConstantEvaluator(sc.getConstantDesc());
-
-    PrimitiveObjectInspector objInspector;
-    Object writable;
-
-    try{
-      objInspector = (PrimitiveObjectInspector)eval.initialize(null);
-      writable = eval.evaluate(null);
-    } catch (ClassCastException cce) {
-      throw new IOException("Currently only primitve types are supported. Found: " +
-        sc.getConstantDesc().getTypeString());
-    } catch (HiveException e) {
-      throw new IOException(e);
-    }
-
-    byte [] constantVal = getConstantVal(writable, objInspector, isKeyBinary);
     byte [] startRow = HConstants.EMPTY_START_ROW, stopRow = HConstants.EMPTY_END_ROW;
-    String comparisonOp = sc.getComparisonOp();
+    for (IndexSearchCondition sc : searchConditions){
 
-    if("org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPEqual".equals(comparisonOp)){
-      startRow = constantVal;
-      stopRow = getNextBA(constantVal);
-    } else if ("org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPLessThan".equals(comparisonOp)){
-      stopRow = constantVal;
-    } else if ("org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPEqualOrGreaterThan"
-        .equals(comparisonOp)) {
-      startRow = constantVal;
-    } else if ("org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPGreaterThan"
-        .equals(comparisonOp)){
-      startRow = getNextBA(constantVal);
-    } else if ("org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPEqualOrLessThan"
-        .equals(comparisonOp)){
-      stopRow = getNextBA(constantVal);
-    } else {
-      throw new IOException(comparisonOp + " is not a supported comparison operator");
+      ExprNodeConstantEvaluator eval = new ExprNodeConstantEvaluator(sc.getConstantDesc());
+      PrimitiveObjectInspector objInspector;
+      Object writable;
+
+      try{
+        objInspector = (PrimitiveObjectInspector)eval.initialize(null);
+        writable = eval.evaluate(null);
+      } catch (ClassCastException cce) {
+        throw new IOException("Currently only primitve types are supported. Found: " +
+            sc.getConstantDesc().getTypeString());
+      } catch (HiveException e) {
+        throw new IOException(e);
+      }
+
+      byte [] constantVal = getConstantVal(writable, objInspector, isKeyBinary);
+      String comparisonOp = sc.getComparisonOp();
+
+      if("org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPEqual".equals(comparisonOp)){
+        startRow = constantVal;
+        stopRow = getNextBA(constantVal);
+      } else if ("org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPLessThan".equals(comparisonOp)){
+        stopRow = constantVal;
+      } else if ("org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPEqualOrGreaterThan"
+          .equals(comparisonOp)) {
+        startRow = constantVal;
+      } else if ("org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPGreaterThan"
+          .equals(comparisonOp)){
+        startRow = getNextBA(constantVal);
+      } else if ("org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPEqualOrLessThan"
+          .equals(comparisonOp)){
+        stopRow = getNextBA(constantVal);
+      } else {
+        throw new IOException(comparisonOp + " is not a supported comparison operator");
+      }
     }
-
     if (tableSplit != null) {
       tableSplit = new TableSplit(
         tableSplit.getTableName(),
@@ -335,7 +334,8 @@ public class HiveHBaseTableInputFormat extends TableInputFormatBase
         boolean isKeyBinary) throws IOException{
 
         if (!isKeyBinary){
-          // Key is stored in text format. Get bytes representation of constant also of text format.
+          // Key is stored in text format. Get bytes representation of constant also of
+          // text format.
           byte[] startRow;
           ByteStream.Output serializeStream = new ByteStream.Output();
           LazyUtils.writePrimitiveUTF8(serializeStream, writable, poi, false, (byte) 0, null);

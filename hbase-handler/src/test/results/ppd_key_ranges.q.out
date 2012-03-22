@@ -1,0 +1,251 @@
+PREHOOK: query: CREATE TABLE hbase_ppd_keyrange(key int, value string) 
+STORED BY 'org.apache.hadoop.hive.hbase.HBaseStorageHandler'
+WITH SERDEPROPERTIES ("hbase.columns.mapping" = ":key#binary,cf:string")
+PREHOOK: type: CREATETABLE
+POSTHOOK: query: CREATE TABLE hbase_ppd_keyrange(key int, value string) 
+STORED BY 'org.apache.hadoop.hive.hbase.HBaseStorageHandler'
+WITH SERDEPROPERTIES ("hbase.columns.mapping" = ":key#binary,cf:string")
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: default@hbase_ppd_keyrange
+PREHOOK: query: INSERT OVERWRITE TABLE hbase_ppd_keyrange 
+SELECT *
+FROM src
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@hbase_ppd_keyrange
+POSTHOOK: query: INSERT OVERWRITE TABLE hbase_ppd_keyrange 
+SELECT *
+FROM src
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@hbase_ppd_keyrange
+PREHOOK: query: explain select * from hbase_ppd_keyrange where key > 8 and key < 21
+PREHOOK: type: QUERY
+POSTHOOK: query: explain select * from hbase_ppd_keyrange where key > 8 and key < 21
+POSTHOOK: type: QUERY
+ABSTRACT SYNTAX TREE:
+  (TOK_QUERY (TOK_FROM (TOK_TABREF (TOK_TABNAME hbase_ppd_keyrange))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR TOK_ALLCOLREF)) (TOK_WHERE (and (> (TOK_TABLE_OR_COL key) 8) (< (TOK_TABLE_OR_COL key) 21)))))
+
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-1
+    Map Reduce
+      Alias -> Map Operator Tree:
+        hbase_ppd_keyrange 
+          TableScan
+            alias: hbase_ppd_keyrange
+            filterExpr:
+                expr: ((key > 8) and (key < 21))
+                type: boolean
+            Filter Operator
+              predicate:
+                  expr: ((key > 8) and (key < 21))
+                  type: boolean
+              Select Operator
+                expressions:
+                      expr: key
+                      type: int
+                      expr: value
+                      type: string
+                outputColumnNames: _col0, _col1
+                File Output Operator
+                  compressed: false
+                  GlobalTableId: 0
+                  table:
+                      input format: org.apache.hadoop.mapred.TextInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+
+
+PREHOOK: query: select * from hbase_ppd_keyrange where key > 8 and key < 21
+PREHOOK: type: QUERY
+PREHOOK: Input: default@hbase_ppd_keyrange
+#### A masked pattern was here ####
+POSTHOOK: query: select * from hbase_ppd_keyrange where key > 8 and key < 21
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@hbase_ppd_keyrange
+#### A masked pattern was here ####
+9	val_9
+10	val_10
+11	val_11
+12	val_12
+15	val_15
+17	val_17
+18	val_18
+19	val_19
+20	val_20
+PREHOOK: query: explain select * from hbase_ppd_keyrange where key > 8 and key <= 17
+PREHOOK: type: QUERY
+POSTHOOK: query: explain select * from hbase_ppd_keyrange where key > 8 and key <= 17
+POSTHOOK: type: QUERY
+ABSTRACT SYNTAX TREE:
+  (TOK_QUERY (TOK_FROM (TOK_TABREF (TOK_TABNAME hbase_ppd_keyrange))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR TOK_ALLCOLREF)) (TOK_WHERE (and (> (TOK_TABLE_OR_COL key) 8) (<= (TOK_TABLE_OR_COL key) 17)))))
+
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-1
+    Map Reduce
+      Alias -> Map Operator Tree:
+        hbase_ppd_keyrange 
+          TableScan
+            alias: hbase_ppd_keyrange
+            filterExpr:
+                expr: ((key > 8) and (key <= 17))
+                type: boolean
+            Filter Operator
+              predicate:
+                  expr: ((key > 8) and (key <= 17))
+                  type: boolean
+              Select Operator
+                expressions:
+                      expr: key
+                      type: int
+                      expr: value
+                      type: string
+                outputColumnNames: _col0, _col1
+                File Output Operator
+                  compressed: false
+                  GlobalTableId: 0
+                  table:
+                      input format: org.apache.hadoop.mapred.TextInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+
+
+PREHOOK: query: select * from hbase_ppd_keyrange where key > 8 and key <= 17
+PREHOOK: type: QUERY
+PREHOOK: Input: default@hbase_ppd_keyrange
+#### A masked pattern was here ####
+POSTHOOK: query: select * from hbase_ppd_keyrange where key > 8 and key <= 17
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@hbase_ppd_keyrange
+#### A masked pattern was here ####
+9	val_9
+10	val_10
+11	val_11
+12	val_12
+15	val_15
+17	val_17
+PREHOOK: query: explain select * from hbase_ppd_keyrange where key > 8 and key <= 17 and value like '%11%'
+PREHOOK: type: QUERY
+POSTHOOK: query: explain select * from hbase_ppd_keyrange where key > 8 and key <= 17 and value like '%11%'
+POSTHOOK: type: QUERY
+ABSTRACT SYNTAX TREE:
+  (TOK_QUERY (TOK_FROM (TOK_TABREF (TOK_TABNAME hbase_ppd_keyrange))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR TOK_ALLCOLREF)) (TOK_WHERE (and (and (> (TOK_TABLE_OR_COL key) 8) (<= (TOK_TABLE_OR_COL key) 17)) (like (TOK_TABLE_OR_COL value) '%11%')))))
+
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-1
+    Map Reduce
+      Alias -> Map Operator Tree:
+        hbase_ppd_keyrange 
+          TableScan
+            alias: hbase_ppd_keyrange
+            filterExpr:
+                expr: ((key > 8) and (key <= 17))
+                type: boolean
+            Filter Operator
+              predicate:
+                  expr: (value like '%11%')
+                  type: boolean
+              Select Operator
+                expressions:
+                      expr: key
+                      type: int
+                      expr: value
+                      type: string
+                outputColumnNames: _col0, _col1
+                File Output Operator
+                  compressed: false
+                  GlobalTableId: 0
+                  table:
+                      input format: org.apache.hadoop.mapred.TextInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+
+
+PREHOOK: query: select * from hbase_ppd_keyrange where key > 8 and key <= 17 and value like '%11%'
+PREHOOK: type: QUERY
+PREHOOK: Input: default@hbase_ppd_keyrange
+#### A masked pattern was here ####
+POSTHOOK: query: select * from hbase_ppd_keyrange where key > 8 and key <= 17 and value like '%11%'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@hbase_ppd_keyrange
+#### A masked pattern was here ####
+11	val_11
+PREHOOK: query: explain select * from hbase_ppd_keyrange where key >= 9 and key < 17 and key = 11
+PREHOOK: type: QUERY
+POSTHOOK: query: explain select * from hbase_ppd_keyrange where key >= 9 and key < 17 and key = 11
+POSTHOOK: type: QUERY
+ABSTRACT SYNTAX TREE:
+  (TOK_QUERY (TOK_FROM (TOK_TABREF (TOK_TABNAME hbase_ppd_keyrange))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR TOK_ALLCOLREF)) (TOK_WHERE (and (and (>= (TOK_TABLE_OR_COL key) 9) (< (TOK_TABLE_OR_COL key) 17)) (= (TOK_TABLE_OR_COL key) 11)))))
+
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-1
+    Map Reduce
+      Alias -> Map Operator Tree:
+        hbase_ppd_keyrange 
+          TableScan
+            alias: hbase_ppd_keyrange
+            Filter Operator
+              predicate:
+                  expr: (((key >= 9) and (key < 17)) and (key = 11))
+                  type: boolean
+              Select Operator
+                expressions:
+                      expr: key
+                      type: int
+                      expr: value
+                      type: string
+                outputColumnNames: _col0, _col1
+                File Output Operator
+                  compressed: false
+                  GlobalTableId: 0
+                  table:
+                      input format: org.apache.hadoop.mapred.TextInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+
+
+PREHOOK: query: select * from hbase_ppd_keyrange where key >=9  and key < 17 and key = 11
+PREHOOK: type: QUERY
+PREHOOK: Input: default@hbase_ppd_keyrange
+#### A masked pattern was here ####
+POSTHOOK: query: select * from hbase_ppd_keyrange where key >=9  and key < 17 and key = 11
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@hbase_ppd_keyrange
+#### A masked pattern was here ####
+11	val_11
+PREHOOK: query: drop table  hbase_ppd_keyrange
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@hbase_ppd_keyrange
+PREHOOK: Output: default@hbase_ppd_keyrange
+POSTHOOK: query: drop table  hbase_ppd_keyrange
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@hbase_ppd_keyrange
+POSTHOOK: Output: default@hbase_ppd_keyrange
