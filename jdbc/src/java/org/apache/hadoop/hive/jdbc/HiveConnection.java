@@ -18,6 +18,7 @@
 
 package org.apache.hadoop.hive.jdbc;
 
+import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.service.HiveClient;
 import org.apache.hadoop.hive.service.HiveInterface;
@@ -58,6 +59,23 @@ public class HiveConnection implements java.sql.Connection {
   private SQLWarning warningChain = null;
 
   private static final String URI_PREFIX = "jdbc:hive://";
+
+  /**
+   * Create a connection to a local Hive
+   *
+   * @param hiveConf
+   * @throws SQLException
+   */
+  public HiveConnection(HiveConf hiveConf) throws SQLException {
+    try {
+      client = new HiveServer.HiveServerHandler(hiveConf);
+    } catch (MetaException e) {
+      throw new SQLException("Error accessing Hive metastore: "
+          + e.getMessage(), "08S01",e);
+    }
+    isClosed = false;
+    configureConnection();
+  }
 
   /**
    * TODO: - parse uri (use java.net.URI?).
