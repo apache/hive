@@ -762,7 +762,7 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
 
   @Override
   public void augmentPlan() {
-    PlanUtils.configureTableJobPropertiesForStorageHandler(
+    PlanUtils.configureOutputJobPropertiesForStorageHandler(
         getConf().getTableInfo());
   }
 

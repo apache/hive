@@ -68,11 +68,22 @@ public class DefaultStorageHandler implements HiveStorageHandler {
      return new DefaultHiveAuthorizationProvider();
   }
 
-  @Override
-  public void configureTableJobProperties(
-    TableDesc tableDesc,
-    Map<String, String> jobProperties) {
+   @Override
+  public void configureInputJobProperties(TableDesc tableDesc,
+                                          Map<String, String> jobProperties) {
     // do nothing by default
+  }
+
+  @Override
+  public void configureOutputJobProperties(TableDesc tableDesc,
+                                           Map<String, String> jobProperties) {
+    // do nothing by default
+  }
+
+  @Override
+  public void configureTableJobProperties(TableDesc tableDesc,
+                                          Map<String, String> jobProperties) {
+    //do nothing by default
   }
 
   @Override
