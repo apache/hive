@@ -129,7 +129,7 @@ public class MapredLocalWork implements Serializable {
       if (fetchWork.getTblDesc() == null) {
         continue;
       }
-      PlanUtils.configureTableJobPropertiesForStorageHandler(
+      PlanUtils.configureInputJobPropertiesForStorageHandler(
         fetchWork.getTblDesc());
     }
   }
@@ -208,7 +208,7 @@ public class MapredLocalWork implements Serializable {
 
     private String getBaseFileName (String path) {
       try {
-	return ((new Path(path)).getName());
+        return ((new Path(path)).getName());
       } catch (Exception ex) {
         // This could be due to either URI syntax error or File constructor
         // illegal arg; we don't really care which one it is.

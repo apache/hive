@@ -255,6 +255,19 @@ public class HBaseStorageHandler extends DefaultStorageHandler
   }
 
   @Override
+  public void configureInputJobProperties(
+    TableDesc tableDesc,
+    Map<String, String> jobProperties) {
+      configureTableJobProperties(tableDesc, jobProperties);
+  }
+
+  @Override
+  public void configureOutputJobProperties(
+    TableDesc tableDesc,
+    Map<String, String> jobProperties) {
+      configureTableJobProperties(tableDesc, jobProperties);
+  }
+
   public void configureTableJobProperties(
     TableDesc tableDesc,
     Map<String, String> jobProperties) {
