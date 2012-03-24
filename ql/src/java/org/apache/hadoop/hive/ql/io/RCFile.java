@@ -1187,6 +1187,14 @@ public class RCFile {
     }
 
     /**
+     * Return the metadata (string to string map) that was written into the
+     * file.
+     */
+    public Metadata getMetadata() {
+      return metadata;
+    }
+
+    /**
      * Override this method to specialize the type of
      * {@link FSDataInputStream} returned.
      */

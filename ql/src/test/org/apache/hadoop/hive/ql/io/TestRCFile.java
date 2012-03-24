@@ -50,6 +50,7 @@ import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils.ObjectInspectorCopyOption;
 import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.LongWritable;
+import org.apache.hadoop.io.SequenceFile.Metadata;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.io.Writable;
 import org.apache.hadoop.io.compress.CompressionCodec;
@@ -148,10 +149,11 @@ public class TestRCFile extends TestCase {
         "123".getBytes("UTF-8"), "1000".getBytes("UTF-8"),
         "5.3".getBytes("UTF-8"), "hive and hadoop".getBytes("UTF-8"),
         new byte[0], "NULL".getBytes("UTF-8")};
-
+    Metadata metadata = new Metadata();
+    metadata.set(new Text("apple"), new Text("block"));
     RCFileOutputFormat.setColumnNumber(conf, expectedFieldsData.length);
     RCFile.Writer writer = new RCFile.Writer(fs, conf, file, null,
-        new DefaultCodec());
+                                             metadata, new DefaultCodec());
     BytesRefArrayWritable bytes = new BytesRefArrayWritable(record_1.length);
     for (int i = 0; i < record_1.length; i++) {
       BytesRefWritable cu = new BytesRefWritable(record_1[i], 0,
@@ -179,7 +181,8 @@ public class TestRCFile extends TestCase {
         new Text("hive and hadoop"), null, null};
 
     RCFile.Reader reader = new RCFile.Reader(fs, file, conf);
-
+    assertEquals(new Text("block"),
+                 reader.getMetadata().get(new Text("apple")));
     LongWritable rowID = new LongWritable();
 
     for (int i = 0; i < 2; i++) {
@@ -518,10 +521,10 @@ public class TestRCFile extends TestCase {
     }
     assertEquals("readCount should be equal to writeCount", readCount, writeCount);
   }
-  
+
 
   // adopted Hadoop-5476 (calling new SequenceFile.Reader(...) leaves an
-  // InputStream open, if the given sequence file is broken) to RCFile 
+  // InputStream open, if the given sequence file is broken) to RCFile
   private static class TestFSDataInputStream extends FSDataInputStream {
     private boolean closed = false;
 
