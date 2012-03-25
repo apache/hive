@@ -18,9 +18,11 @@
 
 package org.apache.hadoop.hive.thrift;
 
+import java.net.Socket;
 import java.util.concurrent.ConcurrentMap;
 
 import org.apache.hadoop.security.UserGroupInformation;
+import org.apache.thrift.transport.TSocket;
 import org.apache.thrift.transport.TTransport;
 import org.apache.thrift.transport.TTransportFactory;
 
@@ -44,6 +46,18 @@ public class TUGIContainingTransport extends TFilterTransport {
 
   public void setClientUGI(UserGroupInformation ugi){
     this.ugi = ugi;
+  }
+
+  /**
+   * If the underlying TTransport is an instance of TSocket, it returns the Socket object
+   * which it contains.  Otherwise it returns null.
+   */
+  public Socket getSocket() {
+    if (wrapped instanceof TSocket) {
+      return (((TSocket)wrapped).getSocket());
+    }
+
+    return null;
   }
 
   /** Factory to create TUGIContainingTransport.

@@ -21,12 +21,12 @@ package org.apache.hadoop.hive.metastore;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.net.Socket;
 import java.security.PrivilegedExceptionAction;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.hadoop.hive.metastore.api.ThriftHiveMetastore;
 import org.apache.hadoop.hive.metastore.api.ThriftHiveMetastore.Iface;
 import org.apache.hadoop.hive.metastore.api.ThriftHiveMetastore.Processor;
 import org.apache.hadoop.hive.metastore.api.ThriftHiveMetastore.set_ugi_args;
@@ -53,7 +53,7 @@ import org.apache.thrift.protocol.TType;
  *  Note that old clients will never call set_ugi() and thus ugi will never be received on server
  *  side, in which case server exhibits previous behavior and continues as usual.
  */
-public class TUGIBasedProcessor<I extends Iface> extends ThriftHiveMetastore.Processor<Iface> {
+public class TUGIBasedProcessor<I extends Iface> extends TSetIpAddressProcessor<Iface> {
 
   private final I iface;
   private final Map<String,  org.apache.thrift.ProcessFunction<I, ? extends  TBase<?,?>>>
@@ -76,6 +76,7 @@ public class TUGIBasedProcessor<I extends Iface> extends ThriftHiveMetastore.Pro
 
   @Override
   public boolean process(final TProtocol in, final TProtocol out) throws TException {
+    setIpAddress(in);
 
     final TMessage msg = in.readMessageBegin();
     final ProcessFunction<I, ? extends  TBase<?,?>> fn = functions.get(msg.name);
@@ -174,5 +175,14 @@ public class TUGIBasedProcessor<I extends Iface> extends ThriftHiveMetastore.Pro
     result.write(oprot);
     oprot.writeMessageEnd();
     oprot.getTransport().flush();
+  }
+
+  @Override
+  protected void setIpAddress(final TProtocol in) {
+    TUGIContainingTransport ugiTrans = (TUGIContainingTransport)in.getTransport();
+    Socket socket = ugiTrans.getSocket();
+    if (socket != null) {
+      setIpAddress(socket);
+    }
   }
 }
