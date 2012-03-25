@@ -203,6 +203,26 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       }
     };
 
+    // This will only be set if the metastore is being accessed from a metastore Thrift server,
+    // not if it is from the CLI.  Also, only if the TTransport being used to connect is an
+    // instance of TSocket.
+    private static ThreadLocal<String> threadLocalIpAddress = new ThreadLocal<String>() {
+      @Override
+      protected synchronized String initialValue() {
+        return null;
+      }
+    };
+
+    public static void setIpAddress(String ipAddress) {
+      threadLocalIpAddress.set(ipAddress);
+    }
+
+    // This will return null if the metastore is not being accessed from a metastore Thrift server,
+    // or if the TTransport being used to connect is not an instance of TSocket.
+    public static String getIpAddress() {
+      return threadLocalIpAddress.get();
+    }
+
     public static Integer get() {
       return threadLocalId.get();
     }
@@ -2914,7 +2934,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
           LOG.info("Starting DB backed MetaStore Server with SetUGI enabled");
         } else {
           transFactory = new TTransportFactory();
-          processor = new ThriftHiveMetastore.Processor<HMSHandler>(handler);
+          processor = new TSetIpAddressProcessor<HMSHandler>(handler);
           LOG.info("Starting DB backed MetaStore Server");
         }
       }
