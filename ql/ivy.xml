@@ -63,5 +63,6 @@
                 transitive="false"/>
     <dependency org="org.apache.derby" name="derby" rev="${derby.version}"/>
     <dependency org="com.googlecode.javaewah" name="JavaEWAH" rev="${javaewah.version}"/>
+    <dependency org="junit" name="junit" rev="${junit.version}"/>
   </dependencies>
 </ivy-module>
