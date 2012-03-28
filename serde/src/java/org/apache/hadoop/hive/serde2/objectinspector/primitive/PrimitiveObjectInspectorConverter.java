@@ -336,7 +336,11 @@ public class PrimitiveObjectInspectorConverter {
         t.set(String.valueOf(((DoubleObjectInspector) inputOI).get(input)));
         return t;
       case STRING:
-        t.set(((StringObjectInspector) inputOI).getPrimitiveJavaObject(input));
+	if (inputOI.preferWritable()) {
+	  t.set(((StringObjectInspector) inputOI).getPrimitiveWritableObject(input));
+	} else {
+	  t.set(((StringObjectInspector) inputOI).getPrimitiveJavaObject(input));
+	}
         return t;
       case TIMESTAMP:
         t.set(((TimestampObjectInspector) inputOI)

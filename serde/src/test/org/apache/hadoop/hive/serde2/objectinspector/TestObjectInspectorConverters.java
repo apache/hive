@@ -116,6 +116,16 @@ public class TestObjectInspectorConverters extends TestCase {
       assertEquals("TextConverter", new Text("hive"), textConverter
           .convert(new BytesWritable(new byte[]
               {(byte)'h', (byte)'i',(byte)'v',(byte)'e'})));
+      textConverter = ObjectInspectorConverters.getConverter(
+          PrimitiveObjectInspectorFactory.writableStringObjectInspector,
+          PrimitiveObjectInspectorFactory.writableStringObjectInspector);
+      assertEquals("TextConverter", new Text("hive"), textConverter
+	  .convert(new Text("hive")));
+      textConverter = ObjectInspectorConverters.getConverter(
+          PrimitiveObjectInspectorFactory.javaStringObjectInspector,
+          PrimitiveObjectInspectorFactory.writableStringObjectInspector);
+      assertEquals("TextConverter", new Text("hive"), textConverter
+	  .convert(new String("hive")));
 
       // Binary
       Converter baConverter = ObjectInspectorConverters.getConverter(
