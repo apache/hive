@@ -539,6 +539,23 @@ public class RCFile {
   }
 
   /**
+   * Create a metadata object with alternating key-value pairs.
+   * Eg. metadata(key1, value1, key2, value2)
+   */
+  public static Metadata createMetadata(Text... values) {
+    if (values.length % 2 != 0) {
+      throw new IllegalArgumentException("Must have a matched set of " +
+                                         "key-value pairs. " + values.length+
+                                         " strings supplied.");
+    }
+    Metadata result = new Metadata();
+    for(int i=0; i < values.length; i += 2) {
+      result.set(values[i], values[i+1]);
+    }
+    return result;
+  }
+
+  /**
    * Write KeyBuffer/ValueBuffer pairs to a RCFile. RCFile's format is
    * compatible with SequenceFile's.
    *
@@ -1187,11 +1204,19 @@ public class RCFile {
     }
 
     /**
-     * Return the metadata (string to string map) that was written into the
+     * Return the metadata (Text to Text map) that was written into the
      * file.
      */
     public Metadata getMetadata() {
       return metadata;
+    }
+
+    /**
+     * Return the metadata value associated with the given key.
+     * @param key the metadata key to retrieve
+     */
+    public Text getMetadataValueOf(Text key) {
+      return metadata.get(key);
     }
 
     /**

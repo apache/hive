@@ -50,7 +50,6 @@ import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils.ObjectInspectorCopyOption;
 import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.LongWritable;
-import org.apache.hadoop.io.SequenceFile.Metadata;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.io.Writable;
 import org.apache.hadoop.io.compress.CompressionCodec;
@@ -149,11 +148,14 @@ public class TestRCFile extends TestCase {
         "123".getBytes("UTF-8"), "1000".getBytes("UTF-8"),
         "5.3".getBytes("UTF-8"), "hive and hadoop".getBytes("UTF-8"),
         new byte[0], "NULL".getBytes("UTF-8")};
-    Metadata metadata = new Metadata();
-    metadata.set(new Text("apple"), new Text("block"));
     RCFileOutputFormat.setColumnNumber(conf, expectedFieldsData.length);
-    RCFile.Writer writer = new RCFile.Writer(fs, conf, file, null,
-                                             metadata, new DefaultCodec());
+    RCFile.Writer writer =
+      new RCFile.Writer(fs, conf, file, null,
+                        RCFile.createMetadata(new Text("apple"),
+                                              new Text("block"),
+                                              new Text("cat"),
+                                              new Text("dog")),
+                        new DefaultCodec());
     BytesRefArrayWritable bytes = new BytesRefArrayWritable(record_1.length);
     for (int i = 0; i < record_1.length; i++) {
       BytesRefWritable cu = new BytesRefWritable(record_1[i], 0,
@@ -183,6 +185,10 @@ public class TestRCFile extends TestCase {
     RCFile.Reader reader = new RCFile.Reader(fs, file, conf);
     assertEquals(new Text("block"),
                  reader.getMetadata().get(new Text("apple")));
+    assertEquals(new Text("block"),
+                 reader.getMetadataValueOf(new Text("apple")));
+    assertEquals(new Text("dog"),
+                 reader.getMetadataValueOf(new Text("cat")));
     LongWritable rowID = new LongWritable();
 
     for (int i = 0; i < 2; i++) {
