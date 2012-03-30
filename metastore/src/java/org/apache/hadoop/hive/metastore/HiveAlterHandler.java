@@ -296,6 +296,7 @@ public class HiveAlterHandler implements AlterHandler {
       try {
         destPath = new Path(wh.getTablePath(msdb.getDatabase(dbname), name),
             Warehouse.makePartName(tbl.getPartitionKeys(), new_part.getValues()));
+        destPath = constructRenamedPartitionPath(destPath, new_part);
       } catch (NoSuchObjectException e) {
         LOG.debug(e);
         throw new InvalidOperationException(
@@ -397,5 +398,16 @@ public class HiveAlterHandler implements AlterHandler {
     }
 
     return true;
+  }
+
+  /**
+   * Uses the scheme and authority of the partition's current location, and the path constructed
+   * using the partition's new name to construct a path for the partition's new location.
+   */
+  private Path constructRenamedPartitionPath(Path defaultPath, Partition part) {
+    Path oldPath = new Path(part.getSd().getLocation());
+    URI oldUri = oldPath.toUri();
+
+    return new Path(oldUri.getScheme(), oldUri.getAuthority(), defaultPath.toUri().getPath());
   }
 }
