@@ -381,6 +381,10 @@ public class HadoopJobExecHelper {
         console.printError("[Fatal Error] " + errMsg.toString());
         success = false;
       } else {
+        SessionState ss = SessionState.get();
+        if (ss != null) {
+          ss.getHiveHistory().setTaskCounters(SessionState.get().getQueryId(), getId(), ctrs);
+        }
         success = rj.isSuccessful();
       }
     }
