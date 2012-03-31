@@ -36,6 +36,11 @@ public class CachingPrintStream extends PrintStream {
     super(out, autoFlush, encoding);
   }
 
+  public CachingPrintStream(OutputStream out) {
+
+    super(out);
+  }
+
   @Override
   public void println(String out) {
     output.add(out);

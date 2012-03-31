@@ -1100,6 +1100,7 @@ public class Driver implements CommandProcessor {
       DriverContext driverCxt = new DriverContext(runnable, ctx);
 
       SessionState.get().setLastMapRedStatsList(new ArrayList<MapRedStats>());
+      SessionState.get().setLocalMapRedErrors(new HashMap<String, List<String>>());
 
       // Add root Tasks to runnable
 
