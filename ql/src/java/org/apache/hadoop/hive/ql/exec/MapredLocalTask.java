@@ -40,6 +40,7 @@ import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.FileUtil;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.hive.common.io.CachingPrintStream;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.Context;
 import org.apache.hadoop.hive.ql.DriverContext;
@@ -216,8 +217,10 @@ public class MapredLocalTask extends Task<MapredLocalWork> implements Serializab
       // Run ExecDriver in another JVM
       executor = Runtime.getRuntime().exec(cmdLine, env, new File(workDir));
 
+      CachingPrintStream errPrintStream = new CachingPrintStream(System.err);
+
       StreamPrinter outPrinter = new StreamPrinter(executor.getInputStream(), null, System.out);
-      StreamPrinter errPrinter = new StreamPrinter(executor.getErrorStream(), null, System.err);
+      StreamPrinter errPrinter = new StreamPrinter(executor.getErrorStream(), null, errPrintStream);
 
       outPrinter.start();
       errPrinter.start();
@@ -226,6 +229,9 @@ public class MapredLocalTask extends Task<MapredLocalWork> implements Serializab
 
       if (exitVal != 0) {
         LOG.error("Execution failed with exit status: " + exitVal);
+        if (SessionState.get() != null) {
+          SessionState.get().addLocalMapRedErrors(getId(), errPrintStream.getOutput());
+        }
       } else {
         LOG.info("Execution completed successfully");
         console.printInfo("Mapred Local Task Succeeded . Convert the Join into MapJoin");

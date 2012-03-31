@@ -24,6 +24,7 @@ import java.io.InputStream;
 import java.io.PrintStream;
 import java.net.URI;
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.GregorianCalendar;
 import java.util.HashMap;
@@ -121,6 +122,8 @@ public class SessionState {
   // It is a mapping from the variable name to its value.  Note that if a user repeatedly
   // changes the value of a variable, the corresponding change will be made in this mapping.
   private Map<String, String> overriddenConfigurations;
+
+  private Map<String, List<String>> localMapRedErrors;
 
   /**
    * Lineage state.
@@ -717,5 +720,21 @@ public class SessionState {
 
   public void setOverriddenConfigurations(Map<String, String> overriddenConfigurations) {
     this.overriddenConfigurations = overriddenConfigurations;
+  }
+
+  public Map<String, List<String>> getLocalMapRedErrors() {
+    return localMapRedErrors;
+  }
+
+  public void addLocalMapRedErrors(String id, List<String> localMapRedErrors) {
+    if (!this.localMapRedErrors.containsKey(id)) {
+      this.localMapRedErrors.put(id, new ArrayList<String>());
+    }
+
+    this.localMapRedErrors.get(id).addAll(localMapRedErrors);
+  }
+
+  public void setLocalMapRedErrors(Map<String, List<String>> localMapRedErrors) {
+    this.localMapRedErrors = localMapRedErrors;
   }
 }
