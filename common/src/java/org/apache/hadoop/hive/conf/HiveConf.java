@@ -122,6 +122,7 @@ public class HiveConf extends Configuration {
       HiveConf.ConfVars.METASTORE_RAW_STORE_IMPL,
       HiveConf.ConfVars.METASTORE_END_FUNCTION_LISTENERS,
       HiveConf.ConfVars.METASTORE_PART_INHERIT_TBL_PROPS,
+      HiveConf.ConfVars.METASTORE_PRE_EVENT_LISTENERS,
       };
 
   /**
@@ -288,6 +289,7 @@ public class HiveConf extends Configuration {
     METASTORE_IDENTIFIER_FACTORY("datanucleus.identifierFactory", "datanucleus"),
     METASTORE_PLUGIN_REGISTRY_BUNDLE_CHECK("datanucleus.plugin.pluginRegistryBundleCheck", "LOG"),
     METASTORE_BATCH_RETRIEVE_MAX("hive.metastore.batch.retrieve.max", 300),
+    METASTORE_PRE_EVENT_LISTENERS("hive.metastore.pre.event.listeners", ""),
     METASTORE_EVENT_LISTENERS("hive.metastore.event.listeners", ""),
     // should we do checks against the storage (usually hdfs) for operations like drop_partition
     METASTORE_AUTHORIZATION_STORAGE_AUTH_CHECKS("hive.metastore.authorization.storage.checks", false),
