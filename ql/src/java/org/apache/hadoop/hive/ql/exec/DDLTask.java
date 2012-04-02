@@ -117,6 +117,7 @@ import org.apache.hadoop.hive.ql.plan.GrantDesc;
 import org.apache.hadoop.hive.ql.plan.GrantRevokeRoleDDL;
 import org.apache.hadoop.hive.ql.plan.LockTableDesc;
 import org.apache.hadoop.hive.ql.plan.MsckDesc;
+import org.apache.hadoop.hive.ql.plan.PartitionSpec;
 import org.apache.hadoop.hive.ql.plan.PrincipalDesc;
 import org.apache.hadoop.hive.ql.plan.PrivilegeDesc;
 import org.apache.hadoop.hive.ql.plan.PrivilegeObjectDesc;
@@ -3132,7 +3133,8 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
    * @throws HiveException
    *           Throws this exception if an unexpected error occurs.
    */
-  private int dropTable(Hive db, DropTableDesc dropTbl) throws HiveException {
+  private int dropTable(Hive db, DropTableDesc dropTbl)
+      throws HiveException {
     // We need to fetch the table before it is dropped so that it can be passed
     // to
     // post-execution hook
@@ -3195,13 +3197,18 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
       }
 
       List<Partition> partsToDelete = new ArrayList<Partition>();
-      for (Map<String, String> partSpec : dropTbl.getPartSpecs()) {
-        List<Partition> partitions = db.getPartitions(tbl, partSpec);
+      for (PartitionSpec partSpec : dropTbl.getPartSpecs()) {
+        List<Partition> partitions = null;
+        try {
+          partitions = db.getPartitionsByFilter(tbl, partSpec.toString());
+        } catch (Exception e) {
+          throw new HiveException(e);
+        }
         // this is to prevent dropping archived partition which is archived in a
         // different level the drop command specified.
         int partPrefixToDrop = 0;
         for (FieldSchema fs : tbl.getPartCols()) {
-          if (partSpec.get(fs.getName()) != null) {
+          if (partSpec.existsKey(fs.getName())) {
             partPrefixToDrop += 1;
           } else {
             break;

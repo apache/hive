@@ -20,9 +20,7 @@ package org.apache.hadoop.hive.ql.plan;
 
 import java.io.Serializable;
 import java.util.ArrayList;
-import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Map;
 
 /**
  * DropTableDesc.
@@ -33,7 +31,7 @@ public class DropTableDesc extends DDLDesc implements Serializable {
   private static final long serialVersionUID = 1L;
 
   String tableName;
-  ArrayList<LinkedHashMap<String, String>> partSpecs;
+  ArrayList<PartitionSpec> partSpecs;
   boolean expectView;
   boolean ifExists;
 
@@ -50,13 +48,12 @@ public class DropTableDesc extends DDLDesc implements Serializable {
     this.ifExists = ifExists;
   }
 
-  public DropTableDesc(String tableName,
-    List<? extends Map<String, String>> partSpecs, boolean expectView) {
-    
+  public DropTableDesc(String tableName, List<PartitionSpec> partSpecs, boolean expectView) {
+
     this.tableName = tableName;
-    this.partSpecs = new ArrayList<LinkedHashMap<String, String>>(partSpecs.size());
+    this.partSpecs = new ArrayList<PartitionSpec>(partSpecs.size());
     for (int i = 0; i < partSpecs.size(); i++) {
-      this.partSpecs.add(new LinkedHashMap<String, String>(partSpecs.get(i)));
+      this.partSpecs.add(partSpecs.get(i));
     }
     this.expectView = expectView;
   }
@@ -80,7 +77,7 @@ public class DropTableDesc extends DDLDesc implements Serializable {
   /**
    * @return the partSpecs
    */
-  public ArrayList<LinkedHashMap<String, String>> getPartSpecs() {
+  public ArrayList<PartitionSpec> getPartSpecs() {
     return partSpecs;
   }
 
@@ -88,7 +85,7 @@ public class DropTableDesc extends DDLDesc implements Serializable {
    * @param partSpecs
    *          the partSpecs to set
    */
-  public void setPartSpecs(ArrayList<LinkedHashMap<String, String>> partSpecs) {
+  public void setPartSpecs(ArrayList<PartitionSpec> partSpecs) {
     this.partSpecs = partSpecs;
   }
 
