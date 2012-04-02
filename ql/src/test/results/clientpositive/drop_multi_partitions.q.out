@@ -36,7 +36,7 @@ PREHOOK: type: ALTERTABLE_DROPPARTS
 POSTHOOK: query: explain extended alter table mp drop partition (b='1')
 POSTHOOK: type: ALTERTABLE_DROPPARTS
 ABSTRACT SYNTAX TREE:
-  (TOK_ALTERTABLE_DROPPARTS mp (TOK_PARTSPEC (TOK_PARTVAL b '1')))
+  (TOK_ALTERTABLE_DROPPARTS mp (TOK_PARTSPEC (TOK_PARTVAL b = '1')))
 
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
@@ -51,6 +51,8 @@ STAGE PLANS:
 PREHOOK: query: alter table mp drop partition (b='1')
 PREHOOK: type: ALTERTABLE_DROPPARTS
 PREHOOK: Input: default@mp
+PREHOOK: Output: default@mp@b=1/c=1
+PREHOOK: Output: default@mp@b=1/c=2
 POSTHOOK: query: alter table mp drop partition (b='1')
 POSTHOOK: type: ALTERTABLE_DROPPARTS
 POSTHOOK: Input: default@mp

@@ -32,9 +32,9 @@ import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Properties;
 import java.util.Set;
-import java.util.Map.Entry;
 
 import org.antlr.runtime.tree.CommonTree;
 import org.antlr.runtime.tree.Tree;
@@ -58,8 +58,8 @@ import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.hooks.ReadEntity;
 import org.apache.hadoop.hive.ql.hooks.WriteEntity;
 import org.apache.hadoop.hive.ql.index.HiveIndex;
-import org.apache.hadoop.hive.ql.index.HiveIndexHandler;
 import org.apache.hadoop.hive.ql.index.HiveIndex.IndexType;
+import org.apache.hadoop.hive.ql.index.HiveIndexHandler;
 import org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat;
 import org.apache.hadoop.hive.ql.io.RCFileInputFormat;
 import org.apache.hadoop.hive.ql.metadata.Hive;
@@ -70,7 +70,9 @@ import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.plan.AddPartitionDesc;
 import org.apache.hadoop.hive.ql.plan.AlterDatabaseDesc;
 import org.apache.hadoop.hive.ql.plan.AlterIndexDesc;
+import org.apache.hadoop.hive.ql.plan.AlterIndexDesc.AlterIndexTypes;
 import org.apache.hadoop.hive.ql.plan.AlterTableDesc;
+import org.apache.hadoop.hive.ql.plan.AlterTableDesc.AlterTableTypes;
 import org.apache.hadoop.hive.ql.plan.AlterTableSimpleDesc;
 import org.apache.hadoop.hive.ql.plan.CreateDatabaseDesc;
 import org.apache.hadoop.hive.ql.plan.CreateIndexDesc;
@@ -88,6 +90,7 @@ import org.apache.hadoop.hive.ql.plan.LoadTableDesc;
 import org.apache.hadoop.hive.ql.plan.LockTableDesc;
 import org.apache.hadoop.hive.ql.plan.MoveWork;
 import org.apache.hadoop.hive.ql.plan.MsckDesc;
+import org.apache.hadoop.hive.ql.plan.PartitionSpec;
 import org.apache.hadoop.hive.ql.plan.PrincipalDesc;
 import org.apache.hadoop.hive.ql.plan.PrivilegeDesc;
 import org.apache.hadoop.hive.ql.plan.PrivilegeObjectDesc;
@@ -106,8 +109,6 @@ import org.apache.hadoop.hive.ql.plan.StatsWork;
 import org.apache.hadoop.hive.ql.plan.SwitchDatabaseDesc;
 import org.apache.hadoop.hive.ql.plan.TableDesc;
 import org.apache.hadoop.hive.ql.plan.UnlockTableDesc;
-import org.apache.hadoop.hive.ql.plan.AlterIndexDesc.AlterIndexTypes;
-import org.apache.hadoop.hive.ql.plan.AlterTableDesc.AlterTableTypes;
 import org.apache.hadoop.hive.ql.security.authorization.Privilege;
 import org.apache.hadoop.hive.ql.security.authorization.PrivilegeRegistry;
 import org.apache.hadoop.hive.ql.session.SessionState;
@@ -1767,7 +1768,7 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
 
     String tblName = getUnescapedName((ASTNode)ast.getChild(0));
     // get table metadata
-    List<Map<String, String>> partSpecs = getPartitionSpecs(ast);
+    List<PartitionSpec> partSpecs = getFullPartitionSpecs(ast);
     DropTableDesc dropTblDesc =
       new DropTableDesc(tblName, partSpecs, expectView);
 
@@ -1786,7 +1787,7 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
       // configured not to fail silently
       boolean throwException =
         !ifExists && !HiveConf.getBoolVar(conf, ConfVars.DROPIGNORESNONEXISTENT);
-      addTablePartsOutputs(tblName, partSpecs, throwException, false, ast);
+      addTableDropPartsOutputs(tblName, partSpecs, throwException);
     }
 
     rootTasks.add(TaskFactory.get(new DDLWork(getInputs(), getOutputs(),
@@ -2071,6 +2072,39 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
   }
 
   /**
+   * Get the partition specs from the tree. This stores the full specification
+   * with the comparator operator into the output list.
+   *
+   * @param ast
+   *          Tree to extract partitions from.
+   * @return A list of PartitionSpec objects which contain the mapping from
+   *         key to operator and value.
+   * @throws SemanticException
+   */
+  private List<PartitionSpec> getFullPartitionSpecs(CommonTree ast)
+      throws SemanticException {
+    List<PartitionSpec> partSpecList = new ArrayList<PartitionSpec>();
+
+    for (int childIndex = 1; childIndex < ast.getChildCount(); childIndex++) {
+      Tree partSpecTree = ast.getChild(childIndex);
+      if (partSpecTree.getType() == HiveParser.TOK_PARTSPEC) {
+        PartitionSpec partSpec = new PartitionSpec();
+
+        for (int i = 0; i < partSpecTree.getChildCount(); ++i) {
+          CommonTree partSpecSingleKey = (CommonTree) partSpecTree.getChild(i);
+          assert(partSpecSingleKey.getType() == HiveParser.TOK_PARTVAL);
+          String key = partSpecSingleKey.getChild(0).getText().toLowerCase();
+          String operator = partSpecSingleKey.getChild(1).getText();
+          String val = partSpecSingleKey.getChild(2).getText();
+          partSpec.addPredicate(key, operator, val);
+        }
+
+        partSpecList.add(partSpec);
+      }
+    }
+    return partSpecList;
+  }
+  /**
    * Certain partition values are are used by hive. e.g. the default partition
    * in dynamic partitioning and the intermediate partition values used in the
    * archiving process. Naturally, prohibit the user from creating partitions
@@ -2129,7 +2163,7 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
     for (i = partSpecs.iterator(), index = 1; i.hasNext(); ++index) {
       Map<String, String> partSpec = i.next();
       List<Partition> parts = null;
-      if(allowMany) {
+      if (allowMany) {
         try {
           parts = db.getPartitions(tab, partSpec);
         } catch (HiveException e) {
@@ -2157,4 +2191,39 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
     }
   }
 
+  /**
+   * Add the table partitions to be modified in the output, so that it is available for the
+   * pre-execution hook. If the partition does not exist, throw an error if
+   * throwIfNonExistent is true, otherwise ignore it.
+   */
+  private void addTableDropPartsOutputs(String tblName, List<PartitionSpec> partSpecs,
+            boolean throwIfNonExistent)
+    throws SemanticException {
+    Table tab;
+    try {
+      tab = db.getTable(tblName);
+    } catch (HiveException e) {
+      throw new SemanticException(ErrorMsg.INVALID_TABLE.getMsg(tblName));
+    }
+
+    Iterator<PartitionSpec> i;
+    int index;
+    for (i = partSpecs.iterator(), index = 1; i.hasNext(); ++index) {
+      PartitionSpec partSpec = i.next();
+      List<Partition> parts = null;
+      try {
+        parts = db.getPartitionsByFilter(tab, partSpec.toString());
+      } catch (Exception e) {
+          throw new SemanticException(ErrorMsg.INVALID_PARTITION.getMsg(partSpec.toString()), e);
+      }
+      if (parts.isEmpty()) {
+        if(throwIfNonExistent) {
+          throw new SemanticException(ErrorMsg.INVALID_PARTITION.getMsg(partSpec.toString()));
+        }
+      }
+      for(Partition p: parts) {
+        outputs.add(new WriteEntity(p));
+      }
+    }
+  }
 }

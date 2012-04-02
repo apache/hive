@@ -1,0 +1,199 @@
+PREHOOK: query: create table ptestfilter (a string, b int) partitioned by (c string, d string)
+PREHOOK: type: CREATETABLE
+POSTHOOK: query: create table ptestfilter (a string, b int) partitioned by (c string, d string)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: default@ptestfilter
+PREHOOK: query: describe ptestfilter
+PREHOOK: type: DESCTABLE
+POSTHOOK: query: describe ptestfilter
+POSTHOOK: type: DESCTABLE
+a	string	
+b	int	
+c	string	
+d	string	
+PREHOOK: query: alter table ptestfilter add partition (c='US', d=1)
+PREHOOK: type: ALTERTABLE_ADDPARTS
+PREHOOK: Input: default@ptestfilter
+POSTHOOK: query: alter table ptestfilter add partition (c='US', d=1)
+POSTHOOK: type: ALTERTABLE_ADDPARTS
+POSTHOOK: Input: default@ptestfilter
+POSTHOOK: Output: default@ptestfilter@c=US/d=1
+PREHOOK: query: alter table ptestfilter add partition (c='US', d=2)
+PREHOOK: type: ALTERTABLE_ADDPARTS
+PREHOOK: Input: default@ptestfilter
+POSTHOOK: query: alter table ptestfilter add partition (c='US', d=2)
+POSTHOOK: type: ALTERTABLE_ADDPARTS
+POSTHOOK: Input: default@ptestfilter
+POSTHOOK: Output: default@ptestfilter@c=US/d=2
+PREHOOK: query: alter table ptestFilter add partition (c='Uganda', d=2)
+PREHOOK: type: ALTERTABLE_ADDPARTS
+PREHOOK: Input: default@ptestfilter
+POSTHOOK: query: alter table ptestFilter add partition (c='Uganda', d=2)
+POSTHOOK: type: ALTERTABLE_ADDPARTS
+POSTHOOK: Input: default@ptestfilter
+POSTHOOK: Output: default@ptestfilter@c=Uganda/d=2
+PREHOOK: query: alter table ptestfilter add partition (c='Germany', d=2)
+PREHOOK: type: ALTERTABLE_ADDPARTS
+PREHOOK: Input: default@ptestfilter
+POSTHOOK: query: alter table ptestfilter add partition (c='Germany', d=2)
+POSTHOOK: type: ALTERTABLE_ADDPARTS
+POSTHOOK: Input: default@ptestfilter
+POSTHOOK: Output: default@ptestfilter@c=Germany/d=2
+PREHOOK: query: alter table ptestfilter add partition (c='Canada', d=3)
+PREHOOK: type: ALTERTABLE_ADDPARTS
+PREHOOK: Input: default@ptestfilter
+POSTHOOK: query: alter table ptestfilter add partition (c='Canada', d=3)
+POSTHOOK: type: ALTERTABLE_ADDPARTS
+POSTHOOK: Input: default@ptestfilter
+POSTHOOK: Output: default@ptestfilter@c=Canada/d=3
+PREHOOK: query: alter table ptestfilter add partition (c='Russia', d=3)
+PREHOOK: type: ALTERTABLE_ADDPARTS
+PREHOOK: Input: default@ptestfilter
+POSTHOOK: query: alter table ptestfilter add partition (c='Russia', d=3)
+POSTHOOK: type: ALTERTABLE_ADDPARTS
+POSTHOOK: Input: default@ptestfilter
+POSTHOOK: Output: default@ptestfilter@c=Russia/d=3
+PREHOOK: query: alter table ptestfilter add partition (c='Greece', d=2)
+PREHOOK: type: ALTERTABLE_ADDPARTS
+PREHOOK: Input: default@ptestfilter
+POSTHOOK: query: alter table ptestfilter add partition (c='Greece', d=2)
+POSTHOOK: type: ALTERTABLE_ADDPARTS
+POSTHOOK: Input: default@ptestfilter
+POSTHOOK: Output: default@ptestfilter@c=Greece/d=2
+PREHOOK: query: alter table ptestfilter add partition (c='India', d=3)
+PREHOOK: type: ALTERTABLE_ADDPARTS
+PREHOOK: Input: default@ptestfilter
+POSTHOOK: query: alter table ptestfilter add partition (c='India', d=3)
+POSTHOOK: type: ALTERTABLE_ADDPARTS
+POSTHOOK: Input: default@ptestfilter
+POSTHOOK: Output: default@ptestfilter@c=India/d=3
+PREHOOK: query: alter table ptestfilter add partition (c='France', d=4)
+PREHOOK: type: ALTERTABLE_ADDPARTS
+PREHOOK: Input: default@ptestfilter
+POSTHOOK: query: alter table ptestfilter add partition (c='France', d=4)
+POSTHOOK: type: ALTERTABLE_ADDPARTS
+POSTHOOK: Input: default@ptestfilter
+POSTHOOK: Output: default@ptestfilter@c=France/d=4
+PREHOOK: query: show partitions ptestfilter
+PREHOOK: type: SHOWPARTITIONS
+POSTHOOK: query: show partitions ptestfilter
+POSTHOOK: type: SHOWPARTITIONS
+c=Canada/d=3
+c=France/d=4
+c=Germany/d=2
+c=Greece/d=2
+c=India/d=3
+c=Russia/d=3
+c=US/d=1
+c=US/d=2
+c=Uganda/d=2
+PREHOOK: query: alter table ptestfilter drop partition (c='US', d<'2')
+PREHOOK: type: ALTERTABLE_DROPPARTS
+PREHOOK: Input: default@ptestfilter
+PREHOOK: Output: default@ptestfilter@c=US/d=1
+POSTHOOK: query: alter table ptestfilter drop partition (c='US', d<'2')
+POSTHOOK: type: ALTERTABLE_DROPPARTS
+POSTHOOK: Input: default@ptestfilter
+POSTHOOK: Output: default@ptestfilter@c=US/d=1
+PREHOOK: query: show partitions ptestfilter
+PREHOOK: type: SHOWPARTITIONS
+POSTHOOK: query: show partitions ptestfilter
+POSTHOOK: type: SHOWPARTITIONS
+c=Canada/d=3
+c=France/d=4
+c=Germany/d=2
+c=Greece/d=2
+c=India/d=3
+c=Russia/d=3
+c=US/d=2
+c=Uganda/d=2
+PREHOOK: query: alter table ptestfilter drop partition (c>='US', d<='2')
+PREHOOK: type: ALTERTABLE_DROPPARTS
+PREHOOK: Input: default@ptestfilter
+PREHOOK: Output: default@ptestfilter@c=US/d=2
+PREHOOK: Output: default@ptestfilter@c=Uganda/d=2
+POSTHOOK: query: alter table ptestfilter drop partition (c>='US', d<='2')
+POSTHOOK: type: ALTERTABLE_DROPPARTS
+POSTHOOK: Input: default@ptestfilter
+POSTHOOK: Output: default@ptestfilter@c=US/d=2
+POSTHOOK: Output: default@ptestfilter@c=Uganda/d=2
+PREHOOK: query: show partitions ptestfilter
+PREHOOK: type: SHOWPARTITIONS
+POSTHOOK: query: show partitions ptestfilter
+POSTHOOK: type: SHOWPARTITIONS
+c=Canada/d=3
+c=France/d=4
+c=Germany/d=2
+c=Greece/d=2
+c=India/d=3
+c=Russia/d=3
+PREHOOK: query: alter table ptestfilter drop partition (c >'India')
+PREHOOK: type: ALTERTABLE_DROPPARTS
+PREHOOK: Input: default@ptestfilter
+PREHOOK: Output: default@ptestfilter@c=Russia/d=3
+POSTHOOK: query: alter table ptestfilter drop partition (c >'India')
+POSTHOOK: type: ALTERTABLE_DROPPARTS
+POSTHOOK: Input: default@ptestfilter
+POSTHOOK: Output: default@ptestfilter@c=Russia/d=3
+PREHOOK: query: show partitions ptestfilter
+PREHOOK: type: SHOWPARTITIONS
+POSTHOOK: query: show partitions ptestfilter
+POSTHOOK: type: SHOWPARTITIONS
+c=Canada/d=3
+c=France/d=4
+c=Germany/d=2
+c=Greece/d=2
+c=India/d=3
+PREHOOK: query: alter table ptestfilter drop partition (c >='India'),
+                             partition (c='Greece', d='2')
+PREHOOK: type: ALTERTABLE_DROPPARTS
+PREHOOK: Input: default@ptestfilter
+PREHOOK: Output: default@ptestfilter@c=Greece/d=2
+PREHOOK: Output: default@ptestfilter@c=India/d=3
+POSTHOOK: query: alter table ptestfilter drop partition (c >='India'),
+                             partition (c='Greece', d='2')
+POSTHOOK: type: ALTERTABLE_DROPPARTS
+POSTHOOK: Input: default@ptestfilter
+POSTHOOK: Output: default@ptestfilter@c=Greece/d=2
+POSTHOOK: Output: default@ptestfilter@c=India/d=3
+PREHOOK: query: show partitions ptestfilter
+PREHOOK: type: SHOWPARTITIONS
+POSTHOOK: query: show partitions ptestfilter
+POSTHOOK: type: SHOWPARTITIONS
+c=Canada/d=3
+c=France/d=4
+c=Germany/d=2
+PREHOOK: query: alter table ptestfilter drop partition (c != 'France')
+PREHOOK: type: ALTERTABLE_DROPPARTS
+PREHOOK: Input: default@ptestfilter
+PREHOOK: Output: default@ptestfilter@c=Canada/d=3
+PREHOOK: Output: default@ptestfilter@c=Germany/d=2
+POSTHOOK: query: alter table ptestfilter drop partition (c != 'France')
+POSTHOOK: type: ALTERTABLE_DROPPARTS
+POSTHOOK: Input: default@ptestfilter
+POSTHOOK: Output: default@ptestfilter@c=Canada/d=3
+POSTHOOK: Output: default@ptestfilter@c=Germany/d=2
+PREHOOK: query: show partitions ptestfilter
+PREHOOK: type: SHOWPARTITIONS
+POSTHOOK: query: show partitions ptestfilter
+POSTHOOK: type: SHOWPARTITIONS
+c=France/d=4
+PREHOOK: query: alter table ptestfilter drop if exists partition (c='US')
+PREHOOK: type: ALTERTABLE_DROPPARTS
+PREHOOK: Input: default@ptestfilter
+POSTHOOK: query: alter table ptestfilter drop if exists partition (c='US')
+POSTHOOK: type: ALTERTABLE_DROPPARTS
+POSTHOOK: Input: default@ptestfilter
+PREHOOK: query: show partitions ptestfilter
+PREHOOK: type: SHOWPARTITIONS
+POSTHOOK: query: show partitions ptestfilter
+POSTHOOK: type: SHOWPARTITIONS
+c=France/d=4
+PREHOOK: query: drop table ptestfilter
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@ptestfilter
+PREHOOK: Output: default@ptestfilter
+POSTHOOK: query: drop table ptestfilter
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@ptestfilter
+POSTHOOK: Output: default@ptestfilter

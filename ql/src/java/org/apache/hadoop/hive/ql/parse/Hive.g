@@ -686,8 +686,8 @@ partitionLocation
 alterStatementSuffixDropPartitions
 @init { msgs.push("drop partition statement"); }
 @after { msgs.pop(); }
-    : Identifier KW_DROP ifExists? partitionSpec (COMMA partitionSpec)*
-    -> ^(TOK_ALTERTABLE_DROPPARTS Identifier partitionSpec+ ifExists?)
+    : Identifier KW_DROP ifExists? dropPartitionSpec (COMMA dropPartitionSpec)*
+    -> ^(TOK_ALTERTABLE_DROPPARTS Identifier dropPartitionSpec+ ifExists?)
     ;
 
 alterStatementSuffixProperties
@@ -2069,6 +2069,22 @@ partitionVal
     Identifier (EQUAL constant)? -> ^(TOK_PARTVAL Identifier constant?)
     ;
 
+dropPartitionSpec
+    :
+    KW_PARTITION
+     LPAREN dropPartitionVal (COMMA  dropPartitionVal )* RPAREN -> ^(TOK_PARTSPEC dropPartitionVal +)
+    ;
+
+dropPartitionVal
+    :
+    Identifier dropPartitionOperator constant -> ^(TOK_PARTVAL Identifier dropPartitionOperator constant)
+    ;
+
+dropPartitionOperator
+    :
+    EQUAL | NOTEQUAL | LESSTHANOREQUALTO | LESSTHAN | GREATERTHANOREQUALTO | GREATERTHAN
+    ;
+    
 sysFuncNames
     :
       KW_AND
