@@ -43,24 +43,25 @@ public class TestStatsPublisherEnhanced extends TestCase {
 
   public TestStatsPublisherEnhanced(String name) {
     super(name);
+    conf = new JobConf(TestStatsPublisherEnhanced.class);
+    conf.set("hive.stats.dbclass", "jdbc:derby");
+    statsImplementationClass = HiveConf.getVar(conf, HiveConf.ConfVars.HIVESTATSDBCLASS);
+    StatsFactory.setImplementation(statsImplementationClass, conf);
   }
 
   @Override
   protected void setUp() {
-    conf = new JobConf(TestStatsPublisherEnhanced.class);
-
-    conf.set("hive.stats.dbclass", "jdbc:derby");
-
-    statsImplementationClass = HiveConf.getVar(conf, HiveConf.ConfVars.HIVESTATSDBCLASS);
-    StatsFactory.setImplementation(statsImplementationClass, conf);
-
     stats = new HashMap<String, String>();
-    StatsAggregator sa = StatsFactory.getStatsAggregator();
-    sa.connect(conf);
-    sa.cleanUp("file_0");
-    sa.closeConnection();
   }
 
+  @Override
+  protected void tearDown() {
+    StatsAggregator sa = StatsFactory.getStatsAggregator();
+    assertNotNull(sa);
+    assertTrue(sa.connect(conf));
+    assertTrue(sa.cleanUp("file_0"));
+    assertTrue(sa.closeConnection());
+  }
 
   private void fillStatMap(String numRows, String rawDataSize) {
     stats.clear();
