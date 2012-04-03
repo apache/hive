@@ -14,6 +14,10 @@ select * from hbase_pushdown where key<'1';
 select * from hbase_pushdown where key<='2';
 select * from hbase_pushdown where key>='90';
 
+-- with cnostant expressinon
+explain select * from hbase_pushdown where key>=cast(40 + 50 as string);
+select * from hbase_pushdown where key>=cast(40 + 50 as string);
+
 -- with partial pushdown
 
 explain select * from hbase_pushdown where key>'90' and value like '%9%';

@@ -26,7 +26,10 @@ import java.util.Map;
 import java.util.Set;
 import java.util.Stack;
 
+import org.apache.hadoop.hive.ql.exec.ExprNodeEvaluator;
+import org.apache.hadoop.hive.ql.exec.ExprNodeEvaluatorFactory;
 import org.apache.hadoop.hive.ql.exec.FunctionRegistry;
+import org.apache.hadoop.hive.ql.exec.UDF;
 import org.apache.hadoop.hive.ql.lib.DefaultGraphWalker;
 import org.apache.hadoop.hive.ql.lib.DefaultRuleDispatcher;
 import org.apache.hadoop.hive.ql.lib.Dispatcher;
@@ -40,10 +43,14 @@ import org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeConstantDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc;
+import org.apache.hadoop.hive.ql.udf.generic.GenericUDF;
+import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
+import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFBridge;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.apache.hadoop.util.ReflectionUtils;
 
 /**
  * IndexPredicateAnalyzer decomposes predicates, separating the parts
@@ -58,7 +65,7 @@ public class IndexPredicateAnalyzer
   private Set<String> udfNames;
 
   private Set<String> allowedColumnNames;
-  
+
   public IndexPredicateAnalyzer() {
     udfNames = new HashSet<String>();
   }
@@ -186,8 +193,8 @@ public class IndexPredicateAnalyzer
       return expr;
     }
 
-    ExprNodeDesc child1 = (ExprNodeDesc) nodeOutputs[0];
-    ExprNodeDesc child2 = (ExprNodeDesc) nodeOutputs[1];
+    ExprNodeDesc child1 = extractConstant((ExprNodeDesc) nodeOutputs[0]);
+    ExprNodeDesc child2 = extractConstant((ExprNodeDesc) nodeOutputs[1]);
     ExprNodeColumnDesc columnDesc = null;
     ExprNodeConstantDesc constantDesc = null;
     if ((child1 instanceof ExprNodeColumnDesc)
@@ -219,6 +226,55 @@ public class IndexPredicateAnalyzer
     // we converted the expression to a search condition, so
     // remove it from the residual predicate
     return null;
+  }
+
+  private ExprNodeDesc extractConstant(ExprNodeDesc expr) {
+    if (!(expr instanceof ExprNodeGenericFuncDesc)) {
+      return expr;
+    }
+    ExprNodeConstantDesc folded = foldConstant(((ExprNodeGenericFuncDesc) expr));
+    return folded == null ? expr : folded;
+  }
+
+  private ExprNodeConstantDesc foldConstant(ExprNodeGenericFuncDesc func) {
+    GenericUDF udf = func.getGenericUDF();
+    if (!FunctionRegistry.isDeterministic(udf) || FunctionRegistry.isStateful(udf)) {
+      return null;
+    }
+    try {
+      // If the UDF depends on any external resources, we can't fold because the
+      // resources may not be available at compile time.
+      if (udf instanceof GenericUDFBridge) {
+        UDF internal = ReflectionUtils.newInstance(((GenericUDFBridge) udf).getUdfClass(), null);
+        if (internal.getRequiredFiles() != null || internal.getRequiredJars() != null) {
+          return null;
+        }
+      } else {
+        if (udf.getRequiredFiles() != null || udf.getRequiredJars() != null) {
+          return null;
+        }
+      }
+
+      for (ExprNodeDesc child : func.getChildExprs()) {
+        if (child instanceof ExprNodeConstantDesc) {
+          continue;
+        } else if (child instanceof ExprNodeGenericFuncDesc) {
+          if (foldConstant((ExprNodeGenericFuncDesc) child) != null) {
+            continue;
+          }
+        }
+        return null;
+      }
+      ExprNodeEvaluator evaluator = ExprNodeEvaluatorFactory.get(func);
+      ObjectInspector output = evaluator.initialize(null);
+
+      Object constant = evaluator.evaluate(null);
+      Object java = ObjectInspectorUtils.copyToStandardJavaObject(constant, output);
+
+      return new ExprNodeConstantDesc(java);
+    } catch (Exception e) {
+      return null;
+    }
   }
 
   /**
