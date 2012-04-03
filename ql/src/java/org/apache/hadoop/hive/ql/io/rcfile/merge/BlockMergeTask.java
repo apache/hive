@@ -291,7 +291,6 @@ public class BlockMergeTask extends Task<MergeWork> implements Serializable,
 
     FileSystem fs = null;
     JobConf conf = new JobConf(BlockMergeTask.class);
-    HiveConf hiveConf = new HiveConf(conf, BlockMergeTask.class);
     for (String path : paths) {
       try {
         Path pathObj = new Path(path);
@@ -329,6 +328,7 @@ public class BlockMergeTask extends Task<MergeWork> implements Serializable,
         }
       }
     }
+    HiveConf hiveConf = new HiveConf(conf, BlockMergeTask.class);
 
     Log LOG = LogFactory.getLog(BlockMergeTask.class.getName());
     boolean isSilent = HiveConf.getBoolVar(conf,
