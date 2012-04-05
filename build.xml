@@ -1000,6 +1000,15 @@
                   type="pom.asc"/>
         </artifact:deploy>
       </then>
+      <elseif>
+        <equals arg1="${mvn.publish.repo}" arg2="local"/>
+        <then>
+          <artifact:install 
+              file="${mvn.jar.dir}/hive-${hive.project}-${version}.jar">
+            <pom refid="hive.project.pom" />
+          </artifact:install>
+        </then>
+      </elseif>
       <else>
         <artifact:deploy
             file="${mvn.jar.dir}/hive-${hive.project}-${version}.jar">
