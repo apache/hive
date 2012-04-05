@@ -27,11 +27,16 @@
     <!-- Private configurations -->
     <conf name="docs" visibility="private"/>
     <conf name="checkstyle" visibility="private"/>
+    <conf name="rat" visibility="private"/>
     <conf name="maven" visibility="private"/>
   </configurations>
 
 
   <dependencies>
+   <dependency org="org.apache.rat" name="apache-rat-tasks"
+               rev="${rat.version}" conf="rat->default"/>
+   <dependency org="org.apache.rat" name="apache-rat-core"
+               rev="${rat.version}" conf="rat->default"/>
    <dependency org="checkstyle" name="checkstyle" rev="${checkstyle.version}"
      conf="checkstyle->default"/>
    <dependency org="org.jdom" name="jdom" rev="${jdom.version}"
