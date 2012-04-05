@@ -1,0 +1,68 @@
+PREHOOK: query: CREATE TABLE add_part_test (key STRING, value STRING) PARTITIONED BY (ds STRING)
+PREHOOK: type: CREATETABLE
+POSTHOOK: query: CREATE TABLE add_part_test (key STRING, value STRING) PARTITIONED BY (ds STRING)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: default@add_part_test
+PREHOOK: query: SHOW PARTITIONS add_part_test
+PREHOOK: type: SHOWPARTITIONS
+POSTHOOK: query: SHOW PARTITIONS add_part_test
+POSTHOOK: type: SHOWPARTITIONS
+{"partitions":[]}
+PREHOOK: query: ALTER TABLE add_part_test ADD PARTITION (ds='2010-01-01')
+PREHOOK: type: ALTERTABLE_ADDPARTS
+PREHOOK: Input: default@add_part_test
+POSTHOOK: query: ALTER TABLE add_part_test ADD PARTITION (ds='2010-01-01')
+POSTHOOK: type: ALTERTABLE_ADDPARTS
+POSTHOOK: Input: default@add_part_test
+POSTHOOK: Output: default@add_part_test@ds=2010-01-01
+PREHOOK: query: SHOW PARTITIONS add_part_test
+PREHOOK: type: SHOWPARTITIONS
+POSTHOOK: query: SHOW PARTITIONS add_part_test
+POSTHOOK: type: SHOWPARTITIONS
+{"partitions":[{"values":[{"columnName":"ds","columnValue":"2010-01-01"}],"name":"ds='2010-01-01'"}]}
+PREHOOK: query: ALTER TABLE add_part_test ADD IF NOT EXISTS PARTITION (ds='2010-01-01')
+PREHOOK: type: ALTERTABLE_ADDPARTS
+PREHOOK: Input: default@add_part_test
+PREHOOK: Output: default@add_part_test@ds=2010-01-01
+POSTHOOK: query: ALTER TABLE add_part_test ADD IF NOT EXISTS PARTITION (ds='2010-01-01')
+POSTHOOK: type: ALTERTABLE_ADDPARTS
+POSTHOOK: Input: default@add_part_test
+POSTHOOK: Output: default@add_part_test@ds=2010-01-01
+PREHOOK: query: SHOW PARTITIONS add_part_test
+PREHOOK: type: SHOWPARTITIONS
+POSTHOOK: query: SHOW PARTITIONS add_part_test
+POSTHOOK: type: SHOWPARTITIONS
+{"partitions":[{"values":[{"columnName":"ds","columnValue":"2010-01-01"}],"name":"ds='2010-01-01'"}]}
+PREHOOK: query: ALTER TABLE add_part_test ADD IF NOT EXISTS PARTITION (ds='2010-01-02')
+PREHOOK: type: ALTERTABLE_ADDPARTS
+PREHOOK: Input: default@add_part_test
+POSTHOOK: query: ALTER TABLE add_part_test ADD IF NOT EXISTS PARTITION (ds='2010-01-02')
+POSTHOOK: type: ALTERTABLE_ADDPARTS
+POSTHOOK: Input: default@add_part_test
+POSTHOOK: Output: default@add_part_test@ds=2010-01-02
+PREHOOK: query: SHOW PARTITIONS add_part_test
+PREHOOK: type: SHOWPARTITIONS
+POSTHOOK: query: SHOW PARTITIONS add_part_test
+POSTHOOK: type: SHOWPARTITIONS
+{"partitions":[{"values":[{"columnName":"ds","columnValue":"2010-01-01"}],"name":"ds='2010-01-01'"},{"values":[{"columnName":"ds","columnValue":"2010-01-02"}],"name":"ds='2010-01-02'"}]}
+PREHOOK: query: SHOW TABLE EXTENDED LIKE add_part_test PARTITION (ds='2010-01-02')
+PREHOOK: type: SHOW_TABLESTATUS
+POSTHOOK: query: SHOW TABLE EXTENDED LIKE add_part_test PARTITION (ds='2010-01-02')
+POSTHOOK: type: SHOW_TABLESTATUS
+#### A masked pattern was here ####
+PREHOOK: query: ALTER TABLE add_part_test DROP PARTITION (ds='2010-01-02')
+PREHOOK: type: ALTERTABLE_DROPPARTS
+PREHOOK: Input: default@add_part_test
+PREHOOK: Output: default@add_part_test@ds=2010-01-02
+POSTHOOK: query: ALTER TABLE add_part_test DROP PARTITION (ds='2010-01-02')
+POSTHOOK: type: ALTERTABLE_DROPPARTS
+POSTHOOK: Input: default@add_part_test
+POSTHOOK: Output: default@add_part_test@ds=2010-01-02
+PREHOOK: query: DROP TABLE add_part_test
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@add_part_test
+PREHOOK: Output: default@add_part_test
+POSTHOOK: query: DROP TABLE add_part_test
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@add_part_test
+POSTHOOK: Output: default@add_part_test

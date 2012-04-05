@@ -1,0 +1,46 @@
+PREHOOK: query: CREATE TABLE IF NOT EXISTS jsontable (key INT, value STRING) COMMENT 'json table' STORED AS TEXTFILE
+PREHOOK: type: CREATETABLE
+POSTHOOK: query: CREATE TABLE IF NOT EXISTS jsontable (key INT, value STRING) COMMENT 'json table' STORED AS TEXTFILE
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: default@jsontable
+PREHOOK: query: SHOW TABLES
+PREHOOK: type: SHOWTABLES
+POSTHOOK: query: SHOW TABLES
+POSTHOOK: type: SHOWTABLES
+{"tables":["jsontable","src","src1","src_json","src_sequencefile","src_thrift","srcbucket","srcbucket2","srcpart"]}
+PREHOOK: query: SHOW TABLES LIKE 'json*'
+PREHOOK: type: SHOWTABLES
+POSTHOOK: query: SHOW TABLES LIKE 'json*'
+POSTHOOK: type: SHOWTABLES
+{"tables":["jsontable"]}
+PREHOOK: query: SHOW TABLE EXTENDED LIKE 'json*'
+PREHOOK: type: SHOW_TABLESTATUS
+POSTHOOK: query: SHOW TABLE EXTENDED LIKE 'json*'
+POSTHOOK: type: SHOW_TABLESTATUS
+{"tables":[]}
+PREHOOK: query: ALTER TABLE jsontable SET TBLPROPERTIES ('id' = 'jsontable')
+PREHOOK: type: ALTERTABLE_PROPERTIES
+PREHOOK: Input: default@jsontable
+PREHOOK: Output: default@jsontable
+POSTHOOK: query: ALTER TABLE jsontable SET TBLPROPERTIES ('id' = 'jsontable')
+POSTHOOK: type: ALTERTABLE_PROPERTIES
+POSTHOOK: Input: default@jsontable
+POSTHOOK: Output: default@jsontable
+PREHOOK: query: DESCRIBE jsontable
+PREHOOK: type: DESCTABLE
+POSTHOOK: query: DESCRIBE jsontable
+POSTHOOK: type: DESCTABLE
+{"columns":[{"name":"key","type":"int"},{"name":"value","type":"string"}]}	 	 
+PREHOOK: query: DESCRIBE extended jsontable
+PREHOOK: type: DESCTABLE
+POSTHOOK: query: DESCRIBE extended jsontable
+POSTHOOK: type: DESCTABLE
+#### A masked pattern was here ####
+PREHOOK: query: DROP TABLE jsontable
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@jsontable
+PREHOOK: Output: default@jsontable
+POSTHOOK: query: DROP TABLE jsontable
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@jsontable
+POSTHOOK: Output: default@jsontable

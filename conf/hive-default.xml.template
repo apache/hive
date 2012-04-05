@@ -1259,4 +1259,13 @@
   </description>
 </property>
 
+<property>
+  <name>hive.ddl.output.format</name>
+  <value>text</value>
+  <description>
+    The data format to use for DDL output.  One of "text" (for human
+    readable text) or "json" (for a json object).
+  </description>
+</property>
+
 </configuration>

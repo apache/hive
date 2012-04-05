@@ -11,5 +11,5 @@ CREATE DATABASE test_db
 POSTHOOK: type: CREATEDATABASE
 PREHOOK: query: CREATE DATABASE test_db
 PREHOOK: type: CREATEDATABASE
-Failed with exception Database test_db already exists
+Database test_db already exists
 FAILED: Execution Error, return code 1 from org.apache.hadoop.hive.ql.exec.DDLTask
