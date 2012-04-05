@@ -20,7 +20,8 @@
 
 <project name="hive" default="jar"
          xmlns:ivy="antlib:org.apache.ivy.ant"
-         xmlns:artifact="urn:maven-artifact-ant" >
+         xmlns:artifact="urn:maven-artifact-ant"
+         xmlns:rat="antlib:org.apache.rat.anttasks" >
 
   <property name="hive.root" location="${basedir}"/>
   <property file="${hive.root}/build.properties"/>
@@ -54,6 +55,7 @@
   <property name="vcs.excludes" value="**/.svn,**/.svn/**,**/.git,**/.git/**"/>
   <property name="checkstyle.conf.dir" location="${hive.root}/checkstyle"/>
   <property name="checkstyle.build.dir" location="${build.dir.hive}/checkstyle"/>
+  <property name="rat.build.dir" location="${build.dir.hive}/rat"/>
   <property name="md5sum.format" value="{0}  {1}"/>
 
   <!-- Ignore Postgres upgrade scripts unless 'include.postgres' is true -->
@@ -768,6 +770,80 @@
     </macro_tar>
   </target>
 
+
+  <!-- ================================================================== -->
+  <!-- RAT                                                                -->
+  <!-- ================================================================== -->
+
+
+  <target name="ivy-resolve-rat" depends="ivy-init-settings">
+    <echo message="Project: ${ant.project.name}"/>
+    <ivy:resolve settingsRef="${ant.project.name}.ivy.settings" conf="rat"
+                 log="${ivyresolvelog}"/>
+  </target>
+  
+  <target name="ivy-retrieve-rat" depends="ivy-resolve-rat"
+    description="Retrieve Ivy-managed artifacts for RAT">
+    <echo message="Project: ${ant.project.name}"/>
+    <ivy:retrieve settingsRef="${ant.project.name}.ivy.settings"
+      pattern="${build.ivy.lib.dir}/${ivy.artifact.retrieve.pattern}"
+      log="${ivyresolvelog}"/>
+    <ivy:cachepath pathid="rat-classpath" conf="rat"/>
+  </target>
+
+  <target name="rat" depends="init,ivy-retrieve-rat,check-for-rat"
+          if="rat.present"
+          description="Run RAT on source files">
+    <echo message="Project: ${ant.project.name}"/>
+    <taskdef uri="antlib:org.apache.rat.anttasks"
+             resource="org/apache/rat/anttasks/antlib.xml">
+      <classpath refid="rat-classpath"/>
+    </taskdef>
+
+    <mkdir dir="${rat.build.dir}"/>
+
+    <rat:report reportFile="${rat.build.dir}/hive-rat.txt">
+       <fileset dir=".">
+         <patternset id="non.build.files">
+           <exclude name="**/build/**"/>
+           <exclude name="**/src/gen/**"/>
+           <exclude name=".arcconfig.*"/>
+           <exclude name=".arc_jira_lib/**"/>
+           <exclude name="**/*.deflate"/>
+           <exclude name="**/*.m"/>
+           <exclude name="**/*.m.out"/>
+           <exclude name="**/*.q"/>
+           <exclude name="**/*.q.out"/>
+           <exclude name="data/files/*.rc"/>
+           <exclude name="data/files/*.seq"/>
+	   <exclude name="**/data/files/*.log"/>
+           <exclude name="**/*.txt"/>
+           <exclude name="**/test/results/**/*.xml"/>
+
+           <!-- Ignore recordio generated file -->
+	   <exclude name="ql/src/test/org/apache/hadoop/hive/ql/io/RecordTestObj.java"/>
+
+           <!-- Ignore thrift generated files -->
+           <exclude name="service/lib/php/packages/fb303/FacebookService.php"/>
+           <exclude name="service/lib/php/packages/fb303/fb303_types.php"/>
+           <exclude name="service/lib/py/fb303/FacebookService-remote"/>
+           <exclude name="service/lib/py/fb303/FacebookService.py"/>
+           <exclude name="service/lib/py/fb303/constants.py"/>
+           <exclude name="service/lib/py/fb303/ttypes.py"/>
+           <exclude name="service/lib/py/thrift/reflection/limited/constants.py"/>
+           <exclude name="service/lib/py/thrift/reflection/limited/ttypes.py"/>
+         </patternset>
+       </fileset>
+    </rat:report>
+  </target>
+
+  <target name="check-for-rat">
+    <echo message="Project: ${ant.project.name}"/>
+    <available property="rat.present" 
+	       resource="org/apache/rat/anttasks/antlib.xml">
+      <classpath refid="rat-classpath"/>
+    </available>
+  </target>
 
   <!-- ================================================================== -->
   <!-- Checkstyle                                                         -->
