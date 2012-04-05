@@ -582,6 +582,7 @@ public class HiveConf extends Configuration {
     // A comma separated list of hooks which implement HiveDriverRunHook and will be run at the
     // beginning and end of Driver.run, these will be run in the order specified
     HIVE_DRIVER_RUN_HOOKS("hive.exec.driver.run.hooks", ""),
+    HIVE_DDL_OUTPUT_FORMAT("hive.ddl.output.format", null),
     ;
 
     public final String varname;

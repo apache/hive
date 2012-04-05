@@ -6,5 +6,5 @@ default
 PREHOOK: query: -- Try to drop a database that does not exist
 DROP DATABASE does_not_exist
 PREHOOK: type: DROPDATABASE
-Failed with exception There is no database named does_not_exist
+There is no database named does_not_exist
 FAILED: Execution Error, return code 1 from org.apache.hadoop.hive.ql.exec.DDLTask
