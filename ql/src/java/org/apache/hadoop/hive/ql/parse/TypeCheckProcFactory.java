@@ -387,6 +387,7 @@ public final class TypeCheckProcFactory {
       }
 
       ASTNode expr = (ASTNode) nd;
+      ASTNode parent = stack.size() > 1 ? (ASTNode) stack.get(stack.size() - 2) : null;
       RowResolver input = ctx.getInputRR();
 
       if (expr.getType() != HiveParser.TOK_TABLE_OR_COL) {
@@ -403,9 +404,14 @@ public final class TypeCheckProcFactory {
 
       if (isTableAlias) {
         if (colInfo != null) {
-          // it's a table alias, and also a column
-          ctx.setError(ErrorMsg.AMBIGUOUS_TABLE_OR_COLUMN.getMsg(expr), expr);
-          return null;
+          if (parent != null && parent.getType() == HiveParser.DOT) {
+            // It's a table alias.
+            return null;
+          }
+          // It's a column.
+          return new ExprNodeColumnDesc(colInfo.getType(), colInfo
+              .getInternalName(), colInfo.getTabAlias(), colInfo
+              .getIsVirtualCol());
         } else {
           // It's a table alias.
           // We will process that later in DOT.
