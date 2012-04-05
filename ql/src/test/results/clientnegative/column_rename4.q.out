@@ -23,5 +23,5 @@ PREHOOK: query: alter table tstsrc change key key2 string after key_value
 PREHOOK: type: ALTERTABLE_RENAMECOL
 PREHOOK: Input: default@tstsrc
 PREHOOK: Output: default@tstsrc
-Column 'key_value' does not exist
+Column 'key_value' does not exists
 FAILED: Execution Error, return code 1 from org.apache.hadoop.hive.ql.exec.DDLTask
