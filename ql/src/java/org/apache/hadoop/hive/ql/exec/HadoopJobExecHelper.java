@@ -701,9 +701,15 @@ public class HadoopJobExecHelper {
       statusMesg += " with errors";
       returnVal = 2;
       console.printError(statusMesg);
-      if (HiveConf.getBoolVar(job, HiveConf.ConfVars.SHOW_JOB_FAIL_DEBUG_INFO)) {
+      if (HiveConf.getBoolVar(job, HiveConf.ConfVars.SHOW_JOB_FAIL_DEBUG_INFO) ||
+          HiveConf.getBoolVar(job, HiveConf.ConfVars.JOB_DEBUG_CAPTURE_STACKTRACES)) {
         try {
-          JobDebugger jd = new JobDebugger(job, rj, console);
+          JobDebugger jd;
+          if (SessionState.get() != null) {
+            jd = new JobDebugger(job, rj, console, SessionState.get().getStackTraces());
+          } else {
+            jd = new JobDebugger(job, rj, console);
+          }
           Thread t = new Thread(jd);
           t.start();
           t.join(HiveConf.getIntVar(job, HiveConf.ConfVars.JOB_DEBUG_TIMEOUT));

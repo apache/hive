@@ -1252,6 +1252,14 @@
 </property>
 
 <property>
+  <name>hive.exec.job.debug.capture.stacktraces</name>
+  <value>true</value>
+  <description>Whether or not stack traces parsed from the task logs of a sampled failed task for
+  			   each failed job should be stored in the SessionState
+  </description>
+</property>
+
+<property>
   <name>hive.exec.driver.run.hooks</name>
   <value></value>
   <description>A comma separated list of hooks which implement HiveDriverRunHook and will be run at the
