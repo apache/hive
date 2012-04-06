@@ -23,6 +23,8 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.hadoop.conf.Configuration;
@@ -30,6 +32,7 @@ import org.apache.hadoop.security.token.delegation.AbstractDelegationTokenSecret
 import org.apache.hadoop.security.token.delegation.HiveDelegationTokenSupport;
 import org.apache.zookeeper.CreateMode;
 import org.apache.zookeeper.KeeperException;
+import org.apache.zookeeper.WatchedEvent;
 import org.apache.zookeeper.Watcher;
 import org.apache.zookeeper.ZooDefs;
 import org.apache.zookeeper.ZooDefs.Ids;
@@ -56,6 +59,7 @@ public class ZooKeeperTokenStore implements DelegationTokenStore {
   private volatile ZooKeeper zkSession;
   private String zkConnectString;
   private final int zkSessionTimeout = 3000;
+  private long connectTimeoutMillis = -1;
   private List<ACL> newNodeAcl = Ids.OPEN_ACL_UNSAFE;
 
   private class ZooKeeperWatcher implements Watcher {
@@ -70,6 +74,7 @@ public class ZooKeeperTokenStore implements DelegationTokenStore {
         }
       }
     }
+    
   }
 
   /**
@@ -89,8 +94,8 @@ public class ZooKeeperTokenStore implements DelegationTokenStore {
         synchronized (this) {
           if (zkSession == null || zkSession.getState() == States.CLOSED) {
             try {
-            zkSession = new ZooKeeper(this.zkConnectString, this.zkSessionTimeout,
-                new ZooKeeperWatcher());
+              zkSession = createConnectedClient(this.zkConnectString, this.zkSessionTimeout,
+                this.connectTimeoutMillis, new ZooKeeperWatcher());
             } catch (IOException ex) {
               throw new TokenStoreException("Token store error.", ex);
             }
@@ -100,6 +105,49 @@ public class ZooKeeperTokenStore implements DelegationTokenStore {
     return zkSession;
   }
 
+  /**
+   * Create a ZooKeeper session that is in connected state.
+   * 
+   * @param connectString ZooKeeper connect String
+   * @param sessionTimeout ZooKeeper session timeout
+   * @param connectTimeout milliseconds to wait for connection, 0 or negative value means no wait
+   * @param watchers
+   * @return
+   * @throws InterruptedException
+   * @throws IOException
+   */
+  public static ZooKeeper createConnectedClient(String connectString,
+      int sessionTimeout, long connectTimeout, final Watcher... watchers)
+      throws IOException {
+    final CountDownLatch connected = new CountDownLatch(1);
+    Watcher connectWatcher = new Watcher() {
+      @Override
+      public void process(WatchedEvent event) {
+        switch (event.getState()) {
+        case SyncConnected:
+          connected.countDown();
+          break;
+        }
+        for (Watcher w : watchers) {
+          w.process(event);
+        }
+      }
+    };
+    ZooKeeper zk = new ZooKeeper(connectString, sessionTimeout, connectWatcher);
+    if (connectTimeout > 0) {
+      try {
+        if (!connected.await(connectTimeout, TimeUnit.MILLISECONDS)) {
+          zk.close();
+          throw new IOException("Timeout waiting for connection after "
+              + connectTimeout + "ms");
+        }
+      } catch (InterruptedException e) {
+        throw new IOException("Error waiting for connection.", e);
+      }
+    }
+    return zk;
+  }
+  
   /**
    * Create a path if it does not already exist ("mkdir -p")
    * @param zk ZooKeeper session
@@ -215,6 +263,8 @@ public class ZooKeeperTokenStore implements DelegationTokenStore {
     }
     this.zkConnectString = conf.get(
       HadoopThriftAuthBridge20S.Server.DELEGATION_TOKEN_STORE_ZK_CONNECT_STR, null);
+    this.connectTimeoutMillis = conf.getLong(
+      HadoopThriftAuthBridge20S.Server.DELEGATION_TOKEN_STORE_ZK_CONNECT_TIMEOUTMILLIS, -1);
     this.rootNode = conf.get(
       HadoopThriftAuthBridge20S.Server.DELEGATION_TOKEN_STORE_ZK_ZNODE,
       HadoopThriftAuthBridge20S.Server.DELEGATION_TOKEN_STORE_ZK_ZNODE_DEFAULT);
