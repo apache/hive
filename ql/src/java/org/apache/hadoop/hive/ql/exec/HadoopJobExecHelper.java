@@ -403,7 +403,6 @@ public class HadoopJobExecHelper {
     MapRedStats mapRedStats = new MapRedStats(numMap, numReduce, cpuMsec, success, rj.getID().toString());
     mapRedStats.setCounters(ctrs);
 
-    this.task.setDone();
     // update based on the final value of the counters
     updateCounters(ctrs, rj);
 
