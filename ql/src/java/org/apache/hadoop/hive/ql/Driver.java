@@ -1104,13 +1104,11 @@ public class Driver implements CommandProcessor {
       SessionState.get().setLocalMapRedErrors(new HashMap<String, List<String>>());
 
       // Add root Tasks to runnable
-
       for (Task<? extends Serializable> tsk : plan.getRootTasks()) {
         driverCxt.addToRunnable(tsk);
       }
 
       // Loop while you either have tasks running, or tasks queued up
-
       while (running.size() != 0 || runnable.peek() != null) {
         // Launch upto maxthreads tasks
         while (runnable.peek() != null && running.size() < maxthreads) {
