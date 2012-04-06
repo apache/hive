@@ -41,7 +41,9 @@ public class TestZooKeeperTokenStore extends TestCase {
   private ZooKeeper zkClient = null;
   private int zkPort = -1;
   private ZooKeeperTokenStore ts;
-
+  // connect timeout large enough for slower test environments
+  private final int connectTimeoutMillis = 30000;
+  
   @Override
   protected void setUp() throws Exception {
     File zkDataDir = new File(System.getProperty("java.io.tmpdir"));
@@ -50,8 +52,9 @@ public class TestZooKeeperTokenStore extends TestCase {
     }
     this.zkCluster = new MiniZooKeeperCluster();
     this.zkPort = this.zkCluster.startup(zkDataDir);
-    this.zkClient = new ZooKeeper("localhost:"
-        + zkPort, 300, null);
+    
+    this.zkClient = ZooKeeperTokenStore.createConnectedClient("localhost:" + zkPort, 3000,
+        connectTimeoutMillis);
   }
 
   @Override
@@ -72,6 +75,9 @@ public class TestZooKeeperTokenStore extends TestCase {
     conf.set(
         HadoopThriftAuthBridge20S.Server.DELEGATION_TOKEN_STORE_ZK_ZNODE,
         zkPath);
+    conf.setLong(
+        HadoopThriftAuthBridge20S.Server.DELEGATION_TOKEN_STORE_ZK_CONNECT_TIMEOUTMILLIS,
+        connectTimeoutMillis);
     return conf;
   }
 

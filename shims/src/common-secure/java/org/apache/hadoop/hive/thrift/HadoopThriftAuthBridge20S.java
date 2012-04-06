@@ -213,6 +213,8 @@ import org.apache.thrift.transport.TTransportFactory;
        "hive.cluster.delegation.token.store.class";
      public static final String DELEGATION_TOKEN_STORE_ZK_CONNECT_STR =
          "hive.cluster.delegation.token.store.zookeeper.connectString";
+     public static final String DELEGATION_TOKEN_STORE_ZK_CONNECT_TIMEOUTMILLIS =
+         "hive.cluster.delegation.token.store.zookeeper.connectTimeoutMillis";
      public static final String DELEGATION_TOKEN_STORE_ZK_ZNODE =
          "hive.cluster.delegation.token.store.zookeeper.znode";
      public static final String DELEGATION_TOKEN_STORE_ZK_ACL =
