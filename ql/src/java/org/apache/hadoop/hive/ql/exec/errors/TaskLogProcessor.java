@@ -28,6 +28,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.regex.Pattern;
 
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.mapred.JobConf;
@@ -168,6 +169,79 @@ public class TaskLogProcessor {
     }
 
     return errors;
+  }
+
+  /**
+   * Processes the provided task logs to extract stack traces.
+   * @return A list of lists of strings where each list of strings represents a stack trace
+   */
+  public List<List<String>> getStackTraces() {
+    List<List<String>> stackTraces = new ArrayList<List<String>>();
+
+    for(String urlString : taskLogUrls) {
+
+      // Open the log file, and read the lines, parse out stack traces
+      URL taskAttemptLogUrl;
+      try {
+        taskAttemptLogUrl = new URL(urlString);
+      } catch(MalformedURLException e) {
+        throw new RuntimeException("Bad task log url", e);
+      }
+      BufferedReader in;
+      try {
+        in = new BufferedReader(
+            new InputStreamReader(taskAttemptLogUrl.openStream()));
+        String inputLine;
+        String lastLine = null;
+        boolean lastLineMatched = false;
+        List<String> stackTrace = null;
+
+        // Patterns that match the middle/end of stack traces
+        Pattern stackTracePattern = Pattern.compile("^\tat .*", Pattern.CASE_INSENSITIVE);
+        Pattern endStackTracePattern =
+            Pattern.compile("^\t... [0-9]+ more.*", Pattern.CASE_INSENSITIVE);
+
+        while ((inputLine = in.readLine()) != null) {
+
+          if (stackTracePattern.matcher(inputLine).matches() ||
+              endStackTracePattern.matcher(inputLine).matches()) {
+            // We are in a stack trace
+
+            if (stackTrace == null) {
+              // This is the first time we have realized we are in a stack trace.  In this case,
+              // the previous line was the error message, add that to the stack trace as well
+              stackTrace = new ArrayList<String>();
+              stackTrace.add(lastLine);
+            } else if (!lastLineMatched) {
+              // The last line didn't match a pattern, it is probably an error message, part of
+              // a string of stack traces related to the same error message so add it to the stack
+              // trace
+              stackTrace.add(lastLine);
+            }
+
+            stackTrace.add(inputLine);
+            lastLineMatched = true;
+          } else {
+
+            if (!lastLineMatched && stackTrace != null) {
+              // If the last line didn't match the patterns either, the stack trace is definitely
+              // over
+              stackTraces.add(stackTrace);
+              stackTrace = null;
+            }
+
+            lastLineMatched = false;
+          }
+
+          lastLine = inputLine;
+        }
+        in.close();
+      } catch (IOException e) {
+        throw new RuntimeException("Error while reading from task log url", e);
+      }
+    }
+
+    return stackTraces;
   }
 
 }

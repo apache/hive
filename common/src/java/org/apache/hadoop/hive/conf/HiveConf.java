@@ -185,6 +185,7 @@ public class HiveConf extends Configuration {
     DEFAULT_ZOOKEEPER_PARTITION_NAME("hive.lockmgr.zookeeper.default.partition.name", "__HIVE_DEFAULT_ZOOKEEPER_PARTITION__"),
     // Whether to show a link to the most failed task + debugging tips
     SHOW_JOB_FAIL_DEBUG_INFO("hive.exec.show.job.failure.debug.info", true),
+    JOB_DEBUG_CAPTURE_STACKTRACES("hive.exec.job.debug.capture.stacktraces", true),
     JOB_DEBUG_TIMEOUT("hive.exec.job.debug.timeout", 30000),
     TASKLOG_DEBUG_TIMEOUT("hive.exec.tasklog.debug.timeout", 20000),
     OUTPUT_FILE_EXTENSION("hive.output.file.extension", null),

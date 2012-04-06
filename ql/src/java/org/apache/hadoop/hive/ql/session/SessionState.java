@@ -117,6 +117,9 @@ public class SessionState {
 
   private Map<String, String> hiveVariables;
 
+  // A mapping from a hadoop job ID to the stack traces collected from the map reduce task logs
+  private Map<String, List<List<String>>> stackTraces;
+
   // This mapping collects all the configuration variables which have been set by the user
   // explicitely, either via SET in the CLI, the hiveconf option, or a System property.
   // It is a mapping from the variable name to its value.  Note that if a user repeatedly
@@ -709,6 +712,14 @@ public class SessionState {
 
   public void setLastMapRedStatsList(List<MapRedStats> lastMapRedStatsList) {
     this.lastMapRedStatsList = lastMapRedStatsList;
+  }
+
+  public void setStackTraces(Map<String, List<List<String>>> stackTraces) {
+    this.stackTraces = stackTraces;
+  }
+
+  public Map<String, List<List<String>>> getStackTraces() {
+    return stackTraces;
   }
 
   public Map<String, String> getOverriddenConfigurations() {

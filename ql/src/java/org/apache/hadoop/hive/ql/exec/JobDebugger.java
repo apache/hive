@@ -19,6 +19,7 @@
 package org.apache.hadoop.hive.ql.exec;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -42,6 +43,7 @@ public class JobDebugger implements Runnable {
   private final JobConf conf;
   private final RunningJob rj;
   private final LogHelper console;
+  private final Map<String, List<List<String>>> stackTraces;
   // Mapping from task ID to the number of failures
   private final Map<String, Integer> failures = new HashMap<String, Integer>();
   private final Set<String> successes = new HashSet<String>(); // Successful task ID's
@@ -74,6 +76,15 @@ public class JobDebugger implements Runnable {
     this.conf = conf;
     this.rj = rj;
     this.console = console;
+    this.stackTraces = null;
+  }
+
+  public JobDebugger(JobConf conf, RunningJob rj, LogHelper console,
+      Map<String, List<List<String>>> stackTraces) {
+    this.conf = conf;
+    this.rj = rj;
+    this.console = console;
+    this.stackTraces = stackTraces;
   }
 
   public void run() {
@@ -208,27 +219,37 @@ public class JobDebugger implements Runnable {
           tlp.addTaskAttemptLogUrl(logUrl);
         }
 
-        List<ErrorAndSolution> errors = tlp.getErrors();
-
-        StringBuilder sb = new StringBuilder();
-        // We use a StringBuilder and then call printError only once as
-        // printError will write to both stderr and the error log file. In
-        // situations where both the stderr and the log file output is
-        // simultaneously output to a single stream, this will look cleaner.
-        sb.append("\n");
-        sb.append("Task with the most failures(" + maxFailures + "): \n");
-        sb.append("-----\n");
-        sb.append("Task ID:\n  " + task + "\n\n");
-        sb.append("URL:\n  " + taskUrl + "\n");
-
-        for (ErrorAndSolution e : errors) {
-          sb.append("\n");
-          sb.append("Possible error:\n  " + e.getError() + "\n\n");
-          sb.append("Solution:\n  " + e.getSolution() + "\n");
+        if (HiveConf.getBoolVar(conf, HiveConf.ConfVars.JOB_DEBUG_CAPTURE_STACKTRACES) &&
+            stackTraces != null) {
+          if (!stackTraces.containsKey(jobId)) {
+            stackTraces.put(jobId, new ArrayList<List<String>>());
+          }
+          stackTraces.get(jobId).addAll(tlp.getStackTraces());
         }
-        sb.append("-----\n");
 
-        console.printError(sb.toString());
+        if (HiveConf.getBoolVar(conf, HiveConf.ConfVars.SHOW_JOB_FAIL_DEBUG_INFO)) {
+          List<ErrorAndSolution> errors = tlp.getErrors();
+
+          StringBuilder sb = new StringBuilder();
+          // We use a StringBuilder and then call printError only once as
+          // printError will write to both stderr and the error log file. In
+          // situations where both the stderr and the log file output is
+          // simultaneously output to a single stream, this will look cleaner.
+          sb.append("\n");
+          sb.append("Task with the most failures(" + maxFailures + "): \n");
+          sb.append("-----\n");
+          sb.append("Task ID:\n  " + task + "\n\n");
+          sb.append("URL:\n  " + taskUrl + "\n");
+
+          for (ErrorAndSolution e : errors) {
+            sb.append("\n");
+            sb.append("Possible error:\n  " + e.getError() + "\n\n");
+            sb.append("Solution:\n  " + e.getSolution() + "\n");
+          }
+          sb.append("-----\n");
+
+          console.printError(sb.toString());
+        }
 
         // Only print out one task because that's good enough for debugging.
         break;
