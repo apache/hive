@@ -6264,7 +6264,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
             + ". Column positions should match for a UNION"));
       }
       //try widening coversion, otherwise fail union
-      TypeInfo commonTypeInfo = FunctionRegistry.getCommonClassForComparison(lInfo.getType(),
+      TypeInfo commonTypeInfo = FunctionRegistry.getCommonClassForUnionAll(lInfo.getType(),
           rInfo.getType());
       if (commonTypeInfo == null) {
         throw new SemanticException(generateErrorMessage(tabref,
@@ -6281,7 +6281,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       String field = lEntry.getKey();
       ColumnInfo lInfo = lEntry.getValue();
       ColumnInfo rInfo = rightmap.get(field);
-      lInfo.setType(FunctionRegistry.getCommonClassForComparison(lInfo.getType(),
+      lInfo.setType(FunctionRegistry.getCommonClassForUnionAll(lInfo.getType(),
             rInfo.getType()));
       unionoutRR.put(unionalias, field, lInfo);
     }

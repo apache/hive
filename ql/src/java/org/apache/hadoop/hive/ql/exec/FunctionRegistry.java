@@ -631,6 +631,28 @@ public final class FunctionRegistry {
   }
 
   /**
+   * Find a common class for union-all operator
+   */
+  public static TypeInfo getCommonClassForUnionAll(TypeInfo a, TypeInfo b) {
+    if (a.equals(b)) {
+      return a;
+    }
+    if (FunctionRegistry.implicitConvertable(a, b)) {
+      return b;
+    }
+    if (FunctionRegistry.implicitConvertable(b, a)) {
+      return a;
+    }
+    for (TypeInfo t : numericTypeList) {
+      if (FunctionRegistry.implicitConvertable(a, t)
+          && FunctionRegistry.implicitConvertable(b, t)) {
+        return t;
+      }
+    }
+    return null;
+  }
+
+  /**
    * Find a common class that objects of both TypeInfo a and TypeInfo b can
    * convert to. This is used for comparing objects of type a and type b.
    *
@@ -644,7 +666,6 @@ public final class FunctionRegistry {
     if (a.equals(b)) {
       return a;
     }
-
     for (TypeInfo t : numericTypeList) {
       if (FunctionRegistry.implicitConvertable(a, t)
           && FunctionRegistry.implicitConvertable(b, t)) {
