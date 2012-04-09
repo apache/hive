@@ -152,10 +152,10 @@ public interface HadoopShims {
    * the setup/cleanup/commit of output from the hive client. As a result it does
    * not need support for the same inside the MR framework
    *
-   * This routine sets the appropriate options to set the output format and any
-   * options related to bypass setup/cleanup/commit support in the MR framework
+   * This routine sets the appropriate options related to bypass setup/cleanup/commit
+   * support in the MR framework, but does not set the OutputFormat class.
    */
-  void setNullOutputFormat(JobConf conf);
+  void prepareJobOutput(JobConf conf);
 
   /**
    * Get the UGI that the given job configuration will run as.

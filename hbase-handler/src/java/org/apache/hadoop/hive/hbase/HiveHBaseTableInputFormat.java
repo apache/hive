@@ -31,6 +31,7 @@ import org.apache.hadoop.hbase.client.HTable;
 import org.apache.hadoop.hbase.client.Result;
 import org.apache.hadoop.hbase.client.Scan;
 import org.apache.hadoop.hbase.io.ImmutableBytesWritable;
+import org.apache.hadoop.hbase.mapred.TableMapReduceUtil;
 import org.apache.hadoop.hbase.mapreduce.TableInputFormatBase;
 import org.apache.hadoop.hbase.mapreduce.TableSplit;
 import org.apache.hadoop.hbase.util.Bytes;
@@ -413,6 +414,9 @@ public class HiveHBaseTableInputFormat extends TableInputFormatBase
 
   @Override
   public InputSplit[] getSplits(JobConf jobConf, int numSplits) throws IOException {
+
+    //obtain delegation tokens for the job
+    TableMapReduceUtil.initCredentials(jobConf);
 
     String hbaseTableName = jobConf.get(HBaseSerDe.HBASE_TABLE_NAME);
     setHTable(new HTable(HBaseConfiguration.create(jobConf), Bytes.toBytes(hbaseTableName)));

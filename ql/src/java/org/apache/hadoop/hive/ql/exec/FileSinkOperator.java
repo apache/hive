@@ -35,7 +35,6 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.FileUtils;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.io.HiveFileFormatUtils;
-import org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat;
 import org.apache.hadoop.hive.ql.io.HiveKey;
 import org.apache.hadoop.hive.ql.io.HiveOutputFormat;
 import org.apache.hadoop.hive.ql.io.HivePartitioner;
@@ -52,10 +51,10 @@ import org.apache.hadoop.hive.serde2.SerDeStats;
 import org.apache.hadoop.hive.serde2.Serializer;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils;
+import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils.ObjectInspectorCopyOption;
 import org.apache.hadoop.hive.serde2.objectinspector.StructField;
 import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.SubStructObjectInspector;
-import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils.ObjectInspectorCopyOption;
 import org.apache.hadoop.hive.shims.ShimLoader;
 import org.apache.hadoop.io.BytesWritable;
 import org.apache.hadoop.io.LongWritable;
@@ -764,6 +763,28 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
   public void augmentPlan() {
     PlanUtils.configureOutputJobPropertiesForStorageHandler(
         getConf().getTableInfo());
+  }
+
+  public void checkOutputSpecs(FileSystem ignored, JobConf job) throws IOException {
+    if (hiveOutputFormat == null) {
+      try {
+        hiveOutputFormat = conf.getTableInfo().getOutputFileFormatClass().newInstance();
+      } catch (Exception ex) {
+        throw new IOException(ex);
+      }
+    }
+    Utilities.copyTableJobPropertiesToConf(conf.getTableInfo(), job);
+
+    if (conf.getTableInfo().isNonNative()) {
+      //check the ouput specs only if it is a storage handler (native tables's outputformats does
+      //not set the job's output properties correctly)
+      try {
+        hiveOutputFormat.checkOutputSpecs(ignored, job);
+      } catch (NoSuchMethodError e) {
+        //For BC, ignore this for now, but leave a log message
+        LOG.warn("HiveOutputFormat should implement checkOutputSpecs() method`");
+      }
+    }
   }
 
   private void publishStats() {

@@ -29,6 +29,7 @@ import org.apache.hadoop.hbase.HBaseConfiguration;
 import org.apache.hadoop.hbase.client.HTable;
 import org.apache.hadoop.hbase.client.Put;
 import org.apache.hadoop.hbase.io.ImmutableBytesWritable;
+import org.apache.hadoop.hbase.mapred.TableMapReduceUtil;
 import org.apache.hadoop.hbase.mapreduce.TableOutputFormat;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.exec.FileSinkOperator.RecordWriter;
@@ -101,6 +102,9 @@ public class HiveHBaseTableOutputFormat extends
 
   @Override
   public void checkOutputSpecs(FileSystem fs, JobConf jc) throws IOException {
+
+    //obtain delegation tokens for the job
+    TableMapReduceUtil.initCredentials(jc);
 
     String hbaseTableName = jc.get(HBaseSerDe.HBASE_TABLE_NAME);
     jc.set(TableOutputFormat.OUTPUT_TABLE, hbaseTableName);
