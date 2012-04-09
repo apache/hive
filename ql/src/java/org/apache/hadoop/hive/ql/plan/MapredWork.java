@@ -454,4 +454,36 @@ public class MapredWork implements Serializable {
     pathToPartitionInfo.put(path.toString(), partDesc);
   }
 
+  public List<Operator<?>> getAllOperators() {
+    ArrayList<Operator<?>> opList = new ArrayList<Operator<?>>();
+    ArrayList<Operator<?>> returnList = new ArrayList<Operator<?>>();
+
+    if (getReducer() != null) {
+      opList.add(getReducer());
+    }
+
+    Map<String, ArrayList<String>> pa = getPathToAliases();
+    if (pa != null) {
+      for (List<String> ls : pa.values()) {
+        for (String a : ls) {
+          Operator<?> op = getAliasToWork().get(a);
+          if (op != null ) {
+            opList.add(op);
+          }
+        }
+      }
+    }
+
+    //recursively add all children
+    while (!opList.isEmpty()) {
+      Operator<?> op = opList.remove(0);
+      if (op.getChildOperators() != null) {
+        opList.addAll(op.getChildOperators());
+      }
+      returnList.add(op);
+    }
+
+    return returnList;
+  }
+
 }

@@ -44,16 +44,16 @@ import org.apache.hadoop.util.ReflectionUtils;
  */
 public class RCFileOutputFormat extends
     FileOutputFormat<WritableComparable, BytesRefArrayWritable> implements
-    HiveOutputFormat<WritableComparable, Writable> {
+    HiveOutputFormat<WritableComparable, BytesRefArrayWritable> {
 
   /**
    * set number of columns into the given configuration.
-   * 
+   *
    * @param conf
    *          configuration instance which need to set the column number
    * @param columnNum
    *          column number for RCFile's Writer
-   * 
+   *
    */
   public static void setColumnNumber(Configuration conf, int columnNum) {
     assert columnNum > 0;
@@ -62,7 +62,7 @@ public class RCFileOutputFormat extends
 
   /**
    * Returns the number of columns set in the conf for writers.
-   * 
+   *
    * @param conf
    * @return number of columns for RCFile's writer
    */
@@ -102,7 +102,7 @@ public class RCFileOutputFormat extends
 
   /**
    * create the final out file.
-   * 
+   *
    * @param jc
    *          the job configuration file
    * @param finalOutPath

@@ -37,13 +37,13 @@ import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.Context;
 import org.apache.hadoop.hive.ql.DriverContext;
 import org.apache.hadoop.hive.ql.QueryPlan;
-import org.apache.hadoop.hive.ql.exec.ExecDriver;
 import org.apache.hadoop.hive.ql.exec.HadoopJobExecHelper;
 import org.apache.hadoop.hive.ql.exec.HadoopJobExecHook;
 import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.exec.Throttle;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.io.CombineHiveInputFormat;
+import org.apache.hadoop.hive.ql.io.HiveOutputFormatImpl;
 import org.apache.hadoop.hive.ql.plan.api.StageType;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.ql.session.SessionState.LogHelper;
@@ -91,7 +91,8 @@ public class BlockMergeTask extends Task<MergeWork> implements Serializable,
     HiveConf.setVar(job, HiveConf.ConfVars.HIVEINPUTFORMAT,
         CombineHiveInputFormat.class.getName());
     success = true;
-    ShimLoader.getHadoopShims().setNullOutputFormat(job);
+    ShimLoader.getHadoopShims().prepareJobOutput(job);
+    job.setOutputFormat(HiveOutputFormatImpl.class);
     job.setMapperClass(work.getMapperClass());
 
     Context ctx = driverContext.getCtx();

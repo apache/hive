@@ -23,14 +23,13 @@ import java.util.Properties;
 
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
-import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.exec.FileSinkOperator.RecordWriter;
+import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.io.BytesWritable;
 import org.apache.hadoop.io.NullWritable;
 import org.apache.hadoop.io.SequenceFile;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.io.Writable;
-import org.apache.hadoop.io.WritableComparable;
 import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.mapred.SequenceFileOutputFormat;
 import org.apache.hadoop.util.Progressable;
@@ -39,9 +38,9 @@ import org.apache.hadoop.util.Progressable;
  * A {@link HiveOutputFormat} that writes {@link SequenceFile}s with the
  * content saved in the keys, and null in the values.
  */
-public class HiveNullValueSequenceFileOutputFormat
-  extends SequenceFileOutputFormat
-  implements HiveOutputFormat<WritableComparable, Writable> {
+public class HiveNullValueSequenceFileOutputFormat<K,V>
+  extends SequenceFileOutputFormat<K,V>
+  implements HiveOutputFormat<K,V> {
 
   private static final Writable NULL_WRITABLE = NullWritable.get();
 
