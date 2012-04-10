@@ -298,6 +298,12 @@
 </property>
 
 <property>
+  <name>hive.metastore.batch.retrieve.table.partition.max</name>
+  <value>1000</value>
+  <description>Maximum number of table partitions that metastore internally retrieves in one batch.</description>
+</property>
+
+<property>
   <name>hive.default.fileformat</name>
   <value>TextFile</value>
   <description>Default file format for CREATE TABLE statement. Options are TextFile and SequenceFile. Users can explicitly say CREATE TABLE ... STORED AS &lt;TEXTFILE|SEQUENCEFILE&gt; to override</description>

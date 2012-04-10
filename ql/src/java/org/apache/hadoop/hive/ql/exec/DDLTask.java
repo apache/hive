@@ -2971,15 +2971,24 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
             " is protected from being dropped");
       }
 
+      int partitionBatchSize = HiveConf.getIntVar(conf,
+        ConfVars.METASTORE_BATCH_RETRIEVE_TABLE_PARTITION_MAX);
+
       // We should check that all the partitions of the table can be dropped
       if (tbl != null && tbl.isPartitioned()) {
-        List<Partition> listPartitions = db.getPartitions(tbl);
-        for (Partition p: listPartitions) {
+        List<String> partitionNames = db.getPartitionNames(tbl.getTableName(), (short)-1);
+
+        for(int i=0; i < partitionNames.size(); i+= partitionBatchSize) {
+          List<String> partNames = partitionNames.subList(i, Math.min(i+partitionBatchSize,
+            partitionNames.size()));
+          List<Partition> listPartitions = db.getPartitionsByNames(tbl, partNames);
+          for (Partition p: listPartitions) {
             if (!p.canDrop()) {
               throw new HiveException("Table " + tbl.getTableName() +
-                  " Partition" + p.getName() +
-                  " is protected from being dropped");
+                " Partition" + p.getName() +
+                " is protected from being dropped");
             }
+          }
         }
       }
 
