@@ -1,0 +1,58 @@
+PREHOOK: query: create table if not exists temp(col STRING) partitioned by (p STRING)
+PREHOOK: type: CREATETABLE
+POSTHOOK: query: create table if not exists temp(col STRING) partitioned by (p STRING)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: default@temp
+PREHOOK: query: alter table temp add if not exists partition (p ='p1')
+PREHOOK: type: ALTERTABLE_ADDPARTS
+PREHOOK: Input: default@temp
+POSTHOOK: query: alter table temp add if not exists partition (p ='p1')
+POSTHOOK: type: ALTERTABLE_ADDPARTS
+POSTHOOK: Input: default@temp
+POSTHOOK: Output: default@temp@p=p1
+PREHOOK: query: alter table temp add if not exists partition (p ='p2')
+PREHOOK: type: ALTERTABLE_ADDPARTS
+PREHOOK: Input: default@temp
+POSTHOOK: query: alter table temp add if not exists partition (p ='p2')
+POSTHOOK: type: ALTERTABLE_ADDPARTS
+POSTHOOK: Input: default@temp
+POSTHOOK: Output: default@temp@p=p2
+PREHOOK: query: alter table temp add if not exists partition (p ='p3')
+PREHOOK: type: ALTERTABLE_ADDPARTS
+PREHOOK: Input: default@temp
+POSTHOOK: query: alter table temp add if not exists partition (p ='p3')
+POSTHOOK: type: ALTERTABLE_ADDPARTS
+POSTHOOK: Input: default@temp
+POSTHOOK: Output: default@temp@p=p3
+PREHOOK: query: show partitions temp
+PREHOOK: type: SHOWPARTITIONS
+POSTHOOK: query: show partitions temp
+POSTHOOK: type: SHOWPARTITIONS
+p=p1
+p=p2
+p=p3
+PREHOOK: query: drop table temp
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@temp
+PREHOOK: Output: default@temp
+POSTHOOK: query: drop table temp
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@temp
+POSTHOOK: Output: default@temp
+PREHOOK: query: create table if not exists temp(col STRING) partitioned by (p STRING)
+PREHOOK: type: CREATETABLE
+POSTHOOK: query: create table if not exists temp(col STRING) partitioned by (p STRING)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: default@temp
+PREHOOK: query: show partitions temp
+PREHOOK: type: SHOWPARTITIONS
+POSTHOOK: query: show partitions temp
+POSTHOOK: type: SHOWPARTITIONS
+PREHOOK: query: drop table temp
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@temp
+PREHOOK: Output: default@temp
+POSTHOOK: query: drop table temp
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@temp
+POSTHOOK: Output: default@temp

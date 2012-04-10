@@ -54,7 +54,6 @@ import org.apache.hadoop.hive.common.classification.InterfaceAudience;
 import org.apache.hadoop.hive.common.classification.InterfaceStability;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
-import org.apache.hadoop.hive.metastore.api.RegionStorageDescriptor;
 import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.HiveObjectPrivilege;
@@ -72,6 +71,7 @@ import org.apache.hadoop.hive.metastore.api.PrincipalPrivilegeSet;
 import org.apache.hadoop.hive.metastore.api.PrincipalType;
 import org.apache.hadoop.hive.metastore.api.PrivilegeBag;
 import org.apache.hadoop.hive.metastore.api.PrivilegeGrantInfo;
+import org.apache.hadoop.hive.metastore.api.RegionStorageDescriptor;
 import org.apache.hadoop.hive.metastore.api.Role;
 import org.apache.hadoop.hive.metastore.api.SerDeInfo;
 import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
@@ -80,7 +80,6 @@ import org.apache.hadoop.hive.metastore.api.Type;
 import org.apache.hadoop.hive.metastore.api.UnknownDBException;
 import org.apache.hadoop.hive.metastore.api.UnknownPartitionException;
 import org.apache.hadoop.hive.metastore.api.UnknownTableException;
-import org.apache.hadoop.hive.metastore.model.MRegionStorageDescriptor;
 import org.apache.hadoop.hive.metastore.model.MColumnDescriptor;
 import org.apache.hadoop.hive.metastore.model.MDBPrivilege;
 import org.apache.hadoop.hive.metastore.model.MDatabase;
@@ -92,6 +91,7 @@ import org.apache.hadoop.hive.metastore.model.MPartition;
 import org.apache.hadoop.hive.metastore.model.MPartitionColumnPrivilege;
 import org.apache.hadoop.hive.metastore.model.MPartitionEvent;
 import org.apache.hadoop.hive.metastore.model.MPartitionPrivilege;
+import org.apache.hadoop.hive.metastore.model.MRegionStorageDescriptor;
 import org.apache.hadoop.hive.metastore.model.MRole;
 import org.apache.hadoop.hive.metastore.model.MRoleMap;
 import org.apache.hadoop.hive.metastore.model.MSerDeInfo;
@@ -705,10 +705,16 @@ public class ObjectStore implements RawStore, Configurable {
           pm.deletePersistentAll(partColGrants);
         }
 
+        int partitionBatchSize = HiveConf.getIntVar(getConf(),
+          ConfVars.METASTORE_BATCH_RETRIEVE_TABLE_PARTITION_MAX);
+
         // call dropPartition on each of the table's partitions to follow the
         // procedure for cleanly dropping partitions.
-        List<MPartition> partsToDelete = listMPartitions(dbName, tableName, -1);
-        if (partsToDelete != null) {
+        while(true) {
+          List<MPartition> partsToDelete = listMPartitions(dbName, tableName, partitionBatchSize);
+          if (partsToDelete == null || partsToDelete.isEmpty()) {
+            break;
+          }
           for (MPartition mpart : partsToDelete) {
             dropPartitionCommon(mpart);
           }
@@ -1296,20 +1302,19 @@ public class ObjectStore implements RawStore, Configurable {
   public List<Partition> getPartitions(String dbName, String tableName, int max)
       throws MetaException {
     openTransaction();
-    List<Partition> parts = convertToParts(listMPartitions(dbName, tableName,
-        max));
+    List<Partition> parts = convertToParts(listMPartitions(dbName, tableName, max));
     commitTransaction();
     return parts;
   }
 
   @Override
   public List<Partition> getPartitionsWithAuth(String dbName, String tblName,
-      short maxParts, String userName, List<String> groupNames)
+      short max, String userName, List<String> groupNames)
       throws MetaException, NoSuchObjectException, InvalidObjectException {
     boolean success = false;
     try {
       openTransaction();
-      List<MPartition> mparts = listMPartitions(dbName, tblName, maxParts);
+      List<MPartition> mparts = listMPartitions(dbName, tblName, max);
       List<Partition> parts = new ArrayList<Partition>(mparts.size());
       if (mparts != null && mparts.size()>0) {
         for (MPartition mpart : mparts) {
@@ -1403,6 +1408,10 @@ public class ObjectStore implements RawStore, Configurable {
           + "order by partitionName asc");
       q.declareParameters("java.lang.String t1, java.lang.String t2");
       q.setResult("partitionName");
+
+      if(max > 0) {
+        q.setRange(0, max);
+      }
       Collection names = (Collection) q.execute(dbName, tableName);
       for (Iterator i = names.iterator(); i.hasNext();) {
         pns.add((String) i.next());
@@ -1538,6 +1547,7 @@ public class ObjectStore implements RawStore, Configurable {
   // TODO:pc implement max
   private List<MPartition> listMPartitions(String dbName, String tableName,
       int max) {
+
     boolean success = false;
     List<MPartition> mparts = null;
     try {
@@ -1549,6 +1559,9 @@ public class ObjectStore implements RawStore, Configurable {
           "table.tableName == t1 && table.database.name == t2");
       query.declareParameters("java.lang.String t1, java.lang.String t2");
       query.setOrdering("partitionName ascending");
+      if(max > 0) {
+        query.setRange(0, max);
+      }
       mparts = (List<MPartition>) query.execute(tableName, dbName);
       LOG.debug("Done executing query for listMPartitions");
       pm.retrieveAll(mparts);
