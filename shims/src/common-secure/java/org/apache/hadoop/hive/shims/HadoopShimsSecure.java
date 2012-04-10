@@ -50,7 +50,6 @@ import org.apache.hadoop.mapred.TaskCompletionEvent;
 import org.apache.hadoop.mapred.TaskID;
 import org.apache.hadoop.mapred.lib.CombineFileInputFormat;
 import org.apache.hadoop.mapred.lib.CombineFileSplit;
-import org.apache.hadoop.mapred.lib.NullOutputFormat;
 import org.apache.hadoop.mapreduce.Job;
 import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.hadoop.security.token.Token;
@@ -473,8 +472,7 @@ public abstract class HadoopShimsSecure implements HadoopShims {
     public void abortTask(TaskAttemptContext taskContext) { }
   }
 
-  public void setNullOutputFormat(JobConf conf) {
-    conf.setOutputFormat(NullOutputFormat.class);
+  public void prepareJobOutput(JobConf conf) {
     conf.setOutputCommitter(NullOutputCommitter.class);
 
     // option to bypass job setup and cleanup was introduced in hadoop-21 (MAPREDUCE-463)

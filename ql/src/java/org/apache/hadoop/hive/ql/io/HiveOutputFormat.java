@@ -24,8 +24,8 @@ import java.util.Properties;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.ql.exec.FileSinkOperator.RecordWriter;
 import org.apache.hadoop.io.Writable;
-import org.apache.hadoop.io.WritableComparable;
 import org.apache.hadoop.mapred.JobConf;
+import org.apache.hadoop.mapred.OutputFormat;
 import org.apache.hadoop.util.Progressable;
 
 /**
@@ -34,16 +34,16 @@ import org.apache.hadoop.util.Progressable;
  * {@link #getHiveRecordWriter(JobConf, Path, Class, boolean, Properties, Progressable)}
  * , with various parameters used to create the final out file and get some
  * specific settings.
- * 
+ *
  * @see org.apache.hadoop.mapred.OutputFormat
  * @see RecordWriter
  * @see JobConf
  */
-public interface HiveOutputFormat<K extends WritableComparable, V extends Writable> {
+public interface HiveOutputFormat<K, V> extends OutputFormat<K, V> {
 
   /**
    * create the final out file and get some specific settings.
-   * 
+   *
    * @param jc
    *          the job configuration file
    * @param finalOutPath
