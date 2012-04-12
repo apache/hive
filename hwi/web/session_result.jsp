@@ -36,30 +36,37 @@
 <% } %>
 <% String sessionName = request.getParameter("sessionName"); %>
 <% HWISessionItem si = hs.findSessionItemByName(auth,sessionName); %>
+<!DOCTYPE html>
 <html>
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
     <title>Session Result Bucket</title>
+    <link href="css/bootstrap.min.css" rel="stylesheet">
   </head>
-  <body>
-    <table>
-      <tr>
-        <td valign="top"><jsp:include page="left_navigation.jsp"/></td>
-        <td valign="top">
+<body style="padding-top: 60px;">
+    <jsp:include page="/navbar.jsp"></jsp:include>
+<div class="container">
+	<div class="row">
+		<div class="span4">
+			<jsp:include page="/left_navigation.jsp"/>
+		</div><!- span4 -->
+		<div class="span8">
           <h2>Session Result Bucket</h2>
           
           <% if (si!=null) { %>
-            <table border=1">
+            <table class="table table-striped">
+              <tbody>
               <% for (List<String> rows : si.getResultBucket() ) { %>
 	        <% for (String row : rows ) { %>  
 		  <tr><td><%=row%></td></tr>
 	      	<% } %>
             <% } %>
+              </tbody>
 	    	</table>	
           <% } %>
           
-        </td>
-      </tr>
-    </table>
+		</div><!- span8 -->
+	</div><!-- row -->
+ </div><!-- container -->
   </body>
 </html>

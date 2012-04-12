@@ -14,28 +14,35 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 --%>
-<%@page errorPage="error_page.jsp" %>
-<%@ page import="org.apache.hadoop.hive.hwi.*" %>
+<!DOCTYPE html>
+<%@page errorPage="error_page.jsp"%>
+<%@ page import="org.apache.hadoop.hive.hwi.*"%>
 <% HWIAuth auth = (HWIAuth) session.getAttribute("auth"); %>
 <% if (auth==null) { %>
-	<jsp:forward page="/authorize.jsp" />
+<jsp:forward page="/authorize.jsp" />
 <% } %>
 <html>
-  <head>
-    <title>Hive Web Interface</title>
-  </head>
-  <body>
-    <table>
-      <tr>
-        <td valign="top" valign="top" width="100">
-	  <jsp:include page="/left_navigation.jsp"/></td>
-        <td valign="top">
-          <h2>Hive Web Interface</h2>
-          <p>The Hive Web Interface (HWI) offers an alternative to the command line interface (CLI). Once authenticated 
-          users can start HWIWebSessions. A HWIWebSession lives on the server users can submit queries and return later 
-          to view the status of the query and view any results it produced. </p>
-        </td>
-      </tr>
-    </table>
-  </body>
+<head>
+<title>Hive Web Interface</title>
+<link href="css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body style="padding-top: 60px;">
+    <jsp:include page="/navbar.jsp"></jsp:include>
+	<div class="container">
+		<div class="row">
+			<div class="span4">
+				<jsp:include page="/left_navigation.jsp" />
+			</div><!-- span4 -->
+			<div class="span8">
+				<div class="hero-unit"><h2>Hive Web Interface</h2>
+				<p>The Hive Web Interface (HWI) offers an alternative to the
+					command line interface (CLI). Once authenticated users can start
+					HWIWebSessions. A HWIWebSession lives on the server users can
+					submit queries and return later to view the status of the query and
+					view any results it produced.</p>
+				</div><!-- hero-unit -->
+			</div><!-- span8 -->
+		</div><!-- row -->
+	</div><!-- container -->
+</body>
 </html>

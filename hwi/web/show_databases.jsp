@@ -22,34 +22,41 @@ java.util.*,
 org.apache.hadoop.hive.ql.*,
 org.apache.hadoop.hive.cli.*" %>
 <%@page errorPage="error_page.jsp" %>
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
-"http://www.w3.org/TR/html4/loose.dtd">
 <% 
   HiveConf hiveConf = new HiveConf(SessionState.class); 
   HiveMetaStoreClient client = new HiveMetaStoreClient(hiveConf);
   List <String> dbs = client.getAllDatabases();
   client.close();
 %>
+<!DOCTYPE html>
 <html>
-  <head>
-    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-    <title>HWI Hive Web Interface-Schema Browser</title>
-  </head>
-  <body>
-    <table>
-      <tr>
-        <td valign="top"><jsp:include page="/left_navigation.jsp"/></td>
-        <td valign="top">
-          
-          <h2>Database List</h2>
-          <table border="1">
-          <% for (String db : dbs) { %>
-          <tr><td><a href="/hwi/show_database.jsp?db=<%=db%>"><%=db%></a>
-          </td></tr>
-          <% } %>
-          </table>
-        </td>
-      </tr>
-    </table>
-  </body>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>HWI Hive Web Interface-Schema Browser</title>
+<link href="css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body style="padding-top: 60px;">
+    <jsp:include page="/navbar.jsp"></jsp:include>
+	<div class="container">
+		<div class="row">
+			<div class="span4">
+				<jsp:include page="/left_navigation.jsp" />
+			</div><!-- span4 -->
+			<div class="span8">
+
+				<h2>Database List</h2>
+				<table class="table table-striped">
+					<tbody>
+						<% for (String db : dbs) { %>
+						<tr>
+							<td><a href="/hwi/show_database.jsp?db=<%=db%>"><%=db%></a>
+							</td>
+						</tr>
+						<% } %>
+					</tbody>
+				</table>
+			</div><!-- span8 -->
+		</div><!-- row -->
+	</div><!-- container -->
+</body>
 </html>
