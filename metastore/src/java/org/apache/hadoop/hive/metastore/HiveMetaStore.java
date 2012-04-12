@@ -122,8 +122,10 @@ import org.apache.thrift.TProcessor;
 import org.apache.thrift.protocol.TBinaryProtocol;
 import org.apache.thrift.server.TServer;
 import org.apache.thrift.server.TThreadPoolServer;
+import org.apache.thrift.transport.TFramedTransport;
 import org.apache.thrift.transport.TServerSocket;
 import org.apache.thrift.transport.TServerTransport;
+import org.apache.thrift.transport.TTransport;
 import org.apache.thrift.transport.TTransportFactory;
 
 import com.facebook.fb303.FacebookBase;
@@ -143,6 +145,23 @@ public class HiveMetaStore extends ThriftHiveMetastore {
 
   private static HadoopThriftAuthBridge.Server saslServer;
   private static boolean useSasl;
+
+  private static final class ChainedTTransportFactory extends TTransportFactory {
+    private final TTransportFactory parentTransFactory;
+    private final TTransportFactory childTransFactory;
+
+    private ChainedTTransportFactory(
+        TTransportFactory parentTransFactory,
+        TTransportFactory childTransFactory) {
+      this.parentTransFactory = parentTransFactory;
+      this.childTransFactory = childTransFactory;
+    }
+
+    @Override
+    public TTransport getTransport(TTransport trans) {
+      return childTransFactory.getTransport(parentTransFactory.getTransport(trans));
+    }
+  }
 
   public static class HMSHandler extends FacebookBase implements
       ThriftHiveMetastore.Iface {
@@ -2989,6 +3008,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       int minWorkerThreads = conf.getIntVar(HiveConf.ConfVars.METASTORESERVERMINTHREADS);
       int maxWorkerThreads = conf.getIntVar(HiveConf.ConfVars.METASTORESERVERMAXTHREADS);
       boolean tcpKeepAlive = conf.getBoolVar(HiveConf.ConfVars.METASTORE_TCP_KEEP_ALIVE);
+      boolean useFramedTransport = conf.getBoolVar(ConfVars.METASTORE_USE_THRIFT_FRAMED_TRANSPORT);
       useSasl = conf.getBoolVar(HiveConf.ConfVars.METASTORE_USE_THRIFT_SASL);
 
       TServerTransport serverTransport = tcpKeepAlive ?
@@ -2998,6 +3018,9 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       TTransportFactory transFactory;
       if (useSasl) {
         // we are in secure mode.
+        if (useFramedTransport) {
+          throw new HiveMetaException("Framed transport is not supported with SASL enabled.");
+        }
         saslServer = bridge.createServer(
             conf.getVar(HiveConf.ConfVars.METASTORE_KERBEROS_KEYTAB_FILE),
             conf.getVar(HiveConf.ConfVars.METASTORE_KERBEROS_PRINCIPAL));
@@ -3010,12 +3033,18 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       } else {
         // we are in unsecure mode.
         HMSHandler handler = new HMSHandler("new db based metaserver", conf);
+
         if (conf.getBoolVar(ConfVars.METASTORE_EXECUTE_SET_UGI)) {
-          transFactory = new TUGIContainingTransport.Factory();
+          transFactory = useFramedTransport ?
+              new ChainedTTransportFactory(new TFramedTransport.Factory(),
+                  new TUGIContainingTransport.Factory())
+              : new TUGIContainingTransport.Factory();
+
           processor = new TUGIBasedProcessor<HMSHandler>(handler);
           LOG.info("Starting DB backed MetaStore Server with SetUGI enabled");
         } else {
-          transFactory = new TTransportFactory();
+          transFactory = useFramedTransport ?
+              new TFramedTransport.Factory() : new TTransportFactory();
           processor = new TSetIpAddressProcessor<HMSHandler>(handler);
           LOG.info("Starting DB backed MetaStore Server");
         }
