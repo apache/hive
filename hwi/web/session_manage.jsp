@@ -61,67 +61,82 @@
       }
   } 
 %>
-
+<!DOCTYPE html>
 <html>
-  <head>
-    <title>Manage Session <%=sessionName%></title>
-  </head>
-  <body>
-    <table>
-      <tr>
-        <td valign="top" valign="top" width="100">
-	  		<jsp:include page="/left_navigation.jsp"/>
-	  	</td>
-        <td valign="top">
-          <h2>Manage Session <%=sessionName%></h2>
-          
-          <% if (message != null) {  %> <font color="red"><%=message %></font> <% } %>
-          <br>
-          <% if (sess.getStatus()==HWISessionItem.WebSessionItemStatus.QUERY_RUNNING) { %>
-          	<font color="RED">Session is in QUERY_RUNNING state. Changes are not possible!</font>
-          <% } %>
-          <br>  
-          
-          <% if (sess.getStatus()==HWISessionItem.WebSessionItemStatus.QUERY_RUNNING){ %>
-          	<%-- 
+<head>
+<title>Manage Session <%=sessionName%></title>
+<link href="css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body style="padding-top: 60px;">
+    <jsp:include page="/navbar.jsp"></jsp:include>
+	<div class="container">
+		<div class="row">
+			<div class="span4">
+				<jsp:include page="/left_navigation.jsp" />
+			</div><!-- span4 -->
+			<div class="span8">
+				<h2>
+					Manage Session
+					<%=sessionName%></h2>
+
+				<% if (message != null) {  %>
+				<div class="alert alert-info"><%=message %></div>
+				<% } %>
+
+				<% if (sess.getStatus()==HWISessionItem.WebSessionItemStatus.QUERY_RUNNING) { %>
+				<div class="alert alert-warning">Session is in QUERY_RUNNING
+					state. Changes are not possible!</div>
+				<% } %>
+
+				<% if (sess.getStatus()==HWISessionItem.WebSessionItemStatus.QUERY_RUNNING){ %>
+				<%-- 
           	View JobTracker: <a href="<%= sess.getJobTrackerURI() %>">View Job</a><br>
           	Kill Command: <%= sess.getKillCommand() %>
           	 Session Kill: <a href="/hwi/session_kill.jsp?sessionName=<%=sessionName%>"><%=sessionName%></a><br>
           	--%>
-          <% } %>
-          
-          Session History:  <a href="/hwi/session_history.jsp?sessionName=<%=sessionName%>"><%=sessionName%></a><br> 
-          Session Diagnostics: <a href="/hwi/session_diagnostics.jsp?sessionName=<%=sessionName%>"><%=sessionName%></a><br>
-          Session Remove: <a href="/hwi/session_remove.jsp?sessionName=<%=sessionName%>"><%=sessionName%></a><br> 
-          Session Result Bucket: <a href="/hwi/session_result.jsp?sessionName=<%=sessionName%>"><%=sessionName%></a><br>
-	<br>
-          
-			<form action="session_manage.jsp">
-				<input type="hidden" name="sessionName" value="<%=sessionName %>">
-			<table>
-				<tr>
-				<td>Result File</td>
-				<td>
-				<input type="text" name="resultFile" value="<% 
-				if (sess.getResultFile()==null) { out.print(""); } else { out.print(sess.getResultFile()); }
-				%>"><br>
-				<% if (sess.getResultFile()!=null) { %>
-					<a href="/hwi/view_file.jsp?sessionName=<%=sessionName%>">View File</a>
 				<% } %>
-				</td>
-				</tr>
-				
-				<tr>
-				<td>Error File</td>
-				<td>
-				<input type="text" name="errorFile" value="<% 
-				if (sess.getErrorFile()==null) { out.print(""); } else { out.print(sess.getErrorFile()); }
-				%>"></td>
-				</tr>
-				
-				<tr>
-					<td>Query</td>
-					<td><textarea name="query" rows="8" cols="70"><% 
+
+				<div class="btn-group">
+					<a class="btn" href="/hwi/session_history.jsp?sessionName=<%=sessionName%>"><i class="icon-book"></i> History</a>
+					<a class="btn" href="/hwi/session_diagnostics.jsp?sessionName=<%=sessionName%>"><i class="icon-cog"></i> Diagnostics</a>
+					<a class="btn"href="/hwi/session_remove.jsp?sessionName=<%=sessionName%>"><i class="icon-remove"></i> Remove</a>
+					<a class="btn"href="/hwi/session_result.jsp?sessionName=<%=sessionName%>"><i class=" icon-download-alt"></i> Result Bucket</a>
+				</div>
+
+				<form action="session_manage.jsp" class="form-horizontal">
+					<input type="hidden" name="sessionName" value="<%=sessionName %>">
+
+					<fieldset>
+						<legend>Session Details	</legend>
+						<div class="control-group">
+							<label class="control-label" for="fldresfile">Result File</label>
+							<div class="controls">
+								<input id="fldresfile" type="text" name="resultFile"
+									value="<%
+                    if (sess.getResultFile()==null) { out.print(""); } else { out.print(sess.getResultFile()); }
+                 %>">
+								<% if (sess.getResultFile()!=null) { %>
+								<a href="/hwi/view_file.jsp?sessionName=<%=sessionName%>">View
+									File</a>
+								<% } %>
+							</div>
+						</div>
+
+						<div class="control-group">
+							<label class="control-label" for="flderrfile">Error File</label>
+							<div class="controls">
+								<input id="flderrfile" type="text" name="errorFile"
+									value="<%
+                    if (sess.getErrorFile()==null) { out.print(""); } else { out.print(sess.getErrorFile()); }
+                 %>">
+							</div>
+						</div>
+
+						<div class="control-group">
+							<label class="control-label" for="fldquery">Query</label>
+							<div class="controls">
+								<textarea id="fldquery" name="query" rows="8" cols="70">
+									<% 
 				if (sess.getQueries()==null) { 
 				  out.print(""); 
 				} else { 
@@ -129,51 +144,54 @@
 				    out.print(qu); out.print(" ; ");
 				  }	
 				}
-				%></textarea></td>
-				</tr>
-				
-				<tr>
-				<td>Silent Mode ?</td>
-				<td><select name="silent">
-					<option value="YES" 
-					<% if (sess.getSSIsSilent()==true) { out.print("SELECTED=\"TRUE\""); } %>
-					>YES</option>
-					<option value="NO"
-					<% if (sess.getSSIsSilent()==false) { out.print("SELECTED=\"TRUE\""); } %>
-					>NO</option>
-					</select>
-				</td>
-				</tr>
-				
-				<tr>
-					<td>Start Query?</td>
-					<td><select name="start">
-						<option value="NO" SELECTED="TRUE">NO</option>
-						<option value="YES" >YES</option>
-						</select>
-					</td>
-				</tr>
-					
-				<tr>
-					<td>Query Return Codes</td>
-					<td> <% for (int i=0; i< sess.getQueryRet().size();++i ){ %>
-						<%=i%> : <%=sess.getQueryRet().get(i)%><br>
-					     <% } %>
-					</td>
-				</tr>
-				<tr>
-					<td colSpan="2">
-					  <% if (sess.getStatus()==HWISessionItem.WebSessionItemStatus.QUERY_RUNNING) { %>
-			          		<font color="RED">Session is in QUERY_RUNNING state. Changes are not possible!</font>
-			          <% } else { %>
-			          	<input type="submit">
-			          <% } %>
-					</td>
-				</tr>
-				</table>	
-			</form>
-        </td>
-      </tr>
-    </table>
-  </body>
+				%>
+								</textarea>
+							</div>
+						</div>
+
+
+						<div class="control-group">
+							<label class="control-label" for="fldsilent">Silent Mode</label>
+							<div class="controls">
+								<select id="fldsilent" name="silent">
+									<option value="YES"
+										<% if (sess.getSSIsSilent()==true) { out.print("SELECTED=\"TRUE\""); } %>>YES</option>
+									<option value="NO"
+										<% if (sess.getSSIsSilent()==false) { out.print("SELECTED=\"TRUE\""); } %>>NO</option>
+								</select>
+							</div>
+						</div>
+
+						<div class="control-group">
+							<label class="control-label" for="fldstart">Start Query</label>
+							<div class="controls">
+								<select id="fldstart" name="start">
+									<option value="NO" SELECTED="TRUE">NO</option>
+									<option value="YES">YES</option>
+								</select>
+							</div>
+						</div>
+
+					</fieldset>
+
+					<h3>Query Return Codes</h3>
+					<p>
+						<% for (int i=0; i< sess.getQueryRet().size();++i ){ %>
+						<%=i%>
+						:
+						<%=sess.getQueryRet().get(i)%><br>
+						<% } %>
+					</p>
+
+					<% if (sess.getStatus()!=HWISessionItem.WebSessionItemStatus.QUERY_RUNNING) { %>
+					<div class="form-actions">
+						<button type="submit" class="btn btn-primary">Submit</button>
+					</div>
+
+					<% } %>
+				</form>
+			</div><!-- span8 -->
+		</div><!-- row -->
+	</div><!-- container -->
+</body>
 </html>

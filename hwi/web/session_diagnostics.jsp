@@ -14,54 +14,64 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 --%>
-<%@page contentType="text/html" pageEncoding="UTF-8" %>
-<%@page errorPage="error_page.jsp" %>
-<%@page import="org.apache.hadoop.hive.hwi.*" %>
-<%@page import="org.apache.hadoop.hive.conf.*" %>
-<%@page import="java.util.*" %>
+<%@page contentType="text/html" pageEncoding="UTF-8"%>
+<%@page errorPage="error_page.jsp"%>
+<%@page import="org.apache.hadoop.hive.hwi.*"%>
+<%@page import="org.apache.hadoop.hive.conf.*"%>
+<%@page import="java.util.*"%>
 
 <% HWISessionManager hs = (HWISessionManager) application.getAttribute("hs"); %>
 <% if (hs == null) { %>
-  <jsp:forward page="error.jsp">
-    <jsp:param name="message" value="Hive Session Manager Not Found" />
-  </jsp:forward>
+<jsp:forward page="error.jsp">
+	<jsp:param name="message" value="Hive Session Manager Not Found" />
+</jsp:forward>
 <% } %>
 
 <% HWIAuth auth = (HWIAuth) session.getAttribute("auth"); %>
 <% if (auth==null) { %>
-	<jsp:forward page="/authorize.jsp" />
+<jsp:forward page="/authorize.jsp" />
 <% } %>
 <% String sessionName = request.getParameter("sessionName"); %>
 <% HWISessionItem si = hs.findSessionItemByName(auth,sessionName); %>
+<!DOCTYPE html>
 <html>
-  <head>
-    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-    <title>Session Diagnostics</title>
-  </head>
-  <body>
-    <table>
-      <tr>
-        <td valign="top"><jsp:include page="left_navigation.jsp"/></td>
-        <td valign="top">
-          <h2>Session Diagnostics</h2>
-          
-          <% if (si!=null) { %>
-            <table border="1">
-              <tr>
-                <td>Var Name</td>
-                <td>Var Value</td>
-              </tr>
-            <% for (HiveConf.ConfVars var : HiveConf.ConfVars.values() ){ %>
-              <tr>
-                <td><%=var.name()%></td>
-                <td><%=si.getHiveConfVar(var)%></td>
-              </tr>
-            <%  } %>
-            </table>
-          <% } %>
-          
-        </td>
-      </tr>
-    </table>
-  </body>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>Session Diagnostics</title>
+<link href="css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body style="padding-top: 60px;">
+    <jsp:include page="/navbar.jsp"></jsp:include>
+	<div class="container">
+		<div class="row">
+			<div class="span4">
+				<jsp:include page="/left_navigation.jsp" />
+			</div><!-- span4 -->
+			<div class="span8">
+				<h2>Session Diagnostics</h2>
+
+				<% if (si!=null) { %>
+				<table class="table table-striped">
+					<thead>
+						<tr>
+							<th>Var Name</th>
+							<th>Var Value</th>
+						</tr>
+					</thead>
+					<tbody>
+						<% for (HiveConf.ConfVars var : HiveConf.ConfVars.values() ){ %>
+						<tr>
+							<td><%=var.name()%></td>
+							<td><%=si.getHiveConfVar(var)%></td>
+						</tr>
+						<%  } %>
+					
+					<tbody>
+				</table>
+				<% } %>
+
+			</div><!-- span8 -->
+		</div><!-- row -->
+	</div><!-- container -->
+</body>
 </html>

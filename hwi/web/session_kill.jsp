@@ -14,11 +14,11 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 --%>
-<%@ page import="org.apache.hadoop.hive.hwi.*" %>
-<%@ page errorPage="error_page.jsp" %>
+<%@ page import="org.apache.hadoop.hive.hwi.*"%>
+<%@ page errorPage="error_page.jsp"%>
 <% HWIAuth auth = (HWIAuth) session.getAttribute("auth"); %>
 <% if (auth==null) { %>
-	<jsp:forward page="/authorize.jsp" />
+<jsp:forward page="/authorize.jsp" />
 <% } %>
 <% HWISessionManager hs = (HWISessionManager) application.getAttribute("hs"); %>
 <% String sessionName=request.getParameter("sessionName"); %>
@@ -30,26 +30,36 @@
 	message="Query will be killed";
   }
 %>
+<!DOCTYPE html>
 <html>
-  <head>
-    <title>Hive Web Interface</title>
-  </head>
-  <body>
-    <table>
-      <tr>
-        <td valign="top" valign="top" width="100">
-	  <jsp:include page="/left_navigation.jsp"/></td>
-        <td valign="top">
-          <h2>Hive Web Interface</h2>
-          <% if (message!=null){ %><font color="red"><%=message%></font><% } %>
-          <br>
-          <form action="session_kill.jsp">
-          	<input type="hidden" name="sessionName" value="<%=sessionName%>">
-          	Are you sure you want to kill this session?
-          	<input type="submit" name="confirm" value="yes">
-          </form>
-        </td>
-      </tr>
-    </table>
-  </body>
+<head>
+<title>Hive Web Interface</title>
+<link href="css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body style="padding-top: 60px;">
+    <jsp:include page="/navbar.jsp"></jsp:include>
+	<div class="container">
+		<div class="row">
+			<div class="span4">
+				<jsp:include page="/left_navigation.jsp" />
+			</div><!-- span4 -->
+			<div class="span8">
+				<% if (message!=null){ %><font color="red"><%=message%></font>
+				<% } %>
+				<br>
+				<form action="session_kill.jsp">
+					<fieldset>
+					<legend>Killing session <%=sessionName%></legend>
+					<input type="hidden" name="sessionName" value="<%=sessionName%>">
+					Are you sure you want to kill this session? <input type="submit"
+						name="confirm" value="yes">
+					</fieldset>
+				</form>
+			</div>
+			<!-- span8 -->
+		</div>
+		<!-- row -->
+	</div>
+	<!-- container -->
+</body>
 </html>

@@ -14,31 +14,41 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 --%>
-<%@ page import="org.apache.hadoop.hive.hwi.*" %>
-<%@page isErrorPage="true" %>
+<%@ page import="org.apache.hadoop.hive.hwi.*"%>
+<%@page isErrorPage="true"%>
+<!DOCTYPE html>
 <html>
-  <head>
-    <title>Hive Web Interface</title>
-  </head>
-  <body>
-    <table>
-      <tr>
-        <td valign="top" valign="top" width="100">
-	  <jsp:include page="/left_navigation.jsp"/></td>
-        <td valign="top">
-          <h2>Hive Web Interface</h2>
-          <p>
-          <%= exception.getClass().getName() %>
-          <br>
-          <%=exception.getMessage() %>
-          <br>
+<head>
+<title>Hive Web Interface</title>
+<link href="css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body style="padding-top: 60px;">
+    <jsp:include page="/navbar.jsp"></jsp:include>
+	<div class="container">
+		<div class="row">
+			<div class="span4">
+				<jsp:include page="/left_navigation.jsp" />
+			</div>
+			<!-- span4 -->
+			<div class="span8">
+				<h2>Hive Web Interface</h2>
+				<div class="alert alert-error">
+					<h4 class="alert-heading"><%= exception.getClass().getName() %></h4>
+					<%=exception.getMessage() %>
+				</div>
+				<!-- alert -->
+				<h3>Stacktrace</h3>
+				<pre class="pre-scrollable">
           <% for (StackTraceElement e: exception.getStackTrace() ) { %>
           	File: <%= e.getFileName() %> Line:<%= e.getLineNumber() %> method: <%= e.getMethodName() %>
-          	class: <%=e.getClassName() %> <br>
+          	class: <%=e.getClassName() %>
           <% }  %>
-          </p>
-        </td>
-      </tr>
-    </table>
-  </body>
+          </pre>
+			</div>
+			<!-- span8 -->
+		</div>
+		<!-- row -->
+	</div>
+	<!-- container -->
+</body>
 </html>

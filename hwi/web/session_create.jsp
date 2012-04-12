@@ -14,11 +14,11 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 --%>
-<%@ page import="org.apache.hadoop.hive.hwi.*" %>
-<%@ page errorPage="error_page.jsp" %>
+<%@ page import="org.apache.hadoop.hive.hwi.*"%>
+<%@ page errorPage="error_page.jsp"%>
 <% HWIAuth auth = (HWIAuth) session.getAttribute("auth"); %>
 <% if (auth==null) { %>
-	<jsp:forward page="/authorize.jsp" />
+<jsp:forward page="/authorize.jsp" />
 <% } %>
 
 <% HWISessionManager hs = (HWISessionManager) application.getAttribute("hs"); %>
@@ -46,31 +46,39 @@
 		sessionName="";
 	}
 %>
-
+<!DOCTYPE html>
 <html>
-  <head>
-    <title>Hive Web Interface-Create a Hive Session</title>
-  </head>
-  <body>
-    <table>
-      <tr>
-        <td valign="top" valign="top" width="100">
-	  <jsp:include page="/left_navigation.jsp"/></td>
-        <td valign="top">
-          <h2>Create a Hive Session</h2>
-          <form action="session_create.jsp">
-            <table border="1">
-            <tr>
-              <td>Session Name</td>
-              <td><input type="text" name="sessionName" value="<%=sessionName%>" ></td>
-            </tr>
-            <tr>
-            	<td colSpan="2"><input type="submit"></td>
-            </tr>
-            </table>
-          </form>
-        </td>
-      </tr>
-    </table>
-  </body>
+<head>
+<title>Hive Web Interface-Create a Hive Session</title>
+<link href="css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body style="padding-top: 60px;">
+    <jsp:include page="/navbar.jsp"></jsp:include>
+	<div class="container">
+		<div class="row">
+			<div class="span4">
+				<jsp:include page="/left_navigation.jsp" />
+			</div><!-- span4 -->
+			<div class="span8">
+				<form action="session_create.jsp" class="form-horizontal">
+					<fieldset>
+						<legend>Create a Hive Session</legend>
+						<div class="control-group">
+							<label class="control-label" for="fldsession">Sesion Name</label>
+							<div class="controls">
+								<input id="fldsession" type="text" name="sessionName"
+									value="<%=sessionName%>">
+							</div>
+						</div>
+					</fieldset>
+
+					<div class="form-actions">
+						<button type="submit" class="btn btn-primary">Submit</button>
+					</div>
+				</form>
+
+			</div><!-- span8 -->
+		</div><!-- row -->
+	</div><!-- container -->
+</body>
 </html>
