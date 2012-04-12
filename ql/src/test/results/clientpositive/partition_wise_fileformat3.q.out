@@ -35,9 +35,9 @@ columns:struct columns { string key, string value}
 partitioned:true
 partitionColumns:struct partition_columns { string dt}
 totalNumberFiles:1
-totalFileSize:370
-maxFileSize:370
-minFileSize:370
+totalFileSize:275
+maxFileSize:275
+minFileSize:275
 #### A masked pattern was here ####
 
 PREHOOK: query: alter table partition_test_partitioned set fileformat Sequencefile

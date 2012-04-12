@@ -271,6 +271,23 @@ public class TestRCFile extends TestCase {
     reader.close();
   }
 
+  public void testReadOldFileHeader() throws IOException {
+    String[] row = new String[]{"Tester", "Bart", "333 X St.", "Reno", "NV",
+                                "USA"};
+    RCFile.Reader reader =
+      new RCFile.Reader(fs, new Path("src/test/data/rc-file-v0.rc"), conf);
+    LongWritable rowID = new LongWritable();
+    BytesRefArrayWritable cols = new BytesRefArrayWritable();
+    assertTrue("old file reader first row", reader.next(rowID));
+    reader.getCurrentRow(cols);
+    assertEquals(row.length, cols.size());
+    for (int i=0; i < cols.size(); ++i) {
+      assertEquals(row[i], new String(cols.get(i).getBytesCopy()));
+    }
+    assertFalse("old file reader end", reader.next(rowID));
+    reader.close();
+  }
+
   public void testWriteAndFullyRead() throws IOException, SerDeException {
     writeTest(fs, 10000, file, bytesArray);
     fullyReadTest(fs, 10000, file);
@@ -525,7 +542,8 @@ public class TestRCFile extends TestCase {
       System.out.println("The " + i + "th split read "
           + (readCount - previousReadCount));
     }
-    assertEquals("readCount should be equal to writeCount", readCount, writeCount);
+    assertEquals("readCount should be equal to writeCount", writeCount,
+                 readCount);
   }
 
 
