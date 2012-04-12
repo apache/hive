@@ -120,7 +120,7 @@ STAGE PLANS:
               serialization.ddl struct srcpartbucket { string key, string value}
               serialization.format 1
               serialization.lib org.apache.hadoop.hive.serde2.columnar.ColumnarSerDe
-              totalSize 687
+              totalSize 307
 #### A masked pattern was here ####
             serde: org.apache.hadoop.hive.serde2.columnar.ColumnarSerDe
           
@@ -141,7 +141,7 @@ STAGE PLANS:
                 serialization.ddl struct srcpartbucket { string key, string value}
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.serde2.columnar.ColumnarSerDe
-                totalSize 2748
+                totalSize 1228
 #### A masked pattern was here ####
               serde: org.apache.hadoop.hive.serde2.columnar.ColumnarSerDe
               name: default.srcpartbucket
@@ -169,7 +169,7 @@ STAGE PLANS:
               serialization.ddl struct srcpartbucket { string key, string value}
               serialization.format 1
               serialization.lib org.apache.hadoop.hive.serde2.columnar.ColumnarSerDe
-              totalSize 687
+              totalSize 307
 #### A masked pattern was here ####
             serde: org.apache.hadoop.hive.serde2.columnar.ColumnarSerDe
           
@@ -190,7 +190,7 @@ STAGE PLANS:
                 serialization.ddl struct srcpartbucket { string key, string value}
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.serde2.columnar.ColumnarSerDe
-                totalSize 2748
+                totalSize 1228
 #### A masked pattern was here ####
               serde: org.apache.hadoop.hive.serde2.columnar.ColumnarSerDe
               name: default.srcpartbucket
@@ -218,7 +218,7 @@ STAGE PLANS:
               serialization.ddl struct srcpartbucket { string key, string value}
               serialization.format 1
               serialization.lib org.apache.hadoop.hive.serde2.columnar.ColumnarSerDe
-              totalSize 687
+              totalSize 307
 #### A masked pattern was here ####
             serde: org.apache.hadoop.hive.serde2.columnar.ColumnarSerDe
           
@@ -239,7 +239,7 @@ STAGE PLANS:
                 serialization.ddl struct srcpartbucket { string key, string value}
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.serde2.columnar.ColumnarSerDe
-                totalSize 2748
+                totalSize 1228
 #### A masked pattern was here ####
               serde: org.apache.hadoop.hive.serde2.columnar.ColumnarSerDe
               name: default.srcpartbucket
@@ -267,7 +267,7 @@ STAGE PLANS:
               serialization.ddl struct srcpartbucket { string key, string value}
               serialization.format 1
               serialization.lib org.apache.hadoop.hive.serde2.columnar.ColumnarSerDe
-              totalSize 687
+              totalSize 307
 #### A masked pattern was here ####
             serde: org.apache.hadoop.hive.serde2.columnar.ColumnarSerDe
           
@@ -288,7 +288,7 @@ STAGE PLANS:
                 serialization.ddl struct srcpartbucket { string key, string value}
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.serde2.columnar.ColumnarSerDe
-                totalSize 2748
+                totalSize 1228
 #### A masked pattern was here ####
               serde: org.apache.hadoop.hive.serde2.columnar.ColumnarSerDe
               name: default.srcpartbucket

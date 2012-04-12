@@ -100,16 +100,12 @@ import org.apache.hadoop.util.ReflectionUtils;
  *
  * <h5 id="Header">RC Header</h5>
  * <ul>
- * <li>version - 3 bytes of magic header <b>SEQ</b>, followed by 1 byte of
- * actual version number (e.g. SEQ4 or SEQ6)</li>
- * <li>keyClassName -KeyBuffer's class name</li>
- * <li>valueClassName - ValueBuffer's class name</li>
+ * <li>version - 3 bytes of magic header <b>RCF</b>, followed by 1 byte of
+ * actual version number (e.g. RCF1)</li>
  * <li>compression - A boolean which specifies if compression is turned on for
  * keys/values in this file.</li>
- * <li>blockCompression - always false. this field is kept for compatible with
- * SequeceFile's format</li>
- * <li>compression codec - <code>CompressionCodec</code> class which is used for
- * compression of keys and/or values (if compression is enabled).</li>
+ * <li>compression codec - <code>CompressionCodec</code> class which is used
+ * for compression of keys and/or values (if compression is enabled).</li>
  * <li>metadata - {@link Metadata} for this file.</li>
  * <li>sync - A sync marker to denote end of the header.</li>
  * </ul>
@@ -163,14 +159,22 @@ public class RCFile {
   public static final String BLOCK_MISSING_MESSAGE =
     "Could not obtain block";
 
-  /*
-   * these header and Sync are kept from SequenceFile, for compatible of
-   * SequenceFile's format.
-   */
-  private static final byte VERSION_WITH_METADATA = (byte) 6;
-  private static final byte[] VERSION = new byte[] {
-      (byte) 'S', (byte) 'E', (byte) 'Q', VERSION_WITH_METADATA
-      };
+  // All of the versions should be place in this list.
+  private static final int ORIGINAL_VERSION = 0;  // version with SEQ
+  private static final int NEW_MAGIC_VERSION = 1; // version with RCF
+
+  private static final int CURRENT_VERSION = NEW_MAGIC_VERSION;
+
+  // The first version of RCFile used the sequence file header.
+  private static final byte[] ORIGINAL_MAGIC = new byte[] {
+      (byte) 'S', (byte) 'E', (byte) 'Q'};
+  // the version that was included with the original magic, which is mapped
+  // into ORIGINAL_VERSION
+  private static final byte ORIGINAL_MAGIC_VERSION = 6;
+
+  // The 'magic' bytes at the beginning of the RCFile
+  private static final byte[] MAGIC = new byte[] {
+    (byte) 'R', (byte) 'C', (byte) 'F'};
 
   private static final int SYNC_ESCAPE = -1; // "length" of sync entries
   private static final int SYNC_HASH_SIZE = 16; // number of bytes in hash
@@ -778,7 +782,8 @@ public class RCFile {
 
     /** Write the initial part of file header. */
     void initializeFileHeader() throws IOException {
-      out.write(VERSION);
+      out.write(MAGIC);
+      out.write(CURRENT_VERSION);
     }
 
     /** Write the final part of file header. */
@@ -793,11 +798,7 @@ public class RCFile {
 
     /** Write and flush the file header. */
     void writeFileHeader() throws IOException {
-      Text.writeString(out, KeyBuffer.class.getName());
-      Text.writeString(out, ValueBuffer.class.getName());
-
       out.writeBoolean(isCompressed());
-      out.writeBoolean(false);
 
       if (isCompressed()) {
         Text.writeString(out, (codec.getClass()).getName());
@@ -1229,41 +1230,50 @@ public class RCFile {
     }
 
     private void init() throws IOException {
-      byte[] versionBlock = new byte[VERSION.length];
-      in.readFully(versionBlock);
+      byte[] magic = new byte[MAGIC.length];
+      in.readFully(magic);
 
-      if ((versionBlock[0] != VERSION[0]) || (versionBlock[1] != VERSION[1])
-          || (versionBlock[2] != VERSION[2])) {
-        throw new IOException(file + " not a RCFile");
-      }
-
-      // Set 'version'
-      version = versionBlock[3];
-      if (version > VERSION[3]) {
-        throw new VersionMismatchException(VERSION[3], version);
-      }
-
-      try {
-        Class<?> keyCls = conf.getClassByName(Text.readString(in));
-        Class<?> valCls = conf.getClassByName(Text.readString(in));
-        if (!keyCls.equals(KeyBuffer.class)
-            || !valCls.equals(ValueBuffer.class)) {
-          throw new IOException(file + " not a RCFile");
+      if (Arrays.equals(magic, ORIGINAL_MAGIC)) {
+        byte vers = in.readByte();
+        if (vers != ORIGINAL_MAGIC_VERSION) {
+          throw new IOException(file + " is a version " + vers +
+                                " SequenceFile instead of an RCFile.");
         }
-      } catch (ClassNotFoundException e) {
-        throw new IOException(file + " not a RCFile", e);
-      }
-
-      if (version > 2) { // if version > 2
-        decompress = in.readBoolean(); // is compressed?
+        version = ORIGINAL_VERSION;
       } else {
-        decompress = false;
+        if (!Arrays.equals(magic, MAGIC)) {
+          throw new IOException(file + " not a RCFile and has magic of " +
+                                new String(magic));
+        }
+
+        // Set 'version'
+        version = in.readByte();
+        if (version > CURRENT_VERSION) {
+          throw new VersionMismatchException((byte) CURRENT_VERSION, version);
+        }
       }
 
-      // is block-compressed? it should be always false.
-      boolean blkCompressed = in.readBoolean();
-      if (blkCompressed) {
-        throw new IOException(file + " not a RCFile.");
+      if (version == ORIGINAL_VERSION) {
+        try {
+          Class<?> keyCls = conf.getClassByName(Text.readString(in));
+          Class<?> valCls = conf.getClassByName(Text.readString(in));
+          if (!keyCls.equals(KeyBuffer.class)
+              || !valCls.equals(ValueBuffer.class)) {
+            throw new IOException(file + " not a RCFile");
+          }
+        } catch (ClassNotFoundException e) {
+          throw new IOException(file + " not a RCFile", e);
+        }
+      }
+
+      decompress = in.readBoolean(); // is compressed?
+
+      if (version == ORIGINAL_VERSION) {
+        // is block-compressed? it should be always false.
+        boolean blkCompressed = in.readBoolean();
+        if (blkCompressed) {
+          throw new IOException(file + " not a RCFile.");
+        }
       }
 
       // setup the compression codec
@@ -1282,14 +1292,10 @@ public class RCFile {
       }
 
       metadata = new Metadata();
-      if (version >= VERSION_WITH_METADATA) { // if version >= 6
-        metadata.readFields(in);
-      }
+      metadata.readFields(in);
 
-      if (version > 1) { // if version > 1
-        in.readFully(sync); // read sync bytes
-        headerEnd = in.getPos();
-      }
+      in.readFully(sync); // read sync bytes
+      headerEnd = in.getPos();
     }
 
     /** Return the current byte position in the input file. */
@@ -1387,7 +1393,7 @@ public class RCFile {
         return -1;
       }
       int length = in.readInt();
-      if (version > 1 && sync != null && length == SYNC_ESCAPE) { // process
+      if (sync != null && length == SYNC_ESCAPE) { // process
         // a
         // sync entry
         lastSeenSyncPos = in.getPos() - 4; // minus SYNC_ESCAPE's length

@@ -86,9 +86,9 @@ columns:struct columns { i32 key, string value}
 partitioned:false
 partitionColumns:
 totalNumberFiles:1
-totalFileSize:334
-maxFileSize:334
-minFileSize:334
+totalFileSize:239
+maxFileSize:239
+minFileSize:239
 #### A masked pattern was here ####
 
 PREHOOK: query: select count(1) from src_rc_concatenate_test
@@ -208,9 +208,9 @@ columns:struct columns { i32 key, string value}
 partitioned:true
 partitionColumns:struct partition_columns { string ds}
 totalNumberFiles:1
-totalFileSize:334
-maxFileSize:334
-minFileSize:334
+totalFileSize:239
+maxFileSize:239
+minFileSize:239
 #### A masked pattern was here ####
 
 PREHOOK: query: select count(1) from src_rc_concatenate_test_part
