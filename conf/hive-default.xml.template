@@ -748,6 +748,12 @@
 </property>
 
 <property>
+  <name>hive.metastore.thrift.framed.transport.enabled</name>
+  <value>false</value>
+  <description>If true, the metastore thrift interface will use TFramedTransport. When false (default) a standard TTransport is used.</description>
+</property>
+
+<property>
   <name>hive.metastore.kerberos.keytab.file</name>
   <value></value>
   <description>The path to the Kerberos Keytab file containing the metastore thrift server's service principal.</description>
