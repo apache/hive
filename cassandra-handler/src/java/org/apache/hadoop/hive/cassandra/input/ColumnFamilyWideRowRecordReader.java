@@ -241,8 +241,8 @@ public class ColumnFamilyWideRowRecordReader extends ColumnFamilyRecordReader {
       AbstractIterator<Pair<ByteBuffer, SortedMap<ByteBuffer, IColumn>>> {
     private List<KeySlice> rows;
     private String startToken;
-    private final ByteBuffer nextStartSlice = null;
     private int columnsRead = 0;
+    private ByteBuffer prevStartSlice = null;
     private int totalRead = 0;
     private final AbstractType comparator;
     private final AbstractType subComparator;
@@ -289,6 +289,7 @@ public class ColumnFamilyWideRowRecordReader extends ColumnFamilyRecordReader {
         startToken = partitioner.getTokenFactory().toString(partitioner.getToken(rows.get(0).key));
         predicate.getSlice_range().setStart(startSlicePredicate);
         rows = null;
+        prevStartSlice = null;
         totalRead++;
       }
 
@@ -314,12 +315,20 @@ public class ColumnFamilyWideRowRecordReader extends ColumnFamilyRecordReader {
           return;
         }
 
+        //detect infinite loop
+        if (prevStartSlice != null && ByteBufferUtil.compareUnsigned(prevStartSlice, predicate.slice_range.start) == 0) {
+            rows = null;
+            return;
+        }
+
         // prepare for the next slice to be read
         KeySlice row = rows.get(0);
 
-        if (row.getColumnsSize() > 1) {
+        if (row.getColumnsSize() > 0) {
 
           ColumnOrSuperColumn cosc = row.getColumns().get(row.getColumnsSize() - 1);
+
+          prevStartSlice = predicate.slice_range.start;
 
           //prepare next slice
           if (cosc.column != null) {
@@ -343,12 +352,9 @@ public class ColumnFamilyWideRowRecordReader extends ColumnFamilyRecordReader {
           //If we've hit the max columns then rm the last column
           //to make sure we don't know where to start next without overlap
           if (columnsRead == rowPageSize) {
-            row.getColumns().remove(row.getColumnsSize() - 1);
+            row.getColumns().remove(columnsRead - 1);
           }
-        } else { //row with no columns
-
-        }
-
+        } 
       } catch (Exception e) {
         throw new RuntimeException(e);
       }
