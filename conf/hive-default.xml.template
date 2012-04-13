@@ -1240,9 +1240,11 @@
 </property>
 
 <property>
-  <name>hive.files.umask.value</name>
-  <value>0002</value>
-  <description>The dfs.umask value for the hive created folders</description>
+  <name>hive.warehouse.subdir.inherit.perms</name>
+  <value>false</value>
+  <description>Set this to true if the the table directories should inherit the 
+    permission of the warehouse or database directory instead of being created 
+    with the permissions derived from dfs umask</description>
 </property>
 
 <property>
