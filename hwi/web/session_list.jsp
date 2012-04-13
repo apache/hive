@@ -14,51 +14,60 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 --%>
-<%@ page import="org.apache.hadoop.hive.hwi.*" %>
-<%@page errorPage="error_page.jsp" %>
+<%@ page import="org.apache.hadoop.hive.hwi.*"%>
+<%@page errorPage="error_page.jsp"%>
 <% HWISessionManager hs = (HWISessionManager) application.getAttribute("hs"); %>
 <% if (hs == null) { %>
-  <jsp:forward page="error.jsp">
-    <jsp:param name="message" value="Hive Session Manager Not Found" />
-  </jsp:forward>
+<jsp:forward page="error.jsp">
+	<jsp:param name="message" value="Hive Session Manager Not Found" />
+</jsp:forward>
 <% } %>
 
 <% HWIAuth auth = (HWIAuth) session.getAttribute("auth"); %>
 <% if (auth==null) { %>
-	<jsp:forward page="/authorize.jsp" />
+<jsp:forward page="/authorize.jsp" />
 <% } %>
-
+<!DOCTYPE html>
 <html>
-  <head>
-    <title>Session List</title>
-  </head>
-  <body>
-    <table>
-      <tr>
-        <td valign="top" valign="top" width="100">
-	  <jsp:include page="left_navigation.jsp"/></td>
-        <td valign="top">
-          <h2>Session List</h2>
-         
-			<table border="1">
-			  <tr>
-			    <td>Name</td>
-			    <td>Status</td>
-			    <td>Action</td>
-			  </tr>
-			   <% if ( hs.findAllSessionsForUser(auth)!=null){ %>
-				  <% for (HWISessionItem item: hs.findAllSessionsForUser(auth) ){ %>
-				  	<tr>
-				  	  <td><%=item.getSessionName()%></td>
-				  	  <td><%=item.getStatus()%></td>
-				  	  <td><a href="/hwi/session_manage.jsp?sessionName=<%=item.getSessionName()%>">Manager</a></td>
-				  	</tr>
-				  <% } %>
-			  <% } %>
-			</table>          
-        </td>
-      </tr>
-    </table>
-  </body>
+<head>
+<title>Session List</title>
+<link href="css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body style="padding-top: 60px;">
+    <jsp:include page="/navbar.jsp"></jsp:include>
+	<div class="container">
+		<div class="row">
+			<div class="span4">
+				<jsp:include page="/left_navigation.jsp" />
+			</div><!-- span4 -->
+			<div class="span8">
+
+				<h2>Session List</h2>
+
+				<table class="table table-striped">
+					<thead>
+						<tr>
+							<th>Name</th>
+							<th>Status</th>
+							<th>Action</th>
+						</tr>
+					</thead>
+					<tbody>
+						<% if ( hs.findAllSessionsForUser(auth)!=null){ %>
+						<% for (HWISessionItem item: hs.findAllSessionsForUser(auth) ){ %>
+						<tr>
+							<td><%=item.getSessionName()%></td>
+							<td><%=item.getStatus()%></td>
+							<td><a
+								href="/hwi/session_manage.jsp?sessionName=<%=item.getSessionName()%>">Manager</a></td>
+						</tr>
+						<% } %>
+						<% } %>
+					</tbody>
+				</table>
+			</div><!-- span8 -->
+		</div><!-- row -->
+	</div><!-- container -->
+</body>
 </html>
 

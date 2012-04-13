@@ -33,20 +33,24 @@
      bsize = Integer.parseInt( request.getParameter("bsize") );
    }
 %>
-
+<!DOCTYPE html>
 <html>
-  <head>
-    <title>Hive Web Interface</title>
-  </head>
-  <body>
-    <table>
-      <tr>
-        <td valign="top" valign="top" width="100">
-	  <jsp:include page="/left_navigation.jsp"/></td>
-        <td valign="top">
-          <h2>Hive Web Interface</h2>
-          <p><%=sess.getResultFile() %></p>
-          <textarea rows="8" cols="40"><%   
+<head>
+<title>Hive Web Interface</title>
+<link href="css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body style="padding-top: 60px;">
+    <jsp:include page="/navbar.jsp"></jsp:include>
+	<div class="container">
+		<div class="row">
+			<div class="span4">
+				<jsp:include page="/left_navigation.jsp" />
+			</div><!-- span4 -->
+			<div class="span8">
+				<h2>Hive Web Interface</h2>
+				<p><%=sess.getResultFile() %></p>
+				<pre>
+					<%   
 			  File f = new File(   sess.getResultFile()  ); 
 			  BufferedReader br = new BufferedReader( new FileReader(f) );
 			  br.skip(start*bsize);
@@ -58,14 +62,18 @@
 			   out.println( c ); 
 			  }
 			  br.close();	  
-			%></textarea>
-          <br>
-          <% long numberOfBlocks = f.length()/ (long)bsize;%>
-          This file contains <%=numberOfBlocks%> of <%=bsize%> blocks.  
-        
-          <a href="/hwi/view_file.jsp?sessionName=<%=sessionName%>&start=<%=(start+1) %>&bsize=<%=bsize %>">Next Block</a>
-        </td>
-      </tr>
-    </table>
-  </body>
+			%>
+          </pre>
+				<% long numberOfBlocks = f.length()/ (long)bsize;%>
+				This file contains
+				<%=numberOfBlocks%>
+				of
+				<%=bsize%>
+				blocks. <a
+					href="/hwi/view_file.jsp?sessionName=<%=sessionName%>&start=<%=(start+1) %>&bsize=<%=bsize %>">Next
+					Block</a>
+			</div><!-- span8 -->
+		</div><!-- row -->
+	</div><!-- container -->
+</body>
 </html>

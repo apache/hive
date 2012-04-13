@@ -25,8 +25,6 @@ org.apache.hadoop.hive.ql.session.SessionState,
 java.util.*,
 org.apache.hadoop.hive.ql.*,
 org.apache.hadoop.hive.cli.*" %>
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
-"http://www.w3.org/TR/html4/loose.dtd">
 <% 
   String db= request.getParameter("db");
   String table= request.getParameter("table");
@@ -40,109 +38,147 @@ org.apache.hadoop.hive.cli.*" %>
   List<Order> ord = sd.getSortCols();
   Partition p = null;//How do we get this info?
 %>
+<!DOCTYPE html>
 <html>
-  <head>
-    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-    <title>HWI Hive Web Interface-Schema Browser</title>
-  </head>
-  <body>
-    <table>
-      <tr>
-        <td valign="top"><jsp:include page="/left_navigation.jsp"/></td>
-        <td valign="top">
-          
-          <h2><%=table%></h2>
-          ColsSize: <%= sd.getColsSize()%> <br>
-          Input Format: <%= sd.getInputFormat()   %><br>
-          Output Format: <%= sd.getOutputFormat()  %><br>
-          Is Compressed?: <%= sd.isCompressed()  %><br>
-          Location: <%= sd.getLocation()  %> <br>
-          Number Of Buckets: <%= sd.getNumBuckets() %><br>
-          
-           <h2>Field Schema</h2>
-          <table border="1">
-            <tr>
-              <td>Name</td>
-              <td>Type</td>
-              <td>Comment</td>
-            </tr>
-            <% for (FieldSchema fs: fsc ) {%>
-            <tr>
-              <td><%=fs.getName() %></td>
-              <td><%=fs.getType() %></td> 
-              <td><%=fs.getComment() %></td>
-            </tr>
-            <% } %>
-          </table>
-          
-          <table border="1">
-            <tr><td>Bucket Columns</td></tr>
-            <% for (String col: bcols ) {%>
-            <tr><td><%=col%></td></tr>
-            <% } %>
-          </table>
-          
-          <h2>Sort Columns</h2>
-          <table border="1">
-            <tr>
-              <td>Column</td>
-              <td>Order</td>
-            </tr>
-            <% for (Order  o: ord ) {%>
-            <tr>
-              <td><%= o.getCol()   %></td>
-              <td><%= o.getOrder()   %></td>
-            </tr>
-            <% } %>
-          </table>
-          <h2>Parameters</h2>
-          <table border="1">
-            <tr>
-              <td>Name</td>
-              <td>Value</td>
-            </tr>
-          <%  for ( String key: sd.getParameters().keySet() ){  %>
-            <tr>
-              <td><%=key%></td>
-              <td><%=sd.getParameters().get(key)%></td>
-            </tr>
-          <% } %>
-          </table>
-          
-          <h2>SerDe Info</h2>
-          <% SerDeInfo si = sd.getSerdeInfo(); %>
-          Name:<%= si.getName() %><br>
-          Lib: <%= si.getSerializationLib()  %><br>
-            <table border="1">
-              <tr>
-                <td>Name</td>
-                <td>value</td>
-              </tr>
-              <% for (String key: si.getParameters().keySet() ) { %>
-              <tr>
-                <td><%= key %></td>
-                <td><%= si.getParameters().get(key)  %></td>
-              </tr>
-              <% } %>
-            </table>
-            
-            <h2>Partition Information</h2>
-             <table border="1">
-              <tr>
-         		<td>Name</td>
-                <td>Type</td>
-                <td>Comment</td>
-              </tr>
-            <% for (FieldSchema fieldSchema: t.getPartitionKeys() ){ %>
-           	  <tr>
-            	<td><%= fieldSchema.getName() %></td>
-                <td><%= fieldSchema.getType() %></td>
-                <td><%= fieldSchema.getComment() %></td>
-              </tr>
-   			<% } %>
-        </td>
-      </tr>
-    </table>
-  </body>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>HWI Hive Web Interface-Schema Browser</title>
+<link href="css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body style="padding-top: 60px;">
+    <jsp:include page="/navbar.jsp"></jsp:include>
+	<div class="container">
+		<div class="row">
+			<div class="span4">
+				<jsp:include page="/left_navigation.jsp" />
+			</div><!-- span4 -->
+			<div class="span8">
+				<h2><%=table%></h2>
+				ColsSize:
+				<%= sd.getColsSize()%>
+				<br> Input Format:
+				<%= sd.getInputFormat()   %><br> Output Format:
+				<%= sd.getOutputFormat()  %><br> Is Compressed?:
+				<%= sd.isCompressed()  %><br> Location:
+				<%= sd.getLocation()  %>
+				<br> Number Of Buckets:
+				<%= sd.getNumBuckets() %><br>
+
+				<h2>Field Schema</h2>
+				<table class="table table-striped">
+					<thead>
+						<tr>
+							<th>Name</th>
+							<th>Type</th>
+							<th>Comment</th>
+						</tr>
+					</thead>
+					<tbody>
+						<% for (FieldSchema fs: fsc ) {%>
+						<tr>
+							<td><%=fs.getName() %></td>
+							<td><%=fs.getType() %></td>
+							<td><%=fs.getComment() %></td>
+						</tr>
+						<% } %>
+					</tbody>
+				</table>
+
+				<table class="table table-striped">
+					<thead>
+						<tr>
+							<th>Bucket Columns</th>
+						</tr>
+					</thead>
+					<tbody>
+						<% for (String col: bcols ) {%>
+						<tr>
+							<td><%=col%></td>
+						</tr>
+						<% } %>
+					</tbody>
+				</table>
+
+				<h2>Sort Columns</h2>
+				<table class="table table-striped">
+					<thead>
+						<tr>
+							<th>Column</th>
+							<th>Order</th>
+						</tr>
+					</thead>
+					<tbody>
+						<% for (Order  o: ord ) {%>
+						<tr>
+							<td><%= o.getCol()   %></td>
+							<td><%= o.getOrder()   %></td>
+						</tr>
+						<% } %>
+					</tbody>
+				</table>
+
+				<h2>Parameters</h2>
+				<table class="table table-striped">
+					<thead>
+						<tr>
+							<th>Name</th>
+							<th>Value</th>
+						</tr>
+					</thead>
+					<tbody>
+						<%  for ( String key: sd.getParameters().keySet() ){  %>
+						<tr>
+							<td><%=key%></td>
+							<td><%=sd.getParameters().get(key)%></td>
+						</tr>
+						<% } %>
+					</tbody>
+				</table>
+
+				<h2>SerDe Info</h2>
+				<% SerDeInfo si = sd.getSerdeInfo(); %>
+				Name:<%= si.getName() %><br> Lib:
+				<%= si.getSerializationLib()  %><br>
+				<table class="table table-striped">
+					<thead>
+						<tr>
+							<th>Name</th>
+							<th>value</th>
+						</tr>
+					</thead>
+					<tbody>
+						<% for (String key: si.getParameters().keySet() ) { %>
+						<tr>
+							<td><%= key %></td>
+							<td><%= si.getParameters().get(key)  %></td>
+						</tr>
+						<% } %>
+					</tbody>
+				</table>
+
+				<h2>Partition Information</h2>
+				<table class="table table-striped">
+					<thead>
+						<tr>
+							<th>Name</th>
+							<th>Type</th>
+							<th>Comment</th>
+						</tr>
+					</thead>
+					<tbody>
+						<% for (FieldSchema fieldSchema: t.getPartitionKeys() ){ %>
+						<tr>
+							<td><%= fieldSchema.getName() %></td>
+							<td><%= fieldSchema.getType() %></td>
+							<td><%= fieldSchema.getComment() %></td>
+						</tr>
+						<% } %>
+					</tbody>
+				</table>
+
+			</div><!-- span8 -->
+		</div><!-- row -->
+	</div><!-- container -->
+</body>
 </html>
 <% client.close(); %>

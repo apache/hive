@@ -14,18 +14,20 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 --%>
-<div class="well" style="padding: 8px 0;">
-<ul class="nav nav-list">
-  <li class="nav-header">User</li>
-  <li><a href="index.jsp"><i class="icon-home"></i> Home</a></li>
-  <li><a href="authorize.jsp"><i class="icon-lock"></i> Authorize</a></li>
-  <li class="nav-header">Database</li>
-  <li><a href="show_databases.jsp"><i class="icon-search"></i> Browse Schema</a></li>
-  <li class="nav-header">Sessions</li>
-  <li><a href="session_create.jsp"><i class="icon-user"></i> Create Session</a></li>
-  <li><a href="session_list.jsp"><i class="icon-search"></i> List Sessions</a></li>
-  <li class="divider"></li>
-  <li class="nav-header">Diagnostics</li>
-  <li><a href="diagnostics.jsp"><i class="icon-cog"></i> Diagnostics</a></li>
-</ul>
-</div><!-- well -->
+<div class="navbar navbar-fixed-top">
+	<div class="navbar-inner">
+		<div class="container">
+			<a class="btn btn-navbar" data-toggle="collapse"
+				data-target=".nav-collapse"> <span class="icon-bar"></span> <span
+				class="icon-bar"></span> <span class="icon-bar"></span>
+			</a> <a class="brand" href="#">Hive Web Interface</a>
+			<div class="nav-collapse">
+				<ul class="nav pull-right">
+					<li><a href="http://hive.apache.org">Link</a></li>
+				</ul>
+			</div>
+			<!-- /.nav-collapse -->
+		</div>
+	</div>
+	<!-- /navbar-inner -->
+</div>
