@@ -18,6 +18,7 @@
 
 package org.apache.hadoop.hive.metastore;
 
+import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.util.StringUtils;
 
 public class TestEmbeddedHiveMetaStore extends TestHiveMetaStore {
@@ -25,7 +26,9 @@ public class TestEmbeddedHiveMetaStore extends TestHiveMetaStore {
   @Override
   protected void setUp() throws Exception {
     super.setUp();
-
+    hiveConf.setBoolean(
+        HiveConf.ConfVars.HIVE_WAREHOUSE_SUBDIR_INHERIT_PERMS.varname, true);
+    warehouse = new Warehouse(hiveConf);
     try {
       client = new HiveMetaStoreClient(hiveConf, null);
     } catch (Throwable e) {
