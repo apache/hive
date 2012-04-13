@@ -18,7 +18,6 @@
 
 package org.apache.hadoop.hive.ql.io;
 
-import java.io.File;
 import java.io.IOException;
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -317,8 +316,8 @@ public final class HiveFileFormatUtils {
 
     if (part == null) {
       String dirStr = dir.toString();
-      int dirPathIndex = dirPath.lastIndexOf(File.separator);
-      int dirStrIndex = dirStr.lastIndexOf(File.separator);
+      int dirPathIndex = dirPath.lastIndexOf(Path.SEPARATOR);
+      int dirStrIndex = dirStr.lastIndexOf(Path.SEPARATOR);
       while (dirPathIndex >= 0 && dirStrIndex >= 0) {
         dirStr = dirStr.substring(0, dirStrIndex);
         dirPath = dirPath.substring(0, dirPathIndex);
@@ -331,8 +330,8 @@ public final class HiveFileFormatUtils {
         if (part != null) {
           break;
         }
-        dirPathIndex = dirPath.lastIndexOf(File.separator);
-        dirStrIndex = dirStr.lastIndexOf(File.separator);
+        dirPathIndex = dirPath.lastIndexOf(Path.SEPARATOR);
+        dirStrIndex = dirStr.lastIndexOf(Path.SEPARATOR);
       }
     }
     return part;
@@ -362,8 +361,8 @@ public final class HiveFileFormatUtils {
     path = dirPath;
 
     String dirStr = dir.toString();
-    int dirPathIndex = dirPath.lastIndexOf(File.separator);
-    int dirStrIndex = dirStr.lastIndexOf(File.separator);
+    int dirPathIndex = dirPath.lastIndexOf(Path.SEPARATOR);
+    int dirStrIndex = dirStr.lastIndexOf(Path.SEPARATOR);
     while (dirPathIndex >= 0 && dirStrIndex >= 0) {
       dirStr = dirStr.substring(0, dirStrIndex);
       dirPath = dirPath.substring(0, dirPathIndex);
@@ -374,8 +373,8 @@ public final class HiveFileFormatUtils {
       if (foundAlias(pathToAliases, dirPath)) {
         return dirPath;
       }
-      dirPathIndex = dirPath.lastIndexOf(File.separator);
-      dirStrIndex = dirStr.lastIndexOf(File.separator);
+      dirPathIndex = dirPath.lastIndexOf(Path.SEPARATOR);
+      dirStrIndex = dirStr.lastIndexOf(Path.SEPARATOR);
     }
     return null;
   }
