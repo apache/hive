@@ -204,7 +204,7 @@ public class RCFileMergeMapper extends MapReduceBase implements
 
     if (!exception) {
       FileStatus fss = fs.getFileStatus(outPath);
-      System.out.println("renamed path " + outPath + " to " + finalPath
+      LOG.info("renamed path " + outPath + " to " + finalPath
           + " . File size is " + fss.getLen());
       if (!fs.rename(outPath, finalPath)) {
         throw new IOException("Unable to rename output to " + finalPath);
