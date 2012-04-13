@@ -382,21 +382,22 @@ public class HiveMetaStore extends ThriftHiveMetastore {
      * @throws MetaException
      */
     private void createDefaultDB() throws MetaException {
-      if (HMSHandler.createDefaultDB || !checkForDefaultDb) {
-        return;
-      }
+      synchronized (HMSHandler.class) {
+        if (HMSHandler.createDefaultDB || !checkForDefaultDb) {
+          return;
+        }
 
-      try {
-        createDefaultDB_core(getMS());
-      } catch (InvalidObjectException e) {
-        throw new MetaException(e.getMessage());
-      } catch (MetaException e) {
-        throw e;
-      } catch (Exception e) {
-        assert (e instanceof RuntimeException);
-        throw (RuntimeException) e;
+        try {
+          createDefaultDB_core(getMS());
+        } catch (InvalidObjectException e) {
+          throw new MetaException(e.getMessage());
+        } catch (MetaException e) {
+          throw e;
+        } catch (Exception e) {
+          assert (e instanceof RuntimeException);
+          throw (RuntimeException) e;
+        }
       }
-
     }
 
     private void logInfo(String m) {
