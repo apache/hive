@@ -182,3 +182,24 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####
 NULL	NULL	null	null	null	A	AB	ABC	ABC	A	AB	ABC	ABC	B	BC	BC	BC	C	C	C	C		C	C	C	C	B	BC	BC	BC	A	AB	ABC	ABC	
+PREHOOK: query: -- test UTF-8 substr
+SELECT
+  substr("玩", 1),
+  substr("abc 玩", 5),
+  substr("abc 玩玩玩 abc", 5),
+  substr("abc 玩玩玩 abc", 5, 3)
+FROM src LIMIT 1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
+POSTHOOK: query: -- test UTF-8 substr
+SELECT
+  substr("玩", 1),
+  substr("abc 玩", 5),
+  substr("abc 玩玩玩 abc", 5),
+  substr("abc 玩玩玩 abc", 5, 3)
+FROM src LIMIT 1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
+玩	玩	玩玩玩 abc	玩玩玩

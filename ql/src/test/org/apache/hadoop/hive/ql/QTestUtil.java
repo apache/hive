@@ -23,13 +23,13 @@ import static org.apache.hadoop.hive.metastore.MetaStoreUtils.DEFAULT_DATABASE_N
 import java.io.BufferedInputStream;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
-import java.io.DataInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.FileWriter;
+import java.io.InputStreamReader;
 import java.io.PrintStream;
 import java.io.Serializable;
 import java.io.UnsupportedEncodingException;
@@ -279,7 +279,7 @@ public class QTestUtil {
 
     FileInputStream fis = new FileInputStream(qf);
     BufferedInputStream bis = new BufferedInputStream(fis);
-    DataInputStream dis = new DataInputStream(bis);
+    BufferedReader br = new BufferedReader(new InputStreamReader(bis, "UTF8"));
     StringBuilder qsb = new StringBuilder();
 
     // Look for a hint to not run a test on some Hadoop versions
@@ -289,8 +289,8 @@ public class QTestUtil {
     // Read the entire query
     boolean excludeQuery = false;
     String hadoopVer = ShimLoader.getMajorVersion();
-    while (dis.available() != 0) {
-      String line = dis.readLine();
+    String line;
+    while ((line = br.readLine()) != null) {
 
       // While we are reading the lines, detect whether this query wants to be
       // excluded from running because the Hadoop version is incorrect
@@ -320,7 +320,7 @@ public class QTestUtil {
           "adding query " + qf.getName() + " to the set of tests to skip");
       qSkipSet.add(qf.getName());
      }
-    dis.close();
+    br.close();
   }
 
   /**
