@@ -18,13 +18,13 @@
 
 package org.apache.hadoop.hive.ql.udf;
 
+import java.util.Arrays;
+
 import org.apache.hadoop.hive.ql.exec.Description;
 import org.apache.hadoop.hive.ql.exec.UDF;
 import org.apache.hadoop.io.BytesWritable;
 import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.Text;
-
-import java.util.Arrays;
 
 /**
  * UDFSubstr.
@@ -65,12 +65,12 @@ public class UDFSubstr extends UDF {
       return r;
     }
 
-    int[] index = makeIndex(pos.get(), len.get(), t.getLength());
+    String s = t.toString();
+    int[] index = makeIndex(pos.get(), len.get(), s.length());
     if (index == null) {
       return r;
     }
 
-    String s = t.toString();
     r.set(s.substring(index[0], index[1]));
     return r;
   }

@@ -65,3 +65,11 @@ SELECT
 FROM (
    select CAST(concat(substr(value, 1, 0), 'ABC') as BINARY) as ABC from src LIMIT 1
 ) X;
+
+-- test UTF-8 substr
+SELECT
+  substr("玩", 1),
+  substr("abc 玩", 5),
+  substr("abc 玩玩玩 abc", 5),
+  substr("abc 玩玩玩 abc", 5, 3)
+FROM src LIMIT 1;
