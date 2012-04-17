@@ -52,6 +52,7 @@ public enum HiveOperation {
   SHOWDATABASES("SHOWDATABASES", new Privilege[]{Privilege.SHOW_DATABASE}, null),
   SHOWTABLES("SHOWTABLES", null, null),
   SHOW_TABLESTATUS("SHOW_TABLESTATUS", null, null),
+  SHOW_TBLPROPERTIES("SHOW_TBLPROPERTIES", null, null),
   SHOWFUNCTIONS("SHOWFUNCTIONS", null, null),
   SHOWINDEXES("SHOWINDEXES", null, null),
   SHOWPARTITIONS("SHOWPARTITIONS", null, null),

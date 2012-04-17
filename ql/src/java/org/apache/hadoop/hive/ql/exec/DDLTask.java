@@ -136,6 +136,7 @@ import org.apache.hadoop.hive.ql.plan.ShowLocksDesc;
 import org.apache.hadoop.hive.ql.plan.ShowPartitionsDesc;
 import org.apache.hadoop.hive.ql.plan.ShowTableStatusDesc;
 import org.apache.hadoop.hive.ql.plan.ShowTablesDesc;
+import org.apache.hadoop.hive.ql.plan.ShowTblPropertiesDesc;
 import org.apache.hadoop.hive.ql.plan.SwitchDatabaseDesc;
 import org.apache.hadoop.hive.ql.plan.UnlockTableDesc;
 import org.apache.hadoop.hive.ql.plan.api.StageType;
@@ -325,6 +326,11 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
       ShowTableStatusDesc showTblStatus = work.getShowTblStatusDesc();
       if (showTblStatus != null) {
         return showTableStatus(db, showTblStatus);
+      }
+
+      ShowTblPropertiesDesc showTblProperties = work.getShowTblPropertiesDesc();
+      if (showTblProperties != null) {
+        return showTableProperties(db, showTblProperties);
       }
 
       ShowFunctionsDesc showFuncs = work.getShowFuncsDesc();
@@ -2445,6 +2451,75 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
     } finally {
       IOUtils.closeStream((FSDataOutputStream) outStream);
     }
+    return 0;
+  }
+
+  /**
+   * Write the properties of a table to a file.
+   *
+   * @param db
+   *          The database in question.
+   * @param showTblPrpt
+   *          This is the table we're interested in.
+   * @return Returns 0 when execution succeeds and above 0 if it fails.
+   * @throws HiveException
+   *           Throws this exception if an unexpected error occurs.
+   */
+  private int showTableProperties(Hive db, ShowTblPropertiesDesc showTblPrpt) throws HiveException {
+    String tableName = showTblPrpt.getTableName();
+
+    // show table properties - populate the output stream
+    Table tbl = db.getTable(tableName, false);
+    DataOutput outStream = null;
+    try {
+      Path resFile = new Path(showTblPrpt.getResFile());
+      FileSystem fs = resFile.getFileSystem(conf);
+      outStream = fs.create(resFile);
+
+      if (tbl == null) {
+        String errMsg = "Table " + tableName + " does not exist";
+        outStream.write(errMsg.getBytes("UTF-8"));
+        ((FSDataOutputStream) outStream).close();
+        outStream = null;
+        return 0;
+      }
+
+      LOG.info("DDLTask: show properties for " + tbl.getTableName());
+
+      String propertyName = showTblPrpt.getPropertyName();
+      if (propertyName != null) {
+        String propertyValue = tbl.getProperty(propertyName);
+        if (propertyValue == null) {
+          String errMsg = "Table " + tableName + " does not have property: " + propertyName;
+          outStream.write(errMsg.getBytes("UTF-8"));
+        }
+        else {
+          outStream.writeBytes(propertyValue);
+        }
+      }
+      else {
+        Map<String, String> properties = tbl.getParameters();
+        for (String key : properties.keySet()) {
+          writeKeyValuePair(outStream, key, properties.get(key));
+        }
+      }
+
+      LOG.info("DDLTask: written data for showing properties of " + tbl.getTableName());
+      ((FSDataOutputStream) outStream).close();
+      outStream = null;
+
+    } catch (FileNotFoundException e) {
+      LOG.info("show table properties: " + stringifyException(e));
+      return 1;
+    } catch (IOException e) {
+      LOG.info("show table properties: " + stringifyException(e));
+      return 1;
+    } catch (Exception e) {
+      throw new HiveException(e);
+    } finally {
+      IOUtils.closeStream((FSDataOutputStream) outStream);
+    }
+
     return 0;
   }
 

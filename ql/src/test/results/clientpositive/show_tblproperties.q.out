@@ -1,0 +1,53 @@
+PREHOOK: query: show tblproperties tmpfoo
+PREHOOK: type: SHOW_TBLPROPERTIES
+POSTHOOK: query: show tblproperties tmpfoo
+POSTHOOK: type: SHOW_TBLPROPERTIES
+Table tmpfoo does not exist	 
+PREHOOK: query: create table tmpfoo (a String)
+PREHOOK: type: CREATETABLE
+POSTHOOK: query: create table tmpfoo (a String)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: default@tmpfoo
+PREHOOK: query: show tblproperties tmpfoo("bar")
+PREHOOK: type: SHOW_TBLPROPERTIES
+POSTHOOK: query: show tblproperties tmpfoo("bar")
+POSTHOOK: type: SHOW_TBLPROPERTIES
+Table tmpfoo does not have property: bar	 
+PREHOOK: query: alter table tmpfoo set tblproperties ("bar" = "bar value")
+PREHOOK: type: ALTERTABLE_PROPERTIES
+PREHOOK: Input: default@tmpfoo
+PREHOOK: Output: default@tmpfoo
+POSTHOOK: query: alter table tmpfoo set tblproperties ("bar" = "bar value")
+POSTHOOK: type: ALTERTABLE_PROPERTIES
+POSTHOOK: Input: default@tmpfoo
+POSTHOOK: Output: default@tmpfoo
+PREHOOK: query: alter table tmpfoo set tblproperties ("tmp" = "true")
+PREHOOK: type: ALTERTABLE_PROPERTIES
+PREHOOK: Input: default@tmpfoo
+PREHOOK: Output: default@tmpfoo
+POSTHOOK: query: alter table tmpfoo set tblproperties ("tmp" = "true")
+POSTHOOK: type: ALTERTABLE_PROPERTIES
+POSTHOOK: Input: default@tmpfoo
+POSTHOOK: Output: default@tmpfoo
+PREHOOK: query: show tblproperties tmpfoo
+PREHOOK: type: SHOW_TBLPROPERTIES
+POSTHOOK: query: show tblproperties tmpfoo
+POSTHOOK: type: SHOW_TBLPROPERTIES
+	 
+#### A masked pattern was here ####
+tmp	true
+#### A masked pattern was here ####
+bar	bar value
+PREHOOK: query: show tblproperties tmpfoo("bar")
+PREHOOK: type: SHOW_TBLPROPERTIES
+POSTHOOK: query: show tblproperties tmpfoo("bar")
+POSTHOOK: type: SHOW_TBLPROPERTIES
+bar value	 
+PREHOOK: query: drop table tmpfoo
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@tmpfoo
+PREHOOK: Output: default@tmpfoo
+POSTHOOK: query: drop table tmpfoo
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@tmpfoo
+POSTHOOK: Output: default@tmpfoo
