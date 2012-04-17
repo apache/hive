@@ -1,3 +1,20 @@
+/**
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package org.apache.hadoop.hive.ql.optimizer.physical;
 
 import java.io.Serializable;
@@ -35,18 +52,18 @@ import org.apache.hadoop.hive.ql.io.OneNullRowInputFormat;
 import org.apache.hadoop.hive.serde2.NullStructSerDe;
 
 /**
- * 
+ *
  * MetadataOnlyOptimizer determines to which TableScanOperators "metadata only"
  * optimization can be applied. Such operator must use only partition columns
  * (it is easy to check, because we are after column pruning and all places
  * where the data from the operator is used must go through GroupByOperator
  * distinct or distinct-like aggregations. Aggregation is distinct-like if
  * adding distinct wouldn't change the result, for example min, max.
- * 
+ *
  * We cannot apply the optimization without group by, because the results depend
  * on the numbers of rows in partitions, for example count(hr) will count all
  * rows in matching partitions.
- * 
+ *
  */
 public class MetadataOnlyOptimizer implements PhysicalPlanResolver {
   private static final Log LOG = LogFactory.getLog(MetadataOnlyOptimizer.class.getName());
@@ -59,7 +76,7 @@ public class MetadataOnlyOptimizer implements PhysicalPlanResolver {
 
     /**
      * Sets operator as one for which there is a chance to apply optimization
-     * 
+     *
      * @param op
      *          the operator
      */
@@ -109,8 +126,8 @@ public class MetadataOnlyOptimizer implements PhysicalPlanResolver {
       TableScanOperator node = (TableScanOperator) nd;
       WalkerCtx walkerCtx = (WalkerCtx) procCtx;
       if (((node.getNeededColumnIDs() == null) || (node.getNeededColumnIDs().size() == 0))
-          && ((node.getConf() == null) || 
-              (node.getConf().getVirtualCols() == null) || 
+          && ((node.getConf() == null) ||
+              (node.getConf().getVirtualCols() == null) ||
               (node.getConf().getVirtualCols().isEmpty()))) {
         walkerCtx.setMayBeMetadataOnly(node);
       }
@@ -231,7 +248,7 @@ public class MetadataOnlyOptimizer implements PhysicalPlanResolver {
         throws SemanticException {
       Task<? extends Serializable> task = (Task<? extends Serializable>) nd;
 
-      Collection<Operator<? extends Serializable>> topOperators 
+      Collection<Operator<? extends Serializable>> topOperators
         = task.getTopOperators();
       if (topOperators.size() == 0) {
         return null;
@@ -254,7 +271,7 @@ public class MetadataOnlyOptimizer implements PhysicalPlanResolver {
       // Create a list of topOp nodes
       ArrayList<Node> topNodes = new ArrayList<Node>();
       // Get the top Nodes for this map-reduce task
-      for (Operator<? extends Serializable> 
+      for (Operator<? extends Serializable>
            workOperator : topOperators) {
         if (parseContext.getTopOps().values().contains(workOperator)) {
           topNodes.add(workOperator);
@@ -264,12 +281,12 @@ public class MetadataOnlyOptimizer implements PhysicalPlanResolver {
       if (task.getReducer() != null) {
         topNodes.add(task.getReducer());
       }
-      
+
       ogw.startWalking(topNodes, null);
 
       LOG.info(String.format("Found %d metadata only table scans",
           walkerCtx.getMetadataOnlyTableScans().size()));
-      Iterator<TableScanOperator> iterator 
+      Iterator<TableScanOperator> iterator
         = walkerCtx.getMetadataOnlyTableScans().iterator();
 
       while (iterator.hasNext()) {

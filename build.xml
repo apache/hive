@@ -807,7 +807,7 @@
          <patternset id="non.build.files">
            <exclude name="**/build/**"/>
            <exclude name="**/src/gen/**"/>
-           <exclude name=".arcconfig.*"/>
+           <exclude name=".arcconfig*"/>
            <exclude name=".arc_jira_lib/**"/>
            <exclude name="**/*.deflate"/>
            <exclude name="**/*.m"/>
@@ -815,10 +815,13 @@
            <exclude name="**/*.q"/>
            <exclude name="**/*.q.out"/>
            <exclude name="data/files/*.rc"/>
+           <exclude name="**/test/data/**/*.rc"/>
            <exclude name="data/files/*.seq"/>
 	   <exclude name="**/data/files/*.log"/>
            <exclude name="**/*.txt"/>
+           <exclude name="**/test/results/**/*.out"/>
            <exclude name="**/test/results/**/*.xml"/>
+           <exclude name="**/testdata/*.input"/>
 
            <!-- Ignore recordio generated file -->
 	   <exclude name="ql/src/test/org/apache/hadoop/hive/ql/io/RecordTestObj.java"/>
