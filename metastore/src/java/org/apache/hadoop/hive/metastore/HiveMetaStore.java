@@ -2918,7 +2918,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
   public static void main(String[] args) throws Throwable {
     HiveMetastoreCli cli = new HiveMetastoreCli();
     cli.parse(args);
-
+    final boolean isCliVerbose = cli.isVerbose();
     // NOTE: It is critical to do this prior to initializing log4j, otherwise
     // any log specific settings via hiveconf will be ignored
     Properties hiveconf = cli.addHiveconfToSystemProperties();
@@ -2948,6 +2948,18 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       for (Map.Entry<Object, Object> item : hiveconf.entrySet()) {
         conf.set((String) item.getKey(), (String) item.getValue());
       }
+
+      //Add shutdown hook.
+      Runtime.getRuntime().addShutdownHook(new Thread() {
+          @Override
+          public void run() {
+              String shutdownMsg = "Shutting down hive metastore.";
+              HMSHandler.LOG.info(shutdownMsg);
+              if (isCliVerbose) {
+                  System.err.println(shutdownMsg);
+                }
+          }
+      });
 
       startMetaStore(cli.port, ShimLoader.getHadoopThriftAuthBridge(), conf);
     } catch (Throwable t) {
