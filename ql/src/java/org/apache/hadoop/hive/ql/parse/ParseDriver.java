@@ -82,6 +82,7 @@ public class ParseDriver {
     xlateMap.put("KW_PARTITIONS", "PARTITIONS");
     xlateMap.put("KW_TABLE", "TABLE");
     xlateMap.put("KW_TABLES", "TABLES");
+    xlateMap.put("KW_TBLPROPERTIES", "TBLPROPERTIES");
     xlateMap.put("KW_SHOW", "SHOW");
     xlateMap.put("KW_MSCK", "MSCK");
     xlateMap.put("KW_DIRECTORY", "DIRECTORY");

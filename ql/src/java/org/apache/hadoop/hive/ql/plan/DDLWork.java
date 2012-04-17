@@ -45,6 +45,7 @@ public class DDLWork implements Serializable {
   private AlterIndexDesc alterIdxDesc;
   private ShowDatabasesDesc showDatabasesDesc;
   private ShowTablesDesc showTblsDesc;
+  private ShowTblPropertiesDesc showTblPropertiesDesc;
   private LockTableDesc lockTblDesc;
   private UnlockTableDesc unlockTblDesc;
   private ShowFunctionsDesc showFuncsDesc;
@@ -352,6 +353,17 @@ public class DDLWork implements Serializable {
     this(inputs, outputs);
 
     this.showTblStatusDesc = showTblStatusDesc;
+  }
+
+  /**
+   * @param showTblPropertiesDesc
+   *          show table properties descriptor
+   */
+  public DDLWork(HashSet<ReadEntity> inputs, HashSet<WriteEntity> outputs,
+      ShowTblPropertiesDesc showTblPropertiesDesc) {
+    this(inputs, outputs);
+
+    this.showTblPropertiesDesc = showTblPropertiesDesc;
   }
 
   public DDLWork(HashSet<ReadEntity> inputs, HashSet<WriteEntity> outputs,
@@ -786,6 +798,14 @@ public class DDLWork implements Serializable {
    */
   public void setShowTblStatusDesc(ShowTableStatusDesc showTblStatusDesc) {
     this.showTblStatusDesc = showTblStatusDesc;
+  }
+
+  public ShowTblPropertiesDesc getShowTblPropertiesDesc() {
+    return showTblPropertiesDesc;
+  }
+
+  public void setShowTblPropertiesDesc(ShowTblPropertiesDesc showTblPropertiesDesc) {
+    this.showTblPropertiesDesc = showTblPropertiesDesc;
   }
 
   public CreateViewDesc getCreateVwDesc() {

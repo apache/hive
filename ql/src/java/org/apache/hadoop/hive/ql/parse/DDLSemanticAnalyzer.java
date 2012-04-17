@@ -105,6 +105,7 @@ import org.apache.hadoop.hive.ql.plan.ShowLocksDesc;
 import org.apache.hadoop.hive.ql.plan.ShowPartitionsDesc;
 import org.apache.hadoop.hive.ql.plan.ShowTableStatusDesc;
 import org.apache.hadoop.hive.ql.plan.ShowTablesDesc;
+import org.apache.hadoop.hive.ql.plan.ShowTblPropertiesDesc;
 import org.apache.hadoop.hive.ql.plan.StatsWork;
 import org.apache.hadoop.hive.ql.plan.SwitchDatabaseDesc;
 import org.apache.hadoop.hive.ql.plan.TableDesc;
@@ -230,6 +231,10 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
     case HiveParser.TOK_SHOW_TABLESTATUS:
       ctx.setResFile(new Path(ctx.getLocalTmpFileURI()));
       analyzeShowTableStatus(ast);
+      break;
+    case HiveParser.TOK_SHOW_TBLPROPERTIES:
+      ctx.setResFile(new Path(ctx.getLocalTmpFileURI()));
+      analyzeShowTableProperties(ast);
       break;
     case HiveParser.TOK_SHOWFUNCTIONS:
       ctx.setResFile(new Path(ctx.getLocalTmpFileURI()));
@@ -1480,6 +1485,21 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
     rootTasks.add(TaskFactory.get(new DDLWork(getInputs(), getOutputs(),
         showTblStatusDesc), conf));
     setFetchTask(createFetchTask(showTblStatusDesc.getSchema()));
+  }
+
+  private void analyzeShowTableProperties(ASTNode ast) throws SemanticException {
+    ShowTblPropertiesDesc showTblPropertiesDesc;
+    String tableNames = getUnescapedName((ASTNode)ast.getChild(0));
+    String dbName = db.getCurrentDatabase();
+    String propertyName = null;
+    if (ast.getChildCount() > 1) {
+      propertyName = unescapeSQLString(ast.getChild(1).getText());
+    }
+    showTblPropertiesDesc = new ShowTblPropertiesDesc(ctx.getResFile().toString(), tableNames,
+        propertyName);
+    rootTasks.add(TaskFactory.get(new DDLWork(getInputs(), getOutputs(),
+        showTblPropertiesDesc), conf));
+    setFetchTask(createFetchTask(showTblPropertiesDesc.getSchema()));
   }
 
   private void analyzeShowIndexes(ASTNode ast) throws SemanticException {
