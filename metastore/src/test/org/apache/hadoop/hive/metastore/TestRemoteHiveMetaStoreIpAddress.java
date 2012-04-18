@@ -18,6 +18,9 @@
 
 package org.apache.hadoop.hive.metastore;
 
+import java.io.IOException;
+import java.net.ServerSocket;
+
 import junit.framework.TestCase;
 
 import org.apache.hadoop.hive.conf.HiveConf;
@@ -33,19 +36,25 @@ import org.apache.hadoop.util.StringUtils;
  * IpAddressListener
  */
 public class TestRemoteHiveMetaStoreIpAddress extends TestCase {
-  protected static final String METASTORE_PORT = "39083";
   private static boolean isServerStarted = false;
   private static HiveConf hiveConf;
   private static HiveMetaStoreClient msc;
 
+  private String port;
+
   private static class RunMS implements Runnable {
+      String port;
+
+      public RunMS(String port) {
+        this.port = port;
+      }
 
       @Override
       public void run() {
         try {
           System.setProperty(ConfVars.METASTORE_EVENT_LISTENERS.varname,
               IpAddressListener.class.getName());
-          HiveMetaStore.main(new String[] { METASTORE_PORT });
+          HiveMetaStore.main(new String[] { port });
         } catch (Throwable e) {
           e.printStackTrace(System.err);
           assert false;
@@ -58,14 +67,15 @@ public class TestRemoteHiveMetaStoreIpAddress extends TestCase {
   protected void setUp() throws Exception {
     super.setUp();
     hiveConf = new HiveConf(this.getClass());
+    port = findFreePort();
 
     if (isServerStarted) {
       assertNotNull("Unable to connect to the MetaStore server", msc);
       return;
     }
 
-    System.out.println("Starting MetaStore Server on port " + METASTORE_PORT);
-    Thread t = new Thread(new RunMS());
+    System.out.println("Starting MetaStore Server on port " + port);
+    Thread t = new Thread(new RunMS(port));
     t.start();
     isServerStarted = true;
 
@@ -92,7 +102,14 @@ public class TestRemoteHiveMetaStoreIpAddress extends TestCase {
 
   protected void createClient() throws Exception {
     hiveConf.setBoolVar(ConfVars.METASTORE_MODE, false);
-    hiveConf.setVar(HiveConf.ConfVars.METASTOREURIS, "thrift://localhost:" + METASTORE_PORT);
+    hiveConf.setVar(HiveConf.ConfVars.METASTOREURIS, "thrift://localhost:" + port);
     msc = new HiveMetaStoreClient(hiveConf);
+  }
+
+  private String findFreePort() throws IOException {
+    ServerSocket socket= new ServerSocket(0);
+    int port = socket.getLocalPort();
+    socket.close();
+    return String.valueOf(port);
   }
 }
