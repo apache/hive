@@ -239,13 +239,6 @@ public abstract class BaseSemanticAnalyzer {
   public abstract void analyzeInternal(ASTNode ast) throws SemanticException;
 
   public void analyze(ASTNode ast, Context ctx) throws SemanticException {
-    boolean useDefaultRegion =
-      HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVE_USE_INPUT_PRIMARY_REGION);
-
-    if (!useDefaultRegion) {
-      throw new SemanticException(ErrorMsg.USE_DEFAULT_REGION.getMsg());
-    }
-
     this.ctx = ctx;
     analyzeInternal(ast);
   }

@@ -3298,8 +3298,6 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
       return rc;
     }
 
-    tbl.setPrimaryRegionName(crtTbl.getPrimaryRegionName());
-
     // create the table
     db.createTable(tbl, crtTbl.getIfNotExists());
     work.getOutputs().add(new WriteEntity(tbl));

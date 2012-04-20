@@ -128,24 +128,24 @@ public class Partition implements org.apache.thrift.TBase<Partition, Partition._
   public static final Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
   static {
     Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
-    tmpMap.put(_Fields.VALUES, new org.apache.thrift.meta_data.FieldMetaData("values", org.apache.thrift.TFieldRequirementType.DEFAULT, 
-        new org.apache.thrift.meta_data.ListMetaData(org.apache.thrift.protocol.TType.LIST, 
+    tmpMap.put(_Fields.VALUES, new org.apache.thrift.meta_data.FieldMetaData("values", org.apache.thrift.TFieldRequirementType.DEFAULT,
+        new org.apache.thrift.meta_data.ListMetaData(org.apache.thrift.protocol.TType.LIST,
             new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING))));
-    tmpMap.put(_Fields.DB_NAME, new org.apache.thrift.meta_data.FieldMetaData("dbName", org.apache.thrift.TFieldRequirementType.DEFAULT, 
+    tmpMap.put(_Fields.DB_NAME, new org.apache.thrift.meta_data.FieldMetaData("dbName", org.apache.thrift.TFieldRequirementType.DEFAULT,
         new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
-    tmpMap.put(_Fields.TABLE_NAME, new org.apache.thrift.meta_data.FieldMetaData("tableName", org.apache.thrift.TFieldRequirementType.DEFAULT, 
+    tmpMap.put(_Fields.TABLE_NAME, new org.apache.thrift.meta_data.FieldMetaData("tableName", org.apache.thrift.TFieldRequirementType.DEFAULT,
         new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
-    tmpMap.put(_Fields.CREATE_TIME, new org.apache.thrift.meta_data.FieldMetaData("createTime", org.apache.thrift.TFieldRequirementType.DEFAULT, 
+    tmpMap.put(_Fields.CREATE_TIME, new org.apache.thrift.meta_data.FieldMetaData("createTime", org.apache.thrift.TFieldRequirementType.DEFAULT,
         new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.I32)));
-    tmpMap.put(_Fields.LAST_ACCESS_TIME, new org.apache.thrift.meta_data.FieldMetaData("lastAccessTime", org.apache.thrift.TFieldRequirementType.DEFAULT, 
+    tmpMap.put(_Fields.LAST_ACCESS_TIME, new org.apache.thrift.meta_data.FieldMetaData("lastAccessTime", org.apache.thrift.TFieldRequirementType.DEFAULT,
         new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.I32)));
-    tmpMap.put(_Fields.SD, new org.apache.thrift.meta_data.FieldMetaData("sd", org.apache.thrift.TFieldRequirementType.DEFAULT, 
+    tmpMap.put(_Fields.SD, new org.apache.thrift.meta_data.FieldMetaData("sd", org.apache.thrift.TFieldRequirementType.DEFAULT,
         new org.apache.thrift.meta_data.StructMetaData(org.apache.thrift.protocol.TType.STRUCT, StorageDescriptor.class)));
-    tmpMap.put(_Fields.PARAMETERS, new org.apache.thrift.meta_data.FieldMetaData("parameters", org.apache.thrift.TFieldRequirementType.DEFAULT, 
-        new org.apache.thrift.meta_data.MapMetaData(org.apache.thrift.protocol.TType.MAP, 
-            new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING), 
+    tmpMap.put(_Fields.PARAMETERS, new org.apache.thrift.meta_data.FieldMetaData("parameters", org.apache.thrift.TFieldRequirementType.DEFAULT,
+        new org.apache.thrift.meta_data.MapMetaData(org.apache.thrift.protocol.TType.MAP,
+            new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING),
             new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING))));
-    tmpMap.put(_Fields.PRIVILEGES, new org.apache.thrift.meta_data.FieldMetaData("privileges", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
+    tmpMap.put(_Fields.PRIVILEGES, new org.apache.thrift.meta_data.FieldMetaData("privileges", org.apache.thrift.TFieldRequirementType.OPTIONAL,
         new org.apache.thrift.meta_data.StructMetaData(org.apache.thrift.protocol.TType.STRUCT, PrincipalPrivilegeSet.class)));
     metaDataMap = Collections.unmodifiableMap(tmpMap);
     org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(Partition.class, metaDataMap);
@@ -765,38 +765,38 @@ public class Partition implements org.apache.thrift.TBase<Partition, Partition._
     while (true)
     {
       field = iprot.readFieldBegin();
-      if (field.type == org.apache.thrift.protocol.TType.STOP) { 
+      if (field.type == org.apache.thrift.protocol.TType.STOP) {
         break;
       }
       switch (field.id) {
         case 1: // VALUES
           if (field.type == org.apache.thrift.protocol.TType.LIST) {
             {
-              org.apache.thrift.protocol.TList _list79 = iprot.readListBegin();
-              this.values = new ArrayList<String>(_list79.size);
-              for (int _i80 = 0; _i80 < _list79.size; ++_i80)
+              org.apache.thrift.protocol.TList _list75 = iprot.readListBegin();
+              this.values = new ArrayList<String>(_list75.size);
+              for (int _i76 = 0; _i76 < _list75.size; ++_i76)
               {
-                String _elem81; // required
-                _elem81 = iprot.readString();
-                this.values.add(_elem81);
+                String _elem77; // required
+                _elem77 = iprot.readString();
+                this.values.add(_elem77);
               }
               iprot.readListEnd();
             }
-          } else { 
+          } else {
             org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
           }
           break;
         case 2: // DB_NAME
           if (field.type == org.apache.thrift.protocol.TType.STRING) {
             this.dbName = iprot.readString();
-          } else { 
+          } else {
             org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
           }
           break;
         case 3: // TABLE_NAME
           if (field.type == org.apache.thrift.protocol.TType.STRING) {
             this.tableName = iprot.readString();
-          } else { 
+          } else {
             org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
           }
           break;
@@ -804,7 +804,7 @@ public class Partition implements org.apache.thrift.TBase<Partition, Partition._
           if (field.type == org.apache.thrift.protocol.TType.I32) {
             this.createTime = iprot.readI32();
             setCreateTimeIsSet(true);
-          } else { 
+          } else {
             org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
           }
           break;
@@ -812,7 +812,7 @@ public class Partition implements org.apache.thrift.TBase<Partition, Partition._
           if (field.type == org.apache.thrift.protocol.TType.I32) {
             this.lastAccessTime = iprot.readI32();
             setLastAccessTimeIsSet(true);
-          } else { 
+          } else {
             org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
           }
           break;
@@ -820,26 +820,26 @@ public class Partition implements org.apache.thrift.TBase<Partition, Partition._
           if (field.type == org.apache.thrift.protocol.TType.STRUCT) {
             this.sd = new StorageDescriptor();
             this.sd.read(iprot);
-          } else { 
+          } else {
             org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
           }
           break;
         case 7: // PARAMETERS
           if (field.type == org.apache.thrift.protocol.TType.MAP) {
             {
-              org.apache.thrift.protocol.TMap _map82 = iprot.readMapBegin();
-              this.parameters = new HashMap<String,String>(2*_map82.size);
-              for (int _i83 = 0; _i83 < _map82.size; ++_i83)
+              org.apache.thrift.protocol.TMap _map78 = iprot.readMapBegin();
+              this.parameters = new HashMap<String,String>(2*_map78.size);
+              for (int _i79 = 0; _i79 < _map78.size; ++_i79)
               {
-                String _key84; // required
-                String _val85; // required
-                _key84 = iprot.readString();
-                _val85 = iprot.readString();
-                this.parameters.put(_key84, _val85);
+                String _key80; // required
+                String _val81; // required
+                _key80 = iprot.readString();
+                _val81 = iprot.readString();
+                this.parameters.put(_key80, _val81);
               }
               iprot.readMapEnd();
             }
-          } else { 
+          } else {
             org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
           }
           break;
@@ -847,7 +847,7 @@ public class Partition implements org.apache.thrift.TBase<Partition, Partition._
           if (field.type == org.apache.thrift.protocol.TType.STRUCT) {
             this.privileges = new PrincipalPrivilegeSet();
             this.privileges.read(iprot);
-          } else { 
+          } else {
             org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
           }
           break;
@@ -868,9 +868,9 @@ public class Partition implements org.apache.thrift.TBase<Partition, Partition._
       oprot.writeFieldBegin(VALUES_FIELD_DESC);
       {
         oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRING, this.values.size()));
-        for (String _iter86 : this.values)
+        for (String _iter82 : this.values)
         {
-          oprot.writeString(_iter86);
+          oprot.writeString(_iter82);
         }
         oprot.writeListEnd();
       }
@@ -901,10 +901,10 @@ public class Partition implements org.apache.thrift.TBase<Partition, Partition._
       oprot.writeFieldBegin(PARAMETERS_FIELD_DESC);
       {
         oprot.writeMapBegin(new org.apache.thrift.protocol.TMap(org.apache.thrift.protocol.TType.STRING, org.apache.thrift.protocol.TType.STRING, this.parameters.size()));
-        for (Map.Entry<String, String> _iter87 : this.parameters.entrySet())
+        for (Map.Entry<String, String> _iter83 : this.parameters.entrySet())
         {
-          oprot.writeString(_iter87.getKey());
-          oprot.writeString(_iter87.getValue());
+          oprot.writeString(_iter83.getKey());
+          oprot.writeString(_iter83.getValue());
         }
         oprot.writeMapEnd();
       }

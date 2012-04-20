@@ -942,32 +942,6 @@ public class ObjectStore implements RawStore, Configurable {
     return mkeys;
   }
 
-  private List<RegionStorageDescriptor> convertToRegionStorageDescriptors(
-    Set<MRegionStorageDescriptor> mDescs) {
-    List<RegionStorageDescriptor> descs = null;
-    if (mDescs != null) {
-      descs = new ArrayList<RegionStorageDescriptor>(mDescs.size());
-      for (MRegionStorageDescriptor mDesc : mDescs) {
-        descs.add(new RegionStorageDescriptor(mDesc.getRegionName(),
-                                               mDesc.getLocation()));
-      }
-    }
-    return descs;
-  }
-
-  private Set<MRegionStorageDescriptor> convertToMRegionStorageDescriptors(
-    List<RegionStorageDescriptor> descs) {
-    Set<MRegionStorageDescriptor> mDescs = null;
-    if (descs != null) {
-      mDescs = new HashSet<MRegionStorageDescriptor>(descs.size());
-      for (RegionStorageDescriptor desc : descs) {
-        mDescs.add(new MRegionStorageDescriptor(desc.getRegionName(),
-                                                 desc.getLocation()));
-      }
-    }
-    return mDescs;
-  }
-
   private List<Order> convertToOrders(List<MOrder> mkeys) {
     List<Order> keys = null;
     if (mkeys != null) {
@@ -1020,8 +994,7 @@ public class ObjectStore implements RawStore, Configurable {
         msd.getLocation(), msd.getInputFormat(), msd.getOutputFormat(), msd
         .isCompressed(), msd.getNumBuckets(), converToSerDeInfo(msd
         .getSerDeInfo()), msd.getBucketCols(), convertToOrders(msd
-        .getSortCols()), msd.getParameters(), msd.getPrimaryRegionName(),
-        convertToRegionStorageDescriptors(msd.getSecondaryRegions()));
+        .getSortCols()), msd.getParameters());
   }
 
   private StorageDescriptor convertToStorageDescriptor(MStorageDescriptor msd)
@@ -1063,9 +1036,7 @@ public class ObjectStore implements RawStore, Configurable {
         .getLocation(), sd.getInputFormat(), sd.getOutputFormat(), sd
         .isCompressed(), sd.getNumBuckets(), converToMSerDeInfo(sd
         .getSerdeInfo()), sd.getBucketCols(),
-        convertToMOrders(sd.getSortCols()), sd.getParameters(),
-        sd.getPrimaryRegionName(),
-        convertToMRegionStorageDescriptors(sd.getSecondaryRegions()));
+        convertToMOrders(sd.getSortCols()), sd.getParameters());
   }
 
   public boolean addPartition(Partition part) throws InvalidObjectException,
@@ -1991,7 +1962,6 @@ public class ObjectStore implements RawStore, Configurable {
     oldSd.getSerDeInfo().setSerializationLib(
         newSd.getSerDeInfo().getSerializationLib());
     oldSd.getSerDeInfo().setParameters(newSd.getSerDeInfo().getParameters());
-    oldSd.setPrimaryRegionName(newSd.getPrimaryRegionName());
   }
 
   /**

@@ -825,9 +825,4 @@ public class Table implements Serializable {
     Hive hive = Hive.get();
     return hive.getIndexes(getTTable().getDbName(), getTTable().getTableName(), max);
   }
-
-  public void setPrimaryRegionName(String primaryRegionName) {
-    tTable.getSd().setPrimaryRegionName(primaryRegionName);
-  }
-
 };

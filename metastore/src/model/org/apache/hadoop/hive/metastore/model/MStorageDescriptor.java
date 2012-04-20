@@ -20,7 +20,6 @@ package org.apache.hadoop.hive.metastore.model;
 
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 public class MStorageDescriptor {
   private MColumnDescriptor cd;
@@ -33,8 +32,6 @@ public class MStorageDescriptor {
   private List<String> bucketCols;
   private List<MOrder> sortCols;
   private Map<String, String> parameters;
-  private String primaryRegionName;
-  private Set<MRegionStorageDescriptor> secondaryRegions;
 
   public MStorageDescriptor() {}
 
@@ -50,14 +47,10 @@ public class MStorageDescriptor {
    * @param bucketCols
    * @param sortOrder
    * @param parameters
-   * @param primaryRegionName
-   * @param secondaryRegions
    */
   public MStorageDescriptor(MColumnDescriptor cd, String location, String inputFormat,
       String outputFormat, boolean isCompressed, int numBuckets, MSerDeInfo serDeInfo,
-      List<String> bucketCols, List<MOrder> sortOrder, Map<String, String> parameters,
-      String primaryRegionName,
-      Set<MRegionStorageDescriptor> secondaryRegions) {
+      List<String> bucketCols, List<MOrder> sortOrder, Map<String, String> parameters) {
     this.cd = cd;
     this.location = location;
     this.inputFormat = inputFormat;
@@ -68,8 +61,6 @@ public class MStorageDescriptor {
     this.bucketCols = bucketCols;
     this.sortCols = sortOrder;
     this.parameters = parameters;
-    this.primaryRegionName = primaryRegionName;
-    this.secondaryRegions = secondaryRegions;
   }
 
 
@@ -214,22 +205,4 @@ public class MStorageDescriptor {
   public List<MOrder> getSortCols() {
     return sortCols;
   }
-
-  public String getPrimaryRegionName() {
-    return primaryRegionName;
-  }
-
-  public void setPrimaryRegionName(String primaryRegionName) {
-    this.primaryRegionName = primaryRegionName;
-  }
-
-  public Set<MRegionStorageDescriptor> getSecondaryRegions() {
-    return secondaryRegions;
-  }
-
-  public void setSecondaryRegions(
-    Set<MRegionStorageDescriptor> secondaryRegions) {
-    this.secondaryRegions = secondaryRegions;
-  }
-
 }
