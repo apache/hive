@@ -23,28 +23,25 @@ import java.io.IOException;
 
 import org.apache.hadoop.hive.serde2.ByteStream;
 import org.apache.hadoop.hive.serde2.lazy.ByteArrayRef;
-import org.apache.hadoop.hive.serde2.lazy.LazyPrimitive;
+import org.apache.hadoop.hive.serde2.lazy.LazyBoolean;
 import org.apache.hadoop.hive.serde2.lazy.objectinspector.primitive.LazyBooleanObjectInspector;
-import org.apache.hadoop.io.BooleanWritable;
 
 /**
  * LazyBooleanBinary for storing a boolean value as an BooleanWritable. This class complements class
  * LazyBoolean. It's primary difference is the {@link #init(ByteArrayRef, int, int)} method, which
  * reads the boolean value stored from the default binary format.
  */
-public class LazyDioBoolean extends LazyPrimitive<LazyBooleanObjectInspector, BooleanWritable> {
+public class LazyDioBoolean extends LazyBoolean {
 
   private ByteStream.Input in;
   private DataInputStream din;
 
   public LazyDioBoolean(LazyBooleanObjectInspector oi) {
     super(oi);
-    data = new BooleanWritable();
   }
 
   public LazyDioBoolean(LazyDioBoolean copy) {
     super(copy);
-    data = new BooleanWritable(copy.data.get());
   }
 
   /* (non-Javadoc)

@@ -22,9 +22,8 @@ import java.io.DataInputStream;
 import java.io.IOException;
 
 import org.apache.hadoop.hive.serde2.ByteStream;
-import org.apache.hadoop.hive.serde2.io.ShortWritable;
 import org.apache.hadoop.hive.serde2.lazy.ByteArrayRef;
-import org.apache.hadoop.hive.serde2.lazy.LazyPrimitive;
+import org.apache.hadoop.hive.serde2.lazy.LazyShort;
 import org.apache.hadoop.hive.serde2.lazy.objectinspector.primitive.LazyShortObjectInspector;
 
 /**
@@ -32,19 +31,17 @@ import org.apache.hadoop.hive.serde2.lazy.objectinspector.primitive.LazyShortObj
  * LazyShort. It's primary difference is the {@link #init(ByteArrayRef, int, int)} method, which
  * reads the short value stored from the default binary format.
  */
-public class LazyDioShort extends LazyPrimitive<LazyShortObjectInspector, ShortWritable> {
+public class LazyDioShort extends LazyShort {
 
   private ByteStream.Input in;
   private DataInputStream din;
 
   public LazyDioShort(LazyShortObjectInspector oi) {
     super(oi);
-    data = new ShortWritable();
   }
 
   public LazyDioShort(LazyDioShort copy) {
     super(copy);
-    data = new ShortWritable(copy.data.get());
   }
 
   /* (non-Javadoc)
