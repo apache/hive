@@ -23,28 +23,25 @@ import java.io.IOException;
 
 import org.apache.hadoop.hive.serde2.ByteStream;
 import org.apache.hadoop.hive.serde2.lazy.ByteArrayRef;
-import org.apache.hadoop.hive.serde2.lazy.LazyPrimitive;
+import org.apache.hadoop.hive.serde2.lazy.LazyInteger;
 import org.apache.hadoop.hive.serde2.lazy.objectinspector.primitive.LazyIntObjectInspector;
-import org.apache.hadoop.io.IntWritable;
 
 /**
  * LazyIntegerBinary for storing an int value as an IntWritable. This class complements class
  * LazyInteger. It's primary difference is the {@link #init(ByteArrayRef, int, int)} method, which
  * reads the integer value stored from the default binary format.
  */
-public class LazyDioInteger extends LazyPrimitive<LazyIntObjectInspector, IntWritable> {
+public class LazyDioInteger extends LazyInteger {
 
   private ByteStream.Input in;
   private DataInputStream din;
 
   public LazyDioInteger(LazyIntObjectInspector oi) {
     super(oi);
-    data = new IntWritable();
   }
 
   public LazyDioInteger(LazyDioInteger copy) {
     super(copy);
-    data = new IntWritable(copy.data.get());
   }
 
   /* (non-Javadoc)

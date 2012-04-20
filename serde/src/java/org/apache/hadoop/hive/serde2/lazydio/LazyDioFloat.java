@@ -23,28 +23,25 @@ import java.io.IOException;
 
 import org.apache.hadoop.hive.serde2.ByteStream;
 import org.apache.hadoop.hive.serde2.lazy.ByteArrayRef;
-import org.apache.hadoop.hive.serde2.lazy.LazyPrimitive;
+import org.apache.hadoop.hive.serde2.lazy.LazyFloat;
 import org.apache.hadoop.hive.serde2.lazy.objectinspector.primitive.LazyFloatObjectInspector;
-import org.apache.hadoop.io.FloatWritable;
 
 /**
  * LazyFloatBinary for storing a float value as a FloatWritable. This class complements class
  * LazyFloat. It's primary difference is the {@link #init(ByteArrayRef, int, int)} method, which
  * reads the float value stored from the default binary format.
  */
-public class LazyDioFloat extends LazyPrimitive<LazyFloatObjectInspector, FloatWritable> {
+public class LazyDioFloat extends LazyFloat {
 
   private ByteStream.Input in;
   private DataInputStream din;
 
   public LazyDioFloat(LazyFloatObjectInspector oi) {
     super(oi);
-    data = new FloatWritable();
   }
 
   public LazyDioFloat(LazyDioFloat copy) {
     super(copy);
-    data = new FloatWritable(copy.data.get());
   }
 
   /* (non-Javadoc)
