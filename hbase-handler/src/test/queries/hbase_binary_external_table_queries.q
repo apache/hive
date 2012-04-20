@@ -35,4 +35,7 @@ TBLPROPERTIES (
 
 SELECT * from t_ext_hbase_3;
 
+--HIVE-2958
+SELECT c_int, count(*) FROM t_ext_hbase_3 GROUP BY c_int;
+
 DROP table t_ext_hbase_3;

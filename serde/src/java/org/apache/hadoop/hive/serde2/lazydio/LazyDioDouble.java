@@ -22,9 +22,8 @@ import java.io.DataInputStream;
 import java.io.IOException;
 
 import org.apache.hadoop.hive.serde2.ByteStream;
-import org.apache.hadoop.hive.serde2.io.DoubleWritable;
 import org.apache.hadoop.hive.serde2.lazy.ByteArrayRef;
-import org.apache.hadoop.hive.serde2.lazy.LazyPrimitive;
+import org.apache.hadoop.hive.serde2.lazy.LazyDouble;
 import org.apache.hadoop.hive.serde2.lazy.objectinspector.primitive.LazyDoubleObjectInspector;
 
 /**
@@ -32,19 +31,17 @@ import org.apache.hadoop.hive.serde2.lazy.objectinspector.primitive.LazyDoubleOb
  * LazyDouble. It's primary difference is the {@link #init(ByteArrayRef, int, int)} method, which
  * reads the double value stored from the default binary format.
  */
-public class LazyDioDouble extends LazyPrimitive<LazyDoubleObjectInspector, DoubleWritable> {
+public class LazyDioDouble extends LazyDouble {
 
   private ByteStream.Input in;
   private DataInputStream din;
 
   public LazyDioDouble(LazyDoubleObjectInspector oi) {
     super(oi);
-    data = new DoubleWritable();
   }
 
   LazyDioDouble(LazyDioDouble copy) {
     super(copy);
-    data = new DoubleWritable(copy.data.get());
   }
 
   /* (non-Javadoc)

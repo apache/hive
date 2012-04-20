@@ -22,9 +22,8 @@ import java.io.DataInputStream;
 import java.io.IOException;
 
 import org.apache.hadoop.hive.serde2.ByteStream;
-import org.apache.hadoop.hive.serde2.io.ByteWritable;
 import org.apache.hadoop.hive.serde2.lazy.ByteArrayRef;
-import org.apache.hadoop.hive.serde2.lazy.LazyPrimitive;
+import org.apache.hadoop.hive.serde2.lazy.LazyByte;
 import org.apache.hadoop.hive.serde2.lazy.objectinspector.primitive.LazyByteObjectInspector;
 
 /**
@@ -32,19 +31,17 @@ import org.apache.hadoop.hive.serde2.lazy.objectinspector.primitive.LazyByteObje
  * LazyByte. It's primary difference is the {@link #init(ByteArrayRef, int, int)} method, which
  * reads the raw byte value stored.
  */
-public class LazyDioByte extends LazyPrimitive<LazyByteObjectInspector, ByteWritable> {
+public class LazyDioByte extends LazyByte {
 
   private ByteStream.Input in;
   private DataInputStream din;
 
   public LazyDioByte(LazyByteObjectInspector oi) {
     super(oi);
-    data = new ByteWritable();
   }
 
   public LazyDioByte(LazyDioByte copy) {
     super(copy);
-    data = new ByteWritable(copy.data.get());
   }
 
   @Override
