@@ -288,24 +288,6 @@ class Order
   ::Thrift::Struct.generate_accessors self
 end
 
-class RegionStorageDescriptor
-  include ::Thrift::Struct, ::Thrift::Struct_Union
-  REGIONNAME = 1
-  LOCATION = 2
-
-  FIELDS = {
-    REGIONNAME => {:type => ::Thrift::Types::STRING, :name => 'regionName'},
-    LOCATION => {:type => ::Thrift::Types::STRING, :name => 'location'}
-  }
-
-  def struct_fields; FIELDS; end
-
-  def validate
-  end
-
-  ::Thrift::Struct.generate_accessors self
-end
-
 class StorageDescriptor
   include ::Thrift::Struct, ::Thrift::Struct_Union
   COLS = 1
@@ -318,8 +300,6 @@ class StorageDescriptor
   BUCKETCOLS = 8
   SORTCOLS = 9
   PARAMETERS = 10
-  PRIMARYREGIONNAME = 11
-  SECONDARYREGIONS = 12
 
   FIELDS = {
     COLS => {:type => ::Thrift::Types::LIST, :name => 'cols', :element => {:type => ::Thrift::Types::STRUCT, :class => FieldSchema}},
@@ -331,9 +311,7 @@ class StorageDescriptor
     SERDEINFO => {:type => ::Thrift::Types::STRUCT, :name => 'serdeInfo', :class => SerDeInfo},
     BUCKETCOLS => {:type => ::Thrift::Types::LIST, :name => 'bucketCols', :element => {:type => ::Thrift::Types::STRING}},
     SORTCOLS => {:type => ::Thrift::Types::LIST, :name => 'sortCols', :element => {:type => ::Thrift::Types::STRUCT, :class => Order}},
-    PARAMETERS => {:type => ::Thrift::Types::MAP, :name => 'parameters', :key => {:type => ::Thrift::Types::STRING}, :value => {:type => ::Thrift::Types::STRING}},
-    PRIMARYREGIONNAME => {:type => ::Thrift::Types::STRING, :name => 'primaryRegionName'},
-    SECONDARYREGIONS => {:type => ::Thrift::Types::LIST, :name => 'secondaryRegions', :element => {:type => ::Thrift::Types::STRUCT, :class => RegionStorageDescriptor}}
+    PARAMETERS => {:type => ::Thrift::Types::MAP, :name => 'parameters', :key => {:type => ::Thrift::Types::STRING}, :value => {:type => ::Thrift::Types::STRING}}
   }
 
   def struct_fields; FIELDS; end

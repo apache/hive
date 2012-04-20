@@ -56,7 +56,6 @@ public class CreateTableDesc extends DDLDesc implements Serializable {
   Map<String, String> serdeProps;
   Map<String, String> tblProps;
   boolean ifNotExists;
-  String primaryRegionName;
 
   public CreateTableDesc() {
   }
@@ -70,14 +69,13 @@ public class CreateTableDesc extends DDLDesc implements Serializable {
       String storageHandler,
       Map<String, String> serdeProps,
       Map<String, String> tblProps,
-      boolean ifNotExists,
-      String primaryRegionName) {
+      boolean ifNotExists) {
 
     this(tableName, isExternal, cols, partCols,
         bucketCols, sortCols, numBuckets, fieldDelim, fieldEscape,
         collItemDelim, mapKeyDelim, lineDelim, comment, inputFormat,
         outputFormat, location, serName, storageHandler, serdeProps,
-        tblProps, ifNotExists, primaryRegionName);
+        tblProps, ifNotExists);
 
     this.databaseName = databaseName;
   }
@@ -91,8 +89,7 @@ public class CreateTableDesc extends DDLDesc implements Serializable {
       String storageHandler,
       Map<String, String> serdeProps,
       Map<String, String> tblProps,
-      boolean ifNotExists,
-      String primaryRegionName) {
+      boolean ifNotExists) {
     this.tableName = tableName;
     this.isExternal = isExternal;
     this.bucketCols = new ArrayList<String>(bucketCols);
@@ -114,7 +111,6 @@ public class CreateTableDesc extends DDLDesc implements Serializable {
     this.serdeProps = serdeProps;
     this.tblProps = tblProps;
     this.ifNotExists = ifNotExists;
-    this.primaryRegionName = primaryRegionName;
   }
 
   @Explain(displayName = "columns")
@@ -346,19 +342,4 @@ public class CreateTableDesc extends DDLDesc implements Serializable {
     this.tblProps = tblProps;
   }
 
-  /**
-   * @return the primaryRegionName
-   */
-  @Explain(displayName = "primaryRegionName")
-  public String getPrimaryRegionName() {
-    return primaryRegionName;
-  }
-
-  /**
-   * @param primaryRegionName
-   *          the primaryRegionName to set
-   */
-  public void setPrimaryRegionName(String primaryRegionName) {
-    this.primaryRegionName = primaryRegionName;
-  }
 }

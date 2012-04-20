@@ -154,34 +154,34 @@ public class Table implements org.apache.thrift.TBase<Table, Table._Fields>, jav
   public static final Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
   static {
     Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
-    tmpMap.put(_Fields.TABLE_NAME, new org.apache.thrift.meta_data.FieldMetaData("tableName", org.apache.thrift.TFieldRequirementType.DEFAULT, 
+    tmpMap.put(_Fields.TABLE_NAME, new org.apache.thrift.meta_data.FieldMetaData("tableName", org.apache.thrift.TFieldRequirementType.DEFAULT,
         new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
-    tmpMap.put(_Fields.DB_NAME, new org.apache.thrift.meta_data.FieldMetaData("dbName", org.apache.thrift.TFieldRequirementType.DEFAULT, 
+    tmpMap.put(_Fields.DB_NAME, new org.apache.thrift.meta_data.FieldMetaData("dbName", org.apache.thrift.TFieldRequirementType.DEFAULT,
         new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
-    tmpMap.put(_Fields.OWNER, new org.apache.thrift.meta_data.FieldMetaData("owner", org.apache.thrift.TFieldRequirementType.DEFAULT, 
+    tmpMap.put(_Fields.OWNER, new org.apache.thrift.meta_data.FieldMetaData("owner", org.apache.thrift.TFieldRequirementType.DEFAULT,
         new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
-    tmpMap.put(_Fields.CREATE_TIME, new org.apache.thrift.meta_data.FieldMetaData("createTime", org.apache.thrift.TFieldRequirementType.DEFAULT, 
+    tmpMap.put(_Fields.CREATE_TIME, new org.apache.thrift.meta_data.FieldMetaData("createTime", org.apache.thrift.TFieldRequirementType.DEFAULT,
         new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.I32)));
-    tmpMap.put(_Fields.LAST_ACCESS_TIME, new org.apache.thrift.meta_data.FieldMetaData("lastAccessTime", org.apache.thrift.TFieldRequirementType.DEFAULT, 
+    tmpMap.put(_Fields.LAST_ACCESS_TIME, new org.apache.thrift.meta_data.FieldMetaData("lastAccessTime", org.apache.thrift.TFieldRequirementType.DEFAULT,
         new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.I32)));
-    tmpMap.put(_Fields.RETENTION, new org.apache.thrift.meta_data.FieldMetaData("retention", org.apache.thrift.TFieldRequirementType.DEFAULT, 
+    tmpMap.put(_Fields.RETENTION, new org.apache.thrift.meta_data.FieldMetaData("retention", org.apache.thrift.TFieldRequirementType.DEFAULT,
         new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.I32)));
-    tmpMap.put(_Fields.SD, new org.apache.thrift.meta_data.FieldMetaData("sd", org.apache.thrift.TFieldRequirementType.DEFAULT, 
+    tmpMap.put(_Fields.SD, new org.apache.thrift.meta_data.FieldMetaData("sd", org.apache.thrift.TFieldRequirementType.DEFAULT,
         new org.apache.thrift.meta_data.StructMetaData(org.apache.thrift.protocol.TType.STRUCT, StorageDescriptor.class)));
-    tmpMap.put(_Fields.PARTITION_KEYS, new org.apache.thrift.meta_data.FieldMetaData("partitionKeys", org.apache.thrift.TFieldRequirementType.DEFAULT, 
-        new org.apache.thrift.meta_data.ListMetaData(org.apache.thrift.protocol.TType.LIST, 
+    tmpMap.put(_Fields.PARTITION_KEYS, new org.apache.thrift.meta_data.FieldMetaData("partitionKeys", org.apache.thrift.TFieldRequirementType.DEFAULT,
+        new org.apache.thrift.meta_data.ListMetaData(org.apache.thrift.protocol.TType.LIST,
             new org.apache.thrift.meta_data.StructMetaData(org.apache.thrift.protocol.TType.STRUCT, FieldSchema.class))));
-    tmpMap.put(_Fields.PARAMETERS, new org.apache.thrift.meta_data.FieldMetaData("parameters", org.apache.thrift.TFieldRequirementType.DEFAULT, 
-        new org.apache.thrift.meta_data.MapMetaData(org.apache.thrift.protocol.TType.MAP, 
-            new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING), 
+    tmpMap.put(_Fields.PARAMETERS, new org.apache.thrift.meta_data.FieldMetaData("parameters", org.apache.thrift.TFieldRequirementType.DEFAULT,
+        new org.apache.thrift.meta_data.MapMetaData(org.apache.thrift.protocol.TType.MAP,
+            new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING),
             new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING))));
-    tmpMap.put(_Fields.VIEW_ORIGINAL_TEXT, new org.apache.thrift.meta_data.FieldMetaData("viewOriginalText", org.apache.thrift.TFieldRequirementType.DEFAULT, 
+    tmpMap.put(_Fields.VIEW_ORIGINAL_TEXT, new org.apache.thrift.meta_data.FieldMetaData("viewOriginalText", org.apache.thrift.TFieldRequirementType.DEFAULT,
         new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
-    tmpMap.put(_Fields.VIEW_EXPANDED_TEXT, new org.apache.thrift.meta_data.FieldMetaData("viewExpandedText", org.apache.thrift.TFieldRequirementType.DEFAULT, 
+    tmpMap.put(_Fields.VIEW_EXPANDED_TEXT, new org.apache.thrift.meta_data.FieldMetaData("viewExpandedText", org.apache.thrift.TFieldRequirementType.DEFAULT,
         new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
-    tmpMap.put(_Fields.TABLE_TYPE, new org.apache.thrift.meta_data.FieldMetaData("tableType", org.apache.thrift.TFieldRequirementType.DEFAULT, 
+    tmpMap.put(_Fields.TABLE_TYPE, new org.apache.thrift.meta_data.FieldMetaData("tableType", org.apache.thrift.TFieldRequirementType.DEFAULT,
         new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
-    tmpMap.put(_Fields.PRIVILEGES, new org.apache.thrift.meta_data.FieldMetaData("privileges", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
+    tmpMap.put(_Fields.PRIVILEGES, new org.apache.thrift.meta_data.FieldMetaData("privileges", org.apache.thrift.TFieldRequirementType.OPTIONAL,
         new org.apache.thrift.meta_data.StructMetaData(org.apache.thrift.protocol.TType.STRUCT, PrincipalPrivilegeSet.class)));
     metaDataMap = Collections.unmodifiableMap(tmpMap);
     org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(Table.class, metaDataMap);
@@ -1105,28 +1105,28 @@ public class Table implements org.apache.thrift.TBase<Table, Table._Fields>, jav
     while (true)
     {
       field = iprot.readFieldBegin();
-      if (field.type == org.apache.thrift.protocol.TType.STOP) { 
+      if (field.type == org.apache.thrift.protocol.TType.STOP) {
         break;
       }
       switch (field.id) {
         case 1: // TABLE_NAME
           if (field.type == org.apache.thrift.protocol.TType.STRING) {
             this.tableName = iprot.readString();
-          } else { 
+          } else {
             org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
           }
           break;
         case 2: // DB_NAME
           if (field.type == org.apache.thrift.protocol.TType.STRING) {
             this.dbName = iprot.readString();
-          } else { 
+          } else {
             org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
           }
           break;
         case 3: // OWNER
           if (field.type == org.apache.thrift.protocol.TType.STRING) {
             this.owner = iprot.readString();
-          } else { 
+          } else {
             org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
           }
           break;
@@ -1134,7 +1134,7 @@ public class Table implements org.apache.thrift.TBase<Table, Table._Fields>, jav
           if (field.type == org.apache.thrift.protocol.TType.I32) {
             this.createTime = iprot.readI32();
             setCreateTimeIsSet(true);
-          } else { 
+          } else {
             org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
           }
           break;
@@ -1142,7 +1142,7 @@ public class Table implements org.apache.thrift.TBase<Table, Table._Fields>, jav
           if (field.type == org.apache.thrift.protocol.TType.I32) {
             this.lastAccessTime = iprot.readI32();
             setLastAccessTimeIsSet(true);
-          } else { 
+          } else {
             org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
           }
           break;
@@ -1150,7 +1150,7 @@ public class Table implements org.apache.thrift.TBase<Table, Table._Fields>, jav
           if (field.type == org.apache.thrift.protocol.TType.I32) {
             this.retention = iprot.readI32();
             setRetentionIsSet(true);
-          } else { 
+          } else {
             org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
           }
           break;
@@ -1158,65 +1158,65 @@ public class Table implements org.apache.thrift.TBase<Table, Table._Fields>, jav
           if (field.type == org.apache.thrift.protocol.TType.STRUCT) {
             this.sd = new StorageDescriptor();
             this.sd.read(iprot);
-          } else { 
+          } else {
             org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
           }
           break;
         case 8: // PARTITION_KEYS
           if (field.type == org.apache.thrift.protocol.TType.LIST) {
             {
-              org.apache.thrift.protocol.TList _list70 = iprot.readListBegin();
-              this.partitionKeys = new ArrayList<FieldSchema>(_list70.size);
-              for (int _i71 = 0; _i71 < _list70.size; ++_i71)
+              org.apache.thrift.protocol.TList _list66 = iprot.readListBegin();
+              this.partitionKeys = new ArrayList<FieldSchema>(_list66.size);
+              for (int _i67 = 0; _i67 < _list66.size; ++_i67)
               {
-                FieldSchema _elem72; // required
-                _elem72 = new FieldSchema();
-                _elem72.read(iprot);
-                this.partitionKeys.add(_elem72);
+                FieldSchema _elem68; // required
+                _elem68 = new FieldSchema();
+                _elem68.read(iprot);
+                this.partitionKeys.add(_elem68);
               }
               iprot.readListEnd();
             }
-          } else { 
+          } else {
             org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
           }
           break;
         case 9: // PARAMETERS
           if (field.type == org.apache.thrift.protocol.TType.MAP) {
             {
-              org.apache.thrift.protocol.TMap _map73 = iprot.readMapBegin();
-              this.parameters = new HashMap<String,String>(2*_map73.size);
-              for (int _i74 = 0; _i74 < _map73.size; ++_i74)
+              org.apache.thrift.protocol.TMap _map69 = iprot.readMapBegin();
+              this.parameters = new HashMap<String,String>(2*_map69.size);
+              for (int _i70 = 0; _i70 < _map69.size; ++_i70)
               {
-                String _key75; // required
-                String _val76; // required
-                _key75 = iprot.readString();
-                _val76 = iprot.readString();
-                this.parameters.put(_key75, _val76);
+                String _key71; // required
+                String _val72; // required
+                _key71 = iprot.readString();
+                _val72 = iprot.readString();
+                this.parameters.put(_key71, _val72);
               }
               iprot.readMapEnd();
             }
-          } else { 
+          } else {
             org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
           }
           break;
         case 10: // VIEW_ORIGINAL_TEXT
           if (field.type == org.apache.thrift.protocol.TType.STRING) {
             this.viewOriginalText = iprot.readString();
-          } else { 
+          } else {
             org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
           }
           break;
         case 11: // VIEW_EXPANDED_TEXT
           if (field.type == org.apache.thrift.protocol.TType.STRING) {
             this.viewExpandedText = iprot.readString();
-          } else { 
+          } else {
             org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
           }
           break;
         case 12: // TABLE_TYPE
           if (field.type == org.apache.thrift.protocol.TType.STRING) {
             this.tableType = iprot.readString();
-          } else { 
+          } else {
             org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
           }
           break;
@@ -1224,7 +1224,7 @@ public class Table implements org.apache.thrift.TBase<Table, Table._Fields>, jav
           if (field.type == org.apache.thrift.protocol.TType.STRUCT) {
             this.privileges = new PrincipalPrivilegeSet();
             this.privileges.read(iprot);
-          } else { 
+          } else {
             org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
           }
           break;
@@ -1274,9 +1274,9 @@ public class Table implements org.apache.thrift.TBase<Table, Table._Fields>, jav
       oprot.writeFieldBegin(PARTITION_KEYS_FIELD_DESC);
       {
         oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, this.partitionKeys.size()));
-        for (FieldSchema _iter77 : this.partitionKeys)
+        for (FieldSchema _iter73 : this.partitionKeys)
         {
-          _iter77.write(oprot);
+          _iter73.write(oprot);
         }
         oprot.writeListEnd();
       }
@@ -1286,10 +1286,10 @@ public class Table implements org.apache.thrift.TBase<Table, Table._Fields>, jav
       oprot.writeFieldBegin(PARAMETERS_FIELD_DESC);
       {
         oprot.writeMapBegin(new org.apache.thrift.protocol.TMap(org.apache.thrift.protocol.TType.STRING, org.apache.thrift.protocol.TType.STRING, this.parameters.size()));
-        for (Map.Entry<String, String> _iter78 : this.parameters.entrySet())
+        for (Map.Entry<String, String> _iter74 : this.parameters.entrySet())
         {
-          oprot.writeString(_iter78.getKey());
-          oprot.writeString(_iter78.getValue());
+          oprot.writeString(_iter74.getKey());
+          oprot.writeString(_iter74.getValue());
         }
         oprot.writeMapEnd();
       }

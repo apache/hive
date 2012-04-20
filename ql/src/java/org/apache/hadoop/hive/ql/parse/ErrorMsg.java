@@ -106,7 +106,6 @@ public enum ErrorMsg {
       + "denaminator in sample clause for table"),
   NEED_PARTITION_ERROR("Need to specify partition columns because the destination "
       + "table is partitioned"),
-  USE_DEFAULT_REGION("Only default region can be used"),
   CTAS_CTLT_COEXISTENCE("Create table command does not allow LIKE and AS-SELECT in "
       + "the same command"),
   LINES_TERMINATED_BY_NON_NEWLINE("LINES TERMINATED BY only supports newline '\\n' right now"),

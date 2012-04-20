@@ -25,13 +25,13 @@
   Non-indexed VARCHAR: 4000 bytes (max length on Oracle 9i/10g/11g)
 
 -->
-<jdo>
-  <package name="org.apache.hadoop.hive.metastore.model">
-    <class name="MDatabase" identity-type="datastore" table="DBS" detachable="true">
+<jdo>  
+  <package name="org.apache.hadoop.hive.metastore.model">  
+    <class name="MDatabase" identity-type="datastore" table="DBS" detachable="true">  
       <datastore-identity>
         <column name="DB_ID"/>
       </datastore-identity>
-      <field name="name">
+      <field name="name">  
         <column name="NAME" length="128" jdbc-type="VARCHAR"/>
         <index name="UniqueDatabase" unique="true"/>
       </field>
@@ -67,15 +67,15 @@
       </field>
     </class>
 
-    <class name="MType" table="TYPES" detachable="true">
-      <field name="name" >
-        <column name="TYPE_NAME" length="128" jdbc-type="VARCHAR"/>
+    <class name="MType" table="TYPES" detachable="true">  
+      <field name="name" >  
+        <column name="TYPE_NAME" length="128" jdbc-type="VARCHAR"/>  
         <index name="UniqueType" unique="true"/>
       </field>
-      <field name="type1">
+      <field name="type1">  
         <column name="TYPE1" length="767" jdbc-type="VARCHAR"/>
       </field>
-      <field name="type2">
+      <field name="type2">  
         <column name="TYPE2" length="767" jdbc-type="VARCHAR"/>
       </field>
       <field name="fields" table="TYPE_FIELDS" >
@@ -233,16 +233,6 @@
       </field>
 	</class>
 
-    <class name="MRegionStorageDescriptor" embedded-only="true" table="REGION_SDS" detachable="true">
-      <field name="regionName">
-        <column name="REGION_NAME" length="512" jdbc-type="VARCHAR"/>
-      </field>
-
-      <field name="location">
-        <column name="LOCATION" length="4000" jdbc-type="VARCHAR"/>
-      </field>
-    </class>
-
     <class name="MStorageDescriptor" identity-type="datastore" table="SDS" detachable="true">
       <datastore-identity>
         <column name="SD_ID"/>
@@ -301,29 +291,6 @@
            <column name="PARAM_VALUE" length="4000" jdbc-type="VARCHAR"/>
         </value>
       </field>
-      <field name="primaryRegionName">
-        <column name="PRIMARY_REGION_NAME" length="512" jdbc-type="VARCHAR"/>
-      </field>
-      <field name="secondaryRegions" table="REGION_SDS">
-        <collection element-type="org.apache.hadoop.hive.metastore.model.MRegionStorageDescriptor"/>
-        <join>
-          <primary-key name="REGION_SDS_PK">
-            <column name="SD_ID"/>
-            <column name="REGION_NAME"/>
-          </primary-key>
-          <column name="SD_ID"/>
-        </join>
-        <element>
-          <embedded>
-            <field name="regionName">
-              <column name="REGION_NAME" length="512" jdbc-type="VARCHAR"/>
-            </field>
-            <field name="location">
-              <column name="LOCATION" length="4000" jdbc-type="VARCHAR"/>
-            </field>
-          </embedded>
-        </element>
-      </field>
     </class>
 
     <class name="MPartition" table="PARTITIONS" identity-type="datastore" detachable="true">
@@ -369,13 +336,13 @@
         </value>
       </field>
     </class>
-
+    
     <class name="MIndex" table="IDXS" identity-type="datastore" detachable="true">
       <index name="UniqueINDEX" unique="true">
         <column name="INDEX_NAME"/>
         <column name="ORIG_TBL_ID"/>
       </index>
-
+      
       <datastore-identity>
         <column name="INDEX_ID"/>
       </datastore-identity>
@@ -436,7 +403,7 @@
       <field name="ownerName">
         <column name="OWNER_NAME" length="128" jdbc-type="VARCHAR"/>
       </field>
-
+      
     </class>
 
     <class name="MRoleMap" table="ROLE_MAP" identity-type="datastore" detachable="true">
@@ -475,7 +442,7 @@
     </class>
 
     <class name="MGlobalPrivilege" table="GLOBAL_PRIVS" identity-type="datastore" detachable="true">
-
+      
       <index name="GlobalPrivilegeIndex" unique="true">
         <column name="PRINCIPAL_NAME"/>
         <column name="PRINCIPAL_TYPE"/>
@@ -483,7 +450,7 @@
         <column name="GRANTOR"/>
         <column name="GRANTOR_TYPE"/>
       </index>
-
+    
       <datastore-identity>
         <column name="USER_GRANT_ID"/>
       </datastore-identity>
@@ -512,7 +479,7 @@
     </class>
 
     <class name="MDBPrivilege" table="DB_PRIVS" identity-type="datastore" detachable="true">
-
+      
       <index name="DBPrivilegeIndex" unique="true">
         <column name="DB_ID"/>
         <column name="PRINCIPAL_NAME"/>
@@ -553,7 +520,7 @@
     </class>
 
     <class name="MTablePrivilege" table="TBL_PRIVS" identity-type="datastore" detachable="true">
-
+    
       <index name="TablePrivilegeIndex" unique="false">
         <column name="TBL_ID"/>
         <column name="PRINCIPAL_NAME"/>
@@ -594,7 +561,7 @@
     </class>
 
     <class name="MPartitionPrivilege" table="PART_PRIVS" identity-type="datastore" detachable="true">
-
+    
       <index name="PartPrivilegeIndex" unique="false">
         <column name="PART_ID"/>
         <column name="PRINCIPAL_NAME"/>
@@ -635,7 +602,7 @@
     </class>
 
     <class name="MTableColumnPrivilege" table="TBL_COL_PRIVS" identity-type="datastore" detachable="true">
-
+    
      <index name="TableColumnPrivilegeIndex" unique="false">
         <column name="TBL_ID"/>
         <column name="COLUMN_NAME"/>
@@ -680,7 +647,7 @@
     </class>
 
     <class name="MPartitionColumnPrivilege" table="PART_COL_PRIVS" identity-type="datastore" detachable="true">
-
+    
      <index name="PartitionColumnPrivilegeIndex" unique="false">
         <column name="PART_ID"/>
         <column name="COLUMN_NAME"/>
@@ -724,17 +691,17 @@
       </field>
     </class>
 
-    <class name="MPartitionEvent"  table="PARTITION_EVENTS" identity-type="datastore" detachable="true">
-
+    <class name="MPartitionEvent"  table="PARTITION_EVENTS" identity-type="datastore" detachable="true">  
+       
       <index name="PartitionEventIndex" unique="false">
         <column name="PARTITION_NAME"/>
       </index>
-
+      
       <datastore-identity>
         <column name="PART_NAME_ID"/>
       </datastore-identity>
-
-      <field name="dbName">
+      
+      <field name="dbName">  
         <column name="DB_NAME" length="128" jdbc-type="VARCHAR"/>
       </field>
       <field name="tblName">
