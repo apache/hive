@@ -1,8 +1,8 @@
--- MySQL dump 10.13  Distrib 5.1.53, for redhat-linux-gnu (x86_64)
+-- MySQL dump 10.13  Distrib 5.1.54, for debian-linux-gnu (x86_64)
 --
--- Host: cdb259.snc1    Database: test_kevinwilfong_metastore
+-- Host: localhost    Database: mdb
 -- ------------------------------------------------------
--- Server version	5.1.47_blackhole_memcache-log
+-- Server version	5.1.54-1ubuntu4
 
 /*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */;
 /*!40101 SET @OLD_CHARACTER_SET_RESULTS=@@CHARACTER_SET_RESULTS */;
@@ -19,10 +19,9 @@
 -- Table structure for table `BUCKETING_COLS`
 --
 
-DROP TABLE IF EXISTS `BUCKETING_COLS`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `BUCKETING_COLS` (
+CREATE TABLE IF NOT EXISTS `BUCKETING_COLS` (
   `SD_ID` bigint(20) NOT NULL,
   `BUCKET_COL_NAME` varchar(256) CHARACTER SET latin1 COLLATE latin1_bin DEFAULT NULL,
   `INTEGER_IDX` int(11) NOT NULL,
@@ -36,10 +35,9 @@ CREATE TABLE `BUCKETING_COLS` (
 -- Table structure for table `CDS`
 --
 
-DROP TABLE IF EXISTS `CDS`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `CDS` (
+CREATE TABLE IF NOT EXISTS `CDS` (
   `CD_ID` bigint(20) NOT NULL,
   PRIMARY KEY (`CD_ID`)
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
@@ -49,10 +47,9 @@ CREATE TABLE `CDS` (
 -- Table structure for table `COLUMNS_V2`
 --
 
-DROP TABLE IF EXISTS `COLUMNS_V2`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `COLUMNS_V2` (
+CREATE TABLE IF NOT EXISTS `COLUMNS_V2` (
   `CD_ID` bigint(20) NOT NULL,
   `COMMENT` varchar(256) CHARACTER SET latin1 COLLATE latin1_bin DEFAULT NULL,
   `COLUMN_NAME` varchar(128) CHARACTER SET latin1 COLLATE latin1_bin NOT NULL,
@@ -68,10 +65,9 @@ CREATE TABLE `COLUMNS_V2` (
 -- Table structure for table `DATABASE_PARAMS`
 --
 
-DROP TABLE IF EXISTS `DATABASE_PARAMS`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `DATABASE_PARAMS` (
+CREATE TABLE IF NOT EXISTS `DATABASE_PARAMS` (
   `DB_ID` bigint(20) NOT NULL,
   `PARAM_KEY` varchar(180) CHARACTER SET latin1 COLLATE latin1_bin NOT NULL,
   `PARAM_VALUE` varchar(4000) CHARACTER SET latin1 COLLATE latin1_bin DEFAULT NULL,
@@ -85,10 +81,9 @@ CREATE TABLE `DATABASE_PARAMS` (
 -- Table structure for table `DBS`
 --
 
-DROP TABLE IF EXISTS `DBS`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `DBS` (
+CREATE TABLE IF NOT EXISTS `DBS` (
   `DB_ID` bigint(20) NOT NULL,
   `DESC` varchar(4000) CHARACTER SET latin1 COLLATE latin1_bin DEFAULT NULL,
   `DB_LOCATION_URI` varchar(4000) CHARACTER SET latin1 COLLATE latin1_bin NOT NULL,
@@ -102,10 +97,9 @@ CREATE TABLE `DBS` (
 -- Table structure for table `DB_PRIVS`
 --
 
-DROP TABLE IF EXISTS `DB_PRIVS`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `DB_PRIVS` (
+CREATE TABLE IF NOT EXISTS `DB_PRIVS` (
   `DB_GRANT_ID` bigint(20) NOT NULL,
   `CREATE_TIME` int(11) NOT NULL,
   `DB_ID` bigint(20) DEFAULT NULL,
@@ -126,10 +120,9 @@ CREATE TABLE `DB_PRIVS` (
 -- Table structure for table `GLOBAL_PRIVS`
 --
 
-DROP TABLE IF EXISTS `GLOBAL_PRIVS`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `GLOBAL_PRIVS` (
+CREATE TABLE IF NOT EXISTS `GLOBAL_PRIVS` (
   `USER_GRANT_ID` bigint(20) NOT NULL,
   `CREATE_TIME` int(11) NOT NULL,
   `GRANT_OPTION` smallint(6) NOT NULL,
@@ -147,10 +140,9 @@ CREATE TABLE `GLOBAL_PRIVS` (
 -- Table structure for table `IDXS`
 --
 
-DROP TABLE IF EXISTS `IDXS`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `IDXS` (
+CREATE TABLE IF NOT EXISTS `IDXS` (
   `INDEX_ID` bigint(20) NOT NULL,
   `CREATE_TIME` int(11) NOT NULL,
   `DEFERRED_REBUILD` bit(1) NOT NULL,
@@ -175,10 +167,9 @@ CREATE TABLE `IDXS` (
 -- Table structure for table `INDEX_PARAMS`
 --
 
-DROP TABLE IF EXISTS `INDEX_PARAMS`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `INDEX_PARAMS` (
+CREATE TABLE IF NOT EXISTS `INDEX_PARAMS` (
   `INDEX_ID` bigint(20) NOT NULL,
   `PARAM_KEY` varchar(256) CHARACTER SET latin1 COLLATE latin1_bin NOT NULL,
   `PARAM_VALUE` varchar(4000) CHARACTER SET latin1 COLLATE latin1_bin DEFAULT NULL,
@@ -192,10 +183,9 @@ CREATE TABLE `INDEX_PARAMS` (
 -- Table structure for table `NUCLEUS_TABLES`
 --
 
-DROP TABLE IF EXISTS `NUCLEUS_TABLES`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `NUCLEUS_TABLES` (
+CREATE TABLE IF NOT EXISTS `NUCLEUS_TABLES` (
   `CLASS_NAME` varchar(128) CHARACTER SET latin1 COLLATE latin1_bin NOT NULL,
   `TABLE_NAME` varchar(128) CHARACTER SET latin1 COLLATE latin1_bin NOT NULL,
   `TYPE` varchar(4) CHARACTER SET latin1 COLLATE latin1_bin NOT NULL,
@@ -210,10 +200,9 @@ CREATE TABLE `NUCLEUS_TABLES` (
 -- Table structure for table `PARTITIONS`
 --
 
-DROP TABLE IF EXISTS `PARTITIONS`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `PARTITIONS` (
+CREATE TABLE IF NOT EXISTS `PARTITIONS` (
   `PART_ID` bigint(20) NOT NULL,
   `CREATE_TIME` int(11) NOT NULL,
   `LAST_ACCESS_TIME` int(11) NOT NULL,
@@ -233,10 +222,9 @@ CREATE TABLE `PARTITIONS` (
 -- Table structure for table `PARTITION_EVENTS`
 --
 
-DROP TABLE IF EXISTS `PARTITION_EVENTS`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `PARTITION_EVENTS` (
+CREATE TABLE IF NOT EXISTS `PARTITION_EVENTS` (
   `PART_NAME_ID` bigint(20) NOT NULL,
   `DB_NAME` varchar(128) CHARACTER SET latin1 COLLATE latin1_bin DEFAULT NULL,
   `EVENT_TIME` bigint(20) NOT NULL,
@@ -252,10 +240,9 @@ CREATE TABLE `PARTITION_EVENTS` (
 -- Table structure for table `PARTITION_KEYS`
 --
 
-DROP TABLE IF EXISTS `PARTITION_KEYS`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `PARTITION_KEYS` (
+CREATE TABLE IF NOT EXISTS `PARTITION_KEYS` (
   `TBL_ID` bigint(20) NOT NULL,
   `PKEY_COMMENT` varchar(4000) CHARACTER SET latin1 COLLATE latin1_bin DEFAULT NULL,
   `PKEY_NAME` varchar(128) CHARACTER SET latin1 COLLATE latin1_bin NOT NULL,
@@ -271,10 +258,9 @@ CREATE TABLE `PARTITION_KEYS` (
 -- Table structure for table `PARTITION_KEY_VALS`
 --
 
-DROP TABLE IF EXISTS `PARTITION_KEY_VALS`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `PARTITION_KEY_VALS` (
+CREATE TABLE IF NOT EXISTS `PARTITION_KEY_VALS` (
   `PART_ID` bigint(20) NOT NULL,
   `PART_KEY_VAL` varchar(256) CHARACTER SET latin1 COLLATE latin1_bin DEFAULT NULL,
   `INTEGER_IDX` int(11) NOT NULL,
@@ -288,10 +274,9 @@ CREATE TABLE `PARTITION_KEY_VALS` (
 -- Table structure for table `PARTITION_PARAMS`
 --
 
-DROP TABLE IF EXISTS `PARTITION_PARAMS`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `PARTITION_PARAMS` (
+CREATE TABLE IF NOT EXISTS `PARTITION_PARAMS` (
   `PART_ID` bigint(20) NOT NULL,
   `PARAM_KEY` varchar(256) CHARACTER SET latin1 COLLATE latin1_bin NOT NULL,
   `PARAM_VALUE` varchar(4000) CHARACTER SET latin1 COLLATE latin1_bin DEFAULT NULL,
@@ -305,10 +290,9 @@ CREATE TABLE `PARTITION_PARAMS` (
 -- Table structure for table `PART_COL_PRIVS`
 --
 
-DROP TABLE IF EXISTS `PART_COL_PRIVS`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `PART_COL_PRIVS` (
+CREATE TABLE IF NOT EXISTS `PART_COL_PRIVS` (
   `PART_COLUMN_GRANT_ID` bigint(20) NOT NULL,
   `COLUMN_NAME` varchar(128) CHARACTER SET latin1 COLLATE latin1_bin DEFAULT NULL,
   `CREATE_TIME` int(11) NOT NULL,
@@ -330,10 +314,9 @@ CREATE TABLE `PART_COL_PRIVS` (
 -- Table structure for table `PART_PRIVS`
 --
 
-DROP TABLE IF EXISTS `PART_PRIVS`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `PART_PRIVS` (
+CREATE TABLE IF NOT EXISTS `PART_PRIVS` (
   `PART_GRANT_ID` bigint(20) NOT NULL,
   `CREATE_TIME` int(11) NOT NULL,
   `GRANT_OPTION` smallint(6) NOT NULL,
@@ -351,30 +334,12 @@ CREATE TABLE `PART_PRIVS` (
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
--- Table structure for table `REGION_SDS`
---
-
-DROP TABLE IF EXISTS `REGION_SDS`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `REGION_SDS` (
-  `SD_ID` bigint(20) NOT NULL,
-  `REGION_NAME` varchar(512) NOT NULL,
-  `LOCATION` varchar(4000) DEFAULT NULL,
-  PRIMARY KEY (`SD_ID`,`REGION_NAME`),
-  KEY `REGION_SDS_N49` (`SD_ID`),
-  CONSTRAINT `REGION_SDS_V2_FK1` FOREIGN KEY (`SD_ID`) REFERENCES `SDS` (`SD_ID`)
-) ENGINE=InnoDB DEFAULT CHARSET=latin1;
-/*!40101 SET character_set_client = @saved_cs_client */;
-
---
 -- Table structure for table `ROLES`
 --
 
-DROP TABLE IF EXISTS `ROLES`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `ROLES` (
+CREATE TABLE IF NOT EXISTS `ROLES` (
   `ROLE_ID` bigint(20) NOT NULL,
   `CREATE_TIME` int(11) NOT NULL,
   `OWNER_NAME` varchar(128) CHARACTER SET latin1 COLLATE latin1_bin DEFAULT NULL,
@@ -388,10 +353,9 @@ CREATE TABLE `ROLES` (
 -- Table structure for table `ROLE_MAP`
 --
 
-DROP TABLE IF EXISTS `ROLE_MAP`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `ROLE_MAP` (
+CREATE TABLE IF NOT EXISTS `ROLE_MAP` (
   `ROLE_GRANT_ID` bigint(20) NOT NULL,
   `ADD_TIME` int(11) NOT NULL,
   `GRANT_OPTION` smallint(6) NOT NULL,
@@ -411,10 +375,9 @@ CREATE TABLE `ROLE_MAP` (
 -- Table structure for table `SDS`
 --
 
-DROP TABLE IF EXISTS `SDS`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `SDS` (
+CREATE TABLE IF NOT EXISTS `SDS` (
   `SD_ID` bigint(20) NOT NULL,
   `CD_ID` bigint(20) DEFAULT NULL,
   `INPUT_FORMAT` varchar(4000) CHARACTER SET latin1 COLLATE latin1_bin DEFAULT NULL,
@@ -423,7 +386,6 @@ CREATE TABLE `SDS` (
   `NUM_BUCKETS` int(11) NOT NULL,
   `OUTPUT_FORMAT` varchar(4000) CHARACTER SET latin1 COLLATE latin1_bin DEFAULT NULL,
   `SERDE_ID` bigint(20) DEFAULT NULL,
-  `PRIMARY_REGION_NAME` varchar(512) CHARACTER SET latin1 COLLATE latin1_bin NOT NULL DEFAULT '',
   PRIMARY KEY (`SD_ID`),
   KEY `SDS_N49` (`SERDE_ID`),
   KEY `SDS_N50` (`CD_ID`),
@@ -436,10 +398,9 @@ CREATE TABLE `SDS` (
 -- Table structure for table `SD_PARAMS`
 --
 
-DROP TABLE IF EXISTS `SD_PARAMS`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `SD_PARAMS` (
+CREATE TABLE IF NOT EXISTS `SD_PARAMS` (
   `SD_ID` bigint(20) NOT NULL,
   `PARAM_KEY` varchar(256) CHARACTER SET latin1 COLLATE latin1_bin NOT NULL,
   `PARAM_VALUE` varchar(4000) CHARACTER SET latin1 COLLATE latin1_bin DEFAULT NULL,
@@ -453,10 +414,9 @@ CREATE TABLE `SD_PARAMS` (
 -- Table structure for table `SEQUENCE_TABLE`
 --
 
-DROP TABLE IF EXISTS `SEQUENCE_TABLE`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `SEQUENCE_TABLE` (
+CREATE TABLE IF NOT EXISTS `SEQUENCE_TABLE` (
   `SEQUENCE_NAME` varchar(255) CHARACTER SET latin1 COLLATE latin1_bin NOT NULL,
   `NEXT_VAL` bigint(20) NOT NULL,
   PRIMARY KEY (`SEQUENCE_NAME`)
@@ -467,10 +427,9 @@ CREATE TABLE `SEQUENCE_TABLE` (
 -- Table structure for table `SERDES`
 --
 
-DROP TABLE IF EXISTS `SERDES`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `SERDES` (
+CREATE TABLE IF NOT EXISTS `SERDES` (
   `SERDE_ID` bigint(20) NOT NULL,
   `NAME` varchar(128) CHARACTER SET latin1 COLLATE latin1_bin DEFAULT NULL,
   `SLIB` varchar(4000) CHARACTER SET latin1 COLLATE latin1_bin DEFAULT NULL,
@@ -482,10 +441,9 @@ CREATE TABLE `SERDES` (
 -- Table structure for table `SERDE_PARAMS`
 --
 
-DROP TABLE IF EXISTS `SERDE_PARAMS`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `SERDE_PARAMS` (
+CREATE TABLE IF NOT EXISTS `SERDE_PARAMS` (
   `SERDE_ID` bigint(20) NOT NULL,
   `PARAM_KEY` varchar(256) CHARACTER SET latin1 COLLATE latin1_bin NOT NULL,
   `PARAM_VALUE` varchar(4000) CHARACTER SET latin1 COLLATE latin1_bin DEFAULT NULL,
@@ -499,10 +457,9 @@ CREATE TABLE `SERDE_PARAMS` (
 -- Table structure for table `SORT_COLS`
 --
 
-DROP TABLE IF EXISTS `SORT_COLS`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `SORT_COLS` (
+CREATE TABLE IF NOT EXISTS `SORT_COLS` (
   `SD_ID` bigint(20) NOT NULL,
   `COLUMN_NAME` varchar(128) CHARACTER SET latin1 COLLATE latin1_bin DEFAULT NULL,
   `ORDER` int(11) NOT NULL,
@@ -517,10 +474,9 @@ CREATE TABLE `SORT_COLS` (
 -- Table structure for table `TABLE_PARAMS`
 --
 
-DROP TABLE IF EXISTS `TABLE_PARAMS`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `TABLE_PARAMS` (
+CREATE TABLE IF NOT EXISTS `TABLE_PARAMS` (
   `TBL_ID` bigint(20) NOT NULL,
   `PARAM_KEY` varchar(256) CHARACTER SET latin1 COLLATE latin1_bin NOT NULL,
   `PARAM_VALUE` varchar(4000) CHARACTER SET latin1 COLLATE latin1_bin DEFAULT NULL,
@@ -534,10 +490,9 @@ CREATE TABLE `TABLE_PARAMS` (
 -- Table structure for table `TBLS`
 --
 
-DROP TABLE IF EXISTS `TBLS`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `TBLS` (
+CREATE TABLE IF NOT EXISTS `TBLS` (
   `TBL_ID` bigint(20) NOT NULL,
   `CREATE_TIME` int(11) NOT NULL,
   `DB_ID` bigint(20) DEFAULT NULL,
@@ -562,10 +517,9 @@ CREATE TABLE `TBLS` (
 -- Table structure for table `TBL_COL_PRIVS`
 --
 
-DROP TABLE IF EXISTS `TBL_COL_PRIVS`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `TBL_COL_PRIVS` (
+CREATE TABLE IF NOT EXISTS `TBL_COL_PRIVS` (
   `TBL_COLUMN_GRANT_ID` bigint(20) NOT NULL,
   `COLUMN_NAME` varchar(128) CHARACTER SET latin1 COLLATE latin1_bin DEFAULT NULL,
   `CREATE_TIME` int(11) NOT NULL,
@@ -587,10 +541,9 @@ CREATE TABLE `TBL_COL_PRIVS` (
 -- Table structure for table `TBL_PRIVS`
 --
 
-DROP TABLE IF EXISTS `TBL_PRIVS`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `TBL_PRIVS` (
+CREATE TABLE IF NOT EXISTS `TBL_PRIVS` (
   `TBL_GRANT_ID` bigint(20) NOT NULL,
   `CREATE_TIME` int(11) NOT NULL,
   `GRANT_OPTION` smallint(6) NOT NULL,
@@ -611,10 +564,9 @@ CREATE TABLE `TBL_PRIVS` (
 -- Table structure for table `TYPES`
 --
 
-DROP TABLE IF EXISTS `TYPES`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `TYPES` (
+CREATE TABLE IF NOT EXISTS `TYPES` (
   `TYPES_ID` bigint(20) NOT NULL,
   `TYPE_NAME` varchar(128) CHARACTER SET latin1 COLLATE latin1_bin DEFAULT NULL,
   `TYPE1` varchar(767) CHARACTER SET latin1 COLLATE latin1_bin DEFAULT NULL,
@@ -628,10 +580,9 @@ CREATE TABLE `TYPES` (
 -- Table structure for table `TYPE_FIELDS`
 --
 
-DROP TABLE IF EXISTS `TYPE_FIELDS`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `TYPE_FIELDS` (
+CREATE TABLE IF NOT EXISTS `TYPE_FIELDS` (
   `TYPE_NAME` bigint(20) NOT NULL,
   `COMMENT` varchar(256) CHARACTER SET latin1 COLLATE latin1_bin DEFAULT NULL,
   `FIELD_NAME` varchar(128) CHARACTER SET latin1 COLLATE latin1_bin NOT NULL,
@@ -652,4 +603,4 @@ CREATE TABLE `TYPE_FIELDS` (
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2012-02-10 12:02:33
+-- Dump completed on 2011-09-22 13:31:46

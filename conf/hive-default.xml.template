@@ -23,7 +23,7 @@
 <!-- WARNING!!! Any changes you make to this file will be ignored by Hive. -->
 <!-- WARNING!!! You must make your changes in hive-site.xml instead.       -->
 
-
+  
 <!-- Hive Execution Parameters -->
 <property>
   <name>mapred.reduce.tasks</name>
@@ -1034,45 +1034,45 @@
   <name>hive.security.authorization.manager</name>
   <value>org.apache.hadoop.hive.ql.security.authorization.DefaultHiveAuthorizationProvider</value>
   <description>the hive client authorization manager class name.
-  The user defined authorization class should implement interface org.apache.hadoop.hive.ql.security.authorization.HiveAuthorizationProvider.
+  The user defined authorization class should implement interface org.apache.hadoop.hive.ql.security.authorization.HiveAuthorizationProvider. 
   </description>
 </property>
 
 <property>
   <name>hive.security.authenticator.manager</name>
   <value>org.apache.hadoop.hive.ql.security.HadoopDefaultAuthenticator</value>
-  <description>hive client authenticator manager class name.
+  <description>hive client authenticator manager class name. 
   The user defined authenticator should implement interface org.apache.hadoop.hive.ql.security.HiveAuthenticationProvider.</description>
 </property>
 
 <property>
   <name>hive.security.authorization.createtable.user.grants</name>
   <value></value>
-  <description>the privileges automatically granted to some users whenever a table gets created.
-   An example like "userX,userY:select;userZ:create" will grant select privilege to userX and userY,
+  <description>the privileges automatically granted to some users whenever a table gets created. 
+   An example like "userX,userY:select;userZ:create" will grant select privilege to userX and userY, 
    and grant create privilege to userZ whenever a new table created.</description>
 </property>
 
 <property>
   <name>hive.security.authorization.createtable.group.grants</name>
   <value></value>
-  <description>the privileges automatically granted to some groups whenever a table gets created.
-   An example like "groupX,groupY:select;groupZ:create" will grant select privilege to groupX and groupY,
+  <description>the privileges automatically granted to some groups whenever a table gets created. 
+   An example like "groupX,groupY:select;groupZ:create" will grant select privilege to groupX and groupY, 
    and grant create privilege to groupZ whenever a new table created.</description>
 </property>
 
 <property>
   <name>hive.security.authorization.createtable.role.grants</name>
   <value></value>
-  <description>the privileges automatically granted to some roles whenever a table gets created.
-   An example like "roleX,roleY:select;roleZ:create" will grant select privilege to roleX and roleY,
+  <description>the privileges automatically granted to some roles whenever a table gets created. 
+   An example like "roleX,roleY:select;roleZ:create" will grant select privilege to roleX and roleY, 
    and grant create privilege to roleZ whenever a new table created.</description>
 </property>
 
 <property>
   <name>hive.security.authorization.createtable.owner.grants</name>
   <value></value>
-  <description>the privileges automatically granted to the owner whenever a table gets created.
+  <description>the privileges automatically granted to the owner whenever a table gets created. 
    An example like "select,drop" will grant select and drop privilege to the owner of the table</description>
 </property>
 
@@ -1080,7 +1080,7 @@
   <name>hive.metastore.authorization.storage.checks</name>
   <value>false</value>
   <description>Should the metastore do authorization checks against the underlying storage
-  for operations like drop-partition (disallow the drop-partition if the user in
+  for operations like drop-partition (disallow the drop-partition if the user in 
   question doesn't have permissions to delete the corresponding directory
   on the storage).</description>
 </property>
@@ -1094,7 +1094,7 @@
 <property>
   <name>hive.index.compact.file.ignore.hdfs</name>
   <value>false</value>
-  <description>True the hdfs location stored in the index file will be igbored at runtime.
+  <description>True the hdfs location stored in the index file will be igbored at runtime. 
   If the data got moved or the name of the cluster got changed, the index data should still be usable.</description>
 </property>
 
@@ -1138,7 +1138,7 @@
 <property>
   <name>hive.lock.mapred.only.operation</name>
   <value>false</value>
-  <description>This param is to control whether or not only do lock on queries
+  <description>This param is to control whether or not only do lock on queries 
   that need to execute at least one mapred job.</description>
 </property>
 
@@ -1172,7 +1172,7 @@
 <property>
   <name>hive.rework.mapredwork</name>
   <value>false</value>
-  <description>should rework the mapred work or not.
+  <description>should rework the mapred work or not. 
   This is first introduced by SymlinkTextInputFormat to replace symlink files with real paths at compile time.</description>
 </property>
 
@@ -1180,9 +1180,9 @@
   <name>hive.exec.concatenate.check.index</name>
   <value>true</value>
   <description>If this sets to true, hive will throw error when doing
-   'alter table tbl_name [partSpec] concatenate' on a table/partition
-    that has indexes on it. The reason the user want to set this to true
-    is because it can help user to avoid handling all index drop, recreation,
+   'alter table tbl_name [partSpec] concatenate' on a table/partition 
+    that has indexes on it. The reason the user want to set this to true 
+    is because it can help user to avoid handling all index drop, recreation, 
     rebuild work. This is very helpful for tables with thousands of partitions.</description>
 </property>
 
@@ -1197,14 +1197,14 @@
 	<name>hive.io.exception.handlers</name>
 	<value></value>
 	<description>A list of io exception handler class names. This is used
-		to construct a list exception handlers to handle exceptions thrown
+		to construct a list exception handlers to handle exceptions thrown 
 		by record readers</description>
 </property>
 
 <property>
   <name>hive.autogen.columnalias.prefix.label</name>
   <value>_c</value>
-  <description>String used as a prefix when auto generating column alias.
+  <description>String used as a prefix when auto generating column alias. 
   By default the prefix label will be appended with a column position number to form the column alias. Auto generation would happen if an aggregate function is used in a select clause without an explicit alias.</description>
 </property>
 
@@ -1235,7 +1235,7 @@
 <property>
   <name>hive.insert.into.multilevel.dirs</name>
   <value>false</value>
-  <description>Where to insert into multilevel directories like
+  <description>Where to insert into multilevel directories like 
   "insert directory '/HIVEFT25686/chinna/' from table"</description>
 </property>
 
@@ -1245,24 +1245,6 @@
   <description>Set this to true if the the table directories should inherit the 
     permission of the warehouse or database directory instead of being created 
     with the permissions derived from dfs umask</description>
-</property>
-
-<property>
-  <name>hive.use.input.primary.region</name>
-  <value>true</value>
-  <description>When creating a table from an input table, create the table in the input table's primary region.</description>
-</property>
-
-<property>
-  <name>hive.default.region.name</name>
-  <value>default</value>
-  <description>The default region name</description>
-</property>
-
-<property>
-  <name>hive.region.properties</name>
-  <value></value>
-  <description>The default filesystem and jobtracker for a region</description>
 </property>
 
 <property>

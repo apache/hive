@@ -104,7 +104,6 @@ STAGE PLANS:
           input format: org.apache.hadoop.mapred.TextInputFormat
           # buckets: -1
           output format: org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat
-          primaryRegionName: 
           name: nzhang_CTAS1
           isExternal: false
 
@@ -264,7 +263,6 @@ STAGE PLANS:
           input format: org.apache.hadoop.mapred.TextInputFormat
           # buckets: -1
           output format: org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat
-          primaryRegionName: 
           name: nzhang_ctas2
           isExternal: false
 
@@ -424,7 +422,6 @@ STAGE PLANS:
           input format: org.apache.hadoop.hive.ql.io.RCFileInputFormat
           # buckets: -1
           output format: org.apache.hadoop.hive.ql.io.RCFileOutputFormat
-          primaryRegionName: 
           serde name: org.apache.hadoop.hive.serde2.columnar.ColumnarSerDe
           name: nzhang_ctas3
           isExternal: false
@@ -653,7 +650,6 @@ STAGE PLANS:
           input format: org.apache.hadoop.mapred.TextInputFormat
           # buckets: -1
           output format: org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat
-          primaryRegionName: 
           name: nzhang_ctas4
           isExternal: false
 
@@ -897,7 +893,6 @@ STAGE PLANS:
 
           # buckets: -1
           output format: org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat
-          primaryRegionName: 
           name: nzhang_ctas5
           isExternal: false
 

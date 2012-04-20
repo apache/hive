@@ -575,12 +575,6 @@ public class HiveConf extends Configuration {
     HIVE_START_CLEANUP_SCRATCHDIR("hive.start.cleanup.scratchdir", false),
     HIVE_INSERT_INTO_MULTILEVEL_DIRS("hive.insert.into.multilevel.dirs", false),
     HIVE_WAREHOUSE_SUBDIR_INHERIT_PERMS("hive.warehouse.subdir.inherit.perms", false),
-
-    // parameters for using multiple clusters in a hive instance
-    HIVE_USE_INPUT_PRIMARY_REGION("hive.use.input.primary.region", true),
-    HIVE_DEFAULT_REGION_NAME("hive.default.region.name", ""),
-    HIVE_REGION_PROPERTIES("hive.region.properties", ""),
-
     // whether insert into external tables is allowed
     HIVE_INSERT_INTO_EXTERNAL_TABLES("hive.insert.into.external.tables", true),
 
