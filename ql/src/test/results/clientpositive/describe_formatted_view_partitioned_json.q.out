@@ -34,24 +34,7 @@ PREHOOK: query: DESCRIBE FORMATTED view_partitioned PARTITION (value='val_86')
 PREHOOK: type: DESCTABLE
 POSTHOOK: query: DESCRIBE FORMATTED view_partitioned PARTITION (value='val_86')
 POSTHOOK: type: DESCTABLE
-# col_name            	data_type           	comment             
-	 	 
-key                 	string              	None                
-	 	 
-# Partition Information	 	 
-# col_name            	data_type           	comment             
-	 	 
-value               	string              	None                
-	 	 
-# Detailed Partition Information	 	 
-Partition Value:    	[val_86]            	 
-Database:           	default             	 
-Table:              	view_partitioned    	 
-#### A masked pattern was here ####
-Protect Mode:       	None                	 
-#### A masked pattern was here ####
-Partition Parameters:	 	 
-#### A masked pattern was here ####
+{"columns":[{"name":"key","type":"string"}]}	 	 
 PREHOOK: query: DROP VIEW view_partitioned
 PREHOOK: type: DROPVIEW
 PREHOOK: Input: default@view_partitioned
