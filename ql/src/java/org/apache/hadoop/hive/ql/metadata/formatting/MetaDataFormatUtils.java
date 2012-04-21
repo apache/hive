@@ -25,6 +25,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.apache.commons.lang.StringEscapeUtils;
+import org.apache.hadoop.hive.metastore.TableType;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.Index;
 import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
@@ -147,8 +148,10 @@ public final class MetaDataFormatUtils {
     getPartitionMetaDataInformation(tableInfo, part);
 
     // Storage information.
-    tableInfo.append(LINE_DELIM).append("# Storage Information").append(LINE_DELIM);
-    getStorageDescriptorInfo(tableInfo, part.getTPartition().getSd());
+    if (part.getTable().getTableType() != TableType.VIRTUAL_VIEW) {
+      tableInfo.append(LINE_DELIM).append("# Storage Information").append(LINE_DELIM);
+      getStorageDescriptorInfo(tableInfo, part.getTPartition().getSd());
+    }
 
     return tableInfo.toString();
   }
