@@ -191,10 +191,11 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
     // Pick the formatter to use to display the results.  Either the
     // normal human readable output or a json object.
     if ("json".equals(conf.get(
-            HiveConf.ConfVars.HIVE_DDL_OUTPUT_FORMAT.varname, "text")))
+            HiveConf.ConfVars.HIVE_DDL_OUTPUT_FORMAT.varname, "text"))) {
       formatter = new JsonMetaDataFormatter();
-    else
+    } else {
       formatter = new TextMetaDataFormatter();
+    }
 
     INTERMEDIATE_ARCHIVED_DIR_SUFFIX =
       HiveConf.getVar(conf, ConfVars.METASTORE_INT_ARCHIVED);
@@ -2361,8 +2362,9 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
                           formatter.MISSING);
       } else {
           Map<String, String> params = null;
-          if(descDatabase.isExt())
-              params = database.getParameters();
+          if(descDatabase.isExt()) {
+            params = database.getParameters();
+          }
 
           formatter.showDatabaseDescription(outStream,
                                             database.getName(),
@@ -2588,7 +2590,8 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
 
       List<FieldSchema> cols = null;
       if (colPath.equals(tableName)) {
-        cols = (part == null) ? tbl.getCols() : part.getCols();
+        cols = (part == null || tbl.getTableType() == TableType.VIRTUAL_VIEW) ?
+            tbl.getCols() : part.getCols();
 
         if (!descTbl.isFormatted()) {
           if (tableName.equals(colPath)) {
