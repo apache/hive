@@ -55,6 +55,8 @@ public class TestJdbcDriver extends TestCase {
   private static final String partitionedTableName = "testHiveJdbcDriverPartitionedTable";
   private static final String partitionedColumnName = "partcolabc";
   private static final String partitionedColumnValue = "20090619";
+  private static final String partitionedIntColumnName = "partcolint";
+  private static final int partitionedIntColumnValue = 777;
   private static final String partitionedTableComment = "Partitioned table";
   private static final String dataTypeTableName = "testDataTypeTable";
   private static final String dataTypeTableComment = "Table with many column data types";
@@ -122,14 +124,16 @@ public class TestJdbcDriver extends TestCase {
 
     res = stmt.executeQuery("create table " + partitionedTableName
         + " (under_col int, value string) comment '"+partitionedTableComment
-            +"' partitioned by (" + partitionedColumnName + " STRING)");
+            +"' partitioned by (" + partitionedColumnName + " STRING,"
+            + partitionedIntColumnName + " INT)");
     assertFalse(res.next());
 
     // load data
     res = stmt.executeQuery("load data local inpath '"
         + dataFilePath.toString() + "' into table " + partitionedTableName
         + " PARTITION (" + partitionedColumnName + "="
-        + partitionedColumnValue + ")");
+        + partitionedColumnValue + ","
+        + partitionedIntColumnName + "=" + partitionedIntColumnValue + ")");
     assertFalse(res.next());
 
     // drop table. ignore error.
@@ -437,7 +441,7 @@ public class TestJdbcDriver extends TestCase {
     int i = 0;
 
     ResultSetMetaData meta = res.getMetaData();
-    int expectedColCount = isPartitionTable ? 3 : 2;
+    int expectedColCount = isPartitionTable ? 4 : 2;
     assertEquals(
       "Unexpected column count", expectedColCount, meta.getColumnCount());
 
@@ -451,6 +455,8 @@ public class TestJdbcDriver extends TestCase {
         if (isPartitionTable) {
           assertEquals(res.getString(3), partitionedColumnValue);
           assertEquals(res.getString(3), res.getString(partitionedColumnName));
+          assertEquals(res.getInt(4), partitionedIntColumnValue);
+          assertEquals(res.getInt(4), res.getInt(partitionedIntColumnName));
         }
         assertFalse("Last result value was not null", res.wasNull());
         assertNull("No warnings should be found on ResultSet", res
@@ -657,7 +663,7 @@ public class TestJdbcDriver extends TestCase {
   public void testMetaDataGetColumns() throws SQLException {
     Map<String[], Integer> tests = new HashMap<String[], Integer>();
     tests.put(new String[]{"testhivejdbcdriver\\_table", null}, 2);
-    tests.put(new String[]{"testhivejdbc%", null}, 7);
+    tests.put(new String[]{"testhivejdbc%", null}, 8);
     tests.put(new String[]{"%jdbcdriver\\_table", null}, 2);
     tests.put(new String[]{"%jdbcdriver\\_table%", "under\\_col"}, 1);
     tests.put(new String[]{"%jdbcdriver\\_table%", "under\\_co_"}, 1);
@@ -1002,6 +1008,87 @@ public class TestJdbcDriver extends TestCase {
       assertEquals(ResultSetMetaData.columnNullable, meta.isNullable(i));
     }
   }
+
+  public void testPartitionedResultSetMetaData() throws SQLException {
+    Statement stmt = con.createStatement();
+
+    ResultSet res = stmt.executeQuery(
+        "select under_col, value, partcolabc, partcolint " +
+        "from " + partitionedTableName + " limit 1");
+    ResultSetMetaData meta = res.getMetaData();
+
+    ResultSet colRS = con.getMetaData().getColumns(null, null,
+        partitionedTableName.toLowerCase(), null);
+
+    assertEquals(4, meta.getColumnCount());
+
+    assertTrue(colRS.next());
+
+    assertEquals("under_col", meta.getColumnName(1));
+    assertEquals(Types.INTEGER, meta.getColumnType(1));
+    assertEquals("int", meta.getColumnTypeName(1));
+    assertEquals(11, meta.getColumnDisplaySize(1));
+    assertEquals(10, meta.getPrecision(1));
+    assertEquals(0, meta.getScale(1));
+
+    assertEquals("under_col", colRS.getString("COLUMN_NAME"));
+    assertEquals(Types.INTEGER, colRS.getInt("DATA_TYPE"));
+    assertEquals("int", colRS.getString("TYPE_NAME").toLowerCase());
+    assertEquals(meta.getPrecision(1), colRS.getInt("COLUMN_SIZE"));
+    assertEquals(meta.getScale(1), colRS.getInt("DECIMAL_DIGITS"));
+
+    assertTrue(colRS.next());
+
+    assertEquals("value", meta.getColumnName(2));
+    assertEquals(Types.VARCHAR, meta.getColumnType(2));
+    assertEquals("string", meta.getColumnTypeName(2));
+    assertEquals(Integer.MAX_VALUE, meta.getColumnDisplaySize(2));
+    assertEquals(Integer.MAX_VALUE, meta.getPrecision(2));
+    assertEquals(0, meta.getScale(2));
+
+    assertEquals("value", colRS.getString("COLUMN_NAME"));
+    assertEquals(Types.VARCHAR, colRS.getInt("DATA_TYPE"));
+    assertEquals("string", colRS.getString("TYPE_NAME").toLowerCase());
+    assertEquals(meta.getPrecision(2), colRS.getInt("COLUMN_SIZE"));
+    assertEquals(meta.getScale(2), colRS.getInt("DECIMAL_DIGITS"));
+
+    assertTrue(colRS.next());
+
+    assertEquals("partcolabc", meta.getColumnName(3));
+    assertEquals(Types.VARCHAR, meta.getColumnType(3));
+    assertEquals("string", meta.getColumnTypeName(3));
+    assertEquals(Integer.MAX_VALUE, meta.getColumnDisplaySize(3));
+    assertEquals(Integer.MAX_VALUE, meta.getPrecision(3));
+    assertEquals(0, meta.getScale(3));
+
+    assertEquals("partcolabc", colRS.getString("COLUMN_NAME"));
+    assertEquals(Types.VARCHAR, colRS.getInt("DATA_TYPE"));
+    assertEquals("string", colRS.getString("TYPE_NAME").toLowerCase());
+    assertEquals(meta.getPrecision(3), colRS.getInt("COLUMN_SIZE"));
+    assertEquals(meta.getScale(3), colRS.getInt("DECIMAL_DIGITS"));
+
+    assertTrue(colRS.next());
+
+    assertEquals("partcolint", meta.getColumnName(4));
+    assertEquals(Types.INTEGER, meta.getColumnType(4));
+    assertEquals("int", meta.getColumnTypeName(4));
+    assertEquals(11, meta.getColumnDisplaySize(4));
+    assertEquals(10, meta.getPrecision(4));
+    assertEquals(0, meta.getScale(4));
+
+    assertEquals("partcolint", colRS.getString("COLUMN_NAME"));
+    assertEquals(Types.INTEGER, colRS.getInt("DATA_TYPE"));
+    assertEquals("int", colRS.getString("TYPE_NAME").toLowerCase());
+    assertEquals(meta.getPrecision(4), colRS.getInt("COLUMN_SIZE"));
+    assertEquals(meta.getScale(4), colRS.getInt("DECIMAL_DIGITS"));
+
+    for (int i = 1; i <= meta.getColumnCount(); i++) {
+      assertFalse(meta.isAutoIncrement(i));
+      assertFalse(meta.isCurrency(i));
+      assertEquals(ResultSetMetaData.columnNullable, meta.isNullable(i));
+    }
+  }
+
 
   // [url] [host] [port] [db]
   private static final String[][] URL_PROPERTIES = new String[][] {
