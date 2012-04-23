@@ -15,7 +15,7 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 -->
-<ivy-module version="2.0">
+<ivy-module version="2.0" xmlns:m="http://ant.apache.org/ivy/maven">
   <info organisation="${hive.ivy.org}" module="hive-shims" revision="${version}">
     <license name="The Apache Software License, Version 2.0" url="http://www.apache.org/licenses/LICENSE-2.0.txt" />
     <description homepage="http://hive.apache.org">
@@ -27,10 +27,7 @@
     <include file="${ivy.conf.dir}/common-configurations.xml"/>
   </configurations>
   <dependencies>
-    <dependency org="org.apache.hadoop" name="hadoop-core" rev="${hadoop.version.ant-internal}">
-      <artifact name="hadoop" type="source" ext="tar.gz"/>
-      <exclude org="org.codehaus.jackson" name="*"/>
-    </dependency>
+    <!-- General dependencies. -->
     <dependency org="org.apache.zookeeper" name="zookeeper"
                 rev="${zookeeper.version}" transitive="false">
       <include type="jar"/>
@@ -45,6 +42,84 @@
       transitive="false"/>
     <dependency org="org.codehaus.jackson" name="jackson-core-asl" rev="${jackson.version}"/>
     <dependency org="org.codehaus.jackson" name="jackson-mapper-asl" rev="${jackson.version}"/>
+
+    <!-- Hadoop 0.23 dependencies. Used both for shims and for building against Hadoop 0.23. -->
+    <dependency org="org.apache.hadoop" name="hadoop-common"
+                rev="${hadoop-0.23.version}"
+                conf="hadoop0.23.shim->default">
+      <include type="jar"/>
+      <exclude org="commons-daemon" module="commons-daemon"/><!--bad POM-->
+      <exclude org="org.apache.commons" module="commons-daemon"/><!--bad POM-->
+    </dependency>
+    <dependency org="org.apache.hadoop" name="hadoop-mapreduce-client-core"
+                rev="${hadoop-0.23.version}"
+                conf="hadoop0.23.shim->default">
+      <include type="jar"/>
+      <exclude org="commons-daemon" module="commons-daemon"/><!--bad POM-->
+      <exclude org="org.apache.commons" module="commons-daemon"/><!--bad POM-->
+    </dependency>
+    <dependency org="org.apache.hadoop" name="hadoop-archives"
+                rev="${hadoop-0.23.version}"
+                conf="hadoop0.23.shim->default">
+      <include type="jar"/>
+      <exclude org="commons-daemon" module="commons-daemon"/><!--bad POM-->
+      <exclude org="org.apache.commons" module="commons-daemon"/><!--bad POM-->
+    </dependency>
+    <dependency org="org.apache.hadoop" name="hadoop-hdfs"
+                rev="${hadoop-0.23.version}"
+                conf="hadoop0.23.shim->default">
+      <artifact name="hadoop-hdfs" ext="jar" />
+      <artifact name="hadoop-hdfs" type="tests" ext="jar" m:classifier="tests"/>
+      <exclude org="commons-daemon" module="commons-daemon"/><!--bad POM-->
+      <exclude org="org.apache.commons" module="commons-daemon"/><!--bad POM-->
+    </dependency>
+
+    <!-- Hadoop 0.20 shim dependencies. Used for building 0.20 shims. -->
+    <dependency org="org.apache.hadoop" name="hadoop-core"
+                rev="${hadoop-0.20.version}"
+                conf="hadoop0.20.shim->default">
+      <include type="jar"/>
+      <exclude org="commons-daemon" module="commons-daemon"/><!--bad POM-->
+      <exclude org="org.apache.commons" module="commons-daemon"/><!--bad POM-->
+    </dependency>
+    <dependency org="org.apache.hadoop" name="hadoop-tools"
+                rev="${hadoop-0.20.version}"
+                conf="hadoop0.20.shim->default">
+      <include type="jar"/>
+      <exclude org="commons-daemon" module="commons-daemon"/><!--bad POM-->
+      <exclude org="org.apache.commons" module="commons-daemon"/><!--bad POM-->
+    </dependency>
+    <dependency org="org.apache.hadoop" name="hadoop-test"
+                rev="${hadoop-0.20.version}"
+                conf="hadoop0.20.shim->default">
+      <include type="jar"/>
+      <exclude org="commons-daemon" module="commons-daemon"/><!--bad POM-->
+      <exclude org="org.apache.commons" module="commons-daemon"/><!--bad POM-->
+    </dependency>
+
+    <!-- Hadoop 0.20S (or 1.0.0) shim dependencies. Used for building 0.20S shims. -->
+    <dependency org="org.apache.hadoop" name="hadoop-core"
+                rev="${hadoop-0.20S.version}"
+                conf="hadoop0.20S.shim->default">
+      <include type="jar"/>
+      <exclude org="commons-daemon" module="commons-daemon"/><!--bad POM-->
+      <exclude org="org.apache.commons" module="commons-daemon"/><!--bad POM-->
+    </dependency>
+    <dependency org="org.apache.hadoop" name="hadoop-tools"
+                rev="${hadoop-0.20S.version}"
+                conf="hadoop0.20S.shim->default">
+      <include type="jar"/>
+      <exclude org="commons-daemon" module="commons-daemon"/><!--bad POM-->
+      <exclude org="org.apache.commons" module="commons-daemon"/><!--bad POM-->
+    </dependency>
+    <dependency org="org.apache.hadoop" name="hadoop-test"
+                rev="${hadoop-0.20S.version}"
+                conf="hadoop0.20S.shim->default">
+      <include type="jar"/>
+      <exclude org="commons-daemon" module="commons-daemon"/><!--bad POM-->
+      <exclude org="org.apache.commons" module="commons-daemon"/><!--bad POM-->
+    </dependency>
+
     <conflict manager="all" />
   </dependencies>
 </ivy-module>

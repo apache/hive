@@ -18,7 +18,7 @@
 -->
 
 
-<project name="ql" default="jar">
+<project xmlns:ivy="antlib:org.apache.ivy.ant" name="ql" default="jar">
 
   <property name="ql.lib.dir" value="${basedir}/lib"/>
   <property name="src.dir"  location="${basedir}/src/java"/>
@@ -31,37 +31,6 @@
 
   <import file="../build-common.xml"/>
   <property name="ql.test.clientpositive.exclude" value="${minimr.query.files}"/>
-
-  <path id="test.classpath">
-    <pathelement location="${test.build.classes}" />
-    <pathelement location="" />
-    <pathelement location="${hadoop.conf.dir}"/>
-    <pathelement location="${test.src.data.dir}/conf"/>
-    <pathelement location="${hive.conf.dir}"/>
-    <pathelement location="${hadoop.oldstyle-name.test.jar}"/>
-    <pathelement location="${hadoop.newstyle-name.test.jar}"/>
-    <pathelement location="${hadoop.common.test.jar}"/>
-    <pathelement location="${hadoop.hdfs.test.jar}"/>
-    <pathelement location="${hadoop.mapreduce.test.jar}"/>
-    <pathelement location="${jetty.test.jar}"/>
-    <pathelement location="${servlet.test.jar}"/>
-    <pathelement location="${jasper.test.jar}"/>
-    <pathelement location="${jasperc.test.jar}"/>
-    <pathelement location="${jsp.test.jar}"/>
-    <pathelement location="${common.jar}"/>
-    <pathelement location="${hive.root}/build/ivy/lib/default/derby-${derby.version}.jar"/>
-    <fileset dir="${hive.root}" includes="testlibs/*.jar"/>
-    <fileset dir="${hadoop.root}">
-      <include name="lib/**/*.jar" />
-      <exclude name="lib/**/excluded/" />
-      <!-- below is for 0.23 onwards -->
-      <include name="share/hadoop/common/lib/*.jar" />
-      <exclude name="share/hadoop/common/lib/hadoop-mapreduce-*.jar" />
-      <exclude name="share/hadoop/common/lib/hadoop-yarn-*.jar" />
-    </fileset>
-
-    <path refid="classpath"/>
-  </path>
 
   <target name="thriftif" depends="check-thrift-home">
     <echo message="${ant.project.name}"/>
@@ -245,6 +214,9 @@
       </manifest>
       <metainf dir="${hive.root}" includes="LICENSE,NOTICE"/>
     </jar>
+    <ivy:publish settingsRef="${ant.project.name}.ivy.settings"
+                 resolver="local" pubrevision="${version}" overwrite="true"
+                 artifactspattern="${build.dir}/${ivy.publish.pattern}"/>
   </target>
 
   <!-- Override deploy since we are deploying hive_exec and not hive_ql -->
