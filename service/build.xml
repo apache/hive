@@ -22,23 +22,6 @@
 
   <import file="../build-common.xml"/>
 
-  <path id="test.classpath">
-    <pathelement location="${test.build.classes}" />
-    <pathelement location="" />
-    <pathelement location="${test.src.data.dir}/conf"/>
-    <pathelement location="${hive.conf.dir}"/>
-    <fileset dir="${test.src.data.dir}" includes="files/*.jar"/>
-    <fileset dir="${hive.root}" includes="testlibs/*.jar"/>
-    <pathelement location="${build.dir.hive}/ql/test/classes"/>
-    <path refid="classpath"/>
-    <fileset dir="${hadoop.root}">
-      <!-- below is for 0.23 onwards -->
-      <include name="share/hadoop/common/lib/*.jar" />
-      <exclude name="share/hadoop/common/lib/hadoop-mapreduce-*.jar" />
-      <exclude name="share/hadoop/common/lib/hadoop-yarn-*.jar" />
-    </fileset>
-  </path>
-
   <target name="thriftif" depends="check-thrift-home">
     <echo message="Project: ${ant.project.name}"/>
     <fail unless="thrift.home">You must set the 'thrift.home' property!</fail>

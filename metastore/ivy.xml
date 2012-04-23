@@ -26,15 +26,10 @@
     <include file="${ivy.conf.dir}/common-configurations.xml"/>
   </configurations>
   <dependencies>
-    <dependency org="org.apache.hadoop" name="hadoop-core" rev="${hadoop.version.ant-internal}">
-      <artifact name="hadoop" type="source" ext="tar.gz"/>
-    </dependency>
-    <dependency org="org.apache.hive" name="hive-common" rev="${version}"
-                conf="runtime" transitive="false"/>
     <dependency org="org.apache.hive" name="hive-serde" rev="${version}"
-                conf="runtime" transitive="false"/>
+                conf="compile->default" />
     <dependency org="org.apache.hive" name="hive-shims" rev="${version}"
-                conf="runtime" transitive="false"/>
+                conf="compile->default" transitive="false" />
     <dependency org="org.antlr" name="antlr" rev="${antlr.version}"/>
     <dependency org="org.antlr" name="antlr-runtime" rev="${antlr-runtime.version}"/>
     <dependency org="commons-cli" name="commons-cli" rev="${commons-cli.version}"/>
@@ -62,10 +57,10 @@
     <dependency org="org.slf4j" name="slf4j-api" rev="${slf4j-api.version}"/>
     <dependency org="org.slf4j" name="slf4j-log4j12" rev="${slf4j-log4j12.version}"
                 transitive="false"/>
-    <dependency org="org.apache.thrift" name="libthrift" rev="${libthrift.version}"
-                transitive="false"/>
-    <dependency org="org.apache.thrift" name="libfb303" rev="${libfb303.version}"
-                transitive="false"/>
+    <dependency org="org.apache.thrift" name="libthrift" rev="${libthrift.version}" transitive="false" />
+
+    <dependency org="org.apache.thrift" name="libfb303" rev="${libfb303.version}" transitive="false" />
+
     <dependency org="asm" name="asm" rev="${asm.version}"/>
   </dependencies>
 </ivy-module>

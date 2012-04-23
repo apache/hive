@@ -66,20 +66,38 @@
   <property name="test.print.classpath" value="false"/>
   <property name="test.lang" value="en_US.UTF-8"/>
 
+  <property name="hadoop.opts.23" value="-D mapreduce.framework.name=local" />
+  <property name="hadoop.opts.20" value="" />
+  
   <path id="test.classpath">
     <pathelement location="${test.build.classes}" />
     <pathelement location="${test.build.resources}" />
     <pathelement location="" />
     <pathelement location="${test.src.data.dir}/conf"/>
     <pathelement location="${hive.conf.dir}"/>
-    <fileset dir="${hive.root}" includes="testlibs/*.jar"/>
-    <path refid="classpath"/>
-    <fileset dir="${hadoop.root}">
-      <!-- below is for 0.23 onwards -->
-      <include name="share/hadoop/common/lib/*.jar" />
-      <exclude name="share/hadoop/common/lib/hadoop-mapreduce-*.jar" />
-      <exclude name="share/hadoop/common/lib/hadoop-yarn-*.jar" />
-    </fileset>
+    <pathelement location="${build.dir.hive}/cli/test/classes"/>
+    <pathelement location="${build.dir.hive}/common/test/classes"/>
+    <pathelement location="${build.dir.hive}/hbase-handler/test/classes"/>
+    <pathelement location="${build.dir.hive}/hwi/test/classes"/>
+    <pathelement location="${build.dir.hive}/jdbc/test/classes"/>
+    <pathelement location="${build.dir.hive}/metastore/test/classes"/>
+    <pathelement location="${build.dir.hive}/ql/test/classes"/>
+    <pathelement location="${build.dir.hive}/serde/test/classes"/>
+    <pathelement location="${build.dir.hive}/service/test/classes"/>
+    <pathelement location="${build.dir.hive}/shims/test/classes"/>
+
+    <fileset dir="${hive.root}/build/ivy/lib/test" includes="*.jar" erroronmissingdir="false" excludes="**/hive_contrib*.jar,**/hive-contrib*.jar"/>
+    <fileset dir="${hive.root}/build/ivy/lib/default" includes="*.jar" erroronmissingdir="false" excludes="**/hive_contrib*.jar,**/hive-contrib*.jar" />
+    <fileset dir="${hive.root}/testlibs" includes="*.jar"/>
+    <fileset dir="${hive.root}/build/ivy/lib/hadoop0.${hadoop.mr.rev}.shim" includes="*.jar" />
+    <pathelement location="${build.classes}" />
+  </path>
+
+  <!-- include contrib on local classpath, but not on cluster -->
+  <!-- https://reviews.facebook.net/D2133#comment-47 -->
+  <path id="test.local.classpath">
+    <path refid="${test.classpath.id}"/>
+    <fileset dir="${hive.root}/build/ivy/lib/test" includes="hive-contrib*.jar" erroronmissingdir="false"/>
   </path>
 
 
@@ -125,47 +143,41 @@
   	<ivy:retrieve settingsRef="${ant.project.name}-${hadoop.version.ant-internal}.ivy.settings"
       pattern="${build.dir.hadoop}/[artifact]-[revision].[ext]"/>
   </target>
-  
-  <available property="hadoopcore.${hadoop.version.ant-internal}.install.done"
-    file="${build.dir.hadoop}/hadoop-${hadoop.version.ant-internal}.installed"/>
 
-  <target name="install-hadoopcore-internal" depends="ivy-retrieve-hadoop-source"
-    unless="hadoopcore.${hadoop.version.ant-internal}.install.done">
+  <target name="ivy-resolve-test" depends="ivy-init-settings" unless="offline">
     <echo message="Project: ${ant.project.name}"/>
-    <untar src="${build.dir.hadoop}/hadoop-${hadoop.version.ant-internal}.tar.gz" dest="${build.dir.hadoop}" compression="gzip"/>
-    <chmod file="${hadoop.root}/bin/hadoop" perm="+x"/>
-    <touch file="${build.dir.hadoop}/hadoop-${hadoop.version.ant-internal}.installed"/>
+    <ivy:resolve settingsRef="${ant.project.name}.ivy.settings"
+      conf="test" log="${ivyresolvelog}"/>
   </target>
 
-  <target name="install-hadoopcore-default" unless="hadoop.root.nondefault">
+  <target name="ivy-retrieve-test" depends="ivy-resolve-test"
+    description="Retrieve Ivy-managed artifacts">
     <echo message="Project: ${ant.project.name}"/>
-    <antcall target="install-hadoopcore-internal"/>
+    <ivy:retrieve settingsRef="${ant.project.name}.ivy.settings"
+      pattern="${build.ivy.lib.dir}/${ivy.artifact.retrieve.pattern}"
+      log="${ivyresolvelog}" conf="test"/>
   </target>
 
-  <target name="install-hadoopcore">
+  <target name="ivy-resolve-hadoop-shim" depends="ivy-init-settings" unless="offline">
     <echo message="Project: ${ant.project.name}"/>
-    <condition property="hadoop.root.nondefault">
-      <not>
-        <equals arg1="${hadoop.root}" arg2="${hadoop.root.default}"/>
-      </not>
-    </condition>
-    <antcall target="install-hadoopcore-default"/>
+    <ivy:resolve settingsRef="${ant.project.name}.ivy.settings"
+      conf="${ivy.hadoop.shim.conf}" log="${ivyresolvelog}"/>
+  </target>
+
+  <target name="ivy-retrieve-hadoop-shim" depends="ivy-resolve-hadoop-shim"
+    description="Retrieve Ivy-managed artifacts">
+    <echo message="Project: ${ant.project.name}"/>
+    <ivy:retrieve settingsRef="${ant.project.name}.ivy.settings"
+      pattern="${build.ivy.lib.dir}/${ivy.artifact.retrieve.pattern}"
+      log="${ivyresolvelog}" conf="${ivy.hadoop.shim.conf}"/>
   </target>
 
   <!-- the normal classpath -->
   <path id="common-classpath">
-    <pathelement location="${hadoop.oldstyle-name.jar}"/>
-    <pathelement location="${hadoop.oldstyle-name.tools.jar}"/>
-    <pathelement location="${hadoop.newstyle-name.jar}"/>
-    <pathelement location="${hadoop.newstyle-name.tools.jar}"/>
-    <pathelement location="${hadoop.common.jar}"/>
-    <pathelement location="${hadoop.hdfs.jar}"/>
-    <pathelement location="${hadoop.mapreduce.jar}"/>
-    <pathelement location="${hadoop.mapreduce.tools.jar}"/>
     <pathelement location="${build.dir.hive}/classes"/>
     <fileset dir="${build.dir.hive}" includes="*/*.jar"/>
     <fileset dir="${hive.root}/lib" includes="*.jar"/>
-    <fileset dir="${build.ivy.lib.dir}/default" includes="*.jar" excludes="*hadoop*.jar"
+    <fileset dir="${build.ivy.lib.dir}/default" includes="*.jar" 
              erroronmissingdir="false"/>
   </path>
 
@@ -178,10 +190,10 @@
     <pathelement location="${build.dir.hive}/cli/classes"/>
     <pathelement location="${build.dir.hive}/shims/classes"/>
     <pathelement location="${build.dir.hive}/hwi/classes"/>
-    <fileset erroronmissingdir="false" dir="${build.dir.hadoop}/hadoop-${hadoop.security.version}"
-             includes="lib/commons-codec-*.jar"/>
-    <path refid="common-classpath"/>
+    <pathelement location="${build.dir.hive}/jdbc/classes"/>
+    <pathelement location="${build.dir.hive}/hbase-handler/classes"/>
     <fileset dir="${basedir}" includes="lib/*.jar"/>
+    <path refid="common-classpath"/>
   </path>
 
   <target name="create-dirs">
@@ -251,10 +263,13 @@
       </manifest>
       <metainf dir="${hive.root}" includes="LICENSE,NOTICE"/>
     </jar>
+    <ivy:publish settingsRef="${ant.project.name}.ivy.settings"
+                 resolver="local" pubrevision="${version}" overwrite="true"
+                 artifactspattern="${build.dir}/${ivy.publish.pattern}"/>
   </target>
 
   <!-- target to compile tests -->
-  <target name="compile-test" depends="compile">
+  <target name="compile-test" depends="compile,ivy-retrieve-test">
     <echo message="Project: ${ant.project.name}"/>
     <javac
      encoding="${build.encoding}"
@@ -356,17 +371,26 @@
   <target name="test"
   	depends="test-conditions,gen-test,compile-test,test-jar,test-init">
     <echo message="Project: ${ant.project.name}"/>
+    <property name="hadoop.testcp" refid="test.classpath"/>
+    <if>
+      <equals arg1="${hadoop.mr.rev}" arg2="23" />
+      <then>
+        <property name="hadoop.opts" value="${hadoop.opts.23}" />
+      </then>
+      <else>
+        <property name="hadoop.opts" value="${hadoop.opts.20}" />
+      </else>
+    </if>
     <if>
       <equals arg1="${test.print.classpath}" arg2="true" />
       <then>        
-        <property name="testcp" refid="test.classpath"/>
-        <echo message="Test Classpath: ${testcp}"/>
+        <echo message="Test Classpath: ${hadoop.testcp}"/>
       </then>
     </if>
     <junit showoutput="${test.output}" printsummary="yes" haltonfailure="no"
            fork="yes" maxmemory="512m" dir="${basedir}" timeout="${test.timeout}"
            errorProperty="tests.failed" failureProperty="tests.failed" filtertrace="off">
-      <env key="LANG" value="${test.lang}"/> 
+      <env key="HIVE_HADOOP_TEST_CLASSPATH" value="${hadoop.testcp}"/>
       <env key="HADOOP_HOME" value="${hadoop.root}"/>
       <env key="HADOOP_CLASSPATH" value="${test.src.data.dir}/conf:${build.dir.hive}/dist/lib/derby-${derby.version}.jar:${build.dir.hive}/dist/lib/JavaEWAH-${javaewah.version}.jar:${hadoop.root}/modules/*"/> <!-- Modules needed for Hadoop 0.23 -->
       <env key="TZ" value="US/Pacific"/>
@@ -391,8 +415,9 @@
       <sysproperty key="build.ivy.lib.dir" value="${build.ivy.lib.dir}"/>
       <sysproperty key="derby.version" value="${derby.version}"/>
       <sysproperty key="hive.version" value="${version}"/>
+      <sysproperty key="hadoop.bin.path" value="${test.hadoop.bin.path}"/>
 
-      <classpath refid="${test.classpath.id}"/>
+      <classpath refid="test.local.classpath"/>
       <formatter type="${test.junit.output.format}" usefile="${test.junit.output.usefile}" />
       <batchtest todir="${test.build.dir}" unless="testcase">
         <fileset dir="${test.build.classes}"
