@@ -96,11 +96,10 @@ public class GenericUDFFromUtcTimestamp extends GenericUDF {
 
   protected Timestamp applyOffset(long offset, Timestamp t) {
     long newTime = t.getTime() + offset;
-    int nanos = (int) (t.getNanos() + (newTime % 1000) * 1000000);
-    t.setTime(newTime);
-    t.setNanos(nanos);
+    Timestamp t2 = new Timestamp(newTime);
+    t2.setNanos(t.getNanos());
 
-    return t;
+    return t2;
   }
 
   @Override

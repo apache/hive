@@ -26,6 +26,17 @@ select from_utc_timestamp(t, 'America/Chicago')
 select to_utc_timestamp(t, 'America/Chicago')
   from timestamp_udf;
 
+select t, from_utc_timestamp(t, 'America/Chicago')
+  from timestamp_udf;
+
+select t, from_utc_timestamp(t, 'America/Chicago'), t, from_utc_timestamp(t, 'America/Chicago')
+  from timestamp_udf;
+
+select t, to_utc_timestamp(t, 'America/Chicago')
+  from timestamp_udf;
+
+select t, to_utc_timestamp(t, 'America/Chicago'), t, to_utc_timestamp(t, 'America/Chicago')
+  from timestamp_udf;
 
 -- Test UDFs with string input
 select unix_timestamp(t), year(t), month(t), day(t), dayofmonth(t), 
