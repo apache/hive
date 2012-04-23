@@ -1,3 +1,181 @@
+Release Notes - Hive - Version 0.9.0
+
+** New Feature
+    * [HIVE-1634] - Allow access to Primitive types stored in binary format in HBase
+    * [HIVE-2005] - Implement BETWEEN operator
+    * [HIVE-2279] - Implement sort_array UDF
+    * [HIVE-2490] - Add reset operation and average time attribute to Metrics MBean.
+    * [HIVE-2530] - Implement SHOW TBLPROPERTIES
+    * [HIVE-2602] - add support for insert partition overwrite(...) if not exists
+    * [HIVE-2612] - support hive table/partitions exists in more than one region
+    * [HIVE-2621] - Allow multiple group bys with the same input data and spray keys to be run on the same reducer.
+    * [HIVE-2695] - Add PRINTF() Udf
+    * [HIVE-2698] - Enable Hadoop-1.0.0 in Hive
+    * [HIVE-2810] - Implement NULL-safe equality operator <=>
+    * [HIVE-2815] - Filter pushdown in hbase for keys stored in binary format
+    * [HIVE-2819] - Closed range scans on hbase keys
+    * [HIVE-2822] - Add JSON output to the hive ddl commands
+    * [HIVE-2894] - RCFile Reader doesn't provide access to Metadata
+    * [HIVE-2898] - Add nicer helper functions for adding and reading metadata from RCFiles
+    * [HIVE-2936] - Warehouse table subdirectories should inherit the group permissions of the warehouse parent directory
+
+
+** Bug
+    * [HIVE-727] - Hive Server getSchema() returns wrong schema for "Explain" queries
+    * [HIVE-1444] - "hdfs" is hardcoded in few places in the code which inhibits use of other file systems
+    * [HIVE-1892] - show functions also returns internal operators
+    * [HIVE-2329] - Not using map aggregation, fails to execute group-by after cluster-by with same key
+    * [HIVE-2503] - HiveServer should provide per session configuration
+    * [HIVE-2504] - Warehouse table subdirectories should inherit the group permissions of the warehouse parent directory
+    * [HIVE-2520] - left semi join will duplicate data
+    * [HIVE-2543] - Compact index table's files merged in creation
+    * [HIVE-2616] - Passing user identity from metastore client to server in non-secure mode
+    * [HIVE-2617] - Insert overwrite table db.tname fails if partition already exists
+    * [HIVE-2629] - Make a single Hive binary work with both 0.20.x and 0.23.0
+    * [HIVE-2631] - Make Hive work with Hadoop 1.0.0
+    * [HIVE-2632] - ignore exception for external jars via reflection
+    * [HIVE-2635] - wrong class loader used for external jars
+    * [HIVE-2646] - Hive Ivy dependencies on Hadoop should depend on jars directly, not tarballs
+    * [HIVE-2647] - Force Bash shell on parallel test slave nodes
+    * [HIVE-2648] - Parallel tests fail if master directory is not present
+    * [HIVE-2649] - Allow multiple ptest runs by the same person
+    * [HIVE-2650] - Parallel test commands that include cd fail
+    * [HIVE-2654] - "hive.querylog.location" requires parent directory to be exist or else folder creation fails
+    * [HIVE-2657] - builtins JAR is not being published to Maven repo & hive-cli POM does not depend on it either
+    * [HIVE-2660] - Need better exception handling in RCFile tolerate corruptions mode
+    * [HIVE-2666] - StackOverflowError when using custom UDF in map join
+    * [HIVE-2673] - Eclipse launch configurations fail due to unsatisfied builtins JAR dependency
+    * [HIVE-2674] - get_partitions_ps throws TApplicationException if table doesn't exist
+    * [HIVE-2681] - SUCESS is misspelled
+    * [HIVE-2690] - a bug in 'alter table concatenate' that causes filenames getting double url encoded
+    * [HIVE-2705] - SemanticAnalyzer twice swallows an exception it shouldn't
+    * [HIVE-2706] - StackOverflowError when using custom UDF after adding archive after adding jars
+    * [HIVE-2714] - Lots of special characters are not handled in LIKE
+    * [HIVE-2718] - NPE in union followed by join
+    * [HIVE-2724] - Remove unused lib/log4j-1.2.15.jar
+    * [HIVE-2725] - Fix flaky testing infrastructure
+    * [HIVE-2734] - Fix some nondeterministic test output
+    * [HIVE-2735] - PlanUtils.configureTableJobPropertiesForStorageHandler() is not called for partitioned table
+    * [HIVE-2741] - Single binary built against 0.20 and 0.23, does not work against 0.23 clusters.
+    * [HIVE-2746] - Metastore client doesn't log properly in case of connection failure to server
+    * [HIVE-2749] - CONV returns incorrect results sometimes
+    * [HIVE-2750] - Hive multi group by single reducer optimization causes invalid column reference error
+    * [HIVE-2753] - Remove empty java files
+    * [HIVE-2754] - NPE in union with lateral view
+    * [HIVE-2755] - union follwowed by union_subq does not work if the subquery union has reducers
+    * [HIVE-2758] - Metastore is caching too aggressively
+    * [HIVE-2759] - Change global_limit.q into linux format file
+    * [HIVE-2761] - Remove lib/javaewah-0.3.jar
+    * [HIVE-2762] - Alter Table Partition Concatenate Fails On Certain Characters
+    * [HIVE-2769] - union with a multi-table insert is not working
+    * [HIVE-2772] - make union31.q deterministic
+    * [HIVE-2778] - Fail on table sampling
+    * [HIVE-2782] - New BINARY type produces unexpected results with supported UDFS when using MapReduce2
+    * [HIVE-2791] - filter is still removed due to regression of HIVE-1538 althougth HIVE-2344
+    * [HIVE-2792] - SUBSTR(CAST(<string> AS BINARY)) produces unexpected results
+    * [HIVE-2793] - Disable loadpart_err.q on 0.23
+    * [HIVE-2811] - Export LANG=en_US.UTF-8 to environment while running tests
+    * [HIVE-2824] - typo in configuration parameter
+    * [HIVE-2831] - TestContribCliDriver.dboutput and TestCliDriver.input45 fail on 0.23
+    * [HIVE-2833] - Fix test failures caused by HIVE-2716
+    * [HIVE-2837] - insert into external tables should not be allowed
+    * [HIVE-2838] - cleanup readentity/writeentity
+    * [HIVE-2840] - INPUT__FILE__NAME virtual column returns unqualified paths on Hadoop 0.23
+    * [HIVE-2856] - Fix TestCliDriver escape1.q failure on MR2
+    * [HIVE-2857] - QTestUtil.cleanUp() fails with FileNotException on 0.23
+    * [HIVE-2863] - Ambiguous table name or column reference message displays when table and column names are the same
+    * [HIVE-2875] - Renaming partition changes partition location prefix
+    * [HIVE-2901] - Hive union with NULL constant and string in same column returns all null
+    * [HIVE-2907] - Hive error when dropping a table with large number of partitions
+    * [HIVE-2913] - BlockMergeTask Doesn't Honor Job Configuration Properties when used directly
+    * [HIVE-2920] - TestStatsPublisherEnhanced throws NPE on JDBC connection failure
+    * [HIVE-2923] - testAclPositive in TestZooKeeperTokenStore failing in clean checkout when run on Mac
+    * [HIVE-2948] - HiveFileFormatUtils should use Path.SEPARATOR instead of File.Separator
+    * [HIVE-2958] - GROUP BY causing ClassCastException [LazyDioInteger cannot be cast LazyInteger]
+    * [HIVE-2970] - several jars in hive tar generated are not required
+
+** Improvement
+    * [HIVE-1040] - use sed rather than diff for masking out noise in diff-based tests
+    * [HIVE-1487] - parallelize test query runs
+    * [HIVE-1877] - Add java_method() as a synonym for the reflect() UDF
+    * [HIVE-2203] - Extend concat_ws() UDF to support arrays of strings
+    * [HIVE-2249] - When creating constant expression for numbers, try to infer type from another comparison operand, instead of trying to use integer first, and then long and double
+    * [HIVE-2471] - Add timestamp column to the partition stats table.
+    * [HIVE-2518] - pull junit jar from maven repos via ivy
+    * [HIVE-2559] - Add target to install Hive JARs/POMs in the local Maven cache
+    * [HIVE-2577] - Expose the HiveConf in HiveConnection API
+    * [HIVE-2589] - Newly created partition should inherit properties from table
+    * [HIVE-2611] - Make index table output of create index command if index is table based
+    * [HIVE-2628] - move one line log from MapOperator to HiveContextAwareRecordReader
+    * [HIVE-2640] - Add alterPartition to AlterHandler interface
+    * [HIVE-2642] - fix Hive-2566 and make union optimization more aggressive
+    * [HIVE-2651] - The variable hive.exec.mode.local.auto.tasks.max should be changed
+    * [HIVE-2652] - Change arc config to hide generated files from Differential by default
+    * [HIVE-2662] - Add Ant configuration property for dumping classpath of tests
+    * [HIVE-2665] - Support for metastore service specific HADOOP_OPTS environment setting
+    * [HIVE-2676] - The row count that loaded to a table may not right
+    * [HIVE-2700] - Add 'ivy-clean-cache' and 'very-clean' Ant targets
+    * [HIVE-2712] - Make ZooKeeper token store ACL configurable
+    * [HIVE-2756] - Views should be added to the inputs of queries.
+    * [HIVE-2760] - TestCliDriver should log elapsed time
+    * [HIVE-2764] - Obtain delegation tokens for MR jobs in secure hbase setup
+    * [HIVE-2765] - hbase handler uses ZooKeeperConnectionException which is not compatible with HBase versions other than 0.89
+    * [HIVE-2773] - HiveStorageHandler.configureTableJobProperites() should let the handler know wether it is configuration for input or output
+    * [HIVE-2779] - Improve hooks run in Driver
+    * [HIVE-2781] - HBaseSerDe should allow users to specify the timestamp passed to Puts
+    * [HIVE-2795] - View partitions do not have a storage descriptor
+    * [HIVE-2797] - Make the IP address of a Thrift client available to HMSHandler.
+    * [HIVE-2823] - Add logging of total run time of Driver
+    * [HIVE-2825] - Concatenating a partition does not inherit location from table
+    * [HIVE-2827] - Implement nullsafe equi-join
+    * [HIVE-2832] - Cache error messages for additional logging
+    * [HIVE-2835] - Change default configuration for hive.exec.dynamic.partition
+    * [HIVE-2841] - Fix javadoc warnings
+    * [HIVE-2850] - Remove zero length files
+    * [HIVE-2853] - Add pre event listeners to metastore
+    * [HIVE-2858] - Cache remote map reduce job stack traces for additional logging
+    * [HIVE-2861] - Support eventual constant expression for filter pushdown for key ranges in hbase
+    * [HIVE-2864] - If hive history file's directory doesn't exist don't crash
+    * [HIVE-2865] - hive-config.sh should honor HIVE_HOME env
+    * [HIVE-2866] - Cache local map reduce job errors for additional logging
+    * [HIVE-2871] - Add a new hook to run at the beginning and end of the Driver.run method
+    * [HIVE-2872] - Store which configs the user has explicitly changed
+    * [HIVE-2879] - Add "rat" target to build to look for missing license headers
+    * [HIVE-2881] - Remove redundant key comparing in SMBMapJoinOperator
+    * [HIVE-2891] - TextConverter for UDF's is inefficient if the input object is already Text or Lazy
+    * [HIVE-2908] - Hive: Extend ALTER TABLE DROP PARTITION syntax to use all comparators
+    * [HIVE-2930] - Add license to the Hive files
+    * [HIVE-2946] - Hive metastore does not have any log messages while shutting itself down.
+    * [HIVE-2961] - Remove need for storage descriptors for view partitions
+
+** Task
+    * [HIVE-2645] - Hive Web Server startup messages logs incorrect path it is searching for WAR
+    * [HIVE-2719] - Fix test failures caused by HIVE-2589
+    * [HIVE-2748] - Upgrade Hbase and ZK dependcies
+    * [HIVE-2768] - Add a getAuthorizationProvider to HiveStorageHandler
+    * [HIVE-2805] - Move metastore upgrade scripts labeled 0.10.0 into scripts labeled 0.9.0
+    * [HIVE-2962] - Remove unnecessary JAR dependencies
+    * [HIVE-2965] - Revert HIVE-2612
+    * [HIVE-2966] - Revert HIVE-2795
+
+** Sub-task
+    * [HIVE-2433] - add DOAP file for Hive
+    * [HIVE-2436] - Update project naming and description in Hive website
+    * [HIVE-2437] - update project website navigation links
+    * [HIVE-2438] - add trademark attributions to Hive homepage
+    * [HIVE-2600] - Enable/Add type-specific compression for rcfile
+    * [HIVE-2716] - Move retry logic in HiveMetaStore to a separe class
+    * [HIVE-2771] - Add support for filter pushdown for key ranges in hbase for keys of type string
+
+
+** Test
+    * [HIVE-2686] - Test ppr_pushdown.q is failing on trunk
+    * [HIVE-2727] - add a testcase for partitioned view on union and base tables have index
+    * [HIVE-2937] - TestHiveServerSessions hangs when executed directly
+
+** Wish
+    * [HIVE-2682] - Clean-up logs
+
 Release Notes - Hive - Version 0.8.0
 
 ** New Feature
