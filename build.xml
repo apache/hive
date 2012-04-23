@@ -490,7 +490,14 @@
 
     <!-- copy jar files -->
     <copy todir="${target.lib.dir}" preservelastmodified="true" flatten="true">
-      <fileset dir="${hive.root}" includes="*/*.jar, */*/*.jar" excludes="**/antlr-2*,**/antlr-3*,**/TestSerDe.jar"/>
+      <fileset dir="${hive.root}"  >
+        <include name="*/*.jar"/>
+        <include name="*/*/*.jar"/>
+        <exclude name="**/TestSerDe.jar"/>
+        <exclude name="build/hadoopcore/*.jar"/>
+        <exclude name="**/ant-contrib*.jar"/>
+        <exclude name="**/hive-anttasks*.jar"/>
+      </fileset>
       <fileset file="${build.dir.hive}/cli/hive-cli-${version}.jar"/>
       <fileset file="${build.dir.hive}/common/hive-common-${version}.jar"/>
       <fileset file="${build.dir.hive}/ql/hive-exec-${version}.jar"/>
@@ -501,6 +508,14 @@
       <fileset dir="${build.dir.hive}/ivy/lib/default">
         <include name="*.jar"/>
         <exclude name="*.tar.gz"/>
+	<exclude name="**/*high-scale-lib-*"/>
+        <exclude name="**/hamcrest-core-*jar"/>
+        <exclude name="**/junit*.jar"/>
+        <exclude name="**/asm*.jar"/>
+        <exclude name="**/mockito*.jar"/>
+        <exclude name="**/velocity*.jar"/>
+        <exclude name="**/antlr-3*.jar"/>
+        <exclude name="**/antlr-2*.jar"/>
       </fileset>
     </copy>
     <copy todir="${target.example.dir}/files" preservelastmodified="true" flatten="true">
