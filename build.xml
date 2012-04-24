@@ -971,7 +971,7 @@
 	     uri="urn:maven-artifact-ant" classpathref="maven-ant-tasks.classpath" />
   </target>
   
-  <target name="maven-build" depends="jar" description="Build Maven artifacts">
+  <target name="maven-build" depends="package" description="Build Maven artifacts">
     <echo message="Project: ${ant.project.name}"/>
     <!-- create jars, poms licences directory -->
     <mkdir dir="${mvn.jar.dir}" />

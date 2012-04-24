@@ -27,7 +27,7 @@
     <!-- defer compilation until package phase -->
   </target>
 
-  <target name="jar" depends="init">
+  <target name="jar" depends="init, setup, ivy-retrieve">
     <echo message="Project: ${ant.project.name}"/>
     <!-- defer compilation until package phase -->
   </target>
