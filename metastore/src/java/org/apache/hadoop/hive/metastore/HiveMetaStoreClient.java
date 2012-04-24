@@ -302,15 +302,17 @@ public class HiveMetaStoreClient implements IMetaStoreClient {
 
   public void close() {
     isConnected = false;
-    if ((transport != null) && transport.isOpen()) {
-      transport.close();
-    }
     try {
       if (null != client) {
         client.shutdown();
       }
     } catch (TException e) {
       LOG.error("Unable to shutdown local metastore client", e);
+    }
+    // Transport would have got closed via client.shutdown(), so we dont need this, but
+    // just in case, we make this call.
+    if ((transport != null) && transport.isOpen()) {
+      transport.close();
     }
   }
 
