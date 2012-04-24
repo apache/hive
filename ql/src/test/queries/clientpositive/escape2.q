@@ -19,64 +19,8 @@ SELECT count(*) from escape2;
 SELECT * from escape2;
 SHOW PARTITIONS escape2;
 
--- ASCII values 1, 10, 13, 59, 92, 127 were not included in the below commands
+-- ASCII values 1-31, 59, 92, 127 were not included in the below commands
 
--- ASCII 2
-ALTER TABLE escape2 PARTITION (ds='1', part='') CONCATENATE;
--- ASCII 3
-ALTER TABLE escape2 PARTITION (ds='1', part='') CONCATENATE;
--- ASCII 4
-ALTER table escape2 PARTITION (ds='1', part='') CONCATENATE;
--- ASCII 5
-ALTER table escape2 PARTITION (ds='1', part='') CONCATENATE;
--- ASCII 6
-ALTER table escape2 PARTITION (ds='1', part='') CONCATENATE;
--- ASCII 7
-ALTER table escape2 PARTITION (ds='1', part='') CONCATENATE;
--- ASCII 8
-ALTER table escape2 PARTITION (ds='1', part='') CONCATENATE;
--- ASCII 9
-ALTER table escape2 PARTITION (ds='1', part='	') CONCATENATE;
--- ASCII 11
-ALTER table escape2 PARTITION (ds='1', part='') CONCATENATE;
--- ASCII 12
-ALTER table escape2 PARTITION (ds='1', part='') CONCATENATE;
--- ASCII 14
-ALTER table escape2 PARTITION (ds='1', part='') CONCATENATE;
--- ASCII 15
-ALTER table escape2 PARTITION (ds='1', part='') CONCATENATE;
--- ASCII 16
-ALTER table escape2 PARTITION (ds='1', part='') CONCATENATE;
--- ASCII 17
-ALTER table escape2 PARTITION (ds='1', part='') CONCATENATE;
--- ASCII 18
-ALTER table escape2 PARTITION (ds='1', part='') CONCATENATE;
--- ASCII 19
-ALTER table escape2 PARTITION (ds='1', part='') CONCATENATE;
--- ASCII 20
-ALTER table escape2 PARTITION (ds='1', part='') CONCATENATE;
--- ASCII 21
-ALTER table escape2 PARTITION (ds='1', part='') CONCATENATE;
--- ASCII 22
-ALTER table escape2 PARTITION (ds='1', part='') CONCATENATE;
--- ASCII 23
-ALTER table escape2 PARTITION (ds='1', part='') CONCATENATE;
--- ASCII 24
-ALTER table escape2 PARTITION (ds='1', part='') CONCATENATE;
--- ASCII 25
-ALTER table escape2 PARTITION (ds='1', part='') CONCATENATE;
--- ASCII 26
-ALTER table escape2 PARTITION (ds='1', part='') CONCATENATE;
--- ASCII 27
-ALTER table escape2 PARTITION (ds='1', part='') CONCATENATE;
--- ASCII 28
-ALTER table escape2 PARTITION (ds='1', part='') CONCATENATE;
--- ASCII 29
-ALTER table escape2 PARTITION (ds='1', part='') CONCATENATE;
--- ASCII 30
-ALTER table escape2 PARTITION (ds='1', part='') CONCATENATE;
--- ASCII 31
-ALTER table escape2 PARTITION (ds='1', part='') CONCATENATE;
 ALTER table escape2 PARTITION (ds='1', part=' ') CONCATENATE;
 ALTER TABLE escape2 PARTITION (ds='1', part='!') CONCATENATE;
 ALTER TABLE escape2 PARTITION (ds='1', part='"') CONCATENATE;
