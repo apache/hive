@@ -164,6 +164,7 @@ public class Hive {
       hiveDB.set(newdb);
       return newdb;
     }
+    db.conf = c;
     return db;
   }
 

@@ -1,0 +1,31 @@
+PREHOOK: query: USE default
+PREHOOK: type: SWITCHDATABASE
+POSTHOOK: query: USE default
+POSTHOOK: type: SWITCHDATABASE
+PREHOOK: query: -- Test of hive.exec.max.dynamic.partitions.pernode
+
+CREATE TABLE max_parts(key STRING) PARTITIONED BY (value STRING)
+PREHOOK: type: CREATETABLE
+POSTHOOK: query: -- Test of hive.exec.max.dynamic.partitions.pernode
+
+CREATE TABLE max_parts(key STRING) PARTITIONED BY (value STRING)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: default@max_parts
+PREHOOK: query: INSERT OVERWRITE TABLE max_parts PARTITION(value)
+SELECT key, value
+FROM src
+LIMIT 50
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@max_parts
+Execution failed with exit status: 2
+Obtaining error information
+
+Task failed!
+Task ID:
+  Stage-1
+
+Logs:
+
+#### A masked pattern was here ####
+FAILED: Execution Error, return code 2 from org.apache.hadoop.hive.ql.exec.MapRedTask
