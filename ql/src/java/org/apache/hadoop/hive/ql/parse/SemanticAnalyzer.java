@@ -496,8 +496,13 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
 
     String tabIdName = getUnescapedName(tableTree);
 
-    String alias = (aliasIndex != 0) ?
-        unescapeIdentifier(tabref.getChild(aliasIndex).getText()) : tabIdName;
+    String alias;
+    if (aliasIndex != 0) {
+      alias = unescapeIdentifier(tabref.getChild(aliasIndex).getText());
+    }
+    else {
+      alias = getUnescapedUnqualifiedTableName(tableTree);
+    }
 
     // If the alias is already there then we have a conflict
     if (qb.exists(alias)) {
@@ -556,7 +561,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
 
     qb.getParseInfo().setSrcForAlias(alias, tableTree);
 
-    unparseTranslator.addTableNameTranslation(tableTree);
+    unparseTranslator.addTableNameTranslation(tableTree, db.getCurrentDatabase());
     if (aliasIndex != 0) {
       unparseTranslator.addIdentifierTranslation((ASTNode) tabref
           .getChild(aliasIndex));
@@ -977,11 +982,6 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         }
 
         if (tab.isView()) {
-          // TODO: add support to referencing views in foreign databases.
-          if (!tab.getDbName().equals(db.getCurrentDatabase())) {
-            throw new SemanticException(ErrorMsg.INVALID_TABLE_ALIAS.
-                getMsg("Referencing view from foreign databases is not supported."));
-          }
           if (qb.getParseInfo().isAnalyzeCommand()) {
             throw new SemanticException(ErrorMsg.ANALYZE_VIEW.getMsg());
           }
@@ -5307,7 +5307,8 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         // leftAliases should contain the first table, rightAliases should
         // contain all other tables and baseSrc should contain all tables
 
-        String tableName = getUnescapedName((ASTNode)child.getChild(0));
+        String tableName = getUnescapedUnqualifiedTableName((ASTNode) child.getChild(0));
+
         String alias = child.getChildCount() == 1 ? tableName
             : unescapeIdentifier(child.getChild(child.getChildCount() - 1)
             .getText().toLowerCase());
@@ -5410,8 +5411,9 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
 
     if ((left.getToken().getType() == HiveParser.TOK_TABREF)
         || (left.getToken().getType() == HiveParser.TOK_SUBQUERY)) {
-      String table_name = getUnescapedName((ASTNode)left.getChild(0));
-      String alias = left.getChildCount() == 1 ? table_name
+      String tableName = getUnescapedUnqualifiedTableName((ASTNode) left.getChild(0))
+        .toLowerCase();
+      String alias = left.getChildCount() == 1 ? tableName
           : unescapeIdentifier(left.getChild(left.getChildCount() - 1)
           .getText().toLowerCase());
       joinTree.setLeftAlias(alias);
@@ -5437,7 +5439,8 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
 
     if ((right.getToken().getType() == HiveParser.TOK_TABREF)
         || (right.getToken().getType() == HiveParser.TOK_SUBQUERY)) {
-      String tableName = getUnescapedName((ASTNode)right.getChild(0));
+      String tableName = getUnescapedUnqualifiedTableName((ASTNode) right.getChild(0))
+        .toLowerCase();
       String alias = right.getChildCount() == 1 ? tableName
           : unescapeIdentifier(right.getChild(right.getChildCount() - 1)
           .getText().toLowerCase());

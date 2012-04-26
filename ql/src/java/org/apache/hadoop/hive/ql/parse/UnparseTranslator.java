@@ -138,7 +138,7 @@ class UnparseTranslator {
    * @param node
    *          source node (which must be an tabName) to be replaced
    */
-  void addTableNameTranslation(ASTNode tableName) {
+  void addTableNameTranslation(ASTNode tableName, String currentDatabaseName) {
     if (!enabled) {
       return;
     }
@@ -148,9 +148,22 @@ class UnparseTranslator {
     }
     assert (tableName.getToken().getType() == HiveParser.TOK_TABNAME);
     assert (tableName.getChildCount() <= 2);
-    addIdentifierTranslation((ASTNode)tableName.getChild(0));
+
     if (tableName.getChildCount() == 2) {
+      addIdentifierTranslation((ASTNode)tableName.getChild(0));
       addIdentifierTranslation((ASTNode)tableName.getChild(1));
+    }
+    else {
+      // transform the table reference to an absolute reference (i.e., "db.table")
+      StringBuilder replacementText = new StringBuilder();
+      replacementText.append(HiveUtils.unparseIdentifier(currentDatabaseName));
+      replacementText.append('.');
+
+      ASTNode identifier = (ASTNode)tableName.getChild(0);
+      String identifierText = BaseSemanticAnalyzer.unescapeIdentifier(identifier.getText());
+      replacementText.append(HiveUtils.unparseIdentifier(identifierText));
+
+      addTranslation(identifier, replacementText.toString());
     }
   }
 

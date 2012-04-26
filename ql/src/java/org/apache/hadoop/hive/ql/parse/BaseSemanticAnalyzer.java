@@ -330,6 +330,28 @@ public abstract class BaseSemanticAnalyzer {
   }
 
   /**
+   * Get the unqualified name from a table node.
+   *
+   * This method works for table names qualified with their schema (e.g., "db.table")
+   * and table names without schema qualification. In both cases, it returns
+   * the table name without the schema.
+   *
+   * @param node the table node
+   * @return the table name without schema qualification
+   *         (i.e., if name is "db.table" or "table", returns "table")
+   */
+  public static String getUnescapedUnqualifiedTableName(ASTNode node) {
+    assert node.getChildCount() <= 2;
+
+    if (node.getChildCount() == 2) {
+      node = (ASTNode) node.getChild(1);
+    }
+
+    return getUnescapedName(node);
+  }
+
+
+  /**
    * Remove the encapsulating "`" pair from the identifier. We allow users to
    * use "`" to escape identifier for table names, column names and aliases, in
    * case that coincide with Hive language keywords.
