@@ -48,9 +48,9 @@ STAGE PLANS:
   Stage: Stage-1
     Map Reduce
       Alias -> Map Operator Tree:
-        db1.sourcetable 
+        sourcetable 
           TableScan
-            alias: db1.sourcetable
+            alias: sourcetable
             Select Operator
               expressions:
                     expr: one
@@ -136,8 +136,8 @@ SELECT one,two FROM db1.sourceTable WHERE ds='2011-11-11' order by one desc, two
 POSTHOOK: type: QUERY
 POSTHOOK: Input: db1@sourcetable@ds=2011-11-11
 POSTHOOK: Output: db2@destintable@ds=2011-11-11
-POSTHOOK: Lineage: destintable PARTITION(ds=2011-11-11).one SIMPLE [(sourcetable)db1.sourcetable.FieldSchema(name:one, type:string, comment:null), ]
-POSTHOOK: Lineage: destintable PARTITION(ds=2011-11-11).two SIMPLE [(sourcetable)db1.sourcetable.FieldSchema(name:two, type:string, comment:null), ]
+POSTHOOK: Lineage: destintable PARTITION(ds=2011-11-11).one SIMPLE [(sourcetable)sourcetable.FieldSchema(name:one, type:string, comment:null), ]
+POSTHOOK: Lineage: destintable PARTITION(ds=2011-11-11).two SIMPLE [(sourcetable)sourcetable.FieldSchema(name:two, type:string, comment:null), ]
 PREHOOK: query: select one,two from db2.destinTable order by one desc, two desc
 PREHOOK: type: QUERY
 PREHOOK: Input: db2@destintable@ds=2011-11-11
@@ -146,8 +146,8 @@ POSTHOOK: query: select one,two from db2.destinTable order by one desc, two desc
 POSTHOOK: type: QUERY
 POSTHOOK: Input: db2@destintable@ds=2011-11-11
 #### A masked pattern was here ####
-POSTHOOK: Lineage: destintable PARTITION(ds=2011-11-11).one SIMPLE [(sourcetable)db1.sourcetable.FieldSchema(name:one, type:string, comment:null), ]
-POSTHOOK: Lineage: destintable PARTITION(ds=2011-11-11).two SIMPLE [(sourcetable)db1.sourcetable.FieldSchema(name:two, type:string, comment:null), ]
+POSTHOOK: Lineage: destintable PARTITION(ds=2011-11-11).one SIMPLE [(sourcetable)sourcetable.FieldSchema(name:one, type:string, comment:null), ]
+POSTHOOK: Lineage: destintable PARTITION(ds=2011-11-11).two SIMPLE [(sourcetable)sourcetable.FieldSchema(name:two, type:string, comment:null), ]
 98	val_98
 98	val_98
 98	val_98
@@ -159,8 +159,8 @@ PREHOOK: type: QUERY
 POSTHOOK: query: EXPLAIN INSERT OVERWRITE TABLE db2.destinTable PARTITION (ds='2011-11-11')
 SELECT one,two FROM db1.sourceTable WHERE ds='2011-11-11' order by one desc, two desc limit 5
 POSTHOOK: type: QUERY
-POSTHOOK: Lineage: destintable PARTITION(ds=2011-11-11).one SIMPLE [(sourcetable)db1.sourcetable.FieldSchema(name:one, type:string, comment:null), ]
-POSTHOOK: Lineage: destintable PARTITION(ds=2011-11-11).two SIMPLE [(sourcetable)db1.sourcetable.FieldSchema(name:two, type:string, comment:null), ]
+POSTHOOK: Lineage: destintable PARTITION(ds=2011-11-11).one SIMPLE [(sourcetable)sourcetable.FieldSchema(name:one, type:string, comment:null), ]
+POSTHOOK: Lineage: destintable PARTITION(ds=2011-11-11).two SIMPLE [(sourcetable)sourcetable.FieldSchema(name:two, type:string, comment:null), ]
 ABSTRACT SYNTAX TREE:
   (TOK_QUERY (TOK_FROM (TOK_TABREF (TOK_TABNAME db1 sourceTable))) (TOK_INSERT (TOK_DESTINATION (TOK_TAB (TOK_TABNAME db2 destinTable) (TOK_PARTSPEC (TOK_PARTVAL ds '2011-11-11')))) (TOK_SELECT (TOK_SELEXPR (TOK_TABLE_OR_COL one)) (TOK_SELEXPR (TOK_TABLE_OR_COL two))) (TOK_WHERE (= (TOK_TABLE_OR_COL ds) '2011-11-11')) (TOK_ORDERBY (TOK_TABSORTCOLNAMEDESC (TOK_TABLE_OR_COL one)) (TOK_TABSORTCOLNAMEDESC (TOK_TABLE_OR_COL two))) (TOK_LIMIT 5)))
 
@@ -174,9 +174,9 @@ STAGE PLANS:
   Stage: Stage-1
     Map Reduce
       Alias -> Map Operator Tree:
-        db1.sourcetable 
+        sourcetable 
           TableScan
-            alias: db1.sourcetable
+            alias: sourcetable
             Select Operator
               expressions:
                     expr: one
@@ -262,10 +262,10 @@ SELECT one,two FROM db1.sourceTable WHERE ds='2011-11-11' order by one desc, two
 POSTHOOK: type: QUERY
 POSTHOOK: Input: db1@sourcetable@ds=2011-11-11
 POSTHOOK: Output: db2@destintable@ds=2011-11-11
-POSTHOOK: Lineage: destintable PARTITION(ds=2011-11-11).one SIMPLE [(sourcetable)db1.sourcetable.FieldSchema(name:one, type:string, comment:null), ]
-POSTHOOK: Lineage: destintable PARTITION(ds=2011-11-11).two SIMPLE [(sourcetable)db1.sourcetable.FieldSchema(name:two, type:string, comment:null), ]
-POSTHOOK: Lineage: destintable PARTITION(ds=2011-11-11).one SIMPLE [(sourcetable)db1.sourcetable.FieldSchema(name:one, type:string, comment:null), ]
-POSTHOOK: Lineage: destintable PARTITION(ds=2011-11-11).two SIMPLE [(sourcetable)db1.sourcetable.FieldSchema(name:two, type:string, comment:null), ]
+POSTHOOK: Lineage: destintable PARTITION(ds=2011-11-11).one SIMPLE [(sourcetable)sourcetable.FieldSchema(name:one, type:string, comment:null), ]
+POSTHOOK: Lineage: destintable PARTITION(ds=2011-11-11).two SIMPLE [(sourcetable)sourcetable.FieldSchema(name:two, type:string, comment:null), ]
+POSTHOOK: Lineage: destintable PARTITION(ds=2011-11-11).one SIMPLE [(sourcetable)sourcetable.FieldSchema(name:one, type:string, comment:null), ]
+POSTHOOK: Lineage: destintable PARTITION(ds=2011-11-11).two SIMPLE [(sourcetable)sourcetable.FieldSchema(name:two, type:string, comment:null), ]
 PREHOOK: query: select one,two from db2.destinTable order by one desc, two desc
 PREHOOK: type: QUERY
 PREHOOK: Input: db2@destintable@ds=2011-11-11
@@ -274,10 +274,10 @@ POSTHOOK: query: select one,two from db2.destinTable order by one desc, two desc
 POSTHOOK: type: QUERY
 POSTHOOK: Input: db2@destintable@ds=2011-11-11
 #### A masked pattern was here ####
-POSTHOOK: Lineage: destintable PARTITION(ds=2011-11-11).one SIMPLE [(sourcetable)db1.sourcetable.FieldSchema(name:one, type:string, comment:null), ]
-POSTHOOK: Lineage: destintable PARTITION(ds=2011-11-11).two SIMPLE [(sourcetable)db1.sourcetable.FieldSchema(name:two, type:string, comment:null), ]
-POSTHOOK: Lineage: destintable PARTITION(ds=2011-11-11).one SIMPLE [(sourcetable)db1.sourcetable.FieldSchema(name:one, type:string, comment:null), ]
-POSTHOOK: Lineage: destintable PARTITION(ds=2011-11-11).two SIMPLE [(sourcetable)db1.sourcetable.FieldSchema(name:two, type:string, comment:null), ]
+POSTHOOK: Lineage: destintable PARTITION(ds=2011-11-11).one SIMPLE [(sourcetable)sourcetable.FieldSchema(name:one, type:string, comment:null), ]
+POSTHOOK: Lineage: destintable PARTITION(ds=2011-11-11).two SIMPLE [(sourcetable)sourcetable.FieldSchema(name:two, type:string, comment:null), ]
+POSTHOOK: Lineage: destintable PARTITION(ds=2011-11-11).one SIMPLE [(sourcetable)sourcetable.FieldSchema(name:one, type:string, comment:null), ]
+POSTHOOK: Lineage: destintable PARTITION(ds=2011-11-11).two SIMPLE [(sourcetable)sourcetable.FieldSchema(name:two, type:string, comment:null), ]
 98	val_98
 98	val_98
 98	val_98
@@ -288,32 +288,32 @@ PREHOOK: type: DROPTABLE
 POSTHOOK: query: drop table db2.destinTable
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Output: db2@destintable
-POSTHOOK: Lineage: destintable PARTITION(ds=2011-11-11).one SIMPLE [(sourcetable)db1.sourcetable.FieldSchema(name:one, type:string, comment:null), ]
-POSTHOOK: Lineage: destintable PARTITION(ds=2011-11-11).two SIMPLE [(sourcetable)db1.sourcetable.FieldSchema(name:two, type:string, comment:null), ]
-POSTHOOK: Lineage: destintable PARTITION(ds=2011-11-11).one SIMPLE [(sourcetable)db1.sourcetable.FieldSchema(name:one, type:string, comment:null), ]
-POSTHOOK: Lineage: destintable PARTITION(ds=2011-11-11).two SIMPLE [(sourcetable)db1.sourcetable.FieldSchema(name:two, type:string, comment:null), ]
+POSTHOOK: Lineage: destintable PARTITION(ds=2011-11-11).one SIMPLE [(sourcetable)sourcetable.FieldSchema(name:one, type:string, comment:null), ]
+POSTHOOK: Lineage: destintable PARTITION(ds=2011-11-11).two SIMPLE [(sourcetable)sourcetable.FieldSchema(name:two, type:string, comment:null), ]
+POSTHOOK: Lineage: destintable PARTITION(ds=2011-11-11).one SIMPLE [(sourcetable)sourcetable.FieldSchema(name:one, type:string, comment:null), ]
+POSTHOOK: Lineage: destintable PARTITION(ds=2011-11-11).two SIMPLE [(sourcetable)sourcetable.FieldSchema(name:two, type:string, comment:null), ]
 PREHOOK: query: drop table db1.sourceTable
 PREHOOK: type: DROPTABLE
 POSTHOOK: query: drop table db1.sourceTable
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Output: db1@sourcetable
-POSTHOOK: Lineage: destintable PARTITION(ds=2011-11-11).one SIMPLE [(sourcetable)db1.sourcetable.FieldSchema(name:one, type:string, comment:null), ]
-POSTHOOK: Lineage: destintable PARTITION(ds=2011-11-11).two SIMPLE [(sourcetable)db1.sourcetable.FieldSchema(name:two, type:string, comment:null), ]
-POSTHOOK: Lineage: destintable PARTITION(ds=2011-11-11).one SIMPLE [(sourcetable)db1.sourcetable.FieldSchema(name:one, type:string, comment:null), ]
-POSTHOOK: Lineage: destintable PARTITION(ds=2011-11-11).two SIMPLE [(sourcetable)db1.sourcetable.FieldSchema(name:two, type:string, comment:null), ]
+POSTHOOK: Lineage: destintable PARTITION(ds=2011-11-11).one SIMPLE [(sourcetable)sourcetable.FieldSchema(name:one, type:string, comment:null), ]
+POSTHOOK: Lineage: destintable PARTITION(ds=2011-11-11).two SIMPLE [(sourcetable)sourcetable.FieldSchema(name:two, type:string, comment:null), ]
+POSTHOOK: Lineage: destintable PARTITION(ds=2011-11-11).one SIMPLE [(sourcetable)sourcetable.FieldSchema(name:one, type:string, comment:null), ]
+POSTHOOK: Lineage: destintable PARTITION(ds=2011-11-11).two SIMPLE [(sourcetable)sourcetable.FieldSchema(name:two, type:string, comment:null), ]
 PREHOOK: query: DROP DATABASE db1
 PREHOOK: type: DROPDATABASE
 POSTHOOK: query: DROP DATABASE db1
 POSTHOOK: type: DROPDATABASE
-POSTHOOK: Lineage: destintable PARTITION(ds=2011-11-11).one SIMPLE [(sourcetable)db1.sourcetable.FieldSchema(name:one, type:string, comment:null), ]
-POSTHOOK: Lineage: destintable PARTITION(ds=2011-11-11).two SIMPLE [(sourcetable)db1.sourcetable.FieldSchema(name:two, type:string, comment:null), ]
-POSTHOOK: Lineage: destintable PARTITION(ds=2011-11-11).one SIMPLE [(sourcetable)db1.sourcetable.FieldSchema(name:one, type:string, comment:null), ]
-POSTHOOK: Lineage: destintable PARTITION(ds=2011-11-11).two SIMPLE [(sourcetable)db1.sourcetable.FieldSchema(name:two, type:string, comment:null), ]
+POSTHOOK: Lineage: destintable PARTITION(ds=2011-11-11).one SIMPLE [(sourcetable)sourcetable.FieldSchema(name:one, type:string, comment:null), ]
+POSTHOOK: Lineage: destintable PARTITION(ds=2011-11-11).two SIMPLE [(sourcetable)sourcetable.FieldSchema(name:two, type:string, comment:null), ]
+POSTHOOK: Lineage: destintable PARTITION(ds=2011-11-11).one SIMPLE [(sourcetable)sourcetable.FieldSchema(name:one, type:string, comment:null), ]
+POSTHOOK: Lineage: destintable PARTITION(ds=2011-11-11).two SIMPLE [(sourcetable)sourcetable.FieldSchema(name:two, type:string, comment:null), ]
 PREHOOK: query: DROP DATABASE db2
 PREHOOK: type: DROPDATABASE
 POSTHOOK: query: DROP DATABASE db2
 POSTHOOK: type: DROPDATABASE
-POSTHOOK: Lineage: destintable PARTITION(ds=2011-11-11).one SIMPLE [(sourcetable)db1.sourcetable.FieldSchema(name:one, type:string, comment:null), ]
-POSTHOOK: Lineage: destintable PARTITION(ds=2011-11-11).two SIMPLE [(sourcetable)db1.sourcetable.FieldSchema(name:two, type:string, comment:null), ]
-POSTHOOK: Lineage: destintable PARTITION(ds=2011-11-11).one SIMPLE [(sourcetable)db1.sourcetable.FieldSchema(name:one, type:string, comment:null), ]
-POSTHOOK: Lineage: destintable PARTITION(ds=2011-11-11).two SIMPLE [(sourcetable)db1.sourcetable.FieldSchema(name:two, type:string, comment:null), ]
+POSTHOOK: Lineage: destintable PARTITION(ds=2011-11-11).one SIMPLE [(sourcetable)sourcetable.FieldSchema(name:one, type:string, comment:null), ]
+POSTHOOK: Lineage: destintable PARTITION(ds=2011-11-11).two SIMPLE [(sourcetable)sourcetable.FieldSchema(name:two, type:string, comment:null), ]
+POSTHOOK: Lineage: destintable PARTITION(ds=2011-11-11).one SIMPLE [(sourcetable)sourcetable.FieldSchema(name:one, type:string, comment:null), ]
+POSTHOOK: Lineage: destintable PARTITION(ds=2011-11-11).two SIMPLE [(sourcetable)sourcetable.FieldSchema(name:two, type:string, comment:null), ]

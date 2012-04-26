@@ -41,7 +41,7 @@ value	string
 #### A masked pattern was here ####
 FROM src	 	 
 WHERE key=86, viewExpandedText:SELECT `src`.`key`, `src`.`value`	 	 
-FROM `src`	 	 
+FROM `default`.`src`	 	 
 WHERE `src`.`key`=86, tableType:VIRTUAL_VIEW)		 
 PREHOOK: query: DESCRIBE FORMATTED vp1
 PREHOOK: type: DESCTABLE
@@ -79,7 +79,7 @@ View Original Text: 	SELECT key, value
 FROM src	 	 
 WHERE key=86	 	 
 View Expanded Text: 	SELECT `src`.`key`, `src`.`value`	 
-FROM `src`	 	 
+FROM `default`.`src`	 	 
 WHERE `src`.`key`=86	 	 
 PREHOOK: query: SELECT * FROM vp1
 PREHOOK: type: QUERY
@@ -271,7 +271,7 @@ Sort Columns:       	[]
 	 	 
 # View Information	 	 
 View Original Text: 	SELECT * FROM srcpart WHERE key < 10	 
-View Expanded Text: 	SELECT `srcpart`.`key`, `srcpart`.`value`, `srcpart`.`ds`, `srcpart`.`hr` FROM `srcpart` WHERE `srcpart`.`key` < 10	 
+View Expanded Text: 	SELECT `srcpart`.`key`, `srcpart`.`value`, `srcpart`.`ds`, `srcpart`.`hr` FROM `default`.`srcpart` WHERE `srcpart`.`key` < 10	 
 PREHOOK: query: ALTER VIEW vp2 ADD PARTITION (hr='11') PARTITION (hr='12')
 PREHOOK: type: ALTERTABLE_ADDPARTS
 PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
@@ -377,7 +377,7 @@ View Original Text: 	SELECT key, value
 FROM src	 	 
 WHERE key=86	 	 
 View Expanded Text: 	SELECT `key` AS `k`, `value` AS `v` FROM (SELECT `src`.`key`, `src`.`value`	 
-FROM `src`	 	 
+FROM `default`.`src`	 	 
 WHERE `src`.`key`=86) `vp3`	 	 
 PREHOOK: query: ALTER VIEW vp3
 ADD PARTITION (v='val_86')

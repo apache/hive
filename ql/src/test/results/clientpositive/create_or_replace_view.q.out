@@ -40,7 +40,7 @@ Sort Columns:       	[]
 	 	 
 # View Information	 	 
 View Original Text: 	select * from srcpart	 
-View Expanded Text: 	select `srcpart`.`key`, `srcpart`.`value`, `srcpart`.`ds`, `srcpart`.`hr` from `srcpart`	 
+View Expanded Text: 	select `srcpart`.`key`, `srcpart`.`value`, `srcpart`.`ds`, `srcpart`.`hr` from `default`.`srcpart`	 
 PREHOOK: query: -- modifying definition of unpartitioned view
 create or replace view v partitioned on (ds, hr) as select * from srcpart
 PREHOOK: type: CREATEVIEW
@@ -116,7 +116,7 @@ Sort Columns:       	[]
 	 	 
 # View Information	 	 
 View Original Text: 	select * from srcpart	 
-View Expanded Text: 	select `srcpart`.`key`, `srcpart`.`value`, `srcpart`.`ds`, `srcpart`.`hr` from `srcpart`	 
+View Expanded Text: 	select `srcpart`.`key`, `srcpart`.`value`, `srcpart`.`ds`, `srcpart`.`hr` from `default`.`srcpart`	 
 PREHOOK: query: show partitions v
 PREHOOK: type: SHOWPARTITIONS
 POSTHOOK: query: show partitions v
@@ -179,7 +179,7 @@ Sort Columns:       	[]
 	 	 
 # View Information	 	 
 View Original Text: 	select value, ds, hr from srcpart	 
-View Expanded Text: 	select `srcpart`.`value`, `srcpart`.`ds`, `srcpart`.`hr` from `srcpart`	 
+View Expanded Text: 	select `srcpart`.`value`, `srcpart`.`ds`, `srcpart`.`hr` from `default`.`srcpart`	 
 PREHOOK: query: show partitions v
 PREHOOK: type: SHOWPARTITIONS
 POSTHOOK: query: show partitions v
@@ -243,7 +243,7 @@ Sort Columns:       	[]
 	 	 
 # View Information	 	 
 View Original Text: 	select key, value, ds, hr from srcpart	 
-View Expanded Text: 	select `srcpart`.`key`, `srcpart`.`value`, `srcpart`.`ds`, `srcpart`.`hr` from `srcpart`	 
+View Expanded Text: 	select `srcpart`.`key`, `srcpart`.`value`, `srcpart`.`ds`, `srcpart`.`hr` from `default`.`srcpart`	 
 PREHOOK: query: show partitions v
 PREHOOK: type: SHOWPARTITIONS
 POSTHOOK: query: show partitions v
@@ -324,7 +324,7 @@ Sort Columns:       	[]
 	 	 
 # View Information	 	 
 View Original Text: 	select * from srcpart	 
-View Expanded Text: 	select `srcpart`.`key`, `srcpart`.`value`, `srcpart`.`ds`, `srcpart`.`hr` from `srcpart`	 
+View Expanded Text: 	select `srcpart`.`key`, `srcpart`.`value`, `srcpart`.`ds`, `srcpart`.`hr` from `default`.`srcpart`	 
 PREHOOK: query: drop view v
 PREHOOK: type: DROPVIEW
 PREHOOK: Input: default@v
