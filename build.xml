@@ -302,12 +302,16 @@
     <iterate target="jar"/>
   </target>
 
-  <target name="jar-test" depends="jar"
+  <target name="gen-test" depends="jar" description="Generate tests">
+    <iterate-test target="gen-test"/>
+  </target>
+  
+  <target name="jar-test" depends="gen-test"
           description="Build Java test artifacts">
     <echo message="Project: ${ant.project.name}"/>
     <iterate-test target="compile-test"/>
   </target>
-
+  
   <target name="test" depends="clean-test,jar-test" description="Run tests">
     <echo message="Project: ${ant.project.name}"/>
     <antcall target="test-shims">
@@ -382,18 +386,6 @@
   <target name="very-clean" unless="offline" depends="ivy-clean-cache,clean"
           description="Clean build artifacts and flush Ivy cache" />
 
-  <!-- ====================================================== -->
-  <!-- Generate some of the test data.                        -->
-  <!-- ====================================================== -->
-  <target name="gen-testdata"
-          depends="jar"
-          description="Generate test data">
-    <echo message="Project: ${ant.project.name}"/>
-    <subant target="gen-testdata">
-      <property name="build.dir.hive" location="${build.dir.hive}"/>
-      <fileset dir="." includes="serde/build.xml"/>
-    </subant>
-  </target>
 
   <target name="package-cpp"
           depends="package,compile-cpp"
@@ -557,7 +549,7 @@
   <!-- ====================================================== -->
   <!-- Generate files for eclipse.                            -->
   <!-- ====================================================== -->
-  <target name="eclipse-files" depends="init"
+  <target name="eclipse-files" depends="gen-test"
           description="Generate files for Eclipse">
     <echo message="Project: ${ant.project.name}"/>
     <condition property="hadoop.version.ant-internal" value="0.20">
