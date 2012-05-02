@@ -41,14 +41,6 @@
   <settings defaultResolver="${resolvers}"/>
 
   <resolvers>
-    <url name="hadoop-source">
-      <artifact pattern="${hadoop.mirror}/hadoop/core/[artifact]-[revision]/[artifact]-[revision].[ext]" />
-    </url>
-
-    <url name="hadoop-source2">
-      <artifact pattern="${hadoop.mirror2}/hadoop/core/[artifact]-[revision]/[artifact]-[revision].[ext]" />
-    </url>
-
     <ibiblio name="maven2" root="${repo.maven.org}" pattern="${maven2.pattern.ext}" m2compatible="true"/>
     <ibiblio name="apache-snapshot" root="${snapshot.apache.org}" m2compatible="true"
              checkmodified="${ivy.checkmodified}" 
@@ -70,8 +62,6 @@
       <resolver ref="apache-snapshot"/>
       <resolver ref="maven2"/>
       <resolver ref="datanucleus-repo"/>
-      <resolver ref="hadoop-source"/>
-      <resolver ref="hadoop-source2"/>
     </chain>
 
     <chain name="internal" dual="true">

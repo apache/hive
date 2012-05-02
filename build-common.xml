@@ -135,15 +135,6 @@
       log="${ivyresolvelog}"/>
   </target>
 
-  <target name="ivy-retrieve-hadoop-source"
-    description="Retrieve Ivy-managed Hadoop source artifacts" unless="ivy.skip">
-    <echo message="Project: ${ant.project.name}"/>
-  	<echo message="hadoop.version.ant-internal: ${hadoop.version.ant-internal}"/>
-  	<ivy:settings id="${ant.project.name}-${hadoop.version.ant-internal}.ivy.settings" file="${ivysettings.xml}"/>
-  	<ivy:retrieve settingsRef="${ant.project.name}-${hadoop.version.ant-internal}.ivy.settings"
-      pattern="${build.dir.hadoop}/[artifact]-[revision].[ext]"/>
-  </target>
-
   <target name="ivy-resolve-test" depends="ivy-init-settings" unless="offline">
     <echo message="Project: ${ant.project.name}"/>
     <ivy:resolve settingsRef="${ant.project.name}.ivy.settings"
