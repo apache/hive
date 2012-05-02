@@ -29,31 +29,6 @@
 
   <import file="../build-common.xml"/>
 
-  <path id="test.classpath">
-    <pathelement location="${build.dir.hive}/ql/test/classes" />
-    <pathelement location="${test.build.classes}" />
-    <pathelement location="" />
-    <pathelement location="${hadoop.conf.dir}"/>
-    <pathelement location="${test.src.data.dir}/conf"/>
-    <pathelement location="${hive.conf.dir}"/>
-    <pathelement location="${hive.root}/cli/lib/jline-0.9.94.jar"/>
-    <pathelement location="${hadoop.oldstyle-name.test.jar}"/>
-    <pathelement location="${hadoop.newstyle-name.test.jar}"/>
-    <pathelement location="${hadoop.common.test.jar}"/>
-    <pathelement location="${hadoop.hdfs.test.jar}"/>
-    <pathelement location="${hadoop.mapreduce.test.jar}"/>
-    <pathelement location="${jetty.test.jar}"/>
-    <pathelement location="${servlet.test.jar}"/>
-    <pathelement location="${jasper.test.jar}"/>
-    <pathelement location="${jasperc.test.jar}"/>
-    <pathelement location="${jsp.test.jar}"/>
-    <pathelement location="${common.jar}"/>
-    <fileset dir="${hive.root}" includes="testlibs/*.jar"/>
-    <fileset dir="${hadoop.root}/lib" includes="*.jar"/>
-    <fileset dir="${hadoop.root}/lib" includes="jsp-2.1/*.jar"/>
-    <path refid="classpath"/>
-  </path>
-
   <target name="test-jar" depends="compile-test, jar">
     <echo message="Project: ${ant.project.name}"/>
     <delete file="${test.build.dir}/test-udfs.jar"/>

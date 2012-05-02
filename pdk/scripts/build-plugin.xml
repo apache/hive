@@ -33,19 +33,21 @@
   <property name="hadoop.home" value="${env.HADOOP_HOME}"/>
 
   <path id="plugin.classpath">
-    <fileset dir="${install.dir}" includes="lib/hive-exec-*.jar"/>
-    <fileset dir="${install.dir}" includes="lib/hive-pdk-*.jar"/>
-    <fileset dir="${install.dir}" includes="lib/commons-lang-*.jar"/>
-    <fileset dir="${install.dir}" includes="lib/commons-logging-*.jar"/>
-    <fileset dir="${hadoop.home}" includes="hadoop-*-core.jar"/>
+    <fileset dir="${build.ivy.lib.dir}/default" includes="hive-exec-*.jar"/>
+    <fileset dir="${build.ivy.lib.dir}/default" includes="hive-pdk-*.jar"/>
+    <fileset dir="${build.ivy.lib.dir}/default" includes="commons-lang-*.jar"/>
+    <fileset dir="${build.ivy.lib.dir}/default" includes="commons-logging-*.jar"/>
+    <fileset dir="${build.ivy.lib.dir}/default" includes="hadoop-*.jar" />
     <pathelement location="${build.classes}"/>
   </path>
 
   <path id="plugin.test.classpath">
     <pathelement path="${install.dir}/conf"/>
-    <fileset dir="${install.dir}" includes="lib/*.jar"/>
-    <fileset dir="${hadoop.home}" includes="hadoop-*-core.jar"/>
+    <fileset dir="${build.ivy.lib.dir}/default" includes="*.jar"/>
+    <fileset dir="${build.ivy.lib.dir}/default" includes="hadoop-*.jar" />
+
     <fileset dir="${build.dir}" includes="${plugin.jar.basename}"/>
+    <fileset dir="${install.dir}/lib" includes="hive-builtins-*.jar"/>
   </path>
 
   <target name="compile">
@@ -118,12 +120,18 @@
   <target name="package" depends="jar"/>
 
   <target name="test" depends="package" unless="testcase">
+    <path id="hive.hadoop.mock.classpath">
+       <fileset dir="${build.ivy.lib.dir}/test" includes="*.jar" excludes="hive*.jar"/>
+    </path>
+    <property name="hive.hadoop.mock.classpath" refid="hive.hadoop.mock.classpath"/>
     <junit fork="true" printsummary="on" haltonfailure="true"
            dir="${build.dir}">
       <classpath refid="plugin.test.classpath"/>
+      <sysproperty key="hadoop.bin.path" value="${test.hadoop.bin.path}"/>
       <sysproperty key="hive.plugin.root.dir" value="${plugin.dir}"/>
       <sysproperty key="hive.plugin.class.list" value="${class.list}"/>
       <sysproperty key="hive.metastore.warehouse.dir" value="${build.dir}/warehouse"/>
+      <env key="HIVE_HADOOP_TEST_CLASSPATH" value="${hive.hadoop.mock.classpath}"/>
       <env key="HADOOP_HOME" value="${hadoop.home}"/>
       <env key="HIVE_CONF_DIR" value="${install.dir}/conf"/>
       <env key="HIVE_HOME" value="${install.dir}"/>

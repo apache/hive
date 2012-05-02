@@ -19,13 +19,6 @@
 
 <project name="jdbc" default="jar">
   <property name="src.dir" value="${basedir}/src"/>
-    
-  <!--
-    Override properties defined in ../build-common.xml.
-  <property name="test.junit.output.format" value="brief"/>
-  <property name="test.output" value="false"/>
-  <property name="test.junit.output.usefile" value="false"/>
-  -->
 
   <import file="../build-common.xml"/>
 
@@ -37,15 +30,8 @@
     <fileset dir="${test.src.data.dir}" includes="files/*.jar"/>
     <fileset dir="${hive.root}" includes="testlibs/*.jar"/>
     <pathelement location="${build.dir.hive}/ql/test/classes"/>
-    <fileset dir="${hadoop.root}">
-      <include name="lib/**/*.jar" />
-      <exclude name="lib/**/excluded/" />
-      <!-- below is for 0.23 onwards -->
-      <include name="share/hadoop/common/lib/*.jar" />
-      <exclude name="share/hadoop/common/lib/hadoop-mapreduce-*.jar" />
-      <exclude name="share/hadoop/common/lib/hadoop-yarn-*.jar" />
-    </fileset>
-    <path refid="classpath"/>
+    <fileset dir="${hive.root}/build/ivy/lib/hadoop0.${hadoop.mr.rev}.shim" includes="*.jar" />
+    <path refid="classpath" />
   </path>
 
   <target name="compile" depends="init,ivy-retrieve">

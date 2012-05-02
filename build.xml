@@ -508,6 +508,7 @@
       <fileset dir="${build.dir.hive}/ivy/lib/default">
         <include name="*.jar"/>
         <exclude name="*.tar.gz"/>
+        <exclude name="hadoop-*.jar" />
 	<exclude name="**/*high-scale-lib-*"/>
         <exclude name="**/hamcrest-core-*jar"/>
         <exclude name="**/junit*.jar"/>
@@ -701,13 +702,6 @@
       <link href="${javadoc.link.java}"/>
 
       <classpath >
-        <fileset dir="${hadoop.root}/lib">
-          <include name="**/*.jar" />
-          <exclude name="**/excluded/" />
-	  <exclude name="**/commons-logging-*.jar" />
-	  <exclude name="**/commons-codec-*.jar" />
-        </fileset>
-	<pathelement path="${hadoop.oldstyle-name.test.jar}"/>
         <path refid="classpath" />
         <pathelement path="${java.class.path}"/>
       </classpath>

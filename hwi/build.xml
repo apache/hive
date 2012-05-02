@@ -37,18 +37,6 @@
     <path refid="classpath"/>
   </path>
 
-  <!-- We also need the Jetty jar as HWI is a stand-alone Jetty instance. -->
-  <path id="test.classpath">
-    <pathelement location="${test.build.classes}" />
-    <pathelement location="" />
-    <pathelement location="${test.src.data.dir}/conf"/>
-    <pathelement location="${hive.conf.dir}"/>
-    <!-- We are running unit tests like the one inside ql -->
-    <pathelement location="${build.dir.hive}/ql/test/classes"/> 
-    <fileset dir="${hive.root}" includes="testlibs/*.jar"/>
-    <path refid="classpath-hwi"/>
-  </path>
-
   <!--hive_hwi.war file contains only the JSP sources -->
   <target name="war">
     <echo message="Project: ${ant.project.name}"/>
@@ -78,7 +66,7 @@
      debug="${javac.debug}"
      deprecation="${javac.deprecation}">
       <compilerarg line="${javac.args} ${javac.args.warnings}" />
-      <classpath refid="classpath-hwi"/>
+      <classpath refid="classpath"/>
     </javac>
   </target>
 

@@ -36,6 +36,8 @@
   <property name="repo.dir" value="${user.home}/.m2/repository"/>
   <property name="maven2.pattern.ext"  value="${maven2.pattern}.[ext]"/>
   <property name="resolvers" value="default" override="false"/>
+  <!-- pull in the local repository -->
+  <include url="${ivy.default.conf.dir}/ivyconf-local.xml"/>
   <settings defaultResolver="${resolvers}"/>
 
   <resolvers>
@@ -62,8 +64,9 @@
     </filesystem>
 
     <chain name="default" dual="true" returnFirst="true" 
-           checkmodified="${ivy.checkmodified}" 
+           checkmodified="true" 
            changingPattern="${ivy.changingPattern}">
+      <resolver ref="local" />
       <resolver ref="apache-snapshot"/>
       <resolver ref="maven2"/>
       <resolver ref="datanucleus-repo"/>
@@ -72,6 +75,7 @@
     </chain>
 
     <chain name="internal" dual="true">
+      <resolver ref="local" />
       <resolver ref="fs"/>
       <resolver ref="apache-snapshot"/>
       <resolver ref="maven2"/>
@@ -86,7 +90,8 @@
   </resolvers>
 
   <modules>
-     <module organisation="org.apache.hadoop" name="hadoop-*" resolver="${resolvers}"/>
+    <module organisation="org.apache.hadoop" name="hadoop-*" resolver="${resolvers}"/>
+    <module organisation="org.apache.hive" name=".*" resolver="${resolvers}"/>
   </modules>
 
   <caches default="${ivy.cache.name}" 

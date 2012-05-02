@@ -17,12 +17,12 @@
    limitations under the License.
 -->
 
-<project name="builtins" default="jar">
+<project xmlns:ivy="antlib:org.apache.ivy.ant" name="builtins" default="jar">
 
   <property name="src.dir"  location="${basedir}/src"/>
   <import file="../build-common.xml"/>
 
-  <target name="compile" depends="init, setup">
+  <target name="compile" depends="init, setup, ivy-retrieve">
     <echo message="Project: ${ant.project.name}"/>
     <!-- defer compilation until package phase -->
   </target>
@@ -32,15 +32,18 @@
     <!-- defer compilation until package phase -->
   </target>
 
-  <target name="package">
+  <target name="package" depends="init, setup, ivy-retrieve">
     <echo message="Project: ${ant.project.name}"/>
     <ant antfile="build-plugin.xml" target="package" inheritAll="false">
       <property name="hive.install.dir" value="${build.dir.hive}/dist"/>
       <property name="hadoop.home" value="${hadoop.root}"/>
     </ant>
+    <ivy:publish settingsRef="${ant.project.name}.ivy.settings"
+                 resolver="local" pubrevision="${version}" overwrite="true"
+                 artifactspattern="${build.dir}/${ivy.publish.pattern}"/>
   </target>
 
-  <target name="test" unless="testcase">
+  <target name="test" unless="testcase" depends="init, setup, ivy-retrieve">
     <echo message="Project: ${ant.project.name}"/>
     <ant antfile="build-plugin.xml" target="test" inheritAll="false">
       <property name="hive.install.dir" value="${build.dir.hive}/dist"/>

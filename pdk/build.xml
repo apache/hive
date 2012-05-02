@@ -52,11 +52,14 @@
          target="package" inheritAll="false" inheritRefs="false">
       <property name="hive.install.dir" value="${build.dir.hive}/dist"/>
       <property name="hadoop.home" value="${hadoop.root}"/>
+      <property name="build.ivy.lib.dir" value="${build.ivy.lib.dir}"/>
     </ant>
     <ant antfile="${build.dir}/test-plugin/build.xml"
          target="test" inheritAll="false" inheritRefs="false">
       <property name="hive.install.dir" value="${build.dir.hive}/dist"/>
       <property name="hadoop.home" value="${hadoop.root}"/>
+      <property name="build.ivy.lib.dir" value="${build.ivy.lib.dir}"/>
+      <property name="test.hadoop.bin.path" value="${test.hadoop.bin.path}"/>
     </ant>
   </target>
 

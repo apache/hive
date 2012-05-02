@@ -23,6 +23,14 @@
         https://cwiki.apache.org/confluence/display/Hive/Home
       </description>
     </info>
-    <dependencies>
-    </dependencies>
+  <configurations>
+    <include file="${ivy.conf.dir}/common-configurations.xml"/>
+  </configurations>
+  <dependencies>
+    <dependency org="org.apache.hive" name="hive-exec" rev="${version}"
+                conf="compile->default" />
+    <dependency org="org.apache.hive" name="hive-pdk" rev="${version}"
+                conf="compile->default" transitive="false" />
+  </dependencies>
+
 </ivy-module>
