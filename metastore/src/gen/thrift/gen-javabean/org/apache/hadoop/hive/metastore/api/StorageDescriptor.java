@@ -138,30 +138,30 @@ public class StorageDescriptor implements org.apache.thrift.TBase<StorageDescrip
   public static final Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
   static {
     Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
-    tmpMap.put(_Fields.COLS, new org.apache.thrift.meta_data.FieldMetaData("cols", org.apache.thrift.TFieldRequirementType.DEFAULT,
-        new org.apache.thrift.meta_data.ListMetaData(org.apache.thrift.protocol.TType.LIST,
+    tmpMap.put(_Fields.COLS, new org.apache.thrift.meta_data.FieldMetaData("cols", org.apache.thrift.TFieldRequirementType.DEFAULT, 
+        new org.apache.thrift.meta_data.ListMetaData(org.apache.thrift.protocol.TType.LIST, 
             new org.apache.thrift.meta_data.StructMetaData(org.apache.thrift.protocol.TType.STRUCT, FieldSchema.class))));
-    tmpMap.put(_Fields.LOCATION, new org.apache.thrift.meta_data.FieldMetaData("location", org.apache.thrift.TFieldRequirementType.DEFAULT,
+    tmpMap.put(_Fields.LOCATION, new org.apache.thrift.meta_data.FieldMetaData("location", org.apache.thrift.TFieldRequirementType.DEFAULT, 
         new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
-    tmpMap.put(_Fields.INPUT_FORMAT, new org.apache.thrift.meta_data.FieldMetaData("inputFormat", org.apache.thrift.TFieldRequirementType.DEFAULT,
+    tmpMap.put(_Fields.INPUT_FORMAT, new org.apache.thrift.meta_data.FieldMetaData("inputFormat", org.apache.thrift.TFieldRequirementType.DEFAULT, 
         new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
-    tmpMap.put(_Fields.OUTPUT_FORMAT, new org.apache.thrift.meta_data.FieldMetaData("outputFormat", org.apache.thrift.TFieldRequirementType.DEFAULT,
+    tmpMap.put(_Fields.OUTPUT_FORMAT, new org.apache.thrift.meta_data.FieldMetaData("outputFormat", org.apache.thrift.TFieldRequirementType.DEFAULT, 
         new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
-    tmpMap.put(_Fields.COMPRESSED, new org.apache.thrift.meta_data.FieldMetaData("compressed", org.apache.thrift.TFieldRequirementType.DEFAULT,
+    tmpMap.put(_Fields.COMPRESSED, new org.apache.thrift.meta_data.FieldMetaData("compressed", org.apache.thrift.TFieldRequirementType.DEFAULT, 
         new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.BOOL)));
-    tmpMap.put(_Fields.NUM_BUCKETS, new org.apache.thrift.meta_data.FieldMetaData("numBuckets", org.apache.thrift.TFieldRequirementType.DEFAULT,
+    tmpMap.put(_Fields.NUM_BUCKETS, new org.apache.thrift.meta_data.FieldMetaData("numBuckets", org.apache.thrift.TFieldRequirementType.DEFAULT, 
         new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.I32)));
-    tmpMap.put(_Fields.SERDE_INFO, new org.apache.thrift.meta_data.FieldMetaData("serdeInfo", org.apache.thrift.TFieldRequirementType.DEFAULT,
+    tmpMap.put(_Fields.SERDE_INFO, new org.apache.thrift.meta_data.FieldMetaData("serdeInfo", org.apache.thrift.TFieldRequirementType.DEFAULT, 
         new org.apache.thrift.meta_data.StructMetaData(org.apache.thrift.protocol.TType.STRUCT, SerDeInfo.class)));
-    tmpMap.put(_Fields.BUCKET_COLS, new org.apache.thrift.meta_data.FieldMetaData("bucketCols", org.apache.thrift.TFieldRequirementType.DEFAULT,
-        new org.apache.thrift.meta_data.ListMetaData(org.apache.thrift.protocol.TType.LIST,
+    tmpMap.put(_Fields.BUCKET_COLS, new org.apache.thrift.meta_data.FieldMetaData("bucketCols", org.apache.thrift.TFieldRequirementType.DEFAULT, 
+        new org.apache.thrift.meta_data.ListMetaData(org.apache.thrift.protocol.TType.LIST, 
             new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING))));
-    tmpMap.put(_Fields.SORT_COLS, new org.apache.thrift.meta_data.FieldMetaData("sortCols", org.apache.thrift.TFieldRequirementType.DEFAULT,
-        new org.apache.thrift.meta_data.ListMetaData(org.apache.thrift.protocol.TType.LIST,
+    tmpMap.put(_Fields.SORT_COLS, new org.apache.thrift.meta_data.FieldMetaData("sortCols", org.apache.thrift.TFieldRequirementType.DEFAULT, 
+        new org.apache.thrift.meta_data.ListMetaData(org.apache.thrift.protocol.TType.LIST, 
             new org.apache.thrift.meta_data.StructMetaData(org.apache.thrift.protocol.TType.STRUCT, Order.class))));
-    tmpMap.put(_Fields.PARAMETERS, new org.apache.thrift.meta_data.FieldMetaData("parameters", org.apache.thrift.TFieldRequirementType.DEFAULT,
-        new org.apache.thrift.meta_data.MapMetaData(org.apache.thrift.protocol.TType.MAP,
-            new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING),
+    tmpMap.put(_Fields.PARAMETERS, new org.apache.thrift.meta_data.FieldMetaData("parameters", org.apache.thrift.TFieldRequirementType.DEFAULT, 
+        new org.apache.thrift.meta_data.MapMetaData(org.apache.thrift.protocol.TType.MAP, 
+            new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING), 
             new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING))));
     metaDataMap = Collections.unmodifiableMap(tmpMap);
     org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(StorageDescriptor.class, metaDataMap);
@@ -943,7 +943,7 @@ public class StorageDescriptor implements org.apache.thrift.TBase<StorageDescrip
     while (true)
     {
       field = iprot.readFieldBegin();
-      if (field.type == org.apache.thrift.protocol.TType.STOP) {
+      if (field.type == org.apache.thrift.protocol.TType.STOP) { 
         break;
       }
       switch (field.id) {
@@ -961,28 +961,28 @@ public class StorageDescriptor implements org.apache.thrift.TBase<StorageDescrip
               }
               iprot.readListEnd();
             }
-          } else {
+          } else { 
             org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
           }
           break;
         case 2: // LOCATION
           if (field.type == org.apache.thrift.protocol.TType.STRING) {
             this.location = iprot.readString();
-          } else {
+          } else { 
             org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
           }
           break;
         case 3: // INPUT_FORMAT
           if (field.type == org.apache.thrift.protocol.TType.STRING) {
             this.inputFormat = iprot.readString();
-          } else {
+          } else { 
             org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
           }
           break;
         case 4: // OUTPUT_FORMAT
           if (field.type == org.apache.thrift.protocol.TType.STRING) {
             this.outputFormat = iprot.readString();
-          } else {
+          } else { 
             org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
           }
           break;
@@ -990,7 +990,7 @@ public class StorageDescriptor implements org.apache.thrift.TBase<StorageDescrip
           if (field.type == org.apache.thrift.protocol.TType.BOOL) {
             this.compressed = iprot.readBool();
             setCompressedIsSet(true);
-          } else {
+          } else { 
             org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
           }
           break;
@@ -998,7 +998,7 @@ public class StorageDescriptor implements org.apache.thrift.TBase<StorageDescrip
           if (field.type == org.apache.thrift.protocol.TType.I32) {
             this.numBuckets = iprot.readI32();
             setNumBucketsIsSet(true);
-          } else {
+          } else { 
             org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
           }
           break;
@@ -1006,7 +1006,7 @@ public class StorageDescriptor implements org.apache.thrift.TBase<StorageDescrip
           if (field.type == org.apache.thrift.protocol.TType.STRUCT) {
             this.serdeInfo = new SerDeInfo();
             this.serdeInfo.read(iprot);
-          } else {
+          } else { 
             org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
           }
           break;
@@ -1023,7 +1023,7 @@ public class StorageDescriptor implements org.apache.thrift.TBase<StorageDescrip
               }
               iprot.readListEnd();
             }
-          } else {
+          } else { 
             org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
           }
           break;
@@ -1041,7 +1041,7 @@ public class StorageDescriptor implements org.apache.thrift.TBase<StorageDescrip
               }
               iprot.readListEnd();
             }
-          } else {
+          } else { 
             org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
           }
           break;
@@ -1060,7 +1060,7 @@ public class StorageDescriptor implements org.apache.thrift.TBase<StorageDescrip
               }
               iprot.readMapEnd();
             }
-          } else {
+          } else { 
             org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
           }
           break;

@@ -2094,6 +2094,76 @@ class Schema:
   def __ne__(self, other):
     return not (self == other)
 
+class EnvironmentContext:
+  """
+  Attributes:
+   - properties
+  """
+
+  thrift_spec = (
+    None, # 0
+    (1, TType.MAP, 'properties', (TType.STRING,None,TType.STRING,None), None, ), # 1
+  )
+
+  def __init__(self, properties=None,):
+    self.properties = properties
+
+  def read(self, iprot):
+    if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
+      fastbinary.decode_binary(self, iprot.trans, (self.__class__, self.thrift_spec))
+      return
+    iprot.readStructBegin()
+    while True:
+      (fname, ftype, fid) = iprot.readFieldBegin()
+      if ftype == TType.STOP:
+        break
+      if fid == 1:
+        if ftype == TType.MAP:
+          self.properties = {}
+          (_ktype175, _vtype176, _size174 ) = iprot.readMapBegin() 
+          for _i178 in xrange(_size174):
+            _key179 = iprot.readString();
+            _val180 = iprot.readString();
+            self.properties[_key179] = _val180
+          iprot.readMapEnd()
+        else:
+          iprot.skip(ftype)
+      else:
+        iprot.skip(ftype)
+      iprot.readFieldEnd()
+    iprot.readStructEnd()
+
+  def write(self, oprot):
+    if oprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and self.thrift_spec is not None and fastbinary is not None:
+      oprot.trans.write(fastbinary.encode_binary(self, (self.__class__, self.thrift_spec)))
+      return
+    oprot.writeStructBegin('EnvironmentContext')
+    if self.properties is not None:
+      oprot.writeFieldBegin('properties', TType.MAP, 1)
+      oprot.writeMapBegin(TType.STRING, TType.STRING, len(self.properties))
+      for kiter181,viter182 in self.properties.items():
+        oprot.writeString(kiter181)
+        oprot.writeString(viter182)
+      oprot.writeMapEnd()
+      oprot.writeFieldEnd()
+    oprot.writeFieldStop()
+    oprot.writeStructEnd()
+
+  def validate(self):
+    return
+
+
+  def __repr__(self):
+    L = ['%s=%r' % (key, value)
+      for key, value in self.__dict__.iteritems()]
+    return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
+
+  def __eq__(self, other):
+    return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
+
+  def __ne__(self, other):
+    return not (self == other)
+
 class MetaException(Exception):
   """
   Attributes:

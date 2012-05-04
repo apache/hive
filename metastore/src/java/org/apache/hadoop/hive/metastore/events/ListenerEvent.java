@@ -20,6 +20,8 @@ package org.apache.hadoop.hive.metastore.events;
 
 import org.apache.hadoop.hive.metastore.HiveMetaStore.HMSHandler;
 
+import org.apache.hadoop.hive.metastore.api.EnvironmentContext;
+
 /**
  * Base class for all the events which are defined for metastore.
  */
@@ -31,6 +33,9 @@ public abstract class ListenerEvent {
    */
   private final boolean status;
   private final HMSHandler handler;
+
+  // Properties passed by the client, to be used in execution hooks.
+  private EnvironmentContext environmentContext = null;
 
   public ListenerEvent(boolean status, HMSHandler handler) {
     super();
@@ -50,6 +55,17 @@ public abstract class ListenerEvent {
    */
   public boolean getStatus() {
     return status;
+  }
+
+  public void setEnvironmentContext(EnvironmentContext environmentContext) {
+    this.environmentContext = environmentContext;
+  }
+
+  /**
+   * @return environment properties of the event
+   */
+  public EnvironmentContext getEnvironmentContext() {
+    return environmentContext;
   }
 
 }

@@ -34,6 +34,7 @@ if len(sys.argv) <= 1 or sys.argv[1] == '--help':
   print '   get_fields(string db_name, string table_name)'
   print '   get_schema(string db_name, string table_name)'
   print '  void create_table(Table tbl)'
+  print '  void create_table_with_environment_context(Table tbl, EnvironmentContext environment_context)'
   print '  void drop_table(string dbname, string name, bool deleteData)'
   print '   get_tables(string db_name, string pattern)'
   print '   get_all_tables(string db_name)'
@@ -41,7 +42,9 @@ if len(sys.argv) <= 1 or sys.argv[1] == '--help':
   print '   get_table_objects_by_name(string dbname,  tbl_names)'
   print '   get_table_names_by_filter(string dbname, string filter, i16 max_tables)'
   print '  void alter_table(string dbname, string tbl_name, Table new_tbl)'
+  print '  void alter_table_with_environment_context(string dbname, string tbl_name, Table new_tbl, EnvironmentContext environment_context)'
   print '  Partition add_partition(Partition new_part)'
+  print '  Partition add_partition_with_environment_context(Partition new_part, EnvironmentContext environment_context)'
   print '  i32 add_partitions( new_parts)'
   print '  Partition append_partition(string db_name, string tbl_name,  part_vals)'
   print '  Partition append_partition_by_name(string db_name, string tbl_name, string part_name)'
@@ -59,6 +62,7 @@ if len(sys.argv) <= 1 or sys.argv[1] == '--help':
   print '   get_partitions_by_filter(string db_name, string tbl_name, string filter, i16 max_parts)'
   print '   get_partitions_by_names(string db_name, string tbl_name,  names)'
   print '  void alter_partition(string db_name, string tbl_name, Partition new_part)'
+  print '  void alter_partition_with_environment_context(string db_name, string tbl_name, Partition new_part, EnvironmentContext environment_context)'
   print '  void rename_partition(string db_name, string tbl_name,  part_vals, Partition new_part)'
   print '  string get_config_value(string name, string defaultValue)'
   print '   partition_name_to_vals(string part_name)'
@@ -213,6 +217,12 @@ elif cmd == 'create_table':
     sys.exit(1)
   pp.pprint(client.create_table(eval(args[0]),))
 
+elif cmd == 'create_table_with_environment_context':
+  if len(args) != 2:
+    print 'create_table_with_environment_context requires 2 args'
+    sys.exit(1)
+  pp.pprint(client.create_table_with_environment_context(eval(args[0]),eval(args[1]),))
+
 elif cmd == 'drop_table':
   if len(args) != 3:
     print 'drop_table requires 3 args'
@@ -255,11 +265,23 @@ elif cmd == 'alter_table':
     sys.exit(1)
   pp.pprint(client.alter_table(args[0],args[1],eval(args[2]),))
 
+elif cmd == 'alter_table_with_environment_context':
+  if len(args) != 4:
+    print 'alter_table_with_environment_context requires 4 args'
+    sys.exit(1)
+  pp.pprint(client.alter_table_with_environment_context(args[0],args[1],eval(args[2]),eval(args[3]),))
+
 elif cmd == 'add_partition':
   if len(args) != 1:
     print 'add_partition requires 1 args'
     sys.exit(1)
   pp.pprint(client.add_partition(eval(args[0]),))
+
+elif cmd == 'add_partition_with_environment_context':
+  if len(args) != 2:
+    print 'add_partition_with_environment_context requires 2 args'
+    sys.exit(1)
+  pp.pprint(client.add_partition_with_environment_context(eval(args[0]),eval(args[1]),))
 
 elif cmd == 'add_partitions':
   if len(args) != 1:
@@ -362,6 +384,12 @@ elif cmd == 'alter_partition':
     print 'alter_partition requires 3 args'
     sys.exit(1)
   pp.pprint(client.alter_partition(args[0],args[1],eval(args[2]),))
+
+elif cmd == 'alter_partition_with_environment_context':
+  if len(args) != 4:
+    print 'alter_partition_with_environment_context requires 4 args'
+    sys.exit(1)
+  pp.pprint(client.alter_partition_with_environment_context(args[0],args[1],eval(args[2]),eval(args[3]),))
 
 elif cmd == 'rename_partition':
   if len(args) != 4:
