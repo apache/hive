@@ -20,6 +20,7 @@ package org.apache.hadoop.hive.metastore.hooks;
 
 import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
 
 import org.apache.commons.lang.StringEscapeUtils;
@@ -108,13 +109,49 @@ public class AuditMetaStoreEventListener extends MetaStoreEventListener {
         String sql = "insert into snc1_command_log " +
                      " set command = ?, inputs = ?, outputs = ?, command_type = ?";
 
-        String ipAddress = HMSHandler.getIpAddress();
-        if (ipAddress != null) {
-          if (ipAddress.startsWith("/")) {
-            ipAddress = ipAddress.replaceFirst("/", "");
+        String user_info = null;
+        String query_src = null;
+
+        // The Metastore Thrift API allows clients to set environment properties for
+        // selected operations (alter / create table and partition,
+        // i.e. create_table_with_environment_context).
+        // If present, the environment context is passed to all listeners.
+        // The following lines check if user information and query source were passed
+        // through the environment context.
+
+        String ENV_CONTEXT_USER_INFO = "user_info";
+        String ENV_CONTEXT_QUERY_SRC = "query_src";
+
+        if (event.getEnvironmentContext() != null &&
+            event.getEnvironmentContext().getProperties() != null &&
+            !event.getEnvironmentContext().getProperties().isEmpty()) {
+          Map<String, String> envProperties =
+              event.getEnvironmentContext().getProperties();
+          if (envProperties.get(ENV_CONTEXT_USER_INFO) != null) {
+            user_info = envProperties.get(ENV_CONTEXT_USER_INFO);
           }
+          if (envProperties.get(ENV_CONTEXT_QUERY_SRC) != null) {
+            query_src = envProperties.get(ENV_CONTEXT_QUERY_SRC);
+          }
+        }
+
+        if (user_info == null) {
+          String ipAddress = HMSHandler.getIpAddress();
+          if (ipAddress != null) {
+            if (ipAddress.startsWith("/")) {
+              ipAddress = ipAddress.replaceFirst("/", "");
+            }
+            user_info = ipAddress;
+          }
+        }
+
+        if (user_info != null) {
           sql += ", user_info = ?";
-          sqlParams.add(ipAddress);
+          sqlParams.add(user_info);
+        }
+        if (query_src != null) {
+          sql += ", query_src = ?";
+          sqlParams.add(StringEscapeUtils.escapeJava(query_src));
         }
 
         HookUtils.runInsert(conf, urlFactory, sql, sqlParams, HookUtils

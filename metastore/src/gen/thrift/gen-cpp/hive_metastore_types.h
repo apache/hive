@@ -1289,6 +1289,47 @@ class Schema {
 
 };
 
+typedef struct _EnvironmentContext__isset {
+  _EnvironmentContext__isset() : properties(false) {}
+  bool properties;
+} _EnvironmentContext__isset;
+
+class EnvironmentContext {
+ public:
+
+  static const char* ascii_fingerprint; // = "5EA2D527ECA3BA20C77AFC023EE8C05F";
+  static const uint8_t binary_fingerprint[16]; // = {0x5E,0xA2,0xD5,0x27,0xEC,0xA3,0xBA,0x20,0xC7,0x7A,0xFC,0x02,0x3E,0xE8,0xC0,0x5F};
+
+  EnvironmentContext() {
+  }
+
+  virtual ~EnvironmentContext() throw() {}
+
+  std::map<std::string, std::string>  properties;
+
+  _EnvironmentContext__isset __isset;
+
+  void __set_properties(const std::map<std::string, std::string> & val) {
+    properties = val;
+  }
+
+  bool operator == (const EnvironmentContext & rhs) const
+  {
+    if (!(properties == rhs.properties))
+      return false;
+    return true;
+  }
+  bool operator != (const EnvironmentContext &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const EnvironmentContext & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
 typedef struct _MetaException__isset {
   _MetaException__isset() : message(false) {}
   bool message;

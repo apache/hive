@@ -20,19 +20,16 @@ import java.util.Arrays;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class Schema implements org.apache.thrift.TBase<Schema, Schema._Fields>, java.io.Serializable, Cloneable {
-  private static final org.apache.thrift.protocol.TStruct STRUCT_DESC = new org.apache.thrift.protocol.TStruct("Schema");
+public class EnvironmentContext implements org.apache.thrift.TBase<EnvironmentContext, EnvironmentContext._Fields>, java.io.Serializable, Cloneable {
+  private static final org.apache.thrift.protocol.TStruct STRUCT_DESC = new org.apache.thrift.protocol.TStruct("EnvironmentContext");
 
-  private static final org.apache.thrift.protocol.TField FIELD_SCHEMAS_FIELD_DESC = new org.apache.thrift.protocol.TField("fieldSchemas", org.apache.thrift.protocol.TType.LIST, (short)1);
-  private static final org.apache.thrift.protocol.TField PROPERTIES_FIELD_DESC = new org.apache.thrift.protocol.TField("properties", org.apache.thrift.protocol.TType.MAP, (short)2);
+  private static final org.apache.thrift.protocol.TField PROPERTIES_FIELD_DESC = new org.apache.thrift.protocol.TField("properties", org.apache.thrift.protocol.TType.MAP, (short)1);
 
-  private List<FieldSchema> fieldSchemas; // required
   private Map<String,String> properties; // required
 
   /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
   public enum _Fields implements org.apache.thrift.TFieldIdEnum {
-    FIELD_SCHEMAS((short)1, "fieldSchemas"),
-    PROPERTIES((short)2, "properties");
+    PROPERTIES((short)1, "properties");
 
     private static final Map<String, _Fields> byName = new HashMap<String, _Fields>();
 
@@ -47,9 +44,7 @@ public class Schema implements org.apache.thrift.TBase<Schema, Schema._Fields>, 
      */
     public static _Fields findByThriftId(int fieldId) {
       switch(fieldId) {
-        case 1: // FIELD_SCHEMAS
-          return FIELD_SCHEMAS;
-        case 2: // PROPERTIES
+        case 1: // PROPERTIES
           return PROPERTIES;
         default:
           return null;
@@ -95,40 +90,28 @@ public class Schema implements org.apache.thrift.TBase<Schema, Schema._Fields>, 
   public static final Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
   static {
     Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
-    tmpMap.put(_Fields.FIELD_SCHEMAS, new org.apache.thrift.meta_data.FieldMetaData("fieldSchemas", org.apache.thrift.TFieldRequirementType.DEFAULT, 
-        new org.apache.thrift.meta_data.ListMetaData(org.apache.thrift.protocol.TType.LIST, 
-            new org.apache.thrift.meta_data.StructMetaData(org.apache.thrift.protocol.TType.STRUCT, FieldSchema.class))));
     tmpMap.put(_Fields.PROPERTIES, new org.apache.thrift.meta_data.FieldMetaData("properties", org.apache.thrift.TFieldRequirementType.DEFAULT, 
         new org.apache.thrift.meta_data.MapMetaData(org.apache.thrift.protocol.TType.MAP, 
             new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING), 
             new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING))));
     metaDataMap = Collections.unmodifiableMap(tmpMap);
-    org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(Schema.class, metaDataMap);
+    org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(EnvironmentContext.class, metaDataMap);
   }
 
-  public Schema() {
+  public EnvironmentContext() {
   }
 
-  public Schema(
-    List<FieldSchema> fieldSchemas,
+  public EnvironmentContext(
     Map<String,String> properties)
   {
     this();
-    this.fieldSchemas = fieldSchemas;
     this.properties = properties;
   }
 
   /**
    * Performs a deep copy on <i>other</i>.
    */
-  public Schema(Schema other) {
-    if (other.isSetFieldSchemas()) {
-      List<FieldSchema> __this__fieldSchemas = new ArrayList<FieldSchema>();
-      for (FieldSchema other_element : other.fieldSchemas) {
-        __this__fieldSchemas.add(new FieldSchema(other_element));
-      }
-      this.fieldSchemas = __this__fieldSchemas;
-    }
+  public EnvironmentContext(EnvironmentContext other) {
     if (other.isSetProperties()) {
       Map<String,String> __this__properties = new HashMap<String,String>();
       for (Map.Entry<String, String> other_element : other.properties.entrySet()) {
@@ -146,52 +129,13 @@ public class Schema implements org.apache.thrift.TBase<Schema, Schema._Fields>, 
     }
   }
 
-  public Schema deepCopy() {
-    return new Schema(this);
+  public EnvironmentContext deepCopy() {
+    return new EnvironmentContext(this);
   }
 
   @Override
   public void clear() {
-    this.fieldSchemas = null;
     this.properties = null;
-  }
-
-  public int getFieldSchemasSize() {
-    return (this.fieldSchemas == null) ? 0 : this.fieldSchemas.size();
-  }
-
-  public java.util.Iterator<FieldSchema> getFieldSchemasIterator() {
-    return (this.fieldSchemas == null) ? null : this.fieldSchemas.iterator();
-  }
-
-  public void addToFieldSchemas(FieldSchema elem) {
-    if (this.fieldSchemas == null) {
-      this.fieldSchemas = new ArrayList<FieldSchema>();
-    }
-    this.fieldSchemas.add(elem);
-  }
-
-  public List<FieldSchema> getFieldSchemas() {
-    return this.fieldSchemas;
-  }
-
-  public void setFieldSchemas(List<FieldSchema> fieldSchemas) {
-    this.fieldSchemas = fieldSchemas;
-  }
-
-  public void unsetFieldSchemas() {
-    this.fieldSchemas = null;
-  }
-
-  /** Returns true if field fieldSchemas is set (has been assigned a value) and false otherwise */
-  public boolean isSetFieldSchemas() {
-    return this.fieldSchemas != null;
-  }
-
-  public void setFieldSchemasIsSet(boolean value) {
-    if (!value) {
-      this.fieldSchemas = null;
-    }
   }
 
   public int getPropertiesSize() {
@@ -230,14 +174,6 @@ public class Schema implements org.apache.thrift.TBase<Schema, Schema._Fields>, 
 
   public void setFieldValue(_Fields field, Object value) {
     switch (field) {
-    case FIELD_SCHEMAS:
-      if (value == null) {
-        unsetFieldSchemas();
-      } else {
-        setFieldSchemas((List<FieldSchema>)value);
-      }
-      break;
-
     case PROPERTIES:
       if (value == null) {
         unsetProperties();
@@ -251,9 +187,6 @@ public class Schema implements org.apache.thrift.TBase<Schema, Schema._Fields>, 
 
   public Object getFieldValue(_Fields field) {
     switch (field) {
-    case FIELD_SCHEMAS:
-      return getFieldSchemas();
-
     case PROPERTIES:
       return getProperties();
 
@@ -268,8 +201,6 @@ public class Schema implements org.apache.thrift.TBase<Schema, Schema._Fields>, 
     }
 
     switch (field) {
-    case FIELD_SCHEMAS:
-      return isSetFieldSchemas();
     case PROPERTIES:
       return isSetProperties();
     }
@@ -280,23 +211,14 @@ public class Schema implements org.apache.thrift.TBase<Schema, Schema._Fields>, 
   public boolean equals(Object that) {
     if (that == null)
       return false;
-    if (that instanceof Schema)
-      return this.equals((Schema)that);
+    if (that instanceof EnvironmentContext)
+      return this.equals((EnvironmentContext)that);
     return false;
   }
 
-  public boolean equals(Schema that) {
+  public boolean equals(EnvironmentContext that) {
     if (that == null)
       return false;
-
-    boolean this_present_fieldSchemas = true && this.isSetFieldSchemas();
-    boolean that_present_fieldSchemas = true && that.isSetFieldSchemas();
-    if (this_present_fieldSchemas || that_present_fieldSchemas) {
-      if (!(this_present_fieldSchemas && that_present_fieldSchemas))
-        return false;
-      if (!this.fieldSchemas.equals(that.fieldSchemas))
-        return false;
-    }
 
     boolean this_present_properties = true && this.isSetProperties();
     boolean that_present_properties = true && that.isSetProperties();
@@ -315,24 +237,14 @@ public class Schema implements org.apache.thrift.TBase<Schema, Schema._Fields>, 
     return 0;
   }
 
-  public int compareTo(Schema other) {
+  public int compareTo(EnvironmentContext other) {
     if (!getClass().equals(other.getClass())) {
       return getClass().getName().compareTo(other.getClass().getName());
     }
 
     int lastComparison = 0;
-    Schema typedOther = (Schema)other;
+    EnvironmentContext typedOther = (EnvironmentContext)other;
 
-    lastComparison = Boolean.valueOf(isSetFieldSchemas()).compareTo(typedOther.isSetFieldSchemas());
-    if (lastComparison != 0) {
-      return lastComparison;
-    }
-    if (isSetFieldSchemas()) {
-      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.fieldSchemas, typedOther.fieldSchemas);
-      if (lastComparison != 0) {
-        return lastComparison;
-      }
-    }
     lastComparison = Boolean.valueOf(isSetProperties()).compareTo(typedOther.isSetProperties());
     if (lastComparison != 0) {
       return lastComparison;
@@ -360,36 +272,18 @@ public class Schema implements org.apache.thrift.TBase<Schema, Schema._Fields>, 
         break;
       }
       switch (field.id) {
-        case 1: // FIELD_SCHEMAS
-          if (field.type == org.apache.thrift.protocol.TType.LIST) {
-            {
-              org.apache.thrift.protocol.TList _list89 = iprot.readListBegin();
-              this.fieldSchemas = new ArrayList<FieldSchema>(_list89.size);
-              for (int _i90 = 0; _i90 < _list89.size; ++_i90)
-              {
-                FieldSchema _elem91; // required
-                _elem91 = new FieldSchema();
-                _elem91.read(iprot);
-                this.fieldSchemas.add(_elem91);
-              }
-              iprot.readListEnd();
-            }
-          } else { 
-            org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
-          }
-          break;
-        case 2: // PROPERTIES
+        case 1: // PROPERTIES
           if (field.type == org.apache.thrift.protocol.TType.MAP) {
             {
-              org.apache.thrift.protocol.TMap _map92 = iprot.readMapBegin();
-              this.properties = new HashMap<String,String>(2*_map92.size);
-              for (int _i93 = 0; _i93 < _map92.size; ++_i93)
+              org.apache.thrift.protocol.TMap _map98 = iprot.readMapBegin();
+              this.properties = new HashMap<String,String>(2*_map98.size);
+              for (int _i99 = 0; _i99 < _map98.size; ++_i99)
               {
-                String _key94; // required
-                String _val95; // required
-                _key94 = iprot.readString();
-                _val95 = iprot.readString();
-                this.properties.put(_key94, _val95);
+                String _key100; // required
+                String _val101; // required
+                _key100 = iprot.readString();
+                _val101 = iprot.readString();
+                this.properties.put(_key100, _val101);
               }
               iprot.readMapEnd();
             }
@@ -410,26 +304,14 @@ public class Schema implements org.apache.thrift.TBase<Schema, Schema._Fields>, 
     validate();
 
     oprot.writeStructBegin(STRUCT_DESC);
-    if (this.fieldSchemas != null) {
-      oprot.writeFieldBegin(FIELD_SCHEMAS_FIELD_DESC);
-      {
-        oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, this.fieldSchemas.size()));
-        for (FieldSchema _iter96 : this.fieldSchemas)
-        {
-          _iter96.write(oprot);
-        }
-        oprot.writeListEnd();
-      }
-      oprot.writeFieldEnd();
-    }
     if (this.properties != null) {
       oprot.writeFieldBegin(PROPERTIES_FIELD_DESC);
       {
         oprot.writeMapBegin(new org.apache.thrift.protocol.TMap(org.apache.thrift.protocol.TType.STRING, org.apache.thrift.protocol.TType.STRING, this.properties.size()));
-        for (Map.Entry<String, String> _iter97 : this.properties.entrySet())
+        for (Map.Entry<String, String> _iter102 : this.properties.entrySet())
         {
-          oprot.writeString(_iter97.getKey());
-          oprot.writeString(_iter97.getValue());
+          oprot.writeString(_iter102.getKey());
+          oprot.writeString(_iter102.getValue());
         }
         oprot.writeMapEnd();
       }
@@ -441,17 +323,9 @@ public class Schema implements org.apache.thrift.TBase<Schema, Schema._Fields>, 
 
   @Override
   public String toString() {
-    StringBuilder sb = new StringBuilder("Schema(");
+    StringBuilder sb = new StringBuilder("EnvironmentContext(");
     boolean first = true;
 
-    sb.append("fieldSchemas:");
-    if (this.fieldSchemas == null) {
-      sb.append("null");
-    } else {
-      sb.append(this.fieldSchemas);
-    }
-    first = false;
-    if (!first) sb.append(", ");
     sb.append("properties:");
     if (this.properties == null) {
       sb.append("null");

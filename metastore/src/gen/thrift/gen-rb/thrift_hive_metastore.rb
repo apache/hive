@@ -233,6 +233,24 @@ module ThriftHiveMetastore
       return
     end
 
+    def create_table_with_environment_context(tbl, environment_context)
+      send_create_table_with_environment_context(tbl, environment_context)
+      recv_create_table_with_environment_context()
+    end
+
+    def send_create_table_with_environment_context(tbl, environment_context)
+      send_message('create_table_with_environment_context', Create_table_with_environment_context_args, :tbl => tbl, :environment_context => environment_context)
+    end
+
+    def recv_create_table_with_environment_context()
+      result = receive_message(Create_table_with_environment_context_result)
+      raise result.o1 unless result.o1.nil?
+      raise result.o2 unless result.o2.nil?
+      raise result.o3 unless result.o3.nil?
+      raise result.o4 unless result.o4.nil?
+      return
+    end
+
     def drop_table(dbname, name, deleteData)
       send_drop_table(dbname, name, deleteData)
       recv_drop_table()
@@ -350,6 +368,22 @@ module ThriftHiveMetastore
       return
     end
 
+    def alter_table_with_environment_context(dbname, tbl_name, new_tbl, environment_context)
+      send_alter_table_with_environment_context(dbname, tbl_name, new_tbl, environment_context)
+      recv_alter_table_with_environment_context()
+    end
+
+    def send_alter_table_with_environment_context(dbname, tbl_name, new_tbl, environment_context)
+      send_message('alter_table_with_environment_context', Alter_table_with_environment_context_args, :dbname => dbname, :tbl_name => tbl_name, :new_tbl => new_tbl, :environment_context => environment_context)
+    end
+
+    def recv_alter_table_with_environment_context()
+      result = receive_message(Alter_table_with_environment_context_result)
+      raise result.o1 unless result.o1.nil?
+      raise result.o2 unless result.o2.nil?
+      return
+    end
+
     def add_partition(new_part)
       send_add_partition(new_part)
       return recv_add_partition()
@@ -366,6 +400,24 @@ module ThriftHiveMetastore
       raise result.o2 unless result.o2.nil?
       raise result.o3 unless result.o3.nil?
       raise ::Thrift::ApplicationException.new(::Thrift::ApplicationException::MISSING_RESULT, 'add_partition failed: unknown result')
+    end
+
+    def add_partition_with_environment_context(new_part, environment_context)
+      send_add_partition_with_environment_context(new_part, environment_context)
+      return recv_add_partition_with_environment_context()
+    end
+
+    def send_add_partition_with_environment_context(new_part, environment_context)
+      send_message('add_partition_with_environment_context', Add_partition_with_environment_context_args, :new_part => new_part, :environment_context => environment_context)
+    end
+
+    def recv_add_partition_with_environment_context()
+      result = receive_message(Add_partition_with_environment_context_result)
+      return result.success unless result.success.nil?
+      raise result.o1 unless result.o1.nil?
+      raise result.o2 unless result.o2.nil?
+      raise result.o3 unless result.o3.nil?
+      raise ::Thrift::ApplicationException.new(::Thrift::ApplicationException::MISSING_RESULT, 'add_partition_with_environment_context failed: unknown result')
     end
 
     def add_partitions(new_parts)
@@ -653,6 +705,22 @@ module ThriftHiveMetastore
 
     def recv_alter_partition()
       result = receive_message(Alter_partition_result)
+      raise result.o1 unless result.o1.nil?
+      raise result.o2 unless result.o2.nil?
+      return
+    end
+
+    def alter_partition_with_environment_context(db_name, tbl_name, new_part, environment_context)
+      send_alter_partition_with_environment_context(db_name, tbl_name, new_part, environment_context)
+      recv_alter_partition_with_environment_context()
+    end
+
+    def send_alter_partition_with_environment_context(db_name, tbl_name, new_part, environment_context)
+      send_message('alter_partition_with_environment_context', Alter_partition_with_environment_context_args, :db_name => db_name, :tbl_name => tbl_name, :new_part => new_part, :environment_context => environment_context)
+    end
+
+    def recv_alter_partition_with_environment_context()
+      result = receive_message(Alter_partition_with_environment_context_result)
       raise result.o1 unless result.o1.nil?
       raise result.o2 unless result.o2.nil?
       return
@@ -1269,6 +1337,23 @@ module ThriftHiveMetastore
       write_result(result, oprot, 'create_table', seqid)
     end
 
+    def process_create_table_with_environment_context(seqid, iprot, oprot)
+      args = read_args(iprot, Create_table_with_environment_context_args)
+      result = Create_table_with_environment_context_result.new()
+      begin
+        @handler.create_table_with_environment_context(args.tbl, args.environment_context)
+      rescue AlreadyExistsException => o1
+        result.o1 = o1
+      rescue InvalidObjectException => o2
+        result.o2 = o2
+      rescue MetaException => o3
+        result.o3 = o3
+      rescue NoSuchObjectException => o4
+        result.o4 = o4
+      end
+      write_result(result, oprot, 'create_table_with_environment_context', seqid)
+    end
+
     def process_drop_table(seqid, iprot, oprot)
       args = read_args(iprot, Drop_table_args)
       result = Drop_table_result.new()
@@ -1360,6 +1445,19 @@ module ThriftHiveMetastore
       write_result(result, oprot, 'alter_table', seqid)
     end
 
+    def process_alter_table_with_environment_context(seqid, iprot, oprot)
+      args = read_args(iprot, Alter_table_with_environment_context_args)
+      result = Alter_table_with_environment_context_result.new()
+      begin
+        @handler.alter_table_with_environment_context(args.dbname, args.tbl_name, args.new_tbl, args.environment_context)
+      rescue InvalidOperationException => o1
+        result.o1 = o1
+      rescue MetaException => o2
+        result.o2 = o2
+      end
+      write_result(result, oprot, 'alter_table_with_environment_context', seqid)
+    end
+
     def process_add_partition(seqid, iprot, oprot)
       args = read_args(iprot, Add_partition_args)
       result = Add_partition_result.new()
@@ -1373,6 +1471,21 @@ module ThriftHiveMetastore
         result.o3 = o3
       end
       write_result(result, oprot, 'add_partition', seqid)
+    end
+
+    def process_add_partition_with_environment_context(seqid, iprot, oprot)
+      args = read_args(iprot, Add_partition_with_environment_context_args)
+      result = Add_partition_with_environment_context_result.new()
+      begin
+        result.success = @handler.add_partition_with_environment_context(args.new_part, args.environment_context)
+      rescue InvalidObjectException => o1
+        result.o1 = o1
+      rescue AlreadyExistsException => o2
+        result.o2 = o2
+      rescue MetaException => o3
+        result.o3 = o3
+      end
+      write_result(result, oprot, 'add_partition_with_environment_context', seqid)
     end
 
     def process_add_partitions(seqid, iprot, oprot)
@@ -1598,6 +1711,19 @@ module ThriftHiveMetastore
         result.o2 = o2
       end
       write_result(result, oprot, 'alter_partition', seqid)
+    end
+
+    def process_alter_partition_with_environment_context(seqid, iprot, oprot)
+      args = read_args(iprot, Alter_partition_with_environment_context_args)
+      result = Alter_partition_with_environment_context_result.new()
+      begin
+        @handler.alter_partition_with_environment_context(args.db_name, args.tbl_name, args.new_part, args.environment_context)
+      rescue InvalidOperationException => o1
+        result.o1 = o1
+      rescue MetaException => o2
+        result.o2 = o2
+      end
+      write_result(result, oprot, 'alter_partition_with_environment_context', seqid)
     end
 
     def process_rename_partition(seqid, iprot, oprot)
@@ -2401,6 +2527,46 @@ module ThriftHiveMetastore
     ::Thrift::Struct.generate_accessors self
   end
 
+  class Create_table_with_environment_context_args
+    include ::Thrift::Struct, ::Thrift::Struct_Union
+    TBL = 1
+    ENVIRONMENT_CONTEXT = 2
+
+    FIELDS = {
+      TBL => {:type => ::Thrift::Types::STRUCT, :name => 'tbl', :class => Table},
+      ENVIRONMENT_CONTEXT => {:type => ::Thrift::Types::STRUCT, :name => 'environment_context', :class => EnvironmentContext}
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+    end
+
+    ::Thrift::Struct.generate_accessors self
+  end
+
+  class Create_table_with_environment_context_result
+    include ::Thrift::Struct, ::Thrift::Struct_Union
+    O1 = 1
+    O2 = 2
+    O3 = 3
+    O4 = 4
+
+    FIELDS = {
+      O1 => {:type => ::Thrift::Types::STRUCT, :name => 'o1', :class => AlreadyExistsException},
+      O2 => {:type => ::Thrift::Types::STRUCT, :name => 'o2', :class => InvalidObjectException},
+      O3 => {:type => ::Thrift::Types::STRUCT, :name => 'o3', :class => MetaException},
+      O4 => {:type => ::Thrift::Types::STRUCT, :name => 'o4', :class => NoSuchObjectException}
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+    end
+
+    ::Thrift::Struct.generate_accessors self
+  end
+
   class Drop_table_args
     include ::Thrift::Struct, ::Thrift::Struct_Union
     DBNAME = 1
@@ -2667,6 +2833,46 @@ module ThriftHiveMetastore
     ::Thrift::Struct.generate_accessors self
   end
 
+  class Alter_table_with_environment_context_args
+    include ::Thrift::Struct, ::Thrift::Struct_Union
+    DBNAME = 1
+    TBL_NAME = 2
+    NEW_TBL = 3
+    ENVIRONMENT_CONTEXT = 4
+
+    FIELDS = {
+      DBNAME => {:type => ::Thrift::Types::STRING, :name => 'dbname'},
+      TBL_NAME => {:type => ::Thrift::Types::STRING, :name => 'tbl_name'},
+      NEW_TBL => {:type => ::Thrift::Types::STRUCT, :name => 'new_tbl', :class => Table},
+      ENVIRONMENT_CONTEXT => {:type => ::Thrift::Types::STRUCT, :name => 'environment_context', :class => EnvironmentContext}
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+    end
+
+    ::Thrift::Struct.generate_accessors self
+  end
+
+  class Alter_table_with_environment_context_result
+    include ::Thrift::Struct, ::Thrift::Struct_Union
+    O1 = 1
+    O2 = 2
+
+    FIELDS = {
+      O1 => {:type => ::Thrift::Types::STRUCT, :name => 'o1', :class => InvalidOperationException},
+      O2 => {:type => ::Thrift::Types::STRUCT, :name => 'o2', :class => MetaException}
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+    end
+
+    ::Thrift::Struct.generate_accessors self
+  end
+
   class Add_partition_args
     include ::Thrift::Struct, ::Thrift::Struct_Union
     NEW_PART = 1
@@ -2684,6 +2890,46 @@ module ThriftHiveMetastore
   end
 
   class Add_partition_result
+    include ::Thrift::Struct, ::Thrift::Struct_Union
+    SUCCESS = 0
+    O1 = 1
+    O2 = 2
+    O3 = 3
+
+    FIELDS = {
+      SUCCESS => {:type => ::Thrift::Types::STRUCT, :name => 'success', :class => Partition},
+      O1 => {:type => ::Thrift::Types::STRUCT, :name => 'o1', :class => InvalidObjectException},
+      O2 => {:type => ::Thrift::Types::STRUCT, :name => 'o2', :class => AlreadyExistsException},
+      O3 => {:type => ::Thrift::Types::STRUCT, :name => 'o3', :class => MetaException}
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+    end
+
+    ::Thrift::Struct.generate_accessors self
+  end
+
+  class Add_partition_with_environment_context_args
+    include ::Thrift::Struct, ::Thrift::Struct_Union
+    NEW_PART = 1
+    ENVIRONMENT_CONTEXT = 2
+
+    FIELDS = {
+      NEW_PART => {:type => ::Thrift::Types::STRUCT, :name => 'new_part', :class => Partition},
+      ENVIRONMENT_CONTEXT => {:type => ::Thrift::Types::STRUCT, :name => 'environment_context', :class => EnvironmentContext}
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+    end
+
+    ::Thrift::Struct.generate_accessors self
+  end
+
+  class Add_partition_with_environment_context_result
     include ::Thrift::Struct, ::Thrift::Struct_Union
     SUCCESS = 0
     O1 = 1
@@ -3390,6 +3636,46 @@ module ThriftHiveMetastore
   end
 
   class Alter_partition_result
+    include ::Thrift::Struct, ::Thrift::Struct_Union
+    O1 = 1
+    O2 = 2
+
+    FIELDS = {
+      O1 => {:type => ::Thrift::Types::STRUCT, :name => 'o1', :class => InvalidOperationException},
+      O2 => {:type => ::Thrift::Types::STRUCT, :name => 'o2', :class => MetaException}
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+    end
+
+    ::Thrift::Struct.generate_accessors self
+  end
+
+  class Alter_partition_with_environment_context_args
+    include ::Thrift::Struct, ::Thrift::Struct_Union
+    DB_NAME = 1
+    TBL_NAME = 2
+    NEW_PART = 3
+    ENVIRONMENT_CONTEXT = 4
+
+    FIELDS = {
+      DB_NAME => {:type => ::Thrift::Types::STRING, :name => 'db_name'},
+      TBL_NAME => {:type => ::Thrift::Types::STRING, :name => 'tbl_name'},
+      NEW_PART => {:type => ::Thrift::Types::STRUCT, :name => 'new_part', :class => Partition},
+      ENVIRONMENT_CONTEXT => {:type => ::Thrift::Types::STRUCT, :name => 'environment_context', :class => EnvironmentContext}
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+    end
+
+    ::Thrift::Struct.generate_accessors self
+  end
+
+  class Alter_partition_with_environment_context_result
     include ::Thrift::Struct, ::Thrift::Struct_Union
     O1 = 1
     O2 = 2

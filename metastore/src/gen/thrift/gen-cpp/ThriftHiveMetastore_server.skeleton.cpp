@@ -87,6 +87,11 @@ class ThriftHiveMetastoreHandler : virtual public ThriftHiveMetastoreIf {
     printf("create_table\n");
   }
 
+  void create_table_with_environment_context(const Table& tbl, const EnvironmentContext& environment_context) {
+    // Your implementation goes here
+    printf("create_table_with_environment_context\n");
+  }
+
   void drop_table(const std::string& dbname, const std::string& name, const bool deleteData) {
     // Your implementation goes here
     printf("drop_table\n");
@@ -122,9 +127,19 @@ class ThriftHiveMetastoreHandler : virtual public ThriftHiveMetastoreIf {
     printf("alter_table\n");
   }
 
+  void alter_table_with_environment_context(const std::string& dbname, const std::string& tbl_name, const Table& new_tbl, const EnvironmentContext& environment_context) {
+    // Your implementation goes here
+    printf("alter_table_with_environment_context\n");
+  }
+
   void add_partition(Partition& _return, const Partition& new_part) {
     // Your implementation goes here
     printf("add_partition\n");
+  }
+
+  void add_partition_with_environment_context(Partition& _return, const Partition& new_part, const EnvironmentContext& environment_context) {
+    // Your implementation goes here
+    printf("add_partition_with_environment_context\n");
   }
 
   int32_t add_partitions(const std::vector<Partition> & new_parts) {
@@ -210,6 +225,11 @@ class ThriftHiveMetastoreHandler : virtual public ThriftHiveMetastoreIf {
   void alter_partition(const std::string& db_name, const std::string& tbl_name, const Partition& new_part) {
     // Your implementation goes here
     printf("alter_partition\n");
+  }
+
+  void alter_partition_with_environment_context(const std::string& db_name, const std::string& tbl_name, const Partition& new_part, const EnvironmentContext& environment_context) {
+    // Your implementation goes here
+    printf("alter_partition_with_environment_context\n");
   }
 
   void rename_partition(const std::string& db_name, const std::string& tbl_name, const std::vector<std::string> & part_vals, const Partition& new_part) {

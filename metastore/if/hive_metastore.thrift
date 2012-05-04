@@ -193,6 +193,14 @@ struct Schema {
  2: map<string, string> properties
 }
 
+// Key-value store to be used with selected
+// Metastore APIs (create, alter methods).
+// The client can pass environment properties / configs that can be
+// accessed in hooks.
+struct EnvironmentContext {
+  1: map<string, string> properties
+}
+
 exception MetaException {
   1: string message
 }
@@ -272,6 +280,11 @@ service ThriftHiveMetastore extends fb303.FacebookService
   // sd.serdeInfo.serializationLib (SerDe class name eg org.apache.hadoop.hive.serde.simple_meta.MetadataTypedColumnsetSerDe
   // * See notes on DDL_TIME
   void create_table(1:Table tbl) throws(1:AlreadyExistsException o1, 2:InvalidObjectException o2, 3:MetaException o3, 4:NoSuchObjectException o4)
+  void create_table_with_environment_context(1:Table tbl,
+      2:EnvironmentContext environment_context)
+      throws (1:AlreadyExistsException o1,
+              2:InvalidObjectException o2, 3:MetaException o3,
+              4:NoSuchObjectException o4)
   // drops the table and all the partitions associated with it if the table has partitions
   // delete data (including partitions) if deleteData is set to true
   void drop_table(1:string dbname, 2:string name, 3:bool deleteData)
@@ -325,11 +338,17 @@ service ThriftHiveMetastore extends fb303.FacebookService
   // * See notes on DDL_TIME
   void alter_table(1:string dbname, 2:string tbl_name, 3:Table new_tbl)
                        throws (1:InvalidOperationException o1, 2:MetaException o2)
-
+  void alter_table_with_environment_context(1:string dbname, 2:string tbl_name,
+      3:Table new_tbl, 4:EnvironmentContext environment_context)
+      throws (1:InvalidOperationException o1, 2:MetaException o2) 
   // the following applies to only tables that have partitions
   // * See notes on DDL_TIME
   Partition add_partition(1:Partition new_part)
                        throws(1:InvalidObjectException o1, 2:AlreadyExistsException o2, 3:MetaException o3)
+  Partition add_partition_with_environment_context(1:Partition new_part,
+      2:EnvironmentContext environment_context)
+      throws (1:InvalidObjectException o1, 2:AlreadyExistsException o2,
+      3:MetaException o3)
   i32 add_partitions(1:list<Partition> new_parts)
                        throws(1:InvalidObjectException o1, 2:AlreadyExistsException o2, 3:MetaException o3)
   Partition append_partition(1:string db_name, 2:string tbl_name, 3:list<string> part_vals)
@@ -389,6 +408,11 @@ service ThriftHiveMetastore extends fb303.FacebookService
   // * See notes on DDL_TIME
   void alter_partition(1:string db_name, 2:string tbl_name, 3:Partition new_part)
                        throws (1:InvalidOperationException o1, 2:MetaException o2)
+
+  void alter_partition_with_environment_context(1:string db_name,
+      2:string tbl_name, 3:Partition new_part,
+      4:EnvironmentContext environment_context)
+      throws (1:InvalidOperationException o1, 2:MetaException o2)
 
   // rename the old partition to the new partition object by changing old part values to the part values
   // in the new_part. old partition is identified from part_vals.
