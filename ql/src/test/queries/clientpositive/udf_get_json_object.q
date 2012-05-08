@@ -23,3 +23,7 @@ SELECT get_json_object(src_json.json, '$.store.book[*].reader[0].age'), get_json
 SELECT get_json_object(src_json.json, '$.store.basket[0][1]'), get_json_object(src_json.json, '$.store.basket[*]'), get_json_object(src_json.json, '$.store.basket[*][0]'), get_json_object(src_json.json, '$.store.basket[0][*]'), get_json_object(src_json.json, '$.store.basket[*][*]'), get_json_object(src_json.json, '$.store.basket[0][2].b'), get_json_object(src_json.json, '$.store.basket[0][*].b') FROM src_json;
 
 SELECT get_json_object(src_json.json, '$.non_exist_key'),  get_json_object(src_json.json, '$..no_recursive'), get_json_object(src_json.json, '$.store.book[10]'), get_json_object(src_json.json, '$.store.book[0].non_exist_key'), get_json_object(src_json.json, '$.store.basket[*].non_exist_key'), get_json_object(src_json.json, '$.store.basket[0][*].non_exist_key') FROM src_json;
+
+SELECT get_json_object(src_json.json, '$.zip code') FROM src_json;
+
+SELECT get_json_object(src_json.json, '$.fb:testid') FROM src_json;
