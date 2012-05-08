@@ -390,6 +390,7 @@
     <junit showoutput="${test.output}" printsummary="yes" haltonfailure="no"
            fork="yes" maxmemory="512m" dir="${basedir}" timeout="${test.timeout}"
            errorProperty="tests.failed" failureProperty="tests.failed" filtertrace="off">
+      <env key="LANG" value="${test.lang}"/>
       <env key="HIVE_HADOOP_TEST_CLASSPATH" value="${hadoop.testcp}"/>
       <env key="HADOOP_HOME" value="${hadoop.root}"/>
       <env key="HADOOP_CLASSPATH" value="${test.src.data.dir}/conf:${build.dir.hive}/dist/lib/derby-${derby.version}.jar:${build.dir.hive}/dist/lib/JavaEWAH-${javaewah.version}.jar:${hadoop.root}/modules/*"/> <!-- Modules needed for Hadoop 0.23 -->
