@@ -153,3 +153,23 @@ POSTHOOK: Input: default@src_json
 #### A masked pattern was here ####
 POSTHOOK: Lineage: dest1.c1 SIMPLE []
 NULL	NULL	NULL	NULL	NULL	NULL
+PREHOOK: query: SELECT get_json_object(src_json.json, '$.zip code') FROM src_json
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src_json
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT get_json_object(src_json.json, '$.zip code') FROM src_json
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src_json
+#### A masked pattern was here ####
+POSTHOOK: Lineage: dest1.c1 SIMPLE []
+94025
+PREHOOK: query: SELECT get_json_object(src_json.json, '$.fb:testid') FROM src_json
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src_json
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT get_json_object(src_json.json, '$.fb:testid') FROM src_json
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src_json
+#### A masked pattern was here ####
+POSTHOOK: Lineage: dest1.c1 SIMPLE []
+1234

@@ -55,7 +55,7 @@ import org.json.JSONObject;
     + "  [,] : Union operator\n"
     + "  [start:end:step] : array slice operator\n")
 public class UDFJson extends UDF {
-  private final Pattern patternKey = Pattern.compile("^([a-zA-Z0-9_\\-]+).*");
+  private final Pattern patternKey = Pattern.compile("^([a-zA-Z0-9_\\-\\:\\s]+).*");
   private final Pattern patternIndex = Pattern.compile("\\[([0-9]+|\\*)\\]");
 
   // An LRU cache using a linked hash map
@@ -93,15 +93,15 @@ public class UDFJson extends UDF {
    * Extract json object from a json string based on json path specified, and
    * return json string of the extracted json object. It will return null if the
    * input json string is invalid.
-   * 
+   *
    * A limited version of JSONPath supported: $ : Root object . : Child operator
    * [] : Subscript operator for array * : Wildcard for []
-   * 
+   *
    * Syntax not supported that's worth noticing: '' : Zero length string as key
    * .. : Recursive descent &amp;#064; : Current object/element () : Script
    * expression ?() : Filter (script) expression. [,] : Union operator
    * [start:end:step] : array slice operator
-   * 
+   *
    * @param jsonString
    *          the json string.
    * @param pathString
