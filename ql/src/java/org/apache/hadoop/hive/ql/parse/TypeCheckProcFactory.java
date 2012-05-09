@@ -684,6 +684,15 @@ public final class TypeCheckProcFactory {
         if (fi.getGenericUDTF() != null) {
           throw new SemanticException(ErrorMsg.UDTF_INVALID_LOCATION.getMsg());
         }
+        // UDAF in filter condition, group-by caluse, param of funtion, etc.
+        if (fi.getGenericUDAFResolver() != null) {
+          if (isFunction) {
+            throw new SemanticException(ErrorMsg.UDAF_INVALID_LOCATION.
+                getMsg((ASTNode) expr.getChild(0)));
+          } else {
+            throw new SemanticException(ErrorMsg.UDAF_INVALID_LOCATION.getMsg(expr));
+          }
+        }
         if (!ctx.getAllowStatefulFunctions() && (fi.getGenericUDF() != null)) {
           if (FunctionRegistry.isStateful(fi.getGenericUDF())) {
             throw new SemanticException(
