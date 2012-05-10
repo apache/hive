@@ -62,15 +62,15 @@ if [ -f ${HADOOP_IN_PATH} ]; then
   HADOOP_DIR=`dirname "$HADOOP_IN_PATH"`/..
 fi
 # HADOOP_HOME env variable overrides hadoop in the path
-HADOOP_HOME=${HADOOP_HOME:-$HADOOP_DIR}
+HADOOP_HOME=${HADOOP_HOME:-${HADOOP_PREFIX:-$HADOOP_DIR}}
 if [ "$HADOOP_HOME" == "" ]; then
-  echo "Cannot find hadoop installation: \$HADOOP_HOME must be set or hadoop must be in the path";
+  echo "Cannot find hadoop installation: \$HADOOP_HOME or \$HADOOP_PREFIX must be set or hadoop must be in the path";
   exit 4;
 fi
 
 HADOOP_EXEC=$HADOOP_HOME/bin/hadoop
 if [ ! -f ${HADOOP} ]; then
-  echo "Cannot find hadoop installation: \$HADOOP_HOME must be set or hadoop must be in the path";
+  echo "Cannot find hadoop installation: \$HADOOP_HOME or \$HADOOP_PREFIX must be set or hadoop must be in the path";
   exit 4;
 fi
 
