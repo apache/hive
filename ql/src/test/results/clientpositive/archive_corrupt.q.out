@@ -1,3 +1,7 @@
+PREHOOK: query: USE default
+PREHOOK: type: SWITCHDATABASE
+POSTHOOK: query: USE default
+POSTHOOK: type: SWITCHDATABASE
 PREHOOK: query: drop table tstsrcpart
 PREHOOK: type: DROPTABLE
 POSTHOOK: query: drop table tstsrcpart
@@ -7,10 +11,24 @@ PREHOOK: type: CREATETABLE
 POSTHOOK: query: create table tstsrcpart like srcpart
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: default@tstsrcpart
-PREHOOK: query: load data local inpath '../data/files/archive_corrupt.rc' overwrite into table tstsrcpart partition (ds='2008-04-08', hr='11')
+PREHOOK: query: -- INCLUDE_HADOOP_MAJOR_VERSIONS(0.20)
+-- The version of GzipCodec provided in Hadoop 0.20 silently ignores
+-- file format errors. However, versions of Hadoop that include
+-- HADOOP-6835 (e.g. 0.23 and 1.x) cause a Wrong File Format exception
+-- to be thrown during the LOAD step. This behavior is now tested in
+-- clientnegative/archive_corrupt.q
+
+load data local inpath '../data/files/archive_corrupt.rc' overwrite into table tstsrcpart partition (ds='2008-04-08', hr='11')
 PREHOOK: type: LOAD
 PREHOOK: Output: default@tstsrcpart
-POSTHOOK: query: load data local inpath '../data/files/archive_corrupt.rc' overwrite into table tstsrcpart partition (ds='2008-04-08', hr='11')
+POSTHOOK: query: -- INCLUDE_HADOOP_MAJOR_VERSIONS(0.20)
+-- The version of GzipCodec provided in Hadoop 0.20 silently ignores
+-- file format errors. However, versions of Hadoop that include
+-- HADOOP-6835 (e.g. 0.23 and 1.x) cause a Wrong File Format exception
+-- to be thrown during the LOAD step. This behavior is now tested in
+-- clientnegative/archive_corrupt.q
+
+load data local inpath '../data/files/archive_corrupt.rc' overwrite into table tstsrcpart partition (ds='2008-04-08', hr='11')
 POSTHOOK: type: LOAD
 POSTHOOK: Output: default@tstsrcpart
 POSTHOOK: Output: default@tstsrcpart@ds=2008-04-08/hr=11
@@ -56,13 +74,9 @@ POSTHOOK: Lineage: tstsrcpart PARTITION(ds=2008-04-09,hr=11).key SIMPLE [(srcpar
 POSTHOOK: Lineage: tstsrcpart PARTITION(ds=2008-04-09,hr=11).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: tstsrcpart PARTITION(ds=2008-04-09,hr=12).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: tstsrcpart PARTITION(ds=2008-04-09,hr=12).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
-PREHOOK: query: -- EXCLUDE_HADOOP_MAJOR_VERSIONS(0.17, 0.18, 0.19)
-
-describe extended tstsrcpart partition (ds='2008-04-08', hr='11')
+PREHOOK: query: describe extended tstsrcpart partition (ds='2008-04-08', hr='11')
 PREHOOK: type: DESCTABLE
-POSTHOOK: query: -- EXCLUDE_HADOOP_MAJOR_VERSIONS(0.17, 0.18, 0.19)
-
-describe extended tstsrcpart partition (ds='2008-04-08', hr='11')
+POSTHOOK: query: describe extended tstsrcpart partition (ds='2008-04-08', hr='11')
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Lineage: tstsrcpart PARTITION(ds=2008-04-08,hr=12).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: tstsrcpart PARTITION(ds=2008-04-08,hr=12).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
