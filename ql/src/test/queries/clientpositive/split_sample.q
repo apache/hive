@@ -1,10 +1,4 @@
-drop table ss_src1;
-drop table ss_src2;
-drop table ss_src3;
-drop table ss_i_part;
-drop table ss_t3;
-drop table ss_t4;
-drop table ss_t5;
+USE default;
 
 set hive.input.format=org.apache.hadoop.hive.ql.io.CombineHiveInputFormat;
 set mapred.max.split.size=300;
@@ -19,6 +13,15 @@ insert overwrite table ss_i_part partition (p='1') select key, value from src;
 insert overwrite table ss_i_part partition (p='2') select key, value from src;
 insert overwrite table ss_i_part partition (p='3') select key, value from src;
 create table ss_src2 as select key, value from ss_i_part;
+
+-- EXCLUDE_HADOOP_MAJOR_VERSIONS(0.22)
+-- This test sets mapred.max.split.size=300 and hive.merge.smallfiles.avgsize=1
+-- in an attempt to force the generation of multiple splits and multiple output files.
+-- However, Hadoop 0.20 is incapable of generating splits smaller than the block size
+-- when using CombineFileInputFormat, so only one split is generated. This has a
+-- significant impact on the results of the TABLESAMPLE(x PERCENT). This issue was
+-- fixed in MAPREDUCE-2046 which is included in 0.22.
+
 select count(1) from ss_src2 tablesample(1 percent);
 
 -- sample first split
@@ -75,12 +78,3 @@ set mapred.min.split.size.per.node=300000;
 set mapred.min.split.size.per.rack=300000;
 select count(1) from ss_src2 tablesample(1 percent);
 select count(1) from ss_src2 tablesample(50 percent);
-
-
-drop table ss_src1;
-drop table ss_src2;
-drop table ss_src3;
-drop table ss_i_part;
-drop table ss_t3;
-drop table ss_t4;
-drop table ss_t5;

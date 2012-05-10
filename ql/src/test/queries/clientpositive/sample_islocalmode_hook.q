@@ -1,6 +1,4 @@
-drop table if exists sih_i_part;
-drop table if exists sih_src;
-drop table if exists sih_src2;
+USE default;
 
 set hive.input.format=org.apache.hadoop.hive.ql.io.CombineHiveInputFormat;
 set mapred.max.split.size=300;
@@ -22,7 +20,14 @@ set hive.exec.post.hooks = org.apache.hadoop.hive.ql.hooks.VerifyIsLocalModeHook
 set mapred.job.tracker=does.notexist.com:666;
 set hive.exec.mode.local.auto.input.files.max=1;
 
--- sample split, running locally limited by num tasks
+-- EXCLUDE_HADOOP_MAJOR_VERSIONS(0.22)
+-- This test sets mapred.max.split.size=300 and hive.merge.smallfiles.avgsize=1
+-- in an attempt to force the generation of multiple splits and multiple output files.
+-- However, Hadoop 0.20 is incapable of generating splits smaller than the block size
+-- when using CombineFileInputFormat, so only one split is generated. This has a
+-- significant impact on the results of the TABLESAMPLE(x PERCENT). This issue was
+-- fixed in MAPREDUCE-2046 which is included in 0.22.
+-- Sample split, running locally limited by num tasks
 select count(1) from sih_src tablesample(1 percent);
 
 set mapred.job.tracker=does.notexist.com:666;
@@ -36,7 +41,3 @@ set mapred.job.tracker=does.notexist.com:666;
 
 -- sample split, running locally limited by max bytes
 select count(1) from sih_src tablesample(1 percent);
-
-drop table sih_i_part;
-drop table sih_src;
-drop table sih_src2;
