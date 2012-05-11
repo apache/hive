@@ -29,6 +29,7 @@ import org.apache.hadoop.hive.ql.security.HadoopDefaultAuthenticator;
 import org.apache.hadoop.hive.ql.security.HiveAuthenticationProvider;
 import org.apache.hadoop.hive.ql.security.authorization.DefaultHiveAuthorizationProvider;
 import org.apache.hadoop.hive.ql.security.authorization.HiveAuthorizationProvider;
+import org.apache.hadoop.io.Text;
 import org.apache.hadoop.util.ReflectionUtils;
 
 /**
@@ -94,6 +95,71 @@ public final class HiveUtils {
       }
     }
     return (escape.toString());
+  }
+
+  static final byte[] newLineEscapeBytes = "\\n".getBytes();;
+  static final byte[] newLineUnescapeBytes = "\n".getBytes();
+
+  public static Text escapeNewLine(Text text) {
+    int length = text.getLength();
+    byte[] textBytes = text.getBytes();
+
+    Text escape = new Text(text);
+    escape.clear();
+
+    for (int i = 0; i < length; ++i) {
+      int c = text.charAt(i);
+      switch (c) {
+      case '\n':
+        byte[] escaped = newLineEscapeBytes;
+        escape.append(escaped, 0, escaped.length);
+        break;
+      default:
+        escape.append(textBytes, i, 1);
+        break;
+      }
+    }
+    return escape;
+  }
+
+  public static int unescapeNewLine(Text text) {
+    Text escape = new Text(text);
+    text.clear();
+
+    int length = escape.getLength();
+    byte[] textBytes = escape.getBytes();
+
+    boolean hadSlash = false;
+    for (int i = 0; i < length; ++i) {
+      int c = escape.charAt(i);
+      switch (c) {
+      case '\\':
+        if (hadSlash) {
+          text.append(textBytes, i, 1);
+        }
+        hadSlash = true;
+        break;
+      case 'n':
+        if (hadSlash) {
+          byte[] newLine = newLineUnescapeBytes;
+          text.append(newLine, 0, newLine.length);
+        }
+        else {
+          text.append(textBytes, i, 1);
+        }
+        hadSlash = false;
+        break;
+      default:
+        if (hadSlash) {
+          text.append(textBytes, i-1, 1);
+          hadSlash = false;
+        }
+
+        text.append(textBytes, i, 1);
+        break;
+      }
+    }
+    return text.getLength();
   }
 
   public static String lightEscapeString(String str) {
