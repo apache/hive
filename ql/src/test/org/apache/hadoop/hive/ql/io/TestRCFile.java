@@ -18,9 +18,10 @@
 
 package org.apache.hadoop.hive.ql.io;
 
+import java.io.DataInputStream;
 import java.io.IOException;
-import java.io.RandomAccessFile;
 import java.io.InputStream;
+import java.io.RandomAccessFile;
 import java.io.UnsupportedEncodingException;
 import java.util.List;
 import java.util.Properties;
@@ -35,6 +36,7 @@ import org.apache.hadoop.fs.FSDataInputStream;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.LocalFileSystem;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.serde.Constants;
 import org.apache.hadoop.hive.serde2.ColumnProjectionUtils;
 import org.apache.hadoop.hive.serde2.SerDeException;
@@ -45,9 +47,9 @@ import org.apache.hadoop.hive.serde2.io.ByteWritable;
 import org.apache.hadoop.hive.serde2.io.DoubleWritable;
 import org.apache.hadoop.hive.serde2.io.ShortWritable;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils;
+import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils.ObjectInspectorCopyOption;
 import org.apache.hadoop.hive.serde2.objectinspector.StructField;
 import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
-import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils.ObjectInspectorCopyOption;
 import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.Text;
@@ -347,6 +349,11 @@ public class TestRCFile extends TestCase {
 
   private void writeTest(FileSystem fs, int count, Path file,
       byte[][] fieldsData) throws IOException, SerDeException {
+    writeTest(fs, count, file, fieldsData, conf);
+  }
+
+  private void writeTest(FileSystem fs, int count, Path file,
+      byte[][] fieldsData, Configuration conf) throws IOException, SerDeException {
     fs.delete(file, true);
 
     RCFileOutputFormat.setColumnNumber(conf, fieldsData.length);
@@ -556,6 +563,7 @@ public class TestRCFile extends TestCase {
       super(in);
     }
 
+    @Override
     public void close() throws IOException {
       closed = true;
       super.close();
@@ -579,6 +587,7 @@ public class TestRCFile extends TestCase {
       new RCFile.Reader(fs, path, conf) {
         // this method is called by the RCFile.Reader constructor, overwritten,
         // so we can access the opened file
+        @Override
         protected FSDataInputStream openFile(FileSystem fs, Path file,
             int bufferSize, long length) throws IOException {
           final InputStream in = super.openFile(fs, file, bufferSize, length);
@@ -592,6 +601,33 @@ public class TestRCFile extends TestCase {
     assertNotNull(path + " should have been opened.", openedFile[0]);
     assertTrue("InputStream for " + path + " should have been closed.",
         openedFile[0].isClosed());
+  }
+
+  public void testRCFileHeader(char[] expected, Configuration conf)
+      throws IOException, SerDeException {
+
+    writeTest(fs, 10000, file, bytesArray, conf);
+    DataInputStream di = fs.open(file, 10000);
+    byte[] bytes = new byte[3];
+    di.read(bytes);
+    for (int i = 0; i < expected.length; i++) {
+      assertTrue("Headers did not match", bytes[i] == expected[i]);
+    }
+    di.close();
+  }
+
+  public void testNonExplicitRCFileHeader() throws IOException, SerDeException {
+    Configuration conf = new Configuration();
+    conf.setBoolean(HiveConf.ConfVars.HIVEUSEEXPLICITRCFILEHEADER.varname, false);
+    char[] expected = new char[] {'S', 'E', 'Q'};
+    testRCFileHeader(expected, conf);
+  }
+
+  public void testExplicitRCFileHeader() throws IOException, SerDeException {
+    Configuration conf = new Configuration();
+    conf.setBoolean(HiveConf.ConfVars.HIVEUSEEXPLICITRCFILEHEADER.varname, true);
+    char[] expected = new char[] {'R', 'C', 'F'};
+    testRCFileHeader(expected, conf);
   }
 
 }

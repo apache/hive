@@ -421,6 +421,8 @@ public class HiveConf extends Configuration {
     HIVEMERGECURRENTJOBHASDYNAMICPARTITIONS(
         "hive.merge.current.job.has.dynamic.partitions", false),
 
+    HIVEUSEEXPLICITRCFILEHEADER("hive.exec.rcfile.use.explicit.header", true),
+
     HIVESKEWJOIN("hive.optimize.skewjoin", false),
     HIVECONVERTJOIN("hive.auto.convert.join", false),
     HIVESKEWJOINKEY("hive.skewjoin.key", 100000),

@@ -37,6 +37,7 @@ import org.apache.hadoop.fs.FSDataInputStream;
 import org.apache.hadoop.fs.FSDataOutputStream;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.serde2.ColumnProjectionUtils;
 import org.apache.hadoop.hive.serde2.columnar.BytesRefArrayWritable;
 import org.apache.hadoop.hive.serde2.columnar.BytesRefWritable;
@@ -170,7 +171,11 @@ public class RCFile {
       (byte) 'S', (byte) 'E', (byte) 'Q'};
   // the version that was included with the original magic, which is mapped
   // into ORIGINAL_VERSION
-  private static final byte ORIGINAL_MAGIC_VERSION = 6;
+  private static final byte ORIGINAL_MAGIC_VERSION_WITH_METADATA = 6;
+
+  private static final byte[] ORIGINAL_MAGIC_VERSION = new byte[] {
+    (byte) 'S', (byte) 'E', (byte) 'Q', ORIGINAL_MAGIC_VERSION_WITH_METADATA
+  };
 
   // The 'magic' bytes at the beginning of the RCFile
   private static final byte[] MAGIC = new byte[] {
@@ -618,6 +623,8 @@ public class RCFile {
     private final int[] plainTotalColumnLength;
     private final int[] comprTotalColumnLength;
 
+    boolean useNewMagic = true;
+
     /*
      * used for buffering appends before flush them out
      */
@@ -782,8 +789,12 @@ public class RCFile {
 
     /** Write the initial part of file header. */
     void initializeFileHeader() throws IOException {
-      out.write(MAGIC);
-      out.write(CURRENT_VERSION);
+      if (useNewMagic) {
+        out.write(MAGIC);
+        out.write(CURRENT_VERSION);
+      } else {
+        out.write(ORIGINAL_MAGIC_VERSION);
+      }
     }
 
     /** Write the final part of file header. */
@@ -798,7 +809,14 @@ public class RCFile {
 
     /** Write and flush the file header. */
     void writeFileHeader() throws IOException {
-      out.writeBoolean(isCompressed());
+      if (useNewMagic) {
+        out.writeBoolean(isCompressed());
+      } else {
+        Text.writeString(out, KeyBuffer.class.getName());
+        Text.writeString(out, ValueBuffer.class.getName());
+        out.writeBoolean(isCompressed());
+        out.writeBoolean(false);
+      }
 
       if (isCompressed()) {
         Text.writeString(out, (codec.getClass()).getName());
@@ -836,6 +854,8 @@ public class RCFile {
         keyDeflateOut = new DataOutputStream(new BufferedOutputStream(
             keyDeflateFilter));
       }
+      this.useNewMagic =
+          conf.getBoolean(HiveConf.ConfVars.HIVEUSEEXPLICITRCFILEHEADER.varname, true);
     }
 
     /** Returns the compression codec of data in this file. */
@@ -1235,7 +1255,7 @@ public class RCFile {
 
       if (Arrays.equals(magic, ORIGINAL_MAGIC)) {
         byte vers = in.readByte();
-        if (vers != ORIGINAL_MAGIC_VERSION) {
+        if (vers != ORIGINAL_MAGIC_VERSION_WITH_METADATA) {
           throw new IOException(file + " is a version " + vers +
                                 " SequenceFile instead of an RCFile.");
         }
