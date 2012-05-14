@@ -1282,5 +1282,15 @@
   </description>
 </property>
 
+<property>
+  <name>hive.exec.rcfile.use.explicit.header</name>
+  <value>true</value>
+  <description>
+    If this is set the header for RC Files will simply be RCF.  If this is not
+    set the header will be that borrowed from sequence files, e.g. SEQ- followed
+    by the input and output RC File formats.
+  </description>
+</property>
+
 </configuration>
 
