@@ -496,7 +496,6 @@ public class TestJdbcDriver extends TestCase {
 
   public void testErrorMessages() throws SQLException {
     String invalidSyntaxSQLState = "42000";
-    int parseErrorCode = 10;
 
     // These tests inherently cause exceptions to be written to the test output
     // logs. This is undesirable, since you it might appear to someone looking
@@ -504,27 +503,23 @@ public class TestJdbcDriver extends TestCase {
     // sure
     // how to get around that.
     doTestErrorCase("SELECTT * FROM " + tableName,
-        "cannot recognize input near 'SELECTT' '*' 'FROM'", invalidSyntaxSQLState, 11);
+        "cannot recognize input near 'SELECTT' '*' 'FROM'",
+        invalidSyntaxSQLState, 40000);
     doTestErrorCase("SELECT * FROM some_table_that_does_not_exist",
-        "Table not found", "42000", parseErrorCode);
+        "Table not found", "42S02", 10001);
     doTestErrorCase("drop table some_table_that_does_not_exist",
-        "Table not found", "42000", parseErrorCode);
+        "Table not found", "42S02", 10001);
     doTestErrorCase("SELECT invalid_column FROM " + tableName,
-        "Invalid table alias or column reference", invalidSyntaxSQLState,
-        parseErrorCode);
+        "Invalid table alias or column reference", invalidSyntaxSQLState, 10004);
     doTestErrorCase("SELECT invalid_function(under_col) FROM " + tableName,
-        "Invalid function", invalidSyntaxSQLState, parseErrorCode);
+    "Invalid function", invalidSyntaxSQLState, 10011);
 
-    // TODO: execute errors like this currently don't return good messages (i.e.
-    // 'Table already exists'). This is because the Driver class calls
-    // Task.executeTask() which swallows meaningful exceptions and returns a
-    // status
-    // code. This should be refactored.
+    // TODO: execute errors like this currently don't return good error
+    // codes and messages. This should be fixed.
     doTestErrorCase(
         "create table " + tableName + " (key int, value string)",
-        "Query returned non-zero code: 9, cause: FAILED: Execution Error, "
-        + "return code 1 from org.apache.hadoop.hive.ql.exec.DDLTask",
-        "08S01", 9);
+        "FAILED: Execution Error, return code 1 from org.apache.hadoop.hive.ql.exec.DDLTask",
+        "08S01", 1);
   }
 
   private void doTestErrorCase(String sql, String expectedMessage,

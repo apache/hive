@@ -9,4 +9,4 @@ POSTHOOK: query: create table exim_department ( dep_id int comment "department i
 	tblproperties("creator"="krishna")
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: default@exim_department
-FAILED: Error in semantic analysis: Export/Import cannot be done for a non-native table. 
+FAILED: SemanticException [Error 10121]: Export/Import cannot be done for a non-native table. 

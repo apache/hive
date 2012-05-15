@@ -694,7 +694,7 @@ public class ExecDriver extends Task<MapredWork> implements Serializable, Hadoop
     }
 
     if (ret != 0) {
-      System.exit(2);
+      System.exit(ret);
     }
   }
 

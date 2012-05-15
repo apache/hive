@@ -3,4 +3,4 @@ PREHOOK: type: CREATETABLE
 POSTHOOK: query: CREATE TABLE dest1(key INT, ten INT, one INT, value STRING) STORED AS TEXTFILE
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: default@dest1
-FAILED: Error in semantic analysis: 8:8 Cannot have both ORDER BY and SORT BY clauses. Error encountered near token 'one'
+FAILED: SemanticException 8:8 Cannot have both ORDER BY and SORT BY clauses. Error encountered near token 'one'

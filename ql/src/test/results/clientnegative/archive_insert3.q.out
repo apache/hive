@@ -31,4 +31,4 @@ POSTHOOK: Input: default@tstsrcpart
 POSTHOOK: Output: default@tstsrcpart@ds=2008-04-08/hr=12
 POSTHOOK: Lineage: tstsrcpart PARTITION(ds=2008-04-08,hr=12).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: tstsrcpart PARTITION(ds=2008-04-08,hr=12).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
-FAILED: Error in semantic analysis: Insert conflict with existing archive: ds=2008-04-08
+FAILED: SemanticException Insert conflict with existing archive: ds=2008-04-08

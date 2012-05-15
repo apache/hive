@@ -77,4 +77,4 @@ PREHOOK: query: use importer
 PREHOOK: type: SWITCHDATABASE
 POSTHOOK: query: use importer
 POSTHOOK: type: SWITCHDATABASE
-FAILED: Error in semantic analysis: Partition not found  - Specified partition not found in import directory
+FAILED: SemanticException [Error 10006]: Partition not found  - Specified partition not found in import directory

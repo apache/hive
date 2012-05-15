@@ -3,4 +3,4 @@ PREHOOK: type: CREATETABLE
 POSTHOOK: query: create table dyn_merge(key string, value string) partitioned by (ds string)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: default@dyn_merge
-FAILED: Error in semantic analysis: Dynamic partition does not support merging using non-CombineHiveInputFormatPlease check your hive.input.format setting and make sure your Hadoop version support CombineFileInputFormat
+FAILED: SemanticException [Error 10097]: Dynamic partition does not support merging using non-CombineHiveInputFormat. Please check your hive.input.format setting and make sure your Hadoop version support CombineFileInputFormat

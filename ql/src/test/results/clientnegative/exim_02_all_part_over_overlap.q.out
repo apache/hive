@@ -99,4 +99,4 @@ POSTHOOK: query: load data local inpath "../data/files/test.dat"
 POSTHOOK: type: LOAD
 POSTHOOK: Output: importer@exim_employee
 POSTHOOK: Output: importer@exim_employee@emp_country=us/emp_state=ka
-FAILED: Error in semantic analysis: Partition already exists emp_country=us,emp_state=ka
+FAILED: SemanticException [Error 10118]: Partition already exists emp_country=us,emp_state=ka

@@ -59,4 +59,4 @@ col	string
 p	string	
 	 	 
 #### A masked pattern was here ####
-FAILED: Error in semantic analysis: Query against an offline table or partition Table tbl_protectmode_tbl4
+FAILED: SemanticException [Error 10113]: Query against an offline table or partition Table tbl_protectmode_tbl4

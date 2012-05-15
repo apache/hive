@@ -5,4 +5,4 @@ POSTHOOK: query: CREATE TABLE non_native2(key int, value string)
 STORED BY 'org.apache.hadoop.hive.ql.metadata.DefaultStorageHandler'
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: default@non_native2
-FAILED: Error in semantic analysis: A non-native table cannot be used as target for LOAD
+FAILED: SemanticException [Error 10101]: A non-native table cannot be used as target for LOAD

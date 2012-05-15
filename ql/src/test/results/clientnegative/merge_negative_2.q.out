@@ -13,4 +13,4 @@ POSTHOOK: Input: default@src
 POSTHOOK: Output: default@srcpart2@ds=2011
 POSTHOOK: Lineage: srcpart2 PARTITION(ds=2011).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: srcpart2 PARTITION(ds=2011).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-FAILED: Error in semantic analysis: org.apache.hadoop.hive.ql.parse.SemanticException: source table srcpart2 is partitioned but no partition desc found.
+FAILED: SemanticException org.apache.hadoop.hive.ql.parse.SemanticException: source table srcpart2 is partitioned but no partition desc found.

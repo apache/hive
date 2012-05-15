@@ -27,4 +27,4 @@ POSTHOOK: query: alter table tbl_protectmode_1 enable offline
 POSTHOOK: type: ALTERTABLE_PROTECTMODE
 POSTHOOK: Input: default@tbl_protectmode_1
 POSTHOOK: Output: default@tbl_protectmode_1
-FAILED: Error in semantic analysis: Query against an offline table or partition Table tbl_protectmode_1
+FAILED: SemanticException [Error 10113]: Query against an offline table or partition Table tbl_protectmode_1

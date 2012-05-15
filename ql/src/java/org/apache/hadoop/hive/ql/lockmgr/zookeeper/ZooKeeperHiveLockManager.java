@@ -39,7 +39,7 @@ import java.util.regex.Pattern;
 import java.util.regex.Matcher;
 import org.apache.zookeeper.KeeperException;
 
-import org.apache.hadoop.hive.ql.parse.ErrorMsg;
+import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.lockmgr.HiveLockManager;
 import org.apache.hadoop.hive.ql.lockmgr.HiveLockManagerCtx;
 import org.apache.hadoop.hive.ql.lockmgr.HiveLock;

@@ -1,1 +1,1 @@
-FAILED: Error in semantic analysis: Line 1:7 Arguments length mismatch '3': The function ELT(N,str1,str2,str3,...) needs at least two arguments.
+FAILED: SemanticException [Error 10015]: Line 1:7 Arguments length mismatch '3': The function ELT(N,str1,str2,str3,...) needs at least two arguments.

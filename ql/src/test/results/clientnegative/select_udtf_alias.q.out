@@ -1,2 +1,2 @@
-FAILED: Parse Error: line 3:49 mismatched input 'LIMIT' expecting FROM near ')' in from clause
+FAILED: ParseException line 3:49 mismatched input 'LIMIT' expecting FROM near ')' in from clause
 

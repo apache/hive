@@ -1,1 +1,1 @@
-FAILED: Error in semantic analysis: Cannot support comparison of map<> type or complex type containing map<>.
+FAILED: UDFArgumentTypeException Cannot support comparison of map<> type or complex type containing map<>.

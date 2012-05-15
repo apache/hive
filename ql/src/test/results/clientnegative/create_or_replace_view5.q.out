@@ -13,4 +13,4 @@ POSTHOOK: query: create view v partitioned on (ds, hr) as select * from srcpart
 POSTHOOK: type: CREATEVIEW
 POSTHOOK: Output: default@v
 #### A masked pattern was here ####
-FAILED: Error in semantic analysis: Can't combine IF NOT EXISTS and OR REPLACE.
+FAILED: SemanticException Can't combine IF NOT EXISTS and OR REPLACE.

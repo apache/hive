@@ -34,6 +34,7 @@ import java.util.TimerTask;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.plan.ScriptDesc;
 import org.apache.hadoop.hive.ql.plan.api.OperatorType;
@@ -214,7 +215,7 @@ public class ScriptOperator extends Operator<ScriptDesc> implements
       // initialize all children before starting the script
       initializeChildren(hconf);
     } catch (Exception e) {
-      throw new HiveException("Cannot initialize ScriptOperator", e);
+      throw new HiveException(ErrorMsg.SCRIPT_INIT_ERROR.getErrorCodedMsg(), e);
     }
   }
 
@@ -317,12 +318,12 @@ public class ScriptOperator extends Operator<ScriptDesc> implements
         outThread.start();
         errThread.start();
       } catch (Exception e) {
-        throw new HiveException("Cannot initialize ScriptOperator", e);
+        throw new HiveException(ErrorMsg.SCRIPT_INIT_ERROR.getErrorCodedMsg(), e);
       }
     }
 
     if (scriptError != null) {
-      throw new HiveException(scriptError);
+      throw new HiveException(ErrorMsg.SCRIPT_GENERIC_ERROR.getErrorCodedMsg(), scriptError);
     }
 
     try {
@@ -345,7 +346,7 @@ public class ScriptOperator extends Operator<ScriptDesc> implements
           displayBrokenPipeInfo();
         }
         scriptError = e;
-        throw new HiveException(e);
+        throw new HiveException(ErrorMsg.SCRIPT_IO_ERROR.getErrorCodedMsg(), e);
       }
     }
   }
@@ -356,7 +357,7 @@ public class ScriptOperator extends Operator<ScriptDesc> implements
     boolean new_abort = abort;
     if (!abort) {
       if (scriptError != null) {
-        throw new HiveException(scriptError);
+        throw new HiveException(ErrorMsg.SCRIPT_GENERIC_ERROR.getErrorCodedMsg(), scriptError);
       }
       // everything ok. try normal shutdown
       try {
@@ -449,7 +450,7 @@ public class ScriptOperator extends Operator<ScriptDesc> implements
     super.close(new_abort);
 
     if (new_abort && !abort) {
-      throw new HiveException("Hit error while closing ..");
+      throw new HiveException(ErrorMsg.SCRIPT_CLOSING_ERROR.getErrorCodedMsg());
     }
   }
 

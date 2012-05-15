@@ -1,1 +1,1 @@
-FAILED: Error in semantic analysis: Line 0:-1 Wrong arguments '1.0': In strict mode, comparing bigints and doubles is not allowed, it may result in a loss of precision. If you really want to perform the operation, set hive.mapred.mode=nonstrict
+FAILED: SemanticException Line 0:-1 Wrong arguments '1.0': In strict mode, comparing bigints and doubles is not allowed, it may result in a loss of precision. If you really want to perform the operation, set hive.mapred.mode=nonstrict

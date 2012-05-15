@@ -84,4 +84,4 @@ POSTHOOK: type: null
 POSTHOOK: Input: default@r3
 POSTHOOK: Output: default@r0
 POSTHOOK: Output: default@r3
-FAILED: Error in semantic analysis: Recursive view default.r0 detected (cycle: default.r0 -> default.r2 -> default.r1 -> default.r0).
+FAILED: SemanticException Recursive view default.r0 detected (cycle: default.r0 -> default.r2 -> default.r1 -> default.r0).

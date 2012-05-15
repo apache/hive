@@ -1,2 +1,2 @@
-FAILED: Parse Error: line 1:25 mismatched input '<EOF>' expecting set null in Identifier for show statement
+FAILED: ParseException line 1:25 mismatched input '<EOF>' expecting set null in Identifier for show statement
 

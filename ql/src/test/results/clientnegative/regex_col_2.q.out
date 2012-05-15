@@ -1,1 +1,1 @@
-FAILED: Error in semantic analysis: Line 2:7 Invalid column reference '`.a.`'
+FAILED: SemanticException [Error 10002]: Line 2:7 Invalid column reference '`.a.`'

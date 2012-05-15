@@ -1,2 +1,2 @@
-FAILED: Parse Error: line 1:54 required (...)+ loop did not match anything at input 'JOIN' in statement
+FAILED: ParseException line 1:54 required (...)+ loop did not match anything at input 'JOIN' in statement
 
