@@ -33,6 +33,7 @@ import org.apache.hadoop.hive.ql.exec.ExtractOperator;
 import org.apache.hadoop.hive.ql.exec.FilterOperator;
 import org.apache.hadoop.hive.ql.exec.ForwardOperator;
 import org.apache.hadoop.hive.ql.exec.GroupByOperator;
+import org.apache.hadoop.hive.ql.exec.JoinOperator;
 import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.exec.OperatorFactory;
 import org.apache.hadoop.hive.ql.exec.ReduceSinkOperator;
@@ -155,9 +156,12 @@ public class ReduceSinkDeDuplication implements Transform{
         }
 
         List<Operator<? extends Serializable>> childOp = childReduceSink.getChildOperators();
-        if (childOp != null && childOp.size() == 1 && childOp.get(0) instanceof GroupByOperator) {
-          ctx.addRejectedReduceSinkOperator(childReduceSink);
-          return null;
+        if (childOp != null && childOp.size() == 1) {
+          Operator<? extends Serializable> child = childOp.get(0);
+          if (child instanceof GroupByOperator || child instanceof JoinOperator) {
+            ctx.addRejectedReduceSinkOperator(childReduceSink);
+            return null;
+          }
         }
 
         ParseContext pGraphContext = ctx.getPctx();
