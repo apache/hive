@@ -1,1 +1,1 @@
-FAILED: Error in semantic analysis: Line 1:7 Wrong arguments '3': The function FIELD(str, str1, str2, ...) needs at least two arguments.
+FAILED: SemanticException [Error 10014]: Line 1:7 Wrong arguments '3': The function FIELD(str, str1, str2, ...) needs at least two arguments.

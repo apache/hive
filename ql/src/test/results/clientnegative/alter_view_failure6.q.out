@@ -15,5 +15,5 @@ SELECT hr,key FROM srcpart
 POSTHOOK: type: CREATEVIEW
 POSTHOOK: Output: default@xxx7
 #### A masked pattern was here ####
-FAILED: Error in semantic analysis: No partition predicate found for Alias "xxx7:srcpart" Table "srcpart"
-FAILED: Error in semantic analysis: The query does not reference any valid partition. To run this query, set hive.mapred.mode=nonstrict
+FAILED: SemanticException [Error 10041]: No partition predicate found for Alias "xxx7:srcpart" Table "srcpart"
+FAILED: SemanticException [Error 10056]: The query does not reference any valid partition. To run this query, set hive.mapred.mode=nonstrict

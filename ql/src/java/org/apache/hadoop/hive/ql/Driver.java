@@ -82,7 +82,6 @@ import org.apache.hadoop.hive.ql.optimizer.ppr.PartitionPruner;
 import org.apache.hadoop.hive.ql.parse.ASTNode;
 import org.apache.hadoop.hive.ql.parse.AbstractSemanticAnalyzerHook;
 import org.apache.hadoop.hive.ql.parse.BaseSemanticAnalyzer;
-import org.apache.hadoop.hive.ql.parse.ErrorMsg;
 import org.apache.hadoop.hive.ql.parse.HiveSemanticAnalyzerHookContext;
 import org.apache.hadoop.hive.ql.parse.HiveSemanticAnalyzerHookContextImpl;
 import org.apache.hadoop.hive.ql.parse.ImportSemanticAnalyzer;
@@ -496,24 +495,17 @@ public class Driver implements CommandProcessor {
       //restore state after we're done executing a specific query
 
       return 0;
-    } catch (SemanticException e) {
-      errorMessage = "FAILED: Error in semantic analysis: " + e.getMessage();
-      SQLState = ErrorMsg.findSQLState(e.getMessage());
-      console.printError(errorMessage, "\n"
-          + org.apache.hadoop.util.StringUtils.stringifyException(e));
-      return (10);
-    } catch (ParseException e) {
-      errorMessage = "FAILED: Parse Error: " + e.getMessage();
-      SQLState = ErrorMsg.findSQLState(e.getMessage());
-      console.printError(errorMessage, "\n"
-          + org.apache.hadoop.util.StringUtils.stringifyException(e));
-      return (11);
     } catch (Exception e) {
-      errorMessage = "FAILED: Hive Internal Error: " + Utilities.getNameMessage(e);
-      SQLState = ErrorMsg.findSQLState(e.getMessage());
-      console.printError(errorMessage + "\n"
+      ErrorMsg error = ErrorMsg.getErrorMsg(e.getMessage());
+      errorMessage = "FAILED: " + e.getClass().getSimpleName();
+      if (error != ErrorMsg.GENERIC_ERROR) {
+        errorMessage += " [Error "  + error.getErrorCode()  + "]:";
+      }
+      errorMessage += " " + e.getMessage();
+      SQLState = error.getSQLState();
+      console.printError(errorMessage, "\n"
           + org.apache.hadoop.util.StringUtils.stringifyException(e));
-      return (12);
+      return error.getErrorCode();
     } finally {
       perfLogger.PerfLogEnd(LOG, PerfLogger.COMPILE);
       restoreSession(queryState);
@@ -1137,8 +1129,11 @@ public class Driver implements CommandProcessor {
           if (backupTask != null) {
             errorMessage = "FAILED: Execution Error, return code " + exitVal + " from "
                 + tsk.getClass().getName();
+            ErrorMsg em = ErrorMsg.getErrorMsg(exitVal);
+            if (em != null) {
+              errorMessage += ". " +  em.getMsg();
+            }
             console.printError(errorMessage);
-
             errorMessage = "ATTEMPT: Execute BackupTask: " + backupTask.getClass().getName();
             console.printError(errorMessage);
 
@@ -1159,9 +1154,12 @@ public class Driver implements CommandProcessor {
               perfLogger.PerfLogEnd(LOG, PerfLogger.FAILURE_HOOK + ofh.getClass().getName());
             }
 
-            // TODO: This error messaging is not very informative. Fix that.
             errorMessage = "FAILED: Execution Error, return code " + exitVal + " from "
                 + tsk.getClass().getName();
+            ErrorMsg em = ErrorMsg.getErrorMsg(exitVal);
+            if (em != null) {
+              errorMessage += ". " +  em.getMsg();
+            }
             SQLState = "08S01";
             console.printError(errorMessage);
             if (running.size() != 0) {
@@ -1170,7 +1168,7 @@ public class Driver implements CommandProcessor {
             // in case we decided to run everything in local mode, restore the
             // the jobtracker setting to its initial value
             ctx.restoreOriginalTracker();
-            return 9;
+            return exitVal;
           }
         }
 

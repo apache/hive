@@ -1,2 +1,2 @@
-FAILED: Parse Error: line 1:7 Failed to recognize predicate 'tabl'. Failed rule: 'kwRole' in create role
+FAILED: ParseException line 1:7 Failed to recognize predicate 'tabl'. Failed rule: 'kwRole' in create role
 

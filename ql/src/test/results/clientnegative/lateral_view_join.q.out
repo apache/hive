@@ -1,2 +1,2 @@
-FAILED: Parse Error: line 1:59 mismatched input 'AS' expecting Identifier near ')' in table alias
+FAILED: ParseException line 1:59 mismatched input 'AS' expecting Identifier near ')' in table alias
 

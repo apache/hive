@@ -33,4 +33,4 @@ POSTHOOK: Input: default@v1
 POSTHOOK: Input: default@v2
 POSTHOOK: Output: default@v3
 #### A masked pattern was here ####
-FAILED: Error in semantic analysis: Recursive view default.v1 detected (cycle: default.v1 -> default.v3 -> default.v2 -> default.v1).
+FAILED: SemanticException Recursive view default.v1 detected (cycle: default.v1 -> default.v3 -> default.v2 -> default.v1).

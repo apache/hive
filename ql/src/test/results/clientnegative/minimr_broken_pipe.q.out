@@ -3,4 +3,4 @@ SELECT TRANSFORM(*) USING 'true' AS a, b, c FROM (SELECT * FROM src LIMIT 1) tmp
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
 #### A masked pattern was here ####
-FAILED: Execution Error, return code 2 from org.apache.hadoop.hive.ql.exec.MapRedTask
+FAILED: Execution Error, return code 20003 from org.apache.hadoop.hive.ql.exec.MapRedTask. An error occurred when trying to close the Operator running your custom script.

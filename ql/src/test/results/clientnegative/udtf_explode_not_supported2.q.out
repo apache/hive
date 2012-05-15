@@ -1,1 +1,1 @@
-FAILED: Error in semantic analysis: The number of aliases supplied in the AS clause does not match the number of columns output by the UDTF expected 2 aliases but got 3
+FAILED: SemanticException [Error 10083]: The number of aliases supplied in the AS clause does not match the number of columns output by the UDTF expected 2 aliases but got 3

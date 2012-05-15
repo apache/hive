@@ -1,1 +1,1 @@
-FAILED: Error in semantic analysis: Invalid index UnknownIndex
+FAILED: SemanticException [Error 10003]: Invalid index UnknownIndex

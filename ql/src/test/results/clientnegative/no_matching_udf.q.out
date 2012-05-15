@@ -1,1 +1,1 @@
-FAILED: Error in semantic analysis: No matching method for class org.apache.hadoop.hive.ql.udf.UDAFPercentile with (double, double). Possible choices: _FUNC_(bigint, array<double>)  _FUNC_(bigint, double)  
+FAILED: NoMatchingMethodException No matching method for class org.apache.hadoop.hive.ql.udf.UDAFPercentile with (double, double). Possible choices: _FUNC_(bigint, array<double>)  _FUNC_(bigint, double)  

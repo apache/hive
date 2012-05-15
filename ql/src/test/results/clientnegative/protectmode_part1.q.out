@@ -77,4 +77,4 @@ POSTHOOK: Output: default@tbl_protectmode5_1
 POSTHOOK: Lineage: tbl_protectmode5_1.col SIMPLE [(tbl_protectmode5)tbl_protectmode5.FieldSchema(name:col, type:string, comment:null), ]
 POSTHOOK: Lineage: tbl_protectmode5_1.col SIMPLE [(tbl_protectmode5)tbl_protectmode5.FieldSchema(name:col, type:string, comment:null), ]
 POSTHOOK: Lineage: tbl_protectmode5_1.col SIMPLE [(tbl_protectmode5)tbl_protectmode5.FieldSchema(name:col, type:string, comment:null), ]
-FAILED: Error in semantic analysis: Query against an offline table or partition Table tbl_protectmode5 Partition p=p1
+FAILED: SemanticException [Error 10113]: Query against an offline table or partition Table tbl_protectmode5 Partition p=p1

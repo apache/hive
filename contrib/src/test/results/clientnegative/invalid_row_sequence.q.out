@@ -12,4 +12,4 @@ PREHOOK: type: CREATEFUNCTION
 POSTHOOK: query: create temporary function row_sequence as 
 'org.apache.hadoop.hive.contrib.udf.UDFRowSequence'
 POSTHOOK: type: CREATEFUNCTION
-FAILED: Error in semantic analysis: Stateful UDF's can only be invoked in the SELECT list
+FAILED: SemanticException [Error 10084]: Stateful UDF's can only be invoked in the SELECT list

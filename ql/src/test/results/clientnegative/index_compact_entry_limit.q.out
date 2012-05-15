@@ -32,7 +32,7 @@ PREHOOK: query: SELECT key, value FROM src WHERE key=100 ORDER BY key
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
 #### A masked pattern was here ####
-Execution failed with exit status: 2
+Execution failed with exit status: 1
 Obtaining error information
 
 Task failed!
@@ -42,4 +42,4 @@ Task ID:
 Logs:
 
 #### A masked pattern was here ####
-FAILED: Execution Error, return code 2 from org.apache.hadoop.hive.ql.exec.MapRedTask
+FAILED: Execution Error, return code 1 from org.apache.hadoop.hive.ql.exec.MapRedTask

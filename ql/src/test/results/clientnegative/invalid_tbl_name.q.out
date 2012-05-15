@@ -1,2 +1,2 @@
-FAILED: Parse Error: line 1:20 cannot recognize input near '-' 'name' '(' in create table statement
+FAILED: ParseException line 1:20 cannot recognize input near '-' 'name' '(' in create table statement
 

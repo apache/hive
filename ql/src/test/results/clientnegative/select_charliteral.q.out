@@ -1,2 +1,2 @@
-FAILED: Parse Error: line 3:11 mismatched input ',' expecting \' near '_c17' in character string literal
+FAILED: ParseException line 3:11 mismatched input ',' expecting \' near '_c17' in character string literal
 

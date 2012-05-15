@@ -10,4 +10,4 @@ PREHOOK: Input: default@texternal
 POSTHOOK: type: ALTERTABLE_ADDPARTS
 POSTHOOK: Input: default@texternal
 POSTHOOK: Output: default@texternal@insertdate=2008-01-01
-FAILED: Error in semantic analysis: Inserting into a external table is not allowed texternal
+FAILED: SemanticException [Error 10071]: Inserting into a external table is not allowed texternal

@@ -15,4 +15,4 @@ SELECT key,ds,hr FROM srcpart
 POSTHOOK: type: CREATEVIEW
 POSTHOOK: Output: default@xxx8
 #### A masked pattern was here ####
-FAILED: Error in semantic analysis: table is partitioned but partition spec is not specified or does not fully match table partitioning: {ds=2011-01-01}
+FAILED: SemanticException table is partitioned but partition spec is not specified or does not fully match table partitioning: {ds=2011-01-01}

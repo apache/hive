@@ -46,4 +46,4 @@ POSTHOOK: query: create table exim_department ( dep_key int comment "department 
 	tblproperties("creator"="krishna")
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: importer@exim_department
-FAILED: Error in semantic analysis: The existing table is not compatible with the import spec.   Column Schema does not match
+FAILED: SemanticException [Error 10120]: The existing table is not compatible with the import spec.   Column Schema does not match
