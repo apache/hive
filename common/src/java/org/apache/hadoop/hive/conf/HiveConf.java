@@ -648,6 +648,17 @@ public class HiveConf extends Configuration {
     public String toString() {
       return varname;
     }
+
+    private static String findHadoopBinary() {
+      String val = System.getenv("HADOOP_HOME");
+      // In Hadoop 1.X and Hadoop 2.X HADOOP_HOME is gone and replaced with HADOOP_PREFIX
+      if (val == null) {
+        val = System.getenv("HADOOP_PREFIX");
+      }
+      // and if all else fails we can at least try /usr/bin/hadoop
+      return (val == null ? File.separator + "usr" : val)
+        + File.separator + "bin" + File.separator + "hadoop";
+    }
   }
 
   /**
@@ -905,16 +916,6 @@ public class HiveConf extends Configuration {
       }
       conf.set(var.varname, var.defaultVal);
     }
-  }
-
-  private static String findHadoopBinary() {
-    String val = System.getenv("HADOOP_HOME");
-    // In Hadoop 1.X and Hadoop 2.X HADOOP_HOME is gone and replaced with HADOOP_PREFIX
-    if (val == null) {
-      val = System.getenv("HADOOP_PREFIX");
-    }
-    // and if all else fails we can at least try /usr/bin/hadoop
-    return (val == null ? File.separator + "usr" : val) + File.separator + "bin" + File.separator + "hadoop";
   }
 
   public Properties getChangedProperties() {
