@@ -1617,6 +1617,11 @@ public class ObjectStore implements RawStore, Configurable {
     } catch(RecognitionException re) {
       throw new MetaException("Error parsing partition filter : " + re);
     }
+
+    if (lexer.errorMsg != null) {
+      throw new MetaException("Error parsing partition filter : " + lexer.errorMsg);
+    }
+
     return parser;
   }
 

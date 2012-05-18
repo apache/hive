@@ -33,6 +33,16 @@ import org.apache.hadoop.hive.metastore.parser.ExpressionTree.LogicalOperator;
 }
 @lexer::header {package org.apache.hadoop.hive.metastore.parser;}
 
+@lexer::members {
+  public String errorMsg;
+
+  @Override
+  public void emitErrorMessage(String msg) {
+    // save for caller to detect invalid filter
+	errorMsg = msg;
+  }
+}
+
 @members {
   public ExpressionTree tree = new ExpressionTree();
 
@@ -121,7 +131,7 @@ KW_LIKE : 'LIKE';
 LPAREN : '(' ;
 RPAREN : ')' ;
 EQUAL : '=';
-NOTEQUAL : '<>';
+NOTEQUAL : '<>' | '!=';
 LESSTHANOREQUALTO : '<=';
 LESSTHAN : '<';
 GREATERTHANOREQUALTO : '>=';

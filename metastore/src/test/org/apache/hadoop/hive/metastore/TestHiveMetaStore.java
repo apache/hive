@@ -1836,8 +1836,16 @@ public abstract class TestHiveMetaStore extends TestCase {
       checkFilter(client, dbName, tblName, "p2 >= \"p21\"", 3);
       checkFilter(client, dbName, tblName, "p2 <= \"p21\"", 2);
       checkFilter(client, dbName, tblName, "p2 <> \"p12\"", 3);
+      checkFilter(client, dbName, tblName, "p2 != \"p12\"", 3);
       checkFilter(client, dbName, tblName, "p2 like \"p2.*\"", 3);
       checkFilter(client, dbName, tblName, "p2 like \"p.*2\"", 1);
+
+      try {
+        checkFilter(client, dbName, tblName, "p2 !< 'dd'", 0);
+        fail("Invalid operator not detected");
+      } catch (MetaException e) {
+        // expected exception due to lexer error
+      }
 
       cleanUp(dbName, tblName, null);
   }
@@ -1970,6 +1978,12 @@ public abstract class TestHiveMetaStore extends TestCase {
       //test_param_1 != "yellow"
       filter = org.apache.hadoop.hive.metastore.api.Constants.HIVE_FILTER_FIELD_PARAMS +
           "test_param_1 <> \"yellow\"";
+
+      tableNames = client.listTableNamesByFilter(dbName, filter, (short) 2);
+      assertEquals(2, tableNames.size());
+
+      filter = org.apache.hadoop.hive.metastore.api.Constants.HIVE_FILTER_FIELD_PARAMS +
+          "test_param_1 != \"yellow\"";
 
       tableNames = client.listTableNamesByFilter(dbName, filter, (short) 2);
       assertEquals(2, tableNames.size());

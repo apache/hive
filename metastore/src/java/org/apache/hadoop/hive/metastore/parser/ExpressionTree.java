@@ -17,8 +17,11 @@
  */
 package org.apache.hadoop.hive.metastore.parser;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.Stack;
 
 import org.antlr.runtime.ANTLRStringStream;
@@ -28,6 +31,8 @@ import org.apache.hadoop.hive.metastore.Warehouse;
 import org.apache.hadoop.hive.metastore.api.Constants;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.Table;
+
+import com.google.common.collect.Sets;
 
 /**
  * The Class representing the filter as a  binary tree. The tree has TreeNode's
@@ -49,6 +54,7 @@ public class ExpressionTree {
     LESSTHANOREQUALTO ("<="),
     GREATERTHANOREQUALTO (">="),
     LIKE ("LIKE", "matches"),
+    NOTEQUALS2 ("!=", "!="),
     NOTEQUALS ("<>", "!=");
 
     private final String op;
@@ -83,6 +89,12 @@ public class ExpressionTree {
       throw new Error("Invalid value " + inputOperator +
           " for " + Operator.class.getSimpleName());
     }
+
+    @Override
+    public String toString() {
+      return op;
+    }
+
   }
 
 
@@ -161,6 +173,11 @@ public class ExpressionTree {
       }
     }
 
+    //can only support "=" and "!=" for now, because our JDO lib is buggy when
+    // using objects from map.get()
+    private static final Set<Operator> TABLE_FILTER_OPS = Sets.newHashSet(
+        Operator.EQUALS, Operator.NOTEQUALS, Operator.NOTEQUALS2);
+
     private String generateJDOFilterOverTables(Map<String, Object> params)
         throws MetaException {
       if (keyName.equals(Constants.HIVE_FILTER_FIELD_OWNER)) {
@@ -172,11 +189,9 @@ public class ExpressionTree {
         }
         keyName = "this.lastAccessTime";
       } else if (keyName.startsWith(Constants.HIVE_FILTER_FIELD_PARAMS)) {
-        //can only support "=" and "<>" for now, because our JDO lib is buggy when
-        // using objects from map.get()
-        if (!(operator == Operator.EQUALS || operator == Operator.NOTEQUALS)) {
-          throw new MetaException("Only = and <> are supported " +
-          		"opreators for HIVE_FILTER_FIELD_PARAMS");
+        if (!TABLE_FILTER_OPS.contains(operator)) {
+          throw new MetaException("Only " + TABLE_FILTER_OPS + " are supported " +
+            "operators for HIVE_FILTER_FIELD_PARAMS");
         }
         String paramKeyName = keyName.substring(Constants.HIVE_FILTER_FIELD_PARAMS.length());
         keyName = "this.parameters.get(\"" + paramKeyName + "\")";
@@ -185,7 +200,7 @@ public class ExpressionTree {
         value = value.toString();
       } else {
         throw new MetaException("Invalid key name in filter.  " +
-        		"Use constants from org.apache.hadoop.hive.metastore.api");
+          "Use constants from org.apache.hadoop.hive.metastore.api");
       }
       return generateJDOFilterGeneral(params);
     }
