@@ -49,21 +49,30 @@
 
     <qtestgen outputDirectory="${test.build.src}/org/apache/hadoop/hive/cli" 
               templatePath="${ql.hbase.test.template.dir}" template="TestHBaseCliDriver.vm" 
-              queryDirectory="${hbase-handler.test.query.dir}" 
+              queryDirectory="${hbase-handler.test.query.dir}/positive" 
               queryFile="${qfile}"
               runDisabled="${run_disabled}"
               clusterMode="${clustermode}"
-              resultsDirectory="${hbase-handler.test.results.dir}" className="TestHBaseCliDriver"
+              resultsDirectory="${hbase-handler.test.results.dir}/positive" className="TestHBaseCliDriver"
               logFile="${test.log.dir}/testhbaseclidrivergen.log"
               logDirectory="${test.log.dir}/hbase-handler"/>
     <qtestgen outputDirectory="${test.build.src}/org/apache/hadoop/hive/cli" 
               templatePath="${ql.hbase.test.template.dir}" template="TestHBaseCliDriver.vm" 
-              queryDirectory="${hbase-handler.test.query.dir}" 
+              queryDirectory="${hbase-handler.test.query.dir}/positive" 
               queryFile="hbase_bulk.m"
               runDisabled="${run_disabled}"
               clusterMode="miniMR"
-              resultsDirectory="${hbase-handler.test.results.dir}" className="TestHBaseMinimrCliDriver"
+              resultsDirectory="${hbase-handler.test.results.dir}/positive" className="TestHBaseMinimrCliDriver"
               logFile="${test.log.dir}/testhbaseminimrclidrivergen.log"
+              logDirectory="${test.log.dir}/hbase-handler"/>
+  <qtestgen outputDirectory="${test.build.src}/org/apache/hadoop/hive/cli"
+              templatePath="${ql.hbase.test.template.dir}" template="TestHBaseNegativeCliDriver.vm"
+              queryDirectory="${hbase-handler.test.query.dir}/negative"
+              queryFile="${qfile}"
+              runDisabled="${run_disabled}"
+              clusterMode="${clustermode}"
+              resultsDirectory="${hbase-handler.test.results.dir}/negative" className="TestHBaseNegativeCliDriver"
+              logFile="${test.log.dir}/testhbasenegativeclidrivergen.log"
               logDirectory="${test.log.dir}/hbase-handler"/>
   </target>
 

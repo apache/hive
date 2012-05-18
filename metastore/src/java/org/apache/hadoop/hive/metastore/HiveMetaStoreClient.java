@@ -458,6 +458,13 @@ public class HiveMetaStoreClient implements IMetaStoreClient {
       }
       return;
     }
+
+    if (cascade) {
+       List<String> tableList = getAllTables(name);
+       for (String table : tableList) {
+            dropTable(name, table, deleteData, false);
+        }
+    }
     client.drop_database(name, deleteData, cascade);
   }
 
