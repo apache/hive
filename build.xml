@@ -696,6 +696,10 @@
       <classpath >
         <path refid="classpath" />
         <pathelement path="${java.class.path}"/>
+        <pathelement 
+           path="${build.ivy.lib.dir}/default/hadoop-core-${hadoop-0.20.version}.jar"/>
+        <pathelement 
+           path="${build.ivy.lib.dir}/default/hadoop-test-${hadoop-0.20.version}.jar"/>
       </classpath>
 
       <group title="Hive" packages="org.apache.*"/>
