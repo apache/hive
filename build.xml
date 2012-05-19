@@ -645,7 +645,7 @@
   <!-- Documentation                                                      -->
   <!-- ================================================================== -->
 
-  <target name="docs" description="Generate documentation">
+  <target name="docs" description="Generate documentation" depends="ivy-init-antlib">
     <echo message="Project: ${ant.project.name}"/>
     <antcall target="docs-anakia"/>
   </target>

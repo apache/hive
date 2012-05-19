@@ -41,6 +41,8 @@
      conf="checkstyle->default"/>
    <dependency org="org.jdom" name="jdom" rev="${jdom.version}"
      conf="docs->default"/>
+   <dependency org="org.apache.velocity" name="velocity" rev="${velocity.version}"
+     conf="docs->default"/>
    <dependency org="org.apache.maven" name="maven-ant-tasks" rev="${maven-ant-tasks.version}"
      conf="maven->default"/>
    <conflict manager="all" />
