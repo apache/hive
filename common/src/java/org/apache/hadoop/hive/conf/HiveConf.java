@@ -389,7 +389,7 @@ public class HiveConf extends Configuration {
         "org.apache.hadoop.hive.ql.exec.TextRecordReader"),
     HIVESCRIPTRECORDWRITER("hive.script.recordwriter",
         "org.apache.hadoop.hive.ql.exec.TextRecordWriter"),
-    HIVESCRIPTESCAPENEWLINES("hive.script.escape.newlines", false),
+    HIVESCRIPTESCAPE("hive.transform.escape.input", false),
 
     // HWI
     HIVEHWILISTENHOST("hive.hwi.listen.host", "0.0.0.0"),

@@ -216,6 +216,7 @@ if [ "$DEBUG" ]; then
   else
     get_debug_params "$DEBUG"
     export HADOOP_CLIENT_OPTS="$HADOOP_CLIENT_OPTS $HIVE_MAIN_CLIENT_DEBUG_OPTS"
+    export HADOOP_OPTS="$HADOOP_OPTS $HADOOP_CLIENT_OPTS"
   fi
 fi
 

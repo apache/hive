@@ -1273,12 +1273,12 @@
 </property>
 
 <property>
-  <name>hive.script.escape.newlines</name>
+  <name>hive.transform.escape.input</name>
   <value>false</value>
   <description>
-    This adds an option to escape the newlines when they are passed to the 
-    user script. This is useful is the hive tables can contain data that
-    can contain newlines.
+    This adds an option to escape special chars (newlines, carriage returns and
+    tabs) when they are passed to the user script. This is useful if the hive tables
+    can contain data that contains special characters.
   </description>
 </property>
 

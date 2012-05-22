@@ -97,10 +97,16 @@ public final class HiveUtils {
     return (escape.toString());
   }
 
+  static final byte[] escapeEscapeBytes = "\\\\".getBytes();;
+  static final byte[] escapeUnescapeBytes = "\\".getBytes();
   static final byte[] newLineEscapeBytes = "\\n".getBytes();;
   static final byte[] newLineUnescapeBytes = "\n".getBytes();
+  static final byte[] carriageReturnEscapeBytes = "\\r".getBytes();;
+  static final byte[] carriageReturnUnescapeBytes = "\r".getBytes();
+  static final byte[] tabEscapeBytes = "\\t".getBytes();;
+  static final byte[] tabUnescapeBytes = "\t".getBytes();
 
-  public static Text escapeNewLine(Text text) {
+  public static Text escapeText(Text text) {
     int length = text.getLength();
     byte[] textBytes = text.getBytes();
 
@@ -109,20 +115,50 @@ public final class HiveUtils {
 
     for (int i = 0; i < length; ++i) {
       int c = text.charAt(i);
+      byte[] escaped;
+      int start;
+      int len;
+
       switch (c) {
-      case '\n':
-        byte[] escaped = newLineEscapeBytes;
-        escape.append(escaped, 0, escaped.length);
+
+      case '\\':
+        escaped = escapeEscapeBytes;
+        start = 0;
+        len = escaped.length;
         break;
+
+      case '\n':
+        escaped = newLineEscapeBytes;
+        start = 0;
+        len = escaped.length;
+        break;
+
+      case '\r':
+        escaped = carriageReturnEscapeBytes;
+        start = 0;
+        len = escaped.length;
+        break;
+
+      case '\t':
+        escaped = tabEscapeBytes;
+        start = 0;
+        len = escaped.length;
+        break;
+
       default:
-        escape.append(textBytes, i, 1);
+        escaped = textBytes;
+        start = i;
+        len = 1;
         break;
       }
+
+      escape.append(escaped, start, len);
+
     }
     return escape;
   }
 
-  public static int unescapeNewLine(Text text) {
+  public static int unescapeText(Text text) {
     Text escape = new Text(text);
     text.clear();
 
@@ -136,8 +172,11 @@ public final class HiveUtils {
       case '\\':
         if (hadSlash) {
           text.append(textBytes, i, 1);
+          hadSlash = false;
         }
-        hadSlash = true;
+        else {
+          hadSlash = true;
+        }
         break;
       case 'n':
         if (hadSlash) {
@@ -149,6 +188,28 @@ public final class HiveUtils {
         }
         hadSlash = false;
         break;
+      case 'r':
+        if (hadSlash) {
+          byte[] carriageReturn = carriageReturnUnescapeBytes;
+          text.append(carriageReturn, 0, carriageReturn.length);
+        }
+        else {
+          text.append(textBytes, i, 1);
+        }
+        hadSlash = false;
+        break;
+
+      case 't':
+        if (hadSlash) {
+          byte[] tab = tabUnescapeBytes;
+          text.append(tab, 0, tab.length);
+        }
+        else {
+          text.append(textBytes, i, 1);
+        }
+        hadSlash = false;
+        break;
+
       default:
         if (hadSlash) {
           text.append(textBytes, i-1, 1);

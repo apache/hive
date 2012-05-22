@@ -46,8 +46,8 @@ public class TextRecordWriter implements RecordWriter {
     Text text = (Text) row;
     Text escapeText = text;
 
-    if (HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVESCRIPTESCAPENEWLINES)) {
-      escapeText = HiveUtils.escapeNewLine(text);
+    if (HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVESCRIPTESCAPE)) {
+      escapeText = HiveUtils.escapeText(text);
     }
 
     out.write(escapeText.getBytes(), 0, escapeText.getLength());
