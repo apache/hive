@@ -659,8 +659,11 @@ public class TestJdbcDriver extends TestCase {
     Map<String[], Integer> tests = new HashMap<String[], Integer>();
     tests.put(new String[]{"testhivejdbcdriver\\_table", null}, 2);
     tests.put(new String[]{"testhivejdbc%", null}, 8);
+    tests.put(new String[]{"testhiveJDBC%", null}, 8);
+    tests.put(new String[]{"testhiveJDB\\C%", null}, 0);
     tests.put(new String[]{"%jdbcdriver\\_table", null}, 2);
     tests.put(new String[]{"%jdbcdriver\\_table%", "under\\_col"}, 1);
+    tests.put(new String[]{"%jdbcdriver\\_table%", "under\\_COL"}, 1);
     tests.put(new String[]{"%jdbcdriver\\_table%", "under\\_co_"}, 1);
     tests.put(new String[]{"%jdbcdriver\\_table%", "under_col"}, 1);
     tests.put(new String[]{"%jdbcdriver\\_table%", "und%"}, 1);
