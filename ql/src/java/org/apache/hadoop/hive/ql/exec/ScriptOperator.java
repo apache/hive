@@ -91,14 +91,13 @@ public class ScriptOperator extends Operator<ScriptDesc> implements
   // of the user assumptions.
   transient boolean firstRow;
 
-  /**
-   * addJobConfToEnvironment is shamelessly copied from hadoop streaming.
-   */
-  static String safeEnvVarName(String var) {
+
+  String safeEnvVarName(String name) {
     StringBuilder safe = new StringBuilder();
-    int len = var.length();
+    int len = name.length();
+
     for (int i = 0; i < len; i++) {
-      char c = var.charAt(i);
+      char c = name.charAt(i);
       char s;
       if ((c >= '0' && c <= '9') || (c >= 'A' && c <= 'Z')
           || (c >= 'a' && c <= 'z')) {
@@ -111,8 +110,32 @@ public class ScriptOperator extends Operator<ScriptDesc> implements
     return safe.toString();
   }
 
-  static void addJobConfToEnvironment(Configuration conf,
-      Map<String, String> env) {
+  /**
+   * Most UNIX implementations impose some limit on the total size of environment variables and
+   * size of strings. To fit in this limit we need sometimes to truncate strings.
+   * @param value environment variable value to check
+   * @param name name of variable (used only for logging purposes)
+   * @param truncate truncate value or not
+   * @return original value, or truncated one if it's length is more then 20KB and
+   * truncate flag is set
+   * @see <a href="http://www.kernel.org/doc/man-pages/online/pages/man2/execve.2.html">Linux
+   * Man page</a> for more details
+   */
+  String safeEnvVarValue(String value, String name, boolean truncate) {
+    final int lenLimit = 20*1024;
+    if (truncate && value.length() > lenLimit) {
+      value = value.substring(0, lenLimit);
+      LOG.warn("Length of environment variable " + name + " was truncated to " + lenLimit
+          + " bytes to fit system limits.");
+    }
+    return value;
+  }
+
+  /**
+   * addJobConfToEnvironment is mostly shamelessly copied from hadoop streaming. Added additional
+   * check on environment variable length
+   */
+  void addJobConfToEnvironment(Configuration conf, Map<String, String> env) {
     Iterator<Map.Entry<String, String>> it = conf.iterator();
     while (it.hasNext()) {
       Map.Entry<String, String> en = it.next();
@@ -121,6 +144,8 @@ public class ScriptOperator extends Operator<ScriptDesc> implements
       // expansion
       String value = conf.get(name); // does variable expansion
       name = safeEnvVarName(name);
+      boolean truncate = conf.getBoolean(HiveConf.ConfVars.HIVESCRIPTTRUNCATEENV.toString(), false);
+      value = safeEnvVarValue(value, name, truncate);
       env.put(name, value);
     }
   }

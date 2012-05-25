@@ -19,9 +19,7 @@
 package org.apache.hadoop.hive.ql.exec;
 
 import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.LinkedHashMap;
-import java.util.Map;
+import java.util.*;
 
 import junit.framework.TestCase;
 
@@ -179,6 +177,51 @@ public class TestOperators extends TestCase {
                    "000005");
 
       System.out.println("FileSink Operator ok");
+    } catch (Throwable e) {
+      e.printStackTrace();
+      throw e;
+    }
+  }
+
+  /**
+   *  When ScriptOperator runs external script, it passes job configuration as environment
+   *  variables. But environment variables have some system limitations and we have to check
+   *  job configuration properties firstly. This test checks that staff.
+   */
+  public void testScriptOperatorEnvVarsProcessing() throws Throwable {
+    try {
+      ScriptOperator scriptOperator = new ScriptOperator();
+
+      //Environment Variables name
+      assertEquals("a_b_c", scriptOperator.safeEnvVarName("a.b.c"));
+      assertEquals("a_b_c", scriptOperator.safeEnvVarName("a-b-c"));
+
+      //Environment Variables short values
+      assertEquals("value", scriptOperator.safeEnvVarValue("value", "name", false));
+      assertEquals("value", scriptOperator.safeEnvVarValue("value", "name", true));
+
+      //Environment Variables long values
+      char [] array = new char[20*1024+1];
+      Arrays.fill(array, 'a');
+      String hugeEnvVar = new String(array);
+      assertEquals(20*1024+1, hugeEnvVar.length());
+      assertEquals(20*1024+1, scriptOperator.safeEnvVarValue(hugeEnvVar, "name", false).length());
+      assertEquals(20*1024, scriptOperator.safeEnvVarValue(hugeEnvVar, "name", true).length());
+
+      //Full test
+      Configuration hconf = new JobConf(ScriptOperator.class);
+      hconf.set("name", hugeEnvVar);
+      Map<String, String> env = new HashMap<String, String>();
+
+      HiveConf.setBoolVar(hconf, HiveConf.ConfVars.HIVESCRIPTTRUNCATEENV, false);
+      scriptOperator.addJobConfToEnvironment(hconf, env);
+      assertEquals(20*1024+1, env.get("name").length());
+
+      HiveConf.setBoolVar(hconf, HiveConf.ConfVars.HIVESCRIPTTRUNCATEENV, true);
+      scriptOperator.addJobConfToEnvironment(hconf, env);
+      assertEquals(20*1024, env.get("name").length());
+
+      System.out.println("Script Operator Environment Variables processing ok");
     } catch (Throwable e) {
       e.printStackTrace();
       throw e;
