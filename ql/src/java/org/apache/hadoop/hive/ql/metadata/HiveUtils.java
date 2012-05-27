@@ -105,6 +105,7 @@ public final class HiveUtils {
   static final byte[] carriageReturnUnescapeBytes = "\r".getBytes();
   static final byte[] tabEscapeBytes = "\\t".getBytes();;
   static final byte[] tabUnescapeBytes = "\t".getBytes();
+  static final byte[] ctrlABytes = "\u0001".getBytes();
 
   public static Text escapeText(Text text) {
     int length = text.getLength();
@@ -141,6 +142,12 @@ public final class HiveUtils {
 
       case '\t':
         escaped = tabEscapeBytes;
+        start = 0;
+        len = escaped.length;
+        break;
+
+      case '\u0001':
+        escaped = tabUnescapeBytes;
         start = 0;
         len = escaped.length;
         break;
@@ -208,6 +215,16 @@ public final class HiveUtils {
           text.append(textBytes, i, 1);
         }
         hadSlash = false;
+        break;
+
+      case '\t':
+        if (hadSlash) {
+          text.append(textBytes, i-1, 1);
+          hadSlash = false;
+        }
+
+        byte[] ctrlA = ctrlABytes;
+        text.append(ctrlA, 0, ctrlA.length);
         break;
 
       default:
