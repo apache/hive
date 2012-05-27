@@ -22,12 +22,11 @@ import java.util.Arrays;
 import java.util.List;
 
 import org.apache.hadoop.hive.serde2.lazy.objectinspector.LazyListObjectInspector;
-import org.apache.hadoop.hive.serde2.objectinspector.ListObjectInspector;
 import org.apache.hadoop.io.Text;
 
 /**
  * LazyArray stores an array of Lazy Objects.
- * 
+ *
  * LazyArray does not deal with the case of a NULL array. That is handled by the
  * parent LazyObject.
  */
@@ -64,7 +63,7 @@ public class LazyArray extends LazyNonPrimitive<LazyListObjectInspector> {
 
   /**
    * Construct a LazyArray object with the ObjectInspector.
-   * 
+   *
    * @param oi
    *          the oi representing the type of this LazyArray as well as meta
    *          information like separator etc.
@@ -75,13 +74,14 @@ public class LazyArray extends LazyNonPrimitive<LazyListObjectInspector> {
 
   /**
    * Set the row data for this LazyArray.
-   * 
+   *
    * @see LazyObject#init(ByteArrayRef, int, int)
    */
   @Override
   public void init(ByteArrayRef bytes, int start, int length) {
     super.init(bytes, start, length);
     parsed = false;
+    cachedList = null;
   }
 
   /**
@@ -175,6 +175,11 @@ public class LazyArray extends LazyNonPrimitive<LazyListObjectInspector> {
    * Get the element without checking out-of-bound index.
    */
   private Object uncheckedGetElement(int index) {
+    if (elementInited[index]) {
+      return arrayElements[index] == null ? null : arrayElements[index].getObject();
+    }
+    elementInited[index] = true;
+
     Text nullSequence = oi.getNullSequence();
 
     int elementLength = startPosition[index + 1] - startPosition[index] - 1;
@@ -183,17 +188,10 @@ public class LazyArray extends LazyNonPrimitive<LazyListObjectInspector> {
         .compare(bytes.getData(), startPosition[index], elementLength,
         nullSequence.getBytes(), 0, nullSequence.getLength())) {
       return null;
-    } else {
-      if (!elementInited[index]) {
-        elementInited[index] = true;
-        if (arrayElements[index] == null) {
-          arrayElements[index] = LazyFactory
-              .createLazyObject(((ListObjectInspector) oi)
-              .getListElementObjectInspector());
-        }
-        arrayElements[index].init(bytes, startPosition[index], elementLength);
-      }
     }
+    arrayElements[index] = LazyFactory
+        .createLazyObject(oi.getListElementObjectInspector());
+    arrayElements[index].init(bytes, startPosition[index], elementLength);
     return arrayElements[index].getObject();
   }
 
@@ -223,11 +221,10 @@ public class LazyArray extends LazyNonPrimitive<LazyListObjectInspector> {
     if (arrayLength == -1) {
       return null;
     }
-    if (cachedList == null) {
-      cachedList = new ArrayList<Object>(arrayLength);
-    } else {
-      cachedList.clear();
+    if (cachedList != null) {
+      return cachedList;
     }
+    cachedList = new ArrayList<Object>(arrayLength);
     for (int index = 0; index < arrayLength; index++) {
       cachedList.add(uncheckedGetElement(index));
     }
