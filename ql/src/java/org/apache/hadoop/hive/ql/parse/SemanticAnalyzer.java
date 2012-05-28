@@ -42,7 +42,6 @@ import org.apache.hadoop.hive.common.FileUtils;
 import org.apache.hadoop.hive.common.JavaUtils;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
-import org.apache.hadoop.hive.metastore.TableType;
 import org.apache.hadoop.hive.metastore.Warehouse;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.MetaException;
@@ -174,6 +173,7 @@ import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
 import org.apache.hadoop.mapred.InputFormat;
+import org.apache.hadoop.hive.metastore.TableType;
 
 /**
  * Implementation of the semantic analyzer.
@@ -6477,8 +6477,10 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       // Finally add the partitioning columns
       for (FieldSchema part_col : tab.getPartCols()) {
         LOG.trace("Adding partition col: " + part_col);
+        // TODO: use the right type by calling part_col.getType() instead of
+        // String.class
         rwsch.put(alias, part_col.getName(), new ColumnInfo(part_col.getName(),
-            TypeInfoFactory.getPrimitiveTypeInfo(part_col.getType()), alias, true));
+            TypeInfoFactory.stringTypeInfo, alias, true));
       }
 
       //put all virutal columns in RowResolver.
