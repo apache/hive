@@ -23,6 +23,7 @@ import java.io.DataInputStream;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.NetworkInterface;
+import java.net.ServerSocket;
 import java.security.PrivilegedExceptionAction;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -117,7 +118,8 @@ public class TestHadoop20SAuthBridge extends TestCase {
         builder.toString());
   }
 
-  public void setup(final int port) throws Exception {
+  public void setup() throws Exception {
+    int port = findFreePort();
     System.setProperty(HiveConf.ConfVars.METASTORE_USE_THRIFT_SASL.varname,
         "true");
     System.setProperty(HiveConf.ConfVars.METASTOREURIS.varname,
@@ -207,14 +209,14 @@ public class TestHadoop20SAuthBridge extends TestCase {
   }
 
   public void testSaslWithHiveMetaStore() throws Exception {
-    setup(10000);
+    setup();
     UserGroupInformation clientUgi = UserGroupInformation.getCurrentUser();
     obtainTokenAndAddIntoUGI(clientUgi, null);
     obtainTokenAndAddIntoUGI(clientUgi, "tokenForFooTablePartition");
   }
 
   public void testMetastoreProxyUser() throws Exception {
-    setup(10010);
+    setup();
 
     final String proxyUserName = "proxyUser";
     //set the configuration up such that proxyUser can act on
@@ -373,5 +375,12 @@ public class TestHadoop20SAuthBridge extends TestCase {
     Database db1 = client.getDatabase(dbName);
     client.dropDatabase(dbName);
     assertTrue("Databases do not match", db1.getName().equals(db.getName()));
+  }
+
+  private int findFreePort() throws IOException {
+    ServerSocket socket= new ServerSocket(0);
+    int port = socket.getLocalPort();
+    socket.close();
+    return port;
   }
 }
