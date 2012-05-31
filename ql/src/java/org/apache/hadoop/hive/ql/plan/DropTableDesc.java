@@ -34,6 +34,9 @@ public class DropTableDesc extends DDLDesc implements Serializable {
   ArrayList<PartitionSpec> partSpecs;
   boolean expectView;
   boolean ifExists;
+  boolean stringPartitionColumns; // This is due to JDO not working very well with
+                                  // non-string partition columns.
+                                  // We need a different codepath for them
 
   public DropTableDesc() {
   }
@@ -41,14 +44,17 @@ public class DropTableDesc extends DDLDesc implements Serializable {
   /**
    * @param tableName
    */
-  public DropTableDesc(String tableName, boolean expectView, boolean ifExists) {
+  public DropTableDesc(String tableName, boolean expectView,
+                       boolean ifExists, boolean stringPartitionColumns) {
     this.tableName = tableName;
     partSpecs = null;
     this.expectView = expectView;
     this.ifExists = ifExists;
+    this.stringPartitionColumns = stringPartitionColumns;
   }
 
-  public DropTableDesc(String tableName, List<PartitionSpec> partSpecs, boolean expectView) {
+  public DropTableDesc(String tableName, List<PartitionSpec> partSpecs,
+                       boolean expectView, boolean stringPartitionColumns) {
 
     this.tableName = tableName;
     this.partSpecs = new ArrayList<PartitionSpec>(partSpecs.size());
@@ -56,6 +62,7 @@ public class DropTableDesc extends DDLDesc implements Serializable {
       this.partSpecs.add(partSpecs.get(i));
     }
     this.expectView = expectView;
+    this.stringPartitionColumns = stringPartitionColumns;
   }
 
   /**
@@ -117,5 +124,13 @@ public class DropTableDesc extends DDLDesc implements Serializable {
    */
   public void setIfExists(boolean ifExists) {
     this.ifExists = ifExists;
+  }
+
+  public boolean isStringPartitionColumns() {
+    return stringPartitionColumns;
+  }
+
+  public void setStringPartitionColumns(boolean stringPartitionColumns) {
+    this.stringPartitionColumns = stringPartitionColumns;
   }
 }
