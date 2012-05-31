@@ -213,6 +213,8 @@ public enum ErrorMsg {
   INSERT_INTO_DYNAMICPARTITION_IFNOTEXISTS(10127,
       "Dynamic partitions do not support IF NOT EXISTS. Specified partitions with value :"),
   UDAF_INVALID_LOCATION(10128, "Not yet supported place for UDAF"),
+  DROP_PARTITION_NON_STRING_PARTCOLS_NONEQUALITY(10129,
+    "Drop partitions for a non string partition columns is not allowed using non-equality"),
 
   SCRIPT_INIT_ERROR(20000, "Unable to initialize custom script."),
   SCRIPT_IO_ERROR(20001, "An error occurred while reading or writing to your custom script. "
