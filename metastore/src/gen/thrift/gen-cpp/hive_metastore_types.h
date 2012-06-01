@@ -887,8 +887,57 @@ class StorageDescriptor {
 
 };
 
+typedef struct _TableIdentifier__isset {
+  _TableIdentifier__isset() : dbName(false), tableName(false) {}
+  bool dbName;
+  bool tableName;
+} _TableIdentifier__isset;
+
+class TableIdentifier {
+ public:
+
+  static const char* ascii_fingerprint; // = "07A9615F837F7D0A952B595DD3020972";
+  static const uint8_t binary_fingerprint[16]; // = {0x07,0xA9,0x61,0x5F,0x83,0x7F,0x7D,0x0A,0x95,0x2B,0x59,0x5D,0xD3,0x02,0x09,0x72};
+
+  TableIdentifier() : dbName(""), tableName("") {
+  }
+
+  virtual ~TableIdentifier() throw() {}
+
+  std::string dbName;
+  std::string tableName;
+
+  _TableIdentifier__isset __isset;
+
+  void __set_dbName(const std::string& val) {
+    dbName = val;
+  }
+
+  void __set_tableName(const std::string& val) {
+    tableName = val;
+  }
+
+  bool operator == (const TableIdentifier & rhs) const
+  {
+    if (!(dbName == rhs.dbName))
+      return false;
+    if (!(tableName == rhs.tableName))
+      return false;
+    return true;
+  }
+  bool operator != (const TableIdentifier &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const TableIdentifier & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
 typedef struct _Table__isset {
-  _Table__isset() : tableName(false), dbName(false), owner(false), createTime(false), lastAccessTime(false), retention(false), sd(false), partitionKeys(false), parameters(false), viewOriginalText(false), viewExpandedText(false), tableType(false), privileges(false) {}
+  _Table__isset() : tableName(false), dbName(false), owner(false), createTime(false), lastAccessTime(false), retention(false), sd(false), partitionKeys(false), parameters(false), viewOriginalText(false), viewExpandedText(false), tableType(false), privileges(false), linkTarget(false), linkTables(false) {}
   bool tableName;
   bool dbName;
   bool owner;
@@ -902,13 +951,15 @@ typedef struct _Table__isset {
   bool viewExpandedText;
   bool tableType;
   bool privileges;
+  bool linkTarget;
+  bool linkTables;
 } _Table__isset;
 
 class Table {
  public:
 
-  static const char* ascii_fingerprint; // = "26BE788C09746068A2616712C9262900";
-  static const uint8_t binary_fingerprint[16]; // = {0x26,0xBE,0x78,0x8C,0x09,0x74,0x60,0x68,0xA2,0x61,0x67,0x12,0xC9,0x26,0x29,0x00};
+  static const char* ascii_fingerprint; // = "06C17A4A74B309FF2357999371777D0D";
+  static const uint8_t binary_fingerprint[16]; // = {0x06,0xC1,0x7A,0x4A,0x74,0xB3,0x09,0xFF,0x23,0x57,0x99,0x93,0x71,0x77,0x7D,0x0D};
 
   Table() : tableName(""), dbName(""), owner(""), createTime(0), lastAccessTime(0), retention(0), viewOriginalText(""), viewExpandedText(""), tableType("") {
   }
@@ -928,6 +979,8 @@ class Table {
   std::string viewExpandedText;
   std::string tableType;
   PrincipalPrivilegeSet privileges;
+  TableIdentifier linkTarget;
+  std::vector<TableIdentifier>  linkTables;
 
   _Table__isset __isset;
 
@@ -984,6 +1037,16 @@ class Table {
     __isset.privileges = true;
   }
 
+  void __set_linkTarget(const TableIdentifier& val) {
+    linkTarget = val;
+    __isset.linkTarget = true;
+  }
+
+  void __set_linkTables(const std::vector<TableIdentifier> & val) {
+    linkTables = val;
+    __isset.linkTables = true;
+  }
+
   bool operator == (const Table & rhs) const
   {
     if (!(tableName == rhs.tableName))
@@ -1013,6 +1076,14 @@ class Table {
     if (__isset.privileges != rhs.__isset.privileges)
       return false;
     else if (__isset.privileges && !(privileges == rhs.privileges))
+      return false;
+    if (__isset.linkTarget != rhs.__isset.linkTarget)
+      return false;
+    else if (__isset.linkTarget && !(linkTarget == rhs.linkTarget))
+      return false;
+    if (__isset.linkTables != rhs.__isset.linkTables)
+      return false;
+    else if (__isset.linkTables && !(linkTables == rhs.linkTables))
       return false;
     return true;
   }

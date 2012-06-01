@@ -75,6 +75,7 @@ import org.apache.hadoop.hive.metastore.api.Role;
 import org.apache.hadoop.hive.metastore.api.SerDeInfo;
 import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
 import org.apache.hadoop.hive.metastore.api.Table;
+import org.apache.hadoop.hive.metastore.api.TableIdentifier;
 import org.apache.hadoop.hive.metastore.api.Type;
 import org.apache.hadoop.hive.metastore.api.UnknownDBException;
 import org.apache.hadoop.hive.metastore.api.UnknownPartitionException;
@@ -850,6 +851,19 @@ public class ObjectStore implements RawStore, Configurable {
     return tables;
   }
 
+  /**
+   * @param mtbl the MTable
+   * @return the TableIdentifier for the passed MTable.
+   */
+  private TableIdentifier extractTableIdentifier(MTable mtbl) {
+    if (mtbl == null) {
+      return null;
+    }
+    return new TableIdentifier(
+        mtbl.getDatabase().getName(),
+        mtbl.getTableName());
+  }
+
   private Table convertToTable(MTable mtbl) throws MetaException {
     if (mtbl == null) {
       return null;
@@ -865,12 +879,25 @@ public class ObjectStore implements RawStore, Configurable {
         tableType = TableType.MANAGED_TABLE.toString();
       }
     }
-    return new Table(mtbl.getTableName(), mtbl.getDatabase().getName(), mtbl
+
+    TableIdentifier linkTarget = extractTableIdentifier(mtbl.getLinkTarget());
+    List<TableIdentifier> linkTables = new ArrayList<TableIdentifier>();
+    Set<MTable> linkMTables = mtbl.getLinkTables();
+    if (linkMTables != null) {
+      for (MTable linkMTable : linkMTables) {
+        linkTables.add(extractTableIdentifier(linkMTable));
+      }
+    }
+
+    Table tbl = new Table(mtbl.getTableName(), mtbl.getDatabase().getName(), mtbl
         .getOwner(), mtbl.getCreateTime(), mtbl.getLastAccessTime(), mtbl
         .getRetention(), convertToStorageDescriptor(mtbl.getSd()),
         convertToFieldSchemas(mtbl.getPartitionKeys()), mtbl.getParameters(),
         mtbl.getViewOriginalText(), mtbl.getViewExpandedText(),
         tableType);
+    tbl.setLinkTarget(linkTarget);
+    tbl.setLinkTables(linkTables);
+    return tbl;
   }
 
   private MTable convertToMTable(Table tbl) throws InvalidObjectException,
@@ -902,13 +929,26 @@ public class ObjectStore implements RawStore, Configurable {
       }
     }
 
+    MTable linkTarget = null;
+    if (tbl.getLinkTarget() != null) {
+      linkTarget = getMTable(tbl.getLinkTarget().getDbName(),
+          tbl.getLinkTarget().getTableName());
+    }
+    Set<MTable> linkTables = new HashSet<MTable>();
+    List<TableIdentifier> linkTIs = tbl.getLinkTables();
+    if (linkTIs != null) {
+      for (TableIdentifier linkTI : linkTIs) {
+        linkTables.add(getMTable(linkTI.getDbName(),
+            linkTI.getTableName()));
+      }
+    }
     // A new table is always created with a new column descriptor
     return new MTable(tbl.getTableName().toLowerCase(), mdb,
         convertToMStorageDescriptor(tbl.getSd()), tbl.getOwner(), tbl
             .getCreateTime(), tbl.getLastAccessTime(), tbl.getRetention(),
         convertToMFieldSchemas(tbl.getPartitionKeys()), tbl.getParameters(),
         tbl.getViewOriginalText(), tbl.getViewExpandedText(),
-        tableType);
+        tableType, linkTarget, linkTables);
   }
 
   private List<MFieldSchema> convertToMFieldSchemas(List<FieldSchema> keys) {

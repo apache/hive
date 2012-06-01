@@ -145,6 +145,11 @@ struct StorageDescriptor {
   10: map<string, string> parameters // any user supplied key value hash
 }
 
+struct TableIdentifier {
+  1: string dbName,
+  2: string tableName	
+}
+
 // table information
 struct Table {
   1: string tableName,                // name of the table
@@ -158,8 +163,10 @@ struct Table {
   9: map<string, string> parameters,   // to store comments or any other user level parameters
   10: string viewOriginalText,         // original view text, null for non-view
   11: string viewExpandedText,         // expanded view text, null for non-view
-  12: string tableType,                 // table type enum, e.g. EXTERNAL_TABLE
+  12: string tableType,                // table type enum, e.g. EXTERNAL_TABLE
   13: optional PrincipalPrivilegeSet privileges,
+  14: optional TableIdentifier linkTarget,      // the table this link table points to, null if not a link table
+  15: optional list<TableIdentifier> linkTables // all link tables pointing to this table 
 }
 
 struct Partition {

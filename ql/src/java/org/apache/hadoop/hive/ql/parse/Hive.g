@@ -112,6 +112,7 @@ TOK_CREATEDATABASE;
 TOK_CREATETABLE;
 TOK_CREATEINDEX;
 TOK_CREATEINDEX_INDEXTBLNAME;
+TOK_CREATETABLELINK;
 TOK_DEFERRED_REBUILDINDEX;
 TOK_DROPINDEX;
 TOK_LIKETABLE;
@@ -151,6 +152,7 @@ TOK_UNLOCKTABLE;
 TOK_SWITCHDATABASE;
 TOK_DROPDATABASE;
 TOK_DROPTABLE;
+TOK_DROPTABLELINK;
 TOK_DATABASECOMMENT;
 TOK_TABCOLLIST;
 TOK_TABCOL;
@@ -254,6 +256,7 @@ TOK_DBPROPLIST;
 TOK_ALTERDATABASE_PROPERTIES;
 TOK_ALTERTABLE_ALTERPARTS_MERGEFILES;
 TOK_TABNAME;
+TOK_TABLINKNAME;
 TOK_TABSRC;
 TOK_RESTRICT;
 TOK_CASCADE;
@@ -330,6 +333,8 @@ ddlStatement
     | dropDatabaseStatement
     | createTableStatement
     | dropTableStatement
+    | createLinkStatement
+    | dropLinkStatement
     | alterStatement
     | descStatement
     | showStatement
@@ -469,6 +474,14 @@ createTableStatement
         )
     ;
 
+createLinkStatement
+@init { msgs.push("create tablelink statement"); }
+@after { msgs.pop(); }
+	: KW_CREATE (linkOptions=KW_STATIC)? KW_TABLELINK KW_TO
+		tab=Identifier AT db=Identifier linkPropertiesPrefixed?
+	-> ^(TOK_CREATETABLELINK $db $tab $linkOptions? linkPropertiesPrefixed?) 
+	;
+
 createIndexStatement
 @init { msgs.push("create index statement");}
 @after {msgs.pop();}
@@ -548,6 +561,12 @@ dropTableStatement
 @after { msgs.pop(); }
     : KW_DROP KW_TABLE ifExists? tableName -> ^(TOK_DROPTABLE tableName ifExists?)
     ;
+    
+dropLinkStatement
+@init { msgs.push("drop link statement"); }
+@after { msgs.pop(); } 
+	: KW_DROP KW_TABLELINK ifExists? linkTableName -> ^(TOK_DROPTABLELINK linkTableName ifExists?)
+	;
 
 alterStatement
 @init { msgs.push("alter statement"); }
@@ -814,8 +833,7 @@ fileFormat
 tabTypeExpr
 @init { msgs.push("specifying table types"); }
 @after { msgs.pop(); }
-
-   : Identifier (DOT^ (Identifier | KW_ELEM_TYPE | KW_KEY_TYPE | KW_VALUE_TYPE))*
+    : (Identifier AT^)? Identifier (DOT^ (Identifier | KW_ELEM_TYPE | KW_KEY_TYPE | KW_VALUE_TYPE))*
    ;
 
 partTypeExpr
@@ -1129,6 +1147,14 @@ tablePropertiesPrefixed
     :
         KW_TBLPROPERTIES! tableProperties
     ;
+
+linkPropertiesPrefixed
+@init { msgs.push("link properties with prefix"); }
+@after { msgs.pop(); }
+    :
+        KW_LINKPROPERTIES! tableProperties
+    ;
+
 
 tableProperties
 @init { msgs.push("table properties"); }
@@ -1696,6 +1722,13 @@ tableName
     : (db=Identifier DOT)? tab=Identifier
     -> ^(TOK_TABNAME $db? $tab)
     ;
+    
+linkTableName
+@init { msgs.push("link table name"); }
+@after { msgs.pop(); }
+    : tab=Identifier AT db=Identifier
+    -> ^(TOK_TABLINKNAME $db $tab)
+    ;
 
 viewName
 @init { msgs.push("view name"); }
@@ -2191,6 +2224,7 @@ KW_TABLE: 'TABLE';
 KW_TABLES: 'TABLES';
 KW_INDEX: 'INDEX';
 KW_INDEXES: 'INDEXES';
+KW_TABLELINK: 'TABLELINK';
 KW_REBUILD: 'REBUILD';
 KW_FUNCTIONS: 'FUNCTIONS';
 KW_SHOW: 'SHOW';
@@ -2295,6 +2329,7 @@ KW_LIMIT: 'LIMIT';
 KW_SET: 'SET';
 KW_TBLPROPERTIES: 'TBLPROPERTIES';
 KW_IDXPROPERTIES: 'IDXPROPERTIES';
+KW_LINKPROPERTIES: 'LINKPROPERTIES';
 KW_VALUE_TYPE: '$VALUE$';
 KW_ELEM_TYPE: '$ELEM$';
 KW_CASE: 'CASE';
@@ -2362,7 +2397,7 @@ KW_SHOW_DATABASE: 'SHOW_DATABASE';
 KW_UPDATE: 'UPDATE';
 KW_RESTRICT: 'RESTRICT';
 KW_CASCADE: 'CASCADE';
-
+KW_STATIC: 'STATIC';
 
 // Operators
 // NOTE: if you add a new function/operator, add it to sysFuncNames so that describe function _FUNC_ will work.
@@ -2371,6 +2406,7 @@ DOT : '.'; // generated as a part of Number rule
 COLON : ':' ;
 COMMA : ',' ;
 SEMICOLON : ';' ;
+AT : '@' ;
 
 LPAREN : '(' ;
 RPAREN : ')' ;

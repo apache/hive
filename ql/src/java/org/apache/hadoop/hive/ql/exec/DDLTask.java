@@ -109,6 +109,7 @@ import org.apache.hadoop.hive.ql.plan.CreateDatabaseDesc;
 import org.apache.hadoop.hive.ql.plan.CreateIndexDesc;
 import org.apache.hadoop.hive.ql.plan.CreateTableDesc;
 import org.apache.hadoop.hive.ql.plan.CreateTableLikeDesc;
+import org.apache.hadoop.hive.ql.plan.CreateTableLinkDesc;
 import org.apache.hadoop.hive.ql.plan.CreateViewDesc;
 import org.apache.hadoop.hive.ql.plan.DDLWork;
 import org.apache.hadoop.hive.ql.plan.DescDatabaseDesc;
@@ -276,6 +277,11 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
       CreateViewDesc crtView = work.getCreateViewDesc();
       if (crtView != null) {
         return createView(db, crtView);
+      }
+
+      CreateTableLinkDesc crtTblLinkDesc = work.getCreateTblLinkDesc();
+      if (crtTblLinkDesc != null) {
+        return createTableLink(db, crtTblLinkDesc);
       }
 
       AddPartitionDesc addPartitionDesc = work.getAddPartitionDesc();
@@ -3025,25 +3031,6 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
 
     if (dropTbl.getPartSpecs() == null) {
       // This is a true DROP TABLE
-      if (tbl != null) {
-        if (tbl.isView()) {
-          if (!dropTbl.getExpectView()) {
-            if (dropTbl.getIfExists()) {
-              return 0;
-            }
-            throw new HiveException("Cannot drop a view with DROP TABLE");
-          }
-        } else {
-          if (dropTbl.getExpectView()) {
-            if (dropTbl.getIfExists()) {
-              return 0;
-            }
-            throw new HiveException(
-              "Cannot drop a base table with DROP VIEW");
-          }
-        }
-      }
-
       if (tbl != null && !tbl.canDrop()) {
         throw new HiveException("Table " + tbl.getTableName() +
             " is protected from being dropped");
@@ -3070,8 +3057,12 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
         }
       }
 
-      // drop the table
-      db.dropTable(dropTbl.getTableName());
+      if (tbl != null && tbl.isLinkTable()) {
+        // Don't delete the underlying data when dropping a table link.
+        db.dropTable(db.getCurrentDatabase(), dropTbl.getTableName(), false, true);
+      } else {
+        db.dropTable(dropTbl.getTableName());
+      }
       if (tbl != null) {
         work.getOutputs().add(new WriteEntity(tbl));
       }
@@ -3569,6 +3560,43 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
       db.createTable(tbl, crtView.getIfNotExists());
       work.getOutputs().add(new WriteEntity(tbl));
     }
+    return 0;
+  }
+
+  /**
+   * Create a table link to an existing table.
+   *
+   * @param db  The database in question.
+   * @param crtTblLinkDesc
+   * @return Returns 0 when execution succeeds and above 0 if it fails.
+   */
+  private int createTableLink(Hive db, CreateTableLinkDesc crtTblLink) throws HiveException {
+    Table tbl = db.getTable(crtTblLink.getTargetDatabase(), crtTblLink.getTargetTable());
+    tbl.setTableName(crtTblLink.getTargetTable() + "@" + crtTblLink.getTargetDatabase());
+    tbl.setDbName(db.getCurrentDatabase());
+    // set owner and creation time
+    int rc = setGenericTableAttributes(tbl);
+    if (rc != 0) {
+      return rc;
+    }
+    tbl.setLastAccessTime((int) (System.currentTimeMillis() / 1000));
+    Map<String, String> params = tbl.getParameters();
+    // Most of the metadata of the target table is retained. However we don't want to
+    // copy the Parameters of the target table because they include several things
+    // that would be wrong to copy like numPartitions, transient_lastDdlTime, etc.
+    params.clear();
+    if (crtTblLink.getLinkProps() != null) {
+      params.putAll(crtTblLink.getLinkProps());
+    }
+    if (crtTblLink.isStaticLink()) {
+      tbl.setTableType(TableType.STATIC_LINK_TABLE);
+    } else {
+      tbl.setTableType(TableType.LINK_TABLE);
+    }
+    tbl.setLinkTarget(crtTblLink.getTargetDatabase(), crtTblLink.getTargetTable());
+
+    db.createTable(tbl);
+    work.getOutputs().add(new WriteEntity(tbl));
     return 0;
   }
 

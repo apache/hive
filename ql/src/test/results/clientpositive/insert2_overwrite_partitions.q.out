@@ -285,8 +285,11 @@ POSTHOOK: Lineage: destintable PARTITION(ds=2011-11-11).two SIMPLE [(sourcetable
 97	val_97
 PREHOOK: query: drop table db2.destinTable
 PREHOOK: type: DROPTABLE
+PREHOOK: Input: db2@destintable
+PREHOOK: Output: db2@destintable
 POSTHOOK: query: drop table db2.destinTable
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: db2@destintable
 POSTHOOK: Output: db2@destintable
 POSTHOOK: Lineage: destintable PARTITION(ds=2011-11-11).one SIMPLE [(sourcetable)sourcetable.FieldSchema(name:one, type:string, comment:null), ]
 POSTHOOK: Lineage: destintable PARTITION(ds=2011-11-11).two SIMPLE [(sourcetable)sourcetable.FieldSchema(name:two, type:string, comment:null), ]
@@ -294,8 +297,11 @@ POSTHOOK: Lineage: destintable PARTITION(ds=2011-11-11).one SIMPLE [(sourcetable
 POSTHOOK: Lineage: destintable PARTITION(ds=2011-11-11).two SIMPLE [(sourcetable)sourcetable.FieldSchema(name:two, type:string, comment:null), ]
 PREHOOK: query: drop table db1.sourceTable
 PREHOOK: type: DROPTABLE
+PREHOOK: Input: db1@sourcetable
+PREHOOK: Output: db1@sourcetable
 POSTHOOK: query: drop table db1.sourceTable
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: db1@sourcetable
 POSTHOOK: Output: db1@sourcetable
 POSTHOOK: Lineage: destintable PARTITION(ds=2011-11-11).one SIMPLE [(sourcetable)sourcetable.FieldSchema(name:one, type:string, comment:null), ]
 POSTHOOK: Lineage: destintable PARTITION(ds=2011-11-11).two SIMPLE [(sourcetable)sourcetable.FieldSchema(name:two, type:string, comment:null), ]

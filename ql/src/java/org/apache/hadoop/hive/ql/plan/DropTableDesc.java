@@ -33,6 +33,7 @@ public class DropTableDesc extends DDLDesc implements Serializable {
   String tableName;
   ArrayList<PartitionSpec> partSpecs;
   boolean expectView;
+  boolean expectLink;
   boolean ifExists;
   boolean stringPartitionColumns; // This is due to JDO not working very well with
                                   // non-string partition columns.
@@ -44,18 +45,18 @@ public class DropTableDesc extends DDLDesc implements Serializable {
   /**
    * @param tableName
    */
-  public DropTableDesc(String tableName, boolean expectView,
+  public DropTableDesc(String tableName, boolean expectView, boolean expectLink,
                        boolean ifExists, boolean stringPartitionColumns) {
     this.tableName = tableName;
     partSpecs = null;
     this.expectView = expectView;
+    this.expectLink = expectLink;
     this.ifExists = ifExists;
     this.stringPartitionColumns = stringPartitionColumns;
   }
 
   public DropTableDesc(String tableName, List<PartitionSpec> partSpecs,
                        boolean expectView, boolean stringPartitionColumns) {
-
     this.tableName = tableName;
     this.partSpecs = new ArrayList<PartitionSpec>(partSpecs.size());
     for (int i = 0; i < partSpecs.size(); i++) {
@@ -63,6 +64,7 @@ public class DropTableDesc extends DDLDesc implements Serializable {
     }
     this.expectView = expectView;
     this.stringPartitionColumns = stringPartitionColumns;
+    this.expectLink = false;
   }
 
   /**
@@ -109,6 +111,21 @@ public class DropTableDesc extends DDLDesc implements Serializable {
    */
   public void setExpectView(boolean expectView) {
     this.expectView = expectView;
+  }
+
+  /**
+   * @return whether to expect a table link being dropped
+   */
+  public boolean getExpectLink() {
+    return expectLink;
+  }
+
+  /**
+   * @param expectLink
+   *          set whether to expect a table link being dropped
+   */
+  public void setExpectLink(boolean expectLink) {
+    this.expectLink = expectLink;
   }
 
   /**

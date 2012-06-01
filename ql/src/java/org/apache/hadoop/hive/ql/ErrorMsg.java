@@ -215,6 +215,15 @@ public enum ErrorMsg {
   UDAF_INVALID_LOCATION(10128, "Not yet supported place for UDAF"),
   DROP_PARTITION_NON_STRING_PARTCOLS_NONEQUALITY(10129,
     "Drop partitions for a non string partition columns is not allowed using non-equality"),
+  TABLELINK_TO_OWN_DB(10130, "You cannot create Links to tables in your own database. "
+      + "Links are meant for accessing other databases."),
+  TABLELINK_TO_UNMANAGED_TABLE(10131, "Table Links can only point to Managed Tables. "
+      + "They cannot point to Views, External Tables or other Links."),
+  DROP_COMMAND_FOR_VIEWS(10132, "To drop a view you need to use the DROP VIEW command."),
+  DROP_COMMAND_FOR_TABLELINKS(10133, "To drop a table link you need to use the"
+      + " DROP TABLELINK command." ),
+  DROP_COMMAND_FOR_TABLES(10134, "To drop a base table you need to use the DROP TABLE command."),
+
 
   SCRIPT_INIT_ERROR(20000, "Unable to initialize custom script."),
   SCRIPT_IO_ERROR(20001, "An error occurred while reading or writing to your custom script. "

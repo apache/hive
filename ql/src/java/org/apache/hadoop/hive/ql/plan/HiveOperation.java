@@ -83,6 +83,8 @@ public enum HiveOperation {
   ALTERPARTITION_LOCATION("ALTERPARTITION_LOCATION", new Privilege[]{Privilege.ALTER_DATA}, null),
   CREATETABLE("CREATETABLE", null, new Privilege[]{Privilege.CREATE}),
   CREATETABLE_AS_SELECT("CREATETABLE_AS_SELECT", new Privilege[]{Privilege.SELECT}, new Privilege[]{Privilege.CREATE}),
+  CREATETABLELINK("CREATETABLELINK", null, new Privilege[]{Privilege.CREATE}),
+  DROPTABLELINK("DROPTABLELINK", null, null),
   QUERY("QUERY", new Privilege[]{Privilege.SELECT}, new Privilege[]{Privilege.ALTER_DATA, Privilege.CREATE}),
   ALTERINDEX_PROPS("ALTERINDEX_PROPS",null, null),
   ALTERDATABASE("ALTERDATABASE", null, null),

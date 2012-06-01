@@ -173,6 +173,10 @@
       <field name="tableType">
         <column name="TBL_TYPE" length="128" jdbc-type="VARCHAR"/>
       </field>
+      <field name="linkTarget">
+        <column name="LINK_TARGET_ID" target="TBL_ID" insert-value="#NULL"/>
+      </field>
+	  <field name="linkTables" mapped-by="linkTarget"/>      
     </class>
 
     <class name="MSerDeInfo" identity-type="datastore" table="SERDES" detachable="true">

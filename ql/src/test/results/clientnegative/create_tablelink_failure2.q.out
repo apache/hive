@@ -1,0 +1,24 @@
+PREHOOK: query: DROP VIEW view1
+PREHOOK: type: DROPVIEW
+POSTHOOK: query: DROP VIEW view1
+POSTHOOK: type: DROPVIEW
+PREHOOK: query: CREATE VIEW view1 AS SELECT value FROM src WHERE key=86
+PREHOOK: type: CREATEVIEW
+#### A masked pattern was here ####
+POSTHOOK: query: CREATE VIEW view1 AS SELECT value FROM src WHERE key=86
+POSTHOOK: type: CREATEVIEW
+POSTHOOK: Output: default@view1
+#### A masked pattern was here ####
+PREHOOK: query: DROP DATABASE IF EXISTS tmpdb CASCADE
+PREHOOK: type: DROPDATABASE
+POSTHOOK: query: DROP DATABASE IF EXISTS tmpdb CASCADE
+POSTHOOK: type: DROPDATABASE
+PREHOOK: query: CREATE DATABASE tmpdb
+PREHOOK: type: CREATEDATABASE
+POSTHOOK: query: CREATE DATABASE tmpdb
+POSTHOOK: type: CREATEDATABASE
+PREHOOK: query: USE tmpdb
+PREHOOK: type: SWITCHDATABASE
+POSTHOOK: query: USE tmpdb
+POSTHOOK: type: SWITCHDATABASE
+FAILED: SemanticException [Error 10131]: Table Links can only point to Managed Tables. They cannot point to Views, External Tables or other Links.
