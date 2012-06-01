@@ -18,7 +18,6 @@
 
 package org.apache.hadoop.hive.ql.plan;
 
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -110,9 +109,9 @@ public class PartitionSpec {
   // For compatibility with other non-string partition columns, this function
   // returns the key, value mapping assuming that the operator is equality.
   public Map<String, String> getPartSpecWithoutOperator() {
-    Map<String, String> partSpec = new HashMap<String, String>();
+    Map<String, String> partSpec = new LinkedHashMap<String, String>();
     for (Map.Entry<String, PredicateSpec> entry: this.partSpec.entrySet()) {
-      partSpec.put(entry.getKey(), entry.getValue().getValue());
+      partSpec.put(entry.getKey(), PlanUtils.stripQuotes(entry.getValue().getValue()));
     }
 
     return partSpec;
