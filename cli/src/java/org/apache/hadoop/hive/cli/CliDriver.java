@@ -487,6 +487,16 @@ public class CliDriver {
     ss.setIsSilent(saveSilent);
   }
 
+  public void processSelectDatabase(CliSessionState ss) throws IOException {
+    String database = ss.database;
+    if (database != null) {
+      int rc = processLine("use " + database + ";");
+      if (rc != 0) {
+        System.exit(rc);
+      }
+    }
+  }
+
   public static Completor getCommandCompletor () {
     // SimpleCompletor matches against a pre-defined wordlist
     // We start with an empty wordlist and build it up
@@ -634,6 +644,9 @@ public class CliDriver {
 
     CliDriver cli = new CliDriver();
     cli.setHiveVariables(oproc.getHiveVariables());
+
+    // use the specified database if specified
+    cli.processSelectDatabase(ss);
 
     // Execute -i init files (always in silent mode)
     cli.processInitFiles(ss);
