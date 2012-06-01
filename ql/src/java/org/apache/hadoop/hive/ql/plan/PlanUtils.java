@@ -724,6 +724,14 @@ public final class PlanUtils {
     }
   }
 
+  public static String stripQuotes(String val) {
+    if ((val.charAt(0) == '\'' && val.charAt(val.length() - 1) == '\'')
+        || (val.charAt(0) == '\"' && val.charAt(val.length() - 1) == '\"')) {
+      val = val.substring(1, val.length() - 1);
+    }
+    return val;
+  }
+
   private PlanUtils() {
     // prevent instantiation
   }
