@@ -45,6 +45,14 @@ public class OptionsProcessor {
   @SuppressWarnings("static-access")
   public OptionsProcessor() {
 
+    // -database database
+    options.addOption(OptionBuilder
+        .hasArg()
+        .withArgName("databasename")
+        .withLongOpt("database")
+        .withDescription("Specify the database to use")
+        .create());
+
     // -e 'quoted-query-string'
     options.addOption(OptionBuilder
         .hasArg()
@@ -152,6 +160,8 @@ public class OptionsProcessor {
     }
 
     ss.setIsSilent(commandLine.hasOption('S'));
+
+    ss.database = commandLine.getOptionValue("database");
 
     ss.execString = commandLine.getOptionValue('e');
 
