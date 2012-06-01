@@ -43,6 +43,7 @@ import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.Order;
 import org.apache.hadoop.hive.metastore.api.SerDeInfo;
 import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
+import org.apache.hadoop.hive.metastore.api.TableIdentifier;
 import org.apache.hadoop.hive.ql.io.HiveFileFormatUtils;
 import org.apache.hadoop.hive.ql.io.HiveOutputFormat;
 import org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat;
@@ -148,6 +149,7 @@ public class Table implements Serializable {
       t.setTableType(TableType.MANAGED_TABLE.toString());
       t.setDbName(databaseName);
       t.setTableName(tableName);
+      t.setLinkTables(new ArrayList<TableIdentifier>());
     }
     return t;
   }
@@ -181,6 +183,10 @@ public class Table implements Serializable {
     } else {
       assert(getViewOriginalText() == null);
       assert(getViewExpandedText() == null);
+    }
+
+    if (isLinkTable()) {
+      assert(getLinkTarget() != null);
     }
 
     Iterator<FieldSchema> iterCols = getCols().iterator();
@@ -374,6 +380,18 @@ public class Table implements Serializable {
   public TableType getTableType() {
      return Enum.valueOf(TableType.class, tTable.getTableType());
    }
+
+  public void setLinkTarget(String targetDb, String targetTbl) {
+    setLinkTarget(new TableIdentifier(targetDb, targetTbl));
+  }
+
+  public void setLinkTarget(TableIdentifier linkTarget) {
+    tTable.setLinkTarget(linkTarget);
+  }
+
+  public TableIdentifier getLinkTarget() {
+    return tTable.getLinkTarget();
+  }
 
   public ArrayList<StructField> getFields() {
 
@@ -717,6 +735,14 @@ public class Table implements Serializable {
    */
   public boolean isIndexTable() {
     return TableType.INDEX_TABLE.equals(getTableType());
+  }
+
+  /**
+   * @return whether this table is a link table
+   */
+  public boolean isLinkTable() {
+    return TableType.LINK_TABLE.equals(getTableType()) ||
+          TableType.STATIC_LINK_TABLE.equals(getTableType());
   }
 
   /**

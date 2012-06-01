@@ -1,0 +1,1 @@
+FAILED: SemanticException [Error 10130]: You cannot create Links to tables in your own database. Links are meant for accessing other databases.

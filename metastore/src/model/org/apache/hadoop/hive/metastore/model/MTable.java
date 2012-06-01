@@ -20,6 +20,7 @@ package org.apache.hadoop.hive.metastore.model;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 public class MTable {
   
@@ -35,6 +36,8 @@ public class MTable {
   private String viewOriginalText;
   private String viewExpandedText;
   private String tableType;
+  private MTable linkTarget;
+  private Set<MTable> linkTables;
 
   public MTable() {}
 
@@ -51,11 +54,14 @@ public class MTable {
    * @param viewOriginalText
    * @param viewExpandedText
    * @param tableType
+   * @param linkTarget
+   * @param linkTables
    */
   public MTable(String tableName, MDatabase database, MStorageDescriptor sd, String owner,
       int createTime, int lastAccessTime, int retention, List<MFieldSchema> partitionKeys,
       Map<String, String> parameters,
-      String viewOriginalText, String viewExpandedText, String tableType) {
+      String viewOriginalText, String viewExpandedText, String tableType,
+      MTable linkTarget, Set<MTable> linkTables) {
     this.tableName = tableName;
     this.database = database;
     this.sd = sd;
@@ -68,6 +74,8 @@ public class MTable {
     this.viewOriginalText = viewOriginalText;
     this.viewExpandedText = viewExpandedText;
     this.tableType = tableType;
+    this.linkTarget = linkTarget;
+    this.linkTables = linkTables;
   }
 
   /**
@@ -236,5 +244,33 @@ public class MTable {
    */
   public String getTableType() {
     return tableType;
+  }
+
+  /**
+   * @param linkTarget  the table to which this link table points.
+   */
+  public void setLinkTarget(MTable linkTarget) {
+    this.linkTarget = linkTarget;
+  }
+
+  /**
+   * @return the ID of the table to which this link table points.
+   */
+  public MTable getLinkTarget() {
+    return linkTarget;
+  }
+
+  /**
+   * @param linkTables the set of all Link Tables pointing to this table.
+   */
+  public void setLinkTables(Set<MTable> linkTables) {
+    this.linkTables = linkTables;
+  }
+
+  /**
+   * @return the set of all Link Tables pointing to this table.
+   */
+  public Set<MTable> getLinkTables() {
+    return linkTables;
   }
 }

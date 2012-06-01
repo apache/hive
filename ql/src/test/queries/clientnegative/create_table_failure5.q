@@ -1,0 +1,1 @@
+CREATE TABLE xyz@default (a STRING, b STRING);

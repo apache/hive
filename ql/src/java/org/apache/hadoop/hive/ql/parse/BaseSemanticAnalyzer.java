@@ -323,6 +323,10 @@ public abstract class BaseSemanticAnalyzer {
       } else {
         return unescapeIdentifier(tableNameNode.getChild(0).getText());
       }
+    } else if (tableNameNode.getToken().getType() == HiveParser.TOK_TABLINKNAME) {
+      String dbName = unescapeIdentifier(tableNameNode.getChild(0).getText());
+      String tableName = unescapeIdentifier(tableNameNode.getChild(1).getText());
+      return tableName + "@" + dbName;
     }
     return unescapeIdentifier(tableNameNode.getText());
   }

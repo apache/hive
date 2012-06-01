@@ -40,6 +40,7 @@ public class DDLWork implements Serializable {
   private CreateTableDesc createTblDesc;
   private CreateTableLikeDesc createTblLikeDesc;
   private CreateViewDesc createVwDesc;
+  private CreateTableLinkDesc createTblLinkDesc;
   private DropTableDesc dropTblDesc;
   private AlterTableDesc alterTblDesc;
   private AlterIndexDesc alterIdxDesc;
@@ -200,6 +201,16 @@ public class DDLWork implements Serializable {
     this(inputs, outputs);
 
     this.createVwDesc = createVwDesc;
+  }
+
+  /**
+   * @param createTblLinkDesc
+   *          create table link descriptor
+   */
+  public DDLWork(HashSet<ReadEntity> inputs, HashSet<WriteEntity> outputs,
+      CreateTableLinkDesc createTblLinkDesc) {
+    this(inputs, outputs);
+    this.createTblLinkDesc = createTblLinkDesc;
   }
 
   /**
@@ -535,6 +546,22 @@ public class DDLWork implements Serializable {
    */
   public void setCreateViewDesc(CreateViewDesc createVwDesc) {
     this.createVwDesc = createVwDesc;
+  }
+
+  /**
+   * @return the createTblLinkDesc
+   */
+  @Explain(displayName = "Create Table Link Operator")
+  public  CreateTableLinkDesc getCreateTblLinkDesc() {
+    return createTblLinkDesc;
+  }
+
+  /**
+   * @param createTblLinkDesc
+   *          the createTblLinkDesc to set
+   */
+  public void setCreateTblLinkDesc(CreateTableLinkDesc createTblLinkDesc) {
+    this.createTblLinkDesc = createTblLinkDesc;
   }
 
   /**

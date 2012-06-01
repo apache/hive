@@ -1,0 +1,135 @@
+PREHOOK: query: DROP DATABASE IF EXISTS tmpdb CASCADE
+PREHOOK: type: DROPDATABASE
+POSTHOOK: query: DROP DATABASE IF EXISTS tmpdb CASCADE
+POSTHOOK: type: DROPDATABASE
+PREHOOK: query: CREATE DATABASE tmpdb
+PREHOOK: type: CREATEDATABASE
+POSTHOOK: query: CREATE DATABASE tmpdb
+POSTHOOK: type: CREATEDATABASE
+PREHOOK: query: USE tmpdb
+PREHOOK: type: SWITCHDATABASE
+POSTHOOK: query: USE tmpdb
+POSTHOOK: type: SWITCHDATABASE
+PREHOOK: query: CREATE TABLELINK TO src@default LINKPROPERTIES('RETENTION'='7')
+PREHOOK: type: CREATETABLELINK
+PREHOOK: Input: default@src
+POSTHOOK: query: CREATE TABLELINK TO src@default LINKPROPERTIES('RETENTION'='7')
+POSTHOOK: type: CREATETABLELINK
+POSTHOOK: Input: default@src
+POSTHOOK: Output: tmpdb@src@default
+PREHOOK: query: DESC src@default
+PREHOOK: type: DESCTABLE
+POSTHOOK: query: DESC src@default
+POSTHOOK: type: DESCTABLE
+key	string	default
+value	string	default
+PREHOOK: query: DESC EXTENDED src@default
+PREHOOK: type: DESCTABLE
+POSTHOOK: query: DESC EXTENDED src@default
+POSTHOOK: type: DESCTABLE
+key	string	default
+value	string	default
+	 	 
+#### A masked pattern was here ####
+PREHOOK: query: DESC FORMATTED src@default
+PREHOOK: type: DESCTABLE
+POSTHOOK: query: DESC FORMATTED src@default
+POSTHOOK: type: DESCTABLE
+# col_name            	data_type           	comment             
+	 	 
+key                 	string              	default             
+value               	string              	default             
+	 	 
+# Detailed Table Information	 	 
+Database:           	tmpdb               	 
+#### A masked pattern was here ####
+Protect Mode:       	None                	 
+Retention:          	0                   	 
+#### A masked pattern was here ####
+Table Type:         	LINK_TABLE          	 
+Table Parameters:	 	 
+	RETENTION           	7                   
+#### A masked pattern was here ####
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe	 
+InputFormat:        	org.apache.hadoop.mapred.TextInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	-1                  	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
+Storage Desc Params:	 	 
+	serialization.format	1                   
+PREHOOK: query: CREATE STATIC TABLELINK TO srcbucket@default
+PREHOOK: type: CREATETABLELINK
+PREHOOK: Input: default@srcbucket
+POSTHOOK: query: CREATE STATIC TABLELINK TO srcbucket@default
+POSTHOOK: type: CREATETABLELINK
+POSTHOOK: Input: default@srcbucket
+POSTHOOK: Output: tmpdb@srcbucket@default
+PREHOOK: query: DESC srcbucket@default
+PREHOOK: type: DESCTABLE
+POSTHOOK: query: DESC srcbucket@default
+POSTHOOK: type: DESCTABLE
+key	int	
+value	string	
+PREHOOK: query: DESC EXTENDED srcbucket@default
+PREHOOK: type: DESCTABLE
+POSTHOOK: query: DESC EXTENDED srcbucket@default
+POSTHOOK: type: DESCTABLE
+key	int	
+value	string	
+	 	 
+#### A masked pattern was here ####
+PREHOOK: query: DESC FORMATTED srcbucket@default
+PREHOOK: type: DESCTABLE
+POSTHOOK: query: DESC FORMATTED srcbucket@default
+POSTHOOK: type: DESCTABLE
+# col_name            	data_type           	comment             
+	 	 
+key                 	int                 	None                
+value               	string              	None                
+	 	 
+# Detailed Table Information	 	 
+Database:           	tmpdb               	 
+#### A masked pattern was here ####
+Protect Mode:       	None                	 
+Retention:          	0                   	 
+#### A masked pattern was here ####
+Table Type:         	STATIC_LINK_TABLE   	 
+Table Parameters:	 	 
+#### A masked pattern was here ####
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe	 
+InputFormat:        	org.apache.hadoop.mapred.TextInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	2                   	 
+Bucket Columns:     	[key]               	 
+Sort Columns:       	[]                  	 
+Storage Desc Params:	 	 
+	serialization.format	1                   
+PREHOOK: query: SHOW TABLES
+PREHOOK: type: SHOWTABLES
+POSTHOOK: query: SHOW TABLES
+POSTHOOK: type: SHOWTABLES
+src@default
+srcbucket@default
+PREHOOK: query: DROP TABLELINK src@default
+PREHOOK: type: DROPTABLELINK
+PREHOOK: Input: tmpdb@src@default
+PREHOOK: Output: tmpdb@src@default
+POSTHOOK: query: DROP TABLELINK src@default
+POSTHOOK: type: DROPTABLELINK
+POSTHOOK: Input: tmpdb@src@default
+POSTHOOK: Output: tmpdb@src@default
+PREHOOK: query: DROP TABLELINK srcbucket@default
+PREHOOK: type: DROPTABLELINK
+PREHOOK: Input: tmpdb@srcbucket@default
+PREHOOK: Output: tmpdb@srcbucket@default
+POSTHOOK: query: DROP TABLELINK srcbucket@default
+POSTHOOK: type: DROPTABLELINK
+POSTHOOK: Input: tmpdb@srcbucket@default
+POSTHOOK: Output: tmpdb@srcbucket@default
