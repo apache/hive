@@ -1,0 +1,66 @@
+PREHOOK: query: -- verify that we can update the table properties
+CREATE TABLE avro2
+ROW FORMAT
+SERDE 'org.apache.hadoop.hive.serde2.avro.AvroSerDe'
+STORED AS
+INPUTFORMAT 'org.apache.hadoop.hive.ql.io.avro.AvroContainerInputFormat'
+OUTPUTFORMAT 'org.apache.hadoop.hive.ql.io.avro.AvroContainerOutputFormat'
+TBLPROPERTIES ('avro.schema.literal'='{ "namespace": "org.apache.hive",
+  "name": "first_schema",
+  "type": "record",
+  "fields": [
+    { "name":"string1", "type":"string" },
+    { "name":"string2", "type":"string" }
+  ] }')
+PREHOOK: type: CREATETABLE
+POSTHOOK: query: -- verify that we can update the table properties
+CREATE TABLE avro2
+ROW FORMAT
+SERDE 'org.apache.hadoop.hive.serde2.avro.AvroSerDe'
+STORED AS
+INPUTFORMAT 'org.apache.hadoop.hive.ql.io.avro.AvroContainerInputFormat'
+OUTPUTFORMAT 'org.apache.hadoop.hive.ql.io.avro.AvroContainerOutputFormat'
+TBLPROPERTIES ('avro.schema.literal'='{ "namespace": "org.apache.hive",
+  "name": "first_schema",
+  "type": "record",
+  "fields": [
+    { "name":"string1", "type":"string" },
+    { "name":"string2", "type":"string" }
+  ] }')
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: default@avro2
+PREHOOK: query: DESCRIBE avro2
+PREHOOK: type: DESCTABLE
+POSTHOOK: query: DESCRIBE avro2
+POSTHOOK: type: DESCTABLE
+string1	string	from deserializer
+string2	string	from deserializer
+PREHOOK: query: ALTER TABLE avro2 SET TBLPROPERTIES ('avro.schema.literal'='{ "namespace": "org.apache.hive",
+  "name": "second_schema",
+  "type": "record",
+  "fields": [
+    { "name":"int1", "type":"int" },
+    { "name":"float1", "type":"float" },
+  { "name":"double1", "type":"double" }
+  ] }')
+PREHOOK: type: ALTERTABLE_PROPERTIES
+PREHOOK: Input: default@avro2
+PREHOOK: Output: default@avro2
+POSTHOOK: query: ALTER TABLE avro2 SET TBLPROPERTIES ('avro.schema.literal'='{ "namespace": "org.apache.hive",
+  "name": "second_schema",
+  "type": "record",
+  "fields": [
+    { "name":"int1", "type":"int" },
+    { "name":"float1", "type":"float" },
+  { "name":"double1", "type":"double" }
+  ] }')
+POSTHOOK: type: ALTERTABLE_PROPERTIES
+POSTHOOK: Input: default@avro2
+POSTHOOK: Output: default@avro2
+PREHOOK: query: DESCRIBE avro2
+PREHOOK: type: DESCTABLE
+POSTHOOK: query: DESCRIBE avro2
+POSTHOOK: type: DESCTABLE
+int1	int	from deserializer
+float1	float	from deserializer
+double1	double	from deserializer

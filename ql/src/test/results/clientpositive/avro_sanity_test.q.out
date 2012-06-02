@@ -1,0 +1,93 @@
+PREHOOK: query: -- verify that we can actually read avro files
+CREATE TABLE doctors 
+ROW FORMAT
+SERDE 'org.apache.hadoop.hive.serde2.avro.AvroSerDe'
+STORED AS
+INPUTFORMAT 'org.apache.hadoop.hive.ql.io.avro.AvroContainerInputFormat'
+OUTPUTFORMAT 'org.apache.hadoop.hive.ql.io.avro.AvroContainerOutputFormat'
+TBLPROPERTIES ('avro.schema.literal'='{
+  "namespace": "testing.hive.avro.serde",
+  "name": "doctors",
+  "type": "record",
+  "fields": [
+    {
+      "name":"number",
+      "type":"int",
+      "doc":"Order of playing the role"
+    },
+    {
+      "name":"first_name",
+      "type":"string",
+      "doc":"first name of actor playing role"
+    },
+    {
+      "name":"last_name",
+      "type":"string",
+      "doc":"last name of actor playing role"
+    }
+  ]
+}')
+PREHOOK: type: CREATETABLE
+POSTHOOK: query: -- verify that we can actually read avro files
+CREATE TABLE doctors 
+ROW FORMAT
+SERDE 'org.apache.hadoop.hive.serde2.avro.AvroSerDe'
+STORED AS
+INPUTFORMAT 'org.apache.hadoop.hive.ql.io.avro.AvroContainerInputFormat'
+OUTPUTFORMAT 'org.apache.hadoop.hive.ql.io.avro.AvroContainerOutputFormat'
+TBLPROPERTIES ('avro.schema.literal'='{
+  "namespace": "testing.hive.avro.serde",
+  "name": "doctors",
+  "type": "record",
+  "fields": [
+    {
+      "name":"number",
+      "type":"int",
+      "doc":"Order of playing the role"
+    },
+    {
+      "name":"first_name",
+      "type":"string",
+      "doc":"first name of actor playing role"
+    },
+    {
+      "name":"last_name",
+      "type":"string",
+      "doc":"last name of actor playing role"
+    }
+  ]
+}')
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: default@doctors
+PREHOOK: query: DESCRIBE doctors
+PREHOOK: type: DESCTABLE
+POSTHOOK: query: DESCRIBE doctors
+POSTHOOK: type: DESCTABLE
+number	int	from deserializer
+first_name	string	from deserializer
+last_name	string	from deserializer
+PREHOOK: query: LOAD DATA LOCAL INPATH '../data/files/doctors.avro' INTO TABLE doctors
+PREHOOK: type: LOAD
+PREHOOK: Output: default@doctors
+POSTHOOK: query: LOAD DATA LOCAL INPATH '../data/files/doctors.avro' INTO TABLE doctors
+POSTHOOK: type: LOAD
+POSTHOOK: Output: default@doctors
+PREHOOK: query: SELECT * FROM doctors ORDER BY number
+PREHOOK: type: QUERY
+PREHOOK: Input: default@doctors
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT * FROM doctors ORDER BY number
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@doctors
+#### A masked pattern was here ####
+1	William	Hartnell
+2	Patrick	Troughton
+3	Jon	Pertwee
+4	Tom	Baker
+5	Peter	Davison
+6	Colin	Baker
+7	Sylvester	McCoy
+8	Paul	McGann
+9	Christopher	Eccleston
+10	David	Tennant
+11	Matt	Smith
