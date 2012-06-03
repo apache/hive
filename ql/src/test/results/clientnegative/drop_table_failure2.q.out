@@ -5,4 +5,10 @@ POSTHOOK: query: CREATE VIEW xxx6 AS SELECT key FROM src
 POSTHOOK: type: CREATEVIEW
 POSTHOOK: Output: default@xxx6
 #### A masked pattern was here ####
-FAILED: SemanticException [Error 10132]: To drop a view you need to use the DROP VIEW command.
+PREHOOK: query: -- Can't use DROP TABLE on a view
+DROP TABLE xxx6
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@xxx6
+PREHOOK: Output: default@xxx6
+FAILED: Error in metadata: Cannot drop a view with DROP TABLE
+FAILED: Execution Error, return code 1 from org.apache.hadoop.hive.ql.exec.DDLTask
