@@ -62,7 +62,6 @@ import org.apache.hadoop.util.StringUtils;
 public class MetaStoreUtils {
 
   protected static final Log LOG = LogFactory.getLog("hive.log");
-  protected static final String IDENTIFIER_REGEX = "[a-zA-Z_0-9@]+";
 
   public static final String DEFAULT_DATABASE_NAME = "default";
   public static final String DEFAULT_DATABASE_COMMENT = "Default Hive database";
@@ -296,7 +295,7 @@ public class MetaStoreUtils {
   /**
    * validateName
    *
-   * Checks the name conforms to our standars which are: "[a-zA-z_0-9@]+". checks
+   * Checks the name conforms to our standars which are: "[a-zA-z_0-9]+". checks
    * this is just characters and numbers and _
    *
    * @param name
@@ -306,7 +305,7 @@ public class MetaStoreUtils {
    *              if it doesn't match the pattern.
    */
   static public boolean validateName(String name) {
-    Pattern tpat = Pattern.compile(IDENTIFIER_REGEX);
+    Pattern tpat = Pattern.compile("[\\w_]+");
     Matcher m = tpat.matcher(name);
     if (m.matches()) {
       return true;

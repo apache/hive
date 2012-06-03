@@ -322,24 +322,6 @@ class StorageDescriptor
   ::Thrift::Struct.generate_accessors self
 end
 
-class TableIdentifier
-  include ::Thrift::Struct, ::Thrift::Struct_Union
-  DBNAME = 1
-  TABLENAME = 2
-
-  FIELDS = {
-    DBNAME => {:type => ::Thrift::Types::STRING, :name => 'dbName'},
-    TABLENAME => {:type => ::Thrift::Types::STRING, :name => 'tableName'}
-  }
-
-  def struct_fields; FIELDS; end
-
-  def validate
-  end
-
-  ::Thrift::Struct.generate_accessors self
-end
-
 class Table
   include ::Thrift::Struct, ::Thrift::Struct_Union
   TABLENAME = 1
@@ -355,8 +337,6 @@ class Table
   VIEWEXPANDEDTEXT = 11
   TABLETYPE = 12
   PRIVILEGES = 13
-  LINKTARGET = 14
-  LINKTABLES = 15
 
   FIELDS = {
     TABLENAME => {:type => ::Thrift::Types::STRING, :name => 'tableName'},
@@ -371,9 +351,7 @@ class Table
     VIEWORIGINALTEXT => {:type => ::Thrift::Types::STRING, :name => 'viewOriginalText'},
     VIEWEXPANDEDTEXT => {:type => ::Thrift::Types::STRING, :name => 'viewExpandedText'},
     TABLETYPE => {:type => ::Thrift::Types::STRING, :name => 'tableType'},
-    PRIVILEGES => {:type => ::Thrift::Types::STRUCT, :name => 'privileges', :class => PrincipalPrivilegeSet, :optional => true},
-    LINKTARGET => {:type => ::Thrift::Types::STRUCT, :name => 'linkTarget', :class => TableIdentifier, :optional => true},
-    LINKTABLES => {:type => ::Thrift::Types::LIST, :name => 'linkTables', :element => {:type => ::Thrift::Types::STRUCT, :class => TableIdentifier}, :optional => true}
+    PRIVILEGES => {:type => ::Thrift::Types::STRUCT, :name => 'privileges', :class => PrincipalPrivilegeSet, :optional => true}
   }
 
   def struct_fields; FIELDS; end

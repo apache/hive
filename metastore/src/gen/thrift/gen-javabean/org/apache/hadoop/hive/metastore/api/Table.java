@@ -36,8 +36,6 @@ public class Table implements org.apache.thrift.TBase<Table, Table._Fields>, jav
   private static final org.apache.thrift.protocol.TField VIEW_EXPANDED_TEXT_FIELD_DESC = new org.apache.thrift.protocol.TField("viewExpandedText", org.apache.thrift.protocol.TType.STRING, (short)11);
   private static final org.apache.thrift.protocol.TField TABLE_TYPE_FIELD_DESC = new org.apache.thrift.protocol.TField("tableType", org.apache.thrift.protocol.TType.STRING, (short)12);
   private static final org.apache.thrift.protocol.TField PRIVILEGES_FIELD_DESC = new org.apache.thrift.protocol.TField("privileges", org.apache.thrift.protocol.TType.STRUCT, (short)13);
-  private static final org.apache.thrift.protocol.TField LINK_TARGET_FIELD_DESC = new org.apache.thrift.protocol.TField("linkTarget", org.apache.thrift.protocol.TType.STRUCT, (short)14);
-  private static final org.apache.thrift.protocol.TField LINK_TABLES_FIELD_DESC = new org.apache.thrift.protocol.TField("linkTables", org.apache.thrift.protocol.TType.LIST, (short)15);
 
   private String tableName; // required
   private String dbName; // required
@@ -52,8 +50,6 @@ public class Table implements org.apache.thrift.TBase<Table, Table._Fields>, jav
   private String viewExpandedText; // required
   private String tableType; // required
   private PrincipalPrivilegeSet privileges; // required
-  private TableIdentifier linkTarget; // required
-  private List<TableIdentifier> linkTables; // required
 
   /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
   public enum _Fields implements org.apache.thrift.TFieldIdEnum {
@@ -69,9 +65,7 @@ public class Table implements org.apache.thrift.TBase<Table, Table._Fields>, jav
     VIEW_ORIGINAL_TEXT((short)10, "viewOriginalText"),
     VIEW_EXPANDED_TEXT((short)11, "viewExpandedText"),
     TABLE_TYPE((short)12, "tableType"),
-    PRIVILEGES((short)13, "privileges"),
-    LINK_TARGET((short)14, "linkTarget"),
-    LINK_TABLES((short)15, "linkTables");
+    PRIVILEGES((short)13, "privileges");
 
     private static final Map<String, _Fields> byName = new HashMap<String, _Fields>();
 
@@ -112,10 +106,6 @@ public class Table implements org.apache.thrift.TBase<Table, Table._Fields>, jav
           return TABLE_TYPE;
         case 13: // PRIVILEGES
           return PRIVILEGES;
-        case 14: // LINK_TARGET
-          return LINK_TARGET;
-        case 15: // LINK_TABLES
-          return LINK_TABLES;
         default:
           return null;
       }
@@ -193,11 +183,6 @@ public class Table implements org.apache.thrift.TBase<Table, Table._Fields>, jav
         new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
     tmpMap.put(_Fields.PRIVILEGES, new org.apache.thrift.meta_data.FieldMetaData("privileges", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
         new org.apache.thrift.meta_data.StructMetaData(org.apache.thrift.protocol.TType.STRUCT, PrincipalPrivilegeSet.class)));
-    tmpMap.put(_Fields.LINK_TARGET, new org.apache.thrift.meta_data.FieldMetaData("linkTarget", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
-        new org.apache.thrift.meta_data.StructMetaData(org.apache.thrift.protocol.TType.STRUCT, TableIdentifier.class)));
-    tmpMap.put(_Fields.LINK_TABLES, new org.apache.thrift.meta_data.FieldMetaData("linkTables", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
-        new org.apache.thrift.meta_data.ListMetaData(org.apache.thrift.protocol.TType.LIST, 
-            new org.apache.thrift.meta_data.StructMetaData(org.apache.thrift.protocol.TType.STRUCT, TableIdentifier.class))));
     metaDataMap = Collections.unmodifiableMap(tmpMap);
     org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(Table.class, metaDataMap);
   }
@@ -292,16 +277,6 @@ public class Table implements org.apache.thrift.TBase<Table, Table._Fields>, jav
     if (other.isSetPrivileges()) {
       this.privileges = new PrincipalPrivilegeSet(other.privileges);
     }
-    if (other.isSetLinkTarget()) {
-      this.linkTarget = new TableIdentifier(other.linkTarget);
-    }
-    if (other.isSetLinkTables()) {
-      List<TableIdentifier> __this__linkTables = new ArrayList<TableIdentifier>();
-      for (TableIdentifier other_element : other.linkTables) {
-        __this__linkTables.add(new TableIdentifier(other_element));
-      }
-      this.linkTables = __this__linkTables;
-    }
   }
 
   public Table deepCopy() {
@@ -326,8 +301,6 @@ public class Table implements org.apache.thrift.TBase<Table, Table._Fields>, jav
     this.viewExpandedText = null;
     this.tableType = null;
     this.privileges = null;
-    this.linkTarget = null;
-    this.linkTables = null;
   }
 
   public String getTableName() {
@@ -652,67 +625,6 @@ public class Table implements org.apache.thrift.TBase<Table, Table._Fields>, jav
     }
   }
 
-  public TableIdentifier getLinkTarget() {
-    return this.linkTarget;
-  }
-
-  public void setLinkTarget(TableIdentifier linkTarget) {
-    this.linkTarget = linkTarget;
-  }
-
-  public void unsetLinkTarget() {
-    this.linkTarget = null;
-  }
-
-  /** Returns true if field linkTarget is set (has been assigned a value) and false otherwise */
-  public boolean isSetLinkTarget() {
-    return this.linkTarget != null;
-  }
-
-  public void setLinkTargetIsSet(boolean value) {
-    if (!value) {
-      this.linkTarget = null;
-    }
-  }
-
-  public int getLinkTablesSize() {
-    return (this.linkTables == null) ? 0 : this.linkTables.size();
-  }
-
-  public java.util.Iterator<TableIdentifier> getLinkTablesIterator() {
-    return (this.linkTables == null) ? null : this.linkTables.iterator();
-  }
-
-  public void addToLinkTables(TableIdentifier elem) {
-    if (this.linkTables == null) {
-      this.linkTables = new ArrayList<TableIdentifier>();
-    }
-    this.linkTables.add(elem);
-  }
-
-  public List<TableIdentifier> getLinkTables() {
-    return this.linkTables;
-  }
-
-  public void setLinkTables(List<TableIdentifier> linkTables) {
-    this.linkTables = linkTables;
-  }
-
-  public void unsetLinkTables() {
-    this.linkTables = null;
-  }
-
-  /** Returns true if field linkTables is set (has been assigned a value) and false otherwise */
-  public boolean isSetLinkTables() {
-    return this.linkTables != null;
-  }
-
-  public void setLinkTablesIsSet(boolean value) {
-    if (!value) {
-      this.linkTables = null;
-    }
-  }
-
   public void setFieldValue(_Fields field, Object value) {
     switch (field) {
     case TABLE_NAME:
@@ -819,22 +731,6 @@ public class Table implements org.apache.thrift.TBase<Table, Table._Fields>, jav
       }
       break;
 
-    case LINK_TARGET:
-      if (value == null) {
-        unsetLinkTarget();
-      } else {
-        setLinkTarget((TableIdentifier)value);
-      }
-      break;
-
-    case LINK_TABLES:
-      if (value == null) {
-        unsetLinkTables();
-      } else {
-        setLinkTables((List<TableIdentifier>)value);
-      }
-      break;
-
     }
   }
 
@@ -879,12 +775,6 @@ public class Table implements org.apache.thrift.TBase<Table, Table._Fields>, jav
     case PRIVILEGES:
       return getPrivileges();
 
-    case LINK_TARGET:
-      return getLinkTarget();
-
-    case LINK_TABLES:
-      return getLinkTables();
-
     }
     throw new IllegalStateException();
   }
@@ -922,10 +812,6 @@ public class Table implements org.apache.thrift.TBase<Table, Table._Fields>, jav
       return isSetTableType();
     case PRIVILEGES:
       return isSetPrivileges();
-    case LINK_TARGET:
-      return isSetLinkTarget();
-    case LINK_TABLES:
-      return isSetLinkTables();
     }
     throw new IllegalStateException();
   }
@@ -1057,24 +943,6 @@ public class Table implements org.apache.thrift.TBase<Table, Table._Fields>, jav
       if (!(this_present_privileges && that_present_privileges))
         return false;
       if (!this.privileges.equals(that.privileges))
-        return false;
-    }
-
-    boolean this_present_linkTarget = true && this.isSetLinkTarget();
-    boolean that_present_linkTarget = true && that.isSetLinkTarget();
-    if (this_present_linkTarget || that_present_linkTarget) {
-      if (!(this_present_linkTarget && that_present_linkTarget))
-        return false;
-      if (!this.linkTarget.equals(that.linkTarget))
-        return false;
-    }
-
-    boolean this_present_linkTables = true && this.isSetLinkTables();
-    boolean that_present_linkTables = true && that.isSetLinkTables();
-    if (this_present_linkTables || that_present_linkTables) {
-      if (!(this_present_linkTables && that_present_linkTables))
-        return false;
-      if (!this.linkTables.equals(that.linkTables))
         return false;
     }
 
@@ -1224,26 +1092,6 @@ public class Table implements org.apache.thrift.TBase<Table, Table._Fields>, jav
         return lastComparison;
       }
     }
-    lastComparison = Boolean.valueOf(isSetLinkTarget()).compareTo(typedOther.isSetLinkTarget());
-    if (lastComparison != 0) {
-      return lastComparison;
-    }
-    if (isSetLinkTarget()) {
-      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.linkTarget, typedOther.linkTarget);
-      if (lastComparison != 0) {
-        return lastComparison;
-      }
-    }
-    lastComparison = Boolean.valueOf(isSetLinkTables()).compareTo(typedOther.isSetLinkTables());
-    if (lastComparison != 0) {
-      return lastComparison;
-    }
-    if (isSetLinkTables()) {
-      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.linkTables, typedOther.linkTables);
-      if (lastComparison != 0) {
-        return lastComparison;
-      }
-    }
     return 0;
   }
 
@@ -1380,32 +1228,6 @@ public class Table implements org.apache.thrift.TBase<Table, Table._Fields>, jav
             org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
           }
           break;
-        case 14: // LINK_TARGET
-          if (field.type == org.apache.thrift.protocol.TType.STRUCT) {
-            this.linkTarget = new TableIdentifier();
-            this.linkTarget.read(iprot);
-          } else { 
-            org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
-          }
-          break;
-        case 15: // LINK_TABLES
-          if (field.type == org.apache.thrift.protocol.TType.LIST) {
-            {
-              org.apache.thrift.protocol.TList _list73 = iprot.readListBegin();
-              this.linkTables = new ArrayList<TableIdentifier>(_list73.size);
-              for (int _i74 = 0; _i74 < _list73.size; ++_i74)
-              {
-                TableIdentifier _elem75; // required
-                _elem75 = new TableIdentifier();
-                _elem75.read(iprot);
-                this.linkTables.add(_elem75);
-              }
-              iprot.readListEnd();
-            }
-          } else { 
-            org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
-          }
-          break;
         default:
           org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
       }
@@ -1452,9 +1274,9 @@ public class Table implements org.apache.thrift.TBase<Table, Table._Fields>, jav
       oprot.writeFieldBegin(PARTITION_KEYS_FIELD_DESC);
       {
         oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, this.partitionKeys.size()));
-        for (FieldSchema _iter76 : this.partitionKeys)
+        for (FieldSchema _iter73 : this.partitionKeys)
         {
-          _iter76.write(oprot);
+          _iter73.write(oprot);
         }
         oprot.writeListEnd();
       }
@@ -1464,10 +1286,10 @@ public class Table implements org.apache.thrift.TBase<Table, Table._Fields>, jav
       oprot.writeFieldBegin(PARAMETERS_FIELD_DESC);
       {
         oprot.writeMapBegin(new org.apache.thrift.protocol.TMap(org.apache.thrift.protocol.TType.STRING, org.apache.thrift.protocol.TType.STRING, this.parameters.size()));
-        for (Map.Entry<String, String> _iter77 : this.parameters.entrySet())
+        for (Map.Entry<String, String> _iter74 : this.parameters.entrySet())
         {
-          oprot.writeString(_iter77.getKey());
-          oprot.writeString(_iter77.getValue());
+          oprot.writeString(_iter74.getKey());
+          oprot.writeString(_iter74.getValue());
         }
         oprot.writeMapEnd();
       }
@@ -1492,27 +1314,6 @@ public class Table implements org.apache.thrift.TBase<Table, Table._Fields>, jav
       if (isSetPrivileges()) {
         oprot.writeFieldBegin(PRIVILEGES_FIELD_DESC);
         this.privileges.write(oprot);
-        oprot.writeFieldEnd();
-      }
-    }
-    if (this.linkTarget != null) {
-      if (isSetLinkTarget()) {
-        oprot.writeFieldBegin(LINK_TARGET_FIELD_DESC);
-        this.linkTarget.write(oprot);
-        oprot.writeFieldEnd();
-      }
-    }
-    if (this.linkTables != null) {
-      if (isSetLinkTables()) {
-        oprot.writeFieldBegin(LINK_TABLES_FIELD_DESC);
-        {
-          oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, this.linkTables.size()));
-          for (TableIdentifier _iter78 : this.linkTables)
-          {
-            _iter78.write(oprot);
-          }
-          oprot.writeListEnd();
-        }
         oprot.writeFieldEnd();
       }
     }
@@ -1615,26 +1416,6 @@ public class Table implements org.apache.thrift.TBase<Table, Table._Fields>, jav
         sb.append("null");
       } else {
         sb.append(this.privileges);
-      }
-      first = false;
-    }
-    if (isSetLinkTarget()) {
-      if (!first) sb.append(", ");
-      sb.append("linkTarget:");
-      if (this.linkTarget == null) {
-        sb.append("null");
-      } else {
-        sb.append(this.linkTarget);
-      }
-      first = false;
-    }
-    if (isSetLinkTables()) {
-      if (!first) sb.append(", ");
-      sb.append("linkTables:");
-      if (this.linkTables == null) {
-        sb.append("null");
-      } else {
-        sb.append(this.linkTables);
       }
       first = false;
     }

@@ -69,8 +69,6 @@ public final class SemanticAnalyzerFactory {
     commandType.put(HiveParser.TOK_DROPFUNCTION, HiveOperation.DROPFUNCTION);
     commandType.put(HiveParser.TOK_CREATEVIEW, HiveOperation.CREATEVIEW);
     commandType.put(HiveParser.TOK_DROPVIEW, HiveOperation.DROPVIEW);
-    commandType.put(HiveParser.TOK_CREATETABLELINK, HiveOperation.CREATETABLELINK);
-    commandType.put(HiveParser.TOK_DROPTABLELINK, HiveOperation.DROPTABLELINK);
     commandType.put(HiveParser.TOK_CREATEINDEX, HiveOperation.CREATEINDEX);
     commandType.put(HiveParser.TOK_DROPINDEX, HiveOperation.DROPINDEX);
     commandType.put(HiveParser.TOK_ALTERINDEX_REBUILD, HiveOperation.ALTERINDEX_REBUILD);
@@ -138,7 +136,6 @@ public final class SemanticAnalyzerFactory {
       case HiveParser.TOK_SWITCHDATABASE:
       case HiveParser.TOK_DROPTABLE:
       case HiveParser.TOK_DROPVIEW:
-      case HiveParser.TOK_DROPTABLELINK:
       case HiveParser.TOK_DESCDATABASE:
       case HiveParser.TOK_DESCTABLE:
       case HiveParser.TOK_DESCFUNCTION:
@@ -168,7 +165,6 @@ public final class SemanticAnalyzerFactory {
       case HiveParser.TOK_SHOWLOCKS:
       case HiveParser.TOK_CREATEINDEX:
       case HiveParser.TOK_DROPINDEX:
-      case HiveParser.TOK_CREATETABLELINK:
       case HiveParser.TOK_ALTERTABLE_CLUSTER_SORT:
       case HiveParser.TOK_ALTERTABLE_TOUCH:
       case HiveParser.TOK_ALTERTABLE_ARCHIVE:
