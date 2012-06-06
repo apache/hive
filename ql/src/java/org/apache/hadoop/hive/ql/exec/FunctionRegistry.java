@@ -197,6 +197,7 @@ import org.apache.hadoop.hive.ql.udf.generic.GenericUDFStruct;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFTimestamp;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFToBinary;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFToUtcTimestamp;
+import org.apache.hadoop.hive.ql.udf.generic.GenericUDFTranslate;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFUnion;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFWhen;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDTF;
@@ -305,6 +306,7 @@ public final class FunctionRegistry {
     registerUDF("parse_url", UDFParseUrl.class, false);
     registerGenericUDF("split", GenericUDFSplit.class);
     registerGenericUDF("str_to_map", GenericUDFStringToMap.class);
+    registerGenericUDF("translate", GenericUDFTranslate.class);
 
     registerUDF("positive", UDFOPPositive.class, true, "+");
     registerUDF("negative", UDFOPNegative.class, true, "-");
