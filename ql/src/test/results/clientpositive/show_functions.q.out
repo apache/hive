@@ -147,6 +147,7 @@ sum
 tan
 to_date
 to_utc_timestamp
+translate
 trim
 ucase
 unhex
@@ -215,6 +216,7 @@ rlike
 size
 space
 to_date
+translate
 ucase
 variance
 xpath_double
