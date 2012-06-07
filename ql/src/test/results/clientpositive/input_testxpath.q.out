@@ -95,7 +95,7 @@ POSTHOOK: Input: default@src_thrift
 POSTHOOK: Output: default@dest1
 POSTHOOK: Lineage: dest1.key EXPRESSION [(src_thrift)src_thrift.FieldSchema(name:lint, type:array<int>, comment:from deserializer), ]
 POSTHOOK: Lineage: dest1.mapvalue EXPRESSION [(src_thrift)src_thrift.FieldSchema(name:mstringstring, type:map<string,string>, comment:from deserializer), ]
-POSTHOOK: Lineage: dest1.value EXPRESSION [(src_thrift)src_thrift.FieldSchema(name:lintstring, type:array<org.apache.hadoop.hive.serde2.thrift.test.IntString>, comment:from deserializer), ]
+POSTHOOK: Lineage: dest1.value EXPRESSION [(src_thrift)src_thrift.FieldSchema(name:lintstring, type:array<struct<myint:int,mystring:string,underscore_int:int>>, comment:from deserializer), ]
 PREHOOK: query: SELECT dest1.* FROM dest1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@dest1
@@ -106,7 +106,7 @@ POSTHOOK: Input: default@dest1
 #### A masked pattern was here ####
 POSTHOOK: Lineage: dest1.key EXPRESSION [(src_thrift)src_thrift.FieldSchema(name:lint, type:array<int>, comment:from deserializer), ]
 POSTHOOK: Lineage: dest1.mapvalue EXPRESSION [(src_thrift)src_thrift.FieldSchema(name:mstringstring, type:map<string,string>, comment:from deserializer), ]
-POSTHOOK: Lineage: dest1.value EXPRESSION [(src_thrift)src_thrift.FieldSchema(name:lintstring, type:array<org.apache.hadoop.hive.serde2.thrift.test.IntString>, comment:from deserializer), ]
+POSTHOOK: Lineage: dest1.value EXPRESSION [(src_thrift)src_thrift.FieldSchema(name:lintstring, type:array<struct<myint:int,mystring:string,underscore_int:int>>, comment:from deserializer), ]
 0	0	NULL
 2	1	NULL
 4	8	value_2

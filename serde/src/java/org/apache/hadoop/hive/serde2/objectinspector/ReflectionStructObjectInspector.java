@@ -76,7 +76,19 @@ public class ReflectionStructObjectInspector extends
   }
 
   public String getTypeName() {
-    return objectClass.getName();
+    StringBuilder sb = new StringBuilder("struct<");
+    boolean first = true;
+    for (StructField structField : getAllStructFieldRefs()) {
+      if (first) {
+        first = false;
+      } else {
+        sb.append(",");
+      }
+      sb.append(structField.getFieldName()).append(":")
+          .append(structField.getFieldObjectInspector().getTypeName());
+    }
+    sb.append(">");
+    return sb.toString();
   }
 
   /**
