@@ -46,6 +46,7 @@ public class PerfLogger {
   public static final String POST_HOOK = "PostHook.";
   public static final String FAILURE_HOOK = "FailureHook.";
   public static final String DRIVER_RUN = "Driver.run";
+  public static final String TIME_TO_SUBMIT = "TimeToSubmit";
 
   protected static final ThreadLocal<PerfLogger> perfLogger = new ThreadLocal<PerfLogger>();
 

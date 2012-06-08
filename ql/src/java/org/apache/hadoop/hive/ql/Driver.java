@@ -69,8 +69,8 @@ import org.apache.hadoop.hive.ql.lockmgr.HiveLockManagerCtx;
 import org.apache.hadoop.hive.ql.lockmgr.HiveLockMode;
 import org.apache.hadoop.hive.ql.lockmgr.HiveLockObj;
 import org.apache.hadoop.hive.ql.lockmgr.HiveLockObject;
-import org.apache.hadoop.hive.ql.lockmgr.LockException;
 import org.apache.hadoop.hive.ql.lockmgr.HiveLockObject.HiveLockObjectData;
+import org.apache.hadoop.hive.ql.lockmgr.LockException;
 import org.apache.hadoop.hive.ql.log.PerfLogger;
 import org.apache.hadoop.hive.ql.metadata.AuthorizationException;
 import org.apache.hadoop.hive.ql.metadata.DummyPartition;
@@ -897,6 +897,7 @@ public class Driver implements CommandProcessor {
     // Reset the perf logger
     PerfLogger perfLogger = PerfLogger.getPerfLogger(true);
     perfLogger.PerfLogBegin(LOG, PerfLogger.DRIVER_RUN);
+    perfLogger.PerfLogBegin(LOG, PerfLogger.TIME_TO_SUBMIT);
 
     int ret = compile(command);
     if (ret != 0) {
@@ -1100,6 +1101,7 @@ public class Driver implements CommandProcessor {
         driverCxt.addToRunnable(tsk);
       }
 
+      perfLogger.PerfLogEnd(LOG, PerfLogger.TIME_TO_SUBMIT);
       // Loop while you either have tasks running, or tasks queued up
       while (running.size() != 0 || runnable.peek() != null) {
         // Launch upto maxthreads tasks
