@@ -907,6 +907,87 @@
     </available>
   </target>
 
+	<!-- ================================================================== -->
+	<!-- Findbugs                                                         -->
+	<!-- ================================================================== -->
+
+
+	<target name="ivy-resolve-findbugs" depends="ivy-init-settings">
+		<echo message="Project: ${ant.project.name}" />
+		<ivy:resolve settingsRef="${ant.project.name}.ivy.settings" conf="findbugs" log="${ivyresolvelog}" />
+	</target>
+
+	<property name="ivy.findbugs.retrieve.pattern" value="[conf]/[artifact].[ext]" />
+
+	<target name="ivy-retrieve-findbugs" depends="ivy-resolve-findbugs" description="Retrieve Ivy-managed artifacts for the checkstyle configurations">
+		<echo message="Project: ${ant.project.name}" />
+		<ivy:retrieve settingsRef="${ant.project.name}.ivy.settings" pattern="${build.ivy.lib.dir}/${ivy.findbugs.retrieve.pattern}" log="${ivyresolvelog}" />
+	</target>
+
+	<target name="check-for-findbugs">
+		<echo message="Project: ${ant.project.name}" />
+		<path id="findbugs.classpath">
+			<fileset dir="${build.ivy.lib.dir}/findbugs">
+				<include name="*.jar" />
+			</fileset>
+		</path>
+		<pathconvert property="findbugs.classpath" refid="findbugs.classpath" />
+	</target>
+
+	<target name="findbugs" depends="init,ivy-retrieve-findbugs,check-for-findbugs" description="Run findbugs on source files">
+		<echo message="Project: ${ant.project.name}" />
+        
+        <property name="findbugs.conf.dir" location="${hive.root}/findbugs" />
+        <property name="findbugs.build.dir" location="${build.dir.hive}/findbugs" />
+        <property name="findbugs.exclude.file" value="${findbugs.conf.dir}/findbugs-exclude.xml"/>
+        <property name="findbugs.report.htmlfile" value="${findbugs.build.dir}/findbugs-report.html"/>
+        <property name="findbugs.report.xmlfile" value="${findbugs.build.dir}/findbugs-report.xml"/>
+        
+		<mkdir dir="${findbugs.build.dir}" />
+		<taskdef name="findbugs" classname="edu.umd.cs.findbugs.anttask.FindBugsTask" classpath="${build.ivy.lib.dir}/findbugs/findbugs-ant.jar" />
+
+		<findbugs classpath="${findbugs.classpath}" pluginList="" effort="max" output="xml" outputFile="${findbugs.report.xmlfile}" excludeFilter="${findbugs.exclude.file}">
+		 
+            <auxClasspath>
+				<fileset dir="${build.dir.hive}">
+					<include name="**/*.jar" />
+				</fileset>
+			</auxClasspath>
+            
+			<sourcePath path="${hive.root}/ant" />
+			<sourcePath path="${hive.root}/builtins" />
+            <sourcePath path="${hive.root}/cli" />
+			<sourcePath path="${hive.root}/common" />
+			<sourcePath path="${hive.root}/contrib" />
+			<sourcePath path="${hive.root}/hbase-handler" />
+			<sourcePath path="${hive.root}/hwi" />
+			<sourcePath path="${hive.root}/jdbc" />
+			<sourcePath path="${hive.root}/metastore" />
+			<sourcePath path="${hive.root}/odbc" />
+			<sourcePath path="${hive.root}/pdk" />
+            <sourcePath path="${hive.root}/ql" />
+			<sourcePath path="${hive.root}/serde" />
+			<sourcePath path="${hive.root}/service" />
+			<sourcePath path="${hive.root}/shims" />
+			<class location="${build.dir.hive}/anttasks/classes" />
+            <class location="${build.dir.hive}/builtins/classes" />
+            <class location="${build.dir.hive}/cli/classes" />
+			<class location="${build.dir.hive}/common/classes" />
+			<class location="${build.dir.hive}/contrib/classes" />
+            <class location="${build.dir.hive}/hbase-handler/classes" />
+			<class location="${build.dir.hive}/hwi/classes" />
+            <class location="${build.dir.hive}/jdbc/classes" />
+			<class location="${build.dir.hive}/metastore/classes" />
+            <class location="${build.dir.hive}/pdk/classes" />
+			<class location="${build.dir.hive}/ql/classes" />
+            <class location="${build.dir.hive}/serde/classes" />
+			<class location="${build.dir.hive}/service/classes" />
+            <class location="${build.dir.hive}/shims/classes" />
+		</findbugs>
+        <!--
+        <xslt style="${findbugs.conf.dir}/default.xsl" in="${findbugs.report.xmlfile}"  out="${findbugs.report.htmlfile}"/>
+        -->
+	</target>
   <target name="ivy-docs" depends="ivy-init-settings"
     description="Resolve, Retrieve Ivy-managed artifacts for docs configuration">
     <echo message="Project: ${ant.project.name}"/>
