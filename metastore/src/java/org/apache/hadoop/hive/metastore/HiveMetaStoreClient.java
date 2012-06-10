@@ -566,6 +566,7 @@ public class HiveMetaStoreClient implements IMetaStoreClient {
       if (hook != null) {
         hook.commitDropTable(tbl, deleteData);
       }
+      success=true;
     } catch (NoSuchObjectException e) {
       if (!ignoreUknownTab) {
         throw e;
