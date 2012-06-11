@@ -163,6 +163,7 @@ import org.apache.hadoop.hive.ql.udf.generic.GenericUDFEWAHBitmapEmpty;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFEWAHBitmapOr;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFElt;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFField;
+import org.apache.hadoop.hive.ql.udf.generic.GenericUDFFormatNumber;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFFromUtcTimestamp;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFHash;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFIf;
@@ -456,6 +457,7 @@ public final class FunctionRegistry {
     registerGenericUDF("sentences", GenericUDFSentences.class);
     registerGenericUDF("map_keys", GenericUDFMapKeys.class);
     registerGenericUDF("map_values", GenericUDFMapValues.class);
+    registerGenericUDF("format_number", GenericUDFFormatNumber.class);
     registerGenericUDF("printf", GenericUDFPrintf.class);
 
     registerGenericUDF("from_utc_timestamp", GenericUDFFromUtcTimestamp.class);

@@ -1,0 +1,1 @@
+FAILED: SemanticException [Error 10016]: Line 2:21 Argument type mismatch '321.23': Argument 1 of function FORMAT_NUMBER must be "tinyint" or "smallint" or "int" or "bigint" or "double" or "float", but "array<double>" was found.
