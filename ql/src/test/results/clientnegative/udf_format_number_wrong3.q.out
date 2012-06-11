@@ -1,0 +1,1 @@
+FAILED: SemanticException [Error 10014]: Line 2:7 Wrong arguments '4': org.apache.hadoop.hive.ql.metadata.HiveException: Argument 2 of function FORMAT_NUMBER must be >= 0, but "-4" was found

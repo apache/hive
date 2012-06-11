@@ -64,6 +64,7 @@ explode
 field
 find_in_set
 floor
+format_number
 from_unixtime
 from_utc_timestamp
 get_json_object
