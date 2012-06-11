@@ -391,6 +391,7 @@ public class HiveConf extends Configuration {
     HIVESCRIPTRECORDWRITER("hive.script.recordwriter",
         "org.apache.hadoop.hive.ql.exec.TextRecordWriter"),
     HIVESCRIPTESCAPE("hive.transform.escape.input", false),
+    HIVEBINARYRECORDMAX("hive.binary.record.max.length", 1000 ),
 
     // HWI
     HIVEHWILISTENHOST("hive.hwi.listen.host", "0.0.0.0"),
