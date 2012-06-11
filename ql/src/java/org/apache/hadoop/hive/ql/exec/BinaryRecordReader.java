@@ -25,11 +25,12 @@ import java.util.Properties;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.io.BytesWritable;
 import org.apache.hadoop.io.Writable;
+import org.apache.hadoop.hive.conf.HiveConf;
 
 /**
- * Read from a binary stream and treat each 1000 bytes (configurable via 
- * hive.binary.record.max.length) as a record.  The last record before the 
- * end of stream can have less than 1000 bytes. 
+ * Read from a binary stream and treat each 1000 bytes (configurable via
+ * hive.binary.record.max.length) as a record.  The last record before the
+ * end of stream can have less than 1000 bytes.
  */
 public class BinaryRecordReader implements RecordReader {
 
@@ -39,7 +40,7 @@ public class BinaryRecordReader implements RecordReader {
 
   public void initialize(InputStream in, Configuration conf, Properties tbl) throws IOException {
     this.in = in;
-    maxRecordLength = conf.getInt("hive.binary.record.max.length", 1000);
+    maxRecordLength = HiveConf.getIntVar(conf, HiveConf.ConfVars.HIVEBINARYRECORDMAX);
   }
 
   public Writable createRow() throws IOException {

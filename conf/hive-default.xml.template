@@ -664,6 +664,14 @@
 </property>
 
 <property>
+  <name>hive.binary.record.max.length</name>
+  <value>1000</value>
+  <description>Read from a binary stream and treat each hive.binary.record.max.length bytes as a record.
+  The last record before the end of stream can have less than hive.binary.record.max.length bytes</description>
+</property>
+
+
+<property>
   <name>hive.script.recordreader</name>
   <value>org.apache.hadoop.hive.ql.exec.TextRecordReader</value>
   <description>The default record reader for reading data from the user scripts. </description>
