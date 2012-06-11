@@ -577,6 +577,14 @@
       <matches string="${hadoop.version.ant-internal}" pattern="^0\.20\..*" />
     </condition>
 
+
+    <!-- Construct the classpath needed for testutils/hadoop launch script -->
+    <path id="hive.hadoop.test.classpath">
+      <fileset dir="${hive.root}/build/ivy/lib/hadoop0.${hadoop.mr.rev}.shim" includes="*.jar" />
+      <fileset dir="${hive.root}/build/ivy/lib/default" includes="*.jar" excludes="hive*.jar" />
+    </path>
+    <property name="hive.hadoop.test.classpath" refid="hive.hadoop.test.classpath"/>
+    
     <pathconvert property="eclipse.project">
       <path path="${basedir}"/>
       <regexpmapper from="^.*/([^/]+)$$" to="\1" handledirsep="yes"/>
@@ -595,6 +603,9 @@
         <filter token="JETTYUTILJAR" value="${jetty.util.jar}"/>
         <filter token="SERVLETAPIJAR" value="${servlet-api.jar}"/>
         <filter token="HIVE_VERSION" value="${version}"/>
+        <filter token="HIVE_HADOOP_TEST_CLASSPATH" value="${hive.hadoop.test.classpath}"/>
+        <filter token="HADOOP_BIN_PATH" value="${hive.root}/testutils/hadoop"/>
+        <filter token="JVM_ARGS" value="${eclipse.launch.jvm.args}"/>
       </filterset>
     </copy>
     <move todir="." includeemptydirs="false">
