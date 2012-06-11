@@ -20,7 +20,7 @@
   <booleanAttribute key="org.eclipse.debug.core.appendEnvironmentVariables" value="false"/>
   <mapAttribute key="org.eclipse.debug.core.environmentVariables">
     <mapEntry key="JAVA_HOME" value="${system_property:java.home}"/>
-    <mapEntry key="HADOOP_HOME" value="${workspace_loc:@PROJECT@}/build/ivy/lib/hadoop.@HADOOPVER@.shim"/>
+    <mapEntry key="HIVE_HADOOP_TEST_CLASSPATH" value="@HIVE_HADOOP_TEST_CLASSPATH@"/>
   </mapAttribute>
   <stringAttribute key="org.eclipse.jdt.junit.CONTAINER" value=""/>
   <booleanAttribute key="org.eclipse.jdt.junit.KEEPRUNNING_ATTR" value="false"/>
@@ -37,6 +37,7 @@
   <booleanAttribute key="org.eclipse.jdt.launching.DEFAULT_CLASSPATH" value="false"/>
   <stringAttribute key="org.eclipse.jdt.launching.MAIN_TYPE" value="org.apache.hadoop.hive.cli.TestCliDriver"/>
   <stringAttribute key="org.eclipse.jdt.launching.PROJECT_ATTR" value="@PROJECT@"/>
-  <stringAttribute key="org.eclipse.jdt.launching.VM_ARGUMENTS" value="-Dhive.root.logger=INFO,console -Dtest.tmp.dir=&quot;${workspace_loc:@PROJECT@}/build/ql/tmp&quot; -Dtest.warehouse.dir=&quot;pfile://${workspace_loc:@PROJECT@}/build/test/data/warehouse&quot; -Dbuild.dir=&quot;${workspace_loc:@PROJECT@}/build/ql&quot; -Dbuild.dir.hive=&quot;${workspace_loc:@PROJECT@}/build&quot; -Dversion=&quot;@HIVE_VERSION@&quot;"/>
+  <stringAttribute key="org.eclipse.jdt.launching.VM_ARGUMENTS"
+                   value="@JVM_ARGS@ -Dhive.root.logger=INFO,console -Dhadoop.bin.path=@HADOOP_BIN_PATH@ -Dtest.tmp.dir=&quot;${workspace_loc:@PROJECT@}/build/ql/tmp&quot; -Dtest.warehouse.dir=&quot;pfile://${workspace_loc:@PROJECT@}/build/test/data/warehouse&quot; -Dbuild.dir=&quot;${workspace_loc:@PROJECT@}/build/ql&quot; -Dbuild.dir.hive=&quot;${workspace_loc:@PROJECT@}/build&quot; -Dversion=&quot;@HIVE_VERSION@&quot;"/>
   <stringAttribute key="org.eclipse.jdt.launching.WORKING_DIRECTORY" value="${workspace_loc:@PROJECT@}/ql"/>
 </launchConfiguration>
