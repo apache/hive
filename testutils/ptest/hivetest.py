@@ -53,6 +53,7 @@ all_set = None
 
 master_base_path = None
 host_base_path = None
+runtest_dir = os.getcwd()
 
 # End of user configurated things.
 
@@ -160,6 +161,19 @@ def get_clean_hive():
     local.run('git pull')
     local.run('ant arc-setup')
 
+def copy_local_hive():
+    # Copy local repo to the destination path instead of using git clone
+    if local.run('test -d "{0}"'.format(code_path), warn_only = True,
+            abandon_output = False) is None:
+      local.run('mkdir -p "{0}"'.format(os.path.dirname(code_path)))
+    local.run('rm -rf "{0}"'.format(code_path), warn_only = True)
+    local.run('mkdir -p "{0}"'.format(code_path))
+    local.run('echo "{0}"'.format(runtest_dir))
+    local.cd(runtest_dir)
+    local.run('cp -rf * "{0}"'.format(code_path))
+    local.cd(code_path)
+    local.run('ant arc-setup')
+
 def prepare_for_reports():
     # Generates directories for test reports.  All test nodes will copy results
     # to this directories.
@@ -189,7 +203,7 @@ def patch_hive(patches = [], revision = None):
     if patches:
         print('\n-- Patching Hive repo using a patch from local file system\n')
         for patch in patches:
-            local.run('patch -f -p0 < "{0}"'.format(patch))
+            local.run('patch -rf -p0 < "{0}"'.format(patch))
 
 def build_hive():
     print('\n-- Building Hive\n')
@@ -431,8 +445,12 @@ def overwrite_results():
 def cmd_prepare(patches = [], revision = None):
     get_ant()
     get_arc()
-    get_clean_hive()
-    patch_hive(patches, revision)
+    if (args.copylocal):
+      copy_local_hive()
+    else :
+      get_clean_hive()
+      patch_hive(patches, revision)
+
     build_hive()
     propagate_hive()
     prepare_tests()
@@ -494,6 +512,9 @@ parser.add_argument('--one-file-report', dest = 'one_file_report',
         help = 'Generate one (huge) report file instead of multiple small ones')
 parser.add_argument('--overwrite', dest = 'overwrite', action = 'store_true',
         help = 'Overwrite result files in master repo')
+parser.add_argument('--copylocal', dest = 'copylocal', action = 'store_true',
+        help = 'Copy local repo instead of using git clone and git hub')
+
 args = parser.parse_args()
 
 read_conf(args.config)
