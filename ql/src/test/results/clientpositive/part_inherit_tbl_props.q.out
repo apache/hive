@@ -1,6 +1,10 @@
-PREHOOK: query: create table mytbl (c1 tinyint) partitioned by (c2 string) tblproperties ('a'='myval','b'='yourval','c'='noval')
+PREHOOK: query: -- The property needs to be unset at the end of the test till HIVE-3109/HIVE-3112 is fixed
+
+create table mytbl (c1 tinyint) partitioned by (c2 string) tblproperties ('a'='myval','b'='yourval','c'='noval')
 PREHOOK: type: CREATETABLE
-POSTHOOK: query: create table mytbl (c1 tinyint) partitioned by (c2 string) tblproperties ('a'='myval','b'='yourval','c'='noval')
+POSTHOOK: query: -- The property needs to be unset at the end of the test till HIVE-3109/HIVE-3112 is fixed
+
+create table mytbl (c1 tinyint) partitioned by (c2 string) tblproperties ('a'='myval','b'='yourval','c'='noval')
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: default@mytbl
 PREHOOK: query: alter table mytbl add partition (c2 = 'v1')
