@@ -6532,7 +6532,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
 
       if (num > den) {
         throw new SemanticException(
-            ErrorMsg.BUCKETED_NUMBERATOR_BIGGER_DENOMINATOR.getMsg() + " "
+            ErrorMsg.BUCKETED_NUMERATOR_BIGGER_DENOMINATOR.getMsg() + " "
             + tab.getTableName());
       }
 
