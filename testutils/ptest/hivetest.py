@@ -87,7 +87,7 @@ def read_conf(config_file):
         master_base_path += '-' + suffix
         host_base_path  += '-' + suffix
 
-    ant_path = master_base_path + '/apache-ant-1.8.2'
+    ant_path = master_base_path + '/apache-ant-1.8.4'
     arc_path = master_base_path + '/arcanist'
     phutil_path = master_base_path + '/libphutil'
     code_path = master_base_path + '/trunk'
@@ -110,21 +110,17 @@ def read_conf(config_file):
     remote_set.export('HIVE_HOME', host_code_path + '/build/dist')
     remote_set.add_path(host_code_path + '/build/dist/bin')
 
-    # Hadoop
-    remote_set.export('HADOOP_HOME', host_code_path +
-            '/build/hadoopcore/hadoop-0.20.1')
-
 def get_ant():
-    # Gets Ant 1.8.2 from one of Apache mirrors.
-    print('\n-- Installing Ant 1.8.2\n')
+    # Gets Ant 1.8.4 from one of Apache mirrors.
+    print('\n-- Installing Ant 1.8.4\n')
 
     if local.run('test -d "{0}"'.format(ant_path), warn_only = True,
             abandon_output = False) is None:
         local.run('mkdir -p "{0}"'.format(master_base_path))
         local.cd(master_base_path)
-        local.run('curl "http://apache.osuosl.org//ant/binaries/apache-ant-1.8.2-bin.tar.gz" | tar xz')
+        local.run('curl "http://apache.osuosl.org//ant/binaries/apache-ant-1.8.4-bin.tar.gz" | tar xz')
     else:
-        print('\n  Ant 1.8.2 already installed\n')
+        print('\n  Ant 1.8.4 already installed\n')
 
 def get_arc():
     # Gets latest Arcanist and libphtuil from their Git repositories.
@@ -155,8 +151,8 @@ def get_clean_hive():
 
     if local.run('test -d "{0}"'.format(code_path), warn_only = True,
             abandon_output = False) is None:
-        local.run('mkdir -p "{0}"'.format(os.path.dirname(code_path)))
-        local.run('git clone git://git.apache.org/hive.git "{0}"'.format(code_path))
+      local.run('mkdir -p "{0}"'.format(os.path.dirname(code_path)))
+      local.run('git clone git://git.apache.org/hive.git "{0}"'.format(code_path))
 
     local.cd(code_path)
     local.run('git reset --hard HEAD')
@@ -198,15 +194,30 @@ def patch_hive(patches = [], revision = None):
 def build_hive():
     print('\n-- Building Hive\n')
     local.cd(code_path)
-    local.run('ant package')
+    # we clean up the jars under ~/.ivy2 to avoid the running of very-clean package.
+    # once we get ivy to work, we should be able to get rid of hive*jar files
+    # without performing ant very-clean package.
+    # Then, we can get rid of this.
+    # Please refer to jira 3116 for more details
+    local.run('cd ~/.ivy2')
+    local.run('find . -name "*hive*.jar" | xargs rm -r')
+
+    local.cd(code_path)
+    local.run('ant clean package')
+    local.run('mkdir -p "{0}/.ivy2" 2>/dev/null'.format(master_base_path), warn_only = True)
+    local.run('cp -Rf ~/.ivy2/* "{0}/.ivy2/" 2>/dev/null'.format(master_base_path), warn_only = True)
 
 def propagate_hive():
     # Expects master_base_path to be available on all test nodes in the same
     # place (for example using NFS).
     print('\n-- Propagating Hive repo to all hosts\n')
+    print(host_code_path)
+    print(code_path)
+    remote_set.run('rm -rf "{0}"'.format(host_code_path))
     remote_set.run('mkdir -p "{0}"'.format(host_code_path))
-    remote_set.run('rsync -qa --delete "{0}/" "{1}"'.format(
-        code_path, host_code_path))
+    remote_set.run('cp -r "{0}/*" "{1}"'.format(
+                    code_path, host_code_path))
+    remote_set.run('cp -Rf "{0}/.ivy2/*" "/root/.ivy2/" 2>/dev/null'.format(master_base_path))
 
 def segment_tests(path):
     # Removes `.q` files that should not be run on this host.  The huge shell
@@ -251,13 +262,14 @@ def collect_log(name):
     qfile_set.run('cp "hive.log" "' + report_path + '/logs/hive-{host}-' + name + '.log"',
             warn_only = True)
 
-def collect_out(name):
+def collect_out(name, desc_name):
     # Moves `.out` file (test output) to the global logs directory.
     #
     # This has the same restriction on master_base_path as propagate_hive.
-    qfile_set.cd(host_code_path + '/build/ql/test/logs/' + name)
+    qfile_set.cd(host_code_path + '/' + name)
     # Warn only if no files are found.
-    qfile_set.run('cp * "' + report_path + '/out/' + name + '"', warn_only = True)
+    qfile_set.run('mkdir -p "' + report_path + '/' + desc_name + '/out/' + '"', warn_only = True)
+    qfile_set.run('cp * "' + report_path + '/' + desc_name + '/out/' + '"', warn_only = True)
 
 def run_tests():
     # Runs TestCliDriver and TestNegativeCliDriver testcases.
@@ -271,16 +283,16 @@ def run_tests():
     # if you need it for some reason).
 
     qfile_set.cd(host_code_path)
-    qfile_set.run('ant -Dtestcase=TestCliDriver -Doffline=true test',
+    qfile_set.run('ant -Dtestcase=TestCliDriver test',
             quiet = True, warn_only = True)
     collect_log('TEST-org.apache.hadoop.hive.cli.TestCliDriver.xml')
-    collect_out('clientpositive')
+    collect_out('build/ql/test/logs/clientpositive', 'TestCliDriver')
 
     qfile_set.cd(host_code_path)
-    qfile_set.run('ant -Dtestcase=TestNegativeCliDriver -Doffline=true test',
+    qfile_set.run('ant -Dtestcase=TestNegativeCliDriver test',
             quiet = True, warn_only = True)
     collect_log('TEST-org.apache.hadoop.hive.cli.TestNegativeCliDriver.xml')
-    collect_out('clientnegative')
+    collect_out('build/ql/test/logs/clientnegative', 'TestNegativeCliDriver')
 
 def run_other_tests():
     # Runs all other tests that run_test doesn't run.
@@ -297,21 +309,38 @@ def run_other_tests():
             'grep -v TestCliDriver.class',
             'grep -v TestNegativeCliDriver.class',
             'grep -v ".*\$.*\.class"',
+            'grep -v TestSetUGIOnBothClientServer.class',
+            'grep -v TestSetUGIOnOnlyClient.class',
+            'grep -v TestSetUGIOnOnlyServer.class',
+            'grep -v TestRemoteHiveMetaStore',
+            'grep -v TestEmbeddedHiveMetaStore',
             'sed -e "s:\.class::"'
         ]), abandon_output = False)
         return tests.split()
 
     def segment_other():
+        other_set.run('mkdir -p ' + report_path + '/TestContribCliDriver', warn_only = True)
+        other_set.run('mkdir -p ' + report_path + '/TestContribCliDriver/positive', warn_only = True)
+        other_set.run('mkdir -p ' + report_path + '/TestContribCliDriver/negative', warn_only = True)
+        other_set.run('mkdir -p ' + report_path + '/TestHBaseCliDriver', warn_only = True)
+
         # Split all test cases between hosts.
         def get_command(test):
             return '; '.join([
-                'ant -Dtestcase=' + test + ' -Doffline=true test',
+                'ant clean package -Dtestcase=' + test + ' test',
 
                 'cp "`find . -name "TEST-*.xml"`" "' + report_path + '/logs/" || ' +
                 'touch "' + report_path + '/logs/{host}-' + test + '.fail"',
 
-                'cp "build/ql/tmp/hive.log" "' + report_path + '/logs/hive-{host}-' + test + '.log"'
+                'cp "build/ql/tmp/hive.log" "' + report_path + '/logs/hive-{host}-' + test + '.log"',
+
+                'cp "build/contrib/test/logs/contribclientnegative/*" "' + report_path + '/TestContribCliDriver/negative 2>/dev/null"',
+
+                'cp "build/contrib/test/logs/contribclientpositive/*" "' + report_path + '/TestContribCliDriver/positive 2>/dev/null"',
+
+                'cp "build/hbase-handler/test/logs/hbase-handler/*" "' + report_path + '/TestHBaseCliDriver/ 2>/dev/null"'
             ])
+
         cmd = []
         i = 0
         for test in get_other_list():
@@ -346,6 +375,7 @@ def run_other_tests():
 def generate_report(one_file_report = False):
     # Uses `Report.py` to create a HTML report.
     print('\n-- Generating a test report\n')
+    local.run('cp "' + master_base_path + '/templogs/* " "'+ report_path + '/logs/" ', warn_only = True)
 
     # Call format to remove '{{' and '}}'.
     path = os.path.expandvars(report_path.format())
@@ -421,6 +451,16 @@ def cmd_run_tests(one_file_report = False):
 
 def cmd_test(patches = [], revision = None, one_file_report = False):
     cmd_prepare(patches, revision)
+
+    local.cd(master_base_path + '/trunk')
+    local.run('chmod -R 777 *');
+    local.run('rm -rf "' + master_base_path + '/templogs/"')
+    local.run('mkdir -p "' + master_base_path + '/templogs/"')
+    tests = ['TestRemoteHiveMetaStore','TestEmbeddedHiveMetaStore','TestSetUGIOnBothClientServer','TestSetUGIOnOnlyClient','TestSetUGIOnOnlyServer']
+    for test in tests:
+      local.run('sudo -u hadoop ant -Dtestcase=' + test + ' test')
+      local.run('cp "`find . -name "TEST-*.xml"`" "' + master_base_path + '/templogs/"')
+
     cmd_run_tests(one_file_report)
 
 def cmd_stop():
