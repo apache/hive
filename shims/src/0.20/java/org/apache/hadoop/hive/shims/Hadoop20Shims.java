@@ -257,7 +257,12 @@ public class Hadoop20Shims implements HadoopShims {
      * Return progress based on the amount of data processed so far.
      */
     public float getProgress() throws IOException {
-      return Math.min(1.0f, progress / (float) (split.getLength()));
+      long subprogress = 0;    // bytes processed in current split
+      if (null != curReader) {
+        // idx is always one past the current subsplit's true index.
+        subprogress = (long)(curReader.getProgress() * split.getLength(idx - 1));
+      }
+      return Math.min(1.0f, (progress + subprogress) / (float) (split.getLength()));
     }
 
     /**
