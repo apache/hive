@@ -466,7 +466,21 @@ public class CliDriver {
     }
     if (ss.initFiles.size() == 0) {
       if (System.getenv("HIVE_HOME") != null) {
-        String hivercDefault = System.getenv("HIVE_HOME") + File.separator + "bin" + File.separator + HIVERCFILE;
+        String hivercDefault = System.getenv("HIVE_HOME") + File.separator +
+          "bin" + File.separator + HIVERCFILE;
+        if (new File(hivercDefault).exists()) {
+          int rc = processFile(hivercDefault);
+          if (rc != 0) {
+            System.exit(rc);
+          }
+          console.printError("Putting the global hiverc in " +
+                             "$HIVE_HOME/bin/.hiverc is deprecated. Please "+
+                             "use $HIVE_CONF_DIR/.hiverc instead.");
+        }
+      }
+      if (System.getenv("HIVE_CONF_DIR") != null) {
+        String hivercDefault = System.getenv("HIVE_CONF_DIR") + File.separator
+          + HIVERCFILE;
         if (new File(hivercDefault).exists()) {
           int rc = processFile(hivercDefault);
           if (rc != 0) {
@@ -475,7 +489,8 @@ public class CliDriver {
         }
       }
       if (System.getProperty("user.home") != null) {
-        String hivercUser = System.getProperty("user.home") + File.separator + HIVERCFILE;
+        String hivercUser = System.getProperty("user.home") + File.separator +
+          HIVERCFILE;
         if (new File(hivercUser).exists()) {
           int rc = processFile(hivercUser);
           if (rc != 0) {
