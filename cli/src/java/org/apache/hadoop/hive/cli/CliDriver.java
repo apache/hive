@@ -512,7 +512,7 @@ public class CliDriver {
     }
   }
 
-  public static Completor getCommandCompletor () {
+  public static Completor[] getCommandCompletor () {
     // SimpleCompletor matches against a pre-defined wordlist
     // We start with an empty wordlist and build it up
     SimpleCompletor sc = new SimpleCompletor(new String[0]);
@@ -575,7 +575,32 @@ public class CliDriver {
       }
     };
 
-    return completor;
+    HiveConf.ConfVars[] confs = HiveConf.ConfVars.values();
+    String[] vars = new String[confs.length];
+    for (int i = 0; i < vars.length; i++) {
+      vars[i] = confs[i].varname;
+    }
+    SimpleCompletor conf = new SimpleCompletor(vars);
+    conf.setDelimiter(".");
+
+    SimpleCompletor set = new SimpleCompletor("set") {
+      @Override
+      public int complete(String buffer, int cursor, List clist) {
+        return buffer != null && buffer.equals("set") ? super.complete(buffer, cursor, clist) : -1;
+      }
+    };
+    ArgumentCompletor propCompletor = new ArgumentCompletor(new Completor[]{set, conf}) {
+      @Override
+      @SuppressWarnings("unchecked")
+      public int complete(String buffer, int offset, List completions) {
+        int ret = super.complete(buffer, offset, completions);
+        if (completions.size() == 1) {
+          completions.set(0, ((String)completions.get(0)).trim());
+        }
+        return ret;
+      }
+    };
+    return new Completor[] {propCompletor, completor};
   }
 
   public static void main(String[] args) throws Exception {
@@ -682,7 +707,9 @@ public class CliDriver {
     ConsoleReader reader = new ConsoleReader();
     reader.setBellEnabled(false);
     // reader.setDebug(new PrintWriter(new FileWriter("writer.debug", true)));
-    reader.addCompletor(getCommandCompletor());
+    for (Completor completor : getCommandCompletor()) {
+      reader.addCompletor(completor);
+    }
 
     String line;
     final String HISTORYFILE = ".hivehistory";
