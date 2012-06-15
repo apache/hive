@@ -79,7 +79,8 @@ struct StageType {
     FUNC = 6,
     MAPREDLOCAL = 7,
     MOVE = 8,
-    STATS = 9
+    STATS = 9,
+    DEPENDENCY_COLLECTION = 10
   };
 };
 

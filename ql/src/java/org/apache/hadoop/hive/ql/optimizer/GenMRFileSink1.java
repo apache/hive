@@ -34,6 +34,7 @@ import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.exec.AbstractMapJoinOperator;
 import org.apache.hadoop.hive.ql.exec.ColumnInfo;
 import org.apache.hadoop.hive.ql.exec.ConditionalTask;
+import org.apache.hadoop.hive.ql.exec.DependencyCollectionTask;
 import org.apache.hadoop.hive.ql.exec.FileSinkOperator;
 import org.apache.hadoop.hive.ql.exec.MapJoinOperator;
 import org.apache.hadoop.hive.ql.exec.MapRedTask;
@@ -110,7 +111,7 @@ public class GenMRFileSink1 implements NodeProcessor {
 
     // Has the user enabled merging of files for map-only jobs or for all jobs
     if ((ctx.getMvTask() != null) && (!ctx.getMvTask().isEmpty())) {
-      List<Task<? extends Serializable>> mvTasks = ctx.getMvTask();
+      List<Task<MoveWork>> mvTasks = ctx.getMvTask();
 
       // In case of unions or map-joins, it is possible that the file has
       // already been seen.
@@ -429,12 +430,42 @@ public class GenMRFileSink1 implements NodeProcessor {
   private void LinkMoveTask(GenMRProcContext ctx, FileSinkOperator newOutput,
       ConditionalTask cndTsk) {
 
-    List<Task<? extends Serializable>> mvTasks = ctx.getMvTask();
-    Task<? extends Serializable> mvTask = findMoveTask(mvTasks, newOutput);
+    List<Task<MoveWork>> mvTasks = ctx.getMvTask();
+    Task<MoveWork> mvTask = findMoveTask(mvTasks, newOutput);
+
+    for (Task<? extends Serializable> tsk : cndTsk.getListTasks()) {
+      addDependentMoveTasks(ctx, mvTask, tsk);
+    }
+  }
+
+  /**
+   * Adds the dependencyTaskForMultiInsert in ctx as a dependent of parentTask.  If mvTask is a
+   * load table, and HIVE_MULTI_INSERT_ATOMIC_OUTPUTS is set, adds mvTask as a dependent of
+   * dependencyTaskForMultiInsert in ctx, otherwise adds mvTask as a dependent of parentTask as
+   * well.
+   * @param ctx
+   * @param mvTask
+   * @param parentTask
+   */
+  private void addDependentMoveTasks(GenMRProcContext ctx, Task<MoveWork> mvTask,
+      Task<? extends Serializable> parentTask) {
 
     if (mvTask != null) {
-      for (Task<? extends Serializable> tsk : cndTsk.getListTasks()) {
-        tsk.addDependentTask(mvTask);
+      if (ctx.getConf().getBoolVar(
+          HiveConf.ConfVars.HIVE_MULTI_INSERT_MOVE_TASKS_SHARE_DEPENDENCIES)) {
+
+        DependencyCollectionTask dependencyTask = ctx.getDependencyTaskForMultiInsert();
+        parentTask.addDependentTask(dependencyTask);
+        if (mvTask.getWork().getLoadTableWork() != null) {
+          // Moving tables/partitions depend on the dependencyTask
+          dependencyTask.addDependentTask(mvTask);
+        } else {
+          // Moving files depends on the parentTask (we still want the dependencyTask to depend
+          // on the parentTask)
+          parentTask.addDependentTask(mvTask);
+        }
+      } else {
+        parentTask.addDependentTask(mvTask);
       }
     }
   }
@@ -547,11 +578,11 @@ public class GenMRFileSink1 implements NodeProcessor {
     return cndTsk;
   }
 
-  private Task<? extends Serializable> findMoveTask(
-      List<Task<? extends Serializable>> mvTasks, FileSinkOperator fsOp) {
+  private Task<MoveWork> findMoveTask(
+      List<Task<MoveWork>> mvTasks, FileSinkOperator fsOp) {
     // find the move task
-    for (Task<? extends Serializable> mvTsk : mvTasks) {
-      MoveWork mvWork = (MoveWork) mvTsk.getWork();
+    for (Task<MoveWork> mvTsk : mvTasks) {
+      MoveWork mvWork = mvTsk.getWork();
       String srcDir = null;
       if (mvWork.getLoadFileWork() != null) {
         srcDir = mvWork.getLoadFileWork().getSourceDir();
@@ -614,7 +645,7 @@ public class GenMRFileSink1 implements NodeProcessor {
       fsOp.getConf().setDirName(tmpDir);
     }
 
-    Task<? extends Serializable> mvTask = null;
+    Task<MoveWork> mvTask = null;
 
     if (!chDir) {
       mvTask = findMoveTask(ctx.getMvTask(), fsOp);
@@ -629,7 +660,8 @@ public class GenMRFileSink1 implements NodeProcessor {
 
     // Set the move task to be dependent on the current task
     if (mvTask != null) {
-      currTask.addDependentTask(mvTask);
+
+      addDependentMoveTasks(ctx, mvTask, currTask);
     }
 
     // In case of multi-table insert, the path to alias mapping is needed for

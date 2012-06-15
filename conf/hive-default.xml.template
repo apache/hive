@@ -1306,5 +1306,22 @@
   </description>
 </property>
 
+<property>
+  <name>hive.multi.insert.move.tasks.share.dependencies</name>
+  <value>false</value>
+  <description>
+    If this is set all move tasks for tables/partitions (not directories) at the end of a 
+    multi-insert query will only begin once the dependencies for all these move tasks have been
+    met.
+    Advantages: If concurrency is enabled, the locks will only be released once the query has
+                finished, so with this config enabled, the time when the table/partition is
+                generated will be much closer to when the lock on it is released.
+    Disadvantages: If concurrency is not enabled, with this disabled, the tables/partitions which
+                   are produced by this query and finish earlier will be available for querying
+                   much earlier.  Since the locks are only released once the query finishes, this
+                   does not apply if concurrency is enabled.
+  </description>
+</property>
+
 </configuration>
 
