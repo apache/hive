@@ -125,6 +125,7 @@ $GLOBALS['E_StageType'] = array(
   'MAPREDLOCAL' => 7,
   'MOVE' => 8,
   'STATS' => 9,
+  'DEPENDENCY_COLLECTION' => 10,
 );
 
 final class StageType {
@@ -138,6 +139,7 @@ final class StageType {
   const MAPREDLOCAL = 7;
   const MOVE = 8;
   const STATS = 9;
+  const DEPENDENCY_COLLECTION = 10;
   static public $__names = array(
     0 => 'CONDITIONAL',
     1 => 'COPY',
@@ -149,6 +151,7 @@ final class StageType {
     7 => 'MAPREDLOCAL',
     8 => 'MOVE',
     9 => 'STATS',
+    10 => 'DEPENDENCY_COLLECTION',
   );
 }
 

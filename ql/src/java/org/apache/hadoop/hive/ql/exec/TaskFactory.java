@@ -28,6 +28,7 @@ import org.apache.hadoop.hive.ql.io.rcfile.merge.MergeWork;
 import org.apache.hadoop.hive.ql.plan.ConditionalWork;
 import org.apache.hadoop.hive.ql.plan.CopyWork;
 import org.apache.hadoop.hive.ql.plan.DDLWork;
+import org.apache.hadoop.hive.ql.plan.DependencyCollectionWork;
 import org.apache.hadoop.hive.ql.plan.ExplainWork;
 import org.apache.hadoop.hive.ql.plan.FetchWork;
 import org.apache.hadoop.hive.ql.plan.FunctionWork;
@@ -78,7 +79,8 @@ public final class TaskFactory {
         StatsTask.class));
     taskvec.add(new taskTuple<MergeWork>(MergeWork.class,
         BlockMergeTask.class));
-
+    taskvec.add(new taskTuple<DependencyCollectionWork>(DependencyCollectionWork.class,
+        DependencyCollectionTask.class));
 
   }
 

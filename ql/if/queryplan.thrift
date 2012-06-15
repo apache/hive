@@ -90,6 +90,7 @@ enum StageType {
   MAPREDLOCAL,
   MOVE,
   STATS,
+  DEPENDENCY_COLLECTION,
 }
 
 struct Stage {

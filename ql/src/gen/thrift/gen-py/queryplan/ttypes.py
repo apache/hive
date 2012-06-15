@@ -132,6 +132,7 @@ class StageType:
   MAPREDLOCAL = 7
   MOVE = 8
   STATS = 9
+  DEPENDENCY_COLLECTION = 10
 
   _VALUES_TO_NAMES = {
     0: "CONDITIONAL",
@@ -144,6 +145,7 @@ class StageType:
     7: "MAPREDLOCAL",
     8: "MOVE",
     9: "STATS",
+    10: "DEPENDENCY_COLLECTION",
   }
 
   _NAMES_TO_VALUES = {
@@ -157,6 +159,7 @@ class StageType:
     "MAPREDLOCAL": 7,
     "MOVE": 8,
     "STATS": 9,
+    "DEPENDENCY_COLLECTION": 10,
   }
 
 
