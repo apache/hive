@@ -86,8 +86,10 @@
     <pathelement location="${build.dir.hive}/service/test/classes"/>
     <pathelement location="${build.dir.hive}/shims/test/classes"/>
 
-    <fileset dir="${hive.root}/build/ivy/lib/test" includes="*.jar" erroronmissingdir="false" excludes="**/hive_contrib*.jar,**/hive-contrib*.jar"/>
-    <fileset dir="${hive.root}/build/ivy/lib/default" includes="*.jar" erroronmissingdir="false" excludes="**/hive_contrib*.jar,**/hive-contrib*.jar" />
+    <!-- Include build/dist/lib on the classpath before Ivy and exclude hive jars from Ivy to make sure we get the local changes when we test Hive -->
+    <fileset dir="${build.dir.hive}/dist/lib" includes="*.jar" erroronmissingdir="false" excludes="**/hive_contrib*.jar,**/hive-contrib*.jar"/>
+    <fileset dir="${hive.root}/build/ivy/lib/test" includes="*.jar" erroronmissingdir="false" excludes="**/hive_*.jar,**/hive-*.jar"/>
+    <fileset dir="${hive.root}/build/ivy/lib/default" includes="*.jar" erroronmissingdir="false" excludes="**/hive_*.jar,**/hive-*.jar" />
     <fileset dir="${hive.root}/testlibs" includes="*.jar"/>
     <fileset dir="${hive.root}/build/ivy/lib/hadoop0.${hadoop.mr.rev}.shim" includes="*.jar" />
     <pathelement location="${build.classes}" />
