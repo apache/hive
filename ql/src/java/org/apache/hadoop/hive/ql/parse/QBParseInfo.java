@@ -133,7 +133,7 @@ public class QBParseInfo {
   }
 
   public void addInsertIntoTable(String table) {
-    insertIntoTables.add(table);
+    insertIntoTables.add(table.toLowerCase());
   }
 
   public boolean isInsertIntoTable(String table) {
