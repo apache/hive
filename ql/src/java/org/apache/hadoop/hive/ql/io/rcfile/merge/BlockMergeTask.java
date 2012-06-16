@@ -236,7 +236,7 @@ public class BlockMergeTask extends Task<MergeWork> implements Serializable,
           HadoopJobExecHelper.runningJobKillURIs.remove(rj.getJobID());
           jobID = rj.getID().toString();
         }
-        RCFileMergeMapper.jobClose(outputPath, success, job, console);
+        RCFileMergeMapper.jobClose(outputPath, success, job, console, work.getDynPartCtx());
       } catch (Exception e) {
       }
     }

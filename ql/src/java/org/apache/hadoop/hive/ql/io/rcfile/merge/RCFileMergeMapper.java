@@ -29,6 +29,7 @@ import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.io.RCFile;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
+import org.apache.hadoop.hive.ql.plan.DynamicPartitionCtx;
 import org.apache.hadoop.hive.ql.session.SessionState.LogHelper;
 import org.apache.hadoop.hive.shims.CombineHiveKey;
 import org.apache.hadoop.hive.shims.ShimLoader;
@@ -231,11 +232,11 @@ public class RCFileMergeMapper extends MapReduceBase implements
   }
 
   public static void jobClose(String outputPath, boolean success, JobConf job,
-      LogHelper console) throws HiveException, IOException {
+      LogHelper console, DynamicPartitionCtx dynPartCtx) throws HiveException, IOException {
     Path outpath = new Path(outputPath);
     FileSystem fs = outpath.getFileSystem(job);
     Path backupPath = backupOutputPath(fs, outpath, job);
-    Utilities.mvFileToFinalPath(outputPath, job, success, LOG, null, null);
+    Utilities.mvFileToFinalPath(outputPath, job, success, LOG, dynPartCtx, null);
     fs.delete(backupPath, true);
   }
 

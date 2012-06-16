@@ -519,7 +519,7 @@ public class GenMRFileSink1 implements NodeProcessor {
       }
 
       MergeWork work = new MergeWork(inputDirs, finalName,
-          hasDynamicPartitions);
+          hasDynamicPartitions, fsInputDesc.getDynPartCtx());
       LinkedHashMap<String, ArrayList<String>> pathToAliases =
           new LinkedHashMap<String, ArrayList<String>>();
       pathToAliases.put(inputDir, (ArrayList<String>) inputDirs.clone());
