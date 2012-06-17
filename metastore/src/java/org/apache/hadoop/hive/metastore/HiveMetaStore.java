@@ -606,6 +606,8 @@ public class HiveMetaStore extends ThriftHiveMetastore {
         IOException {
       boolean success = false;
       Database db = null;
+      List<Path> tablePaths = new ArrayList<Path>();
+      List<Path> partitionPaths = new ArrayList<Path>();
       try {
         ms.openTransaction();
         db = ms.getDatabase(name);
@@ -624,6 +626,60 @@ public class HiveMetaStore extends ThriftHiveMetastore {
               path + " is not writable by " +
               hiveConf.getUser());
         }
+
+        Path databasePath = wh.getDnsPath(wh.getDatabasePath(db));
+
+        // first drop tables
+        int tableBatchSize = HiveConf.getIntVar(hiveConf,
+            ConfVars.METASTORE_BATCH_RETRIEVE_MAX);
+
+        int startIndex = 0;
+        int endIndex = -1;
+        // retrieve the tables from the metastore in batches to alleviate memory constraints
+        while(endIndex < allTables.size() - 1) {
+          startIndex = endIndex + 1;
+          endIndex = endIndex + tableBatchSize;
+          if (endIndex >= allTables.size()) {
+            endIndex = allTables.size() - 1;
+          }
+
+          List<Table> tables = null;
+          try {
+            tables = ms.getTableObjectsByName(name, allTables.subList(startIndex, endIndex));
+          } catch (UnknownDBException e) {
+            throw new MetaException(e.getMessage());
+          }
+
+          if (tables != null && !tables.isEmpty()) {
+            for (Table table : tables) {
+
+              // If the table is not external and it might not be in a subdirectory of the database
+              // add it's locations to the list of paths to delete
+              Path tablePath = null;
+              if (table.getSd().getLocation() != null && !isExternal(table)) {
+                tablePath = wh.getDnsPath(new Path(table.getSd().getLocation()));
+                if (!wh.isWritable(tablePath.getParent())) {
+                  throw new MetaException("Database metadata not deleted since table: " +
+                      table.getTableName() + " has a parent location " +  tablePath.getParent() +
+                      " which is not writable by " + hiveConf.getUser());
+                }
+
+                if (!isSubdirectory(databasePath, tablePath)) {
+                  tablePaths.add(tablePath);
+                }
+              }
+
+              // For each partition in each table, drop the partitions and get a list of
+              // partitions' locations which might need to be deleted
+              partitionPaths = dropPartitionsAndGetLocations(ms, name, table.getTableName(),
+                  tablePath, table.getPartitionKeys(), deleteData && !isExternal(table));
+
+              // Drop the table but not its data
+              drop_table(name, table.getTableName(), false);
+            }
+          }
+        }
+
         if (ms.dropDatabase(name)) {
           success = ms.commitTransaction();
         }
@@ -631,13 +687,38 @@ public class HiveMetaStore extends ThriftHiveMetastore {
         if (!success) {
           ms.rollbackTransaction();
         } else if (deleteData) {
-          wh.deleteDir(new Path(db.getLocationUri()), true);
+          // Delete the data in the partitions which have other locations
+          deletePartitionData(partitionPaths);
+          // Delete the data in the tables which have other locations
+          for (Path tablePath : tablePaths) {
+            deleteTableData(tablePath);
+          }
+          // Delete the data in the database
+          try {
+            wh.deleteDir(new Path(db.getLocationUri()), true);
+          } catch (Exception e) {
+            LOG.error("Failed to delete database directory: " + db.getLocationUri() +
+                " " + e.getMessage());
+          }
           // it is not a terrible thing even if the data is not deleted
         }
         for (MetaStoreEventListener listener : listeners) {
           listener.onDropDatabase(new DropDatabaseEvent(db, success, this));
         }
       }
+    }
+
+    /**
+     * Returns a BEST GUESS as to whether or not other is a subdirectory of parent.  It does not
+     * take into account any intricacies of the underlying file system, which is assumed to be
+     * HDFS.  This should not return any false positives, but may return false negatives.
+     * @param parent
+     * @param other
+     * @return
+     */
+    private boolean isSubdirectory(Path parent, Path other) {
+      return other.toString().startsWith(parent.toString().endsWith(Path.SEPARATOR) ?
+          parent.toString() : parent.toString() + Path.SEPARATOR);
     }
 
     public void drop_database(final String dbName, final boolean deleteData, final boolean cascade)
@@ -907,6 +988,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       boolean success = false;
       boolean isExternal = false;
       Path tblPath = null;
+      List<Path> partPaths = null;
       Table tbl = null;
       isExternal = false;
       boolean isIndexTable = false;
@@ -958,6 +1040,10 @@ public class HiveMetaStore extends ThriftHiveMetastore {
           }
         }
 
+        // Drop the partitions and get a list of locations which need to be deleted
+        partPaths = dropPartitionsAndGetLocations(ms, dbname, name, tblPath,
+            tbl.getPartitionKeys(), deleteData && !isExternal);
+
         if (!ms.dropTable(dbname, name)) {
           throw new MetaException("Unable to drop table");
         }
@@ -965,14 +1051,113 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       } finally {
         if (!success) {
           ms.rollbackTransaction();
-        } else if (deleteData && (tblPath != null) && !isExternal) {
-          wh.deleteDir(tblPath, true);
+        } else if (deleteData && !isExternal) {
+          // Delete the data in the partitions which have other locations
+          deletePartitionData(partPaths);
+          // Delete the data in the table
+          deleteTableData(tblPath);
           // ok even if the data is not deleted
         }
         for (MetaStoreEventListener listener : listeners) {
           listener.onDropTable(new DropTableEvent(tbl, success, this));
         }
       }
+    }
+
+    /**
+     * Deletes the data in a table's location, if it fails logs an error
+     *
+     * @param tablePath
+     */
+    private void deleteTableData(Path tablePath) {
+      if (tablePath != null) {
+        try {
+          wh.deleteDir(tablePath, true);
+        } catch (Exception e) {
+          LOG.error("Failed to delete table directory: " + tablePath +
+              " " + e.getMessage());
+        }
+      }
+    }
+
+    /**
+     * Give a list of partitions' locations, tries to delete each one
+     * and for each that fails logs an error.
+     *
+     * @param partPaths
+     */
+    private void deletePartitionData(List<Path> partPaths) {
+      if (partPaths != null && !partPaths.isEmpty()) {
+        for (Path partPath : partPaths) {
+          try {
+            wh.deleteDir(partPath, true);
+          } catch (Exception e) {
+            LOG.error("Failed to delete partition directory: " + partPath +
+                " " + e.getMessage());
+          }
+        }
+      }
+    }
+
+    /**
+     * Retrieves the partitions specified by partitionKeys.  If checkLocation, for locations of
+     * partitions which may not be subdirectories of tablePath checks to make the locations are
+     * writable.
+     *
+     * Drops the metadata for each partition.
+     *
+     * Provides a list of locations of partitions which may not be subdirectories of tablePath.
+     *
+     * @param ms
+     * @param dbName
+     * @param tableName
+     * @param tablePath
+     * @param partitionKeys
+     * @param checkLocation
+     * @return
+     * @throws MetaException
+     * @throws IOException
+     */
+    private List<Path> dropPartitionsAndGetLocations(RawStore ms, String dbName,
+        String tableName, Path tablePath, List<FieldSchema> partitionKeys, boolean checkLocation)
+            throws MetaException, IOException {
+
+      int partitionBatchSize = HiveConf.getIntVar(hiveConf,
+          ConfVars.METASTORE_BATCH_RETRIEVE_MAX);
+      Path tableDnsPath = null;
+      if (tablePath != null) {
+        tableDnsPath = wh.getDnsPath(tablePath);
+      }
+      List<Path> partPaths = new ArrayList<Path>();
+
+      // call dropPartition on each of the table's partitions to follow the
+      // procedure for cleanly dropping partitions.
+      while(true) {
+        List<Partition> partsToDelete = ms.getPartitions(dbName, tableName, partitionBatchSize);
+        if (partsToDelete == null || partsToDelete.isEmpty()) {
+          break;
+        }
+        for (Partition part : partsToDelete) {
+          if (checkLocation && part.getSd() != null &&
+              part.getSd().getLocation() != null) {
+
+            Path partPath = wh.getDnsPath(new Path(part.getSd().getLocation()));
+            if (tableDnsPath == null ||
+                (partPath != null && !isSubdirectory(tableDnsPath, partPath))){
+              if (!wh.isWritable(partPath.getParent())) {
+                  throw new MetaException("Table metadata not deleted since the partition " +
+                      Warehouse.makePartName(partitionKeys, part.getValues()) +
+                      " has parent location " + partPath.getParent() + " which is not writable " +
+                      "by " + hiveConf.getUser());
+               }
+              partPaths.add(partPath);
+            }
+          }
+          ms.dropPartition(dbName, tableName, part.getValues());
+        }
+      }
+
+      return partPaths;
     }
 
     public void drop_table(final String dbname, final String name, final boolean deleteData)
@@ -2149,6 +2334,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
 
       boolean success = false;
       Path tblPath = null;
+      List<Path> partPaths = null;
       try {
         ms.openTransaction();
 
@@ -2175,6 +2361,11 @@ public class HiveMetaStore extends ThriftHiveMetastore {
                   hiveConf.getUser());
             }
           }
+
+          // Drop the partitions and get a list of partition locations which need to be deleted
+          partPaths = dropPartitionsAndGetLocations(ms, dbName, idxTblName, tblPath,
+              tbl.getPartitionKeys(), deleteData);
+
           if (!ms.dropTable(dbName, idxTblName)) {
             throw new MetaException("Unable to drop underlying data table "
                 + idxTblName + " for index " + idxTblName);
@@ -2186,7 +2377,8 @@ public class HiveMetaStore extends ThriftHiveMetastore {
           ms.rollbackTransaction();
           return false;
         } else if (deleteData && tblPath != null) {
-          wh.deleteDir(tblPath, true);
+          deletePartitionData(partPaths);
+          deleteTableData(tblPath);
           // ok even if the data is not deleted
         }
       }

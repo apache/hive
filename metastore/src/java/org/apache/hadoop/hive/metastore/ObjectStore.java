@@ -456,11 +456,6 @@ public class ObjectStore implements RawStore, Configurable {
     try {
       openTransaction();
 
-      // first drop tables
-      for (String tableName : getAllTables(dbname)) {
-        dropTable(dbname, tableName);
-      }
-
       // then drop the database
       MDatabase db = getMDatabase(dbname);
       pm.retrieve(db);
@@ -681,7 +676,7 @@ public class ObjectStore implements RawStore, Configurable {
       MTable tbl = getMTable(dbName, tableName);
       pm.retrieve(tbl);
       if (tbl != null) {
-        // first remove all the partitions
+        // first remove all the grants
         List<MTablePrivilege> tabGrants = listAllTableGrants(dbName, tableName);
         if (tabGrants != null && tabGrants.size() > 0) {
           pm.deletePersistentAll(tabGrants);
@@ -701,21 +696,6 @@ public class ObjectStore implements RawStore, Configurable {
             tableName);
         if (partColGrants != null && partColGrants.size() > 0) {
           pm.deletePersistentAll(partColGrants);
-        }
-
-        int partitionBatchSize = HiveConf.getIntVar(getConf(),
-          ConfVars.METASTORE_BATCH_RETRIEVE_TABLE_PARTITION_MAX);
-
-        // call dropPartition on each of the table's partitions to follow the
-        // procedure for cleanly dropping partitions.
-        while(true) {
-          List<MPartition> partsToDelete = listMPartitions(dbName, tableName, partitionBatchSize);
-          if (partsToDelete == null || partsToDelete.isEmpty()) {
-            break;
-          }
-          for (MPartition mpart : partsToDelete) {
-            dropPartitionCommon(mpart);
-          }
         }
 
         preDropStorageDescriptor(tbl.getSd());
