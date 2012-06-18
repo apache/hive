@@ -29,5 +29,7 @@
   <dependencies>
     <dependency org="org.apache.hive" name="hive-cli" rev="${version}"
                 conf="compile->default" transitive="false" />
+    <dependency org="junit" name="junit" rev="${junit.version}"
+                conf="compile->default" />
   </dependencies>
 </ivy-module>

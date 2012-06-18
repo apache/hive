@@ -36,5 +36,9 @@
                 transitive="false"/>
     <dependency org="commons-codec" name="commons-codec" rev="${commons-codec.version}"
                 transitive="false"/>
+
+    <!-- Test Dependencies -->
+    <dependency org="junit" name="junit" rev="${junit.version}" conf="test->default" />
+
   </dependencies>
 </ivy-module>

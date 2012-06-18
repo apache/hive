@@ -49,5 +49,8 @@
                 transitive="false"/>
     <dependency org="org.apache.avro" name="avro-mapred" rev="${avro.version}"
                 transitive="false"/>
+
+    <!-- Test Dependencies -->
+    <dependency org="junit" name="junit" rev="${junit.version}" conf="test->default" />
   </dependencies>
 </ivy-module>

@@ -62,5 +62,9 @@
     <dependency org="org.apache.thrift" name="libfb303" rev="${libfb303.version}" transitive="false" />
 
     <dependency org="asm" name="asm" rev="${asm.version}"/>
+
+    <!-- Test Dependencies -->
+    <dependency org="junit" name="junit" rev="${junit.version}" conf="test->default" />
+
   </dependencies>
 </ivy-module>

@@ -120,6 +120,9 @@
       <exclude org="org.apache.commons" module="commons-daemon"/><!--bad POM-->
     </dependency>
 
+    <!-- Test Dependencies -->
+    <dependency org="junit" name="junit" rev="${junit.version}" conf="test->default" />
+
     <conflict manager="all" />
   </dependencies>
 </ivy-module>
