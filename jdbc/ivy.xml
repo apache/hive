@@ -33,5 +33,9 @@
                 transitive="false"/>
     <dependency org="commons-logging" name="commons-logging" rev="${commons-logging.version}"
                 transitive="false"/>
+
+    <!-- Test Dependencies -->
+    <dependency org="junit" name="junit" rev="${junit.version}" conf="test->default" />
+
   </dependencies>
 </ivy-module>

@@ -48,6 +48,9 @@
                 conf="runtime" transitive="false"/>
     
     <!-- Test Dependencies -->
-    <dependency org="org.mockito" name="mockito-all" rev="${mockito-all.version}" />
+    <dependency org="junit" name="junit"
+                rev="${junit.version}" conf="test->default" />
+    <dependency org="org.mockito" name="mockito-all"
+                rev="${mockito-all.version}" conf="test->default" />
   </dependencies>
 </ivy-module>
