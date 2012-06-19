@@ -767,7 +767,12 @@ public class Table implements Serializable {
    */
   public void setProtectMode(ProtectMode protectMode){
     Map<String, String> parameters = tTable.getParameters();
-    parameters.put(ProtectMode.PARAMETER_NAME, protectMode.toString());
+    String pm = protectMode.toString();
+    if (pm != null) {
+      parameters.put(ProtectMode.PARAMETER_NAME, pm);
+    } else {
+      parameters.remove(ProtectMode.PARAMETER_NAME);
+    }
     tTable.setParameters(parameters);
   }
 
