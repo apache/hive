@@ -108,7 +108,8 @@ public class HiveMetaStoreClient implements IMetaStoreClient {
     }
     this.conf = conf;
 
-    localMetaStore = conf.getBoolVar(ConfVars.METASTORE_MODE);
+    String msUri = conf.getVar(HiveConf.ConfVars.METASTOREURIS);
+    localMetaStore = (msUri == null) ? true : msUri.trim().isEmpty();
     if (localMetaStore) {
       // instantiate the metastore server handler directly instead of connecting
       // through the network

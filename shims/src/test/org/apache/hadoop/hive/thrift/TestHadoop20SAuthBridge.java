@@ -127,7 +127,6 @@ public class TestHadoop20SAuthBridge extends TestCase {
     System.setProperty(HiveConf.ConfVars.METASTOREWAREHOUSE.varname, new Path(
         System.getProperty("test.build.data", "/tmp")).toString());
     conf = new HiveConf(TestHadoop20SAuthBridge.class);
-    conf.setBoolVar(ConfVars.METASTORE_MODE, false);
     MetaStoreUtils.startMetaStore(port, new MyHadoopThriftAuthBridge20S());
   }
 
