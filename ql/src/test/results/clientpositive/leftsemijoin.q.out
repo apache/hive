@@ -40,42 +40,42 @@ POSTHOOK: query: load data local inpath '../data/files/things2.txt' INTO TABLE t
 POSTHOOK: type: LOAD
 POSTHOOK: Output: default@things
 POSTHOOK: Output: default@things@ds=2011-10-24
-PREHOOK: query: SELECT name,id FROM sales
+PREHOOK: query: SELECT name,id FROM sales ORDER BY name ASC, id ASC
 PREHOOK: type: QUERY
 PREHOOK: Input: default@sales
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT name,id FROM sales
+POSTHOOK: query: SELECT name,id FROM sales ORDER BY name ASC, id ASC
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@sales
 #### A masked pattern was here ####
-Joe	2
 Hank	2
-PREHOOK: query: SELECT id,name FROM things
+Joe	2
+PREHOOK: query: SELECT id,name FROM things ORDER BY id ASC, name ASC
 PREHOOK: type: QUERY
 PREHOOK: Input: default@things@ds=2011-10-23
 PREHOOK: Input: default@things@ds=2011-10-24
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT id,name FROM things
+POSTHOOK: query: SELECT id,name FROM things ORDER BY id ASC, name ASC
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@things@ds=2011-10-23
 POSTHOOK: Input: default@things@ds=2011-10-24
 #### A masked pattern was here ####
 2	Tie
 2	Tie
-PREHOOK: query: SELECT name,id FROM sales LEFT SEMI JOIN things ON (sales.id = things.id)
+PREHOOK: query: SELECT name,id FROM sales LEFT SEMI JOIN things ON (sales.id = things.id) ORDER BY name ASC, id ASC
 PREHOOK: type: QUERY
 PREHOOK: Input: default@sales
 PREHOOK: Input: default@things@ds=2011-10-23
 PREHOOK: Input: default@things@ds=2011-10-24
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT name,id FROM sales LEFT SEMI JOIN things ON (sales.id = things.id)
+POSTHOOK: query: SELECT name,id FROM sales LEFT SEMI JOIN things ON (sales.id = things.id) ORDER BY name ASC, id ASC
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@sales
 POSTHOOK: Input: default@things@ds=2011-10-23
 POSTHOOK: Input: default@things@ds=2011-10-24
 #### A masked pattern was here ####
-Joe	2
 Hank	2
+Joe	2
 PREHOOK: query: drop table sales
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@sales
