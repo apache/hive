@@ -36,7 +36,7 @@ public class TUGIContainingTransport extends TFilterTransport {
 
   private UserGroupInformation ugi;
 
-  public TUGIContainingTransport(TTransport wrapped, UserGroupInformation ugi) {
+  public TUGIContainingTransport(TTransport wrapped) {
     super(wrapped);
   }
 
@@ -65,9 +65,10 @@ public class TUGIContainingTransport extends TFilterTransport {
 
   public static class Factory extends TTransportFactory {
 
-    // Need a concurrent weak hashmap.
+    // Need a concurrent weakhashmap. WeakKeys() so that when underlying transport gets out of
+    // scope, it still can be GC'ed. Since value of map has a ref to key, need weekValues as well.
     private static final ConcurrentMap<TTransport, TUGIContainingTransport> transMap =
-        new MapMaker().weakKeys().makeMap();
+        new MapMaker().weakKeys().weakValues().makeMap();
 
     /**
      * Get a new <code>TUGIContainingTransport</code> instance, or reuse the
@@ -81,7 +82,7 @@ public class TUGIContainingTransport extends TFilterTransport {
 
       // UGI information is not available at connection setup time, it will be set later
       // via set_ugi() rpc.
-      transMap.putIfAbsent(trans, new TUGIContainingTransport(trans,null));
+      transMap.putIfAbsent(trans, new TUGIContainingTransport(trans));
       return transMap.get(trans);
     }
   }
