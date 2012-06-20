@@ -212,11 +212,11 @@ POSTHOOK: Lineage: dest1.key EXPRESSION [(src)src.FieldSchema(name:key, type:str
 POSTHOOK: Lineage: dest1.value EXPRESSION [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: dest2.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: dest2.value EXPRESSION [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-PREHOOK: query: SELECT DEST1.* FROM DEST1
+PREHOOK: query: SELECT DEST1.* FROM DEST1 ORDER BY key ASC, value ASC
 PREHOOK: type: QUERY
 PREHOOK: Input: default@dest1
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT DEST1.* FROM DEST1
+POSTHOOK: query: SELECT DEST1.* FROM DEST1 ORDER BY key ASC, value ASC
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@dest1
 #### A masked pattern was here ####
@@ -226,19 +226,19 @@ POSTHOOK: Lineage: dest2.key EXPRESSION [(src)src.FieldSchema(name:key, type:str
 POSTHOOK: Lineage: dest2.value EXPRESSION [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 0	0.0
 10	10.0
+11	11.0
 100	200.0
 103	206.0
 104	208.0
 105	105.0
-11	11.0
 111	111.0
 113	226.0
 114	114.0
-PREHOOK: query: SELECT DEST2.* FROM DEST2
+PREHOOK: query: SELECT DEST2.* FROM DEST2 ORDER BY key ASC, value ASC
 PREHOOK: type: QUERY
 PREHOOK: Input: default@dest2
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT DEST2.* FROM DEST2
+POSTHOOK: query: SELECT DEST2.* FROM DEST2 ORDER BY key ASC, value ASC
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@dest2
 #### A masked pattern was here ####
@@ -248,11 +248,11 @@ POSTHOOK: Lineage: dest2.key EXPRESSION [(src)src.FieldSchema(name:key, type:str
 POSTHOOK: Lineage: dest2.value EXPRESSION [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 0	0.0
 10	10.0
+11	11.0
 100	200.0
 103	206.0
 104	208.0
 105	105.0
-11	11.0
 111	111.0
 113	226.0
 114	114.0
