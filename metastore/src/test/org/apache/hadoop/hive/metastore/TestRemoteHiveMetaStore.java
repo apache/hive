@@ -67,7 +67,6 @@ public class TestRemoteHiveMetaStore extends TestHiveMetaStore {
   }
 
   protected void createClient(boolean setugi) throws Exception {
-    hiveConf.setBoolVar(ConfVars.METASTORE_MODE, false);
     hiveConf.setVar(HiveConf.ConfVars.METASTOREURIS, "thrift://localhost:" + METASTORE_PORT);
     hiveConf.setBoolVar(ConfVars.METASTORE_EXECUTE_SET_UGI,setugi);
     client = new HiveMetaStoreClient(hiveConf);

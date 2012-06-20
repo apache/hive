@@ -101,7 +101,6 @@ public class TestRemoteHiveMetaStoreIpAddress extends TestCase {
   }
 
   protected void createClient() throws Exception {
-    hiveConf.setBoolVar(ConfVars.METASTORE_MODE, false);
     hiveConf.setVar(HiveConf.ConfVars.METASTOREURIS, "thrift://localhost:" + port);
     msc = new HiveMetaStoreClient(hiveConf);
   }

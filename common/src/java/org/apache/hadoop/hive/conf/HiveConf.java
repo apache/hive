@@ -82,7 +82,6 @@ public class HiveConf extends Configuration {
       HiveConf.ConfVars.METASTOREDIRECTORY,
       HiveConf.ConfVars.METASTOREWAREHOUSE,
       HiveConf.ConfVars.METASTOREURIS,
-      HiveConf.ConfVars.METASTORE_MODE,
       HiveConf.ConfVars.METASTORETHRIFTRETRIES,
       HiveConf.ConfVars.METASTORE_CLIENT_CONNECT_RETRY_DELAY,
       HiveConf.ConfVars.METASTORE_CLIENT_SOCKET_TIMEOUT,
@@ -301,7 +300,6 @@ public class HiveConf extends Configuration {
     METASTORE_EVENT_EXPIRY_DURATION("hive.metastore.event.expiry.duration",0L),
     METASTORE_EXECUTE_SET_UGI("hive.metastore.execute.setugi", false),
 
-    METASTORE_MODE("hive.metastore.local",true),
     // Default parameters for creating tables
     NEWTABLEDEFAULTPARA("hive.table.parameters.default", ""),
     METASTORE_RAW_STORE_IMPL("hive.metastore.rawstore.impl",
@@ -867,6 +865,19 @@ public class HiveConf extends Configuration {
 
     // Overlay the values of any system properties whose names appear in the list of ConfVars
     applySystemProperties();
+
+    if(this.get("hive.metastore.local", null) != null) {
+      l4j.warn("DEPRECATED: Configuration property hive.metastore.local no longer has any " +
+      		"effect. Make sure to provide a valid value for hive.metastore.uris if you are " +
+      		"connecting to a remote metastore.");
+    }
+
+    if (null != this.get(ConfVars.METASTOREURIS.varname, null) &&
+        null != this.get(ConfVars.METASTORECONNECTURLKEY.varname, null)) {
+      l4j.error("Found both " + ConfVars.METASTOREURIS.varname + " and " +
+        ConfVars.METASTORECONNECTURLKEY + " Recommended to have exactly one of those config key" +
+        "in configuration");
+    }
 
     // if the running class was loaded directly (through eclipse) rather than through a
     // jar then this would be needed
