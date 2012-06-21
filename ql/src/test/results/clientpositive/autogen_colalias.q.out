@@ -80,3 +80,9 @@ PREHOOK: type: DESCTABLE
 POSTHOOK: query: describe dest_grouped_new2
 POSTHOOK: type: DESCTABLE
 key	string	
+PREHOOK: query: -- Drop the temporary function at the end till HIVE-3160 gets fixed
+DROP TEMPORARY FUNCTION test_max
+PREHOOK: type: DROPFUNCTION
+POSTHOOK: query: -- Drop the temporary function at the end till HIVE-3160 gets fixed
+DROP TEMPORARY FUNCTION test_max
+POSTHOOK: type: DROPFUNCTION
