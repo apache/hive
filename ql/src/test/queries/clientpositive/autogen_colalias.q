@@ -20,3 +20,6 @@ describe dest_grouped_new1;
 
 create table dest_grouped_new2 as select distinct src.key from src;
 describe dest_grouped_new2;
+
+-- Drop the temporary function at the end till HIVE-3160 gets fixed
+DROP TEMPORARY FUNCTION test_max;
