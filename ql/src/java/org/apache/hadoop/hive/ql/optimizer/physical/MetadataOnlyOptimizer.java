@@ -34,6 +34,7 @@ import org.apache.hadoop.hive.ql.exec.GroupByOperator;
 import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.exec.TableScanOperator;
 import org.apache.hadoop.hive.ql.exec.Task;
+import org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat;
 import org.apache.hadoop.hive.ql.lib.DefaultGraphWalker;
 import org.apache.hadoop.hive.ql.lib.DefaultRuleDispatcher;
 import org.apache.hadoop.hive.ql.lib.Dispatcher;
@@ -200,6 +201,7 @@ public class MetadataOnlyOptimizer implements PhysicalPlanResolver {
     private PartitionDesc changePartitionToMetadataOnly(PartitionDesc desc) {
       if (desc != null) {
         desc.setInputFileFormatClass(OneNullRowInputFormat.class);
+        desc.setOutputFileFormatClass(HiveIgnoreKeyTextOutputFormat.class);
         desc.setDeserializerClass(NullStructSerDe.class);
         desc.setSerdeClassName(NullStructSerDe.class.getName());
       }
