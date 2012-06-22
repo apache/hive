@@ -33,3 +33,6 @@ set hive.input.format=org.apache.hadoop.hive.ql.io.CombineHiveInputFormat;
 
 explain extended select max(ds) from TEST1;
 select max(ds) from TEST1;
+
+select distinct ds from srcpart;
+select min(ds),max(ds) from srcpart;
