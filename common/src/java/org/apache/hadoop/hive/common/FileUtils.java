@@ -18,16 +18,23 @@
 
 package org.apache.hadoop.hive.common;
 
+import java.io.BufferedOutputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.net.URI;
 import java.util.BitSet;
 import java.util.List;
 
+import org.apache.commons.compress.archivers.tar.TarArchiveEntry;
+import org.apache.commons.compress.archivers.tar.TarArchiveOutputStream;
+import org.apache.commons.compress.compressors.gzip.GzipCompressorOutputStream;
+import org.apache.commons.compress.utils.IOUtils;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
-import org.apache.hadoop.util.Shell.ShellCommandExecutor;
 
 /**
  * Collection of file manipulation utilities common across Hive.
@@ -248,20 +255,27 @@ public final class FileUtils {
    */
   public static void tar(String parentDir, String[] inputFiles, String outputFile)
       throws IOException {
-    StringBuffer tarCommand = new StringBuffer();
-    tarCommand.append("cd " + parentDir + " ; ");
-    tarCommand.append(" tar -zcvf ");
-    tarCommand.append(" " + outputFile);
-    for (int i = 0; i < inputFiles.length; i++) {
-      tarCommand.append(" " + inputFiles[i]);
-    }
-    String[] shellCmd = {"bash", "-c", tarCommand.toString()};
-    ShellCommandExecutor shexec = new ShellCommandExecutor(shellCmd);
-    shexec.execute();
-    int exitcode = shexec.getExitCode();
-    if (exitcode != 0) {
-      throw new IOException("Error tarring file " + outputFile
-          + ". Tar process exited with exit code " + exitcode);
+    TarArchiveOutputStream tOut = null;
+
+    try {
+      tOut = new TarArchiveOutputStream(
+          new GzipCompressorOutputStream(
+              new BufferedOutputStream(
+                  new FileOutputStream(new File(parentDir, outputFile)))));
+
+      for (int i = 0; i < inputFiles.length; i++) {
+        File f = new File(inputFiles[i]);
+        TarArchiveEntry tarEntry = new TarArchiveEntry(f, f.getName());
+        tOut.setLongFileMode(TarArchiveOutputStream.LONGFILE_GNU);
+        tOut.putArchiveEntry(tarEntry);
+        IOUtils.copy(new FileInputStream(f), tOut);
+        tOut.closeArchiveEntry();
+      }
+    } finally {
+      if(tOut != null ) {
+        tOut.finish();
+        tOut.close();
+      }
     }
   }
 }
