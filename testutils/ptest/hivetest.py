@@ -208,18 +208,7 @@ def patch_hive(patches = [], revision = None):
 def build_hive():
     print('\n-- Building Hive\n')
     local.cd(code_path)
-    # we clean up the jars under ~/.ivy2 to avoid the running of very-clean package.
-    # once we get ivy to work, we should be able to get rid of hive*jar files
-    # without performing ant very-clean package.
-    # Then, we can get rid of this.
-    # Please refer to jira 3116 for more details
-    local.run('cd ~/.ivy2')
-    local.run('find . -name "*hive*.jar" | xargs rm -r')
-
-    local.cd(code_path)
     local.run('ant clean package')
-    local.run('mkdir -p "{0}/.ivy2" 2>/dev/null'.format(master_base_path), warn_only = True)
-    local.run('cp -Rf ~/.ivy2/* "{0}/.ivy2/" 2>/dev/null'.format(master_base_path), warn_only = True)
 
 def propagate_hive():
     # Expects master_base_path to be available on all test nodes in the same
@@ -231,7 +220,7 @@ def propagate_hive():
     remote_set.run('mkdir -p "{0}"'.format(host_code_path))
     remote_set.run('cp -r "{0}/*" "{1}"'.format(
                     code_path, host_code_path))
-    remote_set.run('cp -Rf "{0}/.ivy2/*" "/root/.ivy2/" 2>/dev/null'.format(master_base_path))
+
 
 def segment_tests(path):
     # Removes `.q` files that should not be run on this host.  The huge shell
@@ -315,22 +304,36 @@ def run_other_tests():
         local.cd(code_path)
         # Generate test classes in build.
         local.run('ant -Dtestcase=nothing test')
-        tests = local.run(' | '.join([
-            'find build/*/test/classes -name "Test*.class"',
-            'sed -e "s:[^/]*/::g"',
-            'grep -v TestSerDe.class',
-            'grep -v TestHiveMetaStore.class',
-            'grep -v TestCliDriver.class',
-            'grep -v TestNegativeCliDriver.class',
-            'grep -v ".*\$.*\.class"',
-            'grep -v TestSetUGIOnBothClientServer.class',
-            'grep -v TestSetUGIOnOnlyClient.class',
-            'grep -v TestSetUGIOnOnlyServer.class',
-            'grep -v TestRemoteHiveMetaStore',
-            'grep -v TestEmbeddedHiveMetaStore',
-            'sed -e "s:\.class::"'
-        ]), abandon_output = False)
-        return tests.split()
+
+        if (args.singlehost):
+          tests = local.run(' | '.join([
+              'find build/*/test/classes -name "Test*.class"',
+              'sed -e "s:[^/]*/::g"',
+              'grep -v TestSerDe.class',
+              'grep -v TestHiveMetaStore.class',
+              'grep -v TestCliDriver.class',
+              'grep -v TestNegativeCliDriver.class',
+              'grep -v ".*\$.*\.class"',
+              'sed -e "s:\.class::"'
+          ]), abandon_output = False)
+          return tests.split()
+        else:
+          tests = local.run(' | '.join([
+              'find build/*/test/classes -name "Test*.class"',
+              'sed -e "s:[^/]*/::g"',
+              'grep -v TestSerDe.class',
+              'grep -v TestHiveMetaStore.class',
+              'grep -v TestCliDriver.class',
+              'grep -v TestNegativeCliDriver.class',
+              'grep -v ".*\$.*\.class"',
+              'grep -v TestSetUGIOnBothClientServer.class',
+              'grep -v TestSetUGIOnOnlyClient.class',
+              'grep -v TestSetUGIOnOnlyServer.class',
+              'grep -v TestRemoteHiveMetaStore',
+              'grep -v TestEmbeddedHiveMetaStore',
+              'sed -e "s:\.class::"'
+          ]), abandon_output = False)
+          return tests.split()
 
     def segment_other():
         other_set.run('mkdir -p ' + report_path + '/TestContribCliDriver', warn_only = True)
@@ -341,7 +344,7 @@ def run_other_tests():
         # Split all test cases between hosts.
         def get_command(test):
             return '; '.join([
-                'ant clean package -Dtestcase=' + test + ' test',
+                'ant -Dtestcase=' + test + ' test',
 
                 'cp "`find . -name "TEST-*.xml"`" "' + report_path + '/logs/" || ' +
                 'touch "' + report_path + '/logs/{host}-' + test + '.fail"',
@@ -470,14 +473,15 @@ def cmd_run_tests(one_file_report = False):
 def cmd_test(patches = [], revision = None, one_file_report = False):
     cmd_prepare(patches, revision)
 
-    local.cd(master_base_path + '/trunk')
-    local.run('chmod -R 777 *');
-    local.run('rm -rf "' + master_base_path + '/templogs/"')
-    local.run('mkdir -p "' + master_base_path + '/templogs/"')
-    tests = ['TestRemoteHiveMetaStore','TestEmbeddedHiveMetaStore','TestSetUGIOnBothClientServer','TestSetUGIOnOnlyClient','TestSetUGIOnOnlyServer']
-    for test in tests:
-      local.run('sudo -u hadoop ant -Dtestcase=' + test + ' test')
-      local.run('cp "`find . -name "TEST-*.xml"`" "' + master_base_path + '/templogs/"')
+    if args.singlehost==False:
+      local.cd(master_base_path + '/trunk')
+      local.run('chmod -R 777 *');
+      local.run('rm -rf "' + master_base_path + '/templogs/"')
+      local.run('mkdir -p "' + master_base_path + '/templogs/"')
+      tests = ['TestRemoteHiveMetaStore','TestEmbeddedHiveMetaStore','TestSetUGIOnBothClientServer','TestSetUGIOnOnlyClient','TestSetUGIOnOnlyServer']
+      for test in tests:
+        local.run('sudo -u hadoop ant -Dtestcase=' + test + ' test')
+        local.run('cp "`find . -name "TEST-*.xml"`" "' + master_base_path + '/templogs/"')
 
     cmd_run_tests(one_file_report)
 
@@ -514,6 +518,12 @@ parser.add_argument('--overwrite', dest = 'overwrite', action = 'store_true',
         help = 'Overwrite result files in master repo')
 parser.add_argument('--copylocal', dest = 'copylocal', action = 'store_true',
         help = 'Copy local repo instead of using git clone and git hub')
+parser.add_argument('--singlehost', dest = 'singlehost', action = 'store_true',
+        help = 'Only run the test on single host, It is the users '
+               'responsibility to make sure that the conf. file does not '
+               'contain multiple hosts. '
+               'The script is not doing any validation. When --singlehost is set '
+               'the script should not be run using sudo.')
 
 args = parser.parse_args()
 
