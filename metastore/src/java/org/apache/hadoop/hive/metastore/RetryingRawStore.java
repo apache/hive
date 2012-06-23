@@ -115,7 +115,14 @@ public class RetryingRawStore implements InvocationHandler {
       } catch (UndeclaredThrowableException e) {
         throw e.getCause();
       } catch (InvocationTargetException e) {
-        throw e.getCause();
+        if (e.getCause() instanceof javax.jdo.JDOException) {
+          // Due to reflection, the jdo exception is wrapped in
+          // invocationTargetException
+          caughtException = e;
+        }
+        else {
+          throw e.getCause();
+        }
       }
 
       if (retryCount >= retryLimit) {
