@@ -20,6 +20,8 @@ package org.apache.hadoop.hive.ql.udf.generic;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Comparator;
+import java.util.List;
 
 import org.apache.hadoop.hive.ql.exec.Description;
 import org.apache.hadoop.hive.ql.exec.UDFArgumentException;
@@ -29,13 +31,11 @@ import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.serde.Constants;
 import org.apache.hadoop.hive.serde2.objectinspector.ListObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
-import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorConverters;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector.Category;
-import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorFactory;
-import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector;
+import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorConverters;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorConverters.Converter;
-import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorFactory;
-import org.apache.hadoop.hive.serde2.objectinspector.primitive.StringObjectInspector;
+import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorFactory;
+import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils;
 
 /**
  * Generic UDF for array sort
@@ -52,7 +52,7 @@ import org.apache.hadoop.hive.serde2.objectinspector.primitive.StringObjectInspe
     + "  'a', 'b', 'c', 'd'")
 public class GenericUDFSortArray extends GenericUDF {
   private Converter[] converters;
-  private ArrayList<Object> ret = new ArrayList<Object>();
+  private final List<Object> ret = new ArrayList<Object>();
   private ObjectInspector[] argumentOIs;
 
   @Override
@@ -68,8 +68,9 @@ public class GenericUDFSortArray extends GenericUDF {
     switch(arguments[0].getCategory()) {
       case LIST:
         if(((ListObjectInspector)(arguments[0])).getListElementObjectInspector()
-          .getCategory().equals(Category.PRIMITIVE))
+          .getCategory().equals(Category.PRIMITIVE)) {
           break;
+        }
       default:
         throw new UDFArgumentTypeException(0, "Argument 1"
           + " of function SORT_ARRAY must be " + Constants.LIST_TYPE_NAME
@@ -98,8 +99,15 @@ public class GenericUDFSortArray extends GenericUDF {
 
     Object array = arguments[0].get();
     ListObjectInspector arrayOI = (ListObjectInspector) argumentOIs[0];
-    ArrayList retArray = (ArrayList) arrayOI.getList(array);
-    Collections.sort(retArray);
+    List retArray = (List) arrayOI.getList(array);
+    final ObjectInspector valInspector = arrayOI.getListElementObjectInspector();
+    Collections.sort(retArray, new Comparator() {
+
+      @Override
+      public int compare(Object o1, Object o2) {
+        return ObjectInspectorUtils.compare(o1, valInspector, o2, valInspector);
+      }
+    });
 
     ret.clear();
     for (int i = 0; i < retArray.size(); i++) {

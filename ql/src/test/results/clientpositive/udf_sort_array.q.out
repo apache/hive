@@ -99,3 +99,51 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####
 [-3.445,0.777,1.0,1.325,2.003,2.333,9.0]
+PREHOOK: query: -- Test it against data in a table.
+CREATE TABLE dest1 (
+	tinyints ARRAY<TINYINT>,
+	smallints ARRAY<SMALLINT>,
+	ints ARRAY<INT>,
+	bigints ARRAY<BIGINT>,
+	booleans ARRAY<BOOLEAN>,
+	floats ARRAY<FLOAT>,
+	doubles ARRAY<DOUBLE>,
+	strings ARRAY<STRING>,
+	timestamps ARRAY<TIMESTAMP>
+) STORED AS TEXTFILE
+PREHOOK: type: CREATETABLE
+POSTHOOK: query: -- Test it against data in a table.
+CREATE TABLE dest1 (
+	tinyints ARRAY<TINYINT>,
+	smallints ARRAY<SMALLINT>,
+	ints ARRAY<INT>,
+	bigints ARRAY<BIGINT>,
+	booleans ARRAY<BOOLEAN>,
+	floats ARRAY<FLOAT>,
+	doubles ARRAY<DOUBLE>,
+	strings ARRAY<STRING>,
+	timestamps ARRAY<TIMESTAMP>
+) STORED AS TEXTFILE
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: default@dest1
+PREHOOK: query: LOAD DATA LOCAL INPATH '../data/files/primitive_type_arrays.txt' OVERWRITE INTO TABLE dest1
+PREHOOK: type: LOAD
+PREHOOK: Output: default@dest1
+POSTHOOK: query: LOAD DATA LOCAL INPATH '../data/files/primitive_type_arrays.txt' OVERWRITE INTO TABLE dest1
+POSTHOOK: type: LOAD
+POSTHOOK: Output: default@dest1
+PREHOOK: query: SELECT	sort_array(tinyints), sort_array(smallints), sort_array(ints),
+	sort_array(bigints), sort_array(booleans), sort_array(floats),
+	sort_array(doubles), sort_array(strings), sort_array(timestamps)
+	FROM dest1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@dest1
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT	sort_array(tinyints), sort_array(smallints), sort_array(ints),
+	sort_array(bigints), sort_array(booleans), sort_array(floats),
+	sort_array(doubles), sort_array(strings), sort_array(timestamps)
+	FROM dest1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@dest1
+#### A masked pattern was here ####
+[1,2,3,4,5]	[1,2,7,8,9]	[4,8,16,32,64]	[1,100,246,357,1000]	[false,true]	[1.414,1.618,2.718,3.141]	[1.41421,1.61803,2.71828,3.14159]	["","aramis","athos","portos"]	["1970-01-05 13:51:04.042","1970-01-07 00:54:54.442","1970-01-16 12:50:35.242"]
