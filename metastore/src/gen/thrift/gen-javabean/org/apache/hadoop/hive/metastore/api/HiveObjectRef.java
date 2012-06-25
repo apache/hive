@@ -5,6 +5,7 @@
  */
 package org.apache.hadoop.hive.metastore.api;
 
+import org.apache.commons.lang.builder.HashCodeBuilder;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.Map;
@@ -473,7 +474,34 @@ public class HiveObjectRef implements org.apache.thrift.TBase<HiveObjectRef, Hiv
 
   @Override
   public int hashCode() {
-    return 0;
+    HashCodeBuilder builder = new HashCodeBuilder();
+
+    boolean present_objectType = true && (isSetObjectType());
+    builder.append(present_objectType);
+    if (present_objectType)
+      builder.append(objectType.getValue());
+
+    boolean present_dbName = true && (isSetDbName());
+    builder.append(present_dbName);
+    if (present_dbName)
+      builder.append(dbName);
+
+    boolean present_objectName = true && (isSetObjectName());
+    builder.append(present_objectName);
+    if (present_objectName)
+      builder.append(objectName);
+
+    boolean present_partValues = true && (isSetPartValues());
+    builder.append(present_partValues);
+    if (present_partValues)
+      builder.append(partValues);
+
+    boolean present_columnName = true && (isSetColumnName());
+    builder.append(present_columnName);
+    if (present_columnName)
+      builder.append(columnName);
+
+    return builder.toHashCode();
   }
 
   public int compareTo(HiveObjectRef other) {

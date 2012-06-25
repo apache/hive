@@ -5,6 +5,7 @@
  */
 package org.apache.hadoop.hive.metastore.api;
 
+import org.apache.commons.lang.builder.HashCodeBuilder;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.Map;
@@ -267,7 +268,19 @@ public class Version implements org.apache.thrift.TBase<Version, Version._Fields
 
   @Override
   public int hashCode() {
-    return 0;
+    HashCodeBuilder builder = new HashCodeBuilder();
+
+    boolean present_version = true && (isSetVersion());
+    builder.append(present_version);
+    if (present_version)
+      builder.append(version);
+
+    boolean present_comments = true && (isSetComments());
+    builder.append(present_comments);
+    if (present_comments)
+      builder.append(comments);
+
+    return builder.toHashCode();
   }
 
   public int compareTo(Version other) {

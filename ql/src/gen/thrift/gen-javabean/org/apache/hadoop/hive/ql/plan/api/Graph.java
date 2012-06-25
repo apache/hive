@@ -5,6 +5,7 @@
  */
 package org.apache.hadoop.hive.ql.plan.api;
 
+import org.apache.commons.lang.builder.HashCodeBuilder;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.Map;
@@ -377,7 +378,24 @@ public class Graph implements org.apache.thrift.TBase<Graph, Graph._Fields>, jav
 
   @Override
   public int hashCode() {
-    return 0;
+    HashCodeBuilder builder = new HashCodeBuilder();
+
+    boolean present_nodeType = true && (isSetNodeType());
+    builder.append(present_nodeType);
+    if (present_nodeType)
+      builder.append(nodeType.getValue());
+
+    boolean present_roots = true && (isSetRoots());
+    builder.append(present_roots);
+    if (present_roots)
+      builder.append(roots);
+
+    boolean present_adjacencyList = true && (isSetAdjacencyList());
+    builder.append(present_adjacencyList);
+    if (present_adjacencyList)
+      builder.append(adjacencyList);
+
+    return builder.toHashCode();
   }
 
   public int compareTo(Graph other) {

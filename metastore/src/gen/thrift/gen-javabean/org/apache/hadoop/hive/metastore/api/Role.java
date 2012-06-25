@@ -5,6 +5,7 @@
  */
 package org.apache.hadoop.hive.metastore.api;
 
+import org.apache.commons.lang.builder.HashCodeBuilder;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.Map;
@@ -328,7 +329,24 @@ public class Role implements org.apache.thrift.TBase<Role, Role._Fields>, java.i
 
   @Override
   public int hashCode() {
-    return 0;
+    HashCodeBuilder builder = new HashCodeBuilder();
+
+    boolean present_roleName = true && (isSetRoleName());
+    builder.append(present_roleName);
+    if (present_roleName)
+      builder.append(roleName);
+
+    boolean present_createTime = true;
+    builder.append(present_createTime);
+    if (present_createTime)
+      builder.append(createTime);
+
+    boolean present_ownerName = true && (isSetOwnerName());
+    builder.append(present_ownerName);
+    if (present_ownerName)
+      builder.append(ownerName);
+
+    return builder.toHashCode();
   }
 
   public int compareTo(Role other) {

@@ -5,6 +5,7 @@
  */
 package org.apache.hadoop.hive.ql.plan.api;
 
+import org.apache.commons.lang.builder.HashCodeBuilder;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.Map;
@@ -688,7 +689,49 @@ public class Query implements org.apache.thrift.TBase<Query, Query._Fields>, jav
 
   @Override
   public int hashCode() {
-    return 0;
+    HashCodeBuilder builder = new HashCodeBuilder();
+
+    boolean present_queryId = true && (isSetQueryId());
+    builder.append(present_queryId);
+    if (present_queryId)
+      builder.append(queryId);
+
+    boolean present_queryType = true && (isSetQueryType());
+    builder.append(present_queryType);
+    if (present_queryType)
+      builder.append(queryType);
+
+    boolean present_queryAttributes = true && (isSetQueryAttributes());
+    builder.append(present_queryAttributes);
+    if (present_queryAttributes)
+      builder.append(queryAttributes);
+
+    boolean present_queryCounters = true && (isSetQueryCounters());
+    builder.append(present_queryCounters);
+    if (present_queryCounters)
+      builder.append(queryCounters);
+
+    boolean present_stageGraph = true && (isSetStageGraph());
+    builder.append(present_stageGraph);
+    if (present_stageGraph)
+      builder.append(stageGraph);
+
+    boolean present_stageList = true && (isSetStageList());
+    builder.append(present_stageList);
+    if (present_stageList)
+      builder.append(stageList);
+
+    boolean present_done = true;
+    builder.append(present_done);
+    if (present_done)
+      builder.append(done);
+
+    boolean present_started = true;
+    builder.append(present_started);
+    if (present_started)
+      builder.append(started);
+
+    return builder.toHashCode();
   }
 
   public int compareTo(Query other) {

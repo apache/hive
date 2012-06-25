@@ -5,6 +5,7 @@
  */
 package org.apache.hadoop.hive.metastore.api;
 
+import org.apache.commons.lang.builder.HashCodeBuilder;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.Map;
@@ -395,7 +396,29 @@ public class HiveObjectPrivilege implements org.apache.thrift.TBase<HiveObjectPr
 
   @Override
   public int hashCode() {
-    return 0;
+    HashCodeBuilder builder = new HashCodeBuilder();
+
+    boolean present_hiveObject = true && (isSetHiveObject());
+    builder.append(present_hiveObject);
+    if (present_hiveObject)
+      builder.append(hiveObject);
+
+    boolean present_principalName = true && (isSetPrincipalName());
+    builder.append(present_principalName);
+    if (present_principalName)
+      builder.append(principalName);
+
+    boolean present_principalType = true && (isSetPrincipalType());
+    builder.append(present_principalType);
+    if (present_principalType)
+      builder.append(principalType.getValue());
+
+    boolean present_grantInfo = true && (isSetGrantInfo());
+    builder.append(present_grantInfo);
+    if (present_grantInfo)
+      builder.append(grantInfo);
+
+    return builder.toHashCode();
   }
 
   public int compareTo(HiveObjectPrivilege other) {

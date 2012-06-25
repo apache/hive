@@ -5,6 +5,7 @@
  */
 package org.apache.hadoop.hive.metastore.api;
 
+import org.apache.commons.lang.builder.HashCodeBuilder;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.Map;
@@ -397,7 +398,29 @@ public class Type implements org.apache.thrift.TBase<Type, Type._Fields>, java.i
 
   @Override
   public int hashCode() {
-    return 0;
+    HashCodeBuilder builder = new HashCodeBuilder();
+
+    boolean present_name = true && (isSetName());
+    builder.append(present_name);
+    if (present_name)
+      builder.append(name);
+
+    boolean present_type1 = true && (isSetType1());
+    builder.append(present_type1);
+    if (present_type1)
+      builder.append(type1);
+
+    boolean present_type2 = true && (isSetType2());
+    builder.append(present_type2);
+    if (present_type2)
+      builder.append(type2);
+
+    boolean present_fields = true && (isSetFields());
+    builder.append(present_fields);
+    if (present_fields)
+      builder.append(fields);
+
+    return builder.toHashCode();
   }
 
   public int compareTo(Type other) {

@@ -38,7 +38,7 @@
   <property name="build.classes" location="${build.dir}/classes"/>
   <property name="build.encoding" value="ISO-8859-1"/>
 
-  <property name="thrift.args" value="-I ${thrift.home} --gen java:beans --gen cpp --gen php --gen py --gen rb"/>
+  <property name="thrift.args" value="-I ${thrift.home} --gen java:beans,hashcode --gen cpp --gen php --gen py --gen rb"/>
 
   <property name="hadoop.conf.dir" location="${hadoop.root}/conf"/>
 
@@ -68,7 +68,7 @@
 
   <property name="hadoop.opts.23" value="-D mapreduce.framework.name=local" />
   <property name="hadoop.opts.20" value="" />
-  
+
   <path id="test.classpath">
     <pathelement location="${test.build.classes}" />
     <pathelement location="${test.build.resources}" />
@@ -170,7 +170,7 @@
     <pathelement location="${build.dir.hive}/classes"/>
     <fileset dir="${build.dir.hive}" includes="*/*.jar"/>
     <fileset dir="${hive.root}/lib" includes="*.jar"/>
-    <fileset dir="${build.ivy.lib.dir}/default" includes="*.jar" 
+    <fileset dir="${build.ivy.lib.dir}/default" includes="*.jar"
              erroronmissingdir="false"/>
   </path>
 
@@ -376,7 +376,7 @@
     </if>
     <if>
       <equals arg1="${test.print.classpath}" arg2="true" />
-      <then>        
+      <then>
         <echo message="Test Classpath: ${hadoop.testcp}"/>
       </then>
     </if>

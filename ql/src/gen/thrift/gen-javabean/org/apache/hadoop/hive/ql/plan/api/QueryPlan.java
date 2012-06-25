@@ -5,6 +5,7 @@
  */
 package org.apache.hadoop.hive.ql.plan.api;
 
+import org.apache.commons.lang.builder.HashCodeBuilder;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.Map;
@@ -348,7 +349,24 @@ public class QueryPlan implements org.apache.thrift.TBase<QueryPlan, QueryPlan._
 
   @Override
   public int hashCode() {
-    return 0;
+    HashCodeBuilder builder = new HashCodeBuilder();
+
+    boolean present_queries = true && (isSetQueries());
+    builder.append(present_queries);
+    if (present_queries)
+      builder.append(queries);
+
+    boolean present_done = true;
+    builder.append(present_done);
+    if (present_done)
+      builder.append(done);
+
+    boolean present_started = true;
+    builder.append(present_started);
+    if (present_started)
+      builder.append(started);
+
+    return builder.toHashCode();
   }
 
   public int compareTo(QueryPlan other) {

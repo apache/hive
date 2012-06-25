@@ -5,6 +5,7 @@
  */
 package org.apache.hadoop.hive.ql.plan.api;
 
+import org.apache.commons.lang.builder.HashCodeBuilder;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.Map;
@@ -357,7 +358,24 @@ public class Adjacency implements org.apache.thrift.TBase<Adjacency, Adjacency._
 
   @Override
   public int hashCode() {
-    return 0;
+    HashCodeBuilder builder = new HashCodeBuilder();
+
+    boolean present_node = true && (isSetNode());
+    builder.append(present_node);
+    if (present_node)
+      builder.append(node);
+
+    boolean present_children = true && (isSetChildren());
+    builder.append(present_children);
+    if (present_children)
+      builder.append(children);
+
+    boolean present_adjacencyType = true && (isSetAdjacencyType());
+    builder.append(present_adjacencyType);
+    if (present_adjacencyType)
+      builder.append(adjacencyType.getValue());
+
+    return builder.toHashCode();
   }
 
   public int compareTo(Adjacency other) {

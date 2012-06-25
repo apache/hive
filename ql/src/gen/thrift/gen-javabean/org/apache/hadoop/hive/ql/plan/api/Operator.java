@@ -5,6 +5,7 @@
  */
 package org.apache.hadoop.hive.ql.plan.api;
 
+import org.apache.commons.lang.builder.HashCodeBuilder;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.Map;
@@ -564,7 +565,39 @@ public class Operator implements org.apache.thrift.TBase<Operator, Operator._Fie
 
   @Override
   public int hashCode() {
-    return 0;
+    HashCodeBuilder builder = new HashCodeBuilder();
+
+    boolean present_operatorId = true && (isSetOperatorId());
+    builder.append(present_operatorId);
+    if (present_operatorId)
+      builder.append(operatorId);
+
+    boolean present_operatorType = true && (isSetOperatorType());
+    builder.append(present_operatorType);
+    if (present_operatorType)
+      builder.append(operatorType.getValue());
+
+    boolean present_operatorAttributes = true && (isSetOperatorAttributes());
+    builder.append(present_operatorAttributes);
+    if (present_operatorAttributes)
+      builder.append(operatorAttributes);
+
+    boolean present_operatorCounters = true && (isSetOperatorCounters());
+    builder.append(present_operatorCounters);
+    if (present_operatorCounters)
+      builder.append(operatorCounters);
+
+    boolean present_done = true;
+    builder.append(present_done);
+    if (present_done)
+      builder.append(done);
+
+    boolean present_started = true;
+    builder.append(present_started);
+    if (present_started)
+      builder.append(started);
+
+    return builder.toHashCode();
   }
 
   public int compareTo(Operator other) {

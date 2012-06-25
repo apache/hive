@@ -5,6 +5,7 @@
  */
 package org.apache.hadoop.hive.metastore.api;
 
+import org.apache.commons.lang.builder.HashCodeBuilder;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.Map;
@@ -456,7 +457,34 @@ public class PrivilegeGrantInfo implements org.apache.thrift.TBase<PrivilegeGran
 
   @Override
   public int hashCode() {
-    return 0;
+    HashCodeBuilder builder = new HashCodeBuilder();
+
+    boolean present_privilege = true && (isSetPrivilege());
+    builder.append(present_privilege);
+    if (present_privilege)
+      builder.append(privilege);
+
+    boolean present_createTime = true;
+    builder.append(present_createTime);
+    if (present_createTime)
+      builder.append(createTime);
+
+    boolean present_grantor = true && (isSetGrantor());
+    builder.append(present_grantor);
+    if (present_grantor)
+      builder.append(grantor);
+
+    boolean present_grantorType = true && (isSetGrantorType());
+    builder.append(present_grantorType);
+    if (present_grantorType)
+      builder.append(grantorType.getValue());
+
+    boolean present_grantOption = true;
+    builder.append(present_grantOption);
+    if (present_grantOption)
+      builder.append(grantOption);
+
+    return builder.toHashCode();
   }
 
   public int compareTo(PrivilegeGrantInfo other) {

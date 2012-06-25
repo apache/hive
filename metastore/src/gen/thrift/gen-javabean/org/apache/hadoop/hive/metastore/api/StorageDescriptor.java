@@ -5,6 +5,7 @@
  */
 package org.apache.hadoop.hive.metastore.api;
 
+import org.apache.commons.lang.builder.HashCodeBuilder;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.Map;
@@ -819,7 +820,59 @@ public class StorageDescriptor implements org.apache.thrift.TBase<StorageDescrip
 
   @Override
   public int hashCode() {
-    return 0;
+    HashCodeBuilder builder = new HashCodeBuilder();
+
+    boolean present_cols = true && (isSetCols());
+    builder.append(present_cols);
+    if (present_cols)
+      builder.append(cols);
+
+    boolean present_location = true && (isSetLocation());
+    builder.append(present_location);
+    if (present_location)
+      builder.append(location);
+
+    boolean present_inputFormat = true && (isSetInputFormat());
+    builder.append(present_inputFormat);
+    if (present_inputFormat)
+      builder.append(inputFormat);
+
+    boolean present_outputFormat = true && (isSetOutputFormat());
+    builder.append(present_outputFormat);
+    if (present_outputFormat)
+      builder.append(outputFormat);
+
+    boolean present_compressed = true;
+    builder.append(present_compressed);
+    if (present_compressed)
+      builder.append(compressed);
+
+    boolean present_numBuckets = true;
+    builder.append(present_numBuckets);
+    if (present_numBuckets)
+      builder.append(numBuckets);
+
+    boolean present_serdeInfo = true && (isSetSerdeInfo());
+    builder.append(present_serdeInfo);
+    if (present_serdeInfo)
+      builder.append(serdeInfo);
+
+    boolean present_bucketCols = true && (isSetBucketCols());
+    builder.append(present_bucketCols);
+    if (present_bucketCols)
+      builder.append(bucketCols);
+
+    boolean present_sortCols = true && (isSetSortCols());
+    builder.append(present_sortCols);
+    if (present_sortCols)
+      builder.append(sortCols);
+
+    boolean present_parameters = true && (isSetParameters());
+    builder.append(present_parameters);
+    if (present_parameters)
+      builder.append(parameters);
+
+    return builder.toHashCode();
   }
 
   public int compareTo(StorageDescriptor other) {

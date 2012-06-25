@@ -5,6 +5,7 @@
  */
 package org.apache.hadoop.hive.service;
 
+import org.apache.commons.lang.builder.HashCodeBuilder;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.Map;
@@ -514,7 +515,39 @@ public class HiveClusterStatus implements org.apache.thrift.TBase<HiveClusterSta
 
   @Override
   public int hashCode() {
-    return 0;
+    HashCodeBuilder builder = new HashCodeBuilder();
+
+    boolean present_taskTrackers = true;
+    builder.append(present_taskTrackers);
+    if (present_taskTrackers)
+      builder.append(taskTrackers);
+
+    boolean present_mapTasks = true;
+    builder.append(present_mapTasks);
+    if (present_mapTasks)
+      builder.append(mapTasks);
+
+    boolean present_reduceTasks = true;
+    builder.append(present_reduceTasks);
+    if (present_reduceTasks)
+      builder.append(reduceTasks);
+
+    boolean present_maxMapTasks = true;
+    builder.append(present_maxMapTasks);
+    if (present_maxMapTasks)
+      builder.append(maxMapTasks);
+
+    boolean present_maxReduceTasks = true;
+    builder.append(present_maxReduceTasks);
+    if (present_maxReduceTasks)
+      builder.append(maxReduceTasks);
+
+    boolean present_state = true && (isSetState());
+    builder.append(present_state);
+    if (present_state)
+      builder.append(state.getValue());
+
+    return builder.toHashCode();
   }
 
   public int compareTo(HiveClusterStatus other) {

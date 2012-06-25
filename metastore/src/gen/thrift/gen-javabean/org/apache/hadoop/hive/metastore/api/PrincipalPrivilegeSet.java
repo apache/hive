@@ -5,6 +5,7 @@
  */
 package org.apache.hadoop.hive.metastore.api;
 
+import org.apache.commons.lang.builder.HashCodeBuilder;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.Map;
@@ -412,7 +413,24 @@ public class PrincipalPrivilegeSet implements org.apache.thrift.TBase<PrincipalP
 
   @Override
   public int hashCode() {
-    return 0;
+    HashCodeBuilder builder = new HashCodeBuilder();
+
+    boolean present_userPrivileges = true && (isSetUserPrivileges());
+    builder.append(present_userPrivileges);
+    if (present_userPrivileges)
+      builder.append(userPrivileges);
+
+    boolean present_groupPrivileges = true && (isSetGroupPrivileges());
+    builder.append(present_groupPrivileges);
+    if (present_groupPrivileges)
+      builder.append(groupPrivileges);
+
+    boolean present_rolePrivileges = true && (isSetRolePrivileges());
+    builder.append(present_rolePrivileges);
+    if (present_rolePrivileges)
+      builder.append(rolePrivileges);
+
+    return builder.toHashCode();
   }
 
   public int compareTo(PrincipalPrivilegeSet other) {

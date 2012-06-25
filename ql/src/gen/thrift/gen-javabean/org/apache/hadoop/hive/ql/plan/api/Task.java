@@ -5,6 +5,7 @@
  */
 package org.apache.hadoop.hive.ql.plan.api;
 
+import org.apache.commons.lang.builder.HashCodeBuilder;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.Map;
@@ -696,7 +697,49 @@ public class Task implements org.apache.thrift.TBase<Task, Task._Fields>, java.i
 
   @Override
   public int hashCode() {
-    return 0;
+    HashCodeBuilder builder = new HashCodeBuilder();
+
+    boolean present_taskId = true && (isSetTaskId());
+    builder.append(present_taskId);
+    if (present_taskId)
+      builder.append(taskId);
+
+    boolean present_taskType = true && (isSetTaskType());
+    builder.append(present_taskType);
+    if (present_taskType)
+      builder.append(taskType.getValue());
+
+    boolean present_taskAttributes = true && (isSetTaskAttributes());
+    builder.append(present_taskAttributes);
+    if (present_taskAttributes)
+      builder.append(taskAttributes);
+
+    boolean present_taskCounters = true && (isSetTaskCounters());
+    builder.append(present_taskCounters);
+    if (present_taskCounters)
+      builder.append(taskCounters);
+
+    boolean present_operatorGraph = true && (isSetOperatorGraph());
+    builder.append(present_operatorGraph);
+    if (present_operatorGraph)
+      builder.append(operatorGraph);
+
+    boolean present_operatorList = true && (isSetOperatorList());
+    builder.append(present_operatorList);
+    if (present_operatorList)
+      builder.append(operatorList);
+
+    boolean present_done = true;
+    builder.append(present_done);
+    if (present_done)
+      builder.append(done);
+
+    boolean present_started = true;
+    builder.append(present_started);
+    if (present_started)
+      builder.append(started);
+
+    return builder.toHashCode();
   }
 
   public int compareTo(Task other) {
